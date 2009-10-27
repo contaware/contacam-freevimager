@@ -1,0 +1,157 @@
+.ONQuestion
+{
+	font-size: 60%;
+	color: black;
+	font-variant:normal;
+	font-weight:bolder;
+	font-family: Verdana;	
+}
+
+.ONLabel
+{
+	font-size:65%;
+	color: blue;
+	font-variant:normal;
+	font-weight:lighter;
+	font-family: Verdana;	
+}
+
+.ONButton
+{
+	font-size: 70%;
+	color: black;
+	font-family: Verdana;
+	font-variant: normal;
+}
+
+.ONTextArea
+{
+	width:335px; 
+	height:152px;
+	font-size: 70%;
+	color: black;
+	font-variant: normal;
+}
+
+.ONTitle
+{	
+	font-weight: bolder;
+	font-size: 70%;
+	color: black;
+	font-variant: normal;
+	font-family: Verdana;		
+}
+
+.ONDiv 
+{
+	display: block; padding-top: 16px;
+	visibility: visible;
+	width:auto;
+	padding: 0px 15px 0px 20px;
+}
+
+.ONTbl
+{
+	line-height:normal; font-size:70%;
+}
+
+.ONIFrame
+{
+	width: 100%;
+	visibility:hidden;
+}
+
+.OnPageControlImg
+{
+	margin-top: 2px;
+	margin-bottom: 2px;
+	vertical-align:middle;
+	margin-right: 0px;
+	margin-left: 5px;
+	cursor:pointer;			
+}
+
+.ONPageControlTable
+{
+	font-size: 12.75pt;
+	width: auto;
+}
+
+.ONH4
+{
+	margin-top: 5px;
+	margin-left: 5px;
+}
+
+.ONPageControlDiv
+{
+	white-space:normal;
+	BORDER-LEFT: #cccccc 1px solid;
+	BORDER-TOP: #6699cc 3px solid; 
+	BORDER-LEFT: #cccccc 1px solid; 
+	BORDER-BOTTOM: #6699cc 3px solid; 
+	BACKGROUND-COLOR: #f1f1f1;
+	width:100%;
+}
+
+.ONPageControlBottomTable
+{
+	FONT-SIZE: 12pt; 
+	margin-right: 0px;	
+}
+
+.ONPageControlBottomDiv
+{
+    border-top: solid 1px #CCC;
+    background-color: #F1F1F1;
+	visibility: hidden;
+	border-bottom: solid 0px #CCC;
+	width:100%;
+	position:relative;
+}
+
+.ONPageControlBottom
+{	
+	color:Olive;
+	TEXT-DECORATION: none; 	
+	font-size: 70%;
+	word-spacing:normal;
+}
+
+.ONPageControlBottomText
+{
+    padding:2px 3px 2px 3px;
+    margin: 1px 1px 1px 1px;
+    height: 20px;
+    color:#000;
+    text-decoration: none;	
+    font: 65% Verdana;
+	word-spacing: normal;
+	vertical-align: middle;
+	cursor:pointer;
+	text-align: left;
+}
+
+.ONPageControlRight
+{
+    padding:2px 3px 2px 3px;
+    margin: 1px 1px 1px 1px;
+    height: 20px;
+    color:#000;
+    text-decoration: none;	
+    font: 65% Verdana;
+	word-spacing: normal;
+	vertical-align: middle;
+	cursor:pointer;
+	text-align: left;
+}
+
+.OnPageControlBottomImg
+{
+	margin-top: 2px;
+	margin-bottom: 2px;
+	vertical-align:middle;
+	margin-right: 5px;
+	margin-left: 5px;
+	cursor:pointer;			
+}

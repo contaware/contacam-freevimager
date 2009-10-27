@@ -1,0 +1,512 @@
+#include "stdafx.h"
+#include "WorkerThread.h"
+#include <process.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#ifndef MFC_THREAD
+
+unsigned int __stdcall WorkerThreadEntry(void* lpParam)
+{
+	int res = 0;
+	CWorkerThread* pThread = (CWorkerThread*)lpParam;
+
+	if (::SetEvent(pThread->m_hStartupEvent) == 0)
+		return 0;
+
+	if (pThread->OnInitThread())
+	{
+		res = pThread->Work();
+		pThread->OnExitThread(res);
+		::ResetEvent(pThread->m_hStartupEvent); // Be Sure To Reset This Event!
+	}
+	::EnterCriticalSection(&pThread->m_cs);
+	pThread->m_bRunning = false;
+	pThread->m_bAlive = false;
+	::LeaveCriticalSection(&pThread->m_cs);
+	pThread->Delete();
+	return res;
+}
+
+CWorkerThread::CWorkerThread()
+{
+	m_hThread =			NULL;
+	m_nThreadID =		0;
+	m_bRunning =		false;
+	m_bAlive =			false;
+	m_bAutoDelete =		FALSE;
+
+	m_hStartupEvent =	::CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hKillEvent =		::CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	::InitializeCriticalSection(&m_cs);
+}
+
+CWorkerThread::~CWorkerThread()
+{
+	Kill();
+
+	if (m_hStartupEvent)
+		::CloseHandle(m_hStartupEvent);
+		
+	if (m_hKillEvent)
+		::CloseHandle(m_hKillEvent);
+
+	::DeleteCriticalSection(&m_cs);
+
+	if (m_hThread)
+		::CloseHandle(m_hThread);
+}
+
+bool CWorkerThread::Create()
+{
+	m_hThread = (HANDLE)_beginthreadex(NULL, 0, WorkerThreadEntry, (void*)this, CREATE_SUSPENDED, (unsigned int*)(&m_nThreadID));
+
+	if (((unsigned int)m_hThread == 0) || ((unsigned int)m_hThread == 0xFFFFFFFF))
+		return false;
+
+	if (::ResumeThread(m_hThread) == 0xFFFFFFFF)
+		return false;
+
+	if (::WaitForSingleObject(m_hStartupEvent, INFINITE) != WAIT_OBJECT_0)
+		return false;
+
+	if (::SuspendThread(m_hThread) == 0xFFFFFFFF)
+		return false;
+
+	m_bAlive = true;
+	return true;
+}
+
+/*
+THREAD_PRIORITY_TIME_CRITICAL
+THREAD_PRIORITY_HIGHEST
+THREAD_PRIORITY_ABOVE_NORMAL
+THREAD_PRIORITY_NORMAL
+THREAD_PRIORITY_BELOW_NORMAL
+THREAD_PRIORITY_LOWEST
+THREAD_PRIORITY_IDLE 
+*/
+bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
+{
+	::EnterCriticalSection(&m_cs);
+	if (!m_bAlive)
+	{
+		if (m_hThread)
+		{
+			::CloseHandle(m_hThread);
+			m_hThread = NULL;
+		}
+		m_nThreadID = 0;
+		::ResetEvent(m_hKillEvent); // Be Sure To Reset This Event!
+		if (Create() == false)
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}	
+
+	if (!m_bRunning)
+	{
+		if (::ResumeThread(m_hThread) != 0xFFFFFFFF)
+		{
+			m_bRunning = true;
+			VERIFY(::SetThreadPriority(m_hThread, nPriority));
+			::LeaveCriticalSection(&m_cs);
+			return true;
+		}
+		else
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	else
+	{
+		VERIFY(::SetThreadPriority(m_hThread, nPriority));
+		::LeaveCriticalSection(&m_cs);
+		return true;
+	}
+}
+
+bool CWorkerThread::Pause()
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bRunning == true)
+	{
+		if (::SuspendThread(m_hThread) != 0xFFFFFFFF)
+		{
+			m_bRunning = false;
+			::LeaveCriticalSection(&m_cs);
+			return true;
+		}
+		else
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	else
+	{
+		::LeaveCriticalSection(&m_cs);
+		return true;
+	}
+}
+
+bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bAlive)
+	{
+		// Be Sure the Thread is Running
+		if (m_bRunning == false)
+		{
+			if (::ResumeThread(m_hThread) != 0xFFFFFFFF)
+				m_bRunning = true;
+			else
+			{
+				::LeaveCriticalSection(&m_cs);
+				return false;
+			}
+		}
+
+		::LeaveCriticalSection(&m_cs);
+
+		// Send the Thread Kill Event
+		if (::SetEvent(m_hKillEvent) == 0)
+			return false;
+
+		// Wait until thread exits
+		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+		{
+			// If it doesn't want to exit force the termination!
+			if (m_hThread)
+				::TerminateThread(m_hThread, 0);
+		}
+	}
+	else
+		::LeaveCriticalSection(&m_cs);
+	
+	return true;
+}
+
+bool CWorkerThread::Kill_NoBlocking()
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bAlive)
+	{
+		// Be Sure the Thread is Running
+		if (m_bRunning == false)
+		{
+			if (::ResumeThread(m_hThread) != 0xFFFFFFFF)
+				m_bRunning = true;
+			else
+			{
+				::LeaveCriticalSection(&m_cs);
+				return false;
+			}
+		}
+
+		// Send the Thread Kill Event
+		if (::SetEvent(m_hKillEvent) == 0)
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	::LeaveCriticalSection(&m_cs);
+	return true;
+}
+
+void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
+{
+	// Wait until thread exits
+	if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+	{
+		// If it doesn't want to exit force the termination!
+		if (m_hThread)
+			::TerminateThread(m_hThread, 0);
+	}
+}
+
+int CWorkerThread::Work()
+{
+	while (TRUE)
+	{
+		if (::WaitForSingleObject(m_hKillEvent, 1000) == WAIT_OBJECT_0)
+		{
+			return 0;
+		}
+	}
+	return 0;
+}
+
+__forceinline void CWorkerThread::Delete()
+{
+	if (m_bAutoDelete)
+		delete this;
+}
+
+#else
+
+CWorkerThread::CWorkerThread()
+{
+	m_bRunning =		false;
+	m_bAlive =			false;
+	m_bProcMsg =		false;
+	m_bAutoDelete =		FALSE;
+
+	m_hStartupEvent =	::CreateEvent(NULL, TRUE, FALSE, NULL);
+	m_hKillEvent =		::CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	::InitializeCriticalSection(&m_cs);
+}
+
+CWorkerThread::~CWorkerThread()
+{
+	Kill();
+
+	if (m_hStartupEvent)
+		::CloseHandle(m_hStartupEvent);
+	
+	if (m_hKillEvent)
+		::CloseHandle(m_hKillEvent);
+
+	::DeleteCriticalSection(&m_cs);
+}
+
+/*
+THREAD_PRIORITY_TIME_CRITICAL
+THREAD_PRIORITY_HIGHEST
+THREAD_PRIORITY_ABOVE_NORMAL
+THREAD_PRIORITY_NORMAL
+THREAD_PRIORITY_BELOW_NORMAL
+THREAD_PRIORITY_LOWEST
+THREAD_PRIORITY_IDLE 
+*/
+bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
+{
+	::EnterCriticalSection(&m_cs);
+	bool bStartup;
+	if (!m_bAlive)
+	{
+		if (m_hThread)
+		{
+			::CloseHandle(m_hThread);
+			m_hThread = NULL;
+		}
+		m_nThreadID = 0;
+		::ResetEvent(m_hKillEvent);	// Be Sure To Reset This Event!
+		if (!CreateThread(CREATE_SUSPENDED))
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+		m_bAlive = true;
+		bStartup = true;
+	}
+	else
+		bStartup = false;
+
+	if (!m_bRunning)
+	{
+		if (ResumeThread() != 0xFFFFFFFF)
+		{
+			m_bRunning = true;
+			VERIFY(SetThreadPriority(nPriority));
+			if (bStartup)
+				::SetEvent(m_hStartupEvent);
+			::LeaveCriticalSection(&m_cs);
+			return true;
+		}
+		else
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	else
+	{
+		VERIFY(SetThreadPriority(nPriority));
+		::LeaveCriticalSection(&m_cs);
+		return true;
+	}
+}
+
+bool CWorkerThread::Pause()
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bRunning == true)
+	{
+		if (SuspendThread() != 0xFFFFFFFF)
+		{
+			m_bRunning = false;
+			::LeaveCriticalSection(&m_cs);
+			return true;
+		}
+		else
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	else
+	{
+		::LeaveCriticalSection(&m_cs);
+		return true;
+	}
+}
+
+int CWorkerThread::Run()
+{
+	int res = 0;
+	try
+	{
+		// Set m_pMainWnd to the main window, this is necessary if showing
+		// modal dialogs from this thread.
+		//
+		// See code of _AfxThreadEntry(void* pParam) in Thrdcore.cpp:
+		// In that function m_pMainWnd is init to the main frame, but with a
+		// CWnd object (not CFrameWnd) on the stack. A problem arises if 
+		// if we want to re-use the thread object for a second time,
+		// in that case m_pMainWnd still points to the old CWnd on the stack.
+		// We could set m_pMainWnd to NULL before starting the thread, this
+		// would force _AfxThreadEntry(void* pParam) to re-init m_pMainWnd.
+		// Still remains the problem that we prefer to have a CFrameWnd
+		// object and not a CWnd object. The following method solves both problems,
+		// the only catch of it is that we have to make absolutely sure that all
+		// threads are done before the Main Frame object is deleted!!!
+		CWinThread* pUIThread = (CWinThread*)::AfxGetApp();
+		if (pUIThread)
+			m_pMainWnd = pUIThread->GetMainWnd();
+		else
+			m_pMainWnd = NULL;
+		if (OnInitThread())
+		{
+			res = Work();
+			OnExitThread(res);
+			::ResetEvent(m_hStartupEvent); // Be Sure To Reset This Event!
+		}
+		::EnterCriticalSection(&m_cs);
+		m_bRunning = false;
+		m_bAlive = false;
+		::LeaveCriticalSection(&m_cs);
+		m_pMainWnd = NULL;
+		return res;
+	}
+	catch (CException* e)
+	{
+		::ResetEvent(m_hStartupEvent); // Be Sure To Reset This Event!
+		::EnterCriticalSection(&m_cs);
+		m_bRunning = false;
+		m_bAlive = false;
+		::LeaveCriticalSection(&m_cs);
+		e->ReportError(); // ReportError() needs m_pMainWnd -> reset m_pMainWnd at the end!
+		e->Delete();
+		m_pMainWnd = NULL;
+		return 0;
+	}
+}
+
+int CWorkerThread::Work()
+{
+	while (TRUE)
+	{
+		if (::WaitForSingleObject(m_hKillEvent, 1000) == WAIT_OBJECT_0)
+		{
+			return 0;
+		}
+		TRACE(_T("Thread: %lu\n"), m_nThreadID);
+	}
+	return 0;
+}
+
+bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bAlive)
+	{
+		// Be Sure the Thread is Running
+		if (m_bRunning == false)
+		{
+			if (ResumeThread() != 0xFFFFFFFF)
+				m_bRunning = true;
+			else
+			{
+				::LeaveCriticalSection(&m_cs);
+				return false;
+			}
+		}
+
+		::LeaveCriticalSection(&m_cs);
+
+		// Send the Thread Kill Event
+		if (::SetEvent(m_hKillEvent) == 0)
+			return false;
+		
+		// Wait until thread exits
+		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+		{
+			// If it doesn't want to exit force the termination!
+			if (m_hThread)
+			{
+				::TerminateThread(m_hThread, 0);
+				TRACE(_T("Thread: %lu has been forced to terminate!\n"), m_nThreadID);
+				ASSERT(FALSE);
+			}
+		}
+	}
+	else
+		::LeaveCriticalSection(&m_cs);
+
+	return true;
+}
+
+bool CWorkerThread::Kill_NoBlocking()
+{
+	::EnterCriticalSection(&m_cs);
+	if (m_bAlive)
+	{
+		// Be Sure the Thread is Running
+		if (m_bRunning == false)
+		{
+			if (ResumeThread() != 0xFFFFFFFF)
+				m_bRunning = true;
+			else
+			{
+				::LeaveCriticalSection(&m_cs);
+				return false;
+			}
+		}
+
+		// Send the Thread Kill Event
+		if (::SetEvent(m_hKillEvent) == 0)
+		{
+			::LeaveCriticalSection(&m_cs);
+			return false;
+		}
+	}
+	::LeaveCriticalSection(&m_cs);
+	return true;
+}
+
+void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
+{
+	// Wait until thread exits
+	if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+	{
+		// If it doesn't want to exit force the termination!
+		if (m_hThread)
+		{
+			::TerminateThread(m_hThread, 0);
+			TRACE(_T("Thread: %lu has been forced to terminate!\n"), m_nThreadID);
+			ASSERT(FALSE);
+		}
+	}
+}
+
+#endif

@@ -1,0 +1,35 @@
+//
+// TraceLogFile.h
+//
+
+#include <afx.h>
+
+#if !defined(AFX_TRACELOGFILE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
+#define AFX_TRACELOGFILE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_
+
+extern TCHAR g_sTraceFileName[MAX_PATH];
+extern TCHAR g_sLogFileName[MAX_PATH];
+extern ULONGLONG g_ullMaxLogFileSize;
+extern CRITICAL_SECTION g_csTraceFile;
+extern CRITICAL_SECTION g_csLogFile;
+
+extern void InitTraceLogFile(	LPCTSTR szTraceFileName,
+								LPCTSTR szLogFileName,
+								ULONGLONG ullMaxLogFileSize = 0); // 0 means unlimited
+extern void EndTraceLogFile();
+extern void LogLine(const TCHAR* pFormat, ...);
+extern void TraceFile(const TCHAR* pFormat, ...);
+extern void TraceFileCS(const TCHAR* pFormat, ...);
+
+#endif // !defined(AFX_TRACELOGFILE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
+
+
+#ifdef TRACELOGFILE
+	#undef TRACE
+	#define TRACE ::EnterCriticalSection(&g_csTraceFile),::TraceFile(_T("%s(%i) : "),CString(__FILE__),__LINE__),::TraceFileCS
+#else
+	#ifdef _DEBUG
+		#undef TRACE
+		#define TRACE ::AfxTrace(_T("%s(%i) : "),CString(__FILE__),__LINE__),::AfxTrace
+	#endif
+#endif

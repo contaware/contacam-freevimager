@@ -1,0 +1,251 @@
+/* Global style */
+* {
+	margin: 0;
+	padding: 0;
+}
+body {
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 12px;
+	background-color: #666666;
+	color: #bbbbbb;
+}
+form {
+	margin: 0;
+	padding: 0;
+}
+
+/* Pages title */
+h1 {
+	font-size: 36px;
+	margin: 10px 0 10px 0;
+	font-weight: bold;
+	vertical-align: bottom;
+	color: #bbbbbb;
+}
+
+/* Smaller titles */
+h2 {
+	font-size: 18px;
+	margin: 8px 0 6px 0;
+	font-weight: bold;
+	vertical-align: bottom;
+	color: #bbbbbb;
+}
+
+/* Centered containers */
+div.wrap {
+	margin: 0 auto;
+	text-align: center;
+}
+div.wraprel {
+	position: relative;
+	margin: 0 auto;
+	text-align: center;
+}
+
+/* Menu */
+div.menubottom {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+div.menutop {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+/* Links */
+a {
+	font-size: 14px;
+	text-decoration: none;
+}
+a:link {
+	color: #33ccff;
+}
+a:visited {
+	color: #33ccff;
+}
+a:active {
+	color: #33ccff;
+}
+a:hover {
+	color: #ddffff;
+	text-decoration: underline;
+}
+
+/* The back link */
+a.back {
+	font-size: 20px;
+}
+
+/* Highlight currently selected date for summary.php */
+a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover {
+	color: #ffa23c;
+	text-decoration: underline;
+}
+
+/* Two line text for summaries */
+.line1 {
+	line-height: 52px;
+	position: relative;
+	left: 28px;
+}
+.line2 {
+	line-height: 52px;
+	position: relative;
+	left: -11px;
+	top: 15px;
+}
+
+/* Thumbs margin for summaries */
+a img {
+	border: 0;
+	margin: 5px;
+	padding: 0;
+}
+a:visited img {
+	border: 1px solid #00dd00;
+	margin: 4px;
+	padding: 0;
+}
+a.lastselected:visited img {
+	border: 2px solid #ffa23c;
+	margin: 3px;
+	padding: 0;
+}
+
+/* Controls style */
+table#navcontrols {
+	margin: 0 auto 6px auto;
+	text-align: center;
+	font-size: 12px;
+	font-weight: normal;
+	color: #bbbbbb;
+}
+div#imagereloading {
+	margin: 6px 0 0 0;
+	text-align: center;
+}
+input {
+	font-size: 11px;
+	font-style: normal;
+	font-weight: bold;
+	font-family: sans-serif,Arial,Helvetica;
+	padding: 2px;
+	margin: 2px 0;
+	color: #333333;
+	text-align: center;
+	background-color: #dddddd; 
+	border: 1px solid;
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+input.playerbutton {
+	padding: 4px;
+}
+input.playerbutton:hover, input.navbutton:hover, input.playerbutton:focus, input.navbutton:focus {
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+input.playerbutton:active, input.navbutton:active {
+	border-color: #039ccf #33ccff #33ccff #039ccf;
+}
+div#track1 {
+	background-image: url('scaler_slider_track_gray.gif');
+}
+
+/* Calendar style */
+div#calendar {
+	position: absolute;
+	visibility: hidden;
+	background-color: white;
+}
+div#calendar .mycpYearNavigation,
+div#calendar .mycpMonthNavigation {
+	background-color: #33ccff;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	color: #ffffff;
+	font-weight: bold;
+}
+div#calendar .mycpDayColumnHeader,
+div#calendar .mycpYearNavigation,
+div#calendar .mycpMonthNavigation,
+div#calendar .mycpCurrentMonthDate,
+div#calendar .mycpCurrentMonthDateDisabled,
+div#calendar .mycpOtherMonthDate,
+div#calendar .mycpOtherMonthDateDisabled,
+div#calendar .mycpCurrentDate,
+div#calendar .mycpCurrentDateDisabled,
+div#calendar .mycpTodayText,
+div#calendar .mycpTodayTextDisabled,
+div#calendar .mycpText {
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 8pt;
+}
+div#calendar td.mycpDayColumnHeader {
+	color: #606060;
+	text-align: right;
+}
+div#calendar .mycpCurrentMonthDate,
+div#calendar .mycpOtherMonthDate,
+div#calendar .mycpCurrentDate {
+	text-align: right;
+	text-decoration: none;
+}
+div#calendar .mycpCurrentMonthDateDisabled,
+div#calendar .mycpOtherMonthDateDisabled,
+div#calendar .mycpCurrentDateDisabled {
+	color: #d0d0d0;
+	text-align: right;
+	text-decoration: line-through;
+}
+div#calendar .mycpCurrentMonthDate {
+	color: #33ccff;
+	font-weight: bold;
+}
+div#calendar a.mycpCurrentMonthDate:hover {
+	text-decoration: underline;
+}
+div#calendar .mycpCurrentDate {
+	color: #ffffff;
+	font-weight: bold;
+}
+div#calendar .mycpOtherMonthDate {
+	color: #808080;
+}
+div#calendar a.mycpOtherMonthDate:hover {
+	text-decoration: underline;
+}
+div#calendar td.mycpCurrentDate {
+	color: #ffffff;
+	background-color: #33ccff;
+	border-width: 1px;
+	border: solid thin #000000;
+}
+div#calendar td.mycpCurrentDateDisabled {
+	border-width: 1px;
+	border: solid thin #ffaaaa;
+}
+div#calendar td.mycpTodayText,
+div#calendar td.mycpTodayTextDisabled {
+	border: solid thin #33ccff;
+	border-width: 1px 0 0 0;
+}
+div#calendar a.mycpTodayText,
+div#calendar span.mycpTodayTextDisabled {
+	height: 20px;
+}
+div#calendar a.mycpTodayText {
+	color: #33ccff;
+	font-weight: bold;
+}
+div#calendar a.mycpTodayText:hover {
+	text-decoration: underline;
+}
+div#calendar span.mycpTodayTextDisabled {
+	color: #d0d0d0;
+}
+div#calendar .mycpBorder {
+	border: solid thin #33ccff;
+}

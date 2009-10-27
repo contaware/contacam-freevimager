@@ -1,0 +1,8397 @@
+#include "stdafx.h"
+#include "dib.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+#pragma comment(lib, "vfw32.lib")
+
+CDib::CDib()
+{
+	m_hDrawDib = ::DrawDibOpen();
+	m_GetClosestColorIndexLookUp = NULL;
+	Init();
+}
+
+CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
+{
+	m_hDrawDib = ::DrawDibOpen();
+	m_GetClosestColorIndexLookUp = NULL;
+	Init();
+	SetDibSectionFromDDB(pBitmap, pPal);
+}
+
+CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
+{
+	m_hDrawDib = ::DrawDibOpen();
+	m_GetClosestColorIndexLookUp = NULL;
+	Init();
+	SetDibSectionFromDDB(hBitmap, hPal);
+}
+
+CDib::CDib(HBITMAP hDibSection)
+{
+	m_hDrawDib = ::DrawDibOpen();
+	m_GetClosestColorIndexLookUp = NULL;
+	Init();
+	AttachDibSection(hDibSection);
+}
+
+void CDib::CopyVars(const CDib& SrcDib)
+{
+	m_nStretchMode = SrcDib.m_nStretchMode;
+	m_bColorUndoSet = SrcDib.m_bColorUndoSet;
+	m_dwImageSize = SrcDib.m_dwImageSize;
+	m_uwHue = SrcDib.m_uwHue;
+	m_wBrightness = SrcDib.m_wBrightness;
+	m_wContrast = SrcDib.m_wContrast;
+	m_dGamma = SrcDib.m_dGamma;
+	m_wLightness = SrcDib.m_wLightness;
+	m_wSaturation = SrcDib.m_wSaturation;
+	m_dwUpTime = SrcDib.m_dwUpTime;
+	m_bUserFlag = SrcDib.m_bUserFlag;
+	m_bShowMessageBoxOnError = SrcDib.m_bShowMessageBoxOnError;
+	m_bGrayscale = SrcDib.m_bGrayscale;
+	m_bAlpha = SrcDib.m_bAlpha;
+	m_wRedMask16 = SrcDib.m_wRedMask16;
+	m_wGreenMask16 = SrcDib.m_wGreenMask16;
+	m_wBlueMask16 = SrcDib.m_wBlueMask16;
+	m_nGreenShift16 = SrcDib.m_nGreenShift16;
+	m_nRedShift16 = SrcDib.m_nRedShift16;
+	m_nGreenDownShift16 = SrcDib.m_nGreenDownShift16;
+	m_nRedDownShift16 = SrcDib.m_nRedDownShift16;
+	m_nBlueRoundShift16 = SrcDib.m_nBlueRoundShift16;
+	m_nGreenRoundShift16 = SrcDib.m_nGreenRoundShift16;
+	m_nRedRoundShift16 = SrcDib.m_nRedRoundShift16;
+	m_dwRedMask32 = SrcDib.m_dwRedMask32;
+	m_dwGreenMask32 = SrcDib.m_dwGreenMask32;
+	m_dwBlueMask32 = SrcDib.m_dwBlueMask32;
+	m_nGreenShift32 = SrcDib.m_nGreenShift32;
+	m_nRedShift32 = SrcDib.m_nRedShift32;
+	m_nGreenDownShift32 = SrcDib.m_nGreenDownShift32;
+	m_nRedDownShift32 = SrcDib.m_nRedDownShift32;
+	m_nBlueRoundShift32 = SrcDib.m_nBlueRoundShift32;
+	m_nGreenRoundShift32 = SrcDib.m_nGreenRoundShift32;
+	m_nRedRoundShift32 = SrcDib.m_nRedRoundShift32;
+	m_bFast32bpp = SrcDib.m_bFast32bpp;
+	m_crBackgroundColor = SrcDib.m_crBackgroundColor;
+	m_FileInfo = SrcDib.m_FileInfo;
+#ifdef SUPPORT_LIBJPEG
+	m_Metadata = SrcDib.m_Metadata;
+#endif
+#ifdef SUPPORT_GIFLIB
+	m_Gif = SrcDib.m_Gif;
+#endif
+}
+
+// Note: Memory Mapped files are copied, memory is allocated for it!?
+CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(dib2))
+{
+	m_hDrawDib = ::DrawDibOpen();
+	m_GetClosestColorIndexLookUp = NULL;
+
+	// Init the object
+	Init();
+
+	// Copy Dib Section
+	// Note: Must be First because it calls Free
+	//       and inits m_pBMI with wrong number of colors!
+	//       The Problem is that GetDIBits() only knows
+	//       4, 16 and 256 colors table
+	//       for the 1bpp, 4bpp and 8bpp images.
+	if (dib.m_hDibSection)
+	{
+		if (LoadDibSection(dib.m_hDibSection))
+		{
+			// BMI will be allocated and initialized later
+			if (m_pBMI)
+			{
+				delete [] m_pBMI;
+				m_pBMI = NULL;
+				m_pColors = NULL;
+			}
+		}
+	}
+
+	// Copy Vars
+	CopyVars(dib);
+
+	// Copy BMI
+	if (dib.m_pBMI == NULL)
+		return;
+	m_pBMI = (LPBITMAPINFO)new BYTE[dib.GetBMISize()];
+	if (m_pBMI == NULL)
+		return;
+	memcpy((void*)m_pBMI, (void*)dib.m_pBMI, dib.GetBMISize());
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+
+	// Copy Bits
+	if (dib.m_pBits)
+	{
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+		if (m_pBits == NULL)
+			return;
+		memcpy((void*)m_pBits, (void*)dib.m_pBits, dib.m_dwImageSize);
+	}
+
+	// Copy Orig Bits
+	if (dib.m_pOrigBits)
+	{
+		m_pOrigBits = (LPBYTE)::VirtualAlloc(	NULL,
+												dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+												MEM_COMMIT,
+												PAGE_READWRITE);
+		if (m_pOrigBits == NULL)
+			return;
+		memcpy((void*)m_pOrigBits, (void*)dib.m_pOrigBits, dib.m_dwImageSize);
+	}
+
+	// Copy Orig Colors
+	if (dib.m_pOrigColors)
+	{
+		m_pOrigColors = (RGBQUAD*)new BYTE[sizeof(RGBQUAD)*dib.GetNumColors()];
+		if (m_pOrigColors == NULL)
+			return;
+		memcpy((void*)m_pOrigColors, (void*)dib.m_pOrigColors, sizeof(RGBQUAD)*dib.GetNumColors());
+	}
+
+	// Copy Thumbnail Dib
+	if (dib.m_pThumbnailDib)
+	{
+		m_pThumbnailDib = (CDib*)new CDib;
+		if (m_pThumbnailDib == NULL)
+			return;
+		*m_pThumbnailDib = *(dib.m_pThumbnailDib);
+		m_dThumbnailDibRatio = dib.m_dThumbnailDibRatio;
+	}
+
+	// Copy Preview Dib
+	if (dib.m_pPreviewDib)
+	{
+		m_pPreviewDib = (CDib*)new CDib;
+		if (m_pPreviewDib == NULL)
+			return;
+		*m_pPreviewDib = *(dib.m_pPreviewDib);
+		m_dPreviewDibRatio = dib.m_dPreviewDibRatio;
+	}
+
+	// Create Palette
+	if (dib.m_pPalette)
+		CreatePaletteFromBMI();
+}
+
+// Note: Memory Mapped files are copied, memory is allocated for it!?
+CDib& CDib::operator=(const CDib& dib) // Copy Assignment (CDib dib3; dib3 = dib1)
+{
+	if (this != &dib) // beware of self-assignment!
+	{
+		// Clean & Init the object
+		Free();
+		Init();
+
+		// Copy Dib Section
+		// Note: Must be First because it calls Free
+		//       and inits m_pBMI with wrong number of colors!
+		//       The Problem is that GetDIBits() only knows
+		//       4, 16 and 256 colors table
+		//       for the 1bpp, 4bpp and 8bpp images.
+		if (dib.m_hDibSection)
+		{
+			if (LoadDibSection(dib.m_hDibSection))
+			{
+				// BMI will be allocated and initialized later
+				if (m_pBMI)
+				{
+					delete [] m_pBMI;
+					m_pBMI = NULL;
+					m_pColors = NULL;
+				}
+			}
+		}
+
+		// Copy Vars
+		CopyVars(dib);
+		
+		// Copy BMI
+		if (dib.m_pBMI == NULL)
+			return *this;
+		m_pBMI = (LPBITMAPINFO)new BYTE[dib.GetBMISize()];
+		if (m_pBMI == NULL)
+			return *this;
+		memcpy((void*)m_pBMI, (void*)dib.m_pBMI, dib.GetBMISize());
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		else
+			m_pColors = NULL;
+
+		// Copy Bits
+		if (dib.m_pBits)
+		{
+			m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+												dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+												MEM_COMMIT,
+												PAGE_READWRITE);
+			if (m_pBits == NULL)
+				return *this;
+			memcpy((void*)m_pBits, (void*)dib.m_pBits, dib.m_dwImageSize);
+		}
+
+		// Copy Orig Bits
+		if (dib.m_pOrigBits)
+		{
+			m_pOrigBits = (LPBYTE)::VirtualAlloc(	NULL,
+													dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+													MEM_COMMIT,
+													PAGE_READWRITE);
+			if (m_pOrigBits == NULL)
+				return *this;
+			memcpy((void*)m_pOrigBits, (void*)dib.m_pOrigBits, dib.m_dwImageSize);
+		}
+
+		// Copy Orig Colors
+		if (dib.m_pOrigColors)
+		{
+			m_pOrigColors = (RGBQUAD*)new BYTE[sizeof(RGBQUAD)*dib.GetNumColors()];
+			if (m_pOrigColors == NULL)
+				return *this;
+			memcpy((void*)m_pOrigColors, (void*)dib.m_pOrigColors, sizeof(RGBQUAD)*dib.GetNumColors());
+		}
+
+		// Copy Thumbnail Dib
+		if (dib.m_pThumbnailDib && this != dib.m_pThumbnailDib)
+		{
+			m_pThumbnailDib = (CDib*)new CDib;
+			if (m_pThumbnailDib == NULL)
+				return *this;
+			*m_pThumbnailDib = *(dib.m_pThumbnailDib);
+			m_dThumbnailDibRatio = dib.m_dThumbnailDibRatio;
+		}
+
+		// Copy Preview Dib
+		if (dib.m_pPreviewDib && this != dib.m_pPreviewDib)
+		{
+			m_pPreviewDib = (CDib*)new CDib;
+			if (m_pPreviewDib == NULL)
+				return *this;
+			*m_pPreviewDib = *(dib.m_pPreviewDib);
+			m_dPreviewDibRatio = dib.m_dPreviewDibRatio;
+		}
+
+		// Create Palette
+		if (dib.m_pPalette)
+			CreatePaletteFromBMI();
+	}
+	return *this;
+}
+
+CDib::~CDib()
+{
+	Free();
+	FreeGetClosestColorIndex();
+	if (m_hDrawDib)
+	{
+		::DrawDibClose(m_hDrawDib);
+		m_hDrawDib = NULL;
+	}
+}
+
+void CDib::FreeArray(CDib::ARRAY& a)
+{
+	for (int i = 0 ; i < a.GetSize() ; i++)
+	{
+		if (a[i])
+			delete a[i];
+	}
+	a.RemoveAll();
+}
+
+void CDib::FreeList(CDib::LIST& l)
+{
+	while (!l.IsEmpty())
+	{
+		if (l.GetTail())
+			delete l.GetTail();
+		l.RemoveTail();
+	}
+}
+
+BOOL CDib::IsFile(LPCTSTR lpszFileName)
+{
+	DWORD dwAttrib = ::GetFileAttributes(lpszFileName);
+	if (dwAttrib != 0xFFFFFFFF)
+	{
+		// Directory
+		if (!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+			return TRUE;
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::IsBilevelAlpha()
+{
+	// Check
+	if (!m_pBMI || !m_pBits)
+		return FALSE;
+
+	// Has Alpha Channel?
+	if (HasAlpha() && GetBitCount() == 32)
+	{
+		DWORD uiDIBScanLineSize32 = DWALIGNEDWIDTHBYTES(GetWidth() * 32);
+		LPBYTE lpAlphaBits = GetBits();
+		DWORD dwOpaqueCount = 0;
+		DWORD dwTransparentCount = 0;
+
+		// Count the Number of Alpha Values
+		for (unsigned int y = 0 ; y < GetHeight() ; y++)
+		{
+			for (unsigned int x = 0 ; x < GetWidth() ; x++)
+			{
+				BYTE A = lpAlphaBits[4*x + 3 + y*uiDIBScanLineSize32];
+				if (A == 0)
+					dwTransparentCount++;
+				else if (A == 255)
+					dwOpaqueCount++;
+				else
+					return FALSE;
+			}
+		}
+
+		// If it has only fully transparent values
+		// and fully opaque values then it is a
+		// bilevel alpha channel
+		if (dwTransparentCount > 0 && dwOpaqueCount > 0)
+			return TRUE;
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::Paint(HDC hDC,
+				 const LPRECT lpDCRect,
+				 const LPRECT lpDIBRect,
+				 BOOL bForceStretch/*=FALSE*/,
+				 BOOL bNoDrawDib/*=FALSE*/)
+{
+	BOOL bSuccess = FALSE;
+	HPALETTE hPal = NULL;           // Our DIB's palette
+	HPALETTE hOldPal = NULL;        // Previous palette
+
+	if (UsesPalette(hDC))
+	{
+		hPal = (HPALETTE)GetPalette()->GetSafeHandle();
+
+		// Select as background since we have
+		// already realized in forground if needed
+		hOldPal = ::SelectPalette(hDC, hPal, TRUE);
+	}
+
+#ifndef _WIN32_WCE
+	if (m_pBits)
+	{
+		// Do Draw Dib Begin
+		BOOL bDoDrawDibBegin = FALSE;
+		if (!bNoDrawDib)
+		{
+			DWORD dwBMICompareSize = MIN(sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD), GetBMISize());
+			if (memcmp(m_pBMI, &m_OldBMI, dwBMICompareSize) != 0 ||
+				memcmp(lpDCRect, &m_OldDCRect, sizeof(RECT)) != 0 ||
+				memcmp(lpDIBRect, &m_OldDIBRect, sizeof(RECT)) != 0)
+			{
+				bDoDrawDibBegin = TRUE;
+				memcpy(&m_OldBMI, m_pBMI, dwBMICompareSize);
+				memcpy(&m_OldDCRect, lpDCRect, sizeof(RECT));
+				memcpy(&m_OldDIBRect, lpDIBRect, sizeof(RECT));
+				::DrawDibEnd(m_hDrawDib);
+			}
+		}
+
+		// Determine whether to call StretchDIBits() or SetDIBitsToDevice()
+		if ((RECTWIDTH(lpDCRect) == RECTWIDTH(lpDIBRect)) &&
+			(RECTHEIGHT(lpDCRect) == RECTHEIGHT(lpDIBRect)) &&
+			(RC_DIBTODEV & ::GetDeviceCaps(hDC, RASTERCAPS)) && !bForceStretch)
+		{
+			if (m_pBMI->bmiHeader.biBitCount >= 8 && !bNoDrawDib)
+			{
+				if (bDoDrawDibBegin)
+				{
+					bSuccess = ::DrawDibBegin(	m_hDrawDib,             
+												hDC,                  
+												RECTWIDTH(lpDCRect),
+												RECTHEIGHT(lpDCRect),              
+												(LPBITMAPINFOHEADER)m_pBMI,  
+												RECTWIDTH(lpDIBRect),
+												RECTHEIGHT(lpDIBRect),         
+												DDF_SAME_DRAW);
+				}
+				else
+					bSuccess = TRUE;
+
+				if (bSuccess)
+				{
+					bSuccess = ::DrawDibDraw(m_hDrawDib,				// Draw Dib DC         
+											hDC,						// hDC               
+											lpDCRect->left,             // DestX
+											lpDCRect->top,              // DestY
+											RECTWIDTH(lpDCRect),        // nDestWidth
+											RECTHEIGHT(lpDCRect),		// nDestHeight              
+											(LPBITMAPINFOHEADER)m_pBMI,	// lpBitsInfo
+											m_pBits,					// lpBits
+											lpDIBRect->left,			// SrcX
+											lpDIBRect->top,				// SrcY
+											RECTWIDTH(lpDIBRect),		// wSrcWidth
+											RECTHEIGHT(lpDIBRect),		// wSrcHeight               
+											DDF_SAME_DRAW);				// Flags
+				}
+			}
+			else
+				bSuccess = FALSE;
+				
+			// ATTENTION: Here the Src Point (SrcX, SrcY) is the left-bottom point and
+			//            not the left-top point like with the other functions (BitBlt, StretchBlt, DrawDibDraw) !!!
+			if (!bSuccess)
+				bSuccess = ::SetDIBitsToDevice(hDC,					// hDC
+									   lpDCRect->left,				// DestX
+									   lpDCRect->top,				// DestY
+									   RECTWIDTH(lpDIBRect),		// nSrcWidth
+									   RECTHEIGHT(lpDIBRect),		// nSrcHeight
+									   lpDIBRect->left,				// SrcX
+									   GetHeight() - lpDIBRect->bottom,	// SrcY
+									   0,							// nStartScan, I do not understand the purpose of that...
+									   GetHeight(),					// nNumScans, I do not understand the purpose of that...
+									   m_pBits,						// lpBits
+									   m_pBMI,						// lpBitsInfo
+									   DIB_RGB_COLORS);				// wUsage
+		}
+		else if ((RC_STRETCHDIB & ::GetDeviceCaps(hDC, RASTERCAPS)))
+		{
+			if (m_pBMI->bmiHeader.biBitCount >= 8 && !bNoDrawDib)
+			{
+				if (bDoDrawDibBegin)
+				{
+					bSuccess  = ::DrawDibBegin(	m_hDrawDib,             
+												hDC,                  
+												RECTWIDTH(lpDCRect),
+												RECTHEIGHT(lpDCRect),              
+												(LPBITMAPINFOHEADER)m_pBMI,  
+												RECTWIDTH(lpDIBRect),
+												RECTHEIGHT(lpDIBRect),         
+												DDF_SAME_DRAW);
+				}
+				else
+					bSuccess = TRUE;
+
+				if (bSuccess)
+				{
+					bSuccess = ::DrawDibDraw(m_hDrawDib,				// Draw Dib DC             
+											hDC,						// hDC           
+											lpDCRect->left,             // DestX
+											lpDCRect->top,              // DestY
+											RECTWIDTH(lpDCRect),        // nDestWidth
+											RECTHEIGHT(lpDCRect),		// nDestHeight              
+											(LPBITMAPINFOHEADER)m_pBMI,	// lpBitsInfo
+											m_pBits,					// lpBits
+											lpDIBRect->left,			// SrcX
+											lpDIBRect->top,				// SrcY
+											RECTWIDTH(lpDIBRect),		// wSrcWidth
+											RECTHEIGHT(lpDIBRect),		// wSrcHeight               
+											DDF_SAME_DRAW);				// Flags
+				}
+			}
+			else
+				bSuccess = FALSE;
+
+			// ATTENTION: Here the Src Point (SrcX, SrcY) is the left-bottom point and
+			//            not the left-top point like with the other functions (BitBlt, StretchBlt, DrawDibDraw) !!!
+			if (!bSuccess)
+			{
+				int nOldStretchMode = ::SetStretchBltMode(hDC, m_nStretchMode);
+
+				bSuccess = ::StretchDIBits(hDC,						// hDC
+								   lpDCRect->left,					// DestX
+								   lpDCRect->top,					// DestY
+								   RECTWIDTH(lpDCRect),				// nDestWidth
+								   RECTHEIGHT(lpDCRect),			// nDestHeight
+								   lpDIBRect->left,					// SrcX
+								   GetHeight() - lpDIBRect->bottom,	// SrcY
+								   RECTWIDTH(lpDIBRect),			// wSrcWidth
+								   RECTHEIGHT(lpDIBRect),			// wSrcHeight
+								   m_pBits,							// lpBits
+								   m_pBMI,							// lpBitsInfo
+								   DIB_RGB_COLORS,					// wUsage
+								   SRCCOPY);						// dwROP
+				
+				::SetStretchBltMode(hDC, nOldStretchMode);
+			}
+		}
+		else
+		{	
+			HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0xFF,0,0));
+			HGDIOBJ hOldPen = SelectObject(hDC, hPen);
+			Rectangle(hDC, lpDCRect->left, lpDCRect->top, lpDCRect->right, lpDCRect->bottom);
+			SelectObject(hDC, hOldPen);
+			DeleteObject(hPen);
+			bSuccess = FALSE;
+		}
+	}
+	else if (m_hDibSection)
+#else
+	if (m_hDibSection)
+#endif
+	{
+		HPALETTE hOldPalMemDC = NULL;
+		HDC memDC = ::CreateCompatibleDC(hDC);
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(memDC, m_hDibSection);
+		if (hPal)
+			hOldPalMemDC = ::SelectPalette(memDC, hPal, TRUE);// Select as background since we have already realized in forground if needed
+		
+		if ((RECTWIDTH(lpDCRect) == RECTWIDTH(lpDIBRect)) &&
+			(RECTHEIGHT(lpDCRect) == RECTHEIGHT(lpDIBRect)) &&
+			(RC_BITBLT & ::GetDeviceCaps(hDC, RASTERCAPS)) && !bForceStretch)
+		{
+			bSuccess = ::BitBlt(hDC, lpDCRect->left, lpDCRect->top, 
+							RECTWIDTH(lpDCRect), RECTHEIGHT(lpDCRect), memDC,
+							lpDIBRect->left, lpDIBRect->top, 
+							SRCCOPY);
+		}
+		else if ((RC_STRETCHBLT & ::GetDeviceCaps(hDC, RASTERCAPS)))
+		{
+			int nOldStretchMode = ::SetStretchBltMode(hDC, m_nStretchMode);
+			bSuccess = ::StretchBlt(hDC, lpDCRect->left, lpDCRect->top, 
+							RECTWIDTH(lpDCRect), RECTHEIGHT(lpDCRect), memDC,
+							lpDIBRect->left, lpDIBRect->top, 
+							RECTWIDTH(lpDIBRect), RECTHEIGHT(lpDIBRect), SRCCOPY);
+			::SetStretchBltMode(hDC, nOldStretchMode);
+		}
+		else
+		{	
+			HPEN hPen = ::CreatePen(PS_SOLID, 3, RGB(0xFF,0,0));
+			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
+			::Rectangle(hDC, lpDCRect->left, lpDCRect->top, lpDCRect->right, lpDCRect->bottom);
+			::SelectObject(hDC, hOldPen);
+			::DeleteObject(hPen);
+			bSuccess = FALSE;
+		}
+		::SelectObject(memDC, hOldBitmap);
+		if (hOldPalMemDC != NULL)
+			::SelectPalette(memDC, hOldPalMemDC, TRUE);
+		::DeleteDC(memDC);
+	}
+	else
+		return FALSE;
+
+	// Reselect old palette
+	if (hOldPal != NULL)
+		::SelectPalette(hDC, hOldPal, TRUE);
+
+	return bSuccess;
+}
+
+BOOL CDib::CreateHalftonePalette(CPalette* pPal, int nNumColors)
+{
+	int i;
+
+    // Sanity check on requested number of colours.
+    if (nNumColors <= 0 || nNumColors > 256)
+        nNumColors = 256;
+
+	if (!pPal)
+		return FALSE;
+
+	// Allocate memory block for logical palette
+	LPLOGPALETTE lpPal = (LPLOGPALETTE)new BYTE[sizeof(LOGPALETTE) +
+												sizeof(PALETTEENTRY)*nNumColors];
+	if (!lpPal)
+		return FALSE;
+
+	// Set version and number of palette entries
+	lpPal->palVersion = PALVERSION_DEFINE;
+	lpPal->palNumEntries = (WORD)nNumColors;
+
+	int nCurrentColor = 1;
+
+    if (nNumColors <= 2)
+    {
+		// B & W
+		lpPal->palPalEntry[0].peRed   = ms_StdColors[0].rgbRed;
+		lpPal->palPalEntry[0].peGreen = ms_StdColors[0].rgbGreen;
+		lpPal->palPalEntry[0].peBlue  = ms_StdColors[0].rgbBlue;
+		lpPal->palPalEntry[0].peFlags = 0;
+		if (++nCurrentColor > nNumColors)
+		{
+			BOOL bResult = pPal->CreatePalette(lpPal);
+			delete [] lpPal;
+			return bResult;
+		}
+
+		lpPal->palPalEntry[1].peRed   = ms_StdColors[255].rgbRed;
+		lpPal->palPalEntry[1].peGreen = ms_StdColors[255].rgbGreen;
+		lpPal->palPalEntry[1].peBlue  = ms_StdColors[255].rgbBlue;
+		lpPal->palPalEntry[1].peFlags = 0;
+	}
+	else if (nNumColors <= 16)
+	{
+		// VGA Palette
+		for (i = 0; i < 8; i++)
+		{
+			lpPal->palPalEntry[i].peRed   = ms_StdColors[i].rgbRed;
+			lpPal->palPalEntry[i].peGreen = ms_StdColors[i].rgbGreen;
+			lpPal->palPalEntry[i].peBlue  = ms_StdColors[i].rgbBlue;
+			lpPal->palPalEntry[i].peFlags = 0;
+			if (++nCurrentColor > nNumColors)
+			{
+				BOOL bResult = pPal->CreatePalette(lpPal);
+				delete [] lpPal;
+				return bResult;
+			}
+		}
+		for (i = 8; i < 16; i++)
+		{
+			lpPal->palPalEntry[i].peRed   = ms_StdColors[248+i].rgbRed;
+			lpPal->palPalEntry[i].peGreen = ms_StdColors[248+i].rgbGreen;
+			lpPal->palPalEntry[i].peBlue  = ms_StdColors[248+i].rgbBlue;
+			lpPal->palPalEntry[i].peFlags = 0;
+			if (++nCurrentColor > nNumColors)
+			{
+				BOOL bResult = pPal->CreatePalette(lpPal);
+				delete [] lpPal;
+				return bResult;
+			}
+		}
+	}
+	else // if (nNumColors <= 256)
+	{
+		// Fill palette with full halftone palette
+		for (i = 0; i < 256; i++)
+		{
+			lpPal->palPalEntry[i].peRed   = ms_StdColors[i].rgbRed;
+			lpPal->palPalEntry[i].peGreen = ms_StdColors[i].rgbGreen;
+			lpPal->palPalEntry[i].peBlue  = ms_StdColors[i].rgbBlue;
+			lpPal->palPalEntry[i].peFlags = 0;
+			if (++nCurrentColor > nNumColors)
+			{
+				BOOL bResult = pPal->CreatePalette(lpPal);
+				delete [] lpPal;
+				return bResult;
+			}
+		}
+	}
+
+	BOOL bResult = pPal->CreatePalette(lpPal);
+	delete [] lpPal;
+	return bResult;
+}
+
+BOOL CDib::FillGdiColors(RGBQUAD* pColors, int nNumColors)
+{
+	int i;
+
+	if (!pColors)
+		return FALSE;
+
+	if (nNumColors <= 0)
+		return FALSE;
+
+	int nCurrentColor = 1;
+
+    // Sanity check on requested number of colours.
+    if ((nNumColors > 256) || (nNumColors <= 0))
+		return FALSE;
+   
+    if (nNumColors <= 2)
+    {
+		pColors[0].rgbRed = ms_GdiColors256[0].rgbRed;
+		pColors[0].rgbGreen = ms_GdiColors256[0].rgbGreen;
+		pColors[0].rgbBlue  = ms_GdiColors256[0].rgbBlue;
+		pColors[0].rgbReserved = 0;
+		if (++nCurrentColor > nNumColors)
+			return TRUE; 
+
+		pColors[1].rgbRed = ms_GdiColors256[255].rgbRed;
+		pColors[1].rgbGreen = ms_GdiColors256[255].rgbGreen;
+		pColors[1].rgbBlue  = ms_GdiColors256[255].rgbBlue;
+		pColors[1].rgbReserved = 0;
+	}
+	else if (nNumColors <= 16)
+	{
+		for (i = 0 ; i < 16 ; i++)
+		{
+			pColors[i].rgbRed = ms_GdiColors16[i].rgbRed;
+			pColors[i].rgbGreen = ms_GdiColors16[i].rgbGreen;
+			pColors[i].rgbBlue  = ms_GdiColors16[i].rgbBlue;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE; 
+		}
+	}
+	else
+	{
+		// Fill colors with full vga palette
+		for (i = 0 ; i < 256 ; i++)
+		{
+			pColors[i].rgbRed = ms_GdiColors256[i].rgbRed;
+			pColors[i].rgbGreen = ms_GdiColors256[i].rgbGreen;
+			pColors[i].rgbBlue  = ms_GdiColors256[i].rgbBlue;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE;
+		}
+	}	
+
+	return TRUE;
+}
+
+BOOL CDib::FillHalftoneColors(RGBQUAD* pColors, int nNumColors)
+{
+	int i;
+
+	if (!pColors)
+		return FALSE;
+
+	if (nNumColors <= 0)
+		return FALSE;
+
+	int nCurrentColor = 1;
+
+    // Sanity check on requested number of colours.
+    if ((nNumColors > 256) || (nNumColors <= 0))
+		return FALSE;
+   
+    if (nNumColors <= 2)
+    {
+		pColors[0].rgbRed = ms_StdColors[0].rgbRed;
+		pColors[0].rgbGreen = ms_StdColors[0].rgbGreen;
+		pColors[0].rgbBlue  = ms_StdColors[0].rgbBlue;
+		pColors[0].rgbReserved = 0;
+		if (++nCurrentColor > nNumColors)
+			return TRUE; 
+
+		pColors[1].rgbRed = ms_StdColors[255].rgbRed;
+		pColors[1].rgbGreen = ms_StdColors[255].rgbGreen;
+		pColors[1].rgbBlue  = ms_StdColors[255].rgbBlue;
+		pColors[1].rgbReserved = 0;
+	}
+	else if (nNumColors <= 16)
+	{
+		for (i = 0 ; i < 8 ; i++)
+		{
+			pColors[i].rgbRed = ms_StdColors[i].rgbRed;
+			pColors[i].rgbGreen = ms_StdColors[i].rgbGreen;
+			pColors[i].rgbBlue  = ms_StdColors[i].rgbBlue;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE; 
+		}
+		for (i = 8 ; i < 16 ; i++)
+		{
+			pColors[i].rgbRed = ms_StdColors[240+i].rgbRed;
+			pColors[i].rgbGreen = ms_StdColors[240+i].rgbGreen;
+			pColors[i].rgbBlue  = ms_StdColors[240+i].rgbBlue;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE; 
+		}
+	}
+	else
+	{
+		// Fill colors with full halftone palette
+		for (i = 0 ; i < 256 ; i++)
+		{
+			pColors[i].rgbRed = ms_StdColors[i].rgbRed;
+			pColors[i].rgbGreen = ms_StdColors[i].rgbGreen;
+			pColors[i].rgbBlue  = ms_StdColors[i].rgbBlue;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE;
+		}
+	}	
+
+	return TRUE;
+}
+
+BOOL CDib::FillGrayscaleColors(RGBQUAD* pColors, int nNumColors)
+{
+	if (!pColors)
+		return FALSE;
+
+	if (nNumColors <= 0)
+		return FALSE;
+
+	int nCurrentColor = 1;
+
+    // Sanity check on requested number of colours.
+    if ((nNumColors > 256) || (nNumColors == 0))
+		return FALSE;
+   
+    if (nNumColors <= 2)
+    {
+		// According to the MS article "The Palette Manager: How and Why"
+		// monochrome palettes not really needed (will use B&W)
+		pColors[0].rgbRed = 0;
+		pColors[0].rgbGreen = 0;
+		pColors[0].rgbBlue  = 0;
+		pColors[0].rgbReserved = 0;
+		if (++nCurrentColor > nNumColors)
+			return TRUE; 
+
+		pColors[1].rgbRed = 255;
+		pColors[1].rgbGreen = 255;
+		pColors[1].rgbBlue  = 255;
+		pColors[1].rgbReserved = 0;
+	}
+	else if (nNumColors <= 16)
+	{
+		// According to the MS article "The Palette Manager: How and Why"
+		// 4-bit palettes not really needed (will use VGA palette)
+		for (int i = 0 ; i < 16 ; i++)
+		{
+			pColors[i].rgbRed = i * 255 / 15;
+			pColors[i].rgbGreen = i * 255 / 15;
+			pColors[i].rgbBlue  = i * 255 / 15;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE; 
+		}
+	}
+	else
+	{
+		// Fill palette with full halftone palette
+		for (int i = 0 ; i < 256 ; i++)
+		{
+			pColors[i].rgbRed = i;
+			pColors[i].rgbGreen = i;
+			pColors[i].rgbBlue  = i;
+			pColors[i].rgbReserved = 0;
+			if (++nCurrentColor > nNumColors)
+				return TRUE;
+		}
+	}	
+
+	return TRUE;
+}
+
+CString CDib::GetNumColorsName()
+{
+	if (GetBitCount() <= 8)
+	{
+		CString s;
+		if (IsGrayscale())
+			s.Format(_T("%d Gray Levels"), GetNumColors());
+		else
+			s.Format(_T("%d Colors"), GetNumColors());
+		return s;
+	}
+	else if (GetBitCount() == 16)
+	{
+		if (m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
+			if ((pBmiBf->biBlueMask == 0x001F)	&&
+				(pBmiBf->biGreenMask == 0x07E0)	&&
+				(pBmiBf->biRedMask == 0xF800))
+				return _T("65536 Col.");
+			else
+				return _T("32768 Col.");
+		}
+		else
+			return _T("32768 Col.");
+	}
+	else
+		return _T("True Colors");
+}
+
+CString CDib::GetNumColorsName(LPBITMAPINFO pBMI)
+{
+	if (!pBMI)
+		return _T("");
+
+	if (pBMI->bmiHeader.biBitCount <= 8)
+	{
+		CString s;
+		s.Format(_T("%d Colors"), GetNumColors(pBMI));
+		return s;
+	}
+	else if (pBMI->bmiHeader.biBitCount == 16)
+	{
+		if (pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)pBMI;
+			if ((pBmiBf->biBlueMask == 0x001F)	&&
+				(pBmiBf->biGreenMask == 0x07E0)	&&
+				(pBmiBf->biRedMask == 0xF800))
+				return _T("65536 Col.");
+			else
+				return _T("32768 Col.");
+		}
+		else
+			return _T("32768 Col.");
+	}
+	else
+		return _T("True Colors");
+}
+
+// Set color (or index)
+BOOL CDib::SetBitColors(COLORREF crColor)
+{
+	if (!m_pBits)
+	{
+		if (!DibSectionToBits())
+			return FALSE;
+	}
+
+	if (!m_pBits || !m_pBMI)
+		return FALSE;
+
+	if ((GetCompression() == BI_RGB) ||
+		(GetCompression() == BI_BITFIELDS))
+	{
+		DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
+		if (GetBitCount() == 1)
+		{
+			if (crColor)
+				memset(m_pBits, 0xFF, uiDIBScanLineSize * GetHeight());
+			else
+				memset(m_pBits, 0, uiDIBScanLineSize * GetHeight());
+		}
+		else if (GetBitCount() == 4)
+			memset(m_pBits, (crColor<<4) | crColor, uiDIBScanLineSize * GetHeight());
+		else if (GetBitCount() == 8)
+			memset(m_pBits, crColor, uiDIBScanLineSize * GetHeight());
+		else if (GetBitCount() == 16)
+		{
+			if ((crColor == 0) && (GetCompression() == BI_RGB))
+				memset(m_pBits, 0, uiDIBScanLineSize * GetHeight());
+			else
+			{
+				// Fill One Row
+				for (unsigned int x = 0 ; x < GetWidth() ; x++)
+					SetPixelColor(x, 0, crColor);
+
+				// memcpy other rows
+				for (unsigned int y = 1 ; y < GetHeight() ; y++)
+					memcpy(m_pBits + y * uiDIBScanLineSize, m_pBits, uiDIBScanLineSize);
+			}
+		}
+		else if (GetBitCount() == 24)
+		{
+			if ((GetRValue(crColor) == GetGValue(crColor)) &&
+				(GetGValue(crColor) == GetBValue(crColor)))
+				memset(m_pBits, GetRValue(crColor), uiDIBScanLineSize * GetHeight());
+			else
+			{
+				// Fill One Row
+				for (unsigned int x = 0 ; x < GetWidth() ; x++)
+				{
+					m_pBits[3*x]	= GetBValue(crColor);
+					m_pBits[3*x+1]	= GetGValue(crColor);
+					m_pBits[3*x+2]	= GetRValue(crColor);
+				}
+
+				// memcpy other rows
+				for (unsigned int y = 1 ; y < GetHeight() ; y++)
+					memcpy(m_pBits + y * uiDIBScanLineSize, m_pBits, uiDIBScanLineSize);
+			}
+		}
+		else if (GetBitCount() == 32)
+		{
+			if ((GetRValue(crColor) == GetGValue(crColor)) &&
+				(GetGValue(crColor) == GetBValue(crColor)) &&
+				(GetBValue(crColor) == GetAValue(crColor)) &&
+				(GetCompression() == BI_RGB))
+				memset(m_pBits, GetRValue(crColor), uiDIBScanLineSize * GetHeight());
+			else
+			{
+				// Fill One Row
+				for (unsigned int x = 0 ; x < GetWidth() ; x++)
+					SetPixelColor32Alpha(x, 0, crColor);
+
+				// memcpy other rows
+				for (unsigned int y = 1 ; y < GetHeight() ; y++)
+					memcpy(m_pBits + y * uiDIBScanLineSize, m_pBits, uiDIBScanLineSize);
+			}
+		}
+		else
+			memset(m_pBits, (int)crColor, m_dwImageSize);
+	}
+	else
+		memset(m_pBits, (int)crColor, m_dwImageSize);
+
+	return TRUE;
+}
+
+// Set color (or index)
+BOOL CDib::SetDibSectionColors(COLORREF crColor)
+{
+	if (!m_hDibSection)
+	{
+		if (!BitsToDibSection())
+			return FALSE;
+	}
+
+	if (!m_pDibSectionBits || !m_pBMI)
+		return FALSE;
+
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
+
+	if (GetBitCount() == 1)
+	{
+		if (crColor)
+			memset(m_pDibSectionBits, 0xFF, uiDIBScanLineSize * GetHeight());
+		else
+			memset(m_pDibSectionBits, 0, uiDIBScanLineSize * GetHeight());
+	}
+	else if (GetBitCount() == 4)
+		memset(m_pDibSectionBits, (crColor<<4) | crColor, uiDIBScanLineSize * GetHeight());
+	else if (GetBitCount() == 8)
+		memset(m_pDibSectionBits, crColor, uiDIBScanLineSize * GetHeight());
+	else if (GetBitCount() == 16)
+	{
+		if ((crColor == 0) && (GetCompression() == BI_RGB))
+			memset(m_pDibSectionBits, 0, uiDIBScanLineSize * GetHeight());
+		else
+		{
+			// Fill One Row
+			for (unsigned int x = 0 ; x < GetWidth() ; x++)
+				SetPixelColor(x, 0, crColor);
+
+			// memcpy other rows
+			for (unsigned int y = 1 ; y < GetHeight() ; y++)
+				memcpy(m_pDibSectionBits + y * uiDIBScanLineSize, m_pDibSectionBits, uiDIBScanLineSize);
+		}
+	}
+	else if (GetBitCount() == 24)
+	{
+		if ((GetRValue(crColor) == GetGValue(crColor)) &&
+			(GetGValue(crColor) == GetBValue(crColor)))
+			memset(m_pDibSectionBits, GetRValue(crColor), uiDIBScanLineSize * GetHeight());
+		else
+		{
+			// Fill One Row
+			for (unsigned int x = 0 ; x < GetWidth() ; x++)
+			{
+				m_pDibSectionBits[3*x]		= GetBValue(crColor);
+				m_pDibSectionBits[3*x+1]	= GetGValue(crColor);
+				m_pDibSectionBits[3*x+2]	= GetRValue(crColor);
+			}
+
+			// memcpy other rows
+			for (unsigned int y = 1 ; y < GetHeight() ; y++)
+				memcpy(m_pDibSectionBits + y * uiDIBScanLineSize, m_pDibSectionBits, uiDIBScanLineSize);
+		}
+	}
+	else if (GetBitCount() == 32)
+	{
+		if ((GetRValue(crColor) == GetGValue(crColor)) &&
+			(GetGValue(crColor) == GetBValue(crColor)) &&
+			(GetCompression() == BI_RGB))
+			memset(m_pDibSectionBits, GetRValue(crColor), uiDIBScanLineSize * GetHeight());
+		else
+		{
+			// Fill One Row
+			for (unsigned int x = 0 ; x < GetWidth() ; x++)
+				SetPixelColor(x, 0, crColor);
+
+			// memcpy other rows
+			for (unsigned int y = 1 ; y < GetHeight() ; y++)
+				memcpy(m_pDibSectionBits + y * uiDIBScanLineSize, m_pDibSectionBits, uiDIBScanLineSize);
+		}
+	}
+	else
+		return FALSE;
+
+	return TRUE;
+}
+
+BOOL CDib::AllocateBitsFast(WORD wBpp,
+							DWORD wCompression,
+							DWORD dwWidth,
+							DWORD dwHeight,
+							RGBQUAD* pColorsOrMasks/*=NULL*/,
+							DWORD dwNumOfColors/*=0*/)
+{
+	Free();
+
+	// Check
+	if (dwWidth == 0 || dwHeight == 0)
+		return TRUE; // Ok. Allocate Nothing, just Free!
+	
+	// Allocate BMI for RGB
+	if ((wCompression == BI_RGB)		||
+		(wCompression == BI_RLE4)		||
+		(wCompression == FCC('RLE4'))	||
+		(wCompression == BI_RLE8)		||
+		(wCompression == FCC('RLE8'))	||
+		(wCompression == BI_RGB15)		||
+		(wCompression == BI_RGB16)		||
+		(wCompression == BI_BGR15)		||
+		(wCompression == BI_BGR16)		||
+		(wCompression == BI_BITFIELDS))
+	{
+		// Correct just in case
+		if (wCompression == BI_RGB15	||
+			wCompression == BI_RGB16	||
+			wCompression == BI_BGR15	||
+			wCompression == BI_BGR16)
+			wBpp = 16;
+		else if (wCompression == BI_RLE4	||
+				wCompression == FCC('RLE4'))
+		{
+			wCompression = BI_RLE4;
+			wBpp = 4;
+		}
+		else if (wCompression == BI_RLE8	||
+				wCompression == FCC('RLE8'))
+		{
+			wCompression = BI_RLE8;
+			wBpp = 8;
+		}
+
+		DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(dwWidth * wBpp);
+		m_dwImageSize = uiDIBScanLineSize * dwHeight;
+
+		// Allocate memory
+		if (wBpp == 24)
+		{
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 32)
+		{
+			if (wCompression == BI_BITFIELDS)
+			{
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+				if (pColorsOrMasks == NULL)
+				{
+					LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+					*((DWORD*)(pDstMask)) = 0x00FF0000;	// Red Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x0000FF00;	// Green Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x000000FF;	// Blue Mask
+				}
+				else
+				{
+					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
+							pColorsOrMasks,
+							3 * sizeof(RGBQUAD));
+				}
+			}
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 16)
+		{
+			if (wCompression == BI_BITFIELDS)
+			{
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+
+				if (pColorsOrMasks == NULL)
+				{
+					LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+					*((DWORD*)(pDstMask)) = 0x7C00; // Red Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x03E0; // Green Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x001F; // Blue Mask
+				}
+				else
+				{
+					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
+							pColorsOrMasks,
+							3 * sizeof(RGBQUAD));
+				}
+			}
+			else if (wCompression == BI_RGB16	||
+					wCompression == BI_BGR16)
+			{
+				wCompression = BI_BITFIELDS;
+
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+
+				LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+				*((DWORD*)(pDstMask)) = 0xF800; // Red Mask
+				pDstMask = pDstMask + sizeof(DWORD);
+				*((DWORD*)(pDstMask)) = 0x07E0; // Green Mask
+				pDstMask = pDstMask + sizeof(DWORD);
+				*((DWORD*)(pDstMask)) = 0x001F; // Blue Mask
+			}
+			else if (wCompression == BI_RGB15	||
+					wCompression == BI_BGR15)
+			{
+				wCompression = BI_RGB;
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+			}
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 8)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(256, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+		else if (wBpp == 4)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 16 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(16, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+		else if (wBpp == 1)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(2, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+	}
+	// Allocate BMI for YUV
+	else
+	{
+		int stride = ::CalcYUVStride(wCompression, dwWidth);
+		if (stride > 0)
+			m_dwImageSize = ::CalcYUVSize(wCompression, stride, dwHeight);
+		else
+			return FALSE; // No YUV.
+		m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+	}
+	if (!m_pBMI)
+		return FALSE;
+
+	// Allocate Bits
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (!m_pBits)
+		return FALSE;
+
+	// Init BMI
+	m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth = dwWidth;
+	m_pBMI->bmiHeader.biHeight = dwHeight;
+	m_pBMI->bmiHeader.biPlanes = 1;
+	m_pBMI->bmiHeader.biBitCount = wBpp;
+	m_pBMI->bmiHeader.biCompression = wCompression;
+	m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+	m_pBMI->bmiHeader.biXPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biClrUsed = dwNumOfColors;
+	m_pBMI->bmiHeader.biClrImportant = 0;
+
+	// Init Colors
+	if ((wBpp <= 8) &&
+		((wCompression == BI_RGB) || (wCompression == BI_RLE4) || (wCompression == BI_RLE8)))
+	{
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		if (m_pBMI->bmiHeader.biBitCount == 8)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 256;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else if (m_pBMI->bmiHeader.biBitCount == 4)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 16;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 2;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+	}
+	else
+		m_pColors = NULL;
+
+	// Init Palette
+	CreatePaletteFromBMI();
+
+	// Init Masks
+	InitMasks();
+
+	return TRUE;
+}
+
+BOOL CDib::AllocateBits(WORD wBpp,
+						DWORD wCompression,
+						DWORD dwWidth,
+						DWORD dwHeight,
+						COLORREF crInitColor/*=0*/,
+						RGBQUAD* pColorsOrMasks/*=NULL*/,
+						DWORD dwNumOfColors/*=0*/)
+{
+	Free();
+
+	// Check
+	if (dwWidth == 0 || dwHeight == 0)
+		return TRUE; // Ok. Allocate Nothing, just Free!
+	
+	// Allocate BMI for RGB
+	if ((wCompression == BI_RGB)		||
+		(wCompression == BI_RLE4)		||
+		(wCompression == FCC('RLE4'))	||
+		(wCompression == BI_RLE8)		||
+		(wCompression == FCC('RLE8'))	||
+		(wCompression == BI_RGB15)		||
+		(wCompression == BI_RGB16)		||
+		(wCompression == BI_BGR15)		||
+		(wCompression == BI_BGR16)		||
+		(wCompression == BI_BITFIELDS))
+	{
+		// Correct just in case
+		if (wCompression == BI_RGB15	||
+			wCompression == BI_RGB16	||
+			wCompression == BI_BGR15	||
+			wCompression == BI_BGR16)
+			wBpp = 16;
+		else if (wCompression == BI_RLE4	||
+				wCompression == FCC('RLE4'))
+		{
+			wCompression = BI_RLE4;
+			wBpp = 4;
+		}
+		else if (wCompression == BI_RLE8	||
+				wCompression == FCC('RLE8'))
+		{
+			wCompression = BI_RLE8;
+			wBpp = 8;
+		}
+
+		DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(dwWidth * wBpp);
+		m_dwImageSize = uiDIBScanLineSize * dwHeight;
+
+		// Allocate memory
+		if (wBpp == 24)
+		{
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 32)
+		{
+			if (wCompression == BI_BITFIELDS)
+			{
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+				if (pColorsOrMasks == NULL)
+				{
+					LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+					*((DWORD*)(pDstMask)) = 0x00FF0000;	// Red Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x0000FF00;	// Green Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x000000FF;	// Blue Mask
+				}
+				else
+				{
+					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
+							pColorsOrMasks,
+							3 * sizeof(RGBQUAD));
+				}
+			}
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 16)
+		{
+			if (wCompression == BI_BITFIELDS)
+			{
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+
+				if (pColorsOrMasks == NULL)
+				{
+					LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+					*((DWORD*)(pDstMask)) = 0x7C00; // Red Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x03E0; // Green Mask
+					pDstMask = pDstMask + sizeof(DWORD);
+					*((DWORD*)(pDstMask)) = 0x001F; // Blue Mask
+				}
+				else
+				{
+					memcpy((LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER),
+							pColorsOrMasks,
+							3 * sizeof(RGBQUAD));
+				}
+			}
+			else if (wCompression == BI_RGB16	||
+					wCompression == BI_BGR16)
+			{
+				wCompression = BI_BITFIELDS;
+
+				DWORD dwBMISize = sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD);
+				m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+
+				LPBYTE pDstMask = (LPBYTE)m_pBMI + sizeof(BITMAPINFOHEADER);
+				*((DWORD*)(pDstMask)) = 0xF800; // Red Mask
+				pDstMask = pDstMask + sizeof(DWORD);
+				*((DWORD*)(pDstMask)) = 0x07E0; // Green Mask
+				pDstMask = pDstMask + sizeof(DWORD);
+				*((DWORD*)(pDstMask)) = 0x001F; // Blue Mask
+			}
+			else if (wCompression == BI_RGB15	||
+					wCompression == BI_BGR15)
+			{
+				wCompression = BI_RGB;
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+			}
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		}
+		else if (wBpp == 8)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(256, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+		else if (wBpp == 4)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 16 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(16, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+		else if (wBpp == 1)
+		{
+			if (dwNumOfColors == 0)
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
+			else
+				m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(2, dwNumOfColors) * sizeof(RGBQUAD)];
+		}
+	}
+	// Allocate BMI for YUV
+	else
+	{
+		int stride = ::CalcYUVStride(wCompression, dwWidth);
+		if (stride > 0)
+			m_dwImageSize = ::CalcYUVSize(wCompression, stride, dwHeight);
+		else
+			return FALSE; // No YUV.
+		m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+	}
+	if (!m_pBMI)
+		return FALSE;
+
+	// Allocate Bits
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (!m_pBits)
+		return FALSE;
+
+	// Init BMI
+	m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth = dwWidth;
+	m_pBMI->bmiHeader.biHeight = dwHeight;
+	m_pBMI->bmiHeader.biPlanes = 1;
+	m_pBMI->bmiHeader.biBitCount = wBpp;
+	m_pBMI->bmiHeader.biCompression = wCompression;
+	m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+	m_pBMI->bmiHeader.biXPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biClrUsed = dwNumOfColors;
+	m_pBMI->bmiHeader.biClrImportant = 0;
+
+	// Init Colors
+	if ((wBpp <= 8) &&
+		((wCompression == BI_RGB) || (wCompression == BI_RLE4) || (wCompression == BI_RLE8)))
+	{
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		if (m_pBMI->bmiHeader.biBitCount == 8)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 256;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else if (m_pBMI->bmiHeader.biBitCount == 4)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 16;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 2;
+			if (pColorsOrMasks)
+				memcpy(m_pColors, pColorsOrMasks, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+	}
+	else
+		m_pColors = NULL;
+
+	// Init Palette
+	CreatePaletteFromBMI();
+
+	// Init Masks
+	InitMasks();
+
+	// Set Color
+	SetBitColors(crInitColor);
+
+	return TRUE;
+}
+
+BOOL CDib::AllocateDibSection(	WORD wBpp,
+								DWORD dwWidth,
+								DWORD dwHeight,
+								COLORREF crInitColor/*=RGB(0,0,0)*/,
+								RGBQUAD* pColors/*=NULL*/,
+								DWORD dwNumOfColors/*=0*/)
+{
+	Free();
+
+	// Check
+	if (dwWidth == 0 || dwHeight == 0)
+		return TRUE; // Ok. Allocate Nothing, just Free!
+
+	// Scan Line Size
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(dwWidth * wBpp);
+
+	// Allocate memory
+	if (wBpp == 32 || wBpp == 24 || wBpp == 16)
+		m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+	else if (wBpp == 8)
+	{
+		if (dwNumOfColors == 0)
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
+		else
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(256, dwNumOfColors) * sizeof(RGBQUAD)];
+	}
+	else if (wBpp == 4)
+	{
+		if (dwNumOfColors == 0)
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 16 * sizeof(RGBQUAD)];
+		else
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(16, dwNumOfColors) * sizeof(RGBQUAD)];
+	}
+	else if (wBpp == 1)
+	{
+		if (dwNumOfColors == 0)
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
+		else
+			m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + MIN(2, dwNumOfColors) * sizeof(RGBQUAD)];
+	}
+	else
+		return FALSE;
+
+	// Check
+	if (!m_pBMI)
+		return FALSE;
+
+	// BMI
+	m_pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth = dwWidth;
+	m_pBMI->bmiHeader.biHeight = dwHeight;
+	m_pBMI->bmiHeader.biPlanes = 1;
+	m_pBMI->bmiHeader.biBitCount = wBpp;
+	m_pBMI->bmiHeader.biCompression = BI_RGB;
+	m_pBMI->bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(dwWidth * wBpp) * dwHeight;
+	m_pBMI->bmiHeader.biXPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter = 0;
+	m_pBMI->bmiHeader.biClrUsed = dwNumOfColors;
+	m_pBMI->bmiHeader.biClrImportant = 0;
+	m_dwImageSize = uiDIBScanLineSize * dwHeight;
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+	{
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		if (m_pBMI->bmiHeader.biBitCount == 8)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 256;
+			if (pColors)
+				memcpy(m_pColors, pColors, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(256, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else if (m_pBMI->bmiHeader.biBitCount == 4)
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 16;
+			if (pColors)
+				memcpy(m_pColors, pColors, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(16, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+		else
+		{
+			if (dwNumOfColors == 0)
+				dwNumOfColors = 2;
+			if (pColors)
+				memcpy(m_pColors, pColors, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+			else
+				memset(m_pColors, 0, MIN(2, dwNumOfColors) * sizeof(RGBQUAD));
+		}
+	}
+	else
+		m_pColors = NULL;
+
+	// Create a DC
+	HDC hDC = ::GetDC(NULL);
+	if (!hDC)
+		return FALSE;
+
+	// Create the DibSection
+	m_hDibSection = ::CreateDIBSection(	hDC,
+										(const BITMAPINFO*)m_pBMI,
+										DIB_RGB_COLORS,
+										(void**)&m_pDibSectionBits, NULL, 0);
+	if (!m_hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::ReleaseDC(NULL, hDC);
+		m_pDibSectionBits = NULL;
+		return FALSE;
+	}
+	else
+		::ReleaseDC(NULL, hDC);
+
+	// Init Palette
+	CreatePaletteFromBMI();
+	
+	// Init Masks
+	InitMasks();
+
+	// Set Color
+	SetDibSectionColors(crInitColor);
+
+	return TRUE;
+}
+
+BOOL CDib::CropDibSection(	DWORD dwOrigX,
+							DWORD dwOrigY,
+							DWORD dwCropWidth,
+							DWORD dwCropHeight)
+{
+	// Check
+	if (((dwOrigX + dwCropWidth) > GetWidth()) || ((dwOrigY + dwCropHeight) > GetHeight()))
+		return FALSE;
+
+	if (!m_hDibSection)
+	{
+		if (!BitsToDibSection())
+			return FALSE;
+	}
+
+	if (!m_pBMI)
+		return FALSE;
+
+	// DCs
+	HDC hDC = ::GetDC(NULL);
+	if (!hDC)
+		return FALSE;
+	HDC hMemDCSrc = ::CreateCompatibleDC(hDC);
+	if (!hMemDCSrc)
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	HDC hMemDCDst = ::CreateCompatibleDC(hDC);
+	if (!hMemDCDst)
+	{
+		::ReleaseDC(NULL, hDC);
+		::DeleteDC(hMemDCSrc);
+		return FALSE;
+	}
+
+	// Create the New DibSection
+	m_pBMI->bmiHeader.biWidth = dwCropWidth;
+	m_pBMI->bmiHeader.biHeight = dwCropHeight;
+	m_dwImageSize = DWALIGNEDWIDTHBYTES(dwCropWidth * GetBitCount()) * dwCropHeight;
+	m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+	HBITMAP hDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBMI,
+							DIB_RGB_COLORS, (void**)&m_pDibSectionBits, NULL, 0);
+	if (!hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::ReleaseDC(NULL, hDC);
+		::DeleteDC(hMemDCSrc);
+		::DeleteDC(hMemDCDst);
+		m_pDibSectionBits = NULL;
+		return FALSE;
+	}
+
+	// Select Dib Sections into Memory DCs
+	HBITMAP hOldBitmapSrc = (HBITMAP)::SelectObject(hMemDCSrc, m_hDibSection);
+	HBITMAP hOldBitmapDst = (HBITMAP)::SelectObject(hMemDCDst, hDibSection);
+
+	// Crop
+	BOOL res = ::BitBlt(hMemDCDst,
+						0, 0,
+						dwCropWidth, 
+						dwCropHeight,
+						hMemDCSrc,
+						dwOrigX, dwOrigY,
+						SRCCOPY);
+
+	// Clean-up
+	::SelectObject(hMemDCSrc, hOldBitmapSrc);
+	::SelectObject(hMemDCDst, hOldBitmapDst);
+	::DeleteDC(hMemDCSrc);
+	::DeleteDC(hMemDCDst);
+	::ReleaseDC(NULL, hDC);
+
+	// Set New Dib Section
+	::DeleteObject(m_hDibSection);
+	m_hDibSection = hDibSection;
+
+	return res;
+}
+
+BOOL CDib::CropBits(DWORD dwOrigX,
+					DWORD dwOrigY,
+					DWORD dwCropWidth,
+					DWORD dwCropHeight,
+					CDib* pSrcDib/*=NULL*/,
+					CWnd* pProgressWnd/*=NULL*/,
+					BOOL bProgressSend/*=TRUE*/)
+{
+	// Make a Copy of this?
+	CDib SrcDib;
+	BOOL bCopySrcToDst = FALSE;
+	if (pSrcDib == NULL || this == pSrcDib)
+	{
+		// Check
+		if (((dwOrigX + dwCropWidth) > GetWidth()) || ((dwOrigY + dwCropHeight) > GetHeight()))
+			return FALSE;
+
+		if (IsCompressed())
+#ifndef _WIN32_WCE
+			if (!Decompress(GetBitCount())) // Decompress
+				return FALSE;
+#else
+		return FALSE;
+#endif
+
+		SrcDib = *this;
+		pSrcDib = &SrcDib;
+
+		if (!pSrcDib->m_pBits)
+		{
+			if (!pSrcDib->DibSectionToBits())
+				return FALSE;
+		}
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+	}
+	else
+	{
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+
+		// Check
+		if (((dwOrigX + dwCropWidth) > pSrcDib->GetWidth()) || ((dwOrigY + dwCropHeight) > pSrcDib->GetHeight()))
+			return FALSE;
+
+		// No Compression Supported!
+		if (pSrcDib->IsCompressed())
+			return FALSE;
+
+		// Allocate BMI
+		if (m_pBMI == NULL)
+		{
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+		// Need to ReAllocate BMI because they are of differente size
+		else if (pSrcDib->GetBMISize() != GetBMISize())
+		{
+			delete [] m_pBMI;
+
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+
+		// Make Sure m_pColors Points to the Right Place
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		else
+			m_pColors = NULL;
+
+		// Copy Src To Dst
+		bCopySrcToDst = TRUE;
+	}
+
+	// Top-Down to Bottom-Up Coordinates
+	dwOrigY = pSrcDib->GetHeight() - 1 - dwOrigY;
+
+	// Scan Line Alignments
+	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(pSrcDib->GetWidth() * pSrcDib->GetBitCount());
+	DWORD uiDIBTargetScanLineSize = DWALIGNEDWIDTHBYTES(dwCropWidth * GetBitCount());
+
+	// Allocate Bits
+	if (m_pBits == NULL)
+	{
+		// Allocate memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											uiDIBTargetScanLineSize * dwCropHeight + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	}
+	// Need to ReAllocate Bits because they are of differente size
+	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwCropHeight)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+
+		// Allocate memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											uiDIBTargetScanLineSize * dwCropHeight + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	}
+	if (m_pBits == NULL)
+		return FALSE;
+
+	// Copy Vars
+	if (bCopySrcToDst)
+		CopyVars(*pSrcDib);
+
+	// Change BMI
+	m_pBMI->bmiHeader.biWidth = dwCropWidth;
+	m_pBMI->bmiHeader.biHeight = dwCropHeight;
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage = uiDIBTargetScanLineSize * GetHeight();
+
+	// Init Masks For 16 and 32 bits Pictures
+	InitMasks();
+
+	// Free
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	DIB_INIT_PROGRESS;
+
+	// Crop
+	switch (pSrcDib->GetBitCount())
+	{
+		// Not Optimized
+		case 1 :
+		case 4 :
+		{
+			for (int y = dwOrigY - dwCropHeight + 1 ; y <= (int)dwOrigY ; y++)
+			{
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y + dwCropHeight - dwOrigY - 1, dwCropHeight);
+
+				for (int x = dwOrigX ; x < (int)(dwOrigX + dwCropWidth) ; x++)
+				{
+					SetPixelIndex(	x-dwOrigX, y-(dwOrigY - dwCropHeight + 1),
+									pSrcDib->GetPixelIndex(x, y));
+				}
+			}
+			break;
+		}
+
+		// Optimized
+		case 8 :
+		{
+			LPBYTE lpSrcBits = pSrcDib->GetBits() + (dwOrigY - dwCropHeight + 1) * uiDIBSourceScanLineSize;
+			LPBYTE lpDstBits = GetBits();
+			for (int y = 0 ; y < (int)dwCropHeight ; y++)
+			{
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwCropHeight);
+				memcpy(lpDstBits, lpSrcBits + dwOrigX, dwCropWidth);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 16 :
+		{
+			LPBYTE lpSrcBits = pSrcDib->GetBits() + (dwOrigY - dwCropHeight + 1) * uiDIBSourceScanLineSize;
+			LPBYTE lpDstBits = GetBits();
+			for (int y = 0 ; y < (int)dwCropHeight ; y++)
+			{
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwCropHeight);
+				memcpy(lpDstBits, lpSrcBits + (dwOrigX<<1), dwCropWidth<<1);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 24 :
+		{
+			LPBYTE lpSrcBits = pSrcDib->GetBits() + (dwOrigY - dwCropHeight + 1) * uiDIBSourceScanLineSize;
+			LPBYTE lpDstBits = GetBits();
+			for (int y = 0 ; y < (int)dwCropHeight ; y++)
+			{
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwCropHeight);
+				memcpy(lpDstBits, lpSrcBits + (3*dwOrigX), 3*dwCropWidth);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 32 :
+		{
+			LPBYTE lpSrcBits = pSrcDib->GetBits() + (dwOrigY - dwCropHeight + 1) * uiDIBSourceScanLineSize;
+			LPBYTE lpDstBits = GetBits();
+			for (int y = 0 ; y < (int)dwCropHeight ; y++)
+			{
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwCropHeight);
+				memcpy(lpDstBits, lpSrcBits + (dwOrigX<<2), dwCropWidth<<2);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		/* Not Optimized for 16, 24 and 32 bpp
+		for (int y = dwOrigY - dwCropHeight + 1 ; y <= (int)dwOrigY; y++)
+		{
+			DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y + dwCropHeight - dwOrigY - 1, dwCropHeight);
+
+			for (int x = dwOrigX ; x < (int)(dwOrigX + dwCropWidth) ; x++)
+			{
+				SetPixelColor(	x-dwOrigX, y-(dwOrigY - dwCropHeight + 1),
+								pSrcDib->GetPixelColor(x, y));
+			}
+		}
+		*/
+
+		default:
+			break;
+	}
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	return TRUE;
+}
+
+BOOL CDib::Crop(DWORD dwOrigX, DWORD dwOrigY,
+				DWORD dwCropWidth, DWORD dwCropHeight,
+				CWnd* pProgressWnd/*=NULL*/,
+				BOOL bProgressSend/*=TRUE*/)
+{
+	if (m_pBits)
+		return CropBits(dwOrigX,
+						dwOrigY,
+						dwCropWidth,
+						dwCropHeight,
+						NULL,
+						pProgressWnd,
+						bProgressSend);
+	else
+		return CropDibSection(	dwOrigX,
+								dwOrigY,
+								dwCropWidth,
+								dwCropHeight);
+}
+
+BOOL CDib::AddBorders(	DWORD dwLeft,
+						DWORD dwTop,
+						DWORD dwRight,
+						DWORD dwBottom,
+						COLORREF crBorder/*=0*/,
+						CDib* pSrcDib/*=NULL*/,
+						CWnd* pProgressWnd/*=NULL*/,
+						BOOL bProgressSend/*=TRUE*/,
+						CWorkerThread* pThread/*=NULL*/)
+{
+	// Check
+	if ((dwLeft == 0)	&&
+		(dwTop == 0)	&&
+		(dwRight == 0)	&&
+		(dwBottom == 0))
+		return TRUE;
+
+	// Make a Copy of this?
+	CDib SrcDib;
+	BOOL bCopySrcToDst = FALSE;
+	if (pSrcDib == NULL || this == pSrcDib)
+	{
+		if (IsCompressed())
+#ifndef _WIN32_WCE
+			if (!Decompress(GetBitCount())) // Decompress
+				return FALSE;
+#else
+		return FALSE;
+#endif
+
+		SrcDib = *this;
+		pSrcDib = &SrcDib;
+
+		if (!pSrcDib->m_pBits)
+		{
+			if (!pSrcDib->DibSectionToBits())
+				return FALSE;
+		}
+
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+	}
+	else
+	{
+		// Pointers Check
+		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
+			return FALSE;
+
+		// No Compression Supported!
+		if (pSrcDib->IsCompressed())
+			return FALSE;
+
+		// Allocate BMI
+		if (m_pBMI == NULL)
+		{
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+		// Need to ReAllocate BMI because they are of differente size
+		else if (pSrcDib->GetBMISize() != GetBMISize())
+		{
+			delete [] m_pBMI;
+
+			// Allocate & Copy BMI
+			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
+			if (m_pBMI == NULL)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
+		}
+
+		// Make Sure m_pColors Points to the Right Place
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		else
+			m_pColors = NULL;
+
+		// Copy Src To Dst
+		bCopySrcToDst = TRUE;
+	}
+
+	// Top-Down to Bottom-Up Coordinates
+	DWORD dwTemp = dwTop;
+	dwTop = dwBottom;
+	dwBottom = dwTemp;
+
+	// Source Sizes
+	DWORD dwSrcWidth  = pSrcDib->GetWidth();
+	DWORD dwSrcHeight = pSrcDib->GetHeight();
+
+	// Destination Sizes
+	DWORD dwDstWidth  = dwSrcWidth + dwLeft + dwRight;
+	DWORD dwDstHeight = dwSrcHeight + dwTop + dwBottom;
+		
+	// Scan Line Alignments
+	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(dwSrcWidth * pSrcDib->GetBitCount());
+	DWORD uiDIBTargetScanLineSize = DWALIGNEDWIDTHBYTES(dwDstWidth * GetBitCount());
+
+	// Allocate Bits
+	if (m_pBits == NULL)
+	{
+		// Allocate memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											uiDIBTargetScanLineSize * dwDstHeight + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	}
+	// Need to ReAllocate Bits because they are of differente size
+	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwDstHeight)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+
+		// Allocate memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											uiDIBTargetScanLineSize * dwDstHeight + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	}
+	if (m_pBits == NULL)
+		return FALSE;
+
+	// Copy Vars
+	if (bCopySrcToDst)
+		CopyVars(*pSrcDib);
+
+	// Change BMI
+	m_pBMI->bmiHeader.biWidth = dwDstWidth;
+	m_pBMI->bmiHeader.biHeight = dwDstHeight;
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage = uiDIBTargetScanLineSize * GetHeight();
+
+	// Init Masks For 16 and 32 bits Pictures
+	InitMasks();
+
+	// Free
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	// Clip Color Index
+	if (pSrcDib->GetBitCount() <= 8)
+	{
+		if (crBorder >= pSrcDib->GetNumColors())
+			crBorder = pSrcDib->GetNumColors() - 1;
+	}
+
+	DIB_INIT_PROGRESS;
+
+	// Add Border
+	switch (pSrcDib->GetBitCount())
+	{
+		// Not Optimized
+		case 1 :
+		case 4 :
+		{
+			for (int y = 0 ; y < (int)dwDstHeight; y++)
+			{
+				if (pThread && pThread->DoExit())
+				{
+					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+					return FALSE;
+				}
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+				for (int x = 0 ; x < (int)dwDstWidth ; x++)
+				{
+					int nSrcX = x - (int)dwLeft;
+					int nSrcY = y - (int)dwTop;
+					if ((nSrcX < 0) || (nSrcY < 0) ||
+						(nSrcX >= (int)dwSrcWidth) || (nSrcY >= (int)dwSrcHeight))
+						SetPixelIndex(x, y, crBorder);
+					else
+						SetPixelIndex(x, y, pSrcDib->GetPixelIndex(nSrcX , nSrcY));
+				}
+			}
+			break;
+		}
+
+		// Optimized
+		case 8 :
+		{
+			SetBitColors(crBorder);
+			LPBYTE lpSrcBits = pSrcDib->GetBits();
+			LPBYTE lpDstBits = GetBits() + (dwTop * uiDIBTargetScanLineSize);
+			for (int y = 0 ; y < (int)dwSrcHeight ; y++)
+			{
+				if (pThread && pThread->DoExit())
+				{
+					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+					return FALSE;
+				}
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+				memcpy(lpDstBits + dwLeft, lpSrcBits, dwSrcWidth);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 16 :
+		{
+			SetBitColors(crBorder);
+			LPBYTE lpSrcBits = pSrcDib->GetBits();
+			LPBYTE lpDstBits = GetBits() + (dwTop * uiDIBTargetScanLineSize);
+			for (int y = 0 ; y < (int)dwSrcHeight ; y++)
+			{
+				if (pThread && pThread->DoExit())
+				{
+					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+					return FALSE;
+				}
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+				memcpy(lpDstBits + (dwLeft<<1), lpSrcBits, dwSrcWidth<<1);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 24 :
+		{
+			SetBitColors(crBorder);
+			LPBYTE lpSrcBits = pSrcDib->GetBits();
+			LPBYTE lpDstBits = GetBits() + (dwTop * uiDIBTargetScanLineSize);
+			for (int y = 0 ; y < (int)dwSrcHeight ; y++)
+			{
+				if (pThread && pThread->DoExit())
+				{
+					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+					return FALSE;
+				}
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+				memcpy(lpDstBits + (3*dwLeft), lpSrcBits, 3*dwSrcWidth);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		// Optimized
+		case 32 :
+		{
+			SetBitColors(crBorder);
+			LPBYTE lpSrcBits = pSrcDib->GetBits();
+			LPBYTE lpDstBits = GetBits() + (dwTop * uiDIBTargetScanLineSize);
+			for (int y = 0 ; y < (int)dwSrcHeight ; y++)
+			{
+				if (pThread && pThread->DoExit())
+				{
+					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+					return FALSE;
+				}
+				DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+				memcpy(lpDstBits + (dwLeft<<2), lpSrcBits, dwSrcWidth<<2);
+				lpSrcBits += uiDIBSourceScanLineSize;
+				lpDstBits += uiDIBTargetScanLineSize;
+			}
+			break;
+		}
+
+		/* Not Optimized for 16, 24 and 32 bpp
+		for (int y = 0 ; y < (int)dwDstHeight; y++)
+		{
+			if (pThread && pThread->DoExit())
+			{
+				DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+				return FALSE;
+			}
+			DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, dwDstHeight);
+			for (int x = 0 ; x < (int)dwDstWidth ; x++)
+			{
+				int nSrcX = x - (int)dwLeft;
+				int nSrcY = y - (int)dwTop;
+				if ((nSrcX < 0) || (nSrcY < 0) ||
+					(nSrcX >= (int)dwSrcWidth) || (nSrcY >= (int)dwSrcHeight))
+					SetPixelColor(x, y, crBorder);
+				else
+					SetPixelColor(x, y, pSrcDib->GetPixelColor(nSrcX , nSrcY));
+			}
+		}
+		*/
+
+		default:
+			break;
+	}
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	return TRUE;
+}
+
+BOOL CDib::SoftBorders(int nBorder,
+					   BOOL bBlur,
+					   CWnd* pProgressWnd/*=NULL*/,
+					   BOOL bProgressSend/*=TRUE*/)
+{
+	// Check
+	if (nBorder <= 0)
+		return TRUE;
+
+	if (!m_pBits)
+	{
+		if (!DibSectionToBits())
+			return FALSE;
+	}
+
+	if (!m_pBits || !m_pBMI)
+		return FALSE;
+
+#ifndef _WIN32_WCE
+	if (!Decompress(32)) // Decompress to 32 bpp
+		return FALSE;
+#else
+	return FALSE;
+#endif
+
+	int x, y;
+
+	DIB_INIT_PROGRESS;
+
+	// If no Alpha
+	if (!HasAlpha())
+	{
+		// Set All Opaque
+		for (y = 0 ; y < (int)GetHeight() ; y++)
+		{
+			for (x = 0 ; x < (int)GetWidth() ; x++)
+			{
+				((DWORD*)m_pBits)[x + y*GetWidth()] |= 0xFF000000;
+			}
+		}
+
+		// Set Alpha Flag
+		m_bAlpha = TRUE;
+	}
+
+	// Make Blended Borders
+	double k = 255.0 / nBorder;
+	for (y = 0 ; y < (int)GetHeight() ; y++)
+	{
+		DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, y, GetHeight());
+
+		for (x = 0 ; x < (int)GetWidth() ; x++)
+		{
+			int R, G, B, A;
+
+			// Get Pixel
+			DIB32ToRGBA(((DWORD*)m_pBits)[x + y*GetWidth()], &R, &G, &B, &A);
+			
+			// X Direction
+			if (x < nBorder)
+				A = MIN((int)((x + 1) * k), A);
+			else if (x > ((int)GetWidth() - 1 - nBorder))
+				A = MIN((int)(((int)GetWidth() - x) * k), A);
+
+			// Y Direction
+			if (y < nBorder)
+				A = MIN((int)((y + 1) * k), A);
+			else if (y > ((int)GetHeight() - 1 - nBorder))
+				A = MIN((int)(((int)GetHeight() - y) * k), A);
+
+			// Set Pixel
+			((DWORD*)m_pBits)[x + y*GetWidth()] = RGBAToDIB32(R, G, B, A);
+		}
+	}
+
+	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+	// Blur Alpha
+	if (bBlur)
+	{	
+		BOOL res1, res2, res3, res4, res5;
+
+		// Corners Kernel
+		int Kernel[] = {1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1,
+						1,1,1,1,1,1,1,1,1};
+
+		// Top-Left Corner
+		res1 = FilterAlpha(	CRect(	1,
+							1,
+							nBorder - 1,
+							nBorder - 1),
+							Kernel,
+							9, 81, 0,
+							NULL,
+							pProgressWnd,
+							bProgressSend);
+
+		// Top-Right Corner
+		res2 = FilterAlpha(	CRect(	GetWidth() - nBorder + 1,
+							1,
+							GetWidth() - 1,
+							nBorder - 1),
+							Kernel,
+							9, 81, 0,
+							NULL,
+							pProgressWnd,
+							bProgressSend);
+
+		// Bottom-Left Corner
+		res3 = FilterAlpha(	CRect(	1,
+							GetHeight() - nBorder + 1,
+							nBorder - 1,
+							GetHeight() - 1),
+							Kernel,
+							9, 81, 0,
+							NULL,
+							pProgressWnd,
+							bProgressSend);
+
+		// Bottom-Right Corner
+		res4 = FilterAlpha(	CRect(	GetWidth() - nBorder + 1,
+							GetHeight() - nBorder + 1,
+							GetWidth() - 1,
+							GetHeight() - 1),
+							Kernel,
+							9, 81, 0,
+							NULL,
+							pProgressWnd,
+							bProgressSend);
+
+		// Overall
+		int KernelFast[] = {1,1,1,
+							1,1,1,
+							1,1,1};
+		res5 = FilterFastAlpha(	KernelFast, 9,
+								NULL,
+								pProgressWnd,
+								bProgressSend);
+
+		return (res1 && res2 && res3 && res4 && res5);
+	}
+	else
+		return TRUE;
+}
+
+BOOL CDib::CopyBits(	DWORD dwFourCC,
+						DWORD dwBitCount,
+						DWORD uiDstStartX,
+						DWORD uiDstStartY,
+						DWORD uiSrcStartX,
+						DWORD uiSrcStartY,
+						DWORD uiWidthCopy,
+						DWORD uiHeightCopy,
+						DWORD uiDstHeight,
+						DWORD uiSrcHeight,
+						LPBYTE pDstBits,
+						LPBYTE pSrcBits,
+						DWORD uiDIBDstScanLineSize,
+						DWORD uiDIBSrcScanLineSize)
+{
+	if (!pDstBits || !pSrcBits)
+		return FALSE;
+
+	if (dwFourCC == BI_RGB ||
+		dwFourCC == BI_BITFIELDS)
+	{
+		DWORD uiBytesPerScanLineToCopy = uiWidthCopy * dwBitCount / 8;
+		LPBYTE ps = pSrcBits + uiSrcStartX * dwBitCount / 8 + uiDIBSrcScanLineSize * uiSrcStartY;
+		LPBYTE pd = pDstBits + uiDstStartX * dwBitCount / 8 + uiDIBDstScanLineSize * uiDstStartY;
+		for (DWORD line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy);
+			ps += uiDIBSrcScanLineSize;
+			pd += uiDIBDstScanLineSize;
+		}
+		return TRUE;
+	}
+	else if (	dwFourCC == FCC('YV12')	||
+				dwFourCC == FCC('I420')	||
+				dwFourCC == FCC('IYUV'))
+	{
+		DWORD line;
+		DWORD uiBytesPerScanLineToCopy = ::CalcYUVStride(dwFourCC, uiWidthCopy);
+		LPBYTE ps = pSrcBits + uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
+		LPBYTE pd = pDstBits + uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
+
+		// Copy Y Plane: Text To Bitmap Bits
+		for (line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy);
+			ps += uiDIBSrcScanLineSize;
+			pd += uiDIBDstScanLineSize;
+		}
+		
+		// Copy Chroma Planes: Text To Bitmap Bits
+		DWORD uiBytesPerScanLineToCopy2 = (uiBytesPerScanLineToCopy >> 1);
+		DWORD uiHeightCopy2 = (uiHeightCopy >> 1);
+		DWORD uiDstStartX2 = (uiDstStartX >> 1);
+		DWORD uiDstStartY2 = (uiDstStartY >> 1);
+		DWORD uiDstHeight2 = (uiDstHeight >> 1);
+		DWORD uiDIBDstScanLineSize2 = (uiDIBDstScanLineSize >> 1);
+		DWORD uiSrcStartX2 = (uiSrcStartX >> 1);
+		DWORD uiSrcStartY2 = (uiSrcStartY >> 1);
+		DWORD uiSrcHeight2 = (uiSrcHeight >> 1);
+		DWORD uiDIBSrcScanLineSize2 = (uiDIBSrcScanLineSize >> 1);
+		ps =	pSrcBits										+
+				uiSrcStartX2									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize2 * uiSrcStartY2;
+		pd =	pDstBits										+
+				uiDstStartX2									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize2 * uiDstStartY2;
+		for (line = 0 ; line < uiHeightCopy2 ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy2);
+			ps += uiDIBSrcScanLineSize2;
+			pd += uiDIBDstScanLineSize2;
+		}
+		ps =	pSrcBits										+
+				uiSrcStartX2									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize2 * uiSrcHeight2			+
+				uiDIBSrcScanLineSize2 * uiSrcStartY2;
+		pd =	pDstBits										+
+				uiDstStartX2									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize2 * uiDstHeight2			+
+				uiDIBDstScanLineSize2 * uiDstStartY2;
+		for (line = 0 ; line < uiHeightCopy2 ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy2);
+			ps += uiDIBSrcScanLineSize2;
+			pd += uiDIBDstScanLineSize2;
+		}
+		return TRUE;
+	}
+	else if (	dwFourCC == FCC('YVU9')	||
+				dwFourCC == FCC('YUV9'))
+	{
+		DWORD line;
+		DWORD uiBytesPerScanLineToCopy = ::CalcYUVStride(dwFourCC, uiWidthCopy);
+		LPBYTE ps = pSrcBits + uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
+		LPBYTE pd = pDstBits + uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
+
+		// Copy Y Plane: Text To Bitmap Bits
+		for (line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy);
+			ps += uiDIBSrcScanLineSize;
+			pd += uiDIBDstScanLineSize;
+		}
+		
+		// Copy Chroma Planes: Text To Bitmap Bits
+		DWORD uiBytesPerScanLineToCopy4 = (uiBytesPerScanLineToCopy >> 2);
+		DWORD uiHeightCopy4 = (uiHeightCopy >> 2);
+		DWORD uiDstStartX4 = (uiDstStartX >> 2);
+		DWORD uiDstStartY4 = (uiDstStartY >> 2);
+		DWORD uiDstHeight4 = (uiDstHeight >> 2);
+		DWORD uiDIBDstScanLineSize4 = (uiDIBDstScanLineSize >> 2);
+		DWORD uiSrcStartX4 = (uiSrcStartX >> 2);
+		DWORD uiSrcStartY4 = (uiSrcStartY >> 2);
+		DWORD uiSrcHeight4 = (uiSrcHeight >> 2);
+		DWORD uiDIBSrcScanLineSize4 = (uiDIBSrcScanLineSize >> 2);
+		ps =	pSrcBits										+
+				uiSrcStartX4									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize4 * uiSrcStartY4;
+		pd =	pDstBits										+
+				uiDstStartX4									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize4 * uiDstStartY4;
+		for (line = 0 ; line < uiHeightCopy4 ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy4);
+			ps += uiDIBSrcScanLineSize4;
+			pd += uiDIBDstScanLineSize4;
+		}
+		ps =	pSrcBits										+
+				uiSrcStartX4									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize4 * uiSrcHeight4			+
+				uiDIBSrcScanLineSize4 * uiSrcStartY4;
+		pd =	pDstBits										+
+				uiDstStartX4									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize4 * uiDstHeight4			+
+				uiDIBDstScanLineSize4 * uiDstStartY4;
+		for (line = 0 ; line < uiHeightCopy4 ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy4);
+			ps += uiDIBSrcScanLineSize4;
+			pd += uiDIBDstScanLineSize4;
+		}
+		return TRUE;
+	}
+	// Note: If uiSrcStartX is odd/even and uiDstStartX is even/odd
+	// U & V are wrongly copied!
+	else if (	// YUY2 Family
+				dwFourCC == FCC('YUY2')	||	// Packed: Y0 U0 Y1 V0, Y2 U2 Y3 V2
+				dwFourCC == FCC('VYUY')	||
+				dwFourCC == FCC('V422')	||
+				dwFourCC == FCC('YUYV')	||
+				dwFourCC == FCC('YUNV')	||
+				// UYVY Family
+				dwFourCC == FCC('UYVY')	||	// Packed: U0 Y0 V0 Y1, U2 Y2 V2 Y3
+				dwFourCC == FCC('UYNV')	||
+				dwFourCC == FCC('Y422'))
+	{
+		DWORD uiBytesPerScanLineToCopy = ::CalcYUVStride(dwFourCC, uiWidthCopy);
+		LPBYTE ps = pSrcBits + 2 * uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
+		LPBYTE pd = pDstBits + 2 * uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
+		for (DWORD line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy);
+			ps += uiDIBSrcScanLineSize;
+			pd += uiDIBDstScanLineSize;
+		}
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::StretchDibSection(DWORD dwNewWidth,
+							 DWORD dwNewHeight,
+							 int nStretchMode/*=COLORONCOLOR*/)
+{
+	// Check
+	if (dwNewWidth == 0 || dwNewHeight == 0)
+		return FALSE;
+
+	// If Same Size Return
+	if ((dwNewWidth == GetWidth()) && (dwNewHeight == GetHeight()))
+		return TRUE;
+
+	if (!m_hDibSection)
+	{
+		if (!BitsToDibSection())
+			return FALSE;
+	}
+
+	if (!m_pBMI)
+		return FALSE;
+
+	// DCs
+	HDC hDC = ::GetDC(NULL);
+	if (!hDC)
+		return FALSE;
+	HDC hMemDCSrc = ::CreateCompatibleDC(hDC);
+	if (!hMemDCSrc)
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	HDC hMemDCDst = ::CreateCompatibleDC(hDC);
+	if (!hMemDCDst)
+	{
+		::DeleteDC(hMemDCSrc);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Create the New DibSection
+	DWORD dwSrcWidth = m_pBMI->bmiHeader.biWidth;
+	DWORD dwSrcHeight = m_pBMI->bmiHeader.biHeight;
+	m_pBMI->bmiHeader.biWidth = dwNewWidth;
+	m_pBMI->bmiHeader.biHeight = dwNewHeight;
+	m_dwImageSize = DWALIGNEDWIDTHBYTES(dwNewWidth * GetBitCount()) * dwNewHeight;
+	m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+	LPBYTE pDibSectionBits;
+	HBITMAP hDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBMI,
+							DIB_RGB_COLORS, (void**)&pDibSectionBits, NULL, 0);
+	if (!hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::DeleteDC(hMemDCSrc);
+		::DeleteDC(hMemDCDst);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Select Dib Sections into Memory DCs
+	HBITMAP hOldBitmapSrc = (HBITMAP)::SelectObject(hMemDCSrc, m_hDibSection);
+	HBITMAP hOldBitmapDst = (HBITMAP)::SelectObject(hMemDCDst, hDibSection);
+
+	// Stretch Mode
+	int nOldStretchMode = ::SetStretchBltMode(hMemDCDst, nStretchMode);
+
+	// Stretch
+	BOOL res = ::StretchBlt(hMemDCDst,
+							0, 0,
+							dwNewWidth, 
+							dwNewHeight,
+							hMemDCSrc,
+							0, 0,
+							dwSrcWidth,
+							dwSrcHeight,
+							SRCCOPY);
+
+	// Clean-up
+	::SetStretchBltMode(hMemDCDst, nOldStretchMode);
+	::SelectObject(hMemDCSrc, hOldBitmapSrc);
+	::SelectObject(hMemDCDst, hOldBitmapDst);
+	::DeleteDC(hMemDCSrc);
+	::DeleteDC(hMemDCDst);
+	::ReleaseDC(NULL, hDC);
+
+	// Set New Dib Section
+	::DeleteObject(m_hDibSection);
+	m_hDibSection = hDibSection;
+	m_pDibSectionBits = pDibSectionBits;
+
+	return res;
+}
+
+BOOL CDib::SetDibSectionBits(LPBYTE lpBits, DWORD dwSize)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_hDibSection)
+	{
+		// Create a DC
+		HDC hDC = ::GetDC(NULL);
+		if (!hDC)
+			return FALSE;
+
+		// Create the DibSection
+		m_hDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBMI,
+								 DIB_RGB_COLORS, (void**)&m_pDibSectionBits, NULL, 0);
+		if (!m_hDibSection)
+		{
+			ShowLastError(_T("CreateDIBSection()"));
+			::ReleaseDC(NULL, hDC);
+			m_pDibSectionBits = NULL;
+			return FALSE;
+		}
+		else
+			::ReleaseDC(NULL, hDC);
+	}
+	if (lpBits)
+		memcpy(m_pDibSectionBits, lpBits, (dwSize >= m_dwImageSize) ? m_dwImageSize : dwSize);
+
+	return TRUE;
+}
+
+BOOL CDib::SetDibSectionBits(LPBYTE lpBits)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_hDibSection)
+	{
+		// Create a DC
+		HDC hDC = ::GetDC(NULL);
+		if (!hDC)
+			return FALSE;
+
+		// Create the DibSection
+		m_hDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBMI,
+								 DIB_RGB_COLORS, (void**)&m_pDibSectionBits, NULL, 0);
+		if (!m_hDibSection)
+		{
+			ShowLastError(_T("CreateDIBSection()"));
+			::ReleaseDC(NULL, hDC);
+			m_pDibSectionBits = NULL;
+			return FALSE;
+		}
+		else
+			::ReleaseDC(NULL, hDC);
+	}
+	if (lpBits)
+		memcpy(m_pDibSectionBits, lpBits, m_dwImageSize);
+
+	return TRUE;
+}
+
+BOOL CDib::SetBits(LPBYTE lpBits, DWORD dwSize)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_pBits)
+	{
+		// Allocate Memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+		if (m_pBits == NULL)
+			return FALSE;
+	}
+	if (lpBits)
+		memcpy(m_pBits, lpBits, MIN(m_dwImageSize, dwSize));
+
+	return TRUE;
+}
+
+BOOL CDib::SetBits(LPBYTE lpBits)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_pBits)
+	{
+		// Allocate Memory
+		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+		if (m_pBits == NULL)
+			return FALSE;
+	}
+	if (lpBits)
+		memcpy(m_pBits, lpBits, m_dwImageSize);
+
+	return TRUE;
+}
+
+BOOL CDib::SetBMI(LPBITMAPINFO lpBMI)
+{
+	if (!lpBMI)
+		return FALSE;
+
+	DWORD dwBMISize;
+	
+	if ((lpBMI->bmiHeader.biCompression == BI_RGB) ||
+		(lpBMI->bmiHeader.biCompression == BI_RLE4) ||
+		(lpBMI->bmiHeader.biCompression == BI_RLE8) ||
+		(lpBMI->bmiHeader.biCompression == BI_BITFIELDS))
+	{
+		if (lpBMI->bmiHeader.biClrUsed != 0)
+			dwBMISize = lpBMI->bmiHeader.biSize + lpBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD);
+		else
+		{
+			if (lpBMI->bmiHeader.biBitCount >= 16)
+			{
+				if ((lpBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
+					((lpBMI->bmiHeader.biBitCount == 16) || (lpBMI->bmiHeader.biBitCount == 32)))
+					dwBMISize = lpBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD); // Bitfield Masks
+				else
+					dwBMISize = lpBMI->bmiHeader.biSize;
+			}
+			else
+				dwBMISize = lpBMI->bmiHeader.biSize + (1 << lpBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD);
+		}
+
+		if (m_pBMI)
+			if (memcmp(m_pBMI, lpBMI, dwBMISize) == 0)
+				return TRUE;
+	}
+	else
+		dwBMISize = lpBMI->bmiHeader.biSize;
+
+	Free();
+
+	// Allocate memory for Header
+	m_pBMI = (LPBITMAPINFO)new BYTE[dwBMISize];
+	if (m_pBMI == NULL)
+		return FALSE;
+
+	memcpy(m_pBMI, lpBMI, dwBMISize); 
+
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+
+	ComputeImageSize();
+
+	CreatePaletteFromBMI();
+
+	InitMasks();
+
+	return TRUE;
+}
+
+LPBYTE CDib::GetBits(BOOL bDeleteDibSection/*=FALSE*/)
+{
+	DibSectionToBits(FALSE, bDeleteDibSection);
+	return m_pBits;
+}
+
+DWORD CDib::GetBMISize(LPBITMAPINFO pBMI)
+{
+	if (!pBMI)
+		return 0;
+		
+	if ((pBMI->bmiHeader.biCompression == BI_RGB) ||
+		(pBMI->bmiHeader.biCompression == BI_RLE4) ||
+		(pBMI->bmiHeader.biCompression == BI_RLE8) ||
+		(pBMI->bmiHeader.biCompression == BI_BITFIELDS))
+	{
+		if (pBMI->bmiHeader.biClrUsed != 0)
+			return (pBMI->bmiHeader.biSize + pBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD));
+		else
+		{
+			if (pBMI->bmiHeader.biBitCount >= 16)
+			{
+				if ((pBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
+					((pBMI->bmiHeader.biBitCount == 16) || (pBMI->bmiHeader.biBitCount == 32)))
+					return (pBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD)); // Bitfield Masks
+				else
+					return pBMI->bmiHeader.biSize;
+			}
+			else
+				return (pBMI->bmiHeader.biSize + (1 << pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+		}
+	}
+	else
+		return pBMI->bmiHeader.biSize;
+}
+
+DWORD CDib::GetBMISize() const
+{
+	if (!m_pBMI)
+		return 0;
+		
+	if ((m_pBMI->bmiHeader.biCompression == BI_RGB) ||
+		(m_pBMI->bmiHeader.biCompression == BI_RLE4) ||
+		(m_pBMI->bmiHeader.biCompression == BI_RLE8) ||
+		(m_pBMI->bmiHeader.biCompression == BI_BITFIELDS))
+	{
+		if (m_pBMI->bmiHeader.biClrUsed != 0)
+			return (m_pBMI->bmiHeader.biSize + m_pBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD));
+		else
+		{
+			if (m_pBMI->bmiHeader.biBitCount >= 16)
+			{
+				if ((m_pBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
+					((m_pBMI->bmiHeader.biBitCount == 16) || (m_pBMI->bmiHeader.biBitCount == 32)))
+					return (m_pBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD)); // Bitfield Masks
+				else
+					return m_pBMI->bmiHeader.biSize;
+			}
+			else
+				return (m_pBMI->bmiHeader.biSize + (1 << m_pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+		}
+	}
+	else
+		return m_pBMI->bmiHeader.biSize;
+}
+
+BOOL CDib::FileCheck(LPCTSTR lpszPathName)
+{
+	// Check File Existence
+	if (!IsFile(lpszPathName))
+		return FALSE;
+	else
+		return FileCheckInternal(lpszPathName);
+}
+
+BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
+{
+	// Check Size
+	if (LoadImage(lpszPathName, 0, 0, 0, TRUE, TRUE))
+	{
+		CString s, t;
+		if ((GetWidth() / GetHeight() > SECURITY_MAX_RATIO) ||
+			(GetHeight() / GetWidth() > SECURITY_MAX_RATIO))
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("A Width of %i with a Height of %i are not Supported!"),
+																	GetWidth(),
+																	GetHeight());
+			s += t;
+		
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if ((GetWidth() * GetHeight()) > SECURITY_MAX_PIX_AREA)
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("Sorry, such big files are not Supported!"));
+			s += t;
+		
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if (GetWidth() > SECURITY_MAX_ALLOWED_WIDTH)
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("A Width of %i is not Supported!"), GetWidth());
+			s += t;
+		
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if (GetHeight() > SECURITY_MAX_ALLOWED_HEIGHT)
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t.Format(_T("A Height of %i is not Supported!"), GetHeight());
+			s += t;
+		
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else
+			return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::LoadImage(LPCTSTR lpszPathName,
+					 int nMaxSizeX/*=0*/,
+					 int nMaxSizeY/*=0*/,
+					 int nPageNum/*=0*/,
+					 BOOL bDecompressBmp/*=TRUE*/,
+					 BOOL bOnlyHeader/*=FALSE*/,
+					 CWnd* pProgressWnd/*=NULL*/,
+					 BOOL bProgressSend/*=TRUE*/,
+					 CWorkerThread* pThread/*=NULL*/)
+{
+	// Check File Existence
+	if (!IsFile(lpszPathName))
+		return FALSE;
+
+	// Check File
+	if (!bOnlyHeader)
+	{
+		if (!FileCheckInternal(lpszPathName))
+			return FALSE;
+	}
+
+	CString sExt = ::GetFileExt(lpszPathName);
+	if ((sExt == _T(".bmp")) ||
+		(sExt == _T(".dib")))
+	{
+#ifdef SUPPORT_BMP
+		return LoadBMP(	lpszPathName,					// Loads bmp as BMI + bits
+						bOnlyHeader,
+						bDecompressBmp,
+						pProgressWnd,
+						bProgressSend,
+						pThread);
+#endif
+
+		return LoadDibSection(lpszPathName);			// Loads bmp as DIBSECTION
+
+#ifdef SUPPORT_MMBMP
+		return MapBMP(lpszPathName, TRUE);				// Memory Maps the bmp, TRUE -> Read Only
+#endif
+	}
+	else if (sExt == _T(".emf"))
+	{
+		return LoadEMF(lpszPathName);					// Loads emf as BMI + bits
+	}
+	else if (sExt == _T(".png"))
+	{
+#ifdef SUPPORT_LIBPNG
+		return LoadPNG(	lpszPathName,					// Loads png as BMI + bits	
+						TRUE,							// Load Alpha Channel
+						bOnlyHeader,
+						pProgressWnd,
+						bProgressSend,
+						pThread);
+#endif
+	}
+	else if ((sExt == _T(".jpg"))	||
+			(sExt == _T(".jpe"))	||
+			(sExt == _T(".jpeg"))	||
+			(sExt == _T(".thm")))
+	{
+#ifdef SUPPORT_LIBJPEG
+		if (bOnlyHeader || (nMaxSizeX <= 0 && nMaxSizeY <= 0))
+			return LoadJPEG(lpszPathName,				// Loads jpg as BMI + bits
+							1,
+							FALSE,
+							bOnlyHeader,
+							pProgressWnd,
+							bProgressSend,
+							pThread);
+		else
+		{
+			// Free
+			m_FileInfo.Clear();
+			m_bAlpha = FALSE;
+			m_bGrayscale = FALSE;
+			Free();
+
+			// Init The BITMAPINFO of the main Dib and load the bits
+			// to m_pPreviewDib. The edges of the Preview Dib 
+			// are limited (more or less) around nMaxSizeX and/or nMaxSizeY.
+			// Note: CreatePreviewDibFromJPEG returns FALSE and does nothing
+			// if the Preview Dib would be the same size as the Full Dib
+			if (!CreatePreviewDibFromJPEG(	lpszPathName,
+											nMaxSizeX,
+											nMaxSizeY,
+											pProgressWnd,
+											bProgressSend,
+											pThread))
+			{
+				if (pThread && pThread->DoExit())
+					return FALSE;
+				return LoadJPEG(lpszPathName,			// Loads jpg as BMI + bits
+								1,
+								FALSE,
+								bOnlyHeader,
+								pProgressWnd,
+								bProgressSend,
+								pThread);
+			}
+			else
+				return TRUE;
+		}
+#endif
+
+#ifndef _WIN32_WCE
+		return LoadDibSectionEx(lpszPathName);			// Loads jpg as DIBSECTION
+#endif
+	}
+	else if ((sExt == _T(".tif"))	||
+			(sExt == _T(".jfx"))	||
+			(sExt == _T(".tiff")))
+	{
+#ifdef SUPPORT_LIBTIFF
+		return LoadTIFF(lpszPathName,					// Loads tif as BMI + bits
+						nPageNum,						// Load the given page
+						bOnlyHeader,
+						pProgressWnd,
+						bProgressSend,
+						pThread);
+#endif
+	}
+	else if (sExt == _T(".pcx"))
+	{
+#ifdef SUPPORT_PCX
+		return LoadPCX(	lpszPathName,					// Loads pcx as BMI + bits
+						bOnlyHeader,
+						pProgressWnd,
+						bProgressSend,
+						pThread);
+#endif
+	}
+	else if (sExt == _T(".gif"))
+	{
+#ifdef SUPPORT_GIFLIB
+		return LoadGIF(	lpszPathName,					// Loads gif as BMI + bits
+						bOnlyHeader,
+						pProgressWnd,
+						bProgressSend,
+						pThread);
+#endif
+
+#ifndef _WIN32_WCE
+		return LoadDibSectionEx(lpszPathName);			// Loads gif as DIBSECTION
+#endif
+	}
+	
+	return FALSE;
+}
+
+BOOL CDib::LoadDibSection(HBITMAP hDibSection)
+{
+	// Check to see if it is a DibSection
+	if (!IsDibSection(hDibSection))
+		return FALSE;
+
+	LPBYTE pBits;	
+
+	// Create a DC
+	HDC hDC = ::GetDC(NULL);
+	if (!hDC)
+		return FALSE;
+
+	// Free
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+	Free();	
+
+	// Get the BMI
+	if (!DibSectionInitBMI(hDibSection))
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Get the bits
+	pBits = (LPBYTE)::VirtualAlloc(	NULL,
+									m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+									MEM_COMMIT,
+									PAGE_READWRITE);
+	if (!pBits)
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	if (!::GetDIBits(hDC, hDibSection, 0, GetHeight(), pBits, m_pBMI, DIB_RGB_COLORS))
+	{
+		::VirtualFree((LPVOID)pBits, 0, MEM_RELEASE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Create the DibSection
+	m_hDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBMI,
+								 DIB_RGB_COLORS, (void**)&m_pDibSectionBits, NULL, 0);
+
+	if (!m_hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::ReleaseDC(NULL, hDC);
+		::VirtualFree((LPVOID)pBits, 0, MEM_RELEASE);
+		m_pDibSectionBits = NULL;
+		return FALSE;
+	}
+
+	memcpy(m_pDibSectionBits, (void*)pBits, GetImageSize());
+	::ReleaseDC(NULL, hDC);
+	::VirtualFree((LPVOID)pBits, 0, MEM_RELEASE);
+
+	// Init File Info
+	m_FileInfo.m_nType = CFileInfo::BMP;
+	m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+	m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+	m_FileInfo.m_nBpp = m_pBMI->bmiHeader.biBitCount;
+	m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+	m_FileInfo.m_nColorSpace = CFileInfo::COLORSPACE_RGB;
+	m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+	m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+	m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+	m_FileInfo.m_nNumColors = m_pBMI->bmiHeader.biClrUsed;
+	m_FileInfo.m_bPalette = (m_FileInfo.m_nBpp <= 8);
+	m_FileInfo.m_nImageCount = 1;
+	m_FileInfo.m_nImagePos = 0;
+	if (m_FileInfo.m_nCompression == BI_BITFIELDS)
+	{
+		if (m_FileInfo.m_nBpp == 32)
+		{
+			m_FileInfo.m_dwRedMask = m_dwRedMask32; 
+			m_FileInfo.m_dwGreenMask = m_dwGreenMask32; 
+			m_FileInfo.m_dwBlueMask = m_dwBlueMask32;
+		}
+		else
+		{
+			m_FileInfo.m_dwRedMask = m_wRedMask16; 
+			m_FileInfo.m_dwGreenMask = m_wGreenMask16; 
+			m_FileInfo.m_dwBlueMask = m_wBlueMask16;
+		}
+	}
+
+    return TRUE;
+}
+
+BOOL CDib::LoadDibSection(LPCTSTR lpszPathName)
+{
+	BOOL res;
+
+	CString sPathName(lpszPathName);
+	if (sPathName.IsEmpty())
+		return FALSE;
+
+	// Clear File Info, Alpha and Grayscale
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+
+	// Get the File Size
+	CFile file;
+	if (!file.Open(lpszPathName, CFile::modeRead | CFile::shareDenyNone))
+		return FALSE;
+	else
+		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
+	file.Close();
+	if (m_FileInfo.m_dwFileSize == 0)
+		return FALSE;
+
+#ifdef _WIN32_WCE
+	HBITMAP hBitmap = (HBITMAP)::LoadImage(NULL, lpszPathName, IMAGE_BITMAP, 0, 0, 0);
+#else
+	HBITMAP hBitmap = (HBITMAP)::LoadImage(NULL, lpszPathName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+#endif
+	if (hBitmap == NULL)
+		return FALSE;
+
+	// WinCE only loads as DDB, Desktop Windows can load it as DDB or DIBSECTION (see last flag of LoadImage)
+	if (IsDibSection(hBitmap))
+	{	
+		res = TRUE;
+		AttachDibSection(hBitmap); // Will Also Free eventual old Bitmap
+	}
+	else
+	{
+		res = SetDibSectionFromDDB(hBitmap, NULL); // Will Also Free eventual old Bitmap
+		::DeleteObject(hBitmap);
+	}
+
+	// Init File Info
+	m_FileInfo.m_nType = CFileInfo::BMP;
+	m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+	m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+	m_FileInfo.m_nBpp = m_pBMI->bmiHeader.biBitCount;
+	m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+	m_FileInfo.m_nColorSpace = CFileInfo::COLORSPACE_RGB;
+	m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+	m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+	m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+	m_FileInfo.m_nNumColors = m_pBMI->bmiHeader.biClrUsed;
+	m_FileInfo.m_bPalette = (m_FileInfo.m_nBpp <= 8);
+	m_FileInfo.m_nImageCount = 1;
+	m_FileInfo.m_nImagePos = 0;
+	if (m_FileInfo.m_nCompression == BI_BITFIELDS)
+	{
+		if (m_FileInfo.m_nBpp == 32)
+		{
+			m_FileInfo.m_dwRedMask = m_dwRedMask32; 
+			m_FileInfo.m_dwGreenMask = m_dwGreenMask32; 
+			m_FileInfo.m_dwBlueMask = m_dwBlueMask32;
+		}
+		else
+		{
+			m_FileInfo.m_dwRedMask = m_wRedMask16; 
+			m_FileInfo.m_dwGreenMask = m_wGreenMask16; 
+			m_FileInfo.m_dwBlueMask = m_wBlueMask16;
+		}
+	}
+
+	return res;
+}
+
+#ifndef _WIN32_WCE
+// Use of the IPicture COM interface
+// Loads: .bmp (= .dib) ; .gif ; .jpg (= .jpeg or = .jpe or = .thm)
+BOOL CDib::LoadDibSectionEx(LPCTSTR lpszPathName)
+{
+	// Vars
+	LPSTREAM pStream = NULL;
+	HGLOBAL hGlobal = NULL;
+	HRESULT hr;
+
+	// Init COM: COM may fail if its already been inited with a different 
+    // concurrency model. And if it fails you shouldn't release it!
+	// Typically, the COM library is initialized on an apartment only once.
+	// Subsequent calls will succeed, as long as they do not attempt to change
+	// the concurrency model, but will return S_FALSE. To close the COM
+	// library gracefully, each successful call to CoInitialize or CoInitializeEx,
+	// including those that return S_FALSE, must be balanced by a corresponding
+	// call to CoUninitialize.
+	// Once the concurrency model for an apartment is set, it cannot be changed.
+	// A call to CoInitialize on an apartment that was previously initialized as
+	// multithreaded will fail and return RPC_E_CHANGED_MODE.
+    hr = ::CoInitialize(NULL);
+    BOOL bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
+
+	// Free
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+	Free();	
+
+	try
+	{
+		CString sPathName(lpszPathName);
+		if (sPathName.IsEmpty())
+			throw (int)DIBSECTIONEX_E_ZEROPATH;
+
+		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
+		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
+		if (m_FileInfo.m_dwFileSize == 0)
+			throw (int)DIBSECTIONEX_E_FILEEMPTY;
+
+		// Allocate memory based on file size
+		LPVOID pvData = NULL;
+		hGlobal = ::GlobalAlloc(GMEM_MOVEABLE, m_FileInfo.m_dwFileSize);
+		if (hGlobal == NULL)
+			throw (int)DIBSECTIONEX_E_NOMEM;
+		pvData = ::GlobalLock(hGlobal);
+		ASSERT(pvData);
+
+		// Read file and store in global memory
+		if (file.Read(pvData, m_FileInfo.m_dwFileSize) != m_FileInfo.m_dwFileSize)
+			throw (int)DIBSECTIONEX_E_READ;
+
+		// Tidy up the memory and close the file handle
+		::GlobalUnlock(hGlobal);
+		file.Close();
+
+		// Create IStream* from global memory, delete global memory on stream release
+		hr = ::CreateStreamOnHGlobal(hGlobal, TRUE, &pStream);
+		if (FAILED(hr) || pStream == NULL)
+			throw (int)DIBSECTIONEX_E_ISTREAM;
+
+		ASSERT(m_pIPicture == NULL);
+		// Create IPicture from image file
+		hr = ::OleLoadPicture(pStream, m_FileInfo.m_dwFileSize, FALSE, IID_IPicture, (LPVOID*)&m_pIPicture);
+		if (SUCCEEDED(hr) && m_pIPicture)
+		{
+			short nType = PICTYPE_UNINITIALIZED;
+			if (SUCCEEDED(m_pIPicture->get_Type(&nType)) && (nType == PICTYPE_BITMAP))
+			{
+				OLE_HANDLE hDibSection;
+				if (SUCCEEDED(m_pIPicture->get_Handle(&hDibSection)))
+				{
+					m_hDibSection = (HBITMAP)hDibSection;
+				}
+				else
+					throw (int)DIBSECTIONEX_E_HANDLE;
+			}
+			else
+				throw (int)DIBSECTIONEX_E_TYPE;
+		}
+		else
+			throw (int)DIBSECTIONEX_E_LOAD;
+
+
+		// Free up the IStream* interface and delete global memory
+		pStream->Release();
+
+		// Load Metadata
+#ifdef SUPPORT_LIBJPEG
+		JPEGLoadMetadata(lpszPathName);
+#endif
+
+		// Init BMI
+		if (DibSectionInitBMI())
+		{
+			// Init File Info
+			m_FileInfo.m_nType = CFileInfo::BMP;
+			m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+			m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+			m_FileInfo.m_nBpp = m_pBMI->bmiHeader.biBitCount;
+			m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+			m_FileInfo.m_nColorSpace = CFileInfo::COLORSPACE_RGB;
+			m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+			m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+			m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+			m_FileInfo.m_nNumColors = m_pBMI->bmiHeader.biClrUsed;
+			m_FileInfo.m_bPalette = (m_FileInfo.m_nBpp <= 8);
+			m_FileInfo.m_nImageCount = 1;
+			m_FileInfo.m_nImagePos = 0;
+			if (m_FileInfo.m_nCompression == BI_BITFIELDS)
+			{
+				if (m_FileInfo.m_nBpp == 32)
+				{
+					m_FileInfo.m_dwRedMask = m_dwRedMask32; 
+					m_FileInfo.m_dwGreenMask = m_dwGreenMask32; 
+					m_FileInfo.m_dwBlueMask = m_dwBlueMask32;
+				}
+				else
+				{
+					m_FileInfo.m_dwRedMask = m_wRedMask16; 
+					m_FileInfo.m_dwGreenMask = m_wGreenMask16; 
+					m_FileInfo.m_dwBlueMask = m_wBlueMask16;
+				}
+			}
+
+			// Create Palette from BMI
+			CreatePaletteFromBMI();
+
+			// Clean-Up?
+			if (bCleanupCOM)
+				::CoUninitialize();
+
+			return TRUE;
+		}
+		else
+		{
+			if (bCleanupCOM)
+				::CoUninitialize();
+			return FALSE;
+		}
+	}
+	catch (CFileException* e)
+	{
+		TCHAR szCause[255];
+		CString str(_T("LoadDibSectionEx: "));
+		e->GetErrorMessage(szCause, 255);
+		str += szCause;
+		str += _T("\n");
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+		e->Delete();
+
+		if (pStream)
+			pStream->Release();
+		else if (hGlobal)
+		{
+			::GlobalUnlock(hGlobal);
+			::GlobalFree(hGlobal);
+		}
+
+		if (bCleanupCOM)
+			::CoUninitialize();
+
+		return FALSE;
+	}
+	catch (int error_code)
+	{
+		if (pStream)
+			pStream->Release();
+		else if (hGlobal)
+		{
+			::GlobalUnlock(hGlobal);
+			::GlobalFree(hGlobal);
+		}
+
+		CString str;
+#ifdef _DEBUG
+		str.Format(_T("LoadDibSectionEx(%s):\n"), lpszPathName);
+#endif
+		switch(error_code)
+		{
+			case DIBSECTIONEX_E_ZEROPATH :		str += _T("The file name is zero\n");
+			break;
+			case DIBSECTIONEX_E_NOMEM :			str += _T("Could not alloc memory\n");
+			break;
+			case DIBSECTIONEX_E_READ :			str += _T("Couldn't read file\n");
+			break;
+			case DIBSECTIONEX_E_ISTREAM :		str += _T("Couldn't create IStream\n");
+			break;
+			case DIBSECTIONEX_E_LOAD :			str += _T("Couldn't load picture\n");
+			break;
+			case DIBSECTIONEX_E_TYPE :			str += _T("Couldn't get right picture type\n");
+			break;
+			case DIBSECTIONEX_E_HANDLE :		str += _T("Couldn't get picture handle\n");
+			break;
+			case DIBSECTIONEX_E_FILEEMPTY :		str += _T("File is empty\n");
+			break;
+			default:							str += _T("Unspecified error\n");
+			break;
+		}
+		
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+
+		if (bCleanupCOM)
+			::CoUninitialize();
+
+		return FALSE;
+	}
+}
+#endif
+
+BOOL CDib::LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName)
+{
+	BOOL res;
+
+	// Clear File Info, Alpha and Grayscale
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+
+#ifdef _WIN32_WCE
+	HBITMAP hBitmap = (HBITMAP) ::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, 0);
+#else
+	HBITMAP hBitmap = (HBITMAP) ::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTCOLOR);
+#endif
+	if (hBitmap == NULL)
+		return FALSE;
+
+	// WinCE only loads as DDB, Desktop Windows can load it as DDB or DIBSECTION (see last flag of LoadImage)
+	if (IsDibSection(hBitmap))
+	{	
+		res = TRUE;
+		AttachDibSection(hBitmap); // Will Also Free eventual old Bitmap
+	}
+	else
+	{
+		res = SetDibSectionFromDDB(hBitmap, NULL); // Will Also Free eventual old Bitmap
+		::DeleteObject(hBitmap);
+	}
+
+	// Init File Info
+	m_FileInfo.m_nType = CFileInfo::BMP;
+	m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+	m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+	m_FileInfo.m_nBpp = m_pBMI->bmiHeader.biBitCount;
+	m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+	m_FileInfo.m_nColorSpace = CFileInfo::COLORSPACE_RGB;
+	m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+	m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+	m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+	m_FileInfo.m_nNumColors = m_pBMI->bmiHeader.biClrUsed;
+	m_FileInfo.m_bPalette = (m_FileInfo.m_nBpp <= 8);
+	m_FileInfo.m_nImageCount = 1;
+	m_FileInfo.m_nImagePos = 0;
+	if (m_FileInfo.m_nCompression == BI_BITFIELDS)
+	{
+		if (m_FileInfo.m_nBpp == 32)
+		{
+			m_FileInfo.m_dwRedMask = m_dwRedMask32; 
+			m_FileInfo.m_dwGreenMask = m_dwGreenMask32; 
+			m_FileInfo.m_dwBlueMask = m_dwBlueMask32;
+		}
+		else
+		{
+			m_FileInfo.m_dwRedMask = m_wRedMask16; 
+			m_FileInfo.m_dwGreenMask = m_wGreenMask16; 
+			m_FileInfo.m_dwBlueMask = m_wBlueMask16;
+		}
+	}
+
+	return res;
+}
+
+BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
+{
+	// Free
+	m_FileInfo.Clear();
+	m_bAlpha = FALSE;
+	m_bGrayscale = FALSE;
+
+	try
+	{
+		CString sPathName(lpszPathName);
+		if (sPathName.IsEmpty())
+			throw (int)EMF_E_ZEROPATH;
+
+		// Check for .bmp or .dib Extension
+		if (::GetFileExt(sPathName) != _T(".emf"))
+			throw (int)EMF_E_WRONGEXTENTION;
+
+		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
+		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
+		if (m_FileInfo.m_dwFileSize == 0)
+			throw (int)EMF_E_FILEEMPTY;		
+
+		// Get the Handle from the enhanced metafile
+		HENHMETAFILE hemf = ::GetEnhMetaFile(lpszPathName);
+			
+		// Get the header from the enhanced metafile
+		ENHMETAHEADER emh;
+		memset(&emh, 0, sizeof(ENHMETAHEADER));
+		emh.nSize = sizeof(ENHMETAHEADER);
+		if (::GetEnhMetaFileHeader(hemf, sizeof(ENHMETAHEADER), &emh) == 0)
+		{
+			::DeleteEnhMetaFile(hemf);
+			throw (int)EMF_E_BADEMF;
+		}
+		
+		// Get the DC of the Window
+		HDC hDC = ::GetDC(NULL);
+
+		// DPI
+		int XDpi = Round(25.4 * (double)emh.szlDevice.cx / (double)emh.szlMillimeters.cx);
+		int YDpi = Round(25.4 * (double)emh.szlDevice.cy / (double)emh.szlMillimeters.cy);
+
+		// Check DPI
+		if (XDpi <= 0)
+			XDpi = DEFAULT_DPI;
+		if (YDpi <= 0)
+			YDpi = DEFAULT_DPI;
+
+		// Get dimension
+		int cx = emh.rclBounds.right - emh.rclBounds.left;
+		int cy = emh.rclBounds.bottom - emh.rclBounds.top;
+
+		// Dimension in .01 millimeter units
+		if (cx <= 0)
+			cx = Round((emh.rclFrame.right - emh.rclFrame.left) * (double)XDpi / 2540.0);
+		if (cy <= 0)
+			cy = Round((emh.rclFrame.bottom - emh.rclFrame.top) * (double)YDpi / 2540.0);
+
+		// Drawing rectangle
+		RECT rc = {0, 0, cx, cy};
+
+		// Create a Memory DC
+		HDC hMemDC = ::CreateCompatibleDC(hDC); 
+		
+		// Create a compatible bitmap
+		HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC, cx + 1, cy + 1);
+		
+		// Select the bitmap into the Mem DC
+		HBITMAP hBitmapOld = (HBITMAP)::SelectObject(hMemDC, hBitmap);
+		
+		// Paint Background
+		COLORREF crOldColor = ::SetBkColor(hMemDC, m_crBackgroundColor);
+		::ExtTextOut(hMemDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+		::SetBkColor(hMemDC, crOldColor);
+
+		// Get Palette
+		HPALETTE hPal = NULL;
+		UINT uiPalEntries = ::GetEnhMetaFilePaletteEntries(hemf, 0, NULL);
+		if (uiPalEntries > 0)
+		{
+			LPLOGPALETTE lpPal = (LPLOGPALETTE)new BYTE[sizeof(LOGPALETTE) +
+														sizeof(PALETTEENTRY) * uiPalEntries];
+			if (lpPal)
+			{
+				lpPal->palVersion = PALVERSION_DEFINE;
+				lpPal->palNumEntries = ::GetEnhMetaFilePaletteEntries(	hemf,
+																		uiPalEntries,
+																		lpPal->palPalEntry);
+				hPal = ::CreatePalette(lpPal);
+				delete [] lpPal;
+			}
+		}
+
+		// Now play the enhanced metafile into the memory DC,
+		// ignore its return value it may be FALSE even if successful
+		::PlayEnhMetaFile(hMemDC, hemf, &rc);
+
+		// DDB -> CDib bits
+		SetBitsFromDDB(hBitmap, hPal);
+
+		// Set DPI
+		if (GetBMIH())
+		{
+			GetBMIH()->biXPelsPerMeter = (LONG)Round(XDpi * 100.0 / 2.54);
+			GetBMIH()->biYPelsPerMeter = (LONG)Round(YDpi * 100.0 / 2.54);
+		}
+
+		// Clean-Up
+		::SelectObject(hMemDC, hBitmapOld);
+		::DeleteEnhMetaFile(hemf);
+		::DeleteObject(hBitmap);
+		if (hPal)
+			::DeleteObject(hPal);
+		::DeleteDC(hMemDC);
+		::ReleaseDC(NULL, hDC);
+
+		// Init File Info
+		m_FileInfo.m_nType = CFileInfo::EMF;
+		m_FileInfo.m_nWidth = m_pBMI->bmiHeader.biWidth;
+		m_FileInfo.m_nHeight = m_pBMI->bmiHeader.biHeight;
+		m_FileInfo.m_nBpp = m_pBMI->bmiHeader.biBitCount;
+		m_FileInfo.m_nCompression = m_pBMI->bmiHeader.biCompression;
+		m_FileInfo.m_nColorSpace = CFileInfo::COLORSPACE_RGB;
+		m_FileInfo.m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;
+		m_FileInfo.m_nXPixsPerMeter = m_pBMI->bmiHeader.biXPelsPerMeter;
+		m_FileInfo.m_nYPixsPerMeter = m_pBMI->bmiHeader.biYPelsPerMeter;
+		m_FileInfo.m_nNumColors = m_pBMI->bmiHeader.biClrUsed;
+		m_FileInfo.m_bPalette = (m_FileInfo.m_nBpp <= 8);
+		m_FileInfo.m_nImageCount = 1;
+		m_FileInfo.m_nImagePos = 0;
+		if (m_FileInfo.m_nCompression == BI_BITFIELDS)
+		{
+			if (m_FileInfo.m_nBpp == 32)
+			{
+				m_FileInfo.m_dwRedMask = m_dwRedMask32; 
+				m_FileInfo.m_dwGreenMask = m_dwGreenMask32; 
+				m_FileInfo.m_dwBlueMask = m_dwBlueMask32;
+			}
+			else
+			{
+				m_FileInfo.m_dwRedMask = m_wRedMask16; 
+				m_FileInfo.m_dwGreenMask = m_wGreenMask16; 
+				m_FileInfo.m_dwBlueMask = m_wBlueMask16;
+			}
+		}
+
+		return TRUE;
+	}
+	catch (CFileException* e)
+	{
+		TCHAR szCause[255];
+		CString str(_T("LoadEMF: "));
+		e->GetErrorMessage(szCause, 255);
+		str += szCause;
+		str += _T("\n");
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+		e->Delete();
+		return FALSE;
+	}
+	catch (int error_code)
+	{
+		CString str;
+#ifdef _DEBUG
+		str.Format(_T("LoadEMF(%s):\n"), lpszPathName);
+#endif
+		switch(error_code)
+		{
+			case EMF_E_ZEROPATH :		str += _T("The file name is zero\n");
+			break;
+			case EMF_E_WRONGEXTENTION :	str += _T("The file extention is not .emf\n");
+			break;
+			case EMF_E_BADEMF :			str += _T("Corrupted or unsupported EMF\n");
+			break;
+			case EMF_E_FILEEMPTY :		str += _T("File is empty\n");
+			break;
+			default:					str += _T("Unspecified error\n");
+			break;
+		}
+		
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+
+		return FALSE;
+	}
+}
+
+BOOL CDib::SaveEMF(LPCTSTR lpszPathName, HDC hRefDC/*=NULL*/)
+{
+	try
+	{
+		CString sPathName(lpszPathName);
+		if (sPathName.IsEmpty())
+			throw (int)EMF_E_ZEROPATH;
+
+		DWORD dwAttrib = ::GetFileAttributes(lpszPathName);
+		if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
+			throw (int)EMF_E_FILEREADONLY;
+
+		if (!m_pBits)
+		{
+			if (!DibSectionToBits())
+				throw (int)EMF_E_BADBMP;
+		}
+
+		if (!m_pBits || !m_pBMI)
+			throw (int)EMF_E_BADBMP;
+
+		if (IsCompressed())
+#ifndef _WIN32_WCE
+			if (!Decompress(GetBitCount())) // Decompress
+				throw (int)EMF_E_BADBMP;
+#else
+			throw (int)EMF_E_BADBMP;
+#endif
+
+		// Create MemDC
+		HDC hdcMem;
+		if (!hRefDC)
+		{
+			HDC hDC = ::GetDC(NULL);
+			hdcMem = ::CreateCompatibleDC(hDC);
+			::ReleaseDC(NULL, hDC);
+		}
+		else
+			hdcMem = ::CreateCompatibleDC(hRefDC);
+		
+		// Update m_hDibSection without deleting the bits!
+		BitsToDibSection(TRUE, FALSE);
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hdcMem, m_hDibSection);
+
+		// Create EMF and get the emf DC
+		HDC emfdc = ::CreateEnhMetaFile(hdcMem, lpszPathName, NULL, NULL);
+		
+		// Blit
+		::BitBlt(emfdc,0, 0, GetWidth(), GetHeight(), hdcMem, 0, 0, SRCCOPY);
+
+		// Clean-Up
+		if (m_hDibSection)
+		{
+			::DeleteObject(m_hDibSection);
+			m_hDibSection = NULL;
+			m_pDibSectionBits = NULL;
+		}
+		::SelectObject(hdcMem, hOldBitmap);
+		HENHMETAFILE hemf = ::CloseEnhMetaFile(emfdc);
+		::DeleteEnhMetaFile(hemf);
+		::DeleteDC(hdcMem);
+	
+		return TRUE;
+	}
+	catch (CFileException* e)
+	{
+		TCHAR szCause[255];
+		CString str(_T("SaveEMF: "));
+		e->GetErrorMessage(szCause, 255);
+		str += szCause;
+		str += _T("\n");
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+		e->Delete();
+		return FALSE;
+	}
+	catch (int error_code)
+	{
+		CString str;
+#ifdef _DEBUG
+		str.Format(_T("SaveEMF(%s):\n"), lpszPathName);
+#endif
+		switch (error_code)
+		{
+			case EMF_E_ZEROPATH :		str += _T("The file name is zero\n");
+			break;
+			case EMF_E_FILEREADONLY :	str += _T("The file is read only\n");
+			break;
+			case EMF_E_BADBMP :			str += _T("Corrupted or unsupported DIB\n");
+			break;
+			default:					str += _T("Unspecified error\n");
+			break;
+		}
+
+		TRACE(str);
+		if (m_bShowMessageBoxOnError)
+			::AfxMessageBox(str, MB_ICONSTOP);
+		
+		return FALSE;
+	}
+}
+
+BOOL CDib::LoadDibSectionRes(HINSTANCE hInst, UINT uID)
+{
+	return LoadDibSectionRes(hInst, MAKEINTRESOURCE(uID)); 
+}
+
+BOOL CDib::AttachDibSection(HBITMAP hDibSection)
+{
+	if (hDibSection == NULL)
+		return FALSE;
+
+	if (IsDibSection(hDibSection) == FALSE)
+		return FALSE;
+
+	// Free up any resource we may currently have
+	Free();
+
+	m_hDibSection = hDibSection;
+
+	// Create the Palette
+	CreatePaletteFromDibSection();
+	
+	return DibSectionInitBMI();
+}
+
+HBITMAP CDib::GetSafeHandle()
+{
+	if (!this)
+		return NULL;
+
+	BitsToDibSection();
+
+	return m_hDibSection; 
+}
+
+#ifndef _WIN32_WCE
+HBITMAP CDib::GetDDB(HDC hDC/*=NULL*/)
+{
+	if (!DibSectionToBits())
+		return NULL;
+
+	BOOL bReleaseDC = FALSE;
+	if (hDC == NULL)
+	{
+		hDC = ::GetDC(NULL);
+		bReleaseDC = TRUE;
+	}
+    HBITMAP hBitmap = ::CreateDIBitmap(	hDC,
+										(LPBITMAPINFOHEADER)m_pBMI,
+										CBM_INIT,
+										m_pBits,
+										m_pBMI,
+										DIB_RGB_COLORS);
+	
+	if (bReleaseDC)
+		::ReleaseDC(NULL, hDC);
+
+	return hBitmap;
+}
+#endif
+
+BOOL CDib::SetBitsFromDDB(CBitmap* pBitmap, CPalette* pPal)
+{
+	HBITMAP hBitmap = (HBITMAP)pBitmap->GetSafeHandle();
+	if (hBitmap == NULL)
+		return FALSE;
+
+	HPALETTE hPal = (HPALETTE)pPal->GetSafeHandle();
+
+	return SetBitsFromDDB(hBitmap, hPal);
+}
+
+#ifndef _WIN32_WCE
+BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
+{
+	if (hBitmap == NULL)
+		return FALSE;
+
+	// If it is already a DibSection return FALSE!
+	if (IsDibSection(hBitmap))
+		return FALSE;
+
+	// Free up any resource we may currently have
+	Free();
+
+	// Get bitmap information
+	BITMAP bm;
+	if (!::GetObject(hBitmap, sizeof(bm), (LPVOID)&bm)) return FALSE;
+
+	// Compute the size of the infoheader and the color table
+	int nColors;
+	if (bm.bmBitsPixel >= 24)
+		nColors = 1 << (bm.bmPlanes * 24);
+	else
+		nColors = 1 << (bm.bmPlanes * bm.bmBitsPixel);
+
+	// If a palette has not been supplied use Halftone Palette
+	CPalette Pal;
+	if (hPal == NULL)
+	{
+		if (nColors > 256)
+			CreateHalftonePalette(&Pal, 256);
+		else
+			CreateHalftonePalette(&Pal, nColors);
+		hPal = (HPALETTE)Pal.GetSafeHandle();
+	}
+
+	// Adjust nColors
+	if(nColors > 256) nColors = 0;
+
+	// We need a device context to get the DIB from
+	HDC hDC = ::GetDC(NULL);
+	HPALETTE hOldPal = ::SelectPalette(hDC, hPal, FALSE);
+	::RealizePalette(hDC);
+
+	// Allocate memory for Header and Color Table
+	m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)
+									+ nColors * sizeof(RGBQUAD)];
+	if (m_pBMI == NULL)
+	{
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Initialize the BITMAPINFOHEADER
+	m_pBMI->bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth			= bm.bmWidth;
+	m_pBMI->bmiHeader.biHeight 			= bm.bmHeight;
+	m_pBMI->bmiHeader.biPlanes 			= 1;
+	m_pBMI->bmiHeader.biBitCount		= (WORD)(bm.bmPlanes * bm.bmBitsPixel);
+	m_pBMI->bmiHeader.biCompression		= BI_RGB;
+	m_pBMI->bmiHeader.biSizeImage		= 0;
+	m_pBMI->bmiHeader.biXPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biClrUsed			= 0;
+	m_pBMI->bmiHeader.biClrImportant	= 0;
+
+	// Call GetDIBits with a NULL lpBits param, so the device driver 
+	// will calculate the biSizeImage field 
+	GetDIBits(hDC, hBitmap, 0L, GetHeight(), NULL, m_pBMI, DIB_RGB_COLORS);
+
+	ComputeImageSize();
+
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (m_pBits == NULL)
+	{
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+		m_pColors = NULL;
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// FINALLY get the DIB
+	BOOL bGotBits = GetDIBits(hDC, hBitmap,
+				0L,							// Start scan line
+				(DWORD)GetHeight(),			// # of scan lines
+				m_pBits, 					// address for bitmap bits
+				m_pBMI,						// address of bitmapinfo
+				DIB_RGB_COLORS);			// Use RGB for color table
+
+	if (!bGotBits)
+	{
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+		m_pColors = NULL;
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+	CreatePaletteFromBMI();
+
+	::SelectPalette(hDC, hOldPal, FALSE);
+	::ReleaseDC(NULL, hDC);
+
+	// Init Masks For 16 and 32 bits Pictures
+	InitMasks();
+
+	return TRUE;
+}
+#else
+BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
+{
+    if (hBitmap == NULL)
+		return FALSE;
+
+	// If it is already a DibSection return FALSE!
+	if (IsDibSection(hBitmap))
+		return FALSE;
+
+	// Free up any resource we may currently have
+	Free();
+
+    // Get bitmap information
+    BITMAP bm;
+    if (!::GetObject(hBitmap, sizeof(bm), (LPVOID)&bm)) return FALSE;
+
+	// Compute the size of the infoheader and the color table
+	int nColors;
+	if (bm.bmBitsPixel >= 24)
+		nColors = 1 << (bm.bmPlanes * 24);
+	else
+		nColors = 1 << (bm.bmPlanes * bm.bmBitsPixel);
+
+	// If a palette has not been supplied use Halftone Palette
+	CPalette Pal;
+	if (hPal == NULL)
+	{
+		if (nColors > 256)
+			CreateHalftonePalette(&Pal, 256);
+		else
+			CreateHalftonePalette(&Pal, nColors);
+		hPal = (HPALETTE)Pal.GetSafeHandle();
+	}
+
+	// Adjust nColors
+	if(nColors > 256) nColors = 0;
+
+    // We need a device context to get the DIB from
+	HDC hDC = ::GetDC(NULL);
+	HPALETTE hOldPal = ::SelectPalette(hDC, hPal, FALSE);
+	::RealizePalette(hDC);
+
+	// Allocate memory for Header and Color Table
+	m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)
+									+ nColors * sizeof(RGBQUAD)];
+	if (m_pBMI == NULL)
+	{
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+    // Initialize the BITMAPINFOHEADER
+	m_pBMI->bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth			= bm.bmWidth;
+	m_pBMI->bmiHeader.biHeight 			= bm.bmHeight;
+	m_pBMI->bmiHeader.biPlanes 			= 1;
+	m_pBMI->bmiHeader.biBitCount		= (WORD)(bm.bmPlanes * bm.bmBitsPixel);
+	m_pBMI->bmiHeader.biCompression = BI_RGB;
+	m_pBMI->bmiHeader.biSizeImage		= 0;
+	m_pBMI->bmiHeader.biXPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biClrUsed			= 0;
+	m_pBMI->bmiHeader.biClrImportant	= 0;
+
+	ComputeImageSize();
+
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (m_pBits == NULL)
+	{
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+		m_pColors = NULL;
+		::SelectPalette(hDC, hOldPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+    // Create it!
+    HANDLE hDibSection = ::CreateDIBSection(hDC, 
+                                 (const BITMAPINFO*)m_pBMI,
+                                 DIB_RGB_COLORS,
+                                 (void**)&m_pDibSectionBits, 
+                                 NULL, 0);
+	if (hDibSection == NULL)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+		m_pColors = NULL;
+		::SelectPalette(hDC, hOldPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+    // Need to copy the supplied bitmap onto the newly created DIBsection
+    HDC hMemDC, hCopyDC;
+	hMemDC = ::CreateCompatibleDC(hDC);
+	hCopyDC = ::CreateCompatibleDC(hDC);
+	HPALETTE hOldMemPal = ::SelectPalette(hMemDC, hPal, FALSE);
+	::RealizePalette(hMemDC);
+	HPALETTE hOldCopyPal = ::SelectPalette(hCopyDC, hPal, FALSE);
+	::RealizePalette(hCopyDC);
+    HBITMAP hOldMemBitmap  = (HBITMAP)::SelectObject(hMemDC,  hBitmap);
+    HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, hDibSection);
+
+	// Copy
+	::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY);
+    
+	// Copy the Image Bits
+	memcpy((void*)m_pBits, m_pDibSectionBits, m_dwImageSize);
+
+	// Get Colors from the  DibSection
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+	{
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		CEGetDIBColorTable(hCopyDC, 0, nColors, m_pColors);
+	}
+	else
+		m_pColors = NULL;
+	CreatePaletteFromBMI();
+
+	// Free up
+	::SelectObject(hMemDC, hOldMemBitmap);
+    ::SelectObject(hCopyDC, hOldCopyBitmap);
+	::SelectPalette(hMemDC, hOldMemPal, FALSE);
+	::SelectPalette(hCopyDC, hOldCopyPal, FALSE);
+    ::SelectPalette(hDC, hOldPal, FALSE);
+	::DeleteDC(hMemDC);
+	::DeleteDC(hCopyDC);
+	::ReleaseDC(NULL, hDC);
+	::DeleteObject(hDibSection);
+	m_pDibSectionBits = NULL;
+
+	// Init Masks For 16 and 32 bits Pictures
+	InitMasks();
+
+    return TRUE;
+}
+#endif
+
+BOOL CDib::SetDibSectionFromDDB(CBitmap* pBitmap, CPalette* pPal)
+{
+	HBITMAP hBitmap = (HBITMAP)pBitmap->GetSafeHandle();
+	if (hBitmap == NULL)
+		return FALSE;
+
+	HPALETTE hPal = (HPALETTE)pPal->GetSafeHandle();
+
+	return SetDibSectionFromDDB(hBitmap, hPal);
+}
+
+BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
+{
+    if (hBitmap == NULL)
+		return FALSE;
+
+	// If it is already a DibSection return FALSE!
+	if (IsDibSection(hBitmap))
+		return FALSE;
+
+	// Free up any resource we may currently have
+	Free();
+
+    // Get bitmap information
+    BITMAP bm;
+    if (!::GetObject(hBitmap, sizeof(bm), (LPVOID)&bm))
+		return FALSE;
+
+	// Compute the size of the infoheader and the color table
+	int nColors;
+	if (bm.bmBitsPixel >= 24)
+		nColors = 1 << (bm.bmPlanes * 24);
+	else
+		nColors = 1 << (bm.bmPlanes * bm.bmBitsPixel);
+	
+	// If a palette has not been supplied use Halftone Palette
+	CPalette Pal;
+	if (hPal == NULL)
+	{
+		if (nColors > 256)
+			CreateHalftonePalette(&Pal, 256);
+		else
+			CreateHalftonePalette(&Pal, nColors);
+		hPal = (HPALETTE)Pal.GetSafeHandle();
+	}
+
+	// Adjust nColors
+	if (nColors > 256) nColors = 0;
+
+    // We need a device context to get the DIB from
+	HDC hDC = ::GetDC(NULL);
+	HPALETTE hOldPal = ::SelectPalette(hDC, hPal, FALSE);
+	::RealizePalette(hDC);
+
+	// Allocate memory for Header and Color Table
+	m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)
+									+ nColors * sizeof(RGBQUAD)];
+	if (m_pBMI == NULL)
+	{
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+    // Initialize the BITMAPINFOHEADER
+	m_pBMI->bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
+	m_pBMI->bmiHeader.biWidth			= bm.bmWidth;
+	m_pBMI->bmiHeader.biHeight 			= bm.bmHeight;
+	m_pBMI->bmiHeader.biPlanes 			= 1;
+	m_pBMI->bmiHeader.biBitCount		= (WORD)(bm.bmPlanes * bm.bmBitsPixel);
+	
+//#ifdef _WIN32_WCE
+//#if (_WIN32_WCE>=300)
+//    if (bm.bmBitsPixel == 16  || bm.bmBitsPixel == 32)
+//        m_pBMI->bmiHeader.biCompression = BI_BITFIELDS; 
+//    else
+//        m_pBMI->bmiHeader.biCompression = BI_RGB;
+//#else
+	//m_pBMI->bmiHeader.biCompression = BI_RGB;
+//#endif
+//#else
+	m_pBMI->bmiHeader.biCompression = BI_RGB;
+//#endif
+	m_pBMI->bmiHeader.biSizeImage		= 0;
+	m_pBMI->bmiHeader.biXPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biYPelsPerMeter	= 0;
+	m_pBMI->bmiHeader.biClrUsed			= 0;
+	m_pBMI->bmiHeader.biClrImportant	= 0;
+
+	ComputeImageSize();
+
+    // Create it!
+    m_hDibSection = ::CreateDIBSection(hDC, 
+                                 (const BITMAPINFO*)m_pBMI,
+                                 DIB_RGB_COLORS,
+                                 (void**)&m_pDibSectionBits, 
+                                 NULL, 0);
+	if (m_hDibSection == NULL)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::SelectPalette(hDC, hPal, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+    // Need to copy the supplied bitmap onto the newly created DIBsection
+    HDC hMemDC, hCopyDC;
+	hMemDC = ::CreateCompatibleDC(hDC);
+	hCopyDC = ::CreateCompatibleDC(hDC);
+	HPALETTE hOldMemPal = ::SelectPalette(hMemDC, hPal, FALSE);
+	::RealizePalette(hMemDC);
+	HPALETTE hOldCopyPal = ::SelectPalette(hCopyDC, hPal, FALSE);
+	::RealizePalette(hCopyDC);
+    HBITMAP hOldMemBitmap  = (HBITMAP)::SelectObject(hMemDC,  hBitmap);
+    HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, m_hDibSection);
+
+	// Copy
+	if (::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY) == FALSE)
+		MessageBeep(0xFFFFFFFF);
+
+	// Get Colors from the DibSection
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+	{
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+#ifdef _WIN32_WCE
+		CEGetDIBColorTable(hCopyDC, 0, nColors, m_pColors);
+#else
+		::GetDIBColorTable(hMemDC, 0, nColors, m_pColors);
+#endif
+	}
+	else
+		m_pColors = NULL;
+	CreatePaletteFromBMI();
+
+	// Free up
+	::SelectObject(hMemDC, hOldMemBitmap);
+    ::SelectObject(hCopyDC, hOldCopyBitmap);
+	::SelectPalette(hMemDC, hOldMemPal, FALSE);
+	::SelectPalette(hCopyDC, hOldCopyPal, FALSE);
+    ::SelectPalette(hDC, hOldPal, FALSE);
+	::DeleteDC(hMemDC);
+	::DeleteDC(hCopyDC);
+	::ReleaseDC(NULL, hDC);
+
+    return TRUE;
+}
+
+BOOL CDib::BitsToDibSection(BOOL bForceNewDibSection/*=FALSE*/, BOOL bDeleteBits/*=TRUE*/)
+{
+	if (m_hDibSection && !bForceNewDibSection)
+		return TRUE;
+
+	if ((m_pBits == NULL) || (m_pBMI == NULL))
+		return FALSE;
+
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	// Uncompress because CreateDIBSection fails with compressed Bitmaps
+	if (IsCompressed())
+	{
+  		if (!Decompress(GetBitCount())) // Decompress
+			return FALSE;
+	}
+
+	// Create a DC which will be used to get DIB, then create DIBsection
+	HDC hDC = ::GetDC(NULL);
+	if (!hDC)
+		return FALSE;
+
+	// Create the DibSection
+	m_hDibSection = ::CreateDIBSection(	hDC, (const BITMAPINFO*)m_pBMI,
+										DIB_RGB_COLORS, (void**)&m_pDibSectionBits,
+										NULL, 0);
+	if (!m_hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::ReleaseDC(NULL, hDC);
+		m_pDibSectionBits = NULL;
+		return FALSE;
+	}
+	else
+		::ReleaseDC(NULL, hDC);
+
+	// Mem Copy
+	memcpy(m_pDibSectionBits, (void*)m_pBits, GetImageSize());
+
+	// Free?
+	if (bDeleteBits)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+		ResetColorUndo();
+	}
+
+    return TRUE;
+}
+
+#ifndef _WIN32_WCE
+BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection/*=TRUE*/)
+{
+	if (m_pBits && !bForceNewBits)
+		return TRUE;
+
+	if (!m_hDibSection || !m_pBMI)
+		return FALSE;
+
+#ifdef SUPPORT_MMBMP
+	UnMapBMP();
+#endif
+
+	if (m_pBits)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+	}
+	ResetColorUndo();
+
+	HDC hDC = ::GetDC(NULL);
+
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (!m_pBits)
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	if (m_pDibSectionBits)
+		memcpy(m_pBits, m_pDibSectionBits, m_dwImageSize);
+	else if (!::GetDIBits(hDC, m_hDibSection, 0, GetHeight(), m_pBits, m_pBMI, DIB_RGB_COLORS))
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	
+	::ReleaseDC(NULL, hDC);
+
+	if (bDeleteDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	return TRUE;
+}
+#else
+BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection/*=TRUE*/)
+{
+	if (m_pBits && !bForceNewBits)
+		return TRUE;
+
+	if (!m_hDibSection || !m_pBMI)
+		return FALSE;
+
+#ifdef SUPPORT_MMBMP
+	UnMapBMP();
+#endif
+
+	if (m_pBits)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+	}
+	ResetColorUndo();
+
+	HDC hDC = ::GetDC(NULL);
+
+	m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
+										m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+										MEM_COMMIT,
+										PAGE_READWRITE);
+	if (!m_pBits)
+	{
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	HANDLE hDibSection = ::CreateDIBSection(hDC, 
+											(const BITMAPINFO*)m_pBMI,
+											DIB_RGB_COLORS,
+											(void**)&m_pDibSectionBits, 
+											NULL,
+											0);
+	if (!hDibSection)
+	{
+		ShowLastError(_T("CreateDIBSection()"));
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Need to copy the supplied bitmap onto the newly created DIBsection
+    HDC hMemDC, hCopyDC;
+	hMemDC = ::CreateCompatibleDC(hDC);
+	hCopyDC = ::CreateCompatibleDC(hDC);
+
+	// Copy
+    HBITMAP hOldMemBitmap  = (HBITMAP)::SelectObject(hMemDC,  GetSafeHandle());
+    HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, hDibSection);
+	::BitBlt(hCopyDC, 0, 0, GetWidth(), GetHeight(), hMemDC, 0, 0, SRCCOPY);
+    
+	// Copy the Image Bits
+	memcpy((void*)m_pBits, m_pDibSectionBits, m_dwImageSize);
+
+	// Free up
+	::SelectObject(hMemDC, hOldMemBitmap);
+    ::SelectObject(hCopyDC, hOldCopyBitmap);
+	::DeleteDC(hMemDC);
+	::DeleteDC(hCopyDC);
+	::ReleaseDC(NULL, hDC);
+	::DeleteObject(hDibSection);
+
+	if (bDeleteDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+	
+	return TRUE;
+}
+#endif
+
+#ifndef _WIN32_WCE
+// Clipboard support
+void CDib::EditCopy() 
+{
+	if (::OpenClipboard(NULL))
+	{
+		::EmptyClipboard();
+		::SetClipboardData(CF_DIB, CopyToHandle());
+		::CloseClipboard();
+	}
+}
+
+void CDib::EditPaste(int XDpi/*=DEFAULT_DPI*/, int YDpi/*=DEFAULT_DPI*/)
+{
+	if (::OpenClipboard(NULL))
+	{
+		if (::IsClipboardFormatAvailable(CF_DIB))
+		{
+			HGLOBAL hDib = ::GetClipboardData(CF_DIB);
+			if (hDib)
+				CopyFromHandle(hDib);
+		}
+		else if (::IsClipboardFormatAvailable(CF_ENHMETAFILE))
+		{
+			HANDLE hData = NULL;
+			if (hData = ::GetClipboardData(CF_ENHMETAFILE))
+			{
+				// Check
+				if (XDpi <= 0)
+					XDpi = DEFAULT_DPI;
+				if (YDpi <= 0)
+					YDpi = DEFAULT_DPI;
+
+				// Get header
+				HENHMETAFILE hMeta = (HENHMETAFILE)hData;
+				ENHMETAHEADER emh;
+				::GetEnhMetaFileHeader(hMeta, sizeof(emh), &emh); 
+
+				// Specifies the dimensions, in .01 millimeter units which means 100 dots per millimeter
+				// -> convert to wanted dpi
+				int cx = (emh.rclFrame.right - emh.rclFrame.left) * XDpi / 2540;
+				int cy = (emh.rclFrame.bottom - emh.rclFrame.top) * YDpi / 2540;
+
+				// MemDC
+				HDC hDC0 = ::GetDC(NULL);					// screen dc
+				HDC	hMemDC = ::CreateCompatibleDC(hDC0);	// memory dc compatible with screen
+				HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC0, cx, cy);
+				::ReleaseDC(NULL, hDC0);					// don't needed anymore
+
+				// Render
+				if (hMemDC && hBitmap)
+				{
+					// Drawing rectangle
+					RECT rc = {0, 0, cx, cy};
+
+					// Select bitmap
+					HBITMAP hBitmapOld = (HBITMAP)::SelectObject(hMemDC, hBitmap);
+
+					// Paint Background
+					COLORREF crOldColor = ::SetBkColor(hMemDC, m_crBackgroundColor);
+					::ExtTextOut(hMemDC, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+					::SetBkColor(hMemDC, crOldColor);
+
+					// Play the Metafile into Memory DC
+					::PlayEnhMetaFile(hMemDC, hMeta, &rc);
+
+					// Restore old bitmap
+					::SelectObject(hMemDC, hBitmapOld);
+
+					// DDB -> CDib bits
+					SetBitsFromDDB(hBitmap, NULL);
+
+					// Set DPI
+					if (GetBMIH())
+					{
+						GetBMIH()->biXPelsPerMeter = (LONG)Round(XDpi * 100.0 / 2.54);
+						GetBMIH()->biYPelsPerMeter = (LONG)Round(YDpi * 100.0 / 2.54);
+					}
+				}
+
+				// Clean-Up
+				if (hBitmap)
+					::DeleteObject(hBitmap);
+				if (hMemDC)
+					::DeleteDC(hMemDC);
+			}
+		}
+		::CloseClipboard();
+	}
+}
+
+HGLOBAL CDib::CopyToHandle()
+{
+	CSharedFile file;
+	try
+	{
+#ifdef SUPPORT_BMP
+		if (SaveBMPNoFileHeader(file) == FALSE)
+			return NULL;
+#endif
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();
+		return NULL;
+	}
+		
+	return file.Detach();
+}
+
+HGLOBAL CDib::CopyFromHandle(HGLOBAL handle)
+{
+	CSharedFile file;
+	file.SetHandle(handle, FALSE);
+	try
+	{
+#ifdef SUPPORT_BMP
+		if (LoadBMPNoFileHeader(file) == FALSE)
+			return NULL;
+#endif
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();
+		return NULL;
+	}
+		
+	return file.Detach();
+}
+#endif
+
+CString CDib::GetCompressionName()
+{
+	CString sText;
+
+	if (!m_pBMI)
+		return _T("");
+
+	switch (m_pBMI->bmiHeader.biCompression)
+	{	
+		case BI_RGB :
+			if (m_pBMI->bmiHeader.biBitCount == 16)
+				sText = _T("RGB16 (555)");
+			else
+			{
+				if (m_bAlpha)
+					sText.Format(_T("RGBA%d"), m_pBMI->bmiHeader.biBitCount);
+				else
+					sText.Format(_T("RGB%d"), m_pBMI->bmiHeader.biBitCount);
+			}
+			return sText;
+		case BI_RLE8 :		
+			return _T("RLE8");
+		case BI_RLE4 :		
+			return _T("RLE4");
+		case BI_BITFIELDS :
+			if (m_pBMI->bmiHeader.biBitCount == 16)
+			{
+				LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
+				if ((pBmiBf->biBlueMask == 0x001F)	&&
+					(pBmiBf->biGreenMask == 0x07E0)	&&
+					(pBmiBf->biRedMask == 0xF800))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (565)");
+#else
+					sText = _T("RGB16 (565)");
+#endif
+				}
+				else if ((pBmiBf->biBlueMask == 0x001F)&&
+						(pBmiBf->biGreenMask == 0x03E0)&&
+						(pBmiBf->biRedMask == 0x7C00))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (555)");
+#else
+					sText = _T("RGB16 (555)");
+#endif
+				}
+				else
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16");
+#else	
+					sText = _T("RGB16");
+#endif
+				}
+			}
+			else
+			{
+				if (m_bAlpha)
+				{
+#ifdef _DEBUG
+					sText.Format(_T("BITFIELDSA%d"), m_pBMI->bmiHeader.biBitCount);
+#else
+					sText.Format(_T("RGBA%d"), m_pBMI->bmiHeader.biBitCount);
+#endif
+				}
+				else
+				{
+#ifdef _DEBUG
+					sText.Format(_T("BITFIELDS%d"), m_pBMI->bmiHeader.biBitCount);
+#else
+					sText.Format(_T("RGB%d"), m_pBMI->bmiHeader.biBitCount);
+#endif
+				}
+			}
+			return sText;
+		case BI_JPEG :
+			return _T("JPEG");
+		default : 
+		{
+			char ch0 = (char)(m_pBMI->bmiHeader.biCompression & 0xFF);
+			char ch1 = (char)((m_pBMI->bmiHeader.biCompression >> 8) & 0xFF);
+			char ch2 = (char)((m_pBMI->bmiHeader.biCompression >> 16) & 0xFF);
+			char ch3 = (char)((m_pBMI->bmiHeader.biCompression >> 24) & 0xFF);
+#ifdef _UNICODE
+			WCHAR wch0, wch1, wch2, wch3;
+			mbtowc(&wch0, &ch0, sizeof(WCHAR));
+			mbtowc(&wch1, &ch1, sizeof(WCHAR));
+			mbtowc(&wch2, &ch2, sizeof(WCHAR));
+			mbtowc(&wch3, &ch3, sizeof(WCHAR));
+			return (CString(wch0) + CString(wch1) + CString(wch2) + CString(wch3));
+#else
+			return (CString(ch0) + CString(ch1) + CString(ch2) + CString(ch3));
+#endif
+		}
+	}
+}
+
+CString CDib::GetCompressionName(LPBITMAPINFO pBMI)
+{
+	CString sText;
+
+	if (!pBMI)
+		return _T("");
+
+	switch (pBMI->bmiHeader.biCompression)
+	{	
+		case BI_RGB :
+			if (pBMI->bmiHeader.biBitCount == 16)
+				sText = _T("RGB16 (555)");
+			else
+				sText.Format(_T("RGB%d"), pBMI->bmiHeader.biBitCount);
+			return sText;
+		case BI_RLE8 :		
+			return _T("RLE8");
+		case BI_RLE4 :		
+			return _T("RLE4");
+		case BI_BITFIELDS :
+			if (pBMI->bmiHeader.biBitCount == 16)
+			{
+				LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)pBMI;
+				if ((pBmiBf->biBlueMask == 0x001F)	&&
+					(pBmiBf->biGreenMask == 0x07E0)	&&
+					(pBmiBf->biRedMask == 0xF800))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (565)");
+#else
+					sText = _T("RGB16 (565)");
+#endif
+				}
+				else if ((pBmiBf->biBlueMask == 0x001F)&&
+						(pBmiBf->biGreenMask == 0x03E0)&&
+						(pBmiBf->biRedMask == 0x7C00))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (555)");
+#else
+					sText = _T("RGB16 (555)");
+#endif
+				}
+				else
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16");
+#else	
+					sText = _T("RGB16");
+#endif
+				}
+			}
+			else
+			{
+#ifdef _DEBUG
+				sText.Format(_T("BITFIELDS%d"), pBMI->bmiHeader.biBitCount);
+#else
+				sText.Format(_T("RGB%d"), pBMI->bmiHeader.biBitCount);
+#endif	
+			}
+			return sText;
+		case BI_JPEG :
+			return _T("JPEG");
+		default : 
+		{
+			char ch0 = (char)(pBMI->bmiHeader.biCompression & 0xFF);
+			char ch1 = (char)((pBMI->bmiHeader.biCompression >> 8) & 0xFF);
+			char ch2 = (char)((pBMI->bmiHeader.biCompression >> 16) & 0xFF);
+			char ch3 = (char)((pBMI->bmiHeader.biCompression >> 24) & 0xFF);
+#ifdef _UNICODE
+			WCHAR wch0, wch1, wch2, wch3;
+			mbtowc(&wch0, &ch0, sizeof(WCHAR));
+			mbtowc(&wch1, &ch1, sizeof(WCHAR));
+			mbtowc(&wch2, &ch2, sizeof(WCHAR));
+			mbtowc(&wch3, &ch3, sizeof(WCHAR));
+			return (CString(wch0) + CString(wch1) + CString(wch2) + CString(wch3));
+#else
+			return (CString(ch0) + CString(ch1) + CString(ch2) + CString(ch3));
+#endif
+		}
+	}
+}
+
+BOOL CDib::Decompress(int nToBitsPerPixel)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!DibSectionToBits())
+		return FALSE;
+
+	if (!m_pBits)
+		return FALSE;
+
+	// RLE?
+	if ((GetBitCount() <= 8)							&&
+		((m_pBMI->bmiHeader.biCompression == BI_RLE4)	||
+		(m_pBMI->bmiHeader.biCompression == BI_RLE8)))
+	{
+		if (DecompressRLE())
+		{
+			if (GetBitCount() == nToBitsPerPixel)
+				return TRUE;
+			else
+				return ConvertTo(nToBitsPerPixel);
+		}
+		else
+			return FALSE;
+	}
+
+	// If not compressed return wished Bpp
+	if (m_pBMI->bmiHeader.biCompression == BI_RGB ||
+		m_pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+	{
+		if (GetBitCount() == nToBitsPerPixel)
+			return TRUE;
+		else
+			return ConvertTo(nToBitsPerPixel);
+	}
+
+	// YUV Decode?
+	if (::IsSupportedYuvToRgbFormat(m_pBMI->bmiHeader.biCompression))	
+	{
+		// New Image Size
+		m_dwImageSize = DWALIGNEDWIDTHBYTES(24 * GetWidth()) * GetHeight();
+
+		// Allocate
+		LPBITMAPINFO pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+		if (!pBMI)
+			return FALSE;
+		LPBYTE pBits = (LPBYTE)::VirtualAlloc(	NULL,
+												m_dwImageSize + SAFETY_BITALLOC_MARGIN,
+												MEM_COMMIT,
+												PAGE_READWRITE);
+		if (!pBits)
+		{
+			delete [] pBMI;
+			return FALSE;
+		}
+
+		// BMIH
+		pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		pBMI->bmiHeader.biWidth = GetWidth();
+		pBMI->bmiHeader.biHeight = GetHeight();
+		pBMI->bmiHeader.biPlanes = 1;
+		pBMI->bmiHeader.biBitCount = 24;
+		pBMI->bmiHeader.biCompression = BI_RGB;
+		pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+		pBMI->bmiHeader.biXPelsPerMeter = 0;
+		pBMI->bmiHeader.biYPelsPerMeter = 0;
+		pBMI->bmiHeader.biClrUsed = 0;
+		pBMI->bmiHeader.biClrImportant = 0;
+		m_pColors = NULL;
+
+		// Decompress
+		::YUVToRGB24(	m_pBMI->bmiHeader.biCompression,
+						m_pBits,	// YUV format depending from Compression Type
+						pBits,		// RGB24 Dib
+						GetWidth(),
+						GetHeight());
+
+		// Free
+		if (m_pBMI)
+		{
+			delete [] m_pBMI;
+			m_pBMI = NULL;
+		}
+		if (m_pBits)
+		{
+			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			m_pBits = NULL;
+		}
+		ResetColorUndo();
+		if (m_pPalette)
+		{
+			m_pPalette->DeleteObject();
+			delete m_pPalette;
+			m_pPalette = NULL;
+		}
+		if (m_hDibSection)
+		{
+			::DeleteObject(m_hDibSection);
+			m_hDibSection = NULL;
+			m_pDibSectionBits = NULL;
+		}
+
+		// Set Pointer
+		m_pBMI = pBMI;
+		m_pBits = pBits;
+
+		// Convert to the wished Bpp
+		if (GetBitCount() == nToBitsPerPixel)
+			return TRUE;
+		else
+			return ConvertTo(nToBitsPerPixel);
+	}
+	// Try to Decode with DrawDib()
+	else
+	{
+		// Get Display dc
+		HDC hDC = ::GetDC(NULL);
+			
+		// Create mem dc 
+		HDC hTmpDC = ::CreateCompatibleDC(hDC);
+
+		// Create a new (uncompressed) dibsection and select it in to the memory dc
+		LPBITMAPINFO pBMI = (LPBITMAPINFO)new BYTE[GetBMISize()];
+		if (pBMI == NULL)
+		{
+			::DeleteDC(hTmpDC);
+			::ReleaseDC(NULL, hDC);
+			return FALSE;
+		}
+		memcpy(pBMI, m_pBMI, GetBMISize());
+		pBMI->bmiHeader.biBitCount = nToBitsPerPixel;
+		pBMI->bmiHeader.biCompression = BI_RGB;
+		DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(pBMI->bmiHeader.biWidth * pBMI->bmiHeader.biBitCount);
+		pBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * pBMI->bmiHeader.biHeight;
+		LPBYTE pBits = NULL;
+		HBITMAP hTmpDib = ::CreateDIBSection(	hTmpDC,
+												(const BITMAPINFO*)pBMI,
+												DIB_RGB_COLORS,
+												(void**)&pBits,
+												NULL, 0);
+		if (!hTmpDib)
+		{
+			ShowLastError(_T("CreateDIBSection()"));
+			delete [] pBMI;
+			::DeleteDC(hTmpDC);
+			::ReleaseDC(NULL, hDC);
+			return FALSE;
+		}
+
+		// Select Bitmap into mem dc
+		HGDIOBJ hOldBitmap = ::SelectObject(hTmpDC, hTmpDib);
+
+		// Draw to mem dc (=draw to selected bitmap)
+		HDRAWDIB hDrawDib = ::DrawDibOpen();
+		BOOL res = ::DrawDibDraw(	hDrawDib,         
+									hTmpDC,               
+									0,
+									0,
+									m_pBMI->bmiHeader.biWidth,
+									m_pBMI->bmiHeader.biHeight,       
+									(LPBITMAPINFOHEADER)m_pBMI,
+									m_pBits,
+									0,		
+									0,
+									m_pBMI->bmiHeader.biWidth,
+									m_pBMI->bmiHeader.biHeight,               
+									0);
+		::DrawDibClose(hDrawDib);
+
+		// Clean-up
+		::SelectObject(hTmpDC, hOldBitmap);
+		::DeleteDC(hTmpDC);
+		::ReleaseDC(NULL, hDC);
+		
+		// Check Result
+		if (!res)
+		{
+			delete [] pBMI;
+			return FALSE;
+		}
+		
+		// Init New Dibsection
+		Free();
+		m_pBMI = pBMI;
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		else
+			m_pColors = NULL;
+		CreatePaletteFromBMI();
+		m_hDibSection = hTmpDib;
+		m_pDibSectionBits = pBits;
+		m_dwImageSize = pBMI->bmiHeader.biSizeImage;
+		InitMasks();
+
+		// DibSection To Bits and return wished Bpp
+		if (DibSectionToBits(TRUE, TRUE))
+		{
+			// Convert to the wished Bpp
+			if (GetBitCount() == nToBitsPerPixel)
+				return TRUE;
+			else
+				return ConvertTo(nToBitsPerPixel);
+		}
+		else
+			return FALSE;
+	}
+}
+
+BOOL CDib::Compress(DWORD dwFourCC, int stride/*=0*/)
+{
+	// Already RGB?
+	if (dwFourCC == BI_RGB || dwFourCC == GetCompression())
+		return TRUE;
+	// Compress to RLE?
+	else if (	(dwFourCC == BI_RLE4) ||
+				(dwFourCC == BI_RLE8))
+		return CompressRLE(dwFourCC);
+	else if (!::IsSupportedRgbToYuvFormat(dwFourCC))
+		return FALSE;
+
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!DibSectionToBits())
+		return FALSE;
+
+	if (!m_pBits)
+		return FALSE;
+
+	// To RGB
+	if (IsCompressed())
+	{
+  		if (!Decompress(32))
+			return FALSE;
+	}
+	else if (GetBitCount() != 32 && GetBitCount() != 24)
+	{
+		if (!ConvertTo32bits())
+			return FALSE;
+	}
+
+	// FourCC to Bpp
+	int nBpp = ::FourCCToBpp(dwFourCC);
+	
+	// Set Stride if not set
+	if (stride <= 0)
+		stride = ::CalcYUVStride(dwFourCC, GetWidth());
+
+	// Allocate BMI
+	LPBITMAPINFO pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
+	if (!pBMI)
+		return FALSE;
+	pBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pBMI->bmiHeader.biWidth = GetWidth();
+	pBMI->bmiHeader.biHeight = GetHeight();
+	pBMI->bmiHeader.biPlanes = 1;
+	pBMI->bmiHeader.biBitCount = nBpp;
+	pBMI->bmiHeader.biCompression = dwFourCC;
+	pBMI->bmiHeader.biSizeImage = ::CalcYUVSize(dwFourCC, stride, GetHeight());
+	pBMI->bmiHeader.biXPelsPerMeter = 0;
+	pBMI->bmiHeader.biYPelsPerMeter = 0;
+	pBMI->bmiHeader.biClrUsed = 0;
+	pBMI->bmiHeader.biClrImportant = 0;
+
+	// Allocate Bits
+	LPBYTE pBits = (LPBYTE)::VirtualAlloc(	NULL,
+											pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	if (!pBits)
+	{
+		delete [] pBMI;
+		return FALSE;
+	}
+
+	// Compress
+	if (GetBitCount() == 32)
+	{
+		if (!::RGB32ToYUV(	dwFourCC,
+							m_pBits,	// RGB32 Dib
+							pBits,		// YUV format depending from dwFourCC
+							GetWidth(),
+							GetHeight(),
+							stride))
+		{
+			delete [] pBMI;
+			::VirtualFree((LPVOID)pBits, 0, MEM_RELEASE);
+			return FALSE;
+		}
+	}
+	else
+	{
+		if (!::RGB24ToYUV(	dwFourCC,
+							m_pBits,	// RGB24 Dib
+							pBits,		// YUV format depending from dwFourCC
+							GetWidth(),
+							GetHeight(),
+							stride))
+		{
+			delete [] pBMI;
+			::VirtualFree((LPVOID)pBits, 0, MEM_RELEASE);
+			return FALSE;
+		}
+	}
+
+	// Image Size
+	m_dwImageSize = pBMI->bmiHeader.biSizeImage;
+
+	// Free
+	if (m_pBMI)
+	{
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+	}
+	if (m_pBits)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+	}
+	ResetColorUndo();
+	if (m_pPalette)
+	{
+		m_pPalette->DeleteObject();
+		delete m_pPalette;
+		m_pPalette = NULL;
+	}
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+
+	// Set Pointer
+	m_pBMI = pBMI;
+	m_pBits = pBits;
+
+	return TRUE;
+}
+
+__forceinline int CDib::MakeRLE8Scanline(	BYTE* UnencodedBuffer,	// Pointer to buffer holding unencoded scan line
+											BYTE* EncodedBuffer,		// Pointer to buffer to hold encoded scan line
+											int nWidth)				// The length of a scan line in pixels
+{
+	BOOL bDoExit;
+    int	nUnencRunCount;	// The number of pixels in the current unencoded run
+    int	nEncRunCount;	// The number of pixels in the current encoded run
+    int	nUnencPos;		// The index of UnencodedBuffer
+	int	nEncPos;		// The index of EncodedBuffer
+
+	// Init Vars
+    nUnencPos = 0;
+	nEncPos = 0;
+
+    for (;;)
+    {
+		// Check For Encoded Run
+        nEncRunCount = 1;
+		while (((nUnencPos + nEncRunCount) < nWidth) &&
+				UnencodedBuffer[nUnencPos] == UnencodedBuffer[nUnencPos + nEncRunCount])
+		{
+			nEncRunCount++;
+		}
+		bDoExit = (nUnencPos + nEncRunCount) >= nWidth;
+		
+		// Encoded Run(s)
+		if (bDoExit || (nEncRunCount > 1)) 
+		{
+            while (nEncRunCount >= 256)
+			{
+				EncodedBuffer[nEncPos++] = 255;							// Number of pixels in run
+				EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos];	// The Pixel
+				nEncRunCount -= 255;
+				nUnencPos += 255;
+			}
+			if (nEncRunCount > 0)
+			{
+				EncodedBuffer[nEncPos++] = nEncRunCount;				// Number of pixels in run
+				EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos];	// The Pixel
+				nUnencPos += nEncRunCount;
+			}
+
+			if (bDoExit)
+			{
+				EncodedBuffer[nEncPos++] = 0;          
+				EncodedBuffer[nEncPos++] = 0;
+				return nEncPos;
+			}
+		}
+		else
+		{
+			// Check For Unencoded Run
+			nUnencRunCount = 2;
+			BOOL bCurrentSame;
+			BOOL bLastSame = FALSE;
+			BOOL bLastLastSame = FALSE;
+			BOOL bLastLastLastSame = FALSE;
+			while (!(bDoExit = ((nUnencPos + nUnencRunCount) >= nWidth)))
+			{
+				bCurrentSame = UnencodedBuffer[nUnencPos + nUnencRunCount - 1] ==
+											UnencodedBuffer[nUnencPos + nUnencRunCount];
+				if (bCurrentSame		&&
+					bLastSame			&&
+					bLastLastSame		&&
+					bLastLastLastSame)
+				{
+					nUnencRunCount -= 4;
+					break;
+				}
+				bLastLastLastSame = bLastLastSame;
+				bLastLastSame = bLastSame;
+				bLastSame = bCurrentSame;
+				nUnencRunCount++;
+			}
+
+			// Unencoded Run(s)
+			if (nUnencRunCount >= 3)
+			{
+				while (nUnencRunCount >= 256)
+				{
+					int nCountDown = 255;
+					EncodedBuffer[nEncPos++] = 0;	// Unencoded run indicator
+					EncodedBuffer[nEncPos++] = 255;	// 255 pixels in run
+					while (nCountDown--)
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++]; // The Pixel
+					EncodedBuffer[nEncPos++] = 0;	// Padding
+					nUnencRunCount -= 255;
+				}
+				if (nUnencRunCount >= 3)
+				{
+					BOOL bPad = ((nUnencRunCount & 0x1) == 0x1);
+					EncodedBuffer[nEncPos++] = 0;				// Unencoded run indicator
+					EncodedBuffer[nEncPos++] = nUnencRunCount;	// Number of pixels in run
+					while (nUnencRunCount--)
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++]; // The Pixel
+					if (bPad)
+						EncodedBuffer[nEncPos++] = 0;
+				}
+				else
+				{
+					while (nUnencRunCount--)
+					{
+						EncodedBuffer[nEncPos++] = 1;							// One pixels in run
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++];// The Pixel
+					}
+				}
+			}
+			else
+			{
+				while (nUnencRunCount--)
+				{
+					EncodedBuffer[nEncPos++] = 1;							// One pixels in run
+					EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++];// The Pixel
+				}
+			}
+
+			if (bDoExit)
+			{
+				EncodedBuffer[nEncPos++] = 0;          
+				EncodedBuffer[nEncPos++] = 0;
+				return nEncPos;
+			}
+		}
+    }
+
+    return -1;
+}
+
+__forceinline int CDib::MakeRLE4Scanline(	BYTE* UnencodedBuffer,	// Pointer to buffer holding unencoded scan line
+											BYTE* EncodedBuffer,		// Pointer to buffer to hold encoded scan line
+											int nWidth)				// The length of a scan line in pixels
+{
+	BOOL bDoExit;
+	BOOL bOddWidth;
+    int	nUnencRunCount;	// The number of pixels in the current unencoded run
+    int	nEncRunCount;	// The number of pixels in the current encoded run
+    int	nUnencPos;		// The index of UnencodedBuffer
+	int	nEncPos;		// The index of EncodedBuffer
+	int	nScanLineBytes;	// Rounded-up bytes for the scan line
+	int nLastPixelCountPos;	// Used to adjust the pixel count for odd sized scan lines
+
+	// Init Vars
+    nUnencPos = 0;
+	nEncPos = 0;
+	bOddWidth = ((nWidth & 0x1) == 0x1);
+	nScanLineBytes = nWidth / 2;
+	if (bOddWidth)
+		nScanLineBytes++;
+
+    for (;;)
+    {
+		// Check For Encoded Run
+        nEncRunCount = 1;
+		while (((nUnencPos + nEncRunCount) < nScanLineBytes) &&
+				UnencodedBuffer[nUnencPos] == UnencodedBuffer[nUnencPos + nEncRunCount])
+		{
+			nEncRunCount++;
+		}
+		bDoExit = (nUnencPos + nEncRunCount) >= nScanLineBytes;
+		
+		// Encoded Run(s)
+		if (bDoExit || (nEncRunCount > 1)) 
+		{
+            while (nEncRunCount >= 128)
+			{
+				nLastPixelCountPos = nEncPos;
+				EncodedBuffer[nEncPos++] = 254;	// Number of pixels in run
+				EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos];	// The Pixel
+				nEncRunCount -= 127;
+				nUnencPos += 127;
+			}
+			if (nEncRunCount > 0)
+			{
+				nLastPixelCountPos = nEncPos;
+				EncodedBuffer[nEncPos++] = 2 * nEncRunCount;			// Number of pixels in run
+				EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos];	// The Pixel
+				nUnencPos += nEncRunCount;
+			}
+
+			if (bDoExit)
+			{
+				// Dec. pixel count by one for odd sized scan lines
+				if (bOddWidth)
+					EncodedBuffer[nLastPixelCountPos]--;
+
+				EncodedBuffer[nEncPos++] = 0;          
+				EncodedBuffer[nEncPos++] = 0;
+				return nEncPos;
+			}
+		}
+		else
+		{
+			// Check For Unencoded Run
+			nUnencRunCount = 2;
+			BOOL bCurrentSame;
+			BOOL bLastSame = FALSE;
+			BOOL bLastLastSame = FALSE;
+			BOOL bLastLastLastSame = FALSE;
+			while (!(bDoExit = ((nUnencPos + nUnencRunCount) >= nScanLineBytes)))
+			{
+				bCurrentSame = UnencodedBuffer[nUnencPos + nUnencRunCount - 1] ==
+											UnencodedBuffer[nUnencPos + nUnencRunCount];
+				if (bCurrentSame		&&
+					bLastSame			&&
+					bLastLastSame		&&
+					bLastLastLastSame)
+				{
+					nUnencRunCount -= 4;
+					break;
+				}
+				bLastLastLastSame = bLastLastSame;
+				bLastLastSame = bLastSame;
+				bLastSame = bCurrentSame;
+				nUnencRunCount++;
+			}
+
+			// Unencoded Run(s)
+			if (nUnencRunCount >= 3)
+			{
+				while (nUnencRunCount >= 128)
+				{
+					int nCountDown = 127;
+					EncodedBuffer[nEncPos++] = 0;	// Unencoded run indicator
+					nLastPixelCountPos = nEncPos;
+					EncodedBuffer[nEncPos++] = 254;	// Number of pixels in run
+					while (nCountDown--)
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++]; // The Pixels
+					EncodedBuffer[nEncPos++] = 0;	// Padding
+					nUnencRunCount -= 127;
+				}
+				if (nUnencRunCount >= 3)
+				{
+					BOOL bPad = ((nUnencRunCount & 0x1) == 0x1);
+					EncodedBuffer[nEncPos++] = 0;					// Unencoded run indicator
+					nLastPixelCountPos = nEncPos;
+					EncodedBuffer[nEncPos++] = 2 * nUnencRunCount;	// Number of pixels in run
+					while (nUnencRunCount--)
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++]; // The Pixel
+					if (bPad)
+						EncodedBuffer[nEncPos++] = 0;
+				}
+				else
+				{
+					while (nUnencRunCount--)
+					{
+						nLastPixelCountPos = nEncPos;
+						EncodedBuffer[nEncPos++] = 2;							// Two pixels in run
+						EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++];// The Pixel
+					}
+				}
+			}
+			else
+			{
+				while (nUnencRunCount--)
+				{
+					nLastPixelCountPos = nEncPos;
+					EncodedBuffer[nEncPos++] = 2;							// Two pixels in run
+					EncodedBuffer[nEncPos++] = UnencodedBuffer[nUnencPos++];// The Pixel
+				}
+			}
+
+			if (bDoExit)
+			{
+				// Dec. pixel count by one for odd sized scan lines
+				if (bOddWidth)
+					EncodedBuffer[nLastPixelCountPos]--;
+
+				EncodedBuffer[nEncPos++] = 0;          
+				EncodedBuffer[nEncPos++] = 0;
+				return nEncPos;
+			}
+		}
+    }
+
+    return -1;
+}
+
+/*
+This function encodes raw BMP data into 4-bit or 8-bit BMP RLE data.
+Delta escape sequences are not included in the encoding.
+
+Pixels are either 4-bits or 8-bits in size. The nCompression parameter
+indicates the size with a value of BI_RLE4 or BI_RLE8.
+
+For 4-bit pixels the MSN (Most Significant Nibble) is the first pixel
+value and the LSN (Least Significant Nibble) is the second pixel value.
+This particular algorithm encodes 4-bit per pixel data two nibbles at a time.
+In other words, if you had the raw run "11 11 15" only first four nibbles
+would be encoded in the run.  The fifth nibble would be treated part of
+the next run. Not the most efficient scheme, but it simplifies the
+algorithm by not needing to tear apart bytes into separate nibble values.
+*/
+BOOL CDib::CompressRLE(int nCompression)
+{
+	// Check
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!DibSectionToBits())
+		return FALSE;
+
+	if (IsCompressed())
+#ifndef _WIN32_WCE
+		if (!Decompress((nCompression == BI_RLE4) ? 4 : 8)) // Decompress
+				return FALSE;
+#else
+		return FALSE;
+#endif
+
+	if (!m_pBits)
+		return FALSE;
+
+	if ((nCompression != BI_RLE4) && (nCompression != BI_RLE8))
+		return FALSE;
+
+	// Make sure we have the right Bpp
+	if ((nCompression == BI_RLE4) && (GetBitCount() != 4))
+		ConvertTo(4);
+	else if ((nCompression == BI_RLE8) && (GetBitCount() != 8))
+		ConvertTo(8);
+
+	// Source Scan Line Size
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
+
+	// Allocate BMI
+	LPBITMAPINFO lpBMI;
+	if (nCompression == BI_RLE8)
+	{
+		lpBMI = (LPBITMAPINFO)new BYTE[m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 256];
+		if (!lpBMI)
+			return FALSE;
+		memset(lpBMI, 0, m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 256);
+		DWORD dwCopySize = MIN(m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 256, GetBMISize());
+		memcpy((void*)lpBMI, (void*)m_pBMI, dwCopySize);
+		lpBMI->bmiHeader.biCompression = BI_RLE8;
+		lpBMI->bmiHeader.biBitCount = 8;
+	}
+	else // BI_RLE4
+	{
+		lpBMI = (LPBITMAPINFO)new BYTE[m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 16];
+		if (!lpBMI)
+			return FALSE;
+		memset(lpBMI, 0, m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 16);
+		DWORD dwCopySize = MIN(m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 16, GetBMISize());
+		memcpy((void*)lpBMI, (void*)m_pBMI, dwCopySize);
+		lpBMI->bmiHeader.biCompression = BI_RLE4;
+		lpBMI->bmiHeader.biBitCount = 4;
+	}
+	
+	// Allocate Bits
+	LPBYTE lpBits = (LPBYTE)::VirtualAlloc(	NULL,
+											2 * GetImageSize() + SAFETY_BITALLOC_MARGIN, // Be Safe!
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	if (!lpBits)
+	{
+		delete [] lpBMI;
+		return FALSE;
+	}
+
+	// Encode
+	DWORD dwImageSize = 0;
+	BYTE* pSrcBuf = GetBits();
+	BYTE* pDstBuf = lpBits;
+	if (nCompression == BI_RLE8)
+	{
+		for (int line = 0 ; line < (int)GetHeight() ; line++)
+		{
+			int res = MakeRLE8Scanline(	pSrcBuf,			// Pointer to buffer holding unencoded scan line
+										pDstBuf,			// Pointer to buffer to hold encoded scan line
+										GetWidth());		// The length of a scan line in pixels					
+			if (res < 0)
+			{
+				delete [] lpBMI;
+				::VirtualFree((LPVOID)lpBits, 0, MEM_RELEASE);
+				return FALSE;
+			}
+			else
+			{
+				pDstBuf += res;
+				dwImageSize += res;
+				pSrcBuf += uiDIBScanLineSize;
+			}
+		}
+	}
+	else
+	{
+		for (int line = 0 ; line < (int)GetHeight() ; line++)
+		{
+			int res = MakeRLE4Scanline(	pSrcBuf,			// Pointer to buffer holding unencoded scan line
+										pDstBuf,			// Pointer to buffer to hold encoded scan line
+										GetWidth());		// The length of a scan line in pixels
+			if (res < 0)
+			{
+				delete [] lpBMI;
+				::VirtualFree((LPVOID)lpBits, 0, MEM_RELEASE);
+				return FALSE;
+			}
+			else
+			{
+				pDstBuf += res;
+				dwImageSize += res;
+				pSrcBuf += uiDIBScanLineSize;
+			}
+		}
+
+	}
+
+	// Write the End of Bitmap Escape Code over the
+	// last End of Scanline Escape Code
+	pDstBuf -= 2;
+	pDstBuf[0] = 0;          
+	pDstBuf[1] = 1;
+	
+	// Free
+	Free();
+
+	// Set Image Size
+	m_dwImageSize = dwImageSize;
+	lpBMI->bmiHeader.biSizeImage = dwImageSize;
+
+	// Set Pointers
+	m_pBMI = lpBMI;
+	m_pBits = lpBits;
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	return TRUE;
+}
+
+const int RLE_COMMAND     = 0;
+const int RLE_ENDOFLINE   = 0;
+const int RLE_ENDOFBITMAP = 1;
+const int RLE_DELTA       = 2;
+
+BOOL CDib::DecompressRLE8(CDib* pBackgroundDib/*=NULL*/)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_pBits)
+		return FALSE;
+
+	// Only Supported for BI_RLE8
+	if (m_pBMI->bmiHeader.biCompression != BI_RLE8	&&
+		m_pBMI->bmiHeader.biCompression != FCC('RLE8'))
+		return FALSE;
+
+	// Allocate and prepare new BMI
+	LPBITMAPINFO lpBMI = (LPBITMAPINFO)new BYTE[GetBMISize()];
+	if (!lpBMI)
+		return FALSE;
+	memcpy((void*)lpBMI, (void*)m_pBMI, GetBMISize());
+	lpBMI->bmiHeader.biCompression = BI_RGB;
+	lpBMI->bmiHeader.biBitCount = 8;
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(lpBMI->bmiHeader.biWidth * lpBMI->bmiHeader.biBitCount);
+	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
+
+	// Allocate Bits
+	LPBYTE lpUnencBitsStart = (LPBYTE)::VirtualAlloc(NULL,
+													lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
+													MEM_COMMIT,
+													PAGE_READWRITE);
+	if (!lpUnencBitsStart)
+	{
+		delete [] lpBMI;
+		return FALSE;
+	}
+	LPBYTE lpUnencBitsEnd = lpUnencBitsStart + lpBMI->bmiHeader.biSizeImage;
+	if (pBackgroundDib && pBackgroundDib->IsValid())
+	{
+		memcpy(	lpUnencBitsStart,
+				pBackgroundDib->GetBits(),
+				MIN(pBackgroundDib->GetImageSize(), lpBMI->bmiHeader.biSizeImage));
+	}
+	else
+		memset(lpUnencBitsStart, 0, lpBMI->bmiHeader.biSizeImage); // In case of Delta Commands background is index 0
+
+	// Decode
+	BYTE StatusByte = 0;
+	BYTE SecondByte = 0;
+	LPBYTE lpUnencBits = lpUnencBitsStart;
+	int nEncPos = 0;
+	int nUnencPos = 0;
+	BOOL bContinue = TRUE;
+	while (bContinue)
+	{
+		if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)
+			StatusByte = m_pBits[nEncPos++];
+		else
+			break;
+		switch (StatusByte)
+		{
+			case RLE_COMMAND :
+				if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)				// Check Input
+				{
+					StatusByte = m_pBits[nEncPos++];
+					switch (StatusByte)
+					{
+						case RLE_ENDOFLINE :
+						{
+							nUnencPos = 0;
+							lpUnencBits += uiDIBScanLineSize;
+							if (lpUnencBits >= lpUnencBitsEnd)					// Check Output
+								bContinue = FALSE;
+							break;
+						}
+
+						case RLE_ENDOFBITMAP :
+						{
+							bContinue = FALSE;
+							break;
+						}
+
+						case RLE_DELTA :
+						{
+							// Read the delta values
+							int nDeltaX = 0;
+							int nDeltaY = 0;
+							if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+								nDeltaX = m_pBits[nEncPos++];
+							else
+								bContinue = FALSE;
+							if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+								nDeltaY = m_pBits[nEncPos++];
+							else
+								bContinue = FALSE;
+							
+							// Apply X
+							nUnencPos += nDeltaX;
+							if (nUnencPos >= lpBMI->bmiHeader.biWidth)			// Check Output
+								break;
+
+							// Apply Y
+							lpUnencBits += nDeltaY * uiDIBScanLineSize;
+							if (lpUnencBits >= lpUnencBitsEnd)					// Check Output
+								bContinue = FALSE;
+
+							break;
+						}
+
+						// Unencoded Run
+						default :
+						{
+							if (nEncPos + StatusByte <= (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+							{
+								if (nUnencPos + StatusByte <= lpBMI->bmiHeader.biWidth)		// Check Output
+								{
+									memcpy(&lpUnencBits[nUnencPos], &m_pBits[nEncPos], StatusByte);
+									nEncPos += StatusByte;
+									nUnencPos += StatusByte;
+									
+									// Align run length to even number of bytes 
+									if ((StatusByte & 1) == 1)
+										nEncPos++;
+								}
+								else
+									break;
+							}
+							else
+								bContinue = FALSE;
+							
+							break;
+						}
+					}
+				}
+				else
+					bContinue = FALSE;
+
+				break;
+
+			// Encoded Run
+			default :
+				if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)			// Check Input
+				{
+					SecondByte = m_pBits[nEncPos++];
+					if (nUnencPos + StatusByte <= lpBMI->bmiHeader.biWidth)	// Check Output
+					{
+						memset(&lpUnencBits[nUnencPos], SecondByte, StatusByte);
+						nUnencPos += StatusByte;
+					}
+					else
+						break;
+				}
+				else
+					bContinue = FALSE;
+
+				break;
+		}
+	}
+
+	// Clean-Up
+	Free();
+
+	// Set Pointers
+	m_pBMI = lpBMI;
+	m_pBits = lpUnencBitsStart;
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+
+	// Set Size
+	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	return TRUE;
+}
+
+BOOL CDib::DecompressRLE4(CDib* pBackgroundDib/*=NULL*/)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!m_pBits)
+		return FALSE;
+
+	// Only Supported for BI_RLE4
+	if (m_pBMI->bmiHeader.biCompression != BI_RLE4 &&
+		m_pBMI->bmiHeader.biCompression != FCC('RLE4'))
+		return FALSE;
+
+	// Allocate and prepare new BMI
+	LPBITMAPINFO lpBMI = (LPBITMAPINFO)new BYTE[GetBMISize()];
+	if (!lpBMI)
+		return FALSE;
+	memcpy((void*)lpBMI, (void*)m_pBMI, GetBMISize());
+	lpBMI->bmiHeader.biCompression = BI_RGB;
+	lpBMI->bmiHeader.biBitCount = 4;
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(lpBMI->bmiHeader.biWidth * lpBMI->bmiHeader.biBitCount);
+	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
+
+	// Allocate Bits
+	LPBYTE lpUnencBitsStart = (LPBYTE)::VirtualAlloc(NULL,
+													lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
+													MEM_COMMIT,
+													PAGE_READWRITE);
+	if (!lpUnencBitsStart)
+	{
+		delete [] lpBMI;
+		return FALSE;
+	}
+	LPBYTE lpUnencBitsEnd = lpUnencBitsStart + lpBMI->bmiHeader.biSizeImage;
+	if (pBackgroundDib && pBackgroundDib->IsValid())
+	{
+		memcpy(	lpUnencBitsStart,
+				pBackgroundDib->GetBits(),
+				MIN(pBackgroundDib->GetImageSize(), lpBMI->bmiHeader.biSizeImage));
+	}
+	else
+		memset(lpUnencBitsStart, 0, lpBMI->bmiHeader.biSizeImage); // In case of Delta Commands background is index 0
+
+	// Decode
+	BYTE StatusByte = 0;
+	BYTE SecondByte = 0;
+	LPBYTE lpUnencBits = lpUnencBitsStart;
+	int nEncPos = 0;
+	int nUnencPos = 0;
+	int nUnencScanLineBytes = GetWidth() / 2;
+	if (((GetWidth() & 0x1) == 0x1)) // If odd width
+		nUnencScanLineBytes++;
+	BOOL bEncLowNibble = FALSE;
+	BOOL bUnencLowNibble = FALSE;
+	BOOL bContinue = TRUE;
+	while (bContinue)
+	{
+		if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)
+			StatusByte = m_pBits[nEncPos++];
+		else
+			break;
+		switch (StatusByte)
+		{
+			case RLE_COMMAND :
+				if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)				// Check Input
+				{
+					StatusByte = m_pBits[nEncPos++];
+					switch (StatusByte)
+					{
+						case RLE_ENDOFLINE :
+						{
+							nUnencPos = 0;
+							bEncLowNibble = FALSE;
+							bUnencLowNibble = FALSE;
+							lpUnencBits += uiDIBScanLineSize;
+							if (lpUnencBits >= lpUnencBitsEnd)					// Check Output
+								bContinue = FALSE;
+							break;
+						}
+
+						case RLE_ENDOFBITMAP :
+						{
+							bContinue = FALSE;
+							break;
+						}
+
+						case RLE_DELTA :
+						{
+							// Read the delta values
+							int nDeltaX = 0;
+							int nDeltaY = 0;
+							if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+								nDeltaX = m_pBits[nEncPos++];
+							else
+								bContinue = FALSE;
+							if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+								nDeltaY = m_pBits[nEncPos++];
+							else
+								bContinue = FALSE;
+							
+							// Apply X
+							nUnencPos += nDeltaX / 2;
+							if ((nDeltaX & 0x1) == 0x1) // If Odd DeltaX
+							{	
+								if (bUnencLowNibble)
+									nUnencPos++;
+								bUnencLowNibble = !bUnencLowNibble;
+							}
+							if (nUnencPos >= nUnencScanLineBytes)				// Check Output
+								break;
+
+							// Apply Y
+							lpUnencBits += nDeltaY * uiDIBScanLineSize;
+							if (lpUnencBits >= lpUnencBitsEnd)					// Check Output
+								bContinue = FALSE;
+							
+							break;
+						}
+
+						// Unencoded Run
+						default :
+						{
+							if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)	// Check Input
+							{
+								bEncLowNibble = FALSE;
+								SecondByte = m_pBits[nEncPos++];
+								for (int i = 0 ; i < StatusByte ; i++)
+								{
+									if (nUnencPos >= nUnencScanLineBytes)	// Check Output
+										break;
+									if (bEncLowNibble)
+									{
+										if (bUnencLowNibble)
+											lpUnencBits[nUnencPos++] |= (SecondByte & 0x0F);
+										else
+											lpUnencBits[nUnencPos] = (SecondByte << 4);
+										if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)// Check Input
+										{
+											if (i != StatusByte - 1)
+												SecondByte = m_pBits[nEncPos++];
+										}
+										else
+										{
+											bContinue = FALSE;
+											break;
+										}
+									}
+									else
+									{
+										if (bUnencLowNibble)
+											lpUnencBits[nUnencPos++] |= (SecondByte >> 4);
+										else
+											lpUnencBits[nUnencPos] = (SecondByte & 0xF0);
+									}
+									bEncLowNibble = !bEncLowNibble;
+									bUnencLowNibble = !bUnencLowNibble;
+								}
+
+								// Align run length to even number of bytes
+								if ((((StatusByte + 1) >> 1) & 1) == 1)
+									nEncPos++;
+							}
+							else
+								bContinue = FALSE;
+							
+							break;
+						}
+					}
+				}
+				else
+					bContinue = FALSE;
+
+				break;
+
+			// Encoded Run
+			default :
+				if (nEncPos < (int)m_pBMI->bmiHeader.biSizeImage)				// Check Input
+				{
+					bEncLowNibble = FALSE;
+					SecondByte = m_pBits[nEncPos++];
+					for (int i = 0 ; i < StatusByte ; i++)
+					{
+						if (nUnencPos >= nUnencScanLineBytes)					// Check Output
+							break;
+						if (bEncLowNibble)
+						{
+							if (bUnencLowNibble)
+								lpUnencBits[nUnencPos++] |= (SecondByte & 0x0F);
+							else
+								lpUnencBits[nUnencPos] = (SecondByte << 4);
+						}
+						else
+						{
+							if (bUnencLowNibble)
+								lpUnencBits[nUnencPos++] |= (SecondByte >> 4);
+							else
+								lpUnencBits[nUnencPos] = (SecondByte & 0xF0);	
+						}
+						bEncLowNibble = !bEncLowNibble;
+						bUnencLowNibble = !bUnencLowNibble;
+					}
+				}
+				else
+					bContinue = FALSE;
+
+				break;
+		}
+	}
+
+	// Clean-Up
+	Free();
+
+	// Set Pointers
+	m_pBMI = lpBMI;
+	m_pBits = lpUnencBitsStart;
+	m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+
+	// Set Size
+	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
+
+	// Create Palette
+	CreatePaletteFromBMI();
+
+	return TRUE;
+}
+
+BOOL CDib::DecompressRLE(CDib* pBackgroundDib/*=NULL*/)
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (m_pBMI->bmiHeader.biCompression == BI_RLE8 ||
+		m_pBMI->bmiHeader.biCompression == FCC('RLE8'))
+		return DecompressRLE8(pBackgroundDib);
+	else if (	m_pBMI->bmiHeader.biCompression == BI_RLE4	||
+				m_pBMI->bmiHeader.biCompression == FCC('RLE4'))
+		return DecompressRLE4(pBackgroundDib);
+	else
+		return FALSE;
+}
+
+// This would change a bit the colors with a 16 bpp graphics card resolution...
+// -> better use the above decompression!
+#if 0
+BOOL CDib::DecompressRLE()
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (!DibSectionToBits())
+		return FALSE;
+
+	if (!m_pBits)
+		return FALSE;
+
+	if (m_pBMI->bmiHeader.biCompression == BI_RLE8)
+		return DecompressRLE8();
+
+	// Only Supported for BI_RLE4 or BI_RLE8
+	if (m_pBMI->bmiHeader.biCompression != BI_RLE4 &&
+		m_pBMI->bmiHeader.biCompression != BI_RLE8)
+		return FALSE;
+
+	// Store Original Bit Count
+	int nOriginalBitCount = GetBitCount();
+
+	// Get DC
+	HDC hDC = ::GetDC(NULL);
+
+	// Select Palette
+	HPALETTE hOldPalette = NULL;
+	if (m_pPalette)
+		hOldPalette = ::SelectPalette(hDC, (HPALETTE)(*m_pPalette), FALSE);
+	
+	// DIB Bits to DDB (not to DIBSECTION because they do not support RLE!)
+	HBITMAP hBitmap = GetDDB(hDC);
+	if (hBitmap == NULL)
+	{
+		if (hOldPalette)
+			::SelectPalette(hDC, hOldPalette, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+
+	// Allocate and prepare new BMI
+	DWORD dwSize;
+	if (nOriginalBitCount == 4) 
+		dwSize = m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 16;
+	else
+		dwSize = m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 256;
+	LPBITMAPINFO lpBMI = (LPBITMAPINFO)new BYTE[dwSize];
+	if (!lpBMI)
+	{
+		if (hOldPalette)
+			::SelectPalette(hDC, hOldPalette, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	memset(lpBMI, 0, dwSize);
+	memcpy((void*)lpBMI, (void*)m_pBMI, MIN(dwSize, GetBMISize()));
+	lpBMI->bmiHeader.biCompression = BI_RGB; // Decompress
+	lpBMI->bmiHeader.biBitCount = 24;
+	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(lpBMI->bmiHeader.biWidth * lpBMI->bmiHeader.biBitCount);
+	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
+
+	// Allocate Bits and call GetDIBits to create the new DIB
+	LPBYTE lpBits = (LPBYTE)::VirtualAlloc(	NULL,
+											lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
+											MEM_COMMIT,
+											PAGE_READWRITE);
+	if (!lpBits)
+	{
+		delete [] lpBMI;
+		if (hOldPalette)
+			::SelectPalette(hDC, hOldPalette, FALSE);
+		::ReleaseDC(NULL, hDC);
+		return FALSE;
+	}
+	::GetDIBits(hDC, hBitmap, 0, (UINT)lpBMI->bmiHeader.biHeight,
+    			lpBits, lpBMI, DIB_RGB_COLORS);
+
+	// Clean-Up
+	::DeleteObject(hBitmap);
+	if (hOldPalette)
+		::SelectPalette(hDC, hOldPalette, FALSE);
+	::ReleaseDC(NULL, hDC);
+	Free(TRUE); // Leave Palette!
+
+	// Set Pointers
+	m_pBMI = lpBMI;
+	m_pBits = lpBits;
+	if (m_pBMI->bmiHeader.biBitCount <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+
+	// Set Size
+	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
+
+	// Convert from 24bpp back to the original bpp
+	// m_pPalette is still the old one,
+	// it will be converted to the new one.
+	if (nOriginalBitCount == 4) 
+		ConvertTo4bits(m_pPalette);
+	else
+		ConvertTo8bits(m_pPalette);
+
+	return TRUE;
+}
+#endif
+
+void CDib::Serialize(CArchive& ar) 
+{
+	CFile* pFile = ar.GetFile();
+	if (pFile)
+	{
+		if (ar.IsStoring())
+		{	// storing code
+#ifdef SUPPORT_BMP
+			SaveBMP(*pFile);
+#endif
+		}
+		else
+		{	// loading code
+#ifdef SUPPORT_BMP
+			LoadBMP(*pFile);
+#endif
+		}
+	}
+}
+
+void CDib::Init()
+{
+	memset(&m_OldBMI, 0, sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD));
+	memset(&m_OldDCRect, 0, sizeof(RECT));
+	memset(&m_OldDIBRect, 0, sizeof(RECT));
+	m_nStretchMode = COLORONCOLOR;
+	m_hMMFile = INVALID_HANDLE_VALUE;
+	m_hMMapping = NULL;
+	m_pMMFile = NULL;
+	m_bMMReadOnly = FALSE;
+	m_pBMI = NULL;
+	m_pColors = NULL;
+	m_pOrigColors = NULL;
+	m_pBits = NULL;
+	m_pOrigBits = NULL;
+	m_hDibSection = NULL;
+	m_pDibSectionBits = NULL;
+	m_pPalette = NULL;
+	m_pIPicture = NULL;
+	m_dwImageSize = 0;
+	m_dwUpTime = 0;
+	m_bUserFlag = FALSE;
+	m_pPreviewDib = NULL;
+	m_pThumbnailDib = NULL;
+	m_dPreviewDibRatio = 0.0;
+	m_dThumbnailDibRatio = 0.0;
+	m_crBackgroundColor = RGB(0,0,0);
+
+	m_wBrightness = 0;
+	m_wContrast = 0;
+	m_wLightness = 0;
+	m_wSaturation = 0;
+	m_uwHue = 0;
+	m_dGamma = 1.0;
+
+	m_bColorUndoSet = FALSE;
+	m_bGrayscale = FALSE;
+	m_bAlpha = FALSE;
+	
+	m_bShowMessageBoxOnError = TRUE;
+
+	m_wRedMask16 = 0;
+	m_wGreenMask16 = 0;
+	m_wBlueMask16 = 0;
+	m_nGreenShift16 = 0;
+	m_nRedShift16 = 0;
+	m_nGreenDownShift16 = 0;
+	m_nRedDownShift16 = 0;
+	m_nBlueRoundShift16 = 0;
+	m_nGreenRoundShift16 = 0;
+	m_nRedRoundShift16 = 0;
+
+	m_dwRedMask32 = 0;
+	m_dwGreenMask32 = 0;
+	m_dwBlueMask32 = 0;
+	m_nGreenShift32 = 0;
+	m_nRedShift32 = 0;
+	m_nGreenDownShift32 = 0;
+	m_nRedDownShift32 = 0;
+	m_nBlueRoundShift32 = 0;
+	m_nGreenRoundShift32 = 0;
+	m_nRedRoundShift32 = 0;
+	m_bFast32bpp = FALSE;
+
+	m_nFloodFillStackSize = 0;
+	m_pFloodFillStack = NULL;
+	m_nFloodFillStackPos = 0;
+}
+
+void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
+				BOOL bLeaveHeader/*=FALSE*/,
+				BOOL bLeavePreviewDib/*=FALSE*/,
+				BOOL bLeaveThumbnailDib/*=FALSE*/,
+				BOOL bLeaveMetadata/*=FALSE*/,
+				BOOL bLeaveGIF/*=FALSE*/)
+{
+#ifdef SUPPORT_MMBMP
+	if (bLeaveHeader)
+		MMBMPToBMI();
+	else
+		UnMapBMP();
+#endif
+	
+	if (!bLeaveHeader && m_pBMI)
+	{
+		delete [] m_pBMI;
+		m_pBMI = NULL;
+		m_pColors = NULL;
+	}
+	if (m_pBits)
+	{
+		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		m_pBits = NULL;
+	}
+	ResetColorUndo();
+	if (m_hDibSection)
+	{
+		::DeleteObject(m_hDibSection);
+		m_hDibSection = NULL;
+		m_pDibSectionBits = NULL;
+	}
+	if (m_pIPicture)  // Free up the COM IPicture* pointer
+	{
+		m_pIPicture->Release();
+		m_pIPicture = NULL;
+	}
+
+	if (!bLeavePreviewDib)
+		DeletePreviewDib();
+	if (!bLeaveThumbnailDib)
+		DeleteThumbnailDib();
+#ifdef SUPPORT_LIBJPEG
+	if (!bLeaveMetadata)
+		m_Metadata.Free();
+#endif
+#ifdef SUPPORT_GIFLIB
+	if (!bLeaveGIF)
+		m_Gif.Free();
+#endif
+	if (!bLeavePalette && m_pPalette)
+	{
+		m_pPalette->DeleteObject();
+		delete m_pPalette;
+		m_pPalette = NULL;
+	}
+}
+
+BOOL CDib::CreatePreviewDib(int nMaxSizeX,
+							int nMaxSizeY,
+							CDib* pSrcDib/*=NULL*/,
+							CWorkerThread* pThread/*=NULL*/)
+{
+	if (nMaxSizeX < 1 && nMaxSizeY < 1)
+		return FALSE;
+
+	if (pSrcDib == NULL)
+		pSrcDib = this;
+
+	// Free
+	DeletePreviewDib();
+
+	// Allocate Preview Dib
+	m_pPreviewDib = (CDib*)new CDib;
+	if (!m_pPreviewDib)
+		return FALSE;
+
+	// Copy Vars
+	m_pPreviewDib->CopyVars(*pSrcDib);
+
+	// Calc. Ratio
+	double dPreviewDibRatioX = (double)pSrcDib->GetWidth() / (double)nMaxSizeX;
+	double dPreviewDibRatioY = (double)pSrcDib->GetHeight() / (double)nMaxSizeY;
+	m_dPreviewDibRatio = max(dPreviewDibRatioX, dPreviewDibRatioY);
+
+	// Stretch Bits
+	return m_pPreviewDib->StretchBits(	Round(pSrcDib->GetWidth() / m_dPreviewDibRatio),
+										Round(pSrcDib->GetHeight() / m_dPreviewDibRatio),
+										pSrcDib,
+										NULL,
+										TRUE,
+										pThread);
+}
+
+void CDib::DeletePreviewDib()
+{
+	if (m_pPreviewDib)
+	{
+		delete m_pPreviewDib;
+		m_pPreviewDib = NULL;
+	}
+}
+
+BOOL CDib::CreateThumbnailDib(	int nMaxSizeX,
+								int nMaxSizeY,
+								CDib* pSrcDib/*=NULL*/,
+								CWnd* pProgressWnd/*=NULL*/,
+								BOOL bProgressSend/*=TRUE*/,
+								CWorkerThread* pThread/*=NULL*/)
+{
+	if (nMaxSizeX < 1 && nMaxSizeY < 1)
+		return FALSE;
+
+	if (pSrcDib == NULL)
+		pSrcDib = this;
+
+	// Free
+	DeleteThumbnailDib();
+
+	// Allocate Thumbnail Dib
+	m_pThumbnailDib = (CDib*)new CDib;
+	if (!m_pThumbnailDib)
+		return FALSE;
+
+	// Copy Vars
+	m_pThumbnailDib->CopyVars(*pSrcDib);
+
+	// Calc. Ratio
+	double dThumbnailDibRatioX = (double)pSrcDib->GetWidth() / (double)nMaxSizeX;
+	double dThumbnailDibRatioY = (double)pSrcDib->GetHeight() / (double)nMaxSizeY;
+	m_dThumbnailDibRatio = max(dThumbnailDibRatioX, dThumbnailDibRatioY);
+
+	// Destination Size
+	DWORD dwDstWidth = Round(pSrcDib->GetWidth() / m_dThumbnailDibRatio);
+	DWORD dwDstHeight = Round(pSrcDib->GetHeight() / m_dThumbnailDibRatio);
+
+	// Shrink
+	if (m_dThumbnailDibRatio > 1.0)
+	{
+		BOOL res = FALSE;
+
+		// Two Pass Shrinking to Speed-Up
+		if (m_dThumbnailDibRatio >= 7.0)
+		{
+			if (m_pThumbnailDib->NearestNeighborResizeBits(	5 * dwDstWidth,
+															5 * dwDstHeight,
+															pSrcDib,
+															pProgressWnd,
+															bProgressSend,
+															pThread))
+			{
+				res = m_pThumbnailDib->ShrinkBits(	dwDstWidth,
+													dwDstHeight,
+													NULL,
+													pProgressWnd,
+													bProgressSend,
+													pThread);
+			}
+		}
+		else
+		{
+			res = m_pThumbnailDib->ShrinkBits(	dwDstWidth,
+												dwDstHeight,
+												pSrcDib,
+												pProgressWnd,
+												bProgressSend,
+												pThread);
+		}
+
+		return res;
+	}
+	// Enlarge
+	else
+	{
+		return m_pThumbnailDib->NearestNeighborResizeBits(	dwDstWidth,
+															dwDstHeight,
+															pSrcDib,
+															pProgressWnd,
+															bProgressSend,
+															pThread);
+	}
+}
+
+void CDib::DeleteThumbnailDib()
+{
+	if (m_pThumbnailDib)
+	{
+		delete m_pThumbnailDib;
+		m_pThumbnailDib = NULL;
+	}
+}
+
+DWORD CDib::GetRMask() const
+{
+	if (GetBitCount() == 16)
+		return m_wRedMask16;
+	else if (GetBitCount() == 32)
+		return m_dwRedMask32;
+	else
+		return 0xFF0000;
+}
+
+DWORD CDib::GetGMask() const
+{
+	if (GetBitCount() == 16)
+		return m_wGreenMask16;
+	else if (GetBitCount() == 32)
+		return m_dwGreenMask32;
+	else
+		return 0x00FF00;
+}
+
+DWORD CDib::GetBMask() const
+{
+	if (GetBitCount() == 16)
+		return m_wBlueMask16;
+	else if (GetBitCount() == 32)
+		return m_dwBlueMask32;
+	else
+		return 0x0000FF;
+}
+
+void CDib::InitMasks(LPBITMAPINFO pBMI/*=NULL*/)
+{
+	// Check
+	if (pBMI == NULL)
+		pBMI = m_pBMI;
+	if (!pBMI)
+		return;
+
+	// Set Default
+	m_bFast32bpp = FALSE;
+
+	int nMask;
+	if (GetBitCount(pBMI) == 16)
+	{
+		// Masks
+		if (pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)pBMI;
+			m_wRedMask16 = (WORD)pBmiBf->biRedMask;
+			m_wGreenMask16 = (WORD)pBmiBf->biGreenMask;
+			m_wBlueMask16 = (WORD)pBmiBf->biBlueMask;
+		}
+		else
+		{
+			m_wRedMask16 = 0x7C00;		// 5 bits
+			m_wGreenMask16 = 0x03E0;	// 5 bits
+			m_wBlueMask16 = 0x001F;		// 5 bits
+		}
+
+		// Calc. the Blue Shift
+		m_nBlueRoundShift16 = 0;
+		nMask = m_wBlueMask16;
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nBlueRoundShift16 += 1;
+			nMask <<= 1;
+		} 
+		
+		// Calc. the Green Shifts
+		m_nGreenShift16 = m_nGreenRoundShift16 = 0;
+		nMask = m_wGreenMask16;
+		while (nMask && ((nMask & 0x1) == 0))
+		{
+			m_nGreenShift16 += 1;
+			nMask >>= 1;
+		}
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nGreenRoundShift16 += 1;
+			nMask <<= 1;
+		}
+		m_nGreenDownShift16 = m_nGreenShift16 - m_nGreenRoundShift16;
+
+		// Calc. the Red Shifts
+		m_nRedShift16 = m_nRedRoundShift16 = 0;
+		nMask = m_wRedMask16;
+		while (nMask && ((nMask & 0x1) == 0))
+		{
+			m_nRedShift16 += 1;
+			nMask >>= 1;
+		}
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nRedRoundShift16 += 1;
+			nMask <<= 1;
+		}
+		m_nRedDownShift16 = m_nRedShift16 - m_nRedRoundShift16;
+	}
+	else if (GetBitCount(pBMI) == 32)
+	{	
+		// Masks
+		if (pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)pBMI;
+			m_dwRedMask32 = pBmiBf->biRedMask;
+			m_dwGreenMask32 = pBmiBf->biGreenMask;
+			m_dwBlueMask32 = pBmiBf->biBlueMask;
+			if (m_dwRedMask32   == 0x00FF0000 &&
+				m_dwGreenMask32 == 0x0000FF00 &&
+				m_dwBlueMask32  == 0x000000FF)
+				m_bFast32bpp = TRUE;
+		}
+		else
+		{
+			m_dwRedMask32 = 0x00FF0000;
+			m_dwGreenMask32 = 0x0000FF00;
+			m_dwBlueMask32 = 0x000000FF;
+			m_bFast32bpp = TRUE;
+		}
+
+		// Calc. the Blue Shift
+		m_nBlueRoundShift32 = 0;
+		nMask = m_dwBlueMask32;
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nBlueRoundShift32 += 1;
+			nMask <<= 1;
+		}
+
+		// Calc. the Green Shifts
+		m_nGreenShift32 = m_nGreenRoundShift32 = 0;
+		nMask = m_dwGreenMask32;
+		while ((nMask & 0x1) == 0)
+		{
+			m_nGreenShift32 += 1;
+			nMask >>= 1;
+		}
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nGreenRoundShift32 += 1;
+			nMask <<= 1;
+		}
+		m_nGreenDownShift32 = m_nGreenShift32 - m_nGreenRoundShift32;
+
+		// Calc. the Blue Shifts
+		m_nRedShift32 = m_nRedRoundShift32 = 0;
+		nMask = m_dwRedMask32;
+		while ((nMask & 0x1) == 0)
+		{
+			m_nRedShift32 += 1;
+			nMask >>= 1;
+		}
+		while (nMask && ((nMask & 0x80) == 0))
+		{
+			m_nRedRoundShift32 += 1;
+			nMask <<= 1;
+		}
+		m_nRedDownShift32 = m_nRedShift32 - m_nRedRoundShift32;
+	}
+}
+
+BOOL CDib::CreatePaletteFromColors(DWORD dwNumColors, RGBQUAD* pColors)
+{
+	if (!pColors || (dwNumColors == 0))
+		return FALSE;
+   
+	// Allocate memory block for logical palette
+	LPLOGPALETTE lpPal = (LPLOGPALETTE)new BYTE[sizeof(LOGPALETTE) +
+												sizeof(PALETTEENTRY)*dwNumColors];
+	if (!lpPal)
+		return FALSE;
+
+	// Set version and number of palette entries
+	lpPal->palVersion = PALVERSION_DEFINE;
+	lpPal->palNumEntries = (WORD)dwNumColors;
+
+	for (int i = 0; i < (int)dwNumColors; i++)
+	{
+		lpPal->palPalEntry[i].peRed = pColors[i].rgbRed;
+		lpPal->palPalEntry[i].peGreen = pColors[i].rgbGreen;
+		lpPal->palPalEntry[i].peBlue = pColors[i].rgbBlue;
+		lpPal->palPalEntry[i].peFlags = 0;
+	}
+
+	// Create the palette and get handle to it
+	if (m_pPalette)
+	{
+		m_pPalette->DeleteObject();
+		delete m_pPalette;
+	}
+	BOOL bResult = FALSE;
+	m_pPalette = new CPalette;
+	if (m_pPalette)
+		bResult = m_pPalette->CreatePalette(lpPal);
+	delete [] lpPal;
+
+	return bResult;
+}
+
+BOOL CDib::CreatePaletteFromColors(CPalette* pPal, DWORD dwNumColors, RGBQUAD* pColors)
+{
+	if (!pColors || (dwNumColors == 0) || !pPal)
+		return FALSE;
+
+	// Allocate memory block for logical palette
+	LPLOGPALETTE lpPal = (LPLOGPALETTE)new BYTE[sizeof(LOGPALETTE) +
+												sizeof(PALETTEENTRY)*dwNumColors];
+	if (!lpPal)
+		return FALSE;
+
+	// Set version and number of palette entries
+	lpPal->palVersion = PALVERSION_DEFINE;
+	lpPal->palNumEntries = (WORD)dwNumColors;
+
+	for (int i = 0; i < (int)dwNumColors; i++)
+	{
+		lpPal->palPalEntry[i].peRed = pColors[i].rgbRed;
+		lpPal->palPalEntry[i].peGreen = pColors[i].rgbGreen;
+		lpPal->palPalEntry[i].peBlue = pColors[i].rgbBlue;
+		lpPal->palPalEntry[i].peFlags = 0;
+	}
+
+	// Create the palette
+	BOOL bResult = pPal->CreatePalette(lpPal);
+	delete [] lpPal;
+
+	return bResult;
+}
+
+CPalette* CDib::GetPalette()
+{
+	if (m_pPalette == NULL)
+	{
+		m_pPalette = new CPalette;
+		CreateHalftonePalette(m_pPalette, 256);
+		return m_pPalette;
+	}
+	else
+		return m_pPalette;
+}
+
+BOOL CDib::CreatePaletteFromBMI()
+{
+	if (!m_pBMI)
+		return FALSE;
+
+   // Get the number of colors in the DIB
+   WORD wNumColors = GetNumColors();
+
+   if (wNumColors != 0)
+   {
+	   if (!m_pColors)
+		   return FALSE;
+
+		// Allocate memory block for logical palette
+		LPLOGPALETTE lpPal = (LPLOGPALETTE)new BYTE[sizeof(LOGPALETTE) +
+													sizeof(PALETTEENTRY)*wNumColors];
+		if (!lpPal)
+			return FALSE;
+
+		// Set version and number of palette entries
+		lpPal->palVersion = PALVERSION_DEFINE;
+		lpPal->palNumEntries = (WORD)wNumColors;
+
+		for (int i = 0; i < (int)wNumColors; i++)
+		{
+			lpPal->palPalEntry[i].peRed = m_pColors[i].rgbRed;
+			lpPal->palPalEntry[i].peGreen = m_pColors[i].rgbGreen;
+			lpPal->palPalEntry[i].peBlue = m_pColors[i].rgbBlue;
+			lpPal->palPalEntry[i].peFlags = 0;
+		}
+
+		// Create the palette and get handle to it
+		if (m_pPalette)
+		{
+			m_pPalette->DeleteObject();
+			delete m_pPalette;
+		}
+		BOOL bResult = FALSE;
+		m_pPalette = new CPalette;
+		if (m_pPalette)
+			bResult = m_pPalette->CreatePalette(lpPal);
+		delete [] lpPal;
+
+		return bResult;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::FillColorsFromPalette(CPalette* pPalette)
+{
+	if (!m_pColors)
+		return FALSE;
+
+	// Create HalftonePalette if no palette supplied
+	CPalette* pPal;
+	if (!pPalette)
+	{
+		pPal = new CPalette;
+        if (!CreateHalftonePalette(pPal, GetNumColors()))
+		{
+			if (pPal)
+			{
+				pPal->DeleteObject();
+				delete pPal;
+			}
+			return FALSE;
+		}
+	}
+	else
+		pPal = pPalette;
+
+	WORD wNumColors;
+	if (GetNumColors() < pPal->GetEntryCount())
+		wNumColors = GetNumColors();
+	else
+		wNumColors = pPal->GetEntryCount();
+
+	// Get Palette Entries
+	LPPALETTEENTRY lpPalEntries = (LPPALETTEENTRY)new BYTE[sizeof(PALETTEENTRY) * pPal->GetEntryCount()];
+	if (!lpPalEntries)
+	{
+		if (!pPalette)
+		{
+			pPal->DeleteObject();
+			delete pPal;
+		}
+		return FALSE;
+	}
+	pPal->GetPaletteEntries(0, pPal->GetEntryCount(), lpPalEntries);
+
+	// Copy Entries
+	for (int i = 0; i < (int)wNumColors; i++)
+	{
+		m_pColors[i].rgbRed = lpPalEntries[i].peRed;
+		m_pColors[i].rgbGreen = lpPalEntries[i].peGreen;
+		m_pColors[i].rgbBlue = lpPalEntries[i].peBlue;
+	}
+
+	// Free
+	if (!pPalette)
+	{
+		pPal->DeleteObject();
+		delete pPal;
+	}
+	delete [] lpPalEntries;
+
+	return TRUE;
+}
+
+BOOL CDib::CreatePaletteFromDibSection()
+{
+	HPALETTE hPalette = NULL;
+	BITMAP bm;
+	::GetObject(m_hDibSection, sizeof(BITMAP), &bm);
+
+	// If the DIBSection is 256 color or less, it has a color table
+	if ((bm.bmBitsPixel * bm.bmPlanes) <= 8)
+	{
+		// Create a memory DC and select the DIBSection into it
+		HDC hMemDC = ::CreateCompatibleDC(NULL);
+		HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hMemDC, m_hDibSection);
+
+		// Get the DIBSection's color table
+		RGBQUAD rgb[256];
+
+#ifdef _WIN32_WCE
+		UINT nEntries = CEGetDIBColorTable(hMemDC, 0, 256, rgb);
+#else
+		UINT nEntries = ::GetDIBColorTable(hMemDC, 0, 256, rgb);
+#endif
+
+		// Create a palette from the color table
+		LOGPALETTE* pLogPal = (LOGPALETTE*) new BYTE[sizeof(LOGPALETTE) + (nEntries*sizeof(PALETTEENTRY))];
+		if (!pLogPal)
+		{
+			::SelectObject(hMemDC, hOldBitmap);
+			::DeleteDC(hMemDC);
+			return FALSE;
+		}
+		pLogPal->palVersion = PALVERSION_DEFINE;
+		pLogPal->palNumEntries = (WORD)nEntries;
+		for (UINT i=0; i<nEntries; i++)
+		{
+			pLogPal->palPalEntry[i].peRed = rgb[i].rgbRed;
+			pLogPal->palPalEntry[i].peGreen = rgb[i].rgbGreen;
+			pLogPal->palPalEntry[i].peBlue = rgb[i].rgbBlue;
+			pLogPal->palPalEntry[i].peFlags = 0;
+		}
+		hPalette = ::CreatePalette(pLogPal);
+
+		// Clean up
+		::SelectObject(hMemDC, hOldBitmap);
+		::DeleteDC(hMemDC);
+		delete [] pLogPal;
+
+		// Create the m_pPalette
+		if (m_pPalette)
+		{
+			m_pPalette->DeleteObject();
+			delete m_pPalette;
+		}
+		m_pPalette = new CPalette;
+		if (m_pPalette)
+			return m_pPalette->Attach(hPalette);
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::BMIToBITMAPV4HEADER()
+{
+	if (!m_pBMI)
+		return FALSE;
+
+	if (m_pBMI->bmiHeader.biSize != sizeof(BITMAPINFOHEADER))
+		return FALSE;
+
+	LPBITMAPV4HEADER pBV4;
+	if (GetCompression() == BI_BITFIELDS)
+	{
+		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER) + sizeof(DWORD) * 3];
+		if (!pBV4)
+			return FALSE;
+
+		// Init & Copy Header
+		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
+		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+
+		// Copy Masks
+		memcpy((LPBYTE)pBV4 + pBV4->bV4Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(DWORD) * 3);
+		
+	}
+	else if (GetBitCount() <= 8)
+	{
+		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER) + sizeof(RGBQUAD) * GetNumColors()];
+		if (!pBV4)
+			return FALSE;
+
+		// Init & Copy Header
+		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
+		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+
+		// Copy Colors
+		memcpy((LPBYTE)pBV4 + pBV4->bV4Size, (LPBYTE)m_pBMI + m_pBMI->bmiHeader.biSize, sizeof(RGBQUAD) * GetNumColors());
+	}
+	else
+	{
+		pBV4 = (LPBITMAPV4HEADER)new BYTE[sizeof(BITMAPV4HEADER)];
+		if (!pBV4)
+			return FALSE;
+
+		// Init & Copy Header
+		memset(pBV4, 0, sizeof(BITMAPV4HEADER));
+		memcpy(pBV4, m_pBMI, m_pBMI->bmiHeader.biSize);
+		pBV4->bV4Size = sizeof(BITMAPV4HEADER);
+	}
+
+	// BITFIELDS
+	if (GetCompression() == BI_BITFIELDS)
+	{
+		LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)m_pBMI;
+		pBV4->bV4RedMask = pBmiBf->biRedMask;
+		pBV4->bV4GreenMask = pBmiBf->biGreenMask;
+		pBV4->bV4BlueMask = pBmiBf->biBlueMask;
+	}
+
+	// Alpha
+	if (m_bAlpha && GetBitCount() == 32)
+		pBV4->bV4AlphaMask = 0xFF000000;
+
+	// Free
+	delete [] m_pBMI;
+
+	// Change Pointer
+	m_pBMI = (LPBITMAPINFO)pBV4;
+
+	// Set Colors Pointer
+	if (GetBitCount() <= 8)
+		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+	else
+		m_pColors = NULL;
+
+	return TRUE;
+}
+
+BOOL CDib::DibSectionInitBMI()
+{
+	if (!m_hDibSection)
+		return FALSE;
+
+	return DibSectionInitBMI(m_hDibSection);
+}
+
+BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
+{
+	// Check to see if it is a DibSection
+	// If it is already a DibSection return FALSE!
+	if (!IsDibSection(hDibSection))
+		return FALSE;
+
+	DIBSECTION dibsection;
+
+	int nRes = ::GetObject(hDibSection, sizeof(DIBSECTION), (LPVOID)&dibsection);
+	if (nRes == sizeof(DIBSECTION) && dibsection.dsBmih.biSize >= sizeof(BITMAPINFOHEADER))
+	{
+		if (m_pBits)
+		{
+			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			m_pBits = NULL;
+		}
+		ResetColorUndo();
+		if (m_pBMI)
+		{
+			delete [] m_pBMI;
+			m_pBMI = NULL;
+			m_pColors = NULL;
+		}
+
+		DWORD dwNumColors;
+		DWORD dwClrUsed = dibsection.dsBmih.biClrUsed;
+		WORD wBitCount = dibsection.dsBmih.biBitCount;
+		if (dwClrUsed != 0)
+			dwNumColors = dwClrUsed;
+		else
+		{
+			switch (wBitCount)
+			{
+				case 1:
+					dwNumColors = 2;
+				break;
+				case 4:
+					dwNumColors = 16;
+				break;
+				case 8:
+					dwNumColors = 256;
+				break;
+				default:
+					dwNumColors = 0;
+			}
+		}
+
+		int nSize;
+		if (dibsection.dsBmih.biCompression == BI_BITFIELDS)
+		{
+			nSize = dibsection.dsBmih.biSize + sizeof(DWORD) * 3;
+			m_pBMI = (LPBITMAPINFO)new BYTE[nSize];
+			if (!m_pBMI)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)(&(dibsection.dsBmih)), nSize);
+			m_pColors = NULL;
+		}
+		else
+		{
+			nSize = dibsection.dsBmih.biSize + sizeof(RGBQUAD) * dwNumColors;
+			m_pBMI = (LPBITMAPINFO)new BYTE[nSize];
+			if (!m_pBMI)
+				return FALSE;
+			memcpy((void*)m_pBMI, (void*)(&(dibsection.dsBmih)), dibsection.dsBmih.biSize);
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		}
+
+		ComputeImageSize();
+
+		// If the DIBSection is 256 color or less, it has a color table
+		if (dwNumColors != 0)
+		{
+			// Create a memory DC and select the DIBSection into it
+			HDC hMemDC = ::CreateCompatibleDC(NULL);
+			HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hMemDC, hDibSection);
+
+#ifndef _WIN32_WCE
+			// Get the DIBSection's color table
+			UINT nEntries = ::GetDIBColorTable(hMemDC, 0, dwNumColors, m_pColors);
+			VERIFY(nEntries == dwNumColors);
+#else
+			UINT nEntries =  CEGetDIBColorTable(hMemDC, 0, dwNumColors, m_pColors);
+			VERIFY(nEntries == dwNumColors);
+#endif
+
+			// Clean up
+			::SelectObject(hMemDC, hOldBitmap);
+			::DeleteDC(hMemDC);
+		}
+
+		// Init Masks For 16 and 32 bits Pictures
+		InitMasks();
+
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+COLORREF CDib::HighlightColor(COLORREF rcColor)
+{
+	BYTE Gray = RGBToGray(	GetRValue(rcColor),
+							GetGValue(rcColor),
+							GetBValue(rcColor));
+
+	// Invert
+	BYTE newGray = ~Gray;
+
+	if (ABS(Gray - newGray) < 128) // If Gray Between 64 - 191
+	{
+		if (Gray < 128) newGray = 255;
+		else newGray = 0;
+	}
+
+	return RGB(newGray, newGray, newGray);
+}
+
+// biSizeImage can be 0 if the file isn't compressed,
+// if a compression is used, biSizeImage must be
+// the right value(!=0)
+void CDib::ComputeImageSize()
+{
+	if (!m_pBMI)
+		return;
+
+	m_dwImageSize = m_pBMI->bmiHeader.biSizeImage;	// Only compressed DIBs must set this field 
+													// (compressed size is written into biSizeImage)
+	if (m_dwImageSize == 0)
+	{
+		// no compression
+		m_dwImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount()) * GetHeight();
+		m_pBMI->bmiHeader.biSizeImage = m_dwImageSize;
+	}
+}
+
+BOOL CDib::DoAutoOrientate(CDib* pDib)
+{
+	if (!pDib)
+		return FALSE;
+
+	int nOrientation = pDib->GetExifInfo()->Orientation;
+	if ((nOrientation >= 2) && (nOrientation <= 8))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CDib::AutoOrientateDib(CDib* pDib)
+{
+	if (!pDib)
+		return FALSE;
+
+	int nOrientation = pDib->GetExifInfo()->Orientation;
+	if ((nOrientation >= 2) && (nOrientation <= 8))
+	{
+		switch (nOrientation)
+		{
+			case 2 :	// Flip Horizonat = Flip Left-Right
+						if (pDib->IsValid())
+							pDib->FlipLeftRight();
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+							pDib->GetPreviewDib()->FlipLeftRight();
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->FlipLeftRight();
+						break;
+
+			case 3 :	// Rotate 180°
+						if (pDib->IsValid())
+							pDib->Rotate180();
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+							pDib->GetPreviewDib()->Rotate180();
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate180();
+						break;
+
+			case 4 :	// Flip Vertical = Flip Top-Down
+						if (pDib->IsValid())
+							pDib->FlipTopDown();
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+							pDib->GetPreviewDib()->FlipTopDown();
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->FlipTopDown();
+						break;
+
+			case 5 :	// Transpose = 90CW + Flip Left-Right
+						//           = Flip Left-Right + 90CCW
+						if (pDib->IsValid())
+						{
+							if (pDib->Rotate90CW())
+								pDib->FlipLeftRight();
+						}
+						else
+							pDib->SwapWidthHeight(); // Only Swap Header if any
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+						{
+							if (pDib->GetPreviewDib()->Rotate90CW())
+								pDib->GetPreviewDib()->FlipLeftRight();
+						}
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+						{
+							if (pDib->GetThumbnailDib()->Rotate90CW())
+								pDib->GetThumbnailDib()->FlipLeftRight();
+						}
+						break;
+
+			case 6 :	// Rotate 90° Clockwise
+						if (pDib->IsValid())
+							pDib->Rotate90CW();
+						else
+							pDib->SwapWidthHeight(); // Only Swap Header if any
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+							pDib->GetPreviewDib()->Rotate90CW();
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate90CW();
+						break;	
+
+			case 7 :	// Transverse = 90CW + Flip Top-Down
+						//            = Flip Top-Down + 90CCW
+						if (pDib->IsValid())
+						{
+							if (pDib->Rotate90CW())
+								pDib->FlipTopDown();
+						}
+						else
+							pDib->SwapWidthHeight(); // Only Swap Header if any
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+						{
+							if (pDib->GetPreviewDib()->Rotate90CW())
+								pDib->GetPreviewDib()->FlipTopDown();
+						}
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+						{
+							if (pDib->GetThumbnailDib()->Rotate90CW())
+								pDib->GetThumbnailDib()->FlipTopDown();
+						}
+						break;
+
+			case 8 :	// Rotate 90° Counter-Clockwise
+						if (pDib->IsValid())
+							pDib->Rotate90CCW();
+						else
+							pDib->SwapWidthHeight(); // Only Swap Header if any
+						if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
+							pDib->GetPreviewDib()->Rotate90CCW();
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate90CCW();
+						break;	
+
+			default:	break;
+		}
+		
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDib::AutoOrientateThumbnailDib(CDib* pDib)
+{
+	if (!pDib)
+		return FALSE;
+
+	int nOrientation = pDib->GetExifInfo()->Orientation;
+	if ((nOrientation >= 2) && (nOrientation <= 8))
+	{
+		switch (nOrientation)
+		{
+			case 2 :	// Flip Horizonat = Flip Left-Right
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->FlipLeftRight();
+						break;
+
+			case 3 :	// Rotate 180°
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate180();
+						break;
+
+			case 4 :	// Flip Vertical = Flip Top-Down
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->FlipTopDown();
+						break;
+
+			case 5 :	// Transpose = 90CW + Flip Left-Right
+						//           = Flip Left-Right + 90CCW
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+						{
+							if (pDib->GetThumbnailDib()->Rotate90CW())
+								pDib->GetThumbnailDib()->FlipLeftRight();
+						}
+						break;
+
+			case 6 :	// Rotate 90° Clockwise
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate90CW();
+						break;	
+
+			case 7 :	// Transverse = 90CW + Flip Top-Down
+						//            = Flip Top-Down + 90CCW
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+						{
+							if (pDib->GetThumbnailDib()->Rotate90CW())
+								pDib->GetThumbnailDib()->FlipTopDown();
+						}
+						break;
+
+			case 8 :	// Rotate 90° Counter-Clockwise
+						if (pDib->GetThumbnailDib() && pDib->GetThumbnailDib()->IsValid())
+							pDib->GetThumbnailDib()->Rotate90CCW();
+						break;	
+
+			default:	break;
+		}
+		
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+#ifdef _WIN32_WCE
+/**********************************************************************
+This function is from the MS KB article "HOWTO: Get the Color Table of 
+a DIBSection in Windows CE".
+
+PARAMETERS:
+HDC - the Device Context in which the DIBSection is selected
+UINT - the index of the first color table entry to retrieve
+UINT - the number of color table entries to retrieve
+RGBQUAD - a buffer large enough to hold the number of RGBQUAD
+entries requested
+
+RETURNS:
+UINT - the number of colors placed in the buffer
+
+***********************************************************************/
+UINT CDib::CEGetDIBColorTable(HDC hdc, UINT uStartIndex, UINT cEntries, RGBQUAD *pColors)
+{   
+    if (pColors == NULL)
+        return 0;                       // No place to put them, fail
+    
+    // Get a description of the DIB Section
+    HBITMAP hDIBSection = (HBITMAP)::GetCurrentObject(hdc, OBJ_BITMAP);
+
+    DIBSECTION ds;
+    DWORD dwSize = ::GetObject(hDIBSection, sizeof(DIBSECTION), &ds);
+    
+    if (dwSize != sizeof(DIBSECTION))
+        return 0;                      // Must not be a DIBSection, fail
+    
+	if (ds.dsBmih.biSize < sizeof(BITMAPINFOHEADER))
+		return 0;                      // Not right size, fail
+
+    if (ds.dsBmih.biBitCount > 8)
+        return 0;                      // Not Palettized, fail
+    
+    // get the number of colors to return per BITMAPINFOHEADER docs
+    UINT cColors;
+    if (ds.dsBmih.biClrUsed)
+        cColors = ds.dsBmih.biClrUsed;
+    else
+        cColors = 1 << (ds.dsBmih.biBitCount*ds.dsBmih.biPlanes);
+    
+    // Create a mask for the palette index bits for 1, 2, 4, and 8 bpp
+    WORD wIndexMask = (0xFF << (8 - ds.dsBmih.biBitCount)) & 0x00FF;
+    
+    // Get the pointer to the image bits
+    LPBYTE pBits = (LPBYTE) ds.dsBm.bmBits;
+    
+    // Initialize the loop variables
+    cColors = MIN( cColors, cEntries );
+    BYTE OldPalIndex = *pBits;
+ 
+    UINT TestPixelY;
+    if (ds.dsBmih.biHeight > 0 )
+        // If button up DIB, pBits points to last row
+        TestPixelY = ds.dsBm.bmHeight-1;
+    else
+        // If top down DIB, pBits points to first row
+        TestPixelY = 0;
+    
+    for (UINT iColor = uStartIndex; iColor < cColors; iColor++)
+    {
+        COLORREF    rgbColor;
+        
+        // Set the palette index for the test pixel,
+        // modifying only the bits for one pixel
+        *pBits = (iColor << (8 - ds.dsBmih.biBitCount)) |
+            (*pBits & ~wIndexMask);
+        
+        // now get the resulting color
+        rgbColor = GetPixel( hdc, 0, TestPixelY );
+        
+        pColors[iColor - uStartIndex].rgbReserved = 0;
+        pColors[iColor - uStartIndex].rgbBlue = GetBValue(rgbColor);
+        pColors[iColor - uStartIndex].rgbRed = GetRValue(rgbColor);
+        pColors[iColor - uStartIndex].rgbGreen = GetGValue(rgbColor);
+    }
+    
+    // Restore the test pixel
+    *pBits = OldPalIndex;
+    
+    return cColors;
+}
+#endif
+
+void CDib::InitGetClosestColorIndex()
+{
+	if (!m_GetClosestColorIndexLookUp)
+		m_GetClosestColorIndexLookUp = new signed short[65536];
+	if (m_GetClosestColorIndexLookUp)
+		memset((void*)m_GetClosestColorIndexLookUp, -1, 65536 * sizeof(signed short));	// 2^(5+6+5) = 65536
+}
+
+void CDib::FreeGetClosestColorIndex()
+{
+	if (m_GetClosestColorIndexLookUp)
+	{
+		delete [] m_GetClosestColorIndexLookUp;
+		m_GetClosestColorIndexLookUp = NULL;
+	}
+}
+
+void CDib::ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, const CString& sFunctionName)
+{
+	CString sText;
+	LPVOID lpMsgBuf = NULL;
+
+	if (::FormatMessage( 
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		NULL,
+		dwErrorCode,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+		(LPTSTR)&lpMsgBuf,
+		0,
+		NULL) && lpMsgBuf)
+	{
+		// Replace eventual CRs in the middle of the string with a space
+		int i = 0;
+		while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
+		{
+			if (((LPTSTR)lpMsgBuf)[i] == '\r') 
+				((LPTSTR)lpMsgBuf)[i] = ' ';
+			i++;
+		}
+
+		// Remove the terminating CR + LF
+		i = 0;
+		while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
+		((LPTSTR)lpMsgBuf)[i-3] = '\0';
+
+#ifdef _DEBUG
+		sText.Format(_T("%s:\n%s"), sFunctionName, lpMsgBuf);
+#else
+		sText = CString((LPTSTR)lpMsgBuf);
+#endif
+		// Free
+		::LocalFree(lpMsgBuf);
+	}
+	else
+	{
+#ifdef _DEBUG
+		sText.Format(_T("%s Failed"), sFunctionName);
+#else
+		sText = _T("Failure");
+#endif
+	}
+
+	// Show Error
+	CString sTraceMsg = sText;
+	if (sTraceMsg.GetLength() > 0)
+	{
+		if (sTraceMsg[sTraceMsg.GetLength() - 1] != _T('\n'))
+			sTraceMsg += _T('\n');
+	}
+	TRACE(sTraceMsg);
+	if (bShowMessageBoxOnError)
+		::AfxMessageBox(sText, MB_ICONSTOP);
+}
+
+void CDib::ShowError(DWORD dwErrorCode, const CString& sFunctionName)
+{
+	ShowError(dwErrorCode, m_bShowMessageBoxOnError, sFunctionName);
+}
+
+void CDib::ShowLastError(BOOL bShowMessageBoxOnError, const CString& sFunctionName)
+{
+	ShowError(::GetLastError(), bShowMessageBoxOnError, sFunctionName);
+}
+
+void CDib::ShowLastError(const CString& sFunctionName)
+{
+	ShowLastError(m_bShowMessageBoxOnError, sFunctionName);
+}
+
+int CDib::CFileInfo::GetNumColors() const
+{
+	if (m_nNumColors != 0)
+		return m_nNumColors;
+	else
+	{
+		switch (m_nBpp)
+		{
+			case 1:
+				return 2;
+
+			case 2:
+				return 4;
+
+			case 4:
+				return 16;
+
+			case 6:
+				return 64;
+
+			case 8:
+				return 256;
+
+			case 10:
+				return 1024;
+
+			case 12:
+				return 4096;
+
+			case 14:
+				return 16384;
+
+			case 16:
+				if (m_bAlphaChannel)
+					return 256;
+				else
+					return 65536;
+
+			case 24:
+				return 0;
+
+			case 32:
+				if (m_bAlphaChannel)
+					return 65536;
+				else
+					return 0;
+
+			default:
+				return 0;
+		}
+	}
+}
+
+CString CDib::CFileInfo::GetTIFFDepthName()
+{
+	CString sText;
+	CString sCompression;
+
+	switch (m_nCompression)
+	{
+		case COMPRESSION_NONE : sCompression = _T("");						// Uncompressed
+			break;
+		case COMPRESSION_CCITTRLE : sCompression = _T("Huffman RLE");		// CCITT modified Huffman RLE
+			break;
+		case COMPRESSION_CCITTFAX3 : sCompression = _T("CCITT Fax3");		// CCITT Group 3 fax encoding
+			break;
+		case COMPRESSION_CCITTFAX4 : sCompression = _T("CCITT Fax4");		// CCITT Group 4 fax encoding
+			break;
+		case COMPRESSION_LZW : sCompression = _T("LZW");					// Lempel-Ziv  & Welch
+			break;
+		case COMPRESSION_OJPEG : sCompression = _T("OJPEG");				// !6.0 JPEG
+			break;
+		case COMPRESSION_JPEG : sCompression = _T("JPEG");					// JPEG DCT compression
+			break;
+		case COMPRESSION_NEXT : sCompression = _T("Next RLE");				// NeXT 2-bit RLE
+			break;
+		case COMPRESSION_CCITTRLEW : sCompression = _T("Huffman RLE");		// #1 w/ word alignment
+			break;
+		case COMPRESSION_PACKBITS : sCompression = _T("Packbits");			// Macintosh RLE
+			break;
+		case COMPRESSION_THUNDERSCAN : sCompression = _T("ThunderScan RLE");// ThunderScan RLE
+			break;
+		case COMPRESSION_IT8CTPAD : sCompression = _T("IT8 CT");			// IT8 CT w/padding
+			break;
+		case COMPRESSION_IT8LW : sCompression = _T("IT8 Linework");			// IT8 Linework RLE
+			break;
+		case COMPRESSION_IT8MP : sCompression = _T("IT8 Monochrome");		// IT8 Monochrome picture
+			break;
+		case COMPRESSION_IT8BL : sCompression = _T("IT8 Line Art");			// IT8 Binary line art
+			break;
+		case COMPRESSION_PIXARFILM : sCompression = _T("Pixar LZW");		// Pixar companded 10bit LZW
+			break;
+		case COMPRESSION_PIXARLOG : sCompression = _T("Pixar ZIP");			// Pixar companded 11bit ZIP
+			break;
+		case COMPRESSION_DEFLATE : sCompression = _T("ZIP");				// Deflate compression
+			break;
+		case COMPRESSION_ADOBE_DEFLATE : sCompression = _T("Adobe ZIP");	// Deflate compression
+			break;
+		case COMPRESSION_DCS : sCompression = _T("Kodak DCS");				// Kodak DCS encoding
+			break;
+		case COMPRESSION_JBIG : sCompression = _T("ISO JBIG");				// ISO JBIG
+			break;
+		case COMPRESSION_SGILOG : sCompression = _T("SGI Log L. RLE");		// SGI Log Luminance RLE
+			break;
+		case COMPRESSION_SGILOG24 : sCompression = _T("SGI Log 24-bit");	// SGI Log 24-bit packed
+			break;
+		case COMPRESSION_JP2000 : sCompression = _T("JPEG2000");			// Leadtools JPEG2000
+			break;
+		default : sCompression = _T("");
+			break;
+	}
+	
+	if (sCompression == _T(""))
+	{
+		if (m_nColorSpace == COLORSPACE_GRAYSCALE)
+		{
+			if (m_bAlphaChannel)
+				sText.Format(_T("GA%d, %d Levels"), m_nBpp, GetNumColors());
+			else
+			{
+				if (m_nBpp == 32)
+					sText.Format(_T("G%d, 2^32 Gray Levels"), m_nBpp);
+				else if (m_nBpp == 24)
+					sText.Format(_T("G%d, 2^24 Gray Levels"), m_nBpp);
+				else
+					sText.Format(_T("G%d, %d Gray Levels"), m_nBpp, GetNumColors());
+			}
+		}
+		else if (m_nColorSpace == COLORSPACE_CMYK)
+		{	
+			if (m_bAlphaChannel)
+				sText.Format(_T("CMYKA, %d Bpp"), m_nBpp);
+			else
+				sText.Format(_T("CMYK, %d Bpp"), m_nBpp);
+		}
+		else
+		{
+			if (m_bAlphaChannel)
+				sText.Format(_T("RGBA%d, True Colors"), m_nBpp);
+			else
+			{
+				if (m_nBpp == 16)
+				{
+					if (m_bPalette)
+						sText = _T("RGB16 (Pal.), 65536 Col.");
+					else
+						sText = _T("RGB16 (555), 65536 Col.");
+				}
+				else
+				{
+					if (m_nBpp <= 8)
+						sText.Format(_T("RGB%d, %i Colors"), m_nBpp, GetNumColors());
+					else
+						sText.Format(_T("RGB%d, True Colors"), m_nBpp);
+				}
+			}
+		}
+	}
+	else
+	{
+		if (m_nColorSpace == COLORSPACE_GRAYSCALE)
+		{
+			if (m_bAlphaChannel)
+				sText.Format(_T("GA%d, %d Grays, %s"), m_nBpp, GetNumColors(), sCompression);
+			else
+				sText.Format(_T("G%d, %s"), m_nBpp, sCompression);
+		}
+		else if (m_nColorSpace == COLORSPACE_CMYK)
+		{	
+			if (m_bAlphaChannel)
+				sText.Format(_T("CMYKA, %s"), sCompression);
+			else
+				sText.Format(_T("CMYK, %s"), sCompression);
+		}
+		else
+		{
+			if (m_bAlphaChannel)
+				sText.Format(_T("RGBA%d, %s"), m_nBpp, sCompression);
+			else
+				sText.Format(_T("RGB%d, %s"), m_nBpp, sCompression);
+		}
+	}
+
+	return sText;   
+}
+
+CString CDib::CFileInfo::GetDepthName()
+{
+	// Special handling for TIFF files
+	if (m_nType == TIFF)
+		return GetTIFFDepthName();
+
+	CString sText;
+
+	switch (m_nCompression)
+	{	
+		case BI_RGB :
+		case BI_JPEG :
+			if (m_nColorSpace == COLORSPACE_GRAYSCALE)
+			{
+				if (m_bAlphaChannel)
+					sText.Format(_T("GA%d, %d Levels"), m_nBpp, GetNumColors());
+				else
+				{
+					if (m_nNumTransparencyIndexes >= 1)
+						sText.Format(_T("G%d, %d Gray, Transp."), m_nBpp, GetNumColors());
+					else
+					{
+						if (m_nBpp == 32)
+							sText.Format(_T("G%d, 2^32 Gray Levels"), m_nBpp);
+						else if (m_nBpp == 24)
+							sText.Format(_T("G%d, 2^24 Gray Levels"), m_nBpp);
+						else
+							sText.Format(_T("G%d, %d Gray Levels"), m_nBpp, GetNumColors());
+					}
+				}
+			}
+			else if (m_nColorSpace == COLORSPACE_YCbCr)
+			{
+				sText.Format(_T("YCbCr, %d Bpp"), m_nBpp);
+			}
+			else if (m_nColorSpace == COLORSPACE_CMYK)
+			{	
+				sText.Format(_T("CMYK, %d Bpp"), m_nBpp);
+			}
+			else if (m_nColorSpace == COLORSPACE_YCCK)
+			{
+				sText.Format(_T("YCCK, %d Bpp"), m_nBpp);
+			}
+			else
+			{
+				if (m_bAlphaChannel)
+					sText.Format(_T("RGBA%d, True Colors"), m_nBpp);
+				else
+				{
+					if (m_nBpp == 16)
+					{
+						if (m_bPalette)
+							sText = _T("RGB16 (Pal.), 65536 Col.");
+						else
+							sText = _T("RGB16 (555), 32768 Col.");
+					}
+					else
+					{
+						if (m_nBpp <= 8)
+						{
+							if (m_nNumTransparencyIndexes >= 1)
+								sText.Format(_T("RGB%d, %i Col., Transp."), m_nBpp, GetNumColors());
+							else
+								sText.Format(_T("RGB%d, %i Colors"), m_nBpp, GetNumColors());
+						}
+						else
+						{
+							if (m_nNumTransparencyIndexes >= 1)
+								sText.Format(_T("RGB%d, True Col., Transp."), m_nBpp);
+							else
+								sText.Format(_T("RGB%d, True Colors"), m_nBpp);
+						}
+					}
+				}
+			}
+			return sText;
+		case BI_RLE8 :		
+			sText.Format(_T("RLE8, %i Colors"), GetNumColors());
+			return sText;
+		case BI_RLE4 :		
+			sText.Format(_T("RLE4, %i Colors"), GetNumColors());
+			return sText;
+		case BI_BITFIELDS :
+			if (m_nBpp == 16)
+			{
+				if ((m_dwBlueMask == 0x001F)	&&
+					(m_dwGreenMask == 0x07E0)	&&
+					(m_dwRedMask == 0xF800))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (565), 65536 Col.");
+#else
+					sText = _T("RGB16 (565), 65536 Col.");
+#endif
+				}
+				else if ((m_dwBlueMask == 0x001F)&&
+						(m_dwGreenMask == 0x03E0)&&
+						(m_dwRedMask == 0x7C00))
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16 (555), 32768 Col.");
+#else
+					sText = _T("RGB16 (555), 32768 Col.");
+#endif
+				}
+				else
+				{
+#ifdef _DEBUG
+					sText = _T("BITFIELDS16, 65536 Col.");
+#else
+					sText = _T("RGB16, 65536 Col.");
+#endif
+				}
+			}
+			else
+			{
+				if (m_bAlphaChannel)
+				{
+#ifdef _DEBUG
+					sText.Format(_T("BITFIELDSA%d, True Colors"), m_nBpp);
+#else
+					sText.Format(_T("RGBA%d, True Colors"), m_nBpp);
+#endif
+				}
+				else
+				{
+#ifdef _DEBUG
+					sText.Format(_T("BITFIELDS%d, True Colors"), m_nBpp);
+#else
+					sText.Format(_T("RGB%d, True Colors"), m_nBpp);
+#endif
+				}
+			}
+			return sText;
+		default : 
+		{
+			char ch0 = (char)(m_nCompression & 0xFF);
+			char ch1 = (char)((m_nCompression >> 8) & 0xFF);
+			char ch2 = (char)((m_nCompression >> 16) & 0xFF);
+			char ch3 = (char)((m_nCompression >> 24) & 0xFF);
+#ifdef _UNICODE
+			WCHAR wch0, wch1, wch2, wch3;
+			mbtowc(&wch0, &ch0, sizeof(WCHAR));
+			mbtowc(&wch1, &ch1, sizeof(WCHAR));
+			mbtowc(&wch2, &ch2, sizeof(WCHAR));
+			mbtowc(&wch3, &ch3, sizeof(WCHAR));
+			return (CString(wch0) + CString(wch1) + CString(wch2) + CString(wch3));
+#else
+			return (CString(ch0) + CString(ch1) + CString(ch2) + CString(ch3));
+#endif
+		}
+	}
+}
+
+// GDI Colors 16
+RGBQUAD CDib::ms_GdiColors16[] = {
+	{0x00, 0x00, 0x00, 0x00 },
+	{0x00, 0x00, 0x80, 0x00 },
+	{0x00, 0x80, 0x00, 0x00 },
+	{0x00, 0x80, 0x80, 0x00 },
+	{0x80, 0x00, 0x00, 0x00 },
+	{0x80, 0x00, 0x80, 0x00 },
+	{0x80, 0x80, 0x00, 0x00 },
+	{0x80, 0x80, 0x80, 0x00 },
+	{0xC0, 0xC0, 0xC0, 0x00 },
+	{0x00, 0x00, 0xFF, 0x00 },
+	{0x00, 0xFF, 0x00, 0x00 },
+	{0x00, 0xFF, 0xFF, 0x00 },
+	{0xFF, 0x00, 0x00, 0x00 },
+	{0xFF, 0x00, 0xFF, 0x00 },
+	{0xFF, 0xFF, 0x00, 0x00 },
+	{0xFF, 0xFF, 0xFF, 0x00 },
+};
+
+// GDI Colors 256
+RGBQUAD CDib::ms_GdiColors256[] = {
+	{0x00, 0x00, 0x00, 0x00 },
+	{0x00, 0x00, 0x80, 0x00 },
+	{0x00, 0x80, 0x00, 0x00 },
+	{0x00, 0x80, 0x80, 0x00 },
+	{0x80, 0x00, 0x00, 0x00 },
+	{0x80, 0x00, 0x80, 0x00 },
+	{0x80, 0x80, 0x00, 0x00 },
+	{0xC0, 0xC0, 0xC0, 0x00 },
+	{0xC0, 0xDC, 0xC0, 0x00 },
+	{0xF0, 0xCA, 0xA6, 0x00 },
+	{0x00, 0x20, 0x40, 0x00 },
+	{0x00, 0x20, 0x60, 0x00 },
+	{0x00, 0x20, 0x80, 0x00 },
+	{0x00, 0x20, 0xA0, 0x00 },
+	{0x00, 0x20, 0xC0, 0x00 },
+	{0x00, 0x20, 0xE0, 0x00 },
+	{0x00, 0x40, 0x00, 0x00 },
+	{0x00, 0x40, 0x20, 0x00 },
+	{0x00, 0x40, 0x40, 0x00 },
+	{0x00, 0x40, 0x60, 0x00 },
+	{0x00, 0x40, 0x80, 0x00 },
+	{0x00, 0x40, 0xA0, 0x00 },
+	{0x00, 0x40, 0xC0, 0x00 },
+	{0x00, 0x40, 0xE0, 0x00 },
+	{0x00, 0x60, 0x00, 0x00 },
+	{0x00, 0x60, 0x20, 0x00 },
+	{0x00, 0x60, 0x40, 0x00 },
+	{0x00, 0x60, 0x60, 0x00 },
+	{0x00, 0x60, 0x80, 0x00 },
+	{0x00, 0x60, 0xA0, 0x00 },
+	{0x00, 0x60, 0xC0, 0x00 },
+	{0x00, 0x60, 0xE0, 0x00 },
+	{0x00, 0x80, 0x00, 0x00 },
+	{0x00, 0x80, 0x20, 0x00 },
+	{0x00, 0x80, 0x40, 0x00 },
+	{0x00, 0x80, 0x60, 0x00 },
+	{0x00, 0x80, 0x80, 0x00 },
+	{0x00, 0x80, 0xA0, 0x00 },
+	{0x00, 0x80, 0xC0, 0x00 },
+	{0x00, 0x80, 0xE0, 0x00 },
+	{0x00, 0xA0, 0x00, 0x00 },
+	{0x00, 0xA0, 0x20, 0x00 },
+	{0x00, 0xA0, 0x40, 0x00 },
+	{0x00, 0xA0, 0x60, 0x00 },
+	{0x00, 0xA0, 0x80, 0x00 },
+	{0x00, 0xA0, 0xA0, 0x00 },
+	{0x00, 0xA0, 0xC0, 0x00 },
+	{0x00, 0xA0, 0xE0, 0x00 },
+	{0x00, 0xC0, 0x00, 0x00 },
+	{0x00, 0xC0, 0x20, 0x00 },
+	{0x00, 0xC0, 0x40, 0x00 },
+	{0x00, 0xC0, 0x60, 0x00 },
+	{0x00, 0xC0, 0x80, 0x00 },
+	{0x00, 0xC0, 0xA0, 0x00 },
+	{0x00, 0xC0, 0xC0, 0x00 },
+	{0x00, 0xC0, 0xE0, 0x00 },
+	{0x00, 0xE0, 0x00, 0x00 },
+	{0x00, 0xE0, 0x20, 0x00 },
+	{0x00, 0xE0, 0x40, 0x00 },
+	{0x00, 0xE0, 0x60, 0x00 },
+	{0x00, 0xE0, 0x80, 0x00 },
+	{0x00, 0xE0, 0xA0, 0x00 },
+	{0x00, 0xE0, 0xC0, 0x00 },
+	{0x00, 0xE0, 0xE0, 0x00 },
+	{0x40, 0x00, 0x00, 0x00 },
+	{0x40, 0x00, 0x20, 0x00 },
+	{0x40, 0x00, 0x40, 0x00 },
+	{0x40, 0x00, 0x60, 0x00 },
+	{0x40, 0x00, 0x80, 0x00 },
+	{0x40, 0x00, 0xA0, 0x00 },
+	{0x40, 0x00, 0xC0, 0x00 },
+	{0x40, 0x00, 0xE0, 0x00 },
+	{0x40, 0x20, 0x00, 0x00 },
+	{0x40, 0x20, 0x20, 0x00 },
+	{0x40, 0x20, 0x40, 0x00 },
+	{0x40, 0x20, 0x60, 0x00 },
+	{0x40, 0x20, 0x80, 0x00 },
+	{0x40, 0x20, 0xA0, 0x00 },
+	{0x40, 0x20, 0xC0, 0x00 },
+	{0x40, 0x20, 0xE0, 0x00 },
+	{0x40, 0x40, 0x00, 0x00 },
+	{0x40, 0x40, 0x20, 0x00 },
+	{0x40, 0x40, 0x40, 0x00 },
+	{0x40, 0x40, 0x60, 0x00 },
+	{0x40, 0x40, 0x80, 0x00 },
+	{0x40, 0x40, 0xA0, 0x00 },
+	{0x40, 0x40, 0xC0, 0x00 },
+	{0x40, 0x40, 0xE0, 0x00 },
+	{0x40, 0x60, 0x00, 0x00 },
+	{0x40, 0x60, 0x20, 0x00 },
+	{0x40, 0x60, 0x40, 0x00 },
+	{0x40, 0x60, 0x60, 0x00 },
+	{0x40, 0x60, 0x80, 0x00 },
+	{0x40, 0x60, 0xA0, 0x00 },
+	{0x40, 0x60, 0xC0, 0x00 },
+	{0x40, 0x60, 0xE0, 0x00 },
+	{0x40, 0x80, 0x00, 0x00 },
+	{0x40, 0x80, 0x20, 0x00 },
+	{0x40, 0x80, 0x40, 0x00 },
+	{0x40, 0x80, 0x60, 0x00 },
+	{0x40, 0x80, 0x80, 0x00 },
+	{0x40, 0x80, 0xA0, 0x00 },
+	{0x40, 0x80, 0xC0, 0x00 },
+	{0x40, 0x80, 0xE0, 0x00 },
+	{0x40, 0xA0, 0x00, 0x00 },
+	{0x40, 0xA0, 0x20, 0x00 },
+	{0x40, 0xA0, 0x40, 0x00 },
+	{0x40, 0xA0, 0x60, 0x00 },
+	{0x40, 0xA0, 0x80, 0x00 },
+	{0x40, 0xA0, 0xA0, 0x00 },
+	{0x40, 0xA0, 0xC0, 0x00 },
+	{0x40, 0xA0, 0xE0, 0x00 },
+	{0x40, 0xC0, 0x00, 0x00 },
+	{0x40, 0xC0, 0x20, 0x00 },
+	{0x40, 0xC0, 0x40, 0x00 },
+	{0x40, 0xC0, 0x60, 0x00 },
+	{0x40, 0xC0, 0x80, 0x00 },
+	{0x40, 0xC0, 0xA0, 0x00 },
+	{0x40, 0xC0, 0xC0, 0x00 },
+	{0x40, 0xC0, 0xE0, 0x00 },
+	{0x40, 0xE0, 0x00, 0x00 },
+	{0x40, 0xE0, 0x20, 0x00 },
+	{0x40, 0xE0, 0x40, 0x00 },
+	{0x40, 0xE0, 0x60, 0x00 },
+	{0x40, 0xE0, 0x80, 0x00 },
+	{0x40, 0xE0, 0xA0, 0x00 },
+	{0x40, 0xE0, 0xC0, 0x00 },
+	{0x40, 0xE0, 0xE0, 0x00 },
+	{0x80, 0x00, 0x00, 0x00 },
+	{0x80, 0x00, 0x20, 0x00 },
+	{0x80, 0x00, 0x40, 0x00 },
+	{0x80, 0x00, 0x60, 0x00 },
+	{0x80, 0x00, 0x80, 0x00 },
+	{0x80, 0x00, 0xA0, 0x00 },
+	{0x80, 0x00, 0xC0, 0x00 },
+	{0x80, 0x00, 0xE0, 0x00 },
+	{0x80, 0x20, 0x00, 0x00 },
+	{0x80, 0x20, 0x20, 0x00 },
+	{0x80, 0x20, 0x40, 0x00 },
+	{0x80, 0x20, 0x60, 0x00 },
+	{0x80, 0x20, 0x80, 0x00 },
+	{0x80, 0x20, 0xA0, 0x00 },
+	{0x80, 0x20, 0xC0, 0x00 },
+	{0x80, 0x20, 0xE0, 0x00 },
+	{0x80, 0x40, 0x00, 0x00 },
+	{0x80, 0x40, 0x20, 0x00 },
+	{0x80, 0x40, 0x40, 0x00 },
+	{0x80, 0x40, 0x60, 0x00 },
+	{0x80, 0x40, 0x80, 0x00 },
+	{0x80, 0x40, 0xA0, 0x00 },
+	{0x80, 0x40, 0xC0, 0x00 },
+	{0x80, 0x40, 0xE0, 0x00 },
+	{0x80, 0x60, 0x00, 0x00 },
+	{0x80, 0x60, 0x20, 0x00 },
+	{0x80, 0x60, 0x40, 0x00 },
+	{0x80, 0x60, 0x60, 0x00 },
+	{0x80, 0x60, 0x80, 0x00 },
+	{0x80, 0x60, 0xA0, 0x00 },
+	{0x80, 0x60, 0xC0, 0x00 },
+	{0x80, 0x60, 0xE0, 0x00 },
+	{0x80, 0x80, 0x00, 0x00 },
+	{0x80, 0x80, 0x20, 0x00 },
+	{0x80, 0x80, 0x40, 0x00 },
+	{0x80, 0x80, 0x60, 0x00 },
+	{0x80, 0x80, 0x80, 0x00 },
+	{0x80, 0x80, 0xA0, 0x00 },
+	{0x80, 0x80, 0xC0, 0x00 },
+	{0x80, 0x80, 0xE0, 0x00 },
+	{0x80, 0xA0, 0x00, 0x00 },
+	{0x80, 0xA0, 0x20, 0x00 },
+	{0x80, 0xA0, 0x40, 0x00 },
+	{0x80, 0xA0, 0x60, 0x00 },
+	{0x80, 0xA0, 0x80, 0x00 },
+	{0x80, 0xA0, 0xA0, 0x00 },
+	{0x80, 0xA0, 0xC0, 0x00 },
+	{0x80, 0xA0, 0xE0, 0x00 },
+	{0x80, 0xC0, 0x00, 0x00 },
+	{0x80, 0xC0, 0x20, 0x00 },
+	{0x80, 0xC0, 0x40, 0x00 },
+	{0x80, 0xC0, 0x60, 0x00 },
+	{0x80, 0xC0, 0x80, 0x00 },
+	{0x80, 0xC0, 0xA0, 0x00 },
+	{0x80, 0xC0, 0xC0, 0x00 },
+	{0x80, 0xC0, 0xE0, 0x00 },
+	{0x80, 0xE0, 0x00, 0x00 },
+	{0x80, 0xE0, 0x20, 0x00 },
+	{0x80, 0xE0, 0x40, 0x00 },
+	{0x80, 0xE0, 0x60, 0x00 },
+	{0x80, 0xE0, 0x80, 0x00 },
+	{0x80, 0xE0, 0xA0, 0x00 },
+	{0x80, 0xE0, 0xC0, 0x00 },
+	{0x80, 0xE0, 0xE0, 0x00 },
+	{0xC0, 0x00, 0x00, 0x00 },
+	{0xC0, 0x00, 0x20, 0x00 },
+	{0xC0, 0x00, 0x40, 0x00 },
+	{0xC0, 0x00, 0x60, 0x00 },
+	{0xC0, 0x00, 0x80, 0x00 },
+	{0xC0, 0x00, 0xA0, 0x00 },
+	{0xC0, 0x00, 0xC0, 0x00 },
+	{0xC0, 0x00, 0xE0, 0x00 },
+	{0xC0, 0x20, 0x00, 0x00 },
+	{0xC0, 0x20, 0x20, 0x00 },
+	{0xC0, 0x20, 0x40, 0x00 },
+	{0xC0, 0x20, 0x60, 0x00 },
+	{0xC0, 0x20, 0x80, 0x00 },
+	{0xC0, 0x20, 0xA0, 0x00 },
+	{0xC0, 0x20, 0xC0, 0x00 },
+	{0xC0, 0x20, 0xE0, 0x00 },
+	{0xC0, 0x40, 0x00, 0x00 },
+	{0xC0, 0x40, 0x20, 0x00 },
+	{0xC0, 0x40, 0x40, 0x00 },
+	{0xC0, 0x40, 0x60, 0x00 },
+	{0xC0, 0x40, 0x80, 0x00 },
+	{0xC0, 0x40, 0xA0, 0x00 },
+	{0xC0, 0x40, 0xC0, 0x00 },
+	{0xC0, 0x40, 0xE0, 0x00 },
+	{0xC0, 0x60, 0x00, 0x00 },
+	{0xC0, 0x60, 0x20, 0x00 },
+	{0xC0, 0x60, 0x40, 0x00 },
+	{0xC0, 0x60, 0x60, 0x00 },
+	{0xC0, 0x60, 0x80, 0x00 },
+	{0xC0, 0x60, 0xA0, 0x00 },
+	{0xC0, 0x60, 0xC0, 0x00 },
+	{0xC0, 0x60, 0xE0, 0x00 },
+	{0xC0, 0x80, 0x00, 0x00 },
+	{0xC0, 0x80, 0x20, 0x00 },
+	{0xC0, 0x80, 0x40, 0x00 },
+	{0xC0, 0x80, 0x60, 0x00 },
+	{0xC0, 0x80, 0x80, 0x00 },
+	{0xC0, 0x80, 0xA0, 0x00 },
+	{0xC0, 0x80, 0xC0, 0x00 },
+	{0xC0, 0x80, 0xE0, 0x00 },
+	{0xC0, 0xA0, 0x00, 0x00 },
+	{0xC0, 0xA0, 0x20, 0x00 },
+	{0xC0, 0xA0, 0x40, 0x00 },
+	{0xC0, 0xA0, 0x60, 0x00 },
+	{0xC0, 0xA0, 0x80, 0x00 },
+	{0xC0, 0xA0, 0xA0, 0x00 },
+	{0xC0, 0xA0, 0xC0, 0x00 },
+	{0xC0, 0xA0, 0xE0, 0x00 },
+	{0xC0, 0xC0, 0x00, 0x00 },
+	{0xC0, 0xC0, 0x20, 0x00 },
+	{0xC0, 0xC0, 0x40, 0x00 },
+	{0xC0, 0xC0, 0x60, 0x00 },
+	{0xC0, 0xC0, 0x80, 0x00 },
+	{0xC0, 0xC0, 0xA0, 0x00 },
+	{0xF0, 0xFB, 0xFF, 0x00 },
+	{0xA4, 0xA0, 0xA0, 0x00 },
+	{0x80, 0x80, 0x80, 0x00 },
+	{0x00, 0x00, 0xFF, 0x00 },
+	{0x00, 0xFF, 0x00, 0x00 },
+	{0x00, 0xFF, 0xFF, 0x00 },
+	{0xFF, 0x00, 0x00, 0x00 },
+	{0xFF, 0x00, 0xFF, 0x00 },
+	{0xFF, 0xFF, 0x00, 0x00 },
+	{0xFF, 0xFF, 0xFF, 0x00 },
+};
+
+// Standard Colors
+RGBQUAD CDib::ms_StdColors[] = {
+	{0x00, 0x00, 0x00, 0x00 },	// System palette - first 10 colors
+	{0x00, 0x00, 0x80, 0x00 },
+	{0x00, 0x80, 0x00, 0x00 },
+	{0x00, 0x80, 0x80, 0x00 },
+	{0x80, 0x00, 0x00, 0x00 },
+	{0x80, 0x00, 0x80, 0x00 },
+	{0x80, 0x80, 0x00, 0x00 },
+	{0xC0, 0xC0, 0xC0, 0x00 },
+	{0xC0, 0xDC, 0xC0, 0x00 },
+	{0xF0, 0xCA, 0xA6, 0x00 },
+
+	{0x00, 0x00, 0x2C, 0x00 },
+	{0x00, 0x00, 0x56, 0x00 },
+	{0x00, 0x00, 0x87, 0x00 },
+	{0x00, 0x00, 0xC0, 0x00 },
+	{0x00, 0x00, 0xFF, 0x00 },
+	{0x00, 0x2C, 0x00, 0x00 },
+	{0x00, 0x2C, 0x2C, 0x00 },
+	{0x00, 0x2C, 0x56, 0x00 },
+	{0x00, 0x2C, 0x87, 0x00 },
+	{0x00, 0x2C, 0xC0, 0x00 },
+	{0x00, 0x2C, 0xFF, 0x00 },
+	{0x00, 0x56, 0x00, 0x00 },
+	{0x00, 0x56, 0x2C, 0x00 },
+	{0x00, 0x56, 0x56, 0x00 },
+	{0x00, 0x56, 0x87, 0x00 },
+	{0x00, 0x56, 0xC0, 0x00 },
+	{0x00, 0x56, 0xFF, 0x00 },
+	{0x00, 0x87, 0x00, 0x00 },
+	{0x00, 0x87, 0x2C, 0x00 },
+	{0x00, 0x87, 0x56, 0x00 },
+	{0x00, 0x87, 0x87, 0x00 },
+	{0x00, 0x87, 0xC0, 0x00 },
+	{0x00, 0x87, 0xFF, 0x00 },
+	{0x00, 0xC0, 0x00, 0x00 },
+	{0x00, 0xC0, 0x2C, 0x00 },
+	{0x00, 0xC0, 0x56, 0x00 },
+	{0x00, 0xC0, 0x87, 0x00 },
+	{0x00, 0xC0, 0xC0, 0x00 },
+	{0x00, 0xC0, 0xFF, 0x00 },
+	{0x00, 0xFF, 0x00, 0x00 },
+	{0x00, 0xFF, 0x2C, 0x00 },
+	{0x00, 0xFF, 0x56, 0x00 },
+	{0x00, 0xFF, 0x87, 0x00 },
+	{0x00, 0xFF, 0xC0, 0x00 },
+	{0x00, 0xFF, 0xFF, 0x00 },
+	{0x2C, 0x00, 0x00, 0x00 },
+	{0x2C, 0x00, 0x2C, 0x00 },
+	{0x2C, 0x00, 0x56, 0x00 },
+	{0x2C, 0x00, 0x87, 0x00 },
+	{0x2C, 0x00, 0xC0, 0x00 },
+	{0x2C, 0x00, 0xFF, 0x00 },
+	{0x2C, 0x2C, 0x00, 0x00 },
+	{0x2C, 0x2C, 0x2C, 0x00 },
+	{0x2C, 0x2C, 0x56, 0x00 },
+	{0x2C, 0x2C, 0x87, 0x00 },
+	{0x2C, 0x2C, 0xC0, 0x00 },
+	{0x2C, 0x2C, 0xFF, 0x00 },
+	{0x2C, 0x56, 0x00, 0x00 },
+	{0x2C, 0x56, 0x2C, 0x00 },
+	{0x2C, 0x56, 0x56, 0x00 },
+	{0x2C, 0x56, 0x87, 0x00 },
+	{0x2C, 0x56, 0xC0, 0x00 },
+	{0x2C, 0x56, 0xFF, 0x00 },
+	{0x2C, 0x87, 0x00, 0x00 },
+	{0x2C, 0x87, 0x2C, 0x00 },
+	{0x2C, 0x87, 0x56, 0x00 },
+	{0x2C, 0x87, 0x87, 0x00 },
+	{0x2C, 0x87, 0xC0, 0x00 },
+	{0x2C, 0x87, 0xFF, 0x00 },
+	{0x2C, 0xC0, 0x00, 0x00 },
+	{0x2C, 0xC0, 0x2C, 0x00 },
+	{0x2C, 0xC0, 0x56, 0x00 },
+	{0x2C, 0xC0, 0x87, 0x00 },
+	{0x2C, 0xC0, 0xC0, 0x00 },
+	{0x2C, 0xC0, 0xFF, 0x00 },
+	{0x2C, 0xFF, 0x00, 0x00 },
+	{0x2C, 0xFF, 0x2C, 0x00 },
+	{0x2C, 0xFF, 0x56, 0x00 },
+	{0x2C, 0xFF, 0x87, 0x00 },
+	{0x2C, 0xFF, 0xC0, 0x00 },
+	{0x2C, 0xFF, 0xFF, 0x00 },
+	{0x56, 0x00, 0x00, 0x00 },
+	{0x56, 0x00, 0x2C, 0x00 },
+	{0x56, 0x00, 0x56, 0x00 },
+	{0x56, 0x00, 0x87, 0x00 },
+	{0x56, 0x00, 0xC0, 0x00 },
+	{0x56, 0x00, 0xFF, 0x00 },
+	{0x56, 0x2C, 0x00, 0x00 },
+	{0x56, 0x2C, 0x2C, 0x00 },
+	{0x56, 0x2C, 0x56, 0x00 },
+	{0x56, 0x2C, 0x87, 0x00 },
+	{0x56, 0x2C, 0xC0, 0x00 },
+	{0x56, 0x2C, 0xFF, 0x00 },
+	{0x56, 0x56, 0x00, 0x00 },
+	{0x56, 0x56, 0x2C, 0x00 },
+	{0x56, 0x56, 0x56, 0x00 },
+	{0x56, 0x56, 0x87, 0x00 },
+	{0x56, 0x56, 0xC0, 0x00 },
+	{0x56, 0x56, 0xFF, 0x00 },
+	{0x56, 0x87, 0x00, 0x00 },
+	{0x56, 0x87, 0x2C, 0x00 },
+	{0x56, 0x87, 0x56, 0x00 },
+	{0x56, 0x87, 0x87, 0x00 },
+	{0x56, 0x87, 0xC0, 0x00 },
+	{0x56, 0x87, 0xFF, 0x00 },
+	{0x56, 0xC0, 0x00, 0x00 },
+	{0x56, 0xC0, 0x2C, 0x00 },
+	{0x56, 0xC0, 0x56, 0x00 },
+	{0x56, 0xC0, 0x87, 0x00 },
+	{0x56, 0xC0, 0xC0, 0x00 },
+	{0x56, 0xC0, 0xFF, 0x00 },
+	{0x56, 0xFF, 0x00, 0x00 },
+	{0x56, 0xFF, 0x2C, 0x00 },
+	{0x56, 0xFF, 0x56, 0x00 },
+	{0x56, 0xFF, 0x87, 0x00 },
+	{0x56, 0xFF, 0xC0, 0x00 },
+	{0x56, 0xFF, 0xFF, 0x00 },
+	{0x87, 0x00, 0x00, 0x00 },
+	{0x87, 0x00, 0x2C, 0x00 },
+	{0x87, 0x00, 0x56, 0x00 },
+	{0x87, 0x00, 0x87, 0x00 },
+	{0x87, 0x00, 0xC0, 0x00 },
+	{0x87, 0x00, 0xFF, 0x00 },
+	{0x87, 0x2C, 0x00, 0x00 },
+	{0x87, 0x2C, 0x2C, 0x00 },
+	{0x87, 0x2C, 0x56, 0x00 },
+	{0x87, 0x2C, 0x87, 0x00 },
+	{0x87, 0x2C, 0xC0, 0x00 },
+	{0x87, 0x2C, 0xFF, 0x00 },
+	{0x87, 0x56, 0x00, 0x00 },
+	{0x87, 0x56, 0x2C, 0x00 },
+	{0x87, 0x56, 0x56, 0x00 },
+	{0x87, 0x56, 0x87, 0x00 },
+	{0x87, 0x56, 0xC0, 0x00 },
+	{0x87, 0x56, 0xFF, 0x00 },
+	{0x87, 0x87, 0x00, 0x00 },
+	{0x87, 0x87, 0x2C, 0x00 },
+	{0x87, 0x87, 0x56, 0x00 },
+	{0x87, 0x87, 0x87, 0x00 },
+	{0x87, 0x87, 0xC0, 0x00 },
+	{0x87, 0x87, 0xFF, 0x00 },
+	{0x87, 0xC0, 0x00, 0x00 },
+	{0x87, 0xC0, 0x2C, 0x00 },
+	{0x87, 0xC0, 0x56, 0x00 },
+	{0x87, 0xC0, 0x87, 0x00 },
+	{0x87, 0xC0, 0xC0, 0x00 },
+	{0x87, 0xC0, 0xFF, 0x00 },
+	{0x87, 0xFF, 0x00, 0x00 },
+	{0x87, 0xFF, 0x2C, 0x00 },
+	{0x87, 0xFF, 0x56, 0x00 },
+	{0x87, 0xFF, 0x87, 0x00 },
+	{0x87, 0xFF, 0xC0, 0x00 },
+	{0x87, 0xFF, 0xFF, 0x00 },
+	{0xC0, 0x00, 0x00, 0x00 },
+	{0xC0, 0x00, 0x2C, 0x00 },
+	{0xC0, 0x00, 0x56, 0x00 },
+	{0xC0, 0x00, 0x87, 0x00 },
+	{0xC0, 0x00, 0xC0, 0x00 },
+	{0xC0, 0x00, 0xFF, 0x00 },
+	{0xC0, 0x2C, 0x00, 0x00 },
+	{0xC0, 0x2C, 0x2C, 0x00 },
+	{0xC0, 0x2C, 0x56, 0x00 },
+	{0xC0, 0x2C, 0x87, 0x00 },
+	{0xC0, 0x2C, 0xC0, 0x00 },
+	{0xC0, 0x2C, 0xFF, 0x00 },
+	{0xC0, 0x56, 0x00, 0x00 },
+	{0xC0, 0x56, 0x2C, 0x00 },
+	{0xC0, 0x56, 0x56, 0x00 },
+	{0xC0, 0x56, 0x87, 0x00 },
+	{0xC0, 0x56, 0xC0, 0x00 },
+	{0xC0, 0x56, 0xFF, 0x00 },
+	{0xC0, 0x87, 0x00, 0x00 },
+	{0xC0, 0x87, 0x2C, 0x00 },
+	{0xC0, 0x87, 0x56, 0x00 },
+	{0xC0, 0x87, 0x87, 0x00 },
+	{0xC0, 0x87, 0xC0, 0x00 },
+	{0xC0, 0x87, 0xFF, 0x00 },
+	{0xC0, 0xC0, 0x00, 0x00 },
+	{0xC0, 0xC0, 0x2C, 0x00 },
+	{0xC0, 0xC0, 0x56, 0x00 },
+	{0xC0, 0xC0, 0x87, 0x00 },
+	{0xC0, 0xC0, 0xFF, 0x00 },
+	{0xC0, 0xFF, 0x00, 0x00 },
+	{0xC0, 0xFF, 0x2C, 0x00 },
+	{0xC0, 0xFF, 0x56, 0x00 },
+	{0xC0, 0xFF, 0x87, 0x00 },
+	{0xC0, 0xFF, 0xC0, 0x00 },
+	{0xC0, 0xFF, 0xFF, 0x00 },
+	{0xFF, 0x00, 0x00, 0x00 },
+	{0xFF, 0x00, 0x2C, 0x00 },
+	{0xFF, 0x00, 0x56, 0x00 },
+	{0xFF, 0x00, 0x87, 0x00 },
+	{0xFF, 0x00, 0xC0, 0x00 },
+	{0xFF, 0x00, 0xFF, 0x00 },
+	{0xFF, 0x2C, 0x00, 0x00 },
+	{0xFF, 0x2C, 0x2C, 0x00 },
+	{0xFF, 0x2C, 0x56, 0x00 },
+	{0xFF, 0x2C, 0x87, 0x00 },
+	{0xFF, 0x2C, 0xC0, 0x00 },
+	{0xFF, 0x2C, 0xFF, 0x00 },
+	{0xFF, 0x56, 0x00, 0x00 },
+	{0xFF, 0x56, 0x2C, 0x00 },
+	{0xFF, 0x56, 0x56, 0x00 },
+	{0xFF, 0x56, 0x87, 0x00 },
+	{0xFF, 0x56, 0xC0, 0x00 },
+	{0xFF, 0x56, 0xFF, 0x00 },
+	{0xFF, 0x87, 0x00, 0x00 },
+	{0xFF, 0x87, 0x2C, 0x00 },
+	{0xFF, 0x87, 0x56, 0x00 },
+	{0xFF, 0x87, 0x87, 0x00 },
+	{0xFF, 0x87, 0xC0, 0x00 },
+	{0xFF, 0x87, 0xFF, 0x00 },
+	{0xFF, 0xC0, 0x00, 0x00 },
+	{0xFF, 0xC0, 0x2C, 0x00 },
+	{0xFF, 0xC0, 0x56, 0x00 },
+	{0xFF, 0xC0, 0x87, 0x00 },
+	{0xFF, 0xC0, 0xC0, 0x00 },
+	{0xFF, 0xC0, 0xFF, 0x00 },
+	{0xFF, 0xFF, 0x2C, 0x00 },
+	{0xFF, 0xFF, 0x56, 0x00 },
+	{0xFF, 0xFF, 0x87, 0x00 },
+	{0xFF, 0xFF, 0xC0, 0x00 },
+	{0xFF, 0xFF, 0xFF, 0x00 },
+	{0x11, 0x11, 0x11, 0x00 },
+	{0x18, 0x18, 0x18, 0x00 },
+	{0x1E, 0x1E, 0x1E, 0x00 },
+	{0x25, 0x25, 0x25, 0x00 },
+	{0x2C, 0x2C, 0x2C, 0x00 },
+	{0x34, 0x34, 0x34, 0x00 },
+	{0x3C, 0x3C, 0x3C, 0x00 },
+	{0x44, 0x44, 0x44, 0x00 },
+	{0x4D, 0x4D, 0x4D, 0x00 },
+	{0x56, 0x56, 0x56, 0x00 },
+	{0x5F, 0x5F, 0x5F, 0x00 },
+	{0x69, 0x69, 0x69, 0x00 },
+	{0x72, 0x72, 0x72, 0x00 },
+	{0x7D, 0x7D, 0x7D, 0x00 },
+	{0x92, 0x92, 0x92, 0x00 },
+	{0x9D, 0x9D, 0x9D, 0x00 },
+	{0xA8, 0xA8, 0xA8, 0x00 },
+	{0xB4, 0xB4, 0xB4, 0x00 },
+	{0xCC, 0xCC, 0xCC, 0x00 },
+	{0xD8, 0xD8, 0xD8, 0x00 },
+	{0xE5, 0xE5, 0xE5, 0x00 },
+	{0xF2, 0xF2, 0xF2, 0x00 },
+	{0xFF, 0xFF, 0xFF, 0x00 },
+
+	{0xF0, 0xFB, 0xFF, 0x00 },	// System palette - last 10 colors
+	{0xA4, 0xA0, 0xA0, 0x00 },
+	{0x80, 0x80, 0x80, 0x00 },
+	{0x00, 0x00, 0xFF, 0x00 },
+	{0x00, 0xFF, 0x00, 0x00 },
+	{0x00, 0xFF, 0xFF, 0x00 },
+	{0xFF, 0x00, 0x00, 0x00 },
+	{0xFF, 0x00, 0xFF, 0x00 },
+	{0xFF, 0xFF, 0x00, 0x00 },
+	{0xFF, 0xFF, 0xFF, 0x00 },
+};

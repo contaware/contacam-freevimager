@@ -1,0 +1,964 @@
+document.write('<script language="javascript">function GetFeedbackTemplateId() {return "886F4011-1179-4d60-8722-79B23205A67B";}</script><DIV type="Feedback" class="ONDiv" Dir="" ID="pnlPrimary" subType="PrimaryFeedback"><TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="75%" HEIGHT="10%"><TR><TD><Div class="ONQuestion" ID="lblHelpful">Was this information helpful?</Div><P></P></TD></TR><TR><TD><Input class="ONButton" onclick="BtnClick(\'btnYes\')" ID="btnYes" type="Button" Value="Yes" Submit="true" OptionID="1" FeedbackTemplateItemID="1" NextPanelID="pnlSecondaryYes" Title="">&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnNo\')" ID="btnNo" type="Button" Value="No" Submit="true" OptionID="2" FeedbackTemplateItemID="1" NextPanelID="pnlSecondaryNo" Title="">&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnSomewhat\')" ID="btnSomewhat" type="Button" Value="Somewhat" Submit="true" OptionID="3" FeedbackTemplateItemID="1" NextPanelID="pnlSecondarySomewhat" Title="If the content was partially helpful, click this button and tell us why.">&nbsp;&nbsp;&nbsp;</TD></TR></TABLE></DIV><DIV type="Feedback" class="ONDiv" Dir="" ID="pnlSecondaryYes" subType="SecondaryFeedbackYes"><TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="75%" HEIGHT="10%"><TR><TD><Div class="ONQuestion" ID="lblFeedback">Would you like to provide additional feedback?</Div><P></P></TD></TR><TR><TD><textarea class="ONTextArea" type="text" wrap="physical" cols="50" rows="5" maxLength="850" ID="txtVerbatimYes" onkeypress="return EnforceLimit(event, this.id);" onkeyup="return keyCount(\'Characters remaining:\', this.id);" FeedbackTemplateItemID="10"></textarea><DIV id="lblMax" class="ONQuestion">Characters remaining: 850</DIV><P></P></TD></TR><TR><TD><Div class="ONTitle" ID="lblprogSecYes">Step 2 of 2</Div><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnBackYes\')" ID="btnBackYes" NextPanelID="pnlPrimary" type="Button" Value="Back">&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnSubmitYes\')" ID="btnSubmitYes" Submit="true" FeedbackTemplateItemID="10" TextId="txtVerbatimYes" NextPanelID="pnlEnd" type="Button" Value="Submit">&nbsp;&nbsp;&nbsp;</TD></TR></TABLE></DIV><DIV type="Feedback" class="ONDiv" Dir="" ID="pnlSecondaryNo" subType="SecondaryFeedbackNo"><TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="75%" HEIGHT="10%"><TR><TD><Div class="ONTitle" ID="lblMoreFeedback">Please help us improve by providing more feedback.</Div><P></P></TD></TR><TR><TD></TD></TR><TR><TD><Input class="ONButton" title="" ID="radWrong" Submit="true" onclick="RadioClick(\'radWrong\')" type="Radio" Name="RadGrp1" OptionID="1" FeedbackTemplateItemID="20"><a class="ONButton">Information Is Wrong</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radNeedsMore" Submit="true" onclick="RadioClick(\'radNeedsMore\')" type="Radio" Name="RadGrp1" OptionID="2" FeedbackTemplateItemID="20"><a class="ONButton">Needs More Information</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radNot" Submit="true" onclick="RadioClick(\'radNot\')" type="Radio" Name="RadGrp1" OptionID="3" FeedbackTemplateItemID="20"><a class="ONButton">Not What I Expected</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radOther" Submit="true" onclick="RadioClick(\'radOther\')" type="Radio" Name="RadGrp1" OptionID="4" FeedbackTemplateItemID="20"><a class="ONButton">Other</a></TD></TR><TR><TD>&nbsp;&nbsp;&nbsp;</TD></TR><TR><TD><textarea class="ONTextArea" type="text" wrap="physical" cols="50" rows="5" maxLength="850" ID="txtVerbatimNo" onkeypress="return EnforceLimit(event, this.id);" onkeyup="return keyCount(\'Characters remaining:\', this.id);" FeedbackTemplateItemID="24"></textarea><DIV id="lblMax" class="ONQuestion">Characters remaining: 850</DIV><P></P></TD></TR><TR><TD><Div class="ONTitle" ID="lblprogSecNo">Step 2 of 2</Div><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnBack\')" ID="btnBack" NextPanelID="pnlPrimary" type="Button" Value="Back">&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnSubmit\')" ID="btnSubmit" Submit="true" FeedbackTemplateItemID="20" TextId="txtVerbatimNo" NextPanelID="pnlEnd" type="Button" Value="Submit">&nbsp;&nbsp;&nbsp;</TD></TR></TABLE></DIV><DIV type="Feedback" class="ONDiv" Dir="" ID="pnlSecondarySomewhat" subType="SecondaryFeedbackSomewhat"><TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="75%" HEIGHT="10%"><TR><TD><Div class="ONTitle" ID="lblMoreFeedback">Please help us improve by providing more feedback.</Div><P></P></TD></TR><TR><TD></TD></TR><TR><TD><Input class="ONButton" title="" ID="radWrong" Submit="true" onclick="RadioClick(\'radWrong\')" type="Radio" Name="RadGrp1" OptionID="1" FeedbackTemplateItemID="30"><a class="ONButton">Information Is Wrong</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radNeedsMore" Submit="true" onclick="RadioClick(\'radNeedsMore\')" type="Radio" Name="RadGrp1" OptionID="2" FeedbackTemplateItemID="30"><a class="ONButton">Needs More Information</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radNot" Submit="true" onclick="RadioClick(\'radNot\')" type="Radio" Name="RadGrp1" OptionID="3" FeedbackTemplateItemID="30"><a class="ONButton">Not What I Expected</a></TD></TR><TR><TD><Input class="ONButton" title="" ID="radOther" Submit="true" onclick="RadioClick(\'radOther\')" type="Radio" Name="RadGrp1" OptionID="4" FeedbackTemplateItemID="30"><a class="ONButton">Other</a></TD></TR><TR><TD>&nbsp;&nbsp;&nbsp;</TD></TR><TR><TD><textarea class="ONTextArea" type="text" wrap="physical" cols="50" rows="5" maxLength="850" ID="txtVerbatimSomewhat" onkeypress="return EnforceLimit(event, this.id);" onkeyup="return keyCount(\'Characters remaining:\', this.id);" FeedbackTemplateItemID="34"></textarea><DIV id="lblMax" class="ONQuestion">Characters remaining: 850</DIV><P></P></TD></TR><TR><TD><Div class="ONTitle" ID="lblprogSecSomewhat">Step 2 of 2</Div><BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnBackSomewhat\')" ID="btnBackSomewhat" NextPanelID="pnlPrimary" type="Button" Value="Back">&nbsp;&nbsp;&nbsp;<Input class="ONButton" onclick="BtnClick(\'btnSubmitSomewhat\')" ID="btnSubmitSomewhat" Submit="true" FeedbackTemplateItemID="30" TextId="txtVerbatimSomewhat" NextPanelID="pnlEnd" type="Button" Value="Submit">&nbsp;&nbsp;&nbsp;</TD></TR></TABLE></DIV><DIV type="Feedback" class="ONDiv" Submit="true" Dir="" ID="pnlEnd" Title=""><Div class="ONTitle" ID="lblThanks">Thank you for your feedback!</Div><P></P><P></P><P></P></DIV><A id="PageOptions" style="visibility:hidden">Page Options</A><A id="Rate" class="ONPageControlBottom" style="visibility:hidden" title="Rate this page">Comments</A><P></P><P></P><P></P><P></P><P></P><P></P><P></P><P></P><P></P><DIV class="ONPageControlBottomDiv" id="pageControlBottom" Dir="Ltr"><TABLE cellSpacing="0" cellPadding="0" border="0" ID="Table1" class="ONPageControlBottomTable"><TBODY><TR valign="bottom"><TD onmouseover="this.style.backgroundColor = \'lightgrey\';" onmouseout="this.style.backgroundColor = \'#F1F1F1\';"><img align="left" id="PrintIcon" class="OnPageControlBottomImg" onclick="OnPrint();" type="image" src="/WindowsServer/FeedbackImages/rtg_print.gif" name="PrintIcon" title="Print a printer-friendly version of this page"><span id="Print" class="ONPageControlBottomText" onclick="OnPrint();" title="Print a printer-friendly version of this page">Printer-Friendly Version</span></TD><TD onmouseover="this.style.backgroundColor = \'lightgrey\';" onmouseout="this.style.backgroundColor = \'#F1F1F1\';"><img align="left" class="OnPageControlBottomImg" id="EmailIcon" onclick="OnEmail();" type="image" src="/WindowsServer/FeedbackImages/rtg_email.gif" name="EmailIcon" title="E-mail this page"><span id="Email" class="ONPageControlBottomText" onclick="OnEmail();" title="E-mail this page">Email this page</span></TD><TD onmouseover="this.style.backgroundColor = \'lightgrey\';" onmouseout="this.style.backgroundColor = \'#F1F1F1\';"><img align="left" class="OnPageControlBottomImg" id="SaveIcon" onclick="OnSave();" type="image" src="/WindowsServer/FeedbackImages/rtg_save.gif" name="SaveIcon" title="Add to favorites"><span id="Favorites" class="ONPageControlBottomText" onclick="OnSave();" title="Add to favorites">Add to Favorites</span></TD></TR></TBODY></TABLE></DIV><iframe ID="submitTarget"  style="visibility:hidden; width:0; height:0;"></iframe>');
+
+
+var enableRightPageControl = true;
+	var imgPath = '/WindowsServer//FeedbackImages/';
+	var feedbackPage = 
+		'http://technet2.microsoft.com/WindowsServer/FeedbackSink.aspx'
+	function InitWizard(ai) {
+		InitWizardInternal(
+'ar',ai, 'en-US','en-US','c2d85bef-7c0e-464b-8cc4-e091c82789c5','886f4011-1179-4d60-8722-79b23205a67b',false);
+	}
+	var bDebug = false;
+
+	 function LogRating(opt, optVal, verbatim) {
+	 try {
+			 var i=0;
+			 var qs = '';
+			 var url = '';
+
+			 qs = '?assetId=' + assetId +
+					 '&feedbackTemplate=' + feedbackTemplate +
+					 '&documentSet=' + documentSet +
+					 '&locale=' + locale +
+					 '&groupId=' + groupId +
+					 '&feedbackTemplateId=' + GetFeedbackTemplateId() +
+					 '&Option=' + opt +
+					 '&OptionValue=' + optVal +
+					 '&Verbatim=' + EncodeUrlComponent(verbatim);
+			 url = feedbackPage;
+			 url += qs;
+			 url = url;
+
+			 NavigateIFrame('submitTarget', url);
+			
+		 } catch(e) {
+			 return null;
+		 }
+	}
+
+var rgStrClickToRate = new Array();
+var iFeedbackWizStarRated = 0;
+var bFeedbackWizJustRated = false;
+var feedbackTemplate, assetId, documentSet, locale, groupId, feedbackTemplateId;
+var logToFile = false;
+var maxChars = 850;
+var bMNP2 = false;
+var gCurTxt = '';
+var pf = false;
+
+var qs = document.location.search;
+
+	if (window.navigator.appName.toUpperCase().indexOf("MICROSOFT ") >= 0)
+		window.attachEvent("onload", OnLoad);
+
+if(qs.toString().toLowerCase().indexOf('pf=true') != -1) {
+	pf = true;
+} else {
+	pf = false;
+}
+
+function OnLoad() {
+	var div = document.getElementById("pagetools");
+
+	if(div != null) {
+		div.style.visibility = "hidden";					
+		div.style.display = "none";		
+	}		
+}
+
+function InitWizardInternal(ft, ai, ds, l, qi, gi, fi, log) {
+	try {
+		feedbackTemplate = ft;
+		assetId = ai;
+		documentSet = ds;
+		locale = l;
+		groupId = gi;
+		feedbackTemplateId = fi;
+		logToFile = log;					
+				
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+
+function HandleException(ex) {
+	return null;
+}
+
+function displayRatingsAndFeedback() {
+
+	if(pf)
+		return false;
+		
+	var div = document.getElementById("feedbackControl");
+	
+	if(div == null)
+		return false;
+		
+	return div.id != undefined;
+}
+
+function displayPageControls() {	
+	if(pf)
+		return false;
+
+	var div = document.getElementById("pageControl");
+	
+	if(div == null)
+		return false;
+			
+	return div.id != undefined;		
+}
+
+function displayFavoritesOption() {
+	if(pf)
+		return false;
+
+	if (window.navigator.appName.toUpperCase().indexOf("MICROSOFT ") >= 0)
+		return true;
+	else
+		return false;
+}
+
+function InitPageControl() {
+	try {
+
+		var pageControlDiv = document.getElementById("pageControl");
+		var pageControlBottomDiv = document.getElementById("pageControlBottom");		
+		
+		if(displayPageControls()) {	
+
+			if(pageControlDiv != null) {
+				pageControlDiv.style.visibility = "visible";	
+				pageControlDiv.style.display = "";
+			}
+			
+			if(pageControlBottomDiv != null) {
+				pageControlBottomDiv.style.visibility = "visible";
+				pageControlBottomDiv.style.display = "";
+			}
+						
+			EmitPageControlRight();
+
+
+			if(document.getElementById("PrintPageControl") != null && document.getElementById("Print") != null) {
+				document.getElementById("PrintPageControl").innerHTML += document.getElementById("Print").innerHTML;
+				document.getElementById("PrintPageControl").title = document.getElementById("Print").title;				
+			}
+				
+			if(document.getElementById("EmailPageControl") != null && document.getElementById("Email") != null) {
+				document.getElementById("EmailPageControl").innerHTML += document.getElementById("Email").innerHTML;			
+				document.getElementById("EmailPageControl").title = document.getElementById("Email").title;				
+			}					
+			
+			if(document.getElementById("imgPrint") != null) {			
+				document.getElementById("imgPrint").src = imgPath + "rtg_print.gif";			
+			}
+			
+			if(document.getElementById("imgEmail") != null) {			
+				document.getElementById("imgEmail").src = imgPath + "rtg_email.gif";
+			}					
+
+			if(document.getElementById("lblPageOptions") != null && document.getElementById("PageOptions") != null) {			
+				document.getElementById("lblPageOptions").innerHTML = document.getElementById("PageOptions").innerHTML;			
+			}
+			
+			if (displayFavoritesOption()) {			
+				document.getElementById("SavePageControl").innerHTML += document.getElementById("Favorites").innerHTML;
+				document.getElementById("SavePageControl").title = document.getElementById("Favorites").title;				
+				document.getElementById("imgFavorites").src = imgPath + "rtg_save.gif";						
+			} else {
+
+				document.getElementById("Favorites").style.visibility = "hidden";					
+				document.getElementById("Favorites").style.display = "none";
+				document.getElementById("SaveIcon").style.visibility = "hidden";					
+				document.getElementById("SaveIcon").style.display = "none";				
+			}
+												
+			if(displayRatingsAndFeedback()) {			
+				document.getElementById("RatePageControl").innerHTML += document.getElementById("Rate").innerHTML;
+				document.getElementById("RatePageControl").title = document.getElementById("Rate").title;
+				document.getElementById("imgRate").src = imgPath + "rtg_rate.gif";
+			}						
+						
+		} else {
+			if(pageControlDiv != null) {
+				pageControlDiv.style.visibility = "hidden";					
+				pageControlDiv.style.display = "none";
+			}
+		}	
+		
+	} catch(e) {
+		HandleException(e);
+	}
+}
+
+function InitPanels() {	
+	try {	
+
+		var panCol = document.getElementsByTagName("div");
+		var curDiv;
+		var img;
+
+		if (panCol != null && panCol != 'undefined') {
+			for (i=0; i < panCol.length; i++) {
+			
+				if(panCol[i].getAttribute("type") == "Feedback") {
+					curDiv = document.getElementById(panCol[i].id)
+					curDiv.style.visibility = "hidden";
+					curDiv.style.display = "none";
+				}
+
+				if(displayRatingsAndFeedback() && panCol[i].getAttribute("subType") == "PrimaryFeedback") {
+					curDiv = document.getElementById(panCol[i].id)
+					curDiv.style.visibility = "visible";
+					curDiv.style.display = "";
+				}						
+			}
+		}		
+
+		InitPageControl();
+										
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+
+function SetFeedbackFocus() {
+	try {	
+
+		var curHash = document.location.hash.toString();
+		
+		//remove anchor on for fav and email links
+		if(curHash.indexOf('feedbackControl') < -1)
+			document.location = document.location;
+		else
+			document.location.hash = 'feedbackControl';		
+			
+	} catch(e) {
+		HandleException(e);
+	}				
+}
+
+
+function EmitPageControlRight() 
+{		
+	try {	
+		if(!enableRightPageControl)
+			return;
+	
+			var ret = "";
+
+			ret += "<DIV class=\"ONPageControlDiv\" id=\"pageoptions_OptionsPanel\">";
+				ret += "<H4 class=\"ONH4\" \" NOWRAP \" id=\"lblPageOptions\"></H4>";
+				ret += "<BR\>";
+				ret += "<TABLE id=\"tbRatings\" class=\"ONPageControlTable\" cellSpacing=\"4\" cellPadding=\"0\" border=\"0\">";
+					ret += "<TBODY>";
+					ret += "<TR>";
+						ret += "<TD>";
+							ret += "<IMG id=\"imgPrint\" class=\"OnPageControlImg\" height=\"18\" src=\"\" width=\"18\" align=\"absMiddle\" onclick=\"OnPrint();\" />";
+						ret += "</TD>";
+						ret += "<TD style=\"WIDTH: 100%\">";
+							ret += "<span id=\"PrintPageControl\" class=\"ONPageControlRight\" title=\"\" onclick=\"OnPrint();\"></span>";
+						ret += "</TD>";
+					ret += "</TR>";
+					ret += "<TR>";
+						ret += "<TD>";
+							ret += "<IMG id=\"imgEmail\" class=\"OnPageControlImg\" height=\"18\" src=\"\" width=\"18\" align=\"absMiddle\" onclick=\"OnEmail();\" />";
+						ret += "</TD>";
+						ret += "<TD style=\"WIDTH: 100%\">";
+						ret += "<span id=\"EmailPageControl\" onclick=\"OnEmail();\" class=\"ONPageControlRight\" title=\"\"></span>";
+						ret += "</TD>";
+					ret += "</TR>";
+			
+					if (displayFavoritesOption()) {			
+						ret += "<TR>";
+							ret += "<TD>";
+								ret += "<IMG id=\"imgFavorites\" class=\"OnPageControlImg\" height=\"18\" src=\"\" width=\"18\" align=\"absMiddle\" onclick=\"OnSave();\" />";
+							ret += "</TD>";
+							ret += "<TD style=\"WIDTH: 100%\">";
+								ret += "<span id=\"SavePageControl\" class=\"ONPageControlRight\" title=\"\" onclick=\"OnSave();\"></span>";
+							ret += "</TD>";
+						ret += "</TR>";
+					}
+					
+					if(displayRatingsAndFeedback()) {
+						ret += "<TR>";
+							ret += "<TD>";
+								ret += "<IMG id=\"imgRate\" class=\"OnPageControlImg\" height=\"18\" src=\"\" width=\"18\" align=\"absMiddle\" onclick=\"SetFeedbackFocus();\" href=\"javascript:OnRate()\" />";
+							ret += "</TD>";
+							ret += "<TD style=\"WIDTH: 100%\">";
+								ret += "<span id=\"RatePageControl\" class=\"ONPageControlRight\" onclick=\"SetFeedbackFocus();\"></span>";
+							ret += "</TD>";
+						ret += "</TR>";						
+					}
+					
+					ret += "</TBODY>";
+				ret += "</TABLE>";
+			ret += "</DIV><BR/><BR/>";				
+				
+		if(document.getElementById("pageControl") != null)			
+			document.getElementById("pageControl").innerHTML = ret;				
+					
+		if(document.getElementById("pageoptions_OptionsPanel") != null && document.getElementById("pageControlBottom") != null)
+			document.getElementById("pageoptions_OptionsPanel").dir = document.getElementById("pageControlBottom").dir;
+			
+		if(document.getElementById("lblPageOptions") != null) {
+			document.getElementById("pageControl").dir = document.getElementById("pageControlBottom").dir;		
+			document.getElementById("lblPageOptions").dir = document.getElementById("pageControlBottom").dir;		
+		}
+		
+		if(document.getElementById("pageoptions_OptionsPanel").dir == "rtl".toLower())
+			document.getElementById("pageoptions_OptionsPanel").align = "right";
+		else
+			document.getElementById("pageoptions_OptionsPanel").align = "left";							
+				
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+
+function InitImgs() {
+	try {
+		var imgs = GetStarObjects();
+		rgStrClickToRate = new Array(imgs.length);
+		
+		if (imgs != null && imgs != 'undefined')
+		{	
+			for (i=0; i < imgs.length; i++) {
+				rgStrClickToRate[i] = imgs.alt;
+			}
+		}
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+		
+function DOMSwapNode(n1, n2) {
+	try {
+		n1.parentNode.insertBefore(n2.parentNode.removeChild(n2),n1);
+	} catch(e) {
+		HandleException(e);
+	}						
+}
+
+function PanelNav(pnlFrom, pnlTo) {	
+	try {	
+		if(	pnlFrom != null && 
+			pnlFrom != 'undefined' && 
+			pnlTo != null && 
+			pnlTo != 'undefined' &&
+			pnlFrom != pnlTo) {
+					
+				pnlTo.style.visibility = "visible";
+				pnlTo.style.display = "";				
+				
+				pnlFrom.style.visibility = "hidden";
+				pnlFrom.style.display = "none";
+				DOMSwapNode(pnlFrom, pnlTo);
+		}
+	} catch(e) {
+		HandleException(e);
+	}			
+}	
+
+function SetTextBox() {
+	var txtCol = document.getElementsByTagName("textarea");
+	var feedbackType;
+	
+	if (txtCol != null && txtCol != 'undefined') {
+		for (i=0; i < txtCol.length; i++) {	
+			feedbackType = txtCol[i].getElementsByTagName("FeedbackTemplateItemID");
+			
+			if(feedbackType != 'undefined' && feedbackType != null)
+				txtCol[i].value = gCurTxt;			
+		}		
+	}
+}
+
+function GetCurrentPanel(obj) {
+	try {
+		if (window.navigator.appName.toUpperCase().indexOf("NETSCAPE") >= 0)
+			return GetCurrentPanelNetscape(obj);
+		else
+			return GetCurrentPanelIE(obj);
+	} catch(e) {
+		HandleException(e);
+	}
+}
+
+function GetCurrentPanelIE(obj) {
+	try {
+		var pnlCur;
+		var tmp;
+
+		tmp = obj.parentElement;
+
+		while(tmp.tagName != 'DIV') {
+			tmp = tmp.parentElement;
+		}
+		
+		pnlCur = document.getElementById(tmp.id);
+		return pnlCur;
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+
+function GetCurrentPanelNetscape(obj) {
+	try {
+			var pnlCur;
+			var tmp;
+
+			tmp = obj.parentNode;
+
+			while(tmp.tagName != 'DIV') {
+				tmp = tmp.parentNode;
+			}
+			
+			pnlCur = document.getElementById(tmp.id);
+			return pnlCur;
+		} catch(e) {
+			HandleException(e);
+		}			
+}
+			
+function GetTxtFeedbackVal(id) {
+	try {
+		var curObj = document.getElementById(id);
+		var tmp;
+		var curTxt;
+
+		if(curObj != null && curObj != 'undefined') {				
+			if(curObj.getAttribute("type") == 'text')
+				return curObj.value;
+		}	
+		
+		return null;
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+
+function GetNumericFeedbackVal(id) {
+	try {
+		var curObj = document.getElementById(id);
+		var tmp;
+
+		if(curObj != null && curObj != 'undefined') {				
+			var oType = curObj.getAttribute("Submit");
+			
+			if(oType == 'true')
+				return curObj.getAttribute("OptionID");
+				
+			if(curObj.getAttribute("type") == 'radio' && curObj.checked) {
+				return curObj.getAttribute("OptionID");
+			}
+		}
+		
+		return null;
+	} catch(e) {
+		HandleException(e);
+	}						
+}
+
+function EnforceLimit(e, id) {
+	var obj = document.getElementById(id);
+	
+	if(window.navigator.appName.toUpperCase().indexOf("NETSCAPE") >= 0) {
+		if(e.which >= 40 && e.which <= 126 && obj.value.length >= obj.maxLength * 1)
+			return false;
+		else
+			return true;	
+	}	
+	
+	if (obj.value.length >= obj.maxLength * 1) {			
+		return false;
+	}		
+}
+
+function keyCount(lblText, id) { 
+	
+	var obj = document.getElementById(id);
+	
+	if (obj.value.length > obj.maxLength *1 ) 
+		obj.value = obj.value.substring(0, obj.maxLength * 1);
+		
+	if (maxChars) 
+		maxChars.innerText = obj.maxLength - obj.value.length;
+		
+	DisplayRemainingChars(obj.id, lblText);		
+}
+
+
+function DisplayRemainingChars(id, lblText) {
+	var curTxt = document.getElementById(id);
+	var max = curTxt.maxLength;
+	
+	if(curTxt.maxLength != maxChars)
+		curTxt.maxLength = maxChars;
+
+	var cur = parseInt(curTxt.value.length);
+	var s;
+	
+	if((max-cur) < 0)
+		s = new String(0);
+	else
+		s = new String(max-cur);
+	
+	var curLbl = document.getElementById('lblMax');
+	curLbl.childNodes[0].nodeValue = lblText + ' ' + s;		
+}
+
+function printerFriendly() {		
+	var oWnd = window.open(GetPageURL(true) + '?pf=true');	
+}
+		
+function BtnClick(id) {				
+	try {
+		var curBtn = document.getElementById(id);
+		var tmp;
+		var pnlCur = GetCurrentPanel(curBtn);
+		var txtVal = null;		
+		var pnlCol = pnlCur.getElementsByTagName("div");
+		var i=0;				
+		var opt	= new Array(0);
+		var optVal = new Array(0);
+		
+		if(curBtn != null && curBtn != 'undefined') {				
+			var pnlNext = curBtn.getAttribute("NextPanelID");
+			var bType = curBtn.getAttribute("Submit");
+								
+			if(bType == 'true') {
+				if(GetNumericFeedbackVal(curBtn.id) != null) {
+					opt.length += 1;
+					opt[opt.length-1] = curBtn.getAttribute("FeedbackTemplateItemID");
+				
+					optVal.length += 1;
+					optVal[optVal.length-1] = GetNumericFeedbackVal(curBtn.id);
+					
+				} else if(curBtn.getAttribute("TextId") != null) {
+					var curTxt = document.getElementById(curBtn.getAttribute("TextId"));
+					opt[i] = curTxt.getAttribute("FeedbackTemplateItemID");
+					txtVal = GetTxtFeedbackVal(curBtn.getAttribute("TextId"));
+					optVal[i] = null;
+				}
+				
+				for(i=0; i<pnlCol.length; i++) {
+					if(pnlCol[i].getAttribute("type") != 'undefined' && pnlCol[i].id != '' && pnlCol[i].getAttribute("type") != 'button') {
+						if(GetTxtFeedbackVal(pnlCol[i].id) != null) {
+							var curTxt = document.getElementById(curBtn.getAttribute("TextId"));
+							opt[i] = curTxt.getAttribute("FeedbackTemplateItemID");
+							txtVal = GetTxtFeedbackVal(curBtn.getAttribute("TextId"));
+							optVal[i] = null;
+						}
+						if(GetNumericFeedbackVal(pnlCol[i].id) != null) {
+							opt.length += 1;
+							opt[opt.length-1] = curBtn.getAttribute("FeedbackTemplateItemID");
+						
+							optVal.length += 1;
+							optVal[optVal.length-1] = GetNumericFeedbackVal(pnlCol[i].id);
+						}
+					}
+				}
+				for(i=0; i<opt.length; i++) {
+					LogRating(opt[i], optVal[i], trim(txtVal));
+				}
+			}
+			
+			pnlNext = document.getElementById(pnlNext);
+			PanelNav(pnlCur, pnlNext);						
+		}
+	} catch(e) {
+		HandleException(e);
+	}			
+}
+					
+function trim(s) {
+  if(s == null)
+	return s;
+	
+  while (s.substring(0, 1) == ' ') {
+    s = s.substring(1, s.length);
+  }
+  
+  while (s.substring(s.length-1, s.length) == ' ') {
+    s = s.substring(0, s.length-1);
+  }
+  
+  return s;
+}
+									
+function GetStarObjects() {
+	try {
+		var imgs = new Array(0);				
+		var col1 = document.getElementsByTagName("img");
+		var arTmp;
+		var tmpSrc;
+		
+		if (col1 != null && col1 != 'undefined') {	
+			for (i=0; i < col1.length; i++) {
+				if(col1[i].getAttribute("type") == "Star") {
+					imgs.length += 1;
+					imgs[imgs.length-1] = document.getElementById(col1[i].id);
+				}
+			}
+		}
+		
+		return imgs;
+	} catch(e) {
+		HandleException(e);
+	}			
+}				
+
+function StarClick(id) {
+	try {
+		var curStar = document.getElementById(id);		
+		var starVal = curStar.getAttribute("Name");
+		
+		if (iFeedbackWizStarRated == starVal)
+			return;
+
+		iFeedbackWizStarRated = starVal;
+		bFeedbackWizJustRated = true;
+
+		var imgs = GetStarObjects();
+		for (var i=0; i < imgs.length; i++) {
+			if (i == starVal-1) {
+				imgs[i].style.cursor = "default";
+			} else {
+				imgs[i].style.cursor = "hand";
+			}
+
+			if (starVal > i)
+				imgs[i].src = imgPath + "lg_output_full.gif";
+			else
+				imgs[i].src = imgPath + "lg_output_empty.gif";
+		}
+							
+		var pnlNext = curStar.getAttribute("NextPanelID");
+		var pnlCur = GetCurrentPanel(curStar);
+
+		LogRating(curStar.getAttribute("FeedbackTemplateItemID"), parseInt(curStar.getAttribute("OptionID")), null);
+		
+		pnlNext = document.getElementById(pnlNext);
+		SetTextBox();
+		PanelNav(pnlCur, pnlNext);
+	
+	} catch(e) {
+		HandleException(e);
+	}					
+}
+
+function LogClickThrough(ctt) {
+	try {
+		var i=0;
+		var qs = '';
+		var url = '';
+		
+		qs = '?assetId=' + assetId + 
+		'&feedbackTemplate=' + feedbackTemplate + 
+		'&documentSet=' + documentSet +
+		'&locale=' + locale +
+		'&groupId=' + groupId +
+		'&feedbackTemplateId=' + GetFeedbackTemplateId() +
+		'&ctt=' + ctt;
+	
+		if(logToFile == true)
+			qs += '&LogToFile=' + 'true';
+
+		url = feedbackPage;
+		url += qs;
+		url = url;
+
+		NavigateIFrame('submitTarget', url);
+		return;
+	} catch(e) {
+		HandleException(e);
+	}
+}
+			
+function RadioClick(id) {
+	try {
+
+		var curRad = document.getElementById(id);
+		var pnlNext = curRad.getAttribute("NextPanelID");
+		var pnlCur = GetCurrentPanel(curRad);
+
+		LogRating(curRad.getAttribute("FeedbackTemplateItemID"), parseInt(curRad.getAttribute("OptionID")), null);
+		pnlNext = document.getElementById(pnlNext);
+		PanelNav(pnlCur, pnlNext);
+	
+	} catch(e) {
+		HandleException(e);
+	}					
+}
+
+function StarMouseOut(id) {
+	try {
+		bFeedbackWizJustRated = false;
+		var imgs = GetStarObjects();
+
+		for (var i=0; i < imgs.length; i++) {
+			if (iFeedbackWizStarRated <= 0 || iFeedbackWizStarRated > imgs.length) {
+				imgs[i].src = imgPath + "lg_input_empty.gif";
+			} else {
+				if (iFeedbackWizStarRated > i)
+					imgs[i].src = imgPath + "lg_output_full.gif";
+				else
+					imgs[i].src = imgPath + "lg_output_empty.gif";
+			}
+		}
+	} catch(e) {
+		HandleException(e);
+	}						
+}
+
+function StarMouseOver(id) {
+	try {
+		var curStar = document.getElementById(id);
+		var max = parseInt(curStar.getAttribute("OptionID"));
+
+		if(isNaN(max))
+			return;
+			
+		curStar.src = imgPath + "lg_input_full.gif";																			
+		var starCol = GetStarObjects();
+		
+		var arTmp;
+		var tmpSrc;
+
+		if (starCol != null && starCol != 'undefined')
+		{				
+			for (i=0; i < starCol.length; i++) {
+				if(isNaN(parseInt(starCol[i].getAttribute("OptionID"))))
+					return;
+				if(parseInt(starCol[i].getAttribute("OptionID")) < max) {
+					curStar = document.getElementById(starCol[i].id);
+					curStar.src = imgPath + "lg_input_full.gif";
+				}
+			}					
+		}
+	} catch(e) {
+		HandleException(e);
+	}			
+}            
+            
+function EncodeUrlComponent(strUrlComponent)
+{
+try {
+	if (typeof(strUrlComponent) == "undefined" ||
+		null == strUrlComponent)
+		return "";
+
+	if (typeof(encodeURIComponent) != "undefined")
+		return EncodeUrlComponent55(strUrlComponent);
+		
+	return EncodeUrlComponent50(strUrlComponent);			
+} catch(e) {
+	HandleException(e);
+}			
+}
+
+function EncodeUrlComponent55(strUrlComponent)
+{
+	return encodeURIComponent(strUrlComponent);
+}
+
+function EncodeUrlComponent50(strUrlComponent)
+{
+	try {
+		var i=0;
+		var strEncoded = "";
+		for (i=0; i < strUrlComponent.length; i++)
+			{
+			var chr = strUrlComponent.charAt(i);
+			var iChr = strUrlComponent.charCodeAt(i);
+
+			if (iChr < 128)
+				{
+				if ('!' == chr || '\'' == chr || '(' == chr || 	')' == chr || '~' == chr)
+					strEncoded += chr;
+				else if (0 == iChr)
+					strEncoded += "%00";
+				else if (127 == iChr)
+					strEncoded += "%7F";
+				else if ('+' == chr)
+					strEncoded += "%2B";
+				else if ('/' == chr)
+					strEncoded += "%2F";
+				else if ('@' == chr)
+					strEncoded += "%40";
+				else
+					strEncoded += escape(chr);
+				}
+			else if (iChr < 2048)
+				{
+				strEncoded += "%";
+				strEncoded += ( (iChr >> 6) + 192).toString(16).toUpperCase();
+
+				strEncoded += "%";
+				strEncoded += ( (iChr & 63) + 128).toString(16).toUpperCase();
+				}
+			else 
+				{
+				strEncoded += "%";
+				strEncoded += ( (iChr >> 12) + 224).toString(16).toUpperCase();
+
+				strEncoded += "%";
+				strEncoded += ( ((iChr >> 6) & 63) + 128).toString(16).toUpperCase();
+
+				strEncoded += "%";
+				strEncoded += ( (iChr & 63) + 128).toString(16).toUpperCase();
+				}
+			}
+			
+		return strEncoded;					
+	} catch(e) {
+		HandleException(e);
+	}					
+}
+
+function NavigateIFrameIE(strIFrameId, strLocation) {
+	try {	
+		var ifrmSubmitTarget = frames[strIFrameId];
+		if (typeof(ifrmSubmitTarget) != 'undefined' && null != ifrmSubmitTarget)
+			ifrmSubmitTarget.location.replace(strLocation);
+	} catch(e) {
+		HandleException(e);
+	}
+}
+
+function NavigateIFrameNetscape(strIFrameId, strLocation) {
+	try {
+		var ifrmSubmitTarget = document.getElementById(strIFrameId);
+		if (typeof(ifrmSubmitTarget) != 'undefined' && null != ifrmSubmitTarget)
+			ifrmSubmitTarget.contentWindow.location.replace(strLocation);
+	} catch(e) {
+		HandleException(e);
+	}				
+}
+
+function NavigateIFrame(strIFrameId, strLocation) {
+	try {
+		if (window.navigator.appName.toUpperCase().indexOf("NETSCAPE") >= 0)
+			NavigateIFrameNetscape(strIFrameId, strLocation);
+		else
+			NavigateIFrameIE(strIFrameId, strLocation);
+	} catch(e) {
+		HandleException(e);
+	}				
+}
+
+function GetContentWnd(){ return parent; }
+
+function OnInitPage(){
+	try {
+		var oWnd = GetContentWnd();
+		var strQuery = oWnd.location.search;
+
+		if( document.getElementById("RatingsServerCmd").value == "" ) // first time only
+		{
+			document.getElementById("RatingsServerCmd").value = "/";
+			document.getElementById("RatingsContentURL").value = oWnd.location.href;
+			document.getElementById("RatingsContentTitle").value = oWnd.document.title;
+
+			if(strQuery.indexOf(strEmailString) >= 0){
+				document.getElementById("RatingsServerCmd").value = "SaveReturnFromEmail";
+				document.forms(0).submit();
+				return;
+			}
+		}
+		
+	} catch(e) {
+		HandleException(e);
+	}						
+}
+
+function OnRate(){
+	try {
+		var obj = document.getElementById("RatePageControl");
+		obj.blur();
+		
+	} catch(e) {
+		HandleException(e);
+	}
+}
+
+function OnPrint(){
+	printerFriendly();
+	LogClickThrough(13);
+}
+
+function includeTextInEmail() {
+	if (window.navigator.appName.toUpperCase().indexOf("NETSCAPE") >= 0) {
+			if(document.characterSet == 'ISO-8859-1' || document.characterSet == 'windows-1252') {
+				return true;
+			} else {
+				return false;
+			}
+	} else {
+			if(document.charset == 'iso-8859-1' || document.charset == 'windows-1252') {
+				return true;
+			} else {
+				return false;
+			}	
+	}		
+}
+
+function OnEmail(){
+	try {
+		var oWnd = GetContentWnd();		
+
+		if(includeTextInEmail()) {
+			var oDoc = oWnd.document;
+			var oDescription = oDoc.getElementById("Description");
+			var strDescription = ( (oDescription == null) || (oDescription.content == "") ) ? oDoc.title : oDescription.content;
+
+			if( oDoc.title == "" )
+				oWnd.location.href = "mailto:?body="+BuildEmailDescription(strDescription, GetPageURL(true));
+			else
+				oWnd.location.href = "mailto:?subject="+escape(oDoc.title)+"&body="+BuildEmailDescription(strDescription, GetPageURL(true));			
+		} else {
+			oWnd.location.href = "mailto:?body=" + GetPageURL(true);
+		}
+			
+		LogClickThrough(92);
+					
+	} catch(e) {
+		HandleException(e);
+	}		
+}
+
+function BuildEmailDescription(strDescription,hRef){
+	try {
+		return escape(String.fromCharCode(13)+ String.fromCharCode(13) + strDescription + String.fromCharCode(13) + "URL: " + hRef);
+	} catch(e) {
+		HandleException(e);
+	}				
+}
+
+function GetPageURL(removeAnchor) {
+
+	var url = document.location.href;
+	if(removeAnchor) {
+		var curHash = document.location.hash.toString();	
+		url = url.replace(curHash, '');
+	}
+	
+	return url.toString();	
+}
+
+function OnSave(){
+	try {
+		var url = GetPageURL(true);
+		window.external.addFavorite( url, document.title );
+		LogClickThrough(93);						
+				
+	} catch(e) {
+		HandleException(e);
+	}		
+}
+InitPanels();
+InitImgs();

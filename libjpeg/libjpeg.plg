@@ -1,0 +1,175 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: libjpeg - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\Vale\IMPOST~1\Temp\RSP31.tmp" with contents
+[
+/nologo /MDd /w /W0 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR"Debug/" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcapimin.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcapistd.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jccoefct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jccolor.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcdctmgr.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jchuff.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcinit.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcmainct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcmarker.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcmaster.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcomapi.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcparam.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcphuff.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcprepct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jcsample.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jctrans.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdapimin.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdapistd.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdatadst.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdatasrc.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdcoefct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdcolor.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jddctmgr.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdhuff.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdinput.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdmainct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdmarker.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdmaster.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdmerge.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdphuff.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdpostct.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdsample.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jdtrans.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jerror.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jfdctflt.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jfdctfst.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jfdctint.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jidctflt.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jidctfst.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jidctint.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jidctred.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jmemmgr.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jmemnobs.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jquant1.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jquant2.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\jutils.c"
+"C:\Documents and Settings\Vale\Desktop\uimager_14_10_2004\Win32\libjpeg\transupp.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Vale\IMPOST~1\Temp\RSP31.tmp" 
+Creating temporary file "C:\DOCUME~1\Vale\IMPOST~1\Temp\RSP32.tmp" with contents
+[
+/nologo /out:"Debug\libjpeg.lib" 
+".\Debug\jcapimin.obj"
+".\Debug\jcapistd.obj"
+".\Debug\jccoefct.obj"
+".\Debug\jccolor.obj"
+".\Debug\jcdctmgr.obj"
+".\Debug\jchuff.obj"
+".\Debug\jcinit.obj"
+".\Debug\jcmainct.obj"
+".\Debug\jcmarker.obj"
+".\Debug\jcmaster.obj"
+".\Debug\jcomapi.obj"
+".\Debug\jcparam.obj"
+".\Debug\jcphuff.obj"
+".\Debug\jcprepct.obj"
+".\Debug\jcsample.obj"
+".\Debug\jctrans.obj"
+".\Debug\jdapimin.obj"
+".\Debug\jdapistd.obj"
+".\Debug\jdatadst.obj"
+".\Debug\jdatasrc.obj"
+".\Debug\jdcoefct.obj"
+".\Debug\jdcolor.obj"
+".\Debug\jddctmgr.obj"
+".\Debug\jdhuff.obj"
+".\Debug\jdinput.obj"
+".\Debug\jdmainct.obj"
+".\Debug\jdmarker.obj"
+".\Debug\jdmaster.obj"
+".\Debug\jdmerge.obj"
+".\Debug\jdphuff.obj"
+".\Debug\jdpostct.obj"
+".\Debug\jdsample.obj"
+".\Debug\jdtrans.obj"
+".\Debug\jerror.obj"
+".\Debug\jfdctflt.obj"
+".\Debug\jfdctfst.obj"
+".\Debug\jfdctint.obj"
+".\Debug\jidctflt.obj"
+".\Debug\jidctfst.obj"
+".\Debug\jidctint.obj"
+".\Debug\jidctred.obj"
+".\Debug\jmemmgr.obj"
+".\Debug\jmemnobs.obj"
+".\Debug\jquant1.obj"
+".\Debug\jquant2.obj"
+".\Debug\jutils.obj"
+".\Debug\transupp.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\Vale\IMPOST~1\Temp\RSP32.tmp"
+<h3>Output Window</h3>
+Compiling...
+jcapimin.c
+jcapistd.c
+jccoefct.c
+jccolor.c
+jcdctmgr.c
+jchuff.c
+jcinit.c
+jcmainct.c
+jcmarker.c
+jcmaster.c
+jcomapi.c
+jcparam.c
+jcphuff.c
+jcprepct.c
+jcsample.c
+jctrans.c
+jdapimin.c
+jdapistd.c
+jdatadst.c
+jdatasrc.c
+Generating Code...
+Compiling...
+jdcoefct.c
+jdcolor.c
+jddctmgr.c
+jdhuff.c
+jdinput.c
+jdmainct.c
+jdmarker.c
+jdmaster.c
+jdmerge.c
+jdphuff.c
+jdpostct.c
+jdsample.c
+jdtrans.c
+jerror.c
+jfdctflt.c
+jfdctfst.c
+jfdctint.c
+jidctflt.c
+jidctfst.c
+jidctint.c
+Generating Code...
+Compiling...
+jidctred.c
+jmemmgr.c
+jmemnobs.c
+jquant1.c
+jquant2.c
+jutils.c
+transupp.c
+Generating Code...
+Creating library...
+
+
+
+<h3>Results</h3>
+libjpeg.lib - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

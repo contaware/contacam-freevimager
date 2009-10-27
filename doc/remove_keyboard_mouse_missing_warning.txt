@@ -1,0 +1,5 @@
+Regedit
+-------
+
+Under: HLM/System/CurrentControlSet/Services/i8042prt
+Set:   ErrorControl to 0

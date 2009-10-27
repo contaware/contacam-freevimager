@@ -1,0 +1,217 @@
+
+
+document.write("<div style=\"display:none;background:#c0c0c0;\" id=\"errorspan\">Error: </div>");
+
+function Error(msg, url, lineno)
+{
+	var errObj = document.getElementById('errorspan');
+	
+    err = "A JS exception occurred. msg:" + msg + " url:" + url + " lno:" + lineno;
+	errObj.innerHTML = " " + err;
+	return true;
+}
+
+window.onerror=Error;
+
+var cookiesEnabled = false;
+
+function CheckCookies()
+{
+   var cookieValid = document.cookie;
+   
+   // if retrieving the VALUE we just set actually works 
+   // then we know cookies enabled
+   if (cookieValid.indexOf("apuserguid") != -1)
+   {
+      cookiesEnabled = true;
+   }
+   else
+   {
+      cookiesEnabled = false;
+   }
+}
+
+
+if (document.body.attachEvent)
+	document.body.attachEvent('onclick',clickIt);
+else if (document.body.addEventListener)
+	document.body.addEventListener("click",clickIt,false);
+	
+	CheckCookies();
+	
+	function clickIt(evt)	
+	{
+		try
+		{
+			var srcElement;
+						
+			if (cookiesEnabled == false)
+			{
+				return true;
+			}
+				
+			//Get the srcElement
+			if (evt && evt.target) 
+			{
+				srcElement = evt.target;
+			}
+			else if (window.event)
+			{
+				srcElement = window.event.srcElement;
+			}
+			else
+				return true;
+			
+			srcElement = getSrcElement(srcElement);
+		
+			if (srcElement == null)
+				return true;
+
+		
+			var tagName = srcElement.tagName;
+			var type = srcElement.type;
+
+			//Check if an anchor tag is clicked
+			if ( tagName == "A" || tagName == "a" )
+			{
+				var redir = srcElement.getAttribute("logredir");
+				var url = srcElement.getAttribute("href");
+				
+				// Do not run mailto: links through redir
+				if (url.substring(0,7).toLowerCase() == "mailto:")
+				{
+				    return true;
+				}
+								
+				if ((url == null) || (url == ""))
+				{
+					return false;
+				}
+			
+				if ((redir == "") || (redir == null))
+				{
+					srcElement.setAttribute("href",url);
+					return true;
+				}
+				
+				redir = "/WindowsServer/logredir.aspx?MODE=CT&" + redir
+				redir = redir + "&target=" + encodeURIComponent(url);
+				redir = redir + "&referrer=" + encodeURIComponent(document.URL);
+				redir = redir + "&reldir=" + encodeURIComponent(GetRelDir());
+
+				srcElement.setAttribute("href",redir);
+				return true;
+			}
+		}
+		catch ( ex )
+		{
+			err = "A JS exception occurred. msg:" + ex.message;
+			errorspan.innerHTML += " " + err;
+
+			window.event.returnValue = true;
+			return true;
+		}
+	}
+	
+	
+	function getSrcElement(srcElement)
+	{
+		if (srcElement == null)
+			return;
+			
+		if (srcElement.tagName == "a" || srcElement.tagName == "A")
+		{
+			return srcElement;
+		}
+		
+				
+		while (srcElement.tagName.toUpperCase() != "HTML")
+		{
+			srcElement = srcElement.parentNode;
+			
+			if (srcElement.tagName.toUpperCase() == "A")
+				return srcElement;			
+		}
+		return;
+	}
+	
+	function loadGif(mode, reldir, results, spvd, totalresults, lcid, qu, filter, none, least, exact, all)
+	{
+
+		if (cookiesEnabled == false)
+			return;
+			
+		if (mode == null)
+			return;
+		
+		if ((mode != "A") && (mode != "R"))
+			return;		
+		
+			
+		document.open();
+		
+		var url = document.URL;
+		
+		var docreferrer = document.referrer;
+		
+		var randomnumber=Math.floor(Math.random()*10000000001)
+		
+	
+		if (mode == "A")
+			document.write('<img height=1 width=1 src="/WindowsServer/logredir.aspx?MODE=PVA&target=' + escape(url) + '&reldir=' + escape(reldir) + '&referrer=' + escape(docreferrer) + '&rand=' + randomnumber + '" />');
+		else if (mode == "R")
+		{
+			var imgsrc = '<img height=1 width=1 src="/WindowsServer/logredir.aspx?MODE=PVR&target=' + escape(url) + '&reldir=' + escape(reldir) + '&referrer=' + escape(docreferrer) + '&spvd=' + escape(spvd) + '&totalresults=' + escape(totalresults) + '&lcid=' + lcid;
+			
+			if (qu != null)
+				imgsrc = imgsrc + '&qu=' + escape(qu);
+			else
+				imgsrc = imgsrc + '&qu=';
+
+			if (filter != null)
+				imgsrc = imgsrc + '&filter=' + escape(filter);
+			else
+				imgsrc = imgsrc + '&filter=';
+							
+			if (none != null)
+				imgsrc = imgsrc + '&none=' + escape(none);
+			else
+				imgsrc = imgsrc + '&none=';
+			
+			if (least != null)
+				imgsrc = imgsrc + '&least=' + escape(least);
+			else
+				imgsrc = imgsrc + '&least=';
+
+			if (exact != null)
+				imgsrc = imgsrc + '&exact=' + escape(exact);
+			else
+				imgsrc = imgsrc + '&exact=';
+			
+			if (all != null)
+				imgsrc = imgsrc + '&all=' + escape(all);
+			else
+				imgsrc = imgsrc + '&all=';
+
+			imgsrc = imgsrc + '&rand=' + randomnumber;
+			
+			if (results != null)
+				imgsrc = imgsrc + '&results=' + escape(results);
+			else
+				imgsrc = imgsrc + '&results=';
+			
+			imgsrc = imgsrc + '" />'; 
+				
+			
+			
+			
+			document.write(imgsrc);
+			
+			
+		}
+					
+		document.close();		
+	}
+	
+
+

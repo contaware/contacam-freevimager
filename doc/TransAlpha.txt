@@ -1,0 +1,183 @@
+TransparentBlt() and AlphaBlend() for Windows 95
+Christian Graus
+
+    Every new version of Windows provides new and improved API functions.
+    The problem is, if you take advantage of those improvements,
+    then your code no longer runs on older versions of Windows.
+    This article provides backwardly compatible implementations of two of
+    the more useful newer Windows functions: TransparentBlt() and AlphaBlend().
+
+    The source code I’ll be discussing is in gdiu.h (Listing 1) and gdiu.c (Listing 2).
+    
+    Introduction
+    ------------
+
+    There is probably no area where the problem of backward compatibility is more
+    frustrating than graphics. A number of highly useful functions
+    (and some I am yet to see a use for) have crept in over the years,
+    enough so that when I started work on a paint package for my employer,
+    my first question was, “Are we targeting Windows 95 machines?”
+    Well, I’m glad he said “yes,” only because of the things I learned in writing
+    replacements for what I consider the two staple functions introduced in Windows 98:
+    TransparentBlt() and AlphaBlend(). The purpose of this article is to provide you
+    with replacements for these functions, so you can use them and still support Windows 95
+    and hopefully learn some cool tricks as you examine how they do their stuff.
+    
+    
+    TransparentBlt()
+    ----------------
+
+    I’ll start with TransparentBlt() because it is the easiest.
+    To avoid conflict with the GDI function, I have called my variation TransparentBltU(),
+    where the “U” stands for “Universal.” When I set out to write this function,
+    I started by copying the prototype from MSDN,
+    so it is exactly the same as the GDI version. It looks like this:
+
+    bool TransparentBltU(
+    HDC dcDest,         // handle to Dest DC
+    int nXOriginDest,   // x-coord of dest upper-left corner
+    int nYOriginDest,   // y-coord of dest upper-left corner
+    int nWidthDest,     // width of destination rectangle
+    int nHeightDest,    // height of destination rectangle
+    HDC dcSrc,          // handle to source DC
+    int nXOriginSrc,    // x-coord of source upper-left corner
+    int nYOriginSrc,    // y-coord of source upper-left corner
+    int nWidthSrc,      // width of source rectangle
+    int nHeightSrc,     // height of source rectangle
+    UINT crTransparent  // color to make transparent
+      )
+
+    TransparentBltU() takes a handle to the destination device context,
+    four integers corresponding to the top-left corner and width/height of the area to copy to,
+    a handle and four integers providing the same details of the source, and a UINT,
+    which comes from the RGB macro to provide the color to mask out.
+    This means one call can specify an area you want to draw and draw it into an area that
+    need not have the same dimensions, excluding pixels of the specified color.
+    Internally, this is achieved by stretching the source area to the same dimensions as the
+    destination before going through the masking process.
+
+    What follows is an explanation of how the masking process works.
+    Figure 1 and Figure 2 are both images of my daughter, Hannah. You’ll notice that Figure 2
+    has a mask drawn around her. I propose to use this mask to draw her, without the background,
+    onto Figure 2, giving the illusion of twins. To do this, I use a very helpful feature of BitBlt().
+    A device context has a text color and a background color. The background color is the color
+    of the bounding box drawn if you draw text into a device context in OPAQUE mode.
+    However, if you first select a one-bit HBITMAP into the device context before you draw an image into it,
+    every pixel that corresponds to the background color will be drawn white;
+    the rest will be black. This means I can easily create a black and white mask
+    to use in merging my two images. This can be seen in Figure 3.
+
+    Now by using the SRCAND raster operation, I can apply a Boolean AND to draw the mask
+    back over the source image, which leaves me with black pixels in the place of our mask,
+    as shown in Figure 4. Note, I could eliminate this step if I enforced the need for the
+    transparent color to be black. This, and the stretching code, leaves good room for some
+    obvious optimization if you need to make the code faster for any reason, at the loss of some flexibility.
+
+    It is at this point in the code that the mask and image are stretched to accommodate
+    the new dimensions. I then use the SRCAND raster op again, this time to draw the black
+    mask onto the destination image where my final image will be (Figure 5), and finally use
+    SRCPAINT with the source image over the destination (Figure 6). SRCPAINT combines the colors
+    of source and destination using a boolean OR, meaning that the pixels that are not black (off)
+    in the source get merged to the destination. This works because the pixels left behind would,
+    if combined, create a black square, so no pixels are actually merged, but only the pixels
+    I want are copied across verbatim.
+    
+    
+    AlphaBlend()
+    ------------
+
+    Alphablending basically blends the source and destination bitmap, by assigning a weight to each,
+    in the range of 0-255, where 0 means the destination pixel should be left as is
+    (no matter what the source pixel is), 127 means that the destination pixel should be an
+    equal blend of its original value and that of the corresponding source pixel,
+    and 255 means that the destination pixel should just get set to the source pixel.
+
+    Alphablending lets you fade in bitmaps, create fogging effects, etc.
+    I have also provided a function called AlphaBlendCK(), (CK = Color Key),
+    which mixes this technique with the previous idea, letting you specify a mask color,
+    although you’ll see this is much easier to do when you’re forced to step through the bitmap bits anyhow!
+    By the end of this, it should be trivial for you to implement an additional function that takes
+    a handle to another bitmap and uses its values to apply alpha values that vary per pixel.
+    Traditionally, such values are stored in the fourth (or alpha) channel,
+    but apart from Windows Paint, no paint packages really support 32-bit bitmaps,
+    so it would make more sense to pass the values in through a different bitmap or a geometric
+    function (for example, to provide soft edges and a circular bitmap).
+
+    The function prototype differs from GDI’s AlphaBlend() and looks like this:
+
+    bool AlphaBlendCK(HDC dcDest, int x, int y,
+       int cx, int cy, HDC dcSrc, int sx, int sy,
+       int scx, int scy, int alpha)
+
+    The form is similar to TransparentBlt(), but instead of a mask color, you provide an alpha value.
+    AlphaBlendCK() takes a color reference as an extra parameter. I am again able to use this function
+    to simultaneously stretch the source image. In all three cases, it is wise to check the return value,
+    as StretchBlt() will return false if it is asked to stretch the image too far, and this result is passed
+    back to indicate failure. According to the MSDN, it was intended to limit StretchBlt(),
+    but it was accidentally limited more than was originally the idea. In practice, I have found
+    a magnification of more than 16 to cause failure. In your own code, I suggest using a temporary HDC to
+    hold a median stage and doing multiple StretchBlt()’s to get a higher magnification if needed.
+
+    As you may or may not be aware, there are three types of Windows bitmaps: a device dependant bitmap,
+    which is accessed through a HBITMAP and can be selected into a device context; a device independent bitmap,
+    which cannot be selected into a device context for GDI functionality; and a DIBSection, which has both
+    a HBITMAP and a BYTE*, the latter providing direct access to the bitmap bits. To access the bits of the
+    incoming bitmap, I create a same size DIBSection, select it into a device context, and copy the source
+    bitmap onto it. In this manner, I can control the bit depth of the image and access the bits directly.
+    Note that the bytes represent lines of the bitmap going from left to right, bottom to top.
+    Note also that when I step through the bits, Windows stores the image colors in blue, green, red order
+    (not red, green, blue).
+
+    The heart of my blending function looks like this:
+
+    for (int j = 0 ; j < cy ; ++j)
+    {
+        LPBYTE pbDestRGB = (LPBYTE)&((DWORD*)pDestBits)[j * cx];
+        LPBYTE pbSrcRGB  = (LPBYTE)&((DWORD*)pSrcBits)[j * cx];
+        for (int i = 0 ; i < cx ; ++i)
+        {
+            pbSrcRGB[0] = (pbDestRGB[0] * (255-alpha) + pbSrcRGB[0] * alpha)>>8;
+            pbSrcRGB[1] = (pbDestRGB[1] * (255-alpha) + pbSrcRGB[1] * alpha)>>8;
+            pbSrcRGB[2] = (pbDestRGB[2] * (255-alpha) + pbSrcRGB[2] * alpha)>>8;
+            pbSrcRGB += 4;
+            pbDestRGB += 4;
+        }
+    }
+
+    j represents the y axis; i represents the x axis. The two pointers declared inside the first loop
+    point to the lines; then I use pointer arithmetic to step through them four pixels at a time.
+    (I made the bitmaps 32-bit, so there are four BYTEs per pixel.) This leaves the design open for use of an
+    alpha channel if desired, although it would be just as easy to create another DIBSection from a mask bitmap
+    and then use its colors to specify the value currently set by the constant “alpha.” To add masking,
+    I simply use the GetRValue(), GetGValue(), and GetBValue() macros to find the components of the COLORREF
+    passed in and then compare them to the pixels and, if they match, copy the pixel across verbatim instead
+    of blending. Figure 7 and Figure 8 show two alphablended images, one using a mask color, the second not.
+
+    Having gained access to the pixel bits, filters such as lightness, contrast, color levels, gamma, and greyscale
+    are simple and obvious to apply. Spatial filters like embossing, sharpen, smooth, etc. take a bit more work.
+    They all take the same basic form though, that of a 3 x 3 (or 5 x 5, if you like ) matrix, a divisor,
+    and an additive. The end result looks like this:
+
+    Pixel [x,y] = (pixel [x - 1, y -1]
+                + pixel [x, y-1]
+                + pixel[x, y+1]
+                + pixel[x-1,y]
+                + pixel[x,y]
+                + pixel[x+1,y]
+                + pixel[x-1,y+1]
+                + pixel[x,y+1]
+                + pixel[x+1, y+1])
+                /divisor + additive.
+
+    As you can see, this requires a little more work with the pointers and also leaves the outer square of pixels
+    inaccessible. What makes it work is that each of the nine matrix values is given a weight, so, for example,
+    an emboss gives all the values a zero weight except the ones above and below the x,y position, with a divisor of two.
+    Then an additive of 128 is used to stop the image from being too dark, or a smooth gives every matrix position
+    a weight of one, and the divisor is set to nine, resulting in an average value used based on surrounding pixels
+    (which logically results in smoothing). Obviously, filters are outside the scope of this article,
+    but the possibilities are opened by the techniques I have discussed, so I hope by arming you with
+    some basic information, I can encourage you to experiment further and hopefully find something exciting as you do so.
+
+    If you download this month’s source code from the WDJ website, you will find an example project,
+    which illustrates the use of these functions and also shows you the steps taken by TransparentBltU(),
+    as shown also in the examples here.

@@ -1,0 +1,84 @@
+Windows Vista and Windows Server "Longhorn"
+_WIN32_WINNT>=0x0600
+WINVER>=0x0600
+
+Windows Server 2003:
+_WIN32_WINNT>=0x0502
+WINVER>=0x0502
+
+Windows XP
+_WIN32_WINNT>=0x0501
+WINVER>=0x0501
+
+Windows 2000
+_WIN32_WINNT>=0x0500
+WINVER>=0x0500
+
+Windows NT 4.0
+_WIN32_WINNT>=0x0400
+WINVER>=0x0400
+
+Windows Me
+_WIN32_WINDOWS=0x0500
+WINVER>=0x0500
+
+Windows 98
+_WIN32_WINDOWS>=0x0410
+WINVER>=0x0410
+
+Windows 95
+_WIN32_WINDOWS>=0x0400
+WINVER>=0x0400
+
+---------------------------------------------------------------------------
+
+Internet Explorer 7.0			_WIN32_IE>=0x0700
+Internet Explorer 6.0 SP2		_WIN32_IE>=0x0603
+Internet Explorer 6.0 SP1		_WIN32_IE>=0x0601
+Internet Explorer 6.0			_WIN32_IE>=0x0600
+Internet Explorer 5.5			_WIN32_IE>=0x0550
+Internet Explorer 5.01			_WIN32_IE>=0x0501
+Internet Explorer 5.0, 5.0a, 5.0b	_WIN32_IE>=0x0500
+Internet Explorer 4.01			_WIN32_IE>=0x0401
+Internet Explorer 4.0			_WIN32_IE>=0x0400
+Internet Explorer 3.0, 3.01, 3.02	_WIN32_IE>=0x0300
+
+---------------------------------------------------------------------------
+
+_MSC_VER is:
+
+1500 in VS2008
+1400 in VS2005
+1310 in VC.NET 2003
+1300 in VC.NET 2002
+1200 VC++ 6
+1100 VC++ 5
+
+---------------------------------------------------------------------------
+
+_MFC_VER is:
+
+0x0421
+4.21 (mfc42.dll)
+Visual C++ 5.0
+
+0x0600
+6.0 (mfc42.dll)
+Visual C++ 6.0
+Note: Same DLL name as for Visual C++ 5.0!
+
+0x0700 
+7.0 (mfc70.dll)
+Visual C++ .NET 2002
+
+0x0701
+7.1 (mfc71.dll)
+Visual C++ .NET 2003
+
+0x0800
+8.0 (mfc80.dll)
+Visual C++ 2005
+
+0x0900
+9.0 (mfc90.dll)
+Visual C++ 2008

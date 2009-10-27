@@ -1,0 +1,14 @@
+Note on DLGINIT resources problem:
+
+In DLGINIT all strings are stored as ANSI strings.
+All others Windows resouces are stored as UNICODE strings.
+DLGINIT items must be converted to the target language using a
+specific code page. This is done correctly by AppTranslator.
+It is required that the operating system has the same code page
+when running the localized program.
+For example if you localize your application to russian,
+you can run it on an english Windows. All translations show correctly.
+All but DLGINIT items, because those were saved as ANSI strings and have
+been converted to the russian code page (1251). The english Windows has code page 1252.
+It is recommended to not use DLGINIT at all, but populate list- and comboboxes
+by resource strings at runtime (resource strings are allways UNICODE).

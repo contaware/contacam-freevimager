@@ -1,0 +1,428 @@
+Note On Thread Safty or Re-entrant Code:
+---------------------------------------
+
+The following code declares an integer thread local variable
+and initializes it with a value:
+
+// Example of the __declspec keyword
+__declspec( thread ) int tls_i = 1;
+
+
+
+CPJNSMTPConnection 2.67 with w3 mfc 1.83
+----------------------------------------
+
+Changed in class CPJNSMTPConnection:
+
+- SendMessage(CPJNSMTPMessage& Message, DWORD dwSendBufferSize/*=4096*/)
+- SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize/*=4096*/)
+
+To Support OnSendProgress()
+
+
+FTP
+---
+
+Changed Everything...
+
+
+FFMPEG rev.15375
+----------------
+
+- Using revision 9227 for liba52.c otherwise it is not working ...
+
+- Under include/ffmpeg/rational.h added the (int) cast:
+static inline int av_cmp_q(AVRational a, AVRational b){
+    const int64_t tmp= a.num * (int64_t)b.den - b.num * (int64_t)a.den;
+
+    if(tmp) return (int)(tmp>>63)|1;
+    else    return 0;
+}
+
+- Under include/ffmpeg/common.h before #include "mem.h" added:
+#ifndef INT64_C
+#if !defined(WIN32) || (_MSC_VER > 1200) // Oli Added
+#define INT64_C(c)     (c ## LL)
+#define UINT64_C(c)    (c ## ULL)
+#else
+#define INT64_C(c)     (c)
+#define UINT64_C(c)    (c)
+#endif
+#endif
+
+- Added mm_support_mask to libavcodec/i386/cputest.c (or cpuid.c) to
+  selectively disable MM instructions types. There is a dsp_mask in
+  AVCodecContext, but this flag is not global. There are still
+  some functions calling mm_support() directly without checking
+  the dsp_mask!
+
+- In libavcodec/avcodec.h because of sse2 or sse3 I changed:
+#define FF_INPUT_BUFFER_PADDING_SIZE 16
+
+- In libavcodec/atrac3.c added:
+#define round(x) ((x)>=0)?(int)((x)+0.5):(int)((x)-0.5)
+
+- In libavformat/avienc.c changed avi_write_header():
+
+    if(stream->codec_type != CODEC_TYPE_DATA){
+        strf = start_tag(pb, "strf");
+        if (s->streams[i]->stream_copy) {
+            put_buffer(pb, stream->extradata, stream->extradata_size);
+        } else {
+            switch(stream->codec_type) {
+                case CODEC_TYPE_VIDEO:
+                    put_bmp_header(pb, stream, codec_bmp_tags, 0);
+                    break;
+                case CODEC_TYPE_AUDIO:
+                    if (put_wav_header(pb, stream) < 0) {
+                        av_free(avi);
+                        return -1;
+                     }
+                     break;
+                default:
+                     return -1;
+            }
+        }
+        end_tag(pb, strf);
+    }
+
+- Minor Bug in libavcodec/raw.c (or rawdec.c)
+static const PixelFormatTag pixelFormatBpsAVI[] = {
+    { PIX_FMT_PAL8,    8 },
+    { PIX_FMT_RGB555, 15 },
+    { PIX_FMT_RGB555, 16 }, -> This should be PIX_FMT_RGB565
+    { PIX_FMT_BGR24,  24 },
+    { PIX_FMT_RGB32,  32 },
+    { -1, 0 },
+};  
+
+- libavcodec/mpegvideo_enc.c has to be fixed for mem. leaking:
+
+Changed MPV_encode_init() so that it doesn't leak when
+rate control fails (for example if selected bitrate is to low)
+
+- libavcodec/snow.c has to be fixed for mem. leakings:
+
+1. Changed encode_init() so that it doesn't leak when
+rate control fails (for example if selected bitrate is to low)
+
+2. Add and change given lines
+static av_cold int encode_end(AVCodecContext *avctx)
+{
+    SnowContext *s = avctx->priv_data;
+
+    ff_rate_control_uninit(&s->m); // Added this line
+    common_end(s);
+    av_freep(&avctx->stats_out);   // Changed this line
+
+    return 0;
+}
+
+- libavcodec/ffv1.c has been fixed in ffmpeg project, it was:
+static int common_end(AVCodecContext *avctx){
+    FFV1Context *s = avctx->priv_data;
+    int i;
+
+    for(i=0; i<s->plane_count; i++){
+        PlaneContext *p= &s->plane[i];
+
+        av_freep(&p->state);
+        av_freep(&p->vlc_state);	// Added this line
+    }
+
+    return 0;
+}
+
+- libavcodec/huffyuv.c has been fixed in ffmpeg project, it was:
+static int decode_end(AVCodecContext *avctx)
+{
+    HYuvContext *s = avctx->priv_data;
+    int i;
+
+    common_end(s);
+    av_freep(&s->bitstream_buffer);
+
+    for(i=0; i<6; i++){			// Changed from 3 -> 6
+        free_vlc(&s->vlc[i]);
+    }
+
+    return 0;
+}
+
+- libavcodec/libtheoraenc.c quality conversion change and
+  add setting the keyframe flag
+
+
+icclib 2.0.3
+------------
+
+- Thread Safe
+
+- Ok For Commercial Applications
+
+- Changed file icc.c:
+icmFileMem_printf changed to advance pointer and using the more safe vsnprint
+Adapted icc_dump & icmHeader_dump to use tabs
+
+
+zip 2.4.4
+---------
+
+- Thread Safe
+
+- No Changes, but still using older version, new version is GNU Public License
+
+- I added Error Reporting in Exception Handling Class
+ 
+
+zlib 1.2.3
+----------
+
+- Ok For Commercial Applications
+
+- Thread Safe
+
+- In zutil.h added a _MSC_VER < 1500 check because the new vs2008 compiler
+  nativelly supports vsnprintf
+  /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
+  #    if !defined(vsnprintf) && !defined(NO_vsnprintf) && (_MSC_VER < 1500)
+  #      define vsnprintf _vsnprintf
+  #    endif
+
+- Preprocessor defines: WIN32, WINDOWS, ASMV, ASMINF
+  Note: ASMV for using gvmat32.asm and ASMINF for
+  using inffas32.asm  
+
+- Copy from contrib\masmx86 the gvmat32.asm,
+  inffas32.asm and gvmat32c.c files to zlib main dir
+
+- Assemble the two asm files in Custom Build:
+  ml /c /Zd /coff /nologo /Fo "$(IntDir)\$(InputName).obj" "$(InputPath)"
+
+
+libjpeg 6b with transupp changes
+--------------------------------
+
+- Thread Safe
+
+- jpeg_lossless_huffman_support_patch not applied!
+
+- Config Changes: jconfig.h, jmorecfg.h
+
+- Many changes to load/save from/to memory!: jpeglib.h, jdatasrc.c, jdatadst.c
+
+- Changed files: jdmarker.c, transupp.c+h, jerror.h, jconfig.h
+
+- From Tiff Lib to support old jpegs:
+  Append the following code to the end of jdhuff.c:
+
+  GLOBAL(void)
+  jpeg_reset_huff_decode (register j_decompress_ptr cinfo)
+  { register huff_entropy_ptr entropy = (huff_entropy_ptr)cinfo->entropy;
+    register int ci = 0;
+ 
+     /* Discard encoded input bits, up to the next Byte boundary */
+     entropy->bitstate.bits_left &= ~7;
+     /* Re-initialize DC predictions to 0 */
+     do entropy->saved.last_dc_val[ci] = 0; while (++ci < cinfo->comps_in_scan);
+  }
+
+- replaced jcopy_markers_execute_addcomment with a more general
+  jcopy_markers_execute_addmarker function
+
+- Preprocessor defines: _MBCS, _LIB, WIN32
+
+
+giflib 4.1.2
+------------
+
+- MIT License -> Ok For Commercial Applications
+
+- #include <Windows.h> and #include <TCHAR.h> in gif_lib.h
+  DGifOpenFileName and EGifOpenFileName changed to support UNICODE File Names
+
+- Made Thread Safe: __declspec(thread) int _GifError = 0;
+  (in file gif_err.c)
+
+- Preprocessor defines: WIN32, _MBCS, _LIB, _OPEN_BINARY,
+                        HAVE_IO_H, HAVE_STDARG_H, HAVE_FCNTL_H
+
+- Changes in DGifGetImageDesc(GifFileType * GifFile):
+
+From:
+
+/*** FIXME: Why do we check both of these in order to do this?
+ * Why do we have both Image and SavedImages? */     
+if (GifFile->Image.ColorMap && GifFile->SavedImages == NULL)      
+    FreeMapObject(GifFile->Image.ColorMap);
+
+To:
+
+/*** FIXME: Why do we check both of these in order to do this?
+ * Why do we have both Image and SavedImages? */     
+if (GifFile->Image.ColorMap/* && GifFile->SavedImages == NULL*/) // Oli Fix 02.01.2005  
+    FreeMapObject(GifFile->Image.ColorMap);
+
+
+Add in EGifPutImageDesc(...):
+
+// Oli Fix 02.01.2005
+if (GifFile->Image.ColorMap)
+    FreeMapObject(GifFile->Image.ColorMap);
+
+- In many places I added defined(_OPEN_BINARY) to open in binary mode:
+
+open(FileName, O_RDONLY
+#if defined(__MSDOS__) || defined(_OPEN_BINARY)                      
+ | O_BINARY
+#endif /* __MSDOS__ || _OPEN_BINARY */
+
+- Changed DGifOpenFileName() and DGifOpenFileHandle() because if
+  the latter one fails the file should not be closed two times with
+  fclose and close, but just with fclose!
+  
+libtiff 3.8.2
+-------------
+
+- The error handling routine addresses are not thread safe:
+  (Inside the libtiff the TIFFSetWarningHandler or TIFFSetErrorHandler are used!)
+
+  tif_win32.c:
+  __declspec(thread) TIFFErrorHandler _TIFFwarningHandler = Win32WarningHandler;
+  __declspec(thread) TIFFErrorHandler _TIFFerrorHandler = Win32ErrorHandler;
+  
+  tiffiop.h:
+  extern __declspec(thread) TIFFErrorHandler,_TIFFwarningHandler;
+  extern __declspec(thread) TIFFErrorHandler,_TIFFerrorHandler;
+  extern __declspec(thread) TIFFErrorHandlerExt _TIFFwarningHandlerExt;
+
+  extern __declspec(thread) TIFFErrorHandlerExt _TIFFerrorHandlerExt;
+
+  tif_warning.c:
+  __declspec(thread) TIFFErrorHandlerExt _TIFFwarningHandlerExt = NULL;
+
+  tif_error.c
+  __declspec(thread) TIFFErrorHandlerExt _TIFFerrorHandlerExt = NULL;
+
+- Preprocessor defines: USE_WIN32_FILEIO, _MBCS, _LIB, TIF_PLATFORM_CONSOLE, WIN32
+
+- New tiff_config.h
+
+- tif_getimage.c adaptation for DIB_PROGRESS, DoExit() and orientation
+  always FLIP_VERTICALLY of:
+  gtTileContig(), gtTileSeparate(), gtStripContig(), gtStripSeparate() and
+  TIFFRGBAImageBegin()
+  
+- In tiffio.h add of 3 vars to TIFFRGBAImage Struct
+
+- In tif_ojpeg.c:
+  Changed:
+	  	OJPEGDecode(register TIFF *tif,tidata_t buf,tsize_t cc,tsample_t s)
+		{
+			tsize_t bytesperline = isTiled(tif)
+                         ? TIFFTileRowSize(tif)
+                         : tif->tif_scanlinesize,
+            ...
+  To:
+		OJPEGDecode(register TIFF *tif,tidata_t buf,tsize_t cc,tsample_t s)
+		{
+			tsize_t bytesperline = isTiled(tif) ?
+						TIFFTileRowSize(tif) :
+	                    TIFFScanlineSize(tif),
+	        ...
+  This because tif->tif_scanlinesize is initialized with TIFFScanlineSize()
+  when TIFF_UPSAMPLED is not yet set, see changelog:
+  2006-03-21  Andrey Kiselev  <dron@ak4719.spb.edu>
+  * libtiff/tif_strip.c: Take subsampling in account when calculating
+  TIFFScanlineSize().
+
+- In tif_dirwrite.c:
+  Added:
+        TIFFWritePrivateDataSubDirectory() and
+        TIFFWriteNormalSubTag() functions.
+        Taken and modified from contrib\pds.
+        
+  Changed:
+		for (dir = (TIFFDirEntry*) data; dircount; dir++, dircount--) {
+			TIFFSwabArrayOfShort(&dir->tdir_tag, 2);
+			TIFFSwabArrayOfLong(&dir->tdir_count, 2);
+		}
+  To:
+		for (dir = (TIFFDirEntry*) data; dircount; dir++, dircount--)
+		{
+			if (!((	dir->tdir_type == TIFF_ASCII		||
+					dir->tdir_type == TIFF_UNDEFINED	||
+					dir->tdir_type == TIFF_NOTYPE		||
+					dir->tdir_type == TIFF_BYTE			||
+					dir->tdir_type == TIFF_SBYTE)		&&
+					dir->tdir_count <= 4))	
+				TIFFSwabArrayOfLong(&dir->tdir_offset, 1);
+			TIFFSwabArrayOfShort(&dir->tdir_tag, 2);
+			TIFFSwabArrayOfLong(&dir->tdir_count, 1);
+		}
+  Byte family data stored directly in directory should not be swapped!
+
+- In tif_read.c:
+  Because of some truncated tiff files and to be more fault tolerant,
+  Changed TIFFFillStrip():
+		if ( td->td_stripoffset[strip] + bytecount > tif->tif_size) {
+			// This error message might seem strange, but it's
+			// what would happen if a read were done instead.
+			TIFFErrorExt(tif->tif_clientdata, module,
+		    "%s: Read error on strip %lu; got %lu bytes, expected %lu",
+			    tif->tif_name,
+			    (unsigned long) strip,
+			    (unsigned long) tif->tif_size - td->td_stripoffset[strip],
+			    (unsigned long) bytecount);
+			tif->tif_curstrip = NOSTRIP;
+			return (0);
+		}
+		tif->tif_rawdatasize = bytecount;
+  To:
+		if ( td->td_stripoffset[strip] + bytecount > tif->tif_size)
+			tif->tif_rawdatasize = tif->tif_size - td->td_stripoffset[strip];
+		else
+			tif->tif_rawdatasize = bytecount;
+		
+- In tiffio.h added TIFFWritePrivateDataSubDirectory() declaration.
+  
+- In tif_dirinfo.c EXIFTAG_SUBJECTDISTANCE is TIFF_SRATIONAL!
+
+
+libpng 1.2.33
+-------------
+
+- Thread Safe, but do not define PNG_THREAD_UNSAFE_OK!
+
+- Preprocessor defines for release: WIN32, NDEBUG, PNG_USE_PNGVCRD
+                                    PNG_LIBPNG_SPECIALBUILD
+
+- Preprocessor defines for debug: WIN32, DEBUG, _DEBUG, PNG_DEBUG=1,
+                                  PNG_USE_PNGVCRD, PNG_LIBPNG_SPECIALBUILD
+
+- In pngvcrd.c (this file has been removed):
+  union uAll {
+	__int64 use;
+	double  double_align;
+  #if (_MSC_VER <= 1200)
+  	__int64 long_long_align; // It is not compiling
+  #else
+	long long long_long_align;
+  #endif
+  };
+
+
+rsaeuro 1.04
+------------
+
+Not ok for Commercial Applications,
+very old lib (from 1994) and from a single author.
+
+- Not thread safe, see for example the shsc.c file
+  which uses the global buffers: h0, h1, h2, h3, h4 and A, B, C, D, E 
+
+- define USE_ANSI
+
+- In rsaeuro.h: changed Library details
+
+- In r_stdlib.c: commented the copyright string

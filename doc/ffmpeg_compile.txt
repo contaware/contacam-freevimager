@@ -1,0 +1,69 @@
+1. Open MSys Console
+
+
+2. cd to ffmpeg sources:
+cd /C/uimager/ffmpeg
+
+
+3. Configure:
+
+For uimager:
+./config_lgpl
+
+For RemoteCam:
+./config_ocx
+After make copy the libs to the RemoteCam dir!
+		
+For available options:
+./configure --help
+
+
+4. Build:
+make
+
+
+To Clean:
+make clean
+  or
+make distclean -> to really start from a clean distribution
+
+
+You can add the following to enable cmov and fast cmov:
+--cpu=i686
+
+
+Additional GPL Libs:
+--enable-gpl
+--enable-pp
+--enable-swscaler
+--enable-libx264
+--enable-liba52     ->   For AC3 decoding
+--enable-libdts     ->   Not available anymore, there is an internal dca decoder
+--enable-w32threads
+--enable-pthreads   ->   set this if using x264 (supports only pthreads)
+
+
+Note on AC3:
+
+in new ffmpeg AC3 decoding is available as a GPL native code,
+but I could not manage to bring it to work!
+
+
+Note on LibGsm:
+
+not necessary because available as a ACM codec
+
+
+Note on Ogg, Vorbis and Theora:
+
+To compile everything correctly use for all 3 libs the mingw prefix:
+./configure --enable-static --disable-shared --prefix=/mingw
+
+
+Note on buggy decoders:
+
+- Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
+- H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
+- Internal DTS not working in new ffmpeg                           -> not compiled in
+- zlib leaks                                                       -> not compiled in
+- mpeg1 and mpeg2 leak when opened together                        -> disabled in CAVIPlay code

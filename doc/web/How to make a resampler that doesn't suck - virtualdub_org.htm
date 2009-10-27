@@ -1,0 +1,487 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0052)http://www.virtualdub.org/blog/pivot/entry.php?id=86 -->
+<HTML><HEAD><TITLE>How to make a resampler that doesn't suck - virtualdub.org</TITLE>
+<META http-equiv=content-type content="text/html; charset=iso-8859-1"><LINK 
+href="How to make a resampler that doesn't suck - virtualdub_org_files/layout.css" 
+type=text/css rel=stylesheet><LINK title=RSS href="/blog/rss.xml" 
+type=application/rss+xml rel=alternate><LINK title=Atom href="/blog/atom.xml" 
+type=application/atom+xml rel=alternate><!-- snippet 'calendar-style' is not defined -->
+<META content="MSHTML 6.00.2900.2802" name=GENERATOR></HEAD>
+<BODY>
+<TABLE class=banner cellSpacing=0 cellPadding=0 border=0>
+  <TBODY>
+  <TR>
+    <TD width="100%"><SPAN 
+      style="FONT-SIZE: 20pt; FONT-FAMILY: arial, helvetica"><A 
+      style="COLOR: #000000; TEXT-DECORATION: none" 
+      href="http://www.virtualdub.org/">virtualdub.org</A></SPAN><BR>Proof that 
+      I had too much free time in college</TD>
+    <TD align=right><A 
+      href="http://www.robofish.com/cgi-bin/banner.cgi?virtualdub"><IMG 
+      height=60 alt="[TealPoint Software Ad]" 
+      src="How to make a resampler that doesn't suck - virtualdub_org_files/banner.gif" 
+      width=468 border=1></A></TD></TR></TBODY></TABLE>
+<DIV id=leftcolumn>
+<DIV class=block>
+<H3>Current version</H3>
+<P>v1.6.14 (stable)</P></DIV>
+<DIV class=block>
+<H3>Navigation</H3><A href="http://www.virtualdub.org/index">Home</A><BR><A 
+href="http://www.virtualdub.org/oldnews">Archived news</A><BR><A 
+href="http://www.virtualdub.org/download">Downloads</A><BR><A 
+href="http://www.virtualdub.org/virtualdub_docs">Documentation</A><BR>&nbsp;&nbsp;&nbsp;<A 
+href="http://www.virtualdub.org/docs_capture">Capture</A><BR>&nbsp;&nbsp;&nbsp;<A 
+href="http://www.virtualdub.org/docs_compiling">Compiling</A><BR>&nbsp;&nbsp;&nbsp;<A 
+href="http://www.virtualdub.org/docs_processing">Processing</A><BR>&nbsp;&nbsp;&nbsp;<A 
+href="http://www.virtualdub.org/docs_crashes">Crashes</A><BR><A 
+href="http://www.virtualdub.org/features">Features</A><BR><A 
+href="http://www.virtualdub.org/virtualdub_filters">Filters</A><BR><A 
+href="http://www.virtualdub.org/filtersdk">Filter SDK</A><BR><A 
+href="http://www.virtualdub.org/virtualdub_kb">Knowledge base</A><BR><A 
+href="http://www.virtualdub.org/donation">Donate</A><BR><A 
+href="http://www.virtualdub.org/contact">Contact info</A><BR><A 
+href="http://forums.virtualdub.org/">Forum</A><BR></DIV></DIV>
+<DIV id=rightcolumn>
+<DIV class=block>
+<H3>Search</H3>
+<FORM action=/blog/pivot/search.php method=post><INPUT class=searchbox 
+name=search> <INPUT class=searchbutton type=submit value=go!> </FORM></DIV>
+<DIV class=block>
+<H3>Archives</H3>
+<P><A href="http://www.virtualdub.org/blog/archives/archive_2006-m04.php">01 Apr 
+- 30 Apr 2006 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2006-m03.php">01 Mar - 31 
+Mar 2006 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2006-m01.php">01 Jan - 31 
+Jan 2006 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m12.php">01 Dec - 31 
+Dec 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m11.php">01 Nov - 30 
+Nov 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m10.php">01 Oct - 31 
+Oct 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m09.php">01 Sep - 30 
+Sep 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m08.php">01 Aug - 31 
+Aug 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m07.php">01 Jul - 31 
+Jul 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m06.php">01 June - 30 
+June 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m05.php">01 May - 31 
+May 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m04.php">01 Apr - 30 
+Apr 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m03.php">01 Mar - 31 
+Mar 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m02.php">01 Feb - 28 
+Feb 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2005-m01.php">01 Jan - 31 
+Jan 2005 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2004-m12.php">01 Dec - 31 
+Dec 2004 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2004-m11.php">01 Nov - 30 
+Nov 2004 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2004-m10.php">01 Oct - 31 
+Oct 2004 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2004-m09.php">01 Sep - 30 
+Sep 2004 </A><BR><A 
+href="http://www.virtualdub.org/blog/archives/archive_2004-m08.php">01 Aug - 31 
+Aug 2004 </A><BR></P></DIV>
+<DIV class=block>
+<H3>Stuff</H3>
+<P><A title="Powered by Pivot - 1.15: 'Soundwave'" 
+href="http://www.pivotlog.net/?ver=Pivot+-+1.15%3A+%27Soundwave%27"><IMG 
+style="BORDER-RIGHT: 0px; BORDER-TOP: 0px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px" 
+height=15 alt="Powered by Pivot" 
+src="How to make a resampler that doesn't suck - virtualdub_org_files/pivotbutton.png" 
+width=94></A> &nbsp;<BR><A title="XML: RSS feed" 
+href="http://www.virtualdub.org/blog/rss.xml"><IMG 
+style="BORDER-RIGHT: 0px; BORDER-TOP: 0px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px" 
+height=15 alt="XML: RSS feed" 
+src="How to make a resampler that doesn't suck - virtualdub_org_files/rssbutton.png" 
+width=94></A>&nbsp;<BR><A title="XML: Atom feed" 
+href="http://www.virtualdub.org/blog/atom.xml"><IMG 
+style="BORDER-RIGHT: 0px; BORDER-TOP: 0px; BORDER-LEFT: 0px; BORDER-BOTTOM: 0px" 
+height=15 alt="XML: Atom feed" 
+src="How to make a resampler that doesn't suck - virtualdub_org_files/atombutton.png" 
+width=94></A>&nbsp;<BR></P></DIV></DIV>
+<DIV id=centercolumn>
+<DIV class=content>
+<H2 style="CLEAR: both"><SPAN class=date><A 
+title="Permanent link to 'How to make a resampler that doesn't suck' in the archives" 
+href="http://www.virtualdub.org/blog/archives/archive_2006-m02.php#e86">§</A> <A 
+title="Permanent link to entry 'How to make a resampler that doesn't suck'" 
+href="http://www.virtualdub.org/blog/pivot/entry.php?id=86">¶</A></SPAN>How to 
+make a resampler that doesn't suck</H2>
+<P>Resizing an image to a different size requires a basic image processing 
+technology called a <EM>resampler</EM>. This is one of the elementary operations 
+in any image processing toolkit. Yet, I've seen many, many cases where people 
+get resampling algorithms subtly wrong, slightly wrong, or even blatantly wrong. 
+Some of these were even in supposedly professional image processing 
+applications!&nbsp;It isn't that hard to create a quality&nbsp;resampler. It 
+does take some careful thought, and a little ingenuity to implement, but doesn't 
+cost a lot of performance and makes the resampler act a lot more 
+consistently.</P>
+<P>I will freely confess to having committed violations of all the rules I'm 
+about to outline in various older versions of VirtualDub, where sometimes you 
+would see a line of pink pixels on the right, or the image is a tiny bit larger 
+or smaller than it's supposed to be, etc. All of these should be worked out in 
+modern versions and the resize filter should obey all of the rules. If you think 
+there is a violation, feel free to ask about it.</P>
+<P><STRONG>0. Definitions.</STRONG></P>
+<P>The resampler takes a source image of size (sw, sh) and converts it to a 
+destination&nbsp;image of size (dw, dh), where sw/sh/dw/dh are in pixels.</P>
+<P>The&nbsp;coordinate system for&nbsp;the source&nbsp;image is from 
+(0,0)-(sw,sh), and for the destination image it is (0,0)-(dw,dh). The right and 
+bottom edges of each rectangle are not included in the image (this is a 
+<EM>top-left</EM> convention).</P>
+<P>Each pixel&nbsp;occupies a square from (x,y)-(x+1, y+1), where x and y are 
+integers. Again, the right and bottom borders are not included. The <EM>pixel 
+center</EM> is located at (x+0.5, y+0.5) and indicates the location where the 
+pixel's color is authoritative. For the destination image, the color at this 
+point represents the color for the whole pixel.</P>
+<P>The image is processed via a <EM>reverse mapping</EM> that 
+correlates&nbsp;each point in the destination image to a single point in the 
+source image. The destination image is produced by iterating over every pixel in 
+the destination, converting the location of each destination pixel's center to a 
+source location, and taking the color of the source image at that point. This 
+results in exact coverage of the destination image, with no overdraw or 
+dropouts.</P>
+<P><EM>Point sampling</EM> is the simplest resampling algorithm with the lowest 
+quality.&nbsp;It simply chooses the color of the source pixel whose center is 
+closest to the desired source point.</P>
+<P><STRONG>1. Resampling the image by N% shall scale image features by 
+N%.</STRONG></P>
+<P>If I scale my portrait by 2x, I want my face to be twice the size and my nose 
+to be twice the size. Not 1.97x, not 2.03x, exactly 2x. This means that a span 
+of M pixels in the source must correspond to M*N% pixels in the destination. So, 
+if my nose is 20 pixels wide originally, I expect it to be 40 pixels wide 
+afterward.</P>
+<P>In a point-sampled resampler, where pixels can only be duplicated or removed, 
+it isn't possible to do this exactly at every point in the source or output 
+image. The source pixels chosen, though, should still be as close as possible to 
+the ideal location, and on average the image features should land in the right 
+spots.</P>
+<P>Violating this rule causes chains of resample operations to be inconsistent. 
+If you do a 2x enlargement&nbsp;three times, you would expect the result to 
+correspond to a single 8x enlargement.&nbsp;If the resampler gives you 1.97x in 
+features when the frame doubles in size, though, then&nbsp;three consecutive 
+2x&nbsp;operations would give you 1.97^3 = 7.65x, whereas a single 8x operation 
+would give 7.88x.</P>
+<P><STRONG>2. There shall be no image shift.</STRONG></P>
+<P>This is desirable for similar reasons to rule (1). If you enlarge an image by 
+200% and then reduce it by 50%, you'd expect that you'd get the same size image, 
+just with some possible&nbsp;degredation from the resampling. It shouldn't be 
+shifted overall&nbsp;three pixels to the left.</P>
+<P>This rule is simple to devise and tricky to get right. You can reduce it to 
+either matching the centers or matching the corners. A continuous reverse 
+mapping from destination to source that satisfies this criterion might look like 
+this:</P>
+<P>dst(x, y) = src(x * (sw/dw), y * (sh/dh))</P>
+<P>The catch is that this is a <EM>continuous</EM> mapping. You want to sample 
+with (x,y) being on <EM>half-pixel</EM> coordinates, so that the first pixel is 
+(0.5, 0.5), the second (1.5, 0.5), etc. This places the destination points 
+exactly on pixel centers.&nbsp;For&nbsp;point sampling, the source pixel is then 
+chosen by&nbsp;flooring the coordinates to the nearest equal or lower 
+integer.&nbsp;If you use integer coordinates for this instead, you will get a 
+half-pixel shift. This can be fixed by mapping the corners instead, which 
+results in ((sw-1)/(dw-1)) and ((sh-1)/(dh-1)) for the ratios, but that then 
+violates rule (1).</P>
+<P>When point sampling, an integer enlarging factor should result in a regular 
+pattern throughout the image. For instance, 300% enlargement will make each 
+source pixel into a 3x3 block. There should be no runt columns&nbsp;or 
+rows&nbsp;of 1 or 2 pixels on the borders.</P>
+<P>A good stress test for a resampler is to do a big series of forward and 
+inverse transforms, such as 200%&nbsp;followed by&nbsp;50%&nbsp;ten times. Not 
+only does this expose subtle subpixel shifts in a resampler, but it also shows 
+how good the resampling filter is.</P>
+<P><STRONG>3. When doing an identity transform, the image shall remain exactly 
+the same.</STRONG></P>
+<P>This one is common sense. If I ask for a 320x240 image to be resampled to 
+320x240, there shouldn't be any change. If you got rules (1) and (2) right, this 
+should easily follow.</P>
+<P>What isn't as sensical is that this applies for a single axis as well. That 
+is, resampling a 320xN image to 320xM should result in only a vertical 
+resampling — there should be no crosstalk between columns, which should be 
+entirely independent in their processing. This follows because the mapping 
+equations treat the horizontal and vertical axes independently, so a change in 
+one doesn't affect the other. Most resampling filters are <EM>separable</EM> and 
+thus implemented as separate row and column passes, which automatically 
+guarantees this property.</P>
+<P>It's easy to get this right with simple point sampling, but it's often broken 
+when filtering is involved. An interpolation filter&nbsp;should return exactly 
+one pixel's value when asked to sample exactly on top of a source pixel center; 
+it shouldn't blend in any other adjacent pixels. Otherwise, you'll get a 
+subpixel shift in the image, which violates rule (2).</P>
+<P>Sometimes it is advantageous to choose a filter that applies mild blurring in 
+order to reduce aliasing artifacts. In this case, the result won't be exactly 
+the same, but at least it should be unbiased. One way to check is to flip the 
+image on input and output and look for differences in the result.</P>
+<P><STRONG>4. When stretching an image with image filtering, border pixels shall 
+sample from outside the source image.</STRONG></P>
+<P>Bilinear interpolation improves the quality of a resampler by doing crude 
+linear interpolation between the 2x2 block of pixels closest to the desired 
+source point. The closer the source point is to one of the pixels, the more that 
+pixel contributes to the output, and if the source point is exactly on top of 
+the pixel, the result is just that pixel. For pixels A-D in book order within 
+the 2x2 block, and fractional offsets&nbsp;x and y in range 0-1 from A, the 
+result is lerp(lerp(A, B, x), lerp(C, D, x), y), where lerp(E, F, r) = E*(1-r) + 
+F*r = E + (F-E)*r.</P>
+<P>If you stretch an image in a way consistent with the above rules, some of the 
+sample points will fall on the outer edges of the border pixels of the image. 
+The source sampling point will never fall outside of the source image, but 
+they'll get closer than 1/2 pixel on the border. Problem is, if you're 
+filtering, the filter window&nbsp;requires pixels outside of the image, even for 
+the itty-bitty 2x2 bilinear window. Forgetting this results in junk in the image 
+or a crash in the resampler.&nbsp;All too often, I see people fix this by just 
+shrinking the source bounds until the problem goes away. Don't do this! It not 
+only breaks rule (1), but it also requires an adjustment that depends on the 
+size of the filter kernel, which makes no sense.</P>
+<P>The way you solve this is by introducing a rule that defines the source 
+pixels that fall outside the source rectangle. Some useful rules are:</P>
+<UL>
+  <LI><U>Clamp</U>: Choose the nearest pixel along the border. This takes the 
+  border pixels and extends them out to infinity. I use this one, because it's 
+  the fastest rule. 
+  <LI><U>Mirror</U>: Take the source point and reflect it across the border. 
+  This extends out the entire image by alternately flipping it out to 
+  infinity.&nbsp;This one avoids streaking, but can still look odd with a 
+  "bounce" effect at the border. One bug that I often see when this rule is 
+  implemented&nbsp;is only mirroring the source point coordinate once. If the 
+  filter kernel is large or the scaling factor is very high, the coordinate may 
+  be sufficiently far out that mirroring it across one border results in it 
+  still being out of bounds past the opposite one. Bouncing it back and forth 
+  across both borders eventually puts it in-bounds. 
+  <LI><U>Wrap/tile</U>: Pretend the source image is tiled infinitely and wrap 
+  the coordinates to the opposite side when a border is crossed. This rule isn't 
+  very useful unless the source image is naturally repeating, such as a texture 
+  that's meant to be tiled. Wrapping the source coordinates when resampling such 
+  an image, however, prevents seams from developing when the resampled image is 
+  tiled.</LI></UL>
+<P>The size of the border that requires this handling&nbsp;is half&nbsp;a source 
+pixel. A 300% enlargement results a 1.5 pixel 
+wide&nbsp;clamped/wrapped/mirrored&nbsp;border in the output. This means that 
+for most usual factors, the border is hardly noticeable.</P>
+<P>I test resamplers for&nbsp;mistakes in border handling&nbsp;by creating a 2x2 
+black-and-white checkerboard image and then stretching it to 1000x1000. One 
+popular image editing program I tried this on gave me a giant green blotch in 
+the output, almost certainly the result of reading memory outside of the source 
+image. Oops.</P>
+<P><STRONG>5. Resampling a solid color should give a solid color.</STRONG></P>
+<P>If I stretch or shrink a solid red image, it should remain solid red. Doesn't 
+matter if I pick point sampling, bilinear, bicubic, Lanczos3, or 256-tap 
+windowed sinc. Obviously some concessions can be made for limited computing 
+precision under extreme conditions, but in general, the smaller the difference, 
+the better, and ideally it is zero.</P>
+<P>What this means is that any resampling filter used should have all weights in 
+its kernel sum to exactly one. This is called unity gain.&nbsp;If it doesn't, 
+the sum is multiplied into all colors in the output. It also means that if there 
+are weights smaller than zero or larger than 1, that intermediate results can't 
+be clamped to 0-1, only the final result, or else artifacts will show up in the 
+image where the clamping occurs. Even worse, these artifacts will be 
+position-dependent.</P>
+<P><STRONG>Appendix</STRONG></P>
+<P>The rules I've outlined above are consistent with OpenGL texture 
+mapping:<BR><BR>glBegin(GL_QUADS);<BR>glTexCoord2f(0, 0); glVertex2f(0, 
+0);<BR>glTexCoord2f(0, sh); glVertex2f(0, dh);<BR>glTexCoord2f(sw, sh); 
+glVertex2f(dw, dh);<BR>glTexCoord2f(sw, 0); glVertex2f(dw, 0);<BR>glEnd();</P>
+<P>Those of you with 3D experience may realize at this point that there is no 
+dependence on integer coordinates in the above code. Indeed, if you have 
+constructed the destination-to-source mapping correctly and are careful with 
+fill conventions, there is no reason you cannot resample a 320.4x760.5 region to 
+480.6x360.2. VirtualDub's internal resampler allows this, and this is how the 
+resize filter supports fractional target sizes.</P>
+<P>In a similar vein, the 3D analogy also implies that the above rules also 
+apply to rotation engines as well as resamplers; they shouldn't shift or distort 
+either. You can test this case with VirtualDub's <EM>rotate2</EM> video 
+filter.</P>
+<DIV class=entryfooter>%num% comments | Feb 02, 2006 at 02:56 | 
+default</DIV></DIV>
+<DIV class=content style="MARGIN-TOP: 16px">
+<H3>Comments</H3>
+<P><B>Comments posted:</B></P><A id=comm></A>
+<P>Now, the most important question the reader must ask itself, is this: which 
+professional appications did you encounter this with?</P>
+<P>/Zaro</P>
+<P><SMALL><B>Zaro</B> - 02 02 06 - 06:04</SMALL></P>
+<P>&nbsp;</P>
+<P>Guess: Adobe Photoshop?</P>
+<P><SMALL><B>Murmel</B> - 02 02 06 - 15:54</SMALL></P>
+<P>&nbsp;</P>
+<P>I don’t want to name… oh, whatever. Paint Shop Pro 7, IIRC.</P>
+<P><SMALL><B>Phaeron</B> - 03 02 06 - 02:25</SMALL></P>
+<P>&nbsp;</P>
+<P>what about the interpolation function? should it be “linear”, FIR-based (the 
+real linear), bicubic or other? if FIR, which window function to use? should 
+negative values be allowed in tap coefficients?</P>
+<P>are there different answers for streching and shrinking? is it 
+better/faster/etc to do this multi-step (x2 -&gt; x4 -&gt;x8) or in one big 
+step?</P>
+<P>what about extremes – what is the recommended technique for 1/100x 
+(thumbnails)? most thumbnails i see have various artifacts/aliasing even when 
+using “high quality” interpolation</P>
+<P><SMALL><B>User</B> - 04 02 06 - 08:42</SMALL></P>
+<P>&nbsp;</P>
+<P>also, most, if not all, interpolation functions forget to convert the pixel 
+values to linear scale (alpha=1, aka “the number of photons hitting the camera 
+pixel”) before doing the interpolation. this error causes darker 
+midtones/shadows, noticeable in large shrinking…</P>
+<P><SMALL><B>User</B> - 04 02 06 - 08:47</SMALL></P>
+<P>&nbsp;</P>
+<P>Both triangle (“linear”) and cubic kernels are usually implemented as FIR 
+kernels, which are linear by definition. Most small filter kernels have 
+windowing included as part of their definition; if you’re using something 
+infinite or otherwise too-long, such as windowed-sinc, then you get to choose 
+the window. Using a larger filter kernel can give better results, but only to a 
+limited extent; rippling out from edges can become excessive, and beyond a 
+certain point the tails round off enough to be insignificant anyway. The 
+difference between bilinear and bicubic is somewhat noticeable, but it’s hard to 
+distinguish between Lanczos3 and a bicubic filter with the right A 
+parameter.</P>
+<P>Negative tap coefficients are almost always desired; any filter that has only 
+positive coefficients will have a blurring effect. A 4-tap B-spline filter is 
+considerably blurrier than a 4-tap cardinal spline filter, which is why I almost 
+never use B-spline. Using a positive-only filter kernel like a B-spline or a 
+Gaussian, though, can avoid edge ringing in the output, which is bad for 
+thresholding (alpha-test) or gradient determination.</P>
+<P>For a filter defined in source space (the desired case for reverse mapping), 
+stretching is treated as a special case where the filter cutoff is locked at 
+0.5Fs. This means that a cubic interpolation kernel, for instance, is always 
+4-taps in either direction. For shrinking, the filter becomes wider and is 
+sampled more often (thus more taps). Failing to take this into account and using 
+an interpolation kernel for shrinking results in aliasing rather quickly as the 
+shrinking ratio increases, blunting the advantages of using a good filter.</P>
+<P>Although I don’t have numbers, I’d guess that in most common cases it is 
+better to do a resampling operation in one pass. Resampling filters are usually 
+small enough that memory traffic becomes a significant factor in performance, 
+which multipassing exacerbates—especially since the intermediate passes need to 
+be stored in a wider format than the input and output pixel formats. I suppose 
+you could get to ridiculous filters and ratios that would cause cache thrashing, 
+but in that case there are even more exotic algorithms that could be tried than 
+just multipassing, such as FFT convolution.</P>
+<P>For thumbnail generation, I usually apply extreme levels of sharpening, like 
+&gt;radius-20 unsharp mask, and then apply a bicubic resample to shrink. You 
+need the sharpening for the thumbnail to register, because otherwise all of the 
+detail is lost. Aliasing matters less here, because the thumbnail isn’t a moving 
+video.</P>
+<P>Gamma correction is another factor, but it shouldn’t be considered part of 
+the interpolator/filter. You wouldn’t undo and redo the gamma correction between 
+separable passes. You’d do it before and after the whole resampler. Thing is, 
+you can’t really do gamma correction very well with 8 bits/channel, because 
+you’ll get nasty amounts of quantization noise at the low end. You’d want 
+something like 12 bits/channel or more. One of the things I want to implement 
+eventually is a resampler that has support for ~12-15 bit integer and 32-bit 
+float channels.</P>
+<P><SMALL><B>Phaeron</B> - 06 02 06 - 04:24</SMALL></P>
+<P>&nbsp;</P>
+<P>A few words…<BR>When doing separable scaling (first vertical scaling and then 
+horizontal or vide versa), the result of the first scaling can be out range 
+(e.g. negative) and must be preserved. This happens when the interpolator uses 
+negative coefs (bi-cubic, Lanczos, etc). Not doing so will break the 
+mathematical equality to the 2D versions of these scalers and cause 
+artifacts.</P>
+<P>Up scaling and down scaling should be treated differently:<BR>Down scaling 
+should be low passed and then resampled.<BR>Up scaling only need to 
+resample.</P>
+<P>The low pass filter for down scaling should remove (as much as possible) the 
+high frequncies that exist in the hi res image and doesn’t exist in hte low res 
+image. Some interpolators like Lanczos already have the low pass coefs in the 
+interpolator, but others (bi-cubic, bi-linear) must have a pre filter or nasty 
+aliasing will occur.<BR>The meaning of aliasing is “folding” of high frequncies 
+onto low frequencies when a singal (image) is sampled with too little 
+samples.</P>
+<P>Working in 8 bit values is always bad as the accumulated rounding that occurs 
+after each image processing operation can add up to a noticeable error. Current 
+image processing in hardware (pro video processors) use 10 bit and soon 12 bit. 
+The best way is to work (in software) in 16 bit and dither the result at the end 
+of the processing path.<BR>From a programming point of view, the best way is to 
+have a PolyPhase scaler (like Lanczos) meaning that you keep an array of filter 
+coefs for each sampling phase. Bi cubic, bi-linear (not optimal) and many other 
+scalers can be implemnted by using different coefs for each phase.</P>
+<P>So all you have to is find which pixels fall into the interpolation window, 
+find the phase (0-0.999 where 0 is the pixel left of the center of the window 
+and 1.0 is the one right of it).</P>
+<P>If you want to scale the image by from size N to M the distance between 
+sampling points will be (N-1)/(M-1). So factor of 2 will not keep the original 
+pixel for every 2nd sample, but cause a phase shift along the image which might 
+unpleasing if the image has fine details. If you want to keep the original value 
+for every 2nd pixel, the output image will (2N)-1 pixels. This can be solved by 
+increasing the size of the orignal image by 1 pixel in one of the methods Avery 
+mentioned.</P>
+<P>Anyway, the “best” scalers are true 2D scalers, usualy statistical scalers 
+that looks at the 2D neighborhood, classify it and a apply a 2D filter to find 
+the result. These are too heavy for real time software (and very expensive in 
+ASIC).</P>
+<P>A good way to avoid/reduce ringing (and lower noise) is to analize the 
+window, if the window (or part of the iwndow) is smooth (pixels are very 
+similar) then fall back to bilinear. Such a method should have a soft decision 
+(not true/false) and have a range of values that switch between the sharp scaler 
+(Lanczos) and the smooth scaler (linear).</P>
+<P>Cheers,<BR>Technium</P>
+<P><SMALL><B>Technium</B> - 18 03 06 - 18:48</SMALL></P>
+<P>&nbsp;</P>
+<P>Good points. A few replies to your points:</P>
+<P>Regarding premature clamping of negative results between separable passes, 
+that’s true. In practice, you can get away with it, as the negative lobe is 
+usually quite small, and it avoids having to code the dot product differently 
+between row and column passes. Given a decision between clamping and having to 
+go from 8 bits to 7 bits for intermediate results, I think I would choose to 
+clamp.</P>
+<P>An interpolation filter is still a low-pass filter; it just happens to be at 
+the Nyquist limit (half the sampling rate).</P>
+<P>As I noted above, you really want to use N/M as the source step factor 
+instead of (N-1)/(M-1). For an exact 2:1 upsample with correct centering, the 
+phases will be 1/4 and 3/4; none of the samples will be exactly on input 
+samples. For a 2:1 downsample, all of the samples will be exactly between source 
+pixel centers. Getting this right is very important in some circles; this 
+particular case is very important in 3D texture mipmap generation.</P>
+<P><SMALL><B>Phaeron</B> - 18 03 06 - 19:20</SMALL></P>
+<P>&nbsp;</P></DIV>
+<DIV class=content style="MARGIN-TOP: 16px">
+<H3>Comment form</H3><BR><B>Please keep comments on-topic for this entry.</B> If 
+you have unrelated comments about VirtualDub, the forum is a better place to 
+post them.</B> 
+<FORM id=form action=/blog/pivot/submit.php#message method=post>
+<DIV style="WIDTH: 100%">
+<TABLE class=commentform cellSpacing=0 cellPadding=0 width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD>Name:&nbsp;&nbsp;</TD>
+    <TD><INPUT class=commentinput name=piv_name></TD>
+    <TD vAlign=top rowSpan=3>
+      <DIV 
+      style="PADDING-RIGHT: 8px; PADDING-LEFT: 8px; PADDING-BOTTOM: 4px; MARGIN-LEFT: 8px; BORDER-LEFT: #000 1px solid; PADDING-TOP: 4px">Remember 
+      personal info? <BR><INPUT id=remember type=radio value=yes 
+      name=piv_rememberinfo><LABEL for=remember>Yes</LABEL> <BR><INPUT id=forget 
+      type=radio CHECKED value=no name=piv_rememberinfo><LABEL 
+      for=forget>No</LABEL> </DIV></TD></TR>
+  <TR>
+    <TD vAlign=top>Email:</TD>
+    <TD><INPUT class=commentinput size=30 name=piv_email><BR><SMALL>Your email 
+      address is only revealed to the blog owner and is not shown to the 
+      public.</SMALL></TD></TR>
+  <TR>
+    <TD>URL:</TD>
+    <TD><INPUT class=commentinput size=30 name=piv_url></TD></TR>
+  <TR>
+    <TD colSpan=2>Comment:</TD>
+    <TD align=right>/ <A 
+      onmouseover="window.status='Open Textile Reference';return true;" 
+      title="Open Textile Reference" 
+      onclick="window.open('/blog/pivot/includes/textile/overview.html','textile','width=350,height=520,directories=no,location=no,menubar=no,scrollbars=no,status=yes,toolbar=no,resizable=no');return false" 
+      onmouseout="window.status='';return true;" 
+      href="http://www.virtualdub.org/blog/pivot/entry.php?id=86#">Textile</A></TD></TR>
+  <TR>
+    <TD colSpan=3><TEXTAREA class=commentinput style="WIDTH: 99%" name=piv_comment rows=5 cols=40></TEXTAREA></TD></TR>
+  <TR>
+    <TD colSpan=3><INPUT type=hidden value=86 name=piv_code> <INPUT 
+      type=hidden value=phaerons_weblog name=piv_weblog> 
+      <P><SMALL><B>An authentication dialog may appear when you click Post 
+      Comment.</B> Simply type in "user" as the user. I have had to do this to 
+      stop automated comment spam.</B></SMALL></P><INPUT class=commentbutton style="FONT-WEIGHT: bold" type=submit value="Post Comment" name=post> 
+<INPUT class=commentbutton type=submit value="Preview Comment" name=preview> 
+      <BR><BR><SMALL><B>Small print:</B> All html tags except &lt;b&gt; and 
+      &lt;i&gt; will be removed from your comment. You can make links by just 
+      typing the url or 
+mail-address.</SMALL></TD></TR></TBODY></TABLE></DIV></FORM></DIV></DIV></BODY></HTML>

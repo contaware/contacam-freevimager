@@ -1,0 +1,56 @@
+// appconst.h : application constants
+//
+
+#if !defined(AFX_APPCONST_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)
+#define AFX_APPCONST_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+
+// *** Remember To Change the Version in uImager.rc2         ***
+// *** Remember To Change the Version in the Installer       ***
+// *** Update the History.txt file                           ***
+
+#ifdef VIDEODEVICEDOC
+#define APPNAME_EXT										_T("ContaCam.exe")
+#define APPNAME_NOEXT									_T("ContaCam")
+#define APPNAME_NOEXT_LOW								_T("contacam")
+#define APPNAME_NOEXT_ASCII								"ContaCam"
+#define APPMUTEXNAME									_T("ContaCamAppMutex")
+#else
+#define APPNAME_EXT										_T("FreeVimager.exe")
+#define APPNAME_NOEXT									_T("FreeVimager")
+#define APPNAME_NOEXT_LOW								_T("freevimager")
+#define APPNAME_NOEXT_ASCII								"FreeVimager"
+#define APPMUTEXNAME									_T("FreeVimagerAppMutex")
+#endif
+#define APPVERSION										_T("2.0.0")
+#define SLIDESHOWNAME									_T("Start.exe")
+#define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
+#define NEROBURNNAME									_T("NeroBurn.exe")
+
+// Trace and Log files
+#define LOGNAME_EXT										_T("log.txt")
+#define TRACENAME_EXT									_T("trace.txt")
+#define LOG_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(LOGNAME_EXT))
+#define TRACE_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(TRACENAME_EXT))
+#define MAX_LOG_FILE_SIZE								1048576 /* 1MB */
+
+// Company
+#define MYCOMPANY										_T("Contaware")
+#define MYCOMPANY_WEB									_T("contaware.com")
+
+// FAQ online page
+#define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
+
+// Registration online page
+#define REGISTRATION_ONLINE_PAGE						_T("http://www.contaware.com/")
+
+/////////////////////////////////////////////////////////////////////////////
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_APPCONST_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)
+

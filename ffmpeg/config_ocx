@@ -1,0 +1,4 @@
+#!/bin/sh
+#
+./configure --enable-memalign-hack --disable-zlib --disable-bzlib --prefix=/c/uimager/ffmpeg --extra-ldflags=-L/usr/local/lib --extra-cflags="-fno-common -I/usr/local/include" --disable-debug --disable-logging --disable-network --disable-ffmpeg --disable-ffserver --disable-ffplay --disable-filter=crop --disable-decoders --enable-decoder=h263 --disable-encoders --disable-parsers --disable-demuxers --disable-muxers --disable-bsfs --disable-devices --disable-protocols
+exit 0

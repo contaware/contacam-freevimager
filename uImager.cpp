@@ -1,0 +1,7197 @@
+#include "stdafx.h"
+#include "uImager.h"
+
+#include "MainFrm.h"
+#include "LicenseDlg.h"
+#include "CreditsDlg.h"
+#include "NewDlg.h"
+#include "ChildFrm.h"
+#include "ToolBarChildFrm.h"
+#include "uImagerDoc.h"
+#include "PictureDoc.h"
+#include "VideoAviDoc.h"
+#include "VideoDeviceDoc.h"
+#include "AudioMCIDoc.h"
+#include "CDAudioDoc.h"
+#include "PictureView.h"
+#include "PicturePrintPreviewView.h"
+#include "VideoAviView.h"
+#include "VideoDeviceView.h"
+#include "AudioMCIView.h"
+#include "CDAudioView.h"
+#include "PreviewFileDlg.h"
+#include "SendMailDocsDlg.h"
+#include "BatchProcDlg.h"
+#include "DxCapture.h"
+#include <mapi.h>
+#include "ZipProgressDlg.h"
+#include "BrowseDlg.h"
+#include "EnumGDIObjectsDlg.h"
+#include "SortableFileFind.h"
+#include "getdxver.h"
+#include "DirectX7Dlg.h"
+#include "Winsock2MissingDlg.h"
+#include "CPUCount.h"
+#include "CPUSpeed.h"
+#include "PostDelayedMessage.h"
+#include "YuvToRgb.h"
+#include "RgbToYuv.h"
+#include "TiffSaveDlg.h"
+#include "sinstance.h"
+#include <atlbase.h>
+#include "IniFile.h"
+#include "DiscMaster.h"
+#include "ProgressDlg.h"
+#ifdef VIDEODEVICEDOC
+#include "RegistrationDlg.h"
+#include "SettingsDlgVideoDeviceDoc.h"
+#include "rsaeuro.h"
+#include "rsa.h"
+#else
+#include "SettingsDlg.h"
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CUImagerApp
+
+BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
+	//{{AFX_MSG_MAP(CUImagerApp)
+	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+	ON_COMMAND(ID_FILE_OPEN_DIR, OnFileOpenDir)
+	ON_COMMAND(ID_FILE_NEW, OnFileNew)
+	ON_COMMAND(ID_FILE_CLOSEALL, OnFileCloseall)
+	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
+	ON_COMMAND(ID_SETTINGS, OnFileSettings)
+	ON_COMMAND(ID_APP_LICENSE, OnAppLicense)
+	ON_COMMAND(ID_APP_CREDITS, OnAppCredits)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS, OnUpdateFileAssociation)
+	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateFileMruFile1)
+	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
+	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
+	ON_COMMAND(ID_FILE_SENDMAIL_CURRENT_DOC, OnFileSendmailCurrentDoc)
+	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_CURRENT_DOC, OnUpdateFileSendmailCurrentDoc)
+	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
+	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
+	ON_COMMAND(ID_TOOLS_AVIMERGESERIAL_AS, OnToolsAvimergeSerialAs)
+	ON_COMMAND(ID_TOOLS_AVIMERGEPARALLEL_AS, OnToolsAvimergeParallelAs)
+	ON_COMMAND(ID_TOOLS_TRAYICON, OnToolsTrayicon)
+	ON_UPDATE_COMMAND_UI(ID_TOOLS_TRAYICON, OnUpdateToolsTrayicon)
+	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
+	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
+	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
+	ON_COMMAND(ID_APP_REGISTRATION, OnAppRegistration)
+	//}}AFX_MSG_MAP
+	// Standard file based document commands
+	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+	// Standard print setup command
+	ON_COMMAND(ID_FILE_PRINT_SETUP, CWinApp::OnFilePrintSetup)
+	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
+#ifdef VIDEODEVICEDOC
+	ON_COMMAND(ID_TOOLS_VIEW_WEB_LOGFILE, OnToolsViewWebLogfile)
+	ON_COMMAND(ID_CAPTURE_VIDEO_DEVICE, OnCaptureVideoDevice)
+	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
+	ON_COMMAND(ID_CAPTURE_NETWORK, OnCaptureNetwork)
+#endif
+END_MESSAGE_MAP()
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CUImagerApp construction
+
+CUImagerApp::CUImagerApp()
+{
+	m_bShuttingDownApplication = FALSE;
+	m_bClosingAll = FALSE;
+	m_sAppTempDir = _T("");
+	m_sZipFile = _T("");
+	m_sShrinkDestination = _T("");
+	m_bExtractHere = FALSE;
+	m_bStartPlay = FALSE;
+	m_bCloseAfterPlayDone = FALSE;
+	m_pVideoAviDocTemplate = NULL;
+#ifdef VIDEODEVICEDOC
+	m_pVideoDeviceDocTemplate = NULL;
+	m_bFullscreenBrowser = FALSE;
+	m_bBrowserAutostart = FALSE;
+	m_bStartMicroApache = FALSE;
+	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
+	m_bSingleInstance = TRUE;
+	m_bRegistered = FALSE;
+	m_dwPURCHASE_ID = 0;
+	m_wRUNNING_NO = 0;
+#else
+	m_bSingleInstance = FALSE;
+#endif
+	m_bTopMost = FALSE;
+	m_pPictureDocTemplate = NULL;
+	m_pBigPictureDocTemplate = NULL;
+	m_pAudioMCIDocTemplate = NULL;
+	m_bWaitingMailFinish = FALSE;
+	m_bUseLoadPreviewDib = TRUE;
+	m_bFileDlgPreview = TRUE;
+	m_bUseSettings = TRUE;
+	m_hAppMutex = NULL;
+	m_bFirstRun = FALSE;
+	m_bFirstRunEver = FALSE;
+	m_bHasUnicodeExe = FALSE;
+	m_bHasAsciiExe = FALSE;
+	m_sUnicodeExeFileName = _T("");
+	m_sAsciiExeFileName = _T("");
+	m_bMailAvailable = FALSE;
+	m_bStartMaximized = FALSE;
+	m_nCoresCount = 1;
+	m_bVideoAviInfo = FALSE;
+	m_bFFMpeg2VideoDec = FALSE;
+	m_bFFSnowVideoEnc = FALSE;
+	m_bFFMpeg4VideoEnc = FALSE;
+	m_bFFTheoraVideoEnc = FALSE;
+	m_bFFMpegAudioEnc = FALSE;
+	m_bColDet = FALSE;
+	m_sLastOpenedDir = _T("");
+	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
+	m_sPdfScanPaperSize = _T("Fit");
+	m_sScanToPdfFileName = _T("");
+	m_sScanToTiffFileName = _T("");
+	m_bEscExit = FALSE;
+	m_bDisableExtProg = FALSE;
+	m_bTrayIcon = FALSE;
+	m_bHideMainFrame = FALSE;
+	m_bEndSession = FALSE;
+	m_bSlideShowOnly = FALSE;
+	m_bPrinterInit = FALSE;
+	m_nCoordinateUnit = COORDINATES_PIX;
+	m_nNewWidth = DEFAULT_NEW_WIDTH;
+	m_nNewHeight = DEFAULT_NEW_HEIGHT;
+	m_nNewXDpi = DEFAULT_NEW_DPI;
+	m_nNewYDpi = DEFAULT_NEW_DPI;
+	m_nNewPhysUnit = DEFAULT_NEW_PHYS_UNIT;
+	m_sNewPaperSize = DEFAULT_NEW_PAPER_SIZE;
+	m_crNewBackgroundColor = DEFAULT_NEW_COLOR;
+	m_pAutorunProgressDlg = NULL;
+}
+
+CUImagerApp::~CUImagerApp()
+{
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// The one and only CUImagerApp object
+
+CUImagerApp theApp;
+
+/////////////////////////////////////////////////////////////////////////////
+// CUImagerApp initialization
+
+#ifdef SUPPORT_LIBAVCODEC
+CRITICAL_SECTION g_csAVCodec;
+BOOL g_bAVCodecCSInited = FALSE;
+int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
+{
+	::EnterCriticalSection(&g_csAVCodec);
+	int ret = avcodec_open(avctx, codec);
+	::LeaveCriticalSection(&g_csAVCodec);
+	return ret;
+}
+int avcodec_close_thread_safe(AVCodecContext *avctx)
+{
+	::EnterCriticalSection(&g_csAVCodec);
+	int ret = avcodec_close(avctx);
+	::LeaveCriticalSection(&g_csAVCodec);
+	return ret;
+}
+static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
+{
+	return;
+
+	/*
+	if(level > av_log_get_level())
+		return;
+	*/
+
+	// Fix Format
+	CString sFmt(fmt);
+	sFmt.Replace(_T("%td"), _T("%d"));	// %td not supported by vc++
+	sFmt.Replace(_T("%ti"), _T("%i"));	// %ti not supported by vc++
+	
+	// Convert fixed format to Ascii
+#ifdef _UNICODE
+	char* asciifmt = new char[sFmt.GetLength() + 1];
+	if (!asciifmt)
+		return;
+	::wcstombs(asciifmt, (LPCTSTR)sFmt, sFmt.GetLength() + 1);
+	asciifmt[sFmt.GetLength()] = '\0';
+#endif
+	
+	// Make message string
+	char s[1024];
+#ifdef _UNICODE
+	_vsnprintf(s, 1024, asciifmt, vl);
+	delete [] asciifmt;
+#else
+	_vsnprintf(s, 1024, (LPCTSTR)sFmt, vl);
+#endif
+	s[1023] = '\0';
+
+	// Output message string
+	TRACE(CString(s));
+}
+static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
+{
+	return;
+}
+extern "C"
+{
+extern int mm_support_mask;
+}
+#endif
+#ifdef CRACKCHECK
+// 64 bytes
+#define CRC32_REGION_ENDING_A			33
+#define CRC32_REGION_ENDING_B			0
+#define CRC32_REGION_ENDING_C			3
+#define CRC32_REGION_ENDING_D			90
+#define CRC32_REGION_ENDING_E			2
+#define CRC32_REGION_ENDING_F			87
+#define CRC32_REGION_ENDING_G			6
+#define CRC32_REGION_ENDING_H			99
+#define CRC32_REGION_ENDING_A_OFFSET	56
+#define CRC32_REGION_ENDING_B_OFFSET	57
+#define CRC32_REGION_ENDING_C_OFFSET	58
+#define CRC32_REGION_ENDING_D_OFFSET	59
+#define CRC32_REGION_ENDING_E_OFFSET	60
+#define CRC32_REGION_ENDING_F_OFFSET	61
+#define CRC32_REGION_ENDING_G_OFFSET	62
+#define CRC32_REGION_ENDING_H_OFFSET	63
+BYTE g_Crc32CheckArray[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
+							254,167,56,12,90,23,80,190,234,200,18,16,67,134,199,239,188,123,89,210,129,111,148,222,
+							CRC32_REGION_ENDING_A,CRC32_REGION_ENDING_B,CRC32_REGION_ENDING_C,CRC32_REGION_ENDING_D,
+							CRC32_REGION_ENDING_E,CRC32_REGION_ENDING_F,CRC32_REGION_ENDING_G,CRC32_REGION_ENDING_H};
+#endif
+BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
+{
+	try
+	{
+		// Process my by started with hidden set
+		if (m_nCmdShow == SW_HIDE)
+			m_bHideMainFrame = TRUE;
+
+		// InitCommonControlsEx() is required on Windows XP if an application
+		// manifest specifies use of ComCtl32.dll version 6 or later to enable
+		// visual styles.  Otherwise, any window creation will fail.
+		INITCOMMONCONTROLSEX InitCtrls;
+		InitCtrls.dwSize = sizeof(InitCtrls);
+		// Set this to include all the common control classes you want to use
+		// in your application.
+		InitCtrls.dwICC = ICC_WIN95_CLASSES;
+		InitCommonControlsEx(&InitCtrls);
+
+		// Call base class implementation
+		CWinApp::InitInstance();
+
+		// Initialize OLE libraries
+		// Note: AfxWinTerm() called after ExitInstance() will clean-up,
+		// no need to do it in ExitInstance()!
+		if (!AfxOleInit()) // This calls ::CoInitialize(NULL) internally
+		{
+			::AfxMessageBox(IDP_OLE_INIT_FAILED);
+			return FALSE;
+		}
+		AfxEnableControlContainer();
+
+#if _MFC_VER < 0x0700
+		// Standard initialization
+		// If you are not using these features and wish to reduce the size
+		// of your final executable, you should remove from the following
+		// the specific initialization routines you do not need.
+#ifdef _AFXDLL
+		Enable3dControls();			// Call this when using MFC in a shared DLL
+#else
+		Enable3dControlsStatic();	// Call this when linking to MFC statically
+#endif
+#endif
+
+		// Get Module Name and Split it
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szName[_MAX_FNAME];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return FALSE;
+		_tsplitpath(szProgramName, szDrive, szDir, szName, NULL);
+		CString sDrive(szDrive);
+		CString sDir(szDir);
+		CString sName(szName);
+		CString sDriveDir = sDrive + sDir;
+
+		// Set the current directory to the program's directory.
+		// When double-clicking a file the current directory is set
+		// to the clicked file's directory -> change the current
+		// directory to avoid locking the directory from which we
+		// double-clicked!
+		::SetCurrentDirectory(sDriveDir); // Locks program's dir
+
+		// Create Temporary Directory
+		TCHAR szTempPath[MAX_PATH];
+		if (::GetTempPath(MAX_PATH, szTempPath))
+		{
+			// Do not delete temp directory to clean-up,
+			// because if in single instance mode we
+			// have sharing problems!  
+			m_sAppTempDir = CString(szTempPath) + sName + _T("\\");
+			if (!::IsExistingDir(m_sAppTempDir))
+			{
+				if (!::CreateDir(m_sAppTempDir))
+					::ShowLastError(TRUE);
+			}
+		}
+
+		// Init Trace and Log Files
+		CString sLogFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
+		if (sLogFile == _T(""))
+			sLogFile = sDriveDir + LOGNAME_EXT;
+		else
+			sLogFile += _T("\\") + LOG_FILE;
+		CString sPath = ::GetDriveAndDirName(sLogFile);
+		if (!::IsExistingDir(sPath))
+		{
+			if (!::CreateDir(sPath))
+				::ShowLastError(TRUE);
+		}
+		CString sTraceFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
+		if (sTraceFile == _T(""))
+			sTraceFile = sDriveDir + TRACENAME_EXT;
+		else
+			sTraceFile += _T("\\") + TRACE_FILE;
+		sPath = ::GetDriveAndDirName(sTraceFile);
+		if (!::IsExistingDir(sPath))
+		{
+			if (!::CreateDir(sPath))
+				::ShowLastError(TRUE);
+		}
+		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
+
+		// Set to use settings
+		m_bUseSettings = TRUE;
+
+		// If in debug mode or if application installed -> use registry
+#ifdef _DEBUG
+		m_bUseRegistry = TRUE;
+#else
+		CString sSoftwareCompany = CString(_T("Software\\")) + CString(MYCOMPANY) + CString(_T("\\"));
+		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName))
+		{
+			CString sInstallDir = ::GetRegistryStringValue(	HKEY_LOCAL_MACHINE,
+															sSoftwareCompany + sName,
+															_T("Install_Dir"));
+			sInstallDir.TrimRight(_T('\\'));
+			sInstallDir += _T("\\");
+			if (sInstallDir.CompareNoCase(sDriveDir) == 0)
+				m_bUseRegistry = TRUE;
+			else
+				m_bUseRegistry = FALSE;
+		}
+		else
+			m_bUseRegistry = FALSE;
+#endif
+
+		// Parse command line for standard shell commands, DDE, file open
+		CUImagerCommandLineInfo cmdInfo;
+		ParseCommandLine(cmdInfo); // m_bHideMainFrame is ev. set to TRUE here
+
+		// Slideshow only mode?
+		CString sSlideshowName(SLIDESHOWNAME);
+		int pos = sSlideshowName.Find(_T('.'));
+		if (pos >= 0)
+			sSlideshowName = sSlideshowName.Left(pos);
+		if (cmdInfo.DoStartSlideShow() || sName.CompareNoCase(sSlideshowName) == 0)
+		{
+			m_bSlideShowOnly = TRUE;
+			m_bUseSettings = FALSE;
+			m_bUseRegistry = FALSE;
+		}
+
+		// Registry key under which the settings are stored.
+		// This Will create the HKEY_CURRENT_USER\Software\Contaware key
+		if (m_bUseRegistry)
+			SetRegistryKey(MYCOMPANY);
+		else if (m_bUseSettings)
+		{
+			// First free the string allocated by MFC at CWinApp startup.
+			// The string is allocated before InitInstance is called.
+			free((void*)m_pszProfileName);
+
+			// Change the name of the .INI file.
+			// The CWinApp destructor will free the memory.
+			m_pszProfileName = _tcsdup(sDriveDir + sName + _T(".ini"));
+
+			// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
+#ifdef _UNICODE
+			if (!::IsExistingFile(m_pszProfileName))
+			{
+				const WORD wBOM = 0xFEFF;
+				DWORD NumberOfBytesWritten;
+				HANDLE hFile = ::CreateFile(m_pszProfileName,
+											GENERIC_WRITE, 0, NULL,
+											CREATE_NEW,
+											FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hFile != INVALID_HANDLE_VALUE)
+				{
+					::WriteFile(hFile, &wBOM, sizeof(WORD), &NumberOfBytesWritten, NULL);
+					::CloseHandle(hFile);
+				}
+			}
+#endif
+		}
+
+		// Single Instance
+		// (if CVideoDeviceDoc support always single instance, see constructor)
+#ifndef VIDEODEVICEDOC
+		if (m_bUseSettings)
+			m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
+#endif
+#ifdef _UNICODE
+		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
+#else
+		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Ascii")));
+#endif
+		if (!m_bExtractHere												&&
+			!m_bStartPlay												&&
+			!m_bCloseAfterPlayDone										&&
+			!cmdInfo.m_bRunEmbedded										&&
+			!cmdInfo.m_bRunAutomated									&&
+			cmdInfo.m_nShellCommand != CCommandLineInfo::FilePrintTo	&&
+			cmdInfo.m_nShellCommand != CCommandLineInfo::FileDDE		&&
+#if _MFC_VER >= 0x0700
+			cmdInfo.m_nShellCommand != CCommandLineInfo::AppRegister	&&
+#endif
+			cmdInfo.m_nShellCommand != CCommandLineInfo::AppUnregister	&&
+			!m_bSlideShowOnly											&&
+			m_bSingleInstance)
+		{
+			instanceChecker.ActivateChecker();
+			if (instanceChecker.PreviousInstanceRunning())
+			{
+				// Send file name and shell command to previous instance
+				instanceChecker.ActivatePreviousInstance(cmdInfo.m_strFileName,
+														(DWORD)cmdInfo.m_nShellCommand);
+				return FALSE;
+			}
+		}
+
+		// Init Global Helper Functions
+		// (inits OSs flags and processor instruction sets flags)
+		::InitHelpers();
+
+		// Check for MMX
+#if defined(VIDEODEVICEDOC) || defined(SUPPORT_LIBAVCODEC)
+		if (!g_bMMX)
+		{
+			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
+			return FALSE;
+		}
+#endif
+
+		// AVCODEC Init
+#ifdef SUPPORT_LIBAVCODEC
+		// Initialize Critical Section
+		::InitializeCriticalSection(&g_csAVCodec);
+		g_bAVCodecCSInited = TRUE;
+#ifdef _DEBUG
+		av_log_set_callback(my_av_log_trace);
+#else
+		av_log_set_callback(my_av_log_empty);
+#endif
+		/*	ffmpeg automatically detects the best instructions
+			for the given CPU. Set mm_support_mask to limit the
+			used instructions.
+		FF_MM_MMX		// standard MMX
+		FF_MM_3DNOW		// AMD 3DNOW
+		FF_MM_MMXEXT	// SSE integer functions or AMD MMX ext
+		FF_MM_SSE		// SSE functions
+		FF_MM_SSE2		// PIV SSE2 functions
+		FF_MM_3DNOWEXT	// AMD 3DNowExt
+		FF_MM_SSE3		// Prescott SSE3 functions
+		FF_MM_SSSE3		// Conroe SSSE3 functions
+		*/
+		// Win95 and NT4 always crash if enabling sse2 and on newer systems
+		// I had some strange crashes...better to always disable sse2 and higher
+		//mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE | FF_MM_SSE2 | FF_MM_3DNOWEXT | FF_MM_SSE3 | FF_MM_SSSE3;
+		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
+		av_register_all();
+		m_bFFMpeg2VideoDec = avcodec_find_decoder(CODEC_ID_MPEG2VIDEO) != NULL ? TRUE : FALSE;
+		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
+		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
+		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;
+		m_bFFMpegAudioEnc = avcodec_find_encoder(CODEC_ID_MP2) != NULL && avcodec_find_encoder(CODEC_ID_MP3) != NULL ? TRUE : FALSE;
+#endif
+
+		// Init for the PostDelayedMessage() Function
+		CPostDelayedMessageThread::Init();
+
+		// Get the CPU Count
+		if (g_bNT)
+		{
+			unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
+						 TotAvailCore		= 0, // Number of available cores in the system
+						 PhysicalNum		= 0; // Total number of physical processors in the system
+			::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
+			m_nCoresCount = TotAvailCore;
+		}
+
+		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
+		// variable for the PrintPreview.
+		// This Function uses 2 Keys (or Sections for INI Files):
+		// Recent File List and Settings (to store m_nNumPreviewPages)
+		if (m_bUseSettings)
+			LoadStdProfileSettings(6);
+
+		// Check the correctness of Autostart (the program location may change)
+		if (m_bUseSettings)
+		{
+			CRegKey RegKey;
+			TCHAR szCurrentPath[MAX_PATH];
+			DWORD dwCount = MAX_PATH;
+			if (RegKey.Open(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) == ERROR_SUCCESS)
+			{
+#if _MFC_VER < 0x0700
+				if (RegKey.QueryValue(szCurrentPath, APPNAME_NOEXT, &dwCount) == ERROR_SUCCESS)
+					RegKey.SetValue(szProgramName, APPNAME_NOEXT);
+#else
+				if (RegKey.QueryStringValue(APPNAME_NOEXT, szCurrentPath, &dwCount) == ERROR_SUCCESS)
+					RegKey.SetStringValue(APPNAME_NOEXT, szProgramName);
+#endif
+				RegKey.Close();
+			}
+		}
+
+		// HALFTONE stretching is supported?
+		if (g_bNT)
+			m_bStretchModeHalftoneAvailable = TRUE;
+		else
+			m_bStretchModeHalftoneAvailable = FALSE;
+
+		// Picture Doc Template Registration
+		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
+			g_bNT ? IDR_PICTURE : IDR_PICTURE_NOHQ,
+			RUNTIME_CLASS(CPictureDoc),
+			RUNTIME_CLASS(CPictureChildFrame),
+			RUNTIME_CLASS(CPictureView));
+		if (!m_pPictureDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pPictureDocTemplate);
+
+		// Big Picture Doc Template Registration
+		m_pBigPictureDocTemplate = new CUImagerMultiDocTemplate(
+			g_bNT ? IDR_BIGPICTURE : IDR_BIGPICTURE_NOHQ,
+			RUNTIME_CLASS(CPictureDoc),
+			RUNTIME_CLASS(CBigPictureChildFrame),
+			RUNTIME_CLASS(CPictureView));
+		if (!m_pBigPictureDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pBigPictureDocTemplate);
+
+		// Video Avi Doc Template Registration
+		m_pVideoAviDocTemplate = new CUImagerMultiDocTemplate(
+			IDR_VIDEOAVI,
+			RUNTIME_CLASS(CVideoAviDoc),
+			RUNTIME_CLASS(CVideoAviChildFrame),
+			RUNTIME_CLASS(CVideoAviView));
+		if (!m_pVideoAviDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pVideoAviDocTemplate);
+
+		// Video Device Doc Template Registration
+#ifdef VIDEODEVICEDOC
+		m_pVideoDeviceDocTemplate = new CUImagerMultiDocTemplate(
+			IDR_VIDEODEVICE,
+			RUNTIME_CLASS(CVideoDeviceDoc),
+			RUNTIME_CLASS(CVideoDeviceChildFrame),
+			RUNTIME_CLASS(CVideoDeviceView));
+		if (!m_pVideoDeviceDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pVideoDeviceDocTemplate);
+#endif
+
+		// Audio MCI Doc Template Registration
+		m_pAudioMCIDocTemplate = new CUImagerMultiDocTemplate(
+			IDR_AUDIOMCI,
+			RUNTIME_CLASS(CAudioMCIDoc),
+			RUNTIME_CLASS(CAudioMCIChildFrame),
+			RUNTIME_CLASS(CAudioMCIView));
+		if (!m_pAudioMCIDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pAudioMCIDocTemplate);
+
+		// CD Audio Doc Template Registration
+		m_pCDAudioDocTemplate = new CUImagerMultiDocTemplate(
+			IDR_CDAUDIO,
+			RUNTIME_CLASS(CCDAudioDoc),
+			RUNTIME_CLASS(CCDAudioChildFrame),
+			RUNTIME_CLASS(CCDAudioView));
+		if (!m_pCDAudioDocTemplate)
+			return FALSE;
+		AddDocTemplate(m_pCDAudioDocTemplate);
+
+		// Create Named Mutex For Installer / Uninstaller
+		m_hAppMutex = ::CreateMutex(NULL, FALSE, APPMUTEXNAME);
+		switch (::GetLastError())
+		{
+			case ERROR_SUCCESS:
+				// Mutex created successfully. There is
+				// no instances running
+				break;
+
+			case ERROR_ALREADY_EXISTS:
+				// Mutex already exists so there is a
+				// running instance of our app.
+				break;
+
+			default:
+				// Failed to create mutex by unknown reason
+				break;
+		}
+
+		// Is Mail Available?
+		m_bMailAvailable =	(::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0) &&
+							(SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
+
+		// Create main MDI Frame window
+		CMainFrame* pMainFrame = new CMainFrame;
+		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME)) // if m_bHideMainFrame set tray icon is disabled here
+		{
+			delete pMainFrame;
+			return FALSE;
+		}
+		m_pMainWnd = pMainFrame;
+
+		// Init Exe Files Type
+#ifdef _UNICODE
+		m_bHasUnicodeExe = TRUE;
+		m_sUnicodeExeFileName = szProgramName;
+		if (::IsExistingFile(sDriveDir + SLIDESHOWNAME))
+		{
+			m_bHasAsciiExe = TRUE;
+			m_sAsciiExeFileName = sDriveDir + SLIDESHOWNAME;
+		}
+#else
+		m_bHasAsciiExe = TRUE;
+		m_sAsciiExeFileName = szProgramName;
+#endif
+
+		// Zip Settings
+		m_Zip.SetAdvanced(65535 * 50, 16384 * 50, 32768 * 50);
+
+		// Init YUV <-> RGB LUT
+		::InitYUVToRGBTable();
+		::InitRGBToYUVTable();
+		
+#ifdef VIDEODEVICEDOC
+		// Init WinSock 2.2
+		WSADATA wsadata;
+		if(::WSAStartup(MAKEWORD(2, 2), &wsadata) == 0)
+		{
+			/* Confirm that the WinSock DLL supports 2.2.*/
+			/* Note that if the DLL supports versions greater    */
+			/* than 2.2 in addition to 2.2, it will still return */
+			/* 2.2 in wVersion since that is the version we      */
+			/* requested.                                        */
+			if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wVersion) != 2)
+			{
+				::WSACleanup();
+				if (g_bWin95)
+				{
+					CWinsock2MissingDlg dlg;
+					dlg.DoModal();
+				}
+				else
+					::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
+				return FALSE;
+			}
+		}
+		else
+		{
+			if (g_bWin95)
+			{
+				CWinsock2MissingDlg dlg;
+				dlg.DoModal();
+			}
+			else
+				::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
+			return FALSE;
+		}
+
+		// Is registered?
+		m_bRegistered = RSADecrypt();
+#endif
+
+		// Dispatch commands specified on the command line.
+		// Returns FALSE if extracting zip file here,
+		// if printing, if file opening fails.
+		if (!ProcessShellCommand(cmdInfo))
+			return FALSE;
+
+		// Hiding mainframe?
+		if (m_bHideMainFrame)
+			m_nCmdShow = SW_HIDE;
+
+		// The main window has been initialized, so show, place it and update it.
+		pMainFrame->ShowWindow(m_nCmdShow);
+		pMainFrame->UpdateWindow();
+
+		// ProcessShellCommand() is called before the MainFrame is shown,
+		// this to display the zip extraction dialog without MainFrame.
+		// But that causes a problem with the document titles,
+		// they are not shown!
+		// -> Update Title here:
+		CMDIChildWnd* pChild = ::AfxGetMainFrame()->MDIGetActive();
+		if (pChild)
+		{
+			CView* pView = (CView*)pChild->GetActiveView();
+			if (pView)
+			{
+				CDocument* pDoc = pView->GetDocument();
+				if (pDoc)
+					pDoc->UpdateFrameCounts(); // will cause name change in views
+			}
+		}
+
+		// Slideshow only mode
+		if (m_bSlideShowOnly)
+		{
+			m_SettingsXml.LoadSettings(sDriveDir + SLIDESHOWSETTINGSNAME);
+			SlideShow(	sDriveDir,
+						TRUE,
+						TRUE,
+						TRUE);
+		}
+		else
+		{
+			if (m_bUseSettings)
+			{
+				// Load Settings has to be here for the Window Placement restore to work!
+				LoadSettings(m_nCmdShow);
+
+				// First time that the App runs after Install (or Upgrade)
+				if (m_bFirstRun)
+				{	
+					// DirectX check (it's a bit slow, do not run that each time)
+#ifdef VIDEODEVICEDOC
+					if (!RequireDirectXVersion7())
+						return FALSE;
+#else
+					SuggestDirectXVersion7();
+#endif
+
+					// First time ever that the App runs or after a uninstall
+					if (m_bFirstRunEver)
+					{
+#ifdef VIDEODEVICEDOC
+						// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
+						if (!MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
+						{
+							m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
+							WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
+						}
+
+						// Enable autostart
+						Autostart(TRUE);
+
+						// Associate avi files
+						AssociateFileType(_T("avi"));
+						AssociateFileType(_T("divx"));
+						::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+#endif
+						// Reset first run ever flag
+						WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
+					}
+		
+#ifdef VIDEODEVICEDOC
+					// Update / create config file and root index.php for microapache
+					MicroApacheUpdateFiles();			
+#else
+					// Open Settings Dialog for file association and other preferences
+					OnFileSettings();
+#endif
+					// Reset first run flag
+					WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
+				}
+
+#ifdef VIDEODEVICEDOC
+				// Start Micro Apache
+				if (m_bStartMicroApache)
+					CVideoDeviceDoc::MicroApacheInitStart(); // if already running the just started process will exit, no problem
+
+				// Autorun Devices
+				AutorunVideoDevices();
+
+				// Start Browser
+				if (m_bBrowserAutostart)
+				{
+					BOOL bDoStartBrowser = TRUE;
+					if (m_bStartMicroApache)
+					{
+						bDoStartBrowser =	CVideoDeviceDoc::MicroApacheWaitStartDone() &&
+											CVideoDeviceDoc::MicroApacheWaitCanConnect();
+					}
+					if (bDoStartBrowser)
+					{
+						CString sUrl, sPort;
+						sPort.Format(_T("%d"), m_nMicroApachePort);
+						if (sPort != _T("80"))
+							sUrl = _T("http://localhost:") + sPort + _T("/");
+						else
+							sUrl = _T("http://localhost/");
+						if (m_bFullscreenBrowser)
+						{
+							CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
+							::ShellExecute(	NULL,
+											_T("open"),
+											sFullscreenExe,
+											sUrl,
+											NULL,
+											SW_SHOWNORMAL);
+						}
+						else
+						{
+							::ShellExecute(	NULL,
+											_T("open"),
+											sUrl,
+											NULL,
+											NULL,
+											SW_SHOWNORMAL);
+						}
+					}
+				}
+#endif
+			}
+		}
+
+		// If this is the first instance of our App then track it
+		// so any other instances can find us
+		if (m_bSingleInstance)
+			instanceChecker.TrackFirstInstanceRunning();
+
+		return TRUE;
+	}
+	catch (CException* e)
+	{
+		e->ReportError();
+		e->Delete();
+		return FALSE;
+	}
+}
+
+CUImagerMultiDocTemplate::CUImagerMultiDocTemplate(	UINT nIDResource, CRuntimeClass* pDocClass,
+													CRuntimeClass* pFrameClass, CRuntimeClass* pViewClass) :
+													CMultiDocTemplate(nIDResource, pDocClass, pFrameClass, pViewClass)
+{
+
+}
+
+CUImagerMultiDocTemplate::~CUImagerMultiDocTemplate()
+{
+
+}
+
+CDocument* CUImagerMultiDocTemplate::OpenDocumentFile(	LPCTSTR lpszPathName,
+														BOOL bMakeVisible/*=TRUE*/)
+{
+	// Open Document
+	CDocument* pDoc = CMultiDocTemplate::OpenDocumentFile(	lpszPathName,
+															bMakeVisible);
+
+	// Init Menu Positions
+	::AfxGetMainFrame()->InitMenuPositions(pDoc);
+	
+	return pDoc;
+}
+
+IMPLEMENT_DYNAMIC(CUImagerMultiDocTemplate, CMultiDocTemplate)
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CAboutDlg dialog used for App About
+
+CAboutDlg::CAboutDlg(BOOL bClickableLinks/*=TRUE*/) : CDialog(CAboutDlg::IDD)
+{
+	//{{AFX_DATA_INIT(CAboutDlg)
+	//}}AFX_DATA_INIT
+	m_bClickableLinks = bClickableLinks;
+}
+
+void CAboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CAboutDlg)
+	//}}AFX_DATA_MAP
+}
+
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// Application Name
+	CEdit* pAppName = (CEdit*)GetDlgItem(IDC_APPNAME);
+	pAppName->SetWindowText(APPNAME_NOEXT);
+
+	// Application Version
+	CEdit* pAppVer = (CEdit*)GetDlgItem(IDC_APPVER);
+	pAppVer->SetWindowText(APPVERSION);
+
+	// CPU Speed
+	CEdit* pCpuSpeedEdit = (CEdit*)GetDlgItem(IDC_CPUSPEED);
+	CString sCpuSpeedMHz;
+	sCpuSpeedMHz.Format(_T("CPU  ~%u MHz"), ::GetProcessorSpeedMHzFast());
+	pCpuSpeedEdit->SetWindowText(sCpuSpeedMHz);
+
+	// Total Physical Memory
+	CString sPhysMemMB;
+	sPhysMemMB.Format(_T("RAM  %d MB"), ::GetTotPhysMemMB());
+	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
+	pPhysMemMB->SetWindowText(sPhysMemMB);
+
+	// CPU Count
+	unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
+				 TotAvailCore		= 0, // Number of available cores in the system
+				 PhysicalNum		= 0; // Total number of physical processors in the system
+	::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
+	CEdit* pCpuCount = (CEdit*)GetDlgItem(IDC_CPUCOUNT);
+	CString sCpuCount;
+	sCpuCount.Format(	ML_STRING(1173, "%d phys. processor%s, %d core%s, %d logical processor%s"),
+						PhysicalNum,
+						PhysicalNum == 1 ? _T("") : _T("s"),
+						TotAvailCore,
+						TotAvailCore == 1 ? _T("") : _T("s"),
+						TotAvailLogical,
+						TotAvailLogical == 1 ? _T("") : _T("s"));
+	pCpuCount->SetWindowText(sCpuCount);
+
+	// Clickable Links?
+	if (m_bClickableLinks)
+		m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
+
+	// Compilation Time & Date
+	CString s;
+#ifdef _DEBUG
+	s =	CString(_T("(")) +
+		CString(_T(__TIME__)) +
+		CString(_T(" , ")) +
+		CString(_T(__DATE__)) +
+		CString(_T(")"));
+#else
+	s =	CString(_T("(")) +
+		CString(_T(__DATE__)) +
+		CString(_T(")"));
+#endif
+#ifdef _UNICODE
+#ifdef _DEBUG
+	s += ML_STRING(1172, "    Unicode");
+#else
+	s += ML_STRING(1172, "    Unicode Support");
+#endif
+#endif
+	SetDlgItemText(IDC_VERSION, s);
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	//{{AFX_MSG_MAP(CAboutDlg)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+// App command to run the dialog
+void CUImagerApp::OnAppAbout()
+{	
+	// Clickable Links only in Normal Screen Mode!
+	CAboutDlg aboutDlg(!::AfxGetMainFrame()->m_bFullScreenMode);
+	aboutDlg.DoModal();
+}
+
+// Popup Registration Dialog
+void CUImagerApp::OnAppRegistration() 
+{
+#ifdef VIDEODEVICEDOC
+	CRegistrationDlg regDlg;
+	regDlg.DoModal();
+#endif
+}
+
+// Popup Credits Dialog
+void CUImagerApp::OnAppCredits() 
+{
+#ifdef VIDEODEVICEDOC
+	CCreditsDlg creditsDlg(NULL, IDD_CREDITS_VIDEODEVICEDOC);
+#else
+	CCreditsDlg creditsDlg(NULL, IDD_CREDITS);
+#endif
+	creditsDlg.DoModal();
+}
+
+// Popup License Dialog
+void CUImagerApp::OnAppLicense() 
+{
+	CLicenseDlg licenseDlg;
+	licenseDlg.DoModal();
+}
+
+// Show the internet site about FAQs
+void CUImagerApp::OnAppFaq() 
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					FAQ_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+}
+
+// Popup Settings Dialog
+void CUImagerApp::OnFileSettings() 
+{
+#ifdef VIDEODEVICEDOC
+	CSettingsDlgVideoDeviceDoc dlg;
+#else
+	CSettingsDlg dlg;
+#endif
+	dlg.DoModal();
+}
+
+void CUImagerApp::OnUpdateFileAssociation(CCmdUI* pCmdUI) 
+{
+	// Remove the menu item
+	CMenu* pMenu = pCmdUI->m_pMenu;
+	if (!m_bUseSettings && pMenu != NULL)
+	{
+		// Remove the Menu Item and surrounding separators
+		UINT nStateAbove = pMenu->GetMenuState(pCmdUI->m_nIndex-1, MF_BYPOSITION);
+		UINT nStateBelow = pMenu->GetMenuState(pCmdUI->m_nIndex+1, MF_BYPOSITION);
+		pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		if (nStateAbove & nStateBelow & MF_SEPARATOR)
+		{
+			// A separator must be removed since this Menu Item is gone
+			if (nStateAbove != (UINT)-1)
+				pMenu->RemoveMenu(pCmdUI->m_nIndex-1, MF_BYPOSITION);
+			else if (nStateBelow != (UINT)-1)
+				pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		}
+	}	
+}
+
+void CUImagerApp::OnUpdateFileMruFile1(CCmdUI* pCmdUI) 
+{
+	// Remove the menu item
+	CMenu* pMenu = pCmdUI->m_pMenu;
+	if (!m_bUseSettings && pMenu != NULL)
+	{
+		// Remove the Menu Item and surrounding separators
+		UINT nStateAbove = pMenu->GetMenuState(pCmdUI->m_nIndex-1, MF_BYPOSITION);
+		UINT nStateBelow = pMenu->GetMenuState(pCmdUI->m_nIndex+1, MF_BYPOSITION);
+		pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		if (nStateAbove & nStateBelow & MF_SEPARATOR)
+		{
+			// A separator must be removed since this Menu Item is gone
+			if (nStateAbove != (UINT)-1)
+				pMenu->RemoveMenu(pCmdUI->m_nIndex-1, MF_BYPOSITION);
+			else if (nStateBelow != (UINT)-1)
+				pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
+		}
+	}
+
+	if (m_bUseSettings)
+		CWinApp::OnUpdateRecentFileMenu(pCmdUI);
+}
+
+void CUImagerApp::OnFileOpen()
+{
+	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		!m_bSlideShowOnly)
+	{
+		TCHAR* FileNames = new TCHAR[MAX_FILEDLG_PATH];
+		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
+		FileNames[0] = _T('\0');
+		InitDir[0] = _T('\0');
+		m_sLastOpenedDir.TrimRight(_T('\\'));
+		if (::IsExistingDir(m_sLastOpenedDir))
+			_tcscpy(InitDir, (LPCTSTR)m_sLastOpenedDir);
+		else
+			_tcscpy(InitDir, (LPCTSTR)::GetSpecialFolderPath(CSIDL_MYPICTURES));
+		CPreviewFileDlg dlgFile(TRUE,
+								m_bFileDlgPreview,
+								TRUE,
+								NULL,
+								NULL,
+								NULL,
+								::AfxGetMainFrame());
+		dlgFile.m_ofn.lpstrInitialDir = InitDir;
+		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
+		dlgFile.m_ofn.lpstrCustomFilter = NULL;
+		dlgFile.m_ofn.lpstrFilter = 
+					_T("Supported Files (*.bmp;*.gif;*.jpg;*.avi;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif;*.zip)\0")
+					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.avi;*.divx;")
+					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff;*.zip\0")
+					_T("All Files (*.*)\0*.*\0")
+					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
+					_T("Graphics Interchange Format (*.gif)\0*.gif\0")
+					_T("Portable Network Graphics (*.png)\0*.png\0")
+					_T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0")
+					_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
+					_T("PC Paintbrush (*.pcx)\0*.pcx\0")
+					_T("Enhanced Metafile (*.emf)\0*.emf\0")
+					_T("Audio Video Interchange (*.avi;*.divx)\0*.avi;*.divx\0")
+					_T("Audio Files (*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif)\0")
+					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
+					_T("Zip File (*.zip)\0*.zip\0");
+		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+		dlgFile.m_ofn.lpstrFile = FileNames;
+		dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
+
+		// Open File Dialog
+		if (dlgFile.DoModal() == IDOK)
+		{
+			// In case of zip file(s) this is the
+			// selected extraction directory
+			CString sZipExtractDir(_T(""));
+			volatile int nPictureFilesInZipsCount = 0;
+
+			// Update preview flag
+			m_bFileDlgPreview = dlgFile.m_bPreview;
+			if (m_bUseSettings)
+			{
+				WriteProfileInt(_T("GeneralApp"),
+								_T("FileDlgPreview"),
+								m_bFileDlgPreview);
+			}
+			
+			// Get File(s)
+			TCHAR* sSource = FileNames;
+			TCHAR FileName[MAX_PATH];
+			FileName[0] = _T('\0');
+			TCHAR Path[MAX_PATH];
+			Path[0] = _T('\0');
+			_tcscpy(Path, (LPCTSTR)sSource);
+			while (*sSource != 0)
+				sSource++;
+			sSource++; // Skip the 0.
+			if (*sSource == 0) // If two zeros -> single file selected
+			{
+				// Zip File Extraction
+				if (::GetFileExt(Path) == _T(".zip"))
+				{
+					sZipExtractDir = ExtractZip(Path, &nPictureFilesInZipsCount);
+				}
+				else
+				{
+					// Big Picture File?
+					if (dlgFile.m_bBigPicture &&
+						(::GetFileExt(Path) == _T(".bmp") ||
+						::GetFileExt(Path) == _T(".dib")))
+					{
+						CUImagerMultiDocTemplate* curTemplate = GetBigPictureDocTemplate();
+						CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+						if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						{
+							CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+							pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+							pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+							if (!((CPictureDoc*)pDoc)->LoadBigPicture(Path))
+							{
+								((CPictureDoc*)pDoc)->CloseDocumentForce();
+								delete [] FileNames;
+								delete [] InitDir;
+								return;
+							}
+							else
+							{
+								// Fit to document
+								if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+								{
+									((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																									0, 0, 0, 0,
+																									SWP_NOSIZE |
+																									SWP_NOZORDER);
+									((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+								}
+							}
+						}
+					}
+					else
+					{
+						CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(Path);
+						if (curTemplate == NULL)
+						{
+							FileTypeNotSupportedMessageBox(Path);
+							delete [] FileNames;
+							delete [] InitDir;
+							return;
+						}
+
+						CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+						if (pDoc)
+						{
+							if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+							{
+								if (!((CVideoAviDoc*)pDoc)->LoadAVI(Path))
+								{
+									((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+							}
+							else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+							{
+								CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+								pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+								pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+								if (!((CPictureDoc*)pDoc)->LoadPicture(&pDoc->m_pDib, Path))
+								{
+									((CPictureDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+								else
+								{
+									// Fit to document
+									if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+									{
+										((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																										0, 0, 0, 0,
+																										SWP_NOSIZE |
+																										SWP_NOZORDER);
+										((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+									}
+									((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+								}
+							}
+							else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+							{
+								if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
+								{
+									((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+							}
+							else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+							{
+								if (!((CCDAudioDoc*)pDoc)->LoadCD(Path))
+								{
+									((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+							}
+						}
+					}
+				}
+
+				// Store Last Opened Directory
+				TCHAR szDrive[_MAX_DRIVE];
+				TCHAR szDir[_MAX_DIR];
+				_tsplitpath(Path, szDrive, szDir, NULL, NULL);
+				m_sLastOpenedDir = CString(szDrive) + CString(szDir);
+				m_sLastOpenedDir.TrimRight(_T('\\'));
+				if (m_bUseSettings)
+				{
+					WriteProfileString(	_T("GeneralApp"),
+										_T("LastOpenedDir"),
+										m_sLastOpenedDir);
+				}
+			}
+			else // multiple files selected
+			{
+				// Just open one cd player!
+				BOOL bCDAudioOpened = FALSE;
+
+				while (*sSource != 0) // If 0 -> end of file list.
+				{
+					_tcscpy(FileName, (LPCTSTR)Path);
+					_tcscat(FileName, (LPCTSTR)_T("\\"));
+					_tcscat(FileName, (LPCTSTR)sSource);
+
+					// Zip File Extraction
+					if (::GetFileExt(FileName) == _T(".zip"))
+					{
+						if (sZipExtractDir == _T(""))
+							sZipExtractDir = ExtractZip(FileName, &nPictureFilesInZipsCount);
+						else
+							ExtractZipToDir(sZipExtractDir, FileName, &nPictureFilesInZipsCount);
+					}
+					else
+					{
+						// Big Picture File?
+						if (dlgFile.m_bBigPicture &&
+							(::GetFileExt(FileName) == _T(".bmp") ||
+							::GetFileExt(FileName) == _T(".dib")))
+						{
+							CUImagerMultiDocTemplate* curTemplate = GetBigPictureDocTemplate();
+							CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+							if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+							{
+								CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+								pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+								pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+								if (!((CPictureDoc*)pDoc)->LoadBigPicture(FileName))
+								{
+									((CPictureDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+								else
+								{
+									// Fit to document
+									if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+									{
+										((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																										0, 0, 0, 0,
+																										SWP_NOSIZE |
+																										SWP_NOZORDER);
+										((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+									}
+								}
+							}
+						}
+						else
+						{
+							// Just open one cd player
+							if (!bCDAudioOpened || ::GetFileExt(FileName) != _T(".cda"))
+							{
+								CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(FileName);
+								if (curTemplate == NULL)
+								{
+									FileTypeNotSupportedMessageBox(FileName);
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+								CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+								if (pDoc)
+								{
+									if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+									{
+										if (!((CVideoAviDoc*)pDoc)->LoadAVI(FileName))
+										{
+											((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+											delete [] FileNames;
+											delete [] InitDir;
+											return;
+										}
+									}
+									else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+									{
+										CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+										pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+										pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+										if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+																				FileName,
+																				FALSE,
+																				FALSE	// Do not preload Prev & Next because LoadDibSectionEx
+																						// of CDib has a OLE object problem when loading many
+																						// files at the same time!
+																				))
+										{
+											((CPictureDoc*)pDoc)->CloseDocumentForce();
+											delete [] FileNames;
+											delete [] InitDir;
+											return;
+										}
+										else
+										{
+											// Fit to document
+											if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+											{
+												((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																												0, 0, 0, 0,
+																												SWP_NOSIZE |
+																												SWP_NOZORDER);
+												((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+											}
+											((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+										}
+									}
+									else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+									{
+										if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
+										{
+											((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+											delete [] FileNames;
+											delete [] InitDir;
+											return;
+										}
+									}
+									else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+									{
+										if (!((CCDAudioDoc*)pDoc)->LoadCD(FileName))
+										{
+											((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+											delete [] FileNames;
+											delete [] InitDir;
+											return;
+										}
+										else
+											bCDAudioOpened = TRUE;
+									}
+								}
+							}
+						}
+					}
+
+					while (*sSource != 0)
+						sSource++;
+					sSource++; // Skip the 0.
+				}
+
+				// Store Last Opened Directory
+				m_sLastOpenedDir = CString(Path);
+				m_sLastOpenedDir.TrimRight(_T('\\'));
+				if (m_bUseSettings)
+				{
+					WriteProfileString(	_T("GeneralApp"),
+										_T("LastOpenedDir"),
+										m_sLastOpenedDir);
+				}
+			}
+
+			// Open Zip File Content
+			if (sZipExtractDir != _T("") && nPictureFilesInZipsCount > 0)
+			{
+				SlideShow(	sZipExtractDir,
+							FALSE,
+							FALSE,
+							TRUE);
+			}
+		}
+		else
+		{
+			m_bFileDlgPreview = dlgFile.m_bPreview;
+			if (m_bUseSettings)
+			{
+				WriteProfileInt(_T("GeneralApp"),
+								_T("FileDlgPreview"),
+								m_bFileDlgPreview);
+			}
+		}
+
+		// Free
+		delete [] FileNames;
+		delete [] InitDir;
+	}
+}
+
+void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)
+{
+	CString sMsg;
+	CString sExt = ::GetFileExt(lpszFileName);
+	sMsg.Format(ML_STRING(1174, "Failed to Open:\n%s\nThe following extension is not supported:\n%s"),
+				lpszFileName,
+				sExt);
+	::AfxMessageBox(sMsg, MB_OK | MB_ICONSTOP);
+}
+
+// This function is called from the Recent File Open Call,
+// from The Drag And Drop and from the double-click File Open
+CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName) 
+{
+	// Check
+	if (lpszFileName == NULL || lpszFileName[0] == _T('\0'))
+		return NULL;
+
+	// Store Last Opened Directory
+	if (::IsExistingDir(lpszFileName))
+		m_sLastOpenedDir = CString(lpszFileName);
+	else
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		_tsplitpath(lpszFileName, szDrive, szDir, NULL, NULL);
+		m_sLastOpenedDir = CString(szDrive) + CString(szDir);
+	}
+	m_sLastOpenedDir.TrimRight(_T('\\'));
+	if (m_bUseSettings)
+	{
+		WriteProfileString(	_T("GeneralApp"),
+							_T("LastOpenedDir"),
+							m_sLastOpenedDir);
+	}
+
+	// Zip File Extraction
+	if (::GetFileExt(lpszFileName) == _T(".zip"))
+	{
+		volatile int nPictureFilesInZipCount = 0;
+		CString sZipExtractDir = ExtractZip(lpszFileName, &nPictureFilesInZipCount);
+
+		if (m_bExtractHere)
+			return NULL;
+		else
+		{
+			// Open Zip File Content
+			if (sZipExtractDir != _T("") && nPictureFilesInZipCount > 0)
+			{
+				// Maximize from Tray
+				if (m_bTrayIcon &&
+					::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+				{
+					::AfxGetMainFrame()->m_TrayIcon.MaximizeFromTray();
+					::AfxGetMainFrame()->ShowOwnedWindows(TRUE);
+					PaintDocTitles();
+				}
+
+				return SlideShow(	sZipExtractDir,
+									FALSE,
+									FALSE,
+									TRUE);
+			}
+			else
+				return NULL;
+		}
+	}
+	else
+	{
+		// Maximize from Tray
+		if (m_bTrayIcon &&
+			::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+		{
+			::AfxGetMainFrame()->m_TrayIcon.MaximizeFromTray();
+			::AfxGetMainFrame()->ShowOwnedWindows(TRUE);
+			PaintDocTitles();
+		}
+
+		CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(lpszFileName);
+		if (curTemplate == NULL)
+		{
+			// A Dir may have been dropped -> Start Recursive Slideshow
+			if (::IsExistingDir(lpszFileName))
+			{
+				return SlideShow(	lpszFileName,
+									FALSE,
+									FALSE,
+									TRUE);
+			}
+			else
+			{
+				FileTypeNotSupportedMessageBox(lpszFileName);
+				return NULL;
+			}
+		}
+
+		// If the Path is Already Full, GetFullPathName will not change it.
+		TCHAR szFullPathName[MAX_PATH];
+		LPTSTR lpFilePart;
+		::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
+
+		// Picture Doc
+		CUImagerDoc* pDoc = NULL;
+
+		// Init Big Picture File Flag
+		BOOL bBigPicture = FALSE;
+		if (::GetFileExt(szFullPathName) == _T(".bmp") ||
+			::GetFileExt(szFullPathName) == _T(".dib"))
+		{
+			CDib Dib;
+			if (Dib.LoadImage(szFullPathName, 0, 0, 0, TRUE, TRUE))
+				bBigPicture = ((CUImagerApp*)::AfxGetApp())->IsPictureSizeBig(Dib.GetImageSize());
+		}
+
+		// Big Picture File?
+		if (bBigPicture)
+		{
+			curTemplate = GetBigPictureDocTemplate();
+			pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+			{
+				if (m_bStartMaximized)
+					((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
+
+				CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+				pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+				pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+				if (!((CPictureDoc*)pDoc)->LoadBigPicture(szFullPathName))
+				{
+					((CPictureDoc*)pDoc)->CloseDocumentForce();
+					return NULL;
+				}
+				else
+				{
+					// Fit to document
+					if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+					{
+						((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																						0, 0, 0, 0,
+																						SWP_NOSIZE |
+																						SWP_NOZORDER);
+						((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+					}
+				}
+			}
+		}
+		else
+		{
+			pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+			if (pDoc)
+			{
+				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+				{
+					if (m_bStartMaximized)
+						((CVideoAviDoc*)pDoc)->GetFrame()->MDIMaximize();
+					if (!((CVideoAviDoc*)pDoc)->LoadAVI(szFullPathName))
+					{
+						((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+						return NULL;
+					}
+				}
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+				{
+					if (m_bStartMaximized)
+						((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
+
+					CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+					pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+					pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+					if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+															szFullPathName,
+															FALSE,
+															FALSE,	// Do not preload Prev & Next
+															FALSE
+															))
+					{
+						((CPictureDoc*)pDoc)->CloseDocumentForce();
+						return NULL;
+					}
+					else
+					{
+						// Fit to document
+						if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+						{
+							((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																							0, 0, 0, 0,
+																							SWP_NOSIZE |
+																							SWP_NOZORDER);
+							((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+						}
+						((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+					}
+				}
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+				{
+					if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
+					{
+						((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+						return NULL;
+					}
+				}
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+				{
+					if (!((CCDAudioDoc*)pDoc)->LoadCD(szFullPathName))
+					{
+						((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+						return NULL;
+					}
+				}
+			}
+		}
+
+		return pDoc;
+	}
+}
+
+#ifdef VIDEODEVICEDOC
+
+void CUImagerApp::OnCaptureVideoDevice() 
+{
+	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+	if (pDoc)
+	{
+		if (!pDoc->OpenVideoDevice(-1))
+			pDoc->CloseDocument();
+	}
+}
+
+void CUImagerApp::OnCaptureNetwork() 
+{
+	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+	if (pDoc)
+	{
+		if (!pDoc->OpenGetVideo())
+			pDoc->CloseDocument();
+	}
+}
+
+void CUImagerApp::OnFileDxVideoDevice(UINT nID)
+{
+	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+	if (pDoc)
+	{
+		if (!pDoc->OpenVideoDevice(nID - ID_DIRECTSHOW_VIDEODEV_FIRST))
+			pDoc->CloseDocument();
+	}
+}
+
+#endif
+
+void CUImagerApp::OnFileShrinkDirDocs() 
+{
+	ShrinkDirDocsInit();
+}
+
+void CUImagerApp::OnFileSendmailCurrentDoc() 
+{
+	if (!m_bMailAvailable)
+	{
+		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+	if (AreProcessingThreadsRunning())
+	{
+		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
+	if (SaveModifiedCurrentDoc())
+	{
+		if (IsCurrentDocAvailable(TRUE))
+			SendCurrentDocAsMailInit();
+	}
+}
+
+void CUImagerApp::OnUpdateFileSendmailCurrentDoc(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(TRUE);	
+}
+
+void CUImagerApp::OnFileSendmailOpenDocs() 
+{
+	if (!m_bMailAvailable)
+		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
+	else if (AreProcessingThreadsRunning())
+		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
+	else if (!ArePictureDocsOpen() &&
+			!AreVideoAviDocsOpen())
+		::AfxMessageBox(ML_STRING(1177, "No documents open."), MB_OK | MB_ICONINFORMATION);
+	else if (ArePictureDocsOpen() &&
+			!AreVideoAviDocsOpen())
+	{
+		if (AreOpenPictureDocsAvailable(TRUE))
+			SendOpenDocsAsMailInit();
+	}
+	else if (!ArePictureDocsOpen() &&
+			AreVideoAviDocsOpen())
+	{
+		if (AreOpenVideoAviDocsAvailable(TRUE))
+			SendOpenDocsAsMailInit();
+	}
+	else
+	{
+		if (AreOpenPictureDocsAvailable(TRUE) &&
+			AreOpenVideoAviDocsAvailable(TRUE))
+			SendOpenDocsAsMailInit();
+	}
+}
+
+void CUImagerApp::OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(TRUE);
+}
+
+void CUImagerApp::ShrinkDirDocsInit()
+{	
+	CBatchProcDlg dlg(::AfxGetMainFrame());
+	dlg.DoModal();
+}
+
+BOOL CUImagerApp::PaintDocTitles()
+{
+	CUImagerDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			// SetDocumentTitle() calls CDocument::SetTitle()
+			// which calls UpdateFrameCounts(), but if the view is not
+			// visible the title is not updated. When the view becomes
+			// visible exiting the tray icon minimized state
+			// UpdateFrameCounts() has to be called!
+			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc)
+				pDoc->UpdateFrameCounts();        // will cause name change in views
+		}
+	}
+
+	return FALSE;
+}
+
+void CUImagerApp::InitPrinter()
+{
+	if (!m_bPrinterInit)
+	{
+		// Select last used printer
+		if (m_bUseSettings)
+			m_PrinterControl.RestorePrinterSelection(m_hDevMode, m_hDevNames);
+		else
+			m_PrinterControl.SetDefault(m_hDevMode, m_hDevNames);
+		m_bPrinterInit = TRUE;
+	}
+}
+
+BOOL CUImagerApp::AreDocsOpen()
+{
+	CUImagerDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL CUImagerApp::ArePictureDocsOpen()
+{
+	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
+	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
+	CPictureDoc* pPictureDoc;	
+	while (posPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+		if (pPictureDoc)
+			return TRUE;
+	}
+
+	pPictureDocTemplate = GetBigPictureDocTemplate();
+	posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();	
+	while (posPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+		if (pPictureDoc)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CUImagerApp::AreVideoAviDocsOpen()
+{
+	CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
+	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
+	CVideoAviDoc* pVideoAviDoc;	
+	while (posVideoAviDoc)
+	{
+		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
+		if (pVideoAviDoc)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+#ifdef VIDEODEVICEDOC
+
+BOOL CUImagerApp::AreVideoDeviceDocsOpen()
+{
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();	
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+int CUImagerApp::GetTotalVideoDeviceDocsMovementDetecting()
+{
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	int nCount = 0;
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc && (pVideoDeviceDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR))
+			++nCount;
+			
+	}
+	return nCount;
+}
+
+#endif
+
+BOOL CUImagerApp::IsCurrentDocSaved()
+{
+	if (!::AfxGetMainFrame())
+		return FALSE;
+	CUImagerDoc* pDoc = NULL;
+	if (::AfxGetMainFrame()->MDIGetActive())
+		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+	if (pDoc && pDoc->IsModified())
+		return FALSE;
+	else
+		return TRUE;
+}
+
+BOOL CUImagerApp::AreAllDocsSaved()
+{
+	CUImagerDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc && pDoc->IsModified())
+				return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+void CUImagerApp::SaveOnEndSession()
+{
+	if (m_bUseSettings)
+	{
+		SaveSettings();
+		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+	}
+	CUImagerDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc)
+			{
+				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+				{
+					if (!m_bUseSettings)
+						((CPictureDoc*)pDoc)->SaveSettingsXml();
+				}
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+				{
+					if (m_bUseSettings)
+						((CVideoAviDoc*)pDoc)->SaveSettings();
+				}
+#ifdef VIDEODEVICEDOC
+				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+				{
+					// Stop recording so that the index is not missing!
+					if (((CVideoDeviceDoc*)pDoc)->IsRecording())
+						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
+					if (m_bUseSettings)
+						((CVideoDeviceDoc*)pDoc)->SaveSettings();
+				}
+#endif
+			}
+		}
+	}
+#ifdef VIDEODEVICEDOC
+	::DeleteFile(CVideoDeviceDoc::MicroApacheGetLogFileName()); // Avoid growing it to much!
+	::DeleteFile(CVideoDeviceDoc::MicroApacheGetPidFileName());
+#endif
+}
+	
+BOOL CUImagerApp::AreProcessingThreadsRunning()
+{
+	CVideoAviDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate = GetVideoAviDocTemplate();
+	POSITION pos = curTemplate->GetFirstDocPosition();
+	while (pos)
+	{
+		pDoc = (CVideoAviDoc*)(curTemplate->GetNextDoc(pos));
+		if (pDoc && pDoc->m_ProcessingThread.IsRunning())
+			return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL CUImagerApp::IsDoc(CUImagerDoc* pDoc)
+{
+	CUImagerDoc* pDocument;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+
+	// Check
+	if (pDoc == NULL)
+		return FALSE;
+
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDocument = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if ((pDoc == pDocument)	&&
+				!pDocument->m_bClosing)
+				return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL CUImagerApp::IsPictureSizeBig(DWORD dwImageSize)
+{
+	int nMemMB = ::GetTotPhysMemMB();
+	if (((dwImageSize >> 20) < (DWORD)(nMemMB / 2)) &&
+		(dwImageSize < BIG_PICTURE_SIZE_LIMIT))
+		return FALSE;
+	else
+		return TRUE;
+}
+
+CString CUImagerApp::PictureSlideMakeMsg(CPictureDoc* pDoc)
+{
+	CString sMsg;
+
+	if (!pDoc->m_pDib)
+		sMsg = ML_STRING(1178, "No picture file loaded."); 	
+	else if (pDoc->m_dwIDAfterFullLoadCommand != 0)
+		sMsg = ML_STRING(1179, "Please try again later, a command is executed when picture fully loaded.");
+	else if (pDoc->IsModified())
+		sMsg = ML_STRING(1180, "Try again after saving the picture file.");
+	else if (pDoc->m_bMetadataModified)
+		sMsg = ML_STRING(1181, "Before proceeding save the modified metadatas.");
+	else if (pDoc->m_pRotationFlippingDlg)
+		sMsg = ML_STRING(1182, "Close the Rotation / Flipping dialog and try again.");
+	else if (pDoc->m_pWndPalette)
+		sMsg = ML_STRING(1183, "Close the Palette dialog and try again.");
+	else if (pDoc->m_pHLSDlg)
+		sMsg = ML_STRING(1184, "Close the Brightness, Contrast... dialog and try again.");
+	else if (pDoc->m_pRedEyeDlg)
+		sMsg = ML_STRING(1185, "Finish the redeye remove and try again.");
+	else if (pDoc->m_bDoRedEyeColorPickup)
+		sMsg = ML_STRING(1186, "Finish the redeye picking / remove, then try again.");
+	else if (pDoc->m_pMonochromeConversionDlg)
+		sMsg = ML_STRING(1187, "Close the Monochrome Conversion dialog and try again.");
+	else if (pDoc->m_pSharpenDlg)
+		sMsg = ML_STRING(1188, "Close the Sharpen dialog and try again.");
+	else if (pDoc->m_pSoftenDlg)
+		sMsg = ML_STRING(1189, "Close the Soften dialog and try again.");
+	else if (pDoc->m_pSoftBordersDlg)
+		sMsg = ML_STRING(1190, "Close the Soft Borders dialog and try again.");
+	else if (pDoc->m_bCrop)
+		sMsg = ML_STRING(1191, "Finish cropping, then try again.");
+	else if (pDoc->m_bPrintPreviewMode)
+		sMsg = ML_STRING(1192, "Exit Print Preview, then try again.");
+	else
+		sMsg = _T("");
+
+	return sMsg;
+}
+
+CString CUImagerApp::PictureMakeMsg(CPictureDoc* pDoc)
+{
+	CString sMsg;
+
+	sMsg = PictureSlideMakeMsg(pDoc);
+	if (sMsg == _T(""))
+	{
+		if (pDoc->m_SlideShowThread.IsSlideshowRunning() ||
+			pDoc->m_bDoRestartSlideshow)
+			sMsg = ML_STRING(1193, "Stop the slideshow and try again.");
+	}
+
+	return sMsg;
+}
+
+CString CUImagerApp::VideoAviMakeMsg(CVideoAviDoc* pDoc)
+{
+	CString sMsg;
+
+	if (!pDoc->m_pAVIPlay)
+		sMsg = ML_STRING(1194, "No file loaded."); 
+	else if (pDoc->IsModified())
+		sMsg = ML_STRING(1195, "Try again after saving the file.");
+	else if (pDoc->IsProcessing())
+		sMsg = ML_STRING(1196, "Try again after the video processing has terminated.");
+	else if (pDoc->m_PlayVideoFileThread.IsAlive() ||
+			pDoc->m_PlayAudioFileThread.IsAlive())
+		sMsg = ML_STRING(1197, "Stop playing the file and try again.");
+	else
+		sMsg = _T("");	
+		
+	return sMsg;
+}
+
+BOOL CUImagerApp::SaveModifiedCurrentDoc()
+{
+	if (!::AfxGetMainFrame())
+		return FALSE;
+	CUImagerDoc* pDoc = NULL;
+	if (::AfxGetMainFrame()->MDIGetActive())
+		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+	if (!pDoc)
+		return FALSE;
+
+	return pDoc->SaveModified();
+}
+
+BOOL CUImagerApp::IsDocAvailable(CUImagerDoc* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
+{
+	CString sMsg;
+	
+	if (!pDoc)
+	{
+		sMsg = ML_STRING(1198, "No document open.");
+		goto msg;
+	}
+
+	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+	{
+		sMsg = PictureMakeMsg((CPictureDoc*)pDoc);
+		if (sMsg == _T(""))
+			return TRUE;
+	}
+	else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+	{
+		sMsg = VideoAviMakeMsg((CVideoAviDoc*)pDoc);
+		if (sMsg == _T(""))
+			return TRUE;
+	}
+	else
+		sMsg = ML_STRING(1199, "This is not a Picture or a Video File.");
+
+msg:
+	if (bShowMsgBoxIfNotAvailable)
+		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+	return FALSE;
+}
+
+BOOL CUImagerApp::IsCurrentDocAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
+{
+	if (!::AfxGetMainFrame())
+	{
+		if (bShowMsgBoxIfNotAvailable)
+			::AfxMessageBox(_T("Main window pointer is NULL!"), MB_OK | MB_ICONINFORMATION);
+		return FALSE;
+	}
+
+	if (::AfxGetMainFrame()->MDIGetActive())
+		return IsDocAvailable(	(CUImagerDoc*)(::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument()),
+								bShowMsgBoxIfNotAvailable);
+	else
+	{
+		if (bShowMsgBoxIfNotAvailable)
+			::AfxMessageBox(ML_STRING(1201, "No open documents available."), MB_OK | MB_ICONINFORMATION);
+		return FALSE;
+	}
+}
+
+BOOL CUImagerApp::AreOpenVideoAviDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
+{
+	CString sMsg;
+	CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
+	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
+	CVideoAviDoc* pVideoAviDoc;
+
+	// If No Video Docs Open
+	if (!posVideoAviDoc)
+	{
+		sMsg = ML_STRING(1202, "No video documents open."); 
+		goto msg;
+	}
+
+	while (posVideoAviDoc)
+	{
+		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
+		sMsg = VideoAviMakeMsg(pVideoAviDoc);
+		if (sMsg != _T(""))
+			goto msg;
+	}
+	
+	return TRUE;
+
+msg:
+	if (bShowMsgBoxIfNotAvailable)
+		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+	return FALSE;
+}
+
+BOOL CUImagerApp::AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
+{
+	CString sMsg;
+	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
+	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
+	CUImagerMultiDocTemplate* pBigPictureDocTemplate = GetBigPictureDocTemplate();
+	POSITION posBigPictureDoc = pBigPictureDocTemplate->GetFirstDocPosition();
+	CPictureDoc* pPictureDoc;
+
+	// If No Picture Docs Open
+	if (!posPictureDoc && !posBigPictureDoc)
+	{
+		sMsg = ML_STRING(1203, "No picture documents open."); 
+		goto msg;
+	}
+
+	while (posPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+		sMsg = PictureMakeMsg(pPictureDoc);
+		if (sMsg != _T(""))
+			goto msg;
+	}
+
+	while (posBigPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pBigPictureDocTemplate->GetNextDoc(posBigPictureDoc));
+		sMsg = PictureMakeMsg(pPictureDoc);
+		if (sMsg != _T(""))
+			goto msg;
+	}
+
+	return TRUE;
+	
+msg:
+	if (bShowMsgBoxIfNotAvailable)
+		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+	return FALSE;
+}
+
+BOOL CUImagerApp::HasPicturePrintPreview(CPictureDoc* pThisDoc/*=NULL*/)
+{
+	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
+	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
+	CPictureDoc* pPictureDoc;	
+	while (posPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+		if (pPictureDoc				&&
+			pThisDoc != pPictureDoc	&&
+			pPictureDoc->m_bPrintPreviewMode)
+			return TRUE;
+	}
+
+	pPictureDocTemplate = GetBigPictureDocTemplate();
+	posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();	
+	while (posPictureDoc)
+	{
+		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+		if (pPictureDoc				&&
+			pThisDoc != pPictureDoc	&&
+			pPictureDoc->m_bPrintPreviewMode)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CUImagerApp::IsDocReadyToSlide(CPictureDoc* pDoc, BOOL bShowMsgBoxIfSlideNotPossible/*=FALSE*/)
+{
+	CString sMsg;
+
+	if (!pDoc)
+	{
+		sMsg = ML_STRING(1204, "No picture document open."); 
+		goto msg;
+	}
+
+	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+	{
+		// Big Picture
+		if (((CPictureDoc*)pDoc)->m_bBigPicture)
+		{
+			sMsg = ML_STRING(1205, "Sliding not possible for big pictures."); 
+			goto msg;
+		}
+
+		sMsg = PictureSlideMakeMsg((CPictureDoc*)pDoc);
+		if (sMsg == _T(""))
+			return TRUE;
+	}
+	else
+		sMsg = ML_STRING(1206, "This is not a Picture File.");
+
+msg:
+	if (bShowMsgBoxIfSlideNotPossible)
+		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+	return FALSE;
+}
+
+BOOL CUImagerApp::IsCurrentDocReadyToSlide(BOOL bShowMsgBoxIfSlideNotPossible/*=FALSE*/)
+{
+	if (!::AfxGetMainFrame())
+	{
+		if (bShowMsgBoxIfSlideNotPossible)
+			::AfxMessageBox(_T("Main window pointer is NULL!"), MB_OK | MB_ICONINFORMATION);
+		return FALSE;
+	}
+
+	if (::AfxGetMainFrame()->MDIGetActive())
+		return IsDocReadyToSlide(	(CPictureDoc*)(::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument()),
+									bShowMsgBoxIfSlideNotPossible);
+	else
+	{
+		if (bShowMsgBoxIfSlideNotPossible)
+			::AfxMessageBox(ML_STRING(1201, "No open documents available."), MB_OK | MB_ICONINFORMATION);
+		return FALSE;
+	}
+}
+
+int CUImagerApp::GetUniqueTopDirAndCount(CString sZipFileName, CString& sTopDir)
+{
+	try
+	{
+		int i;
+
+		// Reset Top Dir
+		sTopDir = _T("");
+
+		// Open Zip File
+		m_Zip.Open(sZipFileName, CZipArchive::openReadOnly, 0);
+
+		// Entries
+		int nEntries = m_Zip.GetNoEntries();
+
+		// Check for Unique Top Dir
+		for (i = 0 ; i < nEntries ; i++)
+		{
+			if (m_Zip.IsFileDirectory((WORD)i))
+			{
+				// Get File Info
+				CFileHeader fh;
+				m_Zip.GetFileInfo(fh, (WORD)i);
+
+				// Get Length
+				int nLength = fh.m_szFileName.GetLength();
+				if (nLength == 0)
+					continue;
+
+				// Is This a Top Dir?
+				int pos = fh.m_szFileName.Find(_T('\\'));
+				if (pos == (nLength - 1))
+				{
+					if (sTopDir == _T(""))
+						sTopDir = fh.m_szFileName;
+					else if (sTopDir != fh.m_szFileName)
+					{
+						m_Zip.Close();
+						sTopDir = _T("");
+						return nEntries;
+					}
+				}
+			}
+		}
+
+		// Check whether all files are under the found unique top dir
+		for (i = 0 ; i < nEntries ; i++)
+		{
+			// Get File Info
+			CFileHeader fh;
+			m_Zip.GetFileInfo(fh, (WORD)i);
+
+			// If is file
+			if (!m_Zip.IsFileDirectory((WORD)i))
+			{
+				int pos = fh.m_szFileName.Find(_T('\\'));
+				if ((pos < 0) || (sTopDir != fh.m_szFileName.Left(pos+1)))
+				{
+					m_Zip.Close();
+					sTopDir = _T("");
+					return nEntries;
+				}
+			}
+		}
+
+		// Close Zip File
+		m_Zip.Close();
+
+		// Remove Trailing '\'
+		sTopDir.TrimRight(_T('\\'));
+
+		return nEntries;
+		
+	}
+	catch (CZipException* e)
+	{
+		e->ReportZipError();
+		e->Delete();
+		m_Zip.Close(true);
+		return 0;
+	}
+	catch (CException* e)
+	{
+		e->ReportError(MB_ICONSTOP);
+		e->Delete();
+		m_Zip.Close(true);
+		return 0;
+	}
+}
+
+BOOL CUImagerApp::CompressToZip(LPCTSTR szPath, LPCTSTR szZipFileName)
+{	
+	CZipProgressDlg dlg(::AfxGetMainFrame(), FALSE);
+	dlg.m_sZipFileName = CString(szZipFileName);
+	dlg.m_sPath = CString(szPath);
+	if (dlg.DoModal() == IDOK)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName, volatile int* pPictureFilesCount/*=NULL*/)
+{
+	CZipProgressDlg dlg(::AfxGetMainFrame(), TRUE);
+	dlg.m_pPictureFilesCount = pPictureFilesCount;
+	dlg.m_sZipFileName = CString(szZipFileName);
+	dlg.m_sPath = CString(szDirPath);
+	if (dlg.DoModal() == IDOK)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+CString CUImagerApp::ExtractZip(LPCTSTR szZipFileName, volatile int* pPictureFilesCount/*=NULL*/)
+{
+	// Directory Browse Dialog
+	CString sExtractDir;
+
+	if (m_bExtractHere)
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szName[_MAX_FNAME];
+		_tsplitpath(szZipFileName, szDrive, szDir, szName, NULL);
+		
+		CString sTopDir;
+		int nZipEntries = GetUniqueTopDirAndCount(szZipFileName, sTopDir);
+		if (nZipEntries == 0)
+			return _T("");
+
+		// If no Top Dir and at least 2 files,
+		// use the Zip File Name as Top Dir
+		if (sTopDir == _T("") && nZipEntries > 1)
+		{
+			sExtractDir = CString(szDrive) + CString(szDir) + CString(szName);
+		}
+		else
+		{
+			sExtractDir = CString(szDrive) + CString(szDir);
+			sExtractDir.TrimRight(_T('\\'));
+		}
+	}
+	else
+	{
+		sExtractDir = ::GetDriveAndDirName(szZipFileName);
+		CBrowseDlg dlg(	::AfxGetMainFrame(),
+						&sExtractDir,
+						ML_STRING(1207, "Extract Files To Folder"),
+						TRUE);
+		if (dlg.DoModal() == IDCANCEL)
+			return _T("");
+	}
+	
+	if (ExtractZipToDir(sExtractDir, szZipFileName, pPictureFilesCount))
+		return sExtractDir;
+	else
+		return _T("");
+	
+}
+
+BOOL CUImagerApp::HasRecordableDrive(ICDBurn* pICDBurn/*=NULL*/)
+{
+	HRESULT hr;
+	BOOL bDoRelease = FALSE;
+	BOOL bHasRecordableDrive = FALSE;
+
+	if (pICDBurn == NULL)
+	{
+		hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
+		if (SUCCEEDED(hr))
+			bDoRelease = TRUE;
+		else
+			return FALSE;
+	}
+	
+	hr = pICDBurn->HasRecordableDrive(&bHasRecordableDrive);
+	if (bDoRelease)
+		pICDBurn->Release();
+	return (SUCCEEDED(hr) && bHasRecordableDrive);
+}
+
+CString CUImagerApp::GetRecorderDriveLetter(ICDBurn* pICDBurn/*=NULL*/)
+{
+	HRESULT hr;
+	BOOL bDoRelease = FALSE;
+	WCHAR d[32] = {0};
+
+	if (pICDBurn == NULL)
+	{
+		hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
+		if (SUCCEEDED(hr))
+			bDoRelease = TRUE;
+		else
+			return _T("");
+	}
+
+	hr = pICDBurn->GetRecorderDriveLetter(d, sizeof(d)/sizeof(d[0]));
+	if (bDoRelease)
+		pICDBurn->Release();
+	if (SUCCEEDED(hr))
+		return CString(d);
+	else
+		return _T("");
+}
+
+BOOL CUImagerApp::HasRecordableDrive2()
+{
+	CDiscMaster DiscMaster;
+	return (BOOL)DiscMaster.Initialize();
+}
+
+__forceinline CString CUImagerApp::GetBurnFolderPath()
+{
+	return ::GetSpecialFolderPath(CSIDL_CDBURN_AREA);
+}
+
+BOOL CUImagerApp::BurnDirContent(CString sDir) 
+{
+	ICDBurn* pICDBurn;
+	HRESULT hr = ::CoCreateInstance(CLSID_CDBurn, NULL,CLSCTX_INPROC_SERVER,IID_ICDBurn,(LPVOID*)&pICDBurn);
+	if (SUCCEEDED(hr))
+	{
+		if (HasRecordableDrive(pICDBurn))
+		{
+			CString sBurnerDriveLetter = GetRecorderDriveLetter(pICDBurn);
+			CString sBurnFolder = GetBurnFolderPath();
+
+			// Begin Wait Cursor
+			BeginWaitCursor();
+
+			// Empty the Burn Directory
+			if (!::DeleteDirContent(sBurnFolder))
+			{
+				pICDBurn->Release();
+				EndWaitCursor();
+				::AfxMessageBox(ML_STRING(1208, "Error While Deleting The Burn Folder."), MB_OK | MB_ICONSTOP);
+				return FALSE;
+			}
+
+			// Copy directory content to the burn directory
+			if (!::CopyDirContent(sDir, sBurnFolder))
+			{
+				pICDBurn->Release();
+				EndWaitCursor();
+				::AfxMessageBox(ML_STRING(1209, "Error While Copying Files to The Burn Folder."), MB_OK | MB_ICONSTOP);
+				return FALSE;
+			}
+
+			// End Wait Cursor
+			EndWaitCursor();
+
+			// Disable MainFrame
+			CWnd* pParentWnd = ::AfxGetMainFrame();
+			pParentWnd->EnableWindow(FALSE);
+
+			// Burn The Files
+			pICDBurn->Burn(::AfxGetMainFrame()->GetSafeHwnd());
+
+			// Enable MainFrame And Set Focus
+			pParentWnd->EnableWindow(TRUE);
+			pParentWnd->SetActiveWindow();
+			pParentWnd->SetFocus();
+
+			// Release the Object
+			pICDBurn->Release();
+
+			// Empty the Burn Directory
+			if (!::DeleteDirContent(sBurnFolder))
+			{
+				::AfxMessageBox(ML_STRING(1208, "Error While Deleting The Burn Folder."), MB_OK | MB_ICONSTOP);
+				return FALSE;
+			}
+			else
+				return TRUE;
+		}
+		else
+		{
+			pICDBurn->Release();
+			::AfxMessageBox(ML_STRING(1210, "No Burner Was Detected."));
+			return FALSE;
+		}
+	}
+	else
+	{
+		::AfxMessageBox(ML_STRING(1211, "Burning Is Not Supported For Your Operating System."));
+		return FALSE;
+	}
+}
+
+int CUImagerApp::ExitInstance() 
+{	
+#ifdef VIDEODEVICEDOC
+	// Finish Micro Apache shutdown
+	CVideoDeviceDoc::MicroApacheFinishShutdown();
+
+	// Clean-Up Scheduler
+	POSITION pos = m_Scheduler.GetHeadPosition();
+	while (pos)
+		delete m_Scheduler.GetNext(pos);
+	m_Scheduler.RemoveAll();
+#endif
+
+	// Close The Appplication Mutex
+	if (m_hAppMutex)
+		::CloseHandle(m_hAppMutex);
+
+	// Store last selected printer
+	if (m_bUseSettings)
+		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+
+	// Clean-Up Trace Log File
+	::EndTraceLogFile();
+
+	// Clean-Up Global Helper Functions
+	::EndHelpers();
+
+	// Delete Critical Section
+#ifdef SUPPORT_LIBAVCODEC
+	if (g_bAVCodecCSInited)
+	{
+		g_bAVCodecCSInited = FALSE;
+		::DeleteCriticalSection(&g_csAVCodec);
+	}
+#endif
+
+	// From CWinApp::ExitInstance(), I modified the Use Settings Check!
+
+#if _MSC_VER > 1200
+	// If we remember that we're unregistering,
+	// don't save our profile settings
+	if (m_pCmdInfo == NULL ||
+		(m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister &&
+		 m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppRegister))
+	{
+		if (!afxContextIsDLL && m_bUseSettings)
+			SaveStdProfileSettings();
+	}
+
+	// Cleanup DAO if necessary
+	if (m_lpfnDaoTerm != NULL)
+	{
+		// If a DLL, YOU must call AfxDaoTerm prior to ExitInstance
+		ASSERT(!afxContextIsDLL);
+		(*m_lpfnDaoTerm)();
+	}
+
+	if (m_hLangResourceDLL != NULL)
+	{
+		::FreeLibrary(m_hLangResourceDLL);
+		m_hLangResourceDLL = NULL;
+	}
+
+	int nReturnValue=0;
+	if (::AfxGetCurrentMessage())
+	{
+		nReturnValue = static_cast<int>(::AfxGetCurrentMessage()->wParam);
+	}
+	
+	return nReturnValue; // returns the value from PostQuitMessage
+#else
+	// If we remember that we're unregistering,
+	// don't save our profile settings
+	if (m_pCmdInfo == NULL ||
+		m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister)
+	{
+		if (!afxContextIsDLL && m_bUseSettings)
+			SaveStdProfileSettings();
+	}
+
+	// Cleanup DAO if necessary
+	if (m_lpfnDaoTerm != NULL)
+	{
+		// If a DLL, YOU must call AfxDaoTerm prior to ExitInstance
+		ASSERT(!afxContextIsDLL);
+		(*m_lpfnDaoTerm)();
+	}
+
+	return m_msgCur.wParam; // returns the value from PostQuitMessage
+#endif
+}
+
+CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
+									BOOL bFullscreen,
+									BOOL bRunSlideshow,
+									BOOL bRecursive)
+{
+	// Create New Picture Document
+	CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
+	if (pDoc == NULL)
+		return NULL;
+
+	// Set Zoom ComboBox
+	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+	pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex);
+	pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(pDoc->m_nZoomComboBoxIndex))));
+
+	// Go to Full-Screen Mode
+	if (bFullscreen)
+		::AfxGetMainFrame()->EnterExitFullscreen();
+
+	// Slideshow
+	pDoc->m_SlideShowThread.SetStartName(sStartDirName);
+	pDoc->m_SlideShowThread.SetRecursive(bRecursive);
+	if (bRunSlideshow)
+		pDoc->m_SlideShowThread.RunSlideshow();
+	else
+		pDoc->m_SlideShowThread.PauseSlideshow();
+
+	return pDoc;
+}
+
+#ifdef VIDEODEVICEDOC
+void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
+{
+	CString sSection(_T("DeviceAutorun"));
+	CWinApp* pApp = ::AfxGetApp();
+	CString sKey;
+	CString sDevRegistry;
+	CVideoDeviceDoc* pDoc;
+	unsigned int i;
+
+	// If autorunning network devices or direct show devices
+	// check whether they are ready, if not try again in
+	// AUTORUN_VIDEODEVICES_RETRY_DELAY msec for a maximum of
+	// AUTORUN_VIDEODEVICES_MAX_RETRIES retries
+	if (g_bWin2000OrHigher)
+	{
+		for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
+		{
+			sKey.Format(_T("%02u"), i);
+			if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
+			{
+				if (sDevRegistry == _T("VfW"))
+					continue;
+				CString sDev(sDevRegistry);
+				sDev.Replace(_T('/'), _T('\\'));
+				int nID = CDxCapture::GetDeviceID(sDev);
+				if (nID < 0) // It is a Network Device or a unplugged Direct Show Device
+				{
+					CString sAddress;
+					int index = sDevRegistry.Find(_T(':'));
+					if (index >= 0)
+						sAddress = sDevRegistry.Left(index);
+					else
+						sAddress = sDevRegistry;
+					CNetCom NetCom;
+					if (!NetCom.HasInterface(sAddress)) // This function checks whether there is a network
+														// interface that can connect to the given address
+					{
+						if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
+						{
+							CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+																			WM_AUTORUN_VIDEODEVICES,
+																			AUTORUN_VIDEODEVICES_RETRY_DELAY,
+																			(WPARAM)nRetryCount, 0);
+							CString sMsg;
+							sMsg.Format(_T("Cannot reach %s, retry in %d seconds\n"),
+										sAddress, AUTORUN_VIDEODEVICES_RETRY_DELAY / 1000);
+							TRACE(sMsg);
+							::LogLine(sMsg);
+
+							if (!m_pAutorunProgressDlg							&&
+								(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
+								!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+							{
+								m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
+																			ML_STRING(1720, "Starting Device..."),
+																			(nRetryCount - 1) * AUTORUN_VIDEODEVICES_RETRY_DELAY,
+																			AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY);
+							}
+							return;
+						}
+						else
+						{
+							CString sMsg;
+							sMsg.Format(_T("Trying to connect anyway to %s\n"), sAddress);
+							TRACE(sMsg);
+							::LogLine(sMsg);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	// Close progress dialog
+	// Note: if application is exiting the mainframe closes this
+	// child window and self-deletion will clean-up the memory
+	if (m_pAutorunProgressDlg)
+	{
+		m_pAutorunProgressDlg->Close();	// self-deletion
+		m_pAutorunProgressDlg = NULL;
+	}
+
+	// Start devices
+	for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
+	{
+		sKey.Format(_T("%02u"), i);
+		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
+		{
+			// Open VfW Device?
+			if (sDevRegistry == _T("VfW"))
+			{
+				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+				if (pDoc)
+				{
+					if (!pDoc->OpenVideoDevice(-1))
+					{
+						pDoc->CloseDocument();
+						CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
+					}
+				}
+			}
+			else
+			{
+				// Open Empty Document
+				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+				if (pDoc)
+				{
+					// Open Direct Show Device
+					CString sDev(sDevRegistry);
+					sDev.Replace(_T('/'), _T('\\'));
+					int nID = CDxCapture::GetDeviceID(sDev);
+					if (nID >= 0)
+					{
+						if (!pDoc->OpenVideoDevice(nID))
+						{
+							pDoc->CloseDocument();
+							CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
+						}
+					}
+					// Network Device or unplugged Direct Show Device
+					else
+					{
+						if (!pDoc->OpenGetVideo(sDevRegistry))
+						{
+							pDoc->CloseDocument();
+							CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+#endif
+
+void CUImagerApp::OnFileOpenDir() 
+{
+	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		!m_bSlideShowOnly)
+	{
+		m_sLastOpenedDir.TrimRight(_T('\\'));
+		if (!::IsExistingDir(m_sLastOpenedDir))
+			m_sLastOpenedDir = ::GetSpecialFolderPath(CSIDL_MYPICTURES);
+		CBrowseDlg dlg(	::AfxGetMainFrame(),
+						&m_sLastOpenedDir,
+						ML_STRING(1212, "Loading Folder's First Picture"),
+						FALSE,
+						TRUE,
+						ML_STRING(963, "Recursive"),
+						TRUE);
+		if (dlg.DoModal() == IDOK)
+		{
+			SlideShow(	m_sLastOpenedDir,
+						FALSE,
+						FALSE,
+						dlg.IsChecked());
+			if (m_bUseSettings)
+			{
+				WriteProfileString(	_T("GeneralApp"),
+									_T("LastOpenedDir"),
+									m_sLastOpenedDir);
+			}
+		}
+	}
+}
+
+CUImagerApp::CUImagerCommandLineInfo::CUImagerCommandLineInfo()
+{
+	m_bStartSlideShow = FALSE;
+}
+
+CUImagerApp::CUImagerCommandLineInfo::~CUImagerCommandLineInfo()
+{
+}
+
+void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast)
+{
+	if (bFlag)
+	{
+		USES_CONVERSION;
+		ParseParamFlag(T2CA(pszParam));
+
+		if (pszParam)
+		{
+			if (_tcscmp(pszParam, _T("slideshow")) == 0) // Case sensitive!
+				m_bStartSlideShow = TRUE;
+			else if (_tcscmp(pszParam, _T("extracthere")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
+			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
+			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bCloseAfterPlayDone = TRUE;
+			else if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+		}
+	}
+	else
+		ParseParamNotFlag(pszParam);
+
+	ParseLast(bLast);
+}
+
+#ifdef UNICODE
+void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast)
+{
+	if (bFlag)
+	{
+		ParseParamFlag(pszParam);
+
+		if (strcmp(pszParam, "slideshow") == 0) // Case sensitive!
+			m_bStartSlideShow = TRUE;
+		else if (strcmp(pszParam, "exctracthere") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
+		else if (strcmp(pszParam, "play") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
+		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bCloseAfterPlayDone = TRUE;
+		else if (strcmp(pszParam, "hide") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+	}
+	else
+		ParseParamNotFlag(pszParam);
+
+	ParseLast(bLast);
+}
+#endif // UNICODE
+
+#if _MFC_VER >= 0x0700
+void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
+{
+	// OLE command switches are case insensitive, while
+	// shell command switches are case sensitive
+
+	if (lstrcmpA(pszParam, "pt") == 0)
+	{
+		m_nShellCommand = FilePrintTo;
+		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+	}
+	else if (lstrcmpA(pszParam, "p") == 0)
+		m_nShellCommand = FilePrint;
+    else if (::AfxInvariantStrICmp(pszParam, "Register") == 0 ||
+             ::AfxInvariantStrICmp(pszParam, "Regserver") == 0)
+		m_nShellCommand = AppRegister;
+    else if (::AfxInvariantStrICmp(pszParam, "Unregister") == 0 ||
+             ::AfxInvariantStrICmp(pszParam, "Unregserver") == 0)
+		m_nShellCommand = AppUnregister;
+	else if (lstrcmpA(pszParam, "dde") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_nShellCommand = FileDDE;
+		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+	}
+    else if (::AfxInvariantStrICmp(pszParam, "Embedding") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_bRunEmbedded = TRUE;
+		m_bShowSplash = FALSE;
+	}
+    else if (::AfxInvariantStrICmp(pszParam, "Automation") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_bRunAutomated = TRUE;
+		m_bShowSplash = FALSE;
+	}
+}
+#else
+void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
+{
+	// OLE command switches are case insensitive, while
+	// shell command switches are case sensitive
+
+	if (lstrcmpA(pszParam, "pt") == 0)
+	{
+		m_nShellCommand = FilePrintTo;
+		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+	}
+	else if (lstrcmpA(pszParam, "p") == 0)
+		m_nShellCommand = FilePrint;
+	else if (lstrcmpiA(pszParam, "Unregister") == 0 ||
+			 lstrcmpiA(pszParam, "Unregserver") == 0)
+		m_nShellCommand = AppUnregister;
+	else if (lstrcmpA(pszParam, "dde") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_nShellCommand = FileDDE;
+		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+	}
+	else if (lstrcmpiA(pszParam, "Embedding") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_bRunEmbedded = TRUE;
+		m_bShowSplash = FALSE;
+	}
+	else if (lstrcmpiA(pszParam, "Automation") == 0)
+	{
+		AfxOleSetUserCtrl(FALSE);
+		m_bRunAutomated = TRUE;
+		m_bShowSplash = FALSE;
+	}
+}
+#endif
+
+void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const TCHAR* pszParam)
+{
+	if (m_strFileName.IsEmpty())
+	{
+		m_strFileName = pszParam;
+		m_strFileNames.Add(pszParam);
+	}
+	else if (m_nShellCommand == FilePrintTo && m_strPrinterName.IsEmpty())
+		m_strPrinterName = pszParam;
+	else if (m_nShellCommand == FilePrintTo && m_strDriverName.IsEmpty())
+		m_strDriverName = pszParam;
+	else if (m_nShellCommand == FilePrintTo && m_strPortName.IsEmpty())
+		m_strPortName = pszParam;
+	else
+		m_strFileNames.Add(pszParam);
+}
+
+#ifdef UNICODE
+void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const char* pszParam)
+{
+	if (m_strFileName.IsEmpty())
+	{
+		m_strFileName = pszParam;
+		m_strFileNames.Add(CString(pszParam));
+	}
+	else if (m_nShellCommand == FilePrintTo && m_strPrinterName.IsEmpty())
+		m_strPrinterName = pszParam;
+	else if (m_nShellCommand == FilePrintTo && m_strDriverName.IsEmpty())
+		m_strDriverName = pszParam;
+	else if (m_nShellCommand == FilePrintTo && m_strPortName.IsEmpty())
+		m_strPortName = pszParam;
+	else
+		m_strFileNames.Add(CString(pszParam));
+}
+#endif
+
+void CUImagerApp::CUImagerCommandLineInfo::ParseLast(BOOL bLast)
+{
+	if (bLast)
+	{
+		if (m_nShellCommand == FileNew && !m_strFileName.IsEmpty())
+			m_nShellCommand = FileOpen;
+		m_bShowSplash = !m_bRunEmbedded && !m_bRunAutomated;
+	}
+}
+
+void CUImagerApp::ParseCommandLine(CUImagerCommandLineInfo& rCmdInfo)
+{
+	for (int i = 1; i < __argc; i++)
+	{
+		LPCTSTR pszParam = __targv[i];
+		BOOL bFlag = FALSE;
+		BOOL bLast = ((i + 1) == __argc);
+		if (pszParam[0] == '-' || pszParam[0] == '/')
+		{
+			// remove flag specifier
+			bFlag = TRUE;
+			++pszParam;
+		}
+		rCmdInfo.ParseParam(pszParam, bFlag, bLast);
+	}
+}
+
+BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
+{
+	BOOL bResult = TRUE;
+
+	switch (rCmdInfo.m_nShellCommand)
+	{
+		// New File
+		case CCommandLineInfo::FileNew:
+			// No new empty document
+			//if (!AfxGetApp()->OnCmdMsg(ID_FILE_NEW, 0, NULL, NULL))
+			//	OnFileNew();
+
+			// Check
+			if (m_pMainWnd == NULL)
+				bResult = FALSE;	// Error -> Exit Program
+
+			break;
+
+		// If we've been asked to open a file, call OpenDocumentFile()
+		case CCommandLineInfo::FileOpen:
+			if (rCmdInfo.m_strFileNames.GetSize() <= 1)
+			{
+				m_bStartMaximized = TRUE;
+				if (!OpenDocumentFile(rCmdInfo.m_strFileName))
+					bResult = FALSE;	// Error -> Exit Program
+				m_bStartMaximized = FALSE;
+			}
+			else
+			{
+				BOOL bAtLeastOneOpened = FALSE;
+				for (int i = 0 ; i < rCmdInfo.m_strFileNames.GetSize() ; i++)
+				{
+					if (OpenDocumentFile(rCmdInfo.m_strFileNames[i]))
+						bAtLeastOneOpened = TRUE;
+				}
+				if (!bAtLeastOneOpened)
+					bResult = FALSE;	// Error -> Exit Program
+			}
+			break;
+
+		// If the user wanted to print to the given file(s)
+		// Example: uImager.exe "file1.jpg" "file2.jpg" /pt "Printer Name" "Driver Name" "Port Name"
+		// (Printer parameters are optional)
+		case CCommandLineInfo::FilePrintTo:
+			ASSERT(m_pCmdInfo == NULL);
+			m_bUseLoadPreviewDib = FALSE; // Load Full-Size Jpegs!
+			m_pCmdInfo = &rCmdInfo;
+			if (m_pCmdInfo->m_strPrinterName.IsEmpty()	&&
+				m_pCmdInfo->m_strDriverName.IsEmpty()	&&
+				m_pCmdInfo->m_strPortName.IsEmpty())
+				m_pCmdInfo->m_strPrinterName = CEnumPrinters::GetDefaultPrinterName();
+			if (rCmdInfo.m_strFileNames.GetSize() <= 1)
+			{
+				CDocument* pDoc = OpenDocumentFile(rCmdInfo.m_strFileName);
+				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+					((CPictureDoc*)pDoc)->GetView()->SendMessage(WM_COMMAND, ID_FILE_PRINT_DIRECT);
+			}
+			else
+			{
+				for (int i = 0 ; i < rCmdInfo.m_strFileNames.GetSize() ; i++)
+				{
+					CDocument* pDoc = OpenDocumentFile(rCmdInfo.m_strFileNames[i]);
+					if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						((CPictureDoc*)pDoc)->GetView()->SendMessage(WM_COMMAND, ID_FILE_PRINT_DIRECT);
+				}
+			}
+			m_pCmdInfo = NULL;
+			bResult = FALSE; // Done -> Exit Program
+			break;
+
+		// If the user wanted to print preview the given file
+		// Example: uImager.exe "ad3.jpg" /p
+		case CCommandLineInfo::FilePrint:
+			{
+				ASSERT(m_pCmdInfo == NULL);
+				CDocument* pDoc = OpenDocumentFile(rCmdInfo.m_strFileName);
+				if (!pDoc)
+					bResult = FALSE;	// Error -> Exit Program
+				else
+				{
+					m_pCmdInfo = &rCmdInfo;
+					if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						((CPictureDoc*)pDoc)->GetView()->SendMessage(WM_COMMAND, ID_FILE_PRINT_PREVIEW);
+					m_pCmdInfo = NULL;
+				}
+			}
+			break;
+
+		// If we're doing DDE set m_pCmdInfo
+		case CCommandLineInfo::FileDDE:
+			m_pCmdInfo = (CCommandLineInfo*)m_nCmdShow;
+			break;
+
+		// If we've been asked to unregister, unregister and then terminate
+		case CCommandLineInfo::AppUnregister:
+			{
+				UnregisterShellFileTypes();
+				BOOL bUnregistered = Unregister();
+
+				// if you specify /EMBEDDED, we won't make an success/failure box
+				// this use of /EMBEDDED is not related to OLE
+
+				if (!rCmdInfo.m_bRunEmbedded)
+				{
+					if (bUnregistered)
+						::AfxMessageBox(AFX_IDP_UNREG_DONE);
+					else
+						::AfxMessageBox(AFX_IDP_UNREG_FAILURE);
+				}
+				bResult = FALSE;    // that's all we do
+
+				// If nobody is using it already, we can use it.
+				// We'll flag that we're unregistering and not save our state
+				// on the way out. This new object gets deleted by the
+				// app object destructor.
+
+				if (m_pCmdInfo == NULL)
+				{
+					m_pCmdInfo = new CCommandLineInfo;
+					m_pCmdInfo->m_nShellCommand = CCommandLineInfo::AppUnregister;
+				}
+			}
+			break;
+	}
+	return bResult;
+}
+
+void CUImagerApp::ShrinkStatusText(	CString sSrcFileName,
+									CString sDstFileName)
+{
+	CString sStatusText;
+	sStatusText.Format(_T("%s -> %s"),
+				::GetShortFileName(sSrcFileName),
+				::GetShortFileName(sDstFileName));
+	::AfxGetMainFrame()->StatusText(sStatusText);
+}
+
+// Return Value:
+// -1 : Not Finished
+// 0  : Error
+// 1  : Ok
+int CUImagerApp::ShrinkCurrentDoc(	LPCTSTR szDstFileName,
+									DWORD dwMaxSize,
+									BOOL bMaxSizePercent,
+									DWORD dwJpegQuality,
+									BOOL bShrinkPictures,
+									BOOL bShrinkVideos)
+{
+	CUImagerDoc* pDoc = NULL;
+	if (::AfxGetMainFrame()->MDIGetActive())
+		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+	if (!pDoc)
+		return 0;
+
+	// Picture Doc?
+	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+	{
+		BeginWaitCursor();
+
+		// Status Text
+		ShrinkStatusText(((CPictureDoc*)pDoc)->m_sFileName, szDstFileName);
+
+		if (((CPictureDoc*)pDoc)->m_bBigPicture)
+		{
+			if (ShrinkBigPicture(	pDoc->m_pDib,
+									szDstFileName,
+									dwMaxSize,
+									bMaxSizePercent,
+									dwJpegQuality,
+									bShrinkPictures,
+									FALSE,
+									::AfxGetMainFrame(),
+									TRUE))
+			{
+				EndWaitCursor();
+				return 1;
+			}
+			else
+			{
+				EndWaitCursor();
+				return 0;
+			}
+		}
+		else
+		{
+			if (ShrinkPicture(	pDoc->m_sFileName,
+								szDstFileName,
+								dwMaxSize,
+								bMaxSizePercent,
+								dwJpegQuality,
+								FALSE,				// Do not force jpeg quality change if already a jpeg
+								COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
+								TRUE,				// Force the change to Jpeg Compression for Tiff files
+								bShrinkPictures,		
+								FALSE,				// Do not sharpen after shrink
+								TRUE,				// Work on all pages of a multi-page Tiff
+								::AfxGetMainFrame(),
+								TRUE,
+								NULL) != 0)
+			{
+				EndWaitCursor();
+				return 1;
+			}
+			else
+			{
+				EndWaitCursor();
+				return 0;
+			}
+		}
+	}
+		
+	// Video Avi Doc?
+	if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+	{
+		int res = 1;
+
+		// Status Text
+		ShrinkStatusText(((CPictureDoc*)pDoc)->m_sFileName, szDstFileName);
+
+		if (bShrinkVideos)
+		{
+			if (!((CVideoAviDoc*)pDoc)->StartShrinkDocTo(szDstFileName))
+			{
+				::AfxMessageBox(ML_STRING(1213, "AVI Files with VBR Mp3 Audio cannot be Shrinked."), MB_OK | MB_ICONSTOP);
+				return 0;
+			}
+			else
+				res = -1; // Not finished
+		}
+		else
+		{
+			if (!::CopyFile(pDoc->m_sFileName, szDstFileName, FALSE))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+			if (!::SetFileAttributes(szDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+		}
+
+		return res;
+	}
+
+	return 0;
+}
+
+// Return Value:
+// -1 : Not Finished
+// 0  : Error
+// 1  : Ok
+int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
+								 DWORD dwMaxSize,
+								 BOOL bMaxSizePercent,
+								 DWORD dwJpegQuality,
+								 BOOL bPictureExtChange,
+								 BOOL bShrinkPictures,
+								 BOOL bShrinkVideos,
+								 BOOL bOnlyCopyFiles)
+{
+	POSITION pos;
+	CUImagerMultiDocTemplate* curTemplate = NULL;
+	int res = 1;
+
+	// Destination Directory Path
+	CString sDstDirPath(szDstDirPath);
+	sDstDirPath.TrimRight(_T('\\'));
+
+	// Begin Wait Cursor
+	BeginWaitCursor();
+
+	// Picture Docs
+	curTemplate = GetPictureDocTemplate();
+	pos = curTemplate->GetFirstDocPosition();
+	while (pos)
+	{
+		CPictureDoc* pDoc = (CPictureDoc*)curTemplate->GetNextDoc(pos);
+
+		// Source Directory Path
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
+		CString sSrcDirPath = CString(szDrive) + CString(szDir);
+		sSrcDirPath.TrimRight(_T('\\'));
+
+		// Source File Name
+		CString sSrcFileName = pDoc->m_sFileName;
+		sSrcFileName.TrimRight(_T('\\'));
+
+		// Destination File Name
+		CString sDstFileName = sSrcFileName;
+		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
+		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
+		if (bPictureExtChange && !bOnlyCopyFiles)
+		{
+			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+		}
+
+		// Status Text
+		ShrinkStatusText(sSrcFileName, sDstFileName);
+
+		// Only Copy File?
+		if (bOnlyCopyFiles)
+		{
+			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
+			{
+				int nLastError = ::GetLastError();
+				EndWaitCursor();
+				::ShowError(nLastError, TRUE);
+				return 0;
+			}
+			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				int nLastError = ::GetLastError();
+				EndWaitCursor();
+				::ShowError(nLastError, TRUE);
+				return 0;
+			}
+			continue;
+		}
+
+		// Shrink
+		if (ShrinkPicture(	sSrcFileName,
+							sDstFileName,
+							dwMaxSize,
+							bMaxSizePercent,
+							dwJpegQuality,
+							FALSE,				// Do not force jpeg quality change if already a jpeg
+							COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
+							TRUE,				// Force the change to Jpeg Compression for Tiff files
+							bShrinkPictures,
+							FALSE,				// Do not sharpen after shrink
+							TRUE,				// Work on all pages of a multi-page Tiff
+							::AfxGetMainFrame(),
+							TRUE,
+							NULL) == 0)
+		{
+			EndWaitCursor();
+			return 0;
+		}
+	}
+	
+	// Big Picture Docs
+	curTemplate = GetBigPictureDocTemplate();
+	pos = curTemplate->GetFirstDocPosition();
+	while (pos)
+	{
+		CPictureDoc* pDoc = (CPictureDoc*)curTemplate->GetNextDoc(pos);
+
+		// Source Directory Path
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
+		CString sSrcDirPath = CString(szDrive) + CString(szDir);
+		sSrcDirPath.TrimRight(_T('\\'));
+
+		// Source File Name
+		CString sSrcFileName = pDoc->m_sFileName;
+		sSrcFileName.TrimRight(_T('\\'));
+
+		// Destination File Name
+		CString sDstFileName = sSrcFileName;
+		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
+		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
+		if (bPictureExtChange && !bOnlyCopyFiles)
+		{
+			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
+			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
+		}
+
+		// Status Text
+		ShrinkStatusText(sSrcFileName, sDstFileName);
+
+		// Only Copy File?
+		if (bOnlyCopyFiles)
+		{
+			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
+			{
+				int nLastError = ::GetLastError();
+				EndWaitCursor();
+				::ShowError(nLastError, TRUE);
+				return 0;
+			}
+			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				int nLastError = ::GetLastError();
+				EndWaitCursor();
+				::ShowError(nLastError, TRUE);
+				return 0;
+			}
+			continue;
+		}
+
+		// Shrink
+		if (!ShrinkBigPicture(	pDoc->m_pDib,
+								sDstFileName,
+								dwMaxSize,
+								bMaxSizePercent,
+								dwJpegQuality,
+								bShrinkPictures,
+								FALSE,
+								::AfxGetMainFrame(),
+								TRUE))
+		{
+			EndWaitCursor();
+			return 0;
+		}
+	}
+
+	// End Wait Cursor
+	EndWaitCursor();
+
+	// Video Docs
+	curTemplate = GetVideoAviDocTemplate();
+	pos = curTemplate->GetFirstDocPosition();
+	while (pos)
+	{
+		CVideoAviDoc* pDoc = (CVideoAviDoc*)curTemplate->GetNextDoc(pos);
+
+		// Source Directory Path
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
+		CString sSrcDirPath = CString(szDrive) + CString(szDir);
+		sSrcDirPath.TrimRight(_T('\\'));
+
+		// Source File Name
+		CString sSrcFileName = pDoc->m_sFileName;
+		sSrcFileName.TrimRight(_T('\\'));
+
+		// Destination File Name
+		CString sDstFileName = sSrcFileName;
+		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
+		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
+		
+		// Status Text
+		ShrinkStatusText(sSrcFileName, sDstFileName);
+
+		// Only Copy File?
+		if (bOnlyCopyFiles)
+		{
+			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+			continue;
+		}
+
+		// Shrink
+		if (bShrinkVideos)
+		{
+			if (!pDoc->StartShrinkDocTo(sDstFileName))
+			{
+				::AfxMessageBox(ML_STRING(1213, "AVI Files with VBR Mp3 Audio cannot be Shrinked."), MB_OK | MB_ICONSTOP);
+				return 0;
+			}
+			else
+				res = -1; // Not finished
+		}
+		else
+		{
+			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				::ShowLastError(TRUE);
+				return 0;
+			}
+		}
+	}
+
+	return res;
+}
+
+BOOL CUImagerApp::ShrinkBigPicture(	CDib* pSrcDib,
+									LPCTSTR szDstFileName,
+									DWORD dwMaxSize,
+									BOOL bMaxSizePercent,
+									DWORD dwJpegQuality,
+									BOOL bShrinkPictureSize,
+									BOOL bSharpenAfterShrink,
+									CWnd* pProgressWnd,
+									BOOL bProgressSend)
+{
+	CDib DstDib1, DstDib2;
+	CDib* pSaveDib = pSrcDib;
+	DstDib1.SetShowMessageBoxOnError(pSrcDib->IsShowMessageBoxOnError());
+	DstDib2.SetShowMessageBoxOnError(pSrcDib->IsShowMessageBoxOnError());
+
+	// Check
+	if (!pSrcDib || !pSrcDib->IsValid())
+		return FALSE;
+
+	// Set initial value to not shrink
+	DWORD dwShrinkWidth = pSrcDib->GetWidth();
+	DWORD dwShrinkHeight = pSrcDib->GetHeight();
+
+	// Shrink Picture Size
+	if (bShrinkPictureSize)
+	{
+		double dAspectRatio = (double)pSrcDib->GetWidth() / (double)pSrcDib->GetHeight();
+
+		// Landscape
+		if (pSrcDib->GetWidth() > pSrcDib->GetHeight())
+		{
+			// From Percent to Pixels
+			DWORD dwMaxSizePercent;
+			if (bMaxSizePercent)
+			{
+				dwMaxSizePercent = dwMaxSize;
+				dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * pSrcDib->GetWidth());
+			}
+			
+			// Resize to dwMaxSize x XYZ
+			if (pSrcDib->GetWidth() > dwMaxSize)
+			{
+				dwShrinkWidth = dwMaxSize;
+				dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
+				if (!DstDib1.ShrinkBits(dwShrinkWidth,
+										dwShrinkHeight,
+										pSrcDib,
+										pProgressWnd,
+										bProgressSend))
+					return FALSE;
+				else
+				{
+					// Sharpen
+					if (bSharpenAfterShrink)
+					{
+						int Kernel[] = {-1,-1,-1,
+										-1,20,-1,
+										-1,-1,-1};
+						if (!DstDib2.FilterFast(Kernel, 12,
+												&DstDib1,
+												pProgressWnd,
+												bProgressSend))
+							return FALSE;
+						else
+							pSaveDib = &DstDib2;
+					}
+					else
+						pSaveDib = &DstDib1;
+				}
+			}
+
+			// Restore Percent for the Next Pictures
+			if (bMaxSizePercent)
+				dwMaxSize = dwMaxSizePercent;
+		}
+		// Portrait
+		else
+		{
+			// From Percent to Pixels
+			DWORD dwMaxSizePercent;
+			if (bMaxSizePercent)
+			{
+				dwMaxSizePercent = dwMaxSize;
+				dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * pSrcDib->GetHeight());
+			}
+
+			// Resize to XYZ x dwMaxSize
+			if (pSrcDib->GetHeight() > dwMaxSize)
+			{
+				dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
+				dwShrinkHeight = dwMaxSize;
+				if (!DstDib1.ShrinkBits(dwShrinkWidth,
+										dwShrinkHeight,
+										pSrcDib,
+										pProgressWnd,
+										bProgressSend))
+					return FALSE;
+				else
+				{
+					// Sharpen
+					if (bSharpenAfterShrink)
+					{
+						int Kernel[] = {-1,-1,-1,
+										-1,20,-1,
+										-1,-1,-1};
+						if (!DstDib2.FilterFast(Kernel, 12,
+												&DstDib1,
+												pProgressWnd,
+												bProgressSend))
+							return FALSE;
+						else
+							pSaveDib = &DstDib2;
+					}
+					else
+						pSaveDib = &DstDib1;
+				}
+			}
+
+			// Restore Percent for the Next Pictures
+			if (bMaxSizePercent)
+				dwMaxSize = dwMaxSizePercent;
+		}
+	}
+
+	// Set new DPI
+	pSaveDib->SetXDpi(Round((double)dwShrinkWidth  * (double)pSrcDib->GetXDpi() / (double)pSrcDib->GetWidth()));
+	pSaveDib->SetYDpi(Round((double)dwShrinkHeight * (double)pSrcDib->GetYDpi() / (double)pSrcDib->GetHeight()));
+
+	// Save Image
+	CString sDstExt = ::GetFileExt(szDstFileName);
+	sDstExt.MakeLower();
+	if (sDstExt == _T(".jpg")	||
+		sDstExt == _T(".jpe")	||
+		sDstExt == _T(".jpeg")	||
+		sDstExt == _T(".thm"))
+	{
+#ifdef SUPPORT_LIBJPEG
+		if (!pSaveDib->SaveJPEG(szDstFileName,
+								dwJpegQuality,
+								pSrcDib->IsGrayscale(),
+								_T(""),
+								TRUE,
+								FALSE,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+#endif
+	}
+	else if (sDstExt == _T(".tif")	||
+			sDstExt == _T(".jfx")	||
+			sDstExt == _T(".tiff"))
+	{
+#ifdef SUPPORT_LIBTIFF
+		if (!pSaveDib->SaveTIFF(szDstFileName,
+								(pSrcDib->GetBitCount() == 1) ?
+									COMPRESSION_CCITTFAX4 :
+									COMPRESSION_LZW,
+								0,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+#endif
+	}
+	else if (sDstExt == _T(".bmp") || sDstExt == _T(".dib"))
+	{
+		if (!pSaveDib->SaveBMP(	szDstFileName,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+	}
+	else if (sDstExt == _T(".gif"))
+	{
+#ifdef SUPPORT_GIFLIB
+		if (!pSaveDib->SaveGIF(	szDstFileName,
+								GIF_COLORINDEX_NOT_DEFINED,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+#endif	
+	}
+	else if (sDstExt == _T(".png"))
+	{
+#ifdef SUPPORT_LIBPNG
+		if (!pSaveDib->SavePNG(	szDstFileName,
+								FALSE,
+								FALSE,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+#endif
+	}
+	else if (sDstExt == _T(".pcx"))
+	{
+#ifdef SUPPORT_PCX
+		if (!pSaveDib->SavePCX(	szDstFileName,
+								pProgressWnd,
+								bProgressSend))
+			return FALSE;
+#endif
+	}
+	else if (sDstExt == _T(".emf"))
+	{
+		if (!pSaveDib->SaveEMF(szDstFileName))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CUImagerApp::CalcShrink(	const CDib& SrcDib,
+								DWORD dwMaxSize,
+								BOOL bMaxSizePercent,
+								DWORD& dwShrinkWidth,
+								DWORD& dwShrinkHeight)
+{		
+	BOOL bDoShrink = FALSE;
+	double dAspectRatio = (double)SrcDib.GetWidth() / (double)SrcDib.GetHeight();
+
+	// Landscape
+	if (SrcDib.GetWidth() > SrcDib.GetHeight())
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * SrcDib.GetWidth());
+		}
+		
+		// Resize to dwMaxSize x XYZ
+		if (SrcDib.GetWidth() > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = dwMaxSize;
+			dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
+		}
+	}
+	// Portrait
+	else
+	{
+		// From Percent to Pixels
+		DWORD dwMaxSizePercent;
+		if (bMaxSizePercent)
+		{
+			dwMaxSizePercent = dwMaxSize;
+			dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * SrcDib.GetHeight());
+		}
+
+		// Resize to XYZ x dwMaxSize
+		if (SrcDib.GetHeight() > dwMaxSize)
+		{
+			bDoShrink = TRUE;
+			dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
+			dwShrinkHeight = dwMaxSize;
+		}
+	}
+
+	return bDoShrink;
+}
+
+// Return Value:
+// -1 : Just Copied
+// 0  : Error
+// 1  : Shrinked
+int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
+								LPCTSTR szDstFileName,
+								DWORD dwMaxSize,
+								BOOL bMaxSizePercent,
+								DWORD dwJpegQuality,
+								BOOL bForceJpegQuality,
+								int nTiffCompression,
+								BOOL bTiffForceCompression,
+								BOOL bShrinkPictureSize,
+								BOOL bSharpenAfterShrink,
+								BOOL bWorkOnAllPages,
+								CWnd* pProgressWnd,
+								BOOL bProgressSend,
+								CWorkerThread* pThread)
+{
+	BOOL res = FALSE;
+	CDib SrcDib, DstDib1, DstDib2;
+	SrcDib.SetShowMessageBoxOnError(FALSE);
+	DstDib1.SetShowMessageBoxOnError(FALSE);
+	DstDib2.SetShowMessageBoxOnError(FALSE);
+	CDib* pSaveDib = &SrcDib;
+
+	// Just Copy If Same Extension and:
+	// - Animated GIFs
+	// Or If:
+	// - Not Shrinking Picture Size
+	//   and not Jpeg with Force Quality
+	//   and not Tiff with Force Compression
+	if (::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)		&&
+
+		(CDib::IsAnimatedGIF(szSrcFileName, FALSE)						||
+
+		(!bShrinkPictureSize											&&
+		!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality)		&&
+		!(CPictureDoc::IsTIFF(szSrcFileName) && bTiffForceCompression))))
+	{
+		if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
+		{
+			return 0;
+		}
+		if (!::SetFileAttributes(szDstFileName,
+								FILE_ATTRIBUTE_NORMAL |
+								FILE_ATTRIBUTE_TEMPORARY))
+		{
+			return 0;
+		}
+		return -1; // Copied
+	}
+
+	// Load Only Header
+	if (!SrcDib.LoadImage(szSrcFileName, 0, 0, 0, TRUE, TRUE))
+		return 0;
+
+	// Set initial value to not shrink
+	DWORD dwShrinkWidth = SrcDib.GetWidth();
+	DWORD dwShrinkHeight = SrcDib.GetHeight();
+	
+	// Work On All Pages of a Multi-Page TIFF?
+	if (bWorkOnAllPages							&&
+		(SrcDib.m_FileInfo.m_nImageCount > 1)	&&
+		CPictureDoc::IsTIFF(szSrcFileName)		&&
+		CPictureDoc::IsTIFF(szDstFileName))
+	{
+		return ShrinkPictureMultiPage(	szSrcFileName,
+										szDstFileName,
+										dwMaxSize,
+										bMaxSizePercent,
+										dwJpegQuality,
+										bForceJpegQuality,
+										nTiffCompression,
+										bTiffForceCompression,
+										bShrinkPictureSize,
+										bSharpenAfterShrink,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+	}
+
+	// Shrink Picture Size?
+	if (bShrinkPictureSize)
+	{
+		// Calc. Shrink
+		BOOL bDoShrink = CalcShrink(SrcDib,
+									dwMaxSize,
+									bMaxSizePercent,
+									dwShrinkWidth,
+									dwShrinkHeight);
+
+		// Shrink
+		if (bDoShrink)
+		{
+			// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp File
+			if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
+				::GetFileExt(szSrcFileName) == _T(".dib"))
+			{
+				if (!SrcDib.IsCompressed() &&
+					!SrcDib.m_FileInfo.m_bBmpOS2Hdr)
+					res = SrcDib.MapBMP(szSrcFileName, TRUE);
+			}
+			
+			// Normal Load
+			if (res == FALSE)
+			{
+				res = SrcDib.LoadImage(	szSrcFileName,
+										0, 0, 0,
+										TRUE,
+										FALSE,
+										pProgressWnd,
+										bProgressSend,
+										pThread);
+			}
+
+			// Shrink
+			if (res)
+			{
+				if (!DstDib1.ShrinkBits(dwShrinkWidth,
+										dwShrinkHeight,
+										&SrcDib,
+										pProgressWnd,
+										bProgressSend,
+										pThread))
+					return 0;
+				else
+				{						
+					// Sharpen
+					if (bSharpenAfterShrink)
+					{
+						int Kernel[] = {-1,-1,-1,
+										-1,20,-1,
+										-1,-1,-1};
+						if (!DstDib2.FilterFast(Kernel, 12,
+												&DstDib1,
+												pProgressWnd,
+												bProgressSend,
+												pThread))
+							return 0;
+						else
+							pSaveDib = &DstDib2;
+					}
+					else
+						pSaveDib = &DstDib1;
+				}
+			}
+			else
+				return 0;
+		}
+		else
+		{
+			// Just Copy If:
+			// - Not Jpeg with Force Quality
+			//   and not Tiff with Force Compression
+			//   and Same Extension
+			if (!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
+				!(CPictureDoc::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
+				(::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)))
+			{
+				if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
+				{
+					return 0;
+				}
+				if (!::SetFileAttributes(szDstFileName,
+										FILE_ATTRIBUTE_NORMAL |
+										FILE_ATTRIBUTE_TEMPORARY))
+				{
+					return 0;
+				}
+				return -1; // Copied
+			}
+		}
+	}
+	
+	// Not Yet Loaded?
+	if (!res)
+	{
+		// Use Memory Mapped Load if Not Compressed and Not Old OS/2 Bmp File
+		if (::GetFileExt(szSrcFileName) == _T(".bmp") ||
+			::GetFileExt(szSrcFileName) == _T(".dib"))
+		{
+			if (!SrcDib.IsCompressed() &&
+				!SrcDib.m_FileInfo.m_bBmpOS2Hdr)
+				res = SrcDib.MapBMP(szSrcFileName, TRUE);
+		}
+		
+		// Normal Load
+		if (res == FALSE)
+		{
+			res = SrcDib.LoadImage(	szSrcFileName,
+									0, 0, 0,
+									TRUE,
+									FALSE,
+									pProgressWnd,
+									bProgressSend,
+									pThread);
+		}
+		if (!res)
+			return 0;
+	}
+
+	// Set new DPI
+	pSaveDib->SetXDpi(Round((double)dwShrinkWidth  * (double)SrcDib.GetXDpi() / (double)SrcDib.GetWidth()));
+	pSaveDib->SetYDpi(Round((double)dwShrinkHeight * (double)SrcDib.GetYDpi() / (double)SrcDib.GetHeight()));
+
+	// Auto Orientate
+	CDib::AutoOrientateDib(pSaveDib);
+
+	// Clear Orientation
+	pSaveDib->GetExifInfo()->Orientation = 1;
+
+	// Save Image
+	CString sSrcExt = ::GetFileExt(szSrcFileName);
+	CString sDstExt = ::GetFileExt(szDstFileName);
+	sSrcExt.MakeLower();
+	sDstExt.MakeLower();
+	if (sDstExt == _T(".jpg")	||
+		sDstExt == _T(".jpe")	||
+		sDstExt == _T(".jpeg")	||
+		sDstExt == _T(".thm"))
+	{
+		// Flatten
+		if (pSaveDib->HasAlpha() && pSaveDib->GetBitCount() == 32)
+		{
+			pSaveDib->RenderAlphaWithSrcBackground();
+			pSaveDib->SetAlpha(FALSE);
+		}
+
+#ifdef SUPPORT_LIBJPEG
+		if (sSrcExt == _T(".jpg")	||
+			sSrcExt == _T(".jpe")	||
+			sSrcExt == _T(".jpeg")	||
+			sSrcExt == _T(".thm"))
+		{
+			if (!pSaveDib->SaveJPEG(szDstFileName,
+									dwJpegQuality,
+									SrcDib.IsGrayscale(),
+									szSrcFileName,
+									FALSE,
+									TRUE,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+				return 0;
+
+			// Clear Orientation,
+			// this because orientation is copied from szSrcFileName!
+			CDib::JPEGSetOrientationInplace(szDstFileName,
+											1,
+											FALSE);
+		}
+		else
+		{
+			if (!pSaveDib->SaveJPEG(szDstFileName,
+									dwJpegQuality,
+									SrcDib.IsGrayscale(),
+									_T(""),
+									TRUE,
+									FALSE,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+				return 0;
+		}
+#endif
+	}
+	else if (sDstExt == _T(".tif") || sDstExt == _T(".jfx") || sDstExt == _T(".tiff"))
+	{
+#ifdef SUPPORT_LIBTIFF
+		if (sSrcExt == _T(".tif") || sSrcExt == _T(".jfx") || sSrcExt == _T(".tiff"))
+		{
+			if (SrcDib.m_FileInfo.m_nImageCount > 1)
+			{
+				if (!pSaveDib->SaveMultiPageTIFF(	szDstFileName,
+													szSrcFileName,
+													((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+													bTiffForceCompression ? nTiffCompression : SrcDib.m_FileInfo.m_nCompression,
+													dwJpegQuality,
+													pProgressWnd,
+													bProgressSend,
+													pThread))
+					return 0;
+
+			}
+			else
+			{
+				if (!pSaveDib->SaveTIFF(szDstFileName,
+										bTiffForceCompression ? nTiffCompression : SrcDib.m_FileInfo.m_nCompression,
+										dwJpegQuality,
+										pProgressWnd,
+										bProgressSend,
+										pThread))
+					return 0;
+			}
+
+		}
+		else
+		{
+			if (!pSaveDib->SaveTIFF(szDstFileName,
+									nTiffCompression,
+									dwJpegQuality,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+				return 0;
+		}
+#endif
+	}
+	else if (sDstExt == _T(".bmp") || sDstExt == _T(".dib"))
+	{
+		// RLE Compress
+		if ((SrcDib.GetBitCount() == 4						||
+			SrcDib.GetBitCount() == 8)						&&
+			(SrcDib.m_FileInfo.m_nCompression == BI_RLE4	||
+			SrcDib.m_FileInfo.m_nCompression == BI_RLE8))
+		{
+			pSaveDib->Compress((SrcDib.GetBitCount() == 4)
+								? BI_RLE4 : BI_RLE8);
+		}
+		// Store Alpha using the V4 Header
+		else if (SrcDib.HasAlpha() && SrcDib.GetBitCount() == 32)
+		{
+			pSaveDib->BMIToBITMAPV4HEADER();
+		}
+
+		if (!pSaveDib->SaveBMP(	szDstFileName,
+								pProgressWnd,
+								bProgressSend,
+								pThread))
+			return 0;
+	}
+	else if (sDstExt == _T(".gif"))
+	{
+#ifdef SUPPORT_GIFLIB
+		if (!CPictureDoc::SaveGIF(	szDstFileName,
+									pSaveDib,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+			return 0;
+#endif	
+	}
+	else if (sDstExt == _T(".png"))
+	{
+#ifdef SUPPORT_LIBPNG
+		if (!CPictureDoc::SavePNG(	szDstFileName,
+									pSaveDib,
+									SrcDib.m_FileInfo.m_bHasBackgroundColor,
+									pProgressWnd,
+									bProgressSend,
+									pThread))
+			return 0;
+#endif
+	}
+	else if (sDstExt == _T(".pcx"))
+	{
+		// Flatten
+		if (pSaveDib->HasAlpha() && pSaveDib->GetBitCount() == 32)
+		{
+			pSaveDib->RenderAlphaWithSrcBackground();
+			pSaveDib->SetAlpha(FALSE);
+		}
+
+#ifdef SUPPORT_PCX
+		if (!pSaveDib->SavePCX(	szDstFileName,
+								pProgressWnd,
+								bProgressSend,
+								pThread))
+			return 0;
+#endif
+	}
+	else if (sDstExt == _T(".emf"))
+	{
+		// Flatten
+		if (pSaveDib->HasAlpha() && pSaveDib->GetBitCount() == 32)
+		{
+			pSaveDib->RenderAlphaWithSrcBackground();
+			pSaveDib->SetAlpha(FALSE);
+		}
+
+		if (!pSaveDib->SaveEMF(szDstFileName))
+			return 0;
+	}
+
+	return 1; // Saved
+}
+
+// Return Value:
+// -1 : Just Copied
+// 0  : Error
+// 1  : Shrinked
+// Shrink All Pages of a Multi-Page Tiff
+int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
+										LPCTSTR szDstFileName,
+										DWORD dwMaxSize,
+										BOOL bMaxSizePercent,
+										DWORD dwJpegQuality,
+										BOOL bForceJpegQuality,
+										int nTiffCompression,
+										BOOL bTiffForceCompression,
+										BOOL bShrinkPictureSize,
+										BOOL bSharpenAfterShrink,
+										CWnd* pProgressWnd,
+										BOOL bProgressSend,
+										CWorkerThread* pThread)
+{
+	BOOL res = FALSE;
+	int nPageNum;
+	int nPageCount;
+	CDib::ARRAY a;
+	CArray<int,int> Compression;
+
+	// Load First Page
+	CDib* pSrcDib = new CDib;
+	if (!pSrcDib)
+		return 0;
+	pSrcDib->SetShowMessageBoxOnError(FALSE);
+	if (!pSrcDib->LoadTIFF(szSrcFileName, 0, FALSE, pProgressWnd, bProgressSend, pThread))
+	{
+		delete pSrcDib;
+		return 0;
+	}
+	nPageCount = pSrcDib->m_FileInfo.m_nImageCount;
+
+	// Create array of dibs
+	for (nPageNum = 0 ; nPageNum < nPageCount ; nPageNum++)
+	{	
+		// Load
+		if (nPageNum == 0)
+		{
+			a.Add(pSrcDib);
+			Compression.Add(bTiffForceCompression ? nTiffCompression : pSrcDib->m_FileInfo.m_nCompression);
+		}
+		else
+		{
+			// Load
+			a.Add(new CDib);
+			if (!a[a.GetUpperBound()])
+				
+			a[a.GetUpperBound()]->SetShowMessageBoxOnError(FALSE);
+			if (!a[a.GetUpperBound()]->LoadTIFF(szSrcFileName,
+												nPageNum,
+												FALSE,
+												pProgressWnd,
+												bProgressSend,
+												pThread))
+			{
+				CDib::FreeArray(a);
+				return 0;
+			}
+			Compression.Add(bTiffForceCompression ? nTiffCompression : a[a.GetUpperBound()]->m_FileInfo.m_nCompression);
+		}
+
+		// Init Vars
+		int nSrcXDpi = a[a.GetUpperBound()]->GetXDpi();
+		int nSrcYDpi = a[a.GetUpperBound()]->GetYDpi();
+		DWORD dwSrcWidth = a[a.GetUpperBound()]->GetWidth();
+		DWORD dwSrcHeight = a[a.GetUpperBound()]->GetHeight();
+		DWORD dwShrinkWidth = dwSrcWidth;
+		DWORD dwShrinkHeight = dwSrcHeight;
+
+		// Shrink Picture Size?
+		if (bShrinkPictureSize)
+		{
+			// Calc Shrink
+			BOOL bDoShrink = CalcShrink(*a[a.GetUpperBound()],
+										dwMaxSize,
+										bMaxSizePercent,
+										dwShrinkWidth,
+										dwShrinkHeight);
+
+			// Shrink
+			if (bDoShrink)
+			{
+				if (!a[a.GetUpperBound()]->ShrinkBits(	dwShrinkWidth,
+														dwShrinkHeight,
+														NULL,
+														pProgressWnd,
+														bProgressSend,
+														pThread))
+				{
+					CDib::FreeArray(a);
+					return 0;
+				}
+				else
+				{						
+					// Sharpen
+					if (bSharpenAfterShrink)
+					{
+						int Kernel[] = {-1,-1,-1,
+										-1,20,-1,
+										-1,-1,-1};
+						if (!a[a.GetUpperBound()]->FilterFast(	Kernel, 12,
+																NULL,
+																pProgressWnd,
+																bProgressSend,
+																pThread))
+						{
+							CDib::FreeArray(a);
+							return 0;
+						}
+					}
+				}
+			}
+		}
+
+		// Set new DPI
+		a[a.GetUpperBound()]->SetXDpi(Round((double)dwShrinkWidth  * (double)nSrcXDpi / (double)dwSrcWidth));
+		a[a.GetUpperBound()]->SetYDpi(Round((double)dwShrinkHeight * (double)nSrcYDpi / (double)dwSrcHeight));
+
+		// Auto Orientate
+		CDib::AutoOrientateDib(a[a.GetUpperBound()]);
+
+		// Clear Orientation
+		a[a.GetUpperBound()]->GetExifInfo()->Orientation = 1;
+	}
+
+	// Save all TIFF pages
+	res = CDib::SaveMultiPageTIFF(	szDstFileName,
+									a,
+									Compression,
+									dwJpegQuality,
+									pProgressWnd,
+									bProgressSend,
+									pThread);
+
+	// Free
+	CDib::FreeArray(a);
+
+	if (res)
+		return 1; // Saved
+	else
+		return 0; // Error
+}
+
+CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
+{
+	sSrcExt.TrimLeft(_T('.'));
+	sSrcExt.MakeLower();
+
+	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) || (sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
+		(sSrcExt == _T("jpg")) || (sSrcExt == _T("jpe")) || (sSrcExt == _T("jpeg"))	|| (sSrcExt == _T("thm")))
+		return _T(".jpg");
+	else if ((sSrcExt == _T("tif")) || (sSrcExt == _T("jfx")) || (sSrcExt == _T("tiff")))
+		return _T(".tif");
+	else if (sSrcExt == _T("gif"))
+		return _T(".gif");
+	else if (sSrcExt == _T("png"))
+		return _T(".png");
+	else if ((sSrcExt == _T("avi")) || (sSrcExt == _T("divx")))
+		return _T(".avi");
+	else
+		return (_T(".") + sSrcExt);
+}
+
+void CUImagerApp::OnFileCloseall() 
+{
+	if (SaveAllModified())
+		CloseAll();
+}
+
+void CUImagerApp::OnUpdateFileCloseall(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(!m_bClosingAll);
+}
+
+BOOL CUImagerApp::CloseAll() 
+{
+	BOOL bAllClosed = TRUE;
+	CView* pView;
+	CDocument* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc, posView;
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = (CDocument*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc)
+			{
+				posView = pDoc->GetFirstViewPosition();
+				while (posView != NULL)
+				{
+					pDoc->SetModifiedFlag(FALSE);
+					pView = pDoc->GetNextView(posView);
+					ASSERT_VALID(pView);
+					if (pView && pView->GetParentFrame())
+						pView->GetParentFrame()->PostMessage(WM_CLOSE, 0, 0);
+					bAllClosed = FALSE;
+				}   
+			}
+		}
+	}
+
+	// The First Time?
+	if (!m_bClosingAll)
+	{
+		if (!bAllClosed)
+		{
+			m_bClosingAll = TRUE;
+			::AfxGetMainFrame()->SetTimer(ID_TIMER_CLOSING_ALL, CLOSING_CHECK_INTERVAL_TIMER_MS, NULL);
+		}
+		else
+		{
+			// Post a Message to the Main Frame to notify
+			// that all Documents Are Closed
+			::AfxGetMainFrame()->PostMessage(WM_ALL_CLOSED, 0, 0);
+		}
+	}
+	else
+	{
+		// We Are Done :-)
+		if (bAllClosed)
+		{
+			m_bClosingAll = FALSE;
+
+			// Kill Timer
+			::AfxGetMainFrame()->KillTimer(ID_TIMER_CLOSING_ALL);
+
+			// Post a Message to the Main Frame to notify
+			// that all Documents Are Closed
+			::AfxGetMainFrame()->PostMessage(WM_ALL_CLOSED, 0, 0);
+		}
+	}
+
+	return bAllClosed;
+}
+
+void CUImagerApp::LoadSettings(UINT showCmd)
+{
+	CString sSection(_T("GeneralApp"));
+
+	// MainFrame Placement
+	LPBYTE pData = NULL;
+	UINT nBytes = 0;
+	GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
+	WINDOWPLACEMENT *pwp = (WINDOWPLACEMENT*)pData;
+	if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+	{
+		// Hide? If not hide -> use previous Show Command
+		if (showCmd == SW_HIDE)
+			pwp->showCmd = SW_HIDE;
+		
+		// Restore if Minimized
+		if (pwp->showCmd == SW_SHOWMINIMIZED)
+			pwp->showCmd = SW_RESTORE;
+
+		// Store Window Placement used when restoring from tray
+		if (m_bTrayIcon)
+			::AfxGetMainFrame()->m_TrayIcon.SetWndPlacement(pwp);
+
+		// Set
+		m_pMainWnd->SetWindowPlacement(pwp);
+	}
+	if (pData)
+		delete [] pData;
+
+	// Preview File Dialog
+	m_bFileDlgPreview = (BOOL)GetProfileInt(sSection, _T("FileDlgPreview"), TRUE);
+	g_nPreviewFileDlgViewMode = (int)GetProfileInt(sSection, _T("PreviewFileDlgViewMode"), SHVIEW_Default);
+
+	// Display Advanced On-Screen Video Avi Info
+	m_bVideoAviInfo = (BOOL)GetProfileInt(sSection, _T("VideoAviInfo"), FALSE);
+
+	// Color Detection flag
+	m_bColDet = (BOOL)GetProfileInt(sSection, _T("ColDet"), FALSE);
+
+	// Last Opened Directory
+	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));
+
+	// Scan Vars
+	m_nPdfScanCompressionQuality = GetProfileInt(sSection, _T("PdfScanCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
+	m_sPdfScanPaperSize = GetProfileString(sSection, _T("PdfScanPaperSize"), _T("Fit"));
+
+	// ESC to exit the program
+	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
+
+	// Disable opening external program (for pdf, swf)
+	m_bDisableExtProg = (BOOL)GetProfileInt(sSection, _T("DisableExtProg"), FALSE);
+
+	// Coordinate Units
+	m_nCoordinateUnit = GetProfileInt(sSection, _T("CoordinateUnit"), COORDINATES_PIX);
+
+	// New Dialog
+	m_nNewWidth = GetProfileInt(sSection, _T("NewWidth"), DEFAULT_NEW_WIDTH);
+	m_nNewHeight = GetProfileInt(sSection, _T("NewHeight"), DEFAULT_NEW_HEIGHT);
+	m_nNewXDpi = GetProfileInt(sSection, _T("NewXDpi"), DEFAULT_NEW_DPI);
+	m_nNewYDpi = GetProfileInt(sSection, _T("NewYDpi"), DEFAULT_NEW_DPI);
+	if (m_nCoordinateUnit == COORDINATES_INCH)
+		m_nNewPhysUnit = GetProfileInt(sSection, _T("NewPhysUnit"), 1);	// inch
+	else
+		m_nNewPhysUnit = GetProfileInt(sSection, _T("NewPhysUnit"), 0);	// cm
+	m_sNewPaperSize = GetProfileString(sSection, _T("NewPaperSize"), DEFAULT_NEW_PAPER_SIZE);
+	m_crNewBackgroundColor = (COLORREF)GetProfileInt(sSection, _T("NewBackgroundColor"), DEFAULT_NEW_COLOR);
+
+#ifdef VIDEODEVICEDOC
+	// Browser
+	m_bFullscreenBrowser = (BOOL)GetProfileInt(sSection, _T("FullscreenBrowser"), FALSE);
+	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
+
+	// Start Micro Apache
+	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);
+
+	// Micro Apache Document Root
+	CString sDefaultDocRoot;
+	sDefaultDocRoot = ::GetSpecialFolderPath(CSIDL_PERSONAL);
+	if (sDefaultDocRoot == _T(""))
+		sDefaultDocRoot = ::GetDriveName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir());
+	sDefaultDocRoot.TrimRight(_T('\\'));
+	sDefaultDocRoot += _T("\\") + CString(APPNAME_NOEXT);
+	m_sMicroApacheDocRoot = GetProfileString(sSection, _T("MicroApacheDocRoot"), sDefaultDocRoot);
+	::CreateDir(m_sMicroApacheDocRoot);
+
+	// Micro Apache Server Port
+	m_nMicroApachePort = GetProfileInt(sSection, _T("MicroApachePort"), MICROAPACHE_DEFAULT_PORT);
+
+	// Micro Apache Username and Password
+	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"), _T(""));
+	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"), _T(""));
+
+	// Load Schedulers
+	int nCount = GetProfileInt(sSection, _T("SchedulerCount"), 0);
+	for (int i = 0 ; i < nCount ; i++)
+	{
+		sSection.Format(_T("Scheduler%010d"), i);
+		CString sDevicePathName = GetProfileString(sSection, _T("DevicePathName"), _T(""));
+		if (sDevicePathName != _T(""))
+		{
+			CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
+			if (pSchedulerEntry)
+			{
+				pSchedulerEntry->m_sDevicePathName = sDevicePathName;
+				pSchedulerEntry->m_Type = (CSchedulerEntry::SchedulerEntryType)GetProfileInt(sSection, _T("Type"), (int)CUImagerApp::CSchedulerEntry::ONCE);
+				pSchedulerEntry->m_StartTime = CTime(	GetProfileInt(sSection, _T("StartYear"), 2000),
+														GetProfileInt(sSection, _T("StartMonth"), 1),
+														GetProfileInt(sSection, _T("StartDay"), 1),
+														GetProfileInt(sSection, _T("StartHour"), 12),
+														GetProfileInt(sSection, _T("StartMin"), 0),
+														GetProfileInt(sSection, _T("StartSec"), 0));
+				pSchedulerEntry->m_StopTime = CTime(	GetProfileInt(sSection, _T("StopYear"), 2000),
+														GetProfileInt(sSection, _T("StopMonth"), 1),
+														GetProfileInt(sSection, _T("StopDay"), 1),
+														GetProfileInt(sSection, _T("StopHour"), 12),
+														GetProfileInt(sSection, _T("StopMin"), 0),
+														GetProfileInt(sSection, _T("StopSec"), 0));
+				m_Scheduler.AddTail(pSchedulerEntry);
+			}
+		}
+	}
+#endif
+}
+
+void CUImagerApp::SaveSettings()
+{
+	// MainFrame Placement
+	if (!::AfxGetMainFrame()->m_bFullScreenMode)
+	{
+		WINDOWPLACEMENT wndpl;
+		memset(&wndpl, 0, sizeof(wndpl));
+		wndpl.length = sizeof(wndpl);
+		BOOL bOk;
+		if (m_bTrayIcon && ::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+			bOk = ::AfxGetMainFrame()->m_TrayIcon.GetWndPlacement(&wndpl);
+		else
+			bOk = ::AfxGetMainFrame()->GetWindowPlacement(&wndpl);
+		if (bOk)
+		{
+			WriteProfileBinary(	_T("GeneralApp"),
+								_T("WindowPlacement"),
+								(BYTE*)&wndpl, sizeof(wndpl));
+		}
+	}
+}
+
+void CUImagerApp::SendCurrentDocAsMailInit()
+{
+	int res = 0;
+	CUImagerDoc* pDoc = NULL;
+	if (::AfxGetMainFrame()->MDIGetActive())
+		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+	if (!pDoc)
+		return;
+
+	int nID;
+	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+		nID = IDD_SENDMAIL_CURRENT_PICTUREDOC;
+	else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+		nID = IDD_SENDMAIL_CURRENT_VIDEOAVIDOC;
+	else
+		return;
+
+	CSendMailDocsDlg dlg(nID, ::AfxGetMainFrame());
+
+	if (dlg.DoModal() == IDOK)
+	{	
+		// Check & Store Var
+		if (dlg.m_bZipFile)
+		{
+			if (dlg.m_sZipFileName == _T(""))
+				m_sZipFile = _T("Files.zip"); 
+			else
+				m_sZipFile = dlg.m_sZipFileName;
+		}
+		else
+			m_sZipFile = _T("");
+
+		// Create & Empty Email Temp Dir
+		if (!::IsExistingDir(GetAppTempDir() + _T("Email")))
+		{
+			if (!::CreateDir(GetAppTempDir() + _T("Email")))
+			{
+				::ShowLastError(TRUE);
+				return;
+			}
+		}
+		else
+		{
+			if (!::DeleteDirContent(GetAppTempDir() + _T("Email")))
+			{
+				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
+				return;
+			}
+		}
+
+		// Destination Extension
+		CString sDstExt;
+		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT ||
+			(dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT &&
+			!dlg.m_bPictureExtChange))
+			sDstExt = ::GetFileExt(pDoc->m_sFileName);
+		else
+			sDstExt = ShrinkGetDstExt(::GetFileExt(pDoc->m_sFileName));
+
+		// Destination File Name
+		CString sDstFileName = GetAppTempDir() + _T("Email") + _T("\\") + ::GetShortFileNameNoExt(pDoc->m_sFileName) + sDstExt;
+
+		// Shrink
+		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
+		{
+			res = ShrinkCurrentDoc(	sDstFileName,
+									AUTO_SHRINK_MAX_SIZE,
+									FALSE,
+									DEFAULT_JPEGCOMPRESSION,
+									TRUE,
+									TRUE);
+		}
+		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
+		{
+			if (!::CopyFile(pDoc->m_sFileName, sDstFileName, FALSE))
+			{
+				::ShowLastError(TRUE);
+				return;
+			}
+			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
+			{
+				::ShowLastError(TRUE);
+				return;
+			}
+			res = 1;	
+		}
+		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
+		{
+			res = ShrinkCurrentDoc(	sDstFileName,
+									(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
+									(dlg.m_nPixelsPercentSel == 1),
+									dlg.m_nJpegQuality,
+									dlg.m_bShrinkingPictures,
+									dlg.m_bShrinkingVideos);
+		}
+
+		// If No Avi Files, we can finish now,
+		// if avi file we have to wait untill all shrinking threads terminate!
+		// See CMainFrame::OnShrinkDocTerminated()
+		if (res == 1)
+			SendDocAsMailFinish(TRUE);		// Ok
+		else if (res == -1)
+			m_bWaitingMailFinish = TRUE;	// Wait
+		else
+			SendDocAsMailFinish(FALSE);		// Error
+	}
+}
+
+void CUImagerApp::SendOpenDocsAsMailInit()
+{
+	int res;
+
+	CSendMailDocsDlg dlg(IDD_SENDMAIL_OPEN_DOCS, ::AfxGetMainFrame());
+
+	if (dlg.DoModal() == IDOK)
+	{	
+		// Check & Store Var
+		if (dlg.m_bZipFile)
+		{
+			if (dlg.m_sZipFileName == _T(""))
+				m_sZipFile = _T("Files.zip"); 
+			else
+				m_sZipFile = dlg.m_sZipFileName;
+		}
+		else
+			m_sZipFile = _T("");
+
+		// Create & Empty Email Temp Dir
+		if (!::IsExistingDir(GetAppTempDir() + _T("Email")))
+		{
+			if (!::CreateDir(GetAppTempDir() + _T("Email")))
+			{
+				::ShowLastError(TRUE);
+				return;
+			}
+		}
+		else
+		{
+			if (!::DeleteDirContent(GetAppTempDir() + _T("Email")))
+			{
+				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
+				return;
+			}
+		}
+
+		// Shrink
+		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
+		{
+			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+								AUTO_SHRINK_MAX_SIZE,
+								FALSE,
+								DEFAULT_JPEGCOMPRESSION,
+								TRUE,
+								TRUE,
+								TRUE,
+								FALSE);
+		}
+		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
+		{
+			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+								0,
+								FALSE,
+								0,
+								FALSE,
+								FALSE,
+								FALSE,
+								TRUE);
+		}
+		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
+		{
+			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+								(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
+								(dlg.m_nPixelsPercentSel == 1),
+								dlg.m_nJpegQuality,
+								dlg.m_bPictureExtChange,
+								dlg.m_bShrinkingPictures,
+								dlg.m_bShrinkingVideos,
+								FALSE);
+		}
+
+		// If No Avi Files, we can finish now,
+		// if avi file we have to wait untill all shrinking threads terminate!
+		// See CMainFrame::OnShrinkDocTerminated()
+		if (res == 1)
+			SendDocAsMailFinish(TRUE);		// Ok
+		else if (res == -1)
+			m_bWaitingMailFinish = TRUE;	// Wait
+		else
+			SendDocAsMailFinish(FALSE);		// Error
+	}
+}
+
+void CUImagerApp::SendDocAsMailFinish(BOOL bOk)
+{
+	// Reset Flag
+	m_bWaitingMailFinish = FALSE;
+
+	if (bOk)
+	{
+		// Do Zip?
+		if (m_sZipFile != _T(""))
+		{
+			// Adjust if no correct extension or no extension at all supplied
+			m_sZipFile = ::GetFileNameNoExt(m_sZipFile);
+			m_sZipFile += _T(".zip");
+
+			// Create Email Zip Temp Directory if not existing
+			if (!::IsExistingDir(GetAppTempDir() + _T("EmailZip")))
+			{
+				if (!::CreateDir(GetAppTempDir() + _T("EmailZip")))
+				{
+					::ShowLastError(TRUE);
+					::AfxGetMainFrame()->StatusText();
+					return;
+				}
+			}
+
+			// Compress & Send
+			if (CompressToZip(GetAppTempDir() + _T("Email"), GetAppTempDir() + _T("EmailZip\\") + m_sZipFile))
+				SendMail(GetAppTempDir() + _T("EmailZip\\") + m_sZipFile);
+
+			// Delete Email Zip Temp Directory
+			::DeleteDir(GetAppTempDir() + _T("EmailZip"));
+		}
+		else
+			SendMail(GetAppTempDir() + _T("Email")); // Send Email Directory Content
+	
+		::DeleteDir(GetAppTempDir() + _T("Email"));
+	}
+
+	// Reset Status Text
+	::AfxGetMainFrame()->StatusText();
+}
+
+class CMailState : public CNoTrackObject
+{
+public:
+	HINSTANCE m_hInstMail;      // handle to MAPI32.DLL
+	virtual ~CMailState();
+};
+
+CMailState::~CMailState()
+{
+	if (m_hInstMail != NULL)
+		::FreeLibrary(m_hInstMail);
+}
+
+EXTERN_PROCESS_LOCAL(CMailState, MailState)
+BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
+{
+	// Begin Wait Cursor
+	BeginWaitCursor();
+
+	TCHAR szName[_MAX_FNAME];
+	TCHAR szExt[_MAX_EXT];
+	TCHAR szTitle[MAX_ATTACHMENTS][_MAX_PATH];
+	TCHAR szTempName[MAX_ATTACHMENTS][_MAX_PATH];
+#ifdef _UNICODE
+	char szTitleA[MAX_ATTACHMENTS][_MAX_PATH];
+	char szTempNameA[MAX_ATTACHMENTS][_MAX_PATH];
+#endif
+	int nFileCount = 0;
+	MapiFileDesc fileDesc[MAX_ATTACHMENTS];
+	
+	CMailState* pMailState = MailState;
+	if (pMailState->m_hInstMail == NULL)
+		pMailState->m_hInstMail = ::LoadLibraryA("MAPI32.DLL");
+
+	if (pMailState->m_hInstMail == NULL)
+	{
+		EndWaitCursor();
+		::AfxMessageBox(AFX_IDP_FAILED_MAPI_LOAD);
+		return FALSE;
+	}
+	ASSERT(pMailState->m_hInstMail != NULL);
+
+	ULONG (PASCAL *lpfnSendMail)(ULONG, ULONG, MapiMessage*, FLAGS, ULONG);
+	(FARPROC&)lpfnSendMail = ::GetProcAddress(pMailState->m_hInstMail, "MAPISendMail");
+	if (lpfnSendMail == NULL)
+	{
+		EndWaitCursor();
+		::AfxMessageBox(AFX_IDP_INVALID_MAPI_DLL);
+		return FALSE;
+	}
+
+	DWORD dwAttrib =::GetFileAttributes(szAttachment);
+	if (dwAttrib != 0xFFFFFFFF)
+	{
+		if (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) // Directory
+		{
+			TCHAR name[MAX_PATH];
+			WIN32_FIND_DATA info;
+
+			// Adjust Directory Name
+			CString sAdjPath(szAttachment);
+			sAdjPath.TrimRight(_T('\\'));
+
+			// Start with File Search
+			_stprintf(name, _T("%s\\*"), sAdjPath);
+			HANDLE hFileSearch = ::FindFirstFile(name, &info);
+			if (!hFileSearch || hFileSearch == INVALID_HANDLE_VALUE)
+			{
+				EndWaitCursor();
+				return FALSE;
+			}
+			do
+			{
+				_stprintf(name, _T("%s\\%s"), sAdjPath, info.cFileName);
+				if (info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+					continue;
+				else
+				{
+					// File Count Check
+					if (nFileCount == MAX_ATTACHMENTS)
+					{
+						EndWaitCursor();
+						CString Str;
+						Str.Format(	ML_STRING(1214, "To Many Attached Files. Max Number is %i.\n") +
+									ML_STRING(1215, "Tip: Use a Zip File to put all your files in it."),
+									MAX_ATTACHMENTS);
+						::AfxMessageBox(Str);
+						::FindClose(hFileSearch);
+						return FALSE;
+					}
+
+					// File Path
+					_tcscpy(szTempName[nFileCount], name);
+#ifdef _UNICODE
+					_wcstombsz(szTempNameA[nFileCount], szTempName[nFileCount], _MAX_PATH);
+#endif
+
+					// Build an appropriate title for the attachment
+					_tsplitpath(name, NULL, NULL, szName, szExt);
+					_tcscpy(szTitle[nFileCount], CString(szName) + CString(szExt));
+#ifdef _UNICODE
+					_wcstombsz(szTitleA[nFileCount], szTitle[nFileCount], _MAX_PATH);
+#endif
+
+					// Prepare the file description (for the attachment)
+					memset(&fileDesc[nFileCount], 0, sizeof(MapiFileDesc));
+					fileDesc[nFileCount].nPosition = (ULONG)-1;
+#ifdef _UNICODE
+					fileDesc[nFileCount].lpszPathName = szTempNameA[nFileCount];
+					fileDesc[nFileCount].lpszFileName = szTitleA[nFileCount];
+#else
+					fileDesc[nFileCount].lpszPathName = szTempName[nFileCount];
+					fileDesc[nFileCount].lpszFileName = szTitle[nFileCount];
+#endif
+
+					nFileCount++;
+				}
+			}
+			while (::FindNextFile(hFileSearch, &info));
+
+			// Close File Search
+			::FindClose(hFileSearch);
+		}
+		else // Normal File
+		{
+			// File Path
+			_tcscpy(szTempName[0], szAttachment);
+#ifdef _UNICODE
+			_wcstombsz(szTempNameA[0], szTempName[0], _MAX_PATH);
+#endif
+
+			// Build an appropriate title for the attachment
+			_tsplitpath(szAttachment, NULL, NULL, szName, szExt);
+			_tcscpy(szTitle[0], CString(szName) + CString(szExt));
+#ifdef _UNICODE
+			_wcstombsz(szTitleA[0], szTitle[0], _MAX_PATH);
+#endif
+
+			// Prepare the file description (for the attachment)
+			memset(&fileDesc[0], 0, sizeof(MapiFileDesc));
+			fileDesc[0].nPosition = (ULONG)-1;
+#ifdef _UNICODE
+			fileDesc[0].lpszPathName = szTempNameA[0];
+			fileDesc[0].lpszFileName = szTitleA[0];
+#else
+			fileDesc[0].lpszPathName = szTempName[0];
+			fileDesc[0].lpszFileName = szTitle[0];
+#endif
+			nFileCount = 1;
+		}
+	}
+	else
+	{
+		EndWaitCursor();
+		return FALSE;
+	}
+
+	// Prepare the message
+	MapiMessage message;
+	memset(&message, 0, sizeof(message));
+	message.nFileCount = nFileCount;
+	message.lpFiles = fileDesc;	
+
+	// Prepare for modal dialog box
+	EnableModeless(FALSE);
+	HWND hWndTop;
+	CWnd* pParentWnd = CWnd::GetSafeOwner(NULL, &hWndTop);
+
+	// Some extra precautions are required to use MAPISendMail as it
+	// tends to enable the parent window in between dialogs (after
+	// the login dialog, but before the send note dialog).
+	pParentWnd->SetCapture();
+	::SetFocus(NULL);
+	pParentWnd->m_nFlags |= WF_STAYDISABLED;
+
+	// End Wait Cursor
+	EndWaitCursor();
+
+	// Send Mail
+	int nError = lpfnSendMail(0, (ULONG)pParentWnd->GetSafeHwnd(),
+		&message, MAPI_LOGON_UI|MAPI_DIALOG, 0);
+
+	// After returning from the MAPISendMail call, the window must
+	// be re-enabled and focus returned to the frame to undo the workaround
+	// done before the MAPI call.
+	::ReleaseCapture();
+	pParentWnd->m_nFlags &= ~WF_STAYDISABLED;
+
+	pParentWnd->EnableWindow(TRUE);
+	::SetActiveWindow(NULL);
+	pParentWnd->SetActiveWindow();
+	pParentWnd->SetFocus();
+	if (hWndTop != NULL)
+		::EnableWindow(hWndTop, TRUE);
+	EnableModeless(TRUE);
+
+	if (nError != SUCCESS_SUCCESS &&
+		nError != MAPI_USER_ABORT &&
+		nError != MAPI_E_LOGIN_FAILURE)
+	{
+		::AfxMessageBox(AFX_IDP_FAILED_MAPI_SEND);
+		return FALSE;
+	}
+	else
+		return TRUE;
+}
+PROCESS_LOCAL(CMailState, MailState)
+
+void CUImagerApp::SuggestDirectXVersion7()
+{
+	DWORD dwDxVer = 0U;
+	TCHAR szDxVer[16] = {0};
+	::GetDXVersion(&dwDxVer, szDxVer, 16);
+	CString strResult;
+    if (dwDxVer > 0U)
+		strResult.Format(ML_STRING(1216, "DirectX %s installed."), szDxVer);
+    else
+        strResult.Format(ML_STRING(1217, "DirectX not installed."));
+	if (dwDxVer < 0x00070000)
+	{
+		CDirectX7Dlg dlg(::AfxGetMainFrame());
+		dlg.m_sTextRow1 = strResult;
+		dlg.m_sTextRow2 = ML_STRING(1219, "DirectX 7.0 or higher is required for best video playback performance!");
+		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
+		dlg.m_sTextLink = _T("http://www.microsoft.com/windows/directx/");
+		dlg.DoModal();
+	}
+}
+
+BOOL CUImagerApp::RequireDirectXVersion7()
+{
+	DWORD dwDxVer = 0U;
+	TCHAR szDxVer[16] = {0};
+	::GetDXVersion(&dwDxVer, szDxVer, 16);
+	CString strResult;
+    if (dwDxVer > 0U)
+		strResult.Format(ML_STRING(1216, "DirectX %s installed."), szDxVer);
+    else
+        strResult.Format(ML_STRING(1217, "DirectX not installed."));
+	if (dwDxVer < 0x00070000)
+	{
+		CDirectX7Dlg dlg(::AfxGetMainFrame());
+		dlg.m_sTextRow1 = strResult;
+		dlg.m_sTextRow2 = ML_STRING(1221, "DirectX 7.0 or higher is required!");
+		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
+		dlg.m_sTextLink = _T("http://www.microsoft.com/windows/directx/");
+		dlg.DoModal();
+		return FALSE;
+	}
+	else
+		return TRUE;
+}
+
+BOOL CUImagerApp::BackupFile(CString sFileName)
+{
+	CString sBackUpDir = GetAppTempDir() + _T("Backup");
+
+	// Create Backup Directory if not Existing
+	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+	{
+		if (!::CreateDir(sBackUpDir))
+		{
+			::ShowLastError(TRUE);
+			return FALSE;
+		}
+	}
+
+	// Backup File
+	return ::CopyFile(sFileName, sBackUpDir + _T("\\") + GetShortFileName(sFileName), FALSE);
+}
+
+BOOL CUImagerApp::RestoreFile(CString sFileName)
+{
+	CString sBackUpDir = GetAppTempDir() + _T("Backup");
+
+	// Backup Directory Not Existing?
+	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+		return FALSE;
+
+	// Restore File & Delete Backup Copy
+	if (::CopyFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName), sFileName, FALSE))
+	{
+		::DeleteFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName));
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::DeleteBackupFile(CString sFileName)
+{
+	CString sBackUpDir = GetAppTempDir() + _T("Backup");
+
+	// Backup Directory Not Existing?
+	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+		return FALSE;
+
+	// Delete Backup Copy
+	return ::DeleteFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName));
+}
+
+BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if ((sExt == _T(".bmp"))		||
+		(sExt == _T(".dib")))
+		return TRUE;
+	else if (sExt == _T(".emf"))
+		return TRUE;
+	else if (sExt == _T(".png"))
+		return TRUE;
+	else if ((sExt == _T(".jpg"))	||
+			(sExt == _T(".jpe"))	||
+			(sExt == _T(".jpeg"))	||
+			(sExt == _T(".thm")))
+		return TRUE;
+	else if ((sExt == _T(".tif"))	||
+			(sExt == _T(".jfx"))	||
+			(sExt == _T(".tiff")))
+		return TRUE;
+	else if (sExt == _T(".pcx"))
+		return TRUE;
+	else if (sExt == _T(".gif"))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::IsAVIFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if (sExt == _T(".avi") || sExt == _T(".divx"))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::IsSWFFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if (sExt == _T(".swf"))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::IsSupportedMusicFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if (sExt == _T(".mp3"))
+		return TRUE;
+	else if (sExt == _T(".wav"))
+		return TRUE;
+	else if (sExt == _T(".wma"))
+		return TRUE;
+	else if ((sExt == _T(".mid")) || (sExt == _T(".rmi")))
+		return TRUE;
+	else if (sExt == _T(".au"))
+		return TRUE;
+	else if ((sExt == _T(".aif")) || (sExt == _T(".aiff")))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::IsSupportedCDAudioFile(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if (sExt == _T(".cda"))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFileName)
+{
+	if (IsAVIFile(sFileName))
+		return GetVideoAviDocTemplate();
+	else if (IsSupportedPictureFile(sFileName))
+		return GetPictureDocTemplate();
+	else if (IsSupportedMusicFile(sFileName))
+		return GetAudioMCIDocTemplate();
+	else if (IsSupportedCDAudioFile(sFileName))
+		return GetCDAudioDocTemplate();
+	else
+		return NULL;
+}
+
+void CUImagerApp::OnFileNew() 
+{
+	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		!m_bSlideShowOnly)
+	{
+		// Make New Document
+		CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
+		if (pDoc)
+		{
+			// Check
+			if (!pDoc->m_pDib)
+			{
+				pDoc->CloseDocument();
+				return;
+			}
+
+			// Ask size
+			CNewDlg dlg(m_nNewWidth,
+						m_nNewHeight,
+						m_nNewXDpi,
+						m_nNewYDpi,
+						m_nNewPhysUnit,
+						m_sNewPaperSize,
+						m_crNewBackgroundColor,
+						::AfxGetMainFrame());
+			if (dlg.DoModal() == IDOK)
+			{
+				m_nNewWidth = dlg.m_nPixelsWidth;
+				m_nNewHeight = dlg.m_nPixelsHeight;
+				m_nNewXDpi = dlg.m_nXDpi;
+				m_nNewYDpi = dlg.m_nYDpi;
+				m_nNewPhysUnit = dlg.m_PhysUnit;
+				m_sNewPaperSize = dlg.m_sPaperSize;
+				m_crNewBackgroundColor = dlg.m_crBackgroundColor;
+				if (m_bUseRegistry)
+				{
+					WriteProfileInt(_T("GeneralApp"), _T("NewWidth"), m_nNewWidth);
+					WriteProfileInt(_T("GeneralApp"), _T("NewHeight"), m_nNewHeight);
+					WriteProfileInt(_T("GeneralApp"), _T("NewXDpi"), m_nNewXDpi);
+					WriteProfileInt(_T("GeneralApp"), _T("NewYDpi"), m_nNewYDpi);
+					WriteProfileInt(_T("GeneralApp"), _T("NewPhysUnit"), m_nNewPhysUnit);
+					WriteProfileString(_T("GeneralApp"), _T("NewPaperSize"), m_sNewPaperSize);
+					WriteProfileInt(_T("GeneralApp"), _T("NewBackgroundColor"), m_crNewBackgroundColor);
+				}
+				else
+				{
+					// Make a temporary copy because writing to memory sticks is so slow! 
+					CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
+					::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
+					::CopyFile(m_pszProfileName, sTempFileName, FALSE);
+
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewWidth"), m_nNewWidth, sTempFileName);
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewHeight"), m_nNewHeight, sTempFileName);
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewXDpi"), m_nNewXDpi, sTempFileName);
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewYDpi"), m_nNewYDpi, sTempFileName);
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewPhysUnit"), m_nNewPhysUnit, sTempFileName);
+					::WriteProfileIniString(_T("GeneralApp"), _T("NewPaperSize"), m_sNewPaperSize, sTempFileName);
+					::WriteProfileIniInt(_T("GeneralApp"), _T("NewBackgroundColor"), m_crNewBackgroundColor, sTempFileName);
+
+					// Move it
+					::DeleteFile(m_pszProfileName);
+					::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+					::MoveFile(sTempFileName, m_pszProfileName);
+
+				}
+			}
+			else
+			{
+				pDoc->CloseDocument();
+				return;
+			}
+
+			// Allocate
+			pDoc->m_pDib->SetBackgroundColor(pDoc->m_crBackgroundColor);
+			if (!pDoc->m_pDib->AllocateBits(DEFAULT_NEW_BPP,
+											BI_RGB,
+											dlg.m_nPixelsWidth,
+											dlg.m_nPixelsHeight,
+											dlg.m_crBackgroundColor))
+			{
+				pDoc->CloseDocument();
+				return;
+			}
+
+			// Set DPI
+			pDoc->m_pDib->SetXDpi(dlg.m_nXDpi);
+			pDoc->m_pDib->SetYDpi(dlg.m_nYDpi);
+			
+			// Init Doc Rect
+			pDoc->m_DocRect.top = 0;
+			pDoc->m_DocRect.left = 0;
+			pDoc->m_DocRect.right = pDoc->m_pDib->GetWidth();
+			pDoc->m_DocRect.bottom = pDoc->m_pDib->GetHeight();
+			
+			// Update
+			pDoc->SetModifiedFlag();
+			pDoc->SetDocumentTitle();
+			pDoc->UpdateAlphaRenderedDib();
+
+			// Set Zoom to Fit Big
+			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
+
+			// Fit to document
+			if (!pDoc->GetFrame()->IsZoomed())
+			{
+				pDoc->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																0, 0, 0, 0,
+																SWP_NOSIZE |
+																SWP_NOZORDER);
+				pDoc->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+			}
+			else
+				pDoc->GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		}
+	}
+}
+
+void CUImagerApp::OnUpdateFileNew(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode)	&&
+					!m_bSlideShowOnly);
+}
+
+void CUImagerApp::OnEditPaste() 
+{
+	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		!m_bSlideShowOnly)
+	{
+		// Make New Document
+		CPictureDoc* pDoc = (CPictureDoc*)GetPictureDocTemplate()->OpenDocumentFile(NULL);
+		if (pDoc)
+		{
+			// Check
+			if (!pDoc->m_pDib)
+			{
+				pDoc->CloseDocument();
+				return;
+			}
+
+			// Paste
+			pDoc->m_pDib->SetBackgroundColor(pDoc->m_crBackgroundColor);
+			pDoc->m_pDib->EditPaste(PASTE_NEW_DEFAULT_DPI, PASTE_NEW_DEFAULT_DPI);
+			
+			// Init Doc Rect
+			pDoc->m_DocRect.top = 0;
+			pDoc->m_DocRect.left = 0;
+			pDoc->m_DocRect.right = pDoc->m_pDib->GetWidth();
+			pDoc->m_DocRect.bottom = pDoc->m_pDib->GetHeight();
+			
+			// Update
+			pDoc->SetModifiedFlag();
+			pDoc->SetDocumentTitle();
+			pDoc->UpdateAlphaRenderedDib();
+
+			// Set Zoom to Fit Big
+			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
+
+			// Fit to document
+			if (!pDoc->GetFrame()->IsZoomed())
+			{
+				pDoc->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																0, 0, 0, 0,
+																SWP_NOSIZE |
+																SWP_NOZORDER);
+				pDoc->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+			}
+			else
+				pDoc->GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		}
+	}
+}
+
+void CUImagerApp::OnUpdateEditPaste(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(::IsClipboardFormatAvailable(CF_DIB)								||
+					::IsClipboardFormatAvailable(CF_ENHMETAFILE))						&&
+					(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode)	&&
+					!m_bSlideShowOnly);
+}
+
+BOOL CUImagerApp::IsFileTypeAssociated(CString sExt)
+{
+	// Program Name & Path
+	TCHAR szProgName[_MAX_FNAME];
+	TCHAR szProgExt[_MAX_EXT];
+	TCHAR szProgPath[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgPath, MAX_PATH) == 0)
+		return FALSE;
+	_tsplitpath(szProgPath, NULL, NULL, szProgName, szProgExt);
+
+	// Check Extension
+	if (sExt.IsEmpty())
+		return FALSE;
+
+	// Lower Case
+	sExt.MakeLower();
+
+	// Extension Point Adjust
+	CString sExtNoPoint;
+	if (sExt[0] != _T('.'))
+	{
+		sExtNoPoint = sExt;
+		sExt = _T('.') + sExt;
+	}
+	else
+		sExtNoPoint = sExt.Right(sExt.GetLength() - 1);
+
+	// Current User FileExts Path
+	CString sCurrentUserFileExtsPath = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\") + sExt;
+
+	// My Class Name or ProgID
+	CString sMyFileClassName = CString(szProgName) + _T(".") + sExtNoPoint + _T(".1");
+
+	// My Application Name
+	CString sMyFileApplicationName = CString(szProgName) + CString(szProgExt);
+
+	// *** Global Settings ***
+	CString sCurrentFileClassName = ::GetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""));
+
+	// *** Current User Settings ***
+	// which are higher priority than the Global Settings!
+	if (::IsRegistryKey(HKEY_CURRENT_USER, sCurrentUserFileExtsPath))
+	{
+		// ProgID
+		CString sCurrentUserProgID = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"));
+		
+		// Application
+		CString sCurrentUserApplication = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"));
+
+		// Priority Order from Highest to Lowest:
+		//
+		// ProgID, Application, Global
+		//
+		if (sCurrentUserProgID.CompareNoCase(sMyFileClassName) == 0)
+			return TRUE;
+		else if (sCurrentUserProgID != _T(""))
+			return FALSE; // Another Program is associated
+
+		if (sCurrentUserApplication.CompareNoCase(sMyFileApplicationName) == 0)
+			return TRUE;
+		else if (sCurrentUserApplication != _T(""))
+			return FALSE; // Another Program is associated
+	}
+
+	return (sCurrentFileClassName.CompareNoCase(sMyFileClassName) == 0);	
+}
+
+BOOL CUImagerApp::AssociateFileType(CString sExt)
+{
+	// Program Name & Path
+	TCHAR szProgName[_MAX_FNAME];
+	TCHAR szProgExt[_MAX_EXT];
+	TCHAR szProgPath[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgPath, MAX_PATH) == 0)
+		return FALSE;
+	_tsplitpath(szProgPath, NULL, NULL, szProgName, szProgExt);
+
+	// Check Extension
+	if (sExt.IsEmpty())
+		return TRUE;
+
+	// Lower Case
+	sExt.MakeLower();
+
+	// Extension Point Adjust
+	CString sExtNoPoint;
+	if (sExt[0] != _T('.'))
+	{
+		sExtNoPoint = sExt;
+		sExt = _T('.') + sExt;
+	}
+	else
+		sExtNoPoint = sExt.Right(sExt.GetLength() - 1);
+
+	// My Class Name or ProgID
+	CString sMyFileClassName = CString(szProgName) + _T(".") + sExtNoPoint + _T(".1");
+
+	// My Application Name
+	CString sMyFileApplicationName = CString(szProgName) + CString(szProgExt);
+
+	////////////////////
+	// Global Setting //
+	////////////////////
+	CString sCurrentFileClassName = ::GetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""));
+	
+	// Another Program or no Program is associated with the given extension
+	if (sCurrentFileClassName.CompareNoCase(sMyFileClassName) != 0)
+	{
+		// Store Previous File Association in my UninstallClassNameDefault for Restore
+		WriteProfileString(_T("UninstallClassNameDefault"), sExtNoPoint, sCurrentFileClassName);
+
+		// Register File Extension
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""), sMyFileClassName);
+
+		// Write the Old Value to the Open With ProgIDs,
+		// this List contains alternate Class Names
+		// that can open the file extension
+		if (sCurrentFileClassName != _T(""))
+			::SetRegistryEmptyValue(HKEY_CLASSES_ROOT, sExt + _T("\\OpenWithProgids"), sCurrentFileClassName);
+	}
+
+	//////////////////////////////////
+	// Current User Settings        //
+	//                              //
+	// Which have higher priorities //
+	// than the Global Setting!!!   //
+	//////////////////////////////////
+	CString sCurrentUserFileExtsPath = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\") + sExt;
+
+	// Does the Registry Key Exist?
+	if (::IsRegistryKey(HKEY_CURRENT_USER, sCurrentUserFileExtsPath))
+	{
+		// ProgID has higher Priority than Application!!!
+
+		// ProgID
+		CString sCurrentUserProgID = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"));
+		if (sCurrentUserProgID.CompareNoCase(sMyFileClassName) != 0)
+		{
+			// Store Previous File Association in my UninstallUserProgID for Restore
+			WriteProfileString(_T("UninstallUserProgID"), sExtNoPoint, sCurrentUserProgID);
+
+			// Register File Extension
+			::SetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"), sMyFileClassName);
+
+			// Write the Old Value to the Open With ProgIDs,
+			// this List contains alternate Class Names
+			// that can open the file extension
+			if (sCurrentUserProgID != _T(""))
+				::SetRegistryEmptyValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath + _T("\\OpenWithProgids"), sCurrentUserProgID);
+		}
+
+		// Application
+		// (All Applications should be Registered under HKEY_CLASSES_ROOT\\Applications with name and extension like uImager.exe)
+		CString sCurrentUserApplication = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"));
+		if (sCurrentUserApplication.CompareNoCase(sMyFileApplicationName) != 0)
+		{
+			// Store Previous File Association in my UninstallUserApplication for Restore
+			WriteProfileString(_T("UninstallUserApplication"), sExtNoPoint, sCurrentUserApplication);
+
+			// Register File Extension
+			::SetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"), sMyFileApplicationName);
+		}
+	}
+
+	// Create My Class Name or ProgID
+
+	// Description, Shown In Explorer
+	::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName, _T(""), CString(szProgName) + _T(" ") + sExtNoPoint + _T(" file"));
+	
+	// Shell Open Command
+	
+	// Icon order
+	/*
+	IDR_MAINFRAME			0
+	IDR_AUDIOMCI			1
+	IDR_CDAUDIO				2
+	IDR_VIDEOAVI			3
+	IDR_PICTURE				4
+	IDR_PICTURE_NOHQ		5
+	IDR_BIGPICTURE			6
+	IDR_BIGPICTURE_NOHQ		7
+	IDI_ZIP					8
+	*/
+
+	// Zip
+	if (sExtNoPoint == _T("zip"))
+	{
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",8"));
+
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\open\\command"),
+								_T(""),
+								_T("\"") + CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\Extract Here\\command"),
+								_T(""),
+								_T("\"") +  CString(szProgPath)
+								+ _T("\"") + _T(" /extracthere") + _T(" \"%1\""));
+	}
+	// Audio
+	else if (	sExtNoPoint == _T("mp3")	||
+				sExtNoPoint == _T("wav")	||
+				sExtNoPoint == _T("wma")	||
+				sExtNoPoint == _T("mid")	||
+				sExtNoPoint == _T("rmi")	||
+				sExtNoPoint == _T("au")		||
+				sExtNoPoint == _T("aif")	||
+				sExtNoPoint == _T("aiff"))
+	{
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",1"));
+
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\open\\command"),
+								_T(""),
+								_T("\"") + CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+	}
+	// Audio CD
+	else if (sExtNoPoint == _T("cda"))
+	{
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",2"));
+
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\open\\command"),
+								_T(""),
+								_T("\"") + CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+	}
+	// Video
+	else if (sExtNoPoint == _T("avi")	||
+			sExtNoPoint == _T("divx"))
+	{
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",3"));
+
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\open\\command"),
+								_T(""),
+								_T("\"") + CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+	}
+	// Graphics
+	else
+	{
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",4"));
+
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\open\\command"),
+								_T(""),
+								_T("\"") + CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\edit\\command"),
+								_T(""),
+								_T("\"") +  CString(szProgPath)
+								+ _T("\"") + _T(" \"%1\""));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\print\\command"),
+								_T(""),
+								_T("\"") +  CString(szProgPath)
+								+ _T("\"") + _T(" /p") + _T(" \"%1\""));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\printto\\command"),
+								_T(""),
+								_T("\"") +  CString(szProgPath) +
+								_T("\"") + _T(" /pt") + _T(" \"%1\""));
+		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
+								sMyFileClassName +
+								_T("\\shell\\preview\\command"),
+								_T(""),
+								_T("\"") +  CString(szProgPath) +
+								_T("\"") + _T(" \"%1\""));
+	}
+
+	return TRUE;
+}
+
+BOOL CUImagerApp::UnassociateFileType(CString sExt)
+{
+	// Program Name & Path
+	TCHAR szProgName[_MAX_FNAME];
+	TCHAR szProgExt[_MAX_EXT];
+	TCHAR szProgPath[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgPath, MAX_PATH) == 0)
+		return FALSE;
+	_tsplitpath(szProgPath, NULL, NULL, szProgName, szProgExt);
+
+	// Check Extension
+	if (sExt.IsEmpty())
+		return TRUE;
+
+	// Lower Case
+	sExt.MakeLower();
+
+	// Extension Point Adjust
+	CString sExtNoPoint;
+	if (sExt[0] != _T('.'))
+	{
+		sExtNoPoint = sExt;
+		sExt = _T('.') + sExt;
+	}
+	else
+		sExtNoPoint = sExt.Right(sExt.GetLength() - 1);
+
+	// My Class Name or ProgID
+	CString sMyFileClassName = CString(szProgName) + _T(".") + sExtNoPoint + _T(".1");
+
+	// My Application Name
+	CString sMyFileApplicationName = CString(szProgName) + CString(szProgExt);
+
+	////////////////////
+	// Global Setting //
+	////////////////////
+	CString sCurrentFileClassName = ::GetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""));
+	if (sCurrentFileClassName.CompareNoCase(sMyFileClassName) == 0)
+	{
+		// Delete / Restore Previous File Association for the Global Setting
+		CString sPreviousFileClassName = GetProfileString(_T("UninstallClassNameDefault"), sExtNoPoint, _T(""));
+		if (sPreviousFileClassName == _T(""))
+			::DeleteRegistryKey(HKEY_CLASSES_ROOT, sExt);
+		else
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""), sPreviousFileClassName);
+	}
+
+	//////////////////////////////////
+	// Current User Settings        //
+	//                              //
+	// Which have higher priorities //
+	// than the Global Setting!!!   //
+	//////////////////////////////////
+	CString sCurrentUserFileExtsPath = _T("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\") + sExt;
+	if (::IsRegistryKey(HKEY_CURRENT_USER, sCurrentUserFileExtsPath))
+	{
+		CString sCurrentUserProgID = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"));
+		if (sCurrentUserProgID.CompareNoCase(sMyFileClassName) == 0)
+		{
+			// Delete / Restore Previous File Association for the User Level ProgID
+			CString sPreviousUserProgID = GetProfileString(_T("UninstallUserProgID"), sExtNoPoint, _T(""));
+			if (sPreviousUserProgID == _T(""))
+				::DeleteRegistryValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"));
+			else
+				::SetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"), sPreviousUserProgID);
+		}
+
+		CString sCurrentUserApplication = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"));
+		if (sCurrentUserApplication.CompareNoCase(sMyFileApplicationName) == 0)
+		{
+			// Delete / Restore Previous File Association for the User Level Application
+			CString sPreviousUserApplication = GetProfileString(_T("UninstallUserApplication"), sExtNoPoint, _T(""));
+			if (sPreviousUserApplication == _T(""))
+				::DeleteRegistryValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"));
+			else
+				::SetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"), sPreviousUserApplication);
+		}
+	}
+
+	// Clean-Up
+	::DeleteRegistryKey(HKEY_CLASSES_ROOT, sMyFileClassName);
+	WriteProfileString(_T("UninstallClassNameDefault"), sExtNoPoint, _T(""));
+	WriteProfileString(_T("UninstallUserProgID"), sExtNoPoint, _T(""));
+	WriteProfileString(_T("UninstallUserApplication"), sExtNoPoint, _T(""));
+
+	return TRUE;
+}
+
+void CUImagerApp::OnToolsAvimergeSerialAs() 
+{
+	// Open Empty Video Document For Progress Display And Load Avi if Success
+	CVideoAviDoc* pDoc = (CVideoAviDoc*)(GetVideoAviDocTemplate()->OpenDocumentFile(NULL));
+	if (pDoc)
+		pDoc->StartFileMergeSerialAs();
+}
+
+void CUImagerApp::OnToolsAvimergeParallelAs() 
+{
+	// Open Empty Video Document For Progress Display And Load Avi if Success
+	CVideoAviDoc* pDoc = (CVideoAviDoc*)(GetVideoAviDocTemplate()->OpenDocumentFile(NULL));
+	if (pDoc)
+		pDoc->StartFileMergeParallelAs();
+}
+
+void CUImagerApp::OnToolsViewLogfile() 
+{
+	if (::IsExistingFile(g_sLogFileName))
+		::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
+	else
+		::AfxMessageBox(ML_STRING(1760, "Application Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
+}
+
+#ifdef VIDEODEVICEDOC
+
+void CUImagerApp::OnToolsViewWebLogfile() 
+{
+	CString sMicroapacheLogFile = CVideoDeviceDoc::MicroApacheGetLogFileName();
+	if (::IsExistingFile(sMicroapacheLogFile))
+		::ShellExecute(NULL, _T("open"), sMicroapacheLogFile, NULL, NULL, SW_SHOWNORMAL);
+	else
+		::AfxMessageBox(ML_STRING(1761, "Web Server Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
+
+}
+
+CUImagerApp::CSchedulerEntry::CSchedulerEntry()
+{
+	m_Type = ONCE;
+	m_sDevicePathName = _T("");
+	m_pDoc = NULL;
+	m_bRunning = FALSE;
+	m_StartTime = 0;
+	m_StopTime = 0;
+	m_bDocWasOpen = FALSE;
+	m_nStoppingCountdown = 0;
+	m_nCloseDocCountdown = 0;
+	m_bInsideStart = FALSE;
+}
+
+void CUImagerApp::CSchedulerEntry::Start()
+{
+	// If Already Runnig or Inside this function
+	// -> Nothing To Do Here, Exit!
+	//
+	// m_bInsideStart is for safety in case a dialog
+	// which may pump messages is called from this function
+	// (this causes calls to this function again and again
+	// from the scheduler timer message)
+	if (m_bRunning || m_bInsideStart)
+		return;
+
+	// Inside This Function
+	m_bInsideStart = TRUE;
+
+	// First check if already running!
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	CVideoDeviceDoc* pDoc = NULL;
+	m_bDocWasOpen = FALSE;
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+		{
+			if (pVideoDeviceDoc->GetDevicePathName() == m_sDevicePathName)
+			{
+				pDoc = pVideoDeviceDoc;
+				m_bDocWasOpen = TRUE;
+				break;
+			}
+		}
+	}
+
+	// Open Doc
+	if (!m_bDocWasOpen)
+	{
+		// Open VfW Device
+		if (m_sDevicePathName == _T("VfW"))
+		{
+			pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+			if (!pDoc)
+			{
+				m_bInsideStart = FALSE;
+				return;
+			}
+			if (!pDoc->OpenVideoDevice(-1))
+			{
+				pDoc->CloseDocument();
+				m_bInsideStart = FALSE;
+				return;
+			}
+		}
+		else
+		{
+			// Open DirectShow Device
+			CString sDevicePathName(m_sDevicePathName);
+			sDevicePathName.Replace(_T('/'), _T('\\'));
+			int nID = CDxCapture::GetDeviceID(sDevicePathName);
+			if (nID >= 0)
+			{
+				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+				if (!pDoc)
+				{
+					m_bInsideStart = FALSE;
+					return;
+				}
+				if (!pDoc->OpenVideoDevice(nID))
+				{
+					pDoc->CloseDocument();
+					m_bInsideStart = FALSE;
+					return;
+				}
+			}
+			// Open Networking Get Frame
+			else
+			{
+				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+				if (!pDoc)
+				{
+					m_bInsideStart = FALSE;
+					return;
+				}
+				if (!pDoc->OpenGetVideo(m_sDevicePathName))
+				{
+					pDoc->CloseDocument();
+					m_bInsideStart = FALSE;
+					return;
+				}
+			}
+		}
+	}
+
+	// Start recording if not already recording
+	if (!pDoc->IsRecording())
+	{
+		// Note: This function may pump messages, see the explanation above.
+		//
+		// If the function returns FALSE it's probable that the network
+		// camera has not yet received the first frame, which is necessary
+		// for the video recording.
+		// -> return now without setting the m_bRunning flag so that the
+		// scheduler can call us again!
+		if (!pDoc->CaptureRecord(FALSE)) // No Message Box on Error					
+		{
+			m_bInsideStart = FALSE;
+			return;
+		}
+	}
+
+	// Running
+	m_bRunning = TRUE;
+
+	// Store The Document Pointer
+	m_pDoc = pDoc;
+
+	// Reset Countdowns
+	m_nStoppingCountdown = INT_MAX;
+	m_nCloseDocCountdown = INT_MAX;
+
+	// Exiting This Function
+	m_bInsideStart = FALSE;
+}
+
+// If the Return Value is TRUE the Scheduler deletes this entry!
+BOOL CUImagerApp::CSchedulerEntry::Stop()
+{
+	// Safety Check
+	if (!m_pDoc ||
+		!((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc) ||
+		!m_bRunning)
+	{
+		m_bRunning = FALSE;
+		return TRUE;
+	}
+
+	// Stop Recording
+	if (m_pDoc->IsRecording())
+	{
+		// First
+		if (m_nStoppingCountdown == INT_MAX)
+		{
+			// Stop Recording
+			m_pDoc->CaptureRecord(FALSE); // No Message Box on Error	
+			m_nStoppingCountdown = SCHEDULERONCE_STOPPING_COUNTDOWN;
+		}
+		// Dec
+		else if (m_nStoppingCountdown > 0)
+			m_nStoppingCountdown--;
+		// Exit Scheduler Because Recording is not Stopping...
+		else
+		{
+			if (!m_bDocWasOpen)
+			{
+				m_pDoc->CloseDocument();
+				m_pDoc = NULL;
+			}
+			m_bRunning = FALSE;
+			return TRUE; // Done, delete this entry
+		}
+	}
+	// Close Document
+	// (Give Some Time To Open The Recorded Document)
+	else
+	{
+		// First?
+		if (m_nCloseDocCountdown == INT_MAX)
+			m_nCloseDocCountdown = SCHEDULERONCE_CLOSEDOC_COUNTDOWN;
+		// Dec?
+		else if (m_nCloseDocCountdown > 0)
+			m_nCloseDocCountdown--;
+		// Close Document
+		else
+		{
+			if (!m_bDocWasOpen)
+			{
+				m_pDoc->CloseDocument();
+				m_pDoc = NULL;
+			}
+			m_bRunning = FALSE;
+			return TRUE; // Done, delete this entry
+		}
+	}
+
+	return FALSE;	// Do not delete this entry now, wait!
+}
+
+void CUImagerApp::AddSchedulerEntry(CSchedulerEntry* pSchedulerEntry)
+{
+	// Pointer Check
+	if (!pSchedulerEntry)
+		return;
+
+	// No Duplicated Entries:
+	// It may happen that two Network Get Frame Docs
+	// with same IP and Port are scheduled
+	// -> Delete the existing one and Add the new one!
+	if (pSchedulerEntry->m_Type == CSchedulerEntry::ONCE)
+	{
+		CSchedulerEntry* p = GetOnceSchedulerEntry(pSchedulerEntry->m_sDevicePathName);
+		if (p)
+			DeleteOnceSchedulerEntry(p->m_sDevicePathName);
+		m_Scheduler.AddTail(pSchedulerEntry);
+	}
+	else if (pSchedulerEntry->m_Type == CSchedulerEntry::DAILY)
+	{
+		CSchedulerEntry* p = GetDailySchedulerEntry(pSchedulerEntry->m_sDevicePathName);
+		if (p)
+			DeleteDailySchedulerEntry(p->m_sDevicePathName);
+		m_Scheduler.AddTail(pSchedulerEntry);
+	}
+
+	// Store Settings
+	if (m_bUseSettings)
+	{
+		CString sSection;
+		BOOL bFound = FALSE;
+		int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+		
+		// Overwrite?
+		for (int i = 0 ; i < nCount ; i++)
+		{
+			sSection.Format(_T("Scheduler%010d"), i);
+			if (pSchedulerEntry->m_sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+				pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
+			{
+				bFound = TRUE;
+				break;
+			}
+		}
+		if (!bFound)
+		{
+			// Find empty space?
+			for (int i = 0 ; i < nCount ; i++)
+			{
+				sSection.Format(_T("Scheduler%010d"), i);
+				if (GetProfileString(sSection, _T("DevicePathName"), _T("")) == _T(""))
+				{
+					bFound = TRUE;
+					break;
+				}
+			}
+			// Append
+			if (!bFound)
+			{
+				sSection.Format(_T("Scheduler%010d"), nCount);
+				nCount++;
+				WriteProfileInt(_T("GeneralApp"), _T("SchedulerCount"), nCount);
+			}
+		}
+		if (m_bUseRegistry)
+		{
+			WriteProfileString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName);
+			WriteProfileInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type);
+			WriteProfileInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear());
+			WriteProfileInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth());
+			WriteProfileInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay());
+			WriteProfileInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour());
+			WriteProfileInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute());
+			WriteProfileInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond());
+			WriteProfileInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear());
+			WriteProfileInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth());
+			WriteProfileInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay());
+			WriteProfileInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour());
+			WriteProfileInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute());
+			WriteProfileInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond());
+		}
+		else
+		{
+			// Make a temporary copy because writing to memory sticks is so slow! 
+			CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
+			::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
+			::CopyFile(m_pszProfileName, sTempFileName, FALSE);
+
+			::WriteProfileIniString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute(), sTempFileName);
+			::WriteProfileIniInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond(), sTempFileName);
+
+			// Move it
+			::DeleteFile(m_pszProfileName);
+			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+			::MoveFile(sTempFileName, m_pszProfileName);
+		}
+	}
+}
+
+CUImagerApp::CSchedulerEntry* CUImagerApp::GetOnceSchedulerEntry(CString sDevicePathName)
+{
+	// Iterate Through the Scheduler List
+	POSITION pos = m_Scheduler.GetHeadPosition();
+	while (pos)
+	{
+		CSchedulerEntry* pSchedulerEntry = m_Scheduler.GetNext(pos);
+		if (pSchedulerEntry &&
+			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
+			pSchedulerEntry->m_Type == CSchedulerEntry::ONCE)
+			return pSchedulerEntry;
+	}
+
+	return NULL;
+}
+
+CUImagerApp::CSchedulerEntry* CUImagerApp::GetDailySchedulerEntry(CString sDevicePathName)
+{
+	// Iterate Through the Scheduler List
+	POSITION pos = m_Scheduler.GetHeadPosition();
+	while (pos)
+	{
+		CSchedulerEntry* pSchedulerEntry = m_Scheduler.GetNext(pos);
+		if (pSchedulerEntry &&
+			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
+			pSchedulerEntry->m_Type == CSchedulerEntry::DAILY)
+			return pSchedulerEntry;
+	}
+
+	return NULL;
+}
+
+void CUImagerApp::DeleteOnceSchedulerEntry(CString sDevicePathName)
+{
+	// Iterate Through the Scheduler List
+	POSITION pos = m_Scheduler.GetHeadPosition();
+	while (pos)
+	{
+		POSITION prevpos = pos;
+		CSchedulerEntry* pSchedulerEntry = m_Scheduler.GetNext(pos);
+		if (pSchedulerEntry &&
+			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
+			pSchedulerEntry->m_Type == CSchedulerEntry::ONCE)
+		{
+			if (m_bUseSettings)
+			{
+				CString sSection;
+				BOOL bFound = FALSE;
+				int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+				for (int i = 0 ; i < nCount ; i++)
+				{
+					sSection.Format(_T("Scheduler%010d"), i);
+					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
+					{
+						if (m_bUseRegistry)
+						{
+							WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+							WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+							WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+							WriteProfileInt(sSection, _T("StartYear"), 2000);
+							WriteProfileInt(sSection, _T("StartMonth"), 1);
+							WriteProfileInt(sSection, _T("StartDay"), 1);
+							WriteProfileInt(sSection, _T("StartHour"), 12);
+							WriteProfileInt(sSection, _T("StartMin"), 0);
+							WriteProfileInt(sSection, _T("StartSec"), 0);
+							WriteProfileInt(sSection, _T("StopYear"), 2000);
+							WriteProfileInt(sSection, _T("StopMonth"), 1);
+							WriteProfileInt(sSection, _T("StopDay"), 1);
+							WriteProfileInt(sSection, _T("StopHour"), 12);
+							WriteProfileInt(sSection, _T("StopMin"), 0);
+							WriteProfileInt(sSection, _T("StopSec"), 0);
+						}
+						else
+						{
+							// Make a temporary copy because writing to memory sticks is so slow! 
+							CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
+							::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
+							::CopyFile(m_pszProfileName, sTempFileName, FALSE);
+
+							::WriteProfileIniString(sSection, _T("DevicePathName"), _T(""), sTempFileName);
+							::WriteProfileIniInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("Rec"), (int)TRUE, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartYear"), 2000, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartMonth"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartDay"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartHour"), 12, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartMin"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartSec"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopYear"), 2000, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopMonth"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopDay"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopHour"), 12, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopMin"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopSec"), 0, sTempFileName);
+
+							// Move it
+							::DeleteFile(m_pszProfileName);
+							::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+							::MoveFile(sTempFileName, m_pszProfileName);
+						}
+						break;
+					}
+				}
+			}
+			delete pSchedulerEntry;
+			m_Scheduler.RemoveAt(prevpos);
+			break;
+		}
+	}
+}
+
+void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
+{
+	// Iterate Through the Scheduler List
+	POSITION pos = m_Scheduler.GetHeadPosition();
+	while (pos)
+	{
+		POSITION prevpos = pos;
+		CSchedulerEntry* pSchedulerEntry = m_Scheduler.GetNext(pos);
+		if (pSchedulerEntry &&
+			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
+			pSchedulerEntry->m_Type == CSchedulerEntry::DAILY)
+		{
+			if (m_bUseSettings)
+			{
+				CString sSection;
+				BOOL bFound = FALSE;
+				int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+				for (int i = 0 ; i < nCount ; i++)
+				{
+					sSection.Format(_T("Scheduler%010d"), i);
+					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
+					{
+						if (m_bUseRegistry)
+						{
+							WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+							WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+							WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+							WriteProfileInt(sSection, _T("StartYear"), 2000);
+							WriteProfileInt(sSection, _T("StartMonth"), 1);
+							WriteProfileInt(sSection, _T("StartDay"), 1);
+							WriteProfileInt(sSection, _T("StartHour"), 12);
+							WriteProfileInt(sSection, _T("StartMin"), 0);
+							WriteProfileInt(sSection, _T("StartSec"), 0);
+							WriteProfileInt(sSection, _T("StopYear"), 2000);
+							WriteProfileInt(sSection, _T("StopMonth"), 1);
+							WriteProfileInt(sSection, _T("StopDay"), 1);
+							WriteProfileInt(sSection, _T("StopHour"), 12);
+							WriteProfileInt(sSection, _T("StopMin"), 0);
+							WriteProfileInt(sSection, _T("StopSec"), 0);
+						}
+						else
+						{
+							// Make a temporary copy because writing to memory sticks is so slow! 
+							CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
+							::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
+							::CopyFile(m_pszProfileName, sTempFileName, FALSE);
+
+							::WriteProfileIniString(sSection, _T("DevicePathName"), _T(""), sTempFileName);
+							::WriteProfileIniInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("Rec"), (int)TRUE, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartYear"), 2000, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartMonth"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartDay"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartHour"), 12, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartMin"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StartSec"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopYear"), 2000, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopMonth"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopDay"), 1, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopHour"), 12, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopMin"), 0, sTempFileName);
+							::WriteProfileIniInt(sSection, _T("StopSec"), 0, sTempFileName);
+
+							// Move it
+							::DeleteFile(m_pszProfileName);
+							::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+							::MoveFile(sTempFileName, m_pszProfileName);
+						}
+						break;
+					}
+				}
+			}
+			delete pSchedulerEntry;
+			m_Scheduler.RemoveAt(prevpos);
+			break;
+		}
+	}
+}
+
+BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
+{
+	BOOL bUsed = FALSE;
+	CNetCom NetCom;
+	HANDLE hEventArray[2];
+	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
+	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
+	if (NetCom.Init(
+				FALSE,					// Be Client
+				NULL,					// The Optional Owner Window to which send the Network Events.
+				NULL,					// The lParam to send with the Messages
+				NULL,					// The Optional Rx Buffer.
+				NULL,					// The Optional Critical Section for the Rx Buffer.
+				NULL,					// The Optional Rx Fifo.
+				NULL,					// The Optional Critical Section fot the Rx Fifo.
+				NULL,					// The Optional Tx Buffer.
+				NULL,					// The Optional Critical Section for the Tx Buffer.
+				NULL,					// The Optional Tx Fifo.
+				NULL,					// The Optional Critical Section for the Tx Fifo.
+				NULL,					// Parser
+				NULL,					// Generator
+				SOCK_STREAM,			// TCP
+				_T(""),					// Local Address (IP or Host Name).
+				0,						// Local Port, let the OS choose one
+				_T("localhost"),		// Peer Address (IP or Host Name).
+				nPort,					// Peer Port.
+				NULL,					// Handle to an Event Object that will get Accept Events.
+				hEventArray[0],			// Handle to an Event Object that will get Connect Events.
+				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
+				NULL,					// Handle to an Event Object that will get Close Events.
+				NULL,					// Handle to an Event Object that will get Read Events.
+				NULL,					// Handle to an Event Object that will get Write Events.
+				NULL,					// Handle to an Event Object that will get OOB Events.
+				NULL,					// Handle to an Event Object that will get an event when 
+										// all connection of a server have been closed.
+				0,						// A combination of network events:
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// A set value means that instead of setting an event it is reset.
+				0,						// A combination of network events:
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
+										// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
+										// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
+										// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
+										// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
+										// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
+										// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
+										// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
+										// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
+				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
+										// (if hRxMsgTriggerEvent != NULL).
+										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
+										// (if pOwnerWnd != NULL).
+				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
+										// each time uiRxMsgTrigger bytes arrived.
+				0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
+										// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
+				0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
+										// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
+				0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
+										// even if no Write Event Happened (A zero meens INFINITE Timeout).
+										// This is also the Generator rate,
+										// if set to zero the Generator is never called!
+				NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+	{
+		DWORD Event = ::WaitForMultipleObjects(	2,
+												hEventArray,
+												FALSE,
+												MICROAPACHE_TIMEOUT_MS);
+		switch (Event)
+		{
+			// Http Connected Event
+			case WAIT_OBJECT_0 :
+				bUsed = TRUE;
+				break;
+
+			// Http Connection failed Event
+			case WAIT_OBJECT_0 + 1 :
+				break;
+
+			// Timeout
+			default :
+				break;
+		}
+	}
+	NetCom.Close();
+	::CloseHandle(hEventArray[0]);
+	::CloseHandle(hEventArray[1]);
+	return bUsed;
+}
+
+void CUImagerApp::MicroApacheUpdateFiles()
+{
+	// Check config file, create it if not existing
+	CVideoDeviceDoc::MicroApacheCheckConfigFile();
+
+	// Set Port
+	CString sPort;
+	sPort.Format(_T("%d"), m_nMicroApachePort);
+	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("Listen"), sPort);
+	
+	// Set Username and Password
+	if (m_sMicroApacheUsername != _T("") || m_sMicroApachePassword != _T(""))
+	{
+		CVideoDeviceDoc::MicroApacheMakePasswordFile(m_sMicroApacheUsername, m_sMicroApachePassword);
+		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), _T("/>"));
+	}
+	else
+	{
+		// Disable protection adding a fake location
+		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), MICROAPACHE_FAKE_LOCATION);
+	}
+
+	// Copy index.php to Doc Root
+	CString sDocRoot = m_sMicroApacheDocRoot;
+	sDocRoot.TrimRight(_T('\\'));
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
+		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), TRUE);
+	}
+
+	// Set Doc Root to config file
+	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
+	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
+	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
+										// Add a trailing "
+	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("DocumentRoot"), sDocRoot);
+}
+
+BOOL CUImagerApp::RSADecrypt()
+{
+	BYTE KeyData[RSA_BLOCK_SIZE];
+
+	// Vars
+	// Note: for local vars the init values are stored inside the code segment
+	// (compiler generates a mov assembler instruction with direct value that copies to the stack),
+	// exceptions are strings for which the init values are copied from the data segment to the stack.
+	// -> We want the init values inside the code segment so that the CRC32 check will identify key
+	//    values modifications attempts!
+	const BYTE SecretKey[] = {
+		0xF6, 0xCC, 0xD9, 0x1F, 0xBD, 0x7F, 0x2E, 0x1F, 0x3C, 0x52, 0x99, 0x59, 0xA7, 0x3B, 0x74, 0xCC, 
+		0x7F, 0x42, 0x7E, 0x54, 0x64, 0x40, 0xB6, 0x23, 0x37, 0x35, 0x56, 0x8C, 0x86, 0x1C, 0xCD, 0xAF, 
+		0xF8, 0xF1, 0xF3, 0xA6, 0x83, 0x81, 0x5A, 0xA1, 0xB9, 0x00, 0x0F, 0xB3, 0xF3, 0x3C, 0xCB, 0x1B, 
+		0xBD, 0x33, 0xBE, 0x60, 0x56, 0x9C, 0xA9, 0x1B, 0xE4, 0x14, 0x4F, 0x80, 0x56, 0xD8, 0x60, 0x02, 
+		0x4C, 0x9F, 0x73, 0xA6, 0x5C, 0x3F, 0x88, 0x71, 0xF0, 0xDA, 0xCE, 0xF8, 0x3E, 0x4D, 0xFE, 0xA2, 
+		0xD4, 0x6C, 0xF2, 0x60, 0x8F, 0x84, 0x6C, 0x78, 0xB4, 0x37, 0x27, 0xD8, 0x4A, 0xD5, 0x6B, 0xE6, 
+		0xC3, 0xB5, 0x0F, 0xEC, 0xD0, 0xB5, 0x2E, 0xC8, 0xA4, 0xB9, 0x89, 0x9A, 0xA8, 0xE6, 0x96, 0xAE, 
+		0x3E, 0x02, 0xAA, 0x6E, 0xDF, 0xEC, 0xE4, 0xE4, 0x69, 0x9C, 0xA8, 0xA9, 0xCD, 0xAA, 0x14, 0x8C};
+	const BYTE PublicKey[] = {
+		0x00, 0x08, 0xBE, 0xF1, 0x0B, 0x26, 0xB7, 0x89, 0x2B, 0x35, 0xEE, 0x57, 0xCA, 0x2A, 0xBB, 0xFD, 
+		0xAA, 0xDF, 0x05, 0x6B, 0x32, 0x13, 0x35, 0x46, 0xE7, 0x44, 0x32, 0xE4, 0x0A, 0xCB, 0xDD, 0x64, 
+		0x8D, 0x7E, 0x73, 0x6D, 0x6E, 0xF5, 0xDC, 0x43, 0xE7, 0xCE, 0xD5, 0xC4, 0xC1, 0x17, 0xEF, 0x83, 
+		0xE5, 0x91, 0xF9, 0x1D, 0x6E, 0xF3, 0x80, 0x53, 0x13, 0x16, 0x57, 0xE6, 0x53, 0x81, 0x24, 0xCB, 
+		0x29, 0x71, 0x58, 0x88, 0xAB, 0x04, 0x45, 0x04, 0x6B, 0x3B, 0xC1, 0x8E, 0x3E, 0x2A, 0x77, 0xFC, 
+		0x09, 0xDE, 0x27, 0xFC, 0xB3, 0xD8, 0x2B, 0xF8, 0xC6, 0x86, 0xD8, 0xF2, 0x78, 0xB1, 0x07, 0x56, 
+		0x03, 0xDE, 0xF9, 0xAE, 0x5B, 0x07, 0x11, 0xD0, 0x31, 0xDD, 0x65, 0x19, 0xD0, 0xB3, 0x02, 0xFF, 
+		0x40, 0xF0, 0xAB, 0xDC, 0xC9, 0x73, 0x68, 0x25, 0x87, 0x00, 0xB0, 0x04, 0xF5, 0xCE, 0x85, 0x9E, 
+		0x30, 0xDD, 0xDC, 0x21, 0xCA, 0xBD, 0x75, 0x64, 0x35, 0xA1, 0xEF, 0xDF, 0x1B, 0xE3, 0xE1, 0x0C, 
+		0x4B, 0x40, 0xC1, 0xCB, 0xF0, 0x81, 0x73, 0x0E, 0xB6, 0xA4, 0x4B, 0xA8, 0x1B, 0x60, 0x47, 0x9A, 
+		0x61, 0xC9, 0x9C, 0xC6, 0xF2, 0xF4, 0xF8, 0xE7, 0xDD, 0xD6, 0xD8, 0x55, 0xFF, 0x31, 0x71, 0x62, 
+		0x66, 0xF5, 0x72, 0xFB, 0xE6, 0x08, 0xA4, 0x5C, 0x44, 0x55, 0xDA, 0x04, 0x67, 0x88, 0x31, 0xDB, 
+		0xAE, 0xD7, 0x29, 0x90, 0x32, 0xB2, 0x86, 0xAC, 0x27, 0xDE, 0xB0, 0x8C, 0xD5, 0x67, 0x66, 0xBA, 
+		0xFC, 0xB5, 0x50, 0x88, 0x43, 0x66, 0x69, 0x62, 0xB0, 0x21, 0x11, 0x70, 0x43, 0xE6, 0x92, 0xC2, 
+		0xCF, 0x6B, 0x65, 0xDB, 0x33, 0xE2, 0x27, 0xCD, 0x3B, 0x9E, 0xD5, 0x95, 0x60, 0x2C, 0xA2, 0xFE, 
+		0x1F, 0xF8, 0xB5, 0xBF, 0xD6, 0x9B, 0x29, 0x02, 0x14, 0x4E, 0xF1, 0xF5, 0xEA, 0x5D, 0x6D, 0x25, 
+		0x0E, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 
+		0x00, 0x01};
+
+	// Get App Data Folder
+	CString sRSAKeyFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
+
+	// It's important to have a place to write the config file,
+	// under win95 and NT4 CSIDL_APPDATA is not available
+	// return the program's directory
+	if (sRSAKeyFile == _T(""))
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return FALSE;
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sRSAKeyFile = CString(szDrive) + CString(szDir);
+		sRSAKeyFile += RSA_KEYNAME_EXT;
+	}
+	else
+		sRSAKeyFile += _T("\\") + RSA_KEY_FILE;
+
+	// Read key file
+	try
+	{
+		// Open File
+		CFile f(sRSAKeyFile,
+				CFile::modeRead |
+				CFile::shareDenyWrite);
+		DWORD dwLength = (DWORD)f.GetLength();
+		if (dwLength != RSA_BLOCK_SIZE)
+			return FALSE;
+		
+		// Read Data
+		dwLength = f.Read(KeyData, RSA_BLOCK_SIZE);
+		if (dwLength != RSA_BLOCK_SIZE)
+			return FALSE;
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();
+		return FALSE;
+	}
+
+	// Decrypt with public key
+	unsigned int uiDecryptedDataLength;
+	BYTE DecryptedData[RSA_BLOCK_SIZE];
+	memset(DecryptedData, 0, RSA_BLOCK_SIZE);
+	int status = ::RSAPublicDecrypt(DecryptedData, &uiDecryptedDataLength,
+									KeyData, RSA_BLOCK_SIZE, (R_RSA_PUBLIC_KEY*)&PublicKey);
+	if (status)
+	{
+		TRACE(_T("RSAPublicDecrypt failed with %x\n"), status);
+		return FALSE;
+	}
+
+	// Parse block
+	if (memcmp(DecryptedData, SecretKey, SECRET_KEY_SIZE) != 0)
+		return FALSE;
+	m_dwPURCHASE_ID = *((DWORD*)(DecryptedData+SECRET_KEY_SIZE));
+	m_wRUNNING_NO = *((WORD*)(DecryptedData+SECRET_KEY_SIZE+4));
+	// Note: Inside the decrypted block the UTF8 REG_NAME string is null terminated with a normal 0
+	const int nAvailableSize = RSA_USABLE_BLOCK_SIZE - SECRET_KEY_SIZE - 4 - 2 - 1;	// for secret
+																					// 4 for PURCHASE_ID
+																					// 2 for REG_NAME
+																					// 1 for null termination
+	m_sREG_NAME = ::FromUTF8(DecryptedData+SECRET_KEY_SIZE+6, MIN(nAvailableSize, strlen((char*)(DecryptedData+SECRET_KEY_SIZE+6))));
+
+	// Unallowed keys
+	/*
+	const DWORD UnallowedPURCHASE_ID[] = {0x00000000};
+	for (int i = 0 ; i < sizeof(UnallowedPURCHASE_ID) / sizeof(DWORD) ; i++)
+	{
+		if (UnallowedPURCHASE_ID[i] == m_dwPURCHASE_ID)
+			return FALSE;
+	}
+	*/
+
+	return TRUE;
+}
+
+#endif
+
+BOOL CUImagerApp::ShowColorDlg(	COLORREF& crColor,
+								CWnd* pParentWnd/*=NULL*/)
+{
+	BOOL res;
+	CColorDialog dlg(crColor, CC_FULLOPEN | CC_ANYCOLOR, pParentWnd);
+	COLORREF clCustomColors[16];
+	CString szTemp;
+	for (int i = 0 ; i < 16 ; i++)
+	{
+		if (m_bUseSettings)
+		{
+			szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+			clCustomColors[i] = (COLORREF)GetProfileInt(_T("GeneralApp"), szTemp, RGB(255,255,255));
+		}
+		else
+			clCustomColors[i] = RGB(255,255,255);
+	}
+	dlg.m_cc.lpCustColors = clCustomColors;
+
+    if (dlg.DoModal() == IDOK)
+	{
+		res = TRUE;
+        crColor = dlg.GetColor();
+	}
+    else
+		res = FALSE;
+
+	if (m_bUseSettings)
+	{
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+		{
+			for (int i = 0 ; i < 16 ; i++)
+			{
+				szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+				WriteProfileInt(_T("GeneralApp"), szTemp, clCustomColors[i]);
+			}
+		}
+		else
+		{
+			// Make a temporary copy because writing to memory sticks is so slow! 
+			CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
+			::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
+			::CopyFile(m_pszProfileName, sTempFileName, FALSE);
+			
+			for (int i = 0 ; i < 16 ; i++)
+			{
+				szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+				::WriteProfileIniInt(_T("GeneralApp"), szTemp, clCustomColors[i], sTempFileName);
+			}
+
+			// Move it
+			::DeleteFile(m_pszProfileName);
+			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+			::MoveFile(sTempFileName, m_pszProfileName);
+		}
+	}
+
+	return res;
+}
+
+void CUImagerApp::OnHelpTutorial(UINT nID)
+{
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+		return;
+	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+	CString sTutorialsPath = CString(szDrive) + CString(szDir);
+	sTutorialsPath += _T("Tutorials");
+	CSortableFileFind FileFind;
+	FileFind.AddAllowedExtension(_T(".htm"));
+	if (FileFind.Init(sTutorialsPath + _T("\\*")))
+	{
+		::ShellExecute(	NULL,
+						_T("open"),
+						FileFind.GetFileName(nID - ID_HELP_TUTORIAL_FIRST),
+						NULL, NULL, SW_SHOWNORMAL);
+	}
+}
+
+// This function checks MODI is available in the system or not
+BOOL CUImagerApp::IsMODIAvailable()
+{
+	BOOL bRet = TRUE;
+    IDocument* IDobj = NULL;
+
+	HRESULT hr = ::CoCreateInstance(CLSID_Document, NULL,CLSCTX_ALL, IID_IDocument, (void**)&IDobj);
+	if (SUCCEEDED(hr))
+		IDobj->Release();
+	else
+	   bRet= FALSE;
+	
+	return bRet;
+}
+
+// This function convert File Path to BSTR string
+BSTR ToBSTR(LPCTSTR szFileName)
+{
+#ifndef _UNICODE
+	WCHAR wszURL[MAX_PATH];
+    ::MultiByteToWideChar(CP_ACP, 0, szFileName, -1, wszURL, MAX_PATH);
+	wszURL[MAX_PATH - 1] = L'\0';
+	return ::SysAllocString(wszURL);
+#else
+    return ::SysAllocString(szFileName);
+#endif
+}
+
+// This function uses MODI to OCR content of the image
+BOOL CUImagerApp::OCRByMODI(const CString& sFileName,
+							CString& sText,
+							enum MiLANGUAGES LangId/*=miLANG_SYSDEFAULT*/)
+{
+	BOOL bRet = TRUE;
+    HRESULT hr;
+    IDocument  *IDobj   = NULL;
+	ILayout	   *ILayout = NULL;
+    IImages    *IImages = NULL;
+    IImage     *IImage  = NULL;
+	IWords     *IWords  = NULL;
+	IWord      *IWord   = NULL;
+
+	// Empty It
+	sText.Empty();
+
+	hr = ::CoCreateInstance(CLSID_Document, NULL, CLSCTX_ALL, IID_IDocument, (void**)&IDobj);
+	if (SUCCEEDED(hr))
+	{
+		// Load an existing MDI or TIFF file
+		BSTR bstrFileName = ToBSTR(sFileName);
+		hr = IDobj->Create(bstrFileName);
+		if (SUCCEEDED(hr))
+		{
+			/*
+			LangId:
+			miLANG_CHINESE_SIMPLIFIED
+			miLANG_CHINESE_TRADITIONAL
+			miLANG_CZECH
+			miLANG_DANISH
+			miLANG_DUTCH
+			miLANG_ENGLISH
+			miLANG_FINNISH
+			miLANG_FRENCH
+			miLANG_GERMAN
+			miLANG_GREEK
+			miLANG_HUNGARIAN
+			miLANG_ITALIAN
+			miLANG_JAPANESE
+			miLANG_KOREAN
+			miLANG_NORWEGIAN
+			miLANG_POLISH
+			miLANG_PORTUGUESE
+			miLANG_RUSSIAN
+			miLANG_SPANISH
+			miLANG_SWEDISH
+			miLANG_SYSDEFAULT
+			miLANG_TURKISH
+			*/
+			hr = IDobj->OCR(LangId,
+							1,	// OCROrientImage: Specifies whether the OCR engine attempts to determine the orientation of the page.
+							1);	// OCRStraightenImage: Specifies whether the OCR engine attempts to "de-skew" the page to correct for small angles of misalignment from the vertical.
+
+			if (SUCCEEDED(hr))
+			{
+				IDobj->get_Images(&IImages);
+				
+				long iImageCount = 0;
+				IImages->get_Count(&iImageCount);
+				for (int nPage = 0 ; nPage < iImageCount ; nPage++)
+				{
+					// Page Separation Line
+					CString sSeparationLine;
+					if (nPage > 0)
+						sText += _T("\n\n");
+					CString sFormat;
+					sFormat.Format(_T("%%0%dd "), (int)log10((double)iImageCount) + 1);
+					sFormat = _T("--- Page ") + sFormat;
+					sSeparationLine.Format(sFormat, nPage + 1);
+					int nSeparationSize = sSeparationLine.GetLength();
+					for (int n = nSeparationSize ; n < OCR_LINE_SIZE  ; n++)
+						sSeparationLine += _T("-");
+					sSeparationLine += _T("\n\n");
+					sText += sSeparationLine;
+
+					// Get Page
+					IImages->get_Item(nPage, (IDispatch**)&IImage);
+					IImage->get_Layout(&ILayout);
+					
+					// Get Words
+					long numWord = 0;
+					ILayout->get_NumWords(&numWord);
+					ILayout->get_Words(&IWords);
+					IWords->get_Count(&numWord);
+					int nLineCharsCount = 0;
+					for (long i = 0 ; i < numWord ; i++)
+					{
+						// Get Word
+						IWords->get_Item(i, (IDispatch**)&IWord);
+
+						// Get Word Text
+						BSTR bstrWord;
+						IWord->get_Text(&bstrWord);
+						CString sTemp;
+						sTemp = CString(bstrWord);
+						nLineCharsCount += sTemp.GetLength();
+						if (nLineCharsCount > OCR_LINE_SIZE)
+						{
+							// Remove Last Space
+							if (sText.GetLength() > 0)
+								sText.Delete(sText.GetLength() - 1);
+
+							// Add New Line
+							sText += _T("\n");
+							
+							// Add Word to Beginning of New line
+							sText += sTemp;
+
+							// Add Space
+							sText += _T(" ");
+
+							// Update Chars Count
+							nLineCharsCount = sTemp.GetLength() + 1;
+						}
+						else
+						{
+							// Add Word to Beginning
+							sText += sTemp;
+
+							// Add Space
+							sText += _T(" ");
+
+							// Update Chars Count
+							nLineCharsCount++;
+						}
+
+						// Free String
+						::SysFreeString(bstrWord);
+
+						// Release object
+						IWord->Release();
+					}
+
+					// Last Page -> Remove Last Space
+					if (nPage == iImageCount - 1)
+					{
+						if (sText.GetLength() > 0)
+							sText.Delete(sText.GetLength() - 1);
+					}
+
+					// Release all objects
+					IImage->Release();
+					ILayout->Release();
+					IWords->Release();	
+				}
+
+				// Release object
+				IImages->Release();
+			}
+			else
+				bRet = FALSE;
+		}
+		else
+			bRet = FALSE;
+
+		// Free String
+		::SysFreeString(bstrFileName);
+
+		// Release object
+		IDobj->Release();
+	}
+	else
+		bRet = FALSE;
+
+	return bRet;
+}
+
+void CUImagerApp::OnToolsTrayicon() 
+{
+	m_bTrayIcon = !m_bTrayIcon;
+	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
+	if (m_bUseSettings)
+	{
+		WriteProfileInt(_T("GeneralApp"),
+						_T("TrayIcon"),
+						m_bTrayIcon);
+	}
+}
+
+void CUImagerApp::OnUpdateToolsTrayicon(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_bTrayIcon ? 1 : 0);
+}
+
+BOOL CUImagerApp::Autostart(BOOL bEnable)
+{
+	CRegKey RegKey;
+
+	// Set
+	if (bEnable)
+	{
+		// Open or Create key
+		if (RegKey.Create(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) != ERROR_SUCCESS)
+			return FALSE;
+
+		// The program location
+		TCHAR lpFilename[MAX_PATH];
+		DWORD res = ::GetModuleFileName(
+			NULL,		// handle to module to find filename for, NULL means current process' module
+			lpFilename, // pointer to buffer to receive module path
+			MAX_PATH    // size of buffer, in characters
+			);
+
+		// Set the value
+#if _MFC_VER < 0x0700
+		if (RegKey.SetValue(lpFilename, APPNAME_NOEXT) != ERROR_SUCCESS)
+		{
+			RegKey.Close();
+			return FALSE;
+		}
+#else
+		if (RegKey.SetStringValue(APPNAME_NOEXT, lpFilename) != ERROR_SUCCESS)
+		{
+			RegKey.Close();
+			return FALSE;
+		}
+#endif
+	}
+	// Clear
+	else
+	{
+		// Open key
+		if (RegKey.Open(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) != ERROR_SUCCESS)
+			return FALSE;
+
+		// Set the value
+		if (RegKey.DeleteValue(APPNAME_NOEXT) != ERROR_SUCCESS)
+		{
+			RegKey.Close();
+			return FALSE;
+		}
+	}
+
+	// Close key
+	RegKey.Close();
+
+	return TRUE;
+}
+
+BOOL CUImagerApp::IsAutostart()
+{
+	CRegKey RegKey;
+
+	// Open key
+	if (RegKey.Open(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) != ERROR_SUCCESS)
+		return FALSE;
+
+	// The program location
+	TCHAR lpFilename[MAX_PATH];
+	TCHAR lpRegFilename[MAX_PATH];
+	DWORD res = ::GetModuleFileName(
+		NULL,		// handle to module to find filename for, NULL means current process' module
+		lpFilename, // pointer to buffer to receive module path
+		MAX_PATH    // size of buffer, in characters
+		);
+
+	// Get the value
+#if _MFC_VER < 0x0700
+	DWORD dwCount = MAX_PATH;
+	if (RegKey.QueryValue(lpRegFilename, APPNAME_NOEXT, &dwCount) == ERROR_SUCCESS)
+	{
+		lpRegFilename[MAX_PATH - 1] = _T('\0');
+		CString sFilename(lpFilename);
+		CString sRegFilename(lpRegFilename);
+		RegKey.Close();
+		if (sFilename.CompareNoCase(sRegFilename) == 0)
+			return TRUE;
+		else
+			return FALSE;
+	}
+	else
+	{
+		RegKey.Close();
+		return FALSE;
+	}
+#else
+	ULONG nChars = MAX_PATH;
+	if (RegKey.QueryStringValue(APPNAME_NOEXT, lpRegFilename, &nChars) == ERROR_SUCCESS)
+	{
+		lpRegFilename[MAX_PATH - 1] = _T('\0');
+		CString sFilename(lpFilename);
+		CString sRegFilename(lpRegFilename);
+		RegKey.Close();
+		if (sFilename.CompareNoCase(sRegFilename) == 0)
+			return TRUE;
+		else
+			return FALSE;
+	}
+	else
+	{
+		RegKey.Close();
+		return FALSE;
+	}
+#endif
+}
+
+typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+BOOL CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
+{
+	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	if (!h)
+		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
+	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)::GetProcAddress(h, "CryptProtectData");
+	if (fpCryptProtectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	{
+		DATA_BLOB blobIn, blobOut, blobEntropy;
+		blobIn.pbData = (BYTE*)lpszValue;
+		blobIn.cbData = sizeof(TCHAR) * (_tcslen(lpszValue) + 1);
+		blobOut.cbData = 0;
+		blobOut.pbData = NULL;
+		BYTE Entropy[] = {
+			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
+			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
+		blobEntropy.pbData = Entropy;
+		blobEntropy.cbData = sizeof(Entropy);
+
+		if (fpCryptProtectData(	&blobIn,
+#ifdef _UNICODE
+								L"UNICODE",	// Windows 2000:  This parameter is required and cannot be set to NULL
+#else
+								L"ASCII",	// Windows 2000:  This parameter is required and cannot be set to NULL
+#endif
+								&blobEntropy,
+								NULL,
+								NULL,
+								0,
+								&blobOut))
+		{
+			BOOL res = WriteProfileBinary(lpszSection, lpszEntry, (LPBYTE)blobOut.pbData, (UINT)blobOut.cbData);
+			::LocalFree(blobOut.pbData);
+			::FreeLibrary(h);
+			return res;
+		}
+		else
+		{
+			::LocalFree(blobOut.pbData);
+			::FreeLibrary(h);
+			return FALSE;
+		}
+	}
+	else
+	{
+		::FreeLibrary(h);
+		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
+	}
+}
+
+typedef BOOL (WINAPI * FPCRYPTUNPROTECTDATA)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID*, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+CString CUImagerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
+{
+	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	if (!h)
+		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
+	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)::GetProcAddress(h, "CryptUnprotectData");
+	if (fpCryptUnprotectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	{
+		DATA_BLOB blobIn, blobOut, blobEntropy;
+		blobIn.cbData = 0;
+		blobIn.pbData = NULL;
+		blobOut.cbData = 0;
+		blobOut.pbData = NULL;
+		BYTE Entropy[] = {
+			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
+			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
+		blobEntropy.pbData = Entropy;
+		blobEntropy.cbData = sizeof(Entropy);
+		LPWSTR pDescrOut = (LPWSTR)0xbaadf00d ; // Not NULL!
+
+		GetProfileBinary(lpszSection, lpszEntry, &blobIn.pbData, (UINT*)&blobIn.cbData);
+		if (blobIn.pbData && (blobIn.cbData > 0))
+		{
+			if (fpCryptUnprotectData(	&blobIn,
+										&pDescrOut,
+										&blobEntropy,
+										NULL,
+										NULL,
+										0,
+										&blobOut))
+			{
+				CString s;
+				CString sType(pDescrOut);
+				if (sType == L"UNICODE")
+					s = CString((LPCWSTR)blobOut.pbData);
+				else if (sType == L"ASCII")
+					s = CString((LPCSTR)blobOut.pbData);
+				delete [] blobIn.pbData;
+				::LocalFree(pDescrOut);
+				::LocalFree(blobOut.pbData);
+				::FreeLibrary(h);
+				return s;
+			}
+			else
+			{
+				delete [] blobIn.pbData;
+				::LocalFree(pDescrOut);
+				::LocalFree(blobOut.pbData);
+			}
+		}
+		else
+		{
+			if (blobIn.pbData)
+				delete [] blobIn.pbData;
+		}
+		::FreeLibrary(h);
+		return _T("");
+	}
+	else
+	{
+		::FreeLibrary(h);
+		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
+	}
+}

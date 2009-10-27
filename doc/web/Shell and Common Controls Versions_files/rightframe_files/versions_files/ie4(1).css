@@ -1,0 +1,447 @@
+BODY DIV.clsDocBody {
+	MARGIN-TOP: 10px; MARGIN-LEFT: 10px; MARGIN-RIGHT: 10px
+}
+DIV.clsFooter {
+	MARGIN-TOP: 10px; MARGIN-LEFT: 10px; MARGIN-RIGHT: 10px
+}
+DIV.clsFPfig {
+	FONT-SIZE: 80%
+}
+TD {
+	FONT-SIZE: 68%
+}
+TH {
+	FONT-SIZE: 68%
+}
+A:link {
+	COLOR: #003399
+}
+A:visited {
+	COLOR: #6600cc
+}
+A:hover {
+	COLOR: #ff3300
+}
+H2 A:visited {
+	COLOR: #003399
+}
+H3 A:visited {
+	COLOR: #003399
+}
+A.clsIncCpyRt {
+	FONT-SIZE: 95%; COLOR: #000000
+}
+A.clsIncCpyRt:hover {
+	COLOR: #0028de
+}
+A.clsBackTop {
+	MARGIN-TOP: 10px; FONT-SIZE: 90%; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black
+}
+A.clsBackTop:visited {
+	MARGIN-TOP: 10px; FONT-SIZE: 90%; MARGIN-BOTTOM: 0px; PADDING-BOTTOM: 0px; COLOR: black
+}
+A.clsBackTop:hover {
+	COLOR: blue
+}
+P {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 1em; LINE-HEIGHT: 1.5em
+}
+P.clsRef {
+	MARGIN-TOP: 12pt; FONT-WEIGHT: bold; MARGIN-BOTTOM: 0em
+}
+P.ref {
+	MARGIN-TOP: 12pt; FONT-WEIGHT: bold; MARGIN-BOTTOM: 0em
+}
+PRE {
+	PADDING-RIGHT: 5pt; MARGIN-TOP: 1em; PADDING-LEFT: 5pt; BACKGROUND: #eeeeee; MARGIN-BOTTOM: 1em; PADDING-BOTTOM: 5pt; MARGIN-LEFT: 0px; PADDING-TOP: 5pt
+}
+PRE.clsCode {
+	FONT-SIZE: 120%; FONT-FAMILY: 'courier new',courier,serif
+}
+CODE.clsText {
+	FONT-SIZE: 120%; FONT-FAMILY: 'courier new',courier,serif
+}
+PRE.clsSyntax {
+	FONT-SIZE: 125%; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+H1 {
+	MARGIN: 0px 0px 5px; FONT: 165% verdana,arial,helvetica
+}
+H2 {
+	MARGIN-TOP: 1em; MARGIN-BOTTOM: 0.5em; FONT: bold 125% verdana,arial,helvetica
+}
+H2.clsOsigHead {
+	MARGIN-TOP: 1em; FONT-SIZE: 125%; MARGIN-BOTTOM: 0em; COLOR: #3366cc; FONT-FAMILY: arial, helvetica, sans-serif
+}
+H2.clsBlue {
+	COLOR: #336699
+}
+H3 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 115% verdana,arial,helvetica
+}
+H4 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 100% verdana,arial,helvetica
+}
+H5 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 100% verdana,arial,helvetica
+}
+H6 {
+	MARGIN-BOTTOM: 0.5em; FONT: bold 100% verdana,arial,helvetica
+}
+TABLE.clsNavTbl {
+	MARGIN-LEFT: 10px
+}
+TABLE.clsNavTbl TH {
+	FONT-SIZE: 60%; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+TABLE.clsNavTbl TD {
+	FONT-SIZE: 60%; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+TABLE.clsNavTbl TH {
+	PADDING-BOTTOM: 0px
+}
+TABLE.clsTblHomeLeft A {
+	FONT-SIZE: 90%; COLOR: #003399; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+TABLE.clsTblHomeLeft A:visited {
+	FONT-SIZE: 90%; COLOR: #003399; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+TABLE.clsTblHomeLeft A:hover {
+	FONT-SIZE: 90%; COLOR: #003399; FONT-FAMILY: verdana,arial,helvetica,sans-serif
+}
+TABLE.clsTblHomeLeft A:hover {
+	TEXT-DECORATION: underline
+}
+TABLE.clsStd TH {
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; PADDING-BOTTOM: 2px; VERTICAL-ALIGN: top; PADDING-TOP: 2px; BACKGROUND-COLOR: #ddd; TEXT-ALIGN: left
+}
+TABLE.clsStd TD {
+	PADDING-RIGHT: 2px; PADDING-LEFT: 2px; PADDING-BOTTOM: 2px; VERTICAL-ALIGN: top; PADDING-TOP: 2px; BACKGROUND-COLOR: #eee
+}
+TABLE.clsParamVls {
+	PADDING-RIGHT: 2pt; PADDING-LEFT: 2pt
+}
+TABLE.clsParamVls TD {
+	PADDING-RIGHT: 2pt; PADDING-LEFT: 2pt
+}
+UL {
+	MARGIN-TOP: 10px; MARGIN-BOTTOM: 10px; MARGIN-LEFT: 17px
+}
+UL.clsBltBlu {
+	LIST-STYLE-IMAGE: url(/msdn-online/shared/graphics/bulletblue.gif)
+}
+UL.clsBltRed {
+	LIST-STYLE-IMAGE: url(/msdn-online/shared/graphics/bulletred.gif)
+}
+OL {
+	MARGIN-TOP: 10px; MARGIN-BOTTOM: 10px; MARGIN-LEFT: 25px
+}
+UL LI {
+	MARGIN-BOTTOM: 0.5em; LINE-HEIGHT: 120%
+}
+UL LI LI {
+	LIST-STYLE-TYPE: disc
+}
+OL LI {
+	MARGIN-BOTTOM: 0.7em
+}
+DIV.clsVoicesBody {
+	MARGIN-LEFT: 10px; MARGIN-RIGHT: 10px
+}
+TABLE.clsVoicesHead {
+	MARGIN-TOP: 4px
+}
+TD.clsCategory {
+	FONT: bold 65% verdana,arial,helvetica,sans-serif
+}
+TD.clsVoiceNav {
+	BACKGROUND-IMAGE: url(/msdn-online/voices/graphics/background.jpg); PADDING-TOP: 4px
+}
+TD.clsVoiceNav DIV {
+	FONT-SIZE: 90%; PADDING-TOP: 4px
+}
+TD.clsVoiceNav A:visited {
+	COLOR: #003399
+}
+TD.clsVoiceNav SPAN.clsLeftNavDot {
+	FONT-WEIGHT: normal; FONT-SIZE: 100%; LINE-HEIGHT: 80%; FONT-STYLE: normal; FONT-VARIANT: normal
+}
+TD.clsArchiveTD {
+	PADDING-LEFT: 20px; PADDING-TOP: 20px
+}
+TD.clsArchiveTD {
+	FONT: 68% verdana,arial,helvetica,sans-serif
+}
+H3.clsVoicesHead {
+	MARGIN-BOTTOM: 1.5em; PADDING-TOP: 6px
+}
+TD.clsStoryTD {
+	PADDING-RIGHT: 6px; PADDING-TOP: 4px
+}
+TH.clsStoryTD {
+	PADDING-RIGHT: 6px; PADDING-TOP: 4px
+}
+DIV.clsByLine {
+	FONT-SIZE: 80%; LINE-HEIGHT: 120%; PADDING-TOP: 2px
+}
+SPAN.clsPubdate {
+	COLOR: #999999
+}
+TD.clsPubDate {
+	COLOR: #999999
+}
+P.clsPubDate {
+	COLOR: #999999
+}
+TABLE.clsCatItems TD.clsPubDate {
+	PADDING-TOP: 4px
+}
+TD.clsPubDate {
+	PADDING-TOP: 10px
+}
+TABLE.clsCatItems {
+	MARGIN-TOP: 5px
+}
+TABLE.clsCatItems P {
+	MARGIN-TOP: 0px; MARGIN-BOTTOM: 0px
+}
+P.clsPostDate {
+	COLOR: #0099ff
+}
+DIV.clsPullQuote {
+	PADDING-BOTTOM: 0.5em; FONT: italic 110%/140% verdana,arial,helvetica,sans-serif; COLOR: #3366ff
+}
+DIV.clsPullQuote HR {
+	PADDING-BOTTOM: 0.5em; FONT: italic 110%/140% verdana,arial,helvetica,sans-serif; COLOR: #3366ff
+}
+TD.clsTDBody SPAN.clsHighlightItem {
+	LINE-HEIGHT: 1.5em
+}
+SPAN.clsHighlightItem A {
+	FONT-SIZE: 120%
+}
+.clsNewsContent {
+	DISPLAY: none
+}
+.clsTab {
+	FONT: bold 65% verdana,arial,helvetica,sans-serif; CURSOR: hand; COLOR: #ffffff; BACKGROUND-COLOR: #3366cc
+}
+.clsTabSelected {
+	FONT: bold 65% verdana,arial,helvetica,sans-serif; CURSOR: hand; COLOR: #000000; BACKGROUND-COLOR: #99ccff
+}
+.clsNewsItemTD {
+	PADDING-TOP: 4px
+}
+SPAN.st {
+	FONT-WEIGHT: normal; FONT-SIZE: 100%; LINE-HEIGHT: 120%; FONT-STYLE: normal; FONT-VARIANT: normal
+}
+UL.clsShowHide LI {
+	FONT-WEIGHT: bold; LIST-STYLE-IMAGE: url(/msdn-online/shared/graphics/plus.gif); CURSOR: hand; PADDING-TOP: 2px
+}
+UL.clsShowHide DIV {
+	FONT-WEIGHT: normal; PADDING-TOP: 4px
+}
+UL.clsShowHide A:visited {
+	COLOR: #003399
+}
+DIV.clsHide {
+	DISPLAY: none
+}
+UL.clsShowHide LI.clsHide {
+	LIST-STYLE-IMAGE: url(/msdn-online/shared/graphics/plus.gif)
+}
+DIV.clsShow {
+	DISPLAY: block; CURSOR: text
+}
+DIV.clsShow P {
+	MARGIN-TOP: 6px; MARGIN-BOTTOM: 4px; LINE-HEIGHT: 120%
+}
+UL.clsShowHide LI.clsShow {
+	LIST-STYLE-IMAGE: url(/msdn-online/shared/graphics/minus.gif)
+}
+TD.clsBigNav A:visited {
+	COLOR: #003399
+}
+TD.clsBigNav A:hover {
+	COLOR: red; TEXT-DECORATION: none
+}
+TD.clsBigNav {
+	PADDING-RIGHT: 4px; PADDING-LEFT: 4px; FONT-SIZE: 108%; PADDING-BOTTOM: 0px; CURSOR: hand; PADDING-TOP: 0px
+}
+TD.clsBigNavSel {
+	PADDING-RIGHT: 4px; PADDING-LEFT: 4px; FONT-SIZE: 108%; PADDING-BOTTOM: 0px; CURSOR: auto; PADDING-TOP: 0px
+}
+A#idToggleAll {
+	FONT-WEIGHT: bold; COLOR: #003399
+}
+A#idToggleAll IMG {
+	VERTICAL-ALIGN: bottom
+}
+DIV.clsNavLinksDiv {
+	MARGIN-LEFT: 10px
+}
+#lnkShowText {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkSyncText {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkSearchText {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkIndexText {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkPrevText {
+	FONT-WEIGHT: normal; FONT-SIZE: 7.5pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkNextText {
+	FONT-WEIGHT: normal; FONT-SIZE: 7.5pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+#lnkUpText {
+	FONT-WEIGHT: normal; FONT-SIZE: 7.5pt; COLOR: black; FONT-FAMILY: verdana,arial,helvetica,sans-serif; TEXT-DECORATION: none
+}
+DIV.clsBucketBranch {
+	MARGIN: 10px; FONT-STYLE: italic
+}
+DIV.clsBucketBranch A {
+	COLOR: black; TEXT-DECORATION: none
+}
+DIV.clsBucketBranch A:link {
+	COLOR: black; TEXT-DECORATION: none
+}
+DIV.clsBucketBranch A:active {
+	COLOR: black; TEXT-DECORATION: none
+}
+DIV.clsBucketBranch A:visited {
+	COLOR: black; TEXT-DECORATION: none
+}
+DIV.clsBucketBranch A:hover {
+	COLOR: blue
+}
+#pBackTop {
+	DISPLAY: none
+}
+SPAN.clsLeftNavDot {
+	FONT-SIZE: 115%; COLOR: red; LINE-HEIGHT: 1
+}
+DIV.clsExpanded {
+	DISPLAY: inline; WIDTH: 100%; COLOR: black
+}
+A.clsExpanded {
+	DISPLAY: inline; WIDTH: 100%; COLOR: black
+}
+DIV.clsCollapsed {
+	DISPLAY: none
+}
+A.clsCollapsed {
+	DISPLAY: none
+}
+SPAN.clsPropattr {
+	FONT-WEIGHT: bold
+}
+#pStyles {
+	DISPLAY: none; CURSOR: hand; TEXT-DECORATION: underline
+}
+#pCode {
+	DISPLAY: none; CURSOR: hand; TEXT-DECORATION: underline
+}
+#pSyntax {
+	DISPLAY: none; CURSOR: hand; TEXT-DECORATION: underline
+}
+#pEvents {
+	DISPLAY: none; CURSOR: hand; TEXT-DECORATION: underline
+}
+#pStyles {
+	DISPLAY: none; CURSOR: hand; TEXT-DECORATION: underline
+}
+#idToolbar {
+	FONT-SIZE: 10pt
+}
+#idToolbar A:hover {
+	TEXT-DECORATION: none
+}
+A.clsDisabled {
+	CURSOR: text; COLOR: black; TEXT-DECORATION: none
+}
+A.clsEnabled {
+	CURSOR: auto
+}
+SPAN.clsAccess {
+	TEXT-DECORATION: underline
+}
+TABLE.clsIndex {
+	PADDING-RIGHT: 2pt; MARGIN-TOP: 17pt; PADDING-LEFT: 2pt
+}
+TABLE.clsIndex TD {
+	MARGIN: 3pt; BACKGROUND-COLOR: #eeeeee
+}
+TR.clsEntry {
+	VERTICAL-ALIGN: top
+}
+TABLE.clsIndex TD.clsLetters {
+	BACKGROUND-COLOR: #cccccc; TEXT-ALIGN: center
+}
+TD.clsMainHead {
+	MARGIN-TOP: 1.35em; FONT-WEIGHT: bold; FONT-SIZE: 145%; MARGIN-BOTTOM: 0.5em; VERTICAL-ALIGN: top; BACKGROUND-COLOR: #ffffff
+}
+UL.clsIndex {
+	MARGIN-TOP: 0pt; MARGIN-BOTTOM: 5pt; MARGIN-LEFT: 20pt
+}
+LI OL {
+	PADDING-BOTTOM: 1.5em
+}
+A.clsLeftMenu {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: #000000; TEXT-DECORATION: none
+}
+A.clsLeftMenu:visited {
+	FONT-WEIGHT: bold; FONT-SIZE: 8pt; COLOR: #000000; TEXT-DECORATION: none
+}
+BUTTON.clsShowme {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; WIDTH: 68px; COLOR: #ffffff; FONT-FAMILY: arial; POSITION: relative; TOP: 2px; HEIGHT: 23px; BACKGROUND-COLOR: #002f90
+}
+BUTTON.clsShowme5 {
+	FONT-WEIGHT: bold; FONT-SIZE: 11px; WIDTH: 68px; COLOR: #ffffff; FONT-FAMILY: arial; POSITION: relative; TOP: 2px; HEIGHT: 23px; BACKGROUND-COLOR: #002f90
+}
+DIV.clsBeta {
+	MARGIN-TOP: 0.5em; FONT-WEIGHT: bold; MARGIN-BOTTOM: 0.5em; COLOR: red
+}
+DIV.clsHi {
+	PADDING-LEFT: 2em; TEXT-INDENT: -2em
+}
+BUTTON.clsShowme {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 0.5em
+}
+BUTTON.clsShowme5 {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 0.5em
+}
+DIV.clsShowme {
+	MARGIN-TOP: 0.5em; MARGIN-BOTTOM: 0.5em
+}
+SPAN.clsDefValue {
+	FONT-WEIGHT: bold; FONT-FAMILY: 'courier new'
+}
+TD.clsDefValue {
+	FONT-WEIGHT: bold; FONT-FAMILY: 'courier new'
+}
+SPAN.clsLiteral {
+	FONT-FAMILY: 'courier new'
+}
+TD.clsLiteral {
+	FONT-FAMILY: 'courier new'
+}
+SPAN.clsRange {
+	FONT-STYLE: italic
+}
+TD.clsRange {
+	FONT-STYLE: italic
+}
+SPAN.clsEntryText {
+	FONT-SIZE: 8pt; LINE-HEIGHT: 12pt
+}
+SPAN.clsHeading {
+	FONT-WEIGHT: bold; FONT-SIZE: 11pt; COLOR: #00319c
+}
+#tblSiteMap DIV {
+	LINE-HEIGHT: 120%
+}

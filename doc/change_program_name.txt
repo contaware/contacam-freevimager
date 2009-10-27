@@ -1,0 +1,12 @@
+- change in string table:
+  IDR_MAINFRAME
+  AFX_IDS_APP_TITLE
+
+- change defines in uImager.h
+
+- change version string in resource editor
+
+- change installer script
+
+- change output file in debug and link tab of
+  the project settings dialog

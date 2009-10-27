@@ -1,0 +1,105 @@
+SPAN.clsBadXREF {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadTERM {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadTLA {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadXrefPN {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadXrefRN {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadDesc {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadParam {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadRetVal {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadInRef {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadPV {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadShowMe {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadLocalLink {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsErrUnexpected {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadOutlineLoc {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadFragId {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadPRef {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadMRef {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsNotImpl {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadRetCode {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsUndefinedType {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadAttrDesc {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadFlag {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadTopicType {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsNoObject {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsBadPVRef {
+	BACKGROUND-COLOR: red
+}
+SPAN.clsNoDISPID {
+	BACKGROUND-COLOR: red
+}
+DIV.clsSideBar {
+	FONT-SIZE: 10pt; FLOAT: right; WIDTH: 100px; FONT-STYLE: italic; POSITION: relative; BACKGROUND-COLOR: yellow
+}
+DIV.clsNote {
+	MARGIN-BOTTOM: 4pt; BACKGROUND-COLOR: #eeeeee
+}
+DIV.clsAPIList {
+	MARGIN-LEFT: 20px
+}
+DIV.clsAPIListDesc {
+	MARGIN-TOP: 5px; MARGIN-BOTTOM: 10px
+}
+DIV.clsAPIItem {
+	MARGIN-BOTTOM: 5px; MARGIN-LEFT: 20px
+}
+SPAN.clsFmtLib {
+	TEXT-TRANSFORM: lowercase
+}
+SPAN.clsFmtInc {
+	TEXT-TRANSFORM: lowercase
+}
+SPAN.clsFmtIDL {
+	TEXT-TRANSFORM: lowercase
+}
+SPAN.clsFmtDLL {
+	TEXT-TRANSFORM: lowercase
+}

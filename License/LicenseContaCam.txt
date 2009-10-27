@@ -1,0 +1,64 @@
+﻿Copyright © 2005-2009 Oliver Pfister, Switzerland
+By installing ContaCam (henceforth "software"), you are agreeing to be bound
+by the terms and conditions of this license.
+
+This software is provided "as is", without any express or implied warranty.
+In no event will the author/developer be held liable or accountable in any
+way for any damages arising from the use of this software.
+
+
+A. The unregistered ContaCam is a FREEWARE software characterized by a 3-hour 
+capture time limitation. Permission is granted to any one individual to employ
+this unregistered software for private (at home) and for commercial (at work) use.
+
+Permission to use this unregistered software is subject to the following
+restrictions:
+
+1. The origin of this unregistered software must not be misrepresented. You shall
+not claim that you wrote/developed/own the unregistered software.
+
+2. You shall not reverse engineer, decompile, disassemble, translate or modify 
+in anyway this unregistered software.
+
+3. Distributing the unregistered software for any kind of remuneration is
+prohibited. The Licensor grants you the royality-free right to reproduce and
+distribute this unregistered software as part of a CD / DVD to be enclosed with 
+the print issue of any magazine, book, or other printed publication, as long as no
+extra fee is charged for the inclusion (or use) of this unregistered software.
+
+4. This notice may not be removed or altered from any distribution of this
+unregistered software. 
+
+
+B. The registered version of ContaCam is a COMMERCIAL software characterized
+by no capture time limitation. A registration key in form of a key file must
+have been purchased from an authorized reseller. All key files are signed with
+a unique identification number and contain the name of its owner. For each unique
+ContaCam key file you are granted a nonexclusive, non-transferable, revocable
+license to use the registered ContaCam on any single computer, provided the
+registered software is in use on only one computer at any time. The registered
+software is "in use" on a computer when it is loaded into temporary memory (RAM)
+or installed into the permanent memory of a computer, for example a hard disk,
+CD / DVD or other storage device.
+
+Permission to use the registered Software is subject to the following
+restrictions:
+
+1. The origin of this registered software must not be misrepresented. You shall 
+not claim that you wrote/developed/own the registered software.
+
+2. You shall not reverse engineer, decompile, disassemble, translate or modify
+in anyway this registered software.
+
+3. Distributing or sharing key files is strictly prohibited. You are responsible
+to keep the key file in a safe/secure place to avoid theft. You may assign all
+of your licenses for ContaCam to another person or legal entity (the "Assignee"),
+provided however, that prior to such assignment, the Assignee agrees in
+writing to be bound by the same obligations and restrictions specified in the
+terms and conditions of this license. Upon assignment of your licenses,
+you agree to transfer to the Assignee all of your key files.
+
+4. This notice may not be removed or altered.
+
+
+END OF TERMS AND CONDITIONS

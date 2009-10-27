@@ -1,0 +1,27 @@
+﻿Copyright © 2005-2009 Oliver Pfister, Switzerland
+By installing this FREEWARE Software, you are agreeing to be bound by the terms
+of this License.
+
+This Software is provided 'as-is', without any express or implied warranty.
+In no event will the author/developer be held liable for any damages arising
+from the use of this Software.
+
+Permission is granted to any one individual to employ this Software for private
+(at home) and for commercial (at work) use.
+ 
+The Permission to use the Software is subject to the following Restrictions:
+
+1. The Origin of this Software must not be misrepresented. You must not claim that
+you wrote/developed/own the Software.
+
+2. You shall not reverse engineer, decompile, disassemble, translate or modify in
+anyway this Software.
+
+3. Distributing the Software for any kind of remuneration is prohibited. The Licensor
+grants you the royality-free right to reproduce and distribute this Software as part
+of a CD / DVD to be enclosed with the print issue of any magazine, book, or printed
+publication, as long as no extra fee is charged for the inclusion of this Software.
+
+4. This notice may not be removed or altered from any Distribution of this Software. 
+
+END OF TERMS AND CONDITIONS

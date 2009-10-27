@@ -1,0 +1,75 @@
+// RemoteCam.odl : type library source for ActiveX Control project.
+
+// This file will be processed by the Make Type Library (mktyplib) tool to
+// produce the type library (RemoteCam.tlb) that will become a resource in
+// RemoteCam.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(D53AD502-626B-4B71-948C-4F69B8B4C2A3), version(1.0),
+  helpfile("RemoteCam.hlp"),
+  helpstring("RemoteCam ActiveX Control module"),
+  control ]
+library REMOTECAMLib
+{
+	importlib(STDOLE_TLB);
+	importlib(STDTYPE_TLB);
+
+	//  Primary dispatch interface for CRemoteCamCtrl
+
+	[ uuid(7AA2FD65-BB4D-490D-8926-6805BB402467),
+	  helpstring("Dispatch interface for RemoteCam Control"), hidden ]
+	dispinterface _DRemoteCam
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(CRemoteCamCtrl)
+			[id(1)] BSTR Host;
+			[id(2)] long Port;
+			[id(3)] long MaxFrames;
+			[id(4)] boolean DisableResend;
+			[id(5)] BSTR Username;
+			[id(6)] BSTR Password;
+			//}}AFX_ODL_PROP
+
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(CRemoteCamCtrl)
+			//}}AFX_ODL_METHOD
+
+			[id(DISPID_ABOUTBOX)] void AboutBox();
+	};
+
+	//  Event dispatch interface for CRemoteCamCtrl
+
+	[ uuid(CE0D4885-D7CF-40A8-8065-614A450AF957),
+	  helpstring("Event interface for RemoteCam Control") ]
+	dispinterface _DRemoteCamEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+			// NOTE - ClassWizard will maintain event information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_EVENT(CRemoteCamCtrl)
+			//}}AFX_ODL_EVENT
+	};
+
+	//  Class information for CRemoteCamCtrl
+
+	[ uuid(08CF6679-5BB3-4EF4-A773-C410DC56531C),
+	  helpstring("RemoteCam Control"), control ]
+	coclass RemoteCam
+	{
+		[default] dispinterface _DRemoteCam;
+		[default, source] dispinterface _DRemoteCamEvents;
+	};
+
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};

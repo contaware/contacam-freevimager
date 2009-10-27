@@ -1,0 +1,263 @@
+From: Scott Marovich <marovich@hpmarov.hpl.hp.com>
+Date: Mon, 10 Jun 2002 15:59:45 -0700 (PDT)
+To: warmerdam@pobox.com
+Subject: New "tif_ojpeg.c" (etc.)
+Reply-To: marovich@hpl.hp.com
+
+Hello, again, Frank!  I apologize for the extraordinary length of this message,
+but I've attached a UNIX "shar(1)" archive with a number of related files, and I
+hope that you receive them without problems; otherwise, I guess we'll need to
+arrange for an FTP transfer.  The following note explains what it's all about.
+
+PURPOSE
+
+The basic submission here is a new release of my "tif_ojpeg.c" file for the TIFF
+Library, containing two new features requested by TIFF developers who've
+contacted me:
+
+1. Support for OJPEG-in-TIFF images having separate instead of pixel-interleaved
+   color planes.  In TIFF terms, this means: files in which the "PlanarConfig"
+tag value is 2 (= PLANARCONFIG_SEPARATE), instead of 1 (= PLANARCONFIG_CONTIG).
+In JPEG terms, it means: an image's bit-stream has 3 separate "scans", each
+encoding 1 plane, instead of 1 "scan" encoding all 3 planes.  The TIFF Version
+6.0 specification deprecates this format, and the IJG JPEG Library supports it
+only with some work-arounds, so Tom Lane's "tif_jpeg.c" file doesn't handle it
+(even though some users seem to want it); so, my initial version "tif_ojpeg.c"
+file didn't either.  With some radical surgery, Tom's file could potentially be
+updated like mine, and I'll discuss this further below.
+
+2. Support for Ken Murchison's patch to JPEG Library Version 6B, letting JPEG
+   bit-streams be represented using lossless Huffman coding instead of the usual
+lossy DCT-based process; in TIFF Version 6.0 terms, this is equivalent to
+"JPEGProc" tag value 14, instead of 1.  Ken's patch hasn't been widely used, due
+to support issues discussed below, but some users want it (especially the
+"ImageMagick" crowd), so I have "#ifdef"ed my code changes using the CPP macros,
+"[CD]_LOSSLESS_SUPPORTED", which are automatically defined via your local
+<jpeglib.h> when Ken's patch is applied.
+
+I had to do a major reorganization of "tif_ojpeg.c" in order to make these
+changes, so I took advantage of the opportunity to make:
+
+3. Major speed increases, resulting from my improved understanding of the TIFF
+   Library's CODEC "method" API; i.e., I think I finally understand the
+difference between calling "(*tif->tif_setupdecode)()" vs.
+"(*tif->tif_predecode)()", "(*tif->tif_postdecode)()", etc.  Most of the
+initialization formerly done in "OJPEGPreDecode()", which is called once for
+every strip/tile, has been moved to "OJPEGSetupDecode()", which is only called
+once for each image, and some tasks have been moved to a new "OJPEGPostDecode()"
+subroutine.  I also made smaller clean-ups elsewhere.  Note that the same kind
+of reorganization could potentially also improve the performance of Tom Lane's
+"tif_jpeg.c" module, but since that isn't my code, I've left it unaltered in
+that regard.  I'll say more about this below.
+
+4. Minor bug-fixes.  The basic program logic of "tif_ojpeg.c" remains largely
+   unchanged, although some tasks are now done in different subroutines, but a
+few things weren't quite right; so, I tried to cleam them up.
+
+Since the TIFF and JPEG Libraries haven't previously offered strong support for
+PLANARCONFIG_SEPARATE images, many popular TIFF viewers probably won't handle
+them without changes.  I've been testing with "xv(1)", and I've had to extend it
+slightly for this purpose.  Since John Bradley no longer seems to support it
+actively, I'd be happy to share my changes with anyone who's interested; please
+send me E-mail.
+
+Also note that these changes don't alter my file's manipulation of the "tif_row"
+counter, as discussed in our recent correspondence with Michael O'Rourke of
+Adobe Systems <morourke@adobe.com>.
+
+TEST FILES
+
+Most of the accompanying files are test images for these changes, which I've
+derived from other peoples' files using hacked-up "C" programs, and which I
+suggest be incorporated in the TIFF Library test suite.  Let me now summarize
+their provenance and important features:
+
+lhuff-jpeg.tif                Ken Murchison's lossless-Huffman JPEG Library
+lhuff-ojpeg.tif               patch includes an RGB JFIF file named
+                              "testimgl.jpg".  I encapsulated it as-is in a TIFF
+file, in two ways: one follows the TIFF Version 6.0 specification and can be
+read by my new "tif_ojpeg.c" file, while the other follows "TIFF Technical Note
+No.  2" and can be read by Tom Lane's "tif_jpeg.c" file without change (assuming
+that a patched JPEG Library and its header files are used during a build).
+
+lhuff_separate-jpeg.tif       These also represent Ken's image, except that I
+lhuff_separate-ojpeg.tif      reorganized the JPEG bit-stream into 3 separate
+                              "scans", one for each color plane, then I TIFF-
+encapsulated the result in the same two ways as above.  The "-ojpeg" file can be
+read by my new "tif_ojpeg.c" file; but, the "-jpeg" file breaks Tom Lane's
+current "tif_jpeg.c" file.
+
+_family10_separate.jpeg       This image derives from a photograph scanned and
+_family10_separate-jpeg.tif   processed through Wang Imaging Version 6.01 (from
+_family10_separate-ojpeg.tif  Eastman Software), then sent to me by to me by
+                              Mikhael A. Bolgov of fCoder Group International
+<mikef@fcoder.com>.  It's a YCbCr image with horizontal and vertical subsampling
+factors of <1,1>; I extracted the JPEG bit-stream and reorganized it into 3
+separate "scans", one for each color plane, then I TIFF-encapsulated the result
+in the same two ways as above.  In terms of my new "tif_ojpeg.c", the "-ojpeg"
+file exercises its internal "nullconv()" and "ycc_rgb_convert()" subroutines.
+The "-jpeg" file breaks Tom's current "tif_jpeg.c", like the case above.  I have
+not specifically asked Mikhael for permission to copy or distribute this image,
+so it's probably worth making a formal request first.
+
+smallliz_separate-jpeg.tif    This is a similarly reorganized, reencapsulated
+smallliz_separate-ojpeg.tif   version of the HP "smallliz.tif" image currently
+                              in the TIFF Library test suite.  It's a YCbCr
+image with horizontal and vertical subsampling factors of <2,2>, and the
+"-ojpeg" version exercises the "OJPEGDecodeRawSeparate()" subroutine in my new
+"tif_ojpeg.c" file.  The "-jpeg" version breaks Tom Lane's current "tif_jpeg.c"
+file.  These are probably the files most likely to break TIFF viewers that can't
+handle PLANARCONFIG_SEPARATE, or which impose unusual restrictions, such as "no
+subsampling" or "RGB only".
+
+LOSSLESS-HUFFMAN JPEG LIBRARY PATCH
+
+Let me briefly review some background information here, because the situation is
+a little complicated, and I apologize if you know the details.  With
+consultation from Tom Lane, Ken Murchison of Oceana Matrix Ltd. <ken@oceana.com>
+extended the IJG JPEG Library Version 6B to support the lossless-Huffman
+encoding process defined by the 1992 JPEG standard.  His patch is publicly
+available from:
+
+     http://www.oceana.com/ftp/ljpeg/
+or:  ftp://ftp.oceana.com/pub/ljpeg-6b.tar.gz
+
+Unfortunately, Tom has not agreed to incorporate Ken's work in the standard IJG
+distribution, for reasons are discussed in a message to the IJG E-mail] archive:
+
+     http://www.ijg.org/archives/jpeg-l.9903.txt 
+
+(also see related messages messages slightly before and after this one).  The
+main issues seem to be:
+
+1. Ken's patch makes major changes to the JPEG Library and slighlty alters its
+   API in ways that aren't entirely transparent to applications.
+
+2. Apparently Tom believes that other encoding processes should be packaged in
+   separate libraries, instead of making the basic IJG library bigger and more
+complicated.  I sympathize to a degree, but this would greatly complicate life
+for clients like the TIFF Library, which want to easily and dynamically switch
+among alternate processes.
+
+3. Apparently Tom doesn't want to maintain Ken's code.  Also understandable, but
+   it seems that Ken doesn't want the maintenance responsibility either.  I
+strongly suspect that Tom's attitude toward all of the IJG JPEG Library code is:
+"You change it, you support it" and this probably also extends to other peoples'
+proposed "tif_jpeg.c" changes; see further discussion below.
+
+4. A minor complication for me is the "jpeg_reset_huff_decode()" hack that I put
+   into the JPEG Library for Zack the Cat: unfortunately, it must be implemented
+in a different file and in a slightly different way when Ken's patch is applied.
+The basic program logic is unchanged, but it's not exactly the same code.
+Accordingly, I've inserted two versions of the patch, together with a comment,
+at the beginning of my new "tif_ojpeg.c" file.  Ugh!
+
+Until/unless this impasse is resolved, TIFF application developers must assume
+responsibility for merging Tom's and Ken's work, and my "tif_ojpeg.c" changes
+unfortunately stand in the middle.  I could certainly understand if you declined
+to accept my submission without greater assurance of Tom's support, but I
+suspect that he won't give it, even though there seem to be developers who would
+like to marry all of this stuff without undue difficulty.
+
+TIFF LIBRARY "tif_jpeg.c" IMPACT
+
+In order to compile "tif_jpeg.c" file with Ken's JPEG Library patch, modest
+"#ifdef" changes are necessary, as indicated in my accompanying "jpeg.patch2"
+file.  My "jpeg.patch1" file corrects what I think is an old bug in Tom's code,
+which turned up while testing my separate-plane version of Ken's test image.
+These patches will let Tom's file accept TTN2-encapsulated images using either
+the lossless Huffman or "baseline" DCT coding processes, if two conditions are
+met:
+
+1. The image is RGB, or else a TIFF client has used the JPEGCOLORMODE_RGB switch
+   to request color-space conversion by the JPEG Library.
+2. No subsampling is used.
+
+In these cases, both separate or pixel-interleaved color planes can be decoded.
+But if the image has separate color planes and JPEGCOLORMODE_RAW is requested 
+or defaulted)--especially if the image is subsampled--then Tom's current code
+can't handle it.  Moreover, Tom's file obviously lacks the speed increases that
+I realized by reorganizing which tasks get done in what subroutine (i.e. per-
+strip/tile versus per-image processing).
+
+In order to address these limitations, I think that Tom's file could stand a
+rewrite, but I'm not sure whether he's willing to do it.  If I or someone else
+were to undertake it, I'm concerned that he might decide to wash his hands of
+all responsibility for the result.  I'm a little reluctant to touch his code,
+since I'm not sure whether I could devote enough time to maintaining an
+additional TIFF Library module forever, but I wonder whether some other
+volunteer might like to take on this job, using my new "tif_ojpeg.c" as an
+example?
+
+SUMMARY
+
+I know that there are a lot of issues here to ponder, but I thought that I'd
+submit this work nevertheless, in the hope that it might prove useful to other
+TIFF developers, and perhaps stimulate a few to help out with support.
+--
+Scott Marovich               Hewlett-Packard Laboratories M/S 1198
+E-mail: marovich@hpl.hp.com  P.O. Box 10490 (1501 Page Mill Road)
+HP TELNET 857-2998           Palo Alto CA 94303-0971 U.S.A.
+Tel. (650)857-2998           FAX (650)857-7724
+
+
+------- Additional Comments From Frank Warmerdam 2002-06-11 22:25 -------
+
+Created an attachment (id=36)
+Various sample files, and code patches
+
+
+
+------- Additional Comments From Frank Warmerdam 2002-06-11 22:46 -------
+
+Applied Scott's new tif_ojpeg.c with a few adjustments for the INLINE problem,
+for the tif_tagmethods change, and for the new "generic" handling of the 
+TIFFTAG_SOFTWARE.
+
+
+
+------- Additional Comments From Andrey Kiselev 2003-05-06 11:11 -------
+
+I have made an update to this code. jpeg_reset_huff_decode() now will be
+compiled in separate module and linked to libtiff without patching JPEG library.
+All magic should be done automatically by configure script (JPEG=yes and
+OJPEG=yes in configure.site should be enough for this). Makefiles for MSVC are
+not available yet. Lossless patch do not supported as weel, but in the future I
+shall implement proper logic in configure.
+
+
+
+------- Additional Comments From Frank Warmerdam 2003-05-06 13:57 -------
+
+Andrey,
+
+I believe the patch was originally applied to libjpeg itself to avoid depending
+on any private include files of libjpeg.  Can you verify that the changes you
+have made don't introduce any extra dependencies, or result in libtiff maintaining
+a separate copy of some libjpeg include files or private information?
+
+
+
+
+------- Additional Comments From Andrey Kiselev 2003-05-06 15:10 -------
+
+Frank,
+
+Yes, we need two private libjpeg header files. But I'm based on following
+assumptions:
+
+1. If libjpeg will be significally changed the patch for libjpeg should be
+changed too. This peace of code should be maintained along with libjpeg in any case.
+
+2. Patching libjpeg library is not an easy thing for libtiff users, especially
+for users of binary distributions. Personally, I don't want to do it in my
+system every time when I made system update. Suggested approach brings the easy
+solution for this problem.
+
+3. Original patch stays untouched, so anyone wanting to patch libjpeg by hands
+can make it without problems. All libjpeg-related stuff goes in contrib/ojpeg
+directory and libtiff could be safely compiled without it.
+
+Of course, we can forward this issue to distribution maintainers and let them
+solve the problem with libjpeg patch. I don't think it is a good decition. We
+have more information about this problem.

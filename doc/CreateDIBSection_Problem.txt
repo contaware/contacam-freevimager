@@ -1,0 +1,72 @@
+Graphics Program Cannot Create Large Bitmap
+View products that this article applies to.
+Article ID	:	227617
+Last Review	:	December 17, 2004
+Revision	:	1.1
+
+This article was previously published under Q227617
+
+
+SYMPTOMS
+
+Some graphics programs may encounter problems when attempting to create large bitmaps.
+
+
+CAUSE
+
+The CreateDIBSection API function may return a null value (indicating that the request
+did not succeed) when requested to create a large bitmap. Although there is no exact
+size that results in this condition, requests needing dozens of megabytes (MB) of
+addressable memory space fall into the potential problem category.
+
+For example, you can expect repeated calls to the CreateDIBSection function against
+a 5,000 X 5,000 X 24 bitmap to eventually not succeed on a 16-MB computer (with a
+potential not to succeed the first time). After the function does not succeed,
+the requested-size bitmap cannot be allocated without first rebooting the computer.
+
+The number of bitmaps that you can create and delete before this behavior occurs may
+appear to be inversely proportional to the size of the requested bitmap. Specifically,
+the smaller the bitmap, the greater the number of times you can create and destroy a
+bitmap of that size before the issue occurs. Note that a call to the CreateDIBSection
+function does not immediately attempt to commit physical memory to the bitmap.
+
+The core bitmap manipulation routines in the Graphic Device Interface (GDI) are 16-bit.
+This requires Windows to "tile" a contiguous array of selectors across the bitmap memory
+allocation to facilitate 16-bit segmented addressing.
+
+The necessary array of selectors is taken from the kernel local descriptor table, which
+tends to become fragmented over time as a consequence of the generally disorderly nature
+of memory allocations and deallocation. This results in an eventual inability to satisfy
+successive requests for large bitmap allocations.
+
+Note that the value of the fifth parameter to the CreateDIBSection function
+(HANDLE hSection) is immaterial, because an array of selectors is needed for the 16-bit
+GDI core to address file mapping objects.
+
+
+STATUS
+
+Microsoft has confirmed this to be a design limitation in the Microsoft products listed at
+the beginning of this article.
+
+An update to the system kernel to enhance local descriptor table management was incorporated
+into Windows Millennium Edition, which reduces the possibility of CreateDIBSection failure.
+
+
+MORE INFORMATION
+This problem is known to affect the operation of some versions of the LView Pro image
+processing program. You can obtain additional information about this product at the
+LView Pro Web page:
+http://www.lview.com (http://www.lview.com)
+Microsoft provides third-party contact information to help you find technical support.
+This contact information may change without notice. Microsoft does not guarantee the
+accuracy of this third-party contact information.
+
+The third-party products that are discussed in this article are manufactured by companies
+that are independent of Microsoft. Microsoft makes no warranty, implied or otherwise,
+regarding the performance or reliability of these products.
+
+
+APPLIES TO
+- Microsoft Windows 95
+- Microsoft Windows 98 Standard Edition

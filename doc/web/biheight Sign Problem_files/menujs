@@ -1,0 +1,505 @@
+
+
+function mnpMenuDir()
+{
+	return "LTR";
+}
+
+function mnpMenuCT()
+{
+	
+	return false;
+	
+}
+
+function m10b0105d1304bd7a0f56172ce909e12a()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('PC Fundamentals: Overview', '/whdc/system/default.mspx', '', '', '_S1_Node2_S1_Node1');
+	this.items[n++] = new mnpPage('Hardware Design for Windows Vista', '/whdc/system/vista/default.mspx', '', '', '_S1_Node2_S1_Node2');
+	this.items[n++] = new mnpPage('Platform Design', '/whdc/system/platform/default.mspx', '', 'm82342b2f9ac2d5ed407ba96a8abc1a43', '_S1_Node2_S1_Node3');
+	this.items[n++] = new mnpPage('Bus Fundamentals', '/whdc/system/bus/default.mspx', '', 'mc584f6005e2f1792d0381141ea8f6065', '_S1_Node2_S1_Node4');
+	this.items[n++] = new mnpPage('Plug and Play, Power Management, WMI', '/whdc/system/pnppwr/default.mspx', '', 'ma1209776faa977fc1895858f05882fa1', '_S1_Node2_S1_Node5');
+	this.items[n++] = new mnpPage('I/O, Processor, and Memory', '/whdc/system/cec/default.mspx', '', '', '_S1_Node2_S1_Node6');
+	this.items[n++] = new mnpPage('System Performance', '/whdc/system/sysperf/default.mspx', '', '', '_S1_Node2_S1_Node7');
+}
+
+function m82342b2f9ac2d5ed407ba96a8abc1a43()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Platform Design: Overview', '/whdc/system/platform/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('64-bit Platform', '/whdc/system/platform/64bit/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('Firmware Design and Boot Environment', '/whdc/system/platform/firmware/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('General PC Platform Design', '/whdc/system/platform/pcdesign/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node4');
+	this.items[n++] = new mnpPage('Media Center PC Design', '/whdc/system/platform/mediacenter/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node5');
+	this.items[n++] = new mnpPage('Mobile PC Platform Design', '/whdc/system/platform/mobilepc/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node6');
+	this.items[n++] = new mnpPage('Server Platform Design', '/whdc/system/platform/server/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node7');
+	this.items[n++] = new mnpPage('Embedded Platform Design', '/whdc/system/platform/embedded/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node8');
+	this.items[n++] = new mnpPage('Secure Hardware', '/whdc/system/platform/hwsecurity/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node9');
+	this.items[n++] = new mnpPage('Windows Virtualization', '/whdc/system/platform/virtual/default.mspx', '', '', '_S1_Node2_S1_Node3_S1_Node10');
+}
+
+function mc584f6005e2f1792d0381141ea8f6065()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Bus Fundamentals: Overview', '/whdc/system/bus/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node1');
+	this.items[n++] = new mnpPage('CardBus', '/whdc/system/bus/cardbus/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node2');
+	this.items[n++] = new mnpPage('ExpressCard', '/whdc/system/bus/expresscard/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node3');
+	this.items[n++] = new mnpPage('IEEE 1394', '/whdc/system/bus/1394/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node4');
+	this.items[n++] = new mnpPage('PCI and PCI Express', '/whdc/system/bus/pci/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node5');
+	this.items[n++] = new mnpPage('USB', '/whdc/system/bus/usb/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node6');
+	this.items[n++] = new mnpPage('Ultra-Wideband - UWB', '/whdc/system/bus/uwb/default.mspx', '', '', '_S1_Node2_S1_Node4_S1_Node7');
+}
+
+function ma1209776faa977fc1895858f05882fa1()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Plug and Play, Power Management, WMI: Overview', '/whdc/system/pnppwr/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node1');
+	this.items[n++] = new mnpPage('Plug and Play', '/whdc/system/pnppwr/pnp/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node2');
+	this.items[n++] = new mnpPage('Power Management and ACPI', '/whdc/system/pnppwr/powermgmt/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node3');
+	this.items[n++] = new mnpPage('WMI - Windows Management Instrumentation', '/whdc/system/pnppwr/wmi/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node4');
+	this.items[n++] = new mnpPage('WS-Management and Windows', '/whdc/system/pnppwr/wsm/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node5');
+	this.items[n++] = new mnpPage('WHEA', '/whdc/system/pnppwr/whea/default.mspx', '', '', '_S1_Node2_S1_Node5_S1_Node6');
+}
+
+function m9bba6c84c217a460369e94ba23cef969()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Device Fundamentals: Overview', '/whdc/device/default.mspx', '', '', '_S2_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Audio', '/whdc/device/audio/default.mspx', '', '', '_S2_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Device Connectivity', '/whdc/device/connect/default.mspx', '', 'm8f7d09e77f1b2b769de52885ffcd661d', '_S2_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Display and Graphics', '/whdc/device/display/default.mspx', '', 'mfa4166699a8b896772ebe1663caafad3', '_S2_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Input and HID Technologies', '/whdc/device/input/default.mspx', '', 'm5963cacb7d3c38ec721ceee860d506d2', '_S2_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Media Devices', '/whdc/device/stream/default.mspx', '', 'm38971092283aa401db093c0ad0dffdd8', '_S2_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('Networking Fundamentals', '/whdc/device/network/default.mspx', '', 'm24535b7b4e970d4697d0f9501d702a61', '_S2_Node1_S1_Node7');
+	this.items[n++] = new mnpPage('Printing and Imaging', '/whdc/device/PrintImage/default.mspx', '', 'm31e1b83d54d7b24568fafd374ed463c6', '_S2_Node1_S1_Node8');
+	this.items[n++] = new mnpPage('Storage', '/whdc/device/storage/default.mspx', '', 'm62399e4e9cf435cdaf86c520be4b622e', '_S2_Node1_S1_Node9');
+	this.items[n++] = new mnpPage('Looking for Drivers?', '/whdc/pchlp.mspx', '', '', '_S2_Node1_S1_Node10');
+}
+
+function m8f7d09e77f1b2b769de52885ffcd661d()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Device Connectivity: Overview', '/whdc/device/connect/default.mspx', '', '', '_S2_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('Windows Rally - Connectivity Technologies', '/whdc/rally/default.mspx', '', '', '_S2_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('Bus Technologies Fundamentals', '/whdc/system/bus/default.mspx', '', '', '_S2_Node1_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('Portable and Network Connected Devices', '/whdc/device/netAttach/default.mspx', '', '', '_S2_Node1_S1_Node3_S1_Node4');
+	this.items[n++] = new mnpPage('Wireless Technologies', '/whdc/device/network/wireless/default.mspx', '', '', '_S2_Node1_S1_Node3_S1_Node5');
+}
+
+function mfa4166699a8b896772ebe1663caafad3()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Display and Graphics: Overview', '/whdc/device/display/default.mspx', '', '', '_S2_Node1_S1_Node4_S1_Node1');
+	this.items[n++] = new mnpPage('Graphics Hardware and Driver Support', '/whdc/device/display/aero/default.mspx', '', '', '_S2_Node1_S1_Node4_S1_Node2');
+	this.items[n++] = new mnpPage('Color Management', '/whdc/device/display/color/default.mspx', '', '', '_S2_Node1_S1_Node4_S1_Node3');
+}
+
+function m5963cacb7d3c38ec721ceee860d506d2()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Input and HID Technologies: Overview', '/whdc/device/input/default.mspx', '', '', '_S2_Node1_S1_Node5_S1_Node1');
+	this.items[n++] = new mnpPage('Smart Card and Biometric Devices', '/whdc/device/input/smartcard/default.mspx', '', '', '_S2_Node1_S1_Node5_S1_Node2');
+}
+
+function m38971092283aa401db093c0ad0dffdd8()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Media Devices: Overview', '/whdc/device/stream/default.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node1');
+	this.items[n++] = new mnpPage('Audio and Video Streaming Devices', '/whdc/device/stream/AVstream.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Media Center Extender Technology', '/whdc/device/media/MCX.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node3');
+	this.items[n++] = new mnpPage('DVD Technology', '/whdc/device/stream/DVD/default.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node4');
+	this.items[n++] = new mnpPage('Portable and Network Connected Devices', '/whdc/device/netAttach/default.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node5');
+	this.items[n++] = new mnpPage('Video Capture Technologies', '/whdc/device/stream/vidcap/default.mspx', '', '', '_S2_Node1_S1_Node6_S1_Node6');
+}
+
+function m24535b7b4e970d4697d0f9501d702a61()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Networking Fundamentals: Overview', '/whdc/device/network/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node1');
+	this.items[n++] = new mnpPage('Network Architecture and Drivers', '/whdc/device/network/netintro.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node2');
+	this.items[n++] = new mnpPage('NDIS Driver Development', '/whdc/device/network/ndis/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node3');
+	this.items[n++] = new mnpPage('LAN / WAN Technologies', '/whdc/device/network/lanwan/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node4');
+	this.items[n++] = new mnpPage('Wireless Technologies', '/whdc/device/network/wireless/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node5');
+	this.items[n++] = new mnpPage('Home and A/V Networks', '/whdc/device/network/homeNet/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node6');
+	this.items[n++] = new mnpPage('Telephony and RTC', '/whdc/device/network/rtc/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node7');
+	this.items[n++] = new mnpPage('Windows Rally - Connectivity Technologies', '/whdc/rally/default.mspx', '', '', '_S2_Node1_S1_Node7_S1_Node8');
+}
+
+function m31e1b83d54d7b24568fafd374ed463c6()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Printing and Imaging: Overview', '/whdc/device/PrintImage/default.mspx', '', '', '_S2_Node1_S1_Node8_S1_Node1');
+	this.items[n++] = new mnpPage('Printing', '/whdc/device/print/default.mspx', '', '', '_S2_Node1_S1_Node8_S1_Node2');
+	this.items[n++] = new mnpPage('Imaging', '/whdc/device/StillImage/default.mspx', '', '', '_S2_Node1_S1_Node8_S2_Node1');
+}
+
+function m62399e4e9cf435cdaf86c520be4b622e()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Storage: Overview', '/whdc/device/storage/default.mspx', '', '', '_S2_Node1_S1_Node9_S1_Node1');
+	this.items[n++] = new mnpPage('Introduction to Storage Technologies', '/whdc/device/storage/stor-tech.mspx', '', '', '_S2_Node1_S1_Node9_S1_Node2');
+	this.items[n++] = new mnpPage('Introduction to Storage Device Drivers', '/whdc/device/storage/stor-drv.mspx', '', '', '_S2_Node1_S1_Node9_S1_Node3');
+	this.items[n++] = new mnpPage('Removable and USB Storage Devices', '/whdc/device/storage/rem-stor.mspx', '', '', '_S2_Node1_S1_Node9_S1_Node4');
+}
+
+function mb0cc768b1298027b621b031f6ac60875()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Driver Fundamentals: Overview', '/whdc/driver/default.mspx', '', '', '_S3_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Getting Started with Driver Design', '/whdc/driver/foundation/default.mspx', '', '', '_S3_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('WDF - Windows Driver Foundation', '/whdc/driver/wdf/default.mspx', '', 'm7a21aa58a6a74a69d47c0a9048fde9b2', '_S3_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Kernel Mode Fundamentals', '/whdc/driver/kernel/default.mspx', '', '', '_S3_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Security and Reliability Strategies', '/whdc/driver/security/default.mspx', '', '', '_S3_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Driver Performance: Best Practices', '/whdc/driver/perform/default.mspx', '', '', '_S3_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('Device and Driver Installation', '/whdc/driver/install/default.mspx', '', '', '_S3_Node1_S1_Node7');
+	this.items[n++] = new mnpPage('File System Filter Drivers', '/whdc/driver/filterdrv/default.mspx', '', '', '_S3_Node1_S1_Node8');
+	this.items[n++] = new mnpPage('Windows Driver Kit - WDK', '/whdc/driver/WDK/default.mspx', '', 'mdde913f63f0793b94975460213da6897', '_S3_Node1_S1_Node9');
+	this.items[n++] = new mnpPage('Tips: What Every Driver Writer Needs to Know', '/whdc/driver/tips/default.mspx', '', '', '_S3_Node1_S1_Node10');
+	this.items[n++] = new mnpPage('Looking for Drivers?', '/whdc/pchlp.mspx', '', '', '_S3_Node1_S1_Node11');
+}
+
+function m7a21aa58a6a74a69d47c0a9048fde9b2()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('WDF - Windows Driver Foundation: Overview', '/whdc/driver/wdf/default.mspx', '', '', '_S3_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('KMDF - Kernel-mode Driver Framework', '/whdc/driver/wdf/KMDF.mspx', '', '', '_S3_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('UMDF - User-mode Driver Framework', '/whdc/driver/wdf/UMDF.mspx', '', '', '_S3_Node1_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('WDF Driver Verification Tools', '/whdc/driver/wdf/Drv-VerTools.mspx', '', '', '_S3_Node1_S1_Node3_S1_Node4');
+}
+
+function mdde913f63f0793b94975460213da6897()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Windows Driver Kit - WDK: Overview', '/whdc/driver/WDK/default.mspx', '', '', '_S3_Node1_S1_Node9_S1_Node1');
+	this.items[n++] = new mnpPage('About the WDK', '/whdc/driver/WDK/aboutWDK.mspx', '', '', '_S3_Node1_S1_Node9_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Vista Driver Development', '/whdc/driver/WDK/vista_dev.mspx', '', '', '_S3_Node1_S1_Node9_S1_Node3');
+}
+
+function mef4848974a184dedd092d96b8e7ed272()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('WDK and Developer Tools: Overview', '/whdc/DevTools/default.mspx', '', '', '_S4_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Windows Driver Kit - WDK', '/whdc/driver/WDK/default.mspx', '', 'm9b455f5406d5da10007246a8a6e782e0', '_S4_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('WDF - Windows Driver Foundation', '/whdc/driver/wdf/default.mspx', '', 'mee21f5abc17a5a56c9f7d76935950f74', '_S4_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Debugging Tools for Windows', '/whdc/DevTools/Debugging/default.mspx', '', 'm2238f5f72894aba44e8a16853e712f88', '_S4_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Testing Tools', '/whdc/DevTools/tools/default.mspx', '', 'm1af7de0c6cd89a2af3b1d247b1281f25', '_S4_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('DDK and HCT Kits', '/whdc/DevTools/DevKits.mspx', '', 'm1e16d1a5ed912aa0c924223f9808a66d', '_S4_Node1_S2_Node1');
+	this.items[n++] = new mnpPage('Downloads: Kits and Tools', '/whdc/resources/downloads.mspx', '', '', '_S4_Node1_S2_Node2');
+	this.items[n++] = new mnpPage('Looking for Drivers?', '/whdc/pchlp.mspx', '', '', '_S4_Node1_S2_Node3');
+}
+
+function m9b455f5406d5da10007246a8a6e782e0()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Windows Driver Kit - WDK: Overview', '/whdc/driver/WDK/default.mspx', '', '', '_S4_Node1_S1_Node2_S1_Node1');
+	this.items[n++] = new mnpPage('About the WDK', '/whdc/driver/WDK/aboutWDK.mspx', '', '', '_S4_Node1_S1_Node2_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Vista Driver Development', '/whdc/driver/WDK/vista_dev.mspx', '', '', '_S4_Node1_S1_Node2_S1_Node3');
+}
+
+function mee21f5abc17a5a56c9f7d76935950f74()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('WDF - Windows Driver Foundation: Overview', '/whdc/driver/wdf/default.mspx', '', '', '_S4_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('KMDF - Kernel-mode Driver Framework', '/whdc/driver/wdf/KMDF.mspx', '', '', '_S4_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('UMDF - User-mode Driver Framework', '/whdc/driver/wdf/UMDF.mspx', '', '', '_S4_Node1_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('WDF Driver Verification Tools', '/whdc/driver/wdf/Drv-VerTools.mspx', '', '', '_S4_Node1_S1_Node3_S1_Node4');
+}
+
+function m2238f5f72894aba44e8a16853e712f88()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Debugging Tools for Windows: Overview', '/whdc/DevTools/Debugging/default.mspx', '', '', '_S4_Node1_S1_Node4_S1_Node1');
+	this.items[n++] = new mnpPage('Debugging Tools and Symbols: Getting Started', '/whdc/DevTools/Debugging/debugstart.mspx', '', '', '_S4_Node1_S1_Node4_S1_Node2');
+	this.items[n++] = new mnpPage('Debugging Tools and Symbols - Resources', '/whdc/devtools/debugging/resources.mspx', '', '', '_S4_Node1_S1_Node4_S1_Node3');
+	this.items[n++] = new mnpPage('What\'s New with Debugging Tools for Windows', '/whdc/DevTools/Debugging/whatsnew.mspx', '', '', '_S4_Node1_S1_Node4_S1_Node4');
+	this.items[n++] = new mnpPage('Windows Symbol Packages', '/whdc/devtools/debugging/symbolpkg.mspx', '', '', '_S4_Node1_S1_Node4_S1_Node5');
+}
+
+function m1af7de0c6cd89a2af3b1d247b1281f25()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Testing Tools: Overview', '/whdc/DevTools/tools/default.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node1');
+	this.items[n++] = new mnpPage('Testing Tools: Getting Started', '/whdc/DevTools/tools/toolstart.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node2');
+	this.items[n++] = new mnpPage('Build Environment for Windows Drivers', '/whdc/DevTools/tools/BuildEnv.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node3');
+	this.items[n++] = new mnpPage('Driver Testing Strategies', '/whdc/DevTools/tools/TestStrategy.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node4');
+	this.items[n++] = new mnpPage('Driver Verifier', '/whdc/DevTools/tools/DrvVerifier.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node5');
+	this.items[n++] = new mnpPage('Event Tracing', '/whdc/DevTools/tools/EventTracing.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node6');
+	this.items[n++] = new mnpPage('PREfast', '/whdc/DevTools/tools/PREfast.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node7');
+	this.items[n++] = new mnpPage('Static Driver Verifier', '/whdc/devtools/tools/sdv.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node8');
+	this.items[n++] = new mnpPage('Tools from the DDK and HCT', '/whdc/DevTools/tools/DDKTools.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node9');
+	this.items[n++] = new mnpPage('Using Checked Builds of Windows', '/whdc/DevTools/tools/chkblds.mspx', '', '', '_S4_Node1_S1_Node5_S1_Node10');
+}
+
+function m1e16d1a5ed912aa0c924223f9808a66d()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('DDK and HCT Kits: Overview', '/whdc/DevTools/DevKits.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node1');
+	this.items[n++] = new mnpPage('Ordering Kits and Tools', '/whdc/DevTools/OrderKits.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node2');
+	this.items[n++] = new mnpPage('DDK - Windows Driver Development Kit', '/whdc/DevTools/ddk/default.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node3');
+	this.items[n++] = new mnpPage('IFS - Installable File System Kit', '/whdc/DevTools/IFSKit/default.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node4');
+	this.items[n++] = new mnpPage('HCT - Hardware Compatibility Test Kit', '/whdc/DevTools/HCTKit.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node5');
+	this.items[n++] = new mnpPage('DCT - Display Compatibility Test Kit', '/whdc/devtools/DCTkit.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node6');
+	this.items[n++] = new mnpPage('Which Kit to Use?', '/whdc/driver/foundation/WhichDDK.mspx', '', '', '_S4_Node1_S1_Node6_S1_Node7');
+}
+
+function mcddbd1f2e034c8725ff4dbbd36baab91()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Developer Community: Overview', '/whdc/resources/default.mspx', '', '', '_S5_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('DDK MVP Expert Zone', '/whdc/resources/MVP/default.mspx', '', 'm60798a7513e5852d98856592429b5a43', '_S5_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Resource Guide', '/whdc/resources/respec/default.mspx', '', 'me9b254e41d963426c3ef8be9faf06da8', '_S5_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Support for Driver and Hardware Developers', '/whdc/resources/support/default.mspx', '', '', '_S5_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Hardware and Driver Developer Blogs', '/whdc/resources/blogs.mspx', '', '', '_S5_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Driver DevCon', '/whdc/driverdevcon/default.mspx', '', 'ma81e4cfb79007c3e44f8f20197811e43', '_S5_Node1_S1_Node6');
+}
+
+function m60798a7513e5852d98856592429b5a43()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('DDK MVP Expert Zone: Overview', '/whdc/resources/MVP/default.mspx', '', '', '_S5_Node1_S1_Node2_S1_Node1');
+	this.items[n++] = new mnpPage('MVP Insights', '/whdc/resources/MVP/insights.mspx', '', '', '_S5_Node1_S1_Node2_S1_Node2');
+	this.items[n++] = new mnpPage('Extreme MVPs', '/whdc/resources/MVP/xtremeMVP.mspx', '', '', '_S5_Node1_S1_Node2_S1_Node3');
+}
+
+function me9b254e41d963426c3ef8be9faf06da8()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Resource Guide: Overview', '/whdc/resources/respec/default.mspx', '', '', '_S5_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('Technical References', '/whdc/resources/respec/TechRef.mspx', '', '', '_S5_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('Glossary', '/whdc/resources/support/glossary.mspx', '', '', '_S5_Node1_S1_Node3_S1_Node3');
+}
+
+function ma81e4cfb79007c3e44f8f20197811e43()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Driver DevCon: Overview', '/whdc/driverdevcon/default.mspx', '', '', '_S5_Node1_S1_Node6_S1_Node1');
+	this.items[n++] = new mnpPage('What Is Windows Driver DevCon?', '/whdc/driverdevcon/whatisddc.mspx', '', '', '_S5_Node1_S1_Node6_S1_Node2');
+	this.items[n++] = new mnpPage('Registration Information', '/whdc/driverdevcon/ddcreg06.mspx', '', '', '_S5_Node1_S1_Node6_S1_Node3');
+}
+
+function mcb3799b6e8634d6780b0fa8c0a0de420()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Windows Logo and Driver Signing: Overview', '/whdc/winlogo/default.mspx', '', '', '_S6_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Getting Started', '/whdc/GetStart/default.mspx', '', 'mde52a2934a8e29089547a3c2aea9435f', '_S6_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Logo Program 3.0', '/whdc/winlogo/WLP30.mspx', '', '', '_S6_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Requirements for Hardware', '/whdc/winlogo/hwrequirements.mspx', '', '', '_S6_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('FAQ for Windows Logo Program 3.0', '/whdc/winlogo/VistaLogofaq.mspx', '', '', '_S6_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Driver Signing Requirements for Windows', '/whdc/winlogo/drvsign/drvsign.mspx', '', '', '_S6_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('About Windows Logo Program 2.2', '/whdc/winlogo/aboutLogo.mspx', '', 'm5fe5db7fb4ff3c3877324ee48d0d5c6b', '_S6_Node1_S1_Node7');
+	this.items[n++] = new mnpPage('Looking for Drivers?', '/whdc/pchlp.mspx', '', '', '_S6_Node1_S1_Node8');
+}
+
+function mde52a2934a8e29089547a3c2aea9435f()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Getting Started with Logo and WHQL Testing', '/whdc/GetStart/default.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node1');
+	this.items[n++] = new mnpPage('Plan and Design: Getting Started ', '/whdc/GetStart/design.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node2');
+	this.items[n++] = new mnpPage('Develop: Getting Started', '/whdc/GetStart/driverdev.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node3');
+	this.items[n++] = new mnpPage('Test: Getting Started', '/whdc/GetStart/testing.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node4');
+	this.items[n++] = new mnpPage('Qualify: Getting Started', '/whdc/GetStart/qualify.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node5');
+	this.items[n++] = new mnpPage('Maintain: Getting Started', '/whdc/GetStart/maintain.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node6');
+	this.items[n++] = new mnpPage('Specifications: Hardware and Firmware Standards', '/whdc/resources/respec/specs/default.mspx', '', '', '_S6_Node1_S1_Node2_S1_Node7');
+}
+
+function m5fe5db7fb4ff3c3877324ee48d0d5c6b()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('About Windows Logo Program 2.2: Overview', '/whdc/winlogo/aboutLogo.mspx', '', '', '_S6_Node1_S1_Node7_S1_Node1');
+	this.items[n++] = new mnpPage('Why Get the Logo?', '/whdc/winlogo/benefits/default.mspx', '', '', '_S6_Node1_S1_Node7_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Logo Program Requirements 2.2', '/whdc/winlogo/downloads.mspx', '', '', '_S6_Node1_S1_Node7_S1_Node3');
+	this.items[n++] = new mnpPage('FAQ for Windows Logo Program 2.2', '/whdc/winlogo/logofaq.mspx', '', '', '_S6_Node1_S1_Node7_S1_Node4');
+}
+
+function ma342df9dde3515be1415f40fcef58f3b()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('WHQL Testing and Winqual Services: Overview', '/whdc/whql/default.mspx', '', '', '_S7_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('System and Server Testing', '/whdc/whql/system/default.mspx', '', 'm85e27e93dc79d12ba38334ec72a5c919', '_S7_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Device Testing', '/whdc/whql/device/default.mspx', '', 'm27e562cd4824bb99c1375a49c1f28b68', '_S7_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('File System Driver: Anti-Virus', '/whdc/whql/antivirus.mspx', '', '', '_S7_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('WHQL Resources', '/whdc/whql/resources/default.mspx', '', 'm6c421a78d563107d1d216fa1c7ee517a', '_S7_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Winqual and Driver Maintenance', '/whdc/maintain/default.mspx', '', 'm304d99b2101b12ca4a0f9ccd69847619', '_S7_Node1_S1_Node6');
+}
+
+function m85e27e93dc79d12ba38334ec72a5c919()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('System and Server Testing: Overview', '/whdc/whql/system/default.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node1');
+	this.items[n++] = new mnpPage('Cluster Server', '/whdc/whql/system/SysSrv-Clstr.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node2');
+	this.items[n++] = new mnpPage('Cluster Server Block', '/whdc/whql/system/ClusterServerBlock.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node3');
+	this.items[n++] = new mnpPage('Datacenter Server', '/whdc/whql/system/SysSrv-DataCntr.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node4');
+	this.items[n++] = new mnpPage('Desktop', '/whdc/whql/system/SysSrv-dsktp.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node5');
+	this.items[n++] = new mnpPage('Motherboard', '/whdc/whql/system/motherboard.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node6');
+	this.items[n++] = new mnpPage('Previously Logo\'d Motherboard', '/whdc/whql/system/logomotherboard.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node7');
+	this.items[n++] = new mnpPage('Fault-Tolerant Server', '/whdc/whql/system/SysSrv-fault.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node8');
+	this.items[n++] = new mnpPage('Mobile', '/whdc/whql/system/SysSrv-Mbl.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node9');
+	this.items[n++] = new mnpPage('Server', '/whdc/whql/system/syssrv-srvr.mspx', '', '', '_S7_Node1_S1_Node2_S1_Node10');
+}
+
+function m27e562cd4824bb99c1375a49c1f28b68()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Device Testing: Overview', '/whdc/whql/device/default.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('Audio', '/whdc/whql/device/Audio.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('Bus Controller', '/whdc/whql/device/buscontrollers.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('Display Adapter/Chipset', '/whdc/whql/device/displayadapter.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node4');
+	this.items[n++] = new mnpPage('Display Monitor', '/whdc/whql/device/displaymonitor.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node5');
+	this.items[n++] = new mnpPage('DVD Playback', '/whdc/whql/device/dvdplayback.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node6');
+	this.items[n++] = new mnpPage('Enterprise Storage', '/whdc/whql/device/enterprisestorage.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node7');
+	this.items[n++] = new mnpPage('Game Device', '/whdc/whql/device/gamedevice.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node8');
+	this.items[n++] = new mnpPage('Keyboard', '/whdc/whql/device/keyboard.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node9');
+	this.items[n++] = new mnpPage('KVM Switch', '/whdc/whql/device/kvmswitch.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node10');
+	this.items[n++] = new mnpPage('Modem', '/whdc/whql/device/modem.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node11');
+	this.items[n++] = new mnpPage('Multi-port Serial Adapter', '/whdc/whql/device/mpserial.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node12');
+	this.items[n++] = new mnpPage('Network', '/whdc/whql/device/network.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node13');
+	this.items[n++] = new mnpPage('Pointing Device', '/whdc/whql/device/pointing.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node14');
+	this.items[n++] = new mnpPage('Printer', '/whdc/whql/device/printer.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node15');
+	this.items[n++] = new mnpPage('Smart Card Reader', '/whdc/whql/device/smartcard.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node16');
+	this.items[n++] = new mnpPage('Still Image Device', '/whdc/whql/device/stillimage.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node17');
+	this.items[n++] = new mnpPage('Storage', '/whdc/whql/device/storage.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node18');
+	this.items[n++] = new mnpPage('Unclassified and Universal', '/whdc/whql/device/unclassified.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node19');
+	this.items[n++] = new mnpPage('USB Host Controllers and Hubs', '/whdc/whql/device/usb.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node20');
+	this.items[n++] = new mnpPage('Video Capture Device', '/whdc/whql/device/videocapture.mspx', '', '', '_S7_Node1_S1_Node3_S1_Node21');
+}
+
+function m6c421a78d563107d1d216fa1c7ee517a()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Testing Resources: Overview', '/whdc/whql/resources/default.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node1');
+	this.items[n++] = new mnpPage('Policies', '/whdc/whql/policies/policies.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node2');
+	this.items[n++] = new mnpPage('WHQL Errata', '/whdc/whql/WHQLerr.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node3');
+	this.items[n++] = new mnpPage('Downloads', '/whdc/whql/WHQLdwn.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node4');
+	this.items[n++] = new mnpPage('Test Specifications', '/whdc/whql/resources/specs.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node5');
+	this.items[n++] = new mnpPage('Submission Review Utility', '/whdc/whql/resources/SubViewer-HowTo.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node6');
+	this.items[n++] = new mnpPage('Support Contacts', '/whdc/whql/resources/support.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node7');
+	this.items[n++] = new mnpPage('Current News and Notices', '/whdc/whql/resources/WHQLann.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node8');
+	this.items[n++] = new mnpPage('WHQL Calendar', '/whdc/whql/resources/WHQLCal.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node9');
+	this.items[n++] = new mnpPage('WHQL Legacy Information', '/whdc/whql/resources/WHQL-legacy.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node10');
+	this.items[n++] = new mnpPage('WHQL Newsletter Archive', '/whdc/whql/resources/news/default.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node11');
+	this.items[n++] = new mnpPage('What\'s New', '/whdc/whql/policies/WhatsNew.mspx', '', '', '_S7_Node1_S1_Node5_S1_Node12');
+}
+
+function m304d99b2101b12ca4a0f9ccd69847619()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Winqual and Driver Maintenance: Overview', '/whdc/maintain/default.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node1');
+	this.items[n++] = new mnpPage('Driver Maintenance: Getting Started', '/whdc/maintain/DrvMaintain.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node2');
+	this.items[n++] = new mnpPage('Windows Error Reporting: Getting Started', '/whdc/maintain/StartWER.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node3');
+	this.items[n++] = new mnpPage('How WER Helps Customers', '/whdc/maintain/WERHelp.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node4');
+	this.items[n++] = new mnpPage('How WER Works', '/whdc/maintain/WER/WERWorks.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node5');
+	this.items[n++] = new mnpPage('Winqual and Distribution Services', '/whdc/maintain/DrvUpdate.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node6');
+	this.items[n++] = new mnpPage('Looking for Drivers?', '/whdc/pchlp.mspx', '', '', '_S7_Node1_S1_Node6_S1_Node7');
+}
+
+function m10c2e1bb21b8ed527d56b9fb9ee2d7f8()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('WinHEC Home', '/whdc/winhec/default.mspx', '', '', '_S8_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Inside WinHEC', '/whdc/winhec/InsideWH06.mspx', '', '', '_S8_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Agenda &amp; Sessions', '/whdc/winhec/sched06.mspx', '', 'm038c3f1f3d30ec0195da21990b6aff8d', '_S8_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Registration &amp; Pricing', '/whdc/winhec/reg06.mspx', '', '', '_S8_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Sponsors &amp; Exhibitors', '/whdc/winhec/sponsexhib06.mspx', '', 'm2b1b7a5348e73c9072908ae6259b2ec9', '_S8_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Conference Papers', '/whdc/winhec/papers06.mspx', '', '', '_S8_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('Conference Presentations', '/whdc/winhec/pres06.mspx', '', '', '_S8_Node1_S1_Node7');
+}
+
+function m038c3f1f3d30ec0195da21990b6aff8d()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Agenda &amp; Sessions: Overview', '/whdc/winhec/sched06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node1');
+	this.items[n++] = new mnpPage('Conference Schedule', '/whdc/winhec/agenda06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node2');
+	this.items[n++] = new mnpPage('Detailed Agenda', 'http://download.microsoft.com/download/7/c/f/7cf85f00-9656-4eda-95b1-9617bb83d650/WinHEC06agenda-public.xls', '', '', '_S8_Node1_S1_Node3_S1_Node3');
+	this.items[n++] = new mnpPage('Conference Tracks', '/whdc/winhec/tracks06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node4');
+	this.items[n++] = new mnpPage('Session Descriptions', '/whdc/winhec/sessions06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node5');
+	this.items[n++] = new mnpPage('Hands-on-Labs', '/whdc/winhec/labs06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node6');
+	this.items[n++] = new mnpPage('Keynotes', '/whdc/winhec/keynotes06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node7');
+	this.items[n++] = new mnpPage('Ask The Experts', '/whdc/winhec/experts06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node8');
+	this.items[n++] = new mnpPage('Panel Discussions', '/whdc/winhec/panels06.mspx', '', '', '_S8_Node1_S1_Node3_S1_Node9');
+}
+
+function m2b1b7a5348e73c9072908ae6259b2ec9()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Sponsors &amp; Exhibitors: Overview', '/whdc/winhec/sponsexhib06.mspx', '', '', '_S8_Node1_S1_Node5_S1_Node1');
+	this.items[n++] = new mnpPage('Sponsors', '/whdc/winhec/spons06.mspx', '', '', '_S8_Node1_S1_Node5_S1_Node2');
+	this.items[n++] = new mnpPage('Exhibitors', '/whdc/winhec/exhibitors06.mspx', '', '', '_S8_Node1_S1_Node5_S1_Node3');
+}
+
+function me7feb252a4f7596c96962604562ff957()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('XML Paper Specification: Overview', '/whdc/xps/default.mspx', '', '', '_S9_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Specification and License Downloads', '/whdc/xps/downloads.mspx', '', '', '_S9_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('XPS Documents for End Users', '/whdc/xps/xpsusers.mspx', '', '', '_S9_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('XPS Documents for IT Professionals', '/whdc/xps/xpsitpro.mspx', '', '', '_S9_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('XPS Documents for Application Developers', '/whdc/xps/xpsappdevs.mspx', '', '', '_S9_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('XPS Documents for Hardware Developers', '/whdc/xps/xpshwdevs.mspx', '', '', '_S9_Node1_S1_Node6');
+}
+
+function ma1cc41ded5e4459bb2930677bc359301()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Windows Rally: Overview', '/whdc/rally/default.mspx', '', '', '_S10_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('About the Windows Rally Program', '/whdc/rally/aboutrally.mspx', '', '', '_S10_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Configuration Technologies', '/whdc/rally/rallyWcn.mspx', '', '', '_S10_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Discovery Technologies', '/whdc/rally/rallyPnpx.mspx', '', '', '_S10_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('Web Services on Devices', '/whdc/rally/Rallywsd.mspx', '', '', '_S10_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('QoS for Media Experiences', '/whdc/rally/rallyLltd.mspx', '', '', '_S10_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('Specs &amp; Tools - Windows Rally', '/whdc/rally/rallyspecs.mspx', '', '', '_S10_Node1_S1_Node7');
+	this.items[n++] = new mnpPage('Events &amp; News - Windows Rally ', '/whdc/rally/Rallyevents.mspx', '', '', '_S10_Node1_S1_Node8');
+}
+
+function mdb6b0e129db009206b14b7b84168a7d9()
+{
+	this.items = new Array();
+	var n = 0;
+	this.items[n++] = new mnpPage('Microsoft FlexGo: Overview', '/whdc/flexgo/default.mspx', '', '', '_S12_Node1_S1_Node1');
+	this.items[n++] = new mnpPage('Removing financial barriers to PC ownership', '/whdc/flexgo/background.mspx', '', '', '_S12_Node1_S1_Node2');
+	this.items[n++] = new mnpPage('Pay-as-you-go computing', '/whdc/flexgo/payasyougo.mspx', '', '', '_S12_Node1_S1_Node3');
+	this.items[n++] = new mnpPage('Subscription computing', '/whdc/flexgo/subscribe.mspx', '', '', '_S12_Node1_S1_Node4');
+	this.items[n++] = new mnpPage('The technology behind Microsoft FlexGo', '/whdc/flexgo/tech.mspx', '', '', '_S12_Node1_S1_Node5');
+	this.items[n++] = new mnpPage('Consumer and partner benefits', '/whdc/flexgo/benefits.mspx', '', '', '_S12_Node1_S1_Node6');
+	this.items[n++] = new mnpPage('What are people saying about pay-as-you-go PCs?', '/whdc/flexgo/views.mspx', '', '', '_S12_Node1_S1_Node7');
+	this.items[n++] = new mnpPage('Frequently asked questions (FAQs)', '/whdc/flexgo/FAQ.mspx', '', '', '_S12_Node1_S1_Node8');
+}
+

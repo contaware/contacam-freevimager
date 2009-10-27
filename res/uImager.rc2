@@ -1,0 +1,161 @@
+//
+// UIMAGER.RC2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+	#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+/////////////////////////////////////////////////////////////////////////////
+
+
+#ifndef VIDEODEVICEDOC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "FreeVimager"
+	AFX_IDS_APP_TITLE       "FreeVimager"
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "FreeVimager Application\0"
+            VALUE "FileVersion", "2.0.0\0"
+            VALUE "InternalName", "FreeVimager\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2009\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "FreeVimager.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "FreeVimager Application\0"
+            VALUE "ProductVersion", "2.0.0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// License
+//
+
+IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\LicenseFreeVimager.txt"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Manifest
+//
+
+1                       24      MOVEABLE PURE   "res\\manifestfreevimager.bin"
+
+#else
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "ContaCam"
+	AFX_IDS_APP_TITLE       "ContaCam"
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "ContaCam Application\0"
+            VALUE "FileVersion", "2.0.0\0"
+            VALUE "InternalName", "ContaCam\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2009\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "ContaCam.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "ContaCam Application\0"
+            VALUE "ProductVersion", "2.0.0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// License
+//
+
+IDR_LICENSE             TEXT    MOVEABLE PURE   "License\\LicenseContaCam.txt"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Manifest
+//
+
+1                       24      MOVEABLE PURE   "res\\manifestcontacam.bin"
+
+#endif

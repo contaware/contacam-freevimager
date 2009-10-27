@@ -1,0 +1,5 @@
+// Note for CreateCompatibleDC(HDC hdc):
+// Windows 2000 and later: If hdc is NULL, the thread that calls CreateCompatibleDC
+// owns the HDC that is created. When this thread is destroyed, the HDC is no longer
+// valid. Thus, if you create the HDC and pass it to another thread, then exit the
+// first thread, the second thread will not be able to use the HDC.
