@@ -126,7 +126,7 @@ SOURCE=.\png.c
 
 SOURCE=.\pngerror.c
 # ADD BASE CPP /Yc"png.h"
-# ADD CPP /Yc"png.h"
+# ADD CPP /Yc""
 # End Source File
 # Begin Source File
 
