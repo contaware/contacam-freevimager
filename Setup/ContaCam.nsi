@@ -260,7 +260,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "/oname=Tutorials\Redeye_Remove.js" "..\Tutorials\Redeye_Remove.js"
 !endif
   SetOutPath $INSTDIR\microapache
-  File /r "..\microapache\*.*"
+  File /r /x .svn "..\microapache\*.*"
   SetOutPath $INSTDIR
   
   ; Install Unicode?
