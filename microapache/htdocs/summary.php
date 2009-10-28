@@ -235,9 +235,12 @@ if ($handle = @opendir($dir)) {
 		if (($pages_float - $pages) > 0.0)
 			$pages++;
 		
-		// Reverse sort file time
-		krsort($file_array);
-
+		// Sort file time
+		if (SORT_OLDEST_FIRST == 1)
+			ksort($file_array);
+		else
+			krsort($file_array);
+		
 		// Display
 		echo "<div align=\"center\">\n";
 		echo "<h2>";

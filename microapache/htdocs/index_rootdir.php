@@ -5,7 +5,34 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
-<title>Root Directory</title>
+<title>Select Camera</title>
+<style type="text/css">
+/*<![CDATA[*/
+body {
+	font-family: Helvetica,Arial,sans-serif;
+	font-size: 12px;
+	background-color: #ffffff;
+	color: #666666;
+}
+a {
+	font-size: 14px;
+	text-decoration: none;
+}
+a:link {
+	color: #1188bb;
+}
+a:visited {
+	color: #1188bb;
+}
+a:active {
+	color: #1188bb;
+}
+a:hover {
+	color: #116699;
+	text-decoration: underline;
+}
+/*]]>*/
+</style>
 </head>
 <body>
 <?php

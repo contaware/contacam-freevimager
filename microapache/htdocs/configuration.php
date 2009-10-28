@@ -71,6 +71,9 @@ define ("HEIGHT","480");
 // number of shown animated gifs per page (do not set more than 32!)
 define ("MAX_PER_PAGE","28");
 
+// Sort order of summary thumbnails
+define ("SORT_OLDEST_FIRST","1"); // 0 = newest first , 1 = oldest first
+
 // Live jpeg(=client poll) and mjpeg(=server push) urls for summarylive.php
 define ("LIVEJPEGURL","http://192.168.1.19/axis-cgi/jpg/image.cgi?resolution=320x240&compression=60");
 define ("LIVEMJPEGURL","http://192.168.1.19/axis-cgi/mjpg/video.cgi?resolution=320x240&compression=60&fps=1");

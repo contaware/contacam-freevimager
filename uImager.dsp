@@ -412,6 +412,10 @@ SOURCE=.\FTPUploadConfigurationDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\GeneralPage.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\getdxver.cpp
 # End Source File
 # Begin Source File
@@ -544,6 +548,10 @@ SOURCE=.\MovementDetectionPage.cpp
 # Begin Source File
 
 SOURCE=.\NetCom.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\NetworkPage.cpp
 # End Source File
 # Begin Source File
 
@@ -806,14 +814,6 @@ SOURCE=.\VideoDeviceView.cpp
 # Begin Source File
 
 SOURCE=.\VideoFormatDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GeneralPage.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\NetworkPage.cpp
 # End Source File
 # Begin Source File
 
@@ -1137,6 +1137,10 @@ SOURCE=.\FTPUploadConfigurationDlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\GeneralPage.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\getdxver.h
 # End Source File
 # Begin Source File
@@ -1250,6 +1254,10 @@ SOURCE=.\NetCom.h
 # Begin Source File
 
 SOURCE=.\NetFrameHdr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\NetworkPage.h
 # End Source File
 # Begin Source File
 
@@ -1530,14 +1538,6 @@ SOURCE=.\VideoDeviceView.h
 # Begin Source File
 
 SOURCE=.\VideoFormatDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\GeneralPage.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\NetworkPage.h
 # End Source File
 # Begin Source File
 
