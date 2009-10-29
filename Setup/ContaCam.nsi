@@ -237,7 +237,11 @@ Section "${APPNAME_NOEXT} Program (required)"
 !endif
   File "/oname=License.txt" "..\License\LicenseContaCam.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
+!ifdef INSTALLER_WIN9X
+  File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
+!else
   File "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
+!endif
   File "..\NeroBurn\Release\NeroBurn.exe"
   File "/oname=ActiveX\RemoteCam.htm" "..\ActiveX\RemoteCam.htm"
   File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"

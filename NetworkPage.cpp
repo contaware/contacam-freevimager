@@ -90,7 +90,7 @@ BOOL CNetworkPage::OnInitDialog()
 
 	// Video Send Enable Check Box
 	CButton* pCheckVideoPortEnable = (CButton*)GetDlgItem(IDC_VIDEO_PORT_ENABLED);
-	pCheckVideoPortEnable->SetCheck(m_pDoc->m_bSendVideoFrame);
+	pCheckVideoPortEnable->SetCheck(m_pDoc->m_bSendVideoFrame ? 1 : 0);
 	
 	// Video Send Port
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
@@ -235,7 +235,9 @@ void CNetworkPage::OnVideoPortEnabled()
 		::LeaveCriticalSection(&m_pDoc->m_csSendFrameNetCom);
 	}
 
-	// Enable / Disable Edit Ctrls
+	// Update Ctrls
+	CButton* pCheckVideoPortEnable = (CButton*)GetDlgItem(IDC_VIDEO_PORT_ENABLED);
+	pCheckVideoPortEnable->SetCheck(m_pDoc->m_bSendVideoFrame ? 1 : 0);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 	pEdit->EnableWindow(!m_pDoc->m_bSendVideoFrame);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_CONNECTIONS);
