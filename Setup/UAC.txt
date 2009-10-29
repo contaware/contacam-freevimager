@@ -1,11 +1,12 @@
-NSIS UAC Plugin v0.0.6d
------------------------
+NSIS UAC Plugin v0.0.11d
+------------------------
 
 Purpose: to run on vista or higher the installed application
          at the end of the setup as a normal user and not as
          admin like the installer itself.
 
-- UAC.nsh: has been modified to make the MessageBox silent compatible
-  (copy it to the Include directoty of the NSIS installer)
+- UAC.nsh: has been modified to make the MessageBox
+  (search for it case insensitive) silent compatible
+  -> copy it to the Include directoty of the NSIS installer
 - UAC.dll: is original
-  (copy it to the Plugins directoty of the NSIS installer)
+  -> copy it to the Plugins directoty of the NSIS installer

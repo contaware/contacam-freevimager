@@ -40,6 +40,7 @@ public:
 	int		m_nUsage;
 	int		m_nComboSnapshotRate;
 	int		m_nComboSnapshotHistoryRate;
+	int		m_nComboSnapshotHistorySize;
 	//}}AFX_DATA
 
 
@@ -55,7 +56,6 @@ protected:
 	CVideoDeviceDoc* m_pDoc;
 	BOOL m_bDoApplySettings;
 	CString m_sPhpConfigVersion;
-	CString m_sInitDefaultPage;
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void ApplySettings();
@@ -70,6 +70,7 @@ protected:
 	afx_msg void OnRadioManual();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnRadioNochange();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

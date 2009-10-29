@@ -8,6 +8,12 @@ Macros starting with UAC.I should only be called from the installer and vice ver
 */
 !ifndef UAC_HDR__INC
 !define UAC_HDR__INC
+!include LogicLib.nsh
+
+!define UAC.RunElevatedAndProcessMessages 'UAC::RunElevated '
+!define UAC.Unload 'UAC::Unload '
+!define UAC.StackPush 'UAC::StackPush '
+
 /*!macro _UAC.BuildOnInitElevationFunc _funcprefix
 Function ${_funcprefix}onInit
 !ifmacrodef
@@ -17,6 +23,7 @@ FunctionEnd
 !macro _UAC.GenerateSimpleFunction _funcprefix _funcName _funcCode
 Function ${_funcprefix}${_funcName}
 ${_funcCode}
+#messagebox mb_ok "${_funcprefix}${_funcName}" /SD IDOK
 FunctionEnd
 !macroend
 
@@ -46,11 +53,15 @@ FunctionEnd
 !ifNdef __UNINSTALL__
 	!error "UAC: _UAC.GenerateUninstallerTango should only be called by uninstaller, see http://forums.winamp.com/showthread.php?threadid=280330"
 	!endif
-!include LogicLib.nsh
+!ifNdef UAC_UNINSTALLERTANGOFORALLPLATFORMS
+	!include WinVer.nsh
+	!endif
 !insertmacro _UAC.InitStrings 'U.'
 ReadIniStr $0 "$ExeDir\${UACSTR.UnDataFile}" UAC "Un.Ready"
 ${IF} $0 != 1
-;TODO: ${AND} WinVer >= 6
+!ifNdef UAC_UNINSTALLERTANGOFORALLPLATFORMS
+${AndIf} ${AtLeastWinVista}
+!endif
 	InitPluginsDir
 	WriteIniStr "$PluginsDir\${UACSTR.UnDataFile}" UAC "Un.Ready" 1
 	CopyFiles /SILENT "$EXEPATH" "$PluginsDir\${UninstallerFileName}"
@@ -69,31 +80,31 @@ ${IF} $0 != 1
 	!error "UAC: Needs to be called inside a function"
 	!endif
 !insertmacro _UAC.InitStrings ${_modeprefix}
-UAC_Elevate:
+!define _UAC.GOIECUniq L${__LINE__}
+UAC_Elevate_${_UAC.GOIECUniq}:
 UAC::RunElevated 
-StrCmp 1223 $0 UAC_ElevationAborted ; UAC dialog aborted by user?
-StrCmp 0 $0 0 UAC_Err ; Error?
-StrCmp 1 $1 0 UAC_Success ;Are we the real deal or just the wrapper?
+StrCmp 1223 $0 UAC_ElevationAborted_${_UAC.GOIECUniq} ; UAC dialog aborted by user?
+StrCmp 0 $0 0 UAC_Err_${_UAC.GOIECUniq} ; Error?
+StrCmp 1 $1 0 UAC_Success_${_UAC.GOIECUniq} ;Are we the real deal or just the wrapper?
 Quit
-UAC_Err:
-MessageBox MB_OK|MB_ICONSTOP "${UACSTR.${_modeprefix}ElvWinErr}" /SD IDOK
+UAC_Err_${_UAC.GOIECUniq}:
+MessageBox mb_iconstop "${UACSTR.${_modeprefix}ElvWinErr}" /SD IDOK
 Abort
-UAC_ElevationAborted:
-MessageBox MB_OK|MB_ICONSTOP "${UACSTR.${_modeprefix}ElvAbortReqAdmin}" /SD IDOK
+UAC_ElevationAborted_${_UAC.GOIECUniq}:
+MessageBox mb_iconstop "${UACSTR.${_modeprefix}ElvAbortReqAdmin}" /SD IDOK
 Abort
-UAC_Success:
+UAC_Success_${_UAC.GOIECUniq}:
 # if $0==0 && $3==1, we are a member of the admin group (Any OS)
 # if $0==0 && $1==0, UAC not supported (Probably <NT6), run as normal?
 # if $0==0 && $1==3, we can try to elevate again
-StrCmp 1 $3 /*+4*/ UAC_Done ;Admin?
-StrCmp 3 $1 0 UAC_ElevationAborted ;Try again or abort?
-MessageBox MB_OK|MB_ICONEXCLAMATION "${UACSTR.${_modeprefix}ElvMustTryAgain}" /SD IDOK
-goto UAC_Elevate ;...lets try again
-UAC_Done:
+StrCmp 1 $3 /*+4*/ UAC_Done_${_UAC.GOIECUniq} ;Admin?
+StrCmp 3 $1 0 UAC_ElevationAborted_${_UAC.GOIECUniq} ;Try again or abort?
+MessageBox mb_iconexclamation "${UACSTR.${_modeprefix}ElvMustTryAgain}" /SD IDOK ;Inform user...
+goto UAC_Elevate_${_UAC.GOIECUniq} ;...lets try again
+UAC_Done_${_UAC.GOIECUniq}:
+!undef _UAC.GOIECUniq
 !macroend
 !endif
-
-!define UAC.Unload 'UAC::Unload'
 
 !define UAC.I.Elevate.AdminOnly '!insertmacro UAC.I.Elevate.AdminOnly '
 !macro UAC.I.Elevate.AdminOnly
@@ -102,7 +113,9 @@ UAC_Done:
 
 !define UAC.U.Elevate.AdminOnly '!insertmacro UAC.U.Elevate.AdminOnly '
 !macro UAC.U.Elevate.AdminOnly _UninstallerName
-!insertmacro _UAC.GenerateUninstallerTango "${_UninstallerName}"
+!ifNdef UAC_DISABLEUNINSTALLERTANGO
+	!insertmacro _UAC.GenerateUninstallerTango "${_UninstallerName}"
+	!endif
 !insertmacro _UAC.GenerateOnInitElevationCode 'U.'
 !macroend
 
@@ -110,14 +123,24 @@ UAC_Done:
 !macro UAC.AutoCodeUnload _HasUninstaller
 !insertmacro _UAC.GenerateSimpleFunction "" .OnInstFailed '${UAC.Unload}'
 !insertmacro _UAC.GenerateSimpleFunction "" .OnInstSuccess '${UAC.Unload}'
+!ifNdef MUI_INCLUDED
+	!insertmacro _UAC.GenerateSimpleFunction "" .onUserAbort '${UAC.Unload}'
+	!else
+	!ifNdef MUI_CUSTOMFUNCTION_ABORT
+		!error "UAC: must call $$ {UAC.Unload} in MUI_CUSTOMFUNCTION_ABORT!"
+		!endif
+	!endif
 !if "${_HasUninstaller}" != ""
 	!insertmacro _UAC.GenerateSimpleFunction "un" .onUninstFailed '${UAC.Unload}'
 	!insertmacro _UAC.GenerateSimpleFunction "un" .onUninstSuccess '${UAC.Unload}'
+	!ifNdef MUI_INCLUDED
+		!insertmacro _UAC.GenerateSimpleFunction "un" .onUserAbort '${UAC.Unload}'
+		!else
+		!ifNdef MUI_CUSTOMFUNCTION_ABORT
+			!error "UAC: must call $$ {UAC.Unload} in MUI_CUSTOMFUNCTION_(UN)ABORT!"
+			!endif
+		!endif
 	!endif
-!macroend
-
-!define UAC.AutoCodeAdmin '!insertmacro UAC.AutoCodeAdmin '
-!macro UAC.AutoCodeAdmin
 !macroend
 
 !define UAC.FastCallFunctionAsUser '!insertmacro UAC.FastCallFunctionAsUser '
@@ -132,6 +155,16 @@ push $R9
 pop $R9
 !macroend
 
+!define UAC.FastCallGetOuterInstanceHwndParent UAC::GetOuterHwnd
+!define UAC.GetOuterInstanceHwndParent '!insertmacro UAC.GetOuterInstanceHwndParent '
+!macro UAC.GetOuterInstanceHwndParent _var
+push $0
+${UAC.FastCallGetOuterInstanceHwndParent}
+Exch $0
+Pop ${_var}
+!macroend
+
+
 
 !macro _UAC.DumpEx _disp _f _fp _v
 ${_f} ${_fp}
@@ -141,11 +174,18 @@ DetailPrint "${_disp}=${_v}"
 !insertmacro _UAC.DumpEx `${_f}` `${_f}` `${_fp}` `${_v}`
 !macroend
 !macro _UAC.DbgDetailPrint
-!insertmacro _UAC.DumpEx "User" System::Call "advapi32::GetUserName(t.r0,*i${NSIS_MAX_STRLEN})" $0
+push $0
+push $1
+System::Call /NoUnload "advapi32::GetUserName(t.r0,*i${NSIS_MAX_STRLEN})"
+System::Call "Kernel32::GetComputerName(t.r1,*i${NSIS_MAX_STRLEN})"
+DetailPrint "$1\$0"
+;!insertmacro _UAC.DumpEx "User" System::Call "advapi32::GetUserName(t.r0,*i${NSIS_MAX_STRLEN})" $0
 !insertmacro _UAC.DumpEx "CmdLine" "" "" "$CmdLine"
 !insertmacro _UAC.Dump UAC::IsAdmin "" $0
 !insertmacro _UAC.Dump UAC::SupportsUAC "" $0
 !insertmacro _UAC.Dump UAC::GetElevationType "" $0
+pop $1
+pop $0
 !macroend
 
 !endif /* ifndef UAC_HDR__INC */

@@ -49,6 +49,7 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_MOVDET, m_nUsage);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOT_RATE, m_nComboSnapshotRate);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_RATE, m_nComboSnapshotHistoryRate);
+	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	//}}AFX_DATA_MAP
 }
 
@@ -61,6 +62,7 @@ BEGIN_MESSAGE_MAP(CAssistantPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_RADIO_SNAPSHOTHISTORY, OnRadioSnapshothistory)
 	ON_BN_CLICKED(IDC_RADIO_SNAPSHOT, OnRadioSnapshot)
 	ON_BN_CLICKED(IDC_RADIO_MANUAL, OnRadioManual)
+	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
 	//}}AFX_MSG_MAP
@@ -86,6 +88,14 @@ BOOL CAssistantPage::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1737, "3 Minutes Rate"));
 		pComboBox->AddString(ML_STRING(1738, "4 Minutes Rate"));
 		pComboBox->AddString(ML_STRING(1739, "5 Minutes Rate"));
+	}
+	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+	if (pComboBox)
+	{
+		pComboBox->AddString(ML_STRING(1555, "Full"));
+		pComboBox->AddString(_T("3/4"));
+		pComboBox->AddString(_T("1/2"));
+		pComboBox->AddString(_T("1/4"));
 	}
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 	if (pComboBox)
@@ -175,15 +185,17 @@ BOOL CAssistantPage::OnInitDialog()
 	}
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_sPhpConfigVersion = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_VERSION);
-	m_sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
-	if (m_sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME)
+	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
+	if (sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME)
 		m_nUsage = 0;
-	else if (m_sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
+	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
 		m_nUsage = 1;
-	else if (m_sInitDefaultPage == PHPCONFIG_SNAPSHOT_NAME)
+	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOT_NAME)
 		m_nUsage = 2;
-	else
+	else if (sInitDefaultPage == PHPCONFIG_SUMMARYIFRAME_NAME)
 		m_nUsage = 3;
+	else
+		m_nUsage = 4;
 	if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 366)
 		m_nComboKeepFor = 11;	// Infinite
 	else if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 183)
@@ -224,6 +236,22 @@ BOOL CAssistantPage::OnInitDialog()
 		m_nComboSnapshotHistoryRate = 1;	// 30 Seconds
 	else
 		m_nComboSnapshotHistoryRate = 0;	// 15 Seconds
+	if (!m_pDoc->m_bSnapshotThumb)
+		m_nComboSnapshotHistorySize = 0;	// Full Size
+	else
+	{
+		int nSizeRatio = 75;
+		if (m_pDoc->m_DocRect.right > 0)
+			nSizeRatio = 100 * m_pDoc->m_nSnapshotThumbWidth / m_pDoc->m_DocRect.right;
+		if (nSizeRatio > 75)
+			m_nComboSnapshotHistorySize = 0;// Full Size
+		else if (nSizeRatio > 50)
+			m_nComboSnapshotHistorySize = 1;// 3 / 4 Size
+		else if (nSizeRatio > 25)
+			m_nComboSnapshotHistorySize = 2;// 1 / 2 Size
+		else
+			m_nComboSnapshotHistorySize = 3;// 1 / 4 Size
+	}
 	if (m_pDoc->m_nSnapshotRate > 240)
 		m_nComboSnapshotRate = 12;			// 5 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 180)
@@ -318,11 +346,15 @@ void CAssistantPage::EnableDisableCtrls()
 	{
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 		pComboBox->EnableWindow(FALSE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_SNAPSHOTHISTORY_SIZE);
+		pEdit->EnableWindow(FALSE);
+		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(!m_pDoc->m_pVideoAviDoc);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(TRUE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 		pComboBox->EnableWindow(TRUE);
@@ -331,11 +363,15 @@ void CAssistantPage::EnableDisableCtrls()
 	{
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 		pComboBox->EnableWindow(TRUE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_SNAPSHOTHISTORY_SIZE);
+		pEdit->EnableWindow(TRUE);
+		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+		pComboBox->EnableWindow(TRUE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 		pComboBox->EnableWindow(FALSE);
@@ -344,11 +380,15 @@ void CAssistantPage::EnableDisableCtrls()
 	{
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 		pComboBox->EnableWindow(FALSE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_SNAPSHOTHISTORY_SIZE);
+		pEdit->EnableWindow(FALSE);
+		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(TRUE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 		pComboBox->EnableWindow(FALSE);
@@ -357,11 +397,15 @@ void CAssistantPage::EnableDisableCtrls()
 	{
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 		pComboBox->EnableWindow(FALSE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_SNAPSHOTHISTORY_SIZE);
+		pEdit->EnableWindow(FALSE);
+		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 		pComboBox->EnableWindow(FALSE);
@@ -376,11 +420,15 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 	{
 		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 		pComboBox->EnableWindow(FALSE);
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_SNAPSHOTHISTORY_SIZE);
+		pEdit->EnableWindow(FALSE);
+		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_SIZE);
+		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 		pComboBox->EnableWindow(FALSE);
@@ -392,6 +440,8 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_SNAPSHOT);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_RADIO_NOCHANGE);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
@@ -421,6 +471,11 @@ void CAssistantPage::OnRadioSnapshot()
 }
 
 void CAssistantPage::OnRadioManual() 
+{
+	EnableDisableCtrls();
+}
+
+void CAssistantPage::OnRadioNochange() 
 {
 	EnableDisableCtrls();
 }
@@ -765,11 +820,27 @@ void CAssistantPage::ApplySettings()
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
-			BOOL bUseThumb = FALSE;
-			if (m_pDoc->m_DocRect.right > 320 || m_pDoc->m_DocRect.bottom > 240)
-				bUseThumb = TRUE;
-			int nThumbWidth = bUseThumb ? 320 : m_pDoc->m_DocRect.right;
-			int nThumbHeight = bUseThumb ? 240 : m_pDoc->m_DocRect.bottom;
+			BOOL bUseThumb = TRUE;
+			int nThumbWidth = m_pDoc->m_DocRect.right;
+			int nThumbHeight = m_pDoc->m_DocRect.bottom;
+			switch (m_nComboSnapshotHistorySize)
+			{
+				// Full Size
+				case 0	:	bUseThumb = FALSE;
+							break;
+				// 3 / 4 Size
+				case 1	:	nThumbWidth = 3 * nThumbWidth / 4;
+							nThumbHeight = 3 * nThumbHeight / 4;
+							break;
+				// 1 / 2 Size
+				case 2	:	nThumbWidth = nThumbWidth / 2;
+							nThumbHeight = nThumbHeight / 2;
+							break;
+				// 1 / 4 Size
+				default	:	nThumbWidth = nThumbWidth / 4;
+							nThumbHeight = nThumbHeight / 4;
+							break;
+			}
 			CString sThumbWidth, sThumbHeight;
 			sThumbWidth.Format(_T("%d"), nThumbWidth);
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
@@ -790,7 +861,7 @@ void CAssistantPage::ApplySettings()
 
 			// Enable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = TRUE;
-			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1); // Make new swf because Name may have been changed
+			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1); // Make new swf because Size or Name may have been changed
 
 			// Update controls
 			if (m_pDoc->m_pSnapshotPage)
@@ -847,27 +918,22 @@ void CAssistantPage::ApplySettings()
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
-			BOOL bUseThumb = FALSE;
-			if (m_pDoc->m_DocRect.right > 320 || m_pDoc->m_DocRect.bottom > 240)
-				bUseThumb = TRUE;
-			int nThumbWidth = bUseThumb ? 320 : m_pDoc->m_DocRect.right;
-			int nThumbHeight = bUseThumb ? 240 : m_pDoc->m_DocRect.bottom;
 			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), nThumbWidth);
-			sThumbHeight.Format(_T("%d"), nThumbHeight);
+			sThumbWidth.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
+			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, bUseThumb ? _T("1") : _T("0"));
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-			m_pDoc->m_bSnapshotThumb = bUseThumb;
+			m_pDoc->m_bSnapshotThumb = FALSE;
 			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Disable snapshot history
@@ -878,13 +944,13 @@ void CAssistantPage::ApplySettings()
 			if (m_pDoc->m_pSnapshotPage)
 			{
 				// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-				m_pDoc->m_pSnapshotPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
+				m_pDoc->m_pSnapshotPage->ChangeThumbSize(DEFAULT_SNAPSHOT_THUMB_WIDTH, DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 
 				// Enable live snapshots
 				CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
 				pCheck->SetCheck(1);
 				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-				pCheck->SetCheck(bUseThumb ? 1 : 0);
+				pCheck->SetCheck(0);
 				CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
 				pEdit->SetWindowText(sSnapShotRate);
 
@@ -895,8 +961,8 @@ void CAssistantPage::ApplySettings()
 			else
 			{
 				// Thumb size
-				m_pDoc->m_nSnapshotThumbWidth = nThumbWidth;
-				m_pDoc->m_nSnapshotThumbHeight = nThumbHeight;
+				m_pDoc->m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
+				m_pDoc->m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 			}
 
 			break;
@@ -918,10 +984,7 @@ void CAssistantPage::ApplySettings()
 			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 
 			// Update configuration.php
-			if (m_sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME ||
-				m_sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME ||
-				m_sInitDefaultPage == PHPCONFIG_SNAPSHOT_NAME)
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_NAME);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
@@ -1047,17 +1110,7 @@ void CAssistantPage::ApplySettings()
 	m_pDoc->ReStartProcessFrame();
 
 	// Set Autorun
-	if (m_nUsage == 3)
-	{
-		if (m_pDoc->m_pGeneralPage)
-		{
-			CButton* pCheck = (CButton*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_CHECK_AUTORUN);
-			pCheck->SetCheck(0);
-			m_pDoc->m_pGeneralPage->m_bAutorun = FALSE;
-		}
-		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
-	}
-	else
+	if (m_nUsage >= 0 && m_nUsage <= 2)
 	{
 		if (m_pDoc->m_pGeneralPage)
 		{
@@ -1066,6 +1119,17 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->m_pGeneralPage->m_bAutorun = TRUE;
 		}
 		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
+	}
+	// Clear Autorun
+	else if (m_nUsage == 3)
+	{
+		if (m_pDoc->m_pGeneralPage)
+		{
+			CButton* pCheck = (CButton*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_CHECK_AUTORUN);
+			pCheck->SetCheck(0);
+			m_pDoc->m_pGeneralPage->m_bAutorun = FALSE;
+		}
+		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
 	}
 
 	// End wait cursor

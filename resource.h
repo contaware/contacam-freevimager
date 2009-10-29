@@ -3147,6 +3147,7 @@
 #define IDC_EDIT_NAME                   2524
 #define IDC_RADIO_SNAPSHOTHISTORY       2525
 #define IDC_COMBO_SNAPSHOT_RATE         2526
+#define IDC_RADIO_NOCHANGE              2527
 #define IDC_COMBO_SNAPSHOTHISTORY_RATE  2528
 #define IDC_BUTTON_OPEN_KEYFILE         2528
 #define IDC_BUTTON_BUY_LICENSE          2529
@@ -3155,6 +3156,8 @@
 #define IDC_REG_NUMBER                  2531
 #define IDC_COMBO_ANIMGIF_SPEED         2531
 #define IDC_LABEL_THUMBSPERPAGE         2532
+#define IDC_COMBO_SNAPSHOTHISTORY_SIZE  2533
+#define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
 #define ID_CAPTURE_VIDEO_DEVICE         32774
 #define ID_CAPTURE_GRAB_JPEG            32775
 #define ID_EDIT_ROTATE                  32777
@@ -3462,7 +3465,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33164
-#define _APS_NEXT_CONTROL_VALUE         2533
+#define _APS_NEXT_CONTROL_VALUE         2534
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
