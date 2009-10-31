@@ -19,12 +19,10 @@ static char THIS_FILE[] = __FILE__;
 #  define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
-#define CAM_SPACING		10
-#define POLL_TIMER_ID	1
-#define POLL_TIMER_MS	500
-#define NETFRAME_DEFAULT_FRAMES			32U
-#define DEFAULT_UDP_PORT				8800
-#define REG_SECTION						_T("GeneralApp")
+#define POLL_TIMER_ID		1
+#define POLL_TIMER_MS		500
+#define REG_SECTION			_T("GeneralApp")
+#define MIN_SIZE			32
 
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamViewerView
@@ -94,47 +92,39 @@ void CRemoteCamViewerView::OnInitialUpdate()
 	CRect rc;
 	if (::IsWindow(m_RemoteCam0.m_hWnd))
 	{
-		m_RemoteCam0.GetClientRect(&rc);
-		m_szRemoteCamSize0 = rc.Size();
-		m_RemoteCam0.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host0"), _T("localhost")));
-		m_RemoteCam0.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port0"), DEFAULT_UDP_PORT));
-		m_RemoteCam0.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames0"), NETFRAME_DEFAULT_FRAMES));
-		m_RemoteCam0.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username0"), _T("")));
-		m_RemoteCam0.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password0"), _T("")));
-		m_RemoteCam0.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend0"), FALSE));
+		m_RemoteCam0.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host0"), m_RemoteCam0.GetHost()));
+		m_RemoteCam0.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port0"), m_RemoteCam0.GetPort()));
+		m_RemoteCam0.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames0"), m_RemoteCam0.GetMaxFrames()));
+		m_RemoteCam0.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username0"), m_RemoteCam0.GetUsername()));
+		m_RemoteCam0.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password0"), m_RemoteCam0.GetPassword()));
+		m_RemoteCam0.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend0"), m_RemoteCam0.GetDisableResend()));
 	}
 	if (::IsWindow(m_RemoteCam1.m_hWnd))
 	{
-		m_RemoteCam1.GetClientRect(&rc);
-		m_szRemoteCamSize1 = rc.Size();
-		m_RemoteCam1.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host1"), _T("localhost")));
-		m_RemoteCam1.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port1"), DEFAULT_UDP_PORT));
-		m_RemoteCam1.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames1"), NETFRAME_DEFAULT_FRAMES));
-		m_RemoteCam1.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username1"), _T("")));
-		m_RemoteCam1.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password1"), _T("")));
-		m_RemoteCam1.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend1"), FALSE));
+		m_RemoteCam1.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host1"), m_RemoteCam1.GetHost()));
+		m_RemoteCam1.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port1"), m_RemoteCam1.GetPort()));
+		m_RemoteCam1.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames1"), m_RemoteCam1.GetMaxFrames()));
+		m_RemoteCam1.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username1"), m_RemoteCam1.GetUsername()));
+		m_RemoteCam1.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password1"), m_RemoteCam1.GetPassword()));
+		m_RemoteCam1.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend1"), m_RemoteCam1.GetDisableResend()));
 	}
 	if (::IsWindow(m_RemoteCam2.m_hWnd))
 	{
-		m_RemoteCam2.GetClientRect(&rc);
-		m_szRemoteCamSize2 = rc.Size();
-		m_RemoteCam2.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host2"), _T("localhost")));
-		m_RemoteCam2.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port2"), DEFAULT_UDP_PORT));
-		m_RemoteCam2.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames2"), NETFRAME_DEFAULT_FRAMES));
-		m_RemoteCam2.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username2"), _T("")));
-		m_RemoteCam2.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password2"), _T("")));
-		m_RemoteCam2.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend2"), FALSE));
+		m_RemoteCam2.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host2"), m_RemoteCam2.GetHost()));
+		m_RemoteCam2.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port2"), m_RemoteCam2.GetPort()));
+		m_RemoteCam2.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames2"), m_RemoteCam2.GetMaxFrames()));
+		m_RemoteCam2.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username2"), m_RemoteCam2.GetUsername()));
+		m_RemoteCam2.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password2"), m_RemoteCam2.GetPassword()));
+		m_RemoteCam2.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend2"), m_RemoteCam2.GetDisableResend()));
 	}
 	if (::IsWindow(m_RemoteCam3.m_hWnd))
 	{
-		m_RemoteCam3.GetClientRect(&rc);
-		m_szRemoteCamSize3 = rc.Size();
-		m_RemoteCam3.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host3"), _T("localhost")));
-		m_RemoteCam3.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port3"), DEFAULT_UDP_PORT));
-		m_RemoteCam3.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames3"), NETFRAME_DEFAULT_FRAMES));
-		m_RemoteCam3.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username3"), _T("")));
-		m_RemoteCam3.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password3"), _T("")));
-		m_RemoteCam3.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend3"), FALSE));
+		m_RemoteCam3.SetHost(pApp->GetProfileString(REG_SECTION, _T("Host3"), m_RemoteCam3.GetHost()));
+		m_RemoteCam3.SetPort(pApp->GetProfileInt(REG_SECTION, _T("Port3"), m_RemoteCam3.GetPort()));
+		m_RemoteCam3.SetMaxFrames(pApp->GetProfileInt(REG_SECTION, _T("MaxFrames3"), m_RemoteCam3.GetMaxFrames()));
+		m_RemoteCam3.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username3"), m_RemoteCam3.GetUsername()));
+		m_RemoteCam3.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password3"), m_RemoteCam3.GetPassword()));
+		m_RemoteCam3.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend3"), m_RemoteCam3.GetDisableResend()));
 	}
 	SetTimer(POLL_TIMER_ID, POLL_TIMER_MS, NULL);
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
@@ -142,59 +132,6 @@ void CRemoteCamViewerView::OnInitialUpdate()
 	// For flicker free window painting (resizing)
 	ModifyStyle(NULL, WS_CLIPCHILDREN, 0);
 }
-
-BOOL CRemoteCamViewerView::PreCreateWindow(CREATESTRUCT& cs)
-{
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
-	return CFormView::PreCreateWindow(cs);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CRemoteCamViewerView printing
-
-BOOL CRemoteCamViewerView::OnPreparePrinting(CPrintInfo* pInfo)
-{
-	// default preparation
-	return DoPreparePrinting(pInfo);
-}
-
-void CRemoteCamViewerView::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: add extra initialization before printing
-}
-
-void CRemoteCamViewerView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: add cleanup after printing
-}
-
-void CRemoteCamViewerView::OnPrint(CDC* pDC, CPrintInfo* /*pInfo*/)
-{
-	// TODO: add customized printing code here
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CRemoteCamViewerView diagnostics
-
-#ifdef _DEBUG
-void CRemoteCamViewerView::AssertValid() const
-{
-	CFormView::AssertValid();
-}
-
-void CRemoteCamViewerView::Dump(CDumpContext& dc) const
-{
-	CFormView::Dump(dc);
-}
-
-CRemoteCamViewerDoc* CRemoteCamViewerView::GetDocument() // non-debug version is inline
-{
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CRemoteCamViewerDoc)));
-	return (CRemoteCamViewerDoc*)m_pDocument;
-}
-#endif //_DEBUG
 
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamViewerView message handlers
@@ -295,11 +232,11 @@ void CRemoteCamViewerView::RepositionCams()
 		CRect rcView;
 		GetClientRect(&rcView);
 
-		// Necessary Width and Offsets
-		int nNecessaryWidth = CAM_SPACING + MAX(MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize1.cx, m_szRemoteCamSize2.cx + m_szRemoteCamSize3.cx),
-												MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize3.cx, m_szRemoteCamSize1.cx + m_szRemoteCamSize2.cx));
-		int nNecessaryHeight = CAM_SPACING + MAX(MAX(m_szRemoteCamSize0.cy + m_szRemoteCamSize2.cy, m_szRemoteCamSize1.cy + m_szRemoteCamSize3.cy),
-												MAX(m_szRemoteCamSize0.cy + m_szRemoteCamSize3.cy, m_szRemoteCamSize1.cy + m_szRemoteCamSize2.cy));
+		// Necessary Sizes and Offsets
+		int nNecessaryWidth = MAX(	MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize1.cx, m_szRemoteCamSize2.cx + m_szRemoteCamSize3.cx),
+									MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize3.cx, m_szRemoteCamSize1.cx + m_szRemoteCamSize2.cx));
+		int nNecessaryHeight = MAX(	MAX(m_szRemoteCamSize0.cy + m_szRemoteCamSize2.cy, m_szRemoteCamSize1.cy + m_szRemoteCamSize3.cy),
+									MAX(m_szRemoteCamSize0.cy + m_szRemoteCamSize3.cy, m_szRemoteCamSize1.cy + m_szRemoteCamSize2.cy));
 		int nLeftOffset = (rcView.Width() - nNecessaryWidth) / 2;
 		if (nLeftOffset < 0)
 			nLeftOffset = 0;
@@ -313,12 +250,12 @@ void CRemoteCamViewerView::RepositionCams()
 		rc0.top = nTopOffset;
 		rc0.right = rc0.left + m_szRemoteCamSize0.cx;
 		rc0.bottom = rc0.top + m_szRemoteCamSize0.cy;
-		rc1.left = nLeftOffset + MAX(m_szRemoteCamSize0.cx, m_szRemoteCamSize2.cx) + CAM_SPACING;
+		rc1.left = nLeftOffset + MAX(m_szRemoteCamSize0.cx, m_szRemoteCamSize2.cx);
 		rc1.top = rc0.top;
 		rc1.right = rc1.left + m_szRemoteCamSize1.cx;
 		rc1.bottom = rc1.top + m_szRemoteCamSize1.cy;
 		rc2.left = rc0.left;
-		rc2.top = nTopOffset + MAX(m_szRemoteCamSize0.cy, m_szRemoteCamSize1.cy) + CAM_SPACING;
+		rc2.top = nTopOffset + MAX(m_szRemoteCamSize0.cy, m_szRemoteCamSize1.cy);
 		rc2.right = rc2.left + m_szRemoteCamSize2.cx;
 		rc2.bottom = rc2.top + m_szRemoteCamSize2.cy;
 		rc3.left = rc1.left;
@@ -333,10 +270,22 @@ void CRemoteCamViewerView::RepositionCams()
 		ClipToView(&rc3);
 
 		// Set Window Positions
-		m_RemoteCam0.SetWindowPos(NULL, rc0.left, rc0.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
-		m_RemoteCam1.SetWindowPos(NULL, rc1.left, rc1.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
-		m_RemoteCam2.SetWindowPos(NULL, rc2.left, rc2.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
-		m_RemoteCam3.SetWindowPos(NULL, rc3.left, rc3.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOZORDER);
+		if (rc0.Width() > MIN_SIZE && rc0.Height() > MIN_SIZE)
+			m_RemoteCam0.SetWindowPos(&wndTop, rc0.left, rc0.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+		else
+			m_RemoteCam0.SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		if (rc1.Width() > MIN_SIZE && rc1.Height() > MIN_SIZE)
+			m_RemoteCam1.SetWindowPos(&wndTop, rc1.left, rc1.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+		else
+			m_RemoteCam1.SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		if (rc2.Width() > MIN_SIZE && rc2.Height() > MIN_SIZE)
+			m_RemoteCam2.SetWindowPos(&wndTop, rc2.left, rc2.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+		else
+			m_RemoteCam2.SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+		if (rc3.Width() > MIN_SIZE && rc3.Height() > MIN_SIZE)
+			m_RemoteCam3.SetWindowPos(&wndTop, rc3.left, rc3.top, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
+		else
+			m_RemoteCam3.SetWindowPos(&wndBottom, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 	}
 }
 
@@ -348,25 +297,25 @@ void CRemoteCamViewerView::OnTimer(UINT nIDEvent)
 		CRect rc;
 		BOOL bChanged = FALSE;
 		m_RemoteCam0.GetClientRect(&rc);
-		if (rc.Size() != m_szRemoteCamSize0)
+		if (rc.Width() > MIN_SIZE && rc.Height() > MIN_SIZE && rc.Size() != m_szRemoteCamSize0)
 		{
 			bChanged = TRUE;
 			m_szRemoteCamSize0 = rc.Size();
 		}
 		m_RemoteCam1.GetClientRect(&rc);
-		if (rc.Size() != m_szRemoteCamSize1)
+		if (rc.Width() > MIN_SIZE && rc.Height() > MIN_SIZE && rc.Size() != m_szRemoteCamSize1)
 		{
 			bChanged = TRUE;
 			m_szRemoteCamSize1 = rc.Size();
 		}
 		m_RemoteCam2.GetClientRect(&rc);
-		if (rc.Size() != m_szRemoteCamSize2)
+		if (rc.Width() > MIN_SIZE && rc.Height() > MIN_SIZE && rc.Size() != m_szRemoteCamSize2)
 		{
 			bChanged = TRUE;
 			m_szRemoteCamSize2 = rc.Size();
 		}
 		m_RemoteCam3.GetClientRect(&rc);
-		if (rc.Size() != m_szRemoteCamSize3)
+		if (rc.Width() > MIN_SIZE && rc.Height() > MIN_SIZE && rc.Size() != m_szRemoteCamSize3)
 		{
 			bChanged = TRUE;
 			m_szRemoteCamSize3 = rc.Size();
@@ -377,14 +326,35 @@ void CRemoteCamViewerView::OnTimer(UINT nIDEvent)
 	CFormView::OnTimer(nIDEvent);
 }
 
+void CRemoteCamViewerView::OnSize(UINT nType, int cx, int cy) 
+{
+	CFormView::OnSize(nType, cx, cy);
+	RepositionCams();
+}
+
 void CRemoteCamViewerView::OnDestroy() 
 {
 	CFormView::OnDestroy();
 	KillTimer(POLL_TIMER_ID);	
 }
 
-void CRemoteCamViewerView::OnSize(UINT nType, int cx, int cy) 
+/////////////////////////////////////////////////////////////////////////////
+// CRemoteCamViewerView diagnostics
+
+#ifdef _DEBUG
+void CRemoteCamViewerView::AssertValid() const
 {
-	CFormView::OnSize(nType, cx, cy);
-	RepositionCams();
+	CFormView::AssertValid();
 }
+
+void CRemoteCamViewerView::Dump(CDumpContext& dc) const
+{
+	CFormView::Dump(dc);
+}
+
+CRemoteCamViewerDoc* CRemoteCamViewerView::GetDocument() // non-debug version is inline
+{
+	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CRemoteCamViewerDoc)));
+	return (CRemoteCamViewerDoc*)m_pDocument;
+}
+#endif //_DEBUG
