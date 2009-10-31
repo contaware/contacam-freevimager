@@ -179,12 +179,12 @@ SOURCE=.\ReadMe.txt
 # End Source File
 # End Target
 # End Project
+# Section RemoteCamViewer : {08CF6679-5BB3-4EF4-A773-C410DC56531C}
+# 	2:21:DefaultSinkHeaderFile:remotecam.h
+# 	2:16:DefaultSinkClass:CRemoteCam
+# End Section
 # Section RemoteCamViewer : {7AA2FD65-BB4D-490D-8926-6805BB402467}
 # 	2:5:Class:CRemoteCam
 # 	2:10:HeaderFile:remotecam.h
 # 	2:8:ImplFile:remotecam.cpp
-# End Section
-# Section RemoteCamViewer : {08CF6679-5BB3-4EF4-A773-C410DC56531C}
-# 	2:21:DefaultSinkHeaderFile:remotecam.h
-# 	2:16:DefaultSinkClass:CRemoteCam
 # End Section

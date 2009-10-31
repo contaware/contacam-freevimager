@@ -7,13 +7,19 @@
 #define IDD_REMOTECAMVIEWER_FORM        101
 #define IDR_MAINFRAME                   128
 #define IDR_TESTCOTYPE                  129
-#define IDC_REMOTECAMCTRL               1000
+#define IDC_REMOTECAMCTRL0              1000
+#define IDC_REMOTECAMCTRL1              1001
+#define IDC_REMOTECAMCTRL2              1002
+#define IDC_REMOTECAMCTRL3              1003
 #define IDC_STATIC2141                  2141
 #define ID_FILE_TEST                    32771
 #define ID_HELP_ABOUTCTRL               32772
 #define ID_TOOLS_REGISTER               32773
 #define ID_TOOLS_UNREGISTER             32774
-#define ID_TOOLS_SHOWPROP               32775
+#define ID_TOOLS_SHOWPROP0              32776
+#define ID_TOOLS_SHOWPROP1              32777
+#define ID_TOOLS_SHOWPROP2              32778
+#define ID_TOOLS_SHOWPROP3              32779
 
 // Next default values for new objects
 // 
@@ -21,7 +27,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        131
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_COMMAND_VALUE         32780
 #define _APS_NEXT_CONTROL_VALUE         1002
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

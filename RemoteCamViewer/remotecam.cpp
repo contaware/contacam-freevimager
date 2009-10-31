@@ -63,6 +63,30 @@ void CRemoteCam::SetDisableResend(BOOL propVal)
 	SetProperty(0x4, VT_BOOL, propVal);
 }
 
+CString CRemoteCam::GetUsername()
+{
+	CString result;
+	GetProperty(0x5, VT_BSTR, (void*)&result);
+	return result;
+}
+
+void CRemoteCam::SetUsername(LPCTSTR propVal)
+{
+	SetProperty(0x5, VT_BSTR, propVal);
+}
+
+CString CRemoteCam::GetPassword()
+{
+	CString result;
+	GetProperty(0x6, VT_BSTR, (void*)&result);
+	return result;
+}
+
+void CRemoteCam::SetPassword(LPCTSTR propVal)
+{
+	SetProperty(0x6, VT_BSTR, propVal);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCam operations
 

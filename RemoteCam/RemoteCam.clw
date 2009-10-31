@@ -16,10 +16,10 @@ ResourceCount=6
 LastPage=0
 Resource1=IDD_PROPPAGE_REMOTECAM (Italian (Switzerland))
 Resource2=IDD_PROPPAGE_REMOTECAM (English (U.S.))
-Resource3=IDD_ABOUTBOX_REMOTECAM
+Resource3=IDD_PROPPAGE_REMOTECAM
 Resource4=IDD_ABOUTBOX_REMOTECAM (Italian (Switzerland))
 Resource5=IDD_ABOUTBOX_REMOTECAM (English (U.S.))
-Resource6=IDD_PROPPAGE_REMOTECAM
+Resource6=IDD_ABOUTBOX_REMOTECAM
 
 [CLS:CRemoteCamCtrl]
 Type=0

@@ -3,26 +3,9 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: RemoteCamViewer - Win32 ContaCam--------------------
+--------------------Configuration: RemoteCamViewer - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating command line "rc.exe /l 0x409 /fo"../Obj/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.res" /d "NDEBUG" "C:\uimager\RemoteCamViewer\RemoteCamViewer.rc"" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP32A2.tmp" with contents
-[
-/nologo /subsystem:windows /incremental:no /pdb:"../Bin/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.pdb" /machine:I386 /out:"../Bin/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.exe" 
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\MainFrm.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\remotecam.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewerDoc.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewerView.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\StdAfx.obj
-\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.res
-\uimager\Bin\RemoteCam\ReleaseNoDLL\RemoteCam.lib
-]
-Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP32A2.tmp"
-<h3>Output Window</h3>
-Compiling resources...
-Linking...
 
 
 

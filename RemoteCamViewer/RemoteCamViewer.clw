@@ -2,7 +2,7 @@
 
 [General Info]
 Version=1
-LastClass=CRemoteCamViewerDoc
+LastClass=CRemoteCamViewerView
 LastTemplate=CDialog
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "remotecamviewer.h"
@@ -16,9 +16,9 @@ Class4=CRemoteCamViewerDoc
 Class5=CRemoteCamViewerView
 
 ResourceCount=3
-Resource1=IDD_REMOTECAMVIEWER_FORM
-Resource2=IDD_ABOUTBOX
-Resource3=IDR_MAINFRAME
+Resource1=IDD_ABOUTBOX
+Resource2=IDR_MAINFRAME
+Resource3=IDD_REMOTECAMVIEWER_FORM
 
 [CLS:CMainFrame]
 Type=0
@@ -56,7 +56,7 @@ HeaderFile=RemoteCamViewerView.h
 ImplementationFile=RemoteCamViewerView.cpp
 Filter=D
 VirtualFilter=VWC
-LastObject=CRemoteCamViewerView
+LastObject=ID_TOOLS_SHOWPROP3
 
 [DLG:IDD_ABOUTBOX]
 Type=1
@@ -70,8 +70,11 @@ Control4=IDC_STATIC2141,static,1342308352
 [DLG:IDD_REMOTECAMVIEWER_FORM]
 Type=1
 Class=CRemoteCamViewerView
-ControlCount=1
-Control1=IDC_REMOTECAMCTRL,{08CF6679-5BB3-4EF4-A773-C410DC56531C},1342242816
+ControlCount=4
+Control1=IDC_REMOTECAMCTRL0,{08CF6679-5BB3-4EF4-A773-C410DC56531C},1342177280
+Control2=IDC_REMOTECAMCTRL1,{08CF6679-5BB3-4EF4-A773-C410DC56531C},1342177280
+Control3=IDC_REMOTECAMCTRL2,{08CF6679-5BB3-4EF4-A773-C410DC56531C},1342177280
+Control4=IDC_REMOTECAMCTRL3,{08CF6679-5BB3-4EF4-A773-C410DC56531C},1342177280
 
 [TB:IDR_MAINFRAME]
 Type=1
@@ -92,8 +95,11 @@ Class=?
 Command1=ID_APP_EXIT
 Command2=ID_TOOLS_REGISTER
 Command3=ID_TOOLS_UNREGISTER
-Command4=ID_TOOLS_SHOWPROP
-Command5=ID_APP_ABOUT
-Command6=ID_HELP_ABOUTCTRL
-CommandCount=6
+Command4=ID_TOOLS_SHOWPROP0
+Command5=ID_TOOLS_SHOWPROP1
+Command6=ID_TOOLS_SHOWPROP2
+Command7=ID_TOOLS_SHOWPROP3
+Command8=ID_APP_ABOUT
+Command9=ID_HELP_ABOUTCTRL
+CommandCount=9
 

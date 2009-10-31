@@ -26,6 +26,9 @@ public:
 	BOOL IsRegistered();
 	BOOL Register();
 	BOOL Unregister();
+	BOOL WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
+	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
+	BOOL m_bWin2000OrHigher;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

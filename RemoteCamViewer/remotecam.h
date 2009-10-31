@@ -50,6 +50,10 @@ public:
 	void SetMaxFrames(long);
 	BOOL GetDisableResend();
 	void SetDisableResend(BOOL);
+	CString GetUsername();
+	void SetUsername(LPCTSTR);
+	CString GetPassword();
+	void SetPassword(LPCTSTR);
 
 // Operations
 public:

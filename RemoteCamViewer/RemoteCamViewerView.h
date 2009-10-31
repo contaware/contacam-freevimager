@@ -22,7 +22,10 @@ protected: // create from serialization only
 public:
 	//{{AFX_DATA(CRemoteCamViewerView)
 	enum { IDD = IDD_REMOTECAMVIEWER_FORM };
-	CRemoteCam	m_RemoteCam;
+	CRemoteCam	m_RemoteCam0;
+	CRemoteCam	m_RemoteCam1;
+	CRemoteCam	m_RemoteCam2;
+	CRemoteCam	m_RemoteCam3;
 	//}}AFX_DATA
 
 // Attributes
@@ -55,7 +58,12 @@ public:
 #endif
 
 protected:
-	CSize m_szRemoteCamSize;
+	CSize m_szRemoteCamSize0;
+	CSize m_szRemoteCamSize1;
+	CSize m_szRemoteCamSize2;
+	CSize m_szRemoteCamSize3;
+	void ClipToView(LPRECT lpRect) const;
+	void RepositionCams();
 
 // Generated message map functions
 protected:
@@ -63,7 +71,11 @@ protected:
 	afx_msg void OnHelpAboutctrl();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
-	afx_msg void OnToolsShowprop();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnToolsShowprop0();
+	afx_msg void OnToolsShowprop1();
+	afx_msg void OnToolsShowprop2();
+	afx_msg void OnToolsShowprop3();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

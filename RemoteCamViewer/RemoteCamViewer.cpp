@@ -14,6 +14,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define MYCOMPANY		_T("Contaware")
+
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamViewerApp
 
@@ -35,8 +37,7 @@ END_MESSAGE_MAP()
 
 CRemoteCamViewerApp::CRemoteCamViewerApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+	m_bWin2000OrHigher = FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -166,9 +167,22 @@ BOOL CRemoteCamViewerApp::InitInstance()
 #endif
 #endif
 
-	// Is Registered?
+	// Registry key under which the settings are stored
+	SetRegistryKey(MYCOMPANY);
+
+	// Load standard INI file options (including MRU)
+	LoadStdProfileSettings();
+
+	// Is ActiveX Registered?
 	if (!IsRegistered())
 		Register();
+
+	// Get Win Version
+	OSVERSIONINFO ovi = {0};
+    ovi.dwOSVersionInfoSize = sizeof(ovi);
+	GetVersionEx(&ovi);
+	m_bWin2000OrHigher =	(ovi.dwPlatformId == 2)	&&
+							(ovi.dwMajorVersion >= 5);
 
 	// Register the application's document templates. Document templates
 	// serve as the connection between documents, frame windows and views.
@@ -196,7 +210,6 @@ BOOL CRemoteCamViewerApp::InitInstance()
 
 	return TRUE;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
@@ -249,6 +262,123 @@ void CRemoteCamViewerApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
+}
+
+typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+BOOL CRemoteCamViewerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue)
+{
+	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	if (!h)
+		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
+	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)::GetProcAddress(h, "CryptProtectData");
+	if (fpCryptProtectData && m_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	{
+		DATA_BLOB blobIn, blobOut, blobEntropy;
+		blobIn.pbData = (BYTE*)lpszValue;
+		blobIn.cbData = sizeof(TCHAR) * (_tcslen(lpszValue) + 1);
+		blobOut.cbData = 0;
+		blobOut.pbData = NULL;
+		BYTE Entropy[] = {
+			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
+			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
+		blobEntropy.pbData = Entropy;
+		blobEntropy.cbData = sizeof(Entropy);
+
+		if (fpCryptProtectData(	&blobIn,
+#ifdef _UNICODE
+								L"UNICODE",	// Windows 2000:  This parameter is required and cannot be set to NULL
+#else
+								L"ASCII",	// Windows 2000:  This parameter is required and cannot be set to NULL
+#endif
+								&blobEntropy,
+								NULL,
+								NULL,
+								0,
+								&blobOut))
+		{
+			BOOL res = WriteProfileBinary(lpszSection, lpszEntry, (LPBYTE)blobOut.pbData, (UINT)blobOut.cbData);
+			::LocalFree(blobOut.pbData);
+			::FreeLibrary(h);
+			return res;
+		}
+		else
+		{
+			::LocalFree(blobOut.pbData);
+			::FreeLibrary(h);
+			return FALSE;
+		}
+	}
+	else
+	{
+		::FreeLibrary(h);
+		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
+	}
+}
+
+typedef BOOL (WINAPI * FPCRYPTUNPROTECTDATA)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID*, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
+CString CRemoteCamViewerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
+{
+	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	if (!h)
+		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
+	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)::GetProcAddress(h, "CryptUnprotectData");
+	if (fpCryptUnprotectData && m_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	{
+		DATA_BLOB blobIn, blobOut, blobEntropy;
+		blobIn.cbData = 0;
+		blobIn.pbData = NULL;
+		blobOut.cbData = 0;
+		blobOut.pbData = NULL;
+		BYTE Entropy[] = {
+			0x6B, 0x31, 0x20, 0x85, 0x08, 0x79, 0xA3, 0x1B, 0x53, 0xAB, 0x3D, 0x08, 0x67, 0xFD, 0x55, 0x66, 
+			0x26, 0x7B, 0x46, 0x28, 0x91, 0xBB, 0x11, 0x8D, 0x8E, 0xB0, 0x2C, 0x99, 0x1E, 0x5B, 0x4A, 0x68};
+		blobEntropy.pbData = Entropy;
+		blobEntropy.cbData = sizeof(Entropy);
+		LPWSTR pDescrOut = (LPWSTR)0xbaadf00d ; // Not NULL!
+
+		GetProfileBinary(lpszSection, lpszEntry, &blobIn.pbData, (UINT*)&blobIn.cbData);
+		if (blobIn.pbData && (blobIn.cbData > 0))
+		{
+			if (fpCryptUnprotectData(	&blobIn,
+										&pDescrOut,
+										&blobEntropy,
+										NULL,
+										NULL,
+										0,
+										&blobOut))
+			{
+				CString s;
+				CString sType(pDescrOut);
+				if (sType == L"UNICODE")
+					s = CString((LPCWSTR)blobOut.pbData);
+				else if (sType == L"ASCII")
+					s = CString((LPCSTR)blobOut.pbData);
+				delete [] blobIn.pbData;
+				::LocalFree(pDescrOut);
+				::LocalFree(blobOut.pbData);
+				::FreeLibrary(h);
+				return s;
+			}
+			else
+			{
+				delete [] blobIn.pbData;
+				::LocalFree(pDescrOut);
+				::LocalFree(blobOut.pbData);
+			}
+		}
+		else
+		{
+			if (blobIn.pbData)
+				delete [] blobIn.pbData;
+		}
+		::FreeLibrary(h);
+		return _T("");
+	}
+	else
+	{
+		::FreeLibrary(h);
+		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
