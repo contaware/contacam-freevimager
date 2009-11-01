@@ -322,7 +322,7 @@ SectionEnd
 Section "Start Menu Shortcuts"
 
   ; Stores to Start Menu for All Users
-  SetShellVarContext All
+  SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\${APPNAME_NOEXT}"
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${UNINSTNAME_LNK}" "$INSTDIR\${UNINSTNAME_EXT}" "" "$INSTDIR\${UNINSTNAME_EXT}" 0
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${APPNAME_NOEXT}.lnk" "$INSTDIR\${APPNAME_EXT}" "" "$INSTDIR\${APPNAME_EXT}" 0
@@ -494,11 +494,11 @@ Section "Uninstall"
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users
-  SetShellVarContext All
+  SetShellVarContext all
   Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
-
-  ; Remove directories used
   RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  
+  ; Remove directories used
   RMDir /r "$INSTDIR\Tutorials"
   RMDir "$INSTDIR"
   

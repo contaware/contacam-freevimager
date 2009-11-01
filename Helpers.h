@@ -123,20 +123,30 @@ extern BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus);
 // Wrapper for SHGetSpecialFolderPath, returns the path with no trailing backslash
 /*
 CSIDL_ALTSTARTUP				File system directory that corresponds to the user's nonlocalized Startup program group. 
-CSIDL_APPDATA					File system directory that serves as a common repository for application-specific data. 
+CSIDL_APPDATA					The file system directory that serves as a common repository for application-specific data.
+								A typical path is C:\Documents and Settings\username\Application Data.
+CSIDL_LOCAL_APPDATA             The file system directory that serves as a data repository for local (nonroaming) applications.
+								A typical path is C:\Documents and Settings\username\Local Settings\Application Data.
+CSIDL_COMMON_APPDATA			The file system directory that contains application data for all users.
+								A typical path is C:\Documents and Settings\All Users\Application Data.
+								This folder is used for application data that is not user specific.
 CSIDL_BITBUCKET					File system directory containing file objects in the user's Recycle Bin.
-								The location of this directory is not in the registry; it is marked with the hidden and system attributes to prevent the user from moving or deleting it. 
+								The location of this directory is not in the registry;
+								it is marked with the hidden and system attributes to prevent the user from moving or deleting it. 
 CSIDL_COMMON_ALTSTARTUP			File system directory that corresponds to the nonlocalized Startup program group for all users. 
 CSIDL_COMMON_DESKTOPDIRECTORY	File system directory that contains files and folders that appear on the desktop for all users. 
 CSIDL_COMMON_FAVORITES			File system directory that serves as a common repository for all users' favorite items. 
-CSIDL_COMMON_PROGRAMS			File system directory that contains the directories for the common program groups that appear on the Start menu for all users. 
+CSIDL_COMMON_PROGRAMS			File system directory that contains the directories for the common program groups that appear
+								on the Start menu for all users. 
 CSIDL_COMMON_STARTMENU			File system directory that contains the programs and folders that appear on the Start menu for all users. 
 CSIDL_COMMON_STARTUP			File system directory that contains the programs that appear in the Startup folder for all users.  
 CSIDL_CONTROLS					Virtual folder containing icons for the Control Panel applications. 
 CSIDL_COOKIES					File system directory that serves as a common repository for Internet cookies. 
 CSIDL_DESKTOP					Windows Desktop, virtual folder at the root of the namespace. 
-CSIDL_DESKTOPDIRECTORY			File system directory used to physically store file objects on the desktop (not to be confused with the desktop folder itself). 
-CSIDL_DRIVES					My Computer—virtual folder containing everything on the local computer: storage devices, printers, and Control Panel. The folder may also contain mapped network drives. 
+CSIDL_DESKTOPDIRECTORY			File system directory used to physically store file objects on the desktop
+								(not to be confused with the desktop folder itself). 
+CSIDL_DRIVES					My Computer—virtual folder containing everything on the local computer: storage devices,
+								printers, and Control Panel. The folder may also contain mapped network drives. 
 CSIDL_FAVORITES					File system directory that serves as a common repository for the user's favorite items. 
 CSIDL_FONTS						Virtual folder containing fonts. 
 CSIDL_HISTORY					File system directory that serves as a common repository for Internet history items. 

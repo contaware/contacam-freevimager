@@ -345,7 +345,7 @@ SectionEnd
 Section "Start Menu Shortcuts"
 
   ; Stores to Start Menu for All Users
-  SetShellVarContext All
+  SetShellVarContext all
   CreateDirectory "$SMPROGRAMS\${APPNAME_NOEXT}"
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${UNINSTNAME_LNK}" "$INSTDIR\${UNINSTNAME_EXT}" "" "$INSTDIR\${UNINSTNAME_EXT}" 0
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${APPNAME_NOEXT}.lnk" "$INSTDIR\${APPNAME_EXT}" "" "$INSTDIR\${APPNAME_EXT}" 0
@@ -517,6 +517,7 @@ Section "Uninstall"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}"
   DeleteRegKey HKLM "Software\Contaware\${APPNAME_NOEXT}"
   DeleteRegKey HKCU "Software\Contaware\${APPNAME_NOEXT}"
+  DeleteRegKey HKCU "Software\Contaware\RemoteCamViewer"
   DeleteRegKey HKCR "Applications\${APPNAME_EXT}"
   
   ; Remove files and uninstaller
@@ -529,15 +530,21 @@ Section "Uninstall"
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users
-  SetShellVarContext All
+  SetShellVarContext all
   Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
-
-  ; Remove directories used
   RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  
+  ; Remove directories used
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
   RMDir "$INSTDIR"
+  
+  ; Remove application data directories for current user
+  SetShellVarContext current
+  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
+  RMDir "$APPDATA\Contaware"
   
   ; Refresh Icons
   call un.RefreshShellIcons
