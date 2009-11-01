@@ -154,6 +154,7 @@ void CRemoteCamViewerView::OnInitialUpdate()
 	}
 	SetTimer(POLL_TIMER_ID, POLL_TIMER_MS, NULL);
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
+	RepositionCams(); // Shifts down the 4 little ocx squares before they are init
 	ModifyStyle(NULL, WS_CLIPCHILDREN, 0); // for flicker free window painting (resizing)
 }
 
