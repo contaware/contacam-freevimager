@@ -2,23 +2,25 @@
 
 [General Info]
 Version=1
-LastClass=CRemoteCamViewerView
+LastClass=CSettingsDlg
 LastTemplate=CDialog
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "remotecamviewer.h"
 LastPage=0
 
-ClassCount=5
+ClassCount=6
 Class1=CMainFrame
 Class2=CRemoteCamViewerApp
 Class3=CAboutDlg
 Class4=CRemoteCamViewerDoc
 Class5=CRemoteCamViewerView
 
-ResourceCount=3
-Resource1=IDD_ABOUTBOX
-Resource2=IDR_MAINFRAME
+ResourceCount=4
+Resource1=IDR_MAINFRAME
+Resource2=IDD_ABOUTBOX
 Resource3=IDD_REMOTECAMVIEWER_FORM
+Class6=CSettingsDlg
+Resource4=IDD_SETTINGS
 
 [CLS:CMainFrame]
 Type=0
@@ -56,7 +58,7 @@ HeaderFile=RemoteCamViewerView.h
 ImplementationFile=RemoteCamViewerView.cpp
 Filter=D
 VirtualFilter=VWC
-LastObject=ID_TOOLS_SHOWPROP3
+LastObject=ID_FILE_SETTINGS
 
 [DLG:IDD_ABOUTBOX]
 Type=1
@@ -92,14 +94,41 @@ CommandCount=8
 [MNU:IDR_MAINFRAME]
 Type=1
 Class=?
-Command1=ID_APP_EXIT
-Command2=ID_TOOLS_REGISTER
-Command3=ID_TOOLS_UNREGISTER
-Command4=ID_TOOLS_SHOWPROP0
-Command5=ID_TOOLS_SHOWPROP1
-Command6=ID_TOOLS_SHOWPROP2
-Command7=ID_TOOLS_SHOWPROP3
-Command8=ID_APP_ABOUT
-Command9=ID_HELP_ABOUTCTRL
-CommandCount=9
+Command1=ID_FILE_SETTINGS
+Command2=ID_FILE_SHOWPROP0
+Command3=ID_FILE_SHOWPROP1
+Command4=ID_FILE_SHOWPROP2
+Command5=ID_FILE_SHOWPROP3
+Command6=ID_APP_EXIT
+Command7=ID_TOOLS_REGISTER
+Command8=ID_TOOLS_UNREGISTER
+Command9=ID_APP_ABOUT
+Command10=ID_HELP_ABOUTCTRL
+CommandCount=10
+
+[DLG:IDD_SETTINGS]
+Type=1
+Class=CSettingsDlg
+ControlCount=12
+Control1=IDOK,button,1342373889
+Control2=IDC_STATIC,static,1342308352
+Control3=IDC_EDIT_TITLE,edit,1350631552
+Control4=IDC_STATIC,static,1342308352
+Control5=IDC_EDIT_LABEL0,edit,1350631552
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_EDIT_LABEL1,edit,1350631552
+Control8=IDC_STATIC,static,1342308352
+Control9=IDC_EDIT_LABEL2,edit,1350631552
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_EDIT_LABEL3,edit,1350631552
+Control12=IDCANCEL,button,1342242816
+
+[CLS:CSettingsDlg]
+Type=0
+HeaderFile=SettingsDlg.h
+ImplementationFile=SettingsDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CSettingsDlg
 

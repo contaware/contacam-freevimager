@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -117,6 +117,10 @@ SOURCE=.\RemoteCamViewerView.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SettingsDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
 # End Source File
@@ -147,6 +151,10 @@ SOURCE=.\RemoteCamViewerView.h
 # Begin Source File
 
 SOURCE=.\Resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SettingsDlg.h
 # End Source File
 # Begin Source File
 

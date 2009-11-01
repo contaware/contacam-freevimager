@@ -41,6 +41,7 @@ public:
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnInitialUpdate(); // called first time after construct
+	virtual void OnDraw(CDC* pDC);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -56,20 +57,32 @@ protected:
 	CSize m_szRemoteCamSize1;
 	CSize m_szRemoteCamSize2;
 	CSize m_szRemoteCamSize3;
+	BOOL m_bInit0, m_bInit1, m_bInit2, m_bInit3;
+	CRect m_rc0, m_rc1, m_rc2, m_rc3;
+	CString m_sTitle;
+	CString m_sLabel0;
+	CString m_sLabel1;
+	CString m_sLabel2;
+	CString m_sLabel3;
+	CFont m_LabelFont;
+	int m_nTopOffset;
+	CFont m_TitleFont;
 	void ClipToView(LPRECT lpRect) const;
 	void RepositionCams();
 
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CRemoteCamViewerView)
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnHelpAboutctrl();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnToolsShowprop0();
-	afx_msg void OnToolsShowprop1();
-	afx_msg void OnToolsShowprop2();
-	afx_msg void OnToolsShowprop3();
+	afx_msg void OnFileShowprop0();
+	afx_msg void OnFileShowprop1();
+	afx_msg void OnFileShowprop2();
+	afx_msg void OnFileShowprop3();
+	afx_msg void OnFileSettings();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

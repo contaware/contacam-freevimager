@@ -3,9 +3,65 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: RemoteCam - Win32 ContaCam--------------------
+--------------------Configuration: RemoteCam - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E4F.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\ffmpeg\includes" /I "..\ffmpeg" /I "..\Dib" /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zip" /I "..\zlib" /I "..\giflib\lib" /D "_DEBUG" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D "_USRDLL" /D "_WINDLL" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCam/Debug/" /Fp"../Obj/RemoteCam/Debug/RemoteCam.pch" /Yu"stdafx.h" /Fo"../Obj/RemoteCam/Debug/" /Fd"../Obj/RemoteCam/Debug/" /FD /GZ /c 
+"C:\uimager\RemoteCam\NetGetFrame.cpp"
+]
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E4F.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E50.tmp" with contents
+[
+/nologo /subsystem:windows /dll /incremental:yes /pdb:"../Bin/RemoteCam/Debug/RemoteCam.pdb" /debug /machine:I386 /def:".\RemoteCam.def" /out:"../Bin/RemoteCam/Debug/RemoteCam.ocx" /implib:"../Bin/RemoteCam/Debug/RemoteCam.lib" /pdbtype:sept 
+\uimager\Obj\RemoteCam\Debug\ConvertUTF.obj
+\uimager\Obj\RemoteCam\Debug\Helpers.obj
+\uimager\Obj\RemoteCam\Debug\NetCom.obj
+\uimager\Obj\RemoteCam\Debug\NetGetFrame.obj
+\uimager\Obj\RemoteCam\Debug\RemoteCam.obj
+\uimager\Obj\RemoteCam\Debug\RemoteCamCtl.obj
+\uimager\Obj\RemoteCam\Debug\RemoteCamPpg.obj
+\uimager\Obj\RemoteCam\Debug\StdAfx.obj
+\uimager\Obj\RemoteCam\Debug\WorkerThread.obj
+\uimager\Obj\RemoteCam\Debug\XMLite.obj
+\uimager\Obj\RemoteCam\Debug\RemoteCam.res
+\uimager\Bin\Debug\Dib\Dib.lib
+\uimager\Bin\Debug\giflib.lib
+\uimager\Bin\Debug\libjpeg.lib
+\uimager\Bin\Debug\libpng.lib
+\uimager\Bin\Debug\libtiff.lib
+\uimager\Bin\Debug\zlib.lib
+]
+Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E50.tmp"
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E51.bat" with contents
+[
+@echo off
+regsvr32 /s /c "\uimager\Bin\RemoteCam\Debug\RemoteCam.ocx"
+echo regsvr32 exec. time > ".\../Bin/RemoteCam/Debug\regsvr32.trg"
+]
+Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1E51.bat"
+Compiling...
+NetGetFrame.cpp
+Linking...
+<h3>Output Window</h3>
+Registering ActiveX Control...
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP2026.tmp" with contents
+[
+/nologo /o"../Bin/RemoteCam/Debug/RemoteCam.bsc" 
+\uimager\Obj\RemoteCam\Debug\StdAfx.sbr
+\uimager\Obj\RemoteCam\Debug\ConvertUTF.sbr
+\uimager\Obj\RemoteCam\Debug\Helpers.sbr
+\uimager\Obj\RemoteCam\Debug\NetCom.sbr
+\uimager\Obj\RemoteCam\Debug\NetGetFrame.sbr
+\uimager\Obj\RemoteCam\Debug\RemoteCam.sbr
+\uimager\Obj\RemoteCam\Debug\RemoteCamCtl.sbr
+\uimager\Obj\RemoteCam\Debug\RemoteCamPpg.sbr
+\uimager\Obj\RemoteCam\Debug\WorkerThread.sbr
+\uimager\Obj\RemoteCam\Debug\XMLite.sbr]
+Creating command line "bscmake.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP2026.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
 
 
 

@@ -68,17 +68,18 @@ IDR_MAINFRAME MENU PRELOAD DISCARDABLE
 BEGIN
     POPUP "&File"
     BEGIN
+        MENUITEM "&Settings",                   ID_FILE_SETTINGS
+        MENUITEM "Properties for Cam&0",        ID_FILE_SHOWPROP0
+        MENUITEM "Properties for Cam&1",        ID_FILE_SHOWPROP1
+        MENUITEM "Properties for Cam&2",        ID_FILE_SHOWPROP2
+        MENUITEM "Properties for Cam&3",        ID_FILE_SHOWPROP3
+        MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&Tools"
     BEGIN
         MENUITEM "Register ActiveX...",         ID_TOOLS_REGISTER
         MENUITEM "Unregister ActiveX...",       ID_TOOLS_UNREGISTER
-        MENUITEM SEPARATOR
-        MENUITEM "Properties for Cam0",         ID_TOOLS_SHOWPROP0
-        MENUITEM "Properties for Cam1",         ID_TOOLS_SHOWPROP1
-        MENUITEM "Properties for Cam2",         ID_TOOLS_SHOWPROP2
-        MENUITEM "Properties for Cam3",         ID_TOOLS_SHOWPROP3
     END
     POPUP "&Help"
     BEGIN
@@ -106,18 +107,37 @@ BEGIN
                     IDC_STATIC2141,40,28,181,8
 END
 
-IDD_REMOTECAMVIEWER_FORM DIALOG DISCARDABLE  0, 0, 75, 59
+IDD_REMOTECAMVIEWER_FORM DIALOG DISCARDABLE  0, 0, 65, 51
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "",IDC_REMOTECAMCTRL0,
-                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,7,7,16,16
+                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,7,7,10,10
     CONTROL         "",IDC_REMOTECAMCTRL1,
-                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,52,7,16,16
+                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,48,7,10,10
     CONTROL         "",IDC_REMOTECAMCTRL2,
-                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,7,38,16,16
+                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,7,35,10,10
     CONTROL         "",IDC_REMOTECAMCTRL3,
-                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,52,38,16,16
+                    "{08CF6679-5BB3-4EF4-A773-C410DC56531C}",0x0,48,35,10,10
+END
+
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 222, 117
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,61,96,50,14,WS_GROUP
+    LTEXT           "Title Text",IDC_STATIC,7,13,38,8
+    EDITTEXT        IDC_EDIT_TITLE,45,11,170,12,ES_AUTOHSCROLL
+    LTEXT           "Label0",IDC_STATIC,7,35,34,8
+    EDITTEXT        IDC_EDIT_LABEL0,45,33,170,12,ES_AUTOHSCROLL
+    LTEXT           "Label1",IDC_STATIC,7,49,34,8
+    EDITTEXT        IDC_EDIT_LABEL1,45,47,170,12,ES_AUTOHSCROLL
+    LTEXT           "Label2",IDC_STATIC,7,63,34,8
+    EDITTEXT        IDC_EDIT_LABEL2,45,61,170,12,ES_AUTOHSCROLL
+    LTEXT           "Label3",IDC_STATIC,7,77,34,8
+    EDITTEXT        IDC_EDIT_LABEL3,45,75,170,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Cancel",IDCANCEL,118,96,49,14
 END
 
 
@@ -187,9 +207,22 @@ BEGIN
     IDD_REMOTECAMVIEWER_FORM, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 68
+        RIGHTMARGIN, 58
         TOPMARGIN, 7
-        BOTTOMMARGIN, 54
+        BOTTOMMARGIN, 45
+    END
+
+    IDD_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 110
+        HORZGUIDE, 17
+        HORZGUIDE, 39
+        HORZGUIDE, 53
+        HORZGUIDE, 67
+        HORZGUIDE, 81
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -203,19 +236,19 @@ END
 IDD_REMOTECAMVIEWER_FORM DLGINIT
 BEGIN
     IDC_REMOTECAMCTRL0, 0x376, 49, 0
-0x0000, 0x0000, 0x0000, 0x0001, 0x027b, 0x0000, 0x02b0, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0001, 0x018d, 0x0000, 0x01a7, 0x0000, 0x0000, 
 0x0000, 0x6c09, 0x636f, 0x6c61, 0x6f68, 0x7473, 0x2260, 0x0000, 0x0020, 
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, "\000" 
     IDC_REMOTECAMCTRL1, 0x376, 49, 0
-0x0000, 0x0000, 0x0000, 0x0001, 0x027b, 0x0000, 0x02b0, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0001, 0x018d, 0x0000, 0x01a7, 0x0000, 0x0000, 
 0x0000, 0x6c09, 0x636f, 0x6c61, 0x6f68, 0x7473, 0x2261, 0x0000, 0x0020, 
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, "\000" 
     IDC_REMOTECAMCTRL2, 0x376, 49, 0
-0x0000, 0x0000, 0x0000, 0x0001, 0x027b, 0x0000, 0x02b0, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0001, 0x018d, 0x0000, 0x01a7, 0x0000, 0x0000, 
 0x0000, 0x6c09, 0x636f, 0x6c61, 0x6f68, 0x7473, 0x2262, 0x0000, 0x0020, 
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, "\000" 
     IDC_REMOTECAMCTRL3, 0x376, 49, 0
-0x0000, 0x0000, 0x0000, 0x0001, 0x027b, 0x0000, 0x02b0, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0001, 0x018d, 0x0000, 0x01a7, 0x0000, 0x0000, 
 0x0000, 0x6c09, 0x636f, 0x6c61, 0x6f68, 0x7473, 0x2263, 0x0000, 0x0020, 
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, "\000" 
     0
@@ -346,10 +379,11 @@ BEGIN
     ID_HELP_ABOUTCTRL       "Display control information, version number and copyright\nAbout RemoteCam ActiveX"
     ID_TOOLS_REGISTER       "Register the ActiveX (OCX file) control\nRegister ActiveX"
     ID_TOOLS_UNREGISTER     "Unregister the ActiveX (OCX file) control\nUnegister ActiveX"
-    ID_TOOLS_SHOWPROP0      "Show properties for cam0\nCam0 Properties"
-    ID_TOOLS_SHOWPROP1      "Show properties for cam1\nCam1 Properties"
-    ID_TOOLS_SHOWPROP2      "Show properties for cam2\nCam2 Properties"
-    ID_TOOLS_SHOWPROP3      "Show properties for cam3\nCam3 Properties"
+    ID_FILE_SHOWPROP0       "Show properties for cam0\nCam0 Properties"
+    ID_FILE_SHOWPROP1       "Show properties for cam1\nCam1 Properties"
+    ID_FILE_SHOWPROP2       "Show properties for cam2\nCam2 Properties"
+    ID_FILE_SHOWPROP3       "Show properties for cam3\nCam3 Properties"
+    ID_FILE_SETTINGS        "Show settings dialog\nSettings"
 END
 
 #endif    // English (U.S.) resources

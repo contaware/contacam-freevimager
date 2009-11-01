@@ -26,7 +26,7 @@ public:
 	CNetCom m_GetFrameNetCom;
 	CGetFrameParseProcess m_GetFrameParseProcess;
 	CGetFrameGenerator m_GetFrameGenerator;
-	__forceinline DWORD GetMaxFrames() const {return (DWORD)m_lMaxFrames;};
+	__forceinline DWORD GetMaxFrames() const {return (DWORD)MIN(MAX(NETFRAME_MIN_FRAMES, m_lMaxFrames), NETFRAME_MAX_FRAMES);};
 	__forceinline BOOL DoDisableResend() const {return m_bDisableResend;};
 	__forceinline CString GetFrameUsername() const {return m_sGetFrameUsername;};
 	__forceinline CString GetFramePassword() const {return m_sGetFramePassword;};

@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../Bin/RemoteCam/Debug/RemoteCam.ocx" /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # Begin Custom Build - Registering ActiveX Control...
 OutDir=.\../Bin/RemoteCam/Debug
 TargetPath=\uimager\Bin\RemoteCam\Debug\RemoteCam.ocx
@@ -95,7 +95,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.ocx"
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
 # Begin Custom Build - Registering ActiveX Control...
 OutDir=.\../Bin/RemoteCam/ReleaseNoDLL
 TargetPath=\uimager\Bin\RemoteCam\ReleaseNoDLL\RemoteCam.ocx
