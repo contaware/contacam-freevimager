@@ -41,6 +41,7 @@ public:
 	int		m_nComboSnapshotRate;
 	int		m_nComboSnapshotHistoryRate;
 	int		m_nComboSnapshotHistorySize;
+	BOOL	m_bCheckFullStretch;
 	//}}AFX_DATA
 
 

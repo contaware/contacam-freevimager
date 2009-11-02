@@ -9073,9 +9073,6 @@ BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir)
 
 void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& sWebPageFileName)
 {
-	// Begin Wait Cursor
-	BeginWaitCursor();
-
 	// Trim ending backslash
 	sAutoSaveDir.TrimRight(_T('\\'));
 	CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
@@ -9084,7 +9081,6 @@ void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& 
 	// Check whether sAutoSaveDir is inside the document root directory
 	if (sAutoSaveDir.Find(sMicroApacheDocRoot) < 0)
 	{
-		EndWaitCursor();
 		::AfxMessageBox(ML_STRING(1473, "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
 		return;
 	}
@@ -9115,35 +9111,47 @@ void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& 
 	sUrl.Replace(_T(" "), _T("%20"));
 	if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
 	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+		int nRet = IDYES;
+		if (((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString != _T(""))
 		{
-			EndWaitCursor();
-			return;
+			CString sMsg;
+			sMsg.Format(ML_STRING(1762, "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"),
+						((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString);
+			nRet = ::AfxMessageBox(sMsg, MB_YESNO | MB_ICONINFORMATION);
 		}
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sFullscreenExe = CString(szDrive) + CString(szDir) + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
-		::ShellExecute(	NULL,
-						_T("open"),
-						sFullscreenExe,
-						sUrl,
-						NULL,
-						SW_SHOWNORMAL);
+		if (nRet == IDYES)
+		{
+			BeginWaitCursor();
+			TCHAR szDrive[_MAX_DRIVE];
+			TCHAR szDir[_MAX_DIR];
+			TCHAR szProgramName[MAX_PATH];
+			if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			{
+				EndWaitCursor();
+				return;
+			}
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sFullscreenExe = CString(szDrive) + CString(szDir) + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
+			::ShellExecute(	NULL,
+							_T("open"),
+							sFullscreenExe,
+							sUrl,
+							NULL,
+							SW_SHOWNORMAL);
+			EndWaitCursor();
+		}
 	}
 	else
 	{
+		BeginWaitCursor();
 		::ShellExecute(	NULL,
 						_T("open"),
 						sUrl,
 						NULL,
 						NULL,
 						SW_SHOWNORMAL);
+		EndWaitCursor();
 	}
-
-	// End Wait Cursor
-	EndWaitCursor();
 }
 
 CString CVideoDeviceDoc::GetAutoSaveDir()
@@ -12962,29 +12970,30 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 		pDib->GetCompression() == FCC('YV12'))	&&
 		m_nCurrentSizeDiv == 0)
 	{
-		// Encode and append codec id + width + height
+		// Encode
 		int nEncodedSize = avcodec_encode_video(m_pCodecCtx,
-												m_pOutbuf,
-												m_nOutbufSize,
+												m_pOutbuf + NETFRAME_HEADER_SIZE,
+												m_nOutbufSize - NETFRAME_HEADER_SIZE,
 												m_pFrame);
-		ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= 12 + m_pCodecCtx->extradata_size + 4);
-		*((DWORD*)&m_pOutbuf[nEncodedSize]) = (DWORD)m_CodecID;
-		*((WORD*)&m_pOutbuf[nEncodedSize+4]) = (WORD)m_pCodecCtx->width;
-		*((WORD*)&m_pOutbuf[nEncodedSize+6]) = (WORD)m_pCodecCtx->height;
-		*((DWORD*)&m_pOutbuf[nEncodedSize+8]) = m_dwEncryptionType;
+		ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
+		*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
+		*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;
+		*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
+		*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
+		*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
 		if (m_pCodecCtx->extradata_size > 0 &&
 			IsKeyFrame()					&&
 			dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
 		{
 			m_dwLastExtradataSendUpTime = dwRefUpTime;
-			memcpy(&m_pOutbuf[nEncodedSize+12], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
-			*((DWORD*)&m_pOutbuf[nEncodedSize+12+m_pCodecCtx->extradata_size]) = (DWORD)m_pCodecCtx->extradata_size;
-			return nEncodedSize + 12 + m_pCodecCtx->extradata_size + 4;
+			memcpy(&m_pOutbuf[NETFRAME_HEADER_SIZE + nEncodedSize], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
+			*((DWORD*)&m_pOutbuf[12]) = (DWORD)m_pCodecCtx->extradata_size;
+			return NETFRAME_HEADER_SIZE + nEncodedSize + m_pCodecCtx->extradata_size;
 		}
 		else
 		{
-			*((DWORD*)&m_pOutbuf[nEncodedSize+12]) = 0U;
-			return nEncodedSize + 16;
+			*((DWORD*)&m_pOutbuf[12]) = 0U;
+			return NETFRAME_HEADER_SIZE + nEncodedSize;
 		}
 	}
 	else
@@ -13021,29 +13030,30 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 								dwRefUpTime);
 			}
 
-			// Encode and append codec id + width + height
+			// Encode
 			int nEncodedSize = avcodec_encode_video(m_pCodecCtx,
-													m_pOutbuf,
-													m_nOutbufSize,
+													m_pOutbuf + NETFRAME_HEADER_SIZE,
+													m_nOutbufSize - NETFRAME_HEADER_SIZE,
 													m_pFrameI420);
-			ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= 12 + m_pCodecCtx->extradata_size + 4);
-			*((DWORD*)&m_pOutbuf[nEncodedSize]) = (DWORD)m_CodecID;
-			*((WORD*)&m_pOutbuf[nEncodedSize+4]) = (WORD)m_pCodecCtx->width;
-			*((WORD*)&m_pOutbuf[nEncodedSize+6]) = (WORD)m_pCodecCtx->height;
-			*((DWORD*)&m_pOutbuf[nEncodedSize+8]) = m_dwEncryptionType;
+			ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
+			*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
+			*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;
+			*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
+			*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
+			*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
 			if (m_pCodecCtx->extradata_size > 0 &&
 				IsKeyFrame()					&&
 				dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
 			{
 				m_dwLastExtradataSendUpTime = dwRefUpTime;
-				memcpy(&m_pOutbuf[nEncodedSize+12], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
-				*((DWORD*)&m_pOutbuf[nEncodedSize+12+m_pCodecCtx->extradata_size]) = (DWORD)m_pCodecCtx->extradata_size;
-				return nEncodedSize + 12 + m_pCodecCtx->extradata_size + 4;
+				memcpy(&m_pOutbuf[NETFRAME_HEADER_SIZE + nEncodedSize], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
+				*((DWORD*)&m_pOutbuf[12]) = (DWORD)m_pCodecCtx->extradata_size;
+				return NETFRAME_HEADER_SIZE + nEncodedSize + m_pCodecCtx->extradata_size;
 			}
 			else
 			{
-				*((DWORD*)&m_pOutbuf[nEncodedSize+12]) = 0U;
-				return nEncodedSize + 16;
+				*((DWORD*)&m_pOutbuf[12]) = 0U;
+				return NETFRAME_HEADER_SIZE + nEncodedSize;
 			}
 		}
 	}
@@ -13150,8 +13160,8 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 	if (!m_pFrameI420)
         goto error;
 
-	// Allocate Outbuf (we need some extra space for the footer)
-	m_nOutbufSize = 4 * m_pCodecCtx->width * m_pCodecCtx->height + m_pCodecCtx->extradata_size + 16;
+	// Allocate Outbuf
+	m_nOutbufSize = NETFRAME_HEADER_SIZE + 4 * m_pCodecCtx->width * m_pCodecCtx->height + m_pCodecCtx->extradata_size;
 	if (m_nOutbufSize < FF_MIN_BUFFER_SIZE)
 		m_nOutbufSize = FF_MIN_BUFFER_SIZE;
 	m_pOutbuf = new uint8_t[m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE];
@@ -14034,6 +14044,9 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 			LPBYTE pFrame = new BYTE [m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE];
 			if (pFrame)
 			{
+				// Reset
+				memset(pFrame, 0, m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE);
+
 				// Compose Fragments
 				LPBYTE p = pFrame;
 				for (int i = 0 ; i < m_nTotalFragments[dwFrameIndex] ; i++)
@@ -14272,10 +14285,29 @@ void CVideoDeviceDoc::CGetFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*/
 
 BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWORD dwFrameSize)
 {
-	// There is a footer at the end, get it!
-	DWORD dwInitFrameSize = dwFrameSize;
-	dwFrameSize -= 4;
-	m_nExtradataSize = *((DWORD*)&pFrame[dwFrameSize]);
+	// Minimum size check
+	if (dwFrameSize < NETFRAME_HEADER_SIZE)
+		return FALSE;
+
+	// Get frame header
+	NetFrameStruct FrameHdr;
+	memcpy(&FrameHdr, pFrame, NETFRAME_HEADER_SIZE);
+
+	// Check header consistency
+	if (NETFRAME_HEADER_SIZE + FrameHdr.dwFrameDataSize + FrameHdr.dwExtraDataSize != dwFrameSize)
+		return FALSE;
+
+	// Init vars
+	enum CodecID CodecId = (enum CodecID)FrameHdr.dwCodecID;
+	if (CodecId == CODEC_ID_H263P)
+		CodecId = CODEC_ID_H263;
+	m_dwEncryptionType = FrameHdr.dwEncryptionType;
+	if (m_dwEncryptionType != 0U) // Encryption not yet supported...
+		return FALSE;
+	DWORD dwFrameDataSize = FrameHdr.dwFrameDataSize;
+	m_nExtradataSize = (int)FrameHdr.dwExtraDataSize;
+	int width = (int)FrameHdr.dwWidth;
+	int height = (int)FrameHdr.dwHeight;
 	if (m_nExtradataSize > 0)
 	{
 		if (!m_pExtradata || m_nMaxExtradata < m_nExtradataSize)
@@ -14292,26 +14324,11 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 				return FALSE;
 			}
 		}
-		dwFrameSize -= m_nExtradataSize;
 		memcpy(	m_pExtradata,
-				&pFrame[dwFrameSize],
+				&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize],
 				m_nExtradataSize);
+		memset(&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize], 0, m_nExtradataSize);
 	}
-	dwFrameSize -= 4;
-	m_dwEncryptionType = *((DWORD*)&pFrame[dwFrameSize]);
-	dwFrameSize -= 2;
-	int height = (int)(*((WORD*)&pFrame[dwFrameSize]));
-	dwFrameSize -= 2;
-	int width = (int)(*((WORD*)&pFrame[dwFrameSize]));
-	dwFrameSize -= 4;
-	enum CodecID CodecId = (enum CodecID)(*((DWORD*)&pFrame[dwFrameSize]));
-	if (CodecId == CODEC_ID_H263P)
-		CodecId = CODEC_ID_H263;
-	memset(&pFrame[dwFrameSize], 0, dwInitFrameSize - dwFrameSize);
-
-	// Encryption not yet supported...
-	if (m_dwEncryptionType != 0) 
-		return FALSE;
 
 	// Re-init
 	if (width != m_pDoc->m_DocRect.Width() || height != m_pDoc->m_DocRect.Height())
@@ -14329,8 +14346,8 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 	int len = avcodec_decode_video(	m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
-									(unsigned __int8 *)pFrame,
-									(int)dwFrameSize);
+									(unsigned __int8 *)(pFrame + NETFRAME_HEADER_SIZE),
+									(int)dwFrameDataSize);
 	if (len > 0 && got_picture)
 	{
 		// Init Doc?

@@ -2390,6 +2390,7 @@
 #define IDC_BUTTON_CLEAR_DIR            1761
 #define IDS_STRING1761                  1761
 #define IDC_COMPRESSION_QUALITY         1762
+#define IDS_STRING1762                  1762
 #define IDC_COMPRESSION_QUALITY_NUM     1763
 #define IDC_CHECK_SNAPSHOT_THUMB        1764
 #define IDC_BUTTON_THUMB_SIZE           1765
@@ -3153,6 +3154,7 @@
 #define IDC_BUTTON_BUY_LICENSE          2529
 #define IDC_COMBO_THUMBSPERPAGE         2529
 #define IDC_REG_NAME                    2530
+#define IDC_CHECK_FULLSTRETCH           2530
 #define IDC_REG_NUMBER                  2531
 #define IDC_COMBO_ANIMGIF_SPEED         2531
 #define IDC_LABEL_THUMBSPERPAGE         2532

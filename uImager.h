@@ -27,6 +27,7 @@
 #define FULLSCREENBROWSER_INI_NAME_EXT					_T("FullscreenBrowser.ini")
 #define FULLSCREENBROWSER_EXE_NAME_EXT					_T("FullscreenBrowser.exe")
 #define FULLSCREENBROWSER_INI_FILE						(CString(MYCOMPANY) + CString(_T("\\")) + CString(FULLSCREENBROWSER_NOEXT) + CString(_T("\\")) + CString(FULLSCREENBROWSER_INI_NAME_EXT))
+#define FULLSCREENBROWSER_EXITSTRING_ENTRY				_T("ExitString")
 #define FULLSCREENBROWSER_DEFAULT_EXITSTRING			_T("")
 
 // Micro Apache
@@ -312,6 +313,10 @@ public:
 
 	// Registration
 	BOOL RSADecrypt();
+
+	// FullscreenBrowser Ini file handling
+	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
+	BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
 #endif
 
 	// Constructor & Destructor
@@ -749,6 +754,7 @@ public:
 	// Use integrated Fullscreen Browser
 	BOOL m_bFullscreenBrowser;
 	BOOL m_bBrowserAutostart;
+	CString m_sFullscreenBrowserExitString;
 
 	// Start the Micro Apache server when opening a VideoDeviceDoc
 	BOOL m_bStartMicroApache;

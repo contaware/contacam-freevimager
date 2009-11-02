@@ -776,6 +776,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		else
 		{
+#ifdef VIDEODEVICEDOC
+			m_sFullscreenBrowserExitString = GetProfileFullscreenBrowser(	FULLSCREENBROWSER_EXITSTRING_ENTRY,
+																			FULLSCREENBROWSER_DEFAULT_EXITSTRING);
+#endif
 			if (m_bUseSettings)
 			{
 				// Load Settings has to be here for the Window Placement restore to work!
@@ -6669,6 +6673,49 @@ BOOL CUImagerApp::RSADecrypt()
 	*/
 
 	return TRUE;
+}
+
+CString CUImagerApp::GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
+{
+	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
+	if (sProfileName == _T(""))
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return _T("");
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sDrive(szDrive);
+		CString sDir(szDir);
+		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
+	}
+	else
+		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
+	return ::GetProfileIniString(_T("General"), lpszEntry, lpszDefault, sProfileName);
+}
+
+BOOL CUImagerApp::WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue)
+{
+	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
+	if (sProfileName == _T(""))
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return FALSE;
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sDrive(szDrive);
+		CString sDir(szDir);
+		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
+	}
+	else
+		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
+	CString sProfileNamePath = ::GetDriveAndDirName(sProfileName);
+	if (!::IsExistingDir(sProfileNamePath))
+		::CreateDir(sProfileNamePath);
+	return ::WriteProfileIniString(_T("General"), lpszEntry, lpszValue, sProfileName);
 }
 
 #endif

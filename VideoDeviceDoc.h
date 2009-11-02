@@ -126,6 +126,7 @@ class CMovementDetectionPage;
 #define PHPCONFIG_DEFAULTPAGE				_T("DEFAULTPAGE")
 #define PHPCONFIG_SUMMARYSNAPSHOT_NAME		_T("summarysnapshot.php")
 #define PHPCONFIG_SNAPSHOT_NAME				_T("snapshot.php")
+#define PHPCONFIG_SNAPSHOTMOBILE_NAME		_T("snapshotmobile.php")
 #define PHPCONFIG_SNAPSHOTHISTORY_NAME		_T("snapshothistory.php")
 #define PHPCONFIG_SUMMARYIFRAME_NAME		_T("summaryiframe.php")
 #define PHPCONFIG_SUMMARYTITLE				_T("SUMMARYTITLE")
@@ -570,9 +571,10 @@ public:
 			void Clear() {	m_pCodec = NULL;
 							m_pCodecCtx = NULL;
 							m_CodecID = CODEC_ID_H263P;	// Working well: CODEC_ID_MJPEG, CODEC_ID_H263P, CODEC_ID_MPEG4
-														// CODEC_ID_H263 is only working with standard resolution of 176 x 144 or 352 x 266
-														// CODEC_ID_THEORA is crashing with resolutions less than 176 x 144							
-														// CODEC_ID_SNOW is crashing with resolutions less than 88 x 72
+														// CODEC_ID_THEORA not good because it sends the quantization tables with
+														// the frames in the extra data field, that uses a lot of bandwidth!
+														// CODEC_ID_H263 is only working with standard resolution of 176 x 144 or 352 x 266						
+														// CODEC_ID_SNOW is locking with resolutions less than 88 x 72...
 							m_pFrame = NULL;
 							m_pFrameI420 = NULL;
 							m_pImgConvertCtx = NULL;

@@ -6386,7 +6386,7 @@ BEGIN
                     IDC_RADIO_NOCHANGE,"Button",BS_AUTORADIOBUTTON,16,80,200,
                     10
     CONTROL         "24 hours recording",IDC_CHECK_24H_REC,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,147,16,107,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,147,16,87,10
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,147,31,107,222,
                     CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,147,47,107,198,CBS_DROPDOWNLIST | 
@@ -6417,7 +6417,10 @@ BEGIN
     COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,328,31,38,72,
                     CBS_DROPDOWNLIST | WS_TABSTOP
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
-                    32,60,8
+                    33,60,8
+    CONTROL         "Full stretch (for mobile applications)",
+                    IDC_CHECK_FULLSTRETCH,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,263,49,131,10
 END
 
 IDD_REGISTRATION DIALOGEX 0, 0, 260, 230
@@ -9044,6 +9047,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "Web Server Log File has not yet been created"
+    IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
 END
 
 #endif    // English (U.S.) resources

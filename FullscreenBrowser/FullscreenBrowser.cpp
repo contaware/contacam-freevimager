@@ -15,6 +15,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define DESKTOPNAME			_T("FullscreenBrowserDesktop85672235")
 #define FULLSCREENSTART		_T("FullscreenStart:")
+#define EXITSTRING_ENTRY	_T("ExitString")
 #define DEFAULT_EXITSTRING	_T("")
 #define DEFAULT_WEBPAGE		_T("http://localhost:8800")
 #define APPNAME_NOEXT		_T("FullscreenBrowser")
@@ -529,8 +530,8 @@ BOOL FullscreenBrowserApp::InitInstance()
 	if (!m_bNewDesktop || cmdInfo.m_strFileName.Find(s) == 0)
 	{
 		// Get Exit string
-		m_sExitString = GetProfileString(_T("General"), _T("ExitString"), DEFAULT_EXITSTRING);
-		WriteProfileString(_T("General"), _T("ExitString"), m_sExitString);
+		m_sExitString = GetProfileString(_T("General"), EXITSTRING_ENTRY, DEFAULT_EXITSTRING);
+		WriteProfileString(_T("General"), EXITSTRING_ENTRY, m_sExitString);
 		
 		// Get Url
 		if (cmdInfo.m_strFileName.GetLength() > s.GetLength()) 

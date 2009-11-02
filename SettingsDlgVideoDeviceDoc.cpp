@@ -65,55 +65,12 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 	m_bFullscreenBrowser = ((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
-	m_sFullscreenBrowserExitString = GetProfileFullscreenBrowserExitString();
+	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
-}
-
-CString CSettingsDlgVideoDeviceDoc::GetProfileFullscreenBrowserExitString()
-{
-	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	if (sProfileName == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sDrive(szDrive);
-		CString sDir(szDir);
-		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	else
-		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
-	return ::GetProfileIniString(_T("General"), _T("ExitString"), FULLSCREENBROWSER_DEFAULT_EXITSTRING, sProfileName);
-}
-
-BOOL CSettingsDlgVideoDeviceDoc::WriteProfileFullscreenBrowserExitString(const CString& sExitString)
-{
-	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	if (sProfileName == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return FALSE;
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sDrive(szDrive);
-		CString sDir(szDir);
-		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	else
-		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
-	CString sProfileNamePath = ::GetDriveAndDirName(sProfileName);
-	if (!::IsExistingDir(sProfileNamePath))
-		::CreateDir(sProfileNamePath);
-	return ::WriteProfileIniString(_T("General"), _T("ExitString"), sExitString, sProfileName);
 }
 
 void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
@@ -407,7 +364,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Browser
 	pApp->m_bFullscreenBrowser = m_bFullscreenBrowser;
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
-	WriteProfileFullscreenBrowserExitString(m_sFullscreenBrowserExitString);
+	pApp->m_sFullscreenBrowserExitString = m_sFullscreenBrowserExitString;
 
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache		||
@@ -454,6 +411,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	}
 
 	// Store settings
+	pApp->WriteProfileFullscreenBrowser(FULLSCREENBROWSER_EXITSTRING_ENTRY, m_sFullscreenBrowserExitString);
 	if (pApp->m_bUseSettings)
 	{
 		if (pApp->m_bUseRegistry)

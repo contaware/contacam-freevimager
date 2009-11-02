@@ -21,18 +21,19 @@ static char THIS_FILE[] = __FILE__;
 #  define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
-#define POLL_TIMER_ID		1
-#define POLL_TIMER_MS		500
-#define REG_SECTION			_T("GeneralApp")
-#define MIN_SIZE			24
-#define TITLE_MARGIN		10
-#define TITLE_FONT_SIZE		36
-#define TITLE_COLOR			RGB(0x60, 0x60, 0x60)
-#define TITLE_FONT_FACE		_T("Helvetica")
-#define LABEL_MARGIN		3
-#define LABEL_FONT_SIZE		12
-#define LABEL_COLOR			RGB(0x30, 0x30, 0x30)
-#define LABEL_FONT_FACE		_T("Helvetica")
+#define POLL_TIMER_ID			1
+#define POLL_TIMER_MS			500
+#define REG_SECTION				_T("GeneralApp")
+#define MIN_SIZE				24
+#define TITLE_MARGIN_TOP		10
+#define TITLE_MARGIN_BOTTOM		2
+#define TITLE_FONT_SIZE			36
+#define TITLE_COLOR				RGB(0x60, 0x60, 0x60)
+#define TITLE_FONT_FACE			_T("Helvetica")
+#define LABEL_MARGIN			3
+#define LABEL_FONT_SIZE			12
+#define LABEL_COLOR				RGB(0x30, 0x30, 0x30)
+#define LABEL_FONT_FACE			_T("Helvetica")
 
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamViewerView
@@ -78,7 +79,7 @@ CRemoteCamViewerView::CRemoteCamViewerView()
 	m_bInit1 = FALSE;
 	m_bInit2 = FALSE;
 	m_bInit3 = FALSE;
-	m_nTopOffset = 0;
+	m_nTitleHight = 0;
 }	
 
 CRemoteCamViewerView::~CRemoteCamViewerView()
@@ -181,7 +182,7 @@ void CRemoteCamViewerView::OnFileSettings()
 		::AfxGetApp()->WriteProfileString(REG_SECTION, _T("Label1"), m_sLabel1);
 		::AfxGetApp()->WriteProfileString(REG_SECTION, _T("Label2"), m_sLabel2);
 		::AfxGetApp()->WriteProfileString(REG_SECTION, _T("Label3"), m_sLabel3);
-		Invalidate();
+		Invalidate(); // Draw new title and labels
 	}
 }
 
@@ -264,7 +265,7 @@ void CRemoteCamViewerView::ClipToView(LPRECT lpRect) const
 	// Get Client Rect
 	CRect rcView;
 	GetClientRect(&rcView);
-	rcView.top = m_nTopOffset;
+	rcView.top = m_nTitleHight;
 
 	// Clip
 	lpRect->left = MAX(rcView.left, MIN(rcView.right - w, lpRect->left));
@@ -281,7 +282,7 @@ void CRemoteCamViewerView::RepositionCams()
 		// Client Rect
 		CRect rcView;
 		GetClientRect(&rcView);
-		rcView.top = m_nTopOffset;
+		rcView.top = m_nTitleHight;
 
 		// Necessary Sizes and Offsets
 		int nNecessaryWidth = MAX(	MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize1.cx, m_szRemoteCamSize2.cx + m_szRemoteCamSize3.cx),
@@ -387,7 +388,7 @@ BOOL CRemoteCamViewerView::OnEraseBkgnd(CDC* pDC)
 void CRemoteCamViewerView::OnDraw(CDC* pDC) 
 {
 	// Flicker free drawing
-	CRect rcClient;
+	CRect rc, rcClient;
 	GetClientRect(&rcClient);
 	CMemDC MemDC(pDC, &rcClient);
 
@@ -426,11 +427,21 @@ void CRemoteCamViewerView::OnDraw(CDC* pDC)
 	CFont* pOldFont = MemDC.SelectObject(&m_TitleFont);
 
 	// Draw title
-	rcClient.top += TITLE_MARGIN;
-	m_nTopOffset = MemDC.DrawText(	m_sTitle,
-									-1,
-									&rcClient,
-									(DT_CENTER | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK)) + 2 * rcClient.top;
+	int nNewTitleHight = 0;
+	if (m_sTitle != _T(""))
+	{
+		rc = rcClient;
+		rc.top = TITLE_MARGIN_TOP;
+		nNewTitleHight = MemDC.DrawText(m_sTitle,
+										-1,
+										&rc,
+										(DT_CENTER | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK)) + TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM;
+	}
+	if (m_nTitleHight != nNewTitleHight)
+	{
+		m_nTitleHight = nNewTitleHight;
+		RepositionCams();
+	}
 
 	// Clean-up
 	MemDC.SetTextColor(crOldTextColor);
@@ -441,7 +452,6 @@ void CRemoteCamViewerView::OnDraw(CDC* pDC)
 	pOldFont = MemDC.SelectObject(&m_LabelFont);
 
 	// Draw label0
-	CRect rc;
 	if (m_bInit0 && m_sLabel0 != _T(""))
 	{
 		rc = rcClient;
@@ -501,7 +511,7 @@ void CRemoteCamViewerView::OnSize(UINT nType, int cx, int cy)
 {
 	CFormView::OnSize(nType, cx, cy);
 	RepositionCams();
-	// OnDraw() is called automatically after this function
+	// OnDraw() is called automatically
 }
 
 void CRemoteCamViewerView::OnDestroy() 

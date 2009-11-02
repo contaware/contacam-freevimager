@@ -50,6 +50,7 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOT_RATE, m_nComboSnapshotRate);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_RATE, m_nComboSnapshotHistoryRate);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
+	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	//}}AFX_DATA_MAP
 }
 
@@ -170,6 +171,7 @@ BOOL CAssistantPage::OnInitDialog()
 	// Init vars
 	m_bDoApplySettings = FALSE;
 	m_bCheck24hRec = FALSE;
+	m_bCheckFullStretch = FALSE;
 	if (!m_pDoc->m_pVideoAviDoc)
 	{
 		CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
@@ -191,7 +193,15 @@ BOOL CAssistantPage::OnInitDialog()
 	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
 		m_nUsage = 1;
 	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOT_NAME)
+	{
 		m_nUsage = 2;
+		m_bCheckFullStretch = FALSE;
+	}
+	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTMOBILE_NAME)
+	{
+		m_nUsage = 2;
+		m_bCheckFullStretch = TRUE;
+	}
 	else if (sInitDefaultPage == PHPCONFIG_SUMMARYIFRAME_NAME)
 		m_nUsage = 3;
 	else
@@ -352,7 +362,9 @@ void CAssistantPage::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
+		pCheck->EnableWindow(FALSE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(!m_pDoc->m_pVideoAviDoc);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(TRUE);
@@ -369,7 +381,9 @@ void CAssistantPage::EnableDisableCtrls()
 		pComboBox->EnableWindow(TRUE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
+		pCheck->EnableWindow(FALSE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
@@ -386,7 +400,9 @@ void CAssistantPage::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(TRUE);
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
+		pCheck->EnableWindow(TRUE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
@@ -403,7 +419,9 @@ void CAssistantPage::EnableDisableCtrls()
 		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
+		pCheck->EnableWindow(FALSE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
@@ -426,7 +444,9 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 		pComboBox->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 		pComboBox->EnableWindow(FALSE);
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
+		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
+		pCheck->EnableWindow(FALSE);
+		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
@@ -923,7 +943,10 @@ void CAssistantPage::ApplySettings()
 			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 
 			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
+			if (m_bCheckFullStretch)
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTMOBILE_NAME);
+			else
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));

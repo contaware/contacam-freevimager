@@ -519,6 +519,9 @@ BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 			LPBYTE pFrame = new BYTE [m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE];
 			if (pFrame)
 			{
+				// Reset
+				memset(pFrame, 0, m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE);
+
 				// Compose Fragments
 				LPBYTE p = pFrame;
 				for (int i = 0 ; i < m_nTotalFragments[dwFrameIndex] ; i++)
@@ -803,10 +806,29 @@ BOOL CGetFrameParseProcess::InitImgConvert()
 
 BOOL CGetFrameParseProcess::Decode(LPBYTE pFrame, DWORD dwFrameSize)
 {
-	// There is a footer at the end, get it!
-	DWORD dwInitFrameSize = dwFrameSize;
-	dwFrameSize -= 4;
-	m_nExtradataSize = *((DWORD*)&pFrame[dwFrameSize]);
+	// Minimum size check
+	if (dwFrameSize < NETFRAME_HEADER_SIZE)
+		return FALSE;
+
+	// Get frame header
+	NetFrameStruct FrameHdr;
+	memcpy(&FrameHdr, pFrame, NETFRAME_HEADER_SIZE);
+
+	// Check header consistency
+	if (NETFRAME_HEADER_SIZE + FrameHdr.dwFrameDataSize + FrameHdr.dwExtraDataSize != dwFrameSize)
+		return FALSE;
+
+	// Init vars
+	enum CodecID CodecId = (enum CodecID)FrameHdr.dwCodecID;
+	if (CodecId == CODEC_ID_H263P)
+		CodecId = CODEC_ID_H263;
+	m_dwEncryptionType = FrameHdr.dwEncryptionType;
+	if (m_dwEncryptionType != 0U) // Encryption not yet supported...
+		return FALSE;
+	DWORD dwFrameDataSize = FrameHdr.dwFrameDataSize;
+	m_nExtradataSize = (int)FrameHdr.dwExtraDataSize;
+	int width = (int)FrameHdr.dwWidth;
+	int height = (int)FrameHdr.dwHeight;
 	if (m_nExtradataSize > 0)
 	{
 		if (!m_pExtradata || m_nMaxExtradata < m_nExtradataSize)
@@ -823,26 +845,11 @@ BOOL CGetFrameParseProcess::Decode(LPBYTE pFrame, DWORD dwFrameSize)
 				return FALSE;
 			}
 		}
-		dwFrameSize -= m_nExtradataSize;
 		memcpy(	m_pExtradata,
-				&pFrame[dwFrameSize],
+				&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize],
 				m_nExtradataSize);
+		memset(&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize], 0, m_nExtradataSize);
 	}
-	dwFrameSize -= 4;
-	m_dwEncryptionType = *((DWORD*)&pFrame[dwFrameSize]);
-	dwFrameSize -= 2;
-	int height = (int)(*((WORD*)&pFrame[dwFrameSize]));
-	dwFrameSize -= 2;
-	int width = (int)(*((WORD*)&pFrame[dwFrameSize]));
-	dwFrameSize -= 4;
-	enum CodecID CodecId = (enum CodecID)(*((DWORD*)&pFrame[dwFrameSize]));
-	if (CodecId == CODEC_ID_H263P)
-		CodecId = CODEC_ID_H263;
-	memset(&pFrame[dwFrameSize], 0, dwInitFrameSize - dwFrameSize);
-
-	// Encryption not yet supported...
-	if (m_dwEncryptionType != 0) 
-		return FALSE;
 	
 	// Re-init
 	if (width != (int)m_dwPrevDibWidth || height != (int)m_dwPrevDibHeight)
@@ -860,8 +867,8 @@ BOOL CGetFrameParseProcess::Decode(LPBYTE pFrame, DWORD dwFrameSize)
 	int len = avcodec_decode_video(	m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
-									(unsigned __int8 *)pFrame,
-									(int)dwFrameSize);
+									(unsigned __int8 *)(pFrame + NETFRAME_HEADER_SIZE),
+									(int)dwFrameDataSize);
 	if (len > 0 && got_picture)
 	{
 		::EnterCriticalSection(&m_pCtrl->m_csDib);

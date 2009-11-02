@@ -267,12 +267,13 @@
 </FOLDER>
 <FOLDER NAME="Networking">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="5">
+<CLASSES COUNT="6">
 <CLASS NAME="CNetCom"/>
 <CLASS NAME="NetFrameHdrPingAuth"/>
 <CLASS NAME="NetFrameHdrStruct"/>
 <CLASS NAME="NetFrameHdrStructConf"/>
 <CLASS NAME="NetFrameHdrStructFramesLost"/>
+<CLASS NAME="NetFrameStruct"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Burn">
@@ -378,11 +379,11 @@
 <CLASSES COUNT="7">
 <CLASS NAME="CAssistantPage"/>
 <CLASS NAME="CColorDetectionPage"/>
+<CLASS NAME="CGeneralPage"/>
 <CLASS NAME="CMovementDetectionPage"/>
+<CLASS NAME="CNetworkPage"/>
 <CLASS NAME="CSnapshotPage"/>
 <CLASS NAME="CVideoDevicePropertySheet"/>
-<CLASS NAME="CNetworkPage"/>
-<CLASS NAME="CGeneralPage"/>
 </CLASSES>
 </FOLDER>
 </FOLDERS>

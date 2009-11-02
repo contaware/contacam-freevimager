@@ -65,8 +65,6 @@ public:
 
 // Implementation
 protected:
-	CString GetProfileFullscreenBrowserExitString();
-	BOOL WriteProfileFullscreenBrowserExitString(const CString& sExitString);
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlgVideoDeviceDoc)
 	afx_msg void OnButtonClearall();

@@ -65,7 +65,7 @@ protected:
 	CString m_sLabel2;
 	CString m_sLabel3;
 	CFont m_LabelFont;
-	int m_nTopOffset;
+	int m_nTitleHight;
 	CFont m_TitleFont;
 	void ClipToView(LPRECT lpRect) const;
 	void RepositionCams();

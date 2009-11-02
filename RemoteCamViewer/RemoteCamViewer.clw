@@ -16,11 +16,11 @@ Class4=CRemoteCamViewerDoc
 Class5=CRemoteCamViewerView
 
 ResourceCount=4
-Resource1=IDR_MAINFRAME
+Resource1=IDD_SETTINGS
 Resource2=IDD_ABOUTBOX
 Resource3=IDD_REMOTECAMVIEWER_FORM
 Class6=CSettingsDlg
-Resource4=IDD_SETTINGS
+Resource4=IDR_MAINFRAME
 
 [CLS:CMainFrame]
 Type=0

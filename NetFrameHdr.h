@@ -10,6 +10,22 @@
 #include "NetCom.h"
 
 //
+// A video/audio frame has the following structure
+//
+#define NETFRAME_HEADER_SIZE			24
+struct NetFrameStruct
+{
+	DWORD					dwCodecID;
+	DWORD					dwEncryptionType;
+	DWORD					dwFrameDataSize;
+	DWORD					dwExtraDataSize;
+	DWORD					dwWidth;
+	DWORD					dwHeight;
+	//BYTE[dwFrameDataSize]	pFrameData;
+	//BYTE[dwExtraDataSize]	pExtraData;
+};
+
+//
 // Networking Frame Header Type
 //
 // Note:
