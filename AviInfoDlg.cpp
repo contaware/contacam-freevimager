@@ -163,7 +163,7 @@ void CAviInfoDlg::UpdateDisplay()
 						case PIX_FMT_YUV420P :
 							sFormat = _T("Planar YUV 4:2:0, 12bpp");
 							break;
-						case PIX_FMT_YUV422 :
+						case PIX_FMT_YUYV422 : //	Note: PIX_FMT_YUV422 = PIX_FMT_YUYV422
 							sFormat = _T("Packed YUV 4:2:2, 16bpp");
 							break;
 						case PIX_FMT_YUV422P :

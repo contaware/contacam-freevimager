@@ -31,15 +31,17 @@ FFMPEG rev.15375
 
 - Using revision 9227 for liba52.c otherwise it is not working ...
 
-- Under include/ffmpeg/rational.h added the (int) cast:
+
+- Under libavutil/rational.h added the (int) cast:
 static inline int av_cmp_q(AVRational a, AVRational b){
     const int64_t tmp= a.num * (int64_t)b.den - b.num * (int64_t)a.den;
 
-    if(tmp) return (int)(tmp>>63)|1;
+    if(tmp) return (int)(tmp>>63)|1; // Oli Added (int) cast
     else    return 0;
 }
 
-- Under include/ffmpeg/common.h before #include "mem.h" added:
+
+- Under libavutil/common.h before #include "mem.h" added:
 #ifndef INT64_C
 #if !defined(WIN32) || (_MSC_VER > 1200) // Oli Added
 #define INT64_C(c)     (c ## LL)
@@ -50,73 +52,69 @@ static inline int av_cmp_q(AVRational a, AVRational b){
 #endif
 #endif
 
-- Added mm_support_mask to libavcodec/i386/cputest.c (or cpuid.c) to
+
+- Added mm_support_mask to libavcodec/i386/cpuid.c or libavcodec/x86/cpuid.c to
   selectively disable MM instructions types. There is a dsp_mask in
   AVCodecContext, but this flag is not global. There are still
   some functions calling mm_support() directly without checking
   the dsp_mask!
 
+
 - In libavcodec/avcodec.h because of sse2 or sse3 I changed:
-#define FF_INPUT_BUFFER_PADDING_SIZE 16
+#define FF_INPUT_BUFFER_PADDING_SIZE 16 // Oli change from 8 to 16
 
-- In libavcodec/atrac3.c added:
-#define round(x) ((x)>=0)?(int)((x)+0.5):(int)((x)-0.5)
 
-- In libavformat/avienc.c changed avi_write_header():
+- In libavformat/avienc.c added if in avi_write_header():
+if(stream->codec_type != CODEC_TYPE_DATA){
+    strf = start_tag(pb, "strf");
+    if (s->streams[i]->stream_copy) { // oli added this if
+        put_buffer(pb, stream->extradata, stream->extradata_size);
+    } else {
+        switch(stream->codec_type) {
+        ...
 
-    if(stream->codec_type != CODEC_TYPE_DATA){
-        strf = start_tag(pb, "strf");
-        if (s->streams[i]->stream_copy) {
-            put_buffer(pb, stream->extradata, stream->extradata_size);
-        } else {
-            switch(stream->codec_type) {
-                case CODEC_TYPE_VIDEO:
-                    put_bmp_header(pb, stream, codec_bmp_tags, 0);
-                    break;
-                case CODEC_TYPE_AUDIO:
-                    if (put_wav_header(pb, stream) < 0) {
-                        av_free(avi);
-                        return -1;
-                     }
-                     break;
-                default:
-                     return -1;
-            }
-        }
-        end_tag(pb, strf);
-    }
 
-- Minor Bug in libavcodec/raw.c (or rawdec.c)
+- Minor Bug in libavcodec/rawdec.c:
 static const PixelFormatTag pixelFormatBpsAVI[] = {
     { PIX_FMT_PAL8,    8 },
     { PIX_FMT_RGB555, 15 },
-    { PIX_FMT_RGB555, 16 }, -> This should be PIX_FMT_RGB565
+    { PIX_FMT_RGB555, 16 }, // Oli changed this from PIX_FMT_RGB555 to PIX_FMT_RGB565
     { PIX_FMT_BGR24,  24 },
     { PIX_FMT_RGB32,  32 },
     { -1, 0 },
 };  
 
-- libavcodec/mpegvideo_enc.c has to be fixed for mem. leaking:
 
-Changed MPV_encode_init() so that it doesn't leak when
-rate control fails (for example if selected bitrate is to low)
+- libavcodec/mpegvideo_enc.c has to be fixed for mem. leaking;
+  changed MPV_encode_init() so that it doesn't leak when
+  rate control fails (for example if selected bitrate is to low):
+av_cold int MPV_encode_init(AVCodecContext *avctx)
+{
+    ...
+    if(ff_rate_control_init(s) < 0) {
+        MPV_encode_end(avctx); // Oli added
+        return -1;
+    }
+	
+    return 0;
+}
+
 
 - libavcodec/snow.c has to be fixed for mem. leakings:
-
 1. Changed encode_init() so that it doesn't leak when
 rate control fails (for example if selected bitrate is to low)
-
-2. Add and change given lines
+2. Add and change given lines:
 static av_cold int encode_end(AVCodecContext *avctx)
 {
     SnowContext *s = avctx->priv_data;
 
-    ff_rate_control_uninit(&s->m); // Added this line
+    ff_rate_control_uninit(&s->m); // Oli added
     common_end(s);
-    av_freep(&avctx->stats_out);   // Changed this line
+    av_freep(&avctx->stats_out);   // Oli changed
 
     return 0;
 }
+
 
 - libavcodec/ffv1.c has been fixed in ffmpeg project, it was:
 static int common_end(AVCodecContext *avctx){
@@ -133,6 +131,7 @@ static int common_end(AVCodecContext *avctx){
     return 0;
 }
 
+
 - libavcodec/huffyuv.c has been fixed in ffmpeg project, it was:
 static int decode_end(AVCodecContext *avctx)
 {
@@ -148,6 +147,7 @@ static int decode_end(AVCodecContext *avctx)
 
     return 0;
 }
+
 
 - libavcodec/libtheoraenc.c quality conversion change and
   add setting the keyframe flag
