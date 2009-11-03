@@ -7,8 +7,8 @@ cd /C/uimager/ffmpeg
 
 3. Configure:
 
-For uimager:
-./config_lgpl
+For ContaCam:
+./config_lgpl_patentfree_nosnow
 
 For RemoteCam:
 ./config_ocx
@@ -32,7 +32,8 @@ You can add the following to enable cmov and fast cmov:
 --cpu=i686
 
 
-Additional GPL Libs:
+Additional GPL Libs, lib sources under /usr/local/externallibs,
+compiled libs will be put to /usr/local/lib (--prefix=/usr/local):
 --enable-gpl
 --enable-pp
 --enable-swscaler
@@ -54,9 +55,10 @@ Note on LibGsm:
 not necessary because available as a ACM codec
 
 
-Note on Ogg, Vorbis and Theora:
+Note on Ogg, Vorbis and Theora 1.0 (Theora 1.1.1 not working...):
 
-To compile everything correctly use for all 3 libs the mingw prefix:
+To compile everything correctly use for all 3 libs the mingw prefix and
+copy libs from /mingw/lib to /usr/local/lib and includes from /mingw/include to /usr/local/include:
 ./configure --enable-static --disable-shared --prefix=/mingw
 
 

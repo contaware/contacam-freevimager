@@ -12,7 +12,7 @@
 //
 // A video/audio frame has the following structure
 //
-#define NETFRAME_HEADER_SIZE			24
+#define NETFRAME_HEADER_SIZE			32
 struct NetFrameStruct
 {
 	DWORD					dwCodecID;
@@ -21,8 +21,10 @@ struct NetFrameStruct
 	DWORD					dwExtraDataSize;
 	DWORD					dwWidth;
 	DWORD					dwHeight;
-	//BYTE[dwFrameDataSize]	pFrameData;
-	//BYTE[dwExtraDataSize]	pExtraData;
+	DWORD					dwRes1;
+	DWORD					dwRes2;
+	//BYTE[dwFrameDataSize]	pFrameData;	// pFrameData is 32 bytes aligned
+	//BYTE[dwExtraDataSize]	pExtraData;	// No alignment for pExtraData!
 };
 
 //

@@ -12981,6 +12981,8 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 		*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
 		*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
 		*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
+		*((DWORD*)&m_pOutbuf[24]) = 0U; // Reserved1
+		*((DWORD*)&m_pOutbuf[28]) = 0U; // Reserved2
 		if (m_pCodecCtx->extradata_size > 0 &&
 			IsKeyFrame()					&&
 			dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
@@ -13041,6 +13043,8 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 			*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
 			*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
 			*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
+			*((DWORD*)&m_pOutbuf[24]) = 0U; // Reserved1
+			*((DWORD*)&m_pOutbuf[28]) = 0U; // Reserved2
 			if (m_pCodecCtx->extradata_size > 0 &&
 				IsKeyFrame()					&&
 				dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
