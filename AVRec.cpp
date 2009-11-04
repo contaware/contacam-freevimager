@@ -769,8 +769,13 @@ int CAVRec::AddRawAudioStream(	const LPWAVEFORMATEX pFormat,
 		!m_pOutputFormat || !m_pFormatCtx)
 		return -1;
 
-	// Set the Codec id, just to set something otherwise it's not working!
-	m_pOutputFormat->audio_codec = CODEC_ID_PCM_S16LE;
+	// Set the Codec id, that's necessary otherwise av_write_header() in Open() sets a wrong block_align,
+	// which is used in avi_write_header() (see avienc.c) by ff_parse_specific_params() to write the
+	// sample size in the stream header (not the stream format which is hacked and ok)
+	m_pOutputFormat->audio_codec = CAVIPlay::CAVIAudioStream::AVCodecFormatTagToCodecID(pFormat->wFormatTag,
+																						pFormat->wBitsPerSample);
+	if (m_pOutputFormat->audio_codec == CODEC_ID_NONE)
+		m_pOutputFormat->audio_codec = CODEC_ID_PCM_S16LE;
 
 	// Create the audio stream
     AVStream* pStream = av_new_stream(m_pFormatCtx, 0);
@@ -871,6 +876,8 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 		pDstWaveFormat->nAvgBytesPerSec = 0;
 	else if (m_pOutputFormat->audio_codec == CODEC_ID_VORBIS)
 	{
+		// Note: libvorbis has a quality scale 0..10, but it crashes with a division by 0
+		// -> use ffmpeg internal vorbis encoder:
 		// Author says: 10 to 30 are sane values, the higher the number,
 		// the higher the bitrate and quality.
 		// Only 2 channel is supported, and, in a psy sense,

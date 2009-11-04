@@ -13,6 +13,13 @@ extern "C"
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// for libmingwex.a
+#if (_MSC_VER < 1400)
+extern "C" int _get_output_format(void)
+{
+	return 0;
+}
+#endif
 #pragma comment(lib, "libavcodec.a")
 #pragma comment(lib, "libavutil.a")
 #pragma comment(lib, "libgcc.a")

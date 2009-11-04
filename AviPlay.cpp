@@ -3639,7 +3639,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 																	stride,
 																	(int)m_pDstBMI->bmiHeader.biHeight);
 			}
-			else if (m_pCodecCtx->pix_fmt == PIX_FMT_YUYV422)	// Note: PIX_FMT_YUV422 = PIX_FMT_YUYV422
+			else if (	m_pCodecCtx->pix_fmt == PIX_FMT_YUYV422	||	// Note: PIX_FMT_YUV422 = PIX_FMT_YUYV422
+						m_pCodecCtx->pix_fmt == PIX_FMT_YUV422P	||
+						m_pCodecCtx->pix_fmt == PIX_FMT_YUVJ422P)
 			{
 				m_pDstBMI->bmiHeader.biCompression = FCC('YUY2');
 				m_pDstBMI->bmiHeader.biBitCount = 16;

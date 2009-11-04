@@ -56,6 +56,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 # Begin Custom Build - Registering ActiveX Control...
 OutDir=.\../Bin/RemoteCam/Debug
 TargetPath=\uimager\Bin\RemoteCam\Debug\RemoteCam.ocx
@@ -117,11 +118,6 @@ SOURCE="$(InputPath)"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Source File
-
-SOURCE=.\AVCodecHelpers.c
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
 # Begin Source File
 
 SOURCE=..\ConvertUTF.cpp
