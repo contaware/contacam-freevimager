@@ -54,6 +54,7 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 	if (m_uiNumDev == 0)
 	{
 		::AfxMessageBox(ML_STRING(1354, "No Sound Input Device."));
+		CDialog::OnCancel();
 		return TRUE;
 	}
 

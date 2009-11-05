@@ -53,6 +53,7 @@ BOOL CAudioOutDestinationDlg::OnInitDialog()
 	m_uiNumDev = ::waveOutGetNumDevs(); 
 	if (m_uiNumDev == 0)
 	{
+		::AfxMessageBox(ML_STRING(1426, "No Sound Output Device."));
 		CDialog::OnCancel();
 		return TRUE;
 	}

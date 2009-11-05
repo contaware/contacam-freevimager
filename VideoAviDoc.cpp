@@ -767,14 +767,6 @@ void CVideoAviDoc::CPlayAudioFileThread::PlaySyncAudioFromVideo()
 
 void CVideoAviDoc::CPlayAudioFileThread::AudioOutDestinationDialog()
 {
-	// Check Number of Audio Devices
-	if (::waveOutGetNumDevs() == 0)
-	{
-		::AfxMessageBox(ML_STRING(1426, "No Sound Output Device."));
-		return;
-	}
-
-	// Pop-up Dialog
 	CAudioOutDestinationDlg dlg(m_pDoc->GetView(), m_pDoc->m_dwPlayAudioDeviceID);
 	if (dlg.DoModal() == IDOK)
 	{
