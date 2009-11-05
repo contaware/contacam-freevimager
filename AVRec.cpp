@@ -871,30 +871,29 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	if (pDstWaveFormat->wFormatTag != WAVE_FORMAT_PCM)
 		sample_fmt = SAMPLE_FMT_S16;
 
-	// Reset Avg Bytes Per Sec, so that the codec calculates it
+	// Create Audio Stream
 	if (m_pOutputFormat->audio_codec == CODEC_ID_FLAC)
+	{
+		// Reset Avg Bytes Per Sec, so that the codec calculates it
 		pDstWaveFormat->nAvgBytesPerSec = 0;
+	}
 	else if (m_pOutputFormat->audio_codec == CODEC_ID_VORBIS)
 	{
 		// Note: libvorbis has a quality scale 0..10, but it crashes with a division by 0
-		// -> use ffmpeg internal vorbis encoder:
+		// -> use ffmpeg internal vorbis encoder which has a different quality scale:
 		// Author says: 10 to 30 are sane values, the higher the number,
 		// the higher the bitrate and quality.
 		// Only 2 channel is supported, and, in a psy sense,
 		// 44100 and 48000 are best supported...
-
-		// Range check
-		qscale = (int)pDstWaveFormat->nAvgBytesPerSec;
-		if (qscale > 1000)
-			qscale = 1000;
-		else if (qscale < 8)
-			qscale = 8;
-
-		// Reset value (codec doesn't calculate it)
-		pDstWaveFormat->nAvgBytesPerSec = 0;
+		if (pDstWaveFormat->nAvgBytesPerSec <= (60000 / 8))
+			qscale = 10;											// After some tests quality 10 gives around 60 kbps (for 44.1KHz)
+		else if (pDstWaveFormat->nAvgBytesPerSec <= (90000 / 8))
+			qscale = 15;											// After some tests quality 15 gives around 90 kbps (for 44.1KHz)
+		else if (pDstWaveFormat->nAvgBytesPerSec <= (120000 / 8))
+			qscale = 22;											// After some tests quality 22 gives around 120 kbps (for 44.1KHz)
+		else
+			qscale = 35;											// After some tests quality 35 gives around 160 kbps (for 44.1KHz)
 	}
-
-	// Create Audio Stream
     pAudioStream = CreateAudioStream(m_pOutputFormat->audio_codec,
 									sample_fmt,
 									pDstWaveFormat->wFormatTag,

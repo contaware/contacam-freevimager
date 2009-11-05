@@ -39,6 +39,9 @@ if (!((DWORD)(dw1 - dw2) < dw3))
   Snapshot continues to add frames, all frames will be there, but the flash player will only play
   up to the given limit. The slider still works to view single frames...
 
+- ContaCam runs in single instance because Micro Apache is killed when app closes
+  and because the movement detection buffers are optimized for one instance
+
 - Visited links are not shown on Safari for intranet addresses
 
 - To declare the object pointed to by the pointer as const or volatile, use a declaration of the form:

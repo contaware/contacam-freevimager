@@ -253,13 +253,13 @@ void CAudioFormatDlg::CtrlsToWaveFormat()
 		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_VORBIS_QUALITY);
 		switch (pCombo->GetCurSel())
 		{
-			case 0  :	m_WaveFormat.nAvgBytesPerSec = 10;
+			case 0  :	m_WaveFormat.nAvgBytesPerSec = 60000 / 8;	// q = 10
 						break;
-			case 1  :	m_WaveFormat.nAvgBytesPerSec = 15;
+			case 1  :	m_WaveFormat.nAvgBytesPerSec = 90000 / 8;	// q = 15;
 						break;
-			case 2  :	m_WaveFormat.nAvgBytesPerSec = 22;
+			case 2  :	m_WaveFormat.nAvgBytesPerSec = 120000 / 8;	// q = 22;
 						break;
-			case 3  :	m_WaveFormat.nAvgBytesPerSec = 35;
+			case 3  :	m_WaveFormat.nAvgBytesPerSec = 160000 / 8;	// q = 35;
 						break;
 			default :	ASSERT(FALSE);
 						break;
@@ -520,25 +520,25 @@ void CAudioFormatDlg::WaveFormatToCtrls()
 		pRadio->SetCheck(1);
 
 		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_VORBIS_QUALITY);
-		if (m_WaveFormat.nAvgBytesPerSec <= 10)
+		if (m_WaveFormat.nAvgBytesPerSec <= (60000 / 8))
 		{
 			pCombo->SetCurSel(0);
-			m_WaveFormat.nAvgBytesPerSec = 10;
+			m_WaveFormat.nAvgBytesPerSec = 60000 / 8;
 		}
-		else if (m_WaveFormat.nAvgBytesPerSec <= 15)
+		else if (m_WaveFormat.nAvgBytesPerSec <= (90000 / 8))
 		{
 			pCombo->SetCurSel(1);
-			m_WaveFormat.nAvgBytesPerSec = 15;
+			m_WaveFormat.nAvgBytesPerSec = 90000 / 8;
 		}
-		else if (m_WaveFormat.nAvgBytesPerSec <= 22)
+		else if (m_WaveFormat.nAvgBytesPerSec <= (120000 / 8))
 		{
 			pCombo->SetCurSel(2);
-			m_WaveFormat.nAvgBytesPerSec = 22;
+			m_WaveFormat.nAvgBytesPerSec = 120000 / 8;
 		}
 		else
 		{
 			pCombo->SetCurSel(3);
-			m_WaveFormat.nAvgBytesPerSec = 35;
+			m_WaveFormat.nAvgBytesPerSec = 160000 / 8;
 		}
 
 		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_VORBIS_CHANNELS);
@@ -1161,13 +1161,13 @@ void CAudioFormatDlg::OnSelchangeComboVorbisQuality()
 	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_VORBIS_QUALITY);
 	switch (pCombo->GetCurSel())
 	{
-		case 0  :	m_WaveFormat.nAvgBytesPerSec = 10;
+		case 0  :	m_WaveFormat.nAvgBytesPerSec = 60000 / 8;	// q = 10
 					break;
-		case 1  :	m_WaveFormat.nAvgBytesPerSec = 15;
+		case 1  :	m_WaveFormat.nAvgBytesPerSec = 90000 / 8;	// q = 15;
 					break;
-		case 2  :	m_WaveFormat.nAvgBytesPerSec = 22;
+		case 2  :	m_WaveFormat.nAvgBytesPerSec = 120000 / 8;	// q = 22;
 					break;
-		case 3  :	m_WaveFormat.nAvgBytesPerSec = 35;
+		case 3  :	m_WaveFormat.nAvgBytesPerSec = 160000 / 8;	// q = 35;
 					break;
 		default :	ASSERT(FALSE);
 					break;

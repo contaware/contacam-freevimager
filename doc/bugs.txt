@@ -1,0 +1,63 @@
+Fixed Bugs:
+-----------
+
+Tooltips of bottom toolbar showing sometimes, sometimes not, MFC bug solved in vs2003 and vs2005!
+The Player Slider Is Not Hovering Correctly under vs6, fixed in vs2005!
+
+
+
+Strange Things (=not really bugs):
+----------------------------------
+
+With VS6 on Vista if opening two devices and one or both have I420 output
+then the time and date are flickering...
+
+On NT 4 and on Vista the progress when loading a big jpeg is not shown well,
+this because the posted messages for the progress bar are not handled as
+fast as in other OSs, or maybe they are all handled together...
+
+3ivx D4 4.5.1 codec plays DIV3 videos only with uimager release build...
+
+Playing raw yv12 video makes ir50_32.dll vfw codec crash when changing from
+GDI RGB <-> GDI YUV rendering mode on win98 & WinMe...
+
+On Vista when auto-starting with high priority is not working.
+Probably Vista doesn't let you set high priority when starting up.
+
+Axis 206W sometimes is violet -> It's a hardware problem
+
+Logitech old Quickcam (Pro and Notbook) cameras at 640x480 and 4fps (or more)
+change back and forth the dropped frames count...
+
+Hauppauge WinTV PVR 350 after some time goes down to 0.2-0.8 fps, if I change the
+framerate it works again for some time (usually one day).
+I could detect that in the watchdog, but no, I have enough of these stupid bugs!
+ 
+
+
+Bugs:
+-----
+
+On NT 4 after exiting fullscreen mode and if mainframe was maximized, the re-maximizing
+is not exact (1-2 pixels less on right and bottom). Not a big problem. Leave it like this.
+
+Windows Bug: Passing over a picture in Halftone mode with another window restores
+the picture with the wrong stretch mode (coloroncolor) but only with small pictures (like 8x8)...
+
+No Support For Compressing/Decompressing Unicode File Names, even new ZipArchive doesn't support it...
+Zip File Specification doesn't support UNICODE...
+
+On Safari 4 animated gifs support is buggy!!!
+
+
+
+Why using ContaCam only on Win2k and higher:
+--------------------------------------------
+
+- The VC6 compile is less stable, after some month the C lib crashed!
+- Micro Apache is not working on Win95
+- Vorbis decoder is crashing in Win95
+- On NT4 DirectX 7 is not supported
+- PSAPI.dll not available on NT4 -> Micro Apache cannot be killed!
+- Passwords are encrypted on Win2k or higher
+- MD5 necessary for auth not available with versions less than win2k

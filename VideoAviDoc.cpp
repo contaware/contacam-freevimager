@@ -3547,7 +3547,16 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 					pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
 					if (pSrcAudioStream)
 					{
+						// Set format for dlg
 						memcpy(&AudioFormatDlg.m_WaveFormat, pSrcAudioStream->GetFormat(true), sizeof(WAVEFORMATEX));
+						
+						// GetTotalTime() needs m_nVBRSamplesPerChunk which is
+						// calculated when opening the decompressor
+						if (pSrcAudioStream->IsVBR())
+						{
+							pSrcAudioStream->OpenDecompression();
+							pSrcAudioStream->SetStart();
+						}
 						dAudioLength = pSrcAudioStream->GetTotalTime();
 						break;
 					}
