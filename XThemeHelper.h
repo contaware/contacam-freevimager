@@ -63,11 +63,8 @@ public:
 
 // Attributes
 public:
-	// User can disable theming
-	// for app by right-clicking
-	// on exe, then clicking on
-	// Properties | Compatibility |
-	// Disable visual themes
+	// User can disable theming for app by right-clicking on exe,
+	// then clicking on Properties | Compatibility | Disable visual themes
 	BOOL IsAppThemed();
 	BOOL IsThemeActive();
 	BOOL IsThemeLibAvailable() {return m_bThemeLibLoaded;};
@@ -108,7 +105,6 @@ public:
 							OUT COLORREF *pColor);
 	COLORREF GetThemeSysColor(	HTHEME hTheme,
 								int iColorID);
-	int GetComCtl32Version();
 
 // Implementation
 private:
@@ -129,6 +125,7 @@ private:
 	static int								m_nDLLVersion;
 
 	void	Init();
+	int		GetComCtl32Version();
 };
 
 ///////////////////////////////////////////////////////////////////////////////

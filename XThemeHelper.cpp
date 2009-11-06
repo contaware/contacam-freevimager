@@ -164,16 +164,13 @@ int CXThemeHelper::GetComCtl32Version()
 	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
     if (hModComCtl)
     {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
+        pDLLGETVERSION = (DLLGETVERSION)(::GetProcAddress(hModComCtl, "DllGetVersion"));
         if (pDLLGETVERSION)
         {
             DLLVERSIONINFO dvi = {0};
             dvi.cbSize = sizeof dvi;
             if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
                 ret = dvi.dwMajorVersion;
-            }
         }
 		::FreeLibrary(hModComCtl);                 
     }

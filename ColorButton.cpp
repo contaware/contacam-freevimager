@@ -602,13 +602,10 @@ LRESULT CColorButton::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (IsThemed())
 			{
-				if (m_hTheme)
-				{
-					// when user changes themes, close current theme and re-open
-					ThemeHelper.CloseThemeData(m_hTheme);
-					m_hTheme = NULL;
-					m_bFirstTime = TRUE;
-				}
+				// when user changes themes, close current theme
+				ThemeHelper.CloseThemeData(m_hTheme);
+				m_hTheme = NULL;
+				m_bFirstTime = TRUE;
 			}
 		}
 		break;

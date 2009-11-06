@@ -542,11 +542,11 @@ void CToolBarChildFrame::OnPaint()
 	CRect rcToolBar;
 	pToolBar->GetClientRect(&rcToolBar); 
 
-	// With Themes (Turned On or Off) We Have to Erase the
-	// Toolbar Background Border!
+	// With Themes (Turned On or Off) we have to erase the
+	// toolbar background border!
 	if ((TOOLBAR_BORDERRECT.top > 0 || TOOLBAR_BORDERRECT.left > 0 ||
 		TOOLBAR_BORDERRECT.bottom > 0 || TOOLBAR_BORDERRECT.right > 0) &&
-		(ThemeHelper.GetComCtl32Version() >= 6))
+		ThemeHelper.IsThemeComCtl32())
 	{
 		CRect rcToolBarBkg;
 		rcToolBarBkg.top = rcFrameClient.bottom - rcToolBar.Height() -
@@ -554,7 +554,7 @@ void CToolBarChildFrame::OnPaint()
 		rcToolBarBkg.left = rcFrameClient.left;
 		rcToolBarBkg.right = rcFrameClient.right;
 		rcToolBarBkg.bottom = rcFrameClient.bottom;
-		
+
 		COLORREF col = ::GetSysColor(COLOR_BTNFACE);
 		if (IsThemed())
 		{
@@ -617,6 +617,25 @@ void CToolBarChildFrame::OnPaint()
 	}
 
 	// Do not call CChildFrame::OnPaint() for painting messages
+}
+
+LRESULT CToolBarChildFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	switch (message)
+	{
+		case WM_THEMECHANGED:
+		{
+			if (IsThemed())
+			{
+				// when user changes themes, close current theme and re-open
+				ThemeHelper.CloseThemeData(m_hTheme);
+				m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
+			}
+		}
+		break;
+	}
+
+	return CChildFrame::DefWindowProc(message, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1707,25 +1726,3 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 }
 
 #endif
-
-LRESULT CToolBarChildFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
-{
-	switch (message)
-	{
-		case WM_THEMECHANGED:
-		{
-			if (IsThemed())
-			{
-				if (m_hTheme)
-				{
-					// when user changes themes, close current theme and re-open
-					ThemeHelper.CloseThemeData(m_hTheme);
-					m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
-				}
-			}
-		}
-		break;
-	}
-
-	return CChildFrame::DefWindowProc(message, wParam, lParam);
-}

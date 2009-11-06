@@ -200,12 +200,9 @@ LRESULT CToolbarSliderCtrl::DefWindowProc(UINT message, WPARAM wParam, LPARAM lP
 		{
 			if (IsThemed())
 			{
-				if (m_hTheme)
-				{
-					// when user changes themes, close current theme and re-open
-					ThemeHelper.CloseThemeData(m_hTheme);
-					m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
-				}
+				// when user changes themes, close current theme and re-open
+				ThemeHelper.CloseThemeData(m_hTheme);
+				m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
 			}
 		}
 		break;

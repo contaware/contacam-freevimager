@@ -258,12 +258,9 @@ LRESULT CPlayerToolBarDlg::DefWindowProc(UINT message, WPARAM wParam, LPARAM lPa
 		{
 			if (IsThemed())
 			{
-				if (m_hTheme)
-				{
-					// when user changes themes, close current theme and re-open
-					ThemeHelper.CloseThemeData(m_hTheme);
-					m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
-				}
+				// when user changes themes, close current theme and re-open
+				ThemeHelper.CloseThemeData(m_hTheme);
+				m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
 			}
 		}
 		break;
