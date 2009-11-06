@@ -64,6 +64,7 @@ copy libs from /mingw/lib to /usr/local/lib and includes from /mingw/include to 
 
 Notes:
 
+- SNOW is locking (crashing) with resolutions less than 88 x 72...
 - Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
 - H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
 - Internal DTS not working in new ffmpeg                           -> not compiled in
