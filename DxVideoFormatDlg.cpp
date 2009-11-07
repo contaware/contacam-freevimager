@@ -284,30 +284,38 @@ void CDxVideoFormatDlg::OnApply()
 
 LONG CDxVideoFormatDlg::OnApplyVideoFormatChange(WPARAM wparam, LPARAM lparam)
 {
-	int nPrevTotalDelay = (int)lparam;
-	if (nPrevTotalDelay > MAX_DX_DIALOGS_RETRY_TIME || m_pDoc->IsProcessFrameStopped())
+	if (m_pDoc->m_bClosing)
 	{
-		BOOL bCallOnOK = (BOOL)wparam;
-		Apply();
-		m_bChangingFormat = FALSE;
-		if (bCallOnOK)
-			CDialog::OnOK();
+		CDialog::OnCancel();
 		return 1;
 	}
 	else
 	{
-		double dFrameRate = m_pDoc->m_dEffectiveFrameRate;
-		int delay;
-		if (dFrameRate >= 1.0)
-			delay = Round(1000.0 / dFrameRate); // In ms
+		int nPrevTotalDelay = (int)lparam;
+		if (nPrevTotalDelay > MAX_DX_DIALOGS_RETRY_TIME || m_pDoc->IsProcessFrameStopped())
+		{
+			BOOL bCallOnOK = (BOOL)wparam;
+			Apply();
+			m_bChangingFormat = FALSE;
+			if (bCallOnOK)
+				CDialog::OnOK();
+			return 1;
+		}
 		else
-			delay = 1000;
-		CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-														WM_DX_APPLY_VIDEOFORMAT_CHANGE,
-														delay,
-														wparam,
-														nPrevTotalDelay + delay);
-		return 0;
+		{
+			double dFrameRate = m_pDoc->m_dEffectiveFrameRate;
+			int delay;
+			if (dFrameRate >= 1.0)
+				delay = Round(1000.0 / dFrameRate); // In ms
+			else
+				delay = 1000;
+			CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
+															WM_DX_APPLY_VIDEOFORMAT_CHANGE,
+															delay,
+															wparam,
+															nPrevTotalDelay + delay);
+			return 0;
+		}
 	}
 }
 

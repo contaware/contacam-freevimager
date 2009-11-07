@@ -1404,6 +1404,7 @@ void CVideoDeviceChildFrame::OnClose()
 	if (::AfxGetMainFrame()->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
 
+	// If First Close Attempt
 	if (m_bFirstCloseAttempt)
 	{
 		// Start closing only if not displaying a VfW Dialog,
@@ -1484,14 +1485,15 @@ void CVideoDeviceChildFrame::OnClose()
 			if (!((CUImagerApp*)::AfxGetApp())->m_bClosingAll)
 				SetTimer(ID_TIMER_CLOSING_VIDEODEVICEDOC, CLOSING_CHECK_INTERVAL_TIMER_MS, NULL);
 
-			// Start Shutdown
+			// Reset Flag and set shutdown start uptime
 			m_bFirstCloseAttempt = FALSE;
 			m_dwFirstCloseAttemptUpTime = ::timeGetTime();
 
-			// If we have a Video AVI as frame source
-			// kill it so that frames stop to arrive!
+			// Start Shutdown Process
 			if (pDoc->m_pVideoAviDoc)
 			{
+				// If we have a Video AVI as frame source
+				// stop it so that frames will not arrive anymore!
 				if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc) &&
 					pDoc->m_pVideoAviDoc->m_PlayVideoFileThread.IsAlive())
 					pDoc->m_pVideoAviDoc->StopAVI();
@@ -1500,6 +1502,7 @@ void CVideoDeviceChildFrame::OnClose()
 				StartShutdown1();
 		}
 	}
+	// StartShutdown1() for Video AVI Device?
 	else if (pDoc->m_pVideoAviDoc)
 	{
 		if (!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc))
@@ -1508,8 +1511,7 @@ void CVideoDeviceChildFrame::OnClose()
 			pDoc->m_bCapture = FALSE;
 			StartShutdown1();
 		}
-		else if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc)	&&
-				!pDoc->m_pVideoAviDoc->m_PlayVideoFileThread.IsAlive())
+		else if (!pDoc->m_pVideoAviDoc->m_PlayVideoFileThread.IsAlive())
 		{
 			pDoc->m_pVideoAviDoc->m_pVideoDeviceDoc = NULL;
 			pDoc->m_pVideoAviDoc = NULL;
@@ -1517,8 +1519,19 @@ void CVideoDeviceChildFrame::OnClose()
 			StartShutdown1();
 		}
 	}
-	else if (IsShutdown1Done() && !m_bShutdown2Started)
-		StartShutdown2();
+	// StartShutdown2()?
+	else if (!m_bShutdown2Started)
+	{
+		// The given wait time may be exceeded if a small framerate is set or if the UDP
+		// server has been closed just before this client. That's not a problem given that
+		// after MAX_CLOSE_CHILDFRAME_WAITTIME / 2 milliseconds that we called StopProcessFrame()
+		// we are not anymore inside ProcessFrame() and because of the StopProcessFrame() call
+		// we cannot enter ProcessFrame() again!
+		if (IsShutdown1Done() ||
+			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 2))
+			StartShutdown2();
+	}
+	// Done?
 	else if (IsShutdown2Done() ||
 			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= MAX_CLOSE_CHILDFRAME_WAITTIME)
 	{
@@ -1593,6 +1606,8 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	ASSERT_VALID(pView);
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
+
+	// Set flag
 	m_bShutdown2Started = TRUE;
 
 	// Start Killing
@@ -1709,7 +1724,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Check whether all Threads are Dead
+	// Check whether all Threads are dead
 	if (!pDoc->m_HttpGetFrameThread.IsAlive()		&&
 		(pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE)	&&
 		(pDoc->m_pSendFrameNetCom ? pDoc->m_pSendFrameNetCom->IsShutdown() : TRUE)	&&

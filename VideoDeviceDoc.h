@@ -1259,7 +1259,7 @@ public:
 	void VfWVideoSourceDialog();
 	
 	// On Change Frame Rate
-	BOOL OnChangeFrameRate();
+	void OnChangeFrameRate();
 	
 	// List Convention
 	//

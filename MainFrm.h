@@ -72,9 +72,7 @@ extern "C"
 #define FULLSCREENON_DELAYEDRESTART_TIMEOUT			2000U	// ms
 #define FULLSCREENOFF_DELAYEDRESTART_TIMEOUT		2000U	// ms
 
-// Closing wait time, must be quite high because if the VideoDeviceDoc
-// in Client Poll Mode is closing all the open connections
-// it takes some time
+// Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				15000U	// ms
 
 // Temporary Scan & Email Directory

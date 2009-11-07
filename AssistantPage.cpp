@@ -606,7 +606,7 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 
 void CAssistantPage::OnTimer(UINT nIDEvent) 
 {
-	if (m_bDoApplySettings)
+	if (m_bDoApplySettings && !m_pDoc->m_bClosing)
 	{
 		if (!m_pDoc->m_bCapture)
 			ApplySettings();

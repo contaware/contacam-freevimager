@@ -932,234 +932,236 @@ void CGeneralPage::OnRecAudio()
 
 void CGeneralPage::OnTimer(UINT nIDEvent) 
 {
-	// Is Mpeg2?
-	BOOL bMpeg2 = FALSE;
-	if (m_pDoc->m_pOrigBMI &&
-		m_pDoc->m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'))
-		bMpeg2 = TRUE;
-	
-	// Open Mixer If Not Open
-	if (m_pDoc->m_CaptureAudioThread.IsOpen() && !m_pDoc->m_CaptureAudioThread.m_Mixer.IsWithWndHandleOpen())
+	if (!m_pDoc->m_bClosing)
 	{
-		// Open Mixer
-		m_pDoc->m_CaptureAudioThread.m_Mixer.Open(m_pDoc->m_CaptureAudioThread.GetWaveHandle(), GetSafeHwnd());
-
-		// Adjust Volume Slider
-		DWORD dwVolLeft, dwVolRight;
-		if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
+		// Is Mpeg2?
+		BOOL bMpeg2 = FALSE;
+		if (m_pDoc->m_pOrigBMI &&
+			m_pDoc->m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'))
+			bMpeg2 = TRUE;
+		
+		// Open Mixer If Not Open
+		if (m_pDoc->m_CaptureAudioThread.IsOpen() && !m_pDoc->m_CaptureAudioThread.m_Mixer.IsWithWndHandleOpen())
 		{
-			m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-			m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight))
+			// Open Mixer
+			m_pDoc->m_CaptureAudioThread.m_Mixer.Open(m_pDoc->m_CaptureAudioThread.GetWaveHandle(), GetSafeHwnd());
+
+			// Adjust Volume Slider
+			DWORD dwVolLeft, dwVolRight;
+			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
 			{
-				m_RecVolumeLeft.SetPos(dwVolLeft);	
-				m_RecVolumeRight.SetPos(dwVolRight);
+				m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
+											m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
+				m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
+											m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
+				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight))
+				{
+					m_RecVolumeLeft.SetPos(dwVolLeft);	
+					m_RecVolumeRight.SetPos(dwVolRight);
+				}
 			}
-		}
-		else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-		{
-			m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-			m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight))
+			else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
 			{
-				m_RecVolumeLeft.SetPos(dwVolLeft);	
-				m_RecVolumeRight.SetPos(dwVolRight);
+				m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
+											m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
+				m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
+											m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
+				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight))
+				{
+					m_RecVolumeLeft.SetPos(dwVolLeft);	
+					m_RecVolumeRight.SetPos(dwVolRight);
+				}
 			}
+
+			// If Device Has Both Dst & Src, Turn Src Volume to Maximum!
+			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF &&
+				m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
+			{
+				m_pDoc->m_CaptureAudioThread.m_Mixer.SetSrcVolume(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(),
+																	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax());
+			}
+
+			// Set Muted Warning Label if muted
+			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
+			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstMute() ||
+				m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcMute())
+				pEdit->SetWindowText(ML_STRING(1455, "Muted!"));
+			else
+				pEdit->SetWindowText(_T(""));
 		}
 
-		// If Device Has Both Dst & Src, Turn Src Volume to Maximum!
-		if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF &&
-			m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
+		// Enable / Disable Volume Slider
+		if (!m_pDoc->m_CaptureAudioThread.IsOpen())
 		{
-			m_pDoc->m_CaptureAudioThread.m_Mixer.SetSrcVolume(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(),
-																m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax());
-		}
-
-		// Set Muted Warning Label if muted
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
-		if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstMute() ||
-			m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcMute())
-			pEdit->SetWindowText(ML_STRING(1455, "Muted!"));
-		else
-			pEdit->SetWindowText(_T(""));
-	}
-
-	// Enable / Disable Volume Slider
-	if (!m_pDoc->m_CaptureAudioThread.IsOpen())
-	{
-		CSliderCtrl* pSlider;
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
-		pSlider->SetPos(0);
-		pSlider->EnableWindow(FALSE);
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
-		pSlider->SetPos(0);
-		pSlider->EnableWindow(FALSE);
-	}
-	else
-	{
-		CSliderCtrl* pSlider;
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
-		pSlider->EnableWindow(TRUE);
-		pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
-		pSlider->EnableWindow(TRUE);
-	}
-
-	// If Mean Level is Older Than a Second -> Set Peak Meter To Zero
-	CTime CurrentTime = CTime::GetCurrentTime();
-	CTimeSpan ElapsedTime = CurrentTime - m_pDoc->m_CaptureAudioThread.GetMeanLevelTime();
-	int Data[2];
-	if (ElapsedTime.GetTotalSeconds() > 1)
-	{
-		Data[1] = Data[0] = 0;
-		m_PeakMeter.SetData(Data, 0, 2);
-	}
-
-	// Inconsistency Detection:
-	// audio input may not be able to start
-	if ((m_pDoc->m_CaptureAudioThread.IsRunning()	&&
-		m_pDoc->m_bCaptureAudio == FALSE)			||
-		(!m_pDoc->m_CaptureAudioThread.IsRunning()	&&
-		m_pDoc->m_bCaptureAudio == TRUE))
-		m_nAudioCaptureInconsistencyTimeout--;
-	else
-		m_nAudioCaptureInconsistencyTimeout = AUDIOCAPTURE_INCONSISTENCY_TIMEOUT;
-	if (m_nAudioCaptureInconsistencyTimeout <= 0)
-	{
-		CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
-		if (m_pDoc->m_CaptureAudioThread.IsRunning())
-		{
-			pCheck->SetCheck(1);
-			m_pDoc->m_bCaptureAudio = TRUE;
+			CSliderCtrl* pSlider;
+			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
+			pSlider->SetPos(0);
+			pSlider->EnableWindow(FALSE);
+			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
+			pSlider->SetPos(0);
+			pSlider->EnableWindow(FALSE);
 		}
 		else
 		{
-			pCheck->SetCheck(0);
-			m_pDoc->m_bCaptureAudio = FALSE;
+			CSliderCtrl* pSlider;
+			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
+			pSlider->EnableWindow(TRUE);
+			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
+			pSlider->EnableWindow(TRUE);
 		}
-	}
-	
-	// Show Calculated Frame Rate
-	double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EFFECTIVE_FRAMERATE);
-	CString sEffectiveFrameRate;
-	sEffectiveFrameRate.Format(_T("%0.1f"), dEffectiveFrameRate);
-	pEdit->SetWindowText(sEffectiveFrameRate);
 
-	// Show Dropped Frames
-	pEdit = (CEdit*)GetDlgItem(IDC_DROPPED_FRAMES);
-	if (pEdit)
-	{
-		CString sDroppedFrames;
-		if (m_pDoc->m_pDxCapture)
+		// If Mean Level is Older Than a Second -> Set Peak Meter To Zero
+		CTime CurrentTime = CTime::GetCurrentTime();
+		CTimeSpan ElapsedTime = CurrentTime - m_pDoc->m_CaptureAudioThread.GetMeanLevelTime();
+		int Data[2];
+		if (ElapsedTime.GetTotalSeconds() > 1)
 		{
-			LONG lDroppedFrames = m_pDoc->m_pDxCapture->GetDroppedFrames();
-			if (lDroppedFrames >= 0)
-				sDroppedFrames.Format(_T("%d"), lDroppedFrames);
-			else
-				sDroppedFrames = _T("0");	// Unsupported
+			Data[1] = Data[0] = 0;
+			m_PeakMeter.SetData(Data, 0, 2);
 		}
-		else if (m_pDoc->m_pDxCaptureVMR9)
-		{
-			LONG lDroppedFrames = m_pDoc->m_pDxCaptureVMR9->GetDroppedFrames();
-			if (lDroppedFrames >= 0)
-				sDroppedFrames.Format(_T("%d"), lDroppedFrames);
-			else
-				sDroppedFrames = _T("0");	// Unsupported
-		}
-		else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-		{
-			int nDroppedFrames = m_pDoc->m_VfWCaptureVideoThread.GetDroppedFrames();
-			if (nDroppedFrames >= 0)
-				sDroppedFrames.Format(_T("%d"), nDroppedFrames);
-			else
-				sDroppedFrames = _T("0");	// Unsupported
-		}
-		else if (m_pDoc->m_pGetFrameParseProcess)
-			sDroppedFrames.Format(_T("%u"), m_pDoc->m_pGetFrameParseProcess->GetLostCount());
+
+		// Inconsistency Detection:
+		// audio input may not be able to start
+		if ((m_pDoc->m_CaptureAudioThread.IsRunning()	&&
+			m_pDoc->m_bCaptureAudio == FALSE)			||
+			(!m_pDoc->m_CaptureAudioThread.IsRunning()	&&
+			m_pDoc->m_bCaptureAudio == TRUE))
+			m_nAudioCaptureInconsistencyTimeout--;
 		else
-			sDroppedFrames = _T("0");	// Unsupported
-		pEdit->SetWindowText(sDroppedFrames);
-	}
-
-	// Show Process Frame Time
-	pEdit = (CEdit*)GetDlgItem(IDC_PROCESS_TIME);
-	if (pEdit)
-	{
-		CString sProcessFrameTime;
-		sProcessFrameTime.Format(_T("%d"), m_pDoc->m_lProcessFrameTime);
-		pEdit->SetWindowText(sProcessFrameTime);
-	}
-
-	// Show Data Rate
-	pEdit = (CEdit*)GetDlgItem(IDC_DATA_RATE);
-	if (pEdit)
-	{
-		CString sDataRate(_T("xxx"));
-		LONG lUncompressedAvgFrameSize = 0;
-		if (bMpeg2)
-			lUncompressedAvgFrameSize = 3 * m_pDoc->m_DocRect.Height() * m_pDoc->m_DocRect.Width() / 2; // I420 (= 12 bpp)
-		else if (m_pDoc->m_pOrigBMI)
-			lUncompressedAvgFrameSize = m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage;
-		if (lUncompressedAvgFrameSize > 0)
+			m_nAudioCaptureInconsistencyTimeout = AUDIOCAPTURE_INCONSISTENCY_TIMEOUT;
+		if (m_nAudioCaptureInconsistencyTimeout <= 0)
 		{
-			if (m_pDoc->m_lCompressedDataRate > 0)
+			CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
+			if (m_pDoc->m_CaptureAudioThread.IsRunning())
 			{
-				sDataRate.Format(_T("%0.1f -> %0.1f"),	(double)m_pDoc->m_lCompressedDataRate / 1024.0,						// KB / Sec
-														(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
+				pCheck->SetCheck(1);
+				m_pDoc->m_bCaptureAudio = TRUE;
 			}
 			else
 			{
-				sDataRate.Format(_T("%0.1f"),			(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
+				pCheck->SetCheck(0);
+				m_pDoc->m_bCaptureAudio = FALSE;
 			}
 		}
-		pEdit->SetWindowText(sDataRate);
-	}
+		
+		// Show Calculated Frame Rate
+		double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EFFECTIVE_FRAMERATE);
+		CString sEffectiveFrameRate;
+		sEffectiveFrameRate.Format(_T("%0.1f"), dEffectiveFrameRate);
+		pEdit->SetWindowText(sEffectiveFrameRate);
 
-	// Change The Frame Rate if Necessary
-	if (m_bDoChangeFrameRate)
-	{
-		--m_nFrameRateChangeTimeout;
-		if (m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped())
+		// Show Dropped Frames
+		pEdit = (CEdit*)GetDlgItem(IDC_DROPPED_FRAMES);
+		if (pEdit)
 		{
-			// Reset flag
-			m_bDoChangeFrameRate = FALSE;
-
-			// Frame Rate Edit Control
-			CString sFrameRate;
-			pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-			pEdit->GetWindowText(sFrameRate);
-			BOOL bOk = FALSE;
-			BOOL bRestore = FALSE;
-			double dFrameRate = _tcstod(sFrameRate, NULL);
-			double dMinFrameRate, dMaxFrameRate;
-			m_SpinFrameRate.GetRange(dMinFrameRate, dMaxFrameRate);
-			if (sFrameRate != _T(""))
+			CString sDroppedFrames;
+			if (m_pDoc->m_pDxCapture)
 			{
-				if (dFrameRate >= dMinFrameRate && dFrameRate <= dMaxFrameRate)
-					bOk = TRUE;
+				LONG lDroppedFrames = m_pDoc->m_pDxCapture->GetDroppedFrames();
+				if (lDroppedFrames >= 0)
+					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
 				else
-					bRestore = TRUE;
+					sDroppedFrames = _T("0");	// Unsupported
 			}
-			if (bOk)
+			else if (m_pDoc->m_pDxCaptureVMR9)
 			{
-				m_pDoc->m_dFrameRate = dFrameRate;
-				m_pDoc->OnChangeFrameRate();
+				LONG lDroppedFrames = m_pDoc->m_pDxCaptureVMR9->GetDroppedFrames();
+				if (lDroppedFrames >= 0)
+					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
+				else
+					sDroppedFrames = _T("0");	// Unsupported
 			}
-			else if (bRestore)
+			else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
 			{
-				m_pDoc->ReStartProcessFrame();
-				sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-				pEdit->SetWindowText(sFrameRate);
-				pEdit->SetFocus();
-				pEdit->SetSel(0xFFFF0000);
+				int nDroppedFrames = m_pDoc->m_VfWCaptureVideoThread.GetDroppedFrames();
+				if (nDroppedFrames >= 0)
+					sDroppedFrames.Format(_T("%d"), nDroppedFrames);
+				else
+					sDroppedFrames = _T("0");	// Unsupported
+			}
+			else if (m_pDoc->m_pGetFrameParseProcess)
+				sDroppedFrames.Format(_T("%u"), m_pDoc->m_pGetFrameParseProcess->GetLostCount());
+			else
+				sDroppedFrames = _T("0");	// Unsupported
+			pEdit->SetWindowText(sDroppedFrames);
+		}
+
+		// Show Process Frame Time
+		pEdit = (CEdit*)GetDlgItem(IDC_PROCESS_TIME);
+		if (pEdit)
+		{
+			CString sProcessFrameTime;
+			sProcessFrameTime.Format(_T("%d"), m_pDoc->m_lProcessFrameTime);
+			pEdit->SetWindowText(sProcessFrameTime);
+		}
+
+		// Show Data Rate
+		pEdit = (CEdit*)GetDlgItem(IDC_DATA_RATE);
+		if (pEdit)
+		{
+			CString sDataRate(_T("xxx"));
+			LONG lUncompressedAvgFrameSize = 0;
+			if (bMpeg2)
+				lUncompressedAvgFrameSize = 3 * m_pDoc->m_DocRect.Height() * m_pDoc->m_DocRect.Width() / 2; // I420 (= 12 bpp)
+			else if (m_pDoc->m_pOrigBMI)
+				lUncompressedAvgFrameSize = m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage;
+			if (lUncompressedAvgFrameSize > 0)
+			{
+				if (m_pDoc->m_lCompressedDataRate > 0)
+				{
+					sDataRate.Format(_T("%0.1f -> %0.1f"),	(double)m_pDoc->m_lCompressedDataRate / 1024.0,						// KB / Sec
+															(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
+				}
+				else
+				{
+					sDataRate.Format(_T("%0.1f"),			(double)lUncompressedAvgFrameSize * dEffectiveFrameRate / 1024.0);	// KB / Sec
+				}
+			}
+			pEdit->SetWindowText(sDataRate);
+		}
+
+		// Change The Frame Rate if Necessary
+		if (m_bDoChangeFrameRate)
+		{
+			--m_nFrameRateChangeTimeout;
+			if (m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped())
+			{
+				// Reset flag
+				m_bDoChangeFrameRate = FALSE;
+
+				// Frame Rate Edit Control
+				CString sFrameRate;
+				pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+				pEdit->GetWindowText(sFrameRate);
+				BOOL bOk = FALSE;
+				BOOL bRestore = FALSE;
+				double dFrameRate = _tcstod(sFrameRate, NULL);
+				double dMinFrameRate, dMaxFrameRate;
+				m_SpinFrameRate.GetRange(dMinFrameRate, dMaxFrameRate);
+				if (sFrameRate != _T(""))
+				{
+					if (dFrameRate >= dMinFrameRate && dFrameRate <= dMaxFrameRate)
+						bOk = TRUE;
+					else
+						bRestore = TRUE;
+				}
+				if (bOk)
+				{
+					m_pDoc->m_dFrameRate = dFrameRate;
+					m_pDoc->OnChangeFrameRate();
+				}
+				else if (bRestore)
+				{
+					m_pDoc->ReStartProcessFrame();
+					sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+					pEdit->SetWindowText(sFrameRate);
+					pEdit->SetFocus();
+					pEdit->SetSel(0xFFFF0000);
+				}
 			}
 		}
 	}
-
 	CPropertyPage::OnTimer(nIDEvent);
 }
 

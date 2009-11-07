@@ -8722,59 +8722,56 @@ BOOL CVideoDeviceDoc::OnChangeVideoFormat()
 	return res;
 }
 
-BOOL CVideoDeviceDoc::OnChangeFrameRate()
+void CVideoDeviceDoc::OnChangeFrameRate()
 {
-	if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
+	if (!m_bClosing)
 	{
-		m_VfWCaptureVideoThread.Disconnect();
-		m_VfWCaptureVideoThread.DestroyCaptureWnd();
-		ResetMovementDetector();
-		m_ColorDetection.ResetCounter();
-		SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
-		m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate);
-		ReStartProcessFrame();
-		m_VfWCaptureVideoThread.StartCapture();
-		SetDocumentTitle();
-		return TRUE;
+		if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
+		{
+			m_VfWCaptureVideoThread.Disconnect();
+			m_VfWCaptureVideoThread.DestroyCaptureWnd();
+			ResetMovementDetector();
+			m_ColorDetection.ResetCounter();
+			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
+			m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate);
+			ReStartProcessFrame();
+			m_VfWCaptureVideoThread.StartCapture();
+			SetDocumentTitle();
+		}
+		else if (m_pDxCapture)
+		{
+			if (m_pDxCapture->Stop())
+				m_bCapture = FALSE;
+			ResetMovementDetector();
+			m_ColorDetection.ResetCounter();
+			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
+			m_pDxCapture->SetFrameRate(m_dFrameRate);
+			ReStartProcessFrame();
+			if (m_pDxCapture->Run())
+				m_bCapture = TRUE;
+			SetDocumentTitle();
+		}
+		else if (m_pDxCaptureVMR9)
+		{
+			// Do not call m_pDxCaptureVMR9->SetFrameRate,
+			// VMR9 thread will change the grab rate!
+			ResetMovementDetector();
+			m_ColorDetection.ResetCounter();
+			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
+			ReStartProcessFrame();
+			SetDocumentTitle();
+		}
+		else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
+		{
+			ResetMovementDetector();
+			m_ColorDetection.ResetCounter();
+			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
+			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
+				ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			ReStartProcessFrame();
+			SetDocumentTitle();
+		}
 	}
-	else if (m_pDxCapture)
-	{
-		if (m_pDxCapture->Stop())
-			m_bCapture = FALSE;
-		ResetMovementDetector();
-		m_ColorDetection.ResetCounter();
-		SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
-		m_pDxCapture->SetFrameRate(m_dFrameRate);
-		ReStartProcessFrame();
-		if (m_pDxCapture->Run())
-			m_bCapture = TRUE;
-		SetDocumentTitle();
-		return TRUE;
-	}
-	else if (m_pDxCaptureVMR9)
-	{
-		// Do not call m_pDxCaptureVMR9->SetFrameRate,
-		// VMR9 thread will change the grab rate!
-		ResetMovementDetector();
-		m_ColorDetection.ResetCounter();
-		SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
-		ReStartProcessFrame();
-		SetDocumentTitle();
-		return TRUE;
-	}
-	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
-	{
-		ResetMovementDetector();
-		m_ColorDetection.ResetCounter();
-		SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
-		if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
-			ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
-		ReStartProcessFrame();
-		SetDocumentTitle();
-		return TRUE;
-	}
-	else
-		return FALSE;
 }
 
 void CVideoDeviceDoc::ResetMovementDetector()
