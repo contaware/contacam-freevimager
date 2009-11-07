@@ -3,14 +3,15 @@ require_once( 'configuration.php' );
 function doServerPush($file,$type,$poll) {
 	@set_time_limit(0);			// PHP must not terminate this script
 	@ignore_user_abort(false);	// Do not ignore user aborts (may not be allowed, so status is checked in the loop)
-	@ini_set('zlib.output_compression', 'off');	// Disable compressed output
+	@ini_set('zlib.output_compression','off');	// Disable compressed output
 	$poll *= 1000;				// Poll in micro seconds
 
-	// Unique boundary
-	$separator = 'my_boundary_';
+	// Frames separator
+	$separator = 'frame_boundary_';
 	for ($i = 0, $randChars = Array('A','B'); $i < 16; $i++)
 		$separator .= $randChars[rand(0,1)];
 
+	// No Cache
 	header('Cache-Control: no-cache');
 	header('Pragma: no-cache');
 	
@@ -39,8 +40,10 @@ function doServerPush($file,$type,$poll) {
 			usleep($poll);		// This function works on windows starting from php 5.0.0
 			if (time() - $looptime >= 10)
 			{
-				// Every 10 seconds, force it to re-evaluate if the user has disconnected (connection_aborted does not know until this happens)
-				// most use-cases will not need this protection because they will keep trying to send updates, but it is here just in case
+				// Every 10 seconds, force it to re-evaluate if the user has disconnected
+				// (connection_aborted does not know until this happens)
+				// most use-cases will not need this protection because they will keep trying
+				// to send updates, but it is here just in case
 				$looptime = time();
 				echo ' '; // Whitespace is ignored at this specific point in the stream
 				ob_flush();

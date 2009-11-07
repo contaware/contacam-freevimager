@@ -3855,37 +3855,39 @@ BEGIN
     GROUPBOX        "File(s) To Upload",IDC_STATIC2271,7,198,200,35
 END
 
-IDD_HOSTPORT DIALOGEX 0, 0, 186, 217
+IDD_HOSTPORT DIALOGEX 0, 0, 210, 217
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Connect To"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    COMBOBOX        IDC_COMBO_HOST,14,19,159,49,CBS_DROPDOWN | 
+    COMBOBOX        IDC_COMBO_HOST,14,17,184,49,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_PORT,14,59,159,14,ES_AUTOHSCROLL | ES_NUMBER
-    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,98,159,157,CBS_DROPDOWNLIST | 
+    EDITTEXT        IDC_EDIT_PORT,14,56,184,14,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,97,184,157,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_COMBO_BUFSIZE,47,159,29,88,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    PUSHBUTTON      "Search Servers",IDC_SEARCH_SERVERS,119,158,54,14
+    PUSHBUTTON      "Search Servers on given Port",IDC_SEARCH_SERVERS,143,
+                    158,55,26,BS_MULTILINE
     CONTROL         "Disable dropped frames re-sending",
                     IDC_CHECK_DISABLE_RESEND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,14,176,125,10
     DEFPUSHBUTTON   "OK",IDOK,74,199,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,130,199,50,14
-    GROUPBOX        "Host",IDC_STATIC2272,7,5,173,35
-    GROUPBOX        "Port",IDC_STATIC2273,7,46,173,34
-    GROUPBOX        "Select the Device Type and Mode",IDC_STATIC2274,7,86,
-                    173,53
+    PUSHBUTTON      "Cancel",IDCANCEL,154,199,50,14
+    GROUPBOX        "Host name or Host IP or URL starting with http://",
+                    IDC_STATIC2272,7,5,197,32
+    GROUPBOX        "Port (not used if URL set)",IDC_STATIC2273,7,44,197,34
+    GROUPBOX        "Select the Device Type and Mode (not used if URL set)",
+                    IDC_STATIC2274,7,85,197,54
     LTEXT           "Buffering",IDC_LABEL_BUFFERING,14,161,29,8
     LTEXT           "frames",IDC_LABEL_FRAMES,80,161,22,8
-    GROUPBOX        "UDP Only Settings",IDC_STATIC2275,7,146,173,46
-    LTEXT           "Client Poll Mode for frequency < 1 frame/sec",
-                    IDC_STATIC,14,125,159,8
-    LTEXT           "Server Push Mode for frequency > 1 frame/sec",
-                    IDC_STATIC,14,114,159,8
+    GROUPBOX        "UDP Only Settings",IDC_STATIC2275,7,146,197,46
+    LTEXT           "Client poll mode for framerates < 1 frame/sec",
+                    IDC_STATIC,14,125,184,8
+    LTEXT           "Server push mode for framerates > 1 frame/sec",
+                    IDC_STATIC,14,114,184,8
 END
 
 IDD_NETWORK DIALOGEX 0, 0, 417, 268
@@ -6796,12 +6798,11 @@ BEGIN
     IDD_HOSTPORT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 180
+        RIGHTMARGIN, 204
         VERTGUIDE, 14
-        VERTGUIDE, 173
+        VERTGUIDE, 198
         TOPMARGIN, 7
         BOTTOMMARGIN, 213
-        HORZGUIDE, 148
     END
 
     IDD_NETWORK, DIALOG

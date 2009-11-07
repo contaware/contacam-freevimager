@@ -7764,31 +7764,61 @@ BOOL CVideoDeviceDoc::OpenGetVideo()
 	CHostPortDlg dlg;
 	if (dlg.DoModal() == IDOK) // BeginWaitCursor() called by dialog
 	{
-		// Chosen Host, Port, ev. FrameLocation and NetworkDeviceTypeMode
+		// Vars
 		int nPos, nPosEnd;
+		BOOL bUrl = FALSE;
+		int nUrlPort = 80; // Default url port is always 80
+
+		// Remove leading http:// from url
 		CString sGetFrameVideoHost(dlg.m_sHost);
 		CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
 		sGetFrameVideoHostLowerCase.MakeLower();
-		if (sGetFrameVideoHostLowerCase.Find(_T("http://")) >= 0)
-			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7);
+		if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
+		{
+			bUrl = TRUE;
+			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
+		}
+
+		// Port
 		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
 		{
+			CString sPort;
 			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'))) >= 0)
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
 				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+			}
 			else
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
 				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
 		}
+
+		// Get location which is set as first automatic camera type detection query string
 		nPos = sGetFrameVideoHost.Find(_T('/'));
-		if (nPos >= 0) // if a path is present it is set as first automatic camera type detection query string
+		if (nPos >= 0)
 		{	
 			m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
 			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+			m_HttpGetFrameLocations[0].TrimLeft();
+			m_HttpGetFrameLocations[0].TrimRight();
 		}
 		else
 			m_HttpGetFrameLocations[0] = _T("/");
+
+		// Init vars
+		sGetFrameVideoHost.TrimLeft();
+		sGetFrameVideoHost.TrimRight();
 		m_sGetFrameVideoHost = sGetFrameVideoHost;
-		m_nGetFrameVideoPort = dlg.m_nPort;
-		m_nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)dlg.m_nDeviceTypeMode;
+		m_nGetFrameVideoPort = bUrl ? nUrlPort : dlg.m_nPort;
+		m_nNetworkDeviceTypeMode = bUrl ? OTHERONE : (NetworkDeviceTypeMode)dlg.m_nDeviceTypeMode;
 
 		// Free if Necessary
 		if (m_pGetFrameNetCom)
