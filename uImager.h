@@ -84,6 +84,9 @@
 // Default Video Compression Quality: 2.0f best, 31.0f worst
 #define DEFAULT_VIDEO_QUALITY							4.0f
 
+// The theora codec has a more linear Quality distribution: 2.0f best, 31.0f worst
+#define DEFAULT_THEO_QUALITY							17.0f
+
 // Default Video Compression Keyframes Rate
 #define DEFAULT_KEYFRAMESRATE							30
 							

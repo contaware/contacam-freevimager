@@ -6098,22 +6098,26 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	else
 	{
 		WaveFormat.wFormatTag = WAVE_FORMAT_VORBIS;
-		WaveFormat.nChannels = 2;			// Only stereo supported
+		WaveFormat.nChannels = 2;				// Only stereo supported
 		WaveFormat.nSamplesPerSec = 22050;
-		WaveFormat.nAvgBytesPerSec = 22;	// Quality is set here: good quality
+		WaveFormat.nAvgBytesPerSec = 90000 / 8;	// q = 15
 		WaveFormat.nBlockAlign = 0;
 		WaveFormat.wBitsPerSample = 0;
 		WaveFormat.cbSize = 0;
 	}
+	DWORD dwFourCC =		((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc ? FCC('DIVX') :
+							(((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc ? FCC('SNOW') :
+							FCC('theo'));
+	float fVideoQuality =	(dwFourCC == FCC('DIVX')) ? 6.0f :
+							(dwFourCC == FCC('SNOW')) ? 5.0f :
+							23.0f;
 	BOOL res = SaveAsAVCODEC(nPassNumber,
 							pShrinkDocTo->m_sOutFileName,
 							m_pAVIPlay->GetFileName(),
-							((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc ? FCC('DIVX') :
-							(((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc ? FCC('SNOW') :
-							FCC('MJPG')),
+							dwFourCC,
 							0,		// Set Bitrate to 0 because we use quality
 							DEFAULT_KEYFRAMESRATE,
-							DEFAULT_VIDEO_QUALITY,
+							fVideoQuality,
 							0,		// Use Quality
 							false,	// No De-interlace
 							&WaveFormat,
