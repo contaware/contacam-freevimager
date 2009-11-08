@@ -66,7 +66,7 @@ if (!isset($_GET['title']) || $_GET['title'] != 'no')
 if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	echo "<div class=\"menutop\">\n";
 	echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
-	echo "<a href=\"http://" . ((!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST']) . "\" target=\"_top\">" . HOME . "</a>\n";
+	echo "<a href=\"" . getParentUrl() . "\" target=\"_top\">" . HOME . "</a>\n";
 	echo "</div>\n";
 }
 echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";

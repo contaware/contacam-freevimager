@@ -26,7 +26,7 @@ document.write(getCalendarStyles());
 <?php echo "<div align=\"center\"><h1>" . SUMMARYTITLE . "</h1></div>\n";?>
 <div class="menutop">
 <a href="#" onclick="myiframe.location.reload(); return false;"><?php echo RELOAD;?></a> |
-<a href="http://<?php echo (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];?>" target="_top"><?php echo HOME;?></a>
+<a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
 </div>
 <form action="">
 <input type="hidden" name="dateall" value="" />

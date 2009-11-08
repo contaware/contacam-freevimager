@@ -3,9 +3,9 @@
 $filesdirpath = str_replace("\\", "/", FILESDIRPATH);
 $filesdirpath = rtrim($filesdirpath,"/");
 if ($filesdirpath == "") {
-	$path_parts = pathinfo($_SERVER['SCRIPT_NAME']);
-	$filesdirpath = str_replace("\\", "/", $path_parts['dirname']);
-	$filesdirpath = rtrim($filesdirpath,"/");
+	$filesdirpath = dirname($_SERVER['PHP_SELF']);
+	$filesdirpath = str_replace("\\", "/", $filesdirpath);
+	$filesdirpath = rtrim($filesdirpath, "/");
 }
 $path_parts = pathinfo(STYLEFILEPATH);
 if (!isset($path_parts['filename']))
@@ -17,5 +17,15 @@ function getIEVersion() {
 		return floatval($reg[1]);
 	else
 		return -1;
+}
+function getParentUrl() {
+	$parent_path = dirname($_SERVER['PHP_SELF']);
+	$parent_path = str_replace("\\", "/", $parent_path);
+	$parent_path = rtrim($parent_path, "/");
+	$parent_path = dirname($parent_path);
+	$parent_path = str_replace("\\", "/", $parent_path);
+	$parent_path = rtrim($parent_path, "/");
+	$host = (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];
+	return "http://$host$parent_path/";
 }
 ?>

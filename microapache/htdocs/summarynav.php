@@ -32,7 +32,7 @@ document.write(getCalendarStyles());
 <body>
 <div class="menubottom">
 <a href="#" onclick="parent.myframe.location.reload(); return false;"><?php	echo RELOAD;?></a> |
-<a href="http://<?php echo (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];?>" target="_top"><?php echo HOME;?></a>
+<a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
 </div>
 <div class="wrap">
 <form action="">

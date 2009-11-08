@@ -38,6 +38,7 @@ a:hover {
 <?php
 $rel_path = dirname($_SERVER['PHP_SELF']);
 $rel_path = str_replace("\\", "/", $rel_path);
+$rel_path = rtrim($rel_path, "/");
 $dir = dirname($_SERVER['SCRIPT_FILENAME']);
 $hasdir = false;
 if ($handle = @opendir($dir)) {
@@ -46,7 +47,7 @@ if ($handle = @opendir($dir)) {
 		$basename = $path_parts['basename'];
 		if (is_dir("$file") && $basename != "." && $basename != "..") {
 			$hasdir = true;
-			$url = $rel_path . $basename . "/";
+			$url = $rel_path . "/" . $basename . "/";
 			echo "<a href=\"$url\">$basename</a><br/>\n";
 		}
 	}
