@@ -12,21 +12,7 @@
 #include "ColorButtonPicker.h"
 #include "ToolbarSliderCtrl.h"
 
-/*
-When a toolbar is created in the Visual Studio toolbar editor,
-any pixel that is light gray (RGB (192, 192, 192))
-is replaced with the user's chosen button color
-(::GetSysColor (COLOR_BTNFACE))at runtime,
-making those pixels effectively transparent.
-*/
-
-#define TOOLBAR_BORDER_LEFT							2
-#define TOOLBAR_BORDER_TOP							2
-#define TOOLBAR_BORDER_RIGHT						2
-#define TOOLBAR_BORDER_BOTTOM						1
-
 #define PLAY_SLIDER_WIDTH_MIN						80
-
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 
@@ -34,19 +20,27 @@ class CChildToolBar : public CToolBar
 {
 public:
 	CChildToolBar();
+	virtual ~CChildToolBar();
 	virtual BOOL Create(CWnd* pParentWnd);
 	virtual void UpdateControls(void) = 0;
 
-// Operations
+protected:
+	BOOL IsThemed();
+	HTHEME m_hTheme;
+
 public:
 	int m_nMinToolbarWidth;
 	int m_nMaxToolbarWidth;
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CChildToolBar)
+	protected:
+	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CChildToolBar)
+	afx_msg void OnNcPaint();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNAMIC(CChildToolBar)
@@ -182,15 +176,12 @@ class CToolBarChildFrame : public CChildFrame
 
 protected:
 	CToolBarChildFrame();
-	virtual ~CToolBarChildFrame();
-	BOOL IsThemed();
-	HTHEME m_hTheme;
 
 // Attributes
 public:
 	CChildToolBar* m_pToolBar;
-	void SetToolBar(CChildToolBar* pToolBar);
-	CChildToolBar* GetToolBar();
+	void SetToolBar(CChildToolBar* pToolBar) {m_pToolBar = pToolBar;};
+	__forceinline CChildToolBar* GetToolBar() {return m_pToolBar;};
 	
 // Operations
 public:
@@ -198,8 +189,6 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CToolBarChildFrame)
-	protected:
-	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
 // Implementation

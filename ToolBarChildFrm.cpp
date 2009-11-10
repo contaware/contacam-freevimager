@@ -29,10 +29,10 @@ static char THIS_FILE[] = __FILE__;
 #define WM_THEMECHANGED     0x031A
 #endif
 
-static const CRect	TOOLBAR_BORDERRECT		= CRect(TOOLBAR_BORDER_LEFT,
-													TOOLBAR_BORDER_TOP,
-													TOOLBAR_BORDER_RIGHT,
-													TOOLBAR_BORDER_BOTTOM);
+static const CRect	TOOLBAR_BORDERRECT		= CRect(2,	// Left
+													2,	// Top
+													2,	// Right
+													1);	// Bottom
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar
@@ -43,7 +43,22 @@ CChildToolBar::CChildToolBar()
 {
 	m_nMinToolbarWidth = 0;
 	m_nMaxToolbarWidth = 0;
+	m_hTheme = NULL;
 }
+
+CChildToolBar::~CChildToolBar()
+{
+	if (m_hTheme)
+		ThemeHelper.CloseThemeData(m_hTheme);
+	m_hTheme = NULL;
+}
+
+BEGIN_MESSAGE_MAP(CChildToolBar, CToolBar)
+	//{{AFX_MSG_MAP(CChildToolBar)
+	ON_WM_NCPAINT()
+	ON_WM_CREATE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
 BOOL CChildToolBar::Create(CWnd* pParentWnd)
 {
@@ -53,10 +68,83 @@ BOOL CChildToolBar::Create(CWnd* pParentWnd)
 											CBRS_SIZE_FIXED, TOOLBAR_BORDERRECT);
 }
 
-BEGIN_MESSAGE_MAP(CChildToolBar, CToolBar)
-	//{{AFX_MSG_MAP(CChildToolBar)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
+int CChildToolBar::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+	if (CToolBar::OnCreate(lpCreateStruct) == -1)
+		return -1;
+	
+	// Open Thema Data
+	if (ThemeHelper.IsThemeLibAvailable())
+		m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
+	
+	return 0;
+}
+
+BOOL CChildToolBar::IsThemed()
+{
+	return (m_hTheme &&
+			ThemeHelper.IsAppThemed() &&
+			ThemeHelper.IsThemeComCtl32());
+}
+
+void CChildToolBar::OnNcPaint() 
+{
+	// Get window DC that is clipped to the non-client area
+	CWindowDC dc(this);
+
+	// Erase the toolbar background border
+	
+	// Get color
+	COLORREF col = ::GetSysColor(COLOR_BTNFACE);
+	if (IsThemed())
+	{
+		ThemeHelper.GetThemeColor(	m_hTheme,
+									TP_BUTTON,
+									TS_NORMAL,
+									TMT_FILLCOLOR,
+									&col);
+	}
+
+	// Set clip
+	CRect rectClient;
+	GetClientRect(rectClient);
+	CRect rectWindow;
+	GetWindowRect(rectWindow);
+	ScreenToClient(rectWindow);
+	rectClient.OffsetRect(-rectWindow.left, -rectWindow.top);
+	dc.ExcludeClipRect(rectClient);
+
+	// Fill with Brush
+	rectWindow.OffsetRect(-rectWindow.left, -rectWindow.top);
+	CBrush br;
+	br.CreateSolidBrush(col);
+	dc.FillRect(&rectWindow, &br);
+	br.DeleteObject();
+
+	// Erase parts not drawn
+	dc.IntersectClipRect(rectWindow);
+	
+	// Do not call CToolBar::OnNcPaint() for painting messages
+}
+
+LRESULT CChildToolBar::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	switch (message)
+	{
+		case WM_THEMECHANGED:
+		{
+			if (IsThemed())
+			{
+				// when user changes themes, close current theme and re-open
+				ThemeHelper.CloseThemeData(m_hTheme);
+				m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
+			}
+		}
+		break;
+	}
+
+	return CToolBar::DefWindowProc(message, wParam, lParam);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CVideoAviToolBar
@@ -72,6 +160,14 @@ CVideoAviToolBar::~CVideoAviToolBar()
 {
 
 }
+
+BEGIN_MESSAGE_MAP(CVideoAviToolBar, CChildToolBar)
+	//{{AFX_MSG_MAP(CVideoAviToolBar)
+	ON_WM_SIZE()
+	ON_WM_HSCROLL()
+	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
 
 BOOL CVideoAviToolBar::Create(CWnd* pParentWnd, BOOL bFullScreen, int nMaxWidth)
 {
@@ -137,18 +233,10 @@ LRESULT CVideoAviToolBar::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BEGIN_MESSAGE_MAP(CVideoAviToolBar, CChildToolBar)
-	//{{AFX_MSG_MAP(CVideoAviToolBar)
-	ON_WM_SIZE()
-	ON_WM_HSCROLL()
-	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
 void CVideoAviToolBar::UpdateControls(void)
 {
 	// Player Slider
-	if (IsWindow(m_PlayerSlider))
+	if (::IsWindow(m_PlayerSlider))
 	{
 		CRect rcSlider;
 		GetItemRect(m_PlayerSliderIndex, rcSlider);
@@ -217,6 +305,12 @@ CVideoDeviceToolBar::~CVideoDeviceToolBar()
 
 }
 
+BEGIN_MESSAGE_MAP(CVideoDeviceToolBar, CChildToolBar)
+	//{{AFX_MSG_MAP(CVideoDeviceToolBar)
+	ON_WM_SIZE()
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
 BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 {
 	if (!CChildToolBar::Create(pParentWnd))
@@ -229,12 +323,6 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	UpdateWindow();
 	return TRUE;
 }
-
-BEGIN_MESSAGE_MAP(CVideoDeviceToolBar, CChildToolBar)
-	//{{AFX_MSG_MAP(CVideoDeviceToolBar)
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
 
 void CVideoDeviceToolBar::UpdateControls(void)
 {
@@ -273,6 +361,13 @@ CPictureToolBar::~CPictureToolBar()
 {
 
 }
+
+BEGIN_MESSAGE_MAP(CPictureToolBar, CChildToolBar)
+	//{{AFX_MSG_MAP(CPictureToolBar)
+	ON_WM_SIZE()
+	//}}AFX_MSG_MAP
+	ON_MESSAGE(CPN_SELENDOK, OnSelEndOK)
+END_MESSAGE_MAP()
 
 BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 {
@@ -313,8 +408,8 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	}
 
 	CFont m_Font;
-	if (!m_Font.CreateStockObject(DEFAULT_GUI_FONT)) // ANSI_FIXED_FONT, DEFAULT_GUI_FONT, OEM_FIXED_FONT
-		return FALSE;								// ANSI_VAR_FONT, SYSTEM_FONT, SYSTEM_FIXED_FONT
+	if (!m_Font.CreateStockObject(DEFAULT_GUI_FONT))	// ANSI_FIXED_FONT, DEFAULT_GUI_FONT, OEM_FIXED_FONT
+		return FALSE;									// ANSI_VAR_FONT, SYSTEM_FONT, SYSTEM_FIXED_FONT
 
 	// Zoom Combo Box
 	m_ZoomComboBoxIndex = CommandToIndex(ID_ZOOM_COMBOX);
@@ -347,13 +442,6 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	return TRUE;
 }
 
-BEGIN_MESSAGE_MAP(CPictureToolBar, CChildToolBar)
-	//{{AFX_MSG_MAP(CPictureToolBar)
-	ON_WM_SIZE()
-	//}}AFX_MSG_MAP
-	ON_MESSAGE(CPN_SELENDOK, OnSelEndOK)
-END_MESSAGE_MAP()
-
 void CPictureToolBar::UpdateControls(void)
 {
 	CRect rect;
@@ -383,7 +471,7 @@ void CPictureToolBar::UpdateControls(void)
 		}
 	}
 
-	if (IsWindow(m_ZoomComboBox))
+	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
 		rect.right = rect.left + 64;
@@ -402,7 +490,7 @@ void CPictureToolBar::UpdateControls(void)
 			m_rcLastZoomComboBox = rect;
 		}
 	}
-	if (IsWindow(m_BkgColorButtonPicker))
+	if (::IsWindow(m_BkgColorButtonPicker))
 	{
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
 		rect.right = rect.left + 36;
@@ -456,14 +544,6 @@ IMPLEMENT_DYNCREATE(CToolBarChildFrame, CChildFrame)
 CToolBarChildFrame::CToolBarChildFrame()
 {
 	m_pToolBar = NULL;
-	m_hTheme = NULL;
-}
-
-CToolBarChildFrame::~CToolBarChildFrame()
-{
-	if (m_hTheme)
-		ThemeHelper.CloseThemeData(m_hTheme);
-	m_hTheme = NULL;
 }
 
 BEGIN_MESSAGE_MAP(CToolBarChildFrame, CChildFrame)
@@ -474,16 +554,10 @@ BEGIN_MESSAGE_MAP(CToolBarChildFrame, CChildFrame)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CToolBarChildFrame message handlers
 int CToolBarChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
-
-	// Open Thema Data
-	if (ThemeHelper.IsThemeLibAvailable())
-		m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
 
 	// Create ToolBar
 	if (m_pToolBar)
@@ -491,16 +565,6 @@ int CToolBarChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			return -1;
 
 	return 0;
-}
-
-void CToolBarChildFrame::SetToolBar(CChildToolBar* pToolBar)
-{
-	m_pToolBar = pToolBar;
-}
-
-CChildToolBar* CToolBarChildFrame::GetToolBar() 
-{ 
-	return m_pToolBar; 
 }
 	
 void CToolBarChildFrame::OnSize(UINT nType, int cx, int cy) 
@@ -511,101 +575,32 @@ void CToolBarChildFrame::OnSize(UINT nType, int cx, int cy)
 	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 		return;
 
-	pView->UpdateWindowSizes(FALSE, FALSE, FALSE); // Update ToolBar
-}
-
-BOOL CToolBarChildFrame::IsThemed()
-{
-	return (m_hTheme &&
-			ThemeHelper.IsAppThemed() &&
-			ThemeHelper.IsThemeComCtl32());
+	// Update ToolBar
+	pView->UpdateWindowSizes(FALSE, FALSE, FALSE);
 }
 
 void CToolBarChildFrame::OnPaint() 
 {
-	CPaintDC dc(this); // device context for painting
+	CPaintDC dc(this);
 
 	CUImagerView* pView = (CUImagerView*)GetActiveView();
 	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 		return;
 
-	CRect rcFrameClient;
-	GetClientRect(rcFrameClient);
-
-	CRect rcViewClient;
-	pView->GetClientRect(rcViewClient);
-
-	CToolBar* pToolBar = (CToolBar*)GetToolBar();
-	if (!pToolBar)
-		return;
-
-	CRect rcToolBar;
-	pToolBar->GetClientRect(&rcToolBar); 
-
-	// With Themes (Turned On or Off) we have to erase the
-	// toolbar background border!
-	if ((TOOLBAR_BORDERRECT.top > 0 || TOOLBAR_BORDERRECT.left > 0 ||
-		TOOLBAR_BORDERRECT.bottom > 0 || TOOLBAR_BORDERRECT.right > 0) &&
-		ThemeHelper.IsThemeComCtl32())
+	// To erase the Background at the bottom-right corner between
+	// the Scroll Bars!
+	// Are both ScrollBars Visible?
+	if (pView->IsXAndYScroll())
 	{
-		CRect rcToolBarBkg;
-		rcToolBarBkg.top = rcFrameClient.bottom - rcToolBar.Height() -
-						(TOOLBAR_BORDERRECT.top + TOOLBAR_BORDERRECT.bottom);
-		rcToolBarBkg.left = rcFrameClient.left;
-		rcToolBarBkg.right = rcFrameClient.right;
-		rcToolBarBkg.bottom = rcFrameClient.bottom;
-
-		COLORREF col = ::GetSysColor(COLOR_BTNFACE);
-		if (IsThemed())
-		{
-			ThemeHelper.GetThemeColor(	m_hTheme,
-										TP_BUTTON,
-										TS_NORMAL,
-										TMT_FILLCOLOR,
-										&col);
-		}
-	
-		CPen Pen;
-		Pen.CreatePen(PS_SOLID, 1, col);
-		CPen* pOldPen = dc.SelectObject(&Pen);
-		int i;
-
-		// Top Border
-		for (i = 0 ; i < TOOLBAR_BORDERRECT.top ; i++)
-		{
-			dc.MoveTo(rcToolBarBkg.left, rcToolBarBkg.top+i);
-			dc.LineTo(rcToolBarBkg.right, rcToolBarBkg.top+i);
-		}
-		
-		// Left Border
-		for (i = 0 ; i < TOOLBAR_BORDERRECT.left ; i++)
-		{
-			dc.MoveTo(rcToolBarBkg.left+i, rcToolBarBkg.top);
-			dc.LineTo(rcToolBarBkg.left+i, rcToolBarBkg.bottom);
-		}
-
-		// Bottom Border
-		for (i = 0 ; i < TOOLBAR_BORDERRECT.bottom ; i++)
-		{
-			dc.MoveTo(rcToolBarBkg.left, rcToolBarBkg.bottom-i-1);
-			dc.LineTo(rcToolBarBkg.right, rcToolBarBkg.bottom-i-1);
-		}
-
-		// Right Border
-		for (i = 0 ; i < TOOLBAR_BORDERRECT.right ; i++)
-		{
-			dc.MoveTo(rcToolBarBkg.right-i-1, rcToolBarBkg.top);
-			dc.LineTo(rcToolBarBkg.right-i-1, rcToolBarBkg.bottom);
-		}
-
-		dc.SelectObject(pOldPen);
-		Pen.DeleteObject();
-	}
-
-	// To erase the Background at the
-	// bottom-right corner between the Scroll Bars!
-	if (pView->IsXAndYScroll()) // Are both ScrollBars Visible?
-	{
+		CRect rcFrameClient;
+		GetClientRect(rcFrameClient);
+		CRect rcViewClient;
+		pView->GetClientRect(rcViewClient);
+		CToolBar* pToolBar = (CToolBar*)GetToolBar();
+		if (!pToolBar)
+			return;
+		CRect rcToolBar;
+		pToolBar->GetClientRect(&rcToolBar);
 		CRect rcBottomRight = CRect(rcFrameClient.right - (rcFrameClient.Width() - rcViewClient.Width()) + 2,
 								rcFrameClient.bottom - (rcFrameClient.Height() - rcViewClient.Height()) + 2,
 								rcFrameClient.right - 2,
@@ -617,25 +612,6 @@ void CToolBarChildFrame::OnPaint()
 	}
 
 	// Do not call CChildFrame::OnPaint() for painting messages
-}
-
-LRESULT CToolBarChildFrame::DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
-{
-	switch (message)
-	{
-		case WM_THEMECHANGED:
-		{
-			if (IsThemed())
-			{
-				// when user changes themes, close current theme and re-open
-				ThemeHelper.CloseThemeData(m_hTheme);
-				m_hTheme = ThemeHelper.OpenThemeData(m_hWnd, _T("Toolbar"));
-			}
-		}
-		break;
-	}
-
-	return CChildFrame::DefWindowProc(message, wParam, lParam);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -740,16 +716,17 @@ const double dPercent400 = 4.0;
 const double dPercent800 = 8.0;
 const double dPercent1600 = 16.0;
 
+CZoomComboBox::CZoomComboBox()
+{
+
+}
+
 BEGIN_MESSAGE_MAP(CZoomComboBox, CComboBox)
 	//{{AFX_MSG_MAP(CZoomComboBox)
 	ON_CONTROL_REFLECT_EX(CBN_SELENDOK, OnSelEndOk)
 	ON_CONTROL_REFLECT(CBN_SELENDCANCEL, OnSelendcancel)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
-CZoomComboBox::CZoomComboBox()
-{
-}
 
 void CZoomComboBox::Init()
 {
