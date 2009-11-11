@@ -16,40 +16,50 @@
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 
+/////////////////////////////////////////////////////////////////////////////
+// CChildToolBar
+
 class CChildToolBar : public CToolBar
 {
 public:
 	CChildToolBar();
 	virtual ~CChildToolBar();
-	virtual BOOL Create(CWnd* pParentWnd);
 	virtual void UpdateControls(void) = 0;
+	virtual BOOL Create(CWnd* pParentWnd);
+	int m_nMinToolbarWidth;
+	int m_nMaxToolbarWidth;
 
 protected:
 	BOOL IsThemed();
 	HTHEME m_hTheme;
 
-public:
-	int m_nMinToolbarWidth;
-	int m_nMaxToolbarWidth;
-// Overrides
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CChildToolBar)
-	protected:
 	virtual LRESULT DefWindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	//}}AFX_VIRTUAL
 
+	// Generated message map functions
+protected:
 	//{{AFX_MSG(CChildToolBar)
 	afx_msg void OnNcPaint();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
+
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNAMIC(CChildToolBar)
 };
 
+/////////////////////////////////////////////////////////////////////////////
+// CVideoAviToolBar
+
 class CVideoAviToolBar : public CChildToolBar
 {
-// Construction
 public:
+	CVideoAviToolBar();
+	virtual ~CVideoAviToolBar();
+	virtual void UpdateControls(void);
 	BOOL Create(CWnd* pParentWnd);
 	BOOL Create(CWnd* pParentWnd, BOOL bFullScreen, int nMaxWidth);
 	CToolbarSliderCtrl m_PlayerSlider;
@@ -58,16 +68,11 @@ protected:
 	int m_PlayerSliderIndex;
 	int m_PlaySliderWidth;
 	
-// Overrides
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CVideoAviToolBar)
 	//}}AFX_VIRTUAL
-
-// Implementation
-public:
-	CVideoAviToolBar();
-	virtual ~CVideoAviToolBar();
-	virtual void UpdateControls(void);
 
 	// Generated message map functions
 protected:
@@ -76,35 +81,36 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//}}AFX_MSG
 	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
+
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNAMIC(CVideoAviToolBar)
 };
 
 #ifdef VIDEODEVICEDOC
 
+/////////////////////////////////////////////////////////////////////////////
+// CVideoDeviceToolBar
+
 class CVideoDeviceToolBar : public CChildToolBar
 {
-// Construction
-public:
-	BOOL Create(CWnd* pParentWnd);
-
-protected:		
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CVideoDeviceToolBar)
-	//}}AFX_VIRTUAL
-
-// Implementation
 public:
 	CVideoDeviceToolBar();
 	virtual ~CVideoDeviceToolBar();
 	virtual void UpdateControls(void);
+	BOOL Create(CWnd* pParentWnd);
+
+	// Overrides
+protected:		
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CVideoDeviceToolBar)
+	//}}AFX_VIRTUAL
 
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CVideoDeviceToolBar)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG
+
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNAMIC(CVideoDeviceToolBar)
 };
@@ -124,40 +130,43 @@ public:
 	int GetNextZoomIndex(double dZoomFactor);
 	int GetPrevZoomIndex(double dZoomFactor);
 
+	// Generated message map functions
+protected:
 	//{{AFX_MSG(CZoomComboBox)
 	afx_msg BOOL OnSelEndOk();
 	afx_msg void OnSelendcancel();
 	//}}AFX_MSG
+
 	DECLARE_MESSAGE_MAP()
 };
 
+/////////////////////////////////////////////////////////////////////////////
+// CPictureToolBar
+
 class CPictureToolBar : public CChildToolBar
 {
-// Construction
-public:
-	BOOL Create(CWnd* pParentWnd);
-
-protected:		
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CPictureToolBar)
-	//}}AFX_VIRTUAL
-
-// Implementation
 public:
 	CPictureToolBar();
 	virtual ~CPictureToolBar();
 	virtual void UpdateControls(void);
+	BOOL Create(CWnd* pParentWnd);
 	CZoomComboBox m_ZoomComboBox;
 	CColorButtonPicker m_BkgColorButtonPicker;
 
-	// Generated message map functions
 protected:
 	int m_ZoomComboBoxIndex;
 	CRect m_rcLastZoomComboBox;
 	int m_BkgColorButtonPickerIndex;
 	CRect m_rcLastBkgColorButtonPicker;
 
+	// Overrides
+protected:		
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CPictureToolBar)
+	//}}AFX_VIRTUAL
+
+	// Generated message map functions
+protected:
 	//{{AFX_MSG(CPictureToolBar)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG
@@ -168,32 +177,26 @@ protected:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CToolBarChildFrame frame
+// CToolBarChildFrame
 
 class CToolBarChildFrame : public CChildFrame
 {
-	DECLARE_DYNCREATE(CToolBarChildFrame)
-
 protected:
-	CToolBarChildFrame();
+	CToolBarChildFrame();			// protected constructor used by dynamic creation
 
-// Attributes
 public:
 	CChildToolBar* m_pToolBar;
 	void SetToolBar(CChildToolBar* pToolBar) {m_pToolBar = pToolBar;};
 	__forceinline CChildToolBar* GetToolBar() {return m_pToolBar;};
-	
-// Operations
-public:
 
-// Overrides
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CToolBarChildFrame)
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CToolBarChildFrame)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnPaint();
@@ -201,20 +204,21 @@ protected:
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CToolBarChildFrame)
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CAudioMCIChildFrame frame
+// CAudioMCIChildFrame
+
 class CAudioMCIChildFrame : public CChildFrame
 {
-	DECLARE_DYNCREATE(CAudioMCIChildFrame)
 protected:
 	CAudioMCIChildFrame();           // protected constructor used by dynamic creation
 	void StartShutdown();
 	void EndShutdown();
 	BOOL IsShutdownDone();
 
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAudioMCIChildFrame)
 	public:
@@ -223,28 +227,28 @@ protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CAudioMCIChildFrame)
 	afx_msg void OnClose();
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CAudioMCIChildFrame)
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CCDAudioChildFrame frame
+// CCDAudioChildFrame
+
 class CCDAudioChildFrame : public CChildFrame
 {
-	DECLARE_DYNCREATE(CCDAudioChildFrame)
 protected:
 	CCDAudioChildFrame();           // protected constructor used by dynamic creation
 	void StartShutdown();
 	void EndShutdown();
 	BOOL IsShutdownDone();
 
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCDAudioChildFrame)
 	public:
@@ -253,21 +257,21 @@ protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CCDAudioChildFrame)
 	afx_msg void OnClose();
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CCDAudioChildFrame)
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CVideoAviChildFrame frame
+// CVideoAviChildFrame
+
 class CVideoAviChildFrame : public CToolBarChildFrame
 {
-	DECLARE_DYNCREATE(CVideoAviChildFrame)
 protected:
 	CVideoAviChildFrame();           // protected constructor used by dynamic creation
 	void StartShutdown1();
@@ -276,15 +280,17 @@ protected:
 	BOOL IsShutdown1Done();
 	BOOL IsShutdown2Done();
 
-// Overrides
+protected:
+	BOOL m_bShutdown2Started;
+
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CVideoAviChildFrame)
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
-	BOOL m_bShutdown2Started;
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CVideoAviChildFrame)
 	afx_msg void OnClose();
 	afx_msg void OnMove(int x, int y);
@@ -294,14 +300,16 @@ protected:
 	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CVideoAviChildFrame)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CVideoDeviceChildFrame frame
 #ifdef VIDEODEVICEDOC
+
+/////////////////////////////////////////////////////////////////////////////
+// CVideoDeviceChildFrame
+
 class CVideoDeviceChildFrame : public CToolBarChildFrame
 {
-	DECLARE_DYNCREATE(CVideoDeviceChildFrame)
 protected:
 	CVideoDeviceChildFrame(); // protected constructor used by dynamic creation
 	void StartShutdown1();
@@ -310,76 +318,77 @@ protected:
 	BOOL IsShutdown1Done();
 	BOOL IsShutdown2Done();
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CVideoDeviceChildFrame)
-	protected:
-	//}}AFX_VIRTUAL
-
-// Implementation
 protected:
 	BOOL m_bShutdown2Started;
+
+	// Overrides
+protected:
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CVideoDeviceChildFrame)
+	//}}AFX_VIRTUAL
+
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CVideoDeviceChildFrame)
 	afx_msg void OnClose();
 	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CVideoDeviceChildFrame)
 };
+
 #endif
+
 /////////////////////////////////////////////////////////////////////////////
-// CPictureChildFrame frame
+// CPictureChildFrame
 
 class CPictureChildFrame : public CToolBarChildFrame
 {
-	DECLARE_DYNCREATE(CPictureChildFrame)
-
 protected:
 	CPictureChildFrame();           // protected constructor used by dynamic creation
 	void StartShutdown();
 	BOOL IsShutdownDone();
 
-// Overrides
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPictureChildFrame)
-	protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CPictureChildFrame)
 	afx_msg void OnClose();
 	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CPictureChildFrame)
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CBigPictureChildFrame frame
+// CBigPictureChildFrame
 
 class CBigPictureChildFrame : public CPictureChildFrame
 {
-	DECLARE_DYNCREATE(CBigPictureChildFrame)
-
 protected:
 	CBigPictureChildFrame();           // protected constructor used by dynamic creation
 
-// Overrides
+	// Overrides
+protected:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBigPictureChildFrame)
 	//}}AFX_VIRTUAL
 
-// Implementation
-protected:
 	// Generated message map functions
+protected:
 	//{{AFX_MSG(CBigPictureChildFrame)
 	//}}AFX_MSG
 	
 	DECLARE_MESSAGE_MAP()
+	DECLARE_DYNCREATE(CBigPictureChildFrame)
 };
 
 

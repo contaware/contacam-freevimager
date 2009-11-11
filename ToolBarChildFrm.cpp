@@ -29,10 +29,10 @@ static char THIS_FILE[] = __FILE__;
 #define WM_THEMECHANGED     0x031A
 #endif
 
-static const CRect	TOOLBAR_BORDERRECT		= CRect(2,	// Left
-													2,	// Top
-													2,	// Right
-													1);	// Bottom
+static const CRect TOOLBAR_BORDERRECT	= CRect(2,	// Left
+												2,	// Top
+												2,	// Right
+												1);	// Bottom
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar
@@ -587,9 +587,8 @@ void CToolBarChildFrame::OnPaint()
 	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 		return;
 
-	// To erase the Background at the bottom-right corner between
-	// the Scroll Bars!
-	// Are both ScrollBars Visible?
+	// If both ScrollBars visible erase the background at the
+	// bottom-right corner between the Scroll Bars!
 	if (pView->IsXAndYScroll())
 	{
 		CRect rcFrameClient;
