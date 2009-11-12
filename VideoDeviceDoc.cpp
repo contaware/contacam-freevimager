@@ -4698,22 +4698,19 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 		}
 		if (m_pDoc->m_bCaptureStarted)
 		{
-			// Exit if in Video Avi mode
-			// (no log and no watch-dog for it)
-			if (m_pDoc->m_pVideoAviDoc)
-			{
-				::CoUninitialize();
-				return 0;
-			}
-
 			// Store start time
 			m_pDoc->m_CaptureStartTime = CTime::GetCurrentTime();
 
 			// Log the starting
-			CString sMsg;
-			sMsg.Format(_T("%s starting\n"), m_pDoc->GetDeviceName());
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			// (no log for Video Avi mode)
+			if (!m_pDoc->m_pVideoAviDoc)
+			{
+				CString sMsg;
+				sMsg.Format(_T("%s starting\n"), m_pDoc->GetDeviceName());
+				TRACE(sMsg);
+				::LogLine(sMsg);
+			}
+
 			break;
 		}
 	}
@@ -7860,26 +7857,24 @@ BOOL CVideoDeviceDoc::OpenGetVideo()
 		return FALSE;
 }
 
-BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc) 
+BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib) 
 {
 	// Check
-	if (!((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)pDoc))
+	if (!((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)pDoc)	||
+		!pDib														||
+		!pDib->IsValid())
 		return FALSE;
 
-	// First Time?
-	if (!m_pVideoAviDoc)
-	{
-		// Set pointer
-		m_pVideoAviDoc = pDoc;
-		
-		// Load Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			LoadSettings(DEFAULT_FRAMERATE, GetDevicePathName(), GetDeviceName());
+	// Set pointer
+	m_pVideoAviDoc = pDoc;
+	
+	// Load Settings
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		LoadSettings(DEFAULT_FRAMERATE, GetDevicePathName(), GetDeviceName());
 
-		// Start Delete Detections Thread
-		if (!m_DeleteThread.IsAlive())
-			m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-	}
+	// Start Delete Detections Thread
+	if (!m_DeleteThread.IsAlive())
+		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
 	// Reset vars
 	m_dwFrameCountUp = 0U;
@@ -7892,8 +7887,8 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc)
 
 	if (m_pOrigBMI)
 		delete [] m_pOrigBMI;
-	m_pOrigBMI = (LPBITMAPINFO) new BYTE[m_pVideoAviDoc->m_pDib->GetBMISize()];
-	memcpy(m_pOrigBMI, m_pVideoAviDoc->m_pDib->GetBMI(), m_pVideoAviDoc->m_pDib->GetBMISize());
+	m_pOrigBMI = (LPBITMAPINFO) new BYTE[pDib->GetBMISize()];
+	memcpy(m_pOrigBMI, pDib->GetBMI(), pDib->GetBMISize());
 	::EnterCriticalSection(&m_csDib);
 	m_DocRect.top = 0;
 	m_DocRect.left = 0;
@@ -7908,10 +7903,6 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc)
 
 	// Reset Flag
 	m_bDecodeFramesForPreview = FALSE;
-
-	// Call Process Frame
-	ProcessFrame(	m_pVideoAviDoc->m_pDib->GetBits(),
-					m_pVideoAviDoc->m_pDib->GetImageSize());
 
 	// Update
 	if (m_bSizeToDoc)

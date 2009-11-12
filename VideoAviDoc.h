@@ -446,9 +446,6 @@ public:
 	void UpdateAviInfoDlg();
 	void EditSnapshot();
 	void EditDelete(BOOL bPrompt);
-#ifdef VIDEODEVICEDOC
-	void CaptureAviplay();
-#endif
 
 	// Player Control
 	void PlayAVI();				// Not blocking start (starts playing if not already playing)
@@ -618,9 +615,10 @@ public:
 	// User Zoom Rect of the previous full-screen
 	CRect m_PrevUserZoomRect;
 
-#ifdef VIDEODEVICEDOC
 	// Send Frames to the given Video Device Doc
+#ifdef VIDEODEVICEDOC
 	CVideoDeviceDoc* volatile m_pVideoDeviceDoc;
+	CDib* volatile m_pVideoDeviceDocDib;
 #endif
 
 	// Draw

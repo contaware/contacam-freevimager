@@ -587,8 +587,8 @@ void CToolBarChildFrame::OnPaint()
 	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 		return;
 
-	// If both ScrollBars visible erase the background at the
-	// bottom-right corner between the Scroll Bars!
+	// If both ScrollBars are visible erase the background at
+	// the bottom-right corner between them!
 	if (pView->IsXAndYScroll())
 	{
 		CRect rcFrameClient;

@@ -877,8 +877,8 @@ BOOL CGeneralPage::OnInitDialog()
 	// Set Timer
 	SetTimer(ID_TIMER_GENERALDLG, GENERALDLG_TIMER_MS, NULL);
 
-	// Disable Autorun if not using settings
-	if (!((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	// Disable Autorun?
+	if (m_pDoc->m_pVideoAviDoc || !((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
 		pCheck->EnableWindow(FALSE);

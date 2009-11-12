@@ -2392,6 +2392,7 @@
 #define IDC_COMPRESSION_QUALITY         1762
 #define IDS_STRING1762                  1762
 #define IDC_COMPRESSION_QUALITY_NUM     1763
+#define IDS_STRING1763                  1763
 #define IDC_CHECK_SNAPSHOT_THUMB        1764
 #define IDC_BUTTON_THUMB_SIZE           1765
 #define IDC_TEXT_DIR                    1766

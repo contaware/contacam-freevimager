@@ -561,18 +561,12 @@ void CVideoDeviceView::Draw()
 	BOOL bStopAndChangeFormat = (BOOL)pDoc->m_bStopAndChangeFormat;
 	BOOL bStopAndCallVideoSourceDialog = (BOOL)pDoc->m_bStopAndCallVideoSourceDialog;
 	BOOL bWatchDogAlarm = (BOOL)pDoc->m_bWatchDogAlarm;
-	BOOL bDrawMsg;
-	if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)(pDoc->m_pVideoAviDoc)))
-		bDrawMsg = FALSE;
-	else
-	{
-		bDrawMsg = !bVideoView						||
+	BOOL bDrawMsg = !bVideoView						||
 					bVideoFormatApplyPressed		||
 					bDxDeviceUnplugged				||
 					bStopAndChangeFormat			||
 					bStopAndCallVideoSourceDialog	||
 					bWatchDogAlarm;
-	}
 
 	// Draw Msg?
 	if (bDrawMsg)

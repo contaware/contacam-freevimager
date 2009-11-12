@@ -778,13 +778,6 @@ LONG CVideoAviView::OnRenderingSwitch(WPARAM wparam, LPARAM lparam)
 		if (pDoc->m_DxDraw.HasDxDraw())
 			pDoc->m_DxDraw.LeaveCS();
 
-#ifdef VIDEODEVICEDOC
-		// Re-Open Video Device Doc
-		if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc) &&
-			!pDoc->m_pVideoDeviceDoc->OpenVideoAvi(pDoc))
-			pDoc->m_pVideoDeviceDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
-#endif
-
 		// Restart
 		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
 
@@ -848,9 +841,12 @@ void CVideoAviView::OnUpdateViewGdiRgb(CCmdUI* pCmdUI)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
+	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
+					pDoc->m_pAVIPlay->HasVideo()									&&
+					(pDoc->m_nActiveVideoStream >= 0)								&&
+#ifdef VIDEODEVICEDOC
+					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
 }
@@ -871,9 +867,12 @@ void CVideoAviView::OnUpdateViewGdiYuv(CCmdUI* pCmdUI)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
+	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
+					pDoc->m_pAVIPlay->HasVideo()									&&
+					(pDoc->m_nActiveVideoStream >= 0)								&&
+#ifdef VIDEODEVICEDOC
+					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
 }
@@ -895,10 +894,13 @@ void CVideoAviView::OnUpdateViewDirectxRgb(CCmdUI* pCmdUI)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
-					pDoc->m_DxDraw.HasDxDraw()			&&
+	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
+					pDoc->m_pAVIPlay->HasVideo()									&&
+					(pDoc->m_nActiveVideoStream >= 0)								&&
+					pDoc->m_DxDraw.HasDxDraw()										&&
+#ifdef VIDEODEVICEDOC
+					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
 }
@@ -919,10 +921,13 @@ void CVideoAviView::OnUpdateViewDirectxYuv(CCmdUI* pCmdUI)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
-					pDoc->m_DxDraw.HasDxDraw()			&&
+	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
+					pDoc->m_pAVIPlay->HasVideo()									&&
+					(pDoc->m_nActiveVideoStream >= 0)								&&
+					pDoc->m_DxDraw.HasDxDraw()										&&
+#ifdef VIDEODEVICEDOC
+					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
 }
@@ -1006,35 +1011,47 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	{
 		case _T('R') :
 
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasVideo()		&&
-				(pDoc->m_nActiveVideoStream >= 0)	&&
+			if (pDoc->m_pAVIPlay												&&
+				pDoc->m_pAVIPlay->HasVideo()									&&
+				(pDoc->m_nActiveVideoStream >= 0)								&&
+#ifdef VIDEODEVICEDOC
+				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 				!pDoc->IsProcessing())
 				ViewGdiRgb();
 			break;
 
 		case _T('G') :
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasVideo()		&&
-				(pDoc->m_nActiveVideoStream >= 0)	&&
+			if (pDoc->m_pAVIPlay												&&
+				pDoc->m_pAVIPlay->HasVideo()									&&
+				(pDoc->m_nActiveVideoStream >= 0)								&&
+#ifdef VIDEODEVICEDOC
+				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 				!pDoc->IsProcessing())
 				ViewGdiYuv();
 			break;
 
 		case _T('X') :
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasVideo()		&&
-				(pDoc->m_nActiveVideoStream >= 0)	&&
-				pDoc->m_DxDraw.HasDxDraw()			&&
+			if (pDoc->m_pAVIPlay												&&
+				pDoc->m_pAVIPlay->HasVideo()									&&
+				(pDoc->m_nActiveVideoStream >= 0)								&&
+				pDoc->m_DxDraw.HasDxDraw()										&&
+#ifdef VIDEODEVICEDOC
+				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 				!pDoc->IsProcessing())
 				ViewDirectxRgb();
 			break;
 
 		case _T('Y') :
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasVideo()		&&
-				(pDoc->m_nActiveVideoStream >= 0)	&&
-				pDoc->m_DxDraw.HasDxDraw()			&&
+			if (pDoc->m_pAVIPlay												&&
+				pDoc->m_pAVIPlay->HasVideo()									&&
+				(pDoc->m_nActiveVideoStream >= 0)								&&
+				pDoc->m_DxDraw.HasDxDraw()										&&
+#ifdef VIDEODEVICEDOC
+				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
+#endif
 				!pDoc->IsProcessing())
 				ViewDirectxYuv();
 			break;

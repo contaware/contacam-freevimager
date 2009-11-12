@@ -1879,7 +1879,14 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 					break;
 				}
 				else
+				{
+#ifdef VIDEODEVICEDOC
+					if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc)	&&
+						m_pDoc->m_pDib && m_pDoc->m_pDib->IsValid() && m_pDoc->m_pVideoDeviceDocDib)
+						*m_pDoc->m_pVideoDeviceDocDib = *m_pDoc->m_pDib;
+#endif
 					::LeaveCriticalSection(&m_pDoc->m_csDib);
+				}
 			}
 			else
 			{
@@ -2022,18 +2029,14 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 				}
 			}
 
-#ifdef VIDEODEVICEDOC
 			// Send To Capture Doc
-			if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc))
+#ifdef VIDEODEVICEDOC
+			if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc)	&&
+				m_pDoc->m_pVideoDeviceDocDib && m_pDoc->m_pVideoDeviceDocDib->IsValid())
 			{
 				m_pDoc->m_pVideoDeviceDoc->m_bCapture = TRUE;
-				
-				// Do not use the critical sections otherwise the SendMessages inside 
-				// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-				//::EnterCriticalSection(&m_pDoc->m_csDib);
-				m_pDoc->m_pVideoDeviceDoc->ProcessFrame(m_pDoc->m_pDib->GetBits(),
-														m_pDoc->m_pDib->GetImageSize());
-				//::LeaveCriticalSection(&m_pDoc->m_csDib);
+				m_pDoc->m_pVideoDeviceDoc->ProcessFrame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
+														m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
 			}
 #endif
 
@@ -2254,6 +2257,7 @@ CVideoAviDoc::CVideoAviDoc()
 #endif
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDoc = NULL;
+	m_pVideoDeviceDocDib = NULL;
 #endif
 
 	// Threads Init
@@ -2321,6 +2325,14 @@ CVideoAviDoc::~CVideoAviDoc()
 		delete m_pAVIPlay;
 		m_pAVIPlay = NULL;
 	}
+
+#ifdef VIDEODEVICEDOC
+	if (m_pVideoDeviceDocDib)
+	{
+		delete m_pVideoDeviceDocDib;
+		m_pVideoDeviceDocDib = NULL;
+	}
+#endif
 
 	::DeleteCriticalSection(&m_csPlayWaitingForStart);
 	::CloseHandle(m_hPlaySyncEvent);
@@ -5729,15 +5741,6 @@ void CVideoAviDoc::FrameBack()
 			if (nNewPos < 0)
 				nNewPos = 0;
 			DisplayFrame(nNewPos);
-
-#ifdef VIDEODEVICEDOC
-			// Do not use the critical sections otherwise the SendMessages inside 
-			// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-			//::EnterCriticalSection(&m_csDib);							
-			if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-				m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-			//::LeaveCriticalSection(&m_csDib);
-#endif
 		}
 	}
 	else
@@ -5775,18 +5778,7 @@ void CVideoAviDoc::FrameFront()
 	if (pVideoStream)
 	{
 		if (pVideoStream->GetCurrentFramePos() < ((int)pVideoStream->GetTotalFrames() - 1))
-		{
 			DisplayFrame(pVideoStream->GetCurrentFramePos() + 1);
-
-#ifdef VIDEODEVICEDOC
-			// Do not use the critical sections otherwise the SendMessages inside 
-			// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-			//::EnterCriticalSection(&m_csDib);
-			if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-				m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-			//::LeaveCriticalSection(&m_csDib);
-#endif
-		}
 	}
 	else
 	{
@@ -5852,15 +5844,6 @@ void CVideoAviDoc::FrameBackFast(BOOL bVeryFast/*=FALSE*/)
 				nNewPos = 0;
 		}
 		DisplayFrame(nNewPos);
-
-#ifdef VIDEODEVICEDOC
-		// Do not use the critical sections otherwise the SendMessages inside 
-		// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-		//::EnterCriticalSection(&m_csDib);							
-		if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-			m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-		//::LeaveCriticalSection(&m_csDib);
-#endif
 	}
 	else
 	{
@@ -5930,15 +5913,6 @@ void CVideoAviDoc::FrameFrontFast(BOOL bVeryFast/*=FALSE*/)
 				nNewPos = (int)pVideoStream->GetTotalFrames() - 1;
 		}
 		DisplayFrame(nNewPos);
-
-#ifdef VIDEODEVICEDOC
-		// Do not use the critical sections otherwise the SendMessages inside 
-		// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-		//::EnterCriticalSection(&m_csDib);							
-		if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-			m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-		//::LeaveCriticalSection(&m_csDib);
-#endif
 	}
 	else
 	{
@@ -5977,18 +5951,7 @@ void CVideoAviDoc::JumpToFirstFrame()
 	// Get Video Stream
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
 	if (pVideoStream)
-	{
 		DisplayFrame(0);
-
-#ifdef VIDEODEVICEDOC
-		// Do not use the critical sections otherwise the SendMessages inside 
-		// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-		//::EnterCriticalSection(&m_csDib);							
-		if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-			m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-		//::LeaveCriticalSection(&m_csDib);
-#endif
-	}
 	else
 	{
 		m_PlayAudioFileThread.Rew();
@@ -6017,18 +5980,7 @@ void CVideoAviDoc::JumpToLastFrame()
 	// Get Video Stream
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
 	if (pVideoStream)
-	{
 		DisplayFrame(pVideoStream->GetTotalFrames() - 1);
-
-#ifdef VIDEODEVICEDOC
-		// Do not use the critical sections otherwise the SendMessages inside 
-		// ProcessFrame() will dead-lock the CVideoAviView Drawing!
-		//::EnterCriticalSection(&m_csDib);							
-		if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-			m_pVideoDeviceDoc->ProcessFrame(m_pDib->GetBits(), m_pDib->GetImageSize());
-		//::LeaveCriticalSection(&m_csDib);
-#endif
-	}
 	else
 	{
 		m_PlayAudioFileThread.SetCurrentSamplePos(m_PlayAudioFileThread.GetTotalSamples() - 1);
@@ -6264,11 +6216,6 @@ void CVideoAviDoc::OnUpdateViewTimeposition(CCmdUI* pCmdUI)
 
 void CVideoAviDoc::OnCaptureAviplay() 
 {
-	CaptureAviplay();
-}
-
-void CVideoAviDoc::CaptureAviplay() 
-{
 	if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
 	{
 		// Close Video Device Doc
@@ -6276,22 +6223,28 @@ void CVideoAviDoc::CaptureAviplay()
 	}
 	else
 	{
-		// Switch to GDI RGB
-		if (m_bUseDxDraw &&
-			(m_pAVIPlay->HasVideo() &&
-			m_nActiveVideoStream >= 0))
-			RenderingSwitch(RENDERING_MODE_GDI_RGB);
-
-		// Open New
-		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-		if (pDoc)
+		// Switch to GDI!
+		if (m_bUseDxDraw)
+			::AfxMessageBox(ML_STRING(1763, "Switch to GDI under the View menu"));
+		else
 		{
-			if (pDoc->OpenVideoAvi(this))
-				m_pVideoDeviceDoc = pDoc;
-			else
+			// Open New
+			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+			if (pDoc)
 			{
-				// Close Video Device Doc
-				pDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
+				if (!m_pVideoDeviceDocDib)
+					m_pVideoDeviceDocDib = new CDib;
+				::EnterCriticalSection(&m_csDib);
+				if (m_pDib && m_pDib->IsValid() && m_pVideoDeviceDocDib)
+					*m_pVideoDeviceDocDib = *m_pDib;
+				::LeaveCriticalSection(&m_csDib);
+				if (pDoc->OpenVideoAvi(this, m_pVideoDeviceDocDib))
+					m_pVideoDeviceDoc = pDoc;
+				else
+				{
+					// Close Video Device Doc
+					pDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
+				}
 			}
 		}
 	}
@@ -6299,6 +6252,10 @@ void CVideoAviDoc::CaptureAviplay()
 
 void CVideoAviDoc::OnUpdateCaptureAviplay(CCmdUI* pCmdUI) 
 {
+	pCmdUI->Enable(	m_pAVIPlay &&
+					m_pAVIPlay->HasVideo() &&
+					(m_nActiveVideoStream >= 0) &&
+					!IsProcessing());
 	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc) ? 1 : 0);
 }
 

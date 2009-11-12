@@ -1238,7 +1238,7 @@ public:
 	BOOL OpenVideoDevice(int nId);
 
 	// Open Video From Avi Player
-	BOOL OpenVideoAvi(CVideoAviDoc* pDoc);
+	BOOL OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib);
 
 	// Open Video From Network, Pop-Up
 	// a Dialog for address, port and

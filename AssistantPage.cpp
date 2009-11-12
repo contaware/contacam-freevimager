@@ -1133,7 +1133,7 @@ void CAssistantPage::ApplySettings()
 	m_pDoc->ReStartProcessFrame();
 
 	// Set Autorun
-	if (m_nUsage >= 0 && m_nUsage <= 2)
+	if (!m_pDoc->m_pVideoAviDoc && m_nUsage >= 0 && m_nUsage <= 2)
 	{
 		if (m_pDoc->m_pGeneralPage)
 		{
