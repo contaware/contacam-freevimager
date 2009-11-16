@@ -757,6 +757,11 @@ void CAssistantPage::ApplySettings()
 			bDoMovDet = TRUE;
 			EnableDisable24hRec(m_bCheck24hRec);
 			
+			// Init size vars
+			CString sWidth, sHeight;
+			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
+			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
+
 			// Init snapshot rate vars
 			int nSnapshotRate = MIN_SNAPSHOT_RATE;
 			CString sSnapShotRate;
@@ -773,6 +778,8 @@ void CAssistantPage::ApplySettings()
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			if (sMaxPerPage != _T(""))
@@ -824,6 +831,11 @@ void CAssistantPage::ApplySettings()
 			bDoMovDet = FALSE;
 			EnableDisable24hRec(FALSE);
 
+			// Init size vars
+			CString sWidth, sHeight;
+			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
+			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
+
 			// Init snapshot rate vars
 			int nSnapshotRate;
 			switch (m_nComboSnapshotHistoryRate)
@@ -867,6 +879,8 @@ void CAssistantPage::ApplySettings()
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTHISTORY_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
@@ -916,6 +930,11 @@ void CAssistantPage::ApplySettings()
 			bDoMovDet = FALSE;
 			EnableDisable24hRec(FALSE);
 
+			// Init size vars
+			CString sWidth, sHeight;
+			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
+			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
+
 			// Init snapshot rate vars
 			int nSnapshotRate;
 			switch (m_nComboSnapshotRate)
@@ -947,6 +966,8 @@ void CAssistantPage::ApplySettings()
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTMOBILE_NAME);
 			else
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
@@ -996,6 +1017,11 @@ void CAssistantPage::ApplySettings()
 			bDoMovDet = FALSE;
 			EnableDisable24hRec(FALSE);
 
+			// Init size vars
+			CString sWidth, sHeight;
+			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
+			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
+
 			// Init snapshot rate vars
 			int nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 			CString sSnapShotRate;
@@ -1008,6 +1034,8 @@ void CAssistantPage::ApplySettings()
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
