@@ -1049,16 +1049,23 @@ __forceinline void CVideoDeviceDoc::CSaveSnapshotThread::SWFFreeCopyFtp(BOOL bFt
 	{
 		if (m_pSaveSnapshotFTPThread->IsAlive())
 			m_pSaveSnapshotFTPThread->Kill();
-		CString sUploadDir = m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d"));
+		CString sUploadDir;
+		int nYear, nMonth, nDay;
 		if (m_pAVRecSwf && m_sSWFTempFileName != _T("") && m_sSWFFileName != _T(""))
 		{
+			CString sSWFShortFileName = ::GetShortFileName(m_sSWFFileName);
+			_stscanf(sSWFShortFileName, _T("shot_%d_%d_%d.swf"), &nYear, &nMonth, &nDay);
+			sUploadDir.Format(_T("%d/%02d/%02d"), nYear, nMonth, nDay);
 			m_pSaveSnapshotFTPThread->m_sLocalFileName = m_sSWFTempFileName;
-			m_pSaveSnapshotFTPThread->m_sRemoteFileName = sUploadDir + _T("/") + ::GetShortFileName(m_sSWFFileName);
+			m_pSaveSnapshotFTPThread->m_sRemoteFileName = sUploadDir + _T("/") + sSWFShortFileName;
 		}
 		if (m_pAVRecThumbSwf && m_sSWFTempThumbFileName != _T("") && m_sSWFThumbFileName != _T(""))
 		{
+			CString sSWFThumbShortFileName = ::GetShortFileName(m_sSWFThumbFileName);
+			_stscanf(sSWFThumbShortFileName, _T("shot_%d_%d_%d.swf"), &nYear, &nMonth, &nDay);
+			sUploadDir.Format(_T("%d/%02d/%02d"), nYear, nMonth, nDay);
 			m_pSaveSnapshotFTPThread->m_sLocalThumbFileName = m_sSWFTempThumbFileName;
-			m_pSaveSnapshotFTPThread->m_sRemoteThumbFileName = sUploadDir + _T("/") + ::GetShortFileName(m_sSWFThumbFileName);
+			m_pSaveSnapshotFTPThread->m_sRemoteThumbFileName = sUploadDir + _T("/") + sSWFThumbShortFileName;
 		}
 		m_pSaveSnapshotFTPThread->m_Config = m_Config;
 		m_pSaveSnapshotFTPThread->Start();
@@ -1092,7 +1099,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	// Init history file name, if m_bSnapshotHistoryJpeg is TRUE,
 	// it creates also the year, month and day directories, otherwise
 	// it just returns the file name without path
-	CString sHistoryFileName = MakeJpegHistoryFileName(m_Time);
+	CString sHistoryFileName = MakeJpegHistoryFileName();
 
 	// Resize Thumb
 	CDib DibThumb;
@@ -1115,7 +1122,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 									TempTime.GetMonth(),
 									TempTime.GetDay(),
 									0, 0, 0);					// Back to midnight
-			m_sSWFFileName = MakeSwfHistoryFileName(m_Time);
+			m_sSWFFileName = MakeSwfHistoryFileName();
 			m_sSWFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sSWFFileName);
 			m_pAVRecSwf = new CAVRec(m_sSWFTempFileName);
 		}
@@ -1354,12 +1361,12 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 	return 0;
 }
 
-__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileName(const CTime& Time)
+__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileName()
 {
 	CString sFirstFileName(_T(""));
 
 	// Snapshot time
-	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
+	CString sTime = m_Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
 	// Adjust Directory Name
 	CString sSnapshotDir = m_sSnapshotAutoSaveDir;
@@ -1371,7 +1378,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 		DWORD dwAttrib =::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotDir, sFirstFileName))
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sFirstFileName))
 			return _T("");
 	}
 
@@ -1382,12 +1389,12 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 		return sFirstFileName + _T("\\") + _T("shot_") + sTime + _T(".jpg");
 }
 
-__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileName(const CTime& Time)
+__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileName()
 {
 	CString sFirstFileName(_T(""));
 
 	// Snapshot time
-	CString sTime = Time.Format(_T("%Y_%m_%d"));
+	CString sTime = m_Time.Format(_T("%Y_%m_%d"));
 
 	// Adjust Directory Name
 	CString sSnapshotDir = m_sSnapshotAutoSaveDir;
@@ -1399,7 +1406,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileNa
 		DWORD dwAttrib =::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotDir, sFirstFileName))
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sFirstFileName))
 			return _T("");
 	}
 

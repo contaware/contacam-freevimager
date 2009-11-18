@@ -3,6 +3,9 @@ var TotalFramesSet = 0;
 var FirstRun = 1;
 var SliderTimer = 0;
 
+// Note: For loading progress we could poll flashMovie.PercentLoaded()
+// (it returns a value from 0 up to 100)
+
 function InitPlayer()
 {
 	// Give flash player time to start loading the movie

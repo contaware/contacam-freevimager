@@ -1093,8 +1093,8 @@ public:
 		protected:
 			int Work();
 			__forceinline void SWFFreeCopyFtp(BOOL bFtp = FALSE);
-			__forceinline CString MakeJpegHistoryFileName(const CTime& Time);
-			__forceinline CString MakeSwfHistoryFileName(const CTime& Time);
+			__forceinline CString MakeJpegHistoryFileName();
+			__forceinline CString MakeSwfHistoryFileName();
 
 			CAVRec* m_pAVRecSwf;
 			CAVRec* m_pAVRecThumbSwf;
