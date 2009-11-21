@@ -588,7 +588,7 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 		dstname[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!CopyDirContent(srcname, dstname))
+			if (!CopyDirContent(srcname, dstname, bOverwriteIfExists))
 			{
 				FindClose(hp);
 				COPYDIRCONTENT_FREE;
