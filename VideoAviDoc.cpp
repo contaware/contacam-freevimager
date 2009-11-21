@@ -5081,7 +5081,7 @@ void CVideoAviDoc::DeleteDocFile()
 	}
 	delete m_pAVIPlay;
 	m_pAVIPlay = NULL;
-	if (!::DeleteFileToRecycleBin(m_sFileName))
+	if (!::DeleteToRecycleBin(m_sFileName))
 	{
 		CString str;
 		str.Format(ML_STRING(1267, "Cannot delete the %s file"), m_sFileName);

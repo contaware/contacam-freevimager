@@ -2619,7 +2619,7 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 			}
 
 			// Copy directory content to the burn directory
-			if (!::CopyDirContent(sDir, sBurnFolder))
+			if (!::CopyDirContentShell(sDir, sBurnFolder))
 			{
 				pICDBurn->Release();
 				EndWaitCursor();

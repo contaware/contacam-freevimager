@@ -68,19 +68,23 @@ extern BOOL IsReadonly(LPCTSTR lpszFileName);
 // Do we have write access to the given file
 extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
 
-// Directory Creation, Copy, Deletion and Content Size
+// API file / directory operations
 extern BOOL TakeOwnership(LPCTSTR lpszFile);
 extern BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege,BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
 extern BOOL CreateDir(LPCTSTR szNewDir);
-extern BOOL RenameDir(LPCTSTR szOldDir, LPCTSTR szNewDir, BOOL bSilent = TRUE);
-extern BOOL CopyDir(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE);
-extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE);
-extern BOOL DeleteDir(LPCTSTR lpszName);
-extern BOOL DeleteDirContent(LPCTSTR lpszName);
-extern ULARGE_INTEGER GetDirContentSize(LPCTSTR lpszName, 
-										int* pFilesCount = NULL, // Optional Files Count
+extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
+extern BOOL DeleteDir(LPCTSTR szDirName);
+extern BOOL DeleteDirContent(LPCTSTR szDirName);
+extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
+										int* pFilesCount = NULL, // optional Files Count
 										CWorkerThread* pThread = NULL);
+
+// Shell file / directory operations
+extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE);				// delete file or directory
+extern BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent = TRUE);	// rename file or directory
+extern BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE);	// copy file or directory
+extern BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE);
 
 // Date / Time Formatting According to Local Settings
 extern CString MakeTimeLocalFormat(	const CTime& Time,
@@ -89,9 +93,6 @@ extern CString MakeDateLocalFormat(	const CTime& Time,
 									BOOL bLongDate = FALSE);
 extern CString GetDateLocalFormat(BOOL bLongDate = FALSE);
 extern CTime ParseShortDateLocalFormat(CString sDate);
-
-// Delete File to Recycle Bin
-extern BOOL DeleteFileToRecycleBin(LPCTSTR lpszFileName, BOOL bSilent = TRUE);
 
 // Create a Temp File Name
 extern CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName);

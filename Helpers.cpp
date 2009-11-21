@@ -453,7 +453,7 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 	return FALSE;
 }
 
-// Iterative Solution Should Be Faster than a Recursive One!
+// This Iterative Solution Should Be Faster than a Recursive One!
 BOOL CreateDir(LPCTSTR szNewDir)
 {
 	TCHAR szFolder[MAX_PATH];
@@ -494,97 +494,124 @@ BOOL CreateDir(LPCTSTR szNewDir)
 	return FALSE;
 }
 
-// Shell Directory Rename
-BOOL RenameDir(LPCTSTR szOldDir, LPCTSTR szNewDir, BOOL bSilent/*=TRUE*/)
+// Recursive Directory Content Copy
+#define COPYDIRCONTENT_FREE \
+if (pInfo) delete pInfo;\
+if (srcname) delete [] srcname;\
+if (dstname) delete [] dstname;
+BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/)
 {
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+1];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+1);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szOldDir, MAX_PATH);
-	_tcsncpy(pTo, szNewDir, MAX_PATH);
+	// Create dir
+	if (!IsExistingDir(szToDir))
+	{
+		if (!CreateDir(szToDir))
+			return FALSE;
+	}
 
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_RENAME;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Directory Copy
-BOOL CopyDir(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/)
-{
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+1];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+1);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szFromDir, MAX_PATH);
-	_tcsncpy(pTo, szToDir, MAX_PATH);
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_COPY;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Directory Content Copy
-BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/)
-{
-	// Check
-	if (_tcslen(szFromDir) <= 0 ||
-		_tcslen(szToDir) <= 0)
+	// Vars
+	HANDLE hp;
+	BOOL bSrcBackslashEnding, bDstBackslashEnding;
+	// Allocate on heap because we are a recursive function,
+	// using the stack can overflow the stack!
+	WIN32_FIND_DATA* pInfo = NULL;
+	TCHAR* srcname = NULL;
+	TCHAR* dstname = NULL;
+	pInfo = new WIN32_FIND_DATA;
+	if (!pInfo)
+	{
+		COPYDIRCONTENT_FREE;
 		return FALSE;
+	}
 
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+5];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+5);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szFromDir, MAX_PATH);
-	_tcsncpy(pTo, szToDir, MAX_PATH);
-	int pos = _tcslen(szFromDir) - 1;
-	if (pFrom[pos++] != _T('\\')) 
-		pFrom[pos++] = _T('\\');
-	pFrom[pos++] = _T('*');
-	pFrom[pos++] = _T('.');
-	pFrom[pos++] = _T('*');
+	// Src
+	srcname = new TCHAR[MAX_PATH];
+	if (!srcname)
+	{
+		COPYDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (_tcslen(szFromDir) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
+	{
+		COPYDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (szFromDir[_tcslen(szFromDir) - 1] == _T('\\'))
+	{
+		bSrcBackslashEnding = TRUE;
+		_sntprintf(srcname, MAX_PATH - 1, _T("%s*"), szFromDir);
+		srcname[MAX_PATH - 1] = _T('\0');
+	}
+	else
+	{
+		bSrcBackslashEnding = FALSE;
+		_sntprintf(srcname, MAX_PATH - 1, _T("%s\\*"), szFromDir);
+		srcname[MAX_PATH - 1] = _T('\0');
+	}
 
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_COPY;
+	// Dst
+	dstname = new TCHAR[MAX_PATH];
+	if (!dstname)
+	{
+		COPYDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (szToDir[_tcslen(szToDir) - 1] == _T('\\'))
+		bDstBackslashEnding = TRUE;
+	else
+		bDstBackslashEnding = FALSE;
 
-	return (SHFileOperation(&FileOp) == 0);
+	// Copy
+    hp = FindFirstFile(srcname, pInfo);
+    if (!hp || (hp == INVALID_HANDLE_VALUE))
+	{
+		COPYDIRCONTENT_FREE;
+        return FALSE;
+	}
+    do
+    {
+        if (pInfo->cFileName[1] == _T('\0') &&
+			pInfo->cFileName[0] == _T('.'))
+            continue;
+        else if (	pInfo->cFileName[2] == _T('\0')	&&
+					pInfo->cFileName[1] == _T('.')	&&
+					pInfo->cFileName[0] == _T('.'))
+            continue;
+		if (bSrcBackslashEnding)
+			_sntprintf(srcname, MAX_PATH - 1, _T("%s%s"), szFromDir, pInfo->cFileName);
+		else
+			_sntprintf(srcname, MAX_PATH - 1, _T("%s\\%s"), szFromDir, pInfo->cFileName);
+		srcname[MAX_PATH - 1] = _T('\0');
+		if (bDstBackslashEnding)
+			_sntprintf(dstname, MAX_PATH - 1, _T("%s%s"), szToDir, pInfo->cFileName);
+		else
+			_sntprintf(dstname, MAX_PATH - 1, _T("%s\\%s"), szToDir, pInfo->cFileName);
+		dstname[MAX_PATH - 1] = _T('\0');
+		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (!CopyDirContent(srcname, dstname))
+			{
+				FindClose(hp);
+				COPYDIRCONTENT_FREE;
+				return FALSE;
+			}
+		}
+		else
+			CopyFile(srcname, dstname, !bOverwriteIfExists);
+    }
+    while (FindNextFile(hp, pInfo));
+
+	// Clean-up
+	FindClose(hp);
+	COPYDIRCONTENT_FREE;
+
+	return TRUE;
 }
 
 // Recursive Directory Content Deletion
 #define DELETEDIRCONTENT_FREE \
 if (pInfo) delete pInfo;\
 if (name) delete [] name;
-BOOL DeleteDirContent(LPCTSTR lpszName)
+BOOL DeleteDirContent(LPCTSTR szDirName)
 {
 	HANDLE hp;
 	BOOL bBackslashEnding;
@@ -604,21 +631,21 @@ BOOL DeleteDirContent(LPCTSTR lpszName)
 		DELETEDIRCONTENT_FREE;
 		return FALSE;
 	}
-	if (_tcslen(lpszName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
+	if (_tcslen(szDirName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
 	{
 		DELETEDIRCONTENT_FREE;
 		return FALSE;
 	}
-	if (lpszName[_tcslen(lpszName) - 1] == _T('\\'))
+	if (szDirName[_tcslen(szDirName) - 1] == _T('\\'))
 	{
 		bBackslashEnding = TRUE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s*"), lpszName);
+		_sntprintf(name, MAX_PATH - 1, _T("%s*"), szDirName);
 		name[MAX_PATH - 1] = _T('\0');
 	}
 	else
 	{
 		bBackslashEnding = FALSE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), lpszName);
+		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), szDirName);
 		name[MAX_PATH - 1] = _T('\0');
 	}
     hp = FindFirstFile(name, pInfo);
@@ -637,9 +664,9 @@ BOOL DeleteDirContent(LPCTSTR lpszName)
 					pInfo->cFileName[0] == _T('.'))
             continue;
 		if (bBackslashEnding)
-			_sntprintf(name, MAX_PATH - 1, _T("%s%s"), lpszName, pInfo->cFileName);
+			_sntprintf(name, MAX_PATH - 1, _T("%s%s"), szDirName, pInfo->cFileName);
 		else
-			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), lpszName, pInfo->cFileName);
+			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), szDirName, pInfo->cFileName);
 		name[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_READONLY)
 		{
@@ -688,20 +715,20 @@ BOOL DeleteDirContent(LPCTSTR lpszName)
 	return TRUE;
 }
 
-BOOL DeleteDir(LPCTSTR lpszName)
+BOOL DeleteDir(LPCTSTR szDirName)
 {
-	if (DeleteDirContent(lpszName))
+	if (DeleteDirContent(szDirName))
 	{
-		if (!RemoveDirectory(lpszName))
+		if (!RemoveDirectory(szDirName))
 		{
-			if (!TakeOwnership(lpszName))
+			if (!TakeOwnership(szDirName))
 				return FALSE;
-			if (!SetPermission(lpszName, _T("everyone"), GENERIC_ALL))
+			if (!SetPermission(szDirName, _T("everyone"), GENERIC_ALL))
 				return FALSE;
-			DWORD dwFileAttributes = GetFileAttributes(lpszName);
+			DWORD dwFileAttributes = GetFileAttributes(szDirName);
 			if (dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-				SetFileAttributes(lpszName, dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
-			if (!RemoveDirectory(lpszName))
+				SetFileAttributes(szDirName, dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
+			if (!RemoveDirectory(szDirName))
 				return FALSE;
 			return TRUE;
 		}
@@ -712,32 +739,12 @@ BOOL DeleteDir(LPCTSTR lpszName)
 		return FALSE;
 }
 
-BOOL DeleteFileToRecycleBin(LPCTSTR lpszFileName, BOOL bSilent/*=TRUE*/)
-{
-	TCHAR pFrom[MAX_PATH+1]; // +1 for double NULL Termination
-	memset(pFrom, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, lpszFileName, MAX_PATH);
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
-    FileOp.pFrom = pFrom; 
-    FileOp.pTo = NULL; 
-    FileOp.fFlags = FOF_ALLOWUNDO | (bSilent ? FOF_SILENT | FOF_NOCONFIRMATION : 0);
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_DELETE;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
 // Recursively Calculate the Dir Tree Size,
 // optionally returns the files count
 #define GETDIRCONTENTSIZE_FREE \
 if (pInfo) delete pInfo;\
 if (name) delete [] name;
-ULARGE_INTEGER GetDirContentSize(LPCTSTR lpszName,
+ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 								 int* pFilesCount/*=NULL*/,
 								 CWorkerThread* pThread/*=NULL*/)
 {
@@ -762,21 +769,21 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR lpszName,
 		GETDIRCONTENTSIZE_FREE;
 		return Size;
 	}
-	if (_tcslen(lpszName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
+	if (_tcslen(szDirName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
 	{
 		GETDIRCONTENTSIZE_FREE;
 		return Size;
 	}
-	if (lpszName[_tcslen(lpszName) - 1] == _T('\\'))
+	if (szDirName[_tcslen(szDirName) - 1] == _T('\\'))
 	{
 		bBackslashEnding = TRUE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s*"), lpszName);
+		_sntprintf(name, MAX_PATH - 1, _T("%s*"), szDirName);
 		name[MAX_PATH - 1] = _T('\0');
 	}
 	else
 	{
 		bBackslashEnding = FALSE;
-		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), lpszName);
+		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), szDirName);
 		name[MAX_PATH - 1] = _T('\0');
 	}
     hp = FindFirstFile(name, pInfo);
@@ -798,9 +805,9 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR lpszName,
 					pInfo->cFileName[0] == _T('.'))
             continue;
 		if (bBackslashEnding)
-			_sntprintf(name, MAX_PATH - 1, _T("%s%s"), lpszName, pInfo->cFileName);
+			_sntprintf(name, MAX_PATH - 1, _T("%s%s"), szDirName, pInfo->cFileName);
 		else
-			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), lpszName, pInfo->cFileName);
+			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), szDirName, pInfo->cFileName);
 		name[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
@@ -822,6 +829,113 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR lpszName,
 	GETDIRCONTENTSIZE_FREE;
 	
 	return Size;
+}
+
+// Shell deletion
+BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/)
+{
+	TCHAR pFrom[MAX_PATH+1]; // +1 for double NULL Termination
+	memset(pFrom, 0, MAX_PATH+1);
+	_tcsncpy(pFrom, szName, MAX_PATH);
+
+	SHFILEOPSTRUCT FileOp;
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
+	FileOp.hwnd = NULL; 
+    FileOp.pFrom = pFrom; 
+    FileOp.pTo = NULL; 
+    FileOp.fFlags = FOF_ALLOWUNDO | (bSilent ? FOF_SILENT | FOF_NOCONFIRMATION : 0);
+    FileOp.hNameMappings = NULL; 
+    FileOp.lpszProgressTitle = NULL; 
+	FileOp.fAnyOperationsAborted = FALSE; 
+	FileOp.wFunc = FO_DELETE;
+
+	return (SHFileOperation(&FileOp) == 0);
+}
+
+// Shell Rename
+BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/)
+{
+	// pFrom and pTo have to be double NULL terminated! 
+	TCHAR pFrom[MAX_PATH+1];
+	TCHAR pTo[MAX_PATH+1];
+	memset(pFrom, 0, MAX_PATH+1);
+	memset(pTo, 0, MAX_PATH+1);
+	_tcsncpy(pFrom, szOldName, MAX_PATH);
+	_tcsncpy(pTo, szNewName, MAX_PATH);
+
+	SHFILEOPSTRUCT FileOp;
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
+	FileOp.hwnd = NULL; 
+    FileOp.pFrom = pFrom;
+    FileOp.pTo = pTo;
+    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
+    FileOp.hNameMappings = NULL; 
+    FileOp.lpszProgressTitle = NULL; 
+	FileOp.fAnyOperationsAborted = FALSE; 
+	FileOp.wFunc = FO_RENAME;
+
+	return (SHFileOperation(&FileOp) == 0);
+}
+
+// Shell Copy
+BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
+{
+	// pFrom and pTo have to be double NULL terminated! 
+	TCHAR pFrom[MAX_PATH+1];
+	TCHAR pTo[MAX_PATH+1];
+	memset(pFrom, 0, MAX_PATH+1);
+	memset(pTo, 0, MAX_PATH+1);
+	_tcsncpy(pFrom, szFromName, MAX_PATH);
+	_tcsncpy(pTo, szToName, MAX_PATH);
+
+	SHFILEOPSTRUCT FileOp;
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
+	FileOp.hwnd = NULL; 
+    FileOp.pFrom = pFrom;
+    FileOp.pTo = pTo;
+    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
+    FileOp.hNameMappings = NULL; 
+    FileOp.lpszProgressTitle = NULL; 
+	FileOp.fAnyOperationsAborted = FALSE; 
+	FileOp.wFunc = FO_COPY;
+
+	return (SHFileOperation(&FileOp) == 0);
+}
+
+// Shell Directory Content Copy
+BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/)
+{
+	// Check
+	if (_tcslen(szFromDir) <= 0 ||
+		_tcslen(szToDir) <= 0)
+		return FALSE;
+
+	// pFrom and pTo have to be double NULL terminated! 
+	TCHAR pFrom[MAX_PATH+5];
+	TCHAR pTo[MAX_PATH+1];
+	memset(pFrom, 0, MAX_PATH+5);
+	memset(pTo, 0, MAX_PATH+1);
+	_tcsncpy(pFrom, szFromDir, MAX_PATH);
+	_tcsncpy(pTo, szToDir, MAX_PATH);
+	int pos = _tcslen(szFromDir) - 1;
+	if (pFrom[pos++] != _T('\\')) 
+		pFrom[pos++] = _T('\\');
+	pFrom[pos++] = _T('*');
+	pFrom[pos++] = _T('.');
+	pFrom[pos++] = _T('*');
+
+	SHFILEOPSTRUCT FileOp;
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
+	FileOp.hwnd = NULL; 
+    FileOp.pFrom = pFrom;
+    FileOp.pTo = pTo;
+    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
+    FileOp.hNameMappings = NULL; 
+    FileOp.lpszProgressTitle = NULL; 
+	FileOp.fAnyOperationsAborted = FALSE; 
+	FileOp.wFunc = FO_COPY;
+
+	return (SHFileOperation(&FileOp) == 0);
 }
 
 CString MakeTimeLocalFormat(const CTime& Time,
@@ -1216,13 +1330,13 @@ CString MakeValidPath(CString sPath)
 	typedef UINT (WINAPI * FPPATHGETCHARTYPE)(UCHAR ch);
 #endif
 	FPPATHGETCHARTYPE fpPathGetCharType;
-	HINSTANCE h = ::LoadLibrary(_T("shlwapi.dll"));
+	HINSTANCE h = LoadLibrary(_T("shlwapi.dll"));
 	if (!h)
 		return sPath;
 #ifdef _UNICODE
-	fpPathGetCharType = (FPPATHGETCHARTYPE)::GetProcAddress(h, "PathGetCharTypeW");
+	fpPathGetCharType = (FPPATHGETCHARTYPE)GetProcAddress(h, "PathGetCharTypeW");
 #else
-	fpPathGetCharType = (FPPATHGETCHARTYPE)::GetProcAddress(h, "PathGetCharTypeA");
+	fpPathGetCharType = (FPPATHGETCHARTYPE)GetProcAddress(h, "PathGetCharTypeA");
 #endif
 	if (fpPathGetCharType)
 	{
@@ -1241,12 +1355,12 @@ CString MakeValidPath(CString sPath)
 					sNewPath += _T("_");
 			}
 		}
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return sNewPath;
 	}
 	else
 	{
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return sPath;
 	}
 }
@@ -1256,13 +1370,13 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 	CString sSpecialFolderPath;
 	typedef HRESULT (WINAPI * FPSHGETSPECIALFOLDERPATH)(HWND hwndOwner, LPTSTR lpszPath, int nFolder, BOOL fCreate);
 	FPSHGETSPECIALFOLDERPATH fpSHGetSpecialFolderPath;
-	HINSTANCE h = ::LoadLibrary(_T("shell32.dll"));
+	HINSTANCE h = LoadLibrary(_T("shell32.dll"));
 	if (!h)
 		return _T("");
 #ifdef _UNICODE
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)::GetProcAddress(h, "SHGetSpecialFolderPathW");
+	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)GetProcAddress(h, "SHGetSpecialFolderPathW");
 #else
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)::GetProcAddress(h, "SHGetSpecialFolderPathA");
+	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)GetProcAddress(h, "SHGetSpecialFolderPathA");
 #endif
 	if (fpSHGetSpecialFolderPath)
 	{
@@ -1270,7 +1384,7 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 		fpSHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
 		sSpecialFolderPath = path;
 	}
-	::FreeLibrary(h);
+	FreeLibrary(h);
 	return sSpecialFolderPath;
 }
 
@@ -1498,17 +1612,17 @@ BOOL ExecHiddenApp(	const CString& sFileName,
 	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 	sei.nShow = SW_HIDE;
 	sei.lpFile = sFileName;
-	CString sDir = ::GetDriveAndDirName(sFileName);
+	CString sDir = GetDriveAndDirName(sFileName);
 	sei.lpDirectory = sDir;
 	sei.lpParameters = sParams;
-	BOOL res = ::ShellExecuteEx(&sei);
+	BOOL res = ShellExecuteEx(&sei);
 	if (res)
 	{
 		if (bWaitTillDone)
 		{
 			if (sei.hProcess)
 			{
-				if (::WaitForSingleObject(sei.hProcess, dwWaitMillisecondsTimeout) != WAIT_OBJECT_0)
+				if (WaitForSingleObject(sei.hProcess, dwWaitMillisecondsTimeout) != WAIT_OBJECT_0)
 					res = FALSE;
 			}
 			else
@@ -1516,7 +1630,7 @@ BOOL ExecHiddenApp(	const CString& sFileName,
 		}
 	}
 	if (sei.hProcess)
-		::CloseHandle(sei.hProcess);
+		CloseHandle(sei.hProcess);
 	return res;
 }
 
@@ -2236,23 +2350,23 @@ notamd:
 int GetTotPhysMemMB()
 {
 	typedef BOOL (WINAPI * FPGLOBALMEMORYSTATUSEX)(LPMEMORYSTATUSEX lpBuffer);
-	HINSTANCE h = ::LoadLibrary(_T("kernel32.dll"));
+	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
 	if (!h)
 		return 0;
-	FPGLOBALMEMORYSTATUSEX fpGlobalMemoryStatusEx = (FPGLOBALMEMORYSTATUSEX)::GetProcAddress(h, "GlobalMemoryStatusEx");
+	FPGLOBALMEMORYSTATUSEX fpGlobalMemoryStatusEx = (FPGLOBALMEMORYSTATUSEX)GetProcAddress(h, "GlobalMemoryStatusEx");
 	if (fpGlobalMemoryStatusEx)
 	{
 		MEMORYSTATUSEX MemoryStatusEx;
 		MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
 		fpGlobalMemoryStatusEx(&MemoryStatusEx);
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return (int)(MemoryStatusEx.ullTotalPhys >> 20);
 	}
 	else
 	{
 		MEMORYSTATUS MemoryStatus;
-		::GlobalMemoryStatus(&MemoryStatus);
-		::FreeLibrary(h);
+		GlobalMemoryStatus(&MemoryStatus);
+		FreeLibrary(h);
 		return (int)(MemoryStatus.dwTotalPhys >> 20);
 	}
 }
@@ -2403,7 +2517,7 @@ BOOL IsANSIConvertible(const CString& s)
 									0,						// size of buffer
 									NULL,					// default for unmappable chars
 									&bUsedDefaultChar);		// set when default char used
-	if (res <= 0 && ::GetLastError() == ERROR_INVALID_FLAGS)
+	if (res <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{
 		res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
 									0, 
@@ -2445,7 +2559,7 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 									nUtf16Len+1,			// size of buffer
 									NULL,					// default for unmappable chars
 									pbUsedDefaultChar);		// set when default char used
-	if (res <= 0 && ::GetLastError() == ERROR_INVALID_FLAGS)
+	if (res <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{
 		res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
 									0, 

@@ -689,7 +689,7 @@ void CAssistantPage::ApplySettings()
 	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir) + m_sName;
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
 	{
-		if (!::RenameDir(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir, FALSE))
+		if (!::RenameShell(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir, FALSE))
 			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	}
 	else
@@ -704,7 +704,7 @@ void CAssistantPage::ApplySettings()
 	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir) + m_sName;
 	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
 	{
-		if (!RenameDir(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir, FALSE))
+		if (!::RenameShell(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir, FALSE))
 			sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
 	}
 	else
@@ -719,7 +719,7 @@ void CAssistantPage::ApplySettings()
 	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir) + m_sName;
 	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
 	{
-		if (!RenameDir(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir, FALSE))
+		if (!::RenameShell(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir, FALSE))
 			sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
 	}
 	else

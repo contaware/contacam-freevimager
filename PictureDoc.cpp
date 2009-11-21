@@ -5297,7 +5297,7 @@ BOOL CPictureDoc::DeleteDocFile()
 #endif
 
 	// Delete It
-	if (!::DeleteFileToRecycleBin(sFileNameToDelete))
+	if (!::DeleteToRecycleBin(sFileNameToDelete))
 	{
 		CString str;
 		str.Format(ML_STRING(1267, "Cannot delete the %s file"), sFileNameToDelete);
