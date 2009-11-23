@@ -9,6 +9,27 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /*
+Note:
+
+With the microsoft virtual TWAIN driver for WIA
+the debugger asserts in cmdtarg.cpp with m_dwRef == 2 or higher
+when closing the application. I do not know how to release
+the WIA com object to decrement its count...should be done
+by the virtual driver!
+
+CCmdTarget::~CCmdTarget()
+{
+#ifndef _AFX_NO_OLE_SUPPORT
+	if (m_xDispatch.m_vtbl != 0)
+		((COleDispatchImpl*)&m_xDispatch)->Disconnect();
+	ASSERT(m_dwRef <= 1);
+#endif
+	m_pModuleState = NULL;
+}
+*/
+
+
+/*
 Constructor:
 	Parameters : HWND 
 				Window to subclass

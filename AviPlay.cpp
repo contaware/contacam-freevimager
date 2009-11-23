@@ -2999,7 +2999,7 @@ bool CAVIPlay::CAVIVideoStream::FindDecompressorVCM()
 			bFoundDecompressor = true;
 
 			// Close Query
-			ICClose(m_hIC);
+			ICClose(m_hIC); // Application verifier asserts here with "Locks violation detected"...
 			m_hIC = NULL;
 
 			break;

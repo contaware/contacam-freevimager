@@ -3955,7 +3955,9 @@ __forceinline void CVideoDeviceDoc::MovementDetectorPreview(CDib* pDib)
 	}
 	int nBitCount = pDib->GetBitCount();
 	int nCompression = pDib->GetCompression();
+	DWORD dwUpTime = pDib->GetUpTime();
 	*pDib = *m_pDifferencingDib;
+	pDib->SetUpTime(dwUpTime);
 	if (nCompression == BI_RGB)	
 		pDib->Decompress(nBitCount);
 }
@@ -10386,7 +10388,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
 		BOOL bColorDetectionPreview = m_bColorDetectionPreview;
 		BOOL bOk;
-		BOOL bDoFreeDib = FALSE;
 		BOOL bDecodeToRgb24 = FALSE;
 		BOOL bDecodeMpeg2 = FALSE;
 		BOOL bMpeg2 = m_pOrigBMI && (m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'));
@@ -10407,23 +10408,16 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		else if (bMpeg2)
 			bDecodeMpeg2 = TRUE;
 
-		// Decode Rgb (other than 24bpp), Yuv or Mpeg2 to Rgb24?
+		// Decode Rgb (other than 24bpp), Yuv or Mpeg2 to Rgb24
 		if (bDecodeToRgb24)
 		{
 			// Allocate Dib
 			pDib = (CDib*)new CDib;
 			if (!pDib)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s failed while allocating CDib before DecodeFrameToRgb24()\n"), GetDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
 				goto exit;
-			}
 			pDib->SetShowMessageBoxOnError(FALSE);
-			bDoFreeDib = TRUE;
 
-			// Decode Frame
+			// Decode Frame (De-Interlace inside this function)
 			if (!DecodeFrameToRgb24(pData, dwSize, pDib))
 			{
 				delete pDib;
@@ -10436,17 +10430,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			// Allocate Dib
 			pDib = (CDib*)new CDib;
 			if (!pDib)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s failed while allocating CDib before DecodeMpeg2Frame()\n"), GetDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
 				goto exit;
-			}
 			pDib->SetShowMessageBoxOnError(FALSE);
-			bDoFreeDib = TRUE;
 
-			// Decode Frame
+			// Decode Frame (De-Interlace inside this function)
 			if (!DecodeMpeg2Frame(pData, dwSize, pDib))
 			{
 				delete pDib;
@@ -10456,12 +10443,15 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// No decode
 		else
 		{
-			// Fast Processing -> Copy Bits
-			::EnterCriticalSection(&m_csDib);
-			m_pDib->SetBMI(m_pOrigBMI);
-			m_pDib->SetBits(pData, dwSize);
-			pDib = m_pDib;
-			::LeaveCriticalSection(&m_csDib);
+			// Allocate Dib
+			pDib = (CDib*)new CDib;
+			if (!pDib)
+				goto exit;
+			pDib->SetShowMessageBoxOnError(FALSE);
+
+			// Copy Bits
+			pDib->SetBMI(m_pOrigBMI);
+			pDib->SetBits(pData, dwSize);
 
 			// De-Interlace
 			if (m_bDeinterlace && IsDeinterlaceSupported(m_pOrigBMI))
@@ -10784,12 +10774,9 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		}
 
 		// Update m_pDib
-		if (bDecodeToRgb24 || bDecodeMpeg2)
-		{
-			::EnterCriticalSection(&m_csDib);
-			*m_pDib = *pDib;
-			::LeaveCriticalSection(&m_csDib);
-		}
+		::EnterCriticalSection(&m_csDib);
+		*m_pDib = *pDib;
+		::LeaveCriticalSection(&m_csDib);
 
 		// Draw
 		HRESULT hr = ::CoInitialize(NULL);
@@ -10798,9 +10785,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		if (bCleanupCOM)
 			::CoUninitialize();
 
-		// Free?
-		if (bDoFreeDib)
-			delete pDib;
+		// Free
+		delete pDib;
 
 		// Set started flag and open the Settings dialog
 		// if it's the first run of this device (leave this code
