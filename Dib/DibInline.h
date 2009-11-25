@@ -1308,6 +1308,8 @@ __forceinline BOOL CDib::IsAddSingleLineTextSupported(LPBITMAPINFO pBMI)
 	if (pBMI												&&
 		(pBMI->bmiHeader.biCompression == BI_RGB			||
 		pBMI->bmiHeader.biCompression == BI_BITFIELDS		||
+		pBMI->bmiHeader.biCompression == FCC('YV16')		||
+		pBMI->bmiHeader.biCompression == FCC('Y42B')		||
 		pBMI->bmiHeader.biCompression == FCC('YV12')		||
 		pBMI->bmiHeader.biCompression == FCC('I420')		||
 		pBMI->bmiHeader.biCompression == FCC('IYUV')		||

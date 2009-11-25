@@ -108,7 +108,7 @@ bool YUVToRGB24(	DWORD dwFourCC,
 	// Select the Right Decoder
 	if (dwFourCC == FCC('YV12'))
 	{
-		::YV12ToRGB24(	src,
+		YV12ToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -116,21 +116,21 @@ bool YUVToRGB24(	DWORD dwFourCC,
 	else if (	dwFourCC == FCC('I420') ||
 				dwFourCC == FCC('IYUV'))
 	{
-		::I420ToRGB24(	src,
+		I420ToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YVU9'))
 	{
-		::YVU9ToRGB24(	src,
+		YVU9ToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YUV9'))
 	{
-		::YUV9ToRGB24(	src,
+		YUV9ToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -141,7 +141,7 @@ bool YUVToRGB24(	DWORD dwFourCC,
 				dwFourCC == FCC('YUNV') ||
 				dwFourCC == FCC('YUYV'))
 	{
-		::YUY2ToRGB24(	src,
+		YUY2ToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -150,35 +150,35 @@ bool YUVToRGB24(	DWORD dwFourCC,
 				dwFourCC == FCC('Y422') ||
 				dwFourCC == FCC('UYNV'))
 	{
-		::UYVYToRGB24(	src,
+		UYVYToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YVYU'))
 	{
-		::YVYUToRGB24(	src,
+		YVYUToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('VCR1'))
 	{
-		::VCR1ToRGB24(	src,
+		VCR1ToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('CLJR'))
 	{
-		::CLJRToRGB24(	src,
+		CLJRToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('cyuv'))
 	{
-		::cyuvToRGB24(	src,
+		cyuvToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -186,14 +186,14 @@ bool YUVToRGB24(	DWORD dwFourCC,
 	else if (	dwFourCC == FCC('VIXL') ||
 				dwFourCC == FCC('PIXL'))
 	{
-		::VIXLToRGB24(	src,
+		VIXLToRGB24(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('Y41P'))
 	{
-		::Y41PToRGB24(	src,
+		Y41PToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -201,7 +201,7 @@ bool YUVToRGB24(	DWORD dwFourCC,
 	else if (dwFourCC == FCC('YV16') ||
 			dwFourCC == FCC('Y42B'))
 	{
-		::YV16ToRGB24(	src,
+		YV16ToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -210,7 +210,7 @@ bool YUVToRGB24(	DWORD dwFourCC,
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 	{
-		::Y800ToRGB24(	src,
+		Y800ToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -234,7 +234,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	// Select the Right Decoder
 	if (dwFourCC == FCC('YV12'))
 	{
-		::YV12ToRGB32(	src,
+		YV12ToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -242,21 +242,21 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	else if (	dwFourCC == FCC('I420') ||
 				dwFourCC == FCC('IYUV'))
 	{
-		::I420ToRGB32(	src,
+		I420ToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YVU9'))
 	{
-		::YVU9ToRGB32(	src,
+		YVU9ToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YUV9'))
 	{
-		::YUV9ToRGB32(	src,
+		YUV9ToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -267,7 +267,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 				dwFourCC == FCC('YUNV') ||
 				dwFourCC == FCC('YUYV'))
 	{
-		::YUY2ToRGB32(	src,
+		YUY2ToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -276,35 +276,35 @@ bool YUVToRGB32(	DWORD dwFourCC,
 				dwFourCC == FCC('Y422') ||
 				dwFourCC == FCC('UYNV'))
 	{
-		::UYVYToRGB32(	src,
+		UYVYToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('YVYU'))
 	{
-		::YVYUToRGB32(	src,
+		YVYUToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('VCR1'))
 	{
-		::VCR1ToRGB32(	src,
+		VCR1ToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('CLJR'))
 	{
-		::CLJRToRGB32(	src,
+		CLJRToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('cyuv'))
 	{
-		::cyuvToRGB32(	src,
+		cyuvToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -312,14 +312,14 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	else if (	dwFourCC == FCC('VIXL') ||
 				dwFourCC == FCC('PIXL'))
 	{
-		::VIXLToRGB32(	src,
+		VIXLToRGB32(	src,
 						dst,
 						width,
 						height);
 	}
 	else if (dwFourCC == FCC('Y41P'))
 	{
-		::Y41PToRGB32(	src,
+		Y41PToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -327,7 +327,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	else if (dwFourCC == FCC('YV16') ||
 			dwFourCC == FCC('Y42B'))
 	{
-		::YV16ToRGB32(	src,
+		YV16ToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -336,7 +336,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 	{
-		::Y800ToRGB32(	src,
+		Y800ToRGB32(	src,
 						dst,
 						width,
 						height);

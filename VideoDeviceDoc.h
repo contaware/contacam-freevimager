@@ -1581,6 +1581,7 @@ public:
 	volatile LONGLONG m_llRecFileSize;					// Maximum size of one Segment in Bytes
 	CString m_sFirstRecFileName;						// The First Recording File Name
 	CString m_sRecordAutoSaveDir;						// The Record Directory
+	volatile BOOL m_bRecDeinterlace;					// Recording De-Interlace
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoRecDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
@@ -1704,14 +1705,14 @@ public:
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
 	volatile DWORD m_dwAnimatedGifSpeedMul;				// Speed multiplier of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
-	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones
-	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone
-	BOOL* volatile m_MovementDetections;				// Detecting in Zone
-	BOOL* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone
+	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
+	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
+	BOOL* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
+	BOOL* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone (array allocated in constructor)
 	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor
-	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction
-	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction
-	volatile LONG m_lMovDetTotalZones;					// Total Number of zones
+	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
+	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
+	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
 	volatile BOOL m_bDoFalseDetectionCheck;				// Do a false detection check if set
 	volatile BOOL m_bDoFalseDetectionAnd;				// And / Or between Blue and None Blue zones

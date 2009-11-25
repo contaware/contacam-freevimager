@@ -338,7 +338,8 @@ CString CDxCaptureVMR9::GetFormatCompressionDescription(DWORD dwFourCC)
 		return _T("Packed 4:2:2 (16 Bpp)");
 	else if (dwFourCC == FCC('Y41P'))
 		return _T("Packed 4:1:1 (12 Bpp)");
-	else if (dwFourCC == FCC('YV16'))
+	else if (	dwFourCC == FCC('YV16')	||
+				dwFourCC == FCC('Y42B'))
 		return _T("Planar 4:2:2 (16 Bpp)");
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||

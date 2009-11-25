@@ -2521,6 +2521,60 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 		}
 		return TRUE;
 	}
+	else if (	dwFourCC == FCC('YV16')	||
+				dwFourCC == FCC('Y42B'))
+	{
+		DWORD line;
+		DWORD uiBytesPerScanLineToCopy = ::CalcYUVStride(dwFourCC, uiWidthCopy);
+		LPBYTE ps = pSrcBits + uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
+		LPBYTE pd = pDstBits + uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
+
+		// Copy Y Plane
+		for (line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy);
+			ps += uiDIBSrcScanLineSize;
+			pd += uiDIBDstScanLineSize;
+		}
+		
+		// Copy Chroma Planes
+		DWORD uiBytesPerScanLineToCopy2 = (uiBytesPerScanLineToCopy >> 1);
+		DWORD uiDstStartX2 = (uiDstStartX >> 1);
+		DWORD uiDIBDstScanLineSize2 = (uiDIBDstScanLineSize >> 1);
+		DWORD uiSrcStartX2 = (uiSrcStartX >> 1);
+		DWORD uiDIBSrcScanLineSize2 = (uiDIBSrcScanLineSize >> 1);
+		ps =	pSrcBits										+
+				uiSrcStartX2									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize2 * uiSrcStartY;
+		pd =	pDstBits										+
+				uiDstStartX2									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize2 * uiDstStartY;
+		for (line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy2);
+			ps += uiDIBSrcScanLineSize2;
+			pd += uiDIBDstScanLineSize2;
+		}
+		ps =	pSrcBits										+
+				uiSrcStartX2									+
+				uiDIBSrcScanLineSize * uiSrcHeight				+
+				uiDIBSrcScanLineSize2 * uiSrcHeight				+
+				uiDIBSrcScanLineSize2 * uiSrcStartY;
+		pd =	pDstBits										+
+				uiDstStartX2									+
+				uiDIBDstScanLineSize * uiDstHeight				+
+				uiDIBDstScanLineSize2 * uiDstHeight				+
+				uiDIBDstScanLineSize2 * uiDstStartY;
+		for (line = 0 ; line < uiHeightCopy ; line++)
+		{
+			memcpy(pd, ps, uiBytesPerScanLineToCopy2);
+			ps += uiDIBSrcScanLineSize2;
+			pd += uiDIBDstScanLineSize2;
+		}
+		return TRUE;
+	}
 	else if (	dwFourCC == FCC('YV12')	||
 				dwFourCC == FCC('I420')	||
 				dwFourCC == FCC('IYUV'))
@@ -2530,7 +2584,7 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 		LPBYTE ps = pSrcBits + uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
 		LPBYTE pd = pDstBits + uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
 
-		// Copy Y Plane: Text To Bitmap Bits
+		// Copy Y Plane
 		for (line = 0 ; line < uiHeightCopy ; line++)
 		{
 			memcpy(pd, ps, uiBytesPerScanLineToCopy);
@@ -2538,7 +2592,7 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 			pd += uiDIBDstScanLineSize;
 		}
 		
-		// Copy Chroma Planes: Text To Bitmap Bits
+		// Copy Chroma Planes
 		DWORD uiBytesPerScanLineToCopy2 = (uiBytesPerScanLineToCopy >> 1);
 		DWORD uiHeightCopy2 = (uiHeightCopy >> 1);
 		DWORD uiDstStartX2 = (uiDstStartX >> 1);
@@ -2589,7 +2643,7 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 		LPBYTE ps = pSrcBits + uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
 		LPBYTE pd = pDstBits + uiDstStartX + uiDIBDstScanLineSize * uiDstStartY;
 
-		// Copy Y Plane: Text To Bitmap Bits
+		// Copy Y Plane
 		for (line = 0 ; line < uiHeightCopy ; line++)
 		{
 			memcpy(pd, ps, uiBytesPerScanLineToCopy);
@@ -2597,7 +2651,7 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 			pd += uiDIBDstScanLineSize;
 		}
 		
-		// Copy Chroma Planes: Text To Bitmap Bits
+		// Copy Chroma Planes
 		DWORD uiBytesPerScanLineToCopy4 = (uiBytesPerScanLineToCopy >> 2);
 		DWORD uiHeightCopy4 = (uiHeightCopy >> 2);
 		DWORD uiDstStartX4 = (uiDstStartX >> 2);

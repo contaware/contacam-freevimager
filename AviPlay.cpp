@@ -1245,7 +1245,7 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionACM()
 	}
 
 	// Calc. & Allocate Src Buffer
-	// (for safty use the double)
+	// (for safety use the double)
 	res = ::acmStreamSize(m_hAcmStream, m_dwDstBufSize, (LPDWORD)&m_dwSrcBufSize, ACM_STREAMSIZEF_DESTINATION);
 	if (res != MMSYSERR_NOERROR)
 	{

@@ -2228,7 +2228,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
 					res = m_pDoc->m_pAVRec->AddRawAudioPacket(	m_pDoc->m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 																dwSize,
 																pBuf,
-																(m_pDoc->m_bInterleave == TRUE) ? true : false);
+																m_pDoc->m_bInterleave ? true : false);
 				}
 				else
 				{
@@ -2236,7 +2236,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
 					res = m_pDoc->m_pAVRec->AddAudioSamples(	m_pDoc->m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 																nNumOfSrcSamples,
 																pBuf,
-																(m_pDoc->m_bInterleave == TRUE) ? true : false);
+																m_pDoc->m_bInterleave ? true : false);
 				}
 				::LeaveCriticalSection(&m_pDoc->m_csAVRec);
 			}
@@ -2321,7 +2321,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 			pOldAVRec->AddRawAudioPacket(	pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 											dwSize,
 											pBuf,
-											(m_pDoc->m_bInterleave == TRUE) ? true : false);
+											m_pDoc->m_bInterleave ? true : false);
 		}
 		else
 		{
@@ -2329,7 +2329,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 			pOldAVRec->AddAudioSamples(	pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 										nNumOfSrcSamples,
 										pBuf,
-										(m_pDoc->m_bInterleave == TRUE) ? true : false);
+										m_pDoc->m_bInterleave ? true : false);
 		}
 		if (bFreeOldAVRec)
 		{
@@ -6030,6 +6030,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pAVRec = NULL;
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
+	m_bRecDeinterlace = FALSE;
 	m_bPostRecDeinterlace = FALSE;
 	memset(&m_OrigBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
@@ -6685,6 +6686,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// All other
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
 	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
+	m_bRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("RecDeinterlace"), FALSE);
 	m_bPostRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("PostRecDeinterlace"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecSizeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecSizeSegmentation"), FALSE);
@@ -6949,6 +6951,7 @@ void CVideoDeviceDoc::SaveSettings()
 			// All other
 			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
 			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
+			pApp->WriteProfileInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("PostRecDeinterlace"), m_bPostRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation);
@@ -7147,6 +7150,7 @@ void CVideoDeviceDoc::SaveSettings()
 			// All other
 			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("PostRecDeinterlace"), m_bPostRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation, sTempFileName);
@@ -10296,6 +10300,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
 		BOOL bColorDetectionPreview = m_bColorDetectionPreview;
 		BOOL bOk;
+		BOOL bShowFrameTime = m_bShowFrameTime;
 		BOOL bDecodeToRgb24 = FALSE;
 		BOOL bDecodeMpeg2 = FALSE;
 		BOOL bMpeg2 = (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'));
@@ -10303,9 +10308,9 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		if (!bMpeg2 && CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
 		BOOL bIsAddSingleLineSupported = bMpeg2 || CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_OrigBMI);
-		if ((VideoProcessorMode & COLOR_DETECTOR)				||
-			(m_bShowFrameTime && !bIsAddSingleLineSupported)	||
-			m_bDecodeFramesForPreview							||
+		if ((VideoProcessorMode & COLOR_DETECTOR)			||
+			(bShowFrameTime && !bIsAddSingleLineSupported)	||
+			m_bDecodeFramesForPreview						||
 			!bAVCodecSrcFormatSupport)
 		{
 			if (m_OrigBMI.bmiHeader.biBitCount != 24 ||
@@ -10460,10 +10465,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 
 		// Snapshot
 		Snapshot(pDib, CurrentTime);
-		
-		// Add Frame Time if User Wants it
-		if (m_bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Record Video
 		if (m_bVideoRecWait == FALSE)
@@ -10474,17 +10475,37 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				// Add Frame
 				if (m_dwVideoRecFourCC == BI_RGB)
 				{
+					if (bShowFrameTime)
+					{
+						AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+						bShowFrameTime = FALSE;
+					}
 					bOk = m_pAVRec->AddRawVideoPacket(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 														pDib->GetImageSize(),
 														pDib->GetBits(),
 														true,	// Keyframe
-														(m_bInterleave == TRUE) ? true : false);
+														m_bInterleave ? true : false);
 				}
 				else
 				{
+					bool bAVRecShowFrameTime = false;
+					if (bShowFrameTime)
+					{
+						if (!m_bRecDeinterlace)
+						{
+							AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+							bShowFrameTime = FALSE;
+						}
+						else
+							bAVRecShowFrameTime = true;
+					}
 					bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,
-												(m_bInterleave == TRUE) ? true : false);
+												m_bInterleave ? true : false,
+												m_bRecDeinterlace ? true : false,
+												bAVRecShowFrameTime,
+												CurrentTime,
+												dwCurrentInitUpTime);
 				}
 
 				// Recording Up-Time Init
@@ -10566,6 +10587,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			}
 			::LeaveCriticalSection(&m_csAVRec);
 		}
+
+		// Add Frame Time if User Wants it
+		if (bShowFrameTime)
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Send Video Frame
 		if (m_bSendVideoFrame)
@@ -11374,7 +11399,7 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	if (bPlanar)
 		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * (235 - 16);
 	else
-		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * 256;	// Guessed value, because there is the contribution of the chroma components!
+		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * 260;	// Guessed value, because there is the contribution of the chroma components!
 
 	// Calculate the Intensities of all the zones
 	for (y = 0 ; y < m_lMovDetYZonesCount ; y++)

@@ -1,5 +1,5 @@
-Note On Thread Safty or Re-entrant Code:
----------------------------------------
+Note On Thread Safety or Re-entrant Code
+----------------------------------------
 
 The following code declares an integer thread local variable
 and initializes it with a value:

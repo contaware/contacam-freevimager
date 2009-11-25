@@ -43,7 +43,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CGeneralPage)
 	enum { IDD = IDD_GENERAL };
-	
 	CSliderCtrl	m_VideoPostRecQuality;
 	CComboBox	m_VideoPostRecCompressionChoose;
 	CSliderCtrl	m_VideoRecQuality;
@@ -75,6 +74,7 @@ public:
 	int		m_nDeleteRecordingsOlderThanDays;
 	int		m_nTimeSegmentationIndex;
 	BOOL	m_bRecAutoOpen;
+	BOOL	m_bRecDeinterlace;
 	//}}AFX_DATA
 
 
@@ -126,6 +126,7 @@ protected:
 	afx_msg void OnChangeEditDeleteRecordingsDays();
 	afx_msg void OnSelchangeTimeSegmentation();
 	afx_msg void OnCheckAutoopen();
+	afx_msg void OnCheckDeinterlace();
 	//}}AFX_MSG
 	afx_msg LRESULT OnMixerCtrlChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnPeakMeterUpdate(WPARAM wParam, LPARAM lParam);

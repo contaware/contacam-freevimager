@@ -111,6 +111,8 @@ public:
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
 
 	// Video Frame Write
+	// Attention: if bAddFrameTime is set and if
+	// not deinterlacing the time is added to the source bits!
 	__forceinline bool AddFrame(DWORD dwStreamNum,
 								CDib* pDib,
 								bool bInterleaved,

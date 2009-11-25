@@ -1914,6 +1914,7 @@ protected:
 	// Supported FCCs:
 	// BI_RGB
 	// BI_BITFIELDS
+	// YV16 (and the equivalent : Y42B)
 	// YV12
 	// I420 (and the equivalent : IYUV)
 	// YUY2 (and the equivalents: VYUY, V422, YUYV, YUNV)

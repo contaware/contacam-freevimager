@@ -52,13 +52,13 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGeneralPage)
-	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_VIDEO_POSTREC_COMPRESSION_QUALITY, m_VideoPostRecQuality);
 	DDX_Control(pDX, IDC_VIDEO_POSTREC_COMPRESSION_CHOOSE, m_VideoPostRecCompressionChoose);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
 	DDX_Control(pDX, IDC_REC_VOL_RIGHT, m_RecVolumeRight);
 	DDX_Control(pDX, IDC_REC_VOL_LEFT, m_RecVolumeLeft);
+	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
 	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_START, m_SchedulerOnceDateStart);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_ONCE_START, m_SchedulerOnceTimeStart);
@@ -85,6 +85,7 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_nDeleteRecordingsOlderThanDays, 0, 4000000);
 	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
+	DDX_Check(pDX, IDC_CHECK_DEINTERLACE, m_bRecDeinterlace);
 	//}}AFX_DATA_MAP
 }
 
@@ -126,6 +127,7 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_DELETE_RECORDINGS_DAYS, OnChangeEditDeleteRecordingsDays)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
+	ON_BN_CLICKED(IDC_CHECK_DEINTERLACE, OnCheckDeinterlace)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(MM_MIXM_CONTROL_CHANGE, OnMixerCtrlChange)
 	ON_MESSAGE(WM_PEAKMETER_UPDATE, OnPeakMeterUpdate)
@@ -216,6 +218,13 @@ void CGeneralPage::OnAudioFormat()
 
 void CGeneralPage::ShowHideCtrls()
 {
+	// De-Interlace
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DEINTERLACE);
+	if (m_VideoCompressionFcc[m_VideoCompressionChoose.GetCurSel()] == BI_RGB)
+		pCheck->ShowWindow(SW_HIDE);
+	else
+		pCheck->ShowWindow(SW_SHOW);
+
 	// Keyframes Rate
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
 	if (m_VideoCompressionKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
@@ -363,6 +372,7 @@ BOOL CGeneralPage::OnInitDialog()
 	int i;
 	
 	// Init vars
+	m_bRecDeinterlace = FALSE;
 	m_bRecSizeSegmentation = FALSE;
 	m_bPostRec = FALSE;
 	m_nVideoPostRecKeyframesRate = 0;
@@ -397,6 +407,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
 	m_nVideoRecDataRate = m_pDoc->m_nVideoRecDataRate / 1000;
 	m_nVideoRecQualityBitrate = m_pDoc->m_nVideoRecQualityBitrate;
+	m_bRecDeinterlace = m_pDoc->m_bRecDeinterlace;
 	
 	// Init Post Rec Vars
 	m_bPostRec = m_pDoc->m_bPostRec;
@@ -1239,6 +1250,12 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
+void CGeneralPage::OnCheckDeinterlace() 
+{
+	UpdateData(TRUE);
+	m_pDoc->m_bRecDeinterlace = m_bRecDeinterlace;
+}
+
 void CGeneralPage::OnChangeEditKeyframesRate() 
 {
 	UpdateData(TRUE);
@@ -1552,6 +1569,10 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	}
 	else
 		pButton->EnableWindow(FALSE);
+
+	// Video Compression De-Interlace Check Box?
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DEINTERLACE);
+	pCheck->EnableWindow(bEnable);
 
 	// Video Compression Choose?
 	pComboBox = (CComboBox*)GetDlgItem(IDC_VIDEO_COMPRESSION_CHOOSE);
