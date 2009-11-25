@@ -42,7 +42,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT, OnThreadSafeStopAndChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CALLVIDEOSOURCEDLG, OnThreadSafeStopAndCallVideoSourceDialog)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
-	ON_MESSAGE(WM_THREADSAFE_ALLOCATE_MOVDET, OnThreadSafeAllocateMovDet)
+	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
 	ON_MESSAGE(WM_THREADSAFE_OPENGETVIDEO, OnThreadSafeOpenGetVideo)
 	ON_MESSAGE(WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC, OnThreadSafeAutorunRemoveDeviceCloseDoc)
@@ -274,11 +274,13 @@ LONG CVideoDeviceView::OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lpa
 	return 1;
 }
 
-LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
+LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	int i;
+	LONG lMovDetXZonesCount = 0;
+	LONG lMovDetYZonesCount = 0;
 
 	// X
 	for (i = 72 ; i > 0 ; i -= 8)
@@ -286,7 +288,7 @@ LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
 		if ((pDoc->m_DocRect.Width() % i) == 0 &&
 			(pDoc->m_DocRect.Width() / i) >= MOVDET_MIN_ZONESX)
 		{
-			pDoc->m_nMovDetXZonesCount = pDoc->m_DocRect.Width() / i;
+			lMovDetXZonesCount = pDoc->m_DocRect.Width() / i;
 			break;
 		}
 	}
@@ -297,13 +299,16 @@ LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
 		if ((pDoc->m_DocRect.Height() % i) == 0 &&
 			(pDoc->m_DocRect.Height() / i) >= MOVDET_MIN_ZONESY)
 		{
-			pDoc->m_nMovDetYZonesCount = pDoc->m_DocRect.Height() / i;
+			lMovDetYZonesCount = pDoc->m_DocRect.Height() / i;
 			break;
 		}
 	}
 
+	// Total
+	LONG lMovDetTotalZones = lMovDetXZonesCount * lMovDetYZonesCount;
+
 	// Check
-	if (pDoc->m_nMovDetXZonesCount == 0 || pDoc->m_nMovDetYZonesCount == 0)
+	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
 		if (!pDoc->m_bUnsupportedVideoSizeForMovDet)
 		{
@@ -329,31 +334,19 @@ LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
 			}
 			pDoc->m_bUnsupportedVideoSizeForMovDet = FALSE;
 		}
-		pDoc->m_nMovDetTotalZones = pDoc->m_nMovDetXZonesCount * pDoc->m_nMovDetYZonesCount;
+		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
+		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
+		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
 	}
-
-	// Allocate
-	if (pDoc->m_MovementDetectorCurrentIntensity)
-		delete pDoc->m_MovementDetectorCurrentIntensity;
-	pDoc->m_MovementDetectorCurrentIntensity = new int[pDoc->m_nMovDetTotalZones];
-	if (pDoc->m_MovementDetectionsUpTime)
-		delete pDoc->m_MovementDetectionsUpTime;
-	pDoc->m_MovementDetectionsUpTime = new DWORD[pDoc->m_nMovDetTotalZones];
-	if (pDoc->m_MovementDetections)
-		delete pDoc->m_MovementDetections;
-	pDoc->m_MovementDetections = new BOOL[pDoc->m_nMovDetTotalZones];
-	if (pDoc->m_DoMovementDetection)
-		delete pDoc->m_DoMovementDetection;
-	pDoc->m_DoMovementDetection = new BOOL[pDoc->m_nMovDetTotalZones];
 
 	// Load Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CWinApp* pApp = ::AfxGetApp();
 		CString sSection(pDoc->GetDevicePathName());
-		if (pDoc->m_nMovDetTotalZones == pApp->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
+		if (pDoc->m_lMovDetTotalZones == pApp->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
 		{
-			for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
 				sZone.Format(_T("DoMovementDetection%03i"), i);
@@ -363,8 +356,8 @@ LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
 		else
 		{
 			// Enable All Zones and Store Settings
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_nMovDetTotalZones);
-			for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
+			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				pDoc->m_DoMovementDetection[i] = TRUE;
 				CString sZone;
@@ -375,7 +368,7 @@ LONG CVideoDeviceView::OnThreadSafeAllocateMovDet(WPARAM wparam, LPARAM lparam)
 	}
 	else
 	{
-		for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			pDoc->m_DoMovementDetection[i] = TRUE;
 	}
 
@@ -571,9 +564,9 @@ void CVideoDeviceView::Draw()
 	// Draw Msg?
 	if (bDrawMsg)
 	{
-		if (!pDoc->m_DxDraw.IsInit()									||
-			pDoc->m_DocRect.right != pDoc->m_DxDraw.GetSrcWidth()		||
-			pDoc->m_DocRect.bottom != pDoc->m_DxDraw.GetSrcHeight()		||				
+		if (!pDoc->m_DxDraw.IsInit()										||
+			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
+			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
 			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB)
 		{
 			// Dx draw must be init from the main UI thread,
@@ -584,7 +577,7 @@ void CVideoDeviceView::Draw()
 			m_bInitializingDxDraw = TRUE;
 			::PostMessage(	GetSafeHwnd(),
 							WM_THREADSAFE_DXDRAW_INIT,
-							MAKEWPARAM((WORD)(pDoc->m_DocRect.right), (WORD)(pDoc->m_DocRect.bottom)),
+							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
 							(LPARAM)BI_RGB);
 			::LeaveCriticalSection(&pDoc->m_csDib);
 			return;
@@ -592,10 +585,10 @@ void CVideoDeviceView::Draw()
 	}
 	else
 	{
-		if (pDoc->m_pDib															&&
-			(!pDoc->m_DxDraw.IsInit()												||
-			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()				||
-			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()				||				
+		if (pDoc->m_pDib													&&
+			(!pDoc->m_DxDraw.IsInit()										||
+			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
+			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
 			IsCompressionDifferent()))
 		{
 			// Dx draw must be init from the main UI thread,
@@ -656,7 +649,7 @@ void CVideoDeviceView::Draw()
 			pDoc->m_DxDraw.DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);
 		
 		// Blt
-		pDoc->m_DxDraw.Blt(m_ZoomRect, pDoc->m_DocRect);
+		pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()));
 	}
 
 	// Leave CS
@@ -677,12 +670,12 @@ __forceinline void CVideoDeviceView::DrawText()
 		else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
 			sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
 		if (sProgress != _T(""))
-			pDoc->m_DxDraw.DrawText(sProgress, pDoc->m_DocRect.right - 1, 0, DRAWTEXT_TOPRIGHT);
+			pDoc->m_DxDraw.DrawText(sProgress, pDoc->m_pDib->GetWidth() - 1, 0, DRAWTEXT_TOPRIGHT);
 	}
 
 	// Recording
 	if (pDoc->m_SaveFrameListThread.IsAlive())
-		pDoc->m_DxDraw.DrawText(_T("REC"), pDoc->m_DocRect.right - 1, pDoc->m_DocRect.bottom - 1, DRAWTEXT_BOTTOMRIGHT);
+		pDoc->m_DxDraw.DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 	// Movement Detection Zones Count
 	else if (pDoc->m_bDoFalseDetectionCheck)
 	{
@@ -691,21 +684,21 @@ __forceinline void CVideoDeviceView::DrawText()
 		{
 			CString sMovDetCount;
 			sMovDetCount.Format(_T("Blue %d"), pDoc->m_nBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_DocRect.right - 1, pDoc->m_DocRect.bottom - 19, DRAWTEXT_BOTTOMRIGHT);
+			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 19, DRAWTEXT_BOTTOMRIGHT);
 			sMovDetCount.Format(_T("!Blue %d"), pDoc->m_nNoneBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_DocRect.right - 1, pDoc->m_DocRect.bottom - 1, DRAWTEXT_BOTTOMRIGHT);
+			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 		}
 		else if (pDoc->m_nBlueMovementDetectionsCount > 0)
 		{
 			CString sMovDetCount;
 			sMovDetCount.Format(_T("Blue %d"), pDoc->m_nBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_DocRect.right - 1, pDoc->m_DocRect.bottom - 1, DRAWTEXT_BOTTOMRIGHT);
+			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 		}
 		else if (pDoc->m_nNoneBlueMovementDetectionsCount > 0)
 		{
 			CString sMovDetCount;
 			sMovDetCount.Format(_T("!Blue %d"), pDoc->m_nNoneBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_DocRect.right - 1, pDoc->m_DocRect.bottom - 1, DRAWTEXT_BOTTOMRIGHT);
+			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 		}
 	}
 }
@@ -722,19 +715,19 @@ __forceinline void CVideoDeviceView::DrawDC()
 		// Draw Zones where Detection is enabled
 		if (pDoc->m_bShowEditDetectionZones)
 		{
-			for (int i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				if (pDoc->m_DoMovementDetection[i])
 				{
 					RECT rcDetZone;
-					int nZoneWidth = pDoc->m_DocRect.Width() / pDoc->m_nMovDetXZonesCount;
-					int nZoneHeight = pDoc->m_DocRect.Height() / pDoc->m_nMovDetYZonesCount;
-					int nZoneOffsetX = i%pDoc->m_nMovDetXZonesCount * nZoneWidth;
-					int nZoneOffsetY = i/pDoc->m_nMovDetXZonesCount * nZoneHeight;
-					rcDetZone.left = pDoc->m_DocRect.left + MAX(0, nZoneOffsetX - 1);
-					rcDetZone.top = pDoc->m_DocRect.top + MAX(0, nZoneOffsetY - 1);
-					rcDetZone.right = pDoc->m_DocRect.left + nZoneOffsetX + nZoneWidth;
-					rcDetZone.bottom = pDoc->m_DocRect.top + nZoneOffsetY + nZoneHeight;
+					int nZoneWidth = pDoc->m_pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
+					int nZoneHeight = pDoc->m_pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
+					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
+					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
+					rcDetZone.top = MAX(0, nZoneOffsetY - 1);
+					rcDetZone.right = nZoneOffsetX + nZoneWidth;
+					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
 					HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0x00,0x00,0xFF));
 					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
@@ -754,19 +747,19 @@ __forceinline void CVideoDeviceView::DrawDC()
 			pDoc->m_bShowMovementDetections)
 		{
 			DWORD dwCurrentTime = ::timeGetTime();
-			for (int i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				if (pDoc->m_MovementDetections[i])
 				{
 					RECT rcDetZone;
-					int nZoneWidth = pDoc->m_DocRect.Width() / pDoc->m_nMovDetXZonesCount;
-					int nZoneHeight = pDoc->m_DocRect.Height() / pDoc->m_nMovDetYZonesCount;
-					int nZoneOffsetX = i%pDoc->m_nMovDetXZonesCount * nZoneWidth;
-					int nZoneOffsetY = i/pDoc->m_nMovDetXZonesCount * nZoneHeight;
-					rcDetZone.left = pDoc->m_DocRect.left + MAX(0, nZoneOffsetX - 1);
-					rcDetZone.top = pDoc->m_DocRect.top + MAX(0, nZoneOffsetY - 1);
-					rcDetZone.right = pDoc->m_DocRect.left + nZoneOffsetX + nZoneWidth;
-					rcDetZone.bottom = pDoc->m_DocRect.top + nZoneOffsetY + nZoneHeight;
+					int nZoneWidth = pDoc->m_pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
+					int nZoneHeight = pDoc->m_pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
+					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
+					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
+					rcDetZone.top = MAX(0, nZoneOffsetY - 1);
+					rcDetZone.right = nZoneOffsetX + nZoneWidth;
+					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
 					HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0xFF,0x00,0x00));
 					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
@@ -1019,14 +1012,11 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 	// ...
 	if (pDoc->m_nDoColorPickup != 0)
 		ColorPickup(nFlags, point);
-	else if (pDoc->m_bShowEditDetectionZones	&&
-			pDoc->m_nMovDetXZonesCount > 0		&&
-			pDoc->m_nMovDetYZonesCount > 0		&&
-			pDoc->m_nMovDetXZonesCount > 0)
+	else if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
 		// Width & Height
-		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_nMovDetXZonesCount;
-		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_nMovDetYZonesCount;
+		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
+		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
 
 		// Offset Remove
 		point.x -= m_ZoomRect.left;
@@ -1043,7 +1033,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		int y = point.y / nZoneHeight;
 
 		// The Selected Zone Index
-		int nZone = x + y * pDoc->m_nMovDetXZonesCount;
+		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
 		// Reset Zone State
 		if ((nFlags & MK_SHIFT) ||
@@ -1057,7 +1047,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
 			CString sSection(pDoc->GetDevicePathName());
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_nMovDetTotalZones);
+			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
 			sZone.Format(_T("DoMovementDetection%03i"), nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
@@ -1422,14 +1412,12 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 
 	if (pDoc->m_bShowEditDetectionZones	&&
-		(nFlags & MK_LBUTTON)				&&
-		pDoc->m_nMovDetXZonesCount > 0		&&
-		pDoc->m_nMovDetYZonesCount > 0		&&
-		pDoc->m_nMovDetXZonesCount > 0)
+		(nFlags & MK_LBUTTON)			&&
+		pDoc->m_lMovDetTotalZones > 0)
 	{
 		// Width & Height
-		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_nMovDetXZonesCount;
-		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_nMovDetYZonesCount;
+		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
+		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
 
 		// Offset Remove
 		point.x -= m_ZoomRect.left;
@@ -1446,7 +1434,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		int y = point.y / nZoneHeight;
 
 		// The Selected Zone Index
-		int nZone = x + y * pDoc->m_nMovDetXZonesCount;
+		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
 		// Reset Zone State
 		if ((nFlags & MK_SHIFT) ||
@@ -1460,7 +1448,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
 			CString sSection(pDoc->GetDevicePathName());
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_nMovDetTotalZones);
+			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
 			sZone.Format(_T("DoMovementDetection%03i"), nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
@@ -1476,14 +1464,14 @@ void CVideoDeviceView::OnEditSelectall()
 	ASSERT_VALID(pDoc);
 	int i;
 
-	for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		pDoc->m_DoMovementDetection[i] = TRUE;
 
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(pDoc->GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_nMovDetTotalZones);
-		for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
+		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;
 			sZone.Format(_T("DoMovementDetection%03i"), i);
@@ -1498,14 +1486,14 @@ void CVideoDeviceView::OnEditSelectnone()
 	ASSERT_VALID(pDoc);
 	int i;
 
-	for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		pDoc->m_DoMovementDetection[i] = FALSE;
 
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(pDoc->GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_nMovDetTotalZones);
-		for (i = 0 ; i < pDoc->m_nMovDetTotalZones ; i++)
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
+		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;
 			sZone.Format(_T("DoMovementDetection%03i"), i);

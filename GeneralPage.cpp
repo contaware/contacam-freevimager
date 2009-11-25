@@ -936,8 +936,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 	{
 		// Is Mpeg2?
 		BOOL bMpeg2 = FALSE;
-		if (m_pDoc->m_pOrigBMI &&
-			m_pDoc->m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'))
+		if (m_pDoc->m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
 			bMpeg2 = TRUE;
 		
 		// Open Mixer If Not Open
@@ -1104,8 +1103,8 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			LONG lUncompressedAvgFrameSize = 0;
 			if (bMpeg2)
 				lUncompressedAvgFrameSize = 3 * m_pDoc->m_DocRect.Height() * m_pDoc->m_DocRect.Width() / 2; // I420 (= 12 bpp)
-			else if (m_pDoc->m_pOrigBMI)
-				lUncompressedAvgFrameSize = m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage;
+			else
+				lUncompressedAvgFrameSize = m_pDoc->m_OrigBMI.bmiHeader.biSizeImage;
 			if (lUncompressedAvgFrameSize > 0)
 			{
 				if (m_pDoc->m_lCompressedDataRate > 0)

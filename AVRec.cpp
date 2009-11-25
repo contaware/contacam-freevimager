@@ -312,7 +312,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 			}
 			default :
 			{
-				pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pDstVideoFormat);
+				pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstVideoFormat);
 				pCodecCtx->bits_per_coded_sample = ::FourCCToBpp(pDstVideoFormat->bmiHeader.biCompression);
 				break;
 			}
@@ -584,7 +584,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							float qscale)	// 2.0f best quality, 31.0f worst quality
 {
 	int nStreamNum = -1;
-	PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pSrcFormat);
+	PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcFormat);
 
 	// Check
 	if (!pSrcFormat || !pDstFormat || dwDstScale == 0 ||
@@ -1546,7 +1546,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 	else
 	{
 		// Get Src Pixel Format
-		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pBmi);
+		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
 
 		// Check whether AddFrameInternal() can De-Interlace
 		if (bDeinterlace							&&
@@ -1821,7 +1821,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 	else
 	{
 		// Get Src Pixel Format
-		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pBmi);
+		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
 
 		// Check whether we can De-Interlace
 		bool bSrcDeinterlace = false;

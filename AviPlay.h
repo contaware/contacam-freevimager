@@ -889,7 +889,7 @@ class CAVIPlay
 			__forceinline bool IsUsingAVCodec() {return m_pCodecCtx != NULL;};
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
-			static __forceinline enum PixelFormat AVCodecBMIHToPixFormat(LPBITMAPINFO pBMI);
+			static __forceinline enum PixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
 			static __forceinline enum PixelFormat AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw);
 			static __forceinline enum CodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
 #endif
@@ -1329,7 +1329,7 @@ __forceinline DWORD CAVIPlay::CAVIAudioStream::GetBufSamplesCount() const
 
 #ifdef SUPPORT_LIBAVCODEC
 
-__forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(LPBITMAPINFO pBMI)
+__forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
 {
 	if (pBMI)
 	{

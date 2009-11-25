@@ -3469,12 +3469,12 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	BOOL bMovement = FALSE;
 
 	// Init
-	if (m_nMovDetTotalZones == 0)
+	if (m_lMovDetTotalZones == 0)
 	{
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_ALLOCATE_MOVDET,
+							WM_THREADSAFE_INIT_MOVDET,
 							0, 0) == 0)
-			return;
+			return; // Cannot init, unsupported resolution
 	}
 	if (pDib->GetCompression() == BI_RGB)
 	{
@@ -3714,7 +3714,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	}
 	else
 	{
-		for (int i = 0 ; i < m_nMovDetTotalZones ; i++)
+		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 			m_MovementDetections[i] = FALSE;
 	}
 
@@ -6031,7 +6031,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
 	m_bPostRecDeinterlace = FALSE;
-	m_pOrigBMI = NULL;
+	memset(&m_OrigBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
 	m_dEffectiveFrameRate = 0.0;
 	m_dEffectiveFrameTimeSum = 0.0;
@@ -6226,13 +6226,13 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_dwAnimatedGifSpeedMul = MOVDET_ANIMGIF_DEFAULT_SPEEDMUL;
-	m_MovementDetectorCurrentIntensity = NULL;
-	m_MovementDetectionsUpTime = NULL;
-	m_MovementDetections = NULL;
-	m_DoMovementDetection = NULL;
-	m_nMovDetXZonesCount = 0;
-	m_nMovDetYZonesCount = 0;
-	m_nMovDetTotalZones = 0;
+	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
+	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
+	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
+	m_DoMovementDetection = new BOOL[MOVDET_MAX_ZONES];
+	m_lMovDetXZonesCount = MOVDET_MIN_ZONESX;
+	m_lMovDetYZonesCount = MOVDET_MIN_ZONESY;
+	m_lMovDetTotalZones = 0;
 	m_nVideoDetDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoDetKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoDetQuality = DEFAULT_VIDEODET_QUALITY;
@@ -6356,11 +6356,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	// m_pAVRec is contained in this array and freed!
 	FreeAVIFiles();
 	m_pAVRec = NULL;
-	if (m_pOrigBMI)
-	{
-		delete [] m_pOrigBMI;
-		m_pOrigBMI = NULL;
-	}
 	if (m_pHttpGetFrameParseProcess)
 	{
 		delete m_pHttpGetFrameParseProcess;
@@ -6382,6 +6377,26 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_pGetFrameGenerator = NULL;
 	}
 	FreeMovementDetector();
+	if (m_MovementDetectorCurrentIntensity)
+	{
+		delete [] m_MovementDetectorCurrentIntensity;
+		m_MovementDetectorCurrentIntensity = NULL;
+	}
+	if (m_MovementDetectionsUpTime)
+	{
+		delete [] m_MovementDetectionsUpTime;
+		m_MovementDetectionsUpTime = NULL;
+	}
+	if (m_MovementDetections)
+	{
+		delete [] m_MovementDetections;
+		m_MovementDetections = NULL;
+	}
+	if (m_DoMovementDetection)
+	{
+		delete [] m_DoMovementDetection;
+		m_DoMovementDetection = NULL;
+	}
 	ClearMovementDetectionsList();
 	ClearReSendUDPFrameList();
 	::DeleteCriticalSection(&m_csHttpProcess);
@@ -6420,29 +6435,7 @@ void CVideoDeviceDoc::FreeMovementDetector()
 		delete m_pMovementDetectorY800Dib;
 		m_pMovementDetectorY800Dib = NULL;
 	}
-	m_nMovDetXZonesCount = 0;
-	m_nMovDetYZonesCount = 0;
-	m_nMovDetTotalZones = 0;
-	if (m_MovementDetectorCurrentIntensity)
-	{
-		delete m_MovementDetectorCurrentIntensity;
-		m_MovementDetectorCurrentIntensity = NULL;
-	}
-	if (m_MovementDetectionsUpTime)
-	{
-		delete m_MovementDetectionsUpTime;
-		m_MovementDetectionsUpTime = NULL;
-	}
-	if (m_MovementDetections)
-	{
-		delete m_MovementDetections;
-		m_MovementDetections = NULL;
-	}
-	if (m_DoMovementDetection)
-	{
-		delete m_DoMovementDetection;
-		m_DoMovementDetection = NULL;
-	}
+	::InterlockedExchange(&m_lMovDetTotalZones, 0);
 }
 
 void CVideoDeviceDoc::CloseDocument()
@@ -6538,31 +6531,26 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	{
 		// Mpeg2?
 		BOOL bMpeg2 = FALSE;
-		if (m_pOrigBMI		&&
-			m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'))
+		if (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
 			bMpeg2 = TRUE;
 
 		// Converting?
 		BOOL bConverting = FALSE;
 		if (m_bRgb24Frame	&&
-			m_pOrigBMI		&&
-			((m_pOrigBMI->bmiHeader.biCompression != BI_RGB) ||
-			(m_pOrigBMI->bmiHeader.biBitCount != 24)))
+			(m_OrigBMI.bmiHeader.biCompression != BI_RGB ||
+			m_OrigBMI.bmiHeader.biBitCount != 24))
 			bConverting = TRUE;
 
 		// Set format string
 		CString sFormat = _T("");
-		if (m_pOrigBMI)
-		{
-			if (bMpeg2 && bConverting)
-				sFormat = _T("MPEG2 -> RGB24");
-			else if (bMpeg2)
-				sFormat = _T("MPEG2 -> I420");
-			else if (bConverting)
-				sFormat.Format(_T("%s -> RGB24"), CDib::GetCompressionName(m_pOrigBMI));
-			else
-				sFormat.Format(_T("%s"), CDib::GetCompressionName(m_pOrigBMI));
-		}
+		if (bMpeg2 && bConverting)
+			sFormat = _T("MPEG2 -> RGB24");
+		else if (bMpeg2)
+			sFormat = _T("MPEG2 -> I420");
+		else if (bConverting)
+			sFormat.Format(_T("%s -> RGB24"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
+		else
+			sFormat.Format(_T("%s"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 
 		// Name , Size , Frame rate , Pixel format
 		strInfo.Format(
@@ -7061,8 +7049,8 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 			pApp->WriteProfileInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays);
 
-			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_nMovDetTotalZones);
-			for (int i = 0 ; i < m_nMovDetTotalZones ; i++)
+			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
+			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
 				sZone.Format(_T("DoMovementDetection%03i"), i);
@@ -7259,8 +7247,8 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays, sTempFileName);
 
-			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_nMovDetTotalZones, sTempFileName);
-			for (int i = 0 ; i < m_nMovDetTotalZones ; i++)
+			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
+			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
 				sZone.Format(_T("DoMovementDetection%03i"), i);
@@ -7894,17 +7882,10 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 	m_dFrameRate = m_pVideoAviDoc->m_PlayVideoFileThread.GetFrameRate();
 	m_dEffectiveFrameRate = m_dFrameRate;
 
-	if (m_pOrigBMI)
-		delete [] m_pOrigBMI;
-	m_pOrigBMI = (LPBITMAPINFO) new BYTE[pDib->GetBMISize()];
-	memcpy(m_pOrigBMI, pDib->GetBMI(), pDib->GetBMISize());
-	::EnterCriticalSection(&m_csDib);
-	m_DocRect.top = 0;
-	m_DocRect.left = 0;
-	m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-	m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-	m_pDib->SetBMI(m_pOrigBMI);
-	::LeaveCriticalSection(&m_csDib);
+	// Format and Size
+	memcpy(&m_OrigBMI, pDib->GetBMI(), MIN(sizeof(BITMAPINFOFULL), pDib->GetBMISize()));
+	m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+	m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
 
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
@@ -7934,7 +7915,7 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 void CVideoDeviceDoc::OnCaptureDeinterlace() 
 {
-	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported(m_pOrigBMI) ||
+	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI) ||
 									(m_pDxCapture && m_pDxCapture->IsMpeg2());
 	if (bIsDeinterlaceSupported)
 		m_bDeinterlace = !m_bDeinterlace;
@@ -7950,7 +7931,7 @@ void CVideoDeviceDoc::OnCaptureDeinterlace()
 
 void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI) 
 {
-	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported(m_pOrigBMI) ||
+	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI) ||
 									(m_pDxCapture && m_pDxCapture->IsMpeg2());
 	if (bIsDeinterlaceSupported)
 		pCmdUI->SetCheck(m_bDeinterlace ? 1 : 0);
@@ -8098,10 +8079,8 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		if (stride > 0)
 			SrcBmi.biSizeImage = ::CalcYUVSize(SrcBmi.biCompression, stride, SrcBmi.biHeight);
 	}
-	else if (m_pOrigBMI)
-		memcpy(&SrcBmi, m_pOrigBMI, sizeof(BITMAPINFOHEADER));
 	else
-		return FALSE;
+		memcpy(&SrcBmi, &m_OrigBMI, sizeof(BITMAPINFOHEADER));
 	if (m_dwVideoRecFourCC == BI_RGB)
 	{
 		DstBmi.biBitCount = SrcBmi.biBitCount;
@@ -8498,27 +8477,18 @@ void CVideoDeviceDoc::VfWVideoSourceDialog()
 	}
 }
 
-BOOL CVideoDeviceDoc::OnChangeVideoFormat()
+// Function called from the UI thread and when ProcessFrame() is not called
+void CVideoDeviceDoc::OnChangeVideoFormat()
 {
-	BOOL res;
 	DWORD dwSize;
 
 	if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
 	{
-		dwSize = capGetVideoFormatSize(m_VfWCaptureVideoThread.m_hCapWnd);
-		if (m_pOrigBMI)
-			delete [] m_pOrigBMI;
-		m_pOrigBMI = (LPBITMAPINFO) new BYTE[dwSize];
-		capGetVideoFormat(m_VfWCaptureVideoThread.m_hCapWnd, m_pOrigBMI, dwSize);
-		::EnterCriticalSection(&m_csDib);
-		m_DocRect.top = 0;
-		m_DocRect.left = 0;
-		m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-		m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-		res = m_pDib->SetBMI(m_pOrigBMI);
-		::LeaveCriticalSection(&m_csDib);
-		if (res)
-			SetDocumentTitle();
+		capGetVideoFormat(	m_VfWCaptureVideoThread.m_hCapWnd, &m_OrigBMI,
+							MIN(sizeof(BITMAPINFOFULL), capGetVideoFormatSize(m_VfWCaptureVideoThread.m_hCapWnd)));
+		m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+		m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
+		SetDocumentTitle();
 	}
 	else if (m_pDxCapture)
 	{
@@ -8527,46 +8497,26 @@ BOOL CVideoDeviceDoc::OnChangeVideoFormat()
 		{
 			AM_MEDIA_TYPE* pmtConfig = NULL;
 			if (!m_pDxCapture->GetCurrentFormat(&pmtConfig))
-				return FALSE;
-			if (m_pOrigBMI)
-				delete [] m_pOrigBMI;
-			dwSize = sizeof(BITMAPINFOHEADER);
+				return;
 			MPEG2VIDEOINFO* pMpeg2VideoInfo = NULL;
 			if (pmtConfig->pbFormat && pmtConfig->cbFormat >= sizeof(MPEG2VIDEOINFO))
-			{
 				pMpeg2VideoInfo = (MPEG2VIDEOINFO*)pmtConfig->pbFormat;
-				dwSize = pMpeg2VideoInfo->hdr.bmiHeader.biSize;
-				if (dwSize < sizeof(BITMAPINFOHEADER))
-					dwSize = sizeof(BITMAPINFOHEADER);
-			}
-			m_pOrigBMI = (LPBITMAPINFO)new BYTE[dwSize];
-			memset(m_pOrigBMI, 0, dwSize);
 			if (pMpeg2VideoInfo)
-				memcpy(m_pOrigBMI, &(pMpeg2VideoInfo->hdr.bmiHeader), MIN(dwSize, pMpeg2VideoInfo->hdr.bmiHeader.biSize));
+				memcpy(&m_OrigBMI, &(pMpeg2VideoInfo->hdr.bmiHeader), MIN(sizeof(BITMAPINFOHEADER), pMpeg2VideoInfo->hdr.bmiHeader.biSize));
 			else
 			{
-				m_pOrigBMI->bmiHeader.biSize = dwSize;
-				m_pOrigBMI->bmiHeader.biWidth = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Width();
-				m_pOrigBMI->bmiHeader.biHeight = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Height();
+				m_OrigBMI.bmiHeader.biWidth = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Width();
+				m_OrigBMI.bmiHeader.biHeight = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Height();
 			}
-			m_pOrigBMI->bmiHeader.biPlanes = 1;
-			m_pOrigBMI->bmiHeader.biXPelsPerMeter = 0;
-			m_pOrigBMI->bmiHeader.biYPelsPerMeter = 0;
-			m_pOrigBMI->bmiHeader.biClrImportant = 0;
-			m_pOrigBMI->bmiHeader.biClrUsed = 0;
-			m_pOrigBMI->bmiHeader.biBitCount = 0;
-			m_pOrigBMI->bmiHeader.biCompression = FCC('MPG2');
-			m_pOrigBMI->bmiHeader.biSizeImage = 0;
-			::EnterCriticalSection(&m_csDib);
-			m_DocRect.top = 0;
-			m_DocRect.left = 0;
-			m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-			m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-			res = m_pDib->SetBMI(m_pOrigBMI);
-			::LeaveCriticalSection(&m_csDib);
-			m_AVDecoder.Open((LPBITMAPINFOHEADER)m_pOrigBMI);
-			if (res)
-				SetDocumentTitle();
+			m_OrigBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			m_OrigBMI.bmiHeader.biPlanes = 1;
+			m_OrigBMI.bmiHeader.biBitCount = 0;
+			m_OrigBMI.bmiHeader.biCompression = FCC('MPG2');
+			m_OrigBMI.bmiHeader.biSizeImage = 0;
+			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
+			m_AVDecoder.Open((LPBITMAPINFOHEADER)&m_OrigBMI);
+			SetDocumentTitle();
 			m_pDxCapture->DeleteMediaType(pmtConfig);
 		}
 		// DV
@@ -8584,82 +8534,51 @@ BOOL CVideoDeviceDoc::OnChangeVideoFormat()
 			int nWidth, nHeight;
 			if (m_pDxCapture->GetDVSize(&nWidth, &nHeight))
 			{
-				if (m_pOrigBMI)
-					delete [] m_pOrigBMI;
-				m_pOrigBMI = (LPBITMAPINFO) new BYTE[sizeof(BITMAPINFOHEADER)];
-				memset(m_pOrigBMI, 0, sizeof(BITMAPINFOHEADER));
-				m_pOrigBMI->bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-				m_pOrigBMI->bmiHeader.biWidth =         (LONG)nWidth;
-				m_pOrigBMI->bmiHeader.biHeight =        (LONG)nHeight;
-				m_pOrigBMI->bmiHeader.biPlanes =        1;
-				m_pOrigBMI->bmiHeader.biCompression =   FCC('YUY2');
-				m_pOrigBMI->bmiHeader.biBitCount =		16;
-				int stride = ::CalcYUVStride(m_pOrigBMI->bmiHeader.biCompression, (int)m_pOrigBMI->bmiHeader.biWidth);
-				m_pOrigBMI->bmiHeader.biSizeImage = ::CalcYUVSize(m_pOrigBMI->bmiHeader.biCompression, stride, (int)m_pOrigBMI->bmiHeader.biHeight);
-				::EnterCriticalSection(&m_csDib);
-				m_DocRect.top = 0;
-				m_DocRect.left = 0;
-				m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-				m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-				res = m_pDib->SetBMI(m_pOrigBMI);
-				::LeaveCriticalSection(&m_csDib);
-				if (res)
-					SetDocumentTitle();
+				m_OrigBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
+				m_OrigBMI.bmiHeader.biWidth =			(LONG)nWidth;
+				m_OrigBMI.bmiHeader.biHeight =			(LONG)nHeight;
+				m_OrigBMI.bmiHeader.biPlanes =			1;
+				m_OrigBMI.bmiHeader.biCompression =		FCC('YUY2');
+				m_OrigBMI.bmiHeader.biBitCount =		16;
+				int stride = ::CalcYUVStride(m_OrigBMI.bmiHeader.biCompression, (int)m_OrigBMI.bmiHeader.biWidth);
+				m_OrigBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_OrigBMI.bmiHeader.biCompression, stride, (int)m_OrigBMI.bmiHeader.biHeight);
+				m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+				m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
+				SetDocumentTitle();
 			}
-			else
-				res = FALSE;
 		}
 		else if (m_pDxCapture->IsHCW())
 		{
-			if (m_pOrigBMI)
-				delete [] m_pOrigBMI;
-			m_pOrigBMI = (LPBITMAPINFO) new BYTE[sizeof(BITMAPINFOHEADER)];
-			memset(m_pOrigBMI, 0, sizeof(BITMAPINFOHEADER));
-			m_pOrigBMI->bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-			m_pOrigBMI->bmiHeader.biWidth =         (LONG)m_pDxCapture->GetHCWWidth();
-			m_pOrigBMI->bmiHeader.biHeight =        (LONG)m_pDxCapture->GetHCWHeight();
-			m_pOrigBMI->bmiHeader.biPlanes =        1;
-			m_pOrigBMI->bmiHeader.biCompression =   FCC('I420');
-			m_pOrigBMI->bmiHeader.biBitCount =		12;
-			int stride = ::CalcYUVStride(m_pOrigBMI->bmiHeader.biCompression, (int)m_pOrigBMI->bmiHeader.biWidth);
-			m_pOrigBMI->bmiHeader.biSizeImage = ::CalcYUVSize(m_pOrigBMI->bmiHeader.biCompression, stride, (int)m_pOrigBMI->bmiHeader.biHeight);
-			::EnterCriticalSection(&m_csDib);
-			m_DocRect.top = 0;
-			m_DocRect.left = 0;
-			m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-			m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-			res = m_pDib->SetBMI(m_pOrigBMI);
-			::LeaveCriticalSection(&m_csDib);
-			if (res)
-				SetDocumentTitle();
+			m_OrigBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
+			m_OrigBMI.bmiHeader.biWidth =			(LONG)m_pDxCapture->GetHCWWidth();
+			m_OrigBMI.bmiHeader.biHeight =			(LONG)m_pDxCapture->GetHCWHeight();
+			m_OrigBMI.bmiHeader.biPlanes =			1;
+			m_OrigBMI.bmiHeader.biCompression =		FCC('I420');
+			m_OrigBMI.bmiHeader.biBitCount =		12;
+			int stride = ::CalcYUVStride(m_OrigBMI.bmiHeader.biCompression, (int)m_OrigBMI.bmiHeader.biWidth);
+			m_OrigBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_OrigBMI.bmiHeader.biCompression, stride, (int)m_OrigBMI.bmiHeader.biHeight);
+			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
+			SetDocumentTitle();
 		}
 		else
 		{
 			AM_MEDIA_TYPE* pmtConfig = NULL;
 			if (!m_pDxCapture->GetCurrentFormat(&pmtConfig))
-				return FALSE;
+				return;
 			if (pmtConfig->formattype != FORMAT_VideoInfo	||
 				!pmtConfig->pbFormat						||
 				pmtConfig->cbFormat < sizeof(VIDEOINFOHEADER))
 			{
 				m_pDxCapture->DeleteMediaType(pmtConfig);
-				return FALSE;
+				return;
 			}
-			dwSize = pmtConfig->cbFormat - SIZE_PREHEADER;
+			dwSize = MIN(sizeof(BITMAPINFOFULL), pmtConfig->cbFormat - SIZE_PREHEADER);
 			VIDEOINFOHEADER* pVideoHeader = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-			if (m_pOrigBMI)
-				delete [] m_pOrigBMI;
-			m_pOrigBMI = (LPBITMAPINFO) new BYTE[dwSize];
-			memcpy(m_pOrigBMI, HEADER(pVideoHeader), dwSize);
-			::EnterCriticalSection(&m_csDib);
-			m_DocRect.top = 0;
-			m_DocRect.left = 0;
-			m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-			m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;
-			res = m_pDib->SetBMI(m_pOrigBMI);
-			::LeaveCriticalSection(&m_csDib);
-			if (res)
-				SetDocumentTitle();
+			memcpy(&m_OrigBMI, HEADER(pVideoHeader), dwSize);
+			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
+			SetDocumentTitle();
 			m_pDxCapture->DeleteMediaType(pmtConfig);
 		}
 	}
@@ -8677,24 +8596,15 @@ BOOL CVideoDeviceDoc::OnChangeVideoFormat()
 					GetCurrentImage(&lpBitmapImage) == S_OK)
 		{
 			TempDib.SetBMI((LPBITMAPINFO)lpBitmapImage);
-			if (m_pOrigBMI)
-				delete [] m_pOrigBMI;
-			m_pOrigBMI = (LPBITMAPINFO) new BYTE[TempDib.GetBMISize()];
-			memcpy(m_pOrigBMI, TempDib.GetBMI(), TempDib.GetBMISize());
-			::EnterCriticalSection(&m_csDib);
-			m_DocRect.top = 0;
-			m_DocRect.left = 0;
-			m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth;
-			m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight;			
-			res = m_pDib->SetBMI(m_pOrigBMI);
-			::LeaveCriticalSection(&m_csDib);
-			if (res)
-				SetDocumentTitle();
+			memcpy(&m_OrigBMI, TempDib.GetBMI(), MIN(sizeof(BITMAPINFOFULL), TempDib.GetBMISize()));
+			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
+			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;			
+			SetDocumentTitle();
 			::CoTaskMemFree(lpBitmapImage);
 		}
 	}
 	else
-		return FALSE;
+		return;
 
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
@@ -8718,8 +8628,6 @@ BOOL CVideoDeviceDoc::OnChangeVideoFormat()
 	::PostMessage(	GetView()->GetSafeHwnd(),
 					WM_THREADSAFE_UPDATE_PHPPARAMS,
 					0, 0);
-
-	return res;
 }
 
 void CVideoDeviceDoc::OnChangeFrameRate()
@@ -8783,7 +8691,7 @@ void CVideoDeviceDoc::ResetMovementDetector()
 	m_nMilliSecondsBeforeMovementDetection = 0;
 	m_nBlueMovementDetectionsCount = 0;
 	m_nNoneBlueMovementDetectionsCount = 0;
-	for (int i = 0 ; i < m_nMovDetTotalZones ; i++)
+	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 		m_MovementDetections[i] = FALSE;
 }
 
@@ -10083,10 +9991,10 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		return FALSE;
 
 	// Is YUV?
-	if (::IsSupportedYuvToRgbFormat(m_pOrigBMI->bmiHeader.biCompression))
+	if (::IsSupportedYuvToRgbFormat(m_OrigBMI.bmiHeader.biCompression))
 	{
 		// De-Interlace Supported?
-		BOOL bDoDeinterlace = (m_bDeinterlace && IsDeinterlaceSupported(m_pOrigBMI));
+		BOOL bDoDeinterlace = (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI));
 		CDib* pTmpDib = NULL;
 		if (bDoDeinterlace)
 		{
@@ -10094,15 +10002,15 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 			if (!pTmpDib)
 				return FALSE;
 			pTmpDib->SetShowMessageBoxOnError(FALSE);
-			if (Deinterlace(pTmpDib, m_pOrigBMI, pSrcBits))
+			if (Deinterlace(pTmpDib, (LPBITMAPINFO)&m_OrigBMI, pSrcBits))
 				pSrcBits = pTmpDib->GetBits();
 		}
 
 		// Allocate Bits
 		if (!pDstDib->AllocateBitsFast(	24,
 										BI_RGB,
-										m_pOrigBMI->bmiHeader.biWidth,
-										m_pOrigBMI->bmiHeader.biHeight))
+										m_OrigBMI.bmiHeader.biWidth,
+										m_OrigBMI.bmiHeader.biHeight))
 		{
 			if (pTmpDib)
 				delete pTmpDib;
@@ -10110,7 +10018,7 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		}
 
 		// Decode
-		if (!::YUVToRGB24(	m_pOrigBMI->bmiHeader.biCompression,
+		if (!::YUVToRGB24(	m_OrigBMI.bmiHeader.biCompression,
 							pSrcBits,
 							pDstDib->GetBits(),
 							pDstDib->GetWidth(),
@@ -10126,7 +10034,7 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 			delete pTmpDib;
 	}
 	// Mpeg 2 Video?
-	else if (m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'))
+	else if (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
 	{	
 		// Decode
 		BITMAPINFO Bmi;
@@ -10151,11 +10059,11 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 
 		// Update Size
 		if (res == 1 &&
-			(m_pOrigBMI->bmiHeader.biWidth != pDstDib->GetWidth() ||
-			m_pOrigBMI->bmiHeader.biHeight != pDstDib->GetHeight()))
+			(m_OrigBMI.bmiHeader.biWidth != pDstDib->GetWidth() ||
+			m_OrigBMI.bmiHeader.biHeight != pDstDib->GetHeight()))
 		{
-			m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth = pDstDib->GetWidth();
-			m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight = pDstDib->GetHeight();
+			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth = pDstDib->GetWidth();
+			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight = pDstDib->GetHeight();
 			if (m_bSizeToDoc)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),
@@ -10177,7 +10085,7 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 	else
 	{
 		// Set BMI & Bits
-		pDstDib->SetBMI(m_pOrigBMI);
+		pDstDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
 		pDstDib->SetBits(pSrcBits, dwSrcSize);
 
 		// Decompress to 24 bpp
@@ -10218,11 +10126,11 @@ BOOL CVideoDeviceDoc::DecodeMpeg2Frame(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* p
 
 	// Update Size
 	if (res == 1 &&
-		(m_pOrigBMI->bmiHeader.biWidth != pDstDib->GetWidth() ||
-		m_pOrigBMI->bmiHeader.biHeight != pDstDib->GetHeight()))
+		(m_OrigBMI.bmiHeader.biWidth != pDstDib->GetWidth() ||
+		m_OrigBMI.bmiHeader.biHeight != pDstDib->GetHeight()))
 	{
-		m_DocRect.right = m_pOrigBMI->bmiHeader.biWidth = pDstDib->GetWidth();
-		m_DocRect.bottom = m_pOrigBMI->bmiHeader.biHeight = pDstDib->GetHeight();
+		m_DocRect.right = m_OrigBMI.bmiHeader.biWidth = pDstDib->GetWidth();
+		m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight = pDstDib->GetHeight();
 		if (m_bSizeToDoc)
 		{
 			::PostMessage(	GetView()->GetSafeHwnd(),
@@ -10246,7 +10154,7 @@ __forceinline BOOL CVideoDeviceDoc::IsDeinterlaceSupported(LPBITMAPINFO pBmi)
 {
 	if (pBmi)
 	{
-		PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pBmi);
+		PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
 		if (((pBmi->bmiHeader.biWidth & 3) == 0)	&&
 			((pBmi->bmiHeader.biHeight & 3) == 0))
 		{
@@ -10264,7 +10172,7 @@ __forceinline BOOL CVideoDeviceDoc::IsDeinterlaceSupported(CDib* pDib)
 {
 	if (pDib)
 	{
-		PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pDib->GetBMI());
+		PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
 		if (((pDib->GetWidth() & 3) == 0)	&&
 			((pDib->GetHeight() & 3) == 0))
 		{
@@ -10283,7 +10191,7 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 	if (!pDib)
 		return FALSE;
 	AVPicture Frame;
-	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pDib->GetBMI());
+	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
 	avpicture_fill(	&Frame,
 					(uint8_t*)pDib->GetBits(),
 					pix_fmt,
@@ -10303,7 +10211,7 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pS
 		return FALSE;
 
 	// Get Pix Format
-	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pSrcBMI);
+	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
 
 	// Allocate Dst Bits
 	pDstDib->AllocateBitsFast(	pSrcBMI->bmiHeader.biBitCount,
@@ -10390,19 +10298,18 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		BOOL bOk;
 		BOOL bDecodeToRgb24 = FALSE;
 		BOOL bDecodeMpeg2 = FALSE;
-		BOOL bMpeg2 = m_pOrigBMI && (m_pOrigBMI->bmiHeader.biCompression == FCC('MPG2'));
+		BOOL bMpeg2 = (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'));
 		BOOL bAVCodecSrcFormatSupport = TRUE;
-		if (m_pOrigBMI && !bMpeg2 && CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(m_pOrigBMI) == PIX_FMT_NONE)
+		if (!bMpeg2 && CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
-		BOOL bIsAddSingleLineSupported = bMpeg2 || CDib::IsAddSingleLineTextSupported(m_pOrigBMI);
+		BOOL bIsAddSingleLineSupported = bMpeg2 || CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_OrigBMI);
 		if ((VideoProcessorMode & COLOR_DETECTOR)				||
 			(m_bShowFrameTime && !bIsAddSingleLineSupported)	||
 			m_bDecodeFramesForPreview							||
 			!bAVCodecSrcFormatSupport)
 		{
-			if (m_pOrigBMI &&
-				((m_pOrigBMI->bmiHeader.biBitCount != 24) ||
-				(m_pOrigBMI->bmiHeader.biCompression != BI_RGB)))
+			if (m_OrigBMI.bmiHeader.biBitCount != 24 ||
+				m_OrigBMI.bmiHeader.biCompression != BI_RGB)
 				bDecodeToRgb24 = TRUE;
 		}
 		else if (bMpeg2)
@@ -10450,11 +10357,11 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			pDib->SetShowMessageBoxOnError(FALSE);
 
 			// Copy Bits
-			pDib->SetBMI(m_pOrigBMI);
+			pDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
 			pDib->SetBits(pData, dwSize);
 
 			// De-Interlace
-			if (m_bDeinterlace && IsDeinterlaceSupported(m_pOrigBMI))
+			if (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI))
 				Deinterlace(pDib);
 		}
 
@@ -10773,9 +10680,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			}
 		}
 
-		// Update m_pDib
+		// Update m_pDib pointer with new one
 		::EnterCriticalSection(&m_csDib);
-		*m_pDib = *pDib;
+		delete m_pDib;
+		m_pDib = pDib;
 		::LeaveCriticalSection(&m_csDib);
 
 		// Draw
@@ -10784,9 +10692,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		GetView()->Draw();
 		if (bCleanupCOM)
 			::CoUninitialize();
-
-		// Free
-		delete pDib;
 
 		// Set started flag and open the Settings dialog
 		// if it's the first run of this device (leave this code
@@ -11460,8 +11365,8 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	// Vars
 	double dDetectionLevel = (101 - nDetectionLevel) / 1000.0;
 	int i, x, y;
-	int nZoneWidth = pDib->GetWidth() / m_nMovDetXZonesCount;
-	int nZoneHeight = pDib->GetHeight() / m_nMovDetYZonesCount;
+	int nZoneWidth = pDib->GetWidth() / m_lMovDetXZonesCount;
+	int nZoneHeight = pDib->GetHeight() / m_lMovDetYZonesCount;
 
 	// 235 is the MAX Y value, 16 is the MIN Y value
 	// -> The maximum reachable difference is 235 - 16
@@ -11472,11 +11377,11 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * 256;	// Guessed value, because there is the contribution of the chroma components!
 
 	// Calculate the Intensities of all the zones
-	for (y = 0 ; y < m_nMovDetYZonesCount ; y++)
+	for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
 	{
-		for (x = 0 ; x < m_nMovDetXZonesCount ; x++)
+		for (x = 0 ; x < m_lMovDetXZonesCount ; x++)
 		{
-			m_MovementDetectorCurrentIntensity[y*m_nMovDetXZonesCount+x] = SummRectArea(pDib,
+			m_MovementDetectorCurrentIntensity[y*m_lMovDetXZonesCount+x] = SummRectArea(pDib,
 																						bPlanar,
 																						pDib->GetWidth(),
 																						x*nZoneWidth,	// start pixel in x direction
@@ -11494,7 +11399,7 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 		
 		// Single Zone Detection and Current Time Set
 		BOOL bSingleZoneDetection = FALSE;
-		for (i = 0 ; i < m_nMovDetTotalZones ; i++)
+		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 		{
 			if (m_MovementDetectorCurrentIntensity[i] > Round(dDetectionLevel * nMaxIntensityPerZone))
 			{
@@ -11508,7 +11413,7 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 		// Clear Old Detection Zones and Count Detection Zones
 		int nBlueMovementDetectionsCount = 0;
 		int nNoneBlueMovementDetectionsCount = 0;
-		for (i = 0 ; i < m_nMovDetTotalZones ; i++)
+		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 		{
 			if (m_MovementDetections[i]	&&
 				(dwCurrentUpTime - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
@@ -11530,68 +11435,68 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 		BOOL bAdjacentZonesDetection = FALSE;
 		if (bSingleZoneDetection && m_bDoAdjacentZonesDetection)
 		{
-			for (y = 0 ; y < m_nMovDetYZonesCount ; y++)
+			for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
 			{
-				for (x = 0 ; x < m_nMovDetXZonesCount ; x++)
+				for (x = 0 ; x < m_lMovDetXZonesCount ; x++)
 				{
-					if (m_DoMovementDetection[y*m_nMovDetXZonesCount+x] && m_MovementDetections[y*m_nMovDetXZonesCount+x])
+					if (m_DoMovementDetection[y*m_lMovDetXZonesCount+x] && m_MovementDetections[y*m_lMovDetXZonesCount+x])
 					{
 						if (x > 0													&&
 							y > 0													&&
-							m_DoMovementDetection[(y-1)*m_nMovDetXZonesCount+(x-1)]	&&
-							m_MovementDetections[(y-1)*m_nMovDetXZonesCount+(x-1)])
+							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+(x-1)]	&&
+							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+(x-1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
 						if (y > 0													&&
-							m_DoMovementDetection[(y-1)*m_nMovDetXZonesCount+x]		&&
-							m_MovementDetections[(y-1)*m_nMovDetXZonesCount+x])
+							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+x]		&&
+							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+x])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
 						if (y > 0													&&
-							x < (m_nMovDetXZonesCount - 1)							&&
-							m_DoMovementDetection[(y-1)*m_nMovDetXZonesCount+(x+1)]	&&
-							m_MovementDetections[(y-1)*m_nMovDetXZonesCount+(x+1)])
+							x < (m_lMovDetXZonesCount - 1)							&&
+							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+(x+1)]	&&
+							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+(x+1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
 						if (x > 0													&&
-							m_DoMovementDetection[y*m_nMovDetXZonesCount+(x-1)]		&&
-							m_MovementDetections[y*m_nMovDetXZonesCount+(x-1)])
+							m_DoMovementDetection[y*m_lMovDetXZonesCount+(x-1)]		&&
+							m_MovementDetections[y*m_lMovDetXZonesCount+(x-1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
-						if (x < (m_nMovDetXZonesCount - 1)							&&
-							m_DoMovementDetection[y*m_nMovDetXZonesCount+(x+1)]		&&
-							m_MovementDetections[y*m_nMovDetXZonesCount+(x+1)])
+						if (x < (m_lMovDetXZonesCount - 1)							&&
+							m_DoMovementDetection[y*m_lMovDetXZonesCount+(x+1)]		&&
+							m_MovementDetections[y*m_lMovDetXZonesCount+(x+1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
 						if (x > 0													&&
-							y < (m_nMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_nMovDetXZonesCount+(x-1)]	&&
-							m_MovementDetections[(y+1)*m_nMovDetXZonesCount+(x-1)])
+							y < (m_lMovDetYZonesCount - 1)							&&
+							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+(x-1)]	&&
+							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+(x-1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
-						if (y < (m_nMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_nMovDetXZonesCount+x]		&&
-							m_MovementDetections[(y+1)*m_nMovDetXZonesCount+x])
+						if (y < (m_lMovDetYZonesCount - 1)							&&
+							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+x]		&&
+							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+x])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
 						}
-						if (x < (m_nMovDetXZonesCount - 1)							&&
-							y < (m_nMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_nMovDetXZonesCount+(x+1)]	&&
-							m_MovementDetections[(y+1)*m_nMovDetXZonesCount+(x+1)])
+						if (x < (m_lMovDetXZonesCount - 1)							&&
+							y < (m_lMovDetYZonesCount - 1)							&&
+							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+(x+1)]	&&
+							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+(x+1)])
 						{
 							bAdjacentZonesDetection = TRUE;
 							break;
@@ -11841,7 +11746,7 @@ void CVideoDeviceDoc::OnViewDetections()
 
 void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && m_nMovDetTotalZones > 0);
+	pCmdUI->Enable(m_bCapture && m_lMovDetTotalZones > 0);
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
@@ -11860,7 +11765,7 @@ void CVideoDeviceDoc::OnViewDetectionZones()
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && m_nMovDetTotalZones > 0);
+	pCmdUI->Enable(m_bCapture && m_lMovDetTotalZones > 0);
 	pCmdUI->SetCheck(m_bShowEditDetectionZones ? 1 : 0);
 }
 
@@ -12961,7 +12866,7 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 	// Fill Src Frame
 	avpicture_fill(	(AVPicture*)m_pFrame,
 					(uint8_t*)pBits,
-					CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pDib->GetBMI()),
+					CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI()),
 					pDib->GetWidth(),
 					pDib->GetHeight());
 
@@ -13216,7 +13121,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 		// Prepare Image Conversion Context
 		m_pImgConvertCtx = sws_getContext(	pBMI->biWidth,			// Source Width
 											pBMI->biHeight,			// Source Height
-											CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat((LPBITMAPINFO)pBMI), // Source Format
+											CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)pBMI), // Source Format
 											m_pCodecCtx->width,		// Destination Width
 											m_pCodecCtx->height,	// Destination Height
 											m_pCodecCtx->pix_fmt,	// Destination Format
@@ -14371,25 +14276,17 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 			m_pDoc->m_DocRect.Width() != m_pCodecCtx->width	||
 			m_pDoc->m_DocRect.Height() != m_pCodecCtx->height)
 		{
-			if (m_pDoc->m_pOrigBMI)
-				delete [] m_pDoc->m_pOrigBMI;
-			m_pDoc->m_pOrigBMI = (LPBITMAPINFO) new BYTE[sizeof(BITMAPINFOHEADER)];
-			if (!m_pDoc->m_pOrigBMI)
-				return FALSE;
-			memset(m_pDoc->m_pOrigBMI, 0, sizeof(BITMAPINFOHEADER));
-			m_pDoc->m_pOrigBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pDoc->m_pOrigBMI->bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
-			m_pDoc->m_pOrigBMI->bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
-			m_pDoc->m_pOrigBMI->bmiHeader.biPlanes = 1; // must be 1
-			m_pDoc->m_pOrigBMI->bmiHeader.biBitCount = 12;
-			m_pDoc->m_pOrigBMI->bmiHeader.biCompression = FCC('I420');    
-			m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage = avpicture_get_size(	PIX_FMT_YUV420P,
+			m_pDoc->m_OrigBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			m_pDoc->m_OrigBMI.bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
+			m_pDoc->m_OrigBMI.bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
+			m_pDoc->m_OrigBMI.bmiHeader.biPlanes = 1; // must be 1
+			m_pDoc->m_OrigBMI.bmiHeader.biBitCount = 12;
+			m_pDoc->m_OrigBMI.bmiHeader.biCompression = FCC('I420');    
+			m_pDoc->m_OrigBMI.bmiHeader.biSizeImage = avpicture_get_size(	PIX_FMT_YUV420P,
 																			m_pCodecCtx->width,
 																			m_pCodecCtx->height);
-			m_pDoc->m_DocRect.top = 0;
-			m_pDoc->m_DocRect.left = 0;
-			m_pDoc->m_DocRect.right = m_pDoc->m_pOrigBMI->bmiHeader.biWidth;
-			m_pDoc->m_DocRect.bottom = m_pDoc->m_pOrigBMI->bmiHeader.biHeight;
+			m_pDoc->m_DocRect.right = m_pDoc->m_OrigBMI.bmiHeader.biWidth;
+			m_pDoc->m_DocRect.bottom = m_pDoc->m_OrigBMI.bmiHeader.biHeight;
 			m_CodecId = CodecId;
 			m_pDoc->m_bCapture = TRUE;
 			m_bFirstFrame = FALSE;
@@ -14453,13 +14350,13 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 			}
 			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
 			m_pDoc->ProcessFrame(	(LPBYTE)(m_pOutbuf),
-									m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage);
+									m_pDoc->m_OrigBMI.bmiHeader.biSizeImage);
 		}
 		else
 		{
 			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
 			m_pDoc->ProcessFrame(	(LPBYTE)(m_pFrame->data[0]),
-									m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage);
+									m_pDoc->m_OrigBMI.bmiHeader.biSizeImage);
 		}
 		return TRUE;
 	}
@@ -15737,26 +15634,15 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		if (m_pDoc->m_DocRect.right != m_pCodecCtx->width ||
 			m_pDoc->m_DocRect.bottom != m_pCodecCtx->height)
 		{
-			if (m_pDoc->m_pOrigBMI)
-				delete [] m_pDoc->m_pOrigBMI;
-			m_pDoc->m_pOrigBMI = (LPBITMAPINFO) new BYTE[sizeof(BITMAPINFOHEADER)];
-			if (!m_pDoc->m_pOrigBMI)
-			{
-				::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
-				return TRUE; // Auto-Delete pLinBuf
-			}
-			memset(m_pDoc->m_pOrigBMI, 0, sizeof(BITMAPINFOHEADER));
-			m_pDoc->m_pOrigBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pDoc->m_pOrigBMI->bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
-			m_pDoc->m_pOrigBMI->bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
-			m_pDoc->m_pOrigBMI->bmiHeader.biPlanes = 1; // must be 1
-			m_pDoc->m_pOrigBMI->bmiHeader.biBitCount = 12;
-			m_pDoc->m_pOrigBMI->bmiHeader.biCompression = FCC('I420');    
-			m_pDoc->m_pOrigBMI->bmiHeader.biSizeImage = m_dwI420ImageSize;
-			m_pDoc->m_DocRect.top = 0;
-			m_pDoc->m_DocRect.left = 0;
-			m_pDoc->m_DocRect.right = m_pDoc->m_pOrigBMI->bmiHeader.biWidth;
-			m_pDoc->m_DocRect.bottom = m_pDoc->m_pOrigBMI->bmiHeader.biHeight;
+			m_pDoc->m_OrigBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			m_pDoc->m_OrigBMI.bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
+			m_pDoc->m_OrigBMI.bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
+			m_pDoc->m_OrigBMI.bmiHeader.biPlanes = 1; // must be 1
+			m_pDoc->m_OrigBMI.bmiHeader.biBitCount = 12;
+			m_pDoc->m_OrigBMI.bmiHeader.biCompression = FCC('I420');    
+			m_pDoc->m_OrigBMI.bmiHeader.biSizeImage = m_dwI420ImageSize;
+			m_pDoc->m_DocRect.right = m_pDoc->m_OrigBMI.bmiHeader.biWidth;
+			m_pDoc->m_DocRect.bottom = m_pDoc->m_OrigBMI.bmiHeader.biHeight;
 			m_pDoc->m_bCapture = TRUE;
 
 			// Make sure the video size is set correctly

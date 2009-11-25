@@ -447,7 +447,7 @@ int CAVDecoder::Decode(	LPBYTE pSrcBits,	// Compressed Mpeg2 Data
 BOOL CAVDecoder::InitImgConvert(CDib* pDstDib)
 {
 	// Get Pix Format
-	enum PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIHToPixFormat(pDstDib->GetBMI());
+	enum PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
 	
 	// Determine required buffer size and allocate buffer if necessary
 	int nBufSize = avpicture_get_size(	pix_fmt,

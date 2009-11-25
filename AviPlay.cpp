@@ -3654,7 +3654,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		}
 
 		// Get Pix Format
-		enum PixelFormat pix_fmt = AVCodecBMIHToPixFormat(m_pDstBMI);
+		enum PixelFormat pix_fmt = AVCodecBMIToPixFormat(m_pDstBMI);
 		
 		// Determine required buffer size and allocate buffer if necessary
 		int nBufSize = avpicture_get_size(	pix_fmt,

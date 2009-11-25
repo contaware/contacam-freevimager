@@ -70,8 +70,8 @@ class CMovementDetectionPage;
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
 
 // Watchdog
-#define WATCHDOG_DRAW_THRESHOLD				180U		// ms
-#define WATCHDOG_CHECK_TIME					80U			// ms
+#define WATCHDOG_DRAW_THRESHOLD				300U		// ms
+#define WATCHDOG_CHECK_TIME					110U		// ms
 #define WATCHDOG_THRESHOLD					15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
 #define HTTPWATCHDOG_RETRY_TIMEOUT			35000U		// ms, all re-connects after 35s
 
@@ -98,6 +98,7 @@ class CMovementDetectionPage;
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
+#define MOVDET_MAX_ZONES					1024		// Maximum Number of zones
 #define MOVDET_MIN_ZONESX					10			// Minimum Number of zones in X direction
 #define MOVDET_MIN_ZONESY					8			// Minimum Number of zones in Y direction
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
@@ -1344,7 +1345,7 @@ public:
 	__forceinline DWORD GetColorDetectionWaitTime() const {return m_dwColorDetectionWaitTime;};
 
 	// Functin called when the video grabbing format has been changed
-	BOOL OnChangeVideoFormat();
+	void OnChangeVideoFormat();
 
 	// Get Vfw Capture Driver Information
 	static BOOL GetCaptureDriverDescription(WORD nIndex, CString& sName, CString& sVersion);
@@ -1475,6 +1476,12 @@ protected:
 
 // Public Variables
 public:
+	// Bitmap info full struct
+	typedef struct tagBITMAPINFOFULL {
+		BITMAPINFOHEADER    bmiHeader;
+		RGBQUAD             bmiColors[256];
+	} BITMAPINFOFULL;
+
 	// General Vars
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
@@ -1488,7 +1495,7 @@ public:
 	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessFrame()
 	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
-	LPBITMAPINFO m_pOrigBMI;							// Original BMI of Frame
+	BITMAPINFOFULL m_OrigBMI;							// Original BMI of Frame
 	volatile BOOL m_bCapture;							// Flag indicating whether the grabbing device is running
 	volatile LONG m_bCaptureStarted;					// Flag set when first frame has been processed 
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
@@ -1688,7 +1695,6 @@ public:
 	volatile BOOL m_bWaitExecCommandMovementDetection;	// Wait that last command has terminated
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
 	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
-	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones
 	volatile BOOL m_bMovementDetectorPreview;			// Enable Preview
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	CDib* volatile m_pMovementDetectorY800Dib;			// If source Dib is in RGB format that's the converted Y800 Dib
@@ -1698,13 +1704,14 @@ public:
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
 	volatile DWORD m_dwAnimatedGifSpeedMul;				// Speed multiplier of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
+	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone
 	BOOL* volatile m_MovementDetections;				// Detecting in Zone
 	BOOL* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone
 	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor
-	volatile int m_nMovDetXZonesCount;					// Number of zones in X direction
-	volatile int m_nMovDetYZonesCount;					// Number of zones in Y direction
-	volatile int m_nMovDetTotalZones;					// Total Number of zones
+	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction
+	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction
+	volatile LONG m_lMovDetTotalZones;					// Total Number of zones
 	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
 	volatile BOOL m_bDoFalseDetectionCheck;				// Do a false detection check if set
 	volatile BOOL m_bDoFalseDetectionAnd;				// And / Or between Blue and None Blue zones
