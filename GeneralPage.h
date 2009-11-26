@@ -66,7 +66,6 @@ public:
 	BOOL	m_bPostRec;
 	int		m_nVideoPostRecKeyframesRate;
 	int		m_nVideoPostRecDataRate;
-	BOOL	m_bPostRecDeinterlace;
 	int		m_nVideoRecQualityBitrate;
 	int		m_nVideoPostRecQualityBitrate;
 	BOOL	m_bRecTimeSegmentation;
@@ -116,7 +115,6 @@ protected:
 	afx_msg void OnChangeEditPostrecDatarate();
 	afx_msg void OnChangeEditPostrecKeyframesRate();
 	afx_msg void OnSelchangeVideoPostrecCompressionChoose();
-	afx_msg void OnCheckPostrecDeinterlace();
 	afx_msg void OnRadioQuality();
 	afx_msg void OnRadioPostrecQuality();
 	afx_msg void OnRadioBitrate();

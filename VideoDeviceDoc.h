@@ -1593,7 +1593,6 @@ public:
 	volatile float m_fVideoPostRecQuality;				// 2.0f best quality, 31.0f worst quality
 	volatile int m_nVideoPostRecQualityBitrate;			// 0 -> use quality, 1 -> use bitrate
 	volatile BOOL m_bPostRec;							// Enable / Disable Post Recording Compress
-	volatile BOOL m_bPostRecDeinterlace;				// Post Recording De-Interlace
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	// Get Frame Networking for both UDP and HTTP

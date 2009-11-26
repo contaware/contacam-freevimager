@@ -76,7 +76,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_POSTREC, m_bPostRec);
 	DDX_Text(pDX, IDC_EDIT_POSTREC_KEYFRAMES_RATE, m_nVideoPostRecKeyframesRate);
 	DDX_Text(pDX, IDC_EDIT_POSTREC_DATARATE, m_nVideoPostRecDataRate);
-	DDX_Check(pDX, IDC_CHECK_POSTREC_DEINTERLACE, m_bPostRecDeinterlace);
 	DDX_Radio(pDX, IDC_RADIO_QUALITY, m_nVideoRecQualityBitrate);
 	DDX_Radio(pDX, IDC_RADIO_POSTREC_QUALITY, m_nVideoPostRecQualityBitrate);
 	DDX_Check(pDX, IDC_CHECK_TIME_SEGMENTATION, m_bRecTimeSegmentation);
@@ -117,7 +116,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_POSTREC_DATARATE, OnChangeEditPostrecDatarate)
 	ON_EN_CHANGE(IDC_EDIT_POSTREC_KEYFRAMES_RATE, OnChangeEditPostrecKeyframesRate)
 	ON_CBN_SELCHANGE(IDC_VIDEO_POSTREC_COMPRESSION_CHOOSE, OnSelchangeVideoPostrecCompressionChoose)
-	ON_BN_CLICKED(IDC_CHECK_POSTREC_DEINTERLACE, OnCheckPostrecDeinterlace)
 	ON_BN_CLICKED(IDC_RADIO_QUALITY, OnRadioQuality)
 	ON_BN_CLICKED(IDC_RADIO_POSTREC_QUALITY, OnRadioPostrecQuality)
 	ON_BN_CLICKED(IDC_RADIO_BITRATE, OnRadioBitrate)
@@ -218,13 +216,6 @@ void CGeneralPage::OnAudioFormat()
 
 void CGeneralPage::ShowHideCtrls()
 {
-	// De-Interlace
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DEINTERLACE);
-	if (m_VideoCompressionFcc[m_VideoCompressionChoose.GetCurSel()] == BI_RGB)
-		pCheck->ShowWindow(SW_HIDE);
-	else
-		pCheck->ShowWindow(SW_SHOW);
-
 	// Keyframes Rate
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
 	if (m_VideoCompressionKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
@@ -377,7 +368,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_bPostRec = FALSE;
 	m_nVideoPostRecKeyframesRate = 0;
 	m_nVideoPostRecDataRate = 0;
-	m_bPostRecDeinterlace = FALSE;
 	m_nVideoRecQualityBitrate = 0;
 	m_nVideoPostRecQualityBitrate = 0;
 	m_bRecTimeSegmentation = FALSE;
@@ -411,7 +401,6 @@ BOOL CGeneralPage::OnInitDialog()
 	
 	// Init Post Rec Vars
 	m_bPostRec = m_pDoc->m_bPostRec;
-	m_bPostRecDeinterlace = m_pDoc->m_bPostRecDeinterlace;
 	m_nVideoPostRecKeyframesRate = m_pDoc->m_nVideoPostRecKeyframesRate;
 	m_nVideoPostRecDataRate = m_pDoc->m_nVideoPostRecDataRate / 1000;
 	m_nVideoPostRecQualityBitrate = m_pDoc->m_nVideoPostRecQualityBitrate;
@@ -1346,12 +1335,6 @@ void CGeneralPage::OnCheckPostrec()
 	m_pDoc->m_bPostRec = m_bPostRec;
 }
 
-void CGeneralPage::OnCheckPostrecDeinterlace() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bPostRecDeinterlace = m_bPostRecDeinterlace;
-}
-
 void CGeneralPage::OnCheckAutorun() 
 {
 	UpdateData(TRUE);
@@ -1625,10 +1608,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	// Data Rate Radio Button 
 	pRadio = (CButton*)GetDlgItem(IDC_RADIO_POSTREC_BITRATE);
 	pRadio->EnableWindow(bEnable);
-
-	// Video Compression De-Interlace Check Box?
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_POSTREC_DEINTERLACE);
-	pCheck->EnableWindow(bEnable);
 }
 
 void CGeneralPage::OnAudioInput() 

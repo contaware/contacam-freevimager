@@ -162,7 +162,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CTime RefTime = CTime::GetCurrentTime();
 		DWORD dwRefUpTime = ::timeGetTime();
 		DWORD dwTimeDifference = dwRefUpTime - dwFirstUpTime;
-		CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+		CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
 		CTime FirstTime = RefTime - TimeSpan;
 		CString sTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 		
@@ -3418,7 +3418,7 @@ BOOL CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	BOOL res1, res2;
 	
 	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
-	CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
 	RefTime -= TimeSpan;
 
 	CRect rcRect;
@@ -6031,7 +6031,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
 	m_bRecDeinterlace = FALSE;
-	m_bPostRecDeinterlace = FALSE;
 	memset(&m_OrigBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
 	m_dEffectiveFrameRate = 0.0;
@@ -6687,7 +6686,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
 	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
 	m_bRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("RecDeinterlace"), FALSE);
-	m_bPostRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("PostRecDeinterlace"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecSizeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecSizeSegmentation"), FALSE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
@@ -6952,7 +6950,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
 			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace);
-			pApp->WriteProfileInt(sSection, _T("PostRecDeinterlace"), m_bPostRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
@@ -7151,7 +7148,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("PostRecDeinterlace"), m_bPostRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
@@ -8098,7 +8094,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
 	else
 		FrameRate = av_d2q(m_dFrameRate, MAX_SIZE_FOR_RATIONAL);
-	if (m_dwVideoRecFourCC == BI_RGB)
+	if (m_dwVideoRecFourCC == BI_RGB && !m_bRecDeinterlace)
 	{
 		if ((*ppAVRec)->AddRawVideoStream(	(LPBITMAPINFO)(&SrcBmi),	// Video Format
 											sizeof(BITMAPINFOHEADER),	// Video Format Size
@@ -10473,7 +10469,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			if (m_pAVRec)
 			{
 				// Add Frame
-				if (m_dwVideoRecFourCC == BI_RGB)
+				if (m_dwVideoRecFourCC == BI_RGB && !m_bRecDeinterlace)
 				{
 					if (bShowFrameTime)
 					{
@@ -11057,7 +11053,7 @@ __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
 			pPostRecParams->m_nVideoCompressorDataRate = m_nVideoPostRecDataRate;
 			pPostRecParams->m_nVideoCompressorKeyframesRate = m_nVideoPostRecKeyframesRate;
 			pPostRecParams->m_nVideoCompressorQualityBitrate = m_nVideoPostRecQualityBitrate;
-			pPostRecParams->m_bDeinterlace = m_bPostRecDeinterlace;
+			pPostRecParams->m_bDeinterlace = FALSE;
 			pPostRecParams->m_bCloseWhenDone = !(m_bRecAutoOpen && m_bRecAutoOpenAllowed);
 			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 							WM_THREADSAFE_OPEN_DOC,
@@ -11088,7 +11084,7 @@ __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
 				pPostRecParams->m_nVideoCompressorDataRate = m_nVideoPostRecDataRate;
 				pPostRecParams->m_nVideoCompressorKeyframesRate = m_nVideoPostRecKeyframesRate;
 				pPostRecParams->m_nVideoCompressorQualityBitrate = m_nVideoPostRecQualityBitrate;
-				pPostRecParams->m_bDeinterlace = m_bPostRecDeinterlace;
+				pPostRecParams->m_bDeinterlace = FALSE;
 				pPostRecParams->m_bCloseWhenDone = !(m_bRecAutoOpen && m_bRecAutoOpenAllowed);
 				::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 								WM_THREADSAFE_OPEN_DOC,
@@ -12800,7 +12796,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::AddFrameTime(	LPBYTE pBits,
 	TmpDib.SetDibPointers((LPBITMAPINFO)(&Bmi), pBits, dwSizeImage);
 	BOOL res1, res2;
 	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
 	RefTime -= TimeSpan;
 
 	CRect rcRect;

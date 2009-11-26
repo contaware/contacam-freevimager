@@ -1456,7 +1456,7 @@ bool CAVRec::AddFrameTime(	LPBYTE pBits,
 	TmpDib.SetDibPointers((LPBITMAPINFO)(&Bmi), pBits, dwSizeImage);
 	BOOL res1, res2;
 	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
 	RefTime -= TimeSpan;
 
 	CRect rcRect;
@@ -1843,6 +1843,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 		}
 
 		// Add Frame Time here if not De-Interlacing
+		// Attention: time is added to the source bits!
 		if (bAddFrameTime && !bSrcDeinterlace && !bDstDeinterlace)
 		{
 			AddFrameTime(	pBits,
