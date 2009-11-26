@@ -232,9 +232,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 				}
 				else if (pDstVideoFormat->bmiHeader.biBitCount == 16)
 				{
-					pix_fmt = PIX_FMT_NONE; // This makes a BI_RGB tag,
-											// do not set PIX_FMT_RGB555 otherwise (because codec_tag is 0)
-											// we get a incompatible MKTAG('R', 'G', 'B', 15) (see raw.c)
+					pix_fmt = PIX_FMT_RGB555;
 					pCodecCtx->bits_per_coded_sample = 16;
 				}
 				else if (pDstVideoFormat->bmiHeader.biBitCount == 8)
@@ -302,9 +300,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 					else
 					{
 						pCodecCtx->codec_tag = BI_RGB;
-						pix_fmt = PIX_FMT_NONE; // This makes a BI_RGB tag,
-												// do not set PIX_FMT_RGB555 otherwise (because codec_tag is 0)
-												// we get a incompatible MKTAG('R', 'G', 'B', 15) (see raw.c)
+						pix_fmt = PIX_FMT_RGB555;
 					}
 					pCodecCtx->bits_per_coded_sample = 16;
 				}
@@ -686,6 +682,11 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
         }
     }
 
+	// Store codec_tag for raw video encoder
+	unsigned int rawvideo_codec_tag = 0;
+	if (pCodecCtx->codec_id == CODEC_ID_RAWVIDEO)
+		rawvideo_codec_tag = pCodecCtx->codec_tag;
+
 	// Open the video codec
 	if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
 	{
@@ -731,7 +732,15 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		}
 	}
 	else
+	{
+		// Restore codec_tag because raw_init_encoder() under
+		// rawenc.c changes the codec_tag if this is BI_RGB (=0)
+		if (pCodecCtx->codec_id == CODEC_ID_RAWVIDEO)
+			pCodecCtx->codec_tag = rawvideo_codec_tag;
+		
+		// Set opened flag
 		m_bCodecOpened[nStreamNum] = true;
+	}
 
 	// Allocate video frames
 	m_pFrame[nStreamNum] = avcodec_alloc_frame();
