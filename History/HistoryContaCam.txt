@@ -4,7 +4,10 @@ VERSION HISTORY
 
 - first public release
 
-
 2.0.0 pre (October 27th 2009)
 
 - first svn import
+
+0.0.1 (Autumn 2004)
+
+- Started development

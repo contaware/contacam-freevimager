@@ -3,12 +3,12 @@
 <pre>
 <h1>Build Log</h1>
 <h3>
---------------------Configuration: Dib - Win32 Debug--------------------
+--------------------Configuration: Dib - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D92.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16A.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zlib" /I "..\giflib\lib" /I "..\zip" /D "_DEBUG" /D "VIDEODEVICEDOC" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D WINVER=0x0400 /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/Debug/Dib/Dib.pch" /Yu"stdafx.h" /Fo"../Obj/Debug/Dib/" /Fd"../Obj/Debug/Dib/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zlib" /I "..\giflib\lib" /I "..\zip" /D "_MBCS" /D "VIDEODEVICEDOC" /D "_WINDOWS" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/ContaCam/Dib/Dib.pch" /Yu"stdafx.h" /Fo"../Obj/ContaCam/Dib/" /Fd"../Obj/ContaCam/Dib/" /FD /c 
 "C:\uimager\Dib\AnimGifSave.cpp"
 "C:\uimager\Dib\ColorSpace.cpp"
 "C:\uimager\Dib\Dib.cpp"
@@ -32,41 +32,41 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D92.tmp" with 
 "C:\uimager\Dib\Tiff2Pdf.cpp"
 "C:\uimager\Dib\YuvToRgb.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D92.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D93.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16A.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16B.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zlib" /I "..\giflib\lib" /I "..\zip" /D "_DEBUG" /D "VIDEODEVICEDOC" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D WINVER=0x0400 /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/Debug/Dib/Dib.pch" /Yc"stdafx.h" /Fo"../Obj/Debug/Dib/" /Fd"../Obj/Debug/Dib/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zlib" /I "..\giflib\lib" /I "..\zip" /D "_MBCS" /D "VIDEODEVICEDOC" /D "_WINDOWS" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/ContaCam/Dib/Dib.pch" /Yc"stdafx.h" /Fo"../Obj/ContaCam/Dib/" /Fd"../Obj/ContaCam/Dib/" /FD /c 
 "C:\uimager\Dib\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D93.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D94.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16B.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16C.tmp" with contents
 [
-/nologo /out:"../Bin/Debug/Dib\Dib.lib" 
-\uimager\Obj\Debug\Dib\AnimGifSave.obj
-\uimager\Obj\Debug\Dib\ColorSpace.obj
-\uimager\Obj\Debug\Dib\Dib.obj
-\uimager\Obj\Debug\Dib\DibAdjColors.obj
-\uimager\Obj\Debug\Dib\DibAlphaMixDiff.obj
-\uimager\Obj\Debug\Dib\DibBmp.obj
-\uimager\Obj\Debug\Dib\DibConvertBpp.obj
-\uimager\Obj\Debug\Dib\DibFilter.obj
-\uimager\Obj\Debug\Dib\DibGif.obj
-\uimager\Obj\Debug\Dib\DibJpeg.obj
-\uimager\Obj\Debug\Dib\DibMetadata.obj
-\uimager\Obj\Debug\Dib\DibMmBmp.obj
-\uimager\Obj\Debug\Dib\DibPcx.obj
-\uimager\Obj\Debug\Dib\DibPng.obj
-\uimager\Obj\Debug\Dib\DibResize.obj
-\uimager\Obj\Debug\Dib\DibRotate.obj
-\uimager\Obj\Debug\Dib\DibText.obj
-\uimager\Obj\Debug\Dib\DibTiff.obj
-\uimager\Obj\Debug\Dib\Quantizer.obj
-\uimager\Obj\Debug\Dib\RgbToYuv.obj
-\uimager\Obj\Debug\Dib\StdAfx.obj
-\uimager\Obj\Debug\Dib\Tiff2Pdf.obj
-\uimager\Obj\Debug\Dib\YuvToRgb.obj
+/nologo /out:"../Bin/ContaCam/Dib\Dib.lib" 
+\uimager\Obj\ContaCam\Dib\AnimGifSave.obj
+\uimager\Obj\ContaCam\Dib\ColorSpace.obj
+\uimager\Obj\ContaCam\Dib\Dib.obj
+\uimager\Obj\ContaCam\Dib\DibAdjColors.obj
+\uimager\Obj\ContaCam\Dib\DibAlphaMixDiff.obj
+\uimager\Obj\ContaCam\Dib\DibBmp.obj
+\uimager\Obj\ContaCam\Dib\DibConvertBpp.obj
+\uimager\Obj\ContaCam\Dib\DibFilter.obj
+\uimager\Obj\ContaCam\Dib\DibGif.obj
+\uimager\Obj\ContaCam\Dib\DibJpeg.obj
+\uimager\Obj\ContaCam\Dib\DibMetadata.obj
+\uimager\Obj\ContaCam\Dib\DibMmBmp.obj
+\uimager\Obj\ContaCam\Dib\DibPcx.obj
+\uimager\Obj\ContaCam\Dib\DibPng.obj
+\uimager\Obj\ContaCam\Dib\DibResize.obj
+\uimager\Obj\ContaCam\Dib\DibRotate.obj
+\uimager\Obj\ContaCam\Dib\DibText.obj
+\uimager\Obj\ContaCam\Dib\DibTiff.obj
+\uimager\Obj\ContaCam\Dib\Quantizer.obj
+\uimager\Obj\ContaCam\Dib\RgbToYuv.obj
+\uimager\Obj\ContaCam\Dib\StdAfx.obj
+\uimager\Obj\ContaCam\Dib\Tiff2Pdf.obj
+\uimager\Obj\ContaCam\Dib\YuvToRgb.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSP8D94.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPB16C.tmp"
 <h3>Output Window</h3>
 Compiling...
 StdAfx.cpp
@@ -98,12 +98,12 @@ YuvToRgb.cpp
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: giflib - Win32 Debug--------------------
+--------------------Configuration: giflib - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP9DF9.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPE96D.tmp" with contents
 [
-/nologo /MDd /W2 /Gm /GX /ZI /Od /D "_DEBUG" /D "DEBUG" /D "_MBCS" /D "_LIB" /D "_OPEN_BINARY" /D "HAVE_IO_H" /D "HAVE_STDARG_H" /D "HAVE_FCNTL_H" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /W2 /GX /O2 /D "_MBCS" /D "_LIB" /D "_OPEN_BINARY" /D "HAVE_IO_H" /D "HAVE_STDARG_H" /D "HAVE_FCNTL_H" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\giflib\lib\dgif_lib.c"
 "C:\uimager\giflib\lib\egif_lib.c"
 "C:\uimager\giflib\lib\getarg.c"
@@ -114,21 +114,21 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP9DF9.tmp" with 
 "C:\uimager\giflib\lib\qprintf.c"
 "C:\uimager\giflib\lib\quantize.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP9DF9.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP9DFA.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPE96D.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPE96E.tmp" with contents
 [
-/nologo /out:"../Bin/Debug\giflib.lib" 
-\uimager\Obj\Debug\dgif_lib.obj
-\uimager\Obj\Debug\egif_lib.obj
-\uimager\Obj\Debug\getarg.obj
-\uimager\Obj\Debug\gif_err.obj
-\uimager\Obj\Debug\gif_font.obj
-\uimager\Obj\Debug\gif_hash.obj
-\uimager\Obj\Debug\gifalloc.obj
-\uimager\Obj\Debug\qprintf.obj
-\uimager\Obj\Debug\quantize.obj
+/nologo /out:"../Bin/ContaCam\giflib.lib" 
+\uimager\Obj\ContaCam\dgif_lib.obj
+\uimager\Obj\ContaCam\egif_lib.obj
+\uimager\Obj\ContaCam\getarg.obj
+\uimager\Obj\ContaCam\gif_err.obj
+\uimager\Obj\ContaCam\gif_font.obj
+\uimager\Obj\ContaCam\gif_hash.obj
+\uimager\Obj\ContaCam\gifalloc.obj
+\uimager\Obj\ContaCam\qprintf.obj
+\uimager\Obj\ContaCam\quantize.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSP9DFA.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPE96E.tmp"
 <h3>Output Window</h3>
 Compiling...
 dgif_lib.c
@@ -143,12 +143,12 @@ quantize.c
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: libjpeg - Win32 Debug--------------------
+--------------------Configuration: libjpeg - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA3C5.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPEE9D.tmp" with contents
 [
-/nologo /MDd /w /W0 /Gm /GX /ZI /Od /I "..\\" /D "_DEBUG" /D "DEBUG" /D "_MBCS" /D "_LIB" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /w /W0 /GX /O2 /I "..\\" /D "_MBCS" /D "_LIB" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\libjpeg\jcapimin.c"
 "C:\uimager\libjpeg\jcapistd.c"
 "C:\uimager\libjpeg\jccoefct.c"
@@ -197,59 +197,59 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA3C5.tmp" with 
 "C:\uimager\libjpeg\jutils.c"
 "C:\uimager\libjpeg\transupp.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPA3C5.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA3C6.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPEE9D.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPEE9E.tmp" with contents
 [
-/nologo /out:"../Bin/Debug\libjpeg.lib" 
-\uimager\Obj\Debug\jcapimin.obj
-\uimager\Obj\Debug\jcapistd.obj
-\uimager\Obj\Debug\jccoefct.obj
-\uimager\Obj\Debug\jccolor.obj
-\uimager\Obj\Debug\jcdctmgr.obj
-\uimager\Obj\Debug\jchuff.obj
-\uimager\Obj\Debug\jcinit.obj
-\uimager\Obj\Debug\jcmainct.obj
-\uimager\Obj\Debug\jcmarker.obj
-\uimager\Obj\Debug\jcmaster.obj
-\uimager\Obj\Debug\jcomapi.obj
-\uimager\Obj\Debug\jcparam.obj
-\uimager\Obj\Debug\jcphuff.obj
-\uimager\Obj\Debug\jcprepct.obj
-\uimager\Obj\Debug\jcsample.obj
-\uimager\Obj\Debug\jctrans.obj
-\uimager\Obj\Debug\jdapimin.obj
-\uimager\Obj\Debug\jdapistd.obj
-\uimager\Obj\Debug\jdatadst.obj
-\uimager\Obj\Debug\jdatasrc.obj
-\uimager\Obj\Debug\jdcoefct.obj
-\uimager\Obj\Debug\jdcolor.obj
-\uimager\Obj\Debug\jddctmgr.obj
-\uimager\Obj\Debug\jdhuff.obj
-\uimager\Obj\Debug\jdinput.obj
-\uimager\Obj\Debug\jdmainct.obj
-\uimager\Obj\Debug\jdmarker.obj
-\uimager\Obj\Debug\jdmaster.obj
-\uimager\Obj\Debug\jdmerge.obj
-\uimager\Obj\Debug\jdphuff.obj
-\uimager\Obj\Debug\jdpostct.obj
-\uimager\Obj\Debug\jdsample.obj
-\uimager\Obj\Debug\jdtrans.obj
-\uimager\Obj\Debug\jerror.obj
-\uimager\Obj\Debug\jfdctflt.obj
-\uimager\Obj\Debug\jfdctfst.obj
-\uimager\Obj\Debug\jfdctint.obj
-\uimager\Obj\Debug\jidctflt.obj
-\uimager\Obj\Debug\jidctfst.obj
-\uimager\Obj\Debug\jidctint.obj
-\uimager\Obj\Debug\jidctred.obj
-\uimager\Obj\Debug\jmemmgr.obj
-\uimager\Obj\Debug\jmemnobs.obj
-\uimager\Obj\Debug\jquant1.obj
-\uimager\Obj\Debug\jquant2.obj
-\uimager\Obj\Debug\jutils.obj
-\uimager\Obj\Debug\transupp.obj
+/nologo /out:"../Bin/ContaCam\libjpeg.lib" 
+\uimager\Obj\ContaCam\jcapimin.obj
+\uimager\Obj\ContaCam\jcapistd.obj
+\uimager\Obj\ContaCam\jccoefct.obj
+\uimager\Obj\ContaCam\jccolor.obj
+\uimager\Obj\ContaCam\jcdctmgr.obj
+\uimager\Obj\ContaCam\jchuff.obj
+\uimager\Obj\ContaCam\jcinit.obj
+\uimager\Obj\ContaCam\jcmainct.obj
+\uimager\Obj\ContaCam\jcmarker.obj
+\uimager\Obj\ContaCam\jcmaster.obj
+\uimager\Obj\ContaCam\jcomapi.obj
+\uimager\Obj\ContaCam\jcparam.obj
+\uimager\Obj\ContaCam\jcphuff.obj
+\uimager\Obj\ContaCam\jcprepct.obj
+\uimager\Obj\ContaCam\jcsample.obj
+\uimager\Obj\ContaCam\jctrans.obj
+\uimager\Obj\ContaCam\jdapimin.obj
+\uimager\Obj\ContaCam\jdapistd.obj
+\uimager\Obj\ContaCam\jdatadst.obj
+\uimager\Obj\ContaCam\jdatasrc.obj
+\uimager\Obj\ContaCam\jdcoefct.obj
+\uimager\Obj\ContaCam\jdcolor.obj
+\uimager\Obj\ContaCam\jddctmgr.obj
+\uimager\Obj\ContaCam\jdhuff.obj
+\uimager\Obj\ContaCam\jdinput.obj
+\uimager\Obj\ContaCam\jdmainct.obj
+\uimager\Obj\ContaCam\jdmarker.obj
+\uimager\Obj\ContaCam\jdmaster.obj
+\uimager\Obj\ContaCam\jdmerge.obj
+\uimager\Obj\ContaCam\jdphuff.obj
+\uimager\Obj\ContaCam\jdpostct.obj
+\uimager\Obj\ContaCam\jdsample.obj
+\uimager\Obj\ContaCam\jdtrans.obj
+\uimager\Obj\ContaCam\jerror.obj
+\uimager\Obj\ContaCam\jfdctflt.obj
+\uimager\Obj\ContaCam\jfdctfst.obj
+\uimager\Obj\ContaCam\jfdctint.obj
+\uimager\Obj\ContaCam\jidctflt.obj
+\uimager\Obj\ContaCam\jidctfst.obj
+\uimager\Obj\ContaCam\jidctint.obj
+\uimager\Obj\ContaCam\jidctred.obj
+\uimager\Obj\ContaCam\jmemmgr.obj
+\uimager\Obj\ContaCam\jmemnobs.obj
+\uimager\Obj\ContaCam\jquant1.obj
+\uimager\Obj\ContaCam\jquant2.obj
+\uimager\Obj\ContaCam\jutils.obj
+\uimager\Obj\ContaCam\transupp.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPA3C6.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPEE9E.tmp"
 <h3>Output Window</h3>
 Compiling...
 jcapimin.c
@@ -306,12 +306,12 @@ transupp.c
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: libpng - Win32 Debug--------------------
+--------------------Configuration: libpng - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B7.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A1.tmp" with contents
 [
-/nologo /MDd /W2 /GX /ZI /Od /I "..\zlib" /D "DEBUG" /D "_DEBUG" /D PNG_DEBUG=1 /D "PNG_USE_PNGVCRD" /D "PNG_LIBPNG_SPECIALBUILD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /W2 /GX /O2 /I "..\zlib" /D "NDEBUG" /D "PNG_USE_PNGVCRD" /D "PNG_LIBPNG_SPECIALBUILD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\libpng\png.c"
 "C:\uimager\libpng\pngget.c"
 "C:\uimager\libpng\pngmem.c"
@@ -327,33 +327,33 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B7.tmp" with 
 "C:\uimager\libpng\pngwtran.c"
 "C:\uimager\libpng\pngwutil.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B7.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B8.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A1.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A2.tmp" with contents
 [
-/nologo /MDd /W2 /GX /ZI /Od /I "..\zlib" /D "DEBUG" /D "_DEBUG" /D PNG_DEBUG=1 /D "PNG_USE_PNGVCRD" /D "PNG_LIBPNG_SPECIALBUILD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fp"../Obj/Debug/libpng.pch" /Yc /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /W2 /GX /O2 /I "..\zlib" /D "NDEBUG" /D "PNG_USE_PNGVCRD" /D "PNG_LIBPNG_SPECIALBUILD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/ContaCam/libpng.pch" /Yc /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\libpng\pngerror.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B8.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B9.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A2.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A3.tmp" with contents
 [
-/nologo /out:"../Bin/Debug\libpng.lib" 
-\uimager\Obj\Debug\png.obj
-\uimager\Obj\Debug\pngerror.obj
-\uimager\Obj\Debug\pngget.obj
-\uimager\Obj\Debug\pngmem.obj
-\uimager\Obj\Debug\pngpread.obj
-\uimager\Obj\Debug\pngread.obj
-\uimager\Obj\Debug\pngrio.obj
-\uimager\Obj\Debug\pngrtran.obj
-\uimager\Obj\Debug\pngrutil.obj
-\uimager\Obj\Debug\pngset.obj
-\uimager\Obj\Debug\pngtrans.obj
-\uimager\Obj\Debug\pngwio.obj
-\uimager\Obj\Debug\pngwrite.obj
-\uimager\Obj\Debug\pngwtran.obj
-\uimager\Obj\Debug\pngwutil.obj
+/nologo /out:"../Bin/ContaCam\libpng.lib" 
+\uimager\Obj\ContaCam\png.obj
+\uimager\Obj\ContaCam\pngerror.obj
+\uimager\Obj\ContaCam\pngget.obj
+\uimager\Obj\ContaCam\pngmem.obj
+\uimager\Obj\ContaCam\pngpread.obj
+\uimager\Obj\ContaCam\pngread.obj
+\uimager\Obj\ContaCam\pngrio.obj
+\uimager\Obj\ContaCam\pngrtran.obj
+\uimager\Obj\ContaCam\pngrutil.obj
+\uimager\Obj\ContaCam\pngset.obj
+\uimager\Obj\ContaCam\pngtrans.obj
+\uimager\Obj\ContaCam\pngwio.obj
+\uimager\Obj\ContaCam\pngwrite.obj
+\uimager\Obj\ContaCam\pngwtran.obj
+\uimager\Obj\ContaCam\pngwutil.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPA8B9.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF5A3.tmp"
 <h3>Output Window</h3>
 Compiling...
 pngerror.c
@@ -375,12 +375,12 @@ pngwutil.c
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: libtiff - Win32 Debug--------------------
+--------------------Configuration: libtiff - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPABA6.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPFA36.tmp" with contents
 [
-/nologo /MDd /w /W0 /Gm /GX /ZI /Od /I "..\\" /I "..\zlib" /I "..\libjpeg" /I "..\Dib" /D "_DEBUG" /D "DEBUG" /D "_MBCS" /D WINVER=0x0400 /D "USE_WIN32_FILEIO" /D "_LIB" /D "TIF_PLATFORM_CONSOLE" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /w /W0 /GX /O2 /I "..\\" /I "..\zlib" /I "..\libjpeg" /I "..\Dib" /D "_MBCS" /D "NDEBUG" /D WINVER=0x0400 /D "USE_WIN32_FILEIO" /D "_LIB" /D "TIF_PLATFORM_CONSOLE" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\libtiff\libtiff\tif_aux.c"
 "C:\uimager\libtiff\libtiff\tif_close.c"
 "C:\uimager\libtiff\libtiff\tif_codec.c"
@@ -418,48 +418,48 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPABA6.tmp" with 
 "C:\uimager\libtiff\libtiff\tif_write.c"
 "C:\uimager\libtiff\libtiff\tif_zip.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPABA6.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPABA7.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPFA36.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPFA37.tmp" with contents
 [
-/nologo /out:"../Bin/Debug\libtiff.lib" 
-\uimager\Obj\Debug\tif_aux.obj
-\uimager\Obj\Debug\tif_close.obj
-\uimager\Obj\Debug\tif_codec.obj
-\uimager\Obj\Debug\tif_color.obj
-\uimager\Obj\Debug\tif_compress.obj
-\uimager\Obj\Debug\tif_dir.obj
-\uimager\Obj\Debug\tif_dirinfo.obj
-\uimager\Obj\Debug\tif_dirread.obj
-\uimager\Obj\Debug\tif_dirwrite.obj
-\uimager\Obj\Debug\tif_dumpmode.obj
-\uimager\Obj\Debug\tif_error.obj
-\uimager\Obj\Debug\tif_extension.obj
-\uimager\Obj\Debug\tif_fax3.obj
-\uimager\Obj\Debug\tif_fax3sm.obj
-\uimager\Obj\Debug\tif_flush.obj
-\uimager\Obj\Debug\tif_getimage.obj
-\uimager\Obj\Debug\tif_jpeg.obj
-\uimager\Obj\Debug\tif_luv.obj
-\uimager\Obj\Debug\tif_lzw.obj
-\uimager\Obj\Debug\tif_next.obj
-\uimager\Obj\Debug\tif_ojpeg.obj
-\uimager\Obj\Debug\tif_open.obj
-\uimager\Obj\Debug\tif_packbits.obj
-\uimager\Obj\Debug\tif_pixarlog.obj
-\uimager\Obj\Debug\tif_predict.obj
-\uimager\Obj\Debug\tif_print.obj
-\uimager\Obj\Debug\tif_read.obj
-\uimager\Obj\Debug\tif_strip.obj
-\uimager\Obj\Debug\tif_swab.obj
-\uimager\Obj\Debug\tif_thunder.obj
-\uimager\Obj\Debug\tif_tile.obj
-\uimager\Obj\Debug\tif_version.obj
-\uimager\Obj\Debug\tif_warning.obj
-\uimager\Obj\Debug\tif_win32.obj
-\uimager\Obj\Debug\tif_write.obj
-\uimager\Obj\Debug\tif_zip.obj
+/nologo /out:"../Bin/ContaCam\libtiff.lib" 
+\uimager\Obj\ContaCam\tif_aux.obj
+\uimager\Obj\ContaCam\tif_close.obj
+\uimager\Obj\ContaCam\tif_codec.obj
+\uimager\Obj\ContaCam\tif_color.obj
+\uimager\Obj\ContaCam\tif_compress.obj
+\uimager\Obj\ContaCam\tif_dir.obj
+\uimager\Obj\ContaCam\tif_dirinfo.obj
+\uimager\Obj\ContaCam\tif_dirread.obj
+\uimager\Obj\ContaCam\tif_dirwrite.obj
+\uimager\Obj\ContaCam\tif_dumpmode.obj
+\uimager\Obj\ContaCam\tif_error.obj
+\uimager\Obj\ContaCam\tif_extension.obj
+\uimager\Obj\ContaCam\tif_fax3.obj
+\uimager\Obj\ContaCam\tif_fax3sm.obj
+\uimager\Obj\ContaCam\tif_flush.obj
+\uimager\Obj\ContaCam\tif_getimage.obj
+\uimager\Obj\ContaCam\tif_jpeg.obj
+\uimager\Obj\ContaCam\tif_luv.obj
+\uimager\Obj\ContaCam\tif_lzw.obj
+\uimager\Obj\ContaCam\tif_next.obj
+\uimager\Obj\ContaCam\tif_ojpeg.obj
+\uimager\Obj\ContaCam\tif_open.obj
+\uimager\Obj\ContaCam\tif_packbits.obj
+\uimager\Obj\ContaCam\tif_pixarlog.obj
+\uimager\Obj\ContaCam\tif_predict.obj
+\uimager\Obj\ContaCam\tif_print.obj
+\uimager\Obj\ContaCam\tif_read.obj
+\uimager\Obj\ContaCam\tif_strip.obj
+\uimager\Obj\ContaCam\tif_swab.obj
+\uimager\Obj\ContaCam\tif_thunder.obj
+\uimager\Obj\ContaCam\tif_tile.obj
+\uimager\Obj\ContaCam\tif_version.obj
+\uimager\Obj\ContaCam\tif_warning.obj
+\uimager\Obj\ContaCam\tif_win32.obj
+\uimager\Obj\ContaCam\tif_write.obj
+\uimager\Obj\ContaCam\tif_zip.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPABA7.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPFA37.tmp"
 <h3>Output Window</h3>
 Compiling...
 tif_aux.c
@@ -503,24 +503,24 @@ tif_zip.c
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: zlib - Win32 Debug--------------------
+--------------------Configuration: zlib - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD670.bat" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP12E6.bat" with contents
 [
 @echo off
-ml /c /Zd /coff /nologo /Fo ".\../Obj/Debug\inffas32.obj" ".\inffas32.asm"
+ml /c /Zd /coff /nologo /Fo ".\../Obj/ContaCam\inffas32.obj" ".\inffas32.asm"
 ]
-Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD670.bat"
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD671.bat" with contents
+Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSP12E6.bat"
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP12F7.bat" with contents
 [
 @echo off
-ml /c /Zd /coff /nologo /Fo ".\../Obj/Debug\gvmat32.obj" ".\gvmat32.asm"
+ml /c /Zd /coff /nologo /Fo ".\../Obj/ContaCam\gvmat32.obj" ".\gvmat32.asm"
 ]
-Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD671.bat"
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD681.tmp" with contents
+Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSP12F7.bat"
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP12F8.tmp" with contents
 [
-/nologo /MDd /W2 /ZI /Od /D "_DEBUG" /D "DEBUG" /D WINVER=0x0400 /D "ASMV" /D "ASMINF" /D "WINDOWS" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/Debug/" /Fo"../Obj/Debug/" /Fd"../Obj/Debug/" /FD /GZ /c 
+/nologo /MT /W2 /O2 /D "NDEBUG" /D WINVER=0x0400 /D "ASMV" /D "ASMINF" /D "WINDOWS" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fo"../Obj/ContaCam/" /Fd"../Obj/ContaCam/" /FD /c 
 "C:\uimager\zlib\adler32.c"
 "C:\uimager\zlib\compress.c"
 "C:\uimager\zlib\crc32.c"
@@ -535,31 +535,31 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD681.tmp" with 
 "C:\uimager\zlib\uncompr.c"
 "C:\uimager\zlib\zutil.c"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPD681.tmp" 
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP12F8.tmp" 
 Assembling .\inffas32.asm...
  Assembling: .\inffas32.asm
 Assembling .\gvmat32.asm...
  Assembling: .\gvmat32.asm
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD73D.tmp" with contents
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP13B4.tmp" with contents
 [
-/nologo /out:"../Bin/Debug\zlib.lib" 
-\uimager\Obj\Debug\adler32.obj
-\uimager\Obj\Debug\compress.obj
-\uimager\Obj\Debug\crc32.obj
-\uimager\Obj\Debug\deflate.obj
-\uimager\Obj\Debug\gvmat32c.obj
-\uimager\Obj\Debug\gzio.obj
-\uimager\Obj\Debug\infback.obj
-\uimager\Obj\Debug\inffast.obj
-\uimager\Obj\Debug\inflate.obj
-\uimager\Obj\Debug\inftrees.obj
-\uimager\Obj\Debug\trees.obj
-\uimager\Obj\Debug\uncompr.obj
-\uimager\Obj\Debug\zutil.obj
-\uimager\Obj\Debug\gvmat32.obj
-\uimager\Obj\Debug\inffas32.obj
+/nologo /out:"../Bin/ContaCam\zlib.lib" 
+\uimager\Obj\ContaCam\adler32.obj
+\uimager\Obj\ContaCam\compress.obj
+\uimager\Obj\ContaCam\crc32.obj
+\uimager\Obj\ContaCam\deflate.obj
+\uimager\Obj\ContaCam\gvmat32c.obj
+\uimager\Obj\ContaCam\gzio.obj
+\uimager\Obj\ContaCam\infback.obj
+\uimager\Obj\ContaCam\inffast.obj
+\uimager\Obj\ContaCam\inflate.obj
+\uimager\Obj\ContaCam\inftrees.obj
+\uimager\Obj\ContaCam\trees.obj
+\uimager\Obj\ContaCam\uncompr.obj
+\uimager\Obj\ContaCam\zutil.obj
+\uimager\Obj\ContaCam\gvmat32.obj
+\uimager\Obj\ContaCam\inffas32.obj
 ]
-Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSPD73D.tmp"
+Creating command line "link.exe -lib @C:\Users\OLIVER~1\AppData\Local\Temp\RSP13B4.tmp"
 <h3>Output Window</h3>
 Compiling...
 adler32.c
@@ -578,14 +578,14 @@ zutil.c
 Generating Code...
 Creating library...
 <h3>
---------------------Configuration: RemoteCam - Win32 Debug--------------------
+--------------------Configuration: RemoteCam - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating command line "midl.exe /nologo /D "_DEBUG" /tlb "../Bin/RemoteCam/Debug/RemoteCam.tlb" /mktyplib203 /win32 "C:\uimager\RemoteCam\RemoteCam.odl""
-Creating command line "rc.exe /l 0x409 /fo"../Obj/RemoteCam/Debug/RemoteCam.res" /i "../Bin/RemoteCam/Debug" /d "_DEBUG" /d "_AFXDLL" "C:\uimager\RemoteCam\RemoteCam.rc"" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD912.tmp" with contents
+Creating command line "midl.exe /nologo /D "NDEBUG" /tlb "../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.tlb" /mktyplib203 /win32 "C:\uimager\RemoteCam\RemoteCam.odl""
+Creating command line "rc.exe /l 0x409 /fo"../Obj/RemoteCam/ReleaseNoDLL/RemoteCam.res" /i "../Bin/RemoteCam/ReleaseNoDLL" /d "NDEBUG" "C:\uimager\RemoteCam\RemoteCam.rc"" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1673.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\ffmpeg\includes" /I "..\ffmpeg" /I "..\Dib" /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zip" /I "..\zlib" /I "..\giflib\lib" /D "_DEBUG" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D "_USRDLL" /D "_WINDLL" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCam/Debug/" /Fp"../Obj/RemoteCam/Debug/RemoteCam.pch" /Yu"stdafx.h" /Fo"../Obj/RemoteCam/Debug/" /Fd"../Obj/RemoteCam/Debug/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /I "..\\" /I "..\ffmpeg\includes" /I "..\ffmpeg" /I "..\Dib" /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zip" /I "..\zlib" /I "..\giflib\lib" /D "_MBCS" /D "_WINDOWS" /D "_USRDLL" /D "_WINDLL" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/RemoteCam/ReleaseNoDLL/RemoteCam.pch" /Yu"stdafx.h" /Fo"../Obj/RemoteCam/ReleaseNoDLL/" /Fd"../Obj/RemoteCam/ReleaseNoDLL/" /FD /c 
 "C:\uimager\ConvertUTF.cpp"
 "C:\uimager\Helpers.cpp"
 "C:\uimager\NetCom.cpp"
@@ -596,42 +596,42 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD912.tmp" with 
 "C:\uimager\WorkerThread.cpp"
 "C:\uimager\XMLite.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPD912.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD913.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP1673.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1674.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\ffmpeg\includes" /I "..\ffmpeg" /I "..\Dib" /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zip" /I "..\zlib" /I "..\giflib\lib" /D "_DEBUG" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D "_USRDLL" /D "_WINDLL" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCam/Debug/" /Fp"../Obj/RemoteCam/Debug/RemoteCam.pch" /Yc"stdafx.h" /Fo"../Obj/RemoteCam/Debug/" /Fd"../Obj/RemoteCam/Debug/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /I "..\\" /I "..\ffmpeg\includes" /I "..\ffmpeg" /I "..\Dib" /I "..\libpng" /I "..\libjpeg" /I "..\libtiff\libtiff" /I "..\zip" /I "..\zlib" /I "..\giflib\lib" /D "_MBCS" /D "_WINDOWS" /D "_USRDLL" /D "_WINDLL" /D "MFC_THREAD" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /Fp"../Obj/RemoteCam/ReleaseNoDLL/RemoteCam.pch" /Yc"stdafx.h" /Fo"../Obj/RemoteCam/ReleaseNoDLL/" /Fd"../Obj/RemoteCam/ReleaseNoDLL/" /FD /c 
 "C:\uimager\RemoteCam\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPD913.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD914.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP1674.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1675.tmp" with contents
 [
-/nologo /subsystem:windows /dll /incremental:yes /pdb:"../Bin/RemoteCam/Debug/RemoteCam.pdb" /debug /machine:I386 /def:".\RemoteCam.def" /out:"../Bin/RemoteCam/Debug/RemoteCam.ocx" /implib:"../Bin/RemoteCam/Debug/RemoteCam.lib" /pdbtype:sept 
-\uimager\Obj\RemoteCam\Debug\ConvertUTF.obj
-\uimager\Obj\RemoteCam\Debug\Helpers.obj
-\uimager\Obj\RemoteCam\Debug\NetCom.obj
-\uimager\Obj\RemoteCam\Debug\NetGetFrame.obj
-\uimager\Obj\RemoteCam\Debug\RemoteCam.obj
-\uimager\Obj\RemoteCam\Debug\RemoteCamCtl.obj
-\uimager\Obj\RemoteCam\Debug\RemoteCamPpg.obj
-\uimager\Obj\RemoteCam\Debug\StdAfx.obj
-\uimager\Obj\RemoteCam\Debug\WorkerThread.obj
-\uimager\Obj\RemoteCam\Debug\XMLite.obj
-\uimager\Obj\RemoteCam\Debug\RemoteCam.res
-\uimager\Bin\Debug\Dib\Dib.lib
-\uimager\Bin\Debug\giflib.lib
-\uimager\Bin\Debug\libjpeg.lib
-\uimager\Bin\Debug\libpng.lib
-\uimager\Bin\Debug\libtiff.lib
-\uimager\Bin\Debug\zlib.lib
+/nologo /subsystem:windows /dll /incremental:no /pdb:"../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.pdb" /machine:I386 /def:".\RemoteCam.def" /out:"../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.ocx" /implib:"../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.lib" 
+\uimager\Obj\RemoteCam\ReleaseNoDLL\ConvertUTF.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\Helpers.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\NetCom.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\NetGetFrame.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\RemoteCam.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\RemoteCamCtl.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\RemoteCamPpg.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\StdAfx.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\WorkerThread.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\XMLite.obj
+\uimager\Obj\RemoteCam\ReleaseNoDLL\RemoteCam.res
+\uimager\Bin\ContaCam\Dib\Dib.lib
+\uimager\Bin\ContaCam\giflib.lib
+\uimager\Bin\ContaCam\libjpeg.lib
+\uimager\Bin\ContaCam\libpng.lib
+\uimager\Bin\ContaCam\libtiff.lib
+\uimager\Bin\ContaCam\zlib.lib
 ]
-Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPD914.tmp"
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD915.bat" with contents
+Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP1675.tmp"
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1676.bat" with contents
 [
 @echo off
-regsvr32 /s /c "\uimager\Bin\RemoteCam\Debug\RemoteCam.ocx"
-echo regsvr32 exec. time > ".\../Bin/RemoteCam/Debug\regsvr32.trg"
+regsvr32 /s /c "\uimager\Bin\RemoteCam\ReleaseNoDLL\RemoteCam.ocx"
+echo regsvr32 exec. time > ".\../Bin/RemoteCam/ReleaseNoDLL\regsvr32.trg"
 ]
-Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSPD915.bat"
+Creating command line "C:\Users\OLIVER~1\AppData\Local\Temp\RSP1676.bat"
 Creating Type Library...
 Processing C:\uimager\RemoteCam\RemoteCam.odl
 RemoteCam.odl
@@ -664,17 +664,23 @@ WorkerThread.cpp
 XMLite.cpp
 Generating Code...
 Linking...
-   Creating library ../Bin/RemoteCam/Debug/RemoteCam.lib and object ../Bin/RemoteCam/Debug/RemoteCam.exp
+   Creating library ../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.lib and object ../Bin/RemoteCam/ReleaseNoDLL/RemoteCam.exp
+LINK : warning LNK4049: locally defined symbol "__iob" imported
+LINK : warning LNK4049: locally defined symbol "___lc_codepage" imported
+LINK : warning LNK4049: locally defined symbol "___mb_cur_max" imported
+LINK : warning LNK4089: all references to "MPR.dll" discarded by /OPT:REF
+LINK : warning LNK4089: all references to "WININET.dll" discarded by /OPT:REF
+LINK : warning LNK4089: all references to "urlmon.dll" discarded by /OPT:REF
 <h3>Output Window</h3>
 Registering ActiveX Control...
 <h3>
---------------------Configuration: RemoteCamViewer - Win32 Debug--------------------
+--------------------Configuration: RemoteCamViewer - Win32 ContaCam--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating command line "rc.exe /l 0x409 /fo"../Obj/RemoteCamViewer/Debug/RemoteCamViewer.res" /d "_DEBUG" /d "_AFXDLL" "C:\uimager\RemoteCamViewer\RemoteCamViewer.rc"" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF251.tmp" with contents
+Creating command line "rc.exe /l 0x409 /fo"../Obj/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.res" /d "NDEBUG" "C:\uimager\RemoteCamViewer\RemoteCamViewer.rc"" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP241E.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCamViewer/Debug/" /Fp"../Obj/RemoteCamViewer/Debug/RemoteCamViewer.pch" /Yu"stdafx.h" /Fo"../Obj/RemoteCamViewer/Debug/" /Fd"../Obj/RemoteCamViewer/Debug/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCamViewer/ReleaseNoDLL/" /Fp"../Obj/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.pch" /Yu"stdafx.h" /Fo"../Obj/RemoteCamViewer/ReleaseNoDLL/" /Fd"../Obj/RemoteCamViewer/ReleaseNoDLL/" /FD /c 
 "C:\uimager\RemoteCamViewer\MainFrm.cpp"
 "C:\uimager\RemoteCamViewer\remotecam.cpp"
 "C:\uimager\RemoteCamViewer\RemoteCamViewer.cpp"
@@ -682,27 +688,27 @@ Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF251.tmp" with 
 "C:\uimager\RemoteCamViewer\RemoteCamViewerView.cpp"
 "C:\uimager\RemoteCamViewer\SettingsDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF251.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF252.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP241E.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP241F.tmp" with contents
 [
-/nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "DEBUG" /D "_AFXDLL" /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCamViewer/Debug/" /Fp"../Obj/RemoteCamViewer/Debug/RemoteCamViewer.pch" /Yc"stdafx.h" /Fo"../Obj/RemoteCamViewer/Debug/" /Fd"../Obj/RemoteCamViewer/Debug/" /FD /GZ /c 
+/nologo /MT /W3 /GX /O2 /D "_MBCS" /D "_WINDOWS" /D "MFC_THREAD" /D "NDEBUG" /D WINVER=0x0400 /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR"../Obj/RemoteCamViewer/ReleaseNoDLL/" /Fp"../Obj/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.pch" /Yc"stdafx.h" /Fo"../Obj/RemoteCamViewer/ReleaseNoDLL/" /Fd"../Obj/RemoteCamViewer/ReleaseNoDLL/" /FD /c 
 "C:\uimager\RemoteCamViewer\StdAfx.cpp"
 ]
-Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF252.tmp" 
-Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSPF253.tmp" with contents
+Creating command line "cl.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP241F.tmp" 
+Creating temporary file "C:\Users\OLIVER~1\AppData\Local\Temp\RSP2420.tmp" with contents
 [
-/nologo /subsystem:windows /incremental:yes /pdb:"../Bin/RemoteCamViewer/Debug/RemoteCamViewer.pdb" /debug /machine:I386 /out:"../Bin/RemoteCamViewer/Debug/RemoteCamViewer.exe" /pdbtype:sept 
-\uimager\Obj\RemoteCamViewer\Debug\MainFrm.obj
-\uimager\Obj\RemoteCamViewer\Debug\remotecam.obj
-\uimager\Obj\RemoteCamViewer\Debug\RemoteCamViewer.obj
-\uimager\Obj\RemoteCamViewer\Debug\RemoteCamViewerDoc.obj
-\uimager\Obj\RemoteCamViewer\Debug\RemoteCamViewerView.obj
-\uimager\Obj\RemoteCamViewer\Debug\SettingsDlg.obj
-\uimager\Obj\RemoteCamViewer\Debug\StdAfx.obj
-\uimager\Obj\RemoteCamViewer\Debug\RemoteCamViewer.res
-\uimager\Bin\RemoteCam\Debug\RemoteCam.lib
+/nologo /subsystem:windows /incremental:no /pdb:"../Bin/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.pdb" /machine:I386 /out:"../Bin/RemoteCamViewer/ReleaseNoDLL/RemoteCamViewer.exe" 
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\MainFrm.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\remotecam.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewerDoc.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewerView.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\SettingsDlg.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\StdAfx.obj
+\uimager\Obj\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.res
+\uimager\Bin\RemoteCam\ReleaseNoDLL\RemoteCam.lib
 ]
-Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSPF253.tmp"
+Creating command line "link.exe @C:\Users\OLIVER~1\AppData\Local\Temp\RSP2420.tmp"
 <h3>Output Window</h3>
 Compiling resources...
 Compiling...
@@ -720,7 +726,7 @@ Linking...
 
 
 <h3>Results</h3>
-RemoteCamViewer.exe - 0 error(s), 0 warning(s)
+RemoteCamViewer.exe - 0 error(s), 6 warning(s)
 </pre>
 </body>
 </html>
