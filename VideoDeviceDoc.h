@@ -109,18 +109,16 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_ANIMGIF_MIN_DELAY			500			// ms (detection frame time), MOVDET_ANIMGIF_MIN_DELAY / MOVDET_ANIMGIF_MAX_SPEEDMUL must be >= 100
-#define MOVDET_ANIMGIF_MAX_DELAY			1000		// ms (no detection frame time), MOVDET_ANIMGIF_MAX_DELAY / MOVDET_ANIMGIF_MAX_SPEEDMUL must be >= 100
-#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY	1000		// ms (first frame show time), MOVDET_ANIMGIF_FIRST_FRAME_DELAY / MOVDET_ANIMGIF_MAX_SPEEDMUL must be >= 100
-#define MOVDET_ANIMGIF_LAST_FRAME_DELAY		1000		// ms (last frame show time), MOVDET_ANIMGIF_LAST_FRAME_DELAY / MOVDET_ANIMGIF_MAX_SPEEDMUL must be >= 100
+#define MOVDET_EXEC_COMMAND_WAIT_TIMEOUT	100			// ms
+#define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
+#define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
+#define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)
+#define MOVDET_ANIMGIF_FIRST_FRAME_DELAY	1000		// ms (first frame time)
+#define MOVDET_ANIMGIF_LAST_FRAME_DELAY		1000		// ms (last frame time)
 #define MOVDET_ANIMGIF_DIFF_MINLEVEL		10			// determines the "inter-frame-compression" of animated gifs
 														// higher values better compression but worse quality
 #define MOVDET_ANIMGIF_DEFAULT_WIDTH		128			// Default animated gif width
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
-#define MOVDET_ANIMGIF_DEFAULT_SPEEDMUL		3			// Default animated gif speed multiplier
-#define MOVDET_ANIMGIF_MIN_SPEEDMUL			1			// Min animated gif speed multiplier
-#define MOVDET_ANIMGIF_MAX_SPEEDMUL			5			// Max animated gif speed multiplier
-#define MOVDET_EXEC_COMMAND_WAIT_TIMEOUT	100			// ms
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")
@@ -935,6 +933,8 @@ public:
 									RGBQUAD* pGIFColors);
 			void AnimatedGIFInit(	RGBQUAD** ppGIFColors,
 									int& nAnimGifLastFrameToSave,
+									double& dDelayMul,
+									double& dSpeedMul,
 									double dCalcFrameRate,
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
@@ -945,9 +945,10 @@ public:
 									const CString& sGIFFileName, 
 									BOOL* pbFirstGIFSave,
 									BOOL bLastGIFSave,
+									double dDelayMul,
+									double dSpeedMul,
 									RGBQUAD* pGIFColors,
-									int nDiffMinLevel,
-									int nSpeedMul);
+									int nDiffMinLevel);
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sAVIFileName,
 									const CString& sGIFFileName,
@@ -1702,7 +1703,6 @@ public:
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
-	volatile DWORD m_dwAnimatedGifSpeedMul;				// Speed multiplier of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)

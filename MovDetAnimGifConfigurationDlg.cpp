@@ -29,7 +29,7 @@ static char THIS_FILE[] = __FILE__;
 
 CMovDetAnimGifConfigurationDlg::CMovDetAnimGifConfigurationDlg(int nFullWidth, int nFullHeight,
 						   int nCurrentWidth, int nCurrentHeight,
-						   int nSpeedMulIndex, CWnd* pParent/*=NULL*/)
+						   CWnd* pParent/*=NULL*/)
 	: CDialog(CMovDetAnimGifConfigurationDlg::IDD, pParent)
 {
 	// OnInitDialog() has not been called at this point
@@ -44,15 +44,10 @@ CMovDetAnimGifConfigurationDlg::CMovDetAnimGifConfigurationDlg(int nFullWidth, i
 		nCurrentWidth = 1;
 	if (nCurrentHeight < 1)
 		nCurrentHeight = 1;
-	if (nSpeedMulIndex < 0)
-		nSpeedMulIndex = 0;
-	else if (nSpeedMulIndex > (MOVDET_ANIMGIF_MAX_SPEEDMUL - 1))
-		nSpeedMulIndex = (MOVDET_ANIMGIF_MAX_SPEEDMUL - 1);
 
 	//{{AFX_DATA_INIT(CMovDetAnimGifConfigurationDlg)
 	m_nPixelsWidth = nCurrentWidth;
 	m_nPixelsHeight = nCurrentHeight;
-	m_nSpeedMulIndex = nSpeedMulIndex;
 	m_nPercentWidth = MAX(1, Round(nCurrentWidth * 100.0 / nFullWidth));
 	m_nPercentHeight = MAX(1, Round(nCurrentHeight * 100.0 / nFullHeight));
 	m_bRetainAspect = m_nPercentWidth == m_nPercentHeight ? TRUE : FALSE;
@@ -101,7 +96,6 @@ void CMovDetAnimGifConfigurationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_PERCENT_WIDTH, m_nPercentWidth);
 	DDX_Text(pDX, IDC_EDIT_PERCENT_HEIGHT, m_nPercentHeight);
 	DDX_Check(pDX, IDC_CHECK_RETAIN_ASPECT, m_bRetainAspect);
-	DDX_CBIndex(pDX, IDC_COMBO_ANIMGIF_SPEED, m_nSpeedMulIndex);
 	//}}AFX_DATA_MAP
 	DDV_MinMaxInt(pDX, m_nPercentHeight, 1, (int)(m_dMaxResizeFactor * 100.0));
 	DDV_MinMaxInt(pDX, m_nPercentWidth, 1, (int)(m_dMaxResizeFactor * 100.0));

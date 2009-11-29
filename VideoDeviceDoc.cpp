@@ -257,6 +257,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		POSITION currentpos;
 		int nFrames = m_nNumFramesToSave;
 		int nAnimGifLastFrameToSave = 1;
+		double dDelayMul = 1.0;
+		double dSpeedMul = 1.0;
 		CDib AVISaveDib;
 		CDib SWFSaveDib;
 		CDib GIFSaveDib;
@@ -446,6 +448,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						{
 							AnimatedGIFInit(&pGIFColors,
 											nAnimGifLastFrameToSave,		// Sets this
+											dDelayMul,						// Sets this
+											dSpeedMul,						// Sets this
 											dCalcFrameRate,
 											bShowFrameTime,
 											RefTime,
@@ -461,9 +465,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										sGIFTempFileName,
 										&bFirstGIFSave,						// First Frame To Save?
 										nFrames == nAnimGifLastFrameToSave,	// Last Frame To Save?
+										dDelayMul,
+										dSpeedMul,
 										pGIFColors,
-										MOVDET_ANIMGIF_DIFF_MINLEVEL,
-										(int)m_pDoc->m_dwAnimatedGifSpeedMul);
+										MOVDET_ANIMGIF_DIFF_MINLEVEL);
 					}
 				}
 			}
@@ -701,6 +706,8 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 
 void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColors,
 																int& nAnimGifLastFrameToSave,
+																double& dDelayMul,
+																double& dSpeedMul,
 																double dCalcFrameRate,
 																BOOL bShowFrameTime,
 																const CTime& RefTime,
@@ -721,7 +728,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 
 	// Get the frame 1 sec after first movement, get middle frame
 	// and get last movement frame for a optimized palette creation
-	int nMiddleElementCount = m_pFrameList->GetCount() / 2;
+	int nMiddleElementCount = m_nNumFramesToSave / 2;
 	POSITION posPalette = m_pFrameList->GetHeadPosition();
 	int nFrameCountDown = m_nNumFramesToSave;
 	int nFirstCountDown = Round(dCalcFrameRate);
@@ -820,6 +827,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 	Quantizer.SetColorTable(*ppGIFColors);
 	
 	// VGA Palette
+	// Note: palette Entry 255 is the Transparency Index!
 	int i;
 	for (i = 0; i < 8; i++)
 	{
@@ -835,8 +843,19 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 		(*ppGIFColors)[i+239].rgbBlue		= CDib::ms_StdColors[248+i].rgbBlue;
 		(*ppGIFColors)[i+239].rgbReserved	= 0;
 	}
-
-	// Palette Entry 255 is the Transparency Index!
+	
+	// Limit the saved frames to around MOVDET_ANIMGIF_MAX_FRAMES and
+	// the play length to around MOVDET_ANIMGIF_MAX_LENGTH ms.
+	// Note: ie has problems with to many anim. gifs frames and also
+	// with to many anim. gifs images per displayed page!
+	int nTotFramesCount = m_nNumFramesToSave - nAnimGifLastFrameToSave + 1;
+	double dLengthMs = (double)nTotFramesCount / dCalcFrameRate * 1000.0;
+	dSpeedMul = max(1.0, dLengthMs / MOVDET_ANIMGIF_MAX_LENGTH);
+	if (nTotFramesCount >= MOVDET_ANIMGIF_MAX_FRAMES)
+	{
+		double dSavedFrames = dLengthMs / MOVDET_ANIMGIF_DELAY;
+		dDelayMul = max(1.0, dSavedFrames / (double)MOVDET_ANIMGIF_MAX_FRAMES);
+	}
 }
 
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
@@ -871,9 +890,10 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 															const CString& sGIFFileName,
 															BOOL* pbFirstGIFSave,
 															BOOL bLastGIFSave,
+															double dDelayMul,
+															double dSpeedMul,
 															RGBQUAD* pGIFColors,
-															int nDiffMinLevel,
-															int nSpeedMul)
+															int nDiffMinLevel)
 {
 	BOOL res = FALSE;
 
@@ -909,7 +929,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		pGIFSaveDib->GetGif()->SetTransparency(TRUE);
 		pGIFSaveDib->GetGif()->SetTransparencyColorIndex(255);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_NONE);
-		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_FIRST_FRAME_DELAY / nSpeedMul);
+		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_FIRST_FRAME_DELAY);
 		// 0 means loop infinite
 		// 1 means loop one time -> Show all frames 2x
 		// 2 means loop two times -> Show all frames 3x
@@ -934,7 +954,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 				(*ppGIFDib)->ConvertTo8bitsErrDiff((*ppGIFDib)->GetPalette());
 			}
 			pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY / nSpeedMul);
+			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 			(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 			res = pGIFSaveDib->SaveNextGIF(	*ppGIFDib,
 											NULL,
@@ -952,7 +972,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 			(*ppGIFDibPrev)->ConvertTo8bitsErrDiff((*ppGIFDibPrev)->GetPalette());
 		}
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, ((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / nSpeedMul));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -966,7 +986,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 			(*ppGIFDib)->ConvertTo8bitsErrDiff((*ppGIFDib)->GetPalette());
 		}
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY / nSpeedMul);
+		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 		(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDib,
 										NULL,
@@ -974,11 +994,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 	}
 	// Middle Frame?
-	else if (((*ppGIFDib)->IsUserFlag() &&																// Movement
-			(((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= MOVDET_ANIMGIF_MIN_DELAY))	// and at least MOVDET_ANIMGIF_MIN_DELAY ms passed
-			||																							// or
-			(((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= MOVDET_ANIMGIF_MAX_DELAY))	// MOVDET_ANIMGIF_MAX_DELAY ms elapsed since last frame store
-		
+	else if ((int)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
 		// Convert to 8 bpp
 		if ((*ppGIFDibPrev)->GetBitCount() > 8)
@@ -989,7 +1005,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		
 		// Save Next Image
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, ((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / nSpeedMul));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -6225,7 +6241,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bMovementDetectorPreview = FALSE;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
-	m_dwAnimatedGifSpeedMul = MOVDET_ANIMGIF_DEFAULT_SPEEDMUL;
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
@@ -6781,7 +6796,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bColorDetectionPreview = (BOOL) pApp->GetProfileInt(sSection, _T("ColorDetectionPreview"), FALSE);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
-	m_dwAnimatedGifSpeedMul = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifSpeedMul"), MOVDET_ANIMGIF_DEFAULT_SPEEDMUL);
 	m_nDeleteDetectionsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), 0);
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), 0);
 	m_nDeleteSnapshotsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteSnapshotsOlderThanDays"), 0);
@@ -7044,7 +7058,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("ColorDetectionPreview"), m_bColorDetectionPreview);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
-			pApp->WriteProfileInt(sSection, _T("AnimatedGifSpeedMul"), m_dwAnimatedGifSpeedMul);
 			pApp->WriteProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays);
 			pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 			pApp->WriteProfileInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays);
@@ -7242,7 +7255,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("ColorDetectionPreview"), m_bColorDetectionPreview, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("AnimatedGifSpeedMul"), m_dwAnimatedGifSpeedMul, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays, sTempFileName);

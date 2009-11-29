@@ -20,7 +20,7 @@ class CMovDetAnimGifConfigurationDlg : public CDialog
 public:
 	CMovDetAnimGifConfigurationDlg(	int nFullWidth, int nFullHeight,
 					int nCurrentWidth, int nCurrentHeight,
-					int nSpeedMulIndex, CWnd* pParent = NULL);
+					CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CMovDetAnimGifConfigurationDlg)
@@ -30,7 +30,6 @@ public:
 	int		m_nPercentWidth;
 	int		m_nPercentHeight;
 	BOOL	m_bRetainAspect;
-	int		m_nSpeedMulIndex;
 	//}}AFX_DATA
 
 	int m_nFullWidth;

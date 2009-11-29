@@ -577,12 +577,11 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 
 	CMovDetAnimGifConfigurationDlg dlg(	m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
 										(int)m_pDoc->m_dwAnimatedGifWidth, (int)m_pDoc->m_dwAnimatedGifHeight,
-										(int)m_pDoc->m_dwAnimatedGifSpeedMul - 1, this);
+										this);
 	if (dlg.DoModal() == IDOK)
 	{	
 		m_pDoc->m_dwAnimatedGifWidth = (DWORD)dlg.m_nPixelsWidth;
 		m_pDoc->m_dwAnimatedGifHeight = (DWORD)dlg.m_nPixelsHeight;
-		m_pDoc->m_dwAnimatedGifSpeedMul = (DWORD)(dlg.m_nSpeedMulIndex + 1);
 	}
 
 	// Restart Movement Detection
