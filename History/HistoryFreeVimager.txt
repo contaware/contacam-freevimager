@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+2.0.0 (December 20th 2009)
+
+- Some optimisations
+- View's toolbar repainting bug fixed
+
 1.9.7 (September 3rd 2009)
 
 - Multi language support: Russian and Italian translations

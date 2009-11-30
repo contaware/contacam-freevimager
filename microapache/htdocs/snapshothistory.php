@@ -156,15 +156,18 @@ function onNext() {
 <?php      
 $srcuri = "snapshot.php";
 if (intval(WIDTH) > intval(THUMBWIDTH))
-	$iframe_width = intval(WIDTH) + 40;
+	$iframe_width = intval(WIDTH) + 60;
 else
-	$iframe_width = intval(THUMBWIDTH) + 40;
+	$iframe_width = intval(THUMBWIDTH) + 60;
 if (intval(HEIGHT) > intval(THUMBHEIGHT))
-	$iframe_height = intval(HEIGHT) + 80;
+	$iframe_height = intval(HEIGHT) + 90;
 else
-	$iframe_height = intval(THUMBHEIGHT) + 80;
-if ($iframe_width <= 360)
-	$iframe_height = $iframe_height + 100;
+	$iframe_height = intval(THUMBHEIGHT) + 90;
+// Min. size 320x240:
+if ($iframe_width < 380)
+	$iframe_width = 380;
+if ($iframe_height < 330)
+	$iframe_height = 330;
 echo "<div align=\"center\">\n";
 echo "<iframe name=\"myiframe\" src=\"$srcuri?title=no&amp;menu=no\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\">\n";
 echo "<p>Click <a href=\"$srcuri\">Snapshots</a> ";
