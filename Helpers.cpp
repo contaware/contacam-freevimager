@@ -265,13 +265,7 @@ BOOL HasWriteAccess(LPCTSTR lpszFileName)
 	}
 }
 
-/*******************************************************************************
-* PURPOSE  : This function is used to take the Owneship of a specified file
-*
-* INPUT    : lpszFile     :name of the file for which permissions are to be set
-*            
-* RETURNS  : TRUE, if the function succeeds, else FALSE
-********************************************************************************/
+// This function is used to take the Owneship of a specified file
 BOOL TakeOwnership(LPCTSTR lpszFile)
 {
 	if (GetVersion() < 0x80000000) // Windows NT or higher
@@ -302,33 +296,32 @@ BOOL TakeOwnership(LPCTSTR lpszFile)
 							return TRUE;
 						else
 						{
-							// Call GetLastError to determine whether the function succeeded.
-							_stprintf(error, _T("Error in SetFileSecurity Error No : %d"), GetLastError());
-							MessageBox(NULL, error, NULL, MB_OK);
+							_stprintf(error, _T("Error in SetFileSecurity Error No : %d\n"), GetLastError());
+							TRACE(error);
 						}
 					}
 					else
 					{
-						_stprintf(error, _T("Error in SetSecurityDescriptorOwner Error No : %d"), GetLastError());
-						MessageBox(NULL, error, NULL,MB_OK);
+						_stprintf(error, _T("Error in SetSecurityDescriptorOwner Error No : %d\n"), GetLastError());
+						TRACE(error);
 					}
 				}
 				else
 				{
-					_stprintf(error, _T("Error in GetTokenInformation Error No : %d"), GetLastError());
-					MessageBox(NULL, error, NULL, MB_OK);
+					_stprintf(error, _T("Error in GetTokenInformation Error No : %d\n"), GetLastError());
+					TRACE(error);
 				}
 			}
 			else
 			{
-				_stprintf(error, _T("Error in SetPrivilege No : %d"), GetLastError());
-				MessageBox(NULL, error, NULL, MB_OK);
+				_stprintf(error, _T("Error in SetPrivilege No : %d\n"), GetLastError());
+				TRACE(error);
 			}
 		}
 		else
 		{
-			_stprintf(error, _T("Error in OpenProcessToken No : %d"), GetLastError());
-			MessageBox(NULL, error, NULL, MB_OK);
+			_stprintf(error, _T("Error in OpenProcessToken No : %d\n"), GetLastError());
+			TRACE(error);
 		}
 
 		SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, TRUE);// Disabling the set previlege
@@ -407,8 +400,8 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 			acl = (ACL*)malloc(acl_size);
 			if (!acl)
 			{
-				_stprintf(error, _T("Error allocating memory for the acl"));
-				MessageBox(NULL, error, NULL, MB_OK);
+				_stprintf(error, _T("Error allocating memory for the acl\n"));
+				TRACE(error);
 				return FALSE;
 			}
 			InitializeAcl(acl, acl_size, ACL_REVISION);
@@ -424,26 +417,26 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 					}
 					else
 					{
-						_stprintf(error, _T("Error in SetFileSecurity Error No : %d"), GetLastError());
-						MessageBox(NULL, error, NULL, MB_OK);
+						_stprintf(error, _T("Error in SetFileSecurity Error No : %d\n"), GetLastError());
+						TRACE(error);
 					}
 				}
 				else
 				{
-					_stprintf(error, _T("Error in SetSecurityDescriptorDacl Error No : %d"), GetLastError());
-					MessageBox(NULL, error, NULL, MB_OK);
+					_stprintf(error, _T("Error in SetSecurityDescriptorDacl Error No : %d\n"), GetLastError());
+					TRACE(error);
 				}
 			}
 			else
 			{
-				_stprintf(error, _T("Error in AddAccessAllowedAce Error No : %d"), GetLastError());
-				MessageBox(NULL, error, NULL, MB_OK);
+				_stprintf(error, _T("Error in AddAccessAllowedAce Error No : %d\n"), GetLastError());
+				TRACE(error);
 			}
 		}
 		else
 		{
-			_stprintf(error, _T("Error in LookupAccountName No : %d"), GetLastError());
-			MessageBox(NULL, error, NULL, MB_OK);
+			_stprintf(error, _T("Error in LookupAccountName No : %d\n"), GetLastError());
+			TRACE(error);
 		}
 
 		if (acl)

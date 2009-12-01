@@ -3135,7 +3135,8 @@ BEGIN
     LTEXT           "",IDC_VOLUME_MUTED,59,131,31,8
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
-    GROUPBOX        "Recording Scheduler",IDC_STATIC2161,196,155,213,80
+    GROUPBOX        "Recording Scheduler (device must be running)",
+                    IDC_STATIC2161,196,155,213,80
     GROUPBOX        "Recording Video Compression",IDC_STATIC2162,196,2,213,
                     72
     LTEXT           "Start",IDC_STATIC2163,204,179,16,8

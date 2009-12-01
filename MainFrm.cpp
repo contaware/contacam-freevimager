@@ -3401,7 +3401,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				{
 					if (timedate >= pSchedulerEntry->m_StopTime)
 					{
-						if (pSchedulerEntry->IsRunning())
+						if (pSchedulerEntry->m_bRunning)
 						{
 							// Done?
 							if (pSchedulerEntry->Stop())
@@ -3415,7 +3415,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 					}
 					else if (timedate >= pSchedulerEntry->m_StartTime)
 					{
-						if (!pSchedulerEntry->IsRunning())
+						if (!pSchedulerEntry->m_bRunning)
 							pSchedulerEntry->Start();
 					}
 				}
@@ -3425,12 +3425,12 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 					{
 						if (timeonly < pSchedulerEntry->m_StartTime || timeonly > pSchedulerEntry->m_StopTime)
 						{
-							if (pSchedulerEntry->IsRunning())
+							if (pSchedulerEntry->m_bRunning)
 								pSchedulerEntry->Stop();
 						}
 						else
 						{
-							if (!pSchedulerEntry->IsRunning())
+							if (!pSchedulerEntry->m_bRunning)
 								pSchedulerEntry->Start();
 						}
 					}
@@ -3438,12 +3438,12 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 					{
 						if (timeonly < pSchedulerEntry->m_StartTime && timeonly > pSchedulerEntry->m_StopTime)
 						{
-							if (pSchedulerEntry->IsRunning())
+							if (pSchedulerEntry->m_bRunning)
 								pSchedulerEntry->Stop();
 						}
 						else
 						{
-							if (!pSchedulerEntry->IsRunning())
+							if (!pSchedulerEntry->m_bRunning)
 								pSchedulerEntry->Start();
 						}
 					}

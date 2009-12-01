@@ -251,13 +251,8 @@ public:
 	class CSchedulerEntry
 	{
 		public:
-		// Count-Down Defines
-		#define SCHEDULERONCE_STOPPING_COUNTDOWN	10
-		#define SCHEDULERONCE_CLOSEDOC_COUNTDOWN	10
+			enum SchedulerEntryType {NONE, ONCE, DAILY, WEEKLY};
 
-		enum SchedulerEntryType {NONE, ONCE, DAILY, WEEKLY};
-
-		public:
 			CSchedulerEntry();
 			virtual ~CSchedulerEntry(){;};
 
@@ -278,16 +273,6 @@ public:
 
 			// Are we Running?
 			BOOL m_bRunning;
-			BOOL IsRunning() const {return m_bRunning;};
-
-			// Document Was Already Open?
-			BOOL m_bDocWasOpen;
-
-			// The Stopping Count-Down
-			int m_nStoppingCountdown;
-
-			// The Close Document Count-Down
-			int m_nCloseDocCountdown;
 
 			// The Times
 			CTime m_StartTime;
@@ -295,6 +280,7 @@ public:
 
 		protected:
 			BOOL m_bInsideStart;
+			BOOL m_bInsideStop;
 	};
 
 	// Scheduler List Type

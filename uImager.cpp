@@ -2025,7 +2025,10 @@ void CUImagerApp::SaveOnEndSession()
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 				{
 					// Stop recording so that the index is not missing!
-					if (((CVideoDeviceDoc*)pDoc)->IsRecording())
+					if (((CVideoDeviceDoc*)pDoc)->IsRecording()				&&
+						!((CVideoDeviceDoc*)pDoc)->m_bVfWDialogDisplaying	&&
+						!((CVideoDeviceDoc*)pDoc)->m_bAboutToStopRec		&&
+						!((CVideoDeviceDoc*)pDoc)->m_bAboutToStartRec)
 						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
 					if (m_bUseSettings)
 						((CVideoDeviceDoc*)pDoc)->SaveSettings();
@@ -5913,32 +5916,27 @@ CUImagerApp::CSchedulerEntry::CSchedulerEntry()
 	m_bRunning = FALSE;
 	m_StartTime = 0;
 	m_StopTime = 0;
-	m_bDocWasOpen = FALSE;
-	m_nStoppingCountdown = 0;
-	m_nCloseDocCountdown = 0;
 	m_bInsideStart = FALSE;
+	m_bInsideStop = FALSE;
 }
 
 void CUImagerApp::CSchedulerEntry::Start()
 {
-	// If Already Runnig or Inside this function
-	// -> Nothing To Do Here, Exit!
-	//
 	// m_bInsideStart is for safety in case a dialog
 	// which may pump messages is called from this function
 	// (this causes calls to this function again and again
 	// from the scheduler timer message)
-	if (m_bRunning || m_bInsideStart)
+	if (m_bInsideStart || m_bRunning)
 		return;
 
 	// Inside This Function
 	m_bInsideStart = TRUE;
 
-	// First check if already running!
+	// Is document open?
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	CVideoDeviceDoc* pDoc = NULL;
-	m_bDocWasOpen = FALSE;
+	BOOL bDocIsOpen = FALSE;
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
@@ -5947,81 +5945,40 @@ void CUImagerApp::CSchedulerEntry::Start()
 			if (pVideoDeviceDoc->GetDevicePathName() == m_sDevicePathName)
 			{
 				pDoc = pVideoDeviceDoc;
-				m_bDocWasOpen = TRUE;
+				bDocIsOpen = TRUE;
 				break;
 			}
 		}
 	}
 
-	// Open Doc
-	if (!m_bDocWasOpen)
+	// Wait if not yet open
+	if (!bDocIsOpen)
 	{
-		// Open VfW Device
-		if (m_sDevicePathName == _T("VfW"))
-		{
-			pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-			if (!pDoc)
-			{
-				m_bInsideStart = FALSE;
-				return;
-			}
-			if (!pDoc->OpenVideoDevice(-1))
-			{
-				pDoc->CloseDocument();
-				m_bInsideStart = FALSE;
-				return;
-			}
-		}
-		else
-		{
-			// Open DirectShow Device
-			CString sDevicePathName(m_sDevicePathName);
-			sDevicePathName.Replace(_T('/'), _T('\\'));
-			int nID = CDxCapture::GetDeviceID(sDevicePathName);
-			if (nID >= 0)
-			{
-				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-				if (!pDoc)
-				{
-					m_bInsideStart = FALSE;
-					return;
-				}
-				if (!pDoc->OpenVideoDevice(nID))
-				{
-					pDoc->CloseDocument();
-					m_bInsideStart = FALSE;
-					return;
-				}
-			}
-			// Open Networking Get Frame
-			else
-			{
-				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-				if (!pDoc)
-				{
-					m_bInsideStart = FALSE;
-					return;
-				}
-				if (!pDoc->OpenGetVideo(m_sDevicePathName))
-				{
-					pDoc->CloseDocument();
-					m_bInsideStart = FALSE;
-					return;
-				}
-			}
-		}
+		m_bInsideStart = FALSE;
+		return;
 	}
 
-	// Start recording if not already recording
+	// Can start rec?
+	if (!pDoc->m_bCapture				||
+		pDoc->m_bVfWDialogDisplaying	||
+		pDoc->m_bAboutToStopRec			||
+		pDoc->m_bAboutToStartRec)
+	{
+		m_bInsideStart = FALSE;
+		return;
+	}
+
+	// Start recording if not already started
 	if (!pDoc->IsRecording())
 	{
-		// Note: This function may pump messages, see the explanation above.
-		//
-		// If the function returns FALSE it's probable that the network
-		// camera has not yet received the first frame, which is necessary
-		// for the video recording.
-		// -> return now without setting the m_bRunning flag so that the
-		// scheduler can call us again!
+		// Ready?
+		if (!pDoc->m_bCaptureStarted)
+		{
+			m_bInsideStart = FALSE;
+			return;
+		}
+
+		// Start
 		if (!pDoc->CaptureRecord(FALSE)) // No Message Box on Error					
 		{
 			m_bInsideStart = FALSE;
@@ -6035,75 +5992,52 @@ void CUImagerApp::CSchedulerEntry::Start()
 	// Store The Document Pointer
 	m_pDoc = pDoc;
 
-	// Reset Countdowns
-	m_nStoppingCountdown = INT_MAX;
-	m_nCloseDocCountdown = INT_MAX;
-
 	// Exiting This Function
 	m_bInsideStart = FALSE;
 }
 
-// If the Return Value is TRUE the Scheduler deletes this entry!
 BOOL CUImagerApp::CSchedulerEntry::Stop()
 {
-	// Safety Check
-	if (!m_pDoc ||
-		!((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc) ||
+	// m_bInsideStop is for safety in case a dialog
+	// which may pump messages is called from this function
+	// (this causes calls to this function again and again
+	// from the scheduler timer message)
+	if (m_bInsideStop)
+		return FALSE;	// Do not delete this entry now, wait!
+
+	// Inside This Function
+	m_bInsideStop = TRUE;
+
+	// Check
+	if (!((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc) ||
 		!m_bRunning)
 	{
 		m_bRunning = FALSE;
-		return TRUE;
+		m_bInsideStop = FALSE;
+		return TRUE;	// Done, delete this entry
 	}
 
-	// Stop Recording
+	// Can stop rec?
+	if (!m_pDoc->m_bCapture				||
+		m_pDoc->m_bVfWDialogDisplaying	||
+		m_pDoc->m_bAboutToStopRec		||
+		m_pDoc->m_bAboutToStartRec)
+	{
+		m_bInsideStop = FALSE;
+		return FALSE;	// Do not delete this entry now, wait!
+	}
+
+	// Stop recording if not already stopped
 	if (m_pDoc->IsRecording())
-	{
-		// First
-		if (m_nStoppingCountdown == INT_MAX)
-		{
-			// Stop Recording
-			m_pDoc->CaptureRecord(FALSE); // No Message Box on Error	
-			m_nStoppingCountdown = SCHEDULERONCE_STOPPING_COUNTDOWN;
-		}
-		// Dec
-		else if (m_nStoppingCountdown > 0)
-			m_nStoppingCountdown--;
-		// Exit Scheduler Because Recording is not Stopping...
-		else
-		{
-			if (!m_bDocWasOpen)
-			{
-				m_pDoc->CloseDocument();
-				m_pDoc = NULL;
-			}
-			m_bRunning = FALSE;
-			return TRUE; // Done, delete this entry
-		}
-	}
-	// Close Document
-	// (Give Some Time To Open The Recorded Document)
-	else
-	{
-		// First?
-		if (m_nCloseDocCountdown == INT_MAX)
-			m_nCloseDocCountdown = SCHEDULERONCE_CLOSEDOC_COUNTDOWN;
-		// Dec?
-		else if (m_nCloseDocCountdown > 0)
-			m_nCloseDocCountdown--;
-		// Close Document
-		else
-		{
-			if (!m_bDocWasOpen)
-			{
-				m_pDoc->CloseDocument();
-				m_pDoc = NULL;
-			}
-			m_bRunning = FALSE;
-			return TRUE; // Done, delete this entry
-		}
-	}
+		m_pDoc->CaptureRecord(FALSE); // No Message Box on Error
+	
+	// Not Running
+	m_bRunning = FALSE;
 
-	return FALSE;	// Do not delete this entry now, wait!
+	// Exiting This Function
+	m_bInsideStop = FALSE;
+
+	return TRUE;		// Done, delete this entry
 }
 
 void CUImagerApp::AddSchedulerEntry(CSchedulerEntry* pSchedulerEntry)
