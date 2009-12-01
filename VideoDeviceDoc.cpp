@@ -11779,7 +11779,7 @@ void CVideoDeviceDoc::OnViewDetections()
 
 void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && m_lMovDetTotalZones > 0);
+	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
@@ -11798,7 +11798,7 @@ void CVideoDeviceDoc::OnViewDetectionZones()
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && m_lMovDetTotalZones > 0);
+	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowEditDetectionZones ? 1 : 0);
 }
 

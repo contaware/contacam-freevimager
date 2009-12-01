@@ -851,26 +851,26 @@ void CAssistantPage::ApplySettings()
 			CString sSnapShotRate;
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
-			// Init thumb vars
+			// Init thumb vars, must be a multiple of 4 because of swf
 			BOOL bUseThumb = TRUE;
-			int nThumbWidth = m_pDoc->m_DocRect.right;
-			int nThumbHeight = m_pDoc->m_DocRect.bottom;
+			int nThumbWidth = m_pDoc->m_DocRect.right & ~0x3;
+			int nThumbHeight = m_pDoc->m_DocRect.bottom & ~0x3;
 			switch (m_nComboSnapshotHistorySize)
 			{
 				// Full Size
 				case 0	:	bUseThumb = FALSE;
 							break;
 				// 3 / 4 Size
-				case 1	:	nThumbWidth = 3 * nThumbWidth / 4;
-							nThumbHeight = 3 * nThumbHeight / 4;
+				case 1	:	nThumbWidth = (3 * nThumbWidth / 4) & ~0x3;
+							nThumbHeight = (3 * nThumbHeight / 4) & ~0x3;
 							break;
 				// 1 / 2 Size
-				case 2	:	nThumbWidth = nThumbWidth / 2;
-							nThumbHeight = nThumbHeight / 2;
+				case 2	:	nThumbWidth = (nThumbWidth / 2) & ~0x3;
+							nThumbHeight = (nThumbHeight / 2) & ~0x3;
 							break;
 				// 1 / 4 Size
-				default	:	nThumbWidth = nThumbWidth / 4;
-							nThumbHeight = nThumbHeight / 4;
+				default	:	nThumbWidth = (nThumbWidth / 4) & ~0x3;
+							nThumbHeight = (nThumbHeight / 4) & ~0x3;
 							break;
 			}
 			CString sThumbWidth, sThumbHeight;
