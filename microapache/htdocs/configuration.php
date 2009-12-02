@@ -68,8 +68,8 @@ define ("HEIGHT","480");
 
 // Maximum number of summary thumbnails per page
 // Note: Internet explorer has a limitation of the maximum
-// number of shown animated gifs per page (do not set more than 32!)
-define ("MAX_PER_PAGE","28");
+// number of shown animated gifs per page (not more than 36 is safe)
+define ("MAX_PER_PAGE","27");
 
 // Sort order of summary thumbnails
 define ("SORT_OLDEST_FIRST","1"); // 0 = newest first , 1 = oldest first
