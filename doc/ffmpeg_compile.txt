@@ -60,18 +60,3 @@ Note on Ogg, Vorbis and Theora 1.0 (Theora 1.1.1 not working...):
 To compile everything correctly use for all 3 libs the mingw prefix and
 copy libs from /mingw/lib to /usr/local/lib and includes from /mingw/include to /usr/local/include:
 ./configure --enable-static --disable-shared --prefix=/mingw
-
-
-Notes:
-
-- SNOW is locking (crashing) with resolutions less than 88 x 72...
-- Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
-- H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
-- Internal DTS not working in new ffmpeg                           -> not compiled in
-- zlib leaks                                                       -> not compiled in
-- mpeg1 and mpeg2 leak when opened together                        -> disabled in CAVIPlay code
-- vorbis internal decoder crashing on win95
-- swscale doesn't support pal8 input like from CRAM 8bpp.avi. img_convert supports it!
-- MPNG.avi is working with dll version, but with static it is no converting frame at 1 sec...
-- I263 not working, showing only first frame
-- THEORA's datarate regulator outputs keyframes with a lower quality than delta frames...

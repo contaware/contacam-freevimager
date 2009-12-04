@@ -59,6 +59,9 @@ extern "C"
 #define	AVI_SCALE_INT						10000000
 #define	AVI_SCALE_DOUBLE					10000000.0
 
+// Maximum gop size to avoid locking the seek to long
+#define MAX_KEYFRAMES_SPACING				1024
+
 // Lib AVCodec Defines: Codec Id as Parameter
 #ifdef SUPPORT_LIBAVCODEC
 #define mpeg_codec(x)		((x)==CODEC_ID_MPEG1VIDEO || (x)==CODEC_ID_MPEG2VIDEO)

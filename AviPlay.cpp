@@ -3265,9 +3265,9 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 	DWORD dwFourCC = GetFourCC(true);
 	CodecID id = AVCodecFourCCToCodecID(dwFourCC);
 
-	// Avoid mpeg1 or mpeg2 because they leak memory!
-	if (id == CODEC_ID_MPEG2VIDEO || id == CODEC_ID_MPEG1VIDEO)
-		id = CODEC_ID_NONE;
+	// Always use mpeg2 decoder
+	if (id == CODEC_ID_MPEG1VIDEO)
+		id = CODEC_ID_MPEG2VIDEO;
 
     // Find the decoder for the video stream
 	m_pCodec = avcodec_find_decoder(id);
@@ -3324,7 +3324,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 			memcpy(	m_pCodecCtx->extradata,
 					(LPBYTE)m_pSrcFormat + sizeof(BITMAPINFOHEADER),
 					m_pCodecCtx->extradata_size);
-			m_bDecodeExtraData = (id == CODEC_ID_MPEG1VIDEO) ? true : false;
+			m_bDecodeExtraData = mpeg_codec(id) ? true : false;
 		}
 	}
 
@@ -4387,7 +4387,7 @@ bool CAVIPlay::CAVIVideoStream::GetUncompressedFrameAt(	CDib* pDib,
 				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 				return false;
 			}
-			if (nPrevKeyFrame < (int)dwFrame)
+			else if (nPrevKeyFrame < (int)dwFrame && ((int)dwFrame - nPrevKeyFrame < MAX_KEYFRAMES_SPACING))
 			{
 				// Reset
 				nLastDecompressedFrame = -2;
@@ -5318,7 +5318,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			pDib->Free();
 			return false;
 		}
-		else if (nPrevKeyFrame < (int)dwFrame)
+		else if (nPrevKeyFrame < (int)dwFrame && ((int)dwFrame - nPrevKeyFrame < MAX_KEYFRAMES_SPACING))
 		{	
 			// Clear Dst Buffer if First Frame
 			if (nPrevKeyFrame == 0)
@@ -5766,7 +5766,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 	int nPrevKeyFrame = GetPrevKeyFrame(dwFrame);
 	if (nPrevKeyFrame == -1)
 		return false;
-	else if (nPrevKeyFrame < (int)dwFrame)
+	else if (nPrevKeyFrame < (int)dwFrame && ((int)dwFrame - nPrevKeyFrame < MAX_KEYFRAMES_SPACING))
 	{	
 		// Get Key-Frame
 		dwSrcBufSizeUsed = m_dwSrcBufSize;
