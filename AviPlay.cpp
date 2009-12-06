@@ -3679,22 +3679,25 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 						m_pCodecCtx->height);
 
 		// Prepare Image Conversion Context
-		m_pImgConvertCtxGdi = sws_getContext(	GetWidth(),				// Source Width
-												GetHeight(),			// Source Height
-												m_pCodecCtx->pix_fmt,	// Source Format
-												GetWidth(),				// Destination Width
-												GetHeight(),			// Destination Height
-												pix_fmt,				// Destination Format
-												SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
+		if (m_pCodecCtx->pix_fmt != PIX_FMT_NONE)
+		{
+			m_pImgConvertCtxGdi = sws_getContext(	GetWidth(),				// Source Width
+													GetHeight(),			// Source Height
+													m_pCodecCtx->pix_fmt,	// Source Format
+													GetWidth(),				// Destination Width
+													GetHeight(),			// Destination Height
+													pix_fmt,				// Destination Format
+													SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
 #ifdef SUPPORT_LIBSWSCALE
-												m_pFilterGdi,			// Src Filter
+													m_pFilterGdi,			// Src Filter
 #else
-												NULL,
+													NULL,
 #endif
-												NULL,					// No Dst Filter
-												NULL);					// Param
-		if (!m_pImgConvertCtxGdi)
-			return false;
+													NULL,					// No Dst Filter
+													NULL);					// Param
+			if (!m_pImgConvertCtxGdi)
+				return false;
+		}
 
 		// Flip U <-> V pointers
 		if (pix_fmt == PIX_FMT_YUV420P)
@@ -3712,7 +3715,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 #endif
 
 	// Color Space Conversion
-	if (got_picture && m_pFrame->data[0])
+	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxGdi)
 	{
 #ifdef SUPPORT_LIBPOSTPROCESS
 		if (m_pPostProcessingCtx && m_pPostProcessingMode)
@@ -3873,24 +3876,27 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		// Prepare Image Conversion Context
 		if (m_pImgConvertCtxDxDraw)
 			sws_freeContext(m_pImgConvertCtxDxDraw);
-		m_pImgConvertCtxDxDraw = sws_getContext(GetWidth(),				// Source Width
-												GetHeight(),			// Source Height
-												m_pCodecCtx->pix_fmt,	// Source Format
-												GetWidth(),				// Destination Width
-												GetHeight(),			// Destination Height
-												pix_fmt,				// Destination Format
-												SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-#ifdef SUPPORT_LIBSWSCALE
-												m_pFilterDxDraw,		// Src Filter
-#else
-												NULL,
-#endif
-												NULL,					// No Dst Filter
-												NULL);					// Param
-		if (!m_pImgConvertCtxDxDraw)
+		if (m_pCodecCtx->pix_fmt != PIX_FMT_NONE)
 		{
-			pDxDraw->UnlockSrc();
-			return false;
+			m_pImgConvertCtxDxDraw = sws_getContext(GetWidth(),				// Source Width
+													GetHeight(),			// Source Height
+													m_pCodecCtx->pix_fmt,	// Source Format
+													GetWidth(),				// Destination Width
+													GetHeight(),			// Destination Height
+													pix_fmt,				// Destination Format
+													SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
+#ifdef SUPPORT_LIBSWSCALE
+													m_pFilterDxDraw,		// Src Filter
+#else
+													NULL,
+#endif
+													NULL,					// No Dst Filter
+													NULL);					// Param
+			if (!m_pImgConvertCtxDxDraw)
+			{
+				pDxDraw->UnlockSrc();
+				return false;
+			}
 		}
 	}
 
@@ -3900,7 +3906,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 #endif
 
 	// Color Space Conversion
-	if (got_picture && m_pFrame->data[0])
+	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
 	{
 #ifdef SUPPORT_LIBPOSTPROCESS
 		if (m_pPostProcessingCtx && m_pPostProcessingMode)
