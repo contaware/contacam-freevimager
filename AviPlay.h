@@ -981,7 +981,7 @@ class CAVIPlay
 			__forceinline DWORD GetTotalKeyFrames() const {return m_dwKeyFramesCount;};
 
 			// Get Data Functions
-			bool SkipFrame(int nNumOfFrames = 1); // Skip the given amount of frames
+			bool SkipFrame(int nNumOfFrames = 1, BOOL bForceDecompress = FALSE); // Skip the given amount of frames
 			bool GetFrame(CDib* pDib);
 			bool GetFrameAt(CDib* pDib, DWORD dwFrame);
 			bool GetFrame(CDxDraw* pDxDraw, CRect rc);
@@ -1041,7 +1041,7 @@ class CAVIPlay
 			int GetStreamType() const {return 0;};
 
 		protected:
-			__forceinline bool SkipFrameHelper();	// Do not use it directly, has no CS!
+			__forceinline bool SkipFrameHelper(BOOL bForceDecompress);	// Do not use it directly, has no CS!
 			bool GetFrameAtDirect(CDib* pDib, DWORD dwFrame);
 			bool GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc);
 			bool GetUncompressedFrameAt(CDib* pDib, DWORD dwFrame,					// Direct decompress: RGB, RLE4, RLE8, YV12, YUY2

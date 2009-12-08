@@ -3149,7 +3149,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 			// Decode the first frame
 			DWORD dwNextFrame = m_dwNextFrame;
 			Rew();
-			SkipFrame();
+			SkipFrame(1, TRUE);
 			Rew();
 			m_dwNextFrame = dwNextFrame;
 			return true;
@@ -3167,7 +3167,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 				// Decode the first frame
 				DWORD dwNextFrame = m_dwNextFrame;
 				Rew();
-				SkipFrame();
+				SkipFrame(1, TRUE);
 				Rew();
 				m_dwNextFrame = dwNextFrame;
 				return true;
@@ -3241,7 +3241,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 	// we have to decode the first frame
 	DWORD dwNextFrame = m_dwNextFrame;
 	Rew();
-	SkipFrame();
+	SkipFrame(1, TRUE);
 	Rew();
 	m_dwNextFrame = dwNextFrame;
 
@@ -3601,7 +3601,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 									m_pFrame,
 									&got_picture,
 									(unsigned __int8 *)m_pSrcBuf,
-									((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage);
+									((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage); 
 	if (m_pCodecCtx->has_b_frames)
 		m_nOneFrameDelay = 1;
     if (len < 0)
@@ -4108,7 +4108,7 @@ bool CAVIPlay::CAVIVideoStream::ReOpenDecompressVCM()
 				// we have to read the first frame
 				DWORD dwNextFrame = m_dwNextFrame;
 				Rew();
-				SkipFrame();
+				SkipFrame(1, TRUE);
 				Rew();
 				m_dwNextFrame = dwNextFrame;
 				return true;
@@ -4228,7 +4228,7 @@ bool CAVIPlay::CAVIVideoStream::ChangeGetFrameBitsVCM(WORD wNewBitCount)
 	return false;
 }
 
-bool CAVIPlay::CAVIVideoStream::SkipFrame(int nNumOfFrames/*=1*/)
+bool CAVIPlay::CAVIVideoStream::SkipFrame(int nNumOfFrames/*=1*/, BOOL bForceDecompress/*=FALSE*/)
 {
 	// Simple cases
 	if (nNumOfFrames < 1)
@@ -4236,7 +4236,7 @@ bool CAVIPlay::CAVIVideoStream::SkipFrame(int nNumOfFrames/*=1*/)
 	else if (nNumOfFrames == 1)
 	{
 		::EnterCriticalSection(&m_pAVIPlay->m_csAVI);
-		bool res = SkipFrameHelper();
+		bool res = SkipFrameHelper(bForceDecompress);
 		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 		return res;
 	}
@@ -4256,7 +4256,7 @@ bool CAVIPlay::CAVIVideoStream::SkipFrame(int nNumOfFrames/*=1*/)
 	}
 	while (nSkipCount--)
 	{
-		if (!SkipFrameHelper())
+		if (!SkipFrameHelper(bForceDecompress))
 		{
 			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 			return false;
@@ -4273,7 +4273,7 @@ bool CAVIPlay::CAVIVideoStream::SkipFrame(int nNumOfFrames/*=1*/)
 }
 
 // Do not use it directly, has no CS!
-__forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper()
+__forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompress)
 {
 	// If end of File -> return
 	if ((GetTotalFrames() > 0) &&
@@ -4284,8 +4284,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper()
 	m_nLastDecompressedDibFrame = -2;
 	m_nLastDecompressedDxDrawFrame = -2;
 
-	// Not Uncompressed Frame?
-	if (!m_bNoDecompression && !m_bYuvToRgb32 && GetTotalFrames() > GetTotalKeyFrames())
+	// Decompress?
+	if (bForceDecompress ||
+		(!m_bNoDecompression && !m_bYuvToRgb32 && GetTotalFrames() > GetTotalKeyFrames()))
 	{
 		// Get Compressed Data
 		DWORD dwSrcBufSizeUsed = m_dwSrcBufSize;
