@@ -5458,20 +5458,6 @@ BOOL CVideoAviDoc::DisplayFrame(int nFrame, int nDelay/*=0*/)
 		return FALSE;
 }
 
-void CVideoAviDoc::RenderingSwitch(int nRenderingMode)
-{
-	m_PlayVideoFileThread.SafePauseDelayedRestart(	GetView()->GetSafeHwnd(),
-													WM_RENDERING_SWITCH,
-													(WPARAM)nRenderingMode,
-													(LPARAM)0,
-													(GetPlayFrameRate() > 0.0) ?
-													Round(RENDERING_SWITCH_SAFEPAUSED_FRAMES_TIMEOUT * 1000.0 /
-													GetPlayFrameRate()) :
-													500,
-													RENDERING_SWITCH_DELAYEDRESTART_TIMEOUT,
-													TRUE);
-}
-
 void CVideoAviDoc::RestoreFrame(int nDelay/*=0*/)
 {
 	// A restore has already been posted and not yet processed

@@ -772,10 +772,10 @@ BEGIN
         MENUITEM "Full Screen &Adapt Res\tCtrl+F", 
                                                 ID_VIEW_FULLSCREEN_ADAPTRES
         MENUITEM SEPARATOR
-        MENUITEM "GDI RGB\tR",                  ID_VIEW_GDI_RGB
-        MENUITEM "GDI YUV\tG",                  ID_VIEW_GDI_YUV
-        MENUITEM "DirectX RGB\tX",              ID_VIEW_DIRECTX_RGB
-        MENUITEM "DirectX YUV\tY",              ID_VIEW_DIRECTX_YUV
+        MENUITEM "GDI RGB",                     ID_VIEW_GDI_RGB
+        MENUITEM "GDI YUV",                     ID_VIEW_GDI_YUV
+        MENUITEM "DirectX RGB",                 ID_VIEW_DIRECTX_RGB
+        MENUITEM "DirectX YUV",                 ID_VIEW_DIRECTX_YUV
     END
     POPUP "&Capture"
     BEGIN

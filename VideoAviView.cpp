@@ -58,7 +58,6 @@ BEGIN_MESSAGE_MAP(CVideoAviView, CUImagerView)
 	ON_MESSAGE(WM_AVIFILE_PROGRESS, OnAviFileProgress)
 	ON_MESSAGE(WM_RESTORE_FRAME, OnRestoreFrame)
 	ON_MESSAGE(WM_ENABLE_CURSOR, OnEnableCursor)
-	ON_MESSAGE(WM_RENDERING_SWITCH, OnRenderingSwitch)
 	ON_MESSAGE(WM_SAFE_PAUSE_TIMEOUT, OnSafePauseTimeout)
 	ON_MESSAGE(WM_AVIINFODLG_POPUP, OnAviInfoDlg)
 	ON_MESSAGE(WM_PLAYVOLDLG_POPUP, OnPlayVolDlg)
@@ -670,171 +669,110 @@ BOOL CVideoAviView::UpdateCurrentFrame(CAVIPlay::CAVIVideoStream* pVideoStream)
 	}
 }
 
-LONG CVideoAviView::OnRenderingSwitch(WPARAM wparam, LPARAM lparam)
+void CVideoAviView::RenderingSwitch(int nRenderingMode)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	int nRenderingMode = (int)wparam;
-
-	// Tries for CS_TIMEOUT to Enter the CS
-	if (pDoc->m_DxDraw.HasDxDraw() ? pDoc->m_DxDraw.EnterCSTimeout() : TRUE)
+	// Enter the CS
+	if (pDoc->m_DxDraw.HasDxDraw())
+		pDoc->m_DxDraw.EnterCS();
+	
+	switch (nRenderingMode)
 	{
-		switch (nRenderingMode)
+		case RENDERING_MODE_GDI_RGB :
+		case RENDERING_MODE_GDI_YUV :
 		{
-			case RENDERING_MODE_GDI_RGB :
-			case RENDERING_MODE_GDI_YUV :
+			CAVIPlay::CAVIVideoStream* pVideoStream =
+					pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
+			if (pVideoStream)
 			{
-				CAVIPlay::CAVIVideoStream* pVideoStream =
-						pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
-				if (pVideoStream)
-				{
-					// Update Flags
-					pDoc->m_bUseDxDraw = FALSE;
-					pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_GDI_RGB);
+				// Update Flags
+				pDoc->m_bUseDxDraw = FALSE;
+				pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_GDI_RGB);
 
-					// Open Decompressor
-					if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_GDI_RGB) ? true : false))
-						goto RenderingSwitchError;
+				// Open Decompressor
+				if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_GDI_RGB) ? true : false))
+					goto RenderingSwitchExit;
 
-					// Update Frame At Current Position
-					if (!UpdateCurrentFrame(pVideoStream))
-						goto RenderingSwitchError;
-				}
-
-				break;
+				// Update Frame At Current Position
+				if (!UpdateCurrentFrame(pVideoStream))
+					goto RenderingSwitchExit;
 			}
 
-			case RENDERING_MODE_DXDRAW_RGB :
-			case RENDERING_MODE_DXDRAW_YUV :
+			break;
+		}
+
+		case RENDERING_MODE_DXDRAW_RGB :
+		case RENDERING_MODE_DXDRAW_YUV :
+		{
+			CAVIPlay::CAVIVideoStream* pVideoStream =
+					pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
+			if (pVideoStream)
 			{
-				CAVIPlay::CAVIVideoStream* pVideoStream =
-						pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
-				if (pVideoStream)
-				{
-					// Update Flags
-					pDoc->m_bUseDxDraw = TRUE;
-					pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_DXDRAW_RGB);
+				// Update Flags
+				pDoc->m_bUseDxDraw = TRUE;
+				pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_DXDRAW_RGB);
 
-					// Open Decompressor
-					if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_DXDRAW_RGB) ? true : false))
-						goto RenderingSwitchError;
+				// Open Decompressor
+				if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_DXDRAW_RGB) ? true : false))
+					goto RenderingSwitchExit;
 
-					// Update Frame At Current Position
-					if (!UpdateCurrentFrame(pVideoStream))
-						goto RenderingSwitchError;
+				// Update Frame At Current Position
+				if (!UpdateCurrentFrame(pVideoStream))
+					goto RenderingSwitchExit;
 
-					// Update / Init DxDraw
-					if (pDoc->m_DxDraw.IsFullScreen())
-					{	
-						if (!pDoc->m_DxDraw.FullScreenCreateOffscreen(
-											pDoc->m_DocRect.right,
-											pDoc->m_DocRect.bottom,
-											pVideoStream->GetFourCC(false)))
-						{
-							goto RenderingSwitchError;
-						}
-					}
-					else
-					{
-						if (!pDoc->m_DxDraw.Init(GetSafeHwnd(),
-											pDoc->m_DocRect.right,
-											pDoc->m_DocRect.bottom,
-											pVideoStream->GetFourCC(false),
-											IDB_BITSTREAM_VERA_11))
-						{
-							goto RenderingSwitchError;
-						}
-					}
+				// Update / Init DxDraw
+				if (pDoc->m_DxDraw.IsFullScreen())
+				{	
+					if (!pDoc->m_DxDraw.FullScreenCreateOffscreen(
+										pDoc->m_DocRect.right,
+										pDoc->m_DocRect.bottom,
+										pVideoStream->GetFourCC(false)))
+						goto RenderingSwitchExit;
 				}
-
-				break;
+				else
+				{
+					if (!pDoc->m_DxDraw.Init(GetSafeHwnd(),
+										pDoc->m_DocRect.right,
+										pDoc->m_DocRect.bottom,
+										pVideoStream->GetFourCC(false),
+										IDB_BITSTREAM_VERA_11))
+						goto RenderingSwitchExit;
+				}
 			}
-			
-			default :
-				break;
+
+			break;
 		}
 		
-		// Use DirectDraw?
-		if (pDoc->m_bUseDxDraw)
-		{
-			// Copy Dib
-			if ((pDoc->m_PlayVideoFileThread.IsAlive() &&	// Is Waiting Audio to finish
-				pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-				||
-				!pDoc->m_PlayVideoFileThread.IsAlive())		// Is Not Playing
-			{
-				::EnterCriticalSection(&pDoc->m_csDib);
-				pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_UserZoomRect);
-				::LeaveCriticalSection(&pDoc->m_csDib);
-			}
-		}
-		else if (pDoc->m_DxDraw.IsFullScreen())
-		{
-			pDoc->m_DxDraw.FlipCurrentToGDISurface();
-		}
-		
-		// Leave CS
-		if (pDoc->m_DxDraw.HasDxDraw())
-			pDoc->m_DxDraw.LeaveCS();
-
-		// Restart
-		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-
-		// Update Window
-		if ((pDoc->m_PlayVideoFileThread.IsAlive() &&		// Is Waiting Audio to finish
-			pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-			||
-			!pDoc->m_PlayVideoFileThread.IsAlive())			// Is Not Playing
-		{
-			UpdateWindowSizes(TRUE, FALSE, FALSE);
-		}
+		default :
+			break;
 	}
-	else
+	
+	// Use DirectDraw?
+	if (pDoc->m_bUseDxDraw)
 	{
-		// Retry Later
-		CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-														WM_RENDERING_SWITCH,
-														RENDERING_SWITCH_RETRY_DELAY,
-														wparam,
-														lparam);
-		TRACE(_T("Post Delayed: OnRenderingSwitch()\n"));
+		// Copy Dib
+		::EnterCriticalSection(&pDoc->m_csDib);
+		pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_UserZoomRect);
+		::LeaveCriticalSection(&pDoc->m_csDib);
 	}
+	else if (pDoc->m_DxDraw.IsFullScreen())
+		pDoc->m_DxDraw.FlipCurrentToGDISurface();
 
-	return 1;
-
-	// On Error
-RenderingSwitchError:
+RenderingSwitchExit:
 	
 	// Leave CS
 	if (pDoc->m_DxDraw.HasDxDraw())
 		pDoc->m_DxDraw.LeaveCS();
 
-	// Restart
-	pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-
 	// Update Window
-	if ((pDoc->m_PlayVideoFileThread.IsAlive() &&		// Is Waiting Audio to finish
-		pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-		||
-		!pDoc->m_PlayVideoFileThread.IsAlive())			// Is Not Playing
-	{
-		UpdateWindowSizes(TRUE, FALSE, FALSE);
-	}
-
-	return 0;
-}
-
-void CVideoAviView::ViewGdiRgb() 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
-	pDoc->RenderingSwitch(RENDERING_MODE_GDI_RGB);
+	UpdateWindowSizes(TRUE, FALSE, FALSE);
 }
 
 void CVideoAviView::OnViewGdiRgb() 
 {
-	ViewGdiRgb();
+	RenderingSwitch(RENDERING_MODE_GDI_RGB);
 }
 
 void CVideoAviView::OnUpdateViewGdiRgb(CCmdUI* pCmdUI) 
@@ -847,20 +785,15 @@ void CVideoAviView::OnUpdateViewGdiRgb(CCmdUI* pCmdUI)
 #ifdef VIDEODEVICEDOC
 					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
 #endif
+					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
+					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
 }
 
-void CVideoAviView::ViewGdiYuv() 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
-	pDoc->RenderingSwitch(RENDERING_MODE_GDI_YUV);
-}
-
 void CVideoAviView::OnViewGdiYuv() 
 {
-	ViewGdiYuv();
+	RenderingSwitch(RENDERING_MODE_GDI_YUV);
 }
 
 void CVideoAviView::OnUpdateViewGdiYuv(CCmdUI* pCmdUI) 
@@ -873,21 +806,15 @@ void CVideoAviView::OnUpdateViewGdiYuv(CCmdUI* pCmdUI)
 #ifdef VIDEODEVICEDOC
 					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
 #endif
+					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
+					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
 }
 
-void CVideoAviView::ViewDirectxRgb() 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
-	pDoc->RenderingSwitch(RENDERING_MODE_DXDRAW_RGB);
-
-}
-
 void CVideoAviView::OnViewDirectxRgb() 
 {
-	ViewDirectxRgb();
+	RenderingSwitch(RENDERING_MODE_DXDRAW_RGB);
 }
 
 void CVideoAviView::OnUpdateViewDirectxRgb(CCmdUI* pCmdUI) 
@@ -901,20 +828,15 @@ void CVideoAviView::OnUpdateViewDirectxRgb(CCmdUI* pCmdUI)
 #ifdef VIDEODEVICEDOC
 					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
 #endif
+					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
+					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
 }
 
-void CVideoAviView::ViewDirectxYuv() 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
-	pDoc->RenderingSwitch(RENDERING_MODE_DXDRAW_YUV);
-}
-
 void CVideoAviView::OnViewDirectxYuv() 
 {
-	ViewDirectxYuv();
+	RenderingSwitch(RENDERING_MODE_DXDRAW_YUV);
 }
 
 void CVideoAviView::OnUpdateViewDirectxYuv(CCmdUI* pCmdUI) 
@@ -928,6 +850,8 @@ void CVideoAviView::OnUpdateViewDirectxYuv(CCmdUI* pCmdUI)
 #ifdef VIDEODEVICEDOC
 					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
 #endif
+					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
+					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
 	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
 }
@@ -1009,53 +933,6 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case _T('R') :
-
-			if (pDoc->m_pAVIPlay												&&
-				pDoc->m_pAVIPlay->HasVideo()									&&
-				(pDoc->m_nActiveVideoStream >= 0)								&&
-#ifdef VIDEODEVICEDOC
-				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
-				!pDoc->IsProcessing())
-				ViewGdiRgb();
-			break;
-
-		case _T('G') :
-			if (pDoc->m_pAVIPlay												&&
-				pDoc->m_pAVIPlay->HasVideo()									&&
-				(pDoc->m_nActiveVideoStream >= 0)								&&
-#ifdef VIDEODEVICEDOC
-				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
-				!pDoc->IsProcessing())
-				ViewGdiYuv();
-			break;
-
-		case _T('X') :
-			if (pDoc->m_pAVIPlay												&&
-				pDoc->m_pAVIPlay->HasVideo()									&&
-				(pDoc->m_nActiveVideoStream >= 0)								&&
-				pDoc->m_DxDraw.HasDxDraw()										&&
-#ifdef VIDEODEVICEDOC
-				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
-				!pDoc->IsProcessing())
-				ViewDirectxRgb();
-			break;
-
-		case _T('Y') :
-			if (pDoc->m_pAVIPlay												&&
-				pDoc->m_pAVIPlay->HasVideo()									&&
-				(pDoc->m_nActiveVideoStream >= 0)								&&
-				pDoc->m_DxDraw.HasDxDraw()										&&
-#ifdef VIDEODEVICEDOC
-				!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
-				!pDoc->IsProcessing())
-				ViewDirectxYuv();
-			break;
-
 		case _T('V') :
 			if (pDoc->m_pAVIPlay					&&
 				pDoc->m_pAVIPlay->HasAudio()		&&
@@ -1174,18 +1051,14 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_pAVIPlay->HasVideo()	&&
 				pDoc->m_nActiveVideoStream >= 0	&&
 				pDoc->m_PlayVideoFileThread.IsAlive())
-			{
 				ChangePlaySpeed(TRUE);
-			}
 			break;
 
 		case VK_SUBTRACT :
 			if (pDoc->m_pAVIPlay->HasVideo()	&&
 				pDoc->m_nActiveVideoStream >= 0	&&
 				pDoc->m_PlayVideoFileThread.IsAlive())
-			{
 				ChangePlaySpeed(FALSE);
-			}
 			break;
 
 		case VK_HOME :

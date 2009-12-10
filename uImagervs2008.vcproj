@@ -224,6 +224,7 @@
 			<Tool
 				Name="VCAppVerifierTool"
 				HandleVerification="0"
+				LocksVerification="0"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -2037,6 +2038,37 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="GeneralPage.cpp"
+				>
+				<FileConfiguration
+					Name="FreeVimagerw|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ContaCamw|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="getdxver.cpp"
 				>
 				<FileConfiguration
@@ -2508,6 +2540,37 @@
 			</File>
 			<File
 				RelativePath="NetCom.cpp"
+				>
+				<FileConfiguration
+					Name="FreeVimagerw|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ContaCamw|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="NetworkPage.cpp"
 				>
 				<FileConfiguration
 					Name="FreeVimagerw|Win32"
@@ -4178,68 +4241,6 @@
 				>
 			</File>
 			<File
-				RelativePath="GeneralPage.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="NetworkPage.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\Winsock2MissingDlg.cpp"
 				>
 			</File>
@@ -4750,6 +4751,10 @@
 				>
 			</File>
 			<File
+				RelativePath="GeneralPage.h"
+				>
+			</File>
+			<File
 				RelativePath="getdxver.h"
 				>
 			</File>
@@ -4863,6 +4868,10 @@
 			</File>
 			<File
 				RelativePath="NetFrameHdr.h"
+				>
+			</File>
+			<File
+				RelativePath="NetworkPage.h"
 				>
 			</File>
 			<File
@@ -5143,14 +5152,6 @@
 			</File>
 			<File
 				RelativePath=".\videoformatdlg.h"
-				>
-			</File>
-			<File
-				RelativePath="GeneralPage.h"
-				>
-			</File>
-			<File
-				RelativePath="NetworkPage.h"
 				>
 			</File>
 			<File

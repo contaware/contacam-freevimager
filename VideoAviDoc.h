@@ -26,10 +26,6 @@
 #define DXDRAW_GDIDISPLAY_SAFEPAUSED_TIMEOUT		3000	// ms
 #define DXDRAW_GDIDISPLAY_DELAYEDRESTART_TIMEOUT	3000	// ms
 
-// Rendering Switch Timeouts
-#define RENDERING_SWITCH_SAFEPAUSED_FRAMES_TIMEOUT	4		// frames
-#define RENDERING_SWITCH_DELAYEDRESTART_TIMEOUT		5000	// ms
-
 // Rendering Modes
 #define RENDERING_MODE_GDI_RGB						0
 #define RENDERING_MODE_GDI_YUV						1
@@ -46,8 +42,6 @@
 // Forward Declaration
 class CVideoAviView;
 class CVideoAviChildFrame;
-class CAVIFile;
-class CAVIPlay;
 class CVideoDeviceDoc;
 class CAviInfoDlg;
 class COutVolDlg;
@@ -86,17 +80,18 @@ class CPlayerToolBarDlg;
 // Called by the UI Thread:
 // ------------------------
 //
-// - CMainFrame::FullScreenModeOn()          Has no Try Enter CS but the function makes sure
+// - CMainFrame::FullScreenModeOn()          No need for a Try Enter CS because the function makes sure
 //                                           the Video Thread is waiting in a safe place.
 //                                           While processing we cannot switch to full-screen.
 //
 // - CMainFrame::FullScreenModeOff()         Same Comments as above.
 //
-// - CVideoAviDoc::LoadActiveStreams()       Has no Try Enter CS because the streams are loaded 
-//                                           before playing and the process functions have
-//                                           already terminated when reloading.
+// - CVideoAviDoc::LoadActiveStreams()       No need for a Try Enter CS because the streams are loaded 
+//                                           before playing and the process functions have already
+//                                           terminated when reloading.
 //
-// - CVideoAviView::OnRenderingSwitch()      Has Try Enter CS.
+// - CVideoAviView::RenderingSwitch()        No need for a Try Enter CS because the function is only
+//                                           called when not playing and not processing.
 //
 // - CVideoAviView::OnRestoreFrame()         Has Try Enter CS.
 //
@@ -106,7 +101,7 @@ class CPlayerToolBarDlg;
 // Called by CPlayVideoFileThread::Work():
 // ---------------------------------------
 //
-// - Draw() (-> EraseBkgnd())                Uses CS From Video Thread.
+// - Draw() (-> EraseBkgnd())                Normal Enter CS.
 //
 //
 // Called by CProcessing::Work():
@@ -550,9 +545,6 @@ public:
 
 	// Show / Hide Player Controls in FullScreen Mode
 	void PlayerToolBarDlg(CPoint ptPos);
-
-	// Switch to given Rendering Mode
-	void RenderingSwitch(int nRenderingMode);
 
 	// Show / Hide Time Position Display
 	void ViewTimeposition();

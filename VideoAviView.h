@@ -20,16 +20,14 @@
 // Window Message IDs
 #define WM_THREADSAFE_LOAD_AVI					WM_USER + 175
 #define WM_THREADSAFE_UPDATEPLAYSLIDER			WM_USER + 176
-#define WM_RENDERING_SWITCH						WM_USER + 177
-#define WM_SAFE_PAUSE_TIMEOUT					WM_USER + 178
-#define WM_AVIINFODLG_POPUP						WM_USER + 179
-#define WM_PLAYVOLDLG_POPUP						WM_USER + 180
-#define WM_AVSHIFTDLG_POPUP						WM_USER + 181
-#define WM_PLAYERTOOLBARDLG_POPUP				WM_USER + 182
-#define WM_END_THUMBTRACK						WM_USER + 183
+#define WM_SAFE_PAUSE_TIMEOUT					WM_USER + 177
+#define WM_AVIINFODLG_POPUP						WM_USER + 178
+#define WM_PLAYVOLDLG_POPUP						WM_USER + 179
+#define WM_AVSHIFTDLG_POPUP						WM_USER + 180
+#define WM_PLAYERTOOLBARDLG_POPUP				WM_USER + 181
+#define WM_END_THUMBTRACK						WM_USER + 182
 
 // Message Delays in ms
-#define RENDERING_SWITCH_RETRY_DELAY			300
 #define THREAD_SAFE_LOAD_AVI_DELAY				500
 #define THREAD_SAFE_CLOSE_AVI_DELAY				1000
 
@@ -46,12 +44,6 @@ public:
 
 	// Update Play Slider
 	void UpdatePlaySlider();
-
-	// RGB <-> YUV Switch Functions (Not Blocking)
-	void ViewGdiRgb();
-	void ViewGdiYuv();
-	void ViewDirectxRgb();
-	void ViewDirectxYuv();
 
 protected: // create from serialization only
 	DECLARE_DYNCREATE(CVideoAviView)
@@ -76,7 +68,7 @@ protected: // create from serialization only
 	__forceinline void SamplePosText(TCHAR* sText,
 									 LONGLONG llSamplePos,
 									 DWORD dwSampleRate);
-
+	void RenderingSwitch(int nRenderingMode);
 	BOOL UpdateCurrentFrame(CAVIPlay::CAVIVideoStream* pVideoStream);
 
 	// Change play speed
@@ -184,7 +176,6 @@ protected:
 	afx_msg LONG OnRestoreFrame(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAviFileProgress(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableCursor(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnRenderingSwitch(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnSafePauseTimeout(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAviInfoDlg(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnPlayVolDlg(WPARAM wparam, LPARAM lparam);
