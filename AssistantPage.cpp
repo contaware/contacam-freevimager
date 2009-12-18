@@ -197,7 +197,7 @@ BOOL CAssistantPage::OnInitDialog()
 		m_nUsage = 2;
 		m_bCheckFullStretch = FALSE;
 	}
-	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTMOBILE_NAME)
+	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTFULL_NAME)
 	{
 		m_nUsage = 2;
 		m_bCheckFullStretch = TRUE;
@@ -963,7 +963,7 @@ void CAssistantPage::ApplySettings()
 
 			// Update configuration.php
 			if (m_bCheckFullStretch)
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTMOBILE_NAME);
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTFULL_NAME);
 			else
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);

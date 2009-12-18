@@ -19,7 +19,7 @@ RequestExecutionLevel user
 !define INSTALLERMUTEXNAME "${APPNAME_NOEXT}InstallerMutex"
 
 ; Application Version Define
-!define APPVERSION "1.9.7"
+!define APPVERSION "2.0.0"
 
 ; The name of the Program used in Title Bar and in
 ; Explaining Text when Referring to the Software

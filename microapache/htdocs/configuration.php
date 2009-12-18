@@ -41,7 +41,7 @@ define("SNAPSHOTTITLE","Snapshot");
 
 // Default page (index.php redirects to this page)
 // Choose between: summary.php, summarysnapshot.php, summarylive.php
-// summaryiframe.php, snapshot.php, snapshotmobile.php, snapshothistory.php
+// summaryiframe.php, snapshot.php, snapshotfull.php, snapshothistory.php
 define ("DEFAULTPAGE","summarysnapshot.php");
 
 // Set the Language

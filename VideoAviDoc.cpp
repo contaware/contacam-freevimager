@@ -5336,29 +5336,31 @@ BOOL CVideoAviDoc::LoadActiveStreams(DWORD dwFramePos)
 		m_DocRect.right = pVideoStream->GetWidth();
 		pVideoStream->GetFrameRate((DWORD*)&m_dwPlayRate, (DWORD*)&m_dwPlayScale);
 
-		// Enter CS
+		// Dx Draw
 		if (m_DxDraw.HasDxDraw())
+		{
+			// Enter CS
 			m_DxDraw.EnterCS();
 
-		// Init DxDraw
-		if (m_bUseDxDraw)
-		{
-			::EnterCriticalSection(&m_csDib);
-			m_DxDraw.Init(	GetView()->GetSafeHwnd(),
-							m_DocRect.right,
-							m_DocRect.bottom,
-							m_pDib->GetBMIH()->biCompression,
-							IDB_BITSTREAM_VERA_11);
+			// Init DxDraw
+			if (m_bUseDxDraw)
+			{
+				::EnterCriticalSection(&m_csDib);
+				m_DxDraw.Init(	GetView()->GetSafeHwnd(),
+								m_DocRect.right,
+								m_DocRect.bottom,
+								m_pDib->GetBMIH()->biCompression,
+								IDB_BITSTREAM_VERA_11);
 
-			// Copy Current Frame To DirectDraw Surface
-			if (m_DxDraw.IsInit())
-				m_DxDraw.RenderDib(m_pDib, GetView()->m_UserZoomRect);
-			::LeaveCriticalSection(&m_csDib);
-		}
+				// Copy Current Frame To DirectDraw Surface
+				if (m_DxDraw.IsInit())
+					m_DxDraw.RenderDib(m_pDib, GetView()->m_UserZoomRect);
+				::LeaveCriticalSection(&m_csDib);
+			}
 
-		// Leave CS
-		if (m_DxDraw.HasDxDraw())
+			// Leave CS
 			m_DxDraw.LeaveCS();
+		}
 	}
 	else
 	{

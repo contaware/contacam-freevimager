@@ -125,7 +125,7 @@ class CMovementDetectionPage;
 #define PHPCONFIG_DEFAULTPAGE				_T("DEFAULTPAGE")
 #define PHPCONFIG_SUMMARYSNAPSHOT_NAME		_T("summarysnapshot.php")
 #define PHPCONFIG_SNAPSHOT_NAME				_T("snapshot.php")
-#define PHPCONFIG_SNAPSHOTMOBILE_NAME		_T("snapshotmobile.php")
+#define PHPCONFIG_SNAPSHOTFULL_NAME			_T("snapshotfull.php")
 #define PHPCONFIG_SNAPSHOTHISTORY_NAME		_T("snapshothistory.php")
 #define PHPCONFIG_SUMMARYIFRAME_NAME		_T("summaryiframe.php")
 #define PHPCONFIG_SUMMARYTITLE				_T("SUMMARYTITLE")
