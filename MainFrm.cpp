@@ -1707,18 +1707,17 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 			((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
 
 		// Initialize the DirectDraw Interface
-		if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit())
+		if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
+			((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
 		{
+			// Init DxDraw
 			((CVideoAviDoc*)pDoc)->m_DxDraw.InitFullScreen(	GetSafeHwnd(),
 															((CVideoAviDoc*)pDoc)->m_DocRect.right,
 															((CVideoAviDoc*)pDoc)->m_DocRect.bottom,
 															bAdaptResolution,
 															pVideoStream->GetFourCC(false),
 															IDB_TELETEXT_DH_26);
-		}
-		if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
-			((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
-		{
+
 			// Update Because of Possible Resolution Change
 			if (bAdaptResolution)
 			{
@@ -1956,17 +1955,16 @@ void CMainFrame::FullScreenModeOff(BOOL bSafePaused/*=FALSE*/)
 				((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
 
 			// Exit DirectDraw Exclusive FullScreen Mode
-			if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit())
+			if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
+				((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
 			{
+				// Init DxDraw
 				((CVideoAviDoc*)pDoc)->m_DxDraw.Init(pView->GetSafeHwnd(),
 													((CVideoAviDoc*)pDoc)->m_DocRect.right,
 													((CVideoAviDoc*)pDoc)->m_DocRect.bottom,
 													pVideoStream->GetFourCC(false),
 													IDB_BITSTREAM_VERA_11);
-			}
-			if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
-				((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
-			{
+
 				// Leave CS
 				((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
 

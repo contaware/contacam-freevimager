@@ -691,6 +691,10 @@ void CVideoAviView::RenderingSwitch(int nRenderingMode)
 				pDoc->m_bUseDxDraw = FALSE;
 				pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_GDI_RGB);
 
+				// Free DxDraw
+				if (pDoc->m_DxDraw.HasDxDraw())
+					pDoc->m_DxDraw.Free();
+
 				// Open Decompressor
 				if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_GDI_RGB) ? true : false))
 					goto RenderingSwitchExit;
@@ -723,23 +727,12 @@ void CVideoAviView::RenderingSwitch(int nRenderingMode)
 					goto RenderingSwitchExit;
 
 				// Update / Init DxDraw
-				if (pDoc->m_DxDraw.IsFullScreen())
-				{	
-					if (!pDoc->m_DxDraw.FullScreenCreateOffscreen(
-										pDoc->m_DocRect.right,
-										pDoc->m_DocRect.bottom,
-										pVideoStream->GetFourCC(false)))
-						goto RenderingSwitchExit;
-				}
-				else
-				{
-					if (!pDoc->m_DxDraw.Init(GetSafeHwnd(),
-										pDoc->m_DocRect.right,
-										pDoc->m_DocRect.bottom,
-										pVideoStream->GetFourCC(false),
-										IDB_BITSTREAM_VERA_11))
-						goto RenderingSwitchExit;
-				}
+				if (!pDoc->m_DxDraw.Init(GetSafeHwnd(),
+									pDoc->m_DocRect.right,
+									pDoc->m_DocRect.bottom,
+									pVideoStream->GetFourCC(false),
+									IDB_BITSTREAM_VERA_11))
+					goto RenderingSwitchExit;
 			}
 
 			break;
@@ -749,16 +742,13 @@ void CVideoAviView::RenderingSwitch(int nRenderingMode)
 			break;
 	}
 	
-	// Use DirectDraw?
+	// Copy Dib
 	if (pDoc->m_bUseDxDraw)
 	{
-		// Copy Dib
 		::EnterCriticalSection(&pDoc->m_csDib);
 		pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_UserZoomRect);
 		::LeaveCriticalSection(&pDoc->m_csDib);
 	}
-	else if (pDoc->m_DxDraw.IsFullScreen())
-		pDoc->m_DxDraw.FlipCurrentToGDISurface();
 
 RenderingSwitchExit:
 	
