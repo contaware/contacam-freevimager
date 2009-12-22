@@ -4,7 +4,7 @@ RequestExecutionLevel user
 ; Type Of Installer: define both to be compatible with all systems!
 ;!define INSTALLER_WIN9X
 !define INSTALLER_NT
-;!define WITH_TUTORIALS
+!define WITH_TUTORIALS
 
 ; Name Defines
 !define APPNAME_EXT "ContaCam.exe"
@@ -247,21 +247,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"
   File "/oname=ActiveX\RemoteCamViewer.exe" "..\ActiveX\RemoteCamViewer.exe"
 !ifdef WITH_TUTORIALS
-  File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
-  File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
-  File "/oname=Tutorials\Basics.js" "..\Tutorials\Basics.js"
-  File "/oname=Tutorials\Batch_Processing.htm" "..\Tutorials\Batch_Processing.htm"
-  File "/oname=Tutorials\Batch_Processing.swf" "..\Tutorials\Batch_Processing.swf"
-  File "/oname=Tutorials\Batch_Processing.js" "..\Tutorials\Batch_Processing.js"
-  File "/oname=Tutorials\CD_Slideshow.htm" "..\Tutorials\CD_Slideshow.htm"
-  File "/oname=Tutorials\CD_Slideshow.swf" "..\Tutorials\CD_Slideshow.swf"
-  File "/oname=Tutorials\CD_Slideshow.js" "..\Tutorials\CD_Slideshow.js"
-  File "/oname=Tutorials\Compositions.htm" "..\Tutorials\Compositions.htm"
-  File "/oname=Tutorials\Compositions.swf" "..\Tutorials\Compositions.swf"
-  File "/oname=Tutorials\Compositions.js" "..\Tutorials\Compositions.js"
-  File "/oname=Tutorials\Redeye_Remove.htm" "..\Tutorials\Redeye_Remove.htm"
-  File "/oname=Tutorials\Redeye_Remove.swf" "..\Tutorials\Redeye_Remove.swf"
-  File "/oname=Tutorials\Redeye_Remove.js" "..\Tutorials\Redeye_Remove.js"
+  File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
+  File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
+  File "/oname=Tutorials\Getting_Started.js" "..\Tutorials\Getting_Started.js"
 !endif
   SetOutPath $INSTDIR\microapache
   File /r /x .svn "..\microapache\*.*"
