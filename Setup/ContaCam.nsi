@@ -212,6 +212,14 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Section Read-Only (=User Cannot Change it's state)
   SectionIn RO
   
+  ; Stop service (ContaCamService.exe works only for win2k or higher) 
+  StrCmp $INSTALLTYPE 'UNICODE' stopsrv
+    goto stopsrvend
+stopsrv:
+  DetailPrint "Stopping service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -k'
+stopsrvend:
+  
   ; Remove previous install files and directories
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
@@ -219,6 +227,12 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\ContaCamService.exe
+  Delete $INSTDIR\ContaCamService.ini
+  Delete $INSTDIR\ServiceInstall.bat
+  Delete $INSTDIR\ServiceUninstall.bat
+  Delete $INSTDIR\ServiceStart.bat
+  Delete $INSTDIR\ServiceStop.bat
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
@@ -243,6 +257,12 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
 !endif
   File "..\NeroBurn\Release\NeroBurn.exe"
+  File "..\ContaCamService\Release\ContaCamService.exe"
+  File "..\ContaCamService\Release\ContaCamService.ini"
+  File "..\ContaCamService\Release\ServiceInstall.bat"
+  File "..\ContaCamService\Release\ServiceUninstall.bat"
+  File "..\ContaCamService\Release\ServiceStart.bat"
+  File "..\ContaCamService\Release\ServiceStop.bat"
   File "/oname=ActiveX\RemoteCam.htm" "..\ActiveX\RemoteCam.htm"
   File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"
   File "/oname=ActiveX\RemoteCamViewer.exe" "..\ActiveX\RemoteCamViewer.exe"
@@ -438,6 +458,14 @@ FunctionEnd
 
 Section "Uninstall"
   
+  ; Uninstall service (ContaCamService.exe works only for win2k or higher) 
+  StrCmp $INSTALLTYPE 'UNICODE' uninstallsrv
+    goto uninstallsrvend
+uninstallsrv:
+  DetailPrint "Uninstalling service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
+uninstallsrvend:
+
   ; Remove / Restore All File Associations
   
   StrCpy $FILEEXTENSION "bmp"
@@ -490,7 +518,7 @@ Section "Uninstall"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "zip"
   call un.RemoveFileAssociation
-  
+
   ; Firewall remove from the authorized list
   nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\${APPNAME_EXT}"
   nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\microapache\mapache.exe"
@@ -515,6 +543,12 @@ Section "Uninstall"
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\ContaCamService.exe
+  Delete $INSTDIR\ContaCamService.ini
+  Delete $INSTDIR\ServiceInstall.bat
+  Delete $INSTDIR\ServiceUninstall.bat
+  Delete $INSTDIR\ServiceStart.bat
+  Delete $INSTDIR\ServiceStop.bat
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users
