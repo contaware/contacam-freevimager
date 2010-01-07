@@ -7,7 +7,7 @@
 // AudioFormatDlg.h : header file
 //
 
-#ifdef VIDEODEVICEDOC
+#ifdef SUPPORT_LIBAVCODEC
 
 /////////////////////////////////////////////////////////////////////////////
 // CAudioFormatDlg dialog

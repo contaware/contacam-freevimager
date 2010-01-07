@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "uimager.h"
-#include "VideoDeviceDoc.h"
 #include "AviPlay.h"
 #include "AudioFormatDlg.h"
 
@@ -13,7 +12,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef VIDEODEVICEDOC	
+#ifdef SUPPORT_LIBAVCODEC	
 
 #define MPEGAUDIO_CTRL_OFFSET	120
 
