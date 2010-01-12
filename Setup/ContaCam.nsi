@@ -78,8 +78,8 @@ xpstyle on
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION FinishRunCB
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
-;!define MUI_ICON "icon.ico"
-;!define MUI_UNICON "icon.ico"
+;!define MUI_ICON "..\res\uimager.ico"
+;!define MUI_UNICON "..\res\uimager.ico"
 
 ;--------------------------------
 
@@ -144,16 +144,51 @@ InstallCheckInstallerRunning:
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Application Must not be Running
+  ; Application Running?
 InstallCheckApplicationRunning:
   ClearErrors
+  StrCmp $INSTALLTYPE 'UNICODE' InstallCheckApplicationRunningEnd 0 ; UNICODE is set for Win2000 or higher the later 
+                                                                    ; executed KillApps works only for Win2000 or higher
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  Pop $R0
+  StrCmp $R0 0 InstallCheckApplicationRunningEnd													
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
+  ClearErrors
+  Pop $R1
+  Pop $R0
+  ${UAC.Unload} ;Must call unload!
+  Abort
+InstallCheckApplicationRunningEnd:
+    
+  ; OS version check
+!ifndef INSTALLER_WIN9X
+  StrCmp $INSTALLTYPE 'UNICODE' lbl_end
+    MessageBox MB_OK|MB_ICONEXCLAMATION "This Installer works only on Win2000, XP and newer Systems" /SD IDOK
+    Pop $R1
+    Pop $R0
+    ${UAC.Unload} ;Must call unload!
+    Abort
+lbl_end:
+!endif
+  
+  Pop $R1
+  Pop $R0
+ 
+FunctionEnd
+
+;--------------------------------
+; Not working on systems older than Win2000
+
+Function KillApps
+
+  Push $R0
+  Push $R1
+  ClearErrors
+  
+  ; Kill Application
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 KillMicroApache
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
   StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
   StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
   ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
@@ -173,28 +208,17 @@ KillAppAbort:
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Kill Micro Apache (not working on systems older than Win2000)
+  ; Kill Micro Apache
 KillMicroApache:
   StrCpy $0 "mapache.exe"
   KillProc::KillProcesses
   Sleep 1500
-    
-  ; Check
-!ifndef INSTALLER_WIN9X
-  StrCmp $INSTALLTYPE 'UNICODE' lbl_end
-    MessageBox MB_OK|MB_ICONEXCLAMATION "This Installer works only on Win2000, XP and newer Systems" /SD IDOK
-    Pop $R1
-    Pop $R0
-    ${UAC.Unload} ;Must call unload!
-    Abort
-lbl_end:
-!endif
   
   Pop $R1
   Pop $R0
- 
+  
 FunctionEnd
-
+  
 ;--------------------------------
 
 Function FinishRunCB
@@ -212,14 +236,16 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Section Read-Only (=User Cannot Change it's state)
   SectionIn RO
   
-  ; Stop service (ContaCamService.exe works only for win2k or higher) 
-  StrCmp $INSTALLTYPE 'UNICODE' stopsrv
-    goto stopsrvend
-stopsrv:
+  ; Stop service and apps (only for win2k or higher)
+  StrCmp $INSTALLTYPE 'UNICODE' stopit
+    goto stopend
+stopit:
   DetailPrint "Stopping service, please be patient..."
   nsExec::Exec '"$INSTDIR\ContaCamService.exe" -k'
-stopsrvend:
-  
+  DetailPrint "Stopping application, please be patient..."
+  call KillApps
+stopend:
+
   ; Remove previous install files and directories
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
@@ -228,7 +254,6 @@ stopsrvend:
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
-  Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ServiceInstall.bat
   Delete $INSTDIR\ServiceUninstall.bat
   Delete $INSTDIR\ServiceStart.bat
@@ -258,7 +283,9 @@ stopsrvend:
 !endif
   File "..\NeroBurn\Release\NeroBurn.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
+  SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
+  SetOverwrite on
   File "..\ContaCamService\Release\ServiceInstall.bat"
   File "..\ContaCamService\Release\ServiceUninstall.bat"
   File "..\ContaCamService\Release\ServiceStart.bat"
@@ -307,6 +334,11 @@ unicode_end:
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayName" "${APPNAME_NOEXT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "UninstallString" '"$INSTDIR\${UNINSTNAME_EXT}"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "QuietUninstallString" '"$INSTDIR\${UNINSTNAME_EXT}" /S'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayIcon" "$INSTDIR\${APPNAME_EXT},0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayVersion" "${APPVERSION}"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "Publisher" "Contaware.com"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "URLInfoAbout" "http://www.contaware.com"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoRepair" 1
   WriteUninstaller "${UNINSTNAME_EXT}"
@@ -394,6 +426,7 @@ FunctionEnd
 Function un.onInit
 
   Push $R0
+  Push $R1
   ClearErrors
   
   ; Get Win Version
@@ -410,20 +443,45 @@ UninstallCheckUninstallerRunning:
   StrCmp $R0 0 UninstallCheckApplicationRunning
   MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
   ClearErrors
+  Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Application Must not be Running
+  ; Application Running?
 UninstallCheckApplicationRunning:
   ClearErrors
+  StrCmp $INSTALLTYPE 'UNICODE' UninstallCheckApplicationRunningEnd 0 ; UNICODE is set for Win2000 or higher the later 
+                                                                      ; executed un.KillApps works only for Win2000 or higher
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  Pop $R0
+  StrCmp $R0 0 UninstallCheckApplicationRunningEnd
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
+  ClearErrors
+  Pop $R1
+  Pop $R0
+  ${UAC.Unload} ;Must call unload!
+  Abort
+UninstallCheckApplicationRunningEnd:
+  
+  Pop $R1
+  Pop $R0
+  
+FunctionEnd
+
+;--------------------------------
+; Not working on systems older than Win2000
+
+Function un.KillApps
+
+  Push $R0
+  Push $R1
+  ClearErrors
+  
+  ; Kill Application
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 KillMicroApache
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
   MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the uninstallation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
@@ -432,22 +490,26 @@ KillApp:
   StrCmp $1 "-1" KillAppError
   Goto KillMicroApache
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller could not close the running application" /SD IDOK
 KillAppAbort:
   ClearErrors
+  Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Kill Micro Apache (not working on systems older than Win2000)
+  ; Kill Micro Apache
 KillMicroApache:
   StrCpy $0 "mapache.exe"
   KillProc::KillProcesses
   Sleep 1500
   
+  Pop $R1
   Pop $R0
   
 FunctionEnd
+  
+;--------------------------------
 
 !define SHCNE_ASSOCCHANGED 0x08000000
 !define SHCNF_IDLIST 0
@@ -456,15 +518,20 @@ Function un.RefreshShellIcons
   (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
 FunctionEnd
 
+;--------------------------------
+
+; The stuff to uninstall
 Section "Uninstall"
   
-  ; Uninstall service (ContaCamService.exe works only for win2k or higher) 
-  StrCmp $INSTALLTYPE 'UNICODE' uninstallsrv
-    goto uninstallsrvend
-uninstallsrv:
+  ; Uninstall service and stop apps (only for win2k or higher)
+  StrCmp $INSTALLTYPE 'UNICODE' uninstallsrvandstopit
+    goto uninstallsrvandstopitend
+uninstallsrvandstopit:
   DetailPrint "Uninstalling service, please be patient..."
   nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
-uninstallsrvend:
+  DetailPrint "Stopping application, please be patient..."
+  call un.KillApps
+uninstallsrvandstopitend:
 
   ; Remove / Restore All File Associations
   
@@ -545,6 +612,7 @@ uninstallsrvend:
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
+  Delete $INSTDIR\ContaCamService.log
   Delete $INSTDIR\ServiceInstall.bat
   Delete $INSTDIR\ServiceUninstall.bat
   Delete $INSTDIR\ServiceStart.bat

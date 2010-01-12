@@ -1,9 +1,10 @@
 VERSION HISTORY
 
-2.0.0 (December 20th 2009)
+2.0.0 (January 20th 2010)
 
 - Some optimisations
 - View's toolbar repainting bug fixed
+- Integrated codecs
 
 1.9.7 (September 3rd 2009)
 

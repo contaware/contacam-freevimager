@@ -1883,7 +1883,11 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 #ifdef VIDEODEVICEDOC
 					if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc)	&&
 						m_pDoc->m_pDib && m_pDoc->m_pDib->IsValid() && m_pDoc->m_pVideoDeviceDocDib)
+					{
 						*m_pDoc->m_pVideoDeviceDocDib = *m_pDoc->m_pDib;
+						if (!m_pDoc->m_pVideoDeviceDocDib->IsCompressed() && m_pDoc->m_pVideoDeviceDocDib->GetBitCount() <= 16)
+							m_pDoc->m_pVideoDeviceDocDib->ConvertTo32bits();
+					}
 #endif
 					::LeaveCriticalSection(&m_pDoc->m_csDib);
 				}
@@ -6223,7 +6227,11 @@ void CVideoAviDoc::OnCaptureAviplay()
 					m_pVideoDeviceDocDib = new CDib;
 				::EnterCriticalSection(&m_csDib);
 				if (m_pDib && m_pDib->IsValid() && m_pVideoDeviceDocDib)
+				{
 					*m_pVideoDeviceDocDib = *m_pDib;
+					if (!m_pVideoDeviceDocDib->IsCompressed() && m_pVideoDeviceDocDib->GetBitCount() <= 16)
+						m_pVideoDeviceDocDib->ConvertTo32bits();
+				}
 				::LeaveCriticalSection(&m_csDib);
 				if (pDoc->OpenVideoAvi(this, m_pVideoDeviceDocDib))
 					m_pVideoDeviceDoc = pDoc;

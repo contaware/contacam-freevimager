@@ -78,8 +78,8 @@ xpstyle on
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION FinishRunCB
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
-;!define MUI_ICON "icon.ico"
-;!define MUI_UNICON "icon.ico"
+;!define MUI_ICON "..\res\uimager.ico"
+;!define MUI_UNICON "..\res\uimager.ico"
 
 ;--------------------------------
 
@@ -283,6 +283,11 @@ unicode_end:
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayName" "${APPNAME_NOEXT}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "UninstallString" '"$INSTDIR\${UNINSTNAME_EXT}"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "QuietUninstallString" '"$INSTDIR\${UNINSTNAME_EXT}" /S'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayIcon" "$INSTDIR\${APPNAME_EXT},0"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayVersion" "${APPVERSION}"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "Publisher" "Contaware.com"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "URLInfoAbout" "http://www.contaware.com"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoRepair" 1
   WriteUninstaller "${UNINSTNAME_EXT}"
@@ -363,6 +368,7 @@ FunctionEnd
 Function un.onInit
 
   Push $R0
+  Push $R1
   ClearErrors
   
   ; Get Win Version
@@ -379,6 +385,7 @@ UninstallCheckUninstallerRunning:
   StrCmp $R0 0 UninstallCheckApplicationRunning
   MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
   ClearErrors
+  Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
@@ -402,17 +409,21 @@ KillApp:
   Sleep 1500
   Goto lbl_end
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller could not close the running application" /SD IDOK
 KillAppAbort:
   ClearErrors
+  Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
     
 lbl_end:
+  Pop $R1
   Pop $R0
   
 FunctionEnd
+  
+;--------------------------------
 
 !define SHCNE_ASSOCCHANGED 0x08000000
 !define SHCNF_IDLIST 0
@@ -421,6 +432,9 @@ Function un.RefreshShellIcons
   (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
 FunctionEnd
 
+;--------------------------------
+
+; The stuff to uninstall
 Section "Uninstall"
   
   ; Remove / Restore All File Associations

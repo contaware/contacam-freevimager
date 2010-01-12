@@ -2997,7 +2997,7 @@ IDD_ROTATE_FLIP_MODELESS DIALOGEX 0, 0, 143, 182
 STYLE DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Rotation & Flipping"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Rotate 90° CW",IDC_RADIO_TRANSFORMATION0,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,13,20,64,10
@@ -3040,7 +3040,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -3182,7 +3182,7 @@ IDD_RESIZING DIALOGEX 0, 0, 171, 143
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Resizing"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_PIXELS_WIDTH,48,22,38,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
@@ -3268,7 +3268,7 @@ IDD_HLS DIALOGEX 0, 0, 278, 219
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Regulate"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER_BRIGHTNESS,"msctls_trackbar32",
                     TBS_AUTOTICKS | TBS_VERT | WS_TABSTOP,13,15,25,95,
@@ -4305,56 +4305,60 @@ IDD_LICENSE DIALOGEX 0, 0, 323, 300
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "License Agreement"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "I Agree",IDOK,266,280,50,18
     EDITTEXT        IDC_EDIT_LICENSE,7,4,309,272,ES_MULTILINE | ES_READONLY | 
                     WS_VSCROLL
 END
 
-IDD_CREDITS DIALOGEX 0, 0, 236, 268
+IDD_CREDITS DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "Relatives && Friends",IDC_STATIC2339,7,4,222,46
-    LTEXT           "A big thanks to my girlfriend Valeria that always supports me in what I like to do. Thanks to all my friends for being patient with me at testing the software (especially Faek). Big hug to my cool Mom which is also using this program. Dedicated to Ale!",
-                    IDC_STATIC2340,15,14,208,32
-    GROUPBOX        "Libraries",IDC_STATIC2341,7,55,222,136
+    GROUPBOX        "Relatives && Friends",IDC_STATIC2339,7,3,222,39
+    LTEXT           "A big thanks to Valeria that always supports me in what I like to do. Thanks to all my friends for testing the software. Big hug to my Mom which is also using this program. Dedicated to Ale!",
+                    IDC_STATIC2340,15,13,208,27
+    GROUPBOX        "Libraries",IDC_STATIC2341,7,46,222,156
     LTEXT           "Thanks to the Independent JPEG Group for libjpeg 6b",
-                    IDC_STATIC2342,15,65,208,8
-    LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,74,71,8,SS_NOTIFY
+                    IDC_STATIC2342,15,76,208,8
+    LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,85,71,8,SS_NOTIFY
     LTEXT           "Thanks to the TIFF Library Authors for libtiff 3.8.2",
-                    IDC_STATIC2343,15,86,208,8
-    LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,95,78,8,
+                    IDC_STATIC2343,15,97,208,8
+    LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,106,78,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.33",
-                    IDC_STATIC2344,15,107,208,8
-    LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,116,83,8,
+                    IDC_STATIC2344,15,118,208,8
+    LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,127,83,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the ZLIB Library Authors for zlib 1.2.3",
-                    IDC_STATIC2346,15,128,208,8
-    LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,137,74,8,
+                    IDC_STATIC2346,15,139,208,8
+    LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,148,74,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the GIF Library Authors for giflib 4.1.3",
-                    IDC_STATIC2349,15,149,208,8
+                    IDC_STATIC2349,15,160,208,8
     LTEXT           "http://sourceforge.net/projects/giflib",IDC_LINK_GIFLIB,
-                    15,158,126,8,SS_NOTIFY
+                    15,169,126,8,SS_NOTIFY
     LTEXT           "Thanks to Graeme W. Gill for icclib 2.0.3",
-                    IDC_STATIC2350,15,170,208,8
+                    IDC_STATIC2350,15,181,208,8
     LTEXT           "http://freshmeat.net/projects/icclib",IDC_LINK_ICCLIB,
-                    15,179,122,8,SS_NOTIFY
-    GROUPBOX        "Tools",IDC_STATIC2347,7,195,222,53
+                    15,190,122,8,SS_NOTIFY
+    GROUPBOX        "Tools",IDC_STATIC2347,7,207,222,54
     LTEXT           "Thanks to Debug Mode for Wink (tutorial creation software)",
-                    IDC_STATIC2345,15,205,208,8
-    LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,214,121,
+                    IDC_STATIC2345,15,217,208,8
+    LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,226,121,
                     8,SS_NOTIFY
     LTEXT           "Thanks to Nullsoft for NSIS (a scriptable install system)",
-                    IDC_STATIC2348,15,227,208,8
-    LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,236,96,8,
+                    IDC_STATIC2348,15,239,208,8
+    LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,248,96,8,
                     SS_NOTIFY
-    DEFPUSHBUTTON   "OK",IDOK,96,251,50,14
+    DEFPUSHBUTTON   "OK",IDOK,96,264,50,14
+    LTEXT           "Thanks to the FFMPEG Library Authors for ffmpeg rev.15375 (lgpl)",
+                    IDC_STATIC2351,15,56,209,8
+    LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,65,83,8,
+                    SS_NOTIFY
 END
 
 IDD_ENUMGDIOBJECTS DIALOG DISCARDABLE  0, 0, 212, 154
@@ -6194,7 +6198,7 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,19,77,10
@@ -6318,64 +6322,64 @@ BEGIN
     LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,240,8
 END
 
-IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 290
+IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "People",IDC_STATIC2339,7,4,222,27
+    GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
-                    IDC_STATIC2340,15,16,208,8
-    GROUPBOX        "Libraries",IDC_STATIC2341,7,36,222,177
+                    IDC_STATIC2340,15,12,208,8
+    GROUPBOX        "Libraries",IDC_STATIC2341,7,29,222,176
     LTEXT           "Thanks to the FFMPEG Library Authors for ffmpeg rev.15375 (lgpl)",
-                    IDC_STATIC2351,15,46,209,8
-    LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,55,83,8,
+                    IDC_STATIC2351,15,39,209,8
+    LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,48,83,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the MicroApache Authors for the web server",
-                    IDC_STATIC2352,15,66,209,8
+                    IDC_STATIC2352,15,59,209,8
     LTEXT           "http://microapache.amadis.sytes.net",
-                    IDC_LINK_MICROAPACHE,15,75,127,8,SS_NOTIFY
+                    IDC_LINK_MICROAPACHE,15,68,127,8,SS_NOTIFY
     LTEXT           "Thanks to the Independent JPEG Group for libjpeg 6b",
-                    IDC_STATIC2342,15,86,208,8
-    LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,95,72,8,SS_NOTIFY
+                    IDC_STATIC2342,15,79,208,8
+    LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,88,72,8,SS_NOTIFY
     LTEXT           "Thanks to the TIFF Library Authors for libtiff 3.8.2",
-                    IDC_STATIC2343,15,107,208,8
-    LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,116,78,8,
+                    IDC_STATIC2343,15,100,208,8
+    LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,109,78,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.33",
-                    IDC_STATIC2344,15,128,208,8
-    LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,137,83,8,
+                    IDC_STATIC2344,15,121,208,8
+    LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,130,83,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the ZLIB Library Authors for zlib 1.2.3",
-                    IDC_STATIC2346,15,149,208,8
-    LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,158,73,8,
+                    IDC_STATIC2346,15,142,208,8
+    LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,151,73,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the GIF Library Authors for giflib 4.1.3",
-                    IDC_STATIC2349,15,170,208,8
+                    IDC_STATIC2349,15,163,208,8
     LTEXT           "http://sourceforge.net/projects/giflib",IDC_LINK_GIFLIB,
-                    15,179,128,8,SS_NOTIFY
+                    15,172,128,8,SS_NOTIFY
     LTEXT           "Thanks to Graeme W. Gill for icclib 2.0.3",
-                    IDC_STATIC2350,15,191,208,8
+                    IDC_STATIC2350,15,184,208,8
     LTEXT           "http://freshmeat.net/projects/icclib",IDC_LINK_ICCLIB,
-                    15,200,121,8,SS_NOTIFY
-    GROUPBOX        "Tools",IDC_STATIC2347,7,217,222,53
+                    15,193,121,8,SS_NOTIFY
+    GROUPBOX        "Tools",IDC_STATIC2347,7,208,222,53
     LTEXT           "Thanks to Debug Mode for Wink (tutorial creation software)",
-                    IDC_STATIC2345,15,227,208,8
-    LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,236,121,
+                    IDC_STATIC2345,15,218,208,8
+    LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,227,121,
                     8,SS_NOTIFY
     LTEXT           "Thanks to Nullsoft for NSIS (a scriptable install system)",
-                    IDC_STATIC2348,15,249,208,8
-    LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,258,98,8,
+                    IDC_STATIC2348,15,240,208,8
+    LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,249,98,8,
                     SS_NOTIFY
-    DEFPUSHBUTTON   "OK",IDOK,96,273,50,14
+    DEFPUSHBUTTON   "OK",IDOK,96,264,50,14
 END
 
 IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Assistant"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -6432,7 +6436,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Registration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
     PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16
@@ -6456,7 +6460,7 @@ IDD_MOVDET_ANIMGIF_CONFIGURATION DIALOGEX 0, 0, 171, 143
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Animated Gif Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_PIXELS_WIDTH,48,22,38,13,ES_AUTOHSCROLL | 
                     ES_NUMBER
@@ -6957,7 +6961,7 @@ BEGIN
         VERTGUIDE, 15
         VERTGUIDE, 223
         TOPMARGIN, 4
-        BOTTOMMARGIN, 265
+        BOTTOMMARGIN, 278
     END
 
     IDD_ENUMGDIOBJECTS, DIALOG
@@ -7500,7 +7504,7 @@ BEGIN
         VERTGUIDE, 15
         VERTGUIDE, 223
         TOPMARGIN, 4
-        BOTTOMMARGIN, 287
+        BOTTOMMARGIN, 278
     END
 
     IDD_ASSISTANT, DIALOG

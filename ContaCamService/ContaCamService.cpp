@@ -9,10 +9,13 @@
 
 #pragma comment(lib, "netapi32.lib")
 
-#define STRINGBUFSIZE			500
-#define MAXPROCCOUNT			127
-#define INTERFACE_WAIT_TIME		2000
-#define SERVICENAME				_T("ContaCamService")
+#define STRINGBUFSIZE				500
+#define MAXPROCCOUNT				127
+#define INTERFACE_WAIT_TIME			2000
+#define ENDPROCESS_POLLTIME			100
+#define ENDWORKERTHREAD_TIMEOUT		7000
+HANDLE g_hKillEvent = NULL;
+HANDLE g_hWorkerThread = NULL;
 TCHAR g_pServiceName[STRINGBUFSIZE+1];
 TCHAR g_pExeFile[STRINGBUFSIZE+1];
 TCHAR g_pInitFile[STRINGBUFSIZE+1];
@@ -46,14 +49,13 @@ SERVICE_TABLE_ENTRY DispatchTable[] =
 };
 
 BOOL StartProcess(int nIndex) 
-{ 
-	// start a process with given index
+{
 	STARTUPINFO startUpInfo = {sizeof(STARTUPINFO),NULL,_T(""),NULL,0,0,0,0,0,0,0,STARTF_USESHOWWINDOW,0,0,NULL,0,0,0};  
 	TCHAR pItem[STRINGBUFSIZE+1];
 	swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), nIndex);
 	TCHAR pCommandLine[STRINGBUFSIZE+1];
 	GetPrivateProfileString(pItem, _T("CommandLine"), _T(""), pCommandLine, STRINGBUFSIZE, g_pInitFile);
-	if (_tcslen(pCommandLine)>4)
+	if (_tcslen(pCommandLine) > 4)
 	{
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];
@@ -85,9 +87,9 @@ BOOL StartProcess(int nIndex)
 		// create the process
 		if (CreateProcess(NULL,pCommandLine,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,NULL,&startUpInfo,&g_pProcInfo[nIndex]))
 		{
-			TCHAR pPause[STRINGBUFSIZE+1];
-			GetPrivateProfileString(pItem,_T("PauseStart"),_T("100"),pPause,STRINGBUFSIZE,g_pInitFile);
-			Sleep(_ttoi(pPause));
+			TCHAR pStartProcessWait[STRINGBUFSIZE+1];
+			GetPrivateProfileString(pItem, _T("StartProcessWait"), _T("500"), pStartProcessWait, STRINGBUFSIZE, g_pInitFile);
+			Sleep(_ttoi(pStartProcessWait));
 			return TRUE;
 		}
 		else
@@ -148,22 +150,45 @@ BOOL PostCloseMessage(DWORD dwThreadId)
 
 void EndProcess(int nIndex) 
 {	
-	// end a program started by the service
 	if (g_pProcInfo[nIndex].hProcess)
 	{
+		// Get the EndProcessTimeout param
 		TCHAR pItem[STRINGBUFSIZE+1];
 		swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), nIndex);
-		TCHAR pPause[STRINGBUFSIZE+1];
-		GetPrivateProfileString(pItem, _T("PauseEnd"), _T("100"), pPause, STRINGBUFSIZE, g_pInitFile);
-		int nPauseEnd = _ttoi(pPause);
-		// Post a WM_CLOSE message
+		TCHAR pEndProcessTimeout[STRINGBUFSIZE+1];
+		GetPrivateProfileString(pItem, _T("EndProcessTimeout"), _T("5000"), pEndProcessTimeout, STRINGBUFSIZE, g_pInitFile);
+		int nEndProcessTimeout = _ttoi(pEndProcessTimeout);
+		
+		// Post a WM_CLOSE message, if it fails post a WM_QUIT
 		if (!PostCloseMessage(g_pProcInfo[nIndex].dwThreadId))
-			PostThreadMessage(g_pProcInfo[nIndex].dwThreadId, WM_QUIT, 0, 0); // post a WM_QUIT message
-		// sleep for a while so that the process has a chance to terminate itself
-		Sleep(nPauseEnd>0?nPauseEnd:50);
-		// terminate the process by force
-		TerminateProcess(g_pProcInfo[nIndex].hProcess,0);
-		try // close handles to avoid ERROR_NO_SYSTEM_RESOURCES
+			PostThreadMessage(g_pProcInfo[nIndex].dwThreadId, WM_QUIT, 0, 0);
+		
+		// Poll the exit code
+		int nCountDown = nEndProcessTimeout / ENDPROCESS_POLLTIME;
+		BOOL bProcessExited = FALSE;
+		DWORD dwCode;
+		while (GetExitCodeProcess(g_pProcInfo[nIndex].hProcess, &dwCode) && nCountDown >= 0)
+		{
+			if (dwCode != STILL_ACTIVE)
+			{
+				bProcessExited = TRUE;
+				break;
+			}
+			Sleep(ENDPROCESS_POLLTIME);
+			nCountDown--;
+		}
+		
+		// Terminate the process by force
+		if (!bProcessExited)
+		{
+			TCHAR pTemp[121];
+			swprintf(pTemp, 121, _T("Forced process%d termination"), nIndex);
+			WriteLog(pTemp);
+			TerminateProcess(g_pProcInfo[nIndex].hProcess, 0);
+		}
+
+		// Close handles to avoid ERROR_NO_SYSTEM_RESOURCES
+		try
 		{
 			CloseHandle(g_pProcInfo[nIndex].hThread);
 			CloseHandle(g_pProcInfo[nIndex].hProcess);
@@ -192,7 +217,7 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     g_serviceStatus.dwWaitHint           = 0; 
  
     g_hServiceStatusHandle = RegisterServiceCtrlHandler(g_pServiceName, ContaCamServiceHandler); 
-    if (g_hServiceStatusHandle==0) 
+    if (g_hServiceStatusHandle == 0) 
     {
 		long nError = GetLastError();
 		TCHAR pTemp[121];
@@ -201,11 +226,11 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
         return; 
     } 
  
-    // Initialization complete - report running status 
+    // Initialization complete -> report running status 
     g_serviceStatus.dwCurrentState       = SERVICE_RUNNING; 
     g_serviceStatus.dwCheckPoint         = 0; 
     g_serviceStatus.dwWaitHint           = 0;  
-    if(!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
+    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
     { 
 		long nError = GetLastError();
 		TCHAR pTemp[121];
@@ -213,7 +238,8 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 		WriteLog(pTemp);
     } 
 
-	for(int i=0;i<MAXPROCCOUNT;i++)
+	// Start processes
+	for (int i = 0 ; i < MAXPROCCOUNT ; i++)
 	{
 		g_pProcInfo[i].hProcess = 0;
 		StartProcess(i);
@@ -226,29 +252,49 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
 //
 VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
 {
-	switch(fdwControl) 
+	switch (fdwControl) 
 	{
 		case SERVICE_CONTROL_STOP:
 		case SERVICE_CONTROL_SHUTDOWN:
+		{
+			// Stop worker thread
+			SetEvent(g_hKillEvent);
+			if (WaitForSingleObject(g_hWorkerThread, ENDWORKERTHREAD_TIMEOUT) != WAIT_OBJECT_0)
+			{
+				// If it doesn't want to exit force the termination
+				if (g_hWorkerThread)
+				{
+					WriteLog(_T("Forced worker thread termination"));
+					TerminateThread(g_hWorkerThread, 0);
+				}
+			}
+			if (g_hWorkerThread)
+			{
+				CloseHandle(g_hWorkerThread);
+				g_hWorkerThread = NULL;
+			}
+
+			// Set status
 			g_serviceStatus.dwWin32ExitCode = 0; 
 			g_serviceStatus.dwCurrentState  = SERVICE_STOPPED; 
 			g_serviceStatus.dwCheckPoint    = 0; 
 			g_serviceStatus.dwWaitHint      = 0;
-			// terminate all processes started by this service before shutdown
+
+			// Terminate all processes started by this service before shutdown
+			for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
 			{
-				for(int i=MAXPROCCOUNT-1;i>=0;i--)
-				{
-					EndProcess(i);
-				}			
-				if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus))
-				{ 
-					long nError = GetLastError();
-					TCHAR pTemp[121];
-					swprintf(pTemp, 121, _T("SetServiceStatus failed, error code = %d"), nError);
-					WriteLog(pTemp);
-				}
+				EndProcess(i);
+			}			
+			if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus))
+			{ 
+				long nError = GetLastError();
+				TCHAR pTemp[121];
+				swprintf(pTemp, 121, _T("SetServiceStatus failed, error code = %d"), nError);
+				WriteLog(pTemp);
 			}
+
 			return; 
+		}
 		case SERVICE_CONTROL_PAUSE:
 			g_serviceStatus.dwCurrentState = SERVICE_PAUSED; 
 			break;
@@ -258,38 +304,9 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
 		case SERVICE_CONTROL_INTERROGATE:
 			break;
 		default: 
-			// bounce processes started by this service
-			if(fdwControl>=128&&fdwControl<256)
-			{
-				int nIndex = fdwControl&0x7F;
-				// bounce a single process
-				if(nIndex>=0&&nIndex<MAXPROCCOUNT)
-				{
-					EndProcess(nIndex);
-					StartProcess(nIndex);
-				}
-				// bounce all processes
-				else if(nIndex==127)
-				{
-					for(int i=MAXPROCCOUNT-1;i>=0;i--)
-					{
-						EndProcess(i);
-					}
-					for(int i=0;i<MAXPROCCOUNT;i++)
-					{
-						StartProcess(i);
-					}
-				}
-			}
-			else
-			{
-				long nError = GetLastError();
-				TCHAR pTemp[121];
-				swprintf(pTemp, 121, _T("Unrecognized opcode %d"), fdwControl);
-				WriteLog(pTemp);
-			}
+			break;
 	};
-    if (!SetServiceStatus(g_hServiceStatusHandle,  &g_serviceStatus)) 
+    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
 	{ 
 		long nError = GetLastError();
 		TCHAR pTemp[121];
@@ -298,52 +315,69 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
     } 
 }
 
-void WorkerProc(void* pParam)
+unsigned int __stdcall WorkerProc(void* lpParam)
 {
+	// Get CheckProcessSeconds
 	TCHAR pCheckProcess[STRINGBUFSIZE+1];
-	GetPrivateProfileString(_T("Settings"), _T("CheckProcessSeconds"), _T("600"), pCheckProcess, STRINGBUFSIZE, g_pInitFile);
+	GetPrivateProfileString(_T("Settings"), _T("CheckProcessSeconds"), _T("60"), pCheckProcess, STRINGBUFSIZE, g_pInitFile);
 	int nCheckProcessSeconds = _ttoi(pCheckProcess);
-	while (nCheckProcessSeconds > 0)
+	if (nCheckProcessSeconds <= 0)
+		return 0;
+
+	// Main loop
+	while (TRUE)
 	{
-		Sleep(1000 * nCheckProcessSeconds);
-		for (int i=0;i<MAXPROCCOUNT;i++)
+		DWORD Event = WaitForSingleObject(g_hKillEvent, 1000 * nCheckProcessSeconds);
+		switch (Event)
 		{
-			if (g_pProcInfo[i].hProcess)
+			case WAIT_OBJECT_0 :
+				ResetEvent(g_hKillEvent);
+				return 0;
+			case WAIT_TIMEOUT :
 			{
-				TCHAR pItem[STRINGBUFSIZE+1];
-				swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), i);
-				TCHAR pRestart[STRINGBUFSIZE+1];
-				GetPrivateProfileString(pItem, _T("Restart"), _T("No"), pRestart, STRINGBUFSIZE, g_pInitFile);
-				if (pRestart[0]==_T('Y')||pRestart[0]==_T('y')||pRestart[0]==_T('1'))
+				for (int i = 0 ; i < MAXPROCCOUNT ; i++)
 				{
-					DWORD dwCode;
-					if (GetExitCodeProcess(g_pProcInfo[i].hProcess, &dwCode))
+					if (g_pProcInfo[i].hProcess)
 					{
-						if (dwCode!=STILL_ACTIVE)
+						TCHAR pItem[STRINGBUFSIZE+1];
+						swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), i);
+						TCHAR pRestart[STRINGBUFSIZE+1];
+						GetPrivateProfileString(pItem, _T("Restart"), _T("No"), pRestart, STRINGBUFSIZE, g_pInitFile);
+						if (pRestart[0] == _T('Y') || pRestart[0] == _T('y') || pRestart[0] == _T('1'))
 						{
-							try // close handles to avoid ERROR_NO_SYSTEM_RESOURCES
+							DWORD dwCode;
+							if (GetExitCodeProcess(g_pProcInfo[i].hProcess, &dwCode))
 							{
-								CloseHandle(g_pProcInfo[i].hThread);
-								CloseHandle(g_pProcInfo[i].hProcess);
+								if (dwCode != STILL_ACTIVE)
+								{
+									try // close handles to avoid ERROR_NO_SYSTEM_RESOURCES
+									{
+										CloseHandle(g_pProcInfo[i].hThread);
+										CloseHandle(g_pProcInfo[i].hProcess);
+									}
+									catch(...) {}
+									if (StartProcess(i))
+									{
+										TCHAR pTemp[121];
+										swprintf(pTemp, 121, _T("Restarted process%d"), i);
+										WriteLog(pTemp);
+									}
+								}
 							}
-							catch(...) {}
-							if (StartProcess(i))
+							else
 							{
+								long nError = GetLastError();
 								TCHAR pTemp[121];
-								swprintf(pTemp, 121, _T("Restarted process %d"), i);
+								swprintf(pTemp, 121, _T("GetExitCodeProcess failed, error code = %d"), nError);
 								WriteLog(pTemp);
 							}
 						}
 					}
-					else
-					{
-						long nError = GetLastError();
-						TCHAR pTemp[121];
-						swprintf(pTemp, 121, _T("GetExitCodeProcess failed, error code = %d"), nError);
-						WriteLog(pTemp);
-					}
 				}
+				break;
 			}
+			default:
+				return 0;
 		}
 	}
 }
@@ -399,7 +433,7 @@ DWORD RunService(LPCTSTR pName, int nArg, LPCTSTR* pArg)
 
 // If the service is not installed it returns:
 // ERROR_SERVICE_DOES_NOT_EXIST
-DWORD UnInstall(LPCTSTR pName)
+DWORD Uninstall(LPCTSTR pName)
 {
 	DWORD dwError = ERROR_SUCCESS;
 	SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS); 
@@ -590,6 +624,7 @@ void _tmain(int argc, TCHAR* argv[])
 	pModuleFile[dwSize] = _T('\0');
 	if (dwSize > 4 && pModuleFile[dwSize-4] == _T('.'))
 	{
+		_tsplitpath(pModuleFile, NULL, NULL, g_pServiceName, NULL);
 		swprintf(g_pExeFile, STRINGBUFSIZE+1, _T("%s"), pModuleFile);
 		pModuleFile[dwSize-4] = _T('\0');
 		swprintf(g_pInitFile, STRINGBUFSIZE+1, _T("%s.ini"), pModuleFile);
@@ -600,14 +635,13 @@ void _tmain(int argc, TCHAR* argv[])
 		_tprintf(_T("Invalid module file name: %s\r\n"), pModuleFile);
 		return;
 	}
-	_tcscpy(g_pServiceName, SERVICENAME);
 
 	// uninstall service
 	if (argc==2&&_tcsicmp(_T("-u"),argv[1])==0)
 	{
 		_tprintf(_T("Uninstalling %s, please wait...\n\n"), g_pServiceName);
 		KillService(g_pServiceName);
-		int nRet = UnInstall(g_pServiceName);
+		int nRet = Uninstall(g_pServiceName);
 		if (nRet == ERROR_SUCCESS)
 			_tprintf(_T("%s uninstalled"), g_pServiceName);
 		else if (nRet == ERROR_SERVICE_DOES_NOT_EXIST)
@@ -626,7 +660,7 @@ void _tmain(int argc, TCHAR* argv[])
 		while (TRUE)
 		{
 			KillService(g_pServiceName);
-			UnInstall(g_pServiceName);
+			Uninstall(g_pServiceName);
 			if (GetCurrentLoggedUser(pServiceStartName))
 				_tprintf(_T("Logon Username: %s\n"), pServiceStartName);
 			else
@@ -701,11 +735,12 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 	else 
 	{
 		// start a worker thread to check for dead programs (and restart if necessary)
-		if (_beginthread(WorkerProc, 0, NULL)==-1)
+		g_hKillEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+		if ((int)(g_hWorkerThread = (HANDLE)_beginthreadex(NULL, 0, WorkerProc, NULL, 0, NULL)) == 0)
 		{
 			long nError = GetLastError();
 			TCHAR pTemp[121];
-			swprintf(pTemp, 121, _T("_beginthread failed, error code = %d"), nError);
+			swprintf(pTemp, 121, _T("_beginthreadex failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
 		// pass dispatch table to service controller
@@ -717,7 +752,11 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 			WriteLog(pTemp);
 		}
 		// you don't get here unless the service is shutdown
+		if (g_hKillEvent)
+			CloseHandle(g_hKillEvent);
 	}
+
+	// delete global critical section
 	DeleteCriticalSection(&g_myCS);
 }
 

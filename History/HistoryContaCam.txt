@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.0 (December 2nd 2009)
+2.0.0 (January 20th 2010)
 
 - first public release
 
