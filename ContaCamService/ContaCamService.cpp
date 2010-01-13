@@ -9,7 +9,7 @@
 
 #pragma comment(lib, "netapi32.lib")
 
-#define STRINGBUFSIZE				500
+#define STRINGBUFSIZE				511
 #define MAXPROCCOUNT				127
 #define INTERFACE_WAIT_TIME			2000
 #define ENDPROCESS_POLLTIME			100
@@ -53,39 +53,47 @@ BOOL StartProcess(int nIndex)
 	STARTUPINFO startUpInfo = {sizeof(STARTUPINFO),NULL,_T(""),NULL,0,0,0,0,0,0,0,STARTF_USESHOWWINDOW,0,0,NULL,0,0,0};  
 	TCHAR pItem[STRINGBUFSIZE+1];
 	swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), nIndex);
-	TCHAR pCommandLine[STRINGBUFSIZE+1];
-	GetPrivateProfileString(pItem, _T("CommandLine"), _T(""), pCommandLine, STRINGBUFSIZE, g_pInitFile);
-	if (_tcslen(pCommandLine) > 4)
+	TCHAR pProgramName[STRINGBUFSIZE+1];
+	GetPrivateProfileString(pItem, _T("ProgramName"), _T(""), pProgramName, STRINGBUFSIZE, g_pInitFile);
+	TCHAR pProgramParams[STRINGBUFSIZE+1];
+	GetPrivateProfileString(pItem, _T("ProgramParams"), _T(""), pProgramParams, STRINGBUFSIZE, g_pInitFile);
+	if (_tcslen(pProgramName) > 4)
 	{
+		// complete program name
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];
 		TCHAR szName[_MAX_FNAME];
 		TCHAR szExt[_MAX_EXT];
-		TCHAR szProgramName[MAX_PATH];
-		_tsplitpath(pCommandLine, szDrive, szDir, szName, szExt);
+		_tsplitpath(pProgramName, szDrive, szDir, szName, szExt);
 		if (szDrive[0] == _T('\0'))
 		{
-			if (GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			TCHAR pServiceProgramName[MAX_PATH];
+			if (GetModuleFileName(NULL, pServiceProgramName, MAX_PATH) == 0)
 				return FALSE;
-			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			_tsplitpath(pServiceProgramName, szDrive, szDir, NULL, NULL);
 			TCHAR pTemp[STRINGBUFSIZE+1];
-			_tcscpy(pTemp, pCommandLine);
-			pCommandLine[0] = _T('\0');
-			_tcscat(pCommandLine, szDrive);
-			_tcscat(pCommandLine, szDir);
-			_tcscat(pCommandLine, pTemp);
+			_tcscpy(pTemp, pProgramName);
+			pProgramName[0] = _T('\0');
+			_tcscat(pProgramName, szDrive);
+			_tcscat(pProgramName, szDir);
+			_tcscat(pProgramName, pTemp);
 		}
 
+		// working dir
+		TCHAR pWorkingDir[MAX_PATH];
+		_tcscpy(pWorkingDir, szDrive);
+		_tcscat(pWorkingDir, szDir);
+
 		// set the correct desktop for the process to be started
-		TCHAR CurrentDesktopName[512];
+		TCHAR pCurrentDesktopName[STRINGBUFSIZE+1];
 		HDESK hCurrentDesktop = GetThreadDesktop(GetCurrentThreadId());
 		DWORD len;
-		GetUserObjectInformation(hCurrentDesktop, UOI_NAME, CurrentDesktopName, MAX_PATH, &len);
+		GetUserObjectInformation(hCurrentDesktop, UOI_NAME, pCurrentDesktopName, MAX_PATH, &len);
 		startUpInfo.wShowWindow = SW_HIDE;
-		startUpInfo.lpDesktop = CurrentDesktopName;
+		startUpInfo.lpDesktop = pCurrentDesktopName;
 
 		// create the process
-		if (CreateProcess(NULL,pCommandLine,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,NULL,&startUpInfo,&g_pProcInfo[nIndex]))
+		if (CreateProcess(pProgramName,pProgramParams,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,pWorkingDir,&startUpInfo,&g_pProcInfo[nIndex]))
 		{
 			TCHAR pStartProcessWait[STRINGBUFSIZE+1];
 			GetPrivateProfileString(pItem, _T("StartProcessWait"), _T("500"), pStartProcessWait, STRINGBUFSIZE, g_pInitFile);
@@ -95,8 +103,8 @@ BOOL StartProcess(int nIndex)
 		else
 		{
 			long nError = GetLastError();
-			TCHAR pTemp[121];
-			swprintf(pTemp, 121, _T("Failed to start program '%s', error code = %d"), pCommandLine, nError); 
+			TCHAR pTemp[MAX_PATH];
+			swprintf(pTemp, MAX_PATH, _T("Failed to start program '%s', error code = %d"), pProgramName, nError); 
 			WriteLog(pTemp);
 			return FALSE;
 		}
@@ -114,10 +122,10 @@ BOOL CALLBACK EnumChildWindowCallBack(HWND hwnd, LPARAM lParam)
 	{
 		*pbClosePosted = TRUE;
 		PostMessage(hwnd, WM_CLOSE, 0, 0);
-		return false; // Stop enumerating
+		return FALSE; // Stop enumerating
 	} 
 	else
-		return true; // Keep enumerating
+		return TRUE; // Keep enumerating
 }
 
 BOOL CALLBACK EnumWindowCallBack(HWND hwnd, LPARAM lParam) 
@@ -129,15 +137,15 @@ BOOL CALLBACK EnumWindowCallBack(HWND hwnd, LPARAM lParam)
 	{
 		*pbClosePosted = TRUE;
 		PostMessage(hwnd, WM_CLOSE, 0, 0);
-		return false; // Stop enumerating
+		return FALSE; // Stop enumerating
 	} 
 	else
 	{
 		EnumChildWindows(hwnd, EnumChildWindowCallBack, lParam);
 		if (*pbClosePosted)
-			return false; // Stop enumerating
+			return FALSE; // Stop enumerating
 		else
-			return true; // Keep enumerating
+			return TRUE; // Keep enumerating
 	}
 }
 
@@ -181,8 +189,8 @@ void EndProcess(int nIndex)
 		// Terminate the process by force
 		if (!bProcessExited)
 		{
-			TCHAR pTemp[121];
-			swprintf(pTemp, 121, _T("Forced process%d termination"), nIndex);
+			TCHAR pTemp[MAX_PATH];
+			swprintf(pTemp, MAX_PATH, _T("Forced process%d termination"), nIndex);
 			WriteLog(pTemp);
 			TerminateProcess(g_pProcInfo[nIndex].hProcess, 0);
 		}
@@ -220,8 +228,8 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     if (g_hServiceStatusHandle == 0) 
     {
 		long nError = GetLastError();
-		TCHAR pTemp[121];
-		swprintf(pTemp, 121, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
 		WriteLog(pTemp);
         return; 
     } 
@@ -233,8 +241,8 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
     { 
 		long nError = GetLastError();
-		TCHAR pTemp[121];
-		swprintf(pTemp, 121, _T("SetServiceStatus failed, error code = %d"), nError);
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
 		WriteLog(pTemp);
     } 
 
@@ -288,8 +296,8 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
 			if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus))
 			{ 
 				long nError = GetLastError();
-				TCHAR pTemp[121];
-				swprintf(pTemp, 121, _T("SetServiceStatus failed, error code = %d"), nError);
+				TCHAR pTemp[MAX_PATH];
+				swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
 				WriteLog(pTemp);
 			}
 
@@ -309,8 +317,8 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
     if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
 	{ 
 		long nError = GetLastError();
-		TCHAR pTemp[121];
-		swprintf(pTemp, 121, _T("SetServiceStatus failed, error code = %d"), nError);
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
 		WriteLog(pTemp);
     } 
 }
@@ -358,8 +366,8 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 									catch(...) {}
 									if (StartProcess(i))
 									{
-										TCHAR pTemp[121];
-										swprintf(pTemp, 121, _T("Restarted process%d"), i);
+										TCHAR pTemp[MAX_PATH];
+										swprintf(pTemp, MAX_PATH, _T("Restarted process%d"), i);
 										WriteLog(pTemp);
 									}
 								}
@@ -367,8 +375,8 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 							else
 							{
 								long nError = GetLastError();
-								TCHAR pTemp[121];
-								swprintf(pTemp, 121, _T("GetExitCodeProcess failed, error code = %d"), nError);
+								TCHAR pTemp[MAX_PATH];
+								swprintf(pTemp, MAX_PATH, _T("GetExitCodeProcess failed, error code = %d"), nError);
 								WriteLog(pTemp);
 							}
 						}
@@ -739,16 +747,16 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 		if ((int)(g_hWorkerThread = (HANDLE)_beginthreadex(NULL, 0, WorkerProc, NULL, 0, NULL)) == 0)
 		{
 			long nError = GetLastError();
-			TCHAR pTemp[121];
-			swprintf(pTemp, 121, _T("_beginthreadex failed, error code = %d"), nError);
+			TCHAR pTemp[MAX_PATH];
+			swprintf(pTemp, MAX_PATH, _T("_beginthreadex failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
 		// pass dispatch table to service controller
 		if (!StartServiceCtrlDispatcher(DispatchTable))
 		{
 			long nError = GetLastError();
-			TCHAR pTemp[121];
-			swprintf(pTemp, 121, _T("StartServiceCtrlDispatcher failed, error code = %d"), nError);
+			TCHAR pTemp[MAX_PATH];
+			swprintf(pTemp, MAX_PATH, _T("StartServiceCtrlDispatcher failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
 		// you don't get here unless the service is shutdown
