@@ -73,8 +73,7 @@ BOOL StartProcess(int nIndex)
 			_tsplitpath(pServiceProgramName, szDrive, szDir, NULL, NULL);
 			TCHAR pTemp[STRINGBUFSIZE+1];
 			_tcscpy(pTemp, pProgramName);
-			pProgramName[0] = _T('\0');
-			_tcscat(pProgramName, szDrive);
+			_tcscpy(pProgramName, szDrive);
 			_tcscat(pProgramName, szDir);
 			_tcscat(pProgramName, pTemp);
 		}
@@ -83,6 +82,13 @@ BOOL StartProcess(int nIndex)
 		TCHAR pWorkingDir[MAX_PATH];
 		_tcscpy(pWorkingDir, szDrive);
 		_tcscat(pWorkingDir, szDir);
+
+		// command line
+		TCHAR pCommandLine[STRINGBUFSIZE+1];
+		_tcscpy(pCommandLine, _T("\""));
+		_tcscat(pCommandLine, pProgramName);
+		_tcscat(pCommandLine, _T("\" "));
+		_tcscat(pCommandLine, pProgramParams);
 
 		// set the correct desktop for the process to be started
 		TCHAR pCurrentDesktopName[STRINGBUFSIZE+1];
@@ -93,7 +99,7 @@ BOOL StartProcess(int nIndex)
 		startUpInfo.lpDesktop = pCurrentDesktopName;
 
 		// create the process
-		if (CreateProcess(pProgramName,pProgramParams,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,pWorkingDir,&startUpInfo,&g_pProcInfo[nIndex]))
+		if (CreateProcess(NULL,pCommandLine,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,pWorkingDir,&startUpInfo,&g_pProcInfo[nIndex]))
 		{
 			TCHAR pStartProcessWait[STRINGBUFSIZE+1];
 			GetPrivateProfileString(pItem, _T("StartProcessWait"), _T("500"), pStartProcessWait, STRINGBUFSIZE, g_pInitFile);
