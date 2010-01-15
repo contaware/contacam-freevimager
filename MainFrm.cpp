@@ -3697,7 +3697,8 @@ void CMainFrame::OnOpenFromTray()
 LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
 {
 	// Only show right-click taskbar context menu
-	// if no modal dialog running!
+	// if no modal dialog running, if not resizing with FakeThread
+	// and not printing with FakeThread (they all disable the MainFrame)
 	if (IsWindowEnabled())
 	{
 		if (m_bFullScreenMode && MDIGetActive() &&

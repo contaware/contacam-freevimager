@@ -938,11 +938,10 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			}
 
 			// "Abuse" the thread class to pump messages,
-			// this avoids locking the UI. MFC printing dialog with a Cancel
-			// button is showing at this point.
-			// The FakeThread pump-loop drops ESC or ENTER keys, only
-			// left-button clicks on the Cancel button work. Close with
-			// the right-button menu on the taskbar icon also works. 
+			// this avoids locking the UI. MFC printing dialog with
+			// a Cancel button is showing at this point.
+			// The FakeThread pump-loop drops ESC or ENTER keys,
+			// only left-button clicks on the Cancel button work.
 			::AfxGetMainFrame()->EnableWindow(FALSE);
 			CWorkerThread FakeThread;
 			FakeThread.SetProcMsg(true);
