@@ -6198,10 +6198,12 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,19,77,10
+    CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,93,19,66,10
     CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,33,46,10
     CONTROL         "ESC key exits the program in full-screen",
@@ -9036,6 +9038,7 @@ BEGIN
     IDS_STRING1761          "Web Server Log File has not yet been created"
     IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1763          "Switch to GDI under the View menu"
+    IDS_STRING1764          "Stopping ContaCamService..."
 END
 
 #endif    // English (U.S.) resources

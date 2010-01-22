@@ -61,6 +61,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bTopMost =		((CUImagerApp*)::AfxGetApp())->m_bTopMost;
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
+	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 	m_bFullscreenBrowser = ((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser;
@@ -107,6 +108,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_FULLSCREENBROWSER, m_bFullscreenBrowser);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Text(pDX, IDC_EDIT_FULLSCREENBROWSER_EXITSTRING, m_sFullscreenBrowserExitString);
+	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	//}}AFX_DATA_MAP
 }
 
@@ -347,6 +349,43 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 
 	// Autostart
 	pApp->Autostart(m_bAutostart);
+
+	// Start from service
+	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+	{
+		if (m_bStartFromService)
+		{
+			// Install
+			if (CUImagerApp::GetContaCamServiceState() == CONTACAMSERVICE_NOTINSTALLED)
+			{
+				TCHAR szDrive[_MAX_DRIVE];
+				TCHAR szDir[_MAX_DIR];
+				TCHAR szProgramName[MAX_PATH];
+				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+				{
+					_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+					CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+					::ShellExecute(NULL, _T("open"), sContaCamServicePath, _T("-i"), NULL, SW_SHOWNORMAL);
+				}	
+			}
+		}
+		else
+		{
+			// Uninstall
+			if (CUImagerApp::GetContaCamServiceState()) // if CONTACAMSERVICE_RUNNING or CONTACAMSERVICE_NOTRUNNING
+			{
+				TCHAR szDrive[_MAX_DRIVE];
+				TCHAR szDir[_MAX_DIR];
+				TCHAR szProgramName[MAX_PATH];
+				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+				{
+					_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+					CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+					::ExecHiddenApp(sContaCamServicePath, _T("-u"), TRUE, CONTACAMSERVICE_TIMEOUT);
+				}
+			}
+		}
+	}
 
 	// Top Most
 	pApp->m_bTopMost = m_bTopMost;

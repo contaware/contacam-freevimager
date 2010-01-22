@@ -52,6 +52,7 @@ public:
 	BOOL	m_bFullscreenBrowser;
 	BOOL	m_bBrowserAutostart;
 	CString	m_sFullscreenBrowserExitString;
+	BOOL	m_bStartFromService;
 	//}}AFX_DATA
 
 	CStaticLink m_MicroApacheDocRootLabel;

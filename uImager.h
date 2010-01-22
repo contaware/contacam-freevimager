@@ -66,6 +66,12 @@
 #define UNREGISTERED_FONT_COLOR_1						RGB(255,160,0)
 #define UNREGISTERED_FONT_COLOR_2						RGB(255,30,0)
 
+// Service
+#define CONTACAMSERVICE_NOTINSTALLED					0
+#define CONTACAMSERVICE_RUNNING							1
+#define CONTACAMSERVICE_NOTRUNNING						2
+#define CONTACAMSERVICE_TIMEOUT							20000
+
 // System Files
 #define THUMBS_DB										_T("Thumbs.db")
 
@@ -210,9 +216,14 @@ public:
 	//
 	// Supported Switches (they are case-sensitive!):
 	//
-	// /slideshow	: start in slideshow only mode
-	// /p			: print preview open given file
-	// /pt			: print the given file to the specified printer
+	// /slideshow	 : start in slideshow only mode
+	// /service      : started from the ContaCamService
+	// /exctracthere : zip extraction to zip's directory
+	// /play         : play given audio or video file
+	// /close        : close app after finishing playing the audio file
+	// /hide         : hide mainframe
+	// /p			 : print preview open given file
+	// /pt			 : print the given file to the specified printer
 	class CUImagerCommandLineInfo : public CCommandLineInfo
 	{
 		public:
@@ -230,7 +241,6 @@ public:
 			CStringArray m_strFileNames;
 
 		protected:
-			// Do start slideshow
 			BOOL m_bStartSlideShow;
 
 			void ParseParamFlag(const char* pszParam);
@@ -489,6 +499,12 @@ public:
 
 	// Autorun Video Devices
 	void AutorunVideoDevices(int nRetryCount = 0);
+
+	// Get current ContaCamService state
+	// returns:	CONTACAMSERVICE_NOTINSTALLED
+	//			CONTACAMSERVICE_RUNNING
+	//			CONTACAMSERVICE_NOTRUNNING
+	static int GetContaCamServiceState();
 #endif
 
 	// Save current document if it is modified,
@@ -683,7 +699,7 @@ public:
 	// Start playing given file
 	BOOL m_bStartPlay;
 
-	// Close application after play of given file has terminated
+	// Close application after audio play of given file has terminated
 	BOOL m_bCloseAfterPlayDone;
 
 	// File Open Preview Flag
@@ -763,6 +779,9 @@ public:
 	DWORD m_dwPURCHASE_ID;
 	WORD m_wRUNNING_NO;
 	CString m_sREG_NAME;
+
+	// Service
+	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
 #endif
 
 	// MODI OCR

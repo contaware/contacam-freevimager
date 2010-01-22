@@ -2259,6 +2259,7 @@
 #define IDS_STRING1695                  1695
 #define IDC_BAND1                       1696
 #define IDS_STRING1696                  1696
+#define IDC_CHECK_STARTFROM_SERVICE     1696
 #define IDC_CHECK_ESC_EXIT              1697
 #define IDC_BAND2                       1697
 #define IDS_STRING1697                  1697
@@ -2393,6 +2394,7 @@
 #define IDC_COMPRESSION_QUALITY_NUM     1763
 #define IDS_STRING1763                  1763
 #define IDC_CHECK_SNAPSHOT_THUMB        1764
+#define IDS_STRING1764                  1764
 #define IDC_BUTTON_THUMB_SIZE           1765
 #define IDC_TEXT_DIR                    1766
 #define IDC_TEXT_FILE                   1767

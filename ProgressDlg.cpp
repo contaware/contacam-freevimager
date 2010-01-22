@@ -13,8 +13,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CProgressDlg dialog
+CProgressDlg::CProgressDlg(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
+	: CDialog(CProgressDlg::IDD, NULL)	// NULL -> Parent is Main Frame
+{
+	//{{AFX_DATA_INIT(CProgressDlg)
+		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+	m_bUseThread = TRUE;
+	m_hMasterWnd = NULL;
+	m_sTitle = sTitle;
+	m_dwStartTimeMs = dwStartTimeMs;
+	m_dwWaitTimeMs = dwWaitTimeMs;
+	CDialog::Create(CProgressDlg::IDD, NULL);
+}
 
 CProgressDlg::CProgressDlg(HWND hMasterWnd, const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
 	: CDialog(CProgressDlg::IDD, NULL)	// NULL -> Parent is Main Frame
@@ -22,6 +33,7 @@ CProgressDlg::CProgressDlg(HWND hMasterWnd, const CString& sTitle, DWORD dwStart
 	//{{AFX_DATA_INIT(CProgressDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+	m_bUseThread = FALSE;
 	m_hMasterWnd = hMasterWnd;
 	m_sTitle = sTitle;
 	m_dwStartTimeMs = dwStartTimeMs;
@@ -47,9 +59,6 @@ BEGIN_MESSAGE_MAP(CProgressDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CProgressDlg message handlers
-
 BOOL CProgressDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -72,7 +81,7 @@ void CProgressDlg::OnClose()
 
 void CProgressDlg::Close()
 {
-	OnClose();
+	PostMessage(WM_CLOSE, 0, 0);
 }
 
 // Avoid closing dialog with ALT+F4
@@ -111,7 +120,7 @@ BOOL CProgressDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 void CProgressDlg::OnTimer(UINT nIDEvent) 
 {
 	CDialog::OnTimer(nIDEvent);
-	if (::IsWindow(m_hMasterWnd))
+	if (::IsWindow(m_hMasterWnd) || m_bUseThread)
 		m_Progress.StepIt();
 	else
 		Close(); // Close us if master window is closed!
@@ -119,6 +128,8 @@ void CProgressDlg::OnTimer(UINT nIDEvent)
 
 void CProgressDlg::PostNcDestroy() 
 {
+	if (m_bUseThread)
+		::AfxPostQuitMessage(0);
 	delete this;	
 	CDialog::PostNcDestroy();
 }
@@ -150,3 +161,70 @@ void CProgressDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		return;
 	CProgressDlg::OnSysCommand(nID, lParam);
 }
+
+
+IMPLEMENT_DYNCREATE(CProgressDlgThread, CWinThread)
+
+CProgressDlgThread::CProgressDlgThread()
+{
+	m_bAutoDelete = FALSE;
+	m_pProgressDlg = NULL;
+	m_sTitle = _T("Progress");
+	m_dwStartTimeMs = 0;
+	m_dwWaitTimeMs = 5000;
+}
+
+CProgressDlgThread::CProgressDlgThread(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
+{
+	m_bAutoDelete = FALSE;
+	m_pProgressDlg = NULL;
+	m_sTitle = sTitle;
+	m_dwStartTimeMs = dwStartTimeMs;
+	m_dwWaitTimeMs = dwWaitTimeMs;
+	Start();
+}
+
+BOOL CProgressDlgThread::InitInstance()
+{
+ 	m_pProgressDlg = new CProgressDlg(m_sTitle, m_dwStartTimeMs, m_dwWaitTimeMs);
+	if (m_pProgressDlg)
+		return TRUE;	// Start the message pump
+	else
+		return FALSE;	// Exit the thread
+}
+
+int CProgressDlgThread::ExitInstance()
+{
+	return CWinThread::ExitInstance();
+}
+
+void CProgressDlgThread::Kill(DWORD dwTimeout/*=INFINITE*/)
+{
+	if (m_pProgressDlg)
+	{
+		m_pProgressDlg->Close(); // Self-deletion of m_pProgressDlg
+		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+		{
+			// If it doesn't want to exit force the termination!
+			if (m_hThread)
+			{
+				::TerminateThread(m_hThread, 0);
+				TRACE(_T("Thread: %lu has been forced to terminate!\n"), m_nThreadID);
+				ASSERT(FALSE);
+			}
+		}
+		m_pProgressDlg = NULL;
+		if (m_hThread)
+		{
+			CloseHandle(m_hThread);
+			m_hThread = NULL;
+			m_nThreadID = 0;
+		}
+	}
+}
+
+BEGIN_MESSAGE_MAP(CProgressDlgThread, CWinThread)
+	//{{AFX_MSG_MAP(CProgressDlgThread)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()

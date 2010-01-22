@@ -17,6 +17,8 @@
 #define APPNAME_NOEXT									_T("ContaCam")
 #define APPNAME_NOEXT_LOW								_T("contacam")
 #define APPNAME_NOEXT_ASCII								"ContaCam"
+#define SERVICENAME_EXT									_T("ContaCamService.exe")
+#define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")

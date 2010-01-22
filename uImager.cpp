@@ -47,6 +47,8 @@
 #include "SettingsDlgVideoDeviceDoc.h"
 #include "rsaeuro.h"
 #include "rsa.h"
+#include <WinSvc.h>
+#include "ProgressDlg.h"
 #else
 #include "SettingsDlg.h"
 #endif
@@ -128,6 +130,7 @@ CUImagerApp::CUImagerApp()
 	m_bRegistered = FALSE;
 	m_dwPURCHASE_ID = 0;
 	m_wRUNNING_NO = 0;
+	m_bServiceProcess = FALSE;
 #else
 	m_bSingleInstance = FALSE;
 #endif
@@ -279,9 +282,10 @@ BYTE g_Crc32CheckArray[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 #endif
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
+	CInstanceChecker* pInstanceChecker = NULL;
 	try
 	{
-		// Process my by started with hidden set
+		// A process can be started with hidden set
 		if (m_nCmdShow == SW_HIDE)
 			m_bHideMainFrame = TRUE;
 
@@ -304,7 +308,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!AfxOleInit()) // This calls ::CoInitialize(NULL) internally
 		{
 			::AfxMessageBox(IDP_OLE_INIT_FAILED);
-			return FALSE;
+			throw (int)0;
 		}
 		AfxEnableControlContainer();
 
@@ -326,7 +330,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		TCHAR szName[_MAX_FNAME];
 		TCHAR szProgramName[MAX_PATH];
 		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return FALSE;
+			throw (int)0;
 		_tsplitpath(szProgramName, szDrive, szDir, szName, NULL);
 		CString sDrive(szDrive);
 		CString sDir(szDir);
@@ -453,16 +457,28 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 		}
 
+		// Stop service if running
+#ifdef VIDEODEVICEDOC
+		if (!m_bServiceProcess)
+		{
+			if (GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+			{
+				CString sContaCamServicePath(sDriveDir + SERVICENAME_EXT);
+				if (::IsExistingFile(sContaCamServicePath))
+				{
+					CProgressDlgThread ProgressDlgThread(ML_STRING(1764, "Stopping ContaCamService..."),
+																		0, CONTACAMSERVICE_TIMEOUT);
+					::ExecHiddenApp(sContaCamServicePath, _T("-k"), TRUE, CONTACAMSERVICE_TIMEOUT);
+				}
+			}
+		}
+#endif
+
 		// Single Instance
-		// (if CVideoDeviceDoc support always single instance, see constructor)
+		// (if VIDEODEVICEDOC defined -> single instance is always set, see constructor)
 #ifndef VIDEODEVICEDOC
 		if (m_bUseSettings)
 			m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
-#endif
-#ifdef _UNICODE
-		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
-#else
-		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Ascii")));
 #endif
 		if (!m_bExtractHere												&&
 			!m_bStartPlay												&&
@@ -476,15 +492,25 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 			cmdInfo.m_nShellCommand != CCommandLineInfo::AppUnregister	&&
 			!m_bSlideShowOnly											&&
+#ifdef VIDEODEVICEDOC
+			!m_bServiceProcess											&&
+#endif
 			m_bSingleInstance)
 		{
-			instanceChecker.ActivateChecker();
-			if (instanceChecker.PreviousInstanceRunning())
+#ifdef _UNICODE
+			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
+#else
+			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Ascii")));
+#endif
+			if (!pInstanceChecker)
+				throw (int)0;
+			pInstanceChecker->ActivateChecker();
+			if (pInstanceChecker->PreviousInstanceRunning())
 			{
 				// Send file name and shell command to previous instance
-				instanceChecker.ActivatePreviousInstance(cmdInfo.m_strFileName,
+				pInstanceChecker->ActivatePreviousInstance(cmdInfo.m_strFileName,
 														(DWORD)cmdInfo.m_nShellCommand);
-				return FALSE;
+				throw (int)0;
 			}
 		}
 
@@ -497,7 +523,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!g_bMMX)
 		{
 			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
-			return FALSE;
+			throw (int)0;
 		}
 #endif
 
@@ -587,7 +613,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CPictureChildFrame),
 			RUNTIME_CLASS(CPictureView));
 		if (!m_pPictureDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pPictureDocTemplate);
 
 		// Big Picture Doc Template Registration
@@ -597,7 +623,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CBigPictureChildFrame),
 			RUNTIME_CLASS(CPictureView));
 		if (!m_pBigPictureDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pBigPictureDocTemplate);
 
 		// Video Avi Doc Template Registration
@@ -607,7 +633,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CVideoAviChildFrame),
 			RUNTIME_CLASS(CVideoAviView));
 		if (!m_pVideoAviDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pVideoAviDocTemplate);
 
 		// Video Device Doc Template Registration
@@ -618,7 +644,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CVideoDeviceChildFrame),
 			RUNTIME_CLASS(CVideoDeviceView));
 		if (!m_pVideoDeviceDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pVideoDeviceDocTemplate);
 #endif
 
@@ -629,7 +655,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CAudioMCIChildFrame),
 			RUNTIME_CLASS(CAudioMCIView));
 		if (!m_pAudioMCIDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pAudioMCIDocTemplate);
 
 		// CD Audio Doc Template Registration
@@ -639,7 +665,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			RUNTIME_CLASS(CCDAudioChildFrame),
 			RUNTIME_CLASS(CCDAudioView));
 		if (!m_pCDAudioDocTemplate)
-			return FALSE;
+			throw (int)0;
 		AddDocTemplate(m_pCDAudioDocTemplate);
 
 		// Create Named Mutex For Installer / Uninstaller
@@ -656,6 +682,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				// running instance of our app.
 				break;
 
+			case ERROR_ACCESS_DENIED:
+				// Failed to create mutex because of security attributes
+				break;
+
 			default:
 				// Failed to create mutex by unknown reason
 				break;
@@ -670,7 +700,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME)) // if m_bHideMainFrame set tray icon is disabled here
 		{
 			delete pMainFrame;
-			return FALSE;
+			throw (int)0;
 		}
 		m_pMainWnd = pMainFrame;
 
@@ -715,7 +745,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				}
 				else
 					::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
-				return FALSE;
+				throw (int)0;
 			}
 		}
 		else
@@ -727,7 +757,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 			else
 				::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
-			return FALSE;
+			throw (int)0;
 		}
 
 		// Is registered?
@@ -738,7 +768,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Returns FALSE if extracting zip file here,
 		// if printing, if file opening fails.
 		if (!ProcessShellCommand(cmdInfo))
-			return FALSE;
+			throw (int)0;
 
 		// Hiding mainframe?
 		if (m_bHideMainFrame)
@@ -791,7 +821,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// DirectX check (it's a bit slow, do not run that each time)
 #ifdef VIDEODEVICEDOC
 					if (!RequireDirectXVersion7())
-						return FALSE;
+						throw (int)0;
 #else
 					SuggestDirectXVersion7();
 #endif
@@ -839,7 +869,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				AutorunVideoDevices();
 
 				// Start Browser
-				if (m_bBrowserAutostart)
+				if (m_bBrowserAutostart && !m_bServiceProcess)
 				{
 					BOOL bDoStartBrowser = TRUE;
 					if (m_bStartMicroApache)
@@ -882,13 +912,24 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// If this is the first instance of our App then track it
 		// so any other instances can find us
-		if (m_bSingleInstance)
-			instanceChecker.TrackFirstInstanceRunning();
+		if (pInstanceChecker)
+		{
+			pInstanceChecker->TrackFirstInstanceRunning();
+			delete pInstanceChecker;
+		}
 
 		return TRUE;
 	}
+	catch (int)
+	{
+		if (pInstanceChecker)
+			delete pInstanceChecker;
+		return FALSE;
+	}
 	catch (CException* e)
 	{
+		if (pInstanceChecker)
+			delete pInstanceChecker;
 		e->ReportError();
 		e->Delete();
 		return FALSE;
@@ -2038,8 +2079,25 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
-	::DeleteFile(CVideoDeviceDoc::MicroApacheGetLogFileName()); // Avoid growing it to much!
+	// Avoid growing log file to much!
+	::DeleteFile(CVideoDeviceDoc::MicroApacheGetLogFileName());
+
+	// Delete pid file
 	::DeleteFile(CVideoDeviceDoc::MicroApacheGetPidFileName());
+
+	// Start service
+	if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_NOTRUNNING)
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+			::ExecHiddenApp(sContaCamServicePath, _T("-r"));
+		}
+	}
 #endif
 }
 	
@@ -2682,6 +2740,20 @@ int CUImagerApp::ExitInstance()
 	while (pos)
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
+
+	// Start service
+	if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_NOTRUNNING)
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+			::ExecHiddenApp(sContaCamServicePath, _T("-r"));
+		}
+	}
 #endif
 
 	// Close The Appplication Mutex
@@ -2928,6 +3000,37 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 		}
 	}
 }
+
+int CUImagerApp::GetContaCamServiceState()
+{ 
+	int nCurrentState = CONTACAMSERVICE_NOTINSTALLED;
+	SC_HANDLE schSCManager = ::OpenSCManager(NULL, NULL, 0); 
+	if (schSCManager)
+	{
+		SC_HANDLE schService = ::OpenService(schSCManager, SERVICENAME_NOEXT, SERVICE_QUERY_STATUS);
+		if (schService)
+		{
+			SERVICE_STATUS status;
+			if (::QueryServiceStatus(schService, &status))
+			{
+				switch (status.dwCurrentState)
+				{
+					case SERVICE_CONTINUE_PENDING	:
+					case SERVICE_RUNNING			:
+					case SERVICE_START_PENDING		:
+						nCurrentState = CONTACAMSERVICE_RUNNING;
+						break;
+					default :
+						nCurrentState = CONTACAMSERVICE_NOTRUNNING;
+						break;
+				}
+			}
+			::CloseServiceHandle(schService);
+		}
+		::CloseServiceHandle(schSCManager);
+	}
+	return nCurrentState;
+}
 #endif
 
 void CUImagerApp::OnFileOpenDir() 
@@ -2981,6 +3084,10 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 		{
 			if (_tcscmp(pszParam, _T("slideshow")) == 0) // Case sensitive!
 				m_bStartSlideShow = TRUE;
+#ifdef VIDEODEVICEDOC
+			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
+				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
+#endif
 			else if (_tcscmp(pszParam, _T("extracthere")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
 			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
@@ -3006,6 +3113,10 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 
 		if (strcmp(pszParam, "slideshow") == 0) // Case sensitive!
 			m_bStartSlideShow = TRUE;
+#ifdef VIDEODEVICEDOC
+		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
+			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
+#endif
 		else if (strcmp(pszParam, "exctracthere") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
 		else if (strcmp(pszParam, "play") == 0) // Case sensitive!

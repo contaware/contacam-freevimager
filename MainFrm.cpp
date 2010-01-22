@@ -214,6 +214,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Init Menu Positions
 	InitMenuPositions();
 
+	// Set Foreground Window
+	SetForegroundWindow();
+	
 	// Set top most
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
@@ -1599,15 +1602,15 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 		m_ptChildScrollPosition = pView->GetScrollPosition();
 
 	// Store the Toolbars and Statusbar States and hide them
-	m_bToolBarWasVisible = (m_wndToolBar.IsWindowVisible() != 0);
+	m_bToolBarWasVisible = (m_wndToolBar.IsWindowVisible() != FALSE);
 	m_wndToolBar.ShowWindow(SW_HIDE);
 	CToolBar* pChildToolBar = ((CToolBarChildFrame*)pChild)->GetToolBar(); 
 	if (pChildToolBar)
 	{
-		m_bChildToolBarWasVisible = (pChildToolBar->IsWindowVisible() != 0);
+		m_bChildToolBarWasVisible = (pChildToolBar->IsWindowVisible() != FALSE);
 		pChildToolBar->ShowWindow(SW_HIDE);
 	}
-	m_bStatusBarWasVisible = (m_wndStatusBar.IsWindowVisible() != 0);
+	m_bStatusBarWasVisible = (m_wndStatusBar.IsWindowVisible() != FALSE);
 	m_wndStatusBar.ShowWindow(SW_HIDE);
 
 	// Hide Menu
