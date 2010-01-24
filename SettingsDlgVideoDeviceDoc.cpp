@@ -350,8 +350,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Autostart
 	pApp->Autostart(m_bAutostart);
 
-	// Start from service
-	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+	// Service
+	if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance &&
+		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 	{
 		if (m_bStartFromService)
 		{

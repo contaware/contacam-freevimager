@@ -172,6 +172,7 @@ CProgressDlgThread::CProgressDlgThread()
 	m_sTitle = _T("Progress");
 	m_dwStartTimeMs = 0;
 	m_dwWaitTimeMs = 5000;
+	m_hStartupDone = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 }
 
 CProgressDlgThread::CProgressDlgThread(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
@@ -181,12 +182,21 @@ CProgressDlgThread::CProgressDlgThread(const CString& sTitle, DWORD dwStartTimeM
 	m_sTitle = sTitle;
 	m_dwStartTimeMs = dwStartTimeMs;
 	m_dwWaitTimeMs = dwWaitTimeMs;
+	m_hStartupDone = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	Start();
+}
+
+CProgressDlgThread::~CProgressDlgThread()
+{
+	Kill();
+	if (m_hStartupDone)
+		::CloseHandle(m_hStartupDone);
 }
 
 BOOL CProgressDlgThread::InitInstance()
 {
  	m_pProgressDlg = new CProgressDlg(m_sTitle, m_dwStartTimeMs, m_dwWaitTimeMs);
+	::SetEvent(m_hStartupDone);
 	if (m_pProgressDlg)
 		return TRUE;	// Start the message pump
 	else
@@ -196,6 +206,15 @@ BOOL CProgressDlgThread::InitInstance()
 int CProgressDlgThread::ExitInstance()
 {
 	return CWinThread::ExitInstance();
+}
+
+void CProgressDlgThread::Start()
+{
+	if (m_hThread == NULL && CreateThread())
+	{
+		::WaitForSingleObject(m_hStartupDone, INFINITE);
+		::ResetEvent(m_hStartupDone);
+	}
 }
 
 void CProgressDlgThread::Kill(DWORD dwTimeout/*=INFINITE*/)

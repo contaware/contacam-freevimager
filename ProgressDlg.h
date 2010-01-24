@@ -87,8 +87,8 @@ class CProgressDlgThread : public CWinThread
 public:
 	CProgressDlgThread();
 	CProgressDlgThread(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs);
-	virtual ~CProgressDlgThread() {Kill();};
-	void Start() {if (m_hThread == NULL) CreateThread();};
+	virtual ~CProgressDlgThread();
+	void Start();
 	void Kill(DWORD dwTimeout = INFINITE);
 	CString m_sTitle;
 	DWORD m_dwStartTimeMs;
@@ -104,7 +104,8 @@ public:
 
 // Implementation
 protected:
-	CProgressDlg* m_pProgressDlg;
+	CProgressDlg* volatile m_pProgressDlg;
+	HANDLE volatile m_hStartupDone;
 	
 	// Generated message map functions
 	//{{AFX_MSG(CProgressDlgThread)

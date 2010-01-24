@@ -120,6 +120,7 @@ CUImagerApp::CUImagerApp()
 	m_bStartPlay = FALSE;
 	m_bCloseAfterPlayDone = FALSE;
 	m_pVideoAviDocTemplate = NULL;
+	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bFullscreenBrowser = FALSE;
@@ -457,20 +458,29 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 		}
 
-		// Stop service if running
+		// Separate Instance Necessary?
+		m_bForceSeparateInstance =
+			m_bExtractHere												||
+			m_bStartPlay												||
+			m_bCloseAfterPlayDone										||
+			cmdInfo.m_bRunEmbedded										||
+			cmdInfo.m_bRunAutomated										||
+			cmdInfo.m_nShellCommand == CCommandLineInfo::FilePrintTo	||
+			cmdInfo.m_nShellCommand == CCommandLineInfo::FileDDE		||
+#if _MFC_VER >= 0x0700
+			cmdInfo.m_nShellCommand == CCommandLineInfo::AppRegister	||
+#endif
+			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister	||
+			m_bSlideShowOnly;
+
+		// Stop ContaCam.exe from Service
 #ifdef VIDEODEVICEDOC
-		if (!m_bServiceProcess)
+		if (!m_bForceSeparateInstance && !m_bServiceProcess &&
+			GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		{
-			if (GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-			{
-				CString sContaCamServicePath(sDriveDir + SERVICENAME_EXT);
-				if (::IsExistingFile(sContaCamServicePath))
-				{
-					CProgressDlgThread ProgressDlgThread(ML_STRING(1764, "Stopping ContaCamService..."),
-																		0, CONTACAMSERVICE_TIMEOUT);
-					::ExecHiddenApp(sContaCamServicePath, _T("-k"), TRUE, CONTACAMSERVICE_TIMEOUT);
-				}
-			}
+			CProgressDlgThread ProgressDlgThread(ML_STRING(1764, "Stopping ContaCam as Service..."),
+																	0, CONTACAMSERVICE_TIMEOUT);
+			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
 		}
 #endif
 
@@ -480,22 +490,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (m_bUseSettings)
 			m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
 #endif
-		if (!m_bExtractHere												&&
-			!m_bStartPlay												&&
-			!m_bCloseAfterPlayDone										&&
-			!cmdInfo.m_bRunEmbedded										&&
-			!cmdInfo.m_bRunAutomated									&&
-			cmdInfo.m_nShellCommand != CCommandLineInfo::FilePrintTo	&&
-			cmdInfo.m_nShellCommand != CCommandLineInfo::FileDDE		&&
-#if _MFC_VER >= 0x0700
-			cmdInfo.m_nShellCommand != CCommandLineInfo::AppRegister	&&
-#endif
-			cmdInfo.m_nShellCommand != CCommandLineInfo::AppUnregister	&&
-			!m_bSlideShowOnly											&&
-#ifdef VIDEODEVICEDOC
-			!m_bServiceProcess											&&
-#endif
-			m_bSingleInstance)
+		if (!m_bForceSeparateInstance && !m_bServiceProcess && m_bSingleInstance)
 		{
 #ifdef _UNICODE
 			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
@@ -860,49 +855,53 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
 				}
 
+				// Auto-starts
 #ifdef VIDEODEVICEDOC
-				// Start Micro Apache
-				if (m_bStartMicroApache)
-					CVideoDeviceDoc::MicroApacheInitStart(); // if already running the just started process will exit, no problem
-
-				// Autorun Devices
-				AutorunVideoDevices();
-
-				// Start Browser
-				if (m_bBrowserAutostart && !m_bServiceProcess)
+				if (!m_bForceSeparateInstance)
 				{
-					BOOL bDoStartBrowser = TRUE;
+					// Start Micro Apache
 					if (m_bStartMicroApache)
+						CVideoDeviceDoc::MicroApacheInitStart(); // if already running the just started process will exit, no problem
+
+					// Autorun Devices
+					AutorunVideoDevices();
+
+					// Start Browser
+					if (m_bBrowserAutostart && !m_bServiceProcess)
 					{
-						bDoStartBrowser =	CVideoDeviceDoc::MicroApacheWaitStartDone() &&
-											CVideoDeviceDoc::MicroApacheWaitCanConnect();
-					}
-					if (bDoStartBrowser)
-					{
-						CString sUrl, sPort;
-						sPort.Format(_T("%d"), m_nMicroApachePort);
-						if (sPort != _T("80"))
-							sUrl = _T("http://localhost:") + sPort + _T("/");
-						else
-							sUrl = _T("http://localhost/");
-						if (m_bFullscreenBrowser)
+						BOOL bDoStartBrowser = TRUE;
+						if (m_bStartMicroApache)
 						{
-							CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
-							::ShellExecute(	NULL,
-											_T("open"),
-											sFullscreenExe,
-											sUrl,
-											NULL,
-											SW_SHOWNORMAL);
+							bDoStartBrowser =	CVideoDeviceDoc::MicroApacheWaitStartDone() &&
+												CVideoDeviceDoc::MicroApacheWaitCanConnect();
 						}
-						else
+						if (bDoStartBrowser)
 						{
-							::ShellExecute(	NULL,
-											_T("open"),
-											sUrl,
-											NULL,
-											NULL,
-											SW_SHOWNORMAL);
+							CString sUrl, sPort;
+							sPort.Format(_T("%d"), m_nMicroApachePort);
+							if (sPort != _T("80"))
+								sUrl = _T("http://localhost:") + sPort + _T("/");
+							else
+								sUrl = _T("http://localhost/");
+							if (m_bFullscreenBrowser)
+							{
+								CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
+								::ShellExecute(	NULL,
+												_T("open"),
+												sFullscreenExe,
+												sUrl,
+												NULL,
+												SW_SHOWNORMAL);
+							}
+							else
+							{
+								::ShellExecute(	NULL,
+												_T("open"),
+												sUrl,
+												NULL,
+												NULL,
+												SW_SHOWNORMAL);
+							}
 						}
 					}
 				}
@@ -2085,19 +2084,10 @@ void CUImagerApp::SaveOnEndSession()
 	// Delete pid file
 	::DeleteFile(CVideoDeviceDoc::MicroApacheGetPidFileName());
 
-	// Start service
-	if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_NOTRUNNING)
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-		{
-			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-			CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-			::ExecHiddenApp(sContaCamServicePath, _T("-r"));
-		}
-	}
+	// Start ContaCam.exe from Service
+	if (!m_bForceSeparateInstance && !m_bServiceProcess &&
+		GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
 }
 	
@@ -2741,19 +2731,10 @@ int CUImagerApp::ExitInstance()
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	// Start service
-	if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_NOTRUNNING)
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-		{
-			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-			CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-			::ExecHiddenApp(sContaCamServicePath, _T("-r"));
-		}
-	}
+	// Start ContaCam.exe from Service
+	if (!m_bForceSeparateInstance && !m_bServiceProcess &&
+		GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
 
 	// Close The Appplication Mutex
@@ -3030,6 +3011,31 @@ int CUImagerApp::GetContaCamServiceState()
 		::CloseServiceHandle(schSCManager);
 	}
 	return nCurrentState;
+}
+
+// CONTACAMSERVICE_CONTROL_START_PROC
+// CONTACAMSERVICE_CONTROL_END_PROC
+DWORD CUImagerApp::ControlContaCamService(int nMsg)
+{ 
+	DWORD dwError = ERROR_SUCCESS;
+    SC_HANDLE schSCManager = ::OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+    if (schSCManager == 0) 
+		dwError = ::GetLastError();
+	else
+	{
+		SC_HANDLE schService = ::OpenService(schSCManager, SERVICENAME_NOEXT, SERVICE_USER_DEFINED_CONTROL);
+		if (schService == 0)
+			dwError = ::GetLastError();
+		else
+		{
+			SERVICE_STATUS status;
+			if (!::ControlService(schService, nMsg, &status))
+				dwError = ::GetLastError();
+			::CloseServiceHandle(schService); 
+		}
+		::CloseServiceHandle(schSCManager); 
+	}
+	return dwError;
 }
 #endif
 

@@ -9038,7 +9038,7 @@ BEGIN
     IDS_STRING1761          "Web Server Log File has not yet been created"
     IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1763          "Switch to GDI under the View menu"
-    IDS_STRING1764          "Stopping ContaCamService..."
+    IDS_STRING1764          "Stopping ContaCam as Service..."
 END
 
 #endif    // English (U.S.) resources

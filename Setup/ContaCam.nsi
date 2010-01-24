@@ -254,10 +254,6 @@ stopend:
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\ContaCamService.exe
-  Delete $INSTDIR\ServiceInstall.bat
-  Delete $INSTDIR\ServiceUninstall.bat
-  Delete $INSTDIR\ServiceStart.bat
-  Delete $INSTDIR\ServiceStop.bat
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
@@ -286,10 +282,6 @@ stopend:
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
   SetOverwrite on
-  File "..\ContaCamService\Release\ServiceInstall.bat"
-  File "..\ContaCamService\Release\ServiceUninstall.bat"
-  File "..\ContaCamService\Release\ServiceStart.bat"
-  File "..\ContaCamService\Release\ServiceStop.bat"
   File "/oname=ActiveX\RemoteCam.htm" "..\ActiveX\RemoteCam.htm"
   File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"
   File "/oname=ActiveX\RemoteCamViewer.exe" "..\ActiveX\RemoteCamViewer.exe"
@@ -613,10 +605,6 @@ uninstallsrvandstopitend:
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
-  Delete $INSTDIR\ServiceInstall.bat
-  Delete $INSTDIR\ServiceUninstall.bat
-  Delete $INSTDIR\ServiceStart.bat
-  Delete $INSTDIR\ServiceStop.bat
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users

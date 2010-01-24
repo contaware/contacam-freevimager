@@ -71,6 +71,8 @@
 #define CONTACAMSERVICE_RUNNING							1
 #define CONTACAMSERVICE_NOTRUNNING						2
 #define CONTACAMSERVICE_TIMEOUT							20000
+#define CONTACAMSERVICE_CONTROL_START_PROC				133
+#define CONTACAMSERVICE_CONTROL_END_PROC				134
 
 // System Files
 #define THUMBS_DB										_T("Thumbs.db")
@@ -505,6 +507,10 @@ public:
 	//			CONTACAMSERVICE_RUNNING
 	//			CONTACAMSERVICE_NOTRUNNING
 	static int GetContaCamServiceState();
+
+	// CONTACAMSERVICE_CONTROL_START_PROC
+	// CONTACAMSERVICE_CONTROL_END_PROC
+	static DWORD ControlContaCamService(int nMsg);
 #endif
 
 	// Save current document if it is modified,
@@ -632,7 +638,10 @@ public:
 	// Parse & Process of the command line!
 	BOOL m_bHideMainFrame;
 
-	// Single Instance Application
+	// We need to be a separate instance
+	BOOL m_bForceSeparateInstance;
+
+	// Single Instance Application Wanted
 	BOOL m_bSingleInstance;
 
 	// Top Most

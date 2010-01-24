@@ -14,7 +14,10 @@
 #define POLLTIME					100
 #define ENDWORKERTHREAD_TIMEOUT		7000
 #define STATUSCHANGE_TIMEOUT		7000
-#define NOPROCESS_START				_T("-noproc")
+#define PROCESSES_START				_T("-proc")
+#define PROCESSES_STOP				_T("-noproc")
+#define SERVICE_CONTROL_START_PROC	133
+#define SERVICE_CONTROL_END_PROC	134
 HANDLE g_hKillEvent = NULL;
 HANDLE g_hWorkerThread = NULL;
 TCHAR g_pServiceName[STRINGBUFSIZE+1];
@@ -24,14 +27,14 @@ TCHAR g_pLogFile[STRINGBUFSIZE+1];
 PROCESS_INFORMATION g_pProcInfo[MAXPROCCOUNT];
 SERVICE_STATUS g_serviceStatus; 
 SERVICE_STATUS_HANDLE g_hServiceStatusHandle; 
-CRITICAL_SECTION g_myCS;
+CRITICAL_SECTION g_WriteLogCS;
 VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv);
 VOID WINAPI ContaCamServiceHandler(DWORD fdwControl);
 
 void WriteLog(LPCTSTR pMsg)
 {
 	// write error or other information into log file
-	EnterCriticalSection(&g_myCS);
+	EnterCriticalSection(&g_WriteLogCS);
 	try
 	{
 		SYSTEMTIME oT;
@@ -40,7 +43,7 @@ void WriteLog(LPCTSTR pMsg)
 		_ftprintf(pLog,_T("%02d/%02d/%04d, %02d:%02d:%02d\n    %s\n"),oT.wMonth,oT.wDay,oT.wYear,oT.wHour,oT.wMinute,oT.wSecond,pMsg); 
 		fclose(pLog);
 	} catch(...) {}
-	LeaveCriticalSection(&g_myCS);
+	LeaveCriticalSection(&g_WriteLogCS);
 }
 
 SERVICE_TABLE_ENTRY DispatchTable[] = 
@@ -214,137 +217,17 @@ void EndProcess(int nIndex)
 	}
 }
 
-// This routine gets used to start your service
-VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
-{
-	DWORD status = 0; 
-    DWORD specificError = 0xfffffff; 
- 
-    g_serviceStatus.dwServiceType        = SERVICE_WIN32; 
-    g_serviceStatus.dwCurrentState       = SERVICE_START_PENDING; 
-    g_serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PAUSE_CONTINUE; 
-    g_serviceStatus.dwWin32ExitCode      = 0; 
-    g_serviceStatus.dwServiceSpecificExitCode = 0; 
-    g_serviceStatus.dwCheckPoint         = 0; 
-    g_serviceStatus.dwWaitHint           = 0; 
- 
-    g_hServiceStatusHandle = RegisterServiceCtrlHandler(g_pServiceName, ContaCamServiceHandler); 
-    if (g_hServiceStatusHandle == 0) 
-    {
-		long nError = GetLastError();
-		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
-		WriteLog(pTemp);
-        return; 
-    }
- 
-    // Initialization complete -> report running status 
-    g_serviceStatus.dwCurrentState       = SERVICE_RUNNING; 
-    g_serviceStatus.dwCheckPoint         = 0; 
-    g_serviceStatus.dwWaitHint           = 0;  
-    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
-    { 
-		long nError = GetLastError();
-		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
-		WriteLog(pTemp);
-    } 
-
-	// Start processes
-	if (!(dwArgc == 2 && _tcscmp(lpszArgv[1], NOPROCESS_START) == 0))
-	{
-		for (int i = 0 ; i < MAXPROCCOUNT ; i++)
-		{
-			g_pProcInfo[i].hProcess = 0;
-			StartProcess(i);
-		}
-	}
-}
-
-void StopWorkerThread()
-{
-	SetEvent(g_hKillEvent);
-	if (WaitForSingleObject(g_hWorkerThread, ENDWORKERTHREAD_TIMEOUT) != WAIT_OBJECT_0)
-	{
-		// If it doesn't want to exit force the termination
-		if (g_hWorkerThread)
-		{
-			WriteLog(_T("Forced worker thread termination"));
-			TerminateThread(g_hWorkerThread, 0);
-		}
-	}
-	if (g_hWorkerThread)
-	{
-		CloseHandle(g_hWorkerThread);
-		g_hWorkerThread = NULL;
-	}
-}
-
-// This routine responds to events concerning your service, like start/stop
-VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
-{
-	switch (fdwControl) 
-	{
-		case SERVICE_CONTROL_STOP:
-		case SERVICE_CONTROL_SHUTDOWN:
-		{
-			// Stop worker thread
-			StopWorkerThread();
-
-			// Set status
-			g_serviceStatus.dwWin32ExitCode = 0; 
-			g_serviceStatus.dwCurrentState  = SERVICE_STOPPED; 
-			g_serviceStatus.dwCheckPoint    = 0; 
-			g_serviceStatus.dwWaitHint      = 0;
-
-			// Terminate all processes started by this service before shutdown
-			for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
-			{
-				EndProcess(i);
-			}			
-			if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus))
-			{ 
-				long nError = GetLastError();
-				TCHAR pTemp[MAX_PATH];
-				swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
-				WriteLog(pTemp);
-			}
-
-			return; 
-		}
-		case SERVICE_CONTROL_PAUSE:
-			g_serviceStatus.dwCurrentState = SERVICE_PAUSED; 
-			break;
-		case SERVICE_CONTROL_CONTINUE:
-			g_serviceStatus.dwCurrentState = SERVICE_RUNNING; 
-			break;
-		case SERVICE_CONTROL_INTERROGATE:
-			break;
-		default: 
-			break;
-	};
-    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
-	{ 
-		long nError = GetLastError();
-		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
-		WriteLog(pTemp);
-    } 
-}
-
 unsigned int __stdcall WorkerProc(void* lpParam)
 {
 	// Get CheckProcessSeconds
 	TCHAR pCheckProcess[STRINGBUFSIZE+1];
 	GetPrivateProfileString(_T("Settings"), _T("CheckProcessSeconds"), _T("60"), pCheckProcess, STRINGBUFSIZE, g_pInitFile);
 	int nCheckProcessSeconds = _ttoi(pCheckProcess);
-	if (nCheckProcessSeconds <= 0)
-		return 0;
 
 	// Main loop
 	while (TRUE)
 	{
-		DWORD Event = WaitForSingleObject(g_hKillEvent, 1000 * nCheckProcessSeconds);
+		DWORD Event = WaitForSingleObject(g_hKillEvent, nCheckProcessSeconds <= 0 ? INFINITE : 1000 * nCheckProcessSeconds);
 		switch (Event)
 		{
 			case WAIT_OBJECT_0 :
@@ -399,6 +282,151 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 	}
 }
 
+void StartWorkerThread()
+{
+	if (!g_hWorkerThread)
+	{
+		if ((int)(g_hWorkerThread = (HANDLE)_beginthreadex(NULL, 0, WorkerProc, NULL, 0, NULL)) == 0)
+		{
+			long nError = GetLastError();
+			TCHAR pTemp[MAX_PATH];
+			swprintf(pTemp, MAX_PATH, _T("_beginthreadex failed, error code = %d"), nError);
+			WriteLog(pTemp);
+		}
+	}
+}
+
+void StopWorkerThread()
+{
+	if (g_hWorkerThread)
+	{
+		SetEvent(g_hKillEvent);
+		if (WaitForSingleObject(g_hWorkerThread, ENDWORKERTHREAD_TIMEOUT) != WAIT_OBJECT_0)
+		{
+			WriteLog(_T("Forced worker thread termination"));
+			TerminateThread(g_hWorkerThread, 0);
+		}
+		CloseHandle(g_hWorkerThread);
+		g_hWorkerThread = NULL;
+	}
+}
+
+// This routine gets used to start your service
+VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
+{
+	DWORD status = 0; 
+    DWORD specificError = 0xfffffff; 
+ 
+    g_serviceStatus.dwServiceType        = SERVICE_WIN32; 
+    g_serviceStatus.dwCurrentState       = SERVICE_START_PENDING; 
+    g_serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN | SERVICE_ACCEPT_PAUSE_CONTINUE; 
+    g_serviceStatus.dwWin32ExitCode      = 0; 
+    g_serviceStatus.dwServiceSpecificExitCode = 0; 
+    g_serviceStatus.dwCheckPoint         = 0; 
+    g_serviceStatus.dwWaitHint           = 0; 
+ 
+    g_hServiceStatusHandle = RegisterServiceCtrlHandler(g_pServiceName, ContaCamServiceHandler); 
+    if (g_hServiceStatusHandle == 0) 
+    {
+		long nError = GetLastError();
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
+		WriteLog(pTemp);
+        return; 
+    }
+ 
+    // Initialization complete -> report running status 
+    g_serviceStatus.dwCurrentState       = SERVICE_RUNNING; 
+    g_serviceStatus.dwCheckPoint         = 0; 
+    g_serviceStatus.dwWaitHint           = 0;  
+    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
+    { 
+		long nError = GetLastError();
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
+		WriteLog(pTemp);
+    } 
+
+	// Start processes
+	if (!(dwArgc == 2 && _tcscmp(lpszArgv[1], PROCESSES_STOP) == 0))
+	{
+		for (int i = 0 ; i < MAXPROCCOUNT ; i++)
+		{
+			g_pProcInfo[i].hProcess = 0;
+			StartProcess(i);
+		}
+		StartWorkerThread();
+	}
+}
+
+// This routine responds to events concerning your service, like start/stop
+VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
+{
+	switch (fdwControl) 
+	{
+		case SERVICE_CONTROL_STOP:
+		case SERVICE_CONTROL_SHUTDOWN:
+		{
+			// Stop worker thread
+			StopWorkerThread();
+
+			// Set status
+			g_serviceStatus.dwWin32ExitCode = 0; 
+			g_serviceStatus.dwCurrentState  = SERVICE_STOPPED; 
+			g_serviceStatus.dwCheckPoint    = 0; 
+			g_serviceStatus.dwWaitHint      = 0;
+
+			// Terminate all processes started by this service before shutdown
+			for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
+				EndProcess(i);
+			break;
+		}
+		case SERVICE_CONTROL_PAUSE:
+			g_serviceStatus.dwCurrentState = SERVICE_PAUSED; 
+			break;
+		case SERVICE_CONTROL_CONTINUE:
+			g_serviceStatus.dwCurrentState = SERVICE_RUNNING; 
+			break;
+		case SERVICE_CONTROL_INTERROGATE:
+			break;
+		// Range 128 to 255
+		// The service defines the action associated with the control code.
+		// The hService handle must have the SERVICE_USER_DEFINED_CONTROL access right.
+		case SERVICE_CONTROL_START_PROC:
+		{
+			if (!g_hWorkerThread)
+			{
+				for (int i = 0 ; i < MAXPROCCOUNT ; i++)
+				{
+					g_pProcInfo[i].hProcess = 0;
+					StartProcess(i);
+				}
+				StartWorkerThread();
+			}
+			break;
+		}
+		case SERVICE_CONTROL_END_PROC:
+		{
+			if (g_hWorkerThread)
+			{
+				StopWorkerThread();
+				for (int i = MAXPROCCOUNT - 1 ; i >= 0 ; i--)
+					EndProcess(i);
+			}
+			break;
+		}
+		default: 
+			break;
+	};
+    if (!SetServiceStatus(g_hServiceStatusHandle, &g_serviceStatus)) 
+	{ 
+		long nError = GetLastError();
+		TCHAR pTemp[MAX_PATH];
+		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
+		WriteLog(pTemp);
+    } 
+}
+
 // Returns 0 on error, otherwise:
 // SERVICE_STOPPED                1
 // SERVICE_START_PENDING          2
@@ -424,6 +452,31 @@ DWORD GetServiceStatus(LPCTSTR pName)
 		CloseServiceHandle(schSCManager);
 	}
 	return dwCurrentState;
+}
+
+// SERVICE_CONTROL_START_PROC
+// SERVICE_CONTROL_END_PROC
+DWORD CustomeMsg(LPCTSTR pName, int nMsg) 
+{ 
+	DWORD dwError = ERROR_SUCCESS;
+    SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
+    if (schSCManager == 0) 
+		dwError = GetLastError();
+	else
+	{
+		SC_HANDLE schService = OpenService(schSCManager, pName, SERVICE_USER_DEFINED_CONTROL);
+		if (schService == 0)
+			dwError = GetLastError();
+		else
+		{
+			SERVICE_STATUS status;
+			if (!ControlService(schService, nMsg, &status))
+				dwError = GetLastError();
+			CloseServiceHandle(schService); 
+		}
+		CloseServiceHandle(schSCManager); 
+	}
+	return dwError;
 }
 
 // If not running returns:
@@ -685,8 +738,8 @@ void ConsoleWait()
 
 void _tmain(int argc, TCHAR* argv[])
 {
-	// initialize global critical section
-	InitializeCriticalSection(&g_myCS);
+	// initialize critical section
+	InitializeCriticalSection(&g_WriteLogCS);
 
 	// initialize variables
 	TCHAR pModuleFile[STRINGBUFSIZE+1];
@@ -706,124 +759,135 @@ void _tmain(int argc, TCHAR* argv[])
 		return;
 	}
 
-	// uninstall service
-	if (argc==2&&_tcsicmp(_T("-u"),argv[1])==0)
+	// Control commands
+	if (argc==2)
 	{
-		_tprintf(_T("Uninstalling %s, please wait...\n\n"), g_pServiceName);
-		KillService(g_pServiceName);
-		int nRet = Uninstall(g_pServiceName);
-		if (nRet == ERROR_SUCCESS)
-			_tprintf(_T("%s uninstalled"), g_pServiceName);
-		else if (nRet == ERROR_SERVICE_DOES_NOT_EXIST)
-			_tprintf(_T("%s is not installed"), g_pServiceName);
-		else
-			_tprintf(_T("Failed to uninstall %s!"), g_pServiceName);
-		ConsoleWait();
-	}
-	// install service
-	else if (argc==2&&_tcsicmp(_T("-i"),argv[1])==0)
-	{
-		_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
-		TCHAR pServiceStartName[STRINGBUFSIZE+1];
-		TCHAR pServiceStartPassword[STRINGBUFSIZE+1];
-		int nRet;
-		while (TRUE)
+		// uninstall service
+		if (_tcsicmp(_T("-u"), argv[1]) == 0)
 		{
+			_tprintf(_T("Uninstalling %s, please wait...\n\n"), g_pServiceName);
 			KillService(g_pServiceName);
-			Uninstall(g_pServiceName);
-			if (GetCurrentLoggedUser(pServiceStartName))
-				_tprintf(_T("Logon Username: %s\n"), pServiceStartName);
+			int nRet = Uninstall(g_pServiceName);
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("%s uninstalled"), g_pServiceName);
+			else if (nRet == ERROR_SERVICE_DOES_NOT_EXIST)
+				_tprintf(_T("%s is not installed"), g_pServiceName);
 			else
+				_tprintf(_T("Failed to uninstall %s!"), g_pServiceName);
+			ConsoleWait();
+		}
+		// install service
+		else if (_tcsicmp(_T("-i"), argv[1]) == 0)
+		{
+			_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
+			TCHAR pServiceStartName[STRINGBUFSIZE+1];
+			TCHAR pServiceStartPassword[STRINGBUFSIZE+1];
+			int nRet;
+			while (TRUE)
 			{
-				TCHAR pTemp[STRINGBUFSIZE+1];
-				_tprintf(_T("Logon Username: "));
-				_getts_s(pTemp, STRINGBUFSIZE+1);
-				_tcscpy(pServiceStartName, _T(".\\"));
-				_tcscat(pServiceStartName, pTemp);
-			}
-			_tprintf(_T("Logon Password: "));
-			GetPw(pServiceStartPassword);
-			nRet = Install(g_pExeFile, g_pServiceName, pServiceStartName, pServiceStartPassword);
-			if (nRet != ERROR_INVALID_SERVICE_ACCOUNT)
-			{
-				if (pServiceStartName[0] != _T('\0'))
-					AddServiceLogonRight(pServiceStartName);
-				LPTSTR pArgv[1];
-				pArgv[0] = NOPROCESS_START; // Start the service (without starting the processes) to verify the password
-				if ((nRet = RunService(g_pServiceName, 1, (LPCTSTR*)pArgv)) != ERROR_SERVICE_LOGON_FAILED)
-					break;
+				KillService(g_pServiceName);
+				Uninstall(g_pServiceName);
+				if (GetCurrentLoggedUser(pServiceStartName))
+					_tprintf(_T("Logon Username: %s\n"), pServiceStartName);
 				else
 				{
-					if (pServiceStartName[0] != _T('\0') && pServiceStartPassword[0] == _T('\0'))
-					{
-						_tprintf(_T("\
-Logon failed!\n\n\
-Empty passwords may not be supported by your security policy\n\
--> disable Security Settings\\Local Policies\\Security Options\\Accounts:\n\
-Limit local account use of blank passwords to console logon only\n\
--> or set LimitBlankPasswordUse to 0 under the registry key\n\
-HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
-					}
-					else
-						_tprintf(_T("Logon failed! (wrong password)\n\n"));
+					TCHAR pTemp[STRINGBUFSIZE+1];
+					_tprintf(_T("Logon Username: "));
+					_getts_s(pTemp, STRINGBUFSIZE+1);
+					_tcscpy(pServiceStartName, _T(".\\"));
+					_tcscat(pServiceStartName, pTemp);
 				}
+				_tprintf(_T("Logon Password: "));
+				GetPw(pServiceStartPassword);
+				nRet = Install(g_pExeFile, g_pServiceName, pServiceStartName, pServiceStartPassword);
+				if (nRet != ERROR_INVALID_SERVICE_ACCOUNT)
+				{
+					if (pServiceStartName[0] != _T('\0'))
+						AddServiceLogonRight(pServiceStartName);
+					LPTSTR pArgv[1];
+					pArgv[0] = PROCESSES_STOP; // Start the service (without starting the processes) to verify the password
+					if ((nRet = RunService(g_pServiceName, 1, (LPCTSTR*)pArgv)) != ERROR_SERVICE_LOGON_FAILED)
+						break;
+					else
+					{
+						if (pServiceStartName[0] != _T('\0') && pServiceStartPassword[0] == _T('\0'))
+						{
+							_tprintf(_T("\
+	Logon failed!\n\n\
+	Empty passwords may not be supported by your security policy\n\
+	-> disable Security Settings\\Local Policies\\Security Options\\Accounts:\n\
+	Limit local account use of blank passwords to console logon only\n\
+	-> or set LimitBlankPasswordUse to 0 under the registry key\n\
+	HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
+						}
+						else
+							_tprintf(_T("Logon failed! (wrong password)\n\n"));
+					}
+				}
+				else
+					_tprintf(_T("Logon failed! (invalid account)\n\n"));
 			}
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("\n%s installed"), g_pServiceName);
 			else
-				_tprintf(_T("Logon failed! (invalid account)\n\n"));
-		}
-		if (nRet == ERROR_SUCCESS)
-		{
-			_tprintf(_T("\n%s installed"), g_pServiceName);
-			KillService(g_pServiceName);
+				_tprintf(_T("\nFailed to install %s, error code = %d!"), g_pServiceName, nRet);
 			ConsoleWait();
 		}
-		else
-		{
-			_tprintf(_T("\nFailed to install %s, error code = %d!"), g_pServiceName, nRet);
+		// run service
+		else if (_tcsicmp(_T("-r"), argv[1]) == 0)
+		{			
+			_tprintf(_T("Starting service, please wait...\n\n"));
+			int nRet = RunService(g_pServiceName, 0, NULL);
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("%s started"), g_pServiceName);
+			else if (nRet == ERROR_SERVICE_ALREADY_RUNNING)
+				_tprintf(_T("%s is already running"), g_pServiceName);
+			else
+				_tprintf(_T("Failed to start %s!"), g_pServiceName);
 			ConsoleWait();
 		}
-	}
-	// run service
-	else if (argc==2&&_tcsicmp(_T("-r"),argv[1])==0)
-	{			
-		_tprintf(_T("Starting service, please wait...\n\n"));
-		int nRet = RunService(g_pServiceName, 0, NULL);
-		if (nRet == ERROR_SUCCESS)
-			_tprintf(_T("%s started"), g_pServiceName);
-		else if (nRet == ERROR_SERVICE_ALREADY_RUNNING)
-			_tprintf(_T("%s is already running"), g_pServiceName);
-		else
-			_tprintf(_T("Failed to start %s!"), g_pServiceName);
-		ConsoleWait();
-	}
-	// kill service
-	else if (argc==2&&_tcsicmp(_T("-k"),argv[1])==0)
-	{
-		_tprintf(_T("Stopping service, please wait...\n\n"));
-		int nRet = KillService(g_pServiceName);
-		if (nRet == ERROR_SUCCESS)
-			_tprintf(_T("%s stopped"), g_pServiceName);
-		else if (nRet == ERROR_SERVICE_NOT_ACTIVE)
-			_tprintf(_T("%s is already stopped"), g_pServiceName);
-		else
-			_tprintf(_T("Failed to stop %s!"), g_pServiceName);
-		ConsoleWait();
+		// kill service
+		else if (_tcsicmp(_T("-k"), argv[1]) == 0)
+		{
+			_tprintf(_T("Stopping service, please wait...\n\n"));
+			int nRet = KillService(g_pServiceName);
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("%s stopped"), g_pServiceName);
+			else if (nRet == ERROR_SERVICE_NOT_ACTIVE)
+				_tprintf(_T("%s is already stopped"), g_pServiceName);
+			else
+				_tprintf(_T("Failed to stop %s!"), g_pServiceName);
+			ConsoleWait();
+		}
+		else if (_tcsicmp(PROCESSES_START, argv[1]) == 0)
+		{
+			_tprintf(_T("Starting processes, please wait...\n\n"));
+			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_START_PROC);
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("Processes started"));
+			else
+				_tprintf(_T("Failed to start processes!"));
+			ConsoleWait();
+		}
+		else if (_tcsicmp(PROCESSES_STOP, argv[1]) == 0)
+		{
+			_tprintf(_T("Stopping processes, please wait...\n\n"));
+			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_END_PROC);
+			if (nRet == ERROR_SUCCESS)
+				_tprintf(_T("Processes stopped"));
+			else
+				_tprintf(_T("Failed to stop processes!"));
+			ConsoleWait();
+		}
 	}
 	// assume user is starting this service 
 	else 
 	{
-		// reset
+		// init
 		for (int i = 0 ; i < MAXPROCCOUNT ; i++)
 			g_pProcInfo[i].hProcess = 0;
-		// start a worker thread to check for dead programs (and restart if necessary)
 		g_hKillEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-		if ((int)(g_hWorkerThread = (HANDLE)_beginthreadex(NULL, 0, WorkerProc, NULL, 0, NULL)) == 0)
-		{
-			long nError = GetLastError();
-			TCHAR pTemp[MAX_PATH];
-			swprintf(pTemp, MAX_PATH, _T("_beginthreadex failed, error code = %d"), nError);
-			WriteLog(pTemp);
-		}
+
 		// pass dispatch table to service controller
 		if (!StartServiceCtrlDispatcher(DispatchTable))
 		{
@@ -833,12 +897,13 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 			swprintf(pTemp, MAX_PATH, _T("StartServiceCtrlDispatcher failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
+		
 		// you don't get here unless the service is shutdown
 		if (g_hKillEvent)
 			CloseHandle(g_hKillEvent);
 	}
 
-	// delete global critical section
-	DeleteCriticalSection(&g_myCS);
+	// delete critical section
+	DeleteCriticalSection(&g_WriteLogCS);
 }
 

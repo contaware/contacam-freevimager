@@ -2396,6 +2396,7 @@
 #define IDC_CHECK_SNAPSHOT_THUMB        1764
 #define IDS_STRING1764                  1764
 #define IDC_BUTTON_THUMB_SIZE           1765
+#define IDS_STRING1765                  1765
 #define IDC_TEXT_DIR                    1766
 #define IDC_TEXT_FILE                   1767
 #define IDC_WARNING                     1768
