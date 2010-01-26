@@ -144,6 +144,7 @@ CUImagerApp::CUImagerApp()
 	m_bFileDlgPreview = TRUE;
 	m_bUseSettings = TRUE;
 	m_hAppMutex = NULL;
+	m_bInitInstance = FALSE;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
 	m_bHasUnicodeExe = FALSE;
@@ -284,6 +285,7 @@ BYTE g_Crc32CheckArray[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
 	CInstanceChecker* pInstanceChecker = NULL;
+	CProgressDlgThread* pProgressDlgThread = NULL;
 	try
 	{
 		// A process can be started with hidden set
@@ -478,7 +480,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!m_bForceSeparateInstance && !m_bServiceProcess &&
 			GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		{
-			CProgressDlgThread ProgressDlgThread(ML_STRING(1764, "Stopping ContaCam as Service..."),
+			pProgressDlgThread = new CProgressDlgThread(ML_STRING(1764, "Stopping ContaCam as Service..."),
 																	0, CONTACAMSERVICE_TIMEOUT);
 			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
 		}
@@ -496,6 +498,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 			m_bSingleInstance)
 		{
+			// Cannot pass filenames between Ascii and Unicode
+			// -> two different instances for them:
 #ifdef _UNICODE
 			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
 #else
@@ -782,7 +786,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// But that causes a problem with the document titles,
 		// they are not shown!
 		// -> Update Title here:
-		CMDIChildWnd* pChild = ::AfxGetMainFrame()->MDIGetActive();
+		CMDIChildWnd* pChild = pMainFrame->MDIGetActive();
 		if (pChild)
 		{
 			CView* pView = (CView*)pChild->GetActiveView();
@@ -866,7 +870,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// Start Micro Apache
 					if (m_bStartMicroApache)
 					{
-						if (CVideoDeviceDoc::MicroApacheInitStart()) // if already running the just started process will exit, no problem
+						if (CVideoDeviceDoc::MicroApacheInitStart())
 							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 					}
 
@@ -924,18 +928,30 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			delete pInstanceChecker;
 		}
 
+		// The mainframe must be created before you free CProgressDlgThread
+		// this to allow the AttachThreadInput to correctly pass the focus
+		if (pProgressDlgThread)
+			delete pProgressDlgThread;
+
+		// Set ok flag
+		m_bInitInstance = TRUE;
+
 		return TRUE;
 	}
 	catch (int)
 	{
 		if (pInstanceChecker)
 			delete pInstanceChecker;
+		if (pProgressDlgThread)
+			delete pProgressDlgThread;
 		return FALSE;
 	}
 	catch (CException* e)
 	{
 		if (pInstanceChecker)
 			delete pInstanceChecker;
+		if (pProgressDlgThread)
+			delete pProgressDlgThread;
 		e->ReportError();
 		e->Delete();
 		return FALSE;
@@ -2746,7 +2762,7 @@ int CUImagerApp::ExitInstance()
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	if (!m_bForceSeparateInstance)
+	if (!m_bForceSeparateInstance && m_bInitInstance)
 	{
 		// Finish Micro Apache shutdown
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
@@ -2757,7 +2773,7 @@ int CUImagerApp::ExitInstance()
 	}
 #endif
 
-	// Close The Appplication Mutex
+	// Close The Application Mutex
 	if (m_hAppMutex)
 		::CloseHandle(m_hAppMutex);
 

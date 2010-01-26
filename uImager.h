@@ -913,6 +913,10 @@ protected:
 	// whether this program is running
 	HANDLE m_hAppMutex;
 
+	// If not set, InitInstance() failed and returned FALSE,
+	// in that case ExitInstance() is called right after InitInstance()
+	BOOL m_bInitInstance;
+
 	// Autorun progress dialog
 	CProgressDlg* m_pAutorunProgressDlg;
 	

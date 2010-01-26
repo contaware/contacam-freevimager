@@ -69,7 +69,7 @@ BOOL CStaticLink::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	nHitTest;
 	message;
 	
-	// IDC_LINK_HAND has to be in Resource
+	// IDC_HAND_CURSOR has to be in Resource
 	HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_HAND_CURSOR);	
 	ASSERT(hCursor);
 	 

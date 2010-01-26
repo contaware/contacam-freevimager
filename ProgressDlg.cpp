@@ -14,7 +14,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CProgressDlg::CProgressDlg(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
-	: CDialog(CProgressDlg::IDD, NULL)	// NULL -> Parent is Main Frame
+: CDialog(CProgressDlg::IDD, CWnd::FromHandle(::GetDesktopWindow()))
 {
 	//{{AFX_DATA_INIT(CProgressDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -221,7 +221,17 @@ void CProgressDlgThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 {
 	if (m_pProgressDlg)
 	{
-		m_pProgressDlg->Close(); // Self-deletion of m_pProgressDlg
+		// Set the focus back to the Main Frame
+		if (::AfxGetMainFrame())
+		{
+			::AttachThreadInput(::AfxGetApp()->m_nThreadID, m_nThreadID, TRUE);
+			::AfxGetMainFrame()->SetFocus();
+			::AfxGetMainFrame()->SetForegroundWindow();
+			::AttachThreadInput(::AfxGetApp()->m_nThreadID, m_nThreadID, FALSE);
+		}
+
+		// Self-deletion of m_pProgressDlg
+		m_pProgressDlg->Close();
 		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
 		{
 			// If it doesn't want to exit force the termination!
