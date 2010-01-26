@@ -819,12 +819,12 @@ void _tmain(int argc, TCHAR* argv[])
 						if (pServiceStartName[0] != _T('\0') && pServiceStartPassword[0] == _T('\0'))
 						{
 							_tprintf(_T("\
-	Logon failed!\n\n\
-	Empty passwords may not be supported by your security policy\n\
-	-> disable Security Settings\\Local Policies\\Security Options\\Accounts:\n\
-	Limit local account use of blank passwords to console logon only\n\
-	-> or set LimitBlankPasswordUse to 0 under the registry key\n\
-	HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
+Logon failed!\n\n\
+Empty passwords may not be supported by your security policy\n\
+-> disable Security Settings\\Local Policies\\Security Options\\Accounts:\n\
+Limit local account use of blank passwords to console logon only\n\
+-> or set LimitBlankPasswordUse to 0 under the registry key\n\
+HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 						}
 						else
 							_tprintf(_T("Logon failed! (wrong password)\n\n"));
