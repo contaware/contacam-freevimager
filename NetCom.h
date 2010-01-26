@@ -221,7 +221,7 @@ public:
 	{
 		public:
 			CMsgThread(){m_bClosing = FALSE; m_pNetCom = NULL;};
-			virtual ~CMsgThread(){;};
+			virtual ~CMsgThread(){Kill();};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			volatile BOOL m_bClosing; // About to Close
 
@@ -236,7 +236,7 @@ public:
 	{
 		public:
 			CRxThread(){m_pNetCom = NULL; m_pCurrentBuf = NULL;};
-			virtual ~CRxThread(){;};
+			virtual ~CRxThread(){Kill();};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 
 		protected:
@@ -259,7 +259,7 @@ public:
 						m_dwMaxBandwidth = 0U;
 						m_dwLastUpTime = 0U;
 						::InitializeCriticalSection(&m_csBandwidth);};
-			virtual ~CTxThread(){::DeleteCriticalSection(&m_csBandwidth);};
+			virtual ~CTxThread(){Kill(); ::DeleteCriticalSection(&m_csBandwidth);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			__forceinline void SetMaxDatagramBandwidth(DWORD dwMaxBandwidth)
 			{

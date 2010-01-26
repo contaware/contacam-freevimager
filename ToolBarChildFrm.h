@@ -314,12 +314,15 @@ protected:
 	CVideoDeviceChildFrame(); // protected constructor used by dynamic creation
 	void StartShutdown1();
 	void StartShutdown2();
+	void StartShutdown3();
 	void EndShutdown();
 	BOOL IsShutdown1Done();
 	BOOL IsShutdown2Done();
+	BOOL IsShutdown3Done();
 
 protected:
 	BOOL m_bShutdown2Started;
+	BOOL m_bShutdown3Started;
 
 	// Overrides
 protected:

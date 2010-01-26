@@ -6614,30 +6614,33 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	sAutoSaveDir += _T("\\") + CString(APPNAME_NOEXT) + _T("\\") + sDeviceName;
 
 	// Set Placement
-	LPBYTE pData = NULL;
-	UINT nBytes = 0;
-	pApp->GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
-	WINDOWPLACEMENT* pwp = (WINDOWPLACEMENT*)pData;
-	if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+	if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
 	{
-		// Reset size to doc flag
-		m_bSizeToDoc = FALSE;
+		LPBYTE pData = NULL;
+		UINT nBytes = 0;
+		pApp->GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
+		WINDOWPLACEMENT* pwp = (WINDOWPLACEMENT*)pData;
+		if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+		{
+			// Reset size to doc flag
+			m_bSizeToDoc = FALSE;
 
-		// Clip to MDI rect (ClipToMDIRect() not working for all OSs if auto starting minimized to tray)
-		if (!pApp->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
-			::AfxGetMainFrame()->ClipToMDIRect(&pwp->rcNormalPosition);
+			// Clip to MDI rect (ClipToMDIRect() not working for all OSs if auto starting minimized to tray)
+			if (!pApp->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+				::AfxGetMainFrame()->ClipToMDIRect(&pwp->rcNormalPosition);
 
-		// Open Maximized?
-		if (GetFrame()->IsZoomed())
-			pwp->showCmd = SW_SHOWMAXIMIZED;
+			// Open Maximized?
+			if (GetFrame()->IsZoomed())
+				pwp->showCmd = SW_SHOWMAXIMIZED;
 
-		// Set Window Placement
-		GetFrame()->SetWindowPlacement(pwp);
-		if (pwp->showCmd == SW_SHOWMAXIMIZED)
-			GetFrame()->MDIMaximize();
+			// Set Window Placement
+			GetFrame()->SetWindowPlacement(pwp);
+			if (pwp->showCmd == SW_SHOWMAXIMIZED)
+				GetFrame()->MDIMaximize();
+		}
+		if (pData)
+			delete [] pData;
 	}
-	if (pData)
-		delete [] pData;
 
 	// First Run
 	m_bFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ? TRUE : FALSE;
@@ -6904,10 +6907,13 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
 
 			// Store Placement
-			memset(&wndpl, 0, sizeof(wndpl));
-			wndpl.length = sizeof(wndpl);
-			if (GetFrame()->GetWindowPlacement(&wndpl))
-				pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
+			if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
+			{
+				memset(&wndpl, 0, sizeof(wndpl));
+				wndpl.length = sizeof(wndpl);
+				if (GetFrame()->GetWindowPlacement(&wndpl))
+					pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
+			}
 
 			// Try dx frame grab capture first
 			pApp->WriteProfileInt(sSection, _T("DxFrameGrabCaptureFirst"), (int)m_bDxFrameGrabCaptureFirst);
@@ -7101,10 +7107,13 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniString(sSection, _T("DeviceName"), GetDeviceName(), sTempFileName);
 
 			// Store Placement
-			memset(&wndpl, 0, sizeof(wndpl));
-			wndpl.length = sizeof(wndpl);
-			if (GetFrame()->GetWindowPlacement(&wndpl))
-				::WriteProfileIniBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl), sTempFileName);
+			if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
+			{
+				memset(&wndpl, 0, sizeof(wndpl));
+				wndpl.length = sizeof(wndpl);
+				if (GetFrame()->GetWindowPlacement(&wndpl))
+					::WriteProfileIniBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl), sTempFileName);
+			}
 
 			// Try dx frame grab capture first
 			::WriteProfileIniInt(sSection, _T("DxFrameGrabCaptureFirst"), (int)m_bDxFrameGrabCaptureFirst, sTempFileName);

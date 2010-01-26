@@ -1346,8 +1346,9 @@ IMPLEMENT_DYNCREATE(CVideoDeviceChildFrame, CToolBarChildFrame)
 
 CVideoDeviceChildFrame::CVideoDeviceChildFrame()
 {
-	// Init var
+	// Init vars
 	m_bShutdown2Started = FALSE;
+	m_bShutdown3Started = FALSE;
 	
 	// Debugger MessageBox breakpoint?
 #ifdef CRACKCHECK
@@ -1500,28 +1501,35 @@ void CVideoDeviceChildFrame::OnClose()
 	{
 		// The given wait time may be exceeded if a small framerate is set or if the UDP
 		// server has been closed just before this client. That's not a problem given that
-		// after MAX_CLOSE_CHILDFRAME_WAITTIME / 2 milliseconds that we called StopProcessFrame()
+		// after MAX_CLOSE_CHILDFRAME_WAITTIME / 3 milliseconds that we called StopProcessFrame()
 		// we are not anymore inside ProcessFrame() and because of the StopProcessFrame() call
 		// we cannot enter ProcessFrame() again!
 		if (IsShutdown1Done() ||
-			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 2))
+			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
 			StartShutdown2();
 	}
+	// StartShutdown3()?
+	else if (!m_bShutdown3Started)
+	{
+		if (IsShutdown2Done() ||
+			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (2 * MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
+			StartShutdown3();
+	}
 	// Done?
-	else if (IsShutdown2Done() ||
+	else if (IsShutdown3Done() ||
 			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= MAX_CLOSE_CHILDFRAME_WAITTIME)
 	{
 		// Log the failure to close
-		if (!IsShutdown2Done())
+		if (!IsShutdown2Done() || !IsShutdown3Done())
 		{
 			CString sMsg, t;
 			sMsg.Format(_T("%s forced stopping"), pDoc->GetDeviceName());
 			if (pDoc->m_HttpGetFrameThread.IsAlive())
 				t += _T(", http get frame thread still alive");
 			if (pDoc->m_pGetFrameNetCom && !pDoc->m_pGetFrameNetCom->IsShutdown())
-				t += _T(", udp get frame threads still alive");
+				t += _T(", netcom get frame threads still alive");
 			if (pDoc->m_pSendFrameNetCom && !pDoc->m_pSendFrameNetCom->IsShutdown())
-				t += _T(", udp send frame threads still alive");
+				t += _T(", netcom udp send frame threads still alive");
 			if (pDoc->m_DeleteThread.IsAlive())
 				t += _T(", delete thread still alive");
 			if (pDoc->m_CaptureAudioThread.IsAlive())
@@ -1586,12 +1594,8 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	// Set flag
 	m_bShutdown2Started = TRUE;
 
-	// Start Killing
+	// Start killing threads
 	pDoc->m_HttpGetFrameThread.Kill_NoBlocking();
-	if (pDoc->m_pGetFrameNetCom)
-		pDoc->m_pGetFrameNetCom->ShutdownConnection_NoBlocking();
-	if (pDoc->m_pSendFrameNetCom)
-		pDoc->m_pSendFrameNetCom->ShutdownConnection_NoBlocking();
 	pDoc->m_DeleteThread.Kill_NoBlocking();
 	pDoc->m_CaptureAudioThread.Kill_NoBlocking();
 	pDoc->m_VfWCaptureVideoThread.Kill_NoBlocking();
@@ -1601,6 +1605,26 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	pDoc->m_SaveSnapshotThread.Kill_NoBlocking();
 }
 
+void CVideoDeviceChildFrame::StartShutdown3()
+{
+	CVideoDeviceView* pView = (CVideoDeviceView*)GetActiveView();
+	ASSERT_VALID(pView);
+	CVideoDeviceDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// Set flag
+	m_bShutdown3Started = TRUE;
+
+	// Start connections shutdown
+	// (this must happen when m_HttpGetFrameThread is not running
+	// anymore, because inside this thread GetFrame connections
+	// can be established)
+	if (pDoc->m_pGetFrameNetCom)
+		pDoc->m_pGetFrameNetCom->ShutdownConnection_NoBlocking();
+	if (pDoc->m_pSendFrameNetCom)
+		pDoc->m_pSendFrameNetCom->ShutdownConnection_NoBlocking();
+}
+
 void CVideoDeviceChildFrame::EndShutdown()
 {
 	CVideoDeviceView* pView = (CVideoDeviceView*)GetActiveView();
@@ -1608,16 +1632,16 @@ void CVideoDeviceChildFrame::EndShutdown()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// If this is a Network Client Clean-Up
-	// (Threads should already be stopped)
+	// Network Client Clean-Up
+	// (threads already stopped)
 	if (pDoc->m_pGetFrameNetCom)
 	{
 		delete pDoc->m_pGetFrameNetCom;
 		pDoc->m_pGetFrameNetCom = NULL;
 	}
 
-	// Clean-Up the Frame Stream-Server
-	// (Threads already stopped)
+	// Frame Stream-Server Clean-Up
+	// (threads already stopped)
 	::EnterCriticalSection(&pDoc->m_csSendFrameNetCom);
 	if (pDoc->m_pSendFrameNetCom)
 	{
@@ -1630,7 +1654,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	pDoc->m_VfWCaptureVideoThread.Disconnect();
 	pDoc->m_VfWCaptureVideoThread.DestroyCaptureWnd();
 
-	// Delete DirectShow Capture Object
+	// Delete DirectShow Capture Objects
 	if (pDoc->m_pDxCapture)
 	{
 		delete pDoc->m_pDxCapture;
@@ -1702,15 +1726,28 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 
 	// Check whether all Threads are dead
 	if (!pDoc->m_HttpGetFrameThread.IsAlive()		&&
-		(pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE)	&&
-		(pDoc->m_pSendFrameNetCom ? pDoc->m_pSendFrameNetCom->IsShutdown() : TRUE)	&&
-		!pDoc->m_DeleteThread.IsAlive()	&&
+		!pDoc->m_DeleteThread.IsAlive()				&&
 		!pDoc->m_CaptureAudioThread.IsAlive()		&&
 		!pDoc->m_VfWCaptureVideoThread.IsAlive()	&&
 		!pDoc->m_VMR9CaptureVideoThread.IsAlive()	&&
 		!pDoc->m_SaveFrameListThread.IsAlive()		&&
 		!pDoc->m_SaveSnapshotFTPThread.IsAlive()	&&
 		!pDoc->m_SaveSnapshotThread.IsAlive())
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CVideoDeviceChildFrame::IsShutdown3Done()
+{
+	CVideoDeviceView* pView = (CVideoDeviceView*)GetActiveView();
+	ASSERT_VALID(pView);
+	CVideoDeviceDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// Check whether the connections have been shutdown
+	if ((pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE) &&
+		(pDoc->m_pSendFrameNetCom ? pDoc->m_pSendFrameNetCom->IsShutdown() : TRUE))
 		return TRUE;
 	else
 		return FALSE;

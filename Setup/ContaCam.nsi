@@ -240,8 +240,8 @@ Section "${APPNAME_NOEXT} Program (required)"
   StrCmp $INSTALLTYPE 'UNICODE' stopit
     goto stopend
 stopit:
-  DetailPrint "Stopping service, please be patient..."
-  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -k'
+  DetailPrint "Uninstalling service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
   DetailPrint "Stopping application, please be patient..."
   call KillApps
 stopend:

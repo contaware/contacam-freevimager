@@ -52,6 +52,7 @@ public:
 								m_rcClient = CRect(0,0,0,0);
 								m_bEnteredDibHdrCS = FALSE;
 								m_bEnteredDibFullCS = FALSE;};
+			virtual ~CThumbLoadThread(){Kill();};
 			void SetDibStatic(CDibStatic* pDibStatic) {m_pDibStatic = pDibStatic;};
 			void SetFileName(CString sFileName) {m_sFileName = sFileName;};
 			void SetLoadAndPlayAnimatedGif(BOOL bLoadAndPlayAnimatedGif) {m_bLoadAndPlayAnimatedGif = bLoadAndPlayAnimatedGif;};

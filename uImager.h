@@ -259,6 +259,17 @@ public:
 
 
 #ifdef VIDEODEVICEDOC
+	// Micro Apache Watch Dog Thread
+	class CMicroApacheWatchdogThread : public CWorkerThread
+	{
+		public:
+			CMicroApacheWatchdogThread() {;};
+			virtual ~CMicroApacheWatchdogThread() {Kill();};
+
+		protected:
+			int Work();
+	};
+
 	// Scheduler Entry Class
 	class CSchedulerEntry
 	{
@@ -783,6 +794,9 @@ public:
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 
+	// Micro Apache Watchdog Thread
+	CMicroApacheWatchdogThread m_MicroApacheWatchdogThread;
+
 	// Registration
 	BOOL m_bRegistered;
 	DWORD m_dwPURCHASE_ID;
@@ -824,7 +838,7 @@ public:
 	afx_msg void OnFileSettings();
 	afx_msg void OnAppLicense();
 	afx_msg void OnAppCredits();
-	afx_msg void OnUpdateFileAssociation(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFileSettings(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileMruFile1(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileCloseall(CCmdUI* pCmdUI);
 	afx_msg void OnFileShrinkDirDocs();

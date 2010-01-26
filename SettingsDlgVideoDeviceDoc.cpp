@@ -351,39 +351,35 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->Autostart(m_bAutostart);
 
 	// Service
-	if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance &&
-		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+	if (m_bStartFromService)
 	{
-		if (m_bStartFromService)
+		// Install
+		if (CUImagerApp::GetContaCamServiceState() == CONTACAMSERVICE_NOTINSTALLED)
 		{
-			// Install
-			if (CUImagerApp::GetContaCamServiceState() == CONTACAMSERVICE_NOTINSTALLED)
+			TCHAR szDrive[_MAX_DRIVE];
+			TCHAR szDir[_MAX_DIR];
+			TCHAR szProgramName[MAX_PATH];
+			if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
 			{
-				TCHAR szDrive[_MAX_DRIVE];
-				TCHAR szDir[_MAX_DIR];
-				TCHAR szProgramName[MAX_PATH];
-				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-				{
-					_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-					CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-					::ShellExecute(NULL, _T("open"), sContaCamServicePath, _T("-i"), NULL, SW_SHOWNORMAL);
-				}	
-			}
+				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+				CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+				::ShellExecute(NULL, _T("open"), sContaCamServicePath, _T("-i"), NULL, SW_SHOWNORMAL);
+			}	
 		}
-		else
+	}
+	else
+	{
+		// Uninstall
+		if (CUImagerApp::GetContaCamServiceState()) // if CONTACAMSERVICE_RUNNING or CONTACAMSERVICE_NOTRUNNING
 		{
-			// Uninstall
-			if (CUImagerApp::GetContaCamServiceState()) // if CONTACAMSERVICE_RUNNING or CONTACAMSERVICE_NOTRUNNING
+			TCHAR szDrive[_MAX_DRIVE];
+			TCHAR szDir[_MAX_DIR];
+			TCHAR szProgramName[MAX_PATH];
+			if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
 			{
-				TCHAR szDrive[_MAX_DRIVE];
-				TCHAR szDir[_MAX_DIR];
-				TCHAR szProgramName[MAX_PATH];
-				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-				{
-					_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-					CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
-					::ExecHiddenApp(sContaCamServicePath, _T("-u"), TRUE, CONTACAMSERVICE_TIMEOUT);
-				}
+				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+				CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
+				::ExecHiddenApp(sContaCamServicePath, _T("-u"), TRUE, CONTACAMSERVICE_TIMEOUT);
 			}
 		}
 	}
@@ -421,6 +417,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
 		// Start stopping server
+		((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 
 		// Update / create config file and root index.php for microapache
@@ -446,6 +443,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 					::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
 					BeginWaitCursor();
 				}
+				else
+					((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 			}
 		}
 	}

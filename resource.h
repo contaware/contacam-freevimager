@@ -3237,7 +3237,7 @@
 #define ID_PLAY_CLIP_100MS              32885
 #define ID_TOOLS_AVIMERGESERIAL_AS      32886
 #define ID_TOOLS_AVIMERGEPARALLEL_AS    32887
-#define ID_SETTINGS                     32889
+#define ID_FILE_SETTINGS                32889
 #define ID_VIEW_TIMEPOSITION            32890
 #define ID_STOP_RECURSIVE               32891
 #define ID_DIRECTSHOW_VIDEODEV_FIRST    32892

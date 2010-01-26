@@ -777,7 +777,7 @@ public:
 	{
 		public:
 			CVMR9CaptureVideoThread(){m_pDoc = NULL;};
-			virtual ~CVMR9CaptureVideoThread(){};
+			virtual ~CVMR9CaptureVideoThread(){Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:
@@ -795,7 +795,8 @@ public:
 									m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connected Event
 									m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Read Event
 									m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);};	// Http Connect Failed Event
-			virtual ~CHttpGetFrameThread() {::CloseHandle(m_hEventArray[1]);
+			virtual ~CHttpGetFrameThread() {Kill();
+											::CloseHandle(m_hEventArray[1]);
 											::CloseHandle(m_hEventArray[2]);
 											::CloseHandle(m_hEventArray[3]);
 											::CloseHandle(m_hEventArray[4]);};
@@ -835,7 +836,7 @@ public:
 	{
 		public:
 			CWatchdogThread() {m_pDoc = NULL;};
-			virtual ~CWatchdogThread() {;};
+			virtual ~CWatchdogThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:
@@ -848,7 +849,7 @@ public:
 	{
 		public:
 			CDeleteThread(){m_pDoc = NULL; m_dwCounter = 0;};
-			virtual ~CDeleteThread(){};
+			virtual ~CDeleteThread(){Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 		protected:
@@ -917,7 +918,7 @@ public:
 	{
 		public:
 			CSaveFrameListThread(){m_pDoc = NULL; m_nNumFramesToSave = 0; m_nSendMailProgress = 100; m_nFTPUploadProgress = 100;};
-			virtual ~CSaveFrameListThread() {;};
+			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 			void SetFrameList(CDib::LIST* pFrameList) {m_pFrameList = pFrameList;};
 			void SetNumFramesToSave(int nNumFramesToSave) {m_nNumFramesToSave = nNumFramesToSave;};
@@ -1053,7 +1054,7 @@ public:
 	{
 		public:
 			CSaveSnapshotFTPThread(){;};
-			virtual ~CSaveSnapshotFTPThread() {;};
+			virtual ~CSaveSnapshotFTPThread() {Kill();};
 			CString m_sLocalFileName;
 			CString m_sRemoteFileName;
 			CString m_sLocalThumbFileName;
@@ -1069,7 +1070,7 @@ public:
 	{
 		public:
 			CSaveSnapshotThread(){m_pSaveSnapshotFTPThread = NULL; m_pAVRecSwf = NULL; m_pAVRecThumbSwf = NULL;};
-			virtual ~CSaveSnapshotThread() {SWFFreeCopyFtp();};
+			virtual ~CSaveSnapshotThread() {Kill(); SWFFreeCopyFtp();};
 
 			CDib m_Dib;
 			BOOL m_bShowFrameTime;

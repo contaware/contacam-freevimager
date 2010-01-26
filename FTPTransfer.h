@@ -24,7 +24,7 @@ public:
 	{
 		public:
 			CMakeConnectionThread(CFTPTransfer* pFTPTransfer){m_pFTPTransfer = pFTPTransfer;};
-			virtual ~CMakeConnectionThread(){};
+			virtual ~CMakeConnectionThread(){Kill();};
 
 		protected:
 			int Work();

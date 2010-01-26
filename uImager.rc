@@ -271,7 +271,7 @@ BEGIN
     BUTTON      ID_EDIT_SNAPSHOT
     BUTTON      ID_FILE_PRINT_PREVIEW
     SEPARATOR
-    BUTTON      ID_SETTINGS
+    BUTTON      ID_FILE_SETTINGS
     BUTTON      ID_TOOLS_VIEW_LOGFILE
     SEPARATOR
     BUTTON      ID_APP_ABOUT
@@ -306,7 +306,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -646,7 +646,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -747,7 +747,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
@@ -867,7 +867,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -1172,7 +1172,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -1418,7 +1418,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -1572,7 +1572,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -1747,7 +1747,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -2788,7 +2788,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_SETTINGS
+        MENUITEM "Settings...",                 ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -8286,7 +8286,7 @@ BEGIN
     ID_PLAY_CLIP_100MS      "Set minimum frame delay to 100ms like most browsers\nClip To 100ms"
     ID_TOOLS_AVIMERGESERIAL_AS "Join avi file segments\nJoin Avi Files"
     ID_TOOLS_AVIMERGEPARALLEL_AS "Merge avi streams\nMerge Avi streams"
-    ID_SETTINGS             "File associations and global settings\nSettings"
+    ID_FILE_SETTINGS        "File associations and global settings\nSettings"
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
     ID_STOP_RECURSIVE       "Terminate the recursive slideshow of a directory\nRecursive Slideshow Termination"
     ID_DIRECTSHOW_VIDEODEV_1 

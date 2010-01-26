@@ -71,10 +71,10 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_CLOSEALL, OnFileCloseall)
 	ON_COMMAND(ID_EDIT_PASTE, OnEditPaste)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdateEditPaste)
-	ON_COMMAND(ID_SETTINGS, OnFileSettings)
+	ON_COMMAND(ID_FILE_SETTINGS, OnFileSettings)
 	ON_COMMAND(ID_APP_LICENSE, OnAppLicense)
 	ON_COMMAND(ID_APP_CREDITS, OnAppCredits)
-	ON_UPDATE_COMMAND_UI(ID_SETTINGS, OnUpdateFileAssociation)
+	ON_UPDATE_COMMAND_UI(ID_FILE_SETTINGS, OnUpdateFileSettings)
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateFileMruFile1)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
@@ -490,7 +490,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (m_bUseSettings)
 			m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
 #endif
-		if (!m_bForceSeparateInstance && !m_bServiceProcess && m_bSingleInstance)
+		if (!m_bForceSeparateInstance	&&
+#ifdef VIDEODEVICEDOC			
+			!m_bServiceProcess			&&
+#endif
+			m_bSingleInstance)
 		{
 #ifdef _UNICODE
 			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
@@ -861,7 +865,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				{
 					// Start Micro Apache
 					if (m_bStartMicroApache)
-						CVideoDeviceDoc::MicroApacheInitStart(); // if already running the just started process will exit, no problem
+					{
+						if (CVideoDeviceDoc::MicroApacheInitStart()) // if already running the just started process will exit, no problem
+							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+					}
 
 					// Autorun Devices
 					AutorunVideoDevices();
@@ -1111,8 +1118,13 @@ void CUImagerApp::OnFileSettings()
 	dlg.DoModal();
 }
 
-void CUImagerApp::OnUpdateFileAssociation(CCmdUI* pCmdUI) 
+void CUImagerApp::OnUpdateFileSettings(CCmdUI* pCmdUI) 
 {
+	// Enable if we are the main instance
+#ifdef VIDEODEVICEDOC
+	pCmdUI->Enable(!m_bForceSeparateInstance);
+#endif
+
 	// Remove the menu item
 	CMenu* pMenu = pCmdUI->m_pMenu;
 	if (!m_bUseSettings && pMenu != NULL)
@@ -2033,6 +2045,13 @@ BOOL CUImagerApp::AreAllDocsSaved()
 
 void CUImagerApp::SaveOnEndSession()
 {
+#ifdef VIDEODEVICEDOC
+	if (!m_bForceSeparateInstance)
+	{
+		m_MicroApacheWatchdogThread.Kill();
+		CVideoDeviceDoc::MicroApacheInitShutdown();
+	}
+#endif
 	if (m_bUseSettings)
 	{
 		SaveSettings();
@@ -2078,16 +2097,15 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
-	// Avoid growing log file to much!
-	::DeleteFile(CVideoDeviceDoc::MicroApacheGetLogFileName());
+	if (!m_bForceSeparateInstance)
+	{
+		// Finish Micro Apache shutdown
+		CVideoDeviceDoc::MicroApacheFinishShutdown();
 
-	// Delete pid file
-	::DeleteFile(CVideoDeviceDoc::MicroApacheGetPidFileName());
-
-	// Start ContaCam.exe from Service
-	if (!m_bForceSeparateInstance && !m_bServiceProcess &&
-		GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+		// Start ContaCam.exe from Service 
+		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+			ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+	}
 #endif
 }
 	
@@ -2722,19 +2740,21 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 int CUImagerApp::ExitInstance() 
 {	
 #ifdef VIDEODEVICEDOC
-	// Finish Micro Apache shutdown
-	CVideoDeviceDoc::MicroApacheFinishShutdown();
-
 	// Clean-Up Scheduler
 	POSITION pos = m_Scheduler.GetHeadPosition();
 	while (pos)
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	// Start ContaCam.exe from Service
-	if (!m_bForceSeparateInstance && !m_bServiceProcess &&
-		GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+	if (!m_bForceSeparateInstance)
+	{
+		// Finish Micro Apache shutdown
+		CVideoDeviceDoc::MicroApacheFinishShutdown();
+
+		// Start ContaCam.exe from Service
+		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+			ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+	}
 #endif
 
 	// Close The Appplication Mutex
@@ -4660,29 +4680,36 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	CString sSection(_T("GeneralApp"));
 
 	// MainFrame Placement
-	LPBYTE pData = NULL;
-	UINT nBytes = 0;
-	GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
-	WINDOWPLACEMENT *pwp = (WINDOWPLACEMENT*)pData;
-	if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+	if (!m_bForceSeparateInstance
+#ifdef VIDEODEVICEDOC
+		&& !m_bServiceProcess
+#endif
+		)
 	{
-		// Hide? If not hide -> use previous Show Command
-		if (showCmd == SW_HIDE)
-			pwp->showCmd = SW_HIDE;
-		
-		// Restore if Minimized
-		if (pwp->showCmd == SW_SHOWMINIMIZED)
-			pwp->showCmd = SW_RESTORE;
+		LPBYTE pData = NULL;
+		UINT nBytes = 0;
+		GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
+		WINDOWPLACEMENT *pwp = (WINDOWPLACEMENT*)pData;
+		if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+		{
+			// Hide? If not hide -> use previous Show Command
+			if (showCmd == SW_HIDE)
+				pwp->showCmd = SW_HIDE;
+			
+			// Restore if Minimized
+			if (pwp->showCmd == SW_SHOWMINIMIZED)
+				pwp->showCmd = SW_RESTORE;
 
-		// Store Window Placement used when restoring from tray
-		if (m_bTrayIcon)
-			::AfxGetMainFrame()->m_TrayIcon.SetWndPlacement(pwp);
+			// Store Window Placement used when restoring from tray
+			if (m_bTrayIcon)
+				::AfxGetMainFrame()->m_TrayIcon.SetWndPlacement(pwp);
 
-		// Set
-		m_pMainWnd->SetWindowPlacement(pwp);
+			// Set
+			m_pMainWnd->SetWindowPlacement(pwp);
+		}
+		if (pData)
+			delete [] pData;
 	}
-	if (pData)
-		delete [] pData;
 
 	// Preview File Dialog
 	m_bFileDlgPreview = (BOOL)GetProfileInt(sSection, _T("FileDlgPreview"), TRUE);
@@ -4782,7 +4809,11 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 void CUImagerApp::SaveSettings()
 {
 	// MainFrame Placement
-	if (!::AfxGetMainFrame()->m_bFullScreenMode)
+	if (!m_bForceSeparateInstance	&&
+#ifdef VIDEODEVICEDOC
+		!m_bServiceProcess			&&
+#endif
+		!::AfxGetMainFrame()->m_bFullScreenMode)
 	{
 		WINDOWPLACEMENT wndpl;
 		memset(&wndpl, 0, sizeof(wndpl));
@@ -6023,6 +6054,51 @@ void CUImagerApp::OnToolsViewWebLogfile()
 	else
 		::AfxMessageBox(ML_STRING(1761, "Web Server Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
 
+}
+
+int CUImagerApp::CMicroApacheWatchdogThread::Work()
+{
+	DWORD Event;
+	int nLastCount = 0;
+
+	// NOTE:
+	// Up to Windows XP the first logged user and the services run both in session 0.
+	// When logging off, the system sends a logoff event to all console applications
+	// -> the mapache.exe processes terminate even if started from a service. Thus a
+	// watchdog is necessary for these older systems. Starting from Windows 2003 Server
+	// the services run in session 0, all the other processes in session 1 or higher.
+	// Logging off will not terminate the mapache.exe processes started from the service
+	// because they are session 0 processes. For these systems a watchdog is still good
+	// in case the mapache.exe processes are killed or crash for some unknown reasons.
+	for (;;)
+	{
+		Event = ::WaitForSingleObject(GetKillEvent(), MICROAPACHE_WATCHDOG_CHECK_TIME);
+		switch (Event)
+		{
+			// Shutdown Event
+			case WAIT_OBJECT_0 :
+				return 0;
+
+			// Check
+			case WAIT_TIMEOUT :		
+			{
+				int nCount = ::EnumKillProcByName(MICROAPACHE_FILENAME);
+				if (nCount == 0)
+					CVideoDeviceDoc::MicroApacheInitStart();
+				else if (	nCount == nLastCount	&&
+							nCount > 0				&&
+							nCount < MICROAPACHE_NUM_PROCESS)
+					CVideoDeviceDoc::MicroApacheInitShutdown();
+				nLastCount = nCount;
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
+
+	return 0;
 }
 
 CUImagerApp::CSchedulerEntry::CSchedulerEntry()

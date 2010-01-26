@@ -213,9 +213,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Init Menu Positions
 	InitMenuPositions();
-
-	// Set Foreground Window
-	SetForegroundWindow();
 	
 	// Set top most
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -745,7 +742,11 @@ void CMainFrame::OnClose()
 
 		// Start Micro Apache shutdown
 #ifdef VIDEODEVICEDOC
-		CVideoDeviceDoc::MicroApacheInitShutdown();
+		if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance)
+		{
+			((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
+			CVideoDeviceDoc::MicroApacheInitShutdown();
+		}
 #endif
 
 		// Stop All Threads used for the PostDelayedMessage() Function

@@ -63,7 +63,7 @@ public:
 								m_pAVIFile = NULL;
 #endif
 							};
-			virtual ~CProcessThread(){;};
+			virtual ~CProcessThread(){Kill();};
 			void SetDlg(CBatchProcDlg* pDlg) {m_pDlg = pDlg;};
 
 			int m_nPrevPercentDone;
@@ -176,7 +176,7 @@ public:
 										m_hEventArray[0]	= GetKillEvent();
 										m_hEventArray[1]	= m_hFindChangeNotification;
 										m_hEventArray[2]	= m_hDoUpdateEvent;};
-			virtual ~CChangeNotificationThread() {::CloseHandle(m_hDoUpdateEvent);};
+			virtual ~CChangeNotificationThread() {Kill(); ::CloseHandle(m_hDoUpdateEvent);};
 
 			// Get / Set Functions
 			void SetDlg(CBatchProcDlg* pDlg) {m_pDlg = pDlg;};

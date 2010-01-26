@@ -20,7 +20,7 @@ public:
 	{
 		public:
 			CIMAPI2DlgThread() {m_pDlg = NULL;};
-			virtual ~CIMAPI2DlgThread() {;};
+			virtual ~CIMAPI2DlgThread() {Kill();};
 			void SetDlg(CIMAPI2Dlg* pDlg) {m_pDlg = pDlg;};
 
 		protected:

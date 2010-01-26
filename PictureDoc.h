@@ -256,7 +256,7 @@ public:
 										m_hFindChangeNotification = INVALID_HANDLE_VALUE;
 										m_hEventArray[0]	= GetKillEvent();
 										m_hEventArray[1]	= m_hFindChangeNotification;};
-			virtual ~CChangeNotificationThread() {;};
+			virtual ~CChangeNotificationThread() {Kill();};
 
 			// Get / Set Functions
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
@@ -284,7 +284,7 @@ public:
 	{
 		public:
 			CLayeredDlgThread() {m_pDoc = NULL;};
-			virtual ~CLayeredDlgThread() {;};
+			virtual ~CLayeredDlgThread() {Kill();};
 
 			// Get / Set Functions
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
@@ -312,7 +312,7 @@ public:
 							m_lJpegCompressionQuality = -1;
 							m_sFileName = _T("");
 							m_hTimerEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);};
-			virtual ~CJpegThread(){::CloseHandle(m_hTimerEvent);};
+			virtual ~CJpegThread(){Kill(); ::CloseHandle(m_hTimerEvent);};
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
 			__forceinline void SetFileName(CString sFileName) {m_sFileName = sFileName;};
 			__forceinline void ResetJpegCompressionQuality() {::InterlockedExchange(&m_lJpegCompressionQuality, -1);};
@@ -336,7 +336,7 @@ public:
 	{
 		public:
 			CLoadPicturesThread(){m_pDoc = NULL;};
-			virtual ~CLoadPicturesThread(){;};
+			virtual ~CLoadPicturesThread(){Kill();};
 			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
 			BOOL InitFileNames();
 

@@ -91,14 +91,18 @@ BOOL StartProcess(int nIndex)
 		TCHAR pCommandLine[STRINGBUFSIZE+1];
 		_tcscpy(pCommandLine, _T("\""));
 		_tcscat(pCommandLine, pProgramName);
-		_tcscat(pCommandLine, _T("\" "));
-		_tcscat(pCommandLine, pProgramParams);
+		_tcscat(pCommandLine, _T("\""));
+		if (pProgramParams[0] != _T('\0'))
+		{
+			_tcscat(pCommandLine, _T(" "));
+			_tcscat(pCommandLine, pProgramParams);
+		}
 
 		// set the correct desktop for the process to be started
-		TCHAR pCurrentDesktopName[STRINGBUFSIZE+1];
+		TCHAR pCurrentDesktopName[MAX_PATH];
 		HDESK hCurrentDesktop = GetThreadDesktop(GetCurrentThreadId());
 		DWORD len;
-		GetUserObjectInformation(hCurrentDesktop, UOI_NAME, pCurrentDesktopName, MAX_PATH, &len);
+		GetUserObjectInformation(hCurrentDesktop, UOI_NAME, pCurrentDesktopName, MAX_PATH * sizeof(TCHAR), &len);
 		startUpInfo.wShowWindow = SW_HIDE;
 		startUpInfo.lpDesktop = pCurrentDesktopName;
 
@@ -106,8 +110,10 @@ BOOL StartProcess(int nIndex)
 		if (CreateProcess(NULL,pCommandLine,NULL,NULL,TRUE,NORMAL_PRIORITY_CLASS,NULL,pWorkingDir,&startUpInfo,&g_pProcInfo[nIndex]))
 		{
 			TCHAR pStartProcessWait[STRINGBUFSIZE+1];
-			GetPrivateProfileString(pItem, _T("StartProcessWait"), _T("500"), pStartProcessWait, STRINGBUFSIZE, g_pInitFile);
-			Sleep(_ttoi(pStartProcessWait));
+			GetPrivateProfileString(pItem, _T("StartProcessWait"), _T("0"), pStartProcessWait, STRINGBUFSIZE, g_pInitFile);
+			int nStartProcessWait = _ttoi(pStartProcessWait);
+			if (nStartProcessWait > 0)
+				Sleep(nStartProcessWait);
 			return TRUE;
 		}
 		else

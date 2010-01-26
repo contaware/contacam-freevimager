@@ -1385,7 +1385,6 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 {	
 	// Vars
 	int iCount = 0;
-	TCHAR szName[MAX_PATH];
 	HANDLE hProc;
 	HINSTANCE hInstLib;
 
@@ -1393,26 +1392,27 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 	hInstLib = LoadLibrary(_T("PSAPI.DLL"));
 	if (hInstLib)
 	{
+		TCHAR szName[MAX_PATH];
+
 		// Get procedure addresses
 		BOOL (WINAPI *lpfEnumProcesses)(DWORD *, DWORD cb, DWORD *);
 		BOOL (WINAPI *lpfEnumProcessModules)(HANDLE, HMODULE *, DWORD, LPDWORD);
 		DWORD (WINAPI *lpfGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
 		lpfEnumProcesses = (BOOL(WINAPI*)(DWORD *, DWORD, DWORD*))GetProcAddress(hInstLib, "EnumProcesses");
 		lpfEnumProcessModules = (BOOL(WINAPI*)(HANDLE, HMODULE *, DWORD, LPDWORD))GetProcAddress(hInstLib, "EnumProcessModules");
-	#ifdef _UNICODE
-		lpfGetModuleBaseName =(DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameW");
-	#else
-		lpfGetModuleBaseName =(DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameA");
-	#endif	
+#ifdef _UNICODE
+		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameW");
+#else
+		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameA");
+#endif	
 		if (lpfEnumProcesses		&&
 			lpfEnumProcessModules	&&
 			lpfGetModuleBaseName)
 		{
 			// How many processes are there?
-			DWORD aiPID[1000];
-			DWORD iCb = 1000;
-			DWORD iCbneeded = 0;
-			if (!lpfEnumProcesses(aiPID, iCb, &iCbneeded))
+			DWORD aiPID[1024];
+			DWORD iCbneeded;
+			if (!lpfEnumProcesses(aiPID, sizeof(aiPID), &iCbneeded))
 			{
 				FreeLibrary(hInstLib);
 				return 0;
@@ -1468,10 +1468,17 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 	BOOL (WINAPI *lpfModule32First)(HANDLE, LPMODULEENTRY32);
 	BOOL (WINAPI *lpfModule32Next)(HANDLE, LPMODULEENTRY32);
 	lpfCreateToolhelp32Snapshot= (HANDLE(WINAPI*)(DWORD,DWORD))GetProcAddress(hInstLib, "CreateToolhelp32Snapshot");
+#ifdef _UNICODE
+	lpfProcess32First = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32FirstW") ;
+	lpfProcess32Next = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32NextW");
+	lpfModule32First = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32FirstW");
+	lpfModule32Next = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32NextW");
+#else
 	lpfProcess32First = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32First") ;
 	lpfProcess32Next = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32Next");
 	lpfModule32First = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32First");
 	lpfModule32Next = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32Next");
+#endif
 	if (lpfProcess32Next == NULL	||
 		lpfProcess32First == NULL	||
 		lpfModule32Next == NULL		||
