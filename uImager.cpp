@@ -480,7 +480,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!m_bForceSeparateInstance && !m_bServiceProcess &&
 			GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		{
-			pProgressDlgThread = new CProgressDlgThread(ML_STRING(1764, "Stopping ContaCam as Service..."),
+			pProgressDlgThread = new CProgressDlgThread(ML_STRING(1764, "Starting ContaCam..."),
 																	0, CONTACAMSERVICE_TIMEOUT);
 			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
 		}

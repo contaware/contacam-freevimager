@@ -16,6 +16,10 @@
 // Max Device Description Size
 #define MAX_DD7_DEVICE_DESCRIPTION_SIZE			256
 
+// Max operation retry
+#define DXDRAW_MAX_RETRY						4
+#define DXDRAW_RETRY_SLEEP						5U
+
 // rgb to 16 bpp macros
 #define RGBTO15BITS(r,g,b) (((r&0xF8)<<7) + ((g&0xF8)<<2) + (b>>3))
 #define RGBTO16BITS(r,g,b) (((r&0xF8)<<8) + ((g&0xFC)<<3) + (b>>3))
@@ -248,7 +252,7 @@ public:
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)
 						{
 							HDC hDC;
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->GetDC(&hDC);
 								if (hRet == DD_OK)
@@ -263,17 +267,17 @@ public:
 									Error(hRet, _T("GetBackDC()"));
 									return NULL;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return NULL;
+						return NULL;
 						}
 	__forceinline BOOL ReleaseBackDC(HDC hDC) 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)
 						{
 							if (hDC)
 							{
-								while (TRUE)
+								for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 								{
 									HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->ReleaseDC(hDC);
 									if (hRet == DD_OK)
@@ -288,19 +292,17 @@ public:
 										Error(hRet, _T("ReleaseBackDC()"));
 										return FALSE;
 									}
+									::Sleep(DXDRAW_RETRY_SLEEP);
 								}
 							}
-							else
-								return FALSE;
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline HDC GetOffscreenDC()
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer)
 						{
 							HDC hDC;
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer->GetDC(&hDC);
 								if (hRet == DD_OK)
@@ -315,17 +317,17 @@ public:
 									Error(hRet, _T("GetOffscreenDC()"));
 									return NULL;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return NULL;
+						return NULL;
 						}
 	__forceinline BOOL ReleaseOffscreenDC(HDC hDC) 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer)
 						{
 							if (hDC)
 							{
-								while (TRUE)
+								for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 								{
 									HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer->ReleaseDC(hDC);
 									if (hRet == DD_OK)
@@ -340,20 +342,21 @@ public:
 										Error(hRet, _T("ReleaseOffscreenDC()"));
 										return FALSE;
 									}
+									::Sleep(DXDRAW_RETRY_SLEEP);
 								}
 							}
-							else
-								return FALSE;
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline HDC GetFontDC()
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
 							HDC hDC;
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
+								// Note: this fails with DDERR_CANTCREATEDC,
+								// if switching user under XP or higher
+								// (no logout, ContaCam continues to run)
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->GetDC(&hDC);
 								if (hRet == DD_OK)
 									return hDC;
@@ -367,17 +370,17 @@ public:
 									Error(hRet, _T("GetFontDC()"));
 									return NULL;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return NULL;
+						return NULL;
 						}
 	__forceinline BOOL ReleaseFontDC(HDC hDC) 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
 							if (hDC)
 							{
-								while (TRUE)
+								for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 								{
 									HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->ReleaseDC(hDC);
 									if (hRet == DD_OK)
@@ -392,13 +395,11 @@ public:
 										Error(hRet, _T("ReleaseFontDC()"));
 										return FALSE;
 									}
+									::Sleep(DXDRAW_RETRY_SLEEP);
 								}
 							}
-							else
-								return FALSE;
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL LockSrc(LPDDSURFACEDESC2 pddsd) 
 						{if (m_ScreenArray.GetSize() > 0)
@@ -427,7 +428,7 @@ public:
 						{
 							::ZeroMemory(pddsd, sizeof(DDSURFACEDESC2));
 							pddsd->dwSize = sizeof(DDSURFACEDESC2);
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->Lock(NULL, pddsd, DDLOCK_WAIT, 0);
 								if (hRet == DD_OK)
@@ -442,15 +443,15 @@ public:
 									Error(hRet, _T("LockBack()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL UnlockBack() 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)
 						{
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->Unlock(NULL);
 								if (hRet == DD_OK)
@@ -465,17 +466,17 @@ public:
 									Error(hRet, _T("UnlockBack()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL LockOffscreen(LPDDSURFACEDESC2 pddsd) 
 						{if ((pddsd != 0) && (m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer)
 						{
 							::ZeroMemory(pddsd, sizeof(DDSURFACEDESC2));
 							pddsd->dwSize = sizeof(DDSURFACEDESC2);
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer->Lock(NULL, pddsd, DDLOCK_WAIT, 0);
 								if (hRet == DD_OK)
@@ -490,15 +491,15 @@ public:
 									Error(hRet, _T("LockOffscreen()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL UnlockOffscreen() 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer)
 						{
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer->Unlock(NULL);
 								if (hRet == DD_OK)
@@ -513,17 +514,17 @@ public:
 									Error(hRet, _T("UnlockOffscreen()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL LockFont(LPDDSURFACEDESC2 pddsd) 
 						{if ((pddsd != 0) && (m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
 							::ZeroMemory(pddsd, sizeof(DDSURFACEDESC2));
 							pddsd->dwSize = sizeof(DDSURFACEDESC2);
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->Lock(NULL, pddsd, DDLOCK_WAIT, 0);
 								if (hRet == DD_OK)
@@ -538,15 +539,15 @@ public:
 									Error(hRet, _T("LockFont()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline BOOL UnlockFont() 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
-							while (TRUE)
+							for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 							{
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->Unlock(NULL);
 								if (hRet == DD_OK)
@@ -561,10 +562,10 @@ public:
 									Error(hRet, _T("UnlockFont()"));
 									return FALSE;
 								}
+								::Sleep(DXDRAW_RETRY_SLEEP);
 							}
 						}
-						else
-							return FALSE;
+						return FALSE;
 						}
 	__forceinline void ClientToMonitor(RECT* prc)
 						{if (prc && (m_ScreenArray.GetSize() > 0))

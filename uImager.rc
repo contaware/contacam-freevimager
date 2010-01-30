@@ -2953,7 +2953,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,17,10,20,20
     LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
@@ -4316,7 +4316,7 @@ IDD_CREDITS DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Relatives && Friends",IDC_STATIC2339,7,3,222,39
     LTEXT           "A big thanks to Valeria that always supports me in what I like to do. Thanks to all my friends for testing the software. Big hug to my Mom which is also using this program. Dedicated to Ale!",
@@ -6198,7 +6198,7 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,19,77,10
@@ -6328,7 +6328,7 @@ IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -9038,7 +9038,7 @@ BEGIN
     IDS_STRING1761          "Web Server Log File has not yet been created"
     IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1763          "Switch to GDI under the View menu"
-    IDS_STRING1764          "Stopping ContaCam as Service..."
+    IDS_STRING1764          "Starting ContaCam..."
 END
 
 #endif    // English (U.S.) resources

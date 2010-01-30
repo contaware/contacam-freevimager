@@ -95,6 +95,7 @@ protected:
 
 protected:
 	volatile BOOL m_bInitializingDxDraw;
+	DWORD m_dwDxDrawUpTime;
 	BOOL m_bDxDrawInitFailed;
 	int m_nCriticalControlsCount;
 	CFont m_GDIDrawFont;

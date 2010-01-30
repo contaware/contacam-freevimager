@@ -56,6 +56,7 @@ CVideoDeviceView::CVideoDeviceView()
 	// Init vars
 	m_bInitializingDxDraw = FALSE;
 	m_bDxDrawInitFailed = FALSE;
+	m_dwDxDrawUpTime = ::timeGetTime();
 	m_nCriticalControlsCount = 1;
 
 	// Debugger present?
@@ -435,7 +436,7 @@ afx_msg LONG CVideoDeviceView::OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lpar
 		{
 			pDoc->m_bDecodeFramesForPreview = TRUE;
 			m_bInitializingDxDraw = FALSE;
-			if (!m_bDxDrawInitFailed && lparam == 0)
+			if (!m_bDxDrawInitFailed && lparam == 0) // if also BI_RGB failed, display "DirectX failed" in OnDraw()
 			{
 				m_bDxDrawInitFailed = TRUE;
 				Invalidate();
@@ -548,6 +549,7 @@ void CVideoDeviceView::Draw()
 	}
 
 	// Init local vars
+	DWORD dwCurrentUpTime = ::timeGetTime();
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bVideoFormatApplyPressed = pDoc->m_bVideoFormatApplyPressed;
 	BOOL bDxDeviceUnplugged = (BOOL)pDoc->m_bDxDeviceUnplugged;
@@ -565,6 +567,7 @@ void CVideoDeviceView::Draw()
 	if (bDrawMsg)
 	{
 		if (!pDoc->m_DxDraw.IsInit()										||
+			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
 			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB)
@@ -574,6 +577,7 @@ void CVideoDeviceView::Draw()
 			// certain graphic cards!
 			// Init to RGB to be able to display
 			// the messages on a black empty screen
+			m_dwDxDrawUpTime = dwCurrentUpTime;
 			m_bInitializingDxDraw = TRUE;
 			::PostMessage(	GetSafeHwnd(),
 							WM_THREADSAFE_DXDRAW_INIT,
@@ -587,6 +591,7 @@ void CVideoDeviceView::Draw()
 	{
 		if (pDoc->m_pDib													&&
 			(!pDoc->m_DxDraw.IsInit()										||
+			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
 			IsCompressionDifferent()))
@@ -594,6 +599,7 @@ void CVideoDeviceView::Draw()
 			// Dx draw must be init from the main UI thread,
 			// otherwise it crashes on some machines with
 			// certain graphic cards!
+			m_dwDxDrawUpTime = dwCurrentUpTime;
 			m_bInitializingDxDraw = TRUE;
 			::PostMessage(	GetSafeHwnd(),
 							WM_THREADSAFE_DXDRAW_INIT,
@@ -649,7 +655,8 @@ void CVideoDeviceView::Draw()
 			pDoc->m_DxDraw.DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);
 		
 		// Blt
-		pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()));
+		if (pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
+			m_dwDxDrawUpTime = dwCurrentUpTime;
 	}
 
 	// Leave CS
@@ -834,7 +841,6 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 							-1,
 							&rcClient,
 							(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-
 		}
 
 		// Clean-up

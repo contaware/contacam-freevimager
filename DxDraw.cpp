@@ -493,7 +493,11 @@ BOOL CDxDraw::Init(	HWND hWnd,
 			}
 
 			// Copy Font Dib to Font Off-Screen Surface
-			CopyFontDib();
+			if (!CopyFontDib())
+			{
+				Free();
+				return FALSE;
+			}
 
 			// Set Source Color Key
 			if (m_bFontTransparent)
@@ -878,7 +882,11 @@ BOOL CDxDraw::FullScreenCreateOffscreen(int nSrcWidth,
 		}
 
 		// Copy Font Dib
-		CopyFontDib();
+		if (!CopyFontDib())
+		{
+			Free();
+			return FALSE;	
+		}
 
 		// Set Source Color Key
 		if (m_bFontTransparent)
@@ -1029,7 +1037,7 @@ void CDxDraw::ClearFront(const RECT* prc/*=NULL*/)
 
 	if (m_ScreenArray[m_nCurrentDevice]->m_pFrontBuffer)
 	{
-		while (TRUE)
+		for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 		{
 			hRet = m_ScreenArray[m_nCurrentDevice]->m_pFrontBuffer->Blt(prc ? &rc : NULL,
 																		NULL,
@@ -1048,6 +1056,7 @@ void CDxDraw::ClearFront(const RECT* prc/*=NULL*/)
 				Error(hRet, _T("ClearFront()"));
 				break;
 			}
+			::Sleep(DXDRAW_RETRY_SLEEP);
 		}
 	}
 }
@@ -1067,7 +1076,7 @@ void CDxDraw::ClearBack(const RECT* prc/*=NULL*/)
 
 	if (m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)
 	{
-		while (TRUE)
+		for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 		{
 			hRet = m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->Blt(	(LPRECT)prc,
 																		NULL,
@@ -1086,6 +1095,7 @@ void CDxDraw::ClearBack(const RECT* prc/*=NULL*/)
 				Error(hRet, _T("ClearBack()"));
 				break;
 			}
+			::Sleep(DXDRAW_RETRY_SLEEP);
 		}
 	}
 }
@@ -1105,7 +1115,7 @@ void CDxDraw::ClearOffscreen(const RECT* prc/*=NULL*/)
 
 	if (m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer)
 	{
-		while (TRUE)
+		for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 		{
 			hRet = m_ScreenArray[m_nCurrentDevice]->m_pOffscreenBuffer->Blt((LPRECT)prc,
 																			NULL,
@@ -1124,6 +1134,7 @@ void CDxDraw::ClearOffscreen(const RECT* prc/*=NULL*/)
 				Error(hRet, _T("ClearOffscreen()"));
 				break;
 			}
+			::Sleep(DXDRAW_RETRY_SLEEP);
 		}
 	}
 }
@@ -1185,7 +1196,7 @@ BOOL CDxDraw::Blt(RECT rcDest, RECT rcSrc)
 	// Find out where our window lives
 	ClientToMonitor(&rcDest);
 
-    while (TRUE)
+    for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
     {
 		// WaitForVerticalBlank() is used to synchronise the flipping
 		// with the refresh rate of the monitor. Without it,
@@ -1216,9 +1227,10 @@ BOOL CDxDraw::Blt(RECT rcDest, RECT rcSrc)
 			Error(hRet, _T("Blt()"));
             return FALSE;
 		}
+		::Sleep(DXDRAW_RETRY_SLEEP);
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 // Flip bits from back buffer
@@ -1238,7 +1250,7 @@ BOOL CDxDraw::Flip(BOOL bDoBlt/*=FALSE*/)
 	if (!m_bFullScreen)
 		return FALSE;
 
-    while (TRUE)
+    for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
     {		
 		if (bDoBlt)
 		{
@@ -1290,9 +1302,10 @@ BOOL CDxDraw::Flip(BOOL bDoBlt/*=FALSE*/)
 			Error(hRet, _T("Flip()"));
             return FALSE;
 		}
+		::Sleep(DXDRAW_RETRY_SLEEP);
 	}
 
-	return TRUE;
+	return FALSE;
 }
 
 BOOL CDxDraw::RestoreSurfaces()
@@ -1326,8 +1339,8 @@ BOOL CDxDraw::RestoreSurfaces()
 		hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->Restore();
 		if (Error(hRet, _T("Display Surface Lost -> Font Buffer Full Restore Failed!")))
 			res = FALSE;
-		else
-			CopyFontDib();	// Restore Font
+		else if (!CopyFontDib()) // Restore Font
+			res = FALSE;
 	}
 	
 	if (res)
@@ -1572,7 +1585,7 @@ BOOL CDxDraw::UpdateBackSurface(CRect rc)
 		ClientToMonitor(&rc);
 
 		// Copy From Offscreen Buffer to Back Buffer
-		while (TRUE)
+		for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 		{
 			if (GetBackSurface() && GetOffscreenSurface())
 			{
@@ -1651,7 +1664,7 @@ BOOL CDxDraw::UpdateBackSurface(CRect rc)
 												DDBLT_WAIT,
 												NULL);
 				if (hRet == DD_OK)
-					break;
+					return TRUE;
 				else if (hRet == DDERR_SURFACELOST)
 				{
 					if (!RestoreSurfaces())
@@ -1665,12 +1678,10 @@ BOOL CDxDraw::UpdateBackSurface(CRect rc)
 			}
 			else
 				return FALSE;
+			::Sleep(DXDRAW_RETRY_SLEEP);
 		}
-
-		return TRUE;
 	}
-	else
-		return TRUE;
+	return FALSE;
 }
 
 BOOL CDxDraw::LoadFontDib(UINT uID)
@@ -1714,10 +1725,14 @@ BOOL CDxDraw::CopyFontDib()
 		// Release DC
 		ReleaseFontDC(hDC);
 
+		// Error
+		if (!res)
+			TRACE(_T("BitBlt failed in CopyFontDib()\n"));
+
 		return res;
 	}
 	else
-		return FALSE;
+		return FALSE; // error traced in GetFontDC()
 }
 
 /* uiAlign may be:
@@ -1823,7 +1838,7 @@ BOOL CDxDraw::DrawText(LPCTSTR sText, int x, int y, UINT uiAlign)
 				(rcDst.right <= nMaxWidth)		&&
 				(rcDst.bottom <= nMaxHeight))
 			{
-				while (TRUE)
+				for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
 				{
 					if (GetBackSurface())
 					{
@@ -1848,6 +1863,7 @@ BOOL CDxDraw::DrawText(LPCTSTR sText, int x, int y, UINT uiAlign)
 					}
 					else
 						break;
+					::Sleep(DXDRAW_RETRY_SLEEP);
 				}
 			}
 		}
@@ -1890,8 +1906,12 @@ DWORD CDxDraw::ColorMatch(IDirectDrawSurface7* pdds, COLORREF rgb)
 
     // Now lock the surface so we can read back the converted color
     ddsd.dwSize = sizeof(ddsd);
-    while ((hres = pdds->Lock(NULL, &ddsd, 0, NULL)) == DDERR_WASSTILLDRAWING)
-        ;
+	for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
+	{
+		if ((hres = pdds->Lock(NULL, &ddsd, 0, NULL)) != DDERR_WASSTILLDRAWING)
+			break;
+		::Sleep(DXDRAW_RETRY_SLEEP);
+	}
     if (hres == DD_OK)
     {
         dw = *(DWORD *) ddsd.lpSurface;                 // Get DWORD
