@@ -348,7 +348,7 @@ public:
 						}
 						return FALSE;
 						}
-	__forceinline HDC GetFontDC()
+	__forceinline HDC GetFontDC(BOOL bRestoreSurfaces = TRUE)
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
 							HDC hDC;
@@ -362,7 +362,12 @@ public:
 									return hDC;
 								else if (hRet == DDERR_SURFACELOST)
 								{
-									if (!RestoreSurfaces())
+									if (bRestoreSurfaces)
+									{
+										if (!RestoreSurfaces())
+											return NULL;
+									}
+									else
 										return NULL;
 								}
 								else if (hRet != DDERR_WASSTILLDRAWING)
@@ -375,7 +380,7 @@ public:
 						}
 						return NULL;
 						}
-	__forceinline BOOL ReleaseFontDC(HDC hDC) 
+	__forceinline BOOL ReleaseFontDC(HDC hDC, BOOL bRestoreSurfaces = TRUE) 
 						{if ((m_ScreenArray.GetSize() > 0) && m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer)
 						{
 							if (hDC)
@@ -387,7 +392,12 @@ public:
 										return TRUE;
 									else if (hRet == DDERR_SURFACELOST)
 									{
-										if (!RestoreSurfaces())
+										if (bRestoreSurfaces)
+										{
+											if (!RestoreSurfaces())
+												return FALSE;
+										}
+										else
 											return FALSE;
 									}
 									else if (hRet != DDERR_WASSTILLDRAWING)
@@ -619,7 +629,7 @@ protected:
 	static TCHAR* ErrorString(HRESULT hRet);
 	void DeleteScreenArray();
 	BOOL LoadFontDib(UINT uID);
-	BOOL CopyFontDib();
+	BOOL CopyFontDib(BOOL bRestoreSurfaces = TRUE);
 	__forceinline BOOL IsCurrentSrcSameRgbFormat(LPBITMAPINFO pBmi);
 	BOOL FullScreenCreateOffscreen(	int nSrcWidth,
 									int nSrcHeight,

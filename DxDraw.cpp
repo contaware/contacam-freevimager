@@ -1339,7 +1339,7 @@ BOOL CDxDraw::RestoreSurfaces()
 		hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->Restore();
 		if (Error(hRet, _T("Display Surface Lost -> Font Buffer Full Restore Failed!")))
 			res = FALSE;
-		else if (!CopyFontDib()) // Restore Font
+		else if (!CopyFontDib(FALSE)) // Restore font without calling ourself if surfaces have to be restored!
 			res = FALSE;
 	}
 	
@@ -1704,10 +1704,10 @@ BOOL CDxDraw::LoadFontDib(UINT uID)
 	}
 }
 
-BOOL CDxDraw::CopyFontDib()
+BOOL CDxDraw::CopyFontDib(BOOL bRestoreSurfaces/*=TRUE*/)
 {
 	// Get DC
-	HDC hDC = GetFontDC();
+	HDC hDC = GetFontDC(bRestoreSurfaces);
 	if (hDC)
 	{
 		// Copy Bits
@@ -1723,7 +1723,7 @@ BOOL CDxDraw::CopyFontDib()
 		::DeleteDC(memDC);
 
 		// Release DC
-		ReleaseFontDC(hDC);
+		ReleaseFontDC(hDC, bRestoreSurfaces);
 
 		// Error
 		if (!res)
