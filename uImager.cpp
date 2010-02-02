@@ -673,6 +673,15 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		m_pMainWnd = pMainFrame;
 
+		// If this is the first instance of our App then track it
+		// so any other instances can find us
+		if (pInstanceChecker)
+		{
+			pInstanceChecker->TrackFirstInstanceRunning();
+			delete pInstanceChecker;
+			pInstanceChecker = NULL;
+		}
+
 #ifdef VIDEODEVICEDOC
 		// Do stop from Service, this may take some time...
 		if (bStopFromService)
@@ -940,14 +949,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				}
 #endif
 			}
-		}
-
-		// If this is the first instance of our App then track it
-		// so any other instances can find us
-		if (pInstanceChecker)
-		{
-			pInstanceChecker->TrackFirstInstanceRunning();
-			delete pInstanceChecker;
 		}
 
 		// Set ok flag
