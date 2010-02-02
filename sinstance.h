@@ -3,7 +3,7 @@ Module : SINSTANCE.H
 Purpose: Defines the interface for an MFC wrapper class to do instance checking
 Created: PJN / 29-07-1998
 
-Copyright (c) 1996 - 2007 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 1996 - 2008 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -55,7 +55,7 @@ public:
 	void ActivateChecker();
 	BOOL TrackFirstInstanceRunning();
 	BOOL PreviousInstanceRunning();
-	HWND ActivatePreviousInstance(LPCTSTR lpCmdLine = NULL, DWORD dwCopyDataItemData = 0); 
+	HWND ActivatePreviousInstance(LPCTSTR lpCmdLine = NULL, ULONG_PTR dwCopyDataItemData = 0, DWORD dwTimeout = 30000); 
 	void QuitPreviousInstance(int nExitCode = 0);
 
 protected:

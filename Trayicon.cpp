@@ -188,8 +188,8 @@ void CTrayIcon::MaximizeFromTray()
 					RDW_FRAME | RDW_INVALIDATE | RDW_ERASE);
 
     // Move focus away and back again to ensure taskbar icon is recreated
-    if (::IsWindow(m_hWndInvisible))
-        ::SetActiveWindow(m_hWndInvisible);
+	if (::IsWindow(m_hWndInvisible))
+		::SetActiveWindow(m_hWndInvisible);
     ::SetActiveWindow(m_nid.hWnd);
-    ::SetForegroundWindow(m_nid.hWnd);
+	::SetForegroundWindow(m_nid.hWnd);
 }

@@ -650,6 +650,12 @@ public:
 	BOOL m_bHideMainFrame;
 
 	// We need to be a separate instance
+	// - Autorun capture devices disabled if this set
+	// - Microapache start/stop disabled if this set
+	// - General settings dialog disabled if this set (only for VIDEODEVICEDOC compile)
+	// - Browser autostart disabled if this set
+	// - Window placement store/restore disabled if this set
+	// - Start/stop ContaCam.exe from service disabled if this set
 	BOOL m_bForceSeparateInstance;
 
 	// Single Instance Application Wanted
@@ -720,7 +726,7 @@ public:
 	BOOL m_bStartPlay;
 
 	// Close application after audio play of given file has terminated
-	BOOL m_bCloseAfterPlayDone;
+	BOOL m_bCloseAfterAudioPlayDone;
 
 	// File Open Preview Flag
 	BOOL m_bFileDlgPreview;
@@ -804,6 +810,9 @@ public:
 	CString m_sREG_NAME;
 
 	// Service
+	// - Browser autostart disabled if this set
+	// - Window placement store/restore disabled if this set
+	// - Start/stop ContaCam.exe from service disabled if this set
 	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
 #endif
 
@@ -916,13 +925,15 @@ protected:
 	// If not set, InitInstance() failed and returned FALSE,
 	// in that case ExitInstance() is called right after InitInstance()
 	BOOL m_bInitInstance;
-
-	// Autorun progress dialog
-	CProgressDlg* m_pAutorunProgressDlg;
 	
 	// Shrinking & Email Sending Vars
 	CString m_sZipFile;
 	CString m_sShrinkDestination;
+
+	// Autorun progress dialog
+#ifdef VIDEODEVICEDOC
+	CProgressDlg* m_pAutorunProgressDlg;
+#endif
 
 	// Doc Templates
 	CUImagerMultiDocTemplate* m_pVideoAviDocTemplate;

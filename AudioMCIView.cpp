@@ -93,7 +93,7 @@ void CAudioMCIView::OnTimer(UINT nIDEvent)
 {
 	CAudioMCIDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (((CUImagerApp*)::AfxGetApp())->m_bCloseAfterPlayDone &&
+	if (((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone &&
 		!m_DibStatic.IsMusicPlaying())
 		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 	CFormView::OnTimer(nIDEvent);

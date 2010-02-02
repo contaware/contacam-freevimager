@@ -196,6 +196,7 @@ CProgressDlgThread::~CProgressDlgThread()
 BOOL CProgressDlgThread::InitInstance()
 {
  	m_pProgressDlg = new CProgressDlg(m_sTitle, m_dwStartTimeMs, m_dwWaitTimeMs);
+	m_pMainWnd = m_pProgressDlg;
 	::SetEvent(m_hStartupDone);
 	if (m_pProgressDlg)
 		return TRUE;	// Start the message pump
@@ -221,12 +222,18 @@ void CProgressDlgThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 {
 	if (m_pProgressDlg)
 	{
-		// Set the focus back to the Main Frame
-		if (::AfxGetMainFrame())
+		// The SetActiveWindow function activates a window, but not if the
+		// application is in the background.
+		// Do not use SetForegroundWindow because under Win2000 or higher
+		// an application cannot force a window to the foreground while
+		// the user is working with another window. Instead, SetForegroundWindow
+		// will activate the window (see SetActiveWindow) and call the FlashWindowEx
+		// function to notify the user.
+		if (::AfxGetMainFrame() && ::IsWindow(::AfxGetMainFrame()->GetSafeHwnd()))
 		{
 			::AttachThreadInput(::AfxGetApp()->m_nThreadID, m_nThreadID, TRUE);
-			::AfxGetMainFrame()->SetFocus();
-			::AfxGetMainFrame()->SetForegroundWindow();
+			::SetActiveWindow(::AfxGetMainFrame()->GetSafeHwnd());
+			::SetFocus(::AfxGetMainFrame()->GetSafeHwnd());
 			::AttachThreadInput(::AfxGetApp()->m_nThreadID, m_nThreadID, FALSE);
 		}
 

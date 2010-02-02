@@ -49,7 +49,7 @@ extern "C"
 #define ID_TIMER_AVIPLAYSLIDER						12
 #ifdef VIDEODEVICEDOC
 #define ID_TIMER_GENERALDLG  						13
-#define ID_TIMER_SCHEDULER							14
+#define ID_TIMER_ONESEC_POLL						14
 #define ID_TIMER_ASSISTANTDLG						15
 #endif
 
@@ -59,7 +59,7 @@ extern "C"
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				100U	// ms
 #define AVIPLAYSLIDER_TIMER_MS						300U	// ms
 #ifdef VIDEODEVICEDOC
-#define SCHEDULER_TIMER_MS							1000U	// ms
+#define ONESEC_POLL_TIMER_MS						1000U	// ms
 #endif
 
 #ifdef VIDEODEVICEDOC

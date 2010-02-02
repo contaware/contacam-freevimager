@@ -17,7 +17,9 @@
 #include "VideoDevicePropertySheet.h"
 #include "DxCapture.h"
 #include "DxCaptureVMR9.h"
+#ifdef VIDEODEVICEDOC
 #include "ProgressDlg.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

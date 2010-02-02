@@ -207,8 +207,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_bTwainCloseLocked = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("TwainCloseLocked"), FALSE);
 	
 #ifdef VIDEODEVICEDOC
-	// Scheduler Timer
-	SetTimer(ID_TIMER_SCHEDULER, SCHEDULER_TIMER_MS, NULL);
+	// Poll Timer
+	SetTimer(ID_TIMER_ONESEC_POLL, ONESEC_POLL_TIMER_MS, NULL);
 #endif
 
 	// Init Menu Positions
@@ -226,34 +226,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	((CUImagerApp*)::AfxGetApp())->m_pXmpImportDlg = new CXmpDlg(this, IDD_XMP_IMPORT);
 	((CUImagerApp*)::AfxGetApp())->m_pXmpDlg = new CXmpDlg(this, IDD_XMP);
 
-	// First Time that the App runs after Install (or Upgrade)
-	// and first run ever or after a uninstall
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	// Setup Tray Icon
+	if (((CUImagerApp*)::AfxGetApp())->m_bTrayIcon)
 	{
-		// Get flags
-		((CUImagerApp*)::AfxGetApp())->m_bFirstRun = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
-		((CUImagerApp*)::AfxGetApp())->m_bFirstRunEver = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("FirstRunEver"), TRUE);
-		
-		// Fix inconsistency
-		if (((CUImagerApp*)::AfxGetApp())->m_bFirstRunEver && !((CUImagerApp*)::AfxGetApp())->m_bFirstRun)
-			((CUImagerApp*)::AfxGetApp())->m_bFirstRun = TRUE;
-	}
-
-	// Setup Tray Icon if not hiding Mainframe
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-		!((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame)
-	{
-#ifdef VIDEODEVICEDOC
-		if (((CUImagerApp*)::AfxGetApp())->m_bFirstRunEver)
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("TrayIcon"), TRUE);
-#endif
-		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("TrayIcon"), FALSE);
-		if (((CUImagerApp*)::AfxGetApp())->m_bTrayIcon)
-		{
-			TrayIcon(TRUE);
-			if (!((CUImagerApp*)::AfxGetApp())->m_bFirstRunEver)
-				m_TrayIcon.MinimizeToTray();
-		}
+		TrayIcon(TRUE);
+		if (!((CUImagerApp*)::AfxGetApp())->m_bFirstRun)
+			m_TrayIcon.MinimizeToTray();
 	}
 
 	return 0;
@@ -332,7 +310,7 @@ void CMainFrame::OnDestroy()
 {
 	// Kill Timer
 #ifdef VIDEODEVICEDOC
-	KillTimer(ID_TIMER_SCHEDULER);
+	KillTimer(ID_TIMER_ONESEC_POLL);
 #endif
 
 	// Close Eventually Open Dlgs
@@ -3372,7 +3350,7 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		((CUImagerApp*)::AfxGetApp())->CloseAll();
 	}
 #ifdef VIDEODEVICEDOC
-	else if (nIDEvent == ID_TIMER_SCHEDULER)
+	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
 		// Current Time
 		CTime timedate = CTime::GetCurrentTime();

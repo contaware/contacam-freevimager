@@ -118,7 +118,7 @@ CUImagerApp::CUImagerApp()
 	m_sShrinkDestination = _T("");
 	m_bExtractHere = FALSE;
 	m_bStartPlay = FALSE;
-	m_bCloseAfterPlayDone = FALSE;
+	m_bCloseAfterAudioPlayDone = FALSE;
 	m_pVideoAviDocTemplate = NULL;
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
@@ -132,6 +132,7 @@ CUImagerApp::CUImagerApp()
 	m_dwPURCHASE_ID = 0;
 	m_wRUNNING_NO = 0;
 	m_bServiceProcess = FALSE;
+	m_pAutorunProgressDlg = NULL;
 #else
 	m_bSingleInstance = FALSE;
 #endif
@@ -181,7 +182,6 @@ CUImagerApp::CUImagerApp()
 	m_nNewPhysUnit = DEFAULT_NEW_PHYS_UNIT;
 	m_sNewPaperSize = DEFAULT_NEW_PAPER_SIZE;
 	m_crNewBackgroundColor = DEFAULT_NEW_COLOR;
-	m_pAutorunProgressDlg = NULL;
 }
 
 CUImagerApp::~CUImagerApp()
@@ -284,8 +284,10 @@ BYTE g_Crc32CheckArray[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 #endif
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
-	CInstanceChecker* pInstanceChecker = NULL;
+#ifdef VIDEODEVICEDOC
 	CProgressDlgThread* pProgressDlgThread = NULL;
+#endif
+	CInstanceChecker* pInstanceChecker = NULL;
 	try
 	{
 		// A process can be started with hidden set
@@ -310,7 +312,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// no need to do it in ExitInstance()!
 		if (!AfxOleInit()) // This calls ::CoInitialize(NULL) internally
 		{
-			::AfxMessageBox(IDP_OLE_INIT_FAILED);
+			::AfxMessageBox(IDP_OLE_INIT_FAILED, MB_OK | MB_ICONSTOP);
 			throw (int)0;
 		}
 		AfxEnableControlContainer();
@@ -464,7 +466,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_bForceSeparateInstance =
 			m_bExtractHere												||
 			m_bStartPlay												||
-			m_bCloseAfterPlayDone										||
+			m_bCloseAfterAudioPlayDone									||
 			cmdInfo.m_bRunEmbedded										||
 			cmdInfo.m_bRunAutomated										||
 			cmdInfo.m_nShellCommand == CCommandLineInfo::FilePrintTo	||
@@ -474,19 +476,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister	||
 			m_bSlideShowOnly;
-
-		// Stop ContaCam.exe from Service
-#ifdef VIDEODEVICEDOC
-		if (!m_bForceSeparateInstance && !m_bServiceProcess &&
-			GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-		{
-			CString sStartingApp;
-			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
-			pProgressDlgThread = new CProgressDlgThread(sStartingApp,
-														0, CONTACAMSERVICE_TIMEOUT);
-			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
-		}
-#endif
 
 		// Single Instance
 		// (if VIDEODEVICEDOC defined -> single instance is always set, see constructor)
@@ -514,57 +503,37 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			{
 				// Send file name and shell command to previous instance
 				pInstanceChecker->ActivatePreviousInstance(cmdInfo.m_strFileName,
-														(DWORD)cmdInfo.m_nShellCommand);
+														(ULONG_PTR)cmdInfo.m_nShellCommand);
 				throw (int)0;
 			}
+		}
+
+		// First Time that the App runs after Install (or Upgrade)
+		// and first run ever or after a uninstall
+		if (m_bUseSettings)
+		{
+			// Get flags
+			m_bFirstRun = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
+			m_bFirstRunEver = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRunEver"), TRUE);
+			
+			// Fix inconsistency
+			if (m_bFirstRunEver && !m_bFirstRun)
+				m_bFirstRun = TRUE;
+		}
+
+		// Set Tray Icon flag
+		if (m_bUseSettings && !m_bHideMainFrame)
+		{
+#ifdef VIDEODEVICEDOC
+			if (m_bFirstRunEver)
+				WriteProfileInt(_T("GeneralApp"), _T("TrayIcon"), TRUE);
+#endif
+			m_bTrayIcon = (BOOL)GetProfileInt(_T("GeneralApp"), _T("TrayIcon"), FALSE);
 		}
 
 		// Init Global Helper Functions
 		// (inits OSs flags and processor instruction sets flags)
 		::InitHelpers();
-
-		// Check for MMX
-#if defined(VIDEODEVICEDOC) || defined(SUPPORT_LIBAVCODEC)
-		if (!g_bMMX)
-		{
-			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
-			throw (int)0;
-		}
-#endif
-
-		// AVCODEC Init
-#ifdef SUPPORT_LIBAVCODEC
-		// Initialize Critical Section
-		::InitializeCriticalSection(&g_csAVCodec);
-		g_bAVCodecCSInited = TRUE;
-#ifdef _DEBUG
-		av_log_set_callback(my_av_log_trace);
-#else
-		av_log_set_callback(my_av_log_empty);
-#endif
-		/*	ffmpeg automatically detects the best instructions
-			for the given CPU. Set mm_support_mask to limit the
-			used instructions.
-		FF_MM_MMX		// standard MMX
-		FF_MM_3DNOW		// AMD 3DNOW
-		FF_MM_MMXEXT	// SSE integer functions or AMD MMX ext
-		FF_MM_SSE		// SSE functions
-		FF_MM_SSE2		// PIV SSE2 functions
-		FF_MM_3DNOWEXT	// AMD 3DNowExt
-		FF_MM_SSE3		// Prescott SSE3 functions
-		FF_MM_SSSE3		// Conroe SSSE3 functions
-		*/
-		// Win95 and NT4 always crash if enabling sse2 and on newer systems
-		// I had some strange crashes...better to always disable sse2 and higher
-		//mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE | FF_MM_SSE2 | FF_MM_3DNOWEXT | FF_MM_SSE3 | FF_MM_SSSE3;
-		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
-		av_register_all();
-		m_bFFMpeg2VideoDec = avcodec_find_decoder(CODEC_ID_MPEG2VIDEO) != NULL ? TRUE : FALSE;
-		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
-		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
-		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;
-		m_bFFMpegAudioEnc = avcodec_find_encoder(CODEC_ID_MP2) != NULL && avcodec_find_encoder(CODEC_ID_MP3) != NULL ? TRUE : FALSE;
-#endif
 
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
@@ -675,39 +644,48 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Create Named Mutex For Installer / Uninstaller
 		m_hAppMutex = ::CreateMutex(NULL, FALSE, APPMUTEXNAME);
-		switch (::GetLastError())
-		{
-			case ERROR_SUCCESS:
-				// Mutex created successfully. There is
-				// no instances running
-				break;
-
-			case ERROR_ALREADY_EXISTS:
-				// Mutex already exists so there is a
-				// running instance of our app.
-				break;
-
-			case ERROR_ACCESS_DENIED:
-				// Failed to create mutex because of security attributes
-				break;
-
-			default:
-				// Failed to create mutex by unknown reason
-				break;
-		}
 
 		// Is Mail Available?
 		m_bMailAvailable =	(::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0) &&
 							(SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
 
-		// Create main MDI Frame window
+#ifdef VIDEODEVICEDOC
+		// Stop from Service flag
+		BOOL bStopFromService = !m_bForceSeparateInstance	&&
+								!m_bServiceProcess			&&
+								GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
+
+		// Stop from Service Progress Dialog
+		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
+		{
+			CString sStartingApp;
+			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
+			pProgressDlgThread = new CProgressDlgThread(sStartingApp, 0, CONTACAMSERVICE_TIMEOUT);
+		}
+#endif
+
+		// Create main MDI Frame window (before stopping service so that the tray icon gets created)
 		CMainFrame* pMainFrame = new CMainFrame;
-		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME)) // if m_bHideMainFrame set tray icon is disabled here
+		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
 		{
 			delete pMainFrame;
 			throw (int)0;
 		}
 		m_pMainWnd = pMainFrame;
+
+#ifdef VIDEODEVICEDOC
+		// Do stop from Service, this may take some time...
+		if (bStopFromService)
+			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
+
+		// The mainframe must be created before you delete pProgressDlgThread
+		// this to allow the AttachThreadInput to correctly pass the focus!
+		if (pProgressDlgThread)
+		{	
+			delete pProgressDlgThread;
+			pProgressDlgThread = NULL;
+		}
+#endif
 
 		// Init Exe Files Type
 #ifdef _UNICODE
@@ -723,17 +701,59 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_sAsciiExeFileName = szProgramName;
 #endif
 
+		// Check for MMX
+#if defined(VIDEODEVICEDOC) || defined(SUPPORT_LIBAVCODEC)
+		if (!g_bMMX)
+		{
+			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
+			throw (int)0;
+		}
+#endif
+
 		// Zip Settings
 		m_Zip.SetAdvanced(65535 * 50, 16384 * 50, 32768 * 50);
 
 		// Init YUV <-> RGB LUT
 		::InitYUVToRGBTable();
 		::InitRGBToYUVTable();
+
+		// AVCODEC Init
+#ifdef SUPPORT_LIBAVCODEC
+		::InitializeCriticalSection(&g_csAVCodec);
+		g_bAVCodecCSInited = TRUE;
+#ifdef _DEBUG
+		av_log_set_callback(my_av_log_trace);
+#else
+		av_log_set_callback(my_av_log_empty);
+#endif
+		/*	ffmpeg automatically detects the best instructions
+			for the given CPU. Set mm_support_mask to limit the
+			used instructions.
+		FF_MM_MMX		// standard MMX
+		FF_MM_3DNOW		// AMD 3DNOW
+		FF_MM_MMXEXT	// SSE integer functions or AMD MMX ext
+		FF_MM_SSE		// SSE functions
+		FF_MM_SSE2		// PIV SSE2 functions
+		FF_MM_3DNOWEXT	// AMD 3DNowExt
+		FF_MM_SSE3		// Prescott SSE3 functions
+		FF_MM_SSSE3		// Conroe SSSE3 functions
+		*/
+		// Win95 and NT4 always crash if enabling sse2 and on newer systems
+		// I had some strange crashes...better to always disable sse2 and higher
+		//mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE | FF_MM_SSE2 | FF_MM_3DNOWEXT | FF_MM_SSE3 | FF_MM_SSSE3;
+		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
+		av_register_all();
+		m_bFFMpeg2VideoDec = avcodec_find_decoder(CODEC_ID_MPEG2VIDEO) != NULL ? TRUE : FALSE;
+		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
+		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
+		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;
+		m_bFFMpegAudioEnc = avcodec_find_encoder(CODEC_ID_MP2) != NULL && avcodec_find_encoder(CODEC_ID_MP3) != NULL ? TRUE : FALSE;
+#endif
 		
 #ifdef VIDEODEVICEDOC
 		// Init WinSock 2.2
 		WSADATA wsadata;
-		if(::WSAStartup(MAKEWORD(2, 2), &wsadata) == 0)
+		if (::WSAStartup(MAKEWORD(2, 2), &wsadata) == 0)
 		{
 			/* Confirm that the WinSock DLL supports 2.2.*/
 			/* Note that if the DLL supports versions greater    */
@@ -930,11 +950,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			delete pInstanceChecker;
 		}
 
-		// The mainframe must be created before you free CProgressDlgThread
-		// this to allow the AttachThreadInput to correctly pass the focus
-		if (pProgressDlgThread)
-			delete pProgressDlgThread;
-
 		// Set ok flag
 		m_bInitInstance = TRUE;
 
@@ -942,18 +957,22 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 	}
 	catch (int)
 	{
-		if (pInstanceChecker)
-			delete pInstanceChecker;
+#ifdef VIDEODEVICEDOC
 		if (pProgressDlgThread)
 			delete pProgressDlgThread;
+#endif
+		if (pInstanceChecker)
+			delete pInstanceChecker;
 		return FALSE;
 	}
 	catch (CException* e)
 	{
-		if (pInstanceChecker)
-			delete pInstanceChecker;
+#ifdef VIDEODEVICEDOC
 		if (pProgressDlgThread)
 			delete pProgressDlgThread;
+#endif
+		if (pInstanceChecker)
+			delete pInstanceChecker;
 		e->ReportError();
 		e->Delete();
 		return FALSE;
@@ -3137,7 +3156,7 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
-				((CUImagerApp*)::AfxGetApp())->m_bCloseAfterPlayDone = TRUE;
+				((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
 			else if (_tcscmp(pszParam, _T("hide")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
 		}
@@ -3166,7 +3185,7 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 		else if (strcmp(pszParam, "play") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
-			((CUImagerApp*)::AfxGetApp())->m_bCloseAfterPlayDone = TRUE;
+			((CUImagerApp*)::AfxGetApp())->m_bCloseAfterAudioPlayDone = TRUE;
 		else if (strcmp(pszParam, "hide") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
 	}
