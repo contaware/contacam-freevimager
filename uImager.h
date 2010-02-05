@@ -677,6 +677,9 @@ public:
 	// load the full-sized dib.
 	BOOL m_bUseLoadPreviewDib;
 
+	// CUImagerApp Settings have been loaded
+	BOOL m_bSettingsLoaded;
+
 	// Should the settings be remembered?
 	BOOL m_bUseSettings;
 
@@ -787,8 +790,11 @@ public:
 	BOOL m_bBrowserAutostart;
 	CString m_sFullscreenBrowserExitString;
 
-	// Start the Micro Apache server when opening a VideoDeviceDoc
+	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
+
+	// Micro Apache Server has been started
+	BOOL m_bMicroApacheStarted;
 
 	// Micro Apache Document Root
 	CString m_sMicroApacheDocRoot;
@@ -814,6 +820,9 @@ public:
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
 	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
+
+	// Do start from service
+	BOOL m_bDoStartFromService;
 #endif
 
 	// MODI OCR
@@ -921,10 +930,6 @@ protected:
 	// Mutex for the Installer / Uninstaller to check
 	// whether this program is running
 	HANDLE m_hAppMutex;
-
-	// If not set, InitInstance() failed and returned FALSE,
-	// in that case ExitInstance() is called right after InitInstance()
-	BOOL m_bInitInstance;
 	
 	// Shrinking & Email Sending Vars
 	CString m_sZipFile;

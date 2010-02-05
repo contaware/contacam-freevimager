@@ -340,8 +340,14 @@ void CPictureView::OnFilePrintDirect()
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Init
+	// Init printer and set the printer name if not set by the /pt command line
 	((CUImagerApp*)::AfxGetApp())->InitPrinter();
+	if (((CUImagerApp*)::AfxGetApp())->m_pCmdInfo->m_strPrinterName == _T(""))
+	{
+		int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
+		CString sName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
+		((CUImagerApp*)::AfxGetApp())->m_pCmdInfo->m_strPrinterName = sName;
+	}
 
 	// Stop Playing
 	if (pDoc->m_SlideShowThread.IsSlideshowRunning() ||

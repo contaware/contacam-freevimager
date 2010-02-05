@@ -364,6 +364,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 				CString sContaCamServicePath = CString(szDrive) + CString(szDir) + SERVICENAME_EXT;
 				::ShellExecute(NULL, _T("open"), sContaCamServicePath, _T("-i"), NULL, SW_SHOWNORMAL);
+				pApp->m_bDoStartFromService = TRUE;
 			}	
 		}
 	}
@@ -417,6 +418,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
 		// Start stopping server
+		((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted = FALSE;
 		((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 
@@ -431,6 +433,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			// Start server
 			if (m_bStartMicroApache)
 			{
+				((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted = TRUE;
 				if (!CVideoDeviceDoc::MicroApacheInitStart())
 				{
 					EndWaitCursor();

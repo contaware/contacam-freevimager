@@ -126,12 +126,14 @@ CUImagerApp::CUImagerApp()
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bStartMicroApache = FALSE;
+	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bSingleInstance = TRUE;
 	m_bRegistered = FALSE;
 	m_dwPURCHASE_ID = 0;
 	m_wRUNNING_NO = 0;
 	m_bServiceProcess = FALSE;
+	m_bDoStartFromService = FALSE;
 	m_pAutorunProgressDlg = NULL;
 #else
 	m_bSingleInstance = FALSE;
@@ -143,9 +145,10 @@ CUImagerApp::CUImagerApp()
 	m_bWaitingMailFinish = FALSE;
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;
+	m_bSettingsLoaded = FALSE;
 	m_bUseSettings = TRUE;
+	m_bUseRegistry = TRUE;
 	m_hAppMutex = NULL;
-	m_bInitInstance = FALSE;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
 	m_bHasUnicodeExe = FALSE;
@@ -389,13 +392,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
 
-		// Set to use settings
-		m_bUseSettings = TRUE;
-
-		// If in debug mode or if application installed -> use registry
-#ifdef _DEBUG
-		m_bUseRegistry = TRUE;
-#else
+		// Do not use registry if application is not installed
+#ifndef _DEBUG
 		CString sSoftwareCompany = CString(_T("Software\\")) + CString(MYCOMPANY) + CString(_T("\\"));
 		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName))
 		{
@@ -404,9 +402,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 															_T("Install_Dir"));
 			sInstallDir.TrimRight(_T('\\'));
 			sInstallDir += _T("\\");
-			if (sInstallDir.CompareNoCase(sDriveDir) == 0)
-				m_bUseRegistry = TRUE;
-			else
+			if (sInstallDir.CompareNoCase(sDriveDir) != 0)
 				m_bUseRegistry = FALSE;
 		}
 		else
@@ -501,8 +497,17 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			pInstanceChecker->ActivateChecker();
 			if (pInstanceChecker->PreviousInstanceRunning())
 			{
-				// Send file name and shell command to previous instance
-				pInstanceChecker->ActivatePreviousInstance(cmdInfo.m_strFileName,
+				// Send file name(s) and shell command to previous instance
+				CString sFileNames;
+				if (cmdInfo.m_strFileNames.GetSize() <= 1)
+					sFileNames = cmdInfo.m_strFileName;
+				else
+				{
+					sFileNames = CString(_T("\"")) + cmdInfo.m_strFileName + CString(_T("\""));
+					for (int i = 1 ; i < cmdInfo.m_strFileNames.GetSize() ; i++)
+						sFileNames += CString(_T(" \"")) + cmdInfo.m_strFileNames[i] + CString(_T("\""));
+				}
+				pInstanceChecker->ActivatePreviousInstance(sFileNames,
 														(ULONG_PTR)cmdInfo.m_nShellCommand);
 				throw (int)0;
 			}
@@ -649,53 +654,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_bMailAvailable =	(::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0) &&
 							(SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
 
-#ifdef VIDEODEVICEDOC
-		// Stop from Service flag
-		BOOL bStopFromService = !m_bForceSeparateInstance	&&
-								!m_bServiceProcess			&&
-								GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
-
-		// Stop from Service Progress Dialog
-		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
-		{
-			CString sStartingApp;
-			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
-			pProgressDlgThread = new CProgressDlgThread(sStartingApp, 0, CONTACAMSERVICE_TIMEOUT);
-		}
-#endif
-
-		// Create main MDI Frame window (before stopping service so that the tray icon gets created)
-		CMainFrame* pMainFrame = new CMainFrame;
-		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
-		{
-			delete pMainFrame;
-			throw (int)0;
-		}
-		m_pMainWnd = pMainFrame;
-
-		// If this is the first instance of our App then track it
-		// so any other instances can find us
-		if (pInstanceChecker)
-		{
-			pInstanceChecker->TrackFirstInstanceRunning();
-			delete pInstanceChecker;
-			pInstanceChecker = NULL;
-		}
-
-#ifdef VIDEODEVICEDOC
-		// Do stop from Service, this may take some time...
-		if (bStopFromService)
-			ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC);
-
-		// The mainframe must be created before you delete pProgressDlgThread
-		// this to allow the AttachThreadInput to correctly pass the focus!
-		if (pProgressDlgThread)
-		{	
-			delete pProgressDlgThread;
-			pProgressDlgThread = NULL;
-		}
-#endif
-
 		// Init Exe Files Type
 #ifdef _UNICODE
 		m_bHasUnicodeExe = TRUE;
@@ -718,6 +676,17 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			throw (int)0;
 		}
 #endif
+
+		// DirectX check (it's a bit slow, do not run that each time)
+		if (m_bFirstRun)
+		{	
+#ifdef VIDEODEVICEDOC
+			if (!RequireDirectXVersion7())
+				throw (int)0;
+#else
+			SuggestDirectXVersion7();
+#endif
+		}
 
 		// Zip Settings
 		m_Zip.SetAdvanced(65535 * 50, 16384 * 50, 32768 * 50);
@@ -796,13 +765,69 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Is registered?
 		m_bRegistered = RSADecrypt();
+
+		// Stop from Service flag
+		BOOL bStopFromService = !m_bForceSeparateInstance	&&
+								!m_bServiceProcess			&&
+								GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
+
+		// Stop from Service Progress Dialog
+		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
+		{
+			CString sStartingApp;
+			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
+			pProgressDlgThread = new CProgressDlgThread(sStartingApp, 0, CONTACAMSERVICE_TIMEOUT);
+		}
+#endif
+
+		// Create main MDI Frame window (before stopping service so that the tray icon gets created)
+		CMainFrame* pMainFrame = new CMainFrame;
+		if (!pMainFrame || !pMainFrame->LoadFrame(IDR_MAINFRAME))
+		{
+			delete pMainFrame;
+			throw (int)0;
+		}
+		m_pMainWnd = pMainFrame;
+
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// ! Do not throw after this point, debugger asserts if returning FALSE !!
+		// ! from this function when the MainFrame has already been created     !! 
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		// If this is the first instance of our App then track it
+		// so any other instances can find us
+		if (pInstanceChecker)
+		{
+			pInstanceChecker->TrackFirstInstanceRunning();
+			delete pInstanceChecker;
+			pInstanceChecker = NULL;
+		}
+
+#ifdef VIDEODEVICEDOC
+		// Do stop from Service, this may take some time...
+		if (bStopFromService)
+		{
+			if (ControlContaCamService(CONTACAMSERVICE_CONTROL_END_PROC) == ERROR_SUCCESS)
+				m_bDoStartFromService = TRUE;
+		}
+
+		// The mainframe must be created before you delete pProgressDlgThread
+		// this to allow the AttachThreadInput to correctly pass the focus!
+		if (pProgressDlgThread)
+		{	
+			delete pProgressDlgThread;
+			pProgressDlgThread = NULL;
+		}
 #endif
 
 		// Dispatch commands specified on the command line.
 		// Returns FALSE if extracting zip file here,
 		// if printing, if file opening fails.
 		if (!ProcessShellCommand(cmdInfo))
-			throw (int)0;
+		{
+			m_pMainWnd->PostMessage(WM_CLOSE);
+			return TRUE;
+		}
 
 		// Hiding mainframe?
 		if (m_bHideMainFrame)
@@ -851,15 +876,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 				// First time that the App runs after Install (or Upgrade)
 				if (m_bFirstRun)
-				{	
-					// DirectX check (it's a bit slow, do not run that each time)
-#ifdef VIDEODEVICEDOC
-					if (!RequireDirectXVersion7())
-						throw (int)0;
-#else
-					SuggestDirectXVersion7();
-#endif
-
+				{
 					// First time ever that the App runs or after a uninstall
 					if (m_bFirstRunEver)
 					{
@@ -901,6 +918,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// Start Micro Apache
 					if (m_bStartMicroApache)
 					{
+						m_bMicroApacheStarted = TRUE;
 						if (CVideoDeviceDoc::MicroApacheInitStart())
 							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 					}
@@ -950,9 +968,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 			}
 		}
-
-		// Set ok flag
-		m_bInitInstance = TRUE;
 
 		return TRUE;
 	}
@@ -1158,9 +1173,9 @@ void CUImagerApp::OnFileSettings()
 
 void CUImagerApp::OnUpdateFileSettings(CCmdUI* pCmdUI) 
 {
-	// Enable if we are the main instance
+	// Enable if we are the main UI instance
 #ifdef VIDEODEVICEDOC
-	pCmdUI->Enable(!m_bForceSeparateInstance);
+	pCmdUI->Enable(!m_bForceSeparateInstance && !m_bServiceProcess);
 #endif
 
 	// Remove the menu item
@@ -2084,7 +2099,7 @@ BOOL CUImagerApp::AreAllDocsSaved()
 void CUImagerApp::SaveOnEndSession()
 {
 #ifdef VIDEODEVICEDOC
-	if (!m_bForceSeparateInstance)
+	if (m_bMicroApacheStarted)
 	{
 		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
@@ -2135,15 +2150,10 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
-	if (!m_bForceSeparateInstance)
-	{
-		// Finish Micro Apache shutdown
+	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
-
-		// Start ContaCam.exe from Service 
-		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-			ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
-	}
+	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
 }
 	
@@ -2784,15 +2794,9 @@ int CUImagerApp::ExitInstance()
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	if (!m_bForceSeparateInstance && m_bInitInstance)
-	{
-		// Finish Micro Apache shutdown
+	// Finish Micro Apache shutdown
+	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
-
-		// Start ContaCam.exe from Service
-		if (!m_bServiceProcess && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-			ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
-	}
 #endif
 
 	// Close The Application Mutex
@@ -2818,7 +2822,7 @@ int CUImagerApp::ExitInstance()
 	}
 #endif
 
-	// From CWinApp::ExitInstance(), I modified the Use Settings Check!
+	// From CWinApp::ExitInstance(), I modified it:
 
 #if _MSC_VER > 1200
 	// If we remember that we're unregistering,
@@ -2827,9 +2831,15 @@ int CUImagerApp::ExitInstance()
 		(m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister &&
 		 m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppRegister))
 	{
-		if (!afxContextIsDLL && m_bUseSettings)
+		if (!afxContextIsDLL && m_bUseSettings) // Added m_bUseSettings check
 			SaveStdProfileSettings();
 	}
+
+	// Start from Service after writing with SaveStdProfileSettings()!
+#ifdef VIDEODEVICEDOC
+	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+#endif
 
 	// Cleanup DAO if necessary
 	if (m_lpfnDaoTerm != NULL)
@@ -2858,9 +2868,15 @@ int CUImagerApp::ExitInstance()
 	if (m_pCmdInfo == NULL ||
 		m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister)
 	{
-		if (!afxContextIsDLL && m_bUseSettings)
+		if (!afxContextIsDLL && m_bUseSettings) // Added m_bUseSettings check
 			SaveStdProfileSettings();
 	}
+
+	// Start from Service after writing with SaveStdProfileSettings()!
+#ifdef VIDEODEVICEDOC
+	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
+		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
+#endif
 
 	// Cleanup DAO if necessary
 	if (m_lpfnDaoTerm != NULL)
@@ -3375,17 +3391,13 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 			}
 			break;
 
-		// If the user wanted to print to the given file(s)
+		// If the user wanted to print to the given file(s), case sensitive:
 		// Example: uImager.exe "file1.jpg" "file2.jpg" /pt "Printer Name" "Driver Name" "Port Name"
 		// (Printer parameters are optional)
 		case CCommandLineInfo::FilePrintTo:
 			ASSERT(m_pCmdInfo == NULL);
 			m_bUseLoadPreviewDib = FALSE; // Load Full-Size Jpegs!
 			m_pCmdInfo = &rCmdInfo;
-			if (m_pCmdInfo->m_strPrinterName.IsEmpty()	&&
-				m_pCmdInfo->m_strDriverName.IsEmpty()	&&
-				m_pCmdInfo->m_strPortName.IsEmpty())
-				m_pCmdInfo->m_strPrinterName = CEnumPrinters::GetDefaultPrinterName();
 			if (rCmdInfo.m_strFileNames.GetSize() <= 1)
 			{
 				CDocument* pDoc = OpenDocumentFile(rCmdInfo.m_strFileName);
@@ -3405,7 +3417,7 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 			bResult = FALSE; // Done -> Exit Program
 			break;
 
-		// If the user wanted to print preview the given file
+		// If the user wanted to print preview the given file, case sensitive:
 		// Example: uImager.exe "ad3.jpg" /p
 		case CCommandLineInfo::FilePrint:
 			{
@@ -3431,19 +3443,21 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 		// If we've been asked to unregister, unregister and then terminate
 		case CCommandLineInfo::AppUnregister:
 			{
-				UnregisterShellFileTypes();
-				BOOL bUnregistered = Unregister();
+				// Not used...
+				
+				//UnregisterShellFileTypes();
+				//BOOL bUnregistered = Unregister();
 
 				// if you specify /EMBEDDED, we won't make an success/failure box
 				// this use of /EMBEDDED is not related to OLE
 
-				if (!rCmdInfo.m_bRunEmbedded)
-				{
-					if (bUnregistered)
-						::AfxMessageBox(AFX_IDP_UNREG_DONE);
-					else
-						::AfxMessageBox(AFX_IDP_UNREG_FAILURE);
-				}
+				//if (!rCmdInfo.m_bRunEmbedded)
+				//{
+				//	if (bUnregistered)
+				//		::AfxMessageBox(AFX_IDP_UNREG_DONE);
+				//	else
+				//		::AfxMessageBox(AFX_IDP_UNREG_FAILURE);
+				//}
 				bResult = FALSE;    // that's all we do
 
 				// If nobody is using it already, we can use it.
@@ -3451,12 +3465,16 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 				// on the way out. This new object gets deleted by the
 				// app object destructor.
 
-				if (m_pCmdInfo == NULL)
-				{
-					m_pCmdInfo = new CCommandLineInfo;
-					m_pCmdInfo->m_nShellCommand = CCommandLineInfo::AppUnregister;
-				}
+				//if (m_pCmdInfo == NULL)
+				//{
+				//	m_pCmdInfo = new CCommandLineInfo;
+				//	m_pCmdInfo->m_nShellCommand = CCommandLineInfo::AppUnregister;
+				//}
 			}
+			break;
+
+		default:
+			bResult = FALSE;    // that's all we do
 			break;
 	}
 	return bResult;
@@ -4842,16 +4860,20 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 		}
 	}
 #endif
+
+	// Set flag
+	m_bSettingsLoaded = TRUE;
 }
 
 void CUImagerApp::SaveSettings()
 {
 	// MainFrame Placement
-	if (!m_bForceSeparateInstance	&&
+	if (!m_bForceSeparateInstance				&&
 #ifdef VIDEODEVICEDOC
-		!m_bServiceProcess			&&
+		!m_bServiceProcess						&&
 #endif
-		!::AfxGetMainFrame()->m_bFullScreenMode)
+		!::AfxGetMainFrame()->m_bFullScreenMode	&&
+		m_bSettingsLoaded)
 	{
 		WINDOWPLACEMENT wndpl;
 		memset(&wndpl, 0, sizeof(wndpl));

@@ -720,7 +720,7 @@ void CMainFrame::OnClose()
 
 		// Start Micro Apache shutdown
 #ifdef VIDEODEVICEDOC
-		if (!((CUImagerApp*)::AfxGetApp())->m_bForceSeparateInstance)
+		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
 			CVideoDeviceDoc::MicroApacheInitShutdown();
@@ -3833,9 +3833,9 @@ void CMainFrame::OnEndSession(BOOL bEnding)
 LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)
 {
 	COPYDATASTRUCT* pCDS = reinterpret_cast<COPYDATASTRUCT*>(lParam);
-	TCHAR* pszCmdLine = static_cast<TCHAR*>(pCDS->lpData);
+	TCHAR* pszFiles = static_cast<TCHAR*>(pCDS->lpData);
 	int nShellCommand = (int)pCDS->dwData;
-	if (pszCmdLine)
+	if (pszFiles)
 	{
 		if (!m_bFullScreenMode
 #if _MFC_VER < 0x0700
@@ -3846,9 +3846,33 @@ LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)
 			)
 		{
 			OnOpenFromTray();
-			CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(pszCmdLine);
-			if (pDoc && nShellCommand == CCommandLineInfo::FilePrint)
-				SendMessage(WM_COMMAND, ID_FILE_PRINT_PREVIEW);
+			CString sFiles(pszFiles);
+			int nStartIndex = sFiles.Find(_T("\""));
+			if (nStartIndex < 0)
+			{
+				CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(pszFiles);
+				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) && 
+					nShellCommand == CCommandLineInfo::FilePrint)
+					SendMessage(WM_COMMAND, ID_FILE_PRINT_PREVIEW);
+			}
+			else
+			{
+				while (nStartIndex >= 0)
+				{
+					int nEndIndex = sFiles.Find(_T("\""), nStartIndex + 1);
+					if (nEndIndex < 0)
+						break;
+					CString sFile = sFiles.Mid(nStartIndex + 1, nEndIndex - nStartIndex - 1);
+					CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(sFile);
+					if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) &&
+						nShellCommand == CCommandLineInfo::FilePrint)
+					{
+						SendMessage(WM_COMMAND, ID_FILE_PRINT_PREVIEW);
+						break; // Only one print preview, like in ProcessShellCommand()
+					}
+					nStartIndex = sFiles.Find(_T("\""), nEndIndex + 1);
+				}
+			}
 		}
 	}
 	return TRUE;

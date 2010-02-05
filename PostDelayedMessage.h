@@ -8,8 +8,8 @@
 #include "WorkerThread.h"
 #include "MainFrm.h"
 
-// Each 30 milliseconds the Exit() functions
-// whether all threads have exited
+// Each 30 milliseconds the Exit() function
+// checks whether all threads have exited
 #define EXIT_CHECK_INTERVAL		30
 
 // Post Delayed Message Thread Class
@@ -41,6 +41,7 @@ class CPostDelayedMessageThread : CWorkerThread
 
 		static HANDLE volatile m_hExitEvent;
 		static volatile LONG m_lCount;
+		static volatile LONG m_lExit;
 
 		HWND m_hWnd;
 		UINT m_uiMsg;
