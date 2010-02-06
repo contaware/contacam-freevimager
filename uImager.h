@@ -220,7 +220,7 @@ public:
 	//
 	// /slideshow	 : start in slideshow only mode
 	// /service      : started from the ContaCamService
-	// /exctracthere : zip extraction to zip's directory
+	// /extracthere  : zip extraction to zip's directory
 	// /play         : play given audio or video file
 	// /close        : close app after finishing playing the audio file
 	// /hide         : hide mainframe

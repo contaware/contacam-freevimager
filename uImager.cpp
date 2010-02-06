@@ -3169,7 +3169,10 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
 			else if (_tcscmp(pszParam, _T("extracthere")) == 0) // Case sensitive!
+			{
 				((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
+				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+			}
 			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
@@ -3198,7 +3201,10 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
 		else if (strcmp(pszParam, "exctracthere") == 0) // Case sensitive!
+		{
 			((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
+			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
+		}
 		else if (strcmp(pszParam, "play") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
