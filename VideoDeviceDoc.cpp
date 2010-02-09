@@ -9376,8 +9376,7 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 		return FALSE;
 	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
-	BOOL res = ::ExecHiddenApp(sMicroapacheStartFile, sParams);
-	return res;
+	return ::ExecHiddenApp(sMicroapacheStartFile, sParams);
 }
 
 BOOL CVideoDeviceDoc::MicroApacheWaitStartDone()
