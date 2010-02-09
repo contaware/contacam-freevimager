@@ -9252,6 +9252,7 @@ LoadModule dir_module modules/mod_dir.dll\r\n\
 LoadModule mime_module modules/mod_mime.dll\r\n\
 LoadModule rewrite_module modules/mod_rewrite.dll\r\n\
 LoadModule auth_module modules/mod_auth.dll\r\n\
+LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n\
 LoadModule php5_module \"php5apache2.dll\"\r\n\
 AddType application/x-httpd-php .php .php3\r\n\
 AcceptPathInfo off\r\n\
@@ -9274,24 +9275,13 @@ LogLevel crit\r\n");
 		sConfig += _T("</Directory>\r\n");
 
 		sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
-		sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		sConfig += _T("AuthName \"Secure Area\"\r\n");
-		sConfig += _T("AuthType Basic\r\n");
-		sConfig += _T("Require valid-user\r\n");
-		sConfig += _T("</Location>");
-		
-		/* Digest, cannot load the module...maybe we need the original module from the compilation
-		of Micro Apache, site is always down...
-		Use htdigest.exe to create a password.
-
-		sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
 		sConfig += _T("AuthDigestFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		sConfig += _T("AuthName \"Secure Area\"\r\n");
+		sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
+		sConfig += _T("AuthName \"") + CString(MICROAPACHE_REALM) + _T("\"\r\n");
 		sConfig += _T("AuthType Digest\r\n");
 		sConfig += _T("AuthDigestDomain /\r\n");
 		sConfig += _T("Require valid-user\r\n");
 		sConfig += _T("</Location>");
-		*/
 
 		return SaveMicroApacheConfigFile(sConfig);
 	}
@@ -9299,25 +9289,74 @@ LogLevel crit\r\n");
 		return TRUE;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(const CString& sUsername, const CString& sPassword)
+BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword)
 {
+	// Delete password file if existing
 	CString sMicroapachePwFile = MicroApacheGetPwFileName();
 	if (::IsExistingFile(sMicroapachePwFile))
 		::DeleteFile(sMicroapachePwFile);
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-		return FALSE;
-	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	CString sMicroapachePwToolFile = CString(szDrive) + CString(szDir);
-	sMicroapachePwToolFile += MICROAPACHE_PWTOOL_RELPATH;
-	if (!::IsExistingFile(sMicroapachePwToolFile))
-		return FALSE;
-	sMicroapachePwFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise pw tool is not happy)
-	CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
-	BOOL res = ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
-	return res;
+
+	// Make password file
+	if (bDigest)
+	{
+		USES_CONVERSION;
+		CPJNMD5 hmac;
+		CPJNMD5Hash hash;
+		CString sToHash = sUsername + _T(":")					+
+						CString(MICROAPACHE_REALM) + _T(":")	+
+						sPassword;
+		char* pszA1 = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
+		if (hmac.Hash((const BYTE*)pszA1, (DWORD)strlen(pszA1), hash))
+		{
+			CString sHA1 = hash.Format(FALSE);
+			CString sPasswordFileData = sUsername + _T(":") + CString(MICROAPACHE_REALM) + _T(":") + sHA1 + _T("\n");
+			LPSTR pData = NULL;
+			int nLen = ::ToANSI(sPasswordFileData, &pData);
+			if (nLen <= 0 || !pData)
+			{
+				if (pData)
+					delete [] pData;
+				return FALSE;
+			}
+			try
+			{
+				CFile f(sMicroapachePwFile,
+						CFile::modeCreate		|
+						CFile::modeWrite		|
+						CFile::shareDenyWrite);
+				f.Write(pData, nLen);
+				delete [] pData;
+				return TRUE;
+			}
+			catch (CFileException* e)
+			{
+				delete [] pData;
+				e->Delete();
+				return FALSE;
+			}
+		}
+		else
+			return FALSE;
+	}
+	else
+	{
+		// Apache's basic auth password file format is quite complicated
+		// (see apr_md5_encode() in apr_md5.c)
+		// -> we use the htpasswd.exe tool:
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return FALSE;
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sMicroapachePwToolFile = CString(szDrive) + CString(szDir);
+		sMicroapachePwToolFile += MICROAPACHE_PWTOOL_RELPATH;
+		if (!::IsExistingFile(sMicroapachePwToolFile))
+			return FALSE;
+		sMicroapachePwFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise pw tool is not happy)
+		CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
+		return ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
+	}
 }
 
 BOOL CVideoDeviceDoc::MicroApacheInitStart()

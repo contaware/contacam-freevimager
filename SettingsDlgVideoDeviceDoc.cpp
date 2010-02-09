@@ -70,6 +70,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
+	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
 }
@@ -109,6 +110,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Text(pDX, IDC_EDIT_FULLSCREENBROWSER_EXITSTRING, m_sFullscreenBrowserExitString);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
+	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
 	//}}AFX_DATA_MAP
 }
 
@@ -404,16 +406,18 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->m_sFullscreenBrowserExitString = m_sFullscreenBrowserExitString;
 
 	// Micro Apache
-	if (pApp->m_bStartMicroApache != m_bStartMicroApache		||
-		pApp->m_sMicroApacheDocRoot != m_sMicroApacheDocRoot	||
-		pApp->m_nMicroApachePort != m_nMicroApachePort			||
-		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername	||
+	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
+		pApp->m_sMicroApacheDocRoot != m_sMicroApacheDocRoot		||
+		pApp->m_nMicroApachePort != m_nMicroApachePort				||
+		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
+		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword)
 	{
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
+		pApp->m_bMicroApacheDigestAuth = m_bMicroApacheDigestAuth;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
@@ -422,14 +426,14 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 
-		// Update / create config file and root index.php for microapache
-		pApp->MicroApacheUpdateFiles();
-
 		// Wait till shutdown
 		if (!CVideoDeviceDoc::MicroApacheFinishShutdown())
 			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
 		else
 		{
+			// Update / create config file and root index.php for microapache
+			pApp->MicroApacheUpdateFiles();
+
 			// Start server
 			if (m_bStartMicroApache)
 			{
@@ -485,6 +489,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("MicroApachePort"),
 											m_nMicroApachePort);
+			pApp->WriteProfileInt(			_T("GeneralApp"),
+											_T("MicroApacheDigestAuth"),
+											m_bMicroApacheDigestAuth);
 			pApp->WriteSecureProfileString(	_T("GeneralApp"),
 											_T("MicroApacheUsername"),
 											m_sMicroApacheUsername);
@@ -533,6 +540,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("MicroApachePort"),
 											m_nMicroApachePort,
+											sTempFileName);
+			::WriteProfileIniInt(			_T("GeneralApp"),
+											_T("MicroApacheDigestAuth"),
+											m_bMicroApacheDigestAuth,
 											sTempFileName);
 			::WriteSecureProfileIniString(	_T("GeneralApp"),
 											_T("MicroApacheUsername"),

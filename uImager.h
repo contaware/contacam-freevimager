@@ -43,6 +43,7 @@
 #define MICROAPACHE_CANCONNECT_ATTEMPTS					10
 #define MICROAPACHE_PREFERRED_PORT						80
 #define MICROAPACHE_DEFAULT_PORT						8800
+#define MICROAPACHE_REALM								_T("Secure Area")
 #define MICROAPACHE_LOGNAME_EXT							_T("httpd_log.txt")
 #define MICROAPACHE_PIDNAME_EXT							_T("httpd_pid.txt")
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
@@ -802,7 +803,8 @@ public:
 	// Micro Apache Server Port
 	int m_nMicroApachePort;
 
-	// Username and Password
+	// Micro Apache Authentication
+	BOOL m_bMicroApacheDigestAuth;
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 

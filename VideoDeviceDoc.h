@@ -1412,7 +1412,7 @@ public:
 	static CString MicroApacheGetPwFileName();
 	static BOOL MicroApacheCheckConfigFile();
 	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir);
-	static BOOL MicroApacheMakePasswordFile(const CString& sUsername, const CString& sPassword);
+	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();
 	static BOOL MicroApacheWaitCanConnect();

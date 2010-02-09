@@ -128,6 +128,7 @@ CUImagerApp::CUImagerApp()
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
+	m_bMicroApacheDigestAuth = TRUE;
 	m_bSingleInstance = TRUE;
 	m_bRegistered = FALSE;
 	m_dwPURCHASE_ID = 0;
@@ -4832,7 +4833,8 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	// Micro Apache Server Port
 	m_nMicroApachePort = GetProfileInt(sSection, _T("MicroApachePort"), MICROAPACHE_DEFAULT_PORT);
 
-	// Micro Apache Username and Password
+	// Micro Apache Authentication
+	m_bMicroApacheDigestAuth = (BOOL)GetProfileInt(sSection, _T("MicroApacheDigestAuth"), TRUE);
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"), _T(""));
 	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"), _T(""));
 
@@ -6702,11 +6704,15 @@ void CUImagerApp::MicroApacheUpdateFiles()
 	sPort.Format(_T("%d"), m_nMicroApachePort);
 	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("Listen"), sPort);
 	
-	// Set Username and Password
+	// Make password file and set authentication type
 	if (m_sMicroApacheUsername != _T("") || m_sMicroApachePassword != _T(""))
 	{
-		CVideoDeviceDoc::MicroApacheMakePasswordFile(m_sMicroApacheUsername, m_sMicroApachePassword);
+		CVideoDeviceDoc::MicroApacheMakePasswordFile(m_bMicroApacheDigestAuth, m_sMicroApacheUsername, m_sMicroApachePassword);
 		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), _T("/>"));
+		if (m_bMicroApacheDigestAuth)
+			CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("AuthType"), _T("Digest"));
+		else
+			CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("AuthType"), _T("Basic"));
 	}
 	else
 	{

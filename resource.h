@@ -3130,6 +3130,7 @@
 #define IDC_STATIC2499                  2499
 #define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
+#define IDC_CHECK_DIGESTAUTH            2502
 #define IDC_WEBSERVER_ROOTDIR           2504
 #define IDC_WEBSERVER_ROOTDIR_PATH      2505
 #define IDC_TEXT_WEBSERVER_ROOTDIR      2506
