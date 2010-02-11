@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.0 (January 20th 2010)
+2.0.0 (March 18th 2010)
 
 - Some optimisations
 - View's toolbar repainting bug fixed
