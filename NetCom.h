@@ -396,7 +396,7 @@ public:
 	// use WaitTillShutdown_Blocking() to make
 	// sure that we are done, or poll with the
 	// IsShutdown() function.
-	BOOL ShutdownConnection_NoBlocking();
+	void ShutdownConnection_NoBlocking();
 
 	// Wait till all threads are dead, this is a blocking function
 	__forceinline void WaitTillShutdown_Blocking() {m_pTxThread->WaitDone_Blocking();

@@ -3784,6 +3784,13 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 		
 		// Create a compatible bitmap
 		HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC, cx + 1, cy + 1);
+		if (hBitmap == NULL)
+		{
+			::DeleteEnhMetaFile(hemf);
+			::DeleteDC(hMemDC);
+			::ReleaseDC(NULL, hDC);
+			throw (int)EMF_E_NOMEM;
+		}
 		
 		// Select the bitmap into the Mem DC
 		HBITMAP hBitmapOld = (HBITMAP)::SelectObject(hMemDC, hBitmap);
@@ -3888,6 +3895,8 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 		switch(error_code)
 		{
 			case EMF_E_ZEROPATH :		str += _T("The file name is zero\n");
+			break;
+			case EMF_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
 			case EMF_E_WRONGEXTENTION :	str += _T("The file extention is not .emf\n");
 			break;

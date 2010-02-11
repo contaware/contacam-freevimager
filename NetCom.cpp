@@ -3711,22 +3711,20 @@ BOOL CNetCom::InitEvents()
 		return FALSE;
 }
 
-BOOL CNetCom::ShutdownConnection_NoBlocking()
+void CNetCom::ShutdownConnection_NoBlocking()
 {
-	if ((m_hSocket != INVALID_SOCKET) && (m_pMsgThread->IsRunning()))
+	if (m_pMsgThread->IsRunning())
 	{
 		if (!m_bServer)
 			m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
-		return ::SetEvent(m_hStartConnectionShutdownEvent);
+		::SetEvent(m_hStartConnectionShutdownEvent);
 	}
-	else
-		return FALSE;
 }
 
 void CNetCom::ShutdownConnection()
 {
-	if ((m_hSocket != INVALID_SOCKET) && (m_pMsgThread->IsRunning()))
+	if (m_pMsgThread->IsRunning())
 	{
 		if (!m_bServer)
 			m_bClientConnected = FALSE;

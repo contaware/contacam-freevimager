@@ -164,9 +164,10 @@ typedef struct {
 #define EMF_E_ZEROPATH					0   // The file name is zero
 #define EMF_E_WRONGEXTENTION			1	// Wrong File Extention
 #define EMF_E_FILEREADONLY				2	// The file is read only
-#define EMF_E_BADBMP					3	// Corrupted or unsupported DIB
-#define EMF_E_BADEMF					4   // Corrupted or unsupported EMF
-#define EMF_E_FILEEMPTY					5	// File is empty
+#define EMF_E_NOMEM						3   // Could not alloc memory
+#define EMF_E_BADBMP					4	// Corrupted or unsupported DIB
+#define EMF_E_BADEMF					5   // Corrupted or unsupported EMF
+#define EMF_E_FILEEMPTY					6	// File is empty
 
 #define MMBMP_E_ZEROPATH				0   // The file name is zero
 #define MMBMP_E_WRONGEXTENTION			1	// Wrong File Extention

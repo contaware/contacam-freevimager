@@ -6050,6 +6050,12 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 			// Register File Extension
 			::SetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"), sMyFileApplicationName);
 		}
+
+		// NOTE:
+		// There is also a key under sCurrentUserFileExtsPath called UserChoice
+		// that can have a ProgID value: this has the highest priority and can
+		// prevent from being associated. Vista or higher do not let you delete
+		// it, even as administrator...you can delete it with regedit.exe
 	}
 
 	// Create My Class Name or ProgID
