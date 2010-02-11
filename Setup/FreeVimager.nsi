@@ -197,6 +197,13 @@ Function FinishRunCB
 UAC::Exec "" "$INSTDIR\${APPNAME_EXT}" "" ""
 FunctionEnd
 
+!define SHCNE_ASSOCCHANGED 0x08000000
+!define SHCNF_IDLIST 0
+Function RefreshShellIcons
+  System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v \
+  (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'
+FunctionEnd
+
 ;--------------------------------
 
 ; The stuff to install
@@ -274,11 +281,10 @@ unicode_end:
   WriteRegStr HKCR "Applications\${APPNAME_EXT}\shell\print\command" "" '"$INSTDIR\${APPNAME_EXT}" /p "%1"'
   WriteRegStr HKCR "Applications\${APPNAME_EXT}\shell\printto\command" "" '"$INSTDIR\${APPNAME_EXT}" /pt "%1"'
   
-  ; Set First Run Flag only if not in silent mode
-  IfSilent +3
+  ; Set first run flag and silent install flag
   WriteRegDWORD HKCU "Software\Contaware\${APPNAME_NOEXT}\GeneralApp" "FirstRun" 1
-  goto +2
-  WriteRegDWORD HKCU "Software\Contaware\${APPNAME_NOEXT}\GeneralApp" "FirstRun" 0
+  IfSilent 0 +2
+  WriteRegDWORD HKCU "Software\Contaware\${APPNAME_NOEXT}\GeneralApp" "SilentInstall" 1
   
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "DisplayName" "${APPNAME_NOEXT}"
@@ -320,6 +326,9 @@ unicode_end:
   !insertmacro ADDREMOVE_FILEASSOCIATION $AVI avi
   !insertmacro ADDREMOVE_FILEASSOCIATION $AVI divx
   !insertmacro ADDREMOVE_FILEASSOCIATION $ZIP zip
+
+  ; Refresh Icons
+  call RefreshShellIcons
 
 SectionEnd
 
@@ -425,8 +434,6 @@ FunctionEnd
   
 ;--------------------------------
 
-!define SHCNE_ASSOCCHANGED 0x08000000
-!define SHCNF_IDLIST 0
 Function un.RefreshShellIcons
   System::Call 'shell32.dll::SHChangeNotify(i, i, i, i) v \
   (${SHCNE_ASSOCCHANGED}, ${SHCNF_IDLIST}, 0, 0)'

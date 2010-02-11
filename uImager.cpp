@@ -152,6 +152,7 @@ CUImagerApp::CUImagerApp()
 	m_hAppMutex = NULL;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
+	m_bSilentInstall = FALSE;
 	m_bHasUnicodeExe = FALSE;
 	m_bHasAsciiExe = FALSE;
 	m_sUnicodeExeFileName = _T("");
@@ -521,7 +522,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			// Get flags
 			m_bFirstRun = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
 			m_bFirstRunEver = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRunEver"), TRUE);
-			
+			m_bSilentInstall = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
+
 			// Fix inconsistency
 			if (m_bFirstRunEver && !m_bFirstRun)
 				m_bFirstRun = TRUE;
@@ -895,22 +897,28 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 						// Associate avi files
 						AssociateFileType(_T("avi"));
 						AssociateFileType(_T("divx"));
-						::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 #endif
 						// Reset first run ever flag
 						WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
 					}
 		
+					// Update file associations (necessary when changing the icons)
+					UpdateFileAssociations();
+
 #ifdef VIDEODEVICEDOC
 					// Update / create config file and root index.php for microapache
 					MicroApacheUpdateFiles();			
 #else
 					// Open Settings Dialog for file association and other preferences
-					OnFileSettings();
+					if (!m_bSilentInstall)
+						OnFileSettings();
 #endif
 					// Reset first run flag
 					WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
 				}
+
+				// Reset silent install flag
+				WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 				// Auto-starts
 #ifdef VIDEODEVICEDOC
@@ -5714,6 +5722,169 @@ void CUImagerApp::OnUpdateEditPaste(CCmdUI* pCmdUI)
 					!m_bSlideShowOnly);
 }
 
+void CUImagerApp::UpdateFileAssociations()
+{
+	if (m_bUseSettings)
+	{
+		// Graphics
+		BOOL bBmp =		IsFileTypeAssociated(_T("bmp"));
+		BOOL bJpeg =	IsFileTypeAssociated(_T("jpg"))	&&
+						IsFileTypeAssociated(_T("jpeg"))&&
+						IsFileTypeAssociated(_T("jpe"))	&&
+						IsFileTypeAssociated(_T("thm"));
+		BOOL bPcx =		IsFileTypeAssociated(_T("pcx"));
+		BOOL bEmf =		IsFileTypeAssociated(_T("emf"));
+		BOOL bPng =		IsFileTypeAssociated(_T("png"));
+		BOOL bTiff =	IsFileTypeAssociated(_T("tif"))	&&
+						IsFileTypeAssociated(_T("tiff"))&&
+						IsFileTypeAssociated(_T("jfx"));
+		BOOL bGif =		IsFileTypeAssociated(_T("gif"));
+
+		// Audio
+		BOOL bAif =		IsFileTypeAssociated(_T("aif"))	&&
+						IsFileTypeAssociated(_T("aiff"));
+		BOOL bAu =		IsFileTypeAssociated(_T("au"));
+		BOOL bMidi =	IsFileTypeAssociated(_T("mid"))	&&
+						IsFileTypeAssociated(_T("rmi"));
+		BOOL bMp3 =		IsFileTypeAssociated(_T("mp3"));
+		BOOL bWav =		IsFileTypeAssociated(_T("wav"));
+		BOOL bWma =		IsFileTypeAssociated(_T("wma"));
+		BOOL bCda =		IsFileTypeAssociated(_T("cda"));
+
+		// Others
+		BOOL bAvi =		IsFileTypeAssociated(_T("avi")) &&
+						IsFileTypeAssociated(_T("divx"));
+		BOOL bZip =		IsFileTypeAssociated(_T("zip"));
+
+	
+		// Graphics
+
+		if (bBmp)
+			AssociateFileType(_T("bmp"));
+		else
+			UnassociateFileType(_T("bmp"));
+
+		if (bJpeg)
+		{
+			AssociateFileType(_T("jpg"));
+			AssociateFileType(_T("jpeg"));
+			AssociateFileType(_T("jpe"));
+			AssociateFileType(_T("thm"));
+		}
+		else
+		{
+			UnassociateFileType(_T("jpg"));
+			UnassociateFileType(_T("jpeg"));
+			UnassociateFileType(_T("jpe"));
+			UnassociateFileType(_T("thm"));
+		}
+
+		if (bPcx)
+			AssociateFileType(_T("pcx"));
+		else
+			UnassociateFileType(_T("pcx"));
+
+		if (bEmf)
+			AssociateFileType(_T("emf"));
+		else
+			UnassociateFileType(_T("emf"));
+
+		if (bPng)
+			AssociateFileType(_T("png"));
+		else
+			UnassociateFileType(_T("png"));
+
+		if (bTiff)
+		{
+			AssociateFileType(_T("tif"));
+			AssociateFileType(_T("tiff"));
+			AssociateFileType(_T("jfx"));
+		}
+		else
+		{
+			UnassociateFileType(_T("tif"));
+			UnassociateFileType(_T("tiff"));
+			UnassociateFileType(_T("jfx"));
+		}
+
+		if (bGif)
+			AssociateFileType(_T("gif"));
+		else
+			UnassociateFileType(_T("gif"));
+
+
+		// Audio
+
+		if (bAif)
+		{
+			AssociateFileType(_T("aif"));
+			AssociateFileType(_T("aiff"));
+		}
+		else
+		{
+			UnassociateFileType(_T("aif"));
+			UnassociateFileType(_T("aiff"));
+		}
+
+		if (bAu)
+			AssociateFileType(_T("au"));
+		else
+			UnassociateFileType(_T("au"));
+
+		if (bMidi)
+		{
+			AssociateFileType(_T("mid"));
+			AssociateFileType(_T("rmi"));
+		}
+		else
+		{
+			UnassociateFileType(_T("mid"));
+			UnassociateFileType(_T("rmi"));
+		}
+
+		if (bMp3)
+			AssociateFileType(_T("mp3"));
+		else
+			UnassociateFileType(_T("mp3"));
+
+		if (bWav)
+			AssociateFileType(_T("wav"));
+		else
+			UnassociateFileType(_T("wav"));
+
+		if (bWma)
+			AssociateFileType(_T("wma"));
+		else
+			UnassociateFileType(_T("wma"));
+
+		if (bCda)
+			AssociateFileType(_T("cda"));
+		else
+			UnassociateFileType(_T("cda"));
+
+		// Others
+
+		if (bAvi)
+		{
+			AssociateFileType(_T("avi"));
+			AssociateFileType(_T("divx"));
+		}
+		else
+		{
+			UnassociateFileType(_T("avi"));
+			UnassociateFileType(_T("divx"));
+		}
+
+		if (bZip)
+			AssociateFileType(_T("zip"));
+		else
+			UnassociateFileType(_T("zip"));
+
+		// Notify Changes
+		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+	}
+}
+
 BOOL CUImagerApp::IsFileTypeAssociated(CString sExt)
 {
 	// Program Name & Path
@@ -5814,9 +5985,12 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 	// My Application Name
 	CString sMyFileApplicationName = CString(szProgName) + CString(szProgExt);
 
-	////////////////////
-	// Global Setting //
-	////////////////////
+	////////////////////////////////////////////////////////////////
+	// Global Setting for older systems, with newer systems       //
+	// the HKEY_CLASSES_ROOT is under the HKEY_CURRENT_USER.      //
+	// Beginning with Vista or higher it is even more complicate, //
+	// everything is mixed up because of virtualization...        //
+	////////////////////////////////////////////////////////////////
 	CString sCurrentFileClassName = ::GetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""));
 	
 	// Another Program or no Program is associated with the given extension
@@ -5850,7 +6024,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 
 		// ProgID
 		CString sCurrentUserProgID = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("ProgID"));
-		if (sCurrentUserProgID.CompareNoCase(sMyFileClassName) != 0)
+		if (sCurrentUserProgID != _T("") && sCurrentUserProgID.CompareNoCase(sMyFileClassName) != 0)
 		{
 			// Store Previous File Association in my UninstallUserProgID for Restore
 			WriteProfileString(_T("UninstallUserProgID"), sExtNoPoint, sCurrentUserProgID);
@@ -5868,7 +6042,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 		// Application
 		// (All Applications should be Registered under HKEY_CLASSES_ROOT\\Applications with name and extension like uImager.exe)
 		CString sCurrentUserApplication = ::GetRegistryStringValue(HKEY_CURRENT_USER, sCurrentUserFileExtsPath, _T("Application"));
-		if (sCurrentUserApplication.CompareNoCase(sMyFileApplicationName) != 0)
+		if (sCurrentUserApplication != _T("") && sCurrentUserApplication.CompareNoCase(sMyFileApplicationName) != 0)
 		{
 			// Store Previous File Association in my UninstallUserApplication for Restore
 			WriteProfileString(_T("UninstallUserApplication"), sExtNoPoint, sCurrentUserApplication);
@@ -5896,6 +6070,21 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 	IDR_BIGPICTURE			6
 	IDR_BIGPICTURE_NOHQ		7
 	IDI_ZIP					8
+	IDR_VIDEODEVICE         9
+	IDI_DEVICE              10
+	IDI_MAGNIFYPLUS         11
+	IDI_MAGNIFY             12
+	IDI_MAGNIFYMINUS        13
+	IDI_PLAY                14
+	IDI_STOP                15
+	IDI_PAUSE               16
+	IDI_BMP                 17
+	IDI_GIF                 18
+	IDI_JPG                 19
+	IDI_TIF                 20
+	IDI_PNG                 21
+	IDI_PCX                 22
+	IDI_EMF					23
 	*/
 
 	// Zip
@@ -5963,7 +6152,22 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 	// Graphics
 	else
 	{
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",4"));
+		if (sExtNoPoint == _T("bmp"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",17"));
+		else if (sExtNoPoint == _T("gif"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
+		else if (sExtNoPoint == _T("jpg") || sExtNoPoint == _T("jpeg") || sExtNoPoint == _T("jpe") || sExtNoPoint == _T("thm"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
+		else if (sExtNoPoint == _T("tif") || sExtNoPoint == _T("tiff") || sExtNoPoint == _T("jfx"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));
+		else if (sExtNoPoint == _T("png"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",21"));
+		else if (sExtNoPoint == _T("pcx"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",22"));
+		else if (sExtNoPoint == _T("emf"))
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",23"));
+		else
+			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",4"));
 
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
 								sMyFileClassName +

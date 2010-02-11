@@ -33,6 +33,7 @@ Function AddFileAssociation
 	  WriteRegStr HKCR ".$FILEEXTENSION\OpenWithProgids" $CURRENT_GLOBALLEVEL_FILECLASSNAME ""
     
 UserLevelProgID:
+  StrCmp $CURRENT_PROGIDUSERLEVEL "" UserLevelApplication 0
   StrCmp $CURRENT_PROGIDUSERLEVEL MYFILECLASSNAME UserLevelApplication 0
     ; Store Previous File Association in my UninstallUserProgID for Restore
     WriteRegStr HKCU "Software\Contaware\${APPNAME_NOEXT}\UninstallUserProgID" $FILEEXTENSION $CURRENT_PROGIDUSERLEVEL
@@ -47,6 +48,7 @@ UserLevelProgID:
 	  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.$FILEEXTENSION\OpenWithProgids" $CURRENT_PROGIDUSERLEVEL ""
       
 UserLevelApplication:
+  StrCmp $CURRENT_APPLICATIONUSERLEVEL "" ShellCommands 0
   StrCmp $CURRENT_APPLICATIONUSERLEVEL "${APPNAME_EXT}" ShellCommands 0
     ; Store Previous File Association in my UninstallUserApplication for Restore
     WriteRegStr HKCU "Software\Contaware\${APPNAME_NOEXT}\UninstallUserApplication" $FILEEXTENSION $CURRENT_APPLICATIONUSERLEVEL
@@ -58,7 +60,7 @@ ShellCommands:
     ; Description, Shown In Explorer
 	WriteRegStr HKCR $MYFILECLASSNAME "" "${APPNAME_NOEXT} $FILEEXTENSION file"
 	
-	; Shell Open Command, Icon order
+	; Shell Open Command, Icons order
 	;IDR_MAINFRAME			0
 	;IDR_AUDIOMCI			1
 	;IDR_CDAUDIO			2
@@ -68,6 +70,21 @@ ShellCommands:
 	;IDR_BIGPICTURE			6
 	;IDR_BIGPICTURE_NOHQ	7
 	;IDI_ZIP				8
+	;IDR_VIDEODEVICE        9
+	;IDI_DEVICE             10
+	;IDI_MAGNIFYPLUS        11
+	;IDI_MAGNIFY            12
+	;IDI_MAGNIFYMINUS       13
+	;IDI_PLAY               14
+	;IDI_STOP               15
+	;IDI_PAUSE              16
+	;IDI_BMP                17
+	;IDI_GIF                18
+	;IDI_JPG                19
+	;IDI_TIF                20
+	;IDI_PNG                21
+	;IDI_PCX                22
+	;IDI_EMF				23
 
 ; Zip
 StrCmp $FILEEXTENSION "zip" 0 ZipExtensionEnd
@@ -109,7 +126,57 @@ VideoExtension:
 VideoExtensionEnd:
 
 ; Graphics
+StrCmp $FILEEXTENSION "bmp" 0 GifExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},17"
+  goto GraphicsExtensionShell
+GifExtension:
+StrCmp $FILEEXTENSION "gif" 0 JpgExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},18"
+  goto GraphicsExtensionShell
+JpgExtension:
+  StrCmp $FILEEXTENSION "jpg" 0 JpegExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
+  goto GraphicsExtensionShell
+JpegExtension:
+  StrCmp $FILEEXTENSION "jpeg" 0 JpeExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
+  goto GraphicsExtensionShell
+JpeExtension:
+  StrCmp $FILEEXTENSION "jpe" 0 ThmExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
+  goto GraphicsExtensionShell
+ThmExtension:
+  StrCmp $FILEEXTENSION "thm" 0 TifExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},19"
+  goto GraphicsExtensionShell
+TifExtension:
+  StrCmp $FILEEXTENSION "tif" 0 TiffExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},20"
+  goto GraphicsExtensionShell
+TiffExtension:
+  StrCmp $FILEEXTENSION "tiff" 0 JfxExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},20"
+  goto GraphicsExtensionShell
+JfxExtension:
+  StrCmp $FILEEXTENSION "jfx" 0 PngExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},20"
+  goto GraphicsExtensionShell
+PngExtension:
+  StrCmp $FILEEXTENSION "png" 0 PcxExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},21"
+  goto GraphicsExtensionShell
+PcxExtension:
+  StrCmp $FILEEXTENSION "pcx" 0 EmfExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},22"
+  goto GraphicsExtensionShell
+EmfExtension:
+  StrCmp $FILEEXTENSION "emf" 0 NoKnownExtension
+  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},23"
+  goto GraphicsExtensionShell
+NoKnownExtension:
   WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},4"
+  
+GraphicsExtensionShell:
   WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
   WriteRegStr HKCR "$MYFILECLASSNAME\shell\edit\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
   WriteRegStr HKCR "$MYFILECLASSNAME\shell\print\command" "" '"$INSTDIR\${APPNAME_EXT}" /p "%1"'

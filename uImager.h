@@ -605,6 +605,7 @@ public:
 	BOOL IsDoc(CUImagerDoc* pDoc);
 
 	// File Association Functions
+	void UpdateFileAssociations();
 	BOOL IsFileTypeAssociated(CString sExt);
 	BOOL AssociateFileType(CString sExt);
 	BOOL UnassociateFileType(CString sExt);
@@ -643,6 +644,9 @@ public:
 
 	// First time ever that the App runs or after a uninstall
 	BOOL m_bFirstRunEver;
+
+	// Silent install
+	BOOL m_bSilentInstall;
 
 	// Hide Mainframe
 	// m_nCmdShow only could be used,

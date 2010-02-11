@@ -1593,6 +1593,10 @@ SOURCE=.\res\Bitstream_Vera_11.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\bmp.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\cdaudiodoc.ico
 # End Source File
 # Begin Source File
@@ -1609,6 +1613,14 @@ SOURCE=.\res\DragDropSingle.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\emf.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\gif.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\grab_closed.cur
 # End Source File
 # Begin Source File
@@ -1622,6 +1634,10 @@ SOURCE=.\res\hand.cur
 # Begin Source File
 
 SOURCE=.\res\HeaderArrows.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\jpg.ico
 # End Source File
 # Begin Source File
 
@@ -1649,6 +1665,10 @@ SOURCE=.\res\pause.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\pcx.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\picture.bmp
 # End Source File
 # Begin Source File
@@ -1665,6 +1685,10 @@ SOURCE=.\res\play.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\png.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\selectcolor.cur
 # End Source File
 # Begin Source File
@@ -1674,6 +1698,10 @@ SOURCE=.\res\stop.ico
 # Begin Source File
 
 SOURCE=.\res\TeleTextDH_26.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\tif.ico
 # End Source File
 # Begin Source File
 
