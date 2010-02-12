@@ -1,4 +1,4 @@
-﻿Copyright © 2005-2009 Oliver Pfister, Switzerland
+﻿Copyright © 2005-2010 Oliver Pfister, Switzerland
 By installing ContaCam (henceforth "software"), you are agreeing to be bound
 by the terms and conditions of this license.
 

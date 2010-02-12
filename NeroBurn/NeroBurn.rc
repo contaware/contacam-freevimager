@@ -101,7 +101,7 @@ IDD_NEROBURN_DIALOG DIALOGEX 0, 0, 300, 201
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Burn With Nero"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Exit",IDOK,253,63,40,16
     COMBOBOX        IDC_DEVICES,14,18,224,103,CBS_DROPDOWNLIST | CBS_SORT | 
@@ -147,7 +147,7 @@ BEGIN
             VALUE "FileDescription", "NeroBurn\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "NeroBurn\0"
-            VALUE "LegalCopyright", "Copyright (C) 2009 Contaware\0"
+            VALUE "LegalCopyright", "Copyright (C) 2010 Contaware\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "NeroBurn.exe\0"
             VALUE "PrivateBuild", "\0"

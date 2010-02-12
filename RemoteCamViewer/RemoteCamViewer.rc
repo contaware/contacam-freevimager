@@ -169,7 +169,7 @@ BEGIN
             VALUE "FileDescription", "RemoteCamViewer for RemoteCam Application\0"
             VALUE "FileVersion", "2, 0, 0, 0\0"
             VALUE "InternalName", "RemoteCamViewer\0"
-            VALUE "LegalCopyright", "Copyright (C) 2009\0"
+            VALUE "LegalCopyright", "Copyright (C) 2010\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "RemoteCamViewer.EXE\0"
             VALUE "PrivateBuild", "\0"
