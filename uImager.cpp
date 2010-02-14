@@ -893,10 +893,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 						// Enable autostart
 						Autostart(TRUE);
-
-						// Associate avi files
-						AssociateFileType(_T("avi"));
-						AssociateFileType(_T("divx"));
 #endif
 						// Reset first run ever flag
 						WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
@@ -5952,8 +5948,12 @@ BOOL CUImagerApp::IsFileTypeAssociated(CString sExt)
 	return (sCurrentFileClassName.CompareNoCase(sMyFileClassName) == 0);	
 }
 
-BOOL CUImagerApp::AssociateFileType(CString sExt)
+BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/)
 {
+	// Reset value
+	if (pbHasUserChoice)
+		*pbHasUserChoice = FALSE;
+
 	// Program Name & Path
 	TCHAR szProgName[_MAX_FNAME];
 	TCHAR szProgExt[_MAX_EXT];
@@ -5986,10 +5986,13 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 	CString sMyFileApplicationName = CString(szProgName) + CString(szProgExt);
 
 	////////////////////////////////////////////////////////////////
-	// Global Setting for older systems, with newer systems       //
-	// the HKEY_CLASSES_ROOT is under the HKEY_CURRENT_USER.      //
-	// Beginning with Vista or higher it is even more complicate, //
-	// everything is mixed up because of virtualization...        //
+	// Global Setting for classic systems.                        //
+	// Beginning with Vista or higher (because of virtualization) //
+	// the HKEY_CLASSES_ROOT is in some cases mapped to           //
+	// HKEY_CURRENT_USER instead of HKEY_LOCAL_MACHINE.           //
+	// For classes root operations the following set/delete       //
+	// registry functions try the local machine place then if     //
+	// they fail the current user location is used.               //
 	////////////////////////////////////////////////////////////////
 	CString sCurrentFileClassName = ::GetRegistryStringValue(HKEY_CLASSES_ROOT, sExt, _T(""));
 	
@@ -6052,10 +6055,15 @@ BOOL CUImagerApp::AssociateFileType(CString sExt)
 		}
 
 		// NOTE:
-		// There is also a key under sCurrentUserFileExtsPath called UserChoice
-		// that can have a ProgID value: this has the highest priority and can
-		// prevent from being associated. Vista or higher do not let you delete
-		// it, even as administrator...you can delete it with regedit.exe
+		// For Vista or higher there is also a key under sCurrentUserFileExtsPath
+		// called UserChoice that can have a ProgID value: this has the highest priority
+		// and can prevent from being associated. Vista or higher do not let you delete
+		// it, even as administrator ... we can delete it with regedit.exe
+		if (pbHasUserChoice)
+		{
+			if (::IsRegistryKey(HKEY_CURRENT_USER, sCurrentUserFileExtsPath + _T("\\UserChoice")))
+				*pbHasUserChoice = TRUE;
+		}
 	}
 
 	// Create My Class Name or ProgID

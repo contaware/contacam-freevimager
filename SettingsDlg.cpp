@@ -163,140 +163,230 @@ void CSettingsDlg::OnOK()
 {
 	CDialog::OnOK(); // It calls UpdateData(TRUE) for us
 
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+
 	BeginWaitCursor();
 
 	// File type association
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	if (pApp->m_bUseSettings)
 	{
+		// Init vars
+		BOOL bBmpHasUserChoice = FALSE;  BOOL bJpgHasUserChoice = FALSE;  BOOL bJpegHasUserChoice = FALSE;
+		BOOL bJpeHasUserChoice = FALSE;  BOOL bThmHasUserChoice = FALSE;  BOOL bPcxHasUserChoice = FALSE;
+		BOOL bEmfHasUserChoice = FALSE;  BOOL bPngHasUserChoice = FALSE;  BOOL bTifHasUserChoice = FALSE;
+		BOOL bTiffHasUserChoice = FALSE; BOOL bJfxHasUserChoice = FALSE;  BOOL bGifHasUserChoice = FALSE;
+		BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
+		BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
+		BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;  BOOL bCdaHasUserChoice = FALSE;
+		BOOL bAviHasUserChoice = FALSE;  BOOL bDivxHasUserChoice = FALSE; BOOL bZipHasUserChoice = FALSE;
+
 		// Graphics
 
 		if (m_bCheckBmp)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("bmp"));
+			pApp->AssociateFileType(_T("bmp"), &bBmpHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("bmp"));
+			pApp->UnassociateFileType(_T("bmp"));
 
 		if (m_bCheckJpeg)
 		{
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("jpg"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("jpeg"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("jpe"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("thm"));
+			pApp->AssociateFileType(_T("jpg"), &bJpgHasUserChoice);
+			pApp->AssociateFileType(_T("jpeg"), &bJpegHasUserChoice);
+			pApp->AssociateFileType(_T("jpe"), &bJpeHasUserChoice);
+			pApp->AssociateFileType(_T("thm"), &bThmHasUserChoice);
 		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("jpg"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("jpeg"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("jpe"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("thm"));
+			pApp->UnassociateFileType(_T("jpg"));
+			pApp->UnassociateFileType(_T("jpeg"));
+			pApp->UnassociateFileType(_T("jpe"));
+			pApp->UnassociateFileType(_T("thm"));
 		}
 
 		if (m_bCheckPcx)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("pcx"));
+			pApp->AssociateFileType(_T("pcx"), &bPcxHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("pcx"));
+			pApp->UnassociateFileType(_T("pcx"));
 
 		if (m_bCheckEmf)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("emf"));
+			pApp->AssociateFileType(_T("emf"), &bEmfHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("emf"));
+			pApp->UnassociateFileType(_T("emf"));
 
 		if (m_bCheckPng)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("png"));
+			pApp->AssociateFileType(_T("png"), &bPngHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("png"));
+			pApp->UnassociateFileType(_T("png"));
 
 		if (m_bCheckTiff)
 		{
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("tif"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("tiff"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("jfx"));
+			pApp->AssociateFileType(_T("tif"), &bTifHasUserChoice);
+			pApp->AssociateFileType(_T("tiff"), &bTiffHasUserChoice);
+			pApp->AssociateFileType(_T("jfx"), &bJfxHasUserChoice);
 		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("tif"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("tiff"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("jfx"));
+			pApp->UnassociateFileType(_T("tif"));
+			pApp->UnassociateFileType(_T("tiff"));
+			pApp->UnassociateFileType(_T("jfx"));
 		}
 
 		if (m_bCheckGif)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("gif"));
+			pApp->AssociateFileType(_T("gif"), &bGifHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("gif"));
+			pApp->UnassociateFileType(_T("gif"));
 
 
 		// Audio
 
 		if (m_bCheckAif)
 		{
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("aif"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("aiff"));
+			pApp->AssociateFileType(_T("aif"), &bAifHasUserChoice);
+			pApp->AssociateFileType(_T("aiff"), &bAiffHasUserChoice);
 		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("aif"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("aiff"));
+			pApp->UnassociateFileType(_T("aif"));
+			pApp->UnassociateFileType(_T("aiff"));
 		}
 
 		if (m_bCheckAu)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("au"));
+			pApp->AssociateFileType(_T("au"), &bAuHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("au"));
+			pApp->UnassociateFileType(_T("au"));
 
 		if (m_bCheckMidi)
 		{
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("mid"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("rmi"));
+			pApp->AssociateFileType(_T("mid"), &bMidHasUserChoice);
+			pApp->AssociateFileType(_T("rmi"), &bRmiHasUserChoice);
 		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("mid"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("rmi"));
+			pApp->UnassociateFileType(_T("mid"));
+			pApp->UnassociateFileType(_T("rmi"));
 		}
 
 		if (m_bCheckMp3)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("mp3"));
+			pApp->AssociateFileType(_T("mp3"), &bMp3HasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("mp3"));
+			pApp->UnassociateFileType(_T("mp3"));
 
 		if (m_bCheckWav)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("wav"));
+			pApp->AssociateFileType(_T("wav"), &bWavHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("wav"));
+			pApp->UnassociateFileType(_T("wav"));
 
 		if (m_bCheckWma)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("wma"));
+			pApp->AssociateFileType(_T("wma"), &bWmaHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("wma"));
+			pApp->UnassociateFileType(_T("wma"));
 
 		if (m_bCheckCda)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("cda"));
+			pApp->AssociateFileType(_T("cda"), &bCdaHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("cda"));
+			pApp->UnassociateFileType(_T("cda"));
 
 		// Others
 
 		if (m_bCheckAvi)
 		{
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("avi"));
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("divx"));
+			pApp->AssociateFileType(_T("avi"), &bAviHasUserChoice);
+			pApp->AssociateFileType(_T("divx"), &bDivxHasUserChoice);
 		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("avi"));
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("divx"));
+			pApp->UnassociateFileType(_T("avi"));
+			pApp->UnassociateFileType(_T("divx"));
 		}
 
 		if (m_bCheckZip)
-			((CUImagerApp*)::AfxGetApp())->AssociateFileType(_T("zip"));
+			pApp->AssociateFileType(_T("zip"), &bZipHasUserChoice);
 		else
-			((CUImagerApp*)::AfxGetApp())->UnassociateFileType(_T("zip"));
+			pApp->UnassociateFileType(_T("zip"));
+
+		// For Vista or higher there is also a key under
+		// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ext
+		// called UserChoice that can have a ProgID value: this has the highest priority and can
+		// prevent from being associated. Vista or higher do not let you delete it, even as
+		// administrator ... we can delete it with regedit.exe:
+		if (g_bWinVistaOrHigher &&
+			(bBmpHasUserChoice || bJpgHasUserChoice	|| bJpegHasUserChoice	|| bJpeHasUserChoice ||
+			bThmHasUserChoice || bPcxHasUserChoice	|| bEmfHasUserChoice	|| bPngHasUserChoice ||
+			bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
+			bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
+			bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice ||
+			bCdaHasUserChoice || bAviHasUserChoice	|| bDivxHasUserChoice	|| bZipHasUserChoice))
+		{
+			try
+			{
+				CString sTempRegFileName = ::MakeTempFileName(pApp->GetAppTempDir(), _T("extfix.reg"));
+				CStdioFile RegFile(sTempRegFileName, CFile::modeCreate | CFile::modeWrite | CFile::typeText);
+				RegFile.WriteString(_T("REGEDIT4\n\n"));
+				if (bBmpHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.bmp\\UserChoice]\n"));
+				if (bJpgHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpg\\UserChoice]\n"));
+				if (bJpegHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpeg\\UserChoice]\n"));
+				if (bJpeHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpe\\UserChoice]\n"));
+				if (bThmHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.thm\\UserChoice]\n"));
+				if (bPcxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.pcx\\UserChoice]\n"));
+				if (bEmfHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.emf\\UserChoice]\n"));
+				if (bPngHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.png\\UserChoice]\n"));
+				if (bTifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tif\\UserChoice]\n"));
+				if (bTiffHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tiff\\UserChoice]\n"));
+				if (bJfxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jfx\\UserChoice]\n"));
+				if (bGifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.gif\\UserChoice]\n"));
+				if (bAifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aif\\UserChoice]\n"));
+				if (bAiffHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aiff\\UserChoice]\n"));
+				if (bAuHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.au\\UserChoice]\n"));
+				if (bMidHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mid\\UserChoice]\n"));
+				if (bRmiHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.rmi\\UserChoice]\n"));
+				if (bMp3HasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mp3\\UserChoice]\n"));
+				if (bWavHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wav\\UserChoice]\n"));
+				if (bWmaHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
+				if (bCdaHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cda\\UserChoice]\n"));
+				if (bAviHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.avi\\UserChoice]\n"));
+				if (bDivxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.divx\\UserChoice]\n"));
+				if (bZipHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.zip\\UserChoice]\n"));
+				RegFile.Close();
+				CString sParams;
+				sParams.Format(_T("/S \"%s\""), sTempRegFileName);
+				::ExecHiddenApp(_T("regedit.exe"), sParams, TRUE);
+				::DeleteFile(sTempRegFileName);
+			}
+			catch (CFileException* e)
+			{
+				e->Delete();
+			}
+		}
 
 		// Notify Changes
 		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 	}
 
 	// Single Instance
-	if (m_bSingleInstance != ((CUImagerApp*)::AfxGetApp())->m_bSingleInstance)
+	if (m_bSingleInstance != pApp->m_bSingleInstance)
 	{
 #ifdef _UNICODE
 		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
@@ -311,45 +401,45 @@ void CSettingsDlg::OnOK()
 		}
 		// else the constructor above closed the handle of the mm file
 	}
-	((CUImagerApp*)::AfxGetApp())->m_bSingleInstance = m_bSingleInstance;
+	pApp->m_bSingleInstance = m_bSingleInstance;
 	
 	// Tray Icon
-	((CUImagerApp*)::AfxGetApp())->m_bTrayIcon = m_bTrayIcon;
+	pApp->m_bTrayIcon = m_bTrayIcon;
 	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
 
 	// Autostart
-	((CUImagerApp*)::AfxGetApp())->Autostart(m_bAutostart);
+	pApp->Autostart(m_bAutostart);
 
 	// ESC to exit the program
-	((CUImagerApp*)::AfxGetApp())->m_bEscExit = m_bEscExit;
+	pApp->m_bEscExit = m_bEscExit;
 
 	// Disable opening external program (for pdf, swf)
-	((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg = m_bDisableExtProg;
+	pApp->m_bDisableExtProg = m_bDisableExtProg;
 
 	// Store settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	if (pApp->m_bUseSettings)
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+		if (pApp->m_bUseRegistry)
 		{
-			::AfxGetApp()->WriteProfileInt(	_T("GeneralApp"),
-											_T("SingleInstance"),
-											m_bSingleInstance);
-			::AfxGetApp()->WriteProfileInt(	_T("GeneralApp"),
-											_T("TrayIcon"),
-											m_bTrayIcon);
-			::AfxGetApp()->WriteProfileInt(	_T("GeneralApp"),
-											_T("ESCExit"),
-											m_bEscExit);
-			::AfxGetApp()->WriteProfileInt(	_T("GeneralApp"),
-											_T("DisableExtProg"),
-											m_bDisableExtProg);
+			pApp->WriteProfileInt(	_T("GeneralApp"),
+									_T("SingleInstance"),
+									m_bSingleInstance);
+			pApp->WriteProfileInt(	_T("GeneralApp"),
+									_T("TrayIcon"),
+									m_bTrayIcon);
+			pApp->WriteProfileInt(	_T("GeneralApp"),
+									_T("ESCExit"),
+									m_bEscExit);
+			pApp->WriteProfileInt(	_T("GeneralApp"),
+									_T("DisableExtProg"),
+									m_bDisableExtProg);
 		}
 		else
 		{
 			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::AfxGetApp()->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, ::AfxGetApp()->m_pszProfileName); // recache
-			::CopyFile(::AfxGetApp()->m_pszProfileName, sTempFileName, FALSE);
+			CString sTempFileName = ::MakeTempFileName(pApp->GetAppTempDir(), pApp->m_pszProfileName);
+			::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
+			::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
 			::WriteProfileIniInt(	_T("GeneralApp"),
 									_T("SingleInstance"),
 									m_bSingleInstance,
@@ -368,9 +458,9 @@ void CSettingsDlg::OnOK()
 									sTempFileName);
 
 			// Move it
-			::DeleteFile(::AfxGetApp()->m_pszProfileName);
+			::DeleteFile(pApp->m_pszProfileName);
 			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, ::AfxGetApp()->m_pszProfileName);
+			::MoveFile(sTempFileName, pApp->m_pszProfileName);
 		}
 	}
 

@@ -607,7 +607,7 @@ public:
 	// File Association Functions
 	void UpdateFileAssociations();
 	BOOL IsFileTypeAssociated(CString sExt);
-	BOOL AssociateFileType(CString sExt);
+	BOOL AssociateFileType(CString sExt, BOOL* pbHasUserChoice = NULL);
 	BOOL UnassociateFileType(CString sExt);
 
 	// Application Temporary Directory

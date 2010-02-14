@@ -218,19 +218,29 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// File type association
 	if (pApp->m_bUseSettings)
 	{
+		// Init vars
+		BOOL bBmpHasUserChoice = FALSE;  BOOL bJpgHasUserChoice = FALSE;  BOOL bJpegHasUserChoice = FALSE;
+		BOOL bJpeHasUserChoice = FALSE;  BOOL bThmHasUserChoice = FALSE;  BOOL bPcxHasUserChoice = FALSE;
+		BOOL bEmfHasUserChoice = FALSE;  BOOL bPngHasUserChoice = FALSE;  BOOL bTifHasUserChoice = FALSE;
+		BOOL bTiffHasUserChoice = FALSE; BOOL bJfxHasUserChoice = FALSE;  BOOL bGifHasUserChoice = FALSE;
+		BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
+		BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
+		BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;  BOOL bCdaHasUserChoice = FALSE;
+		BOOL bAviHasUserChoice = FALSE;  BOOL bDivxHasUserChoice = FALSE; BOOL bZipHasUserChoice = FALSE;
+
 		// Graphics
 
 		if (m_bCheckBmp)
-			pApp->AssociateFileType(_T("bmp"));
+			pApp->AssociateFileType(_T("bmp"), &bBmpHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("bmp"));
 
 		if (m_bCheckJpeg)
 		{
-			pApp->AssociateFileType(_T("jpg"));
-			pApp->AssociateFileType(_T("jpeg"));
-			pApp->AssociateFileType(_T("jpe"));
-			pApp->AssociateFileType(_T("thm"));
+			pApp->AssociateFileType(_T("jpg"), &bJpgHasUserChoice);
+			pApp->AssociateFileType(_T("jpeg"), &bJpegHasUserChoice);
+			pApp->AssociateFileType(_T("jpe"), &bJpeHasUserChoice);
+			pApp->AssociateFileType(_T("thm"), &bThmHasUserChoice);
 		}
 		else
 		{
@@ -241,25 +251,25 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 
 		if (m_bCheckPcx)
-			pApp->AssociateFileType(_T("pcx"));
+			pApp->AssociateFileType(_T("pcx"), &bPcxHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("pcx"));
 
 		if (m_bCheckEmf)
-			pApp->AssociateFileType(_T("emf"));
+			pApp->AssociateFileType(_T("emf"), &bEmfHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("emf"));
 
 		if (m_bCheckPng)
-			pApp->AssociateFileType(_T("png"));
+			pApp->AssociateFileType(_T("png"), &bPngHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("png"));
 
 		if (m_bCheckTiff)
 		{
-			pApp->AssociateFileType(_T("tif"));
-			pApp->AssociateFileType(_T("tiff"));
-			pApp->AssociateFileType(_T("jfx"));
+			pApp->AssociateFileType(_T("tif"), &bTifHasUserChoice);
+			pApp->AssociateFileType(_T("tiff"), &bTiffHasUserChoice);
+			pApp->AssociateFileType(_T("jfx"), &bJfxHasUserChoice);
 		}
 		else
 		{
@@ -269,7 +279,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 
 		if (m_bCheckGif)
-			pApp->AssociateFileType(_T("gif"));
+			pApp->AssociateFileType(_T("gif"), &bGifHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("gif"));
 
@@ -278,8 +288,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 
 		if (m_bCheckAif)
 		{
-			pApp->AssociateFileType(_T("aif"));
-			pApp->AssociateFileType(_T("aiff"));
+			pApp->AssociateFileType(_T("aif"), &bAifHasUserChoice);
+			pApp->AssociateFileType(_T("aiff"), &bAiffHasUserChoice);
 		}
 		else
 		{
@@ -288,14 +298,14 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 
 		if (m_bCheckAu)
-			pApp->AssociateFileType(_T("au"));
+			pApp->AssociateFileType(_T("au"), &bAuHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("au"));
 
 		if (m_bCheckMidi)
 		{
-			pApp->AssociateFileType(_T("mid"));
-			pApp->AssociateFileType(_T("rmi"));
+			pApp->AssociateFileType(_T("mid"), &bMidHasUserChoice);
+			pApp->AssociateFileType(_T("rmi"), &bRmiHasUserChoice);
 		}
 		else
 		{
@@ -304,22 +314,22 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 
 		if (m_bCheckMp3)
-			pApp->AssociateFileType(_T("mp3"));
+			pApp->AssociateFileType(_T("mp3"), &bMp3HasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("mp3"));
 
 		if (m_bCheckWav)
-			pApp->AssociateFileType(_T("wav"));
+			pApp->AssociateFileType(_T("wav"), &bWavHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("wav"));
 
 		if (m_bCheckWma)
-			pApp->AssociateFileType(_T("wma"));
+			pApp->AssociateFileType(_T("wma"), &bWmaHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("wma"));
 
 		if (m_bCheckCda)
-			pApp->AssociateFileType(_T("cda"));
+			pApp->AssociateFileType(_T("cda"), &bCdaHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("cda"));
 
@@ -327,8 +337,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 
 		if (m_bCheckAvi)
 		{
-			pApp->AssociateFileType(_T("avi"));
-			pApp->AssociateFileType(_T("divx"));
+			pApp->AssociateFileType(_T("avi"), &bAviHasUserChoice);
+			pApp->AssociateFileType(_T("divx"), &bDivxHasUserChoice);
 		}
 		else
 		{
@@ -337,9 +347,87 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 
 		if (m_bCheckZip)
-			pApp->AssociateFileType(_T("zip"));
+			pApp->AssociateFileType(_T("zip"), &bZipHasUserChoice);
 		else
 			pApp->UnassociateFileType(_T("zip"));
+
+		// For Vista or higher there is also a key under
+		// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ext
+		// called UserChoice that can have a ProgID value: this has the highest priority and can
+		// prevent from being associated. Vista or higher do not let you delete it, even as
+		// administrator ... we can delete it with regedit.exe:
+		if (g_bWinVistaOrHigher &&
+			(bBmpHasUserChoice || bJpgHasUserChoice	|| bJpegHasUserChoice	|| bJpeHasUserChoice ||
+			bThmHasUserChoice || bPcxHasUserChoice	|| bEmfHasUserChoice	|| bPngHasUserChoice ||
+			bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
+			bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
+			bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice ||
+			bCdaHasUserChoice || bAviHasUserChoice	|| bDivxHasUserChoice	|| bZipHasUserChoice))
+		{
+			try
+			{
+				CString sTempRegFileName = ::MakeTempFileName(pApp->GetAppTempDir(), _T("extfix.reg"));
+				CStdioFile RegFile(sTempRegFileName, CFile::modeCreate | CFile::modeWrite | CFile::typeText);
+				RegFile.WriteString(_T("REGEDIT4\n\n"));
+				if (bBmpHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.bmp\\UserChoice]\n"));
+				if (bJpgHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpg\\UserChoice]\n"));
+				if (bJpegHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpeg\\UserChoice]\n"));
+				if (bJpeHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jpe\\UserChoice]\n"));
+				if (bThmHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.thm\\UserChoice]\n"));
+				if (bPcxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.pcx\\UserChoice]\n"));
+				if (bEmfHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.emf\\UserChoice]\n"));
+				if (bPngHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.png\\UserChoice]\n"));
+				if (bTifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tif\\UserChoice]\n"));
+				if (bTiffHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.tiff\\UserChoice]\n"));
+				if (bJfxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.jfx\\UserChoice]\n"));
+				if (bGifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.gif\\UserChoice]\n"));
+				if (bAifHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aif\\UserChoice]\n"));
+				if (bAiffHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.aiff\\UserChoice]\n"));
+				if (bAuHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.au\\UserChoice]\n"));
+				if (bMidHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mid\\UserChoice]\n"));
+				if (bRmiHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.rmi\\UserChoice]\n"));
+				if (bMp3HasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.mp3\\UserChoice]\n"));
+				if (bWavHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wav\\UserChoice]\n"));
+				if (bWmaHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
+				if (bCdaHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cda\\UserChoice]\n"));
+				if (bAviHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.avi\\UserChoice]\n"));
+				if (bDivxHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.divx\\UserChoice]\n"));
+				if (bZipHasUserChoice)
+					RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.zip\\UserChoice]\n"));
+				RegFile.Close();
+				CString sParams;
+				sParams.Format(_T("/S \"%s\""), sTempRegFileName);
+				::ExecHiddenApp(_T("regedit.exe"), sParams, TRUE);
+				::DeleteFile(sTempRegFileName);
+			}
+			catch (CFileException* e)
+			{
+				e->Delete();
+			}
+		}
 
 		// Notify Changes
 		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
@@ -422,8 +510,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
 		// Start stopping server
-		((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted = FALSE;
-		((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
+		pApp->m_bMicroApacheStarted = FALSE;
+		pApp->m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 
 		// Wait till shutdown
@@ -437,7 +525,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			// Start server
 			if (m_bStartMicroApache)
 			{
-				((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted = TRUE;
+				pApp->m_bMicroApacheStarted = TRUE;
 				if (!CVideoDeviceDoc::MicroApacheInitStart())
 				{
 					EndWaitCursor();
@@ -451,7 +539,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 					BeginWaitCursor();
 				}
 				else
-					((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+					pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 			}
 		}
 	}
