@@ -62,38 +62,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\uimager.ico"
-IDR_AUDIOMCI            ICON    DISCARDABLE     "res\\audiomcidoc.ico"
-IDR_CDAUDIO             ICON    DISCARDABLE     "res\\cdaudiodoc.ico"
-IDR_VIDEOAVI            ICON    DISCARDABLE     "res\\videoavidoc.ico"
-IDR_PICTURE             ICON    DISCARDABLE     "res\\picturedoc.ico"
-IDR_PICTURE_NOHQ        ICON    DISCARDABLE     "res\\picturedoc.ico"
-IDR_BIGPICTURE          ICON    DISCARDABLE     "res\\picturedoc.ico"
-IDR_BIGPICTURE_NOHQ     ICON    DISCARDABLE     "res\\picturedoc.ico"
-IDI_ZIP                 ICON    DISCARDABLE     "res\\zip.ico"
-IDR_VIDEODEVICE         ICON    DISCARDABLE     "res\\videodevicedoc.ico"
-IDI_DEVICE              ICON    DISCARDABLE     "res\\device.ico"
-IDI_MAGNIFYPLUS         ICON    DISCARDABLE     "res\\magnifyplus.ico"
-IDI_MAGNIFY             ICON    DISCARDABLE     "res\\magnifyp.ico"
-IDI_MAGNIFYMINUS        ICON    DISCARDABLE     "res\\magnifyminus.ico"
-IDI_PLAY                ICON    DISCARDABLE     "res\\play.ico"
-IDI_STOP                ICON    DISCARDABLE     "res\\stop.ico"
-IDI_PAUSE               ICON    DISCARDABLE     "res\\pause.ico"
-IDI_BMP                 ICON    DISCARDABLE     "res\\bmp.ico"
-IDI_GIF                 ICON    DISCARDABLE     "res\\gif.ico"
-IDI_JPG                 ICON    DISCARDABLE     "res\\jpg.ico"
-IDI_TIF                 ICON    DISCARDABLE     "res\\tif.ico"
-IDI_PNG                 ICON    DISCARDABLE     "res\\png.ico"
-IDI_PCX                 ICON    DISCARDABLE     "res\\pcx.ico"
-IDI_EMF                 ICON    DISCARDABLE     "res\\emf.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // Bitmap
 //
 

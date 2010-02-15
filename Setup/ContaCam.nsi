@@ -78,8 +78,8 @@ xpstyle on
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION FinishRunCB
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
-;!define MUI_ICON "..\res\uimager.ico"
-;!define MUI_UNICON "..\res\uimager.ico"
+;!define MUI_ICON "..\res\uimager_videodevicedoc.ico"
+;!define MUI_UNICON "..\res\uimager_videodevicedoc.ico"
 
 ;--------------------------------
 
