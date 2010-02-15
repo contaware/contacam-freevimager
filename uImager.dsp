@@ -1713,7 +1713,11 @@ SOURCE=.\res\toolbarvideodevicedoc.bmp
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\uImager.ico
+SOURCE=.\res\uimager.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\uimager_videodevicedoc.ico
 # End Source File
 # Begin Source File
 

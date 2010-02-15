@@ -5304,7 +5304,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\uImager.ico"
+				RelativePath="res\uimager.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\uimager_videodevicedoc.ico"
 				>
 			</File>
 			<File
