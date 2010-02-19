@@ -2405,6 +2405,7 @@
 #define IDC_BUTTON_THUMB_SIZE           1765
 #define IDS_STRING1765                  1765
 #define IDC_TEXT_DIR                    1766
+#define IDS_STRING1766                  1766
 #define IDC_TEXT_FILE                   1767
 #define IDC_WARNING                     1768
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768

@@ -600,11 +600,132 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	return TRUE;
 }
 
+// Recursive Directory Content Move
+// Note: the szFromDir directory tree (without files) is left behind!
+#define MOVEDIRCONTENT_FREE \
+if (pInfo) delete pInfo;\
+if (srcname) delete [] srcname;\
+if (dstname) delete [] dstname;
+BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/)
+{
+	// Create dir
+	if (!IsExistingDir(szToDir))
+	{
+		if (!CreateDir(szToDir))
+			return FALSE;
+	}
+
+	// Vars
+	HANDLE hp;
+	BOOL bSrcBackslashEnding, bDstBackslashEnding;
+	// Allocate on heap because we are a recursive function,
+	// using the stack can overflow the stack!
+	WIN32_FIND_DATA* pInfo = NULL;
+	TCHAR* srcname = NULL;
+	TCHAR* dstname = NULL;
+	pInfo = new WIN32_FIND_DATA;
+	if (!pInfo)
+	{
+		MOVEDIRCONTENT_FREE;
+		return FALSE;
+	}
+
+	// Src
+	srcname = new TCHAR[MAX_PATH];
+	if (!srcname)
+	{
+		MOVEDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (_tcslen(szFromDir) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
+	{
+		MOVEDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (szFromDir[_tcslen(szFromDir) - 1] == _T('\\'))
+	{
+		bSrcBackslashEnding = TRUE;
+		_sntprintf(srcname, MAX_PATH - 1, _T("%s*"), szFromDir);
+		srcname[MAX_PATH - 1] = _T('\0');
+	}
+	else
+	{
+		bSrcBackslashEnding = FALSE;
+		_sntprintf(srcname, MAX_PATH - 1, _T("%s\\*"), szFromDir);
+		srcname[MAX_PATH - 1] = _T('\0');
+	}
+
+	// Dst
+	dstname = new TCHAR[MAX_PATH];
+	if (!dstname)
+	{
+		MOVEDIRCONTENT_FREE;
+		return FALSE;
+	}
+	if (szToDir[_tcslen(szToDir) - 1] == _T('\\'))
+		bDstBackslashEnding = TRUE;
+	else
+		bDstBackslashEnding = FALSE;
+
+	// Move
+    hp = FindFirstFile(srcname, pInfo);
+    if (!hp || (hp == INVALID_HANDLE_VALUE))
+	{
+		MOVEDIRCONTENT_FREE;
+        return FALSE;
+	}
+    do
+    {
+        if (pInfo->cFileName[1] == _T('\0') &&
+			pInfo->cFileName[0] == _T('.'))
+            continue;
+        else if (	pInfo->cFileName[2] == _T('\0')	&&
+					pInfo->cFileName[1] == _T('.')	&&
+					pInfo->cFileName[0] == _T('.'))
+            continue;
+		if (bSrcBackslashEnding)
+			_sntprintf(srcname, MAX_PATH - 1, _T("%s%s"), szFromDir, pInfo->cFileName);
+		else
+			_sntprintf(srcname, MAX_PATH - 1, _T("%s\\%s"), szFromDir, pInfo->cFileName);
+		srcname[MAX_PATH - 1] = _T('\0');
+		if (bDstBackslashEnding)
+			_sntprintf(dstname, MAX_PATH - 1, _T("%s%s"), szToDir, pInfo->cFileName);
+		else
+			_sntprintf(dstname, MAX_PATH - 1, _T("%s\\%s"), szToDir, pInfo->cFileName);
+		dstname[MAX_PATH - 1] = _T('\0');
+		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if (!MoveDirContent(srcname, dstname, bOverwriteIfExists))
+			{
+				FindClose(hp);
+				MOVEDIRCONTENT_FREE;
+				return FALSE;
+			}
+		}
+		else
+		{
+			if (_tcsicmp(srcname, dstname) != 0)
+			{
+				if (bOverwriteIfExists)
+					DeleteFile(dstname);
+				MoveFile(srcname, dstname);
+			}
+		}
+    }
+    while (FindNextFile(hp, pInfo));
+
+	// Clean-up
+	FindClose(hp);
+	MOVEDIRCONTENT_FREE;
+
+	return TRUE;
+}
+
 // Recursive Directory Content Deletion
 #define DELETEDIRCONTENT_FREE \
 if (pInfo) delete pInfo;\
 if (name) delete [] name;
-BOOL DeleteDirContent(LPCTSTR szDirName)
+BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles/*=FALSE*/)
 {
 	HANDLE hp;
 	BOOL bBackslashEnding;
@@ -667,7 +788,7 @@ BOOL DeleteDirContent(LPCTSTR szDirName)
 		}
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!DeleteDir(name))
+			if (!bOnlyFiles && !DeleteDir(name))
 			{
 				FindClose(hp);
 				DELETEDIRCONTENT_FREE;
@@ -866,6 +987,31 @@ BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/)
     FileOp.lpszProgressTitle = NULL; 
 	FileOp.fAnyOperationsAborted = FALSE; 
 	FileOp.wFunc = FO_RENAME;
+
+	return (SHFileOperation(&FileOp) == 0);
+}
+
+// Shell Move
+BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
+{
+	// pFrom and pTo have to be double NULL terminated! 
+	TCHAR pFrom[MAX_PATH+1];
+	TCHAR pTo[MAX_PATH+1];
+	memset(pFrom, 0, MAX_PATH+1);
+	memset(pTo, 0, MAX_PATH+1);
+	_tcsncpy(pFrom, szFromName, MAX_PATH);
+	_tcsncpy(pTo, szToName, MAX_PATH);
+
+	SHFILEOPSTRUCT FileOp;
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
+	FileOp.hwnd = NULL; 
+    FileOp.pFrom = pFrom;
+    FileOp.pTo = pTo;
+    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
+    FileOp.hNameMappings = NULL; 
+    FileOp.lpszProgressTitle = NULL; 
+	FileOp.fAnyOperationsAborted = FALSE; 
+	FileOp.wFunc = FO_MOVE;
 
 	return (SHFileOperation(&FileOp) == 0);
 }

@@ -3,12 +3,11 @@ MicroApache 2.0.xx README.TXT
 
 Website: http://microapache.amadis.sytes.net
 
-GPL Licence - See the enclosed gpl-licence.txt file or ZIP file
+License: see the enclosed apache-license.txt and php-license.txt files
 
-Source code is unchanged and available from http://www.apache.org
-
-Move and/or delete this file if you wish after reading
-Move and/or delete gpl-licence.txt after reading
+Source code is unchanged and available from: http://www.apache.org
+                                             and
+                                             http://www.php.net
 
 CGI Demo Programs
 =================

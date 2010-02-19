@@ -296,6 +296,9 @@ stopend:
   File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
   File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
   File "/oname=Tutorials\Getting_Started.js" "..\Tutorials\Getting_Started.js"
+  File "/oname=Tutorials\Device_Settings.htm" "..\Tutorials\Device_Settings.htm"
+  File "/oname=Tutorials\Device_Settings.swf" "..\Tutorials\Device_Settings.swf"
+  File "/oname=Tutorials\Device_Settings.js" "..\Tutorials\Device_Settings.js"
 !endif
   SetOutPath $INSTDIR\microapache
   File /r /x .svn "..\microapache\*.*"

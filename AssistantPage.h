@@ -59,6 +59,7 @@ protected:
 	CString m_sPhpConfigVersion;
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
+	void Rename();
 	void ApplySettings();
 	// Generated message map functions
 	//{{AFX_MSG(CAssistantPage)

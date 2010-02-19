@@ -56,6 +56,7 @@
 #define MICROAPACHE_INDEX_ROOTDIR_FILENAME				_T("index_rootdir.php")
 #define MICROAPACHE_LANGUAGES_DIR						_T("languages")
 #define MICROAPACHE_STYLE_DIR							_T("styles")
+#define MICROAPACHE_JS_DIR								_T("js")
 
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")

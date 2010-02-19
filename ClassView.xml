@@ -321,6 +321,7 @@
 <CLASS NAME="KSPROPERTY_TUNER_STANDARD_S"/>
 <CLASS NAME="KSPROPERTY_TUNER_STATUS_S"/>
 <CLASS NAME="CWindowInstance"/>
+<CLASS NAME="_SINSTANCE_DATA"/>
 <CLASS NAME="CAVDecoder"/>
 <CLASS NAME="CAVIFile"/>
 <CLASS NAME="CAVIPlay"/>
@@ -354,7 +355,6 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
-<CLASS NAME="_SINSTANCE_DATA"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">
@@ -378,13 +378,13 @@
 <FOLDER NAME="PropertySheets">
 <FOLDERS COUNT="0"/>
 <CLASSES COUNT="7">
-<CLASS NAME="CAssistantPage"/>
 <CLASS NAME="CColorDetectionPage"/>
 <CLASS NAME="CGeneralPage"/>
 <CLASS NAME="CMovementDetectionPage"/>
 <CLASS NAME="CNetworkPage"/>
 <CLASS NAME="CSnapshotPage"/>
 <CLASS NAME="CVideoDevicePropertySheet"/>
+<CLASS NAME="CAssistantPage"/>
 </CLASSES>
 </FOLDER>
 </FOLDERS>

@@ -6311,7 +6311,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
 	m_MovDetFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_MovDetFTPUploadConfiguration.m_nPort = 21;
-	m_MovDetFTPUploadConfiguration.m_bPasv = FALSE;
+	m_MovDetFTPUploadConfiguration.m_bPasv = TRUE;
 	m_MovDetFTPUploadConfiguration.m_bBinary = TRUE;
 	m_MovDetFTPUploadConfiguration.m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
 	m_MovDetFTPUploadConfiguration.m_bProxy = FALSE;
@@ -6322,7 +6322,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
-	m_SnapshotFTPUploadConfiguration.m_bPasv = FALSE;
+	m_SnapshotFTPUploadConfiguration.m_bPasv = TRUE;
 	m_SnapshotFTPUploadConfiguration.m_bBinary = TRUE;
 	m_SnapshotFTPUploadConfiguration.m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
 	m_SnapshotFTPUploadConfiguration.m_bProxy = FALSE;
@@ -6665,7 +6665,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("MovDetFTPRemoteDir"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("MovDetFTPPort"), 21);
-	m_MovDetFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("MovDetFTPPasv"), FALSE);
+	m_MovDetFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("MovDetFTPPasv"), TRUE);
 	m_MovDetFTPUploadConfiguration.m_bProxy = (BOOL) pApp->GetProfileInt(sSection, _T("MovDetFTPProxy"), FALSE);
 	m_MovDetFTPUploadConfiguration.m_sProxy = pApp->GetProfileString(sSection, _T("MovDetFTPProxyHost"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsername"), _T(""));
@@ -6674,7 +6674,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);
-	m_SnapshotFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotFTPPasv"), FALSE);
+	m_SnapshotFTPUploadConfiguration.m_bPasv = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotFTPPasv"), TRUE);
 	m_SnapshotFTPUploadConfiguration.m_bProxy = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotFTPProxy"), FALSE);
 	m_SnapshotFTPUploadConfiguration.m_sProxy = pApp->GetProfileString(sSection, _T("SnapshotFTPProxyHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPUsername"), _T(""));

@@ -2190,9 +2190,9 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 					lpDstBits += m_pFrame[dwStreamNum]->linesize[0];
 				}
 				int nChromaHeight = pCodecCtx->height;
-				if (pCodecCtx->codec_tag == FCC('YV12'))
+				if (pCodecCtx->codec_tag == FCC('YV12') || pCodecCtx->codec_tag == FCC('I420') || pCodecCtx->codec_tag == FCC('IYUV'))
 					nChromaHeight >>= 1;
-				else	// YVU9
+				else
 					nChromaHeight >>= 2;
 				lpSrcBits = (LPBYTE)m_pFrame[dwStreamNum]->data[1];
 				for (nCurLine = 0 ; nCurLine < nChromaHeight ; nCurLine++)

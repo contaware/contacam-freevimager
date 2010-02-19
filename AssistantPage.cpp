@@ -658,6 +658,101 @@ void CAssistantPage::OnButtonApplySettings()
 	EnableDisableAllCtrls(FALSE);
 }
 
+void CAssistantPage::Rename()
+{
+	// Adjust new name
+	m_sName = CVideoDeviceDoc::GetValidPath(m_sName);
+	m_sName.TrimLeft();
+	m_sName.TrimRight();
+	if (m_sName == _T(""))
+		m_sName = m_pDoc->GetDeviceName();
+	
+	// Make new dirs
+	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir) + m_sName;
+	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir) + m_sName;
+	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir) + m_sName;
+	
+	// Adjust old dirs
+	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
+	m_pDoc->m_sDetectionAutoSaveDir.TrimRight(_T('\\'));
+	m_pDoc->m_sSnapshotAutoSaveDir.TrimRight(_T('\\'));
+
+	// Move and merge flags
+	BOOL bMoveRecord =		::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&& sNewRecordAutoSaveDir	!= m_pDoc->m_sRecordAutoSaveDir;
+	BOOL bMoveDetection =	::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir)&& sNewDetectionAutoSaveDir	!= m_pDoc->m_sDetectionAutoSaveDir;
+	BOOL bMoveSnapshot =	::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir	!= m_pDoc->m_sSnapshotAutoSaveDir;
+	BOOL bMergeRecord =		bMoveRecord		&& ::IsExistingDir(sNewRecordAutoSaveDir);
+	BOOL bMergeDetection =	bMoveDetection	&& ::IsExistingDir(sNewDetectionAutoSaveDir);
+	BOOL bMergeSnapshot =	bMoveSnapshot	&& ::IsExistingDir(sNewSnapshotAutoSaveDir);
+	
+	// Prompt
+	if (bMergeRecord || bMergeDetection || bMergeSnapshot)
+	{
+		CString sMsg;
+		sMsg.Format(ML_STRING(1765, "%s already exists.\nDo you want to proceed and merge the files?"), m_sName);
+		if (::AfxMessageBox(sMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
+		{
+			// Restore old name
+			m_sName = m_pDoc->GetAssignedDeviceName();
+			return;
+		}
+	}
+
+	// Record directory
+	if (bMoveRecord)
+	{
+		if (!::MoveDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
+			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+		else
+			::DeleteDir(m_pDoc->m_sRecordAutoSaveDir);
+	}
+	else
+		::CreateDir(sNewRecordAutoSaveDir);
+	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
+	if (m_pDoc->m_pGeneralPage)
+	{			
+		m_pDoc->m_pGeneralPage->m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
+		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_RECORD_SAVEAS_PATH);
+		pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
+	}
+
+	// Detection directory
+	if (bMoveDetection)
+	{
+		if (!::MoveDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
+			sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+		else
+			::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir);
+	}
+	else
+		::CreateDir(sNewDetectionAutoSaveDir);
+	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
+	if (m_pDoc->m_pMovementDetectionPage)
+	{
+		m_pDoc->m_pMovementDetectionPage->m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
+		CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
+		pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
+	}
+	
+	// Snapshot directory
+	if (bMoveSnapshot)
+	{
+		if (!::MoveDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
+			sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+		else
+			::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir);
+	}
+	else
+		::CreateDir(sNewSnapshotAutoSaveDir);
+	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
+	if (m_pDoc->m_pSnapshotPage)
+	{	
+		m_pDoc->m_pSnapshotPage->m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
+		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
+		pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
+	}
+}
+
 void CAssistantPage::ApplySettings() 
 {
 	// Reset flag
@@ -681,56 +776,7 @@ void CAssistantPage::ApplySettings()
 	m_pDoc->m_SaveSnapshotFTPThread.Kill();
 
 	// Rename
-	m_sName = CVideoDeviceDoc::GetValidPath(m_sName);
-	m_sName.TrimLeft();
-	m_sName.TrimRight();
-	if (m_sName == _T(""))
-		m_sName = m_pDoc->GetDeviceName();
-	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir) + m_sName;
-	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
-	{
-		if (!::RenameShell(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir, FALSE))
-			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-	}
-	else
-		::CreateDir(sNewRecordAutoSaveDir);
-	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
-	if (m_pDoc->m_pGeneralPage)
-	{			
-		m_pDoc->m_pGeneralPage->m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_RECORD_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
-	}
-	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir) + m_sName;
-	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
-	{
-		if (!::RenameShell(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir, FALSE))
-			sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-	}
-	else
-		::CreateDir(sNewDetectionAutoSaveDir);
-	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
-	if (m_pDoc->m_pMovementDetectionPage)
-	{
-		m_pDoc->m_pMovementDetectionPage->m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
-	}
-	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir) + m_sName;
-	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
-	{
-		if (!::RenameShell(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir, FALSE))
-			sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-	}
-	else
-		::CreateDir(sNewSnapshotAutoSaveDir);
-	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
-	if (m_pDoc->m_pSnapshotPage)
-	{	
-		m_pDoc->m_pSnapshotPage->m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
-	}
+	Rename();
 
 	// Language
 	CString sLanguageName;

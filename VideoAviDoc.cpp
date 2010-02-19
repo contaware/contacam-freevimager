@@ -3025,7 +3025,13 @@ BOOL CVideoAviDoc::SaveAsAviVfW(	const CString& sFileName,
 
 		// Show Error Message if not interrupted by user
 		if (!m_ProcessingThread.DoExit())
+		{
+#ifdef SUPPORT_LIBAVCODEC
+			::AfxMessageBox(ML_STRING(1766, "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"), MB_ICONSTOP);
+#else
 			::AfxMessageBox(ML_STRING(1431, "Error while saving file"), MB_ICONSTOP);
+#endif
+		}
 
 		// Restore Current Frame Position
 		CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);

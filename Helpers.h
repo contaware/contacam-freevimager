@@ -74,8 +74,9 @@ extern BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege,BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
 extern BOOL CreateDir(LPCTSTR szNewDir);
 extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
+extern BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
 extern BOOL DeleteDir(LPCTSTR szDirName);
-extern BOOL DeleteDirContent(LPCTSTR szDirName);
+extern BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles = FALSE);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
 										int* pFilesCount = NULL, // optional Files Count
 										CWorkerThread* pThread = NULL);
@@ -83,6 +84,7 @@ extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 // Shell file / directory operations
 extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE);				// delete file or directory
 extern BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent = TRUE);	// rename file or directory
+extern BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE);	// move file or directory
 extern BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE);	// copy file or directory
 extern BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE);
 
