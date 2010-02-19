@@ -12621,7 +12621,12 @@ BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
 			if (Dib.Crop(m_CropDocRect.left, m_CropDocRect.top,
 						m_CropDocRect.Width(), m_CropDocRect.Height(),
 						GetView(), TRUE))
+			{
+				// Has Alpha?
+				if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
+					Dib.BMIToBITMAPV4HEADER();
 				Dib.EditCopy();
+			}
 		}
 		else
 		{
@@ -12912,7 +12917,7 @@ void CPictureDoc::OnEditCopy()
 
 		// The Animation has a separate array of dibs, sync the document's
 		// one with the current one of the animation array
-	#ifdef SUPPORT_GIFLIB
+#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive())
 		{
 			::EnterCriticalSection(&m_csDib);
@@ -12925,7 +12930,7 @@ void CPictureDoc::OnEditCopy()
 			else
 				UpdateAlphaRenderedDib();
 		}
-	#endif
+#endif
 
 		// Has Alpha?
 		if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)

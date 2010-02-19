@@ -20,6 +20,7 @@
 #define SERVICENAME_EXT									_T("ContaCamService.exe")
 #define SERVICENAME_NOEXT								_T("ContaCamService")
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
+#define BROSERAUTORUN_NAME								_T("ContaCamBrowser")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")

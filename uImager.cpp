@@ -2157,6 +2157,7 @@ void CUImagerApp::SaveOnEndSession()
 #ifdef VIDEODEVICEDOC
 	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
+	BrowserAutostart();
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
@@ -2802,6 +2803,9 @@ int CUImagerApp::ExitInstance()
 	// Finish Micro Apache shutdown
 	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
+
+	// Browser autostart
+	BrowserAutostart();
 #endif
 
 	// Close The Application Mutex
@@ -3115,6 +3119,39 @@ DWORD CUImagerApp::ControlContaCamService(int nMsg)
 		::CloseServiceHandle(schSCManager); 
 	}
 	return dwError;
+}
+
+void CUImagerApp::BrowserAutostart()
+{
+	::DeleteRegistryValue(	HKEY_CURRENT_USER,
+							_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
+							BROSERAUTORUN_NAME);
+	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING &&
+		!IsAutostart() && m_bBrowserAutostart)
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			CString sDriveDir = CString(szDrive) + CString(szDir);
+			CString sUrl, sPort;
+			sPort.Format(_T("%d"), m_nMicroApachePort);
+			if (sPort != _T("80"))
+				sUrl = _T("http://localhost:") + sPort + _T("/");
+			else
+				sUrl = _T("http://localhost/");
+			CString sAutorunCommand;
+			if (m_bFullscreenBrowser)
+				sAutorunCommand = _T("\"") + sDriveDir + FULLSCREENBROWSER_EXE_NAME_EXT + _T("\" ") + sUrl;
+			else
+				sAutorunCommand = _T("rundll32.exe url.dll,FileProtocolHandler ") + sUrl;
+			::SetRegistryStringValue(	HKEY_CURRENT_USER,
+										_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
+										BROSERAUTORUN_NAME, sAutorunCommand);
+		}
+	}
 }
 #endif
 

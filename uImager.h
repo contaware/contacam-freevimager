@@ -524,6 +524,9 @@ public:
 	// CONTACAMSERVICE_CONTROL_START_PROC
 	// CONTACAMSERVICE_CONTROL_END_PROC
 	static DWORD ControlContaCamService(int nMsg);
+
+	// Broser autostart
+	void BrowserAutostart();
 #endif
 
 	// Save current document if it is modified,

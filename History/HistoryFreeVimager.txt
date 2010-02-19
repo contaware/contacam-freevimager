@@ -4,7 +4,8 @@ VERSION HISTORY
 
 - Some optimisations
 - View's toolbar repainting bug fixed
-- Integrated codecs
+- Integrated codecs (lossless, mjpeg, theora and vorbis)
+- Crop/Copy fix for images with transparency
 
 1.9.7 (September 3rd 2009)
 
