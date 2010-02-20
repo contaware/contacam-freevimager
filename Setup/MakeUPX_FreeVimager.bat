@@ -1,4 +1,5 @@
 @echo off
 REM Set --compress-exports=0 to be able to run it under Wine
-upx --backup --ultra-brute --8mb-ram ..\bin\FreeVimager\FreeVimager.exe
+copy ..\bin\FreeVimager\FreeVimager.exe .\FreeVimager.exe
+upx --ultra-brute --8mb-ram FreeVimager.exe
 pause
