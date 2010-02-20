@@ -18,7 +18,8 @@ restrictions:
 not claim that you wrote/developed/own the unregistered software.
 
 2. You shall not reverse engineer, decompile, disassemble, translate or modify 
-in anyway this unregistered software.
+in anyway this unregistered software. This software will not work in case the
+executable is packed/compressed.
 
 3. Distributing the unregistered software for any kind of remuneration is
 prohibited. The Licensor grants you the royality-free right to reproduce and
@@ -48,7 +49,8 @@ restrictions:
 not claim that you wrote/developed/own the registered software.
 
 2. You shall not reverse engineer, decompile, disassemble, translate or modify
-in anyway this registered software.
+in anyway this registered software. This software will not work in case the
+executable is packed/compressed.
 
 3. Distributing or sharing key files is strictly prohibited. You are responsible
 to keep the key file in a safe/secure place to avoid theft. You may assign all

@@ -4700,6 +4700,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 		if (!::CodeSectionInformation())
 		{
 			// Usually it fails if the exe is compressed (with upx for example)
+			// I wrote a note in the license file which says:
+			// "This software will not work in case the executable is packed/compressed."
 			CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 															WM_CLOSE, 4986, 0, 0);
 		}
@@ -5281,10 +5283,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 				// Registration check, cannot call RSADecrypt here because the used rsaeuro lib
 				// is not thread safe -> just check the m_bRegistered variable
 				if (!((CUImagerApp*)::AfxGetApp())->m_bRegistered)
-				{
-					CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-																	WM_CLOSE, 3512, 0, 0);
-				}
+					m_pDoc->StopProcessFrame();
 				
 				// Alternatively call them
 				if (m_dwCounter & 0x1U)
