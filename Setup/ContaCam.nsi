@@ -299,6 +299,12 @@ stopend:
   File "/oname=Tutorials\Device_Settings.htm" "..\Tutorials\Device_Settings.htm"
   File "/oname=Tutorials\Device_Settings.swf" "..\Tutorials\Device_Settings.swf"
   File "/oname=Tutorials\Device_Settings.js" "..\Tutorials\Device_Settings.js"
+  File "/oname=Tutorials\Global_Settings.htm" "..\Tutorials\Global_Settings.htm"
+  File "/oname=Tutorials\Global_Settings.swf" "..\Tutorials\Global_Settings.swf"
+  File "/oname=Tutorials\Global_Settings.js" "..\Tutorials\Global_Settings.js"
+  File "/oname=Tutorials\Publish_on_Internet.htm" "..\Tutorials\Publish_on_Internet.htm"
+  File "/oname=Tutorials\Publish_on_Internet.swf" "..\Tutorials\Publish_on_Internet.swf"
+  File "/oname=Tutorials\Publish_on_Internet.js" "..\Tutorials\Publish_on_Internet.js"
 !endif
   SetOutPath $INSTDIR\microapache
   File /r /x .svn "..\microapache\*.*"

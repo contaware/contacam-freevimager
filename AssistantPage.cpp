@@ -676,17 +676,16 @@ void CAssistantPage::Rename()
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_pDoc->m_sDetectionAutoSaveDir.TrimRight(_T('\\'));
 	m_pDoc->m_sSnapshotAutoSaveDir.TrimRight(_T('\\'));
-
-	// Move and merge flags
-	BOOL bMoveRecord =		::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&& sNewRecordAutoSaveDir	!= m_pDoc->m_sRecordAutoSaveDir;
-	BOOL bMoveDetection =	::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir)&& sNewDetectionAutoSaveDir	!= m_pDoc->m_sDetectionAutoSaveDir;
-	BOOL bMoveSnapshot =	::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir	!= m_pDoc->m_sSnapshotAutoSaveDir;
-	BOOL bMergeRecord =		bMoveRecord		&& ::IsExistingDir(sNewRecordAutoSaveDir);
-	BOOL bMergeDetection =	bMoveDetection	&& ::IsExistingDir(sNewDetectionAutoSaveDir);
-	BOOL bMergeSnapshot =	bMoveSnapshot	&& ::IsExistingDir(sNewSnapshotAutoSaveDir);
 	
-	// Prompt
-	if (bMergeRecord || bMergeDetection || bMergeSnapshot)
+	// Prompt for merging
+	if ((::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)    && ::IsExistingDir(sNewRecordAutoSaveDir)    &&
+		sNewRecordAutoSaveDir    != m_pDoc->m_sRecordAutoSaveDir)                                      ||
+
+		(::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && ::IsExistingDir(sNewDetectionAutoSaveDir) &&
+		sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)                                   ||
+
+		(::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir)  && ::IsExistingDir(sNewSnapshotAutoSaveDir)  &&
+		sNewSnapshotAutoSaveDir  != m_pDoc->m_sSnapshotAutoSaveDir))
 	{
 		CString sMsg;
 		sMsg.Format(ML_STRING(1765, "%s already exists.\nDo you want to proceed and merge the files?"), m_sName);
@@ -699,7 +698,7 @@ void CAssistantPage::Rename()
 	}
 
 	// Record directory
-	if (bMoveRecord)
+	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
 	{
 		if (!::MoveDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
@@ -717,7 +716,7 @@ void CAssistantPage::Rename()
 	}
 
 	// Detection directory
-	if (bMoveDetection)
+	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
 	{
 		if (!::MoveDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
 			sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
@@ -735,7 +734,7 @@ void CAssistantPage::Rename()
 	}
 	
 	// Snapshot directory
-	if (bMoveSnapshot)
+	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
 	{
 		if (!::MoveDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
 			sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
