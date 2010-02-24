@@ -2407,6 +2407,7 @@
 #define IDC_TEXT_DIR                    1766
 #define IDS_STRING1766                  1766
 #define IDC_TEXT_FILE                   1767
+#define IDS_STRING1767                  1767
 #define IDC_WARNING                     1768
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
 #define IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE 1772

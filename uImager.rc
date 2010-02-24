@@ -9019,6 +9019,7 @@ BEGIN
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"
+    IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
 END
 
 STRINGTABLE DISCARDABLE 

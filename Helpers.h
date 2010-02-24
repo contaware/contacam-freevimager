@@ -241,9 +241,19 @@ extern void MakeLineBreakCR(CString& s);
 extern void MakeLineBreakLF(CString& s);
 extern void MakeLineBreakCRLF(CString& s);
 
-// CString to ANSI Conversion
+// Is ANSI Convertible?
 extern BOOL IsANSIConvertible(const CString& s);
+
+// CString to ANSI Conversion
+// The allocated buffer is always NULL terminated and has to be freed with delete []
+// The function returns the number of written bytes
+// (the terminating NULL char is not included in this returned bytes count)
 extern int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar = NULL);
+
+// Url encode given string
+// set bEncodeReserved to TRUE if encoding GET values
+// set bEncodeReserved to FALSE if encoding an entire URL
+extern CString UrlEncode(const CString& s, BOOL bEncodeReserved);
 
 // Unicode (=UTF16) <-> UTF8 Conversion
 extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);	// Note: pUtf8 must not be NULL terminated.

@@ -2724,9 +2724,73 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 	}
 	else
 	{
-		(*ppAnsi)[res] = '\0';
+		(*ppAnsi)[MIN(res, nUtf16Len)] = '\0';
 		return res;
 	}
+}
+
+CString UrlEncode(const CString& s, BOOL bEncodeReserved)
+{
+	// Empty String is already ok!
+	if (s.IsEmpty())
+		return _T("");
+
+	LPSTR c = NULL;
+	if (::ToANSI(s, &c) <= 0 || !c)
+	{
+		if (c)
+			delete [] c;
+		return _T("");
+	}
+	CString sHex;
+    CString sEscaped(_T(""));
+	if (bEncodeReserved)
+	{
+		for (int i = 0 ; i < (int)strlen(c) ; i++)
+		{
+			if ( (48 <= c[i] && c[i] <= 57) ||	// 0-9
+				 (65 <= c[i] && c[i] <= 90) ||	// ABC...XYZ
+				 (97 <= c[i] && c[i] <= 122)||	// abc...xyz
+				 (c[i]== '-' || c[i] == '_' ||
+				 c[i] == '.' || c[i] == '!' ||
+				 c[i] == '*' || c[i] == '\''||
+				 c[i] == '(' || c[i]== ')'))
+				sEscaped += CString(c[i]);
+			else
+			{
+				sEscaped += _T("%");
+				sHex.Format(_T("%02x"), ((int)c[i]) & 0xFF);
+				sEscaped += sHex;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0 ; i < (int)strlen(c) ; i++)
+		{
+			if ( (48 <= c[i] && c[i] <= 57) || // 0-9
+				 (65 <= c[i] && c[i] <= 90) || // ABC...XYZ
+				 (97 <= c[i] && c[i] <= 122)|| // abc...xyz
+				 (c[i]== '-' || c[i] == '_' ||
+				 c[i] == '.' || c[i] == '!' ||
+				 c[i] == '*' || c[i] == '\''||
+				 c[i] == '(' || c[i]== ')'	||
+				 c[i] == '$' || c[i] == '&' || // reserved chars
+				 c[i] == '+' || c[i] == ',' || // reserved chars
+				 c[i] == '/' || c[i] == ':' || // reserved chars
+				 c[i] == ';' || c[i] == '=' || // reserved chars
+				 c[i] == '?' || c[i] == '@'))  // reserved chars
+				sEscaped += CString(c[i]);
+			else
+			{
+				sEscaped += _T("%");
+				sHex.Format(_T("%02x"), ((int)c[i]) & 0xFF);
+				sEscaped += sHex;
+			}
+		}
+	}
+	delete [] c;
+	return sEscaped;
 }
 
 CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len)

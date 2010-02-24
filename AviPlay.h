@@ -1555,6 +1555,8 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 		return CODEC_ID_MJPEG;
 	else if (FourCCToStringUpperCase(dwFourCC) == _T("JPGL"))	// JPGL
 		return CODEC_ID_MJPEG;
+	else if (FourCCToStringUpperCase(dwFourCC) == _T("QIVG"))	// QIVG
+		return CODEC_ID_MJPEG;
 	else if (FourCCToStringUpperCase(dwFourCC) == _T("SP54"))	// SP54
 		return CODEC_ID_SP5X;
 

@@ -6582,18 +6582,126 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	CDocument::SetTitle(strInfo);
 }
 
-CString CVideoDeviceDoc::GetValidPath(CString sName)
+CString CVideoDeviceDoc::GetValidName(CString sName)
 {
-	sName.Replace(_T('\\'), _T('_'));
-	sName.Replace(_T('/'), _T('_'));
-	sName.Replace(_T(':'), _T('_'));
-	sName.Replace(_T('*'), _T('_'));
-	sName.Replace(_T('?'), _T('_'));
-	sName.Replace(_T('\"'), _T('_'));
-	sName.Replace(_T('<'), _T('_'));
-	sName.Replace(_T('>'), _T('_'));
-	sName.Replace(_T('|'), _T('_'));
-	return ::MakeValidPath(sName);
+	// Empty String is already ok!
+	if (sName.IsEmpty())
+		return _T("");
+
+	LPSTR c = NULL;
+	if (::ToANSI(sName, &c) <= 0 || !c)
+	{
+		if (c)
+			delete [] c;
+		return _T("");
+	}
+    CString sValidName(_T(""));
+	for (int i = 0 ; i < (int)strlen(c) ; i++)
+	{
+		if ( (48 <= c[i] && c[i] <= 57) ||	// 0-9
+			 (65 <= c[i] && c[i] <= 90) ||	// ABC...XYZ
+			 (97 <= c[i] && c[i] <= 122)||	// abc...xyz
+			 (c[i]== ' ' || c[i] == '-' || c[i] == '_' ||
+			 c[i] == '.' || c[i] == '!' ||
+			 c[i] == '(' || c[i]== ')'))
+			sValidName += CString(c[i]);
+		// a family
+		else if (c[i] == 'ä')
+			sValidName += _T("ae");
+		else if (c[i] == 'Ä')
+			sValidName += _T("AE");
+		else if (c[i] == 'à')
+			sValidName += _T("a");
+		else if (c[i] == 'À')
+			sValidName += _T("A");
+		else if (c[i] == 'á')
+			sValidName += _T("a");
+		else if (c[i] == 'Á')
+			sValidName += _T("A");
+		else if (c[i] == 'â')
+			sValidName += _T("a");
+		else if (c[i] == 'Â')
+			sValidName += _T("A");
+		else if (c[i] == 'å')
+			sValidName += _T("a");
+		else if (c[i] == 'Å')
+			sValidName += _T("A");
+		// e family
+		else if (c[i] == 'è')
+			sValidName += _T("e");
+		else if (c[i] == 'È')
+			sValidName += _T("E");
+		else if (c[i] == 'é')
+			sValidName += _T("e");
+		else if (c[i] == 'É')
+			sValidName += _T("E");
+		else if (c[i] == 'ê')
+			sValidName += _T("e");
+		else if (c[i] == 'Ê')
+			sValidName += _T("E");
+		// i family
+		else if (c[i] == 'ì')
+			sValidName += _T("i");
+		else if (c[i] == 'Ì')
+			sValidName += _T("I");
+		else if (c[i] == 'í')
+			sValidName += _T("i");
+		else if (c[i] == 'Í')
+			sValidName += _T("I");
+		else if (c[i] == 'î')
+			sValidName += _T("i");
+		else if (c[i] == 'Î')
+			sValidName += _T("I");
+		// o family
+		else if (c[i] == 'ö')
+			sValidName += _T("oe");
+		else if (c[i] == 'Ö')
+			sValidName += _T("OE");
+		else if (c[i] == 'ò')
+			sValidName += _T("o");
+		else if (c[i] == 'Ò')
+			sValidName += _T("O");
+		else if (c[i] == 'ó')
+			sValidName += _T("o");
+		else if (c[i] == 'Ó')
+			sValidName += _T("O");
+		else if (c[i] == 'ô')
+			sValidName += _T("o");
+		else if (c[i] == 'Ô')
+			sValidName += _T("O");
+		// u family
+		else if (c[i] == 'ü')
+			sValidName += _T("ue");
+		else if (c[i] == 'Ü')
+			sValidName += _T("UE");
+		else if (c[i] == 'ù')
+			sValidName += _T("u");
+		else if (c[i] == 'Ù')
+			sValidName += _T("U");
+		else if (c[i] == 'ú')
+			sValidName += _T("u");
+		else if (c[i] == 'Ú')
+			sValidName += _T("U");
+		else if (c[i] == 'û')
+			sValidName += _T("u");
+		else if (c[i] == 'Û')
+			sValidName += _T("U");
+		// others
+		else if (c[i] == 'ç')
+			sValidName += _T("c");
+		else if (c[i] == 'Ç')
+			sValidName += _T("C");
+		else if (c[i] == 'ñ')
+			sValidName += _T("n");
+		else if (c[i] == 'Ñ')
+			sValidName += _T("N");
+		else if (c[i] == '\'' || c[i] == '\"' || c[i] == '^' || c[i] == '´' || c[i] == '`')
+			sValidName += _T("");
+		else
+			sValidName += _T("_");
+	}
+	delete [] c;
+	return sValidName;
 }
 
 void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName)
@@ -6604,7 +6712,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	CTime t = CTime::GetCurrentTime();
 
 	// Default auto-save directory
-	sDeviceName = GetValidPath(sDeviceName);
+	sDeviceName = GetValidName(sDeviceName);
 	CString sAutoSaveDir;
 	sAutoSaveDir = ::GetSpecialFolderPath(CSIDL_PERSONAL);
 	if (sAutoSaveDir == _T(""))
@@ -9063,7 +9171,7 @@ void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& 
 		else
 			sUrl = _T("http://localhost/") + sWebPageFileName;
 	}
-	sUrl.Replace(_T(" "), _T("%20"));
+	sUrl = ::UrlEncode(sUrl, FALSE);
 	if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
 	{
 		int nRet = IDYES;

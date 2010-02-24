@@ -1717,11 +1717,11 @@ SOURCE=.\res\uimager.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\uimager_videodevicedoc.ico
+SOURCE=.\res\uImager.rc2
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\uImager.rc2
+SOURCE=.\res\uimager_videodevicedoc.ico
 # End Source File
 # Begin Source File
 

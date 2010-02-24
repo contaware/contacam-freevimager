@@ -2682,7 +2682,10 @@ bool CAVIPlay::CAVIVideoStream::PrepareWantedDstBMI(LPBITMAPINFOHEADER pDstBMIH)
 		}
 		// MJPEG Family?
 		else if (	pSrcBMIH->biCompression == FCC('MJPG')	||
+					pSrcBMIH->biCompression == FCC('IJPG')	||
 					pSrcBMIH->biCompression == FCC('dmb1')	||
+					pSrcBMIH->biCompression == FCC('JPGL')	||
+					pSrcBMIH->biCompression == FCC('QIVG')	||
 					pSrcBMIH->biCompression == FCC('SP54')	||
 					pSrcBMIH->biCompression == FCC('MJ2C'))
 		{
@@ -6099,12 +6102,17 @@ bool CAVIPlay::Open(	LPCTSTR szFileName,
 		for (DWORD dwStreamNum = 0 ; dwStreamNum < m_AviMainHdr.dwStreams ; dwStreamNum++)
 		{
 			// Read strl List
-			if (m_pFile->Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
-				throw (int)UNEXPECTED_EOF;
-			if ((list.fcc != FCC('LIST')) ||
-				list.fccListType != FCC('strl'))
-				throw (int)WRONG_LIST_TYPE;
-
+			while (TRUE)
+			{
+				if (m_pFile->Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
+					throw (int)UNEXPECTED_EOF;
+				if ((list.fcc != FCC('LIST')) ||
+					list.fccListType != FCC('strl'))
+					m_pFile->Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
+				else
+					break;
+			}
+			
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
 			LONGLONG llNextListPos;
@@ -7113,7 +7121,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunkFromList(CFile* pFile, const RIF
 
 	try
 	{
-		pFile->Seek((LONGLONG)RIFFROUND((int)list.cb - 4), CFile::current);
+		pFile->Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
 
 		// Skip JUNK
 		if (pFile->Read(&chunk, sizeof(RIFFCHUNK)) < sizeof(RIFFCHUNK))
@@ -7154,7 +7162,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextList(CFile* pFile, RIFFLIST& list)
 
 	try
 	{
-		pFile->Seek((LONGLONG)RIFFROUND((int)list.cb - 4), CFile::current);
+		pFile->Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
 
 		// Skip JUNK
 		if (pFile->Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
@@ -7404,11 +7412,16 @@ bool CAVIPlay::AviChangeVideoFrameRate(LPCTSTR szFileName,
 		for (DWORD dwStreamNum = 0 ; dwStreamNum < AviMainHdr.dwStreams ; dwStreamNum++)
 		{
 			// Read strl List
-			if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
-				throw (int)UNEXPECTED_EOF;
-			if ((list.fcc != FCC('LIST')) ||
-				list.fccListType != FCC('strl'))
-				throw (int)WRONG_LIST_TYPE;
+			while (TRUE)
+			{
+				if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
+					throw (int)UNEXPECTED_EOF;
+				if ((list.fcc != FCC('LIST')) ||
+					list.fccListType != FCC('strl'))
+					f.Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
+				else
+					break;
+			}
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
@@ -7547,11 +7560,16 @@ bool CAVIPlay::AviChangeVideoStartOffset(LPCTSTR szFileName,
 		for (DWORD dwStreamNum = 0 ; dwStreamNum < AviMainHdr.dwStreams ; dwStreamNum++)
 		{
 			// Read strl List
-			if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST)) 
-				throw (int)UNEXPECTED_EOF;
-			if ((list.fcc != FCC('LIST')) ||
-				list.fccListType != FCC('strl'))
-				throw (int)WRONG_LIST_TYPE;
+			while (TRUE)
+			{
+				if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
+					throw (int)UNEXPECTED_EOF;
+				if ((list.fcc != FCC('LIST')) ||
+					list.fccListType != FCC('strl'))
+					f.Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
+				else
+					break;
+			}
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
@@ -7689,11 +7707,16 @@ bool CAVIPlay::AviChangeAudioStartOffset(LPCTSTR szFileName,
 		for (DWORD dwStreamNum = 0 ; dwStreamNum < AviMainHdr.dwStreams ; dwStreamNum++)
 		{
 			// Read strl List
-			if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST)) 
-				throw (int)UNEXPECTED_EOF;
-			if ((list.fcc != FCC('LIST')) ||
-				list.fccListType != FCC('strl'))
-				throw (int)WRONG_LIST_TYPE;
+			while (TRUE)
+			{
+				if (f.Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
+					throw (int)UNEXPECTED_EOF;
+				if ((list.fcc != FCC('LIST')) ||
+					list.fccListType != FCC('strl'))
+					f.Seek(RIFFROUND((LONGLONG)list.cb - 4), CFile::current);
+				else
+					break;
+			}
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;

@@ -660,8 +660,19 @@ void CAssistantPage::OnButtonApplySettings()
 
 void CAssistantPage::Rename()
 {
+	// Is ANSI?
+	if (!::IsANSIConvertible(m_sName))
+	{
+		// Error Message
+		::AfxMessageBox(ML_STRING(1767, "Only the ANSI character set is supported for the camera name"), MB_OK | MB_ICONERROR);
+		
+		// Restore old name
+		m_sName = m_pDoc->GetAssignedDeviceName();
+		return;
+	}
+
 	// Adjust new name
-	m_sName = CVideoDeviceDoc::GetValidPath(m_sName);
+	m_sName = CVideoDeviceDoc::GetValidName(m_sName);
 	m_sName.TrimLeft();
 	m_sName.TrimRight();
 	if (m_sName == _T(""))

@@ -1390,8 +1390,8 @@ public:
 						BOOL bReSending);
 	void ShowSendFrameMsg();
 
-	// Validate Path
-	static CString GetValidPath(CString sName);
+	// Validate Name
+	static CString GetValidName(CString sName);
 
 	// Settings
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
