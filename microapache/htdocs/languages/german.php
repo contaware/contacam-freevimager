@@ -15,9 +15,9 @@
  *-------------------------------------------------------------------------*/
 define("TODAY","heute");
 define("SHOWCALENDAR","Zeige Kalender");
-define("DAYHEADERS","'S','M','D','M','D','F','S'"); // Anfangend vom Sonntag!
-define("DAYNAMES","'Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'"); // Anfangend vom Sonntag!
-define("MONDAYSTARTSWEEK","1");	// 1: Montag ist der erste Tag der Woche, 0: Sonntag ist der erste Tag der Woche
+define("DAYHEADERS","'S','M','D','M','D','F','S'"); // Starting from sunday!
+define("DAYNAMES","'Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'"); // Starting from sunday!
+define("MONDAYSTARTSWEEK","1");	// 1: monday starts the week, 0: sunday starts the week
 define("SHORTMONTHNAMES","'Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'");
 define("MONTHNAMES","'Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'");
 define("YEAR","Jahr");
@@ -28,7 +28,7 @@ define("DAYS","Tagen");
 define("DAYAGO","Tag zurück");
 define("DAYSAGO","Tagen zurück");
 define("NOFILE","Kein File");
-define("NOFILES","Kein File für");
+define("NOFILESFOR","Kein File für");
 define("PAGES","Seiten");
 define("BACK","Zurück");
 define("LOCALTIME","Lokale Zeit");

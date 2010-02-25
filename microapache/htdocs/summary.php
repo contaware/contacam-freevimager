@@ -137,20 +137,20 @@ function PrintNoFilesDate($days_elapsed) {
 	$month_name = $monthnames[$month_num];
 	$year_num = strftime('%Y', $days_ago_time);
 	if ($days_elapsed == 0) {
-		echo NOFILES . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . TODAY . ")";
+		echo NOFILESFOR . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . TODAY . ")";
 	}
 	else if ($days_elapsed > 0) {
 		if ($days_elapsed == 1)
-			echo NOFILES . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " ($days_elapsed " . DAYAGO . ")";
+			echo NOFILESFOR . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " ($days_elapsed " . DAYAGO . ")";
 		else
-			echo NOFILES . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " ($days_elapsed " . DAYSAGO . ")";
+			echo NOFILESFOR . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " ($days_elapsed " . DAYSAGO . ")";
 	}
 	else {
 		$in_days = -$days_elapsed;
 		if ($days_elapsed == -1)
-			echo NOFILES . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . IN . " $in_days " . DAY . ")";
+			echo NOFILESFOR . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . IN . " $in_days " . DAY . ")";
 		else
-			echo NOFILES . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . IN . " $in_days " . DAYS . ")";
+			echo NOFILESFOR . ' ' . $day_name . ' ' . $day_num . ' ' . $month_name . ' ' . $year_num . " (" . IN . " $in_days " . DAYS . ")";
 	}
 }
             

@@ -28,7 +28,7 @@ define("DAYS","days");
 define("DAYAGO","day ago");
 define("DAYSAGO","days ago");
 define("NOFILE","No file");
-define("NOFILES","No files for");
+define("NOFILESFOR","No files for");
 define("PAGES","pages");
 define("BACK","Back");
 define("LOCALTIME","Local Time");
