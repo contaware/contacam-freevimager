@@ -35,7 +35,7 @@ define("LOCALTIME","Lokale Zeit");
 define("VIEWSNAPSHOTSFOR","Zeige Schnappschüssen für");
 define("VIEWFILESFOR","Zeige file(s) für");
 define("SELECT","auswählen");
-define("IMAGERELOADIN","Bild Laden in");
+define("IMAGERELOADIN","Bild lädt in");
 define("SECONDS","Sekunden");
 define("RELOAD","Neu laden");
 define("HOME","Wähle Kamera");

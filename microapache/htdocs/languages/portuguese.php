@@ -33,7 +33,7 @@ define("PAGES","Páginas");
 define("BACK","Voltar");
 define("LOCALTIME","Horário local");
 define("VIEWSNAPSHOTSFOR","Ver instantâneo(s) para");
-define("VIEWFILESFOR","Visualizar ficheiro(s) de");
+define("VIEWFILESFOR","Visualizar ficheiro(s) para");
 define("SELECT","Selecionar");
 define("IMAGERELOADIN","Imagem irá recarregar em");
 define("SECONDS","Segundos");
