@@ -110,6 +110,8 @@ static av_cold int encode_end(AVCodecContext *avctx)
 
     ff_rate_control_uninit(&s->m); // Oli added
     common_end(s);
+    if (s->input_picture.data[0])
+        avctx->release_buffer(avctx, &s->input_picture);
     av_freep(&avctx->stats_out);   // Oli changed
 
     return 0;
@@ -150,7 +152,10 @@ static int decode_end(AVCodecContext *avctx)
 
 
 - libavcodec/libtheoraenc.c quality conversion change and
-  add setting the keyframe flag
+  commented out color_primaries
+
+
+- libavcodec/vp3.c many changes to backport!
 
 
 icclib 2.0.3

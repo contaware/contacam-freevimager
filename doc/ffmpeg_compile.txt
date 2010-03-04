@@ -55,7 +55,7 @@ Note on LibGsm:
 not necessary because available as a ACM codec
 
 
-Note on Ogg, Vorbis and Theora 1.0 (Theora 1.1.1 not working...):
+Note on Ogg, Vorbis and Theora:
 
 To compile everything correctly use for all 3 libs the mingw prefix and
 copy libs from /mingw/lib to /usr/local/lib and includes from /mingw/include to /usr/local/include:

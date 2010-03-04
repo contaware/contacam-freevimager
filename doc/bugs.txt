@@ -54,7 +54,7 @@ On Safari 4 animated gifs support is buggy!!!
 ffmpeg Bugs:
 ------------
 
-- SNOW is locking (crashing) with resolutions less than 88 x 72...
+- SNOW is locking with low resolutions...
 - Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
 - H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
 - Internal DTS not working in new ffmpeg                           -> not compiled in
@@ -63,7 +63,6 @@ ffmpeg Bugs:
 - swscale doesn't support pal8 input like from CRAM 8bpp.avi. img_convert supports it!
 - MPNG.avi is working with dll version, but with static it is no converting frame at 1 sec...
 - I263 not working, showing only first frame
-- THEORA's datarate regulator outputs keyframes with a lower quality than delta frames...
 
 
 
