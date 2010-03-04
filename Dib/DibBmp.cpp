@@ -226,7 +226,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		if (m_pBMI->bmiHeader.biSizeImage == 0)
 			m_pBMI->bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount()) * GetHeight();
 
-		// Read Colors or Masks
+		// Read the remaining of the Header
 		if (file.Read(((LPBYTE)m_pBMI+sizeof(BITMAPINFOHEADER)), OffBits-sizeof(BITMAPINFOHEADER)) != (UINT)(OffBits-sizeof(BITMAPINFOHEADER)))
 			throw (int)BMP_E_READ;
 		dwReadBytes += (OffBits-sizeof(BITMAPINFOHEADER));
