@@ -337,8 +337,14 @@ static int encode_frame(AVCodecContext* avc_context, uint8_t *outbuf,
     // HACK: assumes no encoder delay, this is true until libtheora becomes
     // multithreaded (which will be disabled unless explictly requested)
     avc_context->coded_frame->pts = frame->pts;
-    avc_context->coded_frame->key_frame = !(o_packet.granulepos & h->keyframe_mask);
-
+	
+	// Oli changed
+    //avc_context->coded_frame->key_frame = !(o_packet.granulepos & h->keyframe_mask);
+	if (th_packet_iskeyframe(&o_packet) == 1)
+		avc_context->coded_frame->key_frame = 1;
+	else
+		avc_context->coded_frame->key_frame = 0;
+		
     return o_packet.bytes;
 }
 

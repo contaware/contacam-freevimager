@@ -151,8 +151,8 @@ static int decode_end(AVCodecContext *avctx)
 }
 
 
-- libavcodec/libtheoraenc.c quality conversion change and
-  commented out color_primaries
+- libavcodec/libtheoraenc.c quality conversion change,
+  commented out color_primaries and fixed setting the keyframe flag!
 
 
 - libavcodec/vp3.c many changes to backport!
