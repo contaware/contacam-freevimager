@@ -4016,6 +4016,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		dwVideoCompressorFourCC != FCC('FLV1')	&&
 		dwVideoCompressorFourCC != FCC('H263')	&&
 		dwVideoCompressorFourCC != FCC('H264')	&&
+		dwVideoCompressorFourCC != FCC('theo')	&&
 		dwVideoCompressorFourCC != FCC('SNOW')))
 		nPassNumber = 0; // No two pass mode
 
@@ -4243,7 +4244,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 														pSrcVideoStream->GetScale(),														// Dst Scale
 														nQualityBitrate == 1 ? nVideoCompressorDataRate : 0,								// Bitrate in bits/s
 														nVideoCompressorKeyframesRate,														// Keyframes Rate
-														nQualityBitrate == 0 ? fVideoCompressorQuality : 0.0f) < 0)							// 2.0f best quality, 31.0f worst quality
+														nQualityBitrate == 0 ? fVideoCompressorQuality : 0.0f) < 0)							// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 							goto error;
 					}
 				}
@@ -4391,6 +4392,12 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 														bDeinterlace);
 							}
 						}
+
+						// Get stats from theora lib
+						if (!bVideoAvailable && nPassNumber == 1	&&
+							dwVideoCompressorFourCC == FCC('theo')	&&
+							(*ppAVRec)->GetFrameCount(dwRecStreamNum) > 0)
+							(*ppAVRec)->TheoraStats(dwRecStreamNum);
 					}
 
 					// Init Vars

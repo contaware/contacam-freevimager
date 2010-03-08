@@ -206,7 +206,7 @@ static av_cold int encode_init(AVCodecContext* avc_context)
         t_info.quality = 63 - t_info.quality;
 		t_info.target_bitrate = 0;
     } else {
-        t_info.target_bitrate = av_clip(avc_context->bit_rate, 45000, 40000000); // Oli changed
+        t_info.target_bitrate = av_clip(avc_context->bit_rate, 1000, 1000000000); // Oli changed
         t_info.quality = 0;
     }
 

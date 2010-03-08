@@ -55,7 +55,7 @@ public:
 						DWORD dwDstScale,
 						int bitrate,
 						int keyframes_rate,
-						float qscale);	// 2.0f best quality, 31.0f worst quality
+						float qscale);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 
 	// Add a Raw Video Stream, no compressor
 	// Only use AddRawVideoPacket and not AddFrame!
@@ -140,6 +140,9 @@ public:
 					DWORD dwUpTime = 0,
 					CTime RefTime = CTime(2000, 1, 1, 12, 0, 0),
 					DWORD dwRefUpTime = 0);
+	
+	// Get theora encoder statistics after first pass
+	void TheoraStats(DWORD dwStreamNum);
 
 	// Raw Video Packet Write
 	bool AddRawVideoPacket(DWORD dwStreamNum, DWORD dwBytes, LPBYTE pBuf, bool bKeyframe, bool bInterleaved);
@@ -230,7 +233,7 @@ protected:
 								PixelFormat pix_fmt,
 								int bitrate,
 								int keyframes_rate,
-								float qscale); // 2.0f best quality, 31.0f worst quality
+								float qscale); // 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 	AVStream* CreateAudioStream(CodecID codec_id,
 								SampleFormat sample_fmt,
 								int tag,

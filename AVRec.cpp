@@ -170,7 +170,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 									PixelFormat pix_fmt,
 									int bitrate,
 									int keyframes_rate,
-									float qscale)	// 2.0f best quality, 31.0f worst quality
+									float qscale)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 {
     AVCodecContext* pCodecCtx;
     AVStream* pStream = av_new_stream(m_pFormatCtx, 0);
@@ -315,10 +315,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 		}
 	}
 
-	// If both 0 -> use worst quality
-	if (bitrate == 0 && qscale == 0.0f)
-		qscale = 31.0f;
-
 	// Use Quality
 	if (qscale > 0.0f)
 	{
@@ -335,7 +331,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	}
 	// Use Bitrate
 	else
-		pCodecCtx->bit_rate = bitrate;
+		pCodecCtx->bit_rate = MAX(1, bitrate);
 
     // Resolution must be a multiple of two
     pCodecCtx->width = pDstVideoFormat->bmiHeader.biWidth;
@@ -349,7 +345,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
     pCodecCtx->time_base.num = dst_scale;
     
 	// Emit one intra frame every given frames at most
-	pCodecCtx->gop_size = MAX(1, keyframes_rate); // theora crashes with gop_size = 0
+	pCodecCtx->gop_size = MAX(1, keyframes_rate);
 
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;
@@ -424,6 +420,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 		pCodecCtx->codec_id != CODEC_ID_H263P	&&
 		pCodecCtx->codec_id != CODEC_ID_FLV1	&&
 		pCodecCtx->codec_id != CODEC_ID_H264	&&
+		pCodecCtx->codec_id != CODEC_ID_THEORA	&&
 		pCodecCtx->codec_id != CODEC_ID_SNOW)
 		m_nPassNumber[pStream->index] = 0; // No two pass mode supported
 	else
@@ -577,7 +574,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							DWORD dwDstScale,
 							int bitrate,
 							int keyframes_rate,
-							float qscale)	// 2.0f best quality, 31.0f worst quality
+							float qscale)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 {
 	int nStreamNum = -1;
 	PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcFormat);
@@ -2278,6 +2275,23 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 		m_llTotalFramesOrSamples[dwStreamNum]++;
 		m_llTotalWrittenBytes[dwStreamNum] += lBytesWritten;
 		return true;
+	}
+}
+
+void CAVRec::TheoraStats(DWORD dwStreamNum)
+{
+	if (m_pFormatCtx && m_pFormatCtx->streams[dwStreamNum])
+	{
+		AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
+		if (pCodecCtx)
+		{
+			avcodec_encode_video(	pCodecCtx,
+									m_pOutbuf[dwStreamNum],
+									m_nOutbufSize[dwStreamNum],
+									NULL);
+			if (m_p2PassLogFiles[dwStreamNum] && pCodecCtx->stats_out)
+				fprintf(m_p2PassLogFiles[dwStreamNum], "%s", pCodecCtx->stats_out);
+		}
 	}
 }
 

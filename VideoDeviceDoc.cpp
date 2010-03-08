@@ -321,7 +321,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											CalcFrameRate.den,					// Scale
 											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetSwfDataRate : 0,		// Bitrate in bits/s
 											m_pDoc->m_nVideoDetSwfKeyframesRate,// Keyframes Rate				
-											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetSwfQuality : 0.0f);	// 2.0f best quality, 31.0f worst quality
+											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetSwfQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 					AVRecSwf.Open();
 				}
 
@@ -390,7 +390,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 												CalcFrameRate.den,						// Scale
 												nQualityBitrate == 1 ? m_pDoc->m_nVideoDetDataRate : 0,		// Bitrate in bits/s
 												m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
-												nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 2.0f best quality, 31.0f worst quality
+												nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 					}
 					AVRecAvi.Open();
 				}
@@ -1170,7 +1170,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 											FrameRate.den,						// Scale
 											0,									// Not using bitrate
 											DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-											m_fSnapshotVideoCompressorQuality);	// 2.0f best quality, 31.0f worst quality
+											m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 				m_pAVRecSwf->Open();
 			}
 
@@ -1222,7 +1222,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 													FrameRate.den,						// Scale
 													0,									// Not using bitrate
 													DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-													m_fSnapshotVideoCompressorQuality);	// 2.0f best quality, 31.0f worst quality
+													m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 					m_pAVRecThumbSwf->Open();
 				}
 
@@ -8241,7 +8241,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 										FrameRate.den,					// Scale
 										nQualityBitrate == 1 ? m_nVideoRecDataRate : 0,			// Bitrate in bits/s
 										m_nVideoRecKeyframesRate,		// Keyframes Rate	
-										nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f) < 0)	// 2.0f best quality, 31.0f worst quality		
+										nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f) < 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality		
 			return FALSE;
 	}
 

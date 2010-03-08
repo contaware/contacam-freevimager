@@ -814,7 +814,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 										FrameRate.den,							// Scale
 										nQualityBitrate == 1 ? m_pDlg->m_nVideoCompressorDataRate : 0,			// Bitrate in bits/s
 										m_pDlg->m_nVideoCompressorKeyframesRate,// Keyframes Rate					
-										nQualityBitrate == 0 ? m_pDlg->m_fVideoCompressorQuality : 0.0f) != 0)	// 2.0f best quality, 31.0f worst quality
+										nQualityBitrate == 0 ? m_pDlg->m_fVideoCompressorQuality : 0.0f) != 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 				throw (int)0;
 		}
 		if (!m_pAVRec->Open())
