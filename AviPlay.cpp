@@ -3609,8 +3609,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		m_nOneFrameDelay = 1;
     if (len < 0)
 		return false;
-	if (bSkipFrame)
-		return true;
+	if (bSkipFrame && m_pCodecCtx->codec_id != CODEC_ID_THEORA) // Theora supports encoded 0-byte-frames which mean repeat last one,
+		return true;											// we cannot skip previous frames because if we exactly seek to such
+																// a 0-byte-frame we would not have the previous one!
 
 	// sws_scale has some problems with 8 bpp images, copy it manually
 	if (m_pCodecCtx->pix_fmt == PIX_FMT_PAL8)
@@ -3812,8 +3813,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		m_nOneFrameDelay = 1;
     if (len < 0)
 		return false;
-	if (bSkipFrame)
-		return true;
+	if (bSkipFrame && m_pCodecCtx->codec_id != CODEC_ID_THEORA)	// Theora supports encoded 0-byte-frames which mean repeat last one,
+		return true;											// we cannot skip previous frames because if we exactly seek to such
+																// a 0-byte-frame we would not have the previous one!
 
 	// sws_scale has some problems with 8 bpp images, copy it manually
 	if (m_pCodecCtx->pix_fmt == PIX_FMT_PAL8)

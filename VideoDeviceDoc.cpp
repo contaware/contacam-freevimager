@@ -13078,6 +13078,8 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 												m_pOutbuf + NETFRAME_HEADER_SIZE,
 												m_nOutbufSize - NETFRAME_HEADER_SIZE,
 												m_pFrame);
+		if (nEncodedSize < 0)
+			return -1;
 		ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
 		*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
 		*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;
@@ -13140,6 +13142,8 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 													m_pOutbuf + NETFRAME_HEADER_SIZE,
 													m_nOutbufSize - NETFRAME_HEADER_SIZE,
 													m_pFrameI420);
+			if (nEncodedSize < 0)
+				return -1;
 			ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
 			*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
 			*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;

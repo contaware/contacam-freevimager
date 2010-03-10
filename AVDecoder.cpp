@@ -522,10 +522,7 @@ BOOL CAVDecoder::GetFrame()
 
             // Was there an error?
             if (bytesDecoded < 0)
-            {
-                //fprintf(stderr, "Error while decoding frame\n");
                 return FALSE;
-            }
 
 			// Update Pos
             m_nBytesRemaining -= bytesDecoded;

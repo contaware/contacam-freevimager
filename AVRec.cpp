@@ -2236,8 +2236,9 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 											m_nOutbufSize[dwStreamNum],
 											m_pFrame[dwStreamNum]);
         
-		// If zero size, it means the image was buffered
-        if (out_size > 0)
+		// If zero size, it means the image was buffered (if B frames enabled)
+		// or an empty delta frame was issued by libtheora for example
+        if (out_size >= 0)
 		{
             AVPacket pkt;
             av_init_packet(&pkt);
