@@ -372,6 +372,6 @@ AVCodec libtheora_encoder = {
     .close = encode_close,
     .encode = encode_frame,
     .capabilities = CODEC_CAP_DELAY, // needed to get the statsfile summary
-    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, PIX_FMT_YUV422P, PIX_FMT_YUV444P, PIX_FMT_NONE},
+    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV420P, /*PIX_FMT_YUV422P, PIX_FMT_YUV444P,*/ PIX_FMT_NONE}, // Oli commented because vp3 decoder is not supporting it yet
     .long_name = NULL_IF_CONFIG_SMALL("libtheora Theora"),
 };

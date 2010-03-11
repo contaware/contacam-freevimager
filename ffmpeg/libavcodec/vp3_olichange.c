@@ -949,7 +949,7 @@ static int unpack_vlcs(Vp3DecodeContext *s, GetBitContext *gb,
     if (blocks_ended)
         dct_tokens[j++] = blocks_ended << 2;
 
-    while (coeff_i < num_coeffs) {
+    while (coeff_i < num_coeffs && (gb->size_in_bits - get_bits_count(gb)) > 0) {
             /* decode a VLC into a token */
             token = get_vlc2(gb, vlc_table, 5, 3);
             /* use the token to get a zero run, a coefficient, and an eob run */
@@ -995,7 +995,7 @@ static int unpack_vlcs(Vp3DecodeContext *s, GetBitContext *gb,
                 }
 
                 if (coeff_index + zero_run > 64) {
-                    av_log(s->avctx, AV_LOG_ERROR, "Invalid zero run of %d with"
+                    av_log(s->avctx, AV_LOG_DEBUG, "Invalid zero run of %d with"
                            " %d coeffs left\n", zero_run, 64-coeff_index);
                     zero_run = 64 - coeff_index;
                 }
@@ -1577,7 +1577,7 @@ static void render_slice(Vp3DecodeContext *s, int slice)
       *     dispatch (slice - 1);
       */
 
-    vp3_draw_horiz_band(s, 64*slice + 64-16);
+    vp3_draw_horiz_band(s, FFMIN(64*slice + 64-16, s->height-16));
 }
 
 /*
@@ -1820,6 +1820,13 @@ static int vp3_decode_frame(AVCodecContext *avctx,
     if (avctx->skip_frame >= AVDISCARD_NONKEY && !s->keyframe)
         return buf_size;
 
+    s->current_frame.reference = 3;
+    s->current_frame.pict_type = s->keyframe ? FF_I_TYPE : FF_P_TYPE;
+    if (avctx->get_buffer(avctx, &s->current_frame) < 0) {
+        av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+        goto error;
+    }
+
     if (s->keyframe) {
         if (!s->theora)
         {
@@ -1838,36 +1845,18 @@ static int vp3_decode_frame(AVCodecContext *avctx,
                     av_log(s->avctx, AV_LOG_ERROR, "Warning, unsupported keyframe coding type?!\n");
             skip_bits(&gb, 2); /* reserved? */
         }
-
-        if (s->last_frame.data[0] == s->golden_frame.data[0]) {
-            if (s->golden_frame.data[0])
-                avctx->release_buffer(avctx, &s->golden_frame);
-            s->last_frame= s->golden_frame; /* ensure that we catch any access to this released frame */
-        } else {
-            if (s->golden_frame.data[0])
-                avctx->release_buffer(avctx, &s->golden_frame);
-            if (s->last_frame.data[0])
-                avctx->release_buffer(avctx, &s->last_frame);
-        }
-
-        s->golden_frame.reference = 3;
-        if(avctx->get_buffer(avctx, &s->golden_frame) < 0) {
-            av_log(s->avctx, AV_LOG_ERROR, "vp3: get_buffer() failed\n");
-            return -1;
-        }
-
-        /* golden frame is also the current frame */
-        s->current_frame= s->golden_frame;
     } else {
-        /* allocate a new current frame */
-        s->current_frame.reference = 3;
         if (!s->golden_frame.data[0]) {
-            av_log(s->avctx, AV_LOG_ERROR, "vp3: first frame not a keyframe\n");
-            return -1;
-        }
-        if(avctx->get_buffer(avctx, &s->current_frame) < 0) {
-            av_log(s->avctx, AV_LOG_ERROR, "vp3: get_buffer() failed\n");
-            return -1;
+            av_log(s->avctx, AV_LOG_WARNING, "vp3: first frame not a keyframe\n");
+
+            s->golden_frame.reference = 3;
+            s->golden_frame.pict_type = FF_I_TYPE;
+            if (avctx->get_buffer(avctx, &s->golden_frame) < 0) {
+                av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+                goto error;
+            }
+            s->last_frame = s->golden_frame;
+            s->last_frame.type = FF_BUFFER_TYPE_COPY;
         }
     }
 
@@ -1878,23 +1867,23 @@ static int vp3_decode_frame(AVCodecContext *avctx,
 
     if (unpack_superblocks(s, &gb)){
         av_log(s->avctx, AV_LOG_ERROR, "error in unpack_superblocks\n");
-        return -1;
+        goto error;
     }
     if (unpack_modes(s, &gb)){
         av_log(s->avctx, AV_LOG_ERROR, "error in unpack_modes\n");
-        return -1;
+        goto error;
     }
     if (unpack_vectors(s, &gb)){
         av_log(s->avctx, AV_LOG_ERROR, "error in unpack_vectors\n");
-        return -1;
+        goto error;
     }
     if (unpack_block_qpis(s, &gb)){
         av_log(s->avctx, AV_LOG_ERROR, "error in unpack_block_qpis\n");
-        return -1;
+        goto error;
     }
     if (unpack_dct_coeffs(s, &gb)){
         av_log(s->avctx, AV_LOG_ERROR, "error in unpack_dct_coeffs\n");
-        return -1;
+        goto error;
     }
 
     for (i = 0; i < 3; i++) {
@@ -1920,15 +1909,27 @@ static int vp3_decode_frame(AVCodecContext *avctx,
 
     /* release the last frame, if it is allocated and if it is not the
      * golden frame */
-    if ((s->last_frame.data[0]) &&
-        (s->last_frame.data[0] != s->golden_frame.data[0]))
+    if (s->last_frame.data[0] && s->last_frame.type != FF_BUFFER_TYPE_COPY)
         avctx->release_buffer(avctx, &s->last_frame);
 
     /* shuffle frames (last = current) */
     s->last_frame= s->current_frame;
+
+    if (s->keyframe) {
+        if (s->golden_frame.data[0])
+            avctx->release_buffer(avctx, &s->golden_frame);
+        s->golden_frame = s->current_frame;
+        s->last_frame.type = FF_BUFFER_TYPE_COPY;
+    }
+
     s->current_frame.data[0]= NULL; /* ensure that we catch any access to this released frame */
 
     return buf_size;
+
+error:
+    if (s->current_frame.data[0])
+        avctx->release_buffer(avctx, &s->current_frame);
+    return -1;
 }
 
 /*
@@ -1960,9 +1961,9 @@ static av_cold int vp3_decode_end(AVCodecContext *avctx)
     free_vlc(&s->motion_vector_vlc);
 
     /* release all frames */
-    if (s->golden_frame.data[0] && s->golden_frame.data[0] != s->last_frame.data[0])
+    if (s->golden_frame.data[0])
         avctx->release_buffer(avctx, &s->golden_frame);
-    if (s->last_frame.data[0])
+    if (s->last_frame.data[0] && s->last_frame.type != FF_BUFFER_TYPE_COPY)
         avctx->release_buffer(avctx, &s->last_frame);
     /* no need to release the current_frame since it will always be pointing
      * to the same frame as either the golden or last frame */
