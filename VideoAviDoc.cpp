@@ -6064,9 +6064,9 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	DWORD dwFourCC =		((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc ? FCC('DIVX') :
 							(((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc ? FCC('SNOW') :
 							FCC('theo'));
-	float fVideoQuality =	(dwFourCC == FCC('DIVX')) ? 6.0f :
+	float fVideoQuality =	(dwFourCC == FCC('DIVX')) ? 7.0f :
 							(dwFourCC == FCC('SNOW')) ? 5.0f :
-							23.0f;
+							19.0f;
 	BOOL res = SaveAsAVCODEC(nPassNumber,
 							pShrinkDocTo->m_sOutFileName,
 							m_pAVIPlay->GetFileName(),

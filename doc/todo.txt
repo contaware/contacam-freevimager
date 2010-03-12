@@ -20,3 +20,10 @@ Picture:
 Detection:
 ----------
 - SMS send if detection with an external program, see naughter
+
+Video:
+------
+VfW save with CAVIFile is crappy: files bigger than 1GB are not supported,
+files which do not have a VfW decompressor are not saved, it crashes
+all the time... Eventually add ICCompress to CAVRec, but do not integrate
+CAVIPlay into CAVIFile it is to complicated, especially because of audio!

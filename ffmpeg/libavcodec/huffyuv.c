@@ -229,7 +229,7 @@ static inline void sub_left_prediction_bgr32(HYuvContext *s, uint8_t *dst, uint8
     *blue=  src[(w-1)*4+B];
 }
 
-static void read_len_table(uint8_t *dst, GetBitContext *gb){
+static int read_len_table(uint8_t *dst, GetBitContext *gb){
     int i, val, repeat;
 
     for(i=0; i<256;){
@@ -238,9 +238,14 @@ static void read_len_table(uint8_t *dst, GetBitContext *gb){
         if(repeat==0)
             repeat= get_bits(gb, 8);
 //printf("%d %d\n", val, repeat);
+        if(i+repeat > 256) {
+            av_log(NULL, AV_LOG_ERROR, "Error reading huffman table\n");
+            return -1;
+        }
         while (repeat--)
             dst[i++] = val;
     }
+    return 0;
 }
 
 static int generate_bits_table(uint32_t *dst, uint8_t *len_table){
@@ -395,8 +400,8 @@ static int read_huffman_tables(HYuvContext *s, uint8_t *src, int length){
     init_get_bits(&gb, src, length*8);
 
     for(i=0; i<3; i++){
-        read_len_table(s->len[i], &gb);
-
+        if(read_len_table(s->len[i], &gb)<0)
+            return -1;
         if(generate_bits_table(s->bits[i], s->len[i])<0){
             return -1;
         }
@@ -420,9 +425,11 @@ static int read_old_huffman_tables(HYuvContext *s){
     int i;
 
     init_get_bits(&gb, classic_shift_luma, sizeof(classic_shift_luma)*8);
-    read_len_table(s->len[0], &gb);
+    if(read_len_table(s->len[0], &gb)<0)
+        return -1;
     init_get_bits(&gb, classic_shift_chroma, sizeof(classic_shift_chroma)*8);
-    read_len_table(s->len[1], &gb);
+    if(read_len_table(s->len[1], &gb)<0)
+        return -1;
 
     for(i=0; i<256; i++) s->bits[0][i] = classic_add_luma  [i];
     for(i=0; i<256; i++) s->bits[1][i] = classic_add_chroma[i];
@@ -1214,6 +1221,9 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     HYuvContext *s = avctx->priv_data;
     int i;
+
+    if (s->picture.data[0])
+        avctx->release_buffer(avctx, &s->picture);
 
     common_end(s);
     av_freep(&s->bitstream_buffer);

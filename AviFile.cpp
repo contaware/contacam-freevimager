@@ -703,6 +703,13 @@ bool CAVIFile::InitRead(UINT uiMode/*=OF_READ | OF_SHARE_DENY_NONE*/)
 					// Open for Single Frame Extraction
 					m_pVideoGetFrame[dwStreamNum] = ::AVIStreamGetFrameOpen(m_pVideoStream[dwStreamNum],
 																			&BmiH);
+					if (!m_pVideoGetFrame[dwStreamNum] && BmiH.biBitCount != 24)
+					{
+						BmiH.biBitCount = 24;
+						m_pVideoGetFrame[dwStreamNum] = ::AVIStreamGetFrameOpen(m_pVideoStream[dwStreamNum],
+																				&BmiH);
+					}
+
 					// If Error
 					if (!m_pVideoGetFrame[dwStreamNum])
 					{
@@ -778,6 +785,13 @@ bool CAVIFile::InitRead(UINT uiMode/*=OF_READ | OF_SHARE_DENY_NONE*/)
 				// Open for Single Frame Extraction
 				m_pVideoGetFrame[dwStreamNum] = ::AVIStreamGetFrameOpen(m_pVideoStream[dwStreamNum],
 																		&BmiH);
+				if (!m_pVideoGetFrame[dwStreamNum] && BmiH.biBitCount != 24)
+				{
+					BmiH.biBitCount = 24;
+					m_pVideoGetFrame[dwStreamNum] = ::AVIStreamGetFrameOpen(m_pVideoStream[dwStreamNum],
+																			&BmiH);
+				}
+
 				// If Error
 				if (!m_pVideoGetFrame[dwStreamNum])
 				{
