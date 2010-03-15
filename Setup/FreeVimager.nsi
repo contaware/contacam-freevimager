@@ -56,7 +56,7 @@ OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
 !endif
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\${APPNAME_NOEXT}
+InstallDir "$PROGRAMFILES\${APPNAME_NOEXT}"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)

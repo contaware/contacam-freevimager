@@ -35,28 +35,28 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-WinAll.exe"
 !else
 !ifdef INSTALLER_WIN9X
 OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-WinAll-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
 OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
 !endif
 !endif
 !endif
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\${APPNAME_NOEXT}
+InstallDir "$PROGRAMFILES\${APPNAME_NOEXT}"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
