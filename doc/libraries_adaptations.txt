@@ -118,39 +118,6 @@ static av_cold int encode_end(AVCodecContext *avctx)
 }
 
 
-- libavcodec/ffv1.c has been fixed in ffmpeg project, it was:
-static int common_end(AVCodecContext *avctx){
-    FFV1Context *s = avctx->priv_data;
-    int i;
-
-    for(i=0; i<s->plane_count; i++){
-        PlaneContext *p= &s->plane[i];
-
-        av_freep(&p->state);
-        av_freep(&p->vlc_state);	// Added this line
-    }
-
-    return 0;
-}
-
-
-- libavcodec/huffyuv.c has been fixed in ffmpeg project, it was:
-static int decode_end(AVCodecContext *avctx)
-{
-    HYuvContext *s = avctx->priv_data;
-    int i;
-
-    common_end(s);
-    av_freep(&s->bitstream_buffer);
-
-    for(i=0; i<6; i++){			// Changed from 3 -> 6
-        free_vlc(&s->vlc[i]);
-    }
-
-    return 0;
-}
-
-
 - libavcodec/libtheoraenc.c quality conversion change,
   commented out color_primaries and fixed setting the keyframe flag!
 

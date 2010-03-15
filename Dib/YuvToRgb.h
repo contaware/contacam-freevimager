@@ -117,12 +117,22 @@ extern void YUVToRGB32Flip(	unsigned char *src0,		// Y Plane
 							int width,
 							int height);
 
-// YV16 to RGB (Equivalent FCC Is: Y42B)
-extern void YV16ToRGB24(unsigned char *src,	// Y Plane, U Plane and V Plane
+// YV16 to RGB
+extern void YV16ToRGB24(unsigned char *src,	// Y Plane, V Plane and U Plane
 						unsigned char *dst,	// RGB24 Dib
 						int width,
 						int height);
-extern void YV16ToRGB32(unsigned char *src,	// Y Plane, U Plane and V Plane
+extern void YV16ToRGB32(unsigned char *src,	// Y Plane, V Plane and U Plane
+						unsigned char *dst,	// RGB32 Dib
+						int width,
+						int height);
+
+// Y42B to RGB
+extern void Y42BToRGB24(unsigned char *src,	// Y Plane, U Plane and V Plane
+						unsigned char *dst,	// RGB24 Dib
+						int width,
+						int height);
+extern void Y42BToRGB32(unsigned char *src,	// Y Plane, U Plane and V Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
@@ -271,8 +281,9 @@ __forceinline bool IsSupportedYuvToRgbFormat(DWORD dwFourCC)
 		return true;
 	else if (dwFourCC == FCC('Y41P'))
 		return true;
-	else if (dwFourCC == FCC('YV16')	||
-			dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
+		return true;
+	else if (dwFourCC == FCC('Y42B'))
 		return true;
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||

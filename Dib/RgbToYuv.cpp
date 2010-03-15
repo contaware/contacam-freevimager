@@ -121,10 +121,17 @@ bool RGB24ToYUV(	DWORD dwFourCC,
 							height,
 							stride);
 	}
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
 	{
 		return RGB24ToYV16(	src,
+							dst,
+							width,
+							height,
+							stride);
+	}
+	else if (dwFourCC == FCC('Y42B'))
+	{
+		return RGB24ToY42B(	src,
 							dst,
 							width,
 							height,
@@ -227,10 +234,17 @@ bool RGB32ToYUV(	DWORD dwFourCC,
 							height,
 							stride);
 	}
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
 	{
 		return RGB32ToYV16(	src,
+							dst,
+							width,
+							height,
+							stride);
+	}
+	else if (dwFourCC == FCC('Y42B'))
+	{
+		return RGB32ToY42B(	src,
 							dst,
 							width,
 							height,
@@ -770,8 +784,125 @@ bool RGB32ToI420(	unsigned char *src,	// RGB32 Dib
 	return true;
 }
 
-// Equivalent FCC Is: Y42B
 bool RGB24ToYV16(	unsigned char *src,	// RGB24 Dib
+					unsigned char *dst,	// Y Plane, V Plane and U Plane
+					int width,
+					int height,
+					int stride/*=0*/)
+{
+	int u0, u1, v0, v1;
+	unsigned char y0, y1;
+	unsigned char *r, *g, *b;
+	int i, j;
+
+	// Check
+	if (width%2)
+		return false;
+
+	// Set Stride if not set
+	if (stride <= 0)
+		stride = width;
+
+	int nChromaOffset = stride * height;
+	int nChromaSize = stride * height / 2;
+	unsigned char* pv = dst + nChromaOffset;
+	unsigned char* pu = dst + nChromaOffset + nChromaSize;
+
+	int nDWAlignedLineSize = DWALIGNEDWIDTHBYTES(width * 24);
+
+	// Get YUV values from RGB values
+	for (i = height - 1 ; i >= 0 ; i--)
+	{
+		b = src + i*nDWAlignedLineSize;
+		g = src + i*nDWAlignedLineSize + 1;
+		r = src + i*nDWAlignedLineSize + 2;
+		for (j = 0 ; j < width ; j += 2)
+		{
+			y0 = (unsigned char)(( g_RGB2YUV_YR[*r]  +g_RGB2YUV_YG[*g]+g_RGB2YUV_YB[*b]+1048576)>>16);
+			u0 = (-g_RGB2YUV_UR[*r]  -g_RGB2YUV_UG[*g]+g_RGB2YUV_UBVR[*b]+8388608)>>16;
+			v0 = ( g_RGB2YUV_UBVR[*r]-g_RGB2YUV_VG[*g]-g_RGB2YUV_VB[*b]+8388608)>>16;
+			r+=3;
+			g+=3;
+			b+=3;
+			y1 = (unsigned char)(( g_RGB2YUV_YR[*r]  +g_RGB2YUV_YG[*g]+g_RGB2YUV_YB[*b]+1048576)>>16);
+			u1 = (-g_RGB2YUV_UR[*r]  -g_RGB2YUV_UG[*g]+g_RGB2YUV_UBVR[*b]+8388608)>>16;
+			v1 = ( g_RGB2YUV_UBVR[*r]-g_RGB2YUV_VG[*g]-g_RGB2YUV_VB[*b]+8388608)>>16;
+			r+=3;
+			g+=3;
+			b+=3;
+			*dst++ = y0;
+			*dst++ = y1;
+			*pu++ = (unsigned char)((u0+u1)>>1);
+			*pv++ = (unsigned char)((v0+v1)>>1);
+		}
+		dst += stride - width;
+		pu  += (stride - width) >> 1;
+		pv  += (stride - width) >> 1;
+	}
+
+	return true;
+}
+
+bool RGB32ToYV16(	unsigned char *src,	// RGB32 Dib
+					unsigned char *dst,	// Y Plane, V Plane and U Plane
+					int width,
+					int height,
+					int stride/*=0*/)
+{
+	int u0, u1, v0, v1;
+	unsigned char y0, y1;
+	unsigned char *r, *g, *b;
+	int i, j;
+
+	// Check
+	if (width%2)
+		return false;
+
+	// Set Stride if not set
+	if (stride <= 0)
+		stride = width;
+
+	int nChromaOffset = stride * height;
+	int nChromaSize = stride * height / 2;
+	unsigned char* pv = dst + nChromaOffset;
+	unsigned char* pu = dst + nChromaOffset + nChromaSize;
+
+	int nDWAlignedLineSize = width << 2;
+
+	// Get YUV values from RGB values
+	for (i = height - 1 ; i >= 0 ; i--)
+	{
+		b = src + i*nDWAlignedLineSize;
+		g = src + i*nDWAlignedLineSize + 1;
+		r = src + i*nDWAlignedLineSize + 2;
+		for (j = 0 ; j < width ; j += 2)
+		{
+			y0 = (unsigned char)(( g_RGB2YUV_YR[*r]  +g_RGB2YUV_YG[*g]+g_RGB2YUV_YB[*b]+1048576)>>16);
+			u0 = (-g_RGB2YUV_UR[*r]  -g_RGB2YUV_UG[*g]+g_RGB2YUV_UBVR[*b]+8388608)>>16;
+			v0 = ( g_RGB2YUV_UBVR[*r]-g_RGB2YUV_VG[*g]-g_RGB2YUV_VB[*b]+8388608)>>16;
+			r+=4;
+			g+=4;
+			b+=4;
+			y1 = (unsigned char)(( g_RGB2YUV_YR[*r]  +g_RGB2YUV_YG[*g]+g_RGB2YUV_YB[*b]+1048576)>>16);
+			u1 = (-g_RGB2YUV_UR[*r]  -g_RGB2YUV_UG[*g]+g_RGB2YUV_UBVR[*b]+8388608)>>16;
+			v1 = ( g_RGB2YUV_UBVR[*r]-g_RGB2YUV_VG[*g]-g_RGB2YUV_VB[*b]+8388608)>>16;
+			r+=4;
+			g+=4;
+			b+=4;
+			*dst++ = y0;
+			*dst++ = y1;
+			*pu++ = (unsigned char)((u0+u1)>>1);
+			*pv++ = (unsigned char)((v0+v1)>>1);
+		}
+		dst += stride - width;
+		pu  += (stride - width) >> 1;
+		pv  += (stride - width) >> 1;
+	}
+
+	return true;
+}
+
+bool RGB24ToY42B(	unsigned char *src,	// RGB24 Dib
 					unsigned char *dst,	// Y Plane, U Plane and V Plane
 					int width,
 					int height,
@@ -830,8 +961,7 @@ bool RGB24ToYV16(	unsigned char *src,	// RGB24 Dib
 	return true;
 }
 
-// Equivalent FCC Is: Y42B
-bool RGB32ToYV16(	unsigned char *src,	// RGB32 Dib
+bool RGB32ToY42B(	unsigned char *src,	// RGB32 Dib
 					unsigned char *dst,	// Y Plane, U Plane and V Plane
 					int width,
 					int height,

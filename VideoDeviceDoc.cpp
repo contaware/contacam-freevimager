@@ -13059,6 +13059,7 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 
 	// Flip Src Frame U <-> V pointers
 	if (pDib->GetCompression() == FCC('YV12') ||
+		pDib->GetCompression() == FCC('YV16') ||
 		pDib->GetCompression() == FCC('YVU9'))
 	{
 		uint8_t* pTemp = m_pFrame->data[1];

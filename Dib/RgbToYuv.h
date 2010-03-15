@@ -125,13 +125,23 @@ extern bool RGB32ToI420(unsigned char *src,	// RGB32 Dib
 						int height,
 						int stride = 0);
 
-// Equivalent FCC Is: Y42B
 extern bool RGB24ToYV16(unsigned char *src,	// RGB24 Dib
-						unsigned char *dst,	// Y Plane, U Plane and V Plane
+						unsigned char *dst,	// Y Plane, V Plane and U Plane
 						int width,
 						int height,
 						int stride = 0);
 extern bool RGB32ToYV16(unsigned char *src,	// RGB32 Dib
+						unsigned char *dst,	// Y Plane, V Plane and U Plane
+						int width,
+						int height,
+						int stride = 0);
+
+extern bool RGB24ToY42B(unsigned char *src,	// RGB24 Dib
+						unsigned char *dst,	// Y Plane, U Plane and V Plane
+						int width,
+						int height,
+						int stride = 0);
+extern bool RGB32ToY42B(unsigned char *src,	// RGB32 Dib
 						unsigned char *dst,	// Y Plane, U Plane and V Plane
 						int width,
 						int height,
@@ -251,8 +261,9 @@ __forceinline bool IsSupportedRgbToYuvFormat(DWORD dwFourCC)
 		return true;
 	else if (dwFourCC == FCC('Y41P'))
 		return true;
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
+		return true;
+	else if (dwFourCC == FCC('Y42B'))
 		return true;
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||
@@ -287,8 +298,9 @@ __forceinline int FourCCToBpp(DWORD dwFourCC)
 		return 16;
 	else if (dwFourCC == FCC('Y41P'))
 		return 12;
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
+		return 16;
+	else if (dwFourCC == FCC('Y42B'))
 		return 16;
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||
@@ -323,8 +335,9 @@ __forceinline int CalcYUVStride(DWORD dwFourCC, int width)
 		return width * 2;
 	else if (dwFourCC == FCC('Y41P'))
 		return width * 3 / 2;
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
+		return width;
+	else if (dwFourCC == FCC('Y42B'))
 		return width;
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||
@@ -359,8 +372,9 @@ __forceinline int CalcYUVSize(DWORD dwFourCC, int stride, int height)
 		return stride * height;
 	else if (dwFourCC == FCC('Y41P'))
 		return stride * height;
-	else if (	dwFourCC == FCC('YV16')	||
-				dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
+		return stride * height * 2;
+	else if (dwFourCC == FCC('Y42B'))
 		return stride * height * 2;
 	else if (	dwFourCC == FCC('Y800') ||
 				dwFourCC == FCC('Y8  ') ||

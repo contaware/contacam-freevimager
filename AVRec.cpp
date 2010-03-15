@@ -1782,7 +1782,7 @@ __forceinline DWORD CAVRec::DstDeinterlacePixFormatToFourCC(PixelFormat pix_fmt)
 		case PIX_FMT_YUV420P :
 			return FCC('I420');
 		case PIX_FMT_YUV422P :
-			return FCC('YV16');
+			return FCC('Y42B');
 		case PIX_FMT_YUV444P :
 			return FCC('0000');	// No Known FCC
 		case PIX_FMT_YUV411P :
@@ -1969,6 +1969,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 
 			// Flip U <-> V pointers
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
+				pBmi->bmiHeader.biCompression == FCC('YV16') ||
 				pBmi->bmiHeader.biCompression == FCC('YVU9'))
 			{
 				uint8_t* pTemp = m_pFrameTemp[dwStreamNum]->data[1];
@@ -2078,6 +2079,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 
 			// Flip U <-> V pointers
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
+				pBmi->bmiHeader.biCompression == FCC('YV16') ||
 				pBmi->bmiHeader.biCompression == FCC('YVU9'))
 			{
 				uint8_t* pTemp = m_pFrame[dwStreamNum]->data[1];
@@ -2118,6 +2120,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 	{
 		// Flip U <-> V pointers
 		if (pCodecCtx->codec_tag == FCC('YV12') ||
+			pCodecCtx->codec_tag == FCC('YV16') ||
 			pCodecCtx->codec_tag == FCC('YVU9'))
 		{
 			uint8_t* pTemp = m_pFrame[dwStreamNum]->data[1];
@@ -2187,7 +2190,9 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 					lpDstBits += m_pFrame[dwStreamNum]->linesize[0];
 				}
 				int nChromaHeight = pCodecCtx->height;
-				if (pCodecCtx->codec_tag == FCC('YV12') || pCodecCtx->codec_tag == FCC('I420') || pCodecCtx->codec_tag == FCC('IYUV'))
+				if (pCodecCtx->codec_tag == FCC('YV16') || pCodecCtx->codec_tag == FCC('Y42B'))
+					nChromaHeight >>= 0;
+				else if (pCodecCtx->codec_tag == FCC('YV12') || pCodecCtx->codec_tag == FCC('I420') || pCodecCtx->codec_tag == FCC('IYUV'))
 					nChromaHeight >>= 1;
 				else
 					nChromaHeight >>= 2;

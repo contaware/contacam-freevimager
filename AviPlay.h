@@ -1357,7 +1357,7 @@ __forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(
 			return PIX_FMT_YUV411P;
 		else if (	pBMI->bmiHeader.biCompression == FCC('YV16')	||
 					pBMI->bmiHeader.biCompression == FCC('Y42B'))
-			return PIX_FMT_YUV422P;
+			return PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
 		else if (	pBMI->bmiHeader.biCompression == FCC('  Y8')	||
 					pBMI->bmiHeader.biCompression == FCC('Y800')	||
 					pBMI->bmiHeader.biCompression == FCC('GREY'))

@@ -3944,7 +3944,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass
 }
 
 // Tested and working with the following YUV FourCCs:
-// I420, YV12, YV16, Y800, Y41P, YVU9, YUV9, YUY2, UYVY, YVYU
+// I420, YV12, YV16, Y42B, Y800, Y41P, YVU9, YUV9, YUY2, UYVY, YVYU
 BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
 											const CString& sDstFileName,
 											CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
@@ -4136,6 +4136,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 								(dwVideoCompressorFourCC == FCC('I420')	||
 								dwVideoCompressorFourCC == FCC('YV12')	||
 								dwVideoCompressorFourCC == FCC('YV16')	||
+								dwVideoCompressorFourCC == FCC('Y42B')	||
 								dwVideoCompressorFourCC == FCC('YVU9')	||
 								dwVideoCompressorFourCC == FCC('YUV9')	||
 								dwVideoCompressorFourCC == FCC('YUY2')	||
@@ -4172,6 +4173,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 						else if (	dwVideoCompressorFourCC == FCC('I420')	||
 									dwVideoCompressorFourCC == FCC('YV12')	||
 									dwVideoCompressorFourCC == FCC('YV16')	||
+									dwVideoCompressorFourCC == FCC('Y42B')	||
 									dwVideoCompressorFourCC == FCC('YVU9')	||
 									dwVideoCompressorFourCC == FCC('YUV9')	||
 									dwVideoCompressorFourCC == FCC('YUY2')	||

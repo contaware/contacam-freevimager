@@ -1264,6 +1264,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 	// Allocate BMI for YUV
 	else
 	{
+		wBpp = ::FourCCToBpp(wCompression);
 		int stride = ::CalcYUVStride(wCompression, dwWidth);
 		if (stride > 0)
 			m_dwImageSize = ::CalcYUVSize(wCompression, stride, dwHeight);
@@ -1490,6 +1491,7 @@ BOOL CDib::AllocateBits(WORD wBpp,
 	// Allocate BMI for YUV
 	else
 	{
+		wBpp = ::FourCCToBpp(wCompression);
 		int stride = ::CalcYUVStride(wCompression, dwWidth);
 		if (stride > 0)
 			m_dwImageSize = ::CalcYUVSize(wCompression, stride, dwHeight);

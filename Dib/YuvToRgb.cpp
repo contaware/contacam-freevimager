@@ -198,10 +198,16 @@ bool YUVToRGB24(	DWORD dwFourCC,
 						width,
 						height);
 	}
-	else if (dwFourCC == FCC('YV16') ||
-			dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
 	{
 		YV16ToRGB24(	src,
+						dst,
+						width,
+						height);
+	}
+	else if (dwFourCC == FCC('Y42B'))
+	{
+		Y42BToRGB24(	src,
 						dst,
 						width,
 						height);
@@ -324,10 +330,16 @@ bool YUVToRGB32(	DWORD dwFourCC,
 						width,
 						height);
 	}
-	else if (dwFourCC == FCC('YV16') ||
-			dwFourCC == FCC('Y42B'))
+	else if (dwFourCC == FCC('YV16'))
 	{
 		YV16ToRGB32(	src,
+						dst,
+						width,
+						height);
+	}
+	else if (dwFourCC == FCC('Y42B'))
+	{
+		Y42BToRGB32(	src,
 						dst,
 						width,
 						height);
@@ -595,8 +607,100 @@ void YUVToRGB32Flip(unsigned char *src0,	// Y Plane
 	}
 }
 
-// Equivalent FCC Is: Y42B
-void YV16ToRGB24(	unsigned char *src,	// Y Plane, U Plane and V Plane
+void YV16ToRGB24(	unsigned char *src,	// Y Plane, V Plane and U Plane
+					unsigned char *dst,	// RGB24 Dib
+					int width,
+					int height)
+{
+	int y1, y2, u, v; 
+	unsigned char *pv, *pu;
+	int rv, gu, gv, bu;
+
+	int nChromaOffset = width * height;
+	int nChromaSize = width * height / 2;
+
+	pv = src + nChromaOffset;
+	pu = src + nChromaOffset + nChromaSize;
+
+	int nDWAlignedLineSize = DWALIGNEDWIDTHBYTES(width * 24);
+	dst = dst + (nDWAlignedLineSize * (height - 1));
+ 	for (int j = 0 ; j < height ; j++)
+	{
+		for (int i = 0 ; i < width ; i += 2)
+		{
+			u = *pu++;
+			v = *pv++;
+
+			rv = g_crv_tab[v];
+			gu = g_cgu_tab[u];
+			gv = g_cgv_tab[v];
+			bu = g_cbu_tab[u];
+
+			// up-left
+            y1 = g_y_tab[*src++];	
+			*dst++ = g_clip[384+((y1 + bu)>>16)];		// Blue 
+			*dst++ = g_clip[384+((y1 - gu - gv)>>16)];	// Green
+            *dst++ = g_clip[384+((y1 + rv)>>16)];		// Red 
+
+			// up-right
+			y2 = g_y_tab[*src++];
+			*dst++ = g_clip[384+((y2 + bu)>>16)];		// Blue
+			*dst++ = g_clip[384+((y2 - gu - gv)>>16)];	// Green
+			*dst++ = g_clip[384+((y2 + rv)>>16)];		// Red
+		}
+		dst = dst - nDWAlignedLineSize - width * 3;
+	}
+}
+
+void YV16ToRGB32(	unsigned char *src,	// Y Plane, V Plane and U Plane
+					unsigned char *dst,	// RGB32 Dib
+					int width,
+					int height)
+{
+	int y1, y2, u, v; 
+	unsigned char *pv, *pu;
+	int rv, gu, gv, bu;
+
+	int nChromaOffset = width * height;
+	int nChromaSize = width * height / 2;
+
+	pv = src + nChromaOffset;
+	pu = src + nChromaOffset + nChromaSize;
+
+	int nDWAlignedLineSize = width << 2;
+	int n2DWAlignedLineSize = width << 3;
+	dst = dst + (nDWAlignedLineSize * (height - 1));
+ 	for (int j = 0 ; j < height ; j++)
+	{
+		for (int i = 0 ; i < width ; i += 2)
+		{
+			u = *pu++;
+			v = *pv++;
+
+			rv = g_crv_tab[v];
+			gu = g_cgu_tab[u];
+			gv = g_cgv_tab[v];
+			bu = g_cbu_tab[u];
+
+			// up-left
+            y1 = g_y_tab[*src++];	
+			*dst++ = g_clip[384+((y1 + bu)>>16)];		// Blue 
+			*dst++ = g_clip[384+((y1 - gu - gv)>>16)];	// Green
+            *dst++ = g_clip[384+((y1 + rv)>>16)];		// Red
+			*dst++ = 0;									// Alpha
+
+			// up-right
+			y2 = g_y_tab[*src++];
+			*dst++ = g_clip[384+((y2 + bu)>>16)];		// Blue
+			*dst++ = g_clip[384+((y2 - gu - gv)>>16)];	// Green
+			*dst++ = g_clip[384+((y2 + rv)>>16)];		// Red
+			*dst++ = 0;									// Alpha
+		}
+		dst -= n2DWAlignedLineSize;
+	}
+}
+
+void Y42BToRGB24(	unsigned char *src,	// Y Plane, U Plane and V Plane
 					unsigned char *dst,	// RGB24 Dib
 					int width,
 					int height)
@@ -641,8 +745,7 @@ void YV16ToRGB24(	unsigned char *src,	// Y Plane, U Plane and V Plane
 	}
 }
 
-// Equivalent FCC Is: Y42B
-void YV16ToRGB32(	unsigned char *src,	// Y Plane, U Plane and V Plane
+void Y42BToRGB32(	unsigned char *src,	// Y Plane, U Plane and V Plane
 					unsigned char *dst,	// RGB32 Dib
 					int width,
 					int height)
