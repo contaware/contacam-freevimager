@@ -236,7 +236,10 @@ echo "</div>\n";
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	echo "<br/>\n";
 	echo "<div align=\"center\">\n";
-	echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
+	if (isset($_GET['backuri']))
+		echo "<a class=\"back\" href=\"" . str_replace("&", "&amp;", $_GET['backuri']) . "\">" . BACK . "</a>\n";
+	else
+		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
 	echo "</div>\n";
 }
 ?>

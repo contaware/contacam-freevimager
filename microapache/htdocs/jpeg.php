@@ -47,8 +47,12 @@ echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
 echo "<img src=\"$filename\" alt=\"Image File\" align=\"middle\" />\n";
 echo "</div>\n";
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
-	echo "<br /><div align=\"center\">\n";
-	echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
+	echo "<br/>\n";
+	echo "<div align=\"center\">\n";
+	if (isset($_GET['backuri']))
+		echo "<a class=\"back\" href=\"" . str_replace("&", "&amp;", $_GET['backuri']) . "\">" . BACK . "</a>\n";
+	else
+		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
 	echo "</div>\n";
 }
 ?>

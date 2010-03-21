@@ -74,6 +74,8 @@ if ($size < 0)
 ?>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
+// Replace all 'top' with 'parent' if we are iframed from another server (different domain).
+// For security reasons in this special case we are not allowed to access the top window name.
 function changeStyle(id) {
 	if (top.window.name != '' && document.getElementById(top.window.name))
 		document.getElementById(top.window.name).className = 'notselected';
@@ -283,7 +285,7 @@ if ($handle = @opendir($dir)) {
 					$swffile = $dir."/".basename($file, ".gif").".swf";
 					$avifile = $dir."/".basename($file, ".gif").".avi";
 					if (is_file($swffile))
-						echo "<a href=\"swf.php?file=$swfuri_get\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else if (is_file($avifile))
 						echo "<a href=\"$aviuri\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else
@@ -293,7 +295,7 @@ if ($handle = @opendir($dir)) {
 					$jpegthumburi = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
 					$jpeguri_get = str_replace("/", "%2F", $jpeguri);
-					echo "<a href=\"jpeg.php?file=$jpeguri_get\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi') {
 					$aviuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
@@ -348,6 +350,8 @@ else {
 ?>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
+// Replace all 'top' with 'parent' if we are iframed from another server (different domain).
+// For security reasons in this special case we are not allowed to access the top window name.
 if (top.window.name != '' && document.getElementById(top.window.name))
 	document.getElementById(top.window.name).className = 'lastselected';
 //]]>
