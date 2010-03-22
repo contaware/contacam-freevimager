@@ -1,5 +1,13 @@
 VERSION HISTORY
 
+2.0.1 (June 29th 2010)
+
+- Assistant's friendly name change optimized
+- Back button of web interface player uses now a static link
+  and not the javascript history.back() function:
+  this is necessary because some browsers like safari or
+  chrome are badly handling the history for iframes!
+
 2.0.0 (March 18th 2010)
 
 - first public release
