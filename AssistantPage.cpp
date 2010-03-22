@@ -711,10 +711,20 @@ void CAssistantPage::Rename()
 	// Record directory
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
 	{
-		if (!::MoveDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
-			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+		// Rename
+		if (!::IsExistingDir(sNewRecordAutoSaveDir))
+		{
+			if (!::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
+				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;				// otherwise we had to use ::RenameShell()
+		}
+		// Merge
 		else
-			::DeleteDir(m_pDoc->m_sRecordAutoSaveDir);
+		{
+			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
+				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+			else
+				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir);
+		}
 	}
 	else
 		::CreateDir(sNewRecordAutoSaveDir);
@@ -729,10 +739,20 @@ void CAssistantPage::Rename()
 	// Detection directory
 	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
 	{
-		if (!::MoveDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
-			sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+		// Rename
+		if (!::IsExistingDir(sNewDetectionAutoSaveDir))
+		{
+			if (!::MoveFile(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
+				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;				// otherwise we had to use ::RenameShell()
+		}
+		// Merge
 		else
-			::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir);
+		{
+			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
+				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+			else
+				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir);
+		}
 	}
 	else
 		::CreateDir(sNewDetectionAutoSaveDir);
@@ -747,10 +767,20 @@ void CAssistantPage::Rename()
 	// Snapshot directory
 	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
 	{
-		if (!::MoveDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
-			sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+		// Rename
+		if (!::IsExistingDir(sNewSnapshotAutoSaveDir))
+		{
+			if (!::MoveFile(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
+				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;				// otherwise we had to use ::RenameShell()
+		}
+		// Merge
 		else
-			::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir);
+		{
+			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
+				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+			else
+				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir);
+		}
 	}
 	else
 		::CreateDir(sNewSnapshotAutoSaveDir);

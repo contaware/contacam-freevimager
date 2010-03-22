@@ -600,13 +600,13 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	return TRUE;
 }
 
-// Recursive Directory Content Move
+// Recursive Directory Content Merge
 // Note: the szFromDir directory tree (without files) is left behind!
-#define MOVEDIRCONTENT_FREE \
+#define MERGEDIRCONTENT_FREE \
 if (pInfo) delete pInfo;\
 if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
-BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/)
+BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/)
 {
 	// Create dir
 	if (!IsExistingDir(szToDir))
@@ -626,7 +626,7 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	pInfo = new WIN32_FIND_DATA;
 	if (!pInfo)
 	{
-		MOVEDIRCONTENT_FREE;
+		MERGEDIRCONTENT_FREE;
 		return FALSE;
 	}
 
@@ -634,12 +634,12 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	srcname = new TCHAR[MAX_PATH];
 	if (!srcname)
 	{
-		MOVEDIRCONTENT_FREE;
+		MERGEDIRCONTENT_FREE;
 		return FALSE;
 	}
 	if (_tcslen(szFromDir) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*' and to avoid an auto-recursion!
 	{
-		MOVEDIRCONTENT_FREE;
+		MERGEDIRCONTENT_FREE;
 		return FALSE;
 	}
 	if (szFromDir[_tcslen(szFromDir) - 1] == _T('\\'))
@@ -659,7 +659,7 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	dstname = new TCHAR[MAX_PATH];
 	if (!dstname)
 	{
-		MOVEDIRCONTENT_FREE;
+		MERGEDIRCONTENT_FREE;
 		return FALSE;
 	}
 	if (szToDir[_tcslen(szToDir) - 1] == _T('\\'))
@@ -667,11 +667,11 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 	else
 		bDstBackslashEnding = FALSE;
 
-	// Move
+	// Merge
     hp = FindFirstFile(srcname, pInfo);
     if (!hp || (hp == INVALID_HANDLE_VALUE))
 	{
-		MOVEDIRCONTENT_FREE;
+		MERGEDIRCONTENT_FREE;
         return FALSE;
 	}
     do
@@ -695,10 +695,10 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 		dstname[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!MoveDirContent(srcname, dstname, bOverwriteIfExists))
+			if (!MergeDirContent(srcname, dstname, bOverwriteIfExists))
 			{
 				FindClose(hp);
-				MOVEDIRCONTENT_FREE;
+				MERGEDIRCONTENT_FREE;
 				return FALSE;
 			}
 		}
@@ -716,7 +716,7 @@ BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 
 	// Clean-up
 	FindClose(hp);
-	MOVEDIRCONTENT_FREE;
+	MERGEDIRCONTENT_FREE;
 
 	return TRUE;
 }

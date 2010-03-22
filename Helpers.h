@@ -74,7 +74,7 @@ extern BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege,BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
 extern BOOL CreateDir(LPCTSTR szNewDir);
 extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
-extern BOOL MoveDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
+extern BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE);
 extern BOOL DeleteDir(LPCTSTR szDirName);
 extern BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles = FALSE);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
