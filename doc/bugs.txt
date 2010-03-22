@@ -47,7 +47,7 @@ the picture with the wrong stretch mode (coloroncolor) but only with small pictu
 No Support For Compressing/Decompressing Unicode File Names, even new ZipArchive doesn't support it...
 Zip File Specification doesn't support UNICODE...
 
-On Safari 4 animated gifs support is buggy!!!
+On Safari 4 animated gifs support is buggy -> solved with safari 4.0.5
 
 
 
