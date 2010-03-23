@@ -6416,14 +6416,14 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Registration"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
     PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16
     DEFPUSHBUTTON   "OK",IDOK,108,208,50,15,WS_GROUP
     LTEXT           "Click the following button to go online and buy a ContaCam license",
                     IDC_STATIC2142,13,61,178,16
-    LTEXT           "Click the following button to register your key file\n(browse to the safe place you have choosen above and select the ContaCamKey.bin file)",
+    LTEXT           "Click the following button to register your key file\n(browse to the safe place you have chosen above and select the ContaCamKey.bin file)",
                     IDC_STATIC2144,13,163,181,27
     GROUPBOX        "1. Buy License",IDC_STATIC2146,7,46,246,40
     GROUPBOX        "2. Save Key File",IDC_STATIC2147,7,97,246,40
@@ -8511,7 +8511,7 @@ BEGIN
     ID_VIEW_PREVIOUS_MONITOR "Switch to previous monitor\nTo Previous Monitor"
     ID_EDIT_PALETTE         "Edit the current palette\nEdit Palette"
     ID_VIEW_LAYERED_DLG     "Show the transparent preview display\nPreview Display"
-    ID_LAYEREDDLG_CLOSE     "Close\tClose"
+    ID_LAYEREDDLG_CLOSE     "Close\nClose"
     ID_LAYEREDDLG_OPACITY_100 "Choose a opacity of 100 %\nOpacity 100 %"
     ID_LAYEREDDLG_OPACITY_80 "Choose a opacity of 80 %\nOpacity 80 %"
     ID_LAYEREDDLG_OPACITY_60 "Choose a opacity of 60 %\nOpacity 60 %"
@@ -8781,7 +8781,6 @@ BEGIN
     IDS_STRING1570          "No Frames"
     IDS_STRING1571          "Preview Off"
     IDS_STRING1572          "Please click on a color which is not black, gray or white!"
-    IDS_STRING1573          "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"
     IDS_STRING1574          "File"
     IDS_STRING1575          "Files"
     IDS_STRING1576          "More Colors..."

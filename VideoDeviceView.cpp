@@ -1402,7 +1402,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 
 	// Status Text
 	if (pDoc->m_bShowEditDetectionZones)
-		::AfxGetMainFrame()->StatusText(ML_STRING(1573, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
 	else
 		::AfxGetMainFrame()->StatusText();
 
