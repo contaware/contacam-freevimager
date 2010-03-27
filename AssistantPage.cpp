@@ -660,6 +660,9 @@ void CAssistantPage::OnButtonApplySettings()
 
 void CAssistantPage::Rename()
 {
+	// Store current name
+	CString sOldName = m_pDoc->GetAssignedDeviceName();
+
 	// Is ANSI?
 	if (!::IsANSIConvertible(m_sName))
 	{
@@ -667,7 +670,7 @@ void CAssistantPage::Rename()
 		::AfxMessageBox(ML_STRING(1767, "Only the ANSI character set is supported for the camera name"), MB_OK | MB_ICONERROR);
 		
 		// Restore old name
-		m_sName = m_pDoc->GetAssignedDeviceName();
+		m_sName = sOldName;
 		return;
 	}
 
@@ -703,10 +706,13 @@ void CAssistantPage::Rename()
 		if (::AfxMessageBox(sMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
 		{
 			// Restore old name
-			m_sName = m_pDoc->GetAssignedDeviceName();
+			m_sName = sOldName;
 			return;
 		}
 	}
+
+	// Error code
+	DWORD dwLastError = ERROR_SUCCESS;
 
 	// Record directory
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
@@ -715,19 +721,29 @@ void CAssistantPage::Rename()
 		if (!::IsExistingDir(sNewRecordAutoSaveDir))
 		{
 			if (!::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;				// otherwise we had to use ::RenameShell()
+			{																		// otherwise we had to use ::RenameShell()
+				dwLastError = ::GetLastError();
+				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+			}
 		}
 		// Merge
 		else
 		{
-			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
+			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir)) // Do not fail on move error
+			{
+				dwLastError = ::GetLastError();
 				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+			}
 			else
-				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir);
+				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir); // No error message on failure
 		}
 	}
 	else
-		::CreateDir(sNewRecordAutoSaveDir);
+	{
+		if (!::CreateDir(sNewRecordAutoSaveDir))
+			dwLastError = ::GetLastError();
+
+	}
 	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
 	if (m_pDoc->m_pGeneralPage)
 	{			
@@ -743,19 +759,28 @@ void CAssistantPage::Rename()
 		if (!::IsExistingDir(sNewDetectionAutoSaveDir))
 		{
 			if (!::MoveFile(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;				// otherwise we had to use ::RenameShell()
+			{																			// otherwise we had to use ::RenameShell()
+				dwLastError = ::GetLastError();
+				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+			}
 		}
 		// Merge
 		else
 		{
-			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
+			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir)) // Do not fail on move error
+			{
+				dwLastError = ::GetLastError();
 				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+			}
 			else
-				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir);
+				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir); // No error message on failure
 		}
 	}
 	else
-		::CreateDir(sNewDetectionAutoSaveDir);
+	{
+		if (!::CreateDir(sNewDetectionAutoSaveDir))
+			dwLastError = ::GetLastError();
+	}
 	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
 	if (m_pDoc->m_pMovementDetectionPage)
 	{
@@ -771,25 +796,44 @@ void CAssistantPage::Rename()
 		if (!::IsExistingDir(sNewSnapshotAutoSaveDir))
 		{
 			if (!::MoveFile(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;				// otherwise we had to use ::RenameShell()
+			{																			// otherwise we had to use ::RenameShell()
+				dwLastError = ::GetLastError();
+				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+			}
 		}
 		// Merge
 		else
 		{
-			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
+			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir)) // Do not fail on move error
+			{
+				dwLastError = ::GetLastError();
 				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+			}
 			else
-				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir);
+				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir); // No error message on failure
 		}
 	}
 	else
-		::CreateDir(sNewSnapshotAutoSaveDir);
+	{
+		if (!::CreateDir(sNewSnapshotAutoSaveDir))
+			dwLastError = ::GetLastError();
+	}
 	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
 	if (m_pDoc->m_pSnapshotPage)
 	{	
 		m_pDoc->m_pSnapshotPage->m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
 		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
 		pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
+	}
+
+	// On Error
+	if (dwLastError != ERROR_SUCCESS)
+	{
+		// Error Message
+		::ShowError(dwLastError, TRUE);
+
+		// Restore old name
+		m_sName = sOldName;
 	}
 }
 
