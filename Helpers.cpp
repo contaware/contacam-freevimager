@@ -613,7 +613,7 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 if (pInfo) delete pInfo;\
 if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
-BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnMoveError/*=TRUE*/)
+BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnCopyError/*=TRUE*/)
 {
 	// Create dir
 	if (!IsExistingDir(szToDir))
@@ -702,7 +702,7 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 		dstname[MAX_PATH - 1] = _T('\0');
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!MergeDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnMoveError))
+			if (!MergeDirContent(srcname, dstname, bOverwriteIfExists, bContinueOnCopyError))
 			{
 				FindClose(hp);
 				MERGEDIRCONTENT_FREE;
@@ -715,11 +715,19 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 			{
 				if (bOverwriteIfExists)
 					DeleteFile(dstname);
-				if (!MoveFile(srcname, dstname) && !bContinueOnMoveError)
+				if (!MoveFile(srcname, dstname))
 				{
-					FindClose(hp);
-					MERGEDIRCONTENT_FREE;
-					return FALSE;
+					if (!CopyFile(srcname, dstname, !bOverwriteIfExists))
+					{
+						if (!bContinueOnCopyError)
+						{
+							FindClose(hp);
+							MERGEDIRCONTENT_FREE;
+							return FALSE;
+						}
+					}
+					else
+						DeleteFile(srcname);
 				}
 			}
 		}

@@ -717,19 +717,9 @@ void CAssistantPage::Rename()
 	// Record directory
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
 	{
-		// Rename
-		if (!::IsExistingDir(sNewRecordAutoSaveDir))
+		if (::IsExistingDir(sNewRecordAutoSaveDir) || !::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 		{
-			if (!::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-			{																		// otherwise we had to use ::RenameShell()
-				dwLastError = ::GetLastError();
-				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-			}
-		}
-		// Merge
-		else
-		{
-			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir)) // Do not fail on move error
+			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 			{
 				dwLastError = ::GetLastError();
 				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
@@ -738,12 +728,8 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir); // No error message on failure
 		}
 	}
-	else
-	{
-		if (!::CreateDir(sNewRecordAutoSaveDir))
-			dwLastError = ::GetLastError();
-
-	}
+	else if (!::CreateDir(sNewRecordAutoSaveDir))
+		dwLastError = ::GetLastError();
 	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
 	if (m_pDoc->m_pGeneralPage)
 	{			
@@ -755,19 +741,9 @@ void CAssistantPage::Rename()
 	// Detection directory
 	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
 	{
-		// Rename
-		if (!::IsExistingDir(sNewDetectionAutoSaveDir))
+		if (::IsExistingDir(sNewDetectionAutoSaveDir) || !::MoveFile(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
 		{
-			if (!::MoveFile(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-			{																			// otherwise we had to use ::RenameShell()
-				dwLastError = ::GetLastError();
-				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-			}
-		}
-		// Merge
-		else
-		{
-			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir)) // Do not fail on move error
+			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
 			{
 				dwLastError = ::GetLastError();
 				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
@@ -776,11 +752,8 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir); // No error message on failure
 		}
 	}
-	else
-	{
-		if (!::CreateDir(sNewDetectionAutoSaveDir))
-			dwLastError = ::GetLastError();
-	}
+	else if (!::CreateDir(sNewDetectionAutoSaveDir))
+		dwLastError = ::GetLastError();
 	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
 	if (m_pDoc->m_pMovementDetectionPage)
 	{
@@ -792,19 +765,9 @@ void CAssistantPage::Rename()
 	// Snapshot directory
 	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
 	{
-		// Rename
-		if (!::IsExistingDir(sNewSnapshotAutoSaveDir))
+		if (::IsExistingDir(sNewSnapshotAutoSaveDir) || !::MoveFile(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
 		{
-			if (!::MoveFile(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))	// ::MoveFile() is ok because destination is on the same volume,
-			{																			// otherwise we had to use ::RenameShell()
-				dwLastError = ::GetLastError();
-				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-			}
-		}
-		// Merge
-		else
-		{
-			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir)) // Do not fail on move error
+			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
 			{
 				dwLastError = ::GetLastError();
 				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
@@ -813,11 +776,8 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir); // No error message on failure
 		}
 	}
-	else
-	{
-		if (!::CreateDir(sNewSnapshotAutoSaveDir))
-			dwLastError = ::GetLastError();
-	}
+	else if (!::CreateDir(sNewSnapshotAutoSaveDir))
+		dwLastError = ::GetLastError();
 	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
 	if (m_pDoc->m_pSnapshotPage)
 	{	
