@@ -729,7 +729,10 @@ void CAssistantPage::Rename()
 		}
 	}
 	else if (!::CreateDir(sNewRecordAutoSaveDir))
+	{
 		dwLastError = ::GetLastError();
+		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	}
 	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
 	if (m_pDoc->m_pGeneralPage)
 	{			
@@ -753,7 +756,10 @@ void CAssistantPage::Rename()
 		}
 	}
 	else if (!::CreateDir(sNewDetectionAutoSaveDir))
+	{
 		dwLastError = ::GetLastError();
+		sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+	}
 	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
 	if (m_pDoc->m_pMovementDetectionPage)
 	{
@@ -777,7 +783,10 @@ void CAssistantPage::Rename()
 		}
 	}
 	else if (!::CreateDir(sNewSnapshotAutoSaveDir))
+	{
 		dwLastError = ::GetLastError();
+		sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+	}
 	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
 	if (m_pDoc->m_pSnapshotPage)
 	{	
