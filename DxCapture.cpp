@@ -1444,7 +1444,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
 												  m_pSrcFilter,
 												  IID_IAMDroppedFrames, (void**)&m_pDF);
 		if (FAILED(hr))
-			m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
 												  &MEDIATYPE_Video,
 												  m_pSrcFilter,
 												  IID_IAMDroppedFrames, (void**)&m_pDF);
@@ -1454,7 +1454,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
 													  m_pSrcFilter,
 													  IID_IAMDroppedFrames, (void**)&m_pDF);
 		if (FAILED(hr))
-			m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
 												  &MEDIATYPE_Video,
 												  m_pSrcFilter,
 												  IID_IAMDroppedFrames, (void**)&m_pDF);
