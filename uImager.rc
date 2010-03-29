@@ -322,8 +322,8 @@ BEGIN
     BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
         MENUITEM "&Stop\tPause",                ID_STOP_SLIDESHOW
-        MENUITEM "&Next Image\tPageDn",         ID_VIEW_NEXT_PICTURE
-        MENUITEM "&Previous Image\tPageUp",     ID_VIEW_PREVIOUS_PICTURE
+        MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
+        MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
@@ -2557,8 +2557,8 @@ BEGIN
     BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
         MENUITEM "&Stop\tPause",                ID_STOP_SLIDESHOW
-        MENUITEM "&Next Image\tPageDn",         ID_VIEW_NEXT_PICTURE
-        MENUITEM "&Previous Image\tPageUp",     ID_VIEW_PREVIOUS_PICTURE
+        MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
+        MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
