@@ -525,7 +525,15 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 		else
 			return TRUE;
 	}
-	// Normal Formats
+	// RGB Format Equivalents
+	else if (pDoc->m_DxDraw.GetCurrentSrcFourCC() == BI_RGB	&&
+			(pDoc->m_pDib->GetCompression() == BI_BITFIELDS	||
+			pDoc->m_pDib->GetCompression() == BI_RLE4		||
+			pDoc->m_pDib->GetCompression() == FCC('RLE4')	||
+			pDoc->m_pDib->GetCompression() == BI_RLE8		||
+			pDoc->m_pDib->GetCompression() == FCC('RLE8')))
+		return FALSE;
+	// Remaining Formats
 	else
 		return (pDoc->m_pDib->GetCompression() != pDoc->m_DxDraw.GetCurrentSrcFourCC());
 }
