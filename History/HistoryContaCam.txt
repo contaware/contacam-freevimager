@@ -1,12 +1,15 @@
 VERSION HISTORY
 
-2.0.1 (June 29th 2010)
+2.0.1 (April 9th 2010)
 
 - Assistant's friendly name change optimized
 - Back button of web interface player uses now a static link
   and not the javascript history.back() function:
   this is necessary because some browsers like safari or
   chrome are badly handling the history for iframes!
+- Fixed dropped frames counter for some type of capture cards
+- Fixed start problem of some capture cards with video input
+  selection (crossbar)
 
 2.0.0 (March 18th 2010)
 

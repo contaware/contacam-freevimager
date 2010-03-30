@@ -1162,12 +1162,12 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 	m_Dib.SetAlpha(TRUE);
 
 	// Adapt image
-	if (m_pDoc->m_nLayeredDlgMaxsizePercent)
+	if (m_nMaxsizePercent)
 	{
 		// Shrink if necessary
 		CSize szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
-		int nMaxSizeX = m_pDoc->m_nLayeredDlgMaxsizePercent * szMonitor.cx / 100;
-		int nMaxSizeY = m_pDoc->m_nLayeredDlgMaxsizePercent * szMonitor.cy / 100;
+		int nMaxSizeX = m_nMaxsizePercent * szMonitor.cx / 100;
+		int nMaxSizeY = m_nMaxsizePercent * szMonitor.cy / 100;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		if ((int)m_Dib.GetWidth() > nMaxSizeX || (int)m_Dib.GetHeight() > nMaxSizeY)
@@ -1192,8 +1192,8 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		int nWidth = m_Dib.GetWidth();
 		int nHeight = m_Dib.GetHeight();
-		nWidth *= m_pDoc->m_nLayeredDlgSizePerthousand / 1000; 
-		nHeight *= m_pDoc->m_nLayeredDlgSizePerthousand / 1000;
+		nWidth *= m_nSizePerthousand / 1000; 
+		nHeight *= m_nSizePerthousand / 1000;
 		if (nWidth > nMaxSizeX && nHeight > nMaxSizeY)
 		{
 			DWORD w, h;
@@ -1202,32 +1202,32 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 				// Top-Left
 				case 0 :
 					if (!m_Dib.Crop(0, 0,
-									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand)),
-									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand))))
+									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand)),
+									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand))))
 						return FALSE;
 					break;
 				// Top-Right
 				case 1 :
-					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(m_Dib.GetWidth() - w,
 									0,
 									w,
-									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand))))
+									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand))))
 						return FALSE;
 					break;
 				// Bottom-Left
 				case 2 :
-					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(0,
 									m_Dib.GetHeight() - h,
-									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand)),
+									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand)),
 									h))
 						return FALSE;
 					break;
 				// Bottom-Right
 				default :
-					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
-					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand));
+					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(m_Dib.GetWidth() - w,
 									m_Dib.GetHeight() - h,
 									w,
@@ -1244,13 +1244,13 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 				// Top-Left
 				case 0 :
 					if (!m_Dib.Crop(0, 0,
-									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand)),
+									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand)),
 									m_Dib.GetHeight()))
 						return FALSE;
 					break;
 				// Top-Right
 				case 1 :
-					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(m_Dib.GetWidth() - w,
 									0,
 									w,
@@ -1260,13 +1260,13 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 				// Bottom-Left
 				case 2 :
 					if (!m_Dib.Crop(0, 0,
-									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand)),
+									MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand)),
 									m_Dib.GetHeight()))
 						return FALSE;
 					break;
 				// Bottom-Right
 				default :
-					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					w = MIN(m_Dib.GetWidth(), (DWORD)(nMaxSizeX * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(m_Dib.GetWidth() - w,
 									0,
 									w,
@@ -1284,19 +1284,19 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 				case 0 :
 					if (!m_Dib.Crop(0, 0,
 									m_Dib.GetWidth(),
-									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand))))
+									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand))))
 						return FALSE;
 					break;
 				// Top-Right
 				case 1 :
 					if (!m_Dib.Crop(0, 0,
 									m_Dib.GetWidth(),
-									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand))))
+									MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand))))
 						return FALSE;
 					break;
 				// Bottom-Left
 				case 2 :
-					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(0,
 									m_Dib.GetHeight() - h,
 									m_Dib.GetWidth(),
@@ -1305,7 +1305,7 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 					break;
 				// Bottom-Right
 				default :
-					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_pDoc->m_nLayeredDlgSizePerthousand));
+					h = MIN(m_Dib.GetHeight(), (DWORD)(nMaxSizeY * 1000 / m_nSizePerthousand));
 					if (!m_Dib.Crop(0,
 									m_Dib.GetHeight() - h,
 									m_Dib.GetWidth(),
@@ -1316,12 +1316,12 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 		}
 
 		// Stretch if necessary
-		if (m_pDoc->m_nLayeredDlgSizePerthousand != 1000)
+		if (m_nSizePerthousand != 1000)
 		{
 			if (m_pDoc->m_bStretchModeHalftone)
 			{
-				if (!m_Dib.StretchBits(	m_Dib.GetWidth() * m_pDoc->m_nLayeredDlgSizePerthousand / 1000,
-										m_Dib.GetHeight() * m_pDoc->m_nLayeredDlgSizePerthousand / 1000,
+				if (!m_Dib.StretchBits(	m_Dib.GetWidth() * m_nSizePerthousand / 1000,
+										m_Dib.GetHeight() * m_nSizePerthousand / 1000,
 										NULL,
 										NULL,
 										TRUE,
@@ -1330,8 +1330,8 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 			}
 			else
 			{
-				if (!m_Dib.NearestNeighborResizeBits(m_Dib.GetWidth() * m_pDoc->m_nLayeredDlgSizePerthousand / 1000,
-													m_Dib.GetHeight() * m_pDoc->m_nLayeredDlgSizePerthousand / 1000,
+				if (!m_Dib.NearestNeighborResizeBits(m_Dib.GetWidth() * m_nSizePerthousand / 1000,
+													m_Dib.GetHeight() * m_nSizePerthousand / 1000,
 													NULL,
 													NULL,
 													TRUE,
@@ -13878,14 +13878,35 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 	m_pLayeredDlg->m_CurrentLayeredDib = *pDib;
 	m_LayeredDlgThread.m_Dib = *pDib;
 
+	// Vars
+	m_LayeredDlgThread.m_nMaxsizePercent = m_nLayeredDlgMaxsizePercent;
+	m_LayeredDlgThread.m_nSizePerthousand = m_nLayeredDlgSizePerthousand;
+
+	// Adapt in case a preview dib is passed
+	if (m_DocRect.Width() != pDib->GetWidth() || m_DocRect.Height() != pDib->GetHeight())
+	{
+		if (m_DocRect.Width() > m_DocRect.Height())
+		{
+			if (pDib->GetWidth() > 0)
+				m_LayeredDlgThread.m_nSizePerthousand = Round((double)m_DocRect.Width() / (double)pDib->GetWidth() *
+																(double)m_LayeredDlgThread.m_nSizePerthousand);
+		}
+		else
+		{
+			if (pDib->GetHeight() > 0)
+				m_LayeredDlgThread.m_nSizePerthousand = Round((double)m_DocRect.Height() / (double)pDib->GetHeight() *
+																(double)m_LayeredDlgThread.m_nSizePerthousand);
+		}
+	}
+
 	// Calc. dialog size
 	m_nLayeredDlgWidth = pDib->GetWidth();
 	m_nLayeredDlgHeight = pDib->GetHeight();
 	CSize szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
-	if (m_nLayeredDlgMaxsizePercent)
+	if (m_LayeredDlgThread.m_nMaxsizePercent)
 	{
-		int nMaxSizeX = m_nLayeredDlgMaxsizePercent * szMonitor.cx / 100;
-		int nMaxSizeY = m_nLayeredDlgMaxsizePercent * szMonitor.cy / 100;
+		int nMaxSizeX = m_LayeredDlgThread.m_nMaxsizePercent * szMonitor.cx / 100;
+		int nMaxSizeY = m_LayeredDlgThread.m_nMaxsizePercent * szMonitor.cy / 100;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		if ((int)pDib->GetWidth() > nMaxSizeX || (int)pDib->GetHeight() > nMaxSizeY)
@@ -13899,33 +13920,35 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 	}
 	else
 	{
+		if (m_LayeredDlgThread.m_nSizePerthousand <= 0)
+			m_LayeredDlgThread.m_nSizePerthousand = 125; // Min size
 		int nMaxSizeX = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cx / 100;
 		int nMaxSizeY = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cy / 100;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		int nWidth = pDib->GetWidth();
 		int nHeight = pDib->GetHeight();
-		nWidth *= m_nLayeredDlgSizePerthousand / 1000; 
-		nHeight *= m_nLayeredDlgSizePerthousand / 1000;
+		nWidth *= m_LayeredDlgThread.m_nSizePerthousand / 1000; 
+		nHeight *= m_LayeredDlgThread.m_nSizePerthousand / 1000;
 		if (nWidth > nMaxSizeX && nHeight > nMaxSizeY)
 		{
-			m_nLayeredDlgWidth = MIN((int)pDib->GetWidth(), nMaxSizeX * 1000 / m_nLayeredDlgSizePerthousand);
-			m_nLayeredDlgHeight = MIN((int)pDib->GetHeight(), nMaxSizeY * 1000 / m_nLayeredDlgSizePerthousand);
+			m_nLayeredDlgWidth = MIN((int)pDib->GetWidth(), nMaxSizeX * 1000 / m_LayeredDlgThread.m_nSizePerthousand);
+			m_nLayeredDlgHeight = MIN((int)pDib->GetHeight(), nMaxSizeY * 1000 / m_LayeredDlgThread.m_nSizePerthousand);
 		}
 		else if (nWidth > nMaxSizeX)
 		{
-			m_nLayeredDlgWidth = MIN((int)pDib->GetWidth(), nMaxSizeX * 1000 / m_nLayeredDlgSizePerthousand);
+			m_nLayeredDlgWidth = MIN((int)pDib->GetWidth(), nMaxSizeX * 1000 / m_LayeredDlgThread.m_nSizePerthousand);
 			m_nLayeredDlgHeight = pDib->GetHeight();
 		}
 		else if (nHeight > nMaxSizeY)
 		{
 			m_nLayeredDlgWidth = pDib->GetWidth();
-			m_nLayeredDlgHeight = MIN((int)pDib->GetHeight(), nMaxSizeY * 1000 / m_nLayeredDlgSizePerthousand);
+			m_nLayeredDlgHeight = MIN((int)pDib->GetHeight(), nMaxSizeY * 1000 / m_LayeredDlgThread.m_nSizePerthousand);
 		}
-		if (m_nLayeredDlgSizePerthousand != 1000)
+		if (m_LayeredDlgThread.m_nSizePerthousand != 1000)
 		{
-			m_nLayeredDlgWidth = m_nLayeredDlgWidth * m_nLayeredDlgSizePerthousand / 1000;
-			m_nLayeredDlgHeight = m_nLayeredDlgHeight * m_nLayeredDlgSizePerthousand / 1000;
+			m_nLayeredDlgWidth = m_nLayeredDlgWidth * m_LayeredDlgThread.m_nSizePerthousand / 1000;
+			m_nLayeredDlgHeight = m_nLayeredDlgHeight * m_LayeredDlgThread.m_nSizePerthousand / 1000;
 		}
 	}
 	m_nLayeredDlgHeight += LAYERED_DLG_TOPBORDER;

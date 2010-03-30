@@ -283,7 +283,7 @@ public:
 	class CLayeredDlgThread : public CWorkerThread
 	{
 		public:
-			CLayeredDlgThread() {m_pDoc = NULL;};
+			CLayeredDlgThread() {m_pDoc = NULL; m_nMaxsizePercent = MIN_LAYERED_DLG_MAXSIZE_PERCENT; m_nSizePerthousand = 0;};
 			virtual ~CLayeredDlgThread() {Kill();};
 
 			// Get / Set Functions
@@ -294,6 +294,10 @@ public:
 
 			// Dib to resize and show
 			CDib m_Dib;
+
+			// Resize factors
+			int m_nMaxsizePercent;
+			int m_nSizePerthousand;
 
 		protected:
 			// Worker Thread Entry
