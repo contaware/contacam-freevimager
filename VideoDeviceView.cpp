@@ -1284,24 +1284,18 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 						pDoc->m_nDeviceInputId = -1;
 					else
 					{
-						// Some hcw devices need that...
-						if (pDoc->m_pDxCapture->IsHCW())
-						{
-							pDoc->m_pDxCapture->Stop();
-							pDoc->m_pDxCapture->Run();
-						}
+						// Some devices need that...
+						pDoc->m_pDxCapture->Stop();
+						pDoc->m_pDxCapture->Run();
 					}
 				}
 				else
 				{
 					if ((pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput()) >= 0)
 					{
-						// Some hcw devices need that...
-						if (pDoc->m_pDxCapture->IsHCW())
-						{
-							pDoc->m_pDxCapture->Stop();
-							pDoc->m_pDxCapture->Run();
-						}
+						// Some devices need that...
+						pDoc->m_pDxCapture->Stop();
+						pDoc->m_pDxCapture->Run();
 					}
 				}
 

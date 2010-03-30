@@ -7516,24 +7516,18 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 						m_nDeviceInputId = -1;
 					else
 					{
-						// Some hcw devices need that...
-						if (m_pDxCapture->IsHCW())
-						{
-							m_pDxCapture->Stop();
-							m_pDxCapture->Run();
-						}
+						// Some devices need that...
+						m_pDxCapture->Stop();
+						m_pDxCapture->Run();
 					}
 				}
 				else
 				{
 					if ((m_nDeviceInputId = m_pDxCapture->SetDefaultInput()) >= 0)
 					{
-						// Some hcw devices need that...
-						if (m_pDxCapture->IsHCW())
-						{
-							m_pDxCapture->Stop();
-							m_pDxCapture->Run();
-						}
+						// Some devices need that...
+						m_pDxCapture->Stop();
+						m_pDxCapture->Run();
 					}
 				}
 
@@ -7555,7 +7549,6 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 
 BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 {
-	// Open Dx VMR9 Capture
 	m_pDxCaptureVMR9 = new CDxCaptureVMR9;
 	if (m_pDxCaptureVMR9)
 	{
@@ -7597,9 +7590,22 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 				{
 					if (!m_pDxCaptureVMR9->SetCurrentInput(m_nDeviceInputId))
 						m_nDeviceInputId = -1;
+					else
+					{
+						// Some devices need that...
+						m_pDxCaptureVMR9->Stop();
+						m_pDxCaptureVMR9->Run();
+					}
 				}
 				else
-					m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput();
+				{
+					if ((m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput()) >= 0)
+					{
+						// Some devices need that...
+						m_pDxCaptureVMR9->Stop();
+						m_pDxCaptureVMR9->Run();
+					}
+				}
 
 				// Start Video Capture Thread
 				m_VMR9CaptureVideoThread.Start();
