@@ -3736,7 +3736,7 @@ IDD_DX_VIDEOFORMAT DIALOGEX 0, 0, 178, 91
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Video Size and Format"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_COMBO_VIDEOSIZE,7,16,164,215,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -3747,7 +3747,7 @@ BEGIN
     PUSHBUTTON      "Apply",IDC_APPLY,121,70,50,14
     LTEXT           "Resolution",IDC_STATIC2249,7,6,34,8
     LTEXT           "Pixel Depth (bits) and Compression",IDC_STATIC2250,7,39,
-                    110,8
+                    120,8
 END
 
 IDD_DX_VIDEOINPUT DIALOGEX 0, 0, 172, 58
@@ -8212,7 +8212,7 @@ BEGIN
     ID_VIEW_PREVIOUS_PICTURE "Show previous image\nPrevious Image"
     ID_VIEW_FIRST_PICTURE   "Show first image\nFirst Image"
     ID_VIEW_LAST_PICTURE    "Show last image\nLast Image"
-    ID_PLAY_FRAME_LAST      "Jump to last frame\nLastFrame"
+    ID_PLAY_FRAME_LAST      "Jump to last frame\nLast Frame"
     ID_PLAY_FRAME_FIRST     "Jump to first frame\nFirst Frame"
     ID_PLAY_FRAME_FRONT_FAST "Jump Forward\nJump Forward"
 END
@@ -8421,7 +8421,7 @@ BEGIN
     ID_OSD_OFFTIMEOUT_6     "Set the off timeout to 6 seconds\n6 s"
     ID_OSD_OFFTIMEOUT_7     "Set the off timeout to 7 seconds\n7 s"
     ID_OSD_OFFTIMEOUT_INFINITE "Never turn off the OSD\nOSD Never Off"
-    ID_OSD_FONTFACE_ARIAL   "Use the comic sans ms font\nArial Font"
+    ID_OSD_FONTFACE_ARIAL   "Use the arial font\nArial Font"
     ID_OSD_FONTFACE_TIMESNEWROMAN 
                             "Use the times new roman font\nTimes New Romans Font"
 END
