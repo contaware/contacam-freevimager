@@ -7514,22 +7514,13 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				{
 					if (!m_pDxCapture->SetCurrentInput(m_nDeviceInputId))
 						m_nDeviceInputId = -1;
-					else
-					{
-						// Some devices need that...
-						m_pDxCapture->Stop();
-						m_pDxCapture->Run();
-					}
 				}
 				else
-				{
-					if ((m_nDeviceInputId = m_pDxCapture->SetDefaultInput()) >= 0)
-					{
-						// Some devices need that...
-						m_pDxCapture->Stop();
-						m_pDxCapture->Run();
-					}
-				}
+					m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
+
+				// Some devices need that...
+				m_pDxCapture->Stop();
+				m_pDxCapture->Run();
 
 				// Start Audio Capture Thread
 				if (m_bCaptureAudio)
@@ -7590,22 +7581,13 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 				{
 					if (!m_pDxCaptureVMR9->SetCurrentInput(m_nDeviceInputId))
 						m_nDeviceInputId = -1;
-					else
-					{
-						// Some devices need that...
-						m_pDxCaptureVMR9->Stop();
-						m_pDxCaptureVMR9->Run();
-					}
 				}
 				else
-				{
-					if ((m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput()) >= 0)
-					{
-						// Some devices need that...
-						m_pDxCaptureVMR9->Stop();
-						m_pDxCaptureVMR9->Run();
-					}
-				}
+					m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput();
+
+				// Some devices need that...
+				m_pDxCaptureVMR9->Stop();
+				m_pDxCaptureVMR9->Run();
 
 				// Start Video Capture Thread
 				m_VMR9CaptureVideoThread.Start();
@@ -8790,7 +8772,13 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
 			ReStartProcessFrame();
 			if (m_pDxCapture->Run())
+			{
 				m_bCapture = TRUE;
+			
+				// Some devices need that...
+				m_pDxCapture->Stop();
+				m_pDxCapture->Run();
+			}
 			SetDocumentTitle();
 		}
 		else if (m_pDxCaptureVMR9)

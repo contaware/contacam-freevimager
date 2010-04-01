@@ -129,7 +129,13 @@ void CDxVideoFormatDlg::Apply()
 		else
 		{
 			if (m_pDoc->m_pDxCapture->Run())
+			{
 				m_pDoc->m_bCapture = TRUE;
+
+				// Some devices need that...
+				m_pDoc->m_pDxCapture->Stop();
+				m_pDoc->m_pDxCapture->Run();
+			}
 			return;
 		}
 
@@ -137,7 +143,13 @@ void CDxVideoFormatDlg::Apply()
 		if (!m_pDoc->m_pDxCapture->GetFormatByID(nID, &pmtConfig))
 		{
 			if (m_pDoc->m_pDxCapture->Run())
+			{
 				m_pDoc->m_bCapture = TRUE;
+
+				// Some devices need that...
+				m_pDoc->m_pDxCapture->Stop();
+				m_pDoc->m_pDxCapture->Run();
+			}
 			return;
 		}
 		VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
@@ -171,7 +183,13 @@ void CDxVideoFormatDlg::Apply()
 		{
 			DeleteMediaType(pmtConfig);
 			if (m_pDoc->m_pDxCapture->Run())
+			{
 				m_pDoc->m_bCapture = TRUE;
+
+				// Some devices need that...
+				m_pDoc->m_pDxCapture->Stop();
+				m_pDoc->m_pDxCapture->Run();
+			}
 			return;
 		}
 		VIDEOINFOHEADER* pTrueVih = (VIDEOINFOHEADER*)pmtTrueConfig->pbFormat;
@@ -199,7 +217,13 @@ void CDxVideoFormatDlg::Apply()
 		// Restart
 		m_pDoc->ReStartProcessFrame();
 		if (m_pDoc->m_pDxCapture->Run())
+		{
 			m_pDoc->m_bCapture = TRUE;
+
+			// Some devices need that...
+			m_pDoc->m_pDxCapture->Stop();
+			m_pDoc->m_pDxCapture->Run();
+		}
 
 		// Clean-Up
 		DeleteMediaType(pmtConfig);

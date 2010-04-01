@@ -8,8 +8,7 @@ VERSION HISTORY
   this is necessary because some browsers like safari or
   chrome are badly handling the history for iframes!
 - Fixed dropped frames counter for some type of capture cards
-- Fixed start problem of some capture cards with video input
-  selection (crossbar)
+- Fixed start problem of some capture cards
 - Fixed capture device RGB16(565) format support
 
 2.0.0 (March 18th 2010)

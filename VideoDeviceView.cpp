@@ -119,7 +119,13 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 				// Restart
 				pDoc->ReStartProcessFrame();
 				if (pDoc->m_pDxCapture->Run())
+				{
 					pDoc->m_bCapture = TRUE;
+					
+					// Some devices need that...
+					pDoc->m_pDxCapture->Stop();
+					pDoc->m_pDxCapture->Run();
+				}
 			}
 			::InterlockedExchange(&(pDoc->m_bStopAndChangeFormat), 0);
 			
@@ -1290,22 +1296,13 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 				{
 					if (!pDoc->m_pDxCapture->SetCurrentInput(pDoc->m_nDeviceInputId))
 						pDoc->m_nDeviceInputId = -1;
-					else
-					{
-						// Some devices need that...
-						pDoc->m_pDxCapture->Stop();
-						pDoc->m_pDxCapture->Run();
-					}
 				}
 				else
-				{
-					if ((pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput()) >= 0)
-					{
-						// Some devices need that...
-						pDoc->m_pDxCapture->Stop();
-						pDoc->m_pDxCapture->Run();
-					}
-				}
+					pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput();
+
+				// Some devices need that...
+				pDoc->m_pDxCapture->Stop();
+				pDoc->m_pDxCapture->Run();
 
 				return TRUE;
 			}
