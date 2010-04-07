@@ -2698,6 +2698,11 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 					_tcscpy(FileName, sFirstFileName);
 				}
 			}
+			else
+			{
+				// Set user interruption so that the error message box is not shown
+				m_ProcessingThread.Kill_NoBlocking();
+			}
 #endif
 		}
 		else if (extension == _T("gif"))
@@ -2728,6 +2733,11 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 									uiMaxColors,
 									(AnimGifSaveDlg.m_nLoopInfinite == 1) ?
 									0 : AnimGifSaveDlg.m_uiPlayTimes);
+			}
+			else
+			{
+				// Set user interruption so that the error message box is not shown
+				m_ProcessingThread.Kill_NoBlocking();
 			}
 #endif
 		}
@@ -4812,6 +4822,10 @@ BOOL CVideoAviDoc::SaveAsAnimGIF(	const CString& sFileName,
 			::AfxMessageBox(ML_STRING(1436, "AVI file is to big to create one unique gif color table,\n") +
 							ML_STRING(1437, "please choose the multiple color tables option."));
 			delete pAllFramesDib;
+
+			// Set user interruption so that the error message box is not shown
+			m_ProcessingThread.Kill_NoBlocking();
+
 			return FALSE;
 		}
 
