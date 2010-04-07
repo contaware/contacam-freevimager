@@ -3736,7 +3736,7 @@ IDD_DX_VIDEOFORMAT DIALOGEX 0, 0, 178, 91
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Video Size and Format"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO_VIDEOSIZE,7,16,164,215,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -5933,7 +5933,7 @@ IDD_HTTP_VIDEOFORMAT DIALOGEX 0, 0, 178, 102
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Video Size and Quality"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO_VIDEOSIZE,7,16,164,215,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
@@ -6143,7 +6143,7 @@ IDD_SNAPSHOT_FTP_CONFIGURATION DIALOGEX 0, 0, 214, 217
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Ftp Upload Configuration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_HOST_NAME,60,18,139,13,ES_AUTOHSCROLL
     EDITTEXT        IDC_FTP_REMOTEDIR,60,37,139,13,ES_AUTOHSCROLL
@@ -6417,7 +6417,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Registration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
     PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16
@@ -7708,7 +7708,7 @@ BEGIN
                             "Failed to get header of body part"
     IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART "Failed to get body of body part"
     IDS_PJNSMTP_FAIL_GET_FOOTER_OF_BODY_PART 
-                            "Failed to ger footer of body part"
+                            "Failed to get footer of body part"
     IDS_PJNSMTP_UNEXPECTED_EHLO_RESPONSE 
                             "Unexpected EHLO response, Last Response: %1"
     IDS_PJNSMTP_UNEXPECTED_HELO_RESPONSE 
@@ -8062,7 +8062,7 @@ BEGIN
     IDS_MULTILANG_1416      "Error while sharpening the big picture\n"
     IDS_MULTILANG_1417      "Error while rotating / flipping the big picture\n"
     IDS_MULTILANG_1418      "Error while adjusting the color of the big picture\n"
-    IDS_MULTILANG_1419      "Select Folder For Snapshot History"
+    IDS_MULTILANG_1419      "Select Folder For Snapshot Saving"
     IDS_MULTILANG_1420      "Error while softening the big picture\n"
     IDS_MULTILANG_1421      "Do You Want To Save The Softened Image To A New File?"
     IDS_MULTILANG_1422      "Sound Output Playback Speed Not Supported"
@@ -8100,7 +8100,7 @@ BEGIN
     IDS_MULTILANG_1447      "Do you want to Compress / Decompress the Video Stream(s)?"
     IDS_MULTILANG_1448      "Do you want to Compress / Decompress the Audio Stream(s)?"
     IDS_MULTILANG_1449      "Failed to Merge the Avi Files."
-    IDS_MULTILANG_1450      "Video Processing Progress : %i%%"
+    IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
     IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
     IDS_MULTILANG_1452      "Rendering mode not supported!"
     IDS_MULTILANG_1453      "Select Folder For Record Saving"
@@ -8128,7 +8128,7 @@ BEGIN
     IDS_MULTILANG_1473      "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1476      "Please configure a directory in the Settings dialog"
+    IDS_MULTILANG_1476      "Please configure a directory in the Assistant and Settings dialog"
     IDS_MULTILANG_1479      "Listening Ok\r\n\r\n"
     IDS_MULTILANG_1480      "Listening Ok:\r\n%d connection%s, Tx size / connection: %d fragments, Max fragments / frame: %u\r\n"
     IDS_MULTILANG_1481      "Datarate / connection: %dkbps , Overall Datarate: %ukbps (+%ukbps)\r\n\r\n"
@@ -8163,7 +8163,6 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_CAPTURE_VIDEO_DEVICE "Select and start VfW capture device\nVfW Video Input"
-    ID_EDIT_ROTATE          "Rotate by de Specified Angle\nRotate"
     ID_EDIT_ROTATE_FLIP     "Rotate / flip current image\nRotate / Flip"
     ID_FILE_SELECTTWAINSOURCE 
                             "Select twain (scanner,...) source\nSelect Twain Source"
@@ -8181,12 +8180,9 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_FILE_BURN_SLIDESHOW  "Create or edit a slideshow which may be burned to a cd/dvd\nCreate/Edit Slideshow"
-    ID_FILE_SHRINK_OPEN_DOCS "Shrink all open documents\nShrink All"
     ID_VIEW_FULLSCREEN      "Go to full screen mode (exit with ESC or F)\nFull Screen"
     ID_FILE_OPEN_DIR        "Open a directory\nOpen Directory"
     ID_FILE_CLOSEALL        "Close all open documents\nClose All"
-    ID_SLIDESHOW_DELAY_1    "Set slideshow delay to 1 second\n1 s"
     ID_SLIDESHOW_DELAY_2    "Set slideshow delay to 2 seconds\n2 s"
     ID_SLIDESHOW_DELAY_3    "Set slideshow delay to 3 seconds\n3 s"
     ID_SLIDESHOW_DELAY_4    "Set slideshow delay to 4 seconds\n4 s"
@@ -8211,8 +8207,6 @@ BEGIN
     ID_PLAY_VOL             "Show output volume regulations\nOutput Volume"
     ID_VIEW_NEXT_PICTURE    "Show next image\nNext Image"
     ID_VIEW_PREVIOUS_PICTURE "Show previous image\nPrevious Image"
-    ID_VIEW_FIRST_PICTURE   "Show first image\nFirst Image"
-    ID_VIEW_LAST_PICTURE    "Show last image\nLast Image"
     ID_PLAY_FRAME_LAST      "Jump to last frame\nLast Frame"
     ID_PLAY_FRAME_FIRST     "Jump to first frame\nFirst Frame"
     ID_PLAY_FRAME_FRONT_FAST "Jump Forward\nJump Forward"
@@ -8262,12 +8256,10 @@ BEGIN
     ID_EDIT_TO8BITS         "Convert current image to maximum 256 colors and 8 bits per pixel\nTo 8 bpp"
     ID_EDIT_TO1BIT_DITHER_ERRDIFF 
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
-    ID_PLAY_CLIP_100MS      "Set minimum frame delay to 100ms like most browsers\nClip To 100ms"
     ID_TOOLS_AVIMERGESERIAL_AS "Join avi file segments\nJoin Avi Files"
     ID_TOOLS_AVIMERGEPARALLEL_AS "Merge avi streams\nMerge Avi streams"
     ID_FILE_SETTINGS        "File associations and global settings\nSettings"
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
-    ID_STOP_RECURSIVE       "Terminate the recursive slideshow of a directory\nRecursive Slideshow Termination"
     ID_DIRECTSHOW_VIDEODEV_1 
                             "Capture frames from this directx device\nDirectX Capture"
     ID_DIRECTSHOW_VIDEODEV_2 
@@ -8319,7 +8311,6 @@ BEGIN
     ID_VIEW_ALL_PREVIOUS_PICTURE 
                             "Show previous image of all open documents\nAll Previous Image"
     ID_PLAY_TRANSITION_BLEND "Blend transition effect\nBlend Transition"
-    ID_EDIT_AUTOROTATE      "Auto Rotate JPEG Files\nAuto Rotate JPEGs"
     ID_EDIT_REDEYE          "Red eye reduction of current image\nRed Eye"
     ID_EDIT_UPDATE_EXIFTHUMB 
                             "Update the EXIF thumbnail with the downsized main image\nUpdate EXIF Thumbnail"
@@ -8360,12 +8351,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_FILE_ENUMGDIOBJECTS  "Enumerate gdi objects\nEnum GDI Objects"
     ID_PLAY_MUSIC           "Enable / disable background music\nBackground Music"
-    ID_FILE_SHRINK_CURRENT_DOC "Shrink current document\nShrink Current"
     ID_FILE_SHRINK_DIR_DOCS "Batch convert, rename and slideshow\nBatch Proc. / Slideshow"
-    ID_FILE_SENDMAIL_DIR_DOCS 
-                            "Send documents from chosen directory by email attachment\nSend Directory"
     ID_FILE_SENDMAIL_OPEN_DOCS 
                             "Send all open documents by email attachment\nSend All"
     ID_FILE_SENDMAIL_CURRENT_DOC 
@@ -8381,7 +8368,6 @@ BEGIN
     ID_VIEW_DIRECTX_YUV     "Render video using DirectX YUV surface\nDirectX YUV"
     ID_VIEW_GDI_RGB         "Render video with GDI RGB\nGDI RGB"
     ID_VIEW_GDI_YUV         "Render video with GDI YUV\nGDI YUV"
-    ID_BACKGROUND_COLOR_MENU "Background color\nBackground Color"
     ID_VIEW_BACKGROUND_COLOR_MENU "Background color\nBackground Color"
     ID_VIEW_ZOOM_FIT        "Fit all images\nFit All"
     ID_VIEW_ZOOM_FITBIG     "Fit big images only\nFit Big Images"
@@ -8404,7 +8390,6 @@ BEGIN
     ID_EDIT_REMOVE_XMP      "Remove the XMP section\nRemove XMP"
     ID_EDIT_REMOVE_ICC      "Remove the ICC color profile section\nRemove ICC"
     ID_VIEW_ENABLE_OSD      "Show on-screen information in full screen mode\nOn-Screen Info"
-    ID_OSD_FONTSIZE         "Select the font size\nFont Size"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -8415,9 +8400,8 @@ BEGIN
     ID_OSD_BKGCOLOR_IMAGE   "Set the background color of the image\nImage Background Color"
     ID_OSD_BKGCOLOR_SELECT  "Open the color chooser to select the background color\nBackground Color Chooser"
     ID_OSD_FONTCOLOR_SELECT "Open the color chooser to select the font color\nFont Color Chooser"
-    ID_OSD_OFFTIMEOUT_3SEC  "Set the off timeout to 3 seconds\n3 s"
-    ID_OSD_OFFTIMEOUT_4     "Set the off timeout to 4 seconds\n4 s"
     ID_OSD_OFFTIMEOUT_3     "Set the off timeout to 3 seconds\n3 s"
+    ID_OSD_OFFTIMEOUT_4     "Set the off timeout to 4 seconds\n4 s"
     ID_OSD_OFFTIMEOUT_5     "Set the off timeout to 5 seconds\n5 s"
     ID_OSD_OFFTIMEOUT_6     "Set the off timeout to 6 seconds\n6 s"
     ID_OSD_OFFTIMEOUT_7     "Set the off timeout to 7 seconds\n7 s"
@@ -8434,11 +8418,8 @@ BEGIN
     ID_OSD_FONTFACE_VERDANA "Use the verdana font\nVerdana Font"
     ID_OSD_FONTFACE_COURIERNEW "Use the courier new font\nCourier New Font"
     ID_OSD_OPACITY_100      "Choose a opacity of 100 %\nOpacity 100 %"
-    ID_OSD_OPACITY_90       "Choose a opacity of 90 %\nOpacity 90 %"
     ID_OSD_OPACITY_80       "Choose a opacity of 80 %\nOpacity 80 %"
-    ID_OSD_OPACITY_70       "Choose a opacity of 70 %\nOpacity 70 %"
     ID_OSD_OPACITY_60       "Choose a opacity of 60 %\nOpacity 60 %"
-    ID_OSD_OPACITY_50       "Choose a opacity of 50 %\nOpacity 50 %"
     ID_OSD_OPACITY_40       "Choose a opacity of 40 %\nOpacity 40 %"
     ID_OSD_DISPLAY_LOCATION "Display the location\nDisplay Location"
     ID_OSD_DISPLAY_DATE     "Display the file date\nDisplay File Date"
@@ -8527,7 +8508,6 @@ BEGIN
     ID_LAYEREDDLG_MAXSIZE_0_25 "Choose the maximum size\nMax Size"
     ID_EDIT_COLORS_COUNT    "Count the unique colors of the current image\nCount Unique Colors"
     ID_EDIT_TEXT_TO_ALPHA   "Convert current image to red with alpha channel\nTo Red With Alpha"
-    ID_EDIT_PASTE_UNDER     "Paste this to the below document\nPaste Into"
     ID_LAYEREDDLG_PASTE     "Paste this to the below document\nPaste Into"
     ID_LAYEREDDLG_OPACITY_20 "Choose a opacity of 20 %\nOpacity 20 %"
     ID_EDIT_TO32BITS_ALPHA  "Convert current image to true color (16 millions colors) and 32 bits per pixel with alpha\nTo 32 bpp"
@@ -8586,7 +8566,6 @@ BEGIN
     ID_FILE_PRINT           "Print the active document\nPrint"
     ID_FILE_PRINT_PREVIEW   "Print the active document\nPrint"
     ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
-    ID_FILE_SEND_MAIL       "Send all open documents by email attachment (optimization options available)\nSend All By Email"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -9020,6 +8999,7 @@ BEGIN
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1766          "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
+    IDS_STRING1768          "Double-click to change unit"
 END
 
 STRINGTABLE DISCARDABLE 

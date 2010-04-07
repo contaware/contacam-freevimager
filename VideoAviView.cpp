@@ -1488,7 +1488,7 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 		// Video Percent Done
 		if (pDoc->m_nVideoPercentDone >= 0)
 		{
-			_stprintf(sText, ML_STRING(1450, "Video Processing Progress : %i%%"), pDoc->m_nVideoPercentDone);
+			_stprintf(sText, ML_STRING(1450, "Video Processing Progress: %i%%"), pDoc->m_nVideoPercentDone);
 			Rect = rcClient;
 			nGDITextHeight = ::DrawText(hDC, sText, -1, &Rect,
 							(DT_LEFT | DT_TOP | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));

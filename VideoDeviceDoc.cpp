@@ -9229,7 +9229,7 @@ void CVideoDeviceDoc::OnViewWeb()
 	if (sAutoSaveDir != _T(""))
 		MicroApacheViewOnWeb(sAutoSaveDir, _T("index.php"));
 	else
-		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Settings dialog"));
+		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Assistant and Settings dialog"));
 }
 
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()

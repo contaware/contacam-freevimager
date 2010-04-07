@@ -418,7 +418,7 @@ void CSnapshotPage::OnButtonSetDir()
 {
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_pDoc->m_sSnapshotAutoSaveDir,
-					ML_STRING(1419, "Select Folder For Snapshot History"),
+					ML_STRING(1419, "Select Folder For Snapshot Saving"),
 					TRUE);
 	if (dlg.DoModal() == IDOK)
 	{

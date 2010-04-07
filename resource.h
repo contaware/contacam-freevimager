@@ -2410,6 +2410,7 @@
 #define IDS_STRING1767                  1767
 #define IDC_WARNING                     1768
 #define IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE 1768
+#define IDS_STRING1768                  1768
 #define IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE 1772
 #define IDC_CHECK_FTP_SNAPSHOT          1774
 #define IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG 1775
@@ -3173,7 +3174,6 @@
 #define IDC_COMBO_SNAPSHOTHISTORY_SIZE  2533
 #define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
 #define ID_CAPTURE_VIDEO_DEVICE         32774
-#define ID_EDIT_ROTATE                  32777
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3186,12 +3186,9 @@
 #define ID_PLAY_FRAME_FRONT             32795
 #define ID_PLAY_FRAME_BACK              32796
 #define ID_ZOOM_COMBOX                  32799
-#define ID_FILE_BURN_SLIDESHOW          32800
-#define ID_FILE_SHRINK_OPEN_DOCS        32801
 #define ID_VIEW_FULLSCREEN              32804
 #define ID_FILE_OPEN_DIR                32805
 #define ID_FILE_CLOSEALL                32807
-#define ID_SLIDESHOW_DELAY_1            32809
 #define ID_SLIDESHOW_DELAY_2            32810
 #define ID_SLIDESHOW_DELAY_3            32811
 #define ID_SLIDESHOW_DELAY_4            32812
@@ -3209,8 +3206,6 @@
 #define ID_PLAY_VOL                     32839
 #define ID_VIEW_NEXT_PICTURE            32841
 #define ID_VIEW_PREVIOUS_PICTURE        32842
-#define ID_VIEW_FIRST_PICTURE           32843
-#define ID_VIEW_LAST_PICTURE            32844
 #define ID_PLAY_FRAME_LAST              32845
 #define ID_PLAY_FRAME_FIRST             32846
 #define ID_PLAY_FRAME_FRONT_FAST        32847
@@ -3244,12 +3239,10 @@
 #define ID_VIEW_PREVIOUS_PAGE_FRAME     32881
 #define ID_EDIT_TO8BITS                 32883
 #define ID_EDIT_TO1BIT_DITHER_ERRDIFF   32884
-#define ID_PLAY_CLIP_100MS              32885
 #define ID_TOOLS_AVIMERGESERIAL_AS      32886
 #define ID_TOOLS_AVIMERGEPARALLEL_AS    32887
 #define ID_FILE_SETTINGS                32889
 #define ID_VIEW_TIMEPOSITION            32890
-#define ID_STOP_RECURSIVE               32891
 #define ID_DIRECTSHOW_VIDEODEV_FIRST    32892
 #define ID_DIRECTSHOW_VIDEODEV_1        32892
 #define ID_DIRECTSHOW_VIDEODEV_2        32893
@@ -3278,7 +3271,6 @@
 #define ID_VIEW_ALL_NEXT_PICTURE        32919
 #define ID_VIEW_ALL_PREVIOUS_PICTURE    32920
 #define ID_PLAY_TRANSITION_BLEND        32921
-#define ID_EDIT_AUTOROTATE              32922
 #define ID_EDIT_REDEYE                  32923
 #define ID_EDIT_UPDATE_EXIFTHUMB        32925
 #define ID_INDICATOR_PROGRESS           32926
@@ -3306,11 +3298,8 @@
 #define ID_VIEW_ALL_FIRST_PICTURE       32956
 #define ID_VIEW_ALL_LAST_PICTURE        32957
 #define ID_VIEW_STRETCH_HALFTONE        32958
-#define ID_FILE_ENUMGDIOBJECTS          32960
 #define ID_PLAY_MUSIC                   32966
-#define ID_FILE_SHRINK_CURRENT_DOC      32967
 #define ID_FILE_SHRINK_DIR_DOCS         32968
-#define ID_FILE_SENDMAIL_DIR_DOCS       32969
 #define ID_FILE_SENDMAIL_OPEN_DOCS      32970
 #define ID_FILE_SENDMAIL_CURRENT_DOC    32971
 #define ID_EDIT_FILTER_SHARPEN          32973
@@ -3325,7 +3314,6 @@
 #define ID_VIEW_DIRECTX_YUV             32984
 #define ID_VIEW_GDI_RGB                 32985
 #define ID_VIEW_GDI_YUV                 32986
-#define ID_BACKGROUND_COLOR_MENU        32988
 #define ID_VIEW_BACKGROUND_COLOR_MENU   32989
 #define ID_VIEW_ZOOM_FIT                32990
 #define ID_VIEW_ZOOM_FITBIG             32991
@@ -3344,16 +3332,14 @@
 #define ID_EDIT_REMOVE_XMP              33004
 #define ID_EDIT_REMOVE_ICC              33005
 #define ID_VIEW_ENABLE_OSD              33006
-#define ID_OSD_FONTSIZE                 33007
 #define ID_OSD_FONTSIZE_SMALL           33008
 #define ID_OSD_FONTSIZE_MEDIUM          33009
 #define ID_OSD_FONTSIZE_BIG             33010
 #define ID_OSD_BKGCOLOR_IMAGE           33011
 #define ID_OSD_BKGCOLOR_SELECT          33012
 #define ID_OSD_FONTCOLOR_SELECT         33013
-#define ID_OSD_OFFTIMEOUT_3SEC          33015
-#define ID_OSD_OFFTIMEOUT_4             33016
-#define ID_OSD_OFFTIMEOUT_3             33017
+#define ID_OSD_OFFTIMEOUT_3             33016
+#define ID_OSD_OFFTIMEOUT_4             33017
 #define ID_OSD_OFFTIMEOUT_5             33018
 #define ID_OSD_OFFTIMEOUT_6             33019
 #define ID_OSD_OFFTIMEOUT_7             33020
@@ -3364,11 +3350,8 @@
 #define ID_OSD_FONTFACE_VERDANA         33025
 #define ID_OSD_FONTFACE_COURIERNEW      33026
 #define ID_OSD_OPACITY_100              33027
-#define ID_OSD_OPACITY_90               33028
 #define ID_OSD_OPACITY_80               33029
-#define ID_OSD_OPACITY_70               33030
 #define ID_OSD_OPACITY_60               33031
-#define ID_OSD_OPACITY_50               33032
 #define ID_OSD_OPACITY_40               33033
 #define ID_OSD_DISPLAY_LOCATION         33034
 #define ID_OSD_DISPLAY_DATE             33035
@@ -3431,7 +3414,6 @@
 #define ID_LAYEREDDLG_MAXSIZE_0_25      33104
 #define ID_EDIT_COLORS_COUNT            33106
 #define ID_EDIT_TEXT_TO_ALPHA           33107
-#define ID_EDIT_PASTE_UNDER             33108
 #define ID_LAYEREDDLG_PASTE             33110
 #define ID_LAYEREDDLG_OPACITY_20        33111
 #define ID_EDIT_TO32BITS_ALPHA          33112

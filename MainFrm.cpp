@@ -104,12 +104,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 #endif
 END_MESSAGE_MAP()
 
+static TCHAR sba_CoordinateHelp[MAX_PATH];
 static SBACTPANEINFO sba_indicators[] = 
 {
 	{ ID_SEPARATOR, _T(""), SBACTF_NORMAL },		// status line indicator
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
-	{ ID_INDICATOR_XCOORDINATE, _T("Double-click to change unit"), SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
-	{ ID_INDICATOR_YCOORDINATE, _T("Double-click to change unit"), SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR }, 
+	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
+	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR }, 
 	{ ID_INDICATOR_CAPS, _T(""), SBACTF_NORMAL }, 
 	{ ID_INDICATOR_NUM, _T(""), SBACTF_NORMAL }, 
 	{ ID_INDICATOR_SCRL, _T(""), SBACTF_NORMAL }, 
@@ -185,6 +186,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
+	_tcsncpy(sba_CoordinateHelp, ML_STRING(1768, "Double-click to change unit"), MAX_PATH);
+	sba_CoordinateHelp[MAX_PATH - 1] = _T('\0');
 	if (!m_wndStatusBar.Create(this) || 
 		!m_wndStatusBar.SetPanes(sba_indicators,
 		  sizeof(sba_indicators)/sizeof(SBACTPANEINFO)))
