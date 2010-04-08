@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.1 (April 9th 2010)
+2.0.1 (April 8th 2010)
 
 - Assistant's friendly name change optimized
 - Back button of web interface player uses now a static link

@@ -137,7 +137,6 @@
 #define IDD_PDF_SAVE                    274
 #define IDD_DELETEPAGE                  275
 #define IDD_OCR_LANGUAGE                276
-#define IDD_DIALOG1                     277
 #define IDD_AUDIOFORMAT                 277
 #define IDD_VIDEOFORMAT                 278
 #define IDD_SAVEAS_STREAMS_CODEC_SELECT 279

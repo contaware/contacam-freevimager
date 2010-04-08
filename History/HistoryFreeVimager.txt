@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.1 (April 9th 2010)
+2.0.1 (April 8th 2010)
 
 - Fixed brightness, contrast,... preview display size
   for pictures with a larger size than the screen
