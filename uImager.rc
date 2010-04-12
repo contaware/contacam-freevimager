@@ -9000,6 +9000,7 @@ BEGIN
     IDS_STRING1766          "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Double-click to change unit"
+    IDS_STRING1769          "Thumbnail Size %i x %i"
 END
 
 STRINGTABLE DISCARDABLE 

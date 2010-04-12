@@ -173,8 +173,8 @@ BOOL CSnapshotPage::OnInitDialog()
 
 	// Thumbnail Size Button
 	CString sSize;
-	sSize.Format(_T("Thumbnail Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
-												m_pDoc->m_nSnapshotThumbHeight);
+	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
+															m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButton->SetWindowText(sSize);
 
@@ -450,8 +450,8 @@ void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 	m_pDoc->m_nSnapshotThumbWidth = nNewWidth & ~0x3;
 	m_pDoc->m_nSnapshotThumbHeight = nNewHeight & ~0x3;
 	CString sSize;
-	sSize.Format(_T("Thumbnail Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
-												m_pDoc->m_nSnapshotThumbHeight);
+	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),	m_pDoc->m_nSnapshotThumbWidth,
+															m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButton->SetWindowText(sSize);
 	if ((nPreviousThumbWidth != m_pDoc->m_nSnapshotThumbWidth) ||

@@ -307,8 +307,9 @@ stopend:
   File "/oname=Tutorials\Publish_on_Internet.js" "..\Tutorials\Publish_on_Internet.js"
 !endif
   SetOutPath $INSTDIR\microapache
-  File /r /x .svn "..\microapache\*.*"
+  File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR
+  File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration.php"
   
   ; Install Unicode?
   StrCmp $INSTALLTYPE 'UNICODE' unicode

@@ -7,8 +7,8 @@ RequestExecutionLevel user
 ;!define WITH_TUTORIALS
 
 ; Name Defines
-!define APPNAME_EXT "FreeVimager.exe"
-!define APPNAME_NOEXT "FreeVimager"
+!define APPNAME_EXT "ContaCam.exe"
+!define APPNAME_NOEXT "ContaCam"
 !define UNINSTNAME_EXT "uninstall.exe"
 !define UNINSTNAME_LNK "Uninstall.lnk"
 
@@ -35,22 +35,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !endif
 !endif
 !endif
@@ -78,13 +78,13 @@ xpstyle on
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_FUNCTION FinishRunCB
 ;!define MUI_FINISHPAGE_RUN_NOTCHECKED
-;!define MUI_ICON "..\res\uimager.ico"
-;!define MUI_UNICON "..\res\uimager.ico"
+;!define MUI_ICON "..\res\uimager_videodevicedoc.ico"
+;!define MUI_UNICON "..\res\uimager_videodevicedoc.ico"
 
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseFreeVimagerIta.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseContaCamRus.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -97,10 +97,10 @@ xpstyle on
 ; Language File Modern UI,
 ; change also the Version Information language!
 ;!insertmacro MUI_LANGUAGE "English"
-!insertmacro MUI_LANGUAGE "Italian"
+;!insertmacro MUI_LANGUAGE "Italian"
 ;!insertmacro MUI_LANGUAGE "French"
 ;!insertmacro MUI_LANGUAGE "German"
-;!insertmacro MUI_LANGUAGE "Russian"
+!insertmacro MUI_LANGUAGE "Russian"
 
 ;--------------------------------
 
@@ -137,48 +137,33 @@ InstallCheckInstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 InstallCheckApplicationRunning
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'installer sta già andando" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer is already running" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Application Must not be Running
+  ; Application Running?
 InstallCheckApplicationRunning:
   ClearErrors
+  StrCmp $INSTALLTYPE 'UNICODE' InstallCheckApplicationRunningEnd 0 ; UNICODE is set for Win2000 or higher the later 
+                                                                    ; executed KillApps works only for Win2000 or higher
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
-  StrCmp $R0 0 lbl_check_exe_type
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'applicazione sta già girando. Chiuderla e riprovare!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
-  StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
-  StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
-  ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
-  MessageBox MB_YESNO|MB_ICONQUESTION "L'applicazione sta girando.$\nVuoi che venga chiusa e che si continui con l'installazione?$\n(Selezionare No sei ci sono ancora dei dati da salvare)" /SD IDNO IDYES KillApp
-  goto KillAppAbort
-KillApp:
-  StrCpy $0 "${APPNAME_EXT}"
-  KillProc::KillProcesses
-  StrCmp $1 "-1" KillAppError
-  Sleep 1500
-  Goto lbl_check_exe_type
-KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'installer non ha potuto chiudere l'applicazione" /SD IDOK
-KillAppAbort:
+  StrCmp $R0 0 InstallCheckApplicationRunningEnd													
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
+InstallCheckApplicationRunningEnd:
     
-  ; Check
-lbl_check_exe_type:
+  ; OS version check
 !ifndef INSTALLER_WIN9X
   StrCmp $INSTALLTYPE 'UNICODE' lbl_end
-    MessageBox MB_OK|MB_ICONEXCLAMATION "Questo installer gira solo su sistemi Win2000, XP e più nuovi" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "This Installer works only on Win2000, XP and newer Systems" /SD IDOK
     Pop $R1
     Pop $R0
     ${UAC.Unload} ;Must call unload!
@@ -191,6 +176,49 @@ lbl_end:
  
 FunctionEnd
 
+;--------------------------------
+; Not working on systems older than Win2000
+
+Function KillApps
+
+  Push $R0
+  Push $R1
+  ClearErrors
+  
+  ; Kill Application
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  Pop $R0
+  StrCmp $R0 0 KillMicroApache
+  StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
+  StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
+  ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
+  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the installation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
+  goto KillAppAbort
+KillApp:
+  StrCpy $0 "${APPNAME_EXT}"
+  KillProc::KillProcesses
+  StrCmp $1 "-1" KillAppError
+  Goto KillMicroApache
+KillAppError:
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
+KillAppAbort:
+  ClearErrors
+  Pop $R1
+  Pop $R0
+  ${UAC.Unload} ;Must call unload!
+  Abort
+  
+  ; Kill Micro Apache
+KillMicroApache:
+  StrCpy $0 "mapache.exe"
+  KillProc::KillProcesses
+  Sleep 1500
+  
+  Pop $R1
+  Pop $R0
+  
+FunctionEnd
+  
 ;--------------------------------
 
 Function FinishRunCB
@@ -215,50 +243,78 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Section Read-Only (=User Cannot Change it's state)
   SectionIn RO
   
+  ; Stop service and apps (only for win2k or higher)
+  StrCmp $INSTALLTYPE 'UNICODE' stopit
+    goto stopend
+stopit:
+  DetailPrint "Uninstalling service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
+  DetailPrint "Stopping application, please be patient..."
+  call KillApps
+stopend:
+
   ; Remove previous install files and directories
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
+  Delete $INSTDIR\FullscreenBrowser.exe
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
+  RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
+  RMDir /r "$INSTDIR\microapache"
     
-  ; Create Tutorials Directory
+  ; Create Directories
+  CreateDirectory "$INSTDIR\ActiveX"
   CreateDirectory "$INSTDIR\Tutorials"
-   
+  
   ; Source Program File Path
 !ifdef INSTALLER_WIN9X
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
 !endif
 !ifdef INSTALLER_NT
-  File "..\Translation\${APPNAME_NOEXT}wIta.exe"
+  File "..\Translation\${APPNAME_NOEXT}wRus.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseFreeVimagerIta.txt"
-  File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
+  File "/oname=License.txt" "..\License\LicenseContaCamRus.txt"
+  File "/oname=History.txt" "..\History\HistoryContaCam.txt"
+!ifdef INSTALLER_WIN9X
+  File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
+!else
+  File "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
+!endif
   File "..\NeroBurn\Release\NeroBurn.exe"
+  File "..\ContaCamService\Release\ContaCamService.exe"
+  SetOverwrite off
+  File "..\ContaCamService\Release\ContaCamService.ini"
+  SetOverwrite on
+  File "/oname=ActiveX\RemoteCam.htm" "..\ActiveX\RemoteCam.htm"
+  File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"
+  File "/oname=ActiveX\RemoteCamViewer.exe" "..\ActiveX\RemoteCamViewer.exe"
 !ifdef WITH_TUTORIALS
-  File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
-  File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
-  File "/oname=Tutorials\Basics.js" "..\Tutorials\Basics.js"
-  File "/oname=Tutorials\Batch_Processing.htm" "..\Tutorials\Batch_Processing.htm"
-  File "/oname=Tutorials\Batch_Processing.swf" "..\Tutorials\Batch_Processing.swf"
-  File "/oname=Tutorials\Batch_Processing.js" "..\Tutorials\Batch_Processing.js"
-  File "/oname=Tutorials\CD_Slideshow.htm" "..\Tutorials\CD_Slideshow.htm"
-  File "/oname=Tutorials\CD_Slideshow.swf" "..\Tutorials\CD_Slideshow.swf"
-  File "/oname=Tutorials\CD_Slideshow.js" "..\Tutorials\CD_Slideshow.js"
-  File "/oname=Tutorials\Compositions.htm" "..\Tutorials\Compositions.htm"
-  File "/oname=Tutorials\Compositions.swf" "..\Tutorials\Compositions.swf"
-  File "/oname=Tutorials\Compositions.js" "..\Tutorials\Compositions.js"
-  File "/oname=Tutorials\Redeye_Remove.htm" "..\Tutorials\Redeye_Remove.htm"
-  File "/oname=Tutorials\Redeye_Remove.swf" "..\Tutorials\Redeye_Remove.swf"
-  File "/oname=Tutorials\Redeye_Remove.js" "..\Tutorials\Redeye_Remove.js"
+  File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
+  File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
+  File "/oname=Tutorials\Getting_Started.js" "..\Tutorials\Getting_Started.js"
+  File "/oname=Tutorials\Device_Settings.htm" "..\Tutorials\Device_Settings.htm"
+  File "/oname=Tutorials\Device_Settings.swf" "..\Tutorials\Device_Settings.swf"
+  File "/oname=Tutorials\Device_Settings.js" "..\Tutorials\Device_Settings.js"
+  File "/oname=Tutorials\Global_Settings.htm" "..\Tutorials\Global_Settings.htm"
+  File "/oname=Tutorials\Global_Settings.swf" "..\Tutorials\Global_Settings.swf"
+  File "/oname=Tutorials\Global_Settings.js" "..\Tutorials\Global_Settings.js"
+  File "/oname=Tutorials\Publish_on_Internet.htm" "..\Tutorials\Publish_on_Internet.htm"
+  File "/oname=Tutorials\Publish_on_Internet.swf" "..\Tutorials\Publish_on_Internet.swf"
+  File "/oname=Tutorials\Publish_on_Internet.js" "..\Tutorials\Publish_on_Internet.js"
 !endif
+  SetOutPath $INSTDIR\microapache
+  File /r /x .svn /x configuration*.* "..\microapache\*.*"
+  SetOutPath $INSTDIR
+  File "/oname=microapache\htdocs\configuration.php" "..\microapache\htdocs\configuration_rus.php"
   
   ; Install Unicode?
   StrCmp $INSTALLTYPE 'UNICODE' unicode
 !ifdef INSTALLER_NT
-    Delete "$INSTDIR\${APPNAME_NOEXT}wIta.exe"
+    Delete "$INSTDIR\${APPNAME_NOEXT}wRus.exe"
 !endif
     goto unicode_end
 unicode:
@@ -266,7 +322,7 @@ unicode:
     Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
 !endif
 !ifdef INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_NOEXT}wIta.exe" "$INSTDIR\${APPNAME_EXT}"
+    Rename "$INSTDIR\${APPNAME_NOEXT}wRus.exe" "$INSTDIR\${APPNAME_EXT}"
 !endif
 unicode_end:
   
@@ -297,6 +353,13 @@ unicode_end:
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoModify" 1
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoRepair" 1
   WriteUninstaller "${UNINSTNAME_EXT}"
+  
+  ; Firewall add to the authorized list
+  nsisFirewall::AddAuthorizedApplication "$INSTDIR\${APPNAME_EXT}" "${APPNAME_NOEXT}"
+  nsisFirewall::AddAuthorizedApplication "$INSTDIR\microapache\mapache.exe" "Micro Apache Server (used by ${APPNAME_NOEXT})"
+  
+  ; Register ocx
+  RegDLL "$INSTDIR\ActiveX\RemoteCam.ocx"
   
   ; File Associations
   
@@ -348,13 +411,13 @@ SectionEnd
 ;Version Information
 
 VIProductVersion "${APPVERSION}.0"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "ProductName" "${APPNAME_NOEXT} Application"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "Comments" "MM Application"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "CompanyName" "Contaware.com"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "LegalCopyright" "© Contaware.com"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
-VIAddVersionKey /LANG=${LANG_ITALIAN} "FileVersion" "${APPVERSION}.0"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "ProductName" "${APPNAME_NOEXT} Application"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "Comments" "MM Application"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "CompanyName" "Contaware.com"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "LegalCopyright" "© Contaware.com"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
+VIAddVersionKey /LANG=${LANG_RUSSIAN} "FileVersion" "${APPVERSION}.0"
 
 ;--------------------------------
 
@@ -392,41 +455,69 @@ UninstallCheckUninstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 UninstallCheckApplicationRunning
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'uninstaller sta già andando" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
   
-  ; Application Must not be Running
+  ; Application Running?
 UninstallCheckApplicationRunning:
   ClearErrors
+  StrCmp $INSTALLTYPE 'UNICODE' UninstallCheckApplicationRunningEnd 0 ; UNICODE is set for Win2000 or higher the later 
+                                                                      ; executed un.KillApps works only for Win2000 or higher
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
-  StrCmp $R0 0 lbl_end
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'applicazione sta già girando. Chiuderla e riprovare!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
-  MessageBox MB_YESNO|MB_ICONQUESTION "L'applicazione sta girando.$\nVuoi che venga chiusa e che si continui con la disinstallazione?$\n(Selezionare No sei ci sono ancora dei dati da salvare)" /SD IDNO IDYES KillApp
+  StrCmp $R0 0 UninstallCheckApplicationRunningEnd
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
+  ClearErrors
+  Pop $R1
+  Pop $R0
+  ${UAC.Unload} ;Must call unload!
+  Abort
+UninstallCheckApplicationRunningEnd:
+  
+  Pop $R1
+  Pop $R0
+  
+FunctionEnd
+
+;--------------------------------
+; Not working on systems older than Win2000
+
+Function un.KillApps
+
+  Push $R0
+  Push $R1
+  ClearErrors
+  
+  ; Kill Application
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  Pop $R0
+  StrCmp $R0 0 KillMicroApache
+  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the uninstallation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
   StrCpy $0 "${APPNAME_EXT}"
   KillProc::KillProcesses
   StrCmp $1 "-1" KillAppError
-  Sleep 1500
-  Goto lbl_end
+  Goto KillMicroApache
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "L'uninstaller non ha potuto chiudere l'applicazione" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller could not close the running application" /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
-    
-lbl_end:
+  
+  ; Kill Micro Apache
+KillMicroApache:
+  StrCpy $0 "mapache.exe"
+  KillProc::KillProcesses
+  Sleep 1500
+  
   Pop $R1
   Pop $R0
   
@@ -444,6 +535,16 @@ FunctionEnd
 ; The stuff to uninstall
 Section "Uninstall"
   
+  ; Uninstall service and stop apps (only for win2k or higher)
+  StrCmp $INSTALLTYPE 'UNICODE' uninstallsrvandstopit
+    goto uninstallsrvandstopitend
+uninstallsrvandstopit:
+  DetailPrint "Uninstalling service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
+  DetailPrint "Stopping application, please be patient..."
+  call un.KillApps
+uninstallsrvandstopitend:
+
   ; Remove / Restore All File Associations
   
   StrCpy $FILEEXTENSION "bmp"
@@ -496,7 +597,14 @@ Section "Uninstall"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "zip"
   call un.RemoveFileAssociation
+
+  ; Firewall remove from the authorized list
+  nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\${APPNAME_EXT}"
+  nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\microapache\mapache.exe"
   
+  ; Unregister ocx
+  UnRegDLL "$INSTDIR\ActiveX\RemoteCam.ocx"
+
   ; Remove autostart registry value
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APPNAME_NOEXT}"
   
@@ -504,14 +612,19 @@ Section "Uninstall"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}"
   DeleteRegKey HKLM "Software\Contaware\${APPNAME_NOEXT}"
   DeleteRegKey HKCU "Software\Contaware\${APPNAME_NOEXT}"
+  DeleteRegKey HKCU "Software\Contaware\RemoteCamViewer"
   DeleteRegKey HKCR "Applications\${APPNAME_EXT}"
   
   ; Remove files and uninstaller
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
+  Delete $INSTDIR\FullscreenBrowser.exe
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\ContaCamService.exe
+  Delete $INSTDIR\ContaCamService.ini
+  Delete $INSTDIR\ContaCamService.log
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users
@@ -520,8 +633,16 @@ Section "Uninstall"
   RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
   
   ; Remove directories used
+  RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
+  RMDir /r "$INSTDIR\microapache"
   RMDir "$INSTDIR"
+  
+  ; Remove application data directories for current user
+  SetShellVarContext current
+  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
+  RMDir "$APPDATA\Contaware"
   
   ; Refresh Icons
   call un.RefreshShellIcons
