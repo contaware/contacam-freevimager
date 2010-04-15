@@ -2208,7 +2208,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	}
 	else if (dwErrorCode == ERROR_INTERNET_NAME_NOT_RESOLVED)
 	{
-		CString sResponse(_T("The server name could not be resolved."));
+		CString sResponse(ML_STRING(1778, "The server name could not be resolved."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2216,7 +2216,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	}
 	else if (dwErrorCode == ERROR_INTERNET_CANNOT_CONNECT)
 	{
-		CString sResponse(_T("The attempt to connect to the server failed."));
+		CString sResponse(ML_STRING(1779, "The attempt to connect to the server failed."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2226,7 +2226,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 				dwErrorCode == ERROR_INTERNET_INCORRECT_USER_NAME	||
 				dwErrorCode == ERROR_INTERNET_LOGIN_FAILURE)
 	{
-		CString sResponse(_T("The request to connect and log on to\nthe server could not be completed\nbecause the supplied user name and / or\npassword are incorrect."));
+		CString sResponse(ML_STRING(1780, "The request to connect and log on to\nthe server could not be completed\nbecause the supplied user name and / or\npassword are incorrect."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2234,7 +2234,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	}
 	else if (dwErrorCode == ERROR_INTERNET_INVALID_PROXY_REQUEST)
 	{
-		CString sResponse(_T("The request to the proxy was invalid."));
+		CString sResponse(ML_STRING(1781, "The request to the proxy was invalid."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2242,7 +2242,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	}
 	else if (dwErrorCode == ERROR_FTP_NO_PASSIVE_MODE)
 	{
-		CString sResponse(_T("Passive mode is not available on the server."));
+		CString sResponse(ML_STRING(1782, "Passive mode is not available on the server."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2250,7 +2250,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	}
 	else if (dwErrorCode == ERROR_FTP_DROPPED)
 	{
-		CString sResponse(_T("FTP connection has been dropped."));
+		CString sResponse(ML_STRING(1783, "FTP connection has been dropped."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else
@@ -2259,7 +2259,7 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 
 	// Avoid empty errors!
 	if (sText == _T(""))
-		sText.Format(_T("Error with code %u."), dwErrorCode);
+		sText.Format(ML_STRING(1784, "Error with code %u."), dwErrorCode);
 
 	// Show Error
 	CString sTraceMsg = sHeader + sText + sFooter;

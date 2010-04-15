@@ -149,7 +149,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 	CopyToConfig();
 
 	if (m_pConfig->m_sHost.IsEmpty()) 
-		::AfxMessageBox(_T("Please Enter A Host Name"));
+		::AfxMessageBox(ML_STRING(1770, "Please Enter A Host Name"));
 	else 
 	{
 		BeginWaitCursor();
@@ -179,7 +179,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		if (FTP.Test())
 		{
 			EndWaitCursor();
-			::AfxMessageBox(_T("Success: Host Reachable."), MB_ICONINFORMATION);
+			::AfxMessageBox(ML_STRING(1771, "Success: Host Reachable."), MB_ICONINFORMATION);
 		}
 		else
 			EndWaitCursor();

@@ -158,7 +158,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		{
 			ex.GetErrorMessage(szCause, 255);
 			CString sError(szCause);
-			sMsg.Format(_T("An error occured while opening the file to be downloaded:\n%s\n"), sError);
+			sMsg.Format(ML_STRING(1772, "An error occured while opening the file to be downloaded:\n%s\n"), sError);
 			TRACE(sMsg);
 			if (m_bShowMessageBoxOnError)
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -176,7 +176,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 			pEx->GetErrorMessage(szCause, 255);
 			pEx->Delete();
 			CString sError(szCause);
-			sMsg.Format(_T("An error occurred while seeking to the end of the file to be downloaded:\n%s\n"), sError);
+			sMsg.Format(ML_STRING(1773, "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"), sError);
 			TRACE(sMsg);
 			if (m_bShowMessageBoxOnError)
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -190,7 +190,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		{
 			ex.GetErrorMessage(szCause, 255);
 			CString sError(szCause);
-			sMsg.Format(_T("An error occured while opening the file to be uploaded:\n%s\n"), sError);
+			sMsg.Format(ML_STRING(1774, "An error occured while opening the file to be uploaded:\n%s\n"), sError);
 			TRACE(sMsg);
 			if (m_bShowMessageBoxOnError)
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -394,7 +394,7 @@ int CFTPTransfer::Transfer()
 											::DeleteFile(m_sLocalFile);
 										Close();
 
-										sMsg = _T("Failed connecting to the FTP server in a timely manner\n");
+										sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
 										TRACE(sMsg);
 										if (m_bShowMessageBoxOnError)
 											::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -447,7 +447,7 @@ int CFTPTransfer::Transfer()
 											::DeleteFile(m_sLocalFile);
 										Close();
 
-										sMsg = _T("Failed connecting to the FTP server in a timely manner\n");
+										sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
 										TRACE(sMsg);
 										if (m_bShowMessageBoxOnError)
 											::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -684,7 +684,7 @@ int CFTPTransfer::Transfer()
 				{
 					pEx->GetErrorMessage(szCause, 255);
 					sError = CString(szCause);
-					sMsg.Format(_T("An exception occured while writing to the download file:\n%s\n"), sError);
+					sMsg.Format(ML_STRING(1776, "An exception occured while writing to the download file:\n%s\n"), sError);
 					TRACE(sMsg);
 					if (m_bShowMessageBoxOnError)
 						::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -725,7 +725,7 @@ int CFTPTransfer::Transfer()
 			{
 				pEx->GetErrorMessage(szCause, 255);
 				sError = CString(szCause);
-				sMsg.Format(_T("An exception occured while reading the local file:\n%s\n"), sError);
+				sMsg.Format(ML_STRING(1777, "An exception occured while reading the local file:\n%s\n"), sError);
 				TRACE(sMsg);
 				if (m_bShowMessageBoxOnError)
 					::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -855,7 +855,7 @@ BOOL CFTPTransfer::Test()
 									// Close
 									Close();
 
-									sMsg = _T("Failed connecting to the FTP server in a timely manner\n");
+									sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
 									TRACE(sMsg);
 									if (m_bShowMessageBoxOnError)
 										::AfxMessageBox(sMsg, MB_ICONSTOP);

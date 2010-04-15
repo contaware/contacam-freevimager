@@ -6417,7 +6417,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Registration"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
     PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16
@@ -6431,10 +6431,10 @@ BEGIN
     GROUPBOX        "3. Enter Key File",IDC_STATIC2148,7,149,246,49
     LTEXT           "After buying the license online you will get an email with your personal key file attached. Store this file in a safe place!",
                     IDC_STATIC2143,13,111,234,16
-    LTEXT           "",IDC_REG_NAME,80,16,173,27
-    LTEXT           "Registration Name:",IDC_STATIC,7,16,61,11
-    LTEXT           "",IDC_REG_NUMBER,80,5,173,11
-    LTEXT           "Registration Number:",IDC_STATIC,7,5,69,11
+    LTEXT           "",IDC_REG_NAME,87,16,166,27
+    LTEXT           "Registration Name:",IDC_STATIC,7,16,77,11
+    LTEXT           "",IDC_REG_NUMBER,87,5,166,11
+    LTEXT           "Registration Number:",IDC_STATIC,7,5,77,11
 END
 
 IDD_MOVDET_ANIMGIF_CONFIGURATION DIALOGEX 0, 0, 171, 143
@@ -7506,7 +7506,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 253
         VERTGUIDE, 13
-        VERTGUIDE, 80
+        VERTGUIDE, 87
         VERTGUIDE, 199
         VERTGUIDE, 247
         TOPMARGIN, 7
@@ -9001,11 +9001,30 @@ BEGIN
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Double-click to change unit"
     IDS_STRING1769          "Thumbnail Size %i x %i"
+    IDS_STRING1770          "Please Enter A Host Name"
+    IDS_STRING1771          "Success: Host Reachable."
+    IDS_STRING1772          "An error occured while opening the file to be downloaded:\n%s\n"
+    IDS_STRING1773          "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"
+    IDS_STRING1774          "An error occured while opening the file to be uploaded:\n%s\n"
+    IDS_STRING1775          "Failed connecting to the FTP server in a timely manner\n"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed. Make sure that the OLE libraries are the correct version"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1776          "An exception occured while writing to the download file:\n%s\n"
+    IDS_STRING1777          "An exception occured while reading the local file:\n%s\n"
+    IDS_STRING1778          "The server name could not be resolved."
+    IDS_STRING1779          "The attempt to connect to the server failed."
+    IDS_STRING1780          "The request to connect and log on to\nthe server could not be completed\nbecause the supplied user name and / or\npassword are incorrect."
+    IDS_STRING1781          "The request to the proxy was invalid."
+    IDS_STRING1782          "Passive mode is not available on the server."
+    IDS_STRING1783          "FTP connection has been dropped."
+    IDS_STRING1784          "Error with code %u."
 END
 
 #endif    // English (U.S.) resources
