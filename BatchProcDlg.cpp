@@ -2160,13 +2160,13 @@ BOOL CBatchProcDlg::OnInitDialog()
 	// Setup the Tab Ctrl
 	int nPageID = 0;
 	m_GeneralTab.Create(IDD_BATCH_PROC_GENERALTAB, this);
-	m_TabAdvSettings.AddSSLPage (_T("General"), nPageID++, &m_GeneralTab);
+	m_TabAdvSettings.AddSSLPage (ML_STRING(1785, "General"), nPageID++, &m_GeneralTab);
 	m_ShrinkTab.Create(IDD_BATCH_PROC_SHRINKTAB, this);
-	m_TabAdvSettings.AddSSLPage (_T("Shrink"), nPageID++, &m_ShrinkTab);
+	m_TabAdvSettings.AddSSLPage (ML_STRING(1786, "Shrink"), nPageID++, &m_ShrinkTab);
 	m_JpegTab.Create(IDD_BATCH_PROC_JPEGTAB, this);
-	m_TabAdvSettings.AddSSLPage (_T("Jpeg"), nPageID++, &m_JpegTab);
+	m_TabAdvSettings.AddSSLPage (ML_STRING(1787, "Jpeg"), nPageID++, &m_JpegTab);
 	m_TiffTab.Create(IDD_BATCH_PROC_TIFFTAB, this);
-	m_TabAdvSettings.AddSSLPage (_T("Tiff / Pdf"), nPageID++, &m_TiffTab);
+	m_TabAdvSettings.AddSSLPage (ML_STRING(1788, "Tiff / Pdf"), nPageID++, &m_TiffTab);
 	m_TabAdvSettings.ActivateSSLPage(m_nInitTab);
 
 	// List Ctrl

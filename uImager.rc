@@ -9025,6 +9025,10 @@ BEGIN
     IDS_STRING1782          "Passive mode is not available on the server."
     IDS_STRING1783          "FTP connection has been dropped."
     IDS_STRING1784          "Error with code %u."
+    IDS_STRING1785          "General"
+    IDS_STRING1786          "Shrink"
+    IDS_STRING1787          "Jpeg"
+    IDS_STRING1788          "Tiff / Pdf"
 END
 
 #endif    // English (U.S.) resources
