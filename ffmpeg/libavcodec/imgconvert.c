@@ -783,7 +783,7 @@ static int avcodec_find_best_pix_fmt1(int64_t pix_fmt_mask,
     dst_pix_fmt = -1;
     min_dist = 0x7fffffff;
     for(i = 0;i < PIX_FMT_NB; i++) {
-        if (pix_fmt_mask & (1 << i)) {
+        if (pix_fmt_mask & (1ULL << i)) {
             loss = avcodec_get_pix_fmt_loss(i, src_pix_fmt, has_alpha) & loss_mask;
             if (loss == 0) {
                 dist = avg_bits_per_pixel(i);
@@ -870,7 +870,7 @@ int ff_get_plane_bytewidth(enum PixelFormat pix_fmt, int width, int plane)
         break;
     case FF_PIXEL_PLANAR:
             if (plane == 1 || plane == 2)
-                width >>= pf->x_chroma_shift;
+                width= -((-width)>>pf->x_chroma_shift);
 
             return (width * pf->depth + 7) >> 3;
         break;
@@ -894,13 +894,11 @@ void av_picture_copy(AVPicture *dst, const AVPicture *src,
     case FF_PIXEL_PACKED:
     case FF_PIXEL_PLANAR:
         for(i = 0; i < pf->nb_channels; i++) {
-            int w, h;
+            int h;
             int bwidth = ff_get_plane_bytewidth(pix_fmt, width, i);
-            w = width;
             h = height;
             if (i == 1 || i == 2) {
-                w >>= pf->x_chroma_shift;
-                h >>= pf->y_chroma_shift;
+                h= -((-height)>>pf->y_chroma_shift);
             }
             ff_img_copy_plane(dst->data[i], dst->linesize[i],
                            src->data[i], src->linesize[i],

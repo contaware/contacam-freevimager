@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+2.0.5 (August 18th 2010)
+
+- Added Edimax network cameras support
+- Added print link in web interface
+
 2.0.1 (April 8th 2010)
 
 - Assistant's friendly name change optimized

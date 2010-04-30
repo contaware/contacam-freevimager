@@ -3911,6 +3911,12 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 #endif
 
 	// Color Space Conversion
+	// Note: the conversion may be really slow when converting the
+	// destination buffer in place byte by byte like the conversion
+	// from PIX_FMT_YUVJ420P to PIX_FMT_YUV420P. This because accessing
+	// directly the graphics memory byte-wise is not that efficient...
+	// (see img_convert() in imgconvert.c)
+	// -> Do not use DirectX YUV rendering!
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
 	{
 #ifdef SUPPORT_LIBPOSTPROCESS
