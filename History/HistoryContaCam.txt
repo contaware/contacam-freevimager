@@ -4,6 +4,7 @@ VERSION HISTORY
 
 - Added Edimax network cameras support
 - Added print link in web interface
+- Motion jpeg decoder more fault tolerant
 
 2.0.1 (April 8th 2010)
 

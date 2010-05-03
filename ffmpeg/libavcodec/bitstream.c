@@ -75,7 +75,6 @@ void ff_put_string(PutBitContext * pbc, const char *s, int put_zero)
 
 void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
 {
-    const uint16_t *srcw= (const uint16_t*)src;
     int words= length>>4;
     int bits= length&15;
     int i;
@@ -83,7 +82,7 @@ void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
     if(length==0) return;
 
     if(ENABLE_SMALL || words < 16 || put_bits_count(pb)&7){
-        for(i=0; i<words; i++) put_bits(pb, 16, be2me_16(srcw[i]));
+        for(i=0; i<words; i++) put_bits(pb, 16, AV_RB16(src + 2*i));
     }else{
         for(i=0; put_bits_count(pb)&31; i++)
             put_bits(pb, 8, src[i]);
@@ -92,7 +91,7 @@ void ff_copy_bits(PutBitContext *pb, const uint8_t *src, int length)
         skip_put_bytes(pb, 2*words-i);
     }
 
-    put_bits(pb, bits, be2me_16(srcw[words])>>(16-bits));
+	put_bits(pb, bits, AV_RB16(src + 2*words)>>(16-bits));
 }
 
 /* VLC decoding */
@@ -179,11 +178,12 @@ static int build_table(VLC *vlc, int table_nb_bits,
 #endif
         /* if code matches the prefix, it is in the table */
         n -= n_prefix;
+		if (n > 0) {
         if(flags & INIT_VLC_LE)
             code_prefix2= code & (n_prefix>=32 ? 0xffffffff : (1 << n_prefix)-1);
         else
             code_prefix2= code >> n;
-        if (n > 0 && code_prefix2 == code_prefix) {
+        if (code_prefix2 == code_prefix) {
             if (n <= table_nb_bits) {
                 /* no need to add another table */
                 j = (code << (table_nb_bits - n)) & (table_size - 1);
@@ -217,6 +217,7 @@ static int build_table(VLC *vlc, int table_nb_bits,
                 table[j][1] = -n1; //bits
             }
         }
+		}
     }
 
     /* second pass : fill auxillary tables recursively */

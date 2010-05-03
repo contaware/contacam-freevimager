@@ -67,6 +67,7 @@ typedef struct MJpegDecodeContext {
     int width, height;
     int mb_width, mb_height;
     int nb_components;
+    int block_stride[MAX_COMPONENTS];
     int component_id[MAX_COMPONENTS];
     int h_count[MAX_COMPONENTS]; /* horizontal and vertical count for each component */
     int v_count[MAX_COMPONENTS];
@@ -80,9 +81,13 @@ typedef struct MJpegDecodeContext {
     int quant_index[4];   /* quant table index for each component */
     int last_dc[MAX_COMPONENTS]; /* last DEQUANTIZED dc (XXX: am I right to do that ?) */
     AVFrame picture; /* picture structure */
+    int got_picture;                                ///< we found a SOF and picture is valid, too.
     int linesize[MAX_COMPONENTS];                   ///< linesize << interlaced
     int8_t *qscale_table;
     DECLARE_ALIGNED_16(DCTELEM, block[64]);
+    DCTELEM (*blocks[MAX_COMPONENTS])[64]; ///< intermediate sums (progressive mode)
+    uint8_t *last_nnz[MAX_COMPONENTS];
+    uint64_t coefs_finished[MAX_COMPONENTS]; ///< bitmask of which coefs have been completely decoded (progressive mode)
     ScanTable scantable;
     DSPContext dsp;
 
@@ -96,6 +101,10 @@ typedef struct MJpegDecodeContext {
     int mjpb_skiptosod;
 
     int cur_scan; /* current scan, used by JPEG-LS */
+    int flipped; /* true if picture is flipped */
+
+    uint16_t (*ljpeg_buffer)[4];
+    unsigned int ljpeg_buffer_size;
 } MJpegDecodeContext;
 
 int ff_mjpeg_decode_init(AVCodecContext *avctx);

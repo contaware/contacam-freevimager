@@ -15895,6 +15895,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 	// use LoadJPEG which is more fault tolerant, but slower...
 	else
 	{
+		TRACE(_T("*** Error: ffmpeg failed to decode mjpeg, trying Dib.LoadJPEG() ***\n"));
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(FALSE);
 		if (Dib.LoadJPEG(pLinBuf, nSize) && Dib.Compress(FCC('I420')))
