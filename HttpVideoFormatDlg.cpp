@@ -112,35 +112,42 @@ void CHttpVideoFormatDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScroll
 
 void CHttpVideoFormatDlg::OnOK() 
 {
-	::EnterCriticalSection(&m_pDoc->m_csHttpParams);
-	m_pDoc->m_nHttpVideoQuality = 100 - m_VideoQualitySlider.GetPos();
-	if (m_VideoSize.GetCurSel() >= 0 &&
-		m_VideoSize.GetCurSel() < m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes.GetSize())
-	{
-		m_pDoc->m_nHttpVideoSizeX = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cx;
-		m_pDoc->m_nHttpVideoSizeY = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cy;
-	}
-	::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
-	m_pDoc->m_bSizeToDoc = TRUE;
-	if (m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
-		m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost, m_pDoc->m_nGetFrameVideoPort);
+	OnApply();
 	CDialog::OnOK();
 }
 
 void CHttpVideoFormatDlg::OnApply() 
 {
+	BOOL bQualityChanged = FALSE;
+	BOOL bResolutionChanged = FALSE;
 	::EnterCriticalSection(&m_pDoc->m_csHttpParams);
-	m_pDoc->m_nHttpVideoQuality = 100 - m_VideoQualitySlider.GetPos();
+	if (m_pDoc->m_nHttpVideoQuality != (100 - m_VideoQualitySlider.GetPos()))
+	{
+		bQualityChanged = TRUE;
+		m_pDoc->m_nHttpVideoQuality = 100 - m_VideoQualitySlider.GetPos();
+	}
 	if (m_VideoSize.GetCurSel() >= 0 &&
 		m_VideoSize.GetCurSel() < m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes.GetSize())
 	{
-		m_pDoc->m_nHttpVideoSizeX = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cx;
-		m_pDoc->m_nHttpVideoSizeY = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cy;
+		if (m_pDoc->m_nHttpVideoSizeX != m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cx ||
+			m_pDoc->m_nHttpVideoSizeY != m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cy)
+		{
+			bResolutionChanged = TRUE;
+			m_pDoc->m_nHttpVideoSizeX = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cx;
+			m_pDoc->m_nHttpVideoSizeY = m_pDoc->m_pHttpGetFrameParseProcess->m_Sizes[m_VideoSize.GetCurSel()].cy;
+		}
 	}
 	::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
 	m_pDoc->m_bSizeToDoc = TRUE;
 	if (m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
+	{
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
+		{
+			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetResolution = bResolutionChanged;
+			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetCompression = bQualityChanged;
+		}
 		m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost, m_pDoc->m_nGetFrameVideoPort);
+	}
 }
 
 #endif

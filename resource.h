@@ -2447,7 +2447,9 @@
 #define IDC_STATIC1788                  1788
 #define IDS_STRING1788                  1788
 #define IDC_STATIC1789                  1789
+#define IDS_STRING1789                  1789
 #define IDC_STATIC1790                  1790
+#define IDS_STRING1790                  1790
 #define IDC_STATIC1791                  1791
 #define IDC_STATIC1792                  1792
 #define IDC_STATIC1793                  1793

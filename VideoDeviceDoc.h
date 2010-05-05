@@ -48,6 +48,7 @@ class CMovementDetectionPage;
 #define VFW_MIN_TRIGGEREDCAP_FRAMETIME		200			// ms
 #define DEFAULT_FRAMERATE					8.0			// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
+#define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
 #define DX_VMR9_FRAMERATE					30.0		// fps, this is the max. framerate, vmr9 thread can grab with a lower rate
 #define DEFAULT_REC_AVIFILE_COUNT			8			// files
@@ -180,6 +181,7 @@ class CMovementDetectionPage;
 #define DEFAULT_TCP_PORT					80
 #define HTTP_MAX_HEADER_SIZE				1400
 #define HTTP_MAX_MULTIPART_BOUNDARY			128
+#define HTTP_MIN_MULTIPART_SIZE				256
 #define DEFAULT_HTTP_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
 #define DEFAULT_HTTP_VIDEO_SIZE_CX			640
 #define DEFAULT_HTTP_VIDEO_SIZE_CY			480
@@ -382,6 +384,9 @@ public:
 			volatile AUTHTYPE m_AnswerAuthorizationType;
 			volatile AUTHTYPE m_LastRequestAuthorizationType;
 			volatile BOOL m_bQueryProperties;
+			volatile BOOL m_bSetResolution;
+			volatile BOOL m_bSetCompression;
+			volatile BOOL m_bSetFramerate;
 			volatile BOOL m_bFirstFrame;
 			volatile BOOL m_bTryConnecting;
 			volatile BOOL m_bConnectionKeepAlive;
@@ -394,6 +399,9 @@ public:
 							m_bFirstFrame = TRUE;
 							m_bTryConnecting = FALSE;
 							m_bQueryProperties = FALSE;
+							m_bSetResolution = FALSE;
+							m_bSetCompression = FALSE;
+							m_bSetFramerate = FALSE;
 							m_bPollNextJpeg = FALSE;
 							m_FormatType = FORMATUNKNOWN;
 							m_AnswerAuthorizationType = AUTHNONE;
@@ -1363,6 +1371,8 @@ public:
 		PANASONIC_CP,		// Panasonic Client Poll (jpegs)
 		PIXORD_SP,			// Pixord Server Push (mjpeg)
 		PIXORD_CP,			// Pixord Client Poll (jpegs)
+		EDIMAX_SP,			// Edimax Server Push (mjpeg)
+		//EDIMAX_CP			not supported because of different resolution, compression and framerate set
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;

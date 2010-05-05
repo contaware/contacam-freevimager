@@ -630,8 +630,9 @@ BOOL CGeneralPage::OnInitDialog()
 	}
 	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 	{
-		// Axis supports only integer values starting at 1 fps
-		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP)
+		// Axis and Edimax support only integer values starting at 1 fps
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP	||
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
 		// Frequency not settable on client side by panasonic devices in server push mode
 		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)

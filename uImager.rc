@@ -9029,6 +9029,7 @@ BEGIN
     IDS_STRING1786          "Shrink"
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
+    IDS_STRING1789          "Edimax (Server Push Mode)"
 END
 
 #endif    // English (U.S.) resources

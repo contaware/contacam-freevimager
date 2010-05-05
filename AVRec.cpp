@@ -1648,9 +1648,8 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 			lpTopDownBits = pBits;
 
 		// Init Image Convert
-		if (!m_pDeinterlaceImgConvertCtx[dwStreamNum])
-		{
-			m_pDeinterlaceImgConvertCtx[dwStreamNum] = sws_getContext(	pBmi->bmiHeader.biWidth,	// Src Width
+		m_pDeinterlaceImgConvertCtx[dwStreamNum] = sws_getCachedContext(m_pDeinterlaceImgConvertCtx[dwStreamNum],
+																		pBmi->bmiHeader.biWidth,	// Src Width
 																		pBmi->bmiHeader.biHeight,	// Src Height
 																		SrcPixFormat,				// Src Format
 																		pBmi->bmiHeader.biWidth,	// Dst Width
@@ -1658,12 +1657,11 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 																		PIX_FMT_YUV420P,			// Dst Format
 																		SWS_BICUBIC,
 																		NULL, NULL, NULL);
-            if (!m_pDeinterlaceImgConvertCtx[dwStreamNum])
-			{
-                TRACE(_T("Cannot initialize the deinterlace conversion context\n"));
-				::LeaveCriticalSection(&m_csAVI);
-                return false;
-            }
+        if (!m_pDeinterlaceImgConvertCtx[dwStreamNum])
+		{
+            TRACE(_T("Cannot initialize the deinterlace conversion context\n"));
+			::LeaveCriticalSection(&m_csAVI);
+            return false;
         }
 
 		// Init Src
@@ -1943,9 +1941,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 			pBmi->bmiHeader.biWidth != pCodecCtx->width	||
 			pBmi->bmiHeader.biHeight != pCodecCtx->height)
 		{
-            if (!m_pImgConvertCtx[dwStreamNum])
-			{
-                m_pImgConvertCtx[dwStreamNum] = sws_getContext(	pBmi->bmiHeader.biWidth,	// Src Width
+            m_pImgConvertCtx[dwStreamNum] = sws_getCachedContext(m_pImgConvertCtx[dwStreamNum],
+																pBmi->bmiHeader.biWidth,	// Src Width
 																pBmi->bmiHeader.biHeight,	// Src Height
 																SrcPixFormat,				// Src Format
 																pCodecCtx->width,			// Dst Width
@@ -1953,11 +1950,10 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 																pCodecCtx->pix_fmt,			// Dst Format
 																SWS_BICUBIC,
 																NULL, NULL, NULL);
-                if (!m_pImgConvertCtx[dwStreamNum])
-				{
-                    TRACE(_T("Cannot initialize the conversion context\n"));
-                    return false;
-                }
+            if (!m_pImgConvertCtx[dwStreamNum])
+			{
+                TRACE(_T("Cannot initialize the conversion context\n"));
+                return false;
             }
 
 			// Init Src
