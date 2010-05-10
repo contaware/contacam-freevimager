@@ -341,6 +341,22 @@ BOOL CDxDraw::Init(	HWND hWnd,
 		if (Error(hRet, _T("Failed to create the DirectDraw7 Object")))
 			return FALSE;
 
+		// Check whether Blt() can color space convert
+		DDCAPS ddcaps;
+		memset(&ddcaps, 0, sizeof(DDCAPS));
+		ddcaps.dwSize = sizeof(DDCAPS);
+		hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
+		if (Error(hRet, _T("GetCaps Failed")))
+		{
+			Free();
+			return FALSE;
+		}
+		if ((dwSrcFourCC != BI_RGB) && !(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
+		{	
+			Free();
+			return FALSE;
+		}
+
 		// Set DDSCL_NORMAL to use windowed mode
 		hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->SetCooperativeLevel(m_hWnd, DDSCL_NORMAL | DDSCL_MULTITHREADED);
 		if (Error(hRet, _T("SetCooperativeLevel Windowed Failed")))
@@ -378,8 +394,6 @@ BOOL CDxDraw::Init(	HWND hWnd,
 		// You can explicitly choose display or system memory by including the DDSCAPS_SYSTEMMEMORY or
 		// DDSCAPS_VIDEOMEMORY flags in the dwCaps member of the DDSCAPS2 structure.
 		// The method fails, returning an error, if it can't create the surface in the specified location.
-		// Additionally, you can create surfaces whose pixel format differs from the primary surface's pixel format.
-		// However, in this case there is one drawback you are limited to using system memory!
 		if (dwSrcFourCC == BI_RGB)
 		{
 			// Back Off-screen (the surface with the pixel format of the primary surface)
@@ -642,6 +656,22 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 								NULL);
 	if (Error(hRet, _T("Failed to create the DirectDraw7 Object")))
 		return FALSE;
+
+	// Check whether Blt() can color space convert
+	DDCAPS ddcaps;
+	memset(&ddcaps, 0, sizeof(DDCAPS));
+	ddcaps.dwSize = sizeof(DDCAPS);
+	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
+	if (Error(hRet, _T("GetCaps Failed")))
+	{
+		Free();
+		return FALSE;
+	}
+	if ((dwSrcFourCC != BI_RGB) && !(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
+	{	
+		Free();
+		return FALSE;
+	}
 
 	// Change Display Resolution to match as close
 	// as possible nSrcWidth and nSrcHeight?
