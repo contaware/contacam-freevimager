@@ -2157,7 +2157,8 @@ void CUImagerApp::SaveOnEndSession()
 #ifdef VIDEODEVICEDOC
 	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
-	BrowserAutostart();
+	if (!m_bServiceProcess)
+		BrowserAutostart();
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
@@ -2805,7 +2806,8 @@ int CUImagerApp::ExitInstance()
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
 
 	// Browser autostart
-	BrowserAutostart();
+	if (!m_bServiceProcess)
+		BrowserAutostart();
 #endif
 
 	// Close The Application Mutex

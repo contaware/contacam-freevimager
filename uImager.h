@@ -826,7 +826,8 @@ public:
 	CString m_sREG_NAME;
 
 	// Service
-	// - Browser autostart disabled if this set
+	// - ContaCam's browser autostart disabled if this set,
+	//   using the registry's Run key to start the browser
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
 	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
