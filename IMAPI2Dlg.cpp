@@ -53,13 +53,13 @@ int CIMAPI2Dlg::CIMAPI2DlgThread::Work()
     // Did user cancel?
     if (DoExit())
     {
-        m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)_T("User Canceled!"));
+        m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)(LPCTSTR)ML_STRING(1803, "User Canceled!"));
         ::CoUninitialize();
 		return 0;
     }
 
 	// Init Message
-    m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)_T("Initializing Disc Recorder..."));
+    m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)(LPCTSTR)ML_STRING(1802, "Initializing Disc Recorder..."));
 
     // Create another disc recorder because we're in a different thread
     CDiscRecorder discRecorder;
@@ -156,7 +156,7 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
         m_pDlg->SendMessage(WM_BURN_FINISHED, hr, (LPARAM)_T("Failed to create IFileSystemImage Interface"));
         goto cleanup;
     }
-    m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)_T("Creating File System..."));
+    m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)(LPCTSTR)ML_STRING(1804, "Creating File System..."));
     image->put_FileSystemsToCreate((FsiFileSystems)(FsiFileSystemJoliet|FsiFileSystemISO9660));
     image->put_VolumeName(m_pDlg->m_sVolumeLabel.AllocSysString());
     image->ChooseImageDefaultsForMediaType(mediaType);
@@ -178,12 +178,12 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
             {
                 if (hr == IMAPI_E_IMAGE_SIZE_LIMIT)
 				{
-					message = _T("Error: No enough space on this media, choose a bigger one!");
+					message = ML_STRING(1805, "Error: No enough space on this media, choose a bigger one!");
 					m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)(LPCTSTR)message);
 				}
 				else
 				{
-					message.Format(_T("Failed to add %s!"), (LPCTSTR)FileFind.GetDirName(pos));
+					message.Format(ML_STRING(1806, "Failed to add %s!"), (LPCTSTR)FileFind.GetDirName(pos));
 					m_pDlg->SendMessage(WM_BURN_FINISHED, hr, (LPARAM)(LPCTSTR)message);
 				}
                 goto cleanup;
@@ -192,7 +192,7 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
 			// Do Exit Thread?
             if (DoExit())
             {
-                m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)_T("User Canceled!"));
+                m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)(LPCTSTR)ML_STRING(1803, "User Canceled!"));
                 hr = IMAPI_E_FSI_INTERNAL_ERROR;
 				goto cleanup;
             }
@@ -200,7 +200,7 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
 		for (pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
 		{
 			CString fileName = ::GetShortFileName(FileFind.GetFileName(pos));
-            message.Format(_T("Adding \"%s\" to file system..."), (LPCTSTR)fileName);
+            message.Format(ML_STRING(1807, "Adding %s to file system..."), (LPCTSTR)fileName);
             m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)(LPCTSTR)message);
 
 			IStream* pStream = NULL;
@@ -212,12 +212,12 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
                 {
                     if (hr == IMAPI_E_IMAGE_SIZE_LIMIT)
 					{
-						message = _T("Error: No enough space on this media, choose a bigger one!");
+						message = ML_STRING(1805, "Error: No enough space on this media, choose a bigger one!");
 						m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)(LPCTSTR)message);
 					}
 					else
 					{
-						message.Format(_T("Failed to add %s!"), (LPCTSTR)fileName);
+						message.Format(ML_STRING(1806, "Failed to add %s!"), (LPCTSTR)fileName);
 						m_pDlg->SendMessage(WM_BURN_FINISHED, hr, (LPARAM)(LPCTSTR)message);
 					}
 					pStream->Release();
@@ -230,7 +230,7 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
             // Do Exit Thread?
             if (DoExit())
             {
-                m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)_T("User Canceled!"));
+                m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)(LPCTSTR)ML_STRING(1803, "User Canceled!"));
                 hr = IMAPI_E_FSI_INTERNAL_ERROR;
 				goto cleanup;
             }
@@ -629,18 +629,18 @@ LRESULT CIMAPI2Dlg::OnBurnFinished(WPARAM hResult, LPARAM lpMessage)
         else
 		{
             CString text;
-            text.Format(_T("%s - Error:0x%08X"), (LPCTSTR)lpMessage, hResult);
+            text.Format(ML_STRING(1794, "%s - Error:0x%08X"), (LPCTSTR)lpMessage, hResult);
             m_ProgressText.SetWindowText(text);
         }
     }
     else
     {
         if (SUCCEEDED((HRESULT)hResult))
-            m_ProgressText.SetWindowText(_T("Burn completed successfully"));
+            m_ProgressText.SetWindowText(ML_STRING(1795, "Burn completed successfully"));
         else
         {
             CString message;
-            message.Format(_T("Burn failed! Error: 0x%08x"), hResult);
+            message.Format(ML_STRING(1796, "Burn failed! Error: 0x%08x"), hResult);
             m_ProgressText.SetWindowText(message);
         }
     }
@@ -660,19 +660,19 @@ LRESULT CIMAPI2Dlg::OnImapiUpdate(WPARAM wParam, LPARAM lParam)
     switch (currentAction)
     {
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_VALIDATING_MEDIA:
-			m_ProgressText.SetWindowText(_T("Validating current media..."));
+			m_ProgressText.SetWindowText(ML_STRING(1797, "Validating current media..."));
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_FORMATTING_MEDIA:
-			m_ProgressText.SetWindowText(_T("Formatting media..."));
+			m_ProgressText.SetWindowText(ML_STRING(1798, "Formatting media..."));
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_INITIALIZING_HARDWARE:
-			m_ProgressText.SetWindowText(_T("Initializing hardware..."));
+			m_ProgressText.SetWindowText(ML_STRING(1799, "Initializing hardware..."));
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_CALIBRATING_POWER:
-			m_ProgressText.SetWindowText(_T("Optimizing laser intensity..."));
+			m_ProgressText.SetWindowText(ML_STRING(1800, "Optimizing laser intensity..."));
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_WRITING_DATA:
@@ -681,11 +681,11 @@ LRESULT CIMAPI2Dlg::OnImapiUpdate(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_FINALIZATION:
-			m_ProgressText.SetWindowText(_T("Finalizing writing..."));
+			m_ProgressText.SetWindowText(ML_STRING(1801, "Finalizing writing..."));
 			break;
 
 		case IMAPI_FORMAT2_DATA_WRITE_ACTION_COMPLETED:
-			m_ProgressText.SetWindowText(_T("Burn completed successfully"));
+			m_ProgressText.SetWindowText(ML_STRING(1795, "Burn completed successfully"));
 			break;
 
 		case IMAPI_FORMAT2_ERASE:
@@ -732,16 +732,16 @@ void CIMAPI2Dlg::UpdateProgress(BOOL bBurn, LONG done, LONG total)
 	if (bBurn)
 	{
 		if (done && total)
-			text.Format(_T("Burn %d%%"), 100 * done / total);
+			text.Format(ML_STRING(1790, "Burn %d%%"), 100 * done / total);
 		else
-			text = _T("Burn...");
+			text = ML_STRING(1791, "Burn...");
 	}
 	else
 	{
 		if (done && total)
-			text.Format(_T("Erase %d%%"), 100 * done / total);
+			text.Format(ML_STRING(1792, "Erase %d%%"), 100 * done / total);
 		else
-			text = _T("Erase...");
+			text = ML_STRING(1793, "Erase...");
 	}
     m_ProgressText.SetWindowText(text);
 }

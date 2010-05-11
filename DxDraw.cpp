@@ -342,19 +342,22 @@ BOOL CDxDraw::Init(	HWND hWnd,
 			return FALSE;
 
 		// Check whether Blt() can color space convert
-		DDCAPS ddcaps;
-		memset(&ddcaps, 0, sizeof(DDCAPS));
-		ddcaps.dwSize = sizeof(DDCAPS);
-		hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
-		if (Error(hRet, _T("GetCaps Failed")))
+		if (dwSrcFourCC != BI_RGB)
 		{
-			Free();
-			return FALSE;
-		}
-		if ((dwSrcFourCC != BI_RGB) && !(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
-		{	
-			Free();
-			return FALSE;
+			DDCAPS ddcaps;
+			memset(&ddcaps, 0, sizeof(DDCAPS));
+			ddcaps.dwSize = sizeof(DDCAPS);
+			hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
+			if (Error(hRet, _T("GetCaps Failed")))
+			{
+				Free();
+				return FALSE;
+			}
+			if (!(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
+			{	
+				Free();
+				return FALSE;
+			}
 		}
 
 		// Set DDSCL_NORMAL to use windowed mode
@@ -658,19 +661,22 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 		return FALSE;
 
 	// Check whether Blt() can color space convert
-	DDCAPS ddcaps;
-	memset(&ddcaps, 0, sizeof(DDCAPS));
-	ddcaps.dwSize = sizeof(DDCAPS);
-	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
-	if (Error(hRet, _T("GetCaps Failed")))
+	if (dwSrcFourCC != BI_RGB)
 	{
-		Free();
-		return FALSE;
-	}
-	if ((dwSrcFourCC != BI_RGB) && !(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
-	{	
-		Free();
-		return FALSE;
+		DDCAPS ddcaps;
+		memset(&ddcaps, 0, sizeof(DDCAPS));
+		ddcaps.dwSize = sizeof(DDCAPS);
+		hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->GetCaps(&ddcaps, NULL);
+		if (Error(hRet, _T("GetCaps Failed")))
+		{
+			Free();
+			return FALSE;
+		}
+		if (!(ddcaps.dwCaps & DDCAPS_BLTFOURCC))
+		{	
+			Free();
+			return FALSE;
+		}
 	}
 
 	// Change Display Resolution to match as close

@@ -9030,6 +9030,28 @@ BEGIN
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
     IDS_STRING1789          "Edimax (Server Push Mode)"
+    IDS_STRING1790          "Burn %d%%"
+    IDS_STRING1791          "Burn..."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1792          "Erase %d%%"
+    IDS_STRING1793          "Erase..."
+    IDS_STRING1794          "%s - Error:0x%08X"
+    IDS_STRING1795          "Burn completed successfully"
+    IDS_STRING1796          "Burn failed! Error: 0x%08x"
+    IDS_STRING1797          "Validating current media..."
+    IDS_STRING1798          "Formatting media..."
+    IDS_STRING1799          "Initializing hardware..."
+    IDS_STRING1800          "Optimizing laser intensity..."
+    IDS_STRING1801          "Finalizing writing..."
+    IDS_STRING1802          "Initializing Disc Recorder..."
+    IDS_STRING1803          "User Canceled!"
+    IDS_STRING1804          "Creating File System..."
+    IDS_STRING1805          "Error: No enough space on this media, choose a bigger one!"
+    IDS_STRING1806          "Failed to add %s!"
+    IDS_STRING1807          "Adding %s to file system..."
 END
 
 #endif    // English (U.S.) resources
