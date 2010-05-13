@@ -47,6 +47,10 @@ document.write(getCalendarStyles());
 <div class="menubottom">
 <a href="#" onclick="parent.myframe.location.reload(); return false;"><?php	echo RELOAD;?></a> |
 <a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
+<?php
+if (SHOW_PRINTCOMMAND == 1)
+	echo "| <a href=\"#\" onclick=\"parent.myframe.focus(); parent.myframe.print(); parent.myframe.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
+?>
 </div>
 <div class="wrap">
 <form action="">

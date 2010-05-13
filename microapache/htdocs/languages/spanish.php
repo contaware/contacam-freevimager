@@ -39,4 +39,5 @@ define("IMAGERELOADIN","La imagen se actualizará en");
 define("SECONDS","Segundos");
 define("RELOAD","Actualizar");
 define("HOME","Seleccione Cámara");
+define("PRINTCOMMAND","Imprimir");
 ?>

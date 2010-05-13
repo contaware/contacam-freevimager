@@ -3,8 +3,9 @@ VERSION HISTORY
 2.0.5 (August 18th 2010)
 
 - Added Edimax network cameras support
-- Added print link in web interface
+- Optional print command link for web interface
 - Motion jpeg decoder more fault tolerant
+- Fixed browser autostart in service mode
 
 2.0.1 (April 8th 2010)
 

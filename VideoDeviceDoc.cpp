@@ -9098,7 +9098,7 @@ void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
-BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir)
+BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite/*=FALSE*/)
 {
 	sAutoSaveDir.TrimRight(_T('\\'));
 	sAutoSaveDir += _T('\\');
@@ -9127,8 +9127,14 @@ BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir)
 		CString sName = FileFind.GetFileName(pos);
 		CString sShortName = ::GetShortFileName(sName);
 		CString sRelName = sName.Mid(nRootDirNameSize);
-		if (sShortName != MICROAPACHE_INDEX_ROOTDIR_FILENAME && sShortName != THUMBS_DB)
-			::CopyFile(sName, sAutoSaveDir + sRelName, TRUE); // Do not overwrite
+		if (sShortName.CompareNoCase(MICROAPACHE_INDEX_ROOTDIR_FILENAME) != 0 &&
+			sShortName.CompareNoCase(THUMBS_DB) != 0)
+		{
+			if (sShortName.CompareNoCase(PHP_CONFIGNAME_EXT) == 0)
+				::CopyFile(sName, sAutoSaveDir + sRelName, TRUE);	// Never overwrite the configuration file!
+			else
+				::CopyFile(sName, sAutoSaveDir + sRelName, !bOverwrite);
+		}
 	}
 	return TRUE;
 }
@@ -9959,13 +9965,23 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 			nIndexDefine = sConfigLowerCase.Find(sDefine, nIndexDefine + 1);
 	}
 
-	// If not found -> insert after <?php
-	int nIndexInsert = sConfigLowerCase.Find(_T("<?php"));
+	// If not found -> insert before last comment
+	int nIndexInsert = sConfigLowerCase.Find(_T("/**************************************\r\n* initialization, do not remove that! *\r\n**************************************/"));
 	if (nIndexInsert >= 0)
 	{
-		nIndexInsert += 5; // Skip <?php
-		sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
+		sConfig.Insert(nIndexInsert, sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");") + _T("\r\n\r\n"));
 		return SavePhpConfigFile(sConfig);
+	}
+	// If also not found -> insert after <?php
+	else
+	{
+		nIndexInsert = sConfigLowerCase.Find(_T("<?php"));
+		if (nIndexInsert >= 0)
+		{
+			nIndexInsert += 5; // Skip <?php
+			sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
+			return SavePhpConfigFile(sConfig);
+		}
 	}
 
 	return FALSE;

@@ -51,6 +51,7 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_RATE, m_nComboSnapshotHistoryRate);
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
+	DDX_Check(pDX, IDC_CHECK_PRINTCOMMAND, m_bCheckPrintCommand);
 	//}}AFX_DATA_MAP
 }
 
@@ -188,6 +189,7 @@ BOOL CAssistantPage::OnInitDialog()
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_sPhpConfigVersion = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_VERSION);
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
+	m_bCheckPrintCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_PRINTCOMMAND) == _T("1"));
 	if (sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME)
 		m_nUsage = 0;
 	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
@@ -462,6 +464,8 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_MANUAL);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_NOCHANGE);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PRINTCOMMAND);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
@@ -846,6 +850,12 @@ void CAssistantPage::ApplySettings()
 		pComboBox->GetLBText(pComboBox->GetCurSel(), sStyleName);
 	if (sStyleName != _T(""))
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_STYLEFILEPATH, CString(MICROAPACHE_STYLE_DIR) + _T("/") + sStyleName + _T(".css"));
+
+	// Print command
+	if (m_bCheckPrintCommand)
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_PRINTCOMMAND, _T("1"));
+	else
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_PRINTCOMMAND, _T("0"));
 
 	// Usage
 	switch (m_nUsage)
@@ -1281,6 +1291,9 @@ void CAssistantPage::ApplySettings()
 		}
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
 	}
+
+	// New versions of the web files
+	m_pDoc->MicroApacheCheckWebFiles(m_pDoc->GetAutoSaveDir(), TRUE);
 
 	// End wait cursor
 	EndWaitCursor();

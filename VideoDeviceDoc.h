@@ -140,6 +140,7 @@ class CMovementDetectionPage;
 #define PHPCONFIG_WIDTH						_T("WIDTH")
 #define PHPCONFIG_HEIGHT					_T("HEIGHT")
 #define PHPCONFIG_MAX_PER_PAGE				_T("MAX_PER_PAGE")
+#define PHPCONFIG_SHOW_PRINTCOMMAND			_T("SHOW_PRINTCOMMAND")
 #define PHPCONFIG_LANGUAGEFILEPATH			_T("LANGUAGEFILEPATH")
 #define PHPCONFIG_STYLEFILEPATH				_T("STYLEFILEPATH")
 #define PHPCONFIG_MIN_THUMSPERPAGE			7
@@ -1421,7 +1422,7 @@ public:
 	static CString MicroApacheGetPidFileName();
 	static CString MicroApacheGetPwFileName();
 	static BOOL MicroApacheCheckConfigFile();
-	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir);
+	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite = FALSE);
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();

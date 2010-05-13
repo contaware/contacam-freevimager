@@ -39,4 +39,5 @@ define("IMAGERELOADIN","L'image est ajournée dans");
 define("SECONDS","secondes");
 define("RELOAD","Recharger");
 define("HOME","Sélection Caméra");
+define("PRINTCOMMAND","Imprimer");
 ?>

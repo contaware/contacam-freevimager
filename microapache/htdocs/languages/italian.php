@@ -39,4 +39,5 @@ define("IMAGERELOADIN","L'immagine verrà aggiornata tra");
 define("SECONDS","secondi");
 define("RELOAD","Ricaricare");
 define("HOME","Seleziona Telecamera");
+define("PRINTCOMMAND","Stampa");
 ?>

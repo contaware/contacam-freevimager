@@ -65,6 +65,9 @@ define ("LANGUAGEFILEPATH","languages/english.php");
 // Set the Style
 define ("STYLEFILEPATH","styles/darkgray.css");
 
+// Show / hide the print command
+define ("SHOW_PRINTCOMMAND","0");     // 0 = Hide , 1 = Show
+
 // Use normal or thumb version for the snapshot viewer
 define ("SNAPSHOT_THUMB","0");        // 0 = Fullsize version , 1 = Thumb version
 define ("SNAPSHOTHISTORY_THUMB","0"); // 0 = Fullsize version , 1 = Thumb version
