@@ -117,14 +117,17 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 				::InterlockedExchange(&pDoc->m_lCurrentInitUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
 
 				// Restart
-				pDoc->ReStartProcessFrame();
 				if (pDoc->m_pDxCapture->Run())
 				{
-					pDoc->m_bCapture = TRUE;
-					
 					// Some devices need that...
 					pDoc->m_pDxCapture->Stop();
 					pDoc->m_pDxCapture->Run();
+
+					// Set flag
+					pDoc->m_bCapture = TRUE;
+
+					// Restart process frame
+					pDoc->ReStartProcessFrame();
 				}
 			}
 			::InterlockedExchange(&(pDoc->m_bStopAndChangeFormat), 0);
@@ -175,10 +178,12 @@ LONG CVideoDeviceView::OnThreadSafeStopAndCallVideoSourceDialog(WPARAM wparam, L
 
 				// Reset vars
 				pDoc->m_bSizeToDoc = TRUE;
-				pDoc->ReStartProcessFrame();
 
 				// Re-Open
 				ReOpenDxDevice();
+
+				// Restart process frame
+				pDoc->ReStartProcessFrame();
 			}
 			::InterlockedExchange(&(pDoc->m_bStopAndCallVideoSourceDialog), 0);
 			
@@ -1289,8 +1294,6 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 			// Start capturing video data
 			if (pDoc->m_pDxCapture->Run())
 			{
-				pDoc->m_bCapture = TRUE;
-				
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
 				if (pDoc->m_nDeviceInputId >= 0 && pDoc->m_nDeviceInputId < pDoc->m_pDxCapture->GetInputsCount())
 				{
@@ -1303,6 +1306,9 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 				// Some devices need that...
 				pDoc->m_pDxCapture->Stop();
 				pDoc->m_pDxCapture->Run();
+
+				// Set flag
+				pDoc->m_bCapture = TRUE;
 
 				return TRUE;
 			}

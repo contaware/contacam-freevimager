@@ -51,6 +51,7 @@ protected:
 	CArray<CSize,CSize> m_Sizes;
 	void Apply();
 	void FormatToCurSel(AM_MEDIA_TYPE* pmtConfig);
+	void ReStart();
 
 	// Generated message map functions
 	//{{AFX_MSG(CDxVideoFormatDlg)

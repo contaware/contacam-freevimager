@@ -7505,10 +7505,9 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 							0, 0);
 
 			// Start capturing video data
+			m_bProcessFrameStopped = 1;
 			if (m_pDxCapture->Run())
 			{
-				m_bCapture = TRUE;
-
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
 				if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCapture->GetInputsCount())
 				{
@@ -7521,6 +7520,12 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				// Some devices need that...
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
+
+				// Set flag
+				m_bCapture = TRUE;
+
+				// Restart process frame
+				ReStartProcessFrame();
 
 				// Start Audio Capture Thread
 				if (m_bCaptureAudio)
@@ -7572,10 +7577,9 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 							0, 0);
 
 			// Start capturing video data
+			m_bProcessFrameStopped = 1;
 			if (m_pDxCaptureVMR9->Run())
 			{
-				m_bCapture = TRUE;
-
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
 				if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCaptureVMR9->GetInputsCount())
 				{
@@ -7588,6 +7592,12 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 				// Some devices need that...
 				m_pDxCaptureVMR9->Stop();
 				m_pDxCaptureVMR9->Run();
+
+				// Set flag
+				m_bCapture = TRUE;
+
+				// Restart process frame
+				ReStartProcessFrame();
 
 				// Start Video Capture Thread
 				m_VMR9CaptureVideoThread.Start();
@@ -8771,14 +8781,17 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			m_ColorDetection.ResetCounter();
 			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
-			ReStartProcessFrame();
 			if (m_pDxCapture->Run())
 			{
-				m_bCapture = TRUE;
-			
 				// Some devices need that...
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
+
+				// Set flag
+				m_bCapture = TRUE;
+
+				// Restart process frame
+				ReStartProcessFrame();
 			}
 			SetDocumentTitle();
 		}

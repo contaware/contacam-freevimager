@@ -108,6 +108,22 @@ BOOL CDxVideoFormatDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CDxVideoFormatDlg::ReStart()
+{
+	if (m_pDoc->m_pDxCapture->Run())
+	{
+		// Some devices need that...
+		m_pDoc->m_pDxCapture->Stop();
+		m_pDoc->m_pDxCapture->Run();
+
+		// Set flag
+		m_pDoc->m_bCapture = TRUE;
+
+		// Restart process frame
+		m_pDoc->ReStartProcessFrame();
+	}
+}
+
 void CDxVideoFormatDlg::Apply()
 {
 	AM_MEDIA_TYPE* pmtConfig;
@@ -128,28 +144,14 @@ void CDxVideoFormatDlg::Apply()
 		}
 		else
 		{
-			if (m_pDoc->m_pDxCapture->Run())
-			{
-				m_pDoc->m_bCapture = TRUE;
-
-				// Some devices need that...
-				m_pDoc->m_pDxCapture->Stop();
-				m_pDoc->m_pDxCapture->Run();
-			}
+			ReStart();
 			return;
 		}
 
 		// Set Size
 		if (!m_pDoc->m_pDxCapture->GetFormatByID(nID, &pmtConfig))
 		{
-			if (m_pDoc->m_pDxCapture->Run())
-			{
-				m_pDoc->m_bCapture = TRUE;
-
-				// Some devices need that...
-				m_pDoc->m_pDxCapture->Stop();
-				m_pDoc->m_pDxCapture->Run();
-			}
+			ReStart();
 			return;
 		}
 		VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
@@ -182,14 +184,7 @@ void CDxVideoFormatDlg::Apply()
 		if (!m_pDoc->m_pDxCapture->GetCurrentFormat(&pmtTrueConfig))
 		{
 			DeleteMediaType(pmtConfig);
-			if (m_pDoc->m_pDxCapture->Run())
-			{
-				m_pDoc->m_bCapture = TRUE;
-
-				// Some devices need that...
-				m_pDoc->m_pDxCapture->Stop();
-				m_pDoc->m_pDxCapture->Run();
-			}
+			ReStart();
 			return;
 		}
 		VIDEOINFOHEADER* pTrueVih = (VIDEOINFOHEADER*)pmtTrueConfig->pbFormat;
@@ -215,16 +210,8 @@ void CDxVideoFormatDlg::Apply()
 		m_pDoc->m_nDeviceFormatHeight = m_Sizes[m_VideoSize.GetCurSel()].cy;
 
 		// Restart
-		m_pDoc->ReStartProcessFrame();
-		if (m_pDoc->m_pDxCapture->Run())
-		{
-			m_pDoc->m_bCapture = TRUE;
-
-			// Some devices need that...
-			m_pDoc->m_pDxCapture->Stop();
-			m_pDoc->m_pDxCapture->Run();
-		}
-
+		ReStart();
+		
 		// Clean-Up
 		DeleteMediaType(pmtConfig);
 		DeleteMediaType(pmtTrueConfig);
