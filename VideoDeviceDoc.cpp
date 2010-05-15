@@ -10451,11 +10451,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 
 	// Do Stop ProcessFrame?
 	if (m_bStopProcessFrame)
-	{
-		// Do not invert the order of these two instructions!
-		::InterlockedExchange(&m_bProcessFrameStopped, 1);
-		::InterlockedExchange(&m_bStopProcessFrame, 0);
-	}
+		SetProcessFrameStopped();
 
 	// Timing
 	DWORD dwCurrentFrameTime;
@@ -11036,11 +11032,7 @@ exit:
 
 	// Do Stop ProcessFrame?
 	if (m_bStopProcessFrame)
-	{
-		// Do not invert the order of these two instructions!
-		::InterlockedExchange(&m_bProcessFrameStopped, 1);
-		::InterlockedExchange(&m_bStopProcessFrame, 0);
-	}
+		SetProcessFrameStopped();
 
 	// Exiting from here
 	m_csProcessFrame.LeaveCriticalSection();

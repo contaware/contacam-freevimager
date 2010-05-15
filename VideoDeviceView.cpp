@@ -1342,6 +1342,9 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
+					// Set stopped state
+					pDoc->SetProcessFrameStopped();
+
 					// Disable Critical Controls
 					::SendMessage(	GetSafeHwnd(),
 									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
@@ -1358,6 +1361,9 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device is available again
 				else if (evParam2 == 1 && pDoc->m_pDxCapture)
 				{
+					// Set stopped state
+					pDoc->SetProcessFrameStopped();
+
 					// Re-Open
 					if (ReOpenDxDevice())
 					{
@@ -1367,6 +1373,9 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 						TRACE(sMsg);
 						::LogLine(sMsg);
 					}
+
+					// Restart process frame
+					pDoc->ReStartProcessFrame();
 
 					// Re-Enable Critical Controls
 					::SendMessage(	GetSafeHwnd(),

@@ -1321,6 +1321,9 @@ public:
 											};
 	__forceinline LONG IsProcessFrameStopped() const {return (	m_bProcessFrameStopped  &&					// Processing Terminated if 1
 																!m_bStopProcessFrame);};
+	__forceinline void SetProcessFrameStopped()	{	// Do not invert the order of these two instructions!
+													::InterlockedExchange(&m_bProcessFrameStopped, 1);		// Set stopped state
+													::InterlockedExchange(&m_bStopProcessFrame, 0);};
 	
 	// Video / Audio Recording
 	__forceinline BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
