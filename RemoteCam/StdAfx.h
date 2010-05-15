@@ -29,6 +29,7 @@
 #include <Windns.h>
 #include <wincrypt.h>
 #include <afxctl.h>
+#include "MlString.h"
 #include "Helpers.h"
 
 #ifndef SM_CMONITORS

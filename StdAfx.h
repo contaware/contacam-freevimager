@@ -42,6 +42,7 @@
 #include <string>
 #include <Windns.h>
 #include <wincrypt.h>
+#include "MlString.h"
 #include "Helpers.h"
 #include "Performance.h"
 #include "TraceLogFile.h"
@@ -131,5 +132,3 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(AFX_STDAFX_H__53BABAC5_8A1F_4462_8394_E4DFE06B0809__INCLUDED_)
-
-#include "MlString.h"

@@ -1,5 +1,4 @@
 #include "StdAfx.h"
-#include "MlString.h"
 
 const CString ml_string(int StringId)
 {

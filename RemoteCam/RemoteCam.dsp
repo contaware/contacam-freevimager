@@ -128,6 +128,10 @@ SOURCE=..\Helpers.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\MlString.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\NetCom.cpp
 # End Source File
 # Begin Source File
@@ -178,6 +182,10 @@ SOURCE=..\XMLite.cpp
 # Begin Source File
 
 SOURCE=..\Helpers.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\MlString.h
 # End Source File
 # Begin Source File
 
