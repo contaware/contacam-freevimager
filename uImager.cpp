@@ -460,6 +460,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 		}
 
+		// Let the possibly running UI process terminate,
+		// especially when doing a logoff
+#ifdef VIDEODEVICEDOC
+		if (m_bServiceProcess)
+			::Sleep(CONTACAMSERVICE_STARTUP_SLEEP);
+#endif
+
 		// Separate Instance Necessary?
 		m_bForceSeparateInstance =
 			m_bExtractHere												||

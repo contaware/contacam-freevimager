@@ -72,7 +72,8 @@
 #define CONTACAMSERVICE_NOTINSTALLED					0
 #define CONTACAMSERVICE_RUNNING							1
 #define CONTACAMSERVICE_NOTRUNNING						2
-#define CONTACAMSERVICE_TIMEOUT							20000
+#define CONTACAMSERVICE_TIMEOUT							20000U
+#define CONTACAMSERVICE_STARTUP_SLEEP					3000U
 #define CONTACAMSERVICE_CONTROL_START_PROC				133
 #define CONTACAMSERVICE_CONTROL_END_PROC				134
 
@@ -826,8 +827,9 @@ public:
 	CString m_sREG_NAME;
 
 	// Service
-	// - ContaCam's browser autostart disabled if this set,
-	//   using the registry's Run key to start the browser
+	// - ContaCam's browser autostart disabled if this set
+	//   (in this case a registry Run key is set to start the browser
+	//    and that's made in BrowserAutostart() by the UI process)
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
 	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us

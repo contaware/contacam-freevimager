@@ -1,8 +1,9 @@
 VERSION HISTORY
 
-2.0.5 (August 18th 2010)
+2.0.5 (May 17th 2010)
 
--
+- Translation fixes
+- YUV Blt() support check
  
 2.0.1 (April 8th 2010)
 

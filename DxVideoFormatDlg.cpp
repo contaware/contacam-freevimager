@@ -113,6 +113,7 @@ void CDxVideoFormatDlg::ReStart()
 	if (m_pDoc->m_pDxCapture->Run())
 	{
 		// Some devices need that...
+		// Process frame must still be stopped when calling Dx Stop()!
 		m_pDoc->m_pDxCapture->Stop();
 		m_pDoc->m_pDxCapture->Run();
 

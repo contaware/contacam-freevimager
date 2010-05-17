@@ -913,7 +913,17 @@ void CGeneralPage::OnChangeFrameRate()
 		{
 			m_pDoc->StopProcessFrame();
 			m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
-			m_bDoChangeFrameRate = TRUE; // Done in OnTimer()
+			if (!m_bDoChangeFrameRate)
+			{
+				// Done in OnTimer()
+				m_bDoChangeFrameRate = TRUE;
+
+				// Disable Critical Controls
+				::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+								(WPARAM)FALSE,	// Disable Them
+								(LPARAM)0);
+			}
 		}
 	}
 }
@@ -1159,6 +1169,12 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 					pEdit->SetFocus();
 					pEdit->SetSel(0xFFFF0000);
 				}
+
+				// Enable Critical Controls
+				::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+								(WPARAM)TRUE,	// Enable Them
+								(LPARAM)0);
 			}
 		}
 	}
@@ -1375,47 +1391,61 @@ void CGeneralPage::OnRadioPostrecBitrate()
 
 void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 {
-	// Enable Framerate?
-	CSpinButtonCtrl* pSpin;
-	pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_FRAMERATE);
 	CEdit* pEdit;
-	pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-	if (bEnable)
+	CSpinButtonCtrl* pSpin;
+	CButton* pButton;
+	CButton* pCheck;
+	CComboBox* pComboBox;
+	CButton* pRadio;
+	CSliderCtrl* pSlider;
+
+	// Enable Framerate?
+	if (!m_bDoChangeFrameRate)
 	{
-		if (m_pDoc->m_pDxCapture)
+		pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_FRAMERATE);
+		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+		if (bEnable)
 		{
-			if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // Not Settable
+			if (m_pDoc->m_pDxCapture)
 			{
-				pSpin->EnableWindow(FALSE);
-				pEdit->EnableWindow(FALSE);
+				if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // Not Settable
+				{
+					pSpin->EnableWindow(FALSE);
+					pEdit->EnableWindow(FALSE);
+				}
+				else
+				{
+					pSpin->EnableWindow(TRUE);
+					pEdit->EnableWindow(TRUE);
+				}
 			}
-			else
+			else if (m_pDoc->m_pDxCaptureVMR9)
 			{
 				pSpin->EnableWindow(TRUE);
 				pEdit->EnableWindow(TRUE);
 			}
-		}
-		else if (m_pDoc->m_pDxCaptureVMR9)
-		{
-			pSpin->EnableWindow(TRUE);
-			pEdit->EnableWindow(TRUE);
-		}
-		else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-		{
-			pSpin->EnableWindow(TRUE);
-			pEdit->EnableWindow(TRUE);
-		}
-		else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
-		{
-			if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
-			{
-				pSpin->EnableWindow(FALSE);
-				pEdit->EnableWindow(FALSE);
-			}
-			else
+			else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
 			{
 				pSpin->EnableWindow(TRUE);
 				pEdit->EnableWindow(TRUE);
+			}
+			else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
+			{
+				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
+				{
+					pSpin->EnableWindow(FALSE);
+					pEdit->EnableWindow(FALSE);
+				}
+				else
+				{
+					pSpin->EnableWindow(TRUE);
+					pEdit->EnableWindow(TRUE);
+				}
+			}
+			else
+			{
+				pSpin->EnableWindow(FALSE);
+				pEdit->EnableWindow(FALSE);
 			}
 		}
 		else
@@ -1424,24 +1454,16 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 			pEdit->EnableWindow(FALSE);
 		}
 	}
-	else
-	{
-		pSpin->EnableWindow(FALSE);
-		pEdit->EnableWindow(FALSE);
-	}
 
 	// Enable Rec. Dir Button?
-	CButton* pButton;
 	pButton = (CButton*)GetDlgItem(IDC_RECORD_SAVEAS);
 	pButton->EnableWindow(bEnable);
 
 	// Enable Time Segmentation Check Box?
-	CButton* pCheck;
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TIME_SEGMENTATION);
 	pCheck->EnableWindow(bEnable);
 
 	// Enable Time Segmentation Combo Box?
-	CComboBox* pComboBox;
 	pComboBox = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
 	pComboBox->EnableWindow(bEnable);
 
@@ -1571,11 +1593,11 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	pEdit->EnableWindow(bEnable);
 
 	// Video Compression Quality Slider?
-	CSliderCtrl* pSlider = (CSliderCtrl*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY);
+	pSlider = (CSliderCtrl*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY);
 	pSlider->EnableWindow(bEnable);
 
 	// Quality Radio Button 
-	CButton* pRadio = (CButton*)GetDlgItem(IDC_RADIO_QUALITY);
+	pRadio = (CButton*)GetDlgItem(IDC_RADIO_QUALITY);
 	pRadio->EnableWindow(bEnable);
 
 	// Data Rate Radio Button 

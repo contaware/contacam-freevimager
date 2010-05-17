@@ -7505,7 +7505,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 							0, 0);
 
 			// Start capturing video data
-			m_bProcessFrameStopped = 1;
+			SetProcessFrameStopped();
 			if (m_pDxCapture->Run())
 			{
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
@@ -7518,6 +7518,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 					m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
 
 				// Some devices need that...
+				// Process frame must still be stopped when calling Dx Stop()!
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
 
@@ -7577,7 +7578,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 							0, 0);
 
 			// Start capturing video data
-			m_bProcessFrameStopped = 1;
+			SetProcessFrameStopped();
 			if (m_pDxCaptureVMR9->Run())
 			{
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
@@ -7590,6 +7591,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 					m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput();
 
 				// Some devices need that...
+				// Process frame must still be stopped when calling Dx Stop()!
 				m_pDxCaptureVMR9->Stop();
 				m_pDxCaptureVMR9->Run();
 
@@ -8784,6 +8786,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			if (m_pDxCapture->Run())
 			{
 				// Some devices need that...
+				// Process frame must still be stopped when calling Dx Stop()!
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
 

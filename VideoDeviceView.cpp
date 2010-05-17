@@ -120,6 +120,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 				if (pDoc->m_pDxCapture->Run())
 				{
 					// Some devices need that...
+					// Process frame must still be stopped when calling Dx Stop()!
 					pDoc->m_pDxCapture->Stop();
 					pDoc->m_pDxCapture->Run();
 
@@ -180,10 +181,11 @@ LONG CVideoDeviceView::OnThreadSafeStopAndCallVideoSourceDialog(WPARAM wparam, L
 				pDoc->m_bSizeToDoc = TRUE;
 
 				// Re-Open
-				ReOpenDxDevice();
-
-				// Restart process frame
-				pDoc->ReStartProcessFrame();
+				if (ReOpenDxDevice())
+				{
+					// Restart process frame
+					pDoc->ReStartProcessFrame();
+				}
 			}
 			::InterlockedExchange(&(pDoc->m_bStopAndCallVideoSourceDialog), 0);
 			
@@ -1304,6 +1306,7 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 					pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput();
 
 				// Some devices need that...
+				// Process frame must still be stopped when calling Dx Stop()!
 				pDoc->m_pDxCapture->Stop();
 				pDoc->m_pDxCapture->Run();
 
@@ -1367,15 +1370,16 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 					// Re-Open
 					if (ReOpenDxDevice())
 					{
+						// Reset Unplugged Flag
 						::InterlockedExchange(&(pDoc->m_bDxDeviceUnplugged), 0);
 						CString sMsg;
 						sMsg.Format(_T("%s replugged\n"), pDoc->GetDeviceName());
 						TRACE(sMsg);
 						::LogLine(sMsg);
-					}
 
-					// Restart process frame
-					pDoc->ReStartProcessFrame();
+						// Restart process frame
+						pDoc->ReStartProcessFrame();
+					}
 
 					// Re-Enable Critical Controls
 					::SendMessage(	GetSafeHwnd(),

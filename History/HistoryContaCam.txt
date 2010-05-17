@@ -1,11 +1,13 @@
 VERSION HISTORY
 
-2.0.5 (August 18th 2010)
+2.0.5 (May 17th 2010)
 
 - Added Edimax network cameras support
 - Optional print command link for web interface
 - Motion jpeg decoder more fault tolerant
+- YUV Blt() support check
 - Fixed browser autostart in service mode
+- Fixed start lock for some directx capture cards
 
 2.0.1 (April 8th 2010)
 
