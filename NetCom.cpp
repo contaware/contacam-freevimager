@@ -806,8 +806,18 @@ int CNetCom::CMsgThread::Work()
 								// Stop the Tx Thread because after shutdown with SD_SEND,
 								// transmitting is not allowed!
 								m_pNetCom->ShutdownTxThread();
+
+								// Enable only FD_READ events at this point; on Wine that's needed because
+								// another FD_CLOSE event is fired when calling shutdown() and this would
+								// create an infinite loop!
+								::EnterCriticalSection(&m_pNetCom->m_csSocket);
+								if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_READ) == SOCKET_ERROR)
+									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
+								::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+
+								// Shutdown SD_SEND
 								if (::shutdown(m_pNetCom->m_hSocket, SD_SEND) == SOCKET_ERROR)
-									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));	
+									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
 
 								// Next Step is entering the case WAIT_TIMEOUT.
 								// This is to let finish reading remaining data!
@@ -1772,7 +1782,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	// Init Message Out if not supplied
 	if (pMsgOut == NULL)
 	{
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(TRACELOGFILE)
 		pMsgOut = (CMsgOut*)new CMsgOut;
 		m_bFreeMsgOut = TRUE;
 #endif
@@ -3884,10 +3894,11 @@ void CNetCom::ProcessError(CString sErrorText)
 	CString sTemp;
 	LPVOID lpMsgBuf = NULL;
 
+	DWORD dwLastError = ::GetLastError();
 	if (::FormatMessage( 
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		NULL,
-		::GetLastError(),
+		dwLastError,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 		(LPTSTR)&lpMsgBuf,
 		0,
@@ -3914,7 +3925,8 @@ void CNetCom::ProcessError(CString sErrorText)
 		::LocalFree(lpMsgBuf);
 	}
 	else
-		sTemp.Format(_T("%s Failed"), sErrorText);
+		sTemp.Format(_T("%s Failed With The Following Error Code: %u"),
+							sErrorText, dwLastError);
 
 	// Call Error
 	if (m_pMsgOut)
@@ -3926,10 +3938,11 @@ void CNetCom::ProcessWSAError(CString sErrorText)
 	CString sTemp;
 	LPVOID lpMsgBuf = NULL;
 
+	int nLastError = ::WSAGetLastError();
 	if (::FormatMessage( 
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 		NULL,
-		::WSAGetLastError(),
+		nLastError,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 		(LPTSTR)&lpMsgBuf,
 		0,
@@ -3956,7 +3969,8 @@ void CNetCom::ProcessWSAError(CString sErrorText)
 		::LocalFree(lpMsgBuf);
 	}
 	else
-		sTemp.Format(_T("%s Failed"), sErrorText);
+		sTemp.Format(_T("%s Failed With The Following Error Code: %d"),
+							sErrorText, nLastError);
 
 	// Call Error
 	if (m_pMsgOut)

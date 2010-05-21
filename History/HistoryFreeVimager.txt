@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.0.7 (September 25th 2010)
+
+- 
+
 2.0.5 (May 17th 2010)
 
 - Translation fixes
