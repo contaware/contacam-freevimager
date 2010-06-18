@@ -2,7 +2,7 @@ VERSION HISTORY
 
 2.0.7 (September 25th 2010)
 
-- Networking fix to make it work with Wine and ReactOS
+- Networking fix to make it work with Wine
 
 2.0.5 (May 17th 2010)
 

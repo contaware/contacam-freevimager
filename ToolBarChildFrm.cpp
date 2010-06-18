@@ -1411,7 +1411,7 @@ void CVideoDeviceChildFrame::OnClose()
 
 			// Log the stopping
 			// (no log for Video Avi mode)
-			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL)
+			if (pDoc->m_bCaptureAndDrawingStarted && pDoc->m_pVideoAviDoc == NULL)
 			{
 				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
 				CString sMsg;

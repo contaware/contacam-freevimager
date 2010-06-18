@@ -832,7 +832,8 @@ public:
 	//    and that's made in BrowserAutostart() by the UI process)
 	// - Window placement store/restore disabled if this set
 	// - Start/stop ContaCam.exe from service disabled if this set
-	BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
+	// - Drawing disabled if this set
+	volatile BOOL m_bServiceProcess;	// Set if SERVICENAME_EXT started us
 
 	// Do start from service
 	BOOL m_bDoStartFromService;

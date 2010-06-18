@@ -30,7 +30,7 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	void Draw();
+	BOOL Draw();
 	BOOL AreCriticalControlsDisabled() {return m_nCriticalControlsCount <= 0;};
 
 protected:

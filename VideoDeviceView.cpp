@@ -551,10 +551,14 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 		return (pDoc->m_pDib->GetCompression() != pDoc->m_DxDraw.GetCurrentSrcFourCC());
 }
 
-void CVideoDeviceView::Draw()
+BOOL CVideoDeviceView::Draw()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+
+	// Nothing to draw as a service, return ok
+	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		return TRUE;
 
 	// Enter CS here, also m_bInitializingDxDraw must be under the cs
 	// so that if two or more Draw() are called from different threads
@@ -566,7 +570,7 @@ void CVideoDeviceView::Draw()
 	if (m_bInitializingDxDraw)
 	{
 		::LeaveCriticalSection(&pDoc->m_csDib);
-		return;
+		return FALSE;
 	}
 
 	// Init local vars
@@ -605,7 +609,7 @@ void CVideoDeviceView::Draw()
 							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
 							(LPARAM)BI_RGB);
 			::LeaveCriticalSection(&pDoc->m_csDib);
-			return;
+			return FALSE;
 		}	
 	}
 	else
@@ -627,11 +631,12 @@ void CVideoDeviceView::Draw()
 							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
 							(LPARAM)pDoc->m_pDib->GetCompression());
 			::LeaveCriticalSection(&pDoc->m_csDib);
-			return;
+			return FALSE;
 		}
 	}
 
 	// Draw if initialized
+	BOOL res = FALSE;
 	if (pDoc->m_DxDraw.IsInit())
 	{
 		// Update Current Device
@@ -677,11 +682,16 @@ void CVideoDeviceView::Draw()
 		
 		// Blt
 		if (pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
+		{
 			m_dwDxDrawUpTime = dwCurrentUpTime;
+			res = TRUE;
+		}
 	}
 
 	// Leave CS
 	::LeaveCriticalSection(&pDoc->m_csDib);
+
+	return res;
 }
 
 __forceinline void CVideoDeviceView::DrawText()

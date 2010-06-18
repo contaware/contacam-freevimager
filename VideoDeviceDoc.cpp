@@ -4723,7 +4723,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			default:
 				break;
 		}
-		if (m_pDoc->m_bCaptureStarted)
+		if (m_pDoc->m_bCaptureAndDrawingStarted)
 		{
 			// Store start time
 			m_pDoc->m_CaptureStartTime = CTime::GetCurrentTime();
@@ -6060,14 +6060,14 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
 	m_bCapture = FALSE;
-	m_bCaptureStarted = 0;
+	m_bCaptureAndDrawingStarted = 0;
 	m_bShowFrameTime = TRUE;
 	m_bVideoView = TRUE;
 	m_VideoProcessorMode = NO_DETECTOR;
 	m_bDecodeFramesForPreview = FALSE;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
-	m_bFirstRun = FALSE;
+	m_bDeviceFirstRun = FALSE;
 
 	// Capture Devices
 	m_bDxFrameGrabCaptureFirst = FALSE;
@@ -6749,8 +6749,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 			delete [] pData;
 	}
 
-	// First Run
-	m_bFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ? TRUE : FALSE;
+	// Device First Run
+	m_bDeviceFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ? TRUE : FALSE;
 
 	// Try dx frame grab capture first
 	m_bDxFrameGrabCaptureFirst = pApp->GetProfileInt(sSection, _T("DxFrameGrabCaptureFirst"), FALSE);
@@ -6969,9 +6969,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	::CreateDir(m_sSnapshotAutoSaveDir);
 
 	// Check whether the web files exist in the given directory.
-	// With first run m_sRecordAutoSaveDir, m_sDetectionAutoSaveDir
+	// With first device run m_sRecordAutoSaveDir, m_sDetectionAutoSaveDir
 	// and m_sSnapshotAutoSaveDir are the same
-	if (m_bFirstRun)
+	if (m_bDeviceFirstRun)
 		MicroApacheCheckWebFiles(GetAutoSaveDir());
 
 	// Start Send Frame
@@ -10903,19 +10903,16 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// Draw
 		HRESULT hr = ::CoInitialize(NULL);
 		BOOL bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
-		GetView()->Draw();
+		BOOL bDrawingOk = GetView()->Draw();
 		if (bCleanupCOM)
 			::CoUninitialize();
 
 		// Set started flag and open the Settings dialog
-		// if it's the first run of this device (leave this code
-		// here because m_pDib must be initialized when setting
-		// the m_bCaptureStarted flag otherwise the Draw()
-		// function inside the watch dog doesn't work correctly!)
-		if (!m_bCaptureStarted)
+		// if it's the first run of this device
+		if (!m_bCaptureAndDrawingStarted && bDrawingOk)
 		{
-			::InterlockedExchange(&m_bCaptureStarted, 1);
-			if (m_bFirstRun)
+			::InterlockedExchange(&m_bCaptureAndDrawingStarted, 1);
+			if (m_bDeviceFirstRun)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_CAPTURESETTINGS,

@@ -1514,7 +1514,7 @@ public:
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
 	BITMAPINFOFULL m_OrigBMI;							// Original BMI of Frame
 	volatile BOOL m_bCapture;							// Flag indicating whether the grabbing device is running
-	volatile LONG m_bCaptureStarted;					// Flag set when first frame has been processed 
+	volatile LONG m_bCaptureAndDrawingStarted;			// Flag set when capture and drawing have completely initialized
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
@@ -1525,7 +1525,7 @@ public:
 	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
-	volatile BOOL m_bFirstRun;							// First Time that this device runs
+	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread

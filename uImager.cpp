@@ -6497,7 +6497,7 @@ void CUImagerApp::CSchedulerEntry::Start()
 	if (!pDoc->IsRecording())
 	{
 		// Ready?
-		if (!pDoc->m_bCaptureStarted)
+		if (!pDoc->m_bCaptureAndDrawingStarted)
 		{
 			m_bInsideStart = FALSE;
 			return;
