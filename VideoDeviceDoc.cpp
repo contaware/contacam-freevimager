@@ -358,31 +358,29 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Open
 				if (!AVRecAvi.IsOpen())
 				{
-					BITMAPINFOHEADER DstBmi;
-					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-					DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-					DstBmi.biWidth = AVISaveDib.GetWidth();
-					DstBmi.biHeight = AVISaveDib.GetHeight();
-					DstBmi.biPlanes = 1;
+					BITMAPINFOFULL DstBmi;
+					memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
 					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB)
-					{
-						DstBmi.biBitCount = AVISaveDib.GetBitCount();
-						DstBmi.biCompression = AVISaveDib.GetCompression();
-						DstBmi.biSizeImage = AVISaveDib.GetImageSize();
-					}
+						memcpy(&DstBmi, AVISaveDib.GetBMI(), AVISaveDib.GetBMISize());
 					else
-						DstBmi.biCompression = m_pDoc->m_dwVideoDetFourCC;
+					{
+						DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+						DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
+						DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
+						DstBmi.bmiHeader.biPlanes = 1;
+						DstBmi.bmiHeader.biCompression = m_pDoc->m_dwVideoDetFourCC;
+					}
 					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB && !m_pDoc->m_bVideoDetDeinterlace)
 					{
 						AVRecAvi.AddRawVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),	// Video Format
-													sizeof(BITMAPINFOHEADER),			// Video Format Size
+													AVISaveDib.GetBMISize(),			// Video Format Size
 													CalcFrameRate.num,					// Rate
 													CalcFrameRate.den);					// Scale
 					}
 					else
 					{
 						int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
-						if (DstBmi.biCompression == FCC('MJPG'))
+						if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
 							nQualityBitrate = 0;
 						AVRecAvi.AddVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),		// Source Video Format
 												(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
@@ -3492,7 +3490,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 							0, 0) == 0)
 			return; // Cannot init, unsupported resolution
 	}
-	if (pDib->GetCompression() == BI_RGB)
+	if (pDib->GetCompression() == BI_RGB ||
+		pDib->GetCompression() == BI_BITFIELDS)
 	{
 		// If first RGB Frame:
 		// 1. Allocated m_pMovementDetectorY800Dib
@@ -3970,12 +3969,23 @@ __forceinline void CVideoDeviceDoc::MovementDetectorPreview(CDib* pDib)
 			bits[i] = 128;
 	}
 	int nBitCount = pDib->GetBitCount();
+	BOOL bRGB565 = pDib->IsRgb16_565();
 	int nCompression = pDib->GetCompression();
 	DWORD dwUpTime = pDib->GetUpTime();
 	*pDib = *m_pDifferencingDib;
-	pDib->SetUpTime(dwUpTime);
 	if (nCompression == BI_RGB)	
 		pDib->Decompress(nBitCount);
+	else if (nCompression == BI_BITFIELDS)
+	{
+		if (bRGB565)
+		{
+			pDib->Decompress(24);
+			pDib->ConvertTo16bitsMasks();
+		}
+		else
+			pDib->Decompress(nBitCount);
+	}
+	pDib->SetUpTime(dwUpTime);
 }
 
 // Remember that this callback is called from a separate thread !!!
@@ -8184,40 +8194,42 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		return FALSE;
 
 	// Add Video Stream
-	BITMAPINFOHEADER SrcBmi;
-	BITMAPINFOHEADER DstBmi;
-	memset(&SrcBmi, 0, sizeof(BITMAPINFOHEADER));
-	memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-	DstBmi.biSize = SrcBmi.biSize = sizeof(BITMAPINFOHEADER);
-	DstBmi.biWidth = SrcBmi.biWidth = m_DocRect.right;
-	DstBmi.biHeight = SrcBmi.biHeight = m_DocRect.bottom;
-	DstBmi.biPlanes = SrcBmi.biPlanes = 1;
+	BITMAPINFOFULL SrcBmi;
+	BITMAPINFOFULL DstBmi;
+	memset(&SrcBmi, 0, sizeof(BITMAPINFOFULL));
+	memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
+	SrcBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	SrcBmi.bmiHeader.biWidth = m_DocRect.right;
+	SrcBmi.bmiHeader.biHeight = m_DocRect.bottom;
+	SrcBmi.bmiHeader.biPlanes = 1;
 	if (m_bRgb24Frame)
 	{
-		SrcBmi.biBitCount = 24;
-		SrcBmi.biCompression = BI_RGB;
-		SrcBmi.biSizeImage = DWALIGNEDWIDTHBYTES(	SrcBmi.biBitCount	*
-													SrcBmi.biWidth)		*
-													SrcBmi.biHeight;
+		SrcBmi.bmiHeader.biBitCount = 24;
+		SrcBmi.bmiHeader.biCompression = BI_RGB;
+		SrcBmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(	SrcBmi.bmiHeader.biBitCount	*
+															SrcBmi.bmiHeader.biWidth)	*
+															SrcBmi.bmiHeader.biHeight;
 	}
 	else if (m_bI420Frame)
 	{
-		SrcBmi.biBitCount = 12;
-		SrcBmi.biCompression = FCC('I420');
-		int stride = ::CalcYUVStride(SrcBmi.biCompression, SrcBmi.biWidth);
+		SrcBmi.bmiHeader.biBitCount = 12;
+		SrcBmi.bmiHeader.biCompression = FCC('I420');
+		int stride = ::CalcYUVStride(SrcBmi.bmiHeader.biCompression, SrcBmi.bmiHeader.biWidth);
 		if (stride > 0)
-			SrcBmi.biSizeImage = ::CalcYUVSize(SrcBmi.biCompression, stride, SrcBmi.biHeight);
+			SrcBmi.bmiHeader.biSizeImage = ::CalcYUVSize(SrcBmi.bmiHeader.biCompression, stride, SrcBmi.bmiHeader.biHeight);
 	}
 	else
-		memcpy(&SrcBmi, &m_OrigBMI, sizeof(BITMAPINFOHEADER));
+		memcpy(&SrcBmi, &m_OrigBMI, CDib::GetBMISize((LPBITMAPINFO)&m_OrigBMI));
 	if (m_dwVideoRecFourCC == BI_RGB)
-	{
-		DstBmi.biBitCount = SrcBmi.biBitCount;
-		DstBmi.biCompression = SrcBmi.biCompression;
-		DstBmi.biSizeImage = SrcBmi.biSizeImage;
-	}
+		memcpy(&DstBmi, &SrcBmi, CDib::GetBMISize((LPBITMAPINFO)&SrcBmi));
 	else
-		DstBmi.biCompression = m_dwVideoRecFourCC;
+	{
+		DstBmi.bmiHeader.biSize = SrcBmi.bmiHeader.biSize;
+		DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
+		DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
+		DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
+		DstBmi.bmiHeader.biCompression = m_dwVideoRecFourCC;
+	}
 	AVRational FrameRate;
 	if (m_dEffectiveFrameRate > 0.0)
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
@@ -8226,7 +8238,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 	if (m_dwVideoRecFourCC == BI_RGB && !m_bRecDeinterlace)
 	{
 		if ((*ppAVRec)->AddRawVideoStream(	(LPBITMAPINFO)(&SrcBmi),	// Video Format
-											sizeof(BITMAPINFOHEADER),	// Video Format Size
+											CDib::GetBMISize((LPBITMAPINFO)(&SrcBmi)),	// Video Format Size
 											FrameRate.num,				// Rate
 											FrameRate.den) < 0)			// Scale
 			return FALSE;
@@ -8234,7 +8246,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 	else
 	{
 		int nQualityBitrate = m_nVideoRecQualityBitrate;
-		if (DstBmi.biCompression == FCC('MJPG'))
+		if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
 			nQualityBitrate = 0;
 		if ((*ppAVRec)->AddVideoStream(	(LPBITMAPINFO)(&SrcBmi),		// Source Video Format
 										(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
@@ -13076,7 +13088,8 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 
 	// If RGB Flip Vertically
 	LPBYTE pBits;
-	if (pDib->GetCompression() == BI_RGB)
+	if (pDib->GetCompression() == BI_RGB ||
+		pDib->GetCompression() == BI_BITFIELDS)
 	{
 		DWORD dwDWAlignedLineSize = DWALIGNEDWIDTHBYTES(pDib->GetBitCount() * pDib->GetWidth());
 		DWORD dwFlipBufSize = dwDWAlignedLineSize * pDib->GetHeight();
