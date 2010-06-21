@@ -3386,11 +3386,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 	m_pFrameDxDraw = avcodec_alloc_frame();
     if (!m_pFrameDxDraw)
         goto error;
-#ifdef SUPPORT_LIBPOSTPROCESS
-	m_pFramePP = avcodec_alloc_frame();
-    if (!m_pFramePP)
-        goto error;
-#endif
 
 	// Prepare Wanted Dib Format
 	if (m_pDstBMI)
@@ -3485,29 +3480,6 @@ void CAVIPlay::CAVIVideoStream::FreeAVCodec(bool bNoClose/*=false*/)
 		sws_freeContext(m_pImgConvertCtxDxDraw);
 		m_pImgConvertCtxDxDraw = NULL;
 	}
-
-#ifdef SUPPORT_LIBPOSTPROCESS
-	if (m_pFramePP)
-    {
-		av_free(m_pFramePP);
-		m_pFramePP = NULL;
-	}
-	if (m_pPPBuf)
-	{
-		delete [] m_pPPBuf;
-		m_pPPBuf = NULL;
-	}
-	if (m_pPostProcessingMode)
-	{
-		pp_free_mode(m_pPostProcessingMode);
-		m_pPostProcessingMode = NULL;
-	}
-	if (m_pPostProcessingCtx)
-	{
-		pp_free_context(m_pPostProcessingCtx);
-		m_pPostProcessingCtx = NULL;
-	}
-#endif
 }
 
 __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecHandle8bpp(bool bVFlip)
@@ -3713,57 +3685,21 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		}
 	}
 
-	// Init Post Processing
-#ifdef SUPPORT_LIBPOSTPROCESS
-	InitPostProcessing(avpicture_get_size(m_pCodecCtx->pix_fmt, GetWidth(), GetHeight()));
-#endif
-
 	// Color Space Conversion
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxGdi)
 	{
-#ifdef SUPPORT_LIBPOSTPROCESS
-		if (m_pPostProcessingCtx && m_pPostProcessingMode)
-		{
-			pp_postprocess(	m_pFrame->data,
-							m_pFrame->linesize,
-							m_pFramePP->data,
-							m_pFramePP->linesize,
-							GetWidth(),
-							GetHeight(),
-							NULL, 0,                         
-							m_pPostProcessingMode,
-							m_pPostProcessingCtx,
-							PP_PICT_TYPE_QP2);
-
-			int sws_scale_res = sws_scale(	m_pImgConvertCtxGdi,	// Image Convert Context
-											m_pFramePP->data,		// Source Data
-											m_pFramePP->linesize,	// Source Stride
-											0,						// Source Slice Y
-											GetHeight(),			// Source Height
-											m_pFrameGdi->data,		// Destination Data
-											m_pFrameGdi->linesize);	// Destination Stride
+		int sws_scale_res = sws_scale(	m_pImgConvertCtxGdi,	// Image Convert Context
+										m_pFrame->data,			// Source Data
+										m_pFrame->linesize,		// Source Stride
+										0,						// Source Slice Y
+										GetHeight(),			// Source Height
+										m_pFrameGdi->data,		// Destination Data
+										m_pFrameGdi->linesize);	// Destination Stride
 #ifdef SUPPORT_LIBSWSCALE
-			return sws_scale_res > 0 ? true : false;
+		return sws_scale_res > 0 ? true : false;
 #else
-			return sws_scale_res >= 0 ? true : false;
-#endif
-		}
-		else
-#endif
-		{
-			int sws_scale_res = sws_scale(	m_pImgConvertCtxGdi,	// Image Convert Context
-											m_pFrame->data,			// Source Data
-											m_pFrame->linesize,		// Source Stride
-											0,						// Source Slice Y
-											GetHeight(),			// Source Height
-											m_pFrameGdi->data,		// Destination Data
-											m_pFrameGdi->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
-			return sws_scale_res > 0 ? true : false;
-#else
-			return sws_scale_res >= 0 ? true : false;
+		return sws_scale_res >= 0 ? true : false;
 #endif			
-		}
 	}
 	else
 		return true;
@@ -3905,11 +3841,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		}
 	}
 
-	// Init Post Processing
-#ifdef SUPPORT_LIBPOSTPROCESS
-	InitPostProcessing(avpicture_get_size(m_pCodecCtx->pix_fmt, GetWidth(), GetHeight()));
-#endif
-
 	// Color Space Conversion
 	// Note: the conversion may be really slow when converting the
 	// destination buffer in place byte by byte like the conversion
@@ -3919,89 +3850,38 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 	// -> Do not use DirectX YUV rendering!
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
 	{
-#ifdef SUPPORT_LIBPOSTPROCESS
-		if (m_pPostProcessingCtx && m_pPostProcessingMode)
-		{
-			pp_postprocess(	m_pFrame->data,
-							m_pFrame->linesize,
-							m_pFramePP->data,
-							m_pFramePP->linesize,
-							GetWidth(),
-							GetHeight(),
-							NULL, 0,                         
-							m_pPostProcessingMode,
-							m_pPostProcessingCtx,
-							PP_PICT_TYPE_QP2);
-
-			int sws_scale_res = sws_scale(	m_pImgConvertCtxDxDraw,		// Image Convert Context
-											m_pFramePP->data,			// Source Data
-											m_pFramePP->linesize,		// Source Stride
-											0,							// Source Slice Y
-											GetHeight(),				// Source Height
-											m_pFrameDxDraw->data,		// Destination Data
-											m_pFrameDxDraw->linesize);	// Destination Stride			
+		int sws_scale_res = sws_scale(	m_pImgConvertCtxDxDraw,		// Image Convert Context
+										m_pFrame->data,				// Source Data
+										m_pFrame->linesize,			// Source Stride
+										0,							// Source Slice Y
+										GetHeight(),				// Source Height
+										m_pFrameDxDraw->data,		// Destination Data
+										m_pFrameDxDraw->linesize);	// Destination Stride
 #ifdef SUPPORT_LIBSWSCALE
-			if (sws_scale_res > 0)
-			{
-				pDxDraw->UnlockSrc();
-				pDxDraw->UpdateBackSurface(rc);
-				return true;
-			}
-			else
-			{
-				pDxDraw->UnlockSrc();
-				return false;
-			}	
-#else
-			if (sws_scale_res >= 0)	
-			{
-				pDxDraw->UnlockSrc();
-				pDxDraw->UpdateBackSurface(rc);
-				return true;
-			}
-			else
-			{
-				pDxDraw->UnlockSrc();
-				return false;
-			}
-#endif
+		if (sws_scale_res > 0)
+		{
+			pDxDraw->UnlockSrc();
+			pDxDraw->UpdateBackSurface(rc);
+			return true;
 		}
 		else
-#endif
 		{
-			int sws_scale_res = sws_scale(	m_pImgConvertCtxDxDraw,		// Image Convert Context
-											m_pFrame->data,				// Source Data
-											m_pFrame->linesize,			// Source Stride
-											0,							// Source Slice Y
-											GetHeight(),				// Source Height
-											m_pFrameDxDraw->data,		// Destination Data
-											m_pFrameDxDraw->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
-			if (sws_scale_res > 0)
-			{
-				pDxDraw->UnlockSrc();
-				pDxDraw->UpdateBackSurface(rc);
-				return true;
-			}
-			else
-			{
-				pDxDraw->UnlockSrc();
-				return false;
-			}
-#else
-			if (sws_scale_res >= 0)	
-			{
-				pDxDraw->UnlockSrc();
-				pDxDraw->UpdateBackSurface(rc);
-				return true;
-			}
-			else
-			{
-				pDxDraw->UnlockSrc();
-				return false;
-			}
-#endif
+			pDxDraw->UnlockSrc();
+			return false;
 		}
+#else
+		if (sws_scale_res >= 0)	
+		{
+			pDxDraw->UnlockSrc();
+			pDxDraw->UpdateBackSurface(rc);
+			return true;
+		}
+		else
+		{
+			pDxDraw->UnlockSrc();
+			return false;
+		}
+#endif
 	}
 	else
 	{
@@ -4010,63 +3890,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		return true;
 	}
 }
-
-#ifdef SUPPORT_LIBPOSTPROCESS
-bool CAVIPlay::CAVIVideoStream::InitPostProcessing(int nFrameSize)
-{
-	// Add one line of safety
-	nFrameSize += m_pFrame->linesize[0];
-
-	if (!m_pPostProcessingCtx && !m_pPostProcessingMode)
-	{
-		int nFlags = PP_CPU_CAPS_MMX | PP_CPU_CAPS_MMX2 /*| PP_CPU_CAPS_3DNOW*/;
-		switch (m_pCodecCtx->pix_fmt)
-		{
-			case PIX_FMT_YUV420P : nFlags |= PP_FORMAT_420;
-				break;
-			case PIX_FMT_YUV422P : nFlags |= PP_FORMAT_422;
-				break;
-			case PIX_FMT_YUV411P : nFlags |= PP_FORMAT_411;
-				break;
-			case PIX_FMT_YUV444P : nFlags |= PP_FORMAT_444;
-				break;
-			default : nFlags = 0;
-				break;
-		}
-		if (nFlags)
-		{
-			if (m_pPPBuf)
-				delete [] m_pPPBuf;
-			m_pPPBuf = new BYTE[nFrameSize + FF_INPUT_BUFFER_PADDING_SIZE];
-			if (!m_pPPBuf)
-				return false;
-
-			// Assign appropriate parts of buffer to image planes
-			avpicture_fill((AVPicture*)m_pFramePP,
-							(unsigned __int8 *)m_pPPBuf,
-							m_pCodecCtx->pix_fmt,
-							m_pCodecCtx->width,
-							m_pCodecCtx->height);
-
-			// Get PP Context
-			m_pPostProcessingCtx = pp_get_context(GetWidth(), GetHeight(), nFlags);
-
-			// Set PP Mode
-			if (m_pPostProcessingCtx)
-			{
-				// Stretch luminance to (0..255)
-				//m_pPostProcessingMode = pp_get_mode_by_name_and_quality("fullyrange", PP_QUALITY_MAX);
-
-				//m_pPostProcessingMode = pp_get_mode_by_name_and_quality("ffmpegdeint", PP_QUALITY_MAX);
-				//m_pPostProcessingMode = pp_get_mode_by_name_and_quality("cubicipoldeint", PP_QUALITY_MAX);
-				m_pPostProcessingMode = pp_get_mode_by_name_and_quality("linblenddeint", PP_QUALITY_MAX);
-			}
-		}
-	}
-
-	return (m_pPostProcessingCtx && m_pPostProcessingMode);
-}
-#endif
 
 #endif
 

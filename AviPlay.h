@@ -17,9 +17,6 @@ extern "C"
 #include "ffmpeg\\libavcodec\\avcodec.h"
 #include "ffmpeg\\libavformat\\avformat.h"
 #include "ffmpeg\\libswscale\\swscale.h"
-#ifdef SUPPORT_LIBPOSTPROCESS
-#include "libpostproc\\postprocess.h"
-#endif
 }
 #endif
 
@@ -863,12 +860,6 @@ class CAVIPlay
 									m_pFilterGdi = NULL;
 									m_pFilterDxDraw = NULL;
 #endif
-#ifdef SUPPORT_LIBPOSTPROCESS
-									m_pPostProcessingCtx = NULL;
-									m_pPostProcessingMode = NULL;
-									m_pFramePP = NULL;
-									m_pPPBuf = NULL;
-#endif
 #endif
 								}; 
 			
@@ -1100,9 +1091,6 @@ class CAVIPlay
 #ifdef SUPPORT_LIBAVCODEC
 			bool OpenDecompressionAVCodec();
 			void FreeAVCodec(bool bNoClose = false);
-#ifdef SUPPORT_LIBPOSTPROCESS
-			bool InitPostProcessing(int nFrameSize);
-#endif
 			__forceinline bool AVCodecHandle8bpp(bool bVFlip);
 			__forceinline bool AVCodecDecompressDib(bool bKeyFrame,
 													bool bSkipFrame,
@@ -1129,12 +1117,6 @@ class CAVIPlay
 #ifdef SUPPORT_LIBSWSCALE
 			SwsFilter* m_pFilterGdi;
 			SwsFilter* m_pFilterDxDraw;
-#endif
-#ifdef SUPPORT_LIBPOSTPROCESS
-			pp_context_t* m_pPostProcessingCtx;
-			pp_mode_t* m_pPostProcessingMode;
-			AVFrame* m_pFramePP;
-			LPBYTE m_pPPBuf;
 #endif
 #endif
 	};

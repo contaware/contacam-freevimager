@@ -12,9 +12,6 @@ extern "C"
 #include "ffmpeg\\libavcodec\\avcodec.h"
 #include "ffmpeg\\libavformat\\avformat.h"
 #include "ffmpeg\\libswscale\\swscale.h"
-#ifdef SUPPORT_LIBPOSTPROCESS
-#include "libpostproc\\postprocess.h"
-#endif
 }
 
 // Used to Convert From Double to Fractional Frame-Rate.
