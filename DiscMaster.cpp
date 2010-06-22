@@ -63,7 +63,7 @@ bool CDiscMaster::Initialize()
 	}
 	if (isSupported == VARIANT_FALSE)
 	{
-		m_errorMessage = _T("There were no writable devices detected!");
+		m_errorMessage = ML_STRING(1813, "There were no writable devices detected!");
 		return false;
 	}
 

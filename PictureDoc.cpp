@@ -342,6 +342,7 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE_INTO_FILE, OnUpdateEditPasteIntoFile)
 	ON_COMMAND(ID_EDIT_ROTATE_180, OnEditRotate180)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ROTATE_180, OnUpdateEditRotate180)
+	ON_COMMAND(ID_EDIT_PASTE_INTO_FILE_HELP, OnEditPasteIntoFileHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -9065,6 +9066,13 @@ void CPictureDoc::OnUpdateEditPasteIntoFile(CCmdUI* pCmdUI)
 					DoEnableCommand()										&&
 					(::IsClipboardFormatAvailable(CF_DIB)					||
 					::IsClipboardFormatAvailable(CF_ENHMETAFILE)));
+}
+
+void CPictureDoc::OnEditPasteIntoFileHelp() 
+{
+	GetView()->ForceCursor();
+	::AfxMessageBox(ML_STRING(1816, "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"), MB_OK | MB_ICONINFORMATION);
+	GetView()->ForceCursor(FALSE);
 }
 
 BOOL CPictureDoc::EditAddBorders() 

@@ -77,6 +77,17 @@ int CIMAPI2Dlg::CIMAPI2DlgThread::Work()
                 IMAPI_MEDIA_PHYSICAL_TYPE mediaType = IMAPI_MEDIA_TYPE_UNKNOWN;
                 discFormatData.GetInterface()->get_CurrentPhysicalMediaType(&mediaType);
 
+				// Is a media inserted?
+				bool bMedia = discFormatData.IsMediaInsert();
+				if (!bMedia)
+				{
+					m_pDlg->SendMessage(WM_BURN_FINISHED, 0, 
+						(LPARAM)(LPCTSTR)ML_STRING(1814, "No Media Inserted"));
+					discRecorder.EjectMedia();
+					::CoUninitialize();
+					return 0;
+				}
+
 				// Check whether disc is blank, if not try formatting it
 				bool bBlank = discFormatData.IsMediaBlank();
 				if (!bBlank)
@@ -640,7 +651,7 @@ LRESULT CIMAPI2Dlg::OnBurnFinished(WPARAM hResult, LPARAM lpMessage)
         else
         {
             CString message;
-            message.Format(ML_STRING(1796, "Burn failed! Error: 0x%08x"), hResult);
+            message.Format(ML_STRING(1796, "Burn failed! Error: 0x%08X"), hResult);
             m_ProgressText.SetWindowText(message);
         }
     }

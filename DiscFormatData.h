@@ -70,6 +70,16 @@ public:
 									}
 									else
 										return false;};
+	inline	bool IsMediaInsert() {	if (m_discFormatData)
+									{
+										IMAPI_FORMAT2_DATA_MEDIA_STATE value = IMAPI_FORMAT2_DATA_MEDIA_STATE_UNKNOWN;
+										if (m_discFormatData->get_CurrentMediaStatus(&value) == E_IMAPI_RECORDER_MEDIA_NO_MEDIA)
+											return false;
+										else
+											return true;
+									}
+									else
+										return false;};
 
 protected:
 	IStream*	m_streamData;

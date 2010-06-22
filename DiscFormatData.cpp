@@ -57,28 +57,28 @@ bool CDiscFormatData::Initialize(CDiscRecorder* pDiscRecorder, const CString& cl
 	m_hResult = m_discFormatData->IsRecorderSupported(pDiscRecorder->GetInterface(), &isSupported);
 	if (isSupported == VARIANT_FALSE)
 	{
-		m_errorMessage = _T("Recorder not supported");
+		m_errorMessage = ML_STRING(1808, "Recorder not supported");
 		return false;
 	}
 
 	m_hResult = m_discFormatData->put_Recorder(pDiscRecorder->GetInterface());
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Recorder cannot be used");
+		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
 	m_hResult = m_discFormatData->put_ClientName(clientName.AllocSysString());
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Recorder cannot be used");
+		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
 	m_hResult = m_discFormatData->get_SupportedMediaTypes(&m_mediaTypesArray);
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Cannot determine the supported Media Types!");
+		m_errorMessage = ML_STRING(1810, "Cannot determine the supported Media Types!");
 		return false;
 	}
 
@@ -151,7 +151,7 @@ bool CDiscFormatData::Burn(HWND hNotificationWnd, IStream* streamData)
 		return true;
 	else
 	{
-		m_errorMessage = _T("Write Failed!");
+		m_errorMessage = ML_STRING(1815, "Burn failed!");
 		return false;
 	}
 }

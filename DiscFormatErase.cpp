@@ -57,28 +57,28 @@ bool CDiscFormatErase::Initialize(CDiscRecorder* pDiscRecorder, const CString& c
 	m_hResult = m_discFormatErase->IsRecorderSupported(pDiscRecorder->GetInterface(), &isSupported);
 	if (isSupported == VARIANT_FALSE)
 	{
-		m_errorMessage = _T("Recorder not supported");
+		m_errorMessage = ML_STRING(1808, "Recorder not supported");
 		return false;
 	}
 
 	m_hResult = m_discFormatErase->put_Recorder(pDiscRecorder->GetInterface());
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Recorder cannot be used");
+		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
 	m_hResult = m_discFormatErase->put_ClientName(clientName.AllocSysString());
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Recorder cannot be used");
+		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
 	m_hResult = m_discFormatErase->get_SupportedMediaTypes(&m_mediaTypesArray);
 	if (!SUCCEEDED(m_hResult))
 	{
-		m_errorMessage = _T("Cannot determine the supported Media Types!");
+		m_errorMessage = ML_STRING(1810, "Cannot determine the supported Media Types!");
 		return false;
 	}
 
@@ -146,9 +146,9 @@ bool CDiscFormatErase::Erase(HWND hNotificationWnd)
 	else
 	{
 		if (m_hResult == E_IMAPI_ERASE_MEDIA_IS_NOT_SUPPORTED)
-			m_errorMessage = _T("Erase Failed, Media is not ReWritable!");
+			m_errorMessage = ML_STRING(1811, "Erase Failed, Media is not ReWritable!");
 		else
-			m_errorMessage = _T("Erase Failed!");
+			m_errorMessage = ML_STRING(1812, "Erase Failed!");
 		return false;
 	}
 }

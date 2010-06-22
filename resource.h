@@ -2485,14 +2485,23 @@
 #define IDC_STATIC1807                  1807
 #define IDS_STRING1807                  1807
 #define IDC_STATIC1808                  1808
+#define IDS_STRING1808                  1808
 #define IDC_STATIC1809                  1809
+#define IDS_STRING1809                  1809
 #define IDC_STATIC1810                  1810
+#define IDS_STRING1810                  1810
 #define IDC_STATIC1811                  1811
+#define IDS_STRING1811                  1811
 #define IDC_STATIC1812                  1812
+#define IDS_STRING1812                  1812
 #define IDC_STATIC1813                  1813
+#define IDS_STRING1813                  1813
 #define IDC_STATIC1814                  1814
+#define IDS_STRING1814                  1814
 #define IDC_STATIC1815                  1815
+#define IDS_STRING1815                  1815
 #define IDC_STATIC1816                  1816
+#define IDS_STRING1816                  1816
 #define IDC_STATIC1817                  1817
 #define IDC_STATIC1818                  1818
 #define IDC_STATIC1819                  1819
@@ -3490,6 +3499,7 @@
 #define ID_CAPTURE_RESET                33159
 #define ID_APP_REGISTRATION             33160
 #define ID_EDIT_SNAPSHOT                33161
+#define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3498,7 +3508,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33164
+#define _APS_NEXT_COMMAND_VALUE         33165
 #define _APS_NEXT_CONTROL_VALUE         2536
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

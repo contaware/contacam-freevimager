@@ -1199,6 +1199,7 @@ protected:
 	afx_msg void OnUpdateEditPasteIntoFile(CCmdUI* pCmdUI);
 	afx_msg void OnEditRotate180();
 	afx_msg void OnUpdateEditRotate180(CCmdUI* pCmdUI);
+	afx_msg void OnEditPasteIntoFileHelp();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

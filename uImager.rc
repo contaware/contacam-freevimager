@@ -514,6 +514,8 @@ BEGIN
 
             MENUITEM SEPARATOR
             MENUITEM "From coord. File...",         ID_EDIT_PASTE_INTO_FILE
+            MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
@@ -1786,6 +1788,8 @@ BEGIN
 
             MENUITEM SEPARATOR
             MENUITEM "From coord. File...",         ID_EDIT_PASTE_INTO_FILE
+            MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
@@ -2256,6 +2260,8 @@ BEGIN
 
             MENUITEM SEPARATOR
             MENUITEM "From coord. File...",         ID_EDIT_PASTE_INTO_FILE
+            MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
+
         END
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
@@ -8674,6 +8680,8 @@ BEGIN
     ID_CAPTURE_RESET        "Reset to default settings\nReset to Default"
     ID_APP_REGISTRATION     "Buy and enter license key file\nBuy and Enter License Key"
     ID_EDIT_SNAPSHOT        "Copy and paste document\nSnapshot"
+    ID_EDIT_PASTE_INTO_FILE_HELP 
+                            "Coordinates text file help\nCoordinates Text File Help"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -9042,7 +9050,7 @@ BEGIN
     IDS_STRING1793          "Erase..."
     IDS_STRING1794          "%s - Error:0x%08X"
     IDS_STRING1795          "Burn completed successfully"
-    IDS_STRING1796          "Burn failed! Error: 0x%08x"
+    IDS_STRING1796          "Burn failed! Error: 0x%08X"
     IDS_STRING1797          "Validating current media..."
     IDS_STRING1798          "Formatting media..."
     IDS_STRING1799          "Initializing hardware..."
@@ -9054,6 +9062,19 @@ BEGIN
     IDS_STRING1805          "Error: No enough space on this media, choose a bigger one!"
     IDS_STRING1806          "Failed to add %s!"
     IDS_STRING1807          "Adding %s to file system..."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1808          "Recorder not supported"
+    IDS_STRING1809          "Recorder cannot be used"
+    IDS_STRING1810          "Cannot determine the supported Media Types!"
+    IDS_STRING1811          "Erase Failed, Media is not ReWritable!"
+    IDS_STRING1812          "Erase Failed!"
+    IDS_STRING1813          "There were no writable devices detected!"
+    IDS_STRING1814          "No Media Inserted"
+    IDS_STRING1815          "Burn failed!"
+    IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
 END
 
 #endif    // English (U.S.) resources

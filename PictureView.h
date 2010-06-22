@@ -28,10 +28,10 @@
 
 // Crop Defines
 #define CROP_MEMDC_USE_MAX_SIZE					4000
-#define CROP_RECT_X_INSIDE						4
-#define CROP_RECT_Y_INSIDE						4
-#define CROP_RECT_X_OUTSIDE						12
-#define CROP_RECT_Y_OUTSIDE						12
+#define CROP_RECT_X_INSIDE						6
+#define CROP_RECT_Y_INSIDE						6
+#define CROP_RECT_X_OUTSIDE						14
+#define CROP_RECT_Y_OUTSIDE						14
 #define CROP_MARKER_RECT_WIDTH					10
 #define CROP_MARKER_RECT_HEIGHT					10
 
