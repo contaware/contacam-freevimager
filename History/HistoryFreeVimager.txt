@@ -2,7 +2,9 @@ VERSION HISTORY
 
 2.0.7 (September 25th 2010)
 
-- 
+- Translation fixes
+- libpng updated to 1.2.43
+- Help command for paste into coordinates file
 
 2.0.5 (May 17th 2010)
 

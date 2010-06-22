@@ -17,6 +17,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifndef MAX
+#  define MAX(a,b)  ((a) > (b) ? (a) : (b))
+#endif
+#ifndef MIN
+#  define MIN(a,b)  ((a) < (b) ? (a) : (b))
+#endif
+
 #define CD_MEDIA				0
 #define DVD_MEDIA				1
 #define DL_DVD_MEDIA			2
@@ -294,7 +301,7 @@ CIMAPI2Dlg::CIMAPI2Dlg(const CString& sDir)
 	: CDialog(CIMAPI2Dlg::IDD, NULL)
 , m_cancelBurn(false)
 , m_isBurning(false)
-, m_prevTotalProgress(0)
+, m_prevTotalProgress(-1)
 {
 	//{{AFX_DATA_INIT(CIMAPI2Dlg)
 	//}}AFX_DATA_INIT
@@ -438,6 +445,8 @@ void CIMAPI2Dlg::OnBurn()
 		// Init
         m_cancelBurn = false;
         m_isBurning = true;
+		m_prevTotalProgress = -1;
+		m_ProgressCtrl.SetPos(0);
         UpdateData();
         EnableUI(FALSE);
 
@@ -729,14 +738,20 @@ void CIMAPI2Dlg::UpdateTimes(LONG totalTime, LONG remainingTime)
 void CIMAPI2Dlg::UpdateProgress(BOOL bBurn, LONG done, LONG total)
 {
 	// Init
-    if (total && (total != m_prevTotalProgress))
+    if (total != m_prevTotalProgress)
     {
         m_prevTotalProgress = total;
-        m_ProgressCtrl.SetRange32(0, total);
+		if (total)
+			m_ProgressCtrl.SetRange32(0, total);
+		else
+			m_ProgressCtrl.SetRange32(0, 1);
     }
 
 	// Set Position
-    m_ProgressCtrl.SetPos(done);
+	if (total)
+		m_ProgressCtrl.SetPos(MIN(done, total));
+	else
+		m_ProgressCtrl.SetPos(0);
 
 	// Update Text
 	CString text;
