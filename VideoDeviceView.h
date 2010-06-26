@@ -20,9 +20,8 @@
 #define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 605
 #define WM_THREADSAFE_DXDRAW_INIT					WM_USER + 606
 #define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 607
-#define WM_THREADSAFE_STOP_AND_CALLVIDEOSOURCEDLG	WM_USER + 608
-#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 609
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 610
+#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 608
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 609
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -83,7 +82,6 @@ protected:
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeStopAndCallVideoSourceDialog(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeOpenGetVideo(WPARAM wparam, LPARAM lparam);

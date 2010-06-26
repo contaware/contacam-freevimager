@@ -6083,7 +6083,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDxFrameGrabCaptureFirst = FALSE;
 	m_pDxCapture = NULL;
 	m_pDxCaptureVMR9 = NULL;
-	m_pHCWBuf = NULL;
 	m_dwCaptureAudioDeviceID = 0U;
 	m_dwVfWCaptureVideoDeviceID = 0U;
 	m_nDeviceInputId = -1;
@@ -6091,7 +6090,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bVideoFormatApplyPressed = FALSE;
 	m_bDxDeviceUnplugged = 0;
 	m_bStopAndChangeFormat = 0;
-	m_bStopAndCallVideoSourceDialog = 0;
 	m_bVfWDialogDisplaying = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
@@ -6434,11 +6432,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	{
 		::CloseHandle(m_hExecCommandMovementDetection);
 		m_hExecCommandMovementDetection = NULL;
-	}
-	if (m_pHCWBuf)
-	{
-		free(m_pHCWBuf);
-		m_pHCWBuf = NULL;
 	}
 }
 
@@ -8636,20 +8629,6 @@ void CVideoDeviceDoc::OnChangeVideoFormat()
 				SetDocumentTitle();
 			}
 		}
-		else if (m_pDxCapture->IsHCW())
-		{
-			m_OrigBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-			m_OrigBMI.bmiHeader.biWidth =			(LONG)m_pDxCapture->GetHCWWidth();
-			m_OrigBMI.bmiHeader.biHeight =			(LONG)m_pDxCapture->GetHCWHeight();
-			m_OrigBMI.bmiHeader.biPlanes =			1;
-			m_OrigBMI.bmiHeader.biCompression =		FCC('I420');
-			m_OrigBMI.bmiHeader.biBitCount =		12;
-			int stride = ::CalcYUVStride(m_OrigBMI.bmiHeader.biCompression, (int)m_OrigBMI.bmiHeader.biWidth);
-			m_OrigBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_OrigBMI.bmiHeader.biCompression, stride, (int)m_OrigBMI.bmiHeader.biHeight);
-			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
-			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
-			SetDocumentTitle();
-		}
 		else
 		{
 			AM_MEDIA_TYPE* pmtConfig = NULL;
@@ -8980,46 +8959,19 @@ void CVideoDeviceDoc::VideoSourceDialog()
 {
 	if (m_pDxCapture)
 	{
-		if (m_pDxCapture->IsHCW())
-		{
-			// Do not call 2 or more times!
-			if (!m_bStopAndCallVideoSourceDialog)
-			{
-				// Disable Critical Controls
-				::SendMessage(	GetView()->GetSafeHwnd(),
-								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-								(WPARAM)FALSE,	// Disable Them
-								(LPARAM)0);
-				::InterlockedExchange(&m_bStopAndCallVideoSourceDialog, 1);
-				StopProcessFrame();
-				double dFrameRate = m_dEffectiveFrameRate;
-				int delay;
-				if (dFrameRate >= 1.0)
-					delay = Round(1000.0 / dFrameRate); // In ms
-				else
-					delay = 1000;
-				CPostDelayedMessageThread::PostDelayedMessage(	GetView()->GetSafeHwnd(),
-																WM_THREADSAFE_STOP_AND_CALLVIDEOSOURCEDLG,
-																delay, 0, delay);
-			}
-		}
-		else
-		{
-			// Disable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)FALSE,	// Disable Them
-							(LPARAM)0);
+		// Disable Critical Controls
+		::SendMessage(	GetView()->GetSafeHwnd(),
+						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+						(WPARAM)FALSE,	// Disable Them
+						(LPARAM)0);
 
-			m_pDxCapture->ShowVideoCaptureFilterDlg();
+		m_pDxCapture->ShowVideoCaptureFilterDlg();
 
-			// Enable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)TRUE,	// Enable Them
-							(LPARAM)0);
-
-		}
+		// Enable Critical Controls
+		::SendMessage(	GetView()->GetSafeHwnd(),
+						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+						(WPARAM)TRUE,	// Enable Them
+						(LPARAM)0);
 	}
 	else
 	{
@@ -10066,82 +10018,6 @@ void CVideoDeviceDoc::SetColorDetectionWaitTime(DWORD dwWaitMilliseconds)
 		m_ColorDetection.SetWaitCount((DWORD)Round((double)dwWaitMilliseconds * m_dFrameRate / 1000.0));
 }
 
-// The HCW is a format used as a preview format
-// by capture devices with mpeg2 capabilities.
-// The YUV 4:2:0 data is organized as 16x16 Y macroblocks,
-// followed by 8x16 interleaved U/V macroblocks:
-//
-// Y00 Y01 Y02 Y03 .. Y15        Y64 Y65 ..
-// Y16 Y17 ..                    Y80 ..
-// Y32 ..
-// Y48 ..
-// ..
-// U00 V00 U01 V01 .. U07 V07    U32 V32 ..
-// U08 V08 ..                    U40 V40 ..
-// U16 V16 ..
-// U24 V24 ..
-//
-// For lower resolution than 720x576 or 720x480
-// the image has to be cropped-out, see nOffset and bVCD
-//
-void CVideoDeviceDoc::HCWToI420(unsigned char *src,
-								unsigned char *dst,
-								int width,
-								int height,
-								int srcbufsize)
-{
-	// Init
-	int nOffset = 16 * (720 - width);
-	if (nOffset < 0)
-		nOffset = 0;
-	int nPos = 0;
-	int nSrcChromaOffset = srcbufsize * 2 / 3;
-	int nDstChromaOffset = width * height;
-	int nDstUPlaneSize = width * height / 4;
-
-	// Luma
-	int height16 = height>>4;
-	int width16 = width>>4;
-	int nYBlock, nXBlock;
-	for (nYBlock = 0 ; nYBlock < height16 ; nYBlock++)
-	{
-		for (nXBlock = 0 ; nXBlock < width16 ; nXBlock++)
-		{
-			for (int y = 0 ; y < 16 ; y++)
-			{
-				for (int x = 0 ; x < 16 ; x++)
-				{
-					dst[x + (nXBlock<<4) + (y + (nYBlock<<4))*width] = src[nPos++];
-				}
-			}
-		}
-		nPos += nOffset;
-	}
-
-	// Chroma
-	nPos = nSrcChromaOffset;
-	dst += nDstChromaOffset;
-	width >>= 1;
-	height >>= 1;
-	height16 = height>>4;
-	int width8 = width>>3;
-	for (nYBlock = 0 ; nYBlock < height16 ; nYBlock++)
-	{
-		for (nXBlock = 0 ; nXBlock < width8 ; nXBlock++)
-		{
-			for (int y = 0 ; y < 16 ; y++)
-			{
-				for (int x = 0 ; x < 8 ; x++)
-				{
-					dst[x + (nXBlock<<3) + (y + (nYBlock<<4))*width] = src[nPos++];	// U
-					dst[x + (nXBlock<<3) + (y + (nYBlock<<4))*width + nDstUPlaneSize] = src[nPos++]; // V
-				}
-			}
-		}
-		nPos += nOffset;
-	}
-}
-
 BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
 {
 	if (!pSrcBits || (dwSrcSize == 0) || !pDstDib)
@@ -10324,23 +10200,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	// Decode, Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
 	if (!m_bProcessFrameStopped && pData && dwSize > 0)
 	{
-		// Decode HCW to I420
-		if (m_pDxCapture && m_pDxCapture->IsHCW())
-		{
-			int nDstBufSize = m_pDxCapture->GetHCWWidth() * m_pDxCapture->GetHCWHeight() * 3 / 2;
-			m_pHCWBuf = (LPBYTE)realloc(m_pHCWBuf, nDstBufSize + SAFETY_BITALLOC_MARGIN);
-			if (m_pHCWBuf)
-			{
-				HCWToI420(	pData,							// Src Buf
-							m_pHCWBuf,						// Dst Buf
-							m_pDxCapture->GetHCWWidth(),	// Width and
-							m_pDxCapture->GetHCWHeight(),	// Height determine the nDstBufSize
-							dwSize);						// Src Buf size
-				pData = m_pHCWBuf;
-				dwSize = nDstBufSize;
-			}
-		}
-
 		// Init Vars
 		CDib* pDib = NULL;
 		BOOL bRgb24Frame;

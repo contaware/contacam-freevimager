@@ -8947,7 +8947,6 @@ BEGIN
     IDS_STRING1715          "Flash:\tno\r\n"
     IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
     IDS_STRING1717          "The latest version for your os may be downloaded from:"
-    IDS_STRING1718          "Change Settings"
     IDS_STRING1719          "Example to play a sound on detection\nCmd\tmplay32.exe (or path to %s)\nParams\t/play /close ""audio file path"""
     IDS_STRING1720          "Starting Device..."
     IDS_STRING1721          "1 Day"

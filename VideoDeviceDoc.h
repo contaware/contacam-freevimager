@@ -1296,11 +1296,6 @@ public:
 	__forceinline void RemoveOldestFrameFromNewestList();		// Free and remove oldest frame from newest list
 
 	// Main Decode & Process Functions
-	static void HCWToI420(	unsigned char *src,
-							unsigned char *dst,
-							int width,
-							int height,
-							int srcbufsize);
 	BOOL DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
@@ -1548,7 +1543,6 @@ public:
 	// DirectShow Capture Vars
 	volatile LONG m_bDxDeviceUnplugged;					// Device Has Been Unplugged
 	volatile LONG m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
-	volatile LONG m_bStopAndCallVideoSourceDialog;		// Flag indicating that we are calling the video source dialog
 	volatile BOOL m_bDxFrameGrabCaptureFirst;			// Try dx frame grab capture first
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
 	CDxCaptureVMR9* volatile m_pDxCaptureVMR9;			// DirectShow Capture Object Through VMR9
@@ -1786,7 +1780,6 @@ protected:
 	CVideoDeviceChildFrame* m_pFrame;
 	volatile LONG m_bStopProcessFrame;
 	volatile LONG m_bProcessFrameStopped;
-	LPBYTE m_pHCWBuf; // HCW conversion buffer
 	CTryEnterCriticalSection m_csProcessFrame;
 
 	// For Frame Rate and Data Rate Calculation

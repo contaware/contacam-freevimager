@@ -40,7 +40,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
 	ON_MESSAGE(WM_THREADSAFE_CHANGEVIDEOFORMAT, OnThreadSafeChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT, OnThreadSafeStopAndChangeVideoFormat)
-	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CALLVIDEOSOURCEDLG, OnThreadSafeStopAndCallVideoSourceDialog)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
@@ -158,62 +157,6 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 	else
 		return 0;
 }
-
-LONG CVideoDeviceView::OnThreadSafeStopAndCallVideoSourceDialog(WPARAM wparam, LPARAM lparam)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	int nPrevTotalDelay = (int)lparam;
-	if (pDoc)
-	{
-		if (nPrevTotalDelay > MAX_DX_DIALOGS_RETRY_TIME || pDoc->IsProcessFrameStopped())
-		{
-			if (!pDoc->m_bClosing)
-			{
-				// Stop
-				if (pDoc->m_pDxCapture->Stop())
-					pDoc->m_bCapture = FALSE;
-
-				// Show dialog
-				pDoc->m_pDxCapture->ShowVideoCaptureFilterDlg();
-
-				// Reset vars
-				pDoc->m_bSizeToDoc = TRUE;
-
-				// Re-Open
-				if (ReOpenDxDevice())
-				{
-					// Restart process frame
-					pDoc->ReStartProcessFrame();
-				}
-			}
-			::InterlockedExchange(&(pDoc->m_bStopAndCallVideoSourceDialog), 0);
-			
-			// Enable Critical Controls
-			::SendMessage(	GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)TRUE,	// Enable Them
-							(LPARAM)0);
-
-			return 1;
-		}
-		else
-		{
-			double dFrameRate = pDoc->m_dEffectiveFrameRate;
-			int delay;
-			if (dFrameRate >= 1.0)
-				delay = Round(1000.0 / dFrameRate); // In ms
-			else
-				delay = 1000;
-			CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-															WM_THREADSAFE_STOP_AND_CALLVIDEOSOURCEDLG,
-															delay, 0, nPrevTotalDelay + delay);
-			return 0;
-		}
-	}
-	else
-		return 0;
-} 
 
 LONG CVideoDeviceView::OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam)
 {
@@ -579,13 +522,11 @@ BOOL CVideoDeviceView::Draw()
 	BOOL bVideoFormatApplyPressed = pDoc->m_bVideoFormatApplyPressed;
 	BOOL bDxDeviceUnplugged = (BOOL)pDoc->m_bDxDeviceUnplugged;
 	BOOL bStopAndChangeFormat = (BOOL)pDoc->m_bStopAndChangeFormat;
-	BOOL bStopAndCallVideoSourceDialog = (BOOL)pDoc->m_bStopAndCallVideoSourceDialog;
 	BOOL bWatchDogAlarm = (BOOL)pDoc->m_bWatchDogAlarm;
 	BOOL bDrawMsg = !bVideoView						||
 					bVideoFormatApplyPressed		||
 					bDxDeviceUnplugged				||
 					bStopAndChangeFormat			||
-					bStopAndCallVideoSourceDialog	||
 					bWatchDogAlarm;
 
 	// Draw Msg?
@@ -654,9 +595,6 @@ BOOL CVideoDeviceView::Draw()
 		// Display: Change Size
 		else if (bStopAndChangeFormat)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);
-		// Display: Change Settings
-		else if (bStopAndCallVideoSourceDialog)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1718, "Change Settings"), 0, 0, DRAWTEXT_TOPLEFT);
 		// Display: No Frames
 		else if (bWatchDogAlarm)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);

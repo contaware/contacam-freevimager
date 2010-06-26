@@ -60,9 +60,6 @@ CDxCapture::CDxCapture()
 	m_pCrossbar = NULL;
 	m_hWnd = NULL;
 	m_bDV = FALSE;
-	m_bHCW = FALSE;
-	m_nHCWWidth = 0;
-	m_nHCWHeight = 0;
 #ifdef _DEBUG
 	m_dwRotRegister = 0;
 #endif
@@ -263,7 +260,7 @@ BOOL CDxCapture::HasFormats()
 {
 	HRESULT hr;
 
-	if (!m_pConfig || m_bDV || m_bHCW)
+	if (!m_pConfig || m_bDV)
 		return FALSE;
 
 	// GetNumberOfCapabilities
@@ -1445,27 +1442,15 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	}
 
 	// Set Format and Frame Rate
-	m_bHCW = FALSE;
 	if (!bDV)
 	{
 		// Check subtype
 		AM_MEDIA_TYPE* pmtConfig = NULL;
 		if (GetCurrentFormat(&pmtConfig))
 		{
-			if (pmtConfig->subtype == MEDIASUBTYPE_HCWYUV)
-			{
-				VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-				if (pVih)
-				{
-					m_bHCW = TRUE;
-					m_nHCWWidth = pVih->bmiHeader.biWidth;
-					m_nHCWHeight = pVih->bmiHeader.biHeight;
-					if (m_nHCWWidth <= 352)
-						m_nHCWWidth = 320; // Crop it to 320, because it is wrongly set on Hauppauge PVR-350...
-					// Note: the 640x576 or 640x480 resolutions are not working on Hauppauge PVR-350...
-				}
-			}
-			else if (pmtConfig->subtype == MEDIASUBTYPE_MPEG2_VIDEO)
+			if (pmtConfig->subtype == MEDIASUBTYPE_HCWYUV	||
+				pmtConfig->subtype == MEDIASUBTYPE_USBYUV	||
+				pmtConfig->subtype == MEDIASUBTYPE_MPEG2_VIDEO)
 			{
 				DeleteMediaType(pmtConfig);
 				return FALSE;

@@ -234,7 +234,11 @@ extern bool RGB32ToYUV420(	unsigned char *src,	// RGB32 Dib
 							unsigned int *dst,	// Y Plane, U Plane and V Plane, unsigned int size for Y, U, V!
 							int width,
 							int height);
-
+extern bool HCWToI420(	unsigned char *src,		// 16x16 Y macroblocks, followed by 8x16 interleaved U/V macroblocks
+						unsigned char *dst,		// Y Plane, U Plane and V Plane
+						int width,
+						int height,
+						int srcbufsize);
 
 __forceinline bool IsSupportedRgbToYuvFormat(DWORD dwFourCC)
 {

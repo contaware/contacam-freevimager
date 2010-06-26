@@ -87,9 +87,6 @@ public:
 				int nHeight);
 	void Close();										// Close Capture & Clean-Up
 	BOOL IsDV() const {return m_bDV;};					// Is the output DV
-	BOOL IsHCW() const {return m_bHCW;};				// Is HCW format
-	int GetHCWWidth() const {return m_nHCWWidth;};		// Get HCW Width
-	int GetHCWHeight() const {return m_nHCWHeight;};	// Get HCW Height
 	BOOL ShowError(HRESULT hr);							// Show Message Box with error
 	int GetDeviceID();									// Get the Device ID from the m_sDevicePath string
 														// (Device IDs dynamically change when a 
@@ -217,9 +214,6 @@ protected:
 	IAMDroppedFrames* m_pDF;							// Dropped Frames Interface
 	LONG m_lDroppedFramesBase;							// Dropped Frames Base
 	BOOL m_bDV;											// Be DV Device
-	BOOL m_bHCW;										// HCW format
-	int m_nHCWWidth;									// HCW width
-	int m_nHCWHeight;									// HCW height
 	// Use the crossbar class to help us sort out all the possible video inputs
     // The class needs to be given the capture filters ANALOGVIDEO input pin
 	CCrossbar* m_pCrossbar;

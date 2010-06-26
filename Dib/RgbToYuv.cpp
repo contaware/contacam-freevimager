@@ -2659,3 +2659,85 @@ bool RGB32ToYUV420(	unsigned char *src,	// RGB32 Dib
 
 	return true;
 }
+
+// The HCW is a format used as a preview format
+// by capture devices with mpeg2 capabilities.
+// The YUV 4:2:0 data is organized as 16x16 Y macroblocks,
+// followed by 8x16 interleaved U/V macroblocks:
+//
+// Y00 Y01 Y02 Y03 .. Y15        Y64 Y65 ..
+// Y16 Y17 ..                    Y80 ..
+// Y32 ..
+// Y48 ..
+// ..
+// U00 V00 U01 V01 .. U07 V07    U32 V32 ..
+// U08 V08 ..                    U40 V40 ..
+// U16 V16 ..
+// U24 V24 ..
+//
+// For lower resolution than 720x576 or 720x480
+// the image has to be cropped-out, see nOffset
+//
+bool HCWToI420(	unsigned char *src,
+				unsigned char *dst,
+				int width,
+				int height,
+				int srcbufsize)
+{
+	// Check
+	if (width%2 || height%2)
+		return false;
+
+	// Init
+	int nOffset = 16 * (720 - width);
+	if (nOffset < 0)
+		nOffset = 0;
+	int nPos = 0;
+	int nSrcChromaOffset = srcbufsize * 2 / 3;
+	int nDstChromaOffset = width * height;
+	int nDstUPlaneSize = width * height / 4;
+
+	// Luma
+	int height16 = height>>4;
+	int width16 = width>>4;
+	int nYBlock, nXBlock;
+	for (nYBlock = 0 ; nYBlock < height16 ; nYBlock++)
+	{
+		for (nXBlock = 0 ; nXBlock < width16 ; nXBlock++)
+		{
+			for (int y = 0 ; y < 16 ; y++)
+			{
+				for (int x = 0 ; x < 16 ; x++)
+				{
+					dst[x + (nXBlock<<4) + (y + (nYBlock<<4))*width] = src[nPos++];
+				}
+			}
+		}
+		nPos += nOffset;
+	}
+
+	// Chroma
+	nPos = nSrcChromaOffset;
+	dst += nDstChromaOffset;
+	width >>= 1;
+	height >>= 1;
+	height16 = height>>4;
+	int width8 = width>>3;
+	for (nYBlock = 0 ; nYBlock < height16 ; nYBlock++)
+	{
+		for (nXBlock = 0 ; nXBlock < width8 ; nXBlock++)
+		{
+			for (int y = 0 ; y < 16 ; y++)
+			{
+				for (int x = 0 ; x < 8 ; x++)
+				{
+					dst[x + (nXBlock<<3) + (y + (nYBlock<<4))*width] = src[nPos++];	// U
+					dst[x + (nXBlock<<3) + (y + (nYBlock<<4))*width + nDstUPlaneSize] = src[nPos++]; // V
+				}
+			}
+		}
+		nPos += nOffset;
+	}
+
+	return true;
+}
