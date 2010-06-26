@@ -161,7 +161,6 @@ CUImagerApp::CUImagerApp()
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
 	m_bVideoAviInfo = FALSE;
-	m_bFFMpeg2VideoDec = FALSE;
 	m_bFFSnowVideoEnc = FALSE;
 	m_bFFMpeg4VideoEnc = FALSE;
 	m_bFFTheoraVideoEnc = FALSE;
@@ -731,7 +730,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		//mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE | FF_MM_SSE2 | FF_MM_3DNOWEXT | FF_MM_SSE3 | FF_MM_SSSE3;
 		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
 		av_register_all();
-		m_bFFMpeg2VideoDec = avcodec_find_decoder(CODEC_ID_MPEG2VIDEO) != NULL ? TRUE : FALSE;
 		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
 		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
 		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;

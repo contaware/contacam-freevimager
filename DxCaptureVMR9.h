@@ -54,7 +54,7 @@ public:
 														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
 				int nWidth,								// if Width or Height are invalid the default size is used
 				int nHeight,
-				BOOL bMpeg2);							// If TRUE opens the Mpeg2 device and returns compressed Mpeg2 video data
+				BOOL bMpeg2);							// If TRUE opens the Mpeg2 device
 	void Close();										// Close Capture & Clean-Up
 	BOOL IsMpeg2() const {return m_bMpeg2;};			// Is the output compressed Mpeg2 video
 	BOOL ShowError(HRESULT hr);							// Show Message Box with error

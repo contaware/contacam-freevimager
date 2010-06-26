@@ -84,10 +84,8 @@ public:
 				int nFormatId,							// If -1, the format is chosen in the following order:
 														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
 				int nWidth,								// if Width or Height are invalid the default size is used
-				int nHeight,
-				BOOL bMpeg2);							// If TRUE opens the Mpeg2 device and returns compressed Mpeg2 video data
+				int nHeight);
 	void Close();										// Close Capture & Clean-Up
-	BOOL IsMpeg2() const {return m_bMpeg2;};			// Is the output compressed Mpeg2 video
 	BOOL IsDV() const {return m_bDV;};					// Is the output DV
 	BOOL IsHCW() const {return m_bHCW;};				// Is HCW format
 	int GetHCWWidth() const {return m_nHCWWidth;};		// Get HCW Width
@@ -218,7 +216,6 @@ protected:
 	IMediaEventEx* m_pME;								// Events Interface
 	IAMDroppedFrames* m_pDF;							// Dropped Frames Interface
 	LONG m_lDroppedFramesBase;							// Dropped Frames Base
-	BOOL m_bMpeg2;										// Be Mpeg2 Device
 	BOOL m_bDV;											// Be DV Device
 	BOOL m_bHCW;										// HCW format
 	int m_nHCWWidth;									// HCW width

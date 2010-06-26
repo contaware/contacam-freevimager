@@ -1191,7 +1191,7 @@ BOOL CDxCaptureEVR::BindFilter(const CString& sDeviceName, const CString& sDevic
 // - If nFormatId is -1, the format is chosen in the following order:
 //   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
-// - If bMpeg2 is set the Mpeg2 device returns compressed Mpeg2 video data
+// - If bMpeg2 is TRUE it tries to open as a Mpeg2 device
 BOOL CDxCaptureEVR::Open(	HWND hWnd,
 							int nId,
 							double dFrameRate,

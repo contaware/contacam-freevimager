@@ -944,12 +944,7 @@ void CGeneralPage::OnRecAudio()
 void CGeneralPage::OnTimer(UINT nIDEvent) 
 {
 	if (!m_pDoc->m_bClosing)
-	{
-		// Is Mpeg2?
-		BOOL bMpeg2 = FALSE;
-		if (m_pDoc->m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
-			bMpeg2 = TRUE;
-		
+	{	
 		// Open Mixer If Not Open
 		if (m_pDoc->m_CaptureAudioThread.IsOpen() && !m_pDoc->m_CaptureAudioThread.m_Mixer.IsWithWndHandleOpen())
 		{
@@ -1111,11 +1106,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		if (pEdit)
 		{
 			CString sDataRate(_T("xxx"));
-			LONG lUncompressedAvgFrameSize = 0;
-			if (bMpeg2)
-				lUncompressedAvgFrameSize = 3 * m_pDoc->m_DocRect.Height() * m_pDoc->m_DocRect.Width() / 2; // I420 (= 12 bpp)
-			else
-				lUncompressedAvgFrameSize = m_pDoc->m_OrigBMI.bmiHeader.biSizeImage;
+			LONG lUncompressedAvgFrameSize = m_pDoc->m_OrigBMI.bmiHeader.biSizeImage;
 			if (lUncompressedAvgFrameSize > 0)
 			{
 				if (m_pDoc->m_lCompressedDataRate > 0)

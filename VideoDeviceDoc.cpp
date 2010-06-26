@@ -6553,11 +6553,6 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	if (m_DocRect.Width() > 0 && 
 		m_DocRect.Height() > 0)
 	{
-		// Mpeg2?
-		BOOL bMpeg2 = FALSE;
-		if (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
-			bMpeg2 = TRUE;
-
 		// Converting?
 		BOOL bConverting = FALSE;
 		if (m_bRgb24Frame	&&
@@ -6567,11 +6562,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 		// Set format string
 		CString sFormat = _T("");
-		if (bMpeg2 && bConverting)
-			sFormat = _T("MPEG2 -> RGB24");
-		else if (bMpeg2)
-			sFormat = _T("MPEG2 -> I420");
-		else if (bConverting)
+		if (bConverting)
 			sFormat.Format(_T("%s -> RGB24"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 		else
 			sFormat.Format(_T("%s"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
@@ -7490,24 +7481,12 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 	if (m_pDxCapture)
 	{
 		m_pDxCapture->SetDoc(this);
-		// Try common capture device or DV device
-		BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
-											nId,
-											m_dFrameRate,
-											m_nDeviceFormatId,
-											m_nDeviceFormatWidth,
-											m_nDeviceFormatHeight,
-											FALSE); // no mpeg2
-		// Try Mpeg2 device decoded through ffmpeg, if mpeg2 decoder compiled in
-		if (!bOpened && ((CUImagerApp*)::AfxGetApp())->m_bFFMpeg2VideoDec)
-			bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
-											nId,
-											m_dFrameRate,
-											m_nDeviceFormatId,
-											m_nDeviceFormatWidth,
-											m_nDeviceFormatHeight,
-											TRUE);// mpeg2
-		if (bOpened)
+		if (m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+								nId,
+								m_dFrameRate,
+								m_nDeviceFormatId,
+								m_nDeviceFormatWidth,
+								m_nDeviceFormatHeight))
 		{
 			// Update format
 			::SendMessage(	GetView()->GetSafeHwnd(),
@@ -7571,7 +7550,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
 		// Try Mpeg2 device decoded through mpeg2 directshow filter and grabbed by vmr9.
 		// We have to grab through vmr9 because the ISampleGrabber is not working after
 		// directshow mpeg2 decoders...seems to be a security to avoid grabbing DVDs
-		// for example. This is the only solution to get mpeg2 devices to work without ffmpeg!
+		// for example. This is the only solution to get mpeg2 devices to work!
 		if (!bOpened)
 			bOpened = m_pDxCaptureVMR9->Open(	GetView()->GetSafeHwnd(),
 												nId,
@@ -8054,9 +8033,7 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 void CVideoDeviceDoc::OnCaptureDeinterlace() 
 {
-	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI) ||
-									(m_pDxCapture && m_pDxCapture->IsMpeg2());
-	if (bIsDeinterlaceSupported)
+	if (IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI))
 		m_bDeinterlace = !m_bDeinterlace;
 	else
 	{
@@ -8070,9 +8047,7 @@ void CVideoDeviceDoc::OnCaptureDeinterlace()
 
 void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI) 
 {
-	BOOL bIsDeinterlaceSupported =	IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI) ||
-									(m_pDxCapture && m_pDxCapture->IsMpeg2());
-	if (bIsDeinterlaceSupported)
+	if (IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI))
 		pCmdUI->SetCheck(m_bDeinterlace ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
@@ -8633,35 +8608,8 @@ void CVideoDeviceDoc::OnChangeVideoFormat()
 	}
 	else if (m_pDxCapture)
 	{
-		// Mpeg2
-		if (m_pDxCapture->IsMpeg2())
-		{
-			AM_MEDIA_TYPE* pmtConfig = NULL;
-			if (!m_pDxCapture->GetCurrentFormat(&pmtConfig))
-				return;
-			MPEG2VIDEOINFO* pMpeg2VideoInfo = NULL;
-			if (pmtConfig->pbFormat && pmtConfig->cbFormat >= sizeof(MPEG2VIDEOINFO))
-				pMpeg2VideoInfo = (MPEG2VIDEOINFO*)pmtConfig->pbFormat;
-			if (pMpeg2VideoInfo)
-				memcpy(&m_OrigBMI, &(pMpeg2VideoInfo->hdr.bmiHeader), MIN(sizeof(BITMAPINFOHEADER), pMpeg2VideoInfo->hdr.bmiHeader.biSize));
-			else
-			{
-				m_OrigBMI.bmiHeader.biWidth = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Width();
-				m_OrigBMI.bmiHeader.biHeight = m_pDxCapture->GetCaptureGraphBuilder()->GetMpeg2Height();
-			}
-			m_OrigBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_OrigBMI.bmiHeader.biPlanes = 1;
-			m_OrigBMI.bmiHeader.biBitCount = 0;
-			m_OrigBMI.bmiHeader.biCompression = FCC('MPG2');
-			m_OrigBMI.bmiHeader.biSizeImage = 0;
-			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
-			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
-			m_AVDecoder.Open((LPBITMAPINFOHEADER)&m_OrigBMI);
-			SetDocumentTitle();
-			m_pDxCapture->DeleteMediaType(pmtConfig);
-		}
 		// DV
-		else if (m_pDxCapture->IsDV())
+		if (m_pDxCapture->IsDV())
 		{
 			_DVENCODERVIDEOFORMAT VideoFormat;
 			if (m_pDxCapture->GetDVFormat(&VideoFormat))
@@ -10242,55 +10190,6 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		if (pTmpDib)
 			delete pTmpDib;
 	}
-	// Mpeg 2 Video?
-	else if (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'))
-	{	
-		// Decode
-		BITMAPINFO Bmi;
-		memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		Bmi.bmiHeader.biCompression = BI_RGB;
-		Bmi.bmiHeader.biPlanes = 1;
-		Bmi.bmiHeader.biBitCount = 24;
-		if (!pDstDib->SetBMI(&Bmi))
-			return FALSE;
-		int res = m_AVDecoder.Decode(pSrcBits,			// Compressed Mpeg2 Data
-									dwSrcSize,			// Compressed Mpeg2 Data Size
-									pDstDib,			// Unallocated Dib with BMI half set
-									m_bDeinterlace);	// (width & height only known when the first frame has been decoded!)
-
-		// Set Frame Rate
-		if (m_dFrameRate != m_AVDecoder.GetFrameRate())
-			m_dFrameRate = m_AVDecoder.GetFrameRate();
-
-		// Compressed data rate sum
-		m_lCompressedDataRateSum += dwSrcSize;
-
-		// Update Size
-		if (res == 1 &&
-			(m_OrigBMI.bmiHeader.biWidth != pDstDib->GetWidth() ||
-			m_OrigBMI.bmiHeader.biHeight != pDstDib->GetHeight()))
-		{
-			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth = pDstDib->GetWidth();
-			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight = pDstDib->GetHeight();
-			if (m_bSizeToDoc)
-			{
-				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
-								(LPARAM)0);
-				m_bSizeToDoc = FALSE;
-			}
-			::PostMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_SETDOCUMENTTITLE,
-							0, 0);
-			::PostMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATE_PHPPARAMS,
-							0, 0);
-		}
-
-		return res == 1;
-	}
 	else
 	{
 		// Set BMI & Bits
@@ -10305,58 +10204,6 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 	}
 
 	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::DecodeMpeg2Frame(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
-{
-	if (!pSrcBits || (dwSrcSize == 0) || !pDstDib)
-		return FALSE;
-
-	// Decode
-	BITMAPINFO Bmi;
-	memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-	Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	Bmi.bmiHeader.biCompression = FCC('I420');
-	Bmi.bmiHeader.biPlanes = 1;
-	Bmi.bmiHeader.biBitCount = 12;
-	if (!pDstDib->SetBMI(&Bmi))
-		return FALSE;
-	int res = m_AVDecoder.Decode(pSrcBits,			// Compressed Mpeg2 Data
-								dwSrcSize,			// Compressed Mpeg2 Data Size
-								pDstDib,			// Unallocated Dib with BMI half set
-								m_bDeinterlace);	// (width & height only known when the first frame has been decoded!)
-
-	// Set Frame Rate
-	if (m_dFrameRate != m_AVDecoder.GetFrameRate())
-		m_dFrameRate = m_AVDecoder.GetFrameRate();
-
-	// Compressed data rate sum
-	m_lCompressedDataRateSum += dwSrcSize;
-
-	// Update Size
-	if (res == 1 &&
-		(m_OrigBMI.bmiHeader.biWidth != pDstDib->GetWidth() ||
-		m_OrigBMI.bmiHeader.biHeight != pDstDib->GetHeight()))
-	{
-		m_DocRect.right = m_OrigBMI.bmiHeader.biWidth = pDstDib->GetWidth();
-		m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight = pDstDib->GetHeight();
-		if (m_bSizeToDoc)
-		{
-			::PostMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
-							(LPARAM)0);
-			m_bSizeToDoc = FALSE;
-		}
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_SETDOCUMENTTITLE,
-						0, 0);
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_UPDATE_PHPPARAMS,
-						0, 0);
-	}
-
-	return res == 1;
 }
 
 __forceinline BOOL CVideoDeviceDoc::IsDeinterlaceSupported(LPBITMAPINFO pBmi)
@@ -10503,12 +10350,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
 		BOOL bDecodeToRgb24 = FALSE;
-		BOOL bDecodeMpeg2 = FALSE;
-		BOOL bMpeg2 = (m_OrigBMI.bmiHeader.biCompression == FCC('MPG2'));
 		BOOL bAVCodecSrcFormatSupport = TRUE;
-		if (!bMpeg2 && CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
+		if (CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
-		BOOL bIsAddSingleLineSupported = bMpeg2 || CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_OrigBMI);
+		BOOL bIsAddSingleLineSupported = CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_OrigBMI);
 		if ((VideoProcessorMode & COLOR_DETECTOR)			||
 			(bShowFrameTime && !bIsAddSingleLineSupported)	||
 			m_bDecodeFramesForPreview						||
@@ -10518,10 +10363,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				m_OrigBMI.bmiHeader.biCompression != BI_RGB)
 				bDecodeToRgb24 = TRUE;
 		}
-		else if (bMpeg2)
-			bDecodeMpeg2 = TRUE;
 
-		// Decode Rgb (other than 24bpp), Yuv or Mpeg2 to Rgb24
+		// Decode Rgb (other than 24bpp) or Yuv to Rgb24
 		if (bDecodeToRgb24)
 		{
 			// Allocate Dib
@@ -10532,22 +10375,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 
 			// Decode Frame (De-Interlace inside this function)
 			if (!DecodeFrameToRgb24(pData, dwSize, pDib))
-			{
-				delete pDib;
-				goto exit;
-			}
-		}
-		// Decode Mpeg2 to I420
-		else if (bDecodeMpeg2)
-		{
-			// Allocate Dib
-			pDib = (CDib*)new CDib;
-			if (!pDib)
-				goto exit;
-			pDib->SetShowMessageBoxOnError(FALSE);
-
-			// Decode Frame (De-Interlace inside this function)
-			if (!DecodeMpeg2Frame(pData, dwSize, pDib))
 			{
 				delete pDib;
 				goto exit;

@@ -14,7 +14,6 @@
 #include "pjnsmtp.h"
 #include "NetCom.h"
 #include "AVRec.h"
-#include "AVDecoder.h"
 #include "YuvToRgb.h"
 #include "NetFrameHdr.h"
 #include "SortableFileFind.h"
@@ -1303,7 +1302,6 @@ public:
 							int height,
 							int srcbufsize);
 	BOOL DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
-	BOOL DecodeMpeg2Frame(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL ProcessFrame(LPBYTE pData, DWORD dwSize);
@@ -1537,9 +1535,6 @@ public:
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
 	CSaveSnapshotFTPThread m_SaveSnapshotFTPThread;		// Thread which ftp uploads the swf snapshots history
-
-	// Mpeg Video Decoder
-	CAVDecoder m_AVDecoder;								// Mpeg Video Decoder
 
 	// Drawing
 	CDxDraw m_DxDraw;									// Direct Draw Object

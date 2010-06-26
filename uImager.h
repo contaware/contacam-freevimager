@@ -708,9 +708,6 @@ public:
 	// Display Advanced On-Screen Video Avi Info
 	BOOL m_bVideoAviInfo;
 
-	// Is ffmpeg mpeg2 video decoder compiled in?
-	BOOL m_bFFMpeg2VideoDec;
-
 	// Is ffmpeg snow video encoder compiled in?
 	BOOL m_bFFSnowVideoEnc;
 

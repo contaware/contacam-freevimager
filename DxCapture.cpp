@@ -59,7 +59,6 @@ CDxCapture::CDxCapture()
 	m_pSrcFilter = NULL;
 	m_pCrossbar = NULL;
 	m_hWnd = NULL;
-	m_bMpeg2 = FALSE;
 	m_bDV = FALSE;
 	m_bHCW = FALSE;
 	m_nHCWWidth = 0;
@@ -264,7 +263,7 @@ BOOL CDxCapture::HasFormats()
 {
 	HRESULT hr;
 
-	if (!m_pConfig || m_bMpeg2 || m_bDV || m_bHCW)
+	if (!m_pConfig || m_bDV || m_bHCW)
 		return FALSE;
 
 	// GetNumberOfCapabilities
@@ -696,7 +695,7 @@ LONG CDxCapture::GetAvgFrameSize()
 
 double CDxCapture::SetFrameRate(double dFrameRate)
 {
-	if (m_bMpeg2 || m_bDV)
+	if (m_bDV)
 		return 0.0;
 
 	// Set Exact NTSC Frame Rate
@@ -722,7 +721,7 @@ double CDxCapture::SetFrameRate(double dFrameRate)
 
 double CDxCapture::GetFrameRate()
 {
-	if (m_bMpeg2 || m_bDV)
+	if (m_bDV)
 		return 0.0;
 	else
 	{
@@ -743,7 +742,7 @@ double CDxCapture::GetFrameRate()
 
 BOOL CDxCapture::GetFrameRateRange(double& dMin, double& dMax)
 {
-	if (!m_pConfig || m_bMpeg2 || m_bDV)
+	if (!m_pConfig || m_bDV)
 		return FALSE;
 
 	AM_MEDIA_TYPE* pmtConfig = NULL;
@@ -1233,14 +1232,12 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - If nFormatId is -1, the format is chosen in the following order:
 //   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
-// - If bMpeg2 is set the Mpeg2 device returns compressed Mpeg2 video data
 BOOL CDxCapture::Open(	HWND hWnd,
 						int nId,
 						double dFrameRate,
 						int nFormatId,
 						int nWidth,
-						int nHeight,
-						BOOL bMpeg2)
+						int nHeight)
 {
 	HRESULT hr;
 
@@ -1292,9 +1289,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
     }
 
 	// Add DV filters
-	BOOL bDV = FALSE;
-	if (!bMpeg2)
-		bDV = IsDeviceOutputDV();
+	BOOL bDV = IsDeviceOutputDV();
 	if (bDV)
 	{
 		hr = ::CoCreateInstance(CLSID_DVSplitter, NULL, CLSCTX_INPROC_SERVER,
@@ -1347,23 +1342,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	AM_MEDIA_TYPE mt;
 	ZeroMemory(&mt, sizeof(AM_MEDIA_TYPE));
 	mt.majortype = MEDIATYPE_Video;
-	if (bMpeg2)
-	{
-		// Get PES MPEG Packets, ffmpeg decods them
-		mt.subtype				= MEDIASUBTYPE_MPEG2_VIDEO;
-		mt.formattype			= FORMAT_MPEG2Video;
-
-		/* Note: to grab mpeg audio we would set:
-		AM_MEDIA_TYPE amTypeAudio;
-		ZeroMemory(&amTypeAudio, sizeof(AM_MEDIA_TYPE));
-		amTypeAudio.majortype   = MEDIATYPE_Audio;
-		amTypeAudio.subtype     = MEDIASUBTYPE_MPEG2_AUDIO;
-		amTypeAudio.formattype  = FORMAT_WaveFormatEx;
-		amTypeAudio.cbFormat    = sizeof(MPEG1AudioFormat);
-		amTypeAudio.pbFormat    = MPEG1AudioFormat;
-		*/
-	}
-	else if (bDV)
+	if (bDV)
 	{
 		mt.subtype		= MEDIASUBTYPE_YUY2;
 		mt.formattype	= FORMAT_VideoInfo;
@@ -1374,15 +1353,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	mt.bTemporalCompression = FALSE;
 	hr = m_pGrabber->SetMediaType(&mt);
 
-	// Render Mpeg2
-	if (bMpeg2)
-	{
-		hr = m_pCaptureGraphBuilder->RenderStream(	NULL,
-													&MEDIATYPE_Stream, // Setting MEDIATYPE_Stream forces the use of the mpeg2 demuxer
-													m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
-	}
 	// Render DV
-	else if (bDV)
+	if (bDV)
 	{
 		hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
 													&MEDIATYPE_Interleaved,
@@ -1423,62 +1395,45 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		return FALSE;
 
 	// Get Dropped Frames and Configuration Interfaces
-	if (bMpeg2)
-	{
-		m_pCaptureGraphBuilder->FindInterface(	&PIN_CATEGORY_CAPTURE,
-												&MEDIATYPE_Stream,
-												m_pSrcFilter,
-												IID_IAMDroppedFrames, (void**)&m_pDF);
-		
-		// Note: some mpeg2 devices return the config interface,
-		// but with no information on it!
+	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Interleaved,
+											  m_pSrcFilter,
+											  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
 		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-												  &MEDIATYPE_Stream,
-												  m_pSrcFilter,
-												  IID_IAMStreamConfig, (void**)&m_pConfig);
-	}
-	else
-	{
-		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Video,
+											  m_pSrcFilter,
+											  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
 												  &MEDIATYPE_Interleaved,
 												  m_pSrcFilter,
 												  IID_IAMDroppedFrames, (void**)&m_pDF);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-												  &MEDIATYPE_Video,
-												  m_pSrcFilter,
-												  IID_IAMDroppedFrames, (void**)&m_pDF);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-													  &MEDIATYPE_Interleaved,
-													  m_pSrcFilter,
-													  IID_IAMDroppedFrames, (void**)&m_pDF);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-												  &MEDIATYPE_Video,
-												  m_pSrcFilter,
-												  IID_IAMDroppedFrames, (void**)&m_pDF);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+											  &MEDIATYPE_Video,
+											  m_pSrcFilter,
+											  IID_IAMDroppedFrames, (void**)&m_pDF);
 
+	hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+											  &MEDIATYPE_Interleaved,
+											  m_pSrcFilter,
+											  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr))
 		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
+												  &MEDIATYPE_Video,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
 												  &MEDIATYPE_Interleaved,
 												  m_pSrcFilter,
 												  IID_IAMStreamConfig, (void**)&m_pConfig);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_CAPTURE,
-													  &MEDIATYPE_Video,
-													  m_pSrcFilter,
-													  IID_IAMStreamConfig, (void**)&m_pConfig);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-													  &MEDIATYPE_Interleaved,
-													  m_pSrcFilter,
-													  IID_IAMStreamConfig, (void**)&m_pConfig);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
-													  &MEDIATYPE_Video,
-													  m_pSrcFilter,
-													  IID_IAMStreamConfig, (void**)&m_pConfig);
-	}
+	if (FAILED(hr))
+		hr = m_pCaptureGraphBuilder->FindInterface(&PIN_CATEGORY_PREVIEW,
+												  &MEDIATYPE_Video,
+												  m_pSrcFilter,
+												  IID_IAMStreamConfig, (void**)&m_pConfig);
 	if (m_pDF)
 		m_pDF->GetNumDropped(&m_lDroppedFramesBase);
 	else
@@ -1491,7 +1446,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
 
 	// Set Format and Frame Rate
 	m_bHCW = FALSE;
-	if (!bMpeg2 && !bDV)
+	if (!bDV)
 	{
 		// Check subtype
 		AM_MEDIA_TYPE* pmtConfig = NULL;
@@ -1622,9 +1577,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	// Init Crossbar, input lines (S-Video, TV-Tuner,...) management
 	InitCrossbar();
 
-	// Set Flags
+	// Set Flag
 	m_bDV = bDV;
-	m_bMpeg2 = bMpeg2;
 
 	// Set the callback interface with a pointer to your callback object:
 	m_pGrabber->SetCallback(this, 1);	// 0 = Use the SampleCB callback method

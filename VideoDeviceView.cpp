@@ -1297,8 +1297,7 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 										pDoc->m_dFrameRate,
 										pDoc->m_nDeviceFormatId,
 										pDoc->m_nDeviceFormatWidth,
-										pDoc->m_nDeviceFormatHeight,
-										pDoc->m_pDxCapture->IsMpeg2()))
+										pDoc->m_nDeviceFormatHeight))
 		{
 			// Update format
 			OnThreadSafeChangeVideoFormat(0, 0);
