@@ -3481,6 +3481,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 													BOOL bDoDetection)
 {
 	BOOL bMovement = FALSE;
+	BOOL bLumChange = FALSE;
 
 	// Init
 	if (m_lMovDetTotalZones == 0)
@@ -3597,6 +3598,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 
 	// Color Space Type
 	BOOL bPlanar;
+	int nPackedYOffset = 0;
 	if (pDibY->GetCompression() == FCC('I420')	||
 		pDibY->GetCompression() == FCC('IYUV')	||
 		pDibY->GetCompression() == FCC('YV12')	||
@@ -3609,17 +3611,24 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		pDibY->GetCompression() == FCC('Y800')	||
 		pDibY->GetCompression() == FCC('GREY'))
 		bPlanar = TRUE;
-	// Packed 422
-	else if (	pDibY->GetCompression() == FCC('YUY2')	||
-				pDibY->GetCompression() == FCC('YUNV')	||
-				pDibY->GetCompression() == FCC('VYUY')	||
-				pDibY->GetCompression() == FCC('V422')	||
-				pDibY->GetCompression() == FCC('YUYV')	||
-				pDibY->GetCompression() == FCC('YVYU')	||
-				pDibY->GetCompression() == FCC('UYVY')	||
-				pDibY->GetCompression() == FCC('Y422')	||
-				pDibY->GetCompression() == FCC('UYNV'))
+	// Packed 422 with Y beginning the 16 bits pixel
+	else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
+				pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
+				pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
+				pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
+				pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
+				pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
+	{
 		bPlanar = FALSE;
+	}
+	// Packed 422 with Y as the second byte of the 16 bits pixel
+	else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
+				pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
+				pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
+	{
+		bPlanar = FALSE;
+		nPackedYOffset = 1;
+	}
 	// Not Supported Format!
 	else
 	{
@@ -3630,6 +3639,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	// Detector Enabled?
 	if (bDoDetection)
 	{
+		// Luminosity change detector
+		bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
+
 		// Differencing
 		BYTE p[16];
 		LPBYTE MinDiff = (LPBYTE)((DWORD)(p+7) & 0xFFFFFFF8);
@@ -3665,13 +3677,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		int nFrameRate = Round(m_dEffectiveFrameRate);
 		if (g_bSSE)
 		{
-			if (nFrameRate >= 20)
-			{
-				::Mix31To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-								pDibY->GetBits(),							// Src2
-								nSize8);									// Size in 8 bytes units
-			}
-			else if (nFrameRate >= 10)
+			if (nFrameRate >= 10)
 			{
 				::Mix15To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
 								pDibY->GetBits(),							// Src2
@@ -3699,25 +3705,20 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				nSize = (pDibY->GetWidth() * pDibY->GetHeight()) << 1;
 			LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
 			LPBYTE p2 = pDibY->GetBits();
-			if (nFrameRate >= 20)
+			if (nFrameRate >= 10)
 			{
 				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((31 * (int)(p1[i]) + (int)(p2[i]))>>5);
-			}
-			else if (nFrameRate >= 10)
-			{
-				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((15 * (int)(p1[i]) + (int)(p2[i]))>>4);
+					p1[i] = (BYTE)((15 * (int)(p1[i]) + (int)(p2[i]) + 8)>>4);
 			}
 			else if (nFrameRate >= 5)
 			{
 				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]))>>3);
+					p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4)>>3);
 			}
 			else
 			{
 				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]))>>2);
+					p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
 			}
 		}
 		
@@ -3738,8 +3739,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	if (m_dEffectiveFrameRate > 0.0)
 		nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
 
-	// If Movement
-	if (bMovement)
+	// If Movement and no Luminosity change
+	if (bMovement && !bLumChange)
 	{
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(TRUE);
@@ -6248,6 +6249,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bMovementDetectorPreview = FALSE;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
+	m_LumChangeDetectorBkgY = new int[MOVDET_MAX_ZONES];
+	m_LumChangeDetectorDiffY = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
@@ -6399,6 +6402,16 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_pGetFrameGenerator = NULL;
 	}
 	FreeMovementDetector();
+	if (m_LumChangeDetectorBkgY)
+	{
+		delete [] m_LumChangeDetectorBkgY;
+		m_LumChangeDetectorBkgY = NULL;
+	}
+	if (m_LumChangeDetectorDiffY)
+	{
+		delete [] m_LumChangeDetectorDiffY;
+		m_LumChangeDetectorDiffY = NULL;
+	}
 	if (m_MovementDetectorCurrentIntensity)
 	{
 		delete [] m_MovementDetectorCurrentIntensity;
@@ -11418,6 +11431,129 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 		m_bFirstMovementDetection = FALSE;
 		return FALSE;
 	}
+}
+
+BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
+										BOOL bPlanar,
+										int nPackedYOffset)
+{
+	int x, y;
+	int nCount = 0;
+	LPBYTE pDataBkg = m_pMovementDetectorBackgndDib->GetBits();
+	LPBYTE pDataCur = pDibY->GetBits();
+	int width = pDibY->GetWidth();
+	int nZoneWidth = pDibY->GetWidth() / m_lMovDetXZonesCount;
+	int nZoneHeight = pDibY->GetHeight() / m_lMovDetYZonesCount;
+	if (!bPlanar)
+	{
+		nZoneWidth <<= 1;	// 16 bits pixels, skip chroma
+		nZoneHeight <<= 1;	// 16 bits pixels, skip chroma
+	}
+
+	// Calc. difference between current Y and background Y
+	// at the grid intersection points
+	for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
+	{
+		int posY = y*nZoneHeight;
+		for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
+		{
+			// Offset
+			int posX = x*nZoneWidth;
+			int nOffset = width*posY + posX + nPackedYOffset;
+
+			// Consider pixels which can shift with a luminosity change
+			// and remember that the Y range is: [16,235] (220 steps)
+			if (pDataBkg[nOffset] > 70 && pDataBkg[nOffset] < 175)
+			{
+				// Inc.
+				nCount++;
+
+				// Store
+				m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] = pDataBkg[nOffset];
+
+				// Diff
+				m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] = pDataCur[nOffset] - pDataBkg[nOffset];
+			}
+			else
+			{
+				m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] = 0;
+				m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] = 0;
+			}
+		}
+	}
+
+	// Statistics
+	if (nCount > 0)
+	{
+		// Avg
+		int nAvg = 0;
+		int nCountPlus = 0;
+		int nCountMinus = 0;
+		for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
+		{
+			for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
+			{
+				if (m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] > 0)
+				{
+					if (m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] > 0)
+						nCountPlus++;
+					else if (m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] < 0)
+						nCountMinus++;
+					nAvg += m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x];
+				}
+			}
+		}
+		nAvg = nAvg / nCount;
+		int nAvgAbs;
+		if (nAvg >= 0)
+			nAvgAbs = nAvg;
+		else
+			nAvgAbs = -nAvg;
+
+		// Std Dev
+		int nStdDev = 0;
+		for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
+		{
+			for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
+			{
+				if (m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] > 0)
+				{
+					int nDistance = m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] - nAvg;
+					if (nDistance < 0)
+						nDistance = -nDistance;
+					nStdDev += nDistance;
+				}
+			}
+		}
+		nStdDev = nStdDev / nCount;
+
+		// Check conditions for luminosity change
+		// Note: do not set the compare nAvgAbs > 8 less than 8 because the Mix15To1
+		// mixer can settle to a difference of 8 between current and background
+		// bitmaps even if both are identical, that's correct and it's a consequence of the rounding!
+		if (nAvgAbs > 8)
+		{
+			int nThreshold = 256; // Just a high value in case nStdDev is 0...
+			if (nStdDev > 0)
+				nThreshold = nAvgAbs / nStdDev;
+			if (nThreshold >= 2)
+			{
+				int nCount90 = 9 * nCount / 10; // 90%
+				if (nCountPlus >= nCount90)
+				{
+					TRACE(_T("+++: nAvgAbs=%d , nAvgAbs / nStdDev=%d\n"), nAvgAbs, nThreshold);
+					return TRUE;
+				}
+				else if (nCountMinus >= nCount90)
+				{
+					TRACE(_T("---: nAvgAbs=%d , nAvgAbs / nStdDev=%d\n"), nAvgAbs, nThreshold);
+					return TRUE;
+				}
+			}
+		}
+	}
+
+	return FALSE;
 }
 
 __forceinline int CVideoDeviceDoc::GetNewestMovementDetectionsListCount()

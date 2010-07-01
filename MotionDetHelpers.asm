@@ -23,61 +23,41 @@ ENDM
 
 .code
 
-; ********** Mix Function **********
+; ********** Mix Functions **********
 ; C++ prototype:
-; extern "C" void Mix31To1MMX(void* pBackgnd, void* pSrc, int nSize);
-Mix31To1MMX PROC NEAR
-PUBLIC Mix31To1MMX
-PublicAlias _Mix31To1MMX	; Underscore needed when called from Windows
-	mov     edx, [esp+4]    ; pBackgnd
-	mov     eax, [esp+8]    ; pSrc
-	mov     ecx, [esp+12]   ; nSize
-ALIGN 16
-MainLoop:
-	movq	mm0,	[eax]	; Src
-	movq	mm1,	[edx]	; Backgnd
-	
-	; pavgb is only available on processors with SSE!
-	pavgb	mm0,	mm1		; mm0 = (mm0 + mm1) / 2
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	; -> mm0 = (mm0 + 31*mm1) / 32
-	
-	movq	[edx],	mm0
-	
-	add		eax,	8
-	add		edx,	8
-	
-	; Dec. Loop Counter
-	dec		ecx
-	jnz		MainLoop
-	
-	emms					; Empty MMX State
-	ret
-Mix31To1MMX ENDP
 
 ; extern "C" void Mix15To1MMX(void* pBackgnd, void* pSrc, int nSize);
+;
+; average_round_up(a, b)                               = pavgb(a, b)
+; average_round_down(a, b) = ~average_round_up(~a, ~b) = ~pavgb(~a, ~b)
+; pavgb is only available on processors with SSE!
+;
+; round((a*15+b)/16)
+; = (a*15 + b + 8) >> 4
+; = (a*8 + a*4 + a*2 + a + b + 8) >> 4
+; = (((((((a + b) >> 1) + a) >> 1) + a) >> 1) + a + 1) >> 1
+; = average_round_up(average_round_down(average_round_down(average_round_down(a, b), a), a), a)
 Mix15To1MMX PROC NEAR
 PUBLIC Mix15To1MMX
 PublicAlias _Mix15To1MMX	; Underscore needed when called from Windows
 	mov     edx, [esp+4]    ; pBackgnd
 	mov     eax, [esp+8]    ; pSrc
 	mov     ecx, [esp+12]   ; nSize
+	pcmpeqb	mm7,	mm7		; mm7 is 0xFFFFFFFFFFFFFFFF
 ALIGN 16
 MainLoop:
-	movq	mm0,	[eax]	; Src
-	movq	mm1,	[edx]	; Backgnd
+	movq	mm0,	[edx]	; Backgnd
+	movq	mm1,	[eax]	; Src
+	movq	mm2,	mm0		; mm2 is Backgnd
+	pxor	mm0,	mm7		; mm0 is ~Backgnd
+	pxor	mm1,	mm7		; mm1 is ~Src
+	pavgb	mm1,	mm0
+	pavgb	mm1,	mm0
+	pavgb	mm1,	mm0
+	pxor	mm1,	mm7
+	pavgb	mm1,	mm2
 	
-	; pavgb is only available on processors with SSE!
-	pavgb	mm0,	mm1		; mm0 = (mm0 + mm1) / 2
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	; -> mm0 = (mm0 + 15*mm1) / 16
-	
-	movq	[edx],	mm0
+	movq	[edx],	mm1
 	
 	add		eax,	8
 	add		edx,	8
@@ -91,24 +71,36 @@ MainLoop:
 Mix15To1MMX ENDP
 
 ; extern "C" void Mix7To1MMX(void* pBackgnd, void* pSrc, int nSize);
+;
+; average_round_up(a, b)                               = pavgb(a, b)
+; average_round_down(a, b) = ~average_round_up(~a, ~b) = ~pavgb(~a, ~b)
+; pavgb is only available on processors with SSE!
+;
+; round((a*7+b)/8)
+; = (a*7 + b + 4) >> 3
+; = (a*4 + a*2 + a + b + 4) >> 3
+; = (((((a + b) >> 1) + a) >> 1) + a + 1) >> 1
+; = average_round_up(average_round_down(average_round_down(a, b), a), a)
 Mix7To1MMX PROC NEAR
 PUBLIC Mix7To1MMX
 PublicAlias _Mix7To1MMX	; Underscore needed when called from Windows
 	mov     edx, [esp+4]    ; pBackgnd
 	mov     eax, [esp+8]    ; pSrc
 	mov     ecx, [esp+12]   ; nSize
+	pcmpeqb	mm7,	mm7		; mm7 is 0xFFFFFFFFFFFFFFFF
 ALIGN 16
 MainLoop:
-	movq	mm0,	[eax]	; Src
-	movq	mm1,	[edx]	; Backgnd
+	movq	mm0,	[edx]	; Backgnd
+	movq	mm1,	[eax]	; Src
+	movq	mm2,	mm0		; mm2 is Backgnd
+	pxor	mm0,	mm7		; mm0 is ~Backgnd
+	pxor	mm1,	mm7		; mm1 is ~Src
+	pavgb	mm1,	mm0
+	pavgb	mm1,	mm0
+	pxor	mm1,	mm7
+	pavgb	mm1,	mm2
 	
-	; pavgb is only available on processors with SSE!
-	pavgb	mm0,	mm1		; mm0 = (mm0 + mm1) / 2
-	pavgb	mm0,	mm1
-	pavgb	mm0,	mm1
-	; -> mm0 = (mm0 + 7*mm1) / 8
-	
-	movq	[edx],	mm0
+	movq	[edx],	mm1
 	
 	add		eax,	8
 	add		edx,	8
@@ -122,23 +114,35 @@ MainLoop:
 Mix7To1MMX ENDP
 
 ; extern "C" void Mix3To1MMX(void* pBackgnd, void* pSrc, int nSize);
+;
+; average_round_up(a, b)                               = pavgb(a, b)
+; average_round_down(a, b) = ~average_round_up(~a, ~b) = ~pavgb(~a, ~b)
+; pavgb is only available on processors with SSE!
+;
+; round((a*3+b)/4)
+; = ((a*3 + b) + 2) >> 2
+; = (a*2 + a + b + 2) >> 2
+; = (((a + b) >> 1) + a + 1) >> 1
+; = average_round_up(average_round_down(a, b), a) 
 Mix3To1MMX PROC NEAR
 PUBLIC Mix3To1MMX
 PublicAlias _Mix3To1MMX	; Underscore needed when called from Windows
 	mov     edx, [esp+4]    ; pBackgnd
 	mov     eax, [esp+8]    ; pSrc
 	mov     ecx, [esp+12]   ; nSize
+	pcmpeqb	mm7,	mm7		; mm7 is 0xFFFFFFFFFFFFFFFF
 ALIGN 16
 MainLoop:
-	movq	mm0,	[eax]	; Src
-	movq	mm1,	[edx]	; Backgnd
+	movq	mm0,	[edx]	; Backgnd
+	movq	mm1,	[eax]	; Src
+	movq	mm2,	mm0		; mm2 is Backgnd
+	pxor	mm0,	mm7		; mm0 is ~Backgnd
+	pxor	mm1,	mm7		; mm1 is ~Src
+	pavgb	mm1,	mm0
+	pxor	mm1,	mm7
+	pavgb	mm1,	mm2
 	
-	; pavgb is only available on processors with SSE!
-	pavgb	mm0,	mm1		; mm0 = (mm0 + mm1) / 2
-	pavgb	mm0,	mm1
-	; -> mm0 = (mm0 + 3*mm1) / 4
-	
-	movq	[edx],	mm0
+	movq	[edx],	mm1
 	
 	add		eax,	8
 	add		edx,	8

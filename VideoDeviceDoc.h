@@ -1338,6 +1338,9 @@ public:
 	void MovementDetectionProcessing(	CDib* pDib,
 										BOOL bMovementDetectorPreview,
 										BOOL bDoDetection);
+	BOOL LumChangeDetector(	CDib* pDibY,
+							BOOL bPlanar,
+							int nPackedYOffset);
 	BOOL MovementDetector(	CDib* pDib,
 							BOOL bPlanar,					
 							int nDetectionLevel);
@@ -1709,6 +1712,8 @@ public:
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
+	int* volatile m_LumChangeDetectorBkgY;				// Luminosity change background by zones (array allocated in constructor)
+	int* volatile m_LumChangeDetectorDiffY;				// Luminosity change difference by zones (array allocated in constructor)
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
 	BOOL* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)

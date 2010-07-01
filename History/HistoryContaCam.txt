@@ -4,6 +4,7 @@ VERSION HISTORY
 
 - Networking fix to make it work with Wine
 - Fixed motion detection and recording for the RGB16(565) format
+- Improved motion detection: less sensible to luminosity changes
 
 2.0.5 (May 17th 2010)
 

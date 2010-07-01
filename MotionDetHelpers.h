@@ -5,7 +5,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-extern "C" void Mix31To1MMX(void* pBackgnd, void* pSrc, int nSize);
 extern "C" void Mix15To1MMX(void* pBackgnd, void* pSrc, int nSize);
 extern "C" void Mix7To1MMX(void* pBackgnd, void* pSrc, int nSize);
 extern "C" void Mix3To1MMX(void* pBackgnd, void* pSrc, int nSize);
