@@ -11482,8 +11482,8 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 		}
 	}
 
-	// Statistics
-	if (nCount > 0)
+	// Statistics (only if we have "statistically" enough samples)
+	if (nCount >= 10)
 	{
 		// Avg
 		int nAvg = 0;
@@ -11533,20 +11533,20 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 		// bitmaps even if both are identical, that's correct and it's a consequence of the rounding!
 		if (nAvgAbs > 8)
 		{
-			int nThreshold = 256; // Just a high value in case nStdDev is 0...
+			double dThreshold = 256.0; // Just a high value in case nStdDev is 0...
 			if (nStdDev > 0)
-				nThreshold = nAvgAbs / nStdDev;
-			if (nThreshold >= 2)
+				dThreshold = (double)nAvgAbs / (double)nStdDev;
+			if (dThreshold >= 1.5)
 			{
 				int nCount90 = 9 * nCount / 10; // 90%
 				if (nCountPlus >= nCount90)
 				{
-					TRACE(_T("+++: nAvgAbs=%d , nAvgAbs / nStdDev=%d\n"), nAvgAbs, nThreshold);
+					TRACE(_T("+++: nAvgAbs=%d , nAvgAbs / nStdDev=%0.2f\n"), nAvgAbs, dThreshold);
 					return TRUE;
 				}
 				else if (nCountMinus >= nCount90)
 				{
-					TRACE(_T("---: nAvgAbs=%d , nAvgAbs / nStdDev=%d\n"), nAvgAbs, nThreshold);
+					TRACE(_T("---: nAvgAbs=%d , nAvgAbs / nStdDev=%0.2f\n"), nAvgAbs, dThreshold);
 					return TRUE;
 				}
 			}
