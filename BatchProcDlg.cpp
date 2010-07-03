@@ -32,18 +32,22 @@ int CBatchProcDlg::CProcessThread::Work()
 	CSortableFileFind FileFind;
 	int nFilesCount;
 	CString sTempFileName(_T(""));
-	CString sSrcDirPath(_T(""));
-	CString sDstDirPath(_T(""));
-	CString sOrigSrcFileName(_T(""));
 	CString sSrcFileName(_T(""));
+	CString sSrcDirPath(_T(""));
 	CString sDstFileName(_T(""));
 	CString sDstFileNameSameExt(_T(""));
+	CString sTempDstDirPath(_T(""));
+	CString sOrigDstDirPath(_T(""));
 
 	::CoInitialize(NULL);
 
-	// Destination Directory Path
-	sDstDirPath = m_szDstDirPath;
-	sDstDirPath.TrimRight(_T('\\'));
+	// Temp Destination Directory Path
+	sTempDstDirPath = m_szTempDstDirPath;
+	sTempDstDirPath.TrimRight(_T('\\'));
+
+	// Original Destination Directory Path
+	sOrigDstDirPath = m_szOrigDstDirPath;
+	sOrigDstDirPath.TrimRight(_T('\\'));
 
 	try
 	{
@@ -86,7 +90,7 @@ int CBatchProcDlg::CProcessThread::Work()
 				// Destination Directory
 				CString sDstDir = sSrcDir;
 				sDstDir = sDstDir.Mid(sSrcDirPath.GetLength() + 1);
-				sDstDir = sDstDirPath + _T("\\") + sDstDir;
+				sDstDir = sTempDstDirPath + _T("\\") + sDstDir;
 				if (!::CreateDir(sDstDir))
 				{
 					::ShowLastError(TRUE);
@@ -143,15 +147,15 @@ int CBatchProcDlg::CProcessThread::Work()
 			// Source File Name and Source Dir Path
 			if (m_pDlg->m_nInputSelection == INPUT_DIR)
 			{
-				sOrigSrcFileName = FileFind.GetFileName(pos);
+				sSrcFileName = FileFind.GetFileName(pos);
 				// Source Dir Path has been initialized above!
 			}
 			else
 			{
 				// Get File Name
-				sOrigSrcFileName =	m_pDlg->m_List.GetItemText(pos, LIST_PATH) +
+				sSrcFileName =	m_pDlg->m_List.GetItemText(pos, LIST_PATH) +
 								m_pDlg->m_List.GetItemText(pos, LIST_FILENAME);
-				sSrcDirPath =	::GetDriveAndDirName(sOrigSrcFileName);
+				sSrcDirPath =	::GetDriveAndDirName(sSrcFileName);
 				sSrcDirPath.TrimRight(_T('\\'));
 
 				// Make sure that the thumb has been fully loaded,
@@ -171,23 +175,23 @@ int CBatchProcDlg::CProcessThread::Work()
 					}
 				}
 			}
-			sOrigSrcFileName.TrimRight(_T('\\'));
+			sSrcFileName.TrimRight(_T('\\'));
 
 			// Skip the System's Thumbs.db File
-			if (::GetShortFileName(sOrigSrcFileName).CompareNoCase(THUMBS_DB) == 0)
+			if (::GetShortFileName(sSrcFileName).CompareNoCase(THUMBS_DB) == 0)
 				continue;
 
 			// Destination File Name and Extension
-			sDstFileName = sOrigSrcFileName;
+			sDstFileName = sSrcFileName;
 			sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
-			sDstFileNameSameExt = sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
+			sDstFileNameSameExt = sDstFileName = sTempDstDirPath + _T("\\") + sDstFileName;
 			CString sDstExt = ::GetFileExt(sDstFileNameSameExt);
 			if (m_pDlg->m_bConversion &&
 				!(m_pDlg->m_nOutputSelection == OUTPUT_FILE && ::GetFileExt(m_pDlg->m_sOutputFileName) != _T(".zip")))
 			{
 				if (m_pDlg->m_nOptimizationSelection == AUTO_OPT)
 				{
-					sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sOrigSrcFileName));
+					sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 					sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
 				}
 				else
@@ -199,7 +203,7 @@ int CBatchProcDlg::CProcessThread::Work()
 							break;
 
 						case CBatchProcGeneralTab::AUTO_CHANGE :
-							sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sOrigSrcFileName));
+							sDstExt = CUImagerApp::ShrinkGetDstExt(::GetFileExt(sSrcFileName));
 							sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
 							break;
 
@@ -246,33 +250,32 @@ int CBatchProcDlg::CProcessThread::Work()
 			else
 				sDstFileName = sDstFileNameSameExt;
 
-			// Rename
+			// Prepare rename strings
 			if (m_pDlg->m_bRename)
 			{
-				Rename(	num,
-						sOrigSrcFileName,
-						sDstFileName,
-						sDstFileNameSameExt);
+				DoRename(	num,
+							sSrcFileName,
+							sDstFileName,
+							sDstFileNameSameExt);
 			}
 
-			// Copy / Move File?
+			// Copy File?
 			if (m_pDlg->m_bRename && !m_pDlg->m_bConversion)
 			{
 				// Copy File
-				if (Copy(sOrigSrcFileName, sDstFileNameSameExt))
+				if (Copy(sSrcFileName, sDstFileNameSameExt))
 				{
 					// Add File
 					if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 					{
-						AddToOutputFile(nFilesCount, sDstDirPath, sDstFileNameSameExt);
+						AddToOutputFile(nFilesCount, sTempDstDirPath, sDstFileNameSameExt);
 						m_pDlg->UpdateDstFileSize();
 					}
 
 					// Delete Input File
-					if (m_bDeleteInputFile								&&
-						(sSrcDirPath.CompareNoCase(sDstDirPath) == 0)	&&
-						(sOrigSrcFileName.CompareNoCase(sDstFileNameSameExt) != 0))
-						CFile::Remove(sOrigSrcFileName);
+					if (m_bDeleteInputFile &&
+						(sSrcDirPath.CompareNoCase(sOrigDstDirPath) == 0))
+						::DeleteToRecycleBin(sSrcFileName);
 				}
 
 				// Progress
@@ -280,16 +283,6 @@ int CBatchProcDlg::CProcessThread::Work()
 
 				continue;
 			}
-
-			// Temporary Source File Necessary?
-			if (sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			{
-				sSrcFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-													sOrigSrcFileName);
-				Copy(sOrigSrcFileName, sSrcFileName);
-			}
-			else
-				sSrcFileName = sOrigSrcFileName;
 
 			// Conversion
 			if (CUImagerApp::IsSupportedPictureFile(sSrcFileName))
@@ -321,7 +314,7 @@ int CBatchProcDlg::CProcessThread::Work()
 						// Add File
 						if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 						{
-							AddToOutputFile(nFilesCount, sDstDirPath, sDstFileNameSameExt);
+							AddToOutputFile(nFilesCount, sTempDstDirPath, sDstFileNameSameExt);
 							m_pDlg->UpdateDstFileSize();
 						}
 					}
@@ -345,7 +338,7 @@ int CBatchProcDlg::CProcessThread::Work()
 					// Add File
 					if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 					{
-						AddToOutputFile(nFilesCount, sDstDirPath, sDstFileName);
+						AddToOutputFile(nFilesCount, sTempDstDirPath, sDstFileName);
 						m_pDlg->UpdateDstFileSize();
 					}
 				}
@@ -358,18 +351,10 @@ int CBatchProcDlg::CProcessThread::Work()
 					// Add File
 					if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 					{
-						AddToOutputFile(nFilesCount, sDstDirPath, sDstFileNameSameExt);
+						AddToOutputFile(nFilesCount, sTempDstDirPath, sDstFileNameSameExt);
 						m_pDlg->UpdateDstFileSize();
 					}
 				}
-			}
-
-			// Remove Temporary Source File
-			if (sSrcFileName != _T("") &&
-				sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			{
-				::DeleteFile(sSrcFileName);
-				sSrcFileName = _T("");
 			}
 
 			// Progress
@@ -382,15 +367,18 @@ int CBatchProcDlg::CProcessThread::Work()
 			CloseOutputFile(false);
 			m_pDlg->UpdateDstFileSize();
 		}
+		// Move from temp destination to original destination directory
+		else if (!::MergeDirContent(sTempDstDirPath, sOrigDstDirPath))
+		{
+			::ShowLastError(TRUE);
+			throw (int)0;
+		}
 
 		// OK
 		return OnExit(TRUE);
 	}
 	catch (int)
 	{
-		if (sSrcFileName != _T("") &&
-			sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			::DeleteFile(sSrcFileName);
 		if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 		{
 			CloseOutputFile(true);
@@ -402,9 +390,6 @@ int CBatchProcDlg::CProcessThread::Work()
 	{
 		e->ReportZipError();
 		e->Delete();
-		if (sSrcFileName != _T("") &&
-			sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			::DeleteFile(sSrcFileName);
 		if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 		{
 			CloseOutputFile(true);
@@ -418,9 +403,6 @@ int CBatchProcDlg::CProcessThread::Work()
 		e->Delete();
 		if (sTempFileName != _T(""))
 			::DeleteFile(sTempFileName);
-		if (sSrcFileName != _T("") &&
-			sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			::DeleteFile(sSrcFileName);
 		if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 		{
 			CloseOutputFile(true);
@@ -433,9 +415,6 @@ int CBatchProcDlg::CProcessThread::Work()
 	{
 		e->ReportError(MB_ICONSTOP);
 		e->Delete();
-		if (sSrcFileName != _T("") &&
-			sOrigSrcFileName.CompareNoCase(sDstFileName) == 0)
-			::DeleteFile(sSrcFileName);
 		if (m_pDlg->m_nOutputSelection == OUTPUT_FILE)
 		{
 			CloseOutputFile(true);
@@ -541,7 +520,6 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 	if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".zip"))
 	{
 		((CUImagerApp*)::AfxGetApp())->m_Zip.Close(bException);
-		
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
 	{
@@ -1394,10 +1372,10 @@ void CBatchProcDlg::CProcessThread::AddToOutputOcr(	int nFilesCount,
 	}
 }
 
-void CBatchProcDlg::CProcessThread::Rename(	int& num,
-											const CString& sSrcFileName,
-											CString& sDstFileName,
-											CString& sDstFileNameSameExt)
+void CBatchProcDlg::CProcessThread::DoRename(	int& num,
+												const CString& sSrcFileName,
+												CString& sDstFileName,
+												CString& sDstFileNameSameExt)
 {
 	CString sRenamed = m_pDlg->m_sRename;
 
@@ -1882,8 +1860,7 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 	BOOL bOk = (BOOL)wparam;
 
 	// Delete Tmp Dir
-	if (m_nOutputSelection == OUTPUT_FILE)
-		::DeleteDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR);
+	::DeleteDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR);
 
 	// Reset Progress
 	m_ProcessThread.m_nPrevPercentDone = -5;
@@ -1906,6 +1883,8 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 	// Close Dlg?
 	if (m_bDoCloseDlg)
 	{
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			SaveSettings();
 		ListDeleteAll();
 		EndWaitCursor();
 		CDialog::OnCancel();
@@ -2656,13 +2635,12 @@ void CBatchProcDlg::OnOK()
 	}
 	else
 	{
-		CString sOutputFile;
-		CString sShrinkDestination;
+		CString sOutputDirectory;
 
 		if (!UpdateData(TRUE))
 			return;
 
-		// Dir?
+		// Input Dir?
 		if (m_nInputSelection == INPUT_DIR)
 		{
 			// Check & Store Vars
@@ -2673,7 +2651,7 @@ void CBatchProcDlg::OnOK()
 				return;
 			}
 		}
-		// File List
+		// Input File List
 		else
 		{
 			if (m_List.GetItemCount() <= 0)
@@ -2684,7 +2662,7 @@ void CBatchProcDlg::OnOK()
 			}
 		}
 
-		// Dir?
+		// Output Dir?
 		if (m_nOutputSelection == OUTPUT_DIR)
 		{
 			if (m_sDst == _T(""))
@@ -2693,10 +2671,9 @@ void CBatchProcDlg::OnOK()
 												MB_OK | MB_ICONSTOP);
 				return;
 			}
-			sShrinkDestination = m_sDst;
-			sOutputFile = _T("");
+			sOutputDirectory = m_sDst;
 		}
-		// File?
+		// Output File?
 		else
 		{
 			if (m_sOutputFileName == _T(""))
@@ -2705,8 +2682,7 @@ void CBatchProcDlg::OnOK()
 												MB_OK | MB_ICONSTOP);
 				return;
 			}
-			sOutputFile = m_sOutputFileName;
-			sShrinkDestination = _T("");
+			sOutputDirectory = _T("");
 		}
 
 		// Rename Pattern Check
@@ -2723,15 +2699,15 @@ void CBatchProcDlg::OnOK()
 			}
 		}
 
-		// Destination Directory
-		if (sShrinkDestination != _T(""))
+		// Output Directory
+		if (sOutputDirectory != _T(""))
 		{
 			// Trim
-			sShrinkDestination.TrimRight(_T('\\'));
+			sOutputDirectory.TrimRight(_T('\\'));
 			m_sSrc.TrimRight(_T('\\'));
 
 			// Check
-			if ((m_nInputSelection == INPUT_DIR) && (m_sSrc.CompareNoCase(sShrinkDestination) == 0))
+			if ((m_nInputSelection == INPUT_DIR) && (m_sSrc.CompareNoCase(sOutputDirectory) == 0))
 			{
 				// Conversion
 				if (m_bConversion)
@@ -2764,10 +2740,10 @@ void CBatchProcDlg::OnOK()
 			}
 
 			// If not existing
-			if (!::IsExistingDir(sShrinkDestination))
+			if (!::IsExistingDir(sOutputDirectory))
 			{
 				// Create Dir
-				if (!::CreateDir(sShrinkDestination))
+				if (!::CreateDir(sOutputDirectory))
 				{
 					::ShowLastError(TRUE);
 					return;
@@ -2779,24 +2755,22 @@ void CBatchProcDlg::OnOK()
 				}
 			}
 		}
+		
+		// Create & Empty Temp Dir
+		if (!::IsExistingDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+		{
+			if (!::CreateDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+			{
+				::ShowLastError(TRUE);
+				return;
+			}
+		}
 		else
 		{
-			// Create & Empty Temp Dir
-			if (!::IsExistingDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+			if (!::DeleteDirContent(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
 			{
-				if (!::CreateDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
-				{
-					::ShowLastError(TRUE);
-					return;
-				}
-			}
-			else
-			{
-				if (!::DeleteDirContent(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
-				{
-					::AfxMessageBox(ML_STRING(1225, "Error While Deleting The Temporary Folder."), MB_OK | MB_ICONSTOP);
-					return;
-				}
+				::AfxMessageBox(ML_STRING(1225, "Error While Deleting The Temporary Folder."), MB_OK | MB_ICONSTOP);
+				return;
 			}
 		}
 
@@ -2813,7 +2787,8 @@ void CBatchProcDlg::OnOK()
 		{
 			if (m_nOptimizationSelection == AUTO_OPT) // Auto
 			{
-				m_ProcessThread.m_szDstDirPath = sShrinkDestination != _T("") ? sShrinkDestination : ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 				m_ProcessThread.m_dwMaxSize = AUTO_SHRINK_MAX_SIZE;
 				m_ProcessThread.m_bMaxSizePercent = FALSE;
 				m_ProcessThread.m_bShrinkPictures = TRUE;
@@ -2846,7 +2821,8 @@ void CBatchProcDlg::OnOK()
 			}
 			else
 			{
-				m_ProcessThread.m_szDstDirPath = sShrinkDestination != _T("") ? sShrinkDestination : ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 				m_ProcessThread.m_dwMaxSize = (m_ShrinkTab.m_nPixelsPercentSel == 0) ? m_ShrinkTab.m_nShrinkingPixels : m_ShrinkTab.m_nShrinkingPercent;
 				m_ProcessThread.m_bMaxSizePercent = (m_ShrinkTab.m_nPixelsPercentSel == 1);
 				m_ProcessThread.m_bShrinkPictures = m_ShrinkTab.m_bShrinkingPictures;
@@ -2900,7 +2876,8 @@ void CBatchProcDlg::OnOK()
 		}
 		else
 		{
-			m_ProcessThread.m_szDstDirPath = sShrinkDestination != _T("") ? sShrinkDestination : ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+			m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+			m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 			m_ProcessThread.m_dwMaxSize = 0;
 			m_ProcessThread.m_bMaxSizePercent = FALSE;
 			m_ProcessThread.m_bShrinkPictures = FALSE;
@@ -2949,8 +2926,6 @@ void CBatchProcDlg::OnCancel()
 		BeginWaitCursor();
 		m_ChangeNotificationThread.Kill();
 		m_bEnableNextLoadDibs = FALSE;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			SaveSettings();
 		if (!m_bThreadExited)
 		{
 			m_ProcessThread.Kill_NoBlocking();
@@ -2959,6 +2934,8 @@ void CBatchProcDlg::OnCancel()
 		}
 		else
 		{
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+				SaveSettings();
 			ListDeleteAll();
 			EndWaitCursor();
 			CDialog::OnCancel();

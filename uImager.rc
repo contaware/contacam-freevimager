@@ -4297,7 +4297,7 @@ IDD_CREDITS DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Relatives && Friends",IDC_STATIC2339,7,3,222,39
     LTEXT           "A big thanks to Valeria that always supports me in what I like to do. Thanks to all my friends for testing the software. Big hug to my Mom which is also using this program. Dedicated to Ale!",
@@ -4368,7 +4368,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Batch Conversion, Rename and Slideshow"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_RADIO_INPUT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,11,16,10,10
@@ -4413,7 +4413,7 @@ BEGIN
                     WS_TABSTOP,231,126,38,10
     CONTROL         "Auto Optimize (optimizes file extensions and shrinks sizes)",
                     IDC_RADIO_OPTIMIZE_AUTO,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,231,139,195,10
+                    WS_GROUP,231,139,198,10
     CONTROL         "Advanced Settings:",IDC_RADIO_OPTIMIZE_ADVANCED,"Button",
                     BS_AUTORADIOBUTTON,231,152,78,10
     CONTROL         "Tab1",IDC_TAB_ADV_SETTINGS,"SysTabControl32",0x0,243,
@@ -6313,7 +6313,7 @@ IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -6366,7 +6366,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Assistant"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -6425,7 +6425,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Registration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
     PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16

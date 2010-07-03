@@ -68,7 +68,8 @@ public:
 
 			int m_nPrevPercentDone;
 
-			CString m_szDstDirPath;
+			CString m_szTempDstDirPath;
+			CString m_szOrigDstDirPath;
 			DWORD m_dwMaxSize;
 			BOOL m_bMaxSizePercent;
 			BOOL m_bShrinkPictures;
@@ -128,10 +129,10 @@ public:
 			void AddToOutputOcr(	int nFilesCount,
 									CString sInFileName,
 									CString sOutFileName);
-			void Rename(int& num,
-						const CString& sSrcFileName,
-						CString& sDstFileName,
-						CString& sDstFileNameSameExt);
+			void DoRename(	int& num,
+							const CString& sSrcFileName,
+							CString& sDstFileName,
+							CString& sDstFileNameSameExt);
 			BOOL Copy(	const CString& sSrcFileName,
 						const CString& sDstFileNameSameExt);
 			void JpegProcessing(BOOL bJpegHasBeenSaved,

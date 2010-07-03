@@ -2,6 +2,9 @@ VERSION HISTORY
 
 2.0.7 (September 25th 2010)
 
+- Fixed batch processing when input and output files
+  have overlapping names in same directory
+  -> reorder in same directory now works as expected!
 - Translation fixes
 - libpng updated to 1.2.43
 - Help command for paste into coordinates file
