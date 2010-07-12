@@ -79,26 +79,26 @@ void DisplayCpuCount(void)
 	int MaxLPPerCore;
 	if (CpuIDSupported() < 4) // CPUID does not report leaf 4 information
 	{
-		s +=	_T("User Warning:\nCPUID Leaf 4 is not supported or disabled. Please check BIOS and correct\n")
+		s +=	_T("User Warning:\nCPUID Leaf 4 is not supported or disabled. Please check BIOS and correct ")
 				_T("system configuration error if leaf 4 is disabled.\n\n");
 
 	}
 	StatusFlag = CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
 	if (USER_CONFIG_ISSUE == StatusFlag)
 	{
-		s +=	_T("User Configuration Error: Not all logical processors in the system are enabled")
-				_T("while running this process. Please rerun this application after make corrections.");
+		s +=	_T("User Configuration Error:\nNot all logical processors in the system are enabled ")
+				_T("while running this process. Please rerun this application after making the corrections.");
 		::AfxMessageBox(s, MB_ICONSTOP);
 		return;
 	}
 
-	s +=	_T("This application displays information on three forms of hardware multithreading\n");
+	s +=	_T("This application displays information on three forms of hardware multithreading ");
 	s +=	_T("capability and their availability to apps. The three forms of capabilities are:\n");
 	s +=	_T("multi-processor (MP), Multi-core (core), and HyperThreading Technology (HT).\n");
 	s +=	_T("\nHardware capability results represents the maximum number provided in hardware.\n");	
-	s +=	_T("Note, Bios/OS or experienced user can make configuration changes resulting in \n");
+	s +=	_T("Note, Bios/OS or experienced user can make configuration changes resulting in ");
 	s +=	_T("less-than-full HW capabilities are available to applications.\n");
-	s +=	_T("For best result, the operator is responsible to configure the BIOS/OS such that\n");
+	s +=	_T("For best result, the operator is responsible to configure the BIOS/OS such that ");
 	s +=	_T("full hardware multi-threading capabilities are enabled.\n\n");
 
 	s +=	_T("Capabilities:\n");
@@ -155,13 +155,13 @@ void DisplayCpuCount(void)
 	}
 
 	s += _T("\nHardware capability and its availability to applications:\n");
-	t.Format(_T("\tSystem wide availability: %d physical processors, %d cores, %d logical processors\n"),
+	t.Format(_T("\t- System wide availability:\n\t  %d physical processors, %d cores, %d logical processors\n"),
 			PhysicalNum, TotAvailCore, TotAvailLogical);
 	s += t;
 	MaxLPPerCore = MaxLogicalProcPerPhysicalProc() / MaxCorePerPhysicalProc() ;
-	t.Format(_T("\tMulti-core capabililty : %d cores per package \n"), MaxCorePerPhysicalProc());
+	t.Format(_T("\t- Multi-core capabililty:\n\t  %d cores per package \n"), MaxCorePerPhysicalProc());
 	s += t;
-	t.Format(_T("\tHT capability: %d logical processors per core \n"), MaxLPPerCore);
+	t.Format(_T("\t- HT capability:\n\t  %d logical processors per core \n"), MaxLPPerCore);
 	s += t;
 	ASSERT(PhysicalNum * MaxCorePerPhysicalProc() >= TotAvailCore);
 	ASSERT(PhysicalNum * MaxLogicalProcPerPhysicalProc() >= TotAvailLogical);

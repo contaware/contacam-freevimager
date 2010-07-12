@@ -144,6 +144,7 @@ class CPictureDoc;
 class CVideoAviDoc;
 class CUImagerDoc;
 class CProgressDlg;
+class CDiscRecorder;
 
 // Interface ICDBurn of IMAPI
 #ifndef __ICDBurn_FWD_DEFINED__
@@ -375,7 +376,20 @@ public:
 	BOOL BurnDirContent(CString sDir);
 
 	// IMAPI2
-	BOOL HasRecordableDrive2();
+	// Note on annoying Bug:
+	// Leaving the previously modal CBatchProcDlg open for more than 15-20
+	// minutes and then closing it generated a strange WM_QUIT which exited
+	// the main message loop. CBatchProcDlg when opened used to call the
+	// IDiscMaster2's get_IsSupportedEnvironment() which internally initializes
+	// all devices with IDiscRecorder2. I simulated the get_IsSupportedEnvironment()
+	// behavior and tracked down the problem to the CoCreateInstance() of
+	// the IDiscRecorder2 interface. I could not figure out what the problem
+	// was, but making the CBatchProcDlg and the CIMAPI2Dlg dialogs modeless
+	// and initializing the IDiscRecorder2 interfaces only once in the main
+	// UI thread solved the problem -> call FreeDiscRecorders2() only once
+	// in ExitInstance()!
+	BOOL InitDiscRecorders2();
+	void FreeDiscRecorders2();
 
 	// Is Wait Cursor Showing?
 	// Used by the OnSetCursor() functions of the Views
@@ -787,6 +801,10 @@ public:
 
 	// Start MDI Child Maximized Flag
 	BOOL m_bStartMaximized;
+
+	// IMAPI2 disc recorders array
+	typedef CArray<CDiscRecorder*,CDiscRecorder*> DISCRECORDERARRAY;
+	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
 	// Use integrated Fullscreen Browser

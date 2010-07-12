@@ -54,14 +54,7 @@ bool CDiscMaster::Initialize()
 	//
 	// Verify that we have some device that uses this interface
 	//
-	VARIANT_BOOL isSupported = VARIANT_FALSE;
-	m_hResult = m_discMaster->get_IsSupportedEnvironment(&isSupported);
-	if (!SUCCEEDED(m_hResult))
-	{
-		m_errorMessage = _T("Unsupported Environment!");
-		return false;
-	}
-	if (isSupported == VARIANT_FALSE)
+	if (GetTotalDevices() <= 0)
 	{
 		m_errorMessage = ML_STRING(1813, "There were no writable devices detected!");
 		return false;

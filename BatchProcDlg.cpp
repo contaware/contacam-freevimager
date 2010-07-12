@@ -1964,11 +1964,6 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	// Output Dir Files Count
 	m_nOutDirFilesCount = 0;
 
-	// Slideshow Burn Vars
-	m_bCanBurnWithNero = FALSE;
-	m_bCanBurnWithIMAPI = FALSE;
-	m_bCanBurnWithIMAPI2 = FALSE;
-
 	// Avi Compression Params
 	m_dwVideoCompressorFourCC = FCC('MJPG');
 	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
@@ -2107,11 +2102,6 @@ BOOL CBatchProcDlg::OnInitDialog()
 	m_InputDirLabel.SetVisitedColor(RGB(0, 0, 255));
 	m_OutputDirLabel.SetVisitedColor(RGB(0, 0, 255));
 	m_OutputFileNameLabel.SetVisitedColor(RGB(0, 0, 255));
-
-	// Burn Support?
-	m_bCanBurnWithNero = CanBurnWithNero();
-	m_bCanBurnWithIMAPI = ((CUImagerApp*)::AfxGetApp())->HasRecordableDrive();
-	m_bCanBurnWithIMAPI2 = ((CUImagerApp*)::AfxGetApp())->HasRecordableDrive2();
 
 	// Set Dlg Wnd for Process Thread
 	m_ProcessThread.SetDlg(this);
@@ -5986,22 +5976,9 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 						MB_ICONINFORMATION);
 		return;
 	}
-
-	// Check Burn Software
-	if (!m_bCanBurnWithNero && !m_bCanBurnWithIMAPI && !m_bCanBurnWithIMAPI2)
-	{
-		CString sText;
-		sText.Format(ML_STRING(1380, "To automatically Burn the Slideshow you need at least Windows XP\n") +
-					ML_STRING(1381, "or the software Nero Burning ROM from Ahead.\n") +
-					ML_STRING(1382, "To proceed anyway open your preferred CD / DVD maker Tool\n") +
-					ML_STRING(1383, "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."),
-					m_sDst);
-		::AfxMessageBox(sText, MB_ICONINFORMATION);
-		return;
-	}
 	
-	// Burn
-	if (m_bCanBurnWithIMAPI2)
+	// Burn with IMAPI2
+	if (((CUImagerApp*)::AfxGetApp())->InitDiscRecorders2())
 	{
 		if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
 		{
@@ -6015,7 +5992,8 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
 		}
 	}
-	else if (m_bCanBurnWithNero)
+	// Burn with Nero
+	else if (CanBurnWithNero())
 	{
 		// Get Module Name
 		TCHAR szDrive[_MAX_DRIVE];
@@ -6034,15 +6012,18 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 						NULL,
 						SW_SHOWNORMAL);
 	}
-	else if (m_bCanBurnWithIMAPI)
+	// Can burn with IMAPI, but first suggest to update to IMAPI2
+	else if (((CUImagerApp*)::AfxGetApp())->HasRecordableDrive())
 	{
+		// IMAPI2 download info
 		CIMAPI2DownloadDlg dlg(::AfxGetMainFrame());
 		dlg.m_sTextRow1 = ML_STRING(1716, "A new version of IMAPI is required for best burning performance!");
 		dlg.m_sTextRow2 = ML_STRING(1717, "The latest version for your os may be downloaded from:");
 		dlg.m_sTextLink = _T("http://www.microsoft.com/downloads/details.aspx?FamilyID=63ab51ea-99c9-45c0-980a-c556746fcf05");
 		dlg.DoModal();
-		m_bCanBurnWithIMAPI2 = ((CUImagerApp*)::AfxGetApp())->HasRecordableDrive2();
-		if (m_bCanBurnWithIMAPI2)
+
+		// Burn with IMAPI2
+		if (((CUImagerApp*)::AfxGetApp())->InitDiscRecorders2())
 		{
 			if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
 			{
@@ -6056,8 +6037,19 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 				::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
 			}
 		}
+		// Burn with IMAPI
 		else
 			((CUImagerApp*)::AfxGetApp())->BurnDirContent(m_sDst);
+	}
+	else
+	{
+		CString sText;
+		sText.Format(ML_STRING(1380, "To automatically Burn the Slideshow you need at least Windows XP\n") +
+					ML_STRING(1381, "or the software Nero Burning ROM from Ahead.\n") +
+					ML_STRING(1382, "To proceed anyway open your preferred CD / DVD maker Tool\n") +
+					ML_STRING(1383, "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."),
+					m_sDst);
+		::AfxMessageBox(sText, MB_ICONINFORMATION);
 	}
 }
 

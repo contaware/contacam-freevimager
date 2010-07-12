@@ -79,7 +79,6 @@ protected:
 	afx_msg void OnAbort();
 	afx_msg void OnBurn();
 	afx_msg void OnSelchangeComboDrive();
-	afx_msg void OnDestroy();
 	afx_msg void OnClose();
 	//}}AFX_MSG
 	afx_msg LRESULT OnImapiUpdate(WPARAM, LPARAM);

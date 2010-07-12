@@ -41,6 +41,7 @@
 #include <atlbase.h>
 #include "IniFile.h"
 #include "DiscMaster.h"
+#include "DiscRecorder.h"
 #include "ProgressDlg.h"
 #ifdef VIDEODEVICEDOC
 #include "RegistrationDlg.h"
@@ -2723,10 +2724,46 @@ CString CUImagerApp::GetRecorderDriveLetter(ICDBurn* pICDBurn/*=NULL*/)
 		return _T("");
 }
 
-BOOL CUImagerApp::HasRecordableDrive2()
+BOOL CUImagerApp::InitDiscRecorders2()
 {
-	CDiscMaster DiscMaster;
-	return (BOOL)DiscMaster.Initialize();
+	// Altready init?
+	if (m_DiscRecorders2.GetSize() > 0)
+		return TRUE;
+
+	// Init Disc Master
+	CDiscMaster discMaster;
+    if (!discMaster.Initialize())
+        return FALSE;
+
+    // Add Devices to array
+    long totalDevices = discMaster.GetTotalDevices();
+    for (long deviceIndex = 0 ; deviceIndex < totalDevices ; deviceIndex++)
+    {
+        CString recorderUniqueID = discMaster.GetDeviceUniqueID(deviceIndex);
+        if (recorderUniqueID.IsEmpty())
+            continue;
+        CDiscRecorder* pDiscRecorder = new CDiscRecorder();
+        if (pDiscRecorder == NULL)
+            return FALSE;
+        if (!pDiscRecorder->Initialize(recorderUniqueID))
+        {
+            delete pDiscRecorder;
+            continue;
+        }
+		m_DiscRecorders2.Add(pDiscRecorder);
+    }
+
+	return (m_DiscRecorders2.GetSize() > 0);
+}
+
+void CUImagerApp::FreeDiscRecorders2()
+{
+	for (int i = 0 ; i < m_DiscRecorders2.GetSize() ; i++)
+	{
+		if (m_DiscRecorders2[i])
+			delete m_DiscRecorders2[i];
+	}
+	m_DiscRecorders2.RemoveAll();
 }
 
 __forceinline CString CUImagerApp::GetBurnFolderPath()
@@ -2809,6 +2846,9 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 
 int CUImagerApp::ExitInstance() 
 {	
+	// Clean-up recorders array
+	FreeDiscRecorders2();
+
 #ifdef VIDEODEVICEDOC
 	// Clean-Up Scheduler
 	POSITION pos = m_Scheduler.GetHeadPosition();

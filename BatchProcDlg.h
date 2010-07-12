@@ -438,11 +438,6 @@ protected:
 	// The Sort Type
 	int m_nSortType;
 
-	// Slideshow Burn Vars
-	BOOL m_bCanBurnWithNero;
-	BOOL m_bCanBurnWithIMAPI;
-	BOOL m_bCanBurnWithIMAPI2;
-
 	// Avi Compression Params
 	DWORD m_dwVideoCompressorFourCC;
 	int m_nVideoCompressorDataRate;

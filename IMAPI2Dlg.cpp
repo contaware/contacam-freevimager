@@ -48,14 +48,7 @@ int CIMAPI2Dlg::CIMAPI2DlgThread::Work()
     }
 
 	// Get original disc recorder
-    CDiscRecorder* pOrigDiscRecorder = (CDiscRecorder*)m_pDlg->m_cbDrive.GetItemDataPtr(selectedIndex);
-    if (pOrigDiscRecorder == NULL)
-    {
-        // This should never happen
-        m_pDlg->SendMessage(WM_BURN_FINISHED, 0, (LPARAM)_T("Error: No Data for selected device"));
-        ::CoUninitialize();
-		return 0;
-    }
+    CDiscRecorder* pOrigDiscRecorder = ((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2[selectedIndex];
 
     // Did user cancel?
     if (DoExit())
@@ -334,7 +327,6 @@ BEGIN_MESSAGE_MAP(CIMAPI2Dlg, CDialog)
 	ON_BN_CLICKED(IDC_ABORT, OnAbort)
 	ON_BN_CLICKED(IDC_BURN, OnBurn)
 	ON_CBN_SELCHANGE(IDC_COMBO_DRIVE, OnSelchangeComboDrive)
-	ON_WM_DESTROY()
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_IMAPI_UPDATE, OnImapiUpdate)
@@ -355,79 +347,31 @@ BOOL CIMAPI2Dlg::OnInitDialog()
 
 void CIMAPI2Dlg::AddRecordersToComboBox()
 {
-    // Cleanup old data on combobox
-    int itemCount = m_cbDrive.GetCount();
-    for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
-    {
-        delete (CDiscRecorder*)m_cbDrive.GetItemDataPtr(itemIndex);
-    }
+    // Cleanup ComboBox
     m_cbDrive.ResetContent();
 
-	// Init Disc Master
-	CDiscMaster discMaster;
-    if (!discMaster.Initialize())
-    {
-        AfxMessageBox(discMaster.GetErrorMessage(), MB_OK|MB_ICONERROR);
-        EndDialog(IDOK);
-        return;
-    }
-
     // Add Devices to ComboBox
-    long totalDevices = discMaster.GetTotalDevices();
-    if (totalDevices == 0 && FAILED(discMaster.GetHresult()))
-        AfxMessageBox(discMaster.GetErrorMessage(), MB_OK | MB_ICONERROR);
-    for (long deviceIndex = 0 ; deviceIndex < totalDevices ; deviceIndex++)
+    for (int i = 0 ; i < ((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2.GetSize() ; i++)
     {
-		// Get recorder ID
-        CString recorderUniqueID = discMaster.GetDeviceUniqueID(deviceIndex);
-        if (recorderUniqueID.IsEmpty())
-        {
-            CString errorMessage(discMaster.GetErrorMessage());
-            if (!errorMessage.IsEmpty())
-            {
-                AfxMessageBox(errorMessage, MB_OK|MB_ICONERROR);
-                continue;
-            }
-        }
-
-        // Create an IDiscRecorder2
-        CDiscRecorder* pDiscRecorder = new CDiscRecorder();
-        ASSERT(pDiscRecorder != NULL);
-        if (pDiscRecorder == NULL)
-            continue;
-        if (!pDiscRecorder->Initialize(recorderUniqueID))
-        {
-            if (totalDevices == 1 && FAILED(pDiscRecorder->GetHresult()))
-            {
-                CString errorMessage;
-                errorMessage.Format(_T("Failed to initialize recorder - Error:0x%08x\n\nRecorder Unique ID:%s"),
-                    pDiscRecorder->GetHresult(), (LPCTSTR)recorderUniqueID);
-                AfxMessageBox(errorMessage, MB_OK|MB_ICONERROR);
-            }
-            delete pDiscRecorder;
-            continue;
-        }
-
         // Get the volume path(s), usually just 1
         CString volumeList;
-        ULONG totalVolumePaths = pDiscRecorder->GetTotalVolumePaths();
+        ULONG totalVolumePaths = ((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2[i]->GetTotalVolumePaths();
         for (ULONG volIndex = 0; volIndex < totalVolumePaths; volIndex++)
         {
             if (volIndex)
                 volumeList += _T(",");
-            volumeList += pDiscRecorder->GetVolumePath(volIndex);
+            volumeList += ((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2[i]->GetVolumePath(volIndex);
         }
 
-        // Add Drive to combo and IDiscRecorder as data
-        CString productId = pDiscRecorder->GetProductID();
+        // Add String to ComboBox
+        CString productId = ((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2[i]->GetProductID();
         CString strName;
         strName.Format(_T("%s [%s]"), (LPCTSTR)volumeList, (LPCTSTR)productId);
-        int comboBoxIndex = m_cbDrive.AddString(strName);
-        m_cbDrive.SetItemDataPtr(comboBoxIndex, pDiscRecorder);
+        m_cbDrive.AddString(strName);
     }
 
-	// Update Drive Combo Box
-    if (totalDevices > 0)
+	// Update ComboBox
+    if (((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2.GetSize() > 0)
     {
         m_cbDrive.SetCurSel(0);
         OnSelchangeComboDrive();
@@ -493,27 +437,22 @@ void CIMAPI2Dlg::OnSelchangeComboDrive()
     if (selectedIndex < 0)
         return;
 
-	// Update Media Type
-    CDiscRecorder* discRecorder = (CDiscRecorder*)m_cbDrive.GetItemDataPtr(selectedIndex);
-    if (discRecorder != NULL)
-    {
-		// Init Disc Format Data
-        CDiscFormatData discFormatData;
-        if  (!discFormatData.Initialize(discRecorder, CLIENT_NAME))
-            return;
+	// Init Disc Format Data
+    CDiscFormatData discFormatData;
+    if  (!discFormatData.Initialize(((CUImagerApp*)::AfxGetApp())->m_DiscRecorders2[selectedIndex], CLIENT_NAME))
+        return;
 
-        // Display Supported Media Types
-        CString supportedMediaTypes;
-        ULONG totalMediaTypes = discFormatData.GetTotalSupportedMediaTypes();
-        for (ULONG volIndex = 0; volIndex < totalMediaTypes; volIndex++)
-        {
-            int mediaType = discFormatData.GetSupportedMediaType(volIndex);
-            if (volIndex > 0)
-                supportedMediaTypes += _T(", ");
-            supportedMediaTypes += GetMediaTypeString(mediaType);
-        }
-        TRACE(supportedMediaTypes);
+    // Display Supported Media Types
+    CString supportedMediaTypes;
+    ULONG totalMediaTypes = discFormatData.GetTotalSupportedMediaTypes();
+    for (ULONG volIndex = 0; volIndex < totalMediaTypes; volIndex++)
+    {
+        int mediaType = discFormatData.GetSupportedMediaType(volIndex);
+        if (volIndex > 0)
+            supportedMediaTypes += _T(", ");
+        supportedMediaTypes += GetMediaTypeString(mediaType);
     }
+    TRACE(supportedMediaTypes);
 }
 
 CString	CIMAPI2Dlg::GetMediaTypeString(int mediaType)
@@ -775,14 +714,6 @@ void CIMAPI2Dlg::UpdateProgress(BOOL bBurn, LONG done, LONG total)
 			text = ML_STRING(1793, "Erase...");
 	}
     m_ProgressText.SetWindowText(text);
-}
-
-void CIMAPI2Dlg::OnDestroy() 
-{
-	int itemCount = m_cbDrive.GetCount();
-    for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
-        delete (CDiscRecorder*)m_cbDrive.GetItemDataPtr(itemIndex);
-    CDialog::OnDestroy();
 }
 
 BOOL CIMAPI2Dlg::OnCommand(WPARAM wParam, LPARAM lParam) 
