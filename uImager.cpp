@@ -90,6 +90,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
 	ON_COMMAND(ID_APP_REGISTRATION, OnAppRegistration)
+	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -1870,7 +1871,22 @@ void CUImagerApp::OnFileDxVideoDevice(UINT nID)
 
 void CUImagerApp::OnFileShrinkDirDocs() 
 {
-	ShrinkDirDocsInit();
+	if (!::AfxGetMainFrame()->m_pBatchProcDlg)
+	{
+		::AfxGetMainFrame()->m_pBatchProcDlg = new CBatchProcDlg(::AfxGetMainFrame());
+		::AfxGetMainFrame()->m_pBatchProcDlg->ShowWindow(SW_RESTORE);
+	}
+	else
+	{
+		::MessageBeep(0xFFFFFFFF);
+		::AfxGetMainFrame()->m_pBatchProcDlg->SetActiveWindow();
+		::AfxGetMainFrame()->m_pBatchProcDlg->SetFocus();
+	}
+}
+
+void CUImagerApp::OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(::AfxGetMainFrame()->m_pBatchProcDlg ? 1 : 0);
 }
 
 void CUImagerApp::OnFileSendmailCurrentDoc() 
@@ -1929,12 +1945,6 @@ void CUImagerApp::OnFileSendmailOpenDocs()
 void CUImagerApp::OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(TRUE);
-}
-
-void CUImagerApp::ShrinkDirDocsInit()
-{	
-	CBatchProcDlg dlg(::AfxGetMainFrame());
-	dlg.DoModal();
 }
 
 BOOL CUImagerApp::PaintDocTitles()

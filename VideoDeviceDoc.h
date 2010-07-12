@@ -1280,20 +1280,22 @@ public:
 	//
 
 	// Detection lists
-	__forceinline void OneFrameList();							// ClearMovementDetectionsList() + Create a New Frame List (all in one critical section) 
-	__forceinline void ClearMovementDetectionsList();			// Free and remove all lists
-	__forceinline void RemoveOldestMovementDetectionList();		// Free and remove oldest list
-	__forceinline BOOL SaveFrameList();							// Add new empty list + Start thread which saves the oldest list(s)
-	__forceinline int  GetTotalMovementDetectionFrames();		// Get the total frames over all lists
+	__forceinline void OneFrameList();								// ClearMovementDetectionsList() + Create a New Frame List (all in one critical section) 
+	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
+	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
+	__forceinline BOOL SaveFrameList();								// Add new empty list + Start thread which saves the oldest list(s)
+	__forceinline int  GetTotalMovementDetectionFrames();			// Get the total frames over all lists
 
 	// Detection list handling
-	__forceinline void ClearFrameList(CDib::LIST* pFrameList);	// Free all frames in list
-	__forceinline void ClearNewestFrameList();					// Free all frames in newest list
-	__forceinline void ShrinkNewestFrameListTo(int nMinSize);	// Free oldest frames and leave the newest nMinSize from newest frame list
-	__forceinline void ShrinkNewestFrameListBy(int nSize);		// Free oldest nSize frames from newest frame list
-	__forceinline int  GetNewestMovementDetectionsListCount();	// Get the newest list's count
-	__forceinline void AddNewFrameToNewestList(CDib* pDib);		// Add new frame to newest list
-	__forceinline void RemoveOldestFrameFromNewestList();		// Free and remove oldest frame from newest list
+	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
+	__forceinline void ClearNewestFrameList();						// Free all frames in newest list
+	__forceinline void ShrinkNewestFrameListTo(int nMinSize);		// Free oldest frames and leave the newest nMinSize from newest frame list
+	__forceinline void ShrinkNewestFrameListBy(	int nSize,			// Free oldest nSize frames from newest frame list
+												DWORD& dwFirstUpTime,
+												DWORD& dwLastUpTime);
+	__forceinline int  GetNewestMovementDetectionsListCount();		// Get the newest list's count
+	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
+	__forceinline void RemoveOldestFrameFromNewestList();			// Free and remove oldest frame from newest list
 
 	// Main Decode & Process Functions
 	BOOL DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
@@ -1447,6 +1449,11 @@ protected:
 																			// Dst bits are Allocate by the function
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec = NULL);
 	void CheckRecDir();
+	BOOL ThumbMessage(	const CString& sMessage1,
+						const CString& sMessage2,
+						const CString& sMessage3,
+						DWORD dwFirstUpTime,
+						DWORD dwLastUpTime);
 	__forceinline void MovementDetectorPreview(CDib* pDib);
 	__forceinline int SummRectArea(	CDib* pDib,
 									BOOL bPlanar,

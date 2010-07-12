@@ -462,6 +462,7 @@ protected:
 	//{{AFX_VIRTUAL(CBatchProcDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -502,6 +503,7 @@ protected:
 	afx_msg void OnChangeEditSrcdir();
 	afx_msg void OnCheckMusicPreview();
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	afx_msg void OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg LONG OnExitHandler(WPARAM wparam, LPARAM lparam);

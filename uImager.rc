@@ -9074,6 +9074,9 @@ BEGIN
     IDS_STRING1814          "No Media Inserted"
     IDS_STRING1815          "Burn failed!"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"
+    IDS_STRING1817          "Dropping det frames:"
+    IDS_STRING1818          "set lower framerate"
+    IDS_STRING1819          "or resolution!"
 END
 
 #endif    // English (U.S.) resources

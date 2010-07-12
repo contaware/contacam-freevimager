@@ -415,9 +415,6 @@ public:
 	// is used as attachment.
 	BOOL SendMail(LPCTSTR szAttachment);
 
-	// Shrink Document(s)
-	void ShrinkDirDocsInit();
-
 	// Send Document(s) by e-mail
 	void SendCurrentDocAsMailInit();
 	void SendOpenDocsAsMailInit();
@@ -883,6 +880,7 @@ public:
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnToolsViewLogfile();
 	afx_msg void OnAppRegistration();
+	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC

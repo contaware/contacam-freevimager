@@ -367,8 +367,9 @@ int CBatchProcDlg::CProcessThread::Work()
 			CloseOutputFile(false);
 			m_pDlg->UpdateDstFileSize();
 		}
-		// Move from temp destination to original destination directory
-		else if (!::MergeDirContent(sTempDstDirPath, sOrigDstDirPath))
+		// Move from temp destination to original destination directory:
+		// overwrite if target file exists and fail on copy error
+		else if (!::MergeDirContent(sTempDstDirPath, sOrigDstDirPath, TRUE, FALSE))
 		{
 			::ShowLastError(TRUE);
 			throw (int)0;
@@ -1860,7 +1861,8 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 	BOOL bOk = (BOOL)wparam;
 
 	// Delete Tmp Dir
-	::DeleteDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR);
+	if (bOk)
+		::DeleteDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR);
 
 	// Reset Progress
 	m_ProcessThread.m_nPrevPercentDone = -5;
@@ -1887,7 +1889,7 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 			SaveSettings();
 		ListDeleteAll();
 		EndWaitCursor();
-		CDialog::OnCancel();
+		DestroyWindow();
 	}
 
 	return 0;
@@ -1989,6 +1991,9 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	// Load Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		LoadSettings();
+
+	// Create
+	CDialog::Create(CBatchProcDlg::IDD, pParent);
 }
 
 
@@ -2067,6 +2072,7 @@ BEGIN_MESSAGE_MAP(CBatchProcDlg, CDialog)
 	ON_EN_CHANGE(IDC_EDIT_SRCDIR, OnChangeEditSrcdir)
 	ON_BN_CLICKED(IDC_CHECK_MUSIC_PREVIEW, OnCheckMusicPreview)
 	ON_WM_SETCURSOR()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 	// Change : ON_NOTIFY(HDN_ITEMCLICK, IDC_LIST_INPUT, OnItemclickListInput)
 	// To:
@@ -2359,7 +2365,7 @@ void CBatchProcDlg::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec);
 		pApp->WriteProfileInt(sSection, _T("ListFilesCount"), m_List.GetItemCount());
 		pApp->WriteProfileInt(sSection, _T("MusicPreview"), m_bMusicPreview);
-		pApp->WriteProfileInt(sSection, _T("InitTab"), m_TabAdvSettings.GetSSLActivePage());
+		pApp->WriteProfileInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()));
 		pApp->WriteProfileInt(sSection, _T("OcrLangId"), (int)m_lOcrLangId);
 		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 		{
@@ -2424,7 +2430,7 @@ void CBatchProcDlg::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("ListFilesCount"), m_List.GetItemCount(), sTempFileName);
 		::WriteProfileIniInt(sSection, _T("MusicPreview"), m_bMusicPreview, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("InitTab"), m_TabAdvSettings.GetSSLActivePage(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()), sTempFileName);
 		::WriteProfileIniInt(sSection, _T("OcrLangId"), (int)m_lOcrLangId, sTempFileName);
 		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 		{
@@ -2916,30 +2922,6 @@ void CBatchProcDlg::OnOK()
 		// Disable All Controls Except Process Button!
 		if (!m_bThreadExited)
 			EnableAllControls(FALSE, FALSE);
-	}
-}
-
-void CBatchProcDlg::OnCancel() 
-{
-	if (UpdateData(TRUE))
-	{
-		BeginWaitCursor();
-		m_ChangeNotificationThread.Kill();
-		m_bEnableNextLoadDibs = FALSE;
-		if (!m_bThreadExited)
-		{
-			m_ProcessThread.Kill_NoBlocking();
-			EnableAllControls(FALSE, TRUE);
-			m_bDoCloseDlg = TRUE;
-		}
-		else
-		{
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				SaveSettings();
-			ListDeleteAll();
-			EndWaitCursor();
-			CDialog::OnCancel();
-		}
 	}
 }
 
@@ -6021,8 +6003,17 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 	// Burn
 	if (m_bCanBurnWithIMAPI2)
 	{
-		CIMAPI2Dlg Dlg(m_sDst);
-		Dlg.DoModal();
+		if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
+		{
+			::AfxGetMainFrame()->m_pIMAPI2Dlg = new CIMAPI2Dlg(::AfxGetMainFrame(), m_sDst);
+			::AfxGetMainFrame()->m_pIMAPI2Dlg->ShowWindow(SW_RESTORE);
+		}
+		else
+		{
+			::MessageBeep(0xFFFFFFFF);
+			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetActiveWindow();
+			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
+		}
 	}
 	else if (m_bCanBurnWithNero)
 	{
@@ -6053,8 +6044,17 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 		m_bCanBurnWithIMAPI2 = ((CUImagerApp*)::AfxGetApp())->HasRecordableDrive2();
 		if (m_bCanBurnWithIMAPI2)
 		{
-			CIMAPI2Dlg Dlg(m_sDst);
-			Dlg.DoModal();
+			if (!::AfxGetMainFrame()->m_pIMAPI2Dlg)
+			{
+				::AfxGetMainFrame()->m_pIMAPI2Dlg = new CIMAPI2Dlg(::AfxGetMainFrame(), m_sDst);
+				::AfxGetMainFrame()->m_pIMAPI2Dlg->ShowWindow(SW_RESTORE);
+			}
+			else
+			{
+				::MessageBeep(0xFFFFFFFF);
+				::AfxGetMainFrame()->m_pIMAPI2Dlg->SetActiveWindow();
+				::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
+			}
 		}
 		else
 			((CUImagerApp*)::AfxGetApp())->BurnDirContent(m_sDst);
@@ -6186,4 +6186,40 @@ BOOL CBatchProcDlg::CanBurnWithNero()
 	}
 	else
 		return FALSE;
+}
+
+void CBatchProcDlg::OnCancel() 
+{
+	OnClose();
+}
+
+void CBatchProcDlg::OnClose() 
+{
+	if (UpdateData(TRUE))
+	{
+		BeginWaitCursor();
+		m_ChangeNotificationThread.Kill();
+		m_bEnableNextLoadDibs = FALSE;
+		if (!m_bThreadExited)
+		{
+			m_ProcessThread.Kill_NoBlocking();
+			EnableAllControls(FALSE, TRUE);
+			m_bDoCloseDlg = TRUE;
+		}
+		else
+		{
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+				SaveSettings();
+			ListDeleteAll();
+			EndWaitCursor();
+			DestroyWindow();
+		}
+	}
+}
+
+void CBatchProcDlg::PostNcDestroy() 
+{
+	::AfxGetMainFrame()->m_pBatchProcDlg = NULL;
+	delete this;
+	CDialog::PostNcDestroy();
 }

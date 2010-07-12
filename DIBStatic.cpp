@@ -1026,6 +1026,9 @@ CString CDibStatic::GetFormattedTime(LONG lMilliseconds)
 
 void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/, BOOL bForceBusyTextDisplay/*=FALSE*/)
 {
+	// Check
+	if (GetSafeHwnd() == NULL)
+		return;
 	CClientDC dc(this);
 	CRect rcClient, rcPaint;
 	GetClientRect(&rcClient);
@@ -1249,8 +1252,9 @@ void CDibStatic::OnPaletteChanged(CWnd* pFocusWnd)
 
 BOOL CDibStatic::DoRealizePalette(BOOL bForceBackGround)
 {
-	if ((m_pDibFull && m_pDibFull->IsValid()) ||
-		(m_pDibFull && m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid()))
+	if (GetSafeHwnd() != NULL	&&
+		((m_pDibFull && m_pDibFull->IsValid()) ||
+		(m_pDibFull && m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid())))
 	{
 		CDib* pDib;
 #ifdef SUPPORT_GIFLIB

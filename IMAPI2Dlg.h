@@ -32,8 +32,7 @@ public:
 
 // Construction
 public:
-	CIMAPI2Dlg(const CString& sDir);
-
+	CIMAPI2Dlg(CWnd* pParent, const CString& sDir);
 	CString m_sDir;
 
 // Dialog Data
@@ -53,6 +52,8 @@ public:
 	//{{AFX_VIRTUAL(CIMAPI2Dlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+	virtual void PostNcDestroy();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -79,6 +80,7 @@ protected:
 	afx_msg void OnBurn();
 	afx_msg void OnSelchangeComboDrive();
 	afx_msg void OnDestroy();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	afx_msg LRESULT OnImapiUpdate(WPARAM, LPARAM);
 	afx_msg LRESULT OnBurnStatusMessage(WPARAM, LPARAM);

@@ -127,6 +127,9 @@ int CIMAPI2Dlg::CIMAPI2DlgThread::Work()
                 // Burn the data, this does all the work
                 discFormatData.Burn(m_pDlg->m_hWnd, dataStream);
 
+                // Release the IStream after burning
+                dataStream->Release();
+
                 // Eject Media when finished
                 discRecorder.EjectMedia();
             }
@@ -297,8 +300,8 @@ cleanup:
 // CIMAPI2Dlg dialog
 
 
-CIMAPI2Dlg::CIMAPI2Dlg(const CString& sDir)
-	: CDialog(CIMAPI2Dlg::IDD, NULL)
+CIMAPI2Dlg::CIMAPI2Dlg(CWnd* pParent, const CString& sDir)
+	: CDialog(CIMAPI2Dlg::IDD, pParent)
 , m_cancelBurn(false)
 , m_isBurning(false)
 , m_prevTotalProgress(-1)
@@ -308,6 +311,7 @@ CIMAPI2Dlg::CIMAPI2Dlg(const CString& sDir)
 	m_sVolumeLabel = CTime::GetCurrentTime().Format(_T("%Y_%m_%d"));
 	m_sDir = sDir;
 	m_IMAPI2DlgThread.SetDlg(this);
+	CDialog::Create(CIMAPI2Dlg::IDD, pParent);
 }
 
 
@@ -331,6 +335,7 @@ BEGIN_MESSAGE_MAP(CIMAPI2Dlg, CDialog)
 	ON_BN_CLICKED(IDC_BURN, OnBurn)
 	ON_CBN_SELCHANGE(IDC_COMBO_DRIVE, OnSelchangeComboDrive)
 	ON_WM_DESTROY()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_IMAPI_UPDATE, OnImapiUpdate)
     ON_MESSAGE(WM_BURN_STATUS_MESSAGE, OnBurnStatusMessage)
@@ -778,4 +783,36 @@ void CIMAPI2Dlg::OnDestroy()
     for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
         delete (CDiscRecorder*)m_cbDrive.GetItemDataPtr(itemIndex);
     CDialog::OnDestroy();
+}
+
+BOOL CIMAPI2Dlg::OnCommand(WPARAM wParam, LPARAM lParam) 
+{
+	if (HIWORD (wParam) == BN_CLICKED)
+	{
+		switch (LOWORD (wParam))
+		{
+			case IDOK:
+			case IDCANCEL:
+				DestroyWindow();
+				return TRUE;
+			default:
+				return CDialog::OnCommand(wParam, lParam);
+		}
+	}
+	return CDialog::OnCommand(wParam, lParam);
+}
+
+void CIMAPI2Dlg::OnClose() 
+{
+	if (!m_isBurning)
+		DestroyWindow();
+	else
+		::MessageBeep(0xFFFFFFFF);
+}
+
+void CIMAPI2Dlg::PostNcDestroy() 
+{
+	::AfxGetMainFrame()->m_pIMAPI2Dlg = NULL;
+	delete this;
+	CDialog::PostNcDestroy();
 }

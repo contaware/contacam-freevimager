@@ -82,6 +82,8 @@ extern "C"
 // Forward Declarations
 class CUImagerDoc;
 class CEnumGDIObjectsDlg;
+class CBatchProcDlg;
+class CIMAPI2Dlg;
 class CDib;
 
 class CMainFrame : public CMDIFrameWnd, public CTwain
@@ -190,8 +192,14 @@ public:
 	// Progress control
 	CProgressCtrl m_Progress;
 
-	// The Modeless GDI Enumeration Dlg
+	// The Modeless GDI Enumeration dialog
 	CEnumGDIObjectsDlg* m_pEnumGDIObjectsDlg;
+
+	// Batch Processing dialog
+	CBatchProcDlg* m_pBatchProcDlg;
+
+	// IMAPI2 Burn dialog
+	CIMAPI2Dlg* m_pIMAPI2Dlg;
 
 	// Menu Item Strings that have been deleted,
 	// store them here for later restore

@@ -16,6 +16,8 @@
 #include "OutVolDlg.h"
 #include "PlayerToolBarDlg.h"
 #include "EnumGDIObjectsDlg.h"
+#include "IMAPI2Dlg.h"
+#include "BatchProcDlg.h"
 #include "CPUCount.h"
 #include "CPUSpeed.h"
 #include "PostDelayedMessage.h"
@@ -151,6 +153,8 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_sJPEGAdvancedMenuItem = _T("");
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
+	m_pBatchProcDlg = NULL;
+	m_pIMAPI2Dlg = NULL;
 }
 
 CMainFrame::~CMainFrame()
@@ -720,6 +724,30 @@ void CMainFrame::OnClose()
 		// Attempt to save all documents
 		if (!pApp->SaveAllModified())
 			return;     // don't close it
+
+		// Let the user close the dialog(s),
+		// some processing may still be running!
+		if (m_pBatchProcDlg && m_pIMAPI2Dlg)
+		{
+			::MessageBeep(0xFFFFFFFF);
+			m_pIMAPI2Dlg->SetActiveWindow();
+			m_pIMAPI2Dlg->SetFocus();
+			return;		// don't close it
+		}
+		else if (m_pBatchProcDlg)
+		{
+			::MessageBeep(0xFFFFFFFF);
+			m_pBatchProcDlg->SetActiveWindow();
+			m_pBatchProcDlg->SetFocus();
+			return;		// don't close it
+		}
+		else if (m_pIMAPI2Dlg)
+		{
+			::MessageBeep(0xFFFFFFFF);
+			m_pIMAPI2Dlg->SetActiveWindow();
+			m_pIMAPI2Dlg->SetFocus();
+			return;		// don't close it
+		}
 
 		// Start Micro Apache shutdown
 #ifdef VIDEODEVICEDOC

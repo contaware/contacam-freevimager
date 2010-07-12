@@ -3808,8 +3808,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			m_bDetectingMovement = FALSE;
 			m_nMilliSecondsSinceMovementDetection = 0;
 			m_nMilliSecondsWithoutMovementDetection = 0;
-			m_nBlueMovementDetectionsCount = 0;
-			m_nNoneBlueMovementDetectionsCount = 0;
 
 			// Save frames or clear the new frame list?
 			if (!bFalseDetection				&&
@@ -3821,7 +3819,18 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				m_bExecCommandMovementDetection))
 				SaveFrameList();
 			else
+			{
 				ClearNewestFrameList();
+				CString sMsg;
+				sMsg.Format(_T("%s, false detection: Blue %d , None Blue %d\n"),
+							GetDeviceName(), m_nBlueMovementDetectionsCount, m_nNoneBlueMovementDetectionsCount);
+				TRACE(sMsg);
+				::LogLine(sMsg);
+			}
+
+			// Reset false detection counts
+			m_nBlueMovementDetectionsCount = 0;
+			m_nNoneBlueMovementDetectionsCount = 0;
 		}
 		else 
 		{
@@ -3857,7 +3866,12 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 					if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
 						dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
 					{
-						ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST);
+						DWORD dwFirstUpTime, dwLastUpTime;
+						ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST, dwFirstUpTime, dwLastUpTime);
+						ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
+										ML_STRING(1818, "set lower framerate"),
+										ML_STRING(1819, "or resolution!"),
+										dwFirstUpTime, dwLastUpTime);
 						CString sMsg;
 						sMsg.Format(_T("%s, doc mem load %0.1f%%%%, app mem load %0.1f%%%% -> dropping det frames!\n"),
 																				GetDeviceName(), dDocLoad, dAppLoad);
@@ -3881,6 +3895,152 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		m_nBlueMovementDetectionsCount = 0;
 		m_nNoneBlueMovementDetectionsCount = 0;
 	}
+}
+
+BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
+									const CString& sMessage2,
+									const CString& sMessage3,
+									DWORD dwFirstUpTime,
+									DWORD dwLastUpTime)
+{
+	if (m_bSaveAnimGIFMovementDetection)
+	{
+		// Allocate Thumb Dib
+		CDib ThumbDib;
+		if (!ThumbDib.AllocateBits(24, BI_RGB, m_dwAnimatedGifWidth, m_dwAnimatedGifHeight, RGB(80,70,70)))
+			return FALSE;
+
+		// Current Reference Time and Current Reference Up-Time
+		CTime RefTime = CTime::GetCurrentTime();
+		DWORD dwRefUpTime = ::timeGetTime();
+
+		// First Frame Time 
+		DWORD dwFirstTimeDifference = dwRefUpTime - dwFirstUpTime;
+		CTimeSpan FirstTimeSpan((time_t)(dwFirstTimeDifference > 0U ? Round((double)dwFirstTimeDifference / 1000.0) : 0));
+		CTime FirstTime = RefTime - FirstTimeSpan;
+		
+		// Last Frame Time
+		DWORD dwLastTimeDifference = dwRefUpTime - dwLastUpTime;
+		CTimeSpan LastTimeSpan((time_t)(dwLastTimeDifference > 0U ? Round((double)dwLastTimeDifference / 1000.0) : 0));
+		CTime LastTime = RefTime - LastTimeSpan;
+		
+		// Directory to Store Detection
+		CString sDetectionAutoSaveDir;
+		
+		// Check Whether Detection Dir Exists
+		DWORD dwAttrib =::GetFileAttributes(m_sDetectionAutoSaveDir);
+		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
+			return FALSE;
+		// Adjust Directory Name
+		else
+		{
+			sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+			sDetectionAutoSaveDir.TrimRight(_T('\\'));
+		}
+
+		// Thumb name
+		CString sGIFFileName;
+		CString sGIFTempFileName;
+		CString sTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sGIFFileName))
+			return FALSE;
+		if (sGIFFileName == _T(""))
+			sGIFFileName = _T("det_") + sTime + _T(".gif");
+		else
+			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sTime + _T(".gif");
+		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
+
+		// Draw rect
+		CRect rcRect;
+		rcRect.left = 0;
+		rcRect.top = 0;
+		rcRect.right = ThumbDib.GetWidth();
+		rcRect.bottom = ThumbDib.GetHeight();
+
+		// Date
+		sTime = ::MakeDateLocalFormat(FirstTime);
+		if (!ThumbDib.AddSingleLineText(sTime,
+										rcRect,
+										NULL,
+										(DT_LEFT | DT_TOP),
+										RGB(0x80,0x80,0xff),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+
+		// Message1
+		rcRect.top = rcRect.bottom / 4;
+		if (!ThumbDib.AddSingleLineText(sMessage1,
+										rcRect,
+										NULL,
+										(DT_CENTER | DT_TOP),
+										RGB(0xff,0,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+
+		// Message2
+		rcRect.top = 0;
+		if (!ThumbDib.AddSingleLineText(sMessage2,
+										rcRect,
+										NULL,
+										(DT_CENTER | DT_VCENTER),
+										RGB(0xff,0,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+
+		// Message3
+		rcRect.bottom = 3 * rcRect.bottom / 4;
+		if (!ThumbDib.AddSingleLineText(sMessage3,
+										rcRect,
+										NULL,
+										(DT_CENTER | DT_BOTTOM),
+										RGB(0xff,0,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+
+		// Time
+		rcRect.bottom = ThumbDib.GetHeight();
+		sTime = ::MakeTimeLocalFormat(FirstTime, TRUE);
+		if (!ThumbDib.AddSingleLineText(sTime,
+										rcRect,
+										NULL,
+										(DT_LEFT | DT_BOTTOM),
+										RGB(0,0xff,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+		if (!ThumbDib.AddSingleLineText(_T("->"),
+										rcRect,
+										NULL,
+										(DT_CENTER | DT_BOTTOM),
+										RGB(0,0xff,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+		rcRect.right -= 1; // Looks nicer!
+		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
+		if (!ThumbDib.AddSingleLineText(sTime,
+										rcRect,
+										NULL,
+										(DT_RIGHT | DT_BOTTOM),
+										RGB(0,0xff,0),
+										TRANSPARENT,
+										RGB(0,0,0)))
+			return FALSE;
+
+		// Save
+		if (!ThumbDib.SaveGIF(sGIFTempFileName))
+			return FALSE;
+
+		// Rename Saved Gif File
+		::DeleteFile(sGIFFileName);
+		::MoveFile(sGIFTempFileName, sGIFFileName);
+	}
+	
+	return TRUE;
 }
 
 __forceinline int CVideoDeviceDoc::GetAppMemoryUsageMB()
@@ -11463,7 +11623,7 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 
 			// Consider pixels which can shift with a luminosity change
 			// and remember that the Y range is: [16,235] (220 steps)
-			if (pDataBkg[nOffset] > 70 && pDataBkg[nOffset] < 175)
+			if (pDataBkg[nOffset] > 71 && pDataBkg[nOffset] < 180)
 			{
 				// Inc.
 				nCount++;
@@ -11483,7 +11643,9 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 	}
 
 	// Statistics (only if we have "statistically" enough samples)
-	if (nCount >= 10)
+	int nTotalGridIntersections = (m_lMovDetXZonesCount - 1) * (m_lMovDetYZonesCount - 1);
+	int nTotalGridIntersections20 = 2 * nTotalGridIntersections / 10; // 20%
+	if (nCount >= nTotalGridIntersections20)
 	{
 		// Avg
 		int nAvg = 0;
@@ -11536,22 +11698,27 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 			double dThreshold = 256.0; // Just a high value in case nStdDev is 0...
 			if (nStdDev > 0)
 				dThreshold = (double)nAvgAbs / (double)nStdDev;
-			if (dThreshold >= 1.5)
+			if (dThreshold >= 1.2)
 			{
-				int nCount90 = 9 * nCount / 10; // 90%
-				if (nCountPlus >= nCount90)
+				int nCount80 = 8 * nCount / 10; // 80%
+				if (nCountPlus >= nCount80)
 				{
-					TRACE(_T("+++: nAvgAbs=%d , nAvgAbs / nStdDev=%0.2f\n"), nAvgAbs, dThreshold);
+					TRACE(_T("+++: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
 					return TRUE;
 				}
-				else if (nCountMinus >= nCount90)
+				else if (nCountMinus >= nCount80)
 				{
-					TRACE(_T("---: nAvgAbs=%d , nAvgAbs / nStdDev=%0.2f\n"), nAvgAbs, dThreshold);
+					TRACE(_T("---: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
 					return TRUE;
 				}
 			}
+			//TRACE(_T("FALSE: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
 		}
+		//else
+		//	TRACE(_T("FALSE: nAvgAbs <= 8\n"));
 	}
+	//else
+	//	TRACE(_T("FALSE: nCount < %d\n"), nTotalGridIntersections20);
 
 	return FALSE;
 }
@@ -11705,17 +11872,30 @@ __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListTo(int nMinSize)
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize)
+__forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dwFirstUpTime, DWORD& dwLastUpTime)
 {
+	dwFirstUpTime = dwLastUpTime = 0U;
 	::EnterCriticalSection(&m_csMovementDetectionsList);
 	if (!m_MovementDetectionsList.IsEmpty())
 	{
 		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
 		if (pTail)
 		{
+			CDib* pHeadDib;
+			if (!pTail->IsEmpty())
+			{
+				pHeadDib = pTail->GetHead();
+				if (pHeadDib)
+					dwFirstUpTime = pHeadDib->GetUpTime();
+			}
 			while (!pTail->IsEmpty() && nSize > 0)
 			{
-				delete pTail->GetHead();
+				pHeadDib = pTail->GetHead();
+				if (pHeadDib)
+				{
+					dwLastUpTime = pHeadDib->GetUpTime();
+					delete pHeadDib;
+				}
 				pTail->RemoveHead();
 				--nSize;
 			}
