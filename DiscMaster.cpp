@@ -56,7 +56,7 @@ bool CDiscMaster::Initialize()
 	//
 	if (GetTotalDevices() <= 0)
 	{
-		m_errorMessage = ML_STRING(1813, "There were no writable devices detected!");
+		m_errorMessage = ML_STRING(1813, "No devices detected!");
 		return false;
 	}
 
@@ -99,13 +99,16 @@ CString CDiscMaster::GetDeviceUniqueID(long index)
 	ASSERT(m_discMaster != NULL);
 	ASSERT(index < GetTotalDevices());
 
-	BSTR	uniqueID = NULL;
+	BSTR uniqueID = NULL;
 	m_hResult = m_discMaster->get_Item(index, &uniqueID);
 	if (FAILED(m_hResult))
 	{
 		m_errorMessage.Format(_T("Failed to get the Unique ID of Drive %d!"), index);
 		return _T("");
 	}
-
-	return uniqueID;
+	
+	// Free sys string and return CString
+	CString s(uniqueID);
+	::SysFreeString(uniqueID);
+	return s;
 }

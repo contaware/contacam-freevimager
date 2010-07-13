@@ -1339,6 +1339,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Cmallspy.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ColorButton.cpp"
 				>
 				<FileConfiguration
@@ -4615,6 +4619,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Cmallspy.h"
+				>
+			</File>
+			<File
 				RelativePath="ColorButton.h"
 				>
 			</File>
@@ -5300,11 +5308,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\uimager_videodevicedoc.ico"
+				RelativePath="res\uImager.rc2"
 				>
 			</File>
 			<File
-				RelativePath="res\uImager.rc2"
+				RelativePath="res\uimager_videodevicedoc.ico"
 				>
 			</File>
 			<File

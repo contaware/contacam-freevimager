@@ -126,6 +126,10 @@ CDiscFormatDataEvent::~CDiscFormatDataEvent()
 	{
 		ConnectionUnadvise(m_pUnkSrc, IID_DDiscFormat2DataEvents, m_pUnkSink, TRUE, m_dwCookie);
 	}
+	if (m_ptinfo != NULL)
+	{
+		m_ptinfo->Release();
+	}
 }
 
 
@@ -282,6 +286,10 @@ STDMETHODIMP_(HRESULT) CDiscFormatDataEvent::XFormatDataEvents::Update(IDispatch
 	ASSERT(SUCCEEDED(hr));
 	if (FAILED(hr))
 	{
+		if (discFormatData != NULL)
+			discFormatData->Release();
+		if (progress != NULL)
+			progress->Release();
 		return S_OK;
 	}
 
@@ -311,6 +319,11 @@ STDMETHODIMP_(HRESULT) CDiscFormatDataEvent::XFormatDataEvents::Update(IDispatch
 	{
 		discFormatData->CancelWrite();
 	}
+
+	if (discFormatData != NULL)
+		discFormatData->Release();
+	if (progress != NULL)
+		progress->Release();
 
 	return S_OK;
 }

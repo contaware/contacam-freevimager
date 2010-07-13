@@ -47,6 +47,10 @@
 #include "Performance.h"
 #include "TraceLogFile.h"
 #include "appconst.h"
+#ifndef NDEBUG
+#include "cmallspy.h"
+extern CMallocSpy MallocSpy;
+#endif
 
 // Transparency Defines
 #ifndef WS_EX_LAYERED

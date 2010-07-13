@@ -31,6 +31,10 @@ CDiscFormatErase::~CDiscFormatErase(void)
 	{
 		m_discFormatErase->Release();
 	}
+	if (m_mediaTypesArray != NULL)
+	{
+		::SafeArrayDestroy(m_mediaTypesArray);
+	}
 }
 
 bool CDiscFormatErase::Initialize(CDiscRecorder* pDiscRecorder, const CString& clientName)
@@ -68,13 +72,20 @@ bool CDiscFormatErase::Initialize(CDiscRecorder* pDiscRecorder, const CString& c
 		return false;
 	}
 
-	m_hResult = m_discFormatErase->put_ClientName(clientName.AllocSysString());
+	BSTR clientNameTemp = clientName.AllocSysString();
+	m_hResult = m_discFormatErase->put_ClientName(clientNameTemp);
+	::SysFreeString(clientNameTemp);
 	if (!SUCCEEDED(m_hResult))
 	{
 		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
+	if (m_mediaTypesArray != NULL)
+	{
+		::SafeArrayDestroy(m_mediaTypesArray);
+		m_mediaTypesArray = NULL;
+	}
 	m_hResult = m_discFormatErase->get_SupportedMediaTypes(&m_mediaTypesArray);
 	if (!SUCCEEDED(m_hResult))
 	{

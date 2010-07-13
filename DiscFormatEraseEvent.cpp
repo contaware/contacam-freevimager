@@ -127,6 +127,10 @@ CDiscFormatEraseEvent::~CDiscFormatEraseEvent()
 	{
 		ConnectionUnadvise(m_pUnkSrc, IID_DDiscFormat2EraseEvents, m_pUnkSink, TRUE, m_dwCookie);
 	}
+	if (m_ptinfo != NULL)
+	{
+		m_ptinfo->Release();
+	}
 }
 
 
@@ -286,6 +290,9 @@ STDMETHODIMP_(HRESULT) CDiscFormatEraseEvent::XFormatEraseEvents::Update(IDispat
 		// There is not such a function -> User has to wait that the erase finishes...
 		//discFormatErase->CancelErase();
 	}
+
+	if (discFormatErase != NULL)
+		discFormatErase->Release();
 
 	return S_OK;
 }

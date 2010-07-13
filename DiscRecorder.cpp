@@ -30,6 +30,10 @@ CDiscRecorder::~CDiscRecorder(void)
 	{
 		m_discRecorder->Release();
 	}
+	if (m_volumePathNames != NULL)
+	{
+		::SafeArrayDestroy(m_volumePathNames);
+	}
 }
 
 
@@ -59,7 +63,9 @@ bool CDiscRecorder::Initialize(const CString& recorderUniqueId)
 		return false;
 	}
 
-	m_hResult = m_discRecorder->InitializeDiscRecorder(recorderUniqueId.AllocSysString());
+	BSTR recorderUniqueIdTemp = recorderUniqueId.AllocSysString();
+	m_hResult = m_discRecorder->InitializeDiscRecorder(recorderUniqueIdTemp);
+	::SysFreeString(recorderUniqueIdTemp);
 	if (FAILED(m_hResult))
 	{
 		return false;
@@ -68,6 +74,11 @@ bool CDiscRecorder::Initialize(const CString& recorderUniqueId)
 	//
 	// Get the volume name paths
 	//
+	if (m_volumePathNames != NULL)
+	{
+		::SafeArrayDestroy(m_volumePathNames);
+		m_volumePathNames = NULL;
+	}
 	m_hResult = m_discRecorder->get_VolumePathNames(&m_volumePathNames);
 	ASSERT(SUCCEEDED(m_hResult));
 
@@ -115,9 +126,10 @@ bool CDiscRecorder::AcquireExclusiveAccess(bool force, const CString& clientName
 
 	if (m_discRecorder != NULL)
 	{
-		m_hResult = m_discRecorder->AcquireExclusiveAccess(
-			force ? VARIANT_TRUE : VARIANT_FALSE,
-			clientName.AllocSysString());
+		BSTR clientNameTemp = clientName.AllocSysString();
+		m_hResult = m_discRecorder->AcquireExclusiveAccess(	force ? VARIANT_TRUE : VARIANT_FALSE,
+															clientNameTemp);
+		::SysFreeString(clientNameTemp);
 		if (SUCCEEDED(m_hResult))
 		{
 			return true;
@@ -165,7 +177,10 @@ CString CDiscRecorder::ExclusiveAccessOwner()
 		m_hResult = m_discRecorder->get_ExclusiveAccessOwner(&owner);
 		if (SUCCEEDED(m_hResult))
 		{
-			return owner;
+			// Free sys string and return CString
+			CString s(owner);
+			::SysFreeString(owner);
+			return s;
 		}
 	}
 
@@ -289,7 +304,11 @@ CString CDiscRecorder::GetProductID()
 	{
 		m_discRecorder->get_ProductId(&productId);
 	}
-	return productId;
+	
+	// Free sys string and return CString
+	CString s(productId);
+	::SysFreeString(productId);
+	return s;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -306,7 +325,11 @@ CString CDiscRecorder::GetProductRevision()
 	{
 		m_discRecorder->get_ProductRevision(&productRevision);
 	}
-	return productRevision;
+
+	// Free sys string and return CString
+	CString s(productRevision);
+	::SysFreeString(productRevision);
+	return s;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -323,7 +346,11 @@ CString CDiscRecorder::GetVendorId()
 	{
 		m_discRecorder->get_VendorId(&vendorId);
 	}
-	return vendorId;
+	
+	// Free sys string and return CString
+	CString s(vendorId);
+	::SysFreeString(vendorId);
+	return s;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -340,7 +367,11 @@ CString CDiscRecorder::GetVolumeName()
 	{
 		m_discRecorder->get_VolumeName(&volumeName);
 	}
-	return volumeName;
+	
+	// Free sys string and return CString
+	CString s(volumeName);
+	::SysFreeString(volumeName);
+	return s;
 }
 
 ULONG CDiscRecorder::GetTotalVolumePaths()
@@ -355,11 +386,16 @@ ULONG CDiscRecorder::GetTotalVolumePaths()
 
 CString CDiscRecorder::GetVolumePath(ULONG volumePathIndex)
 {
-	ASSERT(volumePathIndex < m_volumePathNames->rgsabound[0].cElements);
-	if (volumePathIndex >= m_volumePathNames->rgsabound[0].cElements)
+	if (m_volumePathNames != NULL)
 	{
-		return _T("");
+		ASSERT(volumePathIndex < m_volumePathNames->rgsabound[0].cElements);
+		if (volumePathIndex >= m_volumePathNames->rgsabound[0].cElements)
+		{
+			return _T("");
+		}
+
+		return ((VARIANT*)(m_volumePathNames->pvData))[volumePathIndex].bstrVal;
 	}
 
-	return ((VARIANT*)(m_volumePathNames->pvData))[volumePathIndex].bstrVal;
+	return _T("");
 }

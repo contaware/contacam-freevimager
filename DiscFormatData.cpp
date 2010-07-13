@@ -31,6 +31,10 @@ CDiscFormatData::~CDiscFormatData(void)
 	{
 		m_discFormatData->Release();
 	}
+	if (m_mediaTypesArray != NULL)
+	{
+		::SafeArrayDestroy(m_mediaTypesArray);
+	}
 }
 
 bool CDiscFormatData::Initialize(CDiscRecorder* pDiscRecorder, const CString& clientName)
@@ -68,13 +72,20 @@ bool CDiscFormatData::Initialize(CDiscRecorder* pDiscRecorder, const CString& cl
 		return false;
 	}
 
-	m_hResult = m_discFormatData->put_ClientName(clientName.AllocSysString());
+	BSTR clientNameTemp = clientName.AllocSysString();
+	m_hResult = m_discFormatData->put_ClientName(clientNameTemp);
+	::SysFreeString(clientNameTemp);
 	if (!SUCCEEDED(m_hResult))
 	{
 		m_errorMessage = ML_STRING(1809, "Recorder cannot be used");
 		return false;
 	}
 
+	if (m_mediaTypesArray != NULL)
+	{
+		::SafeArrayDestroy(m_mediaTypesArray);
+		m_mediaTypesArray = NULL;
+	}
 	m_hResult = m_discFormatData->get_SupportedMediaTypes(&m_mediaTypesArray);
 	if (!SUCCEEDED(m_hResult))
 	{
@@ -117,9 +128,6 @@ bool CDiscFormatData::Burn(HWND hNotificationWnd, IStream* streamData)
 	if (streamData == NULL)
 		return false;
 
-	// Set Stream Data
-	m_streamData = streamData;
-
 	// Set Notify Window
 	m_hNotificationWnd = hNotificationWnd;
 
@@ -141,7 +149,7 @@ bool CDiscFormatData::Burn(HWND hNotificationWnd, IStream* streamData)
 	// Burn
 	m_discFormatData->put_ForceMediaToBeClosed(m_closeMedia ? VARIANT_TRUE : VARIANT_FALSE);
 	m_discFormatData->put_ForceOverwrite(VARIANT_TRUE);
-	m_hResult = m_discFormatData->Write(m_streamData);
+	m_hResult = m_discFormatData->Write(streamData);
 
 	// Clean-up
 	delete eventSink;

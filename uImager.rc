@@ -9070,7 +9070,7 @@ BEGIN
     IDS_STRING1810          "Cannot determine the supported Media Types!"
     IDS_STRING1811          "Erase Failed, Media is not ReWritable!"
     IDS_STRING1812          "Erase Failed!"
-    IDS_STRING1813          "There were no writable devices detected!"
+    IDS_STRING1813          "No devices detected!"
     IDS_STRING1814          "No Media Inserted"
     IDS_STRING1815          "Burn failed!"
     IDS_STRING1816          "Create a text file where each line represents a Paste\ncommand at the given position:\n  1. Origin: top left, top right, bottom left, bottom right\n  2. horizontal and vertical positions with sign and unit\n      (px, in, cm, mm)\n\nExample:\n\ntop left 1.57cm -1.32cm\nbottom right 12.1mm 5.5mm"

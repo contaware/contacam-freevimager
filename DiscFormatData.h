@@ -80,9 +80,6 @@ public:
 									}
 									else
 										return false;};
-
-protected:
-	IStream*	m_streamData;
 };
 
 #endif // !defined(AFX_DISCFORMATDATA_H__9226541B_3040_4454_97FC_14E326FA7043__INCLUDED_)

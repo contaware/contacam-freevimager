@@ -161,6 +161,7 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
     IFsiDirectoryItem*		rootItem = NULL;
     CString					message;
     bool					returnVal = false;
+	BSTR					VolumeLabelTemp = NULL;
 
 	// Create File System Image
     HRESULT hr = ::CoCreateInstance(CLSID_MsftFileSystemImage,
@@ -171,8 +172,10 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
         goto cleanup;
     }
     m_pDlg->SendMessage(WM_BURN_STATUS_MESSAGE, 0, (LPARAM)(LPCTSTR)ML_STRING(1804, "Creating File System..."));
-    image->put_FileSystemsToCreate((FsiFileSystems)(FsiFileSystemJoliet|FsiFileSystemISO9660));
-    image->put_VolumeName(m_pDlg->m_sVolumeLabel.AllocSysString());
+	image->put_FileSystemsToCreate((FsiFileSystems)(FsiFileSystemJoliet|FsiFileSystemISO9660));
+	VolumeLabelTemp = m_pDlg->m_sVolumeLabel.AllocSysString();
+    image->put_VolumeName(VolumeLabelTemp);
+	::SysFreeString(VolumeLabelTemp);
     image->ChooseImageDefaultsForMediaType(mediaType);
 
     // Get the image root
@@ -187,7 +190,9 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
 		int pos;
 		for (pos = 0 ; pos < FileFind.GetDirsCount() ; pos++)
 		{
-			hr = rootItem->AddTree(FileFind.GetDirName(pos).AllocSysString(), VARIANT_TRUE);
+			BSTR DirNameTemp = FileFind.GetDirName(pos).AllocSysString();
+			hr = rootItem->AddTree(DirNameTemp, VARIANT_TRUE);
+			::SysFreeString(DirNameTemp);
             if (FAILED(hr))
             {
                 if (hr == IMAPI_E_IMAGE_SIZE_LIMIT)
@@ -221,7 +226,9 @@ bool CIMAPI2Dlg:: CIMAPI2DlgThread::CreateMediaFileSystem(IMAPI_MEDIA_PHYSICAL_T
 			CreateStream(FileFind.GetFileName(pos), &pStream);
             if (pStream)
             {
-                hr = rootItem->AddFile(fileName.AllocSysString(), pStream);
+				BSTR fileNameTemp = fileName.AllocSysString();
+                hr = rootItem->AddFile(fileNameTemp, pStream);
+				::SysFreeString(fileNameTemp);
                 if (FAILED(hr))
                 {
                     if (hr == IMAPI_E_IMAGE_SIZE_LIMIT)
