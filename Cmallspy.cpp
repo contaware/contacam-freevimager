@@ -138,6 +138,7 @@ void *CMallocSpy::PostAlloc(void *pActual)
     // is active in the map.
     //
     memcpy(pActual, &m_counter, 4);
+	ASSERT(m_counter < MAX_ALLOCATIONS);
     m_map[m_counter] = 1;
 
     return (void*)((BYTE*)pActual + HEADERSIZE);
@@ -159,6 +160,7 @@ void *CMallocSpy::PreFree(void *pRequest, BOOL fSpyed)
         int counter;
         pRequest = (void*)(((BYTE*)pRequest) - HEADERSIZE);
         memcpy(&counter, pRequest, 4);
+		ASSERT(counter < MAX_ALLOCATIONS);
         m_map[counter] = 0;
 
         return pRequest;
@@ -190,6 +192,7 @@ ULONG CMallocSpy::PreRealloc(void *pRequest,
         int counter;
         BYTE* actual = (BYTE*)pRequest - HEADERSIZE;
         memcpy(&counter, actual, 4);
+		ASSERT(counter < MAX_ALLOCATIONS);
         m_map[counter] = 0;
 
         *ppNewRequest = (void*)(((BYTE*)pRequest) - HEADERSIZE);
@@ -217,6 +220,7 @@ void *CMallocSpy::PostRealloc(void *pActual, BOOL fSpyed)
         // is active in the map.
         //
         memcpy(pActual, &m_counter, 4);
+		ASSERT(m_counter < MAX_ALLOCATIONS);
         m_map[m_counter] = 1;
 
         return (void*)((BYTE*)pActual + HEADERSIZE);

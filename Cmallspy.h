@@ -119,7 +119,7 @@ protected:
     enum
     {
         HEADERSIZE = 4,
-        MAX_ALLOCATIONS = 100000   // cannot handle more than max
+        MAX_ALLOCATIONS = 1000000   // cannot handle more than max
     };
 
     ULONG   m_cRef;
