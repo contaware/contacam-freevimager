@@ -53,6 +53,11 @@ YUV to RGB Conversion:
 
 */
 
+
+// Used global var
+extern BOOL g_bMMX;
+
+
 // Macros
 
 #ifndef MAX
@@ -75,173 +80,136 @@ YUV to RGB Conversion:
 #endif
 
 
+// Structures
+
+// Usually we would write a definition in the .cpp file:
+// __declspec(align(8)) static const short CoefficientsRGBY[256][4] = {..
+// but __declspec() does not support align() in VC6.
+// It only works on VC.NET or higher, the following is a hack to make
+// sure the data is aligned:
+#pragma pack(push, 8)
+typedef struct {
+	short CoefficientsRGBY[256][4];
+	short CoefficientsRGBU[256][4];
+	short CoefficientsRGBV[256][4];
+} YUV2RGBASMLUT;
+typedef union {
+	YUV2RGBASMLUT lut;
+	ULONGLONG dummy[768];
+} YUV2RGBASM;
+#pragma pack(pop)
+
+
 // Functions
 
 extern void InitYUVToRGBTable();
 
 // Main YUV to RGB Functions
-extern bool YUVToRGB24(	DWORD dwFourCC,					// FourCC
-						unsigned char *src,				// YUV format depending from dwFourCC
-						unsigned char *dst,				// RGB24 Dib
-						int width,
-						int height);
-extern bool YUVToRGB32(	DWORD dwFourCC,					// FourCC
-						unsigned char *src,				// YUV format depending from dwFourCC
-						unsigned char *dst,				// RGB32 Dib
+extern bool YUVToRGB32(	DWORD dwFourCC,		// FourCC
+						unsigned char *src,	// YUV format depending from dwFourCC
+						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// YUV Planes to RGB
-extern void YUVToRGB24(	unsigned char *src0,			// Y Plane
-						unsigned char *src1,			// U Plane
-						unsigned char *src2,			// V Plane
-						unsigned char *dst,				// RGB24 Dib
-						int width,
-						int height);
-extern void YUVToRGB32(	unsigned char *src0,			// Y Plane
-						unsigned char *src1,			// U Plane
-						unsigned char *src2,			// V Plane
-						unsigned char *dst,				// RGB32 Dib
-						int width,
-						int height);
-extern void YUVToRGB24Flip(	unsigned char *src0,		// Y Plane
-							unsigned char *src1,		// U Plane
-							unsigned char *src2,		// V Plane
-							unsigned char *dst,			// RGB24 Dib
+// YUV420 Planes to RGB
+extern void YUV420ToRGB32(	LPBYTE src0,	// Y Plane
+							LPBYTE src1,	// U Plane
+							LPBYTE src2,	// V Plane
+							LPDWORD dst,	// RGB32 Dib
 							int width,
 							int height);
-extern void YUVToRGB32Flip(	unsigned char *src0,		// Y Plane
-							unsigned char *src1,		// U Plane
-							unsigned char *src2,		// V Plane
-							unsigned char *dst,			// RGB32 Dib
-							int width,
-							int height);
+extern void YUV420ToRGB32Asm(	LPBYTE src0,// Y Plane
+								LPBYTE src1,// U Plane
+								LPBYTE src2,// V Plane
+								LPDWORD dst,// RGB32 Dib
+								int width,
+								int height);
 
 // YV16 to RGB
-extern void YV16ToRGB24(unsigned char *src,	// Y Plane, V Plane and U Plane
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
 extern void YV16ToRGB32(unsigned char *src,	// Y Plane, V Plane and U Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
 // Y42B to RGB
-extern void Y42BToRGB24(unsigned char *src,	// Y Plane, U Plane and V Plane
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
 extern void Y42BToRGB32(unsigned char *src,	// Y Plane, U Plane and V Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// Y800 to RGB 
-extern void Y800ToRGB24(unsigned char *src,	// Y Plane
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
+// Y800 to RGB
 extern void Y800ToRGB32(unsigned char *src,	// Y Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// YVU9 to RGB 
-extern void YVU9ToRGB24(unsigned char *src,	// Y Plane, V Plane and U Plane
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
+// YVU9 to RGB
 extern void YVU9ToRGB32(unsigned char *src,	// Y Plane, V Plane and U Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// YUV9 to RGB 
-extern void YUV9ToRGB24(unsigned char *src,	// Y Plane, U Plane and V Plane
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
+// YUV9 to RGB
 extern void YUV9ToRGB32(unsigned char *src,	// Y Plane, U Plane and V Plane
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
 // YUY2 to RGB (Equivalent FCCs Are: YUNV, VYUY, V422 and YUYV)
-extern void YUY2ToRGB24(unsigned char *src,	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-						unsigned char *dst,	// RGB24 Dib
+extern void YUY2ToRGB32(LPBYTE src,			// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
+						LPDWORD dst,		// RGB32 Dib
 						int width,
 						int height);
-extern void YUY2ToRGB32(unsigned char *src,	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-						unsigned char *dst,	// RGB32 Dib
-						int width,
-						int height);
+extern void YUY2ToRGB32Asm(	LPBYTE src,		// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
+							LPDWORD dst,	// RGB32 Dib
+							int width,
+							int height);
 
 // UYVY to RGB (Equivalent FCCs Are: Y422 and UYNV)
-extern void UYVYToRGB24(unsigned char *src,	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
-						unsigned char *dst,	// RGB24 Dib
+extern void UYVYToRGB32(LPBYTE src,			// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
+						LPDWORD dst,		// RGB32 Dib
 						int width,
 						int height);
-extern void UYVYToRGB32(unsigned char *src,	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
-						unsigned char *dst,	// RGB32 Dib
-						int width,
-						int height);
+extern void UYVYToRGB32Asm(	LPBYTE src,		// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
+							LPDWORD dst,	// RGB32 Dib
+							int width,
+							int height);
 
 // YVYU to RGB
-extern void YVYUToRGB24(unsigned char *src,	// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
-						unsigned char *dst,	// RGB24 Dib
+extern void YVYUToRGB32(LPBYTE src,			// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
+						LPDWORD dst,		// RGB32 Dib
 						int width,
 						int height);
-extern void YVYUToRGB32(unsigned char *src,	// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
-						unsigned char *dst,	// RGB32 Dib
-						int width,
-						int height);
+extern void YVYUToRGB32Asm(	LPBYTE src,		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
+							LPDWORD dst,	// RGB32 Dib
+							int width,
+							int height);
 
 // VCR1 to RGB
-extern void VCR1ToRGB24(unsigned char *src,
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
 extern void VCR1ToRGB32(unsigned char *src,
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
 // CLJR to RGB
-extern void CLJRToRGB24(unsigned char *src,
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
 extern void CLJRToRGB32(unsigned char *src,
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
 // cyuv to RGB
-extern void cyuvToRGB24(unsigned char *src,
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
 extern void cyuvToRGB32(unsigned char *src,
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// VIXL to RGB 
-extern void VIXLToRGB24(unsigned char *src,
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
+// VIXL to RGB
 extern void VIXLToRGB32(unsigned char *src,
 						unsigned char *dst,	// RGB32 Dib
 						int width,
 						int height);
 
-// Y41P to RGB 
-extern void Y41PToRGB24(unsigned char *src,	// U0 Y0 V0 Y1 U4 Y2 V4 Y3 Y4 Y5 Y6 Y7
-						unsigned char *dst,	// RGB24 Dib
-						int width,
-						int height);
+// Y41P to RGB
 extern void Y41PToRGB32(unsigned char *src,	// U0 Y0 V0 Y1 U4 Y2 V4 Y3 Y4 Y5 Y6 Y7
 						unsigned char *dst,	// RGB32 Dib
 						int width,
@@ -294,20 +262,6 @@ __forceinline bool IsSupportedYuvToRgbFormat(DWORD dwFourCC)
 }
 
 // YV12 to RGB
-__forceinline void YV12ToRGB24(	unsigned char *src,		// Y Plane, V Plane and U Plane
-								unsigned char *dst,		// RGB24 Dib
-								int width,
-								int height)
-{
-	int nChromaOffset = width * height;
-	int nChromaSize = width * height / 4;
-	YUVToRGB24Flip(	src,								// Y Plane
-					src + nChromaOffset + nChromaSize,	// U Plane
-					src + nChromaOffset,				// V Plane
-					dst,								// RGB24 Dib
-					width,
-					height);
-};
 __forceinline void YV12ToRGB32(	unsigned char *src,		// Y Plane, V Plane and U Plane
 								unsigned char *dst,		// RGB32 Dib
 								int width,
@@ -315,30 +269,27 @@ __forceinline void YV12ToRGB32(	unsigned char *src,		// Y Plane, V Plane and U P
 {
 	int nChromaOffset = width * height;
 	int nChromaSize = width * height / 4;
-	YUVToRGB32Flip(	src,								// Y Plane
-					src + nChromaOffset + nChromaSize,	// U Plane
-					src + nChromaOffset,				// V Plane
-					dst,								// RGB32 Dib
-					width,
-					height);
+	if (g_bMMX)
+	{
+		YUV420ToRGB32Asm(src,								// Y Plane
+						src + nChromaOffset + nChromaSize,	// U Plane
+						src + nChromaOffset,				// V Plane
+						(LPDWORD)dst,						// RGB32 Dib
+						width,
+						height);
+	}
+	else
+	{
+		YUV420ToRGB32(	src,								// Y Plane
+						src + nChromaOffset + nChromaSize,	// U Plane
+						src + nChromaOffset,				// V Plane
+						(LPDWORD)dst,						// RGB32 Dib
+						width,
+						height);
+	}
 };
-
 
 // I420 to RGB (Equivalent FCC Is: IYUV)
-__forceinline void I420ToRGB24(	unsigned char *src,		// Y Plane, U Plane and V Plane
-								unsigned char *dst,		// RGB24 Dib
-								int width,
-								int height)
-{
-	int nChromaOffset = width * height;
-	int nChromaSize = width * height / 4;
-	YUVToRGB24Flip(	src,								// Y Plane
-					src + nChromaOffset,				// U Plane
-					src + nChromaOffset + nChromaSize,	// V Plane
-					dst,								// RGB24 Dib
-					width,
-					height);
-};
 __forceinline void I420ToRGB32(	unsigned char *src,		// Y Plane, U Plane and V Plane
 								unsigned char *dst,		// RGB32 Dib
 								int width,
@@ -346,24 +297,24 @@ __forceinline void I420ToRGB32(	unsigned char *src,		// Y Plane, U Plane and V P
 {
 	int nChromaOffset = width * height;
 	int nChromaSize = width * height / 4;
-	YUVToRGB32Flip(	src,								// Y Plane
-					src + nChromaOffset,				// U Plane
-					src + nChromaOffset + nChromaSize,	// V Plane
-					dst,								// RGB32 Dib
-					width,
-					height);
+	if (g_bMMX)
+	{
+		YUV420ToRGB32Asm(src,								// Y Plane
+						src + nChromaOffset,				// U Plane
+						src + nChromaOffset + nChromaSize,	// V Plane
+						(LPDWORD)dst,						// RGB32 Dib
+						width,
+						height);
+	}
+	else
+	{
+		YUV420ToRGB32(	src,								// Y Plane
+						src + nChromaOffset,				// U Plane
+						src + nChromaOffset + nChromaSize,	// V Plane
+						(LPDWORD)dst,						// RGB32 Dib
+						width,
+						height);
+	}
 };
-
-#ifdef YUVTORGB_SPEEDTEST_VERSIONS
-extern void YUY2ToRGB24Calc(	unsigned char *src,	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-								unsigned char *dst,	// RGB24 Dib
-								int width,
-								int height);
-
-extern void YUY2ToRGB24BigLut(	unsigned char *src,	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-								unsigned char *dst,	// RGB24 Dib
-								int width,
-								int height);
-#endif
 
 #endif

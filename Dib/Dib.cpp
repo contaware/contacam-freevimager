@@ -5043,7 +5043,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 	if (::IsSupportedYuvToRgbFormat(m_pBMI->bmiHeader.biCompression))	
 	{
 		// New Image Size
-		m_dwImageSize = DWALIGNEDWIDTHBYTES(24 * GetWidth()) * GetHeight();
+		m_dwImageSize = DWALIGNEDWIDTHBYTES(32 * GetWidth()) * GetHeight();
 
 		// Allocate
 		LPBITMAPINFO pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
@@ -5064,7 +5064,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		pBMI->bmiHeader.biWidth = GetWidth();
 		pBMI->bmiHeader.biHeight = GetHeight();
 		pBMI->bmiHeader.biPlanes = 1;
-		pBMI->bmiHeader.biBitCount = 24;
+		pBMI->bmiHeader.biBitCount = 32;
 		pBMI->bmiHeader.biCompression = BI_RGB;
 		pBMI->bmiHeader.biSizeImage = m_dwImageSize;
 		pBMI->bmiHeader.biXPelsPerMeter = 0;
@@ -5074,9 +5074,9 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		m_pColors = NULL;
 
 		// Decompress
-		::YUVToRGB24(	m_pBMI->bmiHeader.biCompression,
+		::YUVToRGB32(	m_pBMI->bmiHeader.biCompression,
 						m_pBits,	// YUV format depending from Compression Type
-						pBits,		// RGB24 Dib
+						pBits,		// RGB32 Dib
 						GetWidth(),
 						GetHeight());
 

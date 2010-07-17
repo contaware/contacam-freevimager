@@ -1298,7 +1298,7 @@ public:
 	__forceinline void RemoveOldestFrameFromNewestList();			// Free and remove oldest frame from newest list
 
 	// Main Decode & Process Functions
-	BOOL DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
+	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL ProcessFrame(LPBYTE pData, DWORD dwSize);
@@ -1510,8 +1510,7 @@ public:
 	AVRECARRAY m_AVRecs;								// Array of Opened files for segmented recording
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
-	volatile BOOL m_bRgb24Frame;						// Current Frame is RGB24 (Converted to or originally 24 bpp)
-	volatile BOOL m_bI420Frame;							// Current Frame is I420
+	volatile BOOL m_bRgb32Frame;						// Current Frame is RGB32 (Converted to or originally 32 bpp)
 	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessFrame()
 	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum

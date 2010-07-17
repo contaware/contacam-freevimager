@@ -426,7 +426,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				{
 					// Make sure we have a true RGB format
 					if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
-						pDib->Decompress(24);
+						pDib->Decompress(32);
 
 					// Resize
 					pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
@@ -770,19 +770,19 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 		pDibForPalette1 = m_pFrameList->GetHead();
 	DibForPalette1 = *pDibForPalette1;
 	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
-		DibForPalette1.Decompress(24);
+		DibForPalette1.Decompress(32);
 	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
 	DibForPalette2 = *pDibForPalette2;
 	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
-		DibForPalette2.Decompress(24);
+		DibForPalette2.Decompress(32);
 	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
 	DibForPalette3 = *pDibForPalette3;
 	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
-		DibForPalette3.Decompress(24);
+		DibForPalette3.Decompress(32);
 	DibForPalette3.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	
 	// Dib for Palette Calculation
@@ -3907,7 +3907,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 	{
 		// Allocate Thumb Dib
 		CDib ThumbDib;
-		if (!ThumbDib.AllocateBits(24, BI_RGB, m_dwAnimatedGifWidth, m_dwAnimatedGifHeight, RGB(80,70,70)))
+		if (!ThumbDib.AllocateBits(32, BI_RGB, m_dwAnimatedGifWidth, m_dwAnimatedGifHeight, RGB(80,70,70)))
 			return FALSE;
 
 		// Current Reference Time and Current Reference Up-Time
@@ -4140,7 +4140,7 @@ __forceinline void CVideoDeviceDoc::MovementDetectorPreview(CDib* pDib)
 	{
 		if (bRGB565)
 		{
-			pDib->Decompress(24);
+			pDib->Decompress(32);
 			pDib->ConvertTo16bitsMasks();
 		}
 		else
@@ -6225,8 +6225,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pVideoAviDoc = NULL;
 	m_bDoEditCopy = FALSE;
 	m_bDoEditPaste = FALSE;
-	m_bRgb24Frame = FALSE;
-	m_bI420Frame = FALSE;
+	m_bRgb32Frame = FALSE;
 	m_lProcessFrameTime = 0;
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
@@ -6721,15 +6720,15 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	{
 		// Converting?
 		BOOL bConverting = FALSE;
-		if (m_bRgb24Frame	&&
+		if (m_bRgb32Frame	&&
 			(m_OrigBMI.bmiHeader.biCompression != BI_RGB ||
-			m_OrigBMI.bmiHeader.biBitCount != 24))
+			m_OrigBMI.bmiHeader.biBitCount != 32))
 			bConverting = TRUE;
 
 		// Set format string
 		CString sFormat = _T("");
 		if (bConverting)
-			sFormat.Format(_T("%s -> RGB24"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
+			sFormat.Format(_T("%s -> RGB32"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 		else
 			sFormat.Format(_T("%s"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 
@@ -8343,21 +8342,13 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 	SrcBmi.bmiHeader.biWidth = m_DocRect.right;
 	SrcBmi.bmiHeader.biHeight = m_DocRect.bottom;
 	SrcBmi.bmiHeader.biPlanes = 1;
-	if (m_bRgb24Frame)
+	if (m_bRgb32Frame)
 	{
-		SrcBmi.bmiHeader.biBitCount = 24;
+		SrcBmi.bmiHeader.biBitCount = 32;
 		SrcBmi.bmiHeader.biCompression = BI_RGB;
 		SrcBmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(	SrcBmi.bmiHeader.biBitCount	*
 															SrcBmi.bmiHeader.biWidth)	*
 															SrcBmi.bmiHeader.biHeight;
-	}
-	else if (m_bI420Frame)
-	{
-		SrcBmi.bmiHeader.biBitCount = 12;
-		SrcBmi.bmiHeader.biCompression = FCC('I420');
-		int stride = ::CalcYUVStride(SrcBmi.bmiHeader.biCompression, SrcBmi.bmiHeader.biWidth);
-		if (stride > 0)
-			SrcBmi.bmiHeader.biSizeImage = ::CalcYUVSize(SrcBmi.bmiHeader.biCompression, stride, SrcBmi.bmiHeader.biHeight);
 	}
 	else
 		memcpy(&SrcBmi, &m_OrigBMI, CDib::GetBMISize((LPBITMAPINFO)&m_OrigBMI));
@@ -10191,7 +10182,7 @@ void CVideoDeviceDoc::SetColorDetectionWaitTime(DWORD dwWaitMilliseconds)
 		m_ColorDetection.SetWaitCount((DWORD)Round((double)dwWaitMilliseconds * m_dFrameRate / 1000.0));
 }
 
-BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
+BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
 {
 	if (!pSrcBits || (dwSrcSize == 0) || !pDstDib)
 		return FALSE;
@@ -10213,7 +10204,7 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		}
 
 		// Allocate Bits
-		if (!pDstDib->AllocateBitsFast(	24,
+		if (!pDstDib->AllocateBitsFast(	32,
 										BI_RGB,
 										m_OrigBMI.bmiHeader.biWidth,
 										m_OrigBMI.bmiHeader.biHeight))
@@ -10224,7 +10215,7 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		}
 
 		// Decode
-		if (!::YUVToRGB24(	m_OrigBMI.bmiHeader.biCompression,
+		if (!::YUVToRGB32(	m_OrigBMI.bmiHeader.biCompression,
 							pSrcBits,
 							pDstDib->GetBits(),
 							pDstDib->GetWidth(),
@@ -10245,11 +10236,11 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb24(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 		pDstDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
 		pDstDib->SetBits(pSrcBits, dwSrcSize);
 
-		// Decompress to 24 bpp
+		// Decompress to 32 bpp
 		if (pDstDib->IsCompressed())
-			pDstDib->Decompress(24);
-		else if (pDstDib->GetBitCount() != 24)
-			pDstDib->ConvertTo24bits();
+			pDstDib->Decompress(32);
+		else if (pDstDib->GetBitCount() != 32)
+			pDstDib->ConvertTo32bits();
 	}
 
 	return TRUE;
@@ -10375,13 +10366,13 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	{
 		// Init Vars
 		CDib* pDib = NULL;
-		BOOL bRgb24Frame;
+		BOOL bRgb32Frame;
 		DWORD VideoProcessorMode = m_VideoProcessorMode;
 		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
 		BOOL bColorDetectionPreview = m_bColorDetectionPreview;
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
-		BOOL bDecodeToRgb24 = FALSE;
+		BOOL bDecodeToRgb32 = FALSE;
 		BOOL bAVCodecSrcFormatSupport = TRUE;
 		if (CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
@@ -10391,13 +10382,14 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			m_bDecodeFramesForPreview						||
 			!bAVCodecSrcFormatSupport)
 		{
-			if (m_OrigBMI.bmiHeader.biBitCount != 24 ||
+			if ((m_OrigBMI.bmiHeader.biBitCount != 24 &&
+				m_OrigBMI.bmiHeader.biBitCount != 32) ||
 				m_OrigBMI.bmiHeader.biCompression != BI_RGB)
-				bDecodeToRgb24 = TRUE;
+				bDecodeToRgb32 = TRUE;
 		}
 
-		// Decode Rgb (other than 24bpp) or Yuv to Rgb24
-		if (bDecodeToRgb24)
+		// Decode Rgb (other than 24bpp and 32bpp) or Yuv to Rgb32
+		if (bDecodeToRgb32)
 		{
 			// Allocate Dib
 			pDib = (CDib*)new CDib;
@@ -10406,7 +10398,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			pDib->SetShowMessageBoxOnError(FALSE);
 
 			// Decode Frame (De-Interlace inside this function)
-			if (!DecodeFrameToRgb24(pData, dwSize, pDib))
+			if (!DecodeFrameToRgb32(pData, dwSize, pDib))
 			{
 				delete pDib;
 				goto exit;
@@ -10430,14 +10422,13 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				Deinterlace(pDib);
 		}
 
-		// Set Rgb24 Frame and I420 Frame Flags
-		if ((pDib->GetBitCount() == 24) && (pDib->GetCompression() == BI_RGB))
+		// Set Rgb32 Frame Flag
+		if ((pDib->GetBitCount() == 32) && (pDib->GetCompression() == BI_RGB))
 		{
-			m_bI420Frame = FALSE;
-			bRgb24Frame = TRUE;
-			if (!m_bRgb24Frame)
+			bRgb32Frame = TRUE;
+			if (!m_bRgb32Frame)
 			{
-				m_bRgb24Frame = TRUE;
+				m_bRgb32Frame = TRUE;
 				::PostMessage(	GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_SETDOCUMENTTITLE,
 								0, 0);
@@ -10445,14 +10436,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		}
 		else 
 		{
-			if ((pDib->GetBitCount() == 12) && (pDib->GetCompression() == FCC('I420')))
-				m_bI420Frame = TRUE;
-			else
-				m_bI420Frame = FALSE;
-			bRgb24Frame = FALSE;
-			if (m_bRgb24Frame)
+			bRgb32Frame = FALSE;
+			if (m_bRgb32Frame)
 			{
-				m_bRgb24Frame = FALSE;
+				m_bRgb32Frame = FALSE;
 				::PostMessage(	GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_SETDOCUMENTTITLE,
 								0, 0);
@@ -10463,7 +10450,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
 		// Video Detection Modes
-		if ((VideoProcessorMode & COLOR_DETECTOR) && bRgb24Frame)
+		if ((VideoProcessorMode & COLOR_DETECTOR) &&
+			(bRgb32Frame || (m_OrigBMI.bmiHeader.biCompression == BI_RGB && m_OrigBMI.bmiHeader.biBitCount == 24)))
 		{
 			ColorDetectionProcessing(pDib, bColorDetectionPreview);
 		}
@@ -10976,7 +10964,7 @@ BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.m_Dib.SetShowMessageBoxOnError(FALSE);
 	if (pDib->IsCompressed())
 	{
-		if (!DecodeFrameToRgb24(pDib->GetBits(),
+		if (!DecodeFrameToRgb32(pDib->GetBits(),
 								pDib->GetImageSize(),
 								&m_SaveSnapshotThread.m_Dib))
 			return FALSE;
@@ -11022,7 +11010,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 	Dib.SetShowMessageBoxOnError(FALSE);
 	if (pDib->IsCompressed())
 	{
-		if (!DecodeFrameToRgb24(pDib->GetBits(),
+		if (!DecodeFrameToRgb32(pDib->GetBits(),
 								pDib->GetImageSize(),
 								&Dib))
 		{
@@ -11350,6 +11338,15 @@ BOOL CVideoDeviceDoc::NextAviFile()
 // posY    : start pixel position in y direction
 // rx      : pixels count to sum in x direction
 // ry      : pixels count to sum in y direction
+/* Note:
+When using __asm to write assembly language in C/C++ functions, you don't need to
+preserve the EAX, EBX, ECX, EDX, ESI, or EDI registers. However, using these registers
+will affect code quality because the register allocator cannot use them to store values
+across __asm blocks. The compiler avoids enregistering variables across an __asm block
+if the register's contents would be changed by the __asm block. In addition, by using
+EBX, ESI or EDI in inline assembly code, you force the compiler to save and restore
+those registers in the function prologue and epilogue.
+*/
 __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 												BOOL bPlanar,
 												int width,

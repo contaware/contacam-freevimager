@@ -2596,7 +2596,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 {
 	BOOL res = FALSE;
 	BOOL bSaveCopyAs;
-	CDib Dib24;
 	TCHAR FileName[MAX_PATH] = _T("");
 	_tcscpy(FileName, m_sFileName);
 	CAviSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
@@ -6463,10 +6462,10 @@ void CVideoAviDoc::OnEditCopy()
 	::EnterCriticalSection(&m_csDib);
 	if (m_pDib && m_pDib->IsValid())
 	{
-		CDib Dib24(*m_pDib);
+		CDib Dib(*m_pDib);
 		::LeaveCriticalSection(&m_csDib);
-		Dib24.Decompress(24);
-		Dib24.EditCopy();
+		Dib.Decompress(32);
+		Dib.EditCopy();
 	}
 	else
 		::LeaveCriticalSection(&m_csDib);
