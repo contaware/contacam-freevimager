@@ -12320,12 +12320,6 @@ void CPictureDoc::OnEditCropLossless()
 #ifdef SUPPORT_LIBJPEG
 	if (IsJPEG())
 	{
-		if (IsModified())
-		{
-			::AfxMessageBox(ML_STRING(1286, "Please Save Before Performing This Operation."));
-			return;
-		}
-
 		if (m_bCrop)
 			ApplyCrop();
 		else
@@ -12334,8 +12328,8 @@ void CPictureDoc::OnEditCropLossless()
 			if (!IsDibReadyForCommand(ID_EDIT_CROP_LOSSLESS))
 				return;
 
-			// Lossless Crop
-			m_bLosslessCrop = TRUE;
+			// Lossless Crop if not modified
+			m_bLosslessCrop = !IsModified();
 			EditCrop();
 		}
 	}
@@ -12345,12 +12339,28 @@ void CPictureDoc::OnEditCropLossless()
 void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI) 
 {
 #ifdef SUPPORT_LIBJPEG
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0						||
-					m_dwIDAfterFullLoadCommand == ID_EDIT_CROP_LOSSLESS)	&&
-					DoEnableCommand()										&&
-					IsJPEG()												&&
-					m_DocRect.Width() >= m_nPixelAlignX						&&
-					m_DocRect.Height() >= m_nPixelAlignY					&&
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0			||
+					m_dwIDAfterFullLoadCommand == ID_EDIT_CROP_LOSSLESS)&&
+					m_pDib												&&
+					!(m_SlideShowThread.IsSlideshowRunning()	||
+					m_bDoRestartSlideshow)								&&
+					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
+#ifdef SUPPORT_GIFLIB
+					!m_GifAnimationThread.IsAlive()						&&
+#endif
+					!m_bMetadataModified								&&
+					!m_pRotationFlippingDlg								&&
+					!m_pWndPalette										&&
+					!m_pRedEyeDlg										&&
+					!m_bDoRedEyeColorPickup								&&
+					!m_pMonochromeConversionDlg							&&
+					!m_pSharpenDlg										&&
+					!m_pSoftenDlg										&&
+					!m_pSoftBordersDlg									&&
+					!m_pHLSDlg											&&
+					IsJPEG()											&&
+					m_DocRect.Width() >= m_nPixelAlignX					&&
+					m_DocRect.Height() >= m_nPixelAlignY				&&
 					!m_bPrintPreviewMode);
 #else
 	pCmdUI->Enable(FALSE);
@@ -12375,10 +12385,10 @@ void CPictureDoc::OnEditCrop()
 
 void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0			||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_CROP)			&&
 					m_pDib												&&
-					!(m_SlideShowThread.IsSlideshowRunning() ||
+					!(m_SlideShowThread.IsSlideshowRunning()	||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
 #ifdef SUPPORT_GIFLIB
@@ -12452,10 +12462,14 @@ BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
 		GetView()->ForceCursor();
 
 #ifdef SUPPORT_LIBJPEG
-		// Check for JPEG Extensions and make sure the file has not been modified
-		if (IsJPEG()	&&
-			!IsModified() &&
-			m_bLosslessCrop)
+		// Lossless crop,
+		// check for JPEG Extensions,
+		// make sure the file has not been modified
+		// and we are not copying
+		if (m_bLosslessCrop	&&
+			IsJPEG()		&&
+			!IsModified()	&&
+			!bCopyOnly)
 		{	
 			CString sCroppedFileName;
 			int nID;

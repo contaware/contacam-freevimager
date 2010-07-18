@@ -3447,8 +3447,6 @@ void CPictureView::OnLButtonDblClk(UINT nFlags, CPoint point)
 			SetCapture();
 		}
 	}
-	else if (pDoc->m_bCrop)
-		pDoc->ApplyCrop();
 	else
 	{
 #ifndef _DEBUG
