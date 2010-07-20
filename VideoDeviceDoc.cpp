@@ -6882,6 +6882,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 			delete [] pData;
 	}
 
+	// Update m_ZoomRect and show the Please wait... message
+	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
+
 	// Device First Run
 	m_bDeviceFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ? TRUE : FALSE;
 

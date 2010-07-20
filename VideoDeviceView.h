@@ -52,6 +52,7 @@ public:
 	virtual void OnInitialUpdate();
 	protected:
 	virtual void OnDraw(CDC* pDC);
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
 // Debug

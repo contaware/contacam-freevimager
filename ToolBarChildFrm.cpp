@@ -577,7 +577,7 @@ void CToolBarChildFrame::OnSize(UINT nType, int cx, int cy)
 	if (!pView || !pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 		return;
 
-	// Update ToolBar
+	// Update ToolBar and m_ZoomRect
 	pView->UpdateWindowSizes(FALSE, FALSE, FALSE);
 }
 

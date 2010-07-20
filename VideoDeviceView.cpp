@@ -872,6 +872,14 @@ void CVideoDeviceView::OnInitialUpdate()
 	CUImagerView::OnInitialUpdate();
 }
 
+void CVideoDeviceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+{
+	// Necessary to init m_ZoomRect, called only once after OnInitialUpdate()
+	// this because we are not issuing UpdateAllViews() from the doc.
+	// Note: default CView implementation only calls Invalidate
+	UpdateWindowSizes(TRUE, FALSE, FALSE);
+}
+
 void CVideoDeviceView::ColorPickup(UINT nFlags, CPoint point)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
