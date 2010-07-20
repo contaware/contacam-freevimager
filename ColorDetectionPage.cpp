@@ -420,11 +420,7 @@ void CColorDetectionPage::OnDestroy()
 
 void CColorDetectionPage::EnableDisableCriticalControls(BOOL bEnable)
 {
-	// Enable Check Boxes?
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_COLOR);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_PREVIEW);
-	pCheck->EnableWindow(bEnable);
+	
 }
 
 void CColorDetectionPage::OnPickcolor0() 

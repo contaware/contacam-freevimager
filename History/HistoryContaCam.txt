@@ -5,6 +5,15 @@ VERSION HISTORY
 - Networking fix to make it work with Wine
 - Fixed motion detection and recording for the RGB16(565) format
 - Improved motion detection: less sensible to luminosity changes
+- New gif thumbnail message in case of system overload and
+  resulting drop of frames -> lower resolution and/or framerate
+  if seeing such a message in the browser while looking at the
+  detections!
+- Recording is less restrictive -> it's now possible to change
+  many things while 24h recording
+- Fixed a tedious bug of a missing emms instruction after
+  the mmx deinterlacing function call. It only happened if no
+  codec was initialized
 
 2.0.5 (May 17th 2010)
 

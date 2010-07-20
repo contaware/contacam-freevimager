@@ -1567,10 +1567,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	else
 		pButton->EnableWindow(FALSE);
 
-	// Video Compression De-Interlace Check Box?
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DEINTERLACE);
-	pCheck->EnableWindow(bEnable);
-
 	// Video Compression Choose?
 	pComboBox = (CComboBox*)GetDlgItem(IDC_VIDEO_COMPRESSION_CHOOSE);
 	pComboBox->EnableWindow(bEnable);

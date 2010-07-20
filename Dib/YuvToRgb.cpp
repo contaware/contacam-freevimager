@@ -2003,7 +2003,6 @@ void __cdecl YUV420ToRGB32Asm(	LPBYTE src0,	// Y Plane
 {
 	__asm {		
 		pushad
-		finit
 
 		mov       edx, [esp + 32 + 4]	; src0
 		mov       edi, [esp + 32 + 8]	; src1
@@ -2108,7 +2107,6 @@ void __cdecl YUY2ToRGB32Asm(	LPBYTE src,		// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
 {
 	__asm {		
 		pushad
-		finit
 
 		mov       edx, [esp + 32 + 4]	; src
 		mov       ebp, [esp + 32 + 8]	; dst
@@ -2196,7 +2194,6 @@ void __cdecl UYVYToRGB32Asm(LPBYTE src,		// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
 {
 	__asm {		
 		pushad
-		finit
 
 		mov       edx, [esp + 32 + 4]	; src
 		mov       ebp, [esp + 32 + 8]	; dst
@@ -2284,7 +2281,6 @@ void __cdecl YVYUToRGB32Asm(LPBYTE src,		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
 {
 	__asm {		
 		pushad
-		finit
 
 		mov       edx, [esp + 32 + 4]	; src
 		mov       ebp, [esp + 32 + 8]	; dst

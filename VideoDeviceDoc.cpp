@@ -342,18 +342,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (DoSaveAvi())
 			{
 				AVISaveDib = *pDib;
-				bool bAVRecShowFrameTime = false;
-				
-				// Show Frame Time?
-				if (bShowFrameTime)
-				{
-					// Add Frame Time here because AddRawVideoPacket() cannot add frame times
-					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB && !m_pDoc->m_bVideoDetDeinterlace)
-						AddFrameTime(&AVISaveDib, RefTime, dwRefUpTime);
-					// Add Frame Time after De-Interlacing, otherwise the frame time text is not nice
-					else
-						bAVRecShowFrameTime = true;
-				}
 
 				// Open
 				if (!AVRecAvi.IsOpen())
@@ -370,50 +358,29 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						DstBmi.bmiHeader.biPlanes = 1;
 						DstBmi.bmiHeader.biCompression = m_pDoc->m_dwVideoDetFourCC;
 					}
-					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB && !m_pDoc->m_bVideoDetDeinterlace)
-					{
-						AVRecAvi.AddRawVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),	// Video Format
-													AVISaveDib.GetBMISize(),			// Video Format Size
-													CalcFrameRate.num,					// Rate
-													CalcFrameRate.den);					// Scale
-					}
-					else
-					{
-						int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
-						if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
-							nQualityBitrate = 0;
-						AVRecAvi.AddVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),		// Source Video Format
-												(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
-												CalcFrameRate.num,						// Rate
-												CalcFrameRate.den,						// Scale
-												nQualityBitrate == 1 ? m_pDoc->m_nVideoDetDataRate : 0,		// Bitrate in bits/s
-												m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
-												nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-					}
+					int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
+					if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
+						nQualityBitrate = 0;
+					AVRecAvi.AddVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),		// Source Video Format
+											(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
+											CalcFrameRate.num,						// Rate
+											CalcFrameRate.den,						// Scale
+											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetDataRate : 0,		// Bitrate in bits/s
+											m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
+											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 					AVRecAvi.Open();
 				}
 
 				// Add Frame
 				if (AVRecAvi.IsOpen())
 				{
-					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB && !m_pDoc->m_bVideoDetDeinterlace)
-					{
-						AVRecAvi.AddRawVideoPacket(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-													AVISaveDib.GetImageSize(),
-													AVISaveDib.GetBits(),
-													true,		// Key frame
-													false);		// No interleave for Video only
-					}
-					else
-					{
-						AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-											&AVISaveDib,
-											false,				// No interleave for Video only
-											m_pDoc->m_bVideoDetDeinterlace ? true : false,
-											bAVRecShowFrameTime,
-											RefTime,
-											dwRefUpTime);
-					}
+					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+										&AVISaveDib,
+										false,	// No interleave for Video only
+										m_pDoc->m_bVideoDetDeinterlace ? true : false,
+										bShowFrameTime ? true : false,
+										RefTime,
+										dwRefUpTime);
 				}
 			}
 
@@ -8367,28 +8334,17 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
 	else
 		FrameRate = av_d2q(m_dFrameRate, MAX_SIZE_FOR_RATIONAL);
-	if (m_dwVideoRecFourCC == BI_RGB && !m_bRecDeinterlace)
-	{
-		if ((*ppAVRec)->AddRawVideoStream(	(LPBITMAPINFO)(&SrcBmi),	// Video Format
-											CDib::GetBMISize((LPBITMAPINFO)(&SrcBmi)),	// Video Format Size
-											FrameRate.num,				// Rate
-											FrameRate.den) < 0)			// Scale
-			return FALSE;
-	}
-	else
-	{
-		int nQualityBitrate = m_nVideoRecQualityBitrate;
-		if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
-			nQualityBitrate = 0;
-		if ((*ppAVRec)->AddVideoStream(	(LPBITMAPINFO)(&SrcBmi),		// Source Video Format
-										(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
-										FrameRate.num,					// Rate
-										FrameRate.den,					// Scale
-										nQualityBitrate == 1 ? m_nVideoRecDataRate : 0,			// Bitrate in bits/s
-										m_nVideoRecKeyframesRate,		// Keyframes Rate	
-										nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f) < 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality		
-			return FALSE;
-	}
+	int nQualityBitrate = m_nVideoRecQualityBitrate;
+	if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
+		nQualityBitrate = 0;
+	if ((*ppAVRec)->AddVideoStream(	(LPBITMAPINFO)(&SrcBmi),		// Source Video Format
+									(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
+									FrameRate.num,					// Rate
+									FrameRate.den,					// Scale
+									nQualityBitrate == 1 ? m_nVideoRecDataRate : 0,			// Bitrate in bits/s
+									m_nVideoRecKeyframesRate,		// Keyframes Rate	
+									nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f) < 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality		
+		return FALSE;
 
 	// Add Audio Stream
 	if (m_bCaptureAudio)
@@ -9186,7 +9142,7 @@ void CVideoDeviceDoc::OnViewVideo()
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && !IsRecording());
+	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
@@ -10365,7 +10321,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	if (!m_bProcessFrameStopped && pData && dwSize > 0)
 	{
 		// Init Vars
-		CDib* pDib = NULL;
 		BOOL bRgb32Frame;
 		DWORD VideoProcessorMode = m_VideoProcessorMode;
 		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
@@ -10388,15 +10343,15 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				bDecodeToRgb32 = TRUE;
 		}
 
+		// Allocate Dib
+		CDib* pDib = (CDib*)new CDib;
+		if (!pDib)
+			goto exit;
+		pDib->SetShowMessageBoxOnError(FALSE);
+
 		// Decode Rgb (other than 24bpp and 32bpp) or Yuv to Rgb32
 		if (bDecodeToRgb32)
 		{
-			// Allocate Dib
-			pDib = (CDib*)new CDib;
-			if (!pDib)
-				goto exit;
-			pDib->SetShowMessageBoxOnError(FALSE);
-
 			// Decode Frame (De-Interlace inside this function)
 			if (!DecodeFrameToRgb32(pData, dwSize, pDib))
 			{
@@ -10407,12 +10362,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// No decode
 		else
 		{
-			// Allocate Dib
-			pDib = (CDib*)new CDib;
-			if (!pDib)
-				goto exit;
-			pDib->SetShowMessageBoxOnError(FALSE);
-
 			// Copy Bits
 			pDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
 			pDib->SetBits(pData, dwSize);
@@ -10521,40 +10470,25 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			if (m_pAVRec)
 			{
 				// Add Frame
-				if (m_dwVideoRecFourCC == BI_RGB && !m_bRecDeinterlace)
+				bool bAVRecShowFrameTime = false;
+				bool bRecDeinterlace = m_bRecDeinterlace ? true : false;
+				if (bShowFrameTime)
 				{
-					if (bShowFrameTime)
+					if (!bRecDeinterlace)
 					{
 						AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 						bShowFrameTime = FALSE;
 					}
-					bOk = m_pAVRec->AddRawVideoPacket(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-														pDib->GetImageSize(),
-														pDib->GetBits(),
-														true,	// Keyframe
-														m_bInterleave ? true : false);
+					else
+						bAVRecShowFrameTime = true;
 				}
-				else
-				{
-					bool bAVRecShowFrameTime = false;
-					if (bShowFrameTime)
-					{
-						if (!m_bRecDeinterlace)
-						{
-							AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
-							bShowFrameTime = FALSE;
-						}
-						else
-							bAVRecShowFrameTime = true;
-					}
-					bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-												pDib,
-												m_bInterleave ? true : false,
-												m_bRecDeinterlace ? true : false,
-												bAVRecShowFrameTime,
-												CurrentTime,
-												dwCurrentInitUpTime);
-				}
+				bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+											pDib,
+											m_bInterleave ? true : false,
+											bRecDeinterlace,
+											bAVRecShowFrameTime,
+											CurrentTime,
+											dwCurrentInitUpTime);
 
 				// Recording Up-Time Init
 				if (m_bRecFirstFrame)
@@ -11953,7 +11887,7 @@ void CVideoDeviceDoc::OnViewFrametime()
 
 void CVideoDeviceDoc::OnUpdateViewFrametime(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture && !m_pAVRec);
+	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowFrameTime ? 1 : 0);	
 }
 

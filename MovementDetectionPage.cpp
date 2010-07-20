@@ -282,11 +282,7 @@ void CMovementDetectionPage::OnDestroy()
 
 void CMovementDetectionPage::EnableDisableCriticalControls(BOOL bEnable)
 {
-	// Enable Check Boxes?
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	pCheck->EnableWindow(bEnable);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_DET_PREVIEW);
-	pCheck->EnableWindow(bEnable);
+	
 }
 
 void CMovementDetectionPage::OnDetectionSaveas() 

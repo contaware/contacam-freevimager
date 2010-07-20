@@ -533,7 +533,7 @@ int CAVRec::AddRawVideoStream(	const LPBITMAPINFO pFormat,
         TRACE(_T("Could not alloc video stream\n"));
         return -1;
     }
-	pStream->stream_copy = 1;	// This is a hack so data the entire extradata
+	pStream->stream_copy = 1;	// This is a hack so that the entire extradata
 								// is copied to strf of the avi file,
 								// I modified the avienc.c source!
     AVCodecContext* pCodecCtx = pStream->codec;
@@ -790,7 +790,7 @@ int CAVRec::AddRawAudioStream(	const LPWAVEFORMATEX pFormat,
         TRACE(_T("Could not alloc audio stream\n"));
         return -1;
     }
-	pStream->stream_copy = 1;	// This is a hack so data the entire extradata
+	pStream->stream_copy = 1;	// This is a hack so that the entire extradata
 								// is copied to strf of the avi file,
 								// I modified the avienc.c source!
     AVCodecContext* pCodecCtx = pStream->codec;

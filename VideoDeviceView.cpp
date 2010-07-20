@@ -532,11 +532,12 @@ BOOL CVideoDeviceView::Draw()
 	// Draw Msg?
 	if (bDrawMsg)
 	{
-		if (!pDoc->m_DxDraw.IsInit()										||
+		if (pDoc->m_pDib													&&
+			(!pDoc->m_DxDraw.IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
-			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB)
+			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB))
 		{
 			// Dx draw must be init from the main UI thread,
 			// otherwise it crashes on some machines with
@@ -1063,12 +1064,12 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('P') :
-			if (pDoc->m_bCapture && !pDoc->IsRecording())
+			if (pDoc->m_bCapture)
 				pDoc->ViewVideo();
 			break;
 
 		case _T('T') :
-			if (pDoc->m_bCapture && !pDoc->IsRecording())
+			if (pDoc->m_bCapture)
 				pDoc->m_bShowFrameTime = !pDoc->m_bShowFrameTime;
 			break;
 

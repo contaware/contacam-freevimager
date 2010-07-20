@@ -270,6 +270,8 @@ static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
 extern "C"
 {
 extern int mm_support_mask;
+extern int mm_flags;
+extern int mm_support(void);
 }
 #endif
 #ifdef CRACKCHECK
@@ -759,6 +761,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
 		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;
 		m_bFFMpegAudioEnc = avcodec_find_encoder(CODEC_ID_MP2) != NULL && avcodec_find_encoder(CODEC_ID_MP3) != NULL ? TRUE : FALSE;
+		// Initializing mm_flags is necessary when using deinterlacing,
+		// otherwise the emms_c() macro in avpicture_deinterlace() of the imgconvert.c file
+		// may be empty and the emms instruction is not called after using MMX!
+		// Note: all codecs except the raw one call dsputil_init() which executes mm_flags = mm_support()
+		mm_flags = mm_support();
 #endif
 		
 #ifdef VIDEODEVICEDOC
@@ -2868,7 +2875,7 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 }
 
 int CUImagerApp::ExitInstance() 
-{	
+{
 	// Clean-up recorders array
 	FreeDiscRecorders2();
 

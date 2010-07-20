@@ -154,9 +154,7 @@ void CNetworkPage::OnDestroy()
 
 void CNetworkPage::EnableDisableCriticalControls(BOOL bEnable)
 {
-	// Enable Check Box?
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_VIDEO_PORT_ENABLED);
-	pCheck->EnableWindow(bEnable);
+	
 }
 
 void CNetworkPage::OnVideoPortEnabled() 
