@@ -68,7 +68,7 @@ class CMovementDetectionPage;
 #define DEFAULT_VIDEOPOSTREC_FOURCC			FCC('theo')	// Encoder
 #define DEFAULT_VIDEOPOSTREC_QUALITY		DEFAULT_THEO_QUALITY
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
-#define DXDRAW_REINIT_TIMEOUT				3000U		// ms
+#define DXDRAW_REINIT_TIMEOUT				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < DXDRAW_REINIT_TIMEOUT
 
 // Watchdog
 #define WATCHDOG_DRAW_THRESHOLD				300U		// ms
