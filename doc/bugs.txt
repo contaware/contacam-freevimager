@@ -9,9 +9,6 @@ The Player Slider Is Not Hovering Correctly under vs6, fixed in vs2005!
 Strange Things (=not really bugs):
 ----------------------------------
 
-With VS6 on Vista if opening two devices and one or both have I420 output
-then the time and date are flickering...
-
 On NT 4 and on Vista the progress when loading a big jpeg is not shown well,
 this because the posted messages for the progress bar are not handled as
 fast as in other OSs, or maybe they are all handled together...
@@ -20,9 +17,6 @@ fast as in other OSs, or maybe they are all handled together...
 
 Playing raw yv12 video makes ir50_32.dll vfw codec crash when changing from
 GDI RGB <-> GDI YUV rendering mode on win98 & WinMe...
-
-On Vista when auto-starting with high priority is not working.
-Probably Vista doesn't let you set high priority when starting up.
 
 Axis 206W sometimes is violet -> It's a hardware problem
 
@@ -59,7 +53,6 @@ ffmpeg Bugs:
 - H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
 - Internal DTS not working in new ffmpeg                           -> not compiled in
 - zlib leaks                                                       -> not compiled in
-- vorbis internal decoder crashing on win95
 - swscale doesn't support pal8 input like from CRAM 8bpp.avi. img_convert supports it!
 - MPNG.avi is working with dll version, but with static it is no converting frame at 1 sec...
 - I263 not working, showing only first frame
@@ -71,7 +64,6 @@ Why using ContaCam only on Win2k and higher:
 
 - The VC6 compile is less stable, after some month the C lib crashed!
 - Micro Apache is not working on Win95
-- Vorbis decoder is crashing in Win95
 - On NT4 DirectX 7 is not supported
 - PSAPI.dll not available on NT4 -> Micro Apache cannot be killed!
 - Passwords are encrypted on Win2k or higher

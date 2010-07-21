@@ -752,10 +752,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		FF_MM_SSE3		// Prescott SSE3 functions
 		FF_MM_SSSE3		// Conroe SSSE3 functions
 		*/
-		// Win95 and NT4 always crash if enabling sse2 and on newer systems
-		// I had some strange crashes...better to always disable sse2 and higher
-		//mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE | FF_MM_SSE2 | FF_MM_3DNOWEXT | FF_MM_SSE3 | FF_MM_SSSE3;
-		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
+		// Win95 and NT4 (or older NT) always crash if enabling higher than mmx.
+		// On newer systems I had some strange crashes...better to always disable sse2 and higher!
+		if (g_bWin95 || g_bNT4OrOlder)
+			mm_support_mask = FF_MM_MMX;
+		else
+			mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
 		av_register_all();
 		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
 		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
