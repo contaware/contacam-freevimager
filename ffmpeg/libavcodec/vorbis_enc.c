@@ -652,7 +652,7 @@ static void floor_fit(vorbis_enc_context * venc, vorbis_enc_floor * fc, float * 
         float average = averages[i];
         int j;
 
-        average *= pow(tot_average / average, 0.5) * pow(1.25, position/200.); // MAGIC!
+        average = sqrt(tot_average * average) * pow(1.25f, position*0.005f); // MAGIC!
         for (j = 0; j < range - 1; j++)
             if (ff_vorbis_floor1_inverse_db_table[j * fc->multiplier] > average) break;
         posts[fc->list[i].sort] = j;
@@ -865,7 +865,7 @@ static int apply_window_and_mdct(vorbis_enc_context * venc, signed short * audio
             float * offset = venc->samples + channel*window_len*2 + window_len;
             j = channel;
             for (i = 0; i < samples; i++, j += venc->channels)
-                offset[i] = -audio[j] / 32768. / n * win[window_len - i - 1]; //FIXME find out why the sign has to be fliped
+                offset[i] = audio[j] / 32768. / n * win[window_len - i - 1];
         }
     } else {
         for (channel = 0; channel < venc->channels; channel++) {
@@ -882,7 +882,7 @@ static int apply_window_and_mdct(vorbis_enc_context * venc, signed short * audio
             float * offset = venc->saved + channel*window_len;
             j = channel;
             for (i = 0; i < samples; i++, j += venc->channels)
-                offset[i] = -audio[j] / 32768. / n * win[i]; //FIXME find out why the sign has to be fliped
+                offset[i] = audio[j] / 32768. / n * win[i];
         }
         venc->have_saved = 1;
     } else {
