@@ -29,7 +29,7 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	BOOL Draw();
+	void Draw();
 	BOOL AreCriticalControlsDisabled() {return m_nCriticalControlsCount <= 0;};
 
 protected:
@@ -94,7 +94,7 @@ protected:
 
 protected:
 	volatile BOOL m_bInitializingDxDraw;
-	DWORD m_dwDxDrawUpTime;
+	volatile DWORD m_dwDxDrawUpTime;
 	BOOL m_bDxDrawInitFailed;
 	int m_nCriticalControlsCount;
 	CFont m_GDIDrawFont;

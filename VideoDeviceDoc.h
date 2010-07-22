@@ -68,7 +68,7 @@ class CMovementDetectionPage;
 #define DEFAULT_VIDEOPOSTREC_FOURCC			FCC('theo')	// Encoder
 #define DEFAULT_VIDEOPOSTREC_QUALITY		DEFAULT_THEO_QUALITY
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
-#define DXDRAW_REINIT_TIMEOUT				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < DXDRAW_REINIT_TIMEOUT
+#define DXDRAW_REINIT_TIMEOUT				5000U		// ms
 
 // Watchdog
 #define WATCHDOG_DRAW_THRESHOLD				300U		// ms
@@ -1516,7 +1516,7 @@ public:
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
 	BITMAPINFOFULL m_OrigBMI;							// Original BMI of Frame
 	volatile BOOL m_bCapture;							// Flag indicating whether the grabbing device is running
-	volatile LONG m_bCaptureAndDrawingStarted;			// Flag set when capture and drawing have completely initialized
+	volatile LONG m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)

@@ -6582,13 +6582,15 @@ void CUImagerApp::CSchedulerEntry::Start()
 	if (!pDoc->IsRecording())
 	{
 		// Ready?
-		if (!pDoc->m_bCaptureAndDrawingStarted)
+		if (!pDoc->m_bCaptureStarted)
 		{
 			m_bInsideStart = FALSE;
 			return;
 		}
 
-		// Start
+		// Start record, the format may still change because of
+		// the m_bDecodeFramesForPreview flag, but that's not a
+		// problem for CAVRec::AddFrame() which manages it well.
 		if (!pDoc->CaptureRecord(FALSE)) // No Message Box on Error					
 		{
 			m_bInsideStart = FALSE;

@@ -4861,13 +4861,12 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			default:
 				break;
 		}
-		if (m_pDoc->m_bCaptureAndDrawingStarted)
+		if (m_pDoc->m_bCaptureStarted)
 		{
 			// Store start time
 			m_pDoc->m_CaptureStartTime = CTime::GetCurrentTime();
 
-			// Log the starting
-			// (no log for Video Avi mode)
+			// Log the starting (no log for Video Avi mode)
 			if (!m_pDoc->m_pVideoAviDoc)
 			{
 				CString sMsg;
@@ -6197,7 +6196,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
 	m_bCapture = FALSE;
-	m_bCaptureAndDrawingStarted = 0;
+	m_bCaptureStarted = 0;
 	m_bShowFrameTime = TRUE;
 	m_bVideoView = TRUE;
 	m_VideoProcessorMode = NO_DETECTOR;
@@ -10699,15 +10698,18 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// Draw
 		HRESULT hr = ::CoInitialize(NULL);
 		BOOL bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
-		BOOL bDrawingOk = GetView()->Draw();
+		GetView()->Draw();
 		if (bCleanupCOM)
 			::CoUninitialize();
 
 		// Set started flag and open the Settings dialog
-		// if it's the first run of this device
-		if (!m_bCaptureAndDrawingStarted && bDrawingOk)
+		// if it's the first run of this device (leave this code
+		// here because m_pDib must be initialized when setting
+		// the m_bCaptureStarted flag otherwise the Draw()
+		// function inside the watch dog doesn't work correctly!)
+		if (!m_bCaptureStarted)
 		{
-			::InterlockedExchange(&m_bCaptureAndDrawingStarted, 1);
+			::InterlockedExchange(&m_bCaptureStarted, 1);
 			if (m_bDeviceFirstRun)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),

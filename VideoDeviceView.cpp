@@ -494,14 +494,14 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 		return (pDoc->m_pDib->GetCompression() != pDoc->m_DxDraw.GetCurrentSrcFourCC());
 }
 
-BOOL CVideoDeviceView::Draw()
+void CVideoDeviceView::Draw()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
 
-	// Nothing to draw as a service, return ok
+	// Nothing to draw as a service, return
 	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-		return TRUE;
+		return;
 
 	// Enter CS here, also m_bInitializingDxDraw must be under the cs
 	// so that if two or more Draw() are called from different threads
@@ -510,10 +510,10 @@ BOOL CVideoDeviceView::Draw()
 
 	// Main UI thread is initializing the DxDraw object for us
 	// -> no drawing at this moment!
-	if (m_bInitializingDxDraw)
+	if (!pDoc->m_pDib || m_bInitializingDxDraw)
 	{
 		::LeaveCriticalSection(&pDoc->m_csDib);
-		return FALSE;
+		return;
 	}
 
 	// Init local vars
@@ -532,12 +532,11 @@ BOOL CVideoDeviceView::Draw()
 	// Draw Msg?
 	if (bDrawMsg)
 	{
-		if (pDoc->m_pDib													&&
-			(!pDoc->m_DxDraw.IsInit()										||
+		if (!pDoc->m_DxDraw.IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
-			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB))
+			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB)
 		{
 			// Dx draw must be init from the main UI thread,
 			// otherwise it crashes on some machines with
@@ -551,17 +550,16 @@ BOOL CVideoDeviceView::Draw()
 							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
 							(LPARAM)BI_RGB);
 			::LeaveCriticalSection(&pDoc->m_csDib);
-			return FALSE;
+			return;
 		}	
 	}
 	else
 	{
-		if (pDoc->m_pDib													&&
-			(!pDoc->m_DxDraw.IsInit()										||
+		if (!pDoc->m_DxDraw.IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
-			IsCompressionDifferent()))
+			IsCompressionDifferent())
 		{
 			// Dx draw must be init from the main UI thread,
 			// otherwise it crashes on some machines with
@@ -573,12 +571,11 @@ BOOL CVideoDeviceView::Draw()
 							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
 							(LPARAM)pDoc->m_pDib->GetCompression());
 			::LeaveCriticalSection(&pDoc->m_csDib);
-			return FALSE;
+			return;
 		}
 	}
 
 	// Draw if initialized
-	BOOL res = FALSE;
 	if (pDoc->m_DxDraw.IsInit())
 	{
 		// Update Current Device
@@ -600,7 +597,7 @@ BOOL CVideoDeviceView::Draw()
 		else if (bWatchDogAlarm)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);
 		// Draw Frame + Info
-		else if (bVideoView && pDoc->m_pDib)
+		else if (bVideoView)
 		{
 			// Draw Frame
 			pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_ZoomRect);
@@ -621,16 +618,11 @@ BOOL CVideoDeviceView::Draw()
 		
 		// Blt
 		if (pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
-		{
 			m_dwDxDrawUpTime = dwCurrentUpTime;
-			res = TRUE;
-		}
 	}
 
 	// Leave CS
 	::LeaveCriticalSection(&pDoc->m_csDib);
-
-	return res;
 }
 
 __forceinline void CVideoDeviceView::DrawText()

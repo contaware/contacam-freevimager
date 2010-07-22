@@ -1409,9 +1409,8 @@ void CVideoDeviceChildFrame::OnClose()
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();
 
-			// Log the stopping
-			// (no log for Video Avi mode)
-			if (pDoc->m_bCaptureAndDrawingStarted && pDoc->m_pVideoAviDoc == NULL)
+			// Log the stopping (no log for Video Avi mode)
+			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL)
 			{
 				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
 				CString sMsg;
