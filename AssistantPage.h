@@ -29,7 +29,6 @@ public:
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CAssistantPage();
 	void EnableDisableCriticalControls(BOOL bEnable);
-	void EnableDisable24hRec(BOOL bEnable);
 
 // Dialog Data
 	//{{AFX_DATA(CAssistantPage)
@@ -61,6 +60,8 @@ protected:
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();
+	void EnableDisable24hRec(BOOL bEnable);
+	BOOL Is24hRec();
 	void ApplySettings();
 	// Generated message map functions
 	//{{AFX_MSG(CAssistantPage)

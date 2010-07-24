@@ -171,21 +171,8 @@ BOOL CAssistantPage::OnInitDialog()
 
 	// Init vars
 	m_bDoApplySettings = FALSE;
-	m_bCheck24hRec = FALSE;
+	m_bCheck24hRec = Is24hRec();
 	m_bCheckFullStretch = FALSE;
-	if (!m_pDoc->m_pVideoAviDoc)
-	{
-		CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
-			((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-		if (pOnceSchedulerEntry											&&
-			pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
-#if _MFC_VER >= 0x0700
-			pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
-#else
-			pOnceSchedulerEntry->m_StopTime == CTime(2037, 12, 31, 23, 59, 59))
-#endif
-			m_bCheck24hRec = TRUE;
-	}
 	m_sName = m_pDoc->GetAssignedDeviceName();
 	m_sPhpConfigVersion = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_VERSION);
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
@@ -608,31 +595,46 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 	}
 }
 
+BOOL CAssistantPage::Is24hRec() 
+{
+	if (!m_pDoc->m_pVideoAviDoc)
+	{
+		CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
+			((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
+		if (pOnceSchedulerEntry											&&
+			pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
+#if _MFC_VER >= 0x0700
+			pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
+#else
+			pOnceSchedulerEntry->m_StopTime == CTime(2037, 12, 31, 23, 59, 59))
+#endif
+			return TRUE;
+	}
+	return FALSE;
+}
+
 void CAssistantPage::OnTimer(UINT nIDEvent) 
 {
 	if (m_bDoApplySettings && !m_pDoc->m_bClosing)
 	{
-		if (!m_pDoc->m_bCapture)
-			ApplySettings();
+		if (m_pDoc->m_pAVRec)
+		{
+			// Stop Rec
+			if (!m_pDoc->m_bAboutToStopRec &&
+				!m_pDoc->m_bAboutToStartRec)
+			{
+				m_pDoc->m_bRecAutoOpenAllowed = FALSE;
+				m_pDoc->CaptureRecord();
+			}
+		}
 		else
 		{
-			if (m_pDoc->m_pAVRec)
-			{
-				// Stop Rec
-				if (!m_pDoc->m_bAboutToStopRec &&
-					!m_pDoc->m_bAboutToStartRec)
-				{
-					m_pDoc->m_bRecAutoOpenAllowed = FALSE;
-					m_pDoc->CaptureRecord();
-				}
-			}
+			// Apply settings if we are not inside
+			// the processing function
+			if (m_pDoc->IsProcessFrameStopped())
+				ApplySettings();
 			else
-			{
-				if (m_pDoc->IsProcessFrameStopped())
-					ApplySettings();
-				else
-					m_pDoc->StopProcessFrame();
-			}
+				m_pDoc->StopProcessFrame();
 		}
 	}
 	CPropertyPage::OnTimer(nIDEvent);
@@ -652,14 +654,22 @@ BOOL CAssistantPage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CAssistantPage::OnButtonApplySettings() 
 {
-	// Begin wait cursor
-	BeginWaitCursor();
+	if (m_pDoc->m_bClosing			||
+		!m_pDoc->m_bCapture			||
+		m_pDoc->m_bWatchDogAlarm	||
+		m_pDoc->m_bDxDeviceUnplugged)
+		::MessageBeep(0xFFFFFFFF);
+	else
+	{
+		// Begin wait cursor
+		BeginWaitCursor();
 
-	// Set flag
-	m_bDoApplySettings = TRUE;
+		// Set flag
+		m_bDoApplySettings = TRUE;
 
-	// Disable all
-	EnableDisableAllCtrls(FALSE);
+		// Disable all
+		EnableDisableAllCtrls(FALSE);
+	}
 }
 
 void CAssistantPage::Rename()
@@ -819,9 +829,17 @@ void CAssistantPage::ApplySettings()
 	UpdateData(TRUE);
 
 	// Disable mov. det. (this also shouts down the save frame list thread)
-	BOOL bDoMovDet = FALSE;
+	BOOL bDoMovDet;
 	if (m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR)
+	{
+		bDoMovDet = TRUE;
 		m_pDoc->MovementDetectionOff();
+	}
+	else
+		bDoMovDet = FALSE;
+
+	// Is 24h rec.?
+	BOOL bDo24hRec = Is24hRec();
 
 	// Stop the delete thread
 	m_pDoc->m_DeleteThread.Kill();
@@ -862,9 +880,9 @@ void CAssistantPage::ApplySettings()
 	{
 		case 0 :
 		{
-			// Set enable mov. det. flag and set/reset 24h rec.
+			// Set enable mov. det. flag and set/reset 24h rec. flag
 			bDoMovDet = TRUE;
-			EnableDisable24hRec(m_bCheck24hRec);
+			bDo24hRec = m_bCheck24hRec;
 			
 			// Init size vars
 			CString sWidth, sHeight;
@@ -936,9 +954,9 @@ void CAssistantPage::ApplySettings()
 		}
 		case 1 :
 		{
-			// Reset mov. det. flag and 24h rec.
+			// Reset mov. det. and 24h rec. flags
 			bDoMovDet = FALSE;
-			EnableDisable24hRec(FALSE);
+			bDo24hRec = FALSE;
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1035,9 +1053,9 @@ void CAssistantPage::ApplySettings()
 		}
 		case 2 :
 		{
-			// Reset mov. det. flag and 24h rec.
+			// Reset mov. det. and 24h rec. flags
 			bDoMovDet = FALSE;
-			EnableDisable24hRec(FALSE);
+			bDo24hRec = FALSE;
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1122,9 +1140,9 @@ void CAssistantPage::ApplySettings()
 		}
 		case 3 :
 		{
-			// Reset mov. det. flag and 24h rec.
+			// Reset mov. det. and 24h rec. flags
 			bDoMovDet = FALSE;
-			EnableDisable24hRec(FALSE);
+			bDo24hRec = FALSE;
 
 			// Init size vars
 			CString sWidth, sHeight;
@@ -1265,6 +1283,9 @@ void CAssistantPage::ApplySettings()
 			pEdit->ShowWindow(FALSE);
 		}
 	}
+
+	// Enable/disable 24h rec.
+	EnableDisable24hRec(bDo24hRec);
 
 	// Restart process frame
 	m_pDoc->ReStartProcessFrame();

@@ -8002,7 +8002,14 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 	m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
 
 	// Connect
-	return ConnectGetFrame();
+	if (!ConnectGetFrame())
+		return FALSE;
+
+	// Start Audio Capture
+	if (m_bCaptureAudio)
+		m_CaptureAudioThread.Start();
+
+	return TRUE;
 }
 
 BOOL CVideoDeviceDoc::OpenGetVideo() 
@@ -8100,6 +8107,10 @@ BOOL CVideoDeviceDoc::OpenGetVideo()
 			return FALSE;
 		}
 
+		// Start Audio Capture
+		if (m_bCaptureAudio)
+			m_CaptureAudioThread.Start();
+
 		return TRUE;
 	}
 	else
@@ -8145,6 +8156,10 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 	// Reset Flag
 	m_bDecodeFramesForPreview = FALSE;
+
+	// Start Audio Capture
+	if (m_bCaptureAudio)
+		m_CaptureAudioThread.Start();
 
 	// Update
 	if (m_bSizeToDoc)
