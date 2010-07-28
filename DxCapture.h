@@ -83,9 +83,10 @@ public:
 				double dFrameRate,						// if zero or negative, the default Frame-Rate is used
 				int nFormatId,							// If -1, the format is chosen in the following order:
 														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
-				int nWidth,								// if Width or Height are invalid the default size is used
-				int nHeight,
-				const GUID *pMediaSubType = NULL);
+				int nWidth,								// If Width or Height are <= 0 the sizes are tried in the following order:
+				int nHeight,							// 640x480, 352x288, 352x240, 320x240
+				const GUID *pMediaSubType = NULL);		// With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
+														// (for DV devices the media subtype is fixed to YUY2)
 	void Close();										// Close Capture & Clean-Up
 	__forceinline BOOL IsDV() const {return m_bDV;};	// Is the output DV
 	__forceinline const GUID* GetOpenMediaSubType() {return &m_OpenMediaSubType;};
