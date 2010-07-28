@@ -14,7 +14,6 @@
 #include "ColorDetectionPage.h"
 #include "Quantizer.h"
 #include "DxCapture.h"
-#include "DxCaptureVMR9.h"
 #include "DxVideoFormatDlg.h"
 #include "DxVideoInputDlg.h"
 #include "AudioFormatDlg.h"
@@ -4435,61 +4434,6 @@ BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::StopTriggeredFrameCapture()
 		return FALSE;
 }
 
-int CVideoDeviceDoc::CVMR9CaptureVideoThread::Work() 
-{
-	CDib TempDib;
-	LPBYTE lpBitmapImage = NULL;
-	int nMaxWaitTime = 0;
-	int nWaitTime = 0;
-	DWORD dwDeltaMilliseconds;
-	DWORD dwStartUpTime, dwEndUpTime;
-
-	ASSERT(m_pDoc);
-
-	for (;;)
-	{
-		DWORD Event = ::WaitForSingleObject(GetKillEvent(), nWaitTime);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :	return 0;
-
-			// Grab Frame
-			case WAIT_TIMEOUT :		if (m_pDoc->m_pDxCaptureVMR9 &&
-										m_pDoc->m_pDxCaptureVMR9->GetWindowlessControlVMR9())
-									{
-										nMaxWaitTime = Round(1000.0 / m_pDoc->m_dFrameRate);
-										dwStartUpTime = ::timeGetTime();
-
-										if (m_pDoc->m_pDxCaptureVMR9->GetWindowlessControlVMR9()->
-											GetCurrentImage(&lpBitmapImage) == S_OK)
-										{
-											// To Calculate the Pixels Offset
-											TempDib.SetBMI((LPBITMAPINFO)lpBitmapImage);
-
-											// Process Frame
-											m_pDoc->ProcessFrame(	TempDib.GetBMISize() + lpBitmapImage,
-																	TempDib.GetImageSize());
-
-											// Free Memory
-											::CoTaskMemFree(lpBitmapImage);
-											lpBitmapImage = NULL;
-										}
-
-										dwEndUpTime = ::timeGetTime();
-										dwDeltaMilliseconds = dwEndUpTime - dwStartUpTime;
-
-										nWaitTime = nMaxWaitTime - (int)dwDeltaMilliseconds;
-										if (nWaitTime < 0)
-											nWaitTime = 0;
-									}
-									break;
-
-			default: break;
-		}
-	}
-}
-
 BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 {
 	BOOL res = FALSE;
@@ -6206,9 +6150,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDeviceFirstRun = FALSE;
 
 	// Capture Devices
-	m_bDxFrameGrabCaptureFirst = FALSE;
 	m_pDxCapture = NULL;
-	m_pDxCaptureVMR9 = NULL;
 	m_dwCaptureAudioDeviceID = 0U;
 	m_dwVfWCaptureVideoDeviceID = 0U;
 	m_nDeviceInputId = -1;
@@ -6303,7 +6245,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
-	m_VMR9CaptureVideoThread.SetDoc(this);
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
@@ -6611,8 +6552,6 @@ CString CVideoDeviceDoc::GetDevicePathName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDevicePath();
-	else if (m_pDxCaptureVMR9)
-		sDevice = m_pDxCaptureVMR9->GetDevicePath();
 	else if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)) 
 		sDevice = _T("VfW");
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
@@ -6651,8 +6590,6 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDeviceName();
-	else if (m_pDxCaptureVMR9)
-		sDevice = m_pDxCaptureVMR9->GetDeviceName();
 	else if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)) 
 		sDevice = _T("VfW");
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
@@ -6886,9 +6823,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 
 	// Device First Run
 	m_bDeviceFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ? TRUE : FALSE;
-
-	// Try dx frame grab capture first
-	m_bDxFrameGrabCaptureFirst = pApp->GetProfileInt(sSection, _T("DxFrameGrabCaptureFirst"), FALSE);
 
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
@@ -7157,9 +7091,6 @@ void CVideoDeviceDoc::SaveSettings()
 					pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
 			}
 
-			// Try dx frame grab capture first
-			pApp->WriteProfileInt(sSection, _T("DxFrameGrabCaptureFirst"), (int)m_bDxFrameGrabCaptureFirst);
-
 			// Email Settings
 			pApp->WriteProfileString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles);
 			pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType);
@@ -7356,9 +7287,6 @@ void CVideoDeviceDoc::SaveSettings()
 				if (GetFrame()->GetWindowPlacement(&wndpl))
 					::WriteProfileIniBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl), sTempFileName);
 			}
-
-			// Try dx frame grab capture first
-			::WriteProfileIniInt(sSection, _T("DxFrameGrabCaptureFirst"), (int)m_bDxFrameGrabCaptureFirst, sTempFileName);
 
 			// Email Settings
 			::WriteProfileIniString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles, sTempFileName);
@@ -7615,12 +7543,21 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 	if (m_pDxCapture)
 	{
 		m_pDxCapture->SetDoc(this);
-		if (m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
-								nId,
-								m_dFrameRate,
-								m_nDeviceFormatId,
-								m_nDeviceFormatWidth,
-								m_nDeviceFormatHeight))
+		BOOL bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+											nId,
+											m_dFrameRate,
+											m_nDeviceFormatId,
+											m_nDeviceFormatWidth,
+											m_nDeviceFormatHeight);
+		if (!bOpened)
+			bOpened = m_pDxCapture->Open(	GetView()->GetSafeHwnd(),
+											nId,
+											m_dFrameRate,
+											m_nDeviceFormatId,
+											m_nDeviceFormatWidth,
+											m_nDeviceFormatHeight,
+											&MEDIASUBTYPE_YUY2);
+		if (bOpened)
 		{
 			// Update format
 			::SendMessage(	GetView()->GetSafeHwnd(),
@@ -7667,82 +7604,6 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 	return FALSE;
 }
 
-BOOL CVideoDeviceDoc::InitOpenDxCaptureVMR9(int nId)
-{
-	m_pDxCaptureVMR9 = new CDxCaptureVMR9;
-	if (m_pDxCaptureVMR9)
-	{
-		m_pDxCaptureVMR9->SetDoc(this);
-		// Try common capture device grabbed by vmr9
-		BOOL bOpened = m_pDxCaptureVMR9->Open(	GetView()->GetSafeHwnd(),
-												nId,
-												DX_VMR9_FRAMERATE,
-												m_nDeviceFormatId,
-												m_nDeviceFormatWidth,
-												m_nDeviceFormatHeight,
-												FALSE); // no mpeg2
-		// Try Mpeg2 device decoded through mpeg2 directshow filter and grabbed by vmr9.
-		// We have to grab through vmr9 because the ISampleGrabber is not working after
-		// directshow mpeg2 decoders...seems to be a security to avoid grabbing DVDs
-		// for example. This is the only solution to get mpeg2 devices to work!
-		if (!bOpened)
-			bOpened = m_pDxCaptureVMR9->Open(	GetView()->GetSafeHwnd(),
-												nId,
-												DX_VMR9_FRAMERATE,
-												m_nDeviceFormatId,
-												m_nDeviceFormatWidth,
-												m_nDeviceFormatHeight,
-												TRUE); // mpeg2
-		if (bOpened)
-		{
-			// Update format
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_CHANGEVIDEOFORMAT,
-							0, 0);
-
-			// Start capturing video data
-			SetProcessFrameStopped();
-			if (m_pDxCaptureVMR9->Run())
-			{
-				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
-				if (m_nDeviceInputId >= 0 && m_nDeviceInputId < m_pDxCaptureVMR9->GetInputsCount())
-				{
-					if (!m_pDxCaptureVMR9->SetCurrentInput(m_nDeviceInputId))
-						m_nDeviceInputId = -1;
-				}
-				else
-					m_nDeviceInputId = m_pDxCaptureVMR9->SetDefaultInput();
-
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				m_pDxCaptureVMR9->Stop();
-				m_pDxCaptureVMR9->Run();
-
-				// Set flag
-				m_bCapture = TRUE;
-
-				// Restart process frame
-				ReStartProcessFrame();
-
-				// Start Video Capture Thread
-				m_VMR9CaptureVideoThread.Start();
-
-				// Start Audio Capture Thread
-				if (m_bCaptureAudio)
-					m_CaptureAudioThread.Start();
-
-				// Title
-				SetDocumentTitle();
-
-				return TRUE;
-			}
-		}
-		delete m_pDxCaptureVMR9;
-		m_pDxCaptureVMR9 = NULL;
-	}
-	return FALSE;
-}
-
 // nId = -1 for Vfw
 // nId >= 0 are for DirectShow Devices
 BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
@@ -7751,7 +7612,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 	if (nId >= 0)
 	{
 		// Already open?
-		if (m_pDxCapture || m_pDxCaptureVMR9)
+		if (m_pDxCapture)
 			return TRUE;
 
 		// Load Settings
@@ -7773,20 +7634,8 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 		m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
 
 		// Init and Open Dx Capture
-		if (m_bDxFrameGrabCaptureFirst)
-		{
-			if (InitOpenDxCaptureVMR9(nId))
-				return TRUE;
-			if (InitOpenDxCapture(nId))
-				return TRUE;
-		}
-		else
-		{
-			if (InitOpenDxCapture(nId))
-				return TRUE;
-			if (InitOpenDxCaptureVMR9(nId))
-				return TRUE;
-		}
+		if (InitOpenDxCapture(nId))
+			return TRUE;
 
 		// Failure
 		m_bCapture = FALSE;
@@ -8787,27 +8636,6 @@ void CVideoDeviceDoc::OnChangeVideoFormat()
 			m_pDxCapture->DeleteMediaType(pmtConfig);
 		}
 	}
-	else if (m_pDxCaptureVMR9 && m_pDxCaptureVMR9->GetWindowlessControlVMR9())
-	{
-		RECT rcDest;
-		rcDest.left = 0;
-		rcDest.right = 0;
-		rcDest.top = 0;
-		rcDest.bottom = 0;
-		m_pDxCaptureVMR9->SetVideoPosition(rcDest);
-		CDib TempDib;
-		LPBYTE lpBitmapImage;
-		if (m_pDxCaptureVMR9->GetWindowlessControlVMR9()->
-					GetCurrentImage(&lpBitmapImage) == S_OK)
-		{
-			TempDib.SetBMI((LPBITMAPINFO)lpBitmapImage);
-			memcpy(&m_OrigBMI, TempDib.GetBMI(), MIN(sizeof(BITMAPINFOFULL), TempDib.GetBMISize()));
-			m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
-			m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;			
-			SetDocumentTitle();
-			::CoTaskMemFree(lpBitmapImage);
-		}
-	}
 	else
 		return;
 
@@ -8872,16 +8700,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 				// Restart process frame
 				ReStartProcessFrame();
 			}
-			SetDocumentTitle();
-		}
-		else if (m_pDxCaptureVMR9)
-		{
-			// Do not call m_pDxCaptureVMR9->SetFrameRate,
-			// VMR9 thread will change the grab rate!
-			ResetMovementDetector();
-			m_ColorDetection.ResetCounter();
-			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
-			ReStartProcessFrame();
 			SetDocumentTitle();
 		}
 		else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
@@ -8971,7 +8789,6 @@ void CVideoDeviceDoc::OnCaptureSettings()
 void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDxCapture														||
-					m_pDxCaptureVMR9													||
 					::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)						||
 					((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc)	||
 					m_pGetFrameNetCom);
@@ -9130,7 +8947,7 @@ void CVideoDeviceDoc::VideoSourceDialog()
 
 void CVideoDeviceDoc::VideoInputDialog() 
 {
-	if (m_pDxCapture || m_pDxCaptureVMR9)
+	if (m_pDxCapture)
 	{
 		CDxVideoInputDlg dlg(this);
 		dlg.DoModal();
@@ -9141,8 +8958,6 @@ void CVideoDeviceDoc::VideoTunerDialog()
 {
 	if (m_pDxCapture)
 		m_pDxCapture->ShowVideoTVTunerDlg();
-	else if (m_pDxCaptureVMR9)
-		m_pDxCaptureVMR9->ShowVideoTVTunerDlg();
 }
 
 void CVideoDeviceDoc::ViewVideo() 

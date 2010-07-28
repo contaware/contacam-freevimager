@@ -9,7 +9,6 @@
 #include "VideoDeviceView.h"
 #include "VideoAviDoc.h"
 #include "DxCapture.h"
-#include "DxCaptureVMR9.h"
 #include "NetCom.h"
 #include "MainFrm.h"
 #include "BrowseDlg.h"
@@ -620,10 +619,6 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
-	else if (m_pDoc->m_pDxCaptureVMR9)
-	{
-		m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
-	}
 	else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
 	{
 		m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
@@ -745,7 +740,7 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Enable Source Button?
 	pButton = (CButton*)GetDlgItem(IDC_VIDEO_SOURCE);
-	if (m_pDoc->m_pDxCapture)
+	if (m_pDoc->m_pDxCapture && !m_pDoc->m_pDxCapture->IsOpenWithMediaSubType())
 	{
 		if (m_pDoc->m_pDxCapture->HasVideoCaptureFilterDlg())
 			pButton->EnableWindow(TRUE);
@@ -766,13 +761,6 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			pButton->EnableWindow(FALSE);
 	}
-	else if (m_pDoc->m_pDxCaptureVMR9)
-	{
-		if (m_pDoc->m_pDxCaptureVMR9->HasVideoTVTunerDlg())
-			pButton->EnableWindow(TRUE);
-		else
-			pButton->EnableWindow(FALSE);
-	}
 	else
 		pButton->EnableWindow(FALSE);
 	
@@ -782,13 +770,6 @@ BOOL CGeneralPage::OnInitDialog()
 	if (m_pDoc->m_pDxCapture)
 	{
 		if (m_pDoc->m_pDxCapture->GetInputsCount() > 0)
-			pButton->EnableWindow(TRUE);
-		else
-			pButton->EnableWindow(FALSE);
-	}
-	else if (m_pDoc->m_pDxCaptureVMR9)
-	{
-		if (m_pDoc->m_pDxCaptureVMR9->GetInputsCount() > 0)
 			pButton->EnableWindow(TRUE);
 		else
 			pButton->EnableWindow(FALSE);
@@ -1064,14 +1045,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			if (m_pDoc->m_pDxCapture)
 			{
 				LONG lDroppedFrames = m_pDoc->m_pDxCapture->GetDroppedFrames();
-				if (lDroppedFrames >= 0)
-					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
-				else
-					sDroppedFrames = _T("0");	// Unsupported
-			}
-			else if (m_pDoc->m_pDxCaptureVMR9)
-			{
-				LONG lDroppedFrames = m_pDoc->m_pDxCaptureVMR9->GetDroppedFrames();
 				if (lDroppedFrames >= 0)
 					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
 				else
@@ -1410,11 +1383,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 					pEdit->EnableWindow(TRUE);
 				}
 			}
-			else if (m_pDoc->m_pDxCaptureVMR9)
-			{
-				pSpin->EnableWindow(TRUE);
-				pEdit->EnableWindow(TRUE);
-			}
 			else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
 			{
 				pSpin->EnableWindow(TRUE);
@@ -1503,7 +1471,7 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	pButton = (CButton*)GetDlgItem(IDC_VIDEO_SOURCE);
 	if (bEnable)
 	{
-		if (m_pDoc->m_pDxCapture)
+		if (m_pDoc->m_pDxCapture && !m_pDoc->m_pDxCapture->IsOpenWithMediaSubType())
 		{
 			if (m_pDoc->m_pDxCapture->HasVideoCaptureFilterDlg())
 				pButton->EnableWindow(TRUE);
@@ -1529,13 +1497,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 			else
 				pButton->EnableWindow(FALSE);
 		}
-		else if (m_pDoc->m_pDxCaptureVMR9)
-		{
-			if (m_pDoc->m_pDxCaptureVMR9->HasVideoTVTunerDlg())
-				pButton->EnableWindow(TRUE);
-			else
-				pButton->EnableWindow(FALSE);
-		}
 		else
 			pButton->EnableWindow(FALSE);	// VfW Has Not This Button
 	}
@@ -1550,13 +1511,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 		if (m_pDoc->m_pDxCapture)
 		{
 			if (m_pDoc->m_pDxCapture->GetInputsCount() > 0)
-				pButton->EnableWindow(TRUE);
-			else
-				pButton->EnableWindow(FALSE);
-		}
-		else if (m_pDoc->m_pDxCaptureVMR9)
-		{
-			if (m_pDoc->m_pDxCaptureVMR9->GetInputsCount() > 0)
 				pButton->EnableWindow(TRUE);
 			else
 				pButton->EnableWindow(FALSE);

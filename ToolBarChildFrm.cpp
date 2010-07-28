@@ -16,7 +16,6 @@
 #include "AudioVideoShiftDlg.h"
 #include "VideoDevicePropertySheet.h"
 #include "DxCapture.h"
-#include "DxCaptureVMR9.h"
 #ifdef VIDEODEVICEDOC
 #include "ProgressDlg.h"
 #endif
@@ -1537,8 +1536,6 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", capture audio thread still alive");
 			if (pDoc->m_VfWCaptureVideoThread.IsAlive())
 				t += _T(", vfw capture video thread still alive");
-			if (pDoc->m_VMR9CaptureVideoThread.IsAlive())
-				t += _T(", vmr9 capture video thread still alive");
 			if (pDoc->m_SaveFrameListThread.IsAlive())
 				t += _T(", save frame list thread still alive");
 			if (pDoc->m_SaveSnapshotFTPThread.IsAlive())
@@ -1600,7 +1597,6 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	pDoc->m_DeleteThread.Kill_NoBlocking();
 	pDoc->m_CaptureAudioThread.Kill_NoBlocking();
 	pDoc->m_VfWCaptureVideoThread.Kill_NoBlocking();
-	pDoc->m_VMR9CaptureVideoThread.Kill_NoBlocking();
 	pDoc->m_SaveFrameListThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotFTPThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotThread.Kill_NoBlocking();
@@ -1655,17 +1651,11 @@ void CVideoDeviceChildFrame::EndShutdown()
 	pDoc->m_VfWCaptureVideoThread.Disconnect();
 	pDoc->m_VfWCaptureVideoThread.DestroyCaptureWnd();
 
-	// Delete DirectShow Capture Objects
+	// Delete DirectShow Capture Object
 	if (pDoc->m_pDxCapture)
 	{
 		delete pDoc->m_pDxCapture;
 		pDoc->m_pDxCapture = NULL;
-		pDoc->m_bCapture = FALSE;
-	}
-	if (pDoc->m_pDxCaptureVMR9)
-	{
-		delete pDoc->m_pDxCaptureVMR9;
-		pDoc->m_pDxCaptureVMR9 = NULL;
 		pDoc->m_bCapture = FALSE;
 	}
 
@@ -1730,7 +1720,6 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 		!pDoc->m_DeleteThread.IsAlive()				&&
 		!pDoc->m_CaptureAudioThread.IsAlive()		&&
 		!pDoc->m_VfWCaptureVideoThread.IsAlive()	&&
-		!pDoc->m_VMR9CaptureVideoThread.IsAlive()	&&
 		!pDoc->m_SaveFrameListThread.IsAlive()		&&
 		!pDoc->m_SaveSnapshotFTPThread.IsAlive()	&&
 		!pDoc->m_SaveSnapshotThread.IsAlive())

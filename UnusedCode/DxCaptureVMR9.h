@@ -1,9 +1,9 @@
-// DxCaptureEVR.h: interface for the CDxCaptureEVR class.
+// DxCaptureVMR9.h: interface for the CDxCaptureVMR9 class.
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_DXCAPTUREEVR_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_)
-#define AFX_DXCAPTUREEVR_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_
+#if !defined(AFX_DXCAPTUREVMR9_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_)
+#define AFX_DXCAPTUREVMR9_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -18,6 +18,8 @@ typedef unsigned long ULONG_PTR;
 #include "streams.h"
 #include <atlbase.h>
 #include <dshow.h>
+#include <d3d9.h>
+#include <vmr9.h>
 // Modified qedit.h to be compatible with directx > 7!!!
 #include "ISampleGrabber.h"
 
@@ -39,105 +41,17 @@ class CCrossbar;
 class CCaptureGraphBuilder;
 class CVideoDeviceDoc;
 
-#ifndef __IMFGetService_INTERFACE_DEFINED__
-#define __IMFGetService_INTERFACE_DEFINED__
-
-MIDL_INTERFACE("fa993888-4383-415a-a930-dd472a8cf6f7")
-IMFGetService : public IUnknown
-{
-	public:
-		virtual HRESULT STDMETHODCALLTYPE GetService( 
-             /* [in] */ REFGUID guidService,
-             /* [in] */ REFIID riid,
-             /* [iid_is][out] */ LPVOID *ppvObject) = 0;
-};
-
-#endif  /* __IMFGetService_INTERFACE_DEFINED__ */
-
-#ifndef __IMFVideoDisplayControl_INTERFACE_DEFINED__
-#define __IMFVideoDisplayControl_INTERFACE_DEFINED__
-
-typedef struct MFVideoNormalizedRect {
-    float left;
-    float top;
-    float right;
-    float bottom;
-} 	MFVideoNormalizedRect;
-
-MIDL_INTERFACE("a490b1e4-ab84-4d31-a1b2-181e03b1077a")
-IMFVideoDisplayControl : public IUnknown
+class CDxCaptureVMR9
 {
 public:
-    virtual HRESULT STDMETHODCALLTYPE GetNativeVideoSize( 
-        /* [unique][out][in] */ SIZE *pszVideo,
-        /* [unique][out][in] */ SIZE *pszARVideo) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetIdealVideoSize( 
-        /* [unique][out][in] */ SIZE *pszMin,
-        /* [unique][out][in] */ SIZE *pszMax) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetVideoPosition( 
-        /* [unique][in] */ const MFVideoNormalizedRect *pnrcSource,
-        /* [unique][in] */ const LPRECT prcDest) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetVideoPosition( 
-        /* [out] */ MFVideoNormalizedRect *pnrcSource,
-        /* [out] */ LPRECT prcDest) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetAspectRatioMode( 
-        /* [in] */ DWORD dwAspectRatioMode) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetAspectRatioMode( 
-        /* [out] */ DWORD *pdwAspectRatioMode) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetVideoWindow( 
-        /* [in] */ HWND hwndVideo) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetVideoWindow( 
-        /* [out] */ HWND *phwndVideo) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE RepaintVideo( void) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetCurrentImage( 
-        /* [out][in] */ BITMAPINFOHEADER *pBih,
-        /* [size_is][size_is][out] */ BYTE **pDib,
-        /* [out] */ DWORD *pcbDib,
-        /* [unique][out][in] */ LONGLONG *pTimeStamp) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetBorderColor( 
-        /* [in] */ COLORREF Clr) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetBorderColor( 
-        /* [out] */ COLORREF *pClr) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetRenderingPrefs( 
-        /* [in] */ DWORD dwRenderFlags) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetRenderingPrefs( 
-        /* [out] */ DWORD *pdwRenderFlags) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE SetFullscreen( 
-        /* [in] */ BOOL fFullscreen) = 0;
-    
-    virtual HRESULT STDMETHODCALLTYPE GetFullscreen( 
-        /* [out] */ BOOL *pfFullscreen) = 0;
-    
-};
-
-#endif 	/* __IMFVideoDisplayControl_INTERFACE_DEFINED__ */
-
-
-class CDxCaptureEVR
-{
-public:
-	CDxCaptureEVR();									// Constructor
-	virtual ~CDxCaptureEVR();							// Destructor
+	CDxCaptureVMR9();									// Constructor
+	virtual ~CDxCaptureVMR9();							// Destructor
 	void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};// The Doc Pointer
 	BOOL Open(	HWND hWnd,								// window for notifications
 				int nId,								// device id, if it is negative m_sDeviceName and m_sDevicePath are used
 				double dFrameRate,						// if zero or negative, the default Frame-Rate is used
 				int nFormatId,							// If -1, the format is chosen in the following order:
-														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
+														// RGB32, RGB24, RGB16, I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, then the first format is used
 				int nWidth,								// if Width or Height are invalid the default size is used
 				int nHeight,
 				BOOL bMpeg2);							// If TRUE opens the Mpeg2 device
@@ -163,6 +77,10 @@ public:
 	BOOL IsRunning();
 	BOOL IsPaused();
 	BOOL IsStopped();
+
+	inline IVMRWindowlessControl9*						// Get The m_pWindowlessControlVMR9 Pointer
+			GetWindowlessControlVMR9()
+				const {return m_pWindowlessControlVMR9;};
 
 	BOOL GetEvent(long* plEventCode,					// Get Events in response of a
 				  LONG_PTR* pplParam1,					// WM_DIRECTSHOW_GRAPHNOTIFY Message
@@ -202,7 +120,7 @@ public:
 	ULONG GetCurrentAnalogVideoStandards();				// The Current Selected Analog Video Standards
 	static CString GetAnalogVideoStandards(ULONG VideoStandard);
 														// Returns the Analog Video Standards String
-	BOOL SetVideoPosition(RECT& rcDest);				// Set EVR Window Video Position
+	BOOL SetVideoPosition(RECT& rcDest);				// Set The VMR9 Window Video Position
 
 	BOOL ResetDroppedFrames();							// Reset Dropped Frames Count
 	LONG GetDroppedFrames();							// Get Current Dropped Frames Count, -1 if not supported
@@ -236,6 +154,8 @@ protected:
 								int nMaxSizeY);
 
 	// For Debug With GraphEdt
+	// Note: for Vista and higher do a regsvr32 "Path to SDKS\Bin\proppage.dll"
+	// and use graphedt.exe from the above bin path!
 #ifdef _DEBUG
 	HRESULT AddToRot(IUnknown *pUnkGraph, DWORD *pdwRegister);
 	void RemoveFromRot(DWORD pdwRegister);
@@ -248,13 +168,15 @@ protected:
 	CString m_sDevicePath;								// Unique Device Path
 	IGraphBuilder* m_pGraph;							// The Graph
 	CCaptureGraphBuilder* m_pCaptureGraphBuilder;		// The Capture Graph Builder Wrapper Class
-	IBaseFilter* m_pEvr;								// EVR
+	IBaseFilter* m_pVmr9;								// VMR9
+	IBaseFilter* m_pAVIDecoder;							// AVI Decoder Filter
+	IBaseFilter* m_pHauppaugeColorSpaceConverter;		// Hauppauge Color Space Converter
+	IBaseFilter* m_pColorSpaceConverter;				// Color Space Converter
+	IVMRWindowlessControl9* m_pWindowlessControlVMR9;	// VMR9 Windowless Control
 	IBaseFilter* m_pGrabberFilter;						// Sample Grabber Filter
 	ISampleGrabber* m_pGrabber;							// It's interface
 	IAMStreamConfig* m_pConfig;							// Configuration interface
 	IBaseFilter* m_pSrcFilter;							// Capture Device Filter
-	IMFGetService* m_pEVRGetService;
-	IMFVideoDisplayControl* m_pEVRVideoDisplay;
 	IMediaControl* m_pMC;								// Control Interface
 	IMediaEventEx* m_pME;								// Events Interface
 	IAMDroppedFrames* m_pDF;							// Dropped Frames Interface
@@ -266,4 +188,4 @@ protected:
 };
 
 #endif
-#endif // !defined(AFX_DXCAPTUREEVR_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_)
+#endif // !defined(AFX_DXCAPTUREVMR9_H__B0EFD53A_DFDA_42C6_81E4_98E817229EC3__INCLUDED_)

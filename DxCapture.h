@@ -82,11 +82,14 @@ public:
 				int nId,								// device id, if it is negative m_sDeviceName and m_sDevicePath are used
 				double dFrameRate,						// if zero or negative, the default Frame-Rate is used
 				int nFormatId,							// If -1, the format is chosen in the following order:
-														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
+														// I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 				int nWidth,								// if Width or Height are invalid the default size is used
-				int nHeight);
+				int nHeight,
+				const GUID *pMediaSubType = NULL);
 	void Close();										// Close Capture & Clean-Up
-	BOOL IsDV() const {return m_bDV;};					// Is the output DV
+	__forceinline BOOL IsDV() const {return m_bDV;};	// Is the output DV
+	__forceinline const GUID* GetOpenMediaSubType() {return &m_OpenMediaSubType;};
+	__forceinline BOOL IsOpenWithMediaSubType() {return m_OpenMediaSubType != MEDIASUBTYPE_None;};
 	BOOL ShowError(HRESULT hr);							// Show Message Box with error
 	int GetDeviceID();									// Get the Device ID from the m_sDevicePath string
 														// (Device IDs dynamically change when a 
@@ -190,6 +193,8 @@ protected:
 								int nMaxSizeY);
 
 	// For Debug With GraphEdt
+	// Note: for Vista and higher do a regsvr32 "Path to SDKS\Bin\proppage.dll"
+	// and use graphedt.exe from the above bin path!
 #ifdef _DEBUG
 	HRESULT AddToRot(IUnknown *pUnkGraph, DWORD *pdwRegister);
 	void RemoveFromRot(DWORD pdwRegister);
@@ -205,6 +210,9 @@ protected:
 	IBaseFilter* m_pGrabberFilter;						// Sample Grabber Filter
 	ISampleGrabber* m_pGrabber;							// It's interface
 	IAMStreamConfig* m_pConfig;							// Configuration interface
+	IBaseFilter* m_pAVIDecoder;							// AVI Decoder Filter
+	IBaseFilter* m_pHauppaugeColorSpaceConverter;		// Hauppauge Color Space Converter
+	IBaseFilter* m_pColorSpaceConverter;				// Color Space Converter
 	IBaseFilter* m_pNullRendererFilter;					// Null Renderer Filter
 	IBaseFilter* m_pSrcFilter;							// Capture Device Filter
 	IBaseFilter* m_pDVSplitter;							// DV Audio / Video splitter
@@ -214,6 +222,7 @@ protected:
 	IAMDroppedFrames* m_pDF;							// Dropped Frames Interface
 	LONG m_lDroppedFramesBase;							// Dropped Frames Base
 	BOOL m_bDV;											// Be DV Device
+	GUID m_OpenMediaSubType;
 	// Use the crossbar class to help us sort out all the possible video inputs
     // The class needs to be given the capture filters ANALOGVIDEO input pin
 	CCrossbar* m_pCrossbar;

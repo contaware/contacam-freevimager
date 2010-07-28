@@ -7,7 +7,6 @@
 #include "ColorDetectionPage.h"
 #include "VideoDevicePropertySheet.h"
 #include "DxCapture.h"
-#include "DxCaptureVMR9.h"
 #include "MemDC.h"
 
 #ifdef _DEBUG
@@ -1056,7 +1055,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case _T('S') :
 			if (pDoc->m_pDxCapture															||
-				pDoc->m_pDxCaptureVMR9														||
 				::IsWindow(pDoc->m_VfWCaptureVideoThread.m_hCapWnd)							||
 				((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)(pDoc->m_pVideoAviDoc))	||
 				pDoc->m_pGetFrameNetCom)
@@ -1236,7 +1234,8 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 										pDoc->m_dFrameRate,
 										pDoc->m_nDeviceFormatId,
 										pDoc->m_nDeviceFormatWidth,
-										pDoc->m_nDeviceFormatHeight))
+										pDoc->m_nDeviceFormatHeight,
+										pDoc->m_pDxCapture->GetOpenMediaSubType()))
 		{
 			// Update format
 			OnThreadSafeChangeVideoFormat(0, 0);
@@ -1277,9 +1276,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 	LONG evCode, evParam1, evParam2;
     HRESULT hr = S_OK;
 
-	// Note: do not support it for m_pDxCaptureVMR9 because re-opening the device
-	// while the thread is grabbing is not good!
-
 	if (pDoc->m_pDxCapture)
 	{
 		while (pDoc->m_pDxCapture->GetEvent(&evCode,
@@ -1287,11 +1283,17 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 											(LONG_PTR*)&evParam2,
 											0)) // Wait Timeout of 0ms
 		{
+			// Make a copy and free before re-opening!
+			LONG evCodeCopy = evCode;
+			LONG evParam1Copy = evParam1;
+			LONG evParam2Copy = evParam2;
+			pDoc->m_pDxCapture->FreeEvent(evCode, evParam1, evParam2);
+
 			// Usb unplugged or replugged
-			if (evCode == EC_DEVICE_LOST)
+			if (evCodeCopy == EC_DEVICE_LOST)
 			{
 				// Device was removed
-				if (evParam2 == 0)
+				if (evParam2Copy == 0)
 				{
 					// Set stopped state
 					pDoc->SetProcessFrameStopped();
@@ -1310,7 +1312,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 					::LogLine(sMsg);
 				}
 				// Device is available again
-				else if (evParam2 == 1 && pDoc->m_pDxCapture)
+				else if (evParam2Copy == 1)
 				{
 					// Set stopped state
 					pDoc->SetProcessFrameStopped();
@@ -1336,8 +1338,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 									(LPARAM)0);
 				}
 			}
-
-			pDoc->m_pDxCapture->FreeEvent(evCode, evParam1, evParam2);
 		}
 
 		return hr;

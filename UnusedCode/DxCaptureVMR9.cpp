@@ -1,4 +1,4 @@
-// DxCaptureEVR.cpp: implementation of the CDxCaptureEVR class.
+// DxCaptureVMR9.cpp: implementation of the CDxCaptureVMR9 class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -10,7 +10,7 @@
 #include "MainFrm.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "DxCaptureEVR.h"
+#include "DxCaptureVMR9.h"
 #include "crossbar.h"
 #include "SampleCGB.h"
 #include "getdxver.h"
@@ -27,14 +27,15 @@ static char THIS_FILE[]=__FILE__;
 // Unknown Device String
 #define UNKNOWN_DEVICE				_T("Unknown Device")
 
-const GUID CLSID_EnhancedVideoRenderer_Internal = {0xfa10746c,0x9b63,0x4b6c,{0xbc,0x49,0xfc,0x30,0x0e,0xa5,0xf2,0x56}}; 
-const GUID MR_VIDEO_RENDER_SERVICE_Internal = {0x1092a86c,0xab1a,0x459a,{0xa3,0x36,0x83,0x1f,0xbc,0x4d,0x11,0xff}}; 
+// Additional class ids
+const CLSID CLSID_HauppaugeWinTVColorFormatConverter = {0x32edfac2,0x2540,0x11d6,{0x91,0x9f,0x00,0xa0,0xcc,0xa0,0xf7,0xc6}};
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CDxCaptureEVR::CDxCaptureEVR()
+CDxCaptureVMR9::CDxCaptureVMR9()
 {
 	m_pMC = NULL;
 	m_pME = NULL;
@@ -44,9 +45,11 @@ CDxCaptureEVR::CDxCaptureEVR()
 	m_pCaptureGraphBuilder = NULL;
 	m_pGrabberFilter = NULL;
 	m_pGrabber = NULL;
-	m_pEvr = NULL;
-	m_pEVRGetService = NULL;
-	m_pEVRVideoDisplay = NULL;
+	m_pVmr9 = NULL;
+	m_pAVIDecoder = NULL;
+	m_pColorSpaceConverter = NULL;
+	m_pHauppaugeColorSpaceConverter = NULL;
+	m_pWindowlessControlVMR9 = NULL;
 	m_pConfig = NULL;
 	m_pSrcFilter = NULL;
 	m_pCrossbar = NULL;
@@ -57,12 +60,12 @@ CDxCaptureEVR::CDxCaptureEVR()
 #endif
 }
 
-CDxCaptureEVR::~CDxCaptureEVR()
+CDxCaptureVMR9::~CDxCaptureVMR9()
 {
 	Close();
 }
 
-BOOL CDxCaptureEVR::ShowError(HRESULT hr)
+BOOL CDxCaptureVMR9::ShowError(HRESULT hr)
 {
     if (FAILED(hr))
     {
@@ -77,7 +80,7 @@ BOOL CDxCaptureEVR::ShowError(HRESULT hr)
 		return FALSE;
 }
 
-BOOL CDxCaptureEVR::InitInterfaces()
+BOOL CDxCaptureVMR9::InitInterfaces()
 {
     HRESULT hr;
 	
@@ -108,22 +111,43 @@ BOOL CDxCaptureEVR::InitInterfaces()
 		return FALSE;
 #endif
 
-	// Create the EVR
-	if (m_pEvr == NULL)
+	// Create the VMR9 in Windowless Mode
+	if (m_pVmr9 == NULL)
 	{
-		hr = ::CoCreateInstance(CLSID_EnhancedVideoRenderer_Internal, NULL,
-							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pEvr);
+		hr = ::CoCreateInstance(CLSID_VideoMixingRenderer9, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pVmr9);
 		if (FAILED(hr))
 			return FALSE;
 	}
 	else
 		return FALSE;
-	hr = m_pEvr->QueryInterface(__uuidof(IMFGetService), (void**)&m_pEVRGetService);
-    if (FAILED(hr))
-        return FALSE;
-	hr = m_pEVRGetService->GetService(MR_VIDEO_RENDER_SERVICE_Internal, __uuidof(IMFVideoDisplayControl), (void**)&m_pEVRVideoDisplay);
-	if (FAILED(hr))
-        return FALSE;
+
+	// Create the AVI Decoder Filter
+	if (m_pAVIDecoder == NULL)
+	{
+		::CoCreateInstance(	CLSID_AVIDec, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pAVIDecoder);
+	}
+	else
+		return FALSE;
+
+	// Create the Color Space Converter Filter
+	if (m_pColorSpaceConverter == NULL)
+	{
+		::CoCreateInstance(	CLSID_Colour, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pColorSpaceConverter);
+	}
+	else
+		return FALSE;
+
+	// Create the Hauppauge Color Space Converter Filter if available
+	if (m_pHauppaugeColorSpaceConverter == NULL)
+	{
+		::CoCreateInstance(	CLSID_HauppaugeWinTVColorFormatConverter, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pHauppaugeColorSpaceConverter);
+	}
+	else
+		return FALSE;
 
     // Obtain interfaces for media control and media events
     hr = m_pGraph->QueryInterface(IID_IMediaControl, (void**)&m_pMC);
@@ -137,7 +161,7 @@ BOOL CDxCaptureEVR::InitInterfaces()
     return TRUE;
 }
 
-CString CDxCaptureEVR::GetDeviceName(int nId)
+CString CDxCaptureVMR9::GetDeviceName(int nId)
 {
 	if (nId < 0)
 		return _T("");
@@ -154,7 +178,7 @@ CString CDxCaptureEVR::GetDeviceName(int nId)
 		return sDevicesName[nId];
 }
 
-CString CDxCaptureEVR::GetDevicePath(int nId)
+CString CDxCaptureVMR9::GetDevicePath(int nId)
 {
 	if (nId < 0)
 		return _T("");
@@ -171,7 +195,7 @@ CString CDxCaptureEVR::GetDevicePath(int nId)
 		return sDevicesPath[nId];
 }
 
-void CDxCaptureEVR::ReadDeviceNameAndPath(IPropertyBag* pBag, CString& sDeviceName, CString& sDevicePath)
+void CDxCaptureVMR9::ReadDeviceNameAndPath(IPropertyBag* pBag, CString& sDeviceName, CString& sDevicePath)
 {
 	sDeviceName = UNKNOWN_DEVICE;
 	sDevicePath = UNKNOWN_DEVICE;
@@ -194,7 +218,7 @@ void CDxCaptureEVR::ReadDeviceNameAndPath(IPropertyBag* pBag, CString& sDeviceNa
 	}
 }
 
-int CDxCaptureEVR::EnumDevices(CStringArray& sDevicesName, CStringArray& sDevicesPath)
+int CDxCaptureVMR9::EnumDevices(CStringArray& sDevicesName, CStringArray& sDevicesPath)
 {
 	// Clean-up
 	sDevicesName.RemoveAll();
@@ -238,7 +262,7 @@ int CDxCaptureEVR::EnumDevices(CStringArray& sDevicesName, CStringArray& sDevice
 	return index;
 }
 
-BOOL CDxCaptureEVR::HasFormats()
+BOOL CDxCaptureVMR9::HasFormats()
 {
 	HRESULT hr;
 
@@ -270,7 +294,7 @@ BOOL CDxCaptureEVR::HasFormats()
 	return FALSE;
 }
 
-int CDxCaptureEVR::EnumFormatCompressions(CDWordArray& Compressions,
+int CDxCaptureVMR9::EnumFormatCompressions(CDWordArray& Compressions,
 										   CDWordArray& Bits,
 										   CStringArray& CompressionStrings)
 {
@@ -327,7 +351,7 @@ int CDxCaptureEVR::EnumFormatCompressions(CDWordArray& Compressions,
 	return Compressions.GetSize();
 }
 
-CString CDxCaptureEVR::GetFormatCompressionDescription(DWORD dwFourCC)
+CString CDxCaptureVMR9::GetFormatCompressionDescription(DWORD dwFourCC)
 {
 	if (dwFourCC == FCC('YV12') ||
 		dwFourCC == FCC('I420') ||
@@ -364,7 +388,7 @@ CString CDxCaptureEVR::GetFormatCompressionDescription(DWORD dwFourCC)
 
 // PAL:               25 fps
 // NTSC: 30000/1001 = 29.97003 fps
-int CDxCaptureEVR::EnumFormatSizes(CArray<CSize,CSize>& Sizes)
+int CDxCaptureVMR9::EnumFormatSizes(CArray<CSize,CSize>& Sizes)
 {
 	if (!m_pConfig)
 		return 0;
@@ -527,7 +551,7 @@ int CDxCaptureEVR::EnumFormatSizes(CArray<CSize,CSize>& Sizes)
 	return Sizes.GetSize();
 }
 
-CString CDxCaptureEVR::FormatSizesToName(const CSize& Size)
+CString CDxCaptureVMR9::FormatSizesToName(const CSize& Size)
 {
 	if (Size == CSize(80,60))
 		return _T("QQQVGA");
@@ -577,7 +601,7 @@ CString CDxCaptureEVR::FormatSizesToName(const CSize& Size)
 		return _T("");
 }
 
-BOOL CDxCaptureEVR::IsSizeInRange(CSize s, int nMinSizeX, int nMinSizeY, int nMaxSizeX, int nMaxSizeY)
+BOOL CDxCaptureVMR9::IsSizeInRange(CSize s, int nMinSizeX, int nMinSizeY, int nMaxSizeX, int nMaxSizeY)
 {
 	if (nMinSizeX <= s.cx && nMinSizeY <= s.cy &&
 		nMaxSizeX >= s.cx && nMaxSizeY >= s.cy)
@@ -586,7 +610,7 @@ BOOL CDxCaptureEVR::IsSizeInRange(CSize s, int nMinSizeX, int nMinSizeY, int nMa
 		return FALSE;
 }
 
-CString CDxCaptureEVR::GetAnalogVideoStandards(ULONG VideoStandard)
+CString CDxCaptureVMR9::GetAnalogVideoStandards(ULONG VideoStandard)
 {
 	CString s(_T(""));
 
@@ -634,7 +658,7 @@ CString CDxCaptureEVR::GetAnalogVideoStandards(ULONG VideoStandard)
 	return s;
 }
 
-BOOL CDxCaptureEVR::ResetDroppedFrames()
+BOOL CDxCaptureVMR9::ResetDroppedFrames()
 {
 	if (m_pDF)
 	{
@@ -647,7 +671,7 @@ BOOL CDxCaptureEVR::ResetDroppedFrames()
 		return FALSE;
 }
 
-LONG CDxCaptureEVR::GetDroppedFrames()
+LONG CDxCaptureVMR9::GetDroppedFrames()
 {
 	if (m_pDF)
 	{
@@ -660,7 +684,7 @@ LONG CDxCaptureEVR::GetDroppedFrames()
 		return -1;
 }
 
-LONG CDxCaptureEVR::GetAvgFrameSize()
+LONG CDxCaptureVMR9::GetAvgFrameSize()
 {
 	if (m_pDF)
 	{
@@ -672,7 +696,7 @@ LONG CDxCaptureEVR::GetAvgFrameSize()
 		return -1;
 }
 
-double CDxCaptureEVR::SetFrameRate(double dFrameRate)
+double CDxCaptureVMR9::SetFrameRate(double dFrameRate)
 {
 	if (m_bMpeg2)
 		return 0.0;
@@ -698,7 +722,7 @@ double CDxCaptureEVR::SetFrameRate(double dFrameRate)
 	return 0.0;
 }
 
-double CDxCaptureEVR::GetFrameRate()
+double CDxCaptureVMR9::GetFrameRate()
 {
 	if (m_bMpeg2)
 		return 0.0;
@@ -719,7 +743,7 @@ double CDxCaptureEVR::GetFrameRate()
 	}
 }
 
-BOOL CDxCaptureEVR::GetFrameRateRange(double& dMin, double& dMax)
+BOOL CDxCaptureVMR9::GetFrameRateRange(double& dMin, double& dMax)
 {
 	if (!m_pConfig || m_bMpeg2)
 		return FALSE;
@@ -742,7 +766,7 @@ BOOL CDxCaptureEVR::GetFrameRateRange(double& dMin, double& dMax)
 	return TRUE;
 }
 
-BOOL CDxCaptureEVR::GetCurrentFormat(AM_MEDIA_TYPE** ppmtConfig)
+BOOL CDxCaptureVMR9::GetCurrentFormat(AM_MEDIA_TYPE** ppmtConfig)
 {
 	HRESULT hr;
 
@@ -756,7 +780,7 @@ BOOL CDxCaptureEVR::GetCurrentFormat(AM_MEDIA_TYPE** ppmtConfig)
 	return FALSE;
 }
 
-BOOL CDxCaptureEVR::SetCurrentFormat(AM_MEDIA_TYPE* pmtConfig)
+BOOL CDxCaptureVMR9::SetCurrentFormat(AM_MEDIA_TYPE* pmtConfig)
 {
 	if (!m_pConfig)
 		return FALSE;
@@ -765,7 +789,7 @@ BOOL CDxCaptureEVR::SetCurrentFormat(AM_MEDIA_TYPE* pmtConfig)
 	return SUCCEEDED(hr);
 }
 
-BOOL CDxCaptureEVR::GetFormatByID(int nId, AM_MEDIA_TYPE** ppmtConfig)
+BOOL CDxCaptureVMR9::GetFormatByID(int nId, AM_MEDIA_TYPE** ppmtConfig)
 {
 	HRESULT hr;
 
@@ -793,7 +817,7 @@ BOOL CDxCaptureEVR::GetFormatByID(int nId, AM_MEDIA_TYPE** ppmtConfig)
 		return FALSE;
 }
 
-int CDxCaptureEVR::GetCurrentFormatID()
+int CDxCaptureVMR9::GetCurrentFormatID()
 {
 	if (!m_pConfig)
 		return -1;
@@ -852,7 +876,7 @@ int CDxCaptureEVR::GetCurrentFormatID()
 	return -1;
 }
 
-ULONG CDxCaptureEVR::GetCurrentAnalogVideoStandards()
+ULONG CDxCaptureVMR9::GetCurrentAnalogVideoStandards()
 {
 	if (!m_pConfig)
 		return 0;
@@ -911,7 +935,7 @@ ULONG CDxCaptureEVR::GetCurrentAnalogVideoStandards()
 	return 0;
 }
 
-int CDxCaptureEVR::GetFormatID(DWORD biCompression, DWORD biBitCount)
+int CDxCaptureVMR9::GetFormatID(DWORD biCompression, DWORD biBitCount)
 {
 	if (!m_pConfig)
 		return -1;
@@ -965,7 +989,7 @@ int CDxCaptureEVR::GetFormatID(DWORD biCompression, DWORD biBitCount)
 	return -1;
 }
 
-BOOL CDxCaptureEVR::SetCurrentFormatByID(int nId)
+BOOL CDxCaptureVMR9::SetCurrentFormatByID(int nId)
 {
 	AM_MEDIA_TYPE* pmtConfig = NULL;
 	VIDEOINFOHEADER* pVih = NULL;
@@ -1019,12 +1043,12 @@ BOOL CDxCaptureEVR::SetCurrentFormatByID(int nId)
 	return FALSE;
 }
 
-int CDxCaptureEVR::GetDeviceID()
+int CDxCaptureVMR9::GetDeviceID()
 {
 	return GetDeviceID(m_sDevicePath);
 }
 
-int CDxCaptureEVR::GetDeviceID(CString sDevicePath)
+int CDxCaptureVMR9::GetDeviceID(CString sDevicePath)
 {
 	if (sDevicePath == _T(""))
 		return -1;
@@ -1074,7 +1098,7 @@ where v(4) is the 4-digit vendor code that the USB committee assigns to the vend
 d(4) is the 4-digit product code that the vendor assigns to the device.
 z(2) is the interface number, extracted from the bInterfaceNumber field of the usb interface association descriptor.
 */
-BOOL CDxCaptureEVR::BindFilter(int nId)
+BOOL CDxCaptureVMR9::BindFilter(int nId)
 {
 	BOOL bBindToObjectOk = FALSE;
 
@@ -1132,7 +1156,7 @@ BOOL CDxCaptureEVR::BindFilter(int nId)
 	return bBindToObjectOk;
 }
 
-BOOL CDxCaptureEVR::BindFilter(const CString& sDeviceName, const CString& sDevicePath)
+BOOL CDxCaptureVMR9::BindFilter(const CString& sDeviceName, const CString& sDevicePath)
 {
 	BOOL bBindToObjectOk = FALSE;
 
@@ -1189,10 +1213,10 @@ BOOL CDxCaptureEVR::BindFilter(const CString& sDeviceName, const CString& sDevic
 // - nId is the device id, if it is negative m_sDeviceName and m_sDevicePath are used
 // - If dFrameRate is zero or negative, the default Frame-Rate is used
 // - If nFormatId is -1, the format is chosen in the following order:
-//   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
+//   RGB32, RGB24, RGB16, I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
 // - If bMpeg2 is TRUE it tries to open as a Mpeg2 device
-BOOL CDxCaptureEVR::Open(	HWND hWnd,
+BOOL CDxCaptureVMR9::Open(	HWND hWnd,
 							int nId,
 							double dFrameRate,
 							int nFormatId,
@@ -1211,7 +1235,7 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
     // Init DirectShow interfaces
     if (!InitInterfaces())
     {
-		TRACE(_T("Failed to init video interfaces,\nmake sure you are on Vista or higher!\n"));
+		TRACE(_T("Failed to init video interfaces,\nmake sure you have DirectX 9 or higher installed!\n"));
         return FALSE;
     }
 
@@ -1249,28 +1273,46 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
         return FALSE;
     }
 
-	// Add EVR filter to our graph
-	hr = m_pGraph->AddFilter(m_pEvr, L"Enhanced Video Renderer");
+	// Add VMR9 filter to our graph
+	hr = m_pGraph->AddFilter(m_pVmr9, L"VMR9");
 	if (FAILED(hr))
 	{
-		TRACE(_T("Failed to add Enhanced Video Renderer to the filter graph\n"));
+		TRACE(_T("Failed to add Video Mixing Renderer 9 to the filter graph\n"));
         return FALSE;
 	}
 
-	// Set the EVR window and size
-	hr = m_pEVRVideoDisplay->SetVideoWindow(hWnd);
-	MFVideoNormalizedRect src;
-	src.left = 0.0f;
-	src.top = 0.0f;
-	src.right = 1.0f;
-	src.bottom = 1.0f;
-	RECT rcDest;
-	//::GetClientRect(hWnd, &rcDest);
-	rcDest.left = 0;
-	rcDest.right = 0;
-	rcDest.top = 0;
-	rcDest.bottom = 0;
-	hr = m_pEVRVideoDisplay->SetVideoPosition(&src, &rcDest);
+	// Add the Color Space Converter to our graph
+	if (m_pAVIDecoder)
+		m_pGraph->AddFilter(m_pAVIDecoder, L"AVI Decoder");
+
+	// Add the Color Space Converter to our graph
+	if (m_pColorSpaceConverter)
+		m_pGraph->AddFilter(m_pColorSpaceConverter, L"Color Space Converter");
+
+	// Add the Hauppauge Color Space Converter to our graph
+	if (m_pHauppaugeColorSpaceConverter)
+		m_pGraph->AddFilter(m_pHauppaugeColorSpaceConverter, L"Hauppauge Color Space Converter");
+
+	// Set the VMR9 rendering mode and the window
+    IVMRFilterConfig9* pConfigVMR9;
+    hr = m_pVmr9->QueryInterface(IID_IVMRFilterConfig9, (void**)&pConfigVMR9);
+    if (SUCCEEDED(hr)) 
+    {
+        pConfigVMR9->SetRenderingMode(VMRMode_Windowless);
+		pConfigVMR9->SetNumberOfStreams(1);
+        pConfigVMR9->Release();
+    }
+    hr = m_pVmr9->QueryInterface(IID_IVMRWindowlessControl9, (void**)&m_pWindowlessControlVMR9);
+    if (SUCCEEDED(hr)) 
+    {
+        m_pWindowlessControlVMR9->SetVideoClippingWindow(hWnd);
+		RECT rcDest;
+		rcDest.left = 0;
+		rcDest.right = 0;
+		rcDest.top = 0;
+		rcDest.bottom = 0;
+		SetVideoPosition(rcDest);
+    }
 
 	// Get Dropped Frames and Configuration Interfaces
 	if (bMpeg2)
@@ -1347,6 +1389,11 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
 		{
 			// Try Formats: from first choice down to last one
 
+			// RGB Formats
+			if ((nFormatId = GetFormatID(BI_RGB, 32)) == -1)
+			if ((nFormatId = GetFormatID(BI_RGB, 24)) == -1)
+			if ((nFormatId = GetFormatID(BI_RGB, 16)) == -1)
+				
 			// I420
 			if ((nFormatId = GetFormatID(mmioFOURCC('I','4','2','0'), 12)) == -1)
 			
@@ -1364,11 +1411,6 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
 			if ((nFormatId = GetFormatID(mmioFOURCC('V','Y','U','Y'), 16)) == -1)
 			if ((nFormatId = GetFormatID(mmioFOURCC('V','4','2','2'), 16)) == -1)
 			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','V'), 16)) == -1)
-
-			// RGB Formats
-			if ((nFormatId = GetFormatID(BI_RGB, 32)) == -1)
-			if ((nFormatId = GetFormatID(BI_RGB, 16)) == -1)
-			if ((nFormatId = GetFormatID(BI_RGB, 24)) == -1)
 				nFormatId = 0;	// If not successful set first format
 		}
 		
@@ -1448,26 +1490,18 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
 	{
 		hr = m_pCaptureGraphBuilder->RenderStream(	NULL,
 													&MEDIATYPE_Stream, // Setting MEDIATYPE_Stream forces the use of the mpeg2 demuxer
-													m_pSrcFilter, NULL, m_pEvr);
+													m_pSrcFilter, NULL, m_pVmr9);
 	}
 	// Render Raw Video
 	else
 	{
-		hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
+		hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
 													&MEDIATYPE_Interleaved,
-													m_pSrcFilter, NULL, m_pEvr);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
-														&MEDIATYPE_Video,
-														m_pSrcFilter, NULL, m_pEvr);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
-														&MEDIATYPE_Interleaved,
-														m_pSrcFilter, NULL, m_pEvr);
+													m_pSrcFilter, NULL, m_pVmr9);
 		if (FAILED(hr))
 			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
 														&MEDIATYPE_Video,
-														m_pSrcFilter, NULL, m_pEvr);
+														m_pSrcFilter, NULL, m_pVmr9);
 	}
 	if (FAILED(hr))
 		return FALSE;
@@ -1491,11 +1525,11 @@ BOOL CDxCaptureEVR::Open(	HWND hWnd,
 		TRACE(_T("Failed to set graph notify window\n"));
         return FALSE;
     }
-
+        
     return TRUE;
 }
 
-void CDxCaptureEVR::Close()
+void CDxCaptureVMR9::Close()
 {
 	// NOTE:
 	// Some crappy devices like my TRUST 380 SpaceCam when unplugged while
@@ -1524,9 +1558,11 @@ void CDxCaptureEVR::Close()
 	SAFE_RELEASE(m_pDF);
 	SAFE_RELEASE(m_pSrcFilter);
 	SAFE_RELEASE(m_pConfig);
-	SAFE_RELEASE(m_pEvr);
-	SAFE_RELEASE(m_pEVRGetService);
-	SAFE_RELEASE(m_pEVRVideoDisplay);
+	SAFE_RELEASE(m_pWindowlessControlVMR9);
+	SAFE_RELEASE(m_pColorSpaceConverter);
+	SAFE_RELEASE(m_pHauppaugeColorSpaceConverter);
+	SAFE_RELEASE(m_pAVIDecoder);
+	SAFE_RELEASE(m_pVmr9);
 	SAFE_RELEASE(m_pGraph);
 	if (m_pCaptureGraphBuilder)
 		m_pCaptureGraphBuilder->ReleaseFilters();
@@ -1543,7 +1579,7 @@ void CDxCaptureEVR::Close()
 	}
 }
 
-void CDxCaptureEVR::FreeMediaType(AM_MEDIA_TYPE& mt)
+void CDxCaptureVMR9::FreeMediaType(AM_MEDIA_TYPE& mt)
 {
     if (mt.cbFormat != 0)
     {
@@ -1559,7 +1595,7 @@ void CDxCaptureEVR::FreeMediaType(AM_MEDIA_TYPE& mt)
     }
 }
 
-void CDxCaptureEVR::DeleteMediaType(AM_MEDIA_TYPE *pmt)
+void CDxCaptureVMR9::DeleteMediaType(AM_MEDIA_TYPE *pmt)
 {
     if (pmt != NULL)
     {
@@ -1568,7 +1604,7 @@ void CDxCaptureEVR::DeleteMediaType(AM_MEDIA_TYPE *pmt)
     }
 }
 
-BOOL CDxCaptureEVR::InitCrossbar()
+BOOL CDxCaptureVMR9::InitCrossbar()
 {
     IPin        *pP = 0;
     IEnumPins   *pins=0;
@@ -1635,7 +1671,7 @@ BOOL CDxCaptureEVR::InitCrossbar()
 	return bFound;
 }
 
-int CDxCaptureEVR::GetInputsCount()
+int CDxCaptureVMR9::GetInputsCount()
 {
 	LONG lCount;
 	if (m_pCrossbar)
@@ -1649,7 +1685,7 @@ int CDxCaptureEVR::GetInputsCount()
 		return -1;
 }
 
-int CDxCaptureEVR::GetCurrentInputID()
+int CDxCaptureVMR9::GetCurrentInputID()
 {
 	LONG lIndex;
 	if (m_pCrossbar)
@@ -1663,7 +1699,7 @@ int CDxCaptureEVR::GetCurrentInputID()
 		return -1;
 }
 
-CString CDxCaptureEVR::GetCurrentInputName()
+CString CDxCaptureVMR9::GetCurrentInputName()
 {
 	if (m_pCrossbar)
 	{
@@ -1679,7 +1715,7 @@ CString CDxCaptureEVR::GetCurrentInputName()
 		return _T("");
 }
 
-BOOL CDxCaptureEVR::SetCurrentInput(int nId)
+BOOL CDxCaptureVMR9::SetCurrentInput(int nId)
 {
 	if (m_pCrossbar && nId >= 0)
         return (m_pCrossbar->SetInputIndex(nId) == S_OK);
@@ -1687,7 +1723,7 @@ BOOL CDxCaptureEVR::SetCurrentInput(int nId)
 		return FALSE;
 }
 
-int CDxCaptureEVR::SetDefaultInput()
+int CDxCaptureVMR9::SetDefaultInput()
 {
 	if (m_pCrossbar)
     {
@@ -1713,7 +1749,7 @@ int CDxCaptureEVR::SetDefaultInput()
 		return -1;
 }
 
-int CDxCaptureEVR::EnumInputs(CStringArray &sInputs)
+int CDxCaptureVMR9::EnumInputs(CStringArray &sInputs)
 {
 	if (m_pCrossbar && GetInputsCount() > 0)
     {
@@ -1735,7 +1771,7 @@ int CDxCaptureEVR::EnumInputs(CStringArray &sInputs)
 		return -1;
 }
 
-BOOL CDxCaptureEVR::Run()
+BOOL CDxCaptureVMR9::Run()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1750,7 +1786,7 @@ BOOL CDxCaptureEVR::Run()
 	}
 }
 
-BOOL CDxCaptureEVR::Pause()
+BOOL CDxCaptureVMR9::Pause()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1765,7 +1801,7 @@ BOOL CDxCaptureEVR::Pause()
 	}
 }
 
-BOOL CDxCaptureEVR::Stop()
+BOOL CDxCaptureVMR9::Stop()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1776,7 +1812,7 @@ BOOL CDxCaptureEVR::Stop()
 		return FALSE;
 }
 
-BOOL CDxCaptureEVR::IsRunning()
+BOOL CDxCaptureVMR9::IsRunning()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1793,7 +1829,7 @@ BOOL CDxCaptureEVR::IsRunning()
 		return FALSE;
 }
 
-BOOL CDxCaptureEVR::IsPaused()
+BOOL CDxCaptureVMR9::IsPaused()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1810,7 +1846,7 @@ BOOL CDxCaptureEVR::IsPaused()
 		return FALSE;
 }
 
-BOOL CDxCaptureEVR::IsStopped()
+BOOL CDxCaptureVMR9::IsStopped()
 {
 	if (!m_pMC)
 		return FALSE;
@@ -1827,7 +1863,7 @@ BOOL CDxCaptureEVR::IsStopped()
 		return FALSE;
 }
 
-BOOL CDxCaptureEVR::GetEvent(long* plEventCode,
+BOOL CDxCaptureVMR9::GetEvent(long* plEventCode,
 						  LONG_PTR* pplParam1,
 						  LONG_PTR* pplParam2,
 						  long msTimeout)
@@ -1840,14 +1876,14 @@ BOOL CDxCaptureEVR::GetEvent(long* plEventCode,
 								msTimeout) == S_OK);
 }
 
-BOOL CDxCaptureEVR::FreeEvent(long lEventCode, LONG_PTR plParam1, LONG_PTR plParam2)
+BOOL CDxCaptureVMR9::FreeEvent(long lEventCode, LONG_PTR plParam1, LONG_PTR plParam2)
 {
 	if (!m_pME)
 		return FALSE;
 	return (m_pME->FreeEventParams(lEventCode, plParam1, plParam2) == S_OK);
 }
 
-BOOL CDxCaptureEVR::HasVideoCaptureFilterDlg()
+BOOL CDxCaptureVMR9::HasVideoCaptureFilterDlg()
 {
 	BOOL bHasVideoCaptureFilterDlg = FALSE;
 	HRESULT hr;
@@ -1872,7 +1908,7 @@ BOOL CDxCaptureEVR::HasVideoCaptureFilterDlg()
 	return bHasVideoCaptureFilterDlg;
 }
 
-BOOL CDxCaptureEVR::ShowVideoCaptureFilterDlg()
+BOOL CDxCaptureVMR9::ShowVideoCaptureFilterDlg()
 {
 	BOOL bOk = FALSE;
 	HRESULT hr;
@@ -1901,7 +1937,7 @@ BOOL CDxCaptureEVR::ShowVideoCaptureFilterDlg()
 	return bOk;
 }
 
-BOOL CDxCaptureEVR::HasVideoCapturePinDlg()
+BOOL CDxCaptureVMR9::HasVideoCapturePinDlg()
 {
 	BOOL bHasVideoCapturePinDlg = FALSE;
 	HRESULT hr;
@@ -1926,7 +1962,7 @@ BOOL CDxCaptureEVR::HasVideoCapturePinDlg()
 	return bHasVideoCapturePinDlg;
 }
 
-BOOL CDxCaptureEVR::ShowVideoCapturePinDlg()
+BOOL CDxCaptureVMR9::ShowVideoCapturePinDlg()
 {
 	BOOL bOk = FALSE;
 	HRESULT hr;
@@ -1955,7 +1991,7 @@ BOOL CDxCaptureEVR::ShowVideoCapturePinDlg()
 	return bOk;
 }
 
-BOOL CDxCaptureEVR::HasVideoTVTunerDlg()
+BOOL CDxCaptureVMR9::HasVideoTVTunerDlg()
 {
 	BOOL bHasVideoTVTunerDlg = FALSE;
 	HRESULT hr;
@@ -1989,7 +2025,7 @@ BOOL CDxCaptureEVR::HasVideoTVTunerDlg()
 	return bHasVideoTVTunerDlg;
 }
 
-BOOL CDxCaptureEVR::ShowVideoTVTunerDlg()
+BOOL CDxCaptureVMR9::ShowVideoTVTunerDlg()
 {
 	BOOL bOk = FALSE;
 	HRESULT hr;
@@ -2029,12 +2065,20 @@ BOOL CDxCaptureEVR::ShowVideoTVTunerDlg()
 	return bOk;
 }
 
-BOOL CDxCaptureEVR::SetVideoPosition(RECT& rcDest)
+BOOL CDxCaptureVMR9::SetVideoPosition(RECT& rcDest)
 {
-	if (m_pEVRVideoDisplay)
+	if (m_pWindowlessControlVMR9)
 	{
-		if (SUCCEEDED(m_pEVRVideoDisplay->SetVideoPosition(NULL, &rcDest)))
-			return TRUE;
+		HRESULT hr;
+		long lWidth, lHeight; 
+		hr = m_pWindowlessControlVMR9->GetNativeVideoSize(&lWidth, &lHeight, NULL, NULL); 
+		if (SUCCEEDED(hr))
+		{
+			RECT rcSrc;
+			::SetRect(&rcSrc, 0, 0, lWidth, lHeight); 
+			if (SUCCEEDED(m_pWindowlessControlVMR9->SetVideoPosition(&rcSrc, &rcDest)))
+				return TRUE;
+		}
 	}
 	
 	return FALSE;
@@ -2042,7 +2086,7 @@ BOOL CDxCaptureEVR::SetVideoPosition(RECT& rcDest)
 
 #ifdef _DEBUG
 
-HRESULT CDxCaptureEVR::AddToRot(IUnknown *pUnkGraph, DWORD *pdwRegister) 
+HRESULT CDxCaptureVMR9::AddToRot(IUnknown *pUnkGraph, DWORD *pdwRegister) 
 {
     IMoniker * pMoniker;
     IRunningObjectTable *pROT;
@@ -2061,7 +2105,7 @@ HRESULT CDxCaptureEVR::AddToRot(IUnknown *pUnkGraph, DWORD *pdwRegister)
     return hr;
 }
 
-void CDxCaptureEVR::RemoveFromRot(DWORD pdwRegister)
+void CDxCaptureVMR9::RemoveFromRot(DWORD pdwRegister)
 {
     IRunningObjectTable *pROT;
     if (SUCCEEDED(GetRunningObjectTable(0, &pROT))) {

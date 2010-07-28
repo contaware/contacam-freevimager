@@ -7,7 +7,6 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "DxCapture.h"
-#include "DxCaptureVMR9.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,8 +56,6 @@ BOOL CDxVideoInputDlg::OnInitDialog()
 	int nInputsCount = 0;
 	if (m_pDoc->m_pDxCapture)
 		nInputsCount = m_pDoc->m_pDxCapture->EnumInputs(m_Inputs);
-	else if (m_pDoc->m_pDxCaptureVMR9)
-		nInputsCount = m_pDoc->m_pDxCaptureVMR9->EnumInputs(m_Inputs);
 	NumberDuplicateNames();
 
 	for (int nInput = 0 ; nInput < nInputsCount ; nInput++)
@@ -67,8 +64,6 @@ BOOL CDxVideoInputDlg::OnInitDialog()
 	int nCurrentInput = -1;
 	if (m_pDoc->m_pDxCapture)
 		nCurrentInput = m_pDoc->m_pDxCapture->GetCurrentInputID();
-	else if (m_pDoc->m_pDxCaptureVMR9)
-		nCurrentInput = m_pDoc->m_pDxCaptureVMR9->GetCurrentInputID();
 
 	if (nCurrentInput >= 0 && nCurrentInput <= m_Inputs.GetUpperBound())
 		m_VideoInput.SetCurSel(nCurrentInput);
@@ -114,13 +109,6 @@ void CDxVideoInputDlg::Apply()
 	if (m_pDoc->m_pDxCapture)
 	{
 		if (m_pDoc->m_pDxCapture->SetCurrentInput(m_VideoInput.GetCurSel()))
-			m_pDoc->m_nDeviceInputId = m_VideoInput.GetCurSel();
-		else
-			m_pDoc->m_nDeviceInputId = -1;
-	}
-	else if (m_pDoc->m_pDxCaptureVMR9)
-	{
-		if (m_pDoc->m_pDxCaptureVMR9->SetCurrentInput(m_VideoInput.GetCurSel()))
 			m_pDoc->m_nDeviceInputId = m_VideoInput.GetCurSel();
 		else
 			m_pDoc->m_nDeviceInputId = -1;

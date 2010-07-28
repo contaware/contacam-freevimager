@@ -1,4 +1,4 @@
-<CLV STREAM="ClassView Window" SIZE="10240" VERSION="0x00050001">
+<CLV STREAM="ClassView Window" SIZE="9216" VERSION="0x00050001">
 <PROJECTS COUNT="13">
 <PROJECT NAME="Dib">
 <FOLDERS COUNT="0"/>
@@ -310,7 +310,7 @@
 </CLASSES>
 </FOLDER>
 </FOLDERS>
-<CLASSES COUNT="44">
+<CLASSES COUNT="39">
 <CLASS NAME="CWorkerThread"/>
 <CLASS NAME="KSPROPERTY_TUNER_CAPS_S"/>
 <CLASS NAME="KSPROPERTY_TUNER_FREQUENCY_S"/>
@@ -327,14 +327,9 @@
 <CLASS NAME="CAVRec"/>
 <CLASS NAME="CCDAudio"/>
 <CLASS NAME="CFile64"/>
+<CLASS NAME="CMallocSpy"/>
 <CLASS NAME="CPUSpeed"/>
 <CLASS NAME="CCrc32Dynamic"/>
-<CLASS NAME="CDxCapture"/>
-<CLASS NAME="CDxCaptureEVR"/>
-<CLASS NAME="IMFGetService"/>
-<CLASS NAME="IMFVideoDisplayControl"/>
-<CLASS NAME="MFVideoNormalizedRect"/>
-<CLASS NAME="CDxCaptureVMR9"/>
 <CLASS NAME="CDxDraw"/>
 <CLASS NAME="CDxTuner"/>
 <CLASS NAME="CEnumPrinters"/>
@@ -354,7 +349,7 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
-<CLASS NAME="CMallocSpy"/>
+<CLASS NAME="CDxCapture"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">

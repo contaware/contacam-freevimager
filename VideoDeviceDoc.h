@@ -31,7 +31,6 @@ class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CColorDetectionPage;
 class CDxCapture;
-class CDxCaptureVMR9;
 class CVideoAviDoc;
 class CAssistantPage;
 class CGeneralPage;
@@ -49,7 +48,6 @@ class CMovementDetectionPage;
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define DX_VMR9_FRAMERATE					30.0		// fps, this is the max. framerate, vmr9 thread can grab with a lower rate
 #define DEFAULT_REC_AVIFILE_COUNT			8			// files
 #define DEFAULT_REC_AVIFILE_SIZE_MB			1000		// 1000 MB
 #define DEFAULT_REC_AVIFILE_SIZE			(1000 * 1024 * 1024)// 1000 MB
@@ -781,19 +779,6 @@ public:
 			volatile BOOL m_bTriggeredCapture;
 	};
 
-	// The VMR9 Video Capture Grab Thread Class
-	class CVMR9CaptureVideoThread : public CWorkerThread
-	{
-		public:
-			CVMR9CaptureVideoThread(){m_pDoc = NULL;};
-			virtual ~CVMR9CaptureVideoThread(){Kill();};
-			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-
-		protected:
-			int Work();
-			CVideoDeviceDoc* m_pDoc;
-	};
-
 	// Http Get Frame Thread
 	class CHttpGetFrameThread : public CWorkerThread
 	{
@@ -1441,7 +1426,6 @@ public:
 // Protected Functions
 protected:
 	BOOL InitOpenDxCapture(int nId);
-	BOOL InitOpenDxCaptureVMR9(int nId);
 	static __forceinline BOOL IsDeinterlaceSupported(LPBITMAPINFO pBmi);
 	static __forceinline BOOL IsDeinterlaceSupported(CDib* pDib);
 	BOOL Deinterlace(CDib* pDib);											// Inplace De-Interlace
@@ -1534,7 +1518,6 @@ public:
 	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
 	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
 	CVfWCaptureVideoThread m_VfWCaptureVideoThread;		// VfW Video Capture Thread
-	CVMR9CaptureVideoThread m_VMR9CaptureVideoThread;	// VMR9 Video Capture Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
@@ -1552,9 +1535,7 @@ public:
 	// DirectShow Capture Vars
 	volatile LONG m_bDxDeviceUnplugged;					// Device Has Been Unplugged
 	volatile LONG m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
-	volatile BOOL m_bDxFrameGrabCaptureFirst;			// Try dx frame grab capture first
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
-	CDxCaptureVMR9* volatile m_pDxCaptureVMR9;			// DirectShow Capture Object Through VMR9
 	int m_nDeviceInputId;								// Input ID
 	int m_nDeviceFormatId;								// Format ID
 	int m_nDeviceFormatWidth;							// Format Width

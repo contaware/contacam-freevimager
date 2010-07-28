@@ -34,9 +34,11 @@ static char THIS_FILE[]=__FILE__;
 // Unknown Device String
 #define UNKNOWN_DEVICE				_T("Unknown Device")
 
-// Two addition media subtypes
+// Additional types and class ids
 const GUID MEDIASUBTYPE_USBYUV = {0xa863c0c8,0x6c87,0x4a90,{0xa5,0xb3,0x62,0x94,0xa8,0x2b,0xcf,0xba}}; // Did not yet found any device with that format...
 const GUID MEDIASUBTYPE_HCWYUV = {0x2859e1da,0xb81f,0x4fbd,{0x94,0x3b,0xe2,0x37,0x24,0xa1,0xab,0xb3}}; // Preview format for Hauppauge with mpeg2
+const CLSID CLSID_HauppaugeWinTVColorFormatConverter = {0x32edfac2,0x2540,0x11d6,{0x91,0x9f,0x00,0xa0,0xcc,0xa0,0xf7,0xc6}};
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -53,6 +55,9 @@ CDxCapture::CDxCapture()
 	m_pGrabberFilter = NULL;
 	m_pGrabber = NULL;
 	m_pConfig = NULL;
+	m_pAVIDecoder = NULL;
+	m_pColorSpaceConverter = NULL;
+	m_pHauppaugeColorSpaceConverter = NULL;
 	m_pNullRendererFilter = NULL;
 	m_pDVSplitter = NULL;
 	m_pDVDecoder = NULL;
@@ -60,6 +65,7 @@ CDxCapture::CDxCapture()
 	m_pCrossbar = NULL;
 	m_hWnd = NULL;
 	m_bDV = FALSE;
+	m_OpenMediaSubType = MEDIASUBTYPE_None;
 #ifdef _DEBUG
 	m_dwRotRegister = 0;
 #endif
@@ -134,6 +140,33 @@ BOOL CDxCapture::InitInterfaces()
 								IID_IBaseFilter, (void**)&m_pNullRendererFilter);
 		if (FAILED(hr))
 			return FALSE;
+	}
+	else
+		return FALSE;
+
+	// Create the AVI Decoder Filter
+	if (m_pAVIDecoder == NULL)
+	{
+		::CoCreateInstance(	CLSID_AVIDec, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pAVIDecoder);
+	}
+	else
+		return FALSE;
+
+	// Create the Color Space Converter Filter
+	if (m_pColorSpaceConverter == NULL)
+	{
+		::CoCreateInstance(	CLSID_Colour, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pColorSpaceConverter);
+	}
+	else
+		return FALSE;
+
+	// Create the Hauppauge Color Space Converter Filter if available
+	if (m_pHauppaugeColorSpaceConverter == NULL)
+	{
+		::CoCreateInstance(	CLSID_HauppaugeWinTVColorFormatConverter, NULL,
+							CLSCTX_INPROC, IID_IBaseFilter, (void**)&m_pHauppaugeColorSpaceConverter);
 	}
 	else
 		return FALSE;
@@ -260,7 +293,7 @@ BOOL CDxCapture::HasFormats()
 {
 	HRESULT hr;
 
-	if (!m_pConfig || m_bDV)
+	if (!m_pConfig || m_bDV || IsOpenWithMediaSubType())
 		return FALSE;
 
 	// GetNumberOfCapabilities
@@ -692,7 +725,7 @@ LONG CDxCapture::GetAvgFrameSize()
 
 double CDxCapture::SetFrameRate(double dFrameRate)
 {
-	if (m_bDV)
+	if (m_bDV || IsOpenWithMediaSubType())
 		return 0.0;
 
 	// Set Exact NTSC Frame Rate
@@ -718,7 +751,7 @@ double CDxCapture::SetFrameRate(double dFrameRate)
 
 double CDxCapture::GetFrameRate()
 {
-	if (m_bDV)
+	if (m_bDV || IsOpenWithMediaSubType())
 		return 0.0;
 	else
 	{
@@ -739,7 +772,7 @@ double CDxCapture::GetFrameRate()
 
 BOOL CDxCapture::GetFrameRateRange(double& dMin, double& dMax)
 {
-	if (!m_pConfig || m_bDV)
+	if (!m_pConfig || m_bDV || IsOpenWithMediaSubType())
 		return FALSE;
 
 	AM_MEDIA_TYPE* pmtConfig = NULL;
@@ -765,11 +798,14 @@ BOOL CDxCapture::GetCurrentFormat(AM_MEDIA_TYPE** ppmtConfig)
 	HRESULT hr;
 
 	// Get Format Through Config Interface
-	if (m_pConfig)
+	if (!IsOpenWithMediaSubType())
 	{
-		hr = m_pConfig->GetFormat(ppmtConfig);
-		if (SUCCEEDED(hr))
-			return TRUE;
+		if (m_pConfig)
+		{
+			hr = m_pConfig->GetFormat(ppmtConfig);
+			if (SUCCEEDED(hr))
+				return TRUE;
+		}
 	}
 	
 	// Try Get Sample Grabber Format
@@ -833,14 +869,13 @@ BOOL CDxCapture::GetFormatByID(int nId, AM_MEDIA_TYPE** ppmtConfig)
 
 int CDxCapture::GetCurrentFormatID()
 {
+	HRESULT hr;
+
 	if (!m_pConfig)
 		return -1;
 	
 	AM_MEDIA_TYPE* pmtCurrentConfig = NULL;
-	HRESULT hr = m_pConfig->GetFormat(&pmtCurrentConfig);
-	if (FAILED(hr))
-		return -1;
-	if (pmtCurrentConfig == NULL)
+	if (!GetCurrentFormat(&pmtCurrentConfig))
 		return -1;
 
 	int iCount = 0, iSize = 0;
@@ -892,14 +927,13 @@ int CDxCapture::GetCurrentFormatID()
 
 ULONG CDxCapture::GetCurrentAnalogVideoStandards()
 {
+	HRESULT hr;
+
 	if (!m_pConfig)
 		return 0;
 	
 	AM_MEDIA_TYPE* pmtCurrentConfig = NULL;
-	HRESULT hr = m_pConfig->GetFormat(&pmtCurrentConfig);
-	if (FAILED(hr))
-		return 0;
-	if (pmtCurrentConfig == NULL)
+	if (!GetCurrentFormat(&pmtCurrentConfig))
 		return 0;
 
 	int iCount = 0, iSize = 0;
@@ -951,14 +985,13 @@ ULONG CDxCapture::GetCurrentAnalogVideoStandards()
 
 int CDxCapture::GetFormatID(DWORD biCompression, DWORD biBitCount)
 {
+	HRESULT hr;
+
 	if (!m_pConfig)
 		return -1;
 	
 	AM_MEDIA_TYPE* pmtCurrentConfig = NULL;
-	HRESULT hr = m_pConfig->GetFormat(&pmtCurrentConfig);
-	if (FAILED(hr))
-		return -1;
-	if (pmtCurrentConfig == NULL)
+	if (!GetCurrentFormat(&pmtCurrentConfig))
 		return -1;
 
 	int iCount = 0, iSize = 0;
@@ -1227,14 +1260,15 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - nId is the device id, if it is negative m_sDeviceName and m_sDevicePath are used
 // - If dFrameRate is zero or negative, the default Frame-Rate is used
 // - If nFormatId is -1, the format is chosen in the following order:
-//   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB16, RGB24, then the first format is used
+//   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
 BOOL CDxCapture::Open(	HWND hWnd,
 						int nId,
 						double dFrameRate,
 						int nFormatId,
 						int nWidth,
-						int nHeight)
+						int nHeight,
+						const GUID *pMediaSubType/*=NULL*/)
 {
 	HRESULT hr;
 
@@ -1284,6 +1318,18 @@ BOOL CDxCapture::Open(	HWND hWnd,
 				_T("that it is connected and is not being used by another application\n"));
         return FALSE;
     }
+
+	// Add the Color Space Converter to our graph
+	if (m_pAVIDecoder)
+		m_pGraph->AddFilter(m_pAVIDecoder, L"AVI Decoder");
+
+	// Add the Color Space Converter to our graph
+	if (m_pColorSpaceConverter)
+		m_pGraph->AddFilter(m_pColorSpaceConverter, L"Color Space Converter");
+
+	// Add the Hauppauge Color Space Converter to our graph
+	if (m_pHauppaugeColorSpaceConverter)
+		m_pGraph->AddFilter(m_pHauppaugeColorSpaceConverter, L"Hauppauge Color Space Converter");
 
 	// Add DV filters
 	BOOL bDV = IsDeviceOutputDV();
@@ -1345,7 +1391,13 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		mt.formattype	= FORMAT_VideoInfo;
 	}
 	else
+	{
+		if (pMediaSubType && (*pMediaSubType != MEDIASUBTYPE_None))
+			m_OpenMediaSubType = mt.subtype = *pMediaSubType;
+		else
+			m_OpenMediaSubType = MEDIASUBTYPE_None;
 		mt.formattype = FORMAT_VideoInfo;
+	}
 	mt.bFixedSizeSamples = TRUE;
 	mt.bTemporalCompression = FALSE;
 	hr = m_pGrabber->SetMediaType(&mt);
@@ -1366,27 +1418,47 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		hr = m_pCaptureGraphBuilder->RenderStream(	NULL,
 													&MEDIATYPE_Video,
 													m_pGrabberFilter, NULL, m_pNullRendererFilter);
-		if (FAILED(hr))
-			return FALSE;
 	}
 	// Render Raw Video
 	else
 	{
-		hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
-													&MEDIATYPE_Interleaved,
-													m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
-		if (FAILED(hr))
+		if (!IsOpenWithMediaSubType())
+		{
 			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
-														&MEDIATYPE_Video,
+														&MEDIATYPE_Interleaved,
 														m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
-		if (FAILED(hr))
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
+															&MEDIATYPE_Video,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
+															&MEDIATYPE_Interleaved,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
+															&MEDIATYPE_Video,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+		}
+		else
+		{
+			
 			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
 														&MEDIATYPE_Interleaved,
 														m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
-		if (FAILED(hr))
-			hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
-														&MEDIATYPE_Video,
-														m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_PREVIEW,
+															&MEDIATYPE_Video,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
+															&MEDIATYPE_Interleaved,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+			if (FAILED(hr))
+				hr = m_pCaptureGraphBuilder->RenderStream(	&PIN_CATEGORY_CAPTURE,
+															&MEDIATYPE_Video,
+															m_pSrcFilter, m_pGrabberFilter, m_pNullRendererFilter);
+		}
 	}
 	if (FAILED(hr))
 		return FALSE;
@@ -1442,7 +1514,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
 	}
 
 	// Set Format and Frame Rate
-	if (!bDV)
+	if (!bDV && !IsOpenWithMediaSubType())
 	{
 		// Check subtype
 		AM_MEDIA_TYPE* pmtConfig = NULL;
@@ -1483,8 +1555,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 
 			// RGB Formats
 			if ((nFormatId = GetFormatID(BI_RGB, 32)) == -1)
-			if ((nFormatId = GetFormatID(BI_RGB, 16)) == -1)
 			if ((nFormatId = GetFormatID(BI_RGB, 24)) == -1)
+			if ((nFormatId = GetFormatID(BI_RGB, 16)) == -1)
 				nFormatId = 0;	// If not successful set first format
 		}
 		
@@ -1616,6 +1688,9 @@ void CDxCapture::Close()
 	SAFE_RELEASE(m_pGrabber);
 	SAFE_RELEASE(m_pGrabberFilter);
 	SAFE_RELEASE(m_pNullRendererFilter);
+	SAFE_RELEASE(m_pColorSpaceConverter);
+	SAFE_RELEASE(m_pHauppaugeColorSpaceConverter);
+	SAFE_RELEASE(m_pAVIDecoder);
 	SAFE_RELEASE(m_pDVSplitter);
 	SAFE_RELEASE(m_pDVDecoder);
 	SAFE_RELEASE(m_pSrcFilter);
