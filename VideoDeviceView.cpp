@@ -214,18 +214,8 @@ LONG CVideoDeviceView::OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lpa
 	else
 		m_nCriticalControlsCount--;
 
-	if (pDoc->m_pAssistantPage)
-		pDoc->m_pAssistantPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
 	if (pDoc->m_pGeneralPage && !pDoc->m_bVfWDialogDisplaying)
 		pDoc->m_pGeneralPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
-	if (pDoc->m_pMovementDetectionPage)
-		pDoc->m_pMovementDetectionPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
-	if (pDoc->m_pSnapshotPage)
-		pDoc->m_pSnapshotPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
-	if (pDoc->m_pNetworkPage)
-		pDoc->m_pNetworkPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
-	if (pDoc->m_pColorDetectionPage)	
-		pDoc->m_pColorDetectionPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
 
 	return 1;
 }

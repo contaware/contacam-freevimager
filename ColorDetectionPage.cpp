@@ -400,10 +400,6 @@ BOOL CColorDetectionPage::OnInitDialog()
 	// Update Controls
 	UpdateControls();
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pColorDetectionPage = this;
 	
@@ -416,11 +412,6 @@ void CColorDetectionPage::OnDestroy()
 	CPropertyPage::OnDestroy();
 	// Set Dialog Pointer to NULL
 	m_pDoc->m_pColorDetectionPage = NULL;
-}
-
-void CColorDetectionPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	
 }
 
 void CColorDetectionPage::OnPickcolor0() 

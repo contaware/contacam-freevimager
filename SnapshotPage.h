@@ -26,7 +26,6 @@ public:
 	CSnapshotPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CSnapshotPage();
-	void EnableDisableCriticalControls(BOOL bEnable);
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 	CStaticLink m_FileLabel;
 	CStaticLink m_DirLabel;

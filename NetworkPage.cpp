@@ -134,10 +134,6 @@ BOOL CNetworkPage::OnInitDialog()
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->SetWindowText(m_pDoc->m_sSendFramePassword);
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pNetworkPage = this;
 	
@@ -150,11 +146,6 @@ void CNetworkPage::OnDestroy()
 	CPropertyPage::OnDestroy();
 	// Set Page Pointer to NULL
 	m_pDoc->m_pNetworkPage = NULL;
-}
-
-void CNetworkPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	
 }
 
 void CNetworkPage::OnVideoPortEnabled() 

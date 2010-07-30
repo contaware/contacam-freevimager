@@ -24,7 +24,6 @@ public:
 	CNetworkPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CNetworkPage();
-	void EnableDisableCriticalControls(BOOL bEnable);
 
 // Dialog Data
 	//{{AFX_DATA(CNetworkPage)

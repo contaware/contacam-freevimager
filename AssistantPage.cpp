@@ -305,10 +305,6 @@ BOOL CAssistantPage::OnInitDialog()
 	// Enable / Disable Controls
 	EnableDisableCtrls();
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pAssistantPage = this;
 	
@@ -329,11 +325,6 @@ void CAssistantPage::OnDestroy()
 
 	// Set Page Pointer to NULL
 	m_pDoc->m_pAssistantPage = NULL;
-}
-
-void CAssistantPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	
 }
 
 void CAssistantPage::EnableDisableCtrls()

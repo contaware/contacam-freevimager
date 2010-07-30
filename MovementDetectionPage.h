@@ -26,7 +26,6 @@ public:
 	CMovementDetectionPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CMovementDetectionPage();
-	void EnableDisableCriticalControls(BOOL bEnable);
 	CStaticLink m_DirLabel;
 
 // Dialog Data

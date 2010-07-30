@@ -28,7 +28,6 @@ public:
 	CAssistantPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CAssistantPage();
-	void EnableDisableCriticalControls(BOOL bEnable);
 
 // Dialog Data
 	//{{AFX_DATA(CAssistantPage)

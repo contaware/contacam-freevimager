@@ -35,7 +35,6 @@ public:
 	~CColorDetectionPage();
 	void UpdateControls();
 	int RegulationTypeToMaxDetectionLevel(int nIndex);
-	void EnableDisableCriticalControls(BOOL bEnable);
 	CSliderCtrl* GetSlider(DWORD dwIndex);
 	CMacProgressCtrl* GetProgress(DWORD dwIndex);
 	void SetHueRadius(DWORD dwIndex, int hue)	{	

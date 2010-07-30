@@ -178,10 +178,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButton->SetWindowText(sSize);
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pSnapshotPage = this;
 	
@@ -194,11 +190,6 @@ void CSnapshotPage::OnDestroy()
 	CPropertyPage::OnDestroy();
 	// Set Page Pointer to NULL
 	m_pDoc->m_pSnapshotPage = NULL;
-}
-
-void CSnapshotPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	
 }
 
 void CSnapshotPage::OnCheckSnapshotThumb() 

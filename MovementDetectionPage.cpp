@@ -248,10 +248,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	else
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// On detection execution example
 	CStatic* pStatic = (CStatic*)GetDlgItem(IDC_STATIC2301);
 	CString s;
@@ -278,11 +274,6 @@ void CMovementDetectionPage::OnDestroy()
 	CPropertyPage::OnDestroy();
 	// Set Page Pointer to NULL
 	m_pDoc->m_pMovementDetectionPage = NULL;
-}
-
-void CMovementDetectionPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	
 }
 
 void CMovementDetectionPage::OnDetectionSaveas() 

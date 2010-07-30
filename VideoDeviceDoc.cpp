@@ -3749,6 +3749,14 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	// If in detection state
 	if (m_bDetectingMovement)
 	{
+		// Init flag
+		BOOL bFramesStored =	m_bSaveSWFMovementDetection		||
+								m_bSaveAVIMovementDetection		||
+								m_bSaveAnimGIFMovementDetection	||
+								m_bSendMailMovementDetection	||
+								m_bFTPUploadMovementDetection	||
+								m_bExecCommandMovementDetection;
+
 		// Check if end of detecting period
 		if (m_nMilliSecondsWithoutMovementDetection > m_nMilliSecondsRecAfterMovementEnd)
 		{
@@ -3776,22 +3784,19 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			m_nMilliSecondsWithoutMovementDetection = 0;
 
 			// Save frames or clear the new frame list?
-			if (!bFalseDetection				&&
-				(m_bSaveSWFMovementDetection	||
-				m_bSaveAVIMovementDetection		||
-				m_bSaveAnimGIFMovementDetection	||
-				m_bSendMailMovementDetection	||
-				m_bFTPUploadMovementDetection	||
-				m_bExecCommandMovementDetection))
+			if (!bFalseDetection && bFramesStored)
 				SaveFrameList();
 			else
 			{
 				ClearNewestFrameList();
-				CString sMsg;
-				sMsg.Format(_T("%s, false detection: Blue %d , None Blue %d\n"),
-							GetDeviceName(), m_nBlueMovementDetectionsCount, m_nNoneBlueMovementDetectionsCount);
-				TRACE(sMsg);
-				::LogLine(sMsg);
+				if (bFalseDetection && bFramesStored)
+				{
+					CString sMsg;
+					sMsg.Format(_T("%s, false detection: Blue %d , None Blue %d\n"),
+								GetDeviceName(), m_nBlueMovementDetectionsCount, m_nNoneBlueMovementDetectionsCount);
+					TRACE(sMsg);
+					::LogLine(sMsg);
+				}
 			}
 
 			// Reset false detection counts
@@ -3807,12 +3812,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 			{
 				// Check memory load and queue size
-				if (m_bSaveSWFMovementDetection		||
-					m_bSaveAVIMovementDetection		||
-					m_bSaveAnimGIFMovementDetection	||
-					m_bSendMailMovementDetection	||
-					m_bFTPUploadMovementDetection	||
-					m_bExecCommandMovementDetection)
+				if (bFramesStored)
 				{
 					// This document load
 					int nTotalPhysInMB = ::GetTotPhysMemMB();
