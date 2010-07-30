@@ -52,11 +52,6 @@ div.wrap {
 	margin: 0 auto;
 	text-align: center;
 }
-div.wraprel {
-	position: relative;
-	margin: 0 auto;
-	text-align: center;
-}
 
 /* Menu */
 div.menubottom {
@@ -100,20 +95,41 @@ a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover {
 	text-decoration: underline;
 }
 
-/* Two line text for summaries */
-.line1 {
+/* Two line Rec text and AVI link for summaries */
+span.line1 {
 	line-height: 52px;
 	position: relative;
 	left: 28px;
 }
-.line2 {
+a.line2 {
+	outline: none;
 	line-height: 52px;
 	position: relative;
 	left: -11px;
 	top: 15px;
 }
+span.thumbcontainer {
+	display: inline-block;
+}
+a.avilink {
+	outline: none;
+	right: 3px;
+	bottom: 2px;
+	position: relative;
+	vertical-align: bottom;
+	font-size: 10px;
+}
+a.avilink:visited, a.line2:visited {
+	color: #00dd00;
+}
+a.avilink:active, a.avilink:focus, a.line2:active, a.line2:focus {
+	color: #ffa23c;
+}
 
 /* Thumbs margin for summaries */
+a.notselected, a.lastselected {
+	outline: none;
+}
 a img {
 	border: 0;
 	margin: 5px;
@@ -124,7 +140,7 @@ a:visited img {
 	margin: 4px;
 	padding: 0;
 }
-a.lastselected:visited img {
+a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 	border: 2px solid #ffa23c;
 	margin: 3px;
 	padding: 0;

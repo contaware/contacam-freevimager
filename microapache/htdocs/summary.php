@@ -87,7 +87,7 @@ function changeStyle(id) {
 </script>
 </head>
 
-<body>
+<body style="overflow-x: hidden">
 <?php
             
 // Functions
@@ -284,7 +284,9 @@ if ($handle = @opendir($dir)) {
 					$gifuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
 					$swffile = $dir."/".basename($file, ".gif").".swf";
 					$avifile = $dir."/".basename($file, ".gif").".avi";
-					if (is_file($swffile))
+					if (is_file($swffile) && is_file($avifile))
+						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
+					else if (is_file($swffile))
 						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else if (is_file($avifile))
 						echo "<a href=\"$aviuri\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";

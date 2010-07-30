@@ -35,8 +35,7 @@ document.write(getCalendarStyles());
 </script>
 </head>
 
-<body>
-<div class="wraprel">
+<body style="overflow-x: hidden">
 <?php echo "<div align=\"center\"><h1>" . SUMMARYTITLE . "</h1></div>\n";?>
 <div class="menutop">
 <a href="#" onclick="myiframe.location.reload(); return false;"><?php echo RELOAD;?></a> |
@@ -46,6 +45,7 @@ if (SHOW_PRINTCOMMAND == 1)
 	echo "| <a href=\"#\" onclick=\"myiframe.focus(); myiframe.print(); myiframe.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
 ?>
 </div>
+<div class="wrap">
 <form action="">
 <input type="hidden" name="dateall" value="" />
 <table id="navcontrols">
