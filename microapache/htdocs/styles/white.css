@@ -147,12 +147,16 @@ a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 }
 
 /* Controls style */
-table#navcontrols {
+table#navcontrols, div#navcontrols {
 	margin: 0 auto 6px auto;
 	text-align: center;
+	vertical-align: middle;
 	font-size: 12px;
 	font-weight: normal;
 	color: #666666;
+}
+.inlinenowrap {
+	display: inline-block;
 }
 div#imagereloading {
 	margin: 6px 0 0 0;
