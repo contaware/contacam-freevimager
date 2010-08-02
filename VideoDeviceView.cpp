@@ -129,7 +129,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 					pDoc->ReStartProcessFrame();
 				}
 			}
-			::InterlockedExchange(&(pDoc->m_bStopAndChangeFormat), 0);
+			pDoc->m_bStopAndChangeFormat = FALSE;
 			
 			// Enable Critical Controls
 			::SendMessage(	GetSafeHwnd(),
@@ -508,12 +508,12 @@ void CVideoDeviceView::Draw()
 	// Init local vars
 	DWORD dwCurrentUpTime = ::timeGetTime();
 	BOOL bVideoView = pDoc->m_bVideoView;
-	BOOL bVideoFormatApplyPressed = pDoc->m_bVideoFormatApplyPressed;
-	BOOL bDxDeviceUnplugged = (BOOL)pDoc->m_bDxDeviceUnplugged;
-	BOOL bStopAndChangeFormat = (BOOL)pDoc->m_bStopAndChangeFormat;
-	BOOL bWatchDogAlarm = (BOOL)pDoc->m_bWatchDogAlarm;
+	BOOL bVfWVideoFormatApplyPressed = pDoc->m_bVfWVideoFormatApplyPressed;
+	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
+	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
+	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	BOOL bDrawMsg = !bVideoView						||
-					bVideoFormatApplyPressed		||
+					bVfWVideoFormatApplyPressed		||
 					bDxDeviceUnplugged				||
 					bStopAndChangeFormat			||
 					bWatchDogAlarm;
@@ -574,7 +574,7 @@ void CVideoDeviceView::Draw()
 		EraseBkgnd(bDrawMsg);
 
 		// Display: OK or Cancel
-		if (bVideoFormatApplyPressed)
+		if (bVfWVideoFormatApplyPressed)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1567, "OK or Cancel"), 0, 0, DRAWTEXT_TOPLEFT);
 		// Display: Unplugged
 		else if (bDxDeviceUnplugged)
@@ -1206,131 +1206,46 @@ BOOL CVideoDeviceView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return CUImagerView::OnSetCursor(pWnd, nHitTest, message);
 }
 
-BOOL CVideoDeviceView::ReOpenDxDevice()
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (pDoc->m_pDxCapture)
-	{
-		// Reset vars
-		pDoc->m_dwFrameCountUp = 0U;
-		pDoc->m_dwNextSnapshotUpTime = ::timeGetTime();
-		::InterlockedExchange(&pDoc->m_lCurrentInitUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
-
-		// Re-Open
-		if (pDoc->m_pDxCapture->Open(	GetSafeHwnd(),
-										-1,	// Re-open previous one
-										pDoc->m_dFrameRate,
-										pDoc->m_nDeviceFormatId,
-										pDoc->m_nDeviceFormatWidth,
-										pDoc->m_nDeviceFormatHeight,
-										pDoc->m_pDxCapture->GetOpenMediaSubType()))
-		{
-			// Update format
-			OnThreadSafeChangeVideoFormat(0, 0);
-				
-			// Start capturing video data
-			if (pDoc->m_pDxCapture->Run())
-			{
-				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
-				if (pDoc->m_nDeviceInputId >= 0 && pDoc->m_nDeviceInputId < pDoc->m_pDxCapture->GetInputsCount())
-				{
-					if (!pDoc->m_pDxCapture->SetCurrentInput(pDoc->m_nDeviceInputId))
-						pDoc->m_nDeviceInputId = -1;
-				}
-				else
-					pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput();
-
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				pDoc->m_pDxCapture->Stop();
-				pDoc->m_pDxCapture->Run();
-
-				// Set flag
-				pDoc->m_bCapture = TRUE;
-
-				return TRUE;
-			}
-		}
-	}
-
-	return FALSE;
-}
-
 LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-
-	LONG evCode, evParam1, evParam2;
-    HRESULT hr = S_OK;
-
 	if (pDoc->m_pDxCapture)
 	{
+		LONG evCode, evParam1, evParam2;
 		while (pDoc->m_pDxCapture->GetEvent(&evCode,
 											(LONG_PTR*)&evParam1, 
 											(LONG_PTR*)&evParam2,
 											0)) // Wait Timeout of 0ms
 		{
-			// Make a copy and free before re-opening!
-			LONG evCodeCopy = evCode;
-			LONG evParam1Copy = evParam1;
-			LONG evParam2Copy = evParam2;
+			// Free
 			pDoc->m_pDxCapture->FreeEvent(evCode, evParam1, evParam2);
 
-			// Usb unplugged or replugged
-			if (evCodeCopy == EC_DEVICE_LOST)
+			// Device unplugged or replugged
+			if (evCode == EC_DEVICE_LOST)
 			{
 				// Device was removed
-				if (evParam2Copy == 0)
+				if (evParam2 == 0)
 				{
-					// Set stopped state
-					pDoc->SetProcessFrameStopped();
-
-					// Disable Critical Controls
-					::SendMessage(	GetSafeHwnd(),
-									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-									(WPARAM)FALSE,	// Disable Them
-									(LPARAM)0);
-
 					// Set Unplugged Flag
-					::InterlockedExchange(&(pDoc->m_bDxDeviceUnplugged), 1);
-					CString sMsg;
-					sMsg.Format(_T("%s unplugged\n"), pDoc->GetDeviceName());
-					TRACE(sMsg);
-					::LogLine(sMsg);
+					// (log message and controls disabling done by watchdog)
+					pDoc->m_bDxDeviceUnplugged = TRUE;
+                    break;
 				}
 				// Device is available again
-				else if (evParam2Copy == 1)
+				else if (evParam2 == 1)
 				{
-					// Set stopped state
-					pDoc->SetProcessFrameStopped();
-
-					// Re-Open
-					if (ReOpenDxDevice())
-					{
-						// Reset Unplugged Flag
-						::InterlockedExchange(&(pDoc->m_bDxDeviceUnplugged), 0);
-						CString sMsg;
-						sMsg.Format(_T("%s replugged\n"), pDoc->GetDeviceName());
-						TRACE(sMsg);
-						::LogLine(sMsg);
-
-						// Restart process frame
-						pDoc->ReStartProcessFrame();
-					}
-
-					// Re-Enable Critical Controls
-					::SendMessage(	GetSafeHwnd(),
-									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-									(WPARAM)TRUE, // Enable Them
-									(LPARAM)0);
+					// I used to re-open here but some devices lock when
+					// stopping their graph, other devices generate a blue-screen
+					// and/or a reboot! The best solution is to do nothing,
+					// leave everything open and in CVideoDeviceChildFrame::EndShutdown()
+					// do not delete m_pDxCapture. We get a small memory leak but that's
+					// by far better than a full computer crash!
+					break;
 				}
 			}
 		}
-
-		return hr;
+		return S_OK;
 	}
 	else
 		return E_POINTER;

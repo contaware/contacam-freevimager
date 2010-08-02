@@ -39,7 +39,6 @@ protected:
 	__forceinline void EraseBkgnd(BOOL bFullErase);
 	__forceinline BOOL IsCompressionDifferent();
 	void ColorPickup(UINT nFlags, CPoint point);
-	BOOL ReOpenDxDevice();
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 	CVideoDeviceDoc::CColorDetection::HSVARRAY m_HsvPickupArray;

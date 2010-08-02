@@ -1,8 +1,3 @@
-Deploy:
--------
-- www.shareit.com
-- www.regsoft.net
-
 Wishes from Yuriy:
 ------------------
 - zoom should change "custom" or use steps 10%

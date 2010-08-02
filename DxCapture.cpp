@@ -46,7 +46,6 @@ const CLSID CLSID_HauppaugeWinTVColorFormatConverter = {0x32edfac2,0x2540,0x11d6
 
 CDxCapture::CDxCapture()
 {
-	m_pMC = NULL;
 	m_pME = NULL;
 	m_pDF = NULL;
 	m_lDroppedFramesBase = 0;
@@ -171,11 +170,7 @@ BOOL CDxCapture::InitInterfaces()
 	else
 		return FALSE;
 
-    // Obtain interfaces for media control and media events
-    hr = m_pGraph->QueryInterface(IID_IMediaControl, (void**)&m_pMC);
-    if (FAILED(hr))
-        return FALSE;
-	
+    // Obtain interface for media events
     hr = m_pGraph->QueryInterface(IID_IMediaEvent, (void**)&m_pME);
     if (FAILED(hr))
         return FALSE;
@@ -703,8 +698,7 @@ LONG CDxCapture::GetDroppedFrames()
 	if (m_pDF)
 	{
 		LONG lDropped = 0;
-		HRESULT res = m_pDF->GetNumDropped(&lDropped);
-		ASSERT(res == S_OK);
+		m_pDF->GetNumDropped(&lDropped);
 		return (lDropped - m_lDroppedFramesBase);
 	}
 	else
@@ -1687,7 +1681,7 @@ void CDxCapture::Close()
 	// running do not notify that the device has been unplugged.
 	// In this case calling Stop() infinitely blocks, also safe releasing
 	// m_pCaptureGraphBuilder will infinitely block.
-	// Getting the state with m_pMC->GetState returns running...
+	// Getting the state with pMC->GetState returns running...
 
 	// Stop Graph Filter
 	Stop();
@@ -1704,7 +1698,6 @@ void CDxCapture::Close()
 #endif
 	
 	// Release DirectShow interfaces
-	SAFE_RELEASE(m_pMC);
 	SAFE_RELEASE(m_pME);
 	SAFE_RELEASE(m_pDF);
 	SAFE_RELEASE(m_pGrabber);
@@ -1927,30 +1920,23 @@ int CDxCapture::EnumInputs(CStringArray &sInputs)
 
 BOOL CDxCapture::Run()
 {
-	if (!m_pMC)
+	if (!m_pGraph)
 		return FALSE;
-	HRESULT hr = m_pMC->Run();
+	IMediaControl* pMC = NULL;
+	HRESULT hr = m_pGraph->QueryInterface(IID_IMediaControl, (void**)&pMC);
+    if (FAILED(hr))
+        return FALSE;
+	hr = pMC->Run();
 	if (SUCCEEDED(hr))
-		return TRUE;
-	else
 	{
-		// Stop parts that ran
-        m_pMC->Stop();
-		return FALSE;
+		pMC->Release();
+		return TRUE;
 	}
-}
-
-BOOL CDxCapture::Pause()
-{
-	if (!m_pMC)
-		return FALSE;
-	HRESULT hr = m_pMC->Pause();
-	if (SUCCEEDED(hr))
-		return TRUE;
 	else
 	{
 		// Stop parts that ran
-        m_pMC->Stop();
+        pMC->Stop();
+		pMC->Release();
 		return FALSE;
 	}
 }
@@ -1959,64 +1945,15 @@ BOOL CDxCapture::Pause()
 // or BufferCB() have returned!
 BOOL CDxCapture::Stop()
 {
-	if (!m_pMC)
+	if (!m_pGraph)
 		return FALSE;
-	HRESULT hr = m_pMC->Stop();
-	if (SUCCEEDED(hr))
-		return TRUE;
-	else
-		return FALSE;
-}
-
-BOOL CDxCapture::IsRunning()
-{
-	if (!m_pMC)
-		return FALSE;
-	OAFilterState fs;
-	HRESULT hr = m_pMC->GetState(200, &fs); // 200 ms timeout
-	if (SUCCEEDED(hr))
-	{
-		if (fs == State_Running)
-			return TRUE;
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CDxCapture::IsPaused()
-{
-	if (!m_pMC)
-		return FALSE;
-	OAFilterState fs;
-	HRESULT hr = m_pMC->GetState(200, &fs); // 200 ms timeout
-	if (SUCCEEDED(hr))
-	{
-		if (fs == State_Paused)
-			return TRUE;
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CDxCapture::IsStopped()
-{
-	if (!m_pMC)
-		return FALSE;
-	OAFilterState fs;
-	HRESULT hr = m_pMC->GetState(200, &fs); // 200 ms timeout
-	if (SUCCEEDED(hr))
-	{
-		if (fs == State_Stopped)
-			return TRUE;
-		else
-			return FALSE;
-    }
-	else
-		return FALSE;
+	IMediaControl* pMC = NULL;
+	HRESULT hr = m_pGraph->QueryInterface(IID_IMediaControl, (void**)&pMC);
+    if (FAILED(hr))
+        return FALSE;
+	hr = pMC->Stop();
+	pMC->Release();
+	return SUCCEEDED(hr);
 }
 
 BOOL CDxCapture::GetEvent(long* plEventCode,

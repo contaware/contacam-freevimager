@@ -166,22 +166,6 @@ CCaptureGraphBuilder::~CCaptureGraphBuilder()
 	}
 }
 
-DWORD CCaptureGraphBuilder::GetMpeg2Width()
-{
-	if (m_pMpeg2ProgramVideo)
-		return m_pMpeg2ProgramVideo->hdr.bmiHeader.biWidth;
-	else
-		return 0;
-}
-
-DWORD CCaptureGraphBuilder::GetMpeg2Height()
-{
-	if (m_pMpeg2ProgramVideo)
-		return m_pMpeg2ProgramVideo->hdr.bmiHeader.biHeight;
-	else
-		return 0;
-}
-
 HRESULT 
 CCaptureGraphBuilder::AllocCapFile( LPCOLESTR lpwstr, DWORDLONG dwlSize )
 {

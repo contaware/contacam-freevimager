@@ -62,13 +62,7 @@ public:
         pMultiplexer_.Release();
         pEncoder_.Release();
         pMPEG2Demux_.Release();
-        pMediaControl_.Release();
-        pAudioPin_.Release();
-        pVideoPin_.Release();
     }
-
-	DWORD GetMpeg2Width();
-	DWORD GetMpeg2Height();
 
     STDMETHOD(AllocCapFile)( LPCOLESTR lpwstr, DWORDLONG dwlSize );
 
@@ -221,17 +215,11 @@ protected:
 
     CComPtr<ICaptureGraphBuilder2> graphBuilder2_;
     CComPtr<IGraphBuilder> graph_;
-    CComPtr<IMediaControl> pMediaControl_;
 
 	MPEG2VIDEOINFO* m_pMpeg2ProgramVideo;
 
     ULONG   VidPID_, 
             AudPID_;
-
-private:
-    CComPtr<IPin>   pAudioPin_;
-    CComPtr<IPin>   pVideoPin_;
-
 };
 
 #endif

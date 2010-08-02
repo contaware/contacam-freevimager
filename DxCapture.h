@@ -105,13 +105,9 @@ public:
 		const {return m_sDevicePath;};
 
 	BOOL Run();											// Do Capture
-	BOOL Pause();										// Pause Capture
 	BOOL Stop();										// Stop Capture
 														// Note: This Function Blocks till SampleCB()
 														//       or BufferCB() have returned!
-	BOOL IsRunning();
-	BOOL IsPaused();
-	BOOL IsStopped();
 
 	BOOL GetEvent(long* plEventCode,					// Get Events in response of a
 				  LONG_PTR* pplParam1,					// WM_DIRECTSHOW_GRAPHNOTIFY Message
@@ -218,7 +214,6 @@ protected:
 	IBaseFilter* m_pSrcFilter;							// Capture Device Filter
 	IBaseFilter* m_pDVSplitter;							// DV Audio / Video splitter
 	IBaseFilter* m_pDVDecoder;							// DV Audio / Video decoder
-	IMediaControl* m_pMC;								// Control Interface
 	IMediaEventEx* m_pME;								// Events Interface
 	IAMDroppedFrames* m_pDF;							// Dropped Frames Interface
 	LONG m_lDroppedFramesBase;							// Dropped Frames Base

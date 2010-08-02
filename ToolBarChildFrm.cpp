@@ -1408,8 +1408,9 @@ void CVideoDeviceChildFrame::OnClose()
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();
 
-			// Log the stopping (no log for Video Avi mode)
-			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL)
+			// Log the stopping (no log for Video Avi mode or when unplugged)
+			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL &&
+				!pDoc->m_bDxDeviceUnplugged)
 			{
 				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
 				CString sMsg;
@@ -1654,7 +1655,10 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// Delete DirectShow Capture Object
 	if (pDoc->m_pDxCapture)
 	{
-		delete pDoc->m_pDxCapture;
+		// This leaks, I know, but better to leak memory than
+		// locks, reboots or blue-screens!
+		if (!pDoc->m_bDxDeviceUnplugged)
+			delete pDoc->m_pDxCapture;
 		pDoc->m_pDxCapture = NULL;
 		pDoc->m_bCapture = FALSE;
 	}
@@ -1671,8 +1675,8 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// m_pGeneralPage
 	// m_pSnapshotPage
 	// m_pColorDetectionPage
-	// m_NetworkPage
-	// m_MovementDetectionPage
+	// m_pNetworkPage
+	// m_pMovementDetectionPage
 	//
 	if (pDoc->m_pVideoDevicePropertySheet)
 	{

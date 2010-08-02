@@ -4125,7 +4125,7 @@ LRESULT CALLBACK CVideoDeviceDoc::CVfWCaptureVideoThread::OnCaptureVideo(HWND hW
 
 		// Check whether data is valid
 		if (lpVHdr->lpData && lpVHdr->dwBytesUsed != 0)
-			pDoc->m_bVideoFormatApplyPressed = FALSE;
+			pDoc->m_bVfWVideoFormatApplyPressed = FALSE;
 
 		return (LRESULT)pDoc->ProcessFrame(lpVHdr->lpData, lpVHdr->dwBytesUsed);
 	}
@@ -4145,7 +4145,7 @@ LRESULT CALLBACK CVideoDeviceDoc::CVfWCaptureVideoThread::OnFrame(HWND hWnd, LPV
 		if (!lpVHdr->lpData || lpVHdr->dwBytesUsed == 0)
 		{
 			// Display Warning Message
-			pDoc->m_bVideoFormatApplyPressed = TRUE;
+			pDoc->m_bVfWVideoFormatApplyPressed = TRUE;
 
 			// Empty Process Frame to make the watchdog happy
 			pDoc->ProcessFrame(NULL, 0);
@@ -4159,7 +4159,7 @@ LRESULT CALLBACK CVideoDeviceDoc::CVfWCaptureVideoThread::OnFrame(HWND hWnd, LPV
 		}
 		else
 		{
-			pDoc->m_bVideoFormatApplyPressed = FALSE;
+			pDoc->m_bVfWVideoFormatApplyPressed = FALSE;
 			pDoc->ProcessFrame(lpVHdr->lpData, lpVHdr->dwBytesUsed);
 		}
 
@@ -4825,7 +4825,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 
 	// Init
 	DWORD dwLastHttpReconnectUpTime = ::timeGetTime();
-	BOOL bVfWUnpluggedLogged = FALSE;
+	BOOL bDxUnplugged = FALSE;
 
 	// Watch
 	for (;;)
@@ -4851,10 +4851,10 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				if (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD	&&
 					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
-					::InterlockedExchange(&(m_pDoc->m_bWatchDogAlarm), 1);
+					m_pDoc->m_bWatchDogAlarm = TRUE;
 				else
 				{
-					::InterlockedExchange(&(m_pDoc->m_bWatchDogAlarm), 0);
+					m_pDoc->m_bWatchDogAlarm = FALSE;
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 				}
 
@@ -4871,12 +4871,21 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bExecCommandMovementDetection))
 					m_pDoc->SaveFrameList();
 
-				// VfW unplugged
-				if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd)	&&
-					!bVfWUnpluggedLogged									&&
-					m_pDoc->m_bWatchDogAlarm)
+				// Dx unplugged
+				//
+				// Note: don't do a VfW unplugged check/set because in this mode
+				// changing device, resolution or format may be extremely slow
+				// (m_bWatchDogAlarm would be set and the unplugged state entered)
+				if (m_pDoc->m_pDxCapture		&&
+					!bDxUnplugged				&&
+					(m_pDoc->m_bWatchDogAlarm	||
+					m_pDoc->m_bDxDeviceUnplugged)) // Can be set by CVideoDeviceView::OnDirectShowGraphNotify()
 				{
-					bVfWUnpluggedLogged = TRUE;
+					::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+									(WPARAM)FALSE,	// Disable Them
+									(LPARAM)0);
+					m_pDoc->m_bDxDeviceUnplugged = bDxUnplugged = TRUE;
 					CString sMsg;
 					sMsg.Format(_T("%s unplugged\n"), m_pDoc->GetDeviceName());
 					TRACE(sMsg);
@@ -4898,11 +4907,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					TRACE(sMsg);
 					::LogLine(sMsg);
 				}
-				// Note: In case of long times between frames I used to post a message to the UI thread
-				// to restart a dx device from there. But if ProcessFrame() is still called by the old thread
-				// a deadlock may happen from the UI thread trying to Stop() the old dx device thread!
-				// -> Dx devices restart is exclusively handled in CVideoDeviceView::OnDirectShowGraphNotify()
-				// where we are sure that ProcessFrame() will not be called!
 
 				// Draw
 				if (m_pDoc->GetView() &&
@@ -6155,14 +6159,14 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwVfWCaptureVideoDeviceID = 0U;
 	m_nDeviceInputId = -1;
 	m_nDeviceFormatId = -1;
-	m_bVideoFormatApplyPressed = FALSE;
-	m_bDxDeviceUnplugged = 0;
-	m_bStopAndChangeFormat = 0;
+	m_bVfWVideoFormatApplyPressed = FALSE;
+	m_bDxDeviceUnplugged = FALSE;
+	m_bStopAndChangeFormat = FALSE;
 	m_bVfWDialogDisplaying = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
-	m_bWatchDogAlarm = 0;
+	m_bWatchDogAlarm = FALSE;
 
 	// Networking
 	m_pSendFrameNetCom = NULL;
@@ -7631,7 +7635,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 		// Reset vars
 		m_dwFrameCountUp = 0U;
 		m_dwNextSnapshotUpTime = ::timeGetTime();
-		m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+		::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 		// Init and Open Dx Capture
 		if (InitOpenDxCapture(nId))
@@ -7682,7 +7686,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 					// Reset vars
 					m_dwFrameCountUp = 0U;
 					m_dwNextSnapshotUpTime = ::timeGetTime();
-					m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+					::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 					// Video Connect
 					if (!m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate))
@@ -7720,7 +7724,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 				// Reset vars
 				m_dwFrameCountUp = 0U;
 				m_dwNextSnapshotUpTime = ::timeGetTime();
-				m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+				::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 				// Video Connect
 				if (!m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate))
@@ -7848,7 +7852,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 	// Reset vars
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
-	m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
 	if (!ConnectGetFrame())
@@ -7947,7 +7951,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo()
 		// Reset vars
 		m_dwFrameCountUp = 0U;
 		m_dwNextSnapshotUpTime = ::timeGetTime();
-		m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+		::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 		// Connect
 		if (!ConnectGetFrame())
@@ -7988,7 +7992,7 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 	// Reset vars
 	m_dwFrameCountUp = 0U;
 	m_dwNextSnapshotUpTime = ::timeGetTime();
-	m_lCurrentInitUpTime = (LONG)m_dwNextSnapshotUpTime;
+	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 	
 	// Frame Rate
 	m_dFrameRate = m_pVideoAviDoc->m_PlayVideoFileThread.GetFrameRate();
@@ -8835,7 +8839,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
 								(WPARAM)FALSE,	// Disable Them
 								(LPARAM)0);
-				::InterlockedExchange(&m_bStopAndChangeFormat, 1);
+				m_bStopAndChangeFormat = TRUE;
 				StopProcessFrame();
 				double dFrameRate = m_dEffectiveFrameRate;
 				int delay;

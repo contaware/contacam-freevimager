@@ -1530,11 +1530,11 @@ public:
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessFrame()
-	volatile LONG m_bWatchDogAlarm;						// WatchDog Alarm
+	volatile BOOL m_bWatchDogAlarm;						// WatchDog Alarm
 
 	// DirectShow Capture Vars
-	volatile LONG m_bDxDeviceUnplugged;					// Device Has Been Unplugged
-	volatile LONG m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
+	volatile BOOL m_bDxDeviceUnplugged;					// Device Has Been Unplugged
+	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
 	int m_nDeviceInputId;								// Input ID
 	int m_nDeviceFormatId;								// Format ID
@@ -1543,7 +1543,7 @@ public:
 
 	// Vfw Capture Vars
 	DWORD m_dwVfWCaptureVideoDeviceID;					// VfW Video Capture Device ID
-	volatile BOOL m_bVideoFormatApplyPressed;			// VfW Format Dialog Hack
+	volatile BOOL m_bVfWVideoFormatApplyPressed;		// VfW Format Dialog Hack
 	volatile BOOL m_bVfWDialogDisplaying;				// VfW is Displaying right now
 	
 	// Audio Capture Vars
