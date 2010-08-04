@@ -104,8 +104,6 @@ public:
 	CDxDraw();
 	virtual ~CDxDraw();
 	BOOL EnumerateScreens();
-	BOOL SetSrcClosestDisplayMode();
-	BOOL RestoreDisplayMode();
 	BOOL Init(	HWND hWnd,
 				int nSrcWidth,
 				int nSrcHeight,
@@ -114,12 +112,12 @@ public:
 	BOOL InitFullScreen(HWND hWnd,
 						int nSrcWidth,
 						int nSrcHeight,
-						BOOL bAdaptResolution,
+						BOOL bExclusiveMode,
 						DWORD dwSrcFourCC,
 						UINT uiFontTableID);
 	__forceinline BOOL IsFullScreen() const {return m_bFullScreen;}
+	__forceinline BOOL IsFullScreenExclusive() const {return m_bFullScreenExclusive;}
 	__forceinline BOOL IsTripleBuffering() const {return (m_bFullScreen && m_bTripleBuffering);}
-	__forceinline BOOL HasDisplayModeChanged() const {return m_bDisplayModeChanged;}
 	__forceinline BOOL HasDxDraw() const {return m_bDx7;}
 	__forceinline BOOL IsInit() const {return m_bInit;}
 	__forceinline void EnterCS() {m_cs.EnterCriticalSection();}
@@ -631,6 +629,7 @@ protected:
 	BOOL LoadFontDib(UINT uID);
 	BOOL CopyFontDib(BOOL bRestoreSurfaces = TRUE);
 	__forceinline BOOL IsCurrentSrcSameRgbFormat(LPBITMAPINFO pBmi);
+	BOOL FullScreenCreateBack(DWORD dwWidth, DWORD dwHeight);
 	BOOL FullScreenCreateOffscreen(	int nSrcWidth,
 									int nSrcHeight,
 									DWORD dwSrcFourCC,
@@ -648,7 +647,7 @@ protected:
 	SIZE m_FontSize;
 	volatile int m_nCurrentDevice;
 	volatile BOOL m_bFullScreen;
-	volatile BOOL m_bDisplayModeChanged;
+	volatile BOOL m_bFullScreenExclusive;
 	volatile BOOL m_bTripleBuffering;
 	CTryEnterCriticalSection m_cs;
 };

@@ -3343,7 +3343,6 @@
 #define ID_MAXIMIZE                     32949
 #define ID_MAINMONITOR                  32950
 #define ID_PLAY_AUDIOVIDEOSHIFT         32951
-#define ID_VIEW_FULLSCREEN_ADAPTRES     32953
 #define ID_APP_LICENSE                  32954
 #define ID_APP_CREDITS                  32955
 #define ID_VIEW_ALL_FIRST_PICTURE       32956

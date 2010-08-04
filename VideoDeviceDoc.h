@@ -852,12 +852,12 @@ public:
 			BOOL DeleteRecordings();
 			BOOL DeleteSnapshots();
 			BOOL CalcOldestDir(	CSortableFileFind& FileFind,
-								int nDetectionAutoSaveDirSize,
+								int nAutoSaveDirSize,
 								CTime& OldestDirTime,
 								const CTime& CurrentTime);
 			BOOL DeleteOld(	CSortableFileFind& FileFind,
-							int nDetectionAutoSaveDirSize,
-							LONGLONG llDeleteDetectionsOlderThanDays,
+							int nAutoSaveDirSize,
+							LONGLONG llDeleteOlderThanDays,
 							const CTime& CurrentTime);
 			CVideoDeviceDoc* m_pDoc;
 			DWORD m_dwCounter;

@@ -2042,6 +2042,29 @@ BOOL CUImagerApp::AreDocsOpen()
 	return FALSE;
 }
 
+int CUImagerApp::GetOpenDocsCount()
+{
+	CUImagerDoc* pDoc;
+	CUImagerMultiDocTemplate* curTemplate;
+	POSITION posTemplate, posDoc;
+	int nCount = 0;
+
+	posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
+		{
+			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			if (pDoc)
+				++nCount;
+		}
+	}
+
+	return nCount;
+}
+
 BOOL CUImagerApp::ArePictureDocsOpen()
 {
 	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();

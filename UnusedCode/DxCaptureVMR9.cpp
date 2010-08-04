@@ -154,7 +154,7 @@ BOOL CDxCaptureVMR9::InitInterfaces()
     if (FAILED(hr))
         return FALSE;
 	
-    hr = m_pGraph->QueryInterface(IID_IMediaEvent, (void**)&m_pME);
+    hr = m_pGraph->QueryInterface(IID_IMediaEventEx, (void**)&m_pME);
     if (FAILED(hr))
         return FALSE;
 	

@@ -508,6 +508,9 @@ public:
 	// Is At least One Document Open?
 	BOOL AreDocsOpen();
 
+	// Returns the count of all open documents
+	int GetOpenDocsCount();
+
 	// Is At least One Picture Document
 	// (or Big Picture Document) Open?
 	BOOL ArePictureDocsOpen();

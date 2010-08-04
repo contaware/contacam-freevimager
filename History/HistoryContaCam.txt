@@ -15,6 +15,8 @@ VERSION HISTORY
 - Fixed a tedious bug of a missing emms instruction after
   the mmx deinterlacing function call. It only happened if no
   codec was initialized
+- Web interface shows now a small AVI link if both swf and
+  avi files are selected for motion detection saving
 
 2.0.5 (May 17th 2010)
 

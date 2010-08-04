@@ -4925,8 +4925,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 }
 
 BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
-												int nDetectionAutoSaveDirSize,	
-												LONGLONG llDeleteDetectionsOlderThanDays,
+												int nAutoSaveDirSize,	
+												LONGLONG llDeleteOlderThanDays,
 												const CTime& CurrentTime)
 {
 	CString sDir;
@@ -4935,7 +4935,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 	{
 		sDir = FileFind.GetDirName(pos);
 		sDir.TrimRight(_T('\\'));
-		sDir.Delete(0, nDetectionAutoSaveDirSize);
+		sDir.Delete(0, nAutoSaveDirSize);
 		if (sDir.GetLength() == 4)			// Year
 		{
 			nYear = _ttoi(sDir);
@@ -5005,7 +5005,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 		// Delete Dir
 		CTime DirTime(nYear, nMonth, nDay, 23, 59, 59);
 		CTimeSpan TimeDiff = CurrentTime - DirTime;
-		if ((LONGLONG)TimeDiff.GetDays() >= llDeleteDetectionsOlderThanDays &&
+		if ((LONGLONG)TimeDiff.GetDays() >= llDeleteOlderThanDays &&
 			::IsExistingDir(FileFind.GetDirName(pos)))
 			::DeleteDir(FileFind.GetDirName(pos));
 
@@ -5018,7 +5018,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 }
 
 BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
-													int nDetectionAutoSaveDirSize,
+													int nAutoSaveDirSize,
 													CTime& OldestDirTime,
 													const CTime& CurrentTime)
 {
@@ -5029,7 +5029,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
 	{
 		sDir = FileFind.GetDirName(pos),
 		sDir.TrimRight(_T('\\'));
-		sDir.Delete(0, nDetectionAutoSaveDirSize);
+		sDir.Delete(0, nAutoSaveDirSize);
 		if (sDir.GetLength() == 10)	// Year + Month + Day
 		{
 			nYear = _ttoi(sDir.Left(4));
@@ -5123,7 +5123,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
 			llDiskFreeSpace = ::GetDiskSpace(sDetectionAutoSaveDir);
 			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			bDeletingOld = FALSE;
-			while (llDaysAgo >= 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
+			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
 			{
 				// Delete old detections
 				if (!DeleteOld(	FileFind,
@@ -5207,7 +5207,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteRecordings()
 			llDiskFreeSpace = ::GetDiskSpace(sRecordAutoSaveDir);
 			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			bDeletingOld = FALSE;
-			while (llDaysAgo >= 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
+			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
 			{
 				// Delete old recordings
 				if (!DeleteOld(	FileFind,
@@ -5291,9 +5291,9 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteSnapshots()
 			llDiskFreeSpace = ::GetDiskSpace(sSnapshotAutoSaveDir);
 			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			bDeletingOld = FALSE;
-			while (llDaysAgo >= 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
+			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
 			{
-				// Delete old detections
+				// Delete old snapshots
 				if (!DeleteOld(	FileFind,
 								nSnapshotAutoSaveDirSize,
 								llDaysAgo,

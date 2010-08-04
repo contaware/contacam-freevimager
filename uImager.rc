@@ -572,8 +572,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
-        MENUITEM "Full Screen &Adapt Res\tCtrl+F", 
-                                                ID_VIEW_FULLSCREEN_ADAPTRES
     END
 END
 
@@ -746,8 +744,6 @@ BEGIN
         MENUITEM "Show &Time Position\tT",      ID_VIEW_TIMEPOSITION
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
-        MENUITEM "Full Screen &Adapt Res\tCtrl+F", 
-                                                ID_VIEW_FULLSCREEN_ADAPTRES
         MENUITEM SEPARATOR
         MENUITEM "GDI RGB",                     ID_VIEW_GDI_RGB
         MENUITEM "GDI YUV",                     ID_VIEW_GDI_YUV
@@ -2886,7 +2882,6 @@ BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "D",            ID_FILE_OPEN_DIR,       VIRTKEY, CONTROL, NOINVERT
     "E",            ID_EDIT_REDEYE,         VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_VIEW_FULLSCREEN_ADAPTRES, VIRTKEY, CONTROL, NOINVERT
     "G",            ID_EDIT_GRAYSCALE,      VIRTKEY, CONTROL, NOINVERT
     "H",            ID_EDIT_FILTER_SHARPEN, VIRTKEY, CONTROL, NOINVERT
     "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
@@ -4368,7 +4363,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Batch Conversion, Rename and Slideshow"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_RADIO_INPUT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,11,16,10,10
@@ -8350,8 +8345,6 @@ BEGIN
     ID_MAXIMIZE             "Enlarges the window to full size\nMaximize"
     ID_MAINMONITOR          "Move the main window to the primary monitor\nTo Primary Monitor"
     ID_PLAY_AUDIOVIDEOSHIFT "Audio / video sync adjustments\nA/V Sync"
-    ID_VIEW_FULLSCREEN_ADAPTRES 
-                            "Go to full screen mode adapting the resolution to the video file (exit with ESC or F)\nFull Screen Adapt To Video"
     ID_APP_LICENSE          "Display program license\nLicense"
     ID_APP_CREDITS          "Display program contributors and used libraries\nCredits"
     ID_VIEW_STRETCH_HALFTONE "Hi quality stretch\nHi Quality Stretch"

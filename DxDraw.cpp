@@ -29,8 +29,8 @@ CDxDraw::CDxDraw()
 	m_FontSize.cy = 0;
 	m_hWnd = NULL;
 	m_bFullScreen = FALSE;
+	m_bFullScreenExclusive = FALSE;
 	m_bTripleBuffering = FALSE;
-	m_bDisplayModeChanged = FALSE;
 	m_hDirectDraw = ::LoadLibrary(_T("ddraw.dll"));
 	m_cs.EnableTimeout();
 
@@ -195,60 +195,6 @@ BOOL CDxDraw::EnumerateScreens()
     return SUCCEEDED(hRet);
 }
 
-HRESULT WINAPI EnumCurrentModesCallback(LPDDSURFACEDESC2 pddsd, VOID* pContext)
-{
-	CDxDraw* p = (CDxDraw*)pContext;
-	if ((int)pddsd->dwWidth >= p->GetSrcWidth() &&
-		(int)pddsd->dwHeight >= p->GetSrcHeight())
-	{
-		HRESULT hRet = p->m_ScreenArray[p->GetCurrentDevice()]->m_pDD->SetDisplayMode(
-																pddsd->dwWidth, 
-																pddsd->dwHeight,
-																0, 0, 0);
-		if (!p->Error(hRet, _T("EnumCurrentModesCallback() Failed")))
-		{
-			// Update New Monitor Rect
-			::GetMonitorRect(	p->m_ScreenArray[p->GetCurrentDevice()]->m_hMonitor,
-								p->m_ScreenArray[p->GetCurrentDevice()]->m_rcMonitor);
-		}
-		return DDENUMRET_CANCEL;
-	}
-	else
-		return DDENUMRET_OK;
-}
-
-BOOL CDxDraw::SetSrcClosestDisplayMode()
-{
-	HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->EnumDisplayModes(0,
-																			NULL,
-																			LPVOID(this),
-																			(LPDDENUMMODESCALLBACK2)EnumCurrentModesCallback);
-	if (Error(hRet, _T("SetSrcClosestDisplayMode() Failed")))
-		return FALSE;
-	else
-	{
-		m_bDisplayModeChanged = TRUE;
-		return TRUE;
-	}
-}
-
-BOOL CDxDraw::RestoreDisplayMode()
-{
-	if ((m_ScreenArray.GetSize() > 0) && m_bFullScreen && m_bDisplayModeChanged)
-	{
-		HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->RestoreDisplayMode();
-		if (Error(hRet, _T("RestoreDisplayMode() Failed")))
-			return FALSE;
-		else
-		{
-			m_bDisplayModeChanged = FALSE;
-			return TRUE;
-		}
-	}
-	else
-		return FALSE;
-}
-
 // DirectDraw Initialization stuff
 BOOL CDxDraw::Init(	HWND hWnd,
 					int nSrcWidth,
@@ -315,8 +261,9 @@ BOOL CDxDraw::Init(	HWND hWnd,
 	m_nSrcWidth = nSrcWidth;
 	m_nSrcHeight = nSrcHeight;
 
-	// Reset the Full-Screen Mode Flag
+	// Reset the Full-Screen Mode Flags
 	m_bFullScreen = FALSE;
+	m_bFullScreenExclusive = FALSE;
 
 	// Load The Font Table
 	LoadFontDib(uiFontTableID);
@@ -360,9 +307,9 @@ BOOL CDxDraw::Init(	HWND hWnd,
 			}
 		}
 
-		// Set DDSCL_NORMAL to use windowed mode
+		// Set Cooperative Level
 		hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->SetCooperativeLevel(m_hWnd, DDSCL_NORMAL | DDSCL_MULTITHREADED);
-		if (Error(hRet, _T("SetCooperativeLevel Windowed Failed")))
+		if (Error(hRet, _T("SetCooperativeLevel Failed")))
 		{
 			Free();
 			return FALSE;
@@ -577,7 +524,7 @@ BOOL CDxDraw::Init(	HWND hWnd,
 BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 								int nSrcWidth,
 								int nSrcHeight,
-								BOOL bAdaptResolution,
+								BOOL bExclusiveMode,
 								DWORD dwSrcFourCC,
 								UINT uiFontTableID)
 {
@@ -641,10 +588,14 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 	m_nSrcHeight = nSrcHeight;
 
 	// Init the m_nCurrentDevice variable
+	// Note: at this point m_hWnd is set, m_bFullScreen is
+	// still FALSE so that m_nCurrentDevice is initialized
+	// by the UpdateCurrentDevice() function.
 	UpdateCurrentDevice();
 
-	// Set the Full-Screen Mode Flag
+	// Set the Full-Screen Mode Flags
 	m_bFullScreen = TRUE;
+	m_bFullScreenExclusive = bExclusiveMode;
 
 	// Load The Font Table
 	LoadFontDib(uiFontTableID);
@@ -679,18 +630,13 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 		}
 	}
 
-	// Change Display Resolution to match as close
-	// as possible nSrcWidth and nSrcHeight?
-	if (bAdaptResolution)
-		SetSrcClosestDisplayMode();
-
-	// Set DDSCL_EXCLUSIVE  | DDSCL_FULLSCREEN for full-screen mode
-	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->SetCooperativeLevel(m_hWnd,	DDSCL_EXCLUSIVE				|
-																				DDSCL_FULLSCREEN			|
-																				DDSCL_MULTITHREADED			|
-																				/*DDSCL_NOWINDOWCHANGES		|*/
-																				DDSCL_ALLOWREBOOT);
-	if (Error(hRet, _T("SetCooperativeLevel Windowed Failed")))
+	// Set Cooperative Level
+	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->SetCooperativeLevel(m_hWnd,	bExclusiveMode ?	DDSCL_EXCLUSIVE				|
+																									DDSCL_FULLSCREEN			|
+																									DDSCL_MULTITHREADED			|
+																									DDSCL_ALLOWREBOOT :
+																									DDSCL_NORMAL | DDSCL_MULTITHREADED);
+	if (Error(hRet, _T("SetCooperativeLevel Failed")))
 	{
 		Free();
 		return FALSE;
@@ -699,33 +645,42 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 	// Create the Front Surface
 	::ZeroMemory(&ddsd, sizeof(ddsd)); 
 	ddsd.dwSize = sizeof(ddsd);
-	DWORD dwTotal, dwFree;
-	if (GetCurrentVideoMem(dwTotal, dwFree))
+	if (bExclusiveMode)
 	{
-		// In Bytes assuming the worst case of 32 bpp
-		DWORD dwFullScreenSurfaceSize = (DWORD)((m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.right - 
-												m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.left) *
-												(m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.bottom -
-												m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.top) * 4);
-		DWORD dwOffScreenSurfaceSize = (DWORD)(m_nSrcWidth * m_nSrcHeight * 4);
-		DWORD dwFontSurfaceSize = (DWORD)(m_FontTableSize.cx * m_FontTableSize.cy * 4);
+		DWORD dwTotal, dwFree;
+		if (GetCurrentVideoMem(dwTotal, dwFree))
+		{
+			// In Bytes assuming the worst case of 32 bpp
+			DWORD dwFullScreenSurfaceSize = (DWORD)((m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.right - 
+													m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.left) *
+													(m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.bottom -
+													m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.top) * 4);
+			DWORD dwOffScreenSurfaceSize = (DWORD)(m_nSrcWidth * m_nSrcHeight * 4);
+			DWORD dwFontSurfaceSize = (DWORD)(m_FontTableSize.cx * m_FontTableSize.cy * 4);
 
-		// We need 5 surfaces for triple-buffering:
-		// 1 x front, 2 x back, 1 x offscreen, 1 x font
-		// Add a margin of 1 more full-screen surface!
-		if (dwFree >= (4 * dwFullScreenSurfaceSize + dwOffScreenSurfaceSize + dwFontSurfaceSize))
-			m_bTripleBuffering = TRUE;
+			// We need 5 surfaces for triple-buffering:
+			// 1 x front, 2 x back, 1 x offscreen, 1 x font
+			// Add a margin of 1 more full-screen surface!
+			if (dwFree >= (4 * dwFullScreenSurfaceSize + dwOffScreenSurfaceSize + dwFontSurfaceSize))
+				m_bTripleBuffering = TRUE;
+			else
+				m_bTripleBuffering = FALSE;
+		}
 		else
 			m_bTripleBuffering = FALSE;
+		if (m_bTripleBuffering)
+			ddsd.dwBackBufferCount	= 2;
+		else
+			ddsd.dwBackBufferCount	= 1;
+		ddsd.dwFlags				= DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
+		ddsd.ddsCaps.dwCaps			= DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
 	}
 	else
+	{
 		m_bTripleBuffering = FALSE;
-	if (m_bTripleBuffering)
-		ddsd.dwBackBufferCount	= 2;
-	else
-		ddsd.dwBackBufferCount	= 1;
-	ddsd.dwFlags				= DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
-	ddsd.ddsCaps.dwCaps			= DDSCAPS_PRIMARYSURFACE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
+		ddsd.dwFlags        = DDSD_CAPS;
+		ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	}
 	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->CreateSurface(&ddsd, &(m_ScreenArray[m_nCurrentDevice]->m_pFrontBuffer), NULL);
 	if (Error(hRet, _T("Failed to create the Primary Surface")))
 	{
@@ -745,14 +700,23 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 	m_ScreenArray[m_nCurrentDevice]->m_nMonitorBpp = ddsd.ddpfPixelFormat.dwRGBBitCount;
 
 	// Get the Attached Back Surface
-	DDSCAPS2 ddscaps;
-	::ZeroMemory(&ddscaps, sizeof(DDSCAPS2));
-	ddscaps.dwCaps = DDSCAPS_BACKBUFFER; 
-	hRet = m_ScreenArray[m_nCurrentDevice]->m_pFrontBuffer->GetAttachedSurface(&ddscaps, &(m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)); 
-	if (Error(hRet, _T("Failed to get the Back Surface")))
+	if (bExclusiveMode)
 	{
-		Free();
-		return FALSE;		
+		DDSCAPS2 ddscaps;
+		::ZeroMemory(&ddscaps, sizeof(DDSCAPS2));
+		ddscaps.dwCaps = DDSCAPS_BACKBUFFER; 
+		hRet = m_ScreenArray[m_nCurrentDevice]->m_pFrontBuffer->GetAttachedSurface(&ddscaps, &(m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer)); 
+		if (Error(hRet, _T("Failed to get the Back Surface")))
+		{
+			Free();
+			return FALSE;		
+		}
+	}
+	// Create the Back Surface
+	else
+	{
+		if (!FullScreenCreateBack(ddsd.dwWidth, ddsd.dwHeight))
+			return FALSE;
 	}
 
 	// Create the Off-Screen buffer used to stretch
@@ -794,6 +758,35 @@ BOOL CDxDraw::InitFullScreen(	HWND hWnd,
 	m_bInit = TRUE;
 
 	return TRUE;
+}
+
+BOOL CDxDraw::FullScreenCreateBack(DWORD dwWidth, DWORD dwHeight)
+{
+	HRESULT hRet;
+	DDSURFACEDESC2 ddsd;
+
+	// Clean-up
+	if (m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer != NULL)
+	{
+		m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer->Release();
+		m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer = NULL;
+	}
+
+	// RGB Back buffer
+	::ZeroMemory(&ddsd, sizeof(ddsd)); 
+	ddsd.dwSize = sizeof(ddsd);
+	ddsd.dwFlags        = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT;
+	ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN;
+	ddsd.dwWidth = dwWidth;
+	ddsd.dwHeight = dwHeight;
+	hRet = m_ScreenArray[m_nCurrentDevice]->m_pDD->CreateSurface(&ddsd, &(m_ScreenArray[m_nCurrentDevice]->m_pBackBuffer), NULL);
+	if (Error(hRet, _T("Failed to create the Back Surface")))
+	{
+		Free();
+		return FALSE;		
+	}
+	else
+		return TRUE;
 }
 
 BOOL CDxDraw::FullScreenCreateOffscreen(int nSrcWidth,
@@ -966,13 +959,9 @@ void CDxDraw::Free()
 			m_ScreenArray[i]->m_bFirstBlt = TRUE;
 			if (m_ScreenArray[i]->m_pDD != NULL)
 			{
-				// If in FullScreen restore to normal mode.
-				// (this will also restore the mode if it has been changed)
-				if (m_bFullScreen)
-				{
+				// If in FullScreen exclusive mode restore to normal mode
+				if (m_bFullScreenExclusive)
 					m_ScreenArray[i]->m_pDD->SetCooperativeLevel(m_hWnd, DDSCL_NORMAL | DDSCL_MULTITHREADED);
-					m_bDisplayModeChanged = FALSE;
-				}
 				if (m_ScreenArray[i]->m_pFrontBuffer != NULL)
 				{
 					if (m_ScreenArray[i]->m_pFontBuffer != NULL)
@@ -1018,6 +1007,7 @@ void CDxDraw::Free()
 	m_FontSize.cy = 0;
 	m_hWnd = NULL;
 	m_bFullScreen = FALSE;
+	m_bFullScreenExclusive = FALSE;
 	m_bTripleBuffering = FALSE;
 }
 
@@ -1285,6 +1275,10 @@ BOOL CDxDraw::Flip(BOOL bDoBlt/*=FALSE*/)
 	// Must be FullScreen!
 	if (!m_bFullScreen)
 		return FALSE;
+
+	// Always Blt in non exclusive mode
+	if (!m_bFullScreenExclusive)
+		bDoBlt = TRUE;
 
     for (int loop = 0 ; loop < DXDRAW_MAX_RETRY ; loop++)
     {		

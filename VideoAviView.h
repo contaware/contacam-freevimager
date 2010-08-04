@@ -153,8 +153,6 @@ protected:
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
-	afx_msg void OnViewFullscreenAdaptres();
-	afx_msg void OnUpdateViewFullscreenAdaptres(CCmdUI* pCmdUI);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnViewGdiRgb();
 	afx_msg void OnUpdateViewGdiRgb(CCmdUI* pCmdUI);

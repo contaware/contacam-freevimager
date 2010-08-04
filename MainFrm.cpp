@@ -1439,7 +1439,7 @@ LONG CMainFrame::OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam)
 		return 0;
 }
 
-void CMainFrame::EnterExitFullscreen(BOOL bAdaptResolution/*=FALSE*/)
+void CMainFrame::EnterExitFullscreen()
 {
 	// Available only if there is an active doc
 	CMDIChildWnd* pChild = MDIGetActive();
@@ -1486,7 +1486,7 @@ void CMainFrame::EnterExitFullscreen(BOOL bAdaptResolution/*=FALSE*/)
 				pDoc->CancelZoomTool();
 			
 			// Full-Screen Mode On 
-			FullScreenModeOn(bAdaptResolution);
+			FullScreenModeOn();
 
 			// Show OSD
 			if (pDoc->m_bEnableOsd)
@@ -1503,7 +1503,7 @@ void CMainFrame::EnterExitFullscreen(BOOL bAdaptResolution/*=FALSE*/)
 		if (m_bFullScreenMode)
 			FullScreenModeOff();
 		else
-			FullScreenModeOn(bAdaptResolution);
+			FullScreenModeOn();
 	}
 }
 
@@ -1541,8 +1541,7 @@ BOOL CMainFrame::FullScreenTo(const CRect& rcMonitor)
 	return TRUE;
 }
 
-void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
-								  BOOL bSafePaused/*=FALSE*/)
+void CMainFrame::FullScreenModeOn(BOOL bSafePaused/*=FALSE*/)
 {
 	// Available only if there is an active doc
 	CMDIChildWnd* pChild = MDIGetActive();
@@ -1564,7 +1563,7 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 		{
 			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SafePauseDelayedRestart(	GetSafeHwnd(),
 																					WM_VIDEOAVI_FULLSCREEN_MODE_ON,
-																					(WPARAM)bAdaptResolution,
+																					(WPARAM)0,
 																					(LPARAM)0,
 																					(((CVideoAviDoc*)pDoc)->GetPlayFrameRate() > 0.0) ?
 																					Round(FULLSCREENON_SAFEPAUSED_FRAMES_TIMEOUT * 1000.0 /
@@ -1693,7 +1692,7 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 	pView->SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
 
 	// Start Full-Screen Timer for Cursor Hiding
-	// and call ResetFullScreenBlt() for CVideoAviDoc
+	// and to call ResetFullScreenBlt() for CVideoAviDoc
 	// if no modeless dialogs are visible
 	pView->m_nMouseHideTimerCount = 0;
 	pView->m_nMouseMoveCount = 0;
@@ -1723,53 +1722,20 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 		if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
 			((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
 		{
-			// Init DxDraw
-			((CVideoAviDoc*)pDoc)->m_DxDraw.InitFullScreen(	GetSafeHwnd(),
+			// Init DxDraw in Exclusive mode if we are the only document open
+			BOOL bExclusive = (((CUImagerApp*)::AfxGetApp())->GetOpenDocsCount() == 1);
+			((CVideoAviDoc*)pDoc)->m_DxDraw.InitFullScreen(	bExclusive ? GetSafeHwnd() : pView->GetSafeHwnd(),
 															((CVideoAviDoc*)pDoc)->m_DocRect.right,
 															((CVideoAviDoc*)pDoc)->m_DocRect.bottom,
-															bAdaptResolution,
+															bExclusive,
 															pVideoStream->GetFourCC(false),
 															IDB_TELETEXT_DH_26);
-
-			// Update Because of Possible Resolution Change
-			if (bAdaptResolution)
-			{
-				rcMonitor = GetMonitorFullRect();
-				nMonitorWidth = rcMonitor.right - rcMonitor.left;
-				nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
-				pView->SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
-			}
 
 			// Calc. m_ZoomRect
 			pView->UpdateZoomRect();
 
-			// Set User Zoom Rect to Doc Rectangle
-			// if DirectX is in Emulated mode (Device 0)
-			// because stretch is really slow in this mode!
-			if (bAdaptResolution &&
-				(((CVideoAviDoc*)pDoc)->m_DxDraw.GetCurrentDevice() == 0))
-			{
-				// Center User Zoom Rect in Screen
-				((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect = pView->m_ZoomRect;
-				int nDeflateX =		(pView->m_ZoomRect.Width()	- pDoc->m_DocRect.Width())	/ 2;
-				int nDeflateY =		(pView->m_ZoomRect.Height()	- pDoc->m_DocRect.Height())	/ 2;
-				int nRemainderX =	(pView->m_ZoomRect.Width()	- pDoc->m_DocRect.Width())	% 2;
-				int nRemainderY =	(pView->m_ZoomRect.Height()	- pDoc->m_DocRect.Height())	% 2;
-				((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect.DeflateRect(nDeflateX, nDeflateY);
-				
-				// If Odd Size Video
-				if (nRemainderX)
-					((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect.DeflateRect(0, 0, 1, 0);
-				if (nRemainderY)
-					((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect.DeflateRect(0, 0, 0, 1);
-
-				// Check
-				ASSERT(((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect.Width() ==
-						((CVideoAviDoc*)pDoc)->m_DocRect.Width());
-				ASSERT(((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect.Height() ==
-						((CVideoAviDoc*)pDoc)->m_DocRect.Height());
-			}
-			else if (((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect == CRect(0,0,0,0))
+			// Set User Zoom Rect
+			if (((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect == CRect(0,0,0,0))
 				((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect = pView->m_ZoomRect;
 
 			// Leave CS
@@ -1802,7 +1768,7 @@ void CMainFrame::FullScreenModeOn(BOOL bAdaptResolution/*=FALSE*/,
 
 LONG CMainFrame::OnVideoAviFullScreenModeOn(WPARAM wparam, LPARAM lparam)
 {
-	FullScreenModeOn((BOOL)wparam, TRUE);
+	FullScreenModeOn(TRUE);
 	return 1;
 }
 
@@ -1826,9 +1792,9 @@ void CMainFrame::FullScreenModeOff(BOOL bSafePaused/*=FALSE*/)
 		pDoc = pView->GetDocument();
 		ASSERT_VALID(pDoc);
 
-		// Do Not Draw and Restore Display Mode
 		if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 		{
+			// Safe Pause & Do Not Draw
 			if (!bSafePaused)
 			{
 				((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SafePauseDelayedRestart(	GetSafeHwnd(),
@@ -1843,23 +1809,6 @@ void CMainFrame::FullScreenModeOff(BOOL bSafePaused/*=FALSE*/)
 																						FALSE);
 				((CVideoAviDoc*)pDoc)->m_bNoDrawing = TRUE;
 				return;
-			}
-			else
-			{
-				// DirectDraw?
-				if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
-				{
-					// Enter CS
-					((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
-
-					// Restore Display Mode
-					if (((CVideoAviDoc*)pDoc)->m_bUseDxDraw &&
-						((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit())
-						((CVideoAviDoc*)pDoc)->m_DxDraw.RestoreDisplayMode();
-
-					// Leave CS
-					((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
-				}
 			}
 		}
 
@@ -1967,7 +1916,7 @@ void CMainFrame::FullScreenModeOff(BOOL bSafePaused/*=FALSE*/)
 			if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
 				((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
 
-			// Exit DirectDraw Exclusive FullScreen Mode
+			// Exit DirectDraw FullScreen Mode
 			if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
 				((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
 			{

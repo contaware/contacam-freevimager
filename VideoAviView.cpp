@@ -26,17 +26,15 @@ BEGIN_MESSAGE_MAP(CVideoAviView, CUImagerView)
 	ON_WM_KEYDOWN()
 	ON_WM_HSCROLL()
 	ON_WM_RBUTTONDOWN()
-	ON_WM_MBUTTONDOWN()
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_MBUTTONDOWN()
 	ON_WM_TIMER()
 	ON_WM_RBUTTONDBLCLK()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_LBUTTONUP()
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
-	ON_COMMAND(ID_VIEW_FULLSCREEN_ADAPTRES, OnViewFullscreenAdaptres)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN_ADAPTRES, OnUpdateViewFullscreenAdaptres)
 	ON_WM_SETCURSOR()
 	ON_COMMAND(ID_VIEW_GDI_RGB, OnViewGdiRgb)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_GDI_RGB, OnUpdateViewGdiRgb)
@@ -2647,12 +2645,7 @@ void CVideoAviView::OnLButtonDblClk(UINT nFlags, CPoint point)
 		!pDoc->IsProcessing())
 	{
 		EnableCursor();
-
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL)) 
-			::AfxGetMainFrame()->EnterExitFullscreen(TRUE);
-		else
-			::AfxGetMainFrame()->EnterExitFullscreen();
+		::AfxGetMainFrame()->EnterExitFullscreen();
 	}
 }
 
@@ -2942,22 +2935,6 @@ void CVideoAviView::OnLButtonUp(UINT nFlags, CPoint point)
 }
 
 void CVideoAviView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
-{
-	CVideoAviDoc* pDoc = (CVideoAviDoc*)GetDocument();
-	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
-					!pDoc->IsProcessing());
-	pCmdUI->SetCheck(::AfxGetMainFrame()->m_bFullScreenMode ? 1 : 0);
-}
-
-void CVideoAviView::OnViewFullscreenAdaptres() 
-{
-	::AfxGetMainFrame()->EnterExitFullscreen(TRUE);
-}
-
-void CVideoAviView::OnUpdateViewFullscreenAdaptres(CCmdUI* pCmdUI) 
 {
 	CVideoAviDoc* pDoc = (CVideoAviDoc*)GetDocument();
 	ASSERT_VALID(pDoc);

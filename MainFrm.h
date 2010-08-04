@@ -98,7 +98,7 @@ public:
 	void TwainCopyImage(HANDLE hBitmap,TW_IMAGEINFO& info);
 	BOOL TwainCanClose();
 	CString TwainSetImageMM(CDib* pDib, int width, int height, int bpp);
-	void EnterExitFullscreen(BOOL bAdaptResolution = FALSE);
+	void EnterExitFullscreen();
 	void Progress(int nPercent);
 	void EnumGdiObjectsDlg();
 
@@ -242,8 +242,7 @@ protected:
 	TIFF* m_TiffScan;
 
 protected:
-	void FullScreenModeOn(	BOOL bAdaptResolution = FALSE,
-							BOOL bSafePaused = FALSE);
+	void FullScreenModeOn(	BOOL bSafePaused = FALSE);
 	void FullScreenModeOff(	BOOL bSafePaused = FALSE);
 	void RestoreAllFrames();
 	void ChangeCoordinatesUnit();
