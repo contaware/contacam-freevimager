@@ -65,13 +65,12 @@ extern "C"
 #ifdef VIDEODEVICEDOC
 #define AUTORUN_VIDEODEVICES_MAX_RETRIES			6
 #define AUTORUN_VIDEODEVICES_RETRY_DELAY			10000	// ms
-#define MICROAPACHE_WATCHDOG_CHECK_TIME				10000	// ms
+#define MICROAPACHE_WATCHDOG_CHECK_TIME				10000U	// ms
 #endif
 
-#define FULLSCREENON_SAFEPAUSED_FRAMES_TIMEOUT		3
-#define FULLSCREENOFF_SAFEPAUSED_FRAMES_TIMEOUT		3
-#define FULLSCREENON_DELAYEDRESTART_TIMEOUT			2000U	// ms
-#define FULLSCREENOFF_DELAYEDRESTART_TIMEOUT		2000U	// ms
+#define FULLSCREEN_SAFEPAUSED_FRAMES_TIMEOUT		3
+#define FULLSCREEN_MIN_SAFEPAUSED_TIMEOUT			1000U	// ms
+#define FULLSCREEN_DELAYEDRESTART_TIMEOUT			3000U	// ms
 
 // Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				15000U	// ms
@@ -242,8 +241,8 @@ protected:
 	TIFF* m_TiffScan;
 
 protected:
-	void FullScreenModeOn(	BOOL bSafePaused = FALSE);
-	void FullScreenModeOff(	BOOL bSafePaused = FALSE);
+	void FullScreenModeOn(HWND hChildWndSafePaused = NULL);
+	void FullScreenModeOff(HWND hChildWndSafePaused = NULL);
 	void RestoreAllFrames();
 	void ChangeCoordinatesUnit();
 #ifdef VIDEODEVICEDOC

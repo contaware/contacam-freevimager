@@ -116,7 +116,6 @@ public:
 						DWORD dwSrcFourCC,
 						UINT uiFontTableID);
 	__forceinline BOOL IsFullScreen() const {return m_bFullScreen;}
-	__forceinline BOOL IsFullScreenExclusive() const {return m_bFullScreenExclusive;}
 	__forceinline BOOL IsTripleBuffering() const {return (m_bFullScreen && m_bTripleBuffering);}
 	__forceinline BOOL HasDxDraw() const {return m_bDx7;}
 	__forceinline BOOL IsInit() const {return m_bInit;}

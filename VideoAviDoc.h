@@ -23,8 +23,8 @@
 #define VIDEO_PLAYER_THRESHOLD_TIME					5
 
 // DirectDraw Full-Screen Display of GDI Dialogs Timeouts
-#define DXDRAW_GDIDISPLAY_SAFEPAUSED_TIMEOUT		3000	// ms
-#define DXDRAW_GDIDISPLAY_DELAYEDRESTART_TIMEOUT	3000	// ms
+#define DXDRAW_GDIDISPLAY_SAFEPAUSED_TIMEOUT		3000U	// ms
+#define DXDRAW_GDIDISPLAY_DELAYEDRESTART_TIMEOUT	3000U	// ms
 
 // Rendering Modes
 #define RENDERING_MODE_GDI_RGB						0
@@ -146,10 +146,10 @@ public:
 									WPARAM wparam,					// Message W Param
 									LPARAM lparam);					// Message L Param
 			void SafePauseDelayedRestart(HWND hSafePausedWnd,		// If hSafePausedWnd != NULL and lSafePausedMsgId != 0
-										LONG lSafePausedMsgId,		// and in safe paused state a message is sent to the View
+										LONG lSafePausedMsgId,		// and in safe paused state a message is posted to hSafePausedWnd
 										WPARAM wparam,				// Message W Param
 										LPARAM lparam,				// Message L Param
-										DWORD dwSafePausedMsgTimeout,// Message Timeout
+										DWORD dwSafePausedMsgTimeout,// Message Post Timeout (after this amount of time a message is posted also if we are not in the safe state)
 										DWORD dwDelayedRestartTimeout,	// Video Thread sleeps in safe place a max. of this amount of time
 										BOOL bDoUpdateDoFullScreenBlt);	// Should the Video Thread set the m_bDoFullScreenBlt when in safe place?
 			void OnSafePauseTimeout(WPARAM wparam, LPARAM lparam);
