@@ -3628,11 +3628,21 @@ void CPictureView::Zoom(BOOL bZoomOut)
 		else
 		{
 			if (bZoomOut)
-				pData = pZoomCB->GetItemDataPtr(--Index); // Zoom Out
+			{
+				--Index; // Zoom Out
+				if (Index <= 1)
+					Index = 0;
+				pData = pZoomCB->GetItemDataPtr(Index);
+			}
 			else
-				pData = pZoomCB->GetItemDataPtr(++Index); // Zoom In
+			{
+				++Index; // Zoom In
+				if (Index >= pZoomCB->GetCount())
+					Index = 0;
+				pData = pZoomCB->GetItemDataPtr(Index);
+			}
 		}
-		if (((int)pData != -1) && (Index > 1))
+		if ((int)pData != -1)
 		{
 			pZoomCB->SetCurSel(Index);
 			pZoomCB->OnChangeZoomFactor(*((double*)pData));
