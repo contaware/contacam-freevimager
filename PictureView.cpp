@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_MESSAGE(MM_MCINOTIFY, OnBackgroundMusicTrackDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
 	ON_MESSAGE(WM_COLOR_PICKER_CLOSED, OnColorPickerClosed)
+	ON_MESSAGE(WM_APPCOMMAND, OnApplicationCommand)
 END_MESSAGE_MAP()
 
 CPictureView::CPictureView()
@@ -1401,7 +1402,7 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			!pDoc->m_bZoomTool)
 	{
 		ScreenToClient(&pt);
-		ZoomPoint(pt, zDelta > 0);
+		ZoomPoint(pt, zDelta < 0);
 	}
 	else 
 	{
@@ -1512,6 +1513,32 @@ LRESULT CPictureView::OnColorPickerClosed(WPARAM wParam, LPARAM lParam)
 	pDoc->m_pWndPalette = NULL;
 	ForceCursor(FALSE);
 	return 0;
+}
+
+LRESULT CPictureView::OnApplicationCommand(WPARAM wParam, LPARAM lParam)
+{
+    CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+    const int cmd = GET_APPCOMMAND_LPARAM(lParam);  
+    switch (cmd)
+    {
+        case APPCOMMAND_BROWSER_BACKWARD :
+			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc, TRUE))
+				pDoc->m_SlideShowThread.PreviousPicture();
+            return TRUE;  // return TRUE to indicate that we processed the button
+
+        case APPCOMMAND_BROWSER_FORWARD :
+			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc, TRUE))
+				pDoc->m_SlideShowThread.NextPicture();
+			return TRUE;  // return TRUE to indicate that we processed the button
+
+		default :
+			break;
+    }
+    
+    // This was a button we don't care about - return FALSE to indicate
+    // that we didn't process the command
+    return FALSE;
 }
 
 void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
@@ -3532,33 +3559,45 @@ void CPictureView::ZoomPoint(CPoint point, BOOL bZoomOut)
 		else
 		{
 			if (bZoomOut)
-				pData = pZoomCB->GetItemDataPtr(--Index); // Zoom Out
+			{
+				--Index; // Zoom Out
+				if (Index <= 1)
+					Index = 0;
+				pData = pZoomCB->GetItemDataPtr(Index);
+			}
 			else
-				pData = pZoomCB->GetItemDataPtr(++Index); // Zoom In
+			{
+				++Index; // Zoom In
+				if (Index >= pZoomCB->GetCount())
+					Index = 0;
+				pData = pZoomCB->GetItemDataPtr(Index);
+			}
 		}
-		if (((int)pData != -1) && (Index > 1))
+		if ((int)pData != -1)
 		{
 			pZoomCB->SetCurSel(Index);
 			pZoomCB->OnChangeZoomFactor(*((double*)pData));
 			UpdateWindowSizes(TRUE, TRUE, FALSE);
-			
-			CPoint ptScrollTo;
-			ptScrollTo.x = (int)((double)ptClick.x * pDoc->m_dZoomFactor);
-			ptScrollTo.y = (int)((double)ptClick.y * pDoc->m_dZoomFactor);
-			ptScrollTo += m_ZoomRect.TopLeft();
-			ptScrollTo -= point;
-			if (ptScrollTo.x < 0)
-				ptScrollTo.x = 0;
-			if (ptScrollTo.y < 0)
-				ptScrollTo.y = 0;
-			if (IsXAndYScroll())
-				ScrollToPosition(ptScrollTo);
-			else if (IsXScroll())
-				ScrollToPosition(CPoint(	ptScrollTo.x,
-											0));
-			else if (IsYScroll())
-				ScrollToPosition(CPoint(	0,
-											ptScrollTo.y));
+			if (Index > 1)
+			{
+				CPoint ptScrollTo;
+				ptScrollTo.x = (int)((double)ptClick.x * pDoc->m_dZoomFactor);
+				ptScrollTo.y = (int)((double)ptClick.y * pDoc->m_dZoomFactor);
+				ptScrollTo += m_ZoomRect.TopLeft();
+				ptScrollTo -= point;
+				if (ptScrollTo.x < 0)
+					ptScrollTo.x = 0;
+				if (ptScrollTo.y < 0)
+					ptScrollTo.y = 0;
+				if (IsXAndYScroll())
+					ScrollToPosition(ptScrollTo);
+				else if (IsXScroll())
+					ScrollToPosition(CPoint(	ptScrollTo.x,
+												0));
+				else if (IsYScroll())
+					ScrollToPosition(CPoint(	0,
+												ptScrollTo.y));
+			}
 		}
 	}	
 }

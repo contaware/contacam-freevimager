@@ -2,12 +2,16 @@ VERSION HISTORY
 
 2.0.7 (September 25th 2010)
 
+- Added touch screen gestures support for zoom in/out
+  and for next/previous picture
 - Fixed batch processing when input and output files
   have overlapping names in same directory
   -> reorder in same directory now works as expected!
 - Translation fixes
 - libpng updated to 1.2.43
 - Help command for paste into coordinates file
+- Fixed crash under Vista or higher when multiple avi
+  are open and full-screen mode is entered with DirectX
 
 2.0.5 (May 17th 2010)
 
@@ -133,7 +137,7 @@ VERSION HISTORY
 - CD / DVD  slideshow remembers OSD settings
 - Fixed zip compression file names bug on UNICODE build
 - Fixed autorun.inf writing bug on UNICODE build
-- In fullscreen use the TAB key to flip the image to the
+- In full-screen use the TAB key to flip the image to the
   next monitor, SHIFT + TAB to flip to the previous one
 
 1.1.0 (May 4th 2007)

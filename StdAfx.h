@@ -52,6 +52,23 @@
 extern CMallocSpy MallocSpy;
 #endif
 
+// App Command Defines
+#ifndef WM_APPCOMMAND
+#define WM_APPCOMMAND					0x0319
+#endif
+#ifndef APPCOMMAND_BROWSER_BACKWARD
+#define APPCOMMAND_BROWSER_BACKWARD		1
+#endif
+#ifndef APPCOMMAND_BROWSER_FORWARD
+#define APPCOMMAND_BROWSER_FORWARD		2
+#endif
+#ifndef FAPPCOMMAND_MASK
+#define FAPPCOMMAND_MASK				0xF000
+#endif
+#ifndef GET_APPCOMMAND_LPARAM
+#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
+#endif
+
 // Transparency Defines
 #ifndef WS_EX_LAYERED
 #define WS_EX_LAYERED					0x00080000
