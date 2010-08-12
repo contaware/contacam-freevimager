@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.7 (September 25th 2010)
+2.0.7 (August 12th 2010)
 
 - Improved motion detection: less sensible to luminosity changes
 - New gif thumbnail message in case of system overload and
