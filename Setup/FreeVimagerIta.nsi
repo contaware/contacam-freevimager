@@ -7,6 +7,7 @@ RequestExecutionLevel user
 ;!define WITH_TUTORIALS
 
 ; Name Defines
+!include "CurrentVersion.nsh"
 !define APPNAME_EXT "FreeVimager.exe"
 !define APPNAME_NOEXT "FreeVimager"
 !define UNINSTNAME_EXT "uninstall.exe"
@@ -17,9 +18,6 @@ RequestExecutionLevel user
 ; Name in the C++ Source!
 !define APPMUTEXNAME "${APPNAME_NOEXT}AppMutex"
 !define INSTALLERMUTEXNAME "${APPNAME_NOEXT}InstallerMutex"
-
-; Application Version Define
-!define APPVERSION "2.0.7"
 
 ; The name of the Program used in Title Bar and in
 ; Explaining Text when Referring to the Software

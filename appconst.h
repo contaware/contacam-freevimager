@@ -8,9 +8,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-// *** Remember To Change the Version in uImager.rc2         ***
-// *** Remember To Change the Version in the Installer       ***
-// *** Update the History.txt file                           ***
+// *** Remember To Change the Version in uImager.rc2                   ***
+// *** Remember To Change the Version in RemoteCam and RemoteCamViewer ***
+// *** (version and about dialog resources)                            ***
+// *** Remember To Change the Version in the Installer                 ***
+// *** Update the History.txt files                                    ***
 
 #ifdef VIDEODEVICEDOC
 #define APPNAME_EXT										_T("ContaCam.exe")
@@ -31,7 +33,7 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #endif
-#define APPVERSION										_T("2.0.7")
+#define APPVERSION										_T("2.0.9beta1")
 #define SLIDESHOWNAME									_T("Start.exe")
 #define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
 #define NEROBURNNAME									_T("NeroBurn.exe")

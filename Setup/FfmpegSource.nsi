@@ -2,6 +2,7 @@
 RequestExecutionLevel user
 
 ; Name Defines
+!include "CurrentVersion.nsh"
 !define APPNAME "ContaCam Ffmpeg Source"
 !define APPNAME_NOSPACE "ContaCamFfmpegSource"
 !define UNINSTNAME_EXT "uninstall.exe"
@@ -9,9 +10,6 @@ RequestExecutionLevel user
 
 ; Mutex Name Define
 !define INSTALLERMUTEXNAME "${APPNAME_NOSPACE}InstallerMutex"
-
-; Application Version Define
-!define APPVERSION "2.0.7"
 
 ; The name of the Program used in Title Bar and in
 ; Explaining Text when Referring to the Software

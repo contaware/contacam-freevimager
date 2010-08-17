@@ -174,10 +174,6 @@ SOURCE=.\res\RemoteCamViewer.rc2
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\RemoteCamViewerDoc.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\Toolbar.bmp
 # End Source File
 # End Group

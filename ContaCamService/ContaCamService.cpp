@@ -768,8 +768,34 @@ void _tmain(int argc, TCHAR* argv[])
 	// Control commands
 	if (argc==2)
 	{
+		// help
+		if (_tcsicmp(_T("-h"), argv[1]) == 0 ||
+			_tcsicmp(_T("-?"), argv[1]) == 0 ||
+			_tcsicmp(_T("/h"), argv[1]) == 0 ||
+			_tcsicmp(_T("/?"), argv[1]) == 0)
+		{
+			_tprintf(_T("This process(es) starter service has the following options:\n\n"));
+			_tprintf(_T("-h or -?  print this help page\n"));
+			_tprintf(_T("-i        install service using this executable name and current user\n"));
+			_tprintf(_T("-u        uninstall service\n"));
+			_tprintf(_T("-r        run service\n"));
+			_tprintf(_T("-k        stop service\n"));
+			_tprintf(_T("-proc     start ProgramName(s) set in ini file\n"));
+			_tprintf(_T("-noproc   exit ProgramName(s) trying 1. WM_CLOSE 2. WM_QUIT 3. killing\n\n"));
+			_tprintf(_T("Ini file must be located in the same directory as this executable, format is:\n\n"));
+			_tprintf(_T("[Settings]\n"));
+			_tprintf(_T("CheckProcessSeconds = 30  ; if 0 watchdog is disabled\n"));
+			_tprintf(_T("[Process0]\n"));
+			_tprintf(_T("ProgramName = myprog.exe  ; if no path specified this executable's path is used\n"));
+			_tprintf(_T("ProgramParams = /myparams ; optional parameter(s)\n"));
+			_tprintf(_T("StartProcessWait = 0      ; waits the given amount of ms after starting\n"));
+			_tprintf(_T("EndProcessTimeout = 15000 ; waits the given amount of ms before killing\n"));
+			_tprintf(_T("Restart = Yes ; if set ProgramName is verified each CheckProcessSeconds\n"));
+			_tprintf(_T("[Process1]\n...\n\n"));
+			ConsoleWait();
+		}
 		// uninstall service
-		if (_tcsicmp(_T("-u"), argv[1]) == 0)
+		else if (_tcsicmp(_T("-u"), argv[1]) == 0)
 		{
 			_tprintf(_T("Uninstalling %s, please wait...\n\n"), g_pServiceName);
 			KillService(g_pServiceName);

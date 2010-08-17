@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.0.9 (December 17th 2010)
+
+- ...
+  
 2.0.7 (August 12th 2010)
 
 - Added touch screen gestures support for zoom in/out
