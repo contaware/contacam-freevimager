@@ -31,11 +31,12 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <?php
 $summaryuri = "summary.php";
 $summaryuri_noheader = $summaryuri . "?header=no";
-echo "<frameset rows=\"" . THUMBHEIGHT . ",*\">\n";
-	echo "<frameset cols=\"*," . THUMBWIDTH . "\">\n";
+echo "<frameset rows=\"" . THUMBHEIGHT . ",12,*\" border=\"0\" frameborder=\"0\" framespacing=\"0\">\n";
+	echo "<frameset cols=\"*," . THUMBWIDTH . "\" border=\"0\" frameborder=\"0\" framespacing=\"0\">\n";
 		echo "<frame src=\"summarynav.php\" scrolling=\"no\" noresize=\"noresize\" />\n";
 		echo "<frame src=\"jpeglive.php\" scrolling=\"no\" noresize=\"noresize\" />\n";
 	echo "</frameset>\n";
+	echo "<frame src=\"separator.php\" scrolling=\"no\" noresize=\"noresize\" />\n";
 	echo "<frame src=\"" . $summaryuri_noheader . "\" name=\"myframe\" />\n";
 	echo "<noframes>\n";
 		echo "<body>\n";
