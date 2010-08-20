@@ -59,7 +59,7 @@ if (SHOW_PRINTCOMMAND == 1)
 <tr>
 <td height="24px" align="left"><?php echo VIEWFILESFOR;?></td>
 <td height="24px" align="left"><input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" />
-<a href="#" onclick="var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
+<a href="#" onclick="positionCalendar(); var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
 </td>
 </tr>
 <tr>
@@ -89,8 +89,8 @@ cal.setWeekStartDay(<?php echo MONDAYSTARTSWEEK;?>);
 var todaytext = '<?php echo str_replace('\'','\\\'',TODAY);?>';
 cal.setTodayText(todaytext);
 cal.setReturnFunction('loadFrame');
-cal.offsetX = -2;
-cal.offsetY = -4;
+cal.offsetX = 0;
+cal.offsetY = 0;
 document.forms[0].datetext.value = todaytext;
 document.forms[0].dateall.value = LZ(now.getDate()) + '/' + LZ(now.getMonth()+1) + '/' + now.getFullYear();
 updateClock();
@@ -159,6 +159,29 @@ function onNext() {
 	tmpdate = sel;
 	tmpdate.setDate(tmpdate.getDate()+1);
 	loadFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+}
+function positionCalendar() {
+	var frameW = document.documentElement.clientWidth;
+<?php echo "	var frameH = " . THUMBHEIGHT . ";\n";?>
+	var anchor2elem = document.getElementById('anchor2');
+	var anchor2OffsetX = anchor2elem.offsetLeft + anchor2elem.offsetParent.offsetLeft + anchor2elem.offsetParent.offsetParent.offsetLeft;
+	var anchor2OffsetY = anchor2elem.offsetTop + anchor2elem.offsetParent.offsetTop + anchor2elem.offsetParent.offsetParent.offsetTop;
+	if (anchor2OffsetX + 150 > frameW)
+	{
+		var x = frameW - 150;
+		if (x < 0) x = 0;
+		cal.offsetX = x - anchor2OffsetX;
+	}
+	else
+		cal.offsetX = 0;
+	if (anchor2OffsetY + 140 > frameH)
+	{
+		var y = frameH - 140;
+		if (y < 0) y = 0;
+		cal.offsetY = y - anchor2OffsetY;
+	}
+	else
+		cal.offsetY = 0;
 }
 //]]>
 </script>
