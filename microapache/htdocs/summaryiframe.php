@@ -54,7 +54,7 @@ if (SHOW_PRINTCOMMAND == 1)
 </span>
 &nbsp;
 <span class="inlinenowrap">
-<?php echo VIEWFILESFOR;?> <input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" /> <a href="#" onclick="var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
+<?php echo VIEWFILESFOR;?> <input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" /> <a href="#" onclick="positionCalendar(); var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
 </span>
 </div>
 </form>
@@ -76,8 +76,8 @@ cal.setWeekStartDay(<?php echo MONDAYSTARTSWEEK;?>);
 var todaytext = '<?php echo str_replace('\'','\\\'',TODAY);?>';
 cal.setTodayText(todaytext);
 cal.setReturnFunction('loadIFrame');
-cal.offsetX = -80;
-cal.offsetY = -2;
+cal.offsetX = 0;
+cal.offsetY = 0;
 document.forms[0].datetext.value = todaytext;
 document.forms[0].dateall.value = LZ(now.getDate()) + '/' + LZ(now.getMonth()+1) + '/' + now.getFullYear();
 updateClock();
@@ -108,8 +108,7 @@ function loadIFrame(y,m,d) {
 		window.frames.myiframe.location.href = srcuri;
 	}
 }
-function updateClock()
-{
+function updateClock() {
 	// Update the now variable
 	now = new Date();
 	
@@ -146,6 +145,24 @@ function onNext() {
 	tmpdate = sel;
 	tmpdate.setDate(tmpdate.getDate()+1);
 	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+}
+function positionCalendar() {
+	var CALENDARWIDTH = 154;
+	var pageW = document.documentElement.clientWidth;
+	var anchor2elem = document.getElementById('anchor2');
+	var anchor2OffsetX = anchor2elem.offsetLeft;
+	var offsetParent = anchor2elem.offsetParent;
+	while (offsetParent) {
+		anchor2OffsetX += offsetParent.offsetLeft;
+		offsetParent = offsetParent.offsetParent;
+	}
+	if (anchor2OffsetX + CALENDARWIDTH > pageW) {
+		var x = pageW - CALENDARWIDTH;
+		if (x < 0) x = 0;
+		cal.offsetX = x - anchor2OffsetX;
+	}
+	else
+		cal.offsetX = 0;
 }
 function resizeIframe() {
 	if (window.frames && window.frames.myiframe) {

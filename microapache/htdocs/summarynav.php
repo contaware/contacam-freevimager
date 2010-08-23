@@ -121,8 +121,7 @@ function loadFrame(y,m,d) {
 		parent.myframe.location.href = srcuri;
 	}
 }
-function updateClock()
-{
+function updateClock() {
 	// Update the now variable
 	now = new Date();
 	
@@ -161,22 +160,28 @@ function onNext() {
 	loadFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
 }
 function positionCalendar() {
+	var CALENDARWIDTH = 154;
+	var CALENDARHEIGHT = 144;
 	var frameW = document.documentElement.clientWidth;
 <?php echo "	var frameH = " . THUMBHEIGHT . ";\n";?>
 	var anchor2elem = document.getElementById('anchor2');
-	var anchor2OffsetX = anchor2elem.offsetLeft + anchor2elem.offsetParent.offsetLeft + anchor2elem.offsetParent.offsetParent.offsetLeft;
-	var anchor2OffsetY = anchor2elem.offsetTop + anchor2elem.offsetParent.offsetTop + anchor2elem.offsetParent.offsetParent.offsetTop;
-	if (anchor2OffsetX + 150 > frameW)
-	{
-		var x = frameW - 150;
+	var anchor2OffsetX = anchor2elem.offsetLeft;
+	var anchor2OffsetY = anchor2elem.offsetTop;
+	var offsetParent = anchor2elem.offsetParent;
+	while (offsetParent) {
+		anchor2OffsetX += offsetParent.offsetLeft;
+		anchor2OffsetY += offsetParent.offsetTop;
+		offsetParent = offsetParent.offsetParent;
+	}
+	if (anchor2OffsetX + CALENDARWIDTH > frameW) {
+		var x = frameW - CALENDARWIDTH;
 		if (x < 0) x = 0;
 		cal.offsetX = x - anchor2OffsetX;
 	}
 	else
 		cal.offsetX = 0;
-	if (anchor2OffsetY + 140 > frameH)
-	{
-		var y = frameH - 140;
+	if (anchor2OffsetY + CALENDARHEIGHT > frameH) {
+		var y = frameH - CALENDARHEIGHT;
 		if (y < 0) y = 0;
 		cal.offsetY = y - anchor2OffsetY;
 	}
