@@ -28,8 +28,8 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 ?>
 </head>
 <body>
-<table style="width: 100%; height: 12px" border="0" cellspacing="0" cellpadding="0">
-<tr><td style="text-align: center; vertical-align: middle"><hr /></td></tr>
+<table style="position:relative;width:100%;height:12px" border="0" cellspacing="0" cellpadding="0">
+<tr><td style="text-align:center;vertical-align:top"><hr style="display:block;position:absolute;left:0;top:1px;padding:0;margin:0;width:100%;font-size:1px;line-height:0;overflow:visible" /></td></tr>
 </table>
 </body>
 </html>
