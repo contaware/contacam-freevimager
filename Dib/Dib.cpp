@@ -5109,6 +5109,12 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		m_pBMI = pBMI;
 		m_pBits = pBits;
 
+		// Init Palette
+		CreatePaletteFromBMI();
+
+		// Init Masks
+		InitMasks();
+
 		// Convert to the wished Bpp
 		if (GetBitCount() == nToBitsPerPixel)
 			return TRUE;
