@@ -1,8 +1,8 @@
 VERSION HISTORY
 
-2.0.9 (December 17th 2010)
+2.0.9 (September 25th 2010)
 
-- ...
+- libpng updated to 1.2.44
   
 2.0.7 (August 12th 2010)
 

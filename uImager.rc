@@ -4305,7 +4305,7 @@ BEGIN
                     IDC_STATIC2343,15,97,208,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,106,78,8,
                     SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.43",
+    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.44",
                     IDC_STATIC2344,15,118,208,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,127,83,8,
                     SS_NOTIFY
@@ -6329,7 +6329,7 @@ BEGIN
                     IDC_STATIC2343,15,100,208,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,109,78,8,
                     SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.43",
+    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.44",
                     IDC_STATIC2344,15,121,208,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,130,83,8,
                     SS_NOTIFY
