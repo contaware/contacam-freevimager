@@ -68,7 +68,7 @@ BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
 	
 	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sin_family != AF_INET)
+	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
 	{
 		pNetCom->RemoveReadHeadBuf();
 		delete pBuf;

@@ -28,6 +28,7 @@ public:
 	BOOL	m_bDisableResend;
 	CString m_sGetFrameUsername;
 	CString m_sGetFramePassword;
+	BOOL	m_bIPv6;
 	//}}AFX_DATA
 
 // Implementation

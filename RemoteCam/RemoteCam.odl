@@ -32,6 +32,7 @@ library REMOTECAMLib
 			[id(4)] boolean DisableResend;
 			[id(5)] BSTR Username;
 			[id(6)] BSTR Password;
+			[id(7)] boolean IPv6;
 			//}}AFX_ODL_PROP
 
 		methods:

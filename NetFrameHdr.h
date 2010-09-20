@@ -157,39 +157,4 @@ __forceinline BOOL SendUDPPing(CNetCom* pNetCom, DWORD dwForceSize)
 	}
 }
 
-__forceinline BOOL SendUDPPingTo(CNetCom* pNetCom, sockaddr_in* pAddr, DWORD dwForceSize)
-{
-	// Header
-	NetFrameHdrPingAuth PingHdr;
-	PingHdr.wSeq = 0;
-	PingHdr.Type = NETFRAME_TYPE_PING_REQ;
-	PingHdr.Flags = 0;
-
-	// Send
-	if (dwForceSize <= sizeof(PingHdr))
-	{
-		PingHdr.dwExtraSize = 0;
-		return (pNetCom->WriteDatagramTo(pAddr,
-										(LPBYTE)&PingHdr,
-										sizeof(NetFrameHdrPingAuth),
-										NULL,
-										0,
-										TRUE) > 0);
-	}
-	else
-	{
-		PingHdr.dwExtraSize = dwForceSize - sizeof(PingHdr);
-		LPBYTE buf = new BYTE[PingHdr.dwExtraSize];
-		memset(buf, 0x80, PingHdr.dwExtraSize);
-		BOOL res = pNetCom->WriteDatagramTo(pAddr,
-											(LPBYTE)&PingHdr,
-											sizeof(NetFrameHdrPingAuth),
-											buf,
-											PingHdr.dwExtraSize,
-											TRUE) > 0;
-		delete [] buf;
-		return res;
-	}
-}
-
 #endif // !defined(AFX_NETFRAMEHDR_H__94956A13_6E82_4959_931F_F512BE9B17A0__INCLUDED_)

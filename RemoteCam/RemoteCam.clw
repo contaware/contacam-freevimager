@@ -85,7 +85,7 @@ Control4=IDC_STATIC,static,1342308352
 [DLG:IDD_PROPPAGE_REMOTECAM (English (U.S.))]
 Type=1
 Class=CRemoteCamPropPage
-ControlCount=11
+ControlCount=12
 Control1=IDC_HOST,edit,1350631552
 Control2=IDC_PORT,edit,1350639744
 Control3=IDC_MAXFRAMES,edit,1350639744
@@ -97,6 +97,7 @@ Control8=IDC_USERNAME,edit,1350631552
 Control9=IDC_STATIC,static,1342308352
 Control10=IDC_PASSWORD,edit,1350631584
 Control11=IDC_STATIC,static,1342308352
+Control12=IDC_IPV6,button,1342242819
 
 [DLG:IDD_ABOUTBOX_REMOTECAM (English (U.S.))]
 Type=1

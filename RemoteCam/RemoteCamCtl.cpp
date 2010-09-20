@@ -39,6 +39,7 @@ BEGIN_DISPATCH_MAP(CRemoteCamCtrl, COleControl)
 	DISP_PROPERTY_NOTIFY(CRemoteCamCtrl, "DisableResend", m_bDisableResend, OnDisableResendChanged, VT_BOOL)
 	DISP_PROPERTY_NOTIFY(CRemoteCamCtrl, "Username", m_sGetFrameUsername, OnUsernameChanged, VT_BSTR)
 	DISP_PROPERTY_NOTIFY(CRemoteCamCtrl, "Password", m_sGetFramePassword, OnPasswordChanged, VT_BSTR)
+	DISP_PROPERTY_NOTIFY(CRemoteCamCtrl, "IPv6", m_bIPv6, OnIPv6Changed, VT_BOOL)
 	//}}AFX_DISPATCH_MAP
 	DISP_FUNCTION_ID(CRemoteCamCtrl, "AboutBox", DISPID_ABOUTBOX, AboutBox, VT_EMPTY, VTS_NONE)
 END_DISPATCH_MAP()
@@ -198,6 +199,7 @@ void CRemoteCamCtrl::DoPropExchange(CPropExchange* pPX)
 	PX_Bool(pPX, _T("DisableResend"), m_bDisableResend, FALSE);
 	PX_String(pPX, _T("Username"), m_sGetFrameUsername, _T(""));
 	PX_String(pPX, _T("Password"), m_sGetFramePassword, _T(""));
+	PX_Bool(pPX, _T("IPv6"), m_bIPv6, FALSE);
 }
 
 
@@ -288,7 +290,8 @@ BOOL CRemoteCamCtrl::ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort)
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					DoIPv6() ? AF_INET6 : AF_INET)) // Socket family
 		return FALSE;
 	else
 	{
@@ -351,4 +354,11 @@ void CRemoteCamCtrl::OnUsernameChanged()
 void CRemoteCamCtrl::OnPasswordChanged() 
 {
 	SetModifiedFlag();
+}
+
+void CRemoteCamCtrl::OnIPv6Changed() 
+{
+	SetModifiedFlag();
+	if (m_bFirstConnected)	// if not in design mode
+		ConnectGetFrameUDP(m_sHost, m_lPort);
 }

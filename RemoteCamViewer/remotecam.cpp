@@ -87,6 +87,18 @@ void CRemoteCam::SetPassword(LPCTSTR propVal)
 	SetProperty(0x6, VT_BSTR, propVal);
 }
 
+BOOL CRemoteCam::GetIPv6()
+{
+	BOOL result;
+	GetProperty(0x7, VT_BOOL, (void*)&result);
+	return result;
+}
+
+void CRemoteCam::SetIPv6(BOOL propVal)
+{
+	SetProperty(0x7, VT_BOOL, propVal);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCam operations
 

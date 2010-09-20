@@ -491,7 +491,7 @@ public:
 			class CSendFrameToEntry
 			{
 				public:
-					CSendFrameToEntry() {	memset(&m_Addr, 0, sizeof(sockaddr_in));
+					CSendFrameToEntry() {	memset(&m_Addr, 0, sizeof(sockaddr_in6));
 											Clear();};
 					virtual ~CSendFrameToEntry() {;};
 					__forceinline void Clear() {m_bSendingKeyFrame = FALSE;
@@ -506,9 +506,9 @@ public:
 					__forceinline BOOL IsAddrSet() {return m_bSet;};
 					__forceinline void SetCurrentKeepAliveUpTime() {m_dwKeepAliveUpTime = ::timeGetTime();};
 					__forceinline BOOL IsKeepAliveOlderThan(DWORD dwMilliSeconds) {return (::timeGetTime() - m_dwKeepAliveUpTime > dwMilliSeconds);};
-					__forceinline void SetAddr(sockaddr_in* pAddr) {memcpy(&m_Addr, pAddr, sizeof(sockaddr_in)); m_bSet = TRUE;};
-					__forceinline sockaddr_in* GetAddrPtr() {return &m_Addr;};
-					__forceinline BOOL IsAddrEqualTo(sockaddr_in* pAddr) {return IsAddrSet() ? (memcmp(pAddr, &m_Addr, sizeof(sockaddr_in)) == 0) : FALSE;};
+					__forceinline void SetAddr(sockaddr* pAddr) {memcpy(&m_Addr, pAddr, SOCKADDRSIZE(pAddr)); m_bSet = TRUE;};
+					__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
+					__forceinline BOOL IsAddrEqualTo(sockaddr* pAddr) {return IsAddrSet() ? (memcmp(pAddr, &m_Addr, SOCKADDRSIZE(pAddr)) == 0) : FALSE;};
 
 					// Sending Keyframe Flag
 					volatile BOOL m_bSendingKeyFrame;
@@ -542,7 +542,7 @@ public:
 
 				protected:
 					volatile DWORD m_dwKeepAliveUpTime;			// Up-Time of the last received keep alive packet 
-					sockaddr_in m_Addr;							// Address to which to send frames
+					sockaddr_in6 m_Addr;						// Address to which to send frames, maybe IP4 or IP6
 					volatile BOOL m_bSet;						// Is Table Entry Set (Valid)
 			};
 
@@ -813,7 +813,8 @@ public:
 										CNetCom* pNetCom,
 										CHttpGetFrameParseProcess* pParseProcess,
 										LPCTSTR pszHostName,
-										int nPort);
+										int nPort,
+										int nSocketFamily);
 			BOOL PollAndClean(BOOL bDoNewPoll);
 			void CleanUpAllConnections();
 			CVideoDeviceDoc* m_pDoc;
@@ -1373,10 +1374,10 @@ public:
 	BOOL ConnectSendFrameUDP(CNetCom* pNetCom, int nPort);
 	BOOL ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort);
 	BOOL StoreUDPFrame(BYTE* Data, int Size, DWORD dwFrameUpTime, WORD wFrameSeq, BOOL bKeyFrame);
-	BOOL ReSendUDPFrame(sockaddr_in* pTo, WORD wFrameSeq);
+	BOOL ReSendUDPFrame(sockaddr* pTo, WORD wFrameSeq);
 	void ClearReSendUDPFrameList();
 	BOOL SendUDPFrame(	CNetCom* pNetCom,
-						sockaddr_in* pTo, // if NULL send to all!
+						sockaddr* pTo, // if NULL send to all!
 						BYTE* Data,
 						int Size,
 						DWORD dwFrameUpTime,
@@ -1452,7 +1453,7 @@ protected:
 	// Networking Functions
 	static double GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode);
 	__forceinline BOOL SendUDPFragment(	CNetCom* pNetCom,
-										sockaddr_in* pTo, // if NULL send to all!
+										sockaddr* pTo, // if NULL send to all!
 										BYTE* Hdr,
 										int HdrSize,
 										BYTE* Data,

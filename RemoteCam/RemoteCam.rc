@@ -143,6 +143,8 @@ BEGIN
     LTEXT           "User Name:",IDC_STATIC,7,62,38,8
     EDITTEXT        IDC_PASSWORD,85,79,95,12,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Password:",IDC_STATIC,7,81,34,8
+    CONTROL         "IPv6 Protocol",IDC_IPV6,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,125,96,59,10
 END
 
 

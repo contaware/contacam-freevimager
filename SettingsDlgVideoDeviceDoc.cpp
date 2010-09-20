@@ -67,6 +67,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bFullscreenBrowser = ((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
+	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
@@ -111,6 +112,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_FULLSCREENBROWSER_EXITSTRING, m_sFullscreenBrowserExitString);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
+	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
 	//}}AFX_DATA_MAP
 }
 
@@ -493,6 +495,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
 	pApp->m_sFullscreenBrowserExitString = m_sFullscreenBrowserExitString;
 
+	// Priority to IPv6
+	pApp->m_bIPv6 = m_bIPv6;
+
 	// Micro Apache
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_sMicroApacheDocRoot != m_sMicroApacheDocRoot		||
@@ -569,6 +574,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											_T("BrowserAutostart"),
 											m_bBrowserAutostart);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
+											_T("IPv6"),
+											m_bIPv6);
+			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("StartMicroApache"),
 											m_bStartMicroApache);
 			pApp->WriteProfileString(		_T("GeneralApp"),
@@ -616,6 +624,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("BrowserAutostart"),
 											m_bBrowserAutostart,
+											sTempFileName);
+			::WriteProfileIniInt(			_T("GeneralApp"),
+											_T("IPv6"),
+											m_bIPv6,
 											sTempFileName);
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("StartMicroApache"),

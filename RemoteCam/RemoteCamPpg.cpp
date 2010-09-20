@@ -60,6 +60,7 @@ CRemoteCamPropPage::CRemoteCamPropPage() :
 	m_bDisableResend = FALSE;
 	m_sGetFrameUsername = _T("");
 	m_sGetFramePassword = _T("");
+	m_bIPv6 = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -82,6 +83,8 @@ void CRemoteCamPropPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_USERNAME, m_sGetFrameUsername);
 	DDP_Text(pDX, IDC_PASSWORD, m_sGetFramePassword, _T("Password") );
 	DDX_Text(pDX, IDC_PASSWORD, m_sGetFramePassword);
+	DDP_Check(pDX, IDC_IPV6, m_bIPv6, _T("IPv6") );
+	DDX_Check(pDX, IDC_IPV6, m_bIPv6);
 	//}}AFX_DATA_MAP
 	DDP_PostProcessing(pDX);
 }

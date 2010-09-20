@@ -10,6 +10,12 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "mpr.lib")
 #pragma comment(lib, "ws2_32.lib")
 
+// Defines
+#define MY_IN6ADDR_ANY_INIT { 0 }
+#define MY_IN6ADDR_LOOPBACK_INIT { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 }
+const struct in6_addr my_in6addr_any = MY_IN6ADDR_ANY_INIT;
+const struct in6_addr my_in6addr_loopback = MY_IN6ADDR_LOOPBACK_INIT;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Buffer Class
 ///////////////////////////////////////////////////////////////////////////////
@@ -53,7 +59,7 @@ CNetCom::CBuf::CBuf()
 	m_Buf = NULL;
 	m_BufSize = 0;
 	m_MsgSize = 0;
-	memset(&m_Addr, 0, sizeof(sockaddr_in));
+	memset(&m_Addr, 0, sizeof(sockaddr_in6));
 	m_PerformanceCount.QuadPart = 0;
 }
 
@@ -62,7 +68,7 @@ CNetCom::CBuf::CBuf(unsigned int Size)
 	m_Buf = new char[Size];
 	m_BufSize = Size;
 	m_MsgSize = 0;
-	memset(&m_Addr, 0, sizeof(sockaddr_in));
+	memset(&m_Addr, 0, sizeof(sockaddr_in6));
 	m_PerformanceCount.QuadPart = 0;
 }
 
@@ -76,7 +82,7 @@ CNetCom::CBuf::CBuf(const CNetCom::CBuf& b) // Copy Constructor (CBuf b1 = b2 or
 {
 	m_MsgSize = b.m_MsgSize;
 	m_PerformanceCount.QuadPart = b.m_PerformanceCount.QuadPart;
-	memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in));
+	memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 	m_Buf = new char[m_BufSize = b.m_BufSize];
 	ASSERT(m_MsgSize <= m_BufSize);
 	if (m_Buf && b.m_Buf)
@@ -89,7 +95,7 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	{
 		m_MsgSize = b.m_MsgSize;
 		m_PerformanceCount.QuadPart = b.m_PerformanceCount.QuadPart;
-		memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in));
+		memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 		if (m_BufSize < m_MsgSize || !m_Buf)
 		{
 			if (m_Buf)
@@ -116,7 +122,7 @@ void CNetCom::CBuf::Serialize(CArchive& archive)
     if (archive.IsStoring())
 	{
         archive << m_BufSize << m_MsgSize << m_PerformanceCount.LowPart <<  m_PerformanceCount.HighPart;
-		for (i = 0 ; i < sizeof(sockaddr_in) ; i++)
+		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
 			archive << ((LPBYTE)&m_Addr)[i];
 		for (i = 0 ; i < m_MsgSize ; i++)
 			archive << m_Buf[i];
@@ -125,7 +131,7 @@ void CNetCom::CBuf::Serialize(CArchive& archive)
 	{
         archive >> m_BufSize >> m_MsgSize >> m_PerformanceCount.LowPart >>  m_PerformanceCount.HighPart;
 		ASSERT(m_BufSize >= m_MsgSize);
-		for (i = 0 ; i < sizeof(sockaddr_in) ; i++)
+		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
 			archive >> ((LPBYTE)&m_Addr)[i];
 		m_Buf = new char[m_BufSize];
 		for (i = 0 ; i < m_MsgSize ; i++)
@@ -249,12 +255,13 @@ void CNetCom::CMsgThread::SignalClosing()
 int CNetCom::CMsgThread::Work()
 {
 	DWORD Event;
-	sockaddr_in incoming_addr;
+	sockaddr_in6 incoming_addr;
+	sockaddr* pincoming_addr = (sockaddr*)&incoming_addr;
 	INT incoming_addrlen;
 
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread started (ID = 0x%08X)"), GetId());
-	::ZeroMemory(&incoming_addr, sizeof(incoming_addr));
+	memset(&incoming_addr, 0, sizeof(incoming_addr));
 	BOOL bInitConnectionShutdown = FALSE; // Did this Socket Initiate the Connection Shutdown
 	m_bClosing = FALSE;
 
@@ -469,10 +476,11 @@ int CNetCom::CMsgThread::Work()
 							pNetCom->m_nIDRx = m_pNetCom->m_nIDRx;
 							pNetCom->m_bIdleGeneratorEnabled = m_pNetCom->m_bIdleGeneratorEnabled;
 							pNetCom->m_nThreadsPriority = m_pNetCom->m_nThreadsPriority;
+							pNetCom->m_nSocketFamily = m_pNetCom->m_nSocketFamily;
 
 							// Initialize the new Server Socket
 							incoming_addrlen = sizeof(incoming_addr);
-							if ((pNetCom->m_hSocket = ::WSAAccept(m_pNetCom->m_hSocket, (sockaddr*)&incoming_addr,
+							if ((pNetCom->m_hSocket = ::WSAAccept(m_pNetCom->m_hSocket, pincoming_addr,
 															&incoming_addrlen, NULL, 0)) == INVALID_SOCKET)
 							{
 								delete pNetCom;
@@ -488,11 +496,26 @@ int CNetCom::CMsgThread::Work()
 							}
 							else if (m_pNetCom->m_pMsgOut)
 							{
-								if (incoming_addr.sin_family == AF_INET)
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept From %d.%d.%d.%d"),	incoming_addr.sin_addr.S_un.S_un_b.s_b1,
-																					incoming_addr.sin_addr.S_un.S_un_b.s_b2,
-																					incoming_addr.sin_addr.S_un.S_un_b.s_b3,
-																					incoming_addr.sin_addr.S_un.S_un_b.s_b4);
+								if (pincoming_addr->sa_family == AF_INET)
+								{
+									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept From %d.%d.%d.%d"),
+																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b1,
+																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b2,
+																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b3,
+																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b4);
+								}
+								else if (pincoming_addr->sa_family == AF_INET6)
+								{
+									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept From %x:%x:%x:%x:%x:%x:%x:%x"),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[0]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[1]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[2]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[3]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[4]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[5]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[6]),
+																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[7]));
+								}
 								else
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept Unknown Address Family"));
 							}
@@ -1094,13 +1117,13 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	if (m_pNetCom->IsDatagram())
 	{
 		INT incoming_addrlen;
-		incoming_addrlen = sizeof(sockaddr_in);
+		incoming_addrlen = sizeof(sockaddr_in6);
 		nRecvRes = ::WSARecvFrom(m_pNetCom->m_hSocket,
 								&WSABuffer,
 								1,
 								&NumberOfBytesReceived,
 								&Flags,
-								(sockaddr*)m_pCurrentBuf->GetAddrPtr(),                           
+								m_pCurrentBuf->GetAddrPtr(),                           
 								&incoming_addrlen,
 								&m_pNetCom->m_ovRx,
 								NULL);
@@ -1339,15 +1362,15 @@ void CNetCom::CTxThread::Write()
 			::EnterCriticalSection(&m_pNetCom->m_csSocket);
 			int nSendRes;
 			if (m_pNetCom->IsDatagram() &&
-				m_pCurrentBuf->GetAddrPtr()->sin_addr.S_un.S_addr != INADDR_ANY)
+				!SOCKADDRANY(m_pCurrentBuf->GetAddrPtr()))
 			{
 				nSendRes = ::WSASendTo(	m_pNetCom->m_hSocket,
 										&WSABuffer,
 										1,
 										&NumberOfBytesSent,
 										0,
-										(sockaddr*)m_pCurrentBuf->GetAddrPtr(),                       
-										sizeof(sockaddr_in),
+										m_pCurrentBuf->GetAddrPtr(),                       
+										SOCKADDRSIZE(m_pCurrentBuf->GetAddrPtr()),
 										&m_pNetCom->m_ovTx,
 										NULL);
 			}
@@ -1369,7 +1392,7 @@ void CNetCom::CTxThread::Write()
 				else
 				{
 					if (m_pNetCom->IsDatagram() &&
-						m_pCurrentBuf->GetAddrPtr()->sin_addr.S_un.S_addr != INADDR_ANY)
+						!SOCKADDRANY(m_pCurrentBuf->GetAddrPtr()))
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASendTo()"));
 					else
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASend()"));
@@ -1603,6 +1626,9 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_nIDAllClose = 0;
 	m_nIDRx = 0;
 	m_nThreadsPriority = THREAD_PRIORITY_NORMAL;
+
+	// Socket Family
+	m_nSocketFamily = AF_UNSPEC;
 }
 
 CNetCom::~CNetCom()
@@ -1688,6 +1714,48 @@ CNetCom::~CNetCom()
 	::WSACleanup();
 }
 
+BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr)
+{
+	if (!paddr)
+		return FALSE;
+	((sockaddr_in*)paddr)->sin_port = htons((unsigned short)uiPort); // If 0 -> Win Selects a Port
+	if (sAddress != _T(""))
+	{
+		// Port string
+		CString sPort;
+		sPort.Format(_T("%u"), uiPort);
+
+		// Priority to IPv6
+		if (nSocketFamily == AF_INET6)
+		{
+			if (!StringToAddress6(sAddress, sPort, (sockaddr_in6*)paddr))
+			{
+				((sockaddr_in*)paddr)->sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
+				if (((sockaddr_in*)paddr)->sin_addr.S_un.S_addr == INADDR_ANY)
+					return FALSE;
+				nSocketFamily = AF_INET;
+			}
+			else
+				nSocketFamily = AF_INET6;				
+		}
+		// Priority to IPv4
+		else
+		{
+			((sockaddr_in*)paddr)->sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
+			if (((sockaddr_in*)paddr)->sin_addr.S_un.S_addr == INADDR_ANY)
+			{
+				if (!StringToAddress6(sAddress, sPort, (sockaddr_in6*)paddr))
+					return FALSE;
+				nSocketFamily = AF_INET6;
+			}
+			else
+				nSocketFamily = AF_INET;
+		}
+	}
+	paddr->sa_family = (unsigned short)nSocketFamily;
+	return TRUE;
+}
+
 BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
 					LPARAM	lParam,						// The lParam to send with the Messages
@@ -1743,27 +1811,32 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 														// This is also the Generator rate if not sending through Write Events,
 														// Attention: if set to zero the Generator is never called!
-					CMsgOut* pMsgOut)					// Optional Message Class for Notice, Warning and Error Visualization.
+					CMsgOut* pMsgOut,					// Message Class for Notice, Warning and Error Visualization.
+					int nSocketFamily)					// Socket family
 {
-	sockaddr_in local_addr, peer_addr;
-
 	// First close
 	Close();
 
-	::ZeroMemory(&local_addr, sizeof(local_addr));
-	::ZeroMemory(&peer_addr, sizeof(peer_addr));
+	// Init socket family
+	m_nSocketFamily = nSocketFamily;
 
-    local_addr.sin_family = AF_INET;
-    local_addr.sin_port = htons((unsigned short)uiLocalPort); // If 0 -> Win Selects a Port
-    local_addr.sin_addr.S_un.S_addr = StringToAddress(sLocalAddress); // If String not Resolved -> INADDR_ANY returned
-	if ((sLocalAddress != _T("")) && (local_addr.sin_addr.S_un.S_addr == INADDR_ANY))
+	// Addresses
+	sockaddr_in6 peer_addr6;
+	sockaddr* ppeer_addr = (sockaddr*)&peer_addr6;
+	memset(&peer_addr6, 0, sizeof(peer_addr6));		// Init to any address
+	sockaddr_in6 local_addr6;
+	sockaddr* plocal_addr = (sockaddr*)&local_addr6;
+	memset(&local_addr6, 0, sizeof(local_addr6));	// Init to any address
+	if (!InitAddr(m_nSocketFamily, sPeerAddress, uiPeerPort, ppeer_addr)) // This can change m_nSocketFamily
 		return FALSE;
-
-	peer_addr.sin_family = AF_INET;
-    peer_addr.sin_port = htons((unsigned short)uiPeerPort); // If 0 -> Win Selects a Port
-    peer_addr.sin_addr.S_un.S_addr = StringToAddress(sPeerAddress); // If String not Resolved -> INADDR_ANY returned
-	if ((sPeerAddress != _T("")) && (peer_addr.sin_addr.S_un.S_addr == INADDR_ANY))
-		return FALSE;
+	if (bServer || (nSocketType == SOCK_DGRAM))
+	{
+		if (!InitAddr(m_nSocketFamily, sLocalAddress, uiLocalPort, plocal_addr)) // This can change m_nSocketFamily
+			return FALSE;
+	}
+	if (m_nSocketFamily == AF_UNSPEC)
+		m_nSocketFamily = AF_INET; // Default to IP4
+	ppeer_addr->sa_family = plocal_addr->sa_family = (unsigned short)m_nSocketFamily; // Init family
 
 	// Limit the Maximum size of the sent packets
 	if ((uiMaxTxPacketSize == 0) || (uiMaxTxPacketSize > NETCOM_MAX_TX_BUFFER_SIZE))
@@ -1823,8 +1896,9 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	if (m_hSocket == INVALID_SOCKET)
 	{
 		// Create an Overlapped (=Asynchronous) Socket
-		if ((m_hSocket = ::WSASocket(AF_INET, nSocketType, (nSocketType==SOCK_STREAM) ? IPPROTO_TCP : IPPROTO_UDP, NULL,
-															0, WSA_FLAG_OVERLAPPED)) != INVALID_SOCKET)
+		if ((m_hSocket = ::WSASocket(m_nSocketFamily, nSocketType,
+									(nSocketType==SOCK_STREAM) ? IPPROTO_TCP : IPPROTO_UDP,
+									NULL, 0, WSA_FLAG_OVERLAPPED)) != INVALID_SOCKET)
 		{
 			// Turn On all Network Events
 			if (InitEvents() == FALSE)
@@ -1835,7 +1909,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 			{
 				m_pMainServer = this;
 
-				if (::bind(m_hSocket, (sockaddr*)&local_addr, sizeof(local_addr)) == SOCKET_ERROR)
+				if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
 				{
 					ProcessWSAError(GetName() + _T(" bind()"));
 					return FALSE;
@@ -1851,7 +1925,14 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					// FD_ACCEPT can be handled
 					StartMsgThread();
 					if (m_pMsgOut)
-						Notice(GetName() + _T(" Listen (%s:%d)"), sLocalAddress, uiLocalPort);
+					{
+						CString sLocalAddressMsg(sLocalAddress);
+						sLocalAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
+						if (sLocalAddressMsg != _T(""))
+							Notice(GetName() + _T(" Listen (%s port %d)"), sLocalAddressMsg, uiLocalPort);
+						else
+							Notice(GetName() + _T(" Listen (localhost port %d)"), uiLocalPort);
+					}
 					return TRUE;
 				}
 			}
@@ -1859,25 +1940,36 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 			{
 				if (nSocketType == SOCK_DGRAM)
 				{
-					if (::bind(m_hSocket, (sockaddr*)&local_addr, sizeof(local_addr)) == SOCKET_ERROR)
+					if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
 					{
 						ProcessWSAError(GetName() + _T(" bind()"));
 						m_bMainServer = FALSE;
 						return FALSE;
 					}
 					else if (m_pMsgOut)
-						Notice(GetName() + _T(" Bind (%s:%d)"), sLocalAddress, uiLocalPort);
+					{
+						CString sLocalAddressMsg(sLocalAddress);
+						sLocalAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
+						if (sLocalAddressMsg != _T(""))
+							Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddressMsg, uiLocalPort);
+						else
+							Notice(GetName() + _T(" Bind (localhost port %d)"), uiLocalPort);
+					}
 				}
 
 				// Start Message Thread now so that FD_CONNECT can be handled
 				StartMsgThread();
-
-				if (peer_addr.sin_addr.S_un.S_addr != INADDR_ANY)
+				
+				if (!SOCKADDRANY(ppeer_addr))
 				{
-					if (::WSAConnect(m_hSocket, (sockaddr*)&peer_addr, sizeof(peer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
+					if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
 					{
 						if (m_pMsgOut)
-							Notice(GetName() + _T(" Connect (%s:%d)"), sPeerAddress, uiPeerPort);
+						{
+							CString sPeerAddressMsg(sPeerAddress);
+							sPeerAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
+							Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddressMsg, uiPeerPort);
+						}
 
 						// Old windows do not set the FD_CONNECT event for udp...
 						if (g_bWin9x && nSocketType == SOCK_DGRAM)
@@ -1948,54 +2040,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	}
 	else
 		return FALSE;
-}
-
-BOOL CNetCom::InitDatagramPeer(	CString sPeerAddress,	// Peer Address (IP or Host Name)
-								UINT uiPeerPort)		// Peer Port, if 0 -> Win Selects a Port
-{
-	// Check Whether Socket has been init and is a datagram
-	if (m_hSocket == INVALID_SOCKET ||
-		m_nSocketType != SOCK_DGRAM ||
-		m_bServer)
-		return FALSE;
-
-	// Check to see if already connected
-	if (m_pTxThread->IsRunning() &&
-		m_sPeerAddress == sPeerAddress &&
-		m_uiPeerPort == uiPeerPort)
-		return TRUE;
-
-	// Get The Internet Address
-	sockaddr_in peer_addr;
-	::ZeroMemory(&peer_addr, sizeof(peer_addr));
-	peer_addr.sin_family = AF_INET;
-    peer_addr.sin_port = htons((unsigned short)uiPeerPort); // If 0 -> Win Selects a Port
-    peer_addr.sin_addr.S_un.S_addr = StringToAddress(sPeerAddress); // If String not Resolved -> INADDR_ANY returned
-	if (peer_addr.sin_addr.S_un.S_addr == INADDR_ANY)
-		return FALSE;
-
-	// Make Sure the Tx Thread is not running
-	StopTxThread();
-
-	// Initialize the Member Variables
-	m_sPeerAddress = sPeerAddress;
-	m_uiPeerPort = uiPeerPort;
-				
-	// Connect
-	if (::WSAConnect(m_hSocket, (sockaddr*)&peer_addr, sizeof(peer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
-	{
-		if (m_pMsgOut)
-			Notice(GetName() + _T(" Connect (%s:%d)"), sPeerAddress, uiPeerPort);
-		return TRUE;
-	}
-	else
-	{
-		int nErrorCode = ::WSAGetLastError();
-		if (nErrorCode == WSAEWOULDBLOCK)
-			return TRUE;
-		ProcessWSAError(GetName() + _T(" WSAConnect()"));
-		return FALSE;
-	}
 }
 
 void CNetCom::Close()
@@ -2111,348 +2155,66 @@ void CNetCom::Close()
 	m_bIdleGeneratorEnabled = FALSE;
 }
 
-BOOL CNetCom::GetLocalSockAddress(sockaddr_in* pAddr, int* pAddrLen)
-{
-	if (::getsockname(m_hSocket, (sockaddr*)pAddr, pAddrLen) == SOCKET_ERROR)
-	{
-		ProcessWSAError(GetName() + _T(" getsockname()"));
-		return FALSE;
-	}
-	else
-		return TRUE;
-}
-
-CString CNetCom::GetLocalSockIP()
-{
-	sockaddr_in addr;
-	int addrlen;
-
-	if (m_hSocket != INVALID_SOCKET)
-	{
-		::ZeroMemory(&addr, sizeof(addr));
-
-		addrlen = sizeof(addr);
-		if (::getsockname(m_hSocket, (sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
-		{
-			ProcessWSAError(GetName() + _T(" getsockname()"));
-			return _T("");
-		}
-		else
-		{
-			CString sLocalAddress; 
-			sLocalAddress.Format(_T("%d.%d.%d.%d"),
-					addr.sin_addr.S_un.S_un_b.s_b1,
-					addr.sin_addr.S_un.S_un_b.s_b2,
-					addr.sin_addr.S_un.S_un_b.s_b3,
-					addr.sin_addr.S_un.S_un_b.s_b4);
-			return sLocalAddress;
-		}
-	}
-	else
-		return _T(""); 
-}
-
-BOOL CNetCom::GetPeerSockAddress(sockaddr_in* pAddr, int* pAddrLen)
-{
-	if (::getpeername(m_hSocket, (sockaddr*)pAddr, pAddrLen) == SOCKET_ERROR)
-	{
-		ProcessWSAError(GetName() + _T(" getpeername()"));
-		return FALSE;
-	}
-	else
-		return TRUE;
-}
-
 CString CNetCom::GetPeerSockIP()
 {
-	sockaddr_in addr;
-	int addrlen;
-
 	if (m_hSocket != INVALID_SOCKET)
 	{
-		::ZeroMemory(&addr, sizeof(addr));
-
-		addrlen = sizeof(addr);
-		if (::getpeername(m_hSocket, (sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
+		if (m_nSocketFamily == AF_INET6)
 		{
-			ProcessWSAError(GetName() + _T(" getpeername()"));
-			return _T("");
-		}
-		else
-		{
-			CString sPeerAddress; 
-			sPeerAddress.Format(_T("%d.%d.%d.%d"),
-					addr.sin_addr.S_un.S_un_b.s_b1,
-					addr.sin_addr.S_un.S_un_b.s_b2,
-					addr.sin_addr.S_un.S_un_b.s_b3,
-					addr.sin_addr.S_un.S_un_b.s_b4);
-			return sPeerAddress;
-		}
-	}
-	else
-		return _T("");
-}
-
-int CNetCom::GetLocalSockPort()
-{
-	sockaddr_in addr;
-	int addrlen;
-
-	if (m_hSocket != INVALID_SOCKET)
-	{
-		::ZeroMemory(&addr, sizeof(addr));
-
-		addrlen = sizeof(addr);
-		if (::getsockname(m_hSocket, (sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
-		{
-			ProcessWSAError(GetName() + _T(" getsockname()"));
-			return -1;
-		}
-		else
-			return htons(addr.sin_port);
-	}
-	else
-		return -1;
-}
-
-CString CNetCom::GetLocalSockPortString()
-{
-	CString str;
-	str.Format(_T("%i"), GetLocalSockPort());
-	return str;
-}
-
-int CNetCom::GetPeerSockPort()
-{
-	sockaddr_in addr;
-	int addrlen;
-
-	if (m_hSocket != INVALID_SOCKET)
-	{
-		::ZeroMemory(&addr, sizeof(addr));
-
-		addrlen = sizeof(addr);
-		if (::getpeername(m_hSocket, (sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
-		{
-			ProcessWSAError(GetName() + _T(" getpeername()"));
-			return -1;
-		}
-		else
-			return htons(addr.sin_port);
-	}
-	else
-		return -1;
-}
-
-CString CNetCom::GetPeerSockPortString()
-{
-	CString str;
-	str.Format(_T("%i"), GetPeerSockPort());
-	return str;
-}
-
-CString CNetCom::GetLocalIPs()
-{
-	char szHostName[256];
-	CString IPs;
-
-	if (::gethostname(szHostName, 256) == 0)
-	{
-		hostent* pHost;
- 
-		if ((pHost = ::gethostbyname(szHostName)) == NULL)
-		{
-			ProcessWSAError(GetName() + _T(" gethostbyname()"));
-			return CString(_T(""));
-		}
-
-		for (int i = 0 ; pHost->h_addr_list[i] != NULL ; i++)
- 		{
-			CString str;
- 
- 			for (int j = 0 ; j < pHost->h_length ; j++)
- 			{
-				CString addr;
- 
- 				if( j > 0 ) str += _T(".");
- 
- 				addr.Format(_T("%u"), (unsigned int)((unsigned char*)pHost->h_addr_list[i])[j]);
-				str += addr;
- 			}
-			if (IPs == _T(""))
-				IPs = str;
-			else
-				IPs = IPs + _T(" ; ") + str;
- 		}
-
-		return IPs;
-	}
-	else
-	{
-		ProcessWSAError(GetName() + _T(" gethostname()"));
-		return CString(_T(""));
-	}
-}
-
-BOOL CNetCom::GetLocalIPsArray(STRINGVECTOR* pIPs)
-{
-	char szHostName[256];
-
-	if (::gethostname(szHostName, 256) == 0)
-	{
-		hostent* pHost;
- 
-		if ((pHost = ::gethostbyname(szHostName)) == NULL)
-		{
-			ProcessWSAError(GetName() + _T(" gethostbyname()"));
-			return FALSE;
-		}
-
-		for (int i = 0 ; pHost->h_addr_list[i] != NULL ; i++)
- 		{
-			CString str;
- 
- 			for (int j = 0 ; j < pHost->h_length ; j++)
- 			{
-				CString addr;
- 
- 				if( j > 0 ) str += _T(".");
- 
- 				addr.Format(_T("%u"), (unsigned int)((unsigned char*)pHost->h_addr_list[i])[j]);
-				str += addr;
- 			}
-			pIPs->Add(str);
- 		}
-
-		return TRUE;
-	}
-	else
-	{
-		ProcessWSAError(GetName() + _T(" gethostname()"));
-		return FALSE;
-	}
-}
-
-CString CNetCom::GetPeerSockHostName()
-{
-	sockaddr_in Addr;
-	int AddrLen = sizeof(sockaddr_in);
-	if (GetPeerSockAddress(&Addr, &AddrLen))
-		return AddressToHostName(&Addr, AddrLen);
-	else
-		return _T("");
-}
-
-CString CNetCom::GetLocalHostName()
-{
-	char szHostName[256];
-	if (::gethostname(szHostName, 256) == SOCKET_ERROR)
-	{
-		ProcessWSAError(GetName() + _T(" gethostname()"));
-		return CString(_T(""));
-	}
-	else
-	{
-		CString sHost(szHostName);
-		// Remove the Domain Part if supplied
-		int pos = sHost.Find(_T("."));
-		if (pos != -1)
-			return sHost.Left(pos);
-		else
-			return sHost;
-	}
-}
-
-CString CNetCom::GetFullLocalHostName()
-{
-	return GetLocalHostName() + _T(".") + GetLocalDomainName();
-}
-
-CString CNetCom::GetLocalDomainName()
-{
-	HANDLE hEnum;
-	DWORD res;
-	DWORD count;
-
-	res = ::WNetOpenEnum(RESOURCE_CONTEXT, RESOURCETYPE_ANY, NULL, NULL, &hEnum);
-	if (res == NO_ERROR)
-	{		
-		if (hEnum)	
-		{
-			const int items_at_a_time = 256;
-			NETRESOURCE net_resource[items_at_a_time];
-			DWORD net_resource_count;
-			
-			do 
+			sockaddr_in6 addr6;
+			memset(&addr6, 0, sizeof(addr6));
+			int addr6len = sizeof(addr6);
+			if (::getpeername(m_hSocket, (sockaddr*)&addr6, &addr6len) == SOCKET_ERROR)
 			{
-				count = 0xFFFFFFFF;
-				net_resource_count = sizeof(NETRESOURCE)*items_at_a_time;
-				::ZeroMemory(net_resource, net_resource_count);
-				
-				res = ::WNetEnumResource(hEnum, &count, (LPVOID)net_resource, &net_resource_count);				
-				if ((res != NO_ERROR) && (res != ERROR_MORE_DATA))
-					break;
-				
-				for (DWORD i = 0 ; i < count ; i++)
-				{	
-					if (net_resource[i].lpRemoteName)
-					{
-						const TCHAR* name = net_resource[i].lpRemoteName;
-						
-						if (lstrlen(name) >= 2 && name[0] == _T('\\') && name[1] == _T('\\'))
-							name += 2; 
-						
-						hostent *host;	
-
-#ifdef _UNICODE
-						size_t name_size = _tcslen(name);
-						char* pname = (char*)new char[name_size+1];
-						wcstombs(pname, name, name_size+1);
-						host = gethostbyname(pname);
-						delete [] pname;
-#else
-						host = gethostbyname(name);
-#endif
-						if (host == NULL)
-							continue;
-						
-						CString sDomain = CString(host->h_name);
-						int pos = sDomain.Find(_T('.'));
-						if (pos != -1) 
-						{
-							if (::WNetCloseEnum(hEnum) != NO_ERROR)
-								ProcessError(GetName() + _T(" WNetCloseEnum()"));
-							return sDomain.Mid(pos+1);
-						}
-					}
-				}
-			} 
-			while((res == NO_ERROR) || (res == ERROR_MORE_DATA));
-			
-			if (::WNetCloseEnum(hEnum) != NO_ERROR)
-				ProcessError(GetName() + _T(" WNetCloseEnum()"));
-			
-			return CString(_T(""));
+				ProcessWSAError(GetName() + _T(" getpeername()"));
+				return _T("");
+			}
+			else
+			{
+				CString sPeerAddress; 
+				sPeerAddress.Format(_T("%x:%x:%x:%x:%x:%x:%x:%x"),
+						ntohs(addr6.sin6_addr.u.Word[0]),
+						ntohs(addr6.sin6_addr.u.Word[1]),
+						ntohs(addr6.sin6_addr.u.Word[2]),
+						ntohs(addr6.sin6_addr.u.Word[3]),
+						ntohs(addr6.sin6_addr.u.Word[4]),
+						ntohs(addr6.sin6_addr.u.Word[5]),
+						ntohs(addr6.sin6_addr.u.Word[6]),
+						ntohs(addr6.sin6_addr.u.Word[7]));
+				return sPeerAddress;
+			}
 		}
 		else
-			return CString(_T(""));
+		{
+			sockaddr_in addr;
+			memset(&addr, 0, sizeof(addr));
+			int addrlen = sizeof(addr);
+			if (::getpeername(m_hSocket, (sockaddr*)&addr, &addrlen) == SOCKET_ERROR)
+			{
+				ProcessWSAError(GetName() + _T(" getpeername()"));
+				return _T("");
+			}
+			else
+			{
+				CString sPeerAddress; 
+				sPeerAddress.Format(_T("%d.%d.%d.%d"),
+						addr.sin_addr.S_un.S_un_b.s_b1,
+						addr.sin_addr.S_un.S_un_b.s_b2,
+						addr.sin_addr.S_un.S_un_b.s_b3,
+						addr.sin_addr.S_un.S_un_b.s_b4);
+				return sPeerAddress;
+			}
+		}
 	}
 	else
-	{
-		ProcessError(GetName() + _T(" WNetOpenEnum()"));
-		return CString(_T(""));
-	}
+		return _T("");
 }
 
 BOOL CNetCom::HasInterface(const CString& sAddress)
 {
-	// Resolve address string
-	sockaddr_in addr;
-	addr.sin_family = AF_INET;
-    addr.sin_port = 0;
-    addr.sin_addr.S_un.S_addr = StringToAddress(sAddress); // If String not Resolved -> INADDR_ANY returned
-	if ((sAddress != _T("")) && (addr.sin_addr.S_un.S_addr == INADDR_ANY))
-		return FALSE; // Cannot resolve or wrong addr...
+	// Check
+	if (sAddress == _T(""))
+		return FALSE;
 
 	// GetBestInterface and GetBestInterfaceEx functions
 	typedef DWORD (WINAPI * FPGETBESTINTERFACE)(ULONG dwDestAddr, PDWORD pdwBestIfIndex);
@@ -2466,9 +2228,28 @@ BOOL CNetCom::HasInterface(const CString& sAddress)
 	fpGetBestInterfaceEx = (FPGETBESTINTERFACEEX)::GetProcAddress(h, "GetBestInterfaceEx");
 	if (fpGetBestInterfaceEx) // Xp and higher
 	{
+		// Resolve address string
+		BOOL bIP4 = FALSE;
+		BOOL bIP6 = FALSE;
+		sockaddr_in addr;
+		sockaddr_in6 addr6;
+		addr.sin_family = AF_INET;
+		addr.sin_port = 0;
+		addr.sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
+		if (addr.sin_addr.S_un.S_addr != INADDR_ANY)
+			bIP4 = TRUE;
+		if (StringToAddress6(sAddress, _T(""), &addr6))
+			bIP6 = TRUE;
+
+		// Check
 		DWORD dwBestIndex;
-		DWORD dwResult = fpGetBestInterfaceEx((sockaddr*)&addr, &dwBestIndex);
-		if (dwResult == NO_ERROR)
+		DWORD dwResult4 = 0xFFFFFFFF;
+		DWORD dwResult6 = 0xFFFFFFFF;
+		if (bIP4)
+			dwResult4 = fpGetBestInterfaceEx((sockaddr*)&addr, &dwBestIndex);
+		if (bIP6)
+			dwResult6 = fpGetBestInterfaceEx((sockaddr*)&addr6, &dwBestIndex);
+		if (dwResult4 == NO_ERROR || dwResult6 == NO_ERROR)
 		{
 			::FreeLibrary(h);
 			return TRUE; // Ok
@@ -2483,8 +2264,20 @@ BOOL CNetCom::HasInterface(const CString& sAddress)
 							// - given address cannot be reached from any of the available network cards
 		}
 	}
-	else if (fpGetBestInterface) // Win2k and higher
+	else if (fpGetBestInterface) // Win2k and higher, only for IP4
 	{
+		// Resolve address string
+		sockaddr_in addr;
+		addr.sin_family = AF_INET;
+		addr.sin_port = 0;
+		addr.sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
+		if (addr.sin_addr.S_un.S_addr == INADDR_ANY)
+		{
+			::FreeLibrary(h);
+			return FALSE;
+		}
+
+		// Check
 		DWORD dwBestIndex;
 		DWORD dwResult = fpGetBestInterface(addr.sin_addr.S_un.S_addr, &dwBestIndex);
 		if (dwResult == NO_ERROR)
@@ -2561,156 +2354,18 @@ CNetCom* CNetCom::GetNextChildServer(CNetCom* pChildServer)
 		return NULL;
 }
 
-/*
-URL Syntax:
-
-protocol://host[:port][/file][#location]
-ftp://[username:password@]host[:port]/file
-mailto:address[?parameters]
-*/
-CString CNetCom::GetProtoFromURL(CString sURL)
+DWORD CNetCom::EnumLAN(CStringArray* pHosts)
 {
-	if (sURL.Left(4).CompareNoCase(_T("http")) == 0)
-		return _T("http");
-	else if (sURL.Left(5).Find(_T("https")) == 0)
-		return _T("https");
-	else if (sURL.Left(3).Find(_T("ftp")) == 0)
-		return _T("ftp");
-	else if(sURL.Left(6).Find(_T("gopher")) == 0)
-		return _T("gopher");
-	else if(sURL.Left(6).CompareNoCase(_T("mailto")) == 0)
-		return _T("mailto");
-	else if(sURL.Left(4).CompareNoCase(_T("nntp")) == 0)
-		return _T("nntp");
-	else if(sURL.Left(4).CompareNoCase(_T("news")) == 0)
-		return _T("news");
-	else if(sURL.Left(6).CompareNoCase(_T("telnet")) == 0)
-		return _T("telnet");
-	else if(sURL.Left(3).CompareNoCase(_T("ssh")) == 0)
-		return _T("ssh");
-	else if(sURL.Left(4).CompareNoCase(_T("wais")) == 0)
-		return _T("wais");
-	else if(sURL.Left(4).CompareNoCase(_T("file")) == 0)
-		return _T("file");
-	else
-		return _T("");
-}
+	// Check
+	if (!pHosts)
+		return 0;
 
-CString CNetCom::RemoveProtoFromURL(CString sURL)
-{
-	CString sProto;
-	int ColPos = -1;
-	int FirstSlashPos = -1;
-	int SecondSlashPos = -1;
-
-	if ((sProto = GetProtoFromURL(sURL)) == _T(""))
-		return sURL;
-	else
-	{
-		ColPos = sURL.Find(_T(":"));
-		FirstSlashPos = sURL.Find(_T("/"));
-		if (FirstSlashPos >= 0)
-			SecondSlashPos = sURL.Find(_T("/"), FirstSlashPos+1);
-
-		if ((ColPos == (FirstSlashPos-1)) && (FirstSlashPos == (SecondSlashPos-1)))
-			return sURL.Right(sURL.GetLength()-(SecondSlashPos+1));
-		else
-			return sURL.Right(sURL.GetLength()-(ColPos+1));
-	}
-}
-
-CString CNetCom::GetHostFromURL(CString sURL)
-{
-	sURL = RemoveProtoFromURL(sURL);
-	int ColPos = sURL.Find(_T(":"));
-	int SlashPos = sURL.Find(_T("/"));
-
-	if (SlashPos < 0)
-	{
-		if (ColPos < 0)
-			return sURL;
-		else
-			return sURL.Left(ColPos);
-	}
-	else
-	{
-		if ((ColPos >= 0) && (ColPos < SlashPos))
-			return sURL.Left(ColPos);
-		else
-			return sURL.Left(SlashPos);
-	}
-}
-
-int CNetCom::GetPortFromURL(CString sURL)
-{
-	CString sPort;
-	unsigned int uiPort;
-	LPTSTR s;
-	sURL = RemoveProtoFromURL(sURL);
-	int ColPos = sURL.Find(_T(":"));
-	int SlashPos = sURL.Find(_T("/"));
-
-	if (SlashPos < 0)
-	{
-		if (ColPos < 0)
-			return -1;
-		else
-		{
-			sPort = sURL.Right(sURL.GetLength()-ColPos-1);
-			s = sPort.GetBuffer(32);
-			uiPort = _tcstoul(s, NULL, 10);
-			sPort.ReleaseBuffer();
-			return uiPort;
-		}
-	}
-	else
-	{
-		if ((ColPos >= 0) && (ColPos < SlashPos))
-		{
-			sPort = sURL.Mid(ColPos+1, SlashPos-ColPos-1);
-			s = sPort.GetBuffer(32);
-			uiPort = _tcstoul(s, NULL, 10);
-			sPort.ReleaseBuffer();
-			return uiPort;
-		}
-		else
-			return -1;
-	}
-}
-
-CString CNetCom::GetResFromURL(CString sURL)
-{
-	sURL = RemoveProtoFromURL(sURL);
-
-	int SlashPos = sURL.Find(_T("/"));
-
-	if (SlashPos < 0)
-		return _T("/");
-	else
-		return sURL.Right(sURL.GetLength()-SlashPos);
-}
-
-CString CNetCom::GetLocationFromURL(CString sURL)
-{
-	sURL = RemoveProtoFromURL(sURL);
-
-	int LocationPos = sURL.Find(_T("#"));
-
-	if (LocationPos < 0)
-		return _T("");
-	else
-		return sURL.Right(sURL.GetLength()-LocationPos-1);
-}
-
-DWORD CNetCom::EnumLAN(HOSTVECTOR* pHosts)
-{
-	HANDLE hEnum;
-	DWORD res;
-	DWORD count;
-
+	// Free
 	pHosts->RemoveAll();
 
-	res = ::WNetOpenEnum(RESOURCE_CONTEXT, RESOURCETYPE_ANY, NULL, NULL, &hEnum);
+	// Enum
+	HANDLE hEnum;
+	DWORD res = ::WNetOpenEnum(RESOURCE_CONTEXT, RESOURCETYPE_ANY, NULL, NULL, &hEnum);
 	if (res == NO_ERROR)
 	{		
 		if (hEnum)	
@@ -2721,9 +2376,9 @@ DWORD CNetCom::EnumLAN(HOSTVECTOR* pHosts)
 			
 			do 
 			{
-				count = 0xFFFFFFFF;
+				DWORD count = 0xFFFFFFFF;
 				net_resource_count = sizeof(NETRESOURCE)*items_at_a_time;
-				::ZeroMemory(net_resource, net_resource_count);
+				memset(net_resource, 0, net_resource_count);
 				
 				res = ::WNetEnumResource(hEnum, &count, (LPVOID)net_resource, &net_resource_count);				
 				if ((res != NO_ERROR) && (res != ERROR_MORE_DATA))
@@ -2734,35 +2389,9 @@ DWORD CNetCom::EnumLAN(HOSTVECTOR* pHosts)
 					if (net_resource[i].lpRemoteName)
 					{
 						const TCHAR* name = net_resource[i].lpRemoteName;
-						
 						if (lstrlen(name) >= 2 && name[0] == _T('\\') && name[1] == _T('\\'))
-							name += 2; 
-						
-						hostent *host;	
-						in_addr *ptr;
-
-#ifdef _UNICODE
-						size_t name_size = _tcslen(name);
-						char* pname = (char*)new char[name_size+1];
-						wcstombs(pname, name, name_size+1);
-						host = gethostbyname(pname);
-						delete [] pname;
-#else
-						host = gethostbyname(name);
-#endif
-						if (host == NULL)
-							continue;
-
-						ptr = (in_addr*)host->h_addr_list[0];
-						
-						CString sIP;
-						sIP.Format(_T("%d.%d.%d.%d"),
-									ptr->S_un.S_un_b.s_b1,
-									ptr->S_un.S_un_b.s_b2,
-									ptr->S_un.S_un_b.s_b3,
-									ptr->S_un.S_un_b.s_b4);
-
-						pHosts->Add(CNetCom::CHost(CString(name), CString(host->h_name), sIP, *ptr));
+							name += 2;
+						pHosts->Add(CString(name));
 					}
 				}
 			} 
@@ -3047,7 +2676,7 @@ int CNetCom::Write(BYTE* Data, int Size)
 		return 0;
 }
 
-int CNetCom::WriteDatagramTo(	sockaddr_in* pAddr,
+int CNetCom::WriteDatagramTo(	sockaddr* pAddr,
 								BYTE* Hdr,
 								int HdrSize,
 								BYTE* Data,
@@ -3090,7 +2719,7 @@ int CNetCom::WriteDatagramTo(	sockaddr_in* pAddr,
 	memcpy((void*)(pBuf->GetBuf()), (void*)(Hdr), HdrSize);
 	memcpy((void*)(pBuf->GetBuf() + HdrSize), (void*)Data, DataSize);
 	pBuf->SetMsgSize(DataSize + HdrSize);
-	memcpy(pBuf->GetAddrPtr(), pAddr, sizeof(sockaddr_in));
+	memcpy(pBuf->GetAddrPtr(), pAddr, SOCKADDRSIZE(pAddr));
 	
 	::EnterCriticalSection(m_pcsTxFifoSync);
 	if (bHighPriority)
@@ -3114,14 +2743,26 @@ int CNetCom::WriteDatagramTo(	CString sPeerAddress,
 {
 	// Get The Internet Address
 	sockaddr_in peer_addr;
-	::ZeroMemory(&peer_addr, sizeof(peer_addr));
+	sockaddr_in6 peer_addr6;
+	sockaddr* ppeer_addr;
+	memset(&peer_addr, 0, sizeof(peer_addr));
 	peer_addr.sin_family = AF_INET;
     peer_addr.sin_port = htons((unsigned short)uiPeerPort); // If 0 -> Win Selects a Port
-    peer_addr.sin_addr.S_un.S_addr = StringToAddress(sPeerAddress); // If String not Resolved -> INADDR_ANY returned
+	if (m_nSocketFamily != AF_INET6)
+		peer_addr.sin_addr.S_un.S_addr = StringToAddress4(sPeerAddress); // If String not Resolved -> INADDR_ANY returned
 	if (peer_addr.sin_addr.S_un.S_addr == INADDR_ANY)
-		return 0;
-
-	return WriteDatagramTo(&peer_addr, Hdr, HdrSize, Data, DataSize, bHighPriority);
+	{
+		if (m_nSocketFamily == AF_INET)
+			return 0;
+		CString sPeerPort;
+		sPeerPort.Format(_T("%u"), uiPeerPort);
+		if (!StringToAddress6(sPeerAddress, sPeerPort, &peer_addr6))
+			return 0;
+		ppeer_addr = (sockaddr*)&peer_addr6;
+	}
+	else
+		ppeer_addr = (sockaddr*)&peer_addr;
+	return WriteDatagramTo(ppeer_addr, Hdr, HdrSize, Data, DataSize, bHighPriority);
 }
 
 int CNetCom::WriteDatagram(	BYTE* Hdr,
@@ -3977,15 +3618,12 @@ void CNetCom::ProcessWSAError(CString sErrorText)
 		Error(sTemp);
 }
 
-unsigned long CNetCom::StringToAddress(const TCHAR* sHost, BOOL* pIsIP/*=NULL*/)
+unsigned long CNetCom::StringToAddress4(const TCHAR* sHost)
 {
 	LPHOSTENT		pHostent = NULL;
 	unsigned long	Address = INADDR_ANY;
 
-	if (pIsIP)
-		*pIsIP = FALSE;
-
-	// Check that we have a string in p_pHost
+	// Check that we have a string in sHost
 	if ((sHost != NULL) && (*sHost != _T('\0')))
 	{
 #ifdef _UNICODE
@@ -4013,15 +3651,7 @@ unsigned long CNetCom::StringToAddress(const TCHAR* sHost, BOOL* pIsIP/*=NULL*/)
 			if (pHostent)
 				Address = *((unsigned long*)pHostent->h_addr);
 			else
-			{
-				ProcessWSAError(GetName() + _T(" gethostbyname()"));
 				Address = INADDR_ANY;
-			}
-		}
-		else
-		{
-			if (pIsIP)
-				*pIsIP = TRUE;
 		}
 
 		// Clean-Up
@@ -4032,52 +3662,69 @@ unsigned long CNetCom::StringToAddress(const TCHAR* sHost, BOOL* pIsIP/*=NULL*/)
 	return Address;
 }
 
-BOOL CNetCom::AddressToString(LPSOCKADDR lpsaAddress, DWORD dwAddressLength,
-							   LPTSTR lpszAddressString, LPDWORD lpdwAddressStringLength)
+BOOL CNetCom::StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_in6* psockaddr6)
 {
-	if (::WSAAddressToString(lpsaAddress, dwAddressLength, NULL, lpszAddressString,
-												lpdwAddressStringLength) == SOCKET_ERROR)
-	{
-		ProcessWSAError(GetName() + _T(" WSAAdressToString()"));
+	// Check
+	if (!psockaddr6)
 		return FALSE;
-	}
-	else
-		return TRUE;
-}
 
-CString CNetCom::AddressToString(LPSOCKADDR lpsaAddress, DWORD dwAddressLength)
-{
-	CString sAddress;
-	TCHAR lpszAddressString[64];
-	DWORD dwAddressStringLength = 64;
-
-	if (::WSAAddressToString(lpsaAddress, dwAddressLength, NULL, lpszAddressString,
-												&dwAddressStringLength) == SOCKET_ERROR)
+	BOOL res = FALSE;
+	HINSTANCE hInstLib = ::LoadLibrary(_T("Ws2_32.dll"));
+	if (hInstLib)
 	{
-		ProcessWSAError(GetName() + _T(" WSAAdressToString()"));
-		return CString(_T(""));
-	}
-	else
-	{
-		sAddress = lpszAddressString;
-		return sAddress;
-	}
-}
+#ifdef _UNICODE
+		INT (WSAAPI *lpfGetAddrInfo)(PCWSTR pNodeName, PCWSTR pServiceName, const ADDRINFOW* pHints, PADDRINFOW* ppResult);
+		VOID (WSAAPI *lpfFreeAddrInfo)(PADDRINFOW pAddrInfo);
+		lpfGetAddrInfo = (INT(WSAAPI*)(PCWSTR, PCWSTR, const ADDRINFOW*, PADDRINFOW*))::GetProcAddress(hInstLib, "GetAddrInfoW");
+		lpfFreeAddrInfo = (VOID(WSAAPI*)(PADDRINFOW))::GetProcAddress(hInstLib, "FreeAddrInfoW");
+#else
+		INT (WSAAPI *lpfGetAddrInfo)(PCSTR pNodeName, PCSTR pServiceName, const ADDRINFOA* pHints, PADDRINFOA* ppResult);
+		VOID (WSAAPI *lpfFreeAddrInfo)(PADDRINFOA pAddrInfo);
+		lpfGetAddrInfo = (INT(WSAAPI*)(PCSTR, PCSTR, const ADDRINFOA*, PADDRINFOA*))::GetProcAddress(hInstLib, "getaddrinfo");
+		lpfFreeAddrInfo = (VOID(WSAAPI*)(PADDRINFOA))::GetProcAddress(hInstLib, "freeaddrinfo");
+#endif
+		if (lpfGetAddrInfo && lpfFreeAddrInfo)
+		{
+			ADDRINFOT aiHints;
+			ADDRINFOT* aiList = NULL;
+			memset(&aiHints, 0, sizeof(aiHints));
+			aiHints.ai_family = AF_UNSPEC;
 
-CString CNetCom::AddressToHostName(LPSOCKADDR_IN lpsaAddress, DWORD dwAddressLength)
-{
-	LPHOSTENT pHostent = NULL;
-	pHostent = ::gethostbyaddr(	(const char*)&lpsaAddress->sin_addr.S_un.S_addr,  
-								sizeof(lpsaAddress->sin_addr.S_un.S_addr),                
-								lpsaAddress->sin_family);
+			// When the AI_PASSIVE flag is set and sHost is a NULL pointer,
+			// the IP address portion of the socket address structure is set
+			// to INADDR_ANY for IPv4 addresses and IN6ADDR_ANY_INIT for IPv6
+			// addresses.
+			// When the AI_PASSIVE flag is not set and sHost is a NULL pointer,
+			// the IP address portion of the socket address structure is set
+			// to the loopback address.
+			//
+			// We want to be compatible with StringToAddress4 which returns INADDR_ANY
+			aiHints.ai_flags = AI_PASSIVE;
 
-	if (pHostent == NULL)
-	{
-		ProcessWSAError(GetName() + _T(" gethostbyaddr()"));
-		return _T("");
+			if (lpfGetAddrInfo(sHost, sPort, &aiHints, &aiList) == 0)
+			{
+				ADDRINFOT* walk;
+				for (walk = aiList ; walk != NULL ; walk = walk->ai_next)
+				{
+					// Get first IP6
+					if (walk->ai_family == AF_INET6)
+					{
+						memcpy(psockaddr6, walk->ai_addr, MIN(walk->ai_addrlen, sizeof(sockaddr_in6)));	
+						res = TRUE;
+						break;
+					}
+				}
+
+				// Free
+				lpfFreeAddrInfo(aiList);
+			}
+		}
+
+		// Free lib
+		::FreeLibrary(hInstLib);
 	}
-	else
-		return CString(pHostent->h_name);	
+
+	return res;
 }
 
 void CNetCom::Error(const TCHAR* pFormat, ...)

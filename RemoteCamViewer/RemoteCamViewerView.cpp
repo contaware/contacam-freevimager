@@ -125,6 +125,7 @@ void CRemoteCamViewerView::OnInitialUpdate()
 		m_RemoteCam0.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username0"), m_RemoteCam0.GetUsername()));
 		m_RemoteCam0.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password0"), m_RemoteCam0.GetPassword()));
 		m_RemoteCam0.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend0"), m_RemoteCam0.GetDisableResend()));
+		m_RemoteCam0.SetIPv6(pApp->GetProfileInt(REG_SECTION, _T("IPv6_0"), m_RemoteCam0.GetIPv6()));
 	}
 	if (::IsWindow(m_RemoteCam1.m_hWnd))
 	{
@@ -134,6 +135,7 @@ void CRemoteCamViewerView::OnInitialUpdate()
 		m_RemoteCam1.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username1"), m_RemoteCam1.GetUsername()));
 		m_RemoteCam1.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password1"), m_RemoteCam1.GetPassword()));
 		m_RemoteCam1.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend1"), m_RemoteCam1.GetDisableResend()));
+		m_RemoteCam1.SetIPv6(pApp->GetProfileInt(REG_SECTION, _T("IPv6_1"), m_RemoteCam1.GetIPv6()));
 	}
 	if (::IsWindow(m_RemoteCam2.m_hWnd))
 	{
@@ -143,6 +145,7 @@ void CRemoteCamViewerView::OnInitialUpdate()
 		m_RemoteCam2.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username2"), m_RemoteCam2.GetUsername()));
 		m_RemoteCam2.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password2"), m_RemoteCam2.GetPassword()));
 		m_RemoteCam2.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend2"), m_RemoteCam2.GetDisableResend()));
+		m_RemoteCam2.SetIPv6(pApp->GetProfileInt(REG_SECTION, _T("IPv6_2"), m_RemoteCam2.GetIPv6()));
 	}
 	if (::IsWindow(m_RemoteCam3.m_hWnd))
 	{
@@ -152,6 +155,7 @@ void CRemoteCamViewerView::OnInitialUpdate()
 		m_RemoteCam3.SetUsername(pApp->GetSecureProfileString(REG_SECTION, _T("Username3"), m_RemoteCam3.GetUsername()));
 		m_RemoteCam3.SetPassword(pApp->GetSecureProfileString(REG_SECTION, _T("Password3"), m_RemoteCam3.GetPassword()));
 		m_RemoteCam3.SetDisableResend(pApp->GetProfileInt(REG_SECTION, _T("DisableResend3"), m_RemoteCam3.GetDisableResend()));
+		m_RemoteCam3.SetIPv6(pApp->GetProfileInt(REG_SECTION, _T("IPv6_3"), m_RemoteCam3.GetIPv6()));
 	}
 	SetTimer(POLL_TIMER_ID, POLL_TIMER_MS, NULL);
 	SetScrollSizes(MM_TEXT, CSize(0, 0));
@@ -198,6 +202,7 @@ void CRemoteCamViewerView::OnFileShowprop0()
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Username0"), m_RemoteCam0.GetUsername());
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Password0"), m_RemoteCam0.GetPassword());
 		pApp->WriteProfileInt(REG_SECTION, _T("DisableResend0"), m_RemoteCam0.GetDisableResend());
+		pApp->WriteProfileInt(REG_SECTION, _T("IPv6_0"), m_RemoteCam0.GetIPv6());
 	}
 }
 
@@ -213,6 +218,7 @@ void CRemoteCamViewerView::OnFileShowprop1()
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Username1"), m_RemoteCam1.GetUsername());
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Password1"), m_RemoteCam1.GetPassword());
 		pApp->WriteProfileInt(REG_SECTION, _T("DisableResend1"), m_RemoteCam1.GetDisableResend());
+		pApp->WriteProfileInt(REG_SECTION, _T("IPv6_1"), m_RemoteCam1.GetIPv6());
 	}
 }
 
@@ -228,6 +234,7 @@ void CRemoteCamViewerView::OnFileShowprop2()
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Username2"), m_RemoteCam2.GetUsername());
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Password2"), m_RemoteCam2.GetPassword());
 		pApp->WriteProfileInt(REG_SECTION, _T("DisableResend2"), m_RemoteCam2.GetDisableResend());
+		pApp->WriteProfileInt(REG_SECTION, _T("IPv6_2"), m_RemoteCam2.GetIPv6());
 	}
 }
 
@@ -243,6 +250,7 @@ void CRemoteCamViewerView::OnFileShowprop3()
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Username3"), m_RemoteCam3.GetUsername());
 		pApp->WriteSecureProfileString(REG_SECTION, _T("Password3"), m_RemoteCam3.GetPassword());
 		pApp->WriteProfileInt(REG_SECTION, _T("DisableResend3"), m_RemoteCam3.GetDisableResend());
+		pApp->WriteProfileInt(REG_SECTION, _T("IPv6_3"), m_RemoteCam3.GetIPv6());
 	}
 }
 

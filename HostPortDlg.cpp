@@ -30,6 +30,7 @@ CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	m_sHost = _T("localhost");
 	m_nPort = DEFAULT_UDP_PORT;
 	m_dwMaxFrames = NETFRAME_DEFAULT_FRAMES;
+	m_dwEnumCount = 0;
 }
 
 
@@ -57,18 +58,15 @@ BOOL CHostPortDlg::OnInitDialog()
 {
 	// Init Combo Box
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	if (pComboBox)
-	{
-		pComboBox->AddString(ML_STRING(1547, "Internal UDP Server"));
-		pComboBox->AddString(ML_STRING(1548, "Other HTTP Device"));
-		pComboBox->AddString(ML_STRING(1549, "Axis (Server Push Mode)"));
-		pComboBox->AddString(ML_STRING(1550, "Axis (Client Poll Mode)"));
-		pComboBox->AddString(ML_STRING(1551, "Panasonic (Server Push Mode)"));
-		pComboBox->AddString(ML_STRING(1552, "Panasonic (Client Poll Mode)"));
-		pComboBox->AddString(ML_STRING(1553, "Pixord or NetComm (Server Push Mode)"));
-		pComboBox->AddString(ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"));
-		pComboBox->AddString(ML_STRING(1789, "Edimax (Server Push Mode)"));
-	}
+	pComboBox->AddString(ML_STRING(1547, "Internal UDP Server"));
+	pComboBox->AddString(ML_STRING(1548, "Other HTTP Device"));
+	pComboBox->AddString(ML_STRING(1549, "Axis (Server Push Mode)"));
+	pComboBox->AddString(ML_STRING(1550, "Axis (Client Poll Mode)"));
+	pComboBox->AddString(ML_STRING(1551, "Panasonic (Server Push Mode)"));
+	pComboBox->AddString(ML_STRING(1552, "Panasonic (Client Poll Mode)"));
+	pComboBox->AddString(ML_STRING(1553, "Pixord or NetComm (Server Push Mode)"));
+	pComboBox->AddString(ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"));
+	pComboBox->AddString(ML_STRING(1789, "Edimax (Server Push Mode)"));
 
 	CDialog::OnInitDialog();
 
@@ -77,79 +75,55 @@ BOOL CHostPortDlg::OnInitDialog()
 		LoadSettings();
 	
 	// Init
-	if (m_HostsHistory.GetSize() > 0)
+	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	if (m_HostsHistory.GetSize() <= 0)
 	{
-		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-		for (int i = 0 ; i < m_HostsHistory.GetSize() ; i++)
-		{
-			// Host
-			pComboBox->AddString(m_HostsHistory[i]);
-			
-			// Port, Device Type and Mode
-			if (i == 0)
-			{
-				// Port
-				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-				CString sPort;
-				sPort.Format(_T("%i"), m_PortsHistory[0]);
-				pEdit->SetWindowText(sPort);
-
-				// Device Type Mode
-				CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-				if (m_DeviceTypeModesHistory[0] >= 0 && (int)m_DeviceTypeModesHistory[0] < pComboBoxDevTypeMode->GetCount())
-					pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[0]);
-				
-				// Max Frames
-				CString sMaxFrames;
-				sMaxFrames.Format(_T("%u"), m_MaxFramesHistory[0]);
-				m_cbBufSize.SelectString(-1, sMaxFrames);
-				
-				// Re-Send Check Box
-				CButton* pCheckDisableResend = (CButton*)GetDlgItem(IDC_CHECK_DISABLE_RESEND);
-				pCheckDisableResend->SetCheck(m_DisableResendHistory[0]);
-
-				// Enable / Disable Windows
-				m_cbBufSize.EnableWindow(m_DeviceTypeModesHistory[0] == 0);
-				CButton* pButton = (CButton*)GetDlgItem(IDC_SEARCH_SERVERS);
-				pButton->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
-				pCheckDisableResend->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
-				pEdit = (CEdit*)GetDlgItem(IDC_LABEL_BUFFERING);
-				pEdit->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
-				pEdit = (CEdit*)GetDlgItem(IDC_LABEL_FRAMES);
-				pEdit->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
-			}
-		}
-		pComboBox->SetCurSel(0);
+		m_HostsHistory.InsertAt(0, _T("localhost"));
+		m_PortsHistory.InsertAt(0, (DWORD)DEFAULT_UDP_PORT);
+		m_DeviceTypeModesHistory.InsertAt(0, (DWORD)0);
+		m_MaxFramesHistory.InsertAt(0, NETFRAME_DEFAULT_FRAMES);
+		m_DisableResendHistory.InsertAt(0, (DWORD)FALSE);
 	}
-	else
+	for (int i = 0 ; i < m_HostsHistory.GetSize() ; i++)
 	{
-		// Empty Host
-		CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-		pComboBox->AddString(_T("localhost"));
-		pComboBox->SetCurSel(0);
+		// Host
+		pComboBox->AddString(m_HostsHistory[i]);
 		
-		// Default Tcp Port
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-		CString sPort;
-		sPort.Format(_T("%i"), DEFAULT_UDP_PORT);
-		pEdit->SetWindowText(sPort);
+		// Port, Device Type Mode, Max Frames and Re-Send flag
+		if (i == 0)
+		{
+			// Port
+			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+			CString sPort;
+			sPort.Format(_T("%i"), m_PortsHistory[0]);
+			pEdit->SetWindowText(sPort);
 
-		// Default Max Frames
-		CString sMaxFrames;
-		sMaxFrames.Format(_T("%u"), NETFRAME_DEFAULT_FRAMES);
-		m_cbBufSize.SelectString(-1, sMaxFrames);
+			// Device Type Mode
+			CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+			if (m_DeviceTypeModesHistory[0] >= 0 && (int)m_DeviceTypeModesHistory[0] < pComboBoxDevTypeMode->GetCount())
+				pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[0]);
+			
+			// Max Frames
+			CString sMaxFrames;
+			sMaxFrames.Format(_T("%u"), m_MaxFramesHistory[0]);
+			m_cbBufSize.SelectString(-1, sMaxFrames);
+			
+			// Re-Send Check Box
+			CButton* pCheckDisableResend = (CButton*)GetDlgItem(IDC_CHECK_DISABLE_RESEND);
+			pCheckDisableResend->SetCheck(m_DisableResendHistory[0]);
 
-		// Enable / Disable Windows
-		m_cbBufSize.EnableWindow(m_nDeviceTypeMode == 0);
-		CButton* pButton = (CButton*)GetDlgItem(IDC_SEARCH_SERVERS);
-		pButton->EnableWindow(m_nDeviceTypeMode == 0);
-		CButton* pCheckDisableResend = (CButton*)GetDlgItem(IDC_CHECK_DISABLE_RESEND);
-		pCheckDisableResend->EnableWindow(m_nDeviceTypeMode == 0);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_BUFFERING);
-		pEdit->EnableWindow(m_nDeviceTypeMode == 0);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_FRAMES);
-		pEdit->EnableWindow(m_nDeviceTypeMode == 0);
+			// Enable / Disable Windows
+			m_cbBufSize.EnableWindow(m_DeviceTypeModesHistory[0] == 0);
+			CButton* pButton = (CButton*)GetDlgItem(IDC_SEARCH_SERVERS);
+			pButton->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
+			pCheckDisableResend->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
+			pEdit = (CEdit*)GetDlgItem(IDC_LABEL_BUFFERING);
+			pEdit->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
+			pEdit = (CEdit*)GetDlgItem(IDC_LABEL_FRAMES);
+			pEdit->EnableWindow(m_DeviceTypeModesHistory[0] == 0);
+		}
 	}
+	pComboBox->SetCurSel(0);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -327,7 +301,7 @@ void CHostPortDlg::SaveSettings()
 		}
 	}
 
-	// Insert new ones at the beginning
+	// Insert new one at the beginning
 	m_HostsHistory.InsertAt(0, m_sHost);
 	m_PortsHistory.InsertAt(0, (DWORD)m_nPort);
 	m_DeviceTypeModesHistory.InsertAt(0, (DWORD)m_nDeviceTypeMode);
@@ -349,10 +323,12 @@ void CHostPortDlg::SaveSettings()
 	{
 		for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
 		{
+			// Host
 			CString sHostEntry;
 			sHostEntry.Format(_T("HostHistory%d"), i);
 			pApp->WriteProfileString(sSection, sHostEntry, m_HostsHistory[i]);
-
+			
+			// Port
 			CString sPortEntry;
 			sPortEntry.Format(_T("PortHistory%d"), i);
 			pApp->WriteProfileInt(sSection, sPortEntry, (int)m_PortsHistory[i]);
@@ -382,10 +358,12 @@ void CHostPortDlg::SaveSettings()
 		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
 		for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
 		{
+			// Host
 			CString sHostEntry;
 			sHostEntry.Format(_T("HostHistory%d"), i);
 			::WriteProfileIniString(sSection, sHostEntry, m_HostsHistory[i], sTempFileName);
 
+			// Port
 			CString sPortEntry;
 			sPortEntry.Format(_T("PortHistory%d"), i);
 			::WriteProfileIniInt(sSection, sPortEntry, (int)m_PortsHistory[i], sTempFileName);
@@ -431,14 +409,14 @@ void CHostPortDlg::Free()
 
 void CHostPortDlg::OnSearchServers()
 {
-	CString sText;
-	int i;
-
+	// Begin Wait Cursor
 	BeginWaitCursor();
 
+	// Interrupt a previous search
 	Free();
 
 	// Get Selected Port
+	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 	pEdit->GetWindowText(sText);
 	int nPort = _tcstol(sText.GetBuffer(0), NULL, 10);
@@ -453,10 +431,11 @@ void CHostPortDlg::OnSearchServers()
 	NetCom.EnumLAN(&m_Hosts);
 
 	// Start Pings
-	for (i = 0 ; i < m_Hosts.GetSize() ; i++)
+	++m_dwEnumCount;
+	for (int i = 0 ; i < m_Hosts.GetSize() ; i++)
 	{
 		CNetCom* pNetCom = (CNetCom*)new CNetCom;
-		CPingParseProcess* pPingParseProcess = (CPingParseProcess*)new CPingParseProcess(this, i);
+		CPingParseProcess* pPingParseProcess = (CPingParseProcess*)new CPingParseProcess(this, i, m_dwEnumCount);
 		CPingGenerator* pPingGenerator = (CPingGenerator*)new CPingGenerator(this);
 
 		m_Connections.Add(pNetCom);
@@ -467,10 +446,11 @@ void CHostPortDlg::OnSearchServers()
 		Connect(pNetCom,
 				pPingParseProcess,
 				pPingGenerator,
-				m_Hosts[i].m_sName,
+				m_Hosts[i],
 				m_nPort);
 	}
 
+	// End Wait Cursor
 	EndWaitCursor();
 }
 
@@ -543,7 +523,8 @@ BOOL CHostPortDlg::Connect(	CNetCom* pNetCom,
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET)) // Socket family
 		return FALSE;
 	else
 	{
@@ -565,7 +546,7 @@ BOOL CHostPortDlg::CPingParseProcess::Parse(CNetCom* pNetCom)
 	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
 	
 	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sin_family != AF_INET)
+	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
 	{
 		delete pBuf;
 		pNetCom->RemoveReadHeadBuf();
@@ -586,7 +567,7 @@ BOOL CHostPortDlg::CPingParseProcess::Parse(CNetCom* pNetCom)
 	if (Hdr.Type & NETFRAME_TYPE_PING_ANS)
 	{
 		pNetCom->EnableIdleGenerator(FALSE);
-		m_pDlg->PostMessage(WM_HOST_OK, m_nHostIndex, 0);
+		m_pDlg->PostMessage(WM_HOST_OK, m_nHostIndex, m_dwEnumCount);
 	}
 
 	delete pBuf;
@@ -597,16 +578,37 @@ BOOL CHostPortDlg::CPingParseProcess::Parse(CNetCom* pNetCom)
 
 LONG CHostPortDlg::OnHostOk(WPARAM wparam, LPARAM lparam)
 {
+	// Passed params
 	int nHostIndex = (int)wparam;
+	DWORD dwEnumCount = (DWORD)lparam;
+
+	// Check
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	if (!pComboBox)
+	if (!pComboBox							||
+		(nHostIndex >= m_Hosts.GetSize())	||
+		(dwEnumCount != m_dwEnumCount))
 		return 0;
 
-	// Insert new ones at the beginning
-	m_HostsHistory.InsertAt(0, m_Hosts[nHostIndex].m_sName);
-	pComboBox->InsertString(0, m_Hosts[nHostIndex].m_sName);
+	// Remove Duplicate
+	for (int i = 0 ; i < m_HostsHistory.GetSize() ; i++)
+	{
+		if (m_HostsHistory[i] == m_Hosts[nHostIndex])
+		{
+			m_HostsHistory.RemoveAt(i);
+			pComboBox->DeleteString(i);
+			m_PortsHistory.RemoveAt(i);
+			m_DeviceTypeModesHistory.RemoveAt(i);
+			m_MaxFramesHistory.RemoveAt(i);
+			m_DisableResendHistory.RemoveAt(i);
+			break;
+		}
+	}
+
+	// Insert new one at the beginning
+	m_HostsHistory.InsertAt(0, m_Hosts[nHostIndex]);
+	pComboBox->InsertString(0, m_Hosts[nHostIndex]);
 	m_PortsHistory.InsertAt(0, (DWORD)m_nPort);
-	m_DeviceTypeModesHistory.InsertAt(0, 0, 1);
+	m_DeviceTypeModesHistory.InsertAt(0, (DWORD)0);
 	m_MaxFramesHistory.InsertAt(0, m_dwMaxFrames);
 	m_DisableResendHistory.InsertAt(0, (DWORD)m_bDisableResend);
 
@@ -624,6 +626,8 @@ LONG CHostPortDlg::OnHostOk(WPARAM wparam, LPARAM lparam)
 	// Select last found
 	pComboBox->SetCurSel(0);
 	
+	UpdateData(TRUE);
+
 	return 1;
 }
 

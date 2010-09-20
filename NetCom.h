@@ -9,6 +9,7 @@
 
 // Include WinSock2
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 
 // Include Worker Thread
 #include "WorkerThread.h"
@@ -21,6 +22,17 @@
 #ifndef MIN
 #define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
+
+// Returns socket address structure size depending whether IP4 or IP6
+#define SOCKADDRSIZE(pAddr)						(pAddr ? ((((sockaddr*)pAddr)->sa_family == AF_INET6) ? sizeof(sockaddr_in6) : sizeof(sockaddr_in)) : 0)
+
+// Returns socket port
+#define SOCKADDRPORT(pAddr)						(pAddr ? ((sockaddr_in*)pAddr)->sin_port : 0)
+
+// Checks whether it is a any address
+#define SOCKADDRANY(pAddr)						(pAddr ? ((((sockaddr*)pAddr)->sa_family == AF_INET6) ?\
+												memcmp(&(((sockaddr_in6*)pAddr)->sin6_addr), &my_in6addr_any, sizeof(my_in6addr_any)) == 0 :\
+												((sockaddr_in*)pAddr)->sin_addr.S_un.S_addr == INADDR_ANY) : 0)
 
 // The safety margin for the processor linear buffer
 #define PROCESSOR_BUFFER_PADDING_SIZE			16
@@ -165,7 +177,7 @@ public:
 			__forceinline unsigned int GetMsgSize() const {return m_MsgSize;};
 			__forceinline unsigned int GetBufSize() const {return m_BufSize;};
 			__forceinline char* GetBuf() const {return m_Buf;};
-			__forceinline sockaddr_in* GetAddrPtr() {return &m_Addr;};
+			__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
 			void Serialize(CArchive& archive);
  
 			LARGE_INTEGER m_PerformanceCount;	// Note: use SetThreadAffinityMask() because
@@ -178,7 +190,7 @@ public:
 			unsigned int m_BufSize;
 
 			// Only Used For Datagrams
-			sockaddr_in m_Addr;		// The internet address is stored here
+			sockaddr_in6 m_Addr;		// The internet address is stored here, maybe IP4 or IP6
 	};
 
 	// The Host Class
@@ -199,7 +211,6 @@ public:
 	typedef CList<CBuf*,CBuf*> BUFQUEUE;
 	typedef CArray<CNetCom*,CNetCom*> NETCOMVECTOR;
 	typedef CArray<CString,CString&> STRINGVECTOR;
-	typedef CArray<CHost,CHost> HOSTVECTOR;
 
 	// Output Message Class
 	class CMsgOut
@@ -334,7 +345,7 @@ public:
 					LPCRITICAL_SECTION pcsTxBufSync,	// The Optional Critical Section for the Tx Buffer.
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
-					CParseProcess* pParser,					// The Parser
+					CParseProcess* pParser,				// The Parser
 					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
 					int nSocketType,					// Socket Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP).
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
@@ -378,14 +389,8 @@ public:
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 														// This is also the Generator rate if not sending through Write Events,
 														// Attention: if set to zero the Generator is never called!
-					CMsgOut* pMsgOut);					// Optional Message Class for Notice, Warning and Error Visualization.
-	
-	// A Datagram Can be initialized (through the Init() function)
-	// with an empty peer address (only Rx mode).
-	// In a seconds step, when the Peer address is known,
-	// just call this function to also start the Tx mode.
-	BOOL InitDatagramPeer(	CString sPeerAddress,	// Peer Address (IP or Host Name)
-							UINT uiPeerPort);		// Peer Port, if 0 -> Win Selects a Port
+					CMsgOut* pMsgOut,					// Message Class for Notice, Warning and Error Visualization.
+					int nSocketFamily);					// Socket family
 
 	// Close the Network Connection or Shutdown the Server,
 	// this function is blocking
@@ -417,62 +422,11 @@ public:
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
 
-	// Get the Peer's Full Qualified Host Name,
-	// example: pig.factory.org
-	CString GetPeerSockHostName();
+	// IP4 or HostName String to 32 bits IP4
+	unsigned long StringToAddress4(const TCHAR* sHost);
 
-	// Return the Peer Socket Port
-	int GetPeerSockPort();
-
-	// Return a String of the Peer Socket Port
-	CString GetPeerSockPortString();
-
-	// Return the Local Socket IP
-	CString GetLocalSockIP();
-
-	// Return the Local Socket Port
-	int GetLocalSockPort();
-
-	// Return a String of the Local Socket Port
-	CString GetLocalSockPortString();
-
-	// Enumerate All Local IPs -> IPs (strings) separated by ; 
-	CString GetLocalIPs();
-
-	// Enumerate All Local IPs -> Return an Array of IPs (strings)
-	BOOL GetLocalIPsArray(STRINGVECTOR* pIPs);
-
-	// Get the Local Host Name,
-	// example: pig of pig.factory.org
-	CString GetLocalHostName();
-
-	// Get the Local Full Qualified Host Name,
-	// example: pig.factory.org
-	CString GetFullLocalHostName();
-
-	// Extracts the Domain Portion of the Local Host Name,
-	// example: factory.org of pig.factory.org
-	CString GetLocalDomainName();
-
-	// Return the Protocol from an URL (http, ftp, ...)
-	CString GetProtoFromURL(CString sURL);
-
-	// Remove the Protocal Part of an URL
-	CString RemoveProtoFromURL(CString sURL);
-
-	// Return the host part of an URL (www.w3.org)
-	CString GetHostFromURL(CString sURL);
-
-	// Return the port part of an URL (80)
-	// returns -1 if no port is specified
-	int GetPortFromURL(CString sURL);
-
-	// Return the relative resource path from an URL (/pub/pic/hello.jpg)
-	CString GetResFromURL(CString sURL);
-
-	// Return the location from an URL
-	// (http://www.myhost.com/Forecast.html#LongRange -> LongRange)
-	CString GetLocationFromURL(CString sURL);
+	// IP6 or HostName String with optional Port to 128 bits IP6
+	BOOL StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_in6* psockaddr6);
 
 	// Is there an interface for the given address?
 	// This is a first guess to determine whether the given
@@ -481,7 +435,7 @@ public:
 	BOOL HasInterface(const CString& sAddress);
 
 	// Enumerate the LAN
-	DWORD EnumLAN(HOSTVECTOR* pHosts);
+	DWORD EnumLAN(CStringArray* pHosts);
 
 	// Get the connected child servers of a main server.
 	// To get the first pass NULL as parameter, to get
@@ -559,7 +513,7 @@ public:
 	// Single UDP Datagram send to Specified Address,
 	// if the data is to big -> nothing is sent!
 	// if bHighPriority is set the datagram is added to the queue head instead of the tail
-	int WriteDatagramTo(sockaddr_in* pAddr,
+	int WriteDatagramTo(sockaddr* pAddr,
 						BYTE* Hdr,
 						int HdrSize,
 						BYTE* Data,
@@ -660,6 +614,9 @@ public:
 	// "NetCom Datagram"
 	CString GetName();
 
+	// Socket Family
+	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
+
 	// Logging
 	void SetRxLogging(BOOL bLogging);
 	void SetTxLogging(BOOL bLogging);
@@ -723,6 +680,9 @@ public:
 	HWND m_hOwnerWnd;
 
 protected:
+	// Init paddr from sAddress
+	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
+
 	// Initialize All User Parameters (Parameters from Init Function)
 	BOOL InitVars(BOOL bServer,
 				HWND hOwnerWnd,
@@ -771,29 +731,6 @@ protected:
 
 	// WSAGetLastError() Handling
 	void ProcessWSAError(CString sErrorText);
-
-	// IP or HostName String to 32 bits IP
-	unsigned long StringToAddress(const TCHAR* sHost, BOOL* pIsIP = NULL);
-
-	// 32 bits IP And Port to IP:Port String
-	BOOL AddressToString(	LPSOCKADDR lpsaAddress,
-							DWORD dwAddressLength,
-							LPTSTR lpszAddressString,
-							LPDWORD lpdwAddressStringLength);
-
-	// 32 bits IP And Port to IP:Port String
-	CString AddressToString(LPSOCKADDR lpsaAddress,
-							DWORD dwAddressLength);
-
-	// 32 bits IP to HostName String
-	CString AddressToHostName(	LPSOCKADDR_IN lpsaAddress,
-								DWORD dwAddressLength);
-
-	// Return the Local Socket Address (Host and Port)
-	BOOL GetLocalSockAddress(sockaddr_in* pAddr, int* pAddrLen);
-
-	// Return the Peer Socket Address (Host and Port)
-	BOOL GetPeerSockAddress(sockaddr_in* pAddr, int* pAddrLen);
 
 	// Shutdown Thread(s)
 	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->IsAlive())
@@ -1043,6 +980,9 @@ protected:
 
 	// Threads priority
 	int m_nThreadsPriority;
+
+	// Socket Family
+	volatile int m_nSocketFamily;
 };
 
 #endif __NETCOM_H__

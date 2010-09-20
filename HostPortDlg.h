@@ -25,9 +25,10 @@ public:
 	class CPingParseProcess : public CNetCom::CParseProcess
 	{
 		public:
-			CPingParseProcess(CHostPortDlg* pDlg, int nHostIndex) {	m_pDlg = pDlg;
-																	m_nHostIndex = nHostIndex;
-																	m_bPingReceived = FALSE;};
+			CPingParseProcess(CHostPortDlg* pDlg, int nHostIndex, DWORD dwEnumCount) {	m_pDlg = pDlg;
+																						m_nHostIndex = nHostIndex;
+																						m_dwEnumCount = dwEnumCount;
+																						m_bPingReceived = FALSE;};
 			virtual ~CPingParseProcess() {;};
 			virtual BOOL Parse(CNetCom* pNetCom);
 			void ResetPingReceived() {m_bPingReceived;};
@@ -37,6 +38,7 @@ public:
 			CHostPortDlg* m_pDlg;
 			BOOL m_bPingReceived;
 			int m_nHostIndex;
+			DWORD m_dwEnumCount;
 	};
 
 	// The Networking Ping Generator Class
@@ -98,10 +100,11 @@ protected:
 	CDWordArray m_DeviceTypeModesHistory;
 	CDWordArray m_MaxFramesHistory;
 	CDWordArray m_DisableResendHistory;
-	CNetCom::HOSTVECTOR m_Hosts;
+	CStringArray m_Hosts;
 	NETCOMARRAY m_Connections;
 	PARSEPROCESSARRAY m_Parsers;
 	GENERATORARRAY m_Generators;
+	DWORD m_dwEnumCount;
 	// Generated message map functions
 	//{{AFX_MSG(CHostPortDlg)
 	virtual BOOL OnInitDialog();

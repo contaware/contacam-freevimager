@@ -54,6 +54,8 @@ public:
 	void SetUsername(LPCTSTR);
 	CString GetPassword();
 	void SetPassword(LPCTSTR);
+	BOOL GetIPv6();
+	void SetIPv6(BOOL);
 
 // Operations
 public:

@@ -30,6 +30,7 @@ public:
 	__forceinline BOOL DoDisableResend() const {return m_bDisableResend;};
 	__forceinline CString GetFrameUsername() const {return m_sGetFrameUsername;};
 	__forceinline CString GetFramePassword() const {return m_sGetFramePassword;};
+	__forceinline BOOL DoIPv6() const {return m_bIPv6;};
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -72,6 +73,8 @@ protected:
 	afx_msg void OnUsernameChanged();
 	CString m_sGetFramePassword;
 	afx_msg void OnPasswordChanged();
+	BOOL m_bIPv6;
+	afx_msg void OnIPv6Changed();
 	//}}AFX_DISPATCH
 	DECLARE_DISPATCH_MAP()
 
@@ -92,6 +95,7 @@ public:
 	dispidDisableResend = 4L,
 	dispidUsername = 5L,
 	dispidPassword = 6L,
+	dispidIPv6 = 7L,
 	//}}AFX_DISP_ID
 	};
 };

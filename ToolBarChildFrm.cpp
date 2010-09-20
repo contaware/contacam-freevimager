@@ -1390,11 +1390,14 @@ void CVideoDeviceChildFrame::OnClose()
 		if (pDoc->CanCloseFrame(this))
 		{
 			// Show closing progress dialog
-			if (!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon ||
-				!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess	&&
+				(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon		||
+				!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+			{
 				new CProgressDlg(	this->GetSafeHwnd(),
 									ML_STRING(1566, "Closing ") + pDoc->GetDeviceName() + _T("..."),
 									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
+			}
 
 			// Remove wait cursor if trying to connect
 			if (pDoc->m_pHttpGetFrameParseProcess &&

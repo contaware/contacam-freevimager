@@ -2274,6 +2274,7 @@
 #define IDS_STRING1698                  1698
 #define IDC_BAND4                       1699
 #define IDS_STRING1699                  1699
+#define IDC_CHECK_IPV6                  1699
 #define IDC_CHECK_TOPMOST               1700
 #define IDC_BAND5                       1700
 #define IDS_STRING1700                  1700

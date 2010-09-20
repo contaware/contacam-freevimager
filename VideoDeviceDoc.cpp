@@ -1572,7 +1572,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 				if (pMessage->GetNumberOfRecipients() == 0)
 				{
 					CString sMsg;
-					sMsg.Format(_T("%s, at least one receipient must be specified to use the DNS lookup option\n"), m_pDoc->GetDeviceName());
+					sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetDeviceName());
 					TRACE(sMsg);
 					::LogLine(sMsg);
 					bSend = FALSE;
@@ -4462,7 +4462,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 					pNetCom,
 					pHttpGetFrameParseProcess,
 					m_pDoc->m_sGetFrameVideoHost,
-					m_pDoc->m_nGetFrameVideoPort))
+					m_pDoc->m_nGetFrameVideoPort,
+					m_pDoc->m_pGetFrameNetCom->GetSocketFamily()))
 		{
 			m_HttpGetFrameNetComList.AddTail(pNetCom);
 			m_HttpGetFrameParseProcessList.AddTail(pHttpGetFrameParseProcess);
@@ -4565,7 +4566,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 												  CNetCom* pNetCom,
 												  CVideoDeviceDoc::CHttpGetFrameParseProcess* pParseProcess,
 												  LPCTSTR pszHostName,
-												  int nPort)
+												  int nPort,
+												  int nSocketFamily)
 {
 	// Check
 	if (!pNetCom)
@@ -4628,7 +4630,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL);					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					nSocketFamily);			// Socket family
 }
 
 int CVideoDeviceDoc::CHttpGetFrameThread::Work()
@@ -4674,7 +4677,8 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 							m_pDoc->m_pGetFrameNetCom,
 							m_pDoc->m_pHttpGetFrameParseProcess,
 							m_sHostName,
-							m_nPort))
+							m_nPort,
+							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET))
 				{
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting)
 						return OnError();
@@ -6605,7 +6609,10 @@ CString CVideoDeviceDoc::GetDeviceName()
 			sDevice = m_pVideoAviDoc->GetPathName();
 	}
 	else if (m_pGetFrameNetCom)
+	{
 		sDevice.Format(_T("%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+		sDevice.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
+	}
 
 	// Registry key cannot begin with a backslash and should
 	// not contain backslashes otherwise subkeys are created!
@@ -6647,6 +6654,10 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			m_DocRect.Height(),
 			m_dEffectiveFrameRate >= MIN_FRAMERATE ? m_dEffectiveFrameRate : m_dFrameRate,
 			sFormat);
+		
+		// Add IPv6 info if it's the case
+		if (m_pGetFrameNetCom && m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)
+			strInfo += _T(" , IPv6");
 	}
 	else
 		strInfo = sName;
@@ -7870,56 +7881,111 @@ BOOL CVideoDeviceDoc::OpenGetVideo()
 	CHostPortDlg dlg;
 	if (dlg.DoModal() == IDOK) // BeginWaitCursor() called by dialog
 	{
-		// Vars
+		// Init Vars
 		int nPos, nPosEnd;
 		BOOL bUrl = FALSE;
 		int nUrlPort = 80; // Default url port is always 80
-
-		// Remove leading http:// from url
 		CString sGetFrameVideoHost(dlg.m_sHost);
 		CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
 		sGetFrameVideoHostLowerCase.MakeLower();
-		if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
-		{
-			bUrl = TRUE;
-			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
-		}
 
-		// Port
-		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
+		// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
+		if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
 		{
-			CString sPort;
-			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'))) >= 0)
+			// Set flag
+			bUrl = TRUE;
+
+			// Remove leading http://[ from url
+			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
+
+			// Has Port?
+			if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
 			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+				CString sPort;
+				if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+				{
+					sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
+					sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+				}
+				else
+				{
+					sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
+					sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+				}
+				sPort.TrimLeft();
+				sPort.TrimRight();
+				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+				sPort.ReleaseBuffer();
+				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+					nUrlPort = nPort;
+			}
+			else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
+				sGetFrameVideoHost.Delete(nPos);
+			else
+				nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
+
+			// Split
+			CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+
+			// Get Location which is set as first automatic camera type detection query string
+			nPos = sLocation.Find(_T('/'));
+			if (nPos >= 0)
+			{	
+				m_HttpGetFrameLocations[0] = sLocation.Right(sLocation.GetLength() - nPos);
+				m_HttpGetFrameLocations[0].TrimLeft();
+				m_HttpGetFrameLocations[0].TrimRight();
 			}
 			else
-			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
-			}
-			sPort.TrimLeft();
-			sPort.TrimRight();
-			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-			sPort.ReleaseBuffer();
-			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-				nUrlPort = nPort;
+				m_HttpGetFrameLocations[0] = _T("/");
 		}
+		// Numeric IP4 or hostname with format http://host:port/framelocation
+		else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
+		{
+			// Set flag
+			bUrl = TRUE;
 
-		// Get location which is set as first automatic camera type detection query string
-		nPos = sGetFrameVideoHost.Find(_T('/'));
-		if (nPos >= 0)
-		{	
-			m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-			m_HttpGetFrameLocations[0].TrimLeft();
-			m_HttpGetFrameLocations[0].TrimRight();
+			// Remove leading http:// from url
+			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
+
+			// Has Port?
+			if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
+			{
+				CString sPort;
+				if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+				{
+					sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
+					sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+				}
+				else
+				{
+					sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
+					sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+				}
+				sPort.TrimLeft();
+				sPort.TrimRight();
+				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+				sPort.ReleaseBuffer();
+				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+					nUrlPort = nPort;
+			}
+
+			// Get Location which is set as first automatic camera type detection query string
+			nPos = sGetFrameVideoHost.Find(_T('/'));
+			if (nPos >= 0)
+			{	
+				m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+				sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+				m_HttpGetFrameLocations[0].TrimLeft();
+				m_HttpGetFrameLocations[0].TrimRight();
+			}
+			else
+				m_HttpGetFrameLocations[0] = _T("/");
 		}
 		else
 			m_HttpGetFrameLocations[0] = _T("/");
 
-		// Init vars
+		// Set vars
 		sGetFrameVideoHost.TrimLeft();
 		sGetFrameVideoHost.TrimRight();
 		m_sGetFrameVideoHost = sGetFrameVideoHost;
@@ -9455,7 +9521,8 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					AF_UNSPEC))				// Socket family
 		{
 			DWORD Event = ::WaitForMultipleObjects(	2,
 													hEventArray,
@@ -10493,15 +10560,30 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 					if (m_pSendFrameParseProcess->m_SendToTable[i].IsAddrSet())
 					{
 						CString sPeerAddress;
-						sPeerAddress.Format(_T("%d.%d.%d.%d"),
-									m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sin_addr.S_un.S_un_b.s_b1,
-									m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sin_addr.S_un.S_un_b.s_b2,
-									m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sin_addr.S_un.S_un_b.s_b3,
-									m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sin_addr.S_un.S_un_b.s_b4);
-						sTableEntry.Format(	ML_STRING(1482, "%02i: %s:%i, Sent: %u, Re-Sent: %u, Confirmed: %u, Lost: %u\r\n"),
+						if (m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sa_family == AF_INET6)
+						{
+							sPeerAddress.Format(_T("%x:%x:%x:%x:%x:%x:%x:%x"),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[0]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[1]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[2]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[3]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[4]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[5]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[6]),
+									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[7]));
+						}
+						else
+						{
+							sPeerAddress.Format(_T("%d.%d.%d.%d"),
+									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b1,
+									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b2,
+									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b3,
+									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b4);
+						}
+						sTableEntry.Format(	ML_STRING(1482, "%02i: %s, Port: %i, Sent: %u, Re-Sent: %u, Confirmed: %u, Lost: %u\r\n"),
 											i,
 											sPeerAddress,
-											ntohs(m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sin_port),
+											ntohs(SOCKADDRPORT(m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())),
 											m_pSendFrameParseProcess->m_SendToTable[i].m_dwSentFrameCount,
 											m_pSendFrameParseProcess->m_SendToTable[i].m_dwReSentFrameCount,
 											m_pSendFrameParseProcess->m_SendToTable[i].m_dwConfirmedFrameCount,
@@ -11939,7 +12021,8 @@ BOOL CVideoDeviceDoc::ConnectSendFrameUDP(	CNetCom* pNetCom,
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET)) // Socket family
 	{
 		m_sSendFrameMsg = ML_STRING(1486, "Error: cannot bind to the specified port, it may already be in use");
 		ShowSendFrameMsg();
@@ -12396,7 +12479,8 @@ BOOL CVideoDeviceDoc::ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort)
 											// even if no Write Event Happened (A zero meens INFINITE Timeout).
 											// This is also the Generator rate,
 											// if set to zero the Generator is never called!
-					NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+					NULL,					// Message Class for Notice, Warning and Error Visualization.
+					((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET)) // Socket family
 		return FALSE;
 	else
 	{
@@ -12433,7 +12517,7 @@ BOOL CVideoDeviceDoc::StoreUDPFrame(BYTE* Data,
 		return FALSE;
 }
 
-BOOL CVideoDeviceDoc::ReSendUDPFrame(sockaddr_in* pTo, WORD wFrameSeq)
+BOOL CVideoDeviceDoc::ReSendUDPFrame(sockaddr* pTo, WORD wFrameSeq)
 {
 	BOOL res = FALSE;
 	::EnterCriticalSection(&m_csReSendUDPFrameList);
@@ -12454,22 +12538,6 @@ BOOL CVideoDeviceDoc::ReSendUDPFrame(sockaddr_in* pTo, WORD wFrameSeq)
 								m_nSendFrameMTU,
 								TRUE,	// High Priority
 								TRUE);	// Re-Sending
-#ifdef _DEBUG
-			if (res)
-			{
-				CString sPeerAddress;
-				sPeerAddress.Format(_T("%d.%d.%d.%d"),
-								pTo->sin_addr.S_un.S_un_b.s_b1,
-								pTo->sin_addr.S_un.S_un_b.s_b2,
-								pTo->sin_addr.S_un.S_un_b.s_b3,
-								pTo->sin_addr.S_un.S_un_b.s_b4);
-				int nPeerPort = ntohs(pTo->sin_port);
-				if (pReSendFrame->m_bKeyFrame)
-					TRACE(_T("Re-Sent Key-Frame with Seq : %u to %s:%i\n"), pReSendFrame->m_wFrameSeq, sPeerAddress, nPeerPort);
-				else
-					TRACE(_T("Re-Sent Frame with Seq : %u to %s:%i\n"), pReSendFrame->m_wFrameSeq, sPeerAddress, nPeerPort);
-			}
-#endif
 			break;
 		}
 	}
@@ -12489,7 +12557,7 @@ void CVideoDeviceDoc::ClearReSendUDPFrameList()
 }
 
 BOOL CVideoDeviceDoc::SendUDPFrame(	CNetCom* pNetCom,
-									sockaddr_in* pTo, // if NULL send to all!
+									sockaddr* pTo, // if NULL send to all!
 									BYTE* Data,
 									int Size,
 									DWORD dwFrameUpTime,
@@ -12580,7 +12648,7 @@ BOOL CVideoDeviceDoc::SendUDPFrame(	CNetCom* pNetCom,
 }
 
 __forceinline BOOL CVideoDeviceDoc::SendUDPFragment(CNetCom* pNetCom,
-													sockaddr_in* pTo, // if NULL send to all!
+													sockaddr* pTo, // if NULL send to all!
 													BYTE* Hdr,
 													int HdrSize,
 													BYTE* Data,
@@ -13238,7 +13306,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::Parse(CNetCom* pNetCom)
 	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
 	
 	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sin_family != AF_INET)
+	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
 	{
 		pNetCom->RemoveReadHeadBuf();
 		delete pBuf;
@@ -13518,7 +13586,7 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
 	
 	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sin_family != AF_INET)
+	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
 	{
 		pNetCom->RemoveReadHeadBuf();
 		delete pBuf;

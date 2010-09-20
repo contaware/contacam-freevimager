@@ -815,6 +815,9 @@ public:
 	BOOL m_bBrowserAutostart;
 	CString m_sFullscreenBrowserExitString;
 
+	// Priority to IPv6
+	volatile BOOL m_bIPv6;
+
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
 

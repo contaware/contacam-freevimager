@@ -54,6 +54,7 @@ public:
 	CString	m_sFullscreenBrowserExitString;
 	BOOL	m_bStartFromService;
 	BOOL	m_bMicroApacheDigestAuth;
+	BOOL	m_bIPv6;
 	//}}AFX_DATA
 
 	CStaticLink m_MicroApacheDocRootLabel;

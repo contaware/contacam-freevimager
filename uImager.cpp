@@ -127,6 +127,7 @@ CUImagerApp::CUImagerApp()
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
+	m_bIPv6 = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -3074,29 +3075,50 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 				int nID = CDxCapture::GetDeviceID(sDev);
 				if (nID < 0) // It is a Network Device or a unplugged Direct Show Device
 				{
-					CString sAddress;
-					int index = sDevRegistry.Find(_T(':'));
+					// Get Host of the network device which has the format:
+					// Host:Port:FrameLocation:NetworkDeviceTypeMode
+					// (use reverse find because Host maybe a IP6 address with :)
+					CString sAddress(sDevRegistry);
+					int index = sAddress.ReverseFind(_T(':'));
 					if (index >= 0)
-						sAddress = sDevRegistry.Left(index);
-					else
-						sAddress = sDevRegistry;
+					{
+						sAddress = sAddress.Left(index);
+						index = sAddress.ReverseFind(_T(':'));
+						if (index >= 0)
+						{
+							sAddress = sAddress.Left(index);
+							index = sAddress.ReverseFind(_T(':'));
+							if (index >= 0)
+								sAddress = sAddress.Left(index);
+						}
+					}
+
+					// This function checks whether there is a network interface
+					// that can connect to the given address
+					// Note: if we have a unplugged Direct Show Device it just
+					// returns FALSE so that we wait for it to get re-plugged
 					CNetCom NetCom;
-					if (!NetCom.HasInterface(sAddress)) // This function checks whether there is a network
-														// interface that can connect to the given address
+					if (!NetCom.HasInterface(sAddress))
 					{
 						if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
 						{
+							// Retry in AUTORUN_VIDEODEVICES_RETRY_DELAY ms
 							CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 																			WM_AUTORUN_VIDEODEVICES,
 																			AUTORUN_VIDEODEVICES_RETRY_DELAY,
 																			(WPARAM)nRetryCount, 0);
+
+							// Log message
 							CString sMsg;
 							sMsg.Format(_T("Cannot reach %s, retry in %d seconds\n"),
 										sAddress, AUTORUN_VIDEODEVICES_RETRY_DELAY / 1000);
+							sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
 							TRACE(sMsg);
 							::LogLine(sMsg);
 
-							if (!m_pAutorunProgressDlg							&&
+							// Show starting progress dialog
+							if (!m_bServiceProcess								&&
+								!m_pAutorunProgressDlg							&&
 								(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
 								!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 							{
@@ -3109,8 +3131,10 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 						}
 						else
 						{
+							// Log message
 							CString sMsg;
-							sMsg.Format(_T("Trying to connect anyway to %s\n"), sAddress);
+							sMsg.Format(_T("Trying to start anyway %s\n"), sAddress);
+							sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
 							TRACE(sMsg);
 							::LogLine(sMsg);
 							break;
@@ -4974,6 +4998,9 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	// Browser
 	m_bFullscreenBrowser = (BOOL)GetProfileInt(sSection, _T("FullscreenBrowser"), FALSE);
 	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
+
+	// Priority to IPv6
+	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
 
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);
@@ -7040,7 +7067,8 @@ BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
 										// even if no Write Event Happened (A zero meens INFINITE Timeout).
 										// This is also the Generator rate,
 										// if set to zero the Generator is never called!
-				NULL))					// Optional Message Class for Notice, Warning and Error Visualization.
+				NULL,					// Message Class for Notice, Warning and Error Visualization.
+				AF_UNSPEC))				// Socket family
 	{
 		DWORD Event = ::WaitForMultipleObjects(	2,
 												hEventArray,
