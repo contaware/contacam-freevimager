@@ -464,6 +464,8 @@ int CNetCom::CMsgThread::Work()
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
 								return 0;
 							}
+							pNetCom->m_bRxBufEnabled = m_pNetCom->m_bRxBufEnabled;
+							pNetCom->m_bTxBufEnabled = m_pNetCom->m_bTxBufEnabled;
 							pNetCom->m_uiMaxRxFifoSize = m_pNetCom->m_uiMaxRxFifoSize;
 							pNetCom->m_nIDAccept = m_pNetCom->m_nIDAccept;
 							pNetCom->m_nIDConnect = m_pNetCom->m_nIDConnect;
@@ -1728,10 +1730,9 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 		// Priority to IPv6
 		if (nSocketFamily == AF_INET6)
 		{
-			if (!StringToAddress6(sAddress, sPort, (sockaddr_in6*)paddr))
+			if (!StringToAddress(sAddress, sPort, paddr, AF_INET6))
 			{
-				((sockaddr_in*)paddr)->sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
-				if (((sockaddr_in*)paddr)->sin_addr.S_un.S_addr == INADDR_ANY)
+				if (!StringToAddress(sAddress, sPort, paddr, AF_INET))
 					return FALSE;
 				nSocketFamily = AF_INET;
 			}
@@ -1741,10 +1742,9 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 		// Priority to IPv4
 		else
 		{
-			((sockaddr_in*)paddr)->sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
-			if (((sockaddr_in*)paddr)->sin_addr.S_un.S_addr == INADDR_ANY)
+			if (!StringToAddress(sAddress, sPort, paddr, AF_INET))
 			{
-				if (!StringToAddress6(sAddress, sPort, (sockaddr_in6*)paddr))
+				if (!StringToAddress(sAddress, sPort, paddr, AF_INET6))
 					return FALSE;
 				nSocketFamily = AF_INET6;
 			}
@@ -2233,12 +2233,9 @@ BOOL CNetCom::HasInterface(const CString& sAddress)
 		BOOL bIP6 = FALSE;
 		sockaddr_in addr;
 		sockaddr_in6 addr6;
-		addr.sin_family = AF_INET;
-		addr.sin_port = 0;
-		addr.sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
-		if (addr.sin_addr.S_un.S_addr != INADDR_ANY)
+		if (StringToAddress(sAddress, _T(""), (sockaddr*)&addr, AF_INET))
 			bIP4 = TRUE;
-		if (StringToAddress6(sAddress, _T(""), &addr6))
+		if (StringToAddress(sAddress, _T(""), (sockaddr*)&addr6, AF_INET6))
 			bIP6 = TRUE;
 
 		// Check
@@ -2268,10 +2265,7 @@ BOOL CNetCom::HasInterface(const CString& sAddress)
 	{
 		// Resolve address string
 		sockaddr_in addr;
-		addr.sin_family = AF_INET;
-		addr.sin_port = 0;
-		addr.sin_addr.S_un.S_addr = StringToAddress4(sAddress); // If String not Resolved -> INADDR_ANY returned
-		if (addr.sin_addr.S_un.S_addr == INADDR_ANY)
+		if (!StringToAddress(sAddress, NULL, (sockaddr*)&addr, AF_INET))
 		{
 			::FreeLibrary(h);
 			return FALSE;
@@ -2397,8 +2391,7 @@ DWORD CNetCom::EnumLAN(CStringArray* pHosts)
 			} 
 			while((res == NO_ERROR) || (res == ERROR_MORE_DATA));
 			
-			if (::WNetCloseEnum(hEnum) != NO_ERROR)
-				ProcessError(GetName() + _T(" WNetCloseEnum()"));
+			::WNetCloseEnum(hEnum);
 
 			return pHosts->GetSize();
 		}
@@ -2406,10 +2399,7 @@ DWORD CNetCom::EnumLAN(CStringArray* pHosts)
 			return 0;
 	}
 	else
-	{
-		ProcessError(GetName() + _T(" WNetOpenEnum()"));
 		return 0;
-	}
 }
  
 BOOL CNetCom::StartMsgThread()
@@ -2741,28 +2731,20 @@ int CNetCom::WriteDatagramTo(	CString sPeerAddress,
 								int DataSize,
 								BOOL bHighPriority)
 {
-	// Get The Internet Address
-	sockaddr_in peer_addr;
-	sockaddr_in6 peer_addr6;
-	sockaddr* ppeer_addr;
-	memset(&peer_addr, 0, sizeof(peer_addr));
-	peer_addr.sin_family = AF_INET;
-    peer_addr.sin_port = htons((unsigned short)uiPeerPort); // If 0 -> Win Selects a Port
+	sockaddr_in6 peer_addr;
+	CString sPeerPort;
+	sPeerPort.Format(_T("%u"), uiPeerPort);
+	BOOL bIPv4 = FALSE;
 	if (m_nSocketFamily != AF_INET6)
-		peer_addr.sin_addr.S_un.S_addr = StringToAddress4(sPeerAddress); // If String not Resolved -> INADDR_ANY returned
-	if (peer_addr.sin_addr.S_un.S_addr == INADDR_ANY)
+		bIPv4 = StringToAddress(sPeerAddress, sPeerPort, (sockaddr*)&peer_addr, AF_INET);
+	if (!bIPv4)
 	{
 		if (m_nSocketFamily == AF_INET)
 			return 0;
-		CString sPeerPort;
-		sPeerPort.Format(_T("%u"), uiPeerPort);
-		if (!StringToAddress6(sPeerAddress, sPeerPort, &peer_addr6))
+		if (!StringToAddress(sPeerAddress, sPeerPort, (sockaddr*)&peer_addr, AF_INET6))
 			return 0;
-		ppeer_addr = (sockaddr*)&peer_addr6;
 	}
-	else
-		ppeer_addr = (sockaddr*)&peer_addr;
-	return WriteDatagramTo(ppeer_addr, Hdr, HdrSize, Data, DataSize, bHighPriority);
+	return WriteDatagramTo((sockaddr*)&peer_addr, Hdr, HdrSize, Data, DataSize, bHighPriority);
 }
 
 int CNetCom::WriteDatagram(	BYTE* Hdr,
@@ -3618,54 +3600,26 @@ void CNetCom::ProcessWSAError(CString sErrorText)
 		Error(sTemp);
 }
 
-unsigned long CNetCom::StringToAddress4(const TCHAR* sHost)
+BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily/*=AF_UNSPEC*/)
 {
-	LPHOSTENT		pHostent = NULL;
-	unsigned long	Address = INADDR_ANY;
+	// Check addr
+	if (!psockaddr)
+		return FALSE;
 
-	// Check that we have a string in sHost
-	if ((sHost != NULL) && (*sHost != _T('\0')))
+	// Init
+	int nPort = 0;
+	if (sPort)
 	{
-#ifdef _UNICODE
-		size_t host_size = _tcslen(sHost);
-		char* pHost = (char*)new char[host_size+1];
-		wcstombs(pHost, sHost, host_size+1);
-		// Check for Dotted IP Address String
-		Address = inet_addr(pHost);
-#else
-		// Check for Dotted IP Address String
-		Address = inet_addr(sHost);
-#endif
-
-		// If not a Dotted IP Address String try to resolve it as host name
-		if ((Address == INADDR_NONE) &&
-			(_tcscmp(sHost, _T("255.255.255.255"))))
-		{
-#ifdef _UNICODE
-			pHostent = ::gethostbyname(pHost);
-#else
-			pHostent = ::gethostbyname(sHost);
-#endif
-
-			// Check if successfull
-			if (pHostent)
-				Address = *((unsigned long*)pHostent->h_addr);
-			else
-				Address = INADDR_ANY;
-		}
-
-		// Clean-Up
-#ifdef _UNICODE
-		delete [] pHost;
-#endif
+		nPort = _tcstol(sPort, NULL, 10);
+		if (nPort < 0 || nPort > 65535)
+			nPort = 0;
 	}
-	return Address;
-}
+	memset(psockaddr, 0, nSocketFamily == AF_INET ? sizeof(sockaddr_in) : sizeof(sockaddr_in6));
+	psockaddr->sa_family = (unsigned short)nSocketFamily;
+    ((sockaddr_in*)psockaddr)->sin_port = htons((unsigned short)nPort);
 
-BOOL CNetCom::StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_in6* psockaddr6)
-{
-	// Check
-	if (!psockaddr6)
+	// Check host
+	if ((sHost == NULL) || (*sHost == _T('\0')))
 		return FALSE;
 
 	BOOL res = FALSE;
@@ -3688,28 +3642,17 @@ BOOL CNetCom::StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_
 			ADDRINFOT aiHints;
 			ADDRINFOT* aiList = NULL;
 			memset(&aiHints, 0, sizeof(aiHints));
-			aiHints.ai_family = AF_UNSPEC;
-
-			// When the AI_PASSIVE flag is set and sHost is a NULL pointer,
-			// the IP address portion of the socket address structure is set
-			// to INADDR_ANY for IPv4 addresses and IN6ADDR_ANY_INIT for IPv6
-			// addresses.
-			// When the AI_PASSIVE flag is not set and sHost is a NULL pointer,
-			// the IP address portion of the socket address structure is set
-			// to the loopback address.
-			//
-			// We want to be compatible with StringToAddress4 which returns INADDR_ANY
+			aiHints.ai_family = nSocketFamily;
 			aiHints.ai_flags = AI_PASSIVE;
-
 			if (lpfGetAddrInfo(sHost, sPort, &aiHints, &aiList) == 0)
 			{
 				ADDRINFOT* walk;
 				for (walk = aiList ; walk != NULL ; walk = walk->ai_next)
 				{
-					// Get first IP6
-					if (walk->ai_family == AF_INET6)
+					if ((walk->ai_family == nSocketFamily || nSocketFamily == AF_UNSPEC) &&
+						(walk->ai_family == AF_INET || walk->ai_family == AF_INET6))
 					{
-						memcpy(psockaddr6, walk->ai_addr, MIN(walk->ai_addrlen, sizeof(sockaddr_in6)));	
+						memcpy(psockaddr, walk->ai_addr, walk->ai_addrlen);	
 						res = TRUE;
 						break;
 					}
@@ -3718,6 +3661,47 @@ BOOL CNetCom::StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_
 				// Free
 				lpfFreeAddrInfo(aiList);
 			}
+		}
+		else if (nSocketFamily != AF_INET6)
+		{
+			psockaddr->sa_family = AF_INET;
+#ifdef _UNICODE
+			size_t host_size = _tcslen(sHost);
+			char* pHost = (char*)new char[host_size+1];
+			wcstombs(pHost, sHost, host_size+1);
+			// Check for Dotted IP Address String
+			((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = inet_addr(pHost);
+#else
+			// Check for Dotted IP Address String
+			((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = inet_addr(sHost);
+#endif
+
+			// If not a Dotted IP Address String try to resolve it as host name
+			if ((((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr == INADDR_NONE) &&
+				(_tcscmp(sHost, _T("255.255.255.255"))))
+			{
+#ifdef _UNICODE
+				LPHOSTENT pHostent = ::gethostbyname(pHost);
+#else
+				LPHOSTENT pHostent = ::gethostbyname(sHost);
+#endif
+
+				// Check if successfull
+				if (pHostent)
+				{
+					((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = *((unsigned long*)pHostent->h_addr);
+					res = TRUE;
+				}
+				else
+					((sockaddr_in*)psockaddr)->sin_addr.S_un.S_addr = INADDR_ANY;
+			}
+			else
+				res = TRUE;
+
+			// Clean-Up
+#ifdef _UNICODE
+			delete [] pHost;
+#endif
 		}
 
 		// Free lib

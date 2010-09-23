@@ -427,8 +427,7 @@ void CHostPortDlg::OnSearchServers()
 		m_nPort = DEFAULT_UDP_PORT;
 
 	// Enum Hosts in LAN
-	CNetCom NetCom;
-	NetCom.EnumLAN(&m_Hosts);
+	CNetCom::EnumLAN(&m_Hosts);
 
 	// Start Pings
 	++m_dwEnumCount;

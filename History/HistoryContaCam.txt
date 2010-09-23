@@ -4,6 +4,7 @@ VERSION HISTORY
 
 - Web interface improvements
 - Fixed thumbnail creation problem with HD video formats
+- IPv6 support
 
 2.0.7 (August 12th 2010)
 

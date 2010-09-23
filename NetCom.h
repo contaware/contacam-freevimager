@@ -333,6 +333,19 @@ public:
 	CNetCom(CNetCom* pMainServer = NULL, LPCRITICAL_SECTION pcsServers = NULL);
 	virtual	~CNetCom();
 
+	// Host and Port to IP4 or IP6 address
+	// Attention: if nSocketFamily is AF_UNSPEC or AF_INET6 pass a sockaddr_in6 structure pointer!
+	static BOOL StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily = AF_UNSPEC);
+
+	// Is there an interface for the given address?
+	// This is a first guess to determine whether the given
+	// address could be reached through one of the installed adapters.
+	// Works starting from win2k, for older systems it returns FALSE
+	static BOOL HasInterface(const CString& sAddress);
+
+	// Enumerate the LAN
+	static DWORD EnumLAN(CStringArray* pHosts);
+
 	// Open a Network Connection or Start a Server											
 	BOOL Init(		BOOL bServer,						// Server or Client?
 					HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
@@ -421,21 +434,6 @@ public:
 
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
-
-	// IP4 or HostName String to 32 bits IP4
-	unsigned long StringToAddress4(const TCHAR* sHost);
-
-	// IP6 or HostName String with optional Port to 128 bits IP6
-	BOOL StringToAddress6(const TCHAR* sHost, const TCHAR* sPort, sockaddr_in6* psockaddr6);
-
-	// Is there an interface for the given address?
-	// This is a first guess to determine whether the given
-	// address could be reached through one of the installed adapters.
-	// Works starting from win2k, for older systems it returns FALSE
-	BOOL HasInterface(const CString& sAddress);
-
-	// Enumerate the LAN
-	DWORD EnumLAN(CStringArray* pHosts);
 
 	// Get the connected child servers of a main server.
 	// To get the first pass NULL as parameter, to get

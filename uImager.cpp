@@ -3097,8 +3097,7 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 					// that can connect to the given address
 					// Note: if we have a unplugged Direct Show Device it just
 					// returns FALSE so that we wait for it to get re-plugged
-					CNetCom NetCom;
-					if (!NetCom.HasInterface(sAddress))
+					if (!CNetCom::HasInterface(sAddress))
 					{
 						if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
 						{
