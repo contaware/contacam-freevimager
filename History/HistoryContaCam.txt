@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.0.9 (September 25th 2010)
+2.0.9 (September 24th 2010)
 
 - Web interface improvements
 - Fixed thumbnail creation problem with HD video formats
