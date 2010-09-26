@@ -12712,9 +12712,7 @@ __forceinline void CVideoDeviceDoc::SendUDPFragmentInternal(	CNetCom* pNetCom,
 	if (m_pSendFrameParseProcess->m_SendToTable[nTo].m_bDoSendFirstFrame)
 	{
 		// Send Keyframe?
-		if (pHdr->FragmentNum == 0											&&
-			(pHdr->Flags & NETFRAME_FLAG_KEYFRAME)							&&
-			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bDoSendFirstFrame)
+		if ((pHdr->FragmentNum == 0) && (pHdr->Flags & NETFRAME_FLAG_KEYFRAME))
 			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bSendingKeyFrame = TRUE;
 
 		// Do Send?
@@ -13780,7 +13778,7 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				delete m_Fragment[dwFrame][Hdr.FragmentNum];
 			m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
 			pNetCom->RemoveReadHeadBuf();
-			m_bKeyFrame[dwFrame] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+			m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 			m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
 			m_dwUpTime[dwFrame] = Hdr.dwUpTime;
 			if (GetReceivedFragmentsCount(dwFrame) == m_nTotalFragments[dwFrame])
@@ -13809,7 +13807,7 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					delete m_Fragment[dwFrame][Hdr.FragmentNum];
 				m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
 				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwFrame] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+				m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 				m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
 				m_dwUpTime[dwFrame] = Hdr.dwUpTime;
 				m_wFrameSeq[dwFrame] = Hdr.wSeq;
@@ -13852,7 +13850,7 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					delete m_Fragment[dwOldestIndex][Hdr.FragmentNum];
 				m_Fragment[dwOldestIndex][Hdr.FragmentNum] = pBuf;
 				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwOldestIndex] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+				m_bKeyFrame[dwOldestIndex] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 				m_nTotalFragments[dwOldestIndex] = Hdr.TotalFragments;
 				m_dwUpTime[dwOldestIndex] = Hdr.dwUpTime;
 				m_wFrameSeq[dwOldestIndex] = Hdr.wSeq;

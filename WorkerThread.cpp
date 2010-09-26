@@ -48,7 +48,8 @@ CWorkerThread::CWorkerThread()
 
 CWorkerThread::~CWorkerThread()
 {
-	Kill();
+	if (!m_bAutoDelete)
+		Kill();
 
 	if (m_hStartupEvent)
 		::CloseHandle(m_hStartupEvent);
@@ -98,6 +99,7 @@ bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
 	{
 		if (m_hThread)
 		{
+			WaitDone_Blocking(1000); // Give 1 sec to completely exit
 			::CloseHandle(m_hThread);
 			m_hThread = NULL;
 		}
@@ -159,6 +161,13 @@ bool CWorkerThread::Pause()
 
 bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 {
+#ifdef _DEBUG
+	if (m_bAutoDelete)
+	{
+		TRACE(_T("Use Kill_NoBlocking() for auto delete threads!\n"));
+		ASSERT(FALSE);
+	}
+#endif
 	::EnterCriticalSection(&m_cs);
 	if (m_bAlive)
 	{
@@ -181,15 +190,13 @@ bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 			return false;
 
 		// Wait until thread exits
-		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
-		{
-			// If it doesn't want to exit force the termination!
-			if (m_hThread)
-				::TerminateThread(m_hThread, 0);
-		}
+		WaitDone_Blocking(dwTimeout);
 	}
 	else
+	{
 		::LeaveCriticalSection(&m_cs);
+		WaitDone_Blocking(1000); // Give 1 sec to completely exit
+	}
 	
 	return true;
 }
@@ -211,21 +218,22 @@ bool CWorkerThread::Kill_NoBlocking()
 			}
 		}
 
+		::LeaveCriticalSection(&m_cs);
+
 		// Send the Thread Kill Event
 		if (::SetEvent(m_hKillEvent) == 0)
-		{
-			::LeaveCriticalSection(&m_cs);
 			return false;
-		}
 	}
-	::LeaveCriticalSection(&m_cs);
+	else
+		::LeaveCriticalSection(&m_cs);
+
 	return true;
 }
 
 void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 {
 	// Wait until thread exits
-	if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+	if (m_hThread && ::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
 	{
 		// If it doesn't want to exit force the termination!
 		if (m_hThread)
@@ -268,7 +276,8 @@ CWorkerThread::CWorkerThread()
 
 CWorkerThread::~CWorkerThread()
 {
-	Kill();
+	if (!m_bAutoDelete)
+		Kill();
 
 	if (m_hStartupEvent)
 		::CloseHandle(m_hStartupEvent);
@@ -296,6 +305,7 @@ bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
 	{
 		if (m_hThread)
 		{
+			WaitDone_Blocking(1000); // Give 1 sec to completely exit
 			::CloseHandle(m_hThread);
 			m_hThread = NULL;
 		}
@@ -394,20 +404,20 @@ int CWorkerThread::Run()
 		::EnterCriticalSection(&m_cs);
 		m_bRunning = false;
 		m_bAlive = false;
-		::LeaveCriticalSection(&m_cs);
 		m_pMainWnd = NULL;
+		::LeaveCriticalSection(&m_cs);
 		return res;
 	}
 	catch (CException* e)
 	{
+		e->ReportError(); // ReportError() needs m_pMainWnd -> reset m_pMainWnd at the end!
+		e->Delete();
 		::ResetEvent(m_hStartupEvent); // Be Sure To Reset This Event!
 		::EnterCriticalSection(&m_cs);
 		m_bRunning = false;
 		m_bAlive = false;
-		::LeaveCriticalSection(&m_cs);
-		e->ReportError(); // ReportError() needs m_pMainWnd -> reset m_pMainWnd at the end!
-		e->Delete();
 		m_pMainWnd = NULL;
+		::LeaveCriticalSection(&m_cs);
 		return 0;
 	}
 }
@@ -427,6 +437,13 @@ int CWorkerThread::Work()
 
 bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 {
+#ifdef _DEBUG
+	if (m_bAutoDelete)
+	{
+		TRACE(_T("Use Kill_NoBlocking() for auto delete threads!\n"));
+		ASSERT(FALSE);
+	}
+#endif
 	::EnterCriticalSection(&m_cs);
 	if (m_bAlive)
 	{
@@ -447,22 +464,16 @@ bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 		// Send the Thread Kill Event
 		if (::SetEvent(m_hKillEvent) == 0)
 			return false;
-		
+
 		// Wait until thread exits
-		if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
-		{
-			// If it doesn't want to exit force the termination!
-			if (m_hThread)
-			{
-				::TerminateThread(m_hThread, 0);
-				TRACE(_T("Thread: %lu has been forced to terminate!\n"), m_nThreadID);
-				ASSERT(FALSE);
-			}
-		}
+		WaitDone_Blocking(dwTimeout);
 	}
 	else
+	{
 		::LeaveCriticalSection(&m_cs);
-
+		WaitDone_Blocking(1000); // Give 1 sec to completely exit
+	}
+	
 	return true;
 }
 
@@ -483,21 +494,22 @@ bool CWorkerThread::Kill_NoBlocking()
 			}
 		}
 
+		::LeaveCriticalSection(&m_cs);
+
 		// Send the Thread Kill Event
 		if (::SetEvent(m_hKillEvent) == 0)
-		{
-			::LeaveCriticalSection(&m_cs);
 			return false;
-		}
 	}
-	::LeaveCriticalSection(&m_cs);
+	else
+		::LeaveCriticalSection(&m_cs);
+
 	return true;
 }
 
 void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 {
 	// Wait until thread exits
-	if (::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
+	if (m_hThread && ::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
 	{
 		// If it doesn't want to exit force the termination!
 		if (m_hThread)

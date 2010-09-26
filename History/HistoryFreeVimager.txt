@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.1.0 (November 27th 2010)
+
+- More robust thread start/stop logic
+
 2.0.9 (September 24th 2010)
 
 - libpng updated to 1.2.44

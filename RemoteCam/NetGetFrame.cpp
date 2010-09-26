@@ -9,6 +9,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
+int avcodec_close_thread_safe(AVCodecContext *avctx);
+
 BOOL CGetFrameGenerator::Generate(CNetCom* pNetCom)
 {
 	// Header
@@ -235,7 +238,7 @@ BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				delete m_Fragment[dwFrame][Hdr.FragmentNum];
 			m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
 			pNetCom->RemoveReadHeadBuf();
-			m_bKeyFrame[dwFrame] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+			m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 			m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
 			m_dwUpTime[dwFrame] = Hdr.dwUpTime;
 			if (GetReceivedFragmentsCount(dwFrame) == m_nTotalFragments[dwFrame])
@@ -264,7 +267,7 @@ BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					delete m_Fragment[dwFrame][Hdr.FragmentNum];
 				m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
 				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwFrame] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+				m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 				m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
 				m_dwUpTime[dwFrame] = Hdr.dwUpTime;
 				m_wFrameSeq[dwFrame] = Hdr.wSeq;
@@ -307,7 +310,7 @@ BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					delete m_Fragment[dwOldestIndex][Hdr.FragmentNum];
 				m_Fragment[dwOldestIndex][Hdr.FragmentNum] = pBuf;
 				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwOldestIndex] = (Hdr.Flags & NETFRAME_FLAG_KEYFRAME) > 0 ? TRUE : FALSE;
+				m_bKeyFrame[dwOldestIndex] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
 				m_nTotalFragments[dwOldestIndex] = Hdr.TotalFragments;
 				m_dwUpTime[dwOldestIndex] = Hdr.dwUpTime;
 				m_wFrameSeq[dwOldestIndex] = Hdr.wSeq;
@@ -698,7 +701,7 @@ BOOL CGetFrameParseProcess::OpenAVCodec(enum CodecID CodecId, int width, int hei
 	}
 
 	// Open codec
-    if (avcodec_open(m_pCodecCtx, m_pCodec) < 0)
+    if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
         goto error_noclose;
 
 	// Allocate video frames
@@ -725,7 +728,7 @@ void CGetFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*/)
 	{
 		// Close
 		if (!bNoClose)
-			avcodec_close(m_pCodecCtx);
+			avcodec_close_thread_safe(m_pCodecCtx);
 
 		// Free
 		av_freep(&m_pCodecCtx);
@@ -929,7 +932,7 @@ BOOL CGetFrameParseProcess::Decode(LPBYTE pFrame, DWORD dwFrameSize)
 		::LeaveCriticalSection(&m_pCtrl->m_csDib);
 
 		// Update View
-		m_pCtrl->InvalidateControl();
+		::PostMessage(m_pCtrl->GetSafeHwnd(), WM_DOINVALIDATE_CTRL, 0, 0);
 
 		return TRUE;
 	}

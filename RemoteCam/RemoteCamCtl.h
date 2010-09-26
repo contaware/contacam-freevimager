@@ -11,6 +11,8 @@
 #include "NetCom.h"
 #include "NetGetFrame.h"
 
+#define WM_DOINVALIDATE_CTRL			WM_USER + 1400
+
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamCtrl : See RemoteCamCtl.cpp for implementation.
 
@@ -57,6 +59,7 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	//}}AFX_MSG
+	afx_msg LONG OnDoInvalidateCtrl(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
 // Dispatch maps

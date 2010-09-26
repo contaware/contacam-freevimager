@@ -440,18 +440,10 @@ public:
 	// the next pass the previous child server pointer.
 	CNetCom* GetNextChildServer(CNetCom* pChildServer);
 
-	// Start / Stop Network Communication Threads
-	BOOL		StartMsgThread();
-	BOOL		StopMsgThread();
-
-	BOOL		StartRxThread();
-	BOOL		StopRxThread();
-	
-	BOOL		StartTxThread();
-	BOOL		StopTxThread();	
-
-	BOOL		StartAllThreads();	
-	BOOL		StopAllThreads();
+	// Start Communication Threads
+	BOOL StartMsgThread();
+	BOOL StartRxThread();
+	BOOL StartTxThread();
 
 	// Enable / Disable The Idle Generator
 	void EnableIdleGenerator(BOOL bEnabled);
@@ -730,22 +722,16 @@ protected:
 	// WSAGetLastError() Handling
 	void ProcessWSAError(CString sErrorText);
 
-	// Shutdown Thread(s)
-	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->IsAlive())
-												if (m_pMsgThread->Kill() == false)
-													if (m_pMsgOut)
-														Notice(GetName() + _T(" MsgThread failed to end (ID = 0x%08X)"), m_pMsgThread->GetId());};
-	__forceinline void ShutdownRxThread() {if (m_pRxThread->IsAlive())
-												if (m_pRxThread->Kill() == false)		
-													if (m_pMsgOut)
-														Notice(GetName() + _T(" RxThread failed to end (ID = 0x%08X)"), m_pRxThread->GetId());};
-	__forceinline void ShutdownTxThread() {if (m_pTxThread->IsAlive())
-												if (m_pTxThread->Kill() == false)
-													if (m_pMsgOut)
-														Notice(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
-	__forceinline void ShutdownAllThreads() {	ShutdownTxThread();
-												ShutdownRxThread();
-												ShutdownMsgThread();};
+	// Shutdown Threads
+	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->Kill() == false)
+												if (m_pMsgOut)
+													Notice(GetName() + _T(" MsgThread failed to end (ID = 0x%08X)"), m_pMsgThread->GetId());};
+	__forceinline void ShutdownRxThread() {	if (m_pRxThread->Kill() == false)		
+												if (m_pMsgOut)
+													Notice(GetName() + _T(" RxThread failed to end (ID = 0x%08X)"), m_pRxThread->GetId());};
+	__forceinline void ShutdownTxThread() {	if (m_pTxThread->Kill() == false)
+												if (m_pMsgOut)
+													Notice(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
 
 	// Error, Warning and Notice Functions
 	void Error(const TCHAR* pFormat, ...);

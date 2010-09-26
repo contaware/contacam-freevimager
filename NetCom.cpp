@@ -2406,6 +2406,27 @@ BOOL CNetCom::StartMsgThread()
 {
 	if (!m_pMsgThread->IsRunning())
 	{
+		/*
+		Reset a eventually set m_bClosing flag from an old closed connection
+		before starting the message thread (in the old code it was done only
+		at the beginning of the message thread) otherwise an infinite wait
+		may happen at the following point in the Close() functions when
+		calling Close() two times by two consecutive Init():
+		if (m_bMainServer)
+		{
+			...
+		}
+		else
+		{
+			// Already Closing?
+			if (m_pMsgThread->m_bClosing)
+				WaitTillShutdown_Blocking(); <-- Infinite Wait !!!
+			else
+				ShutdownConnection();
+		}
+		...
+		*/
+		m_pMsgThread->m_bClosing = FALSE;
 		if (m_pMsgThread->Start() == true)
 		{
 			return TRUE;
@@ -2414,26 +2435,6 @@ BOOL CNetCom::StartMsgThread()
 		{
 			if (m_pMsgOut)
 				Notice(GetName() + _T(" MsgThread start failed (ID = 0x%08X)"), m_pMsgThread->GetId());
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-	
-BOOL CNetCom::StopMsgThread()
-{
-	if (m_pMsgThread->IsRunning())
-	{
-		if (m_pMsgThread->Pause() == true)
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" MsgThread stopped (ID = 0x%08X)"), m_pMsgThread->GetId());
-			return TRUE;
-		}
-		else
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" MsgThread stop failed (ID = 0x%08X)"), m_pMsgThread->GetId());
 			return FALSE;
 		}
 	}
@@ -2458,26 +2459,6 @@ BOOL CNetCom::StartRxThread()
 	return TRUE;
 }
 
-BOOL CNetCom::StopRxThread()
-{
-	if (m_pRxThread->IsRunning())
-	{
-		if (m_pRxThread->Pause() == true)
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" RxThread stopped (ID = 0x%08X)"), m_pRxThread->GetId());
-			return TRUE;
-		}
-		else
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" RxThread stop failed (ID = 0x%08X)"), m_pRxThread->GetId());
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
 BOOL CNetCom::StartTxThread()
 {	
 	if (!m_pTxThread->IsRunning())
@@ -2494,36 +2475,6 @@ BOOL CNetCom::StartTxThread()
 		}
 	}
 	return TRUE;
-}
-
-BOOL CNetCom::StopTxThread()
-{
-	if (m_pTxThread->IsRunning())
-	{
-		if (m_pTxThread->Pause() == true)
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" TxThread stopped (ID = 0x%08X)"), m_pTxThread->GetId());
-			return TRUE;
-		}
-		else
-		{
-			if (m_pMsgOut)
-				Notice(GetName() + _T(" TxThread stop failed (ID = 0x%08X)"), m_pTxThread->GetId());
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-BOOL CNetCom::StartAllThreads()
-{
-	return (StartMsgThread() && StartRxThread() && StartTxThread());	
-}
-
-BOOL CNetCom::StopAllThreads()
-{
-	return (StopTxThread() && StopRxThread() && StopMsgThread());	
 }
 
 void CNetCom::EnableIdleGenerator(BOOL bEnabled)
@@ -3363,7 +3314,7 @@ void CNetCom::ShutdownConnection()
 			m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
-		::WaitForSingleObject(m_pMsgThread->GetHandle(), INFINITE);
+		WaitTillShutdown_Blocking();
 	}
 }
 

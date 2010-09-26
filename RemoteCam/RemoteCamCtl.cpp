@@ -25,6 +25,7 @@ BEGIN_MESSAGE_MAP(CRemoteCamCtrl, COleControl)
 	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 	ON_OLEVERB(AFX_IDS_VERB_PROPERTIES, OnProperties)
+	ON_MESSAGE(WM_DOINVALIDATE_CTRL, OnDoInvalidateCtrl)
 END_MESSAGE_MAP()
 
 
@@ -149,10 +150,13 @@ CRemoteCamCtrl::~CRemoteCamCtrl()
 	::DeleteCriticalSection(&m_csDib);
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CRemoteCamCtrl::OnDraw - Drawing function
-
+LONG CRemoteCamCtrl::OnDoInvalidateCtrl(WPARAM wparam, LPARAM lparam)
+{
+	InvalidateControl();
+	return 0;
+}
 void CRemoteCamCtrl::OnDraw(CDC* pdc, const CRect& rcBounds, const CRect& rcInvalid)
 {
 	::EnterCriticalSection(&m_csDib);
