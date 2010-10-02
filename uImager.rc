@@ -9072,6 +9072,7 @@ BEGIN
     IDS_STRING1817          "Dropping det frames:"
     IDS_STRING1818          "set lower framerate"
     IDS_STRING1819          "or resolution!"
+    IDS_STRING1820          "Overload: lower maximum number of connections!\r\n\r\n"
 END
 
 #endif    // English (U.S.) resources

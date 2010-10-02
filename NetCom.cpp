@@ -15,6 +15,12 @@ static char THIS_FILE[] = __FILE__;
 #define MY_IN6ADDR_LOOPBACK_INIT { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 }
 const struct in6_addr my_in6addr_any = MY_IN6ADDR_ANY_INIT;
 const struct in6_addr my_in6addr_loopback = MY_IN6ADDR_LOOPBACK_INIT;
+#ifndef IPPROTO_IPV6
+#define IPPROTO_IPV6		41
+#endif
+#ifndef IPV6_V6ONLY
+#define IPV6_V6ONLY			27
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Buffer Class
@@ -335,7 +341,7 @@ int CNetCom::CMsgThread::Work()
 				::ResetEvent(m_pNetCom->m_hTxToAllEvent);
 
 				// Only the Main Server should handle this event!
-				if (!m_pNetCom->m_bMainServer) break;
+				if (!m_pNetCom->m_bMainServer || !m_pNetCom->m_pMainServer) break;
 				
 				::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxFifoSync);
 				nMainTxFifoSize = m_pNetCom->m_pMainServer->m_pTxFifo->GetCount();
@@ -997,7 +1003,7 @@ int CNetCom::CRxThread::Work()
 		{
 			// Statistics
 			m_pNetCom->m_uiRxByteCount += m_pCurrentBuf->GetMsgSize();
-			if (m_pNetCom->m_bServer)
+			if (m_pNetCom->m_bServer && m_pNetCom->m_pMainServer)
 			{	
 				::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
 				m_pNetCom->m_pMainServer->m_uiRxByteCount += m_pCurrentBuf->GetMsgSize();
@@ -1285,7 +1291,7 @@ int CNetCom::CTxThread::Work()
 				{
 					m_pNetCom->m_bIdleGeneratorEnabled = m_pNetCom->m_pIdleGenerator->Generate(m_pNetCom);
 					BOOL bAllIdleGeneratorsDisabled = TRUE;
-					if (m_pNetCom->m_bServer)
+					if (m_pNetCom->m_bServer && m_pNetCom->m_pMainServer)
 					{
 						::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
 						for (int i = 0 ; i < m_pNetCom->m_pMainServer->m_Servers.GetSize() ; i++)
@@ -1909,6 +1915,15 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 			{
 				m_pMainServer = this;
 
+				// IPV6_V6ONLY is the default for all Windows OSs because prior to Vista
+				// the stacks for IPv4 and IPv6 where separate so that IPV6_V6ONLY was
+				// the only choice. Do not check the return value because Windows XP and
+				// older do not support this option!
+				if (m_nSocketFamily == AF_INET6)
+				{
+					DWORD ipv6only = 1U;
+					::setsockopt(m_hSocket, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only));
+				}
 				if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
 				{
 					ProcessWSAError(GetName() + _T(" bind()"));
@@ -2479,7 +2494,7 @@ BOOL CNetCom::StartTxThread()
 
 void CNetCom::EnableIdleGenerator(BOOL bEnabled)
 {
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3020,7 +3035,7 @@ int CNetCom::GetNumOpenConnections()
 
 UINT CNetCom::GetTotalRxByteCount()
 {
-	if (m_bServer)
+	if (m_bServer && m_pMainServer)
 	{
 		UINT uiCount = 0;
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
@@ -3040,7 +3055,7 @@ UINT CNetCom::GetTotalRxByteCount()
 UINT CNetCom::GetTotalTxByteCount()
 {
 	
-	if (m_bServer)
+	if (m_bServer && m_pMainServer)
 	{
 		UINT uiCount = 0;
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
@@ -3320,7 +3335,7 @@ void CNetCom::ShutdownConnection()
 
 void CNetCom::SetRxLogging(BOOL bLogging)
 {
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3333,7 +3348,7 @@ void CNetCom::SetRxLogging(BOOL bLogging)
 
 void CNetCom::SetTxLogging(BOOL bLogging)
 {
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3348,7 +3363,7 @@ UINT CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 {
 	UINT uiOldMaxTxPacketSize = m_uiMaxTxPacketSize;
 
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3363,7 +3378,7 @@ UINT CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 
 BOOL CNetCom::IsRxLogging()
 {
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3387,7 +3402,7 @@ BOOL CNetCom::IsRxLogging()
 
 BOOL CNetCom::IsTxLogging()
 {
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3410,7 +3425,7 @@ UINT CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
 {
 	UINT uiOldRxMsgTrigger = m_uiRxMsgTrigger;
 
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3429,7 +3444,7 @@ UINT CNetCom::SetTxTimeout(UINT uiNewTimeout)
 
 	UINT uiOldTxTimeout = m_uiTxPacketTimeout;
 
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
@@ -3449,7 +3464,7 @@ UINT CNetCom::SetRxTimeout(UINT uiNewTimeout)
 
 	UINT uiOldRxTimeout = m_uiRxPacketTimeout;
 
-	if (m_bMainServer)
+	if (m_bMainServer && m_pMainServer)
 	{
 		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
 		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)

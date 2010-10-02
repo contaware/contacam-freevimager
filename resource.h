@@ -2510,6 +2510,7 @@
 #define IDC_STATIC1819                  1819
 #define IDS_STRING1819                  1819
 #define IDC_STATIC1820                  1820
+#define IDS_STRING1820                  1820
 #define IDC_STATIC1821                  1821
 #define IDC_STATIC1822                  1822
 #define IDC_STATIC1823                  1823

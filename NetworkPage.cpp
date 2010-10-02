@@ -102,7 +102,7 @@ BOOL CNetworkPage::OnInitDialog()
 	// Max Connections
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_CONNECTIONS);
 	CString sMaxConnections;
-	sMaxConnections.Format(_T("%i"), m_pDoc->m_nSendFrameMaxConnections);
+	sMaxConnections.Format(_T("%i"), m_pDoc->m_nSendFrameMaxConnectionsConfig);
 	pEdit->SetWindowText(sMaxConnections);
 	pEdit->EnableWindow(!m_pDoc->m_bSendVideoFrame);
 
@@ -163,8 +163,7 @@ void CNetworkPage::OnVideoPortEnabled()
 		m_pDoc->m_pSendFrameParseProcess->FreeAVCodec();
 
 		// Clear Table
-		if (m_pDoc->m_pSendFrameParseProcess)
-			m_pDoc->m_pSendFrameParseProcess->ClearTable();
+		m_pDoc->m_pSendFrameParseProcess->ClearTable();
 
 		// Free Re-Send List
 		m_pDoc->ClearReSendUDPFrameList();
@@ -174,7 +173,7 @@ void CNetworkPage::OnVideoPortEnabled()
 		m_pDoc->m_dwSendFrameTotalSentBytes = 0U;
 		m_pDoc->m_dwSendFrameTotalLastSentBytes = 0U;
 		m_pDoc->m_dwSendFrameOverallDatarate = 0U;
-		m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+		m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 
 		// Listen
 		CNetCom* pNetCom = (CNetCom*)new CNetCom;
@@ -204,8 +203,7 @@ void CNetworkPage::OnVideoPortEnabled()
 		m_pDoc->m_pSendFrameParseProcess->FreeAVCodec();
 
 		// Clear Table
-		if (m_pDoc->m_pSendFrameParseProcess)
-			m_pDoc->m_pSendFrameParseProcess->ClearTable();
+		m_pDoc->m_pSendFrameParseProcess->ClearTable();
 
 		// Free Re-Send List
 		m_pDoc->ClearReSendUDPFrameList();
@@ -215,7 +213,7 @@ void CNetworkPage::OnVideoPortEnabled()
 		m_pDoc->m_dwSendFrameTotalSentBytes = 0U;
 		m_pDoc->m_dwSendFrameTotalLastSentBytes = 0U;
 		m_pDoc->m_dwSendFrameOverallDatarate = 0U;
-		m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+		m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 
 		// Clear Msg
 		m_pDoc->m_sSendFrameMsg = _T("");
@@ -254,9 +252,9 @@ void CNetworkPage::OnChangeEditConnections()
 	int nConnections = _tcstol(sText.GetBuffer(0), NULL, 10);
 	sText.ReleaseBuffer();
 	if (nConnections >= SENDFRAME_MIN_CONNECTIONS && nConnections <= SENDFRAME_MAX_CONNECTIONS)
-		m_pDoc->m_nSendFrameMaxConnections = nConnections;
+		m_pDoc->m_nSendFrameMaxConnectionsConfig = m_pDoc->m_nSendFrameMaxConnections = nConnections;
 	else
-		m_pDoc->m_nSendFrameMaxConnections = DEFAULT_SENDFRAME_CONNECTIONS;
+		m_pDoc->m_nSendFrameMaxConnectionsConfig = m_pDoc->m_nSendFrameMaxConnections = DEFAULT_SENDFRAME_CONNECTIONS;
 }
 
 void CNetworkPage::OnChangeEditMtu() 
@@ -272,7 +270,7 @@ void CNetworkPage::OnChangeEditMtu()
 		nMTU = SENDFRAME_MAX_FRAGMENT_SIZE;
 	m_pDoc->m_nSendFrameMTU = nMTU;
 	m_pDoc->m_dwMaxSendFrameFragmentsPerFrame = 0U;
-	m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+	m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 }
 
 void CNetworkPage::OnChangeEditDatarate() 
@@ -288,7 +286,7 @@ void CNetworkPage::OnChangeEditDatarate()
 		nDataRate = SENDFRAME_MAX_DATARATE / 1000;
 	m_pDoc->m_nSendFrameDataRate = nDataRate * 1000; // kbps -> bits / sec
 	m_pDoc->m_dwMaxSendFrameFragmentsPerFrame = 0U;
-	m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+	m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 }
 
 void CNetworkPage::OnChangeEditFreqdiv() 
@@ -303,7 +301,7 @@ void CNetworkPage::OnChangeEditFreqdiv()
 	else if (nFreqDiv > SENDFRAME_MAX_FREQDIV)
 		nFreqDiv = SENDFRAME_MAX_FREQDIV;
 	m_pDoc->m_nSendFrameFreqDiv = nFreqDiv;
-	m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+	m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 }
 
 void CNetworkPage::OnSelchangeComboSize() 
@@ -311,7 +309,7 @@ void CNetworkPage::OnSelchangeComboSize()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SIZE);
 	m_pDoc->m_nSendFrameSizeDiv = pComboBox->GetCurSel();
 	m_pDoc->m_dwMaxSendFrameFragmentsPerFrame = 0U;
-	m_pDoc->m_dwSendFrameDatarateCorrection = 0U;
+	m_pDoc->m_dSendFrameDatarateCorrection = 1.0;
 }
 
 void CNetworkPage::OnChangeAuthUsername() 

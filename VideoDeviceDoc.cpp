@@ -6181,7 +6181,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pGetFrameGenerator = NULL;
 	m_nSendFrameConnectionsCount = 0;
 	m_nSendFrameVideoPort = DEFAULT_UDP_PORT;
-	m_nSendFrameMaxConnections = DEFAULT_SENDFRAME_CONNECTIONS;
+	m_nSendFrameMaxConnectionsConfig = m_nSendFrameMaxConnections = DEFAULT_SENDFRAME_CONNECTIONS;
 	m_nSendFrameMTU = DEFAULT_SENDFRAME_FRAGMENT_SIZE;
 	m_nSendFrameDataRate = DEFAULT_SENDFRAME_DATARATE;
 	m_nSendFrameSizeDiv = 0;
@@ -6197,7 +6197,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwMaxSendFrameFragmentsPerFrame = 0U;
 	m_dwSendFrameTotalSentBytes = 0U;
 	m_dwSendFrameOverallDatarate = 0U;
-	m_dwSendFrameDatarateCorrection = 0U;
+	m_dSendFrameDatarateCorrection = 1.0;
 	m_dwSendFrameTotalLastSentBytes = 0U;
 	m_nHttpVideoQuality = DEFAULT_HTTP_VIDEO_QUALITY;
 	m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
@@ -6873,7 +6873,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 
 	// Networking
 	m_nSendFrameVideoPort = (int) pApp->GetProfileInt(sSection, _T("SendFrameVideoPort"), DEFAULT_UDP_PORT);
-	m_nSendFrameMaxConnections = (int) pApp->GetProfileInt(sSection, _T("SendFrameMaxConnections"), DEFAULT_SENDFRAME_CONNECTIONS);
+	m_nSendFrameMaxConnectionsConfig = m_nSendFrameMaxConnections = (int) pApp->GetProfileInt(sSection, _T("SendFrameMaxConnections"), DEFAULT_SENDFRAME_CONNECTIONS);
 	m_nSendFrameMTU = (int) pApp->GetProfileInt(sSection, _T("SendFrameMTU"), DEFAULT_SENDFRAME_FRAGMENT_SIZE);
 	m_nSendFrameDataRate = (int) pApp->GetProfileInt(sSection, _T("SendFrameDataRate"), DEFAULT_SENDFRAME_DATARATE);
 	m_nSendFrameSizeDiv = (int) pApp->GetProfileInt(sSection, _T("SendFrameSizeDiv"), 0);
@@ -7140,7 +7140,7 @@ void CVideoDeviceDoc::SaveSettings()
 
 			// Networking
 			pApp->WriteProfileInt(sSection, _T("SendFrameVideoPort"), m_nSendFrameVideoPort);
-			pApp->WriteProfileInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnections);
+			pApp->WriteProfileInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnectionsConfig);
 			pApp->WriteProfileInt(sSection, _T("SendFrameMTU"), m_nSendFrameMTU);
 			pApp->WriteProfileInt(sSection, _T("SendFrameDataRate"), m_nSendFrameDataRate);
 			pApp->WriteProfileInt(sSection, _T("SendFrameSizeDiv"), m_nSendFrameSizeDiv);
@@ -7337,7 +7337,7 @@ void CVideoDeviceDoc::SaveSettings()
 
 			// Networking
 			::WriteProfileIniInt(sSection, _T("SendFrameVideoPort"), m_nSendFrameVideoPort, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnections, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnectionsConfig, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SendFrameMTU"), m_nSendFrameMTU, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SendFrameDataRate"), m_nSendFrameDataRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SendFrameSizeDiv"), m_nSendFrameSizeDiv, sTempFileName);
@@ -10485,8 +10485,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			{
 				int nEncodedSize;
 				::EnterCriticalSection(&m_csSendFrameNetCom);
-				if (m_pSendFrameParseProcess			&&
-					m_nSendFrameConnectionsCount > 0	&&
+				if (m_nSendFrameConnectionsCount > 0	&&
 					(nEncodedSize = m_pSendFrameParseProcess->Encode(	pDib,
 																		CurrentTime,
 																		dwCurrentInitUpTime)) > 0)
@@ -10510,7 +10509,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				::LeaveCriticalSection(&m_csSendFrameNetCom);
 			}
 
-			// Every 1 sec Update Send To Table and Message
+			// Every 1 sec Update
 			DWORD dwFrameRate = (DWORD)Round(m_dEffectiveFrameRate);
 			if (dwFrameRate == 0U)
 				dwFrameRate = (DWORD)m_dFrameRate;
@@ -10525,22 +10524,18 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 					nTxFifoSize = (int)m_pSendFrameNetCom->GetTxFifoSize();
 				::LeaveCriticalSection(&m_csSendFrameNetCom);
 
-				// Update Send To Table
-				m_nSendFrameConnectionsCount = UpdateFrameSendToTable();
-
-				// Update Total Send Bandwidth
-				DWORD dwOverallDatarate = m_dwSendFrameOverallDatarate;
-				if (dwOverallDatarate == 0)
-					dwOverallDatarate = (DWORD)m_nSendFrameConnectionsCount *
-										(DWORD)(m_nSendFrameDataRate / 8);							// bps -> bytes / sec
-				DWORD dwMaxBandwidth = MAX((DWORD)(SENDFRAME_MIN_DATARATE / 8),						// bps -> bytes / sec
-											dwOverallDatarate + m_dwSendFrameDatarateCorrection);	
-				m_pSendFrameNetCom->SetMaxTxDatagramBandwidth(dwMaxBandwidth);
+				// Update Frame Send To Table and Flow Control
+				UpdateFrameSendToTableAndFlowControl();
 
 				// Prepare Statistics
 				CString sMsg;
 				if (m_nSendFrameConnectionsCount == 0)
-					sMsg = ML_STRING(1479, "Listening Ok\r\n\r\n");
+				{
+					if (m_nSendFrameMaxConnections == 0)
+						sMsg = ML_STRING(1820, "Overload: lower maximum number of connections!\r\n\r\n");
+					else
+						sMsg = ML_STRING(1479, "Listening Ok\r\n\r\n");
+				}
 				else
 					sMsg.Format(ML_STRING(1480, "Listening Ok:\r\n%d connection%s, Tx size / connection: %d fragments, Max fragments / frame: %u\r\n") +
 								ML_STRING(1481, "Datarate / connection: %dkbps , Overall Datarate: %ukbps (+%ukbps)\r\n\r\n"),
@@ -10550,7 +10545,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 								m_dwMaxSendFrameFragmentsPerFrame,
 								m_nSendFrameDataRate / 1000,					// bps -> kbps
 								m_dwSendFrameOverallDatarate * 8U / 1000U,		// bytes / sec -> kbps
-								m_dwSendFrameDatarateCorrection * 8U / 1000U);	// bytes / sec -> kbps
+								(DWORD)Round((m_dSendFrameDatarateCorrection - 1.0) * (m_dwSendFrameOverallDatarate * 8U / 1000U)));	// bytes / sec -> kbps
 
 				::EnterCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
 
@@ -11958,8 +11953,7 @@ BOOL CVideoDeviceDoc::ConnectSendFrameUDP(	CNetCom* pNetCom,
 		return FALSE;
 
 	// Clear Table
-	if (m_pSendFrameParseProcess)
-		m_pSendFrameParseProcess->ClearTable();
+	m_pSendFrameParseProcess->ClearTable();
 
 	// Set Thread Priority
 	pNetCom->SetThreadsPriority(THREAD_PRIORITY_HIGHEST);
@@ -12657,7 +12651,7 @@ __forceinline BOOL CVideoDeviceDoc::SendUDPFragment(CNetCom* pNetCom,
 													BOOL bReSending)
 {
 	// Check
-	if (m_pSendFrameParseProcess == NULL || pNetCom == NULL)
+	if (pNetCom == NULL)
 		return FALSE;
 
 	// Send
@@ -12757,22 +12751,10 @@ __forceinline void CVideoDeviceDoc::SendUDPFragmentInternal(	CNetCom* pNetCom,
 	}
 }
 
-int CVideoDeviceDoc::UpdateFrameSendToTable()
+void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl()
 {
-	int nCount = 0;
-
-	// Check
-	if (m_pSendFrameParseProcess == NULL)
-		return 0;
-
-	// Get Tx Fifo Size
-	::EnterCriticalSection(&m_csSendFrameNetCom);
-	int nTxFifoSize = 0;
-	if (m_pSendFrameNetCom)
-		nTxFifoSize = (int)m_pSendFrameNetCom->GetTxFifoSize();
-	::LeaveCriticalSection(&m_csSendFrameNetCom);
-
 	// Clear dead streams and count the number of alive connections
+	int nCount = 0;
 	::EnterCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
 	for (int i = 0 ; i < m_nSendFrameMaxConnections ; i++)
 	{
@@ -12785,62 +12767,85 @@ int CVideoDeviceDoc::UpdateFrameSendToTable()
 		}
 	}
 	::LeaveCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
+	m_nSendFrameConnectionsCount = nCount;
 
-	// Flow Control
-	if (nCount > 0 && m_dwMaxSendFrameFragmentsPerFrame > 0U)
+	// Flow control every 4 sec
+	DWORD dwRate = 4U * (DWORD)Round(m_dEffectiveFrameRate);
+	if (dwRate == 0U)
+		dwRate = 4U * (DWORD)m_dFrameRate;
+	if (dwRate == 0U)
+		dwRate = 1U;
+	if ((m_dwFrameCountUp % dwRate) == 0)
 	{
-		// Data rate
-		DWORD dwOverallDatarate = MAX(	m_dwSendFrameOverallDatarate,
-										(DWORD)nCount * (DWORD)(m_nSendFrameDataRate / 8)); // bps -> bytes / sec
-		DWORD dwDatarateCorrectionInc = dwOverallDatarate / 5U;
-		DWORD dwDatarateCorrectionDec = dwOverallDatarate / 20U;
-		int nTxFifoSizePerConnection =  nTxFifoSize / nCount;
+		// Get Tx Fifo Size
+		::EnterCriticalSection(&m_csSendFrameNetCom);
+		int nTxFifoSize = 0;
+		if (m_pSendFrameNetCom)
+			nTxFifoSize = (int)m_pSendFrameNetCom->GetTxFifoSize();
+		::LeaveCriticalSection(&m_csSendFrameNetCom);
 
-		// Every 4 sec check
-		DWORD dwRate = 4U * (DWORD)Round(m_dEffectiveFrameRate);
-		if (dwRate == 0U)
-			dwRate = 4U * (DWORD)m_dFrameRate;
-		if (dwRate == 0U)
-			dwRate = 1U;
-		if ((m_dwFrameCountUp % dwRate) == 0)
+		// Update SendFrame Datarate Correction and SendFrame Max Connections
+		double dNewSendFrameDatarateCorrection = m_dSendFrameDatarateCorrection;
+		int nTxFifoSizePerConnection = 0;
+		if (m_nSendFrameConnectionsCount > 0)
+			nTxFifoSizePerConnection = nTxFifoSize / m_nSendFrameConnectionsCount;
+		if (nTxFifoSizePerConnection > 32 * (int)m_dwMaxSendFrameFragmentsPerFrame)
 		{
-			if (nTxFifoSizePerConnection >= 10 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-			{
-				if (m_dwSendFrameDatarateCorrection >= 2U * dwOverallDatarate)
-				{
-					int nNewMaxConnections = nCount - 1;
-					if (nNewMaxConnections >= 1)
-					{
-						m_nSendFrameMaxConnections = nNewMaxConnections;
-						TRACE(_T("Server fifo overload, reducing max number of connections to %d\n"), nNewMaxConnections);
-					}
-					else
-					{
-						int nNewSendFrameDataRate = 4 * m_nSendFrameDataRate / 5; // bytes / sec -> bps
-						if (nNewSendFrameDataRate < 0)
-							nNewSendFrameDataRate = 0;
-						m_nSendFrameDataRate = nNewSendFrameDataRate;
-						m_dwSendFrameDatarateCorrection = 0U;
-						TRACE(_T("Server fifo overload, reducing datarate to %dkbps\n"), m_nSendFrameDataRate / 1000);
-					}
-				}
-				else
-				{
-					m_dwSendFrameDatarateCorrection += dwDatarateCorrectionInc;
-					TRACE(_T("Server fifo overload, datarate correction of %u kbps\n"), m_dwSendFrameDatarateCorrection * 8U / 1000U);
-				}
-			}
-			else if (nTxFifoSizePerConnection < (int)m_dwMaxSendFrameFragmentsPerFrame)
-			{
-				int nNewSendFrameDatarateCorrection = (int)m_dwSendFrameDatarateCorrection - (int)dwDatarateCorrectionDec;
-				if (nNewSendFrameDatarateCorrection < 0)
-					nNewSendFrameDatarateCorrection = 0;
-				m_dwSendFrameDatarateCorrection = (DWORD)nNewSendFrameDatarateCorrection; 
-			}
+			m_nSendFrameMaxConnections = 0;
+			dNewSendFrameDatarateCorrection = 1.0;
 		}
+		else if (nTxFifoSizePerConnection > 16 * (int)m_dwMaxSendFrameFragmentsPerFrame)
+			dNewSendFrameDatarateCorrection += 2.0;
+		else if (nTxFifoSizePerConnection > 8 * (int)m_dwMaxSendFrameFragmentsPerFrame)
+			dNewSendFrameDatarateCorrection += 1.2;
+		else if (nTxFifoSizePerConnection > 4 * (int)m_dwMaxSendFrameFragmentsPerFrame)
+			dNewSendFrameDatarateCorrection += 0.7;
+		else if (nTxFifoSizePerConnection > 2 * (int)m_dwMaxSendFrameFragmentsPerFrame)
+			dNewSendFrameDatarateCorrection += 0.3;
+		else if (nTxFifoSizePerConnection > (3 * (int)m_dwMaxSendFrameFragmentsPerFrame / 2))
+			dNewSendFrameDatarateCorrection += 0.1;
+		else if (nTxFifoSizePerConnection <= (int)m_dwMaxSendFrameFragmentsPerFrame)
+		{
+			// Restore max connections
+			if (m_nSendFrameMaxConnections == 0 && nTxFifoSize == 0)
+			{
+				m_nSendFrameMaxConnections = m_nSendFrameMaxConnectionsConfig;
+				dNewSendFrameDatarateCorrection = 1.25;
+			}
+			// Decrease datarate correction
+			else
+				dNewSendFrameDatarateCorrection -= 0.2;
+		}
+
+		// Clip
+		if (dNewSendFrameDatarateCorrection < 1.0)
+			dNewSendFrameDatarateCorrection = 1.0;
+		else if (dNewSendFrameDatarateCorrection > 10.0)
+			dNewSendFrameDatarateCorrection = 10.0;
+		m_dSendFrameDatarateCorrection = dNewSendFrameDatarateCorrection;
 	}
 
-	return nCount;
+	// Update Total Send Bandwidth
+	DWORD dwOverallDatarate;
+	if (m_nSendFrameMaxConnections == 0)
+	{
+		dwOverallDatarate = MAX(m_dwSendFrameOverallDatarate,
+							(DWORD)m_nSendFrameMaxConnectionsConfig * (DWORD)(m_nSendFrameDataRate / 8)); // bps -> bytes / sec
+	}
+	else
+	{
+		dwOverallDatarate = m_dwSendFrameOverallDatarate;
+		if (dwOverallDatarate == 0)
+			dwOverallDatarate = (DWORD)m_nSendFrameConnectionsCount * (DWORD)(m_nSendFrameDataRate / 8); // bps -> bytes / sec
+		if (dwOverallDatarate == 0)
+			dwOverallDatarate = (DWORD)m_nSendFrameMaxConnectionsConfig * (DWORD)(m_nSendFrameDataRate / 8); // bps -> bytes / sec
+	}
+	DWORD dwMaxBandwidth = MAX((DWORD)(SENDFRAME_MIN_DATARATE / 8),	// bps -> bytes / sec
+							(DWORD)Round(m_dSendFrameDatarateCorrection * dwOverallDatarate));
+	::EnterCriticalSection(&m_csSendFrameNetCom);
+	if (m_pSendFrameNetCom)
+		m_pSendFrameNetCom->SetMaxTxDatagramBandwidth(dwMaxBandwidth);
+	::LeaveCriticalSection(&m_csSendFrameNetCom);
 }
 
 BOOL CVideoDeviceDoc::CSendFrameParseProcess::AddFrameTime(	LPBYTE pBits,

@@ -1468,7 +1468,7 @@ protected:
 												int DataSize,
 												BOOL bHighPriority,
 												BOOL bReSending);
-	int UpdateFrameSendToTable();
+	void UpdateFrameSendToTableAndFlowControl();
 
 	// Micro Apache Functions
 	static CString LoadMicroApacheConfigFile();
@@ -1624,7 +1624,8 @@ public:
 	CRITICAL_SECTION m_csSendFrameNetCom;				// UDP Send Frame Critical Section
 	volatile BOOL m_bSendVideoFrame;					// Enable / Disable UDP Send Frame
 	volatile int m_nSendFrameVideoPort;					// Send Frame Video Port
-	volatile int m_nSendFrameMaxConnections;			// Send Frame max number of supported connections
+	volatile int m_nSendFrameMaxConnections;			// Current Send Frame max number of supported connections
+	volatile int m_nSendFrameMaxConnectionsConfig;		// Send Frame max number of supported connections configuration
 	volatile int m_nSendFrameMTU;						// Send Frame max fragment size
 	volatile int m_nSendFrameDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nSendFrameSizeDiv;					// Size divider (0 = full size, 1 = half size, 2 = 1/4 size, ...)
@@ -1639,7 +1640,7 @@ public:
 	volatile DWORD m_dwSendFrameTotalSentBytes;			// Both wrap around, no problem, using only the difference
 	volatile DWORD m_dwSendFrameTotalLastSentBytes;		// of them to calculate the overall datarate
 	volatile DWORD m_dwSendFrameOverallDatarate;		// bytes / sec
-	volatile DWORD m_dwSendFrameDatarateCorrection;		// bytes / sec
+	volatile double m_dSendFrameDatarateCorrection;		// Correction factor
 	CString m_sSendFrameUsername;						// UDP Username
 	CString m_sSendFramePassword;						// UDP Password
 

@@ -263,6 +263,8 @@ __forceinline void CWorkerThread::Delete()
 
 CWorkerThread::CWorkerThread()
 {
+	// m_hThread and m_nThreadID are reset inside the base constructor
+
 	m_bRunning =		false;
 	m_bAlive =			false;
 	m_bProcMsg =		false;
@@ -286,6 +288,8 @@ CWorkerThread::~CWorkerThread()
 		::CloseHandle(m_hKillEvent);
 
 	::DeleteCriticalSection(&m_cs);
+
+	// CloseHandle(m_hThread) is called inside the base destructor
 }
 
 /*
