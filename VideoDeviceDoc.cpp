@@ -16044,9 +16044,10 @@ CString CVideoDeviceDoc::AutorunGetDeviceKey(const CString& sDevicePathName)
 	return _T("");
 }
 
-CString CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
+void CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
+		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess) // No autorun changes in service mode!
 	{
 		AutorunRemoveDevice(sDevicePathName);
 		CString sSection(_T("DeviceAutorun"));
@@ -16058,16 +16059,16 @@ CString CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
 			if (pApp->GetProfileString(sSection, sKey, _T("")) == _T(""))
 			{
 				pApp->WriteProfileString(sSection, sKey, sDevicePathName);
-				return sKey;
+				return;
 			}
 		}
 	}
-	return _T("");
 }
 
-CString CVideoDeviceDoc::AutorunRemoveDevice(const CString& sDevicePathName)
+void CVideoDeviceDoc::AutorunRemoveDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
+		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess) // No autorun changes in service mode!
 	{
 		CString sSection(_T("DeviceAutorun"));
 		CWinApp* pApp = ::AfxGetApp();
@@ -16080,11 +16081,10 @@ CString CVideoDeviceDoc::AutorunRemoveDevice(const CString& sDevicePathName)
 				sDev == sDevicePathName)
 			{
 				pApp->WriteProfileString(sSection, sKey, _T(""));
-				return sKey;
+				return;
 			}
 		}
 	}
-	return _T("");
 }
 
 /////////////////////////////////////////////////////////////////////////////

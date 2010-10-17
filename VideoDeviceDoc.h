@@ -1397,8 +1397,8 @@ public:
 
 	// Autorun
 	static CString AutorunGetDeviceKey(const CString& sDevicePathName);
-	static CString AutorunAddDevice(const CString& sDevicePathName);
-	static CString AutorunRemoveDevice(const CString& sDevicePathName);
+	static void AutorunAddDevice(const CString& sDevicePathName);
+	static void AutorunRemoveDevice(const CString& sDevicePathName);
 
 	// Get common auto-save directory
 	CString GetAutoSaveDir();

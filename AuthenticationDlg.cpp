@@ -19,7 +19,7 @@ CAuthenticationDlg::CAuthenticationDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAuthenticationDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAuthenticationDlg)
-	m_bSaveAuthenticationData = FALSE;
+	m_bSaveAuthenticationData = TRUE;
 	m_sPassword = _T("");
 	m_sUsername = _T("");
 	//}}AFX_DATA_INIT
