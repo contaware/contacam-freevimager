@@ -279,7 +279,7 @@ if ($handle = @opendir($dir)) {
 				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']);
 				if ($path_parts['extension'] == 'gif') {
 					$swfuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".basename($file, ".gif").".swf";
-					$swfuri_get = str_replace("/", "%2F", $swfuri);
+					$swfuri_get = urlencode($swfuri);
 					$aviuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".basename($file, ".gif").".avi";
 					$gifuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
 					$swffile = $dir."/".basename($file, ".gif").".swf";
@@ -296,7 +296,7 @@ if ($handle = @opendir($dir)) {
 				else if ($path_parts['extension'] == 'jpg') {
 					$jpegthumburi = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
-					$jpeguri_get = str_replace("/", "%2F", $jpeguri);
+					$jpeguri_get = urlencode($jpeguri);
 					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi') {
