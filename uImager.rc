@@ -6363,7 +6363,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Assistant"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -6390,9 +6390,13 @@ BEGIN
                     IDC_CHECK_FULLSTRETCH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,263,49,131,10
     EDITTEXT        IDC_EDIT_NAME,147,118,172,12,ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_LANGUAGE,100,136,107,222,CBS_DROPDOWNLIST | 
+    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,335,113,62,10
+    CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,335,124,62,10
+    COMBOBOX        IDC_COMBO_LANGUAGE,100,137,107,222,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,295,136,107,222,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_STYLE,295,137,107,222,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     COMBOBOX        IDC_COMBO_KEEPFOR,63,179,107,116,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
@@ -6402,8 +6406,8 @@ BEGIN
     GROUPBOX        "2. Name && Appearance",IDC_STATIC,5,105,407,51
     LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,
                     120,118,8
-    LTEXT           "Web interface language",IDC_STATIC,16,138,82,8
-    LTEXT           "Web interface style",IDC_STATIC,227,138,66,8
+    LTEXT           "Web interface language",IDC_STATIC,16,139,82,8
+    LTEXT           "Web interface style",IDC_STATIC,227,139,66,8
     GROUPBOX        "3. Storage",IDC_STATIC,5,164,407,39
     LTEXT           "Keep files for",IDC_STATIC,16,181,42,8
     LTEXT           "Note: if the disk space becomes less than 10% the oldest files are automatically deleted to make room for the new one",
@@ -6413,8 +6417,6 @@ BEGIN
                     IDC_STATIC,16,230,297,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
                     33,60,8
-    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,342,120,62,10
 END
 
 IDD_REGISTRATION DIALOGEX 0, 0, 260, 230

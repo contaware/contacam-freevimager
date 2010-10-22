@@ -2,13 +2,14 @@ VERSION HISTORY
 
 2.1.0 (November 27th 2010)
 
+- Optional save command button for web interface
+- Remember User Name and Password checked by default in
+  authentication dialog for network devices 
+- Added FTP Upload for AVI + SWF + Animated GIF Detections
 - Fixed a possible network dead lock
 - RemoteCam added codec open/close critical sections and
   implemented drawing update through PostMessage
 - More robust thread start/stop logic
-- Remember User Name and Password checked by default in
-  authentication dialog for network devices 
-- Added FTP Upload for AVI + SWF + Animated GIF Detections
 
 2.0.9 (September 24th 2010)
 

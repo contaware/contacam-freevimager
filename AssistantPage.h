@@ -41,6 +41,7 @@ public:
 	int		m_nComboSnapshotHistorySize;
 	BOOL	m_bCheckFullStretch;
 	BOOL	m_bCheckPrintCommand;
+	BOOL	m_bCheckSaveCommand;
 	//}}AFX_DATA
 
 

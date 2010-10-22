@@ -52,6 +52,7 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_PRINTCOMMAND, m_bCheckPrintCommand);
+	DDX_Check(pDX, IDC_CHECK_SAVECOMMAND, m_bCheckSaveCommand);
 	//}}AFX_DATA_MAP
 }
 
@@ -177,6 +178,7 @@ BOOL CAssistantPage::OnInitDialog()
 	m_sPhpConfigVersion = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_VERSION);
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
 	m_bCheckPrintCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_PRINTCOMMAND) == _T("1"));
+	m_bCheckSaveCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_SAVECOMMAND) == _T("1"));
 	if (sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME)
 		m_nUsage = 0;
 	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
@@ -444,6 +446,8 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 	pCheck = (CButton*)GetDlgItem(IDC_RADIO_NOCHANGE);
 	pCheck->EnableWindow(bEnable);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_PRINTCOMMAND);
+	pCheck->EnableWindow(bEnable);
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SAVECOMMAND);
 	pCheck->EnableWindow(bEnable);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_NAME);
 	pEdit->EnableWindow(bEnable);
@@ -882,6 +886,12 @@ void CAssistantPage::ApplySettings()
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_PRINTCOMMAND, _T("1"));
 	else
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_PRINTCOMMAND, _T("0"));
+
+	// Save command
+	if (m_bCheckSaveCommand)
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_SAVECOMMAND, _T("1"));
+	else
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_SAVECOMMAND, _T("0"));
 
 	// Usage
 	switch (m_nUsage)
