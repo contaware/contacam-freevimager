@@ -6,6 +6,9 @@ VERSION HISTORY
 - RemoteCam added codec open/close critical sections and
   implemented drawing update through PostMessage
 - More robust thread start/stop logic
+- Remember User Name and Password checked by default in
+  authentication dialog for network devices 
+- Added FTP Upload for AVI + SWF + Animated GIF Detections
 
 2.0.9 (September 24th 2010)
 

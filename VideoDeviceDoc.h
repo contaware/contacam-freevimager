@@ -100,6 +100,7 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_ZONES					1024		// Maximum Number of zones
 #define MOVDET_MIN_ZONESX					10			// Minimum Number of zones in X direction
 #define MOVDET_MIN_ZONESY					8			// Minimum Number of zones in Y direction
+#define MOVDET_SAVEFRAMES_POLL				500U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
 														// case of insufficient memory
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// 16000 is the limit for swf files -> be safe and start
@@ -229,7 +230,8 @@ public:
 		FILES_TO_UPLOAD_ANIMGIF		= 1,
 		FILES_TO_UPLOAD_SWF			= 2,
 		FILES_TO_UPLOAD_AVI_ANIMGIF	= 3,
-		FILES_TO_UPLOAD_SWF_ANIMGIF	= 4
+		FILES_TO_UPLOAD_SWF_ANIMGIF	= 4,
+		FILES_TO_UPLOAD_AVI_SWF_ANIMGIF	= 5
 	};
 
 	// Get Frame Generator Class
@@ -912,15 +914,15 @@ public:
 	class CSaveFrameListThread : public CWorkerThread
 	{
 		public:
-			CSaveFrameListThread(){m_pDoc = NULL; m_nNumFramesToSave = 0; m_nSendMailProgress = 100; m_nFTPUploadProgress = 100;};
+			CSaveFrameListThread(){m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
+						m_nSendMailProgress = 100; m_nFTPUploadProgress = 100; m_bWorking = FALSE;};
 			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			void SetFrameList(CDib::LIST* pFrameList) {m_pFrameList = pFrameList;};
-			void SetNumFramesToSave(int nNumFramesToSave) {m_nNumFramesToSave = nNumFramesToSave;};
 			__forceinline void SetSendMailProgress(int nSendMailProgress) {m_nSendMailProgress = nSendMailProgress;};
 			__forceinline int GetSendMailProgress() const {return m_nSendMailProgress;};
 			__forceinline void SetFTPUploadProgress(int nFTPUploadProgress) {m_nFTPUploadProgress = nFTPUploadProgress;};
 			__forceinline int GetFTPUploadProgress() const {return m_nFTPUploadProgress;};
+			__forceinline BOOL IsWorking() const {return m_bWorking;};
 
 		protected:
 			int Work();
@@ -958,57 +960,69 @@ public:
 															const CString& sSWFFileName);
 
 			__forceinline BOOL DoSaveAvi() const {
-							return m_pDoc->m_bSaveAVIMovementDetection					||
+							return m_pDoc->m_bSaveAVIMovementDetection				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-											CVideoDeviceDoc::ATTACHMENT_AVI)			||
+								CVideoDeviceDoc::ATTACHMENT_AVI)					||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-											CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)	||
+								CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-											CVideoDeviceDoc::FILES_TO_UPLOAD_AVI)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI)				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF)		||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
 
 			__forceinline BOOL DoSaveSwf() const {
-							return m_pDoc->m_bSaveSWFMovementDetection					||
+							return m_pDoc->m_bSaveSWFMovementDetection				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-											CVideoDeviceDoc::FILES_TO_UPLOAD_SWF)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF)				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF)		||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
 
 			__forceinline BOOL DoSaveGif() const {
-							return	m_pDoc->m_bSaveAnimGIFMovementDetection				||
+							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-											CVideoDeviceDoc::ATTACHMENT_ANIMGIF)		||
+								CVideoDeviceDoc::ATTACHMENT_ANIMGIF)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-											CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)	||
+								CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-											CVideoDeviceDoc::FILES_TO_UPLOAD_ANIMGIF)	||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_ANIMGIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF)			||
-								
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF)		||
+
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF)		||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
 
 			// Return Values
 			// -1 : Do Exit Thread
@@ -1021,6 +1035,7 @@ public:
 			int m_nNumFramesToSave;
 			volatile int m_nSendMailProgress;
 			volatile int m_nFTPUploadProgress;
+			volatile BOOL m_bWorking;
 	};
 
 	// FTP Transfer Class
@@ -1266,16 +1281,15 @@ public:
 	//
 
 	// Detection lists
-	__forceinline void OneFrameList();								// ClearMovementDetectionsList() + Create a New Frame List (all in one critical section) 
+	__forceinline void OneEmptyFrameList();							// One empty frame list
 	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
 	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
-	__forceinline BOOL SaveFrameList();								// Add new empty list + Start thread which saves the oldest list(s)
+	__forceinline void SaveFrameList();								// Add new empty list to tail
 	__forceinline int  GetTotalMovementDetectionFrames();			// Get the total frames over all lists
 
 	// Detection list handling
 	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
 	__forceinline void ClearNewestFrameList();						// Free all frames in newest list
-	__forceinline void ShrinkNewestFrameListTo(int nMinSize);		// Free oldest frames and leave the newest nMinSize from newest frame list
 	__forceinline void ShrinkNewestFrameListBy(	int nSize,			// Free oldest nSize frames from newest frame list
 												DWORD& dwFirstUpTime,
 												DWORD& dwLastUpTime);
@@ -1321,8 +1335,6 @@ public:
 	void FreeAVIFiles();
 
 	// Movement Detection
-	void MovementDetectionOn();
-	void MovementDetectionOff();
 	void MovementDetectionProcessing(	CDib* pDib,
 										BOOL bMovementDetectorPreview,
 										BOOL bDoDetection);
@@ -1534,7 +1546,6 @@ public:
 	volatile BOOL m_bWatchDogAlarm;						// WatchDog Alarm
 
 	// DirectShow Capture Vars
-	volatile BOOL m_bDxDeviceUnplugged;					// Device Has Been Unplugged
 	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
 	int m_nDeviceInputId;								// Input ID
@@ -1836,19 +1847,27 @@ __forceinline void CVideoDeviceDoc::ClearFrameList(CDib::LIST* pFrameList)
 		CDib::FreeList(*pFrameList);
 }
 
-__forceinline void CVideoDeviceDoc::OneFrameList()
+__forceinline void CVideoDeviceDoc::OneEmptyFrameList()
 {
 	::EnterCriticalSection(&m_csMovementDetectionsList);
-	while (!m_MovementDetectionsList.IsEmpty())
+	if (m_MovementDetectionsList.IsEmpty())
 	{
-		CDib::LIST* pFrameList = m_MovementDetectionsList.GetTail();
-		ClearFrameList(pFrameList);
-		delete pFrameList;
-		m_MovementDetectionsList.RemoveTail();
+		CDib::LIST* pNewList = new CDib::LIST;
+		if (pNewList)
+			m_MovementDetectionsList.AddTail(pNewList);
 	}
-	CDib::LIST* pNewList = new CDib::LIST;
-	if (pNewList)
-		m_MovementDetectionsList.AddTail(pNewList);
+	else
+	{
+		while (m_MovementDetectionsList.GetCount() > 1)
+		{
+			CDib::LIST* pFrameList = m_MovementDetectionsList.GetTail();
+			ClearFrameList(pFrameList);
+			delete pFrameList;
+			m_MovementDetectionsList.RemoveTail();
+		}
+		CDib::LIST* pFrameList = m_MovementDetectionsList.GetHead();
+		ClearFrameList(pFrameList);
+	}
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 

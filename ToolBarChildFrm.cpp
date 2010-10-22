@@ -1411,9 +1411,8 @@ void CVideoDeviceChildFrame::OnClose()
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();
 
-			// Log the stopping (no log for Video Avi mode or when unplugged)
-			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL &&
-				!pDoc->m_bDxDeviceUnplugged)
+			// Log the stopping (no log for Video Avi mode)
+			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL)
 			{
 				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
 				CString sMsg;
@@ -1660,7 +1659,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	{
 		// This leaks, I know, but better to leak memory than
 		// locks, reboots or blue-screens!
-		if (!pDoc->m_bDxDeviceUnplugged)
+		if (!pDoc->m_bWatchDogAlarm)
 			delete pDoc->m_pDxCapture;
 		pDoc->m_pDxCapture = NULL;
 		pDoc->m_bCapture = FALSE;
@@ -1708,8 +1707,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 		!pDoc->m_WatchdogThread.IsAlive()			&&
 		(pDoc->IsProcessFrameStopped()				||
 		!pDoc->m_bCapture							||
-		pDoc->m_bWatchDogAlarm						||
-		pDoc->m_bDxDeviceUnplugged))
+		pDoc->m_bWatchDogAlarm))
 		return TRUE;
 	else
 		return FALSE;

@@ -647,8 +647,7 @@ void CAssistantPage::OnButtonApplySettings()
 {
 	if (m_pDoc->m_bClosing			||
 		!m_pDoc->m_bCapture			||
-		m_pDoc->m_bWatchDogAlarm	||
-		m_pDoc->m_bDxDeviceUnplugged)
+		m_pDoc->m_bWatchDogAlarm)
 		::MessageBeep(0xFFFFFFFF);
 	else
 	{
@@ -686,15 +685,30 @@ void CAssistantPage::Rename()
 	if (m_sName == _T(""))
 		m_sName = m_pDoc->GetDeviceName();
 	
-	// Make new dirs
-	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir) + m_sName;
-	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir) + m_sName;
-	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir) + m_sName;
-	
 	// Adjust old dirs
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
 	m_pDoc->m_sDetectionAutoSaveDir.TrimRight(_T('\\'));
 	m_pDoc->m_sSnapshotAutoSaveDir.TrimRight(_T('\\'));
+
+	// Make new dirs
+	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir);
+	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir);
+	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir);
+	sNewRecordAutoSaveDir.TrimRight(_T('\\'));
+	sNewDetectionAutoSaveDir.TrimRight(_T('\\'));
+	sNewSnapshotAutoSaveDir.TrimRight(_T('\\'));
+	if (m_pDoc->m_sRecordAutoSaveDir.ReverseFind(_T('\\')) < 0)		// It's just the drive letter?
+		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	else
+		sNewRecordAutoSaveDir += _T('\\') + m_sName;
+	if (m_pDoc->m_sDetectionAutoSaveDir.ReverseFind(_T('\\')) < 0)	// It's just the drive letter?
+		sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+	else
+		sNewDetectionAutoSaveDir += _T('\\') + m_sName;
+	if (m_pDoc->m_sSnapshotAutoSaveDir.ReverseFind(_T('\\')) < 0)	// It's just the drive letter?
+		sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+	else
+		sNewSnapshotAutoSaveDir += _T('\\') + m_sName;
 	
 	// Prompt for merging
 	if ((::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)    && ::IsExistingDir(sNewRecordAutoSaveDir)    &&
@@ -733,7 +747,7 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir); // No error message on failure
 		}
 	}
-	else if (!::CreateDir(sNewRecordAutoSaveDir))
+	else if (!::IsExistingDir(sNewRecordAutoSaveDir) && !::CreateDir(sNewRecordAutoSaveDir))
 	{
 		dwLastError = ::GetLastError();
 		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
@@ -760,7 +774,7 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir); // No error message on failure
 		}
 	}
-	else if (!::CreateDir(sNewDetectionAutoSaveDir))
+	else if (!::IsExistingDir(sNewDetectionAutoSaveDir) && !::CreateDir(sNewDetectionAutoSaveDir))
 	{
 		dwLastError = ::GetLastError();
 		sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
@@ -787,7 +801,7 @@ void CAssistantPage::Rename()
 				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir); // No error message on failure
 		}
 	}
-	else if (!::CreateDir(sNewSnapshotAutoSaveDir))
+	else if (!::IsExistingDir(sNewSnapshotAutoSaveDir) && !::CreateDir(sNewSnapshotAutoSaveDir))
 	{
 		dwLastError = ::GetLastError();
 		sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
@@ -819,15 +833,18 @@ void CAssistantPage::ApplySettings()
 	// Update data
 	UpdateData(TRUE);
 
-	// Disable mov. det. (this also shouts down the save frame list thread)
+	// Disable mov. det.
 	BOOL bDoMovDet;
 	if (m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR)
 	{
 		bDoMovDet = TRUE;
-		m_pDoc->MovementDetectionOff();
+		m_pDoc->m_VideoProcessorMode &= ~MOVEMENT_DETECTOR;
 	}
 	else
 		bDoMovDet = FALSE;
+	m_pDoc->m_SaveFrameListThread.Kill();
+	m_pDoc->OneEmptyFrameList();
+	m_pDoc->ResetMovementDetector();
 
 	// Is 24h rec.?
 	BOOL bDo24hRec = Is24hRec();
@@ -1252,7 +1269,7 @@ void CAssistantPage::ApplySettings()
 	// Do mov. det.?
 	if (bDoMovDet)
 	{
-		m_pDoc->MovementDetectionOn();
+		m_pDoc->m_VideoProcessorMode |= MOVEMENT_DETECTOR;
 		if (m_pDoc->m_pMovementDetectionPage)
 		{
 			CButton* pCheck = (CButton*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
@@ -1274,6 +1291,7 @@ void CAssistantPage::ApplySettings()
 			pEdit->ShowWindow(FALSE);
 		}
 	}
+	m_pDoc->m_SaveFrameListThread.Start();
 
 	// Enable/disable 24h rec.
 	EnableDisable24hRec(bDo24hRec);

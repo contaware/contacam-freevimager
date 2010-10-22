@@ -144,14 +144,65 @@ __forceinline BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CStri
 
 int CVideoDeviceDoc::CSaveFrameListThread::Work() 
 {
-	// Check
-	if (!m_pDoc || !m_pFrameList || m_nNumFramesToSave <= 0)
-		return 0;
-
-	// Do while Frame Lists to Save
-	BOOL bContinue = FALSE;
-	do
+	ASSERT(m_pDoc);
+	m_bWorking = FALSE;
+	while (TRUE)
 	{
+		// Poll for Work
+		m_pFrameList = NULL;
+		m_nNumFramesToSave = 0;
+		BOOL bPolling = TRUE;
+		do
+		{	
+			while (TRUE)
+			{
+				// Is count >= 2?
+				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
+				if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
+					break;
+				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
+
+				// Set that we are not working
+				m_bWorking = FALSE;
+
+				// Shutdown?
+				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
+					return 0;
+			}
+			while (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
+			{
+				// Get oldest (head) list
+				m_pFrameList = m_pDoc->m_MovementDetectionsList.GetHead();
+				if (m_pFrameList)
+					m_nNumFramesToSave = m_pFrameList->GetCount();
+				else
+					m_nNumFramesToSave = 0;
+
+				// Ok there is something to do
+				if (m_nNumFramesToSave > 0)
+				{
+					bPolling = FALSE;
+					m_bWorking = TRUE;
+					break;
+				}
+				// We have an empty list, remove it!
+				else
+				{
+					if (m_pFrameList)
+					{
+						delete m_pFrameList;
+						m_pFrameList = NULL;
+					}
+					m_pDoc->m_MovementDetectionsList.RemoveHead();
+				}
+			}
+			::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
+		}
+		while (bPolling);
+		ASSERT(m_pFrameList);
+		ASSERT(m_nNumFramesToSave > 0);
+		ASSERT(m_bWorking);
+
 		// First & Last Up-Times
 		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
@@ -172,7 +223,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			m_pDoc->m_bSaveAnimGIFMovementDetection)
 		{
 			// Check Whether Detection Dir Exists
-			DWORD dwAttrib =::GetFileAttributes(m_pDoc->m_sDetectionAutoSaveDir);
+			sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+			DWORD dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				// Temp Dir To Store Files
@@ -181,18 +233,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 				{
 					if (!::CreateDir(sDetectionAutoSaveDir))
-					{
 						::ShowLastError(FALSE);
-						return 0;
-					}
 				}	
 			}
-			// Adjust Directory Name
 			else
-			{
-				sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
 				sDetectionAutoSaveDir.TrimRight(_T('\\'));
-			}
 		}
 		// Temp Dir To Store Files For Email Sending and/or Ftp Upload
 		else
@@ -202,10 +247,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				if (!::CreateDir(sDetectionAutoSaveDir))
-				{
 					::ShowLastError(FALSE);
-					return 0;
-				}
 			}
 		}
 
@@ -214,8 +256,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sSWFFileName;
 		CString sGIFFileName;
 		CString sGIFTempFileName;
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName))
-			return 0;
+		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName);
 		sGIFFileName = sSWFFileName = sAVIFileName;
 		if (sAVIFileName == _T(""))
 			sAVIFileName = _T("det_") + sTime + _T(".avi");
@@ -291,6 +332,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFTempFileName);
 				AVRecSwf.Close();
 				::DeleteFile(sSWFFileName);
+				m_bWorking = FALSE;
 				return 0;
 			}
 
@@ -347,7 +389,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				{
 					BITMAPINFOFULL DstBmi;
 					memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
-					if (m_pDoc->m_dwVideoDetFourCC == BI_RGB)
+					DWORD dwVideoDetFourCC = m_pDoc->m_dwVideoDetFourCC;
+					if (dwVideoDetFourCC == BI_RGB)
 						memcpy(&DstBmi, AVISaveDib.GetBMI(), AVISaveDib.GetBMISize());
 					else
 					{
@@ -355,7 +398,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
 						DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
 						DstBmi.bmiHeader.biPlanes = 1;
-						DstBmi.bmiHeader.biCompression = m_pDoc->m_dwVideoDetFourCC;
+						DstBmi.bmiHeader.biCompression = dwVideoDetFourCC;
 					}
 					int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
 					if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
@@ -472,7 +515,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::DeleteFile(sGIFFileName);
 		::MoveFile(sGIFTempFileName, sGIFFileName);
 
-		// Send Mail & FTP Upload, returns FALSE if we have to exit!
+		// Free
+		m_pDoc->RemoveOldestMovementDetectionList();
+
+		// SendMail and/or FTPUpload?
+		// (this function returns FALSE if we have to exit the thread)
 		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName))
 		{
 			// Delete Files if not wanted
@@ -482,11 +529,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFFileName);
 			if (!m_pDoc->m_bSaveSWFMovementDetection)
 				::DeleteFile(sSWFFileName);
+			m_bWorking = FALSE;
 			return 0;
 		}
-
-		// Free
-		m_pDoc->RemoveOldestMovementDetectionList();
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommandMovementDetection)
@@ -525,31 +570,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 		}
 
-		// Continue Saving With Next Frames List?
-		::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-		if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
-		{
-			m_pFrameList = m_pDoc->m_MovementDetectionsList.GetHead();
-			if (m_pFrameList)
-				m_nNumFramesToSave = m_pFrameList->GetCount();
-			else
-				m_nNumFramesToSave = 0;
-			if (m_nNumFramesToSave > 0)
-				bContinue = TRUE;
-			// Should not happen to have an empty list...but you never know!
-			else
-			{
-				// Remove Oldest Movement Detection List
-				if (m_pFrameList)
-					delete m_pFrameList;
-				m_pDoc->m_MovementDetectionsList.RemoveHead();
-				bContinue = FALSE;
-			}
-		}
-		else
-			bContinue = FALSE;
-		::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
-
 		// Delete Files if not wanted
 		if (!m_pDoc->m_bSaveAVIMovementDetection)
 			::DeleteFile(sAVIFileName);
@@ -558,8 +578,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (!m_pDoc->m_bSaveSWFMovementDetection)
 			::DeleteFile(sSWFFileName);
 	}
-	while (bContinue);
-
+	ASSERT(FALSE); // should never end up here...
+	m_bWorking = FALSE;
 	return 0;
 }
 
@@ -652,6 +672,17 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF :
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 													sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
+				if (result == 1)
+					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				break;
+
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF :
+				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
+				if (result == 1)
+					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+														sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				if (result == 1)
 					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
@@ -1475,6 +1506,12 @@ BOOL CVideoDeviceDoc::CSaveFrameListSMTPConnection::OnSendProgress(DWORD dwCurre
 int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString sGIFFile) 
 {
 	int res = 0;
+
+	// Check size -> Return Error
+	if (!sAVIFile.IsEmpty() && ::GetFileSize64(sAVIFile).QuadPart == 0)
+		return 0;
+	if (!sGIFFile.IsEmpty() && ::GetFileSize64(sGIFFile).QuadPart == 0)
+		return 0;
 
 	// No Configuration -> Return Error
 	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()||
@@ -3428,20 +3465,6 @@ BOOL CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	return (res1 && res2);
 }
 
-void CVideoDeviceDoc::MovementDetectionOn()
-{
-	OneFrameList();
-	ResetMovementDetector();
-	m_VideoProcessorMode |= MOVEMENT_DETECTOR;
-}
-
-void CVideoDeviceDoc::MovementDetectionOff()
-{
-	m_VideoProcessorMode &= ~MOVEMENT_DETECTOR;
-	m_SaveFrameListThread.Kill();
-	OneFrameList();
-}
-
 void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 													BOOL bMovementDetectorPreview,
 													BOOL bDoDetection)
@@ -3457,18 +3480,83 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 							0, 0) == 0)
 			return; // Cannot init, unsupported resolution
 	}
-	if (pDib->GetCompression() == BI_RGB ||
-		pDib->GetCompression() == BI_BITFIELDS)
+
+	// Detection Enabled?
+	if (bDoDetection)
 	{
-		// If first RGB Frame:
-		// 1. Allocated m_pMovementDetectorY800Dib
-		// 2. Free m_pDifferencingDib and m_pMovementDetectorBackgndDib
-		if (!m_pMovementDetectorY800Dib)
+		if (pDib->GetCompression() == BI_RGB ||
+			pDib->GetCompression() == BI_BITFIELDS)
 		{
-			m_pMovementDetectorY800Dib = new CDib;
+			// If first RGB Frame:
+			// 1. Allocated m_pMovementDetectorY800Dib
+			// 2. Free m_pDifferencingDib and m_pMovementDetectorBackgndDib
 			if (!m_pMovementDetectorY800Dib)
-				return;
-			m_pMovementDetectorY800Dib->SetShowMessageBoxOnError(FALSE);
+			{
+				m_pMovementDetectorY800Dib = new CDib;
+				if (!m_pMovementDetectorY800Dib)
+					return;
+				m_pMovementDetectorY800Dib->SetShowMessageBoxOnError(FALSE);
+				if (m_pDifferencingDib)
+				{
+					delete m_pDifferencingDib;
+					m_pDifferencingDib = NULL;
+				}
+				if (m_pMovementDetectorBackgndDib)
+				{
+					delete m_pMovementDetectorBackgndDib;
+					m_pMovementDetectorBackgndDib = NULL;
+				}
+			}
+			
+			// 24 bpp
+			if (pDib->GetBitCount() == 24)
+			{
+				if (!m_pMovementDetectorY800Dib->GetBits())
+				{
+					if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
+																		FCC('Y800'),
+																		pDib->GetWidth(),
+																		pDib->GetHeight()))
+						return;
+				}
+				if (!::RGB24ToY800(	pDib->GetBits(),						// RGB24 Dib
+									m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
+									pDib->GetWidth(),
+									pDib->GetHeight()))
+					return;
+			}
+			// 32 bpp
+			else if (pDib->GetBitCount() == 32)
+			{
+				if (!m_pMovementDetectorY800Dib->GetBits())
+				{
+					if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
+																		FCC('Y800'),
+																		pDib->GetWidth(),
+																		pDib->GetHeight()))
+						return;
+				}
+				if (!::RGB32ToY800(	pDib->GetBits(),						// RGB32 Dib
+									m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
+									pDib->GetWidth(),
+									pDib->GetHeight()))
+					return;
+			}
+			// 16 bpp
+			else
+			{
+				*m_pMovementDetectorY800Dib = *pDib;
+				if (!m_pMovementDetectorY800Dib->Compress(FCC('Y800')))
+					return;
+			}
+		}
+		// If first no RGB Frame:
+		// Free m_pMovementDetectorY800Dib,
+		//		m_pDifferencingDib and m_pMovementDetectorBackgndDib
+		else if (m_pMovementDetectorY800Dib)
+		{
+			delete m_pMovementDetectorY800Dib;
+			m_pMovementDetectorY800Dib = NULL;
 			if (m_pDifferencingDib)
 			{
 				delete m_pDifferencingDib;
@@ -3480,131 +3568,69 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				m_pMovementDetectorBackgndDib = NULL;
 			}
 		}
-		
-		// 24 bpp
-		if (pDib->GetBitCount() == 24)
+		CDib* pDibY = m_pMovementDetectorY800Dib ? m_pMovementDetectorY800Dib : pDib;
+		if (!m_pMovementDetectorBackgndDib)
 		{
-			if (!m_pMovementDetectorY800Dib->GetBits())
-			{
-				if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																	FCC('Y800'),
-																	pDib->GetWidth(),
-																	pDib->GetHeight()))
-					return;
-			}
-			if (!::RGB24ToY800(	pDib->GetBits(),						// RGB24 Dib
-								m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-								pDib->GetWidth(),
-								pDib->GetHeight()))
+			m_pMovementDetectorBackgndDib = new CDib(*pDibY);
+			if (!m_pMovementDetectorBackgndDib)
+				return;
+			m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
+		}
+		if (!m_pDifferencingDib)
+		{
+			m_pDifferencingDib = new CDib;
+			if (!m_pDifferencingDib)
+				return;
+			m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
+			if (!m_pDifferencingDib->AllocateBitsFast(	pDibY->GetBitCount(),
+														pDibY->GetCompression(),
+														pDibY->GetWidth(),
+														pDibY->GetHeight()))
 				return;
 		}
-		// 32 bpp
-		else if (pDib->GetBitCount() == 32)
+
+		// Color Space Type
+		BOOL bPlanar;
+		int nPackedYOffset = 0;
+		if (pDibY->GetCompression() == FCC('I420')	||
+			pDibY->GetCompression() == FCC('IYUV')	||
+			pDibY->GetCompression() == FCC('YV12')	||
+			pDibY->GetCompression() == FCC('YUV9')	||
+			pDibY->GetCompression() == FCC('YVU9')	||
+			pDibY->GetCompression() == FCC('Y41B')	||
+			pDibY->GetCompression() == FCC('YV16')	||
+			pDibY->GetCompression() == FCC('Y42B')	||
+			pDibY->GetCompression() == FCC('  Y8')	||
+			pDibY->GetCompression() == FCC('Y800')	||
+			pDibY->GetCompression() == FCC('GREY'))
 		{
-			if (!m_pMovementDetectorY800Dib->GetBits())
-			{
-				if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																	FCC('Y800'),
-																	pDib->GetWidth(),
-																	pDib->GetHeight()))
-					return;
-			}
-			if (!::RGB32ToY800(	pDib->GetBits(),						// RGB32 Dib
-								m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-								pDib->GetWidth(),
-								pDib->GetHeight()))
-				return;
+			bPlanar = TRUE;
 		}
-		// 16 bpp
+		// Packed 422 with Y beginning the 16 bits pixel
+		else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
+					pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
+					pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
+					pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
+					pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
+					pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
+		{
+			bPlanar = FALSE;
+		}
+		// Packed 422 with Y as the second byte of the 16 bits pixel
+		else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
+					pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
+					pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
+		{
+			bPlanar = FALSE;
+			nPackedYOffset = 1;
+		}
+		// Not Supported Format!
 		else
 		{
-			*m_pMovementDetectorY800Dib = *pDib;
-			if (!m_pMovementDetectorY800Dib->Compress(FCC('Y800')))
-				return;
-		}
-	}
-	// If first no RGB Frame:
-	// Free m_pMovementDetectorY800Dib,
-	//		m_pDifferencingDib and m_pMovementDetectorBackgndDib
-	else if (m_pMovementDetectorY800Dib)
-	{
-		delete m_pMovementDetectorY800Dib;
-		m_pMovementDetectorY800Dib = NULL;
-		if (m_pDifferencingDib)
-		{
-			delete m_pDifferencingDib;
-			m_pDifferencingDib = NULL;
-		}
-		if (m_pMovementDetectorBackgndDib)
-		{
-			delete m_pMovementDetectorBackgndDib;
-			m_pMovementDetectorBackgndDib = NULL;
-		}
-	}
-	CDib* pDibY = m_pMovementDetectorY800Dib ? m_pMovementDetectorY800Dib : pDib;
-	if (!m_pMovementDetectorBackgndDib)
-	{
-		m_pMovementDetectorBackgndDib = new CDib(*pDibY);
-		if (!m_pMovementDetectorBackgndDib)
+			TRACE(_T("Video Format Not Supported by Motion Detector!\n"));
 			return;
-		m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
-	}
-	if (!m_pDifferencingDib)
-	{
-		m_pDifferencingDib = new CDib;
-		if (!m_pDifferencingDib)
-			return;
-		m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
-		if (!m_pDifferencingDib->AllocateBitsFast(	pDibY->GetBitCount(),
-													pDibY->GetCompression(),
-													pDibY->GetWidth(),
-													pDibY->GetHeight()))
-			return;
-	}
+		}
 
-	// Color Space Type
-	BOOL bPlanar;
-	int nPackedYOffset = 0;
-	if (pDibY->GetCompression() == FCC('I420')	||
-		pDibY->GetCompression() == FCC('IYUV')	||
-		pDibY->GetCompression() == FCC('YV12')	||
-		pDibY->GetCompression() == FCC('YUV9')	||
-		pDibY->GetCompression() == FCC('YVU9')	||
-		pDibY->GetCompression() == FCC('Y41B')	||
-		pDibY->GetCompression() == FCC('YV16')	||
-		pDibY->GetCompression() == FCC('Y42B')	||
-		pDibY->GetCompression() == FCC('  Y8')	||
-		pDibY->GetCompression() == FCC('Y800')	||
-		pDibY->GetCompression() == FCC('GREY'))
-		bPlanar = TRUE;
-	// Packed 422 with Y beginning the 16 bits pixel
-	else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-				pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
-				pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
-				pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
-				pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
-				pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
-	{
-		bPlanar = FALSE;
-	}
-	// Packed 422 with Y as the second byte of the 16 bits pixel
-	else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
-				pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
-				pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
-	{
-		bPlanar = FALSE;
-		nPackedYOffset = 1;
-	}
-	// Not Supported Format!
-	else
-	{
-		TRACE(_T("Video Format Not Supported by Motion Detector!\n"));
-		return;
-	}
-
-	// Detector Enabled?
-	if (bDoDetection)
-	{
 		// Luminosity change detector
 		bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
 
@@ -3705,6 +3731,15 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	if (m_dEffectiveFrameRate > 0.0)
 		nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
 
+	// Store frames?
+	BOOL bStoreFrames =	bDoDetection					&&
+						(m_bSaveSWFMovementDetection	||
+						m_bSaveAVIMovementDetection		||
+						m_bSaveAnimGIFMovementDetection	||
+						m_bSendMailMovementDetection	||
+						m_bFTPUploadMovementDetection	||
+						m_bExecCommandMovementDetection);
+
 	// If Movement and no Luminosity change
 	if (bMovement && !bLumChange)
 	{
@@ -3733,29 +3768,20 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		else
 		{
 			m_nMilliSecondsBeforeMovementDetection += nFrameTime;
-			AddNewFrameToNewestList(pDib);
+			if (bStoreFrames)
+				AddNewFrameToNewestList(pDib);
 			if (m_nMilliSecondsBeforeMovementDetection > m_nMilliSecondsRecBeforeMovementBegin)
 				RemoveOldestFrameFromNewestList();
 		}
 	}
 
-	// Countup the detection time and add frame
-	if (m_bDetectingMovement)
-	{
-		m_nMilliSecondsSinceMovementDetection += nFrameTime;
-		AddNewFrameToNewestList(pDib);
-	}
-
 	// If in detection state
 	if (m_bDetectingMovement)
 	{
-		// Init flag
-		BOOL bFramesStored =	m_bSaveSWFMovementDetection		||
-								m_bSaveAVIMovementDetection		||
-								m_bSaveAnimGIFMovementDetection	||
-								m_bSendMailMovementDetection	||
-								m_bFTPUploadMovementDetection	||
-								m_bExecCommandMovementDetection;
+		// Countup the detection time and add frame
+		m_nMilliSecondsSinceMovementDetection += nFrameTime;
+		if (bStoreFrames)
+			AddNewFrameToNewestList(pDib);
 
 		// Check if end of detecting period
 		if (m_nMilliSecondsWithoutMovementDetection > m_nMilliSecondsRecAfterMovementEnd)
@@ -3783,13 +3809,11 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			m_nMilliSecondsSinceMovementDetection = 0;
 			m_nMilliSecondsWithoutMovementDetection = 0;
 
-			// Save frames or clear the new frame list?
-			if (!bFalseDetection && bFramesStored)
-				SaveFrameList();
-			else
+			// Save frames
+			if (bFalseDetection)
 			{
 				ClearNewestFrameList();
-				if (bFalseDetection && bFramesStored)
+				if (bStoreFrames)
 				{
 					CString sMsg;
 					sMsg.Format(_T("%s, false detection: Blue %d , None Blue %d\n"),
@@ -3798,6 +3822,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 					::LogLine(sMsg);
 				}
 			}
+			SaveFrameList();
 
 			// Reset false detection counts
 			m_nBlueMovementDetectionsCount = 0;
@@ -3805,54 +3830,48 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		}
 		else 
 		{
-			// If having MOVDET_MIN_FRAMES_IN_LIST frames and
-			// MOVDET_MIN_FRAMES_IN_LIST passed since last check
+			// Check memory load if having MOVDET_MIN_FRAMES_IN_LIST
+			// frames and MOVDET_MIN_FRAMES_IN_LIST passed since last check
 			int nFramesCount = GetNewestMovementDetectionsListCount();
 			if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST	&&
 				((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 			{
-				// Check memory load and queue size
-				if (bFramesStored)
+				// This document load
+				int nTotalPhysInMB = ::GetTotPhysMemMB();
+				if (nTotalPhysInMB > 2048)
+					nTotalPhysInMB = 2048;	// A 32 bits application cannot allocate more than 2GB
+				else if (nTotalPhysInMB <= 0)
+					nTotalPhysInMB = 1;		// At least 1MB...
+				double dDocLoad = ((double)(GetTotalMovementDetectionFrames() * (pDib->GetImageSize() >> 10)) / 10.24) / (double)nTotalPhysInMB; // Load in %
+				double dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
+
+				// This application load
+				double dAppLoad = GetAppMemoryLoad(); // Load in %, on Win9x this always returns 100.0
+
+				// High thresholds, should not end up here,
+				// this means that frames saving is to slow!
+				// -> Throw the oldest MOVDET_MIN_FRAMES_IN_LIST frames 
+				if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
+					dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
 				{
-					// This document load
-					int nTotalPhysInMB = ::GetTotPhysMemMB();
-					if (nTotalPhysInMB > 2048)
-						nTotalPhysInMB = 2048;	// A 32 bits application cannot allocate more than 2GB
-					else if (nTotalPhysInMB <= 0)
-						nTotalPhysInMB = 1;		// At least 1MB...
-					double dDocLoad = ((double)(GetTotalMovementDetectionFrames() * (pDib->GetImageSize() >> 10)) / 10.24) / (double)nTotalPhysInMB; // Load in %
-					double dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
-
-					// This application load
-					double dAppLoad = GetAppMemoryLoad(); // Load in %, on Win9x this always returns 100.0
-
-					// High thresholds, should not end up here,
-					// this means that frames saving is to slow!
-					// -> Throw the oldest MOVDET_MIN_FRAMES_IN_LIST frames 
-					if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
-						dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
-					{
-						DWORD dwFirstUpTime, dwLastUpTime;
-						ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST, dwFirstUpTime, dwLastUpTime);
-						ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
-										ML_STRING(1818, "set lower framerate"),
-										ML_STRING(1819, "or resolution!"),
-										dwFirstUpTime, dwLastUpTime);
-						CString sMsg;
-						sMsg.Format(_T("%s, doc mem load %0.1f%%%%, app mem load %0.1f%%%% -> dropping det frames!\n"),
-																				GetDeviceName(), dDocLoad, dAppLoad);
-						TRACE(sMsg);
-						::LogLine(sMsg);
-					}
-					// Low load threshold or maximum number of frames reached
-					else if (!m_SaveFrameListThread.IsAlive()										&&
-							(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
-							nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
-						SaveFrameList();
+					DWORD dwFirstUpTime, dwLastUpTime;
+					ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST, dwFirstUpTime, dwLastUpTime);
+					ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
+									ML_STRING(1818, "set lower framerate"),
+									ML_STRING(1819, "or resolution!"),
+									dwFirstUpTime, dwLastUpTime);
+					CString sMsg;
+					sMsg.Format(_T("%s, doc mem load %0.1f%%%%, app mem load %0.1f%%%% -> dropping det frames!\n"),
+																			GetDeviceName(), dDocLoad, dAppLoad);
+					TRACE(sMsg);
+					::LogLine(sMsg);
 				}
-				// Keep detection list small if detected frames are not used
-				else
-					ShrinkNewestFrameListTo(MOVDET_MIN_FRAMES_IN_LIST);
+				
+				// Low load threshold or maximum number of frames reached
+				if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
+					(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
+					nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
+					SaveFrameList();
 			}
 		}
 	}
@@ -3890,19 +3909,13 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		CTimeSpan LastTimeSpan((time_t)(dwLastTimeDifference > 0U ? Round((double)dwLastTimeDifference / 1000.0) : 0));
 		CTime LastTime = RefTime - LastTimeSpan;
 		
-		// Directory to Store Detection
-		CString sDetectionAutoSaveDir;
-		
 		// Check Whether Detection Dir Exists
-		DWORD dwAttrib =::GetFileAttributes(m_sDetectionAutoSaveDir);
+		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+		DWORD dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			return FALSE;
-		// Adjust Directory Name
 		else
-		{
-			sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
 			sDetectionAutoSaveDir.TrimRight(_T('\\'));
-		}
 
 		// Thumb name
 		CString sGIFFileName;
@@ -4829,7 +4842,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 
 	// Init
 	DWORD dwLastHttpReconnectUpTime = ::timeGetTime();
-	BOOL bDxUnplugged = FALSE;
 
 	// Watch
 	for (;;)
@@ -4862,11 +4874,15 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 				}
 
-				// Save Frame List
+				// Save Frame List may be called 1 to 4 times till
+				// CSaveFrameListThread::Work() reacts and starts working:
+				// it's not a problem because CSaveFrameListThread::Work()
+				// removes empty lists.
 				if (m_pDoc->m_bWatchDogAlarm							&&
 					(m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR)	&&
 					m_pDoc->GetTotalMovementDetectionFrames() > 0		&&
-					!m_pDoc->m_SaveFrameListThread.IsAlive()			&&
+					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
+					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
 					(m_pDoc->m_bSaveSWFMovementDetection				||
 					m_pDoc->m_bSaveAVIMovementDetection					||
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
@@ -4875,33 +4891,13 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bExecCommandMovementDetection))
 					m_pDoc->SaveFrameList();
 
-				// Dx unplugged
-				//
-				// Note: don't do a VfW unplugged check/set because in this mode
-				// changing device, resolution or format may be extremely slow
-				// (m_bWatchDogAlarm would be set and the unplugged state entered)
-				if (m_pDoc->m_pDxCapture		&&
-					!bDxUnplugged				&&
-					(m_pDoc->m_bWatchDogAlarm	||
-					m_pDoc->m_bDxDeviceUnplugged)) // Can be set by CVideoDeviceView::OnDirectShowGraphNotify()
-				{
-					::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-									(WPARAM)FALSE,	// Disable Them
-									(LPARAM)0);
-					m_pDoc->m_bDxDeviceUnplugged = bDxUnplugged = TRUE;
-					CString sMsg;
-					sMsg.Format(_T("%s unplugged\n"), m_pDoc->GetDeviceName());
-					TRACE(sMsg);
-					::LogLine(sMsg);
-				}
 				// Http Server Push Networking Reconnect
-				else if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT					&&
-						m_pDoc->m_pGetFrameNetCom																	&&
-						m_pDoc->m_pGetFrameNetCom->IsClient()														&&
-						m_pDoc->m_pHttpGetFrameParseProcess															&&
-						m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG	&&
-						!m_pDoc->m_pHttpGetFrameParseProcess->m_bFirstFrame)
+				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT					&&
+					m_pDoc->m_pGetFrameNetCom																	&&
+					m_pDoc->m_pGetFrameNetCom->IsClient()														&&
+					m_pDoc->m_pHttpGetFrameParseProcess															&&
+					m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG	&&
+					!m_pDoc->m_pHttpGetFrameParseProcess->m_bFirstFrame)
 				{
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
@@ -5086,10 +5082,10 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
 	int nDiskFreeSpacePercent;
 
 	// Check and adjust Auto-Save directory
-	dwAttrib =::GetFileAttributes(m_pDoc->m_sDetectionAutoSaveDir);
+	sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+	dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
 	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
-		sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
 		sDetectionAutoSaveDir.TrimRight(_T('\\'));
 		int nDetectionAutoSaveDirSize = sDetectionAutoSaveDir.GetLength() + 1;
 
@@ -6164,7 +6160,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeviceInputId = -1;
 	m_nDeviceFormatId = -1;
 	m_bVfWVideoFormatApplyPressed = FALSE;
-	m_bDxDeviceUnplugged = FALSE;
 	m_bStopAndChangeFormat = FALSE;
 	m_bVfWDialogDisplaying = FALSE;
 	m_nDeviceFormatWidth = 0;
@@ -6437,7 +6432,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	::InitializeCriticalSection(&m_csHttpProcess);
 
 	// Init Movement Detector
-	OneFrameList();
+	OneEmptyFrameList();
 	ResetMovementDetector();
 
 	// Debugger present?
@@ -6445,6 +6440,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	if (::IsDebuggerPresentAsm())
 		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 #endif
+
+	// Start Save Frame List Thread
+	m_SaveFrameListThread.Start();
 
 	// Start Video Watchdog Thread
 	m_WatchdogThread.Start();
@@ -10301,63 +10299,42 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
-		// Video Detection Modes
+		// Color Detection
 		if ((VideoProcessorMode & COLOR_DETECTOR) &&
 			(bRgb32Frame || (m_OrigBMI.bmiHeader.biCompression == BI_RGB && m_OrigBMI.bmiHeader.biBitCount == 24)))
-		{
 			ColorDetectionProcessing(pDib, bColorDetectionPreview);
-		}
-		if (VideoProcessorMode & MOVEMENT_DETECTOR)
+
+		// Movement Detection
+		BOOL bDoDetection = VideoProcessorMode & MOVEMENT_DETECTOR;
+		if (bDoDetection && m_bDetectionStartStop) // Detection Scheduler
 		{
-			BOOL bDoDetection = TRUE;
-			if (m_bDetectionStartStop)
+			CTime timeonly(	2000,
+							1,
+							1,
+							CurrentTime.GetHour(),
+							CurrentTime.GetMinute(),
+							CurrentTime.GetSecond());
+			if (m_DetectionStartTime <= m_DetectionStopTime)
 			{
-				CTime timeonly(	2000,
-								1,
-								1,
-								CurrentTime.GetHour(),
-								CurrentTime.GetMinute(),
-								CurrentTime.GetSecond());
-				if (m_DetectionStartTime <= m_DetectionStopTime)
-				{
-					if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
-						bDoDetection = FALSE;
-				}
-				else
-				{
-					if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
-						bDoDetection = FALSE;
-				}
+				if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
+					bDoDetection = FALSE;
 			}
-
-			// Clear Background
-			if (bDoDetection && m_bFirstMovementDetection)
+			else
 			{
-				if (m_pMovementDetectorBackgndDib)
-				{
-					delete m_pMovementDetectorBackgndDib;
-					m_pMovementDetectorBackgndDib = NULL;
-				}
+				if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
+					bDoDetection = FALSE;
 			}
-
-			// Do Detection, call the function also when bDoDetection
-			// is FALSE, this to finish the detection saving that may
-			// have happened just before switching off the detector
-			// (bDoDetection from TRUE to FALSE)
-			MovementDetectionProcessing(pDib,
-										bMovementDetectorPreview,
-										bDoDetection);
-
-			// Set m_bFirstMovementDetection flag, so that when turning on
-			// again, the background is cleared
-			if (!bDoDetection && !m_bFirstMovementDetection)
-				m_bFirstMovementDetection = TRUE;
 		}
-		else
+		if (bDoDetection && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
 		{
-			if (!m_bFirstMovementDetection)
-				ResetMovementDetector();
+			delete m_pMovementDetectorBackgndDib;
+			m_pMovementDetectorBackgndDib = NULL;
 		}
+		MovementDetectionProcessing(pDib,
+									bMovementDetectorPreview,
+									bDoDetection);
+		if (!bDoDetection && !m_bFirstMovementDetection)
+			m_bFirstMovementDetection = TRUE;
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -11699,26 +11676,6 @@ __forceinline void CVideoDeviceDoc::RemoveOldestFrameFromNewestList()
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline void CVideoDeviceDoc::ShrinkNewestFrameListTo(int nMinSize)
-{
-	::EnterCriticalSection(&m_csMovementDetectionsList);
-	if (!m_MovementDetectionsList.IsEmpty())
-	{
-		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
-		if (pTail)
-		{
-			if (nMinSize < 0)
-				nMinSize = 0;
-			while (pTail->GetCount() > nMinSize)
-			{
-				delete pTail->GetHead();
-				pTail->RemoveHead();
-			}
-		}
-	}
-	::LeaveCriticalSection(&m_csMovementDetectionsList);
-}
-
 __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dwFirstUpTime, DWORD& dwLastUpTime)
 {
 	dwFirstUpTime = dwLastUpTime = 0U;
@@ -11751,49 +11708,13 @@ __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dw
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline BOOL CVideoDeviceDoc::SaveFrameList()
+__forceinline void CVideoDeviceDoc::SaveFrameList()
 {
 	::EnterCriticalSection(&m_csMovementDetectionsList);
-
-	// Add New Empty Frames List to Tail
 	CDib::LIST* pNewList = new CDib::LIST;
 	if (pNewList)
 		m_MovementDetectionsList.AddTail(pNewList);
-
-	// Save Head List
-	if (m_MovementDetectionsList.GetCount() >= 2 && !m_SaveFrameListThread.IsAlive())
-	{
-		CDib::LIST* pHead = m_MovementDetectionsList.GetHead();
-		if (pHead)
-		{
-			if (pHead->GetCount() > 0)
-			{
-				m_SaveFrameListThread.SetNumFramesToSave(pHead->GetCount());
-				m_SaveFrameListThread.SetFrameList(pHead);
-				::LeaveCriticalSection(&m_csMovementDetectionsList);
-				return m_SaveFrameListThread.Start();
-			}
-			// We have an empty list, remove it!
-			else
-			{
-				// Remove Oldest Movement Detection List
-				delete pHead;
-				m_MovementDetectionsList.RemoveHead();
-				::LeaveCriticalSection(&m_csMovementDetectionsList);
-				return FALSE;
-			}
-		}
-		else
-		{
-			::LeaveCriticalSection(&m_csMovementDetectionsList);
-			return FALSE;
-		}
-	}
-	else
-	{
-		::LeaveCriticalSection(&m_csMovementDetectionsList);
-		return FALSE;
-	}
+	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
 void CVideoDeviceDoc::OnViewFrametime() 

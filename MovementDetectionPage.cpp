@@ -278,10 +278,8 @@ void CMovementDetectionPage::OnDestroy()
 
 void CMovementDetectionPage::OnDetectionSaveas() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// Detection Dir Dialog
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
@@ -293,18 +291,17 @@ void CMovementDetectionPage::OnDetectionSaveas()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
 	pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnCheckVideoDetectionMovement() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
 	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();	
+		m_pDoc->m_VideoProcessorMode |= MOVEMENT_DETECTOR;
 	else
-		m_pDoc->MovementDetectionOff();
+		m_pDoc->m_VideoProcessorMode &= ~MOVEMENT_DETECTOR;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
 	if ((m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR) &&
 		m_pDoc->m_bUnsupportedVideoSizeForMovDet)
@@ -494,10 +491,8 @@ void CMovementDetectionPage::OnSaveAnimGifMovementDetection()
 
 void CMovementDetectionPage::OnSwfConfigure() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// Swf Config Dialog
 	CVideoFormatDlg VideoFormatDlg(this);
@@ -519,17 +514,14 @@ void CMovementDetectionPage::OnSwfConfigure()
 		m_pDoc->m_dwVideoDetSwfFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 	}
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnAviConfigure() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// Avi Config Dialog
 	CVideoFormatDlg VideoFormatDlg(this);
@@ -550,17 +542,14 @@ void CMovementDetectionPage::OnAviConfigure()
 		m_pDoc->m_dwVideoDetFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 	}
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnAnimatedgifSize() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	CMovDetAnimGifConfigurationDlg dlg(	m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
 										(int)m_pDoc->m_dwAnimatedGifWidth, (int)m_pDoc->m_dwAnimatedGifHeight,
@@ -571,9 +560,8 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 		m_pDoc->m_dwAnimatedGifHeight = (DWORD)dlg.m_nPixelsHeight;
 	}
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnSendmailMovementDetection() 
@@ -584,18 +572,15 @@ void CMovementDetectionPage::OnSendmailMovementDetection()
 
 void CMovementDetectionPage::OnSendmailConfigure() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// SendMail Config Dialog
 	CSendMailConfigurationDlg dlg(m_pDoc);
 	dlg.DoModal();
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnFtpMovementDetection()
@@ -606,19 +591,16 @@ void CMovementDetectionPage::OnFtpMovementDetection()
 
 void CMovementDetectionPage::OnFtpConfigure() 
 {
-	// Stop Movement Detection
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOff();
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// FTP Config Dialog
 	CFTPUploadConfigurationDlg dlg(	&m_pDoc->m_MovDetFTPUploadConfiguration,
 									IDD_MOVDET_FTP_CONFIGURATION);
 	dlg.DoModal();
 
-	// Restart Movement Detection
-	if (pCheck->GetCheck())
-		m_pDoc->MovementDetectionOn();
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnExecMovementDetection() 

@@ -509,12 +509,10 @@ void CVideoDeviceView::Draw()
 	DWORD dwCurrentUpTime = ::timeGetTime();
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bVfWVideoFormatApplyPressed = pDoc->m_bVfWVideoFormatApplyPressed;
-	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	BOOL bDrawMsg = !bVideoView						||
 					bVfWVideoFormatApplyPressed		||
-					bDxDeviceUnplugged				||
 					bStopAndChangeFormat			||
 					bWatchDogAlarm;
 
@@ -576,9 +574,6 @@ void CVideoDeviceView::Draw()
 		// Display: OK or Cancel
 		if (bVfWVideoFormatApplyPressed)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1567, "OK or Cancel"), 0, 0, DRAWTEXT_TOPLEFT);
-		// Display: Unplugged
-		else if (bDxDeviceUnplugged)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1568, "Unplugged"), 0, 0, DRAWTEXT_TOPLEFT);
 		// Display: Change Size
 		else if (bStopAndChangeFormat)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);
@@ -620,7 +615,7 @@ __forceinline void CVideoDeviceView::DrawText()
 	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
 
 	// Progress Display
-	if (pDoc->m_SaveFrameListThread.IsAlive())
+	if (pDoc->m_SaveFrameListThread.IsWorking())
 	{
 		CString sProgress(_T(""));
 		if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
@@ -632,7 +627,7 @@ __forceinline void CVideoDeviceView::DrawText()
 	}
 
 	// Recording
-	if (pDoc->m_SaveFrameListThread.IsAlive())
+	if (pDoc->m_SaveFrameListThread.IsWorking())
 		pDoc->m_DxDraw.DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 	// Movement Detection Zones Count
 	else if (pDoc->m_bDoFalseDetectionCheck)
@@ -1227,9 +1222,10 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
-					// Set Unplugged Flag
-					// (log message and controls disabling done by watchdog)
-					pDoc->m_bDxDeviceUnplugged = TRUE;
+					CString sMsg;
+					sMsg.Format(_T("%s unplugged\n"), pDoc->GetDeviceName());
+					TRACE(sMsg);
+					::LogLine(sMsg);
                     break;
 				}
 				// Device is available again
@@ -1239,8 +1235,8 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 					// stopping their graph, other devices generate a blue-screen
 					// and/or a reboot! The best solution is to do nothing,
 					// leave everything open and in CVideoDeviceChildFrame::EndShutdown()
-					// do not delete m_pDxCapture. We get a small memory leak but that's
-					// by far better than a full computer crash!
+					// do not delete m_pDxCapture if m_bWatchDogAlarm is set. We get a
+					// small memory leak but that's by far better than a full computer crash!
 					break;
 				}
 			}

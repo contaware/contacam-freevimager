@@ -84,6 +84,7 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 		pComboBox->AddString(_T("SWF Detection"));
 		pComboBox->AddString(_T("AVI + Animated GIF Detections"));
 		pComboBox->AddString(_T("SWF + Animated GIF Detections"));
+		pComboBox->AddString(_T("AVI + SWF + Animated GIF Detections"));
 		pComboBox->SetCurSel((int)m_pConfig->m_FilesToUpload);
 	}
 
