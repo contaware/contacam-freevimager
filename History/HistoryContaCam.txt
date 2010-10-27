@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-2.1.0 (November 27th 2010)
+2.1.0 (October 27th 2010)
 
 - Optional save command button for web interface
 - Remember User Name and Password checked by default in
