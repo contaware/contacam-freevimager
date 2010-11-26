@@ -203,6 +203,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		ASSERT(m_nNumFramesToSave > 0);
 		ASSERT(m_bWorking);
 
+		// Performance
+		CPerformance perf, perfoverall;
+		perfoverall.Init();
+		DWORD dwAVISaveTime = 0U;
+		DWORD dwSWFSaveTime = 0U;
+		DWORD dwGIFSaveTime = 0U;
+		DWORD dwMailFTPTime = 0U;
+
 		// First & Last Up-Times
 		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
@@ -369,6 +377,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame
 				if (AVRecSwf.IsOpen())
 				{
+					perf.Init();
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
 										false,	// No interleave for Video only
@@ -376,6 +385,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
+					perf.End();
+					dwSWFSaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -416,6 +427,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame
 				if (AVRecAvi.IsOpen())
 				{
+					perf.Init();
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
 										false,	// No interleave for Video only
@@ -423,6 +435,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
+					perf.End();
+					dwAVISaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -433,16 +447,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Normal saving
 				if (nFrames >= nAnimGifLastFrameToSave)
 				{
-					// Make sure we have a true RGB format
-					if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
-						pDib->Decompress(32);
-
-					// Resize
-					pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
-
-					// Add Frame Time
-					if (bShowFrameTime)
-						AddFrameTime(pDib, RefTime, dwRefUpTime);
+					perf.Init();
 
 					// First Frame?
 					if (nFrames == m_nNumFramesToSave)
@@ -475,8 +480,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										dDelayMul,
 										dSpeedMul,
 										pGIFColors,
-										MOVDET_ANIMGIF_DIFF_MINLEVEL);
+										MOVDET_ANIMGIF_DIFF_MINLEVEL,
+										bShowFrameTime,
+										RefTime,
+										dwRefUpTime);
 					}
+
+					perf.End();
+					dwGIFSaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -497,9 +508,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// m_nNumFramesToSave by AnimatedGIFInit()
 		if (DoSaveGif() && !::IsExistingFile(sGIFTempFileName))
 		{
+			perf.Init();
 			SaveSingleGif(	m_pFrameList->GetHead(),
 							sGIFTempFileName,
-							pGIFColors);
+							pGIFColors,
+							bShowFrameTime,
+							RefTime,
+							dwRefUpTime);
+			perf.End();
+			dwGIFSaveTime += perf.GetMicroSecDiff();
 		}
 
 		// Clean-Up
@@ -520,6 +537,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
+		perf.Init();
 		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName))
 		{
 			// Delete Files if not wanted
@@ -532,6 +550,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			m_bWorking = FALSE;
 			return 0;
 		}
+		perf.End();
+		dwMailFTPTime += perf.GetMicroSecDiff();
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommandMovementDetection)
@@ -577,6 +597,30 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::DeleteFile(sGIFFileName);
 		if (!m_pDoc->m_bSaveSWFMovementDetection)
 			::DeleteFile(sSWFFileName);
+
+		// End performance calculation
+		perfoverall.End();
+		DWORD dwSaveTimeMs = perfoverall.GetMicroSecDiff() / 1000;
+		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
+		CString sMsg;
+		if (dwFramesTimeMs < dwSaveTimeMs)
+		{
+			sMsg.Format(_T("%s, attention cannot realtime save the detections SaveTime=%0.1fs > FramesTime=%0.1fs (AVI=%0.1fs,SWF=%0.1fs,GIF=%0.1fs,MailFTP=%0.1fs)\n"),
+						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
+						(double)dwAVISaveTime / 1000000.0, (double)dwSWFSaveTime / 1000000.0,
+						(double)dwGIFSaveTime / 1000000.0, (double)dwMailFTPTime / 1000000.0);
+			TRACE(sMsg);
+			::LogLine(sMsg);
+		}
+		else if (m_pDoc->m_nDetectionLevel == 100)
+		{
+			sMsg.Format(_T("%s, realtime saving the detections is ok SaveTime=%0.1fs < FramesTime=%0.1fs (AVI=%0.1fs,SWF=%0.1fs,GIF=%0.1fs,MailFTP=%0.1fs)\n"),
+						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
+						(double)dwAVISaveTime / 1000000.0, (double)dwSWFSaveTime / 1000000.0,
+						(double)dwGIFSaveTime / 1000000.0, (double)dwMailFTPTime / 1000000.0);
+			TRACE(sMsg);
+			::LogLine(sMsg);
+		}
 	}
 	ASSERT(FALSE); // should never end up here...
 	m_bWorking = FALSE;
@@ -855,15 +899,29 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 															const CString& sGIFFileName,
-															RGBQUAD* pGIFColors)
+															RGBQUAD* pGIFColors,
+															BOOL bShowFrameTime,
+															const CTime& RefTime,
+															DWORD dwRefUpTime)
 {
 #ifdef SUPPORT_GIFLIB
 	if (pDib && pGIFColors)
 	{
+		// Make sure we have a true RGB format
+		if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
+			pDib->Decompress(32);
+
+		// Resize
+		pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+
+		// Add Frame Time
+		if (bShowFrameTime)
+			AddFrameTime(pDib, RefTime, dwRefUpTime);
+
 		// Convert to 8 bpp
 		if (pDib->GetBitCount() > 8)
 		{
-			pDib->CreatePaletteFromColors(256, pGIFColors); 
+			pDib->CreatePaletteFromColors(256, pGIFColors); // Use all indexes for color!
 			pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
 		}
 
@@ -879,6 +937,31 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		return FALSE;
 }
 
+__forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDib,
+																		RGBQUAD* pGIFColors,
+																		BOOL bShowFrameTime,
+																		const CTime& RefTime,
+																		DWORD dwRefUpTime)
+{
+	// Make sure we have a true RGB format
+	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
+		pDib->Decompress(32);
+
+	// Resize
+	pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
+
+	// Add Frame Time
+	if (bShowFrameTime)
+		AddFrameTime(pDib, RefTime, dwRefUpTime);
+
+	// Convert to 8 bpp
+	if (pDib->GetBitCount() > 8)
+	{
+		pDib->CreatePaletteFromColors(255, pGIFColors); // One index for transparency!
+		pDib->ConvertTo8bitsErrDiff(pDib->GetPalette());
+	}
+}
+
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 															CDib** ppGIFDib,
 															CDib** ppGIFDibPrev,
@@ -888,7 +971,10 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 															double dDelayMul,
 															double dSpeedMul,
 															RGBQUAD* pGIFColors,
-															int nDiffMinLevel)
+															int nDiffMinLevel,
+															BOOL bShowFrameTime,
+															const CTime& RefTime,
+															DWORD dwRefUpTime)
 {
 	BOOL res = FALSE;
 
@@ -901,12 +987,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	// Is First Frame To Save?
 	if (*pbFirstGIFSave)
 	{
-		// Convert to 8 bpp
-		if ((*ppGIFDibPrev)->GetBitCount() > 8)
-		{
-			(*ppGIFDibPrev)->CreatePaletteFromColors(255, pGIFColors); 
-			(*ppGIFDibPrev)->ConvertTo8bitsErrDiff((*ppGIFDibPrev)->GetPalette());
-		}
+		// Convert to 255 colors
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
 		
 		// Copy First Frame
 		*pGIFSaveDib = **ppGIFDibPrev;
@@ -942,12 +1024,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		// this happens if we have only 2 frames to save
 		if (bLastGIFSave)
 		{
-			// Convert to 8 bpp
-			if ((*ppGIFDib)->GetBitCount() > 8)
-			{
-				(*ppGIFDib)->CreatePaletteFromColors(255, pGIFColors); 
-				(*ppGIFDib)->ConvertTo8bitsErrDiff((*ppGIFDib)->GetPalette());
-			}
+			// Convert to 255 colors and save
+			To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
 			pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 			(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -960,12 +1038,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	// Is Last Frame?
 	else if (bLastGIFSave)
 	{
-		// Convert to 8 bpp
-		if ((*ppGIFDibPrev)->GetBitCount() > 8)
-		{
-			(*ppGIFDibPrev)->CreatePaletteFromColors(255, pGIFColors); 
-			(*ppGIFDibPrev)->ConvertTo8bitsErrDiff((*ppGIFDibPrev)->GetPalette());
-		}
+		// Convert to 255 colors and save
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -974,12 +1048,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										TRUE,
 										this);
 		
-		// Convert to 8 bpp
-		if ((*ppGIFDib)->GetBitCount() > 8)
-		{
-			(*ppGIFDib)->CreatePaletteFromColors(255, pGIFColors); 
-			(*ppGIFDib)->ConvertTo8bitsErrDiff((*ppGIFDib)->GetPalette());
-		}
+		// Convert to 255 colors and save
+		To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 		(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -991,14 +1061,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	// Middle Frame?
 	else if ((int)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
-		// Convert to 8 bpp
-		if ((*ppGIFDibPrev)->GetBitCount() > 8)
-		{
-			(*ppGIFDibPrev)->CreatePaletteFromColors(255, pGIFColors); 
-			(*ppGIFDibPrev)->ConvertTo8bitsErrDiff((*ppGIFDibPrev)->GetPalette());
-		}
-		
-		// Save Next Image
+		// Convert to 255 colors and save
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -13054,7 +13118,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 		m_pCodecCtx->mb_cmp = 1;
 		m_pCodecCtx->flags |= CODEC_FLAG_QPEL;
 	}
-	else if (m_pCodecCtx->codec_id == CODEC_ID_MPEG4)
+	else if (m_CodecID == CODEC_ID_MPEG4)
 	{
 		m_pCodecCtx->me_cmp = 2;
 		m_pCodecCtx->me_sub_cmp = 2;

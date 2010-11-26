@@ -350,6 +350,18 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;
 
+	// Set m_nPassNumber
+	if (pCodecCtx->codec_id != CODEC_ID_MPEG4	&&
+		pCodecCtx->codec_id != CODEC_ID_H263	&&
+		pCodecCtx->codec_id != CODEC_ID_H263P	&&
+		pCodecCtx->codec_id != CODEC_ID_FLV1	&&
+		pCodecCtx->codec_id != CODEC_ID_H264	&&
+		pCodecCtx->codec_id != CODEC_ID_THEORA	&&
+		pCodecCtx->codec_id != CODEC_ID_SNOW)
+		m_nPassNumber[pStream->index] = 0; // No two pass mode supported
+	else
+		m_nPassNumber[pStream->index] = m_nGlobalPassNumber;
+
 	if (!strcmp(m_pFormatCtx->oformat->name, "avi"))
 		pCodecCtx->max_b_frames = 0;
 	else
@@ -375,29 +387,37 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	}
 	else if (pCodecCtx->codec_id == CODEC_ID_MPEG4)
 	{
-		pCodecCtx->me_cmp = 2;
-		pCodecCtx->me_sub_cmp = 2;
-		pCodecCtx->mb_decision = 2;
-		pCodecCtx->trellis = 1;
-		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic
-							CODEC_FLAG_4MV);				// mv4
+		// This is slow, so use it only in case of two pass mode
+		if (m_nPassNumber[pStream->index] > 0)
+		{
+			pCodecCtx->me_cmp = 2;
+			pCodecCtx->me_sub_cmp = 2;
+			pCodecCtx->mb_decision = 2;
+			pCodecCtx->trellis = 1;
+			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic
+								CODEC_FLAG_4MV);				// mv4
+		}
 	}
 	else if (	pCodecCtx->codec_id == CODEC_ID_H263  ||
 				pCodecCtx->codec_id == CODEC_ID_H263P ||
 				pCodecCtx->codec_id == CODEC_ID_FLV1)
 	{
-		pCodecCtx->me_cmp = 2;
-		pCodecCtx->me_sub_cmp = 2;
-		pCodecCtx->mb_decision = 2;
-		pCodecCtx->trellis = 1;
-		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic
-							CODEC_FLAG_CBP_RD				|	// cbp
-							CODEC_FLAG_MV0					|	// mv0
-							CODEC_FLAG_4MV					|	// mv4
-							CODEC_FLAG_LOOP_FILTER			|	// loop filter
-							/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// necessary if multi-threading
-							CODEC_FLAG_H263P_AIV			|	// aiv
-							CODEC_FLAG_H263P_UMV);				// unlimited motion vector
+		// This is slow, so use it only in case of two pass mode
+		if (m_nPassNumber[pStream->index] > 0)
+		{
+			pCodecCtx->me_cmp = 2;
+			pCodecCtx->me_sub_cmp = 2;
+			pCodecCtx->mb_decision = 2;
+			pCodecCtx->trellis = 1;
+			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic
+								CODEC_FLAG_CBP_RD				|	// cbp
+								CODEC_FLAG_MV0					|	// mv0
+								CODEC_FLAG_4MV					|	// mv4
+								CODEC_FLAG_LOOP_FILTER			|	// loop filter
+								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// necessary if multi-threading
+								CODEC_FLAG_H263P_AIV			|	// aiv
+								CODEC_FLAG_H263P_UMV);				// unlimited motion vector
+		}
 	}
 
 	// Note:
@@ -413,18 +433,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 		!strcmp(m_pFormatCtx->oformat->name, "mov") ||
 		!strcmp(m_pFormatCtx->oformat->name, "3gp"))
         pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
-	// Set m_nPassNumber
-	if (pCodecCtx->codec_id != CODEC_ID_MPEG4	&&
-		pCodecCtx->codec_id != CODEC_ID_H263	&&
-		pCodecCtx->codec_id != CODEC_ID_H263P	&&
-		pCodecCtx->codec_id != CODEC_ID_FLV1	&&
-		pCodecCtx->codec_id != CODEC_ID_H264	&&
-		pCodecCtx->codec_id != CODEC_ID_THEORA	&&
-		pCodecCtx->codec_id != CODEC_ID_SNOW)
-		m_nPassNumber[pStream->index] = 0; // No two pass mode supported
-	else
-		m_nPassNumber[pStream->index] = m_nGlobalPassNumber;
 
 	// Two pass mode
 	if (m_nPassNumber[pStream->index] > 0)

@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+2.3.0 (December 12th 2010)
+
+- Detection saving (SWF and animated GIFs) is 3x faster!
+- ...
+
 2.1.0 (October 27th 2010)
 
 - Optional save command button for web interface

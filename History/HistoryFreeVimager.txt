@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.3.0 (December 12th 2010)
+
+- ...
+
 2.1.0 (October 27th 2010)
 
 - More robust thread start/stop logic

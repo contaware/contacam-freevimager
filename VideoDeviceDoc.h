@@ -929,7 +929,10 @@ public:
 			int Work();
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
-									RGBQUAD* pGIFColors);
+									RGBQUAD* pGIFColors,
+									BOOL bShowFrameTime,
+									const CTime& RefTime,
+									DWORD dwRefUpTime);
 			void AnimatedGIFInit(	RGBQUAD** ppGIFColors,
 									int& nAnimGifLastFrameToSave,
 									double& dDelayMul,
@@ -938,6 +941,11 @@ public:
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
+			__forceinline void To255Colors(	CDib* pDib,
+											RGBQUAD* pGIFColors,
+											BOOL bShowFrameTime,
+											const CTime& RefTime,
+											DWORD dwRefUpTime);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib** ppGIFDib,
 									CDib** ppGIFDibPrev,
@@ -947,7 +955,10 @@ public:
 									double dDelayMul,
 									double dSpeedMul,
 									RGBQUAD* pGIFColors,
-									int nDiffMinLevel);
+									int nDiffMinLevel,
+									BOOL bShowFrameTime,
+									const CTime& RefTime,
+									DWORD dwRefUpTime);
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sAVIFileName,
 									const CString& sGIFFileName,
