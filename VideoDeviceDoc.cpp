@@ -283,7 +283,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Note: CAVRec needs a file with .avi or .swf extention!
 
 		// Create the Avi File
-		CAVRec AVRecAvi(sAVIFileName);
+		CAVRec AVRecAvi(sAVIFileName, 0, _T(""), true); // fast encoding!
 		AVRecAvi.SetInfo(	_T("Title"),
 							_T("Author"),
 							_T("Copyright"),
@@ -292,7 +292,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							_T("Genre"));
 
 		// Create the Swf File
-		CAVRec AVRecSwf(sSWFFileName);
+		CAVRec AVRecSwf(sSWFFileName, 0, _T(""), true); // fast encoding!
 		AVRecSwf.SetInfo(	_T("Title"),
 							_T("Author"),
 							_T("Copyright"),
@@ -8286,7 +8286,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		return FALSE;
 
 	// Set File Name
-	if (!(*ppAVRec)->Init(sFileName))
+	if (!(*ppAVRec)->Init(sFileName, 0, _T(""), true)) // fast encoding!
 		return FALSE;
 
 	// Set File Info
@@ -13120,28 +13120,20 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 	}
 	else if (m_CodecID == CODEC_ID_MPEG4)
 	{
-		m_pCodecCtx->me_cmp = 2;
-		m_pCodecCtx->me_sub_cmp = 2;
-		m_pCodecCtx->mb_decision = 2;
-		m_pCodecCtx->trellis = 1;
-		m_pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic
-								CODEC_FLAG_4MV);				// mv4
+		m_pCodecCtx->mb_decision = 2;							// mbd: macroblock decision mode
+		m_pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic: MPEG-4 AC prediction
+								CODEC_FLAG_4MV);				// mv4: 4 MV per MB allowed
 	}
 	else if (	m_CodecID == CODEC_ID_H263P ||
 				m_CodecID == CODEC_ID_H263)
 	{
-		m_pCodecCtx->me_cmp = 2;
-		m_pCodecCtx->me_sub_cmp = 2;
-		m_pCodecCtx->mb_decision = 2;
-		m_pCodecCtx->trellis = 1;
-		m_pCodecCtx->flags |=	(CODEC_FLAG_AC_PRED				|	// aic
-								CODEC_FLAG_CBP_RD				|	// cbp
-								CODEC_FLAG_MV0					|	// mv0
-								CODEC_FLAG_4MV					|	// mv4
-								CODEC_FLAG_LOOP_FILTER			|	// loop filter
-								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// necessary if multi-threading
-								CODEC_FLAG_H263P_AIV			|	// aiv
-								CODEC_FLAG_H263P_UMV);				// unlimited motion vector
+		m_pCodecCtx->mb_decision = 2;							// mbd: macroblock decision mode
+		m_pCodecCtx->flags |=	(CODEC_FLAG_AC_PRED			|	// aic: H.263 advanced intra coding
+								CODEC_FLAG_4MV				|	// mv4: advanced prediction for H.263
+								CODEC_FLAG_LOOP_FILTER		|	// lf:  use loop filter (h263+)
+								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// ssm: necessary if multi-threading (h263+)
+								CODEC_FLAG_H263P_AIV		|	// aiv: H.263+ alternative inter VLC
+								CODEC_FLAG_H263P_UMV);			// umv: Enable Unlimited Motion Vector (h263+)
 	}
 	else if (m_CodecID == CODEC_ID_MJPEG)
 		m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_INOFFICIAL; // to allow the PIX_FMT_YUV420P format

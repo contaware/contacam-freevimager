@@ -582,7 +582,7 @@ public:
 							m_CodecID = CODEC_ID_H263P;	// Working well: CODEC_ID_MJPEG, CODEC_ID_H263P, CODEC_ID_MPEG4
 														// CODEC_ID_THEORA not optimal because it sends the quantization tables with
 														// the frames in the extra data field, that uses some bandwidth more!
-														// CODEC_ID_H263 is only working with standard resolution of 176 x 144 or 352 x 266						
+														// CODEC_ID_H263 is only working with standard resolution of 176 x 144 or 352 x 288						
 														// CODEC_ID_SNOW is locking with low resolutions...
 							m_pFrame = NULL;
 							m_pFrameI420 = NULL;

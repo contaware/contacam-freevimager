@@ -34,7 +34,8 @@ public:
 	// Construction which calls Init()
 	CAVRec(	LPCTSTR lpszFileName,
 			int nPassNumber = 0,
-			LPCTSTR lpszTempDir = _T(""));
+			LPCTSTR lpszTempDir = _T(""),
+			bool bFastEncode = false);
 
 	// Destructor
 	virtual ~CAVRec();
@@ -43,7 +44,8 @@ public:
 	// nPassNumber 0: Single Pass, 1: First Pass, 2: Second Pass
 	bool Init(	LPCTSTR lpszFileName,
 				int nPassNumber = 0,
-				LPCTSTR lpszTempDir = _T(""));
+				LPCTSTR lpszTempDir = _T(""),
+				bool bFastEncode = false);
 
 	// Add Video Stream
 	int AddVideoStream(	const LPBITMAPINFO pSrcFormat,
@@ -259,6 +261,7 @@ protected:
 	bool m_bOpen;
 	bool m_bCodecOpened[MAX_STREAMS];
 	int m_nGlobalPassNumber;
+	bool m_bFastEncode;
 
 	// Video Vars
 	volatile DWORD m_dwTotalVideoStreams;

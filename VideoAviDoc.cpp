@@ -2807,11 +2807,11 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 					dlgStreams.m_bUseVfwCodecs = FALSE;
 				else
 				{
-	#ifdef SUPPORT_LIBAVCODEC
+#ifdef SUPPORT_LIBAVCODEC
 					dlgStreams.m_bUseVfwCodecs = FALSE;
-	#else
+#else
 					dlgStreams.m_bUseVfwCodecs = TRUE;
-	#endif
+#endif
 				}
 				if (dlgStreams.DoModal() == IDOK)
 				{
@@ -2860,7 +2860,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 											bAudioStreamsSave,
 											bAudioStreamsChange);
 					}
-	#ifdef SUPPORT_LIBAVCODEC
+#ifdef SUPPORT_LIBAVCODEC
 					else
 					{
 						res = SaveAsAVCODEC(FileName,
@@ -2872,7 +2872,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 											bAudioStreamsSave,
 											bAudioStreamsChange);
 					}
-	#endif
+#endif
 				}
 			}
 		}

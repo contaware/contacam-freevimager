@@ -34,10 +34,11 @@ CAVRec::CAVRec()
 
 CAVRec::CAVRec(	LPCTSTR lpszFileName,
 				int nPassNumber/*=0*/,
-				LPCTSTR lpszTempDir/*=_T("")*/)
+				LPCTSTR lpszTempDir/*=_T("")*/,
+				bool bFastEncode/*=false*/)
 {
 	InitVars();
-	Init(lpszFileName, nPassNumber, lpszTempDir);
+	Init(lpszFileName, nPassNumber, lpszTempDir, bFastEncode);
 }
 
 void CAVRec::InitVars()
@@ -53,6 +54,7 @@ void CAVRec::InitVars()
 	m_bFileOpened = false;
 	m_bOpen = false;
 	m_nGlobalPassNumber = 0;
+	m_bFastEncode = false;
 	
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < MAX_STREAMS ; dwStreamNum++)
 	{
@@ -387,40 +389,63 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	}
 	else if (pCodecCtx->codec_id == CODEC_ID_MPEG4)
 	{
-		// This is slow, so use it only in case of two pass mode
-		if (m_nPassNumber[pStream->index] > 0)
+		if (!m_bFastEncode)
 		{
-			pCodecCtx->me_cmp = 2;
-			pCodecCtx->me_sub_cmp = 2;
-			pCodecCtx->mb_decision = 2;
-			pCodecCtx->trellis = 1;
-			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic
-								CODEC_FLAG_4MV);				// mv4
+			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
+			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
+			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
 		}
+		pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
+		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic:    MPEG-4 AC prediction
+							CODEC_FLAG_4MV);					// mv4:    4 MV per MB allowed
 	}
 	else if (	pCodecCtx->codec_id == CODEC_ID_H263  ||
 				pCodecCtx->codec_id == CODEC_ID_H263P ||
 				pCodecCtx->codec_id == CODEC_ID_FLV1)
 	{
-		// This is slow, so use it only in case of two pass mode
-		if (m_nPassNumber[pStream->index] > 0)
+		if (!m_bFastEncode)
 		{
-			pCodecCtx->me_cmp = 2;
-			pCodecCtx->me_sub_cmp = 2;
-			pCodecCtx->mb_decision = 2;
-			pCodecCtx->trellis = 1;
-			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic
-								CODEC_FLAG_CBP_RD				|	// cbp
-								CODEC_FLAG_MV0					|	// mv0
-								CODEC_FLAG_4MV					|	// mv4
-								CODEC_FLAG_LOOP_FILTER			|	// loop filter
-								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// necessary if multi-threading
-								CODEC_FLAG_H263P_AIV			|	// aiv
-								CODEC_FLAG_H263P_UMV);				// unlimited motion vector
-		}
+			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
+			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
+			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
+			pCodecCtx->flags |= (CODEC_FLAG_CBP_RD			|	// cbp:    Use rate distortion optimization for cbp, this needs trellis enabled!
+								CODEC_FLAG_MV0);				// mv0:    try to encode each MB with MV=<0,0> and choose the better one
+		}														//         (has no effect if mb_decision=0)
+		pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
+		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic:    H.263 advanced intra coding
+							CODEC_FLAG_4MV					|	// mv4:    advanced prediction for H.263
+							CODEC_FLAG_LOOP_FILTER			|	// lf:     use loop filter (h263+)
+							/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// ssm:    necessary if multi-threading (h263+)
+							CODEC_FLAG_H263P_AIV			|	// aiv:    H.263+ alternative inter VLC
+							CODEC_FLAG_H263P_UMV);				// umv:    Enable Unlimited Motion Vector (h263+)
 	}
-
-	// Note:
+	//
+	// Notes:
+	//
+	// - cbp, mv0: Controls the selection of macroblocks. Small speed cost for small quality gain.
+	// - cmp, subcmp, precmp: Comparison function for motion estimation.
+	//   (precmp seems to do little or nothing, but slows down encoding)
+	//   Experiment with values of 0 (default), 2 (hadamard), 3 (dct), and 6 (rate distortion).
+	//   0 is fastest, and sufficient for precmp. For cmp and subcmp, 2 is good for anime,
+	//   and 3 is good for live action. 6 may or may not be slightly better, but is slow.
+	// - qpel: Quarter pixel motion estimation. MPEG-4 uses half pixel precision for its motion search by default,
+	//   therefore this option comes with an overhead as more information will be stored in the encoded file.
+	//   The compression gain/loss depends on the movie, but it is usually not very effective on Anime.
+	//   qpel always incurs a significant cost in CPU decode time (+25% in practice). 
+	// - mbd: Macroblock decision algorithm (this is the old vhq high quality mode option), encode each macro block
+	//   using all available comparison functions and choose the best.
+	//   This is slow but results in better quality and file size.
+	//   When mbd is set to 1 or 2, the value of mbcmp is ignored when comparing macroblocks
+	//   (the mbcmp value is still used in other places though, in particular the motion search
+	//   algorithms). If any comparison setting (precmp, subcmp, cmp, or mbcmp) is nonzero,
+	//   however, a slower but better half-pel motion search will be used, regardless of what
+	//   mbd is set to. If qpel is set, quarter-pel motion search will be used regardless.
+	//   0: Use comparison function given by mbcmp (default).
+	//   1: Select the MB mode which needs the fewest bits (=vhq).
+	//   2: Select the MB mode which has the best rate distortion.
+	//   I can tell you that switching from 1 to 2 incurs a 10% speed penalty and produces a slightly
+	//   smaller output file.
+	//
 	// Multi-threading compile with --enable-w32threads,
 	// supported for CODEC_ID_MPEG1, CODEC_ID_MPEG2, CODEC_ID_MPEG4 and CODEC_ID_H263P.
 	// Speed-up is around 10-20%, CODEC_ID_H263P makes errors in two pass mode
@@ -466,7 +491,8 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 
 bool CAVRec::Init(	LPCTSTR lpszFileName,
 					int nPassNumber/*=0*/,
-					LPCTSTR lpszTempDir/*=_T("")*/)
+					LPCTSTR lpszTempDir/*=_T("")*/,
+					bool bFastEncode/*=false*/)
 {
 	char filename[1024];
 #ifdef _UNICODE
@@ -483,6 +509,7 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
 	m_nGlobalPassNumber = nPassNumber;
+	m_bFastEncode = bFastEncode;
 	
     // Auto detect the output format from the name. Default is mpeg.
 	AVOutputFormat* pGuessedFormat = guess_format(NULL, filename, NULL);
@@ -1359,6 +1386,7 @@ bool CAVRec::Close()
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
 	m_nGlobalPassNumber = 0;
+	m_bFastEncode = false;
 	m_bOpen = false;
 
 	::LeaveCriticalSection(&m_csAVI);
