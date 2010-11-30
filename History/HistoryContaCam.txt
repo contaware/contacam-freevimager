@@ -2,7 +2,11 @@ VERSION HISTORY
 
 2.3.0 (December 12th 2010)
 
-- Detection saving (SWF and animated GIFs) is 3x faster!
+- Detection SWF saving is 4x times faster
+- Detection Animated GIF saving is 2x faster
+- Detection Theora AVI saving is 2x faster
+- Live recording in Theora AVI is 2x faster
+  (CPU usage while 24h recording is reduced to a half)
 - ...
 
 2.1.0 (October 27th 2010)

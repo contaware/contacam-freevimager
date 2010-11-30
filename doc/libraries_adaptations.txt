@@ -119,7 +119,8 @@ static av_cold int encode_end(AVCodecContext *avctx)
 
 
 - libavcodec/libtheoraenc.c quality conversion change,
-  commented out color_primaries and fixed setting the keyframe flag!
+  commented out color_primaries, fixed setting the keyframe flag
+  and added CODEC_FLAG2_FAST support for fast encoding
 
 
 - libavcodec/vp3.c many changes to backport!

@@ -236,6 +236,22 @@ static av_cold int encode_init(AVCodecContext* avc_context)
             return -1;
     }
 
+	// Oli Added
+	if (avc_context->flags & CODEC_FLAG2_FAST) {
+		int speed_max;
+		int ret;
+		ret = th_encode_ctl(h->t_state, TH_ENCCTL_GET_SPLEVEL_MAX, &speed_max, sizeof(speed_max));
+      	if (ret < 0) {
+            av_log(avc_context, AV_LOG_ERROR, "Error getting maximum speed value\n");
+            return -1;
+        }
+		ret = th_encode_ctl(h->t_state, TH_ENCCTL_SET_SPLEVEL, &speed_max, sizeof(speed_max));
+		if (ret < 0) {
+            av_log(avc_context, AV_LOG_ERROR, "Error setting maximum speed value of %d\n", speed_max);
+            return -1;
+        }
+    }
+	
     /*
         Output first header packet consisting of theora
         header, comment, and tables.

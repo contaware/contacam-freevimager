@@ -13135,6 +13135,8 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 								CODEC_FLAG_H263P_AIV		|	// aiv: H.263+ alternative inter VLC
 								CODEC_FLAG_H263P_UMV);			// umv: Enable Unlimited Motion Vector (h263+)
 	}
+	else if (m_CodecID == CODEC_ID_THEORA)
+		m_pCodecCtx->flags |= CODEC_FLAG2_FAST;
 	else if (m_CodecID == CODEC_ID_MJPEG)
 		m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_INOFFICIAL; // to allow the PIX_FMT_YUV420P format
 

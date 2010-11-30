@@ -391,13 +391,13 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	{
 		if (!m_bFastEncode)
 		{
-			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
+			pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
+			pCodecCtx->me_cmp = 2;									// cmp:    fullpixel motion estimation compare function
+			pCodecCtx->me_sub_cmp = 2;								// subcmp: subpixel motion estimation compare function
+			pCodecCtx->trellis = 1;									// trell:  enable trellis quantization
+			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED |				// aic:    MPEG-4 AC prediction
+								CODEC_FLAG_4MV);					// mv4:    4 MV per MB allowed
 		}
-		pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
-		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic:    MPEG-4 AC prediction
-							CODEC_FLAG_4MV);					// mv4:    4 MV per MB allowed
 	}
 	else if (	pCodecCtx->codec_id == CODEC_ID_H263  ||
 				pCodecCtx->codec_id == CODEC_ID_H263P ||
@@ -405,19 +405,24 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	{
 		if (!m_bFastEncode)
 		{
-			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
-			pCodecCtx->flags |= (CODEC_FLAG_CBP_RD			|	// cbp:    Use rate distortion optimization for cbp, this needs trellis enabled!
-								CODEC_FLAG_MV0);				// mv0:    try to encode each MB with MV=<0,0> and choose the better one
-		}														//         (has no effect if mb_decision=0)
-		pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
-		pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic:    H.263 advanced intra coding
-							CODEC_FLAG_4MV					|	// mv4:    advanced prediction for H.263
-							CODEC_FLAG_LOOP_FILTER			|	// lf:     use loop filter (h263+)
-							/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// ssm:    necessary if multi-threading (h263+)
-							CODEC_FLAG_H263P_AIV			|	// aiv:    H.263+ alternative inter VLC
-							CODEC_FLAG_H263P_UMV);				// umv:    Enable Unlimited Motion Vector (h263+)
+			pCodecCtx->mb_decision = 2;								// mbd:    macroblock decision mode
+			pCodecCtx->me_cmp = 2;									// cmp:    fullpixel motion estimation compare function
+			pCodecCtx->me_sub_cmp = 2;								// subcmp: subpixel motion estimation compare function
+			pCodecCtx->trellis = 1;									// trell:  enable trellis quantization
+			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED				|	// aic:    H.263 advanced intra coding
+								CODEC_FLAG_4MV					|	// mv4:    advanced prediction for H.263
+								CODEC_FLAG_CBP_RD				|	// cbp:    Use rate distortion optimization for cbp, this needs trellis enabled!
+								CODEC_FLAG_MV0					|	// mv0:    try to encode each MB with MV=<0,0> and choose the better one (has no effect if mb_decision=0)
+								CODEC_FLAG_LOOP_FILTER			|	// lf:     use loop filter (h263+)
+								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// ssm:    necessary if multi-threading (h263+)
+								CODEC_FLAG_H263P_AIV			|	// aiv:    H.263+ alternative inter VLC
+								CODEC_FLAG_H263P_UMV);				// umv:    Enable Unlimited Motion Vector (h263+)
+		}
+	}
+	else if (pCodecCtx->codec_id == CODEC_ID_THEORA)
+	{
+		if (m_bFastEncode)
+			pCodecCtx->flags |= CODEC_FLAG2_FAST;
 	}
 	//
 	// Notes:
