@@ -228,6 +228,13 @@ extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 // Get Total Physical Memory in MB installed on the computer
 extern int GetTotPhysMemMB();
 
+// Get Memory Stats
+extern void GetMemoryStats(	int* pRegions = NULL,
+							int* pFreeMB = NULL,
+							int* pReservedMB = NULL,
+							int* pCommittedMB = NULL,
+							double* pFragmentation = NULL);
+
 // Disk Size and Available Space, pass "c:"
 // or a path that has a drive letter in it
 extern ULONGLONG GetDiskSize(LPCTSTR lpszPath);

@@ -2240,6 +2240,7 @@
 #define IDS_STRING1684                  1684
 #define IDC_COMBO_SIZE                  1685
 #define IDS_STRING1685                  1685
+#define IDC_MEMSTATS                    1685
 #define IDC_COMBO_BUFSIZE               1686
 #define IDS_STRING1686                  1686
 #define IDC_CHECK_DISABLE_RESEND        1687
@@ -2512,6 +2513,7 @@
 #define IDC_STATIC1820                  1820
 #define IDS_STRING1820                  1820
 #define IDC_STATIC1821                  1821
+#define IDS_STRING1821                  1821
 #define IDC_STATIC1822                  1822
 #define IDC_STATIC1823                  1823
 #define IDC_STATIC1824                  1824

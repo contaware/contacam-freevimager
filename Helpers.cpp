@@ -2537,6 +2537,65 @@ int GetTotPhysMemMB()
 	}
 }
 
+void GetMemoryStats(int* pRegions/*=NULL*/,
+					int* pFreeMB/*=NULL*/,
+					int* pReservedMB/*=NULL*/,
+					int* pCommittedMB/*=NULL*/,
+					double* pFragmentation/*=NULL*/)
+{
+	MEMORY_BASIC_INFORMATION memory_info;
+	memset(&memory_info, 0, sizeof (memory_info));
+	DWORD region = 0;
+	DWORD sum_free = 0, max_free = 0;
+	DWORD sum_reserve = 0, max_reserve = 0;
+	DWORD sum_commit = 0, max_commit = 0;
+	while (::VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))
+	{
+		++region;
+		switch (memory_info.State)
+		{
+			case MEM_FREE :
+				sum_free += memory_info.RegionSize;
+				max_free = MAX(max_free, memory_info.RegionSize);
+				break;
+			case MEM_RESERVE :
+				sum_reserve += memory_info.RegionSize;
+				max_reserve = MAX(max_reserve, memory_info.RegionSize);
+				break;
+			case MEM_COMMIT :
+				sum_commit += memory_info.RegionSize;
+				max_commit = MAX(max_commit, memory_info.RegionSize);
+				break;
+			default :
+				ASSERT(FALSE);
+				break;
+		}
+		memory_info.BaseAddress = (char*)memory_info.BaseAddress + memory_info.RegionSize;
+	}
+
+	// Calc.
+	double dFragmentation = 0.0;
+	if ((sum_free + sum_reserve + sum_commit) > 0)
+		dFragmentation = 100.0 * (1.0 - (double)(max_free + max_reserve + max_commit) /
+										(double)(sum_free + sum_reserve + sum_commit));
+	sum_free >>= 20;
+	sum_reserve >>= 20;
+	sum_commit >>= 20;
+
+	// Return params
+	if (pRegions) *pRegions = region;
+	if (pFreeMB) *pFreeMB = sum_free;
+	if (pReservedMB) *pReservedMB = sum_reserve;
+	if (pCommittedMB) *pCommittedMB = sum_commit;
+	if (pFragmentation) *pFragmentation = dFragmentation;
+
+	// Trace
+	CString sMsg;
+	sMsg.Format(_T("Regions=%u, Free=%uMB, Reserved=%uMB, Committed=%uMB, Fragmentation=%0.1f%%%%\n"),
+					region, sum_free, sum_reserve, sum_commit, dFragmentation);
+	TRACE(sMsg);
+}
+
 typedef BOOL (WINAPI * FPGETDISKFREESPACEEX)(LPCTSTR lpDirectoryName,
 												PULARGE_INTEGER lpFreeBytesAvailableToCaller,
 												PULARGE_INTEGER lpTotalNumberOfBytes,

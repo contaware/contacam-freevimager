@@ -109,6 +109,8 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
+#define MOVDET_MEM_MAX_MB					1536		// Maximum allocable memory in MB for 32 bits applications
+														// (not 2048 because of fragmentation, stack and heap)
 #define MOVDET_EXEC_COMMAND_WAIT_TIMEOUT	100			// ms
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100

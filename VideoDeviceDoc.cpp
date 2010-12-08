@@ -3902,8 +3902,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			{
 				// This document load
 				int nTotalPhysInMB = ::GetTotPhysMemMB();
-				if (nTotalPhysInMB > 2048)
-					nTotalPhysInMB = 2048;	// A 32 bits application cannot allocate more than 2GB
+				if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
+					nTotalPhysInMB = MOVDET_MEM_MAX_MB;
 				else if (nTotalPhysInMB <= 0)
 					nTotalPhysInMB = 1;		// At least 1MB...
 				double dDocLoad = ((double)(GetTotalMovementDetectionFrames() * (pDib->GetImageSize() >> 10)) / 10.24) / (double)nTotalPhysInMB; // Load in %
@@ -4112,8 +4112,8 @@ __forceinline double CVideoDeviceDoc::GetAppMemoryLoad()
 	if (nUsageInMB < 0)
 		return 100;
 	int nTotalPhysInMB = ::GetTotPhysMemMB();
-	if (nTotalPhysInMB > 2048)
-		nTotalPhysInMB = 2048;	// A 32 bits application cannot allocate more than 2GB
+	if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
+		nTotalPhysInMB = MOVDET_MEM_MAX_MB;
 	if (nTotalPhysInMB > 0)
 		return (double)nUsageInMB * 100.0 / (double)nTotalPhysInMB;
 	else
@@ -10154,14 +10154,22 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 	else
 	{
 		// Set BMI & Bits
-		pDstDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
-		pDstDib->SetBits(pSrcBits, dwSrcSize);
+		if (!pDstDib->SetBMI((LPBITMAPINFO)&m_OrigBMI))
+			return FALSE;
+		if (!pDstDib->SetBits(pSrcBits, dwSrcSize))
+			return FALSE;
 
 		// Decompress to 32 bpp
 		if (pDstDib->IsCompressed())
-			pDstDib->Decompress(32);
+		{
+			if (!pDstDib->Decompress(32))
+				return FALSE;
+		}
 		else if (pDstDib->GetBitCount() != 32)
-			pDstDib->ConvertTo32bits();
+		{		
+			if (!pDstDib->ConvertTo32bits())
+				return FALSE;
+		}
 	}
 
 	return TRUE;
@@ -10328,8 +10336,16 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		else
 		{
 			// Copy Bits
-			pDib->SetBMI((LPBITMAPINFO)&m_OrigBMI);
-			pDib->SetBits(pData, dwSize);
+			if (!pDib->SetBMI((LPBITMAPINFO)&m_OrigBMI))
+			{
+				delete pDib;
+				goto exit;
+			}
+			if (!pDib->SetBits(pData, dwSize))
+			{
+				delete pDib;
+				goto exit;
+			}
 
 			// De-Interlace
 			if (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI))

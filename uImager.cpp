@@ -193,7 +193,9 @@ CUImagerApp::CUImagerApp()
 
 CUImagerApp::~CUImagerApp()
 {
-
+#ifdef _DEBUG
+	::GetMemoryStats();
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1104,12 +1106,6 @@ BOOL CAboutDlg::OnInitDialog()
 	sCpuSpeedMHz.Format(_T("CPU  ~%u MHz"), ::GetProcessorSpeedMHzFast());
 	pCpuSpeedEdit->SetWindowText(sCpuSpeedMHz);
 
-	// Total Physical Memory
-	CString sPhysMemMB;
-	sPhysMemMB.Format(_T("RAM  %d MB"), ::GetTotPhysMemMB());
-	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
-	pPhysMemMB->SetWindowText(sPhysMemMB);
-
 	// CPU Count
 	unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
 				 TotAvailCore		= 0, // Number of available cores in the system
@@ -1125,6 +1121,25 @@ BOOL CAboutDlg::OnInitDialog()
 						TotAvailLogical,
 						TotAvailLogical == 1 ? _T("") : _T("s"));
 	pCpuCount->SetWindowText(sCpuCount);
+
+	// Total Physical Memory
+	CString sPhysMemMB;
+	sPhysMemMB.Format(_T("RAM  %d MB"), ::GetTotPhysMemMB());
+	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
+	pPhysMemMB->SetWindowText(sPhysMemMB);
+
+	// Memory Stats
+	int nRegions = 0;
+	int nFreeMB = 0;
+	int nReservedMB = 0;
+	int nCommittedMB = 0;
+	double dFragmentation = 0.0;
+	::GetMemoryStats(&nRegions, &nFreeMB, &nReservedMB, &nCommittedMB, &dFragmentation);
+	CString sMemStats;
+	sMemStats.Format(ML_STRING(1821, "used %d MB, reserved %d MB, frag %0.1f%%"),
+						nCommittedMB, nReservedMB, dFragmentation);
+	CEdit* pMemStats = (CEdit*)GetDlgItem(IDC_MEMSTATS);
+	pMemStats->SetWindowText(sMemStats);
 
 	// Clickable Links?
 	if (m_bClickableLinks)
