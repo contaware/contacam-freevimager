@@ -2513,18 +2513,39 @@ notamd:
     return feature;
 }
 
-int GetTotPhysMemMB()
+int GetTotPhysMemMB(BOOL bInstalled)
 {
+	/* The GetPhysicallyInstalledSystemMemory function retrieves
+	the amount of physically installed RAM from the computer's
+	SMBIOS firmware tables. This can differ from the amount reported
+	by the GlobalMemoryStatusEx function, which sets the ullTotalPhys
+	member of the MEMORYSTATUSEX structure to the amount of physical
+	memory that is available for the operating system to use. The amount
+	of memory available to the operating system can be less than the
+	amount of memory physically installed in the computer because the
+	BIOS and some drivers may reserve memory as I/O regions for
+	memory-mapped devices, making the memory unavailable to the
+	operating system and applications. */
 	typedef BOOL (WINAPI * FPGLOBALMEMORYSTATUSEX)(LPMEMORYSTATUSEX lpBuffer);
+	typedef BOOL (WINAPI * FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)(PULONGLONG TotalMemoryInKilobytes);
 	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
 	if (!h)
 		return 0;
-	FPGLOBALMEMORYSTATUSEX fpGlobalMemoryStatusEx = (FPGLOBALMEMORYSTATUSEX)GetProcAddress(h, "GlobalMemoryStatusEx");
-	if (fpGlobalMemoryStatusEx)
+	FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY fpGetPhysicallyInstalledSystemMemory;
+	FPGLOBALMEMORYSTATUSEX fpGlobalMemoryStatusEx;
+	ULONGLONG ullTotalMemoryInKilobytes;
+	MEMORYSTATUSEX MemoryStatusEx;
+	MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
+	if (bInstalled &&
+		(fpGetPhysicallyInstalledSystemMemory = (FPGETPHYSICALLYINSTALLEDSYSTEMMEMORY)GetProcAddress(h, "GetPhysicallyInstalledSystemMemory")) &&
+		fpGetPhysicallyInstalledSystemMemory(&ullTotalMemoryInKilobytes))
 	{
-		MEMORYSTATUSEX MemoryStatusEx;
-		MemoryStatusEx.dwLength = sizeof(MemoryStatusEx);
-		fpGlobalMemoryStatusEx(&MemoryStatusEx);
+		FreeLibrary(h);
+		return (int)(ullTotalMemoryInKilobytes >> 10);
+	}
+	else if ((fpGlobalMemoryStatusEx = (FPGLOBALMEMORYSTATUSEX)GetProcAddress(h, "GlobalMemoryStatusEx")) &&
+			fpGlobalMemoryStatusEx(&MemoryStatusEx))
+	{
 		FreeLibrary(h);
 		return (int)(MemoryStatusEx.ullTotalPhys >> 20);
 	}

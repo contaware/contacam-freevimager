@@ -1103,7 +1103,7 @@ BOOL CAboutDlg::OnInitDialog()
 	// CPU Speed
 	CEdit* pCpuSpeedEdit = (CEdit*)GetDlgItem(IDC_CPUSPEED);
 	CString sCpuSpeedMHz;
-	sCpuSpeedMHz.Format(_T("CPU  ~%u MHz"), ::GetProcessorSpeedMHzFast());
+	sCpuSpeedMHz.Format(_T("CPU  %u MHz"), ::GetProcessorSpeedMHzFast());
 	pCpuSpeedEdit->SetWindowText(sCpuSpeedMHz);
 
 	// CPU Count
@@ -1123,8 +1123,13 @@ BOOL CAboutDlg::OnInitDialog()
 	pCpuCount->SetWindowText(sCpuCount);
 
 	// Total Physical Memory
+	int nInstalledPhysRamMB = ::GetTotPhysMemMB(TRUE);
+	int nAvailablePhysRamMB = ::GetTotPhysMemMB(FALSE);
 	CString sPhysMemMB;
-	sPhysMemMB.Format(_T("RAM  %d MB"), ::GetTotPhysMemMB());
+	if (nInstalledPhysRamMB >= (nAvailablePhysRamMB + 16)) // Allow some margin
+		sPhysMemMB.Format(_T("RAM  %d MB (usable %d MB)"), nInstalledPhysRamMB, nAvailablePhysRamMB);
+	else
+		sPhysMemMB.Format(_T("RAM  %d MB"), nInstalledPhysRamMB);
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
@@ -2294,7 +2299,7 @@ BOOL CUImagerApp::IsDoc(CUImagerDoc* pDoc)
 
 BOOL CUImagerApp::IsPictureSizeBig(DWORD dwImageSize)
 {
-	int nMemMB = ::GetTotPhysMemMB();
+	int nMemMB = ::GetTotPhysMemMB(FALSE);
 	if (((dwImageSize >> 20) < (DWORD)(nMemMB / 2)) &&
 		(dwImageSize < BIG_PICTURE_SIZE_LIMIT))
 		return FALSE;

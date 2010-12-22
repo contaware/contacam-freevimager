@@ -3901,7 +3901,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 			{
 				// This document load
-				int nTotalPhysInMB = ::GetTotPhysMemMB();
+				int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
 				if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
 					nTotalPhysInMB = MOVDET_MEM_MAX_MB;
 				else if (nTotalPhysInMB <= 0)
@@ -4111,7 +4111,7 @@ __forceinline double CVideoDeviceDoc::GetAppMemoryLoad()
 	int nUsageInMB = GetAppMemoryUsageMB();
 	if (nUsageInMB < 0)
 		return 100;
-	int nTotalPhysInMB = ::GetTotPhysMemMB();
+	int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
 	if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
 		nTotalPhysInMB = MOVDET_MEM_MAX_MB;
 	if (nTotalPhysInMB > 0)

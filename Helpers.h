@@ -225,8 +225,9 @@ extern MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCIPauseDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 
-// Get Total Physical Memory in MB installed on the computer
-extern int GetTotPhysMemMB();
+// Get the Total Physical Memory in MB installed on the computer
+// or available to the OS
+extern int GetTotPhysMemMB(BOOL bInstalled);
 
 // Get Memory Stats
 extern void GetMemoryStats(	int* pRegions = NULL,
