@@ -214,7 +214,7 @@ BOOL CDib::MMCreateBMP(LPCTSTR lpszPathName)
 		m_bGrayscale = FALSE;
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		ResetColorUndo();
@@ -374,11 +374,7 @@ BOOL CDib::MMBMPToBits()
 	pBMI = (LPBITMAPINFO)new BYTE[pBmfHeader->bfOffBits - sizeof(BITMAPFILEHEADER)];
 	if (pBMI == NULL)
 		return FALSE;
-	pBits = (LPBYTE)::VirtualAlloc(	NULL,
-									m_FileInfo.m_dwFileSize - pBmfHeader->bfOffBits +
-										SAFETY_BITALLOC_MARGIN,
-									MEM_COMMIT,
-									PAGE_READWRITE);
+	pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - pBmfHeader->bfOffBits + SAFETY_BITALLOC_MARGIN);
 	if (pBits == NULL)
 	{
 		delete [] pBMI;

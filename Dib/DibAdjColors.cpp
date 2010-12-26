@@ -70,10 +70,7 @@ BOOL CDib::SetColorUndo()
 		case 16:
 			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)::VirtualAlloc(	NULL,
-														nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN,
-														MEM_COMMIT,
-														PAGE_READWRITE);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
 			if (!m_pOrigBits)
 				return FALSE;
 
@@ -84,10 +81,7 @@ BOOL CDib::SetColorUndo()
 		case 24:
 			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)::VirtualAlloc(	NULL,
-														nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN,
-														MEM_COMMIT,
-														PAGE_READWRITE);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
 			if (!m_pOrigBits)
 				return FALSE;
 
@@ -98,10 +92,7 @@ BOOL CDib::SetColorUndo()
 		case 32:
 			nWidthDWAligned = 4*GetWidth();
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)::VirtualAlloc(	NULL,
-														nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN,
-														MEM_COMMIT,
-														PAGE_READWRITE);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
 			if (!m_pOrigBits)
 				return FALSE;
 
@@ -129,7 +120,7 @@ BOOL CDib::ResetColorUndo()
 {
 	if (m_pOrigBits)
 	{
-		::VirtualFree((LPVOID)m_pOrigBits, 0, MEM_RELEASE);
+		BIGFREE(m_pOrigBits);
 		m_pOrigBits = NULL;
 	}
 	if (m_pOrigColors)

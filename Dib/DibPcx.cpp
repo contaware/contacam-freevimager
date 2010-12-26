@@ -216,10 +216,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		file.SeekToBegin( );
 
 		// Allocate memory to hold the file data
-		pabFileData = (LPBYTE)::VirtualAlloc(	NULL,
-												m_FileInfo.m_dwFileSize,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+		pabFileData = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize);
 		if (pabFileData == NULL)
 			throw (int)PCX_E_NOMEM;
 
@@ -309,15 +306,12 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		// If only header wanted return now
 		if (bOnlyHeader)
 		{
-			::VirtualFree((LPVOID)pabFileData, 0, MEM_RELEASE);
+			BIGFREE(pabFileData);
 			return TRUE;
 		}
 
 		// Prepare a buffer large enough to hold the target DIB image pixels
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBImageSize + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
 		if (m_pBits == NULL)
 			throw (int)PCX_E_NOMEM;
 
@@ -392,10 +386,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		{
 			BYTE Color;
 			// Prepare a buffer large enough to hold the decompressed PCX
-			pPCXDecompr = (LPBYTE)::VirtualAlloc(NULL,
-												(sHeader.Y2-sHeader.Y1+1) * uiPCXScanLineSize,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			pPCXDecompr = (LPBYTE)BIGALLOC((sHeader.Y2-sHeader.Y1+1) * uiPCXScanLineSize);
 			if (pPCXDecompr == NULL)
 				throw (int)PCX_E_NOMEM;
 
@@ -467,7 +458,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 			}
 
 			// 3. Free
-			::VirtualFree((LPVOID)pPCXDecompr, 0, MEM_RELEASE);
+			BIGFREE(pPCXDecompr);
 			pPCXDecompr = NULL;
 
 			DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
@@ -597,7 +588,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Free
-		::VirtualFree((LPVOID)pabFileData, 0, MEM_RELEASE);
+		BIGFREE(pabFileData);
 		pabFileData = NULL;
 
 		// Make it Top-Down:
@@ -617,7 +608,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 			::AfxMessageBox(str, MB_ICONSTOP);
 		e->Delete();
 		if (pabFileData)
-			::VirtualFree((LPVOID)pabFileData, 0, MEM_RELEASE);
+			BIGFREE(pabFileData);
 		if (m_pBMI)
 		{
 			delete [] m_pBMI;
@@ -626,18 +617,18 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		if (pPCXDecompr)
-			::VirtualFree((LPVOID)pPCXDecompr, 0, MEM_RELEASE);
+			BIGFREE(pPCXDecompr);
 		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 		return FALSE;
 	}
 	catch (int error_code)
 	{
 		if (pabFileData)
-			::VirtualFree((LPVOID)pabFileData, 0, MEM_RELEASE);
+			BIGFREE(pabFileData);
 		if (m_pBMI)
 		{
 			delete [] m_pBMI;
@@ -646,11 +637,11 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		if (pPCXDecompr)
-			::VirtualFree((LPVOID)pPCXDecompr, 0, MEM_RELEASE);
+			BIGFREE(pPCXDecompr);
 
 		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 

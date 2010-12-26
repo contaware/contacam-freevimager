@@ -245,10 +245,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 	}
 
 	// Allocate Temp Floating-Point Image
-	double* f = (double*)::VirtualAlloc(NULL,
-										dwContainerSize * sizeof(double),
-										MEM_COMMIT,
-										PAGE_READWRITE);
+	double* f = (double*)BIGALLOC(dwContainerSize * sizeof(double));
 	// If Not Enough Memory Use Bilinear 2x2 Averaging
 	if (f == NULL)
 	{
@@ -277,7 +274,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 		{
 			if (!pSrcDib->DibSectionToBits())
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 		}
@@ -285,7 +282,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 		// Pointers Check
 		if (!pSrcDib->m_pBits || !pSrcDib->m_pBMI)
 		{
-			::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+			BIGFREE(f);
 			return FALSE;
 		}
 	}
@@ -298,7 +295,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
 			if (m_pBMI == NULL)
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
@@ -312,7 +309,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			m_pBMI = (LPBITMAPINFO)new BYTE[pSrcDib->GetBMISize()];
 			if (m_pBMI == NULL)
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			memcpy((void*)m_pBMI, (void*)pSrcDib->m_pBMI, pSrcDib->GetBMISize());
@@ -347,25 +344,19 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 	{
-		::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+		BIGFREE(f);
 		return FALSE;
 	}
 
@@ -393,7 +384,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 	// If Same Size Copy
 	if (bCopySrcToDst && (dwNewWidth == pSrcDib->GetWidth()) && (dwNewHeight == pSrcDib->GetHeight()))
 	{
-		::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+		BIGFREE(f);
 		memcpy((void*)m_pBits, (void*)pSrcDib->m_pBits, m_dwImageSize);
 		return TRUE;
 	}
@@ -410,7 +401,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -519,7 +510,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -548,7 +539,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -663,7 +654,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -694,7 +685,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -803,7 +794,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -828,7 +819,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -949,7 +940,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			{
 				if (pThread && pThread->DoExit())
 				{
-					::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+					BIGFREE(f);
 					DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 					return FALSE;
 				}
@@ -1054,7 +1045,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 				{
 					if (pThread && pThread->DoExit())
 					{
-						::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+						BIGFREE(f);
 						DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 						return FALSE;
 					}
@@ -1155,7 +1146,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 				{
 					if (pThread && pThread->DoExit())
 					{
-						::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+						BIGFREE(f);
 						DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 						return FALSE;
 					}
@@ -1264,7 +1255,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 				{
 					if (pThread && pThread->DoExit())
 					{
-						::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+						BIGFREE(f);
 						DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 						return FALSE;
 					}
@@ -1435,7 +1426,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 	CreatePaletteFromBMI();
 
 	// Free
-	::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+	BIGFREE(f);
 
 	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 
@@ -1537,21 +1528,15 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -1826,21 +1811,15 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -2459,21 +2438,15 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -2578,10 +2551,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 
 		// Allocate and init Temp Floating-Point Image: b g r a (alpha not used)
 		int nFloatSrcScanLineSize = 4 * ((int)pSrcDib->GetWidth() + 2*BICUBIC_PIXMARGIN);
-		f = (float*)::VirtualAlloc(	NULL,
-									nFloatSrcScanLineSize * ((int)pSrcDib->GetHeight() + 2*BICUBIC_PIXMARGIN) * sizeof(float),
-									MEM_COMMIT,
-									PAGE_READWRITE);
+		f = (float*)BIGALLOC(nFloatSrcScanLineSize * ((int)pSrcDib->GetHeight() + 2*BICUBIC_PIXMARGIN) * sizeof(float));
 		if (!f)
 			return FALSE;
 		LPBYTE p = pSrcDib->GetBits();
@@ -2718,11 +2688,11 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 										bProgressSend,
 										pThread))
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			else
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 		}
 		else
 #endif
@@ -2738,11 +2708,11 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 										bProgressSend,
 										pThread))
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			else
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 		}
 	}
 	// Optimized 32 bpp
@@ -2757,10 +2727,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 
 		// Allocate and init Temp Floating-Point Image: b g r a
 		int nFloatSrcScanLineSize = 4 * ((int)pSrcDib->GetWidth() + 2*BICUBIC_PIXMARGIN);
-		f = (float*)::VirtualAlloc(	NULL,
-									nFloatSrcScanLineSize * ((int)pSrcDib->GetHeight() + 2*BICUBIC_PIXMARGIN) * sizeof(float),
-									MEM_COMMIT,
-									PAGE_READWRITE);
+		f = (float*)BIGALLOC(nFloatSrcScanLineSize * ((int)pSrcDib->GetHeight() + 2*BICUBIC_PIXMARGIN) * sizeof(float));
 		if (!f)
 			return FALSE;
 		LPBYTE p = pSrcDib->GetBits();
@@ -2902,11 +2869,11 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 										bProgressSend,
 										pThread))
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			else
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 		}
 		else
 #endif
@@ -2922,11 +2889,11 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 										bProgressSend,
 										pThread))
 			{
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 				return FALSE;
 			}
 			else
-				::VirtualFree((LPVOID)f, 0, MEM_RELEASE);
+				BIGFREE(f);
 		}
 	}
 	// Not Optimized
@@ -3090,10 +3057,7 @@ BOOL CDib::BicubicResample24_SSE(	int nNewWidth,
 	kernconst_minus_4.f.f2 = -4.0f;
 	kernconst_minus_4.f.f3 = -4.0f;
 
-	float* array_kernel_b = (float*)::VirtualAlloc(	NULL,
-													nNewWidth * 4 * sizeof(float),
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	float* array_kernel_b = (float*)BIGALLOC(nNewWidth * 4 * sizeof(float));
 	if (!array_kernel_b)
 		return FALSE;
 
@@ -3225,7 +3189,7 @@ BOOL CDib::BicubicResample24_SSE(	int nNewWidth,
 		__asm emms; // End MMX instructions, prep for possible FP instrs.
 		if (pThread && pThread->DoExit())
 		{
-			::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+			BIGFREE(array_kernel_b);
 			DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 			return FALSE;
 		}
@@ -3530,7 +3494,7 @@ BOOL CDib::BicubicResample24_SSE(	int nNewWidth,
 	}
 
 	__asm emms; // End MMX instructions, prep for possible FP instrs.
-	::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+	BIGFREE(array_kernel_b);
 	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 
 	return TRUE;
@@ -3610,10 +3574,7 @@ BOOL CDib::BicubicResample32_SSE(	int nNewWidth,
 	kernconst_minus_4.f.f2 = -4.0f;
 	kernconst_minus_4.f.f3 = -4.0f;
 
-	float* array_kernel_b = (float*)::VirtualAlloc(	NULL,
-													nNewWidth * 4 * sizeof(float),
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	float* array_kernel_b = (float*)BIGALLOC(nNewWidth * 4 * sizeof(float));
 	if (!array_kernel_b)
 		return FALSE;
 
@@ -3745,7 +3706,7 @@ BOOL CDib::BicubicResample32_SSE(	int nNewWidth,
 		__asm emms; // End MMX instructions, prep for possible FP instrs.
 		if (pThread && pThread->DoExit())
 		{
-			::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+			BIGFREE(array_kernel_b);
 			DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 			return FALSE;
 		}
@@ -4048,7 +4009,7 @@ BOOL CDib::BicubicResample32_SSE(	int nNewWidth,
 	}
 
 	__asm emms; // End MMX instructions, prep for possible FP instrs.
-	::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+	BIGFREE(array_kernel_b);
 	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 
 	return TRUE;
@@ -4071,10 +4032,7 @@ BOOL CDib::BicubicResample24_C(	int nNewWidth,
 	int nDIBTargetScanLineSize = DWALIGNEDWIDTHBYTES(nNewWidth * 24);
 	float f_x, f_y, a, b, r1_1, r1_2, r1_3, r1_4, r2_1, r2_2, r2_3, r2_4, bb, gg, rr, r1, r2, r3, r4;
 	float* kernel_b;
-	float* array_kernel_b = (float*)::VirtualAlloc(	NULL,
-													nNewWidth * 4 * sizeof(float),
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	float* array_kernel_b = (float*)BIGALLOC(nNewWidth * 4 * sizeof(float));
 	if (!array_kernel_b)
 		return FALSE;
 
@@ -4095,7 +4053,7 @@ BOOL CDib::BicubicResample24_C(	int nNewWidth,
 	{
 		if (pThread && pThread->DoExit())
 		{
-			::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+			BIGFREE(array_kernel_b);
 			DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 			return FALSE;
 		}
@@ -4261,7 +4219,7 @@ BOOL CDib::BicubicResample24_C(	int nNewWidth,
 		pOutBits += nDIBTargetScanLineSize;
 	}
 
-	::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+	BIGFREE(array_kernel_b);
 	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 
 	return TRUE;
@@ -4281,10 +4239,7 @@ BOOL CDib::BicubicResample32_C(	int nNewWidth,
 	int i, x, y, i_x, i_y, xx, yy;
 	float f_x, f_y, a, b, r1_1, r1_2, r1_3, r1_4, r2_1, r2_2, r2_3, r2_4, bb, gg, rr, aa, r1, r2, r3, r4;
 	float* kernel_b;
-	float* array_kernel_b = (float*)::VirtualAlloc(	NULL,
-													nNewWidth * 4 * sizeof(float),
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	float* array_kernel_b = (float*)BIGALLOC(nNewWidth * 4 * sizeof(float));
 	if (!array_kernel_b)
 		return FALSE;
 
@@ -4305,7 +4260,7 @@ BOOL CDib::BicubicResample32_C(	int nNewWidth,
 	{
 		if (pThread && pThread->DoExit())
 		{
-			::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+			BIGFREE(array_kernel_b);
 			DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 			return FALSE;
 		}
@@ -4479,7 +4434,7 @@ BOOL CDib::BicubicResample32_C(	int nNewWidth,
 		pOutBits += nNewWidth;
 	}
 
-	::VirtualFree((LPVOID)array_kernel_b, 0, MEM_RELEASE);
+	BIGFREE(array_kernel_b);
 	DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
 
 	return TRUE;
@@ -4593,21 +4548,15 @@ BOOL CDib::LanczosResampleBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;

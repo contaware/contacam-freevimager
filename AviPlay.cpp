@@ -6460,7 +6460,7 @@ bool CAVIPlay::ParseLegacyIndex(int nSize, LONGLONG llMoviAddr)
 	int nPaletteFourCCsCount = 0;
 
 	// Allocate & read index, find streams numeration and determine base address
-	AVIOLDINDEXENTRY* pAviOldIndexTable = (AVIOLDINDEXENTRY*)::VirtualAlloc(NULL, nSize, MEM_COMMIT, PAGE_READWRITE);
+	AVIOLDINDEXENTRY* pAviOldIndexTable = (AVIOLDINDEXENTRY*)BIGALLOC(nSize);
 	if (!pAviOldIndexTable)
 		goto error;
 	if (m_pFile->Read(pAviOldIndexTable, nSize) < (UINT)nSize)
@@ -6787,7 +6787,7 @@ error:
 	// Free
 free:
 	if (pAviOldIndexTable)
-		::VirtualFree((LPVOID)pAviOldIndexTable, 0, MEM_RELEASE);
+		BIGFREE(pAviOldIndexTable);
 
 	return res;
 }

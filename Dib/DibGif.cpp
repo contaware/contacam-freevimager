@@ -517,10 +517,7 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Allocate Space for 1 image + 1 Extra Line For Gif Decompression
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											m_dwImageSize + m_Gif.m_pLoadFile->SWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + m_Gif.m_pLoadFile->SWidth + SAFETY_BITALLOC_MARGIN);
 		if (!m_pBits)
 			throw GIF_E_NOMEM;
 
@@ -556,7 +553,7 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		if (m_Gif.m_pScreenBMI)
@@ -1000,10 +997,7 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Allocate Space for 2 images + 1 Extra Line For Gif Decompression
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											2 * m_dwImageSize + m_Gif.m_pLoadFile->SWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(2 * m_dwImageSize + m_Gif.m_pLoadFile->SWidth + SAFETY_BITALLOC_MARGIN);
 		if (!m_pBits)
 			throw GIF_E_NOMEM;
 
@@ -1050,7 +1044,7 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		if (m_Gif.m_pScreenBMI)
@@ -1544,10 +1538,7 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Allocate Space for 2 x 32 bpp images + 1 Extra Line For Gif Decompression
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											2 * m_dwImageSize + uiDIBScanLineSize32 + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(2 * m_dwImageSize + uiDIBScanLineSize32 + SAFETY_BITALLOC_MARGIN);
 		if (!m_pBits)
 			throw GIF_E_NOMEM;
 
@@ -1596,7 +1587,7 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		if (m_Gif.m_pScreenBMI)

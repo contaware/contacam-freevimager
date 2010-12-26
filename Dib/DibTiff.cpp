@@ -395,10 +395,7 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Prepare a buffer large enough to hold the target DIB image pixels
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											m_dwImageSize + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
 		if (m_pBits == NULL)
 			throw (int)TIFF_E_NOMEM;
 
@@ -536,7 +533,7 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 

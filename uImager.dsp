@@ -945,6 +945,10 @@ SOURCE=.\BatchProcTiffTab.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\bigalloc.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\BkgColEdit.h
 # End Source File
 # Begin Source File

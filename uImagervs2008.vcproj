@@ -4559,6 +4559,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bigalloc.h"
+				>
+			</File>
+			<File
 				RelativePath="BkgColEdit.h"
 				>
 			</File>

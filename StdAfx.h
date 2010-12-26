@@ -47,6 +47,7 @@
 #include "Performance.h"
 #include "TraceLogFile.h"
 #include "appconst.h"
+#include "bigalloc.h"
 #ifndef NDEBUG
 #include "cmallspy.h"
 extern CMallocSpy MallocSpy;
@@ -147,7 +148,6 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 #define SECRET_KEY_SIZE					128
 #define RSA_BLOCK_SIZE					256
 #define RSA_USABLE_BLOCK_SIZE			(RSA_BLOCK_SIZE - 11)
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

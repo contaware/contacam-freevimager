@@ -385,10 +385,7 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Allocate Bits
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											m_dwImageSize + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
 		if (!m_pBits)
 			throw (int)PNG_E_NOMEM;
 
@@ -506,7 +503,7 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 
@@ -830,10 +827,7 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 		// Special handling for these bit depths:
 		if (dib_bpp == 16 || (dib_bpp == 32 && !m_bAlpha)) 
 		{
-			newimage = (LPBYTE)::VirtualAlloc(	NULL,
-												height*width*3,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			newimage = (LPBYTE)BIGALLOC(height*width*3);
 			if (!newimage)
 				throw (int)PNG_E_NOMEM;
 
@@ -891,7 +885,7 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 				}
 			}
 
-			::VirtualFree((LPVOID)newimage, 0, MEM_RELEASE);
+			BIGFREE(newimage);
 			newimage = NULL;
 		}
 		else 
@@ -1007,7 +1001,7 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 		}
 		if (newimage) 
 		{
-			::VirtualFree((LPVOID)newimage, 0, MEM_RELEASE);
+			BIGFREE(newimage);
 			newimage = NULL;
 		}
 		

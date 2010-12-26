@@ -82,21 +82,15 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -211,21 +205,15 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -458,21 +446,15 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -733,21 +715,15 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -996,21 +972,15 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -1357,21 +1327,15 @@ BOOL CDib::RotateCCW(	double angle,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nDstHeight)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-											uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN,
-											MEM_COMMIT,
-											PAGE_READWRITE);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN);
 	}
 	if (m_pBits == NULL)
 		return FALSE;

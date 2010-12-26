@@ -241,23 +241,17 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		if (m_pBits == NULL)
 		{
 			// Allocate memory
-			m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-												m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
 			if (m_pBits == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
 		// Need to ReAllocate Bits because they are of differente size
 		else if (m_dwImageSize != m_pBMI->bmiHeader.biSizeImage)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 
 			// Allocate memory
-			m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-												m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
 			if (m_pBits == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
@@ -348,7 +342,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		m_pColors = NULL;
@@ -517,17 +511,11 @@ BOOL CDib::LoadBMP(	CFile& file,
 		{
 			DWORD dwBitsBytes = m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits;
 			DWORD dwMinImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount()) * GetHeight();
-			m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-												MAX(dwBitsBytes, dwMinImageSize) + SAFETY_BITALLOC_MARGIN,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			m_pBits = (LPBYTE)BIGALLOC(MAX(dwBitsBytes, dwMinImageSize) + SAFETY_BITALLOC_MARGIN);
 		}
 		else
 		{
-			m_pBits = (LPBYTE)::VirtualAlloc(	NULL,
-												m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits + SAFETY_BITALLOC_MARGIN,
-												MEM_COMMIT,
-												PAGE_READWRITE);
+			m_pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits + SAFETY_BITALLOC_MARGIN);
 		}
 		if (m_pBits == NULL)
 			throw (int)BMP_E_NOMEM;
@@ -591,7 +579,7 @@ BOOL CDib::LoadBMP(	CFile& file,
 		}
 		if (m_pBits)
 		{
-			::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+			BIGFREE(m_pBits);
 			m_pBits = NULL;
 		}
 		m_pColors = NULL;

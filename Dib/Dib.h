@@ -137,7 +137,7 @@ typedef struct {
 #define REASONABLE_SIZE_CONTRAST_AVGBRIGHT_CALC		200
 
 // The following amount is allocated in excess for all m_pBits
-// allocated through VirtualAlloc().
+// allocated through BIGALLOC.
 // I started introducing that because XVID 1.1 converting from RGB24
 // to YUV in the MMX routine is reading after the Dib size!
 // (found crashing with 640x480 images)

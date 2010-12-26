@@ -2513,6 +2513,20 @@ notamd:
     return feature;
 }
 
+LPVOID new16align(unsigned int size)
+{
+	LPBYTE mem = new BYTE[size+sizeof(LPVOID)+15];
+	LPVOID ptr = (LPVOID)((unsigned int)(mem+sizeof(LPVOID)+15) & ~0x0F);
+	((LPVOID*)ptr)[-1] = (LPVOID)mem;
+	ASSERT(((unsigned int)ptr & 0x0F) == 0);
+	return ptr;
+}
+
+void delete16align(LPVOID ptr)
+{
+	delete [] (LPBYTE)(((LPVOID*)ptr)[-1]);
+}
+
 int GetTotPhysMemMB(BOOL bInstalled)
 {
 	/* The GetPhysicallyInstalledSystemMemory function retrieves

@@ -440,10 +440,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -633,7 +630,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 	
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -703,10 +700,7 @@ BOOL CDib::ConvertTo1bitDitherErrDiff(	int nMethod,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -742,7 +736,7 @@ BOOL CDib::ConvertTo1bitDitherErrDiff(	int nMethod,
 	// Free
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -1647,10 +1641,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -1891,7 +1882,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 	
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -2001,10 +1992,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -2227,7 +2215,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 	
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -2340,10 +2328,7 @@ BOOL CDib::ConvertTo4bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -2379,7 +2364,7 @@ BOOL CDib::ConvertTo4bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 	// Free
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -2772,10 +2757,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -2994,7 +2976,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 	
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -3104,10 +3086,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -3308,7 +3287,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 	
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -3421,10 +3400,7 @@ BOOL CDib::ConvertTo8bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -3460,7 +3436,7 @@ BOOL CDib::ConvertTo8bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 	// Free
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -3822,10 +3798,7 @@ BOOL CDib::ConvertTo15bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -3964,7 +3937,7 @@ BOOL CDib::ConvertTo15bits(	CWnd* pProgressWnd/*=NULL*/,
 	}
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -4055,10 +4028,7 @@ BOOL CDib::ConvertTo16bitsMasks(WORD wRedMask/*=0xF800*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4203,7 +4173,7 @@ BOOL CDib::ConvertTo16bitsMasks(WORD wRedMask/*=0xF800*/,
 	}
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -4267,10 +4237,7 @@ BOOL CDib::ConvertTo24bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4398,7 +4365,7 @@ BOOL CDib::ConvertTo24bits(	CWnd* pProgressWnd/*=NULL*/,
 	}
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -4459,10 +4426,7 @@ BOOL CDib::ConvertTo32bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4603,7 +4567,7 @@ BOOL CDib::ConvertTo32bits(	CWnd* pProgressWnd/*=NULL*/,
 	}
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();
@@ -4665,10 +4629,7 @@ BOOL CDib::ConvertTo32bitsAlpha(BYTE Alpha/*=255*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)::VirtualAlloc(	NULL,
-													uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN,
-													MEM_COMMIT,
-													PAGE_READWRITE);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4827,7 +4788,7 @@ BOOL CDib::ConvertTo32bitsAlpha(BYTE Alpha/*=255*/,
 	}
 	if (m_pBits)
 	{
-		::VirtualFree((LPVOID)m_pBits, 0, MEM_RELEASE);
+		BIGFREE(m_pBits);
 		m_pBits = NULL;
 	}
 	ResetColorUndo();

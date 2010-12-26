@@ -20,6 +20,7 @@
 #include <math.h>
 #include <windowsx.h>
 #include "..\appconst.h"
+#include "..\bigalloc.h"
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

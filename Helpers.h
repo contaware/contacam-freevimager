@@ -225,6 +225,10 @@ extern MCIERROR MCIPlayDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCIPauseDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 
+// 16 bytes aligned new / delete
+extern LPVOID new16align(unsigned int size); // size in bytes
+extern void delete16align(LPVOID ptr);
+
 // Get the Total Physical Memory in MB installed on the computer
 // or available to the OS
 extern int GetTotPhysMemMB(BOOL bInstalled);
