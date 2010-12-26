@@ -553,7 +553,7 @@ BOOL CIMAPI2Dlg::CIMAPI2DlgThread::CreateStream(const CString& sPath, IStream** 
 	FPSHCREATESTREAMONFILEEX fpSHCreateStreamOnFileEx;
 	HINSTANCE h = ::LoadLibrary(_T("shlwapi.dll"));
 	if (!h)
-		return hr;
+		return FALSE;
 	fpSHCreateStreamOnFileEx = (FPSHCREATESTREAMONFILEEX)::GetProcAddress(h, "SHCreateStreamOnFileEx");
 	if (ppStream && fpSHCreateStreamOnFileEx)
 	{

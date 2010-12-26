@@ -813,14 +813,14 @@ LPTSTR _tagXMLNode::Load( LPCTSTR pszXml, LPPARSEINFO pi /*= &piDefault*/ )
 				TCHAR* pEnd = _tcsechr( ++xml, chXMLTagOpen, chXMLEscape );
 				if( pEnd == NULL ) 
 				{
+					// error cos not exist CloseTag </TAG>
 					if( pi->error_occur == false ) 
 					{
 						pi->error_occur = true;
 						pi->error_pointer = xml;
 						pi->error_code = PIE_NOT_CLOSED;
-						pi->error_string.Format(_T("%s must be closed with </%s>"), (LPCTSTR)name);
+						pi->error_string.Format(_T("it must be closed with </%s>"), (LPCTSTR)name);
 					}
-					// error cos not exist CloseTag </TAG>
 					return NULL;
 				}
 				
@@ -906,7 +906,6 @@ LPTSTR _tagXMLNode::Load( LPCTSTR pszXml, LPPARSEINFO pi /*= &piDefault*/ )
 					}
 				}
 				else	// Alone child Tag Loaded
-						// else 해야하는지 말아야하는지 의심간다.
 				{
 					if( xml && XIsEmptyString( value ) && *xml !=chXMLTagOpen )
 					{
