@@ -56,11 +56,12 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bCheckZip =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("zip"));
 
 	// Global Settings
-	m_bSingleInstance =	((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
-	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
-	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
-	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
-	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
+	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
+	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
+	m_bAutostart =				((CUImagerApp*)::AfxGetApp())->IsAutostart();
+	m_bStartFullScreenMode =	((CUImagerApp*)::AfxGetApp())->m_bStartFullScreenMode;
+	m_bEscExit =				((CUImagerApp*)::AfxGetApp())->m_bEscExit;
+	m_bDisableExtProg =			((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 }
 
 void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
@@ -71,6 +72,7 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_BMP, m_bCheckBmp);
 	DDX_Check(pDX, IDC_CHECK_JPEG, m_bCheckJpeg);
 	DDX_Check(pDX, IDC_CHECK_PCX, m_bCheckPcx);
+	DDX_Check(pDX, IDC_CHECK_EMF, m_bCheckEmf);
 	DDX_Check(pDX, IDC_CHECK_PNG, m_bCheckPng);
 	DDX_Check(pDX, IDC_CHECK_TIFF, m_bCheckTiff);
 	DDX_Check(pDX, IDC_CHECK_GIF, m_bCheckGif);
@@ -82,12 +84,12 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
 	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
 	DDX_Check(pDX, IDC_CHECK_CDA, m_bCheckCda);
+	DDX_Check(pDX, IDC_CHECK_START_FULLSCREEN, m_bStartFullScreenMode);
 	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
 	DDX_Check(pDX, IDC_CHECK_DISABLE_EXTPROG, m_bDisableExtProg);
-	DDX_Check(pDX, IDC_CHECK_EMF, m_bCheckEmf);
 	//}}AFX_DATA_MAP
 }
 
@@ -410,6 +412,9 @@ void CSettingsDlg::OnOK()
 	// Autostart
 	pApp->Autostart(m_bAutostart);
 
+	// When starting program open document in full screen mode
+	pApp->m_bStartFullScreenMode = m_bStartFullScreenMode;
+
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
@@ -427,6 +432,9 @@ void CSettingsDlg::OnOK()
 			pApp->WriteProfileInt(	_T("GeneralApp"),
 									_T("TrayIcon"),
 									m_bTrayIcon);
+			pApp->WriteProfileInt(	_T("GeneralApp"),
+									_T("StartFullScreenMode"),
+									m_bStartFullScreenMode);
 			pApp->WriteProfileInt(	_T("GeneralApp"),
 									_T("ESCExit"),
 									m_bEscExit);
@@ -447,6 +455,10 @@ void CSettingsDlg::OnOK()
 			::WriteProfileIniInt(	_T("GeneralApp"),
 									_T("TrayIcon"),
 									m_bTrayIcon,
+									sTempFileName);
+			::WriteProfileIniInt(	_T("GeneralApp"),
+									_T("StartFullScreenMode"),
+									m_bStartFullScreenMode,
 									sTempFileName);
 			::WriteProfileIniInt(	_T("GeneralApp"),
 									_T("ESCExit"),

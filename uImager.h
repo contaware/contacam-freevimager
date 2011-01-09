@@ -778,6 +778,9 @@ public:
 	// Settings Xml
 	CSettingsXml m_SettingsXml;
 
+	// When starting program open document in full screen mode
+	BOOL m_bStartFullScreenMode;
+
 	// ESC to exit the program
 	BOOL m_bEscExit;
 

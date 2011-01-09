@@ -174,6 +174,7 @@ CUImagerApp::CUImagerApp()
 	m_sPdfScanPaperSize = _T("Fit");
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
+	m_bStartFullScreenMode = FALSE;
 	m_bEscExit = FALSE;
 	m_bDisableExtProg = FALSE;
 	m_bTrayIcon = FALSE;
@@ -1013,6 +1014,15 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					}
 				}
 #endif
+
+				// When starting program open document in full screen mode
+				if (m_nCmdShow != SW_HIDE		&&
+					!m_bForceSeparateInstance	&&
+#ifdef VIDEODEVICEDOC
+					!m_bServiceProcess			&&
+#endif
+					m_bStartFullScreenMode)
+					::AfxGetMainFrame()->EnterExitFullscreen();
 			}
 		}
 
@@ -4991,6 +5001,9 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	// Scan Vars
 	m_nPdfScanCompressionQuality = GetProfileInt(sSection, _T("PdfScanCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
 	m_sPdfScanPaperSize = GetProfileString(sSection, _T("PdfScanPaperSize"), _T("Fit"));
+
+	// When starting program open document in full screen mode
+	m_bStartFullScreenMode = (BOOL)GetProfileInt(sSection, _T("StartFullScreenMode"), FALSE);
 
 	// ESC to exit the program
 	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);

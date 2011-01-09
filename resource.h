@@ -2286,6 +2286,7 @@
 #define IDS_STRING1702                  1702
 #define IDC_CHECK_FULLSCREENBROWSER     1702
 #define IDC_BANDMIN                     1703
+#define IDC_CHECK_START_FULLSCREEN      1703
 #define IDS_STRING1703                  1703
 #define IDC_BANDMAX                     1704
 #define IDS_STRING1704                  1704

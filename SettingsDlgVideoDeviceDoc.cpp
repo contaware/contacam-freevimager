@@ -62,6 +62,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
+	m_bStartFullScreenMode = ((CUImagerApp*)::AfxGetApp())->m_bStartFullScreenMode;
 	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 	m_bFullscreenBrowser = ((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser;
@@ -96,6 +97,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
 	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
 	DDX_Check(pDX, IDC_CHECK_CDA, m_bCheckCda);
+	DDX_Check(pDX, IDC_CHECK_START_FULLSCREEN, m_bStartFullScreenMode);
 	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
@@ -484,6 +486,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	else
 		::AfxGetMainFrame()->SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
+	// When starting program open document in full screen mode
+	pApp->m_bStartFullScreenMode = m_bStartFullScreenMode;
+
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
@@ -562,6 +567,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											_T("TrayIcon"),
 											m_bTrayIcon);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
+											_T("StartFullScreenMode"),
+											m_bStartFullScreenMode);
+			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("ESCExit"),
 											m_bEscExit);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -608,6 +616,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("TrayIcon"),
 											m_bTrayIcon,
+											sTempFileName);
+			::WriteProfileIniInt(			_T("GeneralApp"),
+											_T("StartFullScreenMode"),
+											m_bStartFullScreenMode,
 											sTempFileName);
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("ESCExit"),

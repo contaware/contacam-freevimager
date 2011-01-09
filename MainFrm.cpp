@@ -1565,8 +1565,10 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 		return;
 
 	// View
-	CUImagerView* pView = (CUImagerView*)pChild->GetActiveView();
-	ASSERT_VALID(pView);
+	CView* pActiveView = pChild->GetActiveView();
+	if (!(pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView))))
+		return;
+	CUImagerView* pView = (CUImagerView*)pActiveView;
 
 	// Doc
 	CUImagerDoc* pDoc = pView->GetDocument();
@@ -1805,10 +1807,12 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 	}
 	CMDIChildWnd* pChild = MDIGetActive();
 	if (pChild)
-	{
+	{		
 		// View
-		pView = (CUImagerView*)pChild->GetActiveView();
-		ASSERT_VALID(pView);
+		CView* pActiveView = pChild->GetActiveView();
+		if (!(pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView))))
+			return;
+		pView = (CUImagerView*)pActiveView;
 
 		// Doc
 		pDoc = pView->GetDocument();

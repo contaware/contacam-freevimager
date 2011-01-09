@@ -39,6 +39,7 @@ public:
 	BOOL	m_bCheckWav;
 	BOOL	m_bCheckWma;
 	BOOL	m_bCheckCda;
+	BOOL	m_bStartFullScreenMode;
 	BOOL	m_bEscExit;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;

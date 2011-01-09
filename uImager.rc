@@ -2933,7 +2933,7 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     ICON            120,IDC_STATIC,17,10,20,20
     LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2010 Contaware.com, Switzerland",
+    LTEXT           "Copyright © 2003 - 2011 Contaware.com, Switzerland",
                     IDC_STATIC2141,40,213,181,8
     DEFPUSHBUTTON   "OK",IDOK,103,195,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,17,46,39,8
@@ -3674,7 +3674,7 @@ IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "bmp Files",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,45,10
@@ -3722,6 +3722,8 @@ BEGIN
                     WS_TABSTOP,19,182,151,10
     CONTROL         "Single Instance",IDC_CHECK_SINGLEINSTANCE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,113,140,65,10
+    CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,113,154,72,10
     DEFPUSHBUTTON   "OK",IDOK,67,202,36,14
     PUSHBUTTON      "Cancel",IDCANCEL,121,202,36,14
     LTEXT           "Graphics Files:",IDC_STATIC2244,19,18,47,10,0,
@@ -6176,24 +6178,26 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,19,77,10
-    CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,93,19,66,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
     CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,33,46,10
-    CONTROL         "IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,93,33,51,10
+                    WS_TABSTOP,10,29,46,10
+    CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,41,72,10
     CONTROL         "ESC key exits the program in full-screen",
                     IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,47,140,10
+                    10,53,140,10
     CONTROL         "Disable auto-opening with external program",
                     IDC_CHECK_DISABLE_EXTPROG,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,10,61,150,10
+                    WS_TABSTOP,10,66,150,10
     CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,75,63,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,79,63,10
+    CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,93,17,66,10
+    CONTROL         "IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,93,29,51,10
     CONTROL         "Internal Fullscreen Browser",
                     IDC_CHECK_FULLSCREENBROWSER,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,11,105,101,10

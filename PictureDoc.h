@@ -39,7 +39,7 @@ class CPictureChildFrame;
 
 // The CJpegThread waits for this amount of time
 // in ms before starting the full sized jpeg load. 
-#define JPEG_FULL_IMAGE_LOAD_START_WAITTIME						300
+#define JPEG_FULL_IMAGE_LOAD_START_WAITTIME						1000
 
 // The CJpegThread waits for this amount of time
 // in ms before starting the calculation. The Short time
