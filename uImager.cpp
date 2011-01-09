@@ -1017,7 +1017,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 				// When starting program open document in full screen mode
 				if (m_nCmdShow != SW_HIDE		&&
-					!m_bForceSeparateInstance	&&
 #ifdef VIDEODEVICEDOC
 					!m_bServiceProcess			&&
 #endif
