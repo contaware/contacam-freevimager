@@ -400,6 +400,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
@@ -548,6 +549,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM SEPARATOR
@@ -1024,6 +1026,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "Play Animated GIF",           ID_PLAY_ANIMATION
         MENUITEM "Stop Animated GIF",           ID_STOP_ANIMATION
@@ -1327,6 +1330,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "Play Animated GIF",           ID_PLAY_ANIMATION
         MENUITEM "Stop Animated GIF",           ID_STOP_ANIMATION
@@ -1865,6 +1869,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
@@ -2337,6 +2342,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
@@ -2637,6 +2643,7 @@ BEGIN
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
         MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
+        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
@@ -2929,7 +2936,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            120,IDC_STATIC,17,10,20,20
     LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
@@ -3674,7 +3681,7 @@ IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "bmp Files",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,45,10
@@ -6178,14 +6185,14 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
     CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,29,46,10
-    CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,41,72,10
+    CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,41,72,10
     CONTROL         "ESC key exits the program in full-screen",
                     IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     10,53,140,10
@@ -8684,6 +8691,7 @@ BEGIN
     ID_EDIT_SNAPSHOT        "Copy and paste document\nSnapshot"
     ID_EDIT_PASTE_INTO_FILE_HELP 
                             "Coordinates text file help\nCoordinates Text File Help"
+    ID_PLAY_RANDOM          "Random order play\nRandom Play"
 END
 
 STRINGTABLE DISCARDABLE 

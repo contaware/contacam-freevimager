@@ -5902,11 +5902,12 @@ void CBatchProcDlg::OnButtonAddSlideshowExe()
 		SettingsXml.WriteString(pWindows, _T("slideshow"), _T(""));
 		LPXNode pSlideshow = SettingsXml.GetSection(pWindows, _T("slideshow"));
 		SettingsXml.WriteInt(pSlideshow, _T("delay"), DEFAULT_SLIDESHOW_DELAY);
-		SettingsXml.WriteInt(pSlideshow, _T("loop"), TRUE);
+		SettingsXml.WriteInt(pSlideshow, _T("loop"), 1);
+		SettingsXml.WriteInt(pSlideshow, _T("random"), 0);
 		SettingsXml.WriteInt(pSlideshow, _T("transitiontype"), 0);
 		SettingsXml.WriteInt(pSlideshow, _T("fitbigzoom"), 0);
 		SettingsXml.WriteInt(pSlideshow, _T("backgroundcolor"), 0);
-		SettingsXml.WriteInt(pSlideshow, _T("enableosd"), TRUE);
+		SettingsXml.WriteInt(pSlideshow, _T("enableosd"), 1);
 		SettingsXml.StoreSettings(sSettingsFileName);
 	}
 

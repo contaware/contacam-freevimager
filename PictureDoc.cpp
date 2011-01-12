@@ -343,6 +343,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_ROTATE_180, OnEditRotate180)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ROTATE_180, OnUpdateEditRotate180)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_FILE_HELP, OnEditPasteIntoFileHelp)
+	ON_COMMAND(ID_PLAY_RANDOM, OnPlayRandom)
+	ON_UPDATE_COMMAND_UI(ID_PLAY_RANDOM, OnUpdatePlayRandom)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -365,6 +367,7 @@ CPictureDoc::CSlideShowThread::CSlideShowThread()
 	m_uiSlideshowTimerId = 0;
 	m_bRecursive = FALSE;
 	m_bLoop = FALSE;
+	m_bRandom = FALSE;
 	m_bNext = TRUE;
 	m_bDoRunSlideshow = FALSE;
 	m_bSlideshowLoadPictureDone = TRUE;
@@ -832,13 +835,13 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 			// Next Picture
 			case WAIT_OBJECT_0 + 4 :	::ResetEvent(m_hNextPictureEvent);
 										RestartRunningTimer();
-										if (!ProcessNextFileEvent())
+										if (!ProcessNextFileEvent(FALSE))
 											return FALSE;
 										break;
 
 			// Slideshow Timer
 			case WAIT_OBJECT_0 + 5 :	::ResetEvent(m_hSlideshowTimerEvent);
-										if (!ProcessNextFileEvent())
+										if (!ProcessNextFileEvent(m_bRandom))
 											return FALSE;
 										break;
 
@@ -855,12 +858,16 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
     }
 }
 
-BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent()
+BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent(BOOL bRandom)
 {
 	int nCurrentFilePosition = m_pDoc->m_FileFind.GetFilePosition();
 	BOOL bExisting = ::IsExistingFile(m_pDoc->m_FileFind.GetFileName());
-
-	if (!m_pDoc->m_FileFind.FindNextFile())
+	BOOL res;
+	if (bRandom)
+		res = m_pDoc->m_FileFind.FindRandomFile();
+	else
+		res = m_pDoc->m_FileFind.FindNextFile();
+	if (!res)
 	{
 		// Special handling for file delete in recursive mode
 		if (!bExisting)
@@ -2081,7 +2088,7 @@ int CPictureDoc::CTransitionThread::Work()
 	srand(::timeGetTime()); // Seed
 	if (m_pDoc->m_nTransitionType == 1) // Random Transition
 		m_pDoc->GetView()->m_nCurrentTransition =
-							((unsigned int)rand())%nNumOfTransitions +
+							(int)(((unsigned int)rand())%((unsigned int)nNumOfTransitions)) +
 							nTransitionsOffset;
 	else
 		m_pDoc->GetView()->m_nCurrentTransition =
@@ -5333,6 +5340,7 @@ void CPictureDoc::LoadSettings()
 
 	m_SlideShowThread.SetMilliSecondsDelay((int)pApp->GetProfileInt(sSection, _T("SlideShowDelay"), DEFAULT_SLIDESHOW_DELAY));
 	m_SlideShowThread.SetLoop((BOOL)pApp->GetProfileInt(sSection, _T("SlideShowInfiniteLoop"), FALSE));
+	m_SlideShowThread.SetRandom((BOOL)pApp->GetProfileInt(sSection, _T("SlideShowRandomPlay"), FALSE));
 	m_nTransitionType = (int)pApp->GetProfileInt(sSection, _T("TransitionType"), 0);
 	m_bDitherColorConversion = (BOOL)pApp->GetProfileInt(sSection, _T("DitherColorConversion"), TRUE);
 	m_uiMaxColors16 = (BOOL)pApp->GetProfileInt(sSection, _T("MaxColors16"), 16);
@@ -5376,6 +5384,7 @@ void CPictureDoc::LoadSettingsXml()
 			m_SlideShowThread.SetMilliSecondsDelay(((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("delay"),
 													DEFAULT_SLIDESHOW_DELAY));
 			m_SlideShowThread.SetLoop((BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("loop"), 1));
+			m_SlideShowThread.SetRandom((BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("random"), 0));
 			m_nTransitionType = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("transitiontype"), 0);
 			m_nZoomComboBoxIndex = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("fitbigzoom"), 0); // Default Fit
 			if (m_nZoomComboBoxIndex != 0)	// Only Fit or Fit Big allowed
@@ -5404,6 +5413,7 @@ void CPictureDoc::SaveSettingsXml()
 	{
 		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("delay"), m_SlideShowThread.GetMilliSecondsDelay());
 		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("loop"), (int)m_SlideShowThread.IsLoop());
+		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("random"), (int)m_SlideShowThread.IsRandom());
 		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("transitiontype"), m_nTransitionType);
 		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("fitbigzoom"), m_nZoomComboBoxIndex);
 		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("backgroundcolor"), (int)m_crBackgroundColor);
@@ -11410,6 +11420,27 @@ void CPictureDoc::OnUpdatePlayLoop(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_SlideShowThread.IsLoop() ? 1 : 0);
 }
 
+void CPictureDoc::PlayRandom()
+{
+	m_SlideShowThread.SetRandom(!m_SlideShowThread.IsRandom());
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	{
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("SlideShowRandomPlay"),
+										m_SlideShowThread.IsRandom());
+	}
+}
+
+void CPictureDoc::OnPlayRandom() 
+{
+	PlayRandom();
+}
+
+void CPictureDoc::OnUpdatePlayRandom(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_SlideShowThread.IsRandom() ? 1 : 0);
+}
+
 #ifdef SUPPORT_LIBJPEG
 void CPictureDoc::JPEGGet()
 {
@@ -11892,8 +11923,8 @@ BOOL CPictureDoc::TransitionChess(	HDC hSrcDC, int xs, int ys,
 		{
 			for (int i = 0 ; i < 64 ; i++)
 			{
-				int nX = ((unsigned int)rand())%nXNum;
-				int nY = ((unsigned int)rand())%nYNum;
+				int nX = (int)(((unsigned int)rand())%((unsigned int)nXNum));
+				int nY = (int)(((unsigned int)rand())%((unsigned int)nYNum));
 				::BitBlt(	hDestDC,
 							xd + nX*nSquareSize, yd + nY*nSquareSize,
 							nSquareSize, nSquareSize,

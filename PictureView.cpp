@@ -1592,6 +1592,10 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->PlayLoop();
 			break;
 
+		case _T('R') :
+			pDoc->PlayRandom();
+			break;
+
 		case _T('M') :
 			if (!pDoc->m_bBigPicture		&&
 				pDoc->m_sFileName != _T("")	&&

@@ -105,6 +105,9 @@ class CSortableFileFind
 		// Call FindPreviousDir to retrieve dirs
 		BOOL FindPreviousDir();
 
+		// Get a random file
+		BOOL FindRandomFile();
+
 		// Call FindNextFile to retrieve files
 		BOOL FindNextFile();
 

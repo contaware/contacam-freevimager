@@ -1,8 +1,9 @@
 VERSION HISTORY
 
-2.3.0 (December 12th 2010)
+2.3.0 (January 13th 2011)
 
-- ...
+- Open in full-screen settings option
+- Possibility to play slideshow in random order
 
 2.1.0 (October 27th 2010)
 

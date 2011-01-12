@@ -1654,7 +1654,7 @@ __forceinline BOOL CDib::FloodFillPush(int x, int y)
 	}
 }
 
-int CDib::FloodFill(int x, int y, COLORREF crNewColor, COLORREF crOldColor)
+int CDib::FloodFillColor(int x, int y, COLORREF crNewColor, COLORREF crOldColor)
 {
 	// Optimized?
 	if (GetBitCount() == 32)

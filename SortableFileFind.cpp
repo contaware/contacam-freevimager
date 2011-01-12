@@ -428,6 +428,24 @@ BOOL CSortableFileFind::DeleteFileName(int pos)
 	return TRUE;
 }
 
+BOOL CSortableFileFind::FindRandomFile()
+{
+	::EnterCriticalSection(&m_csFileFindArray);
+	if (m_Files.GetSize() > 0)
+	{
+		srand(::timeGetTime()); // Seed
+		m_nFilePos = (int)(((unsigned int)rand())%((unsigned int)m_Files.GetSize()));
+		m_sFileName = m_Files[m_nFilePos];
+		::LeaveCriticalSection(&m_csFileFindArray);
+		return TRUE;
+	}
+	else
+	{
+		::LeaveCriticalSection(&m_csFileFindArray);
+		return FALSE;
+	}
+}
+
 BOOL CSortableFileFind::FindNextFile()
 {
 	::EnterCriticalSection(&m_csFileFindArray);

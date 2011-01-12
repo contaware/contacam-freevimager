@@ -1573,17 +1573,17 @@ BOOL CRedEyeDlg::CleanNotConnectedRegions(	int nXMaskCenter,
 	// Flood Fill with RGBA(0,0,0,254) values where they are RGBA(0,0,0,255).
 	// The mask center is exactly in the middle -> top-down or bottom-up
 	// coordinates are the same for the Center, but the final coordinate has to be
-	// converted from bottom-up to top-down because FloodFill takes top-down
+	// converted from bottom-up to top-down because FloodFillColor takes top-down
 	// coordinates.
 	if (bMaskCenterIsRedeye)
 	{
 		x = nXMaskCenter;
 		y = nYMaskCenter;
 		y = (int)pMaskDib->GetHeight() - 1 - y;
-		pMaskDib->FloodFill(x,
-							y,
-							0xFE000000,	// = RGBA(0,0,0,254)
-							0xFF000000);// = RGBA(0,0,0,255)
+		pMaskDib->FloodFillColor(	x,
+									y,
+									0xFE000000,	// = RGBA(0,0,0,254)
+									0xFF000000);// = RGBA(0,0,0,255)
 	}
 	else
 	{
@@ -1600,10 +1600,10 @@ BOOL CRedEyeDlg::CleanNotConnectedRegions(	int nXMaskCenter,
 			x += Offset.x;
 			y += Offset.y;
 			y = (int)pMaskDib->GetHeight() - 1 - y;
-			pMaskDib->FloodFill(x,
-								y,
-								0xFE000000,	// = RGBA(0,0,0,254)
-								0xFF000000);// = RGBA(0,0,0,255)
+			pMaskDib->FloodFillColor(	x,
+										y,
+										0xFE000000,	// = RGBA(0,0,0,254)
+										0xFF000000);// = RGBA(0,0,0,255)
 		}
 	}
 

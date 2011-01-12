@@ -171,10 +171,12 @@ public:
 			int  GetMilliSecondsDelay() {return m_nMilliSecondsDelay;};
 			void SetRecursive(BOOL bRecursive) {m_bRecursive = bRecursive;};
 			void SetLoop(BOOL bLoop) {m_bLoop = bLoop;};
+			void SetRandom(BOOL bRandom) {m_bRandom = bRandom;};
 			
 			// Is Functions
 			BOOL IsRecursive() const {return m_bRecursive;};
 			BOOL IsLoop() const {return m_bLoop;};
+			BOOL IsRandom() const {return m_bRandom;};
 			BOOL IsNext() const {return m_bNext;};
 
 			// The Slideshow Timer Event Handle
@@ -207,7 +209,7 @@ public:
 			BOOL SlideShow(CString sStartFileName);
 
 			// Process Next File Event
-			BOOL ProcessNextFileEvent();
+			BOOL ProcessNextFileEvent(BOOL bRandom);
 
 			// Process Previous File Event
 			BOOL ProcessPrevFileEvent();
@@ -243,6 +245,9 @@ public:
 
 			// Loop Slideshow?
 			volatile BOOL m_bLoop;
+
+			// Random Slideshow?
+			volatile BOOL m_bRandom;
 
 			// Load Next or Previous Picture?
 			volatile BOOL m_bNext;
@@ -620,6 +625,9 @@ public:
 	// Enable / Disable Play Loop
 	void PlayLoop();
 	
+	// Enable / Disable Random Order Play
+	void PlayRandom();
+
 	// Enable / Disable Halftone Stretch Mode
 	void StretchHalftone();
 
@@ -1200,6 +1208,8 @@ protected:
 	afx_msg void OnEditRotate180();
 	afx_msg void OnUpdateEditRotate180(CCmdUI* pCmdUI);
 	afx_msg void OnEditPasteIntoFileHelp();
+	afx_msg void OnPlayRandom();
+	afx_msg void OnUpdatePlayRandom(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

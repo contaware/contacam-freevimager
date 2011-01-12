@@ -716,7 +716,7 @@ public:
 
 	// Flood Fill: returns the number of filled pixels, -1 on error
 	// Top-Down Coordinates!
-	int FloodFill(int x, int y, COLORREF crNewColor, COLORREF crOldColor);
+	int FloodFillColor(int x, int y, COLORREF crNewColor, COLORREF crOldColor);
 	int FloodFillIndex(int x, int y, int nNewIndex, int nOldIndex); // For 8 bpp or less
 
 	// Color adjustment
