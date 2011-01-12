@@ -101,9 +101,9 @@ LONG CUImagerView::OnThreadSafeUpdateWindowSizes(WPARAM wparam, LPARAM lparam)
 			// the Print Preview View may be returned!
 			if (pView && pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
 			{
-				pView->UpdateWindowSizes(	dwFlag & UPDATEWINDOWSIZES_INVALIDATE,
-											dwFlag & UPDATEWINDOWSIZES_ERASEBKG,
-											dwFlag & UPDATEWINDOWSIZES_SIZETODOC);
+				pView->UpdateWindowSizes(	(dwFlag & UPDATEWINDOWSIZES_INVALIDATE)	== UPDATEWINDOWSIZES_INVALIDATE,
+											(dwFlag & UPDATEWINDOWSIZES_ERASEBKG)	== UPDATEWINDOWSIZES_ERASEBKG,
+											(dwFlag & UPDATEWINDOWSIZES_SIZETODOC)	== UPDATEWINDOWSIZES_SIZETODOC);
 			}
 		}
 		return 1;

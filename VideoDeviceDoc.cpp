@@ -8145,11 +8145,21 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 	// Update
 	if (m_bSizeToDoc)
 	{
+		// This sizes the view to m_DocRect in normal screen mode,
+		// in full-screen mode it updates m_ZoomRect from m_DocRect
 		::PostMessage(	GetView()->GetSafeHwnd(),
 						WM_THREADSAFE_UPDATEWINDOWSIZES,
 						(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
 						(LPARAM)0);
 		m_bSizeToDoc = FALSE;
+	}
+	else
+	{
+		// In full-screen mode it updates m_ZoomRect from m_DocRect
+		::PostMessage(	GetView()->GetSafeHwnd(),
+						WM_THREADSAFE_UPDATEWINDOWSIZES,
+						(WPARAM)0,
+						(LPARAM)0);
 	}
 	::PostMessage(	GetView()->GetSafeHwnd(),
 					WM_THREADSAFE_SETDOCUMENTTITLE,
@@ -8781,11 +8791,21 @@ void CVideoDeviceDoc::OnChangeVideoFormat()
 	// Update
 	if (m_bSizeToDoc)
 	{
+		// This sizes the view to m_DocRect in normal screen mode,
+		// in full-screen mode it updates m_ZoomRect from m_DocRect
 		::PostMessage(	GetView()->GetSafeHwnd(),
 						WM_THREADSAFE_UPDATEWINDOWSIZES,
 						(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
 						(LPARAM)0);
 		m_bSizeToDoc = FALSE;
+	}
+	else
+	{
+		// In full-screen mode it updates m_ZoomRect from m_DocRect
+		::PostMessage(	GetView()->GetSafeHwnd(),
+						WM_THREADSAFE_UPDATEWINDOWSIZES,
+						(WPARAM)0,
+						(LPARAM)0);
 	}
 	::PostMessage(	GetView()->GetSafeHwnd(),
 					WM_THREADSAFE_SETDOCUMENTTITLE,
@@ -14399,11 +14419,21 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 			// Update
 			if (m_pDoc->m_bSizeToDoc)
 			{
+				// This sizes the view to m_DocRect in normal screen mode,
+				// in full-screen mode it updates m_ZoomRect from m_DocRect
 				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_UPDATEWINDOWSIZES,
 								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
 								(LPARAM)0);
 				m_pDoc->m_bSizeToDoc = FALSE;
+			}
+			else
+			{
+				// In full-screen mode it updates m_ZoomRect from m_DocRect
+				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)0,
+								(LPARAM)0);
 			}
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_SETDOCUMENTTITLE,
@@ -15837,11 +15867,21 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 			// Update
 			if (m_pDoc->m_bSizeToDoc)
 			{
+				// This sizes the view to m_DocRect in normal screen mode,
+				// in full-screen mode it updates m_ZoomRect from m_DocRect
 				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 								WM_THREADSAFE_UPDATEWINDOWSIZES,
 								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
 								(LPARAM)0);
 				m_pDoc->m_bSizeToDoc = FALSE;
+			}
+			else
+			{
+				// In full-screen mode it updates m_ZoomRect from m_DocRect
+				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)0,
+								(LPARAM)0);
 			}
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_SETDOCUMENTTITLE,
