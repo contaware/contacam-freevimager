@@ -4849,7 +4849,6 @@ void CPictureView::OnSize(UINT nType, int cx, int cy)
 
 LONG CPictureView::OnBackgroundMusicTrackDone(WPARAM wparam, LPARAM lparam)
 {	
-	lparam;
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 

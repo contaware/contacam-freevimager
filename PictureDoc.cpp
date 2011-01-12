@@ -399,14 +399,18 @@ void CPictureDoc::CSlideShowThread::PlayFirstBackgroundMusic()
 	::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 					WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC,
 					0, 0);
-
 }
 
 void CPictureDoc::CSlideShowThread::PlayNextBackgroundMusic()
 {	
+	BOOL res;
+	if (m_bRandom)
+		res = m_pDoc->m_BackgroundMusicFileFind.FindRandomFile();
+	else
+		res = m_pDoc->m_BackgroundMusicFileFind.FindNextFile();
+
 	// Loop To First, Load & Play it
-	if (!m_pDoc->m_BackgroundMusicFileFind.FindNextFile() &&
-		(m_pDoc->m_BackgroundMusicFileFind.GetFilesCount() >= 1))
+	if (!res && (m_pDoc->m_BackgroundMusicFileFind.GetFilesCount() >= 1))
 	{
 		PlayFirstBackgroundMusic();
 	}

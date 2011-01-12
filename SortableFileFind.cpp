@@ -433,9 +433,17 @@ BOOL CSortableFileFind::FindRandomFile()
 	::EnterCriticalSection(&m_csFileFindArray);
 	if (m_Files.GetSize() > 0)
 	{
+		int nOldFilePos = m_nFilePos;
 		srand(::timeGetTime()); // Seed
 		m_nFilePos = (int)(((unsigned int)rand())%((unsigned int)m_Files.GetSize()));
 		m_sFileName = m_Files[m_nFilePos];
+		if (nOldFilePos == m_nFilePos) // We do not want the same file, return next one
+		{
+			if (m_nFilePos < (m_Files.GetSize() - 1))
+				m_sFileName = m_Files[++m_nFilePos];
+			else
+				m_sFileName = m_Files[m_nFilePos = 0];
+		}
 		::LeaveCriticalSection(&m_csFileFindArray);
 		return TRUE;
 	}
