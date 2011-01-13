@@ -17,6 +17,8 @@ by resource strings at runtime (resource strings are allways UNICODE).
 Note on synchronization:
 
 Always do the modifications to ContaCam.apt then backport to FreeVimager.apt
-by making a copy of ContaCam.apt and updating the source file and the
-output files under the Module Properties. Remember to update the license!
-This way because with ContaCam we can check all the resources.
+by making a copy of ContaCam.apt and renaming it to FreeVimager.apt.
+Open the new FreeVimager.apt, update the source file and the
+output files under the Module Properties. Save it and close.
+Reopen FreeVimager.apt and call Update Source, remember to update the license!
+This way around because with ContaCam we can check all the resources.

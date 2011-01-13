@@ -977,6 +977,8 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// Width & Height
 		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
 		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
+		if (nZoneWidth <= 0 || nZoneHeight <= 0)
+			return;
 
 		// Offset Remove
 		point.x -= m_ZoomRect.left;
@@ -1291,6 +1293,8 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// Width & Height
 		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
 		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
+		if (nZoneWidth <= 0 || nZoneHeight <= 0)
+			return;
 
 		// Offset Remove
 		point.x -= m_ZoomRect.left;

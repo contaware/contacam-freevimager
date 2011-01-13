@@ -1,5 +1,5 @@
 <?php
-/* Copyright © 2005-2010 Oliver Pfister, Switzerland, Web: www.contaware.com
+/* Copyright © 2005-2011 Oliver Pfister, Switzerland, Web: www.contaware.com
  *
  * This source code is provided "as is", without any express or implied 
  * warranty. In no event will the author/developer be held liable or 
