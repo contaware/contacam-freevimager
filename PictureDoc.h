@@ -606,6 +606,9 @@ public:
 	BOOL ViewNextPageFrame();
 	BOOL ViewPreviousPageFrame();
 
+	// View position in google map
+	void ViewMap();
+
 	// Enable / Disable Borders
 	void ViewNoBorders();
 
@@ -664,9 +667,6 @@ public:
 							CWnd* pProgressWnd = NULL,
 							BOOL bProgressSend = TRUE,
 							CWorkerThread* pThread = NULL);
-
-	// Make google map link from the exif gps data
-	CString MakeGoogleMapLink();
 
 	// Update Layered Dialog with given Dib
 	BOOL UpdateLayeredDlg(CDib* pDib);
@@ -1210,6 +1210,8 @@ protected:
 	afx_msg void OnEditPasteIntoFileHelp();
 	afx_msg void OnPlayRandom();
 	afx_msg void OnUpdatePlayRandom(CCmdUI* pCmdUI);
+	afx_msg void OnViewMap();
+	afx_msg void OnUpdateViewMap(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

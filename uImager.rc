@@ -979,6 +979,8 @@ BEGIN
             MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
         END
         MENUITEM SEPARATOR
+        MENUITEM "Map\tG",                      ID_VIEW_MAP
+        MENUITEM SEPARATOR
         MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
         MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
         MENUITEM "All Next Image\tCtrl+ Space", ID_VIEW_ALL_NEXT_PICTURE
@@ -1284,6 +1286,8 @@ BEGIN
             MENUITEM "Opacity 40 %",                ID_LAYEREDDLG_OPACITY_40
             MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
         END
+        MENUITEM SEPARATOR
+        MENUITEM "Map\tG",                      ID_VIEW_MAP
         MENUITEM SEPARATOR
         MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
         MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
@@ -8692,6 +8696,7 @@ BEGIN
     ID_EDIT_PASTE_INTO_FILE_HELP 
                             "Coordinates text file help\nCoordinates Text File Help"
     ID_PLAY_RANDOM          "Random order play\nRandom Play"
+    ID_VIEW_MAP             "View position on map from image coord., location, city, country, comment or filename\nPosition on Map"
 END
 
 STRINGTABLE DISCARDABLE 

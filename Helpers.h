@@ -275,9 +275,6 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL term
 // Get uuid
 extern CString GetUuidString();
 
-// Lat. / Longitude to Google Map Url
-extern CString LatLongToGoogleMapUrl(BOOL bSatView, double latitude, double longitude, int zoom);
-
 // Use SecureZeroMemory(PVOID ptr, SIZE_T cnt) to zero
 // the given buffer when fineshed using it
 BOOL MakeRandomBuffer(PVOID RandomBuffer, ULONG RandomBufferLength);

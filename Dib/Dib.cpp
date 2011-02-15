@@ -4432,7 +4432,7 @@ BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 
 	// Copy
 	if (::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY) == FALSE)
-		MessageBeep(0xFFFFFFFF);
+		::MessageBeep(0xFFFFFFFF);
 
 	// Get Colors from the DibSection
 	if (m_pBMI->bmiHeader.biBitCount <= 8)

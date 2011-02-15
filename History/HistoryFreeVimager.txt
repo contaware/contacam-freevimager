@@ -1,5 +1,11 @@
 VERSION HISTORY
 
+2.3.5 (February 25th 2011)
+
+- Standalone version is now clean: it will not create
+  a directory in the user's application data folder
+- View image location in Google Map
+
 2.3.0 (January 13th 2011)
 
 - Open in full-screen settings option

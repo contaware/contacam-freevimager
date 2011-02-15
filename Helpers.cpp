@@ -2868,7 +2868,7 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 				 (c[i]== '-' || c[i] == '_' ||
 				 c[i] == '.' || c[i] == '!' ||
 				 c[i] == '*' || c[i] == '\''||
-				 c[i] == '(' || c[i]== ')'))
+				 c[i] == '(' || c[i] == ')'))
 				sEscaped += CString(c[i]);
 			else
 			{
@@ -2888,7 +2888,7 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 				 (c[i]== '-' || c[i] == '_' ||
 				 c[i] == '.' || c[i] == '!' ||
 				 c[i] == '*' || c[i] == '\''||
-				 c[i] == '(' || c[i]== ')'	||
+				 c[i] == '(' || c[i] == ')'	||
 				 c[i] == '$' || c[i] == '&' || // reserved chars
 				 c[i] == '+' || c[i] == ',' || // reserved chars
 				 c[i] == '/' || c[i] == ':' || // reserved chars
@@ -3033,114 +3033,6 @@ CString GetUuidString()
 
 	return sUUID;
 }
-
-// The PI Constant
-#ifndef PI
-#define PI  3.14159265358979323846
-#endif
-int MercatorLatitude(double lati, int maxTile)
-{
-	double maxlat = PI;
-	double lat = lati;
-	if (lat > 90) lat = lat - 180;
-	if (lat < -90) lat = lat + 180;
-
-	// Conversion degree => radians
-	double phi = PI * lat / 180.0;
-
-	// Mercator formula
-	double res = 0.5 * log((1.0 + sin(phi)) / (1.0 - sin(phi)));
-	
-	// Re-center
-	int result = (int)(((1.0 - res / maxlat) / 2.0) * maxTile);
-	
-	return result;
-}
-
-// bSatView: Satellite View if set, otherwise Map View
-// latitude: -90 (S) .. +90 (N)
-// longitude: -180 (W)  .. +180 (E)
-// zoom: 17 (fully zoomed out) to 0 (maximum definition)
-// Note: Some places have a limited zoom,
-//       Sat. Views usually can be zoomed more!
-//
-// Example Locarno: 46.1682418767, 8.79695522996
-CString LatLongToGoogleMapUrl(BOOL bSatView, double latitude, double longitude, int zoom)
-{
-	// Correct the longitude to go from 0 to 360
-	double lon = 180.0 + longitude;
-
-	int maxTile = 1 << (17 - zoom);
-
-	// Find tile size from zoom level
-	double longTileSize = 360.0 / (double)maxTile;
-
-	// Find the tile coordinates
-	int tilex = (int)(lon/longTileSize);
-	int tiley = (int)MercatorLatitude(latitude, maxTile); 
-
-	CString sUrl;
-	if (!bSatView)
-	{
-		// There are other 3 servers: mt2, mt3 and mt4
-		sUrl.Format(_T("http://mt1.google.com/mt?n=404&v=w2.12&x=%i&y=%i&zoom=%i"),
-					tilex,
-					tiley,
-					zoom);
-
-		return sUrl;
-	}
-	else
-	{
-		CString location = _T("t");
-		int CompX = maxTile / 2;
-		int CompY = maxTile / 2;
-
-		// Google use a latitude divided by 2;
-		double halflat = latitude / 2;
-		for (int i = 0 ; i < 17 - zoom ; i++)
-		{	
-			// Upper part (q or r)
-			if (tiley < CompY)
-			{
-				if (tilex < CompX)
-				{ /*q*/
-					location+= "q";
-				}
-				else
-				{/*r*/
-					location+= "r";
-					tilex -= CompX; 
-				}
-				CompX = CompX / 2;
-				CompY = CompY / 2;
-			}
-			// Lower part (t or s)
-			else
-			{
-				if (tilex < CompX)
-				{ /*t*/
-					location+= "t";
-				}
-				else
-				{/*s*/
-					location+= "s";
-					tilex -= CompX;
-				}
-				CompX = CompX / 2;
-				tiley -= CompY; 
-				CompY = CompY / 2;
-			}
-		}
-
-		// There are other 3 servers: kh1, kh2 and kh3
-		sUrl.Format(_T("http://kh0.google.com/kh?n=404&v=8&t=%s"), location);
-
-		return sUrl;
-	}
-}
-
-
 
 // Use SecureZeroMemory(PVOID ptr, SIZE_T cnt) to zero
 // the given buffer when fineshed using it

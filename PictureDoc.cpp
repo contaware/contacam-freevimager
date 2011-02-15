@@ -345,6 +345,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_FILE_HELP, OnEditPasteIntoFileHelp)
 	ON_COMMAND(ID_PLAY_RANDOM, OnPlayRandom)
 	ON_UPDATE_COMMAND_UI(ID_PLAY_RANDOM, OnUpdatePlayRandom)
+	ON_COMMAND(ID_VIEW_MAP, OnViewMap)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_MAP, OnUpdateViewMap)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -13252,6 +13254,143 @@ void CPictureDoc::OnUpdateViewBackgroundColorMenu(CCmdUI* pCmdUI)
 					!m_bDoRedEyeColorPickup);	
 }
 
+void CPictureDoc::ViewMap()
+{
+	if (m_pDib && !::AfxGetMainFrame()->m_bFullScreenMode)
+	{
+		CString sQuery, sUrl;
+
+		// Gps coordinates
+		if (m_pDib->GetExifInfo()								&&
+			m_pDib->GetExifInfo()->bGpsInfoPresent				&&
+			m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE]  >= 0.0f	&&
+			m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES] >= 0.0f	&&
+			m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS] >= 0.0f	&&
+			m_pDib->GetExifInfo()->GpsLatRef[0]					&&
+			m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE]  >= 0.0f	&&
+			m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES] >= 0.0f	&&
+			m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] >= 0.0f &&
+			m_pDib->GetExifInfo()->GpsLongRef[0])
+		{
+			CString sLat, sLong;
+			double dLat =	(double)m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE]				+ 
+							(double)m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES] / 60.0		+
+							(double)m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS] / 3600.0;	
+			sLat.Format(_T("%s%0.6f"), CString(m_pDib->GetExifInfo()->GpsLatRef), dLat);
+			double dLong =	(double)m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE]				+ 
+							(double)m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES] / 60.0		+
+							(double)m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] / 3600.0;	
+			sLong.Format(_T("%s%0.6f"), CString(m_pDib->GetExifInfo()->GpsLongRef), dLong);
+			sQuery = sLat + _T(", ") + sLong;
+			sUrl.Format(_T("http://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
+			::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
+			return;
+		}
+
+		// Location
+		if (m_pDib->GetXmpInfo() &&
+			m_pDib->GetXmpInfo()->Location != _T(""))
+			sQuery = m_pDib->GetXmpInfo()->Location;
+
+		// City
+		if (m_pDib->GetIptcFromXmpInfo() &&
+			m_pDib->GetIptcFromXmpInfo()->City != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcFromXmpInfo()->City;
+		}
+		else if (m_pDib->GetIptcLegacyInfo() &&
+				m_pDib->GetIptcLegacyInfo()->City != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcLegacyInfo()->City;
+		}
+
+		// Province/State
+		if (m_pDib->GetIptcFromXmpInfo() &&
+			m_pDib->GetIptcFromXmpInfo()->ProvinceState != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcFromXmpInfo()->ProvinceState;
+		}
+		else if (m_pDib->GetIptcLegacyInfo() &&
+				m_pDib->GetIptcLegacyInfo()->ProvinceState != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcLegacyInfo()->ProvinceState;
+		}
+
+		// Country
+		if (m_pDib->GetIptcFromXmpInfo() &&
+			m_pDib->GetIptcFromXmpInfo()->Country != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcFromXmpInfo()->Country;
+		}
+		else if (m_pDib->GetIptcLegacyInfo() &&
+				m_pDib->GetIptcLegacyInfo()->Country != _T(""))
+		{
+			if (sQuery != _T(""))
+				sQuery += _T(", ");
+			sQuery += m_pDib->GetIptcLegacyInfo()->Country;
+		}
+
+		// Use comment, filename or user's country
+#ifdef SUPPORT_LIBJPEG
+		if (sQuery == _T("") && IsJPEG() && m_pDib->GetMetadata())
+			sQuery = m_pDib->GetMetadata()->m_sJpegComment;
+#endif
+#ifdef SUPPORT_GIFLIB
+		if (sQuery == _T("") && ::GetFileExt(m_sFileName) == _T(".gif"))
+		{
+			if (m_GifAnimationThread.IsAlive() &&
+				m_GifAnimationThread.m_dwDibAnimationCount > 1 &&
+				!m_GifAnimationThread.IsRunning())
+			{
+				CDib* pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(m_GifAnimationThread.m_dwDibAnimationPos);
+				if (pDib && pDib->GetGif() && pDib->GetGif()->GetComment())
+					sQuery = CString(pDib->GetGif()->GetComment());
+			}
+			else
+			{
+				if (m_pDib->GetGif() && m_pDib->GetGif()->GetComment())
+					sQuery = CString(m_pDib->GetGif()->GetComment());
+			}
+		}
+#endif
+		if (sQuery == _T(""))
+			sQuery = ::GetShortFileNameNoExt(m_sFileName);
+		if (sQuery == _T(""))
+		{
+			int nSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SENGCOUNTRY, NULL, 0);
+			if (nSize > 0)
+			{
+				::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SENGCOUNTRY, sQuery.GetBuffer(nSize), nSize);
+				sQuery.ReleaseBuffer();
+			}
+		}
+
+		// Start browser
+		sUrl.Format(_T("http://maps.google.com/maps?q=%s"), ::UrlEncode(sQuery, TRUE));
+		::ShellExecute(NULL, _T("open"), sUrl, NULL, NULL, SW_SHOWNORMAL);
+	}
+}
+
+void CPictureDoc::OnViewMap() 
+{
+	ViewMap();
+}
+
+void CPictureDoc::OnUpdateViewMap(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(m_pDib && !::AfxGetMainFrame()->m_bFullScreenMode);
+}
+
 void CPictureDoc::ViewNoBorders()
 {
 	m_bNoBorders = !m_bNoBorders;
@@ -14687,44 +14826,6 @@ void CPictureDoc::OnLayereddlgPaste()
 void CPictureDoc::OnLayereddlgClose() 
 {
 	ViewLayeredDlg();
-}
-
-CString CPictureDoc::MakeGoogleMapLink() 
-{
-	// Gps
-	if (m_pDib && m_pDib->GetExifInfo() && m_pDib->GetExifInfo()->bGpsInfoPresent)
-	{
-		CString sUrl, sLat, sLong;
-		if (m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE]  >= 0.0f	&&
-			m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES] >= 0.0f	&&
-			m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS] >= 0.0f	&&
-			m_pDib->GetExifInfo()->GpsLatRef[0])
-		{
-			double dLat =	(double)m_pDib->GetExifInfo()->GpsLat[GPS_DEGREE]				+ 
-							(double)m_pDib->GetExifInfo()->GpsLat[GPS_MINUTES] / 60.0		+
-							(double)m_pDib->GetExifInfo()->GpsLat[GPS_SECONDS] / 3600.0;	
-			sLat.Format(_T("%s%0.6f"), CString(m_pDib->GetExifInfo()->GpsLatRef), dLat);
-		}
-		else
-			return _T("");
-		if (m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE]  >= 0.0f	&&
-			m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES] >= 0.0f	&&
-			m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] >= 0.0f &&
-			m_pDib->GetExifInfo()->GpsLongRef[0])
-		{
-			double dLong =	(double)m_pDib->GetExifInfo()->GpsLong[GPS_DEGREE]				+ 
-							(double)m_pDib->GetExifInfo()->GpsLong[GPS_MINUTES] / 60.0		+
-							(double)m_pDib->GetExifInfo()->GpsLong[GPS_SECONDS] / 3600.0;	
-			sLong.Format(_T("%s%0.6f"), CString(m_pDib->GetExifInfo()->GpsLongRef), dLong);
-		}
-		else
-			return _T("");
-		// Zoom is set to 4, we may change that!
-		sUrl.Format(_T("http://maps.google.com/maps?q=%s,%s&z=4"), sLat, sLong);  
-		return sUrl;
-	}
-	else
-		return _T("");
 }
 
 /////////////////////////////////////////////////////////////////////////////

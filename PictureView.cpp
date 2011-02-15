@@ -1573,19 +1573,8 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->ViewLayeredDlg();
 			break;
 
-		// TODO: add a command for it
 		case _T('G') :
-			if (!::AfxGetMainFrame()->m_bFullScreenMode)
-			{
-				CString sMapUrl = pDoc->MakeGoogleMapLink();
-				if (sMapUrl != _T(""))
-				{
-					::ShellExecute(	NULL,
-									_T("open"),
-									sMapUrl,
-									NULL, NULL, SW_SHOWNORMAL);
-				}
-			}
+			pDoc->ViewMap();
 			break;
 
 		case _T('L') :

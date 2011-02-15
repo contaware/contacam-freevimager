@@ -8,8 +8,6 @@ Picture:
 - Picture Search Slider
 - Play Animated Gifs the exact time in slideshow only mode,
   and think about including videos in slideshow
-- g or G command opens google map if a gps coordinate is available in exif
-  -> add a command under View -> make exif gps coordinates editable
 
 Detection:
 ----------

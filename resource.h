@@ -3509,6 +3509,7 @@
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_PLAY_RANDOM                  33165
+#define ID_VIEW_MAP                     33166
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3517,7 +3518,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33166
+#define _APS_NEXT_COMMAND_VALUE         33167
 #define _APS_NEXT_CONTROL_VALUE         2536
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
