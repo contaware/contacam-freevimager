@@ -412,8 +412,8 @@ BOOL FullscreenBrowserApp::CreateDir(LPCTSTR szNewDir)
 	TCHAR* pEnd = pStart + _tcslen(szFolder);
 	TCHAR* p = pEnd;
 
-	// Try 16 times to create the directory
-	for (int i = 0 ; i < 16 ; i++)
+	// Try 64 times to create the directory
+	for (int i = 0 ; i < 64 ; i++)
 	{
 		BOOL bOK = CreateDirectory(szFolder, NULL);
 		DWORD dwLastError = GetLastError();
@@ -421,7 +421,7 @@ BOOL FullscreenBrowserApp::CreateDir(LPCTSTR szNewDir)
 		{
 			while (*p != _T('\\'))
 			{
-				if (p == pStart)
+				if (p <= pStart)
 					return FALSE;
 				p--;
 			}
@@ -429,7 +429,7 @@ BOOL FullscreenBrowserApp::CreateDir(LPCTSTR szNewDir)
 		}
 		else if (bOK || (ERROR_ALREADY_EXISTS == dwLastError))
 		{
-			if (p == pEnd)
+			if (p >= pEnd)
 				return TRUE;
 
 			*p = _T('\\');

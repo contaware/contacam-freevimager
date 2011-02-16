@@ -38,16 +38,16 @@
 #define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
 #define NEROBURNNAME									_T("NeroBurn.exe")
 
+// Company
+#define MYCOMPANY										_T("Contaware")
+#define MYCOMPANY_WEB									_T("contaware.com")
+
 // Trace and Log files
 #define LOGNAME_EXT										_T("log.txt")
 #define TRACENAME_EXT									_T("trace.txt")
 #define LOG_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(LOGNAME_EXT))
 #define TRACE_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(TRACENAME_EXT))
 #define MAX_LOG_FILE_SIZE								1048576 /* 1MB */
-
-// Company
-#define MYCOMPANY										_T("Contaware")
-#define MYCOMPANY_WEB									_T("contaware.com")
 
 
 /////////////////////////////////////////////////////////////////////////////

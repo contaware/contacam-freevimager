@@ -194,9 +194,7 @@ CUImagerApp::CUImagerApp()
 
 CUImagerApp::~CUImagerApp()
 {
-#ifdef _DEBUG
-	::GetMemoryStats();
-#endif
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -399,29 +397,37 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 		}
 
-		// Init Trace and Log Files
-		CString sLogFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-		if (sLogFile == _T(""))
+		// Get AppData Folder
+		CString sAppData = ::GetSpecialFolderPath(CSIDL_APPDATA);
+
+		// Create our application folder
+		// Note: under win95 and NT4 CSIDL_APPDATA is not
+		// available, sAppData is then _T("")
+#ifdef VIDEODEVICEDOC
+		if (sAppData != _T(""))
+		{
+			CString sOurAppFolder = sAppData + _T("\\") +
+					CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT);
+			if (!::IsExistingDir(sOurAppFolder))
+			{
+				if (!::CreateDir(sOurAppFolder))
+					::ShowLastError(TRUE);
+			}
+		}
+#endif
+
+		// Init Trace and Log Files Location
+		// (Containing folder is created when Trace or Log Files are written)
+		CString sLogFile = sAppData;
+		if (sLogFile == _T(""))		// In case of win95 and NT4
 			sLogFile = sDriveDir + LOGNAME_EXT;
 		else
 			sLogFile += _T("\\") + LOG_FILE;
-		CString sPath = ::GetDriveAndDirName(sLogFile);
-		if (!::IsExistingDir(sPath))
-		{
-			if (!::CreateDir(sPath))
-				::ShowLastError(TRUE);
-		}
-		CString sTraceFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-		if (sTraceFile == _T(""))
+		CString sTraceFile = sAppData;
+		if (sTraceFile == _T(""))	// In case of win95 and NT4
 			sTraceFile = sDriveDir + TRACENAME_EXT;
 		else
 			sTraceFile += _T("\\") + TRACE_FILE;
-		sPath = ::GetDriveAndDirName(sTraceFile);
-		if (!::IsExistingDir(sPath))
-		{
-			if (!::CreateDir(sPath))
-				::ShowLastError(TRUE);
-		}
 		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
 
 		// Do not use registry if application is not installed
@@ -2957,6 +2963,11 @@ int CUImagerApp::ExitInstance()
 	// Store last selected printer
 	if (m_bUseSettings)
 		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+
+	// Trace memory (before EndTraceLogFile()!)
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+	::GetMemoryStats();
+#endif
 
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();

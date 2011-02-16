@@ -6,6 +6,12 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+extern BOOL CreateDir(LPCTSTR szNewDir);
+extern BOOL IsExistingDir(LPCTSTR lpszFileName);
+extern CString GetDriveAndDirName(const CString& sFullFilePath);
+extern CString GetFileNameNoExt(const CString& sFullFilePath);
+extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
+
 TCHAR g_sTraceFileName[MAX_PATH] = _T("");
 TCHAR g_sLogFileName[MAX_PATH] = _T("");
 ULONGLONG g_ullMaxLogFileSize = 0;
@@ -45,21 +51,10 @@ void LogLine(const TCHAR* pFormat, ...)
 	// Check file size
 	if (g_ullMaxLogFileSize > 0)
 	{
-		ULARGE_INTEGER Size;
-		Size.QuadPart = 0;
-		WIN32_FIND_DATA fileinfo;
-		memset(&fileinfo, 0, sizeof(WIN32_FIND_DATA));
-		HANDLE hFind = FindFirstFile(g_sLogFileName, &fileinfo);
-		Size.LowPart = fileinfo.nFileSizeLow;
-		Size.HighPart = fileinfo.nFileSizeHigh;
-		FindClose(hFind);
+		ULARGE_INTEGER Size = ::GetFileSize64(g_sLogFileName);
 		if (Size.QuadPart > g_ullMaxLogFileSize)
 		{
-			TCHAR szDrive[_MAX_DRIVE];
-			TCHAR szDir[_MAX_DIR];
-			TCHAR szName[_MAX_FNAME];
-			_tsplitpath(g_sLogFileName, szDrive, szDir, szName, NULL);
-			CString sOldFileName = CString(szDrive) + CString(szDir) + CString(szName) + _T(".old");
+			CString sOldFileName = ::GetFileNameNoExt(g_sLogFileName) + _T(".old");
 			::DeleteFile(sOldFileName);
 			::MoveFile(g_sLogFileName, sOldFileName);
 		}
@@ -84,6 +79,11 @@ void LogLine(const TCHAR* pFormat, ...)
 	CString sCurrentTime(_tctime(&CurrentTime));
 	sCurrentTime.Replace(_T('\n'), _T(' '));
 
+	// Create directory
+	CString sPath = ::GetDriveAndDirName(g_sLogFileName);
+	if (!::IsExistingDir(sPath))
+		::CreateDir(sPath);
+
 	// Log To File
 	FILE* pf = _tfopen(g_sLogFileName, _T("at"));
 	if (pf)
@@ -107,6 +107,11 @@ void TraceFile(const TCHAR* pFormat, ...)
 	// Trace
 	AfxTrace(s);
 
+	// Create directory
+	CString sPath = ::GetDriveAndDirName(g_sTraceFileName);
+	if (!::IsExistingDir(sPath))
+		::CreateDir(sPath);
+
 	// Log To File
 	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));
 	if (pf)
@@ -126,6 +131,11 @@ void TraceFileCS(const TCHAR* pFormat, ...)
 
 	// Trace
 	AfxTrace(s);
+
+	// Create directory
+	CString sPath = ::GetDriveAndDirName(g_sTraceFileName);
+	if (!::IsExistingDir(sPath))
+		::CreateDir(sPath);
 
 	// Log To File
 	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));

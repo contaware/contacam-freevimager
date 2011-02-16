@@ -83,6 +83,9 @@ void CRegistrationDlg::OnButtonOpenKeyfile()
 		}
 		else
 			sRSAKeyFile += _T("\\") + RSA_KEY_FILE;
+		CString sPath = ::GetDriveAndDirName(sRSAKeyFile);
+		if (!::IsExistingDir(sPath))
+			::CreateDir(sPath);
 		if (::CopyFile(fd.GetPathName(), sRSAKeyFile, FALSE))
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bRegistered = ((CUImagerApp*)::AfxGetApp())->RSADecrypt();
