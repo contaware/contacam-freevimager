@@ -3,8 +3,8 @@ RequestExecutionLevel user
 
 ; Name Defines
 !include "CurrentVersion.nsh"
-!define APPNAME "ContaCam Ffmpeg Source"
-!define APPNAME_NOSPACE "ContaCamFfmpegSource"
+!define APPNAME "Contaware Ffmpeg Source"
+!define APPNAME_NOSPACE "ContawareFfmpegSource"
 !define UNINSTNAME_EXT "uninstall.exe"
 !define UNINSTNAME_LNK "Uninstall.lnk"
 

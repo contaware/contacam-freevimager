@@ -13,8 +13,9 @@ Class1=FullscreenBrowserApp
 Class2=FullscreenBrowserDlg
 Class3=SimpleBrowser
 
-ResourceCount=1
+ResourceCount=2
 Resource1=IDD_DIALOG
+Resource2=IDD_DIALOG (English (U.S.))
 
 [CLS:FullscreenBrowserApp]
 Type=0
@@ -43,6 +44,12 @@ ImplementationFile=SimpleBrowser.cpp
 [DLG:IDD_DIALOG]
 Type=1
 Class=FullscreenBrowserDlg
+ControlCount=1
+Control1=IDC_BROWSER,static,1342308865
+
+[DLG:IDD_DIALOG (English (U.S.))]
+Type=1
+Class=?
 ControlCount=1
 Control1=IDC_BROWSER,static,1342308865
 
