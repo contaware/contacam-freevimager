@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.3.9 (xxx 2011)
+
+- Fixed playing problems for audio files with really long path
+
 2.3.5 (February 18th 2011)
 
 - Standalone version is now clean: it will not create

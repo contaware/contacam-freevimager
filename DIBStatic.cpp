@@ -770,7 +770,8 @@ void CDibStatic::UnloadMusic()
 BOOL CDibStatic::LoadMusic(	LPCTSTR lpszFileName,
 							int nWidth/*=0*/,
 							int nHeight/*=0*/,
-							BOOL bStartPlaying/*=FALSE*/)
+							BOOL bStartPlaying/*=FALSE*/,
+							BOOL bUseShortPath/*=FALSE*/)
 {
 	// Show Player Controls Inside Preview
 	if (::IsWindow(m_hWnd) && m_bMusicFile)
@@ -795,6 +796,10 @@ BOOL CDibStatic::LoadMusic(	LPCTSTR lpszFileName,
 		// Start Music Player
 		if (m_hMCIWnd)
 			MCIWndDestroy(m_hMCIWnd);
+		// Use short path?
+		TCHAR lpszShortPath[1024];
+		if (bUseShortPath)
+			::GetShortPathName(lpszFileName, lpszShortPath, 1024);
 		// Note: .mid is supported, but .midi not...
 		m_hMCIWnd = ::MCIWndCreate(	GetSafeHwnd(),
 									::AfxGetInstanceHandle(),
@@ -803,13 +808,27 @@ BOOL CDibStatic::LoadMusic(	LPCTSTR lpszFileName,
 									MCIWNDF_NOTIFYPOS	|
 									MCIWNDF_NOERRORDLG	|
 									MCIWNDF_NOMENU,
-									lpszFileName);
+									bUseShortPath ? lpszShortPath : lpszFileName);
 		if (m_hMCIWnd)
 		{
 			MCIWndSetTimeFormat(m_hMCIWnd, _T("ms"));
 			m_lMusicLength = MCIWndGetLength(m_hMCIWnd);
-			m_lMusicPos = MCIWndGetPosition(m_hMCIWnd);
-			MCIWndSetInactiveTimer(m_hMCIWnd, 500);
+			// Try with a short path
+			if (m_lMusicLength <= 0 && !bUseShortPath)
+			{
+				UnloadMusic();
+				m_lMusicLength = -1;
+				return LoadMusic(	lpszFileName,
+									nWidth,
+									nHeight,
+									bStartPlaying,
+									TRUE);
+			}
+			else
+			{
+				m_lMusicPos = MCIWndGetPosition(m_hMCIWnd);
+				MCIWndSetInactiveTimer(m_hMCIWnd, 500);
+			}
 		}
 		else
 		{

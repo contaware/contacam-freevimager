@@ -192,7 +192,8 @@ public:
 	BOOL LoadMusic(	LPCTSTR lpszFileName,
 					int nWidth = 0,
 					int nHeight = 0,
-					BOOL bStartPlaying = FALSE);
+					BOOL bStartPlaying = FALSE,
+					BOOL bUseShortPath = FALSE);
 	void UnloadMusic();
 	void FreeMusic();
 
