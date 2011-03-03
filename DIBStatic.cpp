@@ -1116,14 +1116,14 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/, BOOL bForceBusyTextDisplay/*=FAL
 			((m_pDibFull && m_pDibFull->IsValid()) ||
 			(m_pDibFull && m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid())))
 		{
-	#ifdef SUPPORT_GIFLIB
+#ifdef SUPPORT_GIFLIB
 			if ((m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
 				m_GifAnimationThread.IsAlive())
 			{
 				pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(m_GifAnimationThread.m_dwDibAnimationPos);
 			}
 			else
-	#endif
+#endif
 			{
 				if (m_pAlphaRenderedDib && m_pAlphaRenderedDib->IsValid())
 					pDib = m_pAlphaRenderedDib;

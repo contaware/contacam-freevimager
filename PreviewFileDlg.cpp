@@ -445,7 +445,7 @@ void CPreviewFileDlg::Load(BOOL bOnlyHeader/*=FALSE*/)
 	CButton* pBigPictureCheck = (CButton*)GetDlgItem(IDC_BIGPICTURE);
 
 	// Check whether the file exists
-	if (::GetFileAttributes(sLastFileName) == 0xFFFFFFFF)
+	if (!::IsExistingFile(sLastFileName))
 	{
 		// Hide Check Box
 		pBigPictureCheck->ShowWindow(SW_HIDE);
@@ -470,7 +470,6 @@ void CPreviewFileDlg::Load(BOOL bOnlyHeader/*=FALSE*/)
 			m_DibStaticCtrl.FreeMusic();
 			m_DibStaticCtrl.PaintDib();
 			SetInfoText(_T(""));
-
 			m_sLastFileName = _T("");
 		}	
 		else
