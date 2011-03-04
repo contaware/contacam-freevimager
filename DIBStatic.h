@@ -17,10 +17,11 @@
 
 #define WM_MUSIC_POS				WM_USER + 201
 #define	WM_LOADDONE					WM_USER + 1300
-#define	WM_PAINT_BUSYTEXT			WM_USER + 1301
+#define	WM_PAINT_DIB				WM_USER + 1301
 
 // Message Delay
-#define PAINT_BUSYTEXT_DELAY		300
+#define PAINT_DIB_DELAY_LONG		300U
+#define PAINT_DIB_DELAY_SHORT		50U
 
 class CDibStatic : public CStatic
 {
@@ -181,9 +182,8 @@ public:
 				BOOL bStartPlayingAudio = FALSE);		// If TRUE start playing the given audio file
 	
 	// Dibs
-	void FreeDibs(	BOOL bUseCS = TRUE);
-	void PaintDib(	BOOL bUseCS = TRUE,
-					BOOL bForceBusyTextDisplay = FALSE);
+	void FreeDibs(BOOL bUseCS = TRUE);
+	void PaintDib(BOOL bUseCS = TRUE);
 
 	// Music
 	BOOL IsMusicPlaying() const {	return m_hMCIWnd ?
@@ -210,7 +210,7 @@ protected:
 	void CreateMusicRgn(CRgn& rgn);
 	CString GetFormattedTime(LONG lMilliseconds);
 
-	volatile DWORD m_dwBusyTextUpTime;
+	volatile DWORD m_dwPaintDibDelayedUpTime;
 	HWND volatile m_hNotifyWnd;
 	CAVIPlay* volatile m_pAVIPlay;
 	CDib* volatile m_pDibHdr;
@@ -251,7 +251,7 @@ protected:
 	afx_msg void OnPaletteChanged(CWnd* pFocusWnd);
 	afx_msg void OnDestroy();
 	//}}AFX_MSG
-	afx_msg LONG OnPaintBusyText(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnPaintDib(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnMusicPos(WPARAM wparam, LPARAM lparam);
 
 	DECLARE_MESSAGE_MAP()

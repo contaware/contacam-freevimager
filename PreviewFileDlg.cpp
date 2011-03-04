@@ -366,7 +366,6 @@ void CPreviewFileDlg::OnFileNameChange()
 	CFileDialog::OnFileNameChange();
 	CString sLastFileName = GetLastSelectedFilePath();
 	BOOL bExisting = ::IsExistingFile(sLastFileName);
-
 	if (!bExisting || (m_sLastFileName != sLastFileName))
 		Load(!m_bPreview);
 }
@@ -374,11 +373,10 @@ void CPreviewFileDlg::OnFileNameChange()
 void CPreviewFileDlg::OnFolderChange() 
 {
 	CFileDialog::OnFolderChange();
-	m_DibStaticCtrl.FreeDibs();
-	m_DibStaticCtrl.FreeMusic();
-	m_DibStaticCtrl.PaintDib();
-	SetInfoText(_T(""));
-	m_sLastFileName = _T("");
+	CString sLastFileName = GetLastSelectedFilePath();
+	BOOL bExisting = ::IsExistingFile(sLastFileName);
+	if (!bExisting || (m_sLastFileName != sLastFileName))
+		Load(!m_bPreview);
 
 	// We loose the subclassing every time the user navigates to a
 	// different folder, since the control gets recreated. So, re-subclass
@@ -440,41 +438,8 @@ CString CPreviewFileDlg::GetLastSelectedFilePath()
 
 void CPreviewFileDlg::Load(BOOL bOnlyHeader/*=FALSE*/) 
 {
-	CString s, t;
-	CString sLastFileName = GetLastSelectedFilePath();
-	CButton* pBigPictureCheck = (CButton*)GetDlgItem(IDC_BIGPICTURE);
-
-	// Check whether the file exists
-	if (!::IsExistingFile(sLastFileName))
-	{
-		// Hide Check Box
-		pBigPictureCheck->ShowWindow(SW_HIDE);
-
-		// Free
-		m_DibStaticCtrl.FreeDibs();
-		m_DibStaticCtrl.FreeMusic();
-		m_DibStaticCtrl.PaintDib();
-		SetInfoText(_T(""));
-		m_sLastFileName = _T("");
-	}
-	else
-	{
-		// Start Load Thread
-		if (!m_DibStaticCtrl.Load(sLastFileName, bOnlyHeader)) // the control will handle errors
-		{
-			// Hide Check Box
-			pBigPictureCheck->ShowWindow(SW_HIDE);
-
-			// Free
-			m_DibStaticCtrl.FreeDibs();
-			m_DibStaticCtrl.FreeMusic();
-			m_DibStaticCtrl.PaintDib();
-			SetInfoText(_T(""));
-			m_sLastFileName = _T("");
-		}	
-		else
-			m_sLastFileName = sLastFileName;
-	}
+	m_sLastFileName = GetLastSelectedFilePath();
+	m_DibStaticCtrl.Load(m_sLastFileName, bOnlyHeader);
 }
 
 LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
