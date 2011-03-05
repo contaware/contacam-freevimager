@@ -242,15 +242,12 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 				throw (int)FULLLOAD_HDRERROR;
 
 			// Post Paint Busy Text Message
-			if (m_bPaint)
-			{
-				m_pDibStatic->m_dwPaintDibDelayedUpTime = ::timeGetTime();
-				CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
-																WM_PAINT_DIB,
-																PAINT_DIB_DELAY_LONG,
-																(WPARAM)m_pDibStatic->m_dwPaintDibDelayedUpTime,
-																(LPARAM)0);
-			}
+			m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+			CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
+															WM_PAINT_BUSYTEXT,
+															PAINT_BUSYTEXT_DELAY,
+															(WPARAM)m_pDibStatic->m_dwBusyTextUpTime,
+															(LPARAM)0);
 
 			// Init AVI File Object
 			if (!m_pDibStatic->m_pAVIPlay->Open(m_sFileName,
@@ -327,15 +324,12 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
 
 			// Post Paint Busy Text Message
-			if (m_bPaint)
-			{
-				m_pDibStatic->m_dwPaintDibDelayedUpTime = ::timeGetTime();
-				CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
-																WM_PAINT_DIB,
-																PAINT_DIB_DELAY_LONG,
-																(WPARAM)m_pDibStatic->m_dwPaintDibDelayedUpTime,
-																(LPARAM)0);
-			}
+			m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+			CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
+															WM_PAINT_BUSYTEXT,
+															PAINT_BUSYTEXT_DELAY,
+															(WPARAM)m_pDibStatic->m_dwBusyTextUpTime,
+															(LPARAM)0);
 
 			// Leave Hdr CS
 			LeaveHdrCS();
@@ -448,7 +442,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 #endif
 
 		// Clear Paint Busy Text
-		m_pDibStatic->m_dwPaintDibDelayedUpTime = ::timeGetTime();
+		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
 
 		// Paint Dib
 		if (m_bPaint)
@@ -504,19 +498,13 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 	{
 		if (m_pDibStatic->m_pAVIPlay)
 			m_pDibStatic->m_pAVIPlay->CloseFile();
-		m_pDibStatic->m_dwPaintDibDelayedUpTime = ::timeGetTime();
+		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
 		m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
 		m_pDibStatic->FreeDibs(FALSE);
 		if (m_bPaint && (nCause != FULLLOAD_DOEXIT)) // Only Paint if not killed
-		{
-			CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
-															WM_PAINT_DIB,
-															PAINT_DIB_DELAY_SHORT,
-															(WPARAM)m_pDibStatic->m_dwPaintDibDelayedUpTime,
-															(LPARAM)0);
-		}
+			m_pDibStatic->PaintDib(FALSE);
 		LeaveAllCS();
 		if (::IsWindow(m_pDibStatic->m_hNotifyWnd))
 			::PostMessage(	m_pDibStatic->m_hNotifyWnd,
@@ -615,7 +603,7 @@ BEGIN_MESSAGE_MAP(CDibStatic, CStatic)
 	ON_WM_PALETTECHANGED()
 	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_PAINT_DIB, OnPaintDib)
+	ON_MESSAGE(WM_PAINT_BUSYTEXT, OnPaintBusyText)
 	ON_MESSAGE(WM_MUSIC_POS, OnMusicPos)
 END_MESSAGE_MAP()
 
@@ -627,7 +615,7 @@ CDibStatic::CDibStatic()
 	m_bLoadFullTerminated = FALSE;
 	m_nThumbLoadThreadPriority = THREAD_PRIORITY_NORMAL;
 	m_hNotifyWnd = NULL;
-	m_dwPaintDibDelayedUpTime = 0U;
+	m_dwBusyTextUpTime = 0U;
 	m_pAVIPlay = NULL;
 	m_pDibHdr = NULL;
 	m_pDibFull = NULL;
@@ -673,10 +661,10 @@ void CDibStatic::OnDestroy()
 	CStatic::OnDestroy();
 }
 
-LONG CDibStatic::OnPaintDib(WPARAM wparam, LPARAM lparam)
+LONG CDibStatic::OnPaintBusyText(WPARAM wparam, LPARAM lparam)
 {
-	DWORD dwPaintDibDelayedUpTime = (DWORD)wparam;
-	if (m_dwPaintDibDelayedUpTime == dwPaintDibDelayedUpTime)
+	DWORD dwPostedBusyTextUpTime = (DWORD)wparam;
+	if (m_dwBusyTextUpTime == dwPostedBusyTextUpTime)
 		PaintDib();
 	return 0;
 }
@@ -744,7 +732,8 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 		!bOnlyHeader)
 		LoadMusic(lpszFileName, nWidth, nHeight, bStartPlayingAudio);
 
-	// Start Thread
+	// Start Thread, also if music file or a invalid file,
+	// this because we want WM_LOADDONE messages posted!
 	if (m_ThumbLoadThread.Start(m_nThumbLoadThreadPriority) == true)
 		return TRUE;
 	else
@@ -1191,6 +1180,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 
 			if (m_bMusicFile)
 			{
+				// Draw Music Text
 				ClearView(&MemDC);
 				COLORREF crOldTextColor = MemDC.SetTextColor(m_crBusyTextColor);
 				int nOldBkMode = MemDC.SetBkMode(TRANSPARENT);
@@ -1219,7 +1209,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		if (bUseCS && m_pcsDibFull)
 			m_pcsDibFull->LeaveCriticalSection();
 	}
-	else
+	else if (!m_bOnlyHeader && !m_bLoadFullTerminated)
 	{
 		// Flicker Free Drawing
 		CMemDC MemDC(&dc, &rcClient);
