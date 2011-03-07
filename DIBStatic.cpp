@@ -84,7 +84,7 @@ int CDibStatic::CThumbLoadThread::WorkHdr()
 	if (m_pDibStatic->m_pDibHdr == NULL)
 	{
 		m_pDibStatic->m_bLoadHdrTerminated = TRUE;
-		m_pDibStatic->FreeDibs(FALSE);
+		m_pDibStatic->FreeDibs();
 		if (m_bPaint)
 			m_pDibStatic->PaintDib(FALSE);
 		LeaveHdrCS();
@@ -180,7 +180,7 @@ int CDibStatic::CThumbLoadThread::WorkHdr()
 			m_pDibStatic->m_pAVIPlay->CloseFile();
 		m_pDibStatic->m_bLoadHdrTerminated = TRUE;
 		m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
-		m_pDibStatic->FreeDibs(FALSE);
+		m_pDibStatic->FreeDibs();
 		if (m_bPaint)
 			m_pDibStatic->PaintDib(FALSE);
 		LeaveHdrCS();
@@ -206,7 +206,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		m_pDibStatic->m_pDibFull == NULL)
 	{
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
-		m_pDibStatic->FreeDibs(FALSE);
+		m_pDibStatic->FreeDibs();
 		if (m_bPaint)
 			m_pDibStatic->PaintDib(FALSE);
 		LeaveAllCS();
@@ -441,13 +441,6 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		m_pDibStatic->m_GifAnimationThread.ClearAnimationArrays();
 #endif
 
-		// Clear Paint Busy Text
-		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
-
-		// Paint Dib
-		if (m_bPaint)
-			m_pDibStatic->PaintDib(FALSE);
-
 		// Restore Old ShowMessageBoxOnError
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
 
@@ -455,9 +448,13 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 #ifdef SUPPORT_GIFLIB
 		if (m_pDibStatic->m_bAnimatedGif && m_bLoadAndPlayAnimatedGif)
 		{
+			// Load Gifs
 			m_pDibStatic->m_GifAnimationThread.SetFileName(m_sFileName);
 			if (m_pDibStatic->m_GifAnimationThread.Load(FALSE) > 1)
 			{
+				// Clear Paint Busy Text
+				m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+
 				// Loaded Flag
 				m_pDibStatic->m_bLoadFullTerminated = TRUE;
 
@@ -479,8 +476,16 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		}
 #endif
 
+		// Clear Paint Busy Text
+		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
+
 		// Loaded Flag
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
+
+		// Paint Dib (must be after m_bLoadFullTerminated is set
+		// because of the busy text paint logic)
+		if (m_bPaint)
+			m_pDibStatic->PaintDib(FALSE);
 
 		// Leave Full CS
 		LeaveFullCS();
@@ -502,7 +507,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
 		m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
-		m_pDibStatic->FreeDibs(FALSE);
+		m_pDibStatic->FreeDibs();
 		if (m_bPaint && (nCause != FULLLOAD_DOEXIT)) // Only Paint if not killed
 			m_pDibStatic->PaintDib(FALSE);
 		LeaveAllCS();
@@ -644,20 +649,20 @@ CDibStatic::CDibStatic()
 
 CDibStatic::~CDibStatic()
 {
+	m_ThumbLoadThread.Kill();
 #ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.Kill();
 #endif
-	m_ThumbLoadThread.Kill();
 }
 
 void CDibStatic::OnDestroy() 
 {
 	// Destroy MCI Wnd
 	FreeMusic();
+	m_ThumbLoadThread.Kill();
 #ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.Kill();
 #endif
-	m_ThumbLoadThread.Kill();
 	CStatic::OnDestroy();
 }
 
@@ -677,12 +682,6 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 						int nHeight/*=0*/,
 						BOOL bStartPlayingAudio/*=FALSE*/)
 {
-	// Start Killing Gif Animation Thread
-#ifdef SUPPORT_GIFLIB
-	if (m_GifAnimationThread.IsAlive())
-		m_GifAnimationThread.Kill_NoBlocking();
-#endif
-
 	// Client Area
 	CRect rcClient;
 	if (nWidth != 0 && nHeight != 0)
@@ -699,6 +698,12 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 	// Kill Thumb Load Thread
 	if (m_ThumbLoadThread.IsAlive())
 		m_ThumbLoadThread.Kill();
+
+	// Start Killing Gif Animation Thread
+#ifdef SUPPORT_GIFLIB
+	if (m_GifAnimationThread.IsAlive())
+		m_GifAnimationThread.Kill_NoBlocking();
+#endif
 
 	// Clear Gif Animation Flag
 	m_bAnimatedGif = FALSE;
@@ -1314,36 +1319,16 @@ void CDibStatic::SetAVIPlayPointer(CAVIPlay* pAVIPlay)
 		m_pcsDibFull->LeaveCriticalSection();
 }
 
-void CDibStatic::FreeDibs(BOOL bUseCS/*=TRUE*/)
+void CDibStatic::FreeDibs()
 {
-	// Start Killing Threads
-#ifdef SUPPORT_GIFLIB
-	if (m_GifAnimationThread.IsAlive())
-		m_GifAnimationThread.Kill_NoBlocking();
-#endif
-	if (m_ThumbLoadThread.IsAlive())
-		m_ThumbLoadThread.Kill_NoBlocking();
-
 	if (m_bOnlyHeader)
 	{
-		// Enter CS
-		if (bUseCS && m_pcsDibHdr)
-			m_pcsDibHdr->EnterCriticalSection();
-
 		// Free Dib
 		if (m_pDibHdr) 
 			m_pDibHdr->Free();
-
-		// Leave CS
-		if (bUseCS && m_pcsDibHdr)
-			m_pcsDibHdr->LeaveCriticalSection();
 	}
 	else
 	{
-		// Enter CS
-		if (bUseCS && m_pcsDibFull)
-			m_pcsDibFull->EnterCriticalSection();
-
 		// Free Dib
 		if (m_pDibFull) 
 			m_pDibFull->Free();
@@ -1351,9 +1336,5 @@ void CDibStatic::FreeDibs(BOOL bUseCS/*=TRUE*/)
 		// Free Alpha Rendered Dib
 		if (m_pAlphaRenderedDib)
 			m_pAlphaRenderedDib->Free();
-
-		// Leave CS
-		if (bUseCS && m_pcsDibFull)
-			m_pcsDibFull->LeaveCriticalSection();
 	}
 }

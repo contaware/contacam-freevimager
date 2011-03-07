@@ -181,7 +181,6 @@ public:
 				BOOL bStartPlayingAudio = FALSE);		// If TRUE start playing the given audio file
 	
 	// Dibs
-	void FreeDibs(BOOL bUseCS = TRUE);
 	void PaintDib(BOOL bUseCS = TRUE);
 
 	// Music
@@ -202,6 +201,7 @@ public:
 	//}}AFX_VIRTUAL
 
 protected:
+	void FreeDibs();
 	BOOL DoRealizePalette(BOOL bForceBackGround);
 	void ClearView(CDC* pDC);
 	void ClearBorders(CDC* pDC, const CRect& rcDib);

@@ -4341,8 +4341,8 @@ void CBatchProcDlg::DeleteListElement(CBatchProcDlg::CListElement* pListElement)
 		pListElement->m_DibStatic.SetNotifyHwnd(NULL);
 
 		// Kill Threads
-		pListElement->m_DibStatic.GetGifAnimationThread()->Kill();
 		pListElement->m_DibStatic.GetThumbLoadThread()->Kill();
+		pListElement->m_DibStatic.GetGifAnimationThread()->Kill();
 
 		// Delete Dib Hdr
 		if (pListElement->m_pDibHdr)

@@ -234,10 +234,10 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 void CPreviewFileDlg::OnDestroy() 
 {
 	m_DibStaticCtrl.SetNotifyHwnd(NULL);
+	m_DibStaticCtrl.GetThumbLoadThread()->Kill();
 #ifdef SUPPORT_GIFLIB
 	m_DibStaticCtrl.GetGifAnimationThread()->Kill();
 #endif
-	m_DibStaticCtrl.GetThumbLoadThread()->Kill();
 	CFileDialog::OnDestroy();	
 }
 
