@@ -94,11 +94,7 @@ xpstyle on
 
 ; Language File Modern UI,
 ; change also the Version Information language!
-;!insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "Italian"
-;!insertmacro MUI_LANGUAGE "French"
-;!insertmacro MUI_LANGUAGE "German"
-;!insertmacro MUI_LANGUAGE "Russian"
 
 ;--------------------------------
 

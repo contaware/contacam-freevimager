@@ -1,0 +1,30 @@
+﻿Copyright © 2005-2011 Oliver Pfister, Schweiz
+Durch die Installation dieser FREEWARE Software erklären Sie sich mit den
+Bedingungen dieser Lizenz einverstanden.
+  
+Diese Software wird 'wie sie ist' zur Verfügung gestellt, ohne irgendwelche
+explizite oder implizite Garantie. In keinem Fall kann der Autor/Entwickler für
+irgendeinen Schaden welcher von der Nutzung dieser Software entsteht verantwortlich
+gehalten werden.
+  
+Die Erlaubnis wird auf individueller Basis gewährt, man darf die Software im
+Privaten Umfeld (zu Hause) oder im Kommerziellen Umfeld (an der Arbeit) verwenden.  
+   
+Die Nutzung der Software unterliegt den folgenden Einschränkungen:  
+  
+1. Die Herkunft dieser Software darf nicht falsch dargestellt werden. Sie müssen
+nicht behaupten, dass Sie die Software geschrieben haben/entwickelt haben/besitzen.  
+  
+2. Man darf die Software nicht reverse-engineeren, dekompilieren, disassemblieren,
+übersetzen oder auf irgendwelcher Art modifizieren.  
+  
+3. Die Verteilung der Software ist für jede Vergütungsart verboten. Der Lizenzgeber
+gewährt Ihnen das Royality-freie Recht auf Vervielfältigung und Verbreitung dieser
+Software als Teil einer CD / DVD welche mit der gedruckten Ausgabe von Zeitschriften
+oder Büchern gebunden ist, solange keine zusätzliche Gebühr für die Aufnahme dieser
+Software berechnet wird.  
+  
+4. Diese Bekanntmachung darf in keiner Verteilungsart dieser Software entfernt
+oder verändert werden.
+  
+ENDE DER BEDINGUNGEN

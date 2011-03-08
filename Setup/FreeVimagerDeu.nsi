@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !endif
 !endif
 !endif
@@ -82,7 +82,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseFreeVimagerRus.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseFreeVimagerDeu.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -94,7 +94,7 @@ xpstyle on
 
 ; Language File Modern UI,
 ; change also the Version Information language!
-!insertmacro MUI_LANGUAGE "Russian"
+!insertmacro MUI_LANGUAGE "German"
 
 ;--------------------------------
 
@@ -131,7 +131,7 @@ InstallCheckInstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 InstallCheckApplicationRunning
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer is already running" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Die Installation läuft bereits" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
@@ -145,13 +145,13 @@ InstallCheckApplicationRunning:
   Pop $R0
   StrCmp $R0 0 lbl_check_exe_type
   StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Anwendung wird bereits ausgeführt. Bitte schließen und wiederholen!" /SD IDOK
   goto KillAppAbort
 KillAppAsk:
   StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
   StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
   ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
-  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the installation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
+  MessageBox MB_YESNO|MB_ICONQUESTION "Anwendung wird bereits ausgeführt.$\nSoll das Installationsprogramm die Anwendung schließen und fortsetzen?$\n(Wählen Sie Nein falls Sie ungespeicherte Daten haben)" /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
   StrCpy $0 "${APPNAME_EXT}"
@@ -160,7 +160,7 @@ KillApp:
   Sleep 1500
   Goto lbl_check_exe_type
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Das Installationsprogramm konnte die Anwendung nicht schließen" /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1
@@ -172,7 +172,7 @@ KillAppAbort:
 lbl_check_exe_type:
 !ifndef INSTALLER_WIN9X
   StrCmp $INSTALLTYPE 'UNICODE' lbl_end
-    MessageBox MB_OK|MB_ICONEXCLAMATION "This Installer works only on Win2000, XP and newer Systems" /SD IDOK
+    MessageBox MB_OK|MB_ICONEXCLAMATION "Dieses Installationsprogramm funktioniert nur mit Win2000, XP und neueren Systemen" /SD IDOK
     Pop $R1
     Pop $R0
     ${UAC.Unload} ;Must call unload!
@@ -226,9 +226,9 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
 !endif
 !ifdef INSTALLER_NT
-  File "..\Translation\${APPNAME_NOEXT}wRus.exe"
+  File "..\Translation\${APPNAME_NOEXT}wDeu.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseFreeVimagerRus.txt"
+  File "/oname=License.txt" "..\License\LicenseFreeVimagerDeu.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
   File "..\NeroBurn\Release\NeroBurn.exe"
 !ifdef WITH_TUTORIALS
@@ -252,7 +252,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Install Unicode?
   StrCmp $INSTALLTYPE 'UNICODE' unicode
 !ifdef INSTALLER_NT
-    Delete "$INSTDIR\${APPNAME_NOEXT}wRus.exe"
+    Delete "$INSTDIR\${APPNAME_NOEXT}wDeu.exe"
 !endif
     goto unicode_end
 unicode:
@@ -260,7 +260,7 @@ unicode:
     Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
 !endif
 !ifdef INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_NOEXT}wRus.exe" "$INSTDIR\${APPNAME_EXT}"
+    Rename "$INSTDIR\${APPNAME_NOEXT}wDeu.exe" "$INSTDIR\${APPNAME_EXT}"
 !endif
 unicode_end:
   
@@ -342,13 +342,13 @@ SectionEnd
 ;Version Information
 
 VIProductVersion "${APPVERSION}.0"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "ProductName" "${APPNAME_NOEXT} Application"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "Comments" "MM Application"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "CompanyName" "Contaware.com"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "LegalCopyright" "© Contaware.com"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
-VIAddVersionKey /LANG=${LANG_RUSSIAN} "FileVersion" "${APPVERSION}.0"
+VIAddVersionKey /LANG=${LANG_GERMAN} "ProductName" "${APPNAME_NOEXT} Application"
+VIAddVersionKey /LANG=${LANG_GERMAN} "Comments" "MM Application"
+VIAddVersionKey /LANG=${LANG_GERMAN} "CompanyName" "Contaware.com"
+VIAddVersionKey /LANG=${LANG_GERMAN} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
+VIAddVersionKey /LANG=${LANG_GERMAN} "LegalCopyright" "© Contaware.com"
+VIAddVersionKey /LANG=${LANG_GERMAN} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
+VIAddVersionKey /LANG=${LANG_GERMAN} "FileVersion" "${APPVERSION}.0"
 
 ;--------------------------------
 
@@ -386,7 +386,7 @@ UninstallCheckUninstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 UninstallCheckApplicationRunning
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Die Deinstallation läuft bereits" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
@@ -400,10 +400,10 @@ UninstallCheckApplicationRunning:
   Pop $R0
   StrCmp $R0 0 lbl_end
   StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Anwendung wird bereits ausgeführt. Bitte schließen und wiederholen!" /SD IDOK
   goto KillAppAbort
 KillAppAsk:
-  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the uninstallation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
+  MessageBox MB_YESNO|MB_ICONQUESTION "Anwendung wird bereits ausgeführt.$\nSoll das Deinstallationsprogramm die Anwendung schließen und fortsetzen?$\n(Wählen Sie Nein falls Sie ungespeicherte Daten haben)" /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
   StrCpy $0 "${APPNAME_EXT}"
@@ -412,7 +412,7 @@ KillApp:
   Sleep 1500
   Goto lbl_end
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION "Das Deinstallationsprogramm konnte die Anwendung nicht schließen" /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1
