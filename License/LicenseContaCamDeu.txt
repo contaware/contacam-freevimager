@@ -1,76 +1,78 @@
-﻿Copyright © 2005-2011 Oliver Pfister, Schweiz 
-Durch die Installation von ContaCam (im Folgenden "Software") erklären
-Sie sich mit den Bedingungen dieser Lizenz einverstanden.
+﻿Copyright © 2005-2011 Oliver Pfister, Schweiz
+Durch die Installation von ContaCam (nachstehend "Software" genannt)
+erklären Sie sich mit den Bedingungen dieser Lizenz einverstanden.
 
 Diese Software wird 'wie sie ist' zur Verfügung gestellt, ohne irgendwelche
 explizite oder implizite Garantie. In keinem Fall kann der Autor/Entwickler
-für irgendeinen Schaden welcher von der Nutzung dieser Software entsteht
-verantwortlich gehalten werden.
+für irgendeinen Schaden, welcher durch die Nutzung dieser Software entsteht,
+verantwortlich gemacht werden.
 
 
-A. Die unregistrierte ContaCam Version ist ein Freeware-Programm welches
-durch eine 3-stündige Video Erfassungszeit Begrenzt ist. Die Erlaubnis wird
-auf individueller Basis gewährt, man darf diese unregistrierte Software im
-Privaten Umfeld (zu Hause) oder im Kommerziellen Umfeld (an der Arbeit)
-verwenden. 
+A. Die unregistrierte ContaCam Version ist ein Freeware-Programm, welches
+durch eine 3-stündige Video-Erfassungszeit begrenzt ist. Die Erlaubnis wird
+auf individueller Basis gewährt. Diese unregistrierte Software darf im
+privaten Umfeld (zu Hause) oder im kommerziellen Umfeld (an der Arbeit)
+verwendet werden.
 
-Die Nutzung dieser unregistrierten Software unterliegt den folgenden
-Einschränkungen: 
+Die Nutzung dieser unregistrierten Software unterliegt
+den folgenden Einschränkungen:
 
 1. Die Herkunft dieser unregistrierten Software darf nicht falsch dargestellt
-werden. Sie müssen nicht behaupten, dass Sie die unregistrierte Software
-geschrieben haben/entwickelt haben/besitzen.
+werden. Sie dürfen weder behaupten, dass Sie die unregistrierte Software
+geschrieben und/oder entwickelt haben, noch dass Sie sie besitzen.
 
-2. Man darf die unregistrierte Software nicht reverse-engineeren, dekompilieren,
-disassemblieren, übersetzen oder auf irgendwelcher Art modifizieren. Die
-Hauptprogrammdatei läuft nicht mehr richtig wenn man sie packt oder komprimiert. 
+2. Die unregistrierte Software darf nicht reverse-engineert, dekompiliert,
+disassembliert, übersetzt oder auf irgendwelcher Art modifiziert werden.
+Die Hauptprogrammdatei läuft nicht mehr richtig, wenn sie gepackt und/oder
+komprimiert wird.
 
-3. Die Verteilung der unregistrierten Software ist für jede Vergütungsart
-verboten. Der Lizenzgeber gewährt Ihnen das Royality-freie Recht auf
-Vervielfältigung und Verbreitung dieser unregistrierten Software als Teil einer
-CD / DVD welche mit der gedruckten Ausgabe von Zeitschriften oder Büchern
-gebunden ist, solange keine zusätzliche Gebühr für die Aufnahme dieser
-unregistrierten Software berechnet wird. 
+3. Die Verteilung der unregistrierten Software auf jegliche Art ist verboten.
+Der Lizenzgeber gewährt Ihnen ausschließlich das Royality-freie Recht auf
+Vervielfältigung und Verbreitung dieser unregistrierten Software mittels
+einer CD / DVD im Zusammenhang mit gedruckten Ausgaben von Zeitschriften
+oder Büchern, solange keine zusätzliche Gebühr für die Aufnahme dieser
+unregistrierten Software berechnet wird.
 
-4. Diese Bekanntmachung darf in keiner Verteilungsart dieser unregistrierten
-Software entfernt oder verändert werden. 
+4. Diese Bekanntmachung darf von dieser unregistrierten Software bei keiner
+Verteilungsart entfernt oder verändert werden.
 
 
-B. Die registrierte Version von ContaCam ist eine kommerzielle Software die
-durch keine zeitliche Begrenzung gekennzeichnet ist. Ein
-Registrierungsschlüssel in Form einer Schlüsseldatei muss von einem
+B. Die registrierte Version von ContaCam ist eine kommerzielle Software,
+die durch keine zeitliche Begrenzung gekennzeichnet ist.
+Ein Registrierungsschlüssel in Form einer Schlüsseldatei muss von einem
 autorisierten Händler erworben werden. Alle Schlüsseldateien sind durch eine
 eindeutige Identifikationsnummer gekennzeichnet und beinhalten den Namen des
 Besitzers. Für jede ContaCam Schlüsseldatei wird eine nicht exklusive, nicht
-übertragbare, widerrufliche Lizenz die die Nutzung von der registrierten
-ContaCam Software auf jedem einzelnen Computer gewährt, dies sofern die
-registrierte Software nur auf einem Computer in jederzeit im Einsatz ist.
-Die registrierte Software ist "im Einsatz" auf einem Computer, wenn sie in
-den temporären Speicher (RAM) geladen ist oder in den permanenten Speicher
-eines Computers installiert ist, z.B. eine Festplatte, CD / DVD oder
-ein anderes Speichermedium. 
+übertragbare, widerrufliche Lizenz zur Verfügung gestellt, die die Nutzung
+der registrierten ContaCam Software auf jedem einzelnen Computer gewährt.
+Die registrierte Software darf jedoch jeweils nur auf einem Computer im
+Einsatz sein. Die registrierte Software ist auf einem Computer "im Einsatz",
+wenn sie in den temporären Speicher (RAM) geladen, oder in den permanenten
+Speicher eines Computers installiert ist, z.B. eine Festplatte, CD / DVD
+oder ein anderes Speichermedium.
 
-Die Nutzung dieser registrierten Software unterliegt den folgenden
-Einschränkungen: 
+Die Nutzung dieser registrierten Software unterliegt
+den folgenden Einschränkungen: 
 
 1. Die Herkunft dieser registrierten Software darf nicht falsch dargestellt
-werden. Sie müssen nicht behaupten, dass Sie die registrierte Software
-geschrieben haben/entwickelt haben/besitzen. 
+werden. Sie dürfen weder behaupten, dass Sie die registrierte Software
+geschrieben und/oder entwickelt haben, noch dass Sie sie besitzen.
 
-2. Man darf die registrierte Software nicht reverse-engineeren, dekompilieren,
-disassemblieren, übersetzen oder auf irgendwelcher Art modifizieren. Die
-Hauptprogrammdatei läuft nicht mehr richtig wenn man sie packt oder komprimiert. 
+2. Die registrierte Software darf nicht reverse-engineert, dekompiliert,
+disassembliert, übersetzt oder auf irgendwelche Art modifiziert werden.
+Die Hauptprogrammdatei läuft nicht mehr richtig, wenn sie gepackt und/oder
+komprimiert wird.
 
 3. Schlüsseldateien verteilen ist strengstens verboten. Um Diebstahl zu
 vermeiden sind Sie für die Schlüsseldateiaufbewahrung an einem sichern Ort
-verantwortlich. Sie dürfen alle Ihre ContaCam Lizenzen an einer anderen Person
-oder juristische Person (den "Zessionar") weitergeben, jedoch vorausgesetzt,
-dass vor einer solchen Zuordnung der Zessionar in schriftlicher form zustimmt
-durch die gleichen Pflichten und Beschränkungen dieser Lizenz gebunden zu sein.
-Nach der Zuweisung der Lizenzen übertragen Sie dem Zessionar alle Ihre
-Schlüsseldateien. 
+verantwortlich. Sie dürfen alle Ihre ContaCam Lizenzen an eine andere
+natürliche oder juristische Person (den "Zessionar") weitergeben,
+vorausgesetzt, der Zessionar stimmt in schriftlicher Form einer solchen
+Zuordnung und dass er durch die gleichen Pflichten und Beschränkungen
+dieser Lizenz gebunden ist zu. Nach der Zuweisung der Lizenzen übertragen
+Sie dem Zessionar all Ihre Schlüsseldateien.
 
-4. Diese Bekanntmachung darf nicht entfernt oder verändert werden. 
+4. Diese Bekanntmachung darf nicht entfernt oder verändert werden.
 
 
 ENDE DER BEDINGUNGEN

@@ -1,8 +1,9 @@
 VERSION HISTORY
 
-2.3.9 (xxx 2011)
+2.3.9 (March 12th 2011)
 
 - Corrected web interface javascript slider load
+- German translation
 
 2.3.5 (February 18th 2011)
 

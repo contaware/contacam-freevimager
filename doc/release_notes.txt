@@ -1,0 +1,20 @@
+1. Update Version Number and History
+   - 2x in uImager.rc2
+   - RemoteCam and RemoteCamViewer version and about dialog resources
+   - CurrentVersion.nsh
+   - HistoryFreeVimager.txt and HistoryContaCam.txt
+
+2. Build release target of RemoteCam and RemoteCamViewer with vc6
+
+3. Build release target of FreeVimager and ContaCam with vc6 and with vc2008
+
+4. Copy FreeVimagerw.exe and ContaCamw.exe to Translation directory,
+   call Update Source in appTranslator and Build all Target Files
+   
+5. Run upx batch files:
+   Make_RemoteCam.bat, MakeUPX_FreeVimager.bat, MakeUPX_FreeVimagerw.bat
+   MakeUPX_FreeVimagerDeu.bat, MakeUPX_FreeVimagerIta.bat, MakeUPX_FreeVimagerRus.bat
+   
+6. SVN Commit as: Final release x.x.x
+
+7. Compile All NSIS Scripts

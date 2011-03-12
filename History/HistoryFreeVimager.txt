@@ -1,11 +1,12 @@
 VERSION HISTORY
 
-2.3.9 (xxx 2011)
+2.3.9 (March 12th 2011)
 
 - Fixed playing problems for audio files with really long path
 - Fixed Loading... keeps occasionally showing in file open dialog
 - Fixed animated gif preview problems in file open dialog for
   big files with many frames
+- German translation
 
 2.3.5 (February 18th 2011)
 
