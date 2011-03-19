@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.5.5 (XXX)
+
+- Fixed W/H ratio info display for the crop tool with cm units
+
 2.3.9 (March 12th 2011)
 
 - Fixed playing problems for audio files with really long path

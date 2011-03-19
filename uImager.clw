@@ -250,7 +250,7 @@ Resource106=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
 Resource107=IDD_AVIINFO (English (U.S.))
 Resource108=IDD_ABOUTBOX (English (U.S.))
 Resource109=IDD_ASSISTANT (English (U.S.))
-Resource110=IDR_MAINFRAME (English (U.S.))
+Resource110=IDD_MOVDET_ANIMGIF_CONFIGURATION (English (U.S.))
 Resource111=IDD_SNAPSHOT (English (U.S.))
 Resource112=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
 Resource113=IDD_DEVICE (English (U.S.))
@@ -262,7 +262,7 @@ Resource118=IDD_GENERAL (English (U.S.))
 Resource119=IDD_SAVEAS_STREAMS_SELECT (English (U.S.))
 Resource120=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource121=IDD_FILEOPENPREVIEWXP (English (U.S.))
-Resource122=IDD_MOVDET_ANIMGIF_CONFIGURATION (English (U.S.))
+Resource122=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -707,7 +707,7 @@ HeaderFile=PictureDoc.h
 ImplementationFile=PictureDoc.cpp
 Filter=N
 VirtualFilter=DC
-LastObject=ID_VIEW_MAP
+LastObject=CPictureDoc
 
 [CLS:CPicturePrintPreviewView]
 Type=0

@@ -4125,7 +4125,7 @@ void CPictureView::UpdateCropStatusText()
 								ML_STRING(1235, "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"),
 								(double)pDoc->m_CropDocRect.Width()	* 2.54	/ (double)nXDpi,
 								(double)pDoc->m_CropDocRect.Height()* 2.54	/ (double)nYDpi,
-								(double)pDoc->m_CropDocRect.Width()	* 2.54	/ (double)pDoc->m_CropDocRect.Height(),
+								(double)pDoc->m_CropDocRect.Width()			/ (double)pDoc->m_CropDocRect.Height(),
 								(double)pDoc->m_rcCropDelta.left	* 2.54	/ (double)nXDpi,
 								(double)pDoc->m_rcCropDelta.top		* 2.54	/ (double)nYDpi,
 								(double)pDoc->m_rcCropDelta.right	* 2.54	/ (double)nXDpi,

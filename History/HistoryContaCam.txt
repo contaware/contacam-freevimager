@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+2.5.5 (XXX)
+
+- nothing yet
+
 2.3.9 (March 12th 2011)
 
 - Corrected web interface javascript slider load
