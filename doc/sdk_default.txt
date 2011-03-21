@@ -1,0 +1,8 @@
+Set:
+----
+HKEY_CURRENT_USER\SOFTWARE\Microsoft\MicrosoftSDKs\Windows\CurrentVersion and CurrentInstallFolder 
+HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\MicrosoftSDKs\Windows\CurrentVersion and CurrentInstallFolder
+
+Or use:
+-------
+WindowsSdkVer.exe
