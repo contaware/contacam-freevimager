@@ -768,7 +768,7 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 	{
 		do
 		{
-			if (m_pDoc->m_FileFind.GetShortFileName() == sStartFileName)
+			if (sStartFileName.CompareNoCase(m_pDoc->m_FileFind.GetShortFileName()) == 0)
 				break;
 		}
 		while (m_pDoc->m_FileFind.FindNextFile());
@@ -898,7 +898,11 @@ BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent(BOOL bRandom)
 					return FALSE;
 			}
 			else
-				PauseSlideshow();
+			{
+				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_PAUSESLIDESHOW,
+								(WPARAM)0, (LPARAM)0);
+			}
 		}
 		else
 		{
@@ -1487,6 +1491,11 @@ int CPictureDoc::CJpegThread::Work()
 		OnExit();
 		return 0;
 	}
+
+	// This flag is disabled when first opening a document,
+	// from now on it is permitted to cancel the 
+	// Load Full Jpeg transitions
+	m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
 
 	// Full Load Current Picture?
 	if (m_pDoc->m_pDib && !m_pDoc->m_pDib->IsValid())
@@ -2321,6 +2330,7 @@ CPictureDoc::CPictureDoc()
 	m_bLoadFullJpegTransitionWorkerDone = FALSE;
 	m_bFirstLoadFullJpegTransition = FALSE;
 	m_bCancelLoadFullJpegTransition = FALSE;
+	m_bCancelLoadFullJpegTransitionAllowed = FALSE;
 	m_dwIDAfterFullLoadCommand = 0;
 	m_csLoadFullJpegDib.EnableTimeout();
 
@@ -5783,7 +5793,6 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 							  BOOL bOnlyHeader/*=FALSE*/)
 {
 	BOOL res;
-	BOOL bFirstTimeLoad = FALSE;
 
 	// Is Exiting?
 	if (!::IsExistingFile(sFileName))
@@ -5859,7 +5868,7 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 
 	// Reload Picture (after Save command or when
 	// loading next / prev. page in multi-page tiff)
-	if (sFileName == m_sFileName)
+	if (sFileName.CompareNoCase(m_sFileName) == 0)
 	{
 		// Load Picture
 		res = (*ppDib)->LoadImage(	sFileName,
@@ -5931,12 +5940,14 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	}
 	else // First Time Load
 	{
-		bFirstTimeLoad = TRUE;
+		CSize szMonitor;
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib)
+			szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
 
 		// Load Picture
 		res = (*ppDib)->LoadImage(	sFileName,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeX : 0,
-									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? nMaxSizeY : 0,
+									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? szMonitor.cx : 0,
+									((CUImagerApp*)::AfxGetApp())->m_bUseLoadPreviewDib ? szMonitor.cy : 0,
 									m_nPageNum = 0,	// Page Num
 									TRUE,			// Decompress Bmp
 									bOnlyHeader,

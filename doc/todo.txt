@@ -4,11 +4,6 @@ Wishes from Yuriy:
 
 Picture:
 --------
-- Vale PC first load gravidanza-portraits pictures is not sharp:
-  maybe set JPEG_FULL_IMAGE_LOAD_START_WAITTIME to 500 and
-  check whether the loaded size is enough. We could also
-  sharp a bit the preview (if that's not to slow...) and
-  make the fade-in a bit faster
 - Using numbers to jump to a specific file in current directory
 
 Translations:

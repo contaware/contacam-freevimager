@@ -16,6 +16,7 @@
 #define WM_THREADSAFE_STOP_BACKGROUNDMUSIC		WM_USER + 128
 #define WM_THREADSAFE_UPDATEIMAGEINFO			WM_USER + 129
 #define WM_THREADSAFE_RUNSLIDESHOW				WM_USER + 130
+#define WM_THREADSAFE_PAUSESLIDESHOW			WM_USER + 131
 
 // Message Delay in ms
 #define THREAD_SAFE_UPDATEIMAGEINFO_DELAY		300
@@ -285,6 +286,7 @@ protected:
 	afx_msg LONG OnThreadSafePlayFirstBackgroundMusic(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeStopBackgroundMusic(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeRunSlideshow(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafePauseSlideshow(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnRecursiveFileFindDone(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnBackgroundMusicTrackDone(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnColorPicked(WPARAM wParam, LPARAM lParam);

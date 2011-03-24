@@ -78,6 +78,7 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC, OnThreadSafePlayFirstBackgroundMusic)
 	ON_MESSAGE(WM_THREADSAFE_STOP_BACKGROUNDMUSIC, OnThreadSafeStopBackgroundMusic)
 	ON_MESSAGE(WM_THREADSAFE_RUNSLIDESHOW, OnThreadSafeRunSlideshow)
+	ON_MESSAGE(WM_THREADSAFE_PAUSESLIDESHOW, OnThreadSafePauseSlideshow)
 	ON_MESSAGE(WM_RECURSIVEFILEFIND_DONE, OnRecursiveFileFindDone)
 	ON_MESSAGE(MM_MCINOTIFY, OnBackgroundMusicTrackDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
@@ -187,6 +188,16 @@ LONG CPictureView::OnThreadSafeRunSlideshow(WPARAM wparam, LPARAM lparam)
 	if (pDoc->m_SlideShowThread.m_bDoRunSlideshow)
 		pDoc->m_SlideShowThread.RunSlideshow();
 	
+	return 1;
+}
+
+LONG CPictureView::OnThreadSafePauseSlideshow(WPARAM wparam, LPARAM lparam)
+{
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	pDoc->m_SlideShowThread.PauseSlideshow();
+
 	return 1;
 }
 

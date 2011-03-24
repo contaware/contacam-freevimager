@@ -4976,7 +4976,8 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 		case 4 :
 		case 5 :
 		case 6 :
-			res = m_pPreviewDib->LoadJPEG(lpszPathName,
+		case 7 :
+			res = m_pPreviewDib->LoadJPEG(	lpszPathName,
 											nScaleFactor = 4,
 											TRUE,
 											FALSE,
@@ -4985,7 +4986,6 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 											pThread);
 			break;
 
-		case 7 :
 		default : // 8 or More
 			res = m_pPreviewDib->LoadJPEG(	lpszPathName,
 											nScaleFactor = 8,
@@ -5099,6 +5099,7 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 		case 4 :
 		case 5 :
 		case 6 :
+		case 7 :
 			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
 											nScaleFactor = 4,
 											TRUE,
@@ -5108,7 +5109,6 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 											pThread);
 			break;
 
-		case 7 :
 		default : // 8 or More
 			res = m_pThumbnailDib->LoadJPEG(lpszPathName,
 											nScaleFactor = 8,

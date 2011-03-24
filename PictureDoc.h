@@ -39,17 +39,17 @@ class CPictureChildFrame;
 
 // The CJpegThread waits for this amount of time
 // in ms before starting the full sized jpeg load. 
-#define JPEG_FULL_IMAGE_LOAD_START_WAITTIME						1000
+#define JPEG_FULL_IMAGE_LOAD_START_WAITTIME						1000U
 
 // The CJpegThread waits for this amount of time
 // in ms before starting the calculation. The Short time
 // is used when the Picture Properties Dialog is open.
-#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_LONG		4000
-#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_SHORT		2000
+#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_LONG		4000U
+#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_SHORT		2000U
 
 // CJpegThread waits that the Load Pictures
 // Thread finishes, with a maximum wait time specified here in ms.
-#define JPEG_COMPRESSION_CALCULATION_THREADWAIT_TIMEOUT			4000
+#define JPEG_COMPRESSION_CALCULATION_THREADWAIT_TIMEOUT			4000U
 
 // Load Full Jpeg Transition Delay in ms
 #define JPEG_LOADFULL_TRANSITIONDELAY							200
@@ -590,7 +590,8 @@ public:
 								m_TransitionThread.Kill_NoBlocking();};
 
 	// Cancel Load Full Jpeg Transition
-	void CancelLoadFullJpegTransition() {m_bCancelLoadFullJpegTransition = TRUE;};
+	void CancelLoadFullJpegTransition() {	if (m_bCancelLoadFullJpegTransitionAllowed)
+												m_bCancelLoadFullJpegTransition = TRUE;};
 
 	// Crop
 	void EditCrop();
@@ -721,6 +722,7 @@ public:
 	volatile BOOL m_bLoadFullJpegTransitionWorkerDone;
 	volatile BOOL m_bFirstLoadFullJpegTransition;
 	volatile BOOL m_bCancelLoadFullJpegTransition;
+	volatile BOOL m_bCancelLoadFullJpegTransitionAllowed;
 
 	// OSD Dialog
 	BOOL m_bEnableOsd;
@@ -798,7 +800,7 @@ public:
 	// Get Pixel Align, Compression
 	// and load full sized jpeg.
 	// Note: Slideshow disables this!
-	BOOL m_bDoJPEGGet;
+	volatile BOOL m_bDoJPEGGet;
 
 	// The Image Has a Defined Background Color
 	BOOL m_bImageBackgroundColor;
