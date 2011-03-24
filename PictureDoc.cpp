@@ -6105,6 +6105,11 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 			JPEGGet();
 #endif
 
+		// Set flag which would be otherwise set
+		// in CJpegThread started by JPEGGet()
+		if (!m_bDoJPEGGet || !IsJPEG())
+			m_bCancelLoadFullJpegTransitionAllowed = TRUE;
+
 		// Update Info if dialog is open
 		UpdateImageInfo();
 
