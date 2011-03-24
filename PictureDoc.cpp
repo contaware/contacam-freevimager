@@ -1469,6 +1469,8 @@ int CPictureDoc::CJpegThread::Work()
 	// Check
 	if (m_pDoc == NULL || m_pDoc->m_pDib == NULL)
 	{
+		if (m_pDoc)
+			m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
 		OnExit();
 		return 0;
 	}
@@ -1488,6 +1490,7 @@ int CPictureDoc::CJpegThread::Work()
 	// pictures one after the other.
 	if (!WaitFor(JPEG_FULL_IMAGE_LOAD_START_WAITTIME))
 	{
+		m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
 		OnExit();
 		return 0;
 	}
