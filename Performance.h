@@ -16,24 +16,85 @@ class CPerformance
 	public:
 		CPerformance()
 		{
-			m_dwOldThreadAffinity = ::SetThreadAffinityMask(::GetCurrentThread(), 1);
-			::QueryPerformanceFrequency(&m_Frequency);
+			// Init vars
 			m_InitCount.QuadPart = 0;
 			m_EndCount.QuadPart = 0;
+			m_Frequency.QuadPart = 0;
+			m_dwDiffMicroSec = 0U;
+			m_dwInitTick = 0U;
+
+			// Get the current process core mask
+			DWORD dwProcMask;
+			DWORD dwSysMask;
+			::GetProcessAffinityMask(::GetCurrentProcess(), &dwProcMask, &dwSysMask);
+			
+			// If dwProcMask is 0, consider there is only one core available
+			// (using 0 as dwProcMask will cause an infinite loop below)
+			if (dwProcMask == 0U)
+				dwProcMask = 1U;
+
+			// Find the lowest core that this process uses
+			m_dwFirstCoreMask = 1U;
+			while ((m_dwFirstCoreMask & dwProcMask) == 0U)
+				m_dwFirstCoreMask <<= 1;
 		}
 		virtual ~CPerformance()
 		{
-			::SetThreadAffinityMask(::GetCurrentThread(), m_dwOldThreadAffinity);
+
 		}
-		__forceinline void Init()	{::QueryPerformanceCounter(&m_InitCount);}
-		__forceinline void End()	{::QueryPerformanceCounter(&m_EndCount);}
+		__forceinline void Init()
+		{
+			// Get thread handle
+			HANDLE hThread = ::GetCurrentThread();
+
+			// Set affinity to the first core
+			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
+
+			// Get the constant frequency
+			::QueryPerformanceFrequency(&m_Frequency);
+
+			// Query the counter
+			::QueryPerformanceCounter(&m_InitCount);
+			m_dwInitTick = ::GetTickCount();
+
+			// Reset affinity
+			::SetThreadAffinityMask(hThread, dwOldMask);		
+		}
+		__forceinline void End()
+		{
+			// Get thread handle
+			HANDLE hThread = ::GetCurrentThread();
+
+			// Set affinity to the first core
+			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
+
+			// Query the counter
+			::QueryPerformanceCounter(&m_EndCount);
+
+			// Reset affinity
+			::SetThreadAffinityMask(hThread, dwOldMask);
+
+			// Get differences
+			if (m_Frequency.QuadPart > 0)
+			{
+				m_dwDiffMicroSec = (DWORD)(1000000 * (	m_EndCount.QuadPart -
+														m_InitCount.QuadPart) /
+														m_Frequency.QuadPart);
+			}
+			else
+				m_dwDiffMicroSec = 0U;
+			DWORD dwDiffMilliSec = m_dwDiffMicroSec / 1000;
+			DWORD dwDiffTicks = ::GetTickCount() - m_dwInitTick;
+
+			// Detect performance counter leaps
+			// (surprisingly common, see Microsoft KB: Q274323)
+			int nMilliSecOff = (int)(dwDiffMilliSec - dwDiffTicks);
+			if (nMilliSecOff < -300 || nMilliSecOff > 300)
+				m_dwDiffMicroSec = 1000 * dwDiffTicks;
+		}
 		__forceinline DWORD GetMicroSecDiff()
 		{
-			LARGE_INTEGER Time;
-			Time.QuadPart = 1000000 * (	m_EndCount.QuadPart -
-										m_InitCount.QuadPart) /
-										m_Frequency.QuadPart;
-			return (DWORD)Time.QuadPart;
+			return m_dwDiffMicroSec;
 		}
 		__forceinline void Wait(DWORD dwWaitMicroSec)
 		{
@@ -115,10 +176,12 @@ class CPerformance
 		}
 
 	protected:
-		LARGE_INTEGER m_Frequency;
 		LARGE_INTEGER m_InitCount;
 		LARGE_INTEGER m_EndCount;
-		DWORD m_dwOldThreadAffinity;
+		LARGE_INTEGER m_Frequency;
+		DWORD m_dwDiffMicroSec;
+		DWORD m_dwInitTick;
+		DWORD m_dwFirstCoreMask;
 };
 
 #endif // !defined(AFX_PERFORMANCE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)

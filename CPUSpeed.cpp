@@ -31,7 +31,15 @@ DWORD GetProcessorSpeedMHz(DWORD dwMeasureTimeMs)
     
 	// Make sure everything is running on the same CPU, this because the counters
 	// may differ from one CPU to the other on a multi-processor system
-	DWORD dwOldThreadAffinity = SetThreadAffinityMask(GetCurrentThread(), 1);
+	DWORD dwProcMask;
+	DWORD dwSysMask;
+	GetProcessAffinityMask(GetCurrentProcess(), &dwProcMask, &dwSysMask);
+	if (dwProcMask == 0)
+		dwProcMask = 1;
+	DWORD dwFirstCoreMask = 1;
+	while ((dwFirstCoreMask & dwProcMask) == 0)
+		dwFirstCoreMask <<= 1;
+	DWORD dwOldThreadAffinity = SetThreadAffinityMask(GetCurrentThread(), dwFirstCoreMask);
 
 	// Increase Timer Resolution to 1 ms, if possible
 	timeBeginPeriod(wTimerRes);
@@ -114,7 +122,15 @@ CPUSpeed::CPUSpeed(DWORD dwMeasureTimeMs)
 {
 	// Make sure everything is running on the same CPU, this because the counters
 	// may differ from one CPU to the other on a multi-processor system
-	m_dwOldThreadAffinity = ::SetThreadAffinityMask(::GetCurrentThread(), 1);
+	DWORD dwProcMask;
+	DWORD dwSysMask;
+	::GetProcessAffinityMask(::GetCurrentProcess(), &dwProcMask, &dwSysMask);
+	if (dwProcMask == 0)
+		dwProcMask = 1;
+	DWORD dwFirstCoreMask = 1;
+	while ((dwFirstCoreMask & dwProcMask) == 0)
+		dwFirstCoreMask <<= 1;
+	m_dwOldThreadAffinity = ::SetThreadAffinityMask(::GetCurrentThread(), dwFirstCoreMask);
 
 	// Set Time Critical Priority
 	m_dwOldPriorityClass = ::GetPriorityClass(::GetCurrentProcess());
@@ -203,7 +219,7 @@ void CPUSpeed::Delay(unsigned int uiMS)
 	x = Frequency.QuadPart / 1000 * uiMS;
 
 	// Get the starting position of the counter.
-	::QueryPerformanceCounter (&StartCounter);
+	::QueryPerformanceCounter(&StartCounter);
 
 	do
 	{
