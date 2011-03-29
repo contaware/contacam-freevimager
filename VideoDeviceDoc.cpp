@@ -203,14 +203,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		ASSERT(m_nNumFramesToSave > 0);
 		ASSERT(m_bWorking);
 
-		// Performance
-		CPerformance perf, perfoverall;
-		perfoverall.Init();
-		DWORD dwAVISaveTime = 0U;
-		DWORD dwSWFSaveTime = 0U;
-		DWORD dwGIFSaveTime = 0U;
-		DWORD dwMailFTPTime = 0U;
-
 		// First & Last Up-Times
 		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
@@ -377,7 +369,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame
 				if (AVRecSwf.IsOpen())
 				{
-					perf.Init();
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
 										false,	// No interleave for Video only
@@ -385,8 +376,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
-					perf.End();
-					dwSWFSaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -427,7 +416,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Add Frame
 				if (AVRecAvi.IsOpen())
 				{
-					perf.Init();
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
 										false,	// No interleave for Video only
@@ -435,8 +423,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
-					perf.End();
-					dwAVISaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -447,8 +433,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Normal saving
 				if (nFrames >= nAnimGifLastFrameToSave)
 				{
-					perf.Init();
-
 					// First Frame?
 					if (nFrames == m_nNumFramesToSave)
 					{
@@ -485,9 +469,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 										RefTime,
 										dwRefUpTime);
 					}
-
-					perf.End();
-					dwGIFSaveTime += perf.GetMicroSecDiff();
 				}
 			}
 
@@ -508,15 +489,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// m_nNumFramesToSave by AnimatedGIFInit()
 		if (DoSaveGif() && !::IsExistingFile(sGIFTempFileName))
 		{
-			perf.Init();
 			SaveSingleGif(	m_pFrameList->GetHead(),
 							sGIFTempFileName,
 							pGIFColors,
 							bShowFrameTime,
 							RefTime,
 							dwRefUpTime);
-			perf.End();
-			dwGIFSaveTime += perf.GetMicroSecDiff();
 		}
 
 		// Clean-Up
@@ -537,7 +515,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
-		perf.Init();
+		DWORD dwMailFTPTimeMs = ::timeGetTime();
 		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName))
 		{
 			// Delete Files if not wanted
@@ -550,8 +528,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			m_bWorking = FALSE;
 			return 0;
 		}
-		perf.End();
-		dwMailFTPTime += perf.GetMicroSecDiff();
+		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommandMovementDetection)
@@ -598,26 +575,23 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (!m_pDoc->m_bSaveSWFMovementDetection)
 			::DeleteFile(sSWFFileName);
 
-		// End performance calculation
-		perfoverall.End();
-		DWORD dwSaveTimeMs = perfoverall.GetMicroSecDiff() / 1000;
+		// Save time calculation
+		DWORD dwSaveTimeMs = ::timeGetTime() - dwRefUpTime;
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
 		CString sMsg;
 		if (dwFramesTimeMs < dwSaveTimeMs)
 		{
-			sMsg.Format(_T("%s, attention cannot realtime save the detections SaveTime=%0.1fs > FramesTime=%0.1fs (AVI=%0.1fs,SWF=%0.1fs,GIF=%0.1fs,MailFTP=%0.1fs)\n"),
+			sMsg.Format(_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
 						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-						(double)dwAVISaveTime / 1000000.0, (double)dwSWFSaveTime / 1000000.0,
-						(double)dwGIFSaveTime / 1000000.0, (double)dwMailFTPTime / 1000000.0);
+						(double)dwMailFTPTimeMs / 1000.0);
 			TRACE(sMsg);
 			::LogLine(sMsg);
 		}
 		else if (m_pDoc->m_nDetectionLevel == 100)
 		{
-			sMsg.Format(_T("%s, realtime saving the detections is ok SaveTime=%0.1fs < FramesTime=%0.1fs (AVI=%0.1fs,SWF=%0.1fs,GIF=%0.1fs,MailFTP=%0.1fs)\n"),
+			sMsg.Format(_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
 						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-						(double)dwAVISaveTime / 1000000.0, (double)dwSWFSaveTime / 1000000.0,
-						(double)dwGIFSaveTime / 1000000.0, (double)dwMailFTPTime / 1000000.0);
+						(double)dwMailFTPTimeMs / 1000.0);
 			TRACE(sMsg);
 			::LogLine(sMsg);
 		}

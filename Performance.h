@@ -53,9 +53,9 @@ class CPerformance
 			// Get the constant frequency
 			::QueryPerformanceFrequency(&m_Frequency);
 
-			// Query the counter
+			// Query the counters
+			m_dwInitTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
 			::QueryPerformanceCounter(&m_InitCount);
-			m_dwInitTick = ::GetTickCount();
 
 			// Reset affinity
 			::SetThreadAffinityMask(hThread, dwOldMask);		
@@ -68,8 +68,9 @@ class CPerformance
 			// Set affinity to the first core
 			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
 
-			// Query the counter
+			// Query the counters
 			::QueryPerformanceCounter(&m_EndCount);
+			DWORD dwEndTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
 
 			// Reset affinity
 			::SetThreadAffinityMask(hThread, dwOldMask);
@@ -77,18 +78,22 @@ class CPerformance
 			// Get differences
 			if (m_Frequency.QuadPart > 0)
 			{
-				m_dwDiffMicroSec = (DWORD)(1000000 * (	m_EndCount.QuadPart -
-														m_InitCount.QuadPart) /
-														m_Frequency.QuadPart);
+				LONGLONG llDiffMicroSec = 1000000 * (m_EndCount.QuadPart - m_InitCount.QuadPart) /
+													m_Frequency.QuadPart;
+				// Check (performance counter may also leap backwards)
+				if (llDiffMicroSec > 0)
+					m_dwDiffMicroSec = (DWORD)llDiffMicroSec;
+				else
+					m_dwDiffMicroSec = 0U;
 			}
 			else
 				m_dwDiffMicroSec = 0U;
 			DWORD dwDiffMilliSec = m_dwDiffMicroSec / 1000;
-			DWORD dwDiffTicks = ::GetTickCount() - m_dwInitTick;
+			DWORD dwDiffTicks = dwEndTick - m_dwInitTick;
 
 			// Detect performance counter leaps
 			// (surprisingly common, see Microsoft KB: Q274323)
-			int nMilliSecOff = (int)(dwDiffMilliSec - dwDiffTicks);
+			int nMilliSecOff = (int)dwDiffMilliSec - (int)dwDiffTicks;
 			if (nMilliSecOff < -300 || nMilliSecOff > 300)
 				m_dwDiffMicroSec = 1000 * dwDiffTicks;
 		}

@@ -179,10 +179,7 @@ public:
 			__forceinline char* GetBuf() const {return m_Buf;};
 			__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
 			void Serialize(CArchive& archive);
- 
-			LARGE_INTEGER m_PerformanceCount;	// Note: use SetThreadAffinityMask() because
-												// QueryPerformanceCounter() should be called
-												// from the same CPU!
+			DWORD m_dwTickCount;
 
 		private:
 			char* m_Buf;

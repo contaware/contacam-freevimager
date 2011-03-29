@@ -2,7 +2,7 @@ VERSION HISTORY
 
 2.5.5 (XXX)
 
-- nothing yet
+- Small optimizations for detection saving and networking
 
 2.3.9 (March 12th 2011)
 
