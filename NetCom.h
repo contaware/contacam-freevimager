@@ -355,7 +355,7 @@ public:
 					LPCRITICAL_SECTION pcsTxBufSync,	// The Optional Critical Section for the Tx Buffer.
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
-					CParseProcess* pParser,				// The Parser
+					CParseProcess* pParseProcess,		// Parser & Processor
 					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
 					int nSocketType,					// Socket Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP).
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
@@ -423,7 +423,7 @@ public:
 											!m_pRxThread->IsAlive()		&&
 											!m_pTxThread->IsAlive();};
 
-	// Get Parser and Processor
+	// Get Parser & Processor
 	__forceinline CParseProcess* GetParseProcess() const {return m_pParseProcess;};
 
 	// Get Idle Generator
@@ -682,7 +682,7 @@ protected:
 				LPCRITICAL_SECTION pcsTxBufSync,
 				BUFQUEUE* pTxFifo,
 				LPCRITICAL_SECTION pcsTxFifoSync,
-				CParseProcess* pParser,
+				CParseProcess* pParseProcess,
 				CIdleGenerator* pIdleGenerator,
 				int nSocketType,
 				CString sLocalAddress,
@@ -760,7 +760,7 @@ protected:
 	*/
 	int StrToByte(char* str);
 
-	// The Parser
+	// The Parser & Processor
 	CParseProcess* m_pParseProcess;
 
 	// The Idle Generator

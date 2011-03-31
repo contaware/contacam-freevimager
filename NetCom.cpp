@@ -1773,7 +1773,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					LPCRITICAL_SECTION pcsTxBufSync,	// The Optional Critical Section for the Tx Buffer.
 					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
 					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
-					CParseProcess* pParser,				// The Parser
+					CParseProcess* pParseProcess,		// Parser & Processor
 					CIdleGenerator* pIdleGenerator,		// The Idle Generator, remember to enable it with EnableIdleGenerator(TRUE)!
 					int nSocketType,					// Socket Type: SOCK_STREAM (TCP) or SOCK_DGRAM (UDP).
 					CString sLocalAddress,				// Local Address (IP or Host Name), if _T("") Any Address is ok
@@ -1875,7 +1875,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 
 	// Initialize the Member Variables
 	if (InitVars(bServer, hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
-				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParser, pIdleGenerator, nSocketType, sLocalAddress, uiLocalPort,
+				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, nSocketType, sLocalAddress, uiLocalPort,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, hAllCloseEvent, lResetEventMask, lOwnerWndNetEvents,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut) == FALSE)
