@@ -21,6 +21,13 @@ extern "C"
 // Also defined in AviPlay.h!
 #define AUDIO_PCM_MIN_BUF_SIZE				8192
 
+// Frame date / time display constants
+#define ADDFRAMETIME_REFFONTSIZE			9
+#define ADDFRAMETIME_REFWIDTH				640
+#define ADDFRAMETIME_REFHEIGHT				480
+#define FRAMETIME_COLOR						RGB(0,0xff,0)
+#define FRAMEDATE_COLOR						RGB(0x80,0x80,0xff)
+
 class CAVRec
 {
 public:
@@ -108,6 +115,18 @@ public:
 
 	// Video Streams Number to Overall Stream Number
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
+
+	// Add frame time
+	static bool AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
+	static bool AddFrameTime(LPBYTE pBits,
+							DWORD dwWidth,
+							DWORD dwHeight,
+							WORD wBitCount,
+							DWORD dwFourCC,
+							DWORD dwSizeImage,
+							DWORD dwUpTime,
+							CTime RefTime,
+							DWORD dwRefUpTime);
 
 	// Video Frame Write
 	// Attention: if bAddFrameTime is set and if
@@ -214,15 +233,6 @@ protected:
 							DWORD dwUpTime = 0,
 							CTime RefTime = CTime(2000, 1, 1, 12, 0, 0),
 							DWORD dwRefUpTime = 0);
-	static bool AddFrameTime(LPBYTE pBits,
-							DWORD dwWidth,
-							DWORD dwHeight,
-							WORD wBitCount,
-							DWORD dwFourCC,
-							DWORD dwSizeImage,
-							DWORD dwUpTime,
-							CTime RefTime,
-							DWORD dwRefUpTime);
 	static __forceinline WORD DstDeinterlacePixFormatToBitsCount(PixelFormat pix_fmt);
 	static __forceinline DWORD DstDeinterlacePixFormatToFourCC(PixelFormat pix_fmt);
 	AVStream* CreateVideoStream(CodecID codec_id,

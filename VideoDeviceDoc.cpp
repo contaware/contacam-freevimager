@@ -832,7 +832,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 
 	// Add Frame Time to include the colors of the time and date
 	if (bShowFrameTime)
-		AddFrameTime(&DibForPalette, RefTime, dwRefUpTime);
+		CAVRec::AddFrameTime(&DibForPalette, RefTime, dwRefUpTime);
 	
 	// Calc. Palette
 	CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
@@ -890,7 +890,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 
 		// Add Frame Time
 		if (bShowFrameTime)
-			AddFrameTime(pDib, RefTime, dwRefUpTime);
+			CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
 
 		// Convert to 8 bpp
 		if (pDib->GetBitCount() > 8)
@@ -926,7 +926,7 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 
 	// Add Frame Time
 	if (bShowFrameTime)
-		AddFrameTime(pDib, RefTime, dwRefUpTime);
+		CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
 
 	// Convert to 8 bpp
 	if (pDib->GetBitCount() > 8)
@@ -1276,14 +1276,14 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&m_Dib, m_Time, dwUpTime);
+		CAVRec::AddFrameTime(&m_Dib, m_Time, dwUpTime);
 
 	// Save Thumb to Temp
 	if (m_bSnapshotThumb)
 	{
 		// Add frame time
 		if (m_bShowFrameTime)
-			AddFrameTime(&DibThumb, m_Time, dwUpTime);
+			CAVRec::AddFrameTime(&DibThumb, m_Time, dwUpTime);
 
 		// Save
 		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
@@ -3468,41 +3468,6 @@ void CVideoDeviceDoc::ColorDetectionProcessing(CDib* pDib, BOOL bColorDetectionP
 	}
 }
 
-BOOL CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
-{
-	BOOL res1, res2;
-	
-	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
-	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-	RefTime -= TimeSpan;
-
-	CRect rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = pDib->GetWidth();
-	rcRect.bottom = pDib->GetHeight();
-
-	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
-	res1 = pDib->AddSingleLineText(	sTime,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_BOTTOM),
-									RGB(0,0xff,0),
-									OPAQUE,
-									RGB(0,0,0));
-
-	CString sDate = ::MakeDateLocalFormat(RefTime);
-	res2 = pDib->AddSingleLineText(	sDate,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_TOP),
-									RGB(0x80,0x80,0xff),
-									OPAQUE,
-									RGB(0,0,0));
-
-	return (res1 && res2);
-}
-
 void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 													BOOL bMovementDetectorPreview,
 													BOOL bDoDetection)
@@ -3980,7 +3945,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										rcRect,
 										NULL,
 										(DT_LEFT | DT_TOP),
-										RGB(0x80,0x80,0xff),
+										FRAMEDATE_COLOR,
 										TRANSPARENT,
 										RGB(0,0,0)))
 			return FALSE;
@@ -4025,7 +3990,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										rcRect,
 										NULL,
 										(DT_LEFT | DT_BOTTOM),
-										RGB(0,0xff,0),
+										FRAMETIME_COLOR,
 										TRANSPARENT,
 										RGB(0,0,0)))
 			return FALSE;
@@ -4033,7 +3998,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										rcRect,
 										NULL,
 										(DT_CENTER | DT_BOTTOM),
-										RGB(0,0xff,0),
+										FRAMETIME_COLOR,
 										TRANSPARENT,
 										RGB(0,0,0)))
 			return FALSE;
@@ -4043,7 +4008,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										rcRect,
 										NULL,
 										(DT_RIGHT | DT_BOTTOM),
-										RGB(0,0xff,0),
+										FRAMETIME_COLOR,
 										TRANSPARENT,
 										RGB(0,0,0)))
 			return FALSE;
@@ -10430,7 +10395,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				{
 					if (!bRecDeinterlace)
 					{
-						AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+						CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 						bShowFrameTime = FALSE;
 					}
 					else
@@ -10526,7 +10491,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (bShowFrameTime)
-			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+			CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Send Video Frame
 		if (m_bSendVideoFrame)
@@ -10926,7 +10891,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		AddFrameTime(&Dib, Time, dwUpTime);
+		CAVRec::AddFrameTime(&Dib, Time, dwUpTime);
 	
 	// Copy to clipboard
 	Dib.EditCopy();
@@ -12843,62 +12808,6 @@ void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl()
 	::LeaveCriticalSection(&m_csSendFrameNetCom);
 }
 
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::AddFrameTime(	LPBYTE pBits,
-															DWORD dwWidth,
-															DWORD dwHeight,
-															WORD wBitCount,
-															DWORD dwFourCC,
-															DWORD dwSizeImage,
-															DWORD dwUpTime,
-															CTime RefTime,
-															DWORD dwRefUpTime)
-{
-	BITMAPINFOHEADER Bmi;
-	memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-	Bmi.biSize = sizeof(BITMAPINFOHEADER);
-	Bmi.biWidth = dwWidth;
-	Bmi.biHeight = dwHeight;
-	Bmi.biPlanes = 1;
-	Bmi.biBitCount = wBitCount;
-	Bmi.biCompression = dwFourCC;
-	Bmi.biSizeImage = dwSizeImage;
-	CDib TmpDib;
-	TmpDib.SetShowMessageBoxOnError(FALSE);
-	TmpDib.SetDibPointers((LPBITMAPINFO)(&Bmi), pBits, dwSizeImage);
-	BOOL res1, res2;
-	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-	RefTime -= TimeSpan;
-
-	CRect rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = dwWidth;
-	rcRect.bottom = dwHeight;
-
-	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
-	res1 = TmpDib.AddSingleLineText(sTime,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_BOTTOM),
-									RGB(0,0xff,0),
-									OPAQUE,
-									RGB(0,0,0));
-
-	CString sDate = ::MakeDateLocalFormat(RefTime);
-	res2 = TmpDib.AddSingleLineText(sDate,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_TOP),
-									RGB(0x80,0x80,0xff),
-									OPAQUE,
-									RGB(0,0,0));
-
-	TmpDib.SetDibPointers(NULL, NULL, 0);
-
-	return (res1 && res2);
-}
-
 int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 {
 	int res = 0;
@@ -13033,15 +12942,15 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 			// Re-add frame time after shrinking
 			if (m_pDoc->m_bShowFrameTime)
 			{
-				AddFrameTime(	(LPBYTE)m_pFrameI420->data[0],
-								m_pCodecCtx->width,
-								m_pCodecCtx->height,
-								12,
-								FCC('I420'),
-								m_dwI420ImageSize,
-								pDib->GetUpTime(),
-								RefTime,
-								dwRefUpTime);
+				CAVRec::AddFrameTime((LPBYTE)m_pFrameI420->data[0],
+									m_pCodecCtx->width,
+									m_pCodecCtx->height,
+									12,
+									FCC('I420'),
+									m_dwI420ImageSize,
+									pDib->GetUpTime(),
+									RefTime,
+									dwRefUpTime);
 			}
 
 			// Encode

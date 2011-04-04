@@ -1480,6 +1480,62 @@ bool CAVRec::AddRawVideoPacket(DWORD dwStreamNum,
 	}
 }
 
+bool CAVRec::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
+{
+	BOOL res1, res2;
+	
+	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
+	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
+	RefTime -= TimeSpan;
+
+	CRect rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = pDib->GetWidth();
+	rcRect.bottom = pDib->GetHeight();
+
+	CFont Font;
+	double dFactorX = (double)(rcRect.right) / ADDFRAMETIME_REFWIDTH;
+	if (dFactorX < 1.0)
+		dFactorX = 1.0;
+	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETIME_REFHEIGHT;
+	if (dFactorY < 1.0)
+		dFactorY = 1.0;
+	int nFontSize;
+	if (dFactorX > dFactorY)
+		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorX);
+	else
+		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorY);
+	if (nFontSize > ADDFRAMETIME_REFFONTSIZE)
+	{
+		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
+		// metric-compatible variant of MS Sans Serif, first distributed with
+		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
+		// used when passing a NULL pointer to AddSingleLineText().
+		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
+	}
+
+	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
+	res1 = pDib->AddSingleLineText(	sTime,
+									rcRect,
+									nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+									(DT_LEFT | DT_BOTTOM),
+									FRAMETIME_COLOR,
+									OPAQUE,
+									RGB(0,0,0));
+
+	CString sDate = ::MakeDateLocalFormat(RefTime);
+	res2 = pDib->AddSingleLineText(	sDate,
+									rcRect,
+									nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+									(DT_LEFT | DT_TOP),
+									FRAMEDATE_COLOR,
+									OPAQUE,
+									RGB(0,0,0));
+
+	return (bool)(res1 && res2);
+}
+
 bool CAVRec::AddFrameTime(	LPBYTE pBits,
 							DWORD dwWidth,
 							DWORD dwHeight,
@@ -1500,39 +1556,12 @@ bool CAVRec::AddFrameTime(	LPBYTE pBits,
 	Bmi.biCompression = dwFourCC;
 	Bmi.biSizeImage = dwSizeImage;
 	CDib TmpDib;
+	TmpDib.SetShowMessageBoxOnError(FALSE);
 	TmpDib.SetDibPointers((LPBITMAPINFO)(&Bmi), pBits, dwSizeImage);
-	BOOL res1, res2;
-	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-	RefTime -= TimeSpan;
-
-	CRect rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = dwWidth;
-	rcRect.bottom = dwHeight;
-
-	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
-	res1 = TmpDib.AddSingleLineText(sTime,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_BOTTOM),
-									RGB(0,0xff,0),
-									OPAQUE,
-									RGB(0,0,0));
-
-	CString sDate = ::MakeDateLocalFormat(RefTime);
-	res2 = TmpDib.AddSingleLineText(sDate,
-									rcRect,
-									NULL,
-									(DT_LEFT | DT_TOP),
-									RGB(0x80,0x80,0xff),
-									OPAQUE,
-									RGB(0,0,0));
-
+	TmpDib.SetUpTime(dwUpTime);
+	bool res = AddFrameTime(&TmpDib, RefTime, dwRefUpTime);
 	TmpDib.SetDibPointers(NULL, NULL, 0);
-
-	return (bool)(res1 && res2);
+	return res;
 }
 
 /* Supported Color Spaces

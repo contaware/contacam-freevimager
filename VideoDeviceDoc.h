@@ -602,15 +602,6 @@ public:
 							m_pOutbuf = NULL;
 							m_nOutbufSize = 0;
 							m_dwEncryptionType = 0U;};
-			BOOL AddFrameTime(	LPBYTE pBits,
-								DWORD dwWidth,
-								DWORD dwHeight,
-								WORD wBitCount,
-								DWORD dwFourCC,
-								DWORD dwSizeImage,
-								DWORD dwUpTime,
-								CTime RefTime,
-								DWORD dwRefUpTime);
 
 			double m_dCurrentSendFrameRate;
 			CVideoDeviceDoc* m_pDoc;
@@ -1258,7 +1249,6 @@ public:
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
 	static __forceinline BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
-	static BOOL AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
 	void ViewVideo();					// Show / Hide Video Preview
 
 	// Open Video Device
