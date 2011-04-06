@@ -246,7 +246,81 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 <script type="text/javascript" src="js/swf.js"></script>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[ 
+function resizeSwf() {
+<?php
+	if (isset($_GET['back']) && $_GET['back'] == 'no')
+		echo "	var back = false;\n";
+	else
+		echo "	var back = true;\n";
+?>
+	var width = parseInt("<?php echo $width;?>");
+	var height = parseInt("<?php echo $height;?>");
+	if (width <= 0)
+		width = 1;
+	if (height <= 0)
+		height = 1;
+	var windowWidth = 0;
+	var windowHeight = 0;
+	if (typeof(window.innerWidth) == 'number') {
+		// Non-IE
+		windowWidth = window.innerWidth;
+		windowHeight = window.innerHeight;
+	} else if (document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
+		// IE 6+ in 'standards compliant mode'
+		windowWidth = document.documentElement.clientWidth;
+		windowHeight = document.documentElement.clientHeight;
+	} else if (document.body && (document.body.clientWidth || document.body.clientHeight)) {
+		// IE 4 compatible
+		windowWidth = document.body.clientWidth;
+		windowHeight = document.body.clientHeight;
+	}
+	// Left and right margin
+	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
+	// Bottom player control and ev. back button
+	if (back)
+		windowHeight -= 114;
+	else
+		windowHeight -= 80; // this must be less than 90, see snapshothistory.php!
+	// Set a min. size
+	if (windowWidth < 32)
+		windowWidth = 32;
+	if (windowHeight < 32)
+		windowHeight = 32;
+	var fittedWidth;
+	var fittedHeight;
+	var fittedSlider;
+	if (width > windowWidth) {
+		fittedWidth = windowWidth;
+		fittedSlider = windowWidth;
+	}
+	else {
+		fittedWidth = width;
+		fittedSlider = width;
+	}
+	if (height > windowHeight)
+		fittedHeight = windowHeight;
+	else
+		fittedHeight = height;
+	if (fittedWidth / fittedHeight > width / height)
+		fittedWidth = parseInt((fittedHeight * width) / height);
+	else
+		fittedHeight = parseInt((fittedWidth * height) / width);
+	var flashMovie = GetFlashMovieObject("myFlashMovie");
+	flashMovie.width = fittedWidth;
+	flashMovie.height = fittedHeight;
+	var slidercontainer = document.getElementById('slidercontainer');
+	var track1 = document.getElementById('track1');
+	if (slidercontainer && track1) {
+		track1.style.width = fittedSlider + "px";
+		fittedSlider++;
+		slidercontainer.style.width = fittedSlider + "px";
+		mySlider.trackLength = mySlider.maximumOffset() - mySlider.minimumOffset();
+		mySlider.setValue(mySlider.value);
+	}
+} 
 InitPlayer();
+resizeSwf();
+window.onresize=resizeSwf;
 //]]>
 </script>
 </body>

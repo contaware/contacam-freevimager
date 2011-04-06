@@ -166,22 +166,25 @@ function positionCalendar() {
 }
 function resizeIframe() {
 	if (window.frames && window.frames.myiframe) {
-		var iframeElement = parent.document.getElementById('myiframe');
+		var iframeElement = document.getElementById('myiframe');
 		if (iframeElement) {
-			var docHeight;
-			if (document.documentElement.clientHeight == 0) {
-				docHeight = document.body.clientHeight; // for older browsers
+			var windowHeight = 600;
+			if (typeof(window.innerHeight) == 'number') {
+				// Non-IE
+				windowHeight = window.innerHeight;
+			} else if (document.documentElement && document.documentElement.clientHeight) {
+				// IE 6+ in 'standards compliant mode'
+				windowHeight = document.documentElement.clientHeight;
+			} else if (document.body && document.body.clientHeight) {
+				// IE 4 compatible
+				windowHeight = document.body.clientHeight;
 			}
-			else {
-				docHeight = document.documentElement.clientHeight;
-			}
-			docHeight -= iframeElement.offsetTop;
-			docHeight -= 20;
-			iframeElement.style.height = docHeight + "px";
+			windowHeight -= iframeElement.offsetTop;
+			windowHeight -= 4; // for IE
+			iframeElement.style.height = windowHeight + "px";
 		}
 	}
 }
-window.onresize=resizeIframe; 
 //]]>
 </script>
 <?php
@@ -197,6 +200,7 @@ echo "</div>\n";
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
 resizeIframe();
+window.onresize=resizeIframe;
 //]]>
 </script>
 </body>

@@ -84,7 +84,8 @@ function UpdateSlider()
 		if (flashMovie.IsPlaying() == false)
 			window.clearInterval(SliderTimer);
 		var currentFrame=flashMovie.TCurrentFrame("/");
-		mySlider.setValue(parseInt(currentFrame) / (myTotalFrames - 1));
+		if (myTotalFrames - 1 > 0)
+			mySlider.setValue(parseInt(currentFrame) / (myTotalFrames - 1));
 	}
 }
 
@@ -116,7 +117,8 @@ function NextFrameFastFlashMovie()
 	if (nextFrame >= myTotalFrames)
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
-	mySlider.setValue(nextFrame / (myTotalFrames - 1));	
+	if (myTotalFrames - 1 > 0)
+		mySlider.setValue(nextFrame / (myTotalFrames - 1));	
 }
 
 function NextFrameFlashMovie()
@@ -127,7 +129,8 @@ function NextFrameFlashMovie()
 	if (nextFrame >= myTotalFrames)
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
-	mySlider.setValue(nextFrame / (myTotalFrames - 1));	
+	if (myTotalFrames - 1 > 0)
+		mySlider.setValue(nextFrame / (myTotalFrames - 1));	
 }
 
 function PrevFrameFastFlashMovie()
@@ -137,8 +140,9 @@ function PrevFrameFastFlashMovie()
 	var prevFrame=parseInt(currentFrame) - 25;
 	if (prevFrame < 0)
 		prevFrame = 0;
-	flashMovie.GotoFrame(prevFrame);	
-	mySlider.setValue(prevFrame / (myTotalFrames - 1));	
+	flashMovie.GotoFrame(prevFrame);
+	if (myTotalFrames - 1 > 0)
+		mySlider.setValue(prevFrame / (myTotalFrames - 1));	
 }
 
 function PrevFrameFlashMovie()
@@ -148,8 +152,9 @@ function PrevFrameFlashMovie()
 	var prevFrame=parseInt(currentFrame) - 1;
 	if (prevFrame < 0)
 		prevFrame = 0;
-	flashMovie.GotoFrame(prevFrame);	
-	mySlider.setValue(prevFrame / (myTotalFrames - 1));	
+	flashMovie.GotoFrame(prevFrame);
+	if (myTotalFrames - 1 > 0)
+		mySlider.setValue(prevFrame / (myTotalFrames - 1));	
 }
 
 function ZoominFlashMovie()
