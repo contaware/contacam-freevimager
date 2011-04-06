@@ -578,22 +578,25 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwRefUpTime;
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
-		CString sMsg;
-		if (dwFramesTimeMs < dwSaveTimeMs)
+		if (dwFramesTimeMs >= 1000U) // Do the check only if at least 1 sec of frames
 		{
-			sMsg.Format(_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
-						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-						(double)dwMailFTPTimeMs / 1000.0);
-			TRACE(sMsg);
-			::LogLine(sMsg);
-		}
-		else if (m_pDoc->m_nDetectionLevel == 100)
-		{
-			sMsg.Format(_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
-						m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
-						(double)dwMailFTPTimeMs / 1000.0);
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			CString sMsg;
+			if (dwFramesTimeMs < dwSaveTimeMs)
+			{
+				sMsg.Format(_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
+							m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
+							(double)dwMailFTPTimeMs / 1000.0);
+				TRACE(sMsg);
+				::LogLine(sMsg);
+			}
+			else if (m_pDoc->m_nDetectionLevel == 100)
+			{
+				sMsg.Format(_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
+							m_pDoc->GetDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
+							(double)dwMailFTPTimeMs / 1000.0);
+				TRACE(sMsg);
+				::LogLine(sMsg);
+			}
 		}
 	}
 	ASSERT(FALSE); // should never end up here...
