@@ -183,7 +183,7 @@ input {
 	border: 1px solid;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
-input.playerbutton {
+input.playerbutton, input.playerinfotext {
 	padding: 4px;
 }
 input.playerbutton:hover, input.navbutton:hover, input.playerbutton:focus, input.navbutton:focus {

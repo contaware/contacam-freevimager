@@ -18,9 +18,6 @@ var TotalFramesSet = 0;
 var FirstRun = 1;
 var SliderTimer = 0;
 
-// Note: For loading progress we could poll flashMovie.PercentLoaded()
-// (it returns a value from 0 up to 100)
-
 function InitPlayer()
 {
 	// Give flash player time to start loading the movie
@@ -31,7 +28,7 @@ function GetFlashMovieObject(movieName)
 {
 	if (window.document[movieName])
 		return window.document[movieName];
-	else if (navigator.appName.indexOf("Microsoft Internet")==-1)
+	else if (navigator.appName.indexOf("Microsoft") == -1)
 	{
 		if (document.embeds && document.embeds[movieName])
 			return document.embeds[movieName]; 
@@ -45,16 +42,15 @@ function InitPlayerInternal()
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	
 	// For IE
-	if (navigator.appName.indexOf("Microsoft Internet") != -1)
+	if (navigator.appName.indexOf("Microsoft") != -1)
 	{	
 		// Wait for ReadyState = 4
 		// (0=Loading, 1=Uninitialized, 2=Loaded, 3=Interactive, 4=Complete)
 		if (flashMovie.ReadyState == 4)
+		{
 			TotalFramesSet = 1;
-		// Flash player may slowly increment the TotalFrames value while loading the movie,
-		// but only with a ReadyState of 4 we have the full count!
-		if (flashMovie.TotalFrames > 0)
 			myTotalFrames = flashMovie.TotalFrames;
+		}
 	}
 	else if (flashMovie.TotalFrames() > 0)
 	{
@@ -62,10 +58,18 @@ function InitPlayerInternal()
 		myTotalFrames = flashMovie.TotalFrames();
 	}
 	
-	// Check whether Total Frames is fully set,
-	// if not give flash player some more time to set it
-	if (TotalFramesSet == 0)
+	// Display info
+	UpdateInfoText();
+	
+	// Check whether fully loaded
+	if (TotalFramesSet == 0 || flashMovie.PercentLoaded() != 100)
 		window.setTimeout("InitPlayerInternal()", 300);
+	else
+	{
+		var currentFrame=flashMovie.TCurrentFrame("/");
+		if (myTotalFrames - 1 > 0)
+			mySlider.setValue(parseInt(currentFrame) / (myTotalFrames - 1));
+	}
 	
 	// Start to play the movie even if we do not know
 	// the Total Frames count
@@ -86,7 +90,20 @@ function UpdateSlider()
 		var currentFrame=flashMovie.TCurrentFrame("/");
 		if (myTotalFrames - 1 > 0)
 			mySlider.setValue(parseInt(currentFrame) / (myTotalFrames - 1));
+		UpdateInfoText();
 	}
+}
+
+function UpdateInfoText()
+{	
+	var flashMovie=GetFlashMovieObject("myFlashMovie");
+	if (flashMovie.PercentLoaded() == 100)
+	{
+		var currentFrame=flashMovie.TCurrentFrame("/");
+		document.controller.infotext.value = parseInt(currentFrame) + 1;
+	}
+	else
+		document.controller.infotext.value = flashMovie.PercentLoaded() + '%';
 }
 
 function StopFlashMovie()
@@ -106,7 +123,8 @@ function RewindFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	flashMovie.Rewind();
-	mySlider.setValue(0);	
+	mySlider.setValue(0);
+	UpdateInfoText();
 }
 
 function NextFrameFastFlashMovie()
@@ -118,7 +136,8 @@ function NextFrameFastFlashMovie()
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
 	if (myTotalFrames - 1 > 0)
-		mySlider.setValue(nextFrame / (myTotalFrames - 1));	
+		mySlider.setValue(nextFrame / (myTotalFrames - 1));
+	UpdateInfoText();
 }
 
 function NextFrameFlashMovie()
@@ -130,7 +149,8 @@ function NextFrameFlashMovie()
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
 	if (myTotalFrames - 1 > 0)
-		mySlider.setValue(nextFrame / (myTotalFrames - 1));	
+		mySlider.setValue(nextFrame / (myTotalFrames - 1));
+	UpdateInfoText();
 }
 
 function PrevFrameFastFlashMovie()
@@ -142,7 +162,8 @@ function PrevFrameFastFlashMovie()
 		prevFrame = 0;
 	flashMovie.GotoFrame(prevFrame);
 	if (myTotalFrames - 1 > 0)
-		mySlider.setValue(prevFrame / (myTotalFrames - 1));	
+		mySlider.setValue(prevFrame / (myTotalFrames - 1));
+	UpdateInfoText();
 }
 
 function PrevFrameFlashMovie()
@@ -154,7 +175,8 @@ function PrevFrameFlashMovie()
 		prevFrame = 0;
 	flashMovie.GotoFrame(prevFrame);
 	if (myTotalFrames - 1 > 0)
-		mySlider.setValue(prevFrame / (myTotalFrames - 1));	
+		mySlider.setValue(prevFrame / (myTotalFrames - 1));
+	UpdateInfoText();
 }
 
 function ZoominFlashMovie()
@@ -174,6 +196,7 @@ function SeekFrame(v)
 	var flashMovie = GetFlashMovieObject("myFlashMovie");
 	var FramePos = (myTotalFrames - 1) * v;
 	flashMovie.GotoFrame(FramePos);
+	UpdateInfoText();
 }
 
 var mySlider = new Control.Slider('handle1','track1', 
