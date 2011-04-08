@@ -520,12 +520,11 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
 		// Start stopping server
-		if (pApp->m_bMicroApacheInitStarted)
+		if (pApp->m_bMicroApacheStarted)
 		{
-			CVideoDeviceDoc::MicroApacheWaitStartDone();
 			pApp->m_MicroApacheWatchdogThread.Kill();
 			CVideoDeviceDoc::MicroApacheInitShutdown();
-			pApp->m_bMicroApacheInitStarted = FALSE;
+			pApp->m_bMicroApacheStarted = FALSE;
 		}
 
 		// Wait till shutdown
@@ -539,24 +538,16 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			// Start server
 			if (m_bStartMicroApache)
 			{
-				if (!CVideoDeviceDoc::MicroApacheInitStart())
+				if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
+				{
+					pApp->m_bMicroApacheStarted = TRUE;
+					pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+				}
+				else
 				{
 					EndWaitCursor();
 					::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
 					BeginWaitCursor();
-				}
-				else
-				{
-					pApp->m_bMicroApacheInitStarted = TRUE;
-					pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
-					
-					// Check whether server is really running
-					if (!CVideoDeviceDoc::MicroApacheWaitStartDone())
-					{
-						EndWaitCursor();
-						::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
-						BeginWaitCursor();
-					}	
 				}
 			}
 		}

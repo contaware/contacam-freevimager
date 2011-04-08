@@ -129,7 +129,7 @@ CUImagerApp::CUImagerApp()
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_bStartMicroApache = FALSE;
-	m_bMicroApacheInitStarted = FALSE;
+	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
 	m_bSingleInstance = TRUE;
@@ -972,10 +972,16 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// Start Micro Apache
 					if (m_bStartMicroApache)
 					{
-						if (CVideoDeviceDoc::MicroApacheInitStart())
+						if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
 						{
-							m_bMicroApacheInitStarted = TRUE;
+							m_bMicroApacheStarted = TRUE;
 							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+						}
+						else
+						{
+							CString sMsg(ML_STRING(1475, "Failed to start the web server") + CString(_T("\n")));
+							TRACE(sMsg);
+							::LogLine(sMsg);
 						}
 					}
 
@@ -988,8 +994,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 						BOOL bDoStartBrowser = TRUE;
 						if (m_bStartMicroApache)
 						{
-							bDoStartBrowser =	m_bMicroApacheInitStarted					&&
-												CVideoDeviceDoc::MicroApacheWaitStartDone()	&&
+							bDoStartBrowser =	m_bMicroApacheStarted &&
 												CVideoDeviceDoc::MicroApacheWaitCanConnect();
 						}
 						if (bDoStartBrowser)
@@ -2214,9 +2219,8 @@ BOOL CUImagerApp::AreAllDocsSaved()
 void CUImagerApp::SaveOnEndSession()
 {
 #ifdef VIDEODEVICEDOC
-	if (m_bMicroApacheInitStarted)
+	if (m_bMicroApacheStarted)
 	{
-		CVideoDeviceDoc::MicroApacheWaitStartDone();
 		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 	}
@@ -2266,7 +2270,7 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
-	if (m_bMicroApacheInitStarted)
+	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
 	if (!m_bServiceProcess)
 		BrowserAutostart();
@@ -2943,9 +2947,8 @@ int CUImagerApp::ExitInstance()
 {
 #ifdef VIDEODEVICEDOC
 	// Start Micro Apache shutdown
-	if (m_bMicroApacheInitStarted)
+	if (m_bMicroApacheStarted)
 	{
-		CVideoDeviceDoc::MicroApacheWaitStartDone();
 		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 	}
@@ -2962,7 +2965,7 @@ int CUImagerApp::ExitInstance()
 	m_Scheduler.RemoveAll();
 
 	// Finish Micro Apache shutdown
-	if (m_bMicroApacheInitStarted)
+	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
 
 	// Browser autostart
