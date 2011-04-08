@@ -129,7 +129,7 @@ CUImagerApp::CUImagerApp()
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_bStartMicroApache = FALSE;
-	m_bMicroApacheStarted = FALSE;
+	m_bMicroApacheInitStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
 	m_bSingleInstance = TRUE;
@@ -972,9 +972,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// Start Micro Apache
 					if (m_bStartMicroApache)
 					{
-						m_bMicroApacheStarted = TRUE;
 						if (CVideoDeviceDoc::MicroApacheInitStart())
+						{
+							m_bMicroApacheInitStarted = TRUE;
 							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+						}
 					}
 
 					// Autorun Devices
@@ -986,7 +988,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 						BOOL bDoStartBrowser = TRUE;
 						if (m_bStartMicroApache)
 						{
-							bDoStartBrowser =	CVideoDeviceDoc::MicroApacheWaitStartDone() &&
+							bDoStartBrowser =	m_bMicroApacheInitStarted					&&
+												CVideoDeviceDoc::MicroApacheWaitStartDone()	&&
 												CVideoDeviceDoc::MicroApacheWaitCanConnect();
 						}
 						if (bDoStartBrowser)
@@ -2211,8 +2214,9 @@ BOOL CUImagerApp::AreAllDocsSaved()
 void CUImagerApp::SaveOnEndSession()
 {
 #ifdef VIDEODEVICEDOC
-	if (m_bMicroApacheStarted)
+	if (m_bMicroApacheInitStarted)
 	{
+		CVideoDeviceDoc::MicroApacheWaitStartDone();
 		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheInitShutdown();
 	}
@@ -2262,7 +2266,7 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
-	if (m_bMicroApacheStarted)
+	if (m_bMicroApacheInitStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
 	if (!m_bServiceProcess)
 		BrowserAutostart();
@@ -2937,6 +2941,16 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 
 int CUImagerApp::ExitInstance() 
 {
+#ifdef VIDEODEVICEDOC
+	// Start Micro Apache shutdown
+	if (m_bMicroApacheInitStarted)
+	{
+		CVideoDeviceDoc::MicroApacheWaitStartDone();
+		m_MicroApacheWatchdogThread.Kill();
+		CVideoDeviceDoc::MicroApacheInitShutdown();
+	}
+#endif
+
 	// Clean-up recorders array
 	FreeDiscRecorders2();
 
@@ -2948,7 +2962,7 @@ int CUImagerApp::ExitInstance()
 	m_Scheduler.RemoveAll();
 
 	// Finish Micro Apache shutdown
-	if (m_bMicroApacheStarted)
+	if (m_bMicroApacheInitStarted)
 		CVideoDeviceDoc::MicroApacheFinishShutdown();
 
 	// Browser autostart

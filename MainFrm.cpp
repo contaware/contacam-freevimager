@@ -749,15 +749,6 @@ void CMainFrame::OnClose()
 			return;		// don't close it
 		}
 
-		// Start Micro Apache shutdown
-#ifdef VIDEODEVICEDOC
-		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheStarted)
-		{
-			((CUImagerApp*)::AfxGetApp())->m_MicroApacheWatchdogThread.Kill();
-			CVideoDeviceDoc::MicroApacheInitShutdown();
-		}
-#endif
-
 		// Stop All Threads used for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Exit();
 

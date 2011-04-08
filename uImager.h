@@ -825,7 +825,7 @@ public:
 	BOOL m_bStartMicroApache;
 
 	// Micro Apache Server has been started
-	BOOL m_bMicroApacheStarted;
+	BOOL m_bMicroApacheInitStarted;
 
 	// Micro Apache Document Root
 	CString m_sMicroApacheDocRoot;
