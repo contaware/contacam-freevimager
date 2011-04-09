@@ -829,6 +829,33 @@ void CAssistantPage::Rename()
 	}
 }
 
+void CAssistantPage::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate)
+{
+	if (m_pDoc->m_pSnapshotPage)
+	{
+		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
+		m_pDoc->m_pSnapshotPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
+		
+		// Live snapshots
+		CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
+		pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpeg ? 1 : 0);
+		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
+		pCheck->SetCheck(m_pDoc->m_bSnapshotThumb ? 1 : 0);
+		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
+		pEdit->SetWindowText(sSnapShotRate);
+
+		// Snapshot history
+		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
+		pCheck->SetCheck(m_pDoc->m_bSnapshotHistorySwf ? 1 : 0);
+	}
+	else
+	{
+		// Thumb size
+		m_pDoc->m_nSnapshotThumbWidth = nThumbWidth;
+		m_pDoc->m_nSnapshotThumbHeight = nThumbHeight;
+	}
+}
+
 void CAssistantPage::ApplySettings() 
 {
 	// Reset flag
@@ -913,9 +940,15 @@ void CAssistantPage::ApplySettings()
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
+			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
+								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
+								m_pDoc->m_nSnapshotThumbWidth : DEFAULT_SNAPSHOT_THUMB_WIDTH;
+			int nThumbHeight =	(m_pDoc->m_nSnapshotThumbHeight < 4 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3 &&
+								m_pDoc->m_nSnapshotThumbHeight > 2 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3) ?
+								m_pDoc->m_nSnapshotThumbHeight : DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
-			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
+			sThumbWidth.Format(_T("%d"), nThumbWidth);
+			sThumbHeight.Format(_T("%d"), nThumbHeight);
 			CString sMaxPerPage;
 			pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
 			if (pComboBox && pComboBox->GetCurSel() >= 0)
@@ -943,30 +976,8 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
-			// Update controls
-			if (m_pDoc->m_pSnapshotPage)
-			{
-				// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-				m_pDoc->m_pSnapshotPage->ChangeThumbSize(DEFAULT_SNAPSHOT_THUMB_WIDTH, DEFAULT_SNAPSHOT_THUMB_HEIGHT);
-				
-				// Enable live snapshots
-				CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-				pCheck->SetCheck(1);
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-				pCheck->SetCheck(1);
-				CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-				pEdit->SetWindowText(sSnapShotRate);
-
-				// Disable snapshot history
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-				pCheck->SetCheck(0);
-			}
-			else
-			{
-				// Thumb size
-				m_pDoc->m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
-				m_pDoc->m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			}
+			// Update
+			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
 
 			break;
 		}
@@ -1042,30 +1053,8 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->m_bSnapshotHistorySwf = TRUE;
 			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1); // Make new swf because Size or Name may have been changed
 
-			// Update controls
-			if (m_pDoc->m_pSnapshotPage)
-			{
-				// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-				m_pDoc->m_pSnapshotPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
-
-				// Enable live snapshots
-				CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-				pCheck->SetCheck(1);
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-				pCheck->SetCheck(bUseThumb ? 1 : 0);
-				CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-				pEdit->SetWindowText(sSnapShotRate);
-
-				// Enable snapshot history
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-				pCheck->SetCheck(1);
-			}
-			else
-			{
-				// Thumb size
-				m_pDoc->m_nSnapshotThumbWidth = nThumbWidth;
-				m_pDoc->m_nSnapshotThumbHeight = nThumbHeight;
-			}
+			// Update
+			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
 
 			break;
 		}
@@ -1102,9 +1091,11 @@ void CAssistantPage::ApplySettings()
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
+			int nThumbWidth = m_pDoc->m_nSnapshotThumbWidth;
+			int nThumbHeight = m_pDoc->m_nSnapshotThumbHeight;
 			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
-			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
+			sThumbWidth.Format(_T("%d"), nThumbWidth);
+			sThumbHeight.Format(_T("%d"), nThumbHeight);
 
 			// Update configuration.php
 			if (m_bCheckFullStretch)
@@ -1129,30 +1120,8 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
-			// Update controls
-			if (m_pDoc->m_pSnapshotPage)
-			{
-				// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-				m_pDoc->m_pSnapshotPage->ChangeThumbSize(DEFAULT_SNAPSHOT_THUMB_WIDTH, DEFAULT_SNAPSHOT_THUMB_HEIGHT);
-
-				// Enable live snapshots
-				CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-				pCheck->SetCheck(1);
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-				pCheck->SetCheck(0);
-				CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-				pEdit->SetWindowText(sSnapShotRate);
-
-				// Disable snapshot history
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-				pCheck->SetCheck(0);
-			}
-			else
-			{
-				// Thumb size
-				m_pDoc->m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
-				m_pDoc->m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			}
+			// Update
+			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
 
 			break;
 		}
@@ -1173,9 +1142,11 @@ void CAssistantPage::ApplySettings()
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
+			int nThumbWidth = m_pDoc->m_nSnapshotThumbWidth;
+			int nThumbHeight = m_pDoc->m_nSnapshotThumbHeight;
 			CString sThumbWidth, sThumbHeight;
-			sThumbWidth.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
-			sThumbHeight.Format(_T("%d"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
+			sThumbWidth.Format(_T("%d"), nThumbWidth);
+			sThumbHeight.Format(_T("%d"), nThumbHeight);
 
 			// Update configuration.php
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_NAME);
@@ -1197,30 +1168,8 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
-			// Update controls
-			if (m_pDoc->m_pSnapshotPage)
-			{
-				// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
-				m_pDoc->m_pSnapshotPage->ChangeThumbSize(DEFAULT_SNAPSHOT_THUMB_WIDTH, DEFAULT_SNAPSHOT_THUMB_HEIGHT);
-
-				// Disable live snapshots
-				CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-				pCheck->SetCheck(0);
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-				pCheck->SetCheck(0);
-				CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-				pEdit->SetWindowText(sSnapShotRate);
-
-				// Disable snapshot history
-				pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-				pCheck->SetCheck(0);
-			}
-			else
-			{
-				// Thumb size
-				m_pDoc->m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
-				m_pDoc->m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
-			}
+			// Update
+			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
 
 			break;
 		}
