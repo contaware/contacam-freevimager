@@ -1712,61 +1712,6 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 	return iCount;
 }
 
-BOOL SelfDelete()
-{
-	TCHAR szModule [MAX_PATH],
-		  szComspec[MAX_PATH],
-		  szParams [MAX_PATH];
-
-	// Get file path names:
-	if ((GetModuleFileName(0, szModule, MAX_PATH) != 0) &&
-		(GetShortPathName(szModule, szModule, MAX_PATH) != 0) &&
-		(GetEnvironmentVariable(_T("COMSPEC"), szComspec, MAX_PATH) != 0))
-	{
-		// Set command shell parameters
-		lstrcpy(szParams, _T(" /c del "));
-		lstrcat(szParams, szModule);
-		lstrcat(szParams, _T(" > nul"));
-		lstrcat(szComspec, szParams);
-
-		// Set struct members
-		STARTUPINFO si={0};
-		PROCESS_INFORMATION	pi={0};
-		si.cb = sizeof(si);
-		si.dwFlags = STARTF_USESHOWWINDOW;
-		si.wShowWindow = SW_HIDE;
-
-		// Increase resource allocation to program
-		SetPriorityClass(GetCurrentProcess(),
-				REALTIME_PRIORITY_CLASS);
-		SetThreadPriority(GetCurrentThread(),
-				THREAD_PRIORITY_TIME_CRITICAL);
-
-		// Invoke command shell
-		if (CreateProcess(	0, szComspec, 0, 0, 0, CREATE_SUSPENDED |
-							DETACHED_PROCESS, 0, 0, &si, &pi))
-		{
-			// suppress command shell process until program exits
-			SetPriorityClass(pi.hProcess,IDLE_PRIORITY_CLASS);
-			SetThreadPriority(pi.hThread,THREAD_PRIORITY_IDLE); 
-
-			// resume shell process with new low priority
-			ResumeThread(pi.hThread);
-
-			// everything seemed to work
-			return TRUE;
-		}
-		else // if error, normalize allocation
-		{
-			SetPriorityClass(GetCurrentProcess(),
-							 NORMAL_PRIORITY_CLASS);
-			SetThreadPriority(GetCurrentThread(),
-							  THREAD_PRIORITY_NORMAL);
-		}
-	}
-	return FALSE;
-}
-
 BOOL ExecHiddenApp(	const CString& sFileName,
 					const CString& sParams/*=_T("")*/,
 					BOOL bWaitTillDone/*=FALSE*/,

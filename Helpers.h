@@ -183,9 +183,6 @@ extern CString MakeValidPath(CString sPath);
 // On NT4 you need to install psapi.dll from the Platform SDK
 extern int EnumKillProcByName(CString sProcessName, BOOL bKill = FALSE);
 
-// Exe File Self-Deletion
-extern BOOL SelfDelete();
-
 // Execute an app with hidden window (working for both console and windowed apps)
 extern BOOL ExecHiddenApp(	const CString& sFileName,
 							const CString& sParams = _T(""),

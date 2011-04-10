@@ -531,10 +531,6 @@ InputName=MotionDetHelpers
 # End Source File
 # Begin Source File
 
-SOURCE=.\MovDetAnimGifConfigurationDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\MovementDetectionPage.cpp
 # End Source File
 # Begin Source File
@@ -1226,10 +1222,6 @@ SOURCE=.\MonochromeConversionDlg.h
 # Begin Source File
 
 SOURCE=.\MotionDetHelpers.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\MovDetAnimGifConfigurationDlg.h
 # End Source File
 # Begin Source File
 

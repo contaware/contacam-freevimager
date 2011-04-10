@@ -6460,44 +6460,6 @@ BEGIN
     LTEXT           "Registration Number:",IDC_STATIC,7,5,77,11
 END
 
-IDD_MOVDET_ANIMGIF_CONFIGURATION DIALOGEX 0, 0, 171, 143
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Animated Gif Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_EDIT_PIXELS_WIDTH,48,22,38,13,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PIXELS_WIDTH,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,75,20,11,14
-    EDITTEXT        IDC_EDIT_PIXELS_HEIGHT,122,23,38,13,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PIXELS_HEIGHT,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,149,21,11,14
-    EDITTEXT        IDC_EDIT_PERCENT_WIDTH,55,71,31,13,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PERCENT_WIDTH,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,75,69,11,15
-    EDITTEXT        IDC_EDIT_PERCENT_HEIGHT,129,71,31,13,ES_AUTOHSCROLL | 
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PERCENT_HEIGHT,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,149,70,11,13
-    CONTROL         "Retain Aspect",IDC_CHECK_RETAIN_ASPECT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,99,59,10
-    DEFPUSHBUTTON   "OK",IDOK,10,122,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,110,122,50,14
-    LTEXT           "Width",IDC_STATIC2184,23,27,20,8
-    LTEXT           "x Height",IDC_STATIC2185,90,27,29,8
-    LTEXT           "x Height",IDC_STATIC2186,90,76,29,8
-    LTEXT           "Width",IDC_STATIC2187,23,76,20,8
-    LTEXT           "Pixels:",IDC_STATIC2188,10,7,21,8
-    LTEXT           "Percent:",IDC_STATIC2189,10,56,28,8
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -7534,21 +7496,6 @@ BEGIN
         VERTGUIDE, 247
         TOPMARGIN, 7
         BOTTOMMARGIN, 225
-    END
-
-    IDD_MOVDET_ANIMGIF_CONFIGURATION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 164
-        VERTGUIDE, 10
-        VERTGUIDE, 23
-        VERTGUIDE, 75
-        VERTGUIDE, 86
-        VERTGUIDE, 90
-        VERTGUIDE, 149
-        VERTGUIDE, 160
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 136
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -7,7 +7,7 @@
 #include "MovementDetectionPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "MovDetAnimGifConfigurationDlg.h"
+#include "ResizingDlg.h"
 #include "VideoFormatDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
@@ -551,9 +551,9 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 	// Stop Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Kill();
 
-	CMovDetAnimGifConfigurationDlg dlg(	m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
-										(int)m_pDoc->m_dwAnimatedGifWidth, (int)m_pDoc->m_dwAnimatedGifHeight,
-										this);
+	CResizingDlg dlg(m_pDoc->m_DocRect.Width(), m_pDoc->m_DocRect.Height(),
+					(int)m_pDoc->m_dwAnimatedGifWidth, (int)m_pDoc->m_dwAnimatedGifHeight,
+					this);
 	if (dlg.DoModal() == IDOK)
 	{	
 		m_pDoc->m_dwAnimatedGifWidth = (DWORD)dlg.m_nPixelsWidth;

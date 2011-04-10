@@ -2496,10 +2496,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MovDetAnimGifConfigurationDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="MovementDetectionPage.cpp"
 				>
 				<FileConfiguration
@@ -4840,10 +4836,6 @@
 			</File>
 			<File
 				RelativePath=".\MotionDetHelpers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MovDetAnimGifConfigurationDlg.h"
 				>
 			</File>
 			<File

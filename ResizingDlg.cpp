@@ -11,6 +11,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef VIDEODEVICEDOC
+
 /////////////////////////////////////////////////////////////////////////////
 // CResizingDlg dialog
 
@@ -270,3 +272,5 @@ void CResizingDlg::OnOK()
 	CDialog::OnOK();
 	m_bNormalValidate = FALSE;
 }
+
+#endif

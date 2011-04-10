@@ -37,7 +37,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="78">
+<CLASSES COUNT="77">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -81,7 +81,6 @@
 <CLASS NAME="CLayeredDlg"/>
 <CLASS NAME="CLicenseDlg"/>
 <CLASS NAME="CMonochromeConversionDlg"/>
-<CLASS NAME="CMovDetAnimGifConfigurationDlg"/>
 <CLASS NAME="CNewDlg"/>
 <CLASS NAME="CNoVistaFileDlg"/>
 <CLASS NAME="COCRLanguageDlg"/>
@@ -330,6 +329,7 @@
 <CLASS NAME="CMallocSpy"/>
 <CLASS NAME="CPUSpeed"/>
 <CLASS NAME="CCrc32Dynamic"/>
+<CLASS NAME="CDxCapture"/>
 <CLASS NAME="CDxDraw"/>
 <CLASS NAME="CDxTuner"/>
 <CLASS NAME="CEnumPrinters"/>
@@ -349,7 +349,6 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
-<CLASS NAME="CDxCapture"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">
