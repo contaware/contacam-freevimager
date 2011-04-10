@@ -65,7 +65,7 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSnapshotPage)
 	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
-	ON_BN_CLICKED(IDC_BUTTON_SET_DIR, OnButtonSetDir)
+	ON_BN_CLICKED(IDC_SNAPSHOT_SAVEAS, OnSnapshotSaveas)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_THUMB, OnCheckSnapshotThumb)
@@ -405,18 +405,22 @@ void CSnapshotPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void CSnapshotPage::OnButtonSetDir() 
+void CSnapshotPage::OnSnapshotSaveas() 
 {
+	// Stop Thread
+	m_pDoc->m_DeleteThread.Kill();
+
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_pDoc->m_sSnapshotAutoSaveDir,
 					ML_STRING(1419, "Select Folder For Snapshot Saving"),
 					TRUE);
-	if (dlg.DoModal() == IDOK)
-	{
-		m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
-	}
+	dlg.DoModal();
+	m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
+	pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
+
+	// Restart Thread
+	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 }
 
 void CSnapshotPage::OnButtonThumbSize() 

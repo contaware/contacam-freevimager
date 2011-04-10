@@ -2391,7 +2391,7 @@
 #define IDS_STRING1757                  1757
 #define IDC_BUTTON_SET_FILE             1758
 #define IDS_STRING1758                  1758
-#define IDC_BUTTON_SET_DIR              1759
+#define IDC_SNAPSHOT_SAVEAS             1759
 #define IDS_STRING1759                  1759
 #define IDC_BUTTON_CLEAR_FILE           1760
 #define IDS_STRING1760                  1760

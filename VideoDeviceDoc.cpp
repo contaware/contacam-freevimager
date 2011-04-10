@@ -5172,10 +5172,10 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteRecordings()
 	int nDiskFreeSpacePercent;
 
 	// Check and adjust Auto-Save directory
-	dwAttrib =::GetFileAttributes(m_pDoc->m_sRecordAutoSaveDir);
+	sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	dwAttrib =::GetFileAttributes(sRecordAutoSaveDir);
 	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
-		sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 		sRecordAutoSaveDir.TrimRight(_T('\\'));
 		int nRecordAutoSaveDirSize = sRecordAutoSaveDir.GetLength() + 1;
 
@@ -5256,10 +5256,10 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteSnapshots()
 	int nDiskFreeSpacePercent;
 
 	// Check and adjust Auto-Save directory
-	dwAttrib =::GetFileAttributes(m_pDoc->m_sSnapshotAutoSaveDir);
+	sSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
+	dwAttrib =::GetFileAttributes(sSnapshotAutoSaveDir);
 	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
-		sSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
 		sSnapshotAutoSaveDir.TrimRight(_T('\\'));
 		int nSnapshotAutoSaveDirSize = sSnapshotAutoSaveDir.GetLength() + 1;
 

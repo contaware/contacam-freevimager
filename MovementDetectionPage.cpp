@@ -278,10 +278,10 @@ void CMovementDetectionPage::OnDestroy()
 
 void CMovementDetectionPage::OnDetectionSaveas() 
 {
-	// Stop Save Frame List Thread
+	// Stop Threads
 	m_pDoc->m_SaveFrameListThread.Kill();
+	m_pDoc->m_DeleteThread.Kill();
 
-	// Detection Dir Dialog
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_pDoc->m_sDetectionAutoSaveDir,
 					ML_STRING(1399, "Select Folder For Detection Saving"),
@@ -291,7 +291,8 @@ void CMovementDetectionPage::OnDetectionSaveas()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
 	pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
 
-	// Restart Save Frame List Thread
+	// Restart Threads
+	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 	m_pDoc->m_SaveFrameListThread.Start();
 }
 

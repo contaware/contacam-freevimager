@@ -1652,6 +1652,9 @@ void CGeneralPage::OnSelchangeVideoPostrecCompressionChoose()
 
 void CGeneralPage::OnRecordSaveas() 
 {
+	// Stop Thread
+	m_pDoc->m_DeleteThread.Kill();
+
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_pDoc->m_sRecordAutoSaveDir,
 					ML_STRING(1453, "Select Folder For Record Saving"),
@@ -1660,6 +1663,9 @@ void CGeneralPage::OnRecordSaveas()
 	m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECORD_SAVEAS_PATH);
 	pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
+
+	// Restart Thread
+	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 }
 
 /*

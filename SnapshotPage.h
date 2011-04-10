@@ -57,7 +57,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnChangeEditSnapshotRate();
-	afx_msg void OnButtonSetDir();
+	afx_msg void OnSnapshotSaveas();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnCheckSnapshotThumb();
