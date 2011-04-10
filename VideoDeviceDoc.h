@@ -845,9 +845,7 @@ public:
 
 		protected:
 			int Work();
-			BOOL DeleteDetections();
-			BOOL DeleteRecordings();
-			BOOL DeleteSnapshots();
+			BOOL DeleteIt(CString sAutoSaveDir, int nDeleteOlderThanDays);
 			BOOL CalcOldestDir(	CSortableFileFind& FileFind,
 								int nAutoSaveDirSize,
 								CTime& OldestDirTime,

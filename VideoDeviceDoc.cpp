@@ -5074,9 +5074,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
+BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteOlderThanDays)
 {
-	CString sDetectionAutoSaveDir;
 	DWORD dwAttrib;
 	CSortableFileFind FileFind;
 	CTime CurrentTime, OldestDirTime;
@@ -5088,15 +5087,14 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
 	int nDiskFreeSpacePercent;
 
 	// Check and adjust Auto-Save directory
-	sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-	dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
+	dwAttrib =::GetFileAttributes(sAutoSaveDir);
 	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
-		sDetectionAutoSaveDir.TrimRight(_T('\\'));
-		int nDetectionAutoSaveDirSize = sDetectionAutoSaveDir.GetLength() + 1;
+		sAutoSaveDir.TrimRight(_T('\\'));
+		int nAutoSaveDirSize = sAutoSaveDir.GetLength() + 1;
 
 		// Do recursive file find
-		FileFind.InitRecursive(sDetectionAutoSaveDir + _T("\\*"));
+		FileFind.InitRecursive(sAutoSaveDir + _T("\\*"));
 		if (FileFind.WaitRecursiveDone(GetKillEvent()) < 0)
 			return FALSE; // Exit Thread
 
@@ -5104,42 +5102,42 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
 		CurrentTime = CTime::GetCurrentTime();
 
 		// Delete files which are older than the given days amount
-		if (m_pDoc->m_nDeleteDetectionsOlderThanDays > 0)
+		if (nDeleteOlderThanDays > 0)
 		{
 			if (!DeleteOld(	FileFind,
-							nDetectionAutoSaveDirSize,
-							m_pDoc->m_nDeleteDetectionsOlderThanDays,
+							nAutoSaveDirSize,
+							nDeleteOlderThanDays,
 							CurrentTime))
 				return FALSE; // Exit Thread
 		}
 
 		// Delete oldest files if we are short of disk space
-		llDiskTotalSize = ::GetDiskSize(sDetectionAutoSaveDir);
+		llDiskTotalSize = ::GetDiskSize(sAutoSaveDir);
 		if (llDiskTotalSize > 0)
 		{
 			// Get the time of the oldest existing directory
 			if (!CalcOldestDir(	FileFind,
-								nDetectionAutoSaveDirSize,
+								nAutoSaveDirSize,
 								OldestDirTime,
 								CurrentTime))
 				return FALSE; // Exit Thread
 
 			TimeDiff = CurrentTime - OldestDirTime;
 			llDaysAgo = (LONGLONG)TimeDiff.GetDays();
-			llDiskFreeSpace = ::GetDiskSpace(sDetectionAutoSaveDir);
+			llDiskFreeSpace = ::GetDiskSpace(sAutoSaveDir);
 			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			bDeletingOld = FALSE;
 			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
 			{
-				// Delete old detections
+				// Delete old
 				if (!DeleteOld(	FileFind,
-								nDetectionAutoSaveDirSize,
+								nAutoSaveDirSize,
 								llDaysAgo,
 								CurrentTime))
 					return FALSE; // Exit Thread
 				bDeletingOld = TRUE;
 				llDaysAgo--;
-				llDiskFreeSpace = ::GetDiskSpace(sDetectionAutoSaveDir);
+				llDiskFreeSpace = ::GetDiskSpace(sAutoSaveDir);
 				nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			}
 
@@ -5147,176 +5145,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteDetections()
 			if (bDeletingOld)
 			{
 				CString sMsg;
-				sMsg.Format(_T("%s, deleting old movement detection files because the available disk space is less than %d%%%%\n"),
-																				m_pDoc->GetDeviceName(), MIN_DISKFREE_PERCENT);
-				TRACE(sMsg);
-				::LogLine(sMsg);
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CDeleteThread::DeleteRecordings()
-{
-	CString sRecordAutoSaveDir;
-	DWORD dwAttrib;
-	CSortableFileFind FileFind;
-	CTime CurrentTime, OldestDirTime;
-	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo;
-	BOOL bDeletingOld;
-	ULONGLONG llDiskTotalSize;
-	ULONGLONG llDiskFreeSpace;
-	int nDiskFreeSpacePercent;
-
-	// Check and adjust Auto-Save directory
-	sRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-	dwAttrib =::GetFileAttributes(sRecordAutoSaveDir);
-	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		sRecordAutoSaveDir.TrimRight(_T('\\'));
-		int nRecordAutoSaveDirSize = sRecordAutoSaveDir.GetLength() + 1;
-
-		// Do recursive file find
-		FileFind.InitRecursive(sRecordAutoSaveDir + _T("\\*"));
-		if (FileFind.WaitRecursiveDone(GetKillEvent()) < 0)
-			return FALSE; // Exit Thread
-
-		// Get current time
-		CurrentTime = CTime::GetCurrentTime();
-
-		// Delete files which are older than the given days amount
-		if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 0)
-		{
-			if (!DeleteOld(	FileFind,
-							nRecordAutoSaveDirSize,
-							m_pDoc->m_nDeleteRecordingsOlderThanDays,
-							CurrentTime))
-				return FALSE; // Exit Thread
-		}
-
-		// Delete oldest files if we are short of disk space
-		llDiskTotalSize = ::GetDiskSize(sRecordAutoSaveDir);
-		if (llDiskTotalSize > 0)
-		{
-			// Get the time of the oldest existing directory
-			if (!CalcOldestDir(	FileFind,
-								nRecordAutoSaveDirSize,
-								OldestDirTime,
-								CurrentTime))
-				return FALSE; // Exit Thread
-
-			TimeDiff = CurrentTime - OldestDirTime;
-			llDaysAgo = (LONGLONG)TimeDiff.GetDays();
-			llDiskFreeSpace = ::GetDiskSpace(sRecordAutoSaveDir);
-			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
-			bDeletingOld = FALSE;
-			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
-			{
-				// Delete old recordings
-				if (!DeleteOld(	FileFind,
-								nRecordAutoSaveDirSize,
-								llDaysAgo,
-								CurrentTime))
-					return FALSE; // Exit Thread
-				bDeletingOld = TRUE;
-				llDaysAgo--;
-				llDiskFreeSpace = ::GetDiskSpace(sRecordAutoSaveDir);
-				nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
-			}
-
-			// Log
-			if (bDeletingOld)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s, deleting old record files because the available disk space is less than %d%%%%\n"),
-																	m_pDoc->GetDeviceName(), MIN_DISKFREE_PERCENT);
-				TRACE(sMsg);
-				::LogLine(sMsg);
-			}
-		}
-	}
-
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CDeleteThread::DeleteSnapshots()
-{
-	CString sSnapshotAutoSaveDir;
-	DWORD dwAttrib;
-	CSortableFileFind FileFind;
-	CTime CurrentTime, OldestDirTime;
-	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo;
-	BOOL bDeletingOld;
-	ULONGLONG llDiskTotalSize;
-	ULONGLONG llDiskFreeSpace;
-	int nDiskFreeSpacePercent;
-
-	// Check and adjust Auto-Save directory
-	sSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-	dwAttrib =::GetFileAttributes(sSnapshotAutoSaveDir);
-	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		sSnapshotAutoSaveDir.TrimRight(_T('\\'));
-		int nSnapshotAutoSaveDirSize = sSnapshotAutoSaveDir.GetLength() + 1;
-
-		// Do recursive file find
-		FileFind.InitRecursive(sSnapshotAutoSaveDir + _T("\\*"));
-		if (FileFind.WaitRecursiveDone(GetKillEvent()) < 0)
-			return FALSE; // Exit Thread
-
-		// Get current time
-		CurrentTime = CTime::GetCurrentTime();
-
-		// Delete files which are older than the given days amount
-		if (m_pDoc->m_nDeleteSnapshotsOlderThanDays > 0)
-		{
-			if (!DeleteOld(	FileFind,
-							nSnapshotAutoSaveDirSize,
-							m_pDoc->m_nDeleteSnapshotsOlderThanDays,
-							CurrentTime))
-				return FALSE; // Exit Thread
-		}
-
-		// Delete oldest files if we are short of disk space
-		llDiskTotalSize = ::GetDiskSize(sSnapshotAutoSaveDir);
-		if (llDiskTotalSize > 0)
-		{
-			// Get the time of the oldest existing directory
-			if (!CalcOldestDir(	FileFind,
-								nSnapshotAutoSaveDirSize,
-								OldestDirTime,
-								CurrentTime))
-				return FALSE; // Exit Thread
-
-			TimeDiff = CurrentTime - OldestDirTime;
-			llDaysAgo = (LONGLONG)TimeDiff.GetDays();
-			llDiskFreeSpace = ::GetDiskSpace(sSnapshotAutoSaveDir);
-			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
-			bDeletingOld = FALSE;
-			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
-			{
-				// Delete old snapshots
-				if (!DeleteOld(	FileFind,
-								nSnapshotAutoSaveDirSize,
-								llDaysAgo,
-								CurrentTime))
-					return FALSE; // Exit Thread
-				bDeletingOld = TRUE;
-				llDaysAgo--;
-				llDiskFreeSpace = ::GetDiskSpace(sSnapshotAutoSaveDir);
-				nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
-			}
-
-			// Log
-			if (bDeletingOld)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s, deleting old snapshot files because the available disk space is less than %d%%%%\n"),
-																			m_pDoc->GetDeviceName(), MIN_DISKFREE_PERCENT);
+				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is less than %d%%%%\n"),
+							m_pDoc->GetDeviceName(), sAutoSaveDir, MIN_DISKFREE_PERCENT);
 				TRACE(sMsg);
 				::LogLine(sMsg);
 			}
@@ -5379,20 +5209,20 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 				// Alternatively call them
 				if (m_dwCounter & 0x1U)
 				{
-					if (!DeleteDetections())
+					if (!DeleteIt(m_pDoc->m_sDetectionAutoSaveDir,	m_pDoc->m_nDeleteDetectionsOlderThanDays))
 						return 0; // Exit Thread
-					if (!DeleteSnapshots())
+					if (!DeleteIt(m_pDoc->m_sSnapshotAutoSaveDir,	m_pDoc->m_nDeleteSnapshotsOlderThanDays))
 						return 0; // Exit Thread
-					if (!DeleteRecordings())
+					if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir,		m_pDoc->m_nDeleteRecordingsOlderThanDays))
 						return 0; // Exit Thread
 				}
 				else
 				{
-					if (!DeleteRecordings())
+					if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir,		m_pDoc->m_nDeleteRecordingsOlderThanDays))
 						return 0; // Exit Thread
-					if (!DeleteSnapshots())
+					if (!DeleteIt(m_pDoc->m_sSnapshotAutoSaveDir,	m_pDoc->m_nDeleteSnapshotsOlderThanDays))
 						return 0; // Exit Thread
-					if (!DeleteDetections())
+					if (!DeleteIt(m_pDoc->m_sDetectionAutoSaveDir,	m_pDoc->m_nDeleteDetectionsOlderThanDays))
 						return 0; // Exit Thread
 				}
 
