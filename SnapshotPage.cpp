@@ -360,9 +360,12 @@ void CSnapshotPage::OnChangeEditDeleteSnapshotsDays()
 {
 	if (UpdateData(TRUE))
 	{
-		m_pDoc->m_DeleteThread.Kill();
+		BOOL bRunning = m_pDoc->m_DeleteThread.IsRunning();
+		if (bRunning)
+			m_pDoc->m_DeleteThread.Kill();
 		m_pDoc->m_nDeleteSnapshotsOlderThanDays = m_nDeleteSnapshotsOlderThanDays;
-		m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
+		if (bRunning)
+			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 	}
 }
 

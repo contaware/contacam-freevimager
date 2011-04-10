@@ -389,9 +389,12 @@ void CMovementDetectionPage::OnChangeEditDeleteDetectionsDays()
 {
 	if (UpdateData(TRUE))
 	{
-		m_pDoc->m_DeleteThread.Kill();
+		BOOL bRunning = m_pDoc->m_DeleteThread.IsRunning();
+		if (bRunning)
+			m_pDoc->m_DeleteThread.Kill();
 		m_pDoc->m_nDeleteDetectionsOlderThanDays = m_nDeleteDetectionsOlderThanDays;
-		m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
+		if (bRunning)
+			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 	}
 }
 
