@@ -267,8 +267,4 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL term
 // Get uuid
 extern CString GetUuidString();
 
-// Use SecureZeroMemory(PVOID ptr, SIZE_T cnt) to zero
-// the given buffer when fineshed using it
-BOOL MakeRandomBuffer(PVOID RandomBuffer, ULONG RandomBufferLength);
-
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

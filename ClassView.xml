@@ -1,5 +1,5 @@
 <CLV STREAM="ClassView Window" SIZE="9216" VERSION="0x00050001">
-<PROJECTS COUNT="13">
+<PROJECTS COUNT="12">
 <PROJECT NAME="Dib">
 <FOLDERS COUNT="0"/>
 </PROJECT>
@@ -30,14 +30,11 @@
 <PROJECT NAME="libtiff">
 <FOLDERS COUNT="0"/>
 </PROJECT>
-<PROJECT NAME="rsaeuro">
-<FOLDERS COUNT="0"/>
-</PROJECT>
 <PROJECT NAME="uImager">
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="77">
+<CLASSES COUNT="76">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -93,7 +90,6 @@
 <CLASS NAME="CProgressDlg"/>
 <CLASS NAME="CProgressDlgThread"/>
 <CLASS NAME="CRedEyeDlg"/>
-<CLASS NAME="CRegistrationDlg"/>
 <CLASS NAME="CResizingDlg"/>
 <CLASS NAME="CResizingDpiDlg"/>
 <CLASS NAME="CRotationFlippingDlg"/>

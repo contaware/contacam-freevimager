@@ -3159,19 +3159,7 @@ void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
 
 void CMainFrame::PopulateHelpMenu(CMenu* pPopupMenu)
 {
-	// Remove Register... and separator menu items
 	int i;
-#ifndef VIDEODEVICEDOC
-	for (i = 0 ; i < (int)pPopupMenu->GetMenuItemCount() ; i++)
-	{
-		if (pPopupMenu->GetMenuItemID(i) == ID_APP_REGISTRATION)
-		{
-			pPopupMenu->DeleteMenu(i, MF_BYPOSITION);
-			pPopupMenu->DeleteMenu(i, MF_BYPOSITION);
-			break;
-		}
-	}
-#endif
 
 	// Original Items Count
 	if (m_nHelpMenuItemsCount <= 0)

@@ -61,13 +61,6 @@
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 
-// Registration
-#define RSA_KEYNAME_EXT									_T("ContaCamKey.bin")
-#define RSA_KEY_FILE									(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(RSA_KEYNAME_EXT))
-#define REGISTERED_FONT_COLOR							RGB(0,0,255)
-#define UNREGISTERED_FONT_COLOR_1						RGB(255,160,0)
-#define UNREGISTERED_FONT_COLOR_2						RGB(255,30,0)
-
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
 #define CONTACAMSERVICE_RUNNING							1
@@ -322,9 +315,6 @@ public:
 
 	// Update / create config file and root index.php for microapache
 	void MicroApacheUpdateFiles();
-
-	// Registration
-	BOOL RSADecrypt();
 
 	// FullscreenBrowser Ini file handling
 	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
@@ -837,12 +827,6 @@ public:
 	// Micro Apache Watchdog Thread
 	CMicroApacheWatchdogThread m_MicroApacheWatchdogThread;
 
-	// Registration
-	BOOL m_bRegistered;
-	DWORD m_dwPURCHASE_ID;
-	WORD m_wRUNNING_NO;
-	CString m_sREG_NAME;
-
 	// Service
 	// - ContaCam's browser autostart disabled if this set
 	//   (in this case a registry Run key is set to start the browser
@@ -902,7 +886,6 @@ public:
 	afx_msg void OnAppFaq();
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnToolsViewLogfile();
-	afx_msg void OnAppRegistration();
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);

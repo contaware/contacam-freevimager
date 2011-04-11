@@ -5161,11 +5161,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 			// Delete
 			case WAIT_TIMEOUT :		
 			{
-				// Registration check, cannot call RSADecrypt here because the used rsaeuro lib
-				// is not thread safe -> just check the m_bRegistered variable
-				if (!((CUImagerApp*)::AfxGetApp())->m_bRegistered)
-					m_pDoc->StopProcessFrame();
-				
 				// Alternatively call them
 				if (m_dwCounter & 0x1U)
 				{

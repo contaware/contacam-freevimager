@@ -169,7 +169,6 @@
 #define IDD_IMAPI2_DOWNLOAD             302
 #define IDD_CREDITS_VIDEODEVICEDOC      303
 #define IDD_ASSISTANT                   304
-#define IDD_REGISTRATION                305
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
 #define IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART 313
 #define IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART 314
@@ -3504,7 +3503,6 @@
 #define ID_PLAY_INC                     33157
 #define ID_PLAY_DEC                     33158
 #define ID_CAPTURE_RESET                33159
-#define ID_APP_REGISTRATION             33160
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_PLAY_RANDOM                  33165

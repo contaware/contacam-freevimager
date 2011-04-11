@@ -310,8 +310,6 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
-        MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
 END
@@ -684,8 +682,6 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
-        MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
 END
@@ -795,8 +791,6 @@ BEGIN
         MENUITEM "License",                     ID_APP_LICENSE
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
         MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
@@ -1054,8 +1048,6 @@ BEGIN
         MENUITEM "License",                     ID_APP_LICENSE
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
         MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
@@ -1361,8 +1353,6 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
-        MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
 END
@@ -1515,8 +1505,6 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
-        MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
 END
@@ -1667,8 +1655,6 @@ BEGIN
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
         MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
-        MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
 END
@@ -1765,8 +1751,6 @@ BEGIN
         MENUITEM "License",                     ID_APP_LICENSE
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
         MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
@@ -2812,8 +2796,6 @@ BEGIN
         MENUITEM "License",                     ID_APP_LICENSE
         MENUITEM "Credits",                     ID_APP_CREDITS
         MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Register...",                 ID_APP_REGISTRATION
         MENUITEM SEPARATOR
         MENUITEM "FAQs",                        ID_APP_FAQ
     END
@@ -6435,31 +6417,6 @@ BEGIN
                     33,60,8
 END
 
-IDD_REGISTRATION DIALOGEX 0, 0, 260, 230
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Registration"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    PUSHBUTTON      "Buy",IDC_BUTTON_BUY_LICENSE,199,61,48,16
-    PUSHBUTTON      "Register...",IDC_BUTTON_OPEN_KEYFILE,199,168,48,16
-    DEFPUSHBUTTON   "OK",IDOK,108,208,50,15,WS_GROUP
-    LTEXT           "Click the following button to go online and buy a ContaCam license",
-                    IDC_STATIC2142,13,61,178,16
-    LTEXT           "Click the following button to register your key file\n(browse to the safe place you have chosen above and select the ContaCamKey.bin file)",
-                    IDC_STATIC2144,13,163,181,27
-    GROUPBOX        "1. Buy License",IDC_STATIC2146,7,46,246,40
-    GROUPBOX        "2. Save Key File",IDC_STATIC2147,7,97,246,40
-    GROUPBOX        "3. Enter Key File",IDC_STATIC2148,7,149,246,49
-    LTEXT           "After buying the license online you will get an email with your personal key file attached. Store this file in a safe place!",
-                    IDC_STATIC2143,13,111,234,16
-    LTEXT           "",IDC_REG_NAME,87,16,166,27
-    LTEXT           "Registration Name:",IDC_STATIC,7,16,77,11
-    LTEXT           "",IDC_REG_NUMBER,87,5,166,11
-    LTEXT           "Registration Number:",IDC_STATIC,7,5,77,11
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -7484,18 +7441,6 @@ BEGIN
         TOPMARGIN, 2
         BOTTOMMARGIN, 260
         HORZGUIDE, 180
-    END
-
-    IDD_REGISTRATION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 253
-        VERTGUIDE, 13
-        VERTGUIDE, 87
-        VERTGUIDE, 199
-        VERTGUIDE, 247
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 225
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -8638,7 +8583,6 @@ BEGIN
     ID_PLAY_INC             "Increment the video playback speed\nIncrement Speed"
     ID_PLAY_DEC             "Decrement the video playback speed\nDecrement Speed"
     ID_CAPTURE_RESET        "Reset to default settings\nReset to Default"
-    ID_APP_REGISTRATION     "Buy and enter license key file\nBuy and Enter License Key"
     ID_EDIT_SNAPSHOT        "Copy and paste document\nSnapshot"
     ID_EDIT_PASTE_INTO_FILE_HELP 
                             "Coordinates text file help\nCoordinates Text File Help"
@@ -8946,9 +8890,6 @@ BEGIN
     IDS_STRING1745          "5 Seconds Rate"
     IDS_STRING1746          "10 Seconds Rate"
     IDS_STRING1747          "DirectX failed"
-    IDS_STRING1748          "unregistered"
-    IDS_STRING1749          "(unregistered version, 3h capture time limitation)"
-    IDS_STRING1750          "for registration go to the Help menu and choose Register"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"

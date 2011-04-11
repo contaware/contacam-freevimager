@@ -8,7 +8,7 @@ NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "uimager.h"
 LastPage=0
 
-ClassCount=129
+ClassCount=128
 Class1=CAddBordersDlg
 Class2=CAnimGifSaveDlg
 Class3=CAnimGifSaveSmallDlg
@@ -90,57 +90,56 @@ Class78=CPrintPreviewScaleEdit
 Class79=CProgressDlg
 Class80=CProgressDlgThread
 Class81=CRedEyeDlg
-Class82=CRegistrationDlg
-Class83=CResizingDlg
-Class84=CResizingDpiDlg
-Class85=CRotationFlippingDlg
-Class86=CSaveFileDlg
-Class87=CAviSaveFileDlg
-Class88=CAnimGifSaveFileDlg
-Class89=CBatchProcSaveFileDlg
-Class90=CSendMailConfigurationDlg
-Class91=CSendMailDocsDlg
-Class92=CSettingsDlg
-Class93=CSettingsDlgVideoDeviceDoc
-Class94=CSharpenDlg
-Class95=CSnapshotPage
-Class96=CSoftBordersDlg
-Class97=CSoftenDlg
-Class98=CStaticLink
-Class99=CStatusBarACT
-Class100=CTabCtrlSSL
-Class101=CTiffSaveDlg
-Class102=CChildToolBar
-Class103=CVideoAviToolBar
-Class104=CVideoDeviceToolBar
-Class105=CPictureToolBar
-Class106=CToolBarChildFrame
-Class107=CAudioMCIChildFrame
-Class108=CCDAudioChildFrame
-Class109=CZoomComboBox
-Class110=CVideoAviChildFrame
-Class111=CPictureChildFrame
-Class112=CBigPictureChildFrame
-Class113=CVideoDeviceChildFrame
-Class114=CToolbarSliderCtrl
-Class115=CUImagerApp
-Class116=CAboutDlg
-Class117=CUImagerDoc
-Class118=CUImagerView
-Class119=CVideoAviDoc
-Class120=CVideoAviView
-Class121=CVideoDeviceDoc
-Class122=CVideoDevicePropertySheet
-Class123=CVideoDeviceView
-Class124=CVideoFormatDlg
-Class125=CWinsock2MissingDlg
-Class126=CXButtonXP
-Class127=CXmpDlg
-Class128=CYesNoAllCancelDlg
-Class129=CZipProgressDlg
+Class82=CResizingDlg
+Class83=CResizingDpiDlg
+Class84=CRotationFlippingDlg
+Class85=CSaveFileDlg
+Class86=CAviSaveFileDlg
+Class87=CAnimGifSaveFileDlg
+Class88=CBatchProcSaveFileDlg
+Class89=CSendMailConfigurationDlg
+Class90=CSendMailDocsDlg
+Class91=CSettingsDlg
+Class92=CSettingsDlgVideoDeviceDoc
+Class93=CSharpenDlg
+Class94=CSnapshotPage
+Class95=CSoftBordersDlg
+Class96=CSoftenDlg
+Class97=CStaticLink
+Class98=CStatusBarACT
+Class99=CTabCtrlSSL
+Class100=CTiffSaveDlg
+Class101=CChildToolBar
+Class102=CVideoAviToolBar
+Class103=CVideoDeviceToolBar
+Class104=CPictureToolBar
+Class105=CToolBarChildFrame
+Class106=CAudioMCIChildFrame
+Class107=CCDAudioChildFrame
+Class108=CZoomComboBox
+Class109=CVideoAviChildFrame
+Class110=CPictureChildFrame
+Class111=CBigPictureChildFrame
+Class112=CVideoDeviceChildFrame
+Class113=CToolbarSliderCtrl
+Class114=CUImagerApp
+Class115=CAboutDlg
+Class116=CUImagerDoc
+Class117=CUImagerView
+Class118=CVideoAviDoc
+Class119=CVideoAviView
+Class120=CVideoDeviceDoc
+Class121=CVideoDevicePropertySheet
+Class122=CVideoDeviceView
+Class123=CVideoFormatDlg
+Class124=CWinsock2MissingDlg
+Class125=CXButtonXP
+Class126=CXmpDlg
+Class127=CYesNoAllCancelDlg
+Class128=CZipProgressDlg
 
-ResourceCount=121
-Resource1=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
+ResourceCount=120
+Resource1=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource2=IDR_BIGPICTURE_TOOLBAR_NOHQ (English (U.S.))
 Resource3=IDR_MAINFRAME_VIDEODEVICEDOC (English (U.S.))
 Resource4=IDR_VIDEO_AVI_TOOLBAR (English (U.S.))
@@ -178,8 +177,8 @@ Resource35=IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA (English (U.S.))
 Resource36=IDR_TRAYICON (English (U.S.))
 Resource37=IDR_CDAUDIO (English (U.S.))
 Resource38=IDR_CONTEXT_LAYERED_DLG (English (U.S.))
-Resource39=IDD_ASSISTANT (English (U.S.))
-Resource40=IDD_REGISTRATION (English (U.S.))
+Resource39=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
+Resource40=IDR_MAINFRAME (English (U.S.))
 Resource41=IDD_ABOUTBOX (English (U.S.))
 Resource42=IDD_DEVICE (English (U.S.))
 Resource43=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
@@ -259,8 +258,7 @@ Resource116=IDD_PROGRESS (English (U.S.))
 Resource117=IDD_SNAPSHOT_FTP_CONFIGURATION (English (U.S.))
 Resource118=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource119=IDD_IMAPI2 (English (U.S.))
-Resource120=IDD_IMAPI2_DOWNLOAD (English (U.S.))
-Resource121=IDR_MAINFRAME (English (U.S.))
+Resource120=IDD_ASSISTANT (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -748,12 +746,6 @@ BaseClass=CDialog
 HeaderFile=RedEyeDlg.h
 ImplementationFile=RedEyeDlg.cpp
 
-[CLS:CRegistrationDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=RegistrationDlg.h
-ImplementationFile=RegistrationDlg.cpp
-
 [CLS:CResizingDlg]
 Type=0
 BaseClass=CDialog
@@ -1229,10 +1221,6 @@ Class=CProgressDlg
 Type=1
 Class=CRedEyeDlg
 
-[DLG:IDD_REGISTRATION]
-Type=1
-Class=CRegistrationDlg
-
 [DLG:IDD_RESIZING]
 Type=1
 Class=CResizingDlg
@@ -1483,9 +1471,8 @@ Command20=ID_TOOLS_VIEW_WEB_LOGFILE
 Command21=ID_APP_LICENSE
 Command22=ID_APP_CREDITS
 Command23=ID_APP_ABOUT
-Command24=ID_APP_REGISTRATION
-Command25=ID_APP_FAQ
-CommandCount=25
+Command24=ID_APP_FAQ
+CommandCount=24
 
 [MNU:IDR_CONTEXT_SLIDESHOW_ONLY (English (U.S.))]
 Type=1
@@ -1688,9 +1675,8 @@ Command40=ID_WINDOW_TILE_VERT
 Command41=ID_APP_LICENSE
 Command42=ID_APP_CREDITS
 Command43=ID_APP_ABOUT
-Command44=ID_APP_REGISTRATION
-Command45=ID_APP_FAQ
-CommandCount=45
+Command44=ID_APP_FAQ
+CommandCount=44
 
 [MNU:IDR_VIDEOAVI (English (U.S.))]
 Type=1
@@ -1748,9 +1734,8 @@ Command50=ID_WINDOW_TILE_VERT
 Command51=ID_APP_LICENSE
 Command52=ID_APP_CREDITS
 Command53=ID_APP_ABOUT
-Command54=ID_APP_REGISTRATION
-Command55=ID_APP_FAQ
-CommandCount=55
+Command54=ID_APP_FAQ
+CommandCount=54
 
 [MNU:IDR_PICTURE (English (U.S.))]
 Type=1
@@ -1900,9 +1885,8 @@ Command142=ID_WINDOW_TILE_VERT
 Command143=ID_APP_LICENSE
 Command144=ID_APP_CREDITS
 Command145=ID_APP_ABOUT
-Command146=ID_APP_REGISTRATION
-Command147=ID_APP_FAQ
-CommandCount=147
+Command146=ID_APP_FAQ
+CommandCount=146
 
 [MNU:IDR_CONTEXT_CROP (English (U.S.))]
 Type=1
@@ -2087,9 +2071,8 @@ Command141=ID_WINDOW_TILE_VERT
 Command142=ID_APP_LICENSE
 Command143=ID_APP_CREDITS
 Command144=ID_APP_ABOUT
-Command145=ID_APP_REGISTRATION
-Command146=ID_APP_FAQ
-CommandCount=146
+Command145=ID_APP_FAQ
+CommandCount=145
 
 [MNU:IDR_BIGPICTURE (English (U.S.))]
 Type=1
@@ -2176,9 +2159,8 @@ Command79=ID_WINDOW_TILE_VERT
 Command80=ID_APP_LICENSE
 Command81=ID_APP_CREDITS
 Command82=ID_APP_ABOUT
-Command83=ID_APP_REGISTRATION
-Command84=ID_APP_FAQ
-CommandCount=84
+Command83=ID_APP_FAQ
+CommandCount=83
 
 [MNU:IDR_BIGPICTURE_NOHQ (English (U.S.))]
 Type=1
@@ -2264,9 +2246,8 @@ Command78=ID_WINDOW_TILE_VERT
 Command79=ID_APP_LICENSE
 Command80=ID_APP_CREDITS
 Command81=ID_APP_ABOUT
-Command82=ID_APP_REGISTRATION
-Command83=ID_APP_FAQ
-CommandCount=83
+Command82=ID_APP_FAQ
+CommandCount=82
 
 [MNU:IDR_CONTEXT_BIGPICTURE (English (U.S.))]
 Type=1
@@ -2320,9 +2301,8 @@ Command27=ID_WINDOW_TILE_VERT
 Command28=ID_APP_LICENSE
 Command29=ID_APP_CREDITS
 Command30=ID_APP_ABOUT
-Command31=ID_APP_REGISTRATION
-Command32=ID_APP_FAQ
-CommandCount=32
+Command31=ID_APP_FAQ
+CommandCount=31
 
 [MNU:IDR_CONTEXT_PICTURE_FULLSCREEN (English (U.S.))]
 Type=1
@@ -2855,9 +2835,8 @@ Command26=ID_WINDOW_TILE_VERT
 Command27=ID_APP_LICENSE
 Command28=ID_APP_CREDITS
 Command29=ID_APP_ABOUT
-Command30=ID_APP_REGISTRATION
-Command31=ID_APP_FAQ
-CommandCount=31
+Command30=ID_APP_FAQ
+CommandCount=30
 
 [MNU:IDR_CONTEXT_LAYERED_DLG (English (U.S.))]
 Type=1
@@ -5094,22 +5073,4 @@ Control27=IDC_STATIC,static,1342308352
 Control28=IDC_STATIC,button,1342177287
 Control29=IDC_STATIC,static,1342308352
 Control30=IDC_LABEL_SNAPSHOTHISTORY_SIZE,static,1342308352
-
-[DLG:IDD_REGISTRATION (English (U.S.))]
-Type=1
-Class=?
-ControlCount=13
-Control1=IDC_BUTTON_BUY_LICENSE,button,1342242816
-Control2=IDC_BUTTON_OPEN_KEYFILE,button,1342242816
-Control3=IDOK,button,1342373889
-Control4=IDC_STATIC2142,static,1342308352
-Control5=IDC_STATIC2144,static,1342308352
-Control6=IDC_STATIC2146,button,1342177287
-Control7=IDC_STATIC2147,button,1342177287
-Control8=IDC_STATIC2148,button,1342177287
-Control9=IDC_STATIC2143,static,1342308352
-Control10=IDC_REG_NAME,static,1342308352
-Control11=IDC_STATIC,static,1342308352
-Control12=IDC_REG_NUMBER,static,1342308352
-Control13=IDC_STATIC,static,1342308352
 

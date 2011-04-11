@@ -371,19 +371,3 @@ libpng 1.2.44
 
 - Preprocessor defines for debug:   WIN32, DEBUG, _DEBUG, PNG_DEBUG=1,
                                     PNG_LIBPNG_SPECIALBUILD
-
-
-rsaeuro 1.04
-------------
-
-Not ok for Commercial Applications,
-very old lib (from 1994) and from a single author.
-
-- Not thread safe, see for example the shsc.c file
-  which uses the global buffers: h0, h1, h2, h3, h4 and A, B, C, D, E 
-
-- define USE_ANSI
-
-- In rsaeuro.h: changed Library details
-
-- In r_stdlib.c: commented the copyright string

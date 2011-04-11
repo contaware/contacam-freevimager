@@ -98,59 +98,14 @@ void CMDIClientWnd::OnPaint()
 	CString s;
 
 #ifdef VIDEODEVICEDOC
-	if (((CUImagerApp*)::AfxGetApp())->m_bRegistered)
-	{
-		s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
-		::DrawTextEx(memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-		s.ReleaseBuffer();
-	}
-	else
-	{
-		s.Format(_T("%s %s "), APPNAME_NOEXT, APPVERSION);
-		::DrawTextEx(	memDC.GetSafeHdc(),
-						s.GetBuffer(s.GetLength() + 1),
-						s.GetLength(),
-						&rcDraw,
-						DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-						NULL);
-		s.ReleaseBuffer();
-
-		CRect rcRedRect = rcDraw;
-		::DrawTextEx(	memDC.GetSafeHdc(),
-						s.GetBuffer(s.GetLength() + 1),
-						s.GetLength(),
-						&rcRedRect,
-						DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX | DT_CALCRECT,
-						NULL);
-		s.ReleaseBuffer();
-		rcRedRect.left = rcRedRect.right;
-		rcRedRect.right = rcClient.right - nLeftRightMargin;
-		COLORREF crNormalTextColor = memDC.SetTextColor(UNREGISTERED_FONT_COLOR_1);
-		s = ML_STRING(1749, "(unregistered version, 3h capture time limitation)");
-		::DrawTextEx(	memDC.GetSafeHdc(),
-						s.GetBuffer(s.GetLength() + 1),
-						s.GetLength(),
-						&rcRedRect,
-						DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-						NULL);
-		s.ReleaseBuffer();
-		memDC.SetTextColor(crNormalTextColor);
-
-		rcDraw.top += nLineHeight;
-		s = ML_STRING(1750, "for registration go to the Help menu and choose Register");
-		::DrawTextEx(	memDC.GetSafeHdc(),
-						s.GetBuffer(s.GetLength() + 1),
-						s.GetLength(),
-						&rcDraw,
-						DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-						NULL);
-		s.ReleaseBuffer();
-	}
+	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
+	::DrawTextEx(memDC.GetSafeHdc(),
+				s.GetBuffer(s.GetLength() + 1),
+				s.GetLength(),
+				&rcDraw,
+				DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
+				NULL);
+	s.ReleaseBuffer();
 
 	rcDraw.top += 2*nLineHeight;
 	s = ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed");

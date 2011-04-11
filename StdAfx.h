@@ -144,11 +144,6 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 #define MAX_FILEDLG_PATH				65535 // If you put 65536 it's not working on win2000...
 #endif
 
-// RSA Key Sizes
-#define SECRET_KEY_SIZE					128
-#define RSA_BLOCK_SIZE					256
-#define RSA_USABLE_BLOCK_SIZE			(RSA_BLOCK_SIZE - 11)
-
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
