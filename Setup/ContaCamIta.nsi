@@ -82,7 +82,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseContaCamIta.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseIta.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -271,7 +271,7 @@ stopend:
 !ifdef INSTALLER_NT
   File "..\Translation\${APPNAME_NOEXT}wIta.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseContaCamIta.txt"
+  File "/oname=License.txt" "..\License\LicenseIta.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
 !ifdef INSTALLER_WIN9X
   File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"

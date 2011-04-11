@@ -82,7 +82,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseContaCamRus.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseRus.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -271,7 +271,7 @@ stopend:
 !ifdef INSTALLER_NT
   File "..\Translation\${APPNAME_NOEXT}wRus.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseContaCamRus.txt"
+  File "/oname=License.txt" "..\License\LicenseRus.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
 !ifdef INSTALLER_WIN9X
   File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"

@@ -82,7 +82,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseFreeVimagerDeu.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseDeu.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -228,7 +228,7 @@ Section "${APPNAME_NOEXT} Program (required)"
 !ifdef INSTALLER_NT
   File "..\Translation\${APPNAME_NOEXT}wDeu.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseFreeVimagerDeu.txt"
+  File "/oname=License.txt" "..\License\LicenseDeu.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
   File "..\NeroBurn\Release\NeroBurn.exe"
 !ifdef WITH_TUTORIALS

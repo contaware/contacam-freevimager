@@ -1,2 +1,0 @@
-Not working because cannot get the code section
-pointer to calculate the crc32 -> ContaCam exits!
