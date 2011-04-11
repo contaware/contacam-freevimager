@@ -3344,19 +3344,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		CTime timedate = CTime::GetCurrentTime();
 		CTime timeonly(2000, 1, 1, timedate.GetHour(), timedate.GetMinute(), timedate.GetSecond());
 
-		// Debugger PostMessage breakpoint?
-#ifdef CRACKCHECK
-		if (::IsBPXv2((void*)::PostMessage))
-		{
-			// Throw exception
-			int* p = NULL;
-			int l = *p;
-
-			// To avoid optimization removal
-			::DeleteCriticalSection((LPCRITICAL_SECTION)&l);
-		}
-#endif
-
 		// Iterate Through the Scheduler List
 		POSITION pos = ((CUImagerApp*)::AfxGetApp())->m_Scheduler.GetHeadPosition();
 		while (pos)

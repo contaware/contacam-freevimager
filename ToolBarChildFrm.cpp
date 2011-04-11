@@ -1350,12 +1350,6 @@ CVideoDeviceChildFrame::CVideoDeviceChildFrame()
 	// Init vars
 	m_bShutdown2Started = FALSE;
 	m_bShutdown3Started = FALSE;
-	
-	// Debugger MessageBox breakpoint?
-#ifdef CRACKCHECK
-	if (::IsBPXv1((void*)::MessageBox))
-		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-#endif
 }
 
 BEGIN_MESSAGE_MAP(CVideoDeviceChildFrame, CToolBarChildFrame)

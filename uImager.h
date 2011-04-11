@@ -134,10 +134,6 @@
 #define DEFAULT_NEW_PAPER_SIZE							_T("")	/* _T("") is Custom */
 #define DEFAULT_NEW_COLOR								RGB(255,255,255)
 
-#ifdef CRACKCHECK
-extern BYTE g_Crc32CheckArray[];
-#endif
-
 // Forward Declarations
 class CVideoDeviceDoc;
 class CPictureDoc;

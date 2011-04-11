@@ -275,7 +275,7 @@
 				InlineFunctionExpansion="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\libpng;..\libjpeg;..\libtiff;..\zlib;.\ffmpeg\includes;.\ffmpeg;.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;.\rsaeuro"
-				PreprocessorDefinitions="CRACKCHECK;CPJNSMTP_NOSSL;VIDEODEVICEDOC;NDEBUG;UNICODE;WINVER=0x0500;_WIN32_WINNT=0x0500;_WINDOWS;MFC_THREAD;DIRECT3D_VERSION=0x0700;CPJNSMTP_NONTLM;SUPPORT_BMP;SUPPORT_MMBMP;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;SUPPORT_LIBAVCODEC;WIN32;_WIN32_IE=0x0400;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS"
+				PreprocessorDefinitions="CPJNSMTP_NOSSL;VIDEODEVICEDOC;NDEBUG;UNICODE;WINVER=0x0500;_WIN32_WINNT=0x0500;_WINDOWS;MFC_THREAD;DIRECT3D_VERSION=0x0700;CPJNSMTP_NONTLM;SUPPORT_BMP;SUPPORT_MMBMP;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;SUPPORT_LIBAVCODEC;WIN32;_WIN32_IE=0x0400;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -338,7 +338,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="&quot;$(ProjectDir)CheckSumPatcher\Release\CheckSumPatcher.exe&quot; &quot;$(ProjectDir)bin\ContaCamw\ContaCamw.exe&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -1558,10 +1558,6 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Crc32Dynamic.cpp"
-				>
 			</File>
 			<File
 				RelativePath="CreditsDlg.cpp"
@@ -4640,10 +4636,6 @@
 			</File>
 			<File
 				RelativePath="CPUSpeed.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Crc32Dynamic.h"
 				>
 			</File>
 			<File

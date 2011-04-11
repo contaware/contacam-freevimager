@@ -56,12 +56,6 @@ CVideoDeviceView::CVideoDeviceView()
 	m_bDxDrawInitFailed = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_nCriticalControlsCount = 1;
-
-	// Debugger present?
-#ifdef CRACKCHECK
-	if (::IsDebuggerPresentApi())
-		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-#endif
 }
 
 CVideoDeviceView::~CVideoDeviceView()

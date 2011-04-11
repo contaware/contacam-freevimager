@@ -33,11 +33,6 @@ extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
 
-#ifdef CRACKCHECK
-extern LPBYTE g_pCodeStart;
-extern DWORD g_dwCodeSize;
-#endif
-
 // Call This Once Before Using the following Functions!
 extern void InitHelpers();
 
@@ -275,91 +270,5 @@ extern CString GetUuidString();
 // Use SecureZeroMemory(PVOID ptr, SIZE_T cnt) to zero
 // the given buffer when fineshed using it
 BOOL MakeRandomBuffer(PVOID RandomBuffer, ULONG RandomBufferLength);
-
-// Crack check functions
-#ifdef CRACKCHECK
-
-// Get exe's .text section information
-extern BOOL CodeSectionInformation();
-
-// Is debugger present
-extern BOOL IsDebuggerPresentApi();
-
-#pragma warning(disable : 4035)	// deactivates warning for function that does not return any value
-
-// This is reverse engineered from the IsDebuggerPresent() kernel32 api
-extern __forceinline BOOL IsDebuggerPresentAsm()
-{
-	if (g_bWin2000OrHigher)
-	{
-		__asm
-		{
-			mov   eax, fs:[0x18]
-			mov   eax, [eax + 0x30]
-			movzx eax, byte ptr [eax + 0x02]
-		}
-	}
-	else
-		return FALSE;
-}
-
-// Is breakpoint set at given address?
-extern __forceinline BOOL IsBPX(void* address)
-{
-    __asm
-	{
-		mov esi,address  
-		mov al,[esi]        
-		mov ah,0xCC
-		cmp ah,al           // check
-		je BPXed
-		mov eax,0			// no breakpoint
-		jmp NOBPX
-BPXed:
-		mov eax,1			// breakpoint found
-NOBPX:
-	}
-}
-
-extern __forceinline BOOL IsBPXv1(void* address)
-{
-    __asm
-	{
-		mov esi,address  
-		mov al,[esi]        
-		mov ah,0x66
-		add ah,ah			// add it to itself -> it results 0xCC
-		cmp ah,al           // check
-		je BPXed
-		mov eax,0			// no breakpoint
-		jmp NOBPX
-BPXed:
-		mov eax,1			// breakpoint found
-NOBPX:
-	}
-}
-
-extern __forceinline BOOL IsBPXv2(void* address)
-{
-    __asm
-	{
-		mov esi,address  
-		mov al,[esi]        
-		mov ah,0x33
-		add ah,ah
-		add ah,ah			// add it to itself 2 times -> it results 0xCC
-		cmp ah,al           // check
-		je BPXed
-		xor eax,eax			// no breakpoint
-		jmp NOBPX
-BPXed:
-		mov eax,1			// breakpoint found
-NOBPX:
-	}
-}
-
-#pragma warning(default : 4035)	// set the default warning value for function without return value
-
-#endif
 
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

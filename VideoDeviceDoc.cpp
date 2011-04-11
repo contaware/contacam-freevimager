@@ -35,9 +35,6 @@
 #include "Psapi.h"
 #include "IniFile.h"
 #include "NoVistaFileDlg.h"
-#ifdef CRACKCHECK
-#include "Crc32Dynamic.h"
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -4798,21 +4795,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	// Necessary because we are drawing with directx
 	::CoInitialize(NULL);
 
-	// Get the code section start address and size
-#ifdef CRACKCHECK
-	if (!g_pCodeStart)
-	{
-		if (!::CodeSectionInformation())
-		{
-			// Usually it fails if the exe is compressed (with upx for example)
-			// I wrote a note in the license file which says:
-			// "This software will not work in case the executable is packed/compressed."
-			CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-															WM_CLOSE, 4986, 0, 0);
-		}
-	}
-#endif
-
 	// Poll starting flag
 	for (;;)
 	{
@@ -5179,28 +5161,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 			// Delete
 			case WAIT_TIMEOUT :		
 			{
-				// Code section's CRC32 check
-#ifdef CRACKCHECK
-				if (g_pCodeStart)
-				{
-					DWORD dwCrc32;
-					CCrc32Dynamic::CalcAssembly(g_pCodeStart, g_dwCodeSize, dwCrc32);
-					#define CRC32_KEY		0x23fa8c19U
-					#define CRC32_OFFSET	23
-					dwCrc32 ^= CRC32_KEY;
-					if (*((LPDWORD)(&g_Crc32CheckArray[CRC32_OFFSET])) != dwCrc32)
-					{
-						CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-																		WM_CLOSE, 9780, 0, 0);
-					}
-				}
-				else
-				{
-					CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-																	WM_CLOSE, 4459, 0, 0);
-				}
-#endif
-
 				// Registration check, cannot call RSADecrypt here because the used rsaeuro lib
 				// is not thread safe -> just check the m_bRegistered variable
 				if (!((CUImagerApp*)::AfxGetApp())->m_bRegistered)
@@ -6270,12 +6230,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Movement Detector
 	OneEmptyFrameList();
 	ResetMovementDetector();
-
-	// Debugger present?
-#ifdef CRACKCHECK
-	if (::IsDebuggerPresentAsm())
-		::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-#endif
 
 	// Start Save Frame List Thread
 	m_SaveFrameListThread.Start();

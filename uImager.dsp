@@ -70,8 +70,8 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Obj/ContaCam"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff" /I "..\zlib" /I ".\ffmpeg\includes" /I ".\ffmpeg" /I ".\Dib" /I ".\icclib" /I ".\libpng" /I ".\libjpeg" /I ".\libtiff\libtiff" /I ".\zlib" /I ".\giflib\lib" /I ".\zip" /I ".\directx_base" /D "VIDEODEVICEDOC" /D "NDEBUG" /D "SUPPORT_LIBAVCODEC" /D "CRACKCHECK" /D "CPJNSMTP_NOSSL" /D "_MBCS" /D WINVER=0x0400 /D "_WINDOWS" /D "MFC_THREAD" /D DIRECT3D_VERSION=0x0700 /D "CPJNSMTP_NONTLM" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff" /I "..\zlib" /I ".\ffmpeg\includes" /I ".\ffmpeg" /I ".\Dib" /I ".\icclib" /I ".\libpng" /I ".\libjpeg" /I ".\libtiff\libtiff" /I ".\zlib" /I ".\giflib\lib" /I ".\zip" /I ".\directx_base" /I ".\rsaeuro" /D "VIDEODEVICEDOC" /D "NDEBUG" /D "SUPPORT_LIBAVCODEC" /D "CRACKCHECK" /D "CPJNSMTP_NOSSL" /D "_MBCS" /D WINVER=0x0400 /D "_WINDOWS" /D "MFC_THREAD" /D DIRECT3D_VERSION=0x0700 /D "CPJNSMTP_NONTLM" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff" /I "..\zlib" /I ".\ffmpeg\includes" /I ".\ffmpeg" /I ".\Dib" /I ".\icclib" /I ".\libpng" /I ".\libjpeg" /I ".\libtiff\libtiff" /I ".\zlib" /I ".\giflib\lib" /I ".\zip" /I ".\directx_base" /D "VIDEODEVICEDOC" /D "NDEBUG" /D "SUPPORT_LIBAVCODEC" /D "CPJNSMTP_NOSSL" /D "_MBCS" /D WINVER=0x0400 /D "_WINDOWS" /D "MFC_THREAD" /D DIRECT3D_VERSION=0x0700 /D "CPJNSMTP_NONTLM" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\libpng" /I "..\libjpeg" /I "..\libtiff" /I "..\zlib" /I ".\ffmpeg\includes" /I ".\ffmpeg" /I ".\Dib" /I ".\icclib" /I ".\libpng" /I ".\libjpeg" /I ".\libtiff\libtiff" /I ".\zlib" /I ".\giflib\lib" /I ".\zip" /I ".\directx_base" /I ".\rsaeuro" /D "VIDEODEVICEDOC" /D "NDEBUG" /D "SUPPORT_LIBAVCODEC" /D "CPJNSMTP_NOSSL" /D "_MBCS" /D WINVER=0x0400 /D "_WINDOWS" /D "MFC_THREAD" /D DIRECT3D_VERSION=0x0700 /D "CPJNSMTP_NONTLM" /D "SUPPORT_BMP" /D "SUPPORT_MMBMP" /D "SUPPORT_LIBJPEG" /D "SUPPORT_LIBPNG" /D "SUPPORT_LIBTIFF" /D "SUPPORT_PCX" /D "SUPPORT_GIFLIB" /D "WIN32" /D _WIN32_IE=0x0400 /D "_CRT_NONSTDC_NO_DEPRECATE" /D "_CRT_SECURE_NO_DEPRECATE" /D "_SCL_SECURE_NO_DEPRECATE" /D "_ATL_SECURE_NO_DEPRECATE" /D "_AFX_SECURE_NO_DEPRECATE" /D "_CRT_NON_CONFORMING_SWPRINTFS" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "VIDEODEVICEDOC"
@@ -82,11 +82,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386 /out:"Bin/ContaCam/ContaCam.exe"
 # ADD LINK32 /nologo /subsystem:windows /machine:I386 /out:"Bin/ContaCam/ContaCam.exe"
-# Begin Special Build Tool
-WkspDir=.
-SOURCE="$(InputPath)"
-PostBuild_Cmds="$(WkspDir)\CheckSumPatcher\Release\CheckSumPatcher.exe" "$(WkspDir)\bin\ContaCam\ContaCam.exe"
-# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "uImager - Win32 FreeVimager"
 
@@ -309,10 +304,6 @@ SOURCE=.\CPUCount.cpp
 # Begin Source File
 
 SOURCE=.\CPUSpeed.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Crc32Dynamic.cpp
 # End Source File
 # Begin Source File
 
@@ -1026,10 +1017,6 @@ SOURCE=.\CPUCount.h
 # Begin Source File
 
 SOURCE=.\CPUSpeed.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Crc32Dynamic.h
 # End Source File
 # Begin Source File
 
