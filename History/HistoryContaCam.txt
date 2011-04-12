@@ -4,6 +4,7 @@ VERSION HISTORY
 
 - ContaCam is now FREEWARE!!!
 - Small optimizations for detection saving and networking
+- Added some codecs
 
 2.3.9 (March 12th 2011)
 

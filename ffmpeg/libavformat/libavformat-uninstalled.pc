@@ -8,5 +8,5 @@ Description: FFmpeg container format library
 Version: 52.22.1
 Requires:  theora libavcodec = 52.0.0
 Conflicts:
-Libs: ${libdir}/libavformat.a   -lm -ltheora -logg
+Libs: ${libdir}/libavformat.a   -lm -lmp3lame -lm -ltheora -logg
 Cflags: -I${includedir}

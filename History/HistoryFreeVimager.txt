@@ -4,6 +4,7 @@ VERSION HISTORY
 
 - Fixed W/H ratio info display for the crop tool with cm units
 - Optimized first picture soft load
+- Added some codecs
 
 2.3.9 (March 12th 2011)
 

@@ -8,5 +8,5 @@ Description: FFmpeg codec library
 Version: 52.0.0
 Requires:  theora libavutil = 49.10.0
 Conflicts:
-Libs: ${libdir}/libavcodec.a   -lm -ltheora -logg
+Libs: ${libdir}/libavcodec.a   -lm -lmp3lame -lm -ltheora -logg
 Cflags: -I${includedir}
