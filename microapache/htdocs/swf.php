@@ -130,8 +130,8 @@ function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
 	return (reqVer ? false : 0.0);
 }
 //]]>
-</script><!-- to correct the unsightly Flash of Unstyled Content. http://www.bluerobot.com/web/css/fouc.asp -->
-
+</script>
+<!-- to correct the unsightly Flash of Unstyled Content. http://www.bluerobot.com/web/css/fouc.asp -->
 <script type="text/javascript"></script>
 <script src="js/prototype.js" type="text/javascript"></script>
 <script src="js/scriptaculous.js?load=slider" type="text/javascript"></script>
@@ -218,7 +218,18 @@ else {
 <div id="buttonscontainer">
 <form name="controller" action="" method="post" id="controller">
 <div class="wrap">
-<input type="button" value="Play" name="Play" class="playerbutton" onclick="PlayFlashMovie();" /><input type="button" value="Stop" name="Stop" class="playerbutton" onclick="StopFlashMovie();" /><input type="button" value="Rew" name="Rewind" class="playerbutton" onclick="RewindFlashMovie();" /><input type="button" value="&lt;&lt;" name="PrevFrameFast" class="playerbutton" onclick="PrevFrameFastFlashMovie();" /><input type="button" value="&lt;" name="PrevFrame" class="playerbutton" onclick="PrevFrameFlashMovie();" /><input type="text" readonly="readonly" id="infotext" name="infotext" class="playerinfotext" value="0%" size="5" /><input type="button" value="&gt;" name="NextFrame" class="playerbutton" onclick="NextFrameFlashMovie();" /><input type="button" value="&gt;&gt;" name="NextFrameFast" class="playerbutton" onclick="NextFrameFastFlashMovie();" /><input type="button" value="Zoom+" name="Zoomin" class="playerbutton" onclick="ZoominFlashMovie();" /><input type="button" value="Zoom-" name="Zoomout" class="playerbutton" onclick="ZoomoutFlashMovie();" /><?php if (SHOW_SAVECOMMAND == 1) echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href='download.php?file=" . urlencode($filename) . "';\" />";?>
+<?php
+$IEVersion = getIEVersion();
+if ($IEVersion >= 0 && $IEVersion < 9) {
+	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" /><input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" /><input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" /><input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" ondblclick=\"PrevFrameFastFlashMovie();\" /><input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" ondblclick=\"PrevFrameFlashMovie();\" /><input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" /><input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" ondblclick=\"NextFrameFlashMovie();\" /><input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" ondblclick=\"NextFrameFastFlashMovie();\" /><input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" ondblclick=\"ZoominFlashMovie();\" /><input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" ondblclick=\"ZoomoutFlashMovie();\" />";
+} else {
+	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" /><input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" /><input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" /><input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" /><input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" /><input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" /><input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" /><input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" /><input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" /><input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" />";
+}
+if (SHOW_SAVECOMMAND == 1) {
+	echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href='download.php?file=" . urlencode($filename) . "';\" />";
+}
+echo "\n";
+?>
 </div>
 </form>
 </div>
@@ -234,12 +245,33 @@ echo "</div>\n";
 echo "</div>\n";
 
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
+	$currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
+	$currentkey = '0';
+	foreach($_GET as $key=>$val) {
+		if (is_numeric($key) && intval($key) >= 0) {
+			if ($currentswf == $val)
+				$currentkey = $key;
+			$lastkey = intval($key);
+		}
+	}
+	$prevkey = intval($currentkey) - 1;
+	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
 	echo "<div align=\"center\">\n";
+	if ($prevkey >= 0) {
+		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
+		$prevrequesturi = str_replace("&", "&amp;", $prevrequesturi);
+		echo "<a class=\"back\" href=\"$prevrequesturi\" onclick=\"top.window.name = '" . $_GET["$prevkey"] . "';\">&lt;</a>&nbsp;\n";
+	}
 	if (isset($_GET['backuri']))
 		echo "<a class=\"back\" href=\"" . str_replace("&", "&amp;", $_GET['backuri']) . "\">" . BACK . "</a>\n";
 	else
 		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
+	if ($nextkey <= $lastkey) {
+		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
+		$nextrequesturi = str_replace("&", "&amp;", $nextrequesturi);
+		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"top.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
+	}
 	echo "</div>\n";
 }
 ?>

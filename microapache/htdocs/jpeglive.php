@@ -42,7 +42,7 @@ function poll() {
 	x = <?php echo LIVEJPEGREFRESHSEC;?>;
 }
 function getIEVersion() {
-	if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)){
+	if (/MSIE (\d+\.\d+)/.test(navigator.userAgent)) {
 		var ieversion = new Number(RegExp.$1);
 		return ieversion;
 	}

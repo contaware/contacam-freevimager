@@ -97,7 +97,7 @@ function UpdateSlider()
 function UpdateInfoText()
 {	
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	if (flashMovie.PercentLoaded() == 100)
+	if (flashMovie.PercentLoaded() == 100 || flashMovie.PercentLoaded() < 0) // I have sometimes seen negative values...
 	{
 		var currentFrame=flashMovie.TCurrentFrame("/");
 		document.controller.infotext.value = parseInt(currentFrame) + 1;

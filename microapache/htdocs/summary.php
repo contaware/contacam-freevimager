@@ -224,8 +224,6 @@ else
 if ($handle = @opendir($dir)) {
 	$day_has_files = false;
 	$bfirst = true;
-	$pos = 0;
-	$count = 0;
 	$pages = 1;
 			
 	// First catch all the wanted files
@@ -257,7 +255,28 @@ if ($handle = @opendir($dir)) {
 		else
 			krsort($file_array);
 		
+		// Get html query string of swfs pointed to by gifs
+		$pos = 0;
+		$count = 0;
+		foreach($file_array as $file) {
+			$path_parts = pathinfo($file);
+			if (!isset($path_parts['filename']))
+				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
+			
+			if ($pos >= $offset && $count < $size) {
+				if ($path_parts['extension'] == 'gif') {
+					$swffile = $dir."/".basename($file, ".gif").".swf";
+					if (is_file($swffile))
+						$swfs .= "&amp;" . $count . '=' . urlencode(basename($file, ".gif"));
+				}
+				$count++;
+			}
+			$pos++;
+		}			
+		
 		// Display
+		$pos = 0;
+		$count = 0;
 		echo "<div align=\"center\">\n";
 		echo "<h2>";
 		PrintFileDate($days_elapsed);
@@ -266,7 +285,6 @@ if ($handle = @opendir($dir)) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
-			$giffile = "$dir/$file";
 		  
 			if ($bfirst) {
 				$bfirst = false;
@@ -285,9 +303,9 @@ if ($handle = @opendir($dir)) {
 					$swffile = $dir."/".basename($file, ".gif").".swf";
 					$avifile = $dir."/".basename($file, ".gif").".avi";
 					if (is_file($swffile) && is_file($avifile))
-						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
+						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
 					else if (is_file($swffile))
-						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else if (is_file($avifile))
 						echo "<a href=\"$aviuri\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else
