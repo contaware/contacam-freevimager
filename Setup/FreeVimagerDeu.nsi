@@ -1,10 +1,10 @@
 ; Adds a user (no admin) manifest (for vista or higher)
 RequestExecutionLevel user
 
-; Type Of Installer: define both to be compatible with all systems!
-;!define INSTALLER_WIN9X
+; Possible defines: INSTALLER_WIN9X, INSTALLER_NT, WITH_TUTORIALS
+!ifndef INSTALLER_WIN9X & INSTALLER_NT
 !define INSTALLER_NT
-;!define WITH_TUTORIALS
+!endif
 
 ; Name Defines
 !include "CurrentVersion.nsh"
