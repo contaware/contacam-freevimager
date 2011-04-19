@@ -131,7 +131,7 @@ function NextFrameFastFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	var currentFrame=flashMovie.TCurrentFrame("/");
-	var nextFrame=parseInt(currentFrame) + 25;
+	var nextFrame=parseInt(currentFrame) + 20;
 	if (nextFrame >= myTotalFrames)
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
@@ -157,7 +157,7 @@ function PrevFrameFastFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	var currentFrame=flashMovie.TCurrentFrame("/");
-	var prevFrame=parseInt(currentFrame) - 25;
+	var prevFrame=parseInt(currentFrame) - 20;
 	if (prevFrame < 0)
 		prevFrame = 0;
 	flashMovie.GotoFrame(prevFrame);

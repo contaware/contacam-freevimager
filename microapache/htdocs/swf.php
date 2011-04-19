@@ -247,6 +247,7 @@ echo "</div>\n";
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
 	$currentkey = '0';
+	$lastkey = 0;
 	foreach($_GET as $key=>$val) {
 		if (is_numeric($key) && intval($key) >= 0) {
 			if ($currentswf == $val)
