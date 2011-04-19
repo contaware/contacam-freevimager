@@ -19,7 +19,6 @@ class CNewDlg : public CDialog
 {
 // Construction
 public:
-	double m_dRatio;
 	COLORREF m_crBackgroundColor;
 	CNewDlg(int nWidth, int nHeight,
 			int nXDpi, int nYDpi,

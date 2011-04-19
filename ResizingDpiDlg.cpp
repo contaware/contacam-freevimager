@@ -101,8 +101,12 @@ void CResizingDpiDlg::DoDataExchange(CDataExchange* pDX)
 	if (pDX->m_bSaveAndValidate == FALSE)
 	{
 		// Calc. Ratio
-		double dRatioX = (double)m_nInitWidth / (double)m_nPixelsWidth;
-		double dRatioY = (double)m_nInitHeight / (double)m_nPixelsHeight;
+		double dRatioX = 1000.0;
+		if (m_nPixelsWidth > 0)
+			dRatioX = (double)m_nInitWidth / (double)m_nPixelsWidth;
+		double dRatioY = 1000.0;
+		if (m_nPixelsHeight > 0)
+			dRatioY = (double)m_nInitHeight / (double)m_nPixelsHeight;
 		double dRatioMin = MIN(dRatioX, dRatioY);
 
 		// Shrink
@@ -175,11 +179,17 @@ double CResizingDpiDlg::GetMaxPhysWidth()
 	{
 		// cm
 		case 0:
-			return m_dMaxResizeFactor * (double)m_nInitWidth * 2.54 / (double)m_nXDpi;
+			if (m_nXDpi > 0)
+				return m_dMaxResizeFactor * (double)m_nInitWidth * 2.54 / (double)m_nXDpi;
+			else
+				return 1000.0;
 
 		// inch
 		case 1:
-			return m_dMaxResizeFactor * (double)m_nInitWidth / (double)m_nXDpi;
+			if (m_nXDpi > 0)
+				return m_dMaxResizeFactor * (double)m_nInitWidth / (double)m_nXDpi;
+			else
+				return 1000.0;
 
 		default:
 			return 0.0;
@@ -192,11 +202,17 @@ double CResizingDpiDlg::GetMaxPhysHeight()
 	{
 		// cm
 		case 0:
-			return m_dMaxResizeFactor * (double)m_nInitHeight * 2.54 / (double)m_nYDpi;
+			if (m_nYDpi > 0)
+				return m_dMaxResizeFactor * (double)m_nInitHeight * 2.54 / (double)m_nYDpi;
+			else
+				return 1000.0;
 
 		// inch
 		case 1:
-			return m_dMaxResizeFactor * (double)m_nInitHeight / (double)m_nYDpi;
+			if (m_nYDpi > 0)
+				return m_dMaxResizeFactor * (double)m_nInitHeight / (double)m_nYDpi;
+			else
+				return 1000.0;
 
 		default:
 			return 0.0;
@@ -215,12 +231,14 @@ void CResizingDpiDlg::FromPixToPhysX()
 	{
 		// cm
 		case 0:
-			m_SpinPhysWidth.SetPos((double)m_nPixelsWidth * 2.54 / (double)m_nXDpi);
+			if (m_nXDpi > 0)
+				m_SpinPhysWidth.SetPos((double)m_nPixelsWidth * 2.54 / (double)m_nXDpi);
 			break;
 
 		// inch
 		case 1:
-			m_SpinPhysWidth.SetPos((double)m_nPixelsWidth / (double)m_nXDpi);
+			if (m_nXDpi > 0)
+				m_SpinPhysWidth.SetPos((double)m_nPixelsWidth / (double)m_nXDpi);
 			break;
 
 		default:
@@ -235,12 +253,14 @@ void CResizingDpiDlg::FromPixToPhysY()
 	{
 		// cm
 		case 0:
-			m_SpinPhysHeight.SetPos((double)m_nPixelsHeight * 2.54 / (double)m_nYDpi);
+			if (m_nYDpi > 0)
+				m_SpinPhysHeight.SetPos((double)m_nPixelsHeight * 2.54 / (double)m_nYDpi);
 			break;
 
 		// inch
 		case 1:
-			m_SpinPhysHeight.SetPos((double)m_nPixelsHeight / (double)m_nYDpi);
+			if (m_nYDpi > 0)
+				m_SpinPhysHeight.SetPos((double)m_nPixelsHeight / (double)m_nYDpi);
 			break;
 
 		default:

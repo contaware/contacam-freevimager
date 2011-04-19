@@ -59,7 +59,6 @@ CNewDlg::CNewDlg(	int nWidth, int nHeight,
 	m_nInitHeight = nHeight;
 	m_nInitXDpi = nXDpi;
 	m_nInitYDpi = nYDpi;
-	m_dRatio = (double)nWidth / (double)nHeight;
 	m_bNormalValidate = FALSE;
 	m_bPixAreChanging = FALSE;
 	m_bPhysOrDpiAreChanging = FALSE;
@@ -135,12 +134,14 @@ void CNewDlg::FromPixToPhysX()
 	{
 		// cm
 		case 0:
-			m_SpinPhysWidth.SetPos((double)m_nPixelsWidth * 2.54 / (double)m_nXDpi);
+			if (m_nXDpi > 0)
+				m_SpinPhysWidth.SetPos((double)m_nPixelsWidth * 2.54 / (double)m_nXDpi);
 			break;
 
 		// inch
 		case 1:
-			m_SpinPhysWidth.SetPos((double)m_nPixelsWidth / (double)m_nXDpi);
+			if (m_nXDpi > 0)
+				m_SpinPhysWidth.SetPos((double)m_nPixelsWidth / (double)m_nXDpi);
 			break;
 
 		default:
@@ -155,12 +156,14 @@ void CNewDlg::FromPixToPhysY()
 	{
 		// cm
 		case 0:
-			m_SpinPhysHeight.SetPos((double)m_nPixelsHeight * 2.54 / (double)m_nYDpi);
+			if (m_nYDpi > 0)
+				m_SpinPhysHeight.SetPos((double)m_nPixelsHeight * 2.54 / (double)m_nYDpi);
 			break;
 
 		// inch
 		case 1:
-			m_SpinPhysHeight.SetPos((double)m_nPixelsHeight / (double)m_nYDpi);
+			if (m_nYDpi > 0)
+				m_SpinPhysHeight.SetPos((double)m_nPixelsHeight / (double)m_nYDpi);
 			break;
 
 		default:
