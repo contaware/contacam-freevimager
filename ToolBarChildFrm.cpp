@@ -475,7 +475,7 @@ void CPictureToolBar::UpdateControls(void)
 	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
-		rect.right = rect.left + 64;
+		rect.right = rect.left + ZOOMCOMBOBOX_WIDTH;
 		SetButtonInfo(	m_ZoomComboBoxIndex,
 						ID_ZOOM_COMBOX,
 						TBBS_SEPARATOR,
@@ -730,8 +730,8 @@ END_MESSAGE_MAP()
 
 void CZoomComboBox::Init()
 {
-	SetItemDataPtr(AddString(_T("Fit")),	(void*)&dFit);
-	SetItemDataPtr(AddString(_T("Fit Big")),(void*)&dFitBig);
+	SetItemDataPtr(AddString(ML_STRING(1822, "Fit")),	(void*)&dFit);
+	SetItemDataPtr(AddString(ML_STRING(1823, "Fit Big")),(void*)&dFitBig);
 	SetItemDataPtr(AddString(_T("6.25%")),	(void*)&dPercent6Quarter);
 	SetItemDataPtr(AddString(_T("12.5%")),	(void*)&dPercent12Half);
 	SetItemDataPtr(AddString(_T("25%")),	(void*)&dPercent25);

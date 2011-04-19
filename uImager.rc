@@ -8982,6 +8982,8 @@ BEGIN
     IDS_STRING1819          "or resolution!"
     IDS_STRING1820          "Overload: lower maximum number of connections!\r\n\r\n"
     IDS_STRING1821          "used %d MB, reserved %d MB, frag %0.1f%%"
+    IDS_STRING1822          "Fit"
+    IDS_STRING1823          "Fit Big"
 END
 
 #endif    // English (U.S.) resources

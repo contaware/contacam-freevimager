@@ -15,6 +15,7 @@
 #define PLAY_SLIDER_WIDTH_MIN						80
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
+#define ZOOMCOMBOBOX_WIDTH							92
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar

@@ -11,10 +11,6 @@
 4. Copy FreeVimagerw.exe and ContaCamw.exe to Translation directory,
    call Update Source in appTranslator and Build all Target Files
    
-5. Run upx batch files:
-   Make_RemoteCam.bat, MakeUPX_FreeVimager.bat, MakeUPX_FreeVimagerw.bat
-   MakeUPX_FreeVimagerDeu.bat, MakeUPX_FreeVimagerIta.bat, MakeUPX_FreeVimagerRus.bat
+5. Run Make_All.bat in Setup folder
    
 6. SVN Commit as: Final release x.x.x
-
-7. Compile All NSIS Scripts
