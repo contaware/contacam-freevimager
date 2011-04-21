@@ -676,7 +676,7 @@ __forceinline void CVideoDeviceView::DrawDC()
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
-					HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0x00,0x00,0xFF));
+					HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
 					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
 					HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
@@ -708,7 +708,7 @@ __forceinline void CVideoDeviceView::DrawDC()
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
-					HPEN hPen = ::CreatePen(PS_SOLID, 1, RGB(0xFF,0x00,0x00));
+					HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
 					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
 					HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
@@ -762,7 +762,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		}
 
 		// Set colors
-		COLORREF crOldTextColor = MemDC.SetTextColor(RGB(0xFF,0xFF,0xFF));
+		COLORREF crOldTextColor = MemDC.SetTextColor(DXDRAW_MESSAGE_COLOR);
 		int nOldBkMode = MemDC.SetBkMode(OPAQUE);
 		COLORREF crOldBkColor = MemDC.SetBkColor(pDoc->m_crBackgroundColor);
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
@@ -774,6 +774,24 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 							-1,
 							&rcClient,
 							(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+			MemDC.SetTextColor(DXDRAW_ERROR_COLOR);
+			if (!pDoc->m_DxDraw.HasDxDraw())
+			{
+				MemDC.DrawText(	ML_STRING(1221, "DirectX 7.0 or higher is required!"),	
+								-1,
+								&rcClient,
+								(DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+			}
+			else
+			{
+				TCHAR lpszErrorMessage[DXDRAW_ERRORMSG_BUFSIZE];
+				lpszErrorMessage[0] = _T('\0');
+				pDoc->m_DxDraw.GetLastErrorMessage(lpszErrorMessage, DXDRAW_ERRORMSG_BUFSIZE);
+				MemDC.DrawText(	lpszErrorMessage,	
+								-1,
+								&rcClient,
+								(DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+			}
 		}
 		else
 		{

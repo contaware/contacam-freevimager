@@ -67,6 +67,8 @@ class CMovementDetectionPage;
 #define DEFAULT_VIDEOPOSTREC_QUALITY		DEFAULT_THEO_QUALITY
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
 #define DXDRAW_REINIT_TIMEOUT				5000U		// ms
+#define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
+#define DXDRAW_ERROR_COLOR					RGB(255,160,0)
 
 // Watchdog
 #define WATCHDOG_DRAW_THRESHOLD				300U		// ms
@@ -121,6 +123,8 @@ class CMovementDetectionPage;
 														// higher values better compression but worse quality
 #define MOVDET_ANIMGIF_DEFAULT_WIDTH		128			// Default animated gif width
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
+#define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
+#define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")

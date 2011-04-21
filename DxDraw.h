@@ -32,13 +32,16 @@
 #endif
 
 // Text Drawing Define
-#define DRAWTEXT_BOTTOMLEFT		0
-#define DRAWTEXT_TOPLEFT		1
-#define DRAWTEXT_BOTTOMRIGHT	2
-#define DRAWTEXT_TOPRIGHT		3
-#define FONT_COLUMNS			16
-#define FONT_ROWS				6
-#define FONT_ASCII_OFFSET		32
+#define DRAWTEXT_BOTTOMLEFT						0
+#define DRAWTEXT_TOPLEFT						1
+#define DRAWTEXT_BOTTOMRIGHT					2
+#define DRAWTEXT_TOPRIGHT						3
+#define FONT_COLUMNS							16
+#define FONT_ROWS								6
+#define FONT_ASCII_OFFSET						32
+
+// Error message buffer size
+#define DXDRAW_ERRORMSG_BUFSIZE					1024
 
 // Forward Declaration
 class CDib;
@@ -123,6 +126,8 @@ public:
 	__forceinline void LeaveCS() {m_cs.LeaveCriticalSection();}
 	__forceinline BOOL EnterCSTimeout() {return m_cs.EnterCriticalSection(CS_TIMEOUT);}
 	void Free();
+	__forceinline HRESULT GetLastError() const {return m_hLastError;};
+	BOOL GetLastErrorMessage(TCHAR* pBuffer, int nBufferSizeInChars);
 	BOOL GetCurrentVideoMem(DWORD& dwTotal, DWORD& dwFree);
 	void ClearFront(const RECT* prc = NULL);
 	void ClearBack(const RECT* prc = NULL);
@@ -649,6 +654,9 @@ protected:
 	volatile BOOL m_bFullScreenExclusive;
 	volatile BOOL m_bTripleBuffering;
 	CTryEnterCriticalSection m_cs;
+	CRITICAL_SECTION m_csErrorMsg;
+	volatile HRESULT m_hLastError;
+	TCHAR m_lpszLastErrorMsg[DXDRAW_ERRORMSG_BUFSIZE];
 };
 
 #endif // !defined(AFX_DXDRAW_H__1E152EB4_ED1D_4079_BDD4_773383DD98C8__INCLUDED_)

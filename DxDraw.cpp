@@ -18,6 +18,9 @@ static char THIS_FILE[]=__FILE__;
 CDxDraw::CDxDraw()
 {
 	m_bInit = FALSE;
+	::InitializeCriticalSection(&m_csErrorMsg);
+	m_hLastError = ERROR_SUCCESS;
+	m_lpszLastErrorMsg[0] = _T('\0');
 	::ZeroMemory(&m_guidNull, sizeof(GUID));
 	m_nCurrentDevice = 0;
 	m_nSrcWidth = 0;
@@ -38,10 +41,7 @@ CDxDraw::CDxDraw()
 	{
 		// Enumerate Screens
 		if (!EnumerateScreens())
-		{
-			TRACE(_T("Failed while Enumerating Screens\n"));
 			m_bDx7 = FALSE;
-		}
 		else
 		{
 			// Verify the Presence of DirectDraw 7 or Higher
@@ -75,6 +75,7 @@ CDxDraw::~CDxDraw()
 	DeleteScreenArray();
 	if (m_hDirectDraw)
 		::FreeLibrary(m_hDirectDraw);
+	::DeleteCriticalSection(&m_csErrorMsg);
 }
 
 void WINAPI GetMonitorRect(HMONITOR hMonitor, RECT& rcMonitor)
@@ -184,7 +185,10 @@ BOOL CDxDraw::EnumerateScreens()
 			Error(hRet, _T("DirectDrawEnumerate() Failed"));
 		}
 		else
+		{
+			Error(::GetLastError(), _T("DirectDrawEnumerate not available"));
 			return FALSE;
+		}
     }
     else
 	{
@@ -1749,15 +1753,13 @@ BOOL CDxDraw::CopyFontDib(BOOL bRestoreSurfaces/*=TRUE*/)
 							memDC,
 							0, 0, 
 							SRCCOPY);
+		if (!res)
+			Error(::GetLastError(), _T("BitBlt failed in CopyFontDib()"));
 		::SelectObject(memDC, hOldBitmap);
 		::DeleteDC(memDC);
 
 		// Release DC
 		ReleaseFontDC(hDC, bRestoreSurfaces);
-
-		// Error
-		if (!res)
-			TRACE(_T("BitBlt failed in CopyFontDib()\n"));
 
 		return res;
 	}
@@ -2076,16 +2078,37 @@ TCHAR* CDxDraw::ErrorString(HRESULT hRet)
 		case DDERR_NOTPAGELOCKED:                return _T("DDERR_NOTPAGELOCKED");
 		case DDERR_NOTINITIALIZED:               return _T("DDERR_NOTINITIALIZED");
 	}
-	return _T("Unknown Error");
+	return _T("");
 }
 
 BOOL CDxDraw::Error(HRESULT hRet, LPCTSTR lpszMessage)
 {
 	if (FAILED(hRet))
 	{
-		TCHAR buf[1024];
-		_sntprintf(buf, 1024, _T("%s (%s)\n"), lpszMessage, ErrorString(hRet));
-		TRACE(buf);
+		::EnterCriticalSection(&m_csErrorMsg);
+		m_hLastError = hRet;
+		TCHAR* lpszErrorString = ErrorString(hRet);
+		if (lpszErrorString[0] != _T('\0'))
+			_sntprintf(m_lpszLastErrorMsg, DXDRAW_ERRORMSG_BUFSIZE, _T("%s (%s)\n"), lpszMessage, lpszErrorString);
+		else
+			_sntprintf(m_lpszLastErrorMsg, DXDRAW_ERRORMSG_BUFSIZE, _T("%s\n"), lpszMessage);
+		m_lpszLastErrorMsg[DXDRAW_ERRORMSG_BUFSIZE - 1] = _T('\0');
+		TRACE(m_lpszLastErrorMsg);
+		::LeaveCriticalSection(&m_csErrorMsg);
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
+BOOL CDxDraw::GetLastErrorMessage(TCHAR* pBuffer, int nBufferSizeInChars)
+{
+	if (pBuffer && nBufferSizeInChars > 0)
+	{
+		::EnterCriticalSection(&m_csErrorMsg);
+		_tcsncpy(pBuffer, m_lpszLastErrorMsg, MIN(nBufferSizeInChars, DXDRAW_ERRORMSG_BUFSIZE));
+		pBuffer[nBufferSizeInChars - 1] = _T('\0');
+		::LeaveCriticalSection(&m_csErrorMsg);
 		return TRUE;
 	}
 	else
