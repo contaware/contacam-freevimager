@@ -69,11 +69,11 @@ void CAviInfoDlg::UpdateDisplay()
 		// File Info
 
 		// File Name
-		t.Format(_T("File Name: %s\r\n"), ::GetShortFileName(pDoc->m_sFileName));
+		t.Format(ML_STRING(1307, "File: %s\r\n"), ::GetShortFileName(pDoc->m_sFileName));
 		s+=t;
 
 		// Path
-		t.Format(_T("Path: %s\r\n"), ::GetDriveAndDirName(pDoc->m_sFileName));
+		t.Format(ML_STRING(1309, "Path: %s\r\n"), ::GetDriveAndDirName(pDoc->m_sFileName));
 		s+=t;
 
 		// Get File Time
@@ -81,7 +81,7 @@ void CAviInfoDlg::UpdateDisplay()
 		BOOL bFileTimesOk = ::GetFileStatus(pDoc->m_sFileName, FileStatus);
 		if (bFileTimesOk)
 		{
-			t =	_T("Date: ") +
+			t =	ML_STRING(1310, "Date: ") +
 				::MakeDateLocalFormat(FileStatus.m_mtime) +
 				_T(" ") +
 				::MakeTimeLocalFormat(FileStatus.m_mtime, TRUE) +
@@ -89,20 +89,20 @@ void CAviInfoDlg::UpdateDisplay()
 		}
 		else
 		{
-			t = _T("Error Reading Timestamp\r\n");
+			t = ML_STRING(1311, "Error Reading Timestamp\r\n");
 		}
 		s+=t;
 
 		// File Size
 		ULARGE_INTEGER FileSize = pDoc->m_pAVIPlay->GetFileSize();
 		if (FileSize.QuadPart >= (1024*1024*1024))
-			t.Format(_T("File Size: %0.2f GB"), (double)(LONGLONG)FileSize.QuadPart / 1073741824.0);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.2f ") + ML_STRING(1826, "GB")), (double)(LONGLONG)FileSize.QuadPart / 1073741824.0);
 		else if (FileSize.QuadPart >= (1024*1024))
-			t.Format(_T("File Size: %0.1f MB"), (double)(LONGLONG)FileSize.QuadPart / 1048576.0);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.1f ") + ML_STRING(1825, "MB")), (double)(LONGLONG)FileSize.QuadPart / 1048576.0);
 		else if (FileSize.QuadPart >= 1024)
-			t.Format(_T("File Size: %d KB"), (int)FileSize.QuadPart >> 10);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%d ") + ML_STRING(1243, "KB")), (int)FileSize.QuadPart >> 10);
 		else
-			t.Format(_T("File Size: %d Bytes"), (int)FileSize.QuadPart);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%d ") + ML_STRING(1244, "Bytes")), (int)FileSize.QuadPart);
 		s+=t;
 		
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FILEINFO);

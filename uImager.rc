@@ -8986,6 +8986,13 @@ BEGIN
     IDS_STRING1823          "Fit Big"
 END
 
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1824          "File Size: "
+    IDS_STRING1825          "MB"
+    IDS_STRING1826          "GB"
+END
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
