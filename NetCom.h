@@ -51,6 +51,9 @@
 // closes the connection very fast)
 #define NETCOM_PEER_CONNECTION_CLOSE_TIMEOUT	1000U
 
+// In Close() after this timeout the connection closing wait is given up
+#define NETCOM_BLOCKING_TIMEOUT					15000U
+
 // Default Send Buf Size
 #define NETCOM_DEFAULT_SENDBUFSIZE2				4096U
 
@@ -413,10 +416,11 @@ public:
 	// IsShutdown() function.
 	void ShutdownConnection_NoBlocking();
 
-	// Wait till all threads are dead, this is a blocking function
-	__forceinline void WaitTillShutdown_Blocking() {m_pTxThread->WaitDone_Blocking();
-													m_pRxThread->WaitDone_Blocking();
-													m_pMsgThread->WaitDone_Blocking();};
+	// Wait till all threads are dead
+	__forceinline void WaitTillShutdown_Blocking(DWORD dwTimeout = INFINITE) {
+												m_pTxThread->WaitDone_Blocking(dwTimeout);
+												m_pRxThread->WaitDone_Blocking(dwTimeout);
+												m_pMsgThread->WaitDone_Blocking(dwTimeout);};
 
 	// Is Shutdown?
 	__forceinline BOOL IsShutdown() {return !m_pMsgThread->IsAlive()	&&
@@ -709,9 +713,8 @@ protected:
 	// Initialize all Network Events (FD_ACCEPT, FD_CONNECT, ...)
 	BOOL InitEvents();
 
-	// Gracefully Shutdown the Connection with a timeout of
-	// NETCOM_CONNECTION_SHUTDOWN_TIMEOUT milliseconds.
-	void ShutdownConnection();
+	// Gracefully Shutdown the Connection
+	void ShutdownConnection(DWORD dwTimeout = INFINITE);
 
 	// GetLastError() Handling
 	void ProcessError(CString sErrorText);

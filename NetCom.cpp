@@ -330,9 +330,21 @@ int CNetCom::CMsgThread::Work()
 						// transmitting and receiving is not allowed!
 						m_pNetCom->ShutdownTxThread();
 						m_pNetCom->ShutdownRxThread();
+
+						// Set flag
 						bInitConnectionShutdown = TRUE;
+
+						::EnterCriticalSection(&m_pNetCom->m_csSocket);
+
+						// Enable only FD_CLOSE events at this point
+						if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE) == SOCKET_ERROR)
+							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
+
+						// Shutdown SD_BOTH
 						if (::shutdown(m_pNetCom->m_hSocket, SD_BOTH) == SOCKET_ERROR)
 							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
+
+						::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					}
 				}
 				break;
@@ -838,17 +850,19 @@ int CNetCom::CMsgThread::Work()
 								// transmitting is not allowed!
 								m_pNetCom->ShutdownTxThread();
 
+								::EnterCriticalSection(&m_pNetCom->m_csSocket);
+
 								// Enable only FD_READ events at this point; on Wine that's needed because
 								// another FD_CLOSE event is fired when calling shutdown() and this would
 								// create an infinite loop!
-								::EnterCriticalSection(&m_pNetCom->m_csSocket);
 								if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_READ) == SOCKET_ERROR)
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
-								::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 
 								// Shutdown SD_SEND
 								if (::shutdown(m_pNetCom->m_hSocket, SD_SEND) == SOCKET_ERROR)
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
+
+								::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 
 								// Next Step is entering the case WAIT_TIMEOUT.
 								// This is to let finish reading remaining data!
@@ -2096,9 +2110,9 @@ void CNetCom::Close()
 	{
 		// Already Closing?
 		if (m_pMsgThread->m_bClosing)
-			WaitTillShutdown_Blocking();
+			WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT);
 		else
-			ShutdownConnection();
+			ShutdownConnection(NETCOM_BLOCKING_TIMEOUT);
 	}
 
 	m_hRxMsgTriggerEvent = NULL;
@@ -3321,7 +3335,7 @@ void CNetCom::ShutdownConnection_NoBlocking()
 	}
 }
 
-void CNetCom::ShutdownConnection()
+void CNetCom::ShutdownConnection(DWORD dwTimeout/*=INFINITE*/)
 {
 	if (m_pMsgThread->IsRunning())
 	{
@@ -3329,7 +3343,7 @@ void CNetCom::ShutdownConnection()
 			m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
-		WaitTillShutdown_Blocking();
+		WaitTillShutdown_Blocking(dwTimeout);
 	}
 }
 
