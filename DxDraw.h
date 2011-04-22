@@ -126,7 +126,6 @@ public:
 	__forceinline void LeaveCS() {m_cs.LeaveCriticalSection();}
 	__forceinline BOOL EnterCSTimeout() {return m_cs.EnterCriticalSection(CS_TIMEOUT);}
 	void Free();
-	__forceinline HRESULT GetLastError() const {return m_hLastError;};
 	BOOL GetLastErrorMessage(TCHAR* pBuffer, int nBufferSizeInChars);
 	BOOL GetCurrentVideoMem(DWORD& dwTotal, DWORD& dwFree);
 	void ClearFront(const RECT* prc = NULL);
@@ -655,7 +654,6 @@ protected:
 	volatile BOOL m_bTripleBuffering;
 	CTryEnterCriticalSection m_cs;
 	CRITICAL_SECTION m_csErrorMsg;
-	volatile HRESULT m_hLastError;
 	TCHAR m_lpszLastErrorMsg[DXDRAW_ERRORMSG_BUFSIZE];
 };
 

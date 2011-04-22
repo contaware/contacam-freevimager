@@ -19,7 +19,6 @@ CDxDraw::CDxDraw()
 {
 	m_bInit = FALSE;
 	::InitializeCriticalSection(&m_csErrorMsg);
-	m_hLastError = ERROR_SUCCESS;
 	m_lpszLastErrorMsg[0] = _T('\0');
 	::ZeroMemory(&m_guidNull, sizeof(GUID));
 	m_nCurrentDevice = 0;
@@ -2077,8 +2076,8 @@ TCHAR* CDxDraw::ErrorString(HRESULT hRet)
 		case DDERR_CANTPAGEUNLOCK:               return _T("DDERR_CANTPAGEUNLOCK");
 		case DDERR_NOTPAGELOCKED:                return _T("DDERR_NOTPAGELOCKED");
 		case DDERR_NOTINITIALIZED:               return _T("DDERR_NOTINITIALIZED");
+		default:                                 return _T("");
 	}
-	return _T("");
 }
 
 BOOL CDxDraw::Error(HRESULT hRet, LPCTSTR lpszMessage)
@@ -2086,7 +2085,6 @@ BOOL CDxDraw::Error(HRESULT hRet, LPCTSTR lpszMessage)
 	if (FAILED(hRet))
 	{
 		::EnterCriticalSection(&m_csErrorMsg);
-		m_hLastError = hRet;
 		TCHAR* lpszErrorString = ErrorString(hRet);
 		if (lpszErrorString[0] != _T('\0'))
 			_sntprintf(m_lpszLastErrorMsg, DXDRAW_ERRORMSG_BUFSIZE, _T("%s (%s)\n"), lpszMessage, lpszErrorString);
