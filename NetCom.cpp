@@ -269,7 +269,6 @@ int CNetCom::CMsgThread::Work()
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread started (ID = 0x%08X)"), GetId());
 	memset(&incoming_addr, 0, sizeof(incoming_addr));
 	BOOL bInitConnectionShutdown = FALSE; // Did this Socket Initiate the Connection Shutdown
-	m_bClosing = FALSE;
 
 	// Set thread priority
 	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
@@ -2108,11 +2107,8 @@ void CNetCom::Close()
 	}
 	else
 	{
-		// Already Closing?
-		if (m_pMsgThread->m_bClosing)
-			WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT);
-		else
-			ShutdownConnection(NETCOM_BLOCKING_TIMEOUT);
+		ShutdownConnection_NoBlocking();
+		WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT);
 	}
 
 	m_hRxMsgTriggerEvent = NULL;
@@ -2435,27 +2431,13 @@ BOOL CNetCom::StartMsgThread()
 {
 	if (!m_pMsgThread->IsRunning())
 	{
-		/*
-		Reset a eventually set m_bClosing flag from an old closed connection
-		before starting the message thread (in the old code it was done only
-		at the beginning of the message thread) otherwise an infinite wait
-		may happen at the following point in the Close() functions when
-		calling Close() two times by two consecutive Init():
-		if (m_bMainServer)
-		{
-			...
-		}
-		else
-		{
-			// Already Closing?
-			if (m_pMsgThread->m_bClosing)
-				WaitTillShutdown_Blocking(); <-- Infinite Wait !!!
-			else
-				ShutdownConnection();
-		}
-		...
-		*/
+		// Reset eventually set vars from an old closed connection
+		// before starting the message thread. Resetting them at
+		// the beginning of the message thread could lock at
+		// WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT) in the
+		// Close() function called two times by two consecutive Init()!
 		m_pMsgThread->m_bClosing = FALSE;
+		::ResetEvent(m_hStartConnectionShutdownEvent);
 		if (m_pMsgThread->Start() == true)
 		{
 			return TRUE;
@@ -3326,24 +3308,12 @@ BOOL CNetCom::InitEvents()
 
 void CNetCom::ShutdownConnection_NoBlocking()
 {
-	if (m_pMsgThread->IsRunning())
+	if (m_pMsgThread->IsRunning() && !m_pMsgThread->m_bClosing)
 	{
 		if (!m_bServer)
 			m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
-	}
-}
-
-void CNetCom::ShutdownConnection(DWORD dwTimeout/*=INFINITE*/)
-{
-	if (m_pMsgThread->IsRunning())
-	{
-		if (!m_bServer)
-			m_bClientConnected = FALSE;
-		m_pMsgThread->m_bClosing = TRUE;
-		::SetEvent(m_hStartConnectionShutdownEvent);
-		WaitTillShutdown_Blocking(dwTimeout);
 	}
 }
 

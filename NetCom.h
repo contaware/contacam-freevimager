@@ -413,7 +413,8 @@ public:
 	// eventually do something else and finally
 	// use WaitTillShutdown_Blocking() to make
 	// sure that we are done, or poll with the
-	// IsShutdown() function.
+	// IsShutdown() function, or just call Close()
+	// (the destructor calls also Close() for us)
 	void ShutdownConnection_NoBlocking();
 
 	// Wait till all threads are dead
@@ -713,9 +714,6 @@ protected:
 	// Initialize all Network Events (FD_ACCEPT, FD_CONNECT, ...)
 	BOOL InitEvents();
 
-	// Gracefully Shutdown the Connection
-	void ShutdownConnection(DWORD dwTimeout = INFINITE);
-
 	// GetLastError() Handling
 	void ProcessError(CString sErrorText);
 
@@ -905,8 +903,8 @@ protected:
 	HANDLE m_hTxToAllEvent;
 
 	// The m_hStartConnectionShutdownEvent is set by
-	// ShutdownConnection() function and handled by
-	// the message thread
+	// ShutdownConnection_NoBlocking() function and handled
+	// by the message thread
 	HANDLE m_hStartConnectionShutdownEvent;
 	
 	// The Tx Timeout has changed
