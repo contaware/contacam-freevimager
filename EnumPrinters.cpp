@@ -136,7 +136,7 @@ CString CEnumPrinters::GetDefaultPrinterName()
 			}
 			else
 				fpGetDefaultPrinter = NULL;
-			if (fpGetDefaultPrinter && !g_bReactOS)
+			if (fpGetDefaultPrinter)
 			{
 				// I had a problem in win 2003 server with no printer installed:
 				// DWORD size was not inited to zero before, so that

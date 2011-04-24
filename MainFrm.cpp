@@ -1258,32 +1258,6 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("ColDet"), ((CUImagerApp*)::AfxGetApp())->m_bColDet);
 		}
-		else if (m_sSecretCodeSequence.CompareNoCase(_T(":osver")) == 0)
-		{
-			OSVERSIONINFO ovi = {0};
-			ovi.dwOSVersionInfoSize = sizeof ovi;
-			::GetVersionEx(&ovi);
-			CString sVer;
-			if (g_bReactOS)
-			{
-				sVer.Format(_T("ReactOS emulation of: PlatformId=%u , Maj=%u , Min=%u , Build=%u\n%s"),
-												ovi.dwPlatformId,
-												ovi.dwMajorVersion, 
-												ovi.dwMinorVersion,
-												ovi.dwBuildNumber,
-												ovi.szCSDVersion);
-			}
-			else
-			{
-				sVer.Format(_T("PlatformId=%u , Maj=%u , Min=%u , Build=%u\n%s"),
-												ovi.dwPlatformId,
-												ovi.dwMajorVersion, 
-												ovi.dwMinorVersion,
-												ovi.dwBuildNumber,
-												ovi.szCSDVersion);
-			}
-			::AfxMessageBox(sVer);
-		}
 	}
 	
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);

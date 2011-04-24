@@ -26,7 +26,6 @@ BOOL g_bWin95 = TRUE;
 BOOL g_bWin9x = TRUE;
 BOOL g_bNT = FALSE;
 BOOL g_bNT4OrOlder = FALSE;
-BOOL g_bReactOS = FALSE;
 BOOL g_bWin2000 = FALSE;
 BOOL g_bWin2000OrHigher = FALSE;
 BOOL g_bWinXP = FALSE;
@@ -75,12 +74,7 @@ void InitHelpers()
 
 	// NT 4 or Older
 	g_bNT4OrOlder =			(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion <= 4);
-
-	// ReactOS
-	LPTSTR RosVersion;
-	RosVersion = ovi.szCSDVersion + _tcslen(ovi.szCSDVersion) + 1;
-	g_bReactOS = (_tcsnicmp(RosVersion, _T("ReactOS"), 7) == 0);                
+							(ovi.dwMajorVersion <= 4);                
 	
 	// Win 2000
 	g_bWin2000 =			(ovi.dwPlatformId == 2)		&&

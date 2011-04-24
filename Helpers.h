@@ -19,7 +19,6 @@ extern BOOL g_bWin95;
 extern BOOL g_bWin9x;
 extern BOOL g_bNT;
 extern BOOL g_bNT4OrOlder;
-extern BOOL g_bReactOS;
 extern BOOL g_bWin2000;
 extern BOOL g_bWin2000OrHigher;
 extern BOOL g_bWinXP;
