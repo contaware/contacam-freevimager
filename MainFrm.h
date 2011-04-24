@@ -37,23 +37,21 @@ extern "C"
 														
 #define ID_TIMER_FULLSCREEN							1
 #define ID_TIMER_CROP_SCROLL						2
-#define ID_TIMER_GDI_OBJECTS_DLG					3
-#define ID_TIMER_TRANSPARENCY						4
-#define ID_TIMER_CLOSING_ALL						5
-#define ID_TIMER_CLOSING_PICTUREDOC					6
-#define ID_TIMER_CLOSING_VIDEOAVIDOC				7
-#define ID_TIMER_CLOSING_VIDEODEVICEDOC				8
-#define ID_TIMER_CDAUDIO							9
-#define ID_TIMER_MCIAUDIO							10
-#define ID_TIMER_PROGRESS							11
-#define ID_TIMER_AVIPLAYSLIDER						12
+#define ID_TIMER_TRANSPARENCY						3
+#define ID_TIMER_CLOSING_ALL						4
+#define ID_TIMER_CLOSING_PICTUREDOC					5
+#define ID_TIMER_CLOSING_VIDEOAVIDOC				6
+#define ID_TIMER_CLOSING_VIDEODEVICEDOC				7
+#define ID_TIMER_CDAUDIO							8
+#define ID_TIMER_MCIAUDIO							9
+#define ID_TIMER_PROGRESS							10
+#define ID_TIMER_AVIPLAYSLIDER						11
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_GENERALDLG  						13
-#define ID_TIMER_ONESEC_POLL						14
-#define ID_TIMER_ASSISTANTDLG						15
+#define ID_TIMER_GENERALDLG  						12
+#define ID_TIMER_ONESEC_POLL						13
+#define ID_TIMER_ASSISTANTDLG						14
 #endif
 
-#define GDIOBJECTSDLG_TIMER_MS						3000U	// ms
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				100U	// ms
@@ -80,7 +78,6 @@ extern "C"
 
 // Forward Declarations
 class CUImagerDoc;
-class CEnumGDIObjectsDlg;
 class CBatchProcDlg;
 class CIMAPI2Dlg;
 class CDib;
@@ -99,7 +96,6 @@ public:
 	CString TwainSetImageMM(CDib* pDib, int width, int height, int bpp);
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
-	void EnumGdiObjectsDlg();
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);
@@ -190,9 +186,6 @@ public:
 
 	// Progress control
 	CProgressCtrl m_Progress;
-
-	// The Modeless GDI Enumeration dialog
-	CEnumGDIObjectsDlg* m_pEnumGDIObjectsDlg;
 
 	// Batch Processing dialog
 	CBatchProcDlg* m_pBatchProcDlg;

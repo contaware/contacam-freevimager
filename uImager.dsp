@@ -375,10 +375,6 @@ SOURCE=.\DxVideoInputDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\EnumGDIObjectsDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\EnumPrinters.cpp
 # End Source File
 # Begin Source File
@@ -1081,10 +1077,6 @@ SOURCE=.\DxVideoFormatDlg.h
 # Begin Source File
 
 SOURCE=.\DxVideoInputDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\EnumGDIObjectsDlg.h
 # End Source File
 # Begin Source File
 

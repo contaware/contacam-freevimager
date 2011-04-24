@@ -34,7 +34,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="76">
+<CLASSES COUNT="75">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -66,7 +66,6 @@
 <CLASS NAME="CDirectX7Dlg"/>
 <CLASS NAME="CDxVideoFormatDlg"/>
 <CLASS NAME="CDxVideoInputDlg"/>
-<CLASS NAME="CEnumGDIObjectsDlg"/>
 <CLASS NAME="CFTPUploadConfigurationDlg"/>
 <CLASS NAME="CHLSDlgModeless"/>
 <CLASS NAME="CHostPortDlg"/>

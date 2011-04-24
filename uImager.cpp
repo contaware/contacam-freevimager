@@ -26,7 +26,6 @@
 #include <mapi.h>
 #include "ZipProgressDlg.h"
 #include "BrowseDlg.h"
-#include "EnumGDIObjectsDlg.h"
 #include "SortableFileFind.h"
 #include "getdxver.h"
 #include "DirectX7Dlg.h"

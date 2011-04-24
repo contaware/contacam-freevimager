@@ -92,7 +92,6 @@
 #define IDR_LICENSE                     221
 #define IDD_LICENSE                     222
 #define IDD_CREDITS                     224
-#define IDD_ENUMGDIOBJECTS              225
 #define IDD_YESNOALLCANCEL              226
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229

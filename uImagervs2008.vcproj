@@ -1871,37 +1871,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="EnumGDIObjectsDlg.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="EnumPrinters.cpp"
 				>
 				<FileConfiguration
@@ -4700,10 +4669,6 @@
 			</File>
 			<File
 				RelativePath="DxVideoInputDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="EnumGDIObjectsDlg.h"
 				>
 			</File>
 			<File

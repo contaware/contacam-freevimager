@@ -15,7 +15,6 @@
 #include "PicturePrintPreviewView.h"
 #include "OutVolDlg.h"
 #include "PlayerToolBarDlg.h"
-#include "EnumGDIObjectsDlg.h"
 #include "IMAPI2Dlg.h"
 #include "BatchProcDlg.h"
 #include "CPUCount.h"
@@ -144,7 +143,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_bScreenSaverWasActive = FALSE;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
-	m_pEnumGDIObjectsDlg = NULL;
 	m_sPlayGifMenuItem = _T("");
 	m_sStopGifMenuItem = _T("");
 	m_sNextPageFrameMenuItem = _T("");
@@ -319,14 +317,6 @@ void CMainFrame::OnDestroy()
 #ifdef VIDEODEVICEDOC
 	KillTimer(ID_TIMER_ONESEC_POLL);
 #endif
-
-	// Close Eventually Open Dlgs
-	if (m_pEnumGDIObjectsDlg)
-	{
-		// m_pEnumGDIObjectsDlg pointer is set to NULL
-		// from the dialog class (selfdeletion)
-		m_pEnumGDIObjectsDlg->Close();
-	}
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -1116,23 +1106,6 @@ void CMainFrame::OnUpdateFileLockTwainclose(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bTwainCloseLocked ? 1 : 0);
 }
 
-void CMainFrame::EnumGdiObjectsDlg() 
-{
-	// Close Enum GDI Dialog if already Open
-	if (m_pEnumGDIObjectsDlg)
-	{
-		// m_pEnumGDIObjectsDlg pointer is set to NULL
-		// from the dialog class (selfdeletion)
-		m_pEnumGDIObjectsDlg->Close();
-	}
-	else
-	{
-		// Show Enum GDI Dialog
-		m_pEnumGDIObjectsDlg = new CEnumGDIObjectsDlg(this);
-		m_pEnumGDIObjectsDlg->ShowWindow(SW_RESTORE);
-	}
-}
-
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) 
 {
 	// TWAIN
@@ -1229,12 +1202,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			m_sSecretCodeSequence = _T("");
 		else if (m_sSecretCodeSequence.GetLength() >= 1)
 			m_sSecretCodeSequence += CString((char)pMsg->wParam);
-		if (m_sSecretCodeSequence.CompareNoCase(_T(":gdidump")) == 0)	// Working Only For Win9x!
-		{
-			if (!g_bNT && !m_pEnumGDIObjectsDlg)
-				EnumGdiObjectsDlg();
-		}
-		else if (m_sSecretCodeSequence.CompareNoCase(_T(":cpucount")) == 0)
+		if (m_sSecretCodeSequence.CompareNoCase(_T(":cpucount")) == 0)
 		{
 			::DisplayCpuCount();
 		}
