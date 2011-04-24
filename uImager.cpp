@@ -697,8 +697,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (m_bFirstRun)
 		{	
 #ifdef VIDEODEVICEDOC
-			if (!RequireDirectXVersion7())
-				throw (int)0;
+			RequireDirectXVersion7();
 #else
 			SuggestDirectXVersion7();
 #endif
@@ -5560,7 +5559,7 @@ void CUImagerApp::SuggestDirectXVersion7()
 		dlg.m_sTextRow1 = strResult;
 		dlg.m_sTextRow2 = ML_STRING(1219, "DirectX 7.0 or higher is required for best video playback performance!");
 		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://www.microsoft.com/windows/directx/");
+		dlg.m_sTextLink = _T("http://www.gamesforwindows.com/directx/");
 		dlg.DoModal();
 	}
 }
@@ -5581,7 +5580,7 @@ BOOL CUImagerApp::RequireDirectXVersion7()
 		dlg.m_sTextRow1 = strResult;
 		dlg.m_sTextRow2 = ML_STRING(1221, "DirectX 7.0 or higher is required!");
 		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://www.microsoft.com/windows/directx/");
+		dlg.m_sTextLink = _T("http://www.gamesforwindows.com/directx/");
 		dlg.DoModal();
 		return FALSE;
 	}
