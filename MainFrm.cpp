@@ -1202,11 +1202,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			m_sSecretCodeSequence = _T("");
 		else if (m_sSecretCodeSequence.GetLength() >= 1)
 			m_sSecretCodeSequence += CString((char)pMsg->wParam);
-		if (m_sSecretCodeSequence.CompareNoCase(_T(":cpucount")) == 0)
-		{
-			::DisplayCpuCount();
-		}
-		else if (m_sSecretCodeSequence.CompareNoCase(_T(":aviinfo")) == 0)
+		if (m_sSecretCodeSequence.CompareNoCase(_T(":aviinfo")) == 0)
 		{
 			((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo = !((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo;
 			CUImagerMultiDocTemplate* pVideoAviDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
