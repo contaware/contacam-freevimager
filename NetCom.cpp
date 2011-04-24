@@ -433,7 +433,6 @@ int CNetCom::CMsgThread::Work()
 						{
 							if (m_pNetCom->m_pMsgOut)
 								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_ACCEPT"));
-							bInitConnectionShutdown = FALSE;
 							CNetCom* pNetCom = new CNetCom(m_pNetCom, m_pNetCom->m_pcsServersSync);
 							
 							// Initialize the Member Variables
@@ -609,11 +608,10 @@ int CNetCom::CMsgThread::Work()
 											(WPARAM)m_pNetCom->m_nIDAccept, (LPARAM)NULL);
 							}
 						}
-						if (NetworkEvents.lNetworkEvents & FD_CONNECT)
+						if (NetworkEvents.lNetworkEvents & FD_CONNECT) // Old Win9x and Wine do not set the FD_CONNECT event for udp
 						{
 							if (m_pNetCom->m_pMsgOut)
 								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_CONNECT"));
-							bInitConnectionShutdown = FALSE;
 
 							switch (NetworkEvents.iErrorCode[FD_CONNECT_BIT])
 							{
@@ -690,7 +688,7 @@ int CNetCom::CMsgThread::Work()
 									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
 								return 0;
 							}
-							else
+							else if (m_pNetCom->m_nSocketType != SOCK_DGRAM)
 							{
 								m_pNetCom->m_bClientConnected = TRUE;
 
@@ -1999,8 +1997,9 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 							Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddressMsg, uiPeerPort);
 						}
 
-						// Old windows do not set the FD_CONNECT event for udp...
-						if (g_bWin9x && nSocketType == SOCK_DGRAM)
+						// Old Win9x and Wine do not set the FD_CONNECT event for udp
+						// -> start everything here!
+						if (nSocketType == SOCK_DGRAM)
 						{
 							m_bClientConnected = TRUE;
 
