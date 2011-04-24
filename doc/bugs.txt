@@ -23,10 +23,6 @@ Axis 206W sometimes is violet -> It's a hardware problem
 Logitech old Quickcam (Pro and Notbook) cameras at 640x480 and 4fps (or more)
 change back and forth the dropped frames count...
 
-Hauppauge WinTV PVR 350 after some time goes down to 0.2-0.8 fps, if I change the
-framerate it works again for some time (usually one day).
-I could detect that in the watchdog, but no, I have enough of these stupid bugs!
- 
 
 
 Bugs:
@@ -48,7 +44,7 @@ On Safari 4 animated gifs support is buggy -> solved with safari 4.0.5
 ffmpeg Bugs:
 ------------
 
-- SNOW is locking with low resolutions...
+- SNOW is locking with low resolutions...                          -> not compiled in
 - Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
 - H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
 - Internal DTS not working in new ffmpeg                           -> not compiled in

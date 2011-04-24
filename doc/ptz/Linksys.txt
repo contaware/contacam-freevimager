@@ -1,7 +1,0 @@
-Pan Left: http://YourName.Linksys-Cam.com/pt/ptctrl.cgi?mv=L,X (Where X equals the “distance to move”)
-Pan Right: http://YourName.Linksys-Cam.com/pt/ptctrl.cgi?mv=R,X (Where X equals the “distance to move”)
-Pan Down: http://YourName.Linksys-Cam.com/pt/ptctrl.cgi?mv=D,X (Where X equals the “distance to move”)
-Pan Up: http://YourName.Linksys-Cam.com/pt/ptctrl.cgi?mv=U,X (Where X equals the “distance to move”)
-
-Move to Preset Location:
-http://YourName.Linksys-Cam.com/pt/ptctrl.cgi?preset=move,X (where X is the preset Location)
