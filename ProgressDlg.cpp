@@ -245,7 +245,7 @@ void CProgressDlgThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 			if (m_hThread)
 			{
 				::TerminateThread(m_hThread, 0);
-				TRACE(_T("Thread: %lu has been forced to terminate!\n"), m_nThreadID);
+				TRACE(_T("Thread with ID = 0x%08X has been forced to terminate!\n"), m_nThreadID);
 				ASSERT(FALSE);
 			}
 		}
