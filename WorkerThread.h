@@ -1,49 +1,6 @@
 #ifndef __WORKERTHREAD_H__
 #define __WORKERTHREAD_H__
 
-#ifndef MFC_THREAD
-
-class CWorkerThread
-{
-public:
-	friend unsigned int __stdcall WorkerThreadEntry(void* lpParam);
-
-	CWorkerThread();
-	virtual ~CWorkerThread();
-	virtual bool Start(int nPriority = THREAD_PRIORITY_NORMAL);
-	bool Pause();
-	bool Kill(DWORD dwTimeout = INFINITE);
-	bool Kill_NoBlocking();
-	void WaitDone_Blocking(DWORD dwTimeout = INFINITE);
-	__forceinline bool DoExit() {return (::WaitForSingleObject(m_hKillEvent, 0) == WAIT_OBJECT_0);};
-	__forceinline HANDLE GetHandle() const {return m_hThread;};
-	__forceinline DWORD GetId() const {return m_nThreadID;};
-	__forceinline HANDLE GetKillEvent() const {return m_hKillEvent;};
-	__forceinline HANDLE GetStartupEvent() const {return m_hStartupEvent;};
-	__forceinline bool IsRunning() {return m_bRunning;};
-	__forceinline bool IsAlive() {return m_bAlive;};
-
-protected:
-	bool Create();
-	__forceinline void Delete();
-	virtual BOOL OnInitThread(){return TRUE;};
-	virtual void OnExitThread(int nExitCode){nExitCode;};
-	virtual int Work();
-
-	HANDLE volatile m_hThread;
-	volatile DWORD m_nThreadID;
-	HANDLE volatile m_hStartupEvent;
-	HANDLE volatile m_hKillEvent;
-	volatile bool m_bRunning;
-	volatile bool m_bAlive;
-	volatile BOOL m_bAutoDelete;
-	CRITICAL_SECTION m_cs; // Critical section for m_bRunning and m_bAlive
-	CWnd* m_pMainWnd;
-};
-unsigned int __stdcall WorkerThreadEntry(void* lpParam);
-
-#else
-
 class CWorkerThread : public CWinThread
 {
 public:
@@ -99,7 +56,5 @@ protected:
 	bool m_bProcMsg;
 	CRITICAL_SECTION m_cs; // Critical section for m_bRunning and m_bAlive
 };
-
-#endif
 
 #endif /* __WORKERTHREAD_H__ */
