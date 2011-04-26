@@ -237,6 +237,7 @@ protected:
 	void FullScreenModeOn(HWND hChildWndSafePaused = NULL);
 	void FullScreenModeOff(HWND hChildWndSafePaused = NULL);
 	void RestoreAllFrames();
+	void ClearFrontAll();
 	void ChangeCoordinatesUnit();
 #ifdef VIDEODEVICEDOC
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
@@ -297,6 +298,7 @@ protected:
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
+	afx_msg LONG OnSessionChange(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 #endif

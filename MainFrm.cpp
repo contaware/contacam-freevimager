@@ -100,6 +100,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
+	ON_MESSAGE(WM_WTSSESSION_CHANGE, OnSessionChange)
 #ifdef VIDEODEVICEDOC
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 #endif
@@ -239,6 +240,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			m_TrayIcon.MinimizeToTray();
 	}
 
+	// Register session change notification
+	typedef BOOL (WINAPI * FPWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
+	HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
+	if (h)
+	{
+		FPWTSREGISTERSESSIONNOTIFICATION fpWTSRegisterSessionNotification = (FPWTSREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSRegisterSessionNotification");
+		if (fpWTSRegisterSessionNotification)
+			fpWTSRegisterSessionNotification(GetSafeHwnd(), NOTIFY_FOR_THIS_SESSION);
+		::FreeLibrary(h);
+	}
+
 	return 0;
 }
 
@@ -313,6 +325,17 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 
 void CMainFrame::OnDestroy() 
 {
+	// Unregister session change notification
+	typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
+	HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
+	if (h)
+	{
+		FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
+		if (fpWTSUnRegisterSessionNotification)
+			fpWTSUnRegisterSessionNotification(GetSafeHwnd());
+		::FreeLibrary(h);
+	}
+
 	// Kill Timer
 #ifdef VIDEODEVICEDOC
 	KillTimer(ID_TIMER_ONESEC_POLL);
@@ -3729,6 +3752,40 @@ void CMainFrame::OnEndSession(BOOL bEnding)
 		((CUImagerApp*)::AfxGetApp())->m_bEndSession = TRUE;
 		((CUImagerApp*)::AfxGetApp())->SaveOnEndSession();
 	}
+}
+
+void CMainFrame::ClearFrontAll()
+{
+	CUImagerMultiDocTemplate* pVideoAviDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
+	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
+	CVideoAviDoc* pVideoAviDoc;	
+	while (posVideoAviDoc)
+	{
+		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
+		if (pVideoAviDoc && ((CUImagerApp*)::AfxGetApp())->IsDoc(pVideoAviDoc) &&
+			pVideoAviDoc->m_DxDraw.HasDxDraw() && pVideoAviDoc->m_bUseDxDraw && pVideoAviDoc->m_DxDraw.IsInit())
+			pVideoAviDoc->m_DxDraw.ClearFront();
+	}
+
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	CVideoDeviceDoc* pVideoDeviceDoc;	
+	while (posVideoDeviceDoc)
+	{
+		pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc && ((CUImagerApp*)::AfxGetApp())->IsDoc(pVideoDeviceDoc) &&
+			pVideoDeviceDoc->m_DxDraw.HasDxDraw() && pVideoDeviceDoc->m_DxDraw.IsInit())
+			pVideoDeviceDoc->m_DxDraw.ClearFront();
+	}
+}
+
+LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
+{
+	// When switching user sometimes it is not restarting
+	// the drawing without clearing the front buffer...
+	// (Blt() is not return any error)
+	ClearFrontAll();
+	return 1;
 }
 
 LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)

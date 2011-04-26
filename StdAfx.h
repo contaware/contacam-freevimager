@@ -140,6 +140,26 @@ typedef HMONITOR (WINAPI * FPMONITORFROMWINDOW)(HWND hwnd, DWORD dwFlags);
 typedef HMONITOR (WINAPI * FPMONITORFROMPOINT)(POINT pt, DWORD dwFlags);
 typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 
+// Session change notification
+#ifndef NOTIFY_FOR_ALL_SESSIONS
+#define NOTIFY_FOR_ALL_SESSIONS     1
+#endif
+#ifndef NOTIFY_FOR_THIS_SESSION
+#define NOTIFY_FOR_THIS_SESSION     0
+#endif
+#ifndef WM_WTSSESSION_CHANGE
+#define WM_WTSSESSION_CHANGE			0x02B1
+#define WTS_CONSOLE_CONNECT				0x1
+#define WTS_CONSOLE_DISCONNECT			0x2
+#define WTS_REMOTE_CONNECT				0x3
+#define WTS_REMOTE_DISCONNECT			0x4
+#define WTS_SESSION_LOGON				0x5
+#define WTS_SESSION_LOGOFF				0x6
+#define WTS_SESSION_LOCK				0x7
+#define WTS_SESSION_UNLOCK				0x8
+#define WTS_SESSION_REMOTE_CONTROL		0x9
+#endif
+
 #ifndef MAX_FILEDLG_PATH
 #define MAX_FILEDLG_PATH				65535 // If you put 65536 it's not working on win2000...
 #endif

@@ -1188,8 +1188,8 @@ void CDxDraw::UpdateCurrentDevice()
 					::GetClientRect(m_hWnd, &rcClient);
 					POINT p = {0, 0};
 					::ClientToScreen(m_hWnd, &p);
-					OffsetRect(&rcClient, p.x, p.y);
-					if (IntersectRect(	&rcIntersection,
+					::OffsetRect(&rcClient, p.x, p.y);
+					if (::IntersectRect(&rcIntersection,
 										&rcClient,
 										&(m_ScreenArray[i]->m_rcMonitor)))
 					{

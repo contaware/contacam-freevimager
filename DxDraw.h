@@ -586,7 +586,7 @@ public:
 							::OffsetRect(prc, p.x, p.y);
 							if (m_nCurrentDevice > 0)
 							{
-								OffsetRect(	prc,
+								::OffsetRect(prc,
 											-m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.left,
 											-m_ScreenArray[m_nCurrentDevice]->m_rcMonitor.top);
 							}
