@@ -2081,8 +2081,7 @@ void CNetCom::Close()
 		{
 			if (::closesocket(m_hSocket) == SOCKET_ERROR)
 				ProcessWSAError(GetName() + _T(" closesocket()"));
-			else
-				m_hSocket = INVALID_SOCKET;
+			m_hSocket = INVALID_SOCKET;
 		}
 
 		// Kill all child servers. No use of servers critical section
@@ -2106,8 +2105,17 @@ void CNetCom::Close()
 	}
 	else
 	{
+		// Shutdown connection
 		ShutdownConnection_NoBlocking();
 		WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT);
+		
+		// Close the socket if thread was forced to shutdown after timeout
+		if (m_hSocket != INVALID_SOCKET)
+		{
+			if (::closesocket(m_hSocket) == SOCKET_ERROR)
+				ProcessWSAError(GetName() + _T(" closesocket()"));
+			m_hSocket = INVALID_SOCKET;
+		}
 	}
 
 	m_hRxMsgTriggerEvent = NULL;
