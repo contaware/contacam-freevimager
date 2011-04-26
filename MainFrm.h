@@ -184,6 +184,9 @@ public:
 	// Full screen flag
 	volatile bool m_bFullScreenMode;
 
+	// Session disconnected or locked flag
+	BOOL m_bSessionDisconnectedLocked;
+
 	// Progress control
 	CProgressCtrl m_Progress;
 

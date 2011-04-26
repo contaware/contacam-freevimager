@@ -359,7 +359,7 @@ afx_msg LONG CVideoDeviceView::OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lpar
 	ASSERT_VALID(pDoc);
 	WORD wWidth = LOWORD(wparam);
 	WORD wHeight = HIWORD(wparam);
-	if (wWidth > 0 && wHeight > 0)
+	if (wWidth > 0 && wHeight > 0 && !::AfxGetMainFrame()->m_bSessionDisconnectedLocked)
 	{
 		if (pDoc->m_DxDraw.Init(	GetSafeHwnd(),
 									(int)wWidth,
@@ -505,13 +505,9 @@ void CVideoDeviceView::Draw()
 	BOOL bVfWVideoFormatApplyPressed = pDoc->m_bVfWVideoFormatApplyPressed;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
-	BOOL bDrawMsg = !bVideoView						||
-					bVfWVideoFormatApplyPressed		||
-					bStopAndChangeFormat			||
-					bWatchDogAlarm;
 
-	// Draw Msg?
-	if (bDrawMsg)
+	// Preview Off?
+	if (!bVideoView)
 	{
 		if (!pDoc->m_DxDraw.IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
@@ -563,17 +559,21 @@ void CVideoDeviceView::Draw()
 		pDoc->m_DxDraw.UpdateCurrentDevice();
 
 		// Erase Background, full erase if drawing a message
+		BOOL bDrawMsg = !bVideoView						||
+						bVfWVideoFormatApplyPressed		||
+						bStopAndChangeFormat			||
+						bWatchDogAlarm;
 		EraseBkgnd(bDrawMsg);
 
 		// Display: OK or Cancel
 		if (bVfWVideoFormatApplyPressed)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1567, "OK or Cancel"), 0, 0, DRAWTEXT_TOPLEFT);
+			pDoc->m_DxDraw.DrawText(ML_STRING(1567, "OK or Cancel"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		// Display: Change Size
 		else if (bStopAndChangeFormat)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);
+			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		// Display: No Frames
 		else if (bWatchDogAlarm)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);
+			pDoc->m_DxDraw.DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);		// Only ASCII string supported!
 		// Draw Frame + Info
 		else if (bVideoView)
 		{
@@ -592,7 +592,7 @@ void CVideoDeviceView::Draw()
 		}
 		// Display: Preview Off
 		else
-			pDoc->m_DxDraw.DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);
+			pDoc->m_DxDraw.DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		
 		// Blt
 		if (pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))

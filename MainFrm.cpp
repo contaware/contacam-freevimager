@@ -142,6 +142,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_dChildZoomFactor = 1.0;
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
+	m_bSessionDisconnectedLocked = FALSE;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
 	m_sPlayGifMenuItem = _T("");
@@ -325,17 +326,6 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 
 void CMainFrame::OnDestroy() 
 {
-	// Unregister session change notification
-	typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
-	HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
-	if (h)
-	{
-		FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
-		if (fpWTSUnRegisterSessionNotification)
-			fpWTSUnRegisterSessionNotification(GetSafeHwnd());
-		::FreeLibrary(h);
-	}
-
 	// Kill Timer
 #ifdef VIDEODEVICEDOC
 	KillTimer(ID_TIMER_ONESEC_POLL);
@@ -760,6 +750,17 @@ void CMainFrame::OnClose()
 			m_pIMAPI2Dlg->SetActiveWindow();
 			m_pIMAPI2Dlg->SetFocus();
 			return;		// don't close it
+		}
+
+		// Unregister session change notification
+		typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
+		HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
+		if (h)
+		{
+			FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
+			if (fpWTSUnRegisterSessionNotification)
+				fpWTSUnRegisterSessionNotification(GetSafeHwnd());
+			::FreeLibrary(h);
 		}
 
 		// Stop All Threads used for the PostDelayedMessage() Function
@@ -3781,10 +3782,25 @@ void CMainFrame::ClearFrontAll()
 
 LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 {
-	// When switching user sometimes it is not restarting
-	// the drawing without clearing the front buffer...
-	// (Blt() is not return any error)
-	ClearFrontAll();
+	if (wparam == WTS_CONSOLE_DISCONNECT	||
+		wparam == WTS_REMOTE_DISCONNECT		||
+		wparam == WTS_SESSION_LOCK)
+	{
+		::LogLine(_T("m_bSessionDisconnectedLocked = TRUE\n"), wparam);
+		m_bSessionDisconnectedLocked = TRUE;
+	}
+	else if (wparam == WTS_CONSOLE_CONNECT	||
+			wparam == WTS_REMOTE_CONNECT	||
+			wparam == WTS_SESSION_UNLOCK)
+	{
+		::LogLine(_T("m_bSessionDisconnectedLocked = FALSE\n"), wparam);
+		m_bSessionDisconnectedLocked = FALSE;
+
+		// When user switches back sometimes the drawing is not
+		// restarting without clearing the front buffer...
+		// (Blt() is not return any error)
+		ClearFrontAll();
+	}
 	return 1;
 }
 
