@@ -142,7 +142,8 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_dChildZoomFactor = 1.0;
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
-	m_bSessionDisconnectedLocked = FALSE;
+	m_SessionChangeTime = CTime::GetCurrentTime() - CTimeSpan(0, 0, 0, SESSIONCHANGE_WAIT_SEC);
+	m_nSessionDisconnectedLockedCount = 0;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
 	m_sPlayGifMenuItem = _T("");
@@ -3767,7 +3768,7 @@ void CMainFrame::ClearFrontAll()
 			pVideoAviDoc->m_DxDraw.HasDxDraw() && pVideoAviDoc->m_bUseDxDraw && pVideoAviDoc->m_DxDraw.IsInit())
 			pVideoAviDoc->m_DxDraw.ClearFront();
 	}
-
+#ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
 	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
 	CVideoDeviceDoc* pVideoDeviceDoc;	
@@ -3778,28 +3779,36 @@ void CMainFrame::ClearFrontAll()
 			pVideoDeviceDoc->m_DxDraw.HasDxDraw() && pVideoDeviceDoc->m_DxDraw.IsInit())
 			pVideoDeviceDoc->m_DxDraw.ClearFront();
 	}
+#endif
 }
 
 LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 {
+	// Use a counter for disconnection and lock.
+	// This because XP is handling it differently
+	// than Vista and newer. XP sends an additional session lock with
+	// the disconnection, when then connecting to another user
+	// we get a session unlock and finally coming back we receive
+	// the session connect.
 	if (wparam == WTS_CONSOLE_DISCONNECT	||
 		wparam == WTS_REMOTE_DISCONNECT		||
 		wparam == WTS_SESSION_LOCK)
 	{
-		::LogLine(_T("m_bSessionDisconnectedLocked = TRUE\n"), wparam);
-		m_bSessionDisconnectedLocked = TRUE;
+		m_SessionChangeTime = CTime::GetCurrentTime();
+		m_nSessionDisconnectedLockedCount++;
 	}
 	else if (wparam == WTS_CONSOLE_CONNECT	||
 			wparam == WTS_REMOTE_CONNECT	||
 			wparam == WTS_SESSION_UNLOCK)
 	{
-		::LogLine(_T("m_bSessionDisconnectedLocked = FALSE\n"), wparam);
-		m_bSessionDisconnectedLocked = FALSE;
+		m_SessionChangeTime = CTime::GetCurrentTime();
+		m_nSessionDisconnectedLockedCount--;
 
 		// When user switches back sometimes the drawing is not
-		// restarting without clearing the front buffer...
-		// (Blt() is not return any error)
-		ClearFrontAll();
+		// restarting without clearing the front buffer,
+		// note that Blt() is not return any error...
+		if (m_nSessionDisconnectedLockedCount <= 0)
+			ClearFrontAll();
 	}
 	return 1;
 }

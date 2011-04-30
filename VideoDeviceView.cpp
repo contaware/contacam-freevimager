@@ -359,7 +359,10 @@ afx_msg LONG CVideoDeviceView::OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lpar
 	ASSERT_VALID(pDoc);
 	WORD wWidth = LOWORD(wparam);
 	WORD wHeight = HIWORD(wparam);
-	if (wWidth > 0 && wHeight > 0 && !::AfxGetMainFrame()->m_bSessionDisconnectedLocked)
+	CTimeSpan ElapsedTimeSinceLastSessionChange = CTime::GetCurrentTime() - ::AfxGetMainFrame()->m_SessionChangeTime;
+	if (wWidth > 0 && wHeight > 0									&&
+		::AfxGetMainFrame()->m_nSessionDisconnectedLockedCount <= 0	&&
+		ElapsedTimeSinceLastSessionChange.GetTotalSeconds() >= SESSIONCHANGE_WAIT_SEC)
 	{
 		if (pDoc->m_DxDraw.Init(	GetSafeHwnd(),
 									(int)wWidth,

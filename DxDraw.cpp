@@ -2092,6 +2092,7 @@ BOOL CDxDraw::Error(HRESULT hRet, LPCTSTR lpszMessage)
 			_sntprintf(m_lpszLastErrorMsg, DXDRAW_ERRORMSG_BUFSIZE, _T("%s\n"), lpszMessage);
 		m_lpszLastErrorMsg[DXDRAW_ERRORMSG_BUFSIZE - 1] = _T('\0');
 		TRACE(m_lpszLastErrorMsg);
+		m_lpszLastErrorMsg[_tcsclen(m_lpszLastErrorMsg) - 1] = _T('\0'); // Remove '\n' used by TRACE
 		::LeaveCriticalSection(&m_csErrorMsg);
 		return TRUE;
 	}

@@ -70,6 +70,8 @@ extern "C"
 #define FULLSCREEN_MIN_SAFEPAUSED_TIMEOUT			1000U	// ms
 #define FULLSCREEN_DELAYEDRESTART_TIMEOUT			3000U	// ms
 
+#define SESSIONCHANGE_WAIT_SEC						5		// sec
+
 // Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				15000U	// ms
 
@@ -184,8 +186,11 @@ public:
 	// Full screen flag
 	volatile bool m_bFullScreenMode;
 
-	// Session disconnected or locked flag
-	BOOL m_bSessionDisconnectedLocked;
+	// Session change state time
+	CTime m_SessionChangeTime;
+
+	// Session disconnected and locked count
+	int m_nSessionDisconnectedLockedCount;
 
 	// Progress control
 	CProgressCtrl m_Progress;
