@@ -190,7 +190,7 @@ public:
 	CTime m_SessionChangeTime;
 
 	// Session disconnected and locked count
-	int m_nSessionDisconnectedLockedCount;
+	volatile LONG m_lSessionDisconnectedLockedCount;
 
 	// Progress control
 	CProgressCtrl m_Progress;

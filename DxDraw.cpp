@@ -2076,6 +2076,7 @@ TCHAR* CDxDraw::ErrorString(HRESULT hRet)
 		case DDERR_CANTPAGEUNLOCK:               return _T("DDERR_CANTPAGEUNLOCK");
 		case DDERR_NOTPAGELOCKED:                return _T("DDERR_NOTPAGELOCKED");
 		case DDERR_NOTINITIALIZED:               return _T("DDERR_NOTINITIALIZED");
+		case D3DERR_INVALIDCALL:                 return _T("D3DERR_INVALIDCALL");
 		default:                                 return _T("");
 	}
 }

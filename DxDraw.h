@@ -40,6 +40,11 @@
 #define FONT_ROWS								6
 #define FONT_ASCII_OFFSET						32
 
+// Other Errors
+#ifndef D3DERR_INVALIDCALL
+#define D3DERR_INVALIDCALL						MAKE_HRESULT(1, 0x876, 2156)
+#endif
+
 // Error message buffer size
 #define DXDRAW_ERRORMSG_BUFSIZE					1024
 

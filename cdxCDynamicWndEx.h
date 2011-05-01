@@ -56,6 +56,7 @@ public:
 	void ActivateAutoPos(UINT nID) { m_strAutoPos.Format(_T("ID=0x%08lx"),nID); }
 	void ActivateAutoPos(const CString & strID) { m_strAutoPos = strID; }
 	void NoAutoPos() { m_strAutoPos.Empty(); }
+	static CString MakeFullProfile(LPCTSTR lpszBase, const CString & str);
 
 	//
 	// we need these
@@ -64,7 +65,6 @@ public:
 protected:
 	virtual void OnInitialized();
 	virtual void OnDestroying();
-	static CString MakeFullProfile(LPCTSTR lpszBase, const CString & str);
 
 public:
 	static LPCTSTR	M_lpszAutoPosProfileSection;

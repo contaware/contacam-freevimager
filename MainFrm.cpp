@@ -143,7 +143,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
 	m_SessionChangeTime = CTime::GetCurrentTime() - CTimeSpan(0, 0, 0, SESSIONCHANGE_WAIT_SEC);
-	m_nSessionDisconnectedLockedCount = 0;
+	m_lSessionDisconnectedLockedCount = 0;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
 	m_sPlayGifMenuItem = _T("");
@@ -243,14 +243,19 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// Register session change notification
-	typedef BOOL (WINAPI * FPWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
-	HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
-	if (h)
+#ifdef VIDEODEVICEDOC
+	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+#endif
 	{
-		FPWTSREGISTERSESSIONNOTIFICATION fpWTSRegisterSessionNotification = (FPWTSREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSRegisterSessionNotification");
-		if (fpWTSRegisterSessionNotification)
-			fpWTSRegisterSessionNotification(GetSafeHwnd(), NOTIFY_FOR_THIS_SESSION);
-		::FreeLibrary(h);
+		typedef BOOL (WINAPI * FPWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
+		HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
+		if (h)
+		{
+			FPWTSREGISTERSESSIONNOTIFICATION fpWTSRegisterSessionNotification = (FPWTSREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSRegisterSessionNotification");
+			if (fpWTSRegisterSessionNotification)
+				fpWTSRegisterSessionNotification(GetSafeHwnd(), NOTIFY_FOR_THIS_SESSION);
+			::FreeLibrary(h);
+		}
 	}
 
 	return 0;
@@ -754,14 +759,19 @@ void CMainFrame::OnClose()
 		}
 
 		// Unregister session change notification
-		typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
-		HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
-		if (h)
+#ifdef VIDEODEVICEDOC
+		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+#endif
 		{
-			FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
-			if (fpWTSUnRegisterSessionNotification)
-				fpWTSUnRegisterSessionNotification(GetSafeHwnd());
-			::FreeLibrary(h);
+			typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
+			HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
+			if (h)
+			{
+				FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
+				if (fpWTSUnRegisterSessionNotification)
+					fpWTSUnRegisterSessionNotification(GetSafeHwnd());
+				::FreeLibrary(h);
+			}
 		}
 
 		// Stop All Threads used for the PostDelayedMessage() Function
@@ -3728,6 +3738,19 @@ void CMainFrame::OnMainmonitor()
 												SWP_NOSIZE | SWP_NOZORDER);
 		}
 	}
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	{
+		HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+		if (h)
+		{
+			LPVOID p = ::GetProcAddress(h, "SetLayeredWindowAttributes");
+			CString strAutoPos;
+			strAutoPos.Format(_T("ID=0x%08lx"), p ? IDD_IMAGEINFO : IDD_IMAGEINFO_NOALPHA);
+			CString sSection = cdxCDynamicWndEx::MakeFullProfile(cdxCDynamicWndEx::M_lpszAutoPosProfileSection, strAutoPos);
+			::AfxGetApp()->WriteProfileInt(sSection, _T("(valid)"), 0);
+			::FreeLibrary(h);
+		}
+	}
 }
 
 BOOL CMainFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
@@ -3795,19 +3818,31 @@ LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 		wparam == WTS_SESSION_LOCK)
 	{
 		m_SessionChangeTime = CTime::GetCurrentTime();
-		m_nSessionDisconnectedLockedCount++;
+		::InterlockedIncrement(&m_lSessionDisconnectedLockedCount);
+		if (wparam == WTS_CONSOLE_DISCONNECT)
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+		else if (wparam == WTS_REMOTE_DISCONNECT)
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+		else
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION LOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 	}
 	else if (wparam == WTS_CONSOLE_CONNECT	||
 			wparam == WTS_REMOTE_CONNECT	||
 			wparam == WTS_SESSION_UNLOCK)
 	{
 		m_SessionChangeTime = CTime::GetCurrentTime();
-		m_nSessionDisconnectedLockedCount--;
+		::InterlockedDecrement(&m_lSessionDisconnectedLockedCount);
+		if (wparam == WTS_CONSOLE_CONNECT)
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+		else if (wparam == WTS_REMOTE_CONNECT)
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+		else
+			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION UNLOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 
 		// When user switches back sometimes the drawing is not
 		// restarting without clearing the front buffer,
-		// note that Blt() is not return any error...
-		if (m_nSessionDisconnectedLockedCount <= 0)
+		// note that Blt() is not return any error in this case...
+		if (m_lSessionDisconnectedLockedCount <= 0)
 			ClearFrontAll();
 	}
 	return 1;

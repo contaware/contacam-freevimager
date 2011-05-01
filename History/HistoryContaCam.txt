@@ -2,8 +2,13 @@ VERSION HISTORY
 
 3.0.0 (XXX)
 
-- ContaCam is now FREEWARE!!!
+- ContaCam is now FREEWARE
+- Web interface got Prev./Next detection video play
+- Web interface video player fast button clicks are
+  now working well also with Internet Explorer
 - Small optimizations for detection saving and networking
+- UDP networking works now with Wine
+- Enhanced translations
 - Added some codecs
 
 2.3.9 (March 12th 2011)

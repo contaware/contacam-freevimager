@@ -361,7 +361,7 @@ afx_msg LONG CVideoDeviceView::OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lpar
 	WORD wHeight = HIWORD(wparam);
 	CTimeSpan ElapsedTimeSinceLastSessionChange = CTime::GetCurrentTime() - ::AfxGetMainFrame()->m_SessionChangeTime;
 	if (wWidth > 0 && wHeight > 0									&&
-		::AfxGetMainFrame()->m_nSessionDisconnectedLockedCount <= 0	&&
+		::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0	&&
 		ElapsedTimeSinceLastSessionChange.GetTotalSeconds() >= SESSIONCHANGE_WAIT_SEC)
 	{
 		if (pDoc->m_DxDraw.Init(	GetSafeHwnd(),
@@ -485,8 +485,9 @@ void CVideoDeviceView::Draw()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
 
-	// Nothing to draw as a service, return
-	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+	// Nothing to draw as a service or if not connected
+	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess ||
+		::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount > 0)
 		return;
 
 	// Enter CS here, also m_bInitializingDxDraw must be under the cs
