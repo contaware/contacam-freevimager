@@ -1692,11 +1692,23 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 			if (bSend)
 			{
 				connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-				connection.Connect(	sHost,
-									m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
-									m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-									m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-									m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+				if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
+					m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
+				{
+					connection.Connect(	sHost,
+										CPJNSMTPConnection::AUTH_NONE,
+										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
+										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
+										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+				}
+				else
+				{
+					connection.Connect(	sHost,
+										m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
+										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
+										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
+										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+				}
 				connection.SendMessage(*pMessage);
 			}
 

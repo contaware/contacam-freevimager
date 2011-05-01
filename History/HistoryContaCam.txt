@@ -8,6 +8,7 @@ VERSION HISTORY
   now working well also with Internet Explorer
 - Small optimizations for detection saving and networking
 - UDP networking works now with Wine
+- Fixed email send with empty User Name and Password
 - Enhanced translations
 - Added some codecs
 
