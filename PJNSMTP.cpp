@@ -2744,6 +2744,8 @@ CPJNSMTPConnection::AuthenticationMethod CPJNSMTPConnection::ChooseAuthenticatio
 		am = AUTH_LOGIN;
 	else if (_tcsstr(sAuthMethods, _T("PLAIN")) != NULL)
 		am = AUTH_PLAIN;
+	else 
+		am = AUTH_NONE; // Oli backported
 		
   return am;
 }
@@ -2799,6 +2801,11 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
       //Now decide which protocol to choose via the virtual function to allow further client customization
 			am = ChooseAuthenticationMethod(sAuthMethods);
 		}
+		else
+		{
+			//If AUTH is not found the server does not support authentication
+			am = AUTH_NONE; // Oli backported
+		}
   }
 
   //What we do next depends on what authentication protocol we are using
@@ -2832,7 +2839,12 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
 		{
 			ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_EHLO_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 			break;
-		}    
+		}
+		case AUTH_NONE:
+		{
+			//authentication not requried
+			break;    // Oli backported
+	  }
     default:
     {
       ASSERT(FALSE);
