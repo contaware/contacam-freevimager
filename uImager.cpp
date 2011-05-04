@@ -155,6 +155,8 @@ CUImagerApp::CUImagerApp()
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
+	m_dwFFPreferredVideoEncFourCC = FCC('MJPG');
+	m_fFFPreferredVideoEncQuality = DEFAULT_VIDEO_QUALITY;
 	m_bVideoAviInfo = FALSE;
 	m_bFFSnowVideoEnc = FALSE;
 	m_bFFMpeg4VideoEnc = FALSE;
@@ -746,6 +748,14 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// may be empty and the emms instruction is not called after using MMX!
 		// Note: all codecs except the raw one call dsputil_init() which executes mm_flags = mm_support()
 		mm_flags = mm_support();
+
+		// Set preferred video encoder
+		m_dwFFPreferredVideoEncFourCC = m_bFFMpeg4VideoEnc ? FCC('DIVX') :
+										m_bFFTheoraVideoEnc ? FCC('theo') :								
+										m_bFFSnowVideoEnc ? FCC('SNOW') :
+										FCC('MJPG');
+		m_fFFPreferredVideoEncQuality = m_dwFFPreferredVideoEncFourCC == FCC('theo') ? DEFAULT_THEO_QUALITY :
+										DEFAULT_VIDEO_QUALITY;
 #endif
 		
 #ifdef VIDEODEVICEDOC

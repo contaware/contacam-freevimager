@@ -61,10 +61,6 @@ class CMovementDetectionPage;
 #define	FILES_DELETE_INTERVAL				10800000U 	// in ms -> each 3 hours check whether we can delete old detections
 #define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
 #define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
-#define DEFAULT_VIDEOREC_FOURCC				FCC('theo')	// Encoder
-#define DEFAULT_VIDEOREC_QUALITY			DEFAULT_THEO_QUALITY
-#define DEFAULT_VIDEOPOSTREC_FOURCC			FCC('theo')	// Encoder
-#define DEFAULT_VIDEOPOSTREC_QUALITY		DEFAULT_THEO_QUALITY
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
 #define DXDRAW_REINIT_TIMEOUT				5000U		// ms
 #define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
@@ -93,8 +89,6 @@ class CMovementDetectionPage;
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of swf
 
 // Movement Detection
-#define DEFAULT_VIDEODET_FOURCC				FCC('theo')	// Encoder
-#define DEFAULT_VIDEODET_QUALITY			DEFAULT_THEO_QUALITY
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)

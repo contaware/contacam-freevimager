@@ -708,6 +708,12 @@ public:
 	// Display Advanced On-Screen Video Avi Info
 	BOOL m_bVideoAviInfo;
 
+	// Preferred ffmpeg video encoder fourcc
+	DWORD m_dwFFPreferredVideoEncFourCC;
+
+	// Preferred ffmpeg video encoder quality
+	float m_fFFPreferredVideoEncQuality;
+
 	// Is ffmpeg snow video encoder compiled in?
 	BOOL m_bFFSnowVideoEnc;
 
