@@ -4384,19 +4384,7 @@ BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 	m_pBMI->bmiHeader.biHeight 			= bm.bmHeight;
 	m_pBMI->bmiHeader.biPlanes 			= 1;
 	m_pBMI->bmiHeader.biBitCount		= (WORD)(bm.bmPlanes * bm.bmBitsPixel);
-	
-//#ifdef _WIN32_WCE
-//#if (_WIN32_WCE>=300)
-//    if (bm.bmBitsPixel == 16  || bm.bmBitsPixel == 32)
-//        m_pBMI->bmiHeader.biCompression = BI_BITFIELDS; 
-//    else
-//        m_pBMI->bmiHeader.biCompression = BI_RGB;
-//#else
-	//m_pBMI->bmiHeader.biCompression = BI_RGB;
-//#endif
-//#else
-	m_pBMI->bmiHeader.biCompression = BI_RGB;
-//#endif
+	m_pBMI->bmiHeader.biCompression		= BI_RGB;
 	m_pBMI->bmiHeader.biSizeImage		= 0;
 	m_pBMI->bmiHeader.biXPelsPerMeter	= 0;
 	m_pBMI->bmiHeader.biYPelsPerMeter	= 0;
@@ -6133,113 +6121,6 @@ BOOL CDib::DecompressRLE(CDib* pBackgroundDib/*=NULL*/)
 	else
 		return FALSE;
 }
-
-// This would change a bit the colors with a 16 bpp graphics card resolution...
-// -> better use the above decompression!
-#if 0
-BOOL CDib::DecompressRLE()
-{
-	if (!m_pBMI)
-		return FALSE;
-
-	if (!DibSectionToBits())
-		return FALSE;
-
-	if (!m_pBits)
-		return FALSE;
-
-	if (m_pBMI->bmiHeader.biCompression == BI_RLE8)
-		return DecompressRLE8();
-
-	// Only Supported for BI_RLE4 or BI_RLE8
-	if (m_pBMI->bmiHeader.biCompression != BI_RLE4 &&
-		m_pBMI->bmiHeader.biCompression != BI_RLE8)
-		return FALSE;
-
-	// Store Original Bit Count
-	int nOriginalBitCount = GetBitCount();
-
-	// Get DC
-	HDC hDC = ::GetDC(NULL);
-
-	// Select Palette
-	HPALETTE hOldPalette = NULL;
-	if (m_pPalette)
-		hOldPalette = ::SelectPalette(hDC, (HPALETTE)(*m_pPalette), FALSE);
-	
-	// DIB Bits to DDB (not to DIBSECTION because they do not support RLE!)
-	HBITMAP hBitmap = GetDDB(hDC);
-	if (hBitmap == NULL)
-	{
-		if (hOldPalette)
-			::SelectPalette(hDC, hOldPalette, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-
-	// Allocate and prepare new BMI
-	DWORD dwSize;
-	if (nOriginalBitCount == 4) 
-		dwSize = m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 16;
-	else
-		dwSize = m_pBMI->bmiHeader.biSize + sizeof(RGBQUAD) * 256;
-	LPBITMAPINFO lpBMI = (LPBITMAPINFO)new BYTE[dwSize];
-	if (!lpBMI)
-	{
-		if (hOldPalette)
-			::SelectPalette(hDC, hOldPalette, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-	memset(lpBMI, 0, dwSize);
-	memcpy((void*)lpBMI, (void*)m_pBMI, MIN(dwSize, GetBMISize()));
-	lpBMI->bmiHeader.biCompression = BI_RGB; // Decompress
-	lpBMI->bmiHeader.biBitCount = 24;
-	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(lpBMI->bmiHeader.biWidth * lpBMI->bmiHeader.biBitCount);
-	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
-
-	// Allocate Bits and call GetDIBits to create the new DIB
-	LPBYTE lpBits = (LPBYTE)BIGALLOC(lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
-	if (!lpBits)
-	{
-		delete [] lpBMI;
-		if (hOldPalette)
-			::SelectPalette(hDC, hOldPalette, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-	::GetDIBits(hDC, hBitmap, 0, (UINT)lpBMI->bmiHeader.biHeight,
-    			lpBits, lpBMI, DIB_RGB_COLORS);
-
-	// Clean-Up
-	::DeleteObject(hBitmap);
-	if (hOldPalette)
-		::SelectPalette(hDC, hOldPalette, FALSE);
-	::ReleaseDC(NULL, hDC);
-	Free(TRUE); // Leave Palette!
-
-	// Set Pointers
-	m_pBMI = lpBMI;
-	m_pBits = lpBits;
-	if (m_pBMI->bmiHeader.biBitCount <= 8)
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
-	else
-		m_pColors = NULL;
-
-	// Set Size
-	m_dwImageSize = lpBMI->bmiHeader.biSizeImage;
-
-	// Convert from 24bpp back to the original bpp
-	// m_pPalette is still the old one,
-	// it will be converted to the new one.
-	if (nOriginalBitCount == 4) 
-		ConvertTo4bits(m_pPalette);
-	else
-		ConvertTo8bits(m_pPalette);
-
-	return TRUE;
-}
-#endif
 
 void CDib::Serialize(CArchive& ar) 
 {

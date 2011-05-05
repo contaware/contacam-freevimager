@@ -3823,12 +3823,14 @@ LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 	{
 		m_SessionChangeTime = CTime::GetCurrentTime();
 		::InterlockedIncrement(&m_lSessionDisconnectedLockedCount);
+#ifdef _DEBUG
 		if (wparam == WTS_CONSOLE_DISCONNECT)
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 		else if (wparam == WTS_REMOTE_DISCONNECT)
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 		else
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION LOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+#endif
 	}
 	else if (wparam == WTS_CONSOLE_CONNECT	||
 			wparam == WTS_REMOTE_CONNECT	||
@@ -3836,12 +3838,14 @@ LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 	{
 		m_SessionChangeTime = CTime::GetCurrentTime();
 		::InterlockedDecrement(&m_lSessionDisconnectedLockedCount);
+#ifdef _DEBUG
 		if (wparam == WTS_CONSOLE_CONNECT)
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 		else if (wparam == WTS_REMOTE_CONNECT)
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 		else
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION UNLOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
+#endif
 
 		// When user switches back sometimes the drawing is not
 		// restarting without clearing the front buffer,

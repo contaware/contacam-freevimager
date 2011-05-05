@@ -7,12 +7,12 @@ cd /C/uimager/ffmpeg
 
 3. Configure:
 
-For ContaCam:
-./config_lgpl_patentfree_nosnow
+For FreeVimager and ContaCam:
+./config_lgpl_nosnow
 
 For RemoteCam:
 ./config_ocx
-After make copy the libs to the RemoteCam dir!
+(after the make command copy the libs to the RemoteCam dir!)
 		
 For available options:
 ./configure --help
@@ -26,10 +26,6 @@ To Clean:
 make clean
   or
 make distclean -> to really start from a clean distribution
-
-
-You can add the following to enable cmov and fast cmov:
---cpu=i686
 
 
 Additional GPL Libs, lib sources under /usr/local/externallibs,

@@ -1511,17 +1511,6 @@ int CPictureDoc::CJpegThread::Work()
 		}
 		CDib::AutoOrientateDib(&Dib);
 
-		// Just to debug
-//#define SIMULATE_LONG_FULLLOAD
-#ifdef SIMULATE_LONG_FULLLOAD
-		for (int i = 0 ; i < 80 ; i++)
-		{
-			if (DoExit())
-				break;
-			::Sleep(100);
-		}
-#endif
-
 		// ENTER CS
 		m_pDoc->m_csLoadFullJpegDib.EnterCriticalSection();
 		

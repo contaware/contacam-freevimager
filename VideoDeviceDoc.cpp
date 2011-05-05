@@ -1345,14 +1345,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 					return 0;
 				}
 			}
-#if 0
-			// To debug web client poll
-			HANDLE hLockFile = ::CreateFile(sLiveFileName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			HANDLE hLockThumbFile = ::CreateFile(sLiveThumbFileName, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-			::Sleep(900);
-			::CloseHandle(hLockFile);
-			::CloseHandle(hLockThumbFile);
-#endif
 		}
 	}
 	if (m_bSnapshotHistoryJpeg)
@@ -5465,12 +5457,10 @@ COLORREF CVideoDeviceDoc::CColorDetection::CalcMeanValue(CDib* pDib, DWORD dwCal
 		return FALSE;
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return 0;
-#else
-		return 0;
-#endif
+	}
 
 	if ((pDib->GetBitCount() != 24) && (pDib->GetBitCount() != 32))
 		return FALSE;
