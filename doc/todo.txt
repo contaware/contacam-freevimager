@@ -6,14 +6,10 @@ Picture:
 --------
 - Using numbers to jump to a specific file in current directory
 
-Translations:
--------------
-- Translate AVI Info
-- Translate Fit, Fit Big and the percents
-
 Detection:
 ----------
-- SMS send if detection with an external program, see naughter
+- Possibility to send 3x jpegs by email on detection
+- Advanced detection scheduler with weekday selection
 
 Video:
 ------

@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "cdxCDynamicWndEx.h"
 #include "IniFile.h"
+#include "Helpers.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -292,6 +293,12 @@ bool cdxCDynamicWndEx::RestoreWindowPosition(LPCTSTR lpszProfile, UINT restoreFl
 		wpl.rcNormalPosition.bottom	=	wpl.rcNormalPosition.top;
 		wpl.rcNormalPosition.top	=	l;
 	}
+
+	//
+	// make sure position is in a monitor
+	// 
+	if (!::IntersectsValidMonitor(&(wpl.rcNormalPosition)))
+		return false;
 
 	//
 	// get restore stuff

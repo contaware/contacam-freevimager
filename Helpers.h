@@ -266,4 +266,7 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL term
 // Get uuid
 extern CString GetUuidString();
 
+// Does the given rectangle intersect a valid monitor?
+extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
+
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

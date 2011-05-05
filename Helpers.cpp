@@ -2967,3 +2967,35 @@ CString GetUuidString()
 
 	return sUUID;
 }
+
+BOOL IntersectsValidMonitor(LPCRECT lpRect)
+{
+	BOOL res;
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (!h)
+	{
+		CRect rcMonitor, rcIntersection;
+		rcMonitor.left = 0;
+		rcMonitor.top = 0;
+		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
+		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+		res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
+	}
+	else
+	{
+		FPMONITORFROMRECT fpMonitorFromRect = (FPMONITORFROMRECT)::GetProcAddress(h, "MonitorFromRect");
+		if (fpMonitorFromRect)
+			res = (fpMonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);
+		else
+		{
+			CRect rcMonitor, rcIntersection;
+			rcMonitor.left = 0;
+			rcMonitor.top = 0;
+			rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
+			rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+			res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
+		}
+		::FreeLibrary(h);
+	}
+	return res;
+}

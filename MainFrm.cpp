@@ -3612,6 +3612,10 @@ void CMainFrame::OnOpenFromTray()
 
 // The WPARAM is unused (zero) and the LPARAM contains the
 // mouse position in screen coordinates, in the usual format.
+//
+// Note: not working anymore on Windows 7 or higher. Could
+// implement toolbar buttons in the task preview through
+// the ITaskbarList3 interface (ThumbBarSetImageList and ThumbBarAddButtons)
 LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
 {
 	// Only show right-click taskbar context menu

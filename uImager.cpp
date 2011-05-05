@@ -4957,7 +4957,8 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 		UINT nBytes = 0;
 		GetProfileBinary(sSection, _T("WindowPlacement"), &pData, &nBytes);
 		WINDOWPLACEMENT *pwp = (WINDOWPLACEMENT*)pData;
-		if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)))
+		if (pwp && (nBytes == sizeof(WINDOWPLACEMENT)) &&
+			::IntersectsValidMonitor(&(pwp->rcNormalPosition)))
 		{
 			// Hide? If not hide -> use previous Show Command
 			if (showCmd == SW_HIDE)
