@@ -18,7 +18,7 @@
 * Usually do not edit the following *
 ************************************/
 // Version
-define ("VERSION","2.0");
+define ("VERSION","3.0");
 // Image and video files directory (path relative to document root)
 // If FILESDIRPATH is set to "" configuration.php's dir will be used
 define ("FILESDIRPATH","");
