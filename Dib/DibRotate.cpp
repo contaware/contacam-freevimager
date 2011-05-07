@@ -15,12 +15,10 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -138,12 +136,10 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -379,12 +375,10 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -644,12 +638,10 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -901,12 +893,10 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -1258,12 +1248,10 @@ BOOL CDib::RotateCCW(	double angle,
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;

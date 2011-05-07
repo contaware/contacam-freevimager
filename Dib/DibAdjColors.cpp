@@ -297,12 +297,10 @@ BOOL CDib::AdjustImage(	short brightness,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// The first time this function is called make a copy of the image
 	if (bEnableUndo)
@@ -478,12 +476,10 @@ void CDib::AdjustBrightnessContrastFast(short brightness,
 		return;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return;
-#else
-		return;
-#endif
+	}
 
 	// Create Brightness & Contrast Lookup Table
 	float c = (100 + contrast) / 100.0f;
@@ -518,12 +514,10 @@ void CDib::AdjustBrightness(short brightness,
 		return;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return;
-#else
-		return;
-#endif
+	}
 
 	WORD wNumColors = GetNumColors();
 	unsigned int line, i, nWidthDWAligned;
@@ -734,12 +728,10 @@ void CDib::AdjustContrast(	short contrast,
 		return;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return;
-#else
-		return;
-#endif
+	}
 
 	WORD wNumColors = GetNumColors();
 	unsigned int line, i, nWidthDWAligned;
@@ -1163,12 +1155,10 @@ void CDib::AdjustGamma(	double gamma,
 		return;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return;
-#else
-		return;
-#endif
+	}
 
 	// Create Gamma Lookup Table
 	double dInvGamma = 1.0 / gamma;
@@ -1195,12 +1185,10 @@ BOOL CDib::Negative(CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	WORD wNumColors = GetNumColors();
 	unsigned int line, i, nWidthDWAligned;
@@ -1316,12 +1304,10 @@ BOOL CDib::NegativeAlpha(CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (m_pBMI->bmiHeader.biBitCount != 32 || !HasAlpha())
 		return FALSE;
@@ -1362,12 +1348,10 @@ BOOL CDib::Grayscale(CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSend/*=TRUE*/)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	WORD wNumColors = GetNumColors();
 	unsigned int line, i, nWidthDWAligned;
@@ -1491,12 +1475,10 @@ BOOL CDib::UpdateGrayscaleFlag()
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (!m_pColors)
 		return FALSE;
@@ -1533,12 +1515,10 @@ BOOL CDib::MakeGrayscaleAscending(CWnd* pProgressWnd/*=NULL*/, BOOL bProgressSen
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
 	int i, j, gray;

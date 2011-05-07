@@ -28,12 +28,10 @@ DWORD CDib::CountUniqueColors(	CWnd* pProgressWnd/*=NULL*/,
 		return 0;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return 0;
-#else
-		return 0;
-#endif
+	}
 
 	// Scan Line Alignment
 	DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
@@ -419,12 +417,10 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -676,12 +672,10 @@ BOOL CDib::ConvertTo1bitDitherErrDiff(	int nMethod,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -1574,12 +1568,10 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -1925,12 +1917,10 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -2256,12 +2246,10 @@ BOOL CDib::ConvertTo4bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -2690,12 +2678,10 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -3019,12 +3005,10 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -3328,12 +3312,10 @@ BOOL CDib::ConvertTo8bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -3780,12 +3762,10 @@ BOOL CDib::ConvertTo15bits(	CWnd* pProgressWnd/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -4010,12 +3990,10 @@ BOOL CDib::ConvertTo16bitsMasks(WORD wRedMask/*=0xF800*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -4219,12 +4197,10 @@ BOOL CDib::ConvertTo24bits(	CWnd* pProgressWnd/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Reset Alpha
 	m_bAlpha = FALSE;
@@ -4411,12 +4387,10 @@ BOOL CDib::ConvertTo32bits(	CWnd* pProgressWnd/*=NULL*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Scan Line Alignments
 	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
@@ -4614,12 +4588,10 @@ BOOL CDib::ConvertTo32bitsAlpha(BYTE Alpha/*=255*/,
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	// Scan Line Alignments
 	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());

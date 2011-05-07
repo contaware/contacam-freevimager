@@ -634,12 +634,10 @@ BOOL CDib::SaveFirstTIFF(	LPCTSTR lpszPathName,
 			throw (int)TIFF_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)TIFF_E_BADBMP;
-#else
-			throw (int)TIFF_E_BADBMP;
-#endif
+		}
    
 #ifdef _UNICODE
 		*ptif = TIFFOpenW(lpszPathName, "w");
@@ -1215,12 +1213,10 @@ BOOL CDib::SaveNextTIFF(	TIFF* tif,
 			throw (int)TIFF_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)TIFF_E_BADBMP;
-#else
-			throw (int)TIFF_E_BADBMP;
-#endif
+		}
 
 		// Set Metadata,
 		// we have to remove the ICC profile when saving a CMYK or YCCK image

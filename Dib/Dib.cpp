@@ -387,7 +387,6 @@ BOOL CDib::Paint(HDC hDC,
 		hOldPal = ::SelectPalette(hDC, hPal, TRUE);
 	}
 
-#ifndef _WIN32_WCE
 	if (m_pBits)
 	{
 		// Do Draw Dib Begin
@@ -536,9 +535,6 @@ BOOL CDib::Paint(HDC hDC,
 		}
 	}
 	else if (m_hDibSection)
-#else
-	if (m_hDibSection)
-#endif
 	{
 		HPALETTE hOldPalMemDC = NULL;
 		HDC memDC = ::CreateCompatibleDC(hDC);
@@ -1777,12 +1773,10 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 			return FALSE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -2037,12 +2031,10 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -2327,12 +2319,8 @@ BOOL CDib::SoftBorders(int nBorder,
 	if (!m_pBits || !m_pBMI)
 		return FALSE;
 
-#ifndef _WIN32_WCE
 	if (!Decompress(32)) // Decompress to 32 bpp
 		return FALSE;
-#else
-	return FALSE;
-#endif
 
 	int x, y;
 
@@ -3193,9 +3181,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 		}
 #endif
 
-#ifndef _WIN32_WCE
 		return LoadDibSectionEx(lpszPathName);			// Loads jpg as DIBSECTION
-#endif
 	}
 	else if ((sExt == _T(".tif"))	||
 			(sExt == _T(".jfx"))	||
@@ -3230,9 +3216,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 						pThread);
 #endif
 
-#ifndef _WIN32_WCE
 		return LoadDibSectionEx(lpszPathName);			// Loads gif as DIBSECTION
-#endif
 	}
 	
 	return FALSE;
@@ -3351,11 +3335,7 @@ BOOL CDib::LoadDibSection(LPCTSTR lpszPathName)
 	if (m_FileInfo.m_dwFileSize == 0)
 		return FALSE;
 
-#ifdef _WIN32_WCE
-	HBITMAP hBitmap = (HBITMAP)::LoadImage(NULL, lpszPathName, IMAGE_BITMAP, 0, 0, 0);
-#else
 	HBITMAP hBitmap = (HBITMAP)::LoadImage(NULL, lpszPathName, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-#endif
 	if (hBitmap == NULL)
 		return FALSE;
 
@@ -3404,7 +3384,6 @@ BOOL CDib::LoadDibSection(LPCTSTR lpszPathName)
 	return res;
 }
 
-#ifndef _WIN32_WCE
 // Use of the IPicture COM interface
 // Loads: .bmp (= .dib) ; .gif ; .jpg (= .jpeg or = .jpe or = .thm)
 BOOL CDib::LoadDibSectionEx(LPCTSTR lpszPathName)
@@ -3617,7 +3596,6 @@ BOOL CDib::LoadDibSectionEx(LPCTSTR lpszPathName)
 		return FALSE;
 	}
 }
-#endif
 
 BOOL CDib::LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName)
 {
@@ -3628,11 +3606,7 @@ BOOL CDib::LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName)
 	m_bAlpha = FALSE;
 	m_bGrayscale = FALSE;
 
-#ifdef _WIN32_WCE
-	HBITMAP hBitmap = (HBITMAP) ::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, 0);
-#else
 	HBITMAP hBitmap = (HBITMAP) ::LoadImage(hInst, lpResourceName, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_DEFAULTCOLOR);
-#endif
 	if (hBitmap == NULL)
 		return FALSE;
 
@@ -3901,12 +3875,10 @@ BOOL CDib::SaveEMF(LPCTSTR lpszPathName, HDC hRefDC/*=NULL*/)
 			throw (int)EMF_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)EMF_E_BADBMP;
-#else
-			throw (int)EMF_E_BADBMP;
-#endif
+		}
 
 		// Create MemDC
 		HDC hdcMem;
@@ -4016,7 +3988,6 @@ HBITMAP CDib::GetSafeHandle()
 	return m_hDibSection; 
 }
 
-#ifndef _WIN32_WCE
 HBITMAP CDib::GetDDB(HDC hDC/*=NULL*/)
 {
 	if (!DibSectionToBits())
@@ -4040,7 +4011,6 @@ HBITMAP CDib::GetDDB(HDC hDC/*=NULL*/)
 
 	return hBitmap;
 }
-#endif
 
 BOOL CDib::SetBitsFromDDB(CBitmap* pBitmap, CPalette* pPal)
 {
@@ -4053,7 +4023,6 @@ BOOL CDib::SetBitsFromDDB(CBitmap* pBitmap, CPalette* pPal)
 	return SetBitsFromDDB(hBitmap, hPal);
 }
 
-#ifndef _WIN32_WCE
 BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 {
 	if (hBitmap == NULL)
@@ -4170,149 +4139,6 @@ BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 
 	return TRUE;
 }
-#else
-BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
-{
-    if (hBitmap == NULL)
-		return FALSE;
-
-	// If it is already a DibSection return FALSE!
-	if (IsDibSection(hBitmap))
-		return FALSE;
-
-	// Free up any resource we may currently have
-	Free();
-
-    // Get bitmap information
-    BITMAP bm;
-    if (!::GetObject(hBitmap, sizeof(bm), (LPVOID)&bm)) return FALSE;
-
-	// Compute the size of the infoheader and the color table
-	int nColors;
-	if (bm.bmBitsPixel >= 24)
-		nColors = 1 << (bm.bmPlanes * 24);
-	else
-		nColors = 1 << (bm.bmPlanes * bm.bmBitsPixel);
-
-	// If a palette has not been supplied use Halftone Palette
-	CPalette Pal;
-	if (hPal == NULL)
-	{
-		if (nColors > 256)
-			CreateHalftonePalette(&Pal, 256);
-		else
-			CreateHalftonePalette(&Pal, nColors);
-		hPal = (HPALETTE)Pal.GetSafeHandle();
-	}
-
-	// Adjust nColors
-	if(nColors > 256) nColors = 0;
-
-    // We need a device context to get the DIB from
-	HDC hDC = ::GetDC(NULL);
-	HPALETTE hOldPal = ::SelectPalette(hDC, hPal, FALSE);
-	::RealizePalette(hDC);
-
-	// Allocate memory for Header and Color Table
-	m_pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)
-									+ nColors * sizeof(RGBQUAD)];
-	if (m_pBMI == NULL)
-	{
-		::SelectPalette(hDC, hPal, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-
-    // Initialize the BITMAPINFOHEADER
-	m_pBMI->bmiHeader.biSize			= sizeof(BITMAPINFOHEADER);
-	m_pBMI->bmiHeader.biWidth			= bm.bmWidth;
-	m_pBMI->bmiHeader.biHeight 			= bm.bmHeight;
-	m_pBMI->bmiHeader.biPlanes 			= 1;
-	m_pBMI->bmiHeader.biBitCount		= (WORD)(bm.bmPlanes * bm.bmBitsPixel);
-	m_pBMI->bmiHeader.biCompression = BI_RGB;
-	m_pBMI->bmiHeader.biSizeImage		= 0;
-	m_pBMI->bmiHeader.biXPelsPerMeter	= 0;
-	m_pBMI->bmiHeader.biYPelsPerMeter	= 0;
-	m_pBMI->bmiHeader.biClrUsed			= 0;
-	m_pBMI->bmiHeader.biClrImportant	= 0;
-
-	ComputeImageSize();
-
-	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
-	if (m_pBits == NULL)
-	{
-		delete [] m_pBMI;
-		m_pBMI = NULL;
-		m_pColors = NULL;
-		::SelectPalette(hDC, hOldPal, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-
-    // Create it!
-    HANDLE hDibSection = ::CreateDIBSection(hDC, 
-                                 (const BITMAPINFO*)m_pBMI,
-                                 DIB_RGB_COLORS,
-                                 (void**)&m_pDibSectionBits, 
-                                 NULL, 0);
-	if (hDibSection == NULL)
-	{
-		ShowLastError(_T("CreateDIBSection()"));
-		BIGFREE(m_pBits);
-		m_pBits = NULL;
-		delete [] m_pBMI;
-		m_pBMI = NULL;
-		m_pColors = NULL;
-		::SelectPalette(hDC, hOldPal, FALSE);
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-
-    // Need to copy the supplied bitmap onto the newly created DIBsection
-    HDC hMemDC, hCopyDC;
-	hMemDC = ::CreateCompatibleDC(hDC);
-	hCopyDC = ::CreateCompatibleDC(hDC);
-	HPALETTE hOldMemPal = ::SelectPalette(hMemDC, hPal, FALSE);
-	::RealizePalette(hMemDC);
-	HPALETTE hOldCopyPal = ::SelectPalette(hCopyDC, hPal, FALSE);
-	::RealizePalette(hCopyDC);
-    HBITMAP hOldMemBitmap  = (HBITMAP)::SelectObject(hMemDC,  hBitmap);
-    HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, hDibSection);
-
-	// Copy
-	::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY);
-    
-	// Copy the Image Bits
-	memcpy((void*)m_pBits, m_pDibSectionBits, m_dwImageSize);
-
-	// Get Colors from the  DibSection
-	if (m_pBMI->bmiHeader.biBitCount <= 8)
-	{
-		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
-		CEGetDIBColorTable(hCopyDC, 0, nColors, m_pColors);
-	}
-	else
-		m_pColors = NULL;
-	CreatePaletteFromBMI();
-
-	// Free up
-	::SelectObject(hMemDC, hOldMemBitmap);
-    ::SelectObject(hCopyDC, hOldCopyBitmap);
-	::SelectPalette(hMemDC, hOldMemPal, FALSE);
-	::SelectPalette(hCopyDC, hOldCopyPal, FALSE);
-    ::SelectPalette(hDC, hOldPal, FALSE);
-	::DeleteDC(hMemDC);
-	::DeleteDC(hCopyDC);
-	::ReleaseDC(NULL, hDC);
-	::DeleteObject(hDibSection);
-	m_pDibSectionBits = NULL;
-
-	// Init Masks For 16 and 32 bits Pictures
-	InitMasks();
-
-    return TRUE;
-}
-#endif
 
 BOOL CDib::SetDibSectionFromDDB(CBitmap* pBitmap, CPalette* pPal)
 {
@@ -4426,11 +4252,7 @@ BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
 	{
 		m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
-#ifdef _WIN32_WCE
-		CEGetDIBColorTable(hCopyDC, 0, nColors, m_pColors);
-#else
 		::GetDIBColorTable(hMemDC, 0, nColors, m_pColors);
-#endif
 	}
 	else
 		m_pColors = NULL;
@@ -4504,7 +4326,6 @@ BOOL CDib::BitsToDibSection(BOOL bForceNewDibSection/*=FALSE*/, BOOL bDeleteBits
     return TRUE;
 }
 
-#ifndef _WIN32_WCE
 BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection/*=TRUE*/)
 {
 	if (m_pBits && !bForceNewBits)
@@ -4553,80 +4374,7 @@ BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection
 
 	return TRUE;
 }
-#else
-BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection/*=TRUE*/)
-{
-	if (m_pBits && !bForceNewBits)
-		return TRUE;
 
-	if (!m_hDibSection || !m_pBMI)
-		return FALSE;
-
-#ifdef SUPPORT_MMBMP
-	UnMapBMP();
-#endif
-
-	if (m_pBits)
-	{
-		BIGFREE(m_pBits);
-		m_pBits = NULL;
-	}
-	ResetColorUndo();
-
-	HDC hDC = ::GetDC(NULL);
-
-	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
-	if (!m_pBits)
-	{
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-	HANDLE hDibSection = ::CreateDIBSection(hDC, 
-											(const BITMAPINFO*)m_pBMI,
-											DIB_RGB_COLORS,
-											(void**)&m_pDibSectionBits, 
-											NULL,
-											0);
-	if (!hDibSection)
-	{
-		ShowLastError(_T("CreateDIBSection()"));
-		::ReleaseDC(NULL, hDC);
-		return FALSE;
-	}
-
-	// Need to copy the supplied bitmap onto the newly created DIBsection
-    HDC hMemDC, hCopyDC;
-	hMemDC = ::CreateCompatibleDC(hDC);
-	hCopyDC = ::CreateCompatibleDC(hDC);
-
-	// Copy
-    HBITMAP hOldMemBitmap  = (HBITMAP)::SelectObject(hMemDC,  GetSafeHandle());
-    HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, hDibSection);
-	::BitBlt(hCopyDC, 0, 0, GetWidth(), GetHeight(), hMemDC, 0, 0, SRCCOPY);
-    
-	// Copy the Image Bits
-	memcpy((void*)m_pBits, m_pDibSectionBits, m_dwImageSize);
-
-	// Free up
-	::SelectObject(hMemDC, hOldMemBitmap);
-    ::SelectObject(hCopyDC, hOldCopyBitmap);
-	::DeleteDC(hMemDC);
-	::DeleteDC(hCopyDC);
-	::ReleaseDC(NULL, hDC);
-	::DeleteObject(hDibSection);
-
-	if (bDeleteDibSection)
-	{
-		::DeleteObject(m_hDibSection);
-		m_hDibSection = NULL;
-		m_pDibSectionBits = NULL;
-	}
-	
-	return TRUE;
-}
-#endif
-
-#ifndef _WIN32_WCE
 // Clipboard support
 void CDib::EditCopy() 
 {
@@ -4755,7 +4503,6 @@ HGLOBAL CDib::CopyFromHandle(HGLOBAL handle)
 		
 	return file.Detach();
 }
-#endif
 
 CString CDib::GetCompressionName()
 {
@@ -5582,12 +5329,10 @@ BOOL CDib::CompressRLE(int nCompression)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress((nCompression == BI_RLE4) ? 4 : 8)) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (!m_pBits)
 		return FALSE;
@@ -6769,12 +6514,7 @@ BOOL CDib::CreatePaletteFromDibSection()
 
 		// Get the DIBSection's color table
 		RGBQUAD rgb[256];
-
-#ifdef _WIN32_WCE
-		UINT nEntries = CEGetDIBColorTable(hMemDC, 0, 256, rgb);
-#else
 		UINT nEntries = ::GetDIBColorTable(hMemDC, 0, 256, rgb);
-#endif
 
 		// Create a palette from the color table
 		LOGPALETTE* pLogPal = (LOGPALETTE*) new BYTE[sizeof(LOGPALETTE) + (nEntries*sizeof(PALETTEENTRY))];
@@ -6979,14 +6719,9 @@ BOOL CDib::DibSectionInitBMI(HBITMAP hDibSection)
 			HDC hMemDC = ::CreateCompatibleDC(NULL);
 			HBITMAP hOldBitmap = (HBITMAP)::SelectObject(hMemDC, hDibSection);
 
-#ifndef _WIN32_WCE
 			// Get the DIBSection's color table
 			UINT nEntries = ::GetDIBColorTable(hMemDC, 0, dwNumColors, m_pColors);
 			VERIFY(nEntries == dwNumColors);
-#else
-			UINT nEntries =  CEGetDIBColorTable(hMemDC, 0, dwNumColors, m_pColors);
-			VERIFY(nEntries == dwNumColors);
-#endif
 
 			// Clean up
 			::SelectObject(hMemDC, hOldBitmap);
@@ -7221,92 +6956,6 @@ BOOL CDib::AutoOrientateThumbnailDib(CDib* pDib)
 	else
 		return FALSE;
 }
-
-#ifdef _WIN32_WCE
-/**********************************************************************
-This function is from the MS KB article "HOWTO: Get the Color Table of 
-a DIBSection in Windows CE".
-
-PARAMETERS:
-HDC - the Device Context in which the DIBSection is selected
-UINT - the index of the first color table entry to retrieve
-UINT - the number of color table entries to retrieve
-RGBQUAD - a buffer large enough to hold the number of RGBQUAD
-entries requested
-
-RETURNS:
-UINT - the number of colors placed in the buffer
-
-***********************************************************************/
-UINT CDib::CEGetDIBColorTable(HDC hdc, UINT uStartIndex, UINT cEntries, RGBQUAD *pColors)
-{   
-    if (pColors == NULL)
-        return 0;                       // No place to put them, fail
-    
-    // Get a description of the DIB Section
-    HBITMAP hDIBSection = (HBITMAP)::GetCurrentObject(hdc, OBJ_BITMAP);
-
-    DIBSECTION ds;
-    DWORD dwSize = ::GetObject(hDIBSection, sizeof(DIBSECTION), &ds);
-    
-    if (dwSize != sizeof(DIBSECTION))
-        return 0;                      // Must not be a DIBSection, fail
-    
-	if (ds.dsBmih.biSize < sizeof(BITMAPINFOHEADER))
-		return 0;                      // Not right size, fail
-
-    if (ds.dsBmih.biBitCount > 8)
-        return 0;                      // Not Palettized, fail
-    
-    // get the number of colors to return per BITMAPINFOHEADER docs
-    UINT cColors;
-    if (ds.dsBmih.biClrUsed)
-        cColors = ds.dsBmih.biClrUsed;
-    else
-        cColors = 1 << (ds.dsBmih.biBitCount*ds.dsBmih.biPlanes);
-    
-    // Create a mask for the palette index bits for 1, 2, 4, and 8 bpp
-    WORD wIndexMask = (0xFF << (8 - ds.dsBmih.biBitCount)) & 0x00FF;
-    
-    // Get the pointer to the image bits
-    LPBYTE pBits = (LPBYTE) ds.dsBm.bmBits;
-    
-    // Initialize the loop variables
-    cColors = MIN( cColors, cEntries );
-    BYTE OldPalIndex = *pBits;
- 
-    UINT TestPixelY;
-    if (ds.dsBmih.biHeight > 0 )
-        // If button up DIB, pBits points to last row
-        TestPixelY = ds.dsBm.bmHeight-1;
-    else
-        // If top down DIB, pBits points to first row
-        TestPixelY = 0;
-    
-    for (UINT iColor = uStartIndex; iColor < cColors; iColor++)
-    {
-        COLORREF    rgbColor;
-        
-        // Set the palette index for the test pixel,
-        // modifying only the bits for one pixel
-        *pBits = (iColor << (8 - ds.dsBmih.biBitCount)) |
-            (*pBits & ~wIndexMask);
-        
-        // now get the resulting color
-        rgbColor = GetPixel( hdc, 0, TestPixelY );
-        
-        pColors[iColor - uStartIndex].rgbReserved = 0;
-        pColors[iColor - uStartIndex].rgbBlue = GetBValue(rgbColor);
-        pColors[iColor - uStartIndex].rgbRed = GetRValue(rgbColor);
-        pColors[iColor - uStartIndex].rgbGreen = GetGValue(rgbColor);
-    }
-    
-    // Restore the test pixel
-    *pBits = OldPalIndex;
-    
-    return cColors;
-}
-#endif
 
 void CDib::InitGetClosestColorIndex()
 {

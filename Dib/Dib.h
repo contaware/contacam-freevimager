@@ -1735,19 +1735,15 @@ public:
 	// Dib Section Functions
 	BOOL LoadDibSection(HBITMAP hDibSection);		// Duplicates a DibSection
 	BOOL LoadDibSection(LPCTSTR lpszPathName);		// Loads a Bmp file
-#ifndef _WIN32_WCE
 	BOOL LoadDibSectionEx(LPCTSTR lpszPathName);	// Loads Bmp, Gif and Jpg files
-#endif
 	BOOL LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName); // Loads a resource
 	BOOL LoadDibSectionRes(HINSTANCE hInst, UINT uID); // Loads a resource
 	BOOL AttachDibSection(HBITMAP hDibSection); // Attaches a Dib Section to the class
 	HBITMAP GetSafeHandle(); // Returns a handle to the DIB Section
 
 	// Device dependent bitmap (DDB) functions
-#ifndef _WIN32_WCE
 	HBITMAP GetDDB(HDC hDC = NULL);	// Creates a DDB Bitmap from the Image Bits and returns a handle to it
-									// (you have to call DeleteObject for the HBITMAP!) 	
-#endif
+									// (you have to call DeleteObject for the HBITMAP!)
 	BOOL SetDibSectionFromDDB(CBitmap* pBitmap, CPalette* pPal);	// Initializes the DibSection from a DDB (Device Dependent Bitmap) CBitmap pointer
 	BOOL SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal);		// Initializes the DibSection from a DDB (Device Dependent Bitmap) handle
 	BOOL SetBitsFromDDB(CBitmap* pBitmap, CPalette* pPal);			// Initializes the Image Bits from a DDB (Device Dependent Bitmap) CBitmap pointer
@@ -1774,12 +1770,10 @@ public:
 																// between DibSection and bits!
 
 	// Clipboard support function
-#ifndef _WIN32_WCE
 	void EditCopy(); 
 	void EditPaste(int XDpi = DEFAULT_DPI, int YDpi = DEFAULT_DPI);
 	HGLOBAL CopyToHandle();
 	HGLOBAL CopyFromHandle(HGLOBAL handle);
-#endif
 	
 	// Compression / Decompression
 	BOOL Compress(DWORD dwFourCC, int stride = 0);
@@ -1798,11 +1792,6 @@ protected:
 	// Init BMI From the DibSection
 	BOOL DibSectionInitBMI();
 	BOOL DibSectionInitBMI(HBITMAP hDibSection);
-
-	// Get Color Table For WinCE
-#ifdef _WIN32_WCE
-	UINT CEGetDIBColorTable(HDC hdc, UINT uStartIndex, UINT cEntries, RGBQUAD *pColors);
-#endif
 
 	// Compression / Decompression
 	BOOL CompressRLE(int nCompression);

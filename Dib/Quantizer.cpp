@@ -41,12 +41,10 @@ BOOL CQuantizer::ProcessImage(	CDib* pDib,
 		return FALSE;
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 	
 	DWORD uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(pDib->GetWidth() * pDib->GetBitCount());
 	LPBYTE lpBits = pDib->GetBits();

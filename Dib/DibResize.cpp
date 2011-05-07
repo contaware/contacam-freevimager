@@ -208,12 +208,10 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 			return TRUE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-			return FALSE;
-#endif
+		}
 
 		// Init Container Size
 		if (HasAlpha() && GetBitCount() == 32)
@@ -1455,12 +1453,10 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 			return TRUE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -1738,12 +1734,10 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 			return TRUE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -2365,12 +2359,10 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 			return TRUE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -4475,12 +4467,10 @@ BOOL CDib::LanczosResampleBits(	DWORD dwNewWidth,
 			return TRUE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;

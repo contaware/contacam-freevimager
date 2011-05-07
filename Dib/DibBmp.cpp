@@ -316,12 +316,10 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 
 		// Decompress
 		if (IsCompressed() && bDecompress)
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-			return FALSE;
-#endif
+		}
 
 		// Flip Top-Down?
 		if (m_pBMI->bmiHeader.biHeight < 0)
@@ -548,12 +546,10 @@ BOOL CDib::LoadBMP(	CFile& file,
 
 		// Decompress
 		if (IsCompressed() && bDecompress)
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-			return FALSE;
-#endif
+		}
 
 		// Flip Top-Down?
 		if (m_pBMI->bmiHeader.biHeight < 0)

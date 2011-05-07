@@ -717,12 +717,10 @@ BOOL CDib::SavePCX(	LPCTSTR lpszPathName,
 			throw (int)PCX_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)PCX_E_BADBMP;
-#else
-			throw (int)PCX_E_BADBMP;
-#endif
+		}
 
 		CFile file(lpszPathName,	CFile::modeCreate |
 									CFile::modeWrite  |

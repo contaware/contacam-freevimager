@@ -1178,12 +1178,10 @@ BOOL CDib::SaveJPEG(LPCTSTR lpszPathName,
 			throw (int)JPEG_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)JPEG_E_BADBMP;
-#else
-			throw (int)JPEG_E_BADBMP;
-#endif
+		}
 
 		if ((quality < 0) || (quality > 100))
 			throw (int)JPEG_E_QUALITYRANGE;
@@ -1803,12 +1801,10 @@ BOOL CDib::SaveJPEG(LPBYTE pOutput,
 			throw (int)JPEG_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)JPEG_E_BADBMP;
-#else
-			throw (int)JPEG_E_BADBMP;
-#endif
+		}
 
 		if ((quality < 0) || (quality > 100))
 			throw (int)JPEG_E_QUALITYRANGE;

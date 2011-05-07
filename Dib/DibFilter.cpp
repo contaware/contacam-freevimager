@@ -26,12 +26,10 @@ BOOL CDib::Filter(	int* pKernel,
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -1070,12 +1068,10 @@ BOOL CDib::FilterAlpha(	CRect rc,
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;

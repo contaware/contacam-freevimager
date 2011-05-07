@@ -21,12 +21,10 @@ BOOL CDib::RenderAlphaWithSrcBackground(CDib* pSrcDib/*=NULL*/)
 			return FALSE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -161,12 +159,10 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 			return FALSE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -305,12 +301,10 @@ BOOL CDib::AlphaOffset(int nAlphaOffset, CDib* pSrcDib/*=NULL*/, CWnd* pProgress
 			return FALSE;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				return FALSE;
-#else
-		return FALSE;
-#endif
+		}
 
 		SrcDib = *this;
 		pSrcDib = &SrcDib;
@@ -455,20 +449,16 @@ BOOL CDib::MixRGB(CDib* pDib)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if ((GetBitCount() != pDib->GetBitCount()) ||
 		(GetCompression() != pDib->GetCompression()) ||
@@ -551,20 +541,16 @@ BOOL CDib::DiffRGB(CDib* pDib, int nMinDiff)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if ((GetBitCount() != pDib->GetBitCount()) ||
 		(GetCompression() != pDib->GetCompression()) ||
@@ -677,20 +663,16 @@ BOOL CDib::DiffTransp8(CDib* pDib, int nTransparentIndex)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(8)) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if ((GetBitCount() != 8)							||
 		(pDib->GetBitCount() != 8)						||
@@ -744,20 +726,16 @@ BOOL CDib::DiffTransp8(CDib* pDib, int nMinDiff, int nTransparentIndex)
 		return FALSE;
 
 	if (IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!Decompress(8)) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+	{
 		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 			return FALSE;
-#else
-		return FALSE;
-#endif
+	}
 
 	if ((GetBitCount() != 8)							||
 		(pDib->GetBitCount() != 8)						||

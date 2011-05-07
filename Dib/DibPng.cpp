@@ -603,12 +603,10 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 			throw (int)PNG_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)PNG_E_BADBMP;
-#else
-			throw (int)PNG_E_BADBMP;
-#endif
+		}
 
 		// Init Vars
 		width = m_pBMI->bmiHeader.biWidth;

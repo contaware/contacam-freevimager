@@ -2016,12 +2016,10 @@ BOOL CDib::SaveGIF(	LPCTSTR lpszPathName,
 			throw (int)GIF_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)GIF_E_BADBMP;
-#else
-			throw (int)GIF_E_BADBMP;
-#endif
+		}
 
 		// Scan Line Sizes
 		DWORD uiInputDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
@@ -2415,12 +2413,10 @@ BOOL CDib::SaveFirstGIF(LPCTSTR lpszPathName,
 			throw (int)GIF_E_BADBMP;
 
 		if (IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!Decompress(GetBitCount())) // Decompress
 				throw (int)GIF_E_BADBMP;
-#else
-			throw (int)GIF_E_BADBMP;
-#endif
+		}
 
 		// Scan Line Sizes
 		DWORD uiInputDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount());
@@ -2783,12 +2779,10 @@ BOOL CDib::SaveNextGIF(	CDib* pDib/*=NULL*/,
 			throw (int)GIF_E_BADBMP;
 
 		if (pDib->IsCompressed())
-#ifndef _WIN32_WCE
+		{
 			if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
 				throw (int)GIF_E_BADBMP;
-#else
-			throw (int)GIF_E_BADBMP;
-#endif
+		}
    
 		// Scan Line Sizes
 		DWORD uiInputDIBScanLineSize = DWALIGNEDWIDTHBYTES(pDib->GetWidth() * pDib->GetBitCount());
