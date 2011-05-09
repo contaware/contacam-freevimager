@@ -1,11 +1,12 @@
 VERSION HISTORY
 
-3.0.0 (XXX)
+3.0.0 (May 9th 2011)
 
 - Fixed W/H ratio info display for the crop tool with cm units
 - Optimized first picture soft load
-- The "To Primary Monitor" menu entry of the task button works
-  now also for File Info dialogs that are not showing
+- Main window and File Info dialogs are restored to the
+  primary monitor if the last position is on a invalid monitor
+  (for example after the removal of a video projector)
 - Enhanced translations
 - Added some codecs
 

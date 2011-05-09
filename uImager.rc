@@ -6300,7 +6300,7 @@ IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -6312,8 +6312,8 @@ BEGIN
                     SS_NOTIFY
     LTEXT           "Thanks to the MicroApache Authors for the web server",
                     IDC_STATIC2352,15,59,209,8
-    LTEXT           "http://microapache.amadis.sytes.net",
-                    IDC_LINK_MICROAPACHE,15,68,127,8,SS_NOTIFY
+    LTEXT           "http://microapache.kerys.co.uk",IDC_LINK_MICROAPACHE,15,
+                    68,127,8,SS_NOTIFY
     LTEXT           "Thanks to the Independent JPEG Group for libjpeg 6b",
                     IDC_STATIC2342,15,79,208,8
     LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,88,72,8,SS_NOTIFY
