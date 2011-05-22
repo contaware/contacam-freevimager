@@ -7,7 +7,7 @@
 #include "ColorDetectionPage.h"
 #include "VideoDevicePropertySheet.h"
 #include "DxCapture.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

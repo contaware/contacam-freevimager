@@ -57,7 +57,7 @@
 #include "stdafx.h"
 #include "XButtonXP.h"
 #include "XThemeHelper.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

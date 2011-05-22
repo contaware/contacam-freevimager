@@ -6,7 +6,7 @@
 #include "RemoteCamViewerDoc.h"
 #include "RemoteCamViewerView.h"
 #include "SettingsDlg.h"
-#include "..\MemDC.h"
+#include "..\MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

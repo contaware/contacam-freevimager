@@ -5,7 +5,7 @@
 #include "PictureDoc.h"
 #include "VideoAviDoc.h"
 #include "PostDelayedMessage.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

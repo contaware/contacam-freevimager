@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "uImager.h"
 #include "MDIClientWnd.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

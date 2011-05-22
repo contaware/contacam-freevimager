@@ -6,7 +6,7 @@
 #include "CDAudioView.h"
 #include "CDAudioDoc.h"
 #include "CDAudio.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

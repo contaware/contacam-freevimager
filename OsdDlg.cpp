@@ -5,7 +5,7 @@
 #include "uimager.h"
 #include "MainFrm.h"
 #include "OsdDlg.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 #include "Dib.h"
 #include "IniFile.h"
 #include "PictureDoc.h"

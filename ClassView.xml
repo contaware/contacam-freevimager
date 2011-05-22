@@ -330,7 +330,6 @@
 <CLASS NAME="CGifAnimationThread"/>
 <CLASS NAME="ISampleGrabber"/>
 <CLASS NAME="ISampleGrabberCB"/>
-<CLASS NAME="CMemDC"/>
 <CLASS NAME="CPerformance"/>
 <CLASS NAME="CPostDelayedMessageThread"/>
 <CLASS NAME="CCaptureGraphBuilder"/>
@@ -343,6 +342,7 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
+<CLASS NAME="CMyMemDC"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">

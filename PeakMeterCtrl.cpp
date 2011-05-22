@@ -29,7 +29,7 @@
 #include "stdafx.h"
 #include <mmsystem.h>
 #include "XThemeHelper.h"
-#include "MemDC.h"
+#include "MyMemDC.h"
 #include "PeakMeterCtrl.h"
 
 #pragma comment(lib, "winmm.lib")

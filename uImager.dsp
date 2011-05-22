@@ -1184,7 +1184,7 @@ SOURCE=.\MDIVWCTL.tlh
 # End Source File
 # Begin Source File
 
-SOURCE=.\MemDC.h
+SOURCE=.\MyMemDC.h
 # End Source File
 # Begin Source File
 
