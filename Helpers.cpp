@@ -1470,7 +1470,7 @@ BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 #ifndef GCT_LFNCHAR
 #define GCT_LFNCHAR             0x0001
 #endif
-CString MakeValidPath(CString sPath)
+CString MakeValidPath(const CString& sPath)
 {
 #ifdef _UNICODE
 	typedef UINT (WINAPI * FPPATHGETCHARTYPE)(WCHAR ch);
@@ -1511,6 +1511,41 @@ CString MakeValidPath(CString sPath)
 		FreeLibrary(h);
 		return sPath;
 	}
+}
+
+BOOL IsASCIIPath(const CString& sPath)
+{
+	// Empty Path is already ok!
+	if (sPath.IsEmpty())
+		return TRUE;
+
+	LPSTR c = NULL;
+	if (ToANSI(sPath, &c) <= 0 || !c)
+	{
+		if (c)
+			delete [] c;
+		return FALSE;
+	}
+	for (int i = 0 ; i < (int)strlen(c) ; i++)
+	{
+		if (!((48 <= c[i] && c[i] <= 57)||	// 0-9
+			(65 <= c[i] && c[i] <= 90)	||	// ABC...XYZ
+			(97 <= c[i] && c[i] <= 122)	||	// abc...xyz
+			c[i] == ' '					||	// space
+			c[i] == '-'					||	// minus
+			c[i] == '_'					||	// underscore
+			c[i] == '~'					||	// tilde
+			c[i] == '.'					||	// dot
+			c[i] == ':'					||	// column
+			c[i] == '\\'				||	// backslash
+			c[i] == '/'))					// slash
+		{
+			delete [] c;
+			return FALSE;
+		}
+	}
+	delete [] c;
+	return TRUE;
 }
 
 CString GetSpecialFolderPath(int nSpecialFolder)
@@ -2784,7 +2819,7 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 		return _T("");
 
 	LPSTR c = NULL;
-	if (::ToANSI(s, &c) <= 0 || !c)
+	if (ToANSI(s, &c) <= 0 || !c)
 	{
 		if (c)
 			delete [] c;

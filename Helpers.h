@@ -117,6 +117,12 @@ extern BOOL SetFileTime(LPCTSTR lpszFileName,
 // -> Use GetFileSize64()
 extern BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus);
 
+// Make a valid file path
+extern CString MakeValidPath(const CString& sPath);
+
+// Is it a ASCII compatible path?
+extern BOOL IsASCIIPath(const CString& sPath);
+
 // Wrapper for SHGetSpecialFolderPath, returns the path with no trailing backslash
 /*
 CSIDL_ALTSTARTUP				File system directory that corresponds to the user's nonlocalized Startup program group. 
@@ -168,9 +174,6 @@ CSIDL_PERSONAL					My Documents folder
 CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);
-
-// Make a valid file path
-extern CString MakeValidPath(CString sPath);
 
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes

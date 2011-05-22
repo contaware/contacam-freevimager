@@ -9098,6 +9098,22 @@ CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 	return sMicroapachePwFile;
 }
 
+CString CVideoDeviceDoc::MicroApacheCompatiblePath(const CString& sPath)
+{
+	if (!::IsASCIIPath(sPath))
+	{
+		TCHAR lpszShortPath[1024];
+		DWORD dwCount = ::GetShortPathName(sPath, lpszShortPath, 1024);
+		lpszShortPath[1023] = _T('\0');
+		if (dwCount == 0)
+			return sPath;
+		else
+			return CString(lpszShortPath);
+	}
+	else
+		return sPath;
+}
+
 BOOL CVideoDeviceDoc::MicroApacheCheckConfigFile()
 {
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
@@ -9129,7 +9145,7 @@ TimeOut 30\r\n\
 DirectoryIndex index.html index.htm index.php\r\n\
 LogLevel crit\r\n");
 		
-		CString sDir = ::GetDriveAndDirName(sMicroapacheConfigFile);
+		CString sDir = MicroApacheCompatiblePath(::GetDriveAndDirName(sMicroapacheConfigFile));
 		sDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
 		sConfig += _T("ErrorLog \"") + sDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
 		sConfig += _T("PidFile \"") + sDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
@@ -9220,6 +9236,7 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 		sMicroapachePwToolFile += MICROAPACHE_PWTOOL_RELPATH;
 		if (!::IsExistingFile(sMicroapachePwToolFile))
 			return FALSE;
+		sMicroapachePwFile = MicroApacheCompatiblePath(sMicroapachePwFile);
 		sMicroapachePwFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise pw tool is not happy)
 		CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
 		return ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
@@ -9241,6 +9258,7 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	sMicroapacheStartFile += MICROAPACHE_RELPATH;
 	if (!::IsExistingFile(sMicroapacheStartFile))
 		return FALSE;
+	sMicroapacheConfigFile = MicroApacheCompatiblePath(sMicroapacheConfigFile);
 	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
 	return ::ExecHiddenApp(sMicroapacheStartFile, sParams);
