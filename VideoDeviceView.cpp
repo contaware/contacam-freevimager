@@ -745,7 +745,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		// Flicker free drawing
 		CRect rcClient;
 		GetClientRect(&rcClient);
-		CMemDC MemDC(pDC, &rcClient);
+		CMyMemDC MemDC(pDC, &rcClient);
 
 		//  Erase Background
 		CBrush br;

@@ -327,7 +327,7 @@ void CXButtonXP::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 
 	CDC *pDC = CDC::FromHandle(lpDIS->hDC);
 
-	CMemDC memDC(pDC);
+	CMyMemDC memDC(pDC);
 
 	CFont *pFont = GetParent()->GetFont();
 

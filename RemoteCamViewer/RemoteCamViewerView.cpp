@@ -398,7 +398,7 @@ void CRemoteCamViewerView::OnDraw(CDC* pDC)
 	// Flicker free drawing
 	CRect rc, rcClient;
 	GetClientRect(&rcClient);
-	CMemDC MemDC(pDC, &rcClient);
+	CMyMemDC MemDC(pDC, &rcClient);
 
 	// Erase Background
 	MemDC.FillSolidRect(&rcClient, ::GetSysColor(COLOR_BTNFACE));

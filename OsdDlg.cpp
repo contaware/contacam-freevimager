@@ -410,7 +410,7 @@ void COsdDlg::OnPaint()
 
 	// Device context for painting
 	CPaintDC dc(this);
-	CMemDC memDC(&dc);
+	CMyMemDC memDC(&dc);
 
 	// Get Client Rectangle
 	CRect rcClient;

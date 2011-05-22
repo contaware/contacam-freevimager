@@ -487,7 +487,7 @@ void CPeakMeterCtrl::OnPaint()
 	CRect rc;
 	GetWindowRect( rc );
 	rc.OffsetRect(-rc.left, -rc.top);
-	CMemDC memdc(&dc, &rc);
+	CMyMemDC memdc(&dc, &rc);
 	memdc.SetBkMode(TRANSPARENT);
 	if (IsThemed())
 		ThemeHelper.DrawThemeParentBackground(GetSafeHwnd(), memdc.GetSafeHdc(), &rc);

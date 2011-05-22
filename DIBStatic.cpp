@@ -1066,7 +1066,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		dc.SelectClipRgn(&rgn);
 
 		// Flicker Free Drawing
-		CMemDC* pMemDC = new CMemDC(&dc, &rcClient);
+		CMyMemDC* pMemDC = new CMyMemDC(&dc, &rcClient);
 		if (!pMemDC)
 			return;
 
@@ -1181,7 +1181,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		else
 		{
 			// Flicker Free Drawing
-			CMemDC MemDC(&dc, &rcClient);
+			CMyMemDC MemDC(&dc, &rcClient);
 
 			if (m_bMusicFile)
 			{
@@ -1217,7 +1217,7 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 	else if (!m_bOnlyHeader && !m_bLoadFullTerminated)
 	{
 		// Flicker Free Drawing
-		CMemDC MemDC(&dc, &rcClient);
+		CMyMemDC MemDC(&dc, &rcClient);
 
 		// Draw m_sBusyText Text
 		ClearView(&MemDC);
