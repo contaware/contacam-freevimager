@@ -1,5 +1,13 @@
 VERSION HISTORY
 
+3.1.0 (June xxx 2011)
+
+- New compile with MFC security update (MS11-025 and KB2465361)
+- Fixed important bug which prevented the web server to start
+  on localizations with a none ASCII application data path
+  (for example: "Data aplikací", many thanks to Majo)
+- Fixed small web interface bug
+
 3.0.0 (May 9th 2011)
 
 - ContaCam is now FREEWARE
