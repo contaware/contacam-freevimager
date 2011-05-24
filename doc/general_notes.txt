@@ -22,9 +22,6 @@ if (!((DWORD)(dw1 - dw2) < dw3))
 - UNICODE versions are not running on win95, win98 and Me machines,
   Microsoft Layer for Unicode (MSLU) needed...
 
-- My Unicode builds have WINVER=0x0500 and _WIN32_WINNT=0x0500 -> With VS6 it crashes when calling
-  the file open dialog. Setting both to 4 solves the problem.
-
 - Starting with vs7 shlwapi.dll is needed, NT4 without ie5 does not have this!
   -> tell user to upgrade to ie5 or use good old vs6.
 
