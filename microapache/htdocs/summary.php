@@ -258,6 +258,7 @@ if ($handle = @opendir($dir)) {
 		// Get html query string of swfs pointed to by gifs
 		$pos = 0;
 		$count = 0;
+		$swfpos = 0;
 		foreach($file_array as $file) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
@@ -266,8 +267,10 @@ if ($handle = @opendir($dir)) {
 			if ($pos >= $offset && $count < $size) {
 				if ($path_parts['extension'] == 'gif') {
 					$swffile = $dir."/".basename($file, ".gif").".swf";
-					if (is_file($swffile))
-						$swfs .= "&amp;" . $count . '=' . urlencode(basename($file, ".gif"));
+					if (is_file($swffile)) {
+						$swfs .= "&amp;" . $swfpos . '=' . urlencode(basename($file, ".gif"));
+						$swfpos++;
+					}
 				}
 				$count++;
 			}
