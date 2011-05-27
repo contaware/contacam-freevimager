@@ -1,3 +1,37 @@
+Build system
+------------
+
+Two build systems are used: Visual Studio 6 for Win9x and
+Visual Studio 2008 for Win2000 or higher (do not use Visual Studio
+2010, this will not support Win2000). MFC is necessary, the express
+editions are not supporting MFC natively but the library can be
+obtained from alternative sources such as the free-to-download
+Windows Driver Kit.
+
+Additional requirements for Visual Studio 6:
+- install sp6
+- Microsoft DirectX 9.0 SDK (October 2004)
+- install Platform SDK Feb 2003
+- put the MASM 6.15 files (ml.err and ml.exe) to
+  C:\Program Files\Microsoft Visual Studio\VC98\Bin
+The file inclusion order under Tools - Options is:
+1. DirectX  2. Platform SDK  3. Standard files 
+
+Additional requirements for Visual Studio 2008:
+- install sp1 or higher
+- Microsoft Windows SDK v6.0A or higher
+- Microsoft DirectX 9.0 SDK or higher
+
+Necessary free tools:
+- http://nsis.sourceforge.net    -> to make the installers
+- http://upx.sourceforge.net     -> to compress the exes
+- http://www.debugmode.com/wink  -> for tutorials build
+
+
+
+Release procedure
+-----------------
+
 1. Update Version Number and History
    - 2x in uImager.rc2
    - RemoteCam and RemoteCamViewer version and about dialog resources
