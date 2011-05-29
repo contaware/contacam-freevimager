@@ -31,10 +31,11 @@ Instructions for translators:
 
 Hi,
 
-I send you the project files for the translation.
-FreeVimager and ContaCam share the same resources, so this is
-why inside the translation project you can encounter resources
-specific to ContaCam or FreeVimager.
+I send you the instructions for translating the program.
+Note that FreeVimager and ContaCam share the same code,
+for this reason in the translation project there are
+resources for both ContaCam and FreeVimager. If possible
+please translate all of them.
 
 How to proceed:
 
