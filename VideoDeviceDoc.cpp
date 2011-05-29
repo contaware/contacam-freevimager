@@ -4517,7 +4517,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 			else
 			{
 				// Buffer is full, it's time to force a connection shutdown
-				// (connection may have been abrubtly closed by the peer
+				// (connection may have been abruptly closed by the peer
 				// so that our socket has not been notified about that)
 				if (!bDoNewPoll)
 				{
@@ -4665,29 +4665,37 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 
 	for (;;)
 	{
+		// Set wait delay for client poll mode and set
+		// check-timeout for both client poll and server
+		// push modes when trying to setup a connection 
 		DWORD dwWaitDelay = HTTPGETFRAME_DELAY_DEFAULT;
 		if (m_pDoc->m_dFrameRate > 0.0)
 			dwWaitDelay = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
+
+		// Alarm dependent wait delay (only used in client poll mode)
 		if (bAlarm1)
 			dwWaitDelay = 2U*dwWaitDelay;
 		else if (bAlarm2)
 			dwWaitDelay = MAX(4U*dwWaitDelay, HTTPGETFRAME_DELAY_ALARM2);
 		else if (bAlarm3)
 			dwWaitDelay = MAX(8U*dwWaitDelay, HTTPGETFRAME_DELAY_ALARM3);
+		dwWaitDelay = MIN(dwWaitDelay, (DWORD)(1000.0 / MIN_FRAMERATE));
+
+		// Wait for events
 		DWORD Event = ::WaitForMultipleObjects(	5,
 												m_hEventArray,
 												FALSE,
 												dwWaitDelay);
 		switch (Event)
 		{
-			// Shutdown Event
+			// Shutdown Event (for both client poll and server push modes)
 			case WAIT_OBJECT_0 :		
 			{
 				CleanUpAllConnections();
 				return 0;
 			}
 
-			// Http Setup Connection Event
+			// Http Setup Connection Event (for client poll init and server push mode)
 			case WAIT_OBJECT_0 + 1 :
 			{
 				::ResetEvent(m_hEventArray[1]);
@@ -4706,7 +4714,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				break;
 			}
 
-			// Http Connected Event
+			// Http Connected Event (for client poll init and server push mode)
 			case WAIT_OBJECT_0 + 2 :
 			{
 				::ResetEvent(m_hEventArray[2]);
@@ -4717,7 +4725,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				break;
 			}
 
-			// Http Read Event
+			// Http Read Event (for client poll init and server push mode)
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
@@ -4725,7 +4733,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				break;
 			}
 
-			// Http Connection failed Event
+			// Http Connection failed Event (for client poll init and server push mode)
 			case WAIT_OBJECT_0 + 4 :
 			{
 				::ResetEvent(m_hEventArray[4]);
@@ -4737,13 +4745,13 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			// Timeout
 			case WAIT_TIMEOUT :		
 			{	
-				// Setup connection timeout
+				// Setup connection timeout (for client poll init and server push mode)
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting	&&
 					!bReadEvent												&&
 					(::timeGetTime() - dwLastSetupConnectionTime) >= HTTPGETFRAME_CONNECTION_TIMEOUT)
 					return OnError();
 
-				// Poll
+				// Poll (only client poll mode)
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg)
 				{
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)
@@ -4775,7 +4783,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 							bAlarm3 = FALSE;
 						}
 						
-						// If in Alarm3 state just free closed connection
+						// If in Alarm3 state close all connections
 						// and do not open new ones!
 						PollAndClean(!bAlarm3);
 					}
