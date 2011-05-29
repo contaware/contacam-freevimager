@@ -1,4 +1,5 @@
 Note on DLGINIT resources problem:
+----------------------------------
 
 In DLGINIT all strings are stored as ANSI strings.
 All others Windows resouces are stored as UNICODE strings.
@@ -15,6 +16,7 @@ by resource strings at runtime (resource strings are allways UNICODE).
 
 
 Note on synchronization:
+------------------------
 
 Always do the modifications to ContaCam.apt then backport to FreeVimager.apt
 by making a copy of ContaCam.apt and renaming it to FreeVimager.apt.
@@ -22,3 +24,44 @@ Open the new FreeVimager.apt, update the source file and the
 output files under the Module Properties. Save it and close.
 Reopen FreeVimager.apt and call Update Source.
 This way around because with ContaCam we can check all the resources.
+
+
+Instructions for translators:
+-----------------------------
+
+Hi,
+
+I send you the project files for the translation.
+FreeVimager and ContaCam share the same resources, so this is
+why inside the translation project you can encounter resources
+specific to ContaCam or FreeVimager.
+
+How to proceed:
+
+1. Download
+http://www.contaware.com/downloads/appTranslatorTESetup.exe
+http://www.contaware.com/downloads/ContaCam-3.1.0-SKY.zip
+install the translation application and unzip the project file
+
+2. Start the installed application and open the .apt
+translation project file. Note: the .apt file and the program exe
+have to be in the same directory (exe's ending 'w' stands for
+wide chars = unicode)
+
+3. While translating you can resize/reposition the dialog controls
+to make room for longer strings; use the search and replace feature,
+especially for menus (there are duplicated items, it's normal)
+
+4. Attention:
+- Please do not change the menu shortcuts like Ctrl+P for print,
+you can change the Ctrl string but do not change the P!
+- In the string table respect the new lines!
+
+5. Press the Build Target File to create the output exe,
+test it sometimes by double-clicking on it
+
+6. When done send me back the .apt file
+
+If you have any questions please feel free to contact me,
+happy translating and thanks for helping,
+Oliver 
