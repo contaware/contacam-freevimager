@@ -2,7 +2,7 @@ VERSION HISTORY
 
 3.1.0 (June xxx 2011)
 
-- New compile with MFC security update (MS11-025 and KB2465361)
+- New compile with MFC security update (MS11-025 and KB2538241)
 
 3.0.0 (May 9th 2011)
 
