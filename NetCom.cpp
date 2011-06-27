@@ -719,8 +719,8 @@ int CNetCom::CMsgThread::Work()
 						}
 						if (NetworkEvents.lNetworkEvents & FD_READ)
 						{
-							//if (m_pNetCom->m_pMsgOut)
-							//	m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_READ"));
+							if (m_pNetCom->m_pMsgOut)
+								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_READ"));
 
 							// Read Event
 							if (m_pNetCom->m_hReadEvent)
@@ -747,8 +747,8 @@ int CNetCom::CMsgThread::Work()
 						}
 						if (NetworkEvents.lNetworkEvents & FD_WRITE)
 						{
-							//if (m_pNetCom->m_pMsgOut)
-							//	m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_WRITE"));
+							if (m_pNetCom->m_pMsgOut)
+								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_WRITE"));
 
 							// Write Event
 							if (m_pNetCom->m_hWriteEvent)
@@ -772,8 +772,8 @@ int CNetCom::CMsgThread::Work()
 						}
 						if (NetworkEvents.lNetworkEvents & FD_OOB)
 						{
-							//if (m_pNetCom->m_pMsgOut)
-							//	m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_OOB"));
+							if (m_pNetCom->m_pMsgOut)
+								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_OOB"));
 
 							// OOB Event
 							if (m_pNetCom->m_hOOBEvent)
@@ -970,8 +970,11 @@ int CNetCom::CRxThread::Work()
 					}
 				}
 				else
+				{
 					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
-				
+					if (m_pNetCom->m_pMsgOut)
+						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() or WSARecvFrom() with %d bytes"), NumberOfBytesReceived);
+				}
 				// Strange: Even if WSARecv received all the bytes and returned no error,
 				// the Overlapped event is triggered! 
 				if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() == 0))
@@ -1161,7 +1164,16 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	{
 		int res = ::WSAGetLastError();
 		if (res == WSAEWOULDBLOCK || res == WSA_IO_PENDING)
+		{
 			::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+			if (m_pNetCom->m_pMsgOut)
+			{
+				if (res == WSAEWOULDBLOCK)
+					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received with WSAEWOULDBLOCK %d bytes"), NumberOfBytesReceived);
+				else
+					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received with WSA_IO_PENDING %d bytes"), NumberOfBytesReceived);
+			}
+		}
 		else
 		{
 			if (m_pNetCom->IsDatagram())
@@ -1176,6 +1188,8 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	else
 	{
 		::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+		if (m_pNetCom->m_pMsgOut)
+			m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received %d bytes"), NumberOfBytesReceived);
 
 		// Overlapped Event is also called if no error has been returned.
 		// -> the following code is not necessary!
@@ -1250,7 +1264,11 @@ int CNetCom::CTxThread::Work()
 					}
 				}
 				else
+				{
 					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+					if (m_pNetCom->m_pMsgOut)
+						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
+				}
 
 				// Statistics
 				// Strange: Even if WSASend sent all the bytes and returned no error,
@@ -1407,7 +1425,16 @@ void CNetCom::CTxThread::Write()
 			{
 				int res = ::WSAGetLastError();
 				if (res == WSAEWOULDBLOCK || res == WSA_IO_PENDING)
+				{
 					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+					if (m_pNetCom->m_pMsgOut)
+					{
+						if (res == WSAEWOULDBLOCK)
+							m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent with WSAEWOULDBLOCK %d bytes"), NumberOfBytesSent);
+						else
+							m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent with WSA_IO_PENDING %d bytes"), NumberOfBytesSent);
+					}
+				}
 				else
 				{
 					if (m_pNetCom->IsDatagram() &&
@@ -1423,6 +1450,8 @@ void CNetCom::CTxThread::Write()
 			else
 			{
 				::LeaveCriticalSection(&m_pNetCom->m_csSocket);
+				if (m_pNetCom->m_pMsgOut)
+					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent %d bytes"), NumberOfBytesSent);
 
 				// Overlapped Event is also called if no error has been returned.
 				// -> the following code is not necessary!
@@ -2034,7 +2063,15 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					{
 						int nErrorCode = ::WSAGetLastError();
 						if (nErrorCode == WSAEWOULDBLOCK)
+						{
+							if (m_pMsgOut)
+							{
+								CString sPeerAddressMsg(sPeerAddress);
+								sPeerAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
+								Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddressMsg, uiPeerPort);
+							}
 							return TRUE;
+						}
 						ProcessWSAError(GetName() + _T(" WSAConnect()"));
 						return FALSE;
 					}
