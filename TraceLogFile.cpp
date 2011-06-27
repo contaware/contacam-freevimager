@@ -14,30 +14,33 @@ extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
 
 TCHAR g_sTraceFileName[MAX_PATH] = _T("");
 TCHAR g_sLogFileName[MAX_PATH] = _T("");
-ULONGLONG g_ullMaxLogFileSize = 0;
+volatile ULONGLONG g_ullMaxLogFileSize = 0;
 CRITICAL_SECTION g_csTraceFile;
 CRITICAL_SECTION g_csLogFile;
-BOOL g_bTraceLogFileCSInited = FALSE;
+volatile BOOL g_bTraceLogFileInited = FALSE;
 
 void InitTraceLogFile(LPCTSTR szTraceFileName,
 					  LPCTSTR szLogFileName,
 					  ULONGLONG ullMaxLogFileSize/*=0*/)
 {
-	InitializeCriticalSection(&g_csTraceFile);
-	InitializeCriticalSection(&g_csLogFile);
-	g_ullMaxLogFileSize = ullMaxLogFileSize;
-	_tcsncpy(g_sTraceFileName, szTraceFileName, MAX_PATH);
-	g_sTraceFileName[MAX_PATH - 1] = _T('\0');
-	_tcsncpy(g_sLogFileName, szLogFileName, MAX_PATH);
-	g_sLogFileName[MAX_PATH - 1] = _T('\0');
-	g_bTraceLogFileCSInited = TRUE;
+	if (!g_bTraceLogFileInited)
+	{
+		InitializeCriticalSection(&g_csTraceFile);
+		InitializeCriticalSection(&g_csLogFile);
+		g_ullMaxLogFileSize = ullMaxLogFileSize;
+		_tcsncpy(g_sTraceFileName, szTraceFileName, MAX_PATH);
+		g_sTraceFileName[MAX_PATH - 1] = _T('\0');
+		_tcsncpy(g_sLogFileName, szLogFileName, MAX_PATH);
+		g_sLogFileName[MAX_PATH - 1] = _T('\0');
+		g_bTraceLogFileInited = TRUE;
+	}
 }
 
 void EndTraceLogFile()
 {
-	if (g_bTraceLogFileCSInited)
+	if (g_bTraceLogFileInited)
 	{
-		g_bTraceLogFileCSInited = FALSE;
+		g_bTraceLogFileInited = FALSE;
 		DeleteCriticalSection(&g_csLogFile);
 		DeleteCriticalSection(&g_csTraceFile);
 	}
@@ -45,18 +48,22 @@ void EndTraceLogFile()
 
 void LogLine(const TCHAR* pFormat, ...)
 {
+	// Check
+	if (!g_bTraceLogFileInited)
+		return;
+
 	// Enter CS
 	EnterCriticalSection(&g_csLogFile);
 
 	// Check file size
 	if (g_ullMaxLogFileSize > 0)
 	{
-		ULARGE_INTEGER Size = ::GetFileSize64(g_sLogFileName);
+		ULARGE_INTEGER Size = GetFileSize64(g_sLogFileName);
 		if (Size.QuadPart > g_ullMaxLogFileSize)
 		{
-			CString sOldFileName = ::GetFileNameNoExt(g_sLogFileName) + _T(".old");
-			::DeleteFile(sOldFileName);
-			::MoveFile(g_sLogFileName, sOldFileName);
+			CString sOldFileName = GetFileNameNoExt(g_sLogFileName) + _T(".old");
+			DeleteFile(sOldFileName);
+			MoveFile(g_sLogFileName, sOldFileName);
 		}
 	}
 
@@ -80,9 +87,9 @@ void LogLine(const TCHAR* pFormat, ...)
 	sCurrentTime.Replace(_T('\n'), _T(' '));
 
 	// Create directory
-	CString sPath = ::GetDriveAndDirName(g_sLogFileName);
-	if (!::IsExistingDir(sPath))
-		::CreateDir(sPath);
+	CString sPath = GetDriveAndDirName(g_sLogFileName);
+	if (!IsExistingDir(sPath))
+		CreateDir(sPath);
 
 	// Log To File
 	FILE* pf = _tfopen(g_sLogFileName, _T("at"));
@@ -96,8 +103,15 @@ void LogLine(const TCHAR* pFormat, ...)
 	LeaveCriticalSection(&g_csLogFile);
 }
 
-void TraceFile(const TCHAR* pFormat, ...)
+void TraceFileEnterCS(const TCHAR* pFormat, ...)
 {
+	// Check
+	if (!g_bTraceLogFileInited)
+		return;
+
+	// Enter CS
+	EnterCriticalSection(&g_csTraceFile);
+
 	CString s;
 	va_list arguments;
 	va_start(arguments, pFormat);	
@@ -105,12 +119,16 @@ void TraceFile(const TCHAR* pFormat, ...)
     va_end(arguments);
 
 	// Trace
-	AfxTrace(s);
+#ifdef _DEBUG
+	CString sTrace(s);
+	sTrace.Replace(_T("%"), _T("%%"));
+	AfxTrace(sTrace);
+#endif
 
 	// Create directory
-	CString sPath = ::GetDriveAndDirName(g_sTraceFileName);
-	if (!::IsExistingDir(sPath))
-		::CreateDir(sPath);
+	CString sPath = GetDriveAndDirName(g_sTraceFileName);
+	if (!IsExistingDir(sPath))
+		CreateDir(sPath);
 
 	// Log To File
 	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));
@@ -121,8 +139,12 @@ void TraceFile(const TCHAR* pFormat, ...)
 	}
 }
 
-void TraceFileCS(const TCHAR* pFormat, ...)
+void TraceFileLeaveCS(const TCHAR* pFormat, ...)
 {
+	// Check
+	if (!g_bTraceLogFileInited)
+		return;
+
 	CString s;
 	va_list arguments;
 	va_start(arguments, pFormat);	
@@ -130,12 +152,16 @@ void TraceFileCS(const TCHAR* pFormat, ...)
     va_end(arguments);
 
 	// Trace
-	AfxTrace(s);
+#ifdef _DEBUG
+	CString sTrace(s);
+	sTrace.Replace(_T("%"), _T("%%"));
+	AfxTrace(sTrace);
+#endif
 
 	// Create directory
-	CString sPath = ::GetDriveAndDirName(g_sTraceFileName);
-	if (!::IsExistingDir(sPath))
-		::CreateDir(sPath);
+	CString sPath = GetDriveAndDirName(g_sTraceFileName);
+	if (!IsExistingDir(sPath))
+		CreateDir(sPath);
 
 	// Log To File
 	FILE* pf = _tfopen(g_sTraceFileName, _T("at"));

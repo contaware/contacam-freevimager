@@ -9,24 +9,25 @@
 
 extern TCHAR g_sTraceFileName[MAX_PATH];
 extern TCHAR g_sLogFileName[MAX_PATH];
-extern ULONGLONG g_ullMaxLogFileSize;
+extern volatile ULONGLONG g_ullMaxLogFileSize;
 extern CRITICAL_SECTION g_csTraceFile;
 extern CRITICAL_SECTION g_csLogFile;
+extern volatile BOOL g_bTraceLogFileInited;
 
 extern void InitTraceLogFile(	LPCTSTR szTraceFileName,
 								LPCTSTR szLogFileName,
 								ULONGLONG ullMaxLogFileSize = 0); // 0 means unlimited
 extern void EndTraceLogFile();
 extern void LogLine(const TCHAR* pFormat, ...);
-extern void TraceFile(const TCHAR* pFormat, ...);
-extern void TraceFileCS(const TCHAR* pFormat, ...);
+extern void TraceFileEnterCS(const TCHAR* pFormat, ...);
+extern void TraceFileLeaveCS(const TCHAR* pFormat, ...);
 
 #endif // !defined(AFX_TRACELOGFILE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
 
 
 #ifdef TRACELOGFILE
 	#undef TRACE
-	#define TRACE ::EnterCriticalSection(&g_csTraceFile),::TraceFile(_T("%s(%i) : "),CString(__FILE__),__LINE__),::TraceFileCS
+	#define TRACE ::TraceFileEnterCS(_T("%s(%i) : "),CString(__FILE__),__LINE__),::TraceFileLeaveCS
 #else
 	#ifdef _DEBUG
 		#undef TRACE
