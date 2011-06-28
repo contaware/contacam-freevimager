@@ -4657,9 +4657,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 {
 	ASSERT(m_pDoc);
-	BOOL bAlarm1 = FALSE;
-	BOOL bAlarm2 = FALSE;
-	BOOL bAlarm3 = FALSE;
+	int nAlarmLevel = 0;
 	BOOL bReadEvent = FALSE;
 	DWORD dwLastSetupConnectionTime = ::timeGetTime();
 
@@ -4673,13 +4671,21 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			dwWaitDelay = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
 
 		// Alarm dependent wait delay (only used in client poll mode)
-		if (bAlarm1)
-			dwWaitDelay = 2U*dwWaitDelay;
-		else if (bAlarm2)
-			dwWaitDelay = MAX(4U*dwWaitDelay, HTTPGETFRAME_DELAY_ALARM2);
-		else if (bAlarm3)
-			dwWaitDelay = MAX(8U*dwWaitDelay, HTTPGETFRAME_DELAY_ALARM3);
-		dwWaitDelay = MIN(dwWaitDelay, (DWORD)(1000.0 / MIN_FRAMERATE));
+		if (nAlarmLevel == 1)
+		{
+			dwWaitDelay = MAX(2U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM1);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM1);
+		}
+		else if (nAlarmLevel == 2)
+		{
+			dwWaitDelay = MAX(4U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM2);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM2);
+		}
+		else if (nAlarmLevel >= 3)
+		{
+			dwWaitDelay = MAX(8U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM3);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM3);
+		}	
 
 		// Wait for events
 		DWORD Event = ::WaitForMultipleObjects(	5,
@@ -4759,33 +4765,17 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 					else
 					{
 						if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
-						{
-							bAlarm1 = FALSE;
-							bAlarm2 = FALSE;
-							bAlarm3 = TRUE;
-						}
+							nAlarmLevel = 3;
 						else if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM2)
-						{
-							bAlarm1 = FALSE;
-							bAlarm2 = TRUE;
-							bAlarm3 = FALSE;
-						}
+							nAlarmLevel = 2;
 						else if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM1)
-						{
-							bAlarm1 = TRUE;
-							bAlarm2 = FALSE;
-							bAlarm3 = FALSE;
-						}
+							nAlarmLevel = 1;
 						else
-						{
-							bAlarm1 = FALSE;
-							bAlarm2 = FALSE;
-							bAlarm3 = FALSE;
-						}
+							nAlarmLevel = 0;
 						
-						// If in Alarm3 state close all connections
+						// If in nAlarmLevel 3 state close all connections
 						// and do not open new ones!
-						PollAndClean(!bAlarm3);
+						PollAndClean(nAlarmLevel < 3);
 					}
 				}
 				break;
@@ -9106,9 +9096,67 @@ CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 	return sMicroapachePwFile;
 }
 
+BOOL CVideoDeviceDoc::IsMicroApacheCompatiblePath(const CString& sPath)
+{
+	// Empty Path is already ok!
+	if (sPath.IsEmpty())
+		return TRUE;
+
+	LPSTR c = NULL;
+	if (::ToANSI(sPath, &c) <= 0 || !c)
+	{
+		if (c)
+			delete [] c;
+		return FALSE;
+	}
+	for (int i = 0 ; i < (int)strlen(c) ; i++)
+	{
+		if (!((48 <= c[i] && c[i] <= 57)||	// 0-9
+			(65 <= c[i] && c[i] <= 90)	||	// ABC...XYZ
+			(97 <= c[i] && c[i] <= 122)	||	// abc...xyz
+			c[i] == ' '					||	// space
+			c[i] == '-'					||	// minus
+			c[i] == '_'					||	// underscore
+			c[i] == '~'					||	// tilde
+			c[i] == '.'					||	// dot
+			c[i] == ':'					||	// column
+			c[i] == '\\'				||	// backslash
+			c[i] == '/'))					// slash
+		{
+			delete [] c;
+			return FALSE;
+		}
+	}
+	delete [] c;
+	return TRUE;
+}
+
+/*
+Microapache doesn't like special chars in its path
+--------------------------------------------------
+
+GetShortPathName will return an ASCII string if NtfsAllowExtendedCharacterIn8dot3Name
+is not set in the registry (the default value is 0 so we are quite ok with the following code)
+
+NtfsAllowExtendedCharacterIn8dot3Name under
+HKLM\SYSTEM\CurrentControlSet\Control\FileSystem
+specifies whether the characters from the extended character set,
+including diacritic characters, can be used in short file names
+using the 8.3 naming convention on NTFS volumes.
+ 
+Values:
+0: On NTFS volumes, file names using the 8.3 naming convention are limited
+   to the standard ASCII character set (minus any reserved values)
+1: On NTFS volumes, file names using the 8.3 naming convention may use extended characters
+
+Note: this entry does not exist in the registry by default,
+you can add it by using the registry editor.
+
+See: http://technet.microsoft.com/en-us/library/cc781607%28WS.10%29.aspx
+*/
 CString CVideoDeviceDoc::MicroApacheCompatiblePath(const CString& sPath)
 {
-	if (!::IsASCIIPath(sPath))
+	if (!IsMicroApacheCompatiblePath(sPath))
 	{
 		TCHAR lpszShortPath[1024];
 		DWORD dwCount = ::GetShortPathName(sPath, lpszShortPath, 1024);

@@ -188,9 +188,13 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MAXCOUNT_ALARM1		30
 #define HTTPGETFRAME_MAXCOUNT_ALARM2		40
 #define HTTPGETFRAME_MAXCOUNT_ALARM3		50
-#define HTTPGETFRAME_DELAY_DEFAULT			500U		// ms
-#define HTTPGETFRAME_DELAY_ALARM2			1000U		// ms
-#define HTTPGETFRAME_DELAY_ALARM3			2000U		// ms
+#define HTTPGETFRAME_DELAY_DEFAULT			500U								// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM1		100U								// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM2		400U								// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U								// ms
+#define HTTPGETFRAME_MAX_DELAY_ALARM1		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
+#define HTTPGETFRAME_MAX_DELAY_ALARM2		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
+#define HTTPGETFRAME_MAX_DELAY_ALARM3		((DWORD)(3000.0 / MIN_FRAMERATE))	// ms
 #define HTTPGETFRAME_CONNECTION_TIMEOUT		15000U		// Setup connection timeout in ms
 
 
@@ -1420,6 +1424,7 @@ public:
 	static CString MicroApacheGetLogFileName();
 	static CString MicroApacheGetPidFileName();
 	static CString MicroApacheGetPwFileName();
+	static BOOL IsMicroApacheCompatiblePath(const CString& sPath);
 	static CString MicroApacheCompatiblePath(const CString& sPath);
 	static BOOL MicroApacheCheckConfigFile();
 	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite = FALSE);

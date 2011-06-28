@@ -1184,10 +1184,6 @@ SOURCE=.\MDIVWCTL.tlh
 # End Source File
 # Begin Source File
 
-SOURCE=.\MyMemDC.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\MlString.h
 # End Source File
 # Begin Source File
@@ -1201,6 +1197,10 @@ SOURCE=.\MotionDetHelpers.h
 # Begin Source File
 
 SOURCE=.\MovementDetectionPage.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MyMemDC.h
 # End Source File
 # Begin Source File
 
