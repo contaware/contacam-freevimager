@@ -133,8 +133,6 @@ function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
 </script>
 <!-- to correct the unsightly Flash of Unstyled Content. http://www.bluerobot.com/web/css/fouc.asp -->
 <script type="text/javascript"></script>
-<script src="js/prototype.js" type="text/javascript"></script>
-<script src="js/scriptaculous.js?load=slider" type="text/javascript"></script>
 <style type="text/css">
 /*<![CDATA[*/
 <?php
@@ -146,12 +144,11 @@ if (!isset($_GET['height']))
 	$height = HEIGHT;
 else
 	$height = $_GET['height'];
-$stylewidth = intval($width) + 1;
 echo "#slidercontainer {\n";
 echo "position: relative;\n";
 echo "margin: 0 auto;\n";
 echo "text-align: left;\n";
-echo "width: " . $stylewidth . "px;\n}\n";
+echo "width: " . $width . "px;\n}\n";
 ?>
 /*]]>*/
 </style>
@@ -238,7 +235,7 @@ echo "\n";
 echo "<div align=\"center\">\n";
 echo "<div id=\"slidercontainer\">\n";
 echo "<div id=\"track1\" style=\"width: " . $width . "px;\n";
-echo "background-repeat: repeat-x; background-position: center left; height:26px; padding: 0px 0px 0px 1px;\">\n";
+echo "background-repeat: repeat-x; background-position: center left; height: 26px; padding: 0px;\">\n";
 echo "<div id=\"handle1\" style=\"width: 13px; height: 26px;\"><img src=\"styles/scaler_slider_$style_postfix.gif\" alt=\"[Slider]\" /></div>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -276,9 +273,12 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	echo "</div>\n";
 }
 ?>
-<script type="text/javascript" src="js/swf.js"></script>
+
+<script src="js/prototype.js" type="text/javascript"></script>
+<script src="js/scriptaculous.js?load=slider" type="text/javascript"></script>
 <script language="JavaScript" type="text/javascript">
-//<![CDATA[ 
+//<![CDATA[
+var mySlider = new Control.Slider('handle1','track1',{axis:'horizontal'});
 function resizeSwf() {
 <?php
 	if (isset($_GET['back']) && $_GET['back'] == 'no')
@@ -345,15 +345,18 @@ function resizeSwf() {
 	var track1 = document.getElementById('track1');
 	if (slidercontainer && track1) {
 		track1.style.width = fittedSlider + "px";
-		fittedSlider++;
 		slidercontainer.style.width = fittedSlider + "px";
 		mySlider.trackLength = mySlider.maximumOffset() - mySlider.minimumOffset();
 		mySlider.setValue(mySlider.value);
 	}
-} 
+}
+//]]>
+</script>
+<script type="text/javascript" src="js/swf.js"></script>
+<script language="JavaScript" type="text/javascript">
+//<![CDATA[
 InitPlayer();
 resizeSwf();
-window.onresize=resizeSwf;
 //]]>
 </script>
 </body>

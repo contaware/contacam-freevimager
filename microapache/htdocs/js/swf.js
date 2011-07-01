@@ -24,6 +24,7 @@ function InitPlayer()
 	window.setTimeout("InitPlayerInternal()", 300);
 }
 
+// See: http://www.permadi.com/tutorial/flashGetObject/
 function GetFlashMovieObject(movieName)
 {
 	if (window.document[movieName])
@@ -72,10 +73,13 @@ function InitPlayerInternal()
 	}
 	
 	// Start to play the movie even if we do not know
-	// the Total Frames count
+	// the Total Frames count, add slider and browser
+	// window resize event managers
 	if (FirstRun)
 	{
 		PlayFlashMovie();
+		mySlider.options.onSlide = function(value){SeekFrame(value);}
+		Event.observe(window, "resize", resizeSwf);
 		FirstRun = 0;
 	}
 }
@@ -197,13 +201,4 @@ function SeekFrame(v)
 	var FramePos = (myTotalFrames - 1) * v;
 	flashMovie.GotoFrame(FramePos);
 	UpdateInfoText();
-}
-
-var mySlider = new Control.Slider('handle1','track1', 
-      {axis:'horizontal', minimum: 0, maximum:110, alignX: 2, increment: 2, sliderValue: 0});
-
-// Called while dragging the thumb
-mySlider.options.onSlide = function(value)
-{
-	SeekFrame(value);
 }
