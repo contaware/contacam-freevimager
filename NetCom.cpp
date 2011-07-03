@@ -3506,94 +3506,6 @@ UINT CNetCom::SetRxTimeout(UINT uiNewTimeout)
 	return uiOldRxTimeout;
 }
 
-void CNetCom::ProcessError(CString sErrorText)
-{
-	CString sTemp;
-	LPVOID lpMsgBuf = NULL;
-
-	DWORD dwLastError = ::GetLastError();
-	if (::FormatMessage( 
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL,
-		dwLastError,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-		(LPTSTR)&lpMsgBuf,
-		0,
-		NULL) && lpMsgBuf)
-	{
-		// Replace eventual CRs in the middle of the string with a space
-		int i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
-		{
-			if (((LPTSTR)lpMsgBuf)[i] == '\r') 
-				((LPTSTR)lpMsgBuf)[i] = ' ';
-			i++;
-		}
-
-		// Remove the terminating CR + LF
-		i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
-		((LPTSTR)lpMsgBuf)[i-3] = '\0';
-
-		sTemp.Format(_T("%s Failed With The Following Error:\n%s"),
-							sErrorText, lpMsgBuf);
-
-		// Free
-		::LocalFree(lpMsgBuf);
-	}
-	else
-		sTemp.Format(_T("%s Failed With The Following Error Code: %u"),
-							sErrorText, dwLastError);
-
-	// Call Error
-	if (m_pMsgOut)
-		Error(sTemp);
-}
-
-void CNetCom::ProcessWSAError(CString sErrorText)
-{
-	CString sTemp;
-	LPVOID lpMsgBuf = NULL;
-
-	int nLastError = ::WSAGetLastError();
-	if (::FormatMessage( 
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL,
-		nLastError,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-		(LPTSTR)&lpMsgBuf,
-		0,
-		NULL) && lpMsgBuf)
-	{
-		// Replace eventual CRs in the middle of the string with a space
-		int i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
-		{
-			if (((LPTSTR)lpMsgBuf)[i] == '\r') 
-				((LPTSTR)lpMsgBuf)[i] = ' ';
-			i++;
-		}
-
-		// Remove the terminating CR + LF
-		i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
-		((LPTSTR)lpMsgBuf)[i-3] = '\0';
-
-		sTemp.Format(_T("%s Failed With The Following Error:\n%s"),
-							sErrorText, lpMsgBuf);
-
-		// Free
-		::LocalFree(lpMsgBuf);
-	}
-	else
-		sTemp.Format(_T("%s Failed With The Following Error Code: %d"),
-							sErrorText, nLastError);
-
-	// Call Error
-	if (m_pMsgOut)
-		Error(sTemp);
-}
-
 BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily/*=AF_UNSPEC*/)
 {
 	// Check addr
@@ -3705,10 +3617,55 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 	return res;
 }
 
+void CNetCom::ProcessWSAError(const CString& sErrorText)
+{
+	if (m_pMsgOut)
+	{
+		CString sTemp;
+		LPVOID lpMsgBuf = NULL;
+
+		int nLastError = ::WSAGetLastError();
+		if (::FormatMessage( 
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+			NULL,
+			nLastError,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+			(LPTSTR)&lpMsgBuf,
+			0,
+			NULL) && lpMsgBuf)
+		{
+			// Replace eventual CRs in the middle of the string with a space
+			int i = 0;
+			while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
+			{
+				if (((LPTSTR)lpMsgBuf)[i] == '\r') 
+					((LPTSTR)lpMsgBuf)[i] = ' ';
+				i++;
+			}
+
+			// Remove the terminating CR + LF
+			i = 0;
+			while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
+			((LPTSTR)lpMsgBuf)[i-3] = '\0';
+
+			sTemp.Format(_T("%s Failed With The Following Error:\n%s"),
+								sErrorText, lpMsgBuf);
+
+			// Free
+			::LocalFree(lpMsgBuf);
+		}
+		else
+			sTemp.Format(_T("%s Failed With The Following Error Code: %d"),
+								sErrorText, nLastError);
+
+		// Call Error
+		Error(sTemp);
+	}
+}
+
 void CNetCom::Error(const TCHAR* pFormat, ...)
 {
-	ASSERT(m_pMsgOut);
-	if (pFormat)
+	if (pFormat && m_pMsgOut)
 	{
 		// Get Msg
 		CString s;
@@ -3726,8 +3683,7 @@ void CNetCom::Error(const TCHAR* pFormat, ...)
 
 void CNetCom::Warning(const TCHAR* pFormat, ...)
 {
-	ASSERT(m_pMsgOut);
-	if (pFormat)
+	if (pFormat && m_pMsgOut)
 	{
 		// Get Msg
 		CString s;
@@ -3745,8 +3701,7 @@ void CNetCom::Warning(const TCHAR* pFormat, ...)
 
 void CNetCom::Notice(const TCHAR* pFormat, ...)
 {
-	ASSERT(m_pMsgOut);
-	if (pFormat)
+	if (pFormat && m_pMsgOut)
 	{
 		// Get Msg
 		CString s;

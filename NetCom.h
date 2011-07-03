@@ -714,12 +714,6 @@ protected:
 	// Initialize all Network Events (FD_ACCEPT, FD_CONNECT, ...)
 	BOOL InitEvents();
 
-	// GetLastError() Handling
-	void ProcessError(CString sErrorText);
-
-	// WSAGetLastError() Handling
-	void ProcessWSAError(CString sErrorText);
-
 	// Shutdown Threads
 	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->Kill() == false)
 												if (m_pMsgOut)
@@ -732,6 +726,7 @@ protected:
 													Notice(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
 
 	// Error, Warning and Notice Functions
+	void ProcessWSAError(const CString& sErrorText);
 	void Error(const TCHAR* pFormat, ...);
 	void Warning(const TCHAR* pFormat, ...);
 	void Notice(const TCHAR* pFormat, ...);
