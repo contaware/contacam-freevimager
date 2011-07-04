@@ -3621,7 +3621,7 @@ void CNetCom::ProcessWSAError(const CString& sErrorText)
 {
 	if (m_pMsgOut)
 	{
-		CString sTemp;
+		CString sText;
 		LPVOID lpMsgBuf = NULL;
 
 		int nLastError = ::WSAGetLastError();
@@ -3634,32 +3634,28 @@ void CNetCom::ProcessWSAError(const CString& sErrorText)
 			0,
 			NULL) && lpMsgBuf)
 		{
-			// Replace eventual CRs in the middle of the string with a space
-			int i = 0;
-			while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
-			{
-				if (((LPTSTR)lpMsgBuf)[i] == '\r') 
-					((LPTSTR)lpMsgBuf)[i] = ' ';
-				i++;
-			}
+			// Init
+			sText = (LPCTSTR)lpMsgBuf;
+			
+			// Remove terminating CR and LF
+			sText.TrimRight(_T("\r\n"));
 
-			// Remove the terminating CR + LF
-			i = 0;
-			while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
-			((LPTSTR)lpMsgBuf)[i-3] = '\0';
+			// Replace eventual CRs or LFs in the middle of the string with a space
+			sText.Replace(_T('\r'), _T(' '));
+			sText.Replace(_T('\n'), _T(' '));
 
-			sTemp.Format(_T("%s Failed With The Following Error:\n%s"),
-								sErrorText, lpMsgBuf);
+			// Format message
+			sText = sErrorText + _T(" failed with the following error:\n") + sText;
 
 			// Free
 			::LocalFree(lpMsgBuf);
 		}
 		else
-			sTemp.Format(_T("%s Failed With The Following Error Code: %d"),
+			sText.Format(_T("%s failed with the following error code: %d"),
 								sErrorText, nLastError);
 
 		// Call Error
-		Error(sTemp);
+		Error(sText);
 	}
 }
 
@@ -3730,13 +3726,13 @@ void CNetCom::CMsgOut::MessageOut(MsgOutCode code, const TCHAR* pFormat, ...)
 		switch (code)
 		{
 			case CMsgOut::ERROR_MSG :
-				TRACE(_T("NETCOM ERROR: %s\n"), s);
+				TRACE(_T("NETCOM ERROR %s\n"), s);
 				break;
 			case CMsgOut::WARNING_MSG :
-				TRACE(_T("NETCOM WARNING: %s\n"), s);
+				TRACE(_T("NETCOM WARNING %s\n"), s);
 				break;
 			case CMsgOut::NOTICE_MSG :
-				TRACE(_T("NETCOM NOTICE: %s\n"), s);
+				TRACE(_T("NETCOM NOTICE %s\n"), s);
 				break;
 			default :
 				break;

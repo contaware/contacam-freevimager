@@ -2047,7 +2047,7 @@ BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 
 void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
-	CString sText(_T(""));
+	CString sText;
 	LPVOID lpMsgBuf = NULL;
 
 	if (FormatMessage( 
@@ -2059,21 +2059,15 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 		0,
 		NULL) && lpMsgBuf)
 	{
-		// Replace eventual CRs in the middle of the string with a space
-		int i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i] != '\0') && (i < 1024)) // i < 1024 security!
-		{
-			if (((LPTSTR)lpMsgBuf)[i] == '\r') 
-				((LPTSTR)lpMsgBuf)[i] = ' ';
-			i++;
-		}
+		// Init
+		sText = (LPCTSTR)lpMsgBuf;
+		
+		// Remove terminating CR and LF
+		sText.TrimRight(_T("\r\n"));
 
-		// Remove the terminating CR + LF
-		i = 0;
-		while ((((LPTSTR)lpMsgBuf)[i++] != '\0') && (i < 1024)); // i < 1024 security!
-		((LPTSTR)lpMsgBuf)[i-3] = '\0';
-
-		sText = (LPTSTR)lpMsgBuf;
+		// Replace eventual CRs or LFs in the middle of the string with a space
+		sText.Replace(_T('\r'), _T(' '));
+		sText.Replace(_T('\n'), _T(' '));
 
 		// Free
 		LocalFree(lpMsgBuf);
