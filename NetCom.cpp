@@ -1847,6 +1847,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 														// (if hRxMsgTriggerEvent != NULL).
 														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
 														// (if pOwnerWnd != NULL).
+														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
 					UINT uiMaxTxPacketSize,				// The maximum size for transmitted packets,
@@ -3387,9 +3388,11 @@ void CNetCom::SetTxLogging(BOOL bLogging)
 	m_bTxBufEnabled = bLogging;
 }
 
-UINT CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
+void CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 {
-	UINT uiOldMaxTxPacketSize = m_uiMaxTxPacketSize;
+	// Limit the Maximum size of the sent packets
+	if ((uiNewSize == 0) || (uiNewSize > NETCOM_MAX_TX_BUFFER_SIZE))
+		uiNewSize = NETCOM_MAX_TX_BUFFER_SIZE;
 
 	if (m_bMainServer && m_pMainServer)
 	{
@@ -3401,7 +3404,6 @@ UINT CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 	}
 	
 	m_uiMaxTxPacketSize = uiNewSize;
-	return uiOldMaxTxPacketSize;
 }
 
 BOOL CNetCom::IsRxLogging()
@@ -3449,9 +3451,11 @@ BOOL CNetCom::IsTxLogging()
 	return FALSE;
 }
 
-UINT CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
+void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
 {
-	UINT uiOldRxMsgTrigger = m_uiRxMsgTrigger;
+	// Limit the Trigger Size
+	if (uiNewSize > NETCOM_MAX_RX_BUFFER_SIZE)
+		uiNewSize = NETCOM_MAX_RX_BUFFER_SIZE;
 
 	if (m_bMainServer && m_pMainServer)
 	{
@@ -3463,7 +3467,6 @@ UINT CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
 	}
 	
 	m_uiRxMsgTrigger = uiNewSize;
-	return uiOldRxMsgTrigger;
 }
 
 UINT CNetCom::SetTxTimeout(UINT uiNewTimeout)

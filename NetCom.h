@@ -392,6 +392,7 @@ public:
 														// (if hRxMsgTriggerEvent != NULL).
 														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
 														// (if pOwnerWnd != NULL).
+														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
 					UINT uiMaxTxPacketSize,				// The maximum size for transmitted packets,
@@ -628,16 +629,14 @@ public:
 	__forceinline void SetMaxTxDatagramBandwidth(DWORD dwMaxBandwidth) {if (m_pTxThread)
 																			m_pTxThread->SetMaxDatagramBandwidth(dwMaxBandwidth);};
 
-	// Set the new max Tx packet size,
-	// returns the old size
-	UINT SetMaxTxPacketSize(UINT uiNewSize);
+	// Set the new max Tx packet size
+	void SetMaxTxPacketSize(UINT uiNewSize);
 	
 	// Return the max Tx packet size value
 	__forceinline UINT GetMaxTxPacketSize() const {return m_uiMaxTxPacketSize;};
 
-	// Set the new Rx message trigger,
-	// returns the old size
-	UINT SetRxMsgTriggerSize(UINT uiNewSize);
+	// Set the new Rx message trigger
+	void SetRxMsgTriggerSize(UINT uiNewSize);
 	
 	// Return the Rx message trigger value
 	__forceinline UINT GetRxMsgTriggerSize() const {return m_uiRxMsgTrigger;};
@@ -786,18 +785,19 @@ protected:
 	// The Network Events that are to be sent to the Owner Window
 	long m_lOwnerWndNetEvents;
 
-	// The number of bytes that will trigger
-	// a WM_NETCOM_RX Message (if m_pOwnerWnd != NULL)
-	// and a m_hRxMsgTriggerEvent Event
-	// (if m_hRxMsgTriggerEvent != NULL)
+	// The number of bytes that triggers an m_hRxMsgTriggerEvent 
+	// (if m_hRxMsgTriggerEvent != NULL).
+	// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
+	// (if m_pOwnerWnd != NULL).
+	// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 	UINT m_uiRxMsgTrigger;
 
 	// Maximum Tx Packet Size, 
-	// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE
+	// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
 	UINT m_uiMaxTxPacketSize;
 
 	// After this timeout a Packet is returned
-	// even if the uiRxMsgTrigger size is not reached
+	// even if the m_uiRxMsgTrigger size is not reached
 	// (A zero meens INFINITE Timeout).
 	UINT m_uiRxPacketTimeout;
 

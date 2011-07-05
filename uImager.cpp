@@ -7083,6 +7083,7 @@ BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
 										// (if hRxMsgTriggerEvent != NULL).
 										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
 										// (if pOwnerWnd != NULL).
+										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
 										// each time uiRxMsgTrigger bytes arrived.
 				0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
