@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.1.0 (June xxx 2011)
+3.1.0 (July 5th 2011)
 
 - New compile with MFC security update (MS11-025 and KB2538241)
 

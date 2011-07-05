@@ -24,6 +24,7 @@ Open the new FreeVimager.apt, update the source file and the
 output files under the Module Properties. Save it and close.
 Reopen FreeVimager.apt and call Update Source.
 This way around because with ContaCam we can check all the resources.
+FREEVIMAGER AND CONTACAM BOTH COMMITTED MEANS THEY ARE IN SYNC!
 
 
 Instructions for translators:

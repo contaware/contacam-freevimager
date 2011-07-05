@@ -1,12 +1,17 @@
 VERSION HISTORY
 
-3.1.0 (June xxx 2011)
+3.1.0 (July 5th 2011)
 
 - New compile with MFC security update (MS11-025 and KB2538241)
-- Fixed important bug which prevented the web server to start
-  on localizations with a none ASCII application data path
+- Fixed important bug which prevented the internal web server to
+  start on localizations with a none ASCII application data path
   (for example: "Data aplikací", many thanks to Majo)
-- Fixed small web interface bug
+- Fixed next/prev. buttons of swf player when also avi recs
+  or gifs only shown
+- Updated web interface to Prototype 1.7 / Scriptaculous 1.9.0
+  and moved the javascript library loading to the end
+- Updated internal web server to Apache 2.0.64 and PHP 5.2.17
+- Added Czech and Slovak web interface languages
 
 3.0.0 (May 9th 2011)
 

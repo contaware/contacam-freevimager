@@ -180,7 +180,7 @@ Resource39=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource40=IDD_IMAPI2 (English (U.S.))
 Resource41=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource42=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
-Resource43=IDR_MAINFRAME (English (U.S.))
+Resource43=IDD_ASSISTANT (English (U.S.))
 Resource44=IDD_ABOUTBOX (English (U.S.))
 Resource45=IDD_DEVICE (English (U.S.))
 Resource46=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
@@ -256,7 +256,7 @@ Resource115=IDD_SOFTEN (English (U.S.))
 Resource116=IDD_NEW (English (U.S.))
 Resource117=IDD_SNAPSHOT (English (U.S.))
 Resource118=IDD_PROGRESS (English (U.S.))
-Resource119=IDD_ASSISTANT (English (U.S.))
+Resource119=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
