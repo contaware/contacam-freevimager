@@ -30,8 +30,12 @@ InstallDir "$PROGRAMFILES\${APPNAME}"
 ; overwrite the old one automatically)
 InstallDirRegKey HKLM "Software\Contaware\${APPNAME}" "Install_Dir"
 
+; Don't check CRC because we can have problems when installing from a net share!
+CRCCheck off
+
 ; Compressor
-SetCompressor lzma
+SetCompressor /FINAL /SOLID lzma
+SetCompressorDictSize 16
 
 ; Write Manifest to Installer and Uninstaller
 xpstyle on

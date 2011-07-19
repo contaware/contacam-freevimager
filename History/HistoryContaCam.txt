@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+3.3.0 (xxx xth 2011)
+
+- Optimized installer size and removed installer CRC check
+  because it can fail on network shares
+
 3.1.0 (July 5th 2011)
 
 - New compile with MFC security update (MS11-025 and KB2538241)
