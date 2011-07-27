@@ -5884,7 +5884,7 @@ void CUImagerApp::OnEditPaste()
 
 			// Paste
 			pDoc->m_pDib->SetBackgroundColor(pDoc->m_crBackgroundColor);
-			pDoc->m_pDib->EditPaste(PASTE_NEW_DEFAULT_DPI, PASTE_NEW_DEFAULT_DPI);
+			pDoc->m_pDib->EditPaste();
 			
 			// Init Doc Rect
 			pDoc->m_DocRect.top = 0;

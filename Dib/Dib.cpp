@@ -3694,24 +3694,31 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 		HDC hDC = ::GetDC(NULL);
 
 		// DPI
-		int XDpi = Round(25.4 * (double)emh.szlDevice.cx / (double)emh.szlMillimeters.cx);
-		int YDpi = Round(25.4 * (double)emh.szlDevice.cy / (double)emh.szlMillimeters.cy);
+		double dXDpi = 0.0;
+		double dYDpi = 0.0;
+		if (emh.szlMillimeters.cx > 0)
+			dXDpi = 25.4 * (double)emh.szlDevice.cx / (double)emh.szlMillimeters.cx;
+		if (emh.szlMillimeters.cy > 0)
+			dYDpi = 25.4 * (double)emh.szlDevice.cy / (double)emh.szlMillimeters.cy;
+		if (dXDpi <= 0.0)
+			dXDpi = DEFAULT_DPI;
+		if (dYDpi <= 0.0)
+			dYDpi = DEFAULT_DPI;
 
-		// Check DPI
-		if (XDpi <= 0)
-			XDpi = DEFAULT_DPI;
-		if (YDpi <= 0)
-			YDpi = DEFAULT_DPI;
+		// Note: rclFrame and rclBounds include the right and bottom edges.
+		// In EditPaste() I add + 1 to the right and bottom coordinates,
+		// here it's not working like this... I add + 1 when creating the Bitmap.
 
 		// Get dimension
 		int cx = emh.rclBounds.right - emh.rclBounds.left;
 		int cy = emh.rclBounds.bottom - emh.rclBounds.top;
 
-		// Dimension in .01 millimeter units
+		// rclFrame specifies the dimensions in .01 millimeter units
+		// -> convert to device units
 		if (cx <= 0)
-			cx = Round((emh.rclFrame.right - emh.rclFrame.left) * (double)XDpi / 2540.0);
+			cx = Round((emh.rclFrame.right - emh.rclFrame.left) * dXDpi / 2540.0);
 		if (cy <= 0)
-			cy = Round((emh.rclFrame.bottom - emh.rclFrame.top) * (double)YDpi / 2540.0);
+			cy = Round((emh.rclFrame.bottom - emh.rclFrame.top) * dYDpi / 2540.0);
 
 		// Drawing rectangle
 		RECT rc = {0, 0, cx, cy};
@@ -3765,8 +3772,8 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 		// Set DPI
 		if (GetBMIH())
 		{
-			GetBMIH()->biXPelsPerMeter = (LONG)Round(XDpi * 100.0 / 2.54);
-			GetBMIH()->biYPelsPerMeter = (LONG)Round(YDpi * 100.0 / 2.54);
+			GetBMIH()->biXPelsPerMeter = (LONG)Round(dXDpi * 100.0 / 2.54);
+			GetBMIH()->biYPelsPerMeter = (LONG)Round(dYDpi * 100.0 / 2.54);
 		}
 
 		// Clean-Up
@@ -4386,42 +4393,87 @@ void CDib::EditCopy()
 	}
 }
 
-void CDib::EditPaste(int XDpi/*=DEFAULT_DPI*/, int YDpi/*=DEFAULT_DPI*/)
+void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 {
+	BOOL bOk = FALSE;
 	if (::OpenClipboard(NULL))
 	{
 		if (::IsClipboardFormatAvailable(CF_DIB))
 		{
 			HGLOBAL hDib = ::GetClipboardData(CF_DIB);
 			if (hDib)
-				CopyFromHandle(hDib);
+				bOk = ((CopyFromHandle(hDib) != NULL) && IsValid());
 		}
-		else if (::IsClipboardFormatAvailable(CF_ENHMETAFILE))
+		if (!bOk && ::IsClipboardFormatAvailable(CF_ENHMETAFILE))
 		{
 			HANDLE hData = NULL;
 			if (hData = ::GetClipboardData(CF_ENHMETAFILE))
 			{
-				// Check
-				if (XDpi <= 0)
-					XDpi = DEFAULT_DPI;
-				if (YDpi <= 0)
-					YDpi = DEFAULT_DPI;
-
 				// Get header
 				HENHMETAFILE hMeta = (HENHMETAFILE)hData;
 				ENHMETAHEADER emh;
 				::GetEnhMetaFileHeader(hMeta, sizeof(emh), &emh); 
 
-				// Specifies the dimensions, in .01 millimeter units which means 100 dots per millimeter
-				// -> convert to wanted dpi
-				int cx = (emh.rclFrame.right - emh.rclFrame.left) * XDpi / 2540;
-				int cy = (emh.rclFrame.bottom - emh.rclFrame.top) * YDpi / 2540;
+				// Calc. the bound rectangle which can be smaller than the frame rectangle
+				// Note: rclFrame and rclBounds include the right and bottom edges
+				double dXSrcDpi, dYSrcDpi, dXDstDpi, dYDstDpi;
+				int cx, cy;
+				CRect rcBound;
+				if (emh.szlMillimeters.cx > 0	&&	emh.szlMillimeters.cy &&
+					emh.szlDevice.cx > 0		&&	emh.szlDevice.cy > 0)
+				{
+					dXSrcDpi = 25.4 * (double)emh.szlDevice.cx / (double)emh.szlMillimeters.cx;
+					dYSrcDpi = 25.4 * (double)emh.szlDevice.cy / (double)emh.szlMillimeters.cy;
+					dXDstDpi = XDpi;
+					dYDstDpi = YDpi;
+					if (XDpi <= 0)
+						dXDstDpi = dXSrcDpi;
+					if (YDpi <= 0)
+						dYDstDpi = dYSrcDpi;
+
+					// rclFrame specifies the dimensions in .01 millimeter units
+					// -> convert to wanted dpi in device units
+					cx = Round((emh.rclFrame.right - emh.rclFrame.left + 1) * dXDstDpi / 2540.0);
+					cy = Round((emh.rclFrame.bottom - emh.rclFrame.top + 1) * dYDstDpi / 2540.0);
+
+					// rclBounds specifies the dimensions in device units
+					// -> convert to wanted dpi in device units
+					if (dXDstDpi == dXSrcDpi && dYDstDpi == dYSrcDpi)
+					{
+						rcBound = CRect(emh.rclBounds.left,
+										emh.rclBounds.top,
+										emh.rclBounds.right + 1,
+										emh.rclBounds.bottom + 1);
+					}
+					else
+					{
+						rcBound = CRect(Round(emh.rclBounds.left			* dXDstDpi / dXSrcDpi),
+										Round(emh.rclBounds.top				* dYDstDpi / dYSrcDpi),
+										Round((emh.rclBounds.right + 1)		* dXDstDpi / dXSrcDpi),
+										Round((emh.rclBounds.bottom + 1)	* dYDstDpi / dYSrcDpi));
+					}
+				}
+				else
+				{
+					dXSrcDpi = dXDstDpi = XDpi;
+					dYSrcDpi = dYDstDpi = YDpi;
+					if (XDpi <= 0)
+						dXSrcDpi = dXDstDpi = DEFAULT_DPI;
+					if (YDpi <= 0)
+						dYSrcDpi = dYDstDpi = DEFAULT_DPI;
+
+					// rclFrame specifies the dimensions in .01 millimeter units
+					// -> convert to wanted dpi in device units
+					cx = Round((emh.rclFrame.right - emh.rclFrame.left + 1) * dXDstDpi / 2540.0);
+					cy = Round((emh.rclFrame.bottom - emh.rclFrame.top + 1) * dYDstDpi / 2540.0);
+					rcBound = CRect(0, 0, cx, cy);
+				}
 
 				// MemDC
-				HDC hDC0 = ::GetDC(NULL);					// screen dc
-				HDC	hMemDC = ::CreateCompatibleDC(hDC0);	// memory dc compatible with screen
-				HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC0, cx, cy);
-				::ReleaseDC(NULL, hDC0);					// don't needed anymore
+				HDC hDC = ::GetDC(NULL);				// screen dc
+				HDC	hMemDC = ::CreateCompatibleDC(hDC);	// memory dc compatible with screen
+				HBITMAP hBitmap = ::CreateCompatibleBitmap(hDC, cx, cy);
+				::ReleaseDC(NULL, hDC);					// don't needed anymore
 
 				// Render
 				if (hMemDC && hBitmap)
@@ -4444,13 +4496,16 @@ void CDib::EditPaste(int XDpi/*=DEFAULT_DPI*/, int YDpi/*=DEFAULT_DPI*/)
 					::SelectObject(hMemDC, hBitmapOld);
 
 					// DDB -> CDib bits
-					SetBitsFromDDB(hBitmap, NULL);
+					bOk = (SetBitsFromDDB(hBitmap, NULL) && IsValid());
+
+					// Crop
+					Crop(rcBound.left, rcBound.top, rcBound.right - rcBound.left, rcBound.bottom - rcBound.top);
 
 					// Set DPI
 					if (GetBMIH())
 					{
-						GetBMIH()->biXPelsPerMeter = (LONG)Round(XDpi * 100.0 / 2.54);
-						GetBMIH()->biYPelsPerMeter = (LONG)Round(YDpi * 100.0 / 2.54);
+						GetBMIH()->biXPelsPerMeter = (LONG)Round(dXDstDpi * 100.0 / 2.54);
+						GetBMIH()->biYPelsPerMeter = (LONG)Round(dYDstDpi * 100.0 / 2.54);
 					}
 				}
 

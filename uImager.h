@@ -108,10 +108,6 @@
 // New line when this count of chars is reached
 #define OCR_LINE_SIZE									80
 
-// Paste new enhanced metafile objects rendering them
-// with the given dpi
-#define PASTE_NEW_DEFAULT_DPI							600
-
 // Coordinate Units
 #define COORDINATES_PIX									0
 #define COORDINATES_INCH								1

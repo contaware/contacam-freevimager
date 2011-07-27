@@ -1771,7 +1771,7 @@ public:
 
 	// Clipboard support function
 	void EditCopy(); 
-	void EditPaste(int XDpi = DEFAULT_DPI, int YDpi = DEFAULT_DPI);
+	void EditPaste(int XDpi = 0, int YDpi = 0);
 	HGLOBAL CopyToHandle();
 	HGLOBAL CopyFromHandle(HGLOBAL handle);
 	
