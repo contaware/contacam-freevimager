@@ -4,6 +4,9 @@ VERSION HISTORY
 
 - Optimized installer size and removed installer CRC check
   because it can fail on network shares
+- Fixed background color popup not displaying correctly bug
+  appeared with version 3.1.0 and affecting the unicode
+  executable running under Win 2003, XP and Win 2000 
   
 3.1.0 (July 5th 2011)
 
