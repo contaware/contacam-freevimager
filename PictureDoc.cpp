@@ -1186,6 +1186,8 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 		CSize szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
 		int nMaxSizeX = m_nMaxsizePercent * szMonitor.cx / 100;
 		int nMaxSizeY = m_nMaxsizePercent * szMonitor.cy / 100;
+		if (nMaxSizeX + LAYERED_DLG_LEFTBORDER > szMonitor.cx)
+			nMaxSizeX = szMonitor.cx - LAYERED_DLG_LEFTBORDER;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		if ((int)m_Dib.GetWidth() > nMaxSizeX || (int)m_Dib.GetHeight() > nMaxSizeY)
@@ -1206,6 +1208,8 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 		CSize szMonitor = ::AfxGetMainFrame()->GetMonitorSize();
 		int nMaxSizeX = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cx / 100;
 		int nMaxSizeY = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cy / 100;
+		if (nMaxSizeX + LAYERED_DLG_LEFTBORDER > szMonitor.cx)
+			nMaxSizeX = szMonitor.cx - LAYERED_DLG_LEFTBORDER;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		int nWidth = m_Dib.GetWidth();
@@ -1359,9 +1363,10 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 		}
 	}
 
-	// We need some transparent top borders,
-	// otherwise we see the rounded window corners!
-	if (!m_Dib.AddBorders(	0,
+	// We need some transparent left and top borders,
+	// otherwise we see the rounded window corners and
+	// on some OSs there is a minimum allowed dialog size!
+	if (!m_Dib.AddBorders(	LAYERED_DLG_LEFTBORDER,
 							LAYERED_DLG_TOPBORDER,
 							0,
 							0,
@@ -14111,6 +14116,8 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 	{
 		int nMaxSizeX = m_LayeredDlgThread.m_nMaxsizePercent * szMonitor.cx / 100;
 		int nMaxSizeY = m_LayeredDlgThread.m_nMaxsizePercent * szMonitor.cy / 100;
+		if (nMaxSizeX + LAYERED_DLG_LEFTBORDER > szMonitor.cx)
+			nMaxSizeX = szMonitor.cx - LAYERED_DLG_LEFTBORDER;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		if ((int)pDib->GetWidth() > nMaxSizeX || (int)pDib->GetHeight() > nMaxSizeY)
@@ -14128,6 +14135,8 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 			m_LayeredDlgThread.m_nSizePerthousand = 125; // Min size
 		int nMaxSizeX = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cx / 100;
 		int nMaxSizeY = LAYERED_DLG_BOUNDARY_PERCENT * szMonitor.cy / 100;
+		if (nMaxSizeX + LAYERED_DLG_LEFTBORDER > szMonitor.cx)
+			nMaxSizeX = szMonitor.cx - LAYERED_DLG_LEFTBORDER;
 		if (nMaxSizeY + LAYERED_DLG_TOPBORDER > szMonitor.cy)
 			nMaxSizeY = szMonitor.cy - LAYERED_DLG_TOPBORDER;
 		int nWidth = pDib->GetWidth();
@@ -14155,6 +14164,7 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 			m_nLayeredDlgHeight = m_nLayeredDlgHeight * m_LayeredDlgThread.m_nSizePerthousand / 1000;
 		}
 	}
+	m_nLayeredDlgWidth += LAYERED_DLG_LEFTBORDER;
 	m_nLayeredDlgHeight += LAYERED_DLG_TOPBORDER;
 
 	// Start it
@@ -14189,9 +14199,12 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 		{
 			// Fully Transparent Empty Dib
 			CDib EmptyDib;
-			EmptyDib.AllocateBits(32, BI_RGB, m_nLayeredDlgWidth, m_nLayeredDlgHeight - LAYERED_DLG_TOPBORDER, RGBA(0,0,0,255));
+			EmptyDib.AllocateBits(	32, BI_RGB,
+									m_nLayeredDlgWidth - LAYERED_DLG_LEFTBORDER,
+									m_nLayeredDlgHeight - LAYERED_DLG_TOPBORDER,
+									RGBA(0,0,0,255));
 			EmptyDib.SetAlpha(TRUE);
-			EmptyDib.AddBorders(0,
+			EmptyDib.AddBorders(LAYERED_DLG_LEFTBORDER,
 								LAYERED_DLG_TOPBORDER,
 								0,
 								0,
@@ -14785,6 +14798,7 @@ void CPictureDoc::OnLayereddlgPaste()
 		// Top-Left
 		case 0 :
 			ptCorner = CPoint(rcDlg.left, rcDlg.top);
+			ptCorner.x += LAYERED_DLG_LEFTBORDER;
 			ptCorner.y += LAYERED_DLG_TOPBORDER;
 			break;
 		// Top-Right
@@ -14795,6 +14809,7 @@ void CPictureDoc::OnLayereddlgPaste()
 		// Bottom-Left
 		case 2 :
 			ptCorner = CPoint(rcDlg.left, rcDlg.top + m_nLayeredDlgHeight - 1);
+			ptCorner.x += LAYERED_DLG_LEFTBORDER;
 			break;
 		// Bottom-Right
 		default :
