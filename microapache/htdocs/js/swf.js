@@ -13,15 +13,22 @@
  *
  *-------------------------------------------------------------------------*/
 
+// Global vars
 var myTotalFrames = 3000; // Set some init value
 var TotalFramesSet = 0;
 var FirstRun = 1;
-var SliderTimer = 0;
+
+// Constants
+var INIT_PLAYER_MS = 300;
+var UPDATE_SLIDER_MS = 500;
+var ZOOMIN_PERCENT = 90;
+var ZOOMOUT_PERCENT = 110;
+var STEPFAST_FRAMES = 20;
 
 function InitPlayer()
 {
 	// Give flash player time to start loading the movie
-	window.setTimeout("InitPlayerInternal()", 300);
+	window.setTimeout("InitPlayerInternal()", INIT_PLAYER_MS);
 }
 
 // See: http://www.permadi.com/tutorial/flashGetObject/
@@ -29,11 +36,9 @@ function GetFlashMovieObject(movieName)
 {
 	if (window.document[movieName])
 		return window.document[movieName];
-	else if (navigator.appName.indexOf("Microsoft") == -1)
-	{
-		if (document.embeds && document.embeds[movieName])
-			return document.embeds[movieName]; 
-	}
+	else if (navigator.appName.indexOf("Microsoft") == -1 &&
+			document.embeds && document.embeds[movieName])
+		return document.embeds[movieName];
 	else
 		return document.getElementById(movieName);
 }
@@ -64,7 +69,7 @@ function InitPlayerInternal()
 	
 	// Check whether fully loaded
 	if (TotalFramesSet == 0 || flashMovie.PercentLoaded() != 100)
-		window.setTimeout("InitPlayerInternal()", 300);
+		window.setTimeout("InitPlayerInternal()", INIT_PLAYER_MS);
 	else
 	{
 		var currentFrame=flashMovie.TCurrentFrame("/");
@@ -85,12 +90,12 @@ function InitPlayerInternal()
 }
 
 function UpdateSlider()
-{	
+{
+	var flashMovie=GetFlashMovieObject("myFlashMovie");
+	if (flashMovie.IsPlaying())
+		window.setTimeout("UpdateSlider()", UPDATE_SLIDER_MS);
 	if (mySlider.dragging == false)
 	{
-		var flashMovie=GetFlashMovieObject("myFlashMovie");
-		if (flashMovie.IsPlaying() == false)
-			window.clearInterval(SliderTimer);
 		var currentFrame=flashMovie.TCurrentFrame("/");
 		if (myTotalFrames - 1 > 0)
 			mySlider.setValue(parseInt(currentFrame) / (myTotalFrames - 1));
@@ -113,14 +118,18 @@ function UpdateInfoText()
 function StopFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	flashMovie.StopPlay();
+	if (flashMovie.IsPlaying())
+		flashMovie.StopPlay();
 }
 
 function PlayFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	flashMovie.Play();
-	SliderTimer = window.setInterval("UpdateSlider()", 500);    
+	if (flashMovie.IsPlaying() == false)
+	{
+		flashMovie.Play();
+		window.setTimeout("UpdateSlider()", UPDATE_SLIDER_MS);    
+	}
 }
 
 function RewindFlashMovie()
@@ -135,7 +144,7 @@ function NextFrameFastFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	var currentFrame=flashMovie.TCurrentFrame("/");
-	var nextFrame=parseInt(currentFrame) + 20;
+	var nextFrame=parseInt(currentFrame) + STEPFAST_FRAMES;
 	if (nextFrame >= myTotalFrames)
 		nextFrame = myTotalFrames - 1;
 	flashMovie.GotoFrame(nextFrame);
@@ -161,7 +170,7 @@ function PrevFrameFastFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	var currentFrame=flashMovie.TCurrentFrame("/");
-	var prevFrame=parseInt(currentFrame) - 20;
+	var prevFrame=parseInt(currentFrame) - STEPFAST_FRAMES;
 	if (prevFrame < 0)
 		prevFrame = 0;
 	flashMovie.GotoFrame(prevFrame);
@@ -186,13 +195,13 @@ function PrevFrameFlashMovie()
 function ZoominFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	flashMovie.Zoom(90);
+	flashMovie.Zoom(ZOOMIN_PERCENT);
 }
 
 function ZoomoutFlashMovie()
 {
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	flashMovie.Zoom(110);
+	flashMovie.Zoom(ZOOMOUT_PERCENT);
 }
 
 function SeekFrame(v)
