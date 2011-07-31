@@ -101,8 +101,10 @@ class CPictureChildFrame;
 #define SUCCESSIVE_CHANGENOTIFICATIONS_WAITTIME					100
 
 // Layered dialog parameters
-#define LAYERED_DLG_LEFTBORDER									140	// In pixels
-#define LAYERED_DLG_TOPBORDER									40	// In pixels
+#define LAYERED_DLG_LEFTBORDER									0	// In pixels
+#define LAYERED_DLG_RIGHTBORDER									0	// In pixels
+#define LAYERED_DLG_TOPBORDER									0	// In pixels
+#define LAYERED_DLG_BOTTOMBORDER								0	// In pixels
 #define MIN_LAYERED_DLG_MAXSIZE_PERCENT							25	// m_nLayeredDlgMaxsizePercent init value
 #define LAYERED_DLG_BOUNDARY_PERCENT							90	// Upper boundary value in percent of screen size before cropping
 																	// (only for exact size settings <-> m_nLayeredDlgMaxsizePercent = 0)
