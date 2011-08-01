@@ -9,6 +9,10 @@
 
 #include "Dib.h"
 
+// NOTE:
+// IDD_LAYERED must only have the WS_POPUP style,
+// otherwise it is not working correctly on all OSs!
+
 /////////////////////////////////////////////////////////////////////////////
 // CLayeredDlg dialog
 
@@ -46,6 +50,7 @@ protected:
 	afx_msg void OnClose();
 	//}}AFX_MSG
 	afx_msg LRESULT OnNcHitTest(CPoint point);
+	afx_msg void OnEnable(BOOL bEnable);
 	DECLARE_MESSAGE_MAP()
 };
 

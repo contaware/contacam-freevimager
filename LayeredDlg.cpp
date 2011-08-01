@@ -43,6 +43,7 @@ BEGIN_MESSAGE_MAP(CLayeredDlg, CDialog)
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 	ON_WM_NCHITTEST()
+	ON_WM_ENABLE()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -147,4 +148,13 @@ void CLayeredDlg::PostNcDestroy()
 	pView->ForceCursor(FALSE);
 	delete this;
 	CDialog::PostNcDestroy();
+}
+
+// Modal dialogs will disable all windows and because we are
+// a Top-Most window we could cover the modal dialog.
+// So simply hide us while a modal dialog is showing.
+void CLayeredDlg::OnEnable(BOOL bEnable) 
+{
+	ShowWindow(bEnable ? SW_SHOWNA : SW_HIDE);
+	CDialog::OnEnable(bEnable);
 }
