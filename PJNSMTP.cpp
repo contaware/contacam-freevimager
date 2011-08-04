@@ -1760,12 +1760,22 @@ std::string CPJNSMTPMessage::getHeader()
   else
     nTZBias = tzi.Bias;
   CString sTZBias;
-  sTZBias.Format(_T("%+.2d%.2d"), -nTZBias/60, nTZBias%60);
+  //sTZBias.Format(_T("%+.2d%.2d"), -nTZBias/60, nTZBias%60);
+  sTZBias.Format(_T("%+.2d%.2d"), -nTZBias/60, abs(nTZBias)%60); // Oli backported
 
   //Create the "Date:" part of the header
-  CTime now(CTime::GetCurrentTime());
-  CString sDate(now.Format(_T("%a, %d %b %Y %H:%M:%S ")));
-  sDate += sTZBias;
+  //CTime now(CTime::GetCurrentTime());
+  //CString sDate(now.Format(_T("%a, %d %b %Y %H:%M:%S ")));
+  //sDate += sTZBias;
+  WORD langId = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);	// Oli backported
+  DWORD localeId = MAKELCID(langId, SORT_DEFAULT);
+  const int nBufSize = 128;
+  CString s1, s2, sDate;
+  ::GetDateFormat(localeId, 0, NULL, _T("ddd', 'dd' 'MMM' 'yyyy"), s1.GetBuffer(nBufSize), nBufSize);
+  ::GetTimeFormat(localeId, 0, NULL, _T("HH':'mm':'ss"), s2.GetBuffer(nBufSize), nBufSize);
+  s1.ReleaseBuffer();
+  s2.ReleaseBuffer();
+  sDate.Format(_T("%s %s %s"), s1, s2, sTZBias);
 
   CString sCharset = m_RootPart.GetCharset();
 

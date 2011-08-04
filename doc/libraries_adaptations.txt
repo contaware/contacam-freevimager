@@ -18,8 +18,11 @@ CPJNSMTPConnection 2.67 with w3 mfc 1.83
   SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize/*=4096*/)
   -> to Support OnSendProgress()
 
-- Backported from newer version: Updated the AUTH_AUTO login support to fall back to no
-  authentication if no authentication scheme is supported by the SMTP server.
+- Backported from newer version:
+  1. Updated the AUTH_AUTO login support to fall back to no
+     authentication if no authentication scheme is supported by the SMTP server.
+  2. Added abs() to sTZBias.Format(_T("%+.2d%.2d"), -nTZBias/60, abs(nTZBias)%60)
+     and changed the "Date:" header creation so that it is always in English.
 
 
 CFTPTransfer
