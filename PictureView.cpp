@@ -1727,7 +1727,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case VK_RETURN : // Enter
 			if (pDoc->m_bCrop)
-				pDoc->ApplyCrop();
+				pDoc->DoCropRect();
 			else
 			{
 				if (!((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc, TRUE))

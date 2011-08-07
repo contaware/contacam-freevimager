@@ -858,7 +858,7 @@ BEGIN
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
         MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy rectangle...\tCtrl+K", ID_EDIT_CROP
+        MENUITEM "Crop/Copy/Cut rectangle\tCtrl+K", ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
         MENUITEM "Negative\tCtrl+Q",            ID_EDIT_NEGATIVE
@@ -1059,6 +1059,7 @@ BEGIN
     BEGIN
         MENUITEM "&Apply Crop\tEnter",          ID_EDIT_CROP_APPLY
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "C&ut\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "Ca&ncel\tEsc",                ID_EDIT_CROP_CANCEL
     END
 END
@@ -1164,7 +1165,7 @@ BEGIN
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
         MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy rectangle...\tCtrl+K", ID_EDIT_CROP
+        MENUITEM "Crop/Copy/Cut rectangle\tCtrl+K", ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
         MENUITEM "Negative\tCtrl+Q",            ID_EDIT_NEGATIVE
@@ -1406,7 +1407,7 @@ BEGIN
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
         MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy rectangle...\tCtrl+K", ID_EDIT_CROP
+        MENUITEM "Crop rectangle\tCtrl+K",      ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
         MENUITEM "Negative\tCtrl+Q",            ID_EDIT_NEGATIVE
@@ -1558,7 +1559,7 @@ BEGIN
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
         MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy rectangle...\tCtrl+K", ID_EDIT_CROP
+        MENUITEM "Crop rectangle\tCtrl+K",      ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
         MENUITEM "Negative\tCtrl+Q",            ID_EDIT_NEGATIVE
@@ -4288,7 +4289,7 @@ IDD_CREDITS DIALOGEX 0, 0, 236, 265
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -6300,7 +6301,7 @@ IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -8134,7 +8135,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_PLAY_TRANSITION_CHESSBOARD 
                             "Chessboard transition effect\nChessboard Transition"
-    ID_EDIT_CROP            "Crop/Copy the selected rectangle\nCrop/Copy Rectangle"
+    ID_EDIT_CROP            "Operation on rectangle, see context menu\nRectangle Operation"
     ID_EDIT_CROP_APPLY      "Apply crop to current image\nCrop It"
     ID_EDIT_CROP_CANCEL     "Cancel operation\nCancel Operation"
     ID_EDIT_RESIZE          "Resize current image\nResize"

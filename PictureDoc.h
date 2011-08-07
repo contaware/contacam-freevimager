@@ -596,13 +596,9 @@ public:
 	void CancelLoadFullJpegTransition() {	if (m_bCancelLoadFullJpegTransitionAllowed)
 												m_bCancelLoadFullJpegTransition = TRUE;};
 
-	// Crop
-	void EditCrop();
+	// Crop/Copy/Cut
 	void CancelCrop();
-	void ApplyCrop();
-	void CopyCrop();
-	BOOL Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly);
-	BOOL CropBigPicture(BOOL bShowMessageBoxOnError);
+	void DoCropRect();
 
 	// Show Page/Frame
 	BOOL ViewFirstPageFrame();
@@ -805,7 +801,9 @@ public:
 	// Note: Slideshow disables this!
 	volatile BOOL m_bDoJPEGGet;
 
-	// The Image Has a Defined Background Color
+	// If the Image Has a Defined Background Color,
+	// in all the code m_crImageBackgroundColor
+	// is used instead of m_crBackgroundColor!
 	BOOL m_bImageBackgroundColor;
 	COLORREF m_crImageBackgroundColor;
 
@@ -855,8 +853,11 @@ public:
 
 // Protected Functions
 protected:
+	// Delete Current File
+	BOOL DeleteDocFile();
+
+	// Save File
 	BOOL SaveAsPdf(BOOL bShowPdfSaveDlg);
-	BOOL DeleteDocFile(); // Delete Current File
 	BOOL SaveAsFromAnimGIF(	BOOL bSaveCopyAs,
 							CString sDlgTitle = _T(""));
 	BOOL SaveAsFromAnimGIFToAnimGIF(const CString& sFileName,
@@ -864,6 +865,13 @@ protected:
 									CArray<int, int>* pDelaysArray);
 	BOOL SaveAsFromAnimGIFToAVI(const CString& sFileName);
 	CString SaveAsFromAnimGIFToBMP(const CString& sFileName);
+
+	// Crop/Copy/Cut
+	void EditCrop();
+	void DoCopyRect();
+	void DoCutRect();
+	BOOL CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel, BOOL bCrop);
+	BOOL CropBigPicture(BOOL bShowMessageBoxOnError);
 
 // Protected Variables
 protected:
@@ -1217,6 +1225,8 @@ protected:
 	afx_msg void OnUpdatePlayRandom(CCmdUI* pCmdUI);
 	afx_msg void OnViewMap();
 	afx_msg void OnUpdateViewMap(CCmdUI* pCmdUI);
+	afx_msg void OnEditCut();
+	afx_msg void OnUpdateEditCut(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

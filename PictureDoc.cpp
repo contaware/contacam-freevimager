@@ -347,6 +347,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_PLAY_RANDOM, OnUpdatePlayRandom)
 	ON_COMMAND(ID_VIEW_MAP, OnViewMap)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_MAP, OnUpdateViewMap)
+	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateEditCut)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -12369,7 +12371,7 @@ void CPictureDoc::OnEditCropLossless()
 	if (IsJPEG())
 	{
 		if (m_bCrop)
-			ApplyCrop();
+			DoCropRect();
 		else
 		{
 			// Wait and schedule command if dib not fully loaded!
@@ -12418,7 +12420,7 @@ void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI)
 void CPictureDoc::OnEditCrop() 
 {
 	if (m_bCrop)
-		ApplyCrop();
+		DoCropRect();
 	else
 	{
 		// Wait and schedule command if dib not fully loaded!
@@ -12455,9 +12457,9 @@ void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI)
 					!m_bPrintPreviewMode);
 }
 
-void CPictureDoc::ApplyCrop()
+void CPictureDoc::DoCropRect()
 {
-	Crop(TRUE, FALSE);
+	CopyDelCrop(TRUE, FALSE, FALSE, TRUE);
 	m_bCrop = FALSE;
 	GetView()->FreeCropMemDCDrawing();
 	if (GetView()->m_nAutoScroll)
@@ -12466,9 +12468,20 @@ void CPictureDoc::ApplyCrop()
 	::AfxGetMainFrame()->StatusText();
 }
 
-void CPictureDoc::CopyCrop()
+void CPictureDoc::DoCopyRect()
 {
-	Crop(TRUE, TRUE);
+	CopyDelCrop(TRUE, TRUE, FALSE, FALSE);
+	m_bCrop = FALSE;
+	GetView()->FreeCropMemDCDrawing();
+	if (GetView()->m_nAutoScroll)
+		GetView()->StopAutoScroll();
+	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
+	::AfxGetMainFrame()->StatusText();
+}
+
+void CPictureDoc::DoCutRect()
+{
+	CopyDelCrop(TRUE, TRUE, TRUE, FALSE);
 	m_bCrop = FALSE;
 	GetView()->FreeCropMemDCDrawing();
 	if (GetView()->m_nAutoScroll)
@@ -12499,7 +12512,7 @@ void CPictureDoc::CancelCrop()
 	}
 }
 
-BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
+BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel, BOOL bCrop)
 {
 	if (m_bBigPicture)
 		return CropBigPicture(bShowMessageBoxOnError);
@@ -12513,11 +12526,12 @@ BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
 		// Lossless crop,
 		// check for JPEG Extensions,
 		// make sure the file has not been modified
-		// and we are not copying
+		// and we are not copying and not deleting
 		if (m_bLosslessCrop	&&
 			IsJPEG()		&&
 			!IsModified()	&&
-			!bCopyOnly)
+			!bCopy			&&
+			!bDel)
 		{	
 			CString sCroppedFileName;
 			int nID;
@@ -12685,7 +12699,8 @@ BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
 		// Begin Wait Cursor
 		BeginWaitCursor();
 
-		if (bCopyOnly)
+		// Copy
+		if (bCopy)
 		{
 			CDib Dib(*m_pDib);
 			if (Dib.Crop(m_CropDocRect.left, m_CropDocRect.top,
@@ -12698,7 +12713,72 @@ BOOL CPictureDoc::Crop(BOOL bShowMessageBoxOnError, BOOL bCopyOnly)
 				Dib.EditCopy();
 			}
 		}
-		else
+
+		// Delete with current background color or
+		// make transparent if image has alpha channel
+		if (bDel)
+		{
+			// From top-down to bottom-up Coordinates
+			int xStart = m_CropDocRect.left;
+			int xEnd = m_CropDocRect.right;
+			int yStart = m_pDib->GetHeight() - m_CropDocRect.bottom;
+			int yEnd = m_pDib->GetHeight() - m_CropDocRect.top;
+
+			// A Duplicated Dib is created
+			AddUndo();
+			
+			// Set pixels
+			if (m_pDib->GetBitCount() <= 8)
+			{
+				int nBackgroundIndex =	m_bImageBackgroundColor ?
+										m_pDib->GetPalette()->GetNearestPaletteIndex(m_crImageBackgroundColor) :
+										m_pDib->GetPalette()->GetNearestPaletteIndex(m_crBackgroundColor);
+				for (int y = yStart ; y < yEnd ; y++)
+				{
+					for (int x = xStart ; x < xEnd ; x++)
+					{
+						m_pDib->SetPixelIndex(x, y, nBackgroundIndex);
+					}
+				}
+			}
+			else if (m_pDib->GetBitCount() == 32 && m_pDib->HasAlpha())
+			{
+				COLORREF crTransparentBackgroundColor = m_bImageBackgroundColor ?
+														m_crImageBackgroundColor :
+														m_crBackgroundColor;
+				crTransparentBackgroundColor &= 0x00FFFFFF;
+				for (int y = yStart ; y < yEnd ; y++)
+				{
+					for (int x = xStart ; x < xEnd ; x++)
+					{
+						m_pDib->SetPixelColor32Alpha(x, y, crTransparentBackgroundColor);
+					}
+				}
+			}
+			else
+			{
+				COLORREF crBackgroundColor =	m_bImageBackgroundColor ?
+												m_crImageBackgroundColor :
+												m_crBackgroundColor;
+				for (int y = yStart ; y < yEnd ; y++)
+				{
+					for (int x = xStart ; x < xEnd ; x++)
+					{
+						m_pDib->SetPixelColor(x, y, crBackgroundColor);
+					}
+				}
+			}
+
+			// Update
+			UpdateAlphaRenderedDib();
+			SetModifiedFlag();
+			SetDocumentTitle();
+			UpdateAllViews(NULL);
+			UpdateImageInfo();
+		}
+
+		// Crop
+		if (bCrop)
 		{
 			// A Duplicated Dib is created
 			AddUndo();
@@ -12893,7 +12973,7 @@ BOOL CPictureDoc::CropBigPicture(BOOL bShowMessageBoxOnError)
 
 void CPictureDoc::OnEditCropApply() 
 {
-	ApplyCrop();
+	DoCropRect();
 }
 
 void CPictureDoc::OnUpdateEditCropApply(CCmdUI* pCmdUI) 
@@ -12901,74 +12981,11 @@ void CPictureDoc::OnUpdateEditCropApply(CCmdUI* pCmdUI)
 	pCmdUI->Enable(m_bCrop);
 }
 
-void CPictureDoc::OnEditCropCancel() 
-{
-	CancelCrop();
-}
-
-void CPictureDoc::OnUpdateEditCropCancel(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(m_bCrop);
-}
-
-void CPictureDoc::OnPlayAnimation() 
-{
-#ifdef SUPPORT_GIFLIB
-	if (m_GifAnimationThread.IsAlive() && !m_GifAnimationThread.IsRunning())
-	{
-		m_GifAnimationThread.Start();
-		SetDocumentTitle();
-		UpdateImageInfo();
-	}
-#endif
-}
-
-void CPictureDoc::OnUpdatePlayAnimation(CCmdUI* pCmdUI) 
-{
-#ifdef SUPPORT_GIFLIB
-	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
-	if (m_GifAnimationThread.IsAlive())
-		pCmdUI->SetCheck(m_GifAnimationThread.IsRunning() ? 1 : 0);
-	else
-		pCmdUI->SetCheck(0);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
-}
-
-void CPictureDoc::OnPlayStopAnimation() 
-{
-#ifdef SUPPORT_GIFLIB
-	if (m_GifAnimationThread.IsRunning())
-	{
-		m_GifAnimationThread.Pause();
-		CRect rcc;
-		GetView()->GetClientRect(&rcc);
-		GetView()->InvalidateRect(rcc, FALSE);
-		SetDocumentTitle();
-		UpdateImageInfo();
-	}
-#endif
-}
-
-void CPictureDoc::OnUpdatePlayStopAnimation(CCmdUI* pCmdUI) 
-{
-#ifdef SUPPORT_GIFLIB
-	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
-	if (m_GifAnimationThread.IsAlive())
-		pCmdUI->SetCheck((!m_GifAnimationThread.IsRunning()) ? 1 : 0);
-	else
-		pCmdUI->SetCheck(0);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
-}
-
 void CPictureDoc::OnEditCopy()
 {
 	if (m_bCrop)
 	{
-		CopyCrop();
+		DoCopyRect();
 	}
 	else
 	{
@@ -13032,6 +13049,79 @@ void CPictureDoc::OnUpdateEditCopy(CCmdUI* pCmdUI)
 					!m_pSharpenDlg								&&
 					!m_pSoftenDlg								&&
 					!m_pSoftBordersDlg);
+}
+
+void CPictureDoc::OnEditCut() 
+{
+	DoCutRect();
+}
+
+void CPictureDoc::OnUpdateEditCut(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(!m_bBigPicture && m_bCrop);
+}
+
+void CPictureDoc::OnEditCropCancel() 
+{
+	CancelCrop();
+}
+
+void CPictureDoc::OnUpdateEditCropCancel(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(m_bCrop);
+}
+
+void CPictureDoc::OnPlayAnimation() 
+{
+#ifdef SUPPORT_GIFLIB
+	if (m_GifAnimationThread.IsAlive() && !m_GifAnimationThread.IsRunning())
+	{
+		m_GifAnimationThread.Start();
+		SetDocumentTitle();
+		UpdateImageInfo();
+	}
+#endif
+}
+
+void CPictureDoc::OnUpdatePlayAnimation(CCmdUI* pCmdUI) 
+{
+#ifdef SUPPORT_GIFLIB
+	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
+	if (m_GifAnimationThread.IsAlive())
+		pCmdUI->SetCheck(m_GifAnimationThread.IsRunning() ? 1 : 0);
+	else
+		pCmdUI->SetCheck(0);
+#else
+	pCmdUI->Enable(FALSE);
+#endif
+}
+
+void CPictureDoc::OnPlayStopAnimation() 
+{
+#ifdef SUPPORT_GIFLIB
+	if (m_GifAnimationThread.IsRunning())
+	{
+		m_GifAnimationThread.Pause();
+		CRect rcc;
+		GetView()->GetClientRect(&rcc);
+		GetView()->InvalidateRect(rcc, FALSE);
+		SetDocumentTitle();
+		UpdateImageInfo();
+	}
+#endif
+}
+
+void CPictureDoc::OnUpdatePlayStopAnimation(CCmdUI* pCmdUI) 
+{
+#ifdef SUPPORT_GIFLIB
+	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
+	if (m_GifAnimationThread.IsAlive())
+		pCmdUI->SetCheck((!m_GifAnimationThread.IsRunning()) ? 1 : 0);
+	else
+		pCmdUI->SetCheck(0);
+#else
+	pCmdUI->Enable(FALSE);
+#endif
 }
 
 BOOL CPictureDoc::ViewNextPageFrame() 
