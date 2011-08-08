@@ -61,6 +61,7 @@ protected:
 	afx_msg void OnButtonClearall();
 	afx_msg void OnButtonSetall();
 	virtual void OnOK();
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

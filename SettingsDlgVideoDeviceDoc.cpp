@@ -684,6 +684,14 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 	m_MicroApacheDocRootLabel.SetVisitedColor(RGB(0, 0, 255));
 	m_MicroApacheDocRootLabel.SetLink(m_sMicroApacheDocRoot);
 	
+	// Shield Icon on OK Button
+	if (g_bWinVistaOrHigher)
+	{
+		CButton* pOK = (CButton*)GetDlgItem(IDOK);
+		if (pOK)
+			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
+	}
+
 	// Enable / Disable Fullscreen Browser Exit password field
 	CButton* pCheckFullscreenBrowser = (CButton*)GetDlgItem(IDC_CHECK_FULLSCREENBROWSER);
 	CEdit* pEditFullscreenBrowserExitString = (CEdit*)GetDlgItem(IDC_EDIT_FULLSCREENBROWSER_EXITSTRING);

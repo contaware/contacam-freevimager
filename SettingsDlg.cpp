@@ -479,4 +479,20 @@ void CSettingsDlg::OnOK()
 	EndWaitCursor();
 }
 
+BOOL CSettingsDlg::OnInitDialog() 
+{
+	CDialog::OnInitDialog();
+	
+	// Shield Icon on OK Button
+	if (g_bWinVistaOrHigher)
+	{
+		CButton* pOK = (CButton*)GetDlgItem(IDOK);
+		if (pOK)
+			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
+	}
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
 #endif

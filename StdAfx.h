@@ -165,6 +165,14 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 #define MAX_FILEDLG_PATH				65535 // If you put 65536 it's not working on win2000...
 #endif
 
+// Vista and higher Shield Icon
+#ifndef BCM_FIRST
+#define BCM_FIRST			0x1600
+#endif
+#ifndef BCM_SETSHIELD
+#define BCM_SETSHIELD		(BCM_FIRST + 0x000C)
+#endif
+
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
