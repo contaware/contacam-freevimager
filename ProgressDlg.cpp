@@ -16,9 +16,6 @@ static char THIS_FILE[] = __FILE__;
 CProgressDlg::CProgressDlg(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
 : CDialog(CProgressDlg::IDD, CWnd::FromHandle(::GetDesktopWindow()))
 {
-	//{{AFX_DATA_INIT(CProgressDlg)
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
 	m_bUseThread = TRUE;
 	m_hMasterWnd = NULL;
 	m_sTitle = sTitle;
@@ -30,9 +27,6 @@ CProgressDlg::CProgressDlg(const CString& sTitle, DWORD dwStartTimeMs, DWORD dwW
 CProgressDlg::CProgressDlg(HWND hMasterWnd, const CString& sTitle, DWORD dwStartTimeMs, DWORD dwWaitTimeMs)
 	: CDialog(CProgressDlg::IDD, NULL)	// NULL -> Parent is Main Frame
 {
-	//{{AFX_DATA_INIT(CProgressDlg)
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
 	m_bUseThread = FALSE;
 	m_hMasterWnd = hMasterWnd;
 	m_sTitle = sTitle;
