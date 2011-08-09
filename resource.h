@@ -2523,11 +2523,17 @@
 #define IDC_STATIC1826                  1826
 #define IDS_STRING1826                  1826
 #define IDC_STATIC1827                  1827
+#define IDS_STRING1827                  1827
 #define IDC_STATIC1828                  1828
+#define IDS_STRING1828                  1828
 #define IDC_STATIC1829                  1829
+#define IDS_STRING1829                  1829
 #define IDC_STATIC1830                  1830
+#define IDS_STRING1830                  1830
 #define IDC_STATIC1831                  1831
+#define IDS_STRING1831                  1831
 #define IDC_STATIC1832                  1832
+#define IDS_STRING1832                  1832
 #define IDC_STATIC1833                  1833
 #define IDC_STATIC1834                  1834
 #define IDC_STATIC1835                  1835
@@ -3232,6 +3238,8 @@
 #define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
 #define IDC_CHECK_PRINTCOMMAND          2535
 #define IDC_CHECK_SAVECOMMAND           2536
+#define IDC_AUTH_METHOD                 2536
+#define IDC_STATIC2537                  2537
 #define ID_CAPTURE_VIDEO_DEVICE         32774
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
@@ -3520,7 +3528,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33167
-#define _APS_NEXT_CONTROL_VALUE         2536
+#define _APS_NEXT_CONTROL_VALUE         2538
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -42,6 +42,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
 	afx_msg void OnButtonTest();
+	afx_msg void OnSelchangeAuthMethod();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

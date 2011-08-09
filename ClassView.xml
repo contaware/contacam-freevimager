@@ -192,7 +192,7 @@
 </FOLDER>
 <FOLDER NAME="Email">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="21">
+<CLASSES COUNT="22">
 <CLASS NAME="CPJNMD5"/>
 <CLASS NAME="CPJNMD5Hash"/>
 <CLASS NAME="WSOCKET_SOCK4_CONNECT_REQUEST"/>
@@ -214,6 +214,7 @@
 <CLASS NAME="CPJNSMTPMessage"/>
 <CLASS NAME="CWSocket"/>
 <CLASS NAME="CWSocketException"/>
+<CLASS NAME="CNTLMClientAuth"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Ftp">
@@ -330,6 +331,7 @@
 <CLASS NAME="CGifAnimationThread"/>
 <CLASS NAME="ISampleGrabber"/>
 <CLASS NAME="ISampleGrabberCB"/>
+<CLASS NAME="CMyMemDC"/>
 <CLASS NAME="CPerformance"/>
 <CLASS NAME="CPostDelayedMessageThread"/>
 <CLASS NAME="CCaptureGraphBuilder"/>
@@ -342,7 +344,6 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
-<CLASS NAME="CMyMemDC"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">

@@ -6632,6 +6632,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));
 	m_MovDetSendMailConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SendMailHost"), _T(""));
 	m_MovDetSendMailConfiguration.m_sFromName = pApp->GetProfileString(sSection, _T("SendMailFromName"), _T(""));
+	m_MovDetSendMailConfiguration.m_Auth = (CPJNSMTPConnection::AuthenticationMethod) pApp->GetProfileInt(sSection, _T("SendMailAuth"), CPJNSMTPConnection::AUTH_AUTO);
 	m_MovDetSendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_MovDetSendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
 	m_MovDetSendMailConfiguration.m_bHTML = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailHTML"), TRUE);
@@ -6899,6 +6900,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom);
 			pApp->WriteProfileString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost);
 			pApp->WriteProfileString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName);
+			pApp->WriteProfileInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth);
 			pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
 			pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
 			pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
@@ -7096,6 +7098,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom, sTempFileName);
 			::WriteProfileIniString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost, sTempFileName);
 			::WriteProfileIniString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth, sTempFileName);
 			::WriteSecureProfileIniString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername, sTempFileName);
 			::WriteSecureProfileIniString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML, sTempFileName);
