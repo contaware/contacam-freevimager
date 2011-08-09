@@ -7,7 +7,10 @@ VERSION HISTORY
 - Fixed background color popup not displaying correctly bug
   appeared with version 3.1.0 and affecting the unicode
   executable running under Win 2003, XP and Win 2000 
-- Enhanced Paste command
+- Enhanced the Paste command
+- Fixed Preview Display not showing correctly bug
+  for small sizes on Windows 7
+- Added a Cut operation to the Crop/Copy/Cut command
 
 3.1.0 (July 5th 2011)
 
