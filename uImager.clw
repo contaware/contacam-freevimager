@@ -2,7 +2,7 @@
 
 [General Info]
 Version=1
-LastClass=CFTPUploadConfigurationDlg
+LastClass=CSendMailConfigurationDlg
 LastTemplate=CDialog
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "uimager.h"
@@ -189,7 +189,7 @@ Resource48=IDD_ABOUTBOX (English (U.S.))
 Resource49=IDD_IMAPI2 (English (U.S.))
 Resource50=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource51=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
-Resource52=IDR_MAINFRAME (English (U.S.))
+Resource52=IDD_ASSISTANT (English (U.S.))
 Resource53=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource54=IDD_DEVICE (English (U.S.))
 Resource55=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
@@ -256,7 +256,7 @@ Resource115=IDD_PICTUREPRINTPREVIEW (English (U.S.))
 Resource116=IDD_AUDIOFORMAT (English (U.S.))
 Resource117=IDD_VIDEOFORMAT (English (U.S.))
 Resource118=IDD_SAVEAS_STREAMS_CODEC_SELECT (English (U.S.))
-Resource119=IDD_ASSISTANT (English (U.S.))
+Resource119=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -1882,8 +1882,9 @@ Type=1
 Class=?
 Command1=ID_EDIT_CROP_APPLY
 Command2=ID_EDIT_COPY
-Command3=ID_EDIT_CROP_CANCEL
-CommandCount=3
+Command3=ID_EDIT_CUT
+Command4=ID_EDIT_CROP_CANCEL
+CommandCount=4
 
 [MNU:IDR_CONTEXT_VIDEO_DEVICE_ZONES (English (U.S.))]
 Type=1

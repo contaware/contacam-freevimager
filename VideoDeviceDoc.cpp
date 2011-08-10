@@ -1458,53 +1458,59 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileNa
 		return sFirstFileName + _T("\\") + _T("shot_") + sTime + _T(".swf");
 }
 
-CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage()
+CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration)
 {
+	// Check
+	if (!pSendMailConfiguration)
+		return NULL;
+
 	// Create the message
 	CPJNSMTPMessage* pMessage = new CPJNSMTPMessage;
+	if (!pMessage)
+		return NULL;
 	CPJNSMTPBodyPart attachment;
 
 	// Set the mime flag
-	pMessage->SetMime(m_MovDetSendMailConfiguration.m_bMime);
+	pMessage->SetMime(pSendMailConfiguration->m_bMime);
 
 	// Set the charset of the message and all attachments
-	pMessage->SetCharset(m_MovDetSendMailConfiguration.m_sEncodingCharset);
-	attachment.SetCharset(m_MovDetSendMailConfiguration.m_sEncodingCharset);
+	pMessage->SetCharset(pSendMailConfiguration->m_sEncodingCharset);
+	attachment.SetCharset(pSendMailConfiguration->m_sEncodingCharset);
 
 	// Set the message priority
-	pMessage->m_Priority = m_MovDetSendMailConfiguration.m_Priority;
+	pMessage->m_Priority = pSendMailConfiguration->m_Priority;
 
 	// Setup the all the recipient types for this message,
 	// valid separators between addresses are ',' or ';'
-	pMessage->AddMultipleRecipients(m_MovDetSendMailConfiguration.m_sTo, CPJNSMTPMessage::TO);
-	if (!m_MovDetSendMailConfiguration.m_sCC.IsEmpty()) 
-		pMessage->AddMultipleRecipients(m_MovDetSendMailConfiguration.m_sCC, CPJNSMTPMessage::CC);
-	if (!m_MovDetSendMailConfiguration.m_sBCC.IsEmpty()) 
-		pMessage->AddMultipleRecipients(m_MovDetSendMailConfiguration.m_sBCC, CPJNSMTPMessage::BCC);
-	if (!m_MovDetSendMailConfiguration.m_sSubject.IsEmpty()) 
-		pMessage->m_sSubject = m_MovDetSendMailConfiguration.m_sSubject;
-	if (!m_MovDetSendMailConfiguration.m_sBody.IsEmpty())
+	pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sTo, CPJNSMTPMessage::TO);
+	if (!pSendMailConfiguration->m_sCC.IsEmpty()) 
+		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sCC, CPJNSMTPMessage::CC);
+	if (!pSendMailConfiguration->m_sBCC.IsEmpty()) 
+		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sBCC, CPJNSMTPMessage::BCC);
+	if (!pSendMailConfiguration->m_sSubject.IsEmpty()) 
+		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
+	if (!pSendMailConfiguration->m_sBody.IsEmpty())
 	{
-		if (m_MovDetSendMailConfiguration.m_bHTML)
-			pMessage->AddHTMLBody(m_MovDetSendMailConfiguration.m_sBody, _T(""));
+		if (pSendMailConfiguration->m_bHTML)
+			pMessage->AddHTMLBody(pSendMailConfiguration->m_sBody, _T(""));
 		else
-			pMessage->AddTextBody(m_MovDetSendMailConfiguration.m_sBody);
+			pMessage->AddTextBody(pSendMailConfiguration->m_sBody);
 	}
 
 	// Add the attachment(s) if necessary,
 	// valid separators between attachments are ',' or ';'
-	if (!m_MovDetSendMailConfiguration.m_sFiles.IsEmpty()) 
-		pMessage->AddMultipleAttachments(m_MovDetSendMailConfiguration.m_sFiles);		
+	if (!pSendMailConfiguration->m_sFiles.IsEmpty()) 
+		pMessage->AddMultipleAttachments(pSendMailConfiguration->m_sFiles);		
 
 	// Setup the from address
-	if (m_MovDetSendMailConfiguration.m_sFromName.IsEmpty()) 
+	if (pSendMailConfiguration->m_sFromName.IsEmpty()) 
 	{
-		pMessage->m_From = m_MovDetSendMailConfiguration.m_sFrom;
-		//pMessage->m_ReplyTo = m_MovDetSendMailConfiguration.m_sFrom; uncomment this if you want to send a Reply-To header
+		pMessage->m_From = pSendMailConfiguration->m_sFrom;
+		//pMessage->m_ReplyTo = pSendMailConfiguration->m_sFrom; uncomment this if you want to send a Reply-To header
 	}
 	else 
 	{
-		CPJNSMTPAddress address(m_MovDetSendMailConfiguration.m_sFromName, m_MovDetSendMailConfiguration.m_sFrom);
+		CPJNSMTPAddress address(pSendMailConfiguration->m_sFromName, pSendMailConfiguration->m_sFrom);
 		pMessage->m_From = address;
 		//pMessage->m_ReplyTo = address; //uncomment this if you want to send a Reply-To header
 	}
@@ -1571,7 +1577,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 					m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
 
 				// Create the message
-				pMessage = m_pDoc->CreateEmailMessage();
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
 			}
 			else
 			{
@@ -1580,7 +1586,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
 
 				// Create the message
-				pMessage = m_pDoc->CreateEmailMessage();
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
 
 				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
 					pMessage->RemoveBodyPart(i);
@@ -6223,6 +6229,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Http Video Processing Image Data Critical Section
 	::InitializeCriticalSection(&m_csHttpProcess);
 
+	// Init Snapshot FTP Upload Configuration Critical Section
+	::InitializeCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+
 	// Init Movement Detector
 	OneEmptyFrameList();
 	ResetMovementDetector();
@@ -6292,6 +6301,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 	ClearMovementDetectionsList();
 	ClearReSendUDPFrameList();
+	::DeleteCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csSendFrameNetCom);
@@ -10718,7 +10728,9 @@ BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.m_fSnapshotVideoCompressorQuality = m_fSnapshotVideoCompressorQuality;
 	m_SaveSnapshotThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 	m_SaveSnapshotThread.m_Time = Time;
+	::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
+	::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	m_SaveSnapshotThread.m_pSaveSnapshotFTPThread = &m_SaveSnapshotFTPThread;
 	if (m_bSnapshotHistoryCloseSwfFile)
 	{

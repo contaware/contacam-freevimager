@@ -7,6 +7,9 @@ VERSION HISTORY
 - Timer enhancements for the web interface swf player
 - Email header fixes for email sending on movement detection
 - Possibility to manually select the email authentication method
+- The FTP and the email configuration dialogs are now working as
+  expected: after the Test button has been pressed the Cancel
+  button doesn't change the settings
 
 3.1.0 (July 5th 2011)
 

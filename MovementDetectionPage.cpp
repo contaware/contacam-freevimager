@@ -580,8 +580,10 @@ void CMovementDetectionPage::OnSendmailConfigure()
 	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// SendMail Config Dialog
-	CSendMailConfigurationDlg dlg(m_pDoc);
-	dlg.DoModal();
+	CSendMailConfigurationDlg dlg;
+	dlg.m_SendMailConfiguration = m_pDoc->m_MovDetSendMailConfiguration;
+	if (dlg.DoModal() == IDOK)
+		m_pDoc->m_MovDetSendMailConfiguration = dlg.m_SendMailConfiguration;
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();
@@ -599,9 +601,10 @@ void CMovementDetectionPage::OnFtpConfigure()
 	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg(	&m_pDoc->m_MovDetFTPUploadConfiguration,
-									IDD_MOVDET_FTP_CONFIGURATION);
-	dlg.DoModal();
+	CFTPUploadConfigurationDlg dlg(IDD_MOVDET_FTP_CONFIGURATION);
+	dlg.m_FTPUploadConfiguration = m_pDoc->m_MovDetFTPUploadConfiguration;
+	if (dlg.DoModal() == IDOK)
+		m_pDoc->m_MovDetFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();

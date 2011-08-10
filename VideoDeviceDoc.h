@@ -1352,7 +1352,8 @@ public:
 	void FreeMovementDetector();
 
 	// Email Message Creation
-	CPJNSMTPMessage* CreateEmailMessage();
+	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
+	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
 
 	// Color Detection
 	void ColorDetectionProcessing(CDib* pDib, BOOL bColorDetectionPreview);
@@ -1776,6 +1777,7 @@ public:
 	// FTP Upload
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
+	CRITICAL_SECTION m_csSnapshotFTPUploadConfiguration;
 
 	// Return Values
 	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)

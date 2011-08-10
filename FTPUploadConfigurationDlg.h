@@ -18,8 +18,8 @@ class CFTPUploadConfigurationDlg : public CDialog
 {
 // Construction
 public:
-	CFTPUploadConfigurationDlg(CVideoDeviceDoc::FTPUploadConfigurationStruct* pConfig, UINT idd);
-	CVideoDeviceDoc::FTPUploadConfigurationStruct* m_pConfig;
+	CFTPUploadConfigurationDlg(UINT idd);
+	CVideoDeviceDoc::FTPUploadConfigurationStruct m_FTPUploadConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CFTPUploadConfigurationDlg)
 	//}}AFX_DATA
@@ -33,7 +33,7 @@ public:
 
 // Implementation
 protected:
-	void CopyToConfig();
+	void CopyToStruct();
 	// Generated message map functions
 	//{{AFX_MSG(CFTPUploadConfigurationDlg)
 	virtual BOOL OnInitDialog();

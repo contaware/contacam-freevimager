@@ -18,13 +18,13 @@ class CSendMailConfigurationDlg : public CDialog
 {
 // Construction
 public:
-	CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc);
+	CSendMailConfigurationDlg();
+	CVideoDeviceDoc::SendMailConfigurationStruct m_SendMailConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CSendMailConfigurationDlg)
 	enum { IDD = IDD_SENDMAIL_CONFIGURATION };
 		// NOTE: the ClassWizard will add data members here
 	//}}AFX_DATA
-
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -35,8 +35,7 @@ public:
 
 // Implementation
 protected:
-	CVideoDeviceDoc* m_pDoc;
-	void CopyToDoc();
+	void CopyToStruct();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)
 	virtual BOOL OnInitDialog();

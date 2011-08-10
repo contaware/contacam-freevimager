@@ -460,9 +460,14 @@ void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 void CSnapshotPage::OnFtpConfigure()
 {
 	// FTP Config Dialog
-	CFTPUploadConfigurationDlg dlg(	&m_pDoc->m_SnapshotFTPUploadConfiguration,
-									IDD_SNAPSHOT_FTP_CONFIGURATION);
-	dlg.DoModal();
+	CFTPUploadConfigurationDlg dlg(IDD_SNAPSHOT_FTP_CONFIGURATION);
+	dlg.m_FTPUploadConfiguration = m_pDoc->m_SnapshotFTPUploadConfiguration;
+	if (dlg.DoModal() == IDOK)
+	{
+		::EnterCriticalSection(&m_pDoc->m_csSnapshotFTPUploadConfiguration);
+		m_pDoc->m_SnapshotFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
+		::LeaveCriticalSection(&m_pDoc->m_csSnapshotFTPUploadConfiguration);
+	}
 }
 
 #endif

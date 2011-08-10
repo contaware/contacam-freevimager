@@ -17,16 +17,13 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSendMailConfigurationDlg dialog
 
-
-CSendMailConfigurationDlg::CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc)
+CSendMailConfigurationDlg::CSendMailConfigurationDlg()
 	: CDialog(CSendMailConfigurationDlg::IDD, NULL)
 {
 	//{{AFX_DATA_INIT(CSendMailConfigurationDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-	m_pDoc = pDoc;
 }
-
 
 void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -35,7 +32,6 @@ void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 }
-
 
 BEGIN_MESSAGE_MAP(CSendMailConfigurationDlg, CDialog)
 	//{{AFX_MSG_MAP(CSendMailConfigurationDlg)
@@ -53,11 +49,11 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 	// To Email
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sTo);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sTo);
 
 	// Send HTML Email?
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_HTML);
-	pCheck->SetCheck(m_pDoc->m_MovDetSendMailConfiguration.m_bHTML ? 1 : 0);
+	pCheck->SetCheck(m_SendMailConfiguration.m_bHTML ? 1 : 0);
 
 	// Attachment possibilities
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
@@ -65,29 +61,29 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
     pComboBox->AddString(_T("AVI Detection"));
     pComboBox->AddString(_T("Animated GIF Detection"));
     pComboBox->AddString(_T("AVI + Animated GIF Detections"));
-	pComboBox->SetCurSel((int)m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType);
+	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
 
 	// From Name
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sFromName);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sFromName);
 
 	// From Email
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sFrom);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sFrom);
 
 	// Server Name
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sHost);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sHost);
 
 	// Server Port
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
 	CString sPort;
-	sPort.Format(_T("%i"), m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+	sPort.Format(_T("%i"), m_SendMailConfiguration.m_nPort);
 	pEdit->SetWindowText(sPort);
 
 	// Auth Methods
     int index = 0;
-	BOOL bAuthenticated = (m_pDoc->m_MovDetSendMailConfiguration.m_Auth != CPJNSMTPConnection::AUTH_NONE);
+	BOOL bAuthenticated = (m_SendMailConfiguration.m_Auth != CPJNSMTPConnection::AUTH_NONE);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_AUTH_METHOD);
 	pComboBox->AddString(ML_STRING(1827, "None"));		// CPJNSMTPConnection::AUTH_NONE = 0
 														// use no authentication with the server
@@ -114,7 +110,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	pComboBox->SetItemData(index++, CPJNSMTPConnection::AUTH_AUTO);
 	for (index = 0 ; index < pComboBox->GetCount() ; index++)
 	{
-		if (pComboBox->GetItemData(index) == m_pDoc->m_MovDetSendMailConfiguration.m_Auth)
+		if (pComboBox->GetItemData(index) == m_SendMailConfiguration.m_Auth)
 		{
 			pComboBox->SetCurSel(index);
 			break;
@@ -123,10 +119,10 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 	// Username and Password
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sUsername);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sUsername);
 	pEdit->EnableWindow(bAuthenticated);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	pEdit->SetWindowText(m_pDoc->m_MovDetSendMailConfiguration.m_sPassword);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sPassword);
 	pEdit->EnableWindow(bAuthenticated);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -145,70 +141,68 @@ void CSendMailConfigurationDlg::OnSelchangeAuthMethod()
 	pEdit->EnableWindow(bAuthenticated);
 }
 
-void CSendMailConfigurationDlg::CopyToDoc()
+void CSendMailConfigurationDlg::CopyToStruct()
 {
 	CString sText;
 
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECEIVER_MAIL);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sTo = sText;
+	m_SendMailConfiguration.m_sTo = sText;
 
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_HTML);
-	m_pDoc->m_MovDetSendMailConfiguration.m_bHTML = pCheck->GetCheck();
+	m_SendMailConfiguration.m_bHTML = pCheck->GetCheck();
 
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-	m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType =
+	m_SendMailConfiguration.m_AttachmentType =
 			(CVideoDeviceDoc::AttachmentType)pComboBox->GetCurSel();
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_NAME);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sFromName = sText;
+	m_SendMailConfiguration.m_sFromName = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sFrom = sText;
+	m_SendMailConfiguration.m_sFrom = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sHost = sText;
+	m_SendMailConfiguration.m_sHost = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_PORT);
 	pEdit->GetWindowText(sText);
 	int nPort = _tcstol(sText.GetBuffer(0), NULL, 10);
 	sText.ReleaseBuffer();
 	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-		m_pDoc->m_MovDetSendMailConfiguration.m_nPort = nPort;
+		m_SendMailConfiguration.m_nPort = nPort;
 	else
-		m_pDoc->m_MovDetSendMailConfiguration.m_nPort = 25;
+		m_SendMailConfiguration.m_nPort = 25;
 
 	pComboBox = (CComboBox*)GetDlgItem(IDC_AUTH_METHOD);
-	m_pDoc->m_MovDetSendMailConfiguration.m_Auth =
+	m_SendMailConfiguration.m_Auth =
 			(CPJNSMTPConnection::AuthenticationMethod)pComboBox->GetItemData(pComboBox->GetCurSel());
 
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sUsername = sText;
+	m_SendMailConfiguration.m_sUsername = sText;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
-	m_pDoc->m_MovDetSendMailConfiguration.m_sPassword = sText;
+	m_SendMailConfiguration.m_sPassword = sText;
 }
 
 void CSendMailConfigurationDlg::OnOK() 
 {
-	CopyToDoc();
+	CopyToStruct();
 	CDialog::OnOK();
 }
 
 void CSendMailConfigurationDlg::OnButtonTest() 
 {
-	CopyToDoc();
+	CopyToStruct();
 
-	int res = 0;
-
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty() ||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty()) 
+	if (m_SendMailConfiguration.m_sHost.IsEmpty()	||
+		m_SendMailConfiguration.m_sFrom.IsEmpty()	||
+		m_SendMailConfiguration.m_sTo.IsEmpty()) 
 		::AfxMessageBox(ML_STRING(1406, "Please Enter A Host Name, a From and a To Address"));
 	else 
 	{
@@ -220,27 +214,27 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// Subject
 			CTime Time = CTime::GetCurrentTime();
 			CString sSubject(Time.Format(_T("Movement Detection on %A, %d %B %Y at %H:%M:%S")));
-			m_pDoc->m_MovDetSendMailConfiguration.m_sSubject = sSubject;
+			m_SendMailConfiguration.m_sSubject = sSubject;
 
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
+			if (m_SendMailConfiguration.m_bHTML == FALSE)
 			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection Test Email");
+				m_SendMailConfiguration.m_bMime = FALSE;
+				m_SendMailConfiguration.m_sBody = _T("Movement Detection Test Email");
 
 				// No Attachment(s)
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
+				m_SendMailConfiguration.m_sFiles = _T("");
 
 				// Create the message
-				pMessage = m_pDoc->CreateEmailMessage();
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_SendMailConfiguration);
 			}
 			else
 			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
+				m_SendMailConfiguration.m_bMime = TRUE;
+				m_SendMailConfiguration.m_sFiles = _T("");
+				m_SendMailConfiguration.m_sBody = _T("");
 
 				// Create the message
-				pMessage = m_pDoc->CreateEmailMessage();
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_SendMailConfiguration);
 
 				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
 					pMessage->RemoveBodyPart(i);
@@ -259,15 +253,15 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			}
 
 			// Init Connection class
-			CVideoDeviceDoc::CSaveFrameListSMTPConnection connection;
+			CPJNSMTPConnection connection;
 
 			// Auto connect to the internet?
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
+			if (m_SendMailConfiguration.m_bAutoDial)
 				connection.ConnectToInternet();
 
 			CString sHost;
 			BOOL bSend = TRUE;
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
+			if (m_SendMailConfiguration.m_bDNSLookup)
 			{
 				if (pMessage->GetNumberOfRecipients() == 0)
 				{
@@ -312,28 +306,28 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				}
 			}
 			else
-				sHost = m_pDoc->m_MovDetSendMailConfiguration.m_sHost;
+				sHost = m_SendMailConfiguration.m_sHost;
 
 			// Connect and send the message
 			if (bSend)
 			{
-				connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-				if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
-					m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
+				connection.SetBoundAddress(m_SendMailConfiguration.m_sBoundIP);
+				if (m_SendMailConfiguration.m_sUsername == _T("") &&
+					m_SendMailConfiguration.m_sPassword == _T(""))
 				{
 					connection.Connect(	sHost,
 										CPJNSMTPConnection::AUTH_NONE,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+										m_SendMailConfiguration.m_sUsername,
+										m_SendMailConfiguration.m_sPassword,
+										m_SendMailConfiguration.m_nPort);
 				}
 				else
 				{
 					connection.Connect(	sHost,
-										m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+										m_SendMailConfiguration.m_Auth,
+										m_SendMailConfiguration.m_sUsername,
+										m_SendMailConfiguration.m_sPassword,
+										m_SendMailConfiguration.m_nPort);
 				}
 				connection.SendMessage(*pMessage);
 				EndWaitCursor();
@@ -341,19 +335,8 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			}
 
 			// Auto disconnect from the internet
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
+			if (m_SendMailConfiguration.m_bAutoDial)
 				connection.CloseInternetConnection();
-
-			// Sending Interrupted?
-			if (connection.m_bDoExit)
-			{
-				connection.Disconnect(FALSE);	// Disconnect no Gracefully,
-												// otherwise the thread blocks
-												// long time to get a answer!
-				res = -1;
-			}
-			else
-				res = 1;
 
 			// Clean-up
 			if (pMessage)
