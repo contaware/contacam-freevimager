@@ -316,10 +316,10 @@ stopend:
 unicode:
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
     Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
+	Delete "$INSTDIR\FullscreenBrowser.exe"
 !endif
 !ifdef INSTALLER_NT
     Rename "$INSTDIR\${APPNAME_NOEXT}w.exe" "$INSTDIR\${APPNAME_EXT}"
-	Delete "$INSTDIR\FullscreenBrowser.exe"
 	Rename "$INSTDIR\FullscreenBrowserw.exe" "$INSTDIR\FullscreenBrowser.exe"
 !endif
 unicode_end:
