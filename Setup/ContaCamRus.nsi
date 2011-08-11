@@ -271,17 +271,14 @@ stopend:
   ; Source Program File Path
 !ifdef INSTALLER_WIN9X
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
+  File "/oname=FullscreenBrowser.exe" "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
 !endif
 !ifdef INSTALLER_NT
-  File "..\Translation\${APPNAME_NOEXT}wRus.exe"
+  File "/oname=${APPNAME_NOEXT}w.exe" "..\Translation\${APPNAME_NOEXT}wRus.exe"
+  File "/oname=FullscreenBrowserw.exe" "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
 !endif
   File "/oname=License.txt" "..\License\LicenseRus.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
-!ifdef INSTALLER_WIN9X
-  File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
-!else
-  File "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
-!endif
   File "..\NeroBurn\Release\NeroBurn.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
   SetOverwrite off
@@ -312,7 +309,8 @@ stopend:
   ; Install Unicode?
   StrCmp $INSTALLTYPE 'UNICODE' unicode
 !ifdef INSTALLER_NT
-    Delete "$INSTDIR\${APPNAME_NOEXT}wRus.exe"
+    Delete "$INSTDIR\${APPNAME_NOEXT}w.exe"
+	Delete "$INSTDIR\FullscreenBrowserw.exe"
 !endif
     goto unicode_end
 unicode:
@@ -320,7 +318,9 @@ unicode:
     Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
 !endif
 !ifdef INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_NOEXT}wRus.exe" "$INSTDIR\${APPNAME_EXT}"
+    Rename "$INSTDIR\${APPNAME_NOEXT}w.exe" "$INSTDIR\${APPNAME_EXT}"
+	Delete "$INSTDIR\FullscreenBrowser.exe"
+	Rename "$INSTDIR\FullscreenBrowserw.exe" "$INSTDIR\FullscreenBrowser.exe"
 !endif
 unicode_end:
   

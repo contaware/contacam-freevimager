@@ -230,7 +230,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
 !endif
 !ifdef INSTALLER_NT
-  File "..\Translation\${APPNAME_NOEXT}wRus.exe"
+  File "/oname=${APPNAME_NOEXT}w.exe" "..\Translation\${APPNAME_NOEXT}wRus.exe"
 !endif
   File "/oname=License.txt" "..\License\LicenseRus.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
@@ -256,7 +256,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Install Unicode?
   StrCmp $INSTALLTYPE 'UNICODE' unicode
 !ifdef INSTALLER_NT
-    Delete "$INSTDIR\${APPNAME_NOEXT}wRus.exe"
+    Delete "$INSTDIR\${APPNAME_NOEXT}w.exe"
 !endif
     goto unicode_end
 unicode:
@@ -264,7 +264,7 @@ unicode:
     Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
 !endif
 !ifdef INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_NOEXT}wRus.exe" "$INSTDIR\${APPNAME_EXT}"
+    Rename "$INSTDIR\${APPNAME_NOEXT}w.exe" "$INSTDIR\${APPNAME_EXT}"
 !endif
 unicode_end:
   

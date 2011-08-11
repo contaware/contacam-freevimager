@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-WinAll.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
 !else
 !ifdef INSTALLER_WIN9X
 OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-WinAll-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
 OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
+OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
 !endif
 !endif
 !endif
@@ -271,17 +271,14 @@ stopend:
   ; Source Program File Path
 !ifdef INSTALLER_WIN9X
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
+  File "/oname=FullscreenBrowser.exe" "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
 !endif
 !ifdef INSTALLER_NT
   File "..\Bin\${APPNAME_NOEXT}w\${APPNAME_NOEXT}w.exe"
+  File "/oname=FullscreenBrowserw.exe" "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
 !endif
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
-!ifdef INSTALLER_WIN9X
-  File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
-!else
-  File "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
-!endif
   File "..\NeroBurn\Release\NeroBurn.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
   SetOverwrite off
@@ -313,6 +310,7 @@ stopend:
   StrCmp $INSTALLTYPE 'UNICODE' unicode
 !ifdef INSTALLER_NT
     Delete "$INSTDIR\${APPNAME_NOEXT}w.exe"
+	Delete "$INSTDIR\FullscreenBrowserw.exe"
 !endif
     goto unicode_end
 unicode:
@@ -321,6 +319,8 @@ unicode:
 !endif
 !ifdef INSTALLER_NT
     Rename "$INSTDIR\${APPNAME_NOEXT}w.exe" "$INSTDIR\${APPNAME_EXT}"
+	Delete "$INSTDIR\FullscreenBrowser.exe"
+	Rename "$INSTDIR\FullscreenBrowserw.exe" "$INSTDIR\FullscreenBrowser.exe"
 !endif
 unicode_end:
   

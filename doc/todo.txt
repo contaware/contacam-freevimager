@@ -13,6 +13,12 @@ Detection:
 - Have an option to monitor every say 2, 4 or 8 frames instead
   of every frame -> this would be less cpu hungry
 
+Email sending on detection:
+---------------------------
+- Make dual file compilation for vs6 and vs2008 (add static openssl libs to
+  vs2008 project) with the new naughter classes supporting STARTTLS and SSL
+  but not supporting vs6 so that we have STARTTLS and SSL on Win2000 and higher
+
 Video:
 ------
 - VfW save with CAVIFile is crappy: files bigger than 1GB are not supported,

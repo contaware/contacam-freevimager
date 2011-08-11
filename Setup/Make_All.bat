@@ -19,11 +19,9 @@ echo NSIS make ffmpeg source installer
 
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS ContaCam.nsi
-echo NSIS make ContaCam no tutorials installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT ContaCam.nsi
-echo NSIS make ContaCam win all installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT /DWITH_TUTORIALS ContaCam.nsi
+echo NSIS make ContaCam no tutorials installer
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT ContaCam.nsi
 echo NSIS make ContaCamDeu installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT ContaCamDeu.nsi
 echo NSIS make ContaCamIta installer
