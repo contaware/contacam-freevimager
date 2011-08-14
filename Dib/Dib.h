@@ -115,6 +115,10 @@ typedef struct {
 #define DEFAULT_DPI						96
 #endif
 
+// Paste enhanced metafile objects rendering them
+// with a maximum of the given dpi
+#define PASTE_MAX_DPI					600
+
 // Had a conflict with:
 // const WORD PALVERSION = 0x300;
 // of the directx_includes\winutil.h

@@ -4427,9 +4427,9 @@ void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 					dXDstDpi = XDpi;
 					dYDstDpi = YDpi;
 					if (XDpi <= 0)
-						dXDstDpi = dXSrcDpi;
+						dXSrcDpi = dXDstDpi = MIN(PASTE_MAX_DPI, dXSrcDpi);
 					if (YDpi <= 0)
-						dYDstDpi = dYSrcDpi;
+						dYSrcDpi = dYDstDpi = MIN(PASTE_MAX_DPI, dYSrcDpi);
 
 					// rclFrame specifies the dimensions in .01 millimeter units
 					// -> convert to wanted dpi in device units
@@ -4452,15 +4452,16 @@ void CDib::EditPaste(int XDpi/*=0*/, int YDpi/*=0*/)
 										Round((emh.rclBounds.right + 1)		* dXDstDpi / dXSrcDpi),
 										Round((emh.rclBounds.bottom + 1)	* dYDstDpi / dYSrcDpi));
 					}
+					rcBound.OffsetRect(-rcBound.left, -rcBound.top);
 				}
 				else
 				{
 					dXSrcDpi = dXDstDpi = XDpi;
 					dYSrcDpi = dYDstDpi = YDpi;
 					if (XDpi <= 0)
-						dXSrcDpi = dXDstDpi = DEFAULT_DPI;
+						dXSrcDpi = dXDstDpi = MIN(PASTE_MAX_DPI, DEFAULT_DPI);
 					if (YDpi <= 0)
-						dYSrcDpi = dYDstDpi = DEFAULT_DPI;
+						dYSrcDpi = dYDstDpi = MIN(PASTE_MAX_DPI, DEFAULT_DPI);
 
 					// rclFrame specifies the dimensions in .01 millimeter units
 					// -> convert to wanted dpi in device units
