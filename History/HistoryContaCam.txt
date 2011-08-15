@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.3.0 (xxx xth 2011)
+3.3.0 (August 15th 2011)
 
 - Optimized installer size and removed installer CRC check
   because it can fail on network shares
