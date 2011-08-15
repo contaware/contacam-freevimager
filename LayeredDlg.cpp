@@ -151,10 +151,11 @@ void CLayeredDlg::PostNcDestroy()
 }
 
 // Modal dialogs will disable all windows and because we are
-// a Top-Most window we could cover the modal dialog.
-// So simply hide us while a modal dialog is showing.
+// a Top-Most window we could cover the modal dialog!
 void CLayeredDlg::OnEnable(BOOL bEnable) 
 {
-	ShowWindow(bEnable ? SW_SHOWNA : SW_HIDE);
+	SetWindowPos(	bEnable ? &wndTopMost : &wndNoTopMost,
+					0, 0, 0, 0,
+					SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	CDialog::OnEnable(bEnable);
 }

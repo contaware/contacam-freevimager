@@ -14259,9 +14259,9 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 	if ((m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
 		m_GifAnimationThread.IsAlive())
 	{
-		// Top-Most and right size
+		// Set z-order and right size
 		::SetWindowPos(	m_pLayeredDlg->GetSafeHwnd(),
-						HWND_TOPMOST,
+						m_pLayeredDlg->IsWindowEnabled() ? HWND_TOPMOST : HWND_NOTOPMOST,
 						0, 0,
 						m_nLayeredDlgWidth,
 						m_nLayeredDlgHeight,
@@ -14314,9 +14314,9 @@ BOOL CPictureDoc::UpdateLayeredDlg(CDib* pDib)
 			szWindow.cy = EmptyDib.GetHeight();
 		}
 
-		// Top-Most and right size
+		// Set z-order and right size
 		::SetWindowPos(	m_pLayeredDlg->GetSafeHwnd(),
-						HWND_TOPMOST,
+						m_pLayeredDlg->IsWindowEnabled() ? HWND_TOPMOST : HWND_NOTOPMOST,
 						0, 0,
 						m_nLayeredDlgWidth,
 						m_nLayeredDlgHeight,

@@ -1889,9 +1889,14 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		if (pView->IsXOrYScroll())
 			pView->ScrollToPosition(m_ptChildScrollPosition);
 
-		// Restore the Top-Most state for the Layered Dialog
+		// Restore the Top-Most state for the Layered Dialog if it is enabled
 		if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) && ((CPictureDoc*)pDoc)->m_pLayeredDlg)
-			((CPictureDoc*)pDoc)->m_pLayeredDlg->SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		{
+			((CPictureDoc*)pDoc)->m_pLayeredDlg->SetWindowPos(	((CPictureDoc*)pDoc)->m_pLayeredDlg->IsWindowEnabled() ?
+																&wndTopMost : &wndNoTopMost,
+																0, 0, 0, 0,
+																SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+		}
 
 		// Special Additional Commands for CVideoAviDoc
 		if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
