@@ -1,4 +1,4 @@
 @echo off
-REM Set --compress-exports=0 to be able to run it under Wine
-copy ..\bin\FreeVimagerw\FreeVimagerw.exe .\FreeVimagerw.exe
-upx --compress-icons=0 --ultra-brute --8mb-ram FreeVimagerw.exe
+for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
+copy ..\bin\FreeVimagerw\FreeVimagerw.exe .\FreeVimagerUnicode-%CURRENTVERSION%.exe
+upx --compress-icons=0 --ultra-brute FreeVimagerUnicode-%CURRENTVERSION%.exe
