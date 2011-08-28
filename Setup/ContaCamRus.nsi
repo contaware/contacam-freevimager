@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
+OutFile "${APPVERSION}\russian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Rus-NoTutorials.exe"
 !endif
 !endif
 !endif

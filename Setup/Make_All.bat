@@ -3,15 +3,25 @@
 REM Configure NSIS installation directory
 set nsisdir=C:\Program Files\NSIS
 
-REM Start making FreeVimager UPXs
-start "UPX FreeVimager" /MIN cmd.exe /C MakeUPX_FreeVimager.bat
-start "UPX FreeVimagerw" /MIN cmd.exe /C MakeUPX_FreeVimagerw.bat
-start "UPX FreeVimagerDeu" /MIN cmd.exe /C MakeUPX_FreeVimagerDeu.bat
-start "UPX FreeVimagerIta" /MIN cmd.exe /C MakeUPX_FreeVimagerIta.bat
-start "UPX FreeVimagerRus" /MIN cmd.exe /C MakeUPX_FreeVimagerRus.bat
+REM Create output directories
+for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
+rmdir /S /Q .\%CURRENTVERSION%
+mkdir .\%CURRENTVERSION%
+mkdir .\%CURRENTVERSION%\german
+mkdir .\%CURRENTVERSION%\italian
+mkdir .\%CURRENTVERSION%\russian
+
+REM Copy FreeVimager standalone versions
+copy ..\bin\FreeVimager\FreeVimager.exe .\%CURRENTVERSION%\FreeVimager-%CURRENTVERSION%.exe
+copy ..\bin\FreeVimagerw\FreeVimagerw.exe .\%CURRENTVERSION%\FreeVimagerUnicode-%CURRENTVERSION%.exe
+copy ..\Translation\FreeVimagerwDEU.exe .\%CURRENTVERSION%\german\FreeVimagerDeu-%CURRENTVERSION%.exe
+copy ..\Translation\FreeVimagerwITA.exe .\%CURRENTVERSION%\italian\FreeVimagerIta-%CURRENTVERSION%.exe
+copy ..\Translation\FreeVimagerwRUS.exe .\%CURRENTVERSION%\russian\FreeVimagerRus-%CURRENTVERSION%.exe
 
 REM Update ActiveX directory (this must be done before starting with all the ContaCam nsis)
-call Make_RemoteCam.bat
+copy ..\bin\RemoteCam\ReleaseNoDLL\RemoteCam.ocx ..\ActiveX\RemoteCam.ocx
+copy ..\bin\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.exe ..\ActiveX\RemoteCamViewer.exe
+upx --ultra-brute ..\ActiveX\RemoteCam.ocx
 
 REM Make the ffmpeg source code
 echo NSIS make ffmpeg source installer

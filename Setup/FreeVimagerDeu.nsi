@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
+OutFile "${APPVERSION}\german\${APPNAME_NOEXT}-${APPVERSION}-Setup-Deu-NoTutorials.exe"
 !endif
 !endif
 !endif

@@ -21,7 +21,7 @@ Name "${APPNAME} ${APPVERSION} (based on rev. 15375)"
 !include "InitVersion.nsh"
 
 ; The file to write
-OutFile "${APPNAME_NOSPACE}-${APPVERSION}-Setup.exe"
+OutFile "${APPVERSION}\${APPNAME_NOSPACE}-${APPVERSION}-Setup.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\${APPNAME}"

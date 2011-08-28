@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NT.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x-NoTutorials.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
+OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
 !endif
 !endif
 !endif

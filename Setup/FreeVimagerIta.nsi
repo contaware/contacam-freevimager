@@ -33,22 +33,22 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 ; The file to write
 !ifdef WITH_TUTORIALS
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita.exe"
 !endif
 !endif
 !else
 !ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
 !else
 !ifdef INSTALLER_WIN9X
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
 !else
-OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
+OutFile "${APPVERSION}\italian\${APPNAME_NOEXT}-${APPVERSION}-Setup-Ita-NoTutorials.exe"
 !endif
 !endif
 !endif
