@@ -1,5 +1,12 @@
 VERSION HISTORY
 
+3.5.0 (September xxx 2011)
+
+- Fixed Xmp metadata reading, sometimes this caused a
+  really slow loading of jpeg or tiff files
+- Animated gifs are now displaying in high quality when
+  that setting is chosen
+
 3.3.0 (August 15th 2011)
 
 - Optimized installer size and removed installer CRC check

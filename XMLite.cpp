@@ -1460,13 +1460,9 @@ LPXNode	_tagXMLNode::Find( LPCTSTR name, BOOL bOnlyDirectChilds/*=FALSE*/ )
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->Find( name );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->Find( name );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1492,13 +1488,9 @@ LPXNode	_tagXMLNode::Find( LPCTSTR name, LPCTSTR attrname, BOOL bOnlyDirectChild
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->Find( name, attrname );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->Find( name, attrname );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1525,13 +1517,9 @@ LPXNode	_tagXMLNode::Find( LPCTSTR name, LPCTSTR attrname, LPCTSTR attrvalue, BO
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->Find( name, attrname, attrvalue );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->Find( name, attrname, attrvalue );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1557,13 +1545,9 @@ LPXNode	_tagXMLNode::FindByAttrName( LPCTSTR name, LPCTSTR attrname, BOOL bOnlyD
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->FindByAttrName( name, attrname );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->FindByAttrName( name, attrname );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1589,13 +1573,9 @@ LPXNode	_tagXMLNode::FindByAttrValue( LPCTSTR name, LPCTSTR attrvalue, BOOL bOnl
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->FindByAttrValue( name, attrvalue );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->FindByAttrValue( name, attrvalue );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1618,13 +1598,9 @@ LPXNode	_tagXMLNode::FindByAttrName( LPCTSTR attrname, BOOL bOnlyDirectChilds/*=
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->FindByAttrName( attrname );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->FindByAttrName( attrname );
+			if( find != NULL )
+				return find;
 		}
 	}
 
@@ -1647,13 +1623,9 @@ LPXNode	_tagXMLNode::FindByAttrValue( LPCTSTR attrvalue, BOOL bOnlyDirectChilds/
 
 		if (!bOnlyDirectChilds)
 		{
-			XNodes::iterator it2 = child->childs.begin();
-			for( ; it2 != child->childs.end(); ++(it2))
-			{
-				LPXNode find = child->FindByAttrValue( attrvalue );
-				if( find != NULL )
-					return find;
-			}
+			LPXNode find = child->FindByAttrValue( attrvalue );
+			if( find != NULL )
+				return find;
 		}
 	}
 

@@ -2112,7 +2112,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 						m_ZoomRect,
 						pDoc->m_DocRect,
 						FALSE,
-						FALSE);	// Fast Drawing
+						TRUE);
 
 		// Update Layered Image
 		pDoc->UpdateLayeredDlg(	pDoc->m_GifAnimationThread.m_DibAnimationArray.GetAt

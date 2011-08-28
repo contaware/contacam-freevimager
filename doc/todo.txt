@@ -1,3 +1,7 @@
+To avoid anti-virus false positives:
+------------------------------------
+- Remove UPX compression
+
 Wishes from Yuriy:
 ------------------
 - zoom should change "custom" or use steps 10%
