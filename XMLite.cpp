@@ -311,6 +311,8 @@ void _SetString( LPTSTR psz, LPTSTR end, CString* ps, bool trim = FALSE, int esc
 		ps->ReleaseBuffer();
 		ps->FreeExtra();
 	}
+	if(XIsEmptyString(*ps))
+		ps->Empty();
 }
 
 _tagXMLNode::~_tagXMLNode()

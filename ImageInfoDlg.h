@@ -129,7 +129,6 @@ protected:
 	void SetEditMetadataText();
 	void GetEditMetadataText();
 	void DisplayMetadata();
-	void DisplayXmp();
 	BOOL ExportXmp(LPCTSTR lpzsFileName);
 	static BOOL ExportXmp(LPCTSTR lpszFileName, LPBYTE pXmpData, DWORD dwXmpSize);
 	void GetIptc();

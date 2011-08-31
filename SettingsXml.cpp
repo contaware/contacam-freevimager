@@ -294,7 +294,7 @@ BOOL CSettingsXml::StoreSettings(CString sFileName/*=CString(_T(""))*/)
 	_tcsncpy(opt.newline_type, _T("\r\n"), 3);
 	opt.value_quotation_mark = _T('\'');
 	sXml = m_Xml.GetXML(&opt);
-	sXml.Delete(0, 4); // Remove initial \r\n
+	sXml.TrimLeft(_T("\r\n")); // Remove initial \r\n
 	
 	// Convert to UTF8
 	nSize = ToUTF8(sXml, &pData);

@@ -1518,47 +1518,6 @@ For backward compatibility with earlier versions of the XMP Packet
 specification, the value of this attribute can be the empty string,
 indicating UTF-8 encoding.
 */
-void CImageInfoDlg::DisplayXmp()
-{
-	CString s = _T("");
-	CString t;
-
-	if (m_pDoc->m_pDib->GetMetadata()->m_pXmpData && 
-		m_pDoc->m_pDib->GetMetadata()->m_dwXmpSize > 0)
-	{
-		// Parse Xml
-		CString sXml = ::FromUTF8(	(const unsigned char*)m_pDoc->m_pDib->GetMetadata()->m_pXmpData,
-									(int)m_pDoc->m_pDib->GetMetadata()->m_dwXmpSize);
-
-		XDoc xml;
-		PARSEINFO pi;
-		pi.trim_value = true;				// trim value
-		sXml.Replace(_T("\\"), _T("\\\\"));	// escape
-		if (xml.Load(sXml, &pi))
-		{
-			// For nice displaying restore value
-			// of BOM, but only if it is not empty!
-			LPXAttr pAttr = xml.GetChildAttr(_T("xpacket"), _T("begin"));
-			if (pAttr && pAttr->value != _T(""))
-				pAttr->value = _T("﻿");
-
-			// Get Xml
-			DISP_OPT opt;
-			opt.value_quotation_mark = _T('\'');
-			s = xml.GetXML(&opt);
-			s.Delete(0, 4); // Remove initial \r\n\r\n
-		}
-		else
-			s = ML_STRING(1397, "Error parsing Xml!");
-	}
-	else
-		s = ML_STRING(1398, "No Xml available.");
-
-	// Set Text
-	CEdit* pMetadataBox = (CEdit*)GetDlgItem(IDC_METADATA);
-	pMetadataBox->SetWindowText(s);
-}
-
 BOOL CImageInfoDlg::ExportXmp(LPCTSTR lpszFileName)
 {
 	if (m_pDoc->m_pDib->GetMetadata()->m_pXmpData && 
@@ -1618,7 +1577,7 @@ BOOL CImageInfoDlg::ExportXmp(LPCTSTR lpszFileName, LPBYTE pXmpData, DWORD dwXmp
 			_tcsncpy(opt.newline_type, _T("\n"), 3);
 			opt.value_quotation_mark = _T('\'');
 			sXml = xml.GetXML(&opt);
-			sXml.Delete(0, 2); // Remove initial \n
+			sXml.TrimLeft(_T('\n')); // Remove initial \n
 			LPBYTE pData = NULL;
 			int nSize = ::ToUTF8(sXml, &pData);
 

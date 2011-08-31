@@ -5023,7 +5023,7 @@ BOOL CMetadata::UpdateXmpData(const CString& sMime)
 	_tcsncpy(opt.newline_type, _T("\n"), 3);
 	opt.value_quotation_mark = _T('\'');
 	sXml = xml.GetXML(&opt);
-	sXml.Delete(0, 2); // Remove initial \n
+	sXml.TrimLeft(_T('\n')); // Remove initial \n
 	if (m_pXmpData)
 	{
 		delete [] m_pXmpData;
