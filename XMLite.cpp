@@ -311,6 +311,10 @@ void _SetString( LPTSTR psz, LPTSTR end, CString* ps, bool trim = FALSE, int esc
 		ps->ReleaseBuffer();
 		ps->FreeExtra();
 	}
+	// The following makes strings with only white spaces
+	// empty strings. If trim is set that's already done
+	// at the beginning of this function. If that behaviour
+	// is not wished just comment the following two lines.
 	if(XIsEmptyString(*ps))
 		ps->Empty();
 }
@@ -1148,13 +1152,13 @@ CString _tagXMLNode::GetXML( LPDISP_OPT opt /*= &optDefault*/ )
 }
 
 //========================================================
-// 함수명 : GetText
-// 설  명 : 노드 하나를 텍스트 문자열로 반환
-// 인  자 :
-// 리턴값 : 변환된 문자열
+// Name   : GetText
+// Desc   : get current value
+// Param  :
+// Return : string value
 //--------------------------------------------------------
-// 작성자   작성일                 작성이유
-// 조경민   2004-06-15
+// Coder    Date                      Desc
+// bro      2004-06-15
 //========================================================
 CString _tagXMLNode::GetText( LPDISP_OPT opt /*= &optDefault*/ )
 {
