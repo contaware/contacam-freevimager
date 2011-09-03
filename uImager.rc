@@ -4292,7 +4292,7 @@ IDD_CREDITS DIALOGEX 0, 0, 236, 265
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -4305,7 +4305,7 @@ BEGIN
                     IDC_STATIC2343,15,80,208,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,89,78,8,
                     SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.44",
+    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.46",
                     IDC_STATIC2344,15,101,208,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,110,83,8,
                     SS_NOTIFY
@@ -6304,7 +6304,7 @@ IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -6325,7 +6325,7 @@ BEGIN
                     IDC_STATIC2343,15,100,208,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,109,78,8,
                     SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.44",
+    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.46",
                     IDC_STATIC2344,15,121,208,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,130,83,8,
                     SS_NOTIFY

@@ -6,6 +6,7 @@ VERSION HISTORY
   really slow loading of jpeg or tiff files
 - Animated gifs are now displaying in high quality when
   that setting is chosen
+- libpng updated to 1.2.46
 
 3.3.0 (August 15th 2011)
 

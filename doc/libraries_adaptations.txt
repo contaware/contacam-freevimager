@@ -367,7 +367,7 @@ libtiff 3.8.2
 - In tif_dirinfo.c EXIFTAG_SUBJECTDISTANCE is TIFF_SRATIONAL!
 
 
-libpng 1.2.44
+libpng 1.2.46
 -------------
 
 - Thread Safe, but do not define PNG_THREAD_UNSAFE_OK!
