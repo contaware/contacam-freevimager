@@ -1,7 +1,7 @@
 Build system
 ------------
 
-Two build systems are used: Visual Studio 6 for Win9x and
+Two build systems are used: Visual Studio 6 for Win9x & NT4 and
 Visual Studio 2008 for Win2000 or higher (do not use Visual Studio
 2010, this will not support Win2000). MFC is necessary, the express
 editions are not supporting MFC natively but the library can be
@@ -24,7 +24,8 @@ Additional requirements for Visual Studio 2008:
 
 Necessary free tools:
 - http://nsis.sourceforge.net    -> to make the installers
-- http://upx.sourceforge.net     -> to compress the exes
+  (needed also the nsisFirewall, KillProc and UAC plugins)
+- http://upx.sourceforge.net     -> to compress the activex
 - http://www.debugmode.com/wink  -> for tutorials build
 
 

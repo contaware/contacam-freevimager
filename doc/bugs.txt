@@ -61,6 +61,6 @@ Why using ContaCam only on Win2k and higher:
 - The VC6 compile is less stable, after some month the C lib crashed!
 - Micro Apache is not working on Win95
 - On NT4 DirectX 7 is not supported
-- PSAPI.dll not available on NT4 -> Micro Apache cannot be killed!
+- PSAPI.dll not available on NT4 (can be installed) -> Micro Apache cannot be killed!
 - Passwords are encrypted on Win2k or higher
 - MD5 necessary for auth not available with versions less than win2k

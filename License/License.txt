@@ -1,27 +1,31 @@
-﻿Copyright © 2005-2011 Oliver Pfister, Switzerland
-By installing this FREEWARE Software, you are agreeing to be bound by the terms
-of this License.
+﻿License, Oliver Pfister, Switzerland, Web: www.contaware.com 
 
-This Software is provided 'as-is', without any express or implied warranty.
-In no event will the author/developer be held liable for any damages arising
-from the use of this Software.
+By using the FREEWARE Software and/or the Source Code, you are agreeing 
+to be bound by the terms of this License. 
 
-Permission is granted to any one individual to employ this Software for private
-(at home) and for commercial (at work) use.
- 
-The Permission to use the Software is subject to the following Restrictions:
+The Software and the Source Code are provided 'as-is', without any 
+express or implied warranty. In no event will the author/developer be 
+held liable or accountable in any way for any damages arising from the 
+use of the Software and/or from the use of the Source Code. 
 
-1. The Origin of this Software must not be misrepresented. You must not claim that
-you wrote/developed/own the Software.
+Permission is granted to everybody (individual or company) to use/modify 
+the Software and the Source Code for private (at home) and for 
+commercial (at work) use. The Permission to use/modify the Software and 
+the Source Code are subject to the following Restrictions: 
 
-2. You shall not reverse engineer, decompile, disassemble, translate or modify in
-anyway this Software.
+1. The Origin of the Software and of the Source Code must not be 
+misrepresented. You must not claim that you wrote/developed/own the 
+Software or the Source Code. 
 
-3. Distributing the Software for any kind of remuneration is prohibited. The Licensor
-grants you the royality-free right to reproduce and distribute this Software as part
-of a CD / DVD to be enclosed with the print issue of any magazine, book, or printed
-publication, as long as no extra fee is charged for the inclusion of this Software.
+2. This notice may not be removed or altered from any Distribution of 
+the Software and from any Distribution of the Source Code. 
 
-4. This notice may not be removed or altered from any Distribution of this Software. 
+3. All Software Bug Fixes must be reported to the author with a detailed 
+explanation attaching the fixed Source Code file(s). 
 
-END OF TERMS AND CONDITIONS
+4. This Source Code License applies to the parts of code written by 
+Oliver Pfister distinguishable by no License Header. Third Party 
+Libraries and Code are used to make the Software; you must follow their 
+specific License Statement. 
+
+END OF TERMS AND CONDITIONS 

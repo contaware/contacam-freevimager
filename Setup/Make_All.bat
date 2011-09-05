@@ -23,10 +23,6 @@ copy ..\bin\RemoteCam\ReleaseNoDLL\RemoteCam.ocx ..\ActiveX\RemoteCam.ocx
 copy ..\bin\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.exe ..\ActiveX\RemoteCamViewer.exe
 upx --ultra-brute ..\ActiveX\RemoteCam.ocx
 
-REM Make the ffmpeg source code
-echo NSIS make ffmpeg source installer
-"%nsisdir%\makensis.exe" /V2 FfmpegSource.nsi
-
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT /DWITH_TUTORIALS ContaCam.nsi

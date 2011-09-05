@@ -378,6 +378,13 @@ libpng 1.2.46
                                     PNG_LIBPNG_SPECIALBUILD
 
 
+UAC NSIS installer plugin
+-------------------------
+
+- Added silent install switches to the UAC.nsh include file:
+  MessageBox ... /SD IDOK
+
+
 Web interface
 -------------
 

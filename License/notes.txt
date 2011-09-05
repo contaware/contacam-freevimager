@@ -1,1 +1,1 @@
-Save all as UTF-8 with BOM
+Save as UTF-8 with BOM

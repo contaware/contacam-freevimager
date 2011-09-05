@@ -1,7 +1,3 @@
-Wishes from Yuriy:
-------------------
-- zoom should change "custom" or use steps 10%
-
 Picture:
 --------
 - Using numbers to jump to a specific file in current directory
@@ -16,9 +12,9 @@ Detection:
 
 Email sending on detection:
 ---------------------------
-- Make dual file compilation for vs6 and vs2008 (add static openssl libs to
-  vs2008 project) with the new naughter classes supporting STARTTLS and SSL
-  but not supporting vs6 so that we have STARTTLS and SSL on Win2000 and higher
+- Make dual file compilation for vc6 and vc2008 (add static openssl libs to
+  vc2008 project) with the new naughter classes supporting STARTTLS and SSL
+  but not supporting vc6 so that we have STARTTLS and SSL on Win2000 and higher
 
 Video:
 ------

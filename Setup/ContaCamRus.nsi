@@ -86,7 +86,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\LicenseRus.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\License.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -277,7 +277,7 @@ stopend:
   File "/oname=${APPNAME_NOEXT}w.exe" "..\Translation\${APPNAME_NOEXT}wRus.exe"
   File "/oname=FullscreenBrowserw.exe" "..\FullscreenBrowser\Release_Unicode\FullscreenBrowser.exe"
 !endif
-  File "/oname=License.txt" "..\License\LicenseRus.txt"
+  File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
   File "..\NeroBurn\Release\NeroBurn.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
