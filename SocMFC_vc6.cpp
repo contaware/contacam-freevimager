@@ -1,5 +1,5 @@
 /*
-Module : SocMFC.cpp
+Module : SocMFC_vc6.cpp
 Purpose: Implementation for an MFC wrapper class for sockets
 Created: PJN / 05-08-1998
 History: 03-03-2003 1. Addition of a number of preprocessor defines, namely W3MFC_EXT_CLASS, 
@@ -76,7 +76,7 @@ to maintain a single distribution point for the source code.
 /////////////////// Includes //////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "SocMFC.h"
+#include "SocMFC_vc6.h"
 #include "Base64.h"
 
 

@@ -11,7 +11,7 @@
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
 #include "DxDraw.h"
-#include "pjnsmtp.h"
+#include "pjnsmtp_vc6.h"
 #include "NetCom.h"
 #include "AVRec.h"
 #include "YuvToRgb.h"

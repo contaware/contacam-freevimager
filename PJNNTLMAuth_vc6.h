@@ -1,5 +1,5 @@
 /*
-Module : PJNNTLMAuth.H
+Module : PJNNTLMAuth_vc6.H
 Purpose: Defines the interface for a simple wrapper class for client NTLM authentication via SSPI
 Created: PJN / 07-03-2005
 
@@ -22,8 +22,8 @@ to maintain a single distribution point for the source code.
 
 #pragma once
 
-#ifndef __PJNNTLMAUTH_H__
-#define __PJNNTLMAUTH_H__
+#ifndef __PJNNTLMAUTH_VC6_H__
+#define __PJNNTLMAUTH_VC6_H__
 
 #ifndef SECURITY_WIN32
 #define SECURITY_WIN32
@@ -71,4 +71,4 @@ protected:
   SecHandle                      m_hContext;                      //The security handle for the connection 
 };
 
-#endif //__PJNNTLMAUTH_H__
+#endif //__PJNNTLMAUTH_VC6_H__

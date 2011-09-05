@@ -586,11 +586,11 @@ SOURCE=.\PictureView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PJNNTLMAuth.cpp
+SOURCE=.\PJNNTLMAuth_vc6.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PJNSMTP.cpp
+SOURCE=.\PJNSMTP_vc6.cpp
 # End Source File
 # Begin Source File
 
@@ -678,7 +678,7 @@ SOURCE=.\SnapshotPage.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SocMFC.cpp
+SOURCE=.\SocMFC_vc6.cpp
 # End Source File
 # Begin Source File
 
@@ -1280,15 +1280,15 @@ SOURCE=.\PictureView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PJNMD5.h
+SOURCE=.\PJNMD5_vc6.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PJNNTLMAuth.h
+SOURCE=.\PJNNTLMAuth_vc6.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PJNSMTP.h
+SOURCE=.\PJNSMTP_vc6.h
 # End Source File
 # Begin Source File
 
@@ -1388,7 +1388,7 @@ SOURCE=.\SnapshotPage.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\SocMFC.h
+SOURCE=.\SocMFC_vc6.h
 # End Source File
 # Begin Source File
 

@@ -1,5 +1,5 @@
 /*
-Module : PJNSMTP.CPP
+Module : PJNSMTP_vc6.CPP
 Purpose: Implementation for a MFC class encapsulation of the SMTP protocol
 Created: PJN / 22-05-1998
 History: PJN / 15-06-1998 1) Fixed the case where a single dot occurs on its own
@@ -409,9 +409,9 @@ my explicit written consent.
 //////////////// Includes ////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PJNSMTP.h"
+#include "PJNSMTP_vc6.h"
 #include "resource.h"
-#include "PJNMD5.h"
+#include "PJNMD5_vc6.h"
 
 #ifndef _WININET_
 #pragma message("To avoid this message, please put WinInet.h in your pre compiled header (usually stdafx.h)")

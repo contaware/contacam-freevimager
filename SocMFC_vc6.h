@@ -1,5 +1,5 @@
 /*
-Module : SocMFC.H
+Module : SocMFC_vc6.H
 Purpose: Interface for an MFC wrapper class for sockets
 Created: PJN / 05-08-1998
 
@@ -20,8 +20,8 @@ to maintain a single distribution point for the source code.
 
 /////////////////////////////// Defines ///////////////////////////////////////
 
-#ifndef __SOCMFC_H__
-#define __SOCMFC_H__
+#ifndef __SOCMFC_VC6_H__
+#define __SOCMFC_VC6_H__
 
 #ifndef SOCKMFC_EXT_CLASS
 #define SOCKMFC_EXT_CLASS
@@ -121,4 +121,4 @@ protected:
   SOCKET m_hSocket;
 };
 
-#endif //__SOCMFC_H__
+#endif //__SOCMFC_VC6_H__

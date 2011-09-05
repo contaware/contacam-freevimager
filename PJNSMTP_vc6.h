@@ -1,5 +1,5 @@
 /*
-Module : PJNSMTP.H
+Module : PJNSMTP_vc6.H
 Purpose: Defines the interface for a MFC class encapsulation of the SMTP protocol
 Created: PJN / 22-05-1998
 
@@ -26,8 +26,8 @@ my explicit written consent.
 
 #pragma once
 
-#ifndef __PJNSMTP_H__
-#define __PJNSMTP_H__
+#ifndef __PJNSMTP_VC6_H__
+#define __PJNSMTP_VC6_H__
 
 #ifndef __AFXTEMPL_H__
 #pragma message("To avoid this message, please put afxtempl.h in your PCH (usually stdafx.h)")
@@ -58,14 +58,14 @@ my explicit written consent.
 #endif
 #pragma warning(pop)
 
-#include "SocMFC.h" //If you get a compilation error about this missing header file, then you need to download my CWSocket and Base64 classes from http://www.naughter.com/w3mfc.html
+#include "SocMFC_vc6.h" //If you get a compilation error about this missing header file, then you need to download my CWSocket and Base64 classes from http://www.naughter.com/w3mfc.html
 #include "Base64.h" //If you get a compilation error about this missing header file, then you need to download my CWSocket and Base64 classes from http://www.naughter.com/w3mfc.html
 #ifndef CPJNSMTP_NOSSL
 #include "OpenSSLMfc.h" //If you get a compilation error about this missing header file, then you need to download my CSSLSocket classes from http://www.naughter.com/w3mfc.html
 #endif
 
 #ifndef CPJNSMTP_NONTLM
-#include "PJNNTLMAuth.h"
+#include "PJNNTLMAuth_vc6.h"
 #endif
 
 #ifndef PJNSMTP_EXT_CLASS
@@ -523,4 +523,4 @@ protected:
 #define CSMTPConnection CPJNSMTPConnection
 #endif
 
-#endif //__PJNSMTP_H__
+#endif //__PJNSMTP_VC6_H__

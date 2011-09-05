@@ -1,5 +1,5 @@
 /*
-Module : PJNNTLMAuth.CPP
+Module : PJNNTLMAuth_vc6.CPP
 Purpose: Implementation for a simple wrapper class for client NTLM authentication via SSPI
 Created: PJN / 06-04-2005
 History: PJN / 05-09-2005 1. Function pointer to CompleteAuthToken is now constructed at runtime. This means
@@ -44,7 +44,7 @@ to maintain a single distribution point for the source code.
 //////////////// Includes /////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PJNNTLMAuth.h"
+#include "PJNNTLMAuth_vc6.h"
 #ifndef __SSPI_H__
 #pragma message("To avoid this message, please put Sspi.h in your pre compiled header (usually stdafx.h)")
 #include <Sspi.h>

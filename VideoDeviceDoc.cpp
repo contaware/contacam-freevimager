@@ -31,7 +31,7 @@
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"
 #include "Base64.h"
-#include "PJNMD5.h"
+#include "PJNMD5_vc6.h"
 #include "Psapi.h"
 #include "IniFile.h"
 #include "NoVistaFileDlg.h"

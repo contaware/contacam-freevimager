@@ -1,5 +1,5 @@
 /*
-Module : PJNMD5.H
+Module : PJNMD5_vc6.H
 Purpose: Defines the interface for some MFC class which encapsulate calculating MD5 hashes and HMACS using the MS CryptoAPI
 Created: PJN / 23-04-2005
 History: PJN / 18-05-2005 1. Fixed a compiler warning when compiled using Visual Studio .NET 2003. Thanks to Alexey Kuznetsov
@@ -27,8 +27,8 @@ to maintain a single distribution point for the source code.
 
 #pragma once
 
-#ifndef __PJNMD5_H__
-#define __PJNMD5_H__
+#ifndef __PJNMD5_VC6_H__
+#define __PJNMD5_VC6_H__
 
 
 ////////////////////////////// Includes ///////////////////////////////////////
@@ -248,4 +248,4 @@ protected:
   HCRYPTPROV m_hProv; //If you get a compilation error on this line, then you need to download, install and configure the MS Platform SDK if you are compiling the code under Visual C++ 6
 };
 
-#endif //__PJNMD5_H__
+#endif //__PJNMD5_VC6_H__

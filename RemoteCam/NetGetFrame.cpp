@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "NetGetFrame.h"
 #include "RemoteCamCtl.h"
-#include "PJNMD5.h"
+#include "PJNMD5_vc6.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
