@@ -263,7 +263,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			BOOL bSend = TRUE;
 			if (m_SendMailConfiguration.m_bDNSLookup)
 			{
+#if (_MSC_VER > 1200)
+				if (pMessage->m_To.GetSize() == 0)
+#else
 				if (pMessage->GetNumberOfRecipients() == 0)
+#endif
 				{
 					EndWaitCursor();
 					CString sMsg(ML_STRING(1410, "At least one recipient must be specified to use the DNS lookup option\n"));
@@ -273,7 +277,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				}
 				else
 				{
-					CString sAddress = pMessage->GetRecipient(0)->m_sEmailAddress;
+#if (_MSC_VER > 1200)
+					CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
+#else
+					CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
+#endif
 					int nAmpersand = sAddress.Find(_T("@"));
 					if (nAmpersand == -1)
 					{
@@ -311,7 +319,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// Connect and send the message
 			if (bSend)
 			{
+#if (_MSC_VER > 1200)
+				connection.SetBindAddress(m_SendMailConfiguration.m_sBoundIP);
+#else
 				connection.SetBoundAddress(m_SendMailConfiguration.m_sBoundIP);
+#endif
 				if (m_SendMailConfiguration.m_sUsername == _T("") &&
 					m_SendMailConfiguration.m_sPassword == _T(""))
 				{

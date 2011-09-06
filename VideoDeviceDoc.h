@@ -11,7 +11,11 @@
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
 #include "DxDraw.h"
+#if (_MSC_VER <= 1200)
 #include "pjnsmtp_vc6.h"
+#else
+#include "pjnsmtp.h"
+#endif
 #include "NetCom.h"
 #include "AVRec.h"
 #include "YuvToRgb.h"

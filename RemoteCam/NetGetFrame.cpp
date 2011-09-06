@@ -1,7 +1,11 @@
 #include "stdafx.h"
 #include "NetGetFrame.h"
 #include "RemoteCamCtl.h"
+#if (_MSC_VER <= 1200)
 #include "PJNMD5_vc6.h"
+#else
+#include "PJNMD5.h"
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

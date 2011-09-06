@@ -31,7 +31,11 @@
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"
 #include "Base64.h"
+#if (_MSC_VER <= 1200)
 #include "PJNMD5_vc6.h"
+#else
+#include "PJNMD5.h"
+#endif
 #include "Psapi.h"
 #include "IniFile.h"
 #include "NoVistaFileDlg.h"
@@ -1482,11 +1486,27 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct
 
 	// Setup the all the recipient types for this message,
 	// valid separators between addresses are ',' or ';'
+#if (_MSC_VER > 1200)
+	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
+#else
 	pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sTo, CPJNSMTPMessage::TO);
-	if (!pSendMailConfiguration->m_sCC.IsEmpty()) 
+#endif
+	if (!pSendMailConfiguration->m_sCC.IsEmpty())
+	{
+#if (_MSC_VER > 1200)
+		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
+#else
 		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sCC, CPJNSMTPMessage::CC);
+#endif
+	}
 	if (!pSendMailConfiguration->m_sBCC.IsEmpty()) 
+	{
+#if (_MSC_VER > 1200)
+		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
+#else
 		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sBCC, CPJNSMTPMessage::BCC);
+#endif
+	}
 	if (!pSendMailConfiguration->m_sSubject.IsEmpty()) 
 		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
 	if (!pSendMailConfiguration->m_sBody.IsEmpty())
@@ -1642,7 +1662,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 			BOOL bSend = TRUE;
 			if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
 			{
+#if (_MSC_VER > 1200)
+				if (pMessage->m_To.GetSize() == 0)
+#else
 				if (pMessage->GetNumberOfRecipients() == 0)
+#endif
 				{
 					CString sMsg;
 					sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetDeviceName());
@@ -1652,7 +1676,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 				}
 				else
 				{
-					CString sAddress = pMessage->GetRecipient(0)->m_sEmailAddress;
+#if (_MSC_VER > 1200)
+					CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
+#else
+					CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
+#endif
 					int nAmpersand = sAddress.Find(_T("@"));
 					if (nAmpersand == -1)
 					{
@@ -1689,7 +1717,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 			// Connect and send the message
 			if (bSend)
 			{
+#if (_MSC_VER > 1200)
+				connection.SetBindAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
+#else
 				connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
+#endif
 				if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
 					m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
 				{
@@ -6182,7 +6214,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("iso-8859-1");
 	m_MovDetSendMailConfiguration.m_bMime = TRUE;
 	m_MovDetSendMailConfiguration.m_bHTML = TRUE;
+#if (_MSC_VER > 1200)
+	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NoPriority;
+#else
 	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NO_PRIORITY;
+#endif
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");

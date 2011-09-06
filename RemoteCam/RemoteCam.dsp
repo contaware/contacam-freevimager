@@ -197,7 +197,7 @@ SOURCE=.\NetGetFrame.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\PJNMD5.h
+SOURCE=..\PJNMD5_vc6.h
 # End Source File
 # Begin Source File
 

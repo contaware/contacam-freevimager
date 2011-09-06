@@ -48,6 +48,11 @@
 #include "TraceLogFile.h"
 #include "appconst.h"
 #include "bigalloc.h"
+#if (_MSC_VER > 1200)
+#include <atlfile.h>
+#include <atlenc.h>
+#include <atlsocket.h>
+#endif
 #ifndef NDEBUG
 #include "cmallspy.h"
 extern CMallocSpy MallocSpy;
