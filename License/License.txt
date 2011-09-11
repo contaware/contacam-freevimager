@@ -20,12 +20,9 @@ Software or the Source Code.
 2. This notice may not be removed or altered from any Distribution of 
 the Software and from any Distribution of the Source Code. 
 
-3. All Software Bug Fixes must be reported to the author with a detailed 
-explanation attaching the fixed Source Code file(s). 
-
-4. This Source Code License applies to the parts of code written by 
+3. This Source Code License applies to the parts of code written by 
 Oliver Pfister distinguishable by no License Header. Third Party 
-Libraries and Code are used to make the Software; you must follow their 
+Libraries and Code are used to build the Software; you must follow their 
 specific License Statement. 
 
 END OF TERMS AND CONDITIONS 

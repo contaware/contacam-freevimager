@@ -907,6 +907,11 @@ protected:
 	
 protected:
 
+#ifndef CPJNSMTP_NOSSL
+	static CCriticalSection* m_pOpenSSLCritSections;
+	static void __cdecl OpenSSLLockingCallback(int mode, int type, const char* file, int line);
+#endif
+
 	CString PictureSlideMakeMsg(CPictureDoc* pDoc);
 	CString PictureMakeMsg(CPictureDoc* pDoc);
 	CString VideoAviMakeMsg(CVideoAviDoc* pDoc);

@@ -56,6 +56,26 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// OpenSSL library
+#ifndef CPJNSMTP_NOSSL
+#ifdef _DEBUG
+#pragma comment(lib, "openssl\\ssleay32MTd.lib")
+#pragma comment(lib, "openssl\\libeay32MTd.lib")
+#else
+#pragma comment(lib, "openssl\\ssleay32MT.lib")
+#pragma comment(lib, "openssl\\libeay32MT.lib")
+#endif
+CCriticalSection* CUImagerApp::m_pOpenSSLCritSections = NULL;
+void __cdecl CUImagerApp::OpenSSLLockingCallback(int mode, int type, const char* /*file*/, int /*line*/)
+{
+	ASSERT(m_pOpenSSLCritSections);
+	if (mode & CRYPTO_LOCK)
+		m_pOpenSSLCritSections[type].Lock();
+	else
+		m_pOpenSSLCritSections[type].Unlock();
+}
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp
 
@@ -416,6 +436,24 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		else
 			m_bUseRegistry = FALSE;
+#endif
+
+#ifndef CPJNSMTP_NOSSL
+		// Standard OpenSSL initialization
+		SSL_load_error_strings();
+		SSL_library_init(); // it's normal that OpenSSL leaks 16 + 20 bytes +
+							// sometimes more but not increasing with the email sends
+
+		// Setup SSL to work correctly in a multithreaded environment
+		ASSERT(m_pOpenSSLCritSections == NULL);
+		m_pOpenSSLCritSections = new CCriticalSection[CRYPTO_num_locks()];
+		if (m_pOpenSSLCritSections == NULL)
+		{
+			// Report the error
+			::AfxMessageBox(_T("Failed to create SSL critical sections required for OpenSSL"), MB_OK | MB_ICONSTOP);
+			throw (int)0;
+		}
+		CRYPTO_set_locking_callback(OpenSSLLockingCallback);
 #endif
 
 		// Parse command line for standard shell commands, DDE, file open
@@ -2946,6 +2984,25 @@ int CUImagerApp::ExitInstance()
 	// Store last selected printer
 	if (m_bUseSettings)
 		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+
+#ifndef CPJNSMTP_NOSSL
+	// Clean up OpenSSL library
+	// It's normal that OpenSSL leaks 16 + 20 bytes +
+	// sometimes more but not increasing with the email sends
+	ERR_free_strings();
+	ERR_remove_state(0);
+	EVP_cleanup();
+	CRYPTO_cleanup_all_ex_data();
+
+	// Clean up the SSL critical sections
+	if (m_pOpenSSLCritSections)
+	{
+		delete [] m_pOpenSSLCritSections;
+		m_pOpenSSLCritSections = NULL;
+	}
+
+	TRACE(_T("*** OPENSSL LEAKS A CONSTANT AMOUNT OF MEMORY, IT'S NORMAL ***\n"));
+#endif
 
 	// Trace memory (before EndTraceLogFile()!)
 #if defined(_DEBUG) || defined(TRACELOGFILE)

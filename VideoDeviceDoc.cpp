@@ -1729,7 +1729,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 										CPJNSMTPConnection::AUTH_NONE,
 										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
 										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+										m_pDoc->m_MovDetSendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+										, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
+#endif
+										);
 				}
 				else
 				{
@@ -1737,7 +1741,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 										m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
 										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
 										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort);
+										m_pDoc->m_MovDetSendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+										, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
+#endif
+										);
 				}
 				connection.SendMessage(*pMessage);
 			}
@@ -6215,6 +6223,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_bMime = TRUE;
 	m_MovDetSendMailConfiguration.m_bHTML = TRUE;
 #if (_MSC_VER > 1200)
+	m_MovDetSendMailConfiguration.m_ConnectionType = CPJNSMTPConnection::PlainText;
 	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NoPriority;
 #else
 	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NO_PRIORITY;
@@ -6682,6 +6691,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_MovDetSendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
 	m_MovDetSendMailConfiguration.m_bHTML = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailHTML"), TRUE);
+#if (_MSC_VER > 1200)
+	m_MovDetSendMailConfiguration.m_ConnectionType = (CPJNSMTPConnection::ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), CPJNSMTPConnection::PlainText);
+#endif
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -6950,6 +6962,9 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
 			pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
 			pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
+#if (_MSC_VER > 1200)
+			pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType);
+#endif
 
 			// FTP Settings
 			pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
@@ -7148,6 +7163,9 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteSecureProfileIniString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername, sTempFileName);
 			::WriteSecureProfileIniString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML, sTempFileName);
+#if (_MSC_VER > 1200)
+			::WriteProfileIniInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType, sTempFileName);
+#endif
 
 			// FTP Settings
 			::WriteProfileIniString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost, sTempFileName);

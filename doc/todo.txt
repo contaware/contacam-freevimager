@@ -6,15 +6,10 @@ Detection:
 ----------
 - Possibility to send 3x jpegs by email on detection
 - Possibility to save a sequence of jpegs on detection
+  or to enable snapshots only on detection
 - Advanced detection scheduler with weekday selection
 - Have an option to monitor every say 2, 4 or 8 frames instead
   of every frame -> this would be less cpu hungry
-
-Email sending on detection:
----------------------------
-- Make dual file compilation for vc6 and vc2008 (add static openssl libs to
-  vc2008 project) with the new naughter classes supporting STARTTLS and SSL
-  but not supporting vc6 so that we have STARTTLS and SSL on Win2000 and higher
 
 Video:
 ------

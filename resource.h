@@ -218,6 +218,7 @@
 #define IDS_MULTILANG_350               350
 #define IDS_PJNSMTP_FAIL_Q_ENCODE       350
 #define IDS_MULTILANG_351               351
+#define IDS_PJNSMTP_UNEXPECTED_STARTTLS_RESPONSE 351
 #define IDS_MULTILANG_352               352
 #define IDS_MULTILANG_353               353
 #define IDS_MULTILANG_354               354
@@ -2545,8 +2546,11 @@
 #define IDC_STATIC1832                  1832
 #define IDS_STRING1832                  1832
 #define IDC_STATIC1833                  1833
+#define IDS_STRING1833                  1833
 #define IDC_STATIC1834                  1834
+#define IDS_STRING1834                  1834
 #define IDC_STATIC1835                  1835
+#define IDS_STRING1835                  1835
 #define IDC_STATIC1836                  1836
 #define IDC_STATIC1837                  1837
 #define IDC_STATIC1838                  1838
@@ -3237,12 +3241,8 @@
 #define IDC_COMBO_SNAPSHOT_RATE         2526
 #define IDC_RADIO_NOCHANGE              2527
 #define IDC_COMBO_SNAPSHOTHISTORY_RATE  2528
-#define IDC_BUTTON_OPEN_KEYFILE         2528
-#define IDC_BUTTON_BUY_LICENSE          2529
 #define IDC_COMBO_THUMBSPERPAGE         2529
-#define IDC_REG_NAME                    2530
 #define IDC_CHECK_FULLSTRETCH           2530
-#define IDC_REG_NUMBER                  2531
 #define IDC_LABEL_THUMBSPERPAGE         2532
 #define IDC_COMBO_SNAPSHOTHISTORY_SIZE  2533
 #define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
@@ -3250,6 +3250,8 @@
 #define IDC_CHECK_SAVECOMMAND           2536
 #define IDC_AUTH_METHOD                 2536
 #define IDC_STATIC2537                  2537
+#define IDC_CONNECTIONTYPE              2538
+#define IDC_STATIC2539                  2539
 #define ID_CAPTURE_VIDEO_DEVICE         32774
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
@@ -3538,7 +3540,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33167
-#define _APS_NEXT_CONTROL_VALUE         2538
+#define _APS_NEXT_CONTROL_VALUE         2540
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

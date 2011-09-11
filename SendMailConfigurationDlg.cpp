@@ -125,6 +125,18 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sPassword);
 	pEdit->EnableWindow(bAuthenticated);
 
+	// Connection Type
+	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
+	pComboBox->AddString(ML_STRING(1833, "Plain Text (Port 25 or 587)"));
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+    pComboBox->AddString(ML_STRING(1834, "SSL/TLS (Port 465)"));	
+    pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
+	pComboBox->SetCurSel(m_SendMailConfiguration.m_ConnectionType);
+#else
+	pComboBox->SetCurSel(0);
+	pComboBox->EnableWindow(FALSE);
+#endif
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -188,6 +200,12 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sPassword = sText;
+
+#if (_MSC_VER > 1200)
+	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
+	m_SendMailConfiguration.m_ConnectionType =
+			(CPJNSMTPConnection::ConnectionType)pComboBox->GetCurSel();
+#endif
 }
 
 void CSendMailConfigurationDlg::OnOK() 
@@ -331,7 +349,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 										CPJNSMTPConnection::AUTH_NONE,
 										m_SendMailConfiguration.m_sUsername,
 										m_SendMailConfiguration.m_sPassword,
-										m_SendMailConfiguration.m_nPort);
+										m_SendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+										, m_SendMailConfiguration.m_ConnectionType
+#endif
+										);
 				}
 				else
 				{
@@ -339,7 +361,11 @@ void CSendMailConfigurationDlg::OnButtonTest()
 										m_SendMailConfiguration.m_Auth,
 										m_SendMailConfiguration.m_sUsername,
 										m_SendMailConfiguration.m_sPassword,
-										m_SendMailConfiguration.m_nPort);
+										m_SendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+										, m_SendMailConfiguration.m_ConnectionType
+#endif
+										);
 				}
 				connection.SendMessage(*pMessage);
 				EndWaitCursor();
