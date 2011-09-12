@@ -1432,8 +1432,6 @@ public:
 	static CString MicroApacheGetLogFileName();
 	static CString MicroApacheGetPidFileName();
 	static CString MicroApacheGetPwFileName();
-	static BOOL IsMicroApacheCompatiblePath(const CString& sPath);
-	static CString MicroApacheCompatiblePath(const CString& sPath);
 	static BOOL MicroApacheCheckConfigFile();
 	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite = FALSE);
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);

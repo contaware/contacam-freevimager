@@ -805,7 +805,10 @@ BOOL CDibStatic::LoadMusic(	LPCTSTR lpszFileName,
 		// Use short path?
 		TCHAR lpszShortPath[1024];
 		if (bUseShortPath)
+		{		
 			::GetShortPathName(lpszFileName, lpszShortPath, 1024);
+			lpszShortPath[1023] = _T('\0');
+		}
 		// Note: .mid is supported, but .midi not...
 		m_hMCIWnd = ::MCIWndCreate(	GetSafeHwnd(),
 									::AfxGetInstanceHandle(),

@@ -250,6 +250,10 @@ extern BOOL IsANSIConvertible(const CString& s);
 // (the terminating NULL char is not included in this returned bytes count)
 extern int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar = NULL);
 
+// Get ASCII compatible path, file or directory must exist!
+extern BOOL IsASCIICompatiblePath(const CString& sPath);
+extern CString GetASCIICompatiblePath(const CString& sPath);
+
 // Url encode given string
 // set bEncodeReserved to TRUE if encoding GET values
 // set bEncodeReserved to FALSE if encoding an entire URL

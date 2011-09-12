@@ -2725,6 +2725,77 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 	}
 }
 
+BOOL IsASCIICompatiblePath(const CString& sPath)
+{
+	// Empty Path is already ok!
+	if (sPath.IsEmpty())
+		return TRUE;
+
+	LPSTR c = NULL;
+	if (::ToANSI(sPath, &c) <= 0 || !c)
+	{
+		if (c)
+			delete [] c;
+		return FALSE;
+	}
+	for (int i = 0 ; i < (int)strlen(c) ; i++)
+	{
+		if (!((48 <= c[i] && c[i] <= 57)||	// 0-9
+			(65 <= c[i] && c[i] <= 90)	||	// ABC...XYZ
+			(97 <= c[i] && c[i] <= 122)	||	// abc...xyz
+			c[i] == ' '					||	// space
+			c[i] == '-'					||	// minus
+			c[i] == '_'					||	// underscore
+			c[i] == '~'					||	// tilde
+			c[i] == '.'					||	// dot
+			c[i] == ':'					||	// column
+			c[i] == '\\'				||	// backslash
+			c[i] == '/'))					// slash
+		{
+			delete [] c;
+			return FALSE;
+		}
+	}
+	delete [] c;
+	return TRUE;
+}
+
+/*
+GetShortPathName will return an ASCII string if NtfsAllowExtendedCharacterIn8dot3Name
+is not set in the registry (the default value is 0 so we are quite ok with the following code)
+
+NtfsAllowExtendedCharacterIn8dot3Name under
+HKLM\SYSTEM\CurrentControlSet\Control\FileSystem
+specifies whether the characters from the extended character set,
+including diacritic characters, can be used in short file names
+using the 8.3 naming convention on NTFS volumes.
+ 
+Values:
+0: On NTFS volumes, file names using the 8.3 naming convention are limited
+   to the standard ASCII character set (minus any reserved values)
+1: On NTFS volumes, file names using the 8.3 naming convention may use extended characters
+
+Note: this entry does not exist in the registry by default,
+you can add it by using the registry editor.
+
+See: http://technet.microsoft.com/en-us/library/cc781607%28WS.10%29.aspx
+*/
+CString GetASCIICompatiblePath(const CString& sPath)
+{
+	if (!IsASCIICompatiblePath(sPath))
+	{
+		TCHAR lpszShortPath[1024];
+		DWORD dwCount = ::GetShortPathName(sPath, lpszShortPath, 1024);
+		lpszShortPath[1023] = _T('\0');
+		if (dwCount == 0)
+			return sPath;
+		else
+			return CString(lpszShortPath);
+	}
+	else
+		return sPath;
+}
+
 CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 {
 	// Empty String is already ok!

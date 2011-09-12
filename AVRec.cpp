@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AVRec.h"
 #include "Round.h"
+#include "Helpers.h"
 #include "AviPlay.h"
 
 #ifdef _DEBUG
@@ -499,11 +500,27 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 					LPCTSTR lpszTempDir/*=_T("")*/,
 					bool bFastEncode/*=false*/)
 {
+	// Make ffmpeg compatible file name
+	if (!::IsExistingFile(lpszFileName))
+	{
+		const DWORD dwInit = 0U;
+		DWORD NumberOfBytesWritten;
+		HANDLE hFile = ::CreateFile(lpszFileName,
+									GENERIC_WRITE, 0, NULL,
+									CREATE_NEW,
+									FILE_ATTRIBUTE_NORMAL, NULL);
+		if (hFile != INVALID_HANDLE_VALUE)
+		{
+			::WriteFile(hFile, &dwInit, sizeof(DWORD), &NumberOfBytesWritten, NULL);
+			::CloseHandle(hFile);
+		}
+	}
+	CString sASCIICompatiblePath = ::GetASCIICompatiblePath(lpszFileName); // file must exist!
 	char filename[1024];
 #ifdef _UNICODE
-	wcstombs(filename, lpszFileName, 1024);
+	wcstombs(filename, sASCIICompatiblePath, 1024);
 #else
-	strncpy(filename, lpszFileName, 1023);
+	strncpy(filename, sASCIICompatiblePath, 1023);
 #endif
 	filename[1023] = '\0';
 

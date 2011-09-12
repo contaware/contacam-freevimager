@@ -3001,7 +3001,7 @@ int CUImagerApp::ExitInstance()
 		m_pOpenSSLCritSections = NULL;
 	}
 
-	TRACE(_T("*** OPENSSL LEAKS A CONSTANT AMOUNT OF MEMORY, IT'S NORMAL ***\n"));
+	TRACE(_T("*** OPENSSL LEAKS 16 + 20 BYTES + SOMETIMES MORE, IT'S NORMAL ***\n"));
 #endif
 
 	// Trace memory (before EndTraceLogFile()!)
@@ -7220,7 +7220,7 @@ void CUImagerApp::MicroApacheUpdateFiles()
 	}
 
 	// Set Doc Root to config file
-	sDocRoot = CVideoDeviceDoc::MicroApacheCompatiblePath(sDocRoot);
+	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
 	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
 	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
 	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
