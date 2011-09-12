@@ -16,7 +16,11 @@
 #define  XTHEMEHELPER_H
 
 #include "uxtheme.h"
+#if defined(NTDDI_VERSION) && defined(NTDDI_LONGHORN) && (NTDDI_VERSION >= NTDDI_LONGHORN)
+#include "vssym32.h"
+#else
 #include "tmschema.h"
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
