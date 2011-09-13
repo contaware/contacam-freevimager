@@ -215,7 +215,7 @@ Resource74=IDD_BATCH_PROC_SHRINKTAB (English (U.S.))
 Resource75=IDD_SETTINGS (English (U.S.))
 Resource76=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource77=IDD_CREDITS_VIDEODEVICEDOC (English (U.S.))
-Resource78=IDR_MAINFRAME (English (U.S.))
+Resource78=IDD_ASSISTANT (English (U.S.))
 Resource79=IDD_MOVDET_FTP_CONFIGURATION (English (U.S.))
 Resource80=IDD_OCR_LANGUAGE (English (U.S.))
 Resource81=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
@@ -256,7 +256,7 @@ Resource115=IDD_MONOCHROME (English (U.S.))
 Resource116=IDD_XMP (English (U.S.))
 Resource117=IDD_BATCH_PROC (English (U.S.))
 Resource118=IDD_SENDMAIL_CURRENT_PICTUREDOC (English (U.S.))
-Resource119=IDD_ASSISTANT (English (U.S.))
+Resource119=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -788,7 +788,7 @@ HeaderFile=SendMailConfigurationDlg.h
 ImplementationFile=SendMailConfigurationDlg.cpp
 Filter=D
 VirtualFilter=dWC
-LastObject=IDC_AUTH_METHOD
+LastObject=CSendMailConfigurationDlg
 
 [CLS:CSendMailDocsDlg]
 Type=0

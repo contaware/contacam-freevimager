@@ -1,12 +1,15 @@
 Build system
 ------------
 
-Two build systems are used: Visual Studio 6 for Win9x & NT4 and
-Visual Studio 2008 for Win2000 or higher (do not use Visual Studio
-2010, this will not support Win2000). MFC is necessary, the express
-editions are not supporting MFC natively but the library can be
-obtained from alternative sources such as the free-to-download
-Windows Driver Kit.
+Two build systems are used: Visual Studio 6 to make Win9x & NT4
+ANSI executables and Visual Studio 2008 to make Win2000 or higher
+UNICODE executables (do not use Visual Studio 2010, this will not
+support Win2000). For historical reasons the name of the project
+is uImager. uImager.dsw is the Visual Studio 6 project file and
+uImagervs2008.sln the Visual Studio 2008 project file.
+MFC is necessary, the express editions are not
+supporting MFC natively but the library can be obtained from
+alternative sources such as the free-to-download Windows Driver Kit.
 
 Additional requirements for Visual Studio 6:
 - install sp6
@@ -28,6 +31,8 @@ Necessary free tools:
 - http://upx.sourceforge.net     -> to compress the activex
 - http://www.debugmode.com/wink  -> for tutorials build
 
+Non-free tool to make the translations:
+- http://www.apptranslator.com
 
 
 Release procedure

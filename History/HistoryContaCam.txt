@@ -1,7 +1,9 @@
 VERSION HISTORY
 
-3.5.0 (September xxx 2011)
+3.5.0 (September 13th 2011)
 
+- Secure email sending through SSL/TLS or STARTTLS
+- Fixed saving of avi and swf files to non-ASCII path
 - Added Dutch web interface language
 
 3.3.0 (August 15th 2011)
@@ -19,7 +21,7 @@ VERSION HISTORY
 
 - New compile with MFC security update (MS11-025 and KB2538241)
 - Fixed important bug which prevented the internal web server to
-  start on localizations with a none ASCII application data path
+  start on localizations with a non-ASCII application data path
   (for example: "Data aplikací", many thanks to Majo)
 - Fixed next/prev. buttons of swf player when also avi recs
   or gifs only shown

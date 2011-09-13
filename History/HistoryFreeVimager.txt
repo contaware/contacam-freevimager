@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.5.0 (September xxx 2011)
+3.5.0 (September 13th 2011)
 
 - Fixed Xmp metadata reading, sometimes this caused a
   really slow loading of jpeg or tiff files
