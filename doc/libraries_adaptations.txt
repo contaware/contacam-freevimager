@@ -35,6 +35,10 @@ CPJNSMTPConnection 2.93 with w3 mfc 1.94 for VC2008
   SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize/*=4096*/)
   -> to Support OnSendProgress()
 
+- added in SocMFC.cpp to compile also for Windows 2000 target:
+  const struct in6_addr my_in6addr_any = { 0 };
+  sockAddr.sin6_addr = my_in6addr_any;
+
 
 CFTPTransfer
 ------------

@@ -508,7 +508,8 @@ void CWSocket::CreateAndBind(UINT nSocketPort, int nSocketType, int nDefaultAddr
         memset(&sockAddr, 0, sizeof(sockAddr));
         sockAddr.sin6_family = AF_INET6;
         sockAddr.sin6_port = htons(static_cast<USHORT>(nSocketPort));
-        sockAddr.sin6_addr = in6addr_any; //Bind to any IP address;
+		const struct in6_addr my_in6addr_any = { 0 }; // Oli added
+        sockAddr.sin6_addr = my_in6addr_any; //Bind to any IP address;
 
         //Create the socket
         Create(nSocketType, 0, nDefaultAddressFormat);

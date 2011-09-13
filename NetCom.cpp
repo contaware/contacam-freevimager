@@ -3548,14 +3548,27 @@ BOOL CNetCom::StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* 
 #endif
 		if (lpfGetAddrInfo && lpfFreeAddrInfo)
 		{
-			ADDRINFOT aiHints;
-			ADDRINFOT* aiList = NULL;
+			// Do not use ADDRINFOT because it is defined as addrinfo
+			// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
+#ifdef _UNICODE
+			ADDRINFOW aiHints;
+			ADDRINFOW* aiList = NULL;
+#else
+			ADDRINFOA aiHints;
+			ADDRINFOA* aiList = NULL;
+#endif
 			memset(&aiHints, 0, sizeof(aiHints));
 			aiHints.ai_family = nSocketFamily;
 			aiHints.ai_flags = AI_PASSIVE;
 			if (lpfGetAddrInfo(sHost, sPort, &aiHints, &aiList) == 0)
 			{
-				ADDRINFOT* walk;
+				// Do not use ADDRINFOT because it is defined as addrinfo
+				// if _WIN32_WINNT < 0x0502 in the atlsocket.h file!
+#ifdef _UNICODE
+				ADDRINFOW* walk;
+#else
+				ADDRINFOA* walk;
+#endif
 				for (walk = aiList ; walk != NULL ; walk = walk->ai_next)
 				{
 					if ((walk->ai_family == nSocketFamily || nSocketFamily == AF_UNSPEC) &&

@@ -178,6 +178,12 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 #define BCM_SETSHIELD		(BCM_FIRST + 0x000C)
 #endif
 
+// ws2def.h doesn't define the following for older than XP
+#if (_MSC_VER > 1200) && (_WIN32_WINNT < 0x0501)
+typedef SOCKADDR_STORAGE_XP SOCKADDR_STORAGE;
+typedef SOCKADDR_STORAGE *PSOCKADDR_STORAGE, FAR *LPSOCKADDR_STORAGE;
+#endif
+
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
