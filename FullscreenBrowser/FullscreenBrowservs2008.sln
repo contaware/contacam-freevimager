@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FullscreenBrowser", "FullscreenBrowser.vcproj", "{E748BE08-2D77-422B-B017-E4C419179D18}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FullscreenBrowser", "FullscreenBrowservs2008.vcproj", "{E748BE08-2D77-422B-B017-E4C419179D18}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
