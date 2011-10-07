@@ -4,6 +4,7 @@ Picture:
 
 Detection:
 ----------
+- Save also audio on detection
 - Possibility to send 3x jpegs by email on detection
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection

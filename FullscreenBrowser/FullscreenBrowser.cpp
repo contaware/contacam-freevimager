@@ -54,8 +54,10 @@ public:
 	DECLARE_MESSAGE_MAP()
 
 protected:
+#ifdef LOCK_BROWSER
 	BOOL TaskManagerEnableDisable(BOOL bEnableDisable);
 	int KeysEnableDisable(BOOL bEnableDisable);
+#endif
 	BOOL StartProcess(CString sDesktopName, CString sPath);
 	void ProcessDesktop(LPCTSTR szDesktopName, LPCTSTR szPath);
 };
@@ -151,6 +153,7 @@ FullscreenBrowserApp::FullscreenBrowserApp()
 	m_bNewDesktop = FALSE;
 }
 
+#ifdef LOCK_BROWSER
 /***************************************************
  * Enable / Disable Task Manager and others of the *
  * security Screen popped-up with CTRL+ALT+DEL     *
@@ -291,6 +294,7 @@ int FullscreenBrowserApp::KeysEnableDisable(BOOL bEnableDisable)
 
     return 1;
 }
+#endif
 
 BOOL FullscreenBrowserApp::StartProcess(CString sDesktopName, CString sPath)
 {
@@ -540,6 +544,7 @@ BOOL FullscreenBrowserApp::InitInstance()
 			m_sUrl = GetProfileString(_T("General"), _T("WebPage"), DEFAULT_WEBPAGE);
 		WriteProfileString(_T("General"), _T("WebPage"), m_sUrl);
 		
+#ifdef LOCK_BROWSER
 		// Keys disable, not working if debugging!
 #ifndef _DEBUG
 		KeysEnableDisable(FALSE);
@@ -547,18 +552,21 @@ BOOL FullscreenBrowserApp::InitInstance()
 
 		// Task Manager Disable
 		TaskManagerEnableDisable(FALSE);
+#endif
 
 		// Start Dlg
 		FullscreenBrowserDlg dlg;
 		m_pMainWnd = &dlg;
 		dlg.DoModal();
 
+#ifdef LOCK_BROWSER
 		// Task Manager Enable
 		TaskManagerEnableDisable(TRUE);
 
 		// Keys enable, not working if debugging!
 #ifndef _DEBUG
 		KeysEnableDisable(TRUE);
+#endif
 #endif
 	}
 	else

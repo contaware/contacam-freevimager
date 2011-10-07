@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="FullscreenBrowser"
 	ProjectGUID="{E748BE08-2D77-422B-B017-E4C419179D18}"
+	RootNamespace="FullscreenBrowser"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="0"
 	>
@@ -49,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
+				PreprocessorDefinitions="LOCK_BROWSER,_DEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -60,6 +61,7 @@
 				ObjectFile=".\Debug_Unicode/"
 				ProgramDataBaseFileName=".\Debug_Unicode/"
 				BrowseInformation="1"
+				BrowseInformationFile="$(IntDir)\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -69,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="_DEBUG,LOCK_BROWSER"
 				Culture="1033"
 			/>
 			<Tool
@@ -101,7 +103,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug_Unicode/FullscreenBrowser.bsc"
+				OutputFile=""
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -160,6 +162,8 @@
 				AssemblerListingLocation=".\Release_Unicode/"
 				ObjectFile=".\Release_Unicode/"
 				ProgramDataBaseFileName=".\Release_Unicode/"
+				BrowseInformation="1"
+				BrowseInformationFile="$(IntDir)\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -200,7 +204,108 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release_Unicode/FullscreenBrowser.bsc"
+				OutputFile=""
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode LockBrowser|Win32"
+			OutputDirectory=".\Release_Unicode_LockBrowser"
+			IntermediateDirectory=".\Release_Unicode_LockBrowser"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
+			UseOfMFC="1"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release_Unicode_LockBrowser/FullscreenBrowser.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				WholeProgramOptimization="true"
+				PreprocessorDefinitions="LOCK_BROWSER,NDEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="stdafx.h"
+				PrecompiledHeaderFile=".\Release_Unicode_LockBrowser/FullscreenBrowser.pch"
+				AssemblerListingLocation=".\Release_Unicode_LockBrowser/"
+				ObjectFile=".\Release_Unicode_LockBrowser/"
+				ProgramDataBaseFileName=".\Release_Unicode_LockBrowser/"
+				BrowseInformation="1"
+				BrowseInformationFile="$(IntDir)\"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG,LOCK_BROWSER"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile=".\Release_Unicode_LockBrowser/FullscreenBrowser.exe"
+				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				GenerateManifest="false"
+				ProgramDatabaseFile=".\Release_Unicode_LockBrowser/FullscreenBrowser.pdb"
+				SubSystem="2"
+				LinkTimeCodeGeneration="1"
+				EntryPointSymbol="wWinMainCRTStartup"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+				SuppressStartupBanner="true"
+				OutputFile=""
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -239,6 +344,14 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode LockBrowser|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="FullscreenBrowser.rc"
@@ -259,6 +372,14 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode LockBrowser|Win32"
+					>
+					<Tool
+						Name="VCResourceCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="SimpleBrowser.cpp"
@@ -273,6 +394,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode LockBrowser|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -301,6 +430,15 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode LockBrowser|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -320,14 +458,31 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath="res\FullscreenBrowser.ico"
+		<Filter
+			Name="Resource Files"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
-		</File>
-		<File
-			RelativePath="res\manifest.bin"
-			>
-		</File>
+			<File
+				RelativePath="res\FullscreenBrowser.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\FullscreenBrowser.rc2"
+				>
+			</File>
+			<File
+				RelativePath=".\res\FullscreenBrowserLock.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\manifest.bin"
+				>
+			</File>
+			<File
+				RelativePath=".\res\manifestlock.bin"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

@@ -19,6 +19,7 @@ CFG=FullscreenBrowser - Win32 Release
 !MESSAGE 
 !MESSAGE "FullscreenBrowser - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "FullscreenBrowser - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "FullscreenBrowser - Win32 Release_LockBrowser" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -69,11 +70,11 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "_MBCS" /D "_AFXDLL" /D "WIN32" /D "_WINDOWS" /D _WIN32_WINNT=0x0400 /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "LOCK_BROWSER" /D "_DEBUG" /D "_MBCS" /D "_AFXDLL" /D "WIN32" /D "_WINDOWS" /D _WIN32_WINNT=0x0400 /D _WIN32_IE=0x0400 /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
-# ADD RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL" /d "LOCK_BROWSER"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -81,12 +82,40 @@ LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
+!ELSEIF  "$(CFG)" == "FullscreenBrowser - Win32 Release_LockBrowser"
+
+# PROP BASE Use_MFC 5
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Release_LockBrowser"
+# PROP BASE Intermediate_Dir "Release_LockBrowser"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 5
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "Release_LockBrowser"
+# PROP Intermediate_Dir "Release_LockBrowser"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D _WIN32_WINNT=0x0400 /D _WIN32_IE=0x0400 /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "LOCK_BROWSER" /D "NDEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D _WIN32_WINNT=0x0400 /D _WIN32_IE=0x0400 /Yu"stdafx.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "LOCK_BROWSER"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
+# ADD LINK32 /nologo /subsystem:windows /machine:I386
+
 !ENDIF 
 
 # Begin Target
 
 # Name "FullscreenBrowser - Win32 Release"
 # Name "FullscreenBrowser - Win32 Debug"
+# Name "FullscreenBrowser - Win32 Release_LockBrowser"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -124,13 +153,29 @@ SOURCE=.\SimpleBrowser.h
 SOURCE=.\StdAfx.h
 # End Source File
 # End Group
+# Begin Group "Resource Files"
+
+# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
 SOURCE=.\res\FullscreenBrowser.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\res\FullscreenBrowser.rc2
+# End Source File
+# Begin Source File
+
+SOURCE=.\res\FullscreenBrowserLock.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\manifest.bin
 # End Source File
+# Begin Source File
+
+SOURCE=.\res\manifestlock.bin
+# End Source File
+# End Group
 # End Target
 # End Project
