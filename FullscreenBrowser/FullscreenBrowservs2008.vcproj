@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="LOCK_BROWSER,_DEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
+				PreprocessorDefinitions="_DEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -71,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG,LOCK_BROWSER"
+				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
 			/>
 			<Tool
@@ -153,7 +153,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				WholeProgramOptimization="true"
-				PreprocessorDefinitions="NDEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
+				PreprocessorDefinitions="NDEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -254,7 +254,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				WholeProgramOptimization="true"
-				PreprocessorDefinitions="LOCK_BROWSER,NDEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600"
+				PreprocessorDefinitions="LOCK_BROWSER,NDEBUG;UNICODE;WIN32;_WINDOWS;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_IE=0x0600;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"

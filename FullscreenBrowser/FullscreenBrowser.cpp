@@ -154,11 +154,10 @@ FullscreenBrowserApp::FullscreenBrowserApp()
 }
 
 #ifdef LOCK_BROWSER
-/***************************************************
- * Enable / Disable Task Manager and others of the *
- * security Screen popped-up with CTRL+ALT+DEL     *
- * TRUE=Enable, FALSE=Disable                      *
- ***************************************************/
+// Enable / Disable Task Manager and others of the
+// security Screen popped-up with CTRL+ALT+DEL
+// NOTE: many anti-virus are detecting the modification
+// of the following registry entries as a virus...
 BOOL FullscreenBrowserApp::TaskManagerEnableDisable(BOOL bEnableDisable)
 {
     #define KEY_SYSTEM_POLICIES		_T("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System")
@@ -232,10 +231,9 @@ BOOL FullscreenBrowserApp::TaskManagerEnableDisable(BOOL bEnableDisable)
     return TRUE;
 }
 
-/*******************************************************
- * Note: CTRL+ALT+DEL Unfortunately doesn't work and   *
- * hooking works only when not in debug mode!          *
- *******************************************************/
+
+// Note: CTRL+ALT+DEL Unfortunately doesn't work and
+// hooking works only when not in debug mode!
 HHOOK hKeyboardHook; 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) 
 {
@@ -248,6 +246,8 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         if (
             // WIN key (for Start Menu) APPS key (for right-click context menu) and F1 Help
             ((p->vkCode == VK_LWIN) || (p->vkCode == VK_RWIN) || (p->vkCode == VK_APPS) || (p->vkCode == VK_SNAPSHOT) || (p->vkCode == VK_F1)) || 
+			// SHIFT+F10 (for right-click context menu)
+            ((p->vkCode == VK_F10) && ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0)) ||
             // ALT+TAB
             (p->vkCode == VK_TAB && p->flags & LLKHF_ALTDOWN) ||   
 			// ALT+RETURN
@@ -527,6 +527,12 @@ BOOL FullscreenBrowserApp::InitInstance()
 	}
 #endif	
 
+	// All varieties of Windows NT since 3.51 include the ability to create and run multiple desktops.
+	// Normally, this feature isn't used, and all applications run within the "Default" desktop.
+	// However, if you want to create a kiosk-style application which has a full-screen interface,
+	// and prevents Ctrl+Alt+Del or any of the other standard Windows options from being accessed,
+	// then this technique is the way to do it up to Vista. From Windows 7 on the task manager is
+	// shown in the current desktop...
 	m_bNewDesktop = (BOOL)GetProfileInt(_T("General"), _T("NewDesktop"), FALSE);
 	WriteProfileInt(_T("General"), _T("NewDesktop"), m_bNewDesktop);
 	if (!m_bNewDesktop)
