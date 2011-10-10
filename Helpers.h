@@ -142,7 +142,7 @@ CSIDL_COOKIES					File system directory that serves as a common repository for I
 CSIDL_DESKTOP					Windows Desktop, virtual folder at the root of the namespace. 
 CSIDL_DESKTOPDIRECTORY			File system directory used to physically store file objects on the desktop
 								(not to be confused with the desktop folder itself). 
-CSIDL_DRIVES					My Computer—virtual folder containing everything on the local computer: storage devices,
+CSIDL_DRIVES					My Computer virtual folder containing everything on the local computer: storage devices,
 								printers, and Control Panel. The folder may also contain mapped network drives. 
 CSIDL_FAVORITES					File system directory that serves as a common repository for the user's favorite items. 
 CSIDL_FONTS						Virtual folder containing fonts. 
@@ -150,7 +150,7 @@ CSIDL_HISTORY					File system directory that serves as a common repository for I
 CSIDL_INTERNET					Virtual folder representing the Internet. 
 CSIDL_INTERNET_CACHE			File system directory that serves as a common repository for temporary Internet files. 
 CSIDL_NETHOOD					File system directory containing objects that appear in the network neighborhood. 
-CSIDL_NETWORK					Network Neighborhood Folder—virtual folder representing the top level of the network hierarchy. 
+CSIDL_NETWORK					Network Neighborhood virtual folder representing the top level of the network hierarchy. 
 CSIDL_PERSONAL					File system directory that serves as a common repository for documents. 
 CSIDL_PRINTERS					Virtual folder containing installed printers. 
 CSIDL_PRINTHOOD					File system directory that serves as a common repository for printer links. 
@@ -164,7 +164,6 @@ CSIDL_TEMPLATES					File system directory that serves as a common repository for
 CSIDL_MYVIDEO					My Videos folder
 CSIDL_MYMUSIC					My Music folder
 CSIDL_MYPICTURES				My Pictures folder
-CSIDL_PERSONAL					My Documents folder
 CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);

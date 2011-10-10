@@ -6636,12 +6636,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 
 	// Default auto-save directory
 	sDeviceName = GetValidName(sDeviceName);
-	CString sAutoSaveDir;
-	sAutoSaveDir = ::GetSpecialFolderPath(CSIDL_PERSONAL);
-	if (sAutoSaveDir == _T(""))
-		sAutoSaveDir = ::GetDriveName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir());
-	sAutoSaveDir.TrimRight(_T('\\'));
-	sAutoSaveDir += _T("\\") + CString(APPNAME_NOEXT) + _T("\\") + sDeviceName;
+	CString sDefaultAutoSaveDir(pApp->m_sMicroApacheDocRoot);
+	sDefaultAutoSaveDir.TrimRight(_T('\\'));
+	sDefaultAutoSaveDir += _T("\\") + sDeviceName;
 
 	// Set Placement
 	if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
@@ -6745,8 +6742,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nRecFileCount = (int) pApp->GetProfileInt(sSection, _T("RecFileCount"), DEFAULT_REC_AVIFILE_COUNT);
 	m_llRecFileSize = ((LONGLONG)pApp->GetProfileInt(sSection, _T("RecFileSizeMB"), DEFAULT_REC_AVIFILE_SIZE_MB)) << 20;
 	m_bPostRec = (BOOL) pApp->GetProfileInt(sSection, _T("PostRec"), FALSE);
-	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sAutoSaveDir);
-	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sAutoSaveDir);
+	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
+	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
 	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), FALSE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	m_bSnapshotHistorySwf = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), FALSE);
@@ -6758,7 +6755,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	m_fSnapshotVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_sSnapshotAutoSaveDir = pApp->GetProfileString(sSection, _T("SnapshotAutoSaveDir"), sAutoSaveDir);
+	m_sSnapshotAutoSaveDir = pApp->GetProfileString(sSection, _T("SnapshotAutoSaveDir"), sDefaultAutoSaveDir);
 	m_bSnapshotThumb = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotThumb"), FALSE);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
@@ -8001,58 +7998,6 @@ void CVideoDeviceDoc::FreeAVIFiles()
 	m_AVRecs.RemoveAll();
 }
 
-void CVideoDeviceDoc::CheckRecDir()
-{
-	// Not Existing or Not A Directory?
-	DWORD dwAttrib =::GetFileAttributes(m_sRecordAutoSaveDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		// Try create it
-		if (m_sRecordAutoSaveDir != _T(""))
-			::CreateDir(m_sRecordAutoSaveDir);
-
-		// Try with some standard folders
-		dwAttrib =::GetFileAttributes(m_sRecordAutoSaveDir);
-		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-		{
-			// Try Video directory
-			CString sRecordAutoSaveDir = ::GetSpecialFolderPath(CSIDL_MYVIDEO);
-
-			// Try My Documents if video dir not available
-			if (sRecordAutoSaveDir == _T(""))
-				sRecordAutoSaveDir = ::GetSpecialFolderPath(CSIDL_PERSONAL);
-
-			// Use main drive
-			if (sRecordAutoSaveDir == _T(""))
-				sRecordAutoSaveDir = ::GetDriveName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir()) + _T("\\") + DEFAULT_AVIREC_DIR;
-			else
-			{
-				sRecordAutoSaveDir.TrimRight(_T('\\'));
-				sRecordAutoSaveDir += CString(_T("\\")) + CString(DEFAULT_AVIREC_DIR);
-			}
-
-			// Try create it
-			dwAttrib =::GetFileAttributes(sRecordAutoSaveDir);
-			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-			{
-				if (!::CreateDir(sRecordAutoSaveDir))
-					return;
-			}
-
-			// Set var
-			m_sRecordAutoSaveDir = sRecordAutoSaveDir;
-
-			// Update video mode page
-			if (m_pGeneralPage)
-			{
-				m_pGeneralPage->m_DirLabel.SetLink(sRecordAutoSaveDir);
-				CEdit* pEdit = (CEdit*)m_pGeneralPage->GetDlgItem(IDC_RECORD_SAVEAS_PATH);
-				pEdit->SetWindowText(sRecordAutoSaveDir);
-			}
-		}
-	}
-}
-
 __forceinline CString CVideoDeviceDoc::MakeRecFileName()
 {
 	CString sFirstRecFileName;
@@ -8294,10 +8239,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		}
 		else
 			m_bAboutToStartRec = FALSE;
-
-		// Check whether a rec dir has been chosen,
-		// if not use desktop or temp folder
-		CheckRecDir();
 
 		// Set First Rec. File Name
 		m_sFirstRecFileName = MakeRecFileName();

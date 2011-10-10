@@ -175,25 +175,24 @@ BOOL CAssistantPage::OnInitDialog()
 	m_bCheck24hRec = Is24hRec();
 	m_bCheckFullStretch = FALSE;
 	m_sName = m_pDoc->GetAssignedDeviceName();
-	m_sPhpConfigVersion = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_VERSION);
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
 	m_bCheckPrintCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_PRINTCOMMAND) == _T("1"));
 	m_bCheckSaveCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_SAVECOMMAND) == _T("1"));
-	if (sInitDefaultPage == PHPCONFIG_SUMMARYSNAPSHOT_NAME)
+	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_NAME) == 0)
 		m_nUsage = 0;
-	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTHISTORY_NAME)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_NAME) == 0)
 		m_nUsage = 1;
-	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOT_NAME)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_NAME) == 0)
 	{
 		m_nUsage = 2;
 		m_bCheckFullStretch = FALSE;
 	}
-	else if (sInitDefaultPage == PHPCONFIG_SNAPSHOTFULL_NAME)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_NAME) == 0)
 	{
 		m_nUsage = 2;
 		m_bCheckFullStretch = TRUE;
 	}
-	else if (sInitDefaultPage == PHPCONFIG_SUMMARYIFRAME_NAME)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_NAME) == 0)
 		m_nUsage = 3;
 	else
 		m_nUsage = 4;
@@ -1170,6 +1169,27 @@ void CAssistantPage::ApplySettings()
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
+
+			break;
+		}
+		case 4 :
+		{
+			// Update configuration.php
+			CString sDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
+			if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_NAME) == 0)		// Current usage 0
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
+			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_NAME) == 0)	// Current usage 1
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
+			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_NAME) == 0 ||		// Current usage 2
+					sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_NAME) == 0)
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
+			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_NAME) == 0)		// Current usage 3
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
+			else
+			{
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
+			}
 
 			break;
 		}

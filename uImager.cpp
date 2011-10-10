@@ -391,10 +391,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Get AppData Folder
 		CString sAppData = ::GetSpecialFolderPath(CSIDL_APPDATA);
 
+#ifdef VIDEODEVICEDOC
 		// Create our application folder
 		// Note: under win95 and NT4 CSIDL_APPDATA is not
 		// available, sAppData is then _T("")
-#ifdef VIDEODEVICEDOC
 		if (sAppData != _T(""))
 		{
 			CString sOurAppFolder = sAppData + _T("\\") +
@@ -405,6 +405,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					::ShowLastError(TRUE);
 			}
 		}
+
+		// Set default location for Document Root,
+		// get a drive where we can write (usually it's C:)
+		m_sMicroApacheDocRoot = ::GetDriveName(GetAppTempDir());
+		m_sMicroApacheDocRoot.TrimRight(_T('\\'));
+		m_sMicroApacheDocRoot += _T("\\") + CString(APPNAME_NOEXT);
 #endif
 
 		// Init Trace and Log Files Location
@@ -5089,13 +5095,7 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);
 
 	// Micro Apache Document Root
-	CString sDefaultDocRoot;
-	sDefaultDocRoot = ::GetSpecialFolderPath(CSIDL_PERSONAL);
-	if (sDefaultDocRoot == _T(""))
-		sDefaultDocRoot = ::GetDriveName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir());
-	sDefaultDocRoot.TrimRight(_T('\\'));
-	sDefaultDocRoot += _T("\\") + CString(APPNAME_NOEXT);
-	m_sMicroApacheDocRoot = GetProfileString(sSection, _T("MicroApacheDocRoot"), sDefaultDocRoot);
+	m_sMicroApacheDocRoot = GetProfileString(sSection, _T("MicroApacheDocRoot"), m_sMicroApacheDocRoot);
 	::CreateDir(m_sMicroApacheDocRoot);
 
 	// Micro Apache Server Port

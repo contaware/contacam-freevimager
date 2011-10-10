@@ -56,7 +56,6 @@ public:
 protected:
 	CVideoDeviceDoc* m_pDoc;
 	BOOL m_bDoApplySettings;
-	CString m_sPhpConfigVersion;
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();

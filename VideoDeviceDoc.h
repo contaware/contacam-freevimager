@@ -55,7 +55,6 @@ class CMovementDetectionPage;
 #define DEFAULT_REC_AVIFILE_COUNT			8			// files
 #define DEFAULT_REC_AVIFILE_SIZE_MB			1000		// 1000 MB
 #define DEFAULT_REC_AVIFILE_SIZE			(1000 * 1024 * 1024)// 1000 MB
-#define DEFAULT_AVIREC_DIR					_T("AVIRec")
 #define PART_POSTFIX						_T("_part%04d.avi")
 #define POSTREC_POSTFIX						_T("_postrec")
 #define MAX_DEVICE_AUTORUN_KEYS				32			// Maximum number of devices that can autorun at start-up
@@ -1457,7 +1456,6 @@ protected:
 	BOOL Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits);	// De-Interlace Src and put it to Dst,
 																			// Dst bits are Allocate by the function
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec = NULL);
-	void CheckRecDir();
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
