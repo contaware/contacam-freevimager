@@ -39,6 +39,7 @@ Release procedure
 -----------------
 
 1. Update Version Number and History
+   - appconst.h
    - 2x in uImager.rc2
    - RemoteCam and RemoteCamViewer version and about dialog resources
    - CurrentVersion.nsh
