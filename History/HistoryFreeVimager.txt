@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+3.5.5 (October 10th 2011)
+
+- No changes (be in sync with ContaCam version)
+
 3.5.0 (September 13th 2011)
 
 - Fixed Xmp metadata reading, sometimes this caused a

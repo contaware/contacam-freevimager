@@ -1,5 +1,16 @@
 VERSION HISTORY
 
+3.5.5 (October 10th 2011)
+
+- To avoid web server problems (especially PHP) with non-ASCII
+  My Documents path changed the default document root location
+  from C:\...\Documents\ContaCam to C:\ContaCam 
+- The 'No change' selection in the Assistant Tab is
+  now working as expected when entering a new camera Name 
+- FullscreenBrowser available in two versions: a light version
+  with the task disabler code removed to make the anti-virus
+  happy and the original version distributed separately
+
 3.5.0 (September 13th 2011)
 
 - Secure email sending through SSL/TLS or STARTTLS

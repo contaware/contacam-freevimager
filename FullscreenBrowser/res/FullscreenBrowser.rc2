@@ -47,16 +47,16 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Fullscreen Browser\0"
-            VALUE "CompanyName", "contaware.com\0"
-            VALUE "FileDescription", "Fullscreen Browser Application with Lock\0"
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "Fullscreen Browser with Lock\0"
             VALUE "FileVersion", "1, 0, 0, 5\0"
             VALUE "InternalName", "FullscreenBrowser\0"
-            VALUE "LegalCopyright", "Copyright (C) 2011\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2011\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "FullscreenBrowser.EXE\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Fullscreen Browser Application\0"
+            VALUE "ProductName", "Fullscreen Browser\0"
             VALUE "ProductVersion", "1, 0, 0, 5\0"
             VALUE "SpecialBuild", "\0"
         END
@@ -111,16 +111,16 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Fullscreen Browser\0"
-            VALUE "CompanyName", "contaware.com\0"
-            VALUE "FileDescription", "Fullscreen Browser Application\0"
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "Fullscreen Browser\0"
             VALUE "FileVersion", "1, 0, 0, 5\0"
             VALUE "InternalName", "FullscreenBrowser\0"
-            VALUE "LegalCopyright", "Copyright (C) 2011\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2011\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "FullscreenBrowser.EXE\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Fullscreen Browser Application\0"
+            VALUE "ProductName", "Fullscreen Browser\0"
             VALUE "ProductVersion", "1, 0, 0, 5\0"
             VALUE "SpecialBuild", "\0"
         END
