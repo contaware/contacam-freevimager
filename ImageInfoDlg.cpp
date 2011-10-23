@@ -2056,7 +2056,7 @@ void CImageInfoDlg::DisplayMetadata()
 		if (m_pDoc->m_pDib->GetExifInfo()->bGpsInfoPresent)
 		{
 #ifdef _DEBUG
-			t.Format(_T("Gps version:\t%u%u%u%u\r\n"),	(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[0],
+			t.Format(_T("GPS version:\t%u%u%u%u\r\n"),	(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[0],
 														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[1],
 														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[2],
 														(unsigned int)m_pDoc->m_pDib->GetExifInfo()->GpsVersion[3]);
@@ -2104,7 +2104,7 @@ void CImageInfoDlg::DisplayMetadata()
 			}
 			if (m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum[0])
 			{
-				t.Format(_T("Gps map datum:\t%s\r\n"), CString(m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum));
+				t.Format(_T("GPS map datum:\t%s\r\n"), CString(m_pDoc->m_pDib->GetExifInfo()->GpsMapDatum));
 				s+=t;
 			}
 		}
