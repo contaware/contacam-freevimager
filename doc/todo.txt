@@ -1,6 +1,7 @@
 Picture:
 --------
 - Using numbers to jump to a specific file in current directory
+- When image is shown press F2 and "Rename" window appears
 
 Detection:
 ----------

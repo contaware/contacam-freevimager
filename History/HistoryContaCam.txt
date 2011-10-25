@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+3.7.0 (November 11th 2011)
+
+- Shutdown MicroApache web server in a gently way
+- Added configuration setting for luminosity change detection
+
 3.5.5 (October 10th 2011)
 
 - To avoid web server problems (especially PHP) with non-ASCII
