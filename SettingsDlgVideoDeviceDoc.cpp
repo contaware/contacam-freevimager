@@ -519,16 +519,15 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
-		// Start stopping server
+		// Stop server
+		BOOL bOk = TRUE;
 		if (pApp->m_bMicroApacheStarted)
 		{
 			pApp->m_MicroApacheWatchdogThread.Kill();
-			CVideoDeviceDoc::MicroApacheInitShutdown();
-			pApp->m_bMicroApacheStarted = FALSE;
+			if (bOk = CVideoDeviceDoc::MicroApacheShutdown())
+				pApp->m_bMicroApacheStarted = FALSE;
 		}
-
-		// Wait till shutdown
-		if (!CVideoDeviceDoc::MicroApacheFinishShutdown())
+		if (!bOk)
 			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
 		else
 		{

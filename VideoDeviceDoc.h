@@ -1437,8 +1437,7 @@ public:
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();
 	static BOOL MicroApacheWaitCanConnect();
-	static void MicroApacheInitShutdown();
-	static BOOL MicroApacheFinishShutdown();
+	static BOOL MicroApacheShutdown();
 	static CString MicroApacheConfigFileGetParam(const CString& sParam);						// sParam is case sensitive!
 	static BOOL MicroApacheConfigFileSetParam(const CString& sParam, const CString& sValue);	// sParam is case sensitive!
 	

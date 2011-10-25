@@ -9265,6 +9265,7 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	sMicroapacheStartFile += MICROAPACHE_RELPATH;
 	if (!::IsExistingFile(sMicroapacheStartFile))
 		return FALSE;
+	::DeleteFile(MicroApacheGetLogFileName()); // Avoid growing it to much!
 	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
 	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
@@ -9390,14 +9391,66 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 	return FALSE;
 }
 
-void CVideoDeviceDoc::MicroApacheInitShutdown()
+BOOL CVideoDeviceDoc::MicroApacheShutdown()
 {
-	::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
-}
+	BOOL res;
+	LPBYTE pData = NULL;
+	try
+	{
+		// Open Pid File
+		CFile f(MicroApacheGetPidFileName(),
+				CFile::modeRead | CFile::shareDenyNone);
+		DWORD dwLength = (DWORD)f.GetLength();
+		if (dwLength > 0)
+		{
+			// Allocate Buffer
+			pData = new BYTE [dwLength+1];
+			if (pData)
+			{
+				// Read Data
+				dwLength = f.Read(pData, dwLength);
+				pData[dwLength] = '\0';
+				CString sPid;
+				sPid = CString((LPCSTR)pData);
+				sPid.TrimLeft();
+				sPid.TrimRight();
+				delete [] pData;
 
-BOOL CVideoDeviceDoc::MicroApacheFinishShutdown()
-{
-	BOOL res = TRUE;
+				// Get the existing event
+				CString sEventName;
+				sEventName = _T("ap") + sPid + _T("_shutdown");
+				HANDLE hShutdownEvent = ::OpenEvent(EVENT_MODIFY_STATE, FALSE, sEventName);
+				if (hShutdownEvent)
+				{
+					// Set the event
+					res = ::SetEvent(hShutdownEvent);
+
+					// Clean-up
+					::CloseHandle(hShutdownEvent);
+
+					// Check
+					if (!res)
+						::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+				}
+				else
+					::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+			}
+			else
+				::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+		}
+		else
+			::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+	}
+	catch (CFileException* e)
+	{
+		if (pData)
+			delete [] pData;
+		e->Delete();
+		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+	}
+
+	// Wait a max of MICROAPACHE_TIMEOUT_MS
+	res = TRUE;
 	DWORD dwSleep = 0U;
 	while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
 	{
@@ -9409,8 +9462,28 @@ BOOL CVideoDeviceDoc::MicroApacheFinishShutdown()
 			break;
 		}
 	}
-	::DeleteFile(CVideoDeviceDoc::MicroApacheGetLogFileName()); // Avoid growing it to much!
-	::DeleteFile(CVideoDeviceDoc::MicroApacheGetPidFileName());
+
+	// Wait again a max of MICROAPACHE_TIMEOUT_MS
+	if (!res)
+	{
+		::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE);
+		res = TRUE;
+		dwSleep = 0U;
+		while (::EnumKillProcByName(MICROAPACHE_FILENAME) > 0)
+		{
+			dwSleep += MICROAPACHE_WAITTIME_MS;
+			::Sleep(MICROAPACHE_WAITTIME_MS);
+			if (dwSleep >= MICROAPACHE_TIMEOUT_MS)
+			{
+				res = FALSE;
+				break;
+			}
+		}
+	}
+
+	// Delete pid file
+	::DeleteFile(MicroApacheGetPidFileName());
+
 	return res;
 }
 

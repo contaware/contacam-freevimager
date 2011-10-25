@@ -2228,13 +2228,6 @@ BOOL CUImagerApp::AreAllDocsSaved()
 
 void CUImagerApp::SaveOnEndSession()
 {
-#ifdef VIDEODEVICEDOC
-	if (m_bMicroApacheStarted)
-	{
-		m_MicroApacheWatchdogThread.Kill();
-		CVideoDeviceDoc::MicroApacheInitShutdown();
-	}
-#endif
 	if (m_bUseSettings)
 	{
 		SaveSettings();
@@ -2281,7 +2274,10 @@ void CUImagerApp::SaveOnEndSession()
 	}
 #ifdef VIDEODEVICEDOC
 	if (m_bMicroApacheStarted)
-		CVideoDeviceDoc::MicroApacheFinishShutdown();
+	{
+		m_MicroApacheWatchdogThread.Kill();
+		CVideoDeviceDoc::MicroApacheShutdown();
+	}
 	if (!m_bServiceProcess)
 		BrowserAutostart();
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
@@ -2955,15 +2951,6 @@ BOOL CUImagerApp::BurnDirContent(CString sDir)
 
 int CUImagerApp::ExitInstance() 
 {
-#ifdef VIDEODEVICEDOC
-	// Start Micro Apache shutdown
-	if (m_bMicroApacheStarted)
-	{
-		m_MicroApacheWatchdogThread.Kill();
-		CVideoDeviceDoc::MicroApacheInitShutdown();
-	}
-#endif
-
 	// Clean-up recorders array
 	FreeDiscRecorders2();
 
@@ -2974,9 +2961,12 @@ int CUImagerApp::ExitInstance()
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
 
-	// Finish Micro Apache shutdown
+	// Micro Apache shutdown
 	if (m_bMicroApacheStarted)
-		CVideoDeviceDoc::MicroApacheFinishShutdown();
+	{
+		m_MicroApacheWatchdogThread.Kill();
+		CVideoDeviceDoc::MicroApacheShutdown();
+	}
 
 	// Browser autostart
 	if (!m_bServiceProcess)
@@ -6638,7 +6628,7 @@ int CUImagerApp::CMicroApacheWatchdogThread::Work()
 				else if (	nCount == nLastCount	&&
 							nCount > 0				&&
 							nCount < MICROAPACHE_NUM_PROCESS)
-					CVideoDeviceDoc::MicroApacheInitShutdown();
+					::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE); // Kill it!
 				nLastCount = nCount;
 				break;
 			}
