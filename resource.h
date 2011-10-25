@@ -2241,6 +2241,7 @@
 #define IDS_STRING1681                  1681
 #define IDC_CPUSPEED                    1682
 #define IDS_STRING1682                  1682
+#define IDC_CHECK_LUMCHANGE_DET         1682
 #define IDC_EDIT_MTU                    1683
 #define IDC_PHYSMEM                     1683
 #define IDS_STRING1683                  1683

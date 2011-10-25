@@ -1733,6 +1733,7 @@ public:
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
+	volatile BOOL m_bDoLumChangeDetection;				// Discard movement detection if a luminosity change happens
 	volatile BOOL m_bDoFalseDetectionCheck;				// Do a false detection check if set
 	volatile BOOL m_bDoFalseDetectionAnd;				// And / Or between Blue and None Blue zones
 	volatile int m_nFalseDetectionBlueThreshold;		// False detections blue zones threshold value

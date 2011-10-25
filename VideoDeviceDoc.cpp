@@ -3685,7 +3685,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		}
 
 		// Luminosity change detector
-		bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
+		if (m_bDoLumChangeDetection)
+			bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
 
 		// Differencing
 		BYTE p[16];
@@ -6134,6 +6135,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_bDoAdjacentZonesDetection = TRUE;
+	m_bDoLumChangeDetection = TRUE;
 	m_bDoFalseDetectionCheck = FALSE;
 	m_bDoFalseDetectionAnd = TRUE;
 	m_nFalseDetectionBlueThreshold = 10;
@@ -6777,6 +6779,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_bDoAdjacentZonesDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoAdjacentZonesDetection"), TRUE);
+	m_bDoLumChangeDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoLumChangeDetection"), TRUE);
 	m_bDoFalseDetectionCheck = (BOOL) pApp->GetProfileInt(sSection, _T("DoFalseDetectionCheck"), FALSE);
 	m_bDoFalseDetectionAnd = (BOOL) pApp->GetProfileInt(sSection, _T("DoFalseDetectionAnd"), TRUE);
 	m_nFalseDetectionBlueThreshold = (int) pApp->GetProfileInt(sSection, _T("FalseDetectionBlueThreshold"), 10);
@@ -7044,6 +7047,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 			pApp->WriteProfileInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection);
+			pApp->WriteProfileInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection);
 			pApp->WriteProfileInt(sSection, _T("DoFalseDetectionCheck"), m_bDoFalseDetectionCheck);
 			pApp->WriteProfileInt(sSection, _T("DoFalseDetectionAnd"), m_bDoFalseDetectionAnd);
 			pApp->WriteProfileInt(sSection, _T("FalseDetectionBlueThreshold"), m_nFalseDetectionBlueThreshold);
@@ -7245,6 +7249,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoFalseDetectionCheck"), m_bDoFalseDetectionCheck, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoFalseDetectionAnd"), m_bDoFalseDetectionAnd, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("FalseDetectionBlueThreshold"), m_nFalseDetectionBlueThreshold, sTempFileName);
@@ -11315,7 +11320,7 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 	// Statistics (only if we have "statistically" enough samples)
 	int nTotalGridIntersections = (m_lMovDetXZonesCount - 1) * (m_lMovDetYZonesCount - 1);
 	int nTotalGridIntersections20 = 2 * nTotalGridIntersections / 10; // 20%
-	if (nCount >= nTotalGridIntersections20)
+	if (nCount > 0 && nCount >= nTotalGridIntersections20)
 	{
 		// Avg
 		int nAvg = 0;

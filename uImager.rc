@@ -3907,27 +3907,30 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_MOVEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,7,38,10
     CONTROL         "Preview",IDC_CHECK_DET_PREVIEW,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,66,7,41,10
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,39,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,39,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,57,25,12,
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,33,11,12
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,51,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,57,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,51,11,12
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,79,132,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,72,132,12
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,118,185,10
+                    WS_TABSTOP,14,108,185,10
+    CONTROL         "Only detect if no camera luminosity change occurs",
+                    IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,120,185,10
     CONTROL         "Consider a false detection:",IDC_CHECK_FALSE_DET,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,14,132,99,10
     EDITTEXT        IDC_EDIT_FALSE_DET_BLUE,69,144,23,12,ES_NUMBER
@@ -3944,45 +3947,47 @@ BEGIN
                     DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,208,
                     66,16
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,38,51,10
-    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,37,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,35,51,10
+    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,34,96,12
     CONTROL         "Save AVI",IDC_SAVE_AVI_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,56,46,10
-    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,55,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,53,46,10
+    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,52,96,12
     CONTROL         "Save Anim. GIF",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,74,62,10
-    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,73,96,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,71,62,10
+    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,70,96,
                     12
     CONTROL         "Send Email",IDC_SENDMAIL_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,92,53,10
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,91,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,89,53,10
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,88,96,12
     CONTROL         "Ftp Upload",IDC_FTP_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,111,51,9
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,109,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,107,51,9
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,106,96,12
     CONTROL         "Execute Command:",IDC_EXEC_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,128,77,10
-    EDITTEXT        IDC_EDIT_EXE,266,140,135,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,266,154,135,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,125,77,10
+    EDITTEXT        IDC_EDIT_EXE,266,138,135,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,266,152,135,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",
                     IDC_CHECK_HIDE_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,168,129,10
+                    WS_TABSTOP,236,167,129,10
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,180,145,10
+                    WS_TABSTOP,236,179,145,10
+    LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
+                    WS_GROUP
     EDITTEXT        IDC_DETECTION_SAVEAS_PATH,34,236,356,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
     PUSHBUTTON      "...",IDC_DETECTION_SAVEAS,392,236,16,12
     EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,59,120,8
+                    62,53,120,8
     LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,61,40,131,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,77,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,24,200,75
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,80,13,12,ES_RIGHT | 
+                    IDC_STATIC2283,61,34,131,8
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,70,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,200,71
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,73,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,215,24,193,206
+    GROUPBOX        "On Detection",IDC_STATIC2288,215,20,193,210
     LTEXT           "From",IDC_STATIC2289,27,212,16,8
     LTEXT           "To",IDC_STATIC2290,124,212,10,8
     GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,180,200,50
@@ -3994,16 +3999,14 @@ BEGIN
     LTEXT           "blue zones get red",IDC_STATIC2296,95,146,59,8
     LTEXT           "if more than",IDC_STATIC2297,27,160,38,8
     LTEXT           "none blue zones get red",IDC_STATIC2298,95,160,77,8
-    LTEXT           "Cmd",IDC_STATIC2299,236,143,15,8
-    LTEXT           "Params",IDC_STATIC2300,236,156,24,8
-    LTEXT           "",IDC_STATIC2301,236,194,165,27,SS_SUNKEN
-    LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
-                    WS_GROUP
+    LTEXT           "Cmd",IDC_STATIC2299,236,141,15,8
+    LTEXT           "Params",IDC_STATIC2300,236,154,24,8
+    LTEXT           "",IDC_STATIC2301,236,193,165,29,SS_SUNKEN
     RTEXT           "Warning: Unsupported Video Size for Movement Detection",
-                    IDC_WARNING,117,7,291,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,14,40,18,8
-    LTEXT           "Store",IDC_STATIC,14,59,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,105,200,69
+                    IDC_WARNING,117,6,291,11,SS_CENTERIMAGE
+    LTEXT           "Store",IDC_STATIC,14,34,18,8
+    LTEXT           "Store",IDC_STATIC,14,53,18,8
+    GROUPBOX        "Detection Constraints",IDC_STATIC,7,97,200,77
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 193, 256

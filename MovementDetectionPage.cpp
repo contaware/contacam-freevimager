@@ -90,6 +90,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_ADJACENT_ZONES_DET, OnCheckAdjacentZonesDet)
+	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
 	ON_EN_CHANGE(IDC_EDIT_DELETE_DETECTIONS_DAYS, OnChangeEditDeleteDetectionsDays)
 	ON_BN_CLICKED(IDC_SWF_CONFIGURE, OnSwfConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FALSE_DET, OnCheckFalseDet)
@@ -168,6 +169,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Adjacent Zones Detection
 	CButton* pCheckAdjacentZonesDetection = (CButton*)GetDlgItem(IDC_CHECK_ADJACENT_ZONES_DET);
 	pCheckAdjacentZonesDetection->SetCheck(m_pDoc->m_bDoAdjacentZonesDetection ? 1 : 0);
+
+	// Discard movement detection if a luminosity change happens
+	CButton* pCheckLumChangeDetection = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
+	pCheckLumChangeDetection->SetCheck(m_pDoc->m_bDoLumChangeDetection ? 1 : 0);
 	
 	// False Detection Check
 	CButton* pCheckFalseDetection = (CButton*)GetDlgItem(IDC_CHECK_FALSE_DET);
@@ -438,6 +443,12 @@ void CMovementDetectionPage::OnCheckAdjacentZonesDet()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_ADJACENT_ZONES_DET);
 	m_pDoc->m_bDoAdjacentZonesDetection = pCheck->GetCheck() > 0;
+}
+
+void CMovementDetectionPage::OnCheckLumChangeDet() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
+	m_pDoc->m_bDoLumChangeDetection = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnCheckFalseDet() 

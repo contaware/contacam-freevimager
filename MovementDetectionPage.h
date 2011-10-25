@@ -90,6 +90,7 @@ protected:
 	afx_msg void OnCheckHideExecCommand();
 	afx_msg void OnCheckWaitExecCommand();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnCheckLumChangeDet();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
