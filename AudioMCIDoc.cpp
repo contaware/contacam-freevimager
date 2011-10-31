@@ -6,6 +6,7 @@
 #include "AudioMCIDoc.h"
 #include "AudioMCIView.h"
 #include "ToolBarChildFrm.h"
+#include "RenameDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -25,6 +26,7 @@ BEGIN_MESSAGE_MAP(CAudioMCIDoc, CDocument)
 	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
+	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -140,6 +142,33 @@ void CAudioMCIDoc::DeleteDocFile()
 	CloseDocument();
 }
 
+void CAudioMCIDoc::EditRename()
+{
+	CRenameDlg dlg;
+	dlg.m_sFileName = ::GetShortFileNameNoExt(GetPathName());
+	if (dlg.DoModal() == IDOK)
+	{	
+		// New file name
+		CString sNewFileName =	::GetDriveName(GetPathName()) +
+								::GetDirName(GetPathName()) +
+								dlg.m_sFileName +
+								::GetFileExt(GetPathName());
+		
+		// Destroy MCI Wnd
+		GetView()->m_DibStatic.FreeMusic();
+
+		// Rename
+		if (!::MoveFile(GetPathName(), sNewFileName))
+		{
+			::ShowLastError(TRUE);
+			sNewFileName = GetPathName();
+		}
+		
+		// Reload
+		LoadAudio(sNewFileName);
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CAudioMCIDoc serialization
 
@@ -164,6 +193,11 @@ void CAudioMCIDoc::Serialize(CArchive& ar)
 void CAudioMCIDoc::OnEditDelete() 
 {
 	EditDelete(TRUE);	
+}
+
+void CAudioMCIDoc::OnEditRename() 
+{
+	EditRename();
 }
 
 void CAudioMCIDoc::OnUpdateFileSave(CCmdUI* pCmdUI) 

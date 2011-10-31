@@ -476,10 +476,12 @@ public:
 	// Delete Current Page or Picture and Load Next One
 	void EditDelete(BOOL bPrompt);
 
+	// Rename Current Picture and Reload it
+	void EditRename();
+
 	// Clear the Previous and Next Loaded Pictures
-	// Used In Save As and Crop
-	// (to avoid the save as file is the next or previous)
-	// and Used by EditDelete
+	// Used in Save As (to avoid the save as file is the next or previous),
+	// Crop, FileMoveTo, EditRename, DeleteDocFile
 	void ClearPrevNextPictures();
 
 	// Create Preview Dib from pDib
@@ -1227,6 +1229,8 @@ protected:
 	afx_msg void OnUpdateViewMap(CCmdUI* pCmdUI);
 	afx_msg void OnEditCut();
 	afx_msg void OnUpdateEditCut(CCmdUI* pCmdUI);
+	afx_msg void OnEditRename();
+	afx_msg void OnUpdateEditRename(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

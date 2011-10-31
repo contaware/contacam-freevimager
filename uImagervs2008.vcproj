@@ -3117,6 +3117,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\RenameDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ResizingDlg.cpp"
 				>
 				<FileConfiguration
@@ -4937,6 +4941,10 @@
 			</File>
 			<File
 				RelativePath="RedEyeDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RenameDlg.h"
 				>
 			</File>
 			<File

@@ -1863,6 +1863,7 @@
 #define IDS_STRING1495                  1495
 #define IDC_EDIT_CONTENT_IPTCSUBJECTCODE 1496
 #define IDS_STRING1496                  1496
+#define IDD_RENAME                      1496
 #define IDC_RADIO_CONTENT_CATEGORY      1497
 #define IDS_STRING1497                  1497
 #define IDC_RADIO_CONTENT_CATEGORY2     1498
@@ -3532,6 +3533,7 @@
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_PLAY_RANDOM                  33165
 #define ID_VIEW_MAP                     33166
+#define ID_EDIT_RENAME                  33167
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3539,9 +3541,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33167
-#define _APS_NEXT_CONTROL_VALUE         2540
+#define _APS_NEXT_RESOURCE_VALUE        1497
+#define _APS_NEXT_COMMAND_VALUE         33168
+#define _APS_NEXT_CONTROL_VALUE         2541
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

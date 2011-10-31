@@ -65,7 +65,6 @@ public:
 	int m_nHelpMenuPos;
 
 protected:
-	void DeleteDocFile();
 	// This Pointers point to the first view and first frame,
 	// this works because in the current implementation
 	// we always have only one view and one frame!

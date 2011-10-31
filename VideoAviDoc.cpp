@@ -14,6 +14,7 @@
 #include "OutVolDlg.h"
 #include "AudioVideoShiftDlg.h"
 #include "PlayerToolBarDlg.h"
+#include "RenameDlg.h"
 #include "AviFileMerge.h"
 #include "PostDelayedMessage.h"
 #include "Quantizer.h"
@@ -84,6 +85,8 @@ BEGIN_MESSAGE_MAP(CVideoAviDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_EDIT_SNAPSHOT, OnEditSnapshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
+	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateEditRename)
 	//}}AFX_MSG_MAP
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_CAPTURE_AVIPLAY, OnCaptureAviplay)
@@ -5088,7 +5091,6 @@ void CVideoAviDoc::OnUpdateEditDelete(CCmdUI* pCmdUI)
 
 void CVideoAviDoc::EditDelete(BOOL bPrompt)
 {
-	GetView()->ForceCursor();
 	if (bPrompt)
 	{
 		CString sMsg;
@@ -5098,7 +5100,6 @@ void CVideoAviDoc::EditDelete(BOOL bPrompt)
 	}
 	else
 		DeleteDocFile();
-	GetView()->ForceCursor(FALSE);
 }
 
 void CVideoAviDoc::DeleteDocFile()
@@ -5120,6 +5121,48 @@ void CVideoAviDoc::DeleteDocFile()
 		::AfxMessageBox(str, MB_ICONSTOP);
 	}
 	CloseDocument();
+}
+
+void CVideoAviDoc::OnEditRename() 
+{
+	EditRename();
+}
+
+void CVideoAviDoc::OnUpdateEditRename(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	!IsModified() &&
+					!IsProcessing() &&
+					!AfxGetMainFrame()->m_bFullScreenMode &&
+					!m_PlayVideoFileThread.IsAlive() &&
+					!m_PlayAudioFileThread.IsAlive());
+}
+
+void CVideoAviDoc::EditRename()
+{
+	CRenameDlg dlg;
+	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
+	if (dlg.DoModal() == IDOK)
+	{	
+		// New file name
+		CString sNewFileName =	::GetDriveName(m_sFileName) +
+								::GetDirName(m_sFileName) +
+								dlg.m_sFileName +
+								::GetFileExt(m_sFileName);
+
+		// Delete
+		delete m_pAVIPlay;
+		m_pAVIPlay = NULL;
+
+		// Rename
+		if (!::MoveFile(m_sFileName, sNewFileName))
+		{
+			::ShowLastError(TRUE);
+			sNewFileName = m_sFileName;
+		}
+		
+		// Reload active streams
+		LoadAVI(sNewFileName, 0, TRUE);
+	}
 }
 
 BOOL CVideoAviDoc::LoadAVI(CString sFileName,

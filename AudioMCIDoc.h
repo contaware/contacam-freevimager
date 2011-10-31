@@ -46,6 +46,9 @@ public:
 	// Delete File
 	void EditDelete(BOOL bPrompt);
 
+	// Rename File
+	void EditRename();
+
 	// Audio Load Function
 	BOOL LoadAudio(LPCTSTR lpszFileName);
 
@@ -81,6 +84,7 @@ protected:
 	afx_msg void OnEditDelete();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
+	afx_msg void OnEditRename();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

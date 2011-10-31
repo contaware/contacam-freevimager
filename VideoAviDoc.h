@@ -441,6 +441,7 @@ public:
 	void UpdateAviInfoDlg();
 	void EditSnapshot();
 	void EditDelete(BOOL bPrompt);
+	void EditRename();
 
 	// Player Control
 	void PlayAVI();				// Not blocking start (starts playing if not already playing)
@@ -864,6 +865,8 @@ protected:
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnEditSnapshot();
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
+	afx_msg void OnEditRename();
+	afx_msg void OnUpdateEditRename(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnCaptureAviplay();

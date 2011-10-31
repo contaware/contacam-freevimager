@@ -1873,6 +1873,19 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->EditDelete(TRUE);	// Delete with prompting
 			break;
 
+		case VK_F2 : // Rename Doc
+			if ((pDoc->m_dwIDAfterFullLoadCommand != 0) ||
+				pDoc->IsModified() || pDoc->m_bMetadataModified ||
+				pDoc->m_SlideShowThread.IsSlideshowRunning() ||
+				((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly ||
+				pDoc->m_bDoRestartSlideshow || pDoc->m_pRotationFlippingDlg || pDoc->m_pHLSDlg || 
+				pDoc->m_pWndPalette || pDoc->m_bDoRedEyeColorPickup || pDoc->m_pRedEyeDlg ||
+				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
+				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop || pDoc->m_bBigPicture)
+				break;
+			pDoc->EditRename();
+			break;
+
 		case VK_APPS :
 			// Release Capture!
 			if (m_bDoScrollMove)

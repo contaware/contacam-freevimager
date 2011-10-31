@@ -1083,6 +1083,15 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			}
 			break;
 
+		case VK_F2 : // Rename Doc
+			if (!pDoc->IsModified()						&&
+				!pDoc->IsProcessing()					&&
+				!AfxGetMainFrame()->m_bFullScreenMode	&&
+				!pDoc->m_PlayVideoFileThread.IsAlive()	&&
+				!pDoc->m_PlayAudioFileThread.IsAlive())
+				pDoc->EditRename();
+			break;
+
 		case VK_APPS :
 			ForceCursor();
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_VIDEO_AVI));

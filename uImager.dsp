@@ -622,6 +622,10 @@ SOURCE=.\RedEyeDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\RenameDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ResizingDlg.cpp
 # End Source File
 # Begin Source File
@@ -1321,6 +1325,10 @@ SOURCE=.\ProgressDlg.h
 # Begin Source File
 
 SOURCE=.\RedEyeDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\RenameDlg.h
 # End Source File
 # Begin Source File
 

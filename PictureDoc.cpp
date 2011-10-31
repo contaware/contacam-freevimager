@@ -22,6 +22,7 @@
 #include <math.h>
 #include "Quantizer.h"
 #include "DecreaseBppDlg.h"
+#include "RenameDlg.h"
 #include "TransAlpha.h"
 #include "PostDelayedMessage.h"
 #include "DeletePageDlg.h"
@@ -349,6 +350,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_MAP, OnUpdateViewMap)
 	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateEditCut)
+	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateEditRename)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -3321,7 +3324,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				ClearPrevNextPictures();
 				SetModifiedFlag(FALSE);
 				if (LoadPicture(&m_pDib, FileName))
-					SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State
+					SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 		}
 		else
@@ -3704,7 +3707,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 					ClearPrevNextPictures();
 					SetModifiedFlag(FALSE);
 					if (LoadPicture(&m_pDib, FileName))
-						SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State
+						SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 				}
 			}
 			else
@@ -5346,6 +5349,70 @@ BOOL CPictureDoc::DeleteDocFile()
 	return res;
 }
 
+void CPictureDoc::OnEditRename() 
+{
+	EditRename();
+}
+
+void CPictureDoc::OnUpdateEditRename(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	m_dwIDAfterFullLoadCommand == 0						&&
+					!IsModified()										&&
+					!m_bMetadataModified								&&
+					!(m_SlideShowThread.IsSlideshowRunning()			||
+					m_bDoRestartSlideshow)								&&
+					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
+					!m_pRotationFlippingDlg								&&
+					!m_pWndPalette										&&
+					!m_pHLSDlg											&&
+					!m_pRedEyeDlg										&&
+					!m_bDoRedEyeColorPickup								&&
+					!m_pMonochromeConversionDlg							&&
+					!m_pSharpenDlg										&&
+					!m_pSoftenDlg										&&
+					!m_pSoftBordersDlg									&&
+					!m_bCrop											&&
+					!m_bPrintPreviewMode);
+}
+
+void CPictureDoc::EditRename()
+{
+	CRenameDlg dlg;
+	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
+	GetView()->ForceCursor();
+	if (dlg.DoModal() == IDOK)
+	{	
+		// New file name
+		CString sNewFileName =	::GetDriveName(m_sFileName) +
+								::GetDirName(m_sFileName) +
+								dlg.m_sFileName +
+								::GetFileExt(m_sFileName);
+		
+		// Stop Change Notification Thread
+		if (!m_SlideShowThread.IsRecursive())
+			m_ChangeNotificationThread.Kill();
+
+		// Be Sure We Are Not Working On This File
+		m_JpegThread.Kill();
+#ifdef SUPPORT_GIFLIB
+		m_GifAnimationThread.Kill();
+#endif
+
+		// Rename
+		if (!::MoveFile(m_sFileName, sNewFileName))
+		{
+			::ShowLastError(TRUE);
+			sNewFileName = m_sFileName;
+		}
+		
+		// Reload
+		ClearPrevNextPictures();
+		if (LoadPicture(&m_pDib, sNewFileName))
+			SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
+	}
+	GetView()->ForceCursor(FALSE);
+}
+
 void CPictureDoc::LoadSettings()
 {
 	CWinApp* pApp = ::AfxGetApp();
@@ -5599,9 +5666,6 @@ void CPictureDoc::OnViewPreviousPicture()
 		m_SlideShowThread.PreviousPicture();
 }
 
-// Used In Save As
-// (to avoid the save as file is the next or previous)
-// and Used by EditDelete()
 void CPictureDoc::ClearPrevNextPictures()
 {
 	m_LoadPicturesThread.WaitDone_Blocking();
@@ -12686,7 +12750,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 			{
 				ClearPrevNextPictures();
 				if (LoadPicture(&m_pDib, sCroppedFileName)) // Load Picture
-					SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+					SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 			
 			EndWaitCursor();

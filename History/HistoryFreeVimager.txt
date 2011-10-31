@@ -2,6 +2,7 @@ VERSION HISTORY
 
 3.7.0 (November 11th 2011)
 
+- Rename command
 - String fixes
 
 3.5.5 (October 10th 2011)

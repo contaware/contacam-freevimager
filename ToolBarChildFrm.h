@@ -215,9 +215,6 @@ class CAudioMCIChildFrame : public CChildFrame
 {
 protected:
 	CAudioMCIChildFrame();           // protected constructor used by dynamic creation
-	void StartShutdown();
-	void EndShutdown();
-	BOOL IsShutdownDone();
 
 	// Overrides
 	// ClassWizard generated virtual function overrides
@@ -245,9 +242,6 @@ class CCDAudioChildFrame : public CChildFrame
 {
 protected:
 	CCDAudioChildFrame();           // protected constructor used by dynamic creation
-	void StartShutdown();
-	void EndShutdown();
-	BOOL IsShutdownDone();
 
 	// Overrides
 	// ClassWizard generated virtual function overrides

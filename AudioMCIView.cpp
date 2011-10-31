@@ -116,12 +116,17 @@ BOOL CAudioMCIView::PreTranslateMessage(MSG* pMsg)
 				GetParentFrame()->PostMessage(WM_CLOSE, 0, 0);
 			return TRUE;
 		}
-		else if (pMsg->wParam ==  VK_DELETE)
+		else if (pMsg->wParam == VK_DELETE)
 		{
 			if (::GetKeyState(VK_CONTROL) < 0)
 				pDoc->EditDelete(FALSE);// Delete without prompting
 			else
 				pDoc->EditDelete(TRUE);	// Delete with prompting
+			return TRUE;
+		}
+		else if (pMsg->wParam == VK_F2)
+		{
+			pDoc->EditRename();
 			return TRUE;
 		}
 	}

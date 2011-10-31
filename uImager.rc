@@ -516,8 +516,8 @@ BEGIN
             MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
 
         END
-        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         MENUITEM "&Play\tEnter",                ID_PLAY_SLIDESHOW
         MENUITEM "&Stop\tPause",                ID_STOP_SLIDESHOW
@@ -732,8 +732,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         MENUITEM "Stop Processing",             ID_EDIT_STOP
     END
@@ -852,6 +852,7 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         MENUITEM "Rotate 90° CW\tCtrl+Right",   ID_EDIT_ROTATE_90CW
         MENUITEM "Rotate 90° CCW\tCtrl+Left",   ID_EDIT_ROTATE_90CCW
@@ -1159,6 +1160,7 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         MENUITEM "Rotate 90° CW\tCtrl+Right",   ID_EDIT_ROTATE_90CW
         MENUITEM "Rotate 90° CCW\tCtrl+Left",   ID_EDIT_ROTATE_90CCW
@@ -1664,8 +1666,6 @@ IDR_CONTEXT_BIGPICTURE MENU DISCARDABLE
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM SEPARATOR
         MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
@@ -1725,6 +1725,7 @@ BEGIN
     BEGIN
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
     END
     POPUP "&Capture"
     BEGIN
@@ -1780,8 +1781,8 @@ BEGIN
             MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
 
         END
-        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
@@ -1952,8 +1953,6 @@ IDR_CONTEXT_BIGPICTURE_FULLSCREEN MENU DISCARDABLE
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
             MENUITEM "Fit\tShift + /",              ID_VIEW_ZOOM_FIT
@@ -2253,8 +2252,8 @@ BEGIN
             MENUITEM "Coord. File Help",            ID_EDIT_PASTE_INTO_FILE_HELP
 
         END
-        MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
@@ -2418,8 +2417,6 @@ IDR_CONTEXT_BIGPICTURE_FULLSCREEN_NOALPHA MENU DISCARDABLE
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
             MENUITEM "Fit\tShift + /",              ID_VIEW_ZOOM_FIT
@@ -3766,7 +3763,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Email Send Configuration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_RECEIVER_MAIL,60,20,139,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_ATTACHMENT,60,38,139,62,CBS_DROPDOWNLIST | 
@@ -3907,7 +3904,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_MOVEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,7,38,10
@@ -6419,6 +6416,16 @@ BEGIN
                     33,60,8
 END
 
+IDD_RENAME DIALOG DISCARDABLE  0, 0, 186, 47
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Rename"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,42,26,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,97,26,50,14
+    EDITTEXT        IDC_EDIT_FILENAME,7,7,172,12,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -7435,6 +7442,14 @@ BEGIN
         TOPMARGIN, 2
         BOTTOMMARGIN, 260
         HORZGUIDE, 180
+    END
+
+    IDD_RENAME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -8600,6 +8615,7 @@ BEGIN
                             "Coordinates text file help\nCoordinates Text File Help"
     ID_PLAY_RANDOM          "Random order play\nRandom Play"
     ID_VIEW_MAP             "View position on map from image coord., location, city, country, comment or filename\nPosition on Map"
+    ID_EDIT_RENAME          "Rename current document\nRename Document"
 END
 
 STRINGTABLE DISCARDABLE 
