@@ -168,6 +168,7 @@
 #define IDD_IMAPI2_DOWNLOAD             302
 #define IDD_CREDITS_VIDEODEVICEDOC      303
 #define IDD_ASSISTANT                   304
+#define IDD_RENAME                      305
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
 #define IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART 313
 #define IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART 314
@@ -1863,7 +1864,6 @@
 #define IDS_STRING1495                  1495
 #define IDC_EDIT_CONTENT_IPTCSUBJECTCODE 1496
 #define IDS_STRING1496                  1496
-#define IDD_RENAME                      1496
 #define IDC_RADIO_CONTENT_CATEGORY      1497
 #define IDS_STRING1497                  1497
 #define IDC_RADIO_CONTENT_CATEGORY2     1498
@@ -3541,7 +3541,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        1497
+#define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33168
 #define _APS_NEXT_CONTROL_VALUE         2541
 #define _APS_NEXT_SYMED_VALUE           101
