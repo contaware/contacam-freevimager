@@ -2466,7 +2466,7 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	DWORD sum_free = 0, max_free = 0;
 	DWORD sum_reserve = 0, max_reserve = 0;
 	DWORD sum_commit = 0, max_commit = 0;
-	while (::VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))
+	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))
 	{
 		++region;
 		switch (memory_info.State)
@@ -2638,6 +2638,19 @@ void MakeLineBreakCRLF(CString& s)
 	s.Replace(_T("\n"), _T("\r\n"));
 }
 
+BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError/*=FALSE*/)
+{
+	// Not allowed  \ / : * ? " < > |
+	if (s.FindOneOf(_T("\\/:*?\"<>|")) >= 0)
+	{
+		if (bShowMessageBoxOnError)
+			ShowError(ERROR_INVALID_NAME, TRUE);
+		return FALSE;
+	}
+	else
+		return TRUE;
+}
+
 BOOL IsANSIConvertible(const CString& s)
 {
 	// Empty String is Convertible!
@@ -2732,7 +2745,7 @@ BOOL IsASCIICompatiblePath(const CString& sPath)
 		return TRUE;
 
 	LPSTR c = NULL;
-	if (::ToANSI(sPath, &c) <= 0 || !c)
+	if (ToANSI(sPath, &c) <= 0 || !c)
 	{
 		if (c)
 			delete [] c;
@@ -2785,7 +2798,7 @@ CString GetASCIICompatiblePath(const CString& sPath)
 	if (!IsASCIICompatiblePath(sPath))
 	{
 		TCHAR lpszShortPath[1024];
-		DWORD dwCount = ::GetShortPathName(sPath, lpszShortPath, 1024);
+		DWORD dwCount = GetShortPathName(sPath, lpszShortPath, 1024);
 		lpszShortPath[1023] = _T('\0');
 		if (dwCount == 0)
 			return sPath;
@@ -2990,19 +3003,19 @@ CString GetUuidString()
 BOOL IntersectsValidMonitor(LPCRECT lpRect)
 {
 	BOOL res;
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	HINSTANCE h = LoadLibrary(_T("user32.dll"));
 	if (!h)
 	{
 		CRect rcMonitor, rcIntersection;
 		rcMonitor.left = 0;
 		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+		rcMonitor.right = GetSystemMetrics(SM_CXSCREEN);
+		rcMonitor.bottom = GetSystemMetrics(SM_CYSCREEN);
 		res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
 	}
 	else
 	{
-		FPMONITORFROMRECT fpMonitorFromRect = (FPMONITORFROMRECT)::GetProcAddress(h, "MonitorFromRect");
+		FPMONITORFROMRECT fpMonitorFromRect = (FPMONITORFROMRECT)GetProcAddress(h, "MonitorFromRect");
 		if (fpMonitorFromRect)
 			res = (fpMonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);
 		else
@@ -3010,11 +3023,11 @@ BOOL IntersectsValidMonitor(LPCRECT lpRect)
 			CRect rcMonitor, rcIntersection;
 			rcMonitor.left = 0;
 			rcMonitor.top = 0;
-			rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-			rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+			rcMonitor.right = GetSystemMetrics(SM_CXSCREEN);
+			rcMonitor.bottom = GetSystemMetrics(SM_CYSCREEN);
 			res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
 		}
-		::FreeLibrary(h);
+		FreeLibrary(h);
 	}
 	return res;
 }

@@ -1219,7 +1219,6 @@ void CPictureChildFrame::StartShutdown()
 	pDoc->m_bNoDrawing = TRUE;
 
 	// Start Killing
-	pDoc->m_ChangeNotificationThread.Kill_NoBlocking();
 	pDoc->m_SlideShowThread.Kill_NoBlocking();
 #ifdef SUPPORT_LIBJPEG
 	pDoc->m_bLoadFullJpegTransitionUI = FALSE;
@@ -1307,7 +1306,6 @@ BOOL CPictureChildFrame::IsShutdownDone()
 	// Check whether we exited full-screen and
 	// all Threads are Dead
 	if (!::AfxGetMainFrame()->m_bFullScreenMode		&&
-		!pDoc->m_ChangeNotificationThread.IsAlive()	&&
 		!pDoc->m_SlideShowThread.IsAlive()			&&
 		!pDoc->m_JpegThread.IsAlive()				&&
 		!pDoc->m_LoadPicturesThread.IsAlive()		&&

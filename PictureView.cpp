@@ -73,7 +73,6 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CScrollView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CScrollView::OnFilePrintPreview)
 	ON_MESSAGE(WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE, OnThreadSafeSlideshowLoadPicture)
-	ON_MESSAGE(WM_THREADSAFE_PICTURE_SAVEAS_DLG, OnThreadSafePictureSaveAsDlg)
 	ON_MESSAGE(WM_THREADSAFE_UPDATEIMAGEINFO, OnThreadUpdateImageInfo)
 	ON_MESSAGE(WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC, OnThreadSafePlayFirstBackgroundMusic)
 	ON_MESSAGE(WM_THREADSAFE_STOP_BACKGROUNDMUSIC, OnThreadSafeStopBackgroundMusic)
@@ -241,20 +240,6 @@ LONG CPictureView::OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam
 		delete pFileName;
 
 	return res;
-}
-
-LONG CPictureView::OnThreadSafePictureSaveAsDlg(WPARAM wparam, LPARAM lparam)
-{
-	CPictureDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	
-	if (pDoc && !pDoc->m_bClosing)
-	{
-		return pDoc->SaveAs(FALSE,
-							ML_STRING(1238, "File has been Deleted, Save a Backup Copy!"));
-	}
-	else
-		return 0;
 }
 
 LONG CPictureView::OnThreadUpdateImageInfo(WPARAM wparam, LPARAM lparam)

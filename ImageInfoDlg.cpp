@@ -1089,12 +1089,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 	// Reset Result Var
 	BOOL res = FALSE;
 
-	// Stop Change Notification Thread,
-	// otherwise it will think that current file
-	// has been deleted when copying from temporary file!
-	if (!m_pDoc->m_SlideShowThread.IsRecursive())
-		m_pDoc->m_ChangeNotificationThread.Kill();
-
 	// Save Comment
 	if (m_sOrigComment != m_sCurrentComment)
 	{
@@ -1134,8 +1128,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 			{
 				if (bWasRunning && m_pDoc->m_bDoJPEGGet)	
 					m_pDoc->JPEGGet();
-				if (!m_pDoc->m_SlideShowThread.IsRecursive())
-					m_pDoc->m_ChangeNotificationThread.Start();
 				EndWaitCursor();
 				return FALSE;
 			}
@@ -1182,8 +1174,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 					m_pDoc->m_GifAnimationThread.m_DibAnimationArray[nFrame]->GetGif()->SetComment(sOrigFileComment);
 				if (nFrame == 0)
 					m_pDoc->m_pDib->GetGif()->SetComment(sOrigFileComment);
-				if (!m_pDoc->m_SlideShowThread.IsRecursive())
-					m_pDoc->m_ChangeNotificationThread.Start();
 				EndWaitCursor();
 				return FALSE;
 			}
@@ -1222,8 +1212,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 			::AfxMessageBox(ML_STRING(1393, "Could Not Save The Metadata."), MB_OK | MB_ICONSTOP);
 			if (bWasRunning && m_pDoc->m_bDoJPEGGet)	
 				m_pDoc->JPEGGet();
-			if (!m_pDoc->m_SlideShowThread.IsRecursive())
-				m_pDoc->m_ChangeNotificationThread.Start();
 			EndWaitCursor();
 			return FALSE;
 		}
@@ -1254,8 +1242,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 				::AfxMessageBox(ML_STRING(1393, "Could Not Save The Metadata."), MB_OK | MB_ICONSTOP);
 				if (bWasRunning && m_pDoc->m_bDoJPEGGet)	
 					m_pDoc->JPEGGet();
-				if (!m_pDoc->m_SlideShowThread.IsRecursive())
-					m_pDoc->m_ChangeNotificationThread.Start();
 				EndWaitCursor();
 				return FALSE;
 			}
@@ -1289,8 +1275,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 		{
 			if (bWasRunning && m_pDoc->m_bDoJPEGGet)	
 				m_pDoc->JPEGGet();
-			if (!m_pDoc->m_SlideShowThread.IsRecursive())
-				m_pDoc->m_ChangeNotificationThread.Start();
 			EndWaitCursor();
 			return FALSE;
 		}
@@ -1345,8 +1329,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 		else
 		{
 			((CUImagerApp*)::AfxGetApp())->RestoreFile(m_pDoc->m_sFileName);
-			if (!m_pDoc->m_SlideShowThread.IsRecursive())
-				m_pDoc->m_ChangeNotificationThread.Start();
 			m_pDoc->LoadPicture(&m_pDoc->m_pDib, m_pDoc->m_sFileName);
 			EndWaitCursor();
 			return FALSE;
@@ -1358,8 +1340,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 		}
 		else
 		{
-			if (!m_pDoc->m_SlideShowThread.IsRecursive())
-				m_pDoc->m_ChangeNotificationThread.Start();
 			EndWaitCursor();
 			return FALSE;
 		}
@@ -1371,10 +1351,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 	
 	// Update Dialog Title
 	UpdateDlgTitle();
-
-	// Re-Start Change Notification Thread
-	if (!m_pDoc->m_SlideShowThread.IsRecursive())
-		m_pDoc->m_ChangeNotificationThread.Start();
 
 	return TRUE;
 }

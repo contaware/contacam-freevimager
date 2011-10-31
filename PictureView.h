@@ -11,12 +11,11 @@
 
 // Window Message IDs
 #define WM_THREADSAFE_SLIDESHOW_LOAD_PICTURE	WM_USER + 125
-#define WM_THREADSAFE_PICTURE_SAVEAS_DLG		WM_USER + 126
-#define WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC	WM_USER + 127
-#define WM_THREADSAFE_STOP_BACKGROUNDMUSIC		WM_USER + 128
-#define WM_THREADSAFE_UPDATEIMAGEINFO			WM_USER + 129
-#define WM_THREADSAFE_RUNSLIDESHOW				WM_USER + 130
-#define WM_THREADSAFE_PAUSESLIDESHOW			WM_USER + 131
+#define WM_THREADSAFE_PLAYFIRST_BACKGROUNDMUSIC	WM_USER + 126
+#define WM_THREADSAFE_STOP_BACKGROUNDMUSIC		WM_USER + 127
+#define WM_THREADSAFE_UPDATEIMAGEINFO			WM_USER + 128
+#define WM_THREADSAFE_RUNSLIDESHOW				WM_USER + 129
+#define WM_THREADSAFE_PAUSESLIDESHOW			WM_USER + 130
 
 // Message Delay in ms
 #define THREAD_SAFE_UPDATEIMAGEINFO_DELAY		300
@@ -281,7 +280,6 @@ protected:
 	afx_msg void OnViewPreviousMonitor();
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeSlideshowLoadPicture(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafePictureSaveAsDlg(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadUpdateImageInfo(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafePlayFirstBackgroundMusic(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeStopBackgroundMusic(WPARAM wparam, LPARAM lparam);

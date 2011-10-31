@@ -5141,7 +5141,7 @@ void CVideoAviDoc::EditRename()
 {
 	CRenameDlg dlg;
 	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
-	if (dlg.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
 	{	
 		// New file name
 		CString sNewFileName =	::GetDriveName(m_sFileName) +

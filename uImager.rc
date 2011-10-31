@@ -7807,7 +7807,6 @@ BEGIN
     IDS_MULTILANG_1235      "*** CTRL Lock Ratio, ENTER Apply, ESC Cancel ***"
     IDS_MULTILANG_1236      "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
     IDS_MULTILANG_1237      "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
-    IDS_MULTILANG_1238      "File has been Deleted, Save a Backup Copy!"
     IDS_MULTILANG_1239      " , %dx%d , %s , Image: %d %s"
     IDS_MULTILANG_1240      " , %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1241      " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"

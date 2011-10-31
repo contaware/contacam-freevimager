@@ -256,37 +256,6 @@ public:
 			volatile BOOL m_bNext;
 	};
 
-	// The ChangeNotification Thread Class
-	class CChangeNotificationThread : public CWorkerThread
-	{
-		public:
-			CChangeNotificationThread() {m_pDoc = NULL;
-										m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-										m_hEventArray[0]	= GetKillEvent();
-										m_hEventArray[1]	= m_hFindChangeNotification;};
-			virtual ~CChangeNotificationThread() {Kill();};
-
-			// Get / Set Functions
-			void SetDoc(CPictureDoc* pDoc) {m_pDoc = pDoc;};
-
-		protected:
-			// Worker Thread Entry
-			int Work();
-
-			// Process the File Change Notification Event
-			BOOL ProcessChangeNotification();
-
-			// Find Change Notification Handle
-			HANDLE m_hFindChangeNotification;
-
-			// Contains Shutdown Thread and
-			// Find Change
-			HANDLE m_hEventArray[2];
-
-			// The Doc Pointer
-			CPictureDoc* m_pDoc;
-	};
-
 	// The LayeredDlgThread Thread Class
 	class CLayeredDlgThread : public CWorkerThread
 	{
@@ -696,7 +665,6 @@ public:
 
 	// Threads
 	CSlideShowThread m_SlideShowThread; // Thread which shows pictures in an automated sequence
-	CChangeNotificationThread m_ChangeNotificationThread; // Thread which updates the m_FileFind Object
 	CJpegThread m_JpegThread;			// Thread which calculates the jpeg compression quality
 										// and loads the full sized jpeg
 	CLoadPicturesThread m_LoadPicturesThread;

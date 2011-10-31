@@ -240,6 +240,9 @@ extern void MakeLineBreakCR(CString& s);
 extern void MakeLineBreakLF(CString& s);
 extern void MakeLineBreakCRLF(CString& s);
 
+// Is Valid File Name, checks whether s contains  \ / : * ? " < > |
+extern BOOL IsValidFileName(const CString& s, BOOL bShowMessageBoxOnError = FALSE);
+
 // Is ANSI Convertible?
 extern BOOL IsANSIConvertible(const CString& s);
 

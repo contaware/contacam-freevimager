@@ -799,10 +799,6 @@ BOOL CPictureDoc::CSlideShowThread::SlideShow(CString sStartFileName)
 			return FALSE;
 	}
 
-	// Start Change Notification Thread
-	if (!m_bRecursive)
-		m_pDoc->m_ChangeNotificationThread.Start();
-
 	// Do Slideshow
 	while (TRUE)
     {   
@@ -880,7 +876,7 @@ BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent(BOOL bRandom)
 		res = m_pDoc->m_FileFind.FindNextFile();
 	if (!res)
 	{
-		// Special handling for file delete in recursive mode
+		// Special handling for file delete
 		if (!bExisting)
 		{
 			m_pDoc->m_FileFind.DeleteFileName(nCurrentFilePosition);
@@ -920,7 +916,7 @@ BOOL CPictureDoc::CSlideShowThread::ProcessNextFileEvent(BOOL bRandom)
 	}
 	else
 	{
-		// Special handling for file delete in recursive mode
+		// Special handling for file delete
 		if (!bExisting)
 			m_pDoc->m_FileFind.DeleteFileName(nCurrentFilePosition);
 		if (m_pDoc->m_FileFind.GetFilesCount() <= 0)
@@ -948,210 +944,6 @@ BOOL CPictureDoc::CSlideShowThread::ProcessPrevFileEvent()
 	{
 		if (!LoadPicture(m_pDoc->m_FileFind.GetFileName(), FALSE))
 			return FALSE;
-	}
-
-	return TRUE;
-}
-
-int CPictureDoc::CChangeNotificationThread::Work() 
-{
-	ASSERT(m_pDoc);
-
-	if (m_pDoc->m_SlideShowThread.IsRecursive())
-		return 0;
-
-	m_hFindChangeNotification = ::FindFirstChangeNotification(m_pDoc->m_sDirName,
-															FALSE,
-															FILE_NOTIFY_CHANGE_FILE_NAME);
-	m_hEventArray[1] = m_hFindChangeNotification;
-	
-	BOOL bFirst = TRUE;
-	while (TRUE)
-    {   
-		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, bFirst ? 0 : SLIDESHOW_FSCHANGESTIMER);
-		bFirst = FALSE;
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :		::FindCloseChangeNotification(m_hFindChangeNotification);
-										m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-										return 0;
-
-			// Find Change Notification Event
-			case WAIT_OBJECT_0 + 1 :	// Get rid of all similar events that occur shortly after this
-										do
-										{
-											::FindNextChangeNotification(m_hFindChangeNotification);
-											Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, SUCCESSIVE_CHANGENOTIFICATIONS_WAITTIME);
-											switch (Event)
-											{
-												// Shutdown Event
-												case WAIT_OBJECT_0 :		::FindCloseChangeNotification(m_hFindChangeNotification);
-																			m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-																			return 0;
-
-												// Find Change Notification Event
-												case WAIT_OBJECT_0 + 1 :	break;
-
-												// Timeout
-												case WAIT_TIMEOUT :			break;
-
-												// Error
-												default:					::FindCloseChangeNotification(m_hFindChangeNotification);
-																			m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-																			return 0;
-											}
-										}
-										while (Event == (WAIT_OBJECT_0 + 1));
-
-										// Process
-										if (!ProcessChangeNotification())
-										{
-											::FindCloseChangeNotification(m_hFindChangeNotification);
-											m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-											return 0;
-										}
-
-										break;
-
-			// Timeout
-			case WAIT_TIMEOUT :			// Process
-										if (!ProcessChangeNotification())
-										{
-											::FindCloseChangeNotification(m_hFindChangeNotification);
-											m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-											return 0;
-										}
-
-										break;
-
-			// Error
-			default:					::FindCloseChangeNotification(m_hFindChangeNotification);
-										m_hFindChangeNotification = INVALID_HANDLE_VALUE;
-										return 0;
-		}
-    }
-
-	return 0;
-}
-
-BOOL CPictureDoc::CChangeNotificationThread::ProcessChangeNotification()
-{
-	int pos, newpos;
-	CString sName, sNewName;
-	BOOL bDeleted, bAdded;
-
-	// Init the new file list, returns FALSE on error or if exiting this thread
-	if (!m_pDoc->m_NewFileFind.Init(m_pDoc->m_sDirName + _T("\\*"), TRUE, this))
-		return FALSE;
-
-	// Compare the new and the old file lists
-	// and update the old m_FileFind list!
-	pos = newpos = 0;
-	bDeleted = FALSE;
-	bAdded = FALSE;
-	do
-	{
-		sNewName = m_pDoc->m_NewFileFind.GetFileName(newpos);
-		sName = m_pDoc->m_FileFind.GetFileName(pos);
-		
-		// File Has Been Deleted
-		if ((sName != _T("")) &&
-			((sName < sNewName) || (sNewName == _T(""))))
-		{
-			bDeleted = TRUE;
-			m_pDoc->m_FileFind.DeleteFileName(pos);
-		}
-		else
-		{
-			// File Has Been Inserted or Added to the end
-			if ((sNewName != _T("")) &&
-				((sName > sNewName) || (sName == _T(""))))
-			{
-				bAdded = TRUE;
-				m_pDoc->m_FileFind.AddFileName(pos, sNewName);
-			}
-
-			newpos++;
-			pos++;
-		}
-
-		// Do Exit?
-		if (DoExit())
-			return FALSE;
-	}
-	while (sNewName != _T("") || sName != _T(""));
-
-	// Take Action
-	if (bDeleted)
-	{
-		// If Current Picture modified and deleted or moved from outside
-		if (!::IsExistingFile(m_pDoc->m_sFileName))
-		{
-			// If Current Picture was modified ask to make a backup copy
-			if (m_pDoc->IsModified())
-			{
-				// Set a Backup File Name
-				CTime Time = CTime::GetCurrentTime();
-				CString sBackupFileName(Time.Format(_T("Backup_%Y_%m_%d_%H_%M_%S")));
-				sBackupFileName += ::GetFileExt(m_pDoc->m_sFileName);
-				m_pDoc->m_sFileName = sBackupFileName;
-
-				// Save As Dlg
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_PICTURE_SAVEAS_DLG,
-								(WPARAM)0, (LPARAM)0);
-			}
-			// Go to next image or close if it was the last one
-			else
-			{
-				// Get Next Image Name to find out if there are
-				// loadable files in directory
-				CDib TempDib;
-				CDib* pTempDib = &TempDib;
-				pTempDib->SetShowMessageBoxOnError(FALSE);
-				pos = m_pDoc->m_FileFind.GetFilePosition();
-				pos--;
-				int size = m_pDoc->m_FileFind.GetFilesCount();
-				BOOL res = FALSE;
-				while (	(size-- > 0) &&
-						!(res = m_pDoc->LoadPicture(&pTempDib,
-								sName = m_pDoc->m_FileFind.GetNextFileName(pos),
-								TRUE, FALSE, TRUE)));
-				if (res)
-				{
-					if (!m_pDoc->m_SlideShowThread.LoadPicture(m_pDoc->m_FileFind.GetFileName(), TRUE))
-						return FALSE;
-				}
-				else
-				{
-					// Close Document
-					m_pDoc->CloseDocument();
-					return FALSE;
-				}
-			}
-		}
-		// Update
-		else
-		{
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_SETDOCUMENTTITLE,
-							0, 0);
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEIMAGEINFO,
-							(WPARAM)TRUE, (LPARAM)0);
-		}
-	}
-
-	// Update
-	if (bAdded)
-	{
-		::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_SETDOCUMENTTITLE,
-						0, 0);
-		::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_UPDATEIMAGEINFO,
-						(WPARAM)TRUE, (LPARAM)0);
 	}
 
 	return TRUE;
@@ -2305,7 +2097,6 @@ CPictureDoc::CPictureDoc()
 
 	// Init Threads
 	m_SlideShowThread.SetDoc(this);
-	m_ChangeNotificationThread.SetDoc(this);
 	m_JpegThread.SetDoc(this);
 	m_LoadPicturesThread.SetDoc(this);
 	m_LayeredDlgThread.SetDoc(this);
@@ -3828,25 +3619,11 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAnimGIF(	const CString& sFileName,
 	{
 		try
 		{
-			// Stop Change Notification Thread,
-			// otherwise it will think that current file
-			// has been deleted when copying from temporary file!
-			if (!m_SlideShowThread.IsRecursive())
-				m_ChangeNotificationThread.Kill();
-
 			CFile::Remove(sFileName);
 			CFile::Rename(sDstFileName, sFileName);
-
-			// Re-Start Change Notification Thread
-			if (!m_SlideShowThread.IsRecursive())
-				m_ChangeNotificationThread.Start();
 		}
 		catch (CFileException* e)
 		{
-			// Re-Start Change Notification Thread
-			if (!m_SlideShowThread.IsRecursive())
-				m_ChangeNotificationThread.Start();
-
 			::DeleteFile(sDstFileName);
 
 			DWORD dwAttrib = ::GetFileAttributes(sFileName);
@@ -4122,12 +3899,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 			return FALSE;
 		}
 
-		// Stop Change Notification Thread,
-		// otherwise it will think that current file
-		// has been deleted when copying from temporary file!
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Kill();
-
 		// Backup the file in case the saving fails,
 		// (saving may corrupt the original file!)
 		((CUImagerApp*)::AfxGetApp())->BackupFile(m_sFileName);
@@ -4186,9 +3957,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 					}
 					else
 					{
-						// Re-Start Change Notification Thread
-						if (!m_SlideShowThread.IsRecursive())
-							m_ChangeNotificationThread.Start();
 						GetView()->ForceCursor(FALSE);
 						return FALSE;
 					}
@@ -4307,9 +4075,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 				}
 				else
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 					GetView()->ForceCursor(FALSE);
 					return FALSE;
 				}
@@ -4411,9 +4176,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 				}
 				else
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 					GetView()->ForceCursor(FALSE);
 					return FALSE;
 				}
@@ -4526,9 +4288,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 				}
 				else
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 					GetView()->ForceCursor(FALSE);
 					return FALSE;
 				}
@@ -4627,10 +4386,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 			::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_OK | MB_ICONSTOP);
 		}
 
-		// Re-Start Change Notification Thread
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Start();
-
 		GetView()->ForceCursor(FALSE);
 
 		return res;
@@ -4693,10 +4448,6 @@ void CPictureDoc::FileMoveTo()
 	GetView()->ForceCursor();
 	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
-		// Stop Change Notification Thread
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Kill();
-
 		// Be Sure We Are Not Working On This File
 		m_JpegThread.Kill();
 #ifdef SUPPORT_GIFLIB
@@ -4733,12 +4484,7 @@ void CPictureDoc::FileMoveTo()
 			if (::MoveFile(m_sFileName, fd.GetPathName()))
 			{
 				ClearPrevNextPictures();
-				if (m_SlideShowThread.IsRecursive())
-					m_SlideShowThread.NextPicture();
-				// Note: If Not Recursive the above is automatically
-				// done by the file change notification from
-				// the slideshow thread, which is restarted at the
-				// end of this function
+				m_SlideShowThread.NextPicture();
 			}
 			else
 				::ShowLastError(TRUE);
@@ -4746,10 +4492,6 @@ void CPictureDoc::FileMoveTo()
 
 		// Free
 		delete [] InitDir;
-
-		// Re-Start Change Notification Thread
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Start();
 	}
 	GetView()->ForceCursor(FALSE);
 }
@@ -5232,12 +4974,6 @@ void CPictureDoc::EditDelete(BOOL bPrompt)
 		int nRes = dlg.DoModal();
 		if (nRes == IDOK)
 		{
-			// Stop Change Notification Thread,
-			// otherwise it will think that current file
-			// has been deleted when copying from temporary file!
-			if (!m_SlideShowThread.IsRecursive())
-				m_ChangeNotificationThread.Kill();
-
 			// Delete Current Page
 			if (!CDib::TIFFDeletePage(	m_nPageNum,	
 										m_sFileName,
@@ -5256,10 +4992,6 @@ void CPictureDoc::EditDelete(BOOL bPrompt)
 			if (m_nPageNum == m_pDib->m_FileInfo.m_nImageCount - 1) // If last has been delete dec. by one
 				m_nPageNum--;
 			LoadPicture(&m_pDib, m_sFileName);
-
-			// Re-Start Change Notification Thread
-			if (!m_SlideShowThread.IsRecursive())
-				m_ChangeNotificationThread.Start();
 		}
 		else if (nRes == IDCANCEL)
 			GetView()->ForceCursor(FALSE);
@@ -5310,10 +5042,6 @@ BOOL CPictureDoc::DeleteDocFile()
 		return FALSE;
 	}
 
-	// Stop Change Notification Thread
-	if (!m_SlideShowThread.IsRecursive())
-		m_ChangeNotificationThread.Kill();
-
 	// Be Sure We Are Not Working On This File
 	m_JpegThread.Kill();
 #ifdef SUPPORT_GIFLIB
@@ -5333,18 +5061,9 @@ BOOL CPictureDoc::DeleteDocFile()
 	else
 	{
 		ClearPrevNextPictures();
-		if (m_SlideShowThread.IsRecursive())
-			m_SlideShowThread.NextPicture();
-		// Note: If Not Recursive the above is automatically
-		// done by the file change notification from
-		// the slideshow thread, which is restarted at the
-		// end of this function
+		m_SlideShowThread.NextPicture();
 		res = TRUE;
 	}
-
-	// Re-Start Change Notification Thread
-	if (!m_SlideShowThread.IsRecursive())
-		m_ChangeNotificationThread.Start();
 
 	return res;
 }
@@ -5380,17 +5099,13 @@ void CPictureDoc::EditRename()
 	CRenameDlg dlg;
 	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
 	GetView()->ForceCursor();
-	if (dlg.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
 	{	
 		// New file name
 		CString sNewFileName =	::GetDriveName(m_sFileName) +
 								::GetDirName(m_sFileName) +
 								dlg.m_sFileName +
 								::GetFileExt(m_sFileName);
-		
-		// Stop Change Notification Thread
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Kill();
 
 		// Be Sure We Are Not Working On This File
 		m_JpegThread.Kill();
@@ -6185,8 +5900,7 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 
 BOOL CPictureDoc::SlideShow(BOOL bRecursive, BOOL bRunSlideshow)
 {
-	// Stop Threads
-	m_ChangeNotificationThread.Kill();
+	// Stop Thread
 	m_SlideShowThread.Kill();
 
 	// (Re)Start Thread
@@ -6561,12 +6275,6 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					// Get Last Write File Time
 					FILETIME LastWriteTime;
 					::GetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
@@ -6576,17 +6284,9 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					EndWaitCursor();
 					::DeleteFile(sTempFileName);
 
@@ -6850,12 +6550,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					// Get Last Write File Time
 					FILETIME LastWriteTime;
 					::GetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
@@ -6865,17 +6559,9 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					EndWaitCursor();
 					::DeleteFile(sTempFileName);
 
@@ -7137,12 +6823,6 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					// Get Last Write File Time
 					FILETIME LastWriteTime;
 					::GetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
@@ -7152,17 +6832,9 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					EndWaitCursor();
 					::DeleteFile(sTempFileName);
 
@@ -7429,12 +7101,6 @@ int CPictureDoc::LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippi
 			// Remove and Rename Files
 			try
 			{
-				// Stop Change Notification Thread,
-				// otherwise it will think that current file
-				// has been deleted when copying from temporary file!
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Kill();
-
 				// Get Last Write File Time
 				FILETIME LastWriteTime;
 				::GetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
@@ -7444,17 +7110,9 @@ int CPictureDoc::LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippi
 
 				// Set Last Write File Time
 				::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
-
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
 			}
 			catch (CFileException* e)
 			{
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
-
 				::DeleteFile(sTempFileName);
 
 				DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -9882,12 +9540,6 @@ void CPictureDoc::OnEditAddExifthumb()
 			// Remove and Rename Files
 			try
 			{
-				// Stop Change Notification Thread,
-				// otherwise it will think that current file
-				// has been deleted when copying from temporary file!
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Kill();
-
 				CFile::Remove(m_sFileName);
 				CFile::Rename(sTempFileName, m_sFileName);
 				m_pDib->JPEGLoadMetadata(m_sFileName);
@@ -9895,17 +9547,9 @@ void CPictureDoc::OnEditAddExifthumb()
 				SetDocumentTitle();
 				UpdateImageInfo();
 				::AfxMessageBox(ML_STRING(1288, "EXIF Thumbnail Was Successfully Added"), MB_OK | MB_ICONINFORMATION);
-			
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
 			}
 			catch (CFileException* e)
 			{
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
-
 				::DeleteFile(sTempFileName);
 
 				DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -9987,29 +9631,15 @@ void CPictureDoc::OnEditRemoveExifthumb()
 			// Remove and Rename Files
 			try
 			{
-				// Stop Change Notification Thread,
-				// otherwise it will think that current file
-				// has been deleted when copying from temporary file!
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Kill();
-
 				CFile::Remove(m_sFileName);
 				CFile::Rename(sTempFileName, m_sFileName);
 				m_pDib->JPEGLoadMetadata(m_sFileName);
 				SetDocumentTitle();
 				UpdateImageInfo();
 				::AfxMessageBox(ML_STRING(1289, "EXIF Thumbnail Was Successfully Removed"), MB_OK | MB_ICONINFORMATION);
-			
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
 			}
 			catch (CFileException* e)
 			{
-				// Re-Start Change Notification Thread
-				if (!m_SlideShowThread.IsRecursive())
-					m_ChangeNotificationThread.Start();
-
 				::DeleteFile(sTempFileName);
 
 				DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10073,12 +9703,6 @@ void CPictureDoc::OnEditClearExifOrientate()
 			m_JpegThread.Kill();
 		}
 
-		// Stop Change Notification Thread,
-		// otherwise it will think that current file
-		// has been deleted when copying from temporary file!
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Kill();
-
 		// Auto Orientate
 		if (CDib::JPEGAutoOrientate(m_sFileName,
 									((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
@@ -10094,10 +9718,6 @@ void CPictureDoc::OnEditClearExifOrientate()
 		}
 		else
 			EndWaitCursor();
-
-		// Re-Start Change Notification Thread
-		if (!m_SlideShowThread.IsRecursive())
-			m_ChangeNotificationThread.Start();
 
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
@@ -10171,28 +9791,14 @@ void CPictureDoc::OnEditRemoveExif()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10285,28 +9891,14 @@ void CPictureDoc::OnEditRemoveIcc()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10399,28 +9991,14 @@ void CPictureDoc::OnEditRemoveXmp()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10513,28 +10091,14 @@ void CPictureDoc::OnEditRemoveJfif()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10627,28 +10191,14 @@ void CPictureDoc::OnEditRemoveIptc()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -10761,12 +10311,6 @@ void CPictureDoc::OnEditRemoveOtherApp()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					if (res1 && res2)
 					{
@@ -10778,17 +10322,9 @@ void CPictureDoc::OnEditRemoveOtherApp()
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName1);
 					::DeleteFile(sTempFileName2);
 
@@ -10885,28 +10421,14 @@ void CPictureDoc::OnEditRemoveCom()
 				// Remove and Rename Files
 				try
 				{
-					// Stop Change Notification Thread,
-					// otherwise it will think that current file
-					// has been deleted when copying from temporary file!
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Kill();
-
 					CFile::Remove(m_sFileName);
 					CFile::Rename(sTempFileName, m_sFileName);
 					m_pDib->JPEGLoadMetadata(m_sFileName);
 					SetDocumentTitle();
 					UpdateImageInfo();
-
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
 				}
 				catch (CFileException* e)
 				{
-					// Re-Start Change Notification Thread
-					if (!m_SlideShowThread.IsRecursive())
-						m_ChangeNotificationThread.Start();
-
 					::DeleteFile(sTempFileName);
 
 					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
@@ -12697,25 +12219,11 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 				{
 					try
 					{
-						// Stop Change Notification Thread,
-						// otherwise it will think that current file
-						// has been deleted when copying from temporary file!
-						if (!m_SlideShowThread.IsRecursive())
-							m_ChangeNotificationThread.Kill();
-
 						CFile::Remove(m_sFileName);
 						CFile::Rename(sCroppedFileName, m_sFileName);
-
-						// Re-Start Change Notification Thread
-						if (!m_SlideShowThread.IsRecursive())
-							m_ChangeNotificationThread.Start();
 					}
 					catch (CFileException* e)
 					{
-						// Re-Start Change Notification Thread
-						if (!m_SlideShowThread.IsRecursive())
-							m_ChangeNotificationThread.Start();
-
 						EndWaitCursor();
 						::DeleteFile(sCroppedFileName);
 
