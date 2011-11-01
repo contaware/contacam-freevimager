@@ -586,7 +586,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				m_bFirstRun = TRUE;
 		}
 
-		// Set Tray Icon flag
+		// Set Tray Icon and Start FullScreen Mode flags
 		if (m_bUseSettings && !m_bHideMainFrame)
 		{
 #ifdef VIDEODEVICEDOC
@@ -594,6 +594,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				WriteProfileInt(_T("GeneralApp"), _T("TrayIcon"), TRUE);
 #endif
 			m_bTrayIcon = (BOOL)GetProfileInt(_T("GeneralApp"), _T("TrayIcon"), FALSE);
+			m_bStartFullScreenMode = (BOOL)GetProfileInt(_T("GeneralApp"), _T("StartFullScreenMode"), FALSE);
 		}
 
 		// Init Global Helper Functions
@@ -832,8 +833,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 								GetContaCamServiceState() == CONTACAMSERVICE_RUNNING;
 
 		// Stop from Service Progress Dialog
-		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun)) // if m_bFirstRun set we will not minimize to tray in CMainFrame::OnCreate()
-		{
+		if (bStopFromService && (!m_bTrayIcon || m_bFirstRun || m_bStartFullScreenMode))	// if m_bFirstRun or m_bStartFullScreenMode set
+		{																					// we will not minimize to tray in CMainFrame::OnCreate()
 			CString sStartingApp;
 			sStartingApp.Format(ML_STRING(1764, "Starting %s..."), APPNAME_NOEXT);
 			pProgressDlgThread = new CProgressDlgThread(sStartingApp, 0, CONTACAMSERVICE_TIMEOUT);
@@ -1038,11 +1039,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 
 				// When starting program open document in full screen mode
-				if (m_nCmdShow != SW_HIDE		&&
+				if (m_bStartFullScreenMode
 #ifdef VIDEODEVICEDOC
-					!m_bServiceProcess			&&
+					&& !m_bServiceProcess
 #endif
-					m_bStartFullScreenMode)
+					)
 					::AfxGetMainFrame()->EnterExitFullscreen();
 			}
 		}
@@ -4577,9 +4578,6 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	// Scan Vars
 	m_nPdfScanCompressionQuality = GetProfileInt(sSection, _T("PdfScanCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
 	m_sPdfScanPaperSize = GetProfileString(sSection, _T("PdfScanPaperSize"), _T("Fit"));
-
-	// When starting program open document in full screen mode
-	m_bStartFullScreenMode = (BOOL)GetProfileInt(sSection, _T("StartFullScreenMode"), FALSE);
 
 	// ESC to exit the program
 	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
