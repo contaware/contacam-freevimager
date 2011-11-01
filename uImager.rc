@@ -7127,7 +7127,6 @@ BEGIN
     IDS_MULTILANG_1202      "No video documents open."
     IDS_MULTILANG_1203      "No picture documents open."
     IDS_MULTILANG_1204      "No picture document open."
-    IDS_MULTILANG_1205      "Sliding not possible for big pictures."
     IDS_MULTILANG_1206      "This is not a Picture File."
     IDS_MULTILANG_1207      "Extract Files To Folder"
     IDS_MULTILANG_1208      "Error While Deleting The Burn Folder."
@@ -7208,25 +7207,14 @@ BEGIN
     IDS_MULTILANG_1268      "&Undo %d\tCtrl+Z"
     IDS_MULTILANG_1269      "&Undo\tCtrl+Z"
     IDS_MULTILANG_1270      "The file %s\nis not existing!"
-    IDS_MULTILANG_1271      "Compressed (RLE encoded) files are not supported\n"
     IDS_MULTILANG_1272      "Image Default Backgnd"
     IDS_MULTILANG_1273      "Default Background"
-    IDS_MULTILANG_1274      "Do You Want To Save The Rotated Image To A New File?"
     IDS_MULTILANG_1275      "Cannot save to ourself"
-    IDS_MULTILANG_1276      "Error while rotating the big picture\n"
     IDS_MULTILANG_1277      "Unique Colors Count: %u\r\n"
-    IDS_MULTILANG_1278      "Do You Want To Save The Resized Image To A New File?"
-    IDS_MULTILANG_1279      "Error while resizing the big picture\n"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_MULTILANG_1280      "Do You Want To Save The Filtered Image To A New File?"
-    IDS_MULTILANG_1281      "Error while filtering the big picture\n"
-    IDS_MULTILANG_1282      "Do You Want To Save The Grayscale Image To A New File?"
-    IDS_MULTILANG_1283      "Error while grayscaling the big picture\n"
-    IDS_MULTILANG_1284      "Do You Want To Save The Negative Image To A New File?"
-    IDS_MULTILANG_1285      "Error while making the big picture negative\n"
     IDS_MULTILANG_1286      "Please Save Before Performing This Operation."
     IDS_MULTILANG_1287      "EXIF Thumbnail Was Successfully Updated"
     IDS_MULTILANG_1288      "EXIF Thumbnail Was Successfully Added"
@@ -7281,7 +7269,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_MULTILANG_1328      "Error while cropping the big picture\n"
     IDS_MULTILANG_1329      "Stop playing the Animated GIF before viewing it frame by frame."
     IDS_MULTILANG_1330      "Preview Display available starting from Windows 2000 or higher"
     IDS_MULTILANG_1331      "Please paste over a picture document."
@@ -7329,7 +7316,6 @@ BEGIN
     IDS_MULTILANG_1384      "Loading..."
     IDS_MULTILANG_1385      "Unsupported File"
     IDS_MULTILANG_1388      "The file %s already exists.\nDo you want to replace it?"
-    IDS_MULTILANG_1389      "Do You Want To Save The Color Adjusted Image To A New File?"
     IDS_MULTILANG_1390      "Save edited metadata to %s?"
     IDS_MULTILANG_1391      "Please save the image before proceeding\n"
 END
@@ -7349,7 +7335,6 @@ BEGIN
     IDS_MULTILANG_1402      "No"
     IDS_MULTILANG_1403      "Advanced <<"
     IDS_MULTILANG_1404      "Please Save Before Doing A Lossless Jpeg Transformation."
-    IDS_MULTILANG_1405      "Do You Want To Save The Rotated / Flipped Image To A New File?"
     IDS_MULTILANG_1406      "Please Enter A Host Name, a From and a To Address"
 END
 
@@ -7360,13 +7345,7 @@ BEGIN
     IDS_MULTILANG_1411      "Unable to determine the domain for the email address %s\n"
     IDS_MULTILANG_1413      "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"
     IDS_MULTILANG_1414      "An error occured sending the message, Error:%x\nDescription:%s\n"
-    IDS_MULTILANG_1415      "Do You Want To Save The Sharpened Image To A New File?"
-    IDS_MULTILANG_1416      "Error while sharpening the big picture\n"
-    IDS_MULTILANG_1417      "Error while rotating / flipping the big picture\n"
-    IDS_MULTILANG_1418      "Error while adjusting the color of the big picture\n"
     IDS_MULTILANG_1419      "Select Folder For Snapshot Saving"
-    IDS_MULTILANG_1420      "Error while softening the big picture\n"
-    IDS_MULTILANG_1421      "Do You Want To Save The Softened Image To A New File?"
     IDS_MULTILANG_1422      "Sound Output Playback Speed Not Supported"
     IDS_MULTILANG_1423      "Sound Output Cannot Set Playback Speed"
 END
