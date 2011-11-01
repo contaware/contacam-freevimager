@@ -56,9 +56,7 @@ BOOL CMonochromeConversionDlg::OnInitDialog()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	CDialog::OnInitDialog();
 	
@@ -108,9 +106,7 @@ void CMonochromeConversionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	// Better to use Slider Pos Directly than the nPos parameter,
 	// this because with the Line and Page Message nPos is always 0...
@@ -213,9 +209,7 @@ void CMonochromeConversionDlg::Undo()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	if (pDib && m_PreviewUndoDib.IsValid())
 		*pDib = m_PreviewUndoDib;
@@ -237,9 +231,7 @@ void CMonochromeConversionDlg::OnColorDark()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	COLORREF cr = m_ColorDark.GetBkgColor();
 	if (((CUImagerApp*)::AfxGetApp())->ShowColorDlg(cr, this))
@@ -266,9 +258,7 @@ void CMonochromeConversionDlg::OnColorBright()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	COLORREF cr = m_ColorBright.GetBkgColor();
 	if (((CUImagerApp*)::AfxGetApp())->ShowColorDlg(cr, this))

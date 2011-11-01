@@ -909,118 +909,105 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 	{
 		BeginWaitCursor();
 
-		if (pDoc->m_bBigPicture)
+		// Make a Copy of the Dib
+		CDib Dib(*pDib);
+
+		// Clip the Dib by Cropping
+		if (!Dib.CropBits(	DibRect.left,
+							DibRect.top,
+							DibRect.Width(),
+							DibRect.Height(),
+							NULL,
+							pDoc->GetView(),
+							TRUE))
 		{
-			// Print
-			pDib->SetStretchMode(COLORONCOLOR);
-			pDib->Paint(pDC->m_hDC,
-						m_rcDibPrint,
-						DibRect,
-						FALSE,
-						TRUE);
+			// Restore Pixel Scaling
+			m_dXFontPixelScale = 1.0;
+			m_dYFontPixelScale = 1.0;
+			EndWaitCursor();
+			return;
 		}
-		else
-		{
-			// Make a Copy of the Dib
-			CDib Dib(*pDib);
 
-			// Clip the Dib by Cropping
-			if (!Dib.CropBits(	DibRect.left,
-								DibRect.top,
-								DibRect.Width(),
-								DibRect.Height(),
+		// "Abuse" the thread class to pump messages,
+		// this avoids locking the UI. MFC printing dialog with
+		// a Cancel button is showing at this point.
+		// The FakeThread pump-loop drops ESC or ENTER keys,
+		// only left-button clicks on the Cancel button work.
+		::AfxGetMainFrame()->EnableWindow(FALSE);
+		CWorkerThread FakeThread;
+		FakeThread.SetProcMsg(true);
+
+		// Resize the Dib, that may fail if we do not have enough memory
+		// (for example in case of huge prints)
+		if (!Dib.StretchBits(	(DWORD)(m_rcDibPrint.Width()),
+								(DWORD)(m_rcDibPrint.Height()),
 								NULL,
-								pDoc->GetView(),
-								TRUE))
-			{
-				// Restore Pixel Scaling
-				m_dXFontPixelScale = 1.0;
-				m_dYFontPixelScale = 1.0;
-				EndWaitCursor();
-				return;
-			}
-
-			// "Abuse" the thread class to pump messages,
-			// this avoids locking the UI. MFC printing dialog with
-			// a Cancel button is showing at this point.
-			// The FakeThread pump-loop drops ESC or ENTER keys,
-			// only left-button clicks on the Cancel button work.
-			::AfxGetMainFrame()->EnableWindow(FALSE);
-			CWorkerThread FakeThread;
-			FakeThread.SetProcMsg(true);
-
-			// Resize the Dib, that may fail if we do not have enough memory
-			// (for example in case of huge prints)
-			if (!Dib.StretchBits(	(DWORD)(m_rcDibPrint.Width()),
-									(DWORD)(m_rcDibPrint.Height()),
-									NULL,
-									pDoc->GetView(), TRUE, &FakeThread))
-			{
-				// Re-enable
-				::AfxGetMainFrame()->EnableWindow(TRUE);
-
-				// Abort printing?
-				if (FakeThread.DoExit())
-				{
-					pDC->AbortDoc();	// That avoids the call of the message-loop
-										// in _AfxAbortProc() when exiting this function
-				}
-				else
-				{
-					// Re-copy and re-crop because if StretchBits
-					// failed the Dib's bits may have been freed,
-					// but could not be allocated!
-					Dib = *pDib;
-					if (!Dib.CropBits(	DibRect.left,
-										DibRect.top,
-										DibRect.Width(),
-										DibRect.Height(),
-										NULL,
-										pDoc->GetView(),
-										TRUE))
-					{
-						// Restore Pixel Scaling
-						m_dXFontPixelScale = 1.0;
-						m_dYFontPixelScale = 1.0;
-						EndWaitCursor();
-						return;
-					}
-
-					// Print with halftone stretch
-					Dib.SetStretchMode(HALFTONE);
-					if (!Dib.Paint(	pDC->m_hDC,
-									m_rcDibPrint,
-									CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-									FALSE,
-									TRUE))
-					{
-						// Try with color on color stretch
-						Dib.SetStretchMode(COLORONCOLOR);
-						Dib.Paint(	pDC->m_hDC,
-									m_rcDibPrint,
-									CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-									FALSE,
-									TRUE);
-					}
-				}
-
-				// Restore Pixel Scaling
-				m_dXFontPixelScale = 1.0;
-				m_dYFontPixelScale = 1.0;
-				EndWaitCursor();
-				return;
-			}
-
+								pDoc->GetView(), TRUE, &FakeThread))
+		{
 			// Re-enable
 			::AfxGetMainFrame()->EnableWindow(TRUE);
 
-			// Print (No Stretch)
-			Dib.Paint(	pDC->m_hDC,
-						m_rcDibPrint,
-						CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-						FALSE,
-						TRUE);
+			// Abort printing?
+			if (FakeThread.DoExit())
+			{
+				pDC->AbortDoc();	// That avoids the call of the message-loop
+									// in _AfxAbortProc() when exiting this function
+			}
+			else
+			{
+				// Re-copy and re-crop because if StretchBits
+				// failed the Dib's bits may have been freed,
+				// but could not be allocated!
+				Dib = *pDib;
+				if (!Dib.CropBits(	DibRect.left,
+									DibRect.top,
+									DibRect.Width(),
+									DibRect.Height(),
+									NULL,
+									pDoc->GetView(),
+									TRUE))
+				{
+					// Restore Pixel Scaling
+					m_dXFontPixelScale = 1.0;
+					m_dYFontPixelScale = 1.0;
+					EndWaitCursor();
+					return;
+				}
+
+				// Print with halftone stretch
+				Dib.SetStretchMode(HALFTONE);
+				if (!Dib.Paint(	pDC->m_hDC,
+								m_rcDibPrint,
+								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
+								FALSE,
+								TRUE))
+				{
+					// Try with color on color stretch
+					Dib.SetStretchMode(COLORONCOLOR);
+					Dib.Paint(	pDC->m_hDC,
+								m_rcDibPrint,
+								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
+								FALSE,
+								TRUE);
+				}
+			}
+
+			// Restore Pixel Scaling
+			m_dXFontPixelScale = 1.0;
+			m_dYFontPixelScale = 1.0;
+			EndWaitCursor();
+			return;
 		}
+
+		// Re-enable
+		::AfxGetMainFrame()->EnableWindow(TRUE);
+
+		// Print (No Stretch)
+		Dib.Paint(	pDC->m_hDC,
+					m_rcDibPrint,
+					CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
+					FALSE,
+					TRUE);
 
 		EndWaitCursor();
 	}
@@ -1559,8 +1546,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('C') :
-			if (!pDoc->m_bBigPicture		&&
-				pDoc->m_sFileName != _T("")	&&
+			if (pDoc->m_sFileName != _T("")	&&
 				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
 				pDoc->FileCopyTo();
 			break;
@@ -1582,8 +1568,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('M') :
-			if (!pDoc->m_bBigPicture		&&
-				pDoc->m_sFileName != _T("")	&&
+			if (pDoc->m_sFileName != _T("")	&&
 				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
 				pDoc->FileMoveTo();
 			break;
@@ -1593,8 +1578,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('P') :
-			if (!pDoc->m_bBigPicture									&&
-				(pDoc->m_dwIDAfterFullLoadCommand == 0 ||
+			if ((pDoc->m_dwIDAfterFullLoadCommand == 0 ||
 				pDoc->m_dwIDAfterFullLoadCommand == ID_EDIT_PALETTE)	&&
 				pDoc->m_pDib && pDoc->m_pDib->GetColors()				&&
 				!(pDoc->m_SlideShowThread.IsSlideshowRunning() ||
@@ -1850,7 +1834,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->m_bDoRestartSlideshow || pDoc->m_pRotationFlippingDlg || pDoc->m_pHLSDlg || 
 				pDoc->m_pWndPalette || pDoc->m_bDoRedEyeColorPickup || pDoc->m_pRedEyeDlg ||
 				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
-				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop || pDoc->m_bBigPicture)
+				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop)
 				break;
 			if (::GetKeyState(VK_CONTROL) < 0)
 				pDoc->EditDelete(FALSE);// Delete without prompting
@@ -1866,7 +1850,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->m_bDoRestartSlideshow || pDoc->m_pRotationFlippingDlg || pDoc->m_pHLSDlg || 
 				pDoc->m_pWndPalette || pDoc->m_bDoRedEyeColorPickup || pDoc->m_pRedEyeDlg ||
 				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
-				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop || pDoc->m_bBigPicture)
+				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop)
 				break;
 			pDoc->EditRename();
 			break;
@@ -1900,38 +1884,18 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA));
 			}
 			else if (pDoc->m_bCrop)
-			{
-				if (pDoc->m_bBigPicture)
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP_BIGPICTURE));
-				else
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
-			}
+				VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 			else
 			{
-				if (pDoc->m_bBigPicture)
+				if (::AfxGetMainFrame()->m_bFullScreenMode)
 				{
-					if (::AfxGetMainFrame()->m_bFullScreenMode)
-					{
-						if (pDoc->m_pSetLayeredWindowAttributes)
-							VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE_FULLSCREEN));
-						else
-							VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE_FULLSCREEN_NOALPHA));
-					}
+					if (pDoc->m_pSetLayeredWindowAttributes)
+						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 					else
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE));
+						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
 				}
 				else
-				{
-					if (::AfxGetMainFrame()->m_bFullScreenMode)
-					{
-						if (pDoc->m_pSetLayeredWindowAttributes)
-							VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
-						else
-							VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
-					}
-					else
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
-				}
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
 			}
 			
 			pPopup = menu.GetSubMenu(0);
@@ -2915,45 +2879,25 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 			VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA));
 	}
 	else if (pDoc->m_bCrop)
-	{
-		if (pDoc->m_bBigPicture)
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP_BIGPICTURE));
-		else
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
-	}
+		VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 	else
 	{
-		if (pDoc->m_bBigPicture)
+#ifdef _DEBUG
+		if ((nFlags & MK_SHIFT) ||
+			(nFlags & MK_CONTROL)) 
+			VERIFY(menu.LoadMenu(IDR_CONTEXT_FILTER));
+		else
+#endif
 		{
 			if (::AfxGetMainFrame()->m_bFullScreenMode)
 			{
 				if (pDoc->m_pSetLayeredWindowAttributes)
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE_FULLSCREEN));
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 				else
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE_FULLSCREEN_NOALPHA));
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
 			}
 			else
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_BIGPICTURE));
-		}
-		else
-		{
-#ifdef _DEBUG
-			if ((nFlags & MK_SHIFT) ||
-				(nFlags & MK_CONTROL)) 
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_FILTER));
-			else
-#endif
-			{
-				if (::AfxGetMainFrame()->m_bFullScreenMode)
-				{
-					if (pDoc->m_pSetLayeredWindowAttributes)
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
-					else
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
-				}
-				else
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
-			}
+				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
 		}
 	}
 		

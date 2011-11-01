@@ -57,9 +57,7 @@ BOOL CSharpenDlg::OnInitDialog()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	CDialog::OnInitDialog();
 	
@@ -124,9 +122,7 @@ void CSharpenDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	// Better to use Slider Pos Directly than the nPos parameter,
 	// this because with the Line and Page Message nPos is always 0...
@@ -210,9 +206,7 @@ void CSharpenDlg::Undo()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 
 	if (pDib && m_PreviewUndoDib.IsValid())
 		*pDib = m_PreviewUndoDib;
@@ -226,13 +220,6 @@ void CSharpenDlg::DoIt()
 
 	if (!pSlider || pSlider->GetPos() <= 0)
 		Close();
-	else if (pDoc->m_bBigPicture)
-	{
-		if (!DoItBigPicture())
-			Close();
-		else
-			DestroyWindow();
-	}
 	else
 	{
 		pDoc->AddUndo(&m_PreviewUndoDib);
@@ -241,139 +228,4 @@ void CSharpenDlg::DoIt()
 		pDoc->UpdateImageInfo();
 		DestroyWindow();
 	}
-}
-
-BOOL CSharpenDlg::DoItBigPicture()
-{
-	CPictureView* pView = (CPictureView*)m_pParentWnd;
-	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CSliderCtrl* pSlider = (CSliderCtrl*)GetDlgItem(IDC_SLIDER_SHARPNESS);
-
-	if (pDoc->m_pDib && pSlider)
-	{
-		CString sFilteredFileName;
-		int nID;
-		if (pDoc->m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1415, "Do You Want To Save The Sharpened Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sFilteredFileName = pDoc->m_sFileName;
-			int index = sFilteredFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-				sFilteredFileName.Insert(index, _T("_sharpened"));
-			else
-				return FALSE;
-	
-			_tcscpy(szFileName, sFilteredFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sFilteredFileName = szFileName;
-				if (pDoc->m_pDib->IsMMReadOnly() && sFilteredFileName == pDoc->m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_ICONSTOP);
-					return FALSE;
-				}
-			}
-			else
-				return FALSE;
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sFilteredFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pDoc->m_sFileName);
-		}
-		else // Cancel
-			return FALSE;
-
-		// Check
-		if (sFilteredFileName == pDoc->m_sFileName)
-		{
-			nID = IDNO;
-			sFilteredFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pDoc->m_sFileName);
-		}
-
-		// Create New Filtered Dib in File
-		CDib FilteredDib;
-		FilteredDib.SetBMI(pDoc->m_pDib->GetBMI());
-		if (!FilteredDib.MMCreateBMP(sFilteredFileName))
-			return FALSE;
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Do Sharpening
-		BOOL res = Sharpen(&FilteredDib, pDoc->m_pDib, pSlider->GetPos());
-		
-		// Free (This Closes the Memory Mapped Files!)
-		pDoc->m_pDib->Free();
-		FilteredDib.Free();
-		
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(pDoc->m_sFileName);
-					CFile::Rename(sFilteredFileName, pDoc->m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sFilteredFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(pDoc->m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (pDoc->IsShowMessageBoxOnError())
-							::AfxMessageBox(str, MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, pDoc->IsShowMessageBoxOnError());
-
-					e->Delete();
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1416, "Error while sharpening the big picture\n");
-			TRACE(str);
-			if (pDoc->IsShowMessageBoxOnError())
-				::AfxMessageBox(str, MB_ICONSTOP);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			pDoc->LoadBigPicture(pDoc->m_sFileName);
-		else
-			pDoc->LoadBigPicture(sFilteredFileName);
-
-		EndWaitCursor();
-
-		return TRUE;
-	}
-	else
-		return FALSE;
 }

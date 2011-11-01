@@ -375,37 +375,15 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
 	
-	BOOL bBigPicture;
-	if (pParentWnd->IsKindOf(RUNTIME_CLASS(CBigPictureChildFrame)))
-		bBigPicture = TRUE;
-	else
-		bBigPicture = FALSE;
-	
 	if (g_bNT)
 	{
-		if (bBigPicture)
-		{
-			if (!LoadToolBar(IDR_BIGPICTURE_TOOLBAR))
-				return FALSE;
-		}
-		else
-		{
-			if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
-				return FALSE;
-		}
+		if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
+			return FALSE;
 	}
 	else
 	{
-		if (bBigPicture)
-		{
-			if (!LoadToolBar(IDR_BIGPICTURE_TOOLBAR_NOHQ))
-				return FALSE;
-		}
-		else
-		{
-			if (!LoadToolBar(IDR_PICTURE_TOOLBAR_NOHQ))
-				return FALSE;
-		}
+		if (!LoadToolBar(IDR_PICTURE_TOOLBAR_NOHQ))
+			return FALSE;
 	}
 
 	CFont m_Font;
@@ -1318,22 +1296,6 @@ BOOL CPictureChildFrame::IsShutdownDone()
 	else
 		return FALSE;
 }
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CBigPictureChildFrame
-
-IMPLEMENT_DYNCREATE(CBigPictureChildFrame, CPictureChildFrame)
-
-CBigPictureChildFrame::CBigPictureChildFrame()
-{
-
-}
-
-BEGIN_MESSAGE_MAP(CBigPictureChildFrame, CPictureChildFrame)
-	//{{AFX_MSG_MAP(CBigPictureChildFrame)
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
 
 
 /////////////////////////////////////////////////////////////////////////////

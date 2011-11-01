@@ -95,7 +95,6 @@ public:
 	void TwainSetImage(HANDLE hDib, int width, int height, int bpp);
 	void TwainCopyImage(HANDLE hBitmap,TW_IMAGEINFO& info);
 	BOOL TwainCanClose();
-	CString TwainSetImageMM(CDib* pDib, int width, int height, int bpp);
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
 

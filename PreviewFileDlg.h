@@ -68,7 +68,6 @@ class CPreviewFileDlg : public CFileDialog
 public:
 	CPreviewFileDlg(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
 					BOOL bPreview = TRUE,
-					BOOL bShowBigPictureCheck = TRUE,
 					LPCTSTR lpszDefExt = NULL,
 					LPCTSTR lpszFileName = NULL,
 					LPCTSTR lpszFilter = NULL,
@@ -80,7 +79,6 @@ public:
 // Attributes
 public:
 	BOOL m_bPreview;
-	BOOL m_bBigPicture;
 	CDibStatic m_DibStaticCtrl;
 	CStatic m_PreviewInfo;
 
@@ -88,7 +86,6 @@ protected:
 	//{{AFX_MSG(CPreviewFileDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPreview();
-	afx_msg void OnBigPicture();
 	afx_msg BOOL OnQueryNewPalette();
 	afx_msg void OnPaletteChanged(CWnd* pFocusWnd);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
@@ -114,7 +111,6 @@ protected:
 protected:
 	BOOL m_bNewSizeDlg;
 	CString m_sLastFileName;
-	BOOL m_bShowBigPictureCheck;
 	CDib m_DibHdr;
 	CDib m_DibFull;
 	CDib m_AlphaRenderedDib;

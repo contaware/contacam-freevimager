@@ -1548,14 +1548,6 @@ SOURCE=.\res\audiomcidoc.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\bigpicture.bmp
-# End Source File
-# Begin Source File
-
-SOURCE=.\res\bigpicturenohq.bmp
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\Bitstream_Vera_11.bmp
 # End Source File
 # Begin Source File

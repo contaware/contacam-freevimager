@@ -131,7 +131,6 @@ IMPLEMENT_DYNAMIC(CPreviewFileDlg, CFileDialog)
 BEGIN_MESSAGE_MAP(CPreviewFileDlg, CFileDialog)
 	//{{AFX_MSG_MAP(CPreviewFileDlg)
 	ON_BN_CLICKED(IDC_PREVIEW, OnPreview)
-	ON_BN_CLICKED(IDC_BIGPICTURE, OnBigPicture)
 	ON_WM_QUERYNEWPALETTE()
 	ON_WM_PALETTECHANGED()
 	ON_WM_SETFOCUS()
@@ -146,7 +145,6 @@ END_MESSAGE_MAP()
 #if _MFC_VER >= 0x0900
 CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 									BOOL bPreview,
-									BOOL bShowBigPictureCheck,
 									LPCTSTR lpszDefExt,
 									LPCTSTR lpszFileName,
 									LPCTSTR lpszFilter,
@@ -161,7 +159,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 #else
 CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 									BOOL bPreview,
-									BOOL bShowBigPictureCheck,
 									LPCTSTR lpszDefExt,
 									LPCTSTR lpszFileName,
 									LPCTSTR lpszFilter,
@@ -221,8 +218,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 
 	m_bPreview = bPreview;
 	m_sLastFileName = _T("");
-	m_bBigPicture = FALSE;
-	m_bShowBigPictureCheck = bShowBigPictureCheck;
 	m_DibStaticCtrl.SetDibHdrPointer(&m_DibHdr);
 	m_DibStaticCtrl.SetDibFullPointer(&m_DibFull);
 	m_DibStaticCtrl.SetAlphaRenderedDibPointer(&m_AlphaRenderedDib);
@@ -249,8 +244,6 @@ BOOL CPreviewFileDlg::OnInitDialog()
 	m_DibStaticCtrl.SetNotifyHwnd(this->GetSafeHwnd());
 	GetDlgItem(IDC_PREVIEW)->SendMessage(BM_SETCHECK, (m_bPreview) ? 1 : 0);
 	SetInfoText(_T(""));
-	CButton* pBigPictureCheck = (CButton*)GetDlgItem(IDC_BIGPICTURE);
-	pBigPictureCheck->ShowWindow(SW_HIDE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -446,7 +439,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 {
 	CString s, t;
 	CString sLastFileName = GetLastSelectedFilePath();
-	CButton* pBigPictureCheck = (CButton*)GetDlgItem(IDC_BIGPICTURE);
 
 	if (((int)wparam == CDibStatic::HDRLOAD_HDRDONE) ||
 		((int)wparam == CDibStatic::FULLLOAD_HDRDONE)||
@@ -462,9 +454,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 			CAVIPlay* pAVIPlay = m_DibStaticCtrl.GetAVIPlayPointer();
 			CAVIPlay::CAVIVideoStream* pVideoStream = pAVIPlay->GetVideoStream(0);
 			CAVIPlay::CAVIAudioStream* pAudioStream = pAVIPlay->GetAudioStream(0);
-
-			// Hide Check Box
-			pBigPictureCheck->ShowWindow(SW_HIDE);
 
 			if (pVideoStream && (pAVIPlay->GetVideoStreamsCount() >= 1))
 			{
@@ -525,30 +514,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 		else
 		{
 			CDib* pDib = m_DibStaticCtrl.GetDibHdrPointer();
-
-			// Show Check Box?
-			if (((int)wparam == CDibStatic::HDRLOAD_HDRDONE) ||
-				((int)wparam == CDibStatic::FULLLOAD_HDRDONE))
-			{
-				if (m_bShowBigPictureCheck &&
-					(::GetFileExt(sLastFileName) == _T(".bmp") ||
-					::GetFileExt(sLastFileName) == _T(".dib")))
-				{
-					if (((CUImagerApp*)::AfxGetApp())->IsPictureSizeBig(pDib->GetImageSize()))
-					{
-						pBigPictureCheck->SetCheck(1);
-						m_bBigPicture = TRUE;
-					}
-					else
-					{
-						pBigPictureCheck->SetCheck(0);
-						m_bBigPicture = FALSE;
-					}
-					pBigPictureCheck->ShowWindow(SW_NORMAL);
-				}
-				else
-					pBigPictureCheck->ShowWindow(SW_HIDE);
-			}
 
 			// Dpi
 			int nXDpi = pDib->GetXDpi();
@@ -750,16 +715,8 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 	else if (	((int)wparam == CDibStatic::HDRLOAD_ERROR)		||
 				((int)wparam == CDibStatic::FULLLOAD_HDRERROR))
 	{
-		// Hide Check Box
-		pBigPictureCheck->ShowWindow(SW_HIDE);
-
 		// Clear Info Text
 		SetInfoText(_T(""));
-	}
-	else
-	{
-		// Hide Check Box
-		pBigPictureCheck->ShowWindow(SW_HIDE);
 	}
 
 	return 0;
@@ -769,11 +726,6 @@ void CPreviewFileDlg::OnPreview()
 {	
 	m_bPreview = !m_bPreview;
 	Load(!m_bPreview);
-}
-
-void CPreviewFileDlg::OnBigPicture()
-{
-	m_bBigPicture =	!m_bBigPicture;
 }
 
 BOOL CPreviewFileDlg::OnQueryNewPalette() 

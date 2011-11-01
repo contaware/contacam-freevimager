@@ -120,9 +120,6 @@ BOOL CRotationFlippingDlg::DoIt()
 
 	UpdateData(TRUE);
 
-	if (pDoc->m_bBigPicture)
-		return DoItBigPicture();
-
 	pDoc->BeginWaitCursor();
 
 	// Try Lossless Transformation
@@ -228,242 +225,11 @@ BOOL CRotationFlippingDlg::DoIt()
 	return TRUE;
 }
 
-BOOL CRotationFlippingDlg::DoItBigPicture()
-{
-	CPictureView* pView = (CPictureView*)m_pParentWnd;
-	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	
-	// Undo Preview
-	if (m_PreviewUndoDib.IsValid())
-	{
-		*(pDoc->m_pDib->GetPreviewDib()) = m_PreviewUndoDib;
-		m_PreviewUndoDib.Free();
-		pDoc->m_DocRect.bottom = pDoc->m_pDib->GetHeight();
-		pDoc->m_DocRect.right = pDoc->m_pDib->GetWidth();
-	}
-
-	// Do Transformation if the angle is not 0°
-	if (m_TransformationType != 5 || m_uiAngle != 0 || m_uiAngleMinutes != 0)
-	{
-		CString sRotatedFileName;
-		int nID;
-		if (pDoc->m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1405, "Do You Want To Save The Rotated / Flipped Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sRotatedFileName = pDoc->m_sFileName;
-			int index = sRotatedFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_rotflip"));
-				sRotatedFileName.Insert(index, s);
-			}
-			else
-				goto error;
-			_tcscpy(szFileName, sRotatedFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sRotatedFileName = szFileName;
-				if (pDoc->m_pDib->IsMMReadOnly() && sRotatedFileName == pDoc->m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_ICONSTOP);
-					goto error;
-				}
-			}
-			else
-				goto error;
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pDoc->m_sFileName);
-		}
-		else // Cancel
-			goto error;
-
-		// Check
-		if (sRotatedFileName == pDoc->m_sFileName)
-		{
-			nID = IDNO;
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pDoc->m_sFileName);
-		}
-
-		// Create New Rotated Dib in File
-		CDib RotatedDib;
-		RotatedDib.SetBMI(pDoc->m_pDib->GetBMI());
-		switch (m_TransformationType)
-		{
-			// Flip Width with Height
-			case 0 :
-			case 1 :
-				RotatedDib.GetBMIH()->biWidth = pDoc->m_pDib->GetHeight();
-				RotatedDib.GetBMIH()->biHeight = pDoc->m_pDib->GetWidth();
-				break;
-
-			// Ok, Already right Width & Height
-			case 2 :
-			case 3 :
-			case 4 :
-				break;
-
-			// Calc. New Width & Height
-			case 5 : 
-			{
-				if ((m_uiAngle == 90 && m_uiAngleMinutes == 0) ||
-					(m_uiAngle == 270 && m_uiAngleMinutes == 0))
-				{
-					// Flip Width with Height
-					RotatedDib.GetBMIH()->biWidth = pDoc->m_pDib->GetHeight();
-					RotatedDib.GetBMIH()->biHeight = pDoc->m_pDib->GetWidth();
-				}
-				else if (m_uiAngle == 180 && m_uiAngleMinutes == 0)
-				{
-					// Ok, Already Right Width & Height
-				}
-				else if (m_uiAngle != 0 || m_uiAngleMinutes != 0)
-				{
-					RotatedDib.RotateCW(((double)m_uiAngle + (double)m_uiAngleMinutes / 60.0) * PI / 180.0,
-										0, 0, 0, 0,
-										FALSE,
-										NULL,
-										TRUE);
-				}
-				break;
-			}
-
-			default: break;
-		}
-		RotatedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-		RotatedDib.ComputeImageSize();
-		if (!RotatedDib.MMCreateBMP(sRotatedFileName))
-			goto error;
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Do Transformation
-		BOOL res = FALSE;
-		switch (m_TransformationType)
-		{
-			case 0 : res = RotatedDib.Rotate90CW(pDoc->m_pDib); break;
-			case 1 : res = RotatedDib.Rotate90CCW(pDoc->m_pDib); break;
-			case 2 : res = RotatedDib.Rotate180(pDoc->m_pDib); break;
-			case 3 : res = RotatedDib.FlipLeftRight(pDoc->m_pDib); break;
-			case 4 : res = RotatedDib.FlipTopDown(pDoc->m_pDib); break;
-			case 5 : 
-			{
-				if (m_uiAngle == 90 && m_uiAngleMinutes == 0)
-					res = RotatedDib.Rotate90CW(pDoc->m_pDib);
-				else if (m_uiAngle == 180 && m_uiAngleMinutes == 0)
-					res = RotatedDib.Rotate180(pDoc->m_pDib);
-				else if (m_uiAngle == 270 && m_uiAngleMinutes == 0)
-					res = RotatedDib.Rotate90CCW(pDoc->m_pDib);
-				else if (m_uiAngle != 0 || m_uiAngleMinutes != 0)
-					res = RotatedDib.RotateCW(((double)m_uiAngle + (double)m_uiAngleMinutes / 60.0) * PI / 180.0,
-											GetRValue(m_crBackgroundColor),
-											GetGValue(m_crBackgroundColor),
-											GetBValue(m_crBackgroundColor),
-											GetAValue(m_crBackgroundColor),
-											m_bAntiAliasing,
-											pDoc->m_pDib,
-											FALSE,
-											pView,
-											TRUE);
-				break;
-			}
-			default: break;
-		}
-
-		// Free (This Closes the Memory Mapped Files!)
-		pDoc->m_pDib->Free();
-		RotatedDib.Free();
-		
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(pDoc->m_sFileName);
-					CFile::Rename(sRotatedFileName, pDoc->m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sRotatedFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(pDoc->m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (pDoc->IsShowMessageBoxOnError())
-							::AfxMessageBox(str, MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, pDoc->IsShowMessageBoxOnError());
-
-					e->Delete();
-					goto error;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1417, "Error while rotating / flipping the big picture\n");
-			TRACE(str);
-			if (pDoc->IsShowMessageBoxOnError())
-				::AfxMessageBox(str, MB_ICONSTOP);
-
-			goto error;
-		}
-
-		// Load
-		if (nID == IDNO)
-			pDoc->LoadBigPicture(pDoc->m_sFileName);
-		else
-			pDoc->LoadBigPicture(sRotatedFileName);
-		
-		EndWaitCursor();
-
-		return TRUE;
-	}
-	else
-		return TRUE;
-
-error:
-	// Update Alpha Rendered Dib
-	pDoc->UpdateAlphaRenderedDib();
-
-	// Update All Views
-	pDoc->UpdateAllViews(NULL);
-
-	return FALSE;
-}
-
 void CRotationFlippingDlg::OnPreview()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 	if (!pDib)
 		return;
 	
@@ -513,12 +279,8 @@ void CRotationFlippingDlg::OnPreview()
 	m_uiPreviewAngle = m_uiAngle;
 	m_uiPreviewAngleMinutes = m_uiAngleMinutes;
 	m_bPreviewAntiAliasing = m_bAntiAliasing;
-
-	double dPreviewDibRatio = 1.0;
-	if (pDoc->m_bBigPicture)
-		dPreviewDibRatio = pDoc->m_pDib->GetPreviewDibRatio();
-	pDoc->m_DocRect.bottom = Round(dPreviewDibRatio * pDib->GetHeight());
-	pDoc->m_DocRect.right = Round(dPreviewDibRatio * pDib->GetWidth());
+	pDoc->m_DocRect.bottom = pDib->GetHeight();
+	pDoc->m_DocRect.right = pDib->GetWidth();
 	pDoc->EndWaitCursor();
 	if (m_TransformationType != 5 || m_uiAngle != 0 || m_uiAngleMinutes != 0)
 	{
@@ -608,9 +370,7 @@ void CRotationFlippingDlg::OnUndo()
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-	CDib* pDib =	pDoc->m_bBigPicture ?
-					pDoc->m_pDib->GetPreviewDib() :
-					pDoc->m_pDib;
+	CDib* pDib = pDoc->m_pDib;
 	if (!pDib)
 		return;
 

@@ -4183,7 +4183,6 @@ void CBatchProcDlg::OnButtonListAdd()
 		_tcscpy(InitDir, (LPCTSTR)::GetSpecialFolderPath(CSIDL_MYPICTURES));
 	CPreviewFileDlg dlgFile(TRUE,
 							((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview,
-							FALSE,
 							NULL,
 							NULL,
 							NULL,

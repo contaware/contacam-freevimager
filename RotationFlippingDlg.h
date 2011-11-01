@@ -21,7 +21,6 @@ class CRotationFlippingDlg : public CDialog
 public:
 	CRotationFlippingDlg(CWnd* pParent, UINT idd);
 	BOOL DoIt();
-	BOOL DoItBigPicture();
 	void Close();
 
 // Dialog Data

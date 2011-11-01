@@ -327,7 +327,6 @@ public:
 	CUImagerMultiDocTemplate* GetVideoDeviceDocTemplate() {return m_pVideoDeviceDocTemplate;};
 #endif
 	CUImagerMultiDocTemplate* GetPictureDocTemplate() {return m_pPictureDocTemplate;};
-	CUImagerMultiDocTemplate* GetBigPictureDocTemplate() {return m_pBigPictureDocTemplate;};
 	CUImagerMultiDocTemplate* GetAudioMCIDocTemplate() {return m_pAudioMCIDocTemplate;};
 	CUImagerMultiDocTemplate* GetCDAudioDocTemplate() {return m_pCDAudioDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
@@ -435,21 +434,6 @@ public:
 						BOOL bShrinkVideos,
 						BOOL bOnlyCopyFiles);
 
-	// Shrink Big Picture
-	// (Only called from UI Thread)
-	//
-	// The bProgressSend parameter specifies whether to use
-	// SendMessage or PostMessage For Progress Messages
-	static BOOL ShrinkBigPicture(	CDib* pSrcDib,
-									LPCTSTR szDstFileName,
-									DWORD dwMaxSize,
-									BOOL bMaxSizePercent,
-									DWORD dwJpegQuality,
-									BOOL bShrinkPictureSize,
-									BOOL bSharpenAfterShrink,
-									CWnd* pProgressWnd,
-									BOOL bProgressSend);
-
 	// Shrink Picture
 	// (Called From UI Thread & Processing Thread)
 	//
@@ -493,8 +477,7 @@ public:
 	// Returns the count of all open documents
 	int GetOpenDocsCount();
 
-	// Is At least One Picture Document
-	// (or Big Picture Document) Open?
+	// Is At least One Picture Document Open?
 	BOOL ArePictureDocsOpen();
 
 	// Is At least One Video Avi Document Open?
@@ -575,8 +558,7 @@ public:
 	// (does not check m_pDib->IsValid(), which means fully loaded)
 	BOOL IsCurrentDocReadyToSlide(BOOL bShowMsgBoxIfSlideNotPossible = FALSE);
 
-	// Are the Open Picture Docs
-	// (or Big Picture Docs) Available?
+	// Are the Open Picture Docs Available?
 	// Shows the reason of the unavailability
 	// if bShowMsgBoxIfNotAvailable is TRUE
 	BOOL AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable = FALSE);
@@ -970,7 +952,6 @@ protected:
 	CUImagerMultiDocTemplate* m_pAudioMCIDocTemplate;
 	CUImagerMultiDocTemplate* m_pCDAudioDocTemplate;
 	CUImagerMultiDocTemplate* m_pPictureDocTemplate;
-	CUImagerMultiDocTemplate* m_pBigPictureDocTemplate;
 };
 
 

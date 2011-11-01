@@ -51,7 +51,6 @@ public:
 protected:
 	BOOL IsModified();
 	BOOL DoIt();
-	BOOL DoItBigPicture();
 	BOOL UpdateHysto();
 	BOOL AdjustColor(BOOL bAdjustPreviewDib);
 	BOOL m_bFast;

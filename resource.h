@@ -35,9 +35,7 @@
 #define IDR_CONTEXT_PICTURE             147
 #define IDR_PICTURE_TOOLBAR_NOHQ        147
 #define IDR_CONTEXT_VIDEO_AVI           148
-#define IDR_BIGPICTURE_TOOLBAR          148
 #define IDR_CONTEXT_VIDEO_DEVICE        149
-#define IDR_BIGPICTURE_TOOLBAR_NOHQ     149
 #define IDR_CONTEXT_CROP                150
 #define IDD_HLS                         150
 #define IDR_MAINFRAME_VIDEODEVICEDOC    150
@@ -87,7 +85,6 @@
 #define IDD_AUDIOVIDEO_SHIFT            214
 #define IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY 214
 #define IDD_PLAYER_TOOLBAR              215
-#define IDR_CONTEXT_BIGPICTURE          218
 #define IDD_ZIP_PROGRESS                219
 #define IDR_LICENSE                     221
 #define IDD_LICENSE                     222
@@ -101,14 +98,12 @@
 #define IDD_DIRECTX7                    234
 #define IDR_CONTEXT_FILTER              239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
-#define IDR_CONTEXT_BIGPICTURE_FULLSCREEN 241
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
 #define IDR_CONTEXT_OSD_NOALPHA         243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
 #define IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA 244
 #define IDB_HEADER_CTRL                 245
-#define IDR_CONTEXT_BIGPICTURE_FULLSCREEN_NOALPHA 245
 #define IDR_CONTEXT_SLIDESHOW_ONLY1     246
 #define IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA 246
 #define IDB_TELETEXT_DH_26              247
@@ -146,7 +141,6 @@
 #define IDD_CDAUDIOPLAYER               283
 #define IDR_CONTEXT_LAYERED_DLG         284
 #define IDR_CONTEXT_TASKBAR_FULLSCREEN  285
-#define IDR_CONTEXT_CROP_BIGPICTURE     286
 #define IDI_PLAY                        291
 #define IDI_STOP                        292
 #define IDI_PAUSE                       293
@@ -878,7 +872,6 @@
 #define IDC_PREVIEW_INFO                1003
 #define IDS_MULTILANG_1004              1004
 #define IDC_FPS                         1004
-#define IDC_BIGPICTURE                  1004
 #define IDS_MULTILANG_1005              1005
 #define IDC_SPIN_FPS                    1005
 #define IDS_MULTILANG_1006              1006

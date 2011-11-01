@@ -2052,9 +2052,6 @@ int CPictureDoc::CTransitionThread::Work()
 
 CPictureDoc::CPictureDoc()
 {
-	// Big Picture File Flag
-	m_bBigPicture = FALSE;
-
 	// The Only View and Frame
 	m_pView = NULL;
 	m_pFrame = NULL;
@@ -2420,108 +2417,95 @@ void CPictureDoc::SetDocumentTitle()
 		}
 		else
 		{
-			if (m_bBigPicture)
+			if (m_GifAnimationThread.IsAlive() &&
+				!m_GifAnimationThread.IsRunning() &&
+				m_GifAnimationThread.m_dwDibAnimationCount > 1)
 			{
-				strInfo.Format(
-					   ML_STRING(1240, " , %dx%d , %s , File: %d %s"),
+				if (m_SlideShowThread.IsRecursive())
+				{
+					strInfo.Format(
+					   ML_STRING(1241, " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_GifAnimationThread.m_dwDibAnimationPos + 1,
+						m_GifAnimationThread.m_dwDibAnimationCount,
 						m_pDib->GetWidth(), 
 						m_pDib->GetHeight(),
 						m_pDib->GetCompressionName(), 
 						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
 						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-			}
-			else
-			{
-				if (m_GifAnimationThread.IsAlive() &&
-					!m_GifAnimationThread.IsRunning() &&
-					m_GifAnimationThread.m_dwDibAnimationCount > 1)
-				{
-					if (m_SlideShowThread.IsRecursive())
-					{
-						strInfo.Format(
-						   ML_STRING(1241, " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_GifAnimationThread.m_dwDibAnimationPos + 1,
-							m_GifAnimationThread.m_dwDibAnimationCount,
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
-					else
-					{
-						strInfo.Format(
-						   ML_STRING(1242, " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_GifAnimationThread.m_dwDibAnimationPos + 1,
-							m_GifAnimationThread.m_dwDibAnimationCount,
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
-				}
-				else if (IsMultiPageTIFF())
-				{
-					if (m_SlideShowThread.IsRecursive())
-					{
-						strInfo.Format(
-						   ML_STRING(1245, " , File %i of %i in Directories, Page %i of %i, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_pDib->m_FileInfo.m_nImagePos + 1,
-							m_pDib->m_FileInfo.m_nImageCount,
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
-					else
-					{
-						strInfo.Format(
-						   ML_STRING(1246, " , File %i of %i in Directory, Page %i of %i, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_pDib->m_FileInfo.m_nImagePos + 1,
-							m_pDib->m_FileInfo.m_nImageCount,
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
 				}
 				else
 				{
-					if (m_SlideShowThread.IsRecursive())
-					{
-						strInfo.Format(
-						   ML_STRING(1247, " , File %i of %i in Directories, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
-					else
-					{
-						strInfo.Format(
-						   ML_STRING(1248, " , File %i of %i in Directory, %dx%d , %s , File: %d %s"),
-							m_FileFind.GetFilePosition() + 1,
-							m_FileFind.GetFilesCount(),
-							m_pDib->GetWidth(), 
-							m_pDib->GetHeight(),
-							m_pDib->GetCompressionName(), 
-							(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-							(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					}
+					strInfo.Format(
+					   ML_STRING(1242, " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_GifAnimationThread.m_dwDibAnimationPos + 1,
+						m_GifAnimationThread.m_dwDibAnimationCount,
+						m_pDib->GetWidth(), 
+						m_pDib->GetHeight(),
+						m_pDib->GetCompressionName(), 
+						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
+						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+				}
+			}
+			else if (IsMultiPageTIFF())
+			{
+				if (m_SlideShowThread.IsRecursive())
+				{
+					strInfo.Format(
+					   ML_STRING(1245, " , File %i of %i in Directories, Page %i of %i, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_pDib->m_FileInfo.m_nImagePos + 1,
+						m_pDib->m_FileInfo.m_nImageCount,
+						m_pDib->GetWidth(), 
+						m_pDib->GetHeight(),
+						m_pDib->GetCompressionName(), 
+						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
+						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+				}
+				else
+				{
+					strInfo.Format(
+					   ML_STRING(1246, " , File %i of %i in Directory, Page %i of %i, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_pDib->m_FileInfo.m_nImagePos + 1,
+						m_pDib->m_FileInfo.m_nImageCount,
+						m_pDib->GetWidth(), 
+						m_pDib->GetHeight(),
+						m_pDib->GetCompressionName(), 
+						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
+						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+				}
+			}
+			else
+			{
+				if (m_SlideShowThread.IsRecursive())
+				{
+					strInfo.Format(
+					   ML_STRING(1247, " , File %i of %i in Directories, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_pDib->GetWidth(), 
+						m_pDib->GetHeight(),
+						m_pDib->GetCompressionName(), 
+						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
+						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+				}
+				else
+				{
+					strInfo.Format(
+					   ML_STRING(1248, " , File %i of %i in Directory, %dx%d , %s , File: %d %s"),
+						m_FileFind.GetFilePosition() + 1,
+						m_FileFind.GetFilesCount(),
+						m_pDib->GetWidth(), 
+						m_pDib->GetHeight(),
+						m_pDib->GetCompressionName(), 
+						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
+						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
 				}
 			}
 		}
@@ -4644,7 +4628,6 @@ void CPictureDoc::OnFileSaveAs()
 void CPictureDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDib												&&
-					!m_bBigPicture										&&
 					(m_dwIDAfterFullLoadCommand == 0					||
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS)		&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
@@ -4672,7 +4655,6 @@ void CPictureDoc::OnFileSaveCopyAs()
 void CPictureDoc::OnUpdateFileSaveCopyAs(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDib												&&
-					!m_bBigPicture										&&
 					(m_dwIDAfterFullLoadCommand == 0					||
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_COPY_AS)	&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
@@ -4700,7 +4682,6 @@ void CPictureDoc::OnFileSaveAsPdf()
 void CPictureDoc::OnUpdateFileSaveAsPdf(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDib												&&
-					!m_bBigPicture										&&
 					(m_dwIDAfterFullLoadCommand == 0					||
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS_PDF)	&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
@@ -4728,7 +4709,6 @@ void CPictureDoc::OnFileSaveAsPdfDirect()
 void CPictureDoc::OnUpdateFileSaveAsPdfDirect(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDib												&&
-					!m_bBigPicture										&&
 					(m_dwIDAfterFullLoadCommand == 0					||
 					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS_PDF_DIRECT)	&&
 					!(m_SlideShowThread.IsSlideshowRunning()			||
@@ -5472,96 +5452,6 @@ BOOL CPictureDoc::CreatePreviewDib(CDib* pDib)
 		return pDib->CreatePreviewDib(nMaxSizeX, nMaxSizeY);
 }
 
-BOOL CPictureDoc::LoadBigPicture(CString sFileName)
-{
-	BOOL res;
-	BOOL bLoadReadOnly;
-
-	// Always Show Message Box On Error 
-	SetShowMessageBoxOnError(TRUE);
-
-	// Is Exiting?
-	if (!::IsExistingFile(sFileName))
-	{
-		CString sError;
-		sError.Format(ML_STRING(1270, "The file %s\nis not existing!"), sFileName);
-		::AfxMessageBox(sError, MB_OK | MB_ICONSTOP);
-		return FALSE;
-	}
-
-	// Do we have Write Access?
-	bLoadReadOnly = !::HasWriteAccess(sFileName);
-
-	// Load Picture (only Bmp Supported)
-	if (::GetFileExt(sFileName) == _T(".bmp") ||
-		::GetFileExt(sFileName) == _T(".dib"))
-	{
-		// Load Header
-		if (!m_pDib->LoadBMP(sFileName, TRUE))
-			return FALSE;
-
-		// No Compression Supported!
-		if (m_pDib->IsCompressed())
-		{
-			::AfxMessageBox(ML_STRING(1271, "Compressed (RLE encoded) files are not supported\n"), MB_OK | MB_ICONSTOP);
-			return FALSE;
-		}
-
-		// Memory Map the Bmp and Create a Preview Dib of it
-		if (m_pDib->MapBMP(sFileName, bLoadReadOnly))
-			res = CreatePreviewDib(m_pDib);
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
-	
-	// Initializations for Current Picture & Thread Start
-	if (res)
-	{
-		// Set Big Picture Flag
-		m_bBigPicture = TRUE;
-
-		// Document Rectangle
-		m_DocRect.top = 0;
-		m_DocRect.left = 0;
-		m_DocRect.right = m_pDib->GetWidth();
-		m_DocRect.bottom = m_pDib->GetHeight();
-		m_nPixelAlignX = 1;
-		m_nPixelAlignY = 1;
-
-		// Set File Name & Title
-		m_sFileName = sFileName;
-		SetPathName(sFileName, TRUE);
-
-		// Set Title
-		SetDocumentTitle();
-
-		// Zoom
-		CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(GetFrame()))->GetToolBar())->m_ZoomComboBox);
-		if (pZoomCB->GetCurSel() == 0)		// Fit
-			GetView()->FitZoomFactor();
-		else if (pZoomCB->GetCurSel() == 1) // Fit Big
-			GetView()->FitBigZoomFactor();
-		else if (::AfxGetMainFrame()->m_bFullScreenMode)
-			GetView()->FitZoomFactor();		// Fit
-		GetView()->CalcZoomedPixelAlign();
-
-		// Update Alpha Rendered Dib
-		UpdateAlphaRenderedDib();
-
-		// Update All Views
-		UpdateAllViews(NULL);
-
-		// Update Info if dialog is open
-		UpdateImageInfo();
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 							  CString sFileName,
 							  BOOL bLoadOnly/*=FALSE*/,
@@ -6062,164 +5952,6 @@ void CPictureDoc::OnUpdateEditRotate180(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::Rotate90cwBigPicture(BOOL bShowMessageBoxOnError) 
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-		
-		CString sRotatedFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1274, "Do You Want To Save The Rotated Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sRotatedFileName = m_sFileName;
-			int index = sRotatedFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_rot90cw"));
-				sRotatedFileName.Insert(index, s);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sRotatedFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sRotatedFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sRotatedFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sRotatedFileName == m_sFileName)
-		{
-			nID = IDNO;
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-
-		// Create New Rotated Dib in File
-		CDib RotatedDib;
-		RotatedDib.SetBMI(m_pDib->GetBMI());
-		RotatedDib.GetBMIH()->biWidth = m_pDib->GetHeight();
-		RotatedDib.GetBMIH()->biHeight = m_pDib->GetWidth();
-		RotatedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-		RotatedDib.ComputeImageSize();
-		if (!RotatedDib.MMCreateBMP(sRotatedFileName))
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Rotate
-		BOOL res = RotatedDib.Rotate90CW(m_pDib);
-
-		// Free (This Closes the Memory Mapped Files!)
-		m_pDib->Free();
-		RotatedDib.Free();
-
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sRotatedFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sRotatedFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1276, "Error while rotating the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			LoadBigPicture(m_sFileName);
-		else
-			LoadBigPicture(sRotatedFileName);
-		
-		EndWaitCursor();
-		
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 {
 	if (m_pDib)
@@ -6227,9 +5959,6 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_90CW))
 			return FALSE;
-
-		if (m_bBigPicture)
-			return Rotate90cwBigPicture(bShowMessageBoxOnError);
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -6336,164 +6065,6 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 		return FALSE;
 }
 
-BOOL CPictureDoc::Rotate90ccwBigPicture(BOOL bShowMessageBoxOnError) 
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-		
-		CString sRotatedFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1274, "Do You Want To Save The Rotated Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sRotatedFileName = m_sFileName;
-			int index = sRotatedFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_rot90ccw"));
-				sRotatedFileName.Insert(index, s);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sRotatedFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sRotatedFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sRotatedFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sRotatedFileName == m_sFileName)
-		{
-			nID = IDNO;
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-
-		// Create New Rotated Dib in File
-		CDib RotatedDib;
-		RotatedDib.SetBMI(m_pDib->GetBMI());
-		RotatedDib.GetBMIH()->biWidth = m_pDib->GetHeight();
-		RotatedDib.GetBMIH()->biHeight = m_pDib->GetWidth();
-		RotatedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-		RotatedDib.ComputeImageSize();
-		if (!RotatedDib.MMCreateBMP(sRotatedFileName))
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Rotate
-		BOOL res = RotatedDib.Rotate90CCW(m_pDib);
-
-		// Free (This Closes the Memory Mapped Files!)
-		m_pDib->Free();
-		RotatedDib.Free();
-
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sRotatedFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sRotatedFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1276, "Error while rotating the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			LoadBigPicture(m_sFileName);
-		else
-			LoadBigPicture(sRotatedFileName);
-		
-		EndWaitCursor();
-		
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError) 
 {
 	if (m_pDib)
@@ -6501,9 +6072,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_90CCW))
 			return FALSE;
-
-		if (m_bBigPicture)
-			return Rotate90ccwBigPicture(bShowMessageBoxOnError);
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -6611,162 +6179,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 		return FALSE;
 }
 
-BOOL CPictureDoc::Rotate180BigPicture(BOOL bShowMessageBoxOnError) 
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-		
-		CString sRotatedFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1274, "Do You Want To Save The Rotated Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sRotatedFileName = m_sFileName;
-			int index = sRotatedFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_rot180"));
-				sRotatedFileName.Insert(index, s);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sRotatedFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sRotatedFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sRotatedFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sRotatedFileName == m_sFileName)
-		{
-			nID = IDNO;
-			sRotatedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-
-		// Create New Rotated Dib in File
-		CDib RotatedDib;
-		RotatedDib.SetBMI(m_pDib->GetBMI());
-		RotatedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-		RotatedDib.ComputeImageSize();
-		if (!RotatedDib.MMCreateBMP(sRotatedFileName))
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Rotate
-		BOOL res = RotatedDib.Rotate180(m_pDib);
-
-		// Free (This Closes the Memory Mapped Files!)
-		m_pDib->Free();
-		RotatedDib.Free();
-
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sRotatedFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sRotatedFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1276, "Error while rotating the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			LoadBigPicture(m_sFileName);
-		else
-			LoadBigPicture(sRotatedFileName);
-		
-		EndWaitCursor();
-		
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError) 
 {
 	if (m_pDib)
@@ -6774,9 +6186,6 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_180))
 			return FALSE;
-
-		if (m_bBigPicture)
-			return Rotate180BigPicture(bShowMessageBoxOnError);
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -7270,282 +6679,6 @@ void CPictureDoc::OnUpdateEditColorsCount(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::EditResizeBigPicture(BOOL bShowMessageBoxOnError)
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-
-		// Resize Dialog
-		int nXDpi = m_pDib->GetXDpi();
-		int nYDpi = m_pDib->GetYDpi();
-		if (nXDpi == 0 || nYDpi == 0)
-		{
-			nXDpi = DEFAULT_DPI;
-			nYDpi = DEFAULT_DPI;
-		}
-		CResizingDpiDlg dlg(m_DocRect.Width(), m_DocRect.Height(),
-							nXDpi, nYDpi,
-							m_pDib->GetBitCount() <= 8 ?
-							CResizingDpiDlg::NEARESTNEIGHBOR :
-							CResizingDpiDlg::BICUBIC,
-							GetView());
-		if (dlg.DoModal() == IDOK)
-		{
-			// Resize?
-			if (dlg.m_nPixelsWidth == m_DocRect.Width()		&&
-				dlg.m_nPixelsHeight == m_DocRect.Height()	&&
-				dlg.m_nXDpi == nXDpi						&&
-				dlg.m_nYDpi == nYDpi)
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-
-			CString sResizedFileName;
-			int nID;
-			if (m_pDib->IsMMReadOnly())
-				nID = IDYES;
-			else
-				nID = ::AfxMessageBox(ML_STRING(1278, "Do You Want To Save The Resized Image To A New File?"), MB_YESNOCANCEL);
-			if (nID == IDYES)
-			{
-				// Display the Save As Dialog
-				TCHAR szFileName[MAX_PATH];
-				CNoVistaFileDlg dlgFile(FALSE);
-				sResizedFileName = m_sFileName;
-				int index = sResizedFileName.ReverseFind(_T('.'));	
-				if (index > 0)
-				{
-					CString sSize;
-					sSize.Format(_T("_%ux%u"), dlg.m_nPixelsWidth, dlg.m_nPixelsHeight);
-					sResizedFileName.Insert(index, sSize);
-				}
-				else
-				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-				_tcscpy(szFileName, sResizedFileName);
-				dlgFile.m_ofn.lpstrFile = szFileName;
-				dlgFile.m_ofn.nMaxFile = MAX_PATH;
-				dlgFile.m_ofn.lpstrCustomFilter = NULL;
-				dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-				dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-				dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-				if (dlgFile.DoModal() == IDOK)
-				{
-					sResizedFileName = szFileName;
-					if (m_pDib->IsMMReadOnly() && sResizedFileName == m_sFileName)
-					{
-						::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-				}
-				else
-				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else if (nID == IDNO)
-			{
-				// Temporary File
-				sResizedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-			}
-			else // Cancel
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-	
-			// Check
-			if (sResizedFileName == m_sFileName)
-			{
-				nID = IDNO;
-				sResizedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-			}
-
-			// Create New Resized Dib in File
-			CDib ResizedDib;
-			ResizedDib.SetBMI(m_pDib->GetBMI());
-			ResizedDib.GetBMIH()->biWidth = dlg.m_nPixelsWidth;
-			ResizedDib.GetBMIH()->biHeight = dlg.m_nPixelsHeight;
-			ResizedDib.SetXDpi(dlg.m_nXDpi);
-			ResizedDib.SetYDpi(dlg.m_nYDpi);
-			ResizedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-			ResizedDib.ComputeImageSize();
-			if (!ResizedDib.MMCreateBMP(sResizedFileName))
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-
-			// Begin Wait Cursor
-			BeginWaitCursor();
-
-			// "Abuse" the thread class to pump messages,
-			// this avoids locking the UI
-			::AfxGetMainFrame()->EnableWindow(FALSE);
-			CWorkerThread FakeThread;
-			FakeThread.SetProcMsg(true);
-
-			// Do Resize
-			BOOL res;
-			switch (dlg.m_ResizingMethod)
-			{
-				case 0 :
-				{
-					if (dlg.m_nPixelsWidth < (int)m_pDib->GetWidth() &&
-						dlg.m_nPixelsHeight < (int)m_pDib->GetHeight())
-					{
-						res = ResizedDib.ShrinkBits((DWORD)(dlg.m_nPixelsWidth),
-													(DWORD)(dlg.m_nPixelsHeight),
-													m_pDib,
-													GetView(),
-													TRUE,
-													&FakeThread);
-					}
-					else
-					{
-						res = ResizedDib.BicubicResampleBits((DWORD)(dlg.m_nPixelsWidth),
-															(DWORD)(dlg.m_nPixelsHeight),
-															m_pDib,
-															GetView(),
-															TRUE,
-															&FakeThread);
-					}
-					break;
-				}
-
-				case 1 :
-				{
-					res = ResizedDib.NearestNeighborResizeBits(	(DWORD)(dlg.m_nPixelsWidth),
-																(DWORD)(dlg.m_nPixelsHeight),
-																m_pDib,
-																GetView(),
-																TRUE,
-																&FakeThread);
-					break;
-				}
-				
-				case 2 :
-				{
-					res = ResizedDib.BilinearResampleBits(	(DWORD)(dlg.m_nPixelsWidth),
-															(DWORD)(dlg.m_nPixelsHeight),
-															m_pDib,
-															GetView(),
-															TRUE,
-															&FakeThread);
-					break;
-				}
-
-				case 3 :
-				{
-					res = ResizedDib.BicubicResampleBits(	(DWORD)(dlg.m_nPixelsWidth),
-															(DWORD)(dlg.m_nPixelsHeight),
-															m_pDib,
-															GetView(),
-															TRUE,
-															&FakeThread);
-					break;
-				}
-
-				case 4 :
-				{
-					res = ResizedDib.LanczosResampleBits(	(DWORD)(dlg.m_nPixelsWidth),
-															(DWORD)(dlg.m_nPixelsHeight),
-															m_pDib,
-															GetView(),
-															TRUE,
-															&FakeThread);
-					break;
-				}
-			
-				default :
-					res = FALSE;
-					break;
-			}
-
-			// Free (This Closes the Memory Mapped Files!)
-			m_pDib->Free();
-			ResizedDib.Free();
-			
-			// Re-enable
-			::AfxGetMainFrame()->EnableWindow(TRUE);
-
-			// If Ok
-			if (res)
-			{
-				// Remove and Rename File
-				if (nID == IDNO)
-				{
-					try
-					{
-						CFile::Remove(m_sFileName);
-						CFile::Rename(sResizedFileName, m_sFileName);
-					}
-					catch (CFileException* e)
-					{
-						EndWaitCursor();
-						::DeleteFile(sResizedFileName);
-
-						DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-						if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-						{
-							CString str(ML_STRING(1255, "The file is read only\n"));
-							TRACE(str);
-							if (bShowMessageBoxOnError)
-								::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-						}
-						else
-							::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-						e->Delete();
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-				}
-			}
-			else
-			{		
-				EndWaitCursor();
-
-				CString str;
-				str = ML_STRING(1279, "Error while resizing the big picture\n");
-				TRACE(str);
-				if (bShowMessageBoxOnError && !FakeThread.DoExit())
-					::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					
-				GetView()->ForceCursor(FALSE);
-
-				return FALSE;
-			}
-
-			// Load
-			if (nID == IDNO)
-				LoadBigPicture(m_sFileName);
-			else
-				LoadBigPicture(sResizedFileName);
-
-			EndWaitCursor();
-		}
-		else
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError) 
 {
 	if (m_pDib)
@@ -7553,10 +6686,6 @@ BOOL CPictureDoc::EditResize(BOOL bShowMessageBoxOnError)
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_RESIZE))
 			return FALSE;
-
-		// Resize Big Pictures
-		if (m_bBigPicture)
-			return EditResizeBigPicture(bShowMessageBoxOnError);
 
 		// Force Cursor
 		GetView()->ForceCursor();
@@ -7758,9 +6887,6 @@ BOOL CPictureDoc::EditLinearFilter(BOOL bShowMessageBoxOnError, int nTypeID)
 		if (!IsDibReadyForCommand(nTypeID))
 			return FALSE;
 
-		if (m_bBigPicture)
-			return EditLinearFilterBigPicture(bShowMessageBoxOnError, nTypeID);
-
 		// Force Cursor
 		GetView()->ForceCursor();
 
@@ -7872,237 +6998,6 @@ BOOL CPictureDoc::EditLinearFilter(BOOL bShowMessageBoxOnError, int nTypeID)
 			UpdateImageInfo();
 			return TRUE;
 		}
-	}
-	else
-		return FALSE;
-}
-
-BOOL CPictureDoc::EditLinearFilterBigPicture(BOOL bShowMessageBoxOnError, int nTypeID)
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-
-		CString sFilteredFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1280, "Do You Want To Save The Filtered Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sFilteredFileName = m_sFileName;
-			int index = sFilteredFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-				sFilteredFileName.Insert(index, _T("_filtered"));
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sFilteredFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sFilteredFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sFilteredFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sFilteredFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sFilteredFileName == m_sFileName)
-		{
-			nID = IDNO;
-			sFilteredFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-
-		// Create New Filtered Dib in File
-		CDib FilteredDib;
-		FilteredDib.SetBMI(m_pDib->GetBMI());
-		if (!FilteredDib.MMCreateBMP(sFilteredFileName))
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Do Linear Filter:
-		BOOL res = FALSE;
-
-		// Sharpen
-		if (nTypeID == ID_EDIT_FILTER_SHARPEN)
-		{
-			int Kernel[] = {-1,-1,-1,
-							-1,18,-1,
-							-1,-1,-1};
-			res = FilteredDib.FilterFast(Kernel, 10,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Soften
-		else if (nTypeID == ID_EDIT_FILTER_SOFTEN)
-		{
-			int Kernel[] = {1,1,1,
-							1,8,1,
-							1,1,1};
-			res = FilteredDib.FilterFast(Kernel, 16,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Edge
-		else if (nTypeID == ID_EDIT_FILTER_EDGE)
-		{
-			int Kernel[] = {-1,-1,-1,
-							-1, 8,-1,
-							-1,-1,-1};
-			res = FilteredDib.Filter(Kernel, 3, -1, 255,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Emboss
-		else if (nTypeID == ID_EDIT_FILTER_EMBOSS)
-		{
-			int Kernel[] = {0,0,-1,
-							0,0,0,
-							1,0,0};
-			res = FilteredDib.Filter(Kernel, 3, 0, 127,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Blur
-		else if (nTypeID == ID_EDIT_FILTER_BLUR)
-		{
-			int Kernel[] = {1,1,1,
-							1,1,1,
-							1,1,1};
-			res = FilteredDib.FilterFast(Kernel, 9,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Gaussian 3x3
-		else if (nTypeID == ID_EDIT_FILTER_GAUSSIAN3X3)
-		{
-			int Kernel[] = {1,2,1,
-							2,4,2,
-							1,2,1};
-			res = FilteredDib.FilterFast(Kernel, 16,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-		// Gaussian 5x5
-		else if (nTypeID == ID_EDIT_FILTER_GAUSSIAN5X5)
-		{
-			int Kernel[] = {0,1,2,1,0,
-							1,3,4,3,1,
-							2,4,8,4,2,
-							1,3,4,3,1,
-							0,1,2,1,0};
-			res = FilteredDib.Filter(Kernel, 5, 52, 0,
-									m_pDib,
-									GetView(),
-									TRUE);
-		}
-
-		// Free (This Closes the Memory Mapped Files!)
-		m_pDib->Free();
-		FilteredDib.Free();
-		
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sFilteredFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sFilteredFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1281, "Error while filtering the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			LoadBigPicture(m_sFileName);
-		else
-			LoadBigPicture(sFilteredFileName);
-
-		EndWaitCursor();
-
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
 	}
 	else
 		return FALSE;
@@ -8913,8 +7808,7 @@ void CPictureDoc::OnEditAddBorders()
 
 void CPictureDoc::OnUpdateEditAddBorders(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture										&&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_ADD_BORDERS)	&&
 					DoEnableCommand());
 }
@@ -8940,8 +7834,7 @@ void CPictureDoc::OnEditSoftBorders()
 
 void CPictureDoc::OnUpdateEditSoftBorders(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture										&&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_SOFT_BORDERS)	&&
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
@@ -9017,9 +7910,6 @@ BOOL CPictureDoc::EditGrayscale(BOOL bShowMessageBoxOnError)
 		if (!IsDibReadyForCommand(ID_EDIT_GRAYSCALE))
 			return FALSE;
 
-		if (m_bBigPicture)
-			return EditGrayscaleBigPicture(bShowMessageBoxOnError);
-
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
 		BeginWaitCursor();
@@ -9065,159 +7955,6 @@ BOOL CPictureDoc::EditGrayscale(BOOL bShowMessageBoxOnError)
 		return FALSE;
 }
 
-BOOL CPictureDoc::EditGrayscaleBigPicture(BOOL bShowMessageBoxOnError) 
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-
-		// Store Current File Name
-		CString sOrigFileName = m_sFileName;
-
-		CString sGrayscaleFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1282, "Do You Want To Save The Grayscale Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sGrayscaleFileName = sOrigFileName;
-			int index = sGrayscaleFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_grayscale"));
-				sGrayscaleFileName.Insert(index, s);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sGrayscaleFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sGrayscaleFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sGrayscaleFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Nothing to Do Here
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sGrayscaleFileName == sOrigFileName)
-			nID = IDNO;
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		if (nID == IDYES)
-		{
-			// Close Current File
-			m_pDib->Free();
-
-			// Copy file for in-place editing
-			if (!::CopyFile(sOrigFileName, sGrayscaleFileName, FALSE))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, bShowMessageBoxOnError);
-				BeginWaitCursor();
-				LoadBigPicture(sOrigFileName); // Restore
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-
-			// Make Sure the Copy is Not Read Only!
-			DWORD dwAttrib = ::GetFileAttributes(sGrayscaleFileName);
-			if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-				::SetFileAttributes(sGrayscaleFileName, dwAttrib & ~FILE_ATTRIBUTE_READONLY);
-
-			// Load the Copy
-			if (!LoadBigPicture(sGrayscaleFileName))
-			{
-				LoadBigPicture(sOrigFileName); // Restore
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-
-		// Do Grayscale
-		BOOL res = m_pDib->Grayscale(GetView(), TRUE);
-		m_pDib->GetPreviewDib()->Grayscale();
-
-		// If Not Ok
-		if (!res)
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1283, "Error while grayscaling the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-
-			// Restore
-			if (nID == IDYES)
-			{
-				BeginWaitCursor();
-				LoadBigPicture(sOrigFileName);
-				EndWaitCursor();
-			}
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		EndWaitCursor();
-
-		GetView()->ForceCursor(FALSE);
-
-		// Set Document Title
-		SetDocumentTitle();
-
-		// Invalidate
-		InvalidateAllViews(FALSE);
-
-		// Update Image Info
-		UpdateImageInfo();
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 void CPictureDoc::OnEditGrayscale() 
 {
 	EditGrayscale(TRUE);
@@ -9237,9 +7974,6 @@ BOOL CPictureDoc::EditNegative(BOOL bShowMessageBoxOnError)
 		// Wait and schedule command if dib not fully loaded!
 		if (!IsDibReadyForCommand(ID_EDIT_NEGATIVE))
 			return FALSE;
-
-		if (m_bBigPicture)
-			return EditNegativeBigPicture(bShowMessageBoxOnError);
 
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
@@ -9261,159 +7995,6 @@ BOOL CPictureDoc::EditNegative(BOOL bShowMessageBoxOnError)
 		// Set Modified Flag
 		SetModifiedFlag();
 		
-		// Set Document Title
-		SetDocumentTitle();
-
-		// Invalidate
-		InvalidateAllViews(FALSE);
-
-		// Update Image Info
-		UpdateImageInfo();
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CPictureDoc::EditNegativeBigPicture(BOOL bShowMessageBoxOnError) 
-{
-	if (m_pDib)
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-
-		// Store Current File Name
-		CString sOrigFileName = m_sFileName;
-
-		CString sNegativeFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1284, "Do You Want To Save The Negative Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sNegativeFileName = sOrigFileName;
-			int index = sNegativeFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString s(_T("_negative"));
-				sNegativeFileName.Insert(index, s);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sNegativeFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sNegativeFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sNegativeFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Nothing to Do Here
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sNegativeFileName == sOrigFileName)
-			nID = IDNO;
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		if (nID == IDYES)
-		{
-			// Close Current File
-			m_pDib->Free();
-
-			// Copy file for in-place editing
-			if (!::CopyFile(sOrigFileName, sNegativeFileName, FALSE))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, bShowMessageBoxOnError);
-				BeginWaitCursor();
-				LoadBigPicture(sOrigFileName); // Restore
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-
-			// Make Sure the Copy is Not Read Only!
-			DWORD dwAttrib = ::GetFileAttributes(sNegativeFileName);
-			if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-				::SetFileAttributes(sNegativeFileName, dwAttrib & ~FILE_ATTRIBUTE_READONLY);
-
-			// Load the Copy
-			if (!LoadBigPicture(sNegativeFileName))
-			{
-				LoadBigPicture(sOrigFileName); // Restore
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-
-		// Do Negative
-		BOOL res = m_pDib->Negative(GetView(), TRUE);
-		m_pDib->GetPreviewDib()->Negative();
-
-		// If Not Ok
-		if (!res)
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1285, "Error while making the big picture negative\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-
-			// Restore
-			if (nID == IDYES)
-			{
-				BeginWaitCursor();
-				LoadBigPicture(sOrigFileName);
-				EndWaitCursor();
-			}
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		EndWaitCursor();
-
-		GetView()->ForceCursor(FALSE);
-
 		// Set Document Title
 		SetDocumentTitle();
 
@@ -10509,8 +9090,7 @@ void CPictureDoc::OnEditRedeye()
 
 void CPictureDoc::OnUpdateEditRedeye(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture										&&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REDEYE)		&&
 					m_pDib												&&
 					!(m_SlideShowThread.IsSlideshowRunning() ||
@@ -10591,8 +9171,7 @@ void CPictureDoc::OnEditTo1bit()
 
 void CPictureDoc::OnUpdateEditTo1bit(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO1BIT) &&
 					DoEnableCommand() &&
 					(m_pDib && m_pDib->GetBitCount() != 1));
@@ -10627,8 +9206,7 @@ void CPictureDoc::OnEditTo1bitDitherErrDiff()
 
 void CPictureDoc::OnUpdateEditTo1bitDitherErrDiff(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO1BIT_DITHER_ERRDIFF) &&
 					DoEnableCommand() &&
 					(m_pDib && m_pDib->GetBitCount() != 1));
@@ -10706,8 +9284,7 @@ void CPictureDoc::OnEditTo4bits()
 
 void CPictureDoc::OnUpdateEditTo4bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO4BITS) &&
 					DoEnableCommand());
 }
@@ -10783,8 +9360,7 @@ void CPictureDoc::OnEditTo8bits()
 
 void CPictureDoc::OnUpdateEditTo8bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO8BITS) &&
 					DoEnableCommand());
 }
@@ -10818,8 +9394,7 @@ void CPictureDoc::OnEditTo15bits()
 
 void CPictureDoc::OnUpdateEditTo15bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO15BITS) &&
 					DoEnableCommand() &&
 					(m_pDib && !m_pDib->IsRgb16_555()));
@@ -10858,8 +9433,7 @@ void CPictureDoc::OnEditTo16bits()
 
 void CPictureDoc::OnUpdateEditTo16bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO16BITS) &&
 					DoEnableCommand() &&
 					(m_pDib && !m_pDib->IsRgb16_565()));
@@ -10894,8 +9468,7 @@ void CPictureDoc::OnEditTo24bits()
 
 void CPictureDoc::OnUpdateEditTo24bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO24BITS) &&
 					DoEnableCommand() &&
 					(m_pDib && m_pDib->GetBitCount() != 24));
@@ -10931,8 +9504,7 @@ void CPictureDoc::OnEditTo32bits()
 
 void CPictureDoc::OnUpdateEditTo32bits(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO32BITS) &&
 					DoEnableCommand() &&
 					m_pDib &&
@@ -10966,8 +9538,7 @@ void CPictureDoc::OnEditTo32bitsAlpha()
 
 void CPictureDoc::OnUpdateEditTo32bitsAlpha(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture &&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_TO32BITS_ALPHA) &&
 					DoEnableCommand() &&
 					m_pDib &&
@@ -11202,16 +9773,9 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 		else
 		{
 			// File Name
-			if (m_bBigPicture)
-			{
-				t.Format(ML_STRING(1307, "File: %s\r\n"), ::GetShortFileName(m_sFileName));
-			}
-			else
-			{
-				t.Format(ML_STRING(1308, "File %i of %i: %s\r\n"),	m_FileFind.GetFilePosition() + 1,
-														m_FileFind.GetFilesCount(),
-														::GetShortFileName(m_sFileName));
-			}
+			t.Format(ML_STRING(1308, "File %i of %i: %s\r\n"),	m_FileFind.GetFilePosition() + 1,
+																m_FileFind.GetFilesCount(),
+																::GetShortFileName(m_sFileName));
 			s+=t;
 
 			// Path
@@ -12100,9 +10664,6 @@ void CPictureDoc::CancelCrop()
 
 BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel, BOOL bCrop)
 {
-	if (m_bBigPicture)
-		return CropBigPicture(bShowMessageBoxOnError);
-
 	if (m_pDib && m_pDib->IsValid())
 	{
 		// Force Cursor
@@ -12376,173 +10937,6 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 		return FALSE;
 }
 
-BOOL CPictureDoc::CropBigPicture(BOOL bShowMessageBoxOnError)
-{
-	if (m_CropDocRect == m_DocRect)
-		return FALSE;
-
-	if (m_pDib && m_pDib->IsValid())
-	{
-		// Force Cursor
-		GetView()->ForceCursor();
-
-		CString sCroppedFileName;
-		int nID;
-		if (m_pDib->IsMMReadOnly())
-			nID = IDYES;
-		else
-			nID = ::AfxMessageBox(ML_STRING(1327, "Do You Want To Save The Cropped Image To A New File?"), MB_YESNOCANCEL);
-		if (nID == IDYES)
-		{
-			// Display the Save As Dialog
-			TCHAR szFileName[MAX_PATH];
-			CNoVistaFileDlg dlgFile(FALSE);
-			sCroppedFileName = m_sFileName;
-			int index = sCroppedFileName.ReverseFind(_T('.'));	
-			if (index > 0)
-			{
-				CString sSize;
-				sSize.Format(_T("_%ux%u"), m_CropDocRect.Width(), m_CropDocRect.Height());
-				sCroppedFileName.Insert(index, sSize);
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			_tcscpy(szFileName, sCroppedFileName);
-			dlgFile.m_ofn.lpstrFile = szFileName;
-			dlgFile.m_ofn.nMaxFile = MAX_PATH;
-			dlgFile.m_ofn.lpstrCustomFilter = NULL;
-			dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-			dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-			dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-			if (dlgFile.DoModal() == IDOK)
-			{
-				sCroppedFileName = szFileName;
-				if (m_pDib->IsMMReadOnly() && sCroppedFileName == m_sFileName)
-				{
-					::AfxMessageBox(ML_STRING(1275, "Cannot save to ourself"), MB_OK | MB_ICONSTOP);
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-		}
-		else if (nID == IDNO)
-		{
-			// Temporary File
-			sCroppedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-		else // Cancel
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Check
-		if (sCroppedFileName == m_sFileName)
-		{
-			nID = IDNO;
-			sCroppedFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-		}
-
-		// Create New Cropped Dib in File
-		CDib CroppedDib;
-		CroppedDib.SetBMI(m_pDib->GetBMI());
-		CroppedDib.GetBMIH()->biWidth = m_CropDocRect.Width();
-		CroppedDib.GetBMIH()->biHeight = m_CropDocRect.Height();
-		CroppedDib.GetBMIH()->biSizeImage = 0; // This to Force the Recomputation with the next Command
-		CroppedDib.ComputeImageSize();
-		if (!CroppedDib.MMCreateBMP(sCroppedFileName))
-		{
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Crop
-		BOOL res = CroppedDib.CropBits(	m_CropDocRect.left,
-										m_CropDocRect.top,
-										m_CropDocRect.Width(),
-										m_CropDocRect.Height(),
-										m_pDib,
-										GetView(), TRUE);
-		
-		// Free (This Closes the Memory Mapped Files!)
-		m_pDib->Free();
-		CroppedDib.Free();
-
-		// If Ok
-		if (res)
-		{
-			// Remove and Rename File
-			if (nID == IDNO)
-			{
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sCroppedFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					EndWaitCursor();
-					::DeleteFile(sCroppedFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
-					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
-		}
-		else
-		{		
-			EndWaitCursor();
-
-			CString str;
-			str = ML_STRING(1328, "Error while cropping the big picture\n");
-			TRACE(str);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-				
-			GetView()->ForceCursor(FALSE);
-
-			return FALSE;
-		}
-
-		// Load
-		if (nID == IDNO)
-			LoadBigPicture(m_sFileName);
-		else
-			LoadBigPicture(sCroppedFileName);
-		
-		EndWaitCursor();
-		
-		GetView()->ForceCursor(FALSE);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
 void CPictureDoc::OnEditCropApply() 
 {
 	DoCropRect();
@@ -12608,8 +11002,7 @@ void CPictureDoc::OnEditCopy()
 
 void CPictureDoc::OnUpdateEditCopy(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	!m_bBigPicture								&&
-					(m_dwIDAfterFullLoadCommand == 0 ||
+	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_COPY) &&
 					m_pDib										&&
 					!m_pRotationFlippingDlg						&&
@@ -12630,7 +11023,7 @@ void CPictureDoc::OnEditCut()
 
 void CPictureDoc::OnUpdateEditCut(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(!m_bBigPicture && m_bCrop);
+	pCmdUI->Enable(m_bCrop);
 }
 
 void CPictureDoc::OnEditCropCancel() 

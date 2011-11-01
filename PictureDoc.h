@@ -457,9 +457,6 @@ public:
 	// (use the Monitor Size to decide the Preview Size)
 	static BOOL CreatePreviewDib(CDib* pDib);
 
-	// Just Load One Big Picture Document (No Slideshow, No Undo, ...)
-	BOOL LoadBigPicture(CString sFileName);
-
 	// Picture Loading Function
 	BOOL LoadPicture(	CDib *volatile *ppDib,
 						CString sFileName,
@@ -489,26 +486,19 @@ public:
 	BOOL Rotate90cw(BOOL bShowMessageBoxOnError);
 	BOOL Rotate90ccw(BOOL bShowMessageBoxOnError);
 	BOOL Rotate180(BOOL bShowMessageBoxOnError);
-	BOOL Rotate90cwBigPicture(BOOL bShowMessageBoxOnError);
-	BOOL Rotate90ccwBigPicture(BOOL bShowMessageBoxOnError);
-	BOOL Rotate180BigPicture(BOOL bShowMessageBoxOnError);
 
 	// Resize
-	BOOL EditResize(BOOL bShowMessageBoxOnError); 
-	BOOL EditResizeBigPicture(BOOL bShowMessageBoxOnError);
+	BOOL EditResize(BOOL bShowMessageBoxOnError);
 
 	// Linear Filter
 	BOOL EditLinearFilter(BOOL bShowMessageBoxOnError, int nTypeID);
-	BOOL EditLinearFilterBigPicture(BOOL bShowMessageBoxOnError, int nTypeID);
 
 	// Grayscale
 	BOOL EditGrayscale(BOOL bShowMessageBoxOnError);
-	BOOL EditGrayscaleBigPicture(BOOL bShowMessageBoxOnError);
 
 	// Negative
 	BOOL EditNegative(BOOL bShowMessageBoxOnError);
-	BOOL EditNegativeBigPicture(BOOL bShowMessageBoxOnError);
-
+	
 	// Borders Add
 	BOOL EditAddBorders();
 
@@ -645,7 +635,6 @@ public:
 // Public Variables
 public:
 	CDib m_AlphaRenderedDib;		// Alpha Rendered With Background Color
-	BOOL m_bBigPicture;				// The Document Contains a Big Picture File (No Undo, ...)
 	CDib* volatile m_pNextDib;		// Next Picture
 	CDib* volatile m_pPrevDib;		// Previous Picture
 	CString m_sNextDibName;			// Next Picture Name
@@ -841,7 +830,6 @@ protected:
 	void DoCopyRect();
 	void DoCutRect();
 	BOOL CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel, BOOL bCrop);
-	BOOL CropBigPicture(BOOL bShowMessageBoxOnError);
 
 // Protected Variables
 protected:

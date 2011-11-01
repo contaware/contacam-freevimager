@@ -522,22 +522,8 @@ int CPicturePrintPreviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CButton* pCheckPrintMargin = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_PRINTMARGIN);
 	pCheckPrintMargin->SetCheck(GetDocument()->m_bPrintMargin);
 
-	// If Big Picture No Resize Possible
-	if (GetDocument()->m_bBigPicture)
-	{
-		CButton* pCheck = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_SIZE_FIT);
-		pCheck->SetCheck(0);
-		pCheck->EnableWindow(FALSE);
-		m_pScaleEdit->EnableWindow(FALSE);
-		m_pScaleSpin->EnableWindow(FALSE);
-		GetDocument()->m_bPrintSizeFit = FALSE;
-		GetDocument()->m_ptPrintOffset.x = 0;
-		GetDocument()->m_ptLastPrintOffset.x = 0;
-		GetDocument()->m_ptPrintOffset.y = 0;
-		GetDocument()->m_ptLastPrintOffset.y = 0;
-	}
-	else
-		FitSize();
+	// Fit Size
+	FitSize();
 	
 	// Init the Portrait Landscape Radio Buttons
 	int orientation = GetPrintOrientation();
@@ -795,15 +781,7 @@ void CPicturePrintPreviewView::OnPrintSetup()
 		delete pInfo;
 		delete m_pPreviewDC;
 		m_pPreviewDC = NULL;
-		if (GetDocument()->m_bBigPicture)
-		{
-			GetDocument()->m_ptPrintOffset.x = 0;
-			GetDocument()->m_ptLastPrintOffset.x = 0;
-			GetDocument()->m_ptPrintOffset.y = 0;
-			GetDocument()->m_ptLastPrintOffset.y = 0;
-		}
-		else
-			FitSize();
+		FitSize();
 		SetPrintView(m_pPrintView);
 
 		// Update the Portrait Landscape Radio Buttons
@@ -871,15 +849,7 @@ void CPicturePrintPreviewView::OnPortrait()
 		delete pInfo;
 		delete m_pPreviewDC;
 		m_pPreviewDC = NULL;
-		if (GetDocument()->m_bBigPicture)
-		{
-			GetDocument()->m_ptPrintOffset.x = 0;
-			GetDocument()->m_ptLastPrintOffset.x = 0;
-			GetDocument()->m_ptPrintOffset.y = 0;
-			GetDocument()->m_ptLastPrintOffset.y = 0;
-		}
-		else
-			FitSize();
+		FitSize();
 		SetPrintView(m_pPrintView);
 	}
 }
@@ -900,15 +870,7 @@ void CPicturePrintPreviewView::OnLandscape()
 		delete pInfo;
 		delete m_pPreviewDC;
 		m_pPreviewDC = NULL;
-		if (GetDocument()->m_bBigPicture)
-		{
-			GetDocument()->m_ptPrintOffset.x = 0;
-			GetDocument()->m_ptLastPrintOffset.x = 0;
-			GetDocument()->m_ptPrintOffset.y = 0;
-			GetDocument()->m_ptLastPrintOffset.y = 0;
-		}
-		else
-			FitSize();
+		FitSize();
 		SetPrintView(m_pPrintView);
 	}
 }
@@ -1236,24 +1198,7 @@ void CPicturePrintPreviewView::OnDraw(CDC* pDC)
 	if (m_pPrintView == NULL || m_dcPrint.m_hDC == NULL)
 		return;
 
-	// If Big Picture Set The Fixed Print Scale!
-	if (GetDocument()->m_bBigPicture)
-	{
-		int nXDpiDib = GetDocument()->m_pDib->GetXDpi();
-		int nYDpiDib = GetDocument()->m_pDib->GetYDpi();
-		if (nXDpiDib == 0 || nYDpiDib == 0)
-		{
-			nXDpiDib = DEFAULT_DPI;
-			nYDpiDib = DEFAULT_DPI;
-		}
-		double dXDpiRatio = (double)nXDpiDib / (double)m_sizePrinterPPI.cx;
-		double dYDpiRatio = (double)nYDpiDib / (double)m_sizePrinterPPI.cy;
-		GetDocument()->m_dPrintScale = min(dXDpiRatio, dYDpiRatio);
-		m_pScaleEdit->SetPrintScale(GetDocument()->m_dPrintScale);
-	}
-
 	CPoint ViewportOrg = pDC->GetViewportOrg();
-
 	CPen rectPen;
 	rectPen.CreatePen(PS_SOLID, 2, GetSysColor(COLOR_WINDOWFRAME));
 	CPen shadowPen;

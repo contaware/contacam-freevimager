@@ -366,29 +366,6 @@ protected:
 	DECLARE_DYNCREATE(CPictureChildFrame)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CBigPictureChildFrame
-
-class CBigPictureChildFrame : public CPictureChildFrame
-{
-protected:
-	CBigPictureChildFrame();           // protected constructor used by dynamic creation
-
-	// Overrides
-protected:
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CBigPictureChildFrame)
-	//}}AFX_VIRTUAL
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CBigPictureChildFrame)
-	//}}AFX_MSG
-	
-	DECLARE_MESSAGE_MAP()
-	DECLARE_DYNCREATE(CBigPictureChildFrame)
-};
-
 
 /////////////////////////////////////////////////////////////////////////////
 

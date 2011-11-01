@@ -38,7 +38,6 @@ public:
 // Implementation
 protected:
 	void DoIt();
-	BOOL DoItBigPicture();
 	BOOL Soften(CDib* pDib, CDib* pSrcDib, int nSoftness);
 	void Undo();
 	CDib m_PreviewUndoDib;

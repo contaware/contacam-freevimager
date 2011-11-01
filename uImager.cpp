@@ -156,7 +156,6 @@ CUImagerApp::CUImagerApp()
 #endif
 	m_bTopMost = FALSE;
 	m_pPictureDocTemplate = NULL;
-	m_pBigPictureDocTemplate = NULL;
 	m_pAudioMCIDocTemplate = NULL;
 	m_bWaitingMailFinish = FALSE;
 	m_bUseLoadPreviewDib = TRUE;
@@ -655,16 +654,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!m_pPictureDocTemplate)
 			throw (int)0;
 		AddDocTemplate(m_pPictureDocTemplate);
-
-		// Big Picture Doc Template Registration
-		m_pBigPictureDocTemplate = new CUImagerMultiDocTemplate(
-			g_bNT ? IDR_BIGPICTURE : IDR_BIGPICTURE_NOHQ,
-			RUNTIME_CLASS(CPictureDoc),
-			RUNTIME_CLASS(CBigPictureChildFrame),
-			RUNTIME_CLASS(CPictureView));
-		if (!m_pBigPictureDocTemplate)
-			throw (int)0;
-		AddDocTemplate(m_pBigPictureDocTemplate);
 
 		// Video Avi Doc Template Registration
 		m_pVideoAviDocTemplate = new CUImagerMultiDocTemplate(
@@ -1335,7 +1324,6 @@ void CUImagerApp::OnFileOpen()
 			_tcscpy(InitDir, (LPCTSTR)::GetSpecialFolderPath(CSIDL_MYPICTURES));
 		CPreviewFileDlg dlgFile(TRUE,
 								m_bFileDlgPreview,
-								TRUE,
 								NULL,
 								NULL,
 								NULL,
@@ -1399,20 +1387,35 @@ void CUImagerApp::OnFileOpen()
 				}
 				else
 				{
-					// Big Picture File?
-					if (dlgFile.m_bBigPicture &&
-						(::GetFileExt(Path) == _T(".bmp") ||
-						::GetFileExt(Path) == _T(".dib")))
+					CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(Path);
+					if (curTemplate == NULL)
 					{
-						CUImagerMultiDocTemplate* curTemplate = GetBigPictureDocTemplate();
-						CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-						if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						FileTypeNotSupportedMessageBox(Path);
+						delete [] FileNames;
+						delete [] InitDir;
+						return;
+					}
+
+					CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+					if (pDoc)
+					{
+						if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+						{
+							if (!((CVideoAviDoc*)pDoc)->LoadAVI(Path))
+							{
+								((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+								delete [] FileNames;
+								delete [] InitDir;
+								return;
+							}
+						}
+						else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 						{
 							CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
 							pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
 							pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-							if (!((CPictureDoc*)pDoc)->LoadBigPicture(Path))
+							if (!((CPictureDoc*)pDoc)->LoadPicture(&pDoc->m_pDib, Path))
 							{
 								((CPictureDoc*)pDoc)->CloseDocumentForce();
 								delete [] FileNames;
@@ -1430,79 +1433,27 @@ void CUImagerApp::OnFileOpen()
 																									SWP_NOZORDER);
 									((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 								}
+								((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
 							}
 						}
-					}
-					else
-					{
-						CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(Path);
-						if (curTemplate == NULL)
+						else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
 						{
-							FileTypeNotSupportedMessageBox(Path);
-							delete [] FileNames;
-							delete [] InitDir;
-							return;
+							if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
+							{
+								((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+								delete [] FileNames;
+								delete [] InitDir;
+								return;
+							}
 						}
-
-						CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-						if (pDoc)
+						else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
 						{
-							if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+							if (!((CCDAudioDoc*)pDoc)->LoadCD(Path))
 							{
-								if (!((CVideoAviDoc*)pDoc)->LoadAVI(Path))
-								{
-									((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
-								}
-							}
-							else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-							{
-								CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-								pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-								pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
-
-								if (!((CPictureDoc*)pDoc)->LoadPicture(&pDoc->m_pDib, Path))
-								{
-									((CPictureDoc*)pDoc)->CloseDocumentForce();
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
-								}
-								else
-								{
-									// Fit to document
-									if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-									{
-										((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																										0, 0, 0, 0,
-																										SWP_NOSIZE |
-																										SWP_NOZORDER);
-										((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-									}
-									((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-								}
-							}
-							else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-							{
-								if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
-								{
-									((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
-								}
-							}
-							else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-							{
-								if (!((CCDAudioDoc*)pDoc)->LoadCD(Path))
-								{
-									((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
-								}
+								((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+								delete [] FileNames;
+								delete [] InitDir;
+								return;
 							}
 						}
 					}
@@ -1542,121 +1493,84 @@ void CUImagerApp::OnFileOpen()
 					}
 					else
 					{
-						// Big Picture File?
-						if (dlgFile.m_bBigPicture &&
-							(::GetFileExt(FileName) == _T(".bmp") ||
-							::GetFileExt(FileName) == _T(".dib")))
+						// Just open one cd player
+						if (!bCDAudioOpened || ::GetFileExt(FileName) != _T(".cda"))
 						{
-							CUImagerMultiDocTemplate* curTemplate = GetBigPictureDocTemplate();
-							CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-							if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+							CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(FileName);
+							if (curTemplate == NULL)
 							{
-								CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-								pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-								pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
-
-								if (!((CPictureDoc*)pDoc)->LoadBigPicture(FileName))
-								{
-									((CPictureDoc*)pDoc)->CloseDocumentForce();
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
-								}
-								else
-								{
-									// Fit to document
-									if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-									{
-										((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																										0, 0, 0, 0,
-																										SWP_NOSIZE |
-																										SWP_NOZORDER);
-										((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-									}
-								}
+								FileTypeNotSupportedMessageBox(FileName);
+								delete [] FileNames;
+								delete [] InitDir;
+								return;
 							}
-						}
-						else
-						{
-							// Just open one cd player
-							if (!bCDAudioOpened || ::GetFileExt(FileName) != _T(".cda"))
+							CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+							if (pDoc)
 							{
-								CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(FileName);
-								if (curTemplate == NULL)
+								if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 								{
-									FileTypeNotSupportedMessageBox(FileName);
-									delete [] FileNames;
-									delete [] InitDir;
-									return;
+									if (!((CVideoAviDoc*)pDoc)->LoadAVI(FileName))
+									{
+										((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+										delete [] FileNames;
+										delete [] InitDir;
+										return;
+									}
 								}
-								CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-								if (pDoc)
+								else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 								{
-									if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-									{
-										if (!((CVideoAviDoc*)pDoc)->LoadAVI(FileName))
-										{
-											((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-											delete [] FileNames;
-											delete [] InitDir;
-											return;
-										}
-									}
-									else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-									{
-										CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-										pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-										pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+									CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+									pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+									pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-										if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
-																				FileName,
-																				FALSE,
-																				FALSE	// Do not preload Prev & Next because LoadDibSectionEx
-																						// of CDib has a OLE object problem when loading many
-																						// files at the same time!
-																				))
-										{
-											((CPictureDoc*)pDoc)->CloseDocumentForce();
-											delete [] FileNames;
-											delete [] InitDir;
-											return;
-										}
-										else
-										{
-											// Fit to document
-											if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-											{
-												((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																												0, 0, 0, 0,
-																												SWP_NOSIZE |
-																												SWP_NOZORDER);
-												((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-											}
-											((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-										}
-									}
-									else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+									if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+																			FileName,
+																			FALSE,
+																			FALSE	// Do not preload Prev & Next because LoadDibSectionEx
+																					// of CDib has a OLE object problem when loading many
+																					// files at the same time!
+																			))
 									{
-										if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
-										{
-											((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-											delete [] FileNames;
-											delete [] InitDir;
-											return;
-										}
+										((CPictureDoc*)pDoc)->CloseDocumentForce();
+										delete [] FileNames;
+										delete [] InitDir;
+										return;
 									}
-									else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+									else
 									{
-										if (!((CCDAudioDoc*)pDoc)->LoadCD(FileName))
+										// Fit to document
+										if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
 										{
-											((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-											delete [] FileNames;
-											delete [] InitDir;
-											return;
+											((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																											0, 0, 0, 0,
+																											SWP_NOSIZE |
+																											SWP_NOZORDER);
+											((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 										}
-										else
-											bCDAudioOpened = TRUE;
+										((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
 									}
+								}
+								else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+								{
+									if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
+									{
+										((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+										delete [] FileNames;
+										delete [] InitDir;
+										return;
+									}
+								}
+								else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+								{
+									if (!((CCDAudioDoc*)pDoc)->LoadCD(FileName))
+									{
+										((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+										delete [] FileNames;
+										delete [] InitDir;
+										return;
+									}
+									else
+										bCDAudioOpened = TRUE;
 								}
 							}
 						}
@@ -1805,25 +1719,21 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 		LPTSTR lpFilePart;
 		::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
 
-		// Picture Doc
-		CUImagerDoc* pDoc = NULL;
-
-		// Init Big Picture File Flag
-		BOOL bBigPicture = FALSE;
-		if (::GetFileExt(szFullPathName) == _T(".bmp") ||
-			::GetFileExt(szFullPathName) == _T(".dib"))
+		// Open Doc
+		CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+		if (pDoc)
 		{
-			CDib Dib;
-			if (Dib.LoadImage(szFullPathName, 0, 0, 0, TRUE, TRUE))
-				bBigPicture = ((CUImagerApp*)::AfxGetApp())->IsPictureSizeBig(Dib.GetImageSize());
-		}
-
-		// Big Picture File?
-		if (bBigPicture)
-		{
-			curTemplate = GetBigPictureDocTemplate();
-			pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+			if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+			{
+				if (m_bStartMaximized)
+					((CVideoAviDoc*)pDoc)->GetFrame()->MDIMaximize();
+				if (!((CVideoAviDoc*)pDoc)->LoadAVI(szFullPathName))
+				{
+					((CVideoAviDoc*)pDoc)->CloseDocumentForce();
+					return NULL;
+				}
+			}
+			else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 			{
 				if (m_bStartMaximized)
 					((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
@@ -1832,7 +1742,12 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 				pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
 				pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-				if (!((CPictureDoc*)pDoc)->LoadBigPicture(szFullPathName))
+				if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+														szFullPathName,
+														FALSE,
+														FALSE,	// Do not preload Prev & Next
+														FALSE
+														))
 				{
 					((CPictureDoc*)pDoc)->CloseDocumentForce();
 					return NULL;
@@ -1848,72 +1763,23 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 																						SWP_NOZORDER);
 						((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 					}
+					((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
 				}
 			}
-		}
-		else
-		{
-			pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
-			if (pDoc)
+			else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
 			{
-				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+				if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
 				{
-					if (m_bStartMaximized)
-						((CVideoAviDoc*)pDoc)->GetFrame()->MDIMaximize();
-					if (!((CVideoAviDoc*)pDoc)->LoadAVI(szFullPathName))
-					{
-						((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-						return NULL;
-					}
+					((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+					return NULL;
 				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+			}
+			else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+			{
+				if (!((CCDAudioDoc*)pDoc)->LoadCD(szFullPathName))
 				{
-					if (m_bStartMaximized)
-						((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
-
-					CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-					pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-					pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
-
-					if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
-															szFullPathName,
-															FALSE,
-															FALSE,	// Do not preload Prev & Next
-															FALSE
-															))
-					{
-						((CPictureDoc*)pDoc)->CloseDocumentForce();
-						return NULL;
-					}
-					else
-					{
-						// Fit to document
-						if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-						{
-							((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																							0, 0, 0, 0,
-																							SWP_NOSIZE |
-																							SWP_NOZORDER);
-							((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-						}
-						((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-					}
-				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-				{
-					if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
-					{
-						((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-						return NULL;
-					}
-				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-				{
-					if (!((CCDAudioDoc*)pDoc)->LoadCD(szFullPathName))
-					{
-						((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-						return NULL;
-					}
+					((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+					return NULL;
 				}
 			}
 		}
@@ -2124,15 +1990,6 @@ BOOL CUImagerApp::ArePictureDocsOpen()
 	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
 	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
 	CPictureDoc* pPictureDoc;	
-	while (posPictureDoc)
-	{
-		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		if (pPictureDoc)
-			return TRUE;
-	}
-
-	pPictureDocTemplate = GetBigPictureDocTemplate();
-	posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();	
 	while (posPictureDoc)
 	{
 		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
@@ -2509,12 +2366,10 @@ BOOL CUImagerApp::AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=F
 	CString sMsg;
 	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
 	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
-	CUImagerMultiDocTemplate* pBigPictureDocTemplate = GetBigPictureDocTemplate();
-	POSITION posBigPictureDoc = pBigPictureDocTemplate->GetFirstDocPosition();
 	CPictureDoc* pPictureDoc;
 
 	// If No Picture Docs Open
-	if (!posPictureDoc && !posBigPictureDoc)
+	if (!posPictureDoc)
 	{
 		sMsg = ML_STRING(1203, "No picture documents open."); 
 		goto msg;
@@ -2523,14 +2378,6 @@ BOOL CUImagerApp::AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=F
 	while (posPictureDoc)
 	{
 		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		sMsg = PictureMakeMsg(pPictureDoc);
-		if (sMsg != _T(""))
-			goto msg;
-	}
-
-	while (posBigPictureDoc)
-	{
-		pPictureDoc = (CPictureDoc*)(pBigPictureDocTemplate->GetNextDoc(posBigPictureDoc));
 		sMsg = PictureMakeMsg(pPictureDoc);
 		if (sMsg != _T(""))
 			goto msg;
@@ -2558,17 +2405,6 @@ BOOL CUImagerApp::HasPicturePrintPreview(CPictureDoc* pThisDoc/*=NULL*/)
 			return TRUE;
 	}
 
-	pPictureDocTemplate = GetBigPictureDocTemplate();
-	posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();	
-	while (posPictureDoc)
-	{
-		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		if (pPictureDoc				&&
-			pThisDoc != pPictureDoc	&&
-			pPictureDoc->m_bPrintPreviewMode)
-			return TRUE;
-	}
-
 	return FALSE;
 }
 
@@ -2584,13 +2420,6 @@ BOOL CUImagerApp::IsDocReadyToSlide(CPictureDoc* pDoc, BOOL bShowMsgBoxIfSlideNo
 
 	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 	{
-		// Big Picture
-		if (((CPictureDoc*)pDoc)->m_bBigPicture)
-		{
-			sMsg = ML_STRING(1205, "Sliding not possible for big pictures."); 
-			goto msg;
-		}
-
 		sMsg = PictureSlideMakeMsg((CPictureDoc*)pDoc);
 		if (sMsg == _T(""))
 			return TRUE;
@@ -3779,52 +3608,28 @@ int CUImagerApp::ShrinkCurrentDoc(	LPCTSTR szDstFileName,
 		// Status Text
 		ShrinkStatusText(((CPictureDoc*)pDoc)->m_sFileName, szDstFileName);
 
-		if (((CPictureDoc*)pDoc)->m_bBigPicture)
+		if (ShrinkPicture(	pDoc->m_sFileName,
+							szDstFileName,
+							dwMaxSize,
+							bMaxSizePercent,
+							dwJpegQuality,
+							FALSE,				// Do not force jpeg quality change if already a jpeg
+							COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
+							TRUE,				// Force the change to Jpeg Compression for Tiff files
+							bShrinkPictures,		
+							FALSE,				// Do not sharpen after shrink
+							TRUE,				// Work on all pages of a multi-page Tiff
+							::AfxGetMainFrame(),
+							TRUE,
+							NULL) != 0)
 		{
-			if (ShrinkBigPicture(	pDoc->m_pDib,
-									szDstFileName,
-									dwMaxSize,
-									bMaxSizePercent,
-									dwJpegQuality,
-									bShrinkPictures,
-									FALSE,
-									::AfxGetMainFrame(),
-									TRUE))
-			{
-				EndWaitCursor();
-				return 1;
-			}
-			else
-			{
-				EndWaitCursor();
-				return 0;
-			}
+			EndWaitCursor();
+			return 1;
 		}
 		else
 		{
-			if (ShrinkPicture(	pDoc->m_sFileName,
-								szDstFileName,
-								dwMaxSize,
-								bMaxSizePercent,
-								dwJpegQuality,
-								FALSE,				// Do not force jpeg quality change if already a jpeg
-								COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
-								TRUE,				// Force the change to Jpeg Compression for Tiff files
-								bShrinkPictures,		
-								FALSE,				// Do not sharpen after shrink
-								TRUE,				// Work on all pages of a multi-page Tiff
-								::AfxGetMainFrame(),
-								TRUE,
-								NULL) != 0)
-			{
-				EndWaitCursor();
-				return 1;
-			}
-			else
-			{
-				EndWaitCursor();
-				return 0;
-			}
+			EndWaitCursor();
+			return 0;
 		}
 	}
 		
@@ -3961,73 +3766,6 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 			return 0;
 		}
 	}
-	
-	// Big Picture Docs
-	curTemplate = GetBigPictureDocTemplate();
-	pos = curTemplate->GetFirstDocPosition();
-	while (pos)
-	{
-		CPictureDoc* pDoc = (CPictureDoc*)curTemplate->GetNextDoc(pos);
-
-		// Source Directory Path
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
-		CString sSrcDirPath = CString(szDrive) + CString(szDir);
-		sSrcDirPath.TrimRight(_T('\\'));
-
-		// Source File Name
-		CString sSrcFileName = pDoc->m_sFileName;
-		sSrcFileName.TrimRight(_T('\\'));
-
-		// Destination File Name
-		CString sDstFileName = sSrcFileName;
-		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
-		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
-		if (bPictureExtChange && !bOnlyCopyFiles)
-		{
-			CString sDstExt = ShrinkGetDstExt(::GetFileExt(sSrcFileName));
-			sDstFileName = ::GetFileNameNoExt(sDstFileName) + sDstExt;
-		}
-
-		// Status Text
-		ShrinkStatusText(sSrcFileName, sDstFileName);
-
-		// Only Copy File?
-		if (bOnlyCopyFiles)
-		{
-			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, TRUE);
-				return 0;
-			}
-			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, TRUE);
-				return 0;
-			}
-			continue;
-		}
-
-		// Shrink
-		if (!ShrinkBigPicture(	pDoc->m_pDib,
-								sDstFileName,
-								dwMaxSize,
-								bMaxSizePercent,
-								dwJpegQuality,
-								bShrinkPictures,
-								FALSE,
-								::AfxGetMainFrame(),
-								TRUE))
-		{
-			EndWaitCursor();
-			return 0;
-		}
-	}
 
 	// End Wait Cursor
 	EndWaitCursor();
@@ -4101,215 +3839,6 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 	}
 
 	return res;
-}
-
-BOOL CUImagerApp::ShrinkBigPicture(	CDib* pSrcDib,
-									LPCTSTR szDstFileName,
-									DWORD dwMaxSize,
-									BOOL bMaxSizePercent,
-									DWORD dwJpegQuality,
-									BOOL bShrinkPictureSize,
-									BOOL bSharpenAfterShrink,
-									CWnd* pProgressWnd,
-									BOOL bProgressSend)
-{
-	CDib DstDib1, DstDib2;
-	CDib* pSaveDib = pSrcDib;
-	DstDib1.SetShowMessageBoxOnError(pSrcDib->IsShowMessageBoxOnError());
-	DstDib2.SetShowMessageBoxOnError(pSrcDib->IsShowMessageBoxOnError());
-
-	// Check
-	if (!pSrcDib || !pSrcDib->IsValid())
-		return FALSE;
-
-	// Set initial value to not shrink
-	DWORD dwShrinkWidth = pSrcDib->GetWidth();
-	DWORD dwShrinkHeight = pSrcDib->GetHeight();
-
-	// Shrink Picture Size
-	if (bShrinkPictureSize)
-	{
-		double dAspectRatio = (double)pSrcDib->GetWidth() / (double)pSrcDib->GetHeight();
-
-		// Landscape
-		if (pSrcDib->GetWidth() > pSrcDib->GetHeight())
-		{
-			// From Percent to Pixels
-			DWORD dwMaxSizePercent;
-			if (bMaxSizePercent)
-			{
-				dwMaxSizePercent = dwMaxSize;
-				dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * pSrcDib->GetWidth());
-			}
-			
-			// Resize to dwMaxSize x XYZ
-			if (pSrcDib->GetWidth() > dwMaxSize)
-			{
-				dwShrinkWidth = dwMaxSize;
-				dwShrinkHeight = (DWORD)Round(dwMaxSize / dAspectRatio);
-				if (!DstDib1.ShrinkBits(dwShrinkWidth,
-										dwShrinkHeight,
-										pSrcDib,
-										pProgressWnd,
-										bProgressSend))
-					return FALSE;
-				else
-				{
-					// Sharpen
-					if (bSharpenAfterShrink)
-					{
-						int Kernel[] = {-1,-1,-1,
-										-1,20,-1,
-										-1,-1,-1};
-						if (!DstDib2.FilterFast(Kernel, 12,
-												&DstDib1,
-												pProgressWnd,
-												bProgressSend))
-							return FALSE;
-						else
-							pSaveDib = &DstDib2;
-					}
-					else
-						pSaveDib = &DstDib1;
-				}
-			}
-
-			// Restore Percent for the Next Pictures
-			if (bMaxSizePercent)
-				dwMaxSize = dwMaxSizePercent;
-		}
-		// Portrait
-		else
-		{
-			// From Percent to Pixels
-			DWORD dwMaxSizePercent;
-			if (bMaxSizePercent)
-			{
-				dwMaxSizePercent = dwMaxSize;
-				dwMaxSize = (DWORD)Round(dwMaxSize / 100.0 * pSrcDib->GetHeight());
-			}
-
-			// Resize to XYZ x dwMaxSize
-			if (pSrcDib->GetHeight() > dwMaxSize)
-			{
-				dwShrinkWidth = (DWORD)Round(dwMaxSize * dAspectRatio);
-				dwShrinkHeight = dwMaxSize;
-				if (!DstDib1.ShrinkBits(dwShrinkWidth,
-										dwShrinkHeight,
-										pSrcDib,
-										pProgressWnd,
-										bProgressSend))
-					return FALSE;
-				else
-				{
-					// Sharpen
-					if (bSharpenAfterShrink)
-					{
-						int Kernel[] = {-1,-1,-1,
-										-1,20,-1,
-										-1,-1,-1};
-						if (!DstDib2.FilterFast(Kernel, 12,
-												&DstDib1,
-												pProgressWnd,
-												bProgressSend))
-							return FALSE;
-						else
-							pSaveDib = &DstDib2;
-					}
-					else
-						pSaveDib = &DstDib1;
-				}
-			}
-
-			// Restore Percent for the Next Pictures
-			if (bMaxSizePercent)
-				dwMaxSize = dwMaxSizePercent;
-		}
-	}
-
-	// Set new DPI
-	pSaveDib->SetXDpi(Round((double)dwShrinkWidth  * (double)pSrcDib->GetXDpi() / (double)pSrcDib->GetWidth()));
-	pSaveDib->SetYDpi(Round((double)dwShrinkHeight * (double)pSrcDib->GetYDpi() / (double)pSrcDib->GetHeight()));
-
-	// Save Image
-	CString sDstExt = ::GetFileExt(szDstFileName);
-	sDstExt.MakeLower();
-	if (sDstExt == _T(".jpg")	||
-		sDstExt == _T(".jpe")	||
-		sDstExt == _T(".jpeg")	||
-		sDstExt == _T(".thm"))
-	{
-#ifdef SUPPORT_LIBJPEG
-		if (!pSaveDib->SaveJPEG(szDstFileName,
-								dwJpegQuality,
-								pSrcDib->IsGrayscale(),
-								_T(""),
-								TRUE,
-								FALSE,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-#endif
-	}
-	else if (sDstExt == _T(".tif")	||
-			sDstExt == _T(".jfx")	||
-			sDstExt == _T(".tiff"))
-	{
-#ifdef SUPPORT_LIBTIFF
-		if (!pSaveDib->SaveTIFF(szDstFileName,
-								(pSrcDib->GetBitCount() == 1) ?
-									COMPRESSION_CCITTFAX4 :
-									COMPRESSION_LZW,
-								0,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-#endif
-	}
-	else if (sDstExt == _T(".bmp") || sDstExt == _T(".dib"))
-	{
-		if (!pSaveDib->SaveBMP(	szDstFileName,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-	}
-	else if (sDstExt == _T(".gif"))
-	{
-#ifdef SUPPORT_GIFLIB
-		if (!pSaveDib->SaveGIF(	szDstFileName,
-								GIF_COLORINDEX_NOT_DEFINED,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-#endif	
-	}
-	else if (sDstExt == _T(".png"))
-	{
-#ifdef SUPPORT_LIBPNG
-		if (!pSaveDib->SavePNG(	szDstFileName,
-								FALSE,
-								FALSE,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-#endif
-	}
-	else if (sDstExt == _T(".pcx"))
-	{
-#ifdef SUPPORT_PCX
-		if (!pSaveDib->SavePCX(	szDstFileName,
-								pProgressWnd,
-								bProgressSend))
-			return FALSE;
-#endif
-	}
-	else if (sDstExt == _T(".emf"))
-	{
-		if (!pSaveDib->SaveEMF(szDstFileName))
-			return FALSE;
-	}
-
-	return TRUE;
 }
 
 BOOL CUImagerApp::CalcShrink(	const CDib& SrcDib,

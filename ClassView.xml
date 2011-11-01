@@ -89,6 +89,7 @@
 <CLASS NAME="CProgressDlg"/>
 <CLASS NAME="CProgressDlgThread"/>
 <CLASS NAME="CRedEyeDlg"/>
+<CLASS NAME="CRenameDlg"/>
 <CLASS NAME="CResizingDlg"/>
 <CLASS NAME="CResizingDpiDlg"/>
 <CLASS NAME="CRotationFlippingDlg"/>
@@ -110,7 +111,6 @@
 <CLASS NAME="CXmpDlg"/>
 <CLASS NAME="CYesNoAllCancelDlg"/>
 <CLASS NAME="CZipProgressDlg"/>
-<CLASS NAME="CRenameDlg"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Controls">
@@ -349,10 +349,9 @@
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="13">
+<CLASSES COUNT="12">
 <CLASS NAME="CChildFrame"/>
 <CLASS NAME="CAudioMCIChildFrame"/>
-<CLASS NAME="CBigPictureChildFrame"/>
 <CLASS NAME="CCDAudioChildFrame"/>
 <CLASS NAME="CChildToolBar"/>
 <CLASS NAME="CPictureChildFrame"/>

@@ -601,39 +601,9 @@ void CMainFrame::TwainSetImage(HANDLE hDib, int width, int height, int bpp)
 					return;
 				}
 
-				DWORD dwSizeImage = DWALIGNEDWIDTHBYTES(width * bpp) * height;
-				if (((CUImagerApp*)::AfxGetApp())->IsPictureSizeBig(dwSizeImage))
-				{	
-					// Create MM File
-					if ((pDoc->m_sFileName = TwainSetImageMM(pDoc->m_pDib, width, height, bpp)) == _T(""))
-					{
-						pDoc->CloseDocumentForce();
-						return;
-					}
-					else
-						pDoc->SetPathName(pDoc->m_sFileName, TRUE);
-
-					// Copy Bitmap to MM File
-					pDoc->m_pDib->CopyFromHandle(hDib);
-
-					// Create Preview Dib
-					if (!CPictureDoc::CreatePreviewDib(pDoc->m_pDib))
-					{
-						pDoc->CloseDocumentForce();
-						return;
-					}
-
-					// Set Big Picture Flag
-					pDoc->m_bBigPicture = TRUE;
-
-					// End Wait Cursor (Started inside SetImageMM)
-					EndWaitCursor();
-				}
-				else
-				{
-					pDoc->m_pDib->CopyFromHandle(hDib);
-					pDoc->SetModifiedFlag();
-				}
+				// Get Bits
+				pDoc->m_pDib->CopyFromHandle(hDib);
+				pDoc->SetModifiedFlag();
 
 				// Init Vars
 				pDoc->m_DocRect.top = 0;
@@ -663,50 +633,6 @@ void CMainFrame::TwainSetImage(HANDLE hDib, int width, int height, int bpp)
 			}
 		}
 	}
-}
-
-CString CMainFrame::TwainSetImageMM(CDib* pDib, int width, int height, int bpp)
-{
-	ASSERT(pDib);
-
-	// Display the Save As Dialog
-	TCHAR szFileName[MAX_PATH];
-	CNoVistaFileDlg dlgFile(FALSE);
-	CString sFileName;
-	sFileName.Format(_T("scan_%ux%u.bmp"), width, height);
-	_tcscpy(szFileName, sFileName);
-	dlgFile.m_ofn.lpstrFile = szFileName;
-	dlgFile.m_ofn.nMaxFile = MAX_PATH;
-	dlgFile.m_ofn.lpstrCustomFilter = NULL;
-	dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-	dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0");
-	dlgFile.m_ofn.lpstrDefExt = _T("bmp");
-	if (dlgFile.DoModal() == IDOK)
-	{
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		sFileName = szFileName;
-		BITMAPINFOHEADER Bmih;
-		Bmih.biSize = sizeof(BITMAPINFOHEADER); 
-		Bmih.biWidth =  width; 
-		Bmih.biHeight = height; 
-		Bmih.biPlanes = 1; 
-		Bmih.biBitCount = bpp;
-		Bmih.biCompression = BI_RGB; 
-		Bmih.biSizeImage = 0;
-		Bmih.biXPelsPerMeter = 0; 
-		Bmih.biYPelsPerMeter = 0; 
-		Bmih.biClrUsed = 0; 
-		Bmih.biClrImportant = 0;
-		pDib->SetBMI((LPBITMAPINFO)&Bmih);
-		if (!pDib->MMCreateBMP(szFileName))
-			return _T("");
-		else
-			return sFileName;
-	}
-	else
-		return _T("");
 }
 
 LONG CMainFrame::OnAllClosed(WPARAM wparam, LPARAM lparam)
@@ -2718,62 +2644,30 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 		}
 		else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 		{
-			// Do not use IsKindOf(RUNTIME_CLASS(CPictureChildFrame)) because
-			// CBigPictureChildFrame inherits from CPictureChildFrame this means that
-			// IsKindOf(RUNTIME_CLASS(CPictureChildFrame)) would always be true. 
-			// Do not use m_bBigPicture because it is not initialized yet!
-			if (((CPictureDoc*)pDoc)->GetFrame()->IsKindOf(RUNTIME_CLASS(CBigPictureChildFrame)))
-			{
-				((CPictureDoc*)pDoc)->m_nFileMenuPos = 0;
-				((CPictureDoc*)pDoc)->m_nEditMenuPos = 1;
-				((CPictureDoc*)pDoc)->m_nViewMenuPos = 2;
-				((CPictureDoc*)pDoc)->m_nCaptureMenuPos = 3;
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos = 4;
-				((CPictureDoc*)pDoc)->m_nWindowsPos = 5;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos = 6;
+			((CPictureDoc*)pDoc)->m_nFileMenuPos = 0;
+			((CPictureDoc*)pDoc)->m_nEditMenuPos = 1;
+			((CPictureDoc*)pDoc)->m_nViewMenuPos = 2;
+			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = 3;
+			((CPictureDoc*)pDoc)->m_nPlayMenuPos = 4;
+			((CPictureDoc*)pDoc)->m_nToolsMenuPos = 5;
+			((CPictureDoc*)pDoc)->m_nWindowsPos = 6;
+			((CPictureDoc*)pDoc)->m_nHelpMenuPos = 7;
 #ifndef VIDEODEVICEDOC
-				if (nCount == 7) // On some OSs menus are re-used from one doc opening to the next!
-					pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-				((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos--;
-				((CPictureDoc*)pDoc)->m_nWindowsPos--;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
+			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
+				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
+			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
+			((CPictureDoc*)pDoc)->m_nPlayMenuPos--;
+			((CPictureDoc*)pDoc)->m_nToolsMenuPos--;
+			((CPictureDoc*)pDoc)->m_nWindowsPos--;
+			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
 #endif
 #ifndef VIDEODEVICEDOC
-				if (nCount == 7) // On some OSs menus are re-used from one doc opening to the next!
-					pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos = -2;
-				((CPictureDoc*)pDoc)->m_nWindowsPos--;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
+			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
+				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
+			((CPictureDoc*)pDoc)->m_nToolsMenuPos = -2;
+			((CPictureDoc*)pDoc)->m_nWindowsPos--;
+			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
 #endif
-			}
-			else
-			{
-				((CPictureDoc*)pDoc)->m_nFileMenuPos = 0;
-				((CPictureDoc*)pDoc)->m_nEditMenuPos = 1;
-				((CPictureDoc*)pDoc)->m_nViewMenuPos = 2;
-				((CPictureDoc*)pDoc)->m_nCaptureMenuPos = 3;
-				((CPictureDoc*)pDoc)->m_nPlayMenuPos = 4;
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos = 5;
-				((CPictureDoc*)pDoc)->m_nWindowsPos = 6;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos = 7;
-#ifndef VIDEODEVICEDOC
-				if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-					pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-				((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
-				((CPictureDoc*)pDoc)->m_nPlayMenuPos--;
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos--;
-				((CPictureDoc*)pDoc)->m_nWindowsPos--;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
-#ifndef VIDEODEVICEDOC
-				if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-					pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-				((CPictureDoc*)pDoc)->m_nToolsMenuPos = -2;
-				((CPictureDoc*)pDoc)->m_nWindowsPos--;
-				((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
-			}
 		}
 		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 		{
@@ -2925,14 +2819,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 				if (sTest == _T("")) // In maximized state the first position is the system icon with no string
 					idx--;
 
-				// Is it a Picture Doc (not a Big Picture Doc!) ?
-				//
-				// Note: do not use IsKindOf(RUNTIME_CLASS(CPictureChildFrame)) because
-				// CBigPictureChildFrame inherits from CPictureChildFrame this means that
-				// IsKindOf(RUNTIME_CLASS(CPictureChildFrame)) would always be true. Do not
-				// use m_bBigPicture because it may not be initialized yet!
-				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) &&
-					!((CPictureDoc*)pDoc)->GetFrame()->IsKindOf(RUNTIME_CLASS(CBigPictureChildFrame))) 
+				// Is it a Picture Doc?
+				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc))) 
 				{
 					if (idx == ((CPictureDoc*)pDoc)->m_nPlayMenuPos)
 					{
@@ -3722,25 +3610,10 @@ void CMainFrame::OnMainmonitor()
 	// Place Image Info Dialog(s) to Primary Monitor
 	CUImagerMultiDocTemplate* pPictureDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetPictureDocTemplate();
 	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
-	CUImagerMultiDocTemplate* pBigPictureDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetBigPictureDocTemplate();
-	POSITION posBigPictureDoc = pBigPictureDocTemplate->GetFirstDocPosition();
 	CPictureDoc* pDoc;
 	while (posPictureDoc)
 	{
 		pDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		if (pDoc && pDoc->m_pImageInfoDlg)
-		{
-			pDoc->m_pImageInfoDlg->GetWindowRect(&rc);
-			pDoc->m_pImageInfoDlg->SetWindowPos(NULL,
-												ptPrimaryMonCenter.x - rc.Width() / 2,
-												ptPrimaryMonCenter.y - rc.Height() / 2,
-												0, 0,
-												SWP_NOSIZE | SWP_NOZORDER);
-		}
-	}
-	while (posBigPictureDoc)
-	{
-		pDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posBigPictureDoc));
 		if (pDoc && pDoc->m_pImageInfoDlg)
 		{
 			pDoc->m_pImageInfoDlg->GetWindowRect(&rc);
