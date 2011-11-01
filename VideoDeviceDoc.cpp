@@ -14766,16 +14766,19 @@ __forceinline int CVideoDeviceDoc::CHttpGetFrameParseProcess::FindMultipartBound
 																					int nSize,
 																					const char* pMsg)
 {
-	int nPosEnd = nPos;
-	char cFirst = m_szMultipartBoundary[0];
-	char cSecond = m_szMultipartBoundary[1];
-	while ((nPosEnd + m_nMultipartBoundaryLength) <= nSize)
+	if (m_nMultipartBoundaryLength >= 2)
 	{
-		if (*(pMsg + nPosEnd) == cFirst			&&
-			*(pMsg + nPosEnd + 1) == cSecond	&&
-			memcmp(pMsg + nPosEnd, m_szMultipartBoundary, m_nMultipartBoundaryLength) == 0)
-			return nPosEnd;
-		nPosEnd++;
+		int nPosEnd = nPos;
+		char cFirst = m_szMultipartBoundary[0];
+		char cSecond = m_szMultipartBoundary[1];
+		while ((nPosEnd + m_nMultipartBoundaryLength) <= nSize)
+		{
+			if (*(pMsg + nPosEnd) == cFirst			&&
+				*(pMsg + nPosEnd + 1) == cSecond	&&
+				memcmp(pMsg + nPosEnd, m_szMultipartBoundary, m_nMultipartBoundaryLength) == 0)
+				return nPosEnd;
+			nPosEnd++;
+		}
 	}
 	return -1;
 }
@@ -14803,7 +14806,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 																const CString& sMsgLowerCase)
 {
 	int nPosEnd;
-	m_FormatType = FORMATMJPEG;
 	int nMultipartLength;
 
 	if (m_bMultipartNoLength)
@@ -14824,7 +14826,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 	else
 	{
 		// Find Boundary
-		if ((nPos = sMsg.Find(m_sMultipartBoundary, nPos)) < 0)
+		if (m_sMultipartBoundary.IsEmpty() || (nPos = sMsg.Find(m_sMultipartBoundary, nPos)) < 0)
 			return FALSE;
 
 		// Find Content Length
@@ -14866,7 +14868,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 
 	// Process data
 	if (nSize >= m_nProcessOffset + m_nProcessSize)
+	{
+		m_FormatType = FORMATMJPEG;
 		return TRUE;
+	}
 	else
 		return FALSE;
 }
@@ -14877,7 +14882,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	int nSize,
 {
 	int nPos;
 	int nPosEnd;
-	m_FormatType = FORMATJPEG;
 
 	// Find Content Length
 	if ((nPos = sMsgLowerCase.Find(_T("content-length:"), 0)) < 0)
@@ -14913,7 +14917,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	int nSize,
 
 	// Process data
 	if (nSize >= m_nProcessOffset + m_nProcessSize)
+	{
+		m_FormatType = FORMATJPEG;
 		return TRUE;
+	}
 	else
 		return FALSE;
 }
@@ -15531,24 +15538,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 			return FALSE; // Do not call Processor
 		}
 	}
-	// Multipart
+	// Multipart or sometimes something left from a connection try...
 	else
 	{
-		if (m_bTryConnecting)
-		{
-			m_pDoc->EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1490, "Unsupported network device type or mode"), MB_ICONSTOP);
-			m_pDoc->BeginWaitCursor();
-			m_pDoc->CloseDocRemoveAutorunDev();
-			delete [] pMsg;
-			return FALSE; // Do not call Processor
-		}
-		else
-		{
-			res = ParseMultipart(0, nSize, pMsg, sMsg, sMsgLowerCase);
-			delete [] pMsg;
-			return res;
-		}
+		res = ParseMultipart(0, nSize, pMsg, sMsg, sMsgLowerCase);
+		delete [] pMsg;
+		return res;
 	}
 }
 
