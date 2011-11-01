@@ -1636,10 +1636,6 @@ SOURCE=.\res\picturedoc.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\res\picturenohq.bmp
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\play.ico
 # End Source File
 # Begin Source File

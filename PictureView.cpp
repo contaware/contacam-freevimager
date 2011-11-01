@@ -1877,23 +1877,13 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->CancelLoadFullJpegTransition();
 
 			if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-			{
-				if (pDoc->m_pSetLayeredWindowAttributes)
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
-				else
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA));
-			}
+				VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
 			else if (pDoc->m_bCrop)
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 			else
 			{
 				if (::AfxGetMainFrame()->m_bFullScreenMode)
-				{
-					if (pDoc->m_pSetLayeredWindowAttributes)
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
-					else
-						VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
-				}
+					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 				else
 					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
 			}
@@ -2866,18 +2856,10 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 	if (bPopupOsd)
 	{
 		pDoc->m_pOsdDlg->ForceShow();
-		if (pDoc->m_pSetLayeredWindowAttributes)
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_OSD));
-		else
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_OSD_NOALPHA));
+		VERIFY(menu.LoadMenu(IDR_CONTEXT_OSD));
 	}
 	else if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-	{
-		if (pDoc->m_pSetLayeredWindowAttributes)
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
-		else
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA));
-	}
+		VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
 	else if (pDoc->m_bCrop)
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 	else
@@ -2890,12 +2872,7 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 #endif
 		{
 			if (::AfxGetMainFrame()->m_bFullScreenMode)
-			{
-				if (pDoc->m_pSetLayeredWindowAttributes)
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
-				else
-					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA));
-			}
+				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 			else
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
 		}

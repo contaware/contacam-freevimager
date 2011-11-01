@@ -647,7 +647,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Picture Doc Template Registration
 		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
-			g_bNT ? IDR_PICTURE : IDR_PICTURE_NOHQ,
+			IDR_PICTURE,
 			RUNTIME_CLASS(CPictureDoc),
 			RUNTIME_CLASS(CPictureChildFrame),
 			RUNTIME_CLASS(CPictureView));
@@ -5857,6 +5857,9 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	// Shell Open Command
 	
 	// Icon order
+	// Note: IDR_PICTURE_NOHQ, IDR_BIGPICTURE and IDR_BIGPICTURE_NOHQ
+	//       are not used anymore, but icons remain to keep the
+	//       same order!
 	/*
 	IDR_MAINFRAME			0
 	IDR_AUDIOMCI			1

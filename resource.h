@@ -33,7 +33,6 @@
 #define IDR_CONTEXT_SLIDESHOW_ONLY      146
 #define IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN 146
 #define IDR_CONTEXT_PICTURE             147
-#define IDR_PICTURE_TOOLBAR_NOHQ        147
 #define IDR_CONTEXT_VIDEO_AVI           148
 #define IDR_CONTEXT_VIDEO_DEVICE        149
 #define IDR_CONTEXT_CROP                150
@@ -100,12 +99,9 @@
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
-#define IDR_CONTEXT_OSD_NOALPHA         243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
-#define IDR_CONTEXT_PICTURE_FULLSCREEN_NOALPHA 244
 #define IDB_HEADER_CTRL                 245
 #define IDR_CONTEXT_SLIDESHOW_ONLY1     246
-#define IDR_CONTEXT_SLIDESHOW_ONLY_NOALPHA 246
 #define IDB_TELETEXT_DH_26              247
 #define IDB_BITSTREAM_VERA_10           249
 #define IDB_BITSTREAM_VERA_11           250
@@ -120,7 +116,6 @@
 #define IDD_PNG_SAVE                    263
 #define IDD_BMP_SAVE                    264
 #define IDD_ANIMGIF_SAVE_SMALL          265
-#define IDD_IMAGEINFO_NOALPHA           266
 #define IDD_XMP_IMPORT                  267
 #define IDD_BATCH_PROC_GENERALTAB       268
 #define IDD_BATCH_PROC_JPEGTAB          269

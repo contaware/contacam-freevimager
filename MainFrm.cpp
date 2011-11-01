@@ -3629,9 +3629,8 @@ void CMainFrame::OnMainmonitor()
 		HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
 		if (h)
 		{
-			LPVOID p = ::GetProcAddress(h, "SetLayeredWindowAttributes");
 			CString strAutoPos;
-			strAutoPos.Format(_T("ID=0x%08lx"), p ? IDD_IMAGEINFO : IDD_IMAGEINFO_NOALPHA);
+			strAutoPos.Format(_T("ID=0x%08lx"), IDD_IMAGEINFO);
 			CString sSection = cdxCDynamicWndEx::MakeFullProfile(cdxCDynamicWndEx::M_lpszAutoPosProfileSection, strAutoPos);
 			::AfxGetApp()->WriteProfileInt(sSection, _T("(valid)"), 0);
 			::FreeLibrary(h);

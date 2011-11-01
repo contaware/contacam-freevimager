@@ -375,16 +375,8 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	if (!CChildToolBar::Create(pParentWnd))
 		return FALSE;
 	
-	if (g_bNT)
-	{
-		if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
-			return FALSE;
-	}
-	else
-	{
-		if (!LoadToolBar(IDR_PICTURE_TOOLBAR_NOHQ))
-			return FALSE;
-	}
+	if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
+		return FALSE;
 
 	CFont m_Font;
 	if (!m_Font.CreateStockObject(DEFAULT_GUI_FONT))	// ANSI_FIXED_FONT, DEFAULT_GUI_FONT, OEM_FIXED_FONT

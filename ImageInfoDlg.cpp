@@ -20,10 +20,7 @@ static char THIS_FILE[] = __FILE__;
 // CImageInfoDlg dialog
 
 
-CImageInfoDlg::CImageInfoDlg(CPictureDoc* pDoc) : cdxCDynamicDialog(	(pDoc && pDoc->m_pSetLayeredWindowAttributes) ?
-																		IDD = IDD_IMAGEINFO :
-																		IDD = IDD_IMAGEINFO_NOALPHA,
-																		NULL)
+CImageInfoDlg::CImageInfoDlg(CPictureDoc* pDoc) : cdxCDynamicDialog(IDD = IDD_IMAGEINFO, NULL)
 {
 	//{{AFX_DATA_INIT(CImageInfoDlg)
 	m_nMetadataGroupView = EXIF;
@@ -155,7 +152,8 @@ void CImageInfoDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 				m_bDisableTimer = FALSE;
 
 				// Start Timer
-				if (m_uiTimerID == 0)
+				if (m_pDoc->m_pSetLayeredWindowAttributes &&
+					m_uiTimerID == 0)
 				{
 					m_uiTimerID = SetTimer(	ID_TIMER_TRANSPARENCY,
 											TRANSPARENCY_TIMER_MS,
