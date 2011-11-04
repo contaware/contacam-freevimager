@@ -1347,13 +1347,15 @@ public:
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
 										BOOL bMovementDetectorPreview,
-										BOOL bDoDetection);
+										BOOL bDoDetection,
+										DWORD dwCurrentUpTime);
 	BOOL LumChangeDetector(	CDib* pDibY,
 							BOOL bPlanar,
 							int nPackedYOffset);
 	BOOL MovementDetector(	CDib* pDib,
 							BOOL bPlanar,					
-							int nDetectionLevel);
+							int nDetectionLevel,
+							DWORD dwCurrentUpTime);
 	void ResetMovementDetector();
 	void FreeMovementDetector();
 

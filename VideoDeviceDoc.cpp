@@ -3520,7 +3520,8 @@ void CVideoDeviceDoc::ColorDetectionProcessing(CDib* pDib, BOOL bColorDetectionP
 
 void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 													BOOL bMovementDetectorPreview,
-													BOOL bDoDetection)
+													BOOL bDoDetection,
+													DWORD dwCurrentUpTime)
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
@@ -3717,7 +3718,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		// Call Detector
 		bMovement = MovementDetector(	m_pDifferencingDib,
 										bPlanar,
-										m_nDetectionLevel);
+										m_nDetectionLevel,
+										dwCurrentUpTime);
 
 		// Update background
 		int nFrameRate = Round(m_dEffectiveFrameRate);
@@ -10275,7 +10277,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		}
 		MovementDetectionProcessing(pDib,
 									bMovementDetectorPreview,
-									bDoDetection);
+									bDoDetection,
+									dwCurrentInitUpTime);
 		if (!bDoDetection && !m_bFirstMovementDetection)
 			m_bFirstMovementDetection = TRUE;
 
@@ -11201,7 +11204,8 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 // nDetectionLevel	: 1 - 100 (1 - > low movement sensibility, 100 -> high movement sensibility)
 BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 										BOOL bPlanar,
-										int nDetectionLevel)
+										int nDetectionLevel,
+										DWORD dwCurrentUpTime)
 {
 	// Check Params
 	if ((pDib == NULL) || !pDib->IsValid())
@@ -11241,9 +11245,6 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	// First Frame Already Passed?
 	if (!m_bFirstMovementDetection)
 	{
-		// Get Current Up-Time
-		DWORD dwCurrentUpTime = ::timeGetTime();
-		
 		// Single Zone Detection and Current Time Set
 		BOOL bSingleZoneDetection = FALSE;
 		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
