@@ -8382,8 +8382,10 @@ BOOL CVideoDeviceDoc::SaveModified()
 			if (pChild)
 			{
 				pActiveView = (CUImagerView*)pChild->GetActiveView();
-				ASSERT_VALID(pActiveView);
-				pActiveView->ForceCursor();
+				if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
+					pActiveView->ForceCursor();
+				else
+					pActiveView = NULL;
 			}
 		}
 		::AfxMessageBox(ML_STRING(1472, "Please close the VfW dialog before exiting!"));
@@ -11719,8 +11721,8 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 {
 	CRect rcClient;
 	GetView()->GetClientRect(&rcClient);
-	pCmdUI->Enable(	!::AfxGetMainFrame()->m_bFullScreenMode	&&
-					(rcClient != m_DocRect)					&&
+	pCmdUI->Enable(	!GetView()->m_bFullScreenMode	&&
+					(rcClient != m_DocRect)			&&
 					!GetFrame()->IsIconic());
 }
 
@@ -15538,7 +15540,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 			return FALSE; // Do not call Processor
 		}
 	}
-	// Multipart or sometimes something left from a connection try...
+	// Multipart or something more received before an above
+	// called ConnectGetFrameHTTP() gets executed. That's ok
+	// because ParseMultipart() is robust!
 	else
 	{
 		res = ParseMultipart(0, nSize, pMsg, sMsg, sMsgLowerCase);

@@ -4974,8 +4974,10 @@ BOOL CVideoAviDoc::SaveModified()
 		if (pChild)
 		{
 			pActiveView = (CUImagerView*)pChild->GetActiveView();
-			ASSERT_VALID(pActiveView);
-			pActiveView->ForceCursor();
+			if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
+				pActiveView->ForceCursor();
+			else
+				pActiveView = NULL;
 		}
 	}
 
@@ -5048,7 +5050,7 @@ void CVideoAviDoc::OnFileSaveAs()
 void CVideoAviDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	!IsProcessing()	&&
-					!AfxGetMainFrame()->m_bFullScreenMode);
+					!GetView()->m_bFullScreenMode);
 }
 
 #if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
@@ -5084,7 +5086,7 @@ void CVideoAviDoc::OnUpdateEditDelete(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(	!IsModified() &&
 					!IsProcessing() &&
-					!AfxGetMainFrame()->m_bFullScreenMode &&
+					!GetView()->m_bFullScreenMode &&
 					!m_PlayVideoFileThread.IsAlive() &&
 					!m_PlayAudioFileThread.IsAlive());
 }
@@ -5132,7 +5134,7 @@ void CVideoAviDoc::OnUpdateEditRename(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(	!IsModified() &&
 					!IsProcessing() &&
-					!AfxGetMainFrame()->m_bFullScreenMode &&
+					!GetView()->m_bFullScreenMode &&
 					!m_PlayVideoFileThread.IsAlive() &&
 					!m_PlayAudioFileThread.IsAlive());
 }
@@ -6248,7 +6250,7 @@ BOOL CVideoAviDoc::StartShrinkDocTo(CString sOutFileName)
 void CVideoAviDoc::OnFileInfo() 
 {
 	// Center if in Full-Screen Mode
-	AviInfoDlg(::AfxGetMainFrame()->m_bFullScreenMode);
+	AviInfoDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdateFileInfo(CCmdUI* pCmdUI) 
@@ -6383,7 +6385,7 @@ void CVideoAviDoc::PlayVolDlg(BOOL bCenterCursor/*=FALSE*/)
 void CVideoAviDoc::OnPlayVol() 
 {
 	// Center if in Full-Screen Mode
-	PlayVolDlg(::AfxGetMainFrame()->m_bFullScreenMode);
+	PlayVolDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdatePlayVol(CCmdUI* pCmdUI) 
@@ -6416,7 +6418,7 @@ void CVideoAviDoc::AudioVideoShiftDlg(BOOL bCenterCursor/*=FALSE*/)
 void CVideoAviDoc::OnPlayAudiovideoshift() 
 {
 	// Center if in Full-Screen Mode
-	AudioVideoShiftDlg(::AfxGetMainFrame()->m_bFullScreenMode);
+	AudioVideoShiftDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdatePlayAudiovideoshift(CCmdUI* pCmdUI) 

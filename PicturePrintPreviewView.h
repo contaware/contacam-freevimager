@@ -45,6 +45,7 @@ public:
 	void DisplayPaperAndDPI();
 	void UpdateStatusText();
 	void UpdatePaneText();
+	void Close() {OnPreviewClose();};
 
 protected:
 				CPicturePrintPreviewView();

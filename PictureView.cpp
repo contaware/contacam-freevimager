@@ -529,7 +529,7 @@ void CPictureView::OnFilePrintPreview()
 		return;
 
 	// Disable OSD
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		pDoc->m_bOSDWasEnabled = pDoc->m_bEnableOsd;
 		if (pDoc->m_bEnableOsd)
@@ -566,7 +566,7 @@ void CPictureView::OnFilePrintPreview()
 		pDoc->m_bPrintPreviewMode = FALSE;
 		
 		// If in Full-Screen mode
-		if (::AfxGetMainFrame()->m_bFullScreenMode)
+		if (m_bFullScreenMode)
 		{
 			// Hack to Not Show the Child Borders
 #if _MFC_VER >= 0x0700
@@ -614,7 +614,7 @@ void CPictureView::OnUpdateFilePrintPreview(CCmdUI* pCmdUI)
 					!pDoc->m_pSoftenDlg											&&
 					!pDoc->m_pSoftBordersDlg									&&
 					!pDoc->m_bCrop												&&
-					!(::AfxGetMainFrame()->m_bFullScreenMode					&&
+					!(m_bFullScreenMode											&&
 					((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterCount() == 0));
 }
 
@@ -629,7 +629,7 @@ void CPictureView::OnEndPrintPreview(CDC* pDC, CPrintInfo* pInfo, POINT point, C
 	pDoc->m_bPrintPreviewMode = FALSE;
 
 	// If in Full-Screen mode
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		// Hack to Not Show the Child Borders
 #if _MFC_VER >= 0x0700
@@ -1073,7 +1073,7 @@ void CPictureView::OnUpdateViewZoomFit(CCmdUI* pCmdUI)
 	if (pZoomCB)
 	{
 		pCmdUI->SetRadio(pZoomCB->GetCurSel() == 0 ||
-						(::AfxGetMainFrame()->m_bFullScreenMode && (pZoomCB->GetCurSel() != 1)));
+						(m_bFullScreenMode && (pZoomCB->GetCurSel() != 1)));
 	}
 }
 
@@ -1301,7 +1301,7 @@ void CPictureView::OnViewZoomTool()
 {
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (!::AfxGetMainFrame()->m_bFullScreenMode)
+	if (!m_bFullScreenMode)
 	{
 		if (pDoc->m_bZoomTool)
 			pDoc->CancelZoomTool();
@@ -1314,7 +1314,7 @@ void CPictureView::OnUpdateViewZoomTool(CCmdUI* pCmdUI)
 {
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(!::AfxGetMainFrame()->m_bFullScreenMode);
+	pCmdUI->Enable(!m_bFullScreenMode);
 	pCmdUI->SetCheck(pDoc->m_bZoomTool ? 1 : 0);
 }
 
@@ -1322,7 +1322,7 @@ void CPictureView::OnViewNextMonitor()
 {
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		::AfxGetMainFrame()->FullScreenTo(TRUE);
 		if (pDoc->m_pOsdDlg)
@@ -1334,7 +1334,7 @@ void CPictureView::OnViewPreviousMonitor()
 {
 	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		::AfxGetMainFrame()->FullScreenTo(FALSE);
 		if (pDoc->m_pOsdDlg)
@@ -1356,7 +1356,7 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	ASSERT_VALID(pDoc);
 
 	// Next / Prev. Picture
-	if ((::AfxGetMainFrame()->m_bFullScreenMode ||
+	if ((m_bFullScreenMode ||
 		(!(MK_SHIFT & nFlags) && !(MK_CONTROL & nFlags)))	&&
 		!pDoc->m_bZoomTool									&&
 		!IsXOrYScroll()										&&
@@ -1380,8 +1380,8 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			pDoc->m_SlideShowThread.NextPicture();
 	}
 	// Zoom In / Out?
-	else if ((MK_CONTROL & nFlags) &&
-			!::AfxGetMainFrame()->m_bFullScreenMode &&
+	else if ((MK_CONTROL & nFlags)	&&
+			!m_bFullScreenMode		&&
 			!pDoc->m_bZoomTool)
 	{
 		ScreenToClient(&pt);
@@ -1392,7 +1392,7 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 		// Scroll?
 		BOOL bHoriz =	((MK_SHIFT & nFlags) ||
 						(MK_CONTROL & nFlags));
-		if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		if (!m_bFullScreenMode &&
 			((bHoriz && IsXScroll()) || (!bHoriz && IsYScroll())))
 		{
 			CPoint pos = GetScrollPosition();
@@ -1613,7 +1613,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('Z') :
-			if (!::AfxGetMainFrame()->m_bFullScreenMode)
+			if (!m_bFullScreenMode)
 				OnViewZoomTool();
 			break;
 
@@ -1636,7 +1636,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_TAB :
-			if (::AfxGetMainFrame()->m_bFullScreenMode)
+			if (m_bFullScreenMode)
 			{
 				if (::GetKeyState(VK_SHIFT) < 0)
 					::AfxGetMainFrame()->FullScreenTo(FALSE);	// Previous Monitor
@@ -1648,12 +1648,12 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_SUBTRACT :
-			if (!::AfxGetMainFrame()->m_bFullScreenMode)
+			if (!m_bFullScreenMode)
 				Zoom(TRUE); // Zoom-Out
 			break;
 
 		case VK_ADD :
-			if (!::AfxGetMainFrame()->m_bFullScreenMode)
+			if (!m_bFullScreenMode)
 				Zoom(FALSE); // Zoom-In
 			break;
 
@@ -1665,12 +1665,12 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_MULTIPLY :
-			if (!::AfxGetMainFrame()->m_bFullScreenMode)
+			if (!m_bFullScreenMode)
 				OnViewZoom100();
 			break;
 
 		case _T('O') :
-			if (::AfxGetMainFrame()->m_bFullScreenMode)
+			if (m_bFullScreenMode)
 			{
 				pDoc->m_bEnableOsd = !pDoc->m_bEnableOsd;
 				pDoc->ShowOsd(pDoc->m_bEnableOsd);
@@ -1769,7 +1769,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					pDoc->CancelCrop();
 				else
 				{
-					if (::AfxGetMainFrame()->m_bFullScreenMode)
+					if (m_bFullScreenMode)
 					{
 						if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 							::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
@@ -1882,7 +1882,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
 			else
 			{
-				if (::AfxGetMainFrame()->m_bFullScreenMode)
+				if (m_bFullScreenMode)
 					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 				else
 					VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
@@ -2871,7 +2871,7 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 		else
 #endif
 		{
-			if (::AfxGetMainFrame()->m_bFullScreenMode)
+			if (m_bFullScreenMode)
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 			else
 				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
@@ -4590,7 +4590,7 @@ void CPictureView::UpdateScrollSize()
 	// Zoom Fit or Fit Big?
 	if (pZoomCB->GetCurSel() == 0	||
 		pZoomCB->GetCurSel() == 1	||
-		::AfxGetMainFrame()->m_bFullScreenMode)
+		m_bFullScreenMode)
 		SetScrollSizes(MM_TEXT, CSize(0, 0));
 	else
 	{
@@ -4640,7 +4640,7 @@ void CPictureView::UpdateZoomRect()
 				FitBigZoomFactor();
 				bFit = TRUE;
 			}
-			else if (::AfxGetMainFrame()->m_bFullScreenMode)
+			else if (m_bFullScreenMode)
 			{
 				FitZoomFactor();	// Fit
 				bFit = TRUE;

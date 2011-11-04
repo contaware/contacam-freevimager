@@ -4529,8 +4529,10 @@ BOOL CPictureDoc::SaveModified()
 		if (pChild)
 		{
 			pActiveView = (CUImagerView*)pChild->GetActiveView();
-			ASSERT_VALID(pActiveView);
-			pActiveView->ForceCursor();
+			if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
+				pActiveView->ForceCursor();
+			else
+				pActiveView = NULL;
 		}
 	}
 
@@ -5381,7 +5383,7 @@ void CPictureDoc::ClearPrevNextPictures()
 
 void CPictureDoc::ViewZoomTool() 
 {
-	if (!::AfxGetMainFrame()->m_bFullScreenMode)
+	if (!GetView()->m_bFullScreenMode)
 	{
 		m_bZoomTool = TRUE;
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -11322,7 +11324,7 @@ void CPictureDoc::OnUpdateViewBackgroundColorMenu(CCmdUI* pCmdUI)
 
 void CPictureDoc::ViewMap()
 {
-	if (m_pDib && !::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_pDib && !GetView()->m_bFullScreenMode)
 	{
 		CString sQuery, sUrl;
 
@@ -11454,7 +11456,7 @@ void CPictureDoc::OnViewMap()
 
 void CPictureDoc::OnUpdateViewMap(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_pDib && !::AfxGetMainFrame()->m_bFullScreenMode);
+	pCmdUI->Enable(m_pDib && !GetView()->m_bFullScreenMode);
 }
 
 void CPictureDoc::ViewNoBorders()
@@ -11555,7 +11557,7 @@ void CPictureDoc::OnUpdatePlayMusic(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnViewEnableOsd() 
 {
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (GetView()->m_bFullScreenMode)
 	{
 		m_bEnableOsd = !m_bEnableOsd;
 		ShowOsd(m_bEnableOsd);

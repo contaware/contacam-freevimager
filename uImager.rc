@@ -521,7 +521,6 @@ BEGIN
         MENUITEM "&Pause\tPause",               ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
         MENUITEM "Assistant && Settings...\tS", ID_CAPTURE_SETTINGS
-        MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
         MENUITEM SEPARATOR
         MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
         MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN

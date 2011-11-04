@@ -1397,7 +1397,7 @@ void CUImagerApp::OnFileOpen()
 						return;
 					}
 
-					CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+					CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 					if (pDoc)
 					{
 						if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
@@ -1416,7 +1416,7 @@ void CUImagerApp::OnFileOpen()
 							pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
 							pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-							if (!((CPictureDoc*)pDoc)->LoadPicture(&pDoc->m_pDib, Path))
+							if (!((CPictureDoc*)pDoc)->LoadPicture(&((CPictureDoc*)pDoc)->m_pDib, Path))
 							{
 								((CPictureDoc*)pDoc)->CloseDocumentForce();
 								delete [] FileNames;
@@ -1505,7 +1505,7 @@ void CUImagerApp::OnFileOpen()
 								delete [] InitDir;
 								return;
 							}
-							CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+							CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 							if (pDoc)
 							{
 								if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
@@ -1524,7 +1524,7 @@ void CUImagerApp::OnFileOpen()
 									pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
 									pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-									if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+									if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
 																			FileName,
 																			FALSE,
 																			FALSE	// Do not preload Prev & Next because LoadDibSectionEx
@@ -1721,7 +1721,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 		::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
 
 		// Open Doc
-		CUImagerDoc* pDoc = (CUImagerDoc*)curTemplate->OpenDocumentFile(NULL);
+		CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 		if (pDoc)
 		{
 			if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
@@ -1743,7 +1743,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 				pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
 				pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-				if (!((CPictureDoc*)pDoc)->LoadPicture(	&pDoc->m_pDib,
+				if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
 														szFullPathName,
 														FALSE,
 														FALSE,	// Do not preload Prev & Next
@@ -1903,7 +1903,7 @@ void CUImagerApp::OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI)
 
 BOOL CUImagerApp::PaintDocTitles()
 {
-	CUImagerDoc* pDoc;
+	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 
@@ -1919,7 +1919,7 @@ BOOL CUImagerApp::PaintDocTitles()
 			// visible the title is not updated. When the view becomes
 			// visible exiting the tray icon minimized state
 			// UpdateFrameCounts() has to be called!
-			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc)
 				pDoc->UpdateFrameCounts();        // will cause name change in views
 		}
@@ -1943,7 +1943,7 @@ void CUImagerApp::InitPrinter()
 
 BOOL CUImagerApp::AreDocsOpen()
 {
-	CUImagerDoc* pDoc;
+	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 
@@ -1954,7 +1954,7 @@ BOOL CUImagerApp::AreDocsOpen()
 		posDoc = curTemplate->GetFirstDocPosition();
 		while (posDoc)
 		{
-			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc)
 				return TRUE;
 		}
@@ -1965,7 +1965,7 @@ BOOL CUImagerApp::AreDocsOpen()
 
 int CUImagerApp::GetOpenDocsCount()
 {
-	CUImagerDoc* pDoc;
+	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 	int nCount = 0;
@@ -1977,7 +1977,7 @@ int CUImagerApp::GetOpenDocsCount()
 		posDoc = curTemplate->GetFirstDocPosition();
 		while (posDoc)
 		{
-			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc)
 				++nCount;
 		}
@@ -2053,9 +2053,9 @@ BOOL CUImagerApp::IsCurrentDocSaved()
 {
 	if (!::AfxGetMainFrame())
 		return FALSE;
-	CUImagerDoc* pDoc = NULL;
+	CDocument* pDoc = NULL;
 	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+		pDoc = ::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
 	if (pDoc && pDoc->IsModified())
 		return FALSE;
 	else
@@ -2064,7 +2064,7 @@ BOOL CUImagerApp::IsCurrentDocSaved()
 
 BOOL CUImagerApp::AreAllDocsSaved()
 {
-	CUImagerDoc* pDoc;
+	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 
@@ -2075,7 +2075,7 @@ BOOL CUImagerApp::AreAllDocsSaved()
 		posDoc = curTemplate->GetFirstDocPosition();
 		while (posDoc)
 		{
-			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc && pDoc->IsModified())
 				return FALSE;
 		}
@@ -2091,7 +2091,7 @@ void CUImagerApp::SaveOnEndSession()
 		SaveSettings();
 		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 	}
-	CUImagerDoc* pDoc;
+	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 	posTemplate = GetFirstDocTemplatePosition();
@@ -2101,7 +2101,7 @@ void CUImagerApp::SaveOnEndSession()
 		posDoc = curTemplate->GetFirstDocPosition();
 		while (posDoc)
 		{
-			pDoc = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
+			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc)
 			{
 				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
@@ -2157,9 +2157,9 @@ BOOL CUImagerApp::AreProcessingThreadsRunning()
 	return FALSE;
 }
 
-BOOL CUImagerApp::IsDoc(CUImagerDoc* pDoc)
+BOOL CUImagerApp::IsDoc(CDocument* pDoc)
 {
-	CUImagerDoc* pDocument;
+	CDocument* pDocument;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
 
@@ -2174,10 +2174,18 @@ BOOL CUImagerApp::IsDoc(CUImagerDoc* pDoc)
 		posDoc = curTemplate->GetFirstDocPosition();
 		while (posDoc)
 		{
-			pDocument = (CUImagerDoc*)(curTemplate->GetNextDoc(posDoc));
-			if ((pDoc == pDocument)	&&
-				!pDocument->m_bClosing)
-				return TRUE;
+			pDocument = curTemplate->GetNextDoc(posDoc);
+			if (pDocument->IsKindOf(RUNTIME_CLASS(CUImagerDoc)))
+			{
+				if ((pDoc == pDocument)	&&
+					!(((CUImagerDoc*)pDocument)->m_bClosing))
+					return TRUE;
+			}
+			else
+			{
+				if (pDoc == pDocument)
+					return TRUE;
+			}
 		}
 	}
 
@@ -2272,16 +2280,16 @@ BOOL CUImagerApp::SaveModifiedCurrentDoc()
 {
 	if (!::AfxGetMainFrame())
 		return FALSE;
-	CUImagerDoc* pDoc = NULL;
+	CDocument* pDoc = NULL;
 	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
+		pDoc = ::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
 	if (!pDoc)
 		return FALSE;
 
 	return pDoc->SaveModified();
 }
 
-BOOL CUImagerApp::IsDocAvailable(CUImagerDoc* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
+BOOL CUImagerApp::IsDocAvailable(CDocument* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
 {
 	CString sMsg;
 	
@@ -2322,7 +2330,7 @@ BOOL CUImagerApp::IsCurrentDocAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/
 	}
 
 	if (::AfxGetMainFrame()->MDIGetActive())
-		return IsDocAvailable(	(CUImagerDoc*)(::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument()),
+		return IsDocAvailable(	::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument(),
 								bShowMsgBoxIfNotAvailable);
 	else
 	{

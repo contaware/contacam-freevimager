@@ -524,7 +524,7 @@ public:
 	// when a command will be executed with the full load of the picture,
 	// when in print preview, when playing, when processing
 	// (does not check m_pDib->IsValid(), which means fully loaded)
-	BOOL IsDocAvailable(	CUImagerDoc* pDoc,
+	BOOL IsDocAvailable(	CDocument* pDoc,
 							BOOL bShowMsgBoxIfNotAvailable = FALSE);
 
 	// Is the Current Active Doc Available?
@@ -585,7 +585,7 @@ public:
 	void SaveOnEndSession();
 
 	// Is pDoc a Valid Document?
-	BOOL IsDoc(CUImagerDoc* pDoc);
+	BOOL IsDoc(CDocument* pDoc);
 
 	// File Association Functions
 	void UpdateFileAssociations();

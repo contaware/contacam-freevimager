@@ -98,6 +98,9 @@ public:
 	// Update Pane Text
 	void UpdatePaneText();
 
+	// Full screen flag
+	volatile bool m_bFullScreenMode;
+
 	// Incremented inside OnMouseMove() to avoid
 	// showing the mouse pointer in full-screen
 	// mode with each small mouse move

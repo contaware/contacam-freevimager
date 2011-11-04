@@ -51,6 +51,7 @@ CUImagerView::CUImagerView()
 	m_nMouseMoveCount = 0;
 	m_ptMouseMoveLastPoint = CPoint(0,0);
 	m_nMouseHideTimerCount = 0;
+	m_bFullScreenMode = false;
 }
 
 CUImagerView::~CUImagerView()
@@ -225,23 +226,19 @@ void CUImagerView::UpdateZoomRect()
 	ASSERT_VALID(pDoc);
 	
 	// New Zoom Rect
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		CRect ClientRect;
 		GetClientRect(&ClientRect);
-
-		CMDIChildWnd* pChild = ::AfxGetMainFrame()->MDIGetActive();
-		if (pChild)
-		{
-			CUImagerView* pView = (CUImagerView*)pChild->GetActiveView();
-			if (pView->GetSafeHwnd() == GetSafeHwnd())
-				FitZoomFactor();
-		}
+		
+		// Fit Zoom Factor
+		FitZoomFactor();
 
 		// New Zoom Size
 		CSize ZoomedSize(	Round(pDoc->m_DocRect.Width() * pDoc->m_dZoomFactor),
 							Round(pDoc->m_DocRect.Height() * pDoc->m_dZoomFactor));
 
+		// Set it
 		m_ZoomRect.left = (ClientRect.Width() - ZoomedSize.cx) / 2;
 		m_ZoomRect.right = m_ZoomRect.left + ZoomedSize.cx;
 		m_ZoomRect.top = (ClientRect.Height() - ZoomedSize.cy) / 2;
@@ -267,9 +264,9 @@ BOOL CUImagerView::UpdateWindowSizes(BOOL bInvalidate,
 
 		// Size to Doc
 		if (bSizeToDoc &&
-			pDoc->m_DocRect.Width() != 0			&&
-			pDoc->m_DocRect.Height() != 0			&&
-			!::AfxGetMainFrame()->m_bFullScreenMode &&
+			pDoc->m_DocRect.Width() != 0	&&
+			pDoc->m_DocRect.Height() != 0	&&
+			!m_bFullScreenMode				&&
 			!GetParentFrame()->IsZoomed())
 		{
 			// Remove Scrolls to calculate the right fitting
@@ -425,7 +422,7 @@ void CUImagerView::FitZoomFactor()
 	dZoomFactor = MIN(dZoomFactorX, dZoomFactorY);
 
 	// 5% Less to have some Borders
-	if (!::AfxGetMainFrame()->m_bFullScreenMode	&&
+	if (!m_bFullScreenMode &&
 		!pDoc->m_bNoBorders)
 		dZoomFactor *= FIT_ZOOMFACTOR_MARGIN;
 
@@ -459,7 +456,7 @@ void CUImagerView::FitBigZoomFactor()
 	dZoomFactor = MIN(dZoomFactorX, dZoomFactorY);
 
 	// 5% Less to have some Margin
-	if (!::AfxGetMainFrame()->m_bFullScreenMode	&&
+	if (!m_bFullScreenMode &&
 		!pDoc->m_bNoBorders)
 		dZoomFactor *= FIT_ZOOMFACTOR_MARGIN;
 
@@ -496,7 +493,7 @@ void CUImagerView::OnViewFullscreen()
 
 void CUImagerView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(::AfxGetMainFrame()->m_bFullScreenMode ? 1 : 0);	
+	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
 void CUImagerView::OnTimer(UINT nIDEvent) 
@@ -516,8 +513,8 @@ void CUImagerView::OnTimer(UINT nIDEvent)
 			// of never hiding the cursor when the OSD is enabled.
 			// -> I let it like this, also because usually when in
 			// full-screen mode dialogs of other documents are not open.
-			if (::AfxGetMainFrame()->m_bFullScreenMode			&&
-				!m_bForceCursor									&&
+			if (m_bFullScreenMode	&&
+				!m_bForceCursor		&&
 				m_bCursor)
 				m_nMouseHideTimerCount++;
 			else
@@ -543,7 +540,7 @@ LONG CUImagerView::OnProgress(WPARAM wparam, LPARAM lparam)
 {
 	lparam;
 	if (::AfxGetMainFrame()->MDIGetActive() &&
-		::AfxGetMainFrame()->MDIGetActive()->GetActiveView() == this)
+		::AfxGetMainFrame()->MDIGetActive()->GetActiveView()->GetSafeHwnd() == GetSafeHwnd())
 	{
 		::AfxGetMainFrame()->Progress((int)wparam);
 		return 1;
@@ -618,7 +615,7 @@ void CUImagerView::OnMouseMove(UINT nFlags, CPoint point)
 	ASSERT_VALID(pDoc);
 
 	// Full-Screen Cursor Enable / Disable
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		if (m_ptMouseMoveLastPoint != point)
 			m_nMouseMoveCount++;
@@ -740,7 +737,7 @@ void CUImagerView::OnAppAbout()
 	ForceCursor();
 	
 	// Clickable Links only in Normal Screen Mode!
-	CAboutDlg aboutDlg(!::AfxGetMainFrame()->m_bFullScreenMode);
+	CAboutDlg aboutDlg(!m_bFullScreenMode);
 	aboutDlg.DoModal();
 
 	ForceCursor(FALSE);

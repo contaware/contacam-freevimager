@@ -411,7 +411,7 @@ __forceinline void CVideoDeviceView::EraseBkgnd(BOOL bFullErase)
 	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
 
 	// Erase Full-Screen Borders
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		// Client Rect
 		CRect rcClient;
@@ -1096,7 +1096,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			{
 				if (pDoc->m_pVideoDevicePropertySheet && pDoc->m_pVideoDevicePropertySheet->IsVisible())
 					pDoc->m_pVideoDevicePropertySheet->Hide();
-				else if (::AfxGetMainFrame()->m_bFullScreenMode)
+				else if (m_bFullScreenMode)
 				{
 					if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 						::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);

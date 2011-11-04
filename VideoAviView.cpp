@@ -849,7 +849,7 @@ void CVideoAviView::OnViewFit()
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		// Reset User Zoom Rect
 		m_UserZoomRect = m_ZoomRect;
@@ -893,7 +893,7 @@ void CVideoAviView::OnViewFit()
 
 void CVideoAviView::OnUpdateViewFit(CCmdUI* pCmdUI) 
 {
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 		pCmdUI->Enable(m_UserZoomRect != m_ZoomRect);
 	else
 	{
@@ -979,7 +979,7 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					if (pDoc->m_pPlayerToolBarDlg)
 						pDoc->m_pPlayerToolBarDlg->Close();
 				}
-				else if (::AfxGetMainFrame()->m_bFullScreenMode)
+				else if (m_bFullScreenMode)
 				{
 					if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 						::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
@@ -1072,7 +1072,7 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_DELETE : // Delete Doc
 			if (!pDoc->IsModified()						&&
 				!pDoc->IsProcessing()					&&
-				!AfxGetMainFrame()->m_bFullScreenMode	&&
+				!m_bFullScreenMode						&&
 				!pDoc->m_PlayVideoFileThread.IsAlive()	&&
 				!pDoc->m_PlayAudioFileThread.IsAlive())
 			{
@@ -1086,7 +1086,7 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_F2 : // Rename Doc
 			if (!pDoc->IsModified()						&&
 				!pDoc->IsProcessing()					&&
-				!AfxGetMainFrame()->m_bFullScreenMode	&&
+				!m_bFullScreenMode						&&
 				!pDoc->m_PlayVideoFileThread.IsAlive()	&&
 				!pDoc->m_PlayAudioFileThread.IsAlive())
 				pDoc->EditRename();
@@ -1099,7 +1099,7 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			ASSERT(pPopup != NULL);
 			SetForegroundWindow();
 			ClientToScreen(&point);
-			if (::AfxGetMainFrame()->m_bFullScreenMode)
+			if (m_bFullScreenMode)
 				pDoc->PlayerToolBarDlg(point);
 			else
 				pPopup->TrackPopupMenu(TPM_LEFTBUTTON|TPM_RIGHTBUTTON, point.x, point.y, ::AfxGetMainFrame());
@@ -1133,7 +1133,7 @@ void CVideoAviView::EraseBkgnd(HDC hDC/*=NULL*/)
 	CRect ZoomRect;
 	if ((m_UserZoomRect.Width() != 0) &&
 		(m_UserZoomRect.Height() != 0) &&
-		::AfxGetMainFrame()->m_bFullScreenMode)
+		m_bFullScreenMode)
 	{
 		ZoomRect = m_UserZoomRect;
 		if (ZoomRect.left < 0)
@@ -1412,8 +1412,8 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 	BOOL bDrawText = pDoc->m_bTimePositionShow;	
 	if (bHasVideo)
 	{
-		if (!pDoc->m_PlayVideoFileThread.IsAlive()							||
-			(::AfxGetMainFrame()->m_bFullScreenMode && IsCursorEnabled())	||
+		if (!pDoc->m_PlayVideoFileThread.IsAlive()		||
+			(m_bFullScreenMode && IsCursorEnabled())	||
 			(pDoc->m_PlayVideoFileThread.GetPlaySpeedPercent() != 100))
 			bDrawText = TRUE;
 	}
@@ -1421,7 +1421,7 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 		bDrawText = TRUE;
 
 	// Zoom Rect
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 		ZoomRect = m_UserZoomRect;
 	else
 		ZoomRect = m_ZoomRect;
@@ -1555,9 +1555,9 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 		else
 		{
 			// Make Font
-			if (::AfxGetMainFrame()->m_bFullScreenMode && !m_bBigFont)
+			if (m_bFullScreenMode && !m_bBigFont)
 				MakeFont(TRUE);
-			else if (!::AfxGetMainFrame()->m_bFullScreenMode && m_bBigFont)
+			else if (!m_bFullScreenMode && m_bBigFont)
 				MakeFont(FALSE);
 
 			// GDI Paint
@@ -1769,7 +1769,7 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 													pDoc->m_PlayVideoFileThread.GetMilliSecondsCorrectionAvg(),
 													pDoc->m_PlayVideoFileThread.GetTimerDelay(),
 													pDoc->m_PlayVideoFileThread.GetDroppedFramesCount());
-			if (::AfxGetMainFrame()->m_bFullScreenMode)
+			if (m_bFullScreenMode)
 				Rect = rcClient;
 			else
 				Rect = ZoomRect;
@@ -1780,7 +1780,7 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 		}
 
 		// DirectX Info?
-		if (::AfxGetMainFrame()->m_bFullScreenMode)
+		if (m_bFullScreenMode)
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
@@ -1887,7 +1887,7 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 	}
 	if (bHasVideo)
 	{
-		if (::AfxGetMainFrame()->m_bFullScreenMode)
+		if (m_bFullScreenMode)
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
@@ -1909,7 +1909,7 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 	{
 		_stprintf(sText, _T("%4.1fX"),
 						pDoc->m_PlayVideoFileThread.GetPlaySpeedPercent() / 100.0);
-		if (::AfxGetMainFrame()->m_bFullScreenMode)
+		if (m_bFullScreenMode)
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
@@ -2058,7 +2058,7 @@ void CVideoAviView::OnMouseMove(UINT nFlags, CPoint point)
 	::AfxGetMainFrame()->StatusText();	
 	CUImagerView::OnMouseMove(nFlags, point);
 
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		int nRectSizeXInside = USER_RECT_X_INSIDE;
 		int nRectSizeYInside = USER_RECT_Y_INSIDE;
@@ -2484,7 +2484,7 @@ void CVideoAviView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 	{
 		int nRectSizeXInside = USER_RECT_X_INSIDE;
 		int nRectSizeYInside = USER_RECT_Y_INSIDE;
@@ -2672,7 +2672,7 @@ void CVideoAviView::OnRButtonDown(UINT nFlags, CPoint point)
 	SetForegroundWindow();
 	ClientToScreen(&point);
 
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 		pDoc->PlayerToolBarDlg(point);
 	else
 		pPopup->TrackPopupMenu(TPM_LEFTBUTTON|TPM_RIGHTBUTTON, point.x, point.y, ::AfxGetMainFrame());
@@ -2696,7 +2696,7 @@ void CVideoAviView::OnRButtonDblClk(UINT nFlags, CPoint point)
 	SetForegroundWindow();
 	ClientToScreen(&point);
 
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (m_bFullScreenMode)
 		pDoc->PlayerToolBarDlg(point);
 	else
 		pPopup->TrackPopupMenu(TPM_LEFTBUTTON|TPM_RIGHTBUTTON, point.x, point.y, ::AfxGetMainFrame());
@@ -2951,7 +2951,7 @@ void CVideoAviView::OnUpdateViewFullscreen(CCmdUI* pCmdUI)
 					pDoc->m_pAVIPlay->HasVideo()		&&
 					(pDoc->m_nActiveVideoStream >= 0)	&&
 					!pDoc->IsProcessing());
-	pCmdUI->SetCheck(::AfxGetMainFrame()->m_bFullScreenMode ? 1 : 0);
+	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);
 }
 
 BOOL CVideoAviView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 

@@ -8,6 +8,7 @@
 #include "VideoDeviceView.h"
 #include "PictureView.h"
 #include "AudioMCIView.h"
+#include "CDAudioView.h"
 #include "PlayerToolBarDlg.h"
 #include "mmsystem.h"
 #include "XThemeHelper.h"
@@ -283,7 +284,7 @@ void CVideoAviToolBar::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 		return;
 
 	// Send the WM_HSCROLL Message to the View
-	CUImagerView* pView = (CUImagerView*)(pChild->GetActiveView());
+	CView* pView = pChild->GetActiveView();
 	ASSERT_VALID(pView);
 	pView->SetFocus();
 	pView->SendMessage(WM_HSCROLL, GetCurrentMessage()->wParam, GetCurrentMessage()->lParam);
@@ -417,16 +418,13 @@ void CPictureToolBar::UpdateControls(void)
 {
 	CRect rect;
 
-	CPictureView* pView = NULL;
 	CPictureDoc* pDoc = NULL;
 	int nHiddenCount = 0;
 	if (GetParent())
 	{
-		pView = (CPictureView*)(((CPictureChildFrame*)GetParent())->GetActiveView());
-		if (pView)
+		pDoc = (CPictureDoc*)(((CPictureChildFrame*)GetParent())->GetActiveDocument());
+		if (pDoc)
 		{
-			ASSERT_VALID(pView);
-			pDoc = pView->GetDocument();
 			ASSERT_VALID(pDoc);
 			if (pDoc->IsMultiPageTIFF() || pDoc->m_GifAnimationThread.IsAlive())
 			{
@@ -661,7 +659,7 @@ void CCDAudioChildFrame::ActivateFrame(int nCmdShow)
 
 void CCDAudioChildFrame::OnClose() 
 {
-	CVideoAviView* pView = (CVideoAviView*)GetActiveView();
+	CCDAudioView* pView = (CCDAudioView*)GetActiveView();
 	ASSERT_VALID(pView);
 	
 	// Kill Timer
@@ -935,8 +933,11 @@ void CVideoAviChildFrame::OnClose()
 
 void CVideoAviChildFrame::StartShutdown1()
 {
+	CVideoAviView* pView = (CVideoAviView*)GetActiveView();
+	ASSERT_VALID(pView);
+
 	// Exit Full-Screen
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (pView->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
 }
 
@@ -1017,7 +1018,7 @@ BOOL CVideoAviChildFrame::IsShutdown1Done()
 	ASSERT_VALID(pDoc);
 
 	// Check whether we exited full-screen
-	if (!::AfxGetMainFrame()->m_bFullScreenMode)
+	if (!pView->m_bFullScreenMode)
 		return TRUE;
 	else
 		return FALSE;
@@ -1110,13 +1111,13 @@ void CPictureChildFrame::OnTimer(UINT nIDEvent)
 
 void CPictureChildFrame::OnClose() 
 {
-	CPictureView* pView = (CPictureView*)GetActiveView();
-	ASSERT_VALID(pView);
-	CPictureDoc* pDoc = pView->GetDocument();
+	CPictureDoc* pDoc = (CPictureDoc*)GetActiveDocument();
 	ASSERT_VALID(pDoc);
+	CPictureView* pView = pDoc->GetView();	// Get CPictureView this way, do not use GetActiveView()
+	ASSERT_VALID(pView);					// because it can return CPicturePrintPreviewView!
 
 	// Exit Full-Screen
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (pView->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
 
 	if (m_bFirstCloseAttempt)
@@ -1173,9 +1174,7 @@ void CPictureChildFrame::OnClose()
 
 void CPictureChildFrame::StartShutdown()
 {
-	CPictureView* pView = (CPictureView*)GetActiveView();
-	ASSERT_VALID(pView);
-	CPictureDoc* pDoc = pView->GetDocument();
+	CPictureDoc* pDoc = (CPictureDoc*)GetActiveDocument();
 	ASSERT_VALID(pDoc);
 
 	// Save The Settings
@@ -1268,20 +1267,20 @@ void CPictureChildFrame::StartShutdown()
 
 BOOL CPictureChildFrame::IsShutdownDone()
 {
-	CPictureView* pView = (CPictureView*)GetActiveView();
-	ASSERT_VALID(pView);
-	CPictureDoc* pDoc = pView->GetDocument();
+	CPictureDoc* pDoc = (CPictureDoc*)GetActiveDocument();
 	ASSERT_VALID(pDoc);
+	CPictureView* pView = pDoc->GetView();	// Get CPictureView this way, do not use GetActiveView()
+	ASSERT_VALID(pView);					// because it can return CPicturePrintPreviewView!
 
 	// Check whether we exited full-screen and
 	// all Threads are Dead
-	if (!::AfxGetMainFrame()->m_bFullScreenMode		&&
-		!pDoc->m_SlideShowThread.IsAlive()			&&
-		!pDoc->m_JpegThread.IsAlive()				&&
-		!pDoc->m_LoadPicturesThread.IsAlive()		&&
-		!pDoc->m_LayeredDlgThread.IsAlive()			&&
+	if (!pView->m_bFullScreenMode				&&
+		!pDoc->m_SlideShowThread.IsAlive()		&&
+		!pDoc->m_JpegThread.IsAlive()			&&
+		!pDoc->m_LoadPicturesThread.IsAlive()	&&
+		!pDoc->m_LayeredDlgThread.IsAlive()		&&
 #ifdef SUPPORT_GIFLIB
-		!pDoc->m_GifAnimationThread.IsAlive()		&&
+		!pDoc->m_GifAnimationThread.IsAlive()	&&
 #endif
 		!pDoc->m_TransitionThread.IsAlive())
 		return TRUE;
@@ -1325,7 +1324,7 @@ void CVideoDeviceChildFrame::OnClose()
 	ASSERT_VALID(pDoc);
 
 	// Exit Full-Screen
-	if (::AfxGetMainFrame()->m_bFullScreenMode)
+	if (pView->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
 
 	// If First Close Attempt
@@ -1649,10 +1648,10 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 	// Check whether we exited full-screen, watchdog stopped
 	// and we are not inside the processing function
 	// (or frames where not arriving)
-	if (!::AfxGetMainFrame()->m_bFullScreenMode		&&
-		!pDoc->m_WatchdogThread.IsAlive()			&&
-		(pDoc->IsProcessFrameStopped()				||
-		!pDoc->m_bCapture							||
+	if (!pView->m_bFullScreenMode			&&
+		!pDoc->m_WatchdogThread.IsAlive()	&&
+		(pDoc->IsProcessFrameStopped()		||
+		!pDoc->m_bCapture					||
 		pDoc->m_bWatchDogAlarm))
 		return TRUE;
 	else

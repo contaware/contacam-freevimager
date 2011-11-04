@@ -1203,6 +1203,10 @@ LONG CMainFrame::OnThreadSafeStatusText(WPARAM wparam, LPARAM lparam)
 
 LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 {
+	// Exit Full-Screen
+	if (m_bFullScreenMode)
+		EnterExitFullscreen();
+
 	CString* pFileName = (CString*)wparam;
 #if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
 	CPostRecParams* pPostRecParams = (CPostRecParams*)lparam;
@@ -1336,15 +1340,13 @@ void CMainFrame::EnterExitFullscreen()
 	if (!pChild)
 		return;
 
-	// View
-	CUImagerView* pView = (CUImagerView*)pChild->GetActiveView();
-	ASSERT_VALID(pView);
-
-	if (pView->IsKindOf(RUNTIME_CLASS(CPictureView)))
+	// Doc
+	CPictureDoc* pDoc = (CPictureDoc*)pChild->GetActiveDocument();
+	if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 	{
-		// Doc
-		CPictureDoc* pDoc = ((CPictureView*)pView)->GetDocument();
-		ASSERT_VALID(pDoc);
+		// Close Print Preview
+		if (pDoc->GetView()->GetPicturePrintPreviewView())
+			pDoc->GetView()->GetPicturePrintPreviewView()->Close();
 
 		// Pause SlideShow?
 		BOOL bSlideShowWasRunning = FALSE;
@@ -1414,21 +1416,24 @@ BOOL CMainFrame::FullScreenTo(const CRect& rcMonitor)
 	if (!pChild)
 		return FALSE;
 
-	// View
+	// Move it
 	CUImagerView* pView = (CUImagerView*)pChild->GetActiveView();
-	ASSERT_VALID(pView);
-
-	int nMonitorWidth = rcMonitor.right - rcMonitor.left;
-	int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
-	WINDOWPLACEMENT FullScreenMainFrameWndPlacement;
-	memcpy(&FullScreenMainFrameWndPlacement, &m_MainFrameWndPlacement, sizeof(WINDOWPLACEMENT));
-	FullScreenMainFrameWndPlacement.showCmd = SW_RESTORE;
-	FullScreenMainFrameWndPlacement.rcNormalPosition = rcMonitor;
-	::SetWindowPlacement(GetSafeHwnd(), &FullScreenMainFrameWndPlacement);
-	SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	pView->SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
-	pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
-	return TRUE;
+	if (pView && pView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
+	{
+		int nMonitorWidth = rcMonitor.right - rcMonitor.left;
+		int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
+		WINDOWPLACEMENT FullScreenMainFrameWndPlacement;
+		memcpy(&FullScreenMainFrameWndPlacement, &m_MainFrameWndPlacement, sizeof(WINDOWPLACEMENT));
+		FullScreenMainFrameWndPlacement.showCmd = SW_RESTORE;
+		FullScreenMainFrameWndPlacement.rcNormalPosition = rcMonitor;
+		::SetWindowPlacement(GetSafeHwnd(), &FullScreenMainFrameWndPlacement);
+		SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		pView->SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
+		pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		return TRUE;
+	}
+	else
+		return FALSE;
 }
 
 void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
@@ -1563,8 +1568,9 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 		pChild->ShowWindow(SW_SHOWMAXIMIZED);
 	}
 
-	// Full Screen Mode Flag
+	// Full Screen Mode Flags
 	m_bFullScreenMode = true;
+	pView->m_bFullScreenMode = true;
 
 	// Change Styles For Full-Screen
 	style = m_lOldStyle = ::GetWindowLong(m_hWnd, GWL_STYLE);
@@ -1736,6 +1742,7 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		if (((CUImagerApp*)::AfxGetApp())->m_bShuttingDownApplication)
 		{
 			m_bFullScreenMode = false;
+			pView->m_bFullScreenMode = false;
 			return;
 		}
 		
@@ -1743,8 +1750,9 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		if (m_rcEnterFullScreenMonitor != GetMonitorFullRect())
 			FullScreenTo(m_rcEnterFullScreenMonitor);
 
-		// Full Screen Mode Flag
+		// Full Screen Mode Flags
 		m_bFullScreenMode = false;
+		pView->m_bFullScreenMode = false;
 
 		// Stop Timer for Cursor Hiding
 		pView->KillTimer(ID_TIMER_FULLSCREEN);
@@ -3520,9 +3528,20 @@ LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
 	// and not printing with FakeThread (they all disable the MainFrame)
 	if (IsWindowEnabled())
 	{
-		if (m_bFullScreenMode && MDIGetActive() &&
-			(CUImagerView*)(MDIGetActive()->GetActiveView()))
-			((CUImagerView*)(MDIGetActive()->GetActiveView()))->ForceCursor();
+		// Get active view and force cursor
+		CUImagerView* pActiveView = NULL;
+		if (m_bFullScreenMode)
+		{
+			CMDIChildWnd* pChild = MDIGetActive();
+			if (pChild)
+			{
+				pActiveView = (CUImagerView*)pChild->GetActiveView();
+				if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
+					pActiveView->ForceCursor();
+				else
+					pActiveView = NULL;
+			}
+		}
 
 		CPoint point(lparam);
 		CMenu menu;
@@ -3536,9 +3555,8 @@ LONG CMainFrame::OnTaskBarButton(WPARAM wparam, LPARAM lparam)
 		ASSERT(pPopup != NULL);
 		pPopup->TrackPopupMenu(TPM_LEFTBUTTON|TPM_RIGHTBUTTON, point.x, point.y, this);
 
-		if (m_bFullScreenMode && MDIGetActive() &&
-			(CUImagerView*)(MDIGetActive()->GetActiveView()))
-			((CUImagerView*)(MDIGetActive()->GetActiveView()))->ForceCursor(FALSE);
+		if (pActiveView)
+			pActiveView->ForceCursor(FALSE);
 
 		return 1;
 	}
