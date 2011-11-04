@@ -3,7 +3,9 @@ VERSION HISTORY
 3.7.0 (November 11th 2011)
 
 - Rename command
-- String fixes
+- String and other fixes
+- Dropped memory mapped BMP support
+  (today's PC have enough RAM)
 
 3.5.5 (October 10th 2011)
 

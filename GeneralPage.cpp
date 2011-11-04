@@ -731,9 +731,7 @@ BOOL CGeneralPage::OnInitDialog()
 	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
 		::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd)			||
-		(m_pDoc->m_pGetFrameNetCom										&&
-		m_pDoc->m_pGetFrameNetCom->IsClient()							&&
-		m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::OTHERONE))
+		(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
 		pButton->EnableWindow(TRUE);
 	else
 		pButton->EnableWindow(FALSE);
@@ -1460,9 +1458,7 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 		if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 			(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
 			::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd)			||
-			(m_pDoc->m_pGetFrameNetCom										&&
-			m_pDoc->m_pGetFrameNetCom->IsClient()							&&
-			m_pDoc->m_nNetworkDeviceTypeMode != CVideoDeviceDoc::OTHERONE))
+			(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
 			pButton->EnableWindow(TRUE);
 		else
 			pButton->EnableWindow(FALSE);

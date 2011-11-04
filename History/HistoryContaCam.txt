@@ -3,6 +3,8 @@ VERSION HISTORY
 3.7.0 (November 11th 2011)
 
 - Shutdown MicroApache web server in a gently way
+- Fixed network Autostart which sometimes was not working
+  (especially when Other HTTP Device was selected)
 - Added configuration setting for luminosity change detection
 
 3.5.5 (October 10th 2011)

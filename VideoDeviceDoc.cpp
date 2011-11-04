@@ -8778,23 +8778,42 @@ void CVideoDeviceDoc::VideoFormatDialog()
 	}
 	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 	{
-		// Disable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)FALSE,	// Disable Them
-						(LPARAM)0);
+		if (m_nNetworkDeviceTypeMode != OTHERONE)
+		{
+			// Disable Critical Controls
+			::SendMessage(	GetView()->GetSafeHwnd(),
+							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+							(WPARAM)FALSE,	// Disable Them
+							(LPARAM)0);
 
-		// Stop processing and change format mechanism
-		// not necessary because the size change
-		// is detected when it happens!
-		CHttpVideoFormatDlg dlg(this);
-		dlg.DoModal();
-		
-		// Enable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)TRUE,	// Enable Them
-						(LPARAM)0);
+			// Stop processing and change format mechanism
+			// not necessary because the size change
+			// is detected when it happens!
+			CHttpVideoFormatDlg dlg(this);
+			dlg.DoModal();
+			
+			// Enable Critical Controls
+			::SendMessage(	GetView()->GetSafeHwnd(),
+							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+							(WPARAM)TRUE,	// Enable Them
+							(LPARAM)0);
+		}
+		else
+		{
+			CString sUrl;
+			if (m_nGetFrameVideoPort != 80)
+				sUrl.Format(_T("http://%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			else
+				sUrl.Format(_T("http://%s"), m_sGetFrameVideoHost);
+			BeginWaitCursor();
+			::ShellExecute(	NULL,
+							_T("open"),
+							::UrlEncode(sUrl, FALSE),
+							NULL,
+							NULL,
+							SW_SHOWNORMAL);
+			EndWaitCursor();
+		}
 	}
 }
 
