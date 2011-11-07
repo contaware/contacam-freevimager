@@ -80,25 +80,15 @@ class CPictureChildFrame;
 // Transition Critical Section Timeout in ms
 #define CS_TRANSITION_TIMEOUT									30
 
-// Times in ms to poll for file system changes,
-// used by the Slideshow Thread to update the
-// file list. This is necessary because 
-// FindFirstChangeNotification functions do
-// not work well for network drives on some win os!  
-#define SLIDESHOW_FSCHANGESTIMER								2500
-
 // Each given ms the Slideshow threads checks that the
 // current dir still exists!
-#define SLIDESHOW_DIRCHECK_TIMEOUT								2500
+#define SLIDESHOW_DIRCHECK_TIMEOUT								2500U
 
 // In Milliseconds
 #define SLIDESHOW_TRANSITION_DELAY								60
 
 // Number of Blend Operations for a Blend Transition Effect
 #define BLEND_STEPS												8
-
-// Successive Change Notifications wait time in ms
-#define SUCCESSIVE_CHANGENOTIFICATIONS_WAITTIME					100
 
 // Layered dialog parameters
 #define LAYERED_DLG_LEFTBORDER									0	// In pixels
