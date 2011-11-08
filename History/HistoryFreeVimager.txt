@@ -1,8 +1,8 @@
 VERSION HISTORY
 
-3.7.0 (November 11th 2011)
+3.7.0 (November 8th 2011)
 
-- Rename command
+- Rename command (F2 key)
 - String and other fixes
 - Dropped memory mapped BMP support
   (today's PC have enough RAM)

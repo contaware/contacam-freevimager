@@ -80,7 +80,7 @@ class CPictureChildFrame;
 // Transition Critical Section Timeout in ms
 #define CS_TRANSITION_TIMEOUT									30
 
-// Each given ms the Slideshow threads checks that the
+// Each given ms the Slideshow thread checks that the
 // current dir still exists!
 #define SLIDESHOW_DIRCHECK_TIMEOUT								2500U
 
