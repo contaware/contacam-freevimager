@@ -18,10 +18,6 @@
 #define IDR_BIGPICTURE_NOHQ             127
 #define IDI_ZIP                         128
 #define IDR_VIDEODEVICE                 129
-#define IDS_NO_DEVICES_FOUND            130
-#define IDS_FAIL_CREATE_AVICAP          131
-#define IDS_FAIL_CONNECT_DEVICE         132
-#define IDD_DEVICE                      133
 #define IDD_FILEOPENPREVIEW             134
 #define IDD_CAPTURE_VIDEO               135
 #define IDI_DEVICE                      136
@@ -855,7 +851,6 @@
 #define IDS_MULTILANG_998               998
 #define IDS_MULTILANG_999               999
 #define IDS_MULTILANG_1000              1000
-#define IDC_DEVICES                     1000
 #define IDS_MULTILANG_1001              1001
 #define IDC_PREVIEW                     1001
 #define IDS_MULTILANG_1002              1002
@@ -3237,7 +3232,6 @@
 #define IDC_STATIC2537                  2537
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
-#define ID_CAPTURE_VIDEO_DEVICE         32774
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780

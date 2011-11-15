@@ -873,7 +873,6 @@ public:
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnToolsViewWebLogfile();
 	afx_msg void OnCaptureNetwork();
-	afx_msg void OnCaptureVideoDevice();
 	afx_msg void OnFileDxVideoDevice(UINT nID);
 #endif
 	DECLARE_MESSAGE_MAP()

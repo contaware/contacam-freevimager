@@ -206,7 +206,7 @@ LONG CVideoDeviceView::OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lpa
 	else
 		m_nCriticalControlsCount--;
 
-	if (pDoc->m_pGeneralPage && !pDoc->m_bVfWDialogDisplaying)
+	if (pDoc->m_pGeneralPage)
 		pDoc->m_pGeneralPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
 
 	return 1;
@@ -504,7 +504,6 @@ void CVideoDeviceView::Draw()
 	// Init local vars
 	DWORD dwCurrentUpTime = ::timeGetTime();
 	BOOL bVideoView = pDoc->m_bVideoView;
-	BOOL bVfWVideoFormatApplyPressed = pDoc->m_bVfWVideoFormatApplyPressed;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 
@@ -562,16 +561,12 @@ void CVideoDeviceView::Draw()
 
 		// Erase Background, full erase if drawing a message
 		BOOL bDrawMsg = !bVideoView						||
-						bVfWVideoFormatApplyPressed		||
 						bStopAndChangeFormat			||
 						bWatchDogAlarm;
 		EraseBkgnd(bDrawMsg);
 
-		// Display: OK or Cancel
-		if (bVfWVideoFormatApplyPressed)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1567, "OK or Cancel"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		// Display: Change Size
-		else if (bStopAndChangeFormat)
+		if (bStopAndChangeFormat)
 			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		// Display: No Frames
 		else if (bWatchDogAlarm)
@@ -944,7 +939,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case _T('S') :
 			if (pDoc->m_pDxCapture															||
-				::IsWindow(pDoc->m_VfWCaptureVideoThread.m_hCapWnd)							||
 				((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)(pDoc->m_pVideoAviDoc))	||
 				pDoc->m_pGetFrameNetCom)
 				pDoc->CaptureSettings();
@@ -962,7 +956,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case _T('R') :
 			if (pDoc->m_bCapture					&&
-				!pDoc->m_bVfWDialogDisplaying		&&
 				!pDoc->m_bAboutToStopRec			&&
 				!pDoc->m_bAboutToStartRec)
 				pDoc->CaptureRecord();

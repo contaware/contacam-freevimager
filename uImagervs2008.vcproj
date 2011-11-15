@@ -1110,37 +1110,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="CaptureDeviceDlg.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\CDAudio.cpp"
 				>
 			</File>
@@ -4518,10 +4487,6 @@
 			</File>
 			<File
 				RelativePath="BrowseDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="CaptureDeviceDlg.h"
 				>
 			</File>
 			<File

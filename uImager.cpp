@@ -116,7 +116,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_TOOLS_VIEW_WEB_LOGFILE, OnToolsViewWebLogfile)
-	ON_COMMAND(ID_CAPTURE_VIDEO_DEVICE, OnCaptureVideoDevice)
 	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
 	ON_COMMAND(ID_CAPTURE_NETWORK, OnCaptureNetwork)
 #endif
@@ -1786,16 +1785,6 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 
 #ifdef VIDEODEVICEDOC
 
-void CUImagerApp::OnCaptureVideoDevice() 
-{
-	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-	if (pDoc)
-	{
-		if (!pDoc->OpenVideoDevice(-1))
-			pDoc->CloseDocument();
-	}
-}
-
 void CUImagerApp::OnCaptureNetwork() 
 {
 	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
@@ -2114,7 +2103,6 @@ void CUImagerApp::SaveOnEndSession()
 				{
 					// Stop recording so that the index is not missing!
 					if (((CVideoDeviceDoc*)pDoc)->IsRecording()				&&
-						!((CVideoDeviceDoc*)pDoc)->m_bVfWDialogDisplaying	&&
 						!((CVideoDeviceDoc*)pDoc)->m_bAboutToStopRec		&&
 						!((CVideoDeviceDoc*)pDoc)->m_bAboutToStartRec)
 						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
@@ -2977,8 +2965,6 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 			sKey.Format(_T("%02u"), i);
 			if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
 			{
-				if (sDevRegistry == _T("VfW"))
-					continue;
 				CString sDev(sDevRegistry);
 				sDev.Replace(_T('/'), _T('\\'));
 				int nID = CDxCapture::GetDeviceID(sDev);
@@ -3068,45 +3054,29 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 		sKey.Format(_T("%02u"), i);
 		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
 		{
-			// Open VfW Device?
-			if (sDevRegistry == _T("VfW"))
+			// Open Empty Document
+			pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+			if (pDoc)
 			{
-				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-				if (pDoc)
+				// Open Direct Show Device
+				CString sDev(sDevRegistry);
+				sDev.Replace(_T('/'), _T('\\'));
+				int nID = CDxCapture::GetDeviceID(sDev);
+				if (nID >= 0)
 				{
-					if (!pDoc->OpenVideoDevice(-1))
+					if (!pDoc->OpenVideoDevice(nID))
 					{
 						pDoc->CloseDocument();
 						CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
 					}
 				}
-			}
-			else
-			{
-				// Open Empty Document
-				pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-				if (pDoc)
+				// Network Device or unplugged Direct Show Device
+				else
 				{
-					// Open Direct Show Device
-					CString sDev(sDevRegistry);
-					sDev.Replace(_T('/'), _T('\\'));
-					int nID = CDxCapture::GetDeviceID(sDev);
-					if (nID >= 0)
+					if (!pDoc->OpenGetVideo(sDevRegistry))
 					{
-						if (!pDoc->OpenVideoDevice(nID))
-						{
-							pDoc->CloseDocument();
-							CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
-						}
-					}
-					// Network Device or unplugged Direct Show Device
-					else
-					{
-						if (!pDoc->OpenGetVideo(sDevRegistry))
-						{
-							pDoc->CloseDocument();
-							CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
-						}
+						pDoc->CloseDocument();
+						CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
 					}
 				}
 			}
@@ -6223,7 +6193,6 @@ void CUImagerApp::CSchedulerEntry::Start()
 
 	// Can start rec?
 	if (!pDoc->m_bCapture				||
-		pDoc->m_bVfWDialogDisplaying	||
 		pDoc->m_bAboutToStopRec			||
 		pDoc->m_bAboutToStartRec)
 	{
@@ -6284,7 +6253,6 @@ BOOL CUImagerApp::CSchedulerEntry::Stop()
 
 	// Can stop rec?
 	if (!m_pDoc->m_bCapture				||
-		m_pDoc->m_bVfWDialogDisplaying	||
 		m_pDoc->m_bAboutToStopRec		||
 		m_pDoc->m_bAboutToStartRec)
 	{

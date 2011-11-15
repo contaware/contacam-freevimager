@@ -2991,14 +2991,14 @@ void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
 				if (sItem != sDxDevicesName[id])
 				{
 					pPopupMenu->RemoveMenu(ID_DIRECTSHOW_VIDEODEV_FIRST + id, MF_BYCOMMAND);
-					pPopupMenu->InsertMenu(ID_CAPTURE_VIDEO_DEVICE, MF_BYCOMMAND, ID_DIRECTSHOW_VIDEODEV_FIRST + id, sDxDevicesName[id]);
+					pPopupMenu->InsertMenu(ID_CAPTURE_NETWORK, MF_BYCOMMAND, ID_DIRECTSHOW_VIDEODEV_FIRST + id, sDxDevicesName[id]);
 				}
 			}
 			else
 				pPopupMenu->RemoveMenu(ID_DIRECTSHOW_VIDEODEV_FIRST + id, MF_BYCOMMAND);
 		}
 		else if (id < nDxDevicesCount)
-			pPopupMenu->InsertMenu(ID_CAPTURE_VIDEO_DEVICE, MF_BYCOMMAND, ID_DIRECTSHOW_VIDEODEV_FIRST + id, sDxDevicesName[id]);
+			pPopupMenu->InsertMenu(ID_CAPTURE_NETWORK, MF_BYCOMMAND, ID_DIRECTSHOW_VIDEODEV_FIRST + id, sDxDevicesName[id]);
 	}
 }
 #endif

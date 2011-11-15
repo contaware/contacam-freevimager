@@ -6,7 +6,6 @@
 #include "VideoAviDoc.h"
 #include "VideoAviView.h"
 #include "AudioInSourceDlg.h"
-#include "CaptureDeviceDlg.h"
 #include "AssistantPage.h"
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
@@ -3895,325 +3894,6 @@ __forceinline double CVideoDeviceDoc::GetAppMemoryLoad()
 		return 100.0;
 }
 
-// Remember that this callback is called from a separate thread !!!
-LRESULT CALLBACK CVideoDeviceDoc::CVfWCaptureVideoThread::OnCaptureVideo(HWND hWnd, LPVIDEOHDR lpVHdr)
-{
-	CVideoDeviceDoc::CVfWCaptureVideoThread* pCaptureThread = (CVideoDeviceDoc::CVfWCaptureVideoThread*)capGetUserData(hWnd);
-	if (pCaptureThread && pCaptureThread->m_pDoc)
-	{
-		CVideoDeviceDoc* pDoc = pCaptureThread->m_pDoc;
-
-		// Check whether data is valid
-		if (lpVHdr->lpData && lpVHdr->dwBytesUsed != 0)
-			pDoc->m_bVfWVideoFormatApplyPressed = FALSE;
-
-		return (LRESULT)pDoc->ProcessFrame(lpVHdr->lpData, lpVHdr->dwBytesUsed);
-	}
-	else
-		return FALSE;
-}
-
-// Remember that this callback is called from a separate thread !!!
-LRESULT CALLBACK CVideoDeviceDoc::CVfWCaptureVideoThread::OnFrame(HWND hWnd, LPVIDEOHDR lpVHdr)
-{
-	CVideoDeviceDoc::CVfWCaptureVideoThread* pCaptureThread = (CVideoDeviceDoc::CVfWCaptureVideoThread*)capGetUserData(hWnd);
-	if (pCaptureThread && pCaptureThread->m_pDoc)
-	{
-		CVideoDeviceDoc* pDoc = pCaptureThread->m_pDoc;
-
-		// Some Changes Happened (Like Format Change)
-		if (!lpVHdr->lpData || lpVHdr->dwBytesUsed == 0)
-		{
-			// Display Warning Message
-			pDoc->m_bVfWVideoFormatApplyPressed = TRUE;
-
-			// Empty Process Frame to make the watchdog happy
-			pDoc->ProcessFrame(NULL, 0);
-
-			// Draw
-			HRESULT hr = ::CoInitialize(NULL);
-			BOOL bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
-			pDoc->GetView()->Draw();
-			if (bCleanupCOM)
-				::CoUninitialize();
-		}
-		else
-		{
-			pDoc->m_bVfWVideoFormatApplyPressed = FALSE;
-			pDoc->ProcessFrame(lpVHdr->lpData, lpVHdr->dwBytesUsed);
-		}
-
-		// Triggered Capture Terminates here ->
-		// The Thread can Trigger Another Frame Capture
-		pCaptureThread->m_bTriggeredCapture = FALSE;
-
-		return (LRESULT)TRUE;
-	}
-	else	
-		return (LRESULT)FALSE;
-}
-
-CVideoDeviceDoc::CVfWCaptureVideoThread::CVfWCaptureVideoThread()
-{ 
-	m_pDoc = NULL;
-	m_hCapWnd = NULL;
-	m_bTriggeredCapture = FALSE;
-}
-
-CVideoDeviceDoc::CVfWCaptureVideoThread::~CVfWCaptureVideoThread() 
-{
-	Kill();
-	Disconnect();
-	DestroyCaptureWnd();
-}
-
-int CVideoDeviceDoc::CVfWCaptureVideoThread::Work() 
-{
-	DWORD Event;
-
-	if (!m_pDoc)
-		return 0;
-
-	for (;;)
-	{		
-		m_pDoc->m_bCapture = TRUE;
-		int nFrameTime = VFW_MIN_TRIGGEREDCAP_FRAMETIME;
-		double dFrameRate = m_pDoc->m_dEffectiveFrameRate;
-		if (dFrameRate >= 0.5 && dFrameRate <= (1000.0 / (double)VFW_MIN_TRIGGEREDCAP_FRAMETIME))
-			nFrameTime = Round(1000.0 / dFrameRate);
-		Event = ::WaitForSingleObject(GetKillEvent(), nFrameTime);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :	m_pDoc->m_bCapture = FALSE;
-									return 0;
-
-			// Grab Frame
-			case WAIT_TIMEOUT :		if (!m_bTriggeredCapture)
-									{
-										if (::IsWindow(m_hCapWnd))
-										{
-											m_bTriggeredCapture = TRUE;
-											::PostMessage(m_hCapWnd, WM_CAP_GRAB_FRAME_NOSTOP, 0, 0);
-										}
-									}
-									break;
-
-			default: break;
-		}
-	}
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::CreateCaptureWnd()
-{
-	if (::IsWindow(m_hCapWnd))
-		return FALSE;
-
-	// Note: UNICODE version not available under win9x!
-	m_hCapWnd = ::capCreateCaptureWindow(_T("Capture"),
-										WS_POPUP,
-										0,
-										0,
-										1,
-										1, 
-										m_pDoc->GetView()->GetSafeHwnd(),
-										0);
-
-	if (m_hCapWnd == NULL)
-		return FALSE;
-	else
-		return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::ConnectForce(double dFrameRate)
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		if (!Disconnect())
-			return FALSE;
-		if (!DestroyCaptureWnd())
-			return FALSE;
-	}
-	
-	if (CreateCaptureWnd())
-		return Connect(dFrameRate);
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::Connect(double dFrameRate)
-{
-	// Set Exact NTSC Frame Rate
-	if (Round(dFrameRate) == 30)
-		dFrameRate = 30000.0 / 1001.0;
-
-	// Set User Data For Callback Function
-	capSetUserData(m_hCapWnd, this);
- 
-	// Disable Preview And Overlay
-	capPreview(m_hCapWnd, FALSE);
-	capOverlay(m_hCapWnd, FALSE);
-
-	// Connect to Driver
-	if (!capDriverConnect(m_hCapWnd, m_pDoc->m_dwVfWCaptureVideoDeviceID))
-	{
-		// Device may be open already or it may not have been
-		// closed properly last time.
-		::AfxMessageBox(ML_STRING(1464, "Unable to open Video Capture Device"));
-		::DestroyWindow(m_hCapWnd);
-		m_hCapWnd = NULL;
-		return FALSE;
-	}
-
-	// Set the capture parameters
-	CAPTUREPARMS CapParms;
-	ZeroMemory(&CapParms, sizeof(CAPTUREPARMS));
-	capCaptureGetSetup(m_hCapWnd, &CapParms, sizeof(CAPTUREPARMS));
-	CapParms.dwRequestMicroSecPerFrame = (DWORD)Round(1000000.0 / dFrameRate); 
-	CapParms.fMakeUserHitOKToCapture = FALSE;
-	CapParms.wPercentDropForError = 60;
-	CapParms.fYield = TRUE; // Separate Thread
-	CapParms.dwIndexSize = 1;// (Max: 324000), here not used because we do not capture to a file directly
-	CapParms.wChunkGranularity = 0;
-	CapParms.fUsingDOSMemory = FALSE;
-	CapParms.wNumVideoRequested = 5;
-	CapParms.fCaptureAudio = FALSE;
-	CapParms.wNumAudioRequested = 4;
-	CapParms.vKeyAbort = 0; // 27 = ESC (Original Set)
-	CapParms.fAbortLeftMouse = FALSE;
-	CapParms.fAbortRightMouse = FALSE;
-	CapParms.fLimitEnabled = FALSE;
-	CapParms.wTimeLimit = 0;
-	CapParms.fMCIControl = FALSE;
-	CapParms.fStepMCIDevice = FALSE;
-	CapParms.dwMCIStartTime = 0;
-	CapParms.dwMCIStopTime = 0;
-	CapParms.fStepCaptureAt2x = FALSE; 
-	CapParms.wStepCaptureAverageFrames = 0;
-	CapParms.dwAudioBufferSize = 0;
-	CapParms.fDisableWriteCache = FALSE;
-	CapParms.AVStreamMaster = AVSTREAMMASTER_NONE;
-
-	if (capCaptureSetSetup(m_hCapWnd, &CapParms, sizeof(CapParms)) == FALSE)
-	{
-		capDriverDisconnect(m_hCapWnd);
-		::DestroyWindow(m_hCapWnd);
-		m_hCapWnd = NULL;
-		return FALSE;
-	}
-
-	// Update the Video Dib
-	::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_CHANGEVIDEOFORMAT,
-					0, 0);
-
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::StartCapture()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		capSetCallbackOnVideoStream(m_hCapWnd, OnCaptureVideo);
-
-		if (capCaptureSequenceNoFile(m_hCapWnd) == FALSE)
-		{
-			capSetCallbackOnVideoStream(m_hCapWnd, NULL);
-			capDriverDisconnect(m_hCapWnd);
-			::DestroyWindow(m_hCapWnd);
-			m_hCapWnd = NULL;
-			return FALSE;
-		}
-		else
-		{
-			m_pDoc->m_bCapture = TRUE;
-			return TRUE;
-		}
-	}
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::StartTriggeredFrameCapture()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		BOOL res = capSetCallbackOnFrame(m_hCapWnd, OnFrame);
-		if (res)
-		{
-			m_bTriggeredCapture = FALSE;
-			Start();
-		}
-		return res;
-	}
-	else
-		return FALSE;
-}
-
-int CVideoDeviceDoc::CVfWCaptureVideoThread::GetDroppedFrames()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		CAPSTATUS st;
-		memset(&st, 0, sizeof(CAPSTATUS));
-		capGetStatus(m_hCapWnd, &st, sizeof(CAPSTATUS));
-		return (int)st.dwCurrentVideoFramesDropped;
-	}
-	else
-		return -1;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::DestroyCaptureWnd()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		::DestroyWindow(m_hCapWnd);
-		m_hCapWnd = NULL;
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::Disconnect()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		StopCapture();
-		StopTriggeredFrameCapture();
-
-		// Disconnect
-		capDriverDisconnect(m_hCapWnd);
-
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::StopCapture()
-{
-	if (::IsWindow(m_hCapWnd))
-	{
-		capCaptureStop(m_hCapWnd);
-		capCaptureAbort(m_hCapWnd);
-		capSetCallbackOnVideoStream(m_hCapWnd, NULL);
-		m_pDoc->m_bCapture = FALSE;
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CVfWCaptureVideoThread::StopTriggeredFrameCapture()
-{
-	Kill();
-	if (::IsWindow(m_hCapWnd))
-		return capSetCallbackOnFrame(m_hCapWnd, NULL);
-	else
-		return FALSE;
-}
-
 BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 {
 	BOOL res = FALSE;
@@ -5007,12 +4687,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Capture Devices
 	m_pDxCapture = NULL;
 	m_dwCaptureAudioDeviceID = 0U;
-	m_dwVfWCaptureVideoDeviceID = 0U;
 	m_nDeviceInputId = -1;
 	m_nDeviceFormatId = -1;
-	m_bVfWVideoFormatApplyPressed = FALSE;
 	m_bStopAndChangeFormat = FALSE;
-	m_bVfWDialogDisplaying = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
@@ -5094,7 +4771,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
-	m_VfWCaptureVideoThread.SetDoc(this);
 	m_HttpGetFrameThread.SetDoc(this);
 	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
@@ -5404,8 +5080,6 @@ CString CVideoDeviceDoc::GetDevicePathName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDevicePath();
-	else if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)) 
-		sDevice = _T("VfW");
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
 	{
 		CString sShortFileName;
@@ -5442,8 +5116,6 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDeviceName();
-	else if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)) 
-		sDevice = _T("VfW");
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
 	{
 		CString sShortFileName;
@@ -5777,7 +5449,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
 	m_nDeviceFormatWidth = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), 0);
 	m_nDeviceFormatHeight = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), 0);
-	m_dwVfWCaptureVideoDeviceID = (int) pApp->GetProfileInt(sSection, _T("VfWVideoCaptureDeviceID"), 0);
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
@@ -6040,7 +5711,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
 			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth);
 			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
-			pApp->WriteProfileInt(sSection, _T("VfWVideoCaptureDeviceID"), m_dwVfWCaptureVideoDeviceID);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
@@ -6238,7 +5908,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VfWVideoCaptureDeviceID"), m_dwVfWCaptureVideoDeviceID, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
@@ -6323,78 +5992,6 @@ void CVideoDeviceDoc::SaveSettings()
 	}
 }
 
-BOOL CVideoDeviceDoc::GetCaptureDriverDescription(WORD nIndex, CString& sName, CString& sVersion)
-{
-	// These two Functions are not available
-	// in UNICODE version under win9x!!
-	typedef BOOL (VFWAPI *PFNCAPGETDRIVERDESCRIPTIONA)(	UINT wDriverIndex,
-														LPSTR lpszName, int cbName,
-														LPSTR lpszVer, int cbVer);
-	typedef BOOL (VFWAPI *PFNCAPGETDRIVERDESCRIPTIONW)(	UINT wDriverIndex,
-														LPWSTR lpszName, int cbName,
-														LPWSTR lpszVer, int cbVer);
-	PFNCAPGETDRIVERDESCRIPTIONA fpcapGetDriverDescriptionA = NULL;
-	PFNCAPGETDRIVERDESCRIPTIONW fpcapGetDriverDescriptionW = NULL;
-	HMODULE hAviCap32 = ::LoadLibrary(_T("avicap32.dll"));
-	if (hAviCap32)
-	{
-		fpcapGetDriverDescriptionA = (PFNCAPGETDRIVERDESCRIPTIONA)(
-										::GetProcAddress(hAviCap32,
-														"capGetDriverDescriptionA"));
-			
-		fpcapGetDriverDescriptionW = (PFNCAPGETDRIVERDESCRIPTIONW)(
-										::GetProcAddress(hAviCap32,
-														"capGetDriverDescriptionW"));
-	}
-
-	TCHAR* pszName = sName.GetBuffer(_MAX_PATH);
-	TCHAR* pszVersion = sVersion.GetBuffer(_MAX_PATH);
-	BOOL bSuccess = FALSE;
-#ifdef UNICODE
-		if (fpcapGetDriverDescriptionW)
-		{
-			bSuccess = fpcapGetDriverDescriptionW(
-												nIndex,
-												pszName,
-												_MAX_PATH,
-												pszVersion,
-												_MAX_PATH);
-		}
-		else if (fpcapGetDriverDescriptionA)
-		{
-			char Name[_MAX_PATH];
-			char Version[_MAX_PATH];
-			wcstombs(Name, pszName, _MAX_PATH);
-			wcstombs(Version, pszVersion, _MAX_PATH);
-			bSuccess = fpcapGetDriverDescriptionA(
-												nIndex,
-												Name,
-												_MAX_PATH,
-												Version,
-												_MAX_PATH);
-			mbstowcs(pszName, Name, _MAX_PATH);
-			mbstowcs(pszVersion, Version, _MAX_PATH);
-		}
-#else
-		if (fpcapGetDriverDescriptionA)
-		{
-			bSuccess = fpcapGetDriverDescriptionA(
-													nIndex,
-													pszName,
-													_MAX_PATH,
-													pszVersion,
-													_MAX_PATH);
-		}
-#endif
-
-	sName.ReleaseBuffer();
-	sVersion.ReleaseBuffer();
-	if (hAviCap32)
-		::FreeLibrary(hAviCap32);
-
-	return bSuccess;
-}
-
 BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 {
 	m_pDxCapture = new CDxCapture;
@@ -6462,11 +6059,8 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 	return FALSE;
 }
 
-// nId = -1 for Vfw
-// nId >= 0 are for DirectShow Devices
 BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 {
-	// DirectShow
 	if (nId >= 0)
 	{
 		// Already open?
@@ -6500,107 +6094,8 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 		::AfxMessageBox(ML_STRING(1466, "The capture device is already in use or not compatible"), MB_ICONSTOP);
 		return FALSE;
 	}
-	// VfW
 	else
-	{
-		// Open
-		if (!::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-		{
-			// First see if there are any devices on the system. If
-			// not display a message box and abort
-			int nDevicesFound = 0;
-			for (WORD i = 0 ; i < 10 ; i++)
-			{
-				CString sName, sVersion;
-				if (CVideoDeviceDoc::GetCaptureDriverDescription(i, sName, sVersion))
-					++nDevicesFound;
-			}
-			if (nDevicesFound == 0)
-			{
-				::AfxMessageBox(IDS_NO_DEVICES_FOUND, MB_ICONSTOP);
-				return FALSE;
-			}
-
-			if (nDevicesFound > 1)
-			{
-				CCaptureDeviceDlg dlg(GetView());
-				if (dlg.DoModal() == IDOK)
-				{
-					// Load Settings
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-						LoadSettings(DEFAULT_FRAMERATE, _T("VfW"), _T("VfW"));
-
-					// Start Delete Detections Thread
-					if (!m_DeleteThread.IsAlive())
-						m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-
-					// Set Device ID
-					m_dwVfWCaptureVideoDeviceID = dlg.m_wDeviceID;
-				
-					// Reset vars
-					m_dwFrameCountUp = 0U;
-					m_dwNextSnapshotUpTime = ::timeGetTime();
-					::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-
-					// Video Connect
-					if (!m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate))
-						return FALSE;
-				
-					// Video Capture Start
-					if (!m_VfWCaptureVideoThread.StartCapture())
-						return FALSE;
-
-					// Start Audio Capture
-					if (m_bCaptureAudio)
-						m_CaptureAudioThread.Start();
-
-					// Title
-					SetDocumentTitle();
-
-					return TRUE;
-				}
-				else
-					return FALSE;
-			}
-			else
-			{
-				// Load Settings
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					LoadSettings(DEFAULT_FRAMERATE, _T("VfW"), _T("VfW"));
-
-				// Start Delete Detections Thread
-				if (!m_DeleteThread.IsAlive())
-					m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-
-				// Set Device ID 0
-				m_dwVfWCaptureVideoDeviceID = 0;
-				
-				// Reset vars
-				m_dwFrameCountUp = 0U;
-				m_dwNextSnapshotUpTime = ::timeGetTime();
-				::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-
-				// Video Connect
-				if (!m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate))
-					return FALSE;
-
-				// Video Capture Start
-				if (!m_VfWCaptureVideoThread.StartCapture())
-					return FALSE;
-			
-				// Start Audio Capture
-				if (m_bCaptureAudio)
-					m_CaptureAudioThread.Start();
-
-				// Title
-				SetDocumentTitle();
-
-				return TRUE;
-			}
-		}
-		else
-			return TRUE;
-	}
+		return FALSE;
 }
 
 double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode) 
@@ -7174,7 +6669,6 @@ BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec/*=NUL
 void CVideoDeviceDoc::OnCaptureRecord() 
 {
 	if (m_bCapture					&&
-		!m_bVfWDialogDisplaying		&&
 		!m_bAboutToStopRec			&&
 		!m_bAboutToStartRec)
 		CaptureRecord();
@@ -7184,7 +6678,6 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 {	
 	pCmdUI->SetCheck(m_pAVRec != NULL ? 1 : 0);
 	pCmdUI->Enable(	m_bCapture					&&
-					!m_bVfWDialogDisplaying		&&
 					!m_bAboutToStopRec			&&
 					!m_bAboutToStartRec);
 }
@@ -7360,101 +6853,12 @@ void CVideoDeviceDoc::CaptureRecordPause()
 	m_bCaptureRecordPause = !m_bCaptureRecordPause;
 }
 
-BOOL CVideoDeviceDoc::SaveModified() 
-{
-	if (m_bVfWDialogDisplaying)
-	{
-		// Get active view and force cursor
-		CUImagerView* pActiveView = NULL;
-		if (::AfxGetMainFrame()->m_bFullScreenMode)
-		{
-			CMDIChildWnd* pChild = ::AfxGetMainFrame()->MDIGetActive();
-			if (pChild)
-			{
-				pActiveView = (CUImagerView*)pChild->GetActiveView();
-				if (pActiveView && pActiveView->IsKindOf(RUNTIME_CLASS(CUImagerView)))
-					pActiveView->ForceCursor();
-				else
-					pActiveView = NULL;
-			}
-		}
-		::AfxMessageBox(ML_STRING(1472, "Please close the VfW dialog before exiting!"));
-		if (pActiveView)
-			pActiveView->ForceCursor(FALSE);
-		return FALSE; // Do not exit
-	}
-	else
-		return TRUE;
-}
-
-void CVideoDeviceDoc::VfWVideoFormatDialog() 
-{
-	if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-	{
-		// Hack To Force the Change of the FrameRate!
-		if (m_dFrameRate < MAX_FRAMERATE)
-		{
-			m_VfWCaptureVideoThread.ConnectForce(MAX_FRAMERATE);
-			capSetCallbackOnVideoStream(m_VfWCaptureVideoThread.m_hCapWnd, NULL);
-			capCaptureSequenceNoFile(m_VfWCaptureVideoThread.m_hCapWnd);
-			capCaptureStop(m_VfWCaptureVideoThread.m_hCapWnd);
-			capCaptureAbort(m_VfWCaptureVideoThread.m_hCapWnd);
-		}
-		m_VfWCaptureVideoThread.ConnectForce(MAX_FRAMERATE); // Reconnect
-		
-		m_VfWCaptureVideoThread.StartTriggeredFrameCapture();
-		m_bVfWDialogDisplaying = TRUE;
-		capDlgVideoFormat(m_VfWCaptureVideoThread.m_hCapWnd);
-		m_bVfWDialogDisplaying = FALSE;
-		m_bSizeToDoc = TRUE;
-		OnChangeVideoFormat();
-		m_VfWCaptureVideoThread.StopTriggeredFrameCapture();
-		m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate); // Reconnect
-		m_VfWCaptureVideoThread.StartCapture();
-	}
-}
-
-void CVideoDeviceDoc::VfWVideoSourceDialog() 
-{
-	if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-	{
-		// Hack To Force the Change of the FrameRate!
-		if (m_dFrameRate < MAX_FRAMERATE)
-		{
-			m_VfWCaptureVideoThread.ConnectForce(MAX_FRAMERATE);
-			capSetCallbackOnVideoStream(m_VfWCaptureVideoThread.m_hCapWnd, NULL);
-			capCaptureSequenceNoFile(m_VfWCaptureVideoThread.m_hCapWnd);
-			capCaptureStop(m_VfWCaptureVideoThread.m_hCapWnd);
-			capCaptureAbort(m_VfWCaptureVideoThread.m_hCapWnd);
-		}
-		m_VfWCaptureVideoThread.ConnectForce(MAX_FRAMERATE); // Reconnect
-		
-		m_VfWCaptureVideoThread.StartTriggeredFrameCapture();
-		m_bVfWDialogDisplaying = TRUE;
-		capDlgVideoSource(m_VfWCaptureVideoThread.m_hCapWnd);
-		m_bVfWDialogDisplaying = FALSE;
-		m_bSizeToDoc = TRUE;
-		OnChangeVideoFormat();
-		m_VfWCaptureVideoThread.StopTriggeredFrameCapture();
-		m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate); // Reconnect
-		m_VfWCaptureVideoThread.StartCapture();
-	}
-}
-
 // Function called from the UI thread and when ProcessFrame() is not called
 void CVideoDeviceDoc::OnChangeVideoFormat()
 {
 	DWORD dwSize;
 
-	if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-	{
-		capGetVideoFormat(	m_VfWCaptureVideoThread.m_hCapWnd, &m_OrigBMI,
-							MIN(sizeof(BITMAPINFOFULL), capGetVideoFormatSize(m_VfWCaptureVideoThread.m_hCapWnd)));
-		m_DocRect.right = m_OrigBMI.bmiHeader.biWidth;
-		m_DocRect.bottom = m_OrigBMI.bmiHeader.biHeight;
-		SetDocumentTitle();
-	}
-	else if (m_pDxCapture)
+	if (m_pDxCapture)
 	{
 		// DV
 		if (m_pDxCapture->IsDV())
@@ -7546,17 +6950,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 {
 	if (!m_bClosing)
 	{
-		if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-		{
-			m_VfWCaptureVideoThread.Disconnect();
-			m_VfWCaptureVideoThread.DestroyCaptureWnd();
-			ResetMovementDetector();
-			m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate);
-			ReStartProcessFrame();
-			m_VfWCaptureVideoThread.StartCapture();
-			SetDocumentTitle();
-		}
-		else if (m_pDxCapture)
+		if (m_pDxCapture)
 		{
 			if (m_pDxCapture->Stop())
 				m_bCapture = FALSE;
@@ -7662,7 +7056,6 @@ void CVideoDeviceDoc::OnCaptureSettings()
 void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(	m_pDxCapture														||
-					::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd)						||
 					((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc)	||
 					m_pGetFrameNetCom);
 	if (m_pVideoDevicePropertySheet)
@@ -7741,25 +7134,6 @@ void CVideoDeviceDoc::VideoFormatDialog()
 							(LPARAM)0);
 		}
 	}
-	else if (::IsWindow(m_VfWCaptureVideoThread.m_hCapWnd))
-	{
-		// Disable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)FALSE,	// Disable Them
-						(LPARAM)0);
-
-		// Stop processing and change format mechanism
-		// not necessary because ProcessFrame() is called
-		// from the main UI thread
-		VfWVideoFormatDialog();
-		
-		// Enable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)TRUE,	// Enable Them
-						(LPARAM)0);
-	}
 	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 	{
 		if (m_nNetworkDeviceTypeMode != OTHERONE)
@@ -7812,22 +7186,6 @@ void CVideoDeviceDoc::VideoSourceDialog()
 						(LPARAM)0);
 
 		m_pDxCapture->ShowVideoCaptureFilterDlg();
-
-		// Enable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)TRUE,	// Enable Them
-						(LPARAM)0);
-	}
-	else
-	{
-		// Disable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)FALSE,	// Disable Them
-						(LPARAM)0);
-
-		VfWVideoSourceDialog();
 
 		// Enable Critical Controls
 		::SendMessage(	GetView()->GetSafeHwnd(),

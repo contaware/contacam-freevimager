@@ -231,7 +231,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
     POPUP "&Tools"
@@ -586,7 +585,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "&Record\tR",                  ID_CAPTURE_RECORD
@@ -687,7 +685,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM "&Avi Play",                   ID_CAPTURE_AVIPLAY
     END
@@ -926,7 +923,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
     POPUP "&Play"
@@ -1096,7 +1092,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
     POPUP "&Tools"
@@ -1443,7 +1438,6 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "&VfW",                        ID_CAPTURE_VIDEO_DEVICE
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
     POPUP "&Tools"
@@ -1610,19 +1604,6 @@ BEGIN
     LTEXT           "This is the original language",IDC_STATIC2152,70,113,
                     173,8
     LTEXT           "Mem Stats",IDC_MEMSTATS,70,177,173,8
-END
-
-IDD_DEVICE DIALOGEX 0, 0, 186, 113
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Select The Capture Device"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,71,92,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,92,50,14
-    LISTBOX         IDC_DEVICES,37,7,142,78,LBS_NOINTEGRALHEIGHT | 
-                    WS_VSCROLL | WS_TABSTOP
-    ICON            129,IDC_STATIC,6,7,20,20
 END
 
 IDD_GENERAL DIALOGEX 0, 0, 417, 268
@@ -5919,9 +5900,6 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDR_VIDEODEVICE         "\nVideoDevice\nVideoDevice\n\n\nVideoDevice.Document\nVideoDevice Document"
-    IDS_NO_DEVICES_FOUND    "The program could not detect any capture devices. Please\nensure you have your capture hardware properly configured\nand its drivers are installed and configured properly."
-    IDS_FAIL_CREATE_AVICAP  "Could not create the AVICap capture window"
-    IDS_FAIL_CONNECT_DEVICE "The program could not connect to the capture device. Please\nensure you have your capture hardware properly configured\nand its drivers are installed and configured properly."
 END
 
 STRINGTABLE DISCARDABLE 
@@ -6333,7 +6311,6 @@ BEGIN
     IDS_MULTILANG_1457      "Zip Extraction Progress"
     IDS_MULTILANG_1458      "Zip Compression Progress"
     IDS_MULTILANG_1459      "Sound Input Cannot Open Device!"
-    IDS_MULTILANG_1464      "Unable to open Video Capture Device"
     IDS_MULTILANG_1465      "Cannot connect to the specified network device or server"
     IDS_MULTILANG_1466      "The capture device is already in use or not compatible"
     IDS_MULTILANG_1467      "Live De-Interlacing is only supported with the\n"
@@ -6344,7 +6321,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_MULTILANG_1472      "Please close the VfW dialog before exiting!"
     IDS_MULTILANG_1473      "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
@@ -6380,7 +6356,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_CAPTURE_VIDEO_DEVICE "Select and start VfW capture device\nVfW Video Input"
     ID_EDIT_ROTATE_FLIP     "Rotate / flip current image\nRotate / Flip"
     ID_FILE_SELECTTWAINSOURCE 
                             "Select twain (scanner,...) source\nSelect Twain Source"
@@ -6969,7 +6944,6 @@ BEGIN
     IDS_STRING1564          "Custom"
     IDS_STRING1565          "Please wait..."
     IDS_STRING1566          "Closing "
-    IDS_STRING1567          "OK or Cancel"
 END
 
 STRINGTABLE DISCARDABLE 

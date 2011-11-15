@@ -235,10 +235,6 @@ SOURCE=.\BrowseDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CaptureDeviceDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\CDAudio.cpp
 # End Source File
 # Begin Source File
@@ -941,10 +937,6 @@ SOURCE=.\BmpSaveDlg.h
 # Begin Source File
 
 SOURCE=.\BrowseDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\CaptureDeviceDlg.h
 # End Source File
 # Begin Source File
 

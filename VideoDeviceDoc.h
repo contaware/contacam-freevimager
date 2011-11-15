@@ -46,7 +46,6 @@ class CMovementDetectionPage;
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
 #define PROCESS_MAX_FRAMETIME				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define VFW_MIN_TRIGGEREDCAP_FRAMETIME		200			// ms
 #define DEFAULT_FRAMERATE					8.0			// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
@@ -737,37 +736,6 @@ public:
 			double m_dOutIm[AUDIO_IN_MIN_SMALL_BUF_SIZE];
 	};
 
-	// The VfW Video Capture Thread Class
-	class CVfWCaptureVideoThread : public CWorkerThread
-	{
-		public:
-			// General Functions
-			CVfWCaptureVideoThread();
-			virtual ~CVfWCaptureVideoThread();
-			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			BOOL CreateCaptureWnd();
-			BOOL DestroyCaptureWnd();
-			BOOL Connect(double dFrameRate);
-			BOOL Disconnect();
-			BOOL ConnectForce(double dFrameRate);
-			BOOL StartCapture();
-			BOOL StopCapture();
-			BOOL StartTriggeredFrameCapture();
-			BOOL StopTriggeredFrameCapture();
-			int GetDroppedFrames();
-		
-			// Capture Wnd Var
-			HWND m_hCapWnd;
-
-		protected:
-			int Work();
-			static LRESULT CALLBACK OnCaptureVideo(HWND hWnd, LPVIDEOHDR lpVHdr);
-			static LRESULT CALLBACK OnFrame(HWND hWnd, LPVIDEOHDR lpVHdr);
-
-			CVideoDeviceDoc* m_pDoc;
-			volatile BOOL m_bTriggeredCapture;
-	};
-
 	// Http Get Frame Thread
 	class CHttpGetFrameThread : public CWorkerThread
 	{
@@ -1160,8 +1128,6 @@ public:
 	void VideoInputDialog();
 	void VideoTunerDialog();
 	void AudioFormatDialog();
-	void VfWVideoFormatDialog();
-	void VfWVideoSourceDialog();
 	
 	// On Change Frame Rate
 	void OnChangeFrameRate();
@@ -1246,9 +1212,6 @@ public:
 
 	// Functin called when the video grabbing format has been changed
 	void OnChangeVideoFormat();
-
-	// Get Vfw Capture Driver Information
-	static BOOL GetCaptureDriverDescription(WORD nIndex, CString& sName, CString& sVersion);
 
 	// Networking Type and Mode
 	typedef enum {
@@ -1416,7 +1379,6 @@ public:
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
 	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
 	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
-	CVfWCaptureVideoThread m_VfWCaptureVideoThread;		// VfW Video Capture Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
@@ -1438,11 +1400,6 @@ public:
 	int m_nDeviceFormatId;								// Format ID
 	int m_nDeviceFormatWidth;							// Format Width
 	int m_nDeviceFormatHeight;							// Format Height
-
-	// Vfw Capture Vars
-	DWORD m_dwVfWCaptureVideoDeviceID;					// VfW Video Capture Device ID
-	volatile BOOL m_bVfWVideoFormatApplyPressed;		// VfW Format Dialog Hack
-	volatile BOOL m_bVfWDialogDisplaying;				// VfW is Displaying right now
 	
 	// Audio Capture Vars
 	DWORD m_dwCaptureAudioDeviceID;						// Audio Capture Device ID
@@ -1673,8 +1630,6 @@ protected:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CVideoDeviceDoc)
-	protected:
-	virtual BOOL SaveModified();
 	//}}AFX_VIRTUAL
 
 // Debug

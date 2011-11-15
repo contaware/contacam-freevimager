@@ -1330,8 +1330,7 @@ void CVideoDeviceChildFrame::OnClose()
 	// If First Close Attempt
 	if (m_bFirstCloseAttempt)
 	{
-		// Start closing only if not displaying a VfW Dialog,
-		// see SaveModified() called by CanCloseFrame()
+		// Start closing
 		if (pDoc->CanCloseFrame(this))
 		{
 			// Show closing progress dialog
@@ -1482,8 +1481,6 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", delete thread still alive");
 			if (pDoc->m_CaptureAudioThread.IsAlive())
 				t += _T(", capture audio thread still alive");
-			if (pDoc->m_VfWCaptureVideoThread.IsAlive())
-				t += _T(", vfw capture video thread still alive");
 			if (pDoc->m_SaveFrameListThread.IsAlive())
 				t += _T(", save frame list thread still alive");
 			if (pDoc->m_SaveSnapshotFTPThread.IsAlive())
@@ -1544,7 +1541,6 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	pDoc->m_HttpGetFrameThread.Kill_NoBlocking();
 	pDoc->m_DeleteThread.Kill_NoBlocking();
 	pDoc->m_CaptureAudioThread.Kill_NoBlocking();
-	pDoc->m_VfWCaptureVideoThread.Kill_NoBlocking();
 	pDoc->m_SaveFrameListThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotFTPThread.Kill_NoBlocking();
 	pDoc->m_SaveSnapshotThread.Kill_NoBlocking();
@@ -1594,10 +1590,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 		pDoc->m_pSendFrameNetCom = NULL;
 	}
 	::LeaveCriticalSection(&pDoc->m_csSendFrameNetCom);
-
-	// Close VfW Capture Thread
-	pDoc->m_VfWCaptureVideoThread.Disconnect();
-	pDoc->m_VfWCaptureVideoThread.DestroyCaptureWnd();
 
 	// Delete DirectShow Capture Object
 	if (pDoc->m_pDxCapture)
@@ -1668,7 +1660,6 @@ BOOL CVideoDeviceChildFrame::IsShutdown2Done()
 	if (!pDoc->m_HttpGetFrameThread.IsAlive()		&&
 		!pDoc->m_DeleteThread.IsAlive()				&&
 		!pDoc->m_CaptureAudioThread.IsAlive()		&&
-		!pDoc->m_VfWCaptureVideoThread.IsAlive()	&&
 		!pDoc->m_SaveFrameListThread.IsAlive()		&&
 		!pDoc->m_SaveSnapshotFTPThread.IsAlive()	&&
 		!pDoc->m_SaveSnapshotThread.IsAlive())

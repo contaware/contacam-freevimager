@@ -619,10 +619,6 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
-	else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-	{
-		m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
-	}
 	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 	{
 		// Axis and Edimax support only integer values starting at 1 fps
@@ -730,7 +726,6 @@ BOOL CGeneralPage::OnInitDialog()
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
 	if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 		(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-		::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd)			||
 		(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
 		pButton->EnableWindow(TRUE);
 	else
@@ -745,8 +740,6 @@ BOOL CGeneralPage::OnInitDialog()
 		else
 			pButton->EnableWindow(FALSE);
 	}
-	else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-		pButton->EnableWindow(TRUE); // VfW Has This Button
 	else
 		pButton->EnableWindow(FALSE);
 
@@ -1045,14 +1038,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 				LONG lDroppedFrames = m_pDoc->m_pDxCapture->GetDroppedFrames();
 				if (lDroppedFrames >= 0)
 					sDroppedFrames.Format(_T("%d"), lDroppedFrames);
-				else
-					sDroppedFrames = _T("0");	// Unsupported
-			}
-			else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-			{
-				int nDroppedFrames = m_pDoc->m_VfWCaptureVideoThread.GetDroppedFrames();
-				if (nDroppedFrames >= 0)
-					sDroppedFrames.Format(_T("%d"), nDroppedFrames);
 				else
 					sDroppedFrames = _T("0");	// Unsupported
 			}
@@ -1384,11 +1369,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 					pEdit->EnableWindow(TRUE);
 				}
 			}
-			else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-			{
-				pSpin->EnableWindow(TRUE);
-				pEdit->EnableWindow(TRUE);
-			}
 			else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 			{
 				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
@@ -1457,7 +1437,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	{
 		if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
 			(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-			::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd)			||
 			(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
 			pButton->EnableWindow(TRUE);
 		else
@@ -1477,8 +1456,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 			else
 				pButton->EnableWindow(FALSE);
 		}
-		else if (::IsWindow(m_pDoc->m_VfWCaptureVideoThread.m_hCapWnd))
-			pButton->EnableWindow(TRUE); // VfW Has This Button
 		else
 			pButton->EnableWindow(FALSE);
 	}
@@ -1497,7 +1474,7 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 				pButton->EnableWindow(FALSE);
 		}
 		else
-			pButton->EnableWindow(FALSE);	// VfW Has Not This Button
+			pButton->EnableWindow(FALSE);
 	}
 	else
 		pButton->EnableWindow(FALSE);
@@ -1515,7 +1492,7 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 				pButton->EnableWindow(FALSE);
 		}
 		else
-			pButton->EnableWindow(FALSE);	// VfW Has Not This Button!
+			pButton->EnableWindow(FALSE);
 	}
 	else
 		pButton->EnableWindow(FALSE);
