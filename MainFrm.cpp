@@ -1133,9 +1133,11 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 		}
 #endif
 	}
-#if _MFC_VER < 0x0700
 	// No menu in print preview mode -> we do not need menu activation keys
 	// otherwise the pointer changes from hand to arrow!
+	// Note: with new MFC in full-screen print preview mode the menu
+	// activation keys are de-activate automatically.
+#if _MFC_VER < 0x0700
 	else if (pMsg->message == WM_SYSKEYDOWN)
 	{
 		if ((pMsg->wParam ==  VK_MENU		||	// ALT
@@ -1144,39 +1146,11 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			return TRUE;
 	}
 #endif
-	// Note: with new MFC in full-screen print preview mode the menu
-	// activation keys are de-activate automatically.
-	else if (pMsg->message == WM_KEYDOWN)
+	// App Exit Pressing ESC
+	else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
-		// App Exit Pressing ESC
-		if (pMsg->wParam ==  VK_ESCAPE)
-		{
-			if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
-				PostMessage(WM_CLOSE, 0, 0);
-		}
-
-		// Secret Code
-		#define MAX_CODE_LENGTH		13
-		if (pMsg->wParam == VK_CONTROL)
-			m_sSecretCodeSequence = _T(":");
-		else if (m_sSecretCodeSequence.GetLength() > MAX_CODE_LENGTH)
-			m_sSecretCodeSequence = _T("");
-		else if (m_sSecretCodeSequence.GetLength() >= 1)
-			m_sSecretCodeSequence += CString((char)pMsg->wParam);
-		if (m_sSecretCodeSequence.CompareNoCase(_T(":aviinfo")) == 0)
-		{
-			((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo = !((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo;
-			CUImagerMultiDocTemplate* pVideoAviDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
-			POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-			while (posVideoAviDoc)
-			{
-				CVideoAviDoc* pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-				if (pVideoAviDoc)
-					pVideoAviDoc->GetView()->Invalidate(FALSE);
-			}
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("VideoAviInfo"), ((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo);
-		}
+		if (!((CUImagerApp*)::AfxGetApp())->AreDocsOpen())
+			PostMessage(WM_CLOSE, 0, 0);
 	}
 	
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);

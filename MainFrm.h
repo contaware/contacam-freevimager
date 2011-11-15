@@ -216,7 +216,6 @@ public:
 	CMDIClientWnd m_MDIClientWnd;
 
 protected:
-	CString m_sSecretCodeSequence;
 	CStatusBarACT  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
 	HMENU		m_hMenu;

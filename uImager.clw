@@ -163,7 +163,7 @@ Resource23=IDR_CONTEXT_OSD (English (U.S.))
 Resource24=IDR_TRAYICON (English (U.S.))
 Resource25=IDR_CDAUDIO (English (U.S.))
 Resource26=IDD_ASSISTANT (English (U.S.))
-Resource27=IDR_MAINFRAME (English (U.S.))
+Resource27=IDD_RENAME (English (U.S.))
 Resource28=IDD_ABOUTBOX (English (U.S.))
 Resource29=IDD_DEVICE (English (U.S.))
 Resource30=IDD_GENERAL (English (U.S.))
@@ -239,7 +239,7 @@ Resource99=IDD_PROGRESS (English (U.S.))
 Resource100=IDD_SNAPSHOT_FTP_CONFIGURATION (English (U.S.))
 Resource101=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource102=IDD_IMAPI2 (English (U.S.))
-Resource103=IDD_RENAME (English (U.S.))
+Resource103=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
