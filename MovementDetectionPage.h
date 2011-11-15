@@ -60,7 +60,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnDetectionSaveas();
 	afx_msg void OnCheckVideoDetectionMovement();
-	afx_msg void OnCheckDetPreview();
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);

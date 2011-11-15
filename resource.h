@@ -1230,7 +1230,6 @@
 #define IDC_CHECK_VIDEO_DETECTION_MOVEMENT 1186
 #define IDS_MULTILANG_1187              1187
 #define IDC_SLIDER_BW_THRESHOLD         1187
-#define IDC_CHECK_DET_PREVIEW           1187
 #define IDS_MULTILANG_1188              1188
 #define IDC_BW_THRESHOLD                1188
 #define IDS_MULTILANG_1189              1189

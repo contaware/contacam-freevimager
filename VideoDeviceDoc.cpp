@@ -3309,7 +3309,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 }
 
 void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
-													BOOL bMovementDetectorPreview,
 													BOOL bDoDetection,
 													DWORD dwCurrentUpTime)
 {
@@ -3559,12 +3558,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 					p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
 			}
 		}
-		
-		// If Preview copy m_pDifferencingDib to pDib
-		// and reset (set to 128) the U and V channels
-		// to have a nice looking grayscale preview 
-		if (bMovementDetectorPreview)
-			MovementDetectorPreview(pDib);
 	}
 	else
 	{
@@ -3900,78 +3893,6 @@ __forceinline double CVideoDeviceDoc::GetAppMemoryLoad()
 		return (double)nUsageInMB * 100.0 / (double)nTotalPhysInMB;
 	else
 		return 100.0;
-}
-
-__forceinline void CVideoDeviceDoc::MovementDetectorPreview(CDib* pDib)
-{
-	// Not necessay, just that it's gray and has no colors:
-	if (m_pDifferencingDib->GetCompression() == FCC('I420')	||			// YUV420P
-		m_pDifferencingDib->GetCompression() == FCC('IYUV')	||
-		m_pDifferencingDib->GetCompression() == FCC('YV12'))
-	{
-		memset(	m_pDifferencingDib->GetBits() + (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()),
-				128,
-				(m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()) >> 1);
-	}
-	else if (	m_pDifferencingDib->GetCompression() == FCC('YUV9')	||	// YUV410P
-				m_pDifferencingDib->GetCompression() == FCC('YVU9'))
-	{
-		memset(	m_pDifferencingDib->GetBits() + (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()),
-				128,
-				(m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()) >> 3);
-	}
-	else if (	m_pDifferencingDib->GetCompression() == FCC('Y41B'))	// YUV411P
-	{
-		memset(	m_pDifferencingDib->GetBits() + (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()),
-				128,
-				(m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()) >> 1);
-	}
-	else if (	m_pDifferencingDib->GetCompression() == FCC('YV16')	||	// YUV422P
-				m_pDifferencingDib->GetCompression() == FCC('Y42B'))
-	{
-		memset(	m_pDifferencingDib->GetBits() + (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()),
-				128,
-				m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight());
-	}
-	else if (	m_pDifferencingDib->GetCompression() == FCC('YUY2')	||	// Packed 422: YUYV or YVYU
-				m_pDifferencingDib->GetCompression() == FCC('YUNV')	||
-				m_pDifferencingDib->GetCompression() == FCC('VYUY')	||
-				m_pDifferencingDib->GetCompression() == FCC('V422')	||
-				m_pDifferencingDib->GetCompression() == FCC('YUYV')	||
-				m_pDifferencingDib->GetCompression() == FCC('YVYU'))
-	{
-		int size = (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()) << 1;
-		LPBYTE bits = m_pDifferencingDib->GetBits() + 1;
-		for (int i = 0 ; i < size ; i += 2)
-			bits[i] = 128;
-	}
-	else if (	m_pDifferencingDib->GetCompression() == FCC('UYVY')	||	// Packed 422: UYVY
-				m_pDifferencingDib->GetCompression() == FCC('Y422')	||
-				m_pDifferencingDib->GetCompression() == FCC('UYNV'))
-	{
-		int size = (m_pDifferencingDib->GetWidth() * m_pDifferencingDib->GetHeight()) << 1;
-		LPBYTE bits = m_pDifferencingDib->GetBits();
-		for (int i = 0 ; i < size ; i += 2)
-			bits[i] = 128;
-	}
-	int nBitCount = pDib->GetBitCount();
-	BOOL bRGB565 = pDib->IsRgb16_565();
-	int nCompression = pDib->GetCompression();
-	DWORD dwUpTime = pDib->GetUpTime();
-	*pDib = *m_pDifferencingDib;
-	if (nCompression == BI_RGB)	
-		pDib->Decompress(nBitCount);
-	else if (nCompression == BI_BITFIELDS)
-	{
-		if (bRGB565)
-		{
-			pDib->Decompress(32);
-			pDib->ConvertTo16bitsMasks();
-		}
-		else
-			pDib->Decompress(nBitCount);
-	}
-	pDib->SetUpTime(dwUpTime);
 }
 
 // Remember that this callback is called from a separate thread !!!
@@ -5246,7 +5167,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_hExecCommandMovementDetection = NULL;
 	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
 	m_nMovementDetectorIntensityLimit = DEFAULT_MOVDET_INTENSITY_LIMIT;
-	m_bMovementDetectorPreview = FALSE;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_LumChangeDetectorBkgY = new int[MOVDET_MAX_ZONES];
@@ -5910,7 +5830,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
 	m_bShowMovementDetections = (BOOL) pApp->GetProfileInt(sSection, _T("ShowMovementDetections"), FALSE);
 	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
-	m_bMovementDetectorPreview = (BOOL) pApp->GetProfileInt(sSection, _T("MovementDetectorPreview"), FALSE);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
 	m_nDeleteDetectionsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), 0);
@@ -6173,7 +6092,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime);
 			pApp->WriteProfileInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections);
 			pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
-			pApp->WriteProfileInt(sSection, _T("MovementDetectorPreview"), m_bMovementDetectorPreview);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 			pApp->WriteProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays);
@@ -6372,7 +6290,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MovementDetectorPreview"), m_bMovementDetectorPreview, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays, sTempFileName);
@@ -9216,7 +9133,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	{
 		// Init Vars
 		BOOL bRgb32Frame;
-		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
 		BOOL bDecodeToRgb32 = FALSE;
@@ -9324,7 +9240,6 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			m_pMovementDetectorBackgndDib = NULL;
 		}
 		MovementDetectionProcessing(pDib,
-									bMovementDetectorPreview,
 									bDoDetection,
 									dwCurrentInitUpTime);
 		if (!bDoDetection && !m_bFirstMovementDetection)

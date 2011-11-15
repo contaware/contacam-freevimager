@@ -72,7 +72,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_DETECTION_SAVEAS, OnDetectionSaveas)
 	ON_BN_CLICKED(IDC_CHECK_VIDEO_DETECTION_MOVEMENT, OnCheckVideoDetectionMovement)
-	ON_BN_CLICKED(IDC_CHECK_DET_PREVIEW, OnCheckDetPreview)
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
 	ON_WM_HSCROLL()
@@ -146,13 +145,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
 	m_SpinSecondsBeforeMovementBegin.SetRange(1, 9);
 	m_SpinSecondsAfterMovementEnd.SetRange(1, 99);
-
-	// Movement Detector Mix Preview Check Box
-	CButton* pCheckPreview = (CButton*)GetDlgItem(IDC_CHECK_DET_PREVIEW);
-	pCheckPreview->SetCheck(m_pDoc->m_bMovementDetectorPreview);
-#ifndef _DEBUG
-	pCheckPreview->ShowWindow(SW_HIDE);
-#endif
 
 	// Detection Level Slider & Edit Controls
 	m_DetectionLevel.SetRange(1, 100, TRUE);
@@ -355,15 +347,6 @@ HBRUSH CMovementDetectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 
 	return hbr; // return brush
-}
-
-void CMovementDetectionPage::OnCheckDetPreview() 
-{	
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DET_PREVIEW);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bMovementDetectorPreview = TRUE;
-	else
-		m_pDoc->m_bMovementDetectorPreview = FALSE;
 }
 
 void CMovementDetectionPage::OnChangeSecondsAfterMovementEnd() 

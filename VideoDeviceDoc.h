@@ -1228,7 +1228,6 @@ public:
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
-										BOOL bMovementDetectorPreview,
 										BOOL bDoDetection,
 										DWORD dwCurrentUpTime);
 	BOOL LumChangeDetector(	CDib* pDibY,
@@ -1339,7 +1338,6 @@ protected:
 						const CString& sMessage3,
 						DWORD dwFirstUpTime,
 						DWORD dwLastUpTime);
-	__forceinline void MovementDetectorPreview(CDib* pDib);
 	__forceinline int SummRectArea(	CDib* pDib,
 									BOOL bPlanar,
 									int width,
@@ -1592,7 +1590,6 @@ public:
 	volatile BOOL m_bWaitExecCommandMovementDetection;	// Wait that last command has terminated
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
 	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
-	volatile BOOL m_bMovementDetectorPreview;			// Enable Preview
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	CDib* volatile m_pMovementDetectorY800Dib;			// If source Dib is in RGB format that's the converted Y800 Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
