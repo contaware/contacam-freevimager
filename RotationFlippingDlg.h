@@ -19,12 +19,13 @@ class CRotationFlippingDlg : public CDialog
 {
 // Construction
 public:
-	CRotationFlippingDlg(CWnd* pParent, UINT idd);
+	CRotationFlippingDlg(CWnd* pParent);
 	BOOL DoIt();
 	void Close();
 
 // Dialog Data
 	//{{AFX_DATA(CRotationFlippingDlg)
+	enum { IDD = IDD_ROTATE_FLIP_MODELESS };
 	CSpinButtonCtrl	m_SpinAngleMinutes;
 	CColorButton	m_PickColorFromImage;
 	CColorButton	m_PickColorFromDlg;

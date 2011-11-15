@@ -6309,10 +6309,8 @@ void CPictureDoc::OnEditRotateFlip()
 		if (!IsDibReadyForCommand(ID_EDIT_ROTATE_FLIP))
 			return;
 
-		if (IsJPEG() && !IsModified() && !m_bPrintPreviewMode)
-			m_pRotationFlippingDlg = new CRotationFlippingDlg(GetView(), IDD_ROTATE_FLIP_MODELESS_LOSSLESS);
-		else
-			m_pRotationFlippingDlg = new CRotationFlippingDlg(GetView(), IDD_ROTATE_FLIP_MODELESS);
+		// Show dialog
+		m_pRotationFlippingDlg = new CRotationFlippingDlg(GetView());
 		m_pRotationFlippingDlg->ShowWindow(SW_RESTORE);
 	}
 }

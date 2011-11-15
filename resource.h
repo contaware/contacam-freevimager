@@ -25,7 +25,6 @@
 #define IDD_FILEOPENPREVIEW             134
 #define IDD_CAPTURE_VIDEO               135
 #define IDI_DEVICE                      136
-#define IDD_ROTATE_FLIP_MODELESS        139
 #define IDD_GENERAL                     140
 #define IDR_VIDEO_AVI_TOOLBAR           143
 #define IDR_VIDEO_DEVICE_TOOLBAR        144
@@ -71,7 +70,7 @@
 #define IDD_DECREASE_BPP                202
 #define IDD_FILEOPENPREVIEWXP           204
 #define IDD_FILEOPENPREVIEWWIN2000      205
-#define IDD_ROTATE_FLIP_MODELESS_LOSSLESS 206
+#define IDD_ROTATE_FLIP_MODELESS        206
 #define IDD_RESIZING_DPI                207
 #define IDD_PICTUREPRINTPREVIEW         209
 #define IDC_GRAB_NORMAL                 210

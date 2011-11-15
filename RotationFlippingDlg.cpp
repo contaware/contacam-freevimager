@@ -20,8 +20,8 @@ static char THIS_FILE[] = __FILE__;
 // CRotationFlippingDlg dialog
 
 
-CRotationFlippingDlg::CRotationFlippingDlg(CWnd* pParent, UINT idd)
-	: CDialog(idd, pParent)
+CRotationFlippingDlg::CRotationFlippingDlg(CWnd* pParent)
+	: CDialog(CRotationFlippingDlg::IDD, pParent)
 {
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	ASSERT_VALID(pView);
@@ -44,7 +44,7 @@ CRotationFlippingDlg::CRotationFlippingDlg(CWnd* pParent, UINT idd)
 	m_crBackgroundColor = RGB(0xFF,0xFF,0xFF);
 	m_pWndPalette = NULL;
 	pView->ForceCursor();
-	CDialog::Create(idd, pParent);
+	CDialog::Create(CRotationFlippingDlg::IDD, pParent);
 }
 
 
@@ -96,15 +96,16 @@ BOOL CRotationFlippingDlg::OnInitDialog()
 	m_SpinAngleMinutes.SetRange(0, 59);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_UNDO);
 	pButton->EnableWindow(FALSE);
-
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LOSSLESS);
-	if (pCheck)
+	if (pDoc->IsJPEG() && !pDoc->IsModified() && !pDoc->m_bPrintPreviewMode)
 	{
 		if (pDoc->m_bForceLossyTrafo)
 			pCheck->SetCheck(0);
 		else
 			pCheck->SetCheck(1);
 	}
+	else
+		pCheck->ShowWindow(SW_HIDE);
 
 	// OnInitDialog() has been called
 	m_bDlgInitialized = TRUE;
@@ -397,9 +398,6 @@ void CRotationFlippingDlg::OnUndo()
 
 void CRotationFlippingDlg::OnClose() 
 {
-	CPictureView* pView = (CPictureView*)m_pParentWnd;
-	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
-
 	OnUndo();
 	DestroyWindow();
 }
@@ -474,15 +472,12 @@ void CRotationFlippingDlg::OnCheckLossless()
 	CPictureDoc* pDoc = (CPictureDoc*)pView->GetDocument();
 
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LOSSLESS);
-	if (pCheck)
+	pDoc->m_bForceLossyTrafo = !pCheck->GetCheck();
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
-		pDoc->m_bForceLossyTrafo = !pCheck->GetCheck();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("ForceLossyTrafo"),
-											pDoc->m_bForceLossyTrafo);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("ForceLossyTrafo"),
+										pDoc->m_bForceLossyTrafo);
 	}
 }
 
