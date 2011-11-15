@@ -16,11 +16,11 @@ class CCreditsDlg : public CDialog
 {
 // Construction
 public:
-	CCreditsDlg(CWnd* pParent, UINT idd);
+	CCreditsDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCreditsDlg)
-		// NOTE: the ClassWizard will add data members here
+	enum { IDD = IDD_CREDITS };
 	//}}AFX_DATA
 
 
@@ -34,7 +34,6 @@ public:
 // Implementation
 protected:
 	CStaticLink m_FfmpegLink;
-	CStaticLink m_MicroApacheLink;
 	CStaticLink m_IjgLink;
 	CStaticLink m_LibTiffLink;
 	CStaticLink m_LibPngLink;

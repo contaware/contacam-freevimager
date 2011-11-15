@@ -15,8 +15,8 @@ static char THIS_FILE[] = __FILE__;
 // CCreditsDlg dialog
 
 
-CCreditsDlg::CCreditsDlg(CWnd* pParent, UINT idd)
-	: CDialog(idd, pParent)
+CCreditsDlg::CCreditsDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CCreditsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CCreditsDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -45,10 +45,7 @@ BOOL CCreditsDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	if (GetDlgItem(IDC_LINK_FFMPEG))
-		m_FfmpegLink.SubclassDlgItem(IDC_LINK_FFMPEG, this);
-	if (GetDlgItem(IDC_LINK_MICROAPACHE))
-		m_MicroApacheLink.SubclassDlgItem(IDC_LINK_MICROAPACHE, this);
+	m_FfmpegLink.SubclassDlgItem(IDC_LINK_FFMPEG, this);
 	m_IjgLink.SubclassDlgItem(IDC_LINK_IJG, this);
 	m_LibTiffLink.SubclassDlgItem(IDC_LINK_LIBTIFF, this);
 	m_LibPngLink.SubclassDlgItem(IDC_LINK_LIBPNG, this);

@@ -2415,7 +2415,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_MOVEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,7,38,10
@@ -4767,59 +4767,6 @@ BEGIN
     LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,240,8
 END
 
-IDD_CREDITS_VIDEODEVICEDOC DIALOGEX 0, 0, 236, 281
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
-    LTEXT           "A big thanks to everybody giving support or help",
-                    IDC_STATIC2340,15,12,208,8
-    GROUPBOX        "Libraries",IDC_STATIC2341,7,29,222,176
-    LTEXT           "Thanks to the FFMPEG Library Authors for ffmpeg rev.15375 (lgpl)",
-                    IDC_STATIC2351,15,39,209,8
-    LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,48,83,8,
-                    SS_NOTIFY
-    LTEXT           "Thanks to the MicroApache Authors for the web server",
-                    IDC_STATIC2352,15,59,209,8
-    LTEXT           "http://microapache.kerys.co.uk",IDC_LINK_MICROAPACHE,15,
-                    68,127,8,SS_NOTIFY
-    LTEXT           "Thanks to the Independent JPEG Group for libjpeg 6b",
-                    IDC_STATIC2342,15,79,208,8
-    LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,88,72,8,SS_NOTIFY
-    LTEXT           "Thanks to the TIFF Library Authors for libtiff 3.8.2",
-                    IDC_STATIC2343,15,100,208,8
-    LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,109,78,8,
-                    SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.46",
-                    IDC_STATIC2344,15,121,208,8
-    LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,130,83,8,
-                    SS_NOTIFY
-    LTEXT           "Thanks to the ZLIB Library Authors for zlib 1.2.3",
-                    IDC_STATIC2346,15,142,208,8
-    LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,151,73,8,
-                    SS_NOTIFY
-    LTEXT           "Thanks to the GIF Library Authors for giflib 4.1.3",
-                    IDC_STATIC2349,15,163,208,8
-    LTEXT           "http://sourceforge.net/projects/giflib",IDC_LINK_GIFLIB,
-                    15,172,128,8,SS_NOTIFY
-    LTEXT           "Thanks to Graeme W. Gill for icclib 2.0.3",
-                    IDC_STATIC2350,15,184,208,8
-    LTEXT           "http://freshmeat.net/projects/icclib",IDC_LINK_ICCLIB,
-                    15,193,121,8,SS_NOTIFY
-    GROUPBOX        "Tools",IDC_STATIC2347,7,208,222,53
-    LTEXT           "Thanks to Debug Mode for Wink (tutorial creation software)",
-                    IDC_STATIC2345,15,218,208,8
-    LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,227,121,
-                    8,SS_NOTIFY
-    LTEXT           "Thanks to Nullsoft for NSIS (a scriptable install system)",
-                    IDC_STATIC2348,15,240,208,8
-    LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,249,98,8,
-                    SS_NOTIFY
-    DEFPUSHBUTTON   "OK",IDOK,96,264,50,14
-END
-
 IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -5844,16 +5791,6 @@ BEGIN
         RIGHTMARGIN, 247
         TOPMARGIN, 7
         BOTTOMMARGIN, 59
-    END
-
-    IDD_CREDITS_VIDEODEVICEDOC, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 229
-        VERTGUIDE, 15
-        VERTGUIDE, 223
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 278
     END
 
     IDD_ASSISTANT, DIALOG

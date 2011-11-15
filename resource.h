@@ -154,7 +154,6 @@
 #define IDI_EMF                         300
 #define IDD_IMAPI2                      301
 #define IDD_IMAPI2_DOWNLOAD             302
-#define IDD_CREDITS_VIDEODEVICEDOC      303
 #define IDD_ASSISTANT                   304
 #define IDD_RENAME                      305
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
@@ -1495,7 +1494,6 @@
 #define IDS_MULTILANG_1316              1316
 #define IDC_LINK_FFMPEG                 1316
 #define IDS_MULTILANG_1317              1317
-#define IDC_LINK_MICROAPACHE            1317
 #define IDS_MULTILANG_1318              1318
 #define IDC_CHECK_BROWSEDLG             1318
 #define IDS_MULTILANG_1319              1319

@@ -1223,11 +1223,7 @@ void CUImagerApp::OnAppAbout()
 // Popup Credits Dialog
 void CUImagerApp::OnAppCredits() 
 {
-#ifdef VIDEODEVICEDOC
-	CCreditsDlg creditsDlg(NULL, IDD_CREDITS_VIDEODEVICEDOC);
-#else
-	CCreditsDlg creditsDlg(NULL, IDD_CREDITS);
-#endif
+	CCreditsDlg creditsDlg;
 	creditsDlg.DoModal();
 }
 
