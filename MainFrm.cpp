@@ -1177,12 +1177,6 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("VideoAviInfo"), ((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo);
 		}
-		else if (m_sSecretCodeSequence.CompareNoCase(_T(":coldet")) == 0)
-		{
-			((CUImagerApp*)::AfxGetApp())->m_bColDet = !((CUImagerApp*)::AfxGetApp())->m_bColDet;
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("ColDet"), ((CUImagerApp*)::AfxGetApp())->m_bColDet);
-		}
 	}
 	
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);

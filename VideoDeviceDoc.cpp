@@ -11,7 +11,6 @@
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
 #include "VideoDevicePropertySheet.h"
-#include "ColorDetectionPage.h"
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
@@ -3309,215 +3308,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 	}
 }
 
-void CVideoDeviceDoc::ColorDetectionProcessing(CDib* pDib, BOOL bColorDetectionPreview)
-{
-	if (m_ColorDetection.Detector(pDib, m_dwColorDetectionAccuracy, bColorDetectionPreview))
-	{
-		if (m_pColorDetectionPage)
-		{
-			CString Str;
-			CEdit* pEdit;
-			switch (m_ColorDetection.GetColorsCount())
-			{
-				case 8 :
-					m_pColorDetectionPage->m_ProgressColor7.SetPos(m_ColorDetection.GetDetectionLevel(7));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP7);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(7));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME7);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(7)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(7)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME7);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(7)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(7)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME7);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(7)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(7)%1000);
-					pEdit->SetWindowText(Str);
-				case 7 :
-					m_pColorDetectionPage->m_ProgressColor6.SetPos(m_ColorDetection.GetDetectionLevel(6));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP6);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(6));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME6);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(6)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(6)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME6);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(6)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(6)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME6);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(6)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(6)%1000);
-					pEdit->SetWindowText(Str);
-				case 6 :
-					m_pColorDetectionPage->m_ProgressColor5.SetPos(m_ColorDetection.GetDetectionLevel(5));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP5);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(5));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME5);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(5)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(5)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME5);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(5)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(5)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME5);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(5)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(5)%1000);
-					pEdit->SetWindowText(Str);
-				case 5 :
-					m_pColorDetectionPage->m_ProgressColor4.SetPos(m_ColorDetection.GetDetectionLevel(4));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP4);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(4));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME4);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(4)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(4)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME4);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(4)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(4)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME4);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(4)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(4)%1000);
-					pEdit->SetWindowText(Str);
-				case 4 :
-					m_pColorDetectionPage->m_ProgressColor3.SetPos(m_ColorDetection.GetDetectionLevel(3));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP3);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(3));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME3);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(3)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(3)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME3);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(3)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(3)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME3);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(3)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(3)%1000);
-					pEdit->SetWindowText(Str);
-				case 3 :
-					m_pColorDetectionPage->m_ProgressColor2.SetPos(m_ColorDetection.GetDetectionLevel(2));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP2);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(2));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME2);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(2)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(2)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME2);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(2)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(2)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME2);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(2)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(2)%1000);
-					pEdit->SetWindowText(Str);
-				case 2 :
-					m_pColorDetectionPage->m_ProgressColor1.SetPos(m_ColorDetection.GetDetectionLevel(1));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP1);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(1));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME1);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(1)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(1)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME1);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(1)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(1)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME1);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(1)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(1)%1000);
-					pEdit->SetWindowText(Str);
-				case 1 :
-					m_pColorDetectionPage->m_ProgressColor0.SetPos(m_ColorDetection.GetDetectionLevel(0));
-					
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_COUNTUP0);
-					Str.Format(_T("%u"), m_ColorDetection.GetDetectionCountup(0));
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LASTTIME0);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetTimeBetweenCounts(0)/1000,
-												m_ColorDetection.GetTimeBetweenCounts(0)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_SHORTESTTIME0);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetShortestTimeBetweenCounts(0)/1000,
-												m_ColorDetection.GetShortestTimeBetweenCounts(0)%1000);
-					pEdit->SetWindowText(Str);
-
-					pEdit = (CEdit*)m_pColorDetectionPage->GetDlgItem(IDC_EDIT_LONGESTTIME0);
-					Str.Format(_T("%u\" %ums"),	m_ColorDetection.GetLongestTimeBetweenCounts(0)/1000,
-												m_ColorDetection.GetLongestTimeBetweenCounts(0)%1000);
-					pEdit->SetWindowText(Str);
-
-				case 0 :
-				default :
-					break;
-			}
-			switch (m_ColorDetection.GetColorsCount())
-			{
-				case 0 :
-					m_pColorDetectionPage->m_ProgressColor0.SetPos(0);
-				case 1 :
-					m_pColorDetectionPage->m_ProgressColor1.SetPos(0);
-				case 2 :
-					m_pColorDetectionPage->m_ProgressColor2.SetPos(0);
-				case 3 :
-					m_pColorDetectionPage->m_ProgressColor3.SetPos(0);
-				case 4 :
-					m_pColorDetectionPage->m_ProgressColor4.SetPos(0);
-				case 5 :
-					m_pColorDetectionPage->m_ProgressColor5.SetPos(0);
-				case 6 :
-					m_pColorDetectionPage->m_ProgressColor6.SetPos(0);
-				case 7 :
-					m_pColorDetectionPage->m_ProgressColor7.SetPos(0);
-				case 8 :
-				default :
-					break;
-			}
-		}
-	}
-}
-
 void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 													BOOL bMovementDetectorPreview,
 													BOOL bDoDetection,
@@ -5247,707 +5037,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 	return 0;
 }
 
-CVideoDeviceDoc::CColorDetection::CColorDetection()
-{
-	::InitializeCriticalSection(&m_cs);
-	m_dwMaxWaitCount = 0;
-	m_dwMaxCountsColorIndexes = 0;
-	m_dwShortestTimeBetweenCountsColorIndexes = 0;
-	m_dwLongestTimeBetweenCountsColorIndexes = 0;
-	m_nColDetCount = 0;
-	for (int i = 0 ; i < COLDET_MAX_COLORS ; i++)
-	{
-		m_DetectionLevels[i] = 0;
-		m_DetectionLevelsThresholds[i] = 0;
-		m_DetectionCountup[i] = 0;
-		m_WaitCountup[i] = 0;
-		m_DetectionTime[i] = 0;
-		m_TimeBetweenCounts[i] = 0;
-		m_ShortestTimeBetweenCounts[i] = 0;
-		m_LongestTimeBetweenCounts[i] = 0;
-		m_ColDetTable[i].Clear();
-	}
-}
-
-CVideoDeviceDoc::CColorDetection::~CColorDetection()
-{
-	::DeleteCriticalSection(&m_cs);
-}
-
-// Simplest Color Detector:
-// pDib   :             24 or 32 bit/pixels Bitmap To Test For Colors
-// nDetectionAccuracy : 1 uses all Pixels, 2 uses 1/4 of the pixels, 3 uses 1/9 of the pixels ,
-//                      4 uses 1/16 of the pixels , 5 uses 1/25 of the pixels , ...
-BOOL CVideoDeviceDoc::CColorDetection::Detector(CDib* pDib, DWORD dwDetectionAccuracy, BOOL bColorImage/*=FALSE*/)
-{
-	int nColorIndex;
-
-	if ((pDib == NULL) || !pDib->IsValid())
-		return FALSE;
-
-	LPBYTE pBits;
-	if (!(pBits = pDib->GetBits()))
-		return FALSE;
-
-	LPBITMAPINFO pBMI;
-	if (!(pBMI = pDib->GetBMI()))
-		return FALSE;
-
-	if ((pDib->GetBitCount() != 24) && (pDib->GetBitCount() != 32))
-		return FALSE;
-
-	::EnterCriticalSection(&m_cs);
-
-	int nColDetCount = m_nColDetCount;
-	CColDetEntry ColDetTable[COLDET_MAX_COLORS];
-	for (int i = 0 ; i < nColDetCount ; i++)
-		ColDetTable[i] = m_ColDetTable[i];
-
-	// Detection Array 
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-		m_DetectionLevels[nColorIndex] = 0;
-	DWORD nPixelsCount = 0;
-
-	// Scan Line Alignments
-	DWORD uiDIBSourceScanLineSize;
-	uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(pDib->GetWidth() * pDib->GetBitCount());
-
-	// Bytes Per Pixel
-	int nBytesPerPixel;
-	if (pDib->GetBitCount() == 24)
-		nBytesPerPixel = 3;
-	else // 32 bits/pix
-		nBytesPerPixel = 4;
-
-	// Detect
-	for (int line = 0 ; line < (int)pDib->GetHeight(); line += dwDetectionAccuracy)
-	{
-		for (int i = 0 ; i < (int)pDib->GetWidth() ; i += dwDetectionAccuracy)
-		{
-			int nFirstDetCol = -1;
-			int hue = pBits[nBytesPerPixel*i+2];
-			int saturation = pBits[nBytesPerPixel*i+1];
-			int value = pBits[nBytesPerPixel*i];
-			BOOL bChromatic = ::RGB2HSV(&hue, &saturation, &value);
-			if (bChromatic)
-			{
-				for (int n = 0 ; n < nColDetCount ; n++)
-				{
-					if (ColDetTable[n].huemax < ColDetTable[n].huemin)
-					{
-						if (!(hue <= ColDetTable[n].huemin				&&
-							hue >= ColDetTable[n].huemax)				&&
-							saturation < ColDetTable[n].saturationmax	&&
-							saturation > ColDetTable[n].saturationmin	&&
-							value < ColDetTable[n].valuemax				&&
-							value > ColDetTable[n].valuemin)
-						{
-							if (nFirstDetCol == -1)
-								nFirstDetCol = n;
-							++(m_DetectionLevels[n]);
-						}
-		
-					}
-					else
-					{
-						if (hue < ColDetTable[n].huemax					&&
-							hue > ColDetTable[n].huemin					&&
-							saturation < ColDetTable[n].saturationmax	&&
-							saturation > ColDetTable[n].saturationmin	&&
-							value < ColDetTable[n].valuemax				&&
-							value > ColDetTable[n].valuemin)
-						{
-							if (nFirstDetCol == -1)
-								nFirstDetCol = n;
-							++(m_DetectionLevels[n]);
-						}
-					}
-				}
-			}
-
-			++nPixelsCount;
-			
-			if (bColorImage)
-			{
-				if (nFirstDetCol >= 0)
-				{
-					pBits[nBytesPerPixel*i+2] = ColDetTable[nFirstDetCol].red;
-					pBits[nBytesPerPixel*i+1] = ColDetTable[nFirstDetCol].green;
-					pBits[nBytesPerPixel*i] = ColDetTable[nFirstDetCol].blue;
-				}
-				else
-				{	
-					pBits[nBytesPerPixel*i+2] = 0;
-					pBits[nBytesPerPixel*i+1] = 0;
-					pBits[nBytesPerPixel*i] = 0;
-				}
-			}
-		}
-		pBits += (dwDetectionAccuracy * uiDIBSourceScanLineSize);
-	}
-
-	// If A Pixels Count is Over The Detection Level the color has been detected -> Count Up
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		// Convert To Range 0 .. 10000
-		m_DetectionLevels[nColorIndex] = m_DetectionLevels[nColorIndex] * 10000 / nPixelsCount;
-		if (m_WaitCountup[nColorIndex] == 0)
-		{
-			if (m_DetectionLevels[nColorIndex] > m_DetectionLevelsThresholds[nColorIndex])
-			{
-				
-				++m_DetectionCountup[nColorIndex];
-				++m_WaitCountup[nColorIndex];
-
-				if (m_DetectionCountup[nColorIndex] > 1)
-				{
-					// Set last time between counts
-					m_TimeBetweenCounts[nColorIndex] = pDib->GetUpTime() - m_DetectionTime[nColorIndex];
-
-					if (m_DetectionCountup[nColorIndex] == 2)
-					{
-						m_ShortestTimeBetweenCounts[nColorIndex] = m_TimeBetweenCounts[nColorIndex];
-						m_LongestTimeBetweenCounts[nColorIndex] = m_TimeBetweenCounts[nColorIndex];
-					}
-					else // m_DetectionCountup[nColorIndex] > 2
-					{
-						// Update shortest time between counts if it is the case
-						if (m_TimeBetweenCounts[nColorIndex] < m_ShortestTimeBetweenCounts[nColorIndex])
-							m_ShortestTimeBetweenCounts[nColorIndex] = m_TimeBetweenCounts[nColorIndex];
-
-						// Update longest time between counts if it is the case
-						if (m_TimeBetweenCounts[nColorIndex] > m_LongestTimeBetweenCounts[nColorIndex])
-							m_LongestTimeBetweenCounts[nColorIndex] = m_TimeBetweenCounts[nColorIndex];
-					}
-				}
-
-				// Update with new time
-				m_DetectionTime[nColorIndex] = pDib->GetUpTime();
-			}
-		}
-		else 
-			++m_WaitCountup[nColorIndex];
-
-		if (m_WaitCountup[nColorIndex] >= m_dwMaxWaitCount)			
-			m_WaitCountup[nColorIndex] = 0;
-	}
-
-	// Update overall maximum count color index if it is the case
-	int nMaxCounts = 0;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if ((int)m_DetectionCountup[nColorIndex] > nMaxCounts)
-			nMaxCounts = m_DetectionCountup[nColorIndex];
-	}
-	m_dwMaxCountsColorIndexes = 0;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if (m_DetectionCountup[nColorIndex] == nMaxCounts)
-			m_dwMaxCountsColorIndexes |= (1<<nColorIndex);
-	}
-
-	// Update overall shortest time color index if it is the case
-	DWORD dwShortestTime = 0xFFFFFFFF;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if (m_DetectionCountup[nColorIndex] > 1)
-		{
-			if (m_ShortestTimeBetweenCounts[nColorIndex] < dwShortestTime)
-				dwShortestTime = m_ShortestTimeBetweenCounts[nColorIndex];
-		}
-	}
-	m_dwShortestTimeBetweenCountsColorIndexes = 0;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if (m_DetectionCountup[nColorIndex] > 1)
-		{
-			if (m_ShortestTimeBetweenCounts[nColorIndex] == dwShortestTime)
-				m_dwShortestTimeBetweenCountsColorIndexes |= (1<<nColorIndex);
-		}
-	}
-
-	// Update overall longest time color index if it is the case
-	DWORD dwLongestTime = 0;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if (m_DetectionCountup[nColorIndex] > 1)
-		{
-			if (m_LongestTimeBetweenCounts[nColorIndex] > dwLongestTime)
-				dwLongestTime = m_LongestTimeBetweenCounts[nColorIndex];
-		}
-	}
-	m_dwLongestTimeBetweenCountsColorIndexes = 0;
-	for (nColorIndex = 0 ; nColorIndex < nColDetCount ; nColorIndex++)
-	{
-		if (m_DetectionCountup[nColorIndex] > 1)
-		{
-			if (m_LongestTimeBetweenCounts[nColorIndex] == dwLongestTime)
-				m_dwLongestTimeBetweenCountsColorIndexes |= (1<<nColorIndex);
-		}
-	}
-
-	::LeaveCriticalSection(&m_cs);
-
-	return TRUE;
-}
-
-COLORREF CVideoDeviceDoc::CColorDetection::CalcMeanValue(CDib* pDib, DWORD dwCalcAccuracy)
-{
-	if ((pDib == NULL) || !pDib->IsValid())
-		return 0;
-
-	LPBYTE pBits;
-	if (!(pBits = pDib->GetBits()))
-		return 0;
-
-	LPBITMAPINFO pBMI;
-	if (!(pBMI = pDib->GetBMI()))
-		return FALSE;
-
-	if (pDib->IsCompressed())
-	{
-		if (!pDib->Decompress(pDib->GetBitCount())) // Decompress
-			return 0;
-	}
-
-	if ((pDib->GetBitCount() != 24) && (pDib->GetBitCount() != 32))
-		return FALSE;
-
-	// Scan Line Alignments
-	DWORD uiDIBSourceScanLineSize;
-	uiDIBSourceScanLineSize = DWALIGNEDWIDTHBYTES(pDib->GetWidth() * pDib->GetBitCount());
-
-	// Bytes Per Pixel
-	int nBytesPerPixel;
-	if (pDib->GetBitCount() == 24)
-		nBytesPerPixel = 3;
-	else // 32 bits/pix
-		nBytesPerPixel = 4;
-
-	// Calc Mean Value
-	DWORD nPixelsCount = 0;
-	DWORD R = 0;
-	DWORD G = 0;
-	DWORD B = 0;
-	for (int line = 0 ; line < (int)pDib->GetHeight(); line += dwCalcAccuracy)
-	{
-		for (int i = 0 ; i < (int)pDib->GetWidth() ; i += dwCalcAccuracy)
-		{
-			R += pBits[nBytesPerPixel*i+2];
-			G += pBits[nBytesPerPixel*i+1];
-			B += pBits[nBytesPerPixel*i];
-			++nPixelsCount;
-		}
-		pBits += (dwCalcAccuracy * uiDIBSourceScanLineSize);
-	}
-
-	return (RGB(R / nPixelsCount, G / nPixelsCount, B / nPixelsCount));
-}
-
-DWORD CVideoDeviceDoc::CColorDetection::GetColorsCount()
-{
-	::EnterCriticalSection(&m_cs);
-	int nColDetCount = m_nColDetCount;
-	::LeaveCriticalSection(&m_cs);
-	return nColDetCount;
-}
-
-COLORREF CVideoDeviceDoc::CColorDetection::GetColor(DWORD dwIndex)
-{
-	::EnterCriticalSection(&m_cs);
-
-	if ((int)dwIndex >= m_nColDetCount)
-	{
-		::LeaveCriticalSection(&m_cs);
-		return 0;
-	}
-
-	COLORREF col = RGB(	m_ColDetTable[dwIndex].red,
-						m_ColDetTable[dwIndex].green,
-						m_ColDetTable[dwIndex].blue);
-
-	::LeaveCriticalSection(&m_cs);
-
-	return col;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::SetDetectionThreshold(DWORD dwIndex, DWORD dwThreshold)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return FALSE;
-	::EnterCriticalSection(&m_cs);
-	m_DetectionLevelsThresholds[dwIndex] = dwThreshold;
-	::LeaveCriticalSection(&m_cs);
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::SetHueRadius(DWORD dwIndex, DWORD dwRadius)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return FALSE;
-	::EnterCriticalSection(&m_cs);
-	m_ColDetTable[dwIndex].huemin = m_ColDetTable[dwIndex].hue - dwRadius;
-	m_ColDetTable[dwIndex].huemax = m_ColDetTable[dwIndex].hue + dwRadius;
-	if (m_ColDetTable[dwIndex].huemin < 0)
-		m_ColDetTable[dwIndex].huemin += 360;
-	if (m_ColDetTable[dwIndex].huemax > 360)
-		m_ColDetTable[dwIndex].huemax -= 360;					
-	::LeaveCriticalSection(&m_cs);
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::SetSaturationRadius(DWORD dwIndex, DWORD dwRadius)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return FALSE;
-	::EnterCriticalSection(&m_cs);
-	m_ColDetTable[dwIndex].saturationmin = m_ColDetTable[dwIndex].saturation - dwRadius;
-	m_ColDetTable[dwIndex].saturationmax = m_ColDetTable[dwIndex].saturation + dwRadius;
-	if (m_ColDetTable[dwIndex].saturationmin < 0)
-		m_ColDetTable[dwIndex].saturationmin = 0;
-	if (m_ColDetTable[dwIndex].saturationmax > 255)
-		m_ColDetTable[dwIndex].saturationmax = 255;
-	::LeaveCriticalSection(&m_cs);
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::SetValueRadius(DWORD dwIndex, DWORD dwRadius)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return FALSE;
-	::EnterCriticalSection(&m_cs);
-	m_ColDetTable[dwIndex].valuemin = m_ColDetTable[dwIndex].value - dwRadius;
-	m_ColDetTable[dwIndex].valuemax = m_ColDetTable[dwIndex].value + dwRadius;
-	if (m_ColDetTable[dwIndex].valuemin < 0)
-		m_ColDetTable[dwIndex].valuemin = 0;
-	if (m_ColDetTable[dwIndex].valuemax > 255)
-		m_ColDetTable[dwIndex].valuemax = 255;
-	::LeaveCriticalSection(&m_cs);
-	return TRUE;
-}
-
-int CVideoDeviceDoc::CColorDetection::GetHueRadius(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-
-	::EnterCriticalSection(&m_cs);
-	int radius;
-	if (m_ColDetTable[dwIndex].huemin > m_ColDetTable[dwIndex].huemax)
-		radius = (360 - (m_ColDetTable[dwIndex].huemin - m_ColDetTable[dwIndex].huemax)) / 2;
-	else
-		radius = (m_ColDetTable[dwIndex].huemax - m_ColDetTable[dwIndex].huemin) / 2;
-	::LeaveCriticalSection(&m_cs);
-	return radius;
-}
-
-int CVideoDeviceDoc::CColorDetection::GetSaturationRadius(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-
-	::EnterCriticalSection(&m_cs);
-	int radius = (m_ColDetTable[dwIndex].saturationmax - m_ColDetTable[dwIndex].saturationmin) / 2;
-	::LeaveCriticalSection(&m_cs);
-	return radius;
-}
-
-int CVideoDeviceDoc::CColorDetection::GetValueRadius(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-
-	::EnterCriticalSection(&m_cs);
-	int radius = (m_ColDetTable[dwIndex].valuemax - m_ColDetTable[dwIndex].valuemin) / 2;
-	::LeaveCriticalSection(&m_cs);
-	return radius;
-}
-
-int CVideoDeviceDoc::CColorDetection::AppendColor(HSVARRAY& a)
-{
-	int nIndex = -1;
-
-	::EnterCriticalSection(&m_cs);
-	if (m_nColDetCount < COLDET_MAX_COLORS)
-	{
-		if (m_ColDetTable[m_nColDetCount].SetHSVArray(a))
-		{
-			nIndex = m_nColDetCount;
-			m_nColDetCount++;
-		}
-	}
-	::LeaveCriticalSection(&m_cs);
-
-	return nIndex;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::ReplaceColor(DWORD dwIndex, HSVARRAY& a)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return FALSE;
-
-	::EnterCriticalSection(&m_cs);
-	BOOL res = m_ColDetTable[dwIndex].SetHSVArray(a);
-	::LeaveCriticalSection(&m_cs);
-
-	return res;
-}
-
-BOOL CVideoDeviceDoc::CColorDetection::RemoveColor(DWORD dwIndex)
-{
-	::EnterCriticalSection(&m_cs);
-
-	if (m_nColDetCount > 0)
-	{
-		for (int i = (int)dwIndex + 1 ; i < m_nColDetCount ; i++)
-			m_ColDetTable[i-1] = m_ColDetTable[i];
-		m_nColDetCount--;
-	}
-
-	::LeaveCriticalSection(&m_cs);
-
-	return TRUE;
-}
-
-int CVideoDeviceDoc::CColorDetection::GetDetectionLevel(DWORD dwIndex)// 0 .. 10000 %, -1 if error
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-	else
-	{
-		::EnterCriticalSection(&m_cs);
-		int detectionlevel = (int)(m_DetectionLevels[dwIndex]);
-		::LeaveCriticalSection(&m_cs);
-		return detectionlevel;
-	}
-}
-
-DWORD CVideoDeviceDoc::CColorDetection::GetTimeBetweenCounts(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-	else
-	{
-		::EnterCriticalSection(&m_cs);
-		DWORD time = m_TimeBetweenCounts[dwIndex];
-		::LeaveCriticalSection(&m_cs);
-		return time;
-	}
-}
-
-DWORD CVideoDeviceDoc::CColorDetection::GetShortestTimeBetweenCounts(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-	else
-	{
-		::EnterCriticalSection(&m_cs);
-		DWORD shortesttime = m_ShortestTimeBetweenCounts[dwIndex];
-		::LeaveCriticalSection(&m_cs);
-		return shortesttime;
-	}
-}
-
-DWORD CVideoDeviceDoc::CColorDetection::GetLongestTimeBetweenCounts(DWORD dwIndex)
-{
-	if (dwIndex >= COLDET_MAX_COLORS)
-		return -1;
-	else
-	{
-		::EnterCriticalSection(&m_cs);
-		DWORD longesttime = m_LongestTimeBetweenCounts[dwIndex];
-		::LeaveCriticalSection(&m_cs);
-		return longesttime;
-	}
-}
-
-void CVideoDeviceDoc::CColorDetection::ResetCounter()
-{
-	::EnterCriticalSection(&m_cs);
-	m_dwMaxCountsColorIndexes = 0;
-	m_dwShortestTimeBetweenCountsColorIndexes = 0;
-	m_dwLongestTimeBetweenCountsColorIndexes = 0;
-	for (DWORD dwIndex = 0 ; dwIndex < COLDET_MAX_COLORS ; dwIndex++)
-	{
-		m_DetectionCountup[dwIndex] = 0;
-		m_WaitCountup[dwIndex] = 0;
-		m_DetectionTime[dwIndex] = 0;
-		m_TimeBetweenCounts[dwIndex] = 0;
-		m_ShortestTimeBetweenCounts[dwIndex] = 0;
-		m_LongestTimeBetweenCounts[dwIndex] = 0;
-	}
-	::LeaveCriticalSection(&m_cs);
-}
-
-//
-// Hue Quadrants
-//
-//           | 0°
-//           |
-//       4   |   1
-// 270°      |        90°
-// ---------------------
-//           |
-//       3   |   2
-//           |
-//           | 180°
-//
-BOOL CVideoDeviceDoc::CColorDetection::CColDetEntry::SetHSVArray(HSVARRAY& a)
-{
-	CString s(_T("\n"));
-	CString t;
-
-	// Calc. Saturation and Value and determine
-	// in which Quadrants the given colors are
-	int saturation_radius;
-	int value_radius;
-	int array_saturationmin = 255;
-	int array_saturationmax = 0;
-	int array_valuemin = 255;
-	int array_valuemax = 0;
-	BOOL bQuadrant1 = FALSE;
-	BOOL bQuadrant2 = FALSE;
-	BOOL bQuadrant3 = FALSE;
-	BOOL bQuadrant4 = FALSE;
-	saturation = 0;
-	value = 0;
-	for (int i = 0 ; i < a.GetSize() ; i++)
-	{
-		if (a[i].hue >= 0 && a[i].hue < 90)
-			bQuadrant1 = TRUE;
-		else if (a[i].hue >= 90 && a[i].hue < 180)
-			bQuadrant2 = TRUE;
-		else if (a[i].hue >= 180 && a[i].hue < 270)
-			bQuadrant3 = TRUE;
-		else if (a[i].hue >= 270 && a[i].hue < 360)
-			bQuadrant4 = TRUE;
-
-		array_saturationmin = MIN(array_saturationmin, a[i].saturation);
-		array_saturationmax = MAX(array_saturationmax, a[i].saturation);
-		array_valuemin = MIN(array_valuemin, a[i].value);
-		array_valuemax = MAX(array_valuemax, a[i].value);
-		saturation += a[i].saturation;
-		value += a[i].value;
-
-		t.Format(_T("%02d:     H=%03d S=%03d V=%03d\n"), i, a[i].hue, a[i].saturation, a[i].value); 
-		s += t;
-	}
-
-	// Saturation and Value Means
-	saturation /= a.GetSize();
-	value /= a.GetSize();
-
-	// Saturation and Value Radius
-	saturation_radius = Round(COLDET_RADIUS_MARGINE * MAX(array_saturationmax - saturation, saturation - array_saturationmin));
-	value_radius = Round(COLDET_RADIUS_MARGINE * MAX(array_valuemax - value, value - array_valuemin));
-
-	int hue_radius;
-	int array_huemin;
-	int array_huemax;
-	
-	// Quandrants Check
-	if (bQuadrant1 && bQuadrant2 && bQuadrant3 && bQuadrant4)
-	{
-		::AfxMessageBox(ML_STRING(1492, "You clicked on too different colors!"));
-		return FALSE;
-	}
-	// Calc. Hue in quadrants 1 and 4 (eventually also in 2 or 3)
-	else if (bQuadrant1 && bQuadrant4)
-	{
-		int hue_temp;
-		hue = 0;
-		array_huemin = 180;
-		array_huemax = -180;
-		for (int i = 0 ; i < a.GetSize() ; i++)
-		{
-			if (a[i].hue >= 180)
-				hue_temp = a[i].hue - 360;
-			else
-				hue_temp = a[i].hue;
-			hue += hue_temp;
-			array_huemin = MIN(array_huemin, hue_temp);
-			array_huemax = MAX(array_huemax, hue_temp);
-		}
-		hue /= a.GetSize();
-		hue_radius = Round(COLDET_RADIUS_MARGINE * MAX(array_huemax - hue, hue - array_huemin));
-		if (hue < 0)
-			hue += 360;
-		if (array_huemin < 0)
-			array_huemin += 360;
-	}
-	// Calc. Hue in quadrants 2 and/or 3 (eventually also in 1 or 4)
-	else
-	{
-		hue = 0;
-		array_huemin = 360;
-		array_huemax = 0;
-		for (int i = 0 ; i < a.GetSize() ; i++)
-		{
-			array_huemin = MIN(array_huemin, a[i].hue);
-			array_huemax = MAX(array_huemax, a[i].hue);
-			hue += a[i].hue;
-		}
-		hue /= a.GetSize();
-		hue_radius = Round(COLDET_RADIUS_MARGINE * MAX(array_huemax - hue, hue - array_huemin));
-	}
-
-	// Min Radius
-	if (hue_radius == 0)
-		hue_radius = COLDET_MIN_HUE_RADIUS;
-	if (saturation_radius == 0)
-		saturation_radius = COLDET_MIN_SATURATION_RADIUS;
-	if (value_radius == 0)
-		value_radius = COLDET_MIN_VALUE_RADIUS;
-
-	// Max Radius
-	if (hue_radius > COLDET_MAX_HUE_RADIUS)
-		hue_radius = COLDET_MAX_HUE_RADIUS;
-	if (saturation_radius > COLDET_MAX_SATURATION_RADIUS)
-		saturation_radius = COLDET_MAX_SATURATION_RADIUS;
-	if (value_radius > COLDET_MAX_VALUE_RADIUS)
-		value_radius = COLDET_MAX_VALUE_RADIUS;
-
-	// Set Min / Max
-	huemin = hue - hue_radius;
-	huemax = hue + hue_radius;
-	if (huemin < 0)
-		huemin += 360;
-	if (huemax >= 360)
-		huemax -= 360;
-	saturationmin = saturation - saturation_radius;
-	saturationmax = saturation + saturation_radius;
-	if (saturationmin < 0)
-		saturationmin = 0;
-	if (saturationmax > 255)
-		saturationmax = 255;
-	valuemin = value - value_radius;
-	valuemax = value + value_radius;
-	if (valuemin < 0)
-		valuemin = 0;
-	if (valuemax > 255)
-		valuemax = 255;
-
-	// Mean Value To RGB
-	red = hue;
-	green = saturation;
-	blue = value;
-	::HSV2RGB((int*)&red, (int*)&green, (int*)&blue);
-
-	// Trace
-	t.Format(_T("Min:    H=%03d S=%03d V=%03d\n"), array_huemin, array_saturationmin, array_valuemin); 
-	s += t;
-	t.Format(_T("Max:    H=%03d S=%03d V=%03d\n"), array_huemax, array_saturationmax, array_valuemax); 
-	s += t;
-	t.Format(_T("Mean:   H=%03d S=%03d V=%03d\n"), hue, saturation, value); 
-	s += t;
-	t.Format(_T("Radius: H=%03d S=%03d V=%03d\n"), hue_radius, saturation_radius, value_radius); 
-	s += t;
-	t.Format(_T("Color:  R=%03d G=%03d B=%03d\n"), red, green, blue); 
-	s += t;
-	TRACE(s);
-
-	return TRUE;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CVideoDeviceDoc Functions
@@ -6187,20 +5276,12 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeleteDetectionsOlderThanDays = 0;
 	m_bUnsupportedVideoSizeForMovDet = FALSE;
 
-	// Color Detection
-	m_nDoColorPickup = 0;
-	m_bColorDetectionPreview = FALSE;
-	m_dwColorDetectionAccuracy = 1U;
-	m_dwColorDetectionWaitTime = DEFAULT_COLDET_WAITTIME;
-	SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // (Needs Effective Framerate)
-
 	// Property Sheet
 	m_pAssistantPage = NULL;
 	m_pMovementDetectionPage = NULL;
 	m_pGeneralPage = NULL;
 	m_pSnapshotPage = NULL;
 	m_pNetworkPage = NULL;
-	m_pColorDetectionPage = NULL;
 	m_pVideoDevicePropertySheet = NULL;
 
 	// Email Settings
@@ -6826,13 +5907,10 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_DetectionStopTime = CTime(2000, 1, 1,		pApp->GetProfileInt(sSection, _T("DetectionStopHour"), t.GetHour()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), t.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), t.GetSecond()));
-	m_dwColorDetectionWaitTime = (DWORD) pApp->GetProfileInt(sSection, _T("ColorDetectionWaitTime"), DEFAULT_COLDET_WAITTIME);
-	m_dwColorDetectionAccuracy = (DWORD) pApp->GetProfileInt(sSection, _T("ColorDetectionAccuracy"), 1);
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
 	m_bShowMovementDetections = (BOOL) pApp->GetProfileInt(sSection, _T("ShowMovementDetections"), FALSE);
 	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_bMovementDetectorPreview = (BOOL) pApp->GetProfileInt(sSection, _T("MovementDetectorPreview"), FALSE);
-	m_bColorDetectionPreview = (BOOL) pApp->GetProfileInt(sSection, _T("ColorDetectionPreview"), FALSE);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
 	m_nDeleteDetectionsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), 0);
@@ -6853,7 +5931,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 			delete [] (LPBYTE)pFrameRate;
 		m_dFrameRate = dDefaultFrameRate;
 	}
-	SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // (Needs Effective Framerate)
 
 	if (m_CaptureAudioThread.m_pSrcWaveFormat)
 		delete [] m_CaptureAudioThread.m_pSrcWaveFormat;
@@ -7093,13 +6170,10 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
 			pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
 			pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
-			pApp->WriteProfileInt(sSection, _T("ColorDetectionWaitTime"), m_dwColorDetectionWaitTime);
-			pApp->WriteProfileInt(sSection, _T("ColorDetectionAccuracy"), m_dwColorDetectionAccuracy);
 			pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime);
 			pApp->WriteProfileInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections);
 			pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 			pApp->WriteProfileInt(sSection, _T("MovementDetectorPreview"), m_bMovementDetectorPreview);
-			pApp->WriteProfileInt(sSection, _T("ColorDetectionPreview"), m_bColorDetectionPreview);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 			pApp->WriteProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays);
@@ -7295,13 +6369,10 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour(), sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute(), sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ColorDetectionWaitTime"), m_dwColorDetectionWaitTime, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ColorDetectionAccuracy"), m_dwColorDetectionAccuracy, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MovementDetectorPreview"), m_bMovementDetectorPreview, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ColorDetectionPreview"), m_bColorDetectionPreview, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays, sTempFileName);
@@ -8563,8 +7634,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			m_VfWCaptureVideoThread.Disconnect();
 			m_VfWCaptureVideoThread.DestroyCaptureWnd();
 			ResetMovementDetector();
-			m_ColorDetection.ResetCounter();
-			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
 			m_VfWCaptureVideoThread.ConnectForce(m_dFrameRate);
 			ReStartProcessFrame();
 			m_VfWCaptureVideoThread.StartCapture();
@@ -8575,8 +7644,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			if (m_pDxCapture->Stop())
 				m_bCapture = FALSE;
 			ResetMovementDetector();
-			m_ColorDetection.ResetCounter();
-			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
 			if (m_pDxCapture->Run())
 			{
@@ -8596,8 +7663,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 		else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 		{
 			ResetMovementDetector();
-			m_ColorDetection.ResetCounter();
-			SetColorDetectionWaitTime(m_dwColorDetectionWaitTime); // Call it because frame rate changed!
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
 			{
 				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
@@ -9959,15 +9024,6 @@ CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
 	return _T("");
 }
 
-void CVideoDeviceDoc::SetColorDetectionWaitTime(DWORD dwWaitMilliseconds)
-{
-	m_dwColorDetectionWaitTime = dwWaitMilliseconds;
-	if (m_dEffectiveFrameRate > 0.0)
-		m_ColorDetection.SetWaitCount((DWORD)Round((double)dwWaitMilliseconds * m_dEffectiveFrameRate / 1000.0));
-	else
-		m_ColorDetection.SetWaitCount((DWORD)Round((double)dwWaitMilliseconds * m_dFrameRate / 1000.0));
-}
-
 BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
 {
 	if (!pSrcBits || (dwSrcSize == 0) || !pDstDib)
@@ -10160,9 +9216,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	{
 		// Init Vars
 		BOOL bRgb32Frame;
-		DWORD VideoProcessorMode = m_VideoProcessorMode;
 		BOOL bMovementDetectorPreview = m_bMovementDetectorPreview;
-		BOOL bColorDetectionPreview = m_bColorDetectionPreview;
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
 		BOOL bDecodeToRgb32 = FALSE;
@@ -10170,8 +9224,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		if (CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_OrigBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
 		BOOL bIsAddSingleLineSupported = CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_OrigBMI);
-		if ((VideoProcessorMode & COLOR_DETECTOR)			||
-			(bShowFrameTime && !bIsAddSingleLineSupported)	||
+		if ((bShowFrameTime && !bIsAddSingleLineSupported)	||
 			m_bDecodeFramesForPreview						||
 			!bAVCodecSrcFormatSupport)
 		{
@@ -10244,13 +9297,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
-		// Color Detection
-		if ((VideoProcessorMode & COLOR_DETECTOR) &&
-			(bRgb32Frame || (m_OrigBMI.bmiHeader.biCompression == BI_RGB && m_OrigBMI.bmiHeader.biBitCount == 24)))
-			ColorDetectionProcessing(pDib, bColorDetectionPreview);
-
 		// Movement Detection
-		BOOL bDoDetection = VideoProcessorMode & MOVEMENT_DETECTOR;
+		BOOL bDoDetection = m_VideoProcessorMode & MOVEMENT_DETECTOR;
 		if (bDoDetection && m_bDetectionStartStop) // Detection Scheduler
 		{
 			CTime timeonly(	2000,

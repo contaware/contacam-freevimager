@@ -2082,159 +2082,6 @@ BEGIN
                     IDC_STATIC2229,7,73,186,8
 END
 
-IDD_COLOR_DETECTION DIALOGEX 0, 0, 417, 268
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
-    WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Color Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_COLOR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,4,7,35,10
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_0,4,20,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR0,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,27,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE0,174,21,34,99,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_1,4,45,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR1,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,52,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE1,174,46,34,99,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_2,4,70,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR2,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,77,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE2,174,71,34,99,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_3,4,95,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR3,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,102,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE3,174,96,34,99,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_4,4,119,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR4,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,127,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE4,174,120,34,100,
-                    CBS_DROPDOWNLIST | WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_5,4,144,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR5,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,152,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE5,174,145,34,107,
-                    CBS_DROPDOWNLIST | WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_6,4,169,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR6,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,177,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE6,174,170,34,118,
-                    CBS_DROPDOWNLIST | WS_TABSTOP
-    PUSHBUTTON      "Pick\nColor",IDC_PICKCOLOR_7,4,194,31,21,BS_MULTILINE
-    CONTROL         "Slider1",IDC_SLIDER_COLOR7,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,40,202,134,15
-    COMBOBOX        IDC_COMBO_REGULATION_TYPE7,174,195,34,116,
-                    CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Detection\nPreview",IDC_CHECK_DETECTION_PREVIEW,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,4,228,53,17
-    CONTROL         "Slider1",IDC_SLIDER_ACCURACY,"msctls_trackbar32",
-                    TBS_AUTOTICKS | WS_TABSTOP,59,224,115,19
-    EDITTEXT        IDC_EDIT_WAITBETWEENCOUNTUP,322,216,25,13,ES_READONLY | 
-                    ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_WAITBETWEENCOUNTUP,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,347,216,11,13
-    PUSHBUTTON      "Reset Counter",IDC_BUTTON_RESETCOUNTER,210,245,50,16
-    EDITTEXT        IDC_EDIT_COUNTUP0,210,21,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP1,210,46,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP2,210,71,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP3,210,96,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP4,210,120,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP5,210,145,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP6,210,170,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_COUNTUP7,210,195,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    LTEXT           "Accurate (Slow)",IDC_STATIC2230,55,246,51,8
-    LTEXT           "Less Accurate (Fast)",IDC_STATIC2231,125,246,66,8
-    LTEXT           "Det. Count",IDC_STATIC2232,210,7,35,8
-    EDITTEXT        IDC_EDIT_LASTTIME0,262,21,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME1,262,46,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME2,262,71,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME3,262,96,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME4,262,120,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME5,262,145,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME6,262,170,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LASTTIME7,262,195,44,12,ES_RIGHT | ES_READONLY | 
-                    ES_NUMBER | NOT WS_TABSTOP
-    LTEXT           "Last Time",IDC_STATIC2233,262,7,35,8
-    LTEXT           "Shortest Time",IDC_STATIC2234,316,7,44,8
-    EDITTEXT        IDC_EDIT_SHORTESTTIME0,316,21,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME1,316,46,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME2,316,71,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME3,316,96,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME4,316,120,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME5,316,145,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME6,316,170,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_SHORTESTTIME7,316,195,44,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    LTEXT           "Detection Sensibility Regulation",IDC_STATIC2235,47,7,
-                    100,8
-    LTEXT           "Min. Seconds Between Countups:",IDC_STATIC2236,210,218,
-                    108,8
-    EDITTEXT        IDC_EDIT_LONGESTTIME0,369,21,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME1,369,46,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME2,369,71,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME3,369,96,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME4,369,120,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME5,369,145,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME6,369,170,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    EDITTEXT        IDC_EDIT_LONGESTTIME7,369,195,41,12,ES_RIGHT | 
-                    ES_READONLY | ES_NUMBER | NOT WS_TABSTOP
-    LTEXT           "Longest Time",IDC_STATIC2237,369,7,41,8
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR0,"msctls_progress32",
-                    PBS_SMOOTH,47,20,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR1,"msctls_progress32",
-                    PBS_SMOOTH,47,45,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR2,"msctls_progress32",
-                    PBS_SMOOTH,47,70,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR3,"msctls_progress32",
-                    PBS_SMOOTH,47,95,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR4,"msctls_progress32",
-                    PBS_SMOOTH,47,120,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR5,"msctls_progress32",
-                    PBS_SMOOTH,47,145,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR6,"msctls_progress32",
-                    PBS_SMOOTH,47,170,118,7
-    CONTROL         "Progress1",IDC_PROGRESS_COLOR7,"msctls_progress32",
-                    PBS_SMOOTH,47,195,118,7
-    LTEXT           "NOTE: Hold down the CTRL key while picking\na color to average multiple pick points.\nHold down the CTRL key when pressing Pick\nColor to clear the color.",
-                    IDC_STATIC2238,266,233,148,32
-END
-
 IDD_OPEN_STREAMS_SELECT DIALOGEX 0, 0, 232, 187
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
@@ -5217,30 +5064,6 @@ BEGIN
         BOTTOMMARGIN, 151
     END
 
-    IDD_COLOR_DETECTION, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 410
-        VERTGUIDE, 40
-        VERTGUIDE, 47
-        VERTGUIDE, 165
-        VERTGUIDE, 174
-        VERTGUIDE, 210
-        VERTGUIDE, 262
-        VERTGUIDE, 316
-        VERTGUIDE, 369
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 261
-        HORZGUIDE, 21
-        HORZGUIDE, 46
-        HORZGUIDE, 71
-        HORZGUIDE, 96
-        HORZGUIDE, 120
-        HORZGUIDE, 145
-        HORZGUIDE, 170
-        HORZGUIDE, 195
-    END
-
     IDD_OPEN_STREAMS_SELECT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -6667,7 +6490,6 @@ BEGIN
     IDS_MULTILANG_1489      "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."
     IDS_MULTILANG_1490      "Unsupported network device type or mode"
     IDS_MULTILANG_1491      "Server is to busy, try later"
-    IDS_MULTILANG_1492      "You clicked on too different colors!"
     IDS_MULTILANG_1493      "Cannot Create the AVI File!\n"
     IDS_STRING1494          "Paper: "
     IDS_STRING1495          "Select Document Root Folder"
@@ -6678,7 +6500,6 @@ BEGIN
     IDS_STRING1500          "Bilinear"
     IDS_STRING1501          "Bicubic"
     IDS_STRING1502          "Lanczos (slowest)"
-    IDS_STRING1503          "Hue"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -7199,8 +7020,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_STRING1504          "Sat."
-    IDS_STRING1505          "Value"
     IDS_STRING1506          "No Image Extension Change"
     IDS_STRING1507          "Auto Optimize Image Extensions"
     IDS_STRING1508          "Convert All Images To Jpeg"
@@ -7283,7 +7102,6 @@ BEGIN
     IDS_STRING1569          "Change Size"
     IDS_STRING1570          "No Frames"
     IDS_STRING1571          "Preview Off"
-    IDS_STRING1572          "Please click on a color which is not black, gray or white!"
     IDS_STRING1574          "File"
     IDS_STRING1575          "Files"
     IDS_STRING1576          "More Colors..."

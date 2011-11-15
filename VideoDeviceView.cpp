@@ -4,7 +4,6 @@
 #include "VideoDeviceDoc.h"
 #include "PostDelayedMessage.h"
 #include "VideoDeviceView.h"
-#include "ColorDetectionPage.h"
 #include "VideoDevicePropertySheet.h"
 #include "DxCapture.h"
 #include "MyMemDC.h"
@@ -33,7 +32,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
-	ON_WM_LBUTTONDBLCLK()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURESETTINGS, OnThreadSafeCaptureSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -820,12 +818,7 @@ void CVideoDeviceView::OnRButtonDown(UINT nFlags, CPoint point)
 
 	ForceCursor();
 
-	if (pDoc->m_nDoColorPickup != 0)
-	{
-		pDoc->m_nDoColorPickup = 0;
-		m_HsvPickupArray.RemoveAll();
-	}
-	else if (pDoc->m_bShowEditDetectionZones)
+	if (pDoc->m_bShowEditDetectionZones)
 	{
 		CMenu menu;
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_VIDEO_DEVICE_ZONES));
@@ -872,105 +865,6 @@ void CVideoDeviceView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	UpdateWindowSizes(TRUE, FALSE, FALSE);
 }
 
-void CVideoDeviceView::ColorPickup(UINT nFlags, CPoint point)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Get the average of 9 pixels
-	DWORD R = 0;
-	DWORD G = 0;
-	DWORD B = 0;
-	int nPixelsCount = 0;
-	HDC hDC = ::GetDC(NULL);
-	ClientToScreen(&point);
-	COLORREF crColor = ::GetPixel(hDC, point.x, point.y);
-	for (int y = -1 ; y <= 1 ; y++)
-	{
-		for (int x = -1 ; x <= 1 ; x++)
-		{
-			crColor = ::GetPixel(hDC, point.x + x, point.y + y);
-			if (crColor != CLR_INVALID)
-			{
-				R += GetRValue(crColor);
-				G += GetGValue(crColor);
-				B += GetBValue(crColor);
-				++nPixelsCount;
-			}
-		}
-	}
-	::ReleaseDC(NULL, hDC);
-	R /= nPixelsCount;
-	G /= nPixelsCount;
-	B /= nPixelsCount;
-	crColor = RGB(R,G,B);
-
-	// RGB -> HSV
-	CVideoDeviceDoc::CColorDetection::HsvEntry e;
-	e.hue = GetRValue(crColor);
-	e.saturation = GetGValue(crColor);
-	e.value = GetBValue(crColor);
-	BOOL bChromatic = ::RGB2HSV((int*)&e.hue, (int*)&e.saturation, (int*)&e.value);
-	if (!bChromatic)
-	{
-		ReleaseCapture();
-		::AfxMessageBox(ML_STRING(1572, "Please click on a color which is not black, gray or white!"));
-		SetCapture();
-		HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_SELECTCOLOR_CURSOR);	
-		ASSERT(hCursor);
-		::SetCursor(hCursor);
-	}
-	else
-	{
-		// Add to Hsv Pickup Array
-		m_HsvPickupArray.Add(e);
-		
-		// Done?
-		if (!((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL)))
-		{
-			int nIndex = -1;
-			if (pDoc->m_nDoColorPickup  == -1)
-				nIndex = pDoc->m_ColorDetection.AppendColor(m_HsvPickupArray);
-			else
-			{
-				if (pDoc->m_ColorDetection.ReplaceColor(pDoc->m_nDoColorPickup - 1, m_HsvPickupArray))
-					nIndex = pDoc->m_nDoColorPickup - 1;
-			}
-			if (nIndex >= 0 && pDoc->m_pColorDetectionPage)
-			{
-				pDoc->m_pColorDetectionPage->SetHueRadius(nIndex, pDoc->m_ColorDetection.GetHueRadius(nIndex));
-				pDoc->m_pColorDetectionPage->SetSaturationRadius(nIndex, pDoc->m_ColorDetection.GetSaturationRadius(nIndex));
-				pDoc->m_pColorDetectionPage->SetValueRadius(nIndex, pDoc->m_ColorDetection.GetValueRadius(nIndex));
-				pDoc->m_pColorDetectionPage->UpdateControls();
-			}
-			pDoc->m_nDoColorPickup = 0;
-			ReleaseCapture();
-			m_HsvPickupArray.RemoveAll();
-		}
-	}
-}
-
-void CVideoDeviceView::OnLButtonDblClk(UINT nFlags, CPoint point) 
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// m_nDoColorPickup:
-	// -1 Add
-	// 0 Do Nothing
-	// 1 First Color
-	// 2 Second Color
-	// ...
-	if (pDoc->m_nDoColorPickup != 0)
-	{
-		EnableCursor();
-		ColorPickup(nFlags, point);
-	}
-	else
-		CUImagerView::OnLButtonDblClk(nFlags, point);
-}
-
 void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point) 
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -980,15 +874,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	// m_nDoColorPickup:
-	// -1 Add
-	// 0 Do Nothing
-	// 1 First Color
-	// 2 Second Color
-	// ...
-	if (pDoc->m_nDoColorPickup != 0)
-		ColorPickup(nFlags, point);
-	else if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
+	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
 		// Width & Height
 		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
@@ -1192,15 +1078,8 @@ BOOL CVideoDeviceView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	ASSERT_VALID(pDoc);
 	HCURSOR hCursor;
 	
-	if (pDoc->m_nDoColorPickup != 0)
-	{
-		hCursor = ::AfxGetApp()->LoadCursor(IDC_SELECTCOLOR_CURSOR);	
-		ASSERT(hCursor);
-		::SetCursor(hCursor);
-		return TRUE;
-	}
 	// If Wait Cursor leave it!
-	else if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
+	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
 	{
 		RestoreWaitCursor();
 		return TRUE;
@@ -1269,21 +1148,6 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-
-	// Make sure that inside the MainFrame we have the color picker cursor
-	if (pDoc->m_nDoColorPickup != 0)
-	{
-		CRect rcMainFrame;
-		::AfxGetMainFrame()->GetWindowRect(&rcMainFrame);
-		CPoint ptColorPick = point;
-		ClientToScreen(&ptColorPick);
-		if (rcMainFrame.PtInRect(ptColorPick))
-		{
-			HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_SELECTCOLOR_CURSOR);	
-			ASSERT(hCursor);
-			::SetCursor(hCursor);
-		}
-	}
 
 	// Status Text
 	if (pDoc->m_bShowEditDetectionZones)

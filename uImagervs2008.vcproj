@@ -1405,37 +1405,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ColorDetectionPage.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="ColourPopup.cpp"
 				>
 				<FileConfiguration
@@ -4601,10 +4570,6 @@
 			</File>
 			<File
 				RelativePath="ColorButtonPicker.h"
-				>
-			</File>
-			<File
-				RelativePath="ColorDetectionPage.h"
 				>
 			</File>
 			<File

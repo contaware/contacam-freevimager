@@ -10,7 +10,6 @@
 #include "AssistantPage.h"
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
-#include "ColorDetectionPage.h"
 #include "NetworkPage.h"
 #include "MovementDetectionPage.h"
 
@@ -35,7 +34,6 @@ protected:
 
 // Attributes
 	CGeneralPage m_GeneralPropertyPage;
-	CColorDetectionPage m_ColorDetectionPropertyPage;
 	CSnapshotPage m_SnapshotPropertyPage;
 	CNetworkPage m_NetworkPropertyPage;
 	CMovementDetectionPage m_MovementDetectionPropertyPage;

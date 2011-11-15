@@ -46,7 +46,6 @@
 #define IDD_AUDIOOUT_DESTINATION        159
 #define IDD_JPEG_COMPRESSION_QUALITY    164
 #define IDD_SAVEAS_STREAMS_SELECT       165
-#define IDD_COLOR_DETECTION             166
 #define IDD_OPEN_STREAMS_SELECT         167
 #define IDD_IMAGEINFO                   170
 #define IDD_RESIZING                    171

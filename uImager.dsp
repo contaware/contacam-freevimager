@@ -287,10 +287,6 @@ SOURCE=.\ColorButtonPicker.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ColorDetectionPage.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ColourPopup.cpp
 # End Source File
 # Begin Source File
@@ -997,10 +993,6 @@ SOURCE=.\ColorButton.h
 # Begin Source File
 
 SOURCE=.\ColorButtonPicker.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ColorDetectionPage.h
 # End Source File
 # Begin Source File
 

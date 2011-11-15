@@ -704,9 +704,6 @@ public:
 	// Are ffmpeg mp2 and mp3 audio encoders compiled in?
 	BOOL m_bFFMpegAudioEnc;
 
-	// Color Detection flag
-	BOOL m_bColDet;
-
 	// Flags to execute final steps after video shrinking
 	volatile BOOL m_bWaitingMailFinish;
 

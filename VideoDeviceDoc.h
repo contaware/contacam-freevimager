@@ -33,7 +33,6 @@ extern "C"
 // Forward Declarations
 class CVideoDeviceView;
 class CVideoDeviceChildFrame;
-class CColorDetectionPage;
 class CDxCapture;
 class CVideoAviDoc;
 class CAssistantPage;
@@ -77,7 +76,7 @@ class CMovementDetectionPage;
 
 // Detection Flags
 #define NO_DETECTOR							0x00
-#define COLOR_DETECTOR						0x01
+#define UNUSED_DETECTOR						0x01
 #define MOVEMENT_DETECTOR					0x02
 
 // Snapshot
@@ -148,17 +147,6 @@ class CMovementDetectionPage;
 #define PHPCONFIG_MIN_THUMSPERPAGE			7
 #define PHPCONFIG_MAX_THUMSPERPAGE			36
 #define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
-
-// Color Detection
-#define COLDET_MAX_COLORS					8
-#define DEFAULT_COLDET_WAITTIME				3000U		// ms
-#define COLDET_RADIUS_MARGINE				1.3
-#define COLDET_MAX_HUE_RADIUS				80
-#define COLDET_MAX_SATURATION_RADIUS		80
-#define COLDET_MAX_VALUE_RADIUS				80
-#define COLDET_MIN_HUE_RADIUS				25
-#define COLDET_MIN_SATURATION_RADIUS		30
-#define COLDET_MIN_VALUE_RADIUS				35
 
 // UDP Networking
 #define DEFAULT_SENDFRAME_FRAGMENT_SIZE		1400		// bytes
@@ -1128,112 +1116,6 @@ public:
 			CString m_sSWFTempThumbFileName;
 	};
 
-	// The Color Detection Class
-	class CColorDetection
-	{
-		public:
-			struct HsvEntry
-			{
-				int hue;
-				int saturation;
-				int value;
-			};
-			typedef CArray<HsvEntry,HsvEntry&> HSVARRAY;
-			class CColDetEntry
-			{
-				public:
-					CColDetEntry() {Clear();};
-					virtual ~CColDetEntry() {;};
-					void Clear() {	red = 0;
-									green = 0;
-									blue = 0;
-									hue = 0;
-									huemin = 0;
-									huemax = 0;
-									saturation = 0;
-									saturationmin = 0;
-									saturationmax = 0;
-									value = 0;
-									valuemin = 0;
-									valuemax = 0;};
-					BOOL SetHSVArray(HSVARRAY& a);
-					volatile int red;
-					volatile int green;
-					volatile int blue;
-					volatile int hue;
-					volatile int huemax;
-					volatile int huemin;
-					volatile int saturation;
-					volatile int saturationmax;
-					volatile int saturationmin;
-					volatile int value;
-					volatile int valuemax;
-					volatile int valuemin;
-			};
-		public:
-			CColorDetection();
-			virtual ~CColorDetection();
-			void ResetCounter();
-			BOOL Detector(CDib* pDib, DWORD dwDetectionAccuracy, BOOL bColorImage = FALSE);
-			static COLORREF CalcMeanValue(CDib* pDib, DWORD dwCalcAccuracy);
-			int AppendColor(HSVARRAY& a);
-			BOOL ReplaceColor(DWORD dwIndex, HSVARRAY& a);
-			BOOL RemoveColor(DWORD dwIndex);
-			DWORD GetColorsCount();
-			COLORREF GetColor(DWORD dwIndex);
-			BOOL SetDetectionThreshold(DWORD dwIndex, DWORD dwThreshold); // 0 .. 10000
-			BOOL SetHueRadius(DWORD dwIndex, DWORD dwRadius);
-			BOOL SetSaturationRadius(DWORD dwIndex, DWORD dwRadius);
-			BOOL SetValueRadius(DWORD dwIndex, DWORD dwRadius);
-			int GetHueRadius(DWORD dwIndex);
-			int GetSaturationRadius(DWORD dwIndex);
-			int GetValueRadius(DWORD dwIndex);
-			int GetDetectionLevel(DWORD dwIndex); // 0 .. 10000, -1 if error
-			DWORD GetDetectionCountup(DWORD dwIndex) {	::EnterCriticalSection(&m_cs);
-														DWORD countup = m_DetectionCountup[dwIndex];
-														::LeaveCriticalSection(&m_cs);
-														return countup;};
-			DWORD GetTimeBetweenCounts(DWORD dwIndex);
-			DWORD GetShortestTimeBetweenCounts(DWORD dwIndex);
-			DWORD GetLongestTimeBetweenCounts(DWORD dwIndex);
-			DWORD GetMaxCountsColorIndexes() {	::EnterCriticalSection(&m_cs);
-												DWORD index = m_dwMaxCountsColorIndexes;
-												::LeaveCriticalSection(&m_cs);
-												return index;};
-			DWORD GetShortestTimeBetweenCountsColorIndexes() {	::EnterCriticalSection(&m_cs);
-																DWORD index = m_dwShortestTimeBetweenCountsColorIndexes;
-																::LeaveCriticalSection(&m_cs);
-																return index;};
-			DWORD GetLongestTimeBetweenCountsColorIndexes() {	::EnterCriticalSection(&m_cs);
-																DWORD index = m_dwLongestTimeBetweenCountsColorIndexes;
-																::LeaveCriticalSection(&m_cs);
-																return index;};
-			void SetWaitCount(DWORD dwMaxWaitCount) {	::EnterCriticalSection(&m_cs);
-														m_dwMaxWaitCount = dwMaxWaitCount;
-														::LeaveCriticalSection(&m_cs);};
-
-		protected:
-			CRITICAL_SECTION m_cs;
-			CColDetEntry m_ColDetTable[COLDET_MAX_COLORS];
-			volatile int m_nColDetCount;
-
-			// Detection Level : 0 .. 10000
-			DWORD volatile m_DetectionLevels[COLDET_MAX_COLORS];
-			
-			// If a Detection Level is greater o equal the threshold -> the detection countup is incremented
-			DWORD volatile m_DetectionLevelsThresholds[COLDET_MAX_COLORS];
-			DWORD volatile m_DetectionCountup[COLDET_MAX_COLORS];
-			DWORD volatile m_WaitCountup[COLDET_MAX_COLORS];
-			volatile DWORD m_dwMaxWaitCount;
-			DWORD volatile m_DetectionTime[COLDET_MAX_COLORS];
-			DWORD volatile m_TimeBetweenCounts[COLDET_MAX_COLORS];
-			DWORD volatile m_ShortestTimeBetweenCounts[COLDET_MAX_COLORS];
-			DWORD volatile m_LongestTimeBetweenCounts[COLDET_MAX_COLORS];
-			volatile DWORD m_dwMaxCountsColorIndexes;
-			volatile DWORD m_dwShortestTimeBetweenCountsColorIndexes;
-			volatile DWORD m_dwLongestTimeBetweenCountsColorIndexes;
-	};
-
 protected: // create from serialization only
 	DECLARE_DYNCREATE(CVideoDeviceDoc)
 	CVideoDeviceDoc();
@@ -1362,11 +1244,6 @@ public:
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
 	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
-
-	// Color Detection
-	void ColorDetectionProcessing(CDib* pDib, BOOL bColorDetectionPreview);
-	void SetColorDetectionWaitTime(DWORD dwWaitMilliseconds);
-	__forceinline DWORD GetColorDetectionWaitTime() const {return m_dwColorDetectionWaitTime;};
 
 	// Functin called when the video grabbing format has been changed
 	void OnChangeVideoFormat();
@@ -1759,13 +1636,6 @@ public:
 	volatile int m_nDeleteDetectionsOlderThanDays;		// Delete Detections older than the given amount of days,
 														// 0 means never delete any file!
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
-	
-	// Color Detector Vars
-	CColorDetection m_ColorDetection;					// Color Detection Object
-	int m_nDoColorPickup;								// Color Pickup Var
-	volatile BOOL m_bColorDetectionPreview;				// Show Detection Preview in View Window
-	volatile DWORD m_dwColorDetectionAccuracy;			// Accuracy Var
-	volatile DWORD m_dwColorDetectionWaitTime;			// Wait time between detection count-ups (like racing laps)	
 
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;
@@ -1773,7 +1643,6 @@ public:
 	CSnapshotPage* volatile m_pSnapshotPage;
 	CNetworkPage* volatile m_pNetworkPage;
 	CGeneralPage* volatile m_pGeneralPage;
-	CColorDetectionPage* volatile m_pColorDetectionPage;
 	CMovementDetectionPage* volatile m_pMovementDetectionPage;
 
 	// Email sending

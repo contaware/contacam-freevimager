@@ -1621,7 +1621,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// m_pAssistantPage
 	// m_pGeneralPage
 	// m_pSnapshotPage
-	// m_pColorDetectionPage
 	// m_pNetworkPage
 	// m_pMovementDetectionPage
 	//

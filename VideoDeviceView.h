@@ -38,10 +38,8 @@ protected:
 	__forceinline void DrawDC();
 	__forceinline void EraseBkgnd(BOOL bFullErase);
 	__forceinline BOOL IsCompressionDifferent();
-	void ColorPickup(UINT nFlags, CPoint point);
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
-	CVideoDeviceDoc::CColorDetection::HSVARRAY m_HsvPickupArray;
 
 // Overrides
 public:
@@ -76,7 +74,6 @@ protected:
 	afx_msg void OnEditSelectall();
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);

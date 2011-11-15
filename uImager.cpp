@@ -181,7 +181,6 @@ CUImagerApp::CUImagerApp()
 	m_bFFMpeg4VideoEnc = FALSE;
 	m_bFFTheoraVideoEnc = FALSE;
 	m_bFFMpegAudioEnc = FALSE;
-	m_bColDet = FALSE;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sPdfScanPaperSize = _T("Fit");
@@ -4576,9 +4575,6 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 
 	// Display Advanced On-Screen Video Avi Info
 	m_bVideoAviInfo = (BOOL)GetProfileInt(sSection, _T("VideoAviInfo"), FALSE);
-
-	// Color Detection flag
-	m_bColDet = (BOOL)GetProfileInt(sSection, _T("ColDet"), FALSE);
 
 	// Last Opened Directory
 	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));

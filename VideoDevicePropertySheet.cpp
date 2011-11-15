@@ -34,8 +34,6 @@ CPropertySheet(	pDoc->GetDeviceName() != pDoc->GetAssignedDeviceName() ?
 	m_GeneralPropertyPage.SetDoc(pDoc);
 	m_SnapshotPropertyPage.SetDoc(pDoc);
 	m_MovementDetectionPropertyPage.SetDoc(pDoc);
-	if (((CUImagerApp*)::AfxGetApp())->m_bColDet)
-		m_ColorDetectionPropertyPage.SetDoc(pDoc);
 	m_NetworkPropertyPage.SetDoc(pDoc);
 
 	// Add pages
@@ -43,8 +41,6 @@ CPropertySheet(	pDoc->GetDeviceName() != pDoc->GetAssignedDeviceName() ?
 	AddPage(&m_GeneralPropertyPage);
 	AddPage(&m_SnapshotPropertyPage);
 	AddPage(&m_MovementDetectionPropertyPage);
-	if (((CUImagerApp*)::AfxGetApp())->m_bColDet)
-		AddPage(&m_ColorDetectionPropertyPage);
 	AddPage(&m_NetworkPropertyPage);
 }
 

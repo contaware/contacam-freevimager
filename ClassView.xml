@@ -366,9 +366,8 @@
 </FOLDER>
 <FOLDER NAME="PropertySheets">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="7">
+<CLASSES COUNT="6">
 <CLASS NAME="CAssistantPage"/>
-<CLASS NAME="CColorDetectionPage"/>
 <CLASS NAME="CGeneralPage"/>
 <CLASS NAME="CMovementDetectionPage"/>
 <CLASS NAME="CNetworkPage"/>
