@@ -66,11 +66,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerDailyTimeStop);
 	DDX_Text(pDX, IDC_EDIT_DATARATE, m_nVideoRecDataRate);
 	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoRecKeyframesRate);
-	DDX_Check(pDX, IDC_CHECK_SIZE_SEGMENTATION, m_bRecSizeSegmentation);
-	DDX_Text(pDX, IDC_RECFILE_COUNT, m_nRecFileCount);
-	DDV_MinMaxInt(pDX, m_nRecFileCount, 1, 99999);
-	DDX_Text(pDX, IDC_RECFILE_SIZE, m_nRecFileSizeMB);
-	DDV_MinMaxInt(pDX, m_nRecFileSizeMB, 1, 9999999);
 	DDX_Check(pDX, IDC_CHECK_POSTREC, m_bPostRec);
 	DDX_Text(pDX, IDC_EDIT_POSTREC_KEYFRAMES_RATE, m_nVideoPostRecKeyframesRate);
 	DDX_Text(pDX, IDC_EDIT_POSTREC_DATARATE, m_nVideoPostRecDataRate);
@@ -107,9 +102,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
 	ON_EN_CHANGE(IDC_EDIT_KEYFRAMES_RATE, OnChangeEditKeyframesRate)
 	ON_EN_CHANGE(IDC_EDIT_DATARATE, OnChangeEditDatarate)
-	ON_EN_CHANGE(IDC_RECFILE_COUNT, OnChangeRecfileCount)
-	ON_EN_CHANGE(IDC_RECFILE_SIZE, OnChangeRecfileSize)
-	ON_BN_CLICKED(IDC_CHECK_SIZE_SEGMENTATION, OnCheckSizeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_POSTREC, OnCheckPostrec)
 	ON_EN_CHANGE(IDC_EDIT_POSTREC_DATARATE, OnChangeEditPostrecDatarate)
 	ON_EN_CHANGE(IDC_EDIT_POSTREC_KEYFRAMES_RATE, OnChangeEditPostrecKeyframesRate)
@@ -362,7 +354,6 @@ BOOL CGeneralPage::OnInitDialog()
 	
 	// Init vars
 	m_bRecDeinterlace = FALSE;
-	m_bRecSizeSegmentation = FALSE;
 	m_bPostRec = FALSE;
 	m_nVideoPostRecKeyframesRate = 0;
 	m_nVideoPostRecDataRate = 0;
@@ -387,9 +378,6 @@ BOOL CGeneralPage::OnInitDialog()
 	// Init Segmentation Vars
 	m_bRecTimeSegmentation = m_pDoc->m_bRecTimeSegmentation;
 	m_nTimeSegmentationIndex = m_pDoc->m_nTimeSegmentationIndex;
-	m_bRecSizeSegmentation = m_pDoc->m_bRecSizeSegmentation;
-	m_nRecFileCount = m_pDoc->m_nRecFileCount;
-	m_nRecFileSizeMB = (int)(m_pDoc->m_llRecFileSize >> 20);
 
 	// Init Rec Vars
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
@@ -1251,48 +1239,16 @@ void CGeneralPage::OnCheckAutoopen()
 	m_pDoc->m_bRecAutoOpen = m_bRecAutoOpen;
 }
 
-void CGeneralPage::OnCheckSizeSegmentation() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bRecSizeSegmentation = m_bRecSizeSegmentation;
-
-	// Clear Time Segmentation
-	if (m_bRecSizeSegmentation && m_bRecTimeSegmentation)
-	{
-		m_pDoc->m_bRecTimeSegmentation = m_bRecTimeSegmentation = FALSE;
-		UpdateData(FALSE);
-	}
-}
-
 void CGeneralPage::OnCheckTimeSegmentation() 
 {
 	UpdateData(TRUE);
 	m_pDoc->m_bRecTimeSegmentation = m_bRecTimeSegmentation;
-	
-	// Clear Size Segmentation
-	if (m_bRecTimeSegmentation && m_bRecSizeSegmentation)
-	{
-		m_pDoc->m_bRecSizeSegmentation = m_bRecSizeSegmentation = FALSE;
-		UpdateData(FALSE);
-	}
 }
 
 void CGeneralPage::OnSelchangeTimeSegmentation() 
 {
 	UpdateData(TRUE);
 	m_pDoc->m_nTimeSegmentationIndex = m_nTimeSegmentationIndex;
-}
-
-void CGeneralPage::OnChangeRecfileCount() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nRecFileCount = m_nRecFileCount;
-}
-
-void CGeneralPage::OnChangeRecfileSize() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_llRecFileSize = ((LONGLONG)m_nRecFileSizeMB) << 20;
 }
 
 void CGeneralPage::OnCheckPostrec() 
@@ -1405,18 +1361,6 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 	// Enable Time Segmentation Combo Box?
 	pComboBox = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
 	pComboBox->EnableWindow(bEnable);
-
-	// Enable Size Segmentation Check Box?
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SIZE_SEGMENTATION);
-	pCheck->EnableWindow(bEnable);
-
-	// Enable Rec. File Count Edit Box?
-	pEdit = (CEdit*)GetDlgItem(IDC_RECFILE_COUNT);
-	pEdit->EnableWindow(bEnable);
-
-	// Enable Rec. File Size Edit Box?
-	pEdit = (CEdit*)GetDlgItem(IDC_RECFILE_SIZE);
-	pEdit->EnableWindow(bEnable);
 
 	// Enable Rec Audio Check Box?
 	pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);

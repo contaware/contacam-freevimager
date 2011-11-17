@@ -60,9 +60,6 @@ public:
 	CTime	m_SchedulerDailyTimeStop;
 	int		m_nVideoRecDataRate;
 	int		m_nVideoRecKeyframesRate;
-	BOOL	m_bRecSizeSegmentation;
-	int		m_nRecFileCount;
-	int		m_nRecFileSizeMB;	// In MB
 	BOOL	m_bPostRec;
 	int		m_nVideoPostRecKeyframesRate;
 	int		m_nVideoPostRecDataRate;
@@ -108,9 +105,6 @@ protected:
 	afx_msg void OnCheckSchedulerDaily();
 	afx_msg void OnChangeEditKeyframesRate();
 	afx_msg void OnChangeEditDatarate();
-	afx_msg void OnChangeRecfileCount();
-	afx_msg void OnChangeRecfileSize();
-	afx_msg void OnCheckSizeSegmentation();
 	afx_msg void OnCheckPostrec();
 	afx_msg void OnChangeEditPostrecDatarate();
 	afx_msg void OnChangeEditPostrecKeyframesRate();

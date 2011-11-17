@@ -523,7 +523,6 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = m_pDoc->m_pGeneralPage->m_bRecTimeSegmentation = TRUE;
 			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 3;
-			m_pDoc->m_bRecSizeSegmentation = m_pDoc->m_pGeneralPage->m_bRecSizeSegmentation = FALSE;
 			m_pDoc->m_bRecAutoOpen = m_pDoc->m_pGeneralPage->m_bRecAutoOpen = FALSE;
 
 			// Update Data from vars to view
@@ -537,7 +536,6 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 			// No Segmentation
 			m_pDoc->m_bRecTimeSegmentation = m_pDoc->m_pGeneralPage->m_bRecTimeSegmentation = FALSE;
 			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 0;
-			m_pDoc->m_bRecSizeSegmentation = m_pDoc->m_pGeneralPage->m_bRecSizeSegmentation = FALSE;
 			m_pDoc->m_bRecAutoOpen = m_pDoc->m_pGeneralPage->m_bRecAutoOpen = TRUE;
 
 			// Update Data from vars to view
@@ -572,7 +570,6 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = TRUE;
 			m_pDoc->m_nTimeSegmentationIndex = 3;
-			m_pDoc->m_bRecSizeSegmentation = FALSE;
 			m_pDoc->m_bRecAutoOpen = FALSE;
 
 			// Add Scheduler Entry
@@ -583,7 +580,6 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 			// No Segmentation
 			m_pDoc->m_bRecTimeSegmentation = FALSE;
 			m_pDoc->m_nTimeSegmentationIndex = 0;
-			m_pDoc->m_bRecSizeSegmentation = FALSE;
 			m_pDoc->m_bRecAutoOpen = TRUE;
 		}
 	}

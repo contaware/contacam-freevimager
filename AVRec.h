@@ -91,7 +91,7 @@ public:
 					int nYear = 0);
 
 	// Open
-	bool Open(BOOL bNoTruncation = FALSE);
+	bool Open();
 
 	// This function returns true if the above function has been execute successfully
 	bool IsOpen() const {return m_bOpen;};

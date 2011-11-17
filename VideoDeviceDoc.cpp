@@ -2291,21 +2291,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
 			BOOL bNextAviFileCalled = FALSE;
 			if (!m_pDoc->m_bStopRec)
 			{
-				if (m_pDoc->m_bRecSizeSegmentation)
-				{
-					LONGLONG llTotalWrittenBytes =	
-					m_pDoc->m_pAVRec->GetTotalWrittenBytes(m_pDoc->m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM)) +
-					m_pDoc->m_pAVRec->GetTotalWrittenBytes(m_pDoc->m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
-					llTotalWrittenBytes += (llTotalWrittenBytes / 4); // Guess a 25% of AVI Overhead (Index, AVI Hdrs and Data Chunk Hdrs)
-					if (llTotalWrittenBytes > m_pDoc->m_llRecFileSize)
-					{
-						// Note: NextAviFile() always adds the samples to
-						// the old file, even if returning FALSE!
-						res = NextAviFile(dwSize, pBuf);
-						bNextAviFileCalled = TRUE;
-					}
-				}
-				else if (m_pDoc->m_bRecTimeSegmentation)
+				if (m_pDoc->m_bRecTimeSegmentation)
 				{
 					CTime t = CTime::GetCurrentTime();
 					if (t >= m_pDoc->m_NextRecTime)
@@ -2352,67 +2338,42 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
 BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf)
 {
 	BOOL res = FALSE;
-	CString sFirstRecFileName;
+	CString sRecFileName;
 	int nRecordedFrames = 0;
 	CAVRec* pNextAVRec = NULL;
 	CAVRec* pOldAVRec = NULL;
 	BOOL bFreeOldAVRec = FALSE;
-	if (m_pDoc->m_bRecSizeSegmentation)
+
+	// Set Old AVRec Pointer
+	pOldAVRec = m_pDoc->m_pAVRec;
+
+	// Make Rec. File Name
+	sRecFileName = m_pDoc->MakeRecFileName();
+	
+	// Allocate & Init pNextAVRec
+	if (sRecFileName != _T(""))
 	{
-		// Set Old AVRec Pointer
-		pOldAVRec = m_pDoc->m_pAVRec;
-
-		// Get Next AVI File
-		if ((m_pDoc->m_nRecFilePos + 1) < m_pDoc->m_AVRecs.GetSize())
+		if (m_pDoc->MakeAVRec(sRecFileName, &pNextAVRec))
 		{
-			// Get Next AVRec Pointer
-			pNextAVRec = m_pDoc->m_AVRecs[++(m_pDoc->m_nRecFilePos)];
-
-			// Change Pointer
+			// Change Pointer and
+			// restart with frame counting and time measuring
 			::EnterCriticalSection(&m_pDoc->m_csAVRec);
 			m_pDoc->m_pAVRec = pNextAVRec;
-			::LeaveCriticalSection(&m_pDoc->m_csAVRec);
+			nRecordedFrames = m_pDoc->m_nRecordedFrames;
+			m_pDoc->m_bRecFirstFrame = TRUE; // Video thread will reset m_pDoc->m_nRecordedFrames!
+			::LeaveCriticalSection(&m_pDoc->m_csAVRec);				
+
+			// Set Free Flag
+			bFreeOldAVRec = TRUE;
 
 			// Set Ok
 			res = TRUE;
 		}
-	}
-	// m_bRecTimeSegmentation
-	else
-	{
-		// Set Old AVRec Pointer
-		pOldAVRec = m_pDoc->m_pAVRec;
-
-		// Make First Rec. File Name
-		sFirstRecFileName = m_pDoc->MakeRecFileName();
-		
-		// Allocate & Init pNextAVRec
-		if (sFirstRecFileName != _T(""))
+		else
 		{
-			if (m_pDoc->MakeAVRec(sFirstRecFileName, &pNextAVRec))
-			{
-				// Change Pointer and
-				// restart with frame counting and time measuring
-				::EnterCriticalSection(&m_pDoc->m_csAVRec);
-				m_pDoc->m_pAVRec = pNextAVRec;
-				if (m_pDoc->m_AVRecs.GetSize() > 0)
-					m_pDoc->m_AVRecs[0] = pNextAVRec;
-				nRecordedFrames = m_pDoc->m_nRecordedFrames;
-				m_pDoc->m_bRecFirstFrame = TRUE; // Video thread will reset m_pDoc->m_nRecordedFrames!
-				::LeaveCriticalSection(&m_pDoc->m_csAVRec);				
-
-				// Set Free Flag
-				bFreeOldAVRec = TRUE;
-
-				// Set Ok
-				res = TRUE;
-			}
-			else
-			{
-				if (pNextAVRec)
-					delete pNextAVRec;
-				
-			}
+			if (pNextAVRec)
+				delete pNextAVRec;
+			
 		}
 	}
 
@@ -2457,7 +2418,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 			m_pDoc->OpenAndPostProcess();
 
 			// Set New File Name
-			m_pDoc->m_sFirstRecFileName = sFirstRecFileName;
+			m_pDoc->m_sRecFileName = sRecFileName;
 		}
 	}
 
@@ -4778,15 +4739,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
-	m_sFirstRecFileName  = _T("");
-	m_nRecFilePos = 0;
+	m_sRecFileName  = _T("");
 	m_bRecAutoOpen = TRUE;
 	m_bRecAutoOpenAllowed = TRUE;
-	m_bRecSizeSegmentation = FALSE;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
-	m_nRecFileCount = DEFAULT_REC_AVIFILE_COUNT;
-	m_llRecFileSize = DEFAULT_REC_AVIFILE_SIZE;
 	m_bAudioRecWait = TRUE;
 	m_bVideoRecWait = TRUE;
 	m_bStopRec = FALSE;
@@ -4971,9 +4928,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
 {
-	// m_pAVRec is contained in this array and freed!
-	FreeAVIFiles();
-	m_pAVRec = NULL;
+	FreeAVIFile();
 	if (m_pHttpGetFrameParseProcess)
 	{
 		delete m_pHttpGetFrameParseProcess;
@@ -5413,11 +5368,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
 	m_bRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("RecDeinterlace"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
-	m_bRecSizeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecSizeSegmentation"), FALSE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
-	m_nRecFileCount = (int) pApp->GetProfileInt(sSection, _T("RecFileCount"), DEFAULT_REC_AVIFILE_COUNT);
-	m_llRecFileSize = ((LONGLONG)pApp->GetProfileInt(sSection, _T("RecFileSizeMB"), DEFAULT_REC_AVIFILE_SIZE_MB)) << 20;
 	m_bPostRec = (BOOL) pApp->GetProfileInt(sSection, _T("PostRec"), FALSE);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
@@ -5675,11 +5627,8 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
-			pApp->WriteProfileInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
-			pApp->WriteProfileInt(sSection, _T("RecFileCount"), m_nRecFileCount);
-			pApp->WriteProfileInt(sSection, _T("RecFileSizeMB"), (int)(m_llRecFileSize >> 20));
 			pApp->WriteProfileInt(sSection, _T("PostRec"), m_bPostRec);
 			pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 			pApp->WriteProfileString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir);
@@ -5872,11 +5821,8 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecSizeSegmentation"), m_bRecSizeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecFileCount"), m_nRecFileCount, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecFileSizeMB"), (int)(m_llRecFileSize >> 20), sTempFileName);
 			::WriteProfileIniInt(sSection, _T("PostRec"), m_bPostRec, sTempFileName);
 			::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
 			::WriteProfileIniString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir, sTempFileName);
@@ -6469,28 +6415,25 @@ void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI)
 		pCmdUI->SetCheck(0);
 }
 
-void CVideoDeviceDoc::FreeAVIFiles()
+void CVideoDeviceDoc::FreeAVIFile()
 {
-	for (int i = 0 ; i < m_AVRecs.GetSize() ; i++)
+	if (m_pAVRec)
 	{
-		if (m_AVRecs[i])
+		if (m_pAVRec->GetFrameCount(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM)) == 0)
 		{
-			if (m_AVRecs[i]->GetFrameCount(m_AVRecs[i]->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM)) == 0)
-			{
-				CString sFileName = m_AVRecs[i]->GetFileName();
-				delete m_AVRecs[i];
-				::DeleteFile(sFileName);
-			}
-			else
-				delete m_AVRecs[i];
+			CString sFileName = m_pAVRec->GetFileName();
+			delete m_pAVRec;
+			::DeleteFile(sFileName);
 		}
+		else
+			delete m_pAVRec;
+		m_pAVRec = NULL;
 	}
-	m_AVRecs.RemoveAll();
 }
 
 __forceinline CString CVideoDeviceDoc::MakeRecFileName()
 {
-	CString sFirstRecFileName;
+	CString sRecFileName;
 	CTime Time = CTime::GetCurrentTime();
 	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
@@ -6499,13 +6442,13 @@ __forceinline CString CVideoDeviceDoc::MakeRecFileName()
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 
 	// Recording File Name (Full-Path)
-	if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sRecordAutoSaveDir, sFirstRecFileName))
+	if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sRecordAutoSaveDir, sRecFileName))
 		return _T("");
 	
-	if (sFirstRecFileName == _T(""))
+	if (sRecFileName == _T(""))
 		return _T("rec_") + sTime + _T(".avi");
 	else
-		return sFirstRecFileName + _T("\\") + _T("rec_") + sTime + _T(".avi");
+		return sRecFileName + _T("\\") + _T("rec_") + sTime + _T(".avi");
 }
 
 __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
@@ -6587,57 +6530,10 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 	}
 
 	// Open
-	if (!(*ppAVRec)->Open(m_bRecSizeSegmentation)) // if m_bRecSizeSegmentation is TRUE -> do Not Truncate File
+	if (!(*ppAVRec)->Open())
 		return FALSE;
 	else
 		return TRUE;
-}
-
-void CVideoDeviceDoc::AllocateCaptureFiles()
-{
-	// Allocate Files
-	int filenum;
-	for (filenum = 0 ; filenum < m_nRecFileCount ; filenum++)
-	{
-		// Set File Name
-		CString sFileName;
-		if (filenum > 0)
-		{
-			sFileName.Format(PART_POSTFIX, filenum + 1); 
-			sFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + sFileName;
-		}
-		else
-			sFileName = m_sFirstRecFileName;
-
-		// Create File
-		HANDLE hFile = ::CreateFile(sFileName,
-									GENERIC_WRITE,
-									FILE_SHARE_READ,
-									NULL,
-									OPEN_ALWAYS,
-									FILE_ATTRIBUTE_NORMAL,
-									NULL);
-		if (hFile != INVALID_HANDLE_VALUE)
-		{
-			LARGE_INTEGER li;
-			li.QuadPart = m_llRecFileSize;
-			::SetFilePointer(hFile, li.LowPart, &li.HighPart, FILE_BEGIN);
-			::SetEndOfFile(hFile);
-			::CloseHandle(hFile);
-		}
-	}
-
-	// Remove Remaining Files
-	for ( ; ; filenum++)
-	{
-		CString sFileName;
-		sFileName.Format(PART_POSTFIX, filenum + 1); 
-		sFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + sFileName;
-		if (::IsExistingFile(sFileName))
-			::DeleteFile(sFileName);
-		else
-			break;
-	}
 }
 
 BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec/*=NULL*/)
@@ -6728,9 +6624,9 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		else
 			m_bAboutToStartRec = FALSE;
 
-		// Set First Rec. File Name
-		m_sFirstRecFileName = MakeRecFileName();
-		if (m_sFirstRecFileName == _T(""))
+		// Set Rec. File Name
+		m_sRecFileName = MakeRecFileName();
+		if (m_sRecFileName == _T(""))
 			return RecError(bShowMessageBoxOnError);
 
 		// Set next rec time for time segmentation
@@ -6740,46 +6636,16 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 			NextRecTime(t);
 		}
 
-		// Allocate Capture Files
-		if (m_bRecSizeSegmentation)
-			AllocateCaptureFiles();
-
-		// Make Sure Array is empty!
-		FreeAVIFiles();
-		m_pAVRec = NULL;
-
-		// Reset Pos
-		m_nRecFilePos = 0;
+		// Free
+		FreeAVIFile();
 		
-		// Set File Count
-		int nRecFileCount = m_nRecFileCount;
-		if (!m_bRecSizeSegmentation)
-			nRecFileCount = 1;
+		// Allocate & Init pAVRec
+		CAVRec* pAVRec = NULL;
+		if (!MakeAVRec(m_sRecFileName, &pAVRec))
+			return RecError(bShowMessageBoxOnError, pAVRec);
 
-		// Init File(s)
-		for (int filenum = 0 ; filenum < nRecFileCount ; filenum++)
-		{
-			// Set File Name
-			CString sFileName;
-			if (filenum > 0)
-			{
-				sFileName.Format(PART_POSTFIX, filenum + 1); 
-				sFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + sFileName;
-			}
-			else
-				sFileName = m_sFirstRecFileName;
-
-			// Allocate & Init pAVRec
-			CAVRec* pAVRec = NULL;
-			if (!MakeAVRec(sFileName, &pAVRec))
-				return RecError(bShowMessageBoxOnError, pAVRec);
-
-			// Add To Array
-			m_AVRecs.Add(pAVRec);
-		}
-
-		// Set Current AV Rec Pointer
-		m_pAVRec = m_AVRecs[0];
+		// Set AV Rec Pointer
+		m_pAVRec = pAVRec;
 
 		// Start Recording
 		m_bRecFirstFrame = TRUE;
@@ -8683,15 +8549,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 					!m_bCaptureAudio	&&
 					(m_dwFrameCountUp % dwFrameRate) == 0)
 				{
-					if (m_bRecSizeSegmentation)
-					{
-						LONGLONG llTotalWrittenBytes =
-						m_pAVRec->GetTotalWrittenBytes(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
-						llTotalWrittenBytes += (llTotalWrittenBytes / 5); // Guess a 20% of AVI Overhead (Index, AVI Hdrs and Data Chunk Hdrs)
-						if (llTotalWrittenBytes > m_llRecFileSize)
-							bOk = NextAviFile();
-					}
-					else if (m_bRecTimeSegmentation)
+					if (m_bRecTimeSegmentation)
 					{
 						CTime t = CurrentTime;
 						if (t >= m_NextRecTime)
@@ -9165,20 +9023,10 @@ __forceinline void CVideoDeviceDoc::ChangeRecFileFrameRate(double dFrameRate/*=0
 		else
 			dFrameRate =	1.0;
 	}
-	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)m_sFirstRecFileName,
+	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)m_sRecFileName,
 										0,
 										dFrameRate,
 										false);
-	for (int i = 1 ; i <= m_nRecFilePos ; i++)
-	{
-		CString sNextFileName;
-		sNextFileName.Format(PART_POSTFIX, i + 1); 
-		sNextFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + sNextFileName;
-		CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sNextFileName,
-											0,
-											dFrameRate,
-											false);
-	}
 }
 
 __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
@@ -9188,7 +9036,7 @@ __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
 		CPostRecParams* pPostRecParams = new CPostRecParams;
 		if (pPostRecParams)
 		{
-			pPostRecParams->m_sSaveFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + POSTREC_POSTFIX + _T(".avi");
+			pPostRecParams->m_sSaveFileName = ::GetFileNameNoExt(m_sRecFileName) + POSTREC_POSTFIX + _T(".avi");
 			pPostRecParams->m_dwVideoCompressorFourCC = m_dwVideoPostRecFourCC;
 			pPostRecParams->m_fVideoCompressorQuality = m_fVideoPostRecQuality;
 			pPostRecParams->m_nVideoCompressorDataRate = m_nVideoPostRecDataRate;
@@ -9198,7 +9046,7 @@ __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
 			pPostRecParams->m_bCloseWhenDone = !(m_bRecAutoOpen && m_bRecAutoOpenAllowed);
 			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 							WM_THREADSAFE_OPEN_DOC,
-							(WPARAM)(new CString(m_sFirstRecFileName)),
+							(WPARAM)(new CString(m_sRecFileName)),
 							(LPARAM)pPostRecParams);
 		}
 	}
@@ -9206,59 +9054,20 @@ __forceinline void CVideoDeviceDoc::OpenAndPostProcess()
 	{
 		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 						WM_THREADSAFE_OPEN_DOC,
-						(WPARAM)(new CString(m_sFirstRecFileName)),
+						(WPARAM)(new CString(m_sRecFileName)),
 						(LPARAM)NULL);
-	}
-	for (int i = 1 ; i <= m_nRecFilePos ; i++)
-	{
-		CString sPart;
-		sPart.Format(PART_POSTFIX, i + 1); 
-		CString sNextFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + sPart;
-		if (m_bPostRec)
-		{
-			CPostRecParams* pPostRecParams = new CPostRecParams;
-			if (pPostRecParams)
-			{
-				pPostRecParams->m_sSaveFileName = ::GetFileNameNoExt(m_sFirstRecFileName) + POSTREC_POSTFIX + sPart;
-				pPostRecParams->m_dwVideoCompressorFourCC = m_dwVideoPostRecFourCC;
-				pPostRecParams->m_fVideoCompressorQuality = m_fVideoPostRecQuality;
-				pPostRecParams->m_nVideoCompressorDataRate = m_nVideoPostRecDataRate;
-				pPostRecParams->m_nVideoCompressorKeyframesRate = m_nVideoPostRecKeyframesRate;
-				pPostRecParams->m_nVideoCompressorQualityBitrate = m_nVideoPostRecQualityBitrate;
-				pPostRecParams->m_bDeinterlace = FALSE;
-				pPostRecParams->m_bCloseWhenDone = !(m_bRecAutoOpen && m_bRecAutoOpenAllowed);
-				::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-								WM_THREADSAFE_OPEN_DOC,
-								(WPARAM)(new CString(sNextFileName)),
-								(LPARAM)pPostRecParams);
-			}
-		}
-		else if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
-		{
-			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-							WM_THREADSAFE_OPEN_DOC,
-							(WPARAM)(new CString(sNextFileName)),
-							(LPARAM)NULL);
-		}
 	}
 }
 
 void CVideoDeviceDoc::CloseAndShowAviRec()
 {
-	// Calc. Total Samples
+	// Get Total Samples
 	LONGLONG llSamplesCount = 0;
-	if (m_bCaptureAudio)
-	{
-		for (int i = 0 ; i < m_AVRecs.GetSize() ; i++)
-		{
-			if (m_AVRecs[i])
-				llSamplesCount += m_AVRecs[i]->GetSampleCount(m_AVRecs[i]->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
-		}
-	}
+	if (m_bCaptureAudio && m_pAVRec)
+		llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
 
 	// Free & Reset Vars
-	FreeAVIFiles();
-	m_pAVRec = NULL;
+	FreeAVIFile();
 	m_bVideoRecWait = TRUE;
 	m_bAudioRecWait = TRUE;
 	m_bStopRec = FALSE;
@@ -9280,7 +9089,7 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 	else
 		ChangeRecFileFrameRate();
 
-	// If ending the windows session do not performe the following
+	// If ending the windows session do not perform the following
 	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
 	{
 		// Set Small Buffers for a faster Peak Meter Reaction
@@ -9364,67 +9173,44 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 
 BOOL CVideoDeviceDoc::NextAviFile()
 {
-	BOOL res = FALSE;
 	CAVRec* pNextAVRec = NULL;
-	if (m_bRecSizeSegmentation)
+
+	// Make Rec. File Name
+	CString sRecFileName = MakeRecFileName();
+	if (sRecFileName == _T(""))
+		return FALSE;
+
+	// Allocate & Init pNextAVRec
+	if (!MakeAVRec(sRecFileName, &pNextAVRec))
 	{
-		// Get Next AVI File
-		if ((m_nRecFilePos + 1) < m_AVRecs.GetSize()) 
-			pNextAVRec = m_AVRecs[++m_nRecFilePos];
-		else
-			return FALSE;
-
-		// Change Pointer
-		m_pAVRec = pNextAVRec;
-
-		// Set Ok
-		res = TRUE;
+		if (pNextAVRec)
+			delete pNextAVRec;
+		return FALSE;
 	}
-	// m_bRecTimeSegmentation
-	else
+
+	// Close old file, change frame rate and ev. post process it
+	if (m_pAVRec)
 	{
-		// Make First Rec. File Name
-		CString sFirstRecFileName = MakeRecFileName();
-		if (sFirstRecFileName == _T(""))
-			return FALSE;
+		// Free
+		delete m_pAVRec;
 
-		// Allocate & Init pNextAVRec
-		if (!MakeAVRec(sFirstRecFileName, &pNextAVRec))
-		{
-			if (pNextAVRec)
-				delete pNextAVRec;
-			return FALSE;
-		}
+		// Change Frame Rate
+		ChangeRecFileFrameRate();
 
-		// Close old file, change frame rate and ev. post process it
-		if (m_pAVRec)
-		{
-			// Free
-			delete m_pAVRec;
-
-			// Change Frame Rate
-			ChangeRecFileFrameRate();
-
-			// Open the video file and ev. post process it
-			OpenAndPostProcess();
-		}
-
-		// Change Pointer
-		m_pAVRec = pNextAVRec;
-		if (m_AVRecs.GetSize() > 0)
-			m_AVRecs[0] = pNextAVRec;
-
-		// Set new first file name
-		m_sFirstRecFileName = sFirstRecFileName;
-
-		// Restart with frame counting and time measuring
-		m_bRecFirstFrame = TRUE;
-
-		// Set Ok
-		res = TRUE;
+		// Open the video file and ev. post process it
+		OpenAndPostProcess();
 	}
-	
-	return res;
+
+	// Change Pointer
+	m_pAVRec = pNextAVRec;
+
+	// Set new file name
+	m_sRecFileName = sRecFileName;
+
+	// Restart with frame counting and time measuring
+	m_bRecFirstFrame = TRUE;
+
+	return TRUE;
 }
 
 // pDib    : the frame pointer

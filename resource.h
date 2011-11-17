@@ -1615,10 +1615,8 @@
 #define IDS_MULTILANG_1383              1383
 #define IDC_EDIT_DATARATE               1383
 #define IDS_MULTILANG_1384              1384
-#define IDC_RECFILE_COUNT               1384
 #define IDC_EDIT_FREQDIV                1384
 #define IDS_MULTILANG_1385              1385
-#define IDC_RECFILE_SIZE                1385
 #define IDS_MULTILANG_1386              1386
 #define IDC_EDIT_POSTREC_DATARATE       1386
 #define IDS_MULTILANG_1387              1387
@@ -2142,7 +2140,6 @@
 #define IDC_COMBO_MP2_CHANNELS          1649
 #define IDS_STRING1649                  1649
 #define IDC_COMBO_MP3_CHANNELS          1650
-#define IDC_CHECK_SIZE_SEGMENTATION     1650
 #define IDS_STRING1650                  1650
 #define IDC_COMBO_MP2_SAMPLINGRATE      1651
 #define IDC_CHECK_DEINTERLACE           1651

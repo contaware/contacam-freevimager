@@ -18,14 +18,6 @@ static char THIS_FILE[] = __FILE__;
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
 
-// This Function supports a additional flag for not truncating the file: URL_NOTRUNC
-#define URL_NOTRUNC   4
-extern "C"
-{
-int avrec_url_fopen(ByteIOContext **s, const char *filename, int flags);
-}
-
-
 CAVRec::CAVRec()
 {
 	InitVars();
@@ -1129,7 +1121,7 @@ bool CAVRec::SetInfo(LPCTSTR szTitle,
 	return true;
 }
 
-bool CAVRec::Open(BOOL bNoTruncation/*=FALSE*/)
+bool CAVRec::Open()
 {
 	// Check
 	if (!m_pOutputFormat || !m_pFormatCtx)
@@ -1147,10 +1139,7 @@ bool CAVRec::Open(BOOL bNoTruncation/*=FALSE*/)
 	// Open the output file, if needed
     if (!(m_pOutputFormat->flags & AVFMT_NOFILE))
 	{
-		int flags = URL_WRONLY;
-		if (bNoTruncation)
-			flags |= URL_NOTRUNC;
-		if (avrec_url_fopen(&m_pFormatCtx->pb, m_pFormatCtx->filename, flags) < 0)
+		if (::url_fopen(&m_pFormatCtx->pb, m_pFormatCtx->filename, URL_WRONLY) < 0)
 		{
             TRACE(_T("Could not open '%s'\n"), m_sFileName);
             return false;

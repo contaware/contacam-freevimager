@@ -50,10 +50,6 @@ class CMovementDetectionPage;
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define DEFAULT_REC_AVIFILE_COUNT			8			// files
-#define DEFAULT_REC_AVIFILE_SIZE_MB			1000		// 1000 MB
-#define DEFAULT_REC_AVIFILE_SIZE			(1000 * 1024 * 1024)// 1000 MB
-#define PART_POSTFIX						_T("_part%04d.avi")
 #define POSTREC_POSTFIX						_T("_postrec")
 #define MAX_DEVICE_AUTORUN_KEYS				32			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
@@ -207,7 +203,6 @@ class CVideoDeviceDoc : public CUImagerDoc
 {
 public:
 	// Types
-	typedef CArray<CAVRec*,CAVRec*> AVRECARRAY;
 	typedef CList<CDib::LIST*,CDib::LIST*> DIBLISTLIST;
 	typedef CList<CNetCom*,CNetCom*> NETCOMLIST;
 	
@@ -1186,11 +1181,10 @@ public:
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();
 	__forceinline BOOL IsRecording() {return m_pAVRec != NULL;};
-	void AllocateCaptureFiles();
 	BOOL NextAviFile();
 	void NextRecTime(CTime t);
 	void CloseAndShowAviRec();
-	void FreeAVIFiles();
+	void FreeAVIFile();
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
@@ -1353,7 +1347,6 @@ public:
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
 	volatile BOOL m_bInterleave;						// Do not interleave because while recording the frame rate is not yet exactly known!
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
-	AVRECARRAY m_AVRecs;								// Array of Opened files for segmented recording
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
 	volatile BOOL m_bRgb32Frame;						// Current Frame is RGB32 (Converted to or originally 32 bpp)
@@ -1420,17 +1413,10 @@ public:
 														// -> For Frame Rate Calculation
 	volatile BOOL m_bRecAutoOpen;						// Auto open avi after recording
 	volatile BOOL m_bRecAutoOpenAllowed;				// Flag which allows auto open of avi after recording
-	volatile int m_nRecFilePos;							// 0 = Current recording file is the first one
-														// 1 = This is the second recording file,
-														//     already recorded one file of the given max size
-														// 2 = ...
-	volatile BOOL m_bRecSizeSegmentation;				// Enable / Disable Size Segmentation
 	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
-	volatile int m_nRecFileCount;						// The Maximum Number of Segments to Record
-	volatile LONGLONG m_llRecFileSize;					// Maximum size of one Segment in Bytes
-	CString m_sFirstRecFileName;						// The First Recording File Name
+	CString m_sRecFileName;								// The Recording File Name
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	volatile BOOL m_bRecDeinterlace;					// Recording De-Interlace
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
