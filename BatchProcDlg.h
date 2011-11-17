@@ -8,7 +8,6 @@
 #include "resource.h"
 #include "DibStatic.h"
 #include "AviPlay.h"
-#include "AviFile.h"
 #include "StaticLink.h"
 #include "DragDropListCtrl.h"
 #include "TabCtrlSSL.h"
@@ -18,9 +17,7 @@
 #include "BatchProcShrinkTab.h"
 #include "TryEnterCriticalSection.h"
 #include "AnimGifSave.h"
-#ifdef SUPPORT_LIBAVCODEC
 #include "AVRec.h"
-#endif
 
 #define	WM_ONEXIT							WM_USER + 1200
 #define	WM_UPDATEDIBS_POSTPONE				WM_USER + 1201
@@ -57,11 +54,7 @@ public:
 								m_pAnimGifSave = NULL;
 								m_TiffOutFile = NULL;
 								m_bFirstOutputFile = TRUE;
-#ifdef SUPPORT_LIBAVCODEC
 								m_pAVRec = NULL;
-#else
-								m_pAVIFile = NULL;
-#endif
 							};
 			virtual ~CProcessThread(){Kill();};
 			void SetDlg(CBatchProcDlg* pDlg) {m_pDlg = pDlg;};
@@ -107,11 +100,7 @@ public:
 			CString m_sTempOutputFileName;
 			BOOL m_bFirstOutputFile;
 			CBatchProcDlg* m_pDlg;
-#ifdef SUPPORT_LIBAVCODEC
 			CAVRec* m_pAVRec;
-#else
-			CAVIFile* m_pAVIFile;
-#endif
 
 			int Work();
 			void OpenOutputFile(int nFilesCount);

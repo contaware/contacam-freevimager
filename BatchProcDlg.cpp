@@ -433,7 +433,6 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		// Create the Avi File
 		m_pAVRec = new CAVRec(m_pDlg->m_sOutputFileName);
 		if (!m_pAVRec)
@@ -466,22 +465,6 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 		}
 		else
 			throw (int)0;
-#else
-		m_pAVIFile = new CAVIFile (	m_pDlg,
-									m_pDlg->m_sOutputFileName,
-									(DWORD)Round(m_dFrameRate * AVI_SCALE_DOUBLE),
-									AVI_SCALE_INT,
-									NULL,
-									true,
-									true,
-									false); // Do Not Show Message Box On Error
-		if (!m_pAVIFile)
-			throw (int)0;
-
-		// Prompt for Compression
-		if (!m_pAVIFile->VideoCompressorDialog(0))
-			throw (int)0;
-#endif
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
@@ -524,19 +507,11 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		if (m_pAVRec)
 		{
 			delete m_pAVRec;
 			m_pAVRec = NULL;
 		}
-#else
-		if (m_pAVIFile)
-		{
-			delete m_pAVIFile;
-			m_pAVIFile = NULL;
-		}
-#endif
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
@@ -731,7 +706,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 		m_Dib.SetAlpha(FALSE);
 	}
 
-#ifdef SUPPORT_LIBAVCODEC
 	// Set Raw Copy Flag
 	BOOL bRawCopy = (m_pDlg->m_dwVideoCompressorFourCC == BI_RGB);
 
@@ -887,137 +861,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 		if (!m_pAVRec->AddFrame(0, &m_Dib, false))
 			throw (int)0;
 	}
-#else
-	// If first frame
-	if (m_bFirstOutputFile)
-	{
-		// If not raw encoding decompress to 24 bpp
-		if (m_pAVIFile->GetVideoCompressorOptions(0)->fccHandler != BI_RGB)
-		{
-			if (!m_Dib.Decompress(24))
-				throw (int)0;
-		}
-
-		// Init video write 
-		if (!m_pAVIFile->InitVideoWrite(0, m_Dib.GetBMI()))
-		{
-			// Allocate a temporary Bitmapinfo struct
-			LPBITMAPINFO pTempBMI = (LPBITMAPINFO)new BYTE[m_Dib.GetBMISize()];
-			int nXAdd = 0;
-			int nYAdd = 0;
-
-			// Retry sizes that are mutiples of: 2, 4, 8, 16 or 32
-			for (int i = 1 ; i <= 5 ; i++)
-			{
-				nXAdd = m_Dib.GetWidth() % (1<<i);
-				if (nXAdd > 0)
-					nXAdd = (1<<i) - nXAdd;
-				nYAdd = m_Dib.GetHeight() % (1<<i);
-				if (nYAdd > 0)
-					nYAdd = (1<<i) - nYAdd;
-				
-				memcpy(pTempBMI, m_Dib.GetBMI(), m_Dib.GetBMISize());
-				pTempBMI->bmiHeader.biWidth = m_Dib.GetWidth() + nXAdd;
-				pTempBMI->bmiHeader.biHeight = m_Dib.GetHeight() + nYAdd;
-				pTempBMI->bmiHeader.biSizeImage =	DWALIGNEDWIDTHBYTES(pTempBMI->bmiHeader.biWidth * pTempBMI->bmiHeader.biBitCount) *
-													pTempBMI->bmiHeader.biHeight;
-				m_pAVIFile->SetOk(true); // Reset Last Error!
-				if (m_pAVIFile->InitVideoWrite(0, pTempBMI))
-					break;
-			}
-			delete [] pTempBMI;
-			if (!m_pAVIFile->IsOk())
-				throw (int)0;
-			else
-			{
-				if (!m_Dib.StretchBitsMaintainAspectRatio(	m_Dib.GetWidth() + nXAdd,
-															m_Dib.GetHeight() + nYAdd,
-															RGB(0,0,0), // Black background for AVIs is ok
-															NULL,		// Src Dib itself
-															NULL,		// No Progress Wnd
-															FALSE,		// No Progress Send
-															this))		// Thread
-					throw (int)0;
-			}
-		}
-
-		// Store First Dib
-		m_FirstDib = m_Dib;
-	}
-	else
-	{
-		// Stretch if necessary and decompresses if RLE encoded
-		if (!m_Dib.StretchBitsMaintainAspectRatio(	m_FirstDib.GetWidth(),
-													m_FirstDib.GetHeight(),
-													RGB(0,0,0), // Black background for AVIs is ok
-													NULL,		// Src Dib itself
-													NULL,		// No Progress Wnd
-													FALSE,		// No Progress Send
-													this))		// Thread
-			throw (int)0;
-
-		// Change bit depth and eventually decompress if RLE encoded
-		if (m_FirstDib.GetBitCount() <= 8)
-		{
-			if (!m_Dib.Decompress(24))
-				throw (int)0;
-		}
-		else
-		{
-			// Special Handling for 16 bpp
-			if (m_FirstDib.GetBitCount() == 16)
-			{
-				if (m_FirstDib.IsRgb16_555())
-				{
-					if (!m_Dib.ConvertTo15bits())
-						throw (int)0;
-				}
-				else
-				{
-					if (!m_Dib.ConvertTo16bitsMasks())
-						throw (int)0;
-				}
-			}
-			// Normal Handling for 24 bpp & 32 bpp
-			else
-			{
-				if (!m_Dib.ConvertTo(m_FirstDib.GetBitCount()))
-					throw (int)0;
-			}
-		}
-		
-		// Convert to 1 bpp
-		if (m_FirstDib.GetBitCount() == 1)
-		{
-			if (!m_Dib.ConvertTo1bitDitherErrDiff(0))	// Floyd-Steinberg
-				throw (int)0;
-		}
-		// Convert to 4 bpp using first's image palette
-		else if (m_FirstDib.GetBitCount() == 4)
-		{
-			if (!m_Dib.ConvertTo4bitsErrDiff(m_FirstDib.GetPalette()))
-				throw (int)0;
-		}
-		// Convert to 8 bpp using first's image palette
-		else if (m_FirstDib.GetBitCount() == 8)
-		{
-			if (!m_Dib.ConvertTo8bitsErrDiff(m_FirstDib.GetPalette()))
-				throw (int)0;
-		}
-
-		// If we want RLE we need to compress
-		if (m_FirstDib.GetCompression() == BI_RLE4 ||
-			m_FirstDib.GetCompression() == BI_RLE8)
-		{
-			if (!m_Dib.Compress(m_FirstDib.GetCompression()))
-				throw (int)0;
-		}
-	}
-
-	// Save Frame
-	if (!m_pAVIFile->AddFrame(0, &m_Dib))
-		throw (int)0;
-#endif
 }
 
 void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,

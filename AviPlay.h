@@ -11,14 +11,12 @@
 #if (_MSC_VER <= 1200)
 #include "BigFile.h"
 #endif
-#ifdef SUPPORT_LIBAVCODEC
 extern "C"
 {
 #include "ffmpeg\\libavcodec\\avcodec.h"
 #include "ffmpeg\\libavformat\\avformat.h"
 #include "ffmpeg\\libswscale\\swscale.h"
 }
-#endif
 
 #ifndef BI_BGR16
 #define BI_BGR16							mmioFOURCC('B','G','R',16)
@@ -60,10 +58,8 @@ extern "C"
 #define MAX_KEYFRAMES_SPACING				1024
 
 // Lib AVCodec Defines: Codec Id as Parameter
-#ifdef SUPPORT_LIBAVCODEC
 #define mpeg_codec(x)		((x)==CODEC_ID_MPEG1VIDEO || (x)==CODEC_ID_MPEG2VIDEO)
 #define mjpeg_codex(x)		((x)==CODEC_ID_MJPEG || (x)==CODEC_ID_MJPEGB || (x)==CODEC_ID_SP5X)
-#endif
 
 /*
 Timing of an AVI stream is governed by several variables:
@@ -568,11 +564,9 @@ class CAVIPlay
 									m_bFirstConversion = true;
 									m_dwSrcBufUnconvertedBytesCount = 0;
 									memset(&m_MpegAudioFrameHdr, 0, sizeof(MpegAudioFrameHdr));
-#ifdef SUPPORT_LIBAVCODEC
 									m_pCodec = NULL;
 									m_pCodecCtx = NULL;
 									m_pParser = NULL;
-#endif
 								}; 
 			
 			// Destructor						
@@ -650,12 +644,10 @@ class CAVIPlay
 			__forceinline bool IsUsingACM() {return m_hAcmStream != NULL;};
 
 			// AV Codec
-#ifdef SUPPORT_LIBAVCODEC
 			__forceinline bool IsUsingAVCodec() {return m_pCodecCtx != NULL;};
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
 			static enum CodecID AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits = 16);
-#endif
 
 		protected:
 			bool OpenDecompressionACM();
@@ -753,7 +745,6 @@ class CAVIPlay
 										MpegAudioFrameHdr* pHdrFound = NULL,
 										MpegAudioFrameHdr* pHdrCompare = NULL);
 
-#ifdef SUPPORT_LIBAVCODEC
 			// AVCodec Vars
 			AVCodec* m_pCodec;
 			AVCodecContext* m_pCodecCtx;
@@ -762,7 +753,6 @@ class CAVIPlay
 			// AVCodec Functions
 			bool OpenDecompressionAVCodec();
 			void FreeAVCodec();
-#endif
 	};
 
 	// AVI Palette Stream Class
@@ -842,7 +832,6 @@ class CAVIPlay
 									m_pPrevRLEDib = NULL;
 									m_pCurrentRLEDib = NULL;
 									m_nOneFrameDelay = 0;
-#ifdef SUPPORT_LIBAVCODEC
 									m_pCodec = NULL;
 									m_pCodecCtx = NULL;
 									m_pFrame = NULL;
@@ -859,7 +848,6 @@ class CAVIPlay
 #ifdef SUPPORT_LIBSWSCALE
 									m_pFilterGdi = NULL;
 									m_pFilterDxDraw = NULL;
-#endif
 #endif
 								}; 
 			
@@ -879,14 +867,12 @@ class CAVIPlay
 			__forceinline bool IsUsingVCM() {return m_hIC != NULL;};
 
 			// AV Codec
-#ifdef SUPPORT_LIBAVCODEC
 			__forceinline bool IsUsingAVCodec() {return m_pCodecCtx != NULL;};
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
 			static __forceinline enum PixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
 			static __forceinline enum PixelFormat AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw);
 			static __forceinline enum CodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
-#endif
 
 			// Width & Height: some corrupted Avis have different values for width & height...
 			// Priority of choice: 1. Format, 2. rcFrame, 3. Main Hdr
@@ -1088,7 +1074,6 @@ class CAVIPlay
 			CDib* m_pCurrentRLEDib;
 			int m_nOneFrameDelay;
 
-#ifdef SUPPORT_LIBAVCODEC
 			bool OpenDecompressionAVCodec();
 			void FreeAVCodec(bool bNoClose = false);
 			__forceinline bool AVCodecHandle8bpp(bool bVFlip);
@@ -1117,7 +1102,6 @@ class CAVIPlay
 #ifdef SUPPORT_LIBSWSCALE
 			SwsFilter* m_pFilterGdi;
 			SwsFilter* m_pFilterDxDraw;
-#endif
 #endif
 	};
 
@@ -1265,9 +1249,7 @@ public:
 #endif
 
 	// Use AVCodecs as first choice flag
-#ifdef SUPPORT_LIBAVCODEC
 	bool m_bAVCodecPriority;
-#endif
 
 	// Critical section for synchronizing accesses to avi file and codecs
 	// (some audio and video codecs cannot be access at the same time)
@@ -1311,8 +1293,6 @@ __forceinline DWORD CAVIPlay::CAVIAudioStream::GetBufSamplesCount() const
 	else
 		return 0;
 }
-
-#ifdef SUPPORT_LIBAVCODEC
 
 __forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
 {
@@ -1700,7 +1680,5 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 	else
 		return CODEC_ID_NONE;
 }
-
-#endif
 
 #endif //!_INC_AVIPLAY

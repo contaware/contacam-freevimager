@@ -17,18 +17,16 @@ static char THIS_FILE[] = __FILE__;
 
 
 CAviSaveAsStreamsDlg::CAviSaveAsStreamsDlg(	CAVIPlay* pAVIPlay,
-											int nDlgID,
 											CDWordArray* pVideoStreamsSave,
 											CDWordArray* pVideoStreamsChange,
 											CDWordArray* pAudioStreamsSave,
 											CDWordArray* pAudioStreamsChange,
 											CWnd* pParent /*=NULL*/)
-	: CDialog(nDlgID, pParent)
+	: CDialog(CAviSaveAsStreamsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAviSaveAsStreamsDlg)
 	//}}AFX_DATA_INIT
 	m_pAVIPlay = pAVIPlay;
-	m_bUseVfwCodecs = FALSE;
 	m_pVideoStreamsSave = pVideoStreamsSave;
 	m_pVideoStreamsChange = pVideoStreamsChange;
 	m_pAudioStreamsSave = pAudioStreamsSave;
@@ -83,14 +81,6 @@ BOOL CAviSaveAsStreamsDlg::OnInitDialog()
 		}
 	}
 
-	CButton* pRadioCodecInternal = (CButton*)GetDlgItem(IDC_RADIO_CODEC_INTERNAL);
-	CButton* pRadioCodecVFW = (CButton*)GetDlgItem(IDC_RADIO_CODEC_VFW);
-	if (pRadioCodecInternal && pRadioCodecVFW)
-	{
-		pRadioCodecInternal->SetCheck(m_bUseVfwCodecs ? 0 : 1);
-		pRadioCodecVFW->SetCheck(m_bUseVfwCodecs ? 1 : 0);
-	}
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -131,10 +121,6 @@ void CAviSaveAsStreamsDlg::OnOK()
 			m_pAudioStreamsChange->Add(0);
 		}
 	}
-
-	CButton* pRadioCodecVFW = (CButton*)GetDlgItem(IDC_RADIO_CODEC_VFW);
-	if (pRadioCodecVFW)
-		m_bUseVfwCodecs = pRadioCodecVFW->GetCheck() == 1 ? TRUE : FALSE;
 
 	CDialog::OnOK();
 }

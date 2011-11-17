@@ -122,7 +122,6 @@
 #define IDD_OCR_LANGUAGE                276
 #define IDD_AUDIOFORMAT                 277
 #define IDD_VIDEOFORMAT                 278
-#define IDD_SAVEAS_STREAMS_CODEC_SELECT 279
 #define IDD_WINSOCK2_MISSING            280
 #define IDD_HTTP_VIDEOFORMAT            281
 #define IDD_HTTP_AUTHENTICATION         282
@@ -2176,10 +2175,8 @@
 #define IDS_STRING1660                  1660
 #define IDS_STRING1661                  1661
 #define IDC_LABEL_POSTREC_KEYFRAMES_RATE0 1662
-#define IDC_RADIO_CODEC_INTERNAL        1662
 #define IDS_STRING1662                  1662
 #define IDC_LABEL_POSTREC_DATARATE1     1663
-#define IDC_RADIO_CODEC_VFW             1663
 #define IDS_STRING1663                  1663
 #define IDC_VIDEO_POSTREC_COMPRESSION_QUALITY_NUM 1664
 #define IDC_RADIO_RGB                   1664

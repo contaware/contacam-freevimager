@@ -4291,29 +4291,6 @@ BEGIN
                     35,10
 END
 
-IDD_SAVEAS_STREAMS_CODEC_SELECT DIALOGEX 0, 0, 210, 177
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Save As Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    LISTBOX         IDC_STREAM_SAVE,7,17,196,47,LBS_MULTIPLESEL | 
-                    LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
-                    WS_HSCROLL | WS_TABSTOP
-    LISTBOX         IDC_STREAM_CHANGE,7,82,196,47,LBS_MULTIPLESEL | 
-                    LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
-                    WS_HSCROLL | WS_TABSTOP
-    CONTROL         "Use Internal Codecs",IDC_RADIO_CODEC_INTERNAL,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,7,138,99,10
-    CONTROL         "Use VfW Codecs",IDC_RADIO_CODEC_VFW,"Button",
-                    BS_AUTORADIOBUTTON,132,138,71,10
-    DEFPUSHBUTTON   "OK",IDOK,71,156,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,153,156,50,14
-    LTEXT           "Select the Streams to Save:",IDC_STATIC2455,7,7,89,8
-    LTEXT           "Select the Streams to Change (Compress/Decompress, ...):",
-                    IDC_STATIC2456,7,73,186,8
-END
-
 IDD_WINSOCK2_MISSING DIALOG DISCARDABLE  0, 0, 231, 70
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
@@ -5574,15 +5551,6 @@ BEGIN
         HORZGUIDE, 75
     END
 
-    IDD_SAVEAS_STREAMS_CODEC_SELECT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 203
-        VERTGUIDE, 20
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 170
-    END
-
     IDD_WINSOCK2_MISSING, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -6282,7 +6250,6 @@ BEGIN
     IDS_MULTILANG_1435      "Do you want to continue anyway?\n"
     IDS_MULTILANG_1436      "AVI file is to big to create one unique gif color table,\n"
     IDS_MULTILANG_1437      "please choose the multiple color tables option."
-    IDS_MULTILANG_1438      "AVI Files with VBR Mp3 Audio cannot be Saved."
     IDS_MULTILANG_1439      "The file name is zero"
 END
 
@@ -6291,12 +6258,7 @@ BEGIN
     IDS_MULTILANG_1440      "The file extention is not .avi or .divx"
     IDS_MULTILANG_1441      "File is empty"
     IDS_MULTILANG_1442      "Unspecified error"
-    IDS_MULTILANG_1443      "In The Next Dialog Box Select A Low Quality\n"
-    IDS_MULTILANG_1444      "Or A Low Bitrate (for example: 192 kbit/s) To\n"
-    IDS_MULTILANG_1445      "Get A Small Video File Size!"
     IDS_MULTILANG_1446      "Select Two Or More Files!\n(Tip: Hold Down the Ctrl-Key To Multiple File Select)"
-    IDS_MULTILANG_1447      "Do you want to Compress / Decompress the Video Stream(s)?"
-    IDS_MULTILANG_1448      "Do you want to Compress / Decompress the Audio Stream(s)?"
     IDS_MULTILANG_1449      "Failed to Merge the Avi Files."
     IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
     IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
@@ -7184,7 +7146,6 @@ BEGIN
     IDS_STRING1763          "Switch to GDI under the View menu"
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
-    IDS_STRING1766          "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Double-click to change unit"
     IDS_STRING1769          "Thumbnail Size %i x %i"

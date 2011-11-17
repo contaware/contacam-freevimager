@@ -29,10 +29,7 @@
 #include "Tiff2Pdf.h"
 #include "PdfSaveDlg.h"
 #include "NoVistaFileDlg.h"
-#include "AviFile.h"
-#ifdef SUPPORT_LIBAVCODEC
 #include "AVRec.h"
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -3643,7 +3640,6 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAVI(const CString& sFileName)
 			nMilliSecondDelay = pDib->GetGif()->GetDelay();
 	}
 
-#ifdef SUPPORT_LIBAVCODEC
 	// Create Avi
 	CAVRec AVRec(sFileName);
 
@@ -3718,71 +3714,6 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAVI(const CString& sFileName)
 	
 	DIB_END_PROGRESS(GetView()->GetSafeHwnd());
 	EndWaitCursor();
-#else
-	// Create Avi
-	CAVIFile AVIFile(	GetView(),
-						sFileName,
-						1000,
-						nMilliSecondDelay,
-						NULL,
-						true,
-						true,
-						false); // Do Not Show Message Box On Error
-
-	BeginWaitCursor();
-	DIB_INIT_PROGRESS;
-	
-	BOOL bFirst = TRUE;
-	CDib Dib24;
-	for (i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
-	{
-		// Progress
-		DIB_PROGRESS(GetView()->GetSafeHwnd(), TRUE, i, m_GifAnimationThread.m_dwDibAnimationCount);
-
-		// Add Frame
-		CDib* pOriginalDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(i);
-		CDib* pAlphaRenderedDib =	(m_GifAnimationThread.m_AlphaRenderedDibAnimationArray.GetSize() > 0) ?
-									m_GifAnimationThread.m_AlphaRenderedDibAnimationArray.GetAt(i) : NULL;
-		if (pAlphaRenderedDib ?
-			pDib = pAlphaRenderedDib :
-			pDib = pOriginalDib)
-		{
-			Dib24 = *pDib;
-			Dib24.SetShowMessageBoxOnError(FALSE);
-			res = Dib24.ConvertTo24bits();
-			if (!res)
-				break;
-
-			// First Frame?
-			if (bFirst)
-			{
-				bFirst = FALSE;
-				res = AVIFile.InitVideoWrite(0, Dib24.GetBMI()) ? TRUE : FALSE;
-				if (!res)
-					break;
-			}
-
-			// Add Frame(s)
-			int nRep = pOriginalDib->GetGif()->GetDelay() / nMilliSecondDelay;
-			for (int r = 0 ; r < nRep ; r++)
-			{
-				res = AVIFile.AddFrame(0, &Dib24) ? TRUE : FALSE;
-				if (!res)
-					break;
-			}
-			if (!res)
-				break;
-		}
-		else
-		{
-			res = FALSE;
-			break;
-		}
-	}
-	
-	DIB_END_PROGRESS(GetView()->GetSafeHwnd());
-	EndWaitCursor();
-#endif
 
 	return res;
 }

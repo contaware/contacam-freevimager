@@ -14,8 +14,6 @@ static char THIS_FILE[] = __FILE__;
 #define ALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 #define BUF_ALLOC_ALIGN		16
 
-#ifdef SUPPORT_LIBAVCODEC
-
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
@@ -2791,5 +2789,3 @@ __forceinline bool CAVRec::EncodeSamples(DWORD dwStreamNum, int nInputSamplesCou
 
 	return true;
 }
-
-#endif

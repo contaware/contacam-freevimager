@@ -34,7 +34,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="76">
+<CLASSES COUNT="75">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -53,7 +53,6 @@
 <CLASS NAME="CBatchProcTiffTab"/>
 <CLASS NAME="CBmpSaveDlg"/>
 <CLASS NAME="CBrowseDlg"/>
-<CLASS NAME="CCaptureDeviceDlg"/>
 <CLASS NAME="cdxCDynamicChildDlg"/>
 <CLASS NAME="cdxCDynamicDialog"/>
 <CLASS NAME="cdxCDynamicLayoutInfo"/>
@@ -306,7 +305,7 @@
 </CLASSES>
 </FOLDER>
 </FOLDERS>
-<CLASSES COUNT="38">
+<CLASSES COUNT="37">
 <CLASS NAME="CWorkerThread"/>
 <CLASS NAME="KSPROPERTY_TUNER_CAPS_S"/>
 <CLASS NAME="KSPROPERTY_TUNER_FREQUENCY_S"/>
@@ -318,7 +317,6 @@
 <CLASS NAME="KSPROPERTY_TUNER_STATUS_S"/>
 <CLASS NAME="CWindowInstance"/>
 <CLASS NAME="_SINSTANCE_DATA"/>
-<CLASS NAME="CAVIFile"/>
 <CLASS NAME="CAVIPlay"/>
 <CLASS NAME="CAVRec"/>
 <CLASS NAME="CCDAudio"/>

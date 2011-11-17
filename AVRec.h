@@ -1,8 +1,6 @@
 #ifndef _INC_AVREC
 #define _INC_AVREC
 
-#ifdef SUPPORT_LIBAVCODEC
-
 #include "Dib.h"
 #include <mmsystem.h>
 #include "YuvToRgb.h"
@@ -351,5 +349,4 @@ __forceinline DWORD CAVRec::AudioStreamNumToStreamNum(DWORD dwAudioStreamNum)
 	return 0;
 }
 
-#endif
 #endif //!_INC_AVREC

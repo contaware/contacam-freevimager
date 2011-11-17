@@ -12,27 +12,22 @@ static char THIS_FILE[] = __FILE__;
 #define ALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 #define BUF_ALLOC_ALIGN		16
 
-#ifdef SUPPORT_LIBAVCODEC
-
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
 
+// Libs
 #pragma comment(lib, "ffmpeg\\libavcodec\\libavcodec.a")
 #pragma comment(lib, "ffmpeg\\libavformat\\libavformat.a")
 #pragma comment(lib, "ffmpeg\\libavutil\\libavutil.a")
 #pragma comment(lib, "ffmpeg\\lib\\libgcc.a")
 #pragma comment(lib, "ffmpeg\\lib\\libmingwex.a")
-#pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")	// not necessary to comment out when using ffmpeg as patent free,
-													// will not be linked in because of no references to it
-#pragma comment(lib, "ffmpeg\\lib\\libogg.a")		// used by libtheora and libvorbis
+#pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")
+#pragma comment(lib, "ffmpeg\\lib\\libogg.a")
 #pragma comment(lib, "ffmpeg\\lib\\libtheora.a")
 // Integer division by zero exception using libvorbis...
 //#pragma comment(lib, "ffmpeg\\lib\\libvorbis.a")
 //#pragma comment(lib, "ffmpeg\\lib\\libvorbisenc.a")
-
-#endif
-
 #pragma comment(lib, "wsock32.lib")
 #pragma comment(lib, "vfw32.lib")
 #pragma comment(lib, "msacm32.lib")
@@ -657,9 +652,7 @@ void CAVIPlay::CAVIAudioStream::Free()
 	}
 
 	// Free LIBAVCODEC
-#ifdef SUPPORT_LIBAVCODEC
 	FreeAVCodec();
-#endif
 
 	if (m_pUncompressedWaveFormat)
 	{
@@ -680,8 +673,6 @@ void CAVIPlay::CAVIAudioStream::Free()
 	m_bHasDecompressor = false;
 	memset(&m_MpegAudioFrameHdr, 0, sizeof(MpegAudioFrameHdr));
 }
-
-#ifdef SUPPORT_LIBAVCODEC
 
 void CAVIPlay::CAVIAudioStream::FreeAVCodec()
 {
@@ -927,8 +918,6 @@ enum CodecID CAVIPlay::CAVIAudioStream::AVCodecFormatTagToCodecID(WORD wFormatTa
 		default :								return CODEC_ID_NONE;
 	}
 }
-
-#endif
 
 // sampling rates in hertz: 1. index = MPEG Version ID, 2. index = sampling rate index
 const int CAVIPlay::CAVIAudioStream::m_nFreq[4][3] = 
@@ -1341,7 +1330,6 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompression()
 
 	// Open Decompressor
 	bool bFoundDecompressor = false;
-#ifdef SUPPORT_LIBAVCODEC
 	if (m_pAVIPlay->m_bAVCodecPriority)
 	{
 		if (!OpenDecompressionAVCodec() && !OpenDecompressionACM())
@@ -1356,9 +1344,6 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompression()
 		else
 			bFoundDecompressor = true;
 	}
-#else
-	bFoundDecompressor = OpenDecompressionACM();
-#endif
 	if (!bFoundDecompressor)
 	{
 		// Error Message
@@ -1980,10 +1965,8 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 		bSeek = true;
 
 		// Flush Buffers
-#ifdef SUPPORT_LIBAVCODEC
 		if (m_pCodecCtx)
 			avcodec_flush_buffers(m_pCodecCtx);
-#endif
 	}
 
 	// Uncompression
@@ -2066,7 +2049,6 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 		m_dwDstBufSizeUsed = m_AcmStreamHeader.cbDstLengthUsed;
 		m_dwDstBufOffset = 0;
 	}
-#ifdef SUPPORT_LIBAVCODEC
 	else if (m_pCodecCtx)
 	{
 		int total_out_size = 0;
@@ -2300,7 +2282,6 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 		m_dwDstBufSizeUsed = total_out_size;
 		m_dwDstBufOffset = 0;
 	}
-#endif
 	else
 	{
 		m_dwDstBufSizeUsed = 0;
@@ -2529,10 +2510,8 @@ bool CAVIPlay::CAVIVideoStream::IsSrcFormatSupported()
 		else
 			return false;
 	}
-#ifdef SUPPORT_LIBAVCODEC
 	else if (m_pCodecCtx)
 		return true;
-#endif
 	else
 		return false;
 }
@@ -2549,10 +2528,8 @@ bool CAVIPlay::CAVIVideoStream::IsDstFormatSupported(LPBITMAPINFO pDstBMI)
 		else
 			return false;
 	}
-#ifdef SUPPORT_LIBAVCODEC
 	else if (m_pCodecCtx)
 		return true;
-#endif
 	else
 		return false;
 }
@@ -3144,7 +3121,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 
 	// Find Decompressor
 	bool bFoundDecompressorVCM = false;
-#ifdef SUPPORT_LIBAVCODEC
 	if (m_pAVIPlay->m_bAVCodecPriority)
 	{
 		if (OpenDecompressionAVCodec())
@@ -3177,9 +3153,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 			}
 		}
 	}
-#else
-	bFoundDecompressorVCM = FindDecompressorVCM();
-#endif
 	if (!bFoundDecompressorVCM)
 	{
 		// Error Message
@@ -3253,8 +3226,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 
 	return true;
 }
-
-#ifdef SUPPORT_LIBAVCODEC
 
 bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 {
@@ -3891,8 +3862,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 	}
 }
 
-#endif
-
 bool CAVIPlay::CAVIVideoStream::ReOpenDecompressVCM()
 {
 	m_nLastDecompressedDibFrame = -2;
@@ -3965,9 +3934,7 @@ void CAVIPlay::CAVIVideoStream::Free()
 	}
 
 	// Free LIBAVCODEC
-#ifdef SUPPORT_LIBAVCODEC
 	FreeAVCodec();
-#endif
 
 	// Clean-Up
 	if (m_pSrcBuf)
@@ -4149,7 +4116,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompr
 					m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
 				}
 			}
-#ifdef SUPPORT_LIBAVCODEC
 			else
 			{
 				if (AVCodecDecompressDib(IsKeyFrame(m_dwNextFrame), true, false))
@@ -4158,7 +4124,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompr
 					m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
 				}
 			}
-#endif
 		}
 	}
 	
@@ -4654,7 +4619,6 @@ __forceinline void  CAVIPlay::CAVIVideoStream::UpdatePalette(DWORD dwFrame)
 {
 	if (m_pPaletteStream)
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		if (m_pCodecCtx)
 		{
 			DWORD dwPaletteSize = 0;
@@ -4679,7 +4643,6 @@ __forceinline void  CAVIPlay::CAVIVideoStream::UpdatePalette(DWORD dwFrame)
 			}
 		}
 		else
-#endif
 		{
 			DWORD dwSrcPaletteSize = 0;
 			DWORD dwDstPaletteSize = 0;
@@ -4817,18 +4780,12 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDib* pDib)
 		}
 		else
 		{
-#ifdef SUPPORT_LIBAVCODEC
 			if (!AVCodecDecompressDib(IsKeyFrame(bFlushLastFrame ?  GetTotalFrames() - 1 : m_dwNextFrame), false, false))
 			{
 				pDib->Free();
 				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 				return false;
 			}
-#else
-			pDib->Free();
-			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-			return false;
-#endif
 		}
 	}
 
@@ -4842,7 +4799,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDib* pDib)
 	}
 
 	// Copy Bits
-#ifdef SUPPORT_LIBAVCODEC
 	if (!m_hIC)
 	{
 		if (m_pDstBMI->bmiHeader.biCompression == BI_RGB ||
@@ -4926,7 +4882,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDib* pDib)
 		}
 	}
 	else
-#endif
 		memcpy(pDib->GetBits(), m_pDstBuf, pDib->GetImageSize());
 
 	// Update Last Decompressed Frame
@@ -5073,17 +5028,12 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDxDraw* pDxDraw, CRect rc)
 	}
 	else
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 		if (!AVCodecDecompressDxDraw(IsKeyFrame(m_dwNextFrame), false, false, pDxDraw, rc))
 		{
 			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 			return false;
 		}
-#else
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-#endif
 	}
 
 	// Update Last Decompressed Frame
@@ -5194,16 +5144,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				if (!AVCodecDecompressDib(true, true, true))
 				{
 					pDib->Free();
 					return false;
 				}
-#else
-				pDib->Free();
-				return false;
-#endif
 			}
 			
 			// Get Middle Delta Frames
@@ -5234,16 +5179,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 				}
 				else
 				{
-#ifdef SUPPORT_LIBAVCODEC
 					if (!AVCodecDecompressDib(false, true, false))
 					{
 						pDib->Free();
 						return false;
 					}
-#else
-					pDib->Free();
-					return false;
-#endif
 				}
 			}
 
@@ -5273,16 +5213,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				if (!AVCodecDecompressDib(false, false, false))
 				{
 					pDib->Free();
 					return false;
 				}
-#else
-				pDib->Free();
-				return false;
-#endif
 			}
 		}
 		else
@@ -5321,7 +5256,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				if (!AVCodecDecompressDib(	true,
 											false,
 											true))
@@ -5329,10 +5263,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 					pDib->Free();
 					return false;
 				}
-#else
-				pDib->Free();
-				return false;
-#endif
 			}
 		}
 	}
@@ -5346,7 +5276,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 	}
 
 	// Copy Bits
-#ifdef SUPPORT_LIBAVCODEC
 	if (!m_hIC)
 	{
 		if (m_pDstBMI->bmiHeader.biCompression == BI_RGB ||
@@ -5430,7 +5359,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 		}
 	}
 	else
-#endif
 		memcpy(pDib->GetBits(), m_pDstBuf, pDib->GetImageSize());
 
 	// Update Last Decompressed Frame
@@ -5635,15 +5563,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		}
 		else
 		{
-#ifdef SUPPORT_LIBAVCODEC
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 			if (!AVCodecDecompressDxDraw(true, true, true, pDxDraw, rc))
 			{
 				return false;
 			}
-#else
-			return false;
-#endif
 		}
 		
 		// Get Middle Delta Frames
@@ -5674,15 +5598,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 			}
 			else
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 				if (!AVCodecDecompressDxDraw(false, true, false, pDxDraw, rc))
 				{
 					return false;
 				}
-#else
-				return false;
-#endif
 			}
 		}
 
@@ -5736,15 +5656,11 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		}
 		else
 		{
-#ifdef SUPPORT_LIBAVCODEC
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 			if (!AVCodecDecompressDxDraw(false, false, false, pDxDraw, rc))
 			{
 				return false;
 			}
-#else
-			return false;
-#endif
 		}
 	}
 	else
@@ -5809,7 +5725,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		}
 		else
 		{
-#ifdef SUPPORT_LIBAVCODEC
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 			if (!AVCodecDecompressDxDraw(true,
 										false,
@@ -5819,9 +5734,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 			{
 				return false;
 			}
-#else
-			return false;
-#endif
 		}
 	}
 
@@ -6814,9 +6726,7 @@ bool CAVIPlay::IsFourCCInArray(DWORD dwFourCC, DWORD* pFourCCs, DWORD nSize)
 CAVIPlay::CAVIPlay(bool bShowMessageBoxOnError/*=true*/) :
 	m_bShowMessageBoxOnError(bShowMessageBoxOnError)
 {
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = true;
-#endif
 	InitWaveFormatTagTable();
 	memset(&m_AviMainHdr, 0, sizeof(AVIMAINHDR));
 	m_pFile = NULL;
@@ -6829,9 +6739,7 @@ CAVIPlay::CAVIPlay(	LPCTSTR lpszFileName,
 					bool bShowMessageBoxOnError/*=true*/) :
 	m_bShowMessageBoxOnError(bShowMessageBoxOnError)
 {
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = true;
-#endif
 	InitWaveFormatTagTable();
 	memset(&m_AviMainHdr, 0, sizeof(AVIMAINHDR));
 	m_pFile = NULL;
@@ -7173,18 +7081,12 @@ bool CAVIPlay::AviChangeVideoFrameRate(	LPCTSTR szFileName,
 {
 	DWORD dwRate;
 	DWORD dwScale;
-
-#ifdef SUPPORT_LIBAVCODEC
 #ifndef DEFAULT_FRAME_RATE_BASE
 #define DEFAULT_FRAME_RATE_BASE 1001000
 #endif
 	AVRational FrameRate = av_d2q(dFrameRate, DEFAULT_FRAME_RATE_BASE);
 	dwRate = (DWORD)FrameRate.num;
 	dwScale = (DWORD)FrameRate.den;
-#else
-	dwRate = (DWORD)Round(dFrameRate * AVI_SCALE_DOUBLE);
-	dwScale = AVI_SCALE_INT;
-#endif
 	return AviChangeVideoFrameRate(szFileName,
 								   dwVideoStreamNum,
 								   dwRate,

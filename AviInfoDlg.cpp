@@ -145,7 +145,6 @@ void CAviInfoDlg::UpdateDisplay()
 			}
 			else
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				if (pVideoStream->IsUsingAVCodec())
 				{
 					CString sFormat(_T(""));
@@ -212,9 +211,7 @@ void CAviInfoDlg::UpdateDisplay()
 									CDib::GetCompressionName(pVideoStream->GetFormat(true)));
 					}
 				}
-				else
-#endif
-				if (pVideoStream->IsUsingVCM())
+				else if (pVideoStream->IsUsingVCM())
 				{
 					t.Format(_T("    Decompressor: %s\r\n    FourCC: %s\r\n"),
 								pVideoStream->GetDecompressorDescription(),
@@ -313,14 +310,9 @@ void CAviInfoDlg::UpdateDisplay()
 			// Decompressor
 			if (pAudioStream->GetFormatTag(true) != WAVE_FORMAT_PCM)
 			{
-#ifdef SUPPORT_LIBAVCODEC
 				if (pAudioStream->IsUsingAVCodec())
-				{
 					t.Format(_T("    Decompressor: Internal\r\n"));
-				}
-				else
-#endif
-				if (pAudioStream->IsUsingACM())
+				else if (pAudioStream->IsUsingACM())
 					t.Format(_T("    Decompressor: %s\r\n"), pAudioStream->GetACMDecompressorLongName());
 				else
 					t.Format(_T("    Decompressor: None\r\n"));

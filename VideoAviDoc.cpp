@@ -15,7 +15,6 @@
 #include "AudioVideoShiftDlg.h"
 #include "PlayerToolBarDlg.h"
 #include "RenameDlg.h"
-#include "AviFileMerge.h"
 #include "PostDelayedMessage.h"
 #include "Quantizer.h"
 #include "JpegCompressionQualityDlg.h"
@@ -2244,7 +2243,6 @@ CVideoAviDoc::CVideoAviDoc()
 	m_bLoop = 0;
 	m_dwPlayRate = 1;
 	m_dwPlayScale = 1;
-	m_bAVIFileEditable = FALSE;
 	m_nActiveVideoStream = -1;
 	m_nActiveAudioStream = -1;
 	m_pAviInfoDlg = NULL;
@@ -2259,9 +2257,7 @@ CVideoAviDoc::CVideoAviDoc()
 	m_dwFrameCountUp = 0U;
 	m_pAudioCompressorWaveFormat = NULL;
 	m_PrevUserZoomRect = CRect(0,0,0,0);
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = true;
-#endif
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDoc = NULL;
 	m_pVideoDeviceDocDib = NULL;
@@ -2272,7 +2268,7 @@ CVideoAviDoc::CVideoAviDoc()
 	m_PlayVideoFileThread.SetDoc(this);
 	m_ProcessingThread.SetDoc(this);
 	m_SaveAsProcessing.SetDoc(this);
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 	m_PostRecProcessing.SetDoc(this);
 #endif
 	m_FileMergeSerialAsProcessing.SetDoc(this);
@@ -2499,9 +2495,7 @@ void CVideoAviDoc::LoadSettings()
 		m_pAudioCompressorWaveFormat->cbSize = 0;
 	}
 
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = pApp->GetProfileInt(sSection, _T("AVCodecPriority"), true) ? true : false;
-#endif
 
 	// View settings
 	sSection = _T("VideoAviView");
@@ -2534,9 +2528,7 @@ void CVideoAviDoc::SaveSettings()
 		
 		if (m_pAudioCompressorWaveFormat)
 			pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
-#ifdef SUPPORT_LIBAVCODEC
 		pApp->WriteProfileInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority);
-#endif
 
 		// View settings
 		sSection = _T("VideoAviView");
@@ -2568,9 +2560,7 @@ void CVideoAviDoc::SaveSettings()
 		
 		if (m_pAudioCompressorWaveFormat)
 			::WriteProfileIniBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
-#ifdef SUPPORT_LIBAVCODEC
 		::WriteProfileIniInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority, sTempFileName);
-#endif
 
 		// View settings
 		sSection = _T("VideoAviView");
@@ -2747,29 +2737,12 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 		{
 			// Vars
 			bSaveAsVideoFile = TRUE;
-			BOOL bCodecsSelect = FALSE;
 
 			// Avi
-#ifdef SUPPORT_LIBAVCODEC
-			if (extension == _T("avi")	||
-				extension == _T("divx"))
-			{	
-				if (m_pAVIPlay->HasVBRAudio())
-					bCodecsSelect = FALSE;
-				else
-					bCodecsSelect = TRUE;
-			}
-#else
-			if (extension != _T("avi")	&&
-				extension != _T("divx"))
-				return FALSE;
-#endif
-
 			bool bVideoStreamsSave[MAX_VIDEO_STREAMS];
 			bool bVideoStreamsChange[MAX_VIDEO_STREAMS];
 			bool bAudioStreamsSave[MAX_AUDIO_STREAMS];
 			bool bAudioStreamsChange[MAX_AUDIO_STREAMS];
-#ifdef SUPPORT_LIBAVCODEC
 			if (extension != _T("avi")	&&
 				extension != _T("divx"))
 			{	
@@ -2790,7 +2763,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 									bAudioStreamsChange);
 			}
 			else
-#endif
 			{
 				// Streams selection dialog
 				CDWordArray VideoStreamsSave;
@@ -2798,24 +2770,11 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 				CDWordArray AudioStreamsSave;
 				CDWordArray AudioStreamsChange;
 				CAviSaveAsStreamsDlg dlgStreams(m_pAVIPlay,
-												bCodecsSelect ?
-												IDD_SAVEAS_STREAMS_CODEC_SELECT :	// With radio button to select between Internal or VfW codecs
-												IDD_SAVEAS_STREAMS_SELECT,
 												&VideoStreamsSave,
 												&VideoStreamsChange,
 												&AudioStreamsSave,
 												&AudioStreamsChange,
 												GetView());
-				if (bCodecsSelect)
-					dlgStreams.m_bUseVfwCodecs = FALSE;
-				else
-				{
-#ifdef SUPPORT_LIBAVCODEC
-					dlgStreams.m_bUseVfwCodecs = FALSE;
-#else
-					dlgStreams.m_bUseVfwCodecs = TRUE;
-#endif
-				}
 				if (dlgStreams.DoModal() == IDOK)
 				{
 					int nStreamNum;
@@ -2853,29 +2812,14 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 					}
 
 					// Save
-					if (dlgStreams.m_bUseVfwCodecs)
-					{
-						res = SaveAsAviVfW(	FileName,
-											bSaveCopyAs,			
-											nCurrentFramePos,
-											bVideoStreamsSave,
-											bVideoStreamsChange,
-											bAudioStreamsSave,
-											bAudioStreamsChange);
-					}
-#ifdef SUPPORT_LIBAVCODEC
-					else
-					{
-						res = SaveAsAVCODEC(FileName,
-											bSaveCopyAs,
-											nCurrentFramePos,
-											true,	// Try two pass encoding
-											bVideoStreamsSave,
-											bVideoStreamsChange,
-											bAudioStreamsSave,
-											bAudioStreamsChange);
-					}
-#endif
+					res = SaveAsAVCODEC(FileName,
+										bSaveCopyAs,
+										nCurrentFramePos,
+										true,	// Try two pass encoding
+										bVideoStreamsSave,
+										bVideoStreamsChange,
+										bAudioStreamsSave,
+										bAudioStreamsChange);
 				}
 			}
 		}
@@ -2917,151 +2861,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	
 	return res;
 }
-
-BOOL CVideoAviDoc::SaveAsAviVfW(	const CString& sFileName,
-									BOOL bSaveCopyAs,
-									int nCurrentFramePos,
-									bool* pbVideoStreamsSave,
-									bool* pbVideoStreamsChange,
-									bool* pbAudioStreamsSave,
-									bool* pbAudioStreamsChange)
-{
-	// Open CAVIFile
-	CAVIFile AVIFile(GetView(), m_pAVIPlay->GetFileName(), false);
-
-	// For Processing Progress Stop
-	AVIFile.SetKillEvent(m_ProcessingThread.GetKillEvent());
-
-	// Save to itself?
-	CString sDstFileName = sFileName;
-	if (m_sFileName.CompareNoCase(sFileName) == 0)
-	{
-		// Temporary File
-		sDstFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-	}
-
-	// Show Dialog(s) And ReCompress
-	if (AVIFile.ReCompress(	sDstFileName,
-							pbVideoStreamsSave,
-							pbVideoStreamsChange,
-							pbAudioStreamsSave,
-							pbAudioStreamsChange,
-							NULL, NULL, NULL, NULL, NULL, NULL, 0))
-	{
-		// Close
-		AVIFile.Close();
-
-		// Open Document
-		if (bSaveCopyAs)
-		{
-			// Restore Current Frame Position
-			CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
-			if (pVideoStream)
-			{
-				pVideoStream->SetCurrentFramePos(nCurrentFramePos);
-				m_PlayAudioFileThread.PlaySyncAudioFromVideo();
-			}
-
-			// Restore Frame
-			if (m_pAVIPlay &&
-				m_pAVIPlay->HasVideo() &&
-				(m_nActiveVideoStream >= 0))
-			{
-				RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-			}
-			else
-			{
-				CPostDelayedMessageThread::PostDelayedMessage(
-										GetView()->GetSafeHwnd(),
-										WM_THREADSAFE_UPDATEWINDOWSIZES,
-										THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-										(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-										(LPARAM)0);
-			}
-
-			// Open New Document
-			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-							WM_THREADSAFE_OPEN_DOC,
-							(WPARAM)(new CString(sFileName)),
-							(LPARAM)NULL);
-		}
-		// Load
-		else
-		{
-			// Clear Modified Flag
-			SetModifiedFlag(FALSE);
-
-			// Save to itself?
-			if (m_sFileName.CompareNoCase(sFileName) == 0)
-			{
-				// Free
-				delete m_pAVIPlay;
-				m_pAVIPlay = NULL;
-
-				// Remove & Rename
-				try
-				{
-					CFile::Remove(m_sFileName);
-					CFile::Rename(sDstFileName, m_sFileName);
-				}
-				catch (CFileException* e)
-				{
-					e->ReportError();
-					e->Delete();
-					CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
-					if (pVideoStream)
-					{
-						pVideoStream->SetCurrentFramePos(nCurrentFramePos);
-						m_PlayAudioFileThread.PlaySyncAudioFromVideo();
-					}
-					::DeleteFile(sDstFileName); // Delete Tmp File
-					return FALSE;
-				}
-			}
-
-			// Load AVI
-			CPostDelayedMessageThread::PostDelayedMessage(
-										GetView()->GetSafeHwnd(),
-										WM_THREADSAFE_LOAD_AVI,
-										THREAD_SAFE_LOAD_AVI_DELAY,
-										(WPARAM)(new CString(sFileName)),
-										(LPARAM)nCurrentFramePos);
-		}
-
-		return TRUE;
-	}
-	else
-	{
-		// Close
-		AVIFile.Close();
-
-		// Show Error Message if not interrupted by user
-		if (!m_ProcessingThread.DoExit())
-		{
-#ifdef SUPPORT_LIBAVCODEC
-			::AfxMessageBox(ML_STRING(1766, "Error while saving file:\nFirst save the file with the internal codecs to Raw I420,\nthen save the raw file with the VfW codecs!"), MB_ICONSTOP);
-#else
-			::AfxMessageBox(ML_STRING(1431, "Error while saving file"), MB_ICONSTOP);
-#endif
-		}
-
-		// Restore Current Frame Position
-		CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
-		if (pVideoStream)
-		{
-			pVideoStream->SetCurrentFramePos(nCurrentFramePos);
-			m_PlayAudioFileThread.PlaySyncAudioFromVideo();
-		}
-
-		// Delete Tmp File
-		if (!bSaveCopyAs)
-			::DeleteFile(sDstFileName);
-
-		return FALSE;
-	}
-}
-
-#ifdef SUPPORT_LIBAVCODEC
 
 #ifdef VIDEODEVICEDOC
 BOOL CVideoAviDoc::PostRecAVCODEC(	const CString& sFileName,
@@ -4579,8 +4378,6 @@ free:
 	return res;
 }
 
-#endif
-
 CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 {
 	CDib Dib;
@@ -5037,9 +4834,7 @@ BOOL CVideoAviDoc::SaveModified()
 
 void CVideoAviDoc::OnFileSaveAs()
 {
-	if (!m_bAVIFileEditable)
-		::AfxMessageBox(ML_STRING(1438, "AVI Files with VBR Mp3 Audio cannot be Saved."), MB_ICONINFORMATION);
-	else if (((CUImagerApp*)::AfxGetApp())->IsCurrentDocAvailable(TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsCurrentDocAvailable(TRUE))
 	{
 		ResetPercentDone();
 		m_ProcessingThread.SetProcessingFunct(&m_SaveAsProcessing);
@@ -5053,7 +4848,7 @@ void CVideoAviDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI)
 					!GetView()->m_bFullScreenMode);
 }
 
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 void CVideoAviDoc::PostRecProcessing(	const CString& sFileName,
 										DWORD dwVideoCompressorFourCC,
 										int nVideoCompressorDataRate,
@@ -5249,20 +5044,8 @@ BOOL CVideoAviDoc::LoadAVI(CString sFileName,
 		return FALSE;
 	}
 
-	// Init the AVI file editable flag
-#ifdef SUPPORT_LIBAVCODEC
-	m_bAVIFileEditable = TRUE;
-#else
-	// With the old VfW Api if VBR Audio the avi file is not editable
-	// because the stream copy CAVIFile::SaveCopyAs, which is based
-	// on the ::AVISaveV() Api, changes the chunk size!!!
-	m_bAVIFileEditable = !m_pAVIPlay->HasVBRAudio();
-#endif
-
 	// Set Codec Priority
-#ifdef SUPPORT_LIBAVCODEC
 	m_pAVIPlay->m_bAVCodecPriority = m_bAVCodecPriority;
-#endif
 
 	// End Wait Cursor
 	EndWaitCursor();
@@ -6080,7 +5863,6 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	if (!m_pAVIPlay)
 		return FALSE;
 
-#ifdef SUPPORT_LIBAVCODEC
 	// All Streams have to be recompressed
 	bool bVideoStreamsSave[MAX_VIDEO_STREAMS];
 	bool bVideoStreamsChange[MAX_VIDEO_STREAMS];
@@ -6154,93 +5936,10 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 					(LPARAM)this);
 
 	return res;
-#else
-	// AVI File
-	CAVIFile AVIFile(GetView(), m_pAVIPlay->GetFileName(), false);
-
-	// Audio
-	LPWAVEFORMATEX pWaveFormat = NULL; // The following function allocates mem. for the structure
-	AVIFile.AutoChooseAudioCompressor(	m_nActiveAudioStream,
-										&pWaveFormat);
-
-	// Choose Codec And Open Video Compressor Configuration Dialog
-	DWORD dwFourCC = 0;
-	if (m_pAVIPlay->HasVideo() && (m_nActiveVideoStream >= 0))
-	{
-		CAVIFile TempAvi(GetView(), false);
-		dwFourCC = TempAvi.AutoChooseVideoCompressor();
-		TempAvi.SetVideoCompressor(m_nActiveVideoStream, dwFourCC);
-		CString sFourCC = TempAvi.GetFourCCString(m_nActiveVideoStream);
-		sFourCC.MakeUpper();
-		HIC hIC = TempAvi.OpenVideoCompressor(m_nActiveVideoStream);
-	
-		if (sFourCC == _T("XVID")	||
-			sFourCC == _T("DIVX")	||
-			sFourCC == _T("3IV2"))
-		{
-			::AfxMessageBox(ML_STRING(1443, "In The Next Dialog Box Select A Low Quality\n") +
-							ML_STRING(1444, "Or A Low Bitrate (for example: 192 kbit/s) To\n") +
-							ML_STRING(1445, "Get A Small Video File Size!"));
-			TempAvi.VideoCompressorConfigDialog(hIC);
-		}
-
-		TempAvi.CloseVideoCompressor(hIC);
-	}
-
-	// All Streams have to be recompressed
-	bool bVideoStreamsSave[MAX_VIDEO_STREAMS];
-	bool bVideoStreamsChange[MAX_VIDEO_STREAMS];
-	bool bAudioStreamsSave[MAX_AUDIO_STREAMS];
-	bool bAudioStreamsChange[MAX_AUDIO_STREAMS];
-	DWORD dwStreamNum;
-	for (dwStreamNum = 0 ; dwStreamNum < m_pAVIPlay->GetVideoStreamsCount() ; dwStreamNum++)
-	{
-		bVideoStreamsSave[dwStreamNum] = true;
-		bVideoStreamsChange[dwStreamNum] = true;
-	}
-	for (dwStreamNum = 0 ; dwStreamNum < m_pAVIPlay->GetAudioStreamsCount() ; dwStreamNum++)
-	{
-		bAudioStreamsSave[dwStreamNum] = true;
-		bAudioStreamsChange[dwStreamNum] = true;
-	}
-
-	// For Processing Progress Stop
-	AVIFile.SetKillEvent(m_ProcessingThread.GetKillEvent());
-
-	// ReCompress
-	DWORD dwQuality = DEFAULT_VCM_QUALITY;
-	DWORD dwKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	DWORD dwDataRate = DEFAULT_VCM_DATARATE;
-	bool res = AVIFile.ReCompress(	pShrinkDocTo->m_sOutFileName,
-									bVideoStreamsSave,
-									bVideoStreamsChange,
-									bAudioStreamsSave,
-									bAudioStreamsChange,
-									&dwFourCC,
-									pWaveFormat,
-									&dwQuality,
-									&dwKeyframesRate,
-									&dwDataRate,
-									NULL,
-									0);
-
-	// Clean-up
-	delete [] pWaveFormat;
-
-	// Notify the Termination
-	::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-					WM_SHRINKDOC_TERMINATED,
-					(WPARAM)((res == true) ? TRUE : FALSE),
-					(LPARAM)this);
-
-	return ((res == true) ? TRUE : FALSE);
-#endif
 }
 
 BOOL CVideoAviDoc::StartShrinkDocTo(CString sOutFileName) 
 {
-	if (!m_bAVIFileEditable)
-		return FALSE;
 	ResetPercentDone();
 	m_ShrinkDocToProcessing.m_sOutFileName = sOutFileName;
 	m_ProcessingThread.SetProcessingFunct(&m_ShrinkDocToProcessing);
@@ -6450,7 +6149,6 @@ void CVideoAviDoc::PlayerToolBarDlg(CPoint ptPos)
 
 void CVideoAviDoc::OnPlayVfwcodecpriority() 
 {
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = !m_bAVCodecPriority;
 	int nCurrentFramePos = 0;
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
@@ -6462,23 +6160,19 @@ void CVideoAviDoc::OnPlayVfwcodecpriority()
 	LoadActiveStreams(nCurrentFramePos);
 	UpdateAviInfoDlg();
 	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
-#endif
 }
 
 void CVideoAviDoc::OnUpdatePlayVfwcodecpriority(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBAVCODEC
 	pCmdUI->Enable(	m_pAVIPlay							&&
 					!IsProcessing()						&&
 					!m_PlayVideoFileThread.IsAlive()	&&
 					!m_PlayAudioFileThread.IsAlive());
 	pCmdUI->SetRadio(!m_bAVCodecPriority);
-#endif
 }
 
 void CVideoAviDoc::OnPlayInternalcodecpriority() 
 {
-#ifdef SUPPORT_LIBAVCODEC
 	m_bAVCodecPriority = !m_bAVCodecPriority;
 	int nCurrentFramePos = 0;
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
@@ -6490,18 +6184,15 @@ void CVideoAviDoc::OnPlayInternalcodecpriority()
 	LoadActiveStreams(nCurrentFramePos);
 	UpdateAviInfoDlg();
 	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
-#endif
 }
 
 void CVideoAviDoc::OnUpdatePlayInternalcodecpriority(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBAVCODEC
 	pCmdUI->Enable(	m_pAVIPlay							&&
 					!IsProcessing()						&&
 					!m_PlayVideoFileThread.IsAlive()	&&
 					!m_PlayAudioFileThread.IsAlive());
 	pCmdUI->SetRadio(m_bAVCodecPriority);
-#endif
 }
 
 void CVideoAviDoc::OnEditCopy() 
@@ -6637,7 +6328,6 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 	int ret;
 	if (bSerial)
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		ret = AVIFileMergeSerialAVCODEC(SaveFileName,
 										&AviFileNames,
 										m_dwVideoCompressorFourCC,
@@ -6650,31 +6340,9 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 										GetView(),
 										&m_ProcessingThread,
 										false);
-#else
-		bool bReCompressVideo, bReCompressAudio;
-		if (::AfxMessageBox(ML_STRING(1447, "Do you want to Compress / Decompress the Video Stream(s)?"), MB_YESNO) == IDYES)
-			bReCompressVideo = true;
-		else
-			bReCompressVideo = false;
-		if (::AfxMessageBox(ML_STRING(1448, "Do you want to Compress / Decompress the Audio Stream(s)?"), MB_YESNO) == IDYES)
-			bReCompressAudio = true;
-		else
-			bReCompressAudio = false;
-		if (::AVIFileMergeSerialVfW(	SaveFileName,
-										&AviFileNames,
-										bReCompressVideo,
-										bReCompressAudio,
-										GetView(),
-										m_ProcessingThread.GetKillEvent(),
-										false))
-			ret = 1;
-		else
-			ret = -1;
-#endif
 	}
 	else
 	{
-#ifdef SUPPORT_LIBAVCODEC
 		if (AVIFileMergeParallelAVCODEC(	SaveFileName,
 											&AviFileNames,
 											GetView(),
@@ -6683,17 +6351,6 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 			ret = 1;
 		else
 			ret = -1;
-#else
-		if (::AVIFileMergeParallelVfW(SaveFileName,
-										&AviFileNames,
-										GetView(),
-										m_ProcessingThread.GetKillEvent(),
-										false))
-			ret = 1;
-		else
-			ret = -1;
-
-#endif
 	}
 
 	// Load Merged Avi
@@ -6727,8 +6384,6 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 		return FALSE;
 	}
 }
-
-#ifdef SUPPORT_LIBAVCODEC
 
 BOOL CVideoAviDoc::AVIFileMergeParallelAVCODEC(	CString sSaveFileName,
 												CSortableStringArray* pAviFileNames,
@@ -7066,7 +6721,6 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 		if (i == 0)
 		{
 			CAviSaveAsStreamsDlg dlgStreams(pAVIPlay,
-											IDD_SAVEAS_STREAMS_SELECT,
 											&VideoStreamsSave,
 											&VideoStreamsChange,
 											&AudioStreamsSave,
@@ -7253,8 +6907,6 @@ free:
 	
 	return ret;
 }
-
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CVideoAviDoc diagnostics

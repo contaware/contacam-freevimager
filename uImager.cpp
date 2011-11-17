@@ -223,7 +223,6 @@ CUImagerApp theApp;
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp initialization
 
-#ifdef SUPPORT_LIBAVCODEC
 CRITICAL_SECTION g_csAVCodec;
 BOOL g_bAVCodecCSInited = FALSE;
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
@@ -286,7 +285,6 @@ extern int mm_support_mask;
 extern int mm_flags;
 extern int mm_support(void);
 }
-#endif
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
 #ifdef VIDEODEVICEDOC
@@ -718,13 +716,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 
 		// Check for MMX
-#if defined(VIDEODEVICEDOC) || defined(SUPPORT_LIBAVCODEC)
 		if (!g_bMMX)
 		{
 			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
 			throw (int)0;
 		}
-#endif
 
 		// DirectX check (it's a bit slow, do not run that each time)
 		if (m_bFirstRun)
@@ -744,7 +740,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::InitRGBToYUVTable();
 
 		// AVCODEC Init
-#ifdef SUPPORT_LIBAVCODEC
 		::InitializeCriticalSection(&g_csAVCodec);
 		g_bAVCodecCSInited = TRUE;
 #ifdef _DEBUG
@@ -788,7 +783,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 										FCC('MJPG');
 		m_fFFPreferredVideoEncQuality = m_dwFFPreferredVideoEncFourCC == FCC('theo') ? DEFAULT_THEO_QUALITY :
 										DEFAULT_VIDEO_QUALITY;
-#endif
 		
 #ifdef VIDEODEVICEDOC
 		// Init WinSock 2.2
@@ -2833,13 +2827,11 @@ int CUImagerApp::ExitInstance()
 	::EndHelpers();
 
 	// Delete Critical Section
-#ifdef SUPPORT_LIBAVCODEC
 	if (g_bAVCodecCSInited)
 	{
 		g_bAVCodecCSInited = FALSE;
 		::DeleteCriticalSection(&g_csAVCodec);
 	}
-#endif
 
 	// Unregister the malloc spy
 #ifndef NDEBUG

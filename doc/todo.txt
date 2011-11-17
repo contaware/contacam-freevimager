@@ -11,10 +11,3 @@ Detection:
 - Advanced detection scheduler with weekday selection
 - Have an option to monitor every say 2, 4 or 8 frames instead
   of every frame -> this would be less cpu hungry
-
-Video:
-------
-- VfW save with CAVIFile is crappy: files bigger than 1GB are not supported,
-  files which do not have a VfW decompressor are not saved, it crashes
-  all the time... Eventually add ICCompress to CAVRec, but do not integrate
-  CAVIPlay into CAVIFile it is to complicated, especially because of audio!

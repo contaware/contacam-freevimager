@@ -26,6 +26,7 @@
 #define WM_AVSHIFTDLG_POPUP						WM_USER + 180
 #define WM_PLAYERTOOLBARDLG_POPUP				WM_USER + 181
 #define WM_END_THUMBTRACK						WM_USER + 182
+#define WM_AVIFILE_PROGRESS						WM_USER + 183
 
 // Message Delays in ms
 #define THREAD_SAFE_LOAD_AVI_DELAY				500

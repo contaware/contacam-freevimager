@@ -25,9 +25,7 @@
 #include "Tiff2Pdf.h"
 #include "PdfSaveDlg.h"
 #include "NoVistaFileDlg.h"
-#ifdef SUPPORT_LIBAVCODEC
 #include "AVRec.h"
-#endif
 
 #ifdef _INC_WINDOWSX
 // The following names from WINDOWSX.H collide with names in this file
@@ -1176,7 +1174,7 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 		EnterExitFullscreen();
 
 	CString* pFileName = (CString*)wparam;
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 	CPostRecParams* pPostRecParams = (CPostRecParams*)lparam;
 #endif
 	if (pFileName)
@@ -1185,7 +1183,7 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 		delete pFileName;
 		if (pDoc)
 		{
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 			if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 			{
 				if (pPostRecParams)
@@ -1207,7 +1205,7 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 		}
 		else
 		{
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 			if (pPostRecParams)
 				delete pPostRecParams;
 #endif
@@ -1216,7 +1214,7 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 	}
 	else
 	{
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 		if (pPostRecParams)
 			delete pPostRecParams;
 #endif
@@ -2655,21 +2653,6 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CVideoAviDoc*)pDoc)->m_nToolsMenuPos = 5;
 			((CVideoAviDoc*)pDoc)->m_nWindowsPos = 6;
 			((CVideoAviDoc*)pDoc)->m_nHelpMenuPos = 7;
-#ifndef SUPPORT_LIBAVCODEC
-			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-			{
-				CMenu* pPlayMenu = pMenu->GetSubMenu(((CVideoAviDoc*)pDoc)->m_nPlayMenuPos);
-				if (pPlayMenu && (int)pPlayMenu->GetMenuItemCount() == 12)
-				{
-					// Delete the two Codec Priority Entries & Separator
-					for (int j = 0 ; j < 3 ; j++)
-					{
-						pPlayMenu->DeleteMenu(	(int)pPlayMenu->GetMenuItemCount() - 1,
-												MF_BYPOSITION);
-					}
-				}
-			}
-#endif
 #ifndef VIDEODEVICEDOC
 			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CVideoAviDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);

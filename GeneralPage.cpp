@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "GeneralPage.h"
-#include "AviFile.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "VideoAviDoc.h"

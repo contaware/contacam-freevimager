@@ -12,8 +12,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBAVCODEC	
-
 #define MPEGAUDIO_CTRL_OFFSET	120
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1570,5 +1568,3 @@ void CAudioFormatDlg::EnableDisableCtrls()
 		}
 	}
 }
-
-#endif

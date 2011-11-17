@@ -7,12 +7,10 @@
 
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
+#include "SortableStringArray.h"
 #include "DxDraw.h"
 #include "AviPlay.h"
-#include "AviFile.h"
-#ifdef SUPPORT_LIBAVCODEC
 #include "AVRec.h"
-#endif
 
 // Avi File Exceptions
 #define AVI_E_ZEROPATH								0
@@ -323,7 +321,7 @@ public:
 		public:
 			virtual BOOL Do() {return m_pDoc->SaveAs();};
 	};
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 	class CPostRec : public CFunct
 	{
 		public:
@@ -497,7 +495,7 @@ public:
 	BOOL SaveAs(CString sDlgTitle = _T(""));	// Open File Dialog Title
 												// If _T("") the default is used
 
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 	void PostRecProcessing(	const CString& sFileName,
 							DWORD dwVideoCompressorFourCC,
 							int nVideoCompressorDataRate,
@@ -601,10 +599,6 @@ public:
 	volatile int m_nAudioPercentDone;
 	CString m_sProcessingError;
 
-	// If VBR audio the file is not editable with CAVIFile because
-	// the audio stream is corrupted by CAVIFile if saved!
-	BOOL m_bAVIFileEditable;
-
 	// User Zoom Rect of the previous full-screen
 	CRect m_PrevUserZoomRect;
 
@@ -622,9 +616,7 @@ public:
 	volatile LONG m_bAboutToRestoreFrame;// Restoring Frame Soon
 
 	// AV Codec Priority
-#ifdef SUPPORT_LIBAVCODEC
 	bool m_bAVCodecPriority;
-#endif
 
 	// Avi Info Dialog
 	CAviInfoDlg* m_pAviInfoDlg;
@@ -652,14 +644,6 @@ protected:
 						BOOL bDitherColorConversion,
 						UINT uiMaxColors,
 						UINT uiPlayTimes);
-	BOOL SaveAsAviVfW(	const CString& sFileName,
-						BOOL bSaveCopyAs,
-						int nCurrentFramePos,
-						bool* pbVideoStreamsSave,
-						bool* pbVideoStreamsChange,
-						bool* pbAudioStreamsSave,
-						bool* pbAudioStreamsChange);
-#ifdef SUPPORT_LIBAVCODEC
 	static BOOL SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
 										const CString& sDstFileName,
 										CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
@@ -779,8 +763,6 @@ protected:
 									CWnd* pWnd,
 									CWorkerThread* pThread,
 									bool bShowMessageBoxOnError);
-	
-#endif
 
 // Protected Variables
 protected:
@@ -796,7 +778,7 @@ protected:
 
 	// Processing Classes
 	CSaveAs m_SaveAsProcessing;
-#if defined (SUPPORT_LIBAVCODEC) && defined (VIDEODEVICEDOC)
+#ifdef VIDEODEVICEDOC
 	CPostRec m_PostRecProcessing;
 #endif
 	CFileMergeSerialAs m_FileMergeSerialAsProcessing;

@@ -1,5 +1,3 @@
-#ifdef SUPPORT_LIBAVCODEC
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -161,5 +159,3 @@ int avrec_url_fopen(ByteIOContext **s, const char *filename, int flags)
     }
     return 0;
 }
-
-#endif

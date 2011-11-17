@@ -186,9 +186,7 @@ CAviSaveFileDlg::CAviSaveFileDlg(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTS
 	m_ofn.Flags |= OFN_EXPLORER;
 	m_ofn.lpstrFilter =
 				_T("Avi File (*.avi)\0*.avi\0")
-#ifdef SUPPORT_LIBAVCODEC
 				_T("Swf File (*.swf)\0*.swf\0")
-#endif
 				_T("Animated GIF (*.gif)\0*.gif\0")						
 				_T("BMP Sequence (*.bmp)\0*.bmp\0")
 				_T("PNG Sequence (*.png)\0*.png\0")
@@ -235,7 +233,6 @@ void CAviSaveFileDlg::OnTypeChange()
 			}
 		break;
 
-#ifdef SUPPORT_LIBAVCODEC
 		case 1 : // swf
 			if (fileName.IsEmpty())
 				fileName = _T("*.swf");
@@ -295,55 +292,7 @@ void CAviSaveFileDlg::OnTypeChange()
 				fileName += _T(".jpg");
 			}
 		break;
-#else
-		case 1 : // gif
-			if (fileName.IsEmpty())
-				fileName = _T("*.gif");
-			else
-			{
-				pos = fileName.ReverseFind(_T('.'));
-				if (pos != -1)
-					fileName.Delete(pos, fileName.GetLength() - pos);
-				fileName += _T(".gif");
-			}
-		break;
 
-		case 2 : // bmp
-			if (fileName.IsEmpty())
-				fileName = _T("*.bmp");
-			else
-			{
-				pos = fileName.ReverseFind(_T('.'));
-				if (pos != -1)
-					fileName.Delete(pos, fileName.GetLength() - pos);
-				fileName += _T(".bmp");
-			}
-		break;
-
-		case 3 : // png
-			if (fileName.IsEmpty())
-				fileName = _T("*.png");
-			else
-			{
-				pos = fileName.ReverseFind(_T('.'));
-				if (pos != -1)
-					fileName.Delete(pos, fileName.GetLength() - pos);
-				fileName += _T(".png");
-			}
-		break;
-
-		case 4 : // jpg
-			if (fileName.IsEmpty())
-				fileName = _T("*.jpg");
-			else
-			{
-				pos = fileName.ReverseFind(_T('.'));
-				if (pos != -1)
-					fileName.Delete(pos, fileName.GetLength() - pos);
-				fileName += _T(".jpg");
-			}
-		break;
-#endif
 		default:	
 		break;
 	}

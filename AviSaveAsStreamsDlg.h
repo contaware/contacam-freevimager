@@ -21,16 +21,15 @@ class CAviSaveAsStreamsDlg : public CDialog
 // Construction
 public:
 	CAviSaveAsStreamsDlg(	CAVIPlay* pAVIPlay,
-							int nDlgID,
 							CDWordArray* pVideoStreamsSave,
 							CDWordArray* pVideoStreamsChange,
 							CDWordArray* pAudioStreamsSave,
 							CDWordArray* pAudioStreamsChange,
-							CWnd* pParent = NULL);   // standard constructor
-	BOOL m_bUseVfwCodecs;
+							CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CAviSaveAsStreamsDlg)
+	enum { IDD = IDD_SAVEAS_STREAMS_SELECT };
 	CHScrollListBox	m_StreamSave;
 	CHScrollListBox	m_StreamChange;
 	//}}AFX_DATA
