@@ -2414,8 +2414,8 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 			}
 			m_pDoc->ChangeRecFileFrameRate(dFrameRate);
 
-			// Open the video file and ev. post process it
-			m_pDoc->OpenAndPostProcess();
+			// Open the video file
+			m_pDoc->OpenAVIFile();
 
 			// Set New File Name
 			m_pDoc->m_sRecFileName = sRecFileName;
@@ -4760,12 +4760,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_fVideoRecQuality = ((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality;
 	m_dwVideoRecFourCC = ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC;
 	m_nVideoRecQualityBitrate = 0;
-	m_nVideoPostRecDataRate = DEFAULT_VIDEO_DATARATE;
-	m_nVideoPostRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoPostRecQuality = ((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality;
-	m_dwVideoPostRecFourCC = ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC;
-	m_nVideoPostRecQualityBitrate = 0;
-	m_bPostRec = FALSE;
 	m_nDeleteRecordingsOlderThanDays = 0;
 
 	// Movement Detection
@@ -5370,7 +5364,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
-	m_bPostRec = (BOOL) pApp->GetProfileInt(sSection, _T("PostRec"), FALSE);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
 	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), FALSE);
@@ -5426,11 +5419,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoRecDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_nVideoRecQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoRecQualityBitrate"), 0);
-	m_dwVideoPostRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoPostRecFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
-	m_fVideoPostRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoPostRecQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
-	m_nVideoPostRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoPostRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_nVideoPostRecDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoPostRecDataRate"), DEFAULT_VIDEO_DATARATE);
-	m_nVideoPostRecQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoPostRecQualityBitrate"), 0);
 	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
 	m_bVideoDetDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("VideoDetDeinterlace"), FALSE);
 	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
@@ -5629,7 +5617,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
-			pApp->WriteProfileInt(sSection, _T("PostRec"), m_bPostRec);
 			pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 			pApp->WriteProfileString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir);
 			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
@@ -5684,11 +5671,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
 			pApp->WriteProfileInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate);
 			pApp->WriteProfileInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate);
-			pApp->WriteProfileInt(sSection, _T("VideoPostRecFourCC"), m_dwVideoPostRecFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoPostRecQuality"), (int)m_fVideoPostRecQuality);
-			pApp->WriteProfileInt(sSection, _T("VideoPostRecKeyframesRate"), m_nVideoPostRecKeyframesRate);
-			pApp->WriteProfileInt(sSection, _T("VideoPostRecDataRate"), m_nVideoPostRecDataRate);
-			pApp->WriteProfileInt(sSection, _T("VideoPostRecQualityBitrate"), m_nVideoPostRecQualityBitrate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
 			pApp->WriteProfileInt(sSection, _T("VideoDetDeinterlace"), m_bVideoDetDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
@@ -5823,7 +5805,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("PostRec"), m_bPostRec, sTempFileName);
 			::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
 			::WriteProfileIniString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg, sTempFileName);
@@ -5878,11 +5859,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoPostRecFourCC"), m_dwVideoPostRecFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoPostRecQuality"), (int)m_fVideoPostRecQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoPostRecKeyframesRate"), m_nVideoPostRecKeyframesRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoPostRecDataRate"), m_nVideoPostRecDataRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoPostRecQualityBitrate"), m_nVideoPostRecQualityBitrate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetDeinterlace"), m_bVideoDetDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality, sTempFileName);
@@ -9029,28 +9005,9 @@ __forceinline void CVideoDeviceDoc::ChangeRecFileFrameRate(double dFrameRate/*=0
 										false);
 }
 
-__forceinline void CVideoDeviceDoc::OpenAndPostProcess()
+__forceinline void CVideoDeviceDoc::OpenAVIFile()
 {
-	if (m_bPostRec)
-	{
-		CPostRecParams* pPostRecParams = new CPostRecParams;
-		if (pPostRecParams)
-		{
-			pPostRecParams->m_sSaveFileName = ::GetFileNameNoExt(m_sRecFileName) + POSTREC_POSTFIX + _T(".avi");
-			pPostRecParams->m_dwVideoCompressorFourCC = m_dwVideoPostRecFourCC;
-			pPostRecParams->m_fVideoCompressorQuality = m_fVideoPostRecQuality;
-			pPostRecParams->m_nVideoCompressorDataRate = m_nVideoPostRecDataRate;
-			pPostRecParams->m_nVideoCompressorKeyframesRate = m_nVideoPostRecKeyframesRate;
-			pPostRecParams->m_nVideoCompressorQualityBitrate = m_nVideoPostRecQualityBitrate;
-			pPostRecParams->m_bDeinterlace = FALSE;
-			pPostRecParams->m_bCloseWhenDone = !(m_bRecAutoOpen && m_bRecAutoOpenAllowed);
-			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-							WM_THREADSAFE_OPEN_DOC,
-							(WPARAM)(new CString(m_sRecFileName)),
-							(LPARAM)pPostRecParams);
-		}
-	}
-	else if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
+	if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
 	{
 		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 						WM_THREADSAFE_OPEN_DOC,
@@ -9102,8 +9059,8 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 						(WPARAM)TRUE, // Enable Them
 						(LPARAM)0);
 
-		// Open the video file(s) and eventually post process them
-		OpenAndPostProcess();
+		// Open the video file
+		OpenAVIFile();
 	}
 }
 
@@ -9188,7 +9145,7 @@ BOOL CVideoDeviceDoc::NextAviFile()
 		return FALSE;
 	}
 
-	// Close old file, change frame rate and ev. post process it
+	// Close old file, change frame rate and open it
 	if (m_pAVRec)
 	{
 		// Free
@@ -9197,8 +9154,8 @@ BOOL CVideoDeviceDoc::NextAviFile()
 		// Change Frame Rate
 		ChangeRecFileFrameRate();
 
-		// Open the video file and ev. post process it
-		OpenAndPostProcess();
+		// Open the video file
+		OpenAVIFile();
 	}
 
 	// Change Pointer

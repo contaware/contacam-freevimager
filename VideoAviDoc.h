@@ -321,63 +321,6 @@ public:
 		public:
 			virtual BOOL Do() {return m_pDoc->SaveAs();};
 	};
-#ifdef VIDEODEVICEDOC
-	class CPostRec : public CFunct
-	{
-		public:
-			CString m_sFileName;
-			DWORD m_dwVideoCompressorFourCC;
-			int m_nVideoCompressorDataRate;
-			int m_nVideoCompressorKeyframesRate;
-			float m_fVideoCompressorQuality;
-			int m_nVideoCompressorQualityBitrate;
-			bool m_bDeinterlace;
-			bool m_bCloseWhenDone;
-			CPostRec() : CFunct()
-			{
-				m_sFileName = _T("");
-				m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE;
-				m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
-				m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
-				m_dwVideoCompressorFourCC = FCC('MJPG');
-				m_nVideoCompressorQualityBitrate = 0;
-				m_bDeinterlace = false;
-				m_bCloseWhenDone = false;
-			};
-			virtual BOOL Do() {	// All Video Streams have to be recompressed
-								bool bVideoStreamsSave[MAX_VIDEO_STREAMS];
-								bool bVideoStreamsChange[MAX_VIDEO_STREAMS];
-								bool bAudioStreamsSave[MAX_AUDIO_STREAMS];
-								bool bAudioStreamsChange[MAX_AUDIO_STREAMS];
-								DWORD dwStreamNum;
-								for (dwStreamNum = 0 ; dwStreamNum < m_pDoc->m_pAVIPlay->GetVideoStreamsCount() ; dwStreamNum++)
-								{
-									bVideoStreamsSave[dwStreamNum] = true;
-									bVideoStreamsChange[dwStreamNum] = true;
-								}
-								for (dwStreamNum = 0 ; dwStreamNum < m_pDoc->m_pAVIPlay->GetAudioStreamsCount() ; dwStreamNum++)
-								{
-									bAudioStreamsSave[dwStreamNum] = true;
-									bAudioStreamsChange[dwStreamNum] = false;
-								}
-								return m_pDoc->PostRecAVCODEC(	m_sFileName,
-																0,
-																m_dwVideoCompressorFourCC,
-																m_nVideoCompressorDataRate,
-																m_nVideoCompressorKeyframesRate,
-																m_fVideoCompressorQuality,
-																m_nVideoCompressorQualityBitrate,
-																m_bDeinterlace,
-																m_bCloseWhenDone,
-																true,	// Two pass encoding
-																NULL,
-																bVideoStreamsSave,
-																bVideoStreamsChange,
-																bAudioStreamsSave,
-																bAudioStreamsChange);
-								};
-	};
-#endif
 	class CPercentProgress
 	{
 		public:
@@ -495,33 +438,7 @@ public:
 	BOOL SaveAs(CString sDlgTitle = _T(""));	// Open File Dialog Title
 												// If _T("") the default is used
 
-#ifdef VIDEODEVICEDOC
-	void PostRecProcessing(	const CString& sFileName,
-							DWORD dwVideoCompressorFourCC,
-							int nVideoCompressorDataRate,
-							int nVideoCompressorKeyframesRate,
-							float fVideoCompressorQuality,
-							int nVideoCompressorQualityBitrate,
-							BOOL bDeinterlace,
-							BOOL bCloseWhenDone);
-	BOOL PostRecAVCODEC(	const CString& sFileName,
-							int nCurrentFramePos,
-							DWORD dwVideoCompressorFourCC,
-							int nVideoCompressorDataRate,
-							int nVideoCompressorKeyframesRate,
-							float fVideoCompressorQuality,
-							int nVideoCompressorQualityBitrate,
-							bool bDeinterlace,
-							bool bCloseWhenDone,
-							bool b2Pass,
-							LPWAVEFORMATEX pAudioCompressorWaveFormat,
-							bool* pbVideoStreamsSave,
-							bool* pbVideoStreamsChange,
-							bool* pbAudioStreamsSave,
-							bool* pbAudioStreamsChange);
-#endif
-
-	// End of Position Slider Thumbtrack 
+	// End of Position Slider Thumbtrack
 	void EndThumbTrack();			// No blocking restart playing at m_nThumbTrackPos
 									// if it was playing. If it wasn't playing just
 									// call DisplayFrame().
@@ -712,7 +629,7 @@ protected:
 							bool* pbAudioStreamsChange);
 
 	// Static Save Function with compression params
-	// called by PostRecAVCODEC() and ShrinkDocTo()
+	// called by ShrinkDocTo()
 	static BOOL SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
 								const CString& sDstFileName,
 								const CString& sSrcFileName,
@@ -778,9 +695,6 @@ protected:
 
 	// Processing Classes
 	CSaveAs m_SaveAsProcessing;
-#ifdef VIDEODEVICEDOC
-	CPostRec m_PostRecProcessing;
-#endif
 	CFileMergeSerialAs m_FileMergeSerialAsProcessing;
 	CFileMergeParallelAs m_FileMergeParallelAsProcessing;
 	CShrinkDocTo m_ShrinkDocToProcessing;

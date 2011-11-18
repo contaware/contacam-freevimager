@@ -50,7 +50,6 @@ class CMovementDetectionPage;
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define POSTREC_POSTFIX						_T("_postrec")
 #define MAX_DEVICE_AUTORUN_KEYS				32			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
@@ -182,21 +181,6 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MAX_DELAY_ALARM2		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM3		((DWORD)(3000.0 / MIN_FRAMERATE))	// ms
 #define HTTPGETFRAME_CONNECTION_TIMEOUT		15000U		// Setup connection timeout in ms
-
-
-// Post-Recording Parameters
-class CPostRecParams
-{
-public:
-	CString m_sSaveFileName;				// File Name
-	DWORD m_dwVideoCompressorFourCC;		// Video Compressor FourCC
-	int m_nVideoCompressorDataRate;			// Data Rate in Bits / Sec
-	int m_nVideoCompressorKeyframesRate;	// Keyframes Rate
-	float m_fVideoCompressorQuality;		// 2.0f best quality, 31.0f worst quality
-	int m_nVideoCompressorQualityBitrate;	// 0 -> use quality, 1 -> use bitrate
-	BOOL m_bDeinterlace;					// De-Interlace
-	BOOL m_bCloseWhenDone;					// Close document when done
-};
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc
@@ -1177,7 +1161,7 @@ public:
 	__forceinline BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
 	__forceinline CString MakeRecFileName();
 	__forceinline void ChangeRecFileFrameRate(double dFrameRate = 0.0);
-	__forceinline void OpenAndPostProcess();
+	__forceinline void OpenAVIFile();
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();
 	__forceinline BOOL IsRecording() {return m_pAVRec != NULL;};
@@ -1424,12 +1408,6 @@ public:
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality
 	volatile int m_nVideoRecQualityBitrate;				// 0 -> use quality, 1 -> use bitrate
-	volatile DWORD m_dwVideoPostRecFourCC;				// Video Compressor FourCC
-	volatile int m_nVideoPostRecDataRate;				// Data Rate in Bits / Sec
-	volatile int m_nVideoPostRecKeyframesRate;			// Keyframes Rate
-	volatile float m_fVideoPostRecQuality;				// 2.0f best quality, 31.0f worst quality
-	volatile int m_nVideoPostRecQualityBitrate;			// 0 -> use quality, 1 -> use bitrate
-	volatile BOOL m_bPostRec;							// Enable / Disable Post Recording Compress
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	// Get Frame Networking for both UDP and HTTP

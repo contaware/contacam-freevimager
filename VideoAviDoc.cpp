@@ -2268,9 +2268,6 @@ CVideoAviDoc::CVideoAviDoc()
 	m_PlayVideoFileThread.SetDoc(this);
 	m_ProcessingThread.SetDoc(this);
 	m_SaveAsProcessing.SetDoc(this);
-#ifdef VIDEODEVICEDOC
-	m_PostRecProcessing.SetDoc(this);
-#endif
 	m_FileMergeSerialAsProcessing.SetDoc(this);
 	m_FileMergeParallelAsProcessing.SetDoc(this);
 	m_ShrinkDocToProcessing.SetDoc(this);
@@ -2861,162 +2858,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	
 	return res;
 }
-
-#ifdef VIDEODEVICEDOC
-BOOL CVideoAviDoc::PostRecAVCODEC(	const CString& sFileName,
-									int nCurrentFramePos,
-									DWORD dwVideoCompressorFourCC,
-									int nVideoCompressorDataRate,
-									int nVideoCompressorKeyframesRate,
-									float fVideoCompressorQuality,
-									int nVideoCompressorQualityBitrate,
-									bool bDeinterlace,
-									bool bCloseWhenDone,
-									bool b2Pass,
-									LPWAVEFORMATEX pAudioCompressorWaveFormat,
-									bool* pbVideoStreamsSave,
-									bool* pbVideoStreamsChange,
-									bool* pbAudioStreamsSave,
-									bool* pbAudioStreamsChange)
-{
-	// Save to itself?
-	CString sDstFileName = sFileName;
-	if (m_sFileName.CompareNoCase(sFileName) == 0)
-	{
-		// Temporary File
-		sDstFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
-	}
-
-	BOOL res;
-	int nPassNumber;
-	if (b2Pass)
-	{
-		nPassNumber = 1;
-		if (!SaveAsAVCODEC(	nPassNumber,		// 1: First Pass
-							sDstFileName,
-							m_sFileName,
-							dwVideoCompressorFourCC,
-							nVideoCompressorDataRate,
-							nVideoCompressorKeyframesRate,
-							fVideoCompressorQuality,
-							nVideoCompressorQualityBitrate,
-							bDeinterlace,
-							pAudioCompressorWaveFormat,
-							pbVideoStreamsSave,
-							pbVideoStreamsChange,
-							pbAudioStreamsSave,
-							pbAudioStreamsChange,
-							GetView(),
-							FALSE,
-							&m_ProcessingThread))
-			return FALSE;
-										
-		if (nPassNumber != 0)
-		{
-			nPassNumber = 2;
-			res = SaveAsAVCODEC(nPassNumber,	// 2: Second Pass
-								sDstFileName,
-								m_sFileName,
-								dwVideoCompressorFourCC,
-								nVideoCompressorDataRate,
-								nVideoCompressorKeyframesRate,
-								fVideoCompressorQuality,
-								nVideoCompressorQualityBitrate,
-								bDeinterlace,
-								pAudioCompressorWaveFormat,
-								pbVideoStreamsSave,
-								pbVideoStreamsChange,
-								pbAudioStreamsSave,
-								pbAudioStreamsChange,
-								GetView(),
-								FALSE,
-								&m_ProcessingThread);
-		}
-		else
-			res = TRUE;	// Only Single Pass Necessary
-
-	}
-	else
-	{
-		nPassNumber = 0;
-		res = SaveAsAVCODEC(nPassNumber,		// 0: Single Pass
-							sDstFileName,
-							m_sFileName,
-							dwVideoCompressorFourCC,
-							nVideoCompressorDataRate,
-							nVideoCompressorKeyframesRate,
-							fVideoCompressorQuality,
-							nVideoCompressorQualityBitrate,
-							bDeinterlace,
-							pAudioCompressorWaveFormat,
-							pbVideoStreamsSave,
-							pbVideoStreamsChange,
-							pbAudioStreamsSave,
-							pbAudioStreamsChange,
-							GetView(),
-							FALSE,
-							&m_ProcessingThread);
-	}
-
-	if (res)
-	{
-		// Clear Modified Flag
-		SetModifiedFlag(FALSE);
-
-		// Save to itself?
-		if (m_sFileName.CompareNoCase(sFileName) == 0)
-		{
-			// Free
-			delete m_pAVIPlay;
-			m_pAVIPlay = NULL;
-
-			// Remove & Rename
-			try
-			{
-				CFile::Remove(m_sFileName);
-				CFile::Rename(sDstFileName, m_sFileName);
-			}
-			catch (CFileException* e)
-			{
-				::DeleteFile(sDstFileName); // Delete Tmp File
-				e->ReportError();
-				e->Delete();
-				return FALSE;
-			}
-		}
-
-		// Close?
-		if (bCloseWhenDone)
-		{
-			CPostDelayedMessageThread::PostDelayedMessage(
-											GetFrame()->GetSafeHwnd(),
-											WM_CLOSE,
-											THREAD_SAFE_CLOSE_AVI_DELAY,
-											0, 0);
-		}
-		else
-		{
-			// Re-Load AVI
-			CPostDelayedMessageThread::PostDelayedMessage(
-											GetView()->GetSafeHwnd(),
-											WM_THREADSAFE_LOAD_AVI,
-											THREAD_SAFE_LOAD_AVI_DELAY,
-											(WPARAM)(new CString(sFileName)),
-											(LPARAM)nCurrentFramePos);
-		}
-
-		return TRUE;
-	}
-	else
-	{
-		// Show Error Message if not interrupted by user
-		if (!m_ProcessingThread.DoExit())
-			::AfxMessageBox(ML_STRING(1431, "Error while saving file"), MB_ICONSTOP);
-
-		return FALSE;
-	}
-}
-#endif
 									
 BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sFileName,
 									BOOL bSaveCopyAs,
@@ -4847,30 +4688,6 @@ void CVideoAviDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	!IsProcessing()	&&
 					!GetView()->m_bFullScreenMode);
 }
-
-#ifdef VIDEODEVICEDOC
-void CVideoAviDoc::PostRecProcessing(	const CString& sFileName,
-										DWORD dwVideoCompressorFourCC,
-										int nVideoCompressorDataRate,
-										int nVideoCompressorKeyframesRate,
-										float fVideoCompressorQuality,
-										int nVideoCompressorQualityBitrate,
-										BOOL bDeinterlace,
-										BOOL bCloseWhenDone)
-{
-	m_PostRecProcessing.m_sFileName = sFileName;
-	m_PostRecProcessing.m_dwVideoCompressorFourCC = dwVideoCompressorFourCC;
-	m_PostRecProcessing.m_nVideoCompressorDataRate = nVideoCompressorDataRate;
-	m_PostRecProcessing.m_nVideoCompressorKeyframesRate = nVideoCompressorKeyframesRate;
-	m_PostRecProcessing.m_fVideoCompressorQuality = fVideoCompressorQuality;
-	m_PostRecProcessing.m_nVideoCompressorQualityBitrate = nVideoCompressorQualityBitrate;
-	m_PostRecProcessing.m_bDeinterlace = (bDeinterlace ? true : false);
-	m_PostRecProcessing.m_bCloseWhenDone = (bCloseWhenDone ? true : false);
-	ResetPercentDone();
-	m_ProcessingThread.SetProcessingFunct(&m_PostRecProcessing);
-	m_ProcessingThread.Start();
-}
-#endif
 
 void CVideoAviDoc::OnEditDelete() 
 {

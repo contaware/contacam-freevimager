@@ -102,9 +102,6 @@ public:
 	// Avi File Name
 	__forceinline CString GetFileName() const	{return m_sFileName;};
 
-	// Get Current File Size
-	ULARGE_INTEGER GetFileSize();
-
 	// Total Written Bytes for the given stream
 	__forceinline LONGLONG GetTotalWrittenBytes(DWORD dwStreamNum) const	{return m_llTotalWrittenBytes[dwStreamNum];};
 

@@ -30,7 +30,6 @@
 
 // Message Delays in ms
 #define THREAD_SAFE_LOAD_AVI_DELAY				500
-#define THREAD_SAFE_CLOSE_AVI_DELAY				1000
 
 // End Thumb-Track Retry Delay
 // 100 ms * 40 = 4 sec retrying

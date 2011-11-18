@@ -1403,32 +1403,6 @@ bool CAVRec::Close()
 	return res;
 }
 
-ULARGE_INTEGER CAVRec::GetFileSize()
-{
-	ULARGE_INTEGER Size;
-	Size.QuadPart = 0;
-
-	if (m_sFileName == _T(""))
-		return Size;
-
-	HANDLE hFile = ::CreateFile(m_sFileName,
-								0, // Only Query Access
-								FILE_SHARE_READ |
-								FILE_SHARE_WRITE,
-								NULL, OPEN_EXISTING,
-								FILE_ATTRIBUTE_NORMAL,
-								NULL);
-
-	if (hFile == INVALID_HANDLE_VALUE)
-		return Size;
-	
-	Size.LowPart = ::GetFileSize(hFile, &(Size.HighPart));
-
-	::CloseHandle(hFile);
-
-	return Size;
-}
-
 bool CAVRec::AddRawVideoPacket(DWORD dwStreamNum,
 							   DWORD dwBytes,
 							   LPBYTE pBuf,

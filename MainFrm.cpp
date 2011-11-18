@@ -1174,52 +1174,17 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 		EnterExitFullscreen();
 
 	CString* pFileName = (CString*)wparam;
-#ifdef VIDEODEVICEDOC
-	CPostRecParams* pPostRecParams = (CPostRecParams*)lparam;
-#endif
 	if (pFileName)
 	{
 		CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName);
 		delete pFileName;
 		if (pDoc)
-		{
-#ifdef VIDEODEVICEDOC
-			if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-			{
-				if (pPostRecParams)
-				{
-					((CVideoAviDoc*)pDoc)->PostRecProcessing(pPostRecParams->m_sSaveFileName,
-															pPostRecParams->m_dwVideoCompressorFourCC,
-															pPostRecParams->m_nVideoCompressorDataRate,
-															pPostRecParams->m_nVideoCompressorKeyframesRate,
-															pPostRecParams->m_fVideoCompressorQuality,
-															pPostRecParams->m_nVideoCompressorQualityBitrate,
-															pPostRecParams->m_bDeinterlace,
-															pPostRecParams->m_bCloseWhenDone);
-				}
-			}
-			if (pPostRecParams)
-				delete pPostRecParams;
-#endif
 			return 1;
-		}
 		else
-		{
-#ifdef VIDEODEVICEDOC
-			if (pPostRecParams)
-				delete pPostRecParams;
-#endif
 			return 0;
-		}
 	}
 	else
-	{
-#ifdef VIDEODEVICEDOC
-		if (pPostRecParams)
-			delete pPostRecParams;
-#endif
 		return 0;
-	}
 }
 
 #ifdef VIDEODEVICEDOC

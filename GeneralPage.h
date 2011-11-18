@@ -43,8 +43,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CGeneralPage)
 	enum { IDD = IDD_GENERAL };
-	CSliderCtrl	m_VideoPostRecQuality;
-	CComboBox	m_VideoPostRecCompressionChoose;
 	CSliderCtrl	m_VideoRecQuality;
 	CComboBox	m_VideoCompressionChoose;
 	CSliderCtrl	m_RecVolumeRight;
@@ -60,11 +58,7 @@ public:
 	CTime	m_SchedulerDailyTimeStop;
 	int		m_nVideoRecDataRate;
 	int		m_nVideoRecKeyframesRate;
-	BOOL	m_bPostRec;
-	int		m_nVideoPostRecKeyframesRate;
-	int		m_nVideoPostRecDataRate;
 	int		m_nVideoRecQualityBitrate;
-	int		m_nVideoPostRecQualityBitrate;
 	BOOL	m_bRecTimeSegmentation;
 	BOOL	m_bAutorun;
 	int		m_nDeleteRecordingsOlderThanDays;
@@ -105,14 +99,8 @@ protected:
 	afx_msg void OnCheckSchedulerDaily();
 	afx_msg void OnChangeEditKeyframesRate();
 	afx_msg void OnChangeEditDatarate();
-	afx_msg void OnCheckPostrec();
-	afx_msg void OnChangeEditPostrecDatarate();
-	afx_msg void OnChangeEditPostrecKeyframesRate();
-	afx_msg void OnSelchangeVideoPostrecCompressionChoose();
 	afx_msg void OnRadioQuality();
-	afx_msg void OnRadioPostrecQuality();
 	afx_msg void OnRadioBitrate();
-	afx_msg void OnRadioPostrecBitrate();
 	afx_msg void OnCheckTimeSegmentation();
 	afx_msg void OnCheckAutorun();
 	afx_msg void OnChangeEditDeleteRecordingsDays();
