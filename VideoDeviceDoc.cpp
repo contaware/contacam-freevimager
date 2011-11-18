@@ -89,7 +89,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-__forceinline BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir)
+BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir)
 {
 	// Remove Trailing '\'
 	sBaseDir.TrimRight(_T('\\'));
@@ -2338,7 +2338,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
 BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf)
 {
 	BOOL res = FALSE;
-	CString sRecFileName;
 	int nRecordedFrames = 0;
 	CAVRec* pNextAVRec = NULL;
 	CAVRec* pOldAVRec = NULL;
@@ -2346,35 +2345,29 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 
 	// Set Old AVRec Pointer
 	pOldAVRec = m_pDoc->m_pAVRec;
-
-	// Make Rec. File Name
-	sRecFileName = m_pDoc->MakeRecFileName();
 	
 	// Allocate & Init pNextAVRec
-	if (sRecFileName != _T(""))
+	if (m_pDoc->MakeAVRec(m_pDoc->MakeRecFileName(), &pNextAVRec))
 	{
-		if (m_pDoc->MakeAVRec(sRecFileName, &pNextAVRec))
-		{
-			// Change Pointer and
-			// restart with frame counting and time measuring
-			::EnterCriticalSection(&m_pDoc->m_csAVRec);
-			m_pDoc->m_pAVRec = pNextAVRec;
-			nRecordedFrames = m_pDoc->m_nRecordedFrames;
-			m_pDoc->m_bRecFirstFrame = TRUE; // Video thread will reset m_pDoc->m_nRecordedFrames!
-			::LeaveCriticalSection(&m_pDoc->m_csAVRec);				
+		// Change Pointer and
+		// restart with frame counting and time measuring
+		::EnterCriticalSection(&m_pDoc->m_csAVRec);
+		m_pDoc->m_pAVRec = pNextAVRec;
+		nRecordedFrames = m_pDoc->m_nRecordedFrames;
+		m_pDoc->m_bRecFirstFrame = TRUE; // Video thread will reset m_pDoc->m_nRecordedFrames!
+		::LeaveCriticalSection(&m_pDoc->m_csAVRec);				
 
-			// Set Free Flag
-			bFreeOldAVRec = TRUE;
+		// Set Free Flag
+		bFreeOldAVRec = TRUE;
 
-			// Set Ok
-			res = TRUE;
-		}
-		else
-		{
-			if (pNextAVRec)
-				delete pNextAVRec;
-			
-		}
+		// Set Ok
+		res = TRUE;
+	}
+	else
+	{
+		if (pNextAVRec)
+			delete pNextAVRec;
+		
 	}
 
 	// Store samples to Old File
@@ -2400,6 +2393,9 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 			// Get Samples Count
 			LONGLONG llSamplesCount = pOldAVRec->GetSampleCount(pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
 
+			// Store old rec file name
+			CString sOldRecFileName = pOldAVRec->GetFileName();
+
 			// Free
 			delete pOldAVRec;
 
@@ -2412,13 +2408,10 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf
 				dFrameRate =	(double)nRecordedFrames /
 								((double)llSamplesCount / (double)m_pDstWaveFormat->nSamplesPerSec);
 			}
-			m_pDoc->ChangeRecFileFrameRate(dFrameRate);
+			m_pDoc->ChangeRecFileFrameRate(sOldRecFileName, dFrameRate);
 
 			// Open the video file
-			m_pDoc->OpenAVIFile();
-
-			// Set New File Name
-			m_pDoc->m_sRecFileName = sRecFileName;
+			m_pDoc->OpenAVIFile(sOldRecFileName);
 		}
 	}
 
@@ -4739,7 +4732,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
-	m_sRecFileName  = _T("");
 	m_bRecAutoOpen = TRUE;
 	m_bRecAutoOpenAllowed = TRUE;
 	m_bRecTimeSegmentation = FALSE;
@@ -6407,7 +6399,7 @@ void CVideoDeviceDoc::FreeAVIFile()
 	}
 }
 
-__forceinline CString CVideoDeviceDoc::MakeRecFileName()
+CString CVideoDeviceDoc::MakeRecFileName()
 {
 	CString sRecFileName;
 	CTime Time = CTime::GetCurrentTime();
@@ -6427,7 +6419,7 @@ __forceinline CString CVideoDeviceDoc::MakeRecFileName()
 		return sRecFileName + _T("\\") + _T("rec_") + sTime + _T(".avi");
 }
 
-__forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
+BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
 {
 	// Check
 	if (!ppAVRec)
@@ -6512,7 +6504,7 @@ __forceinline BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec**
 		return TRUE;
 }
 
-BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec/*=NULL*/)
+BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec)
 {
 	// Free
 	if (pAVRec)
@@ -6600,11 +6592,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		else
 			m_bAboutToStartRec = FALSE;
 
-		// Set Rec. File Name
-		m_sRecFileName = MakeRecFileName();
-		if (m_sRecFileName == _T(""))
-			return RecError(bShowMessageBoxOnError);
-
 		// Set next rec time for time segmentation
 		if (m_bRecTimeSegmentation)
 		{
@@ -6617,7 +6604,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		
 		// Allocate & Init pAVRec
 		CAVRec* pAVRec = NULL;
-		if (!MakeAVRec(m_sRecFileName, &pAVRec))
+		if (!MakeAVRec(MakeRecFileName(), &pAVRec))
 			return RecError(bShowMessageBoxOnError, pAVRec);
 
 		// Set AV Rec Pointer
@@ -8987,7 +8974,7 @@ void CVideoDeviceDoc::ShowSendFrameMsg()
 	}
 }
 
-__forceinline void CVideoDeviceDoc::ChangeRecFileFrameRate(double dFrameRate/*=0.0*/)
+void CVideoDeviceDoc::ChangeRecFileFrameRate(const CString& sFileName, double dFrameRate/*=0.0*/)
 {
 	if (dFrameRate == 0.0)
 	{
@@ -8999,29 +8986,36 @@ __forceinline void CVideoDeviceDoc::ChangeRecFileFrameRate(double dFrameRate/*=0
 		else
 			dFrameRate =	1.0;
 	}
-	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)m_sRecFileName,
+	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sFileName,
 										0,
 										dFrameRate,
 										false);
 }
 
-__forceinline void CVideoDeviceDoc::OpenAVIFile()
+void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
 {
 	if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
 	{
 		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 						WM_THREADSAFE_OPEN_DOC,
-						(WPARAM)(new CString(m_sRecFileName)),
+						(WPARAM)(new CString(sFileName)),
 						(LPARAM)NULL);
 	}
 }
 
 void CVideoDeviceDoc::CloseAndShowAviRec()
 {
-	// Get Total Samples
 	LONGLONG llSamplesCount = 0;
-	if (m_bCaptureAudio && m_pAVRec)
-		llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
+	CString sOldRecFileName;
+	if (m_pAVRec)
+	{
+		// Get Total Samples
+		if (m_bCaptureAudio)
+			llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
+
+		// Store old rec file name
+		sOldRecFileName = m_pAVRec->GetFileName();
+	}
 
 	// Free & Reset Vars
 	FreeAVIFile();
@@ -9041,10 +9035,10 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 			dFrameRate =	(double)m_nRecordedFrames /
 							((double)llSamplesCount / (double)m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec);
 		}
-		ChangeRecFileFrameRate(dFrameRate);
+		ChangeRecFileFrameRate(sOldRecFileName, dFrameRate);
 	}
 	else
-		ChangeRecFileFrameRate();
+		ChangeRecFileFrameRate(sOldRecFileName);
 
 	// If ending the windows session do not perform the following
 	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
@@ -9060,7 +9054,7 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 						(LPARAM)0);
 
 		// Open the video file
-		OpenAVIFile();
+		OpenAVIFile(sOldRecFileName);
 	}
 }
 
@@ -9130,15 +9124,9 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 
 BOOL CVideoDeviceDoc::NextAviFile()
 {
-	CAVRec* pNextAVRec = NULL;
-
-	// Make Rec. File Name
-	CString sRecFileName = MakeRecFileName();
-	if (sRecFileName == _T(""))
-		return FALSE;
-
 	// Allocate & Init pNextAVRec
-	if (!MakeAVRec(sRecFileName, &pNextAVRec))
+	CAVRec* pNextAVRec = NULL;
+	if (!MakeAVRec(MakeRecFileName(), &pNextAVRec))
 	{
 		if (pNextAVRec)
 			delete pNextAVRec;
@@ -9148,21 +9136,21 @@ BOOL CVideoDeviceDoc::NextAviFile()
 	// Close old file, change frame rate and open it
 	if (m_pAVRec)
 	{
+		// Store old rec file name
+		CString sOldRecFileName = m_pAVRec->GetFileName();
+
 		// Free
 		delete m_pAVRec;
 
 		// Change Frame Rate
-		ChangeRecFileFrameRate();
+		ChangeRecFileFrameRate(sOldRecFileName);
 
 		// Open the video file
-		OpenAVIFile();
+		OpenAVIFile(sOldRecFileName);
 	}
 
 	// Change Pointer
 	m_pAVRec = pNextAVRec;
-
-	// Set new file name
-	m_sRecFileName = sRecFileName;
 
 	// Restart with frame counting and time measuring
 	m_bRecFirstFrame = TRUE;

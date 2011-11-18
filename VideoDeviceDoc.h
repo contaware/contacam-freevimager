@@ -1083,7 +1083,7 @@ public:
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
-	static __forceinline BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
+	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
 	void ViewVideo();					// Show / Hide Video Preview
 
 	// Open Video Device
@@ -1158,10 +1158,10 @@ public:
 													::InterlockedExchange(&m_bStopProcessFrame, 0);};
 	
 	// Video / Audio Recording
-	__forceinline BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
-	__forceinline CString MakeRecFileName();
-	__forceinline void ChangeRecFileFrameRate(double dFrameRate = 0.0);
-	__forceinline void OpenAVIFile();
+	BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
+	CString MakeRecFileName();
+	void ChangeRecFileFrameRate(const CString& sFileName, double dFrameRate = 0.0);
+	void OpenAVIFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();
 	__forceinline BOOL IsRecording() {return m_pAVRec != NULL;};
@@ -1273,7 +1273,7 @@ protected:
 	BOOL Deinterlace(CDib* pDib);											// Inplace De-Interlace
 	BOOL Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits);	// De-Interlace Src and put it to Dst,
 																			// Dst bits are Allocate by the function
-	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec = NULL);
+	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
@@ -1400,7 +1400,6 @@ public:
 	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
-	CString m_sRecFileName;								// The Recording File Name
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	volatile BOOL m_bRecDeinterlace;					// Recording De-Interlace
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
