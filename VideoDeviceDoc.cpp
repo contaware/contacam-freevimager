@@ -3518,11 +3518,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			m_MovementDetections[i] = FALSE;
 	}
 
-	// Frame Time
-	int nFrameTime = Round(1000.0 / m_dFrameRate);
-	if (m_dEffectiveFrameRate > 0.0)
-		nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-
 	// Store frames?
 	BOOL bStoreFrames =	bDoDetection					&&
 						(m_bSaveSWFMovementDetection	||
@@ -3539,14 +3534,11 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		pDib->SetUserFlag(TRUE);
 
 		// Reset var
-		m_nMilliSecondsWithoutMovementDetection = 0;
+		m_dwWithoutMovementDetection = dwCurrentUpTime;
 
 		// First detected frame?
 		if (!m_bDetectingMovement)
-		{
-			m_nMilliSecondsBeforeMovementDetection = 0;
 			m_bDetectingMovement = TRUE;
-		}
 	}
 	// If No Movement
 	else
@@ -3554,29 +3546,20 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		// Mark the Frame as no Movement Cause
 		pDib->SetUserFlag(FALSE);
 
-		// If detecting countup without movement var
-		if (m_bDetectingMovement)
-			m_nMilliSecondsWithoutMovementDetection += nFrameTime;
-		else
-		{
-			m_nMilliSecondsBeforeMovementDetection += nFrameTime;
-			if (bStoreFrames)
-				AddNewFrameToNewestList(pDib);
-			if (m_nMilliSecondsBeforeMovementDetection > m_nMilliSecondsRecBeforeMovementBegin)
-				RemoveOldestFrameFromNewestList();
-		}
+		// Reset var
+		if (!m_bDetectingMovement)
+			m_dwWithoutMovementDetection = dwCurrentUpTime;
 	}
 
 	// If in detection state
 	if (m_bDetectingMovement)
 	{
-		// Countup the detection time and add frame
-		m_nMilliSecondsSinceMovementDetection += nFrameTime;
+		// Add new frame
 		if (bStoreFrames)
 			AddNewFrameToNewestList(pDib);
 
-		// Check if end of detecting period
-		if (m_nMilliSecondsWithoutMovementDetection > m_nMilliSecondsRecAfterMovementEnd)
+		// Check if end of detection period
+		if ((dwCurrentUpTime - m_dwWithoutMovementDetection) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
 		{
 			// False Detection
 			BOOL bFalseDetection = FALSE;
@@ -3596,10 +3579,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 				}
 			}
 
-			// Reset vars
+			// Reset var
 			m_bDetectingMovement = FALSE;
-			m_nMilliSecondsSinceMovementDetection = 0;
-			m_nMilliSecondsWithoutMovementDetection = 0;
 
 			// Save frames
 			if (bFalseDetection)
@@ -3669,6 +3650,13 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	}
 	else
 	{
+		// Add new frame
+		if (bStoreFrames)
+			AddNewFrameToNewestListAndShrink(pDib);
+		else
+			ClearNewestFrameList();
+
+		// Reset false detection counts
 		m_nBlueMovementDetectionsCount = 0;
 		m_nNoneBlueMovementDetectionsCount = 0;
 	}
@@ -6819,9 +6807,6 @@ void CVideoDeviceDoc::ResetMovementDetector()
 {
 	m_bFirstMovementDetection = TRUE;			
 	m_bDetectingMovement = FALSE;
-	m_nMilliSecondsSinceMovementDetection = 0;
-	m_nMilliSecondsWithoutMovementDetection = 0;
-	m_nMilliSecondsBeforeMovementDetection = 0;
 	m_nBlueMovementDetectionsCount = 0;
 	m_nNoneBlueMovementDetectionsCount = 0;
 	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
@@ -9659,19 +9644,47 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 	}
 }
 
-__forceinline void CVideoDeviceDoc::RemoveOldestFrameFromNewestList()
+__forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 {
-	::EnterCriticalSection(&m_csMovementDetectionsList);
-	if (!m_MovementDetectionsList.IsEmpty())
+	if (pDib)
 	{
-		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
-		if (pTail && !pTail->IsEmpty())
+		::EnterCriticalSection(&m_csMovementDetectionsList);
+		if (!m_MovementDetectionsList.IsEmpty())
 		{
-			delete pTail->GetHead();
-			pTail->RemoveHead();
+			CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
+			if (pTail)
+			{
+				// Check
+				CDib* pHeadDib;
+				if (!pTail->IsEmpty())
+				{
+					pHeadDib = pTail->GetHead();
+					if (pHeadDib && memcmp(pHeadDib->GetBMIH(), pDib->GetBMIH(), sizeof(BITMAPINFOHEADER)) != 0)
+						CDib::FreeList(*pTail);
+				}
+
+				// Add
+				DWORD dwNewUpTime = pDib->GetUpTime();
+				CDib* pNewDib = new CDib(*pDib);
+				if (pNewDib)
+					pTail->AddTail(pNewDib);
+
+				// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
+				while (pTail->GetCount() > 1)
+				{
+					pHeadDib = pTail->GetHead();
+					if (pHeadDib)
+					{
+						if ((dwNewUpTime - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
+							break;
+						delete pHeadDib;
+					}
+					pTail->RemoveHead();
+				}
+			}
 		}
+		::LeaveCriticalSection(&m_csMovementDetectionsList);
 	}
-	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
 __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dwFirstUpTime, DWORD& dwLastUpTime)

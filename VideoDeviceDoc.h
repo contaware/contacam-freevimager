@@ -1132,7 +1132,8 @@ public:
 												DWORD& dwLastUpTime);
 	__forceinline int  GetNewestMovementDetectionsListCount();		// Get the newest list's count
 	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
-	__forceinline void RemoveOldestFrameFromNewestList();			// Free and remove oldest frame from newest list
+	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
+																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 
 	// Main Decode & Process Functions
 	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
@@ -1493,9 +1494,7 @@ public:
 	volatile BOOL m_bFirstMovementDetection;			// Start Detecting when this is FALSE
 	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 (100 Max Sensibility)
 														// a high sensibility may Detect Video Noise!)
-	__int64 m_nMilliSecondsSinceMovementDetection;
-	__int64 m_nMilliSecondsWithoutMovementDetection;
-	__int64 m_nMilliSecondsBeforeMovementDetection;
+	volatile DWORD m_dwWithoutMovementDetection;		// Uptime of last movement detection
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF

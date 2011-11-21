@@ -228,7 +228,7 @@ Resource89=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource90=IDD_IMAPI2 (English (U.S.))
 Resource91=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource92=IDD_ASSISTANT (English (U.S.))
-Resource93=IDR_MAINFRAME (English (U.S.))
+Resource93=IDD_RENAME (English (U.S.))
 Resource94=IDD_ABOUTBOX (English (U.S.))
 Resource95=IDD_GENERAL (English (U.S.))
 Resource96=IDD_RESIZING (English (U.S.))
@@ -236,7 +236,7 @@ Resource97=IDD_SENDMAIL_OPEN_DOCS (English (U.S.))
 Resource98=IDD_HLS (English (U.S.))
 Resource99=IDD_AUDIOIN_SOURCE (English (U.S.))
 Resource100=IDD_OUTVOL (English (U.S.))
-Resource101=IDD_RENAME (English (U.S.))
+Resource101=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
