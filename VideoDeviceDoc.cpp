@@ -3280,18 +3280,93 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 	// Detection Enabled?
 	if (bDoDetection)
 	{
-		if (pDib->GetCompression() == BI_RGB ||
-			pDib->GetCompression() == BI_BITFIELDS)
+		// Update Freq Div?
+		if (m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5 ||
+			m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5)
 		{
-			// If first RGB Frame:
-			// 1. Allocated m_pMovementDetectorY800Dib
-			// 2. Free m_pDifferencingDib and m_pMovementDetectorBackgndDib
-			if (!m_pMovementDetectorY800Dib)
+			double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
+			if (dNewMovDetFreqDiv < 1.0)
+				dNewMovDetFreqDiv = 1.0;
+			m_nMovDetFreqDiv = Round(dNewMovDetFreqDiv);
+			m_dMovDetFrameRateFreqDivCalc = m_dEffectiveFrameRate;
+		}
+
+		// Do detect?
+		if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
+		{
+			if (pDib->GetCompression() == BI_RGB ||
+				pDib->GetCompression() == BI_BITFIELDS)
 			{
-				m_pMovementDetectorY800Dib = new CDib;
+				// If first RGB Frame:
+				// 1. Allocated m_pMovementDetectorY800Dib
+				// 2. Free m_pDifferencingDib and m_pMovementDetectorBackgndDib
 				if (!m_pMovementDetectorY800Dib)
-					return;
-				m_pMovementDetectorY800Dib->SetShowMessageBoxOnError(FALSE);
+				{
+					m_pMovementDetectorY800Dib = new CDib;
+					if (!m_pMovementDetectorY800Dib)
+						return;
+					m_pMovementDetectorY800Dib->SetShowMessageBoxOnError(FALSE);
+					if (m_pDifferencingDib)
+					{
+						delete m_pDifferencingDib;
+						m_pDifferencingDib = NULL;
+					}
+					if (m_pMovementDetectorBackgndDib)
+					{
+						delete m_pMovementDetectorBackgndDib;
+						m_pMovementDetectorBackgndDib = NULL;
+					}
+				}
+				
+				// 24 bpp
+				if (pDib->GetBitCount() == 24)
+				{
+					if (!m_pMovementDetectorY800Dib->GetBits())
+					{
+						if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
+																			FCC('Y800'),
+																			pDib->GetWidth(),
+																			pDib->GetHeight()))
+							return;
+					}
+					if (!::RGB24ToY800(	pDib->GetBits(),						// RGB24 Dib
+										m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
+										pDib->GetWidth(),
+										pDib->GetHeight()))
+						return;
+				}
+				// 32 bpp
+				else if (pDib->GetBitCount() == 32)
+				{
+					if (!m_pMovementDetectorY800Dib->GetBits())
+					{
+						if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
+																			FCC('Y800'),
+																			pDib->GetWidth(),
+																			pDib->GetHeight()))
+							return;
+					}
+					if (!::RGB32ToY800(	pDib->GetBits(),						// RGB32 Dib
+										m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
+										pDib->GetWidth(),
+										pDib->GetHeight()))
+						return;
+				}
+				// 16 bpp
+				else
+				{
+					*m_pMovementDetectorY800Dib = *pDib;
+					if (!m_pMovementDetectorY800Dib->Compress(FCC('Y800')))
+						return;
+				}
+			}
+			// If first no RGB Frame:
+			// Free m_pMovementDetectorY800Dib,
+			//		m_pDifferencingDib and m_pMovementDetectorBackgndDib
+			else if (m_pMovementDetectorY800Dib)
+			{
+				delete m_pMovementDetectorY800Dib;
+				m_pMovementDetectorY800Dib = NULL;
 				if (m_pDifferencingDib)
 				{
 					delete m_pDifferencingDib;
@@ -3303,212 +3378,140 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 					m_pMovementDetectorBackgndDib = NULL;
 				}
 			}
-			
-			// 24 bpp
-			if (pDib->GetBitCount() == 24)
-			{
-				if (!m_pMovementDetectorY800Dib->GetBits())
-				{
-					if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																		FCC('Y800'),
-																		pDib->GetWidth(),
-																		pDib->GetHeight()))
-						return;
-				}
-				if (!::RGB24ToY800(	pDib->GetBits(),						// RGB24 Dib
-									m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-									pDib->GetWidth(),
-									pDib->GetHeight()))
-					return;
-			}
-			// 32 bpp
-			else if (pDib->GetBitCount() == 32)
-			{
-				if (!m_pMovementDetectorY800Dib->GetBits())
-				{
-					if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																		FCC('Y800'),
-																		pDib->GetWidth(),
-																		pDib->GetHeight()))
-						return;
-				}
-				if (!::RGB32ToY800(	pDib->GetBits(),						// RGB32 Dib
-									m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-									pDib->GetWidth(),
-									pDib->GetHeight()))
-					return;
-			}
-			// 16 bpp
-			else
-			{
-				*m_pMovementDetectorY800Dib = *pDib;
-				if (!m_pMovementDetectorY800Dib->Compress(FCC('Y800')))
-					return;
-			}
-		}
-		// If first no RGB Frame:
-		// Free m_pMovementDetectorY800Dib,
-		//		m_pDifferencingDib and m_pMovementDetectorBackgndDib
-		else if (m_pMovementDetectorY800Dib)
-		{
-			delete m_pMovementDetectorY800Dib;
-			m_pMovementDetectorY800Dib = NULL;
-			if (m_pDifferencingDib)
-			{
-				delete m_pDifferencingDib;
-				m_pDifferencingDib = NULL;
-			}
-			if (m_pMovementDetectorBackgndDib)
-			{
-				delete m_pMovementDetectorBackgndDib;
-				m_pMovementDetectorBackgndDib = NULL;
-			}
-		}
-		CDib* pDibY = m_pMovementDetectorY800Dib ? m_pMovementDetectorY800Dib : pDib;
-		if (!m_pMovementDetectorBackgndDib)
-		{
-			m_pMovementDetectorBackgndDib = new CDib(*pDibY);
+			CDib* pDibY = m_pMovementDetectorY800Dib ? m_pMovementDetectorY800Dib : pDib;
 			if (!m_pMovementDetectorBackgndDib)
-				return;
-			m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
-		}
-		if (!m_pDifferencingDib)
-		{
-			m_pDifferencingDib = new CDib;
+			{
+				m_pMovementDetectorBackgndDib = new CDib(*pDibY);
+				if (!m_pMovementDetectorBackgndDib)
+					return;
+				m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
+			}
 			if (!m_pDifferencingDib)
-				return;
-			m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
-			if (!m_pDifferencingDib->AllocateBitsFast(	pDibY->GetBitCount(),
-														pDibY->GetCompression(),
-														pDibY->GetWidth(),
-														pDibY->GetHeight()))
-				return;
-		}
-
-		// Color Space Type
-		BOOL bPlanar;
-		int nPackedYOffset = 0;
-		if (pDibY->GetCompression() == FCC('I420')	||
-			pDibY->GetCompression() == FCC('IYUV')	||
-			pDibY->GetCompression() == FCC('YV12')	||
-			pDibY->GetCompression() == FCC('YUV9')	||
-			pDibY->GetCompression() == FCC('YVU9')	||
-			pDibY->GetCompression() == FCC('Y41B')	||
-			pDibY->GetCompression() == FCC('YV16')	||
-			pDibY->GetCompression() == FCC('Y42B')	||
-			pDibY->GetCompression() == FCC('  Y8')	||
-			pDibY->GetCompression() == FCC('Y800')	||
-			pDibY->GetCompression() == FCC('GREY'))
-		{
-			bPlanar = TRUE;
-		}
-		// Packed 422 with Y beginning the 16 bits pixel
-		else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-					pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
-					pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
-					pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
-					pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
-					pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
-		{
-			bPlanar = FALSE;
-		}
-		// Packed 422 with Y as the second byte of the 16 bits pixel
-		else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
-					pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
-					pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
-		{
-			bPlanar = FALSE;
-			nPackedYOffset = 1;
-		}
-		// Not Supported Format!
-		else
-		{
-			TRACE(_T("Video Format Not Supported by Motion Detector!\n"));
-			return;
-		}
-
-		// Luminosity change detector
-		if (m_bDoLumChangeDetection)
-			bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
-
-		// Differencing
-		BYTE p[16];
-		LPBYTE MinDiff = (LPBYTE)((DWORD)(p+7) & 0xFFFFFFF8);
-		MinDiff[0] = m_nMovementDetectorIntensityLimit;
-		MinDiff[1] = MinDiff[0];
-		MinDiff[2] = MinDiff[0];
-		MinDiff[3] = MinDiff[0];
-		MinDiff[4] = MinDiff[0];
-		MinDiff[5] = MinDiff[0];
-		MinDiff[6] = MinDiff[0];
-		MinDiff[7] = MinDiff[0];
-
-		// Size in 8 bytes units
-		int nSize8;
-		if (bPlanar)
-			nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 3;
-		else
-			nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 2;
-
-		// Do Differencing
-		::DiffMMX(	m_pDifferencingDib->GetBits(),				// Dst
-					pDibY->GetBits(),							// Src1
-					m_pMovementDetectorBackgndDib->GetBits(),	// Src2
-					nSize8,										// Size in 8 bytes units
-					MinDiff);
-
-		// Call Detector
-		bMovement = MovementDetector(	m_pDifferencingDib,
-										bPlanar,
-										m_nDetectionLevel,
-										dwCurrentUpTime);
-
-		// Update background
-		int nFrameRate = Round(m_dEffectiveFrameRate);
-		if (g_bSSE)
-		{
-			if (nFrameRate >= 10)
 			{
-				::Mix15To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-								pDibY->GetBits(),							// Src2
-								nSize8);									// Size in 8 bytes units
+				m_pDifferencingDib = new CDib;
+				if (!m_pDifferencingDib)
+					return;
+				m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
+				if (!m_pDifferencingDib->AllocateBitsFast(	pDibY->GetBitCount(),
+															pDibY->GetCompression(),
+															pDibY->GetWidth(),
+															pDibY->GetHeight()))
+					return;
 			}
-			else if (nFrameRate >= 5)
+
+			// Color Space Type
+			BOOL bPlanar;
+			int nPackedYOffset = 0;
+			if (pDibY->GetCompression() == FCC('I420')	||
+				pDibY->GetCompression() == FCC('IYUV')	||
+				pDibY->GetCompression() == FCC('YV12')	||
+				pDibY->GetCompression() == FCC('YUV9')	||
+				pDibY->GetCompression() == FCC('YVU9')	||
+				pDibY->GetCompression() == FCC('Y41B')	||
+				pDibY->GetCompression() == FCC('YV16')	||
+				pDibY->GetCompression() == FCC('Y42B')	||
+				pDibY->GetCompression() == FCC('  Y8')	||
+				pDibY->GetCompression() == FCC('Y800')	||
+				pDibY->GetCompression() == FCC('GREY'))
 			{
-				::Mix7To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-								pDibY->GetBits(),							// Src2
-								nSize8);									// Size in 8 bytes units
+				bPlanar = TRUE;
 			}
+			// Packed 422 with Y beginning the 16 bits pixel
+			else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
+						pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
+						pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
+						pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
+						pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
+						pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
+			{
+				bPlanar = FALSE;
+			}
+			// Packed 422 with Y as the second byte of the 16 bits pixel
+			else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
+						pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
+						pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
+			{
+				bPlanar = FALSE;
+				nPackedYOffset = 1;
+			}
+			// Not Supported Format!
 			else
 			{
-				::Mix3To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-								pDibY->GetBits(),							// Src2
-								nSize8);									// Size in 8 bytes units
+				TRACE(_T("Video Format Not Supported by Motion Detector!\n"));
+				return;
 			}
-		}
-		else
-		{
-			int nSize;
+
+			// Luminosity change detector
+			if (m_bDoLumChangeDetection)
+				bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
+
+			// Differencing
+			BYTE p[16];
+			LPBYTE MinDiff = (LPBYTE)((DWORD)(p+7) & 0xFFFFFFF8);
+			MinDiff[0] = m_nMovementDetectorIntensityLimit;
+			MinDiff[1] = MinDiff[0];
+			MinDiff[2] = MinDiff[0];
+			MinDiff[3] = MinDiff[0];
+			MinDiff[4] = MinDiff[0];
+			MinDiff[5] = MinDiff[0];
+			MinDiff[6] = MinDiff[0];
+			MinDiff[7] = MinDiff[0];
+
+			// Size in 8 bytes units
+			int nSize8;
 			if (bPlanar)
-				nSize = pDibY->GetWidth() * pDibY->GetHeight();
+				nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 3;
 			else
-				nSize = (pDibY->GetWidth() * pDibY->GetHeight()) << 1;
-			LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
-			LPBYTE p2 = pDibY->GetBits();
-			if (nFrameRate >= 10)
+				nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 2;
+
+			// Do Differencing
+			::DiffMMX(	m_pDifferencingDib->GetBits(),				// Dst
+						pDibY->GetBits(),							// Src1
+						m_pMovementDetectorBackgndDib->GetBits(),	// Src2
+						nSize8,										// Size in 8 bytes units
+						MinDiff);
+
+			// Call Detector
+			bMovement = MovementDetector(	m_pDifferencingDib,
+											bPlanar,
+											m_nDetectionLevel,
+											dwCurrentUpTime);
+
+			// Update background
+			if (g_bSSE)
 			{
-				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((15 * (int)(p1[i]) + (int)(p2[i]) + 8)>>4);
-			}
-			else if (nFrameRate >= 5)
-			{
-				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4)>>3);
+				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
+				{
+					::Mix7To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+									pDibY->GetBits(),							// Src2
+									nSize8);									// Size in 8 bytes units
+				}
+				else
+				{
+					::Mix3To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
+									pDibY->GetBits(),							// Src2
+									nSize8);									// Size in 8 bytes units
+				}
 			}
 			else
 			{
-				for (int i = 0 ; i < nSize ; i++)
-					p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
+				int nSize;
+				if (bPlanar)
+					nSize = pDibY->GetWidth() * pDibY->GetHeight();
+				else
+					nSize = (pDibY->GetWidth() * pDibY->GetHeight()) << 1;
+				LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
+				LPBYTE p2 = pDibY->GetBits();
+				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
+				{
+					for (int i = 0 ; i < nSize ; i++)
+						p1[i] = (BYTE)((7 * (int)(p1[i]) + (int)(p2[i]) + 4)>>3);
+				}
+				else
+				{
+					for (int i = 0 ; i < nSize ; i++)
+						p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
+				}
 			}
 		}
 	}
@@ -4802,6 +4805,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_DetectionStopTime = t;
 	m_nDeleteDetectionsOlderThanDays = 0;
 	m_bUnsupportedVideoSizeForMovDet = FALSE;
+	m_nMovDetFreqDiv = 1;
+	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
 	// Property Sheet
 	m_pAssistantPage = NULL;

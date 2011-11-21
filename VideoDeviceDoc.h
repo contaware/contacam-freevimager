@@ -115,6 +115,8 @@ class CMovementDetectionPage;
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
 #define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
+#define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3 to 1 to 7 to 1 mixer
+#define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")
@@ -1552,6 +1554,8 @@ public:
 	volatile int m_nDeleteDetectionsOlderThanDays;		// Delete Detections older than the given amount of days,
 														// 0 means never delete any file!
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
+	volatile int m_nMovDetFreqDiv;						// Current frequency divider
+	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
 
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;

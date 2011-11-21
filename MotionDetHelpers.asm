@@ -25,51 +25,6 @@ ENDM
 
 ; ********** Mix Functions **********
 ; C++ prototype:
-
-; extern "C" void Mix15To1MMX(void* pBackgnd, void* pSrc, int nSize);
-;
-; average_round_up(a, b)                               = pavgb(a, b)
-; average_round_down(a, b) = ~average_round_up(~a, ~b) = ~pavgb(~a, ~b)
-; pavgb is only available on processors with SSE!
-;
-; round((a*15+b)/16)
-; = (a*15 + b + 8) >> 4
-; = (a*8 + a*4 + a*2 + a + b + 8) >> 4
-; = (((((((a + b) >> 1) + a) >> 1) + a) >> 1) + a + 1) >> 1
-; = average_round_up(average_round_down(average_round_down(average_round_down(a, b), a), a), a)
-Mix15To1MMX PROC NEAR
-PUBLIC Mix15To1MMX
-PublicAlias _Mix15To1MMX	; Underscore needed when called from Windows
-	mov     edx, [esp+4]    ; pBackgnd
-	mov     eax, [esp+8]    ; pSrc
-	mov     ecx, [esp+12]   ; nSize
-	pcmpeqb	mm7,	mm7		; mm7 is 0xFFFFFFFFFFFFFFFF
-ALIGN 16
-MainLoop:
-	movq	mm0,	[edx]	; Backgnd
-	movq	mm1,	[eax]	; Src
-	movq	mm2,	mm0		; mm2 is Backgnd
-	pxor	mm0,	mm7		; mm0 is ~Backgnd
-	pxor	mm1,	mm7		; mm1 is ~Src
-	pavgb	mm1,	mm0
-	pavgb	mm1,	mm0
-	pavgb	mm1,	mm0
-	pxor	mm1,	mm7
-	pavgb	mm1,	mm2
-	
-	movq	[edx],	mm1
-	
-	add		eax,	8
-	add		edx,	8
-	
-	; Dec. Loop Counter
-	dec		ecx
-	jnz		MainLoop
-	
-	emms					; Empty MMX State
-	ret
-Mix15To1MMX ENDP
-
 ; extern "C" void Mix7To1MMX(void* pBackgnd, void* pSrc, int nSize);
 ;
 ; average_round_up(a, b)                               = pavgb(a, b)
