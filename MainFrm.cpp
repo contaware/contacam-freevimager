@@ -86,7 +86,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_YCOORDINATE, OnUpdateIndicatorYCoordinate)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
-	ON_MESSAGE(WM_THREADSAFE_STATUSTEXT, OnThreadSafeStatusText)
 	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
 	ON_MESSAGE(WM_THREADSAFE_AVISTART_SHRINKTO, OnThreadSafeAviStartShrinkTo)
 	ON_MESSAGE(WM_SHRINKDOC_TERMINATED, OnShrinkDocTerminated)
@@ -1154,29 +1153,14 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	return CMDIFrameWnd::PreTranslateMessage(pMsg);
 }
 
-LONG CMainFrame::OnThreadSafeStatusText(WPARAM wparam, LPARAM lparam)
-{
-	CString* pStatusText = (CString*)wparam;
-	if (pStatusText)
-	{
-		StatusText(*pStatusText);
-		delete pStatusText;
-		return 1;
-	}
-	else
-		return 0;
-}
-
 LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 {
-	// Exit Full-Screen
-	if (m_bFullScreenMode)
-		EnterExitFullscreen();
-
 	CString* pFileName = (CString*)wparam;
 	if (pFileName)
 	{
-		CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName);
+		CDocument* pDoc = NULL;
+		if (!m_bFullScreenMode)
+			pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName);
 		delete pFileName;
 		if (pDoc)
 			return 1;
@@ -3598,32 +3582,6 @@ void CMainFrame::OnEndSession(BOOL bEnding)
 	}
 }
 
-void CMainFrame::ClearFrontAll()
-{
-	CUImagerMultiDocTemplate* pVideoAviDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
-	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-	CVideoAviDoc* pVideoAviDoc;	
-	while (posVideoAviDoc)
-	{
-		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-		if (pVideoAviDoc && ((CUImagerApp*)::AfxGetApp())->IsDoc(pVideoAviDoc) &&
-			pVideoAviDoc->m_DxDraw.HasDxDraw() && pVideoAviDoc->m_bUseDxDraw && pVideoAviDoc->m_DxDraw.IsInit())
-			pVideoAviDoc->m_DxDraw.ClearFront();
-	}
-#ifdef VIDEODEVICEDOC
-	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
-	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
-	CVideoDeviceDoc* pVideoDeviceDoc;	
-	while (posVideoDeviceDoc)
-	{
-		pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-		if (pVideoDeviceDoc && ((CUImagerApp*)::AfxGetApp())->IsDoc(pVideoDeviceDoc) &&
-			pVideoDeviceDoc->m_DxDraw.HasDxDraw() && pVideoDeviceDoc->m_DxDraw.IsInit())
-			pVideoDeviceDoc->m_DxDraw.ClearFront();
-	}
-#endif
-}
-
 LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 {
 	// Use a counter for disconnection and lock.
@@ -3661,12 +3619,6 @@ LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
 		else
 			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION UNLOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
 #endif
-
-		// When user switches back sometimes the drawing is not
-		// restarting without clearing the front buffer,
-		// note that Blt() is not return any error in this case...
-		if (m_lSessionDisconnectedLockedCount <= 0)
-			ClearFrontAll();
 	}
 	return 1;
 }
