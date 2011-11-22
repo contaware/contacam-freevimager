@@ -2872,41 +2872,31 @@ BOOL CDib::SetBits(LPBYTE lpBits)
 	return TRUE;
 }
 
+BOOL CDib::IsSameBMI(LPBITMAPINFO lpBMI) const
+{
+	return m_pBMI && lpBMI && GetBMISize() == GetBMISize(lpBMI) &&
+			memcmp(m_pBMI, lpBMI, GetBMISize()) == 0;
+}
+
+BOOL CDib::IsSameBMI(LPBITMAPINFO lpBMI1, LPBITMAPINFO lpBMI2)
+{
+	return lpBMI1 && lpBMI2 && GetBMISize(lpBMI1) == GetBMISize(lpBMI2) &&
+			memcmp(lpBMI1, lpBMI2, GetBMISize(lpBMI1)) == 0;
+}
+
 BOOL CDib::SetBMI(LPBITMAPINFO lpBMI)
 {
 	if (!lpBMI)
 		return FALSE;
 
-	DWORD dwBMISize;
+	// Get BMI size of param
+	DWORD dwBMISize = GetBMISize(lpBMI);
 	
-	if ((lpBMI->bmiHeader.biCompression == BI_RGB) ||
-		(lpBMI->bmiHeader.biCompression == BI_RLE4) ||
-		(lpBMI->bmiHeader.biCompression == BI_RLE8) ||
-		(lpBMI->bmiHeader.biCompression == BI_BITFIELDS))
-	{
-		if (lpBMI->bmiHeader.biClrUsed != 0)
-			dwBMISize = lpBMI->bmiHeader.biSize + lpBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD);
-		else
-		{
-			if (lpBMI->bmiHeader.biBitCount >= 16)
-			{
-				if ((lpBMI->bmiHeader.biCompression == BI_BITFIELDS) &&
-					((lpBMI->bmiHeader.biBitCount == 16) || (lpBMI->bmiHeader.biBitCount == 32)))
-					dwBMISize = lpBMI->bmiHeader.biSize + 3 * sizeof(RGBQUAD); // Bitfield Masks
-				else
-					dwBMISize = lpBMI->bmiHeader.biSize;
-			}
-			else
-				dwBMISize = lpBMI->bmiHeader.biSize + (1 << lpBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD);
-		}
+	// Check whether we can recycle the current m_pBMI
+	if (m_pBMI && GetBMISize() == dwBMISize && memcmp(m_pBMI, lpBMI, dwBMISize) == 0)
+		return TRUE;
 
-		if (m_pBMI)
-			if (memcmp(m_pBMI, lpBMI, dwBMISize) == 0)
-				return TRUE;
-	}
-	else
-		dwBMISize = lpBMI->bmiHeader.biSize;
-
+	// Free, also bits if available because we have a new format and/or image size
 	Free();
 
 	// Allocate memory for Header
@@ -2941,9 +2931,9 @@ DWORD CDib::GetBMISize(LPBITMAPINFO pBMI)
 	if (!pBMI)
 		return 0;
 		
-	if ((pBMI->bmiHeader.biCompression == BI_RGB) ||
-		(pBMI->bmiHeader.biCompression == BI_RLE4) ||
-		(pBMI->bmiHeader.biCompression == BI_RLE8) ||
+	if ((pBMI->bmiHeader.biCompression == BI_RGB)	||
+		(pBMI->bmiHeader.biCompression == BI_RLE4)	||
+		(pBMI->bmiHeader.biCompression == BI_RLE8)	||
 		(pBMI->bmiHeader.biCompression == BI_BITFIELDS))
 	{
 		if (pBMI->bmiHeader.biClrUsed != 0)
@@ -2971,9 +2961,9 @@ DWORD CDib::GetBMISize() const
 	if (!m_pBMI)
 		return 0;
 		
-	if ((m_pBMI->bmiHeader.biCompression == BI_RGB) ||
-		(m_pBMI->bmiHeader.biCompression == BI_RLE4) ||
-		(m_pBMI->bmiHeader.biCompression == BI_RLE8) ||
+	if ((m_pBMI->bmiHeader.biCompression == BI_RGB)		||
+		(m_pBMI->bmiHeader.biCompression == BI_RLE4)	||
+		(m_pBMI->bmiHeader.biCompression == BI_RLE8)	||
 		(m_pBMI->bmiHeader.biCompression == BI_BITFIELDS))
 	{
 		if (m_pBMI->bmiHeader.biClrUsed != 0)

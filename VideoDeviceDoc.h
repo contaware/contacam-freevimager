@@ -22,7 +22,6 @@
 #include "NetFrameHdr.h"
 #include "SortableFileFind.h"
 #include "FTPTransfer.h"
-#include "TryEnterCriticalSection.h"
 extern "C"
 {
 #include "ffmpeg\\libavcodec\\avcodec.h"
@@ -1330,6 +1329,7 @@ public:
 	} BITMAPINFOFULL;
 
 	// General Vars
+	CDib* volatile m_pProcessFrameDib;					// Helper Dib used in Process Frame
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
 	volatile BOOL m_bInterleave;						// Do not interleave because while recording the frame rate is not yet exactly known!
@@ -1587,7 +1587,6 @@ protected:
 	CVideoDeviceChildFrame* m_pFrame;
 	volatile LONG m_bStopProcessFrame;
 	volatile LONG m_bProcessFrameStopped;
-	CTryEnterCriticalSection m_csProcessFrame;
 
 	// For Frame Rate and Data Rate Calculation
 	volatile double m_dEffectiveFrameTimeSum;

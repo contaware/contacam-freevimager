@@ -1117,6 +1117,8 @@ public:
 	LPBYTE GetBits(BOOL bDeleteDibSection = FALSE);
 
 	// BMI Functions
+	BOOL IsSameBMI(LPBITMAPINFO lpBMI) const;
+	static BOOL IsSameBMI(LPBITMAPINFO lpBMI1, LPBITMAPINFO lpBMI2);
 	BOOL SetBMI(LPBITMAPINFO lpBMI);
 	DWORD GetBMISize() const;
 	static DWORD GetBMISize(LPBITMAPINFO pBMI);

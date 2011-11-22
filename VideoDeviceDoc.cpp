@@ -4595,6 +4595,10 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Disable Message Box Show
 	m_pDib->SetShowMessageBoxOnError(FALSE);
+	
+	// Allocate Helper Dib used in Process Frame
+	m_pProcessFrameDib = new CDib;
+	m_pProcessFrameDib->SetShowMessageBoxOnError(FALSE);
 
 	// General Vars
 	m_bResetSettings = FALSE;
@@ -4973,6 +4977,11 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	{
 		::CloseHandle(m_hExecCommandMovementDetection);
 		m_hExecCommandMovementDetection = NULL;
+	}
+	if (m_pProcessFrameDib)
+	{
+		delete m_pProcessFrameDib;
+		m_pProcessFrameDib = NULL;
 	}
 }
 
@@ -8283,18 +8292,6 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pS
 
 BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 {
-	// A critical section is necessary because some devices may still have
-	// an old thread running when re-opening. It follows that ProcessFrame()
-	// may be called from two different threads at the same time!
-	if (!m_csProcessFrame.TryEnterCriticalSection())
-	{
-		CString sMsg;
-		sMsg.Format(_T("%s is already in process frame, not entering a second time\n"), GetDeviceName());
-		TRACE(sMsg);
-		::LogLine(sMsg);
-		return FALSE;
-	}
-
 	// Do Stop ProcessFrame?
 	if (m_bStopProcessFrame)
 		SetProcessFrameStopped();
@@ -8327,36 +8324,26 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				bDecodeToRgb32 = TRUE;
 		}
 
-		// Allocate Dib
-		CDib* pDib = (CDib*)new CDib;
+		// Set Dib Pointer
+		CDib* pDib = m_pProcessFrameDib;
 		if (!pDib)
 			goto exit;
-		pDib->SetShowMessageBoxOnError(FALSE);
 
 		// Decode Rgb (other than 24bpp and 32bpp) or Yuv to Rgb32
 		if (bDecodeToRgb32)
 		{
 			// Decode Frame (De-Interlace inside this function)
 			if (!DecodeFrameToRgb32(pData, dwSize, pDib))
-			{
-				delete pDib;
 				goto exit;
-			}
 		}
 		// No decode
 		else
 		{
 			// Copy Bits
 			if (!pDib->SetBMI((LPBITMAPINFO)&m_OrigBMI))
-			{
-				delete pDib;
 				goto exit;
-			}
 			if (!pDib->SetBits(pData, dwSize))
-			{
-				delete pDib;
 				goto exit;
-			}
 
 			// De-Interlace
 			if (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_OrigBMI))
@@ -8655,9 +8642,9 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			}
 		}
 
-		// Update m_pDib pointer with new one
+		// Swap Dib pointers
 		::EnterCriticalSection(&m_csDib);
-		delete m_pDib;
+		m_pProcessFrameDib = m_pDib;
 		m_pDib = pDib;
 		::LeaveCriticalSection(&m_csDib);
 
@@ -8797,9 +8784,6 @@ exit:
 	// Do Stop ProcessFrame?
 	if (m_bStopProcessFrame)
 		SetProcessFrameStopped();
-
-	// Exiting from here
-	m_csProcessFrame.LeaveCriticalSection();
 
 	return m_bProcessFrameStopped;
 }
@@ -9505,6 +9489,8 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 		// Note: do not set the compare nAvgAbs > 8 less than 8 because the Mix15To1
 		// mixer can settle to a difference of 8 between current and background
 		// bitmaps even if both are identical, that's correct and it's a consequence of the rounding!
+		// Note for release 3.9.0 and above:
+		// Mix15To1 has been removed, Mix7To1 remains -> we could set the compare as low as 4.
 		if (nAvgAbs > 8)
 		{
 			double dThreshold = 256.0; // Just a high value in case nStdDev is 0...
@@ -9631,11 +9617,11 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 			CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
 			if (pTail)
 			{
-				// Check
+				// Check whether format or size changed
 				if (!pTail->IsEmpty())
 				{
 					CDib* pHeadDib = pTail->GetHead();
-					if (pHeadDib && memcmp(pHeadDib->GetBMIH(), pDib->GetBMIH(), sizeof(BITMAPINFOHEADER)) != 0)
+					if (pHeadDib && !pDib->IsSameBMI(pHeadDib->GetBMI()))
 						CDib::FreeList(*pTail);
 				}
 
@@ -9659,32 +9645,69 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 			CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
 			if (pTail)
 			{
-				// Check
+				// Check whether format or size changed
 				CDib* pHeadDib;
 				if (!pTail->IsEmpty())
 				{
 					pHeadDib = pTail->GetHead();
-					if (pHeadDib && memcmp(pHeadDib->GetBMIH(), pDib->GetBMIH(), sizeof(BITMAPINFOHEADER)) != 0)
+					if (pHeadDib && !pDib->IsSameBMI(pHeadDib->GetBMI()))
 						CDib::FreeList(*pTail);
 				}
 
-				// Add
+				// New dib
 				DWORD dwNewUpTime = pDib->GetUpTime();
-				CDib* pNewDib = new CDib(*pDib);
-				if (pNewDib)
-					pTail->AddTail(pNewDib);
+				CDib* pNewDib;
+				
+				// Get current queue length in milliseconds
+				DWORD dwQueueLengthMs = 0U;
+				if (!pTail->IsEmpty() && pTail->GetTail() && pTail->GetHead())
+					dwQueueLengthMs = pTail->GetTail()->GetUpTime() - pTail->GetHead()->GetUpTime();
 
-				// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
-				while (pTail->GetCount() > 1)
+				// Only add the new frame
+				if (dwQueueLengthMs < (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
 				{
+					pNewDib = new CDib(*pDib);
+					if (pNewDib)
+						pTail->AddTail(pNewDib);
+				}
+				// Remove old frame(s) and add the new one recycling the oldest one
+				else
+				{
+					// Get head dib and remove from head position
 					pHeadDib = pTail->GetHead();
+					pTail->RemoveHead();
+
+					// Add new frame recycling the oldest one
 					if (pHeadDib)
 					{
-						if ((dwNewUpTime - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
-							break;
-						delete pHeadDib;
+						pHeadDib->SetBits(pDib->GetBits());
+						pHeadDib->SetUpTime(pDib->GetUpTime());
+						pHeadDib->SetUserFlag(pDib->IsUserFlag());
+						pTail->AddTail(pHeadDib);
 					}
-					pTail->RemoveHead();
+					else
+					{
+						pNewDib = new CDib(*pDib);
+						if (pNewDib)
+							pTail->AddTail(pNewDib);
+					}
+
+					// Other old ones to remove?
+					if ((int)dwQueueLengthMs > m_nMilliSecondsRecBeforeMovementBegin + 500) // +500ms to avoid continuous adds and removes
+					{																		// (working well for high framerates, for low framerates it doesn't matter)
+						// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
+						while (pTail->GetCount() > 1)
+						{
+							pHeadDib = pTail->GetHead();
+							if (pHeadDib)
+							{
+								if ((dwNewUpTime - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
+									break;
+								delete pHeadDib;
+							}
+							pTail->RemoveHead();
+						}
+					}
 				}
 			}
 		}
