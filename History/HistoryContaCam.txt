@@ -1,5 +1,13 @@
 VERSION HISTORY
 
+3.9.0 (December 17th 2011)
+
+- Overall speed optimizations, especially the motion
+  detection engine is now less CPU intensive
+- Fixed movement detection pre-buffer handling
+- Removed old VfW support, removed unused
+  rec size segmentation and post recording
+
 3.7.0 (November 8th 2011)
 
 - Shutdown MicroApache web server in a gently way

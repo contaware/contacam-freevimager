@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+3.9.0 (December 17th 2011)
+
+- Reduced dialogs and resources
+
 3.7.0 (November 8th 2011)
 
 - Rename command (F2 key)
