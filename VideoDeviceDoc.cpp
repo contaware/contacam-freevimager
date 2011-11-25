@@ -355,7 +355,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = m_pDoc->m_dwVideoDetSwfFourCC;		// FLV1, need Flash 6 to play it
 					int nQualityBitrate = m_pDoc->m_nVideoDetSwfQualityBitrate;
-					AVRecSwf.AddVideoStream((LPBITMAPINFO)SWFSaveDib.GetBMI(),	// Source Video Format
+					AVRecSwf.AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale
@@ -402,7 +402,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
 					if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
 						nQualityBitrate = 0;
-					AVRecAvi.AddVideoStream((LPBITMAPINFO)AVISaveDib.GetBMI(),		// Source Video Format
+					AVRecAvi.AddVideoStream(AVISaveDib.GetBMI(),					// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
 											CalcFrameRate.num,						// Rate
 											CalcFrameRate.den,						// Scale
@@ -1199,7 +1199,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 				DstBmi.biHeight = SWFSaveDib.GetHeight();
 				DstBmi.biPlanes = 1;
 				DstBmi.biCompression = FCC('FLV1');								// FLV1, need Flash 6 to play it
-				m_pAVRecSwf->AddVideoStream((LPBITMAPINFO)SWFSaveDib.GetBMI(),	// Source Video Format
+				m_pAVRecSwf->AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											FrameRate.num,						// Rate
 											FrameRate.den,						// Scale
@@ -1251,7 +1251,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 					DstBmi.biHeight = SWFSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
 					DstBmi.biCompression = FCC('FLV1');									// FLV1, need Flash 6 to play it
-					m_pAVRecThumbSwf->AddVideoStream((LPBITMAPINFO)SWFSaveDib.GetBMI(),	// Source Video Format
+					m_pAVRecThumbSwf->AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
 													(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 													FrameRate.num,						// Rate
 													FrameRate.den,						// Scale
@@ -4535,11 +4535,17 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 
 	for (;;)
 	{
-		// FILES_DELETE_INTERVAL should never be to small (at least 60 seconds)
+		// If using a constant deletion time interval in case of multiple devices running
+		// the first started one would be cleared more than the last one. To fix that
+		// we use a random generator for the deletion interval
+		srand(makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId()));   // Seed
+		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
+
+		// dwDeleteInMs should never be to small (at least 60 seconds)
 		// otherwise when entering a new days value for deletion like 30 after
 		// typing the number 3 all files older than 3 days are deleted even if we
 		// intended 30!
-		Event = ::WaitForSingleObject(GetKillEvent(), FILES_DELETE_INTERVAL);
+		Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -10820,16 +10826,13 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 
 	// (Re)Open AV Codec
 	double dSendFrameRate = GetSendFrameRate();
-	if (m_CurrentBMI.biWidth != pDib->GetWidth()				||
-		m_CurrentBMI.biHeight != pDib->GetHeight()				||
-		m_CurrentBMI.biCompression != pDib->GetCompression()	||
-		m_CurrentBMI.biBitCount != pDib->GetBitCount()			||
+	if (!pDib->IsSameBMI((LPBITMAPINFO)&m_CurrentBMI)			||
 		m_nCurrentDataRate != m_pDoc->m_nSendFrameDataRate		||
 		m_nCurrentSizeDiv != m_pDoc->m_nSendFrameSizeDiv		||
 		m_nCurrentFreqDiv != m_pDoc->m_nSendFrameFreqDiv		||
 		dSendFrameRate > m_dCurrentSendFrameRate * 1.3			||
 		dSendFrameRate < m_dCurrentSendFrameRate * 0.7)
-		OpenAVCodec(pDib->GetBMIH());
+		OpenAVCodec(pDib->GetBMI());
 
 	// Check Codec Context
 	if (!m_pCodecCtx)
@@ -10990,7 +10993,7 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 	return -1;
 }
 
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBMI)
+BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFO pBMI)
 {
 	// Check
 	if (!pBMI)
@@ -11016,8 +11019,8 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 
 	// Set Output Width and Height
 	m_nCurrentSizeDiv = m_pDoc->m_nSendFrameSizeDiv;
-	m_pCodecCtx->width = pBMI->biWidth >> m_nCurrentSizeDiv;
-	m_pCodecCtx->height = pBMI->biHeight >> m_nCurrentSizeDiv;
+	m_pCodecCtx->width = pBMI->bmiHeader.biWidth >> m_nCurrentSizeDiv;
+	m_pCodecCtx->height = pBMI->bmiHeader.biHeight >> m_nCurrentSizeDiv;
 
 	// Key frame each second
 	m_pCodecCtx->gop_size = m_dCurrentSendFrameRate <= 1.0 ? 1 : Round(m_dCurrentSendFrameRate);
@@ -11095,9 +11098,9 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 	}
 
 	// Init Image Convert
-	if ((pBMI->biCompression != FCC('I420')	&&
-		pBMI->biCompression != FCC('IYUV')	&&
-		pBMI->biCompression != FCC('YV12'))	||
+	if ((pBMI->bmiHeader.biCompression != FCC('I420')	&&
+		pBMI->bmiHeader.biCompression != FCC('IYUV')	&&
+		pBMI->bmiHeader.biCompression != FCC('YV12'))	||
 		m_nCurrentSizeDiv != 0)
 	{
 		// Determine required buffer size and allocate buffer if necessary
@@ -11122,20 +11125,20 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFOHEADER pBM
 						m_pCodecCtx->height);
 
 		// Prepare Image Conversion Context
-		m_pImgConvertCtx = sws_getContext(	pBMI->biWidth,			// Source Width
-											pBMI->biHeight,			// Source Height
-											CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)pBMI), // Source Format
-											m_pCodecCtx->width,		// Destination Width
-											m_pCodecCtx->height,	// Destination Height
-											m_pCodecCtx->pix_fmt,	// Destination Format
-											SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-											NULL,					// No Src Filter
-											NULL,					// No Dst Filter
-											NULL);					// Param
+		m_pImgConvertCtx = sws_getContext(	pBMI->bmiHeader.biWidth,	// Source Width
+											pBMI->bmiHeader.biHeight,	// Source Height
+											CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBMI), // Source Format
+											m_pCodecCtx->width,			// Destination Width
+											m_pCodecCtx->height,		// Destination Height
+											m_pCodecCtx->pix_fmt,		// Destination Format
+											SWS_BICUBIC,				// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
+											NULL,						// No Src Filter
+											NULL,						// No Dst Filter
+											NULL);						// Param
 	}
 
 	// Set Current BMI
-	memcpy(&m_CurrentBMI, pBMI, sizeof(BITMAPINFOHEADER));
+	memcpy(&m_CurrentBMI, pBMI, MIN(sizeof(BITMAPINFOFULL), CDib::GetBMISize(pBMI)));
 
 	return (m_pImgConvertCtx != NULL);
 
@@ -11192,7 +11195,7 @@ void CVideoDeviceDoc::CSendFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*
 		m_pFlipBuf = NULL;
 	}
 	m_dwFlipBufSize = 0;
-	memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOHEADER));
+	memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
 	if (m_pOutbuf)
 	{
 		delete [] m_pOutbuf;

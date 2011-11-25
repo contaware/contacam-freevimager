@@ -2949,7 +2949,12 @@ DWORD CDib::GetBMISize(LPBITMAPINFO pBMI)
 					return pBMI->bmiHeader.biSize;
 			}
 			else
-				return (pBMI->bmiHeader.biSize + (1 << pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+			{
+				if (pBMI->bmiHeader.biClrUsed > 0)
+					return (pBMI->bmiHeader.biSize + pBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD));
+				else
+					return (pBMI->bmiHeader.biSize + (1 << pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+			}
 		}
 	}
 	else
@@ -2979,7 +2984,12 @@ DWORD CDib::GetBMISize() const
 					return m_pBMI->bmiHeader.biSize;
 			}
 			else
-				return (m_pBMI->bmiHeader.biSize + (1 << m_pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+			{
+				if (m_pBMI->bmiHeader.biClrUsed > 0)
+					return (m_pBMI->bmiHeader.biSize + m_pBMI->bmiHeader.biClrUsed*sizeof(RGBQUAD));
+				else
+					return (m_pBMI->bmiHeader.biSize + (1 << m_pBMI->bmiHeader.biBitCount)*sizeof(RGBQUAD));
+			}
 		}
 	}
 	else

@@ -29,6 +29,30 @@ extern "C"
 #include "ColorSpace.h"
 #include "..\TraceLogFile.h"
 
+// Bitmap info for BI_BITFIELDS
+typedef struct {
+		DWORD      biSize;
+		LONG       biWidth;
+		LONG       biHeight;
+		WORD       biPlanes;
+		WORD       biBitCount;
+		DWORD      biCompression;
+		DWORD      biSizeImage;
+		LONG       biXPelsPerMeter;
+		LONG       biYPelsPerMeter;
+		DWORD      biClrUsed;
+		DWORD      biClrImportant;
+		DWORD      biRedMask;
+		DWORD      biGreenMask;
+		DWORD      biBlueMask;
+} BITMAPINFOBITFIELDS, FAR *LPBITMAPINFOBITFIELDS, *PBITMAPINFOBITFIELDS;
+
+// Bitmap info full struct
+typedef struct {
+		BITMAPINFOHEADER    bmiHeader;
+		RGBQUAD             bmiColors[256];
+} BITMAPINFOFULL, FAR *LPBITMAPINFOFULL, *PBITMAPINFOFULL;
+
 #if (WINVER < 0x0500)
 typedef struct {
         DWORD        bV5Size;
@@ -1940,24 +1964,6 @@ protected:
 							DWORD uiDIBDstScanLineSize,
 							DWORD uiDIBSrcScanLineSize);
 public:
-	// Bitmap Info Header for BI_BITFIELDS Compression
-	typedef struct tagBITMAPINFOBITFIELDS{
-			DWORD      biSize;
-			LONG       biWidth;
-			LONG       biHeight;
-			WORD       biPlanes;
-			WORD       biBitCount;
-			DWORD      biCompression;
-			DWORD      biSizeImage;
-			LONG       biXPelsPerMeter;
-			LONG       biYPelsPerMeter;
-			DWORD      biClrUsed;
-			DWORD      biClrImportant;
-			DWORD      biRedMask;
-			DWORD      biGreenMask;
-			DWORD      biBlueMask;
-	} BITMAPINFOBITFIELDS, FAR *LPBITMAPINFOBITFIELDS, *PBITMAPINFOBITFIELDS;
-
 	// PCX header
 	struct PCXHeader
 	{

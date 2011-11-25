@@ -416,24 +416,6 @@ class CAVIPlay
 		DWORD    dwOffsetField2;	// offset to second field
 	} AVIFIELDINDEXENTRY, *LPAVIFIELDINDEXENTRY;
 
-	// Bitmap Info Header for BI_BITFIELDS Compression
-	typedef struct tagBITMAPINFOBITFIELDS{
-			DWORD      biSize;
-			LONG       biWidth;
-			LONG       biHeight;
-			WORD       biPlanes;
-			WORD       biBitCount;
-			DWORD      biCompression;
-			DWORD      biSizeImage;
-			LONG       biXPelsPerMeter;
-			LONG       biYPelsPerMeter;
-			DWORD      biClrUsed;
-			DWORD      biClrImportant;
-			DWORD      biRedMask;
-			DWORD      biGreenMask;
-			DWORD      biBlueMask;
-	} BITMAPINFOBITFIELDS, FAR *LPBITMAPINFOBITFIELDS, *PBITMAPINFOBITFIELDS;
-
 	// AVI Stream Class
 	class CAVIStream
 	{

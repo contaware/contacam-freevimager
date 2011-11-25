@@ -272,4 +272,14 @@ extern CString GetUuidString();
 // Does the given rectangle intersect a valid monitor?
 extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
 
+// Floating point and integer random generators
+extern double drand(); // returns a double in the range of [0.0,1.0[  (0.0 included and 1.0 excluded)
+#define irand(x) ((unsigned int) ((x) * drand()))	// irand(x) will return a random integer in the range [0,x[
+													// (0 included and x excluded)
+
+// Mix the given params for srand seeding, as input we can use:
+// GetCurrentProcessId(), GetCurrentThreadId(), timeGetTime(), GetTickCount(), ...
+extern unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c);
+
+
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

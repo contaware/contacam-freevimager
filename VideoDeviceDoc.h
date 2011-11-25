@@ -45,7 +45,7 @@ class CMovementDetectionPage;
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
 #define PROCESS_MAX_FRAMETIME				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define DEFAULT_FRAMERATE					8.0			// fps
+#define DEFAULT_FRAMERATE					10.0		// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
@@ -53,7 +53,8 @@ class CMovementDetectionPage;
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
 #define MIN_DISKFREE_PERCENT				10			// Belove this disk free percentage the oldest files are deleted
-#define	FILES_DELETE_INTERVAL				10800000U 	// in ms -> each 3 hours check whether we can delete old detections
+#define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
+#define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
 #define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
 #define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
@@ -116,6 +117,7 @@ class CMovementDetectionPage;
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
 #define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3 to 1 to 7 to 1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
+														// Half of DEFAULT_FRAMERATE
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")
@@ -530,7 +532,7 @@ public:
 			void Close() {FreeAVCodec(); Clear();};
 			virtual BOOL Parse(CNetCom* pNetCom);
 			void ClearTable();
-			BOOL OpenAVCodec(LPBITMAPINFOHEADER pBMI);
+			BOOL OpenAVCodec(LPBITMAPINFO pBMI);
 			void FreeAVCodec(BOOL bNoClose = FALSE);
 			__forceinline double GetSendFrameRate() const {		return m_pDoc->m_dEffectiveFrameRate > 0.0 ?
 																m_pDoc->m_dEffectiveFrameRate / (double)m_nCurrentFreqDiv :
@@ -566,7 +568,7 @@ public:
 							m_dwI420ImageSize = 0;
 							m_pFlipBuf = NULL;
 							m_dwFlipBufSize = 0;
-							memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOHEADER));
+							memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
 							m_nCurrentDataRate = 0;
 							m_nCurrentSizeDiv = 0;
 							m_nCurrentFreqDiv = 1;
@@ -588,7 +590,7 @@ public:
 			DWORD m_dwI420ImageSize;
 			LPBYTE m_pFlipBuf;
 			DWORD m_dwFlipBufSize;
-			BITMAPINFOHEADER m_CurrentBMI;
+			BITMAPINFOFULL m_CurrentBMI;
 			int m_nCurrentDataRate;
 			int m_nCurrentSizeDiv;
 			int m_nCurrentFreqDiv;
@@ -1322,12 +1324,6 @@ protected:
 
 // Public Variables
 public:
-	// Bitmap info full struct
-	typedef struct tagBITMAPINFOFULL {
-		BITMAPINFOHEADER    bmiHeader;
-		RGBQUAD             bmiColors[256];
-	} BITMAPINFOFULL;
-
 	// General Vars
 	CDib* volatile m_pProcessFrameDib;					// Helper Dib used in Process Frame
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
