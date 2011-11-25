@@ -5,6 +5,8 @@ VERSION HISTORY
 - Overall speed optimizations, especially the motion
   detection engine is now less CPU intensive
 - Fixed movement detection pre-buffer handling
+- 10% HD size limit reach check is now each 10-15 min and
+  the deletion of old files is more balanced between cams
 - Removed old VfW support, removed unused
   rec size segmentation and post recording
 

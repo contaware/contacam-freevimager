@@ -12464,7 +12464,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest(const CString& sReq
 			CString sCNonceCount;
 			sCNonceCount.Format(_T("%08x"), m_dwCNonceCount);
 			srand(::timeGetTime()); // Seed
-			DWORD dwCNonce = (DWORD)rand();
+			DWORD dwCNonce = (DWORD)irand(4294967296.0); // returns a random value in the range [0,0xFFFFFFFF]
 			CString sCNonce;
 			sCNonce.Format(_T("%08x"), dwCNonce);
 			sToHash =	sHA1 + _T(":")			+

@@ -435,7 +435,7 @@ BOOL CSortableFileFind::FindRandomFile()
 	{
 		int nOldFilePos = m_nFilePos;
 		srand(::timeGetTime()); // Seed
-		m_nFilePos = (int)(((unsigned int)rand())%((unsigned int)m_Files.GetSize()));
+		m_nFilePos = (int)irand(m_Files.GetSize()); // returns a random pos in the range [0,m_Files.GetSize()[
 		m_sFileName = m_Files[m_nFilePos];
 		if (nOldFilePos == m_nFilePos) // We do not want the same file, return next one
 		{
