@@ -1514,31 +1514,18 @@ bool CAVRec::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	return (bool)(res1 && res2);
 }
 
-bool CAVRec::AddFrameTime(	LPBYTE pBits,
-							DWORD dwWidth,
-							DWORD dwHeight,
-							WORD wBitCount,
-							DWORD dwFourCC,
-							DWORD dwSizeImage,
+bool CAVRec::AddFrameTime(	LPBITMAPINFO pBmi,
+							LPBYTE pBits,
 							DWORD dwUpTime,
 							CTime RefTime,
 							DWORD dwRefUpTime)
 {
-	BITMAPINFOHEADER Bmi;
-	memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-	Bmi.biSize = sizeof(BITMAPINFOHEADER);
-	Bmi.biWidth = dwWidth;
-	Bmi.biHeight = dwHeight;
-	Bmi.biPlanes = 1;
-	Bmi.biBitCount = wBitCount;
-	Bmi.biCompression = dwFourCC;
-	Bmi.biSizeImage = dwSizeImage;
 	CDib TmpDib;
 	TmpDib.SetShowMessageBoxOnError(FALSE);
-	TmpDib.SetDibPointers((LPBITMAPINFO)(&Bmi), pBits, dwSizeImage);
+	TmpDib.SetDibPointers(pBmi, pBits);
 	TmpDib.SetUpTime(dwUpTime);
 	bool res = AddFrameTime(&TmpDib, RefTime, dwRefUpTime);
-	TmpDib.SetDibPointers(NULL, NULL, 0);
+	TmpDib.SetDibPointers(NULL, NULL);
 	return res;
 }
 
@@ -1898,12 +1885,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 		// Attention: time is added to the source bits!
 		if (bAddFrameTime && !bSrcDeinterlace && !bDstDeinterlace)
 		{
-			AddFrameTime(	pBits,
-							pBmi->bmiHeader.biWidth,
-							pBmi->bmiHeader.biHeight,
-							pBmi->bmiHeader.biBitCount,
-							pBmi->bmiHeader.biCompression,
-							pBmi->bmiHeader.biSizeImage,
+			AddFrameTime(	pBmi,
+							pBits,
 							dwUpTime,
 							RefTime,
 							dwRefUpTime);
@@ -2060,12 +2043,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				// Add Frame Time
 				if (bAddFrameTime)
 				{
-					AddFrameTime(	lpTopDownBits,
-									pBmi->bmiHeader.biWidth,
-									pBmi->bmiHeader.biHeight,
-									pBmi->bmiHeader.biBitCount,
-									pBmi->bmiHeader.biCompression,
-									pBmi->bmiHeader.biSizeImage,
+					AddFrameTime(	pBmi,
+									lpTopDownBits,
 									dwUpTime,
 									RefTime,
 									dwRefUpTime);
@@ -2101,12 +2080,17 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				// Add Frame Time
 				if (bAddFrameTime)
 				{
-					AddFrameTime(	m_pFrameBuf2[dwStreamNum],
-									pCodecCtx->width,
-									pCodecCtx->height,
-									DstDeinterlacePixFormatToBitsCount(pCodecCtx->pix_fmt),
-									DstDeinterlacePixFormatToFourCC(pCodecCtx->pix_fmt),
-									nDstSize,
+					BITMAPINFOHEADER Bmi;
+					memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
+					Bmi.biSize = sizeof(BITMAPINFOHEADER);
+					Bmi.biWidth = pCodecCtx->width;
+					Bmi.biHeight = pCodecCtx->height;
+					Bmi.biPlanes = 1;
+					Bmi.biBitCount = DstDeinterlacePixFormatToBitsCount(pCodecCtx->pix_fmt);
+					Bmi.biCompression = DstDeinterlacePixFormatToFourCC(pCodecCtx->pix_fmt);
+					Bmi.biSizeImage = nDstSize;
+					AddFrameTime(	(LPBITMAPINFO)&Bmi,
+									m_pFrameBuf2[dwStreamNum],
 									dwUpTime,
 									RefTime,
 									dwRefUpTime);
@@ -2145,12 +2129,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				// Add Frame Time
 				if (bAddFrameTime)
 				{
-					AddFrameTime(	lpTopDownBits,
-									pBmi->bmiHeader.biWidth,
-									pBmi->bmiHeader.biHeight,
-									pBmi->bmiHeader.biBitCount,
-									pBmi->bmiHeader.biCompression,
-									pBmi->bmiHeader.biSizeImage,
+					AddFrameTime(	pBmi,
+									lpTopDownBits,
 									dwUpTime,
 									RefTime,
 									dwRefUpTime);

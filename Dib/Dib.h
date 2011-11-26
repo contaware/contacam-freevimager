@@ -1124,11 +1124,13 @@ public:
 	// If lpBits == NULL, only create the dibsection (if necessary)
 	BOOL SetDibSectionBits(LPBYTE lpBits);
 
-	// Just set the pointers, no allocation.
-	// Reset the pointers before destroying the Dib object,
-	// otherwise the pointers are freed by the Dib object!
-	void SetDibPointers(LPBITMAPINFO pBMI, LPBYTE pBits, DWORD dwImageSize)
-						{m_pBMI = pBMI; m_pBits = pBits; m_dwImageSize = dwImageSize;};
+	// Just set the pointers, no allocation:
+	// 1. Pay attention to not do operations on the Dib object
+	//    which free or re-alloc the passed bits!
+	// 2. Reset the pointers before destroying the Dib object
+	//    by calling SetDibPointers(NULL, NULL), otherwise the
+	//    pointers are freed by the Dib object!
+	void SetDibPointers(LPBITMAPINFO pBMI, LPBYTE pBits);
 
 	// If lpBits == NULL, only allocates memory (if necessary)
 	BOOL SetBits(LPBYTE lpBits, DWORD dwSize);

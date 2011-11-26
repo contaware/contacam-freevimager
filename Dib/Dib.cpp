@@ -2836,6 +2836,40 @@ BOOL CDib::SetDibSectionBits(LPBYTE lpBits)
 	return TRUE;
 }
 
+// Just set the pointers, no allocation:
+// 1. Pay attention to not do operations on the Dib object
+//    which free or re-alloc the passed bits!
+// 2. Reset the pointers before destroying the Dib object
+//    by calling SetDibPointers(NULL, NULL), otherwise the
+//    pointers are freed by the Dib object!
+void CDib::SetDibPointers(LPBITMAPINFO pBMI, LPBYTE pBits)
+{
+	m_pBMI = pBMI;
+	m_pBits = pBits;
+	if (m_pBMI)
+	{
+		if (m_pBMI->bmiHeader.biBitCount <= 8)
+			m_pColors = (RGBQUAD*)((LPBYTE)m_pBMI + (WORD)(m_pBMI->bmiHeader.biSize));
+		else
+			m_pColors = NULL;
+		if (m_pBMI->bmiHeader.biSize == sizeof(BITMAPV4HEADER) ||
+			m_pBMI->bmiHeader.biSize == sizeof(BITMAPV5HEADER))
+		{
+			LPBITMAPV4HEADER pBV4 = (LPBITMAPV4HEADER)m_pBMI;
+			if (pBV4->bV4AlphaMask > 0 && m_pBMI->bmiHeader.biBitCount == 32)
+				m_bAlpha = TRUE;
+		}
+		InitMasks();
+		ComputeImageSize();
+	}
+	else
+	{
+		m_pColors = NULL;
+		m_bAlpha = FALSE;
+		m_dwImageSize = 0;
+	}
+}
+
 BOOL CDib::SetBits(LPBYTE lpBits, DWORD dwSize)
 {
 	if (!m_pBMI)

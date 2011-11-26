@@ -113,12 +113,8 @@ public:
 
 	// Add frame time
 	static bool AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
-	static bool AddFrameTime(LPBYTE pBits,
-							DWORD dwWidth,
-							DWORD dwHeight,
-							WORD wBitCount,
-							DWORD dwFourCC,
-							DWORD dwSizeImage,
+	static bool AddFrameTime(LPBITMAPINFO pBmi,
+							LPBYTE pBits,
 							DWORD dwUpTime,
 							CTime RefTime,
 							DWORD dwRefUpTime);

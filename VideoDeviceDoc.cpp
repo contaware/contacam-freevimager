@@ -10947,12 +10947,17 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 			// Re-add frame time after shrinking
 			if (m_pDoc->m_bShowFrameTime)
 			{
-				CAVRec::AddFrameTime((LPBYTE)m_pFrameI420->data[0],
-									m_pCodecCtx->width,
-									m_pCodecCtx->height,
-									12,
-									FCC('I420'),
-									m_dwI420ImageSize,
+				BITMAPINFOHEADER Bmi;
+				memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
+				Bmi.biSize = sizeof(BITMAPINFOHEADER);
+				Bmi.biWidth = m_pCodecCtx->width;
+				Bmi.biHeight = m_pCodecCtx->height;
+				Bmi.biPlanes = 1;
+				Bmi.biBitCount = 12;
+				Bmi.biCompression = FCC('I420');
+				Bmi.biSizeImage = m_dwI420ImageSize;
+				CAVRec::AddFrameTime((LPBITMAPINFO)&Bmi,
+									(LPBYTE)m_pFrameI420->data[0],
 									pDib->GetUpTime(),
 									RefTime,
 									dwRefUpTime);
