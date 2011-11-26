@@ -439,17 +439,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						pDibPrev = pDib;
 						ASSERT(pGIFColors == NULL);
 						pGIFColors = (RGBQUAD*)new RGBQUAD[256];
-						if (pGIFColors)
-						{
-							AnimatedGIFInit(&pGIFColors,
-											nAnimGifLastFrameToSave,		// Sets this
-											dDelayMul,						// Sets this
-											dSpeedMul,						// Sets this
-											dCalcFrameRate,
-											bShowFrameTime,
-											RefTime,
-											dwRefUpTime);
-						}
+						AnimatedGIFInit(pGIFColors,
+										nAnimGifLastFrameToSave,		// Sets this
+										dDelayMul,						// Sets this
+										dSpeedMul,						// Sets this
+										dCalcFrameRate,
+										bShowFrameTime,
+										RefTime,
+										dwRefUpTime);
 					}
 					// Next Frame?
 					else
@@ -719,7 +716,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 		return TRUE;
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColors,
+void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD* pGIFColors,
 																int& nAnimGifLastFrameToSave,
 																double& dDelayMul,
 																double& dSpeedMul,
@@ -728,6 +725,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 																const CTime& RefTime,
 																DWORD dwRefUpTime)
 {
+	// Check
+	if (!pGIFColors)
+		return;
+
 	unsigned int line;
 	CDib* pDibForPalette1 = NULL;
 	CDib* pDibForPalette2 = NULL;
@@ -803,10 +804,13 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 	DibForPalette3.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	
 	// Dib for Palette Calculation
-	DibForPalette.AllocateBits(	DibForPalette1.GetBitCount(),
-								DibForPalette1.GetCompression(),
-								DibForPalette1.GetWidth(),
-								3 * DibForPalette1.GetHeight());
+	DibForPalette.AllocateBitsFast(	DibForPalette1.GetBitCount(),
+									DibForPalette1.GetCompression(),
+									DibForPalette1.GetWidth(),
+									3 * DibForPalette1.GetHeight(),
+									DibForPalette1.GetCompression() == BI_BITFIELDS ?
+									(RGBQUAD*)((LPBYTE)(DibForPalette1.GetBMI()) + DibForPalette1.GetBMIH()->biSize) :
+									NULL);
 	LPBYTE pSrcBits;
 	LPBYTE pDstBits = DibForPalette.GetBits();
 	int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
@@ -839,25 +843,29 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD** ppGIFColo
 	// Calc. Palette
 	CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
 	Quantizer.ProcessImage(&DibForPalette);
-	Quantizer.SetColorTable(*ppGIFColors);
+	Quantizer.SetColorTable(pGIFColors);
 	
 	// VGA Palette
 	// Note: palette Entry 255 is the Transparency Index!
 	int i;
 	for (i = 0; i < 8; i++)
 	{
-		(*ppGIFColors)[i+239].rgbRed		= CDib::ms_StdColors[i].rgbRed;
-		(*ppGIFColors)[i+239].rgbGreen		= CDib::ms_StdColors[i].rgbGreen;
-		(*ppGIFColors)[i+239].rgbBlue		= CDib::ms_StdColors[i].rgbBlue;
-		(*ppGIFColors)[i+239].rgbReserved	= 0;
+		pGIFColors[i+239].rgbRed		= CDib::ms_StdColors[i].rgbRed;
+		pGIFColors[i+239].rgbGreen		= CDib::ms_StdColors[i].rgbGreen;
+		pGIFColors[i+239].rgbBlue		= CDib::ms_StdColors[i].rgbBlue;
+		pGIFColors[i+239].rgbReserved	= 0;
 	}
 	for (i = 8; i < 16; i++)
 	{
-		(*ppGIFColors)[i+239].rgbRed		= CDib::ms_StdColors[248+i].rgbRed;
-		(*ppGIFColors)[i+239].rgbGreen		= CDib::ms_StdColors[248+i].rgbGreen;
-		(*ppGIFColors)[i+239].rgbBlue		= CDib::ms_StdColors[248+i].rgbBlue;
-		(*ppGIFColors)[i+239].rgbReserved	= 0;
+		pGIFColors[i+239].rgbRed		= CDib::ms_StdColors[248+i].rgbRed;
+		pGIFColors[i+239].rgbGreen		= CDib::ms_StdColors[248+i].rgbGreen;
+		pGIFColors[i+239].rgbBlue		= CDib::ms_StdColors[248+i].rgbBlue;
+		pGIFColors[i+239].rgbReserved	= 0;
 	}
+	pGIFColors[255].rgbRed		= 255;
+	pGIFColors[255].rgbGreen	= 255;
+	pGIFColors[255].rgbBlue		= 255;
+	pGIFColors[255].rgbReserved	= 0;
 	
 	// Limit the saved frames to around MOVDET_ANIMGIF_MAX_FRAMES and
 	// the play length to around MOVDET_ANIMGIF_MAX_LENGTH ms.
@@ -902,6 +910,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		}
 
 		// Save It
+		pDib->GetGif()->SetBackgroundColorIndex(0);
 		return pDib->SaveGIF(sGIFFileName,
 							GIF_COLORINDEX_NOT_DEFINED,
 							NULL,
@@ -3794,6 +3803,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 			return FALSE;
 
 		// Save
+		ThumbDib.GetGif()->SetBackgroundColorIndex(0);
 		if (!ThumbDib.SaveGIF(sGIFTempFileName))
 			return FALSE;
 

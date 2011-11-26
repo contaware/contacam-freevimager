@@ -1161,9 +1161,11 @@ public:
 	// Init Color is a RGB(A) Color for 16, 24 and 32 bpp
 	// and an index for 1,4 and 8 bpp.
 	// 
-	// wCompression may only be BI_RGB or BI_BITFIELDS.
-	// If BI_BITFIELDS then pColorsOrMasks points to the Masks.
-	// If pColorsOrMasks the default mask is set.
+	// wCompression may be BI_RGB, BI_RLE4, BI_RLE8,
+	// BI_BITFIELDS and some YUV formats.
+	//
+	// If BI_BITFIELDS then pColorsOrMasks points to the Masks
+	// and if pColorsOrMasks is NULL the default mask is set.
 	BOOL AllocateBits(	WORD dwBpp,
 						DWORD wCompression,
 						DWORD dwWidth,

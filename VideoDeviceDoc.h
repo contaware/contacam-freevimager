@@ -870,7 +870,7 @@ public:
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
-			void AnimatedGIFInit(	RGBQUAD** ppGIFColors,
+			void AnimatedGIFInit(	RGBQUAD* pGIFColors,
 									int& nAnimGifLastFrameToSave,
 									double& dDelayMul,
 									double& dSpeedMul,
