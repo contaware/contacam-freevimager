@@ -3803,7 +3803,6 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 			return FALSE;
 
 		// Save
-		ThumbDib.GetGif()->SetBackgroundColorIndex(0);
 		if (!ThumbDib.SaveGIF(sGIFTempFileName))
 			return FALSE;
 
