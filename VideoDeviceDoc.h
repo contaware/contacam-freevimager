@@ -89,7 +89,7 @@ class CMovementDetectionPage;
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
-#define MOVDET_MAX_ZONES					1024		// Maximum Number of zones
+#define MOVDET_MAX_ZONES					8192		// Maximum Number of zones
 #define MOVDET_MIN_ZONESX					10			// Minimum Number of zones in X direction
 #define MOVDET_MIN_ZONESY					8			// Minimum Number of zones in Y direction
 #define MOVDET_SAVEFRAMES_POLL				500U		// ms
@@ -98,12 +98,11 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// 16000 is the limit for swf files -> be safe and start
 														// a new list with 15000
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
-#define MOVDET_TIMEOUT						1000		// Timeout in ms for detection zones
+#define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
 #define MOVDET_MEM_MAX_MB					1536		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
-#define MOVDET_EXEC_COMMAND_WAIT_TIMEOUT	100			// ms
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)
@@ -1175,16 +1174,13 @@ public:
 	void FreeAVIFile();
 
 	// Movement Detection
-	void MovementDetectionProcessing(	CDib* pDib,
-										BOOL bDoDetection,
-										DWORD dwCurrentUpTime);
+	void MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection);
 	BOOL LumChangeDetector(	CDib* pDibY,
 							BOOL bPlanar,
 							int nPackedYOffset);
 	BOOL MovementDetector(	CDib* pDib,
 							BOOL bPlanar,					
-							int nDetectionLevel,
-							DWORD dwCurrentUpTime);
+							int nDetectionLevel);
 	void ResetMovementDetector();
 	void FreeMovementDetector();
 
@@ -1278,6 +1274,7 @@ protected:
 	BOOL Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits);	// De-Interlace Src and put it to Dst,
 																			// Dst bits are Allocate by the function
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
+	void ExecCommandMovementDetection();
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
@@ -1492,6 +1489,8 @@ public:
 	volatile BOOL m_bFirstMovementDetection;			// Start Detecting when this is FALSE
 	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 (100 Max Sensibility)
 														// a high sensibility may Detect Video Noise!)
+	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
+	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwWithoutMovementDetection;		// Uptime of last movement detection
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
@@ -1506,7 +1505,6 @@ public:
 	volatile BOOL m_bHideExecCommandMovementDetection;	// Hide command's window
 	volatile BOOL m_bWaitExecCommandMovementDetection;	// Wait that last command has terminated
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
-	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	CDib* volatile m_pMovementDetectorY800Dib;			// If source Dib is in RGB format that's the converted Y800 Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
@@ -1526,12 +1524,6 @@ public:
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
 	volatile BOOL m_bDoLumChangeDetection;				// Discard movement detection if a luminosity change happens
-	volatile BOOL m_bDoFalseDetectionCheck;				// Do a false detection check if set
-	volatile BOOL m_bDoFalseDetectionAnd;				// And / Or between Blue and None Blue zones
-	volatile int m_nFalseDetectionBlueThreshold;		// False detections blue zones threshold value
-	volatile int m_nFalseDetectionNoneBlueThreshold;	// False detections none blue zones threshold value
-	volatile int m_nBlueMovementDetectionsCount;		// Count the simultaneously detected blue zones
-	volatile int m_nNoneBlueMovementDetectionsCount;	// Count the simultaneously detected none blue zones
 	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
 	volatile BOOL m_bVideoDetDeinterlace;				// Deinterlace video when saving
 	volatile int m_nVideoDetDataRate;					// Data Rate in Bits / Sec

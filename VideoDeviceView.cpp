@@ -219,9 +219,19 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	int i;
 	LONG lMovDetXZonesCount = 0;
 	LONG lMovDetYZonesCount = 0;
+	int nStartSize;
+	switch (pDoc->m_nDetectionZoneSize)
+	{
+		case 0 :	nStartSize = 72;	// Big
+					break;
+		case 1 :	nStartSize = 32;	// Medium
+					break;
+		default :	nStartSize = 16;	// Small
+					break;
+	}
 
 	// X
-	for (i = 72 ; i > 0 ; i -= 8)
+	for (i = nStartSize ; i > 0 ; i -= 8)
 	{
 		if ((pDoc->m_DocRect.Width() % i) == 0 &&
 			(pDoc->m_DocRect.Width() / i) >= MOVDET_MIN_ZONESX)
@@ -232,7 +242,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	}
 
 	// Y
-	for (i = 72 ; i > 0 ; i -= 8)
+	for (i = nStartSize ; i > 0 ; i -= 8)
 	{
 		if ((pDoc->m_DocRect.Height() % i) == 0 &&
 			(pDoc->m_DocRect.Height() / i) >= MOVDET_MIN_ZONESY)
@@ -258,6 +268,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			}
 			pDoc->m_bUnsupportedVideoSizeForMovDet = TRUE;
 		}
+		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
 	}
 	else
@@ -309,6 +320,9 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			pDoc->m_DoMovementDetection[i] = TRUE;
 	}
+
+	// Update var
+	pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
 	return 1;
 }
@@ -620,31 +634,6 @@ __forceinline void CVideoDeviceView::DrawText()
 	// Recording
 	if (pDoc->m_SaveFrameListThread.IsWorking())
 		pDoc->m_DxDraw.DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
-	// Movement Detection Zones Count
-	else if (pDoc->m_bDoFalseDetectionCheck)
-	{
-		if (pDoc->m_nBlueMovementDetectionsCount > 0 &&
-			pDoc->m_nNoneBlueMovementDetectionsCount > 0)
-		{
-			CString sMovDetCount;
-			sMovDetCount.Format(_T("Blue %d"), pDoc->m_nBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 19, DRAWTEXT_BOTTOMRIGHT);
-			sMovDetCount.Format(_T("!Blue %d"), pDoc->m_nNoneBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
-		}
-		else if (pDoc->m_nBlueMovementDetectionsCount > 0)
-		{
-			CString sMovDetCount;
-			sMovDetCount.Format(_T("Blue %d"), pDoc->m_nBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
-		}
-		else if (pDoc->m_nNoneBlueMovementDetectionsCount > 0)
-		{
-			CString sMovDetCount;
-			sMovDetCount.Format(_T("!Blue %d"), pDoc->m_nNoneBlueMovementDetectionsCount);
-			pDoc->m_DxDraw.DrawText(sMovDetCount, pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
-		}
-	}
 }
 
 __forceinline void CVideoDeviceView::DrawDC()

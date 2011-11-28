@@ -1611,7 +1611,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -2325,69 +2325,65 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_MOVEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,7,38,10
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,38,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,33,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,51,25,12,
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,38,11,12
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,55,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,51,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,55,11,12
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,72,132,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,79,132,12
+    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,101,99,72,CBS_DROPDOWNLIST | 
+                    WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,108,185,10
+                    WS_TABSTOP,14,140,185,10
     CONTROL         "Only detect if no camera luminosity change occurs",
                     IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,120,185,10
-    CONTROL         "Consider a false detection:",IDC_CHECK_FALSE_DET,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,14,132,99,10
-    EDITTEXT        IDC_EDIT_FALSE_DET_BLUE,69,144,23,12,ES_NUMBER
-    COMBOBOX        IDC_COMBO_FALSE_DET_ANDOR,157,144,29,32,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
-    EDITTEXT        IDC_EDIT_FALSE_DET_NONEBLUE,69,158,23,12,ES_NUMBER
+                    WS_TABSTOP,14,154,185,10
     CONTROL         "Enable Detection (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,193,175,10
+                    WS_TABSTOP,14,190,175,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,46,208,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,46,206,66,
                     16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,208,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,206,
                     66,16
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,35,51,10
-    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,34,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,37,51,10
+    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,36,96,12
     CONTROL         "Save AVI",IDC_SAVE_AVI_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,53,46,10
-    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,52,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,55,46,10
+    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,54,96,12
     CONTROL         "Save Anim. GIF",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,71,62,10
-    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,70,96,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,73,62,10
+    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,72,96,
                     12
     CONTROL         "Send Email",IDC_SENDMAIL_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,89,53,10
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,88,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,91,53,10
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,90,96,12
     CONTROL         "Ftp Upload",IDC_FTP_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,107,51,9
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,106,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,109,51,9
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,108,96,12
     CONTROL         "Execute Command:",IDC_EXEC_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,125,77,10
-    EDITTEXT        IDC_EDIT_EXE,266,138,135,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,266,152,135,12,ES_AUTOHSCROLL
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,127,77,10
+    EDITTEXT        IDC_EDIT_EXE,266,140,135,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,266,154,135,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",
                     IDC_CHECK_HIDE_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,167,129,10
+                    WS_TABSTOP,236,169,129,10
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,179,145,10
+                    WS_TABSTOP,236,181,145,10
     LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
                     WS_GROUP
     EDITTEXT        IDC_DETECTION_SAVEAS_PATH,34,236,356,12,ES_AUTOHSCROLL | 
@@ -2396,33 +2392,30 @@ BEGIN
     EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,53,120,8
+                    62,57,120,8
     LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,61,34,131,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,70,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,200,71
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,73,13,12,ES_RIGHT | 
+                    IDC_STATIC2283,61,39,131,8
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,77,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,23,200,99
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,80,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,215,20,193,210
-    LTEXT           "From",IDC_STATIC2289,27,212,16,8
-    LTEXT           "To",IDC_STATIC2290,124,212,10,8
-    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,180,200,50
+    GROUPBOX        "On Detection",IDC_STATIC2288,215,22,193,208
+    LTEXT           "From",IDC_STATIC2289,27,210,16,8
+    LTEXT           "To",IDC_STATIC2290,124,210,10,8
+    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,176,200,54
     LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,63,8
     LTEXT           "day(s)",IDC_STATIC2293,103,255,20,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
                     IDC_STATIC2294,131,255,277,8
-    LTEXT           "if more than",IDC_STATIC2295,27,146,38,8
-    LTEXT           "blue zones get red",IDC_STATIC2296,95,146,59,8
-    LTEXT           "if more than",IDC_STATIC2297,27,160,38,8
-    LTEXT           "none blue zones get red",IDC_STATIC2298,95,160,77,8
-    LTEXT           "Cmd",IDC_STATIC2299,236,141,15,8
-    LTEXT           "Params",IDC_STATIC2300,236,154,24,8
-    LTEXT           "",IDC_STATIC2301,236,193,165,29,SS_SUNKEN
-    RTEXT           "Warning: Unsupported Video Size for Movement Detection",
+    LTEXT           "Cmd",IDC_STATIC2299,236,143,15,8
+    LTEXT           "Params",IDC_STATIC2300,236,156,24,8
+    LTEXT           "",IDC_STATIC2301,236,195,165,29,SS_SUNKEN
+    RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
                     IDC_WARNING,117,6,291,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,14,34,18,8
-    LTEXT           "Store",IDC_STATIC,14,53,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,97,200,77
+    LTEXT           "Store",IDC_STATIC,14,39,18,8
+    LTEXT           "Store",IDC_STATIC,14,57,18,8
+    GROUPBOX        "Detection Constraints",IDC_STATIC,7,128,200,42
+    LTEXT           "Detection Zones Size",IDC_STATIC2287,14,104,76,8
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 193, 256
@@ -5010,7 +5003,6 @@ BEGIN
         VERTGUIDE, 22
         VERTGUIDE, 54
         VERTGUIDE, 64
-        VERTGUIDE, 90
         VERTGUIDE, 215
         VERTGUIDE, 226
         VERTGUIDE, 236
@@ -6860,8 +6852,6 @@ BEGIN
     IDS_STRING1553          "Pixord or NetComm (Server Push Mode)"
     IDS_STRING1554          "Pixord or NetComm (Client Poll Mode)"
     IDS_STRING1555          "Full"
-    IDS_STRING1556          "and"
-    IDS_STRING1557          "or"
     IDS_STRING1558          "1 hour"
     IDS_STRING1559          "2 hours"
     IDS_STRING1560          "3 hours"
@@ -7201,6 +7191,8 @@ BEGIN
     IDS_STRING1833          "Plain Text (Port 25 or 587)"
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
+    IDS_STRING1836          "Big"
+    IDS_STRING1837          "Small"
 END
 
 #endif    // English (U.S.) resources

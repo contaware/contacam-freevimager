@@ -79,10 +79,6 @@ protected:
 	afx_msg void OnCheckAdjacentZonesDet();
 	afx_msg void OnChangeEditDeleteDetectionsDays();
 	afx_msg void OnSwfConfigure();
-	afx_msg void OnCheckFalseDet();
-	afx_msg void OnChangeEditFalseDetBlue();
-	afx_msg void OnChangeEditFalseDetNoneblue();
-	afx_msg void OnSelendokComboFalseDetAndor();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnChangeEditExe();
 	afx_msg void OnChangeEditParams();
@@ -90,6 +86,7 @@ protected:
 	afx_msg void OnCheckWaitExecCommand();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnCheckLumChangeDet();
+	afx_msg void OnSelchangeDetectionZoneSize();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

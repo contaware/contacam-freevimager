@@ -526,43 +526,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
-		// Execute Command
-		if (m_pDoc->m_bExecCommandMovementDetection)
-		{
-			::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-			if (m_pDoc->m_bWaitExecCommandMovementDetection)
-			{
-				if (m_pDoc->m_hExecCommandMovementDetection)
-				{
-					if (::WaitForSingleObject(m_pDoc->m_hExecCommandMovementDetection, MOVDET_EXEC_COMMAND_WAIT_TIMEOUT)
-																									== WAIT_OBJECT_0)
-					{
-						::CloseHandle(m_pDoc->m_hExecCommandMovementDetection);
-						m_pDoc->m_hExecCommandMovementDetection = NULL;
-					}
-				}
-			}
-			else if (m_pDoc->m_hExecCommandMovementDetection)
-			{
-				::CloseHandle(m_pDoc->m_hExecCommandMovementDetection);
-				m_pDoc->m_hExecCommandMovementDetection = NULL;
-			}
-			if (m_pDoc->m_sExecCommandMovementDetection != _T("") &&
-				m_pDoc->m_hExecCommandMovementDetection == NULL)
-			{
-				SHELLEXECUTEINFO sei;
-				memset(&sei, 0, sizeof(sei));
-				sei.cbSize = sizeof(sei);
-				sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-				sei.nShow = m_pDoc->m_bHideExecCommandMovementDetection ? SW_HIDE : SW_SHOWNORMAL;
-				sei.lpFile = m_pDoc->m_sExecCommandMovementDetection;
-				sei.lpParameters = m_pDoc->m_sExecParamsMovementDetection; 
-				if (::ShellExecuteEx(&sei))
-					m_pDoc->m_hExecCommandMovementDetection = sei.hProcess;
-			}
-			::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
-		}
-
 		// Delete Files if not wanted
 		if (!m_pDoc->m_bSaveAVIMovementDetection)
 			::DeleteFile(sAVIFileName);
@@ -3270,15 +3233,14 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 	}
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
-													BOOL bDoDetection,
-													DWORD dwCurrentUpTime)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection)
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
 
-	// Init
-	if (m_lMovDetTotalZones == 0)
+	// Init from UI thread because of a UI control update and
+	// initialization of variables used by the UI drawing
+	if (m_lMovDetTotalZones == 0 || m_nCurrentDetectionZoneSize != m_nDetectionZoneSize)
 	{
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_INIT_MOVDET,
@@ -3481,10 +3443,10 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 						MinDiff);
 
 			// Call Detector
+			m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
 			bMovement = MovementDetector(	m_pDifferencingDib,
 											bPlanar,
-											m_nDetectionLevel,
-											dwCurrentUpTime);
+											m_nDetectionLevel);
 
 			// Update background
 			if (g_bSSE)
@@ -3536,8 +3498,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 						m_bSaveAVIMovementDetection		||
 						m_bSaveAnimGIFMovementDetection	||
 						m_bSendMailMovementDetection	||
-						m_bFTPUploadMovementDetection	||
-						m_bExecCommandMovementDetection);
+						m_bFTPUploadMovementDetection);
 
 	// If Movement and no Luminosity change
 	if (bMovement && !bLumChange)
@@ -3546,11 +3507,15 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 		pDib->SetUserFlag(TRUE);
 
 		// Reset var
-		m_dwWithoutMovementDetection = dwCurrentUpTime;
+		m_dwWithoutMovementDetection = pDib->GetUpTime();
 
 		// First detected frame?
 		if (!m_bDetectingMovement)
+		{
 			m_bDetectingMovement = TRUE;
+			if (m_bExecCommandMovementDetection)
+				ExecCommandMovementDetection();
+		}
 	}
 	// If No Movement
 	else
@@ -3560,7 +3525,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 
 		// Reset var
 		if (!m_bDetectingMovement)
-			m_dwWithoutMovementDetection = dwCurrentUpTime;
+			m_dwWithoutMovementDetection = pDib->GetUpTime();
 	}
 
 	// If in detection state
@@ -3571,47 +3536,13 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			AddNewFrameToNewestList(pDib);
 
 		// Check if end of detection period
-		if ((dwCurrentUpTime - m_dwWithoutMovementDetection) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
+		if ((pDib->GetUpTime() - m_dwWithoutMovementDetection) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
 		{
-			// False Detection
-			BOOL bFalseDetection = FALSE;
-			if (m_bDoFalseDetectionCheck)
-			{
-				if (m_bDoFalseDetectionAnd)
-				{
-					if (m_nBlueMovementDetectionsCount > m_nFalseDetectionBlueThreshold	&&
-						m_nNoneBlueMovementDetectionsCount > m_nFalseDetectionNoneBlueThreshold)
-						bFalseDetection = TRUE;
-				}
-				else
-				{
-					if (m_nBlueMovementDetectionsCount > m_nFalseDetectionBlueThreshold	||
-						m_nNoneBlueMovementDetectionsCount > m_nFalseDetectionNoneBlueThreshold)
-						bFalseDetection = TRUE;
-				}
-			}
-
 			// Reset var
 			m_bDetectingMovement = FALSE;
 
 			// Save frames
-			if (bFalseDetection)
-			{
-				ClearNewestFrameList();
-				if (bStoreFrames)
-				{
-					CString sMsg;
-					sMsg.Format(_T("%s, false detection: Blue %d , None Blue %d\n"),
-								GetDeviceName(), m_nBlueMovementDetectionsCount, m_nNoneBlueMovementDetectionsCount);
-					TRACE(sMsg);
-					::LogLine(sMsg);
-				}
-			}
 			SaveFrameList();
-
-			// Reset false detection counts
-			m_nBlueMovementDetectionsCount = 0;
-			m_nNoneBlueMovementDetectionsCount = 0;
 		}
 		else 
 		{
@@ -3667,10 +3598,39 @@ void CVideoDeviceDoc::MovementDetectionProcessing(	CDib* pDib,
 			AddNewFrameToNewestListAndShrink(pDib);
 		else
 			ClearNewestFrameList();
+	}
+}
 
-		// Reset false detection counts
-		m_nBlueMovementDetectionsCount = 0;
-		m_nNoneBlueMovementDetectionsCount = 0;
+void CVideoDeviceDoc::ExecCommandMovementDetection()
+{
+	if (m_bWaitExecCommandMovementDetection)
+	{
+		if (m_hExecCommandMovementDetection)
+		{
+			if (::WaitForSingleObject(m_hExecCommandMovementDetection, 0) == WAIT_OBJECT_0)
+			{
+				::CloseHandle(m_hExecCommandMovementDetection);
+				m_hExecCommandMovementDetection = NULL;
+			}
+		}
+	}
+	else if (m_hExecCommandMovementDetection)
+	{
+		::CloseHandle(m_hExecCommandMovementDetection);
+		m_hExecCommandMovementDetection = NULL;
+	}
+	if (m_sExecCommandMovementDetection != _T("") &&
+		m_hExecCommandMovementDetection == NULL)
+	{
+		SHELLEXECUTEINFO sei;
+		memset(&sei, 0, sizeof(sei));
+		sei.cbSize = sizeof(sei);
+		sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+		sei.nShow = m_bHideExecCommandMovementDetection ? SW_HIDE : SW_SHOWNORMAL;
+		sei.lpFile = m_sExecCommandMovementDetection;
+		sei.lpParameters = m_sExecParamsMovementDetection; 
+		if (::ShellExecuteEx(&sei))
+			m_hExecCommandMovementDetection = sei.hProcess;
 	}
 }
 
@@ -4272,8 +4232,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bSaveAVIMovementDetection					||
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
 					m_pDoc->m_bSendMailMovementDetection				||
-					m_pDoc->m_bFTPUploadMovementDetection				||
-					m_pDoc->m_bExecCommandMovementDetection))
+					m_pDoc->m_bFTPUploadMovementDetection))
 					m_pDoc->SaveFrameList();
 
 				// Http Server Push Networking Reconnect
@@ -4777,12 +4736,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_bDoAdjacentZonesDetection = TRUE;
 	m_bDoLumChangeDetection = TRUE;
-	m_bDoFalseDetectionCheck = FALSE;
-	m_bDoFalseDetectionAnd = TRUE;
-	m_nFalseDetectionBlueThreshold = 10;
-	m_nFalseDetectionNoneBlueThreshold = 30;
-	m_nBlueMovementDetectionsCount = 0;
-	m_nNoneBlueMovementDetectionsCount = 0;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
@@ -4795,6 +4748,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bWaitExecCommandMovementDetection = FALSE;
 	m_hExecCommandMovementDetection = NULL;
 	m_nDetectionLevel = DEFAULT_MOVDET_LEVEL;
+	m_nDetectionZoneSize = 0;
 	m_nMovementDetectorIntensityLimit = DEFAULT_MOVDET_INTENSITY_LIMIT;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
@@ -4888,9 +4842,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
 	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI; // Not used
-
-	// Init Command Execution on Detection Critical Section
-	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
 
 	// Init Re-Send UDP Frame List Critical Section
 	::InitializeCriticalSection(&m_csReSendUDPFrameList);
@@ -4987,7 +4938,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
 	::DeleteCriticalSection(&m_csAVRec);
 	::DeleteCriticalSection(&m_csReSendUDPFrameList);
-	::DeleteCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_hExecCommandMovementDetection)
 	{
 		::CloseHandle(m_hExecCommandMovementDetection);
@@ -5406,12 +5356,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
+	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bDoAdjacentZonesDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoAdjacentZonesDetection"), TRUE);
 	m_bDoLumChangeDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoLumChangeDetection"), TRUE);
-	m_bDoFalseDetectionCheck = (BOOL) pApp->GetProfileInt(sSection, _T("DoFalseDetectionCheck"), FALSE);
-	m_bDoFalseDetectionAnd = (BOOL) pApp->GetProfileInt(sSection, _T("DoFalseDetectionAnd"), TRUE);
-	m_nFalseDetectionBlueThreshold = (int) pApp->GetProfileInt(sSection, _T("FalseDetectionBlueThreshold"), 10);
-	m_nFalseDetectionNoneBlueThreshold = (int) pApp->GetProfileInt(sSection, _T("FalseDetectionNoneBlueThreshold"), 30);
 	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
 	m_bSaveAVIMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAVIMovementDetection"), FALSE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -5659,12 +5606,9 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
+			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 			pApp->WriteProfileInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection);
 			pApp->WriteProfileInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection);
-			pApp->WriteProfileInt(sSection, _T("DoFalseDetectionCheck"), m_bDoFalseDetectionCheck);
-			pApp->WriteProfileInt(sSection, _T("DoFalseDetectionAnd"), m_bDoFalseDetectionAnd);
-			pApp->WriteProfileInt(sSection, _T("FalseDetectionBlueThreshold"), m_nFalseDetectionBlueThreshold);
-			pApp->WriteProfileInt(sSection, _T("FalseDetectionNoneBlueThreshold"), m_nFalseDetectionNoneBlueThreshold);
 			pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
@@ -5847,12 +5791,9 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoFalseDetectionCheck"), m_bDoFalseDetectionCheck, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoFalseDetectionAnd"), m_bDoFalseDetectionAnd, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("FalseDetectionBlueThreshold"), m_nFalseDetectionBlueThreshold, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("FalseDetectionNoneBlueThreshold"), m_nFalseDetectionNoneBlueThreshold, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection, sTempFileName);
@@ -6836,8 +6777,6 @@ void CVideoDeviceDoc::ResetMovementDetector()
 {
 	m_bFirstMovementDetection = TRUE;			
 	m_bDetectingMovement = FALSE;
-	m_nBlueMovementDetectionsCount = 0;
-	m_nNoneBlueMovementDetectionsCount = 0;
 	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 		m_MovementDetections[i] = FALSE;
 }
@@ -8418,9 +8357,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		MovementDetectionProcessing(pDib,
-									bDoDetection,
-									dwCurrentInitUpTime);
+		MovementDetectionProcessing(pDib, bDoDetection);
 		if (!bDoDetection && !m_bFirstMovementDetection)
 			m_bFirstMovementDetection = TRUE;
 
@@ -9245,8 +9182,7 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 // nDetectionLevel	: 1 - 100 (1 - > low movement sensibility, 100 -> high movement sensibility)
 BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 										BOOL bPlanar,
-										int nDetectionLevel,
-										DWORD dwCurrentUpTime)
+										int nDetectionLevel)
 {
 	// Check Params
 	if ((pDib == NULL) || !pDib->IsValid())
@@ -9268,18 +9204,21 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	else
 		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * 260;	// Guessed value, because there is the contribution of the chroma components!
 
-	// Calculate the Intensities of all the zones
+	// Calculate the Intensities of the enabled zones
 	for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
 	{
 		for (x = 0 ; x < m_lMovDetXZonesCount ; x++)
 		{
-			m_MovementDetectorCurrentIntensity[y*m_lMovDetXZonesCount+x] = SummRectArea(pDib,
-																						bPlanar,
-																						pDib->GetWidth(),
-																						x*nZoneWidth,	// start pixel in x direction
-																						y*nZoneHeight,	// start pixel in y direction
-																						nZoneWidth,
-																						nZoneHeight);
+			if (m_DoMovementDetection[y*m_lMovDetXZonesCount+x])
+			{
+				m_MovementDetectorCurrentIntensity[y*m_lMovDetXZonesCount+x] = SummRectArea(pDib,
+																							bPlanar,
+																							pDib->GetWidth(),
+																							x*nZoneWidth,	// start pixel in x direction
+																							y*nZoneHeight,	// start pixel in y direction
+																							nZoneWidth,
+																							nZoneHeight);
+			}
 		}
 	}
 	
@@ -9288,37 +9227,25 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	{
 		// Single Zone Detection and Current Time Set
 		BOOL bSingleZoneDetection = FALSE;
+		int nIntensityThreshold = Round(dDetectionLevel * nMaxIntensityPerZone);
 		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 		{
-			if (m_MovementDetectorCurrentIntensity[i] > Round(dDetectionLevel * nMaxIntensityPerZone))
+			if (m_DoMovementDetection[i] &&
+				m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold)
 			{
-				if (m_DoMovementDetection[i])
-					bSingleZoneDetection = TRUE;
+				bSingleZoneDetection = TRUE;
 				m_MovementDetections[i] = TRUE;
-				m_MovementDetectionsUpTime[i] = dwCurrentUpTime;
+				m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
 			}
 		}
 
-		// Clear Old Detection Zones and Count Detection Zones
-		int nBlueMovementDetectionsCount = 0;
-		int nNoneBlueMovementDetectionsCount = 0;
+		// Clear Old Detection Zones
 		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 		{
 			if (m_MovementDetections[i]	&&
-				(dwCurrentUpTime - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
+				(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
 				m_MovementDetections[i] = FALSE;
-			if (m_MovementDetections[i])
-			{
-				if (m_DoMovementDetection[i])
-					nBlueMovementDetectionsCount++;
-				else
-					nNoneBlueMovementDetectionsCount++;
-			}
 		}
-		if (nBlueMovementDetectionsCount > m_nBlueMovementDetectionsCount)
-			m_nBlueMovementDetectionsCount = nBlueMovementDetectionsCount;
-		if (nNoneBlueMovementDetectionsCount > m_nNoneBlueMovementDetectionsCount)
-			m_nNoneBlueMovementDetectionsCount = nNoneBlueMovementDetectionsCount;
 
 		// Adjacent Zones Detection
 		BOOL bAdjacentZonesDetection = FALSE;

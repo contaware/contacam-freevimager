@@ -89,19 +89,16 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_ADJACENT_ZONES_DET, OnCheckAdjacentZonesDet)
-	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
 	ON_EN_CHANGE(IDC_EDIT_DELETE_DETECTIONS_DAYS, OnChangeEditDeleteDetectionsDays)
 	ON_BN_CLICKED(IDC_SWF_CONFIGURE, OnSwfConfigure)
-	ON_BN_CLICKED(IDC_CHECK_FALSE_DET, OnCheckFalseDet)
-	ON_EN_CHANGE(IDC_EDIT_FALSE_DET_BLUE, OnChangeEditFalseDetBlue)
-	ON_EN_CHANGE(IDC_EDIT_FALSE_DET_NONEBLUE, OnChangeEditFalseDetNoneblue)
-	ON_CBN_SELENDOK(IDC_COMBO_FALSE_DET_ANDOR, OnSelendokComboFalseDetAndor)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
+	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -118,12 +115,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nDeleteDetectionsOlderThanDays = m_pDoc->m_nDeleteDetectionsOlderThanDays;
 
 	// Init Combo Box
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_FALSE_DET_ANDOR);
-	if (pComboBox)
-	{
-		pComboBox->AddString(ML_STRING(1556, "and"));
-		pComboBox->AddString(ML_STRING(1557, "or"));
-	}
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
+	pComboBox->AddString(ML_STRING(1836, "Big"));
+	pComboBox->AddString(ML_STRING(1542, "Medium"));
+	pComboBox->AddString(ML_STRING(1837, "Small"));
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -154,6 +149,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	sLevel.Format(_T("%i"), m_pDoc->m_nDetectionLevel);
 	pEdit->SetWindowText(sLevel);
 
+	// Detection Zone Size
+	pComboBox->SetCurSel(m_pDoc->m_nDetectionZoneSize);
+
 	// Detection Scheduler Check Box
 	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionStartStop);
@@ -165,29 +163,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Discard movement detection if a luminosity change happens
 	CButton* pCheckLumChangeDetection = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
 	pCheckLumChangeDetection->SetCheck(m_pDoc->m_bDoLumChangeDetection ? 1 : 0);
-	
-	// False Detection Check
-	CButton* pCheckFalseDetection = (CButton*)GetDlgItem(IDC_CHECK_FALSE_DET);
-	pCheckFalseDetection->SetCheck(m_pDoc->m_bDoFalseDetectionCheck ? 1 : 0);
-
-	// False detection AND / OR
-	if (pComboBox)
-	{
-		if (m_pDoc->m_bDoFalseDetectionAnd)
-			pComboBox->SetCurSel(0);
-		else
-			pComboBox->SetCurSel(1);
-	}
-
-	// False Detection Thresholds
-	CEdit* pEditFalseDetBlueThreshold = (CEdit*)GetDlgItem(IDC_EDIT_FALSE_DET_BLUE);
-	CString sFalseDetBlueThreshold;
-	sFalseDetBlueThreshold.Format(_T("%d"), m_pDoc->m_nFalseDetectionBlueThreshold);
-	pEditFalseDetBlueThreshold->SetWindowText(sFalseDetBlueThreshold);
-	CEdit* pEditFalseDetNoneBlueThreshold = (CEdit*)GetDlgItem(IDC_EDIT_FALSE_DET_NONEBLUE);
-	CString sFalseDetNoneBlueThreshold;
-	sFalseDetNoneBlueThreshold.Format(_T("%d"), m_pDoc->m_nFalseDetectionNoneBlueThreshold);
-	pEditFalseDetNoneBlueThreshold->SetWindowText(sFalseDetNoneBlueThreshold);
 
 	// Save SWF Movement Detection Check Box
 	CButton* pCheckSWFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
@@ -416,6 +391,12 @@ void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
+void CMovementDetectionPage::OnSelchangeDetectionZoneSize() 
+{
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
+	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
+}
+
 void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	UpdateData(TRUE);
@@ -432,41 +413,6 @@ void CMovementDetectionPage::OnCheckLumChangeDet()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
 	m_pDoc->m_bDoLumChangeDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnCheckFalseDet() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FALSE_DET);
-	m_pDoc->m_bDoFalseDetectionCheck = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnSelendokComboFalseDetAndor() 
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_FALSE_DET_ANDOR);
-	if (pComboBox->GetCurSel() == 0)
-		m_pDoc->m_bDoFalseDetectionAnd = TRUE;
-	else
-		m_pDoc->m_bDoFalseDetectionAnd = FALSE;
-}
-
-void CMovementDetectionPage::OnChangeEditFalseDetBlue() 
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FALSE_DET_BLUE);
-	CString sFalseDetBlueThreshold;
-	pEdit->GetWindowText(sFalseDetBlueThreshold);
-	int nFalseDetBlueThreshold = _ttoi(sFalseDetBlueThreshold);
-	if (nFalseDetBlueThreshold >= 0)
-		m_pDoc->m_nFalseDetectionBlueThreshold = nFalseDetBlueThreshold;
-}
-
-void CMovementDetectionPage::OnChangeEditFalseDetNoneblue() 
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FALSE_DET_NONEBLUE);
-	CString sFalseDetNoneBlueThreshold;
-	pEdit->GetWindowText(sFalseDetNoneBlueThreshold);
-	int nFalseDetNoneBlueThreshold = _ttoi(sFalseDetNoneBlueThreshold);
-	if (nFalseDetNoneBlueThreshold >= 0)
-		m_pDoc->m_nFalseDetectionNoneBlueThreshold = nFalseDetNoneBlueThreshold;
 }
 
 void CMovementDetectionPage::OnSaveSwfMovementDetection() 

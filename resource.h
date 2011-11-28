@@ -2198,7 +2198,6 @@
 #define IDC_EDIT_DELETE_DETECTIONS_DAYS 1680
 #define IDS_STRING1680                  1680
 #define IDC_CHECK_AUTH_SAVE             1681
-#define IDC_CHECK_FALSE_DET             1681
 #define IDS_STRING1681                  1681
 #define IDC_CPUSPEED                    1682
 #define IDS_STRING1682                  1682
@@ -2215,10 +2214,8 @@
 #define IDS_STRING1686                  1686
 #define IDC_CHECK_DISABLE_RESEND        1687
 #define IDS_STRING1687                  1687
-#define IDC_EDIT_FALSE_DET_BLUE         1688
 #define IDS_STRING1688                  1688
 #define IDC_LABEL_16BITS                1689
-#define IDC_EDIT_FALSE_DET_NONEBLUE     1689
 #define IDS_STRING1689                  1689
 #define IDC_LABEL_4BITS                 1690
 #define IDS_STRING1690                  1690
@@ -2229,7 +2226,6 @@
 #define IDC_CHECK_SINGLEINSTANCE        1693
 #define IDS_STRING1693                  1693
 #define IDC_CHECK_STARTWITH_WINDOWS     1694
-#define IDC_COMBO_FALSE_DET_ANDOR       1694
 #define IDS_STRING1694                  1694
 #define IDC_CHECK_TRAYICON              1695
 #define IDC_BAND0                       1695
@@ -2514,7 +2510,9 @@
 #define IDC_STATIC1835                  1835
 #define IDS_STRING1835                  1835
 #define IDC_STATIC1836                  1836
+#define IDS_STRING1836                  1836
 #define IDC_STATIC1837                  1837
+#define IDS_STRING1837                  1837
 #define IDC_STATIC1838                  1838
 #define IDC_STATIC1839                  1839
 #define IDC_STATIC1840                  1840
@@ -3214,6 +3212,7 @@
 #define IDC_STATIC2537                  2537
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
+#define IDC_DETECTION_ZONE_SIZE         2541
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3502,7 +3501,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33168
-#define _APS_NEXT_CONTROL_VALUE         2541
+#define _APS_NEXT_CONTROL_VALUE         2542
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
