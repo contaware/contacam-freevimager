@@ -4454,7 +4454,7 @@ BOOL CVideoAviDoc::SaveAsAnimGIF(	const CString& sFileName,
 		CDib* pAllFramesDib = new CDib;
 		if (!pAllFramesDib)
 			return FALSE;
-		if (!pAllFramesDib->AllocateBits(	24,
+		if (!pAllFramesDib->AllocateBitsFast(24,
 											BI_RGB,
 											m_DocRect.Width(),
 											m_DocRect.Height() * pVideoStream->GetTotalFrames()))
