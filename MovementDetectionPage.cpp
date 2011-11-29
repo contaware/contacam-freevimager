@@ -117,8 +117,8 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Init Combo Box
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
 	pComboBox->AddString(ML_STRING(1836, "Big"));
-	pComboBox->AddString(ML_STRING(1542, "Medium"));
-	pComboBox->AddString(ML_STRING(1837, "Small"));
+	pComboBox->AddString(ML_STRING(1837, "Medium"));
+	pComboBox->AddString(ML_STRING(1838, "Small"));
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();

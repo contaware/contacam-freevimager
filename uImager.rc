@@ -1611,7 +1611,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -1621,7 +1621,7 @@ BEGIN
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,93,60,14
     PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,99,93,81,14
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,131,38,10
+                    WS_TABSTOP,13,132,38,10
     PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,96,129,84,14
     CONTROL         "Slider1",IDC_REC_VOL_LEFT,"msctls_trackbar32",
                     TBS_NOTICKS | WS_TABSTOP,33,147,98,16
@@ -1686,7 +1686,7 @@ BEGIN
     LTEXT           "Right",IDC_STATIC2159,13,174,18,8
     EDITTEXT        IDC_RECORD_SAVEAS_PATH,107,238,284,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "",IDC_VOLUME_MUTED,59,131,31,8
+    LTEXT           "",IDC_VOLUME_MUTED,59,132,31,10,SS_CENTERIMAGE
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
@@ -7192,7 +7192,8 @@ BEGIN
     IDS_STRING1834          "SSL/TLS (Port 465)"
     IDS_STRING1835          "STARTTLS (Port 25 or 587)"
     IDS_STRING1836          "Big"
-    IDS_STRING1837          "Small"
+    IDS_STRING1837          "Medium"
+    IDS_STRING1838          "Small"
 END
 
 #endif    // English (U.S.) resources
