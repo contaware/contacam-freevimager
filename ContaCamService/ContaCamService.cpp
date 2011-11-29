@@ -56,7 +56,7 @@ BOOL StartProcess(int nIndex)
 {
 	STARTUPINFO startUpInfo = {sizeof(STARTUPINFO),NULL,_T(""),NULL,0,0,0,0,0,0,0,STARTF_USESHOWWINDOW,0,0,NULL,0,0,0};  
 	TCHAR pItem[STRINGBUFSIZE+1];
-	swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), nIndex);
+	_sntprintf(pItem, STRINGBUFSIZE+1, _T("Process%d"), nIndex);
 	TCHAR pProgramName[STRINGBUFSIZE+1];
 	GetPrivateProfileString(pItem, _T("ProgramName"), _T(""), pProgramName, STRINGBUFSIZE, g_pInitFile);
 	TCHAR pProgramParams[STRINGBUFSIZE+1];
@@ -120,7 +120,7 @@ BOOL StartProcess(int nIndex)
 		{
 			long nError = GetLastError();
 			TCHAR pTemp[MAX_PATH];
-			swprintf(pTemp, MAX_PATH, _T("Failed to start program '%s', error code = %d"), pProgramName, nError); 
+			_sntprintf(pTemp, MAX_PATH, _T("Failed to start program '%s', error code = %d"), pProgramName, nError); 
 			WriteLog(pTemp);
 			return FALSE;
 		}
@@ -178,7 +178,7 @@ void EndProcess(int nIndex)
 	{
 		// Get the EndProcessTimeout param
 		TCHAR pItem[STRINGBUFSIZE+1];
-		swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), nIndex);
+		_sntprintf(pItem, STRINGBUFSIZE+1, _T("Process%d"), nIndex);
 		TCHAR pEndProcessTimeout[STRINGBUFSIZE+1];
 		GetPrivateProfileString(pItem, _T("EndProcessTimeout"), _T("5000"), pEndProcessTimeout, STRINGBUFSIZE, g_pInitFile);
 		int nEndProcessTimeout = _ttoi(pEndProcessTimeout);
@@ -206,7 +206,7 @@ void EndProcess(int nIndex)
 		if (!bProcessExited)
 		{
 			TCHAR pTemp[MAX_PATH];
-			swprintf(pTemp, MAX_PATH, _T("Forced process%d termination"), nIndex);
+			_sntprintf(pTemp, MAX_PATH, _T("Forced process%d termination"), nIndex);
 			WriteLog(pTemp);
 			TerminateProcess(g_pProcInfo[nIndex].hProcess, 0);
 		}
@@ -246,7 +246,7 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 					if (g_pProcInfo[i].hProcess)
 					{
 						TCHAR pItem[STRINGBUFSIZE+1];
-						swprintf(pItem, STRINGBUFSIZE+1, _T("Process%d\0"), i);
+						_sntprintf(pItem, STRINGBUFSIZE+1, _T("Process%d"), i);
 						TCHAR pRestart[STRINGBUFSIZE+1];
 						GetPrivateProfileString(pItem, _T("Restart"), _T("No"), pRestart, STRINGBUFSIZE, g_pInitFile);
 						if (pRestart[0] == _T('Y') || pRestart[0] == _T('y') || pRestart[0] == _T('1'))
@@ -265,7 +265,7 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 									if (StartProcess(i))
 									{
 										TCHAR pTemp[MAX_PATH];
-										swprintf(pTemp, MAX_PATH, _T("Restarted process%d"), i);
+										_sntprintf(pTemp, MAX_PATH, _T("Restarted process%d"), i);
 										WriteLog(pTemp);
 									}
 								}
@@ -274,7 +274,7 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 							{
 								long nError = GetLastError();
 								TCHAR pTemp[MAX_PATH];
-								swprintf(pTemp, MAX_PATH, _T("GetExitCodeProcess failed, error code = %d"), nError);
+								_sntprintf(pTemp, MAX_PATH, _T("GetExitCodeProcess failed, error code = %d"), nError);
 								WriteLog(pTemp);
 							}
 						}
@@ -296,7 +296,7 @@ void StartWorkerThread()
 		{
 			long nError = GetLastError();
 			TCHAR pTemp[MAX_PATH];
-			swprintf(pTemp, MAX_PATH, _T("_beginthreadex failed, error code = %d"), nError);
+			_sntprintf(pTemp, MAX_PATH, _T("_beginthreadex failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
 	}
@@ -336,7 +336,7 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     {
 		long nError = GetLastError();
 		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
+		_sntprintf(pTemp, MAX_PATH, _T("RegisterServiceCtrlHandler failed, error code = %d"), nError);
 		WriteLog(pTemp);
         return; 
     }
@@ -349,12 +349,12 @@ VOID WINAPI ContaCamServiceMain(DWORD dwArgc, LPTSTR *lpszArgv)
     { 
 		long nError = GetLastError();
 		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
+		_sntprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
 		WriteLog(pTemp);
     } 
 
-	// Start processes
-	if (!(dwArgc == 2 && _tcscmp(lpszArgv[1], PROCESSES_STOP) == 0))
+	// Start processes?
+	if (!(dwArgc == 2 && _tcscmp(lpszArgv[1], PROCESSES_STOP) == 0)) // params from RunService()
 	{
 		for (int i = 0 ; i < MAXPROCCOUNT ; i++)
 		{
@@ -428,7 +428,7 @@ VOID WINAPI ContaCamServiceHandler(DWORD fdwControl)
 	{ 
 		long nError = GetLastError();
 		TCHAR pTemp[MAX_PATH];
-		swprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
+		_sntprintf(pTemp, MAX_PATH, _T("SetServiceStatus failed, error code = %d"), nError);
 		WriteLog(pTemp);
     } 
 }
@@ -638,7 +638,7 @@ BOOL GetCurrentLoggedUser(TCHAR* pUserName)
 	NET_API_STATUS nets = NetWkstaUserGetInfo(NULL, 1, (LPBYTE*)&pUserInfo);
     if (nets == NERR_Success && pUserInfo)
     {
-		swprintf(pUserName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
+		_sntprintf(pUserName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
 		res = TRUE;
     }
     if (pUserInfo)
@@ -734,14 +734,6 @@ void GetPw(TCHAR* sPw)
 	_tprintf(_T("\n"));
 }
 
-void ConsoleWait()
-{
-	Sleep(500);			// Give some time to create the window
-	HWND hWnd = GetConsoleWindow();
-	if (IsWindow(hWnd) && IsWindowVisible(hWnd))
-		Sleep(1500);	// Let the user read what has been written!
-}
-
 void _tmain(int argc, TCHAR* argv[])
 {
 	// initialize critical section
@@ -754,19 +746,19 @@ void _tmain(int argc, TCHAR* argv[])
 	if (dwSize > 4 && pModuleFile[dwSize-4] == _T('.'))
 	{
 		_tsplitpath(pModuleFile, NULL, NULL, g_pServiceName, NULL);
-		swprintf(g_pExeFile, STRINGBUFSIZE+1, _T("%s"), pModuleFile);
+		_sntprintf(g_pExeFile, STRINGBUFSIZE+1, _T("%s"), pModuleFile);
 		pModuleFile[dwSize-4] = _T('\0');
-		swprintf(g_pInitFile, STRINGBUFSIZE+1, _T("%s.ini"), pModuleFile);
-		swprintf(g_pLogFile, STRINGBUFSIZE+1, _T("%s.log"), pModuleFile);
+		_sntprintf(g_pInitFile, STRINGBUFSIZE+1, _T("%s.ini"), pModuleFile);
+		_sntprintf(g_pLogFile, STRINGBUFSIZE+1, _T("%s.log"), pModuleFile);
 	}
 	else
 	{
-		_tprintf(_T("Invalid module file name: %s\r\n"), pModuleFile);
+		_tprintf(_T("Invalid module file name: %s\n"), pModuleFile);
 		return;
 	}
 
 	// Control commands
-	if (argc==2)
+	if (argc == 2)
 	{
 		// help
 		if (_tcsicmp(_T("-h"), argv[1]) == 0 ||
@@ -774,17 +766,20 @@ void _tmain(int argc, TCHAR* argv[])
 			_tcsicmp(_T("/h"), argv[1]) == 0 ||
 			_tcsicmp(_T("/?"), argv[1]) == 0)
 		{
-			_tprintf(_T("This process(es) starter service has the following options:\n\n"));
+			_tprintf(_T("This process(es) starter service has the following options\n"));
+			_tprintf(_T("(only one option at the time, example: -r -proc is not working!)\n\n"));
 			_tprintf(_T("-h or -?  print this help page\n"));
-			_tprintf(_T("-i        install service using this executable name and current user\n"));
-			_tprintf(_T("-u        uninstall service\n"));
-			_tprintf(_T("-r        run service\n"));
-			_tprintf(_T("-k        stop service\n"));
+			_tprintf(_T("-i        install service using this executable name, current user and\n"));
+			_tprintf(_T("          entered password. Sequence: 1. uninstall 2. install\n"));
+			_tprintf(_T("          3. run service without starting ProgramName(s)\n"));
+			_tprintf(_T("-u        uninstall service, that stops also service exiting ProgramName(s)\n"));
+			_tprintf(_T("-r        run service without starting ProgramName(s)\n"));
+			_tprintf(_T("-k        stop service, that exits also ProgramName(s)\n"));
 			_tprintf(_T("-proc     start ProgramName(s) set in ini file\n"));
 			_tprintf(_T("-noproc   exit ProgramName(s) trying 1. WM_CLOSE 2. WM_QUIT 3. killing\n\n"));
 			_tprintf(_T("Ini file must be located in the same directory as this executable, format is:\n\n"));
 			_tprintf(_T("[Settings]\n"));
-			_tprintf(_T("CheckProcessSeconds = 30  ; if 0 watchdog is disabled\n"));
+			_tprintf(_T("CheckProcessSeconds = 30  ; if 0 the restart watchdog is disabled\n"));
 			_tprintf(_T("[Process0]\n"));
 			_tprintf(_T("ProgramName = myprog.exe  ; if no path specified this executable's path is used\n"));
 			_tprintf(_T("ProgramParams = /myparams ; optional parameter(s)\n"));
@@ -792,12 +787,11 @@ void _tmain(int argc, TCHAR* argv[])
 			_tprintf(_T("EndProcessTimeout = 15000 ; waits the given amount of ms before killing\n"));
 			_tprintf(_T("Restart = Yes ; if set ProgramName is verified each CheckProcessSeconds\n"));
 			_tprintf(_T("[Process1]\n...\n\n"));
-			ConsoleWait();
 		}
 		// uninstall service
 		else if (_tcsicmp(_T("-u"), argv[1]) == 0)
 		{
-			_tprintf(_T("Uninstalling %s, please wait...\n\n"), g_pServiceName);
+			_tprintf(_T("Uninstalling %s, please wait...\n"), g_pServiceName);
 			KillService(g_pServiceName);
 			int nRet = Uninstall(g_pServiceName);
 			if (nRet == ERROR_SUCCESS)
@@ -806,7 +800,6 @@ void _tmain(int argc, TCHAR* argv[])
 				_tprintf(_T("%s is not installed"), g_pServiceName);
 			else
 				_tprintf(_T("Failed to uninstall %s!"), g_pServiceName);
-			ConsoleWait();
 		}
 		// install service
 		else if (_tcsicmp(_T("-i"), argv[1]) == 0)
@@ -863,25 +856,26 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 				_tprintf(_T("\n%s installed"), g_pServiceName);
 			else
 				_tprintf(_T("\nFailed to install %s, error code = %d!"), g_pServiceName, nRet);
-			ConsoleWait();
+			Sleep(2000);
 		}
 		// run service
 		else if (_tcsicmp(_T("-r"), argv[1]) == 0)
 		{			
-			_tprintf(_T("Starting service, please wait...\n\n"));
-			int nRet = RunService(g_pServiceName, 0, NULL);
+			_tprintf(_T("Starting service, please wait...\n"));
+			LPTSTR pArgv[1];
+			pArgv[0] = PROCESSES_STOP; // Start the service (without starting the processes)
+			int nRet = RunService(g_pServiceName, 1, (LPCTSTR*)pArgv);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("%s started"), g_pServiceName);
 			else if (nRet == ERROR_SERVICE_ALREADY_RUNNING)
 				_tprintf(_T("%s is already running"), g_pServiceName);
 			else
 				_tprintf(_T("Failed to start %s!"), g_pServiceName);
-			ConsoleWait();
 		}
 		// kill service
 		else if (_tcsicmp(_T("-k"), argv[1]) == 0)
 		{
-			_tprintf(_T("Stopping service, please wait...\n\n"));
+			_tprintf(_T("Stopping service, please wait...\n"));
 			int nRet = KillService(g_pServiceName);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("%s stopped"), g_pServiceName);
@@ -889,27 +883,26 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 				_tprintf(_T("%s is already stopped"), g_pServiceName);
 			else
 				_tprintf(_T("Failed to stop %s!"), g_pServiceName);
-			ConsoleWait();
 		}
+		// run processes
 		else if (_tcsicmp(PROCESSES_START, argv[1]) == 0)
 		{
-			_tprintf(_T("Starting processes, please wait...\n\n"));
+			_tprintf(_T("Starting processes, please wait...\n"));
 			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_START_PROC);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("Processes started"));
 			else
 				_tprintf(_T("Failed to start processes!"));
-			ConsoleWait();
 		}
+		// exit processes
 		else if (_tcsicmp(PROCESSES_STOP, argv[1]) == 0)
 		{
-			_tprintf(_T("Stopping processes, please wait...\n\n"));
+			_tprintf(_T("Stopping processes, please wait...\n"));
 			int nRet = CustomeMsg(g_pServiceName, SERVICE_CONTROL_END_PROC);
 			if (nRet == ERROR_SUCCESS)
 				_tprintf(_T("Processes stopped"));
 			else
 				_tprintf(_T("Failed to stop processes!"));
-			ConsoleWait();
 		}
 	}
 	// assume user is starting this service 
@@ -926,7 +919,7 @@ HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\n\n"));
 			StopWorkerThread();
 			long nError = GetLastError();
 			TCHAR pTemp[MAX_PATH];
-			swprintf(pTemp, MAX_PATH, _T("StartServiceCtrlDispatcher failed, error code = %d"), nError);
+			_sntprintf(pTemp, MAX_PATH, _T("StartServiceCtrlDispatcher failed, error code = %d"), nError);
 			WriteLog(pTemp);
 		}
 		

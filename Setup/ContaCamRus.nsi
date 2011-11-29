@@ -90,6 +90,7 @@ xpstyle on
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE PageFinLeave
 !insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -110,6 +111,18 @@ ${UAC.Unload} ;Must call unload!
 FunctionEnd
 Function .OnInstSuccess
 ${UAC.Unload} ;Must call unload!
+FunctionEnd
+Function PageFinLeave
+; Start service and start ContaCam through service if Run App not checked (only for win2k or higher)
+StrCmp $INSTALLTYPE 'UNICODE' startit
+goto startend
+startit:
+nsExec::Exec '"$INSTDIR\ContaCamService.exe" -r'
+SendMessage $mui.FinishPage.Run ${BM_GETCHECK} 0 0 $mui.FinishPage.ReturnValue
+${if} $mui.FinishPage.ReturnValue = ${BST_UNCHECKED}
+	nsExec::Exec '"$INSTDIR\ContaCamService.exe" -proc'
+${endif}
+startend:
 FunctionEnd
 
 ;--------------------------------
@@ -245,8 +258,8 @@ Section "${APPNAME_NOEXT} Program (required)"
   StrCmp $INSTALLTYPE 'UNICODE' stopit
     goto stopend
 stopit:
-  DetailPrint "Uninstalling service, please be patient..."
-  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -u'
+  DetailPrint "Stopping service, please be patient..."
+  nsExec::Exec '"$INSTDIR\ContaCamService.exe" -k'
   DetailPrint "Stopping application, please be patient..."
   call KillApps
 stopend:
