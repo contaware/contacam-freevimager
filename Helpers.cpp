@@ -1292,35 +1292,6 @@ BOOL IsExistingDir(LPCTSTR lpszFileName)
 		return FALSE;
 }
 
-// Slow
-/*
-ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
-{
-	ULARGE_INTEGER Size;
-	Size.QuadPart = 0;
-
-	if (sFileName == _T(""))
-		return Size;
-
-	HANDLE hFile = CreateFile(	lpszFileName,
-								0, // Only Query Access
-								FILE_SHARE_READ |
-								FILE_SHARE_WRITE,
-								NULL, OPEN_EXISTING,
-								FILE_ATTRIBUTE_NORMAL,
-								NULL);
-
-	if (hFile == INVALID_HANDLE_VALUE)
-		return Size;
-	
-	Size.LowPart = GetFileSize(hFile, &(Size.HighPart));
-
-	CloseHandle(hFile);
-
-	return Size;
-}
-*/
-
 ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;
@@ -1328,9 +1299,12 @@ ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 	WIN32_FIND_DATA fileinfo;
 	memset(&fileinfo, 0, sizeof(WIN32_FIND_DATA));
 	HANDLE hFind = FindFirstFile(lpszFileName, &fileinfo);
-	Size.LowPart = fileinfo.nFileSizeLow;
-	Size.HighPart = fileinfo.nFileSizeHigh;
-	FindClose(hFind);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		Size.LowPart = fileinfo.nFileSizeLow;
+		Size.HighPart = fileinfo.nFileSizeHigh;
+		FindClose(hFind);
+	}
 	return Size;
 }
 
@@ -1339,28 +1313,22 @@ BOOL GetFileTime(	LPCTSTR lpszFileName,
 					LPFILETIME lpLastAccessTime,
 					LPFILETIME lpLastWriteTime)
 {
-	if (lpszFileName == NULL)
+	WIN32_FIND_DATA fileinfo;
+	memset(&fileinfo, 0, sizeof(WIN32_FIND_DATA));
+	HANDLE hFind = FindFirstFile(lpszFileName, &fileinfo);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		if (lpCreationTime)
+			*lpCreationTime = fileinfo.ftCreationTime;
+		if (lpLastAccessTime)
+			*lpLastAccessTime = fileinfo.ftLastAccessTime;
+		if (lpLastWriteTime)
+			*lpLastWriteTime = fileinfo.ftLastWriteTime;
+		FindClose(hFind);
+		return TRUE;
+	}
+	else
 		return FALSE;
-
-	HANDLE hFile = CreateFile(	lpszFileName,
-								GENERIC_READ,
-								FILE_SHARE_READ |
-								FILE_SHARE_WRITE,
-								NULL,
-								OPEN_EXISTING,
-								FILE_ATTRIBUTE_NORMAL,
-								NULL);
-	if (hFile == INVALID_HANDLE_VALUE)
-		return FALSE;
-	
-	BOOL res = GetFileTime(	hFile,
-							lpCreationTime,
-							lpLastAccessTime,
-							lpLastWriteTime);
-
-	CloseHandle(hFile);
-
-	return res;
 }
 
 BOOL SetFileTime(	LPCTSTR lpszFileName,
