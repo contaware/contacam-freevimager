@@ -2398,7 +2398,7 @@ BEGIN
     LTEXT           "seconds of frames before detection begin",
                     IDC_STATIC2283,61,34,131,8
     LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,65,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,21,200,83
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,200,84
     EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,68,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
     GROUPBOX        "On Detection",IDC_STATIC2288,215,20,193,210

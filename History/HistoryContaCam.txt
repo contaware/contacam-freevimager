@@ -5,10 +5,12 @@ VERSION HISTORY
 - Overall speed optimizations and memory page faults reduction,
   especially the motion detection engine is now less
   CPU intensive
-- Fixed movement detection pre-buffer handling
+- Enhanced movement detection pre-buffer
 - Motion detection configurable zones size
 - Motion detection command execution starts now on detection
   begin and not on detection end as before
+- External motion trigger file to support contact sensors and
+  PIR detectors
 - 10% HD size limit check is now each 10-15 min and the
   deletion of old files is more balanced between cameras
 - Removed false detection with blue and none blue zones because 
