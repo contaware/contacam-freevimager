@@ -430,10 +430,21 @@ void CXButtonXP::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 	GetWindowText(strTitle);
 	BOOL bHasText = !strTitle.IsEmpty();
 
-	UINT uTextAlignment = DT_LEFT;
-	if (m_hIcon == NULL)
-		uTextAlignment = DT_CENTER;
-	uTextAlignment |= DT_SINGLELINE | DT_VCENTER | DT_WORDBREAK;
+	UINT uTextAlignment;
+	if (GetStyle() & BS_MULTILINE)
+	{
+		uTextAlignment = DT_WORDBREAK;
+		if ((GetStyle() & BS_CENTER) == BS_CENTER) // note: BS_CENTER = BS_LEFT | BS_RIGHT
+			uTextAlignment |= DT_CENTER;
+		else if (GetStyle() & BS_LEFT)
+			uTextAlignment |= DT_LEFT;
+		else if (GetStyle() & BS_RIGHT)
+			uTextAlignment |= DT_RIGHT;
+		else
+			uTextAlignment |= DT_CENTER;
+	}
+	else
+		uTextAlignment = DT_SINGLELINE;
 
 	RECT captionRect = lpDIS->rcItem;
 
@@ -450,12 +461,12 @@ void CXButtonXP::DrawItem(LPDRAWITEMSTRUCT lpDIS)
 
 		// center text
 		RECT centerRect = captionRect;
-		if (m_hIcon)
-			memDC.DrawText(strTitle, -1, &captionRect, uTextAlignment | DT_CALCRECT);
-
+		memDC.DrawText(strTitle, -1, &captionRect, uTextAlignment | DT_CALCRECT);
+		LONG captionRectWidth = captionRect.right - captionRect.left;
+		LONG centerRectWidth  = centerRect.right  - centerRect.left;
 		LONG captionRectHeight = captionRect.bottom - captionRect.top;
 		LONG centerRectHeight  = centerRect.bottom  - centerRect.top;
-		OffsetRect(&captionRect, 0, (centerRectHeight - captionRectHeight)/2);
+		OffsetRect(&captionRect, (centerRectWidth - captionRectWidth)/2, (centerRectHeight - captionRectHeight)/2);
 
 		if (IsThemed())
 		{

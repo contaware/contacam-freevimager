@@ -43,6 +43,7 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAssistantPage)
+	DDX_Control(pDX, IDC_BUTTON_APPLY_SETTINGS, m_ButtonApplySettings);
 	DDX_Check(pDX, IDC_CHECK_24H_REC, m_bCheck24hRec);
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
@@ -642,6 +643,8 @@ BOOL CAssistantPage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
+// Note: the m_ButtonApplySettings object of class
+//       CXButtonXP is to center the multiline text!
 void CAssistantPage::OnButtonApplySettings() 
 {
 	if (m_pDoc->m_bClosing			||

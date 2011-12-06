@@ -13,6 +13,7 @@
 class CVideoDeviceDoc;
 
 #include "StaticLink.h"
+#include "XButtonXP.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CAssistantPage dialog
@@ -32,6 +33,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CAssistantPage)
 	enum { IDD = IDD_ASSISTANT };
+	CXButtonXP m_ButtonApplySettings;
 	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
 	CString	m_sName;
