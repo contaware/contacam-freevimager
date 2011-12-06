@@ -1235,6 +1235,7 @@
 #define IDC_DETECTION_SAVEAS_PATH       1193
 #define IDS_MULTILANG_1194              1194
 #define IDC_VIDEOINFO                   1194
+#define IDC_DETECTION_TRIGGER_FILENAME  1194
 #define IDS_MULTILANG_1195              1195
 #define IDC_AUDIOINFO                   1195
 #define IDS_MULTILANG_1196              1196

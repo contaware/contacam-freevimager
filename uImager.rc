@@ -2329,35 +2329,37 @@ FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Enable",IDC_CHECK_VIDEO_DETECTION_MOVEMENT,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,7,38,10
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,38,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,38,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,55,25,12,
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,33,11,12
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,48,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,55,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,48,11,12
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,79,132,12
-    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,101,99,72,CBS_DROPDOWNLIST | 
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,67,132,12
+    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,86,99,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,140,185,10
+                    WS_TABSTOP,14,121,185,10
     CONTROL         "Only detect if no camera luminosity change occurs",
                     IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,154,185,10
+                    WS_TABSTOP,14,132,185,10
     CONTROL         "Enable Detection (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,190,175,10
+                    WS_TABSTOP,14,164,175,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,46,206,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,46,176,66,
                     16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,206,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,176,
                     66,16
+    EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,14,213,187,12,
+                    ES_AUTOHSCROLL
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,226,37,51,10
     PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,36,96,12
@@ -2392,17 +2394,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,57,120,8
+                    62,50,120,8
     LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,61,39,131,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,77,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,23,200,99
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,80,13,12,ES_RIGHT | 
+                    IDC_STATIC2283,61,34,131,8
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,65,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,21,200,83
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,68,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,215,22,193,208
-    LTEXT           "From",IDC_STATIC2289,27,210,16,8
-    LTEXT           "To",IDC_STATIC2290,124,210,10,8
-    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,176,200,54
+    GROUPBOX        "On Detection",IDC_STATIC2288,215,20,193,210
+    LTEXT           "From",IDC_STATIC2289,27,180,16,8
+    LTEXT           "To",IDC_STATIC2290,124,180,10,8
+    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,153,200,43
     LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,63,8
     LTEXT           "day(s)",IDC_STATIC2293,103,255,20,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
@@ -2412,10 +2414,12 @@ BEGIN
     LTEXT           "",IDC_STATIC2301,236,195,165,29,SS_SUNKEN
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
                     IDC_WARNING,117,6,291,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,14,39,18,8
-    LTEXT           "Store",IDC_STATIC,14,57,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,128,200,42
-    LTEXT           "Detection Zones Size",IDC_STATIC2287,14,104,76,8
+    LTEXT           "Store",IDC_STATIC,14,34,18,8
+    LTEXT           "Store",IDC_STATIC,14,50,18,8
+    GROUPBOX        "Detection Constraints",IDC_STATIC,7,110,200,37
+    LTEXT           "Detection Zones Size",IDC_STATIC2287,14,88,76,8
+    GROUPBOX        "External Detection Trigger File (write to it to trigger)",
+                    IDC_STATIC,7,202,200,28
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 193, 256
@@ -4651,7 +4655,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Assistant"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -4688,7 +4692,8 @@ BEGIN
                     WS_TABSTOP
     COMBOBOX        IDC_COMBO_KEEPFOR,63,179,107,116,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    PUSHBUTTON      "Apply Settings",IDC_BUTTON_APPLY_SETTINGS,324,227,78,26
+    PUSHBUTTON      "Apply Assistant Settings",IDC_BUTTON_APPLY_SETTINGS,330,
+                    225,72,29,BS_MULTILINE
     GROUPBOX        "1. Usage",IDC_STATIC,5,2,407,94
     LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,262,17,62,8
     GROUPBOX        "2. Name && Appearance",IDC_STATIC,5,105,407,51
@@ -4701,8 +4706,8 @@ BEGIN
     LTEXT           "Note: if the disk space becomes less than 10% the oldest files are automatically deleted to make room for the new one",
                     IDC_STATIC,188,176,214,19
     GROUPBOX        "4. Finish",IDC_STATIC,5,211,407,52
-    LTEXT           "Confirm pressing the Apply Settings button. To watch the Movement detections or the Snapshots select Browse from the View menu",
-                    IDC_STATIC,16,230,297,18
+    LTEXT           "Confirm pressing the Apply Assistant Settings button. To watch the Movement detections or the Snapshots select Browse from the View menu",
+                    IDC_STATIC,16,230,303,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
                     33,60,8
 END
@@ -5011,7 +5016,6 @@ BEGIN
         VERTGUIDE, 401
         TOPMARGIN, 2
         HORZGUIDE, 12
-        HORZGUIDE, 83
         HORZGUIDE, 259
     END
 

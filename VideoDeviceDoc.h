@@ -89,9 +89,8 @@ class CMovementDetectionPage;
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
-#define MOVDET_MAX_ZONES					8192		// Maximum Number of zones
-#define MOVDET_MIN_ZONESX					10			// Minimum Number of zones in X direction
-#define MOVDET_MIN_ZONESY					8			// Minimum Number of zones in Y direction
+#define MOVDET_MAX_ZONES					8192		// Maximum number of zones
+#define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
 #define MOVDET_SAVEFRAMES_POLL				500U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
 														// case of insufficient memory
@@ -117,6 +116,7 @@ class CMovementDetectionPage;
 #define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3 to 1 to 7 to 1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 														// Half of DEFAULT_FRAMERATE
+#define MOVDET_TRIGGERTIME_LIMIT			2			// seconds
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")
@@ -1174,7 +1174,10 @@ public:
 	void FreeAVIFile();
 
 	// Movement Detection
-	void MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection);
+	void MovementDetectionProcessing(	CDib* pDib,
+										BOOL bDoDetection,
+										BOOL b1SecTick,
+										const CTime& CurrentTime);
 	BOOL LumChangeDetector(	CDib* pDibY,
 							BOOL bPlanar,
 							int nPackedYOffset);
@@ -1308,7 +1311,7 @@ protected:
 												int DataSize,
 												BOOL bHighPriority,
 												BOOL bReSending);
-	void UpdateFrameSendToTableAndFlowControl();
+	void UpdateFrameSendToTableAndFlowControl(BOOL b4SecTick);
 
 	// Micro Apache Functions
 	static CString LoadMicroApacheConfigFile();
@@ -1343,10 +1346,11 @@ public:
 	volatile BOOL m_bDoEditPaste;						// Paste Frame when copy done
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
 	volatile DWORD m_VideoProcessorMode;				// The Processor Mode Variable
-	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
+	CTime m_1SecTime;									// For the 1 sec tick in ProcessFrame()
+	CTime m_4SecTime;									// For the 4 sec tick in ProcessFrame()
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
@@ -1482,6 +1486,8 @@ public:
 														// 0 means never delete any file!
 
 	// Movement Detector Vars
+	CString m_sDetectionAutoSaveDir;					// The Detection Directory
+	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone

@@ -55,7 +55,7 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_SECONDS_AFTER_MOVEMENT_END, m_nSecondsAfterMovementEnd);
 	DDV_MinMaxInt(pDX, m_nSecondsAfterMovementEnd, 1, 99);
 	DDX_Text(pDX, IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, m_nSecondsBeforeMovementBegin);
-	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 9);
+	DDV_MinMaxInt(pDX, m_nSecondsBeforeMovementBegin, 1, 99);
 	DDX_Control(pDX, IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN, m_SpinSecondsBeforeMovementBegin);
 	DDX_Control(pDX, IDC_SPIN_SECONDS_AFTER_MOVEMENT_END, m_SpinSecondsAfterMovementEnd);
 	DDX_Control(pDX, IDC_DETECTION_LEVEL, m_DetectionLevel);
@@ -99,6 +99,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
+	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -136,9 +137,13 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
 	pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
+
+	// The external detection trigger file name
+	pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
+	pEdit->SetWindowText(m_pDoc->m_sDetectionTriggerFileName);
 	
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
-	m_SpinSecondsBeforeMovementBegin.SetRange(1, 9);
+	m_SpinSecondsBeforeMovementBegin.SetRange(1, 99);
 	m_SpinSecondsAfterMovementEnd.SetRange(1, 99);
 
 	// Detection Level Slider & Edit Controls
@@ -554,6 +559,12 @@ void CMovementDetectionPage::OnExecMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
+}
+
+void CMovementDetectionPage::OnChangeDetectionTriggerFilename() 
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
+	pEdit->GetWindowText(m_pDoc->m_sDetectionTriggerFileName);
 }
 
 void CMovementDetectionPage::OnChangeEditExe() 

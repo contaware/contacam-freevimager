@@ -87,6 +87,7 @@ protected:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnCheckLumChangeDet();
 	afx_msg void OnSelchangeDetectionZoneSize();
+	afx_msg void OnChangeDetectionTriggerFilename();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

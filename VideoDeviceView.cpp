@@ -219,43 +219,79 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	int i;
 	LONG lMovDetXZonesCount = 0;
 	LONG lMovDetYZonesCount = 0;
-	int nStartSize;
+
+	// Video size check
+	if (pDoc->m_DocRect.Width() <= 0 || pDoc->m_DocRect.Height() <= 0)
+		return 0;
+	
+	// Maximum zones size for X and Y direction
+	// and minimum zones count for X and Y direction
+	int nMaxEdgePix = MAX(pDoc->m_DocRect.Width(), pDoc->m_DocRect.Height());
+	int nMaxSizePix;
 	switch (pDoc->m_nDetectionZoneSize)
 	{
-		case 0 :	nStartSize = 72;	// Big
-					break;
-		case 1 :	nStartSize = 32;	// Medium
-					break;
-		default :	nStartSize = 16;	// Small
-					break;
-	}
+		// Big
+		case 0 :	
+			if (nMaxEdgePix <= 352)
+				nMaxSizePix = 32;
+			else
+				nMaxSizePix = 72;
+			break;
 
-	// X
-	for (i = nStartSize ; i > 0 ; i -= 8)
+		// Medium
+		case 1 :	
+			if (nMaxEdgePix <= 352)
+				nMaxSizePix = 16;
+			else
+				nMaxSizePix = 32;
+			break;
+
+		// Small
+		default :	
+			if (nMaxEdgePix <= 352)
+				nMaxSizePix = 8;
+			else
+				nMaxSizePix = 16;
+			break;
+	}
+	int nMinEdgePix = MIN(pDoc->m_DocRect.Width(), pDoc->m_DocRect.Height());
+	int nMovDetMinXZonesCount, nMovDetMinYZonesCount;
+	if (nMinEdgePix <= 352)
+		nMovDetMinXZonesCount = nMovDetMinYZonesCount = MOVDET_MIN_ZONES_XORY;
+	else
+		nMovDetMinXZonesCount = nMovDetMinYZonesCount = 2 * MOVDET_MIN_ZONES_XORY;
+	double dRatio = (double)(pDoc->m_DocRect.Width()) / (double)(pDoc->m_DocRect.Height());
+	if (dRatio >= 1.0)
+		nMovDetMinXZonesCount = (int)(nMovDetMinYZonesCount * dRatio);
+	else
+		nMovDetMinYZonesCount = (int)(nMovDetMinXZonesCount / dRatio);
+	
+	// Calc. zones count in X direction
+	for (i = nMaxSizePix ; i > 0 ; i -= 8)
 	{
 		if ((pDoc->m_DocRect.Width() % i) == 0 &&
-			(pDoc->m_DocRect.Width() / i) >= MOVDET_MIN_ZONESX)
+			(pDoc->m_DocRect.Width() / i) >= nMovDetMinXZonesCount)
 		{
 			lMovDetXZonesCount = pDoc->m_DocRect.Width() / i;
 			break;
 		}
 	}
 
-	// Y
-	for (i = nStartSize ; i > 0 ; i -= 8)
+	// Calc. zones count in Y direction
+	for (i = nMaxSizePix ; i > 0 ; i -= 8)
 	{
 		if ((pDoc->m_DocRect.Height() % i) == 0 &&
-			(pDoc->m_DocRect.Height() / i) >= MOVDET_MIN_ZONESY)
+			(pDoc->m_DocRect.Height() / i) >= nMovDetMinYZonesCount)
 		{
 			lMovDetYZonesCount = pDoc->m_DocRect.Height() / i;
 			break;
 		}
 	}
 
-	// Total
+	// Total number of zones
 	LONG lMovDetTotalZones = lMovDetXZonesCount * lMovDetYZonesCount;
 
-	// Check
+	// Check and update doc vars
 	if (lMovDetTotalZones == 0 || lMovDetTotalZones > MOVDET_MAX_ZONES)
 	{
 		if (!pDoc->m_bUnsupportedVideoSizeForMovDet)
@@ -321,7 +357,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			pDoc->m_DoMovementDetection[i] = TRUE;
 	}
 
-	// Update var
+	// Update current detection zone size var
 	pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
 	return 1;

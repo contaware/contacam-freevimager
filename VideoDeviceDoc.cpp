@@ -3233,7 +3233,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 	}
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection, BOOL b1SecTick, const CTime& CurrentTime)
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
@@ -3251,9 +3251,10 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection)
 	// Detection Enabled?
 	if (bDoDetection)
 	{
-		// Update Freq Div?
-		if (m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5 ||
-			m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5)
+		// Every 1 sec check whether we have to update the Freq Div
+		if (b1SecTick														&&
+			(m_dEffectiveFrameRate > m_dMovDetFrameRateFreqDivCalc + 0.5	||
+			m_dEffectiveFrameRate < m_dMovDetFrameRateFreqDivCalc - 0.5))
 		{
 			double dNewMovDetFreqDiv = m_dEffectiveFrameRate / MOVDET_WANTED_FREQ;
 			if (dNewMovDetFreqDiv < 1.0)
@@ -3483,6 +3484,34 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection)
 					for (int i = 0 ; i < nSize ; i++)
 						p1[i] = (BYTE)((3 * (int)(p1[i]) + (int)(p2[i]) + 2)>>2);
 				}
+			}
+		}
+
+		// Every 1 sec poll external file trigger
+		if (b1SecTick && !bMovement && !m_sDetectionTriggerFileName.IsEmpty())
+		{
+			CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
+			if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
+			{
+				CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+				sDetectionAutoSaveDir.TrimRight(_T('\\'));
+				sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
+			}
+			FILETIME LastWriteTime;
+			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime))
+			{
+				CTime TriggerTime = CTime(2000, 1, 1, 12, 0, 0);
+#if _MFC_VER >= 0x0700
+				if (CTime::IsValidFILETIME(LastWriteTime))
+#endif
+					TriggerTime = CTime(LastWriteTime);
+				CTimeSpan TriggerTimeAge = CurrentTime - TriggerTime;
+				int nFrameTime = Round(1000.0 / m_dFrameRate);
+				if (m_dEffectiveFrameRate > 0.0)
+					nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
+				if (TriggerTimeAge.GetTotalSeconds() >= 0 &&
+					TriggerTimeAge.GetTotalSeconds() <= MAX(3 * nFrameTime / 2000, MOVDET_TRIGGERTIME_LIMIT))
+					bMovement = TRUE;
 			}
 		}
 	}
@@ -4606,6 +4635,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
+	m_1SecTime = t;
+	m_4SecTime = t;
 
 	// Capture Devices
 	m_pDxCapture = NULL;
@@ -4732,6 +4763,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowEditDetectionZonesMinus = FALSE;
 	m_bDetectingMovement = FALSE;
 	m_sDetectionAutoSaveDir = _T("");
+	m_sDetectionTriggerFileName = _T("");
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_bDoAdjacentZonesDetection = TRUE;
@@ -4758,8 +4790,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
 	m_DoMovementDetection = new BOOL[MOVDET_MAX_ZONES];
-	m_lMovDetXZonesCount = MOVDET_MIN_ZONESX;
-	m_lMovDetYZonesCount = MOVDET_MIN_ZONESY;
+	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
+	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
 	m_nVideoDetDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoDetKeyframesRate = DEFAULT_KEYFRAMESRATE;
@@ -5325,6 +5357,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
+	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T(""));
 	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), FALSE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	m_bSnapshotHistorySwf = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), FALSE);
@@ -5575,6 +5608,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
 			pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 			pApp->WriteProfileString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir);
+			pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
 			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf);
@@ -5760,6 +5794,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
 			::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
 			::WriteProfileIniString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir, sTempFileName);
+			::WriteProfileIniString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf, sTempFileName);
@@ -8255,6 +8290,20 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	DWORD dwPrevInitUpTime = (DWORD)m_lCurrentInitUpTime;
 	CTime CurrentTime = CTime::GetCurrentTime();
 	DWORD dwCurrentInitUpTime = ::timeGetTime();
+	CTimeSpan TimeDiff1(CurrentTime - m_1SecTime);
+	CTimeSpan TimeDiff4(CurrentTime - m_4SecTime);
+	BOOL b1SecTick = FALSE;
+	BOOL b4SecTick = FALSE;
+	if (TimeDiff1.GetTotalSeconds() >= 1)
+	{
+		b1SecTick = TRUE;
+		m_1SecTime = CurrentTime;
+	}
+	if (TimeDiff4.GetTotalSeconds() >= 4)
+	{
+		b4SecTick = TRUE;
+		m_4SecTime = CurrentTime;
+	}
 
 	// Decode, Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
 	if (!m_bProcessFrameStopped && pData && dwSize > 0)
@@ -8357,7 +8406,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		MovementDetectionProcessing(pDib, bDoDetection);
+		MovementDetectionProcessing(pDib, bDoDetection, b1SecTick, CurrentTime);
 		if (!bDoDetection && !m_bFirstMovementDetection)
 			m_bFirstMovementDetection = TRUE;
 
@@ -8432,14 +8481,9 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				//
 				// Note: if capturing audio the following is handled
 				//       inside the audio thread
-				DWORD dwFrameRate = (DWORD)Round(m_dEffectiveFrameRate);
-				if (dwFrameRate == 0U)
-					dwFrameRate = (DWORD)m_dFrameRate;
-				if (dwFrameRate == 0U)
-					dwFrameRate = 1U;
 				if (bOk					&&
 					!m_bCaptureAudio	&&
-					(m_dwFrameCountUp % dwFrameRate) == 0)
+					b1SecTick)
 				{
 					if (m_bRecTimeSegmentation)
 					{
@@ -8504,12 +8548,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			}
 
 			// Every 1 sec Update
-			DWORD dwFrameRate = (DWORD)Round(m_dEffectiveFrameRate);
-			if (dwFrameRate == 0U)
-				dwFrameRate = (DWORD)m_dFrameRate;
-			if (dwFrameRate == 0U)
-				dwFrameRate = 1U;
-			if ((m_dwFrameCountUp % dwFrameRate) == 0)
+			if (b1SecTick)
 			{
 				// Get Tx Fifo Size
 				::EnterCriticalSection(&m_csSendFrameNetCom);
@@ -8519,7 +8558,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 				::LeaveCriticalSection(&m_csSendFrameNetCom);
 
 				// Update Frame Send To Table and Flow Control
-				UpdateFrameSendToTableAndFlowControl();
+				UpdateFrameSendToTableAndFlowControl(b4SecTick);
 
 				// Prepare Statistics
 				CString sMsg;
@@ -10655,7 +10694,7 @@ __forceinline void CVideoDeviceDoc::SendUDPFragmentInternal(	CNetCom* pNetCom,
 	}
 }
 
-void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl()
+void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl(BOOL b4SecTick)
 {
 	// Clear dead streams and count the number of alive connections
 	int nCount = 0;
@@ -10674,12 +10713,7 @@ void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl()
 	m_nSendFrameConnectionsCount = nCount;
 
 	// Flow control every 4 sec
-	DWORD dwRate = 4U * (DWORD)Round(m_dEffectiveFrameRate);
-	if (dwRate == 0U)
-		dwRate = 4U * (DWORD)m_dFrameRate;
-	if (dwRate == 0U)
-		dwRate = 1U;
-	if ((m_dwFrameCountUp % dwRate) == 0)
+	if (b4SecTick)
 	{
 		// Get Tx Fifo Size
 		::EnterCriticalSection(&m_csSendFrameNetCom);
