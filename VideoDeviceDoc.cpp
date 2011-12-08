@@ -8374,12 +8374,12 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	CTimeSpan TimeDiff4(CurrentTime - m_4SecTime);
 	BOOL b1SecTick = FALSE;
 	BOOL b4SecTick = FALSE;
-	if (TimeDiff1.GetTotalSeconds() >= 1)
+	if (TimeDiff1.GetTotalSeconds() >= 1 || TimeDiff1.GetTotalSeconds() < 0)
 	{
 		b1SecTick = TRUE;
 		m_1SecTime = CurrentTime;
 	}
-	if (TimeDiff4.GetTotalSeconds() >= 4)
+	if (TimeDiff4.GetTotalSeconds() >= 4 || TimeDiff4.GetTotalSeconds() < 0)
 	{
 		b4SecTick = TRUE;
 		m_4SecTime = CurrentTime;

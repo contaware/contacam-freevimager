@@ -844,7 +844,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		CTime CurrentTime = CTime::GetCurrentTime();
 		CTimeSpan ElapsedTime = CurrentTime - m_pDoc->m_CaptureAudioThread.GetMeanLevelTime();
 		int Data[2];
-		if (ElapsedTime.GetTotalSeconds() > 1)
+		if (ElapsedTime.GetTotalSeconds() > 1 || ElapsedTime.GetTotalSeconds() < 0)
 		{
 			Data[1] = Data[0] = 0;
 			m_PeakMeter.SetData(Data, 0, 2);
