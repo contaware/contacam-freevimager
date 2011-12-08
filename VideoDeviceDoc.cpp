@@ -86,6 +86,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_RESET, OnCaptureReset)
 	ON_COMMAND(ID_EDIT_SNAPSHOT, OnEditSnapshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
+	ON_COMMAND(ID_EDIT_EXPORT_ZONES, OnEditExportZones)
+	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -5690,7 +5692,7 @@ void CVideoDeviceDoc::SaveSettings()
 			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
-				sZone.Format(_T("DoMovementDetection%03i"), i);
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
 				pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
 			}
 
@@ -5876,7 +5878,7 @@ void CVideoDeviceDoc::SaveSettings()
 			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
-				sZone.Format(_T("DoMovementDetection%03i"), i);
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
 				::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
 			}
 
@@ -5897,6 +5899,84 @@ void CVideoDeviceDoc::SaveSettings()
 			EndWaitCursor();
 		}
 	}
+}
+
+void CVideoDeviceDoc::OnEditExportZones() 
+{
+	GetView()->ForceCursor();
+	CNoVistaFileDlg fd(	FALSE,
+						_T("ini"),
+						_T("MovementDetectionZones.ini"),
+						OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+						_T("INI Files (*.ini)|*.ini||"));
+	if (fd.DoModal() == IDOK)
+		ExportDetectionZones(fd.GetPathName());
+	GetView()->ForceCursor(FALSE);
+}
+
+void CVideoDeviceDoc::ExportDetectionZones(const CString& sFileName)
+{
+	// Ini file writing is slow, especially on memory sticks
+	BeginWaitCursor();
+
+	// Remove previous file if any
+	::DeleteFile(sFileName);
+
+	// Store settings to the export ini file
+	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+	{
+		CString sZone;
+		sZone.Format(MOVDET_ZONE_FORMAT, i);
+		::WriteProfileIniInt(_T("MovementDetectionZones"), sZone, m_DoMovementDetection[i], sFileName);
+	}
+	
+	// Ini file writing is slow, especially on memory sticks
+	EndWaitCursor();
+}
+
+void CVideoDeviceDoc::OnEditImportZones() 
+{
+	GetView()->ForceCursor();
+	CNoVistaFileDlg fd(	TRUE,
+						_T("ini"),
+						_T(""),
+						OFN_HIDEREADONLY, // Hides the Read Only check box
+						_T("INI Files (*.ini)|*.ini||"));
+	if (fd.DoModal() == IDOK)
+		ImportDetectionZones(fd.GetPathName());
+	GetView()->ForceCursor(FALSE);
+}
+
+void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
+{
+	int i;
+
+	// Ini file writing is slow, especially on memory sticks
+	BeginWaitCursor();
+
+	// Load settings from the import ini file
+	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+	{
+		CString sZone;
+		sZone.Format(MOVDET_ZONE_FORMAT, i);
+		m_DoMovementDetection[i] = ::GetProfileIniInt(_T("MovementDetectionZones"), sZone, TRUE, sFileName);
+	}
+
+	// Store settings
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	{
+		CString sSection(GetDevicePathName());
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
+		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+		{
+			CString sZone;
+			sZone.Format(MOVDET_ZONE_FORMAT, i);
+			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
+		}
+	}
+	
+	// Ini file writing is slow, especially on memory sticks
+	EndWaitCursor();
 }
 
 BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)

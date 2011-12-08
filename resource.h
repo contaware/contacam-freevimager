@@ -3494,6 +3494,8 @@
 #define ID_PLAY_RANDOM                  33165
 #define ID_VIEW_MAP                     33166
 #define ID_EDIT_RENAME                  33167
+#define ID_EDIT_EXPORT_ZONES            33168
+#define ID_EDIT_IMPORT_ZONES            33169
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3502,7 +3504,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33168
+#define _APS_NEXT_COMMAND_VALUE         33170
 #define _APS_NEXT_CONTROL_VALUE         2542
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

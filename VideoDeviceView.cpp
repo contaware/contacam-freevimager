@@ -334,7 +334,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
-				sZone.Format(_T("DoMovementDetection%03i"), i);
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
 				pDoc->m_DoMovementDetection[i] = (BOOL)pApp->GetProfileInt(sSection, sZone, TRUE);
 			}
 		}
@@ -346,7 +346,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			{
 				pDoc->m_DoMovementDetection[i] = TRUE;
 				CString sZone;
-				sZone.Format(_T("DoMovementDetection%03i"), i);
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
 				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
 			}
 		}
@@ -933,7 +933,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 			CString sSection(pDoc->GetDevicePathName());
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
-			sZone.Format(_T("DoMovementDetection%03i"), nZone);
+			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
 		}
 	}
@@ -1225,7 +1225,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 			CString sSection(pDoc->GetDevicePathName());
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
-			sZone.Format(_T("DoMovementDetection%03i"), nZone);
+			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
 		}
 	}
@@ -1249,7 +1249,7 @@ void CVideoDeviceView::OnEditSelectall()
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;
-			sZone.Format(_T("DoMovementDetection%03i"), i);
+			sZone.Format(MOVDET_ZONE_FORMAT, i);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
 		}
 	}
@@ -1271,7 +1271,7 @@ void CVideoDeviceView::OnEditSelectnone()
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;
-			sZone.Format(_T("DoMovementDetection%03i"), i);
+			sZone.Format(MOVDET_ZONE_FORMAT, i);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
 		}
 	}

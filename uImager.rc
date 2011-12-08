@@ -1005,10 +1005,8 @@ BEGIN
         MENUITEM "Select All",                  ID_EDIT_SELECTALL
         MENUITEM "Select None",                 ID_EDIT_SELECTNONE
         MENUITEM SEPARATOR
-        MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "Show Frame Time\tT",          ID_VIEW_FRAMETIME
+        MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
+        MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
     END
 END
 
@@ -7198,6 +7196,12 @@ BEGIN
     IDS_STRING1836          "Big"
     IDS_STRING1837          "Medium"
     IDS_STRING1838          "Small"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
+    ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
 END
 
 #endif    // English (U.S.) resources

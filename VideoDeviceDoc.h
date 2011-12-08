@@ -91,6 +91,7 @@ class CMovementDetectionPage;
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
+#define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
 #define MOVDET_SAVEFRAMES_POLL				500U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
 														// case of insufficient memory
@@ -1239,6 +1240,8 @@ public:
 	// Settings
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
 	void SaveSettings();
+	void ExportDetectionZones(const CString& sFileName);
+	void ImportDetectionZones(const CString& sFileName);
 
 	// Autorun
 	static CString AutorunGetDeviceKey(const CString& sDevicePathName);
@@ -1630,6 +1633,8 @@ protected:
 	afx_msg void OnCaptureReset();
 	afx_msg void OnEditSnapshot();
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
+	afx_msg void OnEditExportZones();
+	afx_msg void OnEditImportZones();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
