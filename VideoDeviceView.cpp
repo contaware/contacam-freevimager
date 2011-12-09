@@ -324,7 +324,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
 	}
 
-	// Load Settings
+	// Load/Store Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CWinApp* pApp = ::AfxGetApp();
@@ -932,7 +932,6 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
 			CString sSection(pDoc->GetDevicePathName());
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
 			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
@@ -1224,7 +1223,6 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
 			CString sSection(pDoc->GetDevicePathName());
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			CString sZone;
 			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
@@ -1246,7 +1244,6 @@ void CVideoDeviceView::OnEditSelectall()
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(pDoc->GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;
@@ -1268,7 +1265,6 @@ void CVideoDeviceView::OnEditSelectnone()
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(pDoc->GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 		{
 			CString sZone;

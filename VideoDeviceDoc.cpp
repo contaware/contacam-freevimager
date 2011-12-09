@@ -3239,6 +3239,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
+	BOOL bExternalFileTriggerMovement = FALSE;
 
 	// Init from UI thread because of a UI control update and
 	// initialization of variables used by the UI drawing
@@ -3490,7 +3491,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 		}
 
 		// Every 1 sec poll external file trigger
-		if (b1SecTick && !bMovement && !m_sDetectionTriggerFileName.IsEmpty())
+		if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
 		{
 			CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 			if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
@@ -3506,7 +3507,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 			{
 				m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
 				m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
-				bMovement = TRUE;
+				bExternalFileTriggerMovement = TRUE;
 			}
 		}
 	}
@@ -3524,8 +3525,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 						m_bSendMailMovementDetection	||
 						m_bFTPUploadMovementDetection);
 
-	// If Movement and no Luminosity change
-	if (bMovement && !bLumChange)
+	// If Movement
+	if ((bMovement && !bLumChange) || bExternalFileTriggerMovement)
 	{
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(TRUE);
@@ -5926,6 +5927,8 @@ void CVideoDeviceDoc::ExportDetectionZones(const CString& sFileName)
 	::DeleteFile(sFileName);
 
 	// Store settings to the export ini file
+	::WriteProfileIniInt(_T("MovementDetectionZones"), _T("MovDetTotalZones"), m_lMovDetTotalZones, sFileName);
+	::WriteProfileIniInt(_T("MovementDetectionZones"), _T("DetectionZoneSize"), m_nDetectionZoneSize, sFileName);
 	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
 	{
 		CString sZone;
@@ -5958,7 +5961,17 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 	BeginWaitCursor();
 
 	// Load settings from the import ini file
-	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+	// Note: changing m_nDetectionZoneSize will call OnThreadSafeInitMovDet()
+	// which re-loads the settings stored below
+	long lImportMovDetTotalZones = MIN(MOVDET_MAX_ZONES,
+							::GetProfileIniInt(_T("MovementDetectionZones"), _T("MovDetTotalZones"), 0, sFileName));
+	m_nDetectionZoneSize = ::GetProfileIniInt(_T("MovementDetectionZones"), _T("DetectionZoneSize"), 0, sFileName);
+	if (m_pMovementDetectionPage)
+	{
+		CComboBox* pComboBox = (CComboBox*)m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_ZONE_SIZE);
+		pComboBox->SetCurSel(m_nDetectionZoneSize);
+	}
+	for (i = 0 ; i < lImportMovDetTotalZones ; i++)
 	{
 		CString sZone;
 		sZone.Format(MOVDET_ZONE_FORMAT, i);
@@ -5969,15 +5982,15 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), lImportMovDetTotalZones);
+		for (i = 0 ; i < lImportMovDetTotalZones ; i++)
 		{
 			CString sZone;
 			sZone.Format(MOVDET_ZONE_FORMAT, i);
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
 		}
 	}
-	
+
 	// Ini file writing is slow, especially on memory sticks
 	EndWaitCursor();
 }
