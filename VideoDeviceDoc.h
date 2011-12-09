@@ -117,7 +117,6 @@ class CMovementDetectionPage;
 #define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3 to 1 to 7 to 1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 														// Half of DEFAULT_FRAMERATE
-#define MOVDET_TRIGGERTIME_LIMIT			2			// seconds
 
 // configuration.php
 #define PHPCONFIG_VERSION					_T("VERSION")
@@ -1177,8 +1176,7 @@ public:
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
 										BOOL bDoDetection,
-										BOOL b1SecTick,
-										const CTime& CurrentTime);
+										BOOL b1SecTick);
 	BOOL LumChangeDetector(	CDib* pDibY,
 							BOOL bPlanar,
 							int nPackedYOffset);
@@ -1491,6 +1489,7 @@ public:
 	// Movement Detector Vars
 	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
+	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone

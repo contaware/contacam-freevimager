@@ -3235,7 +3235,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 	}
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection, BOOL b1SecTick, const CTime& CurrentTime)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection, BOOL b1SecTick)
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
@@ -3500,20 +3500,13 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 				sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 			}
 			FILETIME LastWriteTime;
-			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime))
+			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
+				(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
+				LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
 			{
-				CTime TriggerTime = CTime(2000, 1, 1, 12, 0, 0);
-#if _MFC_VER >= 0x0700
-				if (CTime::IsValidFILETIME(LastWriteTime))
-#endif
-					TriggerTime = CTime(LastWriteTime);
-				CTimeSpan TriggerTimeAge = CurrentTime - TriggerTime;
-				int nFrameTime = Round(1000.0 / m_dFrameRate);
-				if (m_dEffectiveFrameRate > 0.0)
-					nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-				if (TriggerTimeAge.GetTotalSeconds() >= 0 &&
-					TriggerTimeAge.GetTotalSeconds() <= MAX(3 * nFrameTime / 2000, MOVDET_TRIGGERTIME_LIMIT))
-					bMovement = TRUE;
+				m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
+				m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
+				bMovement = TRUE;
 			}
 		}
 	}
@@ -4766,6 +4759,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDetectingMovement = FALSE;
 	m_sDetectionAutoSaveDir = _T("");
 	m_sDetectionTriggerFileName = _T("");
+	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
+	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_bDoAdjacentZonesDetection = TRUE;
@@ -5360,6 +5355,14 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T(""));
+	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
+	if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
+	{
+		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+		sDetectionAutoSaveDir.TrimRight(_T('\\'));
+		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
+	}
+	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
 	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), FALSE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	m_bSnapshotHistorySwf = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), FALSE);
@@ -8486,7 +8489,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		MovementDetectionProcessing(pDib, bDoDetection, b1SecTick, CurrentTime);
+		MovementDetectionProcessing(pDib, bDoDetection, b1SecTick);
 		if (!bDoDetection && !m_bFirstMovementDetection)
 			m_bFirstMovementDetection = TRUE;
 
