@@ -3494,6 +3494,10 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 		if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
 		{
 			CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
+			sDetectionTriggerFileName.TrimLeft();
+			sDetectionTriggerFileName.TrimRight();
+			sDetectionTriggerFileName.TrimLeft(_T('\"'));
+			sDetectionTriggerFileName.TrimRight(_T('\"'));
 			if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
 			{
 				CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
@@ -5357,6 +5361,10 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T(""));
 	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
+	sDetectionTriggerFileName.TrimLeft();
+	sDetectionTriggerFileName.TrimRight();
+	sDetectionTriggerFileName.TrimLeft(_T('\"'));
+	sDetectionTriggerFileName.TrimRight(_T('\"'));
 	if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
 	{
 		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
