@@ -670,6 +670,9 @@ public:
 	// The Owner Window
 	HWND m_hOwnerWnd;
 
+	// Init() was executed with success on the following time
+	CTime m_InitSuccessTime;
+
 protected:
 	// Init paddr from sAddress
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);

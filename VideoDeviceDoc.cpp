@@ -3882,13 +3882,16 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 	}
 
 	// Clean-Up
-	while (!m_HttpGetFrameNetComList.IsEmpty())
+	while (m_HttpGetFrameNetComList.GetCount() > (bDoNewPoll ? 1 : 0))
 	{
 		pNetCom = m_HttpGetFrameNetComList.GetHead();
 		if (pNetCom)
 		{
-			// Peer closed the connection normally
-			if (pNetCom->IsShutdown())
+			// Remove closed or old connections
+			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitSuccessTime;
+			if (pNetCom->IsShutdown()												||
+				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_POLLCLEANUP_TIMEOUT	||
+				ConnectionAge.GetTotalSeconds() < 0)
 			{
 				delete pNetCom;
 				m_HttpGetFrameNetComList.RemoveHead();
