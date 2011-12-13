@@ -3890,7 +3890,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 			// Remove closed or old connections
 			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
 			if (pNetCom->IsShutdown()												||
-				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_POLLCLEANUP_TIMEOUT	||
+				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT	||
 				ConnectionAge.GetTotalSeconds() < 0)
 			{
 				delete pNetCom;

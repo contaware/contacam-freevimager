@@ -182,8 +182,7 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MAX_DELAY_ALARM1		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM2		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM3		((DWORD)(3000.0 / MIN_FRAMERATE))	// ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		15	// Setup connection timeout in sec
-#define HTTPGETFRAME_POLLCLEANUP_TIMEOUT	20	// Old connections clean-up timeout in sec
+#define HTTPGETFRAME_CONNECTION_TIMEOUT		15			// Connection timeout in sec
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc
