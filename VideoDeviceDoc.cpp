@@ -3888,7 +3888,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 		if (pNetCom)
 		{
 			// Remove closed or old connections
-			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitSuccessTime;
+			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
 			if (pNetCom->IsShutdown()												||
 				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_POLLCLEANUP_TIMEOUT	||
 				ConnectionAge.GetTotalSeconds() < 0)
@@ -4045,8 +4045,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 {
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
-	BOOL bReadEvent = FALSE;
-	DWORD dwLastSetupConnectionTime = ::timeGetTime();
+	BOOL bCheckConnectionTimeout = FALSE;
 
 	for (;;)
 	{
@@ -4092,8 +4091,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			case WAIT_OBJECT_0 + 1 :
 			{
 				::ResetEvent(m_hEventArray[1]);
-				bReadEvent = FALSE;
-				dwLastSetupConnectionTime = ::timeGetTime();
+				bCheckConnectionTimeout = TRUE;
 				if (!Connect(TRUE,
 							m_pDoc->m_pGetFrameNetCom,
 							m_pDoc->m_pHttpGetFrameParseProcess,
@@ -4122,7 +4120,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			case WAIT_OBJECT_0 + 3 :
 			{
 				::ResetEvent(m_hEventArray[3]);
-				bReadEvent = TRUE;
+				bCheckConnectionTimeout = FALSE;
 				break;
 			}
 
@@ -4139,10 +4137,13 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			case WAIT_TIMEOUT :		
 			{	
 				// Setup connection timeout (for client poll init and server push mode)
-				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting	&&
-					!bReadEvent												&&
-					(::timeGetTime() - dwLastSetupConnectionTime) >= HTTPGETFRAME_CONNECTION_TIMEOUT)
-					return OnError();
+				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting && bCheckConnectionTimeout)
+				{
+					CTimeSpan ConnectionAge = CTime::GetCurrentTime() - m_pDoc->m_pGetFrameNetCom->m_InitTime;
+					if (ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT ||
+						ConnectionAge.GetTotalSeconds() < 0)
+						return OnError();
+				}
 
 				// Poll (only client poll mode)
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg)

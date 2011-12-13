@@ -670,8 +670,8 @@ public:
 	// The Owner Window
 	HWND m_hOwnerWnd;
 
-	// Init() was executed with success on the following time
-	CTime m_InitSuccessTime;
+	// Init() was called last time on
+	CTime m_InitTime;
 
 protected:
 	// Init paddr from sAddress

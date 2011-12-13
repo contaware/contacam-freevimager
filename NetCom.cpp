@@ -1678,8 +1678,8 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
 
-	// Reset init success time
-	m_InitSuccessTime = CTime(0);
+	// Reset init time
+	m_InitTime = CTime(0);
 }
 
 CNetCom::~CNetCom()
@@ -1867,6 +1867,9 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	// First close
 	Close();
 
+	// Set init time
+	m_InitTime = CTime::GetCurrentTime();
+
 	// Init socket family
 	m_nSocketFamily = nSocketFamily;
 
@@ -1992,7 +1995,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 						else
 							Notice(GetName() + _T(" Listen (localhost port %d)"), uiLocalPort);
 					}
-					m_InitSuccessTime = CTime::GetCurrentTime();
 					return TRUE;
 				}
 			}
@@ -2061,7 +2063,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 										(WPARAM)m_nIDConnect, (LPARAM)NULL);
 							}
 						}
-						m_InitSuccessTime = CTime::GetCurrentTime();
+
 						return TRUE;
 					}
 					else
@@ -2075,7 +2077,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 								sPeerAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
 								Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddressMsg, uiPeerPort);
 							}
-							m_InitSuccessTime = CTime::GetCurrentTime();
 							return TRUE;
 						}
 						ProcessWSAError(GetName() + _T(" WSAConnect()"));
@@ -2091,7 +2092,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 						// is sent to the Msg Thread,
 						// which would start the Rx Thread
 						StartRxThread();
-						m_InitSuccessTime = CTime::GetCurrentTime();
 						return TRUE;
 					}
 					else
@@ -2230,8 +2230,8 @@ void CNetCom::Close()
 	// Disable The Idle Generator
 	m_bIdleGeneratorEnabled = FALSE;
 
-	// Reset init success time
-	m_InitSuccessTime = CTime(0);
+	// Reset init time
+	m_InitTime = CTime(0);
 }
 
 CString CNetCom::GetPeerSockIP()
