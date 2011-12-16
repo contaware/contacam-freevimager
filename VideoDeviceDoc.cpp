@@ -4277,7 +4277,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)									&&
 					!m_pDoc->m_pHttpGetFrameParseProcess->m_bFirstFrame)
 				{
-					m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE; // for client poll connection keep alive mode
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
 												m_pDoc->m_nGetFrameVideoPort);
