@@ -4269,13 +4269,15 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->SaveFrameList();
 
 				// Http Server Push Networking Reconnect
-				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT					&&
-					m_pDoc->m_pGetFrameNetCom																	&&
-					m_pDoc->m_pGetFrameNetCom->IsClient()														&&
-					m_pDoc->m_pHttpGetFrameParseProcess															&&
-					m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG	&&
+				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT						&&
+					m_pDoc->m_pGetFrameNetCom																		&&
+					m_pDoc->m_pGetFrameNetCom->IsClient()															&&
+					m_pDoc->m_pHttpGetFrameParseProcess																&&
+					(m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG	||
+					m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)									&&
 					!m_pDoc->m_pHttpGetFrameParseProcess->m_bFirstFrame)
 				{
+					m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE; // for client poll connection keep alive mode
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
 												m_pDoc->m_nGetFrameVideoPort);
@@ -4685,6 +4687,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
 	m_HttpGetFrameLocations.Add(_T("/"));
+	// First try JPEG
 	m_HttpGetFrameLocations.Add(_T("/image.jpg"));
 	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));
 	m_HttpGetFrameLocations.Add(_T("/goform/video2"));
@@ -4695,14 +4698,17 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));
 	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));
 	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));
+	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin"));
+	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));
+	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));
+	// now try MJPEG
 	m_HttpGetFrameLocations.Add(_T("/video.cgi"));
 	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));
 	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));
 	m_HttpGetFrameLocations.Add(_T("/cgi-bin/auto.cgi"));
 	m_HttpGetFrameLocations.Add(_T("/image"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin"));
-	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));
 
 	// Snapshot
 	m_sSnapshotAutoSaveDir = _T("");
@@ -10185,6 +10191,12 @@ D-LINK
 JPEG for DCS-2000, DCS-2100, DCS-3230, DCS-5300, DCS-6620G, DVS-104, DVS-301
 _T("GET /cgi-bin/video.jpg HTTP/1.1\r\n")
 
+JPEG for DCS-920, DCS-2121, ...
+_T("GET /image/jpeg.cgi HTTP/1.1\r\n")
+
+MJPEG for DCS-920, DCS-2121, ...
+_T("GET /video/mjpg.cgi HTTP/1.1\r\n")
+
 
 PLANET or SOLWISE or GADSPOT or VEO Observer
 --------------------------------------------
@@ -10210,11 +10222,14 @@ MJPEG
 _T("GET /cgi-bin/getimage.cgi?motion=1 HTTP/1.1\r\n")
 
 
-STARDOT
--------
+STARDOT (http://www.stardot-tech.com/developer/api.html)
+--------------------------------------------------------
 
 JPEG
 _T("GET /netcam.jpg HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /nph-mjpeg.cgi?x HTTP/1.1\r\n")  ,  (where x = input number, 0 origin) 
 
 
 INTELLINET
@@ -10238,11 +10253,14 @@ MJPEG for SNC-RZ30N
 _T("GET /image HTTP/1.1\r\n")
 
 
-MOBOTIX
--------
+MOBOTIX (http://developer.mobotix.com/mobotix_sdk_1.0.2/paks/help_cgi-image.html)
+---------------------------------------------------------------------------------
 
-UNKNOWN
+JPEG (this HTTP API supports so-called HTTP Keep Alive connections!)
 _T("GET /record/current.jpg HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /cgi-bin/faststream.jpg HTTP/1.1\r\n")
 
 
 Blue Net Video Server
@@ -10257,6 +10275,20 @@ Linksys
 
 JPEG
 _T("GET /img/snapshot.cgi HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /img/video.mjpeg HTTP/1.1\r\n")
+_T("GET /img/mjpeg.jpg HTTP/1.1\r\n")
+
+
+BSTI or Heden VisionCam
+-----------------------
+
+JPEG
+_T("GET /snapshot.cgi HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /videostream.cgi HTTP/1.1\r\n")
 
 */
 
