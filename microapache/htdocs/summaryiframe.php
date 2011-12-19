@@ -86,10 +86,10 @@ function loadIFrame(y,m,d) {
 			todayselected = false;
 			document.forms[0].datetext.value = daynames[sel.getDay()] + ' , ' + LZ(d) + ' ' + cal.monthNames[m-1] + ' ' + y;
 			<?php
-			$srcuri = "summary.php?header=no";
+			$srcuri = "summary.php";
 			echo "var srcuri = '$srcuri';\n";
 			?>
-			srcuri += '&year=' + y + '&month=' + m + '&day=' + d;
+			srcuri += '?year=' + y + '&month=' + m + '&day=' + d + '&header=no';
 		}
 		window.frames.myiframe.location.href = srcuri;
 	}

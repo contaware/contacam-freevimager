@@ -49,14 +49,13 @@ else {	// Today
 	else
 		$params = "";
 }
-$size = -1;
-$offset = 0;
-if (isset($_GET['pagesize']))	// Thumbs number
-	$size = (int)$_GET['pagesize'];
-if (isset($_GET['pageoffset']))	// Thumbs offset
-	$offset = (int)$_GET['pageoffset'];
-if ($size < 0)
-	$size = MAX_PER_PAGE;
+$max_per_page = MAX_PER_PAGE;
+$page_offset = 0;
+if (isset($_GET['pageoffset']))	{// Thumbs offset
+	$page_offset = (int)$_GET['pageoffset'];
+	if ($page_offset < 0)
+		$page_offset = 0;
+}
 ?>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
@@ -230,7 +229,7 @@ if ($handle = @opendir($dir)) {
 	if ($file_array !== NULL) {
 		// Get total images and calc. total pages
 		$total_size = count($file_array);
-		$pages_float = $total_size / (float)$size;
+		$pages_float = $total_size / (float)$max_per_page;
 		$pages = floor($pages_float);
 		if (($pages_float - $pages) > 0.0)
 			$pages++;
@@ -250,7 +249,7 @@ if ($handle = @opendir($dir)) {
 			if (!isset($path_parts['filename']))
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
 			
-			if ($pos >= $offset && $count < $size) {
+			if ($pos >= $page_offset && $count < $max_per_page) {
 				if ($path_parts['extension'] == 'gif') {
 					$swffile = $dir."/".basename($file, ".gif").".swf";
 					if (is_file($swffile)) {
@@ -280,7 +279,7 @@ if ($handle = @opendir($dir)) {
 				$day_has_files = true;
 			}
 			
-			if ($pos >= $offset && $count < $size) {
+			if ($pos >= $page_offset && $count < $max_per_page) {
 				$file_date = getdate($file_time);
 				// Leave a final space so that the text can wrap in the browser
 				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']);
@@ -328,24 +327,39 @@ if ($handle = @opendir($dir)) {
 	if ($pages > 1) {
 		echo "<hr />\n";
 		echo "<div align=\"center\">" . PAGES . " [\n";
-		$currentoffset = 0;
+		$current_page_offset = 0;
 		$file_time_array = array_keys($file_array);
 		for ($page=1 ; $page <= $pages ; $page++) {
-			$file_date = getdate($file_time_array[$currentoffset]);
+			$file_date = getdate($file_time_array[$current_page_offset]);
 			$file_timestamp = sprintf("%02d:%02d", $file_date['hours'], $file_date['minutes']);
-			if ($currentoffset == $offset) {
-				if ($params == "")
-					echo " <a class=\"highlight\" href=\"summary.php?pagesize=$size&amp;pageoffset=$currentoffset\">$file_timestamp</a>\n";
-				else
-					echo " <a class=\"highlight\" href=\"summary.php" . $params . "&amp;pagesize=$size&amp;pageoffset=$currentoffset\">$file_timestamp</a>\n";                                        
+			if ($page == 1) {
+				if ($current_page_offset == $page_offset) {
+					if ($params == "")
+						echo " <a class=\"highlight\" href=\"summary.php\">$file_timestamp</a>\n";
+					else
+						echo " <a class=\"highlight\" href=\"summary.php" . $params . "\">$file_timestamp</a>\n";
+				}
+				else {
+					if ($params == "")
+						echo " <a href=\"summary.php\">$file_timestamp</a>\n";
+					else
+						echo " <a href=\"summary.php" . $params . "\">$file_timestamp</a>\n";
+				}
+			} else {
+				if ($current_page_offset == $page_offset) {
+					if ($params == "")
+						echo " <a class=\"highlight\" href=\"summary.php?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+					else
+						echo " <a class=\"highlight\" href=\"summary.php" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+				}
+				else {
+					if ($params == "")
+						echo " <a href=\"summary.php?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+					else
+						echo " <a href=\"summary.php" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+				}
 			}
-			else {
-				if ($params == "")
-					echo " <a href=\"summary.php?pagesize=$size&amp;pageoffset=$currentoffset\">$file_timestamp</a>\n";
-				else
-					echo " <a href=\"summary.php" . $params . "&amp;pagesize=$size&amp;pageoffset=$currentoffset\">$file_timestamp</a>\n";
-			}
-			$currentoffset += $size;
+			$current_page_offset += $max_per_page;
 		}
 		echo "]</div>\n";
 	}
