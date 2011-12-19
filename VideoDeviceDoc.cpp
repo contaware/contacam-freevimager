@@ -4686,28 +4686,31 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
 	m_HttpGetFrameLocations.Add(_T("/"));
-	// First try JPEG
-	m_HttpGetFrameLocations.Add(_T("/image.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));
-	m_HttpGetFrameLocations.Add(_T("/goform/video2"));
-	m_HttpGetFrameLocations.Add(_T("/goform/video"));
-	m_HttpGetFrameLocations.Add(_T("/goform/capture"));
-	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));
-	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin"));
-	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));
-	// now try MJPEG
-	m_HttpGetFrameLocations.Add(_T("/video.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));
-	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/auto.cgi"));
-	m_HttpGetFrameLocations.Add(_T("/image"));
+	// First try JPEG because we can change the framerate
+	m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// Many cams
+	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Many cams
+	m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// REPOTEC, TRENDNET, PLANET
+	m_HttpGetFrameLocations.Add(_T("/goform/video"));					// REPOTEC, TRENDNET, PLANET
+	m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// REPOTEC, TRENDNET, PLANET
+	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// PLANET, SOLWISE, GADSPOT, VEO Observer
+	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// STARDOT
+	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// EDIMAX, INTELLINET
+	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// MOBOTIX
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GADSPOT GS1200G
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));				// D-LINK
+	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-LINK
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin")); // Blue Net Video Server
+	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// LINKSYS
+	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// BSTI, Heden VisionCam
+	m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// SONY
+	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// CANON
+	// then try mixed JPEG/MJPEG
+	m_HttpGetFrameLocations.Add(_T("/image"));							// JPEG for ARECONT VISION and MJPEG for SONY
+	// finally try MJPEG
+	m_HttpGetFrameLocations.Add(_T("/video.cgi"));						// Many cams
+	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));						// Many cams
+	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// GADSPOT, ORITE, PLANET
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/auto.cgi"));				// ANEXTEK
 
 	// Snapshot
 	m_sSnapshotAutoSaveDir = _T("");
@@ -10158,8 +10161,6 @@ sif      -> 352x240 (NTSC)
 full     -> 704x480 (NTSC)
 delay=10 -> 100 ms
 
-Live Cam: p120.demo.pixord.com
-
 
 TRENDNET or  Raytalk RTAV 600W or Airlink101 or TRUST or GENIUS or
 D-LINK DCS-700 and DCS-900 or PLANET ICA-100C and ICA-100PE
@@ -10179,9 +10180,9 @@ REPOTEC or TRENDNET TV-IP201W, TV-IP301 and TV-IP301W or PLANET ICA-110, ICA-210
 --------------------------------------------------------------------------------
 
 JPEG
-_T("GET /goform/video HTTP/1.1\r\n")
-_T("GET /goform/video2 HTTP/1.1\r\n")
-_T("GET /goform/capture HTTP/1.1\r\n")
+_T("GET /goform/video HTTP/1.1\r\n")       -> get one frame, don't response until frame ready
+_T("GET /goform/video2 HTTP/1.1\r\n")      -> get one frame, response no matter frame ready or not
+_T("GET /goform/capture HTTP/1.1\r\n")     -> get one frame, server will disconnect the connection after
 
 
 D-LINK
@@ -10190,10 +10191,10 @@ D-LINK
 JPEG for DCS-2000, DCS-2100, DCS-3230, DCS-5300, DCS-6620G, DVS-104, DVS-301
 _T("GET /cgi-bin/video.jpg HTTP/1.1\r\n")
 
-JPEG for DCS-920, DCS-2121, ...
+JPEG for DCS-920, DCS-2121, DCS-2102, ...
 _T("GET /image/jpeg.cgi HTTP/1.1\r\n")
 
-MJPEG for DCS-920, DCS-2121, ...
+MJPEG for DCS-920, DCS-2121, DCS-2102, ...
 _T("GET /video/mjpg.cgi HTTP/1.1\r\n")
 
 
@@ -10248,8 +10249,21 @@ _T("GET /cgi-bin/auto.cgi HTTP/1.1\r\n")
 SONY
 ----
 
-MJPEG for SNC-RZ30N
+JPEG
+_T("GET /oneshotimage.jpg HTTP/1.1\r\n")
+
+MJPEG
 _T("GET /image HTTP/1.1\r\n")
+
+
+ARECONT VISION
+--------------
+
+JPEG
+_T("GET /image HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /mjpeg HTTP/1.1\r\n")
 
 
 MOBOTIX (http://developer.mobotix.com/mobotix_sdk_1.0.2/paks/help_cgi-image.html)
@@ -10269,7 +10283,7 @@ JPEG
 _T("GET /cgi-bin/image.cgi?control=0&id=admin&passwd=admin HTTP/1.1\r\n")
 
 
-Linksys
+LINKSYS
 -------
 
 JPEG
@@ -10289,6 +10303,17 @@ _T("GET /snapshot.cgi HTTP/1.1\r\n")
 MJPEG
 _T("GET /videostream.cgi HTTP/1.1\r\n")
 
+
+CANON
+-----
+
+JPEG
+_T("GET /-wvhttp-01-/GetLiveImage HTTP/1.1\r\n")
+_T("GET /-wvhttp-01-/image.cgi HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /-wvhttp-01-/GetOneShot HTTP/1.1\r\n")
+_T("GET /-wvhttp-01-/video.cgi HTTP/1.1\r\n")
 */
 
 BOOL CVideoDeviceDoc::ConnectGetFrame()
