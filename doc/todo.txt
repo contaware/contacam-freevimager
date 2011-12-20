@@ -9,5 +9,3 @@ Detection:
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection
 - Advanced detection scheduler with weekday selection
-- Have an option to monitor every say 2, 4 or 8 frames instead
-  of every frame -> this would be less cpu hungry
