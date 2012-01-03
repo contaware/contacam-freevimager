@@ -1135,13 +1135,17 @@ void CAssistantPage::ApplySettings()
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
 			// Init snapshot rate vars
-			int nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
+			int nSnapshotRate = MIN_SNAPSHOT_RATE;
 			CString sSnapShotRate;
 			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
-			int nThumbWidth = m_pDoc->m_nSnapshotThumbWidth;
-			int nThumbHeight = m_pDoc->m_nSnapshotThumbHeight;
+			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
+								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
+								m_pDoc->m_nSnapshotThumbWidth : DEFAULT_SNAPSHOT_THUMB_WIDTH;
+			int nThumbHeight =	(m_pDoc->m_nSnapshotThumbHeight < 4 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3 &&
+								m_pDoc->m_nSnapshotThumbHeight > 2 * DEFAULT_SNAPSHOT_THUMB_HEIGHT / 3) ?
+								m_pDoc->m_nSnapshotThumbHeight : DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 			CString sThumbWidth, sThumbHeight;
 			sThumbWidth.Format(_T("%d"), nThumbWidth);
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
@@ -1152,14 +1156,14 @@ void CAssistantPage::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("0"));
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOT_THUMB, _T("1"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
 
-			// Disable live snapshots
-			m_pDoc->m_bSnapshotLiveJpeg = FALSE;
-			m_pDoc->m_bSnapshotThumb = FALSE;
+			// Enable live snapshots
+			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
+			m_pDoc->m_bSnapshotThumb = TRUE;
 			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Disable snapshot history
