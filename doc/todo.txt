@@ -4,8 +4,16 @@ Picture:
 
 Detection:
 ----------
+- Motion detection tab have a combobox instead of the enable
+  check box, label + 4 possible values:
+  "Detection: off, software detection, external detection, both"
+  -> this combobox also (or only) in main toolbar
 - Save also audio on detection
 - Possibility to send 3x jpegs by email on detection
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection
 - Advanced detection scheduler with weekday selection
+
+Networking:
+-----------
+- Edimax client poll

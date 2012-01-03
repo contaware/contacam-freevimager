@@ -952,8 +952,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					UpdateFileAssociations();
 
 #ifdef VIDEODEVICEDOC
-					// Update / create config file and root index.php for microapache
-					MicroApacheUpdateFiles();			
+					// Update / create config file and doc root index.php for microapache
+					MicroApacheUpdateFiles(TRUE); // overwrite doc root index.php
 #else
 					// Open Settings Dialog for file association and other preferences
 					if (!m_bSilentInstall)
@@ -5105,7 +5105,7 @@ void CUImagerApp::SuggestDirectXVersion7()
 		dlg.m_sTextRow1 = strResult;
 		dlg.m_sTextRow2 = ML_STRING(1219, "DirectX 7.0 or higher is required for best video playback performance!");
 		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://www.gamesforwindows.com/directx/");
+		dlg.m_sTextLink = _T("http://support.microsoft.com/kb/179113");
 		dlg.DoModal();
 	}
 }
@@ -5126,7 +5126,7 @@ BOOL CUImagerApp::RequireDirectXVersion7()
 		dlg.m_sTextRow1 = strResult;
 		dlg.m_sTextRow2 = ML_STRING(1221, "DirectX 7.0 or higher is required!");
 		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://www.gamesforwindows.com/directx/");
+		dlg.m_sTextLink = _T("http://support.microsoft.com/kb/179113");
 		dlg.DoModal();
 		return FALSE;
 	}
@@ -6660,7 +6660,7 @@ BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
 	return bUsed;
 }
 
-void CUImagerApp::MicroApacheUpdateFiles()
+void CUImagerApp::MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex/*=FALSE*/)
 {
 	// Check config file, create it if not existing
 	CVideoDeviceDoc::MicroApacheCheckConfigFile();
@@ -6696,7 +6696,7 @@ void CUImagerApp::MicroApacheUpdateFiles()
 	{
 		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), TRUE);
+		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), !bOverwriteDocRootIndex);
 	}
 
 	// Set Doc Root to config file

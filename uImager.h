@@ -309,8 +309,8 @@ public:
 	// Check whether the given port is already used by another tcp server
 	static BOOL MicroApacheIsPortUsed(int nPort);
 
-	// Update / create config file and root index.php for microapache
-	void MicroApacheUpdateFiles();
+	// Update / create config file and doc root index.php for microapache
+	void MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex = FALSE);
 
 	// FullscreenBrowser Ini file handling
 	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);

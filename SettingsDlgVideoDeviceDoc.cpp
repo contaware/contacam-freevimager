@@ -531,8 +531,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
 		else
 		{
-			// Update / create config file and root index.php for microapache
-			pApp->MicroApacheUpdateFiles();
+			// Update / create config file and doc root index.php for microapache
+			pApp->MicroApacheUpdateFiles(); // do not overwrite doc root index.php
 
 			// Start server
 			if (m_bStartMicroApache)
