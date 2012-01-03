@@ -147,7 +147,7 @@ BEGIN
             VALUE "FileDescription", "NeroBurn\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
             VALUE "InternalName", "NeroBurn\0"
-            VALUE "LegalCopyright", "Copyright (C) 2011 Contaware\0"
+            VALUE "LegalCopyright", "Copyright (C) 2012 Contaware\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "NeroBurn.exe\0"
             VALUE "PrivateBuild", "\0"

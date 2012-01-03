@@ -1580,7 +1580,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            120,IDC_STATIC,17,10,20,20
     LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2011 Contaware.com, Switzerland",
+    LTEXT           "Copyright © 2003 - 2012 Contaware.com, Switzerland",
                     IDC_STATIC2141,40,213,181,8
     DEFPUSHBUTTON   "OK",IDOK,103,195,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,17,46,39,8

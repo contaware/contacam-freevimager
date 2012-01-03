@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+3.9.5 (March 5th 2012)
+
+- Web interface camera selection with previews
+
 3.9.0 (December 20th 2011)
 
 - Overall speed optimizations and memory page faults reduction,
