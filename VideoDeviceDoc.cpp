@@ -9134,12 +9134,12 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	Dib.EditCopy();
 
 	// Save to JPEG File(s)
+	BOOL res = Dib.SaveJPEG(sFileName, m_nSnapshotCompressionQuality);
 	if (DibThumb.IsValid())
 	{
 		DibThumb.SaveJPEG(	::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
 							m_nSnapshotCompressionQuality);
 	}
-	BOOL res = Dib.SaveJPEG(sFileName, m_nSnapshotCompressionQuality);
 
 	// Open Document File
 	if (res && m_bManualSnapshotAutoOpen)
