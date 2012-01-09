@@ -1141,6 +1141,7 @@ public:
 	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
+	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	BOOL ProcessFrame(LPBYTE pData, DWORD dwSize);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
@@ -1323,6 +1324,9 @@ protected:
 	CString LoadPhpConfigFile();
 	BOOL SavePhpConfigFile(const CString& sConfig);
 
+	// Manual Snapshot
+	CString MakeJpegManualSnapshotFileName(const CTime& Time);
+
 // Public Variables
 public:
 	// General Vars
@@ -1344,7 +1348,7 @@ public:
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessFrame()
-	volatile BOOL m_bDoEditPaste;						// Paste Frame when copy done
+	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
 	volatile DWORD m_VideoProcessorMode;				// The Processor Mode Variable
 	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
@@ -1471,6 +1475,7 @@ public:
 	volatile BOOL m_bSnapshotHistoryJpegFtp;			// Upload Jpeg Snapshot history files
 	volatile BOOL m_bSnapshotHistorySwfFtp;				// Upload Swf Snapshot history files
 	volatile BOOL m_bSnapshotHistoryDeinterlace;		// Snapshot history deinterlace
+	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
 	volatile LONG m_bSnapshotHistoryCloseSwfFile;		// Close the Snapshot history swf file

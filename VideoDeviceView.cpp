@@ -1013,11 +1013,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_INSERT :
-			if (!pDoc->m_bDoEditCopy || !pDoc->m_bDoEditPaste)
-			{
-				pDoc->m_bDoEditCopy = TRUE;
-				pDoc->m_bDoEditPaste = TRUE;
-			}
+			pDoc->m_bDoEditSnapshot = TRUE;
 			break;
 
 		case VK_CONTROL :

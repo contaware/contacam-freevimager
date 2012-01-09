@@ -4932,7 +4932,7 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 		return FALSE;
 	}
 
-	DWORD dwAttrib =::GetFileAttributes(szAttachment);
+	DWORD dwAttrib = ::GetFileAttributes(szAttachment);
 	if (dwAttrib != 0xFFFFFFFF)
 	{
 		if (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) // Directory
@@ -5139,7 +5139,7 @@ BOOL CUImagerApp::BackupFile(CString sFileName)
 	CString sBackUpDir = GetAppTempDir() + _T("Backup");
 
 	// Create Backup Directory if not Existing
-	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
 		if (!::CreateDir(sBackUpDir))
@@ -5158,7 +5158,7 @@ BOOL CUImagerApp::RestoreFile(CString sFileName)
 	CString sBackUpDir = GetAppTempDir() + _T("Backup");
 
 	// Backup Directory Not Existing?
-	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 		return FALSE;
 
@@ -5177,7 +5177,7 @@ BOOL CUImagerApp::DeleteBackupFile(CString sFileName)
 	CString sBackUpDir = GetAppTempDir() + _T("Backup");
 
 	// Backup Directory Not Existing?
-	DWORD dwAttrib =::GetFileAttributes(sBackUpDir);
+	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 		return FALSE;
 

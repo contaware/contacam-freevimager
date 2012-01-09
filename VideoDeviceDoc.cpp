@@ -102,12 +102,12 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	CString sDay = Time.Format(_T("%d"));
 
 	// Check Passed Dir
-	DWORD dwAttrib =::GetFileAttributes(sBaseDir);
+	DWORD dwAttrib = ::GetFileAttributes(sBaseDir);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 		return FALSE;
 
 	// Create Year Dir if not existing
-	dwAttrib =::GetFileAttributes(sBaseDir + _T("\\") + sYear);
+	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear))
@@ -118,7 +118,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	}
 
 	// Create Month Dir if not existing
-	dwAttrib =::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth);
+	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth))
@@ -129,7 +129,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	}
 
 	// Create Day Dir if not existing
-	dwAttrib =::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay);
+	dwAttrib = ::GetFileAttributes(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 	{
 		if (!::CreateDir(sBaseDir + _T("\\") + sYear + _T("\\") + sMonth + _T("\\") + sDay))
@@ -225,12 +225,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			// Check Whether Detection Dir Exists
 			sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-			DWORD dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
+			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				// Temp Dir To Store Files
 				sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + _T("Detection");
-				dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
+				dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 				if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 				{
 					if (!::CreateDir(sDetectionAutoSaveDir))
@@ -244,7 +244,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		else
 		{
 			sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + _T("Detection");
-			DWORD dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
+			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				if (!::CreateDir(sDetectionAutoSaveDir))
@@ -1380,7 +1380,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileName()
 {
-	CString sFirstFileName(_T(""));
+	CString sYearMonthDayDir(_T(""));
 
 	// Snapshot time
 	CString sTime = m_Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
@@ -1392,25 +1392,25 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 	// Create directory if necessary
 	if (sSnapshotDir != _T("") && m_bSnapshotHistoryJpeg)
 	{
-		DWORD dwAttrib =::GetFileAttributes(sSnapshotDir);
+		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sFirstFileName))
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sYearMonthDayDir))
 			return _T("");
 	}
 
 	// Return file name
-	if (sFirstFileName == _T(""))
+	if (sYearMonthDayDir == _T(""))
 		return _T("shot_") + sTime + _T(".jpg");
 	else
-		return sFirstFileName + _T("\\") + _T("shot_") + sTime + _T(".jpg");
+		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + _T(".jpg");
 }
 
 __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileName()
 {
-	CString sFirstFileName(_T(""));
+	CString sYearMonthDayDir(_T(""));
 
-	// Snapshot time
+	// Snapshots time
 	CString sTime = m_Time.Format(_T("%Y_%m_%d"));
 
 	// Adjust Directory Name
@@ -1420,18 +1420,18 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileNa
 	// Create directory if necessary
 	if (sSnapshotDir != _T("") && m_bSnapshotHistorySwf)
 	{
-		DWORD dwAttrib =::GetFileAttributes(sSnapshotDir);
+		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 			::CreateDir(sSnapshotDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sFirstFileName))
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(m_Time, sSnapshotDir, sYearMonthDayDir))
 			return _T("");
 	}
 
 	// Return file name
-	if (sFirstFileName == _T(""))
+	if (sYearMonthDayDir == _T(""))
 		return _T("shot_") + sTime + _T(".swf");
 	else
-		return sFirstFileName + _T("\\") + _T("shot_") + sTime + _T(".swf");
+		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + _T(".swf");
 }
 
 CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration)
@@ -3692,7 +3692,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		
 		// Check Whether Detection Dir Exists
 		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
-		DWORD dwAttrib =::GetFileAttributes(sDetectionAutoSaveDir);
+		DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			return FALSE;
 		else
@@ -4459,7 +4459,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 	int nDiskFreeSpacePercent;
 
 	// Check and adjust Auto-Save directory
-	dwAttrib =::GetFileAttributes(sAutoSaveDir);
+	dwAttrib = ::GetFileAttributes(sAutoSaveDir);
 	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 	{
 		sAutoSaveDir.TrimRight(_T('\\'));
@@ -4626,7 +4626,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwEffectiveFrameTimeCountUp = 0U;
 	m_pVideoAviDoc = NULL;
 	m_bDoEditCopy = FALSE;
-	m_bDoEditPaste = FALSE;
+	m_bDoEditSnapshot = FALSE;
 	m_bRgb32Frame = FALSE;
 	m_lProcessFrameTime = 0;
 	m_lCompressedDataRate = 0;
@@ -4721,6 +4721,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotHistoryJpegFtp = FALSE;
 	m_bSnapshotHistorySwfFtp = FALSE;
 	m_bSnapshotHistoryDeinterlace = FALSE;
+	m_bManualSnapshotAutoOpen = TRUE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_bSnapshotHistoryCloseSwfFile = 0;
@@ -5391,6 +5392,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bSnapshotHistoryJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), FALSE);
 	m_bSnapshotHistorySwfFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), FALSE);
 	m_bSnapshotHistoryDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryDeinterlace"), FALSE);
+	m_bManualSnapshotAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("ManualSnapshotAutoOpen"), TRUE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
@@ -5642,6 +5644,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryDeinterlace"), (int)m_bSnapshotHistoryDeinterlace);
+			pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
@@ -5828,6 +5831,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryDeinterlace"), (int)m_bSnapshotHistoryDeinterlace, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
@@ -6492,6 +6496,34 @@ void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI)
 		pCmdUI->SetCheck(0);
 }
 
+CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
+{
+	CString sYearMonthDayDir(_T(""));
+
+	// Snapshot time
+	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
+
+	// Adjust Directory Name
+	CString sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
+	sSnapshotAutoSaveDir.TrimRight(_T('\\'));
+
+	// Create directory if necessary
+	if (sSnapshotAutoSaveDir != _T(""))
+	{
+		DWORD dwAttrib = ::GetFileAttributes(sSnapshotAutoSaveDir);
+		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+			::CreateDir(sSnapshotAutoSaveDir);
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sSnapshotAutoSaveDir, sYearMonthDayDir))
+			return _T("");
+	}
+
+	// Return file name
+	if (sYearMonthDayDir == _T(""))
+		return _T("manualshot_") + sTime + _T(".jpg");
+	else
+		return sYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
+}
+
 void CVideoDeviceDoc::FreeAVIFile()
 {
 	if (m_pAVRec)
@@ -6510,7 +6542,9 @@ void CVideoDeviceDoc::FreeAVIFile()
 
 CString CVideoDeviceDoc::MakeRecFileName()
 {
-	CString sRecFileName;
+	CString sYearMonthDayDir(_T(""));
+
+	// Recording time
 	CTime Time = CTime::GetCurrentTime();
 	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
@@ -6518,14 +6552,21 @@ CString CVideoDeviceDoc::MakeRecFileName()
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
 
-	// Recording File Name (Full-Path)
-	if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sRecordAutoSaveDir, sRecFileName))
-		return _T("");
+	// Create directory if necessary
+	if (sRecordAutoSaveDir != _T(""))
+	{
+		DWORD dwAttrib = ::GetFileAttributes(sRecordAutoSaveDir);
+		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+			::CreateDir(sRecordAutoSaveDir);
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sRecordAutoSaveDir, sYearMonthDayDir))
+			return _T("");
+	}
 	
-	if (sRecFileName == _T(""))
+	// Return file name
+	if (sYearMonthDayDir == _T(""))
 		return _T("rec_") + sTime + _T(".avi");
 	else
-		return sRecFileName + _T("\\") + _T("rec_") + sTime + _T(".avi");
+		return sYearMonthDayDir + _T("\\") + _T("rec_") + sTime + _T(".avi");
 }
 
 BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
@@ -8530,7 +8571,11 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		if (m_bDoEditCopy)
 			EditCopy(pDib, CurrentTime);
 
-		// Snapshot
+		// Manual Snapshot to JPEG File(s) (this copies also to clipboard)
+		if (m_bDoEditSnapshot)
+			EditSnapshot(pDib, CurrentTime);
+
+		// Timed Snapshot
 		Snapshot(pDib, CurrentTime);
 
 		// Record Video
@@ -9013,7 +9058,6 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 								&Dib))
 		{
 			m_bDoEditCopy = FALSE;
-			m_bDoEditPaste = FALSE;
 			return FALSE;
 		}
 		Dib.SetUpTime(dwUpTime);
@@ -9028,15 +9072,88 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 	// Copy to clipboard
 	Dib.EditCopy();
 
-	// Paste from clipboard
-	if (m_bDoEditPaste)
-		::PostMessage(::AfxGetMainFrame()->GetSafeHwnd(), WM_COMMAND, ID_EDIT_PASTE, 0);
-
-	// Clear flags
+	// Clear flag
 	m_bDoEditCopy = FALSE;
-	m_bDoEditPaste = FALSE;
 
 	return TRUE;
+}
+
+BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
+{
+	// Make FileName
+	CString sFileName = MakeJpegManualSnapshotFileName(Time);
+
+	// Do not overwrite existing because of the
+	// below posted open document message
+	if (::IsExistingFile(sFileName))
+	{
+		m_bDoEditSnapshot = FALSE;
+		return FALSE;
+	}
+
+	// Get uptime
+	DWORD dwUpTime = pDib->GetUpTime();
+
+	// Decode if compressed
+	CDib Dib;
+	Dib.SetShowMessageBoxOnError(FALSE);
+	if (pDib->IsCompressed())
+	{
+		if (!DecodeFrameToRgb32(pDib->GetBits(),
+								pDib->GetImageSize(),
+								&Dib))
+		{
+			m_bDoEditSnapshot = FALSE;
+			return FALSE;
+		}
+		Dib.SetUpTime(dwUpTime);
+	}
+	else
+		Dib = *pDib;
+
+	// Resize Thumb
+	CDib DibThumb;
+	if (m_bSnapshotThumb)
+	{
+		// No Message Box on Error
+		DibThumb.SetShowMessageBoxOnError(FALSE);
+
+		// Resize
+		DibThumb.StretchBits(m_nSnapshotThumbWidth, m_nSnapshotThumbHeight, &Dib);
+	}
+
+	// Add frame time
+	if (m_bShowFrameTime)
+	{
+		CAVRec::AddFrameTime(&Dib, Time, dwUpTime);
+		if (DibThumb.IsValid())
+			CAVRec::AddFrameTime(&DibThumb, Time, dwUpTime);
+	}
+	
+	// Copy to clipboard (not necessary but can be useful)
+	Dib.EditCopy();
+
+	// Save to JPEG File(s)
+	if (DibThumb.IsValid())
+	{
+		DibThumb.SaveJPEG(	::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
+							m_nSnapshotCompressionQuality);
+	}
+	BOOL res = Dib.SaveJPEG(sFileName, m_nSnapshotCompressionQuality);
+
+	// Open Document File
+	if (res && m_bManualSnapshotAutoOpen)
+	{
+		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+						WM_THREADSAFE_OPEN_DOC,
+						(WPARAM)(new CString(sFileName)),
+						(LPARAM)NULL);
+	}
+
+	// Clear flag
+	m_bDoEditSnapshot = FALSE;
+
+	return res;
 }
 
 void CVideoDeviceDoc::ShowSendFrameMsg()
@@ -9958,14 +10075,13 @@ void CVideoDeviceDoc::OnUpdateEditCopy(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditSnapshot() 
 {
-	// Copy and Paste Done in ProcessFrame()
-	m_bDoEditCopy = TRUE;
-	m_bDoEditPaste = TRUE;
+	// Snapshot Done in ProcessFrame()
+	m_bDoEditSnapshot = TRUE;
 }
 
 void CVideoDeviceDoc::OnUpdateEditSnapshot(CCmdUI* pCmdUI) 
 {
-	if (m_bDoEditCopy && m_bDoEditPaste)
+	if (m_bDoEditSnapshot)
 	{
 		pCmdUI->Enable(FALSE);
 		pCmdUI->SetText(ML_STRING(1758, "&Snapshooting...\tIns"));

@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF, OnCheckFtpSnapshotHistorySwf)
+	ON_BN_CLICKED(IDC_CHECK_MANUALSHOT_AUTOOPEN, OnCheckManualshotAutoopen)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -129,6 +130,10 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Snapshot History Deinterlace Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryDeinterlace);
+
+	// Manual Snapshot Auto-Open Document File
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
+	pCheck->SetCheck(m_pDoc->m_bManualSnapshotAutoOpen);
 
 	// Snapshot Scheduler Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
@@ -208,6 +213,15 @@ void CSnapshotPage::OnCheckSnapshotHistoryDeinterlace()
 		m_pDoc->m_bSnapshotHistoryDeinterlace = TRUE;
 	else
 		m_pDoc->m_bSnapshotHistoryDeinterlace = FALSE;
+}
+
+void CSnapshotPage::OnCheckManualshotAutoopen() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
+	if (pCheck->GetCheck())
+		m_pDoc->m_bManualSnapshotAutoOpen = TRUE;
+	else
+		m_pDoc->m_bManualSnapshotAutoOpen = FALSE;
 }
 
 void CSnapshotPage::OnCheckSnapshotLiveJpeg() 

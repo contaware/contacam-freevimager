@@ -573,7 +573,7 @@ int CPictureDoc::CSlideShowThread::Work()
 	CString sStartFileName;
 
 	// Dir or File?
-	DWORD dwAttrib =::GetFileAttributes(m_sStartName);
+	DWORD dwAttrib = ::GetFileAttributes(m_sStartName);
 	if (dwAttrib != 0xFFFFFFFF)
 	{
 		// Directory
