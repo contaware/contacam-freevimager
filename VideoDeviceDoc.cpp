@@ -218,6 +218,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 		
 		// Directory to Store Detection
+		CString sThreadUniqueName;
+		sThreadUniqueName.Format(_T("Detection%X"), ::GetCurrentThreadId());
 		CString sDetectionAutoSaveDir;
 		if (m_pDoc->m_bSaveSWFMovementDetection	||
 			m_pDoc->m_bSaveAVIMovementDetection ||
@@ -229,7 +231,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				// Temp Dir To Store Files
-				sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + _T("Detection");
+				sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sThreadUniqueName;
 				dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 				if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 				{
@@ -243,7 +245,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Temp Dir To Store Files For Email Sending and/or Ftp Upload
 		else
 		{
-			sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + _T("Detection");
+			sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sThreadUniqueName;
 			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
@@ -252,13 +254,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
-		// Detection File Names (Full-Path)
+		// Detection File Names
 		CString sAVIFileName;
 		CString sSWFFileName;
 		CString sGIFFileName;
 		CString sGIFTempFileName;
+		CString sJPGDir;
+		CStringArray sJPGFileNames;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName);
-		sGIFFileName = sSWFFileName = sAVIFileName;
+		sJPGDir = sGIFFileName = sSWFFileName = sAVIFileName;
 		if (sAVIFileName == _T(""))
 			sAVIFileName = _T("det_") + sTime + _T(".avi");
 		else
@@ -272,6 +276,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		else
 			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sTime + _T(".gif");
 		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
+		if (sJPGDir != _T(""))
+			sJPGDir = sJPGDir + _T("\\");
 		
 		// Note: CAVRec needs a file with .avi or .swf extention!
 
@@ -303,6 +309,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CDib AVISaveDib;
 		CDib SWFSaveDib;
 		CDib GIFSaveDib;
+		CDib JPGSaveDib;
 		CDib* pDibPrev;
 		CDib* pDib = NULL;
 		BOOL bFirstGIFSave;
@@ -333,6 +340,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFTempFileName);
 				AVRecSwf.Close();
 				::DeleteFile(sSWFFileName);
+				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
+					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
 				return 0;
 			}
@@ -427,6 +436,45 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				}
 			}
 
+			// Jpeg
+			if (DoSaveJpeg())
+			{
+				// FIRST movement frame
+				if (sJPGFileNames.GetSize() == 0)
+				{
+					if (pDib->IsUserFlag())
+					{
+						JPGSaveDib = *pDib;
+						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+						if (sJPGFileName != _T(""))
+							sJPGFileNames.Add(sJPGFileName);
+					}
+				}
+				// MIDDLE frame
+				// Note: SaveJpeg() returns _T("") if a file already exists
+				// -> maximum one frame per second
+				else if (sJPGFileNames.GetSize() == 1)
+				{
+					if (nFrames <= m_nNumFramesToSave / 2)
+					{
+						JPGSaveDib = *pDib;
+						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+						if (sJPGFileName != _T(""))
+							sJPGFileNames.Add(sJPGFileName);
+					}
+				}
+				// LAST frame
+				// Note: SaveJpeg() returns _T("") if a file already exists
+				// -> maximum one frame per second
+				if (nFrames == 1)
+				{
+					JPGSaveDib = *pDib;
+					CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+					if (sJPGFileName != _T(""))
+						sJPGFileNames.Add(sJPGFileName);
+				}	
+			}
+
 			// Animated Gif, because of differencing the saving is shifted by one frame
 			BOOL bSaveGif = DoSaveGif();
 			if (bSaveGif)
@@ -441,7 +489,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						pDibPrev = pDib;
 						ASSERT(pGIFColors == NULL);
 						pGIFColors = (RGBQUAD*)new RGBQUAD[256];
-						AnimatedGIFInit(pGIFColors,
+						AnimatedGifInit(pGIFColors,
 										nAnimGifLastFrameToSave,		// Sets this
 										dDelayMul,						// Sets this
 										dSpeedMul,						// Sets this
@@ -514,7 +562,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
 		DWORD dwMailFTPTimeMs = ::timeGetTime();
-		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName))
+		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName, sJPGFileNames))
 		{
 			// Delete Files if not wanted
 			if (!m_pDoc->m_bSaveAVIMovementDetection)
@@ -523,6 +571,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFFileName);
 			if (!m_pDoc->m_bSaveSWFMovementDetection)
 				::DeleteFile(sSWFFileName);
+			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
+				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
 			return 0;
 		}
@@ -535,6 +585,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::DeleteFile(sGIFFileName);
 		if (!m_pDoc->m_bSaveSWFMovementDetection)
 			::DeleteFile(sSWFFileName);
+		for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
+			::DeleteFile(sJPGFileNames[i]);
 
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwRefUpTime;
@@ -568,11 +620,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time,
 																const CString& sAVIFileName,
 																const CString& sGIFFileName,
-																const CString& sSWFFileName)
+																const CString& sSWFFileName,
+																const CStringArray& sJPGFileNames)
 {
 	// Send By E-Mail
 	if (m_pDoc->m_bSendMailMovementDetection &&
-		!SendMailMovementDetection(Time, sAVIFileName, sGIFFileName))
+		!SendMailMovementDetection(Time, sAVIFileName, sGIFFileName, sJPGFileNames))
 		return FALSE;
 
 	// FTP Upload
@@ -585,7 +638,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetection(	const CTime& Time,
 																						const CString& sAVIFileName,
-																						const CString& sGIFFileName)
+																						const CString& sGIFFileName,
+																						const CStringArray& sJPGFileNames)
 {
 	CString sSubject(Time.Format(_T("Movement Detection on %A, %d %B %Y at %H:%M:%S")));
 	m_pDoc->m_MovDetSendMailConfiguration.m_sSubject = sSubject;
@@ -593,19 +647,23 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
 	{
 		case CVideoDeviceDoc::ATTACHMENT_AVI :
-				result = SendEmail(sAVIFileName, _T(""));
+				result = SendMailAVIGIF(sAVIFileName, _T(""));
 				break;
 
 		case CVideoDeviceDoc::ATTACHMENT_ANIMGIF :
-				result = SendEmail(_T(""), sGIFFileName);
+				result = SendMailAVIGIF(_T(""), sGIFFileName);
 				break;
 
 		case CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF :
-				result = SendEmail(sAVIFileName, sGIFFileName);
+				result = SendMailAVIGIF(sAVIFileName, sGIFFileName);
+				break;
+
+		case CVideoDeviceDoc::ATTACHMENT_JPG :
+				result = SendMailJPG(sJPGFileNames);
 				break;
 
 		default :
-				result = SendEmail(_T(""), _T(""));
+				result = SendMailAVIGIF(_T(""), _T(""));
 				break;
 	}
 
@@ -681,7 +739,37 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 		return TRUE;
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGIFInit(	RGBQUAD* pGIFColors,
+CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
+														CString sJPGDir,
+														BOOL bShowFrameTime,
+														const CTime& RefTime,
+														DWORD dwRefUpTime)
+{
+	// Calc. time and create file name
+	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
+	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
+	CTime Time = RefTime - TimeSpan;
+	CString sTime(Time.Format(_T("%Y_%m_%d_%H_%M_%S")));
+	sJPGDir += _T("det_") + sTime + _T(".jpg");
+
+	// Do not overwrite previous jpeg save
+	if (::IsExistingFile(sJPGDir))
+		return _T("");
+
+	// Decompress to 32bpp and add frame time stamp
+	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
+		pDib->Decompress(32);
+	if (bShowFrameTime)
+		CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
+
+	// Save
+	if (pDib->SaveJPEG(sJPGDir))
+		return sJPGDir;
+	else
+		return _T("");
+}
+
+void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors,
 																int& nAnimGifLastFrameToSave,
 																double& dDelayMul,
 																double& dSpeedMul,
@@ -1531,7 +1619,132 @@ BOOL CVideoDeviceDoc::CSaveFrameListSMTPConnection::OnSendProgress(DWORD dwCurre
 // -1 : Do Exit Thread
 // 0  : Error Sending Email
 // 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString sGIFFile) 
+int CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(CPJNSMTPMessage* pMessage)
+{
+	// Check
+	if (!pMessage)
+		return 0;
+
+	// Init Connection class
+	CVideoDeviceDoc::CSaveFrameListSMTPConnection connection(this);
+
+	// Auto connect to the internet?
+	if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
+		connection.ConnectToInternet();
+
+	CString sHost;
+	BOOL bSend = TRUE;
+	if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
+	{
+#if (_MSC_VER > 1200)
+		if (pMessage->m_To.GetSize() == 0)
+#else
+		if (pMessage->GetNumberOfRecipients() == 0)
+#endif
+		{
+			CString sMsg;
+			sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetDeviceName());
+			TRACE(sMsg);
+			::LogLine(sMsg);
+			bSend = FALSE;
+		}
+		else
+		{
+#if (_MSC_VER > 1200)
+			CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
+#else
+			CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
+#endif
+			int nAmpersand = sAddress.Find(_T("@"));
+			if (nAmpersand == -1)
+			{
+				CString sMsg;
+				sMsg.Format(_T("%s, unable to determine the domain for the email address %s\n"), m_pDoc->GetDeviceName(), sAddress);
+				TRACE(sMsg);
+				::LogLine(sMsg);
+				bSend = FALSE;
+			}
+			else
+			{
+				// We just pick the first MX record found, other implementations could ask the user
+				// or automatically pick the lowest priority record
+				CString sDomain(sAddress.Right(sAddress.GetLength() - nAmpersand - 1));
+				CStringArray servers;
+				CWordArray priorities;
+				if (!connection.MXLookup(sDomain, servers, priorities))
+				{
+					CString sMsg;
+					sMsg.Format(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"),
+																m_pDoc->GetDeviceName(), sDomain, GetLastError());
+					TRACE(sMsg);
+					::LogLine(sMsg);
+					bSend = FALSE;
+				}
+				else
+					sHost = servers.GetAt(0);
+			}
+		}
+	}
+	else
+		sHost = m_pDoc->m_MovDetSendMailConfiguration.m_sHost;
+
+	// Connect and send the message
+	if (bSend)
+	{
+#if (_MSC_VER > 1200)
+		connection.SetBindAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
+#else
+		connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
+#endif
+		if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
+			m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
+		{
+			connection.Connect(	sHost,
+								CPJNSMTPConnection::AUTH_NONE,
+								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
+								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
+								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
+#endif
+								);
+		}
+		else
+		{
+			connection.Connect(	sHost,
+								m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
+								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
+								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
+								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
+#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
+#endif
+								);
+		}
+		connection.SendMessage(*pMessage);
+	}
+
+	// Auto disconnect from the internet
+	if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
+		connection.CloseInternetConnection();
+
+	// Sending Interrupted?
+	if (connection.m_bDoExit)
+	{
+		connection.Disconnect(FALSE);	// Disconnect no Gracefully,
+										// otherwise the thread blocks
+										// long time to get a answer!
+		return -1;
+	}
+	else
+		return 1;
+}
+
+// Return Values
+// -1 : Do Exit Thread
+// 0  : Error Sending Email
+// 1  : Ok
+int CVideoDeviceDoc::CSaveFrameListThread::SendMailAVIGIF(CString sAVIFile, CString sGIFFile) 
 {
 	int res = 0;
 
@@ -1542,8 +1755,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 		return 0;
 
 	// No Configuration -> Return Error
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty() ||
+	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	||
+		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	||
 		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty()) 
 		return 0;
 	else 
@@ -1570,6 +1783,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 
 				// Create the message
 				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
+				if (!pMessage)
+					return 0;
 			}
 			else
 			{
@@ -1579,41 +1794,46 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 
 				// Create the message
 				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
-
+				if (!pMessage)
+					return 0;
 				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
 					pMessage->RemoveBodyPart(i);
 
 				// Setup all the body parts we want
+				srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
+				CString sRanNum;
+				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
+				CString sCIDAnimGif(::GetShortFileName(sGIFFile) + _T("@") + sRanNum + _T(".com"));
+				CString sCIDAvi(::GetShortFileName(sAVIFile) + _T("@") + sRanNum + _T(".com"));
 				CPJNSMTPBodyPart related;
 				related.SetContentType(_T("multipart/related"));
-
 				CPJNSMTPBodyPart html;
+				CString sHtml(_T("<html><body>"));
 				if (!sAVIFile.IsEmpty() && !sGIFFile.IsEmpty())
-					html.SetText(_T("<p><b>Movement Detection:</b></p><a HREF=\"cid:AVI\"><IMG SRC=\"cid:ANIMGIF\" ALT=\"Animated Gif Detection Image\"></a>"));
+					sHtml += _T("<p><b>Movement Detection:</b></p><a href=\"cid:") + sCIDAvi + _T("\"><img src=\"cid:") + sCIDAnimGif + _T("\" border=\"0\" alt=\"Animated Gif Detection Image\"></a>");
 				else if (!sAVIFile.IsEmpty())
-					html.SetText(_T("<p><b>Movement Detection:</b></p><a HREF=\"cid:AVI\">AVI Video File</a>"));
+					sHtml += _T("<p><b>Movement Detection:</b></p><a href=\"cid:") + sCIDAvi + _T("\">AVI Video File</a>");
 				else if (!sGIFFile.IsEmpty())
-					html.SetText(_T("<p><b>Movement Detection:</b></p><IMG SRC=\"cid:ANIMGIF\" ALT=\"Animated Gif Detection Image\">"));
+					sHtml += _T("<p><b>Movement Detection:</b></p><img src=\"cid:") + sCIDAnimGif + _T("\" border=\"0\" alt=\"Animated Gif Detection Image\">");
 				else
-					html.SetText(_T("<p><b>Movement Detection!</b></p>"));
+					sHtml += _T("<p><b>Movement Detection!</b></p>");
+				sHtml += _T("</body></html>");
+				html.SetText(sHtml);
 				html.SetContentType(_T("text/html"));
-
 				CPJNSMTPBodyPart giffile;
 				if (!sGIFFile.IsEmpty())
 				{
 					giffile.SetFilename(sGIFFile);
-					giffile.SetContentID(_T("ANIMGIF"));
+					giffile.SetContentID(_T("<") + sCIDAnimGif + _T(">"));
 					giffile.SetContentType(_T("image/gif"));
 				}
-
 				CPJNSMTPBodyPart avifile;
 				if (!sAVIFile.IsEmpty())
 				{
 					avifile.SetFilename(sAVIFile);
-					avifile.SetContentID(_T("AVI"));
+					avifile.SetContentID(_T("<") + sCIDAvi + _T(">"));
 					avifile.SetContentType(_T("video/avi"));
 				}
-
 				related.AddChildBodyPart(html);
 				if (!sGIFFile.IsEmpty())
 					related.AddChildBodyPart(giffile);
@@ -1623,119 +1843,131 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendEmail(CString sAVIFile, CString s
 				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
 			}
 
-			// Init Connection class
-			CVideoDeviceDoc::CSaveFrameListSMTPConnection connection(this);
+			// Send It
+			res = SendMailMessage(pMessage);
 
-			// Auto connect to the internet?
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
-				connection.ConnectToInternet();
+			// Clean-up
+			if (pMessage)
+				delete pMessage;
+		}
+		catch (CPJNSMTPException* pEx)
+		{
+			// Clean-up
+			if (pMessage)
+				delete pMessage;
 
-			CString sHost;
-			BOOL bSend = TRUE;
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
+			// Display the error
+			CString sMsg;
+			sMsg.Format(_T("%s, an error occured sending the message, Error:%x\nDescription:%s\n"),
+						m_pDoc->GetDeviceName(),
+						pEx->m_hr,
+						pEx->GetErrorMessage());
+			TRACE(sMsg);
+			::LogLine(sMsg);
+			pEx->Delete();
+			return 0;
+		}
+
+		return res;
+	}
+}
+
+// Return Values
+// -1 : Do Exit Thread
+// 0  : Error Sending Email
+// 1  : Ok
+int CVideoDeviceDoc::CSaveFrameListThread::SendMailJPG(const CStringArray& sJPGFiles)
+{
+	int res = 0;
+	int i;
+
+	// Check size -> Return Error
+	for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+	{
+		if (::GetFileSize64(sJPGFiles[i]).QuadPart == 0)
+			return 0;
+	}
+
+	// No Configuration -> Return Error
+	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	||
+		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	||
+		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty()) 
+		return 0;
+	else 
+	{
+		CPJNSMTPMessage* pMessage = NULL;
+		try
+		{
+			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
 			{
-#if (_MSC_VER > 1200)
-				if (pMessage->m_To.GetSize() == 0)
-#else
-				if (pMessage->GetNumberOfRecipients() == 0)
-#endif
+				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
+				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
+				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection!");
+
+				// Attachment(s)
+				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
 				{
-					CString sMsg;
-					sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetDeviceName());
-					TRACE(sMsg);
-					::LogLine(sMsg);
-					bSend = FALSE;
-				}
-				else
-				{
-#if (_MSC_VER > 1200)
-					CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
-#else
-					CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
-#endif
-					int nAmpersand = sAddress.Find(_T("@"));
-					if (nAmpersand == -1)
-					{
-						CString sMsg;
-						sMsg.Format(_T("%s, unable to determine the domain for the email address %s\n"), m_pDoc->GetDeviceName(), sAddress);
-						TRACE(sMsg);
-						::LogLine(sMsg);
-						bSend = FALSE;
-					}
+					if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sJPGFiles[i];
 					else
-					{
-						// We just pick the first MX record found, other implementations could ask the user
-						// or automatically pick the lowest priority record
-						CString sDomain(sAddress.Right(sAddress.GetLength() - nAmpersand - 1));
-						CStringArray servers;
-						CWordArray priorities;
-						if (!connection.MXLookup(sDomain, servers, priorities))
-						{
-							CString sMsg;
-							sMsg.Format(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"),
-																		m_pDoc->GetDeviceName(), sDomain, GetLastError());
-							TRACE(sMsg);
-							::LogLine(sMsg);
-							bSend = FALSE;
-						}
-						else
-							sHost = servers.GetAt(0);
-					}
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sJPGFiles[i];
 				}
+
+				// Create the message
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
+				if (!pMessage)
+					return 0;
 			}
 			else
-				sHost = m_pDoc->m_MovDetSendMailConfiguration.m_sHost;
-
-			// Connect and send the message
-			if (bSend)
 			{
-#if (_MSC_VER > 1200)
-				connection.SetBindAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-#else
-				connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-#endif
-				if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
-					m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
-				{
-					connection.Connect(	sHost,
-										CPJNSMTPConnection::AUTH_NONE,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
-										, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
-#endif
-										);
-				}
+				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE;
+				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
+				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
+
+				// Create the message
+				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
+				if (!pMessage)
+					return 0;
+				for (i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
+					pMessage->RemoveBodyPart(i);
+
+				// Setup all the body parts we want
+				srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
+				CString sRanNum;
+				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
+				CPJNSMTPBodyPart related;
+				related.SetContentType(_T("multipart/related"));
+				CPJNSMTPBodyPart html;
+				CString sHtml(_T("<html><body>"));
+				if (sJPGFiles.GetSize() > 0)
+					sHtml += _T("<p><b>Movement Detection:</b></p>");
 				else
+					sHtml += _T("<p><b>Movement Detection!</b></p>");
+				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
 				{
-					connection.Connect(	sHost,
-										m_pDoc->m_MovDetSendMailConfiguration.m_Auth,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
-										m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
-										m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
-										, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
-#endif
-										);
+					CString sImgTag;
+					sImgTag.Format(	_T("<img src=\"cid:%s\" border=\"0\" alt=\"Jpeg Detection Image %d\">"),
+									::GetShortFileName(sJPGFiles[i]) + _T("@") + sRanNum + _T(".com"), i);
+					sHtml += sImgTag;
 				}
-				connection.SendMessage(*pMessage);
+				sHtml += _T("</body></html>");
+				html.SetText(sHtml);
+				html.SetContentType(_T("text/html"));
+				related.AddChildBodyPart(html);
+				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+				{
+					CPJNSMTPBodyPart jpegfile;
+					jpegfile.SetFilename(sJPGFiles[i]);
+					jpegfile.SetContentID(_T("<") + ::GetShortFileName(sJPGFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
+					jpegfile.SetContentType(_T("image/jpeg"));
+					related.AddChildBodyPart(jpegfile);
+				}
+				pMessage->AddBodyPart(related);
+				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
 			}
 
-			// Auto disconnect from the internet
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
-				connection.CloseInternetConnection();
-
-			// Sending Interrupted?
-			if (connection.m_bDoExit)
-			{
-				connection.Disconnect(FALSE);	// Disconnect no Gracefully,
-												// otherwise the thread blocks
-												// long time to get a answer!
-				res = -1;
-			}
-			else
-				res = 1;
+			// Send It
+			res = SendMailMessage(pMessage);
 
 			// Clean-up
 			if (pMessage)
@@ -4540,7 +4772,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 		// If using a constant deletion time interval in case of multiple devices running
 		// the first started one would be cleared more than the last one. To fix that
 		// we use a random generator for the deletion interval
-		srand(makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId()));   // Seed
+		srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId()));   // Seed
 		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
 
 		// dwDeleteInMs should never be to small (at least 60 seconds)
@@ -12718,7 +12950,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest(const CString& sReq
 			m_dwCNonceCount++;
 			CString sCNonceCount;
 			sCNonceCount.Format(_T("%08x"), m_dwCNonceCount);
-			srand(::timeGetTime()); // Seed
+			srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
 			DWORD dwCNonce = (DWORD)irand(4294967296.0); // returns a random value in the range [0,0xFFFFFFFF]
 			CString sCNonce;
 			sCNonce.Format(_T("%08x"), dwCNonce);

@@ -198,7 +198,8 @@ public:
 		ATTACHMENT_NONE				= 0,
 		ATTACHMENT_AVI				= 1,
 		ATTACHMENT_ANIMGIF			= 2,
-		ATTACHMENT_AVI_ANIMGIF		= 3
+		ATTACHMENT_AVI_ANIMGIF		= 3,
+		ATTACHMENT_JPG				= 4
 	};
 	enum FilesToUploadType
 	{
@@ -863,13 +864,18 @@ public:
 
 		protected:
 			int Work();
+			CString SaveJpeg(	CDib* pDib,
+								CString sJPGDir,
+								BOOL bShowFrameTime,
+								const CTime& RefTime,
+								DWORD dwRefUpTime);
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
-			void AnimatedGIFInit(	RGBQUAD* pGIFColors,
+			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									int& nAnimGifLastFrameToSave,
 									double& dDelayMul,
 									double& dSpeedMul,
@@ -898,10 +904,12 @@ public:
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sAVIFileName,
 									const CString& sGIFFileName,
-									const CString& sSWFFileName);
+									const CString& sSWFFileName,
+									const CStringArray& sJPGFileNames);
 			__forceinline BOOL SendMailMovementDetection(	const CTime& Time,
 															const CString& sAVIFileName,
-															const CString& sGIFFileName);
+															const CString& sGIFFileName,
+															const CStringArray& sJPGFileNames);
 			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
 															const CString& sAVIFileName,
 															const CString& sGIFFileName,
@@ -945,6 +953,11 @@ public:
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
 
+			__forceinline BOOL DoSaveJpeg() const {
+							return (m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_JPG);};
+
 			__forceinline BOOL DoSaveGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
 
@@ -971,12 +984,14 @@ public:
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
-
+			
 			// Return Values
 			// -1 : Do Exit Thread
 			// 0  : Error Sending Email
 			// 1  : Ok
-			int SendEmail(CString sAVIFile, CString sGIFFile);
+			int SendMailMessage(CPJNSMTPMessage* pMessage);
+			int SendMailAVIGIF(CString sAVIFile, CString sGIFFile);
+			int SendMailJPG(const CStringArray& sJPGFiles);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;

@@ -61,6 +61,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
     pComboBox->AddString(_T("AVI Detection"));
     pComboBox->AddString(_T("Animated GIF Detection"));
     pComboBox->AddString(_T("AVI + Animated GIF Detections"));
+	pComboBox->AddString(_T("JPEG Detection"));
 	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
 
 	// From Name
