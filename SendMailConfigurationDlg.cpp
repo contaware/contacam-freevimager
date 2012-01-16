@@ -58,10 +58,13 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	// Attachment possibilities
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
     pComboBox->AddString(_T("None"));
-    pComboBox->AddString(_T("AVI Detection"));
-    pComboBox->AddString(_T("Animated GIF Detection"));
-    pComboBox->AddString(_T("AVI + Animated GIF Detections"));
-	pComboBox->AddString(_T("JPEG Detection"));
+    pComboBox->AddString(_T("AVI"));
+    pComboBox->AddString(_T("GIF"));
+    pComboBox->AddString(_T("JPG"));
+	pComboBox->AddString(_T("GIF + AVI"));
+	pComboBox->AddString(_T("JPG + AVI"));
+	pComboBox->AddString(_T("GIF + JPG"));
+	pComboBox->AddString(_T("GIF + JPG + AVI"));
 	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
 
 	// From Name

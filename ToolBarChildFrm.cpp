@@ -417,9 +417,9 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 void CPictureToolBar::UpdateControls(void)
 {
 	CRect rect;
-
 	CPictureDoc* pDoc = NULL;
-	int nHiddenCount = 0;
+
+	// Show / Hide Buttons
 	if (GetParent())
 	{
 		pDoc = (CPictureDoc*)(((CPictureChildFrame*)GetParent())->GetActiveDocument());
@@ -433,13 +433,13 @@ void CPictureToolBar::UpdateControls(void)
 			}
 			else
 			{
-				nHiddenCount = 2;
 				GetToolBarCtrl().HideButton(ID_VIEW_NEXT_PAGE_FRAME, TRUE);
 				GetToolBarCtrl().HideButton(ID_VIEW_PREVIOUS_PAGE_FRAME, TRUE);
 			}
 		}
 	}
 
+	// Place Zoom ComboBox
 	if (::IsWindow(m_ZoomComboBox))
 	{
 		GetItemRect(m_ZoomComboBoxIndex, rect);
@@ -452,13 +452,15 @@ void CPictureToolBar::UpdateControls(void)
 		(rect.right)--;
 		rect.bottom += 300;
 
-		// To Avoid Flickering Of The ComboBox!
+		// To Avoid Flickering Of The ComboBox
 		if (m_rcLastZoomComboBox != rect)
 		{
 			m_ZoomComboBox.MoveWindow(&rect);
 			m_rcLastZoomComboBox = rect;
 		}
 	}
+
+	// Place Color Button Picker
 	if (::IsWindow(m_BkgColorButtonPicker))
 	{
 		GetItemRect(m_BkgColorButtonPickerIndex, rect);
@@ -472,18 +474,45 @@ void CPictureToolBar::UpdateControls(void)
 		
 		// To Avoid Flickering Of The Color Button Picker
 		if (m_rcLastBkgColorButtonPicker != rect)
+		{
 			m_BkgColorButtonPicker.MoveWindow(&rect);
-		m_rcLastBkgColorButtonPicker = rect;
+			m_rcLastBkgColorButtonPicker = rect;
+		}
 	}
 
 	// Set Min Toolbar Width
-	int nCount = GetCount() - 3 - nHiddenCount; // Zoom ComboBox, Bkg Color Button Picker and separator Not Counted!
-	if (nCount >= 0)
+	if (GetCount() > 0)
 	{
-		GetItemRect(0, &rect);
-		m_nMinToolbarWidth =	m_rcLastZoomComboBox.Width() +
-								m_rcLastBkgColorButtonPicker.Width() +
-								rect.Width() * nCount;
+		int nSeparatorCount = 0;
+		int nButtonCount = 0;
+		CRect rcSep(0,0,0,0);
+		CRect rcButton(0,0,0,0);
+		for (int i = 0 ; i < GetCount() ; i++)
+		{
+			if (i != m_ZoomComboBoxIndex && i != m_BkgColorButtonPickerIndex)
+			{
+				if (GetButtonStyle(i) == TBBS_SEPARATOR)
+				{
+					nSeparatorCount++;
+					if (rcSep.Width() == 0)
+						GetItemRect(i, &rcSep);
+				}
+				else
+				{
+					GetItemRect(i, &rect);
+					if (rect.Width() > 0)
+					{
+						nButtonCount++;
+						if (rcButton.Width() == 0)
+							rcButton = rect;
+					}
+				}
+			}
+		}
+		m_nMinToolbarWidth =	m_rcLastZoomComboBox.Width() + 3 +
+								m_rcLastBkgColorButtonPicker.Width() + 3 +
+								rcButton.Width() * nButtonCount	+
+								rcSep.Width() * nSeparatorCount + 4;
 	}
 }
 

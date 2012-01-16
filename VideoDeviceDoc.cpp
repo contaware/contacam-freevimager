@@ -643,32 +643,48 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 {
 	CString sSubject(Time.Format(_T("Movement Detection on %A, %d %B %Y at %H:%M:%S")));
 	m_pDoc->m_MovDetSendMailConfiguration.m_sSubject = sSubject;
-	int result;
+	CStringArray sFileNames;
 	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
 	{
 		case CVideoDeviceDoc::ATTACHMENT_AVI :
-				result = SendMailAVIGIF(sAVIFileName, _T(""));
+				sFileNames.Add(sAVIFileName);
 				break;
 
-		case CVideoDeviceDoc::ATTACHMENT_ANIMGIF :
-				result = SendMailAVIGIF(_T(""), sGIFFileName);
-				break;
-
-		case CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF :
-				result = SendMailAVIGIF(sAVIFileName, sGIFFileName);
+		case CVideoDeviceDoc::ATTACHMENT_GIF :
+				sFileNames.Add(sGIFFileName);
 				break;
 
 		case CVideoDeviceDoc::ATTACHMENT_JPG :
-				result = SendMailJPG(sJPGFileNames);
+				sFileNames.Append(sJPGFileNames);
+				break;
+
+		case CVideoDeviceDoc::ATTACHMENT_GIF_AVI :
+				sFileNames.Add(sGIFFileName);
+				sFileNames.Add(sAVIFileName);
+				break;
+
+		case CVideoDeviceDoc::ATTACHMENT_JPG_AVI :
+				sFileNames.Append(sJPGFileNames);
+				sFileNames.Add(sAVIFileName);
+				break;
+		
+		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG :
+				sFileNames.Add(sGIFFileName);	
+				sFileNames.Append(sJPGFileNames);
+				break;
+
+		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI :
+				sFileNames.Add(sGIFFileName);
+				sFileNames.Append(sJPGFileNames);
+				sFileNames.Add(sAVIFileName);
 				break;
 
 		default :
-				result = SendMailAVIGIF(_T(""), _T(""));
 				break;
 	}
 
 	// Do Exit?
-	if (result == -1)
+	if (SendMail(sFileNames) == -1)
 		return FALSE;
 	else
 		return TRUE;
@@ -691,7 +707,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				break;
 
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_ANIMGIF :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_GIF :
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 													sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
@@ -701,7 +717,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 													sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				break;
 
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF :
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				if (result == 1)
@@ -709,7 +725,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF :
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 													sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				if (result == 1)
@@ -717,7 +733,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF :
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				if (result == 1)
@@ -1744,154 +1760,22 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(CPJNSMTPMessage* pMes
 // -1 : Do Exit Thread
 // 0  : Error Sending Email
 // 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendMailAVIGIF(CString sAVIFile, CString sGIFFile) 
-{
-	int res = 0;
-
-	// Check size -> Return Error
-	if (!sAVIFile.IsEmpty() && ::GetFileSize64(sAVIFile).QuadPart == 0)
-		return 0;
-	if (!sGIFFile.IsEmpty() && ::GetFileSize64(sGIFFile).QuadPart == 0)
-		return 0;
-
-	// No Configuration -> Return Error
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty()) 
-		return 0;
-	else 
-	{
-		CPJNSMTPMessage* pMessage = NULL;
-		try
-		{
-			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
-			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection!");
-
-				// Attachment(s)
-				if (!sAVIFile.IsEmpty())
-				{
-					m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sAVIFile;
-					if (!sGIFFile.IsEmpty())
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = m_pDoc->m_MovDetSendMailConfiguration.m_sFiles + _T(";") + sGIFFile;
-				}
-				else if (!sGIFFile.IsEmpty())
-					m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sGIFFile;
-				else
-					m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-
-				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
-				if (!pMessage)
-					return 0;
-			}
-			else
-			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
-
-				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
-				if (!pMessage)
-					return 0;
-				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
-					pMessage->RemoveBodyPart(i);
-
-				// Setup all the body parts we want
-				srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
-				CString sRanNum;
-				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
-				CString sCIDAnimGif(::GetShortFileName(sGIFFile) + _T("@") + sRanNum + _T(".com"));
-				CString sCIDAvi(::GetShortFileName(sAVIFile) + _T("@") + sRanNum + _T(".com"));
-				CPJNSMTPBodyPart related;
-				related.SetContentType(_T("multipart/related"));
-				CPJNSMTPBodyPart html;
-				CString sHtml(_T("<html><body>"));
-				if (!sAVIFile.IsEmpty() && !sGIFFile.IsEmpty())
-					sHtml += _T("<p><b>Movement Detection:</b></p><a href=\"cid:") + sCIDAvi + _T("\"><img src=\"cid:") + sCIDAnimGif + _T("\" border=\"0\" alt=\"Animated Gif Detection Image\"></a>");
-				else if (!sAVIFile.IsEmpty())
-					sHtml += _T("<p><b>Movement Detection:</b></p><a href=\"cid:") + sCIDAvi + _T("\">AVI Video File</a>");
-				else if (!sGIFFile.IsEmpty())
-					sHtml += _T("<p><b>Movement Detection:</b></p><img src=\"cid:") + sCIDAnimGif + _T("\" border=\"0\" alt=\"Animated Gif Detection Image\">");
-				else
-					sHtml += _T("<p><b>Movement Detection!</b></p>");
-				sHtml += _T("</body></html>");
-				html.SetText(sHtml);
-				html.SetContentType(_T("text/html"));
-				CPJNSMTPBodyPart giffile;
-				if (!sGIFFile.IsEmpty())
-				{
-					giffile.SetFilename(sGIFFile);
-					giffile.SetContentID(_T("<") + sCIDAnimGif + _T(">"));
-					giffile.SetContentType(_T("image/gif"));
-				}
-				CPJNSMTPBodyPart avifile;
-				if (!sAVIFile.IsEmpty())
-				{
-					avifile.SetFilename(sAVIFile);
-					avifile.SetContentID(_T("<") + sCIDAvi + _T(">"));
-					avifile.SetContentType(_T("video/avi"));
-				}
-				related.AddChildBodyPart(html);
-				if (!sGIFFile.IsEmpty())
-					related.AddChildBodyPart(giffile);
-				if (!sAVIFile.IsEmpty())
-					related.AddChildBodyPart(avifile);
-				pMessage->AddBodyPart(related);
-				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
-			}
-
-			// Send It
-			res = SendMailMessage(pMessage);
-
-			// Clean-up
-			if (pMessage)
-				delete pMessage;
-		}
-		catch (CPJNSMTPException* pEx)
-		{
-			// Clean-up
-			if (pMessage)
-				delete pMessage;
-
-			// Display the error
-			CString sMsg;
-			sMsg.Format(_T("%s, an error occured sending the message, Error:%x\nDescription:%s\n"),
-						m_pDoc->GetDeviceName(),
-						pEx->m_hr,
-						pEx->GetErrorMessage());
-			TRACE(sMsg);
-			::LogLine(sMsg);
-			pEx->Delete();
-			return 0;
-		}
-
-		return res;
-	}
-}
-
-// Return Values
-// -1 : Do Exit Thread
-// 0  : Error Sending Email
-// 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendMailJPG(const CStringArray& sJPGFiles)
+int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles) 
 {
 	int res = 0;
 	int i;
 
 	// Check size -> Return Error
-	for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+	for (i = 0 ; i < sFiles.GetSize() ; i++)
 	{
-		if (::GetFileSize64(sJPGFiles[i]).QuadPart == 0)
+		if (::GetFileSize64(sFiles[i]).QuadPart == 0)
 			return 0;
 	}
 
 	// No Configuration -> Return Error
 	if (m_pDoc->m_MovDetSendMailConfiguration.m_sHost.IsEmpty()	||
 		m_pDoc->m_MovDetSendMailConfiguration.m_sFrom.IsEmpty()	||
-		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty()) 
+		m_pDoc->m_MovDetSendMailConfiguration.m_sTo.IsEmpty())
 		return 0;
 	else 
 	{
@@ -1905,12 +1789,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMailJPG(const CStringArray& sJPGF
 				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection!");
 
 				// Attachment(s)
-				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
 					if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sJPGFiles[i];
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sFiles[i];
 					else
-						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sJPGFiles[i];
+						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sFiles[i];
 				}
 
 				// Create the message
@@ -1939,28 +1823,36 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMailJPG(const CStringArray& sJPGF
 				related.SetContentType(_T("multipart/related"));
 				CPJNSMTPBodyPart html;
 				CString sHtml(_T("<html><body>"));
-				if (sJPGFiles.GetSize() > 0)
+				if (sFiles.GetSize() > 0)
 					sHtml += _T("<p><b>Movement Detection:</b></p>");
 				else
 					sHtml += _T("<p><b>Movement Detection!</b></p>");
-				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
-					CString sImgTag;
-					sImgTag.Format(	_T("<img src=\"cid:%s\" border=\"0\" alt=\"Jpeg Detection Image %d\">"),
-									::GetShortFileName(sJPGFiles[i]) + _T("@") + sRanNum + _T(".com"), i);
-					sHtml += sImgTag;
+					CString s;
+					if (::GetFileExt(sFiles[i]) == _T(".avi"))
+					{
+						s.Format(_T("<a href=\"cid:%s\">AVI Video File</a>"),
+								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
+					}
+					else
+					{
+						s.Format(_T("<img src=\"cid:%s\" border=\"0\" alt=\"Detection Image\">"),
+								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
+					}
+					sHtml += s;
 				}
 				sHtml += _T("</body></html>");
 				html.SetText(sHtml);
 				html.SetContentType(_T("text/html"));
 				related.AddChildBodyPart(html);
-				for (i = 0 ; i < sJPGFiles.GetSize() ; i++)
+				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
-					CPJNSMTPBodyPart jpegfile;
-					jpegfile.SetFilename(sJPGFiles[i]);
-					jpegfile.SetContentID(_T("<") + ::GetShortFileName(sJPGFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
-					jpegfile.SetContentType(_T("image/jpeg"));
-					related.AddChildBodyPart(jpegfile);
+					CPJNSMTPBodyPart filebody;
+					filebody.SetFilename(sFiles[i]);
+					filebody.SetContentID(_T("<") + ::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
+					filebody.SetContentType(::FileNameToMime(sFiles[i]));
+					related.AddChildBodyPart(filebody);
 				}
 				pMessage->AddBodyPart(related);
 				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
@@ -5109,7 +5001,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_sProxy = _T("");
 	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
 	m_MovDetFTPUploadConfiguration.m_sPassword = _T("");
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI_ANIMGIF;
+	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
@@ -5565,7 +5457,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetFTPUploadConfiguration.m_sProxy = pApp->GetProfileString(sSection, _T("MovDetFTPProxyHost"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsername"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("MovDetFTPPassword"), _T(""));
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_AVI_ANIMGIF);
+	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_AVI_GIF);
 	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);

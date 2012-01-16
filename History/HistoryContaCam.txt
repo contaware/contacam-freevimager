@@ -4,6 +4,8 @@ VERSION HISTORY
 
 - Web interface camera selection with previews
 - Manual snapshot command saves now directly to JPEG file
+- On detection possibility to send email with all possible
+  combinations of Animated GIF, AVI and JPG attachments
 
 3.9.0 (December 20th 2011)
 

@@ -2582,7 +2582,7 @@ CString FileNameToMime(LPCTSTR lpszFileName)
 		return _T("image/png");
 	else if (	sExt == _T(".avi")	||
 				sExt == _T(".divx"))
-		return _T("video/x-msvideo");
+		return _T("video/avi");
 	else
 		return _T(""); 
 }

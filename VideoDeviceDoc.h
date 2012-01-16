@@ -197,18 +197,21 @@ public:
 	{
 		ATTACHMENT_NONE				= 0,
 		ATTACHMENT_AVI				= 1,
-		ATTACHMENT_ANIMGIF			= 2,
-		ATTACHMENT_AVI_ANIMGIF		= 3,
-		ATTACHMENT_JPG				= 4
+		ATTACHMENT_GIF				= 2,
+		ATTACHMENT_JPG				= 3,
+		ATTACHMENT_GIF_AVI			= 4,
+		ATTACHMENT_JPG_AVI			= 5,
+		ATTACHMENT_GIF_JPG			= 6,
+		ATTACHMENT_GIF_JPG_AVI		= 7
 	};
 	enum FilesToUploadType
 	{
 		FILES_TO_UPLOAD_AVI			= 0,
-		FILES_TO_UPLOAD_ANIMGIF		= 1,
+		FILES_TO_UPLOAD_GIF			= 1,
 		FILES_TO_UPLOAD_SWF			= 2,
-		FILES_TO_UPLOAD_AVI_ANIMGIF	= 3,
-		FILES_TO_UPLOAD_SWF_ANIMGIF	= 4,
-		FILES_TO_UPLOAD_AVI_SWF_ANIMGIF	= 5
+		FILES_TO_UPLOAD_AVI_GIF		= 3,
+		FILES_TO_UPLOAD_SWF_GIF		= 4,
+		FILES_TO_UPLOAD_AVI_SWF_GIF	= 5
 	};
 
 	// Get Frame Generator Class
@@ -924,7 +927,15 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)			||
+								CVideoDeviceDoc::ATTACHMENT_GIF_AVI)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_JPG_AVI)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -932,11 +943,11 @@ public:
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 
 			__forceinline BOOL DoSaveSwf() const {
 							return m_pDoc->m_bSaveSWFMovementDetection				||
@@ -947,51 +958,70 @@ public:
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 
 			__forceinline BOOL DoSaveJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG);};
+								CVideoDeviceDoc::ATTACHMENT_JPG)					||
+								
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_JPG_AVI)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI);};
 
 			__forceinline BOOL DoSaveGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_ANIMGIF)				||
+								CVideoDeviceDoc::ATTACHMENT_GIF)					||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_AVI_ANIMGIF)			||
+								CVideoDeviceDoc::ATTACHMENT_GIF_AVI)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_ANIMGIF)			||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_GIF)				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_ANIMGIF)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_ANIMGIF)		||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_ANIMGIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 			
 			// Return Values
 			// -1 : Do Exit Thread
 			// 0  : Error Sending Email
 			// 1  : Ok
 			int SendMailMessage(CPJNSMTPMessage* pMessage);
-			int SendMailAVIGIF(CString sAVIFile, CString sGIFFile);
-			int SendMailJPG(const CStringArray& sJPGFiles);
+			int SendMail(const CStringArray& sFiles);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
