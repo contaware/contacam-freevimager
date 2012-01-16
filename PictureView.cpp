@@ -928,6 +928,16 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			return;
 		}
 
+		// Convert to high resolution for faster and better stretching
+		if (Dib.GetBitCount() <= 16 && !Dib.ConvertTo24bits(pDoc->GetView(), TRUE))
+		{
+			// Restore Pixel Scaling
+			m_dXFontPixelScale = 1.0;
+			m_dYFontPixelScale = 1.0;
+			EndWaitCursor();
+			return;
+		}
+
 		// "Abuse" the thread class to pump messages,
 		// this avoids locking the UI. MFC printing dialog with
 		// a Cancel button is showing at this point.

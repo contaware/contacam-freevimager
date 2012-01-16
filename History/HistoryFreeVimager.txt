@@ -2,6 +2,8 @@ VERSION HISTORY
 
 3.9.5 (March 5th 2012)
 
+- Better and faster printing for low-resolution images
+  (1bpp, 4bpp, 8bpp and 16bpp)
 - Updated toolbar min. width calculation
 
 3.9.0 (December 20th 2011)
