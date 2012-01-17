@@ -4184,17 +4184,17 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 		if (nAlarmLevel == 1)
 		{
 			dwWaitDelay = MAX(2U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM1);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM1);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
 		}
 		else if (nAlarmLevel == 2)
 		{
 			dwWaitDelay = MAX(4U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM2);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM2);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
 		}
 		else if (nAlarmLevel >= 3)
 		{
 			dwWaitDelay = MAX(8U*dwWaitDelay, HTTPGETFRAME_MIN_DELAY_ALARM3);
-			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM3);
+			dwWaitDelay = MIN(dwWaitDelay, HTTPGETFRAME_MAX_DELAY_ALARM);
 		}	
 
 		// Wait for events
@@ -4216,6 +4216,9 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
+				CleanUpAllConnections();
+				m_pDoc->m_pGetFrameNetCom->Close();
+				m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE;
 				if (!Connect(TRUE,
 							m_pDoc->m_pGetFrameNetCom,
 							m_pDoc->m_pHttpGetFrameParseProcess,
@@ -4392,14 +4395,9 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_bFTPUploadMovementDetection))
 					m_pDoc->SaveFrameList();
 
-				// Http Server Push Networking Reconnect
-				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT						&&
-					m_pDoc->m_pGetFrameNetCom																		&&
-					m_pDoc->m_pGetFrameNetCom->IsClient()															&&
-					m_pDoc->m_pHttpGetFrameParseProcess																&&
-					(m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG	||
-					m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)									&&
-					!m_pDoc->m_pHttpGetFrameParseProcess->m_bFirstFrame)
+				// Http Networking Reconnect
+				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT &&
+					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
@@ -13515,15 +13513,39 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 	// Begin of Answer?
 	if (sMsgLowerCase.Left(5) == _T("http/"))
 	{
-		// Code
-		CString sCode = sMsgLowerCase.Mid(9,3);
-		
+		// Length
+		nPosEnd = sMsgLowerCase.GetLength();
+
 		// Version
-		CString sVersion = sMsgLowerCase.Mid(5,3);
+		CString sVersion;
+		for (nPos = 5 ; nPos < nPosEnd ; nPos++)
+		{
+			if (_istspace(sMsgLowerCase[nPos]))
+				break;
+			sVersion += sMsgLowerCase[nPos];
+		}
 		if (sVersion == _T("0.9") || sVersion == _T("1.0"))
 			m_bOldVersion = TRUE;
 		else
 			m_bOldVersion = FALSE;
+
+		// Skip space(s)
+		while (nPos < nPosEnd && _istspace(sMsgLowerCase[nPos]))
+			nPos++;
+
+		// 3 Digits Code
+		CString sCode;
+		for (; nPos < nPosEnd ; nPos++)
+		{
+			if (_istspace(sMsgLowerCase[nPos]))
+				break;
+			sCode += sMsgLowerCase[nPos];
+		}
+		if (sCode.GetLength() < 3)
+		{
+			delete [] pMsg;
+			return FALSE; // Do not call Processor
+		}
 
 		// Connection Keep Alive?
 		if (m_bOldVersion)
