@@ -258,7 +258,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sAVIFileName;
 		CString sSWFFileName;
 		CString sGIFFileName;
-		CString sGIFTempFileName;
+		CString sGIFTempFileName; // Store to temp and then move so that web browser will not load half saved gifs
 		CString sJPGDir;
 		CStringArray sJPGFileNames;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName);
@@ -303,7 +303,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
 		POSITION currentpos;
 		int nFrames = m_nNumFramesToSave;
-		int nAnimGifLastFrameToSave = 1;
 		double dDelayMul = 1.0;
 		double dSpeedMul = 1.0;
 		CDib AVISaveDib;
@@ -479,42 +478,37 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			BOOL bSaveGif = DoSaveGif();
 			if (bSaveGif)
 			{
-				// Normal saving
-				if (nFrames >= nAnimGifLastFrameToSave)
+				// First Frame?
+				if (nFrames == m_nNumFramesToSave)
 				{
-					// First Frame?
-					if (nFrames == m_nNumFramesToSave)
-					{
-						bFirstGIFSave = TRUE;
-						pDibPrev = pDib;
-						ASSERT(pGIFColors == NULL);
-						pGIFColors = (RGBQUAD*)new RGBQUAD[256];
-						AnimatedGifInit(pGIFColors,
-										nAnimGifLastFrameToSave,		// Sets this
-										dDelayMul,						// Sets this
-										dSpeedMul,						// Sets this
-										dCalcFrameRate,
-										bShowFrameTime,
-										RefTime,
-										dwRefUpTime);
-					}
-					// Next Frame?
-					else
-					{
-						SaveAnimatedGif(&GIFSaveDib,
-										&pDib,
-										&pDibPrev,
-										sGIFTempFileName,
-										&bFirstGIFSave,						// First Frame To Save?
-										nFrames == nAnimGifLastFrameToSave,	// Last Frame To Save?
-										dDelayMul,
-										dSpeedMul,
-										pGIFColors,
-										MOVDET_ANIMGIF_DIFF_MINLEVEL,
-										bShowFrameTime,
-										RefTime,
-										dwRefUpTime);
-					}
+					bFirstGIFSave = TRUE;
+					pDibPrev = pDib;
+					ASSERT(pGIFColors == NULL);
+					pGIFColors = (RGBQUAD*)new RGBQUAD[256];
+					AnimatedGifInit(pGIFColors,
+									dDelayMul,		// Sets this
+									dSpeedMul,		// Sets this
+									dCalcFrameRate,
+									bShowFrameTime,
+									RefTime,
+									dwRefUpTime);
+				}
+				// Next Frame?
+				else
+				{
+					SaveAnimatedGif(&GIFSaveDib,
+									&pDib,
+									&pDibPrev,
+									sGIFTempFileName,
+									&bFirstGIFSave,	// First Frame To Save?
+									nFrames == 1,	// Last Frame To Save?
+									dDelayMul,
+									dSpeedMul,
+									pGIFColors,
+									MOVDET_ANIMGIF_DIFF_MINLEVEL,
+									bShowFrameTime,
+									RefTime,
+									dwRefUpTime);
 				}
 			}
 
@@ -530,9 +524,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Save single gif image if nothing done above:
-		// this happens if m_nNumFramesToSave is 1 or
-		// if nAnimGifLastFrameToSave has been set to
-		// m_nNumFramesToSave by AnimatedGIFInit()
+		// this happens if m_nNumFramesToSave is 1
 		if (DoSaveGif() && !::IsExistingFile(sGIFTempFileName))
 		{
 			SaveSingleGif(	m_pFrameList->GetHead(),
@@ -786,7 +778,6 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 }
 
 void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors,
-																int& nAnimGifLastFrameToSave,
 																double& dDelayMul,
 																double& dSpeedMul,
 																double dCalcFrameRate,
@@ -811,7 +802,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	DibForPalette3.SetShowMessageBoxOnError(FALSE);
 	DibForPalette.SetShowMessageBoxOnError(FALSE);
 
-	// Get the frame 1 sec after first movement, get middle frame
+	// Get frame 1 sec after first movement, get middle frame
 	// and get last movement frame for a optimized palette creation
 	int nMiddleElementCount = m_nNumFramesToSave / 2;
 	POSITION posPalette = m_pFrameList->GetHeadPosition();
@@ -843,10 +834,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 				if (nMiddleElementCount-- == 0)
 					pDibForPalette2 = p;
 				if (p->IsUserFlag())
-				{
-					nAnimGifLastFrameToSave = nFrameCountDown;
 					pDibForPalette3 = p;
-				}
 			}
 		}
 		nFrameCountDown--;
@@ -940,10 +928,9 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	// the play length to around MOVDET_ANIMGIF_MAX_LENGTH ms.
 	// Note: ie has problems with to many anim. gifs frames and also
 	// with to many anim. gifs images per displayed page!
-	int nTotFramesCount = m_nNumFramesToSave - nAnimGifLastFrameToSave + 1;
-	double dLengthMs = (double)nTotFramesCount / dCalcFrameRate * 1000.0;
+	double dLengthMs = (double)m_nNumFramesToSave / dCalcFrameRate * 1000.0;
 	dSpeedMul = max(1.0, dLengthMs / MOVDET_ANIMGIF_MAX_LENGTH);
-	if (nTotFramesCount >= MOVDET_ANIMGIF_MAX_FRAMES)
+	if (m_nNumFramesToSave >= MOVDET_ANIMGIF_MAX_FRAMES)
 	{
 		double dSavedFrames = dLengthMs / MOVDET_ANIMGIF_DELAY;
 		dDelayMul = max(1.0, dSavedFrames / (double)MOVDET_ANIMGIF_MAX_FRAMES);

@@ -877,7 +877,6 @@ public:
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
-									int& nAnimGifLastFrameToSave,
 									double& dDelayMul,
 									double& dSpeedMul,
 									double dCalcFrameRate,
