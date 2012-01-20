@@ -147,6 +147,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 {
 	ASSERT(m_pDoc);
 	m_bWorking = FALSE;
+	CTime FirstTime(0);
+	CTime LastTime(0);
 	while (TRUE)
 	{
 		// Poll for Work
@@ -208,15 +210,33 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
 
-		// Current Reference Time, Current Reference Up-Time and
-		// First Frame Time
-		CTime RefTime = CTime::GetCurrentTime();
-		DWORD dwRefUpTime = ::timeGetTime();
-		DWORD dwTimeDifference = dwRefUpTime - dwFirstUpTime;
-		CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-		CTime FirstTime = RefTime - TimeSpan;
-		CString sTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
-		
+		// Find a good Reference Time and make the First Time string
+		// (if new first frame is older than last frame from previous detection
+		// then we have rounding errors -> search better ref. time + ref. up-time)
+		DWORD dwStartUpTime = ::timeGetTime();
+		CTime RefTime;
+		DWORD dwRefUpTime;
+		do
+		{
+			RefTime = CTime::GetCurrentTime();
+			dwRefUpTime = ::timeGetTime();
+			FirstTime = CAVRec::CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
+			if (FirstTime < LastTime)
+			{
+				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
+				{
+					m_bWorking = FALSE;
+					return 0;
+				}
+			}
+			else
+				break;
+		}
+		while ((dwRefUpTime - dwStartUpTime) <= 1100U); // be safe in case computer time has been changed
+		ASSERT(FirstTime >= LastTime);
+		LastTime = CAVRec::CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
+		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
+
 		// Directory to Store Detection
 		CString sThreadUniqueName;
 		sThreadUniqueName.Format(_T("Detection%X"), ::GetCurrentThreadId());
@@ -264,17 +284,17 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName);
 		sJPGDir = sGIFFileName = sSWFFileName = sAVIFileName;
 		if (sAVIFileName == _T(""))
-			sAVIFileName = _T("det_") + sTime + _T(".avi");
+			sAVIFileName = _T("det_") + sFirstTime + _T(".avi");
 		else
-			sAVIFileName = sAVIFileName + _T("\\") + _T("det_") + sTime + _T(".avi");
+			sAVIFileName = sAVIFileName + _T("\\") + _T("det_") + sFirstTime + _T(".avi");
 		if (sSWFFileName == _T(""))
-			sSWFFileName = _T("det_") + sTime + _T(".swf");
+			sSWFFileName = _T("det_") + sFirstTime + _T(".swf");
 		else
-			sSWFFileName = sSWFFileName + _T("\\") + _T("det_") + sTime + _T(".swf");
+			sSWFFileName = sSWFFileName + _T("\\") + _T("det_") + sFirstTime + _T(".swf");
 		if (sGIFFileName == _T(""))
-			sGIFFileName = _T("det_") + sTime + _T(".gif");
+			sGIFFileName = _T("det_") + sFirstTime + _T(".gif");
 		else
-			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sTime + _T(".gif");
+			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sFirstTime + _T(".gif");
 		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
 		if (sJPGDir != _T(""))
 			sJPGDir = sJPGDir + _T("\\");
@@ -581,9 +601,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::DeleteFile(sJPGFileNames[i]);
 
 		// Save time calculation
-		DWORD dwSaveTimeMs = ::timeGetTime() - dwRefUpTime;
+		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
-		if (dwFramesTimeMs >= 1000U) // Do the check only if at least 1 sec of frames
+		if (dwFramesTimeMs >= 2000U) // Check only if at least 2 sec of frames
 		{
 			CString sMsg;
 			if (dwFramesTimeMs < dwSaveTimeMs)
@@ -754,9 +774,7 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 														DWORD dwRefUpTime)
 {
 	// Calc. time and create file name
-	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
-	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-	CTime Time = RefTime - TimeSpan;
+	CTime Time = CAVRec::CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 	CString sTime(Time.Format(_T("%Y_%m_%d_%H_%M_%S")));
 	sJPGDir += _T("det_") + sTime + _T(".jpg");
 
@@ -3791,16 +3809,12 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		CTime RefTime = CTime::GetCurrentTime();
 		DWORD dwRefUpTime = ::timeGetTime();
 
-		// First Frame Time 
-		DWORD dwFirstTimeDifference = dwRefUpTime - dwFirstUpTime;
-		CTimeSpan FirstTimeSpan((time_t)(dwFirstTimeDifference > 0U ? Round((double)dwFirstTimeDifference / 1000.0) : 0));
-		CTime FirstTime = RefTime - FirstTimeSpan;
+		// First Frame Time
+		CTime FirstTime = CAVRec::CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
 		
 		// Last Frame Time
-		DWORD dwLastTimeDifference = dwRefUpTime - dwLastUpTime;
-		CTimeSpan LastTimeSpan((time_t)(dwLastTimeDifference > 0U ? Round((double)dwLastTimeDifference / 1000.0) : 0));
-		CTime LastTime = RefTime - LastTimeSpan;
-		
+		CTime LastTime = CAVRec::CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
+
 		// Check Whether Detection Dir Exists
 		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
 		DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);

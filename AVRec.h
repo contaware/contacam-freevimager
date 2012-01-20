@@ -112,6 +112,7 @@ public:
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
 
 	// Add frame time
+	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static bool AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
 	static bool AddFrameTime(LPBITMAPINFO pBmi,
 							LPBYTE pBits,

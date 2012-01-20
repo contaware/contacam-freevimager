@@ -1458,14 +1458,27 @@ bool CAVRec::AddRawVideoPacket(DWORD dwStreamNum,
 	}
 }
 
+CTime CAVRec::CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime)
+{
+	// Ref. time older
+	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
+	if (dwTimeDifference >= 0x80000000U)
+	{
+		CTimeSpan TimeSpan((time_t)Round((double)(dwUpTime - dwRefUpTime) / 1000.0));
+		return RefTime + TimeSpan;
+	}
+	// Ref. time younger
+	else
+	{
+		CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+		return RefTime - TimeSpan;
+	}
+}
+
 bool CAVRec::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 {
 	BOOL res1, res2;
-	
-	DWORD dwTimeDifference = dwRefUpTime - pDib->GetUpTime();
-	CTimeSpan TimeSpan((time_t)(dwTimeDifference > 0U ? Round((double)dwTimeDifference / 1000.0) : 0));
-	RefTime -= TimeSpan;
-
+	RefTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 	CRect rcRect;
 	rcRect.left = 0;
 	rcRect.top = 0;
