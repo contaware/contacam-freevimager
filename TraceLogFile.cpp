@@ -11,6 +11,7 @@ extern BOOL IsExistingDir(LPCTSTR lpszFileName);
 extern CString GetDriveAndDirName(const CString& sFullFilePath);
 extern CString GetFileNameNoExt(const CString& sFullFilePath);
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
+extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
 TCHAR g_sTraceFileName[MAX_PATH] = _T("");
 TCHAR g_sLogFileName[MAX_PATH] = _T("");
@@ -46,7 +47,7 @@ void EndTraceLogFile()
 	}
 }
 
-void LogLine(const TCHAR* pFormat, ...)
+void LogLine(const TCHAR* pString)
 {
 	// Check
 	if (!g_bTraceLogFileInited)
@@ -67,18 +68,14 @@ void LogLine(const TCHAR* pFormat, ...)
 		}
 	}
 
-	// Arguments
-	CString s;
-	va_list arguments;
-	va_start(arguments, pFormat);	
-	s.FormatV(pFormat, arguments);
-    va_end(arguments);
+	// Make single line
+	CString s(pString);
 	s.Replace(_T("\r\n"), _T(" "));
 	s.Replace(_T('\r'), _T(' '));
 	s.Replace(_T('\n'), _T(' '));
 	s.TrimLeft();
 	s.TrimRight();
-	s += _T('\n');
+	s += _T("\r\n");
 
 	// Current Time
 	time_t CurrentTime;
@@ -92,10 +89,22 @@ void LogLine(const TCHAR* pFormat, ...)
 		CreateDir(sPath);
 
 	// Log To File
-	FILE* pf = _tfopen(g_sLogFileName, _T("at"));
+	FILE* pf = _tfopen(g_sLogFileName, _T("ab"));
 	if (pf)
 	{
-		_ftprintf(pf, _T("%s: %s"), (LPCTSTR)sCurrentTime, (LPCTSTR)s);
+		LPBYTE pData = NULL;
+		int nSize = ToUTF8(sCurrentTime + _T(": ") + s, &pData);
+		if (pData)
+		{
+			ULARGE_INTEGER Size = GetFileSize64(g_sLogFileName);
+			if (Size.QuadPart == 0)
+			{
+				const BYTE BOM[3] = {0xEF, 0xBB, 0xBF};
+				fwrite(BOM, sizeof(BYTE), 3, pf);
+			}
+			fwrite(pData, sizeof(BYTE), nSize, pf);
+			delete [] pData;
+		}
 		fclose(pf);
 	}
 

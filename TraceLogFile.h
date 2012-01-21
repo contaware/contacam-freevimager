@@ -18,7 +18,7 @@ extern void InitTraceLogFile(	LPCTSTR szTraceFileName,
 								LPCTSTR szLogFileName,
 								ULONGLONG ullMaxLogFileSize = 0); // 0 means unlimited
 extern void EndTraceLogFile();
-extern void LogLine(const TCHAR* pFormat, ...);
+extern void LogLine(const TCHAR* pString);
 extern void TraceFileEnterCS(const TCHAR* pFormat, ...);
 extern void TraceFileLeaveCS(const TCHAR* pFormat, ...);
 
