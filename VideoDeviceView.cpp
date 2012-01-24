@@ -805,9 +805,34 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		else
 		{
 			MemDC.DrawText(	ML_STRING(1565, "Please wait..."),
-							-1,
-							&rcClient,
-							(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+											-1,
+											&rcClient,
+											(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+			TEXTMETRIC TextMetrics;
+			MemDC.GetTextMetrics(&TextMetrics);
+			int nBoxLength = TextMetrics.tmHeight / 4;
+			CPoint ptCenter(rcClient.CenterPoint());
+			ptCenter.y += TextMetrics.tmHeight;
+			CRect rcBoxMiddle(	ptCenter.x - nBoxLength, ptCenter.y - nBoxLength,
+								ptCenter.x + nBoxLength, ptCenter.y + nBoxLength);
+			CRect rcBoxLeft(rcBoxMiddle);
+			rcBoxLeft.OffsetRect(-3*nBoxLength, 0);
+			CRect rcBoxLeftLeft(rcBoxLeft);
+			rcBoxLeftLeft.OffsetRect(-3*nBoxLength, 0);
+			CRect rcBoxRight(rcBoxMiddle);
+			rcBoxRight.OffsetRect(3*nBoxLength, 0);
+			CRect rcBoxRightRight(rcBoxRight);
+			rcBoxRightRight.OffsetRect(3*nBoxLength, 0);
+			int nCount = ((::GetTickCount() / 1000U) % 5U);
+			MemDC.FillSolidRect(rcBoxLeftLeft, RGB(0,0xFF,0));
+			if (nCount >= 1)
+				MemDC.FillSolidRect(rcBoxLeft, RGB(0,0xFF,0));
+			if (nCount >= 2)
+				MemDC.FillSolidRect(rcBoxMiddle, RGB(0,0xFF,0));
+			if (nCount >= 3)
+				MemDC.FillSolidRect(rcBoxRight, RGB(0,0xFF,0));
+			if (nCount == 4)
+				MemDC.FillSolidRect(rcBoxRightRight, RGB(0,0xFF,0));
 		}
 
 		// Clean-up

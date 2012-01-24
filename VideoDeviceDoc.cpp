@@ -4327,7 +4327,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	// Poll starting flag
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
+		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_STARTCHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -4354,6 +4354,14 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 			}
 
 			break;
+		}
+		else if (m_pDoc->GetView())
+		{
+			// Trigger drawing of the Please wait... progress bar
+			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_UPDATEWINDOWSIZES,
+							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+							(LPARAM)0);
 		}
 	}
 

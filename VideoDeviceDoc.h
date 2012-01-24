@@ -63,6 +63,7 @@ class CMovementDetectionPage;
 #define DXDRAW_ERROR_COLOR					RGB(255,160,0)
 
 // Watchdog
+#define WATCHDOG_STARTCHECK_TIME			1000U		// ms
 #define WATCHDOG_DRAW_THRESHOLD				300U		// ms
 #define WATCHDOG_CHECK_TIME					110U		// ms
 #define WATCHDOG_THRESHOLD					15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
