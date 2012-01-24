@@ -241,6 +241,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Help"
     BEGIN
@@ -603,6 +604,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -712,6 +714,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -969,6 +972,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -1100,6 +1104,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -1446,6 +1451,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -2258,7 +2264,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Connect To"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_COMBO_HOST,14,17,184,49,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -6660,7 +6666,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_VIEW_WEB             "Open web browser\nBrowse"
-    ID_TOOLS_VIEW_LOGFILE   "View the application log file with the default text editor\nView Application Log "
+    ID_TOOLS_VIEW_LOGFILE   "View the application log file with the default text editor\nView Application Log"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
@@ -7199,12 +7205,14 @@ BEGIN
     IDS_STRING1836          "Big"
     IDS_STRING1837          "Medium"
     IDS_STRING1838          "Small"
+    IDS_STRING1839          "Edimax (Client Poll Mode)"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
+    ID_TOOLS_DEBUGLOG       "Enable/disable debug log level\nEnable/Debug Log Level"
 END
 
 #endif    // English (U.S.) resources

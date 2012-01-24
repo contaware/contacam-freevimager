@@ -146,7 +146,14 @@ void CHttpVideoFormatDlg::OnApply()
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetResolution = bResolutionChanged;
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetCompression = bQualityChanged;
 		}
-		m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost, m_pDoc->m_nGetFrameVideoPort);
+		m_pDoc->m_HttpGetFrameThread.SetEventConnect();
+	}
+	else if (m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG &&
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_CP)
+	{
+		m_pDoc->m_pHttpGetFrameParseProcess->m_bSetResolution = bResolutionChanged;
+		m_pDoc->m_pHttpGetFrameParseProcess->m_bSetCompression = bQualityChanged;
+		m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 	}
 }
 

@@ -34,7 +34,7 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #endif
-#define APPVERSION										_T("3.9.5beta6")
+#define APPVERSION										_T("3.9.5beta7")
 #define SLIDESHOWNAME									_T("Start.exe")
 #define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
 #define NEROBURNNAME									_T("NeroBurn.exe")
@@ -48,7 +48,7 @@
 #define TRACENAME_EXT									_T("trace.txt")
 #define LOG_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(LOGNAME_EXT))
 #define TRACE_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(TRACENAME_EXT))
-#define MAX_LOG_FILE_SIZE								1048576 /* 1MB */
+#define MAX_LOG_FILE_SIZE								8388608 /* 8MB */
 
 
 /////////////////////////////////////////////////////////////////////////////

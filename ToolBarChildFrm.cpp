@@ -1372,14 +1372,6 @@ void CVideoDeviceChildFrame::OnClose()
 									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
 			}
 
-			// Remove wait cursor if trying to connect
-			if (pDoc->m_pHttpGetFrameParseProcess &&
-				pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting)
-			{
-				pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting = FALSE;
-				pDoc->EndWaitCursor();
-			}
-
 			// Save Settings
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();

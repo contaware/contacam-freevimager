@@ -3989,13 +3989,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 		if (Connect(FALSE,
 					pNetCom,
 					pHttpGetFrameParseProcess,
-					m_pDoc->m_sGetFrameVideoHost,
-					m_pDoc->m_nGetFrameVideoPort,
 					m_pDoc->m_pGetFrameNetCom->GetSocketFamily()))
 		{
 			m_HttpGetFrameNetComList.AddTail(pNetCom);
 			m_HttpGetFrameParseProcessList.AddTail(pHttpGetFrameParseProcess);
-			pHttpGetFrameParseProcess->SendFrameRequest();
+			pHttpGetFrameParseProcess->SendRequest();
 			res = TRUE;
 		}
 		else
@@ -4061,9 +4059,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 int CVideoDeviceDoc::CHttpGetFrameThread::OnError()
 {
 	CleanUpAllConnections();
-	m_pDoc->EndWaitCursor();
 	::AfxMessageBox(ML_STRING(1465, "Cannot connect to the specified network device or server"), MB_ICONSTOP);
-	m_pDoc->BeginWaitCursor();
 	m_pDoc->CloseDocRemoveAutorunDev();
 	return 0;
 }
@@ -4096,8 +4092,6 @@ void CVideoDeviceDoc::CHttpGetFrameThread::CleanUpAllConnections()
 BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 												  CNetCom* pNetCom,
 												  CVideoDeviceDoc::CHttpGetFrameParseProcess* pParseProcess,
-												  LPCTSTR pszHostName,
-												  int nPort,
 												  int nSocketFamily)
 {
 	// Check
@@ -4122,8 +4116,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					SOCK_STREAM,			// TCP
 					_T(""),					// Local Address (IP or Host Name).
 					0,						// Local Port, let the OS choose one
-					pszHostName,			// Peer Address (IP or Host Name).
-					nPort,					// Peer Port.
+					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
+					m_pDoc->m_nGetFrameVideoPort,// Peer Port.
 					NULL,					// Handle to an Event Object that will get Accept Events.
 					bSignalEvents ? GetHttpConnectedEvent() : NULL,// Handle to an Event Object that will get Connect Events.
 					bSignalEvents ? GetHttpConnectFailedEvent() : NULL,// Handle to an Event Object that will get Connect Failed Events.
@@ -4217,18 +4211,26 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
+				::EnterCriticalSection(&m_csConnectRequestParams);
+				DWORD dwConnectDelay = m_dwConnectDelay;
+				::LeaveCriticalSection(&m_csConnectRequestParams);
 				CleanUpAllConnections();
+				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelay / 2U) == WAIT_OBJECT_0)
+					return 0;
 				m_pDoc->m_pGetFrameNetCom->Close();
+				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelay / 2U) == WAIT_OBJECT_0)
+					return 0;
 				m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE;
 				if (!Connect(TRUE,
 							m_pDoc->m_pGetFrameNetCom,
 							m_pDoc->m_pHttpGetFrameParseProcess,
-							m_sHostName,
-							m_nPort,
 							((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET))
 				{
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting)
+					{
+						m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting = FALSE;
 						return OnError();
+					}
 				}
 				break;
 			}
@@ -4237,10 +4239,13 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			case WAIT_OBJECT_0 + 2 :
 			{
 				::ResetEvent(m_hEventArray[2]);
-				if (m_sRequest == _T(""))
-					m_pDoc->m_pHttpGetFrameParseProcess->SendFrameRequest();
+				::EnterCriticalSection(&m_csConnectRequestParams);
+				CString sRequest = m_sRequest;
+				::LeaveCriticalSection(&m_csConnectRequestParams);
+				if (sRequest == _T(""))
+					m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
 				else
-					m_pDoc->m_pHttpGetFrameParseProcess->SendRequest(m_sRequest);
+					m_pDoc->m_pHttpGetFrameParseProcess->SendRawRequest(sRequest);
 				break;
 			}
 
@@ -4257,7 +4262,10 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[4]);
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting)
+				{
+					m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting = FALSE;
 					return OnError();
+				}
 				break;
 			}
 
@@ -4270,14 +4278,17 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 					CTimeSpan ConnectionAge = CTime::GetCurrentTime() - m_pDoc->m_pGetFrameNetCom->m_InitTime;
 					if (ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT ||
 						ConnectionAge.GetTotalSeconds() < 0)
+					{
+						m_pDoc->m_pHttpGetFrameParseProcess->m_bTryConnecting = FALSE;
 						return OnError();
+					}
 				}
 
 				// Poll (only client poll mode)
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg)
 				{
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)
-						m_pDoc->m_pHttpGetFrameParseProcess->SendFrameRequest();
+						m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
 					else
 					{
 						if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
@@ -4401,8 +4412,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 					CString sMsg;
 					sMsg.Format(_T("%s try reconnecting\n"), m_pDoc->GetDeviceName());
 					TRACE(sMsg);
@@ -4808,7 +4818,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
-	m_HttpGetFrameLocations.Add(_T("/"));
+	m_HttpGetFrameLocations.Add(_T("/"));								// Start trying home to see whether cam is reachable
 	// First try JPEG because we can change the framerate
 	m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// Many cams
 	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Many cams
@@ -5239,6 +5249,13 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sFormat.Format(_T("%s -> RGB32"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 		else
 			sFormat.Format(_T("%s"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
+		if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient() && m_pHttpGetFrameParseProcess)
+		{
+			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
+				sFormat += _T(" (mjpeg)");
+			else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
+				sFormat += _T(" (jpeg)");
+		}
 
 		// Name , Size , Frame rate , Pixel format
 		strInfo.Format(
@@ -6261,6 +6278,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 		case PIXORD_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case PIXORD_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case EDIMAX_SP :	return HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE;
+		case EDIMAX_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		default :			return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 	}
 }
@@ -6271,9 +6289,6 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 // for udp it is not used and set to _T('/') 
 BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress) 
 {
-	// Start wait cursor
-	BeginWaitCursor();
-
 	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
 	int i = sAddress.ReverseFind(_T(':'));
 	if (i >= 0)
@@ -6367,7 +6382,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 BOOL CVideoDeviceDoc::OpenGetVideo() 
 {
 	CHostPortDlg dlg;
-	if (dlg.DoModal() == IDOK) // BeginWaitCursor() called by dialog
+	if (dlg.DoModal() == IDOK)
 	{
 		// Init Vars
 		int nPos, nPosEnd;
@@ -7080,7 +7095,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			{
 				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 					m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
-				ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+				m_HttpGetFrameThread.SetEventConnect();
 			}
 			ReStartProcessFrame();
 			SetDocumentTitle();
@@ -7945,6 +7960,42 @@ BOOL CVideoDeviceDoc::MicroApacheShutdown()
 	::DeleteFile(MicroApacheGetPidFileName());
 
 	return res;
+}
+
+// Return Values
+// 1  : OK
+// 0  : Failed to stop the web server
+// -1 : Failed to start the web server
+int CVideoDeviceDoc::MicroApacheReload()
+{
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	BOOL bOk = TRUE;
+	if (pApp->m_bMicroApacheStarted)
+	{
+		pApp->m_MicroApacheWatchdogThread.Kill();
+		if (bOk = MicroApacheShutdown())
+			pApp->m_bMicroApacheStarted = FALSE;
+	}
+	if (!bOk)
+		return 0;
+	else
+	{
+		// Update / create config file and doc root index.php for microapache
+		pApp->MicroApacheUpdateFiles(); // do not overwrite doc root index.php
+
+		// Start server
+		if (pApp->m_bStartMicroApache)
+		{
+			if (MicroApacheInitStart() && MicroApacheWaitStartDone())
+			{
+				pApp->m_bMicroApacheStarted = TRUE;
+				pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+			}
+			else
+				return -1;
+		}
+	}
+	return 1;
 }
 
 BOOL CVideoDeviceDoc::MicroApacheConfigFileSetParam(const CString& sParam, const CString& sValue)
@@ -10560,16 +10611,8 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 	BOOL res;
 
 	// Check
-	if (!m_pGetFrameNetCom)
-	{
-		EndWaitCursor();
+	if (!m_pGetFrameNetCom || m_sGetFrameVideoHost == _T(""))
 		return FALSE;
-	}
-	if (m_sGetFrameVideoHost == _T(""))
-	{
-		EndWaitCursor();
-		return FALSE;
-	}
 	
 	// Close and Kill
 	m_pGetFrameNetCom->Close();
@@ -10587,8 +10630,6 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 			if (!m_pGetFrameGenerator)
 				m_pGetFrameGenerator = (CGetFrameGenerator*)new CGetFrameGenerator;
 			res = ConnectGetFrameUDP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
-			if (res)
-				EndWaitCursor();
 			break;
 		}
 		case OTHERONE :		// Other HTTP device
@@ -10604,7 +10645,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_nHttpGetFrameLocationPos = 0;
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case AXIS_SP :		// Axis Server Push (mjpeg)
@@ -10620,7 +10661,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort, _T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image HTTP/1.1\r\n"));
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case AXIS_CP :		// Axis Client Poll (jpegs)
@@ -10636,7 +10677,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort, _T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image HTTP/1.1\r\n"));
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case PANASONIC_SP :	// Panasonic Server Push (mjpeg)
@@ -10657,7 +10698,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case PANASONIC_CP :	// Panasonic Client Poll (jpegs)
@@ -10678,7 +10719,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case PIXORD_SP :	// Pixord Server Push (mjpeg)
@@ -10697,7 +10738,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		case PIXORD_CP :	// Pixord Client Poll (jpegs)
@@ -10716,10 +10757,10 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
-		case EDIMAX_SP :		// Edimax Server Push (mjpeg)
+		case EDIMAX_SP :	// Edimax Server Push (mjpeg)
 		{
 			if (m_pHttpGetFrameParseProcess)
 				m_pHttpGetFrameParseProcess->Close();
@@ -10735,7 +10776,25 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			}
 			m_HttpGetFrameThread.Start();
-			res = ConnectGetFrameHTTP(m_sGetFrameVideoHost, m_nGetFrameVideoPort, _T("GET /camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0 HTTP/1.1\r\n"));
+			res = m_HttpGetFrameThread.SetEventConnect();
+			break;
+		}
+		case EDIMAX_CP :	// Edimax Client Poll (jpegs)
+		{
+			if (m_pHttpGetFrameParseProcess)
+				m_pHttpGetFrameParseProcess->Close();
+			else
+				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
+			if (m_pHttpGetFrameParseProcess)
+			{
+				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
+				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
+				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			}
+			m_HttpGetFrameThread.Start();
+			res = m_HttpGetFrameThread.SetEventConnect();
 			break;
 		}
 		default :
@@ -10746,14 +10805,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 		}
 	}
 
-	// End wait cursor on failure
-	if (!res)
-	{
-		EndWaitCursor();
-		return FALSE;
-	}
-	else
-		return TRUE;
+	return res;
 }
 
 BOOL CVideoDeviceDoc::ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort)
@@ -12758,10 +12810,16 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 		return FALSE;
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest(const CString& sRequest)
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& sRequest)
 {
 	CString sMsg;
 	m_sLastRequest = sRequest;
+
+	if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+	{
+		::LogLine(_T("------------------------------------------"));
+		::LogLine(sRequest);
+	}
 
 	if (m_AnswerAuthorizationType == AUTHBASIC)
 	{
@@ -12931,7 +12989,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest(const CString& sReq
 	return (m_pNetCom->WriteStr(sMsg) > 0);
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendFrameRequest()
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 {
 	CString sLocation;
 	CString sRequest;
@@ -12953,71 +13011,91 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendFrameRequest()
 		}
 		case AXIS_SP :		// Axis Server Push (mjpeg)
 		{
-			int nFrameRate = Round(m_pDoc->m_dFrameRate);
-			if (nFrameRate <= 0)
-				nFrameRate = 1;
-			sLocation = _T("/axis-cgi/mjpg/video.cgi");
-			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			if (m_bQueryProperties)
 			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
-						sLocation,
-						m_pDoc->m_nHttpVideoSizeX,
-						m_pDoc->m_nHttpVideoSizeY,
-						m_pDoc->m_nHttpVideoQuality,
-						nFrameRate,
-						m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else if (m_Sizes.GetSize() > 0)
-			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
-						sLocation,
-						m_Sizes[0].cx,
-						m_Sizes[0].cy,
-						m_pDoc->m_nHttpVideoQuality,
-						nFrameRate,
-						m_bOldVersion ? _T("1.0") : _T("1.1"));
-				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
 			}
 			else
 			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d&fps=%d HTTP/%s\r\n"),
-						sLocation,
-						m_pDoc->m_nHttpVideoQuality,
-						nFrameRate,
-						m_bOldVersion ? _T("1.0") : _T("1.1"));
+				int nFrameRate = Round(m_pDoc->m_dFrameRate);
+				if (nFrameRate <= 0)
+					nFrameRate = 1;
+				sLocation = _T("/axis-cgi/mjpg/video.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_pDoc->m_nHttpVideoSizeX,
+							m_pDoc->m_nHttpVideoSizeY,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_Sizes[0].cx,
+							m_Sizes[0].cy,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d&fps=%d HTTP/%s\r\n"),
+							sLocation,
+							m_pDoc->m_nHttpVideoQuality,
+							nFrameRate,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
 			}
 			break;
 		}
 		case AXIS_CP :		// Axis Client Poll (jpegs)
 		{
-			sLocation = _T("/axis-cgi/jpg/image.cgi");
-			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			if (m_bQueryProperties)
 			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
+				sLocation = _T("/axis-cgi/view/param.cgi?action=list&group=Properties.Image");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 								sLocation,
-								m_pDoc->m_nHttpVideoSizeX,
-								m_pDoc->m_nHttpVideoSizeY,
-								m_pDoc->m_nHttpVideoQuality,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));		
-			}
-			else if (m_Sizes.GetSize() > 0)
-			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
-								sLocation,
-								m_Sizes[0].cx,
-								m_Sizes[0].cy,
-								m_pDoc->m_nHttpVideoQuality,
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
-				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
 			}
 			else
 			{
-				sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d HTTP/%s\r\n"),
-								sLocation,
-								m_pDoc->m_nHttpVideoQuality,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				sLocation = _T("/axis-cgi/jpg/image.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));		
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&resolution=%dx%d&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?clock=0&date=0&compression=%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoQuality,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
 			}
 			break;
 		}
@@ -13183,9 +13261,16 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendFrameRequest()
 			}
 			break;
 		}
-		case EDIMAX_SP :		// Edimax Server Push (mjpeg)
+		case EDIMAX_SP :	// Edimax Server Push (mjpeg)
 		{
-			if (m_bSetResolution)
+			if (m_bQueryProperties)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetResolution)
 			{
 				sLocation = _T("/camera-cgi/admin/param.cgi");
 				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
@@ -13245,6 +13330,64 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendFrameRequest()
 			}
 			break;
 		}
+		case EDIMAX_CP :	// Edimax Client Poll (jpegs)
+		{
+			if (m_bQueryProperties)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetResolution)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									DEFAULT_HTTP_VIDEO_SIZE_CX,
+									DEFAULT_HTTP_VIDEO_SIZE_CY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
+					m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+				}
+			}
+			else if (m_bSetCompression)
+			{
+				sLocation = _T("/camera-cgi/admin/param.cgi");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
+								sLocation,
+								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else
+			{
+				sLocation = _T("/jpg/image.jpg");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+							sLocation,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
 		default :
 		{
 			::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
@@ -13255,7 +13398,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendFrameRequest()
 
 	::LeaveCriticalSection(&m_pDoc->m_csHttpParams);
 	
-	return SendRequest(sRequest);
+	return SendRawRequest(sRequest);
 }
 
 __forceinline int CVideoDeviceDoc::CHttpGetFrameParseProcess::FindMultipartBoundary(int nPos,
@@ -13604,27 +13747,30 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				}
 				m_sMultipartBoundary = CString(m_szMultipartBoundary);
 
-				if (m_bTryConnecting)
-				{
-					m_bTryConnecting = FALSE;
-					m_pDoc->EndWaitCursor();
-				}
+				// Flags
+				m_bTryConnecting = FALSE;
 				m_bFirstFrame = TRUE;
+
+				// Call mjpeg parser
 				res = ParseMultipart(nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
+				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					::LogLine(sMsg.Left(nPosEnd));
 				return res;
 			}
 			// Single image
 			else if ((nPos = sMsgLowerCase.Find(_T("content-type: image/jpeg"), 0)) >= 0)
 			{
-				if (m_bTryConnecting)
-				{
-					m_bTryConnecting = FALSE;
-					m_pDoc->EndWaitCursor();
-				}
+				// Flags
+				m_bTryConnecting = FALSE;
 				m_bFirstFrame = TRUE;
+
+				// Call jpeg parser
 				delete [] pMsg;
-				return ParseSingle(nSize, sMsg, sMsgLowerCase);
+				res = ParseSingle(nSize, sMsg, sMsgLowerCase);
+				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					::LogLine(sMsg.Left(nPosEnd));
+				return res;
 			}
 			// Text
 			else if ((nPos = sMsgLowerCase.Find(_T("content-type: text/plain"), 0)) >= 0)
@@ -13636,8 +13782,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					pNetCom->Read();
 
 					// Try next possible device location string
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bQueryProperties)
 				{
@@ -13689,60 +13834,69 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 						nPos = nNextPos + 1;
 					}
 
-					// Reset flag
+					// Reset flags
 					m_bQueryProperties = FALSE;
+					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bSetResolution)
 				{
-					// Reset flag
+					// Reset flags
 					m_bSetResolution = FALSE;
+					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
 				}
 				else if (m_bSetCompression)
 				{
-					// Reset flag
+					// Reset flags
 					m_bSetCompression = FALSE;
+					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
 				}
 				else if (m_bSetFramerate)
 				{
-					// Reset flag
+					// Reset flags
 					m_bSetFramerate = FALSE;
+					m_bTryConnecting = FALSE;
 
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
 				}
 				else if (m_bTryConnecting)
 				{
-					m_pDoc->EndWaitCursor();
+					// Reset flag
+					m_bTryConnecting = FALSE;
+
+					// Msg
 					::AfxMessageBox(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), MB_ICONSTOP);
-					m_pDoc->BeginWaitCursor();
+					
+					// Empty the buffers, so that parser stops calling us!
+					pNetCom->Read();
+
+					// Close
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
+				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+					::LogLine(sMsg);
 				return FALSE; // Do not call Processor
 			}
 			// Html
@@ -13755,17 +13909,25 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					pNetCom->Read();
 
 					// Try next possible device location string
-					m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-												m_pDoc->m_nGetFrameVideoPort);
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bTryConnecting)
 				{
-					m_pDoc->EndWaitCursor();
+					// Reset flag
+					m_bTryConnecting = FALSE;
+
+					// Msg
 					::AfxMessageBox(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), MB_ICONSTOP);
-					m_pDoc->BeginWaitCursor();
+					
+					// Empty the buffers, so that parser stops calling us!
+					pNetCom->Read();
+					
+					// Close
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
+				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+					::LogLine(sMsg);
 				return FALSE; // Do not call Processor
 			}
 			// Unknown or incomplete
@@ -13778,7 +13940,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 		// Redirect
 		else if (sCode == _T("301") || sCode == _T("302") || sCode == _T("303") || sCode == _T("307"))
 		{
-			// Parse new location
+			// Parse new location (new location must have same host and port)
 			if ((nPos = sMsgLowerCase.Find(_T("location:"), 0)) < 0)
 			{
 				delete [] pMsg;
@@ -13821,12 +13983,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 			// Empty the buffers, so that parser stops calling us!
 			pNetCom->Read();
 
-			// Start Connection
-			m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-										m_pDoc->m_nGetFrameVideoPort,
-										sNewRequest);
+			// Start Connection with New Request
+			m_pDoc->m_HttpGetFrameThread.SetEventConnect(sNewRequest);
 	
 			delete [] pMsg;
+			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+				::LogLine(sMsg);
 			return FALSE; // Do not call Processor
 		}
 		// Unauthorized
@@ -13869,15 +14031,13 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				(m_pDoc->m_sHttpGetFrameUsername == _T("")	&&	// No username
 				m_pDoc->m_sHttpGetFramePassword == _T("")))		// No password
 			{
-				if (m_bTryConnecting)
-					m_pDoc->EndWaitCursor();
 				CAuthenticationDlg dlg;
 				dlg.m_sUsername = m_pDoc->m_sHttpGetFrameUsername;
 				if (dlg.DoModal() == IDCANCEL)
 				{
 					if (m_bTryConnecting)
 					{
-						m_pDoc->BeginWaitCursor();
+						m_bTryConnecting = FALSE;
 						m_pDoc->CloseDocRemoveAutorunDev();
 					}
 					else
@@ -13887,8 +14047,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				}
 				else
 				{
-					if (m_bTryConnecting)
-						m_pDoc->BeginWaitCursor();
 					m_pDoc->m_sHttpGetFrameUsername = dlg.m_sUsername;
 					m_pDoc->m_sHttpGetFramePassword = dlg.m_sPassword;
 					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
@@ -13988,16 +14146,15 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 					m_sOpaque = sChosenAuthLine.Mid(nPos, nPosEnd - nPos); 
 			}
 
-			// Start Connection
-			m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-										m_pDoc->m_nGetFrameVideoPort,
-										m_sLastRequest);
+			// Start Connection with Last Request
+			m_pDoc->m_HttpGetFrameThread.SetEventConnect(m_sLastRequest);
 	
 			delete [] pMsg;
+			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+				::LogLine(sMsg);
 			return FALSE; // Do not call Processor
 		}
-		// Bad Request or Not Found
-		else if (sCode == _T("400") || sCode == _T("404"))
+		else
 		{
 			if (m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE && m_bTryConnecting &&
 				++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
@@ -14006,65 +14163,49 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				pNetCom->Read();
 
 				// Try next possible device location string
-				m_pDoc->ConnectGetFrameHTTP(m_pDoc->m_sGetFrameVideoHost,
-											m_pDoc->m_nGetFrameVideoPort);
+				m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 			}
 			else if (m_bTryConnecting)
 			{
+				// Reset flag
 				m_bTryConnecting = FALSE;
-				m_pDoc->EndWaitCursor();
-				::AfxMessageBox(ML_STRING(1490, "Unsupported network device type or mode"), MB_ICONSTOP);
-				pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_OPENGETVIDEO,
-								0, 0);
-			}
-			// Maybe we polled to fast...
-			else
-				pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
-			delete [] pMsg;
-			return FALSE; // Do not call Processor
-		}
-		// Service Unavailable
-		else if (sCode == _T("503"))
-		{
-			if (m_bTryConnecting)
-			{
-				m_pDoc->EndWaitCursor();
-				::AfxMessageBox(ML_STRING(1491, "Server is to busy, try later"), MB_ICONSTOP);
-				m_pDoc->BeginWaitCursor();
+
+				// Msg
+				if (sCode == _T("503")) // Service Unavailable
+					::AfxMessageBox(ML_STRING(1491, "Server is to busy, try later"), MB_ICONSTOP);
+				else
+					::AfxMessageBox(ML_STRING(1490, "Unsupported network device type or mode"), MB_ICONSTOP);
+
+				// Empty the buffers, so that parser stops calling us!
+				pNetCom->Read();
+
+				// Close
 				m_pDoc->CloseDocRemoveAutorunDev();
 			}
-			// Maybe we polled to fast...
+			// Maybe we polled to fast or we changed a param and camera is not yet ready
 			else
-				pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
-			delete [] pMsg;
-			return FALSE; // Do not call Processor
-		}
-		// Unknown
-		else
-		{
-			if (m_bTryConnecting)
 			{
-				m_pDoc->EndWaitCursor();
-				::AfxMessageBox(ML_STRING(1490, "Unsupported network device type or mode"), MB_ICONSTOP);
-				m_pDoc->BeginWaitCursor();
-				m_pDoc->CloseDocRemoveAutorunDev();
+				// Empty the buffers, so that parser stops calling us!
+				pNetCom->Read();
+
+				// Retry start connection with delay
+				m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), HTTPGETFRAME_CONNECTION_STARTDELAY);
 			}
-			// Maybe we polled to fast...
-			else
-				pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
 			delete [] pMsg;
+			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
+				::LogLine(sMsg);
 			return FALSE; // Do not call Processor
 		}
 	}
 	// Multipart or something more received before an above
-	// called ConnectGetFrameHTTP() gets executed. That's ok
+	// called m_HttpGetFrameThread.SetEventConnect() gets executed. That's ok
 	// because ParseMultipart() is robust!
 	else
 	{
 		res = ParseMultipart(0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
+		if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+			::LogLine(sMsg.Left(nPosEnd));
 		return res;
 	}
 }

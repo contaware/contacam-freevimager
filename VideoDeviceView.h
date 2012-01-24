@@ -16,12 +16,11 @@
 #define WM_THREADSAFE_CHANGEVIDEOFORMAT				WM_USER + 601
 #define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 602
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 603
-#define WM_THREADSAFE_OPENGETVIDEO					WM_USER + 604
-#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 605
-#define WM_THREADSAFE_DXDRAW_INIT					WM_USER + 606
-#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 607
-#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 608
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 609
+#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 604
+#define WM_THREADSAFE_DXDRAW_INIT					WM_USER + 605
+#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 606
+#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 607
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 608
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -81,7 +80,6 @@ protected:
 	afx_msg LONG OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeOpenGetVideo(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeSendFrameMsg(WPARAM wparam, LPARAM lparam);

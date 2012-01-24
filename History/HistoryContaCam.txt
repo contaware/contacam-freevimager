@@ -9,6 +9,8 @@ VERSION HISTORY
   of Animated GIF, AVI and JPG attachments
 - Animated GIFs are now entirely stored (before this version
   the engine stopped saving with the last detection frame)
+- Added client poll mode for Edimax IP cams
+- Implemented a debug level log command (under Tools menu)
 
 3.9.0 (December 20th 2011)
 

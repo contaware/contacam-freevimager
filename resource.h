@@ -2517,6 +2517,7 @@
 #define IDC_STATIC1838                  1838
 #define IDS_STRING1838                  1838
 #define IDC_STATIC1839                  1839
+#define IDS_STRING1839                  1839
 #define IDC_STATIC1840                  1840
 #define IDC_STATIC1841                  1841
 #define IDC_STATIC1842                  1842
@@ -3497,6 +3498,7 @@
 #define ID_EDIT_RENAME                  33167
 #define ID_EDIT_EXPORT_ZONES            33168
 #define ID_EDIT_IMPORT_ZONES            33169
+#define ID_TOOLS_DEBUGLOG               33170
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3505,7 +3507,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33170
+#define _APS_NEXT_COMMAND_VALUE         33171
 #define _APS_NEXT_CONTROL_VALUE         2543
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -40,7 +40,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
-	ON_MESSAGE(WM_THREADSAFE_OPENGETVIDEO, OnThreadSafeOpenGetVideo)
 	ON_MESSAGE(WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC, OnThreadSafeAutorunRemoveDeviceCloseDoc)
 	ON_MESSAGE(WM_THREADSAFE_SENDFRAME_MSG, OnThreadSafeSendFrameMsg)
 	ON_MESSAGE(WM_THREADSAFE_DXDRAW_INIT, OnThreadSafeDxDrawInit)
@@ -361,19 +360,6 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
 	return 1;
-}
-
-afx_msg LONG CVideoDeviceView::OnThreadSafeOpenGetVideo(WPARAM wparam, LPARAM lparam)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (pDoc->OpenGetVideo())
-		return 1;
-	else
-	{
-		OnThreadSafeAutorunRemoveDeviceCloseDoc(0, 0);
-		return 0;
-	}
 }
 
 afx_msg LONG CVideoDeviceView::OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam)

@@ -519,36 +519,16 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
-		// Stop server
-		BOOL bOk = TRUE;
-		if (pApp->m_bMicroApacheStarted)
+		// Stop, update and eventually restart server
+		int nRet = CVideoDeviceDoc::MicroApacheReload();
+		if (nRet <= 0)
 		{
-			pApp->m_MicroApacheWatchdogThread.Kill();
-			if (bOk = CVideoDeviceDoc::MicroApacheShutdown())
-				pApp->m_bMicroApacheStarted = FALSE;
-		}
-		if (!bOk)
-			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
-		else
-		{
-			// Update / create config file and doc root index.php for microapache
-			pApp->MicroApacheUpdateFiles(); // do not overwrite doc root index.php
-
-			// Start server
-			if (m_bStartMicroApache)
-			{
-				if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
-				{
-					pApp->m_bMicroApacheStarted = TRUE;
-					pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
-				}
-				else
-				{
-					EndWaitCursor();
-					::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
-					BeginWaitCursor();
-				}
-			}
+			EndWaitCursor();
+			if (nRet == 0)
+				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+			else
+				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+			BeginWaitCursor();
 		}
 	}
 

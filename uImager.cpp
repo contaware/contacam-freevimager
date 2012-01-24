@@ -107,6 +107,8 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
+	ON_COMMAND(ID_TOOLS_DEBUGLOG, OnToolsDebuglog)
+	ON_UPDATE_COMMAND_UI(ID_TOOLS_DEBUGLOG, OnUpdateToolsDebuglog)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -137,6 +139,7 @@ CUImagerApp::CUImagerApp()
 	m_bCloseAfterAudioPlayDone = FALSE;
 	m_pVideoAviDocTemplate = NULL;
 	m_bForceSeparateInstance = FALSE;
+	m_bDebugLog = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
 	m_bFullscreenBrowser = FALSE;
@@ -4562,6 +4565,9 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	m_sNewPaperSize = GetProfileString(sSection, _T("NewPaperSize"), DEFAULT_NEW_PAPER_SIZE);
 	m_crNewBackgroundColor = (COLORREF)GetProfileInt(sSection, _T("NewBackgroundColor"), DEFAULT_NEW_COLOR);
 
+	// Debug messages in Log files
+	m_bDebugLog = (BOOL)GetProfileInt(sSection, _T("DebugLog"), FALSE);
+
 #ifdef VIDEODEVICEDOC
 	// Browser
 	m_bFullscreenBrowser = (BOOL)GetProfileInt(sSection, _T("FullscreenBrowser"), FALSE);
@@ -6669,6 +6675,9 @@ void CUImagerApp::MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex/*=FALSE*/)
 	CString sPort;
 	sPort.Format(_T("%d"), m_nMicroApachePort);
 	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("Listen"), sPort);
+
+	// Set Log Level
+	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("LogLevel"), m_bDebugLog ? _T("debug") : _T("crit"));
 	
 	// Make password file and set authentication type
 	if (m_sMicroApacheUsername != _T("") || m_sMicroApachePassword != _T(""))
@@ -7157,6 +7166,35 @@ BOOL CUImagerApp::IsAutostart()
 		return FALSE;
 	}
 #endif
+}
+
+void CUImagerApp::OnToolsDebuglog() 
+{
+	// Toggle value and store
+	m_bDebugLog = !m_bDebugLog;
+	if (m_bUseSettings)
+		WriteProfileInt(_T("GeneralApp"), _T("DebugLog"), (int)m_bDebugLog);
+
+	// Stop, update and eventually restart server
+#ifdef VIDEODEVICEDOC
+	BeginWaitCursor();
+	int nRet = CVideoDeviceDoc::MicroApacheReload(); // this will update the config file with the new log level
+	if (nRet <= 0)
+	{
+		EndWaitCursor();
+		if (nRet == 0)
+			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+		else
+			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+	}
+	else
+		EndWaitCursor();
+#endif
+}
+
+void CUImagerApp::OnUpdateToolsDebuglog(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_bDebugLog ? 1 : 0);
 }
 
 typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);

@@ -172,6 +172,7 @@ class CMovementDetectionPage;
 #define DEFAULT_HTTP_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
 #define DEFAULT_HTTP_VIDEO_SIZE_CX			640
 #define DEFAULT_HTTP_VIDEO_SIZE_CY			480
+#define HTTPGETFRAME_CONNECTION_STARTDELAY	1000U		// ms
 #define HTTPGETFRAME_MAXCOUNT_ALARM1		30
 #define HTTPGETFRAME_MAXCOUNT_ALARM2		40
 #define HTTPGETFRAME_MAXCOUNT_ALARM3		50
@@ -180,7 +181,7 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MIN_DELAY_ALARM2		400U								// ms
 #define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U								// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		15			// Connection timeout in sec
+#define HTTPGETFRAME_CONNECTION_TIMEOUT		20			// Connection timeout in sec
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc
@@ -346,8 +347,8 @@ public:
 			CHttpGetFrameParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
 			virtual ~CHttpGetFrameParseProcess() {FreeAVCodec();};
 			void Close() {FreeAVCodec(); Clear();};
-			BOOL SendRequest(const CString& sRequest);
-			BOOL SendFrameRequest();
+			BOOL SendRawRequest(const CString& sRequest);
+			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom);
 			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
 			BOOL HasResolution(const CSize& Size);
@@ -724,25 +725,29 @@ public:
 	{
 		public:
 			CHttpGetFrameThread() {	m_pDoc = NULL;
+									m_dwConnectDelay	= 0U;										// Delay before starting connection
 									m_hEventArray[0]	= GetKillEvent();							// Kill Event
 									m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Connection Event
 									m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connected Event
 									m_hEventArray[3]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Read Event
-									m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);};	// Http Connect Failed Event
+									m_hEventArray[4]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connect Failed Event
+									::InitializeCriticalSection(&m_csConnectRequestParams);};
 			virtual ~CHttpGetFrameThread() {Kill();
 											::CloseHandle(m_hEventArray[1]);
 											::CloseHandle(m_hEventArray[2]);
 											::CloseHandle(m_hEventArray[3]);
-											::CloseHandle(m_hEventArray[4]);};
+											::CloseHandle(m_hEventArray[4]);
+											::DeleteCriticalSection(&m_csConnectRequestParams);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			__forceinline HANDLE GetHttpConnectedEvent() const {return m_hEventArray[2];};
-			__forceinline BOOL SetEventConnectGetFrameHTTP(LPCTSTR pszHostName, int nPort, LPCTSTR lpszRequest = _T(""))
+			__forceinline BOOL SetEventConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelay = 0U)
 			{
-				m_sHostName = CString(pszHostName);
-				m_nPort = nPort;
+				::EnterCriticalSection(&m_csConnectRequestParams);
 				m_sRequest = CString(lpszRequest);
+				m_dwConnectDelay = dwConnectDelay;
+				::LeaveCriticalSection(&m_csConnectRequestParams);
 				return ::SetEvent(m_hEventArray[1]);	
 			};
+			__forceinline HANDLE GetHttpConnectedEvent() const {return m_hEventArray[2];};
 			__forceinline HANDLE GetHttpReadEvent() const {return m_hEventArray[3];};
 			__forceinline HANDLE GetHttpConnectFailedEvent() const {return m_hEventArray[4];};
 
@@ -752,16 +757,14 @@ public:
 			__forceinline BOOL Connect(	BOOL bSignalEvents,
 										CNetCom* pNetCom,
 										CHttpGetFrameParseProcess* pParseProcess,
-										LPCTSTR pszHostName,
-										int nPort,
 										int nSocketFamily);
 			BOOL PollAndClean(BOOL bDoNewPoll);
 			void CleanUpAllConnections();
 			CVideoDeviceDoc* m_pDoc;
 			HANDLE m_hEventArray[5];
-			CString m_sHostName;
-			int m_nPort;
+			volatile DWORD m_dwConnectDelay;
 			CString m_sRequest;
+			CRITICAL_SECTION m_csConnectRequestParams;
 			NETCOMLIST m_HttpGetFrameNetComList;
 			NETCOMPARSEPROCESSLIST m_HttpGetFrameParseProcessList;
 	};
@@ -1247,15 +1250,11 @@ public:
 		PIXORD_SP,			// Pixord Server Push (mjpeg)
 		PIXORD_CP,			// Pixord Client Poll (jpegs)
 		EDIMAX_SP,			// Edimax Server Push (mjpeg)
-		//EDIMAX_CP			not supported because of different resolution, compression and framerate set
+		EDIMAX_CP,			// Edimax Client Poll (jpegs)
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
 	BOOL ConnectGetFrame();
-
-	// Http Networking Function
-	__forceinline BOOL ConnectGetFrameHTTP(LPCTSTR pszHostName, int nPort, LPCTSTR lpszRequest = _T("")){
-				return m_HttpGetFrameThread.SetEventConnectGetFrameHTTP(pszHostName, nPort, lpszRequest);};
 	
 	// UDP Networking Functions
 	BOOL ConnectSendFrameUDP(CNetCom* pNetCom, int nPort);
@@ -1304,6 +1303,7 @@ public:
 	static BOOL MicroApacheWaitStartDone();
 	static BOOL MicroApacheWaitCanConnect();
 	static BOOL MicroApacheShutdown();
+	static int MicroApacheReload(); // Return Values: 1=OK, 0=Failed to stop the web server, -1=Failed to start the web server
 	static CString MicroApacheConfigFileGetParam(const CString& sParam);						// sParam is case sensitive!
 	static BOOL MicroApacheConfigFileSetParam(const CString& sParam, const CString& sValue);	// sParam is case sensitive!
 	
