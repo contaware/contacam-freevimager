@@ -1539,9 +1539,6 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	// Stop Processing Frames
 	pDoc->StopProcessFrame();
 
-	// Begin Wait Cursor
-	BeginWaitCursor();
-
 	// Hide Window Property Sheet
 	if (pDoc->m_pVideoDevicePropertySheet &&
 		pDoc->m_pVideoDevicePropertySheet->IsVisible())
@@ -1645,9 +1642,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 		// by the respective OnDestroy() functions
 		pDoc->m_pVideoDevicePropertySheet->Close();
 	}
-
-	// End Wait Cursor
-	EndWaitCursor();
 }
 
 BOOL CVideoDeviceChildFrame::IsShutdown1Done()

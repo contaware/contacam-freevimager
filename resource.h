@@ -2519,8 +2519,11 @@
 #define IDC_STATIC1839                  1839
 #define IDS_STRING1839                  1839
 #define IDC_STATIC1840                  1840
+#define IDS_STRING1840                  1840
 #define IDC_STATIC1841                  1841
+#define IDS_STRING1841                  1841
 #define IDC_STATIC1842                  1842
+#define IDS_STRING1842                  1842
 #define IDC_STATIC1843                  1843
 #define IDC_STATIC1844                  1844
 #define IDC_STATIC1845                  1845

@@ -6287,6 +6287,8 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 		case PIXORD_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case EDIMAX_SP :	return HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE;
 		case EDIMAX_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		case TPLINK_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
+		case TPLINK_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		default :			return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 	}
 }
@@ -7101,7 +7103,8 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			ResetMovementDetector();
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
 			{
-				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
+				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP	||
+					m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
 					m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
 				m_HttpGetFrameThread.SetEventConnect();
 			}
@@ -10397,7 +10400,7 @@ MJPEG
 _T("GET /axis-cgi/mjpg/video.cgi?resolution=320x240&compression=60&fps=1 HTTP/1.1\r\n")
 
 CONFIG  
-_T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image HTTP/1.1\r\n")            -> Get All Image Properties
+_T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image HTTP/1.1\r\n")            -> get all image properties
 _T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image.Rotation HTTP/1.1\r\n")   -> root.Properties.Image.Rotation=0,180
 _T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image.Format HTTP/1.1\r\n")     -> root.Properties.Image.Format=jpeg,mjpeg
 _T("GET /axis-cgi/view/param.cgi?action=list&group=Properties.Image.Resolution HTTP/1.1\r\n") -> root.Properties.Image.Resolution=640x480,640x360,320x240,160x120
@@ -10437,10 +10440,26 @@ MJPEG
 _T("GET /mjpg/video.mjpg HTTP/1.1\r\n")
 
 CONFIG  
-_T("GET /camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0 HTTP/1.1\r\n")                          -> Get All Image Properties (for example: root.Properties.Image.I0.Resolution=1280x1024,640x480,320x240)
+_T("GET /camera-cgi/admin/param.cgi?action=list&group=Properties.Image.I0 HTTP/1.1\r\n")                          -> get all image properties (returns for example: root.Properties.Image.I0.Resolution=1280x1024,640x480,320x240)
 _T("GET /camera-cgi/admin/param.cgi?action=update&Image.I0.Appearance.Resolution=WidthxHeight HTTP/1.1\r\n")      -> set resolution
-_T("GET /camera-cgi/admin/param.cgi?action=update&Image.I0.Appearance.Compression=CompressionLevel HTTP/1.1\r\n") -> set compression level, value range is 0-4
-_T("GET /camera-cgi/admin/param.cgi?action=update&Image.I0.Stream.FPS=Fps HTTP/1.1\r\n")                          -> set framerate, valid values are: 1, 3, 5, 10, 15, 30
+_T("GET /camera-cgi/admin/param.cgi?action=update&Image.I0.Appearance.Compression=CompressionLevel HTTP/1.1\r\n") -> set compression, valid range: 0-4
+_T("GET /camera-cgi/admin/param.cgi?action=update&Image.I0.Stream.FPS=Fps HTTP/1.1\r\n")                          -> set framerate, valid values: 1, 3, 5, 10, 15, 30
+
+
+TP-LINK
+-------
+
+JPEG
+_T("GET /jpg/image.jpg HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /video.mjpg HTTP/1.1\r\n")
+
+CONFIG  
+_T("GET /cgi-bin/view/param?action=list&group=Properties.Image.Resolution HTTP/1.1\r\n")                   -> get all resolutions (returns for example: root.Properties.Image.Resolution=176x120,352x240,720x480)
+_T("GET /cgi-bin/admin/param?action=update&Image.I0.MJPEG.Resolution=WidthxHeight HTTP/1.1\r\n")           -> set resolution
+_T("GET /cgi-bin/admin/param?action=update&Image.I0.Appearance.Compression=CompressionLevel HTTP/1.1\r\n") -> set compression, valid range: 0-100 (0: for auto-rate control)
+_T("GET /cgi-bin/admin/param?action=update&Image.I0.MJPEG.FPS=Fps HTTP/1.1\r\n")                           -> set framerate, valid range: 1-30
 
 
 PIXORD or NETCOMM
@@ -10788,6 +10807,43 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 			break;
 		}
 		case EDIMAX_CP :	// Edimax Client Poll (jpegs)
+		{
+			if (m_pHttpGetFrameParseProcess)
+				m_pHttpGetFrameParseProcess->Close();
+			else
+				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
+			if (m_pHttpGetFrameParseProcess)
+			{
+				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
+				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
+				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			}
+			m_HttpGetFrameThread.Start();
+			res = m_HttpGetFrameThread.SetEventConnect();
+			break;
+		}
+		case TPLINK_SP :	// TP-Link Server Push (mjpeg)
+		{
+			if (m_pHttpGetFrameParseProcess)
+				m_pHttpGetFrameParseProcess->Close();
+			else
+				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
+			if (m_pHttpGetFrameParseProcess)
+			{
+				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
+				m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
+				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
+				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
+			}
+			m_HttpGetFrameThread.Start();
+			res = m_HttpGetFrameThread.SetEventConnect();
+			break;
+		}
+		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
 		{
 			if (m_pHttpGetFrameParseProcess)
 				m_pHttpGetFrameParseProcess->Close();
@@ -13385,6 +13441,133 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
 								sLocation,
 								(100 - m_pDoc->m_nHttpVideoQuality) / 25, // value range is 0-4
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else
+			{
+				sLocation = _T("/jpg/image.jpg");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+							sLocation,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case TPLINK_SP :	// TP-Link Server Push (mjpeg)
+		{
+			if (m_bQueryProperties)
+			{
+				sLocation = _T("/cgi-bin/view/param?action=list&group=Properties.Image.Resolution");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetResolution)
+			{
+				sLocation = _T("/cgi-bin/admin/param");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									DEFAULT_HTTP_VIDEO_SIZE_CX,
+									DEFAULT_HTTP_VIDEO_SIZE_CY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
+					m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+				}
+			}
+			else if (m_bSetCompression)
+			{
+				sLocation = _T("/cgi-bin/admin/param");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
+								sLocation,
+								(100 - m_pDoc->m_nHttpVideoQuality * 99 / 100), // value range is 1-100
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetFramerate)
+			{
+				int nFrameRate = Round(m_pDoc->m_dFrameRate);
+				if (nFrameRate <= 0)
+					nFrameRate = 1;
+				sLocation = _T("/cgi-bin/admin/param");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.FPS=%d HTTP/%s\r\n"),
+								sLocation,
+								nFrameRate, // value range is 1-30
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else
+			{
+				sLocation = _T("/video.mjpg");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+							sLocation,
+							m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
+		{
+			if (m_bQueryProperties)
+			{
+				sLocation = _T("/cgi-bin/view/param?action=list&group=Properties.Image.Resolution");
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_bSetResolution)
+			{
+				sLocation = _T("/cgi-bin/admin/param");
+				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_pDoc->m_nHttpVideoSizeX,
+									m_pDoc->m_nHttpVideoSizeY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+				}
+				else if (m_Sizes.GetSize() > 0)
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									m_Sizes[0].cx,
+									m_Sizes[0].cy,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+				}
+				else
+				{
+					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
+									sLocation,
+									DEFAULT_HTTP_VIDEO_SIZE_CX,
+									DEFAULT_HTTP_VIDEO_SIZE_CY,
+									m_bOldVersion ? _T("1.0") : _T("1.1"));
+					m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
+					m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
+				}
+			}
+			else if (m_bSetCompression)
+			{
+				sLocation = _T("/cgi-bin/admin/param");
+				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
+								sLocation,
+								(100 - m_pDoc->m_nHttpVideoQuality * 99 / 100), // value range is 1-100
 								m_bOldVersion ? _T("1.0") : _T("1.1"));
 			}
 			else

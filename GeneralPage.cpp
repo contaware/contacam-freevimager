@@ -493,9 +493,10 @@ BOOL CGeneralPage::OnInitDialog()
 	}
 	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 	{
-		// Axis and Edimax support only integer values starting at 1 fps
+		// Axis, Edimax and TP-Link support only integer values starting at 1 fps
 		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP	||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP	||
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
 			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
 		// Frequency not settable on client side by panasonic devices in server push mode
 		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
@@ -504,8 +505,9 @@ BOOL CGeneralPage::OnInitDialog()
 			m_SpinFrameRate.EnableWindow(FALSE);
 			pEdit->EnableWindow(FALSE);
 		}
+		// Pixord in server push mode and all client poll
 		else
-			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE); // Pixord in server push mode and all client poll
+			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
 	else
 	{

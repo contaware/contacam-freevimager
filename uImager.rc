@@ -241,7 +241,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
-		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Help"
     BEGIN
@@ -714,7 +714,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
-		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -972,7 +972,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
-		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -1104,7 +1104,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
-		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -1451,7 +1451,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
-		MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
+        MENUITEM "Debug Log Level",             ID_TOOLS_DEBUGLOG
     END
     POPUP "&Window"
     BEGIN
@@ -2189,7 +2189,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Email Send Configuration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_RECEIVER_MAIL,60,20,139,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_ATTACHMENT,60,38,139,124,CBS_DROPDOWNLIST | 
@@ -7213,6 +7213,13 @@ BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
     ID_TOOLS_DEBUGLOG       "Enable/disable debug log level\nEnable/Debug Log Level"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1840          "TP-Link (Server Push Mode)"
+    IDS_STRING1841          "TP-Link (Client Poll Mode)"
+    IDS_STRING1842          "Do you really want to enable Debug Log Level?\nThe Application Log file will fill up with a lot of messages!"
 END
 
 #endif    // English (U.S.) resources

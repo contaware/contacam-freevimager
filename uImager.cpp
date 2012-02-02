@@ -7170,26 +7170,29 @@ BOOL CUImagerApp::IsAutostart()
 
 void CUImagerApp::OnToolsDebuglog() 
 {
-	// Toggle value and store
-	m_bDebugLog = !m_bDebugLog;
-	if (m_bUseSettings)
-		WriteProfileInt(_T("GeneralApp"), _T("DebugLog"), (int)m_bDebugLog);
-
-	// Stop, update and eventually restart server
-#ifdef VIDEODEVICEDOC
-	BeginWaitCursor();
-	int nRet = CVideoDeviceDoc::MicroApacheReload(); // this will update the config file with the new log level
-	if (nRet <= 0)
+	if (m_bDebugLog || ::AfxMessageBox(ML_STRING(1842, "Do you really want to enable Debug Log Level?\nThe Application Log file will fill up with a lot of messages!"), MB_YESNO) == IDYES)
 	{
-		EndWaitCursor();
-		if (nRet == 0)
-			::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+		// Toggle value and store
+		m_bDebugLog = !m_bDebugLog;
+		if (m_bUseSettings)
+			WriteProfileInt(_T("GeneralApp"), _T("DebugLog"), (int)m_bDebugLog);
+
+		// Stop, update and eventually restart server
+#ifdef VIDEODEVICEDOC
+		BeginWaitCursor();
+		int nRet = CVideoDeviceDoc::MicroApacheReload(); // this will update the config file with the new log level
+		if (nRet <= 0)
+		{
+			EndWaitCursor();
+			if (nRet == 0)
+				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+			else
+				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+		}
 		else
-			::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
-	}
-	else
-		EndWaitCursor();
+			EndWaitCursor();
 #endif
+	}
 }
 
 void CUImagerApp::OnUpdateToolsDebuglog(CCmdUI* pCmdUI) 

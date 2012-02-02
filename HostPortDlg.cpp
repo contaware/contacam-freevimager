@@ -68,6 +68,8 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBox->AddString(ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"));
 	pComboBox->AddString(ML_STRING(1789, "Edimax (Server Push Mode)"));
 	pComboBox->AddString(ML_STRING(1839, "Edimax (Client Poll Mode)"));
+	pComboBox->AddString(ML_STRING(1840, "TP-Link (Server Push Mode)"));
+	pComboBox->AddString(ML_STRING(1841, "TP-Link (Client Poll Mode)"));
 
 	CDialog::OnInitDialog();
 

@@ -1252,6 +1252,8 @@ public:
 		PIXORD_CP,			// Pixord Client Poll (jpegs)
 		EDIMAX_SP,			// Edimax Server Push (mjpeg)
 		EDIMAX_CP,			// Edimax Client Poll (jpegs)
+		TPLINK_SP,			// TP-Link Server Push (mjpeg)
+		TPLINK_CP,			// TP-Link Client Poll (jpegs)
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
