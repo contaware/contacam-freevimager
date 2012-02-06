@@ -4316,9 +4316,10 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 	return 0;
 }
 
-int CVideoDeviceDoc::CWatchdogThread::Work()
+int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 {
 	ASSERT(m_pDoc);
+	ASSERT(!m_pDoc->m_pDxDraw);
 	DWORD Event;
 
 	// Necessary because we are drawing with directx
@@ -4327,7 +4328,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	// Poll starting flag
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_STARTCHECK_TIME);
+		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -4367,21 +4368,29 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 
 	// Init
 	DWORD dwLastHttpReconnectUpTime = ::timeGetTime();
+	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		m_pDoc->m_pDxDraw = new CDxDraw;
 
 	// Watch
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
+		Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, WATCHDOG_SHORTCHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
 			case WAIT_OBJECT_0 :		
 			{
+				if (m_pDoc->m_pDxDraw)
+				{
+					delete m_pDoc->m_pDxDraw;
+					m_pDoc->m_pDxDraw = NULL;
+				}
 				::CoUninitialize();
 				return 0;
 			}
 
-			// Check
+			// Check and Draw
+			case WAIT_OBJECT_0 + 1 : ::ResetEvent(m_hEventArray[1]);
 			case WAIT_TIMEOUT :		
 			{
 				// Update m_bWatchDogAlarm
@@ -4399,7 +4408,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 				}
 
-				// Save Frame List may be called 1 to 4 times till
+				// Save Frame List may be called many times till
 				// CSaveFrameListThread::Work() reacts and starts working:
 				// it's not a problem because CSaveFrameListThread::Work()
 				// removes empty lists.
@@ -4428,9 +4437,30 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				}
 
 				// Draw
-				if (m_pDoc->GetView() &&
-					dwMsSinceLastProcessFrame > WATCHDOG_DRAW_THRESHOLD)
-					m_pDoc->GetView()->Draw();
+				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw &&
+					::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0)
+				{
+					if (!m_pDoc->GetView()->Draw())
+					{
+						Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
+						switch (Event)
+						{
+							// Shutdown Event
+							case WAIT_OBJECT_0 :		
+							{
+								if (m_pDoc->m_pDxDraw)
+								{
+									delete m_pDoc->m_pDxDraw;
+									m_pDoc->m_pDxDraw = NULL;
+								}
+								::CoUninitialize();
+								return 0;
+							}
+							default:
+								break;
+						}
+					}
+				}
 
 				break;
 			}
@@ -4440,6 +4470,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 		}
 	}
 
+	// We never end here!
 	return 0;
 }
 
@@ -4753,6 +4784,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bResetSettings = FALSE;
 	m_pView = NULL;
 	m_pFrame = NULL;
+	m_pDxDraw = NULL;
 	m_bCaptureAudio = FALSE;
 	m_bStopProcessFrame = 0;
 	m_bProcessFrameStopped = 0;
@@ -4880,7 +4912,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
 	m_HttpGetFrameThread.SetDoc(this);
-	m_WatchdogThread.SetDoc(this);
+	m_WatchdogAndDrawThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
 
@@ -5059,8 +5091,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Start Save Frame List Thread
 	m_SaveFrameListThread.Start();
 
-	// Start Video Watchdog Thread
-	m_WatchdogThread.Start();
+	// Start Video Watchdog and Draw Thread
+	m_WatchdogAndDrawThread.Start();
 }
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
@@ -5260,9 +5292,9 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient() && m_pHttpGetFrameParseProcess)
 		{
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
-				sFormat += _T(" (mjpeg)");
+				sFormat += _T(" , server push");
 			else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
-				sFormat += _T(" (jpeg)");
+				sFormat += _T(" , client poll");
 		}
 
 		// Name , Size , Frame rate , Pixel format
@@ -8985,18 +9017,10 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		m_pDib = pDib;
 		::LeaveCriticalSection(&m_csDib);
 
-		// Draw
-		HRESULT hr = ::CoInitialize(NULL);
-		BOOL bCleanupCOM = ((hr == S_OK) || (hr == S_FALSE));
-		GetView()->Draw();
-		if (bCleanupCOM)
-			::CoUninitialize();
+		// Trigger a Draw
+		m_WatchdogAndDrawThread.TriggerDraw();
 
 		// Set started flag and open the Settings dialog
-		// if it's the first run of this device (leave this code
-		// here because m_pDib must be initialized when setting
-		// the m_bCaptureStarted flag otherwise the Draw()
-		// function inside the watch dog doesn't work correctly!)
 		if (!m_bCaptureStarted)
 		{
 			::InterlockedExchange(&m_bCaptureStarted, 1);

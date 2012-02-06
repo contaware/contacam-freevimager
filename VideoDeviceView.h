@@ -17,10 +17,9 @@
 #define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 602
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 603
 #define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 604
-#define WM_THREADSAFE_DXDRAW_INIT					WM_USER + 605
-#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 606
-#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 607
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 608
+#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 605
+#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 606
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 607
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -28,11 +27,12 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	void Draw();
+	BOOL Draw();
 	BOOL AreCriticalControlsDisabled() {return m_nCriticalControlsCount <= 0;};
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
+	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
 	__forceinline void DrawText();
 	__forceinline void DrawDC();
 	__forceinline void EraseBkgnd(BOOL bFullErase);
@@ -83,13 +83,12 @@ protected:
 	afx_msg LONG OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeSendFrameMsg(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
 protected:
-	volatile BOOL m_bInitializingDxDraw;
 	volatile DWORD m_dwDxDrawUpTime;
-	BOOL m_bDxDrawInitFailed;
+	volatile BOOL m_bDxDrawInitFailed;
+	volatile BOOL m_bDxDrawFirstInitOk;
 	int m_nCriticalControlsCount;
 	CFont m_GDIDrawFont;
 };

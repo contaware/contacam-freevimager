@@ -1,0 +1,599 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml2/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type"/>
+<meta content="IE=EmulateIE7" http-equiv="X-UA-Compatible"/>
+<title>Understanding COM Apartments, Part I - CodeGuru</title>
+<META Name="description" Content="In the first part of a two-part series on COM apartments, Jeff Prosise describes what apartments are, why they exist, and how to avoid the problems that they introduce.">
+<META NAME="Author" CONTENT="Jeff Prosise">
+<META Name="keywords" Content="">
+
+<META NAME="MS.LOCALE" CONTENT="en-US">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8"> 
+<LINK REL="alternate"  TYPE="application/rss+xml" TITLE="Codeguru RSS Feed" HREF="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml">
+
+<link rel="stylesheet" type="text/css" media="screen" href="/newimg/css/menu/superfish.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/newimg/css/menu/superfish-vertical.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/newimg/css/menu/superfish-navbar.css" />
+
+<!-- Pinning settings -->
+<meta name="application-name" content="Codeguru Site " />
+<meta name="msapplication-tooltip" content="Codeguru: ToolTip: Your Place for Coding Solutions and more." />
+<meta name="msapplication-navbutton-color" content="#660066" />
+<meta name="msapplication-starturl" content="http://www.codeguru.com/" />
+<!-- end of Pinning settings --> 
+
+
+
+
+
+<!-- function to use later with pinning -->
+<script type='text/javascript'>
+function flashWindow()
+{
+    try {
+        if (window.external.msIsSiteMode != undefined && window.external.msIsSiteMode()) {
+            window.setTimeout("window.external.msSiteModeActivate()", 2000);
+        }
+    }
+    catch (ex) {
+        // Fail silently.
+    }
+}
+<!-- end of function to use later with pinning -->
+</script>
+<link type="text/css" rel="stylesheet" href="/newimg/css/reset.css"/>
+<link type="text/css" rel="stylesheet" href="/newimg/css/styles.css"/>
+
+<script type="text/javascript" src="/newimg/javascript/swfobject.js"></script>
+<!--<script type="text/javascript" src="/newimg/javascript/jquery/jquery-1.3.2.min.js"></script>-->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="/newimg/javascript/jquery/plugins/hoverintent.js"></script>
+
+<script type="text/javascript" src="/newimg/javascript/jquery/plugins/jquery.rating.js"></script>
+<script type="text/javascript" src="/newimg/javascript/jquery/plugins/jquery.metadata.js"></script>
+<script type="text/javascript" src="/newimg/javascript/jquery/plugins/jquery.form.js"></script>
+
+<script type="text/javascript" src="/newimg/javascript/popup.js"></script>
+<script type="text/javascript" src="/newimg/javascript/common.js"></script>
+<script type="text/javascript" src="/newimg/javascript/tabs.js"></script>
+<script type="text/javascript" src="/newimg/javascript/hot_topics.js"></script>
+<script type="text/javascript" src="/newimg/javascript/iepngfix_tilebg.js"></script>
+<script type="text/javascript" src="/newimg/javascript/feature_box.js"></script>
+
+<script type="text/javascript" src="/newimg/javascript/main.js"></script>
+
+<SCRIPT LANGUAGE=JavaScript>
+<!--
+function OAS_AD(pos) {}
+//-->
+</SCRIPT><script language="javascript" src="http://e1.cdn.qnsr.com/cgi/d/0/0/203/651179/cmp0.js"></script>
+<script language="javascript" src="http://e1.cdn.qnsr.com/jsc/e1/fx.js"></script>
+<script language="JavaScript" src="http://e1.cdn.qnsr.com/jsc/e1/fc.js"></script>
+</head>
+<body bgcolor="#ffffff" leftmargin="0" topmargin="4" marginwidth="0" marginheight="4">
+
+<table width="100%" cellpadding="4" cellspacing="0" border="0">
+	<tr>
+		<td align="center">
+
+<script language="JavaScript">zzfocrender("203", "9479", "651180/651179/651178/651132/581034", "14", "728", "90", "", "", "");</script>
+<noscript>
+<a href="http://o1.qnsr.com/cgi/r?;n=203;c=651180/651179/651178/651132/581034;s=9479;x=3584;f=380834180;u=j;z=20120121033954" target="_blank">
+<img border="0" width="728" height="90" src="http://o1.qnsr.com/cgi/x?;n=203;c=651180/651179/651178/651132/581034;s=9479;x=3584;f=380834180;u=j;z=20120121033954" alt="Click here"></a>
+</noscript>
+		</td>
+	</tr>
+</table>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+	<tr>
+		<td width="99%" bgcolor="#FFFFFF" background="" valign="top">
+		
+			<img src="/img/sp.gif" width="629" height="1" border="0" alt="">
+			
+			<table width="100%" border="0" cellspacing="0" cellpadding="4" border="0">
+				<tr>
+					<td class="bodycopy">
+www.codeguru.com/cpp/com-tech/activex/apts/article.php/c5529/
+<br>
+<br>
+<a href="/cpp/com-tech/activex/apts/article.php/c5529/">Back to Article</a>
+<br>
+<br>
+
+<span class="bodycopy">
+<b><a href="/"
+">Home</a>
+</b>
+ >> 
+<b><a href="/cpp"
+/
+">Visual C++ / C++</a>
+</b>
+ >> 
+<b><a href="/cpp/com-tech"
+/
+">COM-based Technologies</a>
+</b>
+ >> 
+<b><a href="/cpp/com-tech/activex"
+/
+">ActiveX Programming</a>
+</b>
+ >> 
+<b><a href="/cpp/com-tech/activex/apts"
+/
+">Apartments & Threading </a>
+</b>
+<br>
+<br>
+
+<font class="sectionhead">Understanding COM Apartments, Part I</font><br>
+<b>Rating:</b> <font color="#990000"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"><img src="/img/star.gif" width="13" height="12"></font><br>
+<br>
+
+<table cellpadding="5" cellspacing="0" border="0">
+	<tr>
+		<td align="right">
+		</td>
+		<td class="bodycopy">
+		<b>Jeff Prosise</b> (<a href='/member.php/2635/'>view profile</a>)<br>
+April 13, 2001		</td>
+	</tr>
+</table>
+ 
+
+
+
+Let me begin my inaugural column for CodeGuru by stating that I'm on a crusade-a crusade to stamp 
+out bugs related to COM concurrency. COM features a concurrency mechanism that's capable of intercepting 
+and serializing concurrent method calls to objects that were designed to process only one method call at 
+a time. That mechanism centers around the notion of abstract boundaries called apartments. When I troubleshoot 
+COM systems that don't work, probably 40% of the bugs that I find result from a lack of understanding of 
+apartments. This deficiency of knowledge shouldn't be surprising, because apartments are at once one of 
+the most complex areas of COM and also the least well documented. Microsoft's intentions were good, but 
+when they introduced apartments to COM in Windows NT 3.51, they laid a mine field for unwary developers. 
+Play by the rules and you can avoid stepping on mines. But it's hard to obey the rules when you don't know 
+what the rules are.
+
+<p>
+This article is the first in a two-part series that describes what apartments are, why they exist, and how to avoid the problems that they introduce. In Part 1, I'll describe COM's apartment-based concurrency mechanism. In Part 2, I'll provide a set of rules that you can follow to avoid some of the nastiest and most insidious bugs that afflict COM programmers.
+
+<h3>Apartment Basics</h3>
+An <em>apartment</em> is a concurrency boundary; it's an imaginary box drawn around objects and client threads that 
+separates COM clients and COM objects that have incompatible threading characteristics. The primary reason 
+that apartments exist is to enable COM to serialize method calls to objects that aren't thread-safe. If you 
+don't tell COM that an object is thread-safe, COM won't allow more than one call at a time to reach the object. 
+Tell COM that the object is thread-safe, however, and it will happily allow the object to field concurrent method 
+calls on multiple threads.
+
+<p>
+Every thread that uses COM, and every object that those threads create, is assigned to an apartment. Apartments never span process boundaries, so if an object and its client reside in two different processes, then they reside in different apartments, too. When a client creates an in-proc object, COM must decide whether to place the object in its creator's apartment or in another apartment in the client process. If COM assigns the object and the thread that created it to the same apartment, then the client has direct, unimpeded access to the object. But if COM places the object in another apartment, calls to the object from the thread that created it are marshaled.
+
+<p>
+Figure 1 depicts the relationship between threads and objects that share an apartment, and threads and objects that are assigned to different apartments. Calls from thread 1 travel directly to the object that it created. Calls from thread 2 go through a proxy and a stub. COM creates the proxy/stub pair when it marshals the interface pointer to thread 2's apartment. As a rule, an interface pointer must be marshaled when it's passed across apartment boundaries. This means that when custom interfaces are involved, the same proxy/stub DLL (or type library if you prefer typelib marshaling) you use to provide marshaling support for cross-process and cross-machine method calls is needed even for in-proc objects if those objects will be communicating with clients in other apartments.
+
+<p>
+<a href="COMApartments1-1.gif" target=newFrame>
+<img src="/img/legacy/activex/COMApartments1-1.gif" width=500>
+<br><font size=3><em>Click here for larger image</em></font>
+</a>
+</p>
+<em>Figure 1: Calls to objects in other apartments are marshaled, even if the object and its caller belong to the same process.</em>
+
+<p>
+Windows NT 4.0 supports two different types of apartments; Windows 2000 supports three. The three types of apartments are:
+
+<ul>
+<li>Single-threaded apartments, or STAs (Windows NT 4.0 and Windows 2000)</li>
+<li>Multithreaded apartments, or MTAs (Windows NT 4.0 and Windows 2000)</li>
+<li>Neutral-threaded apartments, or NTAs (Windows 2000 only)</li>
+</ul>
+
+<p>
+Single-threaded apartments are limited to one thread each, but can host an unlimited number of objects. Additionally, COM places no limit on the number of STAs in a given process. The very first STA created in a process is referred to as the process's main STA. What's important about STAs is that every call destined for an object in an STA is transferred to the STA's thread before being delivered. Since all of the object's calls execute on the same thread, it's impossible for an STA-based object to execute more than one call at a time. COM uses STAs to serialize incoming calls to non-thread-safe objects. If you don't explicitly tell COM that an object is thread-safe, it will place instances of that object in an STA so the object won't suffer concurrent thread accesses.
+
+<p>
+One of the more interesting aspects of an STA's operation is how COM transfers calls destined for an STA-based object to the STA's thread. When it creates an STA, COM creates a hidden window to go with it. The window is accompanied by a window procedure that knows how to handle private messages representing method calls. When a method call destined for an STA comes out of COM's RPC channel, COM posts a message representing that call to the STA's window. When the thread in the STA retrieves the message, it dispatches it to the hidden window, and the window's window procedure delivers the call to the stub. The stub, in turn, executes the call to the object. Because a thread retrieves, dispatches, and processes just one message at a time, putting an object in an STA enacts a crude (but effective) call serialization mechanism. As shown in Figure 2, if n method calls are placed to an STA-based object at exactly the same time, the calls are queued and delivered to the object one at a time.
+
+<p>
+<a href="COMApartments1-2.gif" target=newFrame>
+<img src="/img/legacy/activex/COMApartments1-2.gif" width=500>
+<br><font size=3><em>Click here for larger image</em></font>
+</a>
+</p>
+<em>Figure 2: Calls entering an STA are converted into messages and posted to a message queue. Messages are retrieved from the message queue and converted back into method calls one at a time by the thread running in the STA.</em>
+
+<p>
+Something equally important happens when a call leaves an STA. COM can't simply allow the thread to block inside the RPC channel, because a callback would induce deadlock. (Imagine what would happen if an STA thread called an object in another apartment, and that object, in turn, called an object in the calling thread's apartment. If the thread were blocked, the call would never return because the one and only thread that can process the callback is waiting in the RPC channel for the original call to return.) Therefore, when a call leaves an STA, COM blocks the calling thread is such a way that the thread can be awakened to process callbacks. To enable such callbacks to occur, COM tracks the causality of each and every method call so it can recognize when an STA thread that's waiting in the RPC channel for a call to return should be released to process another incoming call. By default, a call that arrives at the entrance to an STA blocks if the STA's thread is currently waiting for an outbound call to return and the inbound and outbound calls are not part of the same causality chain. You can change this default behavior by writing a message filter, but that's a topic for another day.
+
+<p>
+Multithreaded apartments are different animals altogether. COM limits each process to one MTA, but it places no limit on the number of threads or objects in an MTA. If you look inside a process, you might find several STAs containing one thread each, but you'll never see more than on MTA. However, that one MTA, if it exists, can host any number of threads.
+
+<p>
+How do MTAs differ from STAs? Besides the fact that each process is limited to one MTA and that a given MTA can host any number of threads, an MTA has no hidden window and no message queue. Calls inbound to an object in an MTA are transferred to threads randomly selected from an RPC thread pool and are not serialized (see Figure 3). This means that objects placed in an MTA better be thread-safe, because in the absence of an external synchronization mechanism guaranteeing that an MTA-based object will only receive one call at a time, that object is likely to see calls execute concurrently on different RPC threads.
+
+<p>
+<a href="COMApartments1-3.gif" target=newFrame>
+<img src="/img/legacy/activex/COMApartments1-3.gif" width=500>
+<br><font size=3><em>Click here for larger image</em></font>
+</a>
+</p>
+<em>Figure 3: Calls entering an MTA are transferred to RPC threads but are not serialized.</em>
+
+<p>
+When a call leaves an MTA, COM does nothing special. The calling thread is simply allowed to block inside the RPC channel, and if a callback occurs, no deadlock will occur because the callback will be transferred to another RPC thread.
+
+<p>
+Windows 2000 introduced a third apartment type: the neutral-threaded apartment, or NTA. COM limits processes to a maximum of one NTA each. Threads are never assigned to the NTA; the NTA hosts objects only. What's important about the NTA is the fact that calls to NTA-based objects do not incur thread switches as they enter the NTA. In other words, when a call emanates from an STA or MTA to an NTA in the same process, the calling thread temporarily leaves the apartment it's in and executes code directly in the NTA. Contrast this to STA- and MTA-based objects, which always incur thread switches when called from other apartments. This thread switching accounts for the bulk of the overhead incurred when a call is marshaled between apartments. Eliminating these thread switches improves performance. Therefore, you can think of the NTA as an optimization that allows interapartment method calls to execute more efficiently. In addition, Windows 2000 supports an external synchronization mechanism based on activities that lets you specify separately whether calls to NTA-based objects should be serialized. Activity-based call serialization is more efficient than message-based serialization and can be enacted (or not enacted) on an object-by-object basis.
+
+<h3>How Threads are Assigned Apartments</h3>
+One of the cardinal rules of COM programming is that every thread that uses COM in any way must first initialize COM by calling either CoInitialize or CoInitializeEx. When a thread calls either of these functions, it is placed in an apartment. What type of apartment it's placed in depends on which function the thread called and how it called it. If a thread calls CoInitialize, COM creates a new STA and places the thread inside it:
+
+<pre>
+CoInitialize (NULL); <span class="codeComment">// STA</span>
+</pre>
+
+<p>
+If the thread calls CoInitializeEx and passes in the parameter COINIT_APARTMENTTHREADED, it, too, is placed in an STA:
+
+<pre>
+CoInitializeEx (NULL, COINIT_APARTMENTTHREADED); <span class="codeComment">// STA</span>
+</pre>
+
+<p>
+Calling CoInitializeEx with a COINIT_MULTITHREADED parameter places the thread inside the process's one and only MTA:
+
+<pre>
+CoInitializeEx (NULL, COINIT_MULTITHREADED); <span class="codeComment">// MTA</span>
+</pre>
+
+<p>
+To a very large extent, a process's apartment configuration is driven by how the threads in that process call CoInitialize[Ex]. There are instances in which COM will create a new apartment outside of a call to CoInitialize[Ex], but for now we won't muddy the water by considering such circumstances.
+
+<p>
+For the sake of example, suppose that a new process is begun and that a thread in that process (thread 1) calls CoInitialize:
+
+<pre>
+CoInitialize (NULL); <span class="codeComment">// Thread 1</span>
+</pre>
+
+<p>
+Furthermore, suppose that thread 1 starts threads 2, 3, 4, and 5, and that these threads initialize COM with the following statements:
+
+<pre>
+CoInitializeEx (NULL, COINIT_APARTMENTTHREADED); <span class="codeComment">// Thread 2</span>
+CoInitializeEx (NULL, COINIT_MULTITHREADED);     <span class="codeComment">// Thread 3</span>
+CoInitializeEx (NULL, COINIT_MULTITHREADED);     <span class="codeComment">// Thread 4</span>
+CoInitialize (NULL);                             <span class="codeComment">// Thread 5</span>
+</pre>
+
+<p>
+Figure 4 shows the resulting apartment configuration. Threads 1, 2, and 5 are assigned to STAs because of how they called CoInitialize and CoInitializeEx. They're placed in separate STAs because STAs are limited to one thread each. Threads 3 and 4, on the other hand, go in the process's MTA. Remember, COM never creates more than one MTA in a given process, but it's willing to place any number of threads in that MTA.
+
+<p>
+<a href="COMApartments1-4.gif" target=newFrame>
+<img src="/img/legacy/activex/COMApartments1-4.gif" width=500>
+<br><font size=3><em>Click here for larger image</em></font>
+</a>
+</p>
+<em>Figure 4: A process with five threads distributed among three STAs and one MTA.</em>
+
+<p>
+If you're a nuts and bolts person, you might be curious to know more about the physical nature of an apartment-that is, how COM represents apartments internally. Whenever it creates a new apartment, COM allocates an apartment object on the heap and initializes it with important information such as the apartment ID and apartment type. When it assigns a thread to an apartment, COM records the address of the corresponding apartment object in thread-local storage (TLS). Thus, if COM is executing on a thread and it wants to know which, if any, apartment the thread belongs to, all it has to do is reach into thread-local storage and look for the address of an apartment object.
+
+<h3>How In-Proc Objects are Assigned Apartments</h3>
+Now that we know how threads are assigned to apartments, we should consider the other half of the equation-that is, how objects are assigned apartments. The algorithm that COM uses to decide which apartment to create an object in differs depending on whether the object is an in-proc object or out-of-proc object. The in-proc case tends to be the most interesting, because only in-proc objects can be created in their creator's apartment. We'll discuss the in-proc case first, and then double back to discuss apartment considerations for out-of-proc objects.
+
+<p>
+COM determines which apartment an in-proc object will be created in by reading the object's ThreadingModel value from the registry. ThreadingModel is a named value assigned to the InprocServer32 key that identifies the object's DLL. The following registry entries, shown here in REGEDIT format, identify an object whose CLSID is 99999999-0000-0000-0000-111111111111, whose DLL is MyServer.dll, and whose ThreadingModel is Apartment:
+
+<pre>
+[HKEY_CLASSES_ROOT\CLSID\{99999999-0000-0000-0000-111111111111}]
+@="My Object"
+[HKEY_CLASSES_ROOT\CLSID\{99999999-0000-0000-0000-111111111111}
+\InprocServer32]
+@="C:\\COM Servers\\MyServer.dll"
+"ThreadingModel"="Apartment"
+</pre>
+
+<p>
+Apartment is one of four threading models supported by Windows NT 4.0, and one 
+of five supported by Windows 2000. The five threading models-and the operating 
+systems in which they're supported-are:
+
+<p>
+<table border=1 cellpadding=5>
+  <tr>
+    <td>ThreadingModel</td>
+    <td>Apartment Type</td>
+    <td>NT 4.0</td>
+    <td>Windows 2000</td>
+  </tr>
+  <tr>
+    <td>None</td>
+    <td>Main STA</td>
+    <td>X</td>
+    <td>X</td>
+  </tr>
+  <tr>
+    <td>Apartment</td>
+    <td>Any STA</td>
+    <td>X</td>
+    <td>X</td>
+  </tr>
+  <tr>
+    <td>Free</td>
+    <td>MTA</td>
+    <td>X</td>
+    <td>X</td>
+  </tr>
+  <tr>
+    <td>Both</td>
+    <td>STA or MTA</td>
+    <td>X</td>
+    <td>X</td>
+  </tr>
+  <tr>
+    <td>Neutral</td>
+    <td>NTA</td>
+    <td>&nbsp;</td>
+    <td>X</td>
+  </tr>
+</table>
+
+<p>
+The column labeled "Apartment Type" indicates how COM treats an object with the designated ThreadingModel value. For example, COM restricts an object that has no ThreadingModel value ("ThreadingModel=None") to the process's main STA. ThreadingModel=Apartment allows the object to be created in any STA (not just the main STA), while ThreadingModel=Free restricts the object to the MTA and ThreadingModel=Neutral restricts it to the NTA. Only ThreadingModel=Both offers COM any real choice in the matter by giving it permission to create an object in either an STA or MTA.
+
+<p>
+COM tries its best to place in-proc objects in the same apartments as the threads that create 
+them. For example, if an STA thread creates an object marked ThreadingModel=Apartment, then COM 
+will create the object in the creating thread's STA. If an MTA thread creates a ThreadingModel=Free 
+object, COM will place the object in the MTA alongside the creating thread. Sometimes, however, 
+COM can't put an object in its creator's apartment. If an STA thread, for example, creates an object 
+marked ThreadingModel=Free, then the object will be created in the process's MTA and the creating 
+thread will access the object through a proxy and stub. Similarly, if an MTA thread creates a 
+ThreadingModel=None or ThreadingModel=Apartment object, calls from that thread will be marshaled 
+from the MTA to the object's STA. The following table documents what happens when a thread in either 
+an STA or MTA creates an object marked with any valid ThreadingModel value (or no ThreadingModel value):
+
+<p>
+<table cellpadding=5 border=1>
+<tr>
+  <td>&nbsp;</td>
+  <td>None</td>
+  <td>Apartment</td>
+  <td>Free</td>
+  <td>Both</td>
+  <td>Neutral</td>
+</tr>
+
+<tr>
+  <td>STA</td>
+  <td>Main STA</td>
+  <td>Creator's STA</td>
+  <td>MTA</td>
+  <td>Creator's STA</td>
+  <td>NTA</td>
+</tr>
+<tr>
+  <td>MTA</td>
+  <td>Main STA</td>
+  <td>STA</td>
+  <td>MTA</td>
+  <td>MTA</td>
+  <td>NTA</td>
+</tr>
+</table>
+
+<p>
+Why does ThreadingModel=None restrict an object to a process's main STA? Because only then can COM ensure that multiple instances of an object that knows nothing about thread safety can execute safely. Suppose that two ThreadingModel=None objects are created from the same DLL. If the objects access any global variables in that DLL (and they almost certainly will), COM must execute all calls to both objects on the same thread, or else the objects might attempt to read or write the same global variable at once. Restricting object instances to the main STA is COM's way of getting the objects on the same thread.
+
+<p>
+Although it might not be obvious at first, the threading model that you choose has important implications for the code that you write. For example, an object marked ThreadingModel=Free or ThreadingModel=Both should be completely thread-safe since calls to MTA-based objects aren't serialized. Even a ThreadingModel=Apartment object should be partially thread-safe, because ThreadingModel=Apartment doesn't prevent multiple objects created from the same DLL from colliding over shared data. We'll explore this subject in my next column.
+
+<h3>How Out-of-Proc Objects are Assigned Apartments</h3>
+Out-of-process objects don't have ThreadingModel values because COM uses a completely different algorithm to assign out-of-proc objects to apartments. To make a long story short, COM places an out-of-proc object in the same apartment as the thread in the server process that creates the object. Most out-of-proc (EXE) COM servers begin by calling either CoInitialize or CoInitializeEx to place their primary thread in an STA. They then create class objects for the object types that they're capable of creating and register them with CoRegisterClassObject. When an activation request reaches a server that's initialized this way, the request is processed in the process's STA. As a result, objects created in the server process are placed in the process's STA, too.
+
+<p>
+You can move out-of-proc objects to the MTA by placing the thread that registers the objects' class objects in the MTA. Incoming activation requests will then arrive on RPC threads that execute in the server process's MTA. Objects created in response to these activation requests will reside in the MTA as well.
+
+<p>
+The upshot is that in most cases involving EXE COM servers, the apartment that hosts the thread that calls CoRegisterClassObject is also the apartment that hosts the objects that the server creates. Exceptions do exist; EXE COM servers written with ATL's CComAutoThreadModule and CComClassFactoryAutoThread classes, which create multiple STAs in the server process and divide objects evenly among those STAs, are one example. These, however, account for a tiny fraction of the EXE COM servers that exist today, and can very much be considered the exception rather than the rule.
+
+<h3>Coming Up Next</h3>
+So what does it all mean? Much of the detail presented in this article may seem too arcane to have any practical value. The reality, however, is that understanding COM apartments is absolutely essential if you want to avoid some of the most common-and potentially most dangerous-pitfalls that afflict COM programmers. You'll see what I mean in my next column.
+<p>
+
+
+
+
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<table width="100%" cellpadding="10" cellspacing="0" border="0" bgcolor="#FFFFFF">
+  <tr>
+    <td align="center">
+<script language="JavaScript">zzfocrender("203", "9479", "651182/651179/651178/651132/581034", "14", "728", "90", "", "", "");</script>
+<noscript>
+<a href="http://o1.qnsr.com/cgi/r?;n=203;c=651182/651179/651178/651132/581034;s=9479;x=3584;f=558492573;u=j;z=20120121033954" target="_blank">
+<img border="0" width="728" height="90" src="http://o1.qnsr.com/cgi/x?;n=203;c=651182/651179/651178/651132/581034;s=9479;x=3584;f=558492573;u=j;z=20120121033954" alt="Click here"></a>
+</noscript>
+</td>
+  </tr>
+<!--
+  <tr>
+    <td align="center"></td>
+  </tr>
+-->
+  <tr>
+    <td class="bodycopy" align="center">
+      <CENTER>
+       <style>
+#developerBrand-footer {
+	text-align:center; 
+	margin:0 auto; 
+}
+#footerlinks {
+	font-size:12px;
+	margin:10px 0 0 0;
+	word-spacing:2px;
+}
+#footerlinks a {
+	color:#000000;
+	margin:10px 0 0 0;
+}
+#itbeBrand-footer {
+	text-align:center; 
+	margin:0 auto; 
+}
+#footercopyright {
+	font-size:12px;
+	margin:5px 0 0 0;
+}
+#developerBrandForum-footer {
+	text-align:center; 
+	margin:0 auto; 
+}
+#itbeBrandForum-footer {
+	text-align:center; 
+	margin:0 auto; 
+}
+
+
+</style>
+	<!-- Start - Developer Network Footer -->
+	<div id="developerBrand-footer" style="display:none">
+		<div id="developerlogo">
+			<img src="/icom_includes/footers/img/developer_logo.jpg" border="0" />
+		</div>
+		<div id="footercopyright">
+			<script type="text/javascript">
+			document.write(' Copyright ');
+			var today = new Date();
+			document.write( + today.getFullYear());
+			document.write(' QuinStreet Inc. All Rights Reserved.');
+			</script>
+			<noscript>
+			Copyright 2012 QuinStreet Inc. All Rights Reserved.
+			</noscript>
+		</div>
+		<div id="footerlinks">
+			 <a href="/terms">Terms of Service</a> | <a href="/licensing">Licensing & Permissions</a> | <a href="/privacy">Privacy Policy</a>  <br>   <a href="/about-developer">About the Developer.com Network</a> | <a href="/mediakit/index.html">Advertise</a>
+		</div>
+	</div>
+	<!-- End - Developer Network Footer -->
+	<!-- Start - ITBE Network Footer -->
+	<div id="itbeBrand-footer" style="display:none">
+		<div id="itbelogo">
+			<img src="/icom_includes/footers/img/itbe.gif" border="0" />
+		</div>
+		<div id="footercopyright">
+			<script type="text/javascript">
+			document.write(' Copyright ');
+			var today = new Date();
+			document.write( + today.getFullYear());
+			document.write(' QuinStreet Inc. All Rights Reserved.');
+			</script>
+			<noscript>
+			Copyright 2012 Quinstreet Inc. All right reserved.
+			</noscript>
+		</div>
+		<div id="footerlinks">
+			 <a href="/terms">Terms of Service</a> | <a href="/licensing">Licensing & Permissions</a> | <a href="/privacy">Privacy Policy</a>  <br>   <a href="/about-itbe">About the IT Business Edge Network</a> | <a href="/mediakit/index.html">Advertise</a>
+		</div>
+	</div>
+	<!-- End - ITBE Network Footer -->
+	<!-- Forums developer Footer -->
+	<div id="developerBrandForum-footer" style="display:none">
+	<div id="acceptableusepolicy">
+		<a href="/aup.html">Acceptable Use Policy</a>
+	</div>
+	<div id="developerlogo">
+		<a href="http://www.developer.com" target="_blank"><img src="/icom_includes/footers/img/developer_logo.jpg" border="0" /></a>
+	</div>
+	<div id="footercopyright">
+		<script type="text/javascript">
+			document.write(' Copyright ');
+			var today = new Date();
+			document.write( + today.getFullYear());
+			document.write(' QuinStreet Inc. All Rights Reserved.');
+		</script>
+		<noscript>
+			Copyright 2012 QuinStreet Inc. All Rights Reserved.
+		</noscript>
+	</div>
+	<div id="footerlinks">
+		 <a href="/terms">Terms of Service</a> | <a href="/licensing">Licensing & Permissions</a> | <a href="/privacy">Privacy Policy</a>  <br><a href="/about-developer">About the Developer.com Network</a> | <a href="/mediakit/index.html">Advertise</a>
+	</div>
+	</div>
+	<!-- End- Forum Developer footer -->
+	<!-- Forum ITBE footer -->
+	<div id="itbeBrandForum-footer" style="display:none">
+	<div id="acceptableusepolicy">
+		<a href="/aup.html">Acceptable Use Policy</a>
+	</div>
+	<div id="itbelogo">
+		<a href="http://www.itbusinessedge.com" target="_blank"><img src="/icom_includes/footers/img/itbe.gif" border="0" /></a>
+	</div>
+	<div id="footercopyright">
+		<script type="text/javascript">
+			document.write(' Copyright ');
+			var today = new Date();
+			document.write( + today.getFullYear());
+			document.write(' QuinStreet Inc. All Rights Reserved.');
+		</script>
+		<noscript>
+			Copyright 2012 QuinStreet Inc. All Rights Reserved.
+		</noscript>
+	</div>
+	<div id="footerlinks">
+		 <a href="/terms">Terms of Service</a> | <a href="/licensing">Licensing & Permissions</a> | <a href="/privacy">Privacy Policy</a>  <br>   <a href="/about-itbe">About the IT Business Edge Network</a> | <a href="/mediakit/index.html">Advertise</a>
+	</div>
+</div>
+
+<!-- End - Footer ITBE footer -->
+<script language="Javascript" src="/icom_includes/footers/scripts/footerbrandingcode.js"></script>
+<!-- Google Analytics -->
+<script src="/icom_includes/footers/scripts/ga.js"  type="text/javascript"></script>
+<script  type="text/javascript" >
+<!--     hide from no js browsers
+delete Array.prototype.itemValidation;
+delete Array.prototype.isArray;
+var superTracker = _gat._getTracker("UA-2838492-1");
+superTracker._initData();
+superTracker._trackPageview();
+
+-->
+</script>
+<script  type="text/javascript" >
+<!--     hide from no js browsers
+   var site_name =  location.hostname;
+   if ( site_name.indexOf("www.") != 0 ) {
+     site_name  = "www."+site_name ;
+   }
+   document.write("<SCR" + "IPT LANGUAGE='JavaScript1.2' SRC='/icom_includes/footers/sites/"+ site_name +".js' TYPE='text/javascript'><\/SCR" + "IPT>");
+-->
+</script>
+<script  type="text/javascript" >
+<!--     hide from no js browsers
+   pageTracker._initData();
+   pageTracker._trackPageview();
+   // -->
+</script>
+<!-- End Google Analytics -->
+ 
+     </CENTER>
+    </td>
+  </tr>
+  
+</table>
+</body>
+</html>
+
+   

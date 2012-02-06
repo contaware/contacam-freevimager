@@ -60,12 +60,10 @@ class CMovementDetectionPage;
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
 #define DXDRAW_REINIT_TIMEOUT				5000U		// ms
 #define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
-#define DXDRAW_ERROR_COLOR					RGB(255,160,0)
 
-// Watchdog
-#define WATCHDOG_STARTCHECK_TIME			1000U		// ms
-#define WATCHDOG_DRAW_THRESHOLD				300U		// ms
-#define WATCHDOG_CHECK_TIME					110U		// ms
+// Watch Dog and Draw
+#define WATCHDOG_LONGCHECK_TIME				1000U		// ms
+#define WATCHDOG_SHORTCHECK_TIME			300U		// ms
 #define WATCHDOG_THRESHOLD					15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
 #define HTTPWATCHDOG_RETRY_TIMEOUT			35000U		// ms, all re-connects after 35s
 
@@ -770,17 +768,22 @@ public:
 			NETCOMPARSEPROCESSLIST m_HttpGetFrameParseProcessList;
 	};
 
-	// Watch Dog Thread
-	class CWatchdogThread : public CWorkerThread
+	// Watch Dog and Draw Thread
+	class CWatchdogAndDrawThread : public CWorkerThread
 	{
 		public:
-			CWatchdogThread() {m_pDoc = NULL;};
-			virtual ~CWatchdogThread() {Kill();};
+			CWatchdogAndDrawThread() {	m_pDoc = NULL;
+										m_hEventArray[0] = GetKillEvent();
+										m_hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL);};
+			virtual ~CWatchdogAndDrawThread() {	Kill();
+												::CloseHandle(m_hEventArray[1]);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
+			__forceinline BOOL TriggerDraw() {return ::SetEvent(m_hEventArray[1]);};
 
 		protected:
 			int Work();
 			CVideoDeviceDoc* m_pDoc;
+			HANDLE m_hEventArray[2];
 	};
 
 	// Delete Thread
@@ -1404,7 +1407,7 @@ public:
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
-	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
+	CWatchdogAndDrawThread m_WatchdogAndDrawThread;		// Video Capture Watchdog and Draw Thread
 	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
@@ -1412,7 +1415,7 @@ public:
 	CSaveSnapshotFTPThread m_SaveSnapshotFTPThread;		// Thread which ftp uploads the swf snapshots history
 
 	// Drawing
-	CDxDraw m_DxDraw;									// Direct Draw Object
+	CDxDraw* m_pDxDraw;									// Direct Draw Object
 	volatile BOOL m_bDecodeFramesForPreview;			// Decode the frames from YUV to RGB for display
 														// because the format isn't supported for display
 

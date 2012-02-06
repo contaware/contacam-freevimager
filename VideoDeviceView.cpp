@@ -42,15 +42,14 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
 	ON_MESSAGE(WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC, OnThreadSafeAutorunRemoveDeviceCloseDoc)
 	ON_MESSAGE(WM_THREADSAFE_SENDFRAME_MSG, OnThreadSafeSendFrameMsg)
-	ON_MESSAGE(WM_THREADSAFE_DXDRAW_INIT, OnThreadSafeDxDrawInit)
 END_MESSAGE_MAP()
 
 	
 CVideoDeviceView::CVideoDeviceView()
 {
 	// Init vars
-	m_bInitializingDxDraw = FALSE;
 	m_bDxDrawInitFailed = FALSE;
+	m_bDxDrawFirstInitOk = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_nCriticalControlsCount = 1;
 }
@@ -387,45 +386,41 @@ afx_msg LONG CVideoDeviceView::OnThreadSafeSendFrameMsg(WPARAM wparam, LPARAM lp
 		return 0;
 }
 
-afx_msg LONG CVideoDeviceView::OnThreadSafeDxDrawInit(WPARAM wparam, LPARAM lparam)
+BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	WORD wWidth = LOWORD(wparam);
-	WORD wHeight = HIWORD(wparam);
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 	CTimeSpan ElapsedTimeSinceLastSessionChange = CTime::GetCurrentTime() - ::AfxGetMainFrame()->m_SessionChangeTime;
-	if (wWidth > 0 && wHeight > 0									&&
-		::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0	&&
+	if (nWidth > 0 && nHeight > 0 &&
 		(ElapsedTimeSinceLastSessionChange.GetTotalSeconds() >= SESSIONCHANGE_WAIT_SEC ||
 		ElapsedTimeSinceLastSessionChange.GetTotalSeconds() < 0))
 	{
-		if (pDoc->m_DxDraw.Init(	GetSafeHwnd(),
-									(int)wWidth,
-									(int)wHeight,
-									(DWORD)lparam,
+		if (pDoc->m_pDxDraw->Init(	GetSafeHwnd(),
+									nWidth,
+									nHeight,
+									dwFourCC,
 									IDB_BITSTREAM_VERA_11))
 		{
 			m_bDxDrawInitFailed = FALSE;
-			m_bInitializingDxDraw = FALSE;
-			return 1;
+			m_bDxDrawFirstInitOk = TRUE;
+			return TRUE;
 		}
 		else
 		{
 			pDoc->m_bDecodeFramesForPreview = TRUE;
-			m_bInitializingDxDraw = FALSE;
-			if (!m_bDxDrawInitFailed && lparam == 0) // if also BI_RGB failed, display "DirectX failed" in OnDraw()
+			if (!m_bDxDrawInitFailed && dwFourCC == 0U) // if also BI_RGB failed, display "DirectX failed" in OnDraw()
 			{
 				m_bDxDrawInitFailed = TRUE;
-				Invalidate();
+				::PostMessage(	GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+								(LPARAM)0);
 			}
-			return 0;
+			return FALSE;
 		}
 	}
 	else
-	{
-		m_bInitializingDxDraw = FALSE;
-		return 0;
-	}
+		return FALSE;
 }
 
 int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -443,7 +438,7 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 __forceinline void CVideoDeviceView::EraseBkgnd(BOOL bFullErase)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
 	// Erase Full-Screen Borders
 	if (m_bFullScreenMode)
@@ -460,42 +455,42 @@ __forceinline void CVideoDeviceView::EraseBkgnd(BOOL bFullErase)
 		
 		// Clear Front
 		if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-			pDoc->m_DxDraw.ClearFront(&rcTop);
+			pDoc->m_pDxDraw->ClearFront(&rcTop);
 		if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-			pDoc->m_DxDraw.ClearFront(&rcLeft);
+			pDoc->m_pDxDraw->ClearFront(&rcLeft);
 		if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-			pDoc->m_DxDraw.ClearFront(&rcRight);
+			pDoc->m_pDxDraw->ClearFront(&rcRight);
 		if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-			pDoc->m_DxDraw.ClearFront(&rcBottom);
+			pDoc->m_pDxDraw->ClearFront(&rcBottom);
 	}
 
 	// Erase All
 	if (bFullErase)
-		pDoc->m_DxDraw.ClearBack();
+		pDoc->m_pDxDraw->ClearBack();
 }
 
 __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
 	// Check
-	if (!pDoc->m_pDib)
+	if (!pDoc->m_pDib || !pDoc->m_pDxDraw)
 		return FALSE;
 	// YUY2 Format Equivalents
-	else if (pDoc->m_DxDraw.GetCurrentSrcFourCC() == FCC('YUY2')	&&
+	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
 			(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
 			pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
 			pDoc->m_pDib->GetCompression() == FCC('V422')			||
 			pDoc->m_pDib->GetCompression() == FCC('YUYV')))
 		return FALSE;
 	// Special Handling for YV12 Format
-	else if (pDoc->m_DxDraw.GetCurrentSrcFourCC() == FCC('YV12'))
+	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
 	{
-		if (!pDoc->m_DxDraw.GetCurrentSrcFlipUV()			&&
+		if (!pDoc->m_pDxDraw->GetCurrentSrcFlipUV()			&&
 			pDoc->m_pDib->GetCompression() == FCC('YV12'))
 			return FALSE;
-		else if (pDoc->m_DxDraw.GetCurrentSrcFlipUV()		&&
+		else if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV()		&&
 			(pDoc->m_pDib->GetCompression() == FCC('I420')	||
 			pDoc->m_pDib->GetCompression() == FCC('IYUV')))
 			return FALSE;
@@ -503,7 +498,7 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 			return TRUE;
 	}
 	// RGB Format Equivalents
-	else if (pDoc->m_DxDraw.GetCurrentSrcFourCC() == BI_RGB	&&
+	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == BI_RGB	&&
 			(pDoc->m_pDib->GetCompression() == BI_BITFIELDS	||
 			pDoc->m_pDib->GetCompression() == BI_RLE4		||
 			pDoc->m_pDib->GetCompression() == FCC('RLE4')	||
@@ -512,30 +507,23 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 		return FALSE;
 	// Remaining Formats
 	else
-		return (pDoc->m_pDib->GetCompression() != pDoc->m_DxDraw.GetCurrentSrcFourCC());
+		return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 }
 
-void CVideoDeviceView::Draw()
+BOOL CVideoDeviceView::Draw()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
+	ASSERT(pDoc->m_pDxDraw);
 
-	// Nothing to draw as a service or if not connected
-	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess ||
-		::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount > 0)
-		return;
-
-	// Enter CS here, also m_bInitializingDxDraw must be under the cs
-	// so that if two or more Draw() are called from different threads
-	// m_bInitializingDxDraw can be set only by one of them!
+	// Enter CS
 	::EnterCriticalSection(&pDoc->m_csDib);
 
-	// Main UI thread is initializing the DxDraw object for us
-	// -> no drawing at this moment!
-	if (!pDoc->m_pDib || m_bInitializingDxDraw)
+	// No drawing possible at this moment
+	if (!pDoc->m_pDib || !pDoc->m_pDib->IsValid())
 	{
 		::LeaveCriticalSection(&pDoc->m_csDib);
-		return;
+		return FALSE;
 	}
 
 	// Init local vars
@@ -547,54 +535,42 @@ void CVideoDeviceView::Draw()
 	// Preview Off?
 	if (!bVideoView)
 	{
-		if (!pDoc->m_DxDraw.IsInit()										||
+		if (!pDoc->m_pDxDraw->IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
-			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
-			pDoc->m_DxDraw.GetCurrentSrcFourCC() != BI_RGB)
+			pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
+			pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
+			pDoc->m_pDxDraw->GetCurrentSrcFourCC() != BI_RGB)
 		{
-			// Dx draw must be init from the main UI thread,
-			// otherwise it crashes on some machines with
-			// certain graphic cards!
-			// Init to RGB to be able to display
-			// the messages on a black empty screen
 			m_dwDxDrawUpTime = dwCurrentUpTime;
-			m_bInitializingDxDraw = TRUE;
-			::PostMessage(	GetSafeHwnd(),
-							WM_THREADSAFE_DXDRAW_INIT,
-							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
-							(LPARAM)BI_RGB);
-			::LeaveCriticalSection(&pDoc->m_csDib);
-			return;
+			if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), BI_RGB))
+			{
+				::LeaveCriticalSection(&pDoc->m_csDib);
+				return FALSE;
+			}
 		}	
 	}
 	else
 	{
-		if (!pDoc->m_DxDraw.IsInit()										||
+		if (!pDoc->m_pDxDraw->IsInit()										||
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-			pDoc->m_pDib->GetWidth() != pDoc->m_DxDraw.GetSrcWidth()		||
-			pDoc->m_pDib->GetHeight() != pDoc->m_DxDraw.GetSrcHeight()		||				
+			pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
+			pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
 			IsCompressionDifferent())
 		{
-			// Dx draw must be init from the main UI thread,
-			// otherwise it crashes on some machines with
-			// certain graphic cards!
 			m_dwDxDrawUpTime = dwCurrentUpTime;
-			m_bInitializingDxDraw = TRUE;
-			::PostMessage(	GetSafeHwnd(),
-							WM_THREADSAFE_DXDRAW_INIT,
-							MAKEWPARAM((WORD)(pDoc->m_pDib->GetWidth()), (WORD)(pDoc->m_pDib->GetHeight())),
-							(LPARAM)pDoc->m_pDib->GetCompression());
-			::LeaveCriticalSection(&pDoc->m_csDib);
-			return;
+			if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), pDoc->m_pDib->GetCompression()))
+			{
+				::LeaveCriticalSection(&pDoc->m_csDib);
+				return FALSE;
+			}
 		}
 	}
 
 	// Draw if initialized
-	if (pDoc->m_DxDraw.IsInit())
+	if (pDoc->m_pDxDraw->IsInit())
 	{
 		// Update Current Device
-		pDoc->m_DxDraw.UpdateCurrentDevice();
+		pDoc->m_pDxDraw->UpdateCurrentDevice();
 
 		// Erase Background, full erase if drawing a message
 		BOOL bDrawMsg = !bVideoView						||
@@ -604,15 +580,15 @@ void CVideoDeviceView::Draw()
 
 		// Display: Change Size
 		if (bStopAndChangeFormat)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
+			pDoc->m_pDxDraw->DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		// Display: No Frames
 		else if (bWatchDogAlarm)
-			pDoc->m_DxDraw.DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);		// Only ASCII string supported!
+			pDoc->m_pDxDraw->DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);		// Only ASCII string supported!
 		// Draw Frame + Info
 		else if (bVideoView)
 		{
 			// Draw Frame
-			pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_ZoomRect);
+			pDoc->m_pDxDraw->RenderDib(pDoc->m_pDib, m_ZoomRect);
 
 			// Text Drawing
 			DrawText();
@@ -626,21 +602,23 @@ void CVideoDeviceView::Draw()
 		}
 		// Display: Preview Off
 		else
-			pDoc->m_DxDraw.DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
+			pDoc->m_pDxDraw->DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
 		
 		// Blt
-		if (pDoc->m_DxDraw.Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
+		if (pDoc->m_pDxDraw->Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
 			m_dwDxDrawUpTime = dwCurrentUpTime;
 	}
 
 	// Leave CS
 	::LeaveCriticalSection(&pDoc->m_csDib);
+
+	return TRUE;
 }
 
 __forceinline void CVideoDeviceView::DrawText()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
 	// Progress Display
 	if (pDoc->m_SaveFrameListThread.IsWorking())
@@ -651,21 +629,21 @@ __forceinline void CVideoDeviceView::DrawText()
 		else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
 			sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
 		if (sProgress != _T(""))
-			pDoc->m_DxDraw.DrawText(sProgress, pDoc->m_pDib->GetWidth() - 1, 0, DRAWTEXT_TOPRIGHT);
+			pDoc->m_pDxDraw->DrawText(sProgress, pDoc->m_pDib->GetWidth() - 1, 0, DRAWTEXT_TOPRIGHT);
 	}
 
 	// Recording
 	if (pDoc->m_SaveFrameListThread.IsWorking())
-		pDoc->m_DxDraw.DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
+		pDoc->m_pDxDraw->DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 }
 
 __forceinline void CVideoDeviceView::DrawDC()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called also from process thread!
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
 	// Get Back DC
-	HDC hDC = pDoc->m_DxDraw.GetBackDC();
+	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
 	if (hDC)
 	{
 		// Draw Zones where Detection is enabled
@@ -732,7 +710,7 @@ __forceinline void CVideoDeviceView::DrawDC()
 	}
 
 	// Release Back DC
-	pDoc->m_DxDraw.ReleaseBackDC(hDC);
+	pDoc->m_pDxDraw->ReleaseBackDC(hDC);
 }
 
 BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
@@ -740,12 +718,11 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
-// No GDI Drawing after that m_DxDraw is initialized!
 void CVideoDeviceView::OnDraw(CDC* pDC) 
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	if (!m_bInitializingDxDraw && !pDoc->m_DxDraw.IsInit())
+	if (!m_bDxDrawFirstInitOk)
 	{
 		// Flicker free drawing
 		CRect rcClient;
@@ -779,28 +756,10 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		// Draw
 		if (m_bDxDrawInitFailed)
 		{
-			MemDC.DrawText(	ML_STRING(1747, "DirectX failed"),	
+			MemDC.DrawText(	ML_STRING(1747, "DirectX failed"),
 							-1,
 							&rcClient,
 							(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-			MemDC.SetTextColor(DXDRAW_ERROR_COLOR);
-			if (!pDoc->m_DxDraw.HasDxDraw())
-			{
-				MemDC.DrawText(	ML_STRING(1221, "DirectX 7.0 or higher is required!"),	
-								-1,
-								&rcClient,
-								(DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-			}
-			else
-			{
-				TCHAR lpszErrorMessage[DXDRAW_ERRORMSG_BUFSIZE];
-				lpszErrorMessage[0] = _T('\0');
-				pDoc->m_DxDraw.GetLastErrorMessage(lpszErrorMessage, DXDRAW_ERRORMSG_BUFSIZE);
-				MemDC.DrawText(	lpszErrorMessage,	
-								-1,
-								&rcClient,
-								(DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-			}
 		}
 		else
 		{

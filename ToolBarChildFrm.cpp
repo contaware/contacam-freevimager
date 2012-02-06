@@ -1532,9 +1532,8 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Kill Watchdog (kill it right now because like the
-	// Processing Frames function also the watchdog may be drawing)
-	pDoc->m_WatchdogThread.Kill_NoBlocking();
+	// Kill it right now because of the drawing
+	pDoc->m_WatchdogAndDrawThread.Kill_NoBlocking();
 
 	// Stop Processing Frames
 	pDoc->StopProcessFrame();
@@ -1620,9 +1619,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 		pDoc->m_bCapture = FALSE;
 	}
 
-	// Close DirectDraw
-	pDoc->m_DxDraw.Free();
-
 	// The next step must happen last, because it sets to NULL
 	// the following pointers (used inside ProcessFrame()
 	// and the Audio Thread for the PeakMeter):
@@ -1651,13 +1647,13 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Check whether we exited full-screen, watchdog stopped
-	// and we are not inside the processing function
+	// Check whether we exited full-screen, watchdog and draw
+	// stopped and we are not inside the processing function
 	// (or frames where not arriving)
-	if (!pView->m_bFullScreenMode			&&
-		!pDoc->m_WatchdogThread.IsAlive()	&&
-		(pDoc->IsProcessFrameStopped()		||
-		!pDoc->m_bCapture					||
+	if (!pView->m_bFullScreenMode					&&
+		!pDoc->m_WatchdogAndDrawThread.IsAlive()	&&
+		(pDoc->IsProcessFrameStopped()				||
+		!pDoc->m_bCapture							||
 		pDoc->m_bWatchDogAlarm))
 		return TRUE;
 	else
