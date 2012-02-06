@@ -4440,7 +4440,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw &&
 					::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0)
 				{
-					if (!m_pDoc->GetView()->Draw())
+					if (!m_pDoc->GetView()->DxDraw())
 					{
 						Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
 						switch (Event)

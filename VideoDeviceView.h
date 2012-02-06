@@ -27,16 +27,16 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	BOOL Draw();
+	BOOL DxDraw();
 	BOOL AreCriticalControlsDisabled() {return m_nCriticalControlsCount <= 0;};
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
-	__forceinline void DrawText();
-	__forceinline void DrawDC();
-	__forceinline void EraseBkgnd(BOOL bFullErase);
-	__forceinline BOOL IsCompressionDifferent();
+	__forceinline void DxDrawText();
+	__forceinline void DxDrawDC();
+	__forceinline void EraseDxBkgnd(BOOL bFullErase);
+	__forceinline BOOL IsDxCompressionDifferent();
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 

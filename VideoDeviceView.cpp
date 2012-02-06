@@ -435,7 +435,7 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-__forceinline void CVideoDeviceView::EraseBkgnd(BOOL bFullErase)
+__forceinline void CVideoDeviceView::EraseDxBkgnd(BOOL bFullErase)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -469,20 +469,17 @@ __forceinline void CVideoDeviceView::EraseBkgnd(BOOL bFullErase)
 		pDoc->m_pDxDraw->ClearBack();
 }
 
-__forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
+__forceinline BOOL CVideoDeviceView::IsDxCompressionDifferent()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
-	// Check
-	if (!pDoc->m_pDib || !pDoc->m_pDxDraw)
-		return FALSE;
 	// YUY2 Format Equivalents
-	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
-			(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
-			pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
-			pDoc->m_pDib->GetCompression() == FCC('V422')			||
-			pDoc->m_pDib->GetCompression() == FCC('YUYV')))
+	if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
+		(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
+		pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
+		pDoc->m_pDib->GetCompression() == FCC('V422')			||
+		pDoc->m_pDib->GetCompression() == FCC('YUYV')))
 		return FALSE;
 	// Special Handling for YV12 Format
 	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
@@ -510,7 +507,7 @@ __forceinline BOOL CVideoDeviceView::IsCompressionDifferent()
 		return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 }
 
-BOOL CVideoDeviceView::Draw()
+BOOL CVideoDeviceView::DxDraw()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -555,7 +552,7 @@ BOOL CVideoDeviceView::Draw()
 			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 			pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
 			pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
-			IsCompressionDifferent())
+			IsDxCompressionDifferent())
 		{
 			m_dwDxDrawUpTime = dwCurrentUpTime;
 			if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), pDoc->m_pDib->GetCompression()))
@@ -576,7 +573,7 @@ BOOL CVideoDeviceView::Draw()
 		BOOL bDrawMsg = !bVideoView						||
 						bStopAndChangeFormat			||
 						bWatchDogAlarm;
-		EraseBkgnd(bDrawMsg);
+		EraseDxBkgnd(bDrawMsg);
 
 		// Display: Change Size
 		if (bStopAndChangeFormat)
@@ -591,14 +588,14 @@ BOOL CVideoDeviceView::Draw()
 			pDoc->m_pDxDraw->RenderDib(pDoc->m_pDib, m_ZoomRect);
 
 			// Text Drawing
-			DrawText();
+			DxDrawText();
 			
 			// DC Drawing
 			if (pDoc->m_bDetectingMovement		||
 				pDoc->m_bShowEditDetectionZones	||
 				((pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR) &&
 				pDoc->m_bShowMovementDetections))
-				DrawDC();
+				DxDrawDC();
 		}
 		// Display: Preview Off
 		else
@@ -615,7 +612,7 @@ BOOL CVideoDeviceView::Draw()
 	return TRUE;
 }
 
-__forceinline void CVideoDeviceView::DrawText()
+__forceinline void CVideoDeviceView::DxDrawText()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -637,7 +634,7 @@ __forceinline void CVideoDeviceView::DrawText()
 		pDoc->m_pDxDraw->DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
 }
 
-__forceinline void CVideoDeviceView::DrawDC()
+__forceinline void CVideoDeviceView::DxDrawDC()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
