@@ -779,9 +779,6 @@ public:
 	typedef CArray<CDiscRecorder*,CDiscRecorder*> DISCRECORDERARRAY;
 	DISCRECORDERARRAY m_DiscRecorders2;
 
-	// Debug messages in Log files
-	volatile BOOL m_bDebugLog;
-
 #ifdef VIDEODEVICEDOC
 	// Use integrated Fullscreen Browser
 	BOOL m_bFullscreenBrowser;
@@ -871,8 +868,6 @@ public:
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnToolsViewLogfile();
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
-	afx_msg void OnToolsDebuglog();
-	afx_msg void OnUpdateToolsDebuglog(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC

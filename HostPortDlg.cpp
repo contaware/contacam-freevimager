@@ -395,6 +395,7 @@ void CHostPortDlg::Free()
 {
 	for (int i = 0 ; i < m_Hosts.GetSize() ; i++)
 	{
+		// Parsers and Generators always deleted after the related CNetCom objects!
 		if (m_Connections[i])
 			delete m_Connections[i];
 		if (m_Parsers[i])

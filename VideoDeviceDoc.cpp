@@ -5098,6 +5098,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 CVideoDeviceDoc::~CVideoDeviceDoc()
 {
 	FreeAVIFile();
+	// Parsers and Generators always deleted after the related CNetCom objects!
 	if (m_pHttpGetFrameParseProcess)
 	{
 		delete m_pHttpGetFrameParseProcess;
@@ -12898,11 +12899,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 	CString sMsg;
 	m_sLastRequest = sRequest;
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-	{
-		::LogLine(_T("------------------------------------------"));
-		::LogLine(sRequest);
-	}
+	TRACE(sRequest);
 
 	if (m_AnswerAuthorizationType == AUTHBASIC)
 	{
@@ -13885,8 +13882,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				// Call mjpeg parser
 				res = ParseMultipart(pNetCom, nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					::LogLine(sMsg.Left(nPosEnd));
+#ifdef _DEBUG
+				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 				return res;
 			}
 			// Single image
@@ -13899,8 +13898,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				// Call jpeg parser
 				res = ParseSingle(bLastCall, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					::LogLine(sMsg.Left(nPosEnd));
+#ifdef _DEBUG
+				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 				return res;
 			}
 			// Text
@@ -14026,8 +14027,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
-				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-					::LogLine(sMsg);
+				TRACE(sMsg + _T('\n'));
 				return FALSE; // Do not call Processor
 			}
 			// Html
@@ -14057,8 +14057,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
-				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-					::LogLine(sMsg);
+				TRACE(sMsg + _T('\n'));
 				return FALSE; // Do not call Processor
 			}
 			// Unknown or incomplete
@@ -14118,8 +14117,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			m_pDoc->m_HttpGetFrameThread.SetEventConnect(sNewRequest);
 	
 			delete [] pMsg;
-			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-				::LogLine(sMsg);
+			TRACE(sMsg + _T('\n'));
 			return FALSE; // Do not call Processor
 		}
 		// Unauthorized
@@ -14281,8 +14279,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			m_pDoc->m_HttpGetFrameThread.SetEventConnect(m_sLastRequest);
 	
 			delete [] pMsg;
-			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-				::LogLine(sMsg);
+			TRACE(sMsg + _T('\n'));
 			return FALSE; // Do not call Processor
 		}
 		else
@@ -14323,8 +14320,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), HTTPGETFRAME_CONNECTION_STARTDELAY);
 			}
 			delete [] pMsg;
-			if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog)
-				::LogLine(sMsg);
+			TRACE(sMsg + _T('\n'));
 			return FALSE; // Do not call Processor
 		}
 	}
@@ -14335,8 +14331,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	{
 		res = ParseMultipart(pNetCom, 0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
-		if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-			::LogLine(sMsg.Left(nPosEnd));
+#ifdef _DEBUG
+		if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+			TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 		return res;
 	}
 }
