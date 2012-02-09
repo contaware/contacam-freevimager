@@ -302,12 +302,12 @@ public:
 		public:
 			CParseProcess(){m_pNetCom = NULL; m_nProcessOffset = m_nProcessSize = 0;};
 			virtual ~CParseProcess(){;};
-			virtual BOOL Parse(CNetCom* pNetCom) = 0;
+			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall) = 0;
 			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
 			
 		protected:
 			void Init(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
-			void NewData(void);
+			void NewData(BOOL bLastCall);
 			int m_nProcessOffset;
 			int m_nProcessSize;
 			CNetCom* m_pNetCom;

@@ -540,7 +540,7 @@ BOOL CHostPortDlg::CPingGenerator::Generate(CNetCom* pNetCom)
 	return TRUE; // Call the Generator again with the next tx timeout
 }
 
-BOOL CHostPortDlg::CPingParseProcess::Parse(CNetCom* pNetCom)
+BOOL CHostPortDlg::CPingParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
 	// The Received Datagram
 	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();

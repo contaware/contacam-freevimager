@@ -227,7 +227,7 @@ public:
 			CGetFrameParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; Clear();};
 			virtual ~CGetFrameParseProcess() {Free();};
 			void Close() {Free(); Clear();};
-			virtual BOOL Parse(CNetCom* pNetCom);
+			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			__forceinline DWORD GetLostCount() const {return m_dwLostCount;};
 #ifdef _DEBUG
 			void TraceReSendCount();
@@ -348,7 +348,7 @@ public:
 			void Close() {FreeAVCodec(); Clear();};
 			BOOL SendRawRequest(const CString& sRequest);
 			BOOL SendRequest();
-			virtual BOOL Parse(CNetCom* pNetCom);
+			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
 			BOOL HasResolution(const CSize& Size);
 			
@@ -394,10 +394,13 @@ public:
 							m_pI420Buf = NULL;						
 							m_dwI420BufSize = 0;
 							m_dwI420ImageSize = 0;};
-			BOOL ParseSingle(	int nSize,
+			BOOL ParseSingle(	BOOL bLastCall,
+								int nSize,
+								const char* pMsg,
 								const CString& sMsg,
 								const CString& sMsgLowerCase);
-			BOOL ParseMultipart(int nPos,
+			BOOL ParseMultipart(CNetCom* pNetCom,
+								int nPos,
 								int nSize,
 								const char* pMsg,
 								const CString& sMsg,
@@ -531,7 +534,7 @@ public:
 															m_pDoc = pDoc; Clear();};
 			virtual ~CSendFrameParseProcess() {FreeAVCodec(); ::DeleteCriticalSection(&m_csSendToTable);};
 			void Close() {FreeAVCodec(); Clear();};
-			virtual BOOL Parse(CNetCom* pNetCom);
+			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			void ClearTable();
 			BOOL OpenAVCodec(LPBITMAPINFO pBMI);
 			void FreeAVCodec(BOOL bNoClose = FALSE);

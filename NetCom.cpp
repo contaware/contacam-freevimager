@@ -156,14 +156,14 @@ BOOL CNetCom::CParseProcess::Process(unsigned char* pLinBuf, int nSize)
 	return TRUE; // Auto-delete pLinBuf
 }
 
-void CNetCom::CParseProcess::NewData(void)
+void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 {
 	if (!m_pNetCom) return;
 	
 	int nAvailableRxBytes = m_pNetCom->GetAvailableReadBytes(); 
 	m_nProcessOffset = 0;
 	m_nProcessSize = nAvailableRxBytes;
-	if (nAvailableRxBytes > 0 && Parse(m_pNetCom))
+	if (nAvailableRxBytes > 0 && Parse(m_pNetCom, bLastCall))
 	{
 		// Adjust Process Offset and Size
 		// (just in case it has not been correctly
@@ -948,6 +948,9 @@ int CNetCom::CRxThread::Work()
 					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 				}
+				// Call the Parser last time
+				if (m_pNetCom->m_pParseProcess)
+					m_pNetCom->m_pParseProcess->NewData(TRUE);
 				if (m_pNetCom->m_pMsgOut)
 					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" RxThread ended (ID = 0x%08X)"), GetId());
 				return 0;
@@ -1089,7 +1092,7 @@ int CNetCom::CRxThread::Work()
 
 			// Call the Parser
 			if (m_pNetCom->m_pParseProcess)
-				m_pNetCom->m_pParseProcess->NewData();
+				m_pNetCom->m_pParseProcess->NewData(FALSE);
 
 			// Notify parent and set the event if at least m_uiRxMsgTrigger were received,
 			// or if the Rx Timeout elapsed.
@@ -2581,7 +2584,7 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 	if (m_pcsRxFifoSync && m_pRxFifo)
 	{
 		// Empty Read
-		if (Data == NULL)
+		if (Data == NULL && BufSize <= 0)
 		{
 			::EnterCriticalSection(m_pcsRxFifoSync);
 			while (!m_pRxFifo->IsEmpty())
@@ -2598,8 +2601,8 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 			return i;
 		}
 
-		// Zero Size
-		if (BufSize == 0)
+		// Zero or wrong size
+		if (BufSize <= 0)
 			return 0;
 
 		::EnterCriticalSection(m_pcsRxFifoSync);
@@ -2610,7 +2613,8 @@ int CNetCom::Read(BYTE* Data/*=NULL*/, int BufSize/*=0*/)
 			i = 0;
 			while ((pos < BufSize) && (i < pBuf->GetMsgSize()))
 			{
-				Data[pos] = (pBuf->GetBuf())[i];
+				if (Data)
+					Data[pos] = (pBuf->GetBuf())[i];
 				pos++;
 				i++;
 			}

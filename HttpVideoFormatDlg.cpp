@@ -141,8 +141,7 @@ void CHttpVideoFormatDlg::OnApply()
 	m_pDoc->m_bSizeToDoc = TRUE;
 	if (m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
 	{
-		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP	||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 		{
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetResolution = bResolutionChanged;
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetCompression = bQualityChanged;
@@ -151,8 +150,7 @@ void CHttpVideoFormatDlg::OnApply()
 	}
 	else if (m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG)
 	{
-		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_CP	||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_CP)
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_CP)
 		{
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetResolution = bResolutionChanged;
 			m_pDoc->m_pHttpGetFrameParseProcess->m_bSetCompression = bQualityChanged;

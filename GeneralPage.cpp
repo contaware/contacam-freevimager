@@ -493,13 +493,14 @@ BOOL CGeneralPage::OnInitDialog()
 	}
 	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 	{
-		// Axis, Edimax and TP-Link support only integer values starting at 1 fps
+		// Axis and Edimax support only integer values starting at 1 fps
 		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP	||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP	||
-			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
+			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
 		// Frequency not settable on client side by panasonic devices in server push mode
-		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
+		// and TP-Link is crappy for setting params...
+		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP	||
+				m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
 		{
 			m_SpinFrameRate.SetRange(0.0, 0.0);
 			m_SpinFrameRate.EnableWindow(FALSE);
@@ -1154,7 +1155,8 @@ void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
 			}
 			else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 			{
-				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP)
+				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP	||
+					m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
 				{
 					pSpin->EnableWindow(FALSE);
 					pEdit->EnableWindow(FALSE);

@@ -7135,8 +7135,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			ResetMovementDetector();
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
 			{
-				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP	||
-					m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
+				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 					m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
 				m_HttpGetFrameThread.SetEventConnect();
 			}
@@ -7291,7 +7290,25 @@ void CVideoDeviceDoc::VideoFormatDialog()
 	}
 	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 	{
-		if (m_nNetworkDeviceTypeMode != OTHERONE)
+		if (m_nNetworkDeviceTypeMode == OTHERONE	||
+			m_nNetworkDeviceTypeMode == TPLINK_SP	||
+			m_nNetworkDeviceTypeMode == TPLINK_CP)
+		{
+			CString sUrl;
+			if (m_nGetFrameVideoPort != 80)
+				sUrl.Format(_T("http://%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
+			else
+				sUrl.Format(_T("http://%s"), m_sGetFrameVideoHost);
+			BeginWaitCursor();
+			::ShellExecute(	NULL,
+							_T("open"),
+							::UrlEncode(sUrl, FALSE),
+							NULL,
+							NULL,
+							SW_SHOWNORMAL);
+			EndWaitCursor();
+		}
+		else
 		{
 			// Disable Critical Controls
 			::SendMessage(	GetView()->GetSafeHwnd(),
@@ -7310,22 +7327,6 @@ void CVideoDeviceDoc::VideoFormatDialog()
 							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
 							(WPARAM)TRUE,	// Enable Them
 							(LPARAM)0);
-		}
-		else
-		{
-			CString sUrl;
-			if (m_nGetFrameVideoPort != 80)
-				sUrl.Format(_T("http://%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
-			else
-				sUrl.Format(_T("http://%s"), m_sGetFrameVideoHost);
-			BeginWaitCursor();
-			::ShellExecute(	NULL,
-							_T("open"),
-							::UrlEncode(sUrl, FALSE),
-							NULL,
-							NULL,
-							SW_SHOWNORMAL);
-			EndWaitCursor();
 		}
 	}
 }
@@ -10479,7 +10480,8 @@ _T("GET /jpg/image.jpg HTTP/1.1\r\n")
 MJPEG
 _T("GET /video.mjpg HTTP/1.1\r\n")
 
-CONFIG  
+CONFIG only for MJPEG and quite crappy: after a config change had to wait many seconds before re-connecting
+to the stream and even so not always applied -> let user config it on the web interface
 _T("GET /cgi-bin/view/param?action=list&group=Properties.Image.Resolution HTTP/1.1\r\n")                   -> get all resolutions (returns for example: root.Properties.Image.Resolution=176x120,352x240,720x480)
 _T("GET /cgi-bin/admin/param?action=update&Image.I0.MJPEG.Resolution=WidthxHeight HTTP/1.1\r\n")           -> set resolution
 _T("GET /cgi-bin/admin/param?action=update&Image.I0.Appearance.Compression=CompressionLevel HTTP/1.1\r\n") -> set compression, valid range: 0-100 (0: for auto-rate control)
@@ -10856,10 +10858,6 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
 			if (m_pHttpGetFrameParseProcess)
 			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
 				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			}
@@ -10875,9 +10873,6 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
 			if (m_pHttpGetFrameParseProcess)
 			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
 				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
 			}
@@ -11722,7 +11717,7 @@ void CVideoDeviceDoc::CSendFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*
 	m_nOutbufSize = 0;
 }
 
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::Parse(CNetCom* pNetCom)
+BOOL CVideoDeviceDoc::CSendFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
 	int i;
 
@@ -11999,7 +11994,7 @@ __forceinline BYTE CVideoDeviceDoc::CGetFrameParseProcess::ReSendCountDown(	int 
 	return (BYTE)MIN(255, i + nCount + MAX(nCountOffset, z));
 }
 
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom)
+BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
 	ASSERT(m_pDoc);
 	DWORD dwFrame;
@@ -13478,129 +13473,18 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 		}
 		case TPLINK_SP :	// TP-Link Server Push (mjpeg)
 		{
-			if (m_bQueryProperties)
-			{
-				sLocation = _T("/cgi-bin/view/param?action=list&group=Properties.Image.Resolution");
-				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else if (m_bSetResolution)
-			{
-				sLocation = _T("/cgi-bin/admin/param");
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX,
-									m_pDoc->m_nHttpVideoSizeY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx,
-									m_Sizes[0].cy,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									DEFAULT_HTTP_VIDEO_SIZE_CX,
-									DEFAULT_HTTP_VIDEO_SIZE_CY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
-					m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
-				}
-			}
-			else if (m_bSetCompression)
-			{
-				sLocation = _T("/cgi-bin/admin/param");
-				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
-								sLocation,
-								(100 - m_pDoc->m_nHttpVideoQuality * 99 / 100), // value range is 1-100
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else if (m_bSetFramerate)
-			{
-				int nFrameRate = Round(m_pDoc->m_dFrameRate);
-				if (nFrameRate <= 0)
-					nFrameRate = 1;
-				sLocation = _T("/cgi-bin/admin/param");
-				sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.FPS=%d HTTP/%s\r\n"),
-								sLocation,
-								nFrameRate, // value range is 1-30
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else
-			{
-				sLocation = _T("/video.mjpg");
-				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-							sLocation,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
+			sLocation = _T("/video.mjpg");
+			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+						sLocation,
+						m_bOldVersion ? _T("1.0") : _T("1.1"));
 			break;
 		}
 		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
 		{
-			if (m_bQueryProperties)
-			{
-				sLocation = _T("/cgi-bin/view/param?action=list&group=Properties.Image.Resolution");
-				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-								sLocation,
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else if (m_bSetResolution)
-			{
-				sLocation = _T("/cgi-bin/admin/param");
-				if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									m_pDoc->m_nHttpVideoSizeX,
-									m_pDoc->m_nHttpVideoSizeY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-				}
-				else if (m_Sizes.GetSize() > 0)
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									m_Sizes[0].cx,
-									m_Sizes[0].cy,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
-					m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
-				}
-				else
-				{
-					sRequest.Format(_T("GET %s?action=update&Image.I0.MJPEG.Resolution=%dx%d HTTP/%s\r\n"),
-									sLocation,
-									DEFAULT_HTTP_VIDEO_SIZE_CX,
-									DEFAULT_HTTP_VIDEO_SIZE_CY,
-									m_bOldVersion ? _T("1.0") : _T("1.1"));
-					m_pDoc->m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
-					m_pDoc->m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
-				}
-			}
-			else if (m_bSetCompression)
-			{
-				sLocation = _T("/cgi-bin/admin/param");
-				sRequest.Format(_T("GET %s?action=update&Image.I0.Appearance.Compression=%d HTTP/%s\r\n"),
-								sLocation,
-								(100 - m_pDoc->m_nHttpVideoQuality * 99 / 100), // value range is 1-100
-								m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
-			else
-			{
-				sLocation = _T("/jpg/image.jpg");
-				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
-							sLocation,
-							m_bOldVersion ? _T("1.0") : _T("1.1"));
-			}
+			sLocation = _T("/jpg/image.jpg");
+			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+						sLocation,
+						m_bOldVersion ? _T("1.0") : _T("1.1"));
 			break;
 		}
 		default :
@@ -13653,14 +13537,16 @@ __forceinline int CVideoDeviceDoc::CHttpGetFrameParseProcess::FindSOI(	int nPos,
 	return -1;
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom,
+																int nPos,
 																int nSize,
 																const char* pMsg,
 																const CString& sMsg,
 																const CString& sMsgLowerCase)
 {
-	int nPosEnd;
+	int nPosType, nPosEnd;
 	int nMultipartLength;
+	CString sContentType;
 
 	if (m_bMultipartNoLength)
 	{
@@ -13682,6 +13568,18 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 		// Find Boundary
 		if (m_sMultipartBoundary.IsEmpty() || (nPos = sMsg.Find(m_sMultipartBoundary, nPos)) < 0)
 			return FALSE;
+
+		// Content Type
+		if ((nPosType = sMsgLowerCase.Find(_T("content-type:"), nPos)) >= 0)
+		{
+			nPosType += 13;
+			if ((nPosEnd = sMsg.Find(_T("\r\n"), nPosType)) < 0)
+			if ((nPosEnd = sMsg.Find(_T('\n'), nPosType)) < 0)
+			if ((nPosEnd = sMsg.Find(_T('\r'), nPosType)) < 0)
+				return FALSE;
+			sContentType = sMsgLowerCase.Mid(nPosType, nPosEnd - nPosType);
+			sContentType.TrimLeft();
+		}
 
 		// Find Content Length
 		if ((nPos = sMsgLowerCase.Find(_T("content-length:"), nPos)) < 0)
@@ -13706,6 +13604,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 		nMultipartLength = _ttoi(sMultipartLength);
 		if (nMultipartLength <= 0)
 			return FALSE;
+
+		// Find Start of Multipart Data
 		if ((nPos = sMsg.Find(_T("\r\n\r\n"), nPosEnd)) < 0)
 		{
 			if ((nPos = sMsg.Find(_T("\n\n"), nPosEnd)) < 0)
@@ -13717,57 +13617,73 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(int nPos,
 			nPos += 4;
 	}
 
+	// Set Process Vars
 	m_nProcessOffset = nPos;
 	m_nProcessSize = nMultipartLength;
 
 	// Process data
 	if (nSize >= m_nProcessOffset + m_nProcessSize)
 	{
-		m_FormatType = FORMATMJPEG;
-		return TRUE;
+		// Remove non-jpeg stream (usually a audio stream)
+		if (sContentType != _T("") && sContentType.Find(_T("image/jpeg")) < 0)
+		{
+			pNetCom->Read(NULL, m_nProcessOffset + m_nProcessSize);
+			return FALSE;
+		}
+		else
+		{
+			m_FormatType = FORMATMJPEG;
+			return TRUE;
+		}
 	}
 	else
 		return FALSE;
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	int nSize,
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	BOOL bLastCall,
+																int nSize,
+																const char* pMsg,
 																const CString& sMsg,
 																const CString& sMsgLowerCase)
 {
 	int nPos;
 	int nPosEnd;
 
-	// Find Content Length
-	if ((nPos = sMsgLowerCase.Find(_T("content-length:"), 0)) < 0)
-		return FALSE;
-	nPos += 15;
-	if ((nPosEnd = sMsg.Find(_T("\r\n"), nPos)) < 0)
-	if ((nPosEnd = sMsg.Find(_T('\n'), nPos)) < 0)
-	if ((nPosEnd = sMsg.Find(_T('\r'), nPos)) < 0)
-		return FALSE;
-
-	// Parse Content Length
-	CString sSinglepartLength = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
-	if (sSinglepartLength == _T(""))
-		return FALSE;
-	sSinglepartLength.TrimLeft();
-	if ((nPos = sSinglepartLength.Find(_T(' '), 0)) >= 0)
-		sSinglepartLength = sSinglepartLength.Left(nPos);
-	int nSinglepartLength = _ttoi(sSinglepartLength);
-	if (nSinglepartLength <= 0)
-		return FALSE;
-	if ((nPos = sMsg.Find(_T("\r\n\r\n"), nPosEnd)) < 0)
+	// Find Init of JPEG image
+	if ((nPos = sMsg.Find(_T("\r\n\r\n"))) < 0)
 	{
-		if ((nPos = sMsg.Find(_T("\n\n"), nPosEnd)) < 0)
+		if ((nPos = sMsg.Find(_T("\n\n"))) < 0)
 			return FALSE;
 		else
 			nPos += 2;
 	}
 	else
 		nPos += 4;
-
 	m_nProcessOffset = nPos;
-	m_nProcessSize = nSinglepartLength;
+
+	// Find Content Length
+	if ((nPos = sMsgLowerCase.Find(_T("content-length:"))) >= 0)
+	{
+		nPos += 15;
+		if ((nPosEnd = sMsg.Find(_T("\r\n"), nPos)) < 0)
+		if ((nPosEnd = sMsg.Find(_T('\n'), nPos)) < 0)
+		if ((nPosEnd = sMsg.Find(_T('\r'), nPos)) < 0)
+			return FALSE;
+		CString sSinglepartLength = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
+		if (sSinglepartLength == _T(""))
+			return FALSE;
+		sSinglepartLength.TrimLeft();
+		if ((nPos = sSinglepartLength.Find(_T(' '), 0)) >= 0)
+			sSinglepartLength = sSinglepartLength.Left(nPos);
+		int nSinglepartLength = _ttoi(sSinglepartLength);
+		if (nSinglepartLength <= 0)
+			return FALSE;
+		else
+			m_nProcessSize = nSinglepartLength;
+	}
+	// Wait last parser call if image with no Content Length
+	else if (bLastCall)
+		m_nProcessSize = nSize - m_nProcessOffset;
 
 	// Process data
 	if (nSize >= m_nProcessOffset + m_nProcessSize)
@@ -13794,7 +13710,7 @@ for all protocol elements except the Entity-Body.
 The end-of-line marker within an Entity-Body is defined by its
 associated media type.
 */
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
 	int nPos, nPosEnd;
 	int nSize = 0;
@@ -13967,7 +13883,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				m_bFirstFrame = TRUE;
 
 				// Call mjpeg parser
-				res = ParseMultipart(nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
+				res = ParseMultipart(pNetCom, nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
 				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 					::LogLine(sMsg.Left(nPosEnd));
@@ -13981,8 +13897,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 				m_bFirstFrame = TRUE;
 
 				// Call jpeg parser
+				res = ParseSingle(bLastCall, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-				res = ParseSingle(nSize, sMsg, sMsgLowerCase);
 				if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 					::LogLine(sMsg.Left(nPosEnd));
 				return res;
@@ -14417,7 +14333,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom)
 	// because ParseMultipart() is robust!
 	else
 	{
-		res = ParseMultipart(0, nSize, pMsg, sMsg, sMsgLowerCase);
+		res = ParseMultipart(pNetCom, 0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
 		if (((CUImagerApp*)::AfxGetApp())->m_bDebugLog && res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 			::LogLine(sMsg.Left(nPosEnd));

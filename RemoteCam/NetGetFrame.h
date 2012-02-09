@@ -71,7 +71,7 @@ class CGetFrameParseProcess : public CNetCom::CParseProcess
 											m_nMaxExtradata = 0;
 											FreeAVCodec();};
 		void SetCtrl(CRemoteCamCtrl* pCtrl) {m_pCtrl = pCtrl;};
-		virtual BOOL Parse(CNetCom* pNetCom);
+		virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 		
 	protected:
 		BOOL SendConfirmation(	CNetCom* pNetCom,

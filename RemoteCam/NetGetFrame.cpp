@@ -64,7 +64,7 @@ __forceinline BYTE CGetFrameParseProcess::ReSendCountDown(	int nReSendCount,
 	return (BYTE)MIN(255, i + nCount + MAX(nCountOffset, z));
 }
 
-BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom)
+BOOL CGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
 	ASSERT(m_pCtrl);
 	DWORD dwFrame;

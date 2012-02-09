@@ -30,7 +30,7 @@ public:
 																						m_dwEnumCount = dwEnumCount;
 																						m_bPingReceived = FALSE;};
 			virtual ~CPingParseProcess() {;};
-			virtual BOOL Parse(CNetCom* pNetCom);
+			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			void ResetPingReceived() {m_bPingReceived;};
 			BOOL IsPingReceived() const {return m_bPingReceived;};
 
