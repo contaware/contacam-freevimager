@@ -13882,7 +13882,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				// Call mjpeg parser
 				res = ParseMultipart(pNetCom, nPosEndLine, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(TRACELOGFILE)
 				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
 #endif
@@ -13898,7 +13898,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				// Call jpeg parser
 				res = ParseSingle(bLastCall, nSize, pMsg, sMsg, sMsgLowerCase);
 				delete [] pMsg;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(TRACELOGFILE)
 				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
 #endif
@@ -14331,7 +14331,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	{
 		res = ParseMultipart(pNetCom, 0, nSize, pMsg, sMsg, sMsgLowerCase);
 		delete [] pMsg;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(TRACELOGFILE)
 		if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
 			TRACE(sMsg.Left(nPosEnd) + _T('\n'));
 #endif
