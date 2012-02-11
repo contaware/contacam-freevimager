@@ -2830,8 +2830,22 @@ BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
 	if (LoadImage(lpszPathName, 0, 0, 0, TRUE, TRUE))
 	{
 		CString s, t;
-		if ((GetWidth() / GetHeight() > SECURITY_MAX_RATIO) ||
-			(GetHeight() / GetWidth() > SECURITY_MAX_RATIO))
+		if (GetWidth() == 0 || GetHeight() == 0)
+		{
+#ifdef _DEBUG
+			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
+#endif
+			t = _T("Zero Width and/or Height!");
+			s += t;
+		
+			TRACE(s);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(s, MB_ICONSTOP);
+
+			return FALSE;
+		}
+		else if ((GetWidth() / GetHeight() > SECURITY_MAX_RATIO) ||
+				(GetHeight() / GetWidth() > SECURITY_MAX_RATIO))
 		{
 #ifdef _DEBUG
 			s.Format(_T("FileCheck(%s):\n"), lpszPathName);
