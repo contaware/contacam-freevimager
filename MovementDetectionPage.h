@@ -88,6 +88,7 @@ protected:
 	afx_msg void OnCheckLumChangeDet();
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnChangeDetectionTriggerFilename();
+	afx_msg void OnSelchangeExecmodeMovementDetection();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1238,6 +1238,7 @@ public:
 							int nDetectionLevel);
 	void ResetMovementDetector();
 	void FreeMovementDetector();
+	void ExecCommandMovementDetection();
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
@@ -1330,7 +1331,6 @@ protected:
 	BOOL Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits);	// De-Interlace Src and put it to Dst,
 																			// Dst bits are Allocate by the function
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
-	void ExecCommandMovementDetection();
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
@@ -1564,11 +1564,13 @@ public:
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email of Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
 	volatile BOOL m_bExecCommandMovementDetection;		// Execute Command on Movement Detection
+	volatile BOOL m_nExecModeMovementDetection;			// Determines when to execute the command
 	CString m_sExecCommandMovementDetection;			// Command to execute on Movement Detection
 	CString m_sExecParamsMovementDetection;				// Params for command execution
 	volatile BOOL m_bHideExecCommandMovementDetection;	// Hide command's window
 	volatile BOOL m_bWaitExecCommandMovementDetection;	// Wait that last command has terminated
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
+	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
 	CDib* volatile m_pMovementDetectorY800Dib;			// If source Dib is in RGB format that's the converted Y800 Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists

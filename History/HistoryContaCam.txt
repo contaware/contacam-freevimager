@@ -11,7 +11,8 @@ VERSION HISTORY
   the engine stopped saving with the last detection frame)
 - Added client poll mode for Edimax IP cams
 - Added support for TP-Link IP cams
-- Implemented a debug level log command (under Tools menu)
+- Motion detection command execution start can be configured:
+  on first movement frame or after detection save,email,ftp
 
 3.9.0 (December 20th 2011)
 

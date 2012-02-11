@@ -590,6 +590,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
+		// Execute Command
+		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
+			m_pDoc->ExecCommandMovementDetection();
+
 		// Delete Files if not wanted
 		if (!m_pDoc->m_bSaveAVIMovementDetection)
 			::DeleteFile(sAVIFileName);
@@ -3671,7 +3675,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 		if (!m_bDetectingMovement)
 		{
 			m_bDetectingMovement = TRUE;
-			if (m_bExecCommandMovementDetection)
+			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
 				ExecCommandMovementDetection();
 		}
 	}
@@ -3761,6 +3765,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 
 void CVideoDeviceDoc::ExecCommandMovementDetection()
 {
+	::EnterCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_bWaitExecCommandMovementDetection)
 	{
 		if (m_hExecCommandMovementDetection)
@@ -3790,6 +3795,7 @@ void CVideoDeviceDoc::ExecCommandMovementDetection()
 		if (::ShellExecuteEx(&sei))
 			m_hExecCommandMovementDetection = sei.hProcess;
 	}
+	::LeaveCriticalSection(&m_csExecCommandMovementDetection);
 }
 
 BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
@@ -4962,6 +4968,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSendMailMovementDetection = FALSE;
 	m_bFTPUploadMovementDetection = FALSE;
 	m_bExecCommandMovementDetection = FALSE;
+	m_nExecModeMovementDetection = 0;
 	m_sExecCommandMovementDetection = _T("");
 	m_sExecParamsMovementDetection = _T("");
 	m_bHideExecCommandMovementDetection = FALSE;
@@ -5063,6 +5070,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
 	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI; // Not used
 
+	// Init Command Execution on Detection Critical Section
+	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
+
 	// Init Re-Send UDP Frame List Critical Section
 	::InitializeCriticalSection(&m_csReSendUDPFrameList);
 
@@ -5159,6 +5169,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
 	::DeleteCriticalSection(&m_csAVRec);
 	::DeleteCriticalSection(&m_csReSendUDPFrameList);
+	::DeleteCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_hExecCommandMovementDetection)
 	{
 		::CloseHandle(m_hExecCommandMovementDetection);
@@ -5607,6 +5618,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
 	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
+	m_nExecModeMovementDetection = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
 	m_sExecCommandMovementDetection = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection"), _T(""));
 	m_sExecParamsMovementDetection = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
@@ -5859,6 +5871,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
+			pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
 			pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), m_sExecCommandMovementDetection);
 			pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), m_sExecParamsMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
@@ -6046,6 +6059,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection, sTempFileName);
 			::WriteProfileIniString(sSection, _T("ExecCommandMovementDetection"), m_sExecCommandMovementDetection, sTempFileName);
 			::WriteProfileIniString(sSection, _T("ExecParamsMovementDetection"), m_sExecParamsMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection, sTempFileName);

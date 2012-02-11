@@ -2525,6 +2525,7 @@
 #define IDC_STATIC1842                  1842
 #define IDS_STRING1842                  1842
 #define IDC_STATIC1843                  1843
+#define IDS_STRING1843                  1843
 #define IDC_STATIC1844                  1844
 #define IDC_STATIC1845                  1845
 #define IDC_STATIC1846                  1846
@@ -3220,6 +3221,7 @@
 #define IDC_STATIC2539                  2539
 #define IDC_DETECTION_ZONE_SIZE         2541
 #define IDC_CHECK_MANUALSHOT_AUTOOPEN   2542
+#define IDC_EXECMODE_MOVEMENT_DETECTION 2542
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780

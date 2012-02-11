@@ -100,6 +100,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
+	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -115,11 +116,14 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
 	m_nDeleteDetectionsOlderThanDays = m_pDoc->m_nDeleteDetectionsOlderThanDays;
 
-	// Init Combo Box
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
-	pComboBox->AddString(ML_STRING(1836, "Big"));
-	pComboBox->AddString(ML_STRING(1837, "Medium"));
-	pComboBox->AddString(ML_STRING(1838, "Small"));
+	// Init Combo Boxes
+	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
+	pComboBoxZoneSize->AddString(ML_STRING(1836, "Big"));
+	pComboBoxZoneSize->AddString(ML_STRING(1837, "Medium"));
+	pComboBoxZoneSize->AddString(ML_STRING(1838, "Small"));
+	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
+	pComboBoxExexMode->AddString(ML_STRING(1842, "On first movement frame"));
+	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -155,7 +159,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pEdit->SetWindowText(sLevel);
 
 	// Detection Zone Size
-	pComboBox->SetCurSel(m_pDoc->m_nDetectionZoneSize);
+	pComboBoxZoneSize->SetCurSel(m_pDoc->m_nDetectionZoneSize);
 
 	// Detection Scheduler Check Box
 	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
@@ -210,6 +214,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckExecCommandMovementDetection->SetCheck(1);
 	else
 		pCheckExecCommandMovementDetection->SetCheck(0);
+	pComboBoxExexMode->SetCurSel(m_pDoc->m_nExecModeMovementDetection);
 	CEdit* pEditExecCommandMovementDetection = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
 	pEditExecCommandMovementDetection->SetWindowText(m_pDoc->m_sExecCommandMovementDetection);
 	CEdit* pEditExecParamsMovementDetection = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
@@ -402,6 +407,12 @@ void CMovementDetectionPage::OnSelchangeDetectionZoneSize()
 	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
 }
 
+void CMovementDetectionPage::OnSelchangeExecmodeMovementDetection() 
+{
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
+	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
+}
+
 void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	UpdateData(TRUE);
@@ -570,25 +581,33 @@ void CMovementDetectionPage::OnChangeDetectionTriggerFilename()
 void CMovementDetectionPage::OnChangeEditExe() 
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXE);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 	pEdit->GetWindowText(m_pDoc->m_sExecCommandMovementDetection);
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
 void CMovementDetectionPage::OnChangeEditParams() 
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PARAMS);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 	pEdit->GetWindowText(m_pDoc->m_sExecParamsMovementDetection);
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
 void CMovementDetectionPage::OnCheckHideExecCommand() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_HIDE_EXEC_COMMAND);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 	m_pDoc->m_bHideExecCommandMovementDetection = pCheck->GetCheck() > 0;
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
 void CMovementDetectionPage::OnCheckWaitExecCommand() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_WAIT_EXEC_COMMAND);
+	::EnterCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 	m_pDoc->m_bWaitExecCommandMovementDetection = pCheck->GetCheck() > 0;
+	::LeaveCriticalSection(&m_pDoc->m_csExecCommandMovementDetection);
 }
 
 void CMovementDetectionPage::UpdateDetectionStartStopTimes()
