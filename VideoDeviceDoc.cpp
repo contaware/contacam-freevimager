@@ -9035,7 +9035,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		::LeaveCriticalSection(&m_csDib);
 
 		// Trigger a Draw
-		m_WatchdogAndDrawThread.TriggerDraw();
+		if (m_bVideoView)
+			m_WatchdogAndDrawThread.TriggerDraw();
 
 		// Set started flag and open the Settings dialog
 		if (!m_bCaptureStarted)
