@@ -1218,7 +1218,6 @@
 #define IDS_MULTILANG_1185              1185
 #define IDC_CHECK_VIDEO_DETECTION_COLOR 1185
 #define IDS_MULTILANG_1186              1186
-#define IDC_CHECK_VIDEO_DETECTION_MOVEMENT 1186
 #define IDS_MULTILANG_1187              1187
 #define IDC_SLIDER_BW_THRESHOLD         1187
 #define IDS_MULTILANG_1188              1188
@@ -2527,9 +2526,13 @@
 #define IDC_STATIC1843                  1843
 #define IDS_STRING1843                  1843
 #define IDC_STATIC1844                  1844
+#define IDS_STRING1844                  1844
 #define IDC_STATIC1845                  1845
+#define IDS_STRING1845                  1845
 #define IDC_STATIC1846                  1846
+#define IDS_STRING1846                  1846
 #define IDC_STATIC1847                  1847
+#define IDS_STRING1847                  1847
 #define IDC_STATIC1848                  1848
 #define IDC_STATIC1849                  1849
 #define IDC_STATIC1850                  1850
@@ -3222,6 +3225,8 @@
 #define IDC_DETECTION_ZONE_SIZE         2541
 #define IDC_CHECK_MANUALSHOT_AUTOOPEN   2542
 #define IDC_EXECMODE_MOVEMENT_DETECTION 2542
+#define IDC_DETECTION_MODE              2543
+#define IDC_STATIC2544                  2544
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3512,7 +3517,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33170
-#define _APS_NEXT_CONTROL_VALUE         2543
+#define _APS_NEXT_CONTROL_VALUE         2545
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

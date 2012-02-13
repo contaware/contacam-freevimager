@@ -69,8 +69,8 @@ class CMovementDetectionPage;
 
 // Detection Flags
 #define NO_DETECTOR							0x00
-#define UNUSED_DETECTOR						0x01
-#define MOVEMENT_DETECTOR					0x02
+#define TRIGGER_FILE_DETECTOR				0x01
+#define SOFTWARE_MOVEMENT_DETECTOR			0x02
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
@@ -1228,7 +1228,7 @@ public:
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
-										BOOL bDoDetection,
+										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
 	BOOL LumChangeDetector(	CDib* pDibY,
 							BOOL bPlanar,
@@ -1401,7 +1401,7 @@ public:
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessFrame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
-	volatile DWORD m_VideoProcessorMode;				// The Processor Mode Variable
+	volatile DWORD m_dwVideoProcessorMode;				// The Processor Mode Variable
 	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs

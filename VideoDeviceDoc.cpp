@@ -3368,7 +3368,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolume
 	}
 }
 
-void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection, BOOL b1SecTick)
+void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
 {
 	BOOL bMovement = FALSE;
 	BOOL bLumChange = FALSE;
@@ -3384,8 +3384,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 			return; // Cannot init, unsupported resolution
 	}
 
-	// Detection Enabled?
-	if (bDoDetection)
+	// Software Detection Enabled?
+	if (dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR)
 	{
 		// Every 1 sec check whether we have to update the Freq Div
 		if (b1SecTick														&&
@@ -3622,31 +3622,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 				}
 			}
 		}
-
-		// Every 1 sec poll external file trigger
-		if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
-		{
-			CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
-			sDetectionTriggerFileName.TrimLeft();
-			sDetectionTriggerFileName.TrimRight();
-			sDetectionTriggerFileName.TrimLeft(_T('\"'));
-			sDetectionTriggerFileName.TrimRight(_T('\"'));
-			if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
-			{
-				CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
-				sDetectionAutoSaveDir.TrimRight(_T('\\'));
-				sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
-			}
-			FILETIME LastWriteTime;
-			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
-				(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
-				LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
-			{
-				m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
-				m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
-				bExternalFileTriggerMovement = TRUE;
-			}
-		}
 	}
 	else
 	{
@@ -3654,8 +3629,34 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, BOOL bDoDetection,
 			m_MovementDetections[i] = FALSE;
 	}
 
+	// Trigger file detection enabled?
+	if ((dwVideoProcessorMode & TRIGGER_FILE_DETECTOR) &&
+		b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
+	{
+		CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
+		sDetectionTriggerFileName.TrimLeft();
+		sDetectionTriggerFileName.TrimRight();
+		sDetectionTriggerFileName.TrimLeft(_T('\"'));
+		sDetectionTriggerFileName.TrimRight(_T('\"'));
+		if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
+		{
+			CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+			sDetectionAutoSaveDir.TrimRight(_T('\\'));
+			sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
+		}
+		FILETIME LastWriteTime;
+		if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
+			(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
+			LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
+		{
+			m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
+			m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
+			bExternalFileTriggerMovement = TRUE;
+		}
+	}
+
 	// Store frames?
-	BOOL bStoreFrames =	bDoDetection					&&
+	BOOL bStoreFrames =	dwVideoProcessorMode			&&
 						(m_bSaveSWFMovementDetection	||
 						m_bSaveAVIMovementDetection		||
 						m_bSaveAnimGIFMovementDetection	||
@@ -4419,7 +4420,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				// it's not a problem because CSaveFrameListThread::Work()
 				// removes empty lists.
 				if (m_pDoc->m_bWatchDogAlarm							&&
-					(m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR)	&&
+					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->GetTotalMovementDetectionFrames() > 0		&&
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
@@ -4814,7 +4815,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bCaptureStarted = 0;
 	m_bShowFrameTime = TRUE;
 	m_bVideoView = TRUE;
-	m_VideoProcessorMode = NO_DETECTOR;
+	m_dwVideoProcessorMode = NO_DETECTOR;
 	m_bDecodeFramesForPreview = FALSE;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
@@ -5623,7 +5624,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sExecParamsMovementDetection = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
-	m_VideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
+	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
 	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
 	m_fVideoRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
@@ -5921,7 +5922,7 @@ void CVideoDeviceDoc::SaveSettings()
 				pApp->WriteProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX));
 			if (m_CaptureAudioThread.m_pDstWaveFormat)
 				pApp->WriteProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
-			pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_VideoProcessorMode);
+			pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 			unsigned int nSize = sizeof(m_dFrameRate);
 			pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
 		}
@@ -6109,7 +6110,7 @@ void CVideoDeviceDoc::SaveSettings()
 				::WriteProfileIniBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
 			if (m_CaptureAudioThread.m_pDstWaveFormat)
 				::WriteProfileIniBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoProcessorMode"), m_VideoProcessorMode, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode, sTempFileName);
 			unsigned int nSize = sizeof(m_dFrameRate);
 			::WriteProfileIniBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize, sTempFileName);
 
@@ -8771,8 +8772,8 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
 		// Movement Detection
-		BOOL bDoDetection = m_VideoProcessorMode & MOVEMENT_DETECTOR;
-		if (bDoDetection && m_bDetectionStartStop) // Detection Scheduler
+		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
+		if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
 		{
 			CTime timeonly(	2000,
 							1,
@@ -8783,21 +8784,21 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			if (m_DetectionStartTime <= m_DetectionStopTime)
 			{
 				if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
-					bDoDetection = FALSE;
+					dwVideoProcessorMode = NO_DETECTOR;
 			}
 			else
 			{
 				if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
-					bDoDetection = FALSE;
+					dwVideoProcessorMode = NO_DETECTOR;
 			}
 		}
-		if (bDoDetection && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
+		if (dwVideoProcessorMode && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
 		{
 			delete m_pMovementDetectorBackgndDib;
 			m_pMovementDetectorBackgndDib = NULL;
 		}
-		MovementDetectionProcessing(pDib, bDoDetection, b1SecTick);
-		if (!bDoDetection && !m_bFirstMovementDetection)
+		MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
+		if (!dwVideoProcessorMode && !m_bFirstMovementDetection)
 			m_bFirstMovementDetection = TRUE;
 
 		// Copy to Clipboard

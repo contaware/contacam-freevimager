@@ -2018,7 +2018,7 @@ int CUImagerApp::GetTotalVideoDeviceDocsMovementDetecting()
 	while (posVideoDeviceDoc)
 	{
 		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-		if (pVideoDeviceDoc && (pVideoDeviceDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR))
+		if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
 			++nCount;
 			
 	}

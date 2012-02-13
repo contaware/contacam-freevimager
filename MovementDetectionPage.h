@@ -25,6 +25,7 @@ class CMovementDetectionPage : public CPropertyPage
 public:
 	CMovementDetectionPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
+	void UpdateUnsupportedWarning();
 	~CMovementDetectionPage();
 	CStaticLink m_DirLabel;
 
@@ -59,7 +60,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnDetectionSaveas();
-	afx_msg void OnCheckVideoDetectionMovement();
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
@@ -89,6 +89,7 @@ protected:
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnChangeDetectionTriggerFilename();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
+	afx_msg void OnSelchangeDetectionMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -13,6 +13,8 @@ VERSION HISTORY
 - Added support for TP-Link IP cams
 - Motion detection command execution start can be configured:
   on first movement frame or after detection save,email,ftp
+- Motion detector can now be set to: Off, Trigger File,
+  Software or both 
 
 3.9.0 (December 20th 2011)
 

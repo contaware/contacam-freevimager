@@ -864,10 +864,10 @@ void CAssistantPage::ApplySettings()
 
 	// Disable mov. det.
 	BOOL bDoMovDet;
-	if (m_pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR)
+	if (m_pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR)
 	{
 		bDoMovDet = TRUE;
-		m_pDoc->m_VideoProcessorMode &= ~MOVEMENT_DETECTOR;
+		m_pDoc->m_dwVideoProcessorMode &= ~SOFTWARE_MOVEMENT_DETECTOR;
 	}
 	else
 		bDoMovDet = FALSE;
@@ -1250,28 +1250,12 @@ void CAssistantPage::ApplySettings()
 
 	// Do mov. det.?
 	if (bDoMovDet)
+		m_pDoc->m_dwVideoProcessorMode |= SOFTWARE_MOVEMENT_DETECTOR;
+	if (m_pDoc->m_pMovementDetectionPage)
 	{
-		m_pDoc->m_VideoProcessorMode |= MOVEMENT_DETECTOR;
-		if (m_pDoc->m_pMovementDetectionPage)
-		{
-			CButton* pCheck = (CButton*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-			pCheck->SetCheck(1);
-			CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_WARNING);
-			if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
-				pEdit->ShowWindow(TRUE);
-			else
-				pEdit->ShowWindow(FALSE);
-		}
-	}
-	else
-	{
-		if (m_pDoc->m_pMovementDetectionPage)
-		{
-			CButton* pCheck = (CButton*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_CHECK_VIDEO_DETECTION_MOVEMENT);
-			pCheck->SetCheck(0);
-			CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_WARNING);
-			pEdit->ShowWindow(FALSE);
-		}
+		CComboBox* pComboBox = (CComboBox*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_MODE);
+		pComboBox->SetCurSel(m_pDoc->m_dwVideoProcessorMode);
+		m_pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
 	}
 	m_pDoc->m_SaveFrameListThread.Start();
 

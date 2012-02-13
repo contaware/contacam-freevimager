@@ -294,13 +294,9 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	{
 		if (!pDoc->m_bUnsupportedVideoSizeForMovDet)
 		{
-			if (pDoc->m_pMovementDetectionPage)
-			{
-				CEdit* pEdit = (CEdit*)pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_WARNING);
-				if (pEdit)
-					pEdit->ShowWindow(TRUE);
-			}
 			pDoc->m_bUnsupportedVideoSizeForMovDet = TRUE;
+			if (pDoc->m_pMovementDetectionPage)
+				pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
 		}
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
@@ -309,13 +305,9 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	{
 		if (pDoc->m_bUnsupportedVideoSizeForMovDet)
 		{
-			if (pDoc->m_pMovementDetectionPage)
-			{
-				CEdit* pEdit = (CEdit*)pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_WARNING);
-				if (pEdit)
-					pEdit->ShowWindow(FALSE);
-			}
 			pDoc->m_bUnsupportedVideoSizeForMovDet = FALSE;
+			if (pDoc->m_pMovementDetectionPage)
+				pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
 		}
 		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);
@@ -593,7 +585,7 @@ BOOL CVideoDeviceView::DxDraw()
 			// DC Drawing
 			if (pDoc->m_bDetectingMovement		||
 				pDoc->m_bShowEditDetectionZones	||
-				((pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR) &&
+				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
 				pDoc->m_bShowMovementDetections))
 				DxDrawDC();
 		}
@@ -674,7 +666,7 @@ __forceinline void CVideoDeviceView::DxDrawDC()
 		}
 
 		// Draw Detected Zones
-		if ((pDoc->m_VideoProcessorMode & MOVEMENT_DETECTOR) &&
+		if ((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
 			pDoc->m_bShowMovementDetections)
 		{
 			DWORD dwCurrentTime = ::timeGetTime();
