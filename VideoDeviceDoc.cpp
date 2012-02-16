@@ -5554,7 +5554,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
-	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T(""));
+	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T("movtrigger.txt"));
 	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 	sDetectionTriggerFileName.TrimLeft();
 	sDetectionTriggerFileName.TrimRight();
