@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
+	ON_WM_LBUTTONUP()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURESETTINGS, OnThreadSafeCaptureSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -50,6 +51,7 @@ CVideoDeviceView::CVideoDeviceView()
 	// Init vars
 	m_bDxDrawInitFailed = FALSE;
 	m_bDxDrawFirstInitOk = FALSE;
+	m_bDxDrawInfoText = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_nCriticalControlsCount = 1;
 }
@@ -519,6 +521,7 @@ BOOL CVideoDeviceView::DxDraw()
 	DWORD dwCurrentUpTime = ::timeGetTime();
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
+	BOOL bDxDrawInfoText = m_bDxDrawInfoText;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 
 	// Preview Off?
@@ -562,18 +565,18 @@ BOOL CVideoDeviceView::DxDraw()
 		pDoc->m_pDxDraw->UpdateCurrentDevice();
 
 		// Erase Background, full erase if drawing a message
-		BOOL bDrawMsg = !bVideoView						||
-						bStopAndChangeFormat			||
-						bWatchDogAlarm;
-		EraseDxBkgnd(bDrawMsg);
+		EraseDxBkgnd(bStopAndChangeFormat || bDxDrawInfoText || bWatchDogAlarm || !bVideoView);
 
 		// Display: Change Size
 		if (bStopAndChangeFormat)
 			pDoc->m_pDxDraw->DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
+		// Display: Info Text
+		else if (bDxDrawInfoText)
+			DxDrawInfoText();
 		// Display: No Frames
 		else if (bWatchDogAlarm)
-			pDoc->m_pDxDraw->DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);		// Only ASCII string supported!
-		// Draw Frame + Info
+			pDoc->m_pDxDraw->DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
+		// Draw Frame + Text + DC
 		else if (bVideoView)
 		{
 			// Draw Frame
@@ -592,7 +595,7 @@ BOOL CVideoDeviceView::DxDraw()
 		// Display: Preview Off
 		else
 			pDoc->m_pDxDraw->DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
-		
+
 		// Blt
 		if (pDoc->m_pDxDraw->Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
 			m_dwDxDrawUpTime = dwCurrentUpTime;
@@ -602,6 +605,166 @@ BOOL CVideoDeviceView::DxDraw()
 	::LeaveCriticalSection(&pDoc->m_csDib);
 
 	return TRUE;
+}
+
+__forceinline void CVideoDeviceView::DxDrawInfoText()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
+
+	// Vars
+	CSize szFontSize = pDoc->m_pDxDraw->GetFontSize();
+	int nMaxChars = pDoc->m_pDib->GetWidth() / szFontSize.cx;
+	int nMaxLines = pDoc->m_pDib->GetHeight() / szFontSize.cy;
+	CStringArray sMessages;
+	CString sInfoMsg;
+	
+	// Snapshots
+	sInfoMsg = _T("");
+	if (pDoc->m_bSnapshotLiveJpeg)
+		sInfoMsg += _T("Live");
+	if (pDoc->m_bSnapshotHistoryJpeg)
+	{
+		if (sInfoMsg.IsEmpty())
+			sInfoMsg += _T("Jpegs");
+		else
+			sInfoMsg += _T(",Jpegs");
+	}
+	if (pDoc->m_bSnapshotHistorySwf)
+	{
+		if (sInfoMsg.IsEmpty())
+			sInfoMsg += _T("Swf");
+		else
+			sInfoMsg += _T(",Swf");
+	}
+	if (sInfoMsg.IsEmpty())
+	{
+		sInfoMsg = _T("Shot: Off");
+		sMessages.Add(sInfoMsg);
+	}
+	else
+	{
+		sInfoMsg = _T("Shot: ") + sInfoMsg;
+		sMessages.Add(sInfoMsg);
+		if (pDoc->m_bSnapshotStartStop)
+		{
+			sInfoMsg.Format(_T("      %02d:%02d:%02d-%02d:%02d:%02d"),
+						pDoc->m_SnapshotStartTime.GetHour(),
+						pDoc->m_SnapshotStartTime.GetMinute(),
+						pDoc->m_SnapshotStartTime.GetSecond(),
+						pDoc->m_SnapshotStopTime.GetHour(),
+						pDoc->m_SnapshotStopTime.GetMinute(),
+						pDoc->m_SnapshotStopTime.GetSecond());
+			sMessages.Add(sInfoMsg);
+		}
+	}
+
+	// Motion Detection
+	sInfoMsg = _T("Det:  ");
+	switch (pDoc->m_dwVideoProcessorMode)
+	{
+		case NO_DETECTOR :						sInfoMsg += _T("Off"); break;
+		case TRIGGER_FILE_DETECTOR :			sInfoMsg += _T("Trigger"); break;
+		case SOFTWARE_MOVEMENT_DETECTOR :		sInfoMsg += _T("Soft"); break;
+		case (	TRIGGER_FILE_DETECTOR |
+				SOFTWARE_MOVEMENT_DETECTOR):	sInfoMsg += _T("Trigger+Soft"); break;
+		default: break;
+	}
+	sMessages.Add(sInfoMsg);
+	if (pDoc->m_bDetectionStartStop)
+	{
+		sInfoMsg.Format(_T("      %02d:%02d:%02d-%02d:%02d:%02d"),
+					pDoc->m_DetectionStartTime.GetHour(),
+					pDoc->m_DetectionStartTime.GetMinute(),
+					pDoc->m_DetectionStartTime.GetSecond(),
+					pDoc->m_DetectionStopTime.GetHour(),
+					pDoc->m_DetectionStopTime.GetMinute(),
+					pDoc->m_DetectionStopTime.GetSecond());
+		sMessages.Add(sInfoMsg);
+	}
+
+	// UDP Network Server
+	if (pDoc->m_bSendVideoFrame)
+		sInfoMsg.Format(_T("Net:  On(%d)"), pDoc->m_nSendFrameVideoPort);
+	else
+		sInfoMsg.Format(_T("Net:  Off"));
+	sMessages.Add(sInfoMsg);
+
+	// Network Device
+	if (pDoc->m_pGetFrameNetCom)
+	{
+		if (pDoc->m_pGetFrameNetCom->IsClient())
+		{
+			if (pDoc->m_pHttpGetFrameParseProcess)
+			{
+				switch(pDoc->m_nNetworkDeviceTypeMode)
+				{
+					case CVideoDeviceDoc::OTHERONE :
+						if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
+						{
+							sInfoMsg = _T("Cam:  Server Push");
+							sMessages.Add(sInfoMsg);
+							if (pDoc->m_nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
+								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[pDoc->m_nHttpGetFrameLocationPos];
+							else
+								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[0];
+							sMessages.Add(sInfoMsg);
+						}
+						else if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG)
+						{
+							sInfoMsg = _T("Cam:  Client Poll");
+							sMessages.Add(sInfoMsg);
+							if (pDoc->m_nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
+								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[pDoc->m_nHttpGetFrameLocationPos];
+							else
+								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[0];
+							sMessages.Add(sInfoMsg);
+						}
+						break;
+					case CVideoDeviceDoc::AXIS_SP :		sInfoMsg = _T("Cam:  Axis"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::AXIS_CP :		sInfoMsg = _T("Cam:  Axis"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::PANASONIC_SP :sInfoMsg = _T("Cam:  Panasonic"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::PANASONIC_CP :sInfoMsg = _T("Cam:  Panasonic"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::PIXORD_SP :	sInfoMsg = _T("Cam:  Pixord"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::PIXORD_CP :	sInfoMsg = _T("Cam:  Pixord"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::EDIMAX_SP :	sInfoMsg = _T("Cam:  Edimax"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::EDIMAX_CP :	sInfoMsg = _T("Cam:  Edimax"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::TPLINK_SP :	sInfoMsg = _T("Cam:  TP-Link"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
+					case CVideoDeviceDoc::TPLINK_CP :	sInfoMsg = _T("Cam:  TP-Link"); sMessages.Add(sInfoMsg);
+														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
+					default : break;
+				}
+			}
+		}
+		else if (pDoc->m_pGetFrameNetCom->IsDatagram())
+		{
+			sInfoMsg = _T("Cam:  Internal UDP");
+			sMessages.Add(sInfoMsg);
+		}
+		if (pDoc->m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)
+			sInfoMsg = _T("      IPv6");
+		else
+			sInfoMsg = _T("      IPv4");
+		sMessages.Add(sInfoMsg);
+	}
+	
+	// Draw text, only ASCII strings supported!
+	for (int y = 0 ; y < MIN(nMaxLines, sMessages.GetSize()) ; y++)
+	{
+		sInfoMsg = _T("");
+		for (int x = 0 ; x < MIN(nMaxChars, sMessages[y].GetLength()) ; x++)
+			sInfoMsg += sMessages[y][x];
+		pDoc->m_pDxDraw->DrawText(sInfoMsg, 0, y*szFontSize.cy, DRAWTEXT_TOPLEFT);
+	}
 }
 
 __forceinline void CVideoDeviceView::DxDrawText()
@@ -850,51 +1013,69 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	EnableCursor();
-
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
+	if (pDoc->m_bShowEditDetectionZones)
 	{
-		// Width & Height
-		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
-		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
-		if (nZoneWidth <= 0 || nZoneHeight <= 0)
-			return;
-
-		// Offset Remove
-		point.x -= m_ZoomRect.left;
-		point.y -= m_ZoomRect.top;
-
-		// Check if inside Frame
-		if (point.x < 0 ||
-			point.y < 0 ||
-			point.x > m_ZoomRect.Width() ||
-			point.y > m_ZoomRect.Height())
-			return;
-
-		int x = point.x / nZoneWidth;
-		int y = point.y / nZoneHeight;
-
-		// The Selected Zone Index
-		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
-
-		// Reset Zone State
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL))
-			pDoc->m_DoMovementDetection[nZone] = FALSE;
-		// Set Zone State
-		else
-			pDoc->m_DoMovementDetection[nZone] = TRUE;
-
-		// Store Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		if (pDoc->m_lMovDetTotalZones > 0)
 		{
-			CString sSection(pDoc->GetDevicePathName());
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
+			// Width & Height
+			int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
+			int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
+			if (nZoneWidth <= 0 || nZoneHeight <= 0)
+				return;
+
+			// Offset Remove
+			point.x -= m_ZoomRect.left;
+			point.y -= m_ZoomRect.top;
+
+			// Check if inside Frame
+			if (point.x < 0 ||
+				point.y < 0 ||
+				point.x > m_ZoomRect.Width() ||
+				point.y > m_ZoomRect.Height())
+				return;
+
+			int x = point.x / nZoneWidth;
+			int y = point.y / nZoneHeight;
+
+			// The Selected Zone Index
+			int nZone = x + y * pDoc->m_lMovDetXZonesCount;
+
+			// Reset Zone State
+			if ((nFlags & MK_SHIFT) ||
+				(nFlags & MK_CONTROL))
+				pDoc->m_DoMovementDetection[nZone] = FALSE;
+			// Set Zone State
+			else
+				pDoc->m_DoMovementDetection[nZone] = TRUE;
+
+			// Store Settings
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			{
+				CString sSection(pDoc->GetDevicePathName());
+				CString sZone;
+				sZone.Format(MOVDET_ZONE_FORMAT, nZone);
+				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
+			}
 		}
+	}
+	else
+	{
+		ForceCursor();
+		SetCapture();
+		m_bDxDrawInfoText = TRUE;
+	}
+}
+
+void CVideoDeviceView::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	CUImagerView::OnLButtonUp(nFlags, point);
+	if (m_bDxDrawInfoText)
+	{
+		ForceCursor(FALSE);
+		m_bDxDrawInfoText = FALSE;
+		ReleaseCapture();
 	}
 }
 

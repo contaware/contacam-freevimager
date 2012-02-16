@@ -2,7 +2,7 @@
 
 [General Info]
 Version=1
-LastClass=CMovementDetectionPage
+LastClass=CVideoDeviceView
 LastTemplate=CDialog
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "uimager.h"
@@ -195,7 +195,7 @@ Resource56=IDD_DIRECTX7 (English (U.S.))
 Resource57=IDD_SOFT_BORDERS (English (U.S.))
 Resource58=IDD_YESNOALLCANCEL (English (U.S.))
 Resource59=IDD_SETTINGS (English (U.S.))
-Resource60=IDR_MAINFRAME (English (U.S.))
+Resource60=IDD_RENAME (English (U.S.))
 Resource61=IDD_ZIP_PROGRESS (English (U.S.))
 Resource62=IDD_DECREASE_BPP (English (U.S.))
 Resource63=IDD_OUTVOL (English (U.S.))
@@ -236,7 +236,7 @@ Resource97=IDR_CONTEXT_PICTURE (English (U.S.))
 Resource98=IDD_SHARPEN (English (U.S.))
 Resource99=IDD_LAYERED (English (U.S.))
 Resource100=IDD_DELETEPAGE (English (U.S.))
-Resource101=IDD_RENAME (English (U.S.))
+Resource101=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -578,7 +578,7 @@ HeaderFile=MovementDetectionPage.h
 ImplementationFile=MovementDetectionPage.cpp
 Filter=D
 VirtualFilter=idWC
-LastObject=IDC_DETECTION_MODE
+LastObject=CMovementDetectionPage
 
 [CLS:CNetworkPage]
 Type=0
@@ -966,6 +966,9 @@ Type=0
 BaseClass=CUImagerView
 HeaderFile=VideoDeviceView.h
 ImplementationFile=VideoDeviceView.cpp
+Filter=C
+VirtualFilter=VWC
+LastObject=CVideoDeviceView
 
 [CLS:CVideoFormatDlg]
 Type=0

@@ -5302,13 +5302,6 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sFormat.Format(_T("%s -> RGB32"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
 		else
 			sFormat.Format(_T("%s"), CDib::GetCompressionName((LPBITMAPINFO)&m_OrigBMI));
-		if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient() && m_pHttpGetFrameParseProcess)
-		{
-			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
-				sFormat += _T(" , server push");
-			else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
-				sFormat += _T(" , client poll");
-		}
 
 		// Name , Size , Frame rate , Pixel format
 		strInfo.Format(
@@ -5318,10 +5311,6 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			m_DocRect.Height(),
 			m_dEffectiveFrameRate >= MIN_FRAMERATE ? m_dEffectiveFrameRate : m_dFrameRate,
 			sFormat);
-		
-		// Add IPv6 info if it's the case
-		if (m_pGetFrameNetCom && m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)
-			strInfo += _T(" , IPv6");
 	}
 	else
 		strInfo = sName;

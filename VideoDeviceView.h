@@ -33,6 +33,7 @@ public:
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
+	__forceinline void DxDrawInfoText();
 	__forceinline void DxDrawText();
 	__forceinline void DxDrawDC();
 	__forceinline void EraseDxBkgnd(BOOL bFullErase);
@@ -73,6 +74,7 @@ protected:
 	afx_msg void OnEditSelectall();
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
@@ -89,6 +91,7 @@ protected:
 	volatile DWORD m_dwDxDrawUpTime;
 	volatile BOOL m_bDxDrawInitFailed;
 	volatile BOOL m_bDxDrawFirstInitOk;
+	volatile BOOL m_bDxDrawInfoText;
 	int m_nCriticalControlsCount;
 	CFont m_GDIDrawFont;
 };
