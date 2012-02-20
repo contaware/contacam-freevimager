@@ -58,19 +58,19 @@ class CMovementDetectionPage;
 #define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
 #define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
 #define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
-#define DXDRAW_REINIT_TIMEOUT				5000U		// ms
-#define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
 
 // Watch Dog and Draw
 #define WATCHDOG_LONGCHECK_TIME				1000U		// ms
 #define WATCHDOG_SHORTCHECK_TIME			300U		// ms
 #define WATCHDOG_THRESHOLD					15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define HTTPWATCHDOG_RETRY_TIMEOUT			35000U		// ms, all re-connects after 35s
-
-// Detection Flags
-#define NO_DETECTOR							0x00
-#define TRIGGER_FILE_DETECTOR				0x01
-#define SOFTWARE_MOVEMENT_DETECTOR			0x02
+#define HTTPWATCHDOG_RETRY_TIMEOUT			35000U		// ms
+#define DXDRAW_REINIT_TIMEOUT				5000U		// ms
+#define DXDRAW_BKG_COLOR					RGB(0,0,0)	// do not change this because dxdraw background is cleared to 0
+#define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
+#define DXDRAW_MESSAGE_SUCCESS_COLOR		RGB(0,0xFF,0)
+#define DXDRAW_MESSAGE_ERROR_COLOR			RGB(0xFF,0,0)
+#define DXDRAW_MESSAGE_BKG_COLOR			RGB(0x30,0x30,0x30)
+#define DXDRAW_MESSAGE_SHOWTIME				1500U		// ms
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
@@ -84,6 +84,9 @@ class CMovementDetectionPage;
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of swf
 
 // Movement Detection
+#define NO_DETECTOR							0x00
+#define TRIGGER_FILE_DETECTOR				0x01
+#define SOFTWARE_MOVEMENT_DETECTOR			0x02
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
@@ -396,7 +399,6 @@ public:
 							m_dwI420ImageSize = 0;};
 			BOOL ParseSingle(	BOOL bLastCall,
 								int nSize,
-								const char* pMsg,
 								const CString& sMsg,
 								const CString& sMsgLowerCase);
 			BOOL ParseMultipart(CNetCom* pNetCom,
@@ -1164,6 +1166,9 @@ public:
 	
 	// On Change Frame Rate
 	void OnChangeFrameRate();
+
+	// Show OSD message
+	void ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor);
 	
 	// List Convention
 	//
@@ -1421,6 +1426,10 @@ public:
 	CDxDraw* m_pDxDraw;									// Direct Draw Object
 	volatile BOOL m_bDecodeFramesForPreview;			// Decode the frames from YUV to RGB for display
 														// because the format isn't supported for display
+	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
+	volatile DWORD m_dwOSDMessageUpTime;				// OSD message UpTime
+	CString m_sOSDMessage;								// OSD message string
+	volatile COLORREF m_crOSDMessageColor;				// OSD message color
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessFrame()

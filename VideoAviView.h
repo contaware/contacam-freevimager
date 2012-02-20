@@ -52,9 +52,6 @@ protected: // create from serialization only
 	
 	// Drawing Helpers
 	__forceinline BOOL InitMemDC(HDC hDC);
-	__forceinline void DrawBigCenteredText(	HDC hDC,
-											LPCTSTR szText,
-											COLORREF crTextColor);
 	__forceinline void DrawInfo(HDC hDC,
 								BOOL bDxDraw,
 								RECT& rcClient,

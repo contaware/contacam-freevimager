@@ -118,10 +118,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxDetectionMode = (CComboBox*)GetDlgItem(IDC_DETECTION_MODE);
-	pComboBoxDetectionMode->AddString(ML_STRING(1844, "Off"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1845, "Trigger File"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1846, "Software"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1847, "Trigger File + Software"));
+	pComboBoxDetectionMode->AddString(ML_STRING(1845, "Off"));
+	pComboBoxDetectionMode->AddString(ML_STRING(1846, "Trigger File"));
+	pComboBoxDetectionMode->AddString(ML_STRING(1847, "Software"));
+	pComboBoxDetectionMode->AddString(ML_STRING(1848, "Trigger File + Software"));
 	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
 	pComboBoxZoneSize->AddString(ML_STRING(1836, "Big"));
 	pComboBoxZoneSize->AddString(ML_STRING(1837, "Medium"));
@@ -396,6 +396,7 @@ void CMovementDetectionPage::OnSelchangeDetectionMode()
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_MODE);
 	m_pDoc->m_dwVideoProcessorMode = pComboBox->GetCurSel();
+	m_pDoc->SetDocumentTitle();
 	UpdateUnsupportedWarning();
 }
 

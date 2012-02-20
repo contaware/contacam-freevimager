@@ -22,11 +22,10 @@ BEGIN_MESSAGE_MAP(CVideoDevicePropertySheet, CPropertySheet)
 END_MESSAGE_MAP()
 
 CVideoDevicePropertySheet::CVideoDevicePropertySheet(CVideoDeviceDoc* pDoc) :
-CPropertySheet(	pDoc->GetDeviceName() != pDoc->GetAssignedDeviceName() ?
-				pDoc->GetAssignedDeviceName() + _T(" (") + pDoc->GetDeviceName() + _T(")") :
-				pDoc->GetDeviceName(), NULL)
+CPropertySheet(MakeTitle(pDoc), NULL)
 {	
 	// Set doc pointer
+	ASSERT_VALID(pDoc);
 	m_pDoc = pDoc;
 	
 	// Init pages
@@ -47,6 +46,43 @@ CPropertySheet(	pDoc->GetDeviceName() != pDoc->GetAssignedDeviceName() ?
 CVideoDevicePropertySheet::~CVideoDevicePropertySheet()
 {
 	
+}
+
+void CVideoDevicePropertySheet::UpdateTitle()
+{
+	SetTitle(MakeTitle(m_pDoc));
+}
+
+CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
+{
+	ASSERT_VALID(pDoc);
+	CString sTitle;
+	if (pDoc->GetDeviceName() != pDoc->GetAssignedDeviceName())
+		sTitle = pDoc->GetAssignedDeviceName() + _T(" (") + pDoc->GetDeviceName() + _T(")");
+	else
+		sTitle = pDoc->GetDeviceName();
+	if (pDoc->m_pGetFrameNetCom)
+	{
+		switch(pDoc->m_nNetworkDeviceTypeMode)
+		{
+			case CVideoDeviceDoc::INTERNAL_UDP	: sTitle += CString(_T(" , ")) + ML_STRING(1547, "Internal UDP Server"); break;
+			case CVideoDeviceDoc::OTHERONE		: sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Device"); break;
+			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1549, "Axis (Server Push Mode)"); break;
+			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1550, "Axis (Client Poll Mode)"); break;
+			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + ML_STRING(1551, "Panasonic (Server Push Mode)"); break;
+			case CVideoDeviceDoc::PANASONIC_CP	: sTitle += CString(_T(" , ")) + ML_STRING(1552, "Panasonic (Client Poll Mode)"); break;
+			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1553, "Pixord or NetComm (Server Push Mode)"); break;
+			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"); break;
+			case CVideoDeviceDoc::EDIMAX_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1789, "Edimax (Server Push Mode)"); break;
+			case CVideoDeviceDoc::EDIMAX_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1839, "Edimax (Client Poll Mode)"); break;
+			case CVideoDeviceDoc::TPLINK_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1840, "TP-Link (Server Push Mode)"); break;
+			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1841, "TP-Link (Client Poll Mode)"); break;
+			default : break;
+		}
+		if (pDoc->m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)
+			sTitle += _T(" , IPv6");
+	}
+	return sTitle;
 }
 
 void CVideoDevicePropertySheet::Toggle()

@@ -4400,11 +4400,24 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 			case WAIT_OBJECT_0 + 1 : ::ResetEvent(m_hEventArray[1]);
 			case WAIT_TIMEOUT :		
 			{
+				// Get/Reset OSD Message
+				CString sOSDMessage;
+				COLORREF crOSDMessageColor = DXDRAW_MESSAGE_SUCCESS_COLOR;
+				::EnterCriticalSection(&m_pDoc->m_csOSDMessage);
+				DWORD dwCurrentUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
+				if ((dwCurrentUpTime - m_pDoc->m_dwOSDMessageUpTime) <= DXDRAW_MESSAGE_SHOWTIME)
+				{
+					sOSDMessage = m_pDoc->m_sOSDMessage;
+					crOSDMessageColor = m_pDoc->m_crOSDMessageColor;
+				}
+				else
+					m_pDoc->m_sOSDMessage = _T("");
+				::LeaveCriticalSection(&m_pDoc->m_csOSDMessage);
+
 				// Update m_bWatchDogAlarm
 				DWORD dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
 				if (m_pDoc->m_dEffectiveFrameRate > 0.0)
 					dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dEffectiveFrameRate);
-				DWORD dwCurrentUpTime = ::timeGetTime();
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				if (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD	&&
 					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
@@ -4447,7 +4460,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw &&
 					::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0)
 				{
-					if (!m_pDoc->GetView()->DxDraw())
+					if (!m_pDoc->GetView()->DxDraw(dwCurrentUpTime, sOSDMessage, crOSDMessageColor))
 					{
 						Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
 						switch (Event)
@@ -5095,6 +5108,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Snapshot FTP Upload Configuration Critical Section
 	::InitializeCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 
+	// Init OSD Message Critical Section
+	::InitializeCriticalSection(&m_csOSDMessage);
+
 	// Init Movement Detector
 	OneEmptyFrameList();
 	ResetMovementDetector();
@@ -5163,6 +5179,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 	ClearMovementDetectionsList();
 	ClearReSendUDPFrameList();
+	::DeleteCriticalSection(&m_csOSDMessage);
 	::DeleteCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
@@ -5285,7 +5302,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	// Name
 	CString sName = GetAssignedDeviceName();
 
-	// Prepare title string
+	// General info
 	if (m_DocRect.Width() > 0 && 
 		m_DocRect.Height() > 0)
 	{
@@ -5314,6 +5331,18 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	}
 	else
 		strInfo = sName;
+
+	// Motion detection
+	strInfo += CString(_T(" , ")) + ML_STRING(1844, "Det") + CString(_T(" "));
+	switch (m_dwVideoProcessorMode)
+	{
+		case NO_DETECTOR :						strInfo += ML_STRING(1845, "Off"); break;
+		case TRIGGER_FILE_DETECTOR :			strInfo += ML_STRING(1846, "Trigger File"); break;
+		case SOFTWARE_MOVEMENT_DETECTOR :		strInfo += ML_STRING(1847, "Software"); break;
+		case (	TRIGGER_FILE_DETECTOR |
+				SOFTWARE_MOVEMENT_DETECTOR):	strInfo += ML_STRING(1848, "Trigger File + Software"); break;
+		default: break;
+	}
 
 	// Set title string
 	CDocument::SetTitle(strInfo);
@@ -9320,6 +9349,7 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 								&Dib))
 		{
 			m_bDoEditSnapshot = FALSE;
+			ShowOSDMessage(ML_STRING(1850, "Snapshot Save Failed!"), DXDRAW_MESSAGE_ERROR_COLOR);
 			return FALSE;
 		}
 		Dib.SetUpTime(dwUpTime);
@@ -9369,7 +9399,25 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Clear flag
 	m_bDoEditSnapshot = FALSE;
 
+	// Show OSD Message
+	if (res)
+	{
+		if (!m_bManualSnapshotAutoOpen)
+			ShowOSDMessage(ML_STRING(1849, "Snapshot Saved"), DXDRAW_MESSAGE_SUCCESS_COLOR);
+	}
+	else
+		ShowOSDMessage(ML_STRING(1850, "Snapshot Save Failed!"), DXDRAW_MESSAGE_ERROR_COLOR);
+
 	return res;
+}
+
+void CVideoDeviceDoc::ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor)
+{
+	::EnterCriticalSection(&m_csOSDMessage);
+	m_dwOSDMessageUpTime = ::timeGetTime();
+	m_sOSDMessage = sOSDMessage;
+	m_crOSDMessageColor = crOSDMessageColor;
+	::LeaveCriticalSection(&m_csOSDMessage);
 }
 
 void CVideoDeviceDoc::ShowSendFrameMsg()
@@ -13644,7 +13692,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	BOOL bLastCall,
 																int nSize,
-																const char* pMsg,
 																const CString& sMsg,
 																const CString& sMsgLowerCase)
 {
@@ -13901,7 +13948,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				m_bFirstFrame = TRUE;
 
 				// Call jpeg parser
-				res = ParseSingle(bLastCall, nSize, pMsg, sMsg, sMsgLowerCase);
+				res = ParseSingle(bLastCall, nSize, sMsg, sMsgLowerCase);
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
@@ -14032,7 +14079,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
-				TRACE(sMsg + _T('\n'));
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 				return FALSE; // Do not call Processor
 			}
 			// Html
@@ -14062,7 +14112,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_pDoc->CloseDocRemoveAutorunDev();
 				}
 				delete [] pMsg;
-				TRACE(sMsg + _T('\n'));
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 				return FALSE; // Do not call Processor
 			}
 			// Unknown or incomplete
@@ -14122,7 +14175,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			m_pDoc->m_HttpGetFrameThread.SetEventConnect(sNewRequest);
 	
 			delete [] pMsg;
-			TRACE(sMsg + _T('\n'));
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 			return FALSE; // Do not call Processor
 		}
 		// Unauthorized
@@ -14284,7 +14340,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			m_pDoc->m_HttpGetFrameThread.SetEventConnect(m_sLastRequest);
 	
 			delete [] pMsg;
-			TRACE(sMsg + _T('\n'));
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 			return FALSE; // Do not call Processor
 		}
 		else
@@ -14325,7 +14384,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), HTTPGETFRAME_CONNECTION_STARTDELAY);
 			}
 			delete [] pMsg;
-			TRACE(sMsg + _T('\n'));
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+#endif
 			return FALSE; // Do not call Processor
 		}
 	}

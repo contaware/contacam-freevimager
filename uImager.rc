@@ -7216,10 +7216,13 @@ BEGIN
     IDS_STRING1841          "TP-Link (Client Poll Mode)"
     IDS_STRING1842          "On first movement frame"
     IDS_STRING1843          "After Save,Email,Ftp"
-    IDS_STRING1844          "Off"
-    IDS_STRING1845          "Trigger File"
-    IDS_STRING1846          "Software"
-    IDS_STRING1847          "Trigger File + Software"
+    IDS_STRING1844          "Det"
+    IDS_STRING1845          "Off"
+    IDS_STRING1846          "Trigger File"
+    IDS_STRING1847          "Software"
+    IDS_STRING1848          "Trigger File + Software"
+    IDS_STRING1849          "Snapshot Saved"
+    IDS_STRING1850          "Snapshot Save Failed!"
 END
 
 #endif    // English (U.S.) resources

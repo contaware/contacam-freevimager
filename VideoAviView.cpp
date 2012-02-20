@@ -1593,9 +1593,11 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 						br.CreateSolidBrush(pDoc->m_crBackgroundColor);
 						::FillRect(hDC, &rcClient, (HBRUSH)br);
 						br.DeleteObject();
-						DrawBigCenteredText(hDC,
-											ML_STRING(1452, "Rendering mode not supported!"),
-											RGB(0xFF,0,0));
+						::DrawBigText(	hDC,
+										rcClient,
+										ML_STRING(1452, "Rendering mode not supported!"),
+										RGB(0xFF,0,0), 72, DT_CENTER | DT_VCENTER,
+										OPAQUE, pDoc->m_crBackgroundColor);
 					}
 
 					// Update Slider?
@@ -1677,57 +1679,6 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 	}
 	else
 		m_rcPrevClient = CRect(0,0,0,0);
-}
-
-__forceinline void CVideoAviView::DrawBigCenteredText(	HDC hDC,
-														LPCTSTR szText,
-														COLORREF crTextColor)
-{
-	CRect rcClient;
-	GetClientRect(&rcClient);
-
-	int nFontHeight = 44;
-	HFONT hFont;
-	HFONT hOldFont = NULL;
-	LOGFONT* pLF;
-
-	// Calc Font Size
-	do
-	{
-		pLF = (LOGFONT*)calloc(1, sizeof(LOGFONT));
-		if (!pLF)
-			return;
-		_tcscpy(pLF->lfFaceName, _T("Arial"));
-		pLF->lfHeight=nFontHeight;
-		pLF->lfWeight=FW_MEDIUM;
-		pLF->lfItalic=0;
-		pLF->lfUnderline=0;
-		hFont = ::CreateFontIndirect(pLF);
-		CRect rcText(0,0,0,0);
-		hOldFont = (HFONT)::SelectObject(hDC, hFont);
-		int res = ::DrawText(hDC, szText, -1, rcText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
-		if (rcText.Width() > (rcClient.Width() + 10))
-		{
-			::SelectObject(hDC, hOldFont);
-			nFontHeight = Round((double)nFontHeight * (double)rcClient.Width() /
-								(1.3 * (double)rcText.Width()));
-			::DeleteObject(hFont);
-			free(pLF);
-		}
-		else
-			break;
-	}
-	while (nFontHeight >= 6);
-
-	// Draw Error Message
-	COLORREF OldTextColor = ::SetTextColor(hDC, crTextColor);
-	int OldBkMode = ::SetBkMode(hDC, TRANSPARENT);
-	::DrawText(hDC, szText, -1, rcClient, DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_SINGLELINE);
-	::SetBkMode(hDC, OldBkMode);
-	::SetTextColor(hDC, OldTextColor);
-	::SelectObject(hDC, hOldFont);
-	::DeleteObject(hFont);
-	free(pLF);
 }
 
 __forceinline void CVideoAviView::DrawInfo(	HDC hDC,

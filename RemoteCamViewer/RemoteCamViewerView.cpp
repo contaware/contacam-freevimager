@@ -79,7 +79,7 @@ CRemoteCamViewerView::CRemoteCamViewerView()
 	m_bInit1 = FALSE;
 	m_bInit2 = FALSE;
 	m_bInit3 = FALSE;
-	m_nTitleHight = 0;
+	m_nTitleHeight = 0;
 }	
 
 CRemoteCamViewerView::~CRemoteCamViewerView()
@@ -273,7 +273,7 @@ void CRemoteCamViewerView::ClipToView(LPRECT lpRect) const
 	// Get Client Rect
 	CRect rcView;
 	GetClientRect(&rcView);
-	rcView.top = m_nTitleHight;
+	rcView.top = m_nTitleHeight;
 
 	// Clip
 	lpRect->left = MAX(rcView.left, MIN(rcView.right - w, lpRect->left));
@@ -290,7 +290,7 @@ void CRemoteCamViewerView::RepositionCams()
 		// Client Rect
 		CRect rcView;
 		GetClientRect(&rcView);
-		rcView.top = m_nTitleHight;
+		rcView.top = m_nTitleHeight;
 
 		// Necessary Sizes and Offsets
 		int nNecessaryWidth = MAX(	MAX(m_szRemoteCamSize0.cx + m_szRemoteCamSize1.cx, m_szRemoteCamSize2.cx + m_szRemoteCamSize3.cx),
@@ -435,19 +435,19 @@ void CRemoteCamViewerView::OnDraw(CDC* pDC)
 	CFont* pOldFont = MemDC.SelectObject(&m_TitleFont);
 
 	// Draw title
-	int nNewTitleHight = 0;
+	int nNewTitleHeight = 0;
 	if (m_sTitle != _T(""))
 	{
 		rc = rcClient;
 		rc.top = TITLE_MARGIN_TOP;
-		nNewTitleHight = MemDC.DrawText(m_sTitle,
+		nNewTitleHeight = MemDC.DrawText(m_sTitle,
 										-1,
 										&rc,
 										(DT_CENTER | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK)) + TITLE_MARGIN_TOP + TITLE_MARGIN_BOTTOM;
 	}
-	if (m_nTitleHight != nNewTitleHight)
+	if (m_nTitleHeight != nNewTitleHeight)
 	{
-		m_nTitleHight = nNewTitleHight;
+		m_nTitleHeight = nNewTitleHeight;
 		RepositionCams();
 	}
 

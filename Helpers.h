@@ -281,5 +281,18 @@ extern double drand(); // returns a double in the range of [0.0,1.0[  (0.0 inclu
 // GetCurrentProcessId(), GetCurrentThreadId(), timeGetTime(), GetTickCount(), ...
 extern unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c);
 
+// Draw big single line Arial text, if text doesn't fit in given rc width
+// then a smaller font size is chosen (minimum used font size is 8 points)
+// nMaxFontSize:	max. font size in points
+// uAlign:			DT_TOP, DT_BOTTOM, DT_LEFT, DT_RIGHT, DT_CENTER, DT_VCENTER
+// returns:			the used height in pixels (0 if an error occurred)
+extern int DrawBigText(	HDC hDC,
+						CRect rc,
+						LPCTSTR szText,
+						COLORREF crTextColor,
+						int nMaxFontSize = 72,
+						UINT uAlign = DT_CENTER | DT_VCENTER,
+						int nBkMode = TRANSPARENT,
+						COLORREF crBkColor = RGB(0,0,0));
 
 #endif // !defined(AFX_HELPERS_H__8FD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)

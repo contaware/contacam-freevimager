@@ -3024,3 +3024,67 @@ unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c)
 	c=c-a;  c=c-b;  c=c^(b >> 15);
 	return c;
 }
+
+int DrawBigText(HDC hDC,
+				CRect rc,
+				LPCTSTR szText,
+				COLORREF crTextColor,
+				int nMaxFontSize/*=72*/,
+				UINT uAlign/*=DT_CENTER | DT_VCENTER*/,
+				int nBkMode/*=TRANSPARENT*/,
+				COLORREF crBkColor/*=RGB(0,0,0)*/)
+{
+	// Check
+	if (!hDC)
+		return 0;
+
+	// Vars
+	HFONT hFont;
+	HFONT hOldFont = NULL;
+	LOGFONT lf;
+	int nUsedHeightPix;
+	nMaxFontSize = MAX(nMaxFontSize, 8); // 8 is min font size
+
+	// Set colors and mode
+	COLORREF crOldTextColor = SetTextColor(hDC, crTextColor);
+	int nOldBkMode = SetBkMode(hDC, nBkMode);
+	COLORREF crOldBkColor = SetBkColor(hDC, crBkColor);
+
+	// Calc. Font Size
+	while (TRUE)
+	{
+		memset(&lf, 0, sizeof(lf));
+		_tcscpy(lf.lfFaceName, _T("Arial"));
+		lf.lfHeight = -MulDiv(nMaxFontSize, GetDeviceCaps(hDC, LOGPIXELSY), 72);
+		lf.lfWeight = FW_MEDIUM;
+		lf.lfItalic = 0;
+		lf.lfUnderline = 0;
+		hFont = CreateFontIndirect(&lf);
+		CRect rcText(0,0,0,0);
+		hOldFont = (HFONT)SelectObject(hDC, hFont);
+		nUsedHeightPix = DrawText(hDC, szText, -1, rcText, DT_CALCRECT | DT_SINGLELINE | DT_NOCLIP);
+		if (rcText.Width() > rc.Width())
+		{
+			if (nMaxFontSize == 8) // 8 is min font size
+				break;
+			nMaxFontSize = MAX(Round((double)nMaxFontSize * (double)rc.Width() /
+								(1.3 * (double)rcText.Width())), 8);
+			SelectObject(hDC, hOldFont);
+			DeleteObject(hFont);
+		}
+		else
+			break;
+	}
+
+	// Draw Message
+	DrawText(hDC, szText, -1, rc, uAlign | DT_NOCLIP | DT_SINGLELINE);
+	
+	// Restore and clean-up
+	SetBkColor(hDC, crOldBkColor);
+	SetBkMode(hDC, nOldBkMode);
+	SetTextColor(hDC, crOldTextColor);
+	SelectObject(hDC, hOldFont);
+	DeleteObject(hFont);
+
+	return nUsedHeightPix;
+}

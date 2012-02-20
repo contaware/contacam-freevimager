@@ -32,7 +32,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
-	ON_WM_LBUTTONUP()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURESETTINGS, OnThreadSafeCaptureSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -51,7 +50,6 @@ CVideoDeviceView::CVideoDeviceView()
 	// Init vars
 	m_bDxDrawInitFailed = FALSE;
 	m_bDxDrawFirstInitOk = FALSE;
-	m_bDxDrawInfoText = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_nCriticalControlsCount = 1;
 }
@@ -429,7 +427,7 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-__forceinline void CVideoDeviceView::EraseDxBkgnd(BOOL bFullErase)
+__forceinline void CVideoDeviceView::EraseDxDrawBkgnd(BOOL bFullErase)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -463,7 +461,7 @@ __forceinline void CVideoDeviceView::EraseDxBkgnd(BOOL bFullErase)
 		pDoc->m_pDxDraw->ClearBack();
 }
 
-__forceinline BOOL CVideoDeviceView::IsDxCompressionDifferent()
+__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -501,7 +499,7 @@ __forceinline BOOL CVideoDeviceView::IsDxCompressionDifferent()
 		return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 }
 
-BOOL CVideoDeviceView::DxDraw()
+BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -517,87 +515,85 @@ BOOL CVideoDeviceView::DxDraw()
 		return FALSE;
 	}
 
-	// Init local vars
-	DWORD dwCurrentUpTime = ::timeGetTime();
+	// Init
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
-	BOOL bDxDrawInfoText = m_bDxDrawInfoText;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
-
-	// Preview Off?
-	if (!bVideoView)
+	if (!pDoc->m_pDxDraw->IsInit()										||
+		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
+		pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
+		pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
+		IsDxDrawCompressionDifferent())
 	{
-		if (!pDoc->m_pDxDraw->IsInit()										||
-			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-			pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
-			pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
-			pDoc->m_pDxDraw->GetCurrentSrcFourCC() != BI_RGB)
+		m_dwDxDrawUpTime = dwCurrentUpTime;
+		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), pDoc->m_pDib->GetCompression()))
 		{
-			m_dwDxDrawUpTime = dwCurrentUpTime;
-			if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), BI_RGB))
-			{
-				::LeaveCriticalSection(&pDoc->m_csDib);
-				return FALSE;
-			}
-		}	
-	}
-	else
-	{
-		if (!pDoc->m_pDxDraw->IsInit()										||
-			(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-			pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
-			pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
-			IsDxCompressionDifferent())
-		{
-			m_dwDxDrawUpTime = dwCurrentUpTime;
-			if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), pDoc->m_pDib->GetCompression()))
-			{
-				::LeaveCriticalSection(&pDoc->m_csDib);
-				return FALSE;
-			}
+			::LeaveCriticalSection(&pDoc->m_csDib);
+			return FALSE;
 		}
 	}
 
 	// Draw if initialized
 	if (pDoc->m_pDxDraw->IsInit())
 	{
+		// Device Context
+		HDC hDC; 
+
+		// Draw Rect
+		CRect rc(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
+
 		// Update Current Device
 		pDoc->m_pDxDraw->UpdateCurrentDevice();
 
-		// Erase Background, full erase if drawing a message
-		EraseDxBkgnd(bStopAndChangeFormat || bDxDrawInfoText || bWatchDogAlarm || !bVideoView);
+		// Erase Background, full erase if drawing a message (erases to black)
+		EraseDxDrawBkgnd(bStopAndChangeFormat || bWatchDogAlarm || !bVideoView);
 
 		// Display: Change Size
 		if (bStopAndChangeFormat)
-			pDoc->m_pDxDraw->DrawText(ML_STRING(1569, "Change Size"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
-		// Display: Info Text
-		else if (bDxDrawInfoText)
-			DxDrawInfoText();
+		{
+			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
+							ML_STRING(1569, "Change Size"),
+							DXDRAW_MESSAGE_COLOR, 72, DT_CENTER | DT_VCENTER,
+							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
+			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		}
 		// Display: No Frames
 		else if (bWatchDogAlarm)
-			pDoc->m_pDxDraw->DrawText(ML_STRING(1570, "No Frames"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
-		// Draw Frame + Text + DC
+		{
+			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
+							ML_STRING(1570, "No Frames"),
+							DXDRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
+							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
+			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		}
+		// Draw
 		else if (bVideoView)
 		{
 			// Draw Frame
 			pDoc->m_pDxDraw->RenderDib(pDoc->m_pDib, m_ZoomRect);
-
-			// Text Drawing
-			DxDrawText();
 			
-			// DC Drawing
-			if (pDoc->m_bDetectingMovement		||
-				pDoc->m_bShowEditDetectionZones	||
-				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
-				pDoc->m_bShowMovementDetections))
-				DxDrawDC();
+			// Draw Zones
+			if (pDoc->m_bShowEditDetectionZones ||
+				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
+				DxDrawZones();
+
+			// Draw Text
+			if (pDoc->m_SaveFrameListThread.IsWorking() ||
+				!sOSDMessage.IsEmpty())
+				DxDrawText(sOSDMessage, crOSDMessageColor);
 		}
 		// Display: Preview Off
 		else
-			pDoc->m_pDxDraw->DrawText(ML_STRING(1571, "Preview Off"), 0, 0, DRAWTEXT_TOPLEFT);	// Only ASCII string supported!
+		{
+			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
+							ML_STRING(1571, "Preview Off"),
+							DXDRAW_MESSAGE_SUCCESS_COLOR, 72, DT_CENTER | DT_VCENTER,
+							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
+			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		}
 
 		// Blt
-		if (pDoc->m_pDxDraw->Blt(m_ZoomRect, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight())))
+		if (pDoc->m_pDxDraw->Blt(m_ZoomRect, rc))
 			m_dwDxDrawUpTime = dwCurrentUpTime;
 	}
 
@@ -607,189 +603,62 @@ BOOL CVideoDeviceView::DxDraw()
 	return TRUE;
 }
 
-__forceinline void CVideoDeviceView::DxDrawInfoText()
+void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
-	// Vars
-	CSize szFontSize = pDoc->m_pDxDraw->GetFontSize();
-	int nMaxChars = pDoc->m_pDib->GetWidth() / szFontSize.cx;
-	int nMaxLines = pDoc->m_pDib->GetHeight() / szFontSize.cy;
-	CStringArray sMessages;
-	CString sInfoMsg;
-	
-	// Snapshots
-	sInfoMsg = _T("");
-	if (pDoc->m_bSnapshotLiveJpeg)
-		sInfoMsg += _T("Live");
-	if (pDoc->m_bSnapshotHistoryJpeg)
+	// Get Back DC
+	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
+	if (hDC)
 	{
-		if (sInfoMsg.IsEmpty())
-			sInfoMsg += _T("Jpegs");
-		else
-			sInfoMsg += _T(",Jpegs");
-	}
-	if (pDoc->m_bSnapshotHistorySwf)
-	{
-		if (sInfoMsg.IsEmpty())
-			sInfoMsg += _T("Swf");
-		else
-			sInfoMsg += _T(",Swf");
-	}
-	if (sInfoMsg.IsEmpty())
-	{
-		sInfoMsg = _T("Shot: Off");
-		sMessages.Add(sInfoMsg);
-	}
-	else
-	{
-		sInfoMsg = _T("Shot: ") + sInfoMsg;
-		sMessages.Add(sInfoMsg);
-		if (pDoc->m_bSnapshotStartStop)
+		// Save frame list thread working?
+		if (pDoc->m_SaveFrameListThread.IsWorking())
 		{
-			sInfoMsg.Format(_T("      %02d:%02d:%02d-%02d:%02d:%02d"),
-						pDoc->m_SnapshotStartTime.GetHour(),
-						pDoc->m_SnapshotStartTime.GetMinute(),
-						pDoc->m_SnapshotStartTime.GetSecond(),
-						pDoc->m_SnapshotStopTime.GetHour(),
-						pDoc->m_SnapshotStopTime.GetMinute(),
-						pDoc->m_SnapshotStopTime.GetSecond());
-			sMessages.Add(sInfoMsg);
-		}
-	}
+			// Calc. font size
+			int nMaxFontSize;
+			if (pDoc->m_pDib->GetHeight() <= 144)
+				nMaxFontSize = 9;
+			else if (pDoc->m_pDib->GetHeight() <= 288)
+				nMaxFontSize = 16;
+			else if (pDoc->m_pDib->GetHeight() <= 576)
+				nMaxFontSize = 24;
+			else
+				nMaxFontSize = 36;
 
-	// Motion Detection
-	sInfoMsg = _T("Det:  ");
-	switch (pDoc->m_dwVideoProcessorMode)
-	{
-		case NO_DETECTOR :						sInfoMsg += _T("Off"); break;
-		case TRIGGER_FILE_DETECTOR :			sInfoMsg += _T("Trigger"); break;
-		case SOFTWARE_MOVEMENT_DETECTOR :		sInfoMsg += _T("Soft"); break;
-		case (	TRIGGER_FILE_DETECTOR |
-				SOFTWARE_MOVEMENT_DETECTOR):	sInfoMsg += _T("Trigger+Soft"); break;
-		default: break;
-	}
-	sMessages.Add(sInfoMsg);
-	if (pDoc->m_bDetectionStartStop)
-	{
-		sInfoMsg.Format(_T("      %02d:%02d:%02d-%02d:%02d:%02d"),
-					pDoc->m_DetectionStartTime.GetHour(),
-					pDoc->m_DetectionStartTime.GetMinute(),
-					pDoc->m_DetectionStartTime.GetSecond(),
-					pDoc->m_DetectionStopTime.GetHour(),
-					pDoc->m_DetectionStopTime.GetMinute(),
-					pDoc->m_DetectionStopTime.GetSecond());
-		sMessages.Add(sInfoMsg);
-	}
-
-	// UDP Network Server
-	if (pDoc->m_bSendVideoFrame)
-		sInfoMsg.Format(_T("Net:  On(%d)"), pDoc->m_nSendFrameVideoPort);
-	else
-		sInfoMsg.Format(_T("Net:  Off"));
-	sMessages.Add(sInfoMsg);
-
-	// Network Device
-	if (pDoc->m_pGetFrameNetCom)
-	{
-		if (pDoc->m_pGetFrameNetCom->IsClient())
-		{
-			if (pDoc->m_pHttpGetFrameParseProcess)
+			// FTP / Email progress display
+			CString sProgress(_T(""));
+			if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
+				sProgress.Format(_T("FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
+			else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
+				sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
+			if (sProgress != _T(""))
 			{
-				switch(pDoc->m_nNetworkDeviceTypeMode)
-				{
-					case CVideoDeviceDoc::OTHERONE :
-						if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
-						{
-							sInfoMsg = _T("Cam:  Server Push");
-							sMessages.Add(sInfoMsg);
-							if (pDoc->m_nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
-								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[pDoc->m_nHttpGetFrameLocationPos];
-							else
-								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[0];
-							sMessages.Add(sInfoMsg);
-						}
-						else if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG)
-						{
-							sInfoMsg = _T("Cam:  Client Poll");
-							sMessages.Add(sInfoMsg);
-							if (pDoc->m_nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
-								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[pDoc->m_nHttpGetFrameLocationPos];
-							else
-								sInfoMsg = _T("      ") + pDoc->m_HttpGetFrameLocations[0];
-							sMessages.Add(sInfoMsg);
-						}
-						break;
-					case CVideoDeviceDoc::AXIS_SP :		sInfoMsg = _T("Cam:  Axis"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::AXIS_CP :		sInfoMsg = _T("Cam:  Axis"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::PANASONIC_SP :sInfoMsg = _T("Cam:  Panasonic"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::PANASONIC_CP :sInfoMsg = _T("Cam:  Panasonic"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::PIXORD_SP :	sInfoMsg = _T("Cam:  Pixord"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::PIXORD_CP :	sInfoMsg = _T("Cam:  Pixord"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::EDIMAX_SP :	sInfoMsg = _T("Cam:  Edimax"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::EDIMAX_CP :	sInfoMsg = _T("Cam:  Edimax"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::TPLINK_SP :	sInfoMsg = _T("Cam:  TP-Link"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Server Push"); sMessages.Add(sInfoMsg); break;
-					case CVideoDeviceDoc::TPLINK_CP :	sInfoMsg = _T("Cam:  TP-Link"); sMessages.Add(sInfoMsg);
-														sInfoMsg = _T("      Client Poll"); sMessages.Add(sInfoMsg); break;
-					default : break;
-				}
+				::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+								sProgress, DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+								OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 			}
+
+			// Show that we are working
+			::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
-		else if (pDoc->m_pGetFrameNetCom->IsDatagram())
+
+		// Draw OSD message
+		if (!sOSDMessage.IsEmpty())
 		{
-			sInfoMsg = _T("Cam:  Internal UDP");
-			sMessages.Add(sInfoMsg);
+			::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+							sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
+							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
-		if (pDoc->m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)
-			sInfoMsg = _T("      IPv6");
-		else
-			sInfoMsg = _T("      IPv4");
-		sMessages.Add(sInfoMsg);
-	}
-	
-	// Draw text, only ASCII strings supported!
-	for (int y = 0 ; y < MIN(nMaxLines, sMessages.GetSize()) ; y++)
-	{
-		sInfoMsg = _T("");
-		for (int x = 0 ; x < MIN(nMaxChars, sMessages[y].GetLength()) ; x++)
-			sInfoMsg += sMessages[y][x];
-		pDoc->m_pDxDraw->DrawText(sInfoMsg, 0, y*szFontSize.cy, DRAWTEXT_TOPLEFT);
+
+		// Release Back DC
+		pDoc->m_pDxDraw->ReleaseBackDC(hDC);
 	}
 }
 
-__forceinline void CVideoDeviceView::DxDrawText()
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-
-	// Progress Display
-	if (pDoc->m_SaveFrameListThread.IsWorking())
-	{
-		CString sProgress(_T(""));
-		if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
-			sProgress.Format(_T("FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
-		else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
-			sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
-		if (sProgress != _T(""))
-			pDoc->m_pDxDraw->DrawText(sProgress, pDoc->m_pDib->GetWidth() - 1, 0, DRAWTEXT_TOPRIGHT);
-	}
-
-	// Recording
-	if (pDoc->m_SaveFrameListThread.IsWorking())
-		pDoc->m_pDxDraw->DrawText(_T("REC"), pDoc->m_pDib->GetWidth() - 1, pDoc->m_pDib->GetHeight() - 1, DRAWTEXT_BOTTOMRIGHT);
-}
-
-__forceinline void CVideoDeviceView::DxDrawDC()
+void CVideoDeviceView::DxDrawZones()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -829,8 +698,7 @@ __forceinline void CVideoDeviceView::DxDrawDC()
 		}
 
 		// Draw Detected Zones
-		if ((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
-			pDoc->m_bShowMovementDetections)
+		if ((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections)
 		{
 			DWORD dwCurrentTime = ::timeGetTime();
 			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
@@ -859,10 +727,10 @@ __forceinline void CVideoDeviceView::DxDrawDC()
 				}
 			}
 		}
-	}
 
-	// Release Back DC
-	pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		// Release Back DC
+		pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+	}
 }
 
 BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
@@ -872,8 +740,6 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 
 void CVideoDeviceView::OnDraw(CDC* pDC) 
 {
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
 	if (!m_bDxDrawFirstInitOk)
 	{
 		// Flicker free drawing
@@ -883,14 +749,14 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 
 		//  Erase Background
 		CBrush br;
-		br.CreateSolidBrush(pDoc->m_crBackgroundColor);	
+		br.CreateSolidBrush(DXDRAW_BKG_COLOR);	
 		MemDC.FillRect(&rcClient, &br);
 
 		// Create font
 		if (!(HFONT)m_GDIDrawFont)
 		{
 			LOGFONT lf;
-			memset(&lf, 0, sizeof(LOGFONT));
+			memset(&lf, 0, sizeof(lf));
 			_tcscpy(lf.lfFaceName, _T("Arial"));
 			lf.lfHeight = -MulDiv(11, pDC->GetDeviceCaps(LOGPIXELSY), 72);
 			lf.lfWeight = FW_NORMAL;
@@ -902,7 +768,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		// Set colors
 		COLORREF crOldTextColor = MemDC.SetTextColor(DXDRAW_MESSAGE_COLOR);
 		int nOldBkMode = MemDC.SetBkMode(OPAQUE);
-		COLORREF crOldBkColor = MemDC.SetBkColor(pDoc->m_crBackgroundColor);
+		COLORREF crOldBkColor = MemDC.SetBkColor(DXDRAW_BKG_COLOR);
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
 
 		// Draw
@@ -1013,69 +879,51 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
+	EnableCursor();
+
 	CUImagerView::OnLButtonDown(nFlags, point);
 
-	if (pDoc->m_bShowEditDetectionZones)
+	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
-		if (pDoc->m_lMovDetTotalZones > 0)
+		// Width & Height
+		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
+		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
+		if (nZoneWidth <= 0 || nZoneHeight <= 0)
+			return;
+
+		// Offset Remove
+		point.x -= m_ZoomRect.left;
+		point.y -= m_ZoomRect.top;
+
+		// Check if inside Frame
+		if (point.x < 0 ||
+			point.y < 0 ||
+			point.x > m_ZoomRect.Width() ||
+			point.y > m_ZoomRect.Height())
+			return;
+
+		int x = point.x / nZoneWidth;
+		int y = point.y / nZoneHeight;
+
+		// The Selected Zone Index
+		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
+
+		// Reset Zone State
+		if ((nFlags & MK_SHIFT) ||
+			(nFlags & MK_CONTROL))
+			pDoc->m_DoMovementDetection[nZone] = FALSE;
+		// Set Zone State
+		else
+			pDoc->m_DoMovementDetection[nZone] = TRUE;
+
+		// Store Settings
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
-			// Width & Height
-			int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
-			int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
-			if (nZoneWidth <= 0 || nZoneHeight <= 0)
-				return;
-
-			// Offset Remove
-			point.x -= m_ZoomRect.left;
-			point.y -= m_ZoomRect.top;
-
-			// Check if inside Frame
-			if (point.x < 0 ||
-				point.y < 0 ||
-				point.x > m_ZoomRect.Width() ||
-				point.y > m_ZoomRect.Height())
-				return;
-
-			int x = point.x / nZoneWidth;
-			int y = point.y / nZoneHeight;
-
-			// The Selected Zone Index
-			int nZone = x + y * pDoc->m_lMovDetXZonesCount;
-
-			// Reset Zone State
-			if ((nFlags & MK_SHIFT) ||
-				(nFlags & MK_CONTROL))
-				pDoc->m_DoMovementDetection[nZone] = FALSE;
-			// Set Zone State
-			else
-				pDoc->m_DoMovementDetection[nZone] = TRUE;
-
-			// Store Settings
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				CString sSection(pDoc->GetDevicePathName());
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, nZone);
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
-			}
+			CString sSection(pDoc->GetDevicePathName());
+			CString sZone;
+			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
+			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
 		}
-	}
-	else
-	{
-		ForceCursor();
-		SetCapture();
-		m_bDxDrawInfoText = TRUE;
-	}
-}
-
-void CVideoDeviceView::OnLButtonUp(UINT nFlags, CPoint point) 
-{
-	CUImagerView::OnLButtonUp(nFlags, point);
-	if (m_bDxDrawInfoText)
-	{
-		ForceCursor(FALSE);
-		m_bDxDrawInfoText = FALSE;
-		ReleaseCapture();
 	}
 }
 

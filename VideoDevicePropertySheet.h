@@ -24,6 +24,7 @@ public:
 	DECLARE_DYNAMIC(CVideoDevicePropertySheet)
 	CVideoDevicePropertySheet(CVideoDeviceDoc* pDoc);
 	void Close();
+	void UpdateTitle();
 	BOOL IsVisible();
 	void Toggle();
 	void Show();
@@ -31,6 +32,7 @@ public:
 
 protected:
 	virtual ~CVideoDevicePropertySheet();
+	static CString MakeTitle(CVideoDeviceDoc* pDoc);
 
 // Attributes
 	CGeneralPage m_GeneralPropertyPage;

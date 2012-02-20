@@ -1297,17 +1297,16 @@ void CAssistantPage::ApplySettings()
 	// Update data because m_sName may have been changed
 	UpdateData(FALSE);
 
-	// Close
+	// Hide
 	CVideoDevicePropertySheet* pPropertySheet = (CVideoDevicePropertySheet*)GetParent();
 	pPropertySheet->Hide();
 
 	// Restore var
 	m_pDoc->m_bRecAutoOpenAllowed = TRUE;
 
-	// Update title
-	pPropertySheet->SetTitle(	m_pDoc->GetDeviceName() != m_pDoc->GetAssignedDeviceName() ?
-								m_pDoc->GetAssignedDeviceName() + _T(" (") + m_pDoc->GetDeviceName() + _T(")") :
-								m_pDoc->GetDeviceName());
+	// Update titles
+	pPropertySheet->UpdateTitle();
+	m_pDoc->SetDocumentTitle();
 
 	// Enable all
 	EnableDisableAllCtrls(TRUE);
