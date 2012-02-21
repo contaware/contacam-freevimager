@@ -1881,10 +1881,8 @@ int CDxCapture::SetDefaultInput()
             if (m_pCrossbar->GetInputType(j, &lPhysicalType) == S_OK &&
 				lPhysicalType == PhysConn_Video_Composite)
 			{
-				if (nFirstCompositeIndex == -1)
-					nFirstCompositeIndex = j;
-				else
-					return SetCurrentInput(j) ? j : -1; // Second composite input is the preferred choice!
+				nFirstCompositeIndex = j;
+				break;
 			}
         }
 		if (nFirstCompositeIndex >= 0)

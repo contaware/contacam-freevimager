@@ -131,9 +131,9 @@ public:
 	int EnumInputs(CStringArray& sInputs);				// Enumerate All Input Lines (S-Video, TV-Tuner,...)
 														// of the Current Capture Device
 	int GetInputsCount();								// Get the Number of Inputs,
-														// WebCams do not have inputs, it return -1 for them
+														// WebCams do not have inputs, it returns -1 for them
 	BOOL SetCurrentInput(int nId);						// Select Input Line
-	int SetDefaultInput();								// Sets composite input and if not available sets first input
+	int SetDefaultInput();								// Sets first composite input and if not available sets first input
 	int GetCurrentInputID();							// Get Current Input Line Id
 	CString GetCurrentInputName();						// Get Current Input Name
 	
