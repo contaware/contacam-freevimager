@@ -13600,6 +13600,13 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 
 	if (m_bMultipartNoLength)
 	{
+		// Security Size Check
+		if (nSize > HTTP_MAX_MULTIPART_SIZE)
+		{
+			pNetCom->Read(); // Empty the buffers
+			return FALSE;
+		}
+
 		// Find Start
 		if ((nPos = FindMultipartBoundary(nPos, nSize, pMsg)) < 0)
 			return FALSE;
@@ -13615,6 +13622,13 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 	}
 	else
 	{
+		// Security Size Check
+		if (nSize > HTTP_MAX_MULTIPART_SIZE / 2)
+		{
+			m_bMultipartNoLength = TRUE;
+			return FALSE;
+		}
+
 		// Find Boundary
 		if (m_sMultipartBoundary.IsEmpty() || (nPos = sMsg.Find(m_sMultipartBoundary, nPos)) < 0)
 			return FALSE;
