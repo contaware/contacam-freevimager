@@ -872,6 +872,7 @@ public:
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnToolsViewWebLogfile();
+	afx_msg void OnToolsDelCamFolders();
 	afx_msg void OnCaptureNetwork();
 	afx_msg void OnFileDxVideoDevice(UINT nID);
 #endif

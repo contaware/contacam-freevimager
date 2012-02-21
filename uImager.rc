@@ -241,6 +241,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Help"
     BEGIN
@@ -603,6 +605,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -712,6 +716,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -969,6 +975,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -1100,6 +1108,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -1446,6 +1456,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -2324,7 +2336,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_DETECTION_MODE,46,5,96,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
@@ -4726,6 +4738,21 @@ BEGIN
     EDITTEXT        IDC_EDIT_FILENAME,7,7,172,12,ES_AUTOHSCROLL
 END
 
+IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 225, 207
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Select camera folder(s) to delete"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    LISTBOX         IDC_CAM_FOLDERS,7,7,211,171,LBS_MULTIPLESEL | 
+                    LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+                    WS_HSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Delete",IDOK,7,186,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,64,186,50,14
+    PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,143,186,35,14
+    PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,183,186,35,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -5666,6 +5693,14 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 40
+    END
+
+    IDD_DELETE_CAM_FOLDERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 218
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 200
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -7208,6 +7243,8 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
+    ID_TOOLS_DEL_CAM_FOLDERS 
+                            "Select camera folder(s) to delete\nDelete Camera Folder(s)"
 END
 
 STRINGTABLE DISCARDABLE 

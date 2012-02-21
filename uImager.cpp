@@ -43,6 +43,7 @@
 #include "DiscRecorder.h"
 #include "ProgressDlg.h"
 #ifdef VIDEODEVICEDOC
+#include "DeleteCamFoldersDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
 #include <WinSvc.h>
 #include "ProgressDlg.h"
@@ -116,6 +117,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_TOOLS_VIEW_WEB_LOGFILE, OnToolsViewWebLogfile)
+	ON_COMMAND(ID_TOOLS_DEL_CAM_FOLDERS, OnToolsDelCamFolders)
 	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
 	ON_COMMAND(ID_CAPTURE_NETWORK, OnCaptureNetwork)
 #endif
@@ -6086,6 +6088,12 @@ void CUImagerApp::OnToolsViewWebLogfile()
 	else
 		::AfxMessageBox(ML_STRING(1761, "Web Server Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
 
+}
+
+void CUImagerApp::OnToolsDelCamFolders() 
+{
+	CDeleteCamFoldersDlg dlg;
+	dlg.DoModal();
 }
 
 int CUImagerApp::CMicroApacheWatchdogThread::Work()

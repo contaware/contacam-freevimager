@@ -5241,7 +5241,8 @@ CString CVideoDeviceDoc::GetDevicePathName()
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
 	{
 		CString sShortFileName;
-		if (int index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\')))
+		int index;
+		if ((index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\'))) >= 0)
 			sDevice = m_pVideoAviDoc->GetPathName().Right(m_pVideoAviDoc->GetPathName().GetLength() - index - 1);
 		else
 			sDevice = m_pVideoAviDoc->GetPathName();
@@ -5277,7 +5278,8 @@ CString CVideoDeviceDoc::GetDeviceName()
 	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
 	{
 		CString sShortFileName;
-		if (int index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\')))
+		int index;
+		if ((index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\'))) >= 0)
 			sDevice = m_pVideoAviDoc->GetPathName().Right(m_pVideoAviDoc->GetPathName().GetLength() - index - 1);
 		else
 			sDevice = m_pVideoAviDoc->GetPathName();

@@ -34,7 +34,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="75">
+<CLASSES COUNT="76">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -61,6 +61,7 @@
 <CLASS NAME="cdxCSizeIconCtrl"/>
 <CLASS NAME="CCreditsDlg"/>
 <CLASS NAME="CDecreaseBppDlg"/>
+<CLASS NAME="CDeleteCamFoldersDlg"/>
 <CLASS NAME="CDeletePageDlg"/>
 <CLASS NAME="CDirectX7Dlg"/>
 <CLASS NAME="CDxVideoFormatDlg"/>

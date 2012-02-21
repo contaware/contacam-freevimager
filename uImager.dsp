@@ -299,6 +299,10 @@ SOURCE=.\DecreaseBppDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\DeleteCamFoldersDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DeletePageDlg.cpp
 # End Source File
 # Begin Source File
@@ -993,6 +997,10 @@ SOURCE=.\CreditsDlg.h
 # Begin Source File
 
 SOURCE=.\DecreaseBppDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DeleteCamFoldersDlg.h
 # End Source File
 # Begin Source File
 

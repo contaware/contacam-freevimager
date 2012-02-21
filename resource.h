@@ -150,6 +150,7 @@
 #define IDD_IMAPI2_DOWNLOAD             302
 #define IDD_ASSISTANT                   304
 #define IDD_RENAME                      305
+#define IDD_DELETE_CAM_FOLDERS          306
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
 #define IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART 313
 #define IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART 314
@@ -1538,6 +1539,7 @@
 #define IDC_BUTTON_LIST_SELECTALL       1344
 #define IDS_MULTILANG_1345              1345
 #define IDC_BUTTON_LIST_UP              1345
+#define IDC_BUTTON_LIST_SELECTNONE      1345
 #define IDS_MULTILANG_1346              1346
 #define IDC_BUTTON_LIST_DOWN            1346
 #define IDS_MULTILANG_1347              1347
@@ -3230,6 +3232,7 @@
 #define IDC_EXECMODE_MOVEMENT_DETECTION 2542
 #define IDC_DETECTION_MODE              2543
 #define IDC_STATIC2544                  2544
+#define IDC_CAM_FOLDERS                 2545
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3511,6 +3514,7 @@
 #define ID_EDIT_RENAME                  33167
 #define ID_EDIT_EXPORT_ZONES            33168
 #define ID_EDIT_IMPORT_ZONES            33169
+#define ID_TOOLS_DEL_CAM_FOLDERS        33170
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3519,8 +3523,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33170
-#define _APS_NEXT_CONTROL_VALUE         2545
+#define _APS_NEXT_COMMAND_VALUE         33171
+#define _APS_NEXT_CONTROL_VALUE         2546
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

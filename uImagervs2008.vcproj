@@ -1498,6 +1498,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DeleteCamFoldersDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DeletePageDlg.cpp"
 				>
 			</File>
@@ -4489,6 +4493,10 @@
 			</File>
 			<File
 				RelativePath="DecreaseBppDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DeleteCamFoldersDlg.h"
 				>
 			</File>
 			<File
