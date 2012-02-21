@@ -66,7 +66,9 @@ CNetCom::CBuf::CBuf()
 	m_BufSize = 0;
 	m_MsgSize = 0;
 	memset(&m_Addr, 0, sizeof(sockaddr_in6));
+#ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = 0;
+#endif
 }
 
 CNetCom::CBuf::CBuf(unsigned int Size)
@@ -75,7 +77,9 @@ CNetCom::CBuf::CBuf(unsigned int Size)
 	m_BufSize = Size;
 	m_MsgSize = 0;
 	memset(&m_Addr, 0, sizeof(sockaddr_in6));
+#ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = 0;
+#endif
 }
 
 CNetCom::CBuf::~CBuf()
@@ -87,7 +91,9 @@ CNetCom::CBuf::~CBuf()
 CNetCom::CBuf::CBuf(const CNetCom::CBuf& b) // Copy Constructor (CBuf b1 = b2 or CBuf b1(b2))
 {
 	m_MsgSize = b.m_MsgSize;
+#ifdef NETCOM_BUF_TICKCOUNT
 	m_dwTickCount = b.m_dwTickCount;
+#endif
 	memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 	m_Buf = new char[m_BufSize = b.m_BufSize];
 	ASSERT(m_MsgSize <= m_BufSize);
@@ -100,7 +106,9 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	if (this != &b) // beware of self-assignment!
 	{
 		m_MsgSize = b.m_MsgSize;
+#ifdef NETCOM_BUF_TICKCOUNT
 		m_dwTickCount = b.m_dwTickCount;
+#endif
 		memcpy(&m_Addr, &(b.m_Addr), sizeof(sockaddr_in6));
 		if (m_BufSize < m_MsgSize || !m_Buf)
 		{
@@ -127,7 +135,11 @@ void CNetCom::CBuf::Serialize(CArchive& archive)
     // now do the stuff for our specific class
     if (archive.IsStoring())
 	{
+#ifdef NETCOM_BUF_TICKCOUNT
         archive << m_BufSize << m_MsgSize << m_dwTickCount;
+#else
+		archive << m_BufSize << m_MsgSize;
+#endif
 		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
 			archive << ((LPBYTE)&m_Addr)[i];
 		for (i = 0 ; i < m_MsgSize ; i++)
@@ -135,7 +147,11 @@ void CNetCom::CBuf::Serialize(CArchive& archive)
 	}
     else
 	{
+#ifdef NETCOM_BUF_TICKCOUNT
         archive >> m_BufSize >> m_MsgSize >> m_dwTickCount;
+#else
+		archive >> m_BufSize >> m_MsgSize;
+#endif
 		ASSERT(m_BufSize >= m_MsgSize);
 		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
 			archive >> ((LPBYTE)&m_Addr)[i];
@@ -381,7 +397,9 @@ int CNetCom::CMsgThread::Work()
 					if (m_pNetCom->m_pMainServer->m_bTxBufEnabled)
 					{
 						::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxBufSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 						pMainBuf->m_dwTickCount = ::GetTickCount();
+#endif
 						m_pNetCom->m_pMainServer->m_pTxBuf->Add(pMainBuf);
 						::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxBufSync);
 
@@ -1036,13 +1054,17 @@ int CNetCom::CRxThread::Work()
 
 				// Add Message to Buffer
 				::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 				pCopyBuf->m_dwTickCount = ::GetTickCount();
+#endif
 				m_pNetCom->m_pRxBuf->Add(pCopyBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
 
 				// Add Message to Fifo
 				::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 				m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
+#endif
 				m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 
@@ -1057,7 +1079,9 @@ int CNetCom::CRxThread::Work()
 				if (m_pNetCom->m_pRxFifo)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
+#endif
 					m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 				}
@@ -1065,7 +1089,9 @@ int CNetCom::CRxThread::Work()
 				else if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
+#endif
 					m_pNetCom->m_pRxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
 
@@ -1282,7 +1308,9 @@ int CNetCom::CTxThread::Work()
 					if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
 					{
 						::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 						m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
+#endif
 						m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 						::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
 
@@ -1463,7 +1491,9 @@ void CNetCom::CTxThread::Write()
 				if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
+#ifdef NETCOM_BUF_TICKCOUNT
 					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
+#endif
 					m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
 

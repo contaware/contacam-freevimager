@@ -182,8 +182,9 @@ public:
 			__forceinline char* GetBuf() const {return m_Buf;};
 			__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
 			void Serialize(CArchive& archive);
+#ifdef NETCOM_BUF_TICKCOUNT
 			DWORD m_dwTickCount;
-
+#endif
 		private:
 			char* m_Buf;
 			unsigned int m_MsgSize;

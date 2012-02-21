@@ -700,7 +700,7 @@ int CFTPTransfer::Transfer()
 				// For bandwidth throttling
 				if (m_dbLimit > 0.0) 
 				{
-					double t = (double)(GetTickCount() - dwStartTicks);
+					double t = (double)(::GetTickCount() - dwStartTicks);
 					q = (double)((double)dwTotalBytesRead / t);
 					if (q > m_dbLimit)	 
 						::Sleep((DWORD)((((q*t)/m_dbLimit)-t)));
@@ -762,7 +762,7 @@ int CFTPTransfer::Transfer()
 				// For bandwidth throttling
 				if (m_dbLimit > 0.0) 
 				{
-					double t = (double)(GetTickCount() - dwStartTicks);
+					double t = (double)(::GetTickCount() - dwStartTicks);
 					q = (double)((double)dwTotalBytesWritten / t);
 					if (q > m_dbLimit)	 
 						::Sleep((DWORD)((((q*t)/m_dbLimit)-t)));
