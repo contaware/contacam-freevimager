@@ -955,7 +955,7 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 }
 
 // Shell deletion
-BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/)
+BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	TCHAR pFrom[MAX_PATH+1]; // +1 for double NULL Termination
 	memset(pFrom, 0, MAX_PATH+1);
@@ -963,7 +963,7 @@ BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/)
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
+	FileOp.hwnd = hwnd; 
     FileOp.pFrom = pFrom; 
     FileOp.pTo = NULL; 
     FileOp.fFlags = FOF_ALLOWUNDO | (bSilent ? FOF_SILENT | FOF_NOCONFIRMATION : 0);
@@ -976,7 +976,7 @@ BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/)
 }
 
 // Shell Rename
-BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/)
+BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	// pFrom and pTo have to be double NULL terminated! 
 	TCHAR pFrom[MAX_PATH+1];
@@ -988,7 +988,7 @@ BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/)
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
+	FileOp.hwnd = hwnd; 
     FileOp.pFrom = pFrom;
     FileOp.pTo = pTo;
     FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
@@ -1001,7 +1001,7 @@ BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/)
 }
 
 // Shell Move
-BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
+BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	// pFrom and pTo have to be double NULL terminated! 
 	TCHAR pFrom[MAX_PATH+1];
@@ -1013,7 +1013,7 @@ BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
+	FileOp.hwnd = hwnd; 
     FileOp.pFrom = pFrom;
     FileOp.pTo = pTo;
     FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
@@ -1026,7 +1026,7 @@ BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
 }
 
 // Shell Copy
-BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
+BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	// pFrom and pTo have to be double NULL terminated! 
 	TCHAR pFrom[MAX_PATH+1];
@@ -1038,7 +1038,7 @@ BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
+	FileOp.hwnd = hwnd; 
     FileOp.pFrom = pFrom;
     FileOp.pTo = pTo;
     FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
@@ -1051,7 +1051,7 @@ BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/)
 }
 
 // Shell Directory Content Copy
-BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/)
+BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	// Check
 	if (_tcslen(szFromDir) <= 0 ||
@@ -1074,7 +1074,7 @@ BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = NULL; 
+	FileOp.hwnd = hwnd; 
     FileOp.pFrom = pFrom;
     FileOp.pTo = pTo;
     FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;

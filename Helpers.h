@@ -76,11 +76,11 @@ extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 										CWorkerThread* pThread = NULL);
 
 // Shell file / directory operations
-extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE);				// delete file or directory
-extern BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent = TRUE);	// rename file or directory
-extern BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE);	// move file or directory
-extern BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE);	// copy file or directory
-extern BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE);
+extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE, HWND hwnd = NULL);					// delete file or directory
+extern BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent = TRUE, HWND hwnd = NULL);	// rename file or directory
+extern BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE, HWND hwnd = NULL);		// move file or directory
+extern BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE, HWND hwnd = NULL);		// copy file or directory
+extern BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE, HWND hwnd = NULL);
 
 // Date / Time Formatting According to Local Settings
 extern CString MakeTimeLocalFormat(	const CTime& Time,

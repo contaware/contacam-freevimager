@@ -68,12 +68,14 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 
 void CDeleteCamFoldersDlg::OnOK() 
 {
-	CDialog::OnOK();
+	EnableWindow(FALSE);
 	for (int pos = 0 ; pos < m_DirFind.GetDirsCount() ; pos++)
 	{
 		if (m_CamFolders.GetSel(pos) > 0)
-			::DeleteToRecycleBin(m_DirFind.GetDirName(pos), FALSE);
+			::DeleteToRecycleBin(m_DirFind.GetDirName(pos), FALSE, GetSafeHwnd());
 	}
+	EnableWindow(TRUE);
+	CDialog::OnOK();
 }
 
 void CDeleteCamFoldersDlg::OnButtonListSelectall() 
