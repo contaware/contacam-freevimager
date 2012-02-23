@@ -203,9 +203,7 @@ void CDxVideoFormatDlg::Apply()
 
 		// Update
 		m_pDoc->m_bSizeToDoc = TRUE;
-		::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_CHANGEVIDEOFORMAT,
-						0, 0);
+		m_pDoc->OnChangeVideoFormat();
 		m_pDoc->m_nDeviceFormatId = nID;
 		m_pDoc->m_nDeviceFormatWidth = m_Sizes[m_VideoSize.GetCurSel()].cx;
 		m_pDoc->m_nDeviceFormatHeight = m_Sizes[m_VideoSize.GetCurSel()].cy;

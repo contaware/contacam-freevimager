@@ -13,13 +13,12 @@
 
 // Window Message IDs
 #define WM_THREADSAFE_CAPTURESETTINGS				WM_USER + 600
-#define WM_THREADSAFE_CHANGEVIDEOFORMAT				WM_USER + 601
-#define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 602
-#define WM_THREADSAFE_INIT_MOVDET					WM_USER + 603
-#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 604
-#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 605
-#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 606
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 607
+#define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 601
+#define WM_THREADSAFE_INIT_MOVDET					WM_USER + 602
+#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 603
+#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 604
+#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 605
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 606
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -37,6 +36,7 @@ protected:
 	void DxDrawZones();
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
 	__forceinline BOOL IsDxDrawCompressionDifferent();
+	BOOL ReOpenDxDevice();
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
@@ -76,7 +76,6 @@ protected:
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);

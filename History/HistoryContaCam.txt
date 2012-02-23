@@ -16,6 +16,8 @@ VERSION HISTORY
 - Motion detector can now be set to: Off, Trigger File,
   Software or both
 - Added a Delete Camera Folder(s) command in Tools menu
+- USB and DV cams are now auto-reconnected when replugged
+  (for network devices this is already the case)
 
 3.9.0 (December 20th 2011)
 

@@ -1250,7 +1250,7 @@ public:
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
 	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
 
-	// Functin called when the video grabbing format has been changed
+	// Function called when the video grabbing format has been changed
 	void OnChangeVideoFormat();
 
 	// Networking Type and Mode
@@ -1438,6 +1438,7 @@ public:
 
 	// DirectShow Capture Vars
 	volatile BOOL m_bStopAndChangeFormat;				// Flag indicating that we are changing the DV format
+	volatile BOOL m_bDxDeviceUnplugged;					// Device Has Been Unplugged
 	CDxCapture* volatile m_pDxCapture;					// DirectShow Capture Object
 	int m_nDeviceInputId;								// Input ID
 	int m_nDeviceFormatId;								// Format ID

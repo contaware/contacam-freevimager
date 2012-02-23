@@ -35,7 +35,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURESETTINGS, OnThreadSafeCaptureSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
-	ON_MESSAGE(WM_THREADSAFE_CHANGEVIDEOFORMAT, OnThreadSafeChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT, OnThreadSafeStopAndChangeVideoFormat)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
@@ -97,7 +96,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 
 				// Update
 				pDoc->m_bSizeToDoc = TRUE;
-				OnThreadSafeChangeVideoFormat(0, 0);
+				pDoc->OnChangeVideoFormat();
 
 				// Reset vars
 				pDoc->m_dwFrameCountUp = 0U;
@@ -173,20 +172,6 @@ LONG CVideoDeviceView::OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam)
 		sHeight.Format(_T("%d"), pDoc->m_DocRect.bottom);
 		pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 		pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
-		return 1;
-	}
-	else
-		return 0;
-}
-
-LONG CVideoDeviceView::OnThreadSafeChangeVideoFormat(WPARAM wparam, LPARAM lparam)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (pDoc && !pDoc->m_bClosing)
-	{
-		pDoc->OnChangeVideoFormat();
 		return 1;
 	}
 	else
@@ -518,6 +503,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	// Init
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
+	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	if (!pDoc->m_pDxDraw->IsInit()										||
 		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
@@ -546,7 +532,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		pDoc->m_pDxDraw->UpdateCurrentDevice();
 
 		// Erase Background, full erase if drawing a message (erases to black)
-		EraseDxDrawBkgnd(bStopAndChangeFormat || bWatchDogAlarm || !bVideoView);
+		EraseDxDrawBkgnd(bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogAlarm || !bVideoView);
 
 		// Display: Change Size
 		if (bStopAndChangeFormat)
@@ -554,6 +540,15 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
 							ML_STRING(1569, "Change Size"),
 							DXDRAW_MESSAGE_COLOR, 72, DT_CENTER | DT_VCENTER,
+							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
+			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		}
+		// Display: Unplugged
+		else if (bDxDeviceUnplugged)
+		{
+			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
+							ML_STRING(1568, "Unplugged"),
+							DXDRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
 							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
 			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
 		}
@@ -1100,6 +1095,58 @@ BOOL CVideoDeviceView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return CUImagerView::OnSetCursor(pWnd, nHitTest, message);
 }
 
+BOOL CVideoDeviceView::ReOpenDxDevice()
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	if (pDoc->m_pDxCapture)
+	{
+		// Reset vars
+		pDoc->m_dwFrameCountUp = 0U;
+		pDoc->m_dwNextSnapshotUpTime = ::timeGetTime();
+		::InterlockedExchange(&pDoc->m_lCurrentInitUpTime, (LONG)pDoc->m_dwNextSnapshotUpTime);
+
+		// Re-Open
+		if (pDoc->m_pDxCapture->Open(	GetSafeHwnd(),
+										-1,	// Re-open previous one
+										pDoc->m_dFrameRate,
+										pDoc->m_nDeviceFormatId,
+										pDoc->m_nDeviceFormatWidth,
+										pDoc->m_nDeviceFormatHeight,
+										pDoc->m_pDxCapture->GetOpenMediaSubType()))
+		{
+			// Update format
+			pDoc->OnChangeVideoFormat();
+				
+			// Start capturing video data
+			if (pDoc->m_pDxCapture->Run())
+			{
+				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
+				if (pDoc->m_nDeviceInputId >= 0 && pDoc->m_nDeviceInputId < pDoc->m_pDxCapture->GetInputsCount())
+				{
+					if (!pDoc->m_pDxCapture->SetCurrentInput(pDoc->m_nDeviceInputId))
+						pDoc->m_nDeviceInputId = -1;
+				}
+				else
+					pDoc->m_nDeviceInputId = pDoc->m_pDxCapture->SetDefaultInput();
+
+				// Some devices need that...
+				// Process frame must still be stopped when calling Dx Stop()!
+				pDoc->m_pDxCapture->Stop();
+				pDoc->m_pDxCapture->Run();
+
+				// Set flag
+				pDoc->m_bCapture = TRUE;
+
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
 LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -1121,21 +1168,51 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
+					// Set stopped state
+					pDoc->SetProcessFrameStopped();
+					pDoc->m_bCapture = FALSE;
+
+					// Disable Critical Controls
+					::SendMessage(	GetSafeHwnd(),
+									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+									(WPARAM)FALSE,	// Disable Them
+									(LPARAM)0);
+
+					// Set Unplugged Flag
+					pDoc->m_bDxDeviceUnplugged = TRUE;
 					CString sMsg;
 					sMsg.Format(_T("%s unplugged\n"), pDoc->GetDeviceName());
 					TRACE(sMsg);
 					::LogLine(sMsg);
+
                     break;
 				}
 				// Device is available again
 				else if (evParam2 == 1)
 				{
-					// I used to re-open here but some devices lock when
-					// stopping their graph, other devices generate a blue-screen
-					// and/or a reboot! The best solution is to do nothing,
-					// leave everything open and in CVideoDeviceChildFrame::EndShutdown()
-					// do not delete m_pDxCapture if m_bWatchDogAlarm is set. We get a
-					// small memory leak but that's by far better than a full computer crash!
+					// Set stopped state
+					pDoc->SetProcessFrameStopped();
+
+					// Re-Open
+					if (ReOpenDxDevice())
+					{
+						// Reset Unplugged Flag
+						pDoc->m_bDxDeviceUnplugged = FALSE;
+						CString sMsg;
+						sMsg.Format(_T("%s replugged\n"), pDoc->GetDeviceName());
+						TRACE(sMsg);
+						::LogLine(sMsg);
+
+						// Restart process frame
+						pDoc->ReStartProcessFrame();
+					}
+
+					// Re-Enable Critical Controls
+					::SendMessage(	GetSafeHwnd(),
+									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
+									(WPARAM)TRUE, // Enable Them
+									(LPARAM)0);
+
 					break;
 				}
 			}

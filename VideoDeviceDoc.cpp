@@ -4842,6 +4842,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeviceInputId = -1;
 	m_nDeviceFormatId = -1;
 	m_bStopAndChangeFormat = FALSE;
+	m_bDxDeviceUnplugged = FALSE;
 	m_nDeviceFormatWidth = 0;
 	m_nDeviceFormatHeight = 0;
 	m_lCurrentInitUpTime = 0;
@@ -6258,9 +6259,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 		if (bOpened)
 		{
 			// Update format
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_CHANGEVIDEOFORMAT,
-							0, 0);
+			OnChangeVideoFormat();
 
 			// Start capturing video data
 			SetProcessFrameStopped();
@@ -7052,6 +7051,10 @@ void CVideoDeviceDoc::CaptureRecordPause()
 void CVideoDeviceDoc::OnChangeVideoFormat()
 {
 	DWORD dwSize;
+
+	// Check
+	if (m_bClosing)
+		return;
 
 	if (m_pDxCapture)
 	{

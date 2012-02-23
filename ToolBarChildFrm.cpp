@@ -1611,10 +1611,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// Delete DirectShow Capture Object
 	if (pDoc->m_pDxCapture)
 	{
-		// This leaks, I know, but better to leak memory than
-		// locks, reboots or blue-screens!
-		if (!pDoc->m_bWatchDogAlarm)
-			delete pDoc->m_pDxCapture;
+		delete pDoc->m_pDxCapture;
 		pDoc->m_pDxCapture = NULL;
 		pDoc->m_bCapture = FALSE;
 	}
@@ -1654,7 +1651,8 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 		!pDoc->m_WatchdogAndDrawThread.IsAlive()	&&
 		(pDoc->IsProcessFrameStopped()				||
 		!pDoc->m_bCapture							||
-		pDoc->m_bWatchDogAlarm))
+		pDoc->m_bWatchDogAlarm						||
+		pDoc->m_bDxDeviceUnplugged))
 		return TRUE;
 	else
 		return FALSE;
