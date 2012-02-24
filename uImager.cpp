@@ -47,6 +47,7 @@
 #include "SettingsDlgVideoDeviceDoc.h"
 #include <WinSvc.h>
 #include "ProgressDlg.h"
+#include "HostPortDlg.h"
 #else
 #include "SettingsDlg.h"
 #endif
@@ -1783,11 +1784,15 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 
 void CUImagerApp::OnCaptureNetwork() 
 {
-	CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-	if (pDoc)
+	CHostPortDlg dlg;
+	if (dlg.DoModal() == IDOK)
 	{
-		if (!pDoc->OpenGetVideo())
-			pDoc->CloseDocument();
+		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+		if (pDoc)
+		{
+			if (!pDoc->OpenGetVideo(&dlg))
+				pDoc->CloseDocument();
+		}
 	}
 }
 
@@ -6192,8 +6197,7 @@ void CUImagerApp::CSchedulerEntry::Start()
 	}
 
 	// Can start rec?
-	if (!pDoc->m_bCapture				||
-		pDoc->m_bAboutToStopRec			||
+	if (pDoc->m_bAboutToStopRec ||
 		pDoc->m_bAboutToStartRec)
 	{
 		m_bInsideStart = FALSE;
@@ -6252,8 +6256,7 @@ BOOL CUImagerApp::CSchedulerEntry::Stop()
 	}
 
 	// Can stop rec?
-	if (!m_pDoc->m_bCapture				||
-		m_pDoc->m_bAboutToStopRec		||
+	if (m_pDoc->m_bAboutToStopRec ||
 		m_pDoc->m_bAboutToStartRec)
 	{
 		m_bInsideStop = FALSE;

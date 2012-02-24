@@ -19,7 +19,6 @@
 #include "AuthenticationDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
-#include "HostPortDlg.h"
 #include "FTPTransfer.h"
 #include "Fourier.h"
 #include "NetFrameHdr.h"
@@ -4824,8 +4823,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lProcessFrameTime = 0;
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
-	m_bCapture = FALSE;
-	m_bCaptureStarted = 0;
+	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
 	m_bVideoView = TRUE;
 	m_dwVideoProcessorMode = NO_DETECTOR;
@@ -6279,9 +6277,6 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
 
-				// Set flag
-				m_bCapture = TRUE;
-
 				// Restart process frame
 				ReStartProcessFrame();
 
@@ -6332,7 +6327,6 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 			return TRUE;
 
 		// Failure
-		m_bCapture = FALSE;
 		::AfxMessageBox(ML_STRING(1466, "The capture device is already in use or not compatible"), MB_ICONSTOP);
 		return FALSE;
 	}
@@ -6456,164 +6450,162 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::OpenGetVideo() 
+BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg) 
 {
-	CHostPortDlg dlg;
-	if (dlg.DoModal() == IDOK)
+	// Check
+	if (!pDlg)
+		return FALSE;
+
+	// Init Vars
+	int nPos, nPosEnd;
+	BOOL bUrl = FALSE;
+	int nUrlPort = 80; // Default url port is always 80
+	CString sGetFrameVideoHost(pDlg->m_sHost);
+	CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
+	sGetFrameVideoHostLowerCase.MakeLower();
+
+	// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
+	if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
 	{
-		// Init Vars
-		int nPos, nPosEnd;
-		BOOL bUrl = FALSE;
-		int nUrlPort = 80; // Default url port is always 80
-		CString sGetFrameVideoHost(dlg.m_sHost);
-		CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
-		sGetFrameVideoHostLowerCase.MakeLower();
+		// Set flag
+		bUrl = TRUE;
 
-		// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
-		if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
+		// Remove leading http://[ from url
+		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
+
+		// Has Port?
+		if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
 		{
-			// Set flag
-			bUrl = TRUE;
-
-			// Remove leading http://[ from url
-			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
-
-			// Has Port?
-			if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
+			CString sPort;
+			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
 			{
-				CString sPort;
-				if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
-				{
-					sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
-					sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
-				}
-				else
-				{
-					sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
-					sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
-				}
-				sPort.TrimLeft();
-				sPort.TrimRight();
-				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-				sPort.ReleaseBuffer();
-				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-					nUrlPort = nPort;
-			}
-			else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
-				sGetFrameVideoHost.Delete(nPos);
-			else
-				nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
-
-			// Split
-			CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-
-			// Get Location which is set as first automatic camera type detection query string
-			nPos = sLocation.Find(_T('/'));
-			if (nPos >= 0)
-			{	
-				m_HttpGetFrameLocations[0] = sLocation.Right(sLocation.GetLength() - nPos);
-				m_HttpGetFrameLocations[0].TrimLeft();
-				m_HttpGetFrameLocations[0].TrimRight();
+				sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
+				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
 			}
 			else
-				m_HttpGetFrameLocations[0] = _T("/");
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
+				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
 		}
-		// Numeric IP4 or hostname with format http://host:port/framelocation
-		else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
-		{
-			// Set flag
-			bUrl = TRUE;
+		else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
+			sGetFrameVideoHost.Delete(nPos);
+		else
+			nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
 
-			// Remove leading http:// from url
-			sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
+		// Split
+		CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+		sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
 
-			// Has Port?
-			if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
-			{
-				CString sPort;
-				if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
-				{
-					sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
-					sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
-				}
-				else
-				{
-					sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
-					sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
-				}
-				sPort.TrimLeft();
-				sPort.TrimRight();
-				int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-				sPort.ReleaseBuffer();
-				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-					nUrlPort = nPort;
-			}
-
-			// Get Location which is set as first automatic camera type detection query string
-			nPos = sGetFrameVideoHost.Find(_T('/'));
-			if (nPos >= 0)
-			{	
-				m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-				sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-				m_HttpGetFrameLocations[0].TrimLeft();
-				m_HttpGetFrameLocations[0].TrimRight();
-			}
-			else
-				m_HttpGetFrameLocations[0] = _T("/");
+		// Get Location which is set as first automatic camera type detection query string
+		nPos = sLocation.Find(_T('/'));
+		if (nPos >= 0)
+		{	
+			m_HttpGetFrameLocations[0] = sLocation.Right(sLocation.GetLength() - nPos);
+			m_HttpGetFrameLocations[0].TrimLeft();
+			m_HttpGetFrameLocations[0].TrimRight();
 		}
 		else
 			m_HttpGetFrameLocations[0] = _T("/");
+	}
+	// Numeric IP4 or hostname with format http://host:port/framelocation
+	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
+	{
+		// Set flag
+		bUrl = TRUE;
 
-		// Set vars
-		sGetFrameVideoHost.TrimLeft();
-		sGetFrameVideoHost.TrimRight();
-		m_sGetFrameVideoHost = sGetFrameVideoHost;
-		m_nGetFrameVideoPort = bUrl ? nUrlPort : dlg.m_nPort;
-		m_nNetworkDeviceTypeMode = bUrl ? OTHERONE : (NetworkDeviceTypeMode)dlg.m_nDeviceTypeMode;
+		// Remove leading http:// from url
+		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
 
-		// Free if Necessary
-		if (m_pGetFrameNetCom)
+		// Has Port?
+		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
 		{
-			delete m_pGetFrameNetCom;
-			m_pGetFrameNetCom = NULL;
+			CString sPort;
+			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
+				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+			}
+			else
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
+				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
 		}
 
-		// Allocate
-		m_pGetFrameNetCom = (CNetCom*)new CNetCom;
-
-		// Load Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
-
-		// Start Delete Detections Thread
-		if (!m_DeleteThread.IsAlive())
-			m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-
-		// Overwrite the loaded values
-		m_dwGetFrameMaxFrames = dlg.m_dwMaxFrames;			
-		m_bGetFrameDisableResend = dlg.m_bDisableResend;
-
-		// Reset vars
-		m_dwFrameCountUp = 0U;
-		m_dwNextSnapshotUpTime = ::timeGetTime();
-		::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-
-		// Connect
-		if (!ConnectGetFrame())
-		{
-			::AfxMessageBox(ML_STRING(1465, "Cannot connect to the specified network device or server"), MB_ICONSTOP);
-			return FALSE;
+		// Get Location which is set as first automatic camera type detection query string
+		nPos = sGetFrameVideoHost.Find(_T('/'));
+		if (nPos >= 0)
+		{	
+			m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+			m_HttpGetFrameLocations[0].TrimLeft();
+			m_HttpGetFrameLocations[0].TrimRight();
 		}
-
-		// Start Audio Capture
-		if (m_bCaptureAudio)
-			m_CaptureAudioThread.Start();
-
-		return TRUE;
+		else
+			m_HttpGetFrameLocations[0] = _T("/");
 	}
 	else
+		m_HttpGetFrameLocations[0] = _T("/");
+
+	// Set vars
+	sGetFrameVideoHost.TrimLeft();
+	sGetFrameVideoHost.TrimRight();
+	m_sGetFrameVideoHost = sGetFrameVideoHost;
+	m_nGetFrameVideoPort = bUrl ? nUrlPort : pDlg->m_nPort;
+	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
+
+	// Free if Necessary
+	if (m_pGetFrameNetCom)
+	{
+		delete m_pGetFrameNetCom;
+		m_pGetFrameNetCom = NULL;
+	}
+
+	// Allocate
+	m_pGetFrameNetCom = (CNetCom*)new CNetCom;
+
+	// Load Settings
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
+
+	// Start Delete Detections Thread
+	if (!m_DeleteThread.IsAlive())
+		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
+
+	// Overwrite the loaded values
+	m_dwGetFrameMaxFrames = pDlg->m_dwMaxFrames;			
+	m_bGetFrameDisableResend = pDlg->m_bDisableResend;
+
+	// Reset vars
+	m_dwFrameCountUp = 0U;
+	m_dwNextSnapshotUpTime = ::timeGetTime();
+	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+
+	// Connect
+	if (!ConnectGetFrame())
+	{
+		::AfxMessageBox(ML_STRING(1465, "Cannot connect to the specified network device or server"), MB_ICONSTOP);
 		return FALSE;
+	}
+
+	// Start Audio Capture
+	if (m_bCaptureAudio)
+		m_CaptureAudioThread.Start();
+
+	return TRUE;
 }
 
 BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib) 
@@ -6897,18 +6889,14 @@ BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec)
 
 void CVideoDeviceDoc::OnCaptureRecord() 
 {
-	if (m_bCapture					&&
-		!m_bAboutToStopRec			&&
-		!m_bAboutToStartRec)
+	if (!m_bAboutToStopRec && !m_bAboutToStartRec)
 		CaptureRecord();
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI) 
 {	
 	pCmdUI->SetCheck(m_pAVRec != NULL ? 1 : 0);
-	pCmdUI->Enable(	m_bCapture					&&
-					!m_bAboutToStopRec			&&
-					!m_bAboutToStartRec);
+	pCmdUI->Enable(!m_bAboutToStopRec && !m_bAboutToStartRec);
 }
 
 BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/) 
@@ -7150,8 +7138,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 	{
 		if (m_pDxCapture)
 		{
-			if (m_pDxCapture->Stop())
-				m_bCapture = FALSE;
+			m_pDxCapture->Stop();
 			ResetMovementDetector();
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
 			if (m_pDxCapture->Run())
@@ -7160,9 +7147,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 				// Process frame must still be stopped when calling Dx Stop()!
 				m_pDxCapture->Stop();
 				m_pDxCapture->Run();
-
-				// Set flag
-				m_bCapture = TRUE;
 
 				// Restart process frame
 				ReStartProcessFrame();
@@ -7419,7 +7403,6 @@ void CVideoDeviceDoc::OnViewVideo()
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
@@ -9064,7 +9047,7 @@ BOOL CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		// Set started flag and open the Settings dialog
 		if (!m_bCaptureStarted)
 		{
-			::InterlockedExchange(&m_bCaptureStarted, 1);
+			m_bCaptureStarted = TRUE;
 			if (m_bDeviceFirstRun)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),
@@ -10246,7 +10229,6 @@ void CVideoDeviceDoc::OnViewFrametime()
 
 void CVideoDeviceDoc::OnUpdateViewFrametime(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowFrameTime ? 1 : 0);	
 }
 
@@ -10257,7 +10239,6 @@ void CVideoDeviceDoc::OnViewDetections()
 
 void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
@@ -10276,7 +10257,6 @@ void CVideoDeviceDoc::OnViewDetectionZones()
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(m_bCapture);
 	pCmdUI->SetCheck(m_bShowEditDetectionZones ? 1 : 0);
 }
 
@@ -12866,7 +12846,6 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 			m_pDoc->m_DocRect.right = m_pDoc->m_OrigBMI.bmiHeader.biWidth;
 			m_pDoc->m_DocRect.bottom = m_pDoc->m_OrigBMI.bmiHeader.biHeight;
 			m_CodecId = CodecId;
-			m_pDoc->m_bCapture = TRUE;
 			m_bFirstFrame = FALSE;
 
 			// Free Movement Detector because we changed size and/or format!
@@ -14485,7 +14464,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 			m_pDoc->m_OrigBMI.bmiHeader.biSizeImage = m_dwI420ImageSize;
 			m_pDoc->m_DocRect.right = m_pDoc->m_OrigBMI.bmiHeader.biWidth;
 			m_pDoc->m_DocRect.bottom = m_pDoc->m_OrigBMI.bmiHeader.biHeight;
-			m_pDoc->m_bCapture = TRUE;
 
 			// Make sure the video size is set correctly
 			::EnterCriticalSection(&m_pDoc->m_csHttpParams);

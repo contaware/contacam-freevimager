@@ -523,6 +523,7 @@ public:
 #ifdef VIDEODEVICEDOC
 	CVideoDeviceDoc* volatile m_pVideoDeviceDoc;
 	CDib* volatile m_pVideoDeviceDocDib;
+	CRITICAL_SECTION m_csVideoDeviceDoc;
 #endif
 
 	// Draw

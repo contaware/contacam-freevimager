@@ -117,9 +117,6 @@ void CDxVideoFormatDlg::ReStart()
 		m_pDoc->m_pDxCapture->Stop();
 		m_pDoc->m_pDxCapture->Run();
 
-		// Set flag
-		m_pDoc->m_bCapture = TRUE;
-
 		// Restart process frame
 		m_pDoc->ReStartProcessFrame();
 	}
@@ -133,8 +130,7 @@ void CDxVideoFormatDlg::Apply()
 	if (m_pDoc->m_pDxCapture)
 	{
 		// Stop
-		if (m_pDoc->m_pDxCapture->Stop())
-			m_pDoc->m_bCapture = FALSE;
+		m_pDoc->m_pDxCapture->Stop();
 
 		// Get Format ID corresponding to the selected compression and bpp
 		int nID = -1;

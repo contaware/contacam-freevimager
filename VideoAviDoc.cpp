@@ -1690,12 +1690,6 @@ void CVideoAviDoc::CPlayVideoFileThread::OnExit()
 	m_bWaitingForStart = FALSE;
 	::LeaveCriticalSection(&m_pDoc->m_csPlayWaitingForStart);
 
-#ifdef VIDEODEVICEDOC
-	// Reset Capture Var
-	if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc))
-		m_pDoc->m_pVideoDeviceDoc->m_bCapture = FALSE;
-#endif
-
 	// Get Current Frame Pos
 	int nCurrentFramePos = 0;
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pDoc->m_pAVIPlay->GetVideoStream(m_pDoc->m_nActiveVideoStream);
@@ -1883,13 +1877,14 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 				else
 				{
 #ifdef VIDEODEVICEDOC
-					if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc)	&&
-						m_pDoc->m_pDib && m_pDoc->m_pDib->IsValid() && m_pDoc->m_pVideoDeviceDocDib)
+					::EnterCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
+					if (m_pDoc->m_pVideoDeviceDoc && m_pDoc->m_pDib && m_pDoc->m_pDib->IsValid() && m_pDoc->m_pVideoDeviceDocDib)
 					{
 						*m_pDoc->m_pVideoDeviceDocDib = *m_pDoc->m_pDib;
 						if (!m_pDoc->m_pVideoDeviceDocDib->IsCompressed() && m_pDoc->m_pVideoDeviceDocDib->GetBitCount() <= 16)
 							m_pDoc->m_pVideoDeviceDocDib->ConvertTo32bits();
 					}
+					::LeaveCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
 #endif
 					::LeaveCriticalSection(&m_pDoc->m_csDib);
 				}
@@ -2037,13 +2032,13 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 
 			// Send To Capture Doc
 #ifdef VIDEODEVICEDOC
-			if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pDoc->m_pVideoDeviceDoc)	&&
-				m_pDoc->m_pVideoDeviceDocDib && m_pDoc->m_pVideoDeviceDocDib->IsValid())
+			::EnterCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
+			if (m_pDoc->m_pVideoDeviceDoc && m_pDoc->m_pVideoDeviceDocDib && m_pDoc->m_pVideoDeviceDocDib->IsValid())
 			{
-				m_pDoc->m_pVideoDeviceDoc->m_bCapture = TRUE;
 				m_pDoc->m_pVideoDeviceDoc->ProcessFrame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
 														m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
 			}
+			::LeaveCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
 #endif
 
 			// Display Frame
@@ -2261,6 +2256,7 @@ CVideoAviDoc::CVideoAviDoc()
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDoc = NULL;
 	m_pVideoDeviceDocDib = NULL;
+	::InitializeCriticalSection(&m_csVideoDeviceDoc);
 #endif
 
 	// Threads Init
@@ -2332,6 +2328,7 @@ CVideoAviDoc::~CVideoAviDoc()
 		delete m_pVideoDeviceDocDib;
 		m_pVideoDeviceDocDib = NULL;
 	}
+	::DeleteCriticalSection(&m_csVideoDeviceDoc);
 #endif
 
 	::DeleteCriticalSection(&m_csPlayWaitingForStart);
@@ -5825,7 +5822,11 @@ void CVideoAviDoc::OnCaptureAviplay()
 				}
 				::LeaveCriticalSection(&m_csDib);
 				if (pDoc->OpenVideoAvi(this, m_pVideoDeviceDocDib))
+				{
+					::EnterCriticalSection(&m_csVideoDeviceDoc);
 					m_pVideoDeviceDoc = pDoc;
+					::LeaveCriticalSection(&m_csVideoDeviceDoc);
+				}
 				else
 				{
 					// Close Video Device Doc

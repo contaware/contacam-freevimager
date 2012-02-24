@@ -88,8 +88,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 			if (!pDoc->m_bClosing)
 			{
 				// Stop
-				if (pDoc->m_pDxCapture->Stop())
-					pDoc->m_bCapture = FALSE;
+				pDoc->m_pDxCapture->Stop();
 
 				// Show dialog
 				pDoc->m_pDxCapture->ShowDVFormatDlg();
@@ -110,9 +109,6 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 					// Process frame must still be stopped when calling Dx Stop()!
 					pDoc->m_pDxCapture->Stop();
 					pDoc->m_pDxCapture->Run();
-
-					// Set flag
-					pDoc->m_bCapture = TRUE;
 
 					// Restart process frame
 					pDoc->ReStartProcessFrame();
@@ -953,19 +949,15 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('P') :
-			if (pDoc->m_bCapture)
-				pDoc->ViewVideo();
+			pDoc->ViewVideo();
 			break;
 
 		case _T('T') :
-			if (pDoc->m_bCapture)
-				pDoc->m_bShowFrameTime = !pDoc->m_bShowFrameTime;
+			pDoc->m_bShowFrameTime = !pDoc->m_bShowFrameTime;
 			break;
 
 		case _T('R') :
-			if (pDoc->m_bCapture					&&
-				!pDoc->m_bAboutToStopRec			&&
-				!pDoc->m_bAboutToStartRec)
+			if (!pDoc->m_bAboutToStopRec && !pDoc->m_bAboutToStartRec)
 				pDoc->CaptureRecord();
 			break;
 
@@ -1136,9 +1128,6 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 				pDoc->m_pDxCapture->Stop();
 				pDoc->m_pDxCapture->Run();
 
-				// Set flag
-				pDoc->m_bCapture = TRUE;
-
 				return TRUE;
 			}
 		}
@@ -1170,7 +1159,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				{
 					// Set stopped state
 					pDoc->SetProcessFrameStopped();
-					pDoc->m_bCapture = FALSE;
 
 					// Disable Critical Controls
 					::SendMessage(	GetSafeHwnd(),

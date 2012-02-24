@@ -1435,32 +1435,6 @@ void CVideoDeviceChildFrame::OnClose()
 			m_dwFirstCloseAttemptUpTime = ::timeGetTime();
 
 			// Start Shutdown Process
-			if (pDoc->m_pVideoAviDoc)
-			{
-				// If we have a Video AVI as frame source
-				// stop it so that frames will not arrive anymore!
-				if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc) &&
-					pDoc->m_pVideoAviDoc->m_PlayVideoFileThread.IsAlive())
-					pDoc->m_pVideoAviDoc->StopAVI();
-			}
-			else
-				StartShutdown1();
-		}
-	}
-	// StartShutdown1() for Video AVI Device?
-	else if (pDoc->m_pVideoAviDoc)
-	{
-		if (!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc))
-		{
-			pDoc->m_pVideoAviDoc = NULL;
-			pDoc->m_bCapture = FALSE;
-			StartShutdown1();
-		}
-		else if (!pDoc->m_pVideoAviDoc->m_PlayVideoFileThread.IsAlive())
-		{
-			pDoc->m_pVideoAviDoc->m_pVideoDeviceDoc = NULL;
-			pDoc->m_pVideoAviDoc = NULL;
-			pDoc->m_bCapture = FALSE;
 			StartShutdown1();
 		}
 	}
@@ -1590,6 +1564,14 @@ void CVideoDeviceChildFrame::EndShutdown()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
+	// Stop m_pVideoAviDoc calling ProcessFrame()
+	if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc))
+	{
+		::EnterCriticalSection(&pDoc->m_pVideoAviDoc->m_csVideoDeviceDoc);
+		pDoc->m_pVideoAviDoc->m_pVideoDeviceDoc = NULL;
+		::LeaveCriticalSection(&pDoc->m_pVideoAviDoc->m_csVideoDeviceDoc);
+	}
+
 	// Network Client Clean-Up
 	// (threads already stopped)
 	if (pDoc->m_pGetFrameNetCom)
@@ -1613,7 +1595,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	{
 		delete pDoc->m_pDxCapture;
 		pDoc->m_pDxCapture = NULL;
-		pDoc->m_bCapture = FALSE;
 	}
 
 	// The next step must happen last, because it sets to NULL
@@ -1646,13 +1627,9 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 
 	// Check whether we exited full-screen, watchdog and draw
 	// stopped and we are not inside the processing function
-	// (or frames where not arriving)
 	if (!pView->m_bFullScreenMode					&&
 		!pDoc->m_WatchdogAndDrawThread.IsAlive()	&&
-		(pDoc->IsProcessFrameStopped()				||
-		!pDoc->m_bCapture							||
-		pDoc->m_bWatchDogAlarm						||
-		pDoc->m_bDxDeviceUnplugged))
+		pDoc->IsProcessFrameStopped())
 		return TRUE;
 	else
 		return FALSE;

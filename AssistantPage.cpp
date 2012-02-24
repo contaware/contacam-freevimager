@@ -647,9 +647,10 @@ BOOL CAssistantPage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 //       CXButtonXP is to center the multiline text!
 void CAssistantPage::OnButtonApplySettings() 
 {
-	if (m_pDoc->m_bClosing			||
-		!m_pDoc->m_bCapture			||
-		m_pDoc->m_bWatchDogAlarm)
+	if (!m_pDoc->m_bCaptureStarted	||
+		m_pDoc->m_bClosing			||
+		m_pDoc->m_bWatchDogAlarm	||
+		m_pDoc->m_bDxDeviceUnplugged)
 		::MessageBeep(0xFFFFFFFF);
 	else
 	{
