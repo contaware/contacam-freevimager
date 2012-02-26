@@ -66,7 +66,12 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 		switch(pDoc->m_nNetworkDeviceTypeMode)
 		{
 			case CVideoDeviceDoc::INTERNAL_UDP	: sTitle += CString(_T(" , ")) + ML_STRING(1547, "Internal UDP Server"); break;
-			case CVideoDeviceDoc::OTHERONE		: sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Device"); break;
+			case CVideoDeviceDoc::OTHERONE		:
+				if (pDoc->m_HttpGetFrameLocations[0] == _T("/"))
+					sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Device");
+				else
+					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0];
+				break;
 			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1549, "Axis (Server Push Mode)"); break;
 			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1550, "Axis (Client Poll Mode)"); break;
 			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + ML_STRING(1551, "Panasonic (Server Push Mode)"); break;
