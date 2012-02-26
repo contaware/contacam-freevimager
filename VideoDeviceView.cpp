@@ -442,42 +442,47 @@ __forceinline void CVideoDeviceView::EraseDxDrawBkgnd(BOOL bFullErase)
 		pDoc->m_pDxDraw->ClearBack();
 }
 
-__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent()
+__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent(BOOL bVideoView)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
 
-	// YUY2 Format Equivalents
-	if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
-		(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
-		pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
-		pDoc->m_pDib->GetCompression() == FCC('V422')			||
-		pDoc->m_pDib->GetCompression() == FCC('YUYV')))
-		return FALSE;
-	// Special Handling for YV12 Format
-	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
-	{
-		if (!pDoc->m_pDxDraw->GetCurrentSrcFlipUV()			&&
-			pDoc->m_pDib->GetCompression() == FCC('YV12'))
-			return FALSE;
-		else if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV()		&&
-			(pDoc->m_pDib->GetCompression() == FCC('I420')	||
-			pDoc->m_pDib->GetCompression() == FCC('IYUV')))
-			return FALSE;
-		else
-			return TRUE;
-	}
-	// RGB Format Equivalents
-	else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == BI_RGB	&&
-			(pDoc->m_pDib->GetCompression() == BI_BITFIELDS	||
-			pDoc->m_pDib->GetCompression() == BI_RLE4		||
-			pDoc->m_pDib->GetCompression() == FCC('RLE4')	||
-			pDoc->m_pDib->GetCompression() == BI_RLE8		||
-			pDoc->m_pDib->GetCompression() == FCC('RLE8')))
-		return FALSE;
-	// Remaining Formats
+	if (!bVideoView)
+		return (BI_RGB != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 	else
-		return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
+	{
+		// YUY2 Format Equivalents
+		if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
+			(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
+			pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
+			pDoc->m_pDib->GetCompression() == FCC('V422')			||
+			pDoc->m_pDib->GetCompression() == FCC('YUYV')))
+			return FALSE;
+		// Special Handling for YV12 Format
+		else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
+		{
+			if (!pDoc->m_pDxDraw->GetCurrentSrcFlipUV()			&&
+				pDoc->m_pDib->GetCompression() == FCC('YV12'))
+				return FALSE;
+			else if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV()		&&
+				(pDoc->m_pDib->GetCompression() == FCC('I420')	||
+				pDoc->m_pDib->GetCompression() == FCC('IYUV')))
+				return FALSE;
+			else
+				return TRUE;
+		}
+		// RGB Format Equivalents
+		else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == BI_RGB	&&
+				(pDoc->m_pDib->GetCompression() == BI_BITFIELDS	||
+				pDoc->m_pDib->GetCompression() == BI_RLE4		||
+				pDoc->m_pDib->GetCompression() == FCC('RLE4')	||
+				pDoc->m_pDib->GetCompression() == BI_RLE8		||
+				pDoc->m_pDib->GetCompression() == FCC('RLE8')))
+			return FALSE;
+		// Remaining Formats
+		else
+			return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
+	}
 }
 
 BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor)
@@ -505,10 +510,11 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
 		pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
 		pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
-		IsDxDrawCompressionDifferent())
+		IsDxDrawCompressionDifferent(bVideoView))
 	{
 		m_dwDxDrawUpTime = dwCurrentUpTime;
-		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), pDoc->m_pDib->GetCompression()))
+		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(),
+						bVideoView ? pDoc->m_pDib->GetCompression() : BI_RGB))
 		{
 			::LeaveCriticalSection(&pDoc->m_csDib);
 			return FALSE;

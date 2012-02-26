@@ -35,7 +35,7 @@ protected:
 	void DxDrawText(const CString& sOSDMessage, COLORREF crOSDMessageColor);
 	void DxDrawZones();
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
-	__forceinline BOOL IsDxDrawCompressionDifferent();
+	__forceinline BOOL IsDxDrawCompressionDifferent(BOOL bVideoView);
 	BOOL ReOpenDxDevice();
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
