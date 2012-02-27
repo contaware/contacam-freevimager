@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.9.5 (March XXth 2012)
+3.9.5 (February 27th 2012)
 
 - Web interface camera selection with previews
 - Manual snapshot command saves now directly to a JPG file

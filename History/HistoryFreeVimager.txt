@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.9.5 (March XXth 2012)
+3.9.5 (February 27th 2012)
 
 - Better and faster printing for low-resolution images
   (1bpp, 4bpp, 8bpp and 16bpp)
