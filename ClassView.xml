@@ -306,7 +306,7 @@
 </CLASSES>
 </FOLDER>
 </FOLDERS>
-<CLASSES COUNT="37">
+<CLASSES COUNT="38">
 <CLASS NAME="CWorkerThread"/>
 <CLASS NAME="KSPROPERTY_TUNER_CAPS_S"/>
 <CLASS NAME="KSPROPERTY_TUNER_FREQUENCY_S"/>
@@ -324,7 +324,6 @@
 <CLASS NAME="CFile64"/>
 <CLASS NAME="CMallocSpy"/>
 <CLASS NAME="CPUSpeed"/>
-<CLASS NAME="CDxCapture"/>
 <CLASS NAME="CDxDraw"/>
 <CLASS NAME="CDxTuner"/>
 <CLASS NAME="CEnumPrinters"/>
@@ -344,6 +343,8 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
+<CLASS NAME="CDxCapture"/>
+<CLASS NAME="CAVDecoder"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">

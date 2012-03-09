@@ -918,7 +918,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		if (pEdit)
 		{
 			CString sDataRate(_T("xxx"));
-			LONG lUncompressedAvgFrameSize = m_pDoc->m_OrigBMI.bmiHeader.biSizeImage;
+			LONG lUncompressedAvgFrameSize = m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage;
 			if (lUncompressedAvgFrameSize > 0)
 			{
 				if (m_pDoc->m_lCompressedDataRate > 0)

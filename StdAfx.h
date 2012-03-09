@@ -95,6 +95,10 @@ extern CMallocSpy MallocSpy;
 #define ULW_OPAQUE						0x00000004
 #endif
 
+// Memory Alignment
+#define ISALIGNED(x, a) (0==((unsigned int)(x) & ((a) - 1)))
+#define DOALIGN(x, a) (((x)+(a)-1)&~((a)-1))
+
 // PopUp Menu No-Animation define
 #ifndef TPM_NOANIMATION
 #define TPM_NOANIMATION					0x4000

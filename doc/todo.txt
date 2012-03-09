@@ -2,8 +2,14 @@ Picture:
 --------
 - Using numbers to jump to a specific file in current directory
 
+Assistant:
+----------
+- Split Assistant from device settings
+
 Detection:
 ----------
+- ComboBox for motion detection in bottom toolbar
+  (remove the one in settings and remove title showing det. state)
 - Save also audio on detection
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection

@@ -610,6 +610,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AVDecoder.cpp"
+				>
+			</File>
+			<File
 				RelativePath="AviInfoDlg.cpp"
 				>
 				<FileConfiguration
@@ -4361,6 +4365,10 @@
 			</File>
 			<File
 				RelativePath=".\AuthenticationDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AVDecoder.h"
 				>
 			</File>
 			<File

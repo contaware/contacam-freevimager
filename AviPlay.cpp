@@ -8,10 +8,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// Be safe!
-#define ALIGN(x, a) (((x)+(a)-1)&~((a)-1))
-#define BUF_ALLOC_ALIGN		16
-
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
@@ -3105,8 +3101,8 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 																m_pDstBMI->bmiHeader.biWidth)	*
 																ABS(m_pDstBMI->bmiHeader.biHeight);
 		m_dwDstBufSize = DWALIGNEDWIDTHBYTES(	m_pDstBMI->bmiHeader.biBitCount							*
-												ALIGN(m_pDstBMI->bmiHeader.biWidth, BUF_ALLOC_ALIGN)	*
-												ALIGN(ABS(m_pDstBMI->bmiHeader.biHeight), BUF_ALLOC_ALIGN));
+												DOALIGN(m_pDstBMI->bmiHeader.biWidth, 16)	*
+												DOALIGN(ABS(m_pDstBMI->bmiHeader.biHeight), 16));
 		m_pSrcBuf = new BYTE[m_dwSrcBufSize = pSrcBMIH->biSizeImage];
 		if (!m_pSrcBuf)
 			return false;
@@ -3605,8 +3601,8 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		
 		// Determine required buffer size and allocate buffer if necessary
 		int nBufSize = avpicture_get_size(	pix_fmt,
-											ALIGN(m_pCodecCtx->width, BUF_ALLOC_ALIGN),
-											ALIGN(m_pCodecCtx->height, BUF_ALLOC_ALIGN));
+											DOALIGN(m_pCodecCtx->width, 16),
+											DOALIGN(m_pCodecCtx->height, 16));
 		if ((int)(m_dwDstBufSize) < nBufSize || m_pDstBuf == NULL)
 		{
 			if (m_pDstBuf)

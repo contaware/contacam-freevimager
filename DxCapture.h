@@ -71,7 +71,12 @@ public:
 
     STDMETHODIMP BufferCB(double Time, BYTE *pBuffer, long BufferLen)
     {
-		m_pDoc->ProcessFrame(pBuffer, BufferLen);
+		switch (m_pDoc->m_dwCaptureFourCC)
+		{
+			case FCC('MJPG') :	m_pDoc->ProcessMJPGFrame(pBuffer, BufferLen);	break;
+			case FCC('M420') :	m_pDoc->ProcessM420Frame(pBuffer, BufferLen);	break;
+			default :			m_pDoc->ProcessFrame(pBuffer, BufferLen);		break;
+		}
 		return S_OK;
     }
 

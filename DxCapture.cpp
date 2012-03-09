@@ -383,6 +383,8 @@ CString CDxCapture::GetFormatCompressionDescription(DWORD dwFourCC)
 		return _T("Planar 4:1:0 (9 Bpp)");
 	else if (dwFourCC == FCC('cyuv'))
 		return _T("Packed 4:1:1 (6 Bpp)");
+	else if (dwFourCC == FCC('M420'))
+		return _T("Packed 4:2:0 (12 Bpp)");
 	else if (	dwFourCC == FCC('YUY2') ||
 				dwFourCC == FCC('YUNV') ||
 				dwFourCC == FCC('YUYV') ||
@@ -1315,7 +1317,7 @@ BOOL CDxCapture::Open(	HWND hWnd,
         return FALSE;
     }
 
-	// Add the Color Space Converter to our graph
+	// Add the AVI Decoder to our graph
 	if (m_pAVIDecoder)
 		m_pGraph->AddFilter(m_pAVIDecoder, L"AVI Decoder");
 
@@ -1560,6 +1562,9 @@ BOOL CDxCapture::Open(	HWND hWnd,
 			// YV12
 			if ((nFormatId = GetFormatID(mmioFOURCC('Y','V','1','2'), 12)) == -1)
 			
+			// M420
+			if ((nFormatId = GetFormatID(mmioFOURCC('M','4','2','0'), 12)) == -1)
+
 			// YUY2	
 			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','2'), 16)) == -1)
 

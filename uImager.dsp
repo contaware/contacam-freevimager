@@ -166,6 +166,10 @@ SOURCE=.\AuthenticationDlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\AVDecoder.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\AviInfoDlg.cpp
 # End Source File
 # Begin Source File
@@ -865,6 +869,10 @@ SOURCE=.\AudioVideoShiftDlg.h
 # Begin Source File
 
 SOURCE=.\AuthenticationDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\AVDecoder.h
 # End Source File
 # Begin Source File
 

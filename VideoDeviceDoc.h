@@ -18,6 +18,7 @@
 #endif
 #include "NetCom.h"
 #include "AVRec.h"
+#include "AVDecoder.h"
 #include "YuvToRgb.h"
 #include "NetFrameHdr.h"
 #include "SortableFileFind.h"
@@ -1195,11 +1196,9 @@ public:
 																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 
 	// Main Decode & Process Functions
-	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
-	BOOL Snapshot(CDib* pDib, const CTime& Time);
-	BOOL EditCopy(CDib* pDib, const CTime& Time);
-	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
-	BOOL ProcessFrame(LPBYTE pData, DWORD dwSize);
+	void ProcessMJPGFrame(LPBYTE pData, DWORD dwSize);
+	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
+	void ProcessFrame(LPBYTE pData, DWORD dwSize);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame()	{	if (!m_bProcessFrameStopped)
@@ -1330,11 +1329,13 @@ public:
 // Protected Functions
 protected:
 	BOOL InitOpenDxCapture(int nId);
+	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
+	BOOL Snapshot(CDib* pDib, const CTime& Time);
+	BOOL EditCopy(CDib* pDib, const CTime& Time);
+	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	static __forceinline BOOL IsDeinterlaceSupported(LPBITMAPINFO pBmi);
-	static __forceinline BOOL IsDeinterlaceSupported(CDib* pDib);
 	BOOL Deinterlace(CDib* pDib);											// Inplace De-Interlace
-	BOOL Deinterlace(CDib* pDstDib, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits);	// De-Interlace Src and put it to Dst,
-																			// Dst bits are Allocate by the function
+	BOOL Deinterlace(LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, CDib* pDstDib);	// De-Interlace from Src to Dst
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
@@ -1386,7 +1387,6 @@ protected:
 // Public Variables
 public:
 	// General Vars
-	CDib* volatile m_pProcessFrameDib;					// Helper Dib used in Process Frame
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
 	volatile BOOL m_bInterleave;						// Do not interleave because while recording the frame rate is not yet exactly known!
@@ -1397,7 +1397,7 @@ public:
 	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessFrame()
 	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
-	BITMAPINFOFULL m_OrigBMI;							// Original BMI of Frame
+	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessFrame()
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
@@ -1411,6 +1411,7 @@ public:
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessFrame()
 	CTime m_4SecTime;									// For the 4 sec tick in ProcessFrame()
+	volatile DWORD m_dwCaptureFourCC;					// Capture device source format
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
@@ -1648,6 +1649,10 @@ protected:
 	BOOL m_bResetSettings;
 	CVideoDeviceView* m_pView;
 	CVideoDeviceChildFrame* m_pFrame;
+	CDib* volatile m_pProcessFrameDib;				// Helper Dib used in ProcessFrame()
+	CDib* volatile m_pProcessFrameExtraDib;			// Helper Dib used in ProcessMJPGFrame() and ProcessM420Frame()
+	CDib* volatile m_pProcessFrameDeinterlaceDib;	// Helper Dib used in DecodeFrameToRgb32()
+	CAVDecoder m_MJPGDecoder;
 	volatile LONG m_bStopProcessFrame;
 	volatile LONG m_bProcessFrameStopped;
 

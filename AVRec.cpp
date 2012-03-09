@@ -10,10 +10,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// Some codecs like theora need 16 pixels alignment!
-#define ALIGN(x, a) (((x)+(a)-1)&~((a)-1))
-#define BUF_ALLOC_ALIGN		16
-
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
@@ -1724,8 +1720,8 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 											pBmi->bmiHeader.biWidth,
 											pBmi->bmiHeader.biHeight);
 		int nNewFrameBufSize4 = avpicture_get_size(	PIX_FMT_YUV420P,
-													ALIGN(pBmi->bmiHeader.biWidth, BUF_ALLOC_ALIGN),
-													ALIGN(pBmi->bmiHeader.biHeight, BUF_ALLOC_ALIGN));
+													DOALIGN(pBmi->bmiHeader.biWidth, 16),
+													DOALIGN(pBmi->bmiHeader.biHeight, 16));
 		if (!m_pFrameBuf4[dwStreamNum] || m_nFrameBufSize4[dwStreamNum] < nNewFrameBufSize4)
 		{
 			if (m_pFrameBuf4[dwStreamNum])
@@ -1958,8 +1954,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 														pBmi->bmiHeader.biWidth,
 														pBmi->bmiHeader.biHeight);
 			int nNewFrameBufSize1 = avpicture_get_size(	SrcPixFormat,
-														ALIGN(pBmi->bmiHeader.biWidth, BUF_ALLOC_ALIGN),
-														ALIGN(pBmi->bmiHeader.biHeight, BUF_ALLOC_ALIGN));
+														DOALIGN(pBmi->bmiHeader.biWidth, 16),
+														DOALIGN(pBmi->bmiHeader.biHeight, 16));
 			if (!m_pFrameBuf1[dwStreamNum] || m_nFrameBufSize1[dwStreamNum] < nNewFrameBufSize1)
 			{
 				if (m_pFrameBuf1[dwStreamNum])
@@ -2023,8 +2019,8 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 												pCodecCtx->width,
 												pCodecCtx->height);
 			int nNewFrameBufSize2 = avpicture_get_size(	pCodecCtx->pix_fmt,
-														ALIGN(pCodecCtx->width, BUF_ALLOC_ALIGN),
-														ALIGN(pCodecCtx->height, BUF_ALLOC_ALIGN));
+														DOALIGN(pCodecCtx->width, 16),
+														DOALIGN(pCodecCtx->height, 16));
 			if (!m_pFrameBuf2[dwStreamNum] || m_nFrameBufSize2[dwStreamNum] < nNewFrameBufSize2)
 			{
 				if (m_pFrameBuf2[dwStreamNum])
