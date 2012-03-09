@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+3.9.7 (yyyyy xxth 2012)
+
+- Added support for MJPG and M420 capture device formats
+
 3.9.5 (February 27th 2012)
 
 - Web interface camera selection with previews

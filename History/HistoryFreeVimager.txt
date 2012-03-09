@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+3.9.7 (yyyyy xxth 2012)
+
+- ...
+
 3.9.5 (February 27th 2012)
 
 - Better and faster printing for low-resolution images
