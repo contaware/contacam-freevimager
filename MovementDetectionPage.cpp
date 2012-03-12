@@ -100,7 +100,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
-	ON_CBN_SELCHANGE(IDC_DETECTION_MODE, OnSelchangeDetectionMode)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -117,11 +116,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nDeleteDetectionsOlderThanDays = m_pDoc->m_nDeleteDetectionsOlderThanDays;
 
 	// Init Combo Boxes
-	CComboBox* pComboBoxDetectionMode = (CComboBox*)GetDlgItem(IDC_DETECTION_MODE);
-	pComboBoxDetectionMode->AddString(ML_STRING(1845, "Off"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1846, "Trigger File"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1847, "Software"));
-	pComboBoxDetectionMode->AddString(ML_STRING(1848, "Trigger File + Software"));
 	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
 	pComboBoxZoneSize->AddString(ML_STRING(1836, "Big"));
 	pComboBoxZoneSize->AddString(ML_STRING(1837, "Medium"));
@@ -132,9 +126,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
-
-	// Movement Detector Mode
-	pComboBoxDetectionMode->SetCurSel(m_pDoc->m_dwVideoProcessorMode);
 
 	// Detection Dir
 	m_DirLabel.SubclassDlgItem(IDC_TEXT_VIDEO_DET, this);
@@ -237,8 +228,8 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	s.Format(ML_STRING(1719, "Example to play a sound on detection\nCmd\tmplay32.exe (or path to %s)\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
 	pStatic->SetWindowText(s);
 
-	// Warning
-	UpdateUnsupportedWarning();
+	// Update Detection State
+	UpdateDetectionState();
 
 	// Set Page Pointer to this
 	m_pDoc->m_pMovementDetectionPage = this;
@@ -247,14 +238,35 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CMovementDetectionPage::UpdateUnsupportedWarning()
+void CMovementDetectionPage::UpdateDetectionState()
 {
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
-	if ((m_pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
-		m_pDoc->m_bUnsupportedVideoSizeForMovDet)
-		pEdit->ShowWindow(TRUE);
-	else
-		pEdit->ShowWindow(FALSE);
+	// Detection Mode
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_MODE);
+	if (pEdit)
+	{
+		CString sDetectionMode;
+		switch (m_pDoc->m_dwVideoProcessorMode)
+		{
+			case NO_DETECTOR :						sDetectionMode = ML_STRING(1845, "Off"); break;
+			case TRIGGER_FILE_DETECTOR :			sDetectionMode = ML_STRING(1846, "Trigger File"); break;
+			case SOFTWARE_MOVEMENT_DETECTOR :		sDetectionMode = ML_STRING(1847, "Software"); break;
+			case (	TRIGGER_FILE_DETECTOR |
+					SOFTWARE_MOVEMENT_DETECTOR):	sDetectionMode = ML_STRING(1848, "Trigger File + Software"); break;
+			default: break;
+		}
+		pEdit->SetWindowText(sDetectionMode);
+	}
+
+	// Warning
+	pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
+	if (pEdit)
+	{
+		if ((m_pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
+			m_pDoc->m_bUnsupportedVideoSizeForMovDet)
+			pEdit->ShowWindow(TRUE);
+		else
+			pEdit->ShowWindow(FALSE);
+	}
 }
 
 void CMovementDetectionPage::OnDestroy() 
@@ -390,14 +402,6 @@ void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 	}
 
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
-}
-
-void CMovementDetectionPage::OnSelchangeDetectionMode() 
-{
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_DETECTION_MODE);
-	m_pDoc->m_dwVideoProcessorMode = pComboBox->GetCurSel();
-	m_pDoc->SetDocumentTitle();
-	UpdateUnsupportedWarning();
 }
 
 void CMovementDetectionPage::OnSelchangeDetectionZoneSize() 

@@ -277,7 +277,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		{
 			pDoc->m_bUnsupportedVideoSizeForMovDet = TRUE;
 			if (pDoc->m_pMovementDetectionPage)
-				pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
+				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 		}
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, 0);
 		return 0;
@@ -288,7 +288,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		{
 			pDoc->m_bUnsupportedVideoSizeForMovDet = FALSE;
 			if (pDoc->m_pMovementDetectionPage)
-				pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
+				pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 		}
 		::InterlockedExchange(&pDoc->m_lMovDetXZonesCount, lMovDetXZonesCount);
 		::InterlockedExchange(&pDoc->m_lMovDetYZonesCount, lMovDetYZonesCount);

@@ -1252,12 +1252,10 @@ void CAssistantPage::ApplySettings()
 	// Do mov. det.?
 	if (bDoMovDet)
 		m_pDoc->m_dwVideoProcessorMode |= SOFTWARE_MOVEMENT_DETECTOR;
+	if (m_pDoc->GetFrame() && m_pDoc->GetFrame()->GetToolBar())
+		((CVideoDeviceToolBar*)(m_pDoc->GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_pDoc->m_dwVideoProcessorMode);
 	if (m_pDoc->m_pMovementDetectionPage)
-	{
-		CComboBox* pComboBox = (CComboBox*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_MODE);
-		pComboBox->SetCurSel(m_pDoc->m_dwVideoProcessorMode);
-		m_pDoc->m_pMovementDetectionPage->UpdateUnsupportedWarning();
-	}
+		m_pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 	m_pDoc->m_SaveFrameListThread.Start();
 
 	// Enable/disable 24h rec.

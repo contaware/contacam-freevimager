@@ -290,16 +290,74 @@ void CVideoAviToolBar::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 	pView->SendMessage(WM_HSCROLL, GetCurrentMessage()->wParam, GetCurrentMessage()->lParam);
 }
 
+#ifdef VIDEODEVICEDOC
+
+/////////////////////////////////////////////////////////////////////////////
+// CDetComboBox
+
+CDetComboBox::CDetComboBox()
+{
+
+}
+
+BEGIN_MESSAGE_MAP(CDetComboBox, CComboBox)
+	//{{AFX_MSG_MAP(CDetComboBox)
+	ON_CONTROL_REFLECT(CBN_SELENDOK, OnSelEndOk)
+	ON_CONTROL_REFLECT(CBN_CLOSEUP, OnCloseUp)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+void CDetComboBox::Init()
+{
+	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1845, "Off"));
+	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1846, "Trigger File"));
+	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1847, "Software"));
+	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1848, "Trigger File + Software"));
+	SetCurSel(0);
+}
+
+void CDetComboBox::OnSelEndOk()
+{
+	int Index = GetCurSel();
+	if (Index != CB_ERR)
+	{
+		CVideoDeviceView* pView = (CVideoDeviceView*)(((CControlBar*)GetParent())->GetDockingFrame()->GetActiveView());
+		ASSERT_VALID(pView);
+		CVideoDeviceDoc* pDoc = pView->GetDocument();
+		ASSERT_VALID(pDoc);
+		pDoc->m_dwVideoProcessorMode = Index;
+		if (pDoc->m_pMovementDetectionPage)
+			pDoc->m_pMovementDetectionPage->UpdateDetectionState();
+	}
+}
+
+// The following restore code is necessary on some OSs.
+// Do not use OnSelendcancel(), not working well on some
+// OSs in conjunction with SetCurSel().
+void CDetComboBox::OnCloseUp()
+{
+	CVideoDeviceView* pView = (CVideoDeviceView*)(((CControlBar*)GetParent())->GetDockingFrame()->GetActiveView());
+	ASSERT_VALID(pView);
+	CVideoDeviceDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+	SetCurSel(pDoc->m_dwVideoProcessorMode);
+	pView->SetFocus();
+}
+
+BOOL CDetComboBox::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID)
+{
+	return CComboBox::Create(dwStyle | CBS_AUTOHSCROLL | WS_VSCROLL, rect, pParentWnd, nID); 
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CVideoDeviceToolBar
-
-#ifdef VIDEODEVICEDOC
 
 IMPLEMENT_DYNAMIC(CVideoDeviceToolBar, CChildToolBar)
 
 CVideoDeviceToolBar::CVideoDeviceToolBar()
 {
-	
+	m_DetComboBoxIndex = -1;
+	m_rcLastDetComboBox = CRect(0,0,0,0);
 }
 
 CVideoDeviceToolBar::~CVideoDeviceToolBar()
@@ -321,21 +379,84 @@ BOOL CVideoDeviceToolBar::Create(CWnd* pParentWnd)
 	if (!LoadToolBar(IDR_VIDEO_DEVICE_TOOLBAR))
 		return FALSE;
 
+	CFont Font;
+	if (!Font.CreateStockObject(DEFAULT_GUI_FONT))
+		return FALSE;
+
+	// Det Combo Box
+	m_DetComboBoxIndex = CommandToIndex(ID_DET_COMBOX);
+	if (m_DetComboBoxIndex != -1)
+		if (!m_DetComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_DET_COMBOX))
+			return FALSE;
+	m_DetComboBox.SetFont(&Font);
+	m_DetComboBox.SetExtendedUI(TRUE);
+	m_DetComboBox.Init();
+	m_DetComboBox.EnableWindow(TRUE);
+
 	ShowWindow(SW_SHOW);
 	UpdateWindow();
+
 	return TRUE;
 }
 
 void CVideoDeviceToolBar::UpdateControls(void)
 {
-	// Set Min Toolbar Width
-	int nCount = GetCount();
-	if (nCount > 0)
+	CRect rect;
+
+	// Place Det ComboBox
+	if (::IsWindow(m_DetComboBox))
 	{
-		CRect rcItem;
-		GetItemRect(0, &rcItem);
-		m_nMinToolbarWidth = rcItem.Width() * nCount + 4;
-	}	
+		GetItemRect(m_DetComboBoxIndex, rect);
+		rect.right = rect.left + DETCOMBOBOX_WIDTH;
+		SetButtonInfo(	m_DetComboBoxIndex,
+						ID_DET_COMBOX,
+						TBBS_SEPARATOR,
+						rect.Width());
+		rect.left += 2;
+		(rect.right)--;
+		rect.bottom += 300;
+
+		// To Avoid Flickering Of The ComboBox
+		if (m_rcLastDetComboBox != rect)
+		{
+			m_DetComboBox.MoveWindow(&rect);
+			m_rcLastDetComboBox = rect;
+		}
+	}
+
+	// Set Min Toolbar Width
+	if (GetCount() > 0)
+	{
+		int nSeparatorCount = 0;
+		int nButtonCount = 0;
+		CRect rcSep(0,0,0,0);
+		CRect rcButton(0,0,0,0);
+		for (int i = 0 ; i < GetCount() ; i++)
+		{
+			if (i != m_DetComboBoxIndex)
+			{
+				if (GetButtonStyle(i) == TBBS_SEPARATOR)
+				{
+					nSeparatorCount++;
+					if (rcSep.Width() == 0)
+						GetItemRect(i, &rcSep);
+				}
+				else
+				{
+					GetItemRect(i, &rect);
+					if (rect.Width() > 0)
+					{
+						nButtonCount++;
+						if (rcButton.Width() == 0)
+							rcButton = rect;
+					}
+				}
+			}
+		}
+		m_nMinToolbarWidth =	m_rcLastDetComboBox.Width() + 3 +
+								rcButton.Width() * nButtonCount	+
+								rcSep.Width() * nSeparatorCount + 4;
+	}
 }
 
 void CVideoDeviceToolBar::OnSize(UINT nType, int cx, int cy) 
@@ -379,16 +500,16 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	if (!LoadToolBar(IDR_PICTURE_TOOLBAR))
 		return FALSE;
 
-	CFont m_Font;
-	if (!m_Font.CreateStockObject(DEFAULT_GUI_FONT))	// ANSI_FIXED_FONT, DEFAULT_GUI_FONT, OEM_FIXED_FONT
-		return FALSE;									// ANSI_VAR_FONT, SYSTEM_FONT, SYSTEM_FIXED_FONT
+	CFont Font;
+	if (!Font.CreateStockObject(DEFAULT_GUI_FONT))
+		return FALSE;
 
 	// Zoom Combo Box
 	m_ZoomComboBoxIndex = CommandToIndex(ID_ZOOM_COMBOX);
 	if (m_ZoomComboBoxIndex != -1)
 		if (!m_ZoomComboBox.Create(CBS_DROPDOWNLIST | WS_VISIBLE | WS_CHILD, CRect(0,0,0,0), this, ID_ZOOM_COMBOX))
 			return FALSE;
-	m_ZoomComboBox.SetFont(&m_Font);
+	m_ZoomComboBox.SetFont(&Font);
 	m_ZoomComboBox.SetExtendedUI(TRUE);
 	m_ZoomComboBox.Init();
 	m_ZoomComboBox.EnableWindow(TRUE);
@@ -720,8 +841,8 @@ CZoomComboBox::CZoomComboBox()
 
 BEGIN_MESSAGE_MAP(CZoomComboBox, CComboBox)
 	//{{AFX_MSG_MAP(CZoomComboBox)
-	ON_CONTROL_REFLECT_EX(CBN_SELENDOK, OnSelEndOk)
-	ON_CONTROL_REFLECT(CBN_SELENDCANCEL, OnSelendcancel)
+	ON_CONTROL_REFLECT(CBN_SELENDOK, OnSelEndOk)
+	ON_CONTROL_REFLECT(CBN_CLOSEUP, OnCloseUp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -782,7 +903,7 @@ void CZoomComboBox::OnChangeZoomFactor(double dZoomFactor)
 	}
 }
 
-BOOL CZoomComboBox::OnSelEndOk()
+void CZoomComboBox::OnSelEndOk()
 {
 	int Index = GetCurSel();
 	if (Index != CB_ERR)
@@ -796,7 +917,6 @@ BOOL CZoomComboBox::OnSelEndOk()
 		{
 			OnChangeZoomFactor(*((double*)GetItemDataPtr(Index)));
 			pDoc->SetDocumentTitle();
-			pView->SetFocus();
 			pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
 			if (pDoc->m_bCrop)
 			{
@@ -827,14 +947,18 @@ BOOL CZoomComboBox::OnSelEndOk()
 			}
 		}
 	}
-
-	return TRUE;
 }
 
-void CZoomComboBox::OnSelendcancel() 
+// The following restore code is necessary on some OSs.
+// Do not use OnSelendcancel(), not working well on some
+// OSs in conjunction with SetCurSel().
+void CZoomComboBox::OnCloseUp()
 {
 	CPictureView* pView = (CPictureView*)(((CControlBar*)GetParent())->GetDockingFrame()->GetActiveView());
 	ASSERT_VALID(pView);
+	CPictureDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+	SetCurSel(pDoc->m_nZoomComboBoxIndex);
 	pView->SetFocus();
 }
 

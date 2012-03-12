@@ -5358,18 +5358,6 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	else
 		strInfo = sName;
 
-	// Motion detection
-	strInfo += CString(_T(" , ")) + ML_STRING(1844, "Det") + CString(_T(" "));
-	switch (m_dwVideoProcessorMode)
-	{
-		case NO_DETECTOR :						strInfo += ML_STRING(1845, "Off"); break;
-		case TRIGGER_FILE_DETECTOR :			strInfo += ML_STRING(1846, "Trigger File"); break;
-		case SOFTWARE_MOVEMENT_DETECTOR :		strInfo += ML_STRING(1847, "Software"); break;
-		case (	TRIGGER_FILE_DETECTOR |
-				SOFTWARE_MOVEMENT_DETECTOR):	strInfo += ML_STRING(1848, "Trigger File + Software"); break;
-		default: break;
-	}
-
 	// Set title string
 	CDocument::SetTitle(strInfo);
 }
@@ -5669,6 +5657,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
+	if (GetFrame() && GetFrame()->GetToolBar())
+		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
 	m_fVideoRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);

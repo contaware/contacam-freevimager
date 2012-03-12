@@ -128,9 +128,10 @@ BEGIN
     BUTTON      ID_CAPTURE_RECORD
     BUTTON      ID_CAPTURE_RECORD_PAUSE
     BUTTON      ID_VIEW_FRAMETIME
+    BUTTON      ID_VIEW_FIT
     BUTTON      ID_VIEW_DETECTIONS
     BUTTON      ID_VIEW_DETECTION_ZONES
-    BUTTON      ID_VIEW_FIT
+    BUTTON      ID_DET_COMBOX
 END
 
 IDR_PICTURE_TOOLBAR TOOLBAR MOVEABLE PURE  16, 15
@@ -2336,10 +2337,8 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    COMBOBOX        IDC_DETECTION_MODE,46,5,96,72,CBS_DROPDOWNLIST | 
-                    WS_TABSTOP
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
@@ -2434,6 +2433,8 @@ BEGIN
     GROUPBOX        "External Detection Trigger File (write to it to trigger)",
                     IDC_STATIC,7,202,200,28
     LTEXT           "Detection:",IDC_STATIC2544,7,6,36,11,SS_CENTERIMAGE
+    LTEXT           "Off",IDC_DETECTION_MODE,46,6,95,11,SS_CENTERIMAGE | 
+                    SS_SUNKEN
 END
 
 IDD_REDEYE DIALOGEX 0, 0, 193, 256
@@ -4742,7 +4743,7 @@ IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 225, 207
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Select camera folder(s) to delete"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LISTBOX         IDC_CAM_FOLDERS,7,7,211,171,LBS_MULTIPLESEL | 
                     LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
@@ -7245,6 +7246,7 @@ BEGIN
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
     ID_TOOLS_DEL_CAM_FOLDERS 
                             "Select camera folder(s) to delete\nDelete Camera Folder(s)"
+    ID_DET_COMBOX           "Select detection mode\nDetection Mode"
 END
 
 STRINGTABLE DISCARDABLE 

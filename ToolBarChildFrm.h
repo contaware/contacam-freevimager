@@ -16,6 +16,7 @@
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 #define ZOOMCOMBOBOX_WIDTH							92
+#define DETCOMBOBOX_WIDTH							136
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar
@@ -90,6 +91,26 @@ protected:
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
+// CDetComboBox
+
+class CDetComboBox : public CComboBox
+{
+public:
+	CDetComboBox();
+	void Init();
+	BOOL Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID);
+
+	// Generated message map functions
+protected:
+	//{{AFX_MSG(CDetComboBox)
+	afx_msg void OnSelEndOk();
+	afx_msg void OnCloseUp();
+	//}}AFX_MSG
+
+	DECLARE_MESSAGE_MAP()
+};
+
+/////////////////////////////////////////////////////////////////////////////
 // CVideoDeviceToolBar
 
 class CVideoDeviceToolBar : public CChildToolBar
@@ -99,6 +120,11 @@ public:
 	virtual ~CVideoDeviceToolBar();
 	virtual void UpdateControls(void);
 	BOOL Create(CWnd* pParentWnd);
+	CDetComboBox m_DetComboBox;
+
+protected:
+	int m_DetComboBoxIndex;
+	CRect m_rcLastDetComboBox;
 
 	// Overrides
 protected:		
@@ -134,8 +160,8 @@ public:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CZoomComboBox)
-	afx_msg BOOL OnSelEndOk();
-	afx_msg void OnSelendcancel();
+	afx_msg void OnSelEndOk();
+	afx_msg void OnCloseUp();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

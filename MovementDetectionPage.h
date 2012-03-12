@@ -25,7 +25,7 @@ class CMovementDetectionPage : public CPropertyPage
 public:
 	CMovementDetectionPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
-	void UpdateUnsupportedWarning();
+	void UpdateDetectionState();
 	~CMovementDetectionPage();
 	CStaticLink m_DirLabel;
 
@@ -89,7 +89,6 @@ protected:
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnChangeDetectionTriggerFilename();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
-	afx_msg void OnSelchangeDetectionMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

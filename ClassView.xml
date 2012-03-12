@@ -318,12 +318,14 @@
 <CLASS NAME="KSPROPERTY_TUNER_STATUS_S"/>
 <CLASS NAME="CWindowInstance"/>
 <CLASS NAME="_SINSTANCE_DATA"/>
+<CLASS NAME="CAVDecoder"/>
 <CLASS NAME="CAVIPlay"/>
 <CLASS NAME="CAVRec"/>
 <CLASS NAME="CCDAudio"/>
 <CLASS NAME="CFile64"/>
 <CLASS NAME="CMallocSpy"/>
 <CLASS NAME="CPUSpeed"/>
+<CLASS NAME="CDxCapture"/>
 <CLASS NAME="CDxDraw"/>
 <CLASS NAME="CDxTuner"/>
 <CLASS NAME="CEnumPrinters"/>
@@ -343,13 +345,11 @@
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
 <CLASS NAME="CXThemeHelper"/>
-<CLASS NAME="CDxCapture"/>
-<CLASS NAME="CAVDecoder"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="ChildFramesAndToolBars">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="12">
+<CLASSES COUNT="13">
 <CLASS NAME="CChildFrame"/>
 <CLASS NAME="CAudioMCIChildFrame"/>
 <CLASS NAME="CCDAudioChildFrame"/>
@@ -362,6 +362,7 @@
 <CLASS NAME="CVideoDeviceChildFrame"/>
 <CLASS NAME="CVideoDeviceToolBar"/>
 <CLASS NAME="CZoomComboBox"/>
+<CLASS NAME="CDetComboBox"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="PropertySheets">
