@@ -1,9 +1,9 @@
-// AssistantPage.cpp : implementation file
+// AssistantDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "uimager.h"
-#include "AssistantPage.h"
+#include "AssistantDlg.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "VideoDevicePropertySheet.h"

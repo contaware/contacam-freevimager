@@ -34,7 +34,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="76">
+<CLASSES COUNT="77">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -111,6 +111,7 @@
 <CLASS NAME="CXmpDlg"/>
 <CLASS NAME="CYesNoAllCancelDlg"/>
 <CLASS NAME="CZipProgressDlg"/>
+<CLASS NAME="CAssistantDlg"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Controls">
@@ -354,6 +355,7 @@
 <CLASS NAME="CAudioMCIChildFrame"/>
 <CLASS NAME="CCDAudioChildFrame"/>
 <CLASS NAME="CChildToolBar"/>
+<CLASS NAME="CDetComboBox"/>
 <CLASS NAME="CPictureChildFrame"/>
 <CLASS NAME="CPictureToolBar"/>
 <CLASS NAME="CToolBarChildFrame"/>
@@ -362,13 +364,11 @@
 <CLASS NAME="CVideoDeviceChildFrame"/>
 <CLASS NAME="CVideoDeviceToolBar"/>
 <CLASS NAME="CZoomComboBox"/>
-<CLASS NAME="CDetComboBox"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="PropertySheets">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="6">
-<CLASS NAME="CAssistantPage"/>
+<CLASSES COUNT="5">
 <CLASS NAME="CGeneralPage"/>
 <CLASS NAME="CMovementDetectionPage"/>
 <CLASS NAME="CNetworkPage"/>

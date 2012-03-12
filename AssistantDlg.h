@@ -1,10 +1,10 @@
-#if !defined(AFX_ASSISTANTPAGE_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
-#define AFX_ASSISTANTPAGE_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_
+#if !defined(AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
+#define AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-// AssistantPage.h : header file
+// AssistantDlg.h : header file
 //
 
 #ifdef VIDEODEVICEDOC
@@ -82,4 +82,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_ASSISTANTPAGE_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
+#endif // !defined(AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)

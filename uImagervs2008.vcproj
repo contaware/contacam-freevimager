@@ -443,7 +443,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\AssistantPage.cpp"
+				RelativePath=".\AssistantDlg.cpp"
 				>
 			</File>
 			<File
@@ -4336,7 +4336,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AssistantPage.h"
+				RelativePath=".\AssistantDlg.h"
 				>
 			</File>
 			<File

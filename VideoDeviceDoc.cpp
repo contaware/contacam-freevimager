@@ -6,7 +6,7 @@
 #include "VideoAviDoc.h"
 #include "VideoAviView.h"
 #include "AudioInSourceDlg.h"
-#include "AssistantPage.h"
+#include "AssistantDlg.h"
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
 #include "VideoDevicePropertySheet.h"

@@ -134,7 +134,7 @@ SOURCE=.\AnimGifSaveSmallDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\AssistantPage.cpp
+SOURCE=.\AssistantDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -840,7 +840,7 @@ SOURCE=.\appconst.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\AssistantPage.h
+SOURCE=.\AssistantDlg.h
 # End Source File
 # Begin Source File
 
