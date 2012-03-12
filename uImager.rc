@@ -123,6 +123,7 @@ END
 
 IDR_VIDEO_DEVICE_TOOLBAR TOOLBAR MOVEABLE PURE  16, 15
 BEGIN
+    BUTTON      ID_CAPTURE_ASSISTANT
     BUTTON      ID_CAPTURE_SETTINGS
     BUTTON      ID_EDIT_SNAPSHOT
     BUTTON      ID_CAPTURE_RECORD
@@ -221,7 +222,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -523,7 +524,8 @@ BEGIN
         MENUITEM "Record\tR",                   ID_CAPTURE_RECORD
         MENUITEM "&Pause\tPause",               ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
-        MENUITEM "Assistant && Settings...\tS", ID_CAPTURE_SETTINGS
+        MENUITEM "Device Assistant...\tA",      ID_CAPTURE_ASSISTANT
+        MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
         MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
@@ -561,7 +563,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -594,7 +596,8 @@ BEGIN
         MENUITEM "&Record\tR",                  ID_CAPTURE_RECORD
         MENUITEM "&Pause\tPause",               ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
-        MENUITEM "Assistant && Settings...\tS", ID_CAPTURE_SETTINGS
+        MENUITEM "Device Assistant...\tA",      ID_CAPTURE_ASSISTANT
+        MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
         MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
         MENUITEM SEPARATOR
         MENUITEM "De-Interlace",                ID_CAPTURE_DEINTERLACE
@@ -661,7 +664,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
         MENUITEM SEPARATOR
@@ -778,7 +781,7 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -1086,7 +1089,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -1436,7 +1439,7 @@ BEGIN
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Settings...",                 ID_FILE_SETTINGS
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -2097,8 +2100,8 @@ END
 IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+CAPTION "Global Settings"
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "bmp Files",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,45,10
@@ -2337,7 +2340,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -4534,8 +4537,8 @@ END
 IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+CAPTION "Global Settings"
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -4669,10 +4672,10 @@ BEGIN
 END
 
 IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
-STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Assistant"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+CAPTION "Device Assistant"
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -4698,33 +4701,33 @@ BEGIN
     CONTROL         "Full stretch (for mobile applications)",
                     IDC_CHECK_FULLSTRETCH,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,263,49,131,10
-    EDITTEXT        IDC_EDIT_NAME,147,118,172,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_NAME,147,114,172,12,ES_AUTOHSCROLL
     CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,335,113,62,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,335,109,62,10
     CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,335,124,62,10
-    COMBOBOX        IDC_COMBO_LANGUAGE,100,137,107,222,CBS_DROPDOWNLIST | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,335,120,62,10
+    COMBOBOX        IDC_COMBO_LANGUAGE,100,133,107,222,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,295,137,107,222,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_STYLE,295,133,107,222,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    COMBOBOX        IDC_COMBO_KEEPFOR,63,179,107,116,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_COMBO_KEEPFOR,63,172,107,116,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    PUSHBUTTON      "Apply Assistant Settings",IDC_BUTTON_APPLY_SETTINGS,330,
-                    225,72,29,BS_MULTILINE
+    PUSHBUTTON      "OK",IDOK,147,244,58,20,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,220,244,58,20
     GROUPBOX        "1. Usage",IDC_STATIC,5,2,407,94
     LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,262,17,62,8
-    GROUPBOX        "2. Name && Appearance",IDC_STATIC,5,105,407,51
+    GROUPBOX        "2. Name && Appearance",IDC_STATIC,5,101,407,51
     LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,
-                    120,118,8
-    LTEXT           "Web interface language",IDC_STATIC,16,139,82,8
-    LTEXT           "Web interface style",IDC_STATIC,227,139,66,8
-    GROUPBOX        "3. Storage",IDC_STATIC,5,164,407,39
-    LTEXT           "Keep files for",IDC_STATIC,16,181,42,8
+                    116,118,8
+    LTEXT           "Web interface language",IDC_STATIC,16,135,82,8
+    LTEXT           "Web interface style",IDC_STATIC,227,135,66,8
+    GROUPBOX        "3. Storage",IDC_STATIC,5,157,407,39
+    LTEXT           "Keep files for",IDC_STATIC,16,174,42,8
     LTEXT           "Note: if the disk space becomes less than 10% the oldest files are automatically deleted to make room for the new one",
-                    IDC_STATIC,188,176,214,19
-    GROUPBOX        "4. Finish",IDC_STATIC,5,211,407,52
-    LTEXT           "Confirm pressing the Apply Assistant Settings button. To watch the Movement detections or the Snapshots select Browse from the View menu",
-                    IDC_STATIC,16,230,303,18
+                    IDC_STATIC,188,169,214,19
+    GROUPBOX        "4. Finish",IDC_STATIC,5,201,407,37
+    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu",
+                    IDC_STATIC,16,213,386,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
                     33,60,8
 END
@@ -5684,7 +5687,7 @@ BEGIN
         VERTGUIDE, 254
         VERTGUIDE, 402
         TOPMARGIN, 2
-        BOTTOMMARGIN, 260
+        BOTTOMMARGIN, 264
         HORZGUIDE, 180
     END
 
@@ -6286,7 +6289,7 @@ BEGIN
     IDS_MULTILANG_1473      "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1476      "Please configure a directory in the Assistant and Settings dialog"
+    IDS_MULTILANG_1476      "Please configure a directory in the Device Settings dialog"
     IDS_MULTILANG_1479      "Listening Ok\r\n\r\n"
     IDS_MULTILANG_1480      "Listening Ok:\r\n%d connection%s, Tx size / connection: %d fragments, Max fragments / frame: %u\r\n"
     IDS_MULTILANG_1481      "Datarate / connection: %dkbps , Overall Datarate: %ukbps (+%ukbps)\r\n\r\n"
@@ -6322,7 +6325,7 @@ BEGIN
     ID_FILE_SELECTTWAINSOURCE 
                             "Select twain (scanner,...) source\nSelect Twain Source"
     ID_FILE_ACQUIRE         "Scan from selected source\nScan"
-    ID_CAPTURE_SETTINGS     "Assistant and settings\nAssistant and Settings"
+    ID_CAPTURE_SETTINGS     "Device settings\nDevice Settings"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -6413,7 +6416,7 @@ BEGIN
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
     ID_TOOLS_AVIMERGESERIAL_AS "Join avi file segments\nJoin Avi Files"
     ID_TOOLS_AVIMERGEPARALLEL_AS "Merge avi streams\nMerge Avi streams"
-    ID_FILE_SETTINGS        "File associations and global settings\nSettings"
+    ID_FILE_SETTINGS        "File associations and global settings\nGlobal Settings"
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
     ID_DIRECTSHOW_VIDEODEV_1 
                             "Capture frames from this directx device\nDirectX Capture"
@@ -7129,8 +7132,8 @@ BEGIN
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and device type)"
-    IDS_STRING1755          "3. Follow the Assistant and remember to click the Apply Settings button"
-    IDS_STRING1756          "(if it is not popping-up select Assistant & Settings from the Capture menu)"
+    IDS_STRING1755          "3. Follow the Device Assistant"
+    IDS_STRING1756          "(if it is not popping-up select Device Assistant from the Capture menu)"
     IDS_STRING1757          "4. Choose Browse from the View menu"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
@@ -7247,6 +7250,7 @@ BEGIN
     ID_TOOLS_DEL_CAM_FOLDERS 
                             "Select camera folder(s) to delete\nDelete Camera Folder(s)"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
+    ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -7262,6 +7266,7 @@ BEGIN
     IDS_STRING1848          "Trigger File + Software"
     IDS_STRING1849          "Snapshot Saved"
     IDS_STRING1850          "Snapshot Save Failed!"
+    IDS_STRING1851          "Both"
 END
 
 #endif    // English (U.S.) resources

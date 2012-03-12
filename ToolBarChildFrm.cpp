@@ -312,7 +312,7 @@ void CDetComboBox::Init()
 	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1845, "Off"));
 	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1846, "Trigger File"));
 	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1847, "Software"));
-	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1848, "Trigger File + Software"));
+	AddString(ML_STRING(1844, "Det") + CString(_T(" ")) + ML_STRING(1851, "Both"));
 	SetCurSel(0);
 }
 
@@ -1726,7 +1726,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// and the Audio Thread for the PeakMeter):
 	//
 	// m_pVideoDevicePropertySheet
-	// m_pAssistantPage
 	// m_pGeneralPage
 	// m_pSnapshotPage
 	// m_pNetworkPage

@@ -33,7 +33,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_THREADSAFE_CAPTURESETTINGS, OnThreadSafeCaptureSettings)
+	ON_MESSAGE(WM_THREADSAFE_CAPTUREASSISTANT, OnThreadSafeCaptureAssistant)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
 	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT, OnThreadSafeStopAndChangeVideoFormat)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
@@ -142,14 +142,18 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 		return 0;
 }
 
-LONG CVideoDeviceView::OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam)
+LONG CVideoDeviceView::OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if (pDoc && !pDoc->m_bClosing)
+	if (pDoc &&
+		pDoc->m_bCaptureStarted	&&
+		!pDoc->m_bClosing		&&
+		!pDoc->m_bWatchDogAlarm	&&
+		!pDoc->m_bDxDeviceUnplugged)
 	{
-		pDoc->CaptureSettings();
+		pDoc->CaptureAssistant();
 		return 1;
 	}
 	else
@@ -943,6 +947,14 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
+		case _T('A') :
+			if (pDoc->m_bCaptureStarted	&&
+				!pDoc->m_bClosing		&&
+				!pDoc->m_bWatchDogAlarm	&&
+				!pDoc->m_bDxDeviceUnplugged)
+				pDoc->CaptureAssistant();
+			break;
+
 		case _T('F') :
 			::AfxGetMainFrame()->EnterExitFullscreen();
 			break;

@@ -13,27 +13,22 @@
 class CVideoDeviceDoc;
 
 #include "StaticLink.h"
-#include "XButtonXP.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantPage dialog
+// CAssistantDlg dialog
 
 #define ASSISTANTDLG_TIMER_MS		500
 
-class CAssistantPage : public CPropertyPage
+class CAssistantDlg : public CDialog
 {
-	DECLARE_DYNCREATE(CAssistantPage)
-
 // Construction
 public:
-	CAssistantPage();
-	void SetDoc(CVideoDeviceDoc* pDoc);
-	~CAssistantPage();
+	CAssistantDlg(CVideoDeviceDoc* pDoc, CWnd* pParent = NULL);
+	~CAssistantDlg();
 
 // Dialog Data
-	//{{AFX_DATA(CAssistantPage)
+	//{{AFX_DATA(CAssistantDlg)
 	enum { IDD = IDD_ASSISTANT };
-	CXButtonXP m_ButtonApplySettings;
 	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
 	CString	m_sName;
@@ -49,7 +44,7 @@ public:
 
 // Overrides
 	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CAssistantPage)
+	//{{AFX_VIRTUAL(CAssistantDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -66,10 +61,9 @@ protected:
 	void ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate);
 	void ApplySettings();
 	// Generated message map functions
-	//{{AFX_MSG(CAssistantPage)
+	//{{AFX_MSG(CAssistantDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
-	afx_msg void OnButtonApplySettings();
 	afx_msg void OnRadioMovdet();
 	afx_msg void OnRadioSnapshothistory();
 	afx_msg void OnRadioSnapshot();
@@ -77,6 +71,7 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnRadioNochange();
+	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

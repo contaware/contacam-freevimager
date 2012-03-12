@@ -7,7 +7,6 @@
 // VideoDevicePropertySheet.h : header file
 //
 
-#include "AssistantPage.h"
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
 #include "NetworkPage.h"
@@ -39,7 +38,6 @@ protected:
 	CSnapshotPage m_SnapshotPropertyPage;
 	CNetworkPage m_NetworkPropertyPage;
 	CMovementDetectionPage m_MovementDetectionPropertyPage;
-	CAssistantPage m_AssistantPropertyPage;
 	CVideoDeviceDoc* m_pDoc;
 
 // Overrides

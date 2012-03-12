@@ -12,7 +12,7 @@
 #include "VideoDeviceDoc.h"
 
 // Window Message IDs
-#define WM_THREADSAFE_CAPTURESETTINGS				WM_USER + 600
+#define WM_THREADSAFE_CAPTUREASSISTANT				WM_USER + 600
 #define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 601
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 602
 #define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 603
@@ -74,7 +74,7 @@ protected:
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	//}}AFX_MSG
-	afx_msg LONG OnThreadSafeCaptureSettings(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);

@@ -148,7 +148,7 @@ void CMDIClientWnd::OnPaint()
 	s.ReleaseBuffer();
 
 	rcDraw.top += nLineHeight;
-	s = ML_STRING(1755, "3. Follow the Assistant and remember to click the Apply Settings button");
+	s = ML_STRING(1755, "3. Follow the Device Assistant");
 	::DrawTextEx(	memDC.GetSafeHdc(),
 					s.GetBuffer(s.GetLength() + 1),
 					s.GetLength(),
@@ -158,7 +158,7 @@ void CMDIClientWnd::OnPaint()
 	s.ReleaseBuffer();
 
 	rcDraw.top += nLineHeight;
-	s = _T("    ") + ML_STRING(1756, "(if it is not popping-up select Assistant & Settings from the Capture menu)");
+	s = _T("    ") + ML_STRING(1756, "(if it is not popping-up select Device Assistant from the Capture menu)");
 	::DrawTextEx(	memDC.GetSafeHdc(),
 					s.GetBuffer(s.GetLength() + 1),
 					s.GetLength(),

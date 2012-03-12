@@ -26,8 +26,6 @@ CNetworkPage::CNetworkPage()
 {
 	// OnInitDialog() is called when first pressing the tab
 	// OnInitDialog() inits the property page pointer in the doc
-	// -> Move all inits to OnInitDialog() because the assistant
-	// may change the doc vars between construction and OnInitDialog() call
 	//{{AFX_DATA_INIT(CNetworkPage)
 	//}}AFX_DATA_INIT
 	m_pDoc = NULL;

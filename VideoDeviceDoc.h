@@ -36,7 +36,6 @@ class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CDxCapture;
 class CVideoAviDoc;
-class CAssistantPage;
 class CGeneralPage;
 class CSnapshotPage;
 class CVideoDevicePropertySheet;
@@ -1158,6 +1157,7 @@ public:
 	BOOL OpenGetVideo(CString sAddress);	
 
 	// Dialogs
+	void CaptureAssistant();
 	void CaptureSettings();
 	void VideoFormatDialog();
 	void VideoSourceDialog();
@@ -1623,7 +1623,6 @@ public:
 
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;
-	CAssistantPage* volatile m_pAssistantPage;
 	CSnapshotPage* volatile m_pSnapshotPage;
 	CNetworkPage* volatile m_pNetworkPage;
 	CGeneralPage* volatile m_pGeneralPage;
@@ -1706,6 +1705,8 @@ protected:
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
 	afx_msg void OnEditExportZones();
 	afx_msg void OnEditImportZones();
+	afx_msg void OnCaptureAssistant();
+	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

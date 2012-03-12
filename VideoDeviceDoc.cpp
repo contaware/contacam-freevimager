@@ -87,6 +87,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
 	ON_COMMAND(ID_EDIT_EXPORT_ZONES, OnEditExportZones)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
+	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -5027,7 +5029,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
 
 	// Property Sheet
-	m_pAssistantPage = NULL;
 	m_pMovementDetectionPage = NULL;
 	m_pGeneralPage = NULL;
 	m_pSnapshotPage = NULL;
@@ -7265,6 +7266,25 @@ void CVideoDeviceDoc::OnCaptureReset()
 	}
 }
 
+void CVideoDeviceDoc::OnCaptureAssistant() 
+{
+	CaptureAssistant();
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureAssistant(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	m_bCaptureStarted	&&
+					!m_bClosing			&&
+					!m_bWatchDogAlarm	&&
+					!m_bDxDeviceUnplugged);
+}
+
+void CVideoDeviceDoc::CaptureAssistant()
+{
+	CAssistantDlg dlg(this, GetView());
+	dlg.DoModal();
+}
+
 void CVideoDeviceDoc::OnCaptureSettings() 
 {
 	CaptureSettings();
@@ -7588,7 +7608,7 @@ void CVideoDeviceDoc::OnViewWeb()
 	if (sAutoSaveDir != _T(""))
 		MicroApacheViewOnWeb(sAutoSaveDir, _T("index.php"));
 	else
-		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Assistant and Settings dialog"));
+		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
 }
 
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
@@ -9282,14 +9302,14 @@ void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		if (m_bVideoView)
 			m_WatchdogAndDrawThread.TriggerDraw();
 
-		// Set started flag and open the Settings dialog
+		// Set started flag and open the Assistant dialog
 		if (!m_bCaptureStarted)
 		{
 			m_bCaptureStarted = TRUE;
 			if (m_bDeviceFirstRun)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_CAPTURESETTINGS,
+								WM_THREADSAFE_CAPTUREASSISTANT,
 								0, 0);
 			}
 		}

@@ -17,33 +17,24 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantPage property page
+// CAssistantDlg dialog
 
-IMPLEMENT_DYNCREATE(CAssistantPage, CPropertyPage)
-
-CAssistantPage::CAssistantPage()
-	: CPropertyPage(CAssistantPage::IDD)
+CAssistantDlg::CAssistantDlg(CVideoDeviceDoc* pDoc, CWnd* pParent /*=NULL*/)
+	: CDialog(CAssistantDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CAssistantPage)
+	//{{AFX_DATA_INIT(CAssistantDlg)
 	//}}AFX_DATA_INIT
-	m_pDoc = NULL;
-}
-
-void CAssistantPage::SetDoc(CVideoDeviceDoc* pDoc)
-{
-	ASSERT(pDoc);
 	m_pDoc = pDoc;
 }
 
-CAssistantPage::~CAssistantPage()
+CAssistantDlg::~CAssistantDlg()
 {
 }
 
-void CAssistantPage::DoDataExchange(CDataExchange* pDX)
+void CAssistantDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CAssistantPage)
-	DDX_Control(pDX, IDC_BUTTON_APPLY_SETTINGS, m_ButtonApplySettings);
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CAssistantDlg)
 	DDX_Check(pDX, IDC_CHECK_24H_REC, m_bCheck24hRec);
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
@@ -58,24 +49,23 @@ void CAssistantPage::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CAssistantPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CAssistantPage)
+BEGIN_MESSAGE_MAP(CAssistantDlg, CDialog)
+	//{{AFX_MSG_MAP(CAssistantDlg)
 	ON_WM_DESTROY()
-	ON_BN_CLICKED(IDC_BUTTON_APPLY_SETTINGS, OnButtonApplySettings)
 	ON_BN_CLICKED(IDC_RADIO_MOVDET, OnRadioMovdet)
 	ON_BN_CLICKED(IDC_RADIO_SNAPSHOTHISTORY, OnRadioSnapshothistory)
 	ON_BN_CLICKED(IDC_RADIO_SNAPSHOT, OnRadioSnapshot)
 	ON_BN_CLICKED(IDC_RADIO_MANUAL, OnRadioManual)
-	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
+	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantPage message handlers
+// CAssistantDlg message handlers
 
-BOOL CAssistantPage::OnInitDialog() 
+BOOL CAssistantDlg::OnInitDialog() 
 {
 	// Check whether the web files exist in the given directory.
 	CString sAutoSaveDir = m_pDoc->GetAutoSaveDir();
@@ -302,13 +292,10 @@ BOOL CAssistantPage::OnInitDialog()
 	}
 
 	// This calls UpdateData(FALSE)
-	CPropertyPage::OnInitDialog();
+	CDialog::OnInitDialog();
 
 	// Enable / Disable Controls
 	EnableDisableCtrls();
-
-	// Set Page Pointer to this
-	m_pDoc->m_pAssistantPage = this;
 	
 	// Set Timer
 	SetTimer(ID_TIMER_ASSISTANTDLG, ASSISTANTDLG_TIMER_MS, NULL);
@@ -317,19 +304,16 @@ BOOL CAssistantPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CAssistantPage::OnDestroy() 
+void CAssistantDlg::OnDestroy() 
 {
 	// Kill timer
 	KillTimer(ID_TIMER_ASSISTANTDLG);
 
 	// Base class
-	CPropertyPage::OnDestroy();
-
-	// Set Page Pointer to NULL
-	m_pDoc->m_pAssistantPage = NULL;
+	CDialog::OnDestroy();
 }
 
-void CAssistantPage::EnableDisableCtrls()
+void CAssistantDlg::EnableDisableCtrls()
 {
 	CButton* pCheckMovDet = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	CButton* pCheckSnapshotHistory = (CButton*)GetDlgItem(IDC_RADIO_SNAPSHOTHISTORY);
@@ -412,7 +396,7 @@ void CAssistantPage::EnableDisableCtrls()
 	}
 }
 
-void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
+void CAssistantDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
 	if (bEnable)
 		EnableDisableCtrls();
@@ -457,36 +441,38 @@ void CAssistantPage::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
 	pComboBox->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_APPLY_SETTINGS);
+	CButton* pButton = (CButton*)GetDlgItem(IDOK);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDCANCEL);
 	pButton->EnableWindow(bEnable);
 }
 
-void CAssistantPage::OnRadioMovdet() 
+void CAssistantDlg::OnRadioMovdet() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantPage::OnRadioSnapshothistory() 
+void CAssistantDlg::OnRadioSnapshothistory() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantPage::OnRadioSnapshot() 
+void CAssistantDlg::OnRadioSnapshot() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantPage::OnRadioManual() 
+void CAssistantDlg::OnRadioManual() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantPage::OnRadioNochange() 
+void CAssistantDlg::OnRadioNochange() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
+void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
 {
 	if (m_pDoc->m_pGeneralPage)
 	{
@@ -586,7 +572,7 @@ void CAssistantPage::EnableDisable24hRec(BOOL bEnable)
 	}
 }
 
-BOOL CAssistantPage::Is24hRec() 
+BOOL CAssistantDlg::Is24hRec() 
 {
 	if (!m_pDoc->m_pVideoAviDoc)
 	{
@@ -604,7 +590,7 @@ BOOL CAssistantPage::Is24hRec()
 	return FALSE;
 }
 
-void CAssistantPage::OnTimer(UINT nIDEvent) 
+void CAssistantDlg::OnTimer(UINT nIDEvent) 
 {
 	if (m_bDoApplySettings && !m_pDoc->m_bClosing)
 	{
@@ -628,10 +614,10 @@ void CAssistantPage::OnTimer(UINT nIDEvent)
 				m_pDoc->StopProcessFrame();
 		}
 	}
-	CPropertyPage::OnTimer(nIDEvent);
+	CDialog::OnTimer(nIDEvent);
 }
 
-BOOL CAssistantPage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+BOOL CAssistantDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
 	// If Wait Cursor leave it!
 	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
@@ -643,29 +629,19 @@ BOOL CAssistantPage::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
-// Note: the m_ButtonApplySettings object of class
-//       CXButtonXP is to center the multiline text!
-void CAssistantPage::OnButtonApplySettings() 
+void CAssistantDlg::OnOK() 
 {
-	if (!m_pDoc->m_bCaptureStarted	||
-		m_pDoc->m_bClosing			||
-		m_pDoc->m_bWatchDogAlarm	||
-		m_pDoc->m_bDxDeviceUnplugged)
-		::MessageBeep(0xFFFFFFFF);
-	else
-	{
-		// Begin wait cursor
-		BeginWaitCursor();
+	// Begin wait cursor
+	BeginWaitCursor();
 
-		// Set flag
-		m_bDoApplySettings = TRUE;
+	// Set flag
+	m_bDoApplySettings = TRUE;
 
-		// Disable all
-		EnableDisableAllCtrls(FALSE);
-	}
+	// Disable all
+	EnableDisableAllCtrls(FALSE);
 }
 
-void CAssistantPage::Rename()
+void CAssistantDlg::Rename()
 {
 	// Store current name
 	CString sOldName = m_pDoc->GetAssignedDeviceName();
@@ -828,7 +804,7 @@ void CAssistantPage::Rename()
 	}
 }
 
-void CAssistantPage::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate)
+void CAssistantDlg::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate)
 {
 	if (m_pDoc->m_pSnapshotPage)
 	{
@@ -855,7 +831,7 @@ void CAssistantPage::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, cons
 	}
 }
 
-void CAssistantPage::ApplySettings() 
+void CAssistantDlg::ApplySettings() 
 {
 	// Reset flag
 	m_bDoApplySettings = FALSE;
@@ -1293,22 +1269,16 @@ void CAssistantPage::ApplySettings()
 	// End wait cursor
 	EndWaitCursor();
 
-	// Update data because m_sName may have been changed
-	UpdateData(FALSE);
-
-	// Hide
-	CVideoDevicePropertySheet* pPropertySheet = (CVideoDevicePropertySheet*)GetParent();
-	pPropertySheet->Hide();
-
 	// Restore var
 	m_pDoc->m_bRecAutoOpenAllowed = TRUE;
 
-	// Update titles
-	pPropertySheet->UpdateTitle();
+	// Update titles because of possible device name change
+	if (m_pDoc->m_pVideoDevicePropertySheet)
+		m_pDoc->m_pVideoDevicePropertySheet->UpdateTitle();
 	m_pDoc->SetDocumentTitle();
 
-	// Enable all
-	EnableDisableAllCtrls(TRUE);
+	// Close us
+	CDialog::OnOK();
 }
 
 #endif

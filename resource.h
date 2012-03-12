@@ -2542,6 +2542,7 @@
 #define IDC_STATIC1850                  1850
 #define IDS_STRING1850                  1850
 #define IDC_STATIC1851                  1851
+#define IDS_STRING1851                  1851
 #define IDC_STATIC1852                  1852
 #define IDC_STATIC1853                  1853
 #define IDC_STATIC1854                  1854
@@ -3205,7 +3206,6 @@
 #define IDC_PROGRESS_TEXT               2516
 #define IDC_ESTIMATED_TIME              2517
 #define IDC_TIME_LEFT                   2518
-#define IDC_BUTTON_APPLY_SETTINGS       2518
 #define IDC_RADIO_MOVDET                2519
 #define IDC_RADIO_SNAPSHOT              2520
 #define IDC_RADIO_MANUAL                2521
@@ -3516,6 +3516,7 @@
 #define ID_EDIT_IMPORT_ZONES            33169
 #define ID_TOOLS_DEL_CAM_FOLDERS        33170
 #define ID_DET_COMBOX                   33171
+#define ID_CAPTURE_ASSISTANT            33172
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3524,7 +3525,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33172
+#define _APS_NEXT_COMMAND_VALUE         33173
 #define _APS_NEXT_CONTROL_VALUE         2546
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

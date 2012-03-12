@@ -16,7 +16,7 @@
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 #define ZOOMCOMBOBOX_WIDTH							92
-#define DETCOMBOBOX_WIDTH							136
+#define DETCOMBOBOX_WIDTH							110
 
 /////////////////////////////////////////////////////////////////////////////
 // CChildToolBar

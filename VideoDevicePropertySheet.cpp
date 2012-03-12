@@ -29,14 +29,12 @@ CPropertySheet(MakeTitle(pDoc), NULL)
 	m_pDoc = pDoc;
 	
 	// Init pages
-	m_AssistantPropertyPage.SetDoc(pDoc);
 	m_GeneralPropertyPage.SetDoc(pDoc);
 	m_SnapshotPropertyPage.SetDoc(pDoc);
 	m_MovementDetectionPropertyPage.SetDoc(pDoc);
 	m_NetworkPropertyPage.SetDoc(pDoc);
 
 	// Add pages
-	AddPage(&m_AssistantPropertyPage);
 	AddPage(&m_GeneralPropertyPage);
 	AddPage(&m_SnapshotPropertyPage);
 	AddPage(&m_MovementDetectionPropertyPage);
