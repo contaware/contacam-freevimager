@@ -2,7 +2,9 @@ VERSION HISTORY
 
 3.9.7 (yyyyy xxth 2012)
 
-- ...
+- The zoom selection box is now working as expected when
+  canceling the zoom level selection by pressing ESC or
+  clicking outside the selection box
 
 3.9.5 (February 27th 2012)
 
