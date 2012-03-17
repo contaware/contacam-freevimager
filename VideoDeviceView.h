@@ -16,7 +16,7 @@
 #define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 601
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 602
 #define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 603
-#define WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT	WM_USER + 604
+#define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 604
 #define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 605
 #define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 606
 		
@@ -76,7 +76,7 @@ protected:
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam);

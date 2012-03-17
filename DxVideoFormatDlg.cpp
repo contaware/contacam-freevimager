@@ -118,7 +118,7 @@ void CDxVideoFormatDlg::ReStart()
 		m_pDoc->m_pDxCapture->Run();
 
 		// Restart process frame
-		m_pDoc->ReStartProcessFrame();
+		m_pDoc->StartProcessFrame(PROCESSFRAME_DXFORMATDIALOG);
 	}
 }
 
@@ -252,7 +252,7 @@ void CDxVideoFormatDlg::OnOK()
 	if (!m_bChangingFormat)
 	{
 		m_bChangingFormat = TRUE;
-		m_pDoc->StopProcessFrame();
+		m_pDoc->StopProcessFrame(PROCESSFRAME_DXFORMATDIALOG);
 		double dFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		int delay;
 		if (dFrameRate >= 1.0)
@@ -273,7 +273,7 @@ void CDxVideoFormatDlg::OnApply()
 	if (!m_bChangingFormat)
 	{
 		m_bChangingFormat = TRUE;
-		m_pDoc->StopProcessFrame();
+		m_pDoc->StopProcessFrame(PROCESSFRAME_DXFORMATDIALOG);
 		double dFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		int delay;
 		if (dFrameRate >= 1.0)
@@ -298,7 +298,7 @@ LONG CDxVideoFormatDlg::OnApplyVideoFormatChange(WPARAM wparam, LPARAM lparam)
 	else
 	{
 		int nPrevTotalDelay = (int)lparam;
-		if (nPrevTotalDelay > MAX_DX_DIALOGS_RETRY_TIME || m_pDoc->IsProcessFrameStopped())
+		if (nPrevTotalDelay > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_DXFORMATDIALOG))
 		{
 			BOOL bCallOnOK = (BOOL)wparam;
 			Apply();

@@ -1634,7 +1634,7 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	pDoc->m_WatchdogAndDrawThread.Kill_NoBlocking();
 
 	// Stop Processing Frames
-	pDoc->StopProcessFrame();
+	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
 
 	// Hide Window Property Sheet
 	if (pDoc->m_pVideoDevicePropertySheet &&
@@ -1752,7 +1752,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 	// stopped and we are not inside the processing function
 	if (!pView->m_bFullScreenMode					&&
 		!pDoc->m_WatchdogAndDrawThread.IsAlive()	&&
-		pDoc->IsProcessFrameStopped())
+		pDoc->IsProcessFrameStopped(PROCESSFRAME_CLOSE))
 		return TRUE;
 	else
 		return FALSE;

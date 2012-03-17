@@ -12,8 +12,6 @@
 // Forward Declaration
 class CVideoDeviceDoc;
 
-#include "StaticLink.h"
-
 /////////////////////////////////////////////////////////////////////////////
 // CAssistantDlg dialog
 
@@ -53,6 +51,7 @@ public:
 protected:
 	CVideoDeviceDoc* m_pDoc;
 	BOOL m_bDoApplySettings;
+	int m_nRetryTimeMs;
 	void EnableDisableCtrls();
 	void EnableDisableAllCtrls(BOOL bEnable);
 	void Rename();

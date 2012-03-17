@@ -58,7 +58,16 @@ class CMovementDetectionPage;
 #define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
 #define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
 #define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
-#define MAX_DX_DIALOGS_RETRY_TIME			3500		// ms
+
+// Process Frame Stop Engine
+#define PROCESSFRAME_MAX_RETRY_TIME			3500		// ms
+#define PROCESSFRAME_ASSISTANT				0x01
+#define PROCESSFRAME_DXFORMATDIALOG			0x02
+#define PROCESSFRAME_DVFORMATDIALOG			0x04
+#define PROCESSFRAME_CHANGEFRAMERATE		0x08
+#define PROCESSFRAME_DXOPEN					0x10
+#define PROCESSFRAME_DXREPLUGGED			0x20
+#define PROCESSFRAME_CLOSE					0x40
 
 // Watch Dog and Draw
 #define WATCHDOG_LONGCHECK_TIME				1000U		// ms
@@ -1201,21 +1210,16 @@ public:
 	void ProcessFrame(LPBYTE pData, DWORD dwSize);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
-	__forceinline void StopProcessFrame()	{	if (!m_bProcessFrameStopped)
-													::InterlockedExchange(&m_bStopProcessFrame, 1);};		// Stop Processing, No Blocking
-	__forceinline void ReStartProcessFrame() {	if (IsProcessFrameStopped())								// Restart Processing
-												{
-													// Reset Frame Rate Calculation
-													m_dwEffectiveFrameTimeCountUp = 0U;
-													m_dEffectiveFrameTimeSum = 0.0;
-													::InterlockedExchange(&m_bProcessFrameStopped, 0);		// Reset stopped flag
-												}
-											};
-	__forceinline LONG IsProcessFrameStopped() const {return (	m_bProcessFrameStopped  &&					// Processing Terminated if 1
-																!m_bStopProcessFrame);};
-	__forceinline void SetProcessFrameStopped()	{	// Do not invert the order of these two instructions!
-													::InterlockedExchange(&m_bProcessFrameStopped, 1);		// Set stopped state
-													::InterlockedExchange(&m_bStopProcessFrame, 0);};
+	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);
+															m_dwStopProcessFrame |= dwMask;		// set
+															::LeaveCriticalSection(&m_csProcessFrameStop);};
+	__forceinline void StartProcessFrame(DWORD dwMask) {	::EnterCriticalSection(&m_csProcessFrameStop);
+															m_dwStopProcessFrame &= ~dwMask;	// clear
+															::LeaveCriticalSection(&m_csProcessFrameStop);};
+	__forceinline BOOL IsProcessFrameStopped(DWORD dwMask) {::EnterCriticalSection(&m_csProcessFrameStop);
+															BOOL res = ((m_dwProcessFrameStopped & dwMask) == dwMask);
+															::LeaveCriticalSection(&m_csProcessFrameStop);
+															return res;};
 	
 	// Video / Audio Recording
 	BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
@@ -1652,12 +1656,13 @@ protected:
 	CDib* volatile m_pProcessFrameExtraDib;			// Helper Dib used in ProcessMJPGFrame() and ProcessM420Frame()
 	CDib* volatile m_pProcessFrameDeinterlaceDib;	// Helper Dib used in DecodeFrameToRgb32()
 	CAVDecoder m_MJPGDecoder;
-	volatile LONG m_bStopProcessFrame;
-	volatile LONG m_bProcessFrameStopped;
+	volatile DWORD m_dwStopProcessFrame;
+	volatile DWORD m_dwProcessFrameStopped;
+	CRITICAL_SECTION m_csProcessFrameStop;
 
 	// For Frame Rate and Data Rate Calculation
-	volatile double m_dEffectiveFrameTimeSum;
-	volatile DWORD m_dwEffectiveFrameTimeCountUp;
+	double m_dEffectiveFrameTimeSum;
+	DWORD m_dwEffectiveFrameTimeCountUp;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

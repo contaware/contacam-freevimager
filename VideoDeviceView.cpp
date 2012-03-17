@@ -35,7 +35,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTUREASSISTANT, OnThreadSafeCaptureAssistant)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
-	ON_MESSAGE(WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT, OnThreadSafeStopAndChangeVideoFormat)
+	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
 	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
@@ -76,14 +76,14 @@ CVideoDeviceDoc* CVideoDeviceView::GetDocument() // non-debug version is inline
 }
 #endif //_DEBUG
 
-LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARAM lparam)
+LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	int nPrevTotalDelay = (int)lparam;
 	if (pDoc)
 	{
-		if (nPrevTotalDelay > MAX_DX_DIALOGS_RETRY_TIME || pDoc->IsProcessFrameStopped())
+		if (nPrevTotalDelay > PROCESSFRAME_MAX_RETRY_TIME || pDoc->IsProcessFrameStopped(PROCESSFRAME_DVFORMATDIALOG))
 		{
 			if (!pDoc->m_bClosing)
 			{
@@ -111,7 +111,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 					pDoc->m_pDxCapture->Run();
 
 					// Restart process frame
-					pDoc->ReStartProcessFrame();
+					pDoc->StartProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				}
 			}
 			pDoc->m_bStopAndChangeFormat = FALSE;
@@ -133,7 +133,7 @@ LONG CVideoDeviceView::OnThreadSafeStopAndChangeVideoFormat(WPARAM wparam, LPARA
 			else
 				delay = 1000;
 			CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-															WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT,
+															WM_THREADSAFE_DVCHANGEVIDEOFORMAT,
 															delay, 0, nPrevTotalDelay + delay);
 			return 0;
 		}
@@ -147,11 +147,7 @@ LONG CVideoDeviceView::OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	if (pDoc &&
-		pDoc->m_bCaptureStarted	&&
-		!pDoc->m_bClosing		&&
-		!pDoc->m_bWatchDogAlarm	&&
-		!pDoc->m_bDxDeviceUnplugged)
+	if (pDoc && pDoc->m_bCaptureStarted	&& !pDoc->m_bClosing)
 	{
 		pDoc->CaptureAssistant();
 		return 1;
@@ -948,10 +944,7 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	switch (nChar)
 	{
 		case _T('A') :
-			if (pDoc->m_bCaptureStarted	&&
-				!pDoc->m_bClosing		&&
-				!pDoc->m_bWatchDogAlarm	&&
-				!pDoc->m_bDxDeviceUnplugged)
+			if (pDoc->m_bCaptureStarted	&& !pDoc->m_bClosing)
 				pDoc->CaptureAssistant();
 			break;
 
@@ -1175,9 +1168,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
-					// Set stopped state
-					pDoc->SetProcessFrameStopped();
-
 					// Disable Critical Controls
 					::SendMessage(	GetSafeHwnd(),
 									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
@@ -1196,10 +1186,8 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device is available again
 				else if (evParam2 == 1)
 				{
-					// Set stopped state
-					pDoc->SetProcessFrameStopped();
-
 					// Re-Open
+					pDoc->StopProcessFrame(PROCESSFRAME_DXREPLUGGED);
 					if (ReOpenDxDevice())
 					{
 						// Reset Unplugged Flag
@@ -1210,7 +1198,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 						::LogLine(sMsg);
 
 						// Restart process frame
-						pDoc->ReStartProcessFrame();
+						pDoc->StartProcessFrame(PROCESSFRAME_DXREPLUGGED);
 					}
 
 					// Re-Enable Critical Controls

@@ -737,7 +737,7 @@ void CGeneralPage::OnChangeFrameRate()
 		double dFrameRate = _tcstod(sFrameRate, NULL);
 		if (sFrameRate != _T("") && dFrameRate != m_pDoc->m_dFrameRate)
 		{
-			m_pDoc->StopProcessFrame();
+			m_pDoc->StopProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 			m_nFrameRateChangeTimeout = FRAMERATE_CHANGE_TIMEOUT;
 			if (!m_bDoChangeFrameRate)
 			{
@@ -936,7 +936,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 		if (m_bDoChangeFrameRate)
 		{
 			--m_nFrameRateChangeTimeout;
-			if (m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped())
+			if (m_nFrameRateChangeTimeout <= 0 && m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CHANGEFRAMERATE))
 			{
 				// Reset flag
 				m_bDoChangeFrameRate = FALSE;
@@ -964,7 +964,7 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 				}
 				else if (bRestore)
 				{
-					m_pDoc->ReStartProcessFrame();
+					m_pDoc->StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 					sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
 					pEdit->SetWindowText(sFrameRate);
 					pEdit->SetFocus();

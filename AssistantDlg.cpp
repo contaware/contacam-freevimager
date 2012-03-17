@@ -23,6 +23,7 @@ CAssistantDlg::CAssistantDlg(CVideoDeviceDoc* pDoc, CWnd* pParent /*=NULL*/)
 	: CDialog(CAssistantDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAssistantDlg)
+		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	m_pDoc = pDoc;
 }
@@ -163,6 +164,7 @@ BOOL CAssistantDlg::OnInitDialog()
 
 	// Init vars
 	m_bDoApplySettings = FALSE;
+	m_nRetryTimeMs = 0;
 	m_bCheck24hRec = Is24hRec();
 	m_bCheckFullStretch = FALSE;
 	m_sName = m_pDoc->GetAssignedDeviceName();
@@ -291,7 +293,7 @@ BOOL CAssistantDlg::OnInitDialog()
 			pComboBox->SetCurSel(0);
 	}
 
-	// This calls UpdateData(FALSE)
+	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
 
 	// Enable / Disable Controls
@@ -592,7 +594,7 @@ BOOL CAssistantDlg::Is24hRec()
 
 void CAssistantDlg::OnTimer(UINT nIDEvent) 
 {
-	if (m_bDoApplySettings && !m_pDoc->m_bClosing)
+	if (m_bDoApplySettings)
 	{
 		if (m_pDoc->m_pAVRec)
 		{
@@ -606,12 +608,12 @@ void CAssistantDlg::OnTimer(UINT nIDEvent)
 		}
 		else
 		{
-			// Apply settings if we are not inside
-			// the processing function
-			if (m_pDoc->IsProcessFrameStopped())
+			// Apply settings if we are not inside the processing function
+			m_pDoc->StopProcessFrame(PROCESSFRAME_ASSISTANT);
+			if (m_nRetryTimeMs > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_ASSISTANT))
 				ApplySettings();
 			else
-				m_pDoc->StopProcessFrame();
+				m_nRetryTimeMs += ASSISTANTDLG_TIMER_MS;
 		}
 	}
 	CDialog::OnTimer(nIDEvent);
@@ -634,8 +636,9 @@ void CAssistantDlg::OnOK()
 	// Begin wait cursor
 	BeginWaitCursor();
 
-	// Set flag
+	// Set vars
 	m_bDoApplySettings = TRUE;
+	m_nRetryTimeMs = 0;
 
 	// Disable all
 	EnableDisableAllCtrls(FALSE);
@@ -831,12 +834,13 @@ void CAssistantDlg::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const
 	}
 }
 
-void CAssistantDlg::ApplySettings() 
+void CAssistantDlg::ApplySettings()
 {
-	// Reset flag
+	// Reset vars
 	m_bDoApplySettings = FALSE;
+	m_nRetryTimeMs = 0;
 
-	// Update data
+	// Update data -> view to vars
 	UpdateData(TRUE);
 
 	// Disable mov. det.
@@ -1238,7 +1242,7 @@ void CAssistantDlg::ApplySettings()
 	EnableDisable24hRec(bDo24hRec);
 
 	// Restart process frame
-	m_pDoc->ReStartProcessFrame();
+	m_pDoc->StartProcessFrame(PROCESSFRAME_ASSISTANT);
 
 	// Set Autorun
 	if (!m_pDoc->m_pVideoAviDoc && m_nUsage >= 0 && m_nUsage <= 2)

@@ -4811,8 +4811,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pFrame = NULL;
 	m_pDxDraw = NULL;
 	m_bCaptureAudio = FALSE;
-	m_bStopProcessFrame = 0;
-	m_bProcessFrameStopped = 0;
+	m_dwStopProcessFrame = 0U;
+	m_dwProcessFrameStopped = 0U;
 	m_pAVRec = NULL;
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
@@ -5116,6 +5116,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init OSD Message Critical Section
 	::InitializeCriticalSection(&m_csOSDMessage);
 
+	// Init Process Frame Stop Engine Critical Section
+	::InitializeCriticalSection(&m_csProcessFrameStop);
+
 	// Init Movement Detector
 	OneEmptyFrameList();
 	ResetMovementDetector();
@@ -5184,6 +5187,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 	ClearMovementDetectionsList();
 	ClearReSendUDPFrameList();
+	::DeleteCriticalSection(&m_csProcessFrameStop);
 	::DeleteCriticalSection(&m_csOSDMessage);
 	::DeleteCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
@@ -6276,7 +6280,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 			OnChangeVideoFormat();
 
 			// Start capturing video data
-			SetProcessFrameStopped();
+			StopProcessFrame(PROCESSFRAME_DXOPEN);
 			if (m_pDxCapture->Run())
 			{
 				// Select Input Id for Capture Devices with multiple inputs (S-Video, TV-Tuner,...)
@@ -6294,7 +6298,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				m_pDxCapture->Run();
 
 				// Restart process frame
-				ReStartProcessFrame();
+				StartProcessFrame(PROCESSFRAME_DXOPEN);
 
 				// Start Audio Capture Thread
 				if (m_bCaptureAudio)
@@ -7190,7 +7194,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 				m_pDxCapture->Run();
 
 				// Restart process frame
-				ReStartProcessFrame();
+				StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 			}
 			SetDocumentTitle();
 		}
@@ -7203,7 +7207,7 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 					m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
 				m_HttpGetFrameThread.SetEventConnect();
 			}
-			ReStartProcessFrame();
+			StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 			SetDocumentTitle();
 		}
 	}
@@ -7273,10 +7277,7 @@ void CVideoDeviceDoc::OnCaptureAssistant()
 
 void CVideoDeviceDoc::OnUpdateCaptureAssistant(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	m_bCaptureStarted	&&
-					!m_bClosing			&&
-					!m_bWatchDogAlarm	&&
-					!m_bDxDeviceUnplugged);
+	pCmdUI->Enable(m_bCaptureStarted && !m_bClosing);
 }
 
 void CVideoDeviceDoc::CaptureAssistant()
@@ -7339,7 +7340,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 								(WPARAM)FALSE,	// Disable Them
 								(LPARAM)0);
 				m_bStopAndChangeFormat = TRUE;
-				StopProcessFrame();
+				StopProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				double dFrameRate = m_dEffectiveFrameRate;
 				int delay;
 				if (dFrameRate >= 1.0)
@@ -7347,7 +7348,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 				else
 					delay = 1000;
 				CPostDelayedMessageThread::PostDelayedMessage(	GetView()->GetSafeHwnd(),
-																WM_THREADSAFE_STOP_AND_CHANGEVIDEOFORMAT,
+																WM_THREADSAFE_DVCHANGEVIDEOFORMAT,
 																delay, 0, delay);
 			}
 		}
@@ -8768,13 +8769,6 @@ void CVideoDeviceDoc::ProcessMJPGFrame(LPBYTE pData, DWORD dwSize)
 			m_lCompressedDataRateSum += dwSize;
 			ProcessFrame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 		}
-		else
-		{
-			CString sMsg;
-			sMsg.Format(_T("%s, error decoding MJPG stream!\n"), GetDeviceName());
-			TRACE(sMsg);
-			::LogLine(sMsg);
-		}
 	}
 }
 
@@ -8936,10 +8930,6 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 
 void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 {
-	// Do Stop ProcessFrame?
-	if (m_bStopProcessFrame)
-		SetProcessFrameStopped();
-
 	// Timing
 	DWORD dwCurrentFrameTime;
 	DWORD dwPrevInitUpTime = (DWORD)m_lCurrentInitUpTime;
@@ -8960,8 +8950,20 @@ void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		m_4SecTime = CurrentTime;
 	}
 
+	// Process Frame Stop Engine
+	::EnterCriticalSection(&m_csProcessFrameStop);
+	// If restarting reset frame rate calculation
+	if (m_dwProcessFrameStopped != 0U && m_dwStopProcessFrame == 0U)
+	{
+		m_dwEffectiveFrameTimeCountUp = 0U;
+		m_dEffectiveFrameTimeSum = 0.0;
+	}
+	m_dwProcessFrameStopped = m_dwStopProcessFrame;
+	BOOL bDoProcessFrame = (m_dwProcessFrameStopped == 0U);
+	::LeaveCriticalSection(&m_csProcessFrameStop);
+	
 	// Decode, Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
-	if (!m_bProcessFrameStopped && pData && dwSize > 0)
+	if (bDoProcessFrame && pData && dwSize > 0)
 	{
 		// Init Vars
 		BOOL bRgb32Frame;
@@ -9423,10 +9425,6 @@ exit:
 	DWORD dwCurrentEndUpTime = ::timeGetTime();
 	DWORD dwProcessFrameTime = dwCurrentEndUpTime - dwCurrentInitUpTime;
 	::InterlockedExchange(&m_lProcessFrameTime, (LONG)dwProcessFrameTime);
-
-	// Do Stop ProcessFrame?
-	if (m_bStopProcessFrame)
-		SetProcessFrameStopped();
 }
 
 BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
