@@ -4912,7 +4912,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Snapshot
 	m_sSnapshotAutoSaveDir = _T("");
-	m_bSnapshotLiveJpeg = FALSE;
+	m_bSnapshotLiveJpeg = TRUE;
 	m_bSnapshotHistoryJpeg = FALSE;
 	m_bSnapshotHistorySwf = FALSE;
 	m_bSnapshotLiveJpegFtp = FALSE;
@@ -4925,7 +4925,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotHistoryCloseSwfFile = 0;
 	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
 	m_fSnapshotVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
-	m_bSnapshotThumb = FALSE;
+	m_bSnapshotThumb = TRUE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
@@ -5614,7 +5614,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 	}
 	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
-	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), FALSE);
+	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), TRUE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	m_bSnapshotHistorySwf = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), FALSE);
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
@@ -5627,7 +5627,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	m_fSnapshotVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_sSnapshotAutoSaveDir = pApp->GetProfileString(sSection, _T("SnapshotAutoSaveDir"), sDefaultAutoSaveDir);
-	m_bSnapshotThumb = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotThumb"), FALSE);
+	m_bSnapshotThumb = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotThumb"), TRUE);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 	m_bSnapshotStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotStartStop"), FALSE);

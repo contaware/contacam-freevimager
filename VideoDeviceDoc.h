@@ -84,7 +84,7 @@ class CMovementDetectionPage;
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
-#define DEFAULT_SNAPSHOT_RATE				300			// each given seconds
+#define DEFAULT_SNAPSHOT_RATE				1			// each given seconds
 #define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15			// fps
 #define MIN_SNAPSHOT_HISTORY_FRAMERATE		1			// fps
 #define MAX_SNAPSHOT_HISTORY_FRAMERATE		95			// fps

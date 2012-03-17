@@ -57,11 +57,11 @@ define ("SHOW_PRINTCOMMAND","0");     // 0 = Hide , 1 = Show
 define ("SHOW_SAVECOMMAND","0");      // 0 = Hide , 1 = Show
 
 // Use normal or thumb version for the snapshot viewer
-define ("SNAPSHOT_THUMB","0");        // 0 = Fullsize version , 1 = Thumb version
+define ("SNAPSHOT_THUMB","1");        // 0 = Fullsize version , 1 = Thumb version
 define ("SNAPSHOTHISTORY_THUMB","0"); // 0 = Fullsize version , 1 = Thumb version
 
 // Snapshots will refresh each given seconds
-define ("SNAPSHOTREFRESHSEC","300");
+define ("SNAPSHOTREFRESHSEC","1");
 
 // Top-right preview size for summarysnapshot.php and summarylive.php
 // and snapshot history thumb size
