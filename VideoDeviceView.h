@@ -13,12 +13,11 @@
 
 // Window Message IDs
 #define WM_THREADSAFE_CAPTUREASSISTANT				WM_USER + 600
-#define WM_ENABLE_DISABLE_CRITICAL_CONTROLS			WM_USER + 601
-#define WM_THREADSAFE_INIT_MOVDET					WM_USER + 602
-#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 603
-#define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 604
-#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 605
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 606
+#define WM_THREADSAFE_INIT_MOVDET					WM_USER + 601
+#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 602
+#define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 603
+#define WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC	WM_USER + 604
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 605
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -27,7 +26,6 @@ public:
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
 	BOOL DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor);
-	BOOL AreCriticalControlsDisabled() {return m_nCriticalControlsCount <= 0;};
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
@@ -77,7 +75,6 @@ protected:
 	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam);
@@ -88,7 +85,6 @@ protected:
 	volatile DWORD m_dwDxDrawUpTime;
 	volatile BOOL m_bDxDrawInitFailed;
 	volatile BOOL m_bDxDrawFirstInitOk;
-	int m_nCriticalControlsCount;
 	CFont m_GDIDrawFont;
 };
 

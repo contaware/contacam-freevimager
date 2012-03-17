@@ -35,7 +35,6 @@ public:
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CGeneralPage();
 	void ClearOnceScheduler();
-	void EnableDisableCriticalControls(BOOL bEnable);
 	void SetCheckSchedulerOnce(BOOL bCheck);
 	void SetCheckSchedulerDaily(BOOL bCheck);
 	CStaticLink m_DirLabel;

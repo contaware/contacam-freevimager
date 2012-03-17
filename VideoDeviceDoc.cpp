@@ -13,7 +13,6 @@
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
-#include "DxVideoInputDlg.h"
 #include "AudioFormatDlg.h"
 #include "HttpVideoFormatDlg.h"
 #include "AuthenticationDlg.h"
@@ -6993,12 +6992,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		// Leave CS
 		::LeaveCriticalSection(&m_csAVRec);
 
-		// Disable Critical Controls
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)FALSE,	// Disable Them
-						(LPARAM)0);
-
 		return TRUE;
 	}
 }
@@ -7334,11 +7327,6 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			// Do not call 2 or more times!
 			if (!m_bStopAndChangeFormat)
 			{
-				// Disable Critical Controls
-				::SendMessage(	GetView()->GetSafeHwnd(),
-								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-								(WPARAM)FALSE,	// Disable Them
-								(LPARAM)0);
 				m_bStopAndChangeFormat = TRUE;
 				StopProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				double dFrameRate = m_dEffectiveFrameRate;
@@ -7354,22 +7342,10 @@ void CVideoDeviceDoc::VideoFormatDialog()
 		}
 		else
 		{
-			// Disable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)FALSE,	// Disable Them
-							(LPARAM)0);
-
 			// Same stop processing and change format mechanism
 			// is integrated inside CDxVideoFormatDlg
 			CDxVideoFormatDlg dlg(this);
 			dlg.DoModal();
-			
-			// Enable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)TRUE,	// Enable Them
-							(LPARAM)0);
 		}
 	}
 	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
@@ -7394,60 +7370,13 @@ void CVideoDeviceDoc::VideoFormatDialog()
 		}
 		else
 		{
-			// Disable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)FALSE,	// Disable Them
-							(LPARAM)0);
-
 			// Stop processing and change format mechanism
 			// not necessary because the size change
 			// is detected when it happens!
 			CHttpVideoFormatDlg dlg(this);
 			dlg.DoModal();
-			
-			// Enable Critical Controls
-			::SendMessage(	GetView()->GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)TRUE,	// Enable Them
-							(LPARAM)0);
 		}
 	}
-}
-
-void CVideoDeviceDoc::VideoSourceDialog() 
-{
-	if (m_pDxCapture)
-	{
-		// Disable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)FALSE,	// Disable Them
-						(LPARAM)0);
-
-		m_pDxCapture->ShowVideoCaptureFilterDlg();
-
-		// Enable Critical Controls
-		::SendMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)TRUE,	// Enable Them
-						(LPARAM)0);
-	}
-}
-
-void CVideoDeviceDoc::VideoInputDialog() 
-{
-	if (m_pDxCapture)
-	{
-		CDxVideoInputDlg dlg(this);
-		dlg.DoModal();
-	}
-}
-
-void CVideoDeviceDoc::VideoTunerDialog() 
-{
-	if (m_pDxCapture)
-		m_pDxCapture->ShowVideoTVTunerDlg();
 }
 
 void CVideoDeviceDoc::ViewVideo() 
@@ -9722,12 +9651,6 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 		// Set Small Buffers for a faster Peak Meter Reaction
 		if (m_bCaptureAudio)
 			m_CaptureAudioThread.SetSmallBuffers(TRUE);
-
-		// Re-Enable Critical Controls
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-						(WPARAM)TRUE, // Enable Them
-						(LPARAM)0);
 
 		// Open the video file
 		OpenAVIFile(sOldRecFileName);

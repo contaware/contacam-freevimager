@@ -36,7 +36,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_CAPTUREASSISTANT, OnThreadSafeCaptureAssistant)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
 	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
-	ON_MESSAGE(WM_ENABLE_DISABLE_CRITICAL_CONTROLS, OnEnableDisableCriticalControls)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
 	ON_MESSAGE(WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC, OnThreadSafeAutorunRemoveDeviceCloseDoc)
@@ -50,7 +49,6 @@ CVideoDeviceView::CVideoDeviceView()
 	m_bDxDrawInitFailed = FALSE;
 	m_bDxDrawFirstInitOk = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
-	m_nCriticalControlsCount = 1;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -115,12 +113,6 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 				}
 			}
 			pDoc->m_bStopAndChangeFormat = FALSE;
-			
-			// Enable Critical Controls
-			::SendMessage(	GetSafeHwnd(),
-							WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-							(WPARAM)TRUE,	// Enable Them
-							(LPARAM)0);
 
 			return 1;
 		}
@@ -172,23 +164,6 @@ LONG CVideoDeviceView::OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam)
 	}
 	else
 		return 0;
-}
-
-LONG CVideoDeviceView::OnEnableDisableCriticalControls(WPARAM wparam, LPARAM lparam)
-{
-	BOOL bEnable = (BOOL)wparam;
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	if (bEnable)
-		m_nCriticalControlsCount++;
-	else
-		m_nCriticalControlsCount--;
-
-	if (pDoc->m_pGeneralPage)
-		pDoc->m_pGeneralPage->EnableDisableCriticalControls(m_nCriticalControlsCount > 0);
-
-	return 1;
 }
 
 LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
@@ -1168,12 +1143,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				// Device was removed
 				if (evParam2 == 0)
 				{
-					// Disable Critical Controls
-					::SendMessage(	GetSafeHwnd(),
-									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-									(WPARAM)FALSE,	// Disable Them
-									(LPARAM)0);
-
 					// Set Unplugged Flag
 					pDoc->m_bDxDeviceUnplugged = TRUE;
 					CString sMsg;
@@ -1200,12 +1169,6 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 						// Restart process frame
 						pDoc->StartProcessFrame(PROCESSFRAME_DXREPLUGGED);
 					}
-
-					// Re-Enable Critical Controls
-					::SendMessage(	GetSafeHwnd(),
-									WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-									(WPARAM)TRUE, // Enable Them
-									(LPARAM)0);
 
 					break;
 				}

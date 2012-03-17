@@ -1169,9 +1169,6 @@ public:
 	void CaptureAssistant();
 	void CaptureSettings();
 	void VideoFormatDialog();
-	void VideoSourceDialog();
-	void VideoInputDialog();
-	void VideoTunerDialog();
 	void AudioFormatDialog();
 	
 	// On Change Frame Rate

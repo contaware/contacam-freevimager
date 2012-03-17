@@ -8,6 +8,7 @@
 #include "VideoDeviceView.h"
 #include "VideoAviDoc.h"
 #include "DxCapture.h"
+#include "DxVideoInputDlg.h"
 #include "NetCom.h"
 #include "MainFrm.h"
 #include "BrowseDlg.h"
@@ -112,9 +113,7 @@ END_MESSAGE_MAP()
 
 void CGeneralPage::OnVideoFormat() 
 {
-	// Open the video format dialog,
-	// critical controls enable/disable is handled
-	// inside the VideoFormatDialog() function
+	// Open the video format dialog
 	m_pDoc->VideoFormatDialog();
 	
 	// Read Frame-Rate which may have been changed
@@ -131,57 +130,39 @@ void CGeneralPage::OnVideoFormat()
 
 void CGeneralPage::OnVideoSource() 
 {
-	// Open the video source dialog,
-	// critical controls enable/disable is handled
-	// inside the VideoSourceDialog() function
-	m_pDoc->VideoSourceDialog();
-
-	// Read Frame-Rate which may have been changed
-	if (m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->GetFrameRate() > 0.0)
+	if (m_pDoc->m_pDxCapture)
 	{
-		m_pDoc->m_dFrameRate = m_pDoc->m_pDxCapture->GetFrameRate();
-		CString sFrameRate;
-		sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-		pEdit->SetWindowText(sFrameRate);
-		m_pDoc->SetDocumentTitle();
+		// Open the video source dialog
+		m_pDoc->m_pDxCapture->ShowVideoCaptureFilterDlg();
+
+		// Read Frame-Rate which may have been changed
+		if (m_pDoc->m_pDxCapture->GetFrameRate() > 0.0)
+		{
+			m_pDoc->m_dFrameRate = m_pDoc->m_pDxCapture->GetFrameRate();
+			CString sFrameRate;
+			sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+			pEdit->SetWindowText(sFrameRate);
+			m_pDoc->SetDocumentTitle();
+		}
 	}
 }
 
 void CGeneralPage::OnVideoInput() 
 {
-	// Disable Critical Controls
-	::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-					(WPARAM)FALSE,	// Disable Them
-					(LPARAM)0);
-
 	// Open the video input dialog
-	m_pDoc->VideoInputDialog();
-	
-	// Enable Critical Controls
-	::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-					(WPARAM)TRUE,	// Enable Them
-					(LPARAM)0);
+	if (m_pDoc->m_pDxCapture)
+	{
+		CDxVideoInputDlg dlg(m_pDoc);
+		dlg.DoModal();
+	}
 }
 
 void CGeneralPage::OnVideoTuner() 
 {
-	// Disable Critical Controls
-	::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-					(WPARAM)FALSE,	// Disable Them
-					(LPARAM)0);
-
 	// Open the tv tuner dialog
-	m_pDoc->VideoTunerDialog();
-	
-	// Enable Critical Controls
-	::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-					WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-					(WPARAM)TRUE,	// Enable Them
-					(LPARAM)0);
+	if (m_pDoc->m_pDxCapture)
+		m_pDoc->m_pDxCapture->ShowVideoTVTunerDlg();
 }
 
 void CGeneralPage::OnAudioFormat() 
@@ -694,10 +675,6 @@ BOOL CGeneralPage::OnInitDialog()
 	// OnInitDialog() has been called
 	m_bDlgInitialized = TRUE;
 
-	// Disable Critical Controls?
-	if (m_pDoc->GetView()->AreCriticalControlsDisabled())
-		EnableDisableCriticalControls(FALSE);
-
 	// Set Page Pointer to this
 	m_pDoc->m_pGeneralPage = this;
 
@@ -743,12 +720,6 @@ void CGeneralPage::OnChangeFrameRate()
 			{
 				// Done in OnTimer()
 				m_bDoChangeFrameRate = TRUE;
-
-				// Disable Critical Controls
-				::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-								(WPARAM)FALSE,	// Disable Them
-								(LPARAM)0);
 			}
 		}
 	}
@@ -970,12 +941,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 					pEdit->SetFocus();
 					pEdit->SetSel(0xFFFF0000);
 				}
-
-				// Enable Critical Controls
-				::SendMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_ENABLE_DISABLE_CRITICAL_CONTROLS,
-								(WPARAM)TRUE,	// Enable Them
-								(LPARAM)0);
 			}
 		}
 	}
@@ -1119,178 +1084,6 @@ void CGeneralPage::OnRadioBitrate()
 	UpdateData(TRUE);
 	m_pDoc->m_nVideoRecQualityBitrate = m_nVideoRecQualityBitrate;
 	ShowHideCtrls();
-}
-
-void CGeneralPage::EnableDisableCriticalControls(BOOL bEnable)
-{
-	CEdit* pEdit;
-	CSpinButtonCtrl* pSpin;
-	CButton* pButton;
-	CButton* pCheck;
-	CComboBox* pComboBox;
-	CButton* pRadio;
-	CSliderCtrl* pSlider;
-
-	// Enable Framerate?
-	if (!m_bDoChangeFrameRate)
-	{
-		pSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_FRAMERATE);
-		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
-		if (bEnable)
-		{
-			if (m_pDoc->m_pDxCapture)
-			{
-				if (m_pDoc->m_pDxCapture->GetFrameRate() <= 0.0) // Not Settable
-				{
-					pSpin->EnableWindow(FALSE);
-					pEdit->EnableWindow(FALSE);
-				}
-				else
-				{
-					pSpin->EnableWindow(TRUE);
-					pEdit->EnableWindow(TRUE);
-				}
-			}
-			else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
-			{
-				if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP	||
-					m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
-				{
-					pSpin->EnableWindow(FALSE);
-					pEdit->EnableWindow(FALSE);
-				}
-				else
-				{
-					pSpin->EnableWindow(TRUE);
-					pEdit->EnableWindow(TRUE);
-				}
-			}
-			else
-			{
-				pSpin->EnableWindow(FALSE);
-				pEdit->EnableWindow(FALSE);
-			}
-		}
-		else
-		{
-			pSpin->EnableWindow(FALSE);
-			pEdit->EnableWindow(FALSE);
-		}
-	}
-
-	// Enable Rec. Dir Button?
-	pButton = (CButton*)GetDlgItem(IDC_RECORD_SAVEAS);
-	pButton->EnableWindow(bEnable);
-
-	// Enable Time Segmentation Check Box?
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_TIME_SEGMENTATION);
-	pCheck->EnableWindow(bEnable);
-
-	// Enable Time Segmentation Combo Box?
-	pComboBox = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
-	pComboBox->EnableWindow(bEnable);
-
-	// Enable Rec Audio Check Box?
-	pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
-	pCheck->EnableWindow(bEnable);
-
-	// Enable Audio Source Button?
-	pButton = (CButton*)GetDlgItem(IDC_AUDIO_INPUT);
-	pButton->EnableWindow(bEnable);
-
-	// Enable Audio Format Button?
-	pButton = (CButton*)GetDlgItem(IDC_AUDIO_FORMAT);
-	pButton->EnableWindow(bEnable);
-
-	// Enable Format Button?
-	pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
-	if (bEnable)
-	{
-		if ((m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->HasFormats())	||
-			(m_pDoc->m_pDxCapture && m_pDoc->m_pDxCapture->IsDV() && m_pDoc->m_pDxCapture->HasDVFormatDlg()) ||
-			(m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient()))
-			pButton->EnableWindow(TRUE);
-		else
-			pButton->EnableWindow(FALSE);
-	}
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Enable Source Button?
-	pButton = (CButton*)GetDlgItem(IDC_VIDEO_SOURCE);
-	if (bEnable)
-	{
-		if (m_pDoc->m_pDxCapture && !m_pDoc->m_pDxCapture->IsOpenWithMediaSubType())
-		{
-			if (m_pDoc->m_pDxCapture->HasVideoCaptureFilterDlg())
-				pButton->EnableWindow(TRUE);
-			else
-				pButton->EnableWindow(FALSE);
-		}
-		else
-			pButton->EnableWindow(FALSE);
-	}
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Enable TV-Tuner Button?
-	pButton = (CButton*)GetDlgItem(IDC_VIDEO_TUNER);
-	if (bEnable)
-	{
-		if (m_pDoc->m_pDxCapture)
-		{
-			if (m_pDoc->m_pDxCapture->HasVideoTVTunerDlg())
-				pButton->EnableWindow(TRUE);
-			else
-				pButton->EnableWindow(FALSE);
-		}
-		else
-			pButton->EnableWindow(FALSE);
-	}
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Enable Input Button?
-	// (It's for selecting video inputs like S-Video, TV-Tuner,...)
-	pButton = (CButton*)GetDlgItem(IDC_VIDEO_INPUT);
-	if (bEnable)
-	{
-		if (m_pDoc->m_pDxCapture)
-		{
-			if (m_pDoc->m_pDxCapture->GetInputsCount() > 0)
-				pButton->EnableWindow(TRUE);
-			else
-				pButton->EnableWindow(FALSE);
-		}
-		else
-			pButton->EnableWindow(FALSE);
-	}
-	else
-		pButton->EnableWindow(FALSE);
-
-	// Video Compression Choose?
-	pComboBox = (CComboBox*)GetDlgItem(IDC_VIDEO_COMPRESSION_CHOOSE);
-	pComboBox->EnableWindow(bEnable);
-
-	// Video Compression Data Rate?
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DATARATE);
-	pEdit->EnableWindow(bEnable);
-
-	// Video Compression Keyframes Rate?
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
-	pEdit->EnableWindow(bEnable);
-
-	// Video Compression Quality Slider?
-	pSlider = (CSliderCtrl*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY);
-	pSlider->EnableWindow(bEnable);
-
-	// Quality Radio Button 
-	pRadio = (CButton*)GetDlgItem(IDC_RADIO_QUALITY);
-	pRadio->EnableWindow(bEnable);
-
-	// Data Rate Radio Button 
-	pRadio = (CButton*)GetDlgItem(IDC_RADIO_BITRATE);
-	pRadio->EnableWindow(bEnable);
 }
 
 void CGeneralPage::OnAudioInput() 
