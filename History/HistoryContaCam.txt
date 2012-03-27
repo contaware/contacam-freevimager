@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.9.7 (yyyyy xxth 2012)
+3.9.7 (March 27th 2012)
 
 - Added support for MJPG and M420 capture device formats
 - Moved Movement Detection mode selection box to bottom toolbar

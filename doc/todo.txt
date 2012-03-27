@@ -4,7 +4,7 @@ Picture:
 
 Capture:
 --------
-- Vertically flip command
+- Vertically flip and 180 rotate commands
 
 Detection:
 ----------
