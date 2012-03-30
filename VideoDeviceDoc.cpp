@@ -88,6 +88,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
 	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
+	ON_COMMAND(ID_CAPTURE_ROTATE180, OnCaptureRotate180)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ROTATE180, OnUpdateCaptureRotate180)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -4815,6 +4817,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pAVRec = NULL;
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
+	m_bRotate180 = FALSE;
 	m_bRecDeinterlace = FALSE;
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
@@ -5595,6 +5598,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// All other
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
 	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
+	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
 	m_bRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("RecDeinterlace"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
@@ -5862,6 +5866,7 @@ void CVideoDeviceDoc::SaveSettings()
 			// All other
 			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
 			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
+			pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
 			pApp->WriteProfileInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
@@ -6050,6 +6055,7 @@ void CVideoDeviceDoc::SaveSettings()
 			// All other
 			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("Rotate180"), (int)m_bRotate180, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
@@ -6720,6 +6726,16 @@ void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI)
 		pCmdUI->SetCheck(m_bDeinterlace ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
+}
+
+void CVideoDeviceDoc::OnCaptureRotate180() 
+{
+	m_bRotate180 = !m_bRotate180;
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureRotate180(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_bRotate180 ? 1 : 0);
 }
 
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
@@ -8571,6 +8587,188 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 	return TRUE;
 }
 
+__forceinline BOOL CVideoDeviceDoc::IsRotate180Supported(LPBITMAPINFO pBmi)
+{
+	if (pBmi												&&
+
+		// RGB
+		(pBmi->bmiHeader.biCompression == BI_RGB			||
+		pBmi->bmiHeader.biCompression == BI_BITFIELDS		||
+		
+		// Planar 420
+		pBmi->bmiHeader.biCompression == FCC('YV12')		||
+		pBmi->bmiHeader.biCompression == FCC('I420')		||
+		pBmi->bmiHeader.biCompression == FCC('IYUV')		||
+
+		// Packed Y0 U0 Y1 V0
+		pBmi->bmiHeader.biCompression == FCC('YUY2')		||
+		pBmi->bmiHeader.biCompression == FCC('V422')		||
+		pBmi->bmiHeader.biCompression == FCC('VYUY')		||
+		pBmi->bmiHeader.biCompression == FCC('YUNV')		||	
+		pBmi->bmiHeader.biCompression == FCC('YUYV')		||
+
+		// Packed Y0 V0 Y1 U0
+		pBmi->bmiHeader.biCompression == FCC('YVYU')		||
+
+		// Packed U0 Y0 V0 Y1
+		pBmi->bmiHeader.biCompression == FCC('UYVY')		||
+		pBmi->bmiHeader.biCompression == FCC('Y422')		||
+		pBmi->bmiHeader.biCompression == FCC('UYNV')))
+
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
+{
+	// Check
+	if (!pDib || !pDib->GetBMI() || !pDib->GetBits())
+		return FALSE;
+	
+	if (pDib->GetCompression() == BI_RGB ||
+		pDib->GetCompression() == BI_BITFIELDS)
+		return pDib->Rotate180();
+	else if (pDib->GetCompression() == FCC('YV12')	||
+			pDib->GetCompression() == FCC('I420')	||
+			pDib->GetCompression() == FCC('IYUV'))
+	{
+		BYTE pix;
+		unsigned int CurLine;
+		int nHeight2= pDib->GetHeight() / 2;
+		int nHeight4= nHeight2 / 2;
+		int nWidth2= pDib->GetWidth() / 2;
+		LPBYTE lpSrcBitsY = pDib->GetBits();
+		LPBYTE lpDstBitsY = lpSrcBitsY + (pDib->GetHeight() - 1) * pDib->GetWidth();
+		LPBYTE lpSrcBitsU = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth();
+		LPBYTE lpDstBitsU = lpSrcBitsU + (nHeight2 - 1) * nWidth2;
+		LPBYTE lpSrcBitsV = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth() + nHeight2 * nWidth2;
+		LPBYTE lpDstBitsV = lpSrcBitsV + (nHeight2 - 1) * nWidth2;
+
+		// Rotate Y
+		for (CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
+		{
+			for (unsigned int i = 0 ; i < pDib->GetWidth() ; i++)
+			{
+				pix = lpSrcBitsY[i];
+				lpSrcBitsY[i] = lpDstBitsY[pDib->GetWidth() - i - 1];
+				lpDstBitsY[pDib->GetWidth() - i - 1] = pix;
+			}
+			lpDstBitsY -= pDib->GetWidth();
+			lpSrcBitsY += pDib->GetWidth();
+		}
+
+		// Rotate U
+		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
+		{
+			for (unsigned int i = 0 ; i < nWidth2 ; i++)
+			{
+				pix = lpSrcBitsU[i];
+				lpSrcBitsU[i] = lpDstBitsU[nWidth2 - i - 1];
+				lpDstBitsU[nWidth2 - i - 1] = pix;
+			}
+			lpDstBitsU -= nWidth2;
+			lpSrcBitsU += nWidth2;
+		}
+
+		// Rotate V
+		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
+		{
+			for (unsigned int i = 0 ; i < nWidth2 ; i++)
+			{
+				pix = lpSrcBitsV[i];
+				lpSrcBitsV[i] = lpDstBitsV[nWidth2 - i - 1];
+				lpDstBitsV[nWidth2 - i - 1] = pix;
+			}
+			lpDstBitsV -= nWidth2;
+			lpSrcBitsV += nWidth2;
+		}
+
+		return TRUE;
+	}
+	else if (pDib->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0
+			pDib->GetCompression() == FCC('V422')	||	// Y0 U0 Y1 V0
+			pDib->GetCompression() == FCC('VYUY')	||	// Y0 U0 Y1 V0
+			pDib->GetCompression() == FCC('YUNV')	||	// Y0 U0 Y1 V0
+			pDib->GetCompression() == FCC('YUYV')	||	// Y0 U0 Y1 V0
+			pDib->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0
+	{
+		BYTE SrcY0, SrcY1, SrcU, SrcV;
+		BYTE DstY0, DstY1, DstU, DstV;
+		int stride = 2 * pDib->GetWidth();
+		LPBYTE lpSrcBits = pDib->GetBits();
+		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
+		for (unsigned int CurLine = 0 ; CurLine < pDib->GetHeight() / 2 ; CurLine++)
+		{
+			for (unsigned int i = 0 ; i < stride ; i += 4)
+			{
+				// Store values
+				SrcY0 = lpSrcBits[i + 0];
+				SrcU  = lpSrcBits[i + 1];
+				SrcY1 = lpSrcBits[i + 2];
+				SrcV  = lpSrcBits[i + 3];
+				DstY0 = lpDstBits[stride - i - 4];
+				DstU  = lpDstBits[stride - i - 3];
+				DstY1 = lpDstBits[stride - i - 2];
+				DstV  = lpDstBits[stride - i - 1];
+				
+				// Assign values
+				lpDstBits[stride - i - 4] = SrcY1;	// flip Y
+				lpDstBits[stride - i - 3] = SrcU;
+				lpDstBits[stride - i - 2] = SrcY0;	// flip Y
+				lpDstBits[stride - i - 1] = SrcV;
+				lpSrcBits[i + 0] = DstY1;			// flip Y
+				lpSrcBits[i + 1] = DstU;
+				lpSrcBits[i + 2] = DstY0;			// flip Y
+				lpSrcBits[i + 3] = DstV;
+			}
+			lpDstBits -= stride;
+			lpSrcBits += stride;
+		}
+		return TRUE;
+	}
+	else if (pDib->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1
+			pDib->GetCompression() == FCC('Y422')	||	// U0 Y0 V0 Y1
+			pDib->GetCompression() == FCC('UYNV'))		// U0 Y0 V0 Y1
+	{
+		BYTE SrcY0, SrcY1, SrcU, SrcV;
+		BYTE DstY0, DstY1, DstU, DstV;
+		int stride = 2 * pDib->GetWidth();
+		LPBYTE lpSrcBits = pDib->GetBits();
+		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
+		for (unsigned int CurLine = 0 ; CurLine < pDib->GetHeight() / 2 ; CurLine++)
+		{
+			for (unsigned int i = 0 ; i < stride ; i += 4)
+			{
+				// Store values
+				SrcU  = lpSrcBits[i + 0];
+				SrcY0 = lpSrcBits[i + 1];
+				SrcV  = lpSrcBits[i + 2];
+				SrcY1 = lpSrcBits[i + 3];
+				DstU  = lpDstBits[stride - i - 4];
+				DstY0 = lpDstBits[stride - i - 3];
+				DstV  = lpDstBits[stride - i - 2];
+				DstY1 = lpDstBits[stride - i - 1];
+
+				// Assign values
+				lpDstBits[stride - i - 4] = SrcU;
+				lpDstBits[stride - i - 3] = SrcY1;	// flip Y
+				lpDstBits[stride - i - 2] = SrcV;
+				lpDstBits[stride - i - 1] = SrcY0;	// flip Y
+				lpSrcBits[i + 0] = DstU;
+				lpSrcBits[i + 1] = DstY1;			// flip Y
+				lpSrcBits[i + 2] = DstV;
+				lpSrcBits[i + 3] = DstY0;			// flip Y
+			}
+			lpDstBits -= stride;
+			lpSrcBits += stride;
+		}
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 __forceinline BOOL CVideoDeviceDoc::IsDeinterlaceSupported(LPBITMAPINFO pBmi)
 {
 	if (pBmi)
@@ -8898,12 +9096,15 @@ void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 		BOOL bRgb32Frame;
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
+		BOOL bRotate180 = m_bRotate180;
 		BOOL bDecodeToRgb32 = FALSE;
 		BOOL bAVCodecSrcFormatSupport = TRUE;
 		if (CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_ProcessFrameBMI) == PIX_FMT_NONE)
 			bAVCodecSrcFormatSupport = FALSE;
 		BOOL bIsAddSingleLineSupported = CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_ProcessFrameBMI);
+		BOOL bIsRotate180Supported = IsRotate180Supported((LPBITMAPINFO)&m_ProcessFrameBMI);
 		if ((bShowFrameTime && !bIsAddSingleLineSupported)	||
+			(bRotate180 && !bIsRotate180Supported)			||
 			m_bDecodeFramesForPreview						||
 			!bAVCodecSrcFormatSupport)
 		{
@@ -8963,6 +9164,10 @@ void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 			}
 		}
 		
+		// Rotate by 180°
+		if (bRotate180)
+			Rotate180(pDib);
+
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
 

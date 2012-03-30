@@ -601,6 +601,7 @@ BEGIN
         MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
         MENUITEM SEPARATOR
         MENUITEM "De-Interlace",                ID_CAPTURE_DEINTERLACE
+        MENUITEM "Rotate 180°",                 ID_CAPTURE_ROTATE180
     END
     POPUP "&Tools"
     BEGIN
@@ -7251,6 +7252,7 @@ BEGIN
                             "Select camera folder(s) to delete\nDelete Camera Folder(s)"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
     ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
+    ID_CAPTURE_ROTATE180    "Rotate 180° Video Source\nRotate 180°"
 END
 
 STRINGTABLE DISCARDABLE 

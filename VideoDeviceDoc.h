@@ -1334,6 +1334,8 @@ protected:
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
+	static __forceinline BOOL IsRotate180Supported(LPBITMAPINFO pBmi);
+	BOOL Rotate180(CDib* pDib);
 	static __forceinline BOOL IsDeinterlaceSupported(LPBITMAPINFO pBmi);
 	BOOL Deinterlace(CDib* pDib);											// Inplace De-Interlace
 	BOOL Deinterlace(LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, CDib* pDstDib);	// De-Interlace from Src to Dst
@@ -1392,6 +1394,7 @@ public:
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
 	volatile BOOL m_bInterleave;						// Do not interleave because while recording the frame rate is not yet exactly known!
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
+	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
 	volatile BOOL m_bRgb32Frame;						// Current Frame is RGB32 (Converted to or originally 32 bpp)
@@ -1709,6 +1712,8 @@ protected:
 	afx_msg void OnEditImportZones();
 	afx_msg void OnCaptureAssistant();
 	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
+	afx_msg void OnCaptureRotate180();
+	afx_msg void OnUpdateCaptureRotate180(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
