@@ -385,13 +385,15 @@ CString CDxCapture::GetFormatCompressionDescription(DWORD dwFourCC)
 		return _T("Packed 4:1:1 (6 Bpp)");
 	else if (dwFourCC == FCC('M420'))
 		return _T("Packed 4:2:0 (12 Bpp)");
-	else if (	dwFourCC == FCC('YUY2') ||
-				dwFourCC == FCC('YUNV') ||
-				dwFourCC == FCC('YUYV') ||
-				dwFourCC == FCC('UYVY') ||
-				dwFourCC == FCC('Y422') ||
-				dwFourCC == FCC('UYNV') ||
-				dwFourCC == FCC('YVYU'))
+	else if (	dwFourCC == FCC('YUY2') ||	// Packed Y0 U0 Y1 V0
+				dwFourCC == FCC('V422') ||	// Equivalent to YUY2
+				dwFourCC == FCC('VYUY') ||	// Equivalent to YUY2
+				dwFourCC == FCC('YUNV') ||	// Equivalent to YUY2
+				dwFourCC == FCC('YUYV') ||	// Equivalent to YUY2
+				dwFourCC == FCC('YVYU')	||	// Packed Y0 V0 Y1 U0
+				dwFourCC == FCC('UYVY') ||	// Packed U0 Y0 V0 Y1
+				dwFourCC == FCC('Y422') ||	// Equivalent to UYVY
+				dwFourCC == FCC('UYNV'))	// Equivalent to UYVY
 		return _T("Packed 4:2:2 (16 Bpp)");
 	else if (dwFourCC == FCC('Y41P'))
 		return _T("Packed 4:1:1 (12 Bpp)");

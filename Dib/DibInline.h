@@ -1306,23 +1306,39 @@ __forceinline BOOL CDib::SetPixelColor32Alpha(int x, int y, COLORREF crColor)
 __forceinline BOOL CDib::IsAddSingleLineTextSupported(LPBITMAPINFO pBMI)
 {
 	if (pBMI												&&
+
+		// RGB
 		(pBMI->bmiHeader.biCompression == BI_RGB			||
 		pBMI->bmiHeader.biCompression == BI_BITFIELDS		||
+
+		// Planar 422
 		pBMI->bmiHeader.biCompression == FCC('YV16')		||
 		pBMI->bmiHeader.biCompression == FCC('Y42B')		||
+		
+		// Planar 420
 		pBMI->bmiHeader.biCompression == FCC('YV12')		||
 		pBMI->bmiHeader.biCompression == FCC('I420')		||
 		pBMI->bmiHeader.biCompression == FCC('IYUV')		||
+		
+		// Planar 410
 		pBMI->bmiHeader.biCompression == FCC('YVU9')		||
 		pBMI->bmiHeader.biCompression == FCC('YUV9')		||
+		
+		// Packed Y0 U0 Y1 V0
 		pBMI->bmiHeader.biCompression == FCC('YUY2')		||
-		pBMI->bmiHeader.biCompression == FCC('VYUY')		||
 		pBMI->bmiHeader.biCompression == FCC('V422')		||
-		pBMI->bmiHeader.biCompression == FCC('YUYV')		||
+		pBMI->bmiHeader.biCompression == FCC('VYUY')		||
 		pBMI->bmiHeader.biCompression == FCC('YUNV')		||
+		pBMI->bmiHeader.biCompression == FCC('YUYV')		||
+		
+		// Packed Y0 V0 Y1 U0
+		pBMI->bmiHeader.biCompression == FCC('YVYU')		||
+
+		// Packed U0 Y0 V0 Y1
 		pBMI->bmiHeader.biCompression == FCC('UYVY')		||
-		pBMI->bmiHeader.biCompression == FCC('UYNV')		||
-		pBMI->bmiHeader.biCompression == FCC('Y422')))
+		pBMI->bmiHeader.biCompression == FCC('Y422')		||
+		pBMI->bmiHeader.biCompression == FCC('UYNV')))
+		
 		return TRUE;
 	else
 		return FALSE;

@@ -1655,6 +1655,10 @@ protected:
 	CDib* volatile m_pProcessFrameDib;				// Helper Dib used in ProcessFrame()
 	CDib* volatile m_pProcessFrameExtraDib;			// Helper Dib used in ProcessMJPGFrame() and ProcessM420Frame()
 	CDib* volatile m_pProcessFrameDeinterlaceDib;	// Helper Dib used in DecodeFrameToRgb32()
+#ifdef _DEBUG
+	CDib* volatile m_pProcessFrameDebugSrcDib;		// To debug YUV formats
+	CDib* volatile m_pProcessFrameDebugDstDib;		// To debug YUV formats
+#endif
 	CAVDecoder m_MJPGDecoder;
 	volatile DWORD m_dwStopProcessFrame;
 	volatile DWORD m_dwProcessFrameStopped;

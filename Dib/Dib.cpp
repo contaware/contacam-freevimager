@@ -2452,15 +2452,17 @@ BOOL CDib::CopyBits(	DWORD dwFourCC,
 	// Note: If uiSrcStartX is odd/even and uiDstStartX is even/odd
 	// U & V are wrongly copied!
 	else if (	// YUY2 Family
-				dwFourCC == FCC('YUY2')	||	// Packed: Y0 U0 Y1 V0, Y2 U2 Y3 V2
-				dwFourCC == FCC('VYUY')	||
+				dwFourCC == FCC('YUY2')	||	// Packed: Y0 U0 Y1 V0
 				dwFourCC == FCC('V422')	||
-				dwFourCC == FCC('YUYV')	||
+				dwFourCC == FCC('VYUY')	||
 				dwFourCC == FCC('YUNV')	||
+				dwFourCC == FCC('YUYV')	||
+				// YVYU Family
+				dwFourCC == FCC('YVYU')	||	// Packed: Y0 V0 Y1 U0
 				// UYVY Family
-				dwFourCC == FCC('UYVY')	||	// Packed: U0 Y0 V0 Y1, U2 Y2 V2 Y3
-				dwFourCC == FCC('UYNV')	||
-				dwFourCC == FCC('Y422'))
+				dwFourCC == FCC('UYVY')	||	// Packed: U0 Y0 V0 Y1
+				dwFourCC == FCC('Y422')	||
+				dwFourCC == FCC('UYNV'))
 	{
 		DWORD uiBytesPerScanLineToCopy = ::CalcYUVStride(dwFourCC, uiWidthCopy);
 		LPBYTE ps = pSrcBits + 2 * uiSrcStartX + uiDIBSrcScanLineSize * uiSrcStartY;
