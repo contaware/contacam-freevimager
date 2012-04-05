@@ -8620,31 +8620,35 @@ BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib*
 
 __forceinline BOOL CVideoDeviceDoc::IsRotate180Supported(LPBITMAPINFO pBmi)
 {
-	if (pBmi												&&
+	if (pBmi && (
 
 		// RGB
-		(pBmi->bmiHeader.biCompression == BI_RGB			||
-		pBmi->bmiHeader.biCompression == BI_BITFIELDS		||
-		
+		(pBmi->bmiHeader.biCompression == BI_RGB		||
+		pBmi->bmiHeader.biCompression == BI_BITFIELDS)		
+															
+														||
+
 		// Planar 420
-		pBmi->bmiHeader.biCompression == FCC('YV12')		||
-		pBmi->bmiHeader.biCompression == FCC('I420')		||
-		pBmi->bmiHeader.biCompression == FCC('IYUV')		||
+		((pBmi->bmiHeader.biCompression == FCC('YV12')	||
+		pBmi->bmiHeader.biCompression == FCC('I420')	||
+		pBmi->bmiHeader.biCompression == FCC('IYUV'))	&& 
+		(pBmi->bmiHeader.biHeight & 0x3) == 0)				// Divisible by 4
+															
+														||
 
-		// Packed Y0 U0 Y1 V0
-		pBmi->bmiHeader.biCompression == FCC('YUY2')		||
-		pBmi->bmiHeader.biCompression == FCC('V422')		||
-		pBmi->bmiHeader.biCompression == FCC('VYUY')		||
-		pBmi->bmiHeader.biCompression == FCC('YUNV')		||	
-		pBmi->bmiHeader.biCompression == FCC('YUYV')		||
-
-		// Packed Y0 V0 Y1 U0
-		pBmi->bmiHeader.biCompression == FCC('YVYU')		||
-
-		// Packed U0 Y0 V0 Y1
-		pBmi->bmiHeader.biCompression == FCC('UYVY')		||
-		pBmi->bmiHeader.biCompression == FCC('Y422')		||
-		pBmi->bmiHeader.biCompression == FCC('UYNV')))
+		// Packed 422
+		((pBmi->bmiHeader.biCompression == FCC('YUY2')	||	// Y0 U0 Y1 V0
+		pBmi->bmiHeader.biCompression == FCC('V422')	||	// Equivalent to YUY2
+		pBmi->bmiHeader.biCompression == FCC('VYUY')	||	// Equivalent to YUY2
+		pBmi->bmiHeader.biCompression == FCC('YUNV')	||	// Equivalent to YUY2
+		pBmi->bmiHeader.biCompression == FCC('YUYV')	||	// Equivalent to YUY2
+		pBmi->bmiHeader.biCompression == FCC('YVYU')	||	// Y0 V0 Y1 U0
+		pBmi->bmiHeader.biCompression == FCC('UYVY')	||	// U0 Y0 V0 Y1
+		pBmi->bmiHeader.biCompression == FCC('Y422')	||	// Equivalent to UYVY
+		pBmi->bmiHeader.biCompression == FCC('UYNV'))	&&	// Equivalent to UYVY
+		(pBmi->bmiHeader.biHeight & 0x1) == 0)				// Divisible by 2
+		
+		))
 
 		return TRUE;
 	else
@@ -8666,9 +8670,9 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 	{
 		BYTE pix;
 		int CurLine;
-		int nHeight2= pDib->GetHeight() / 2;
-		int nHeight4= nHeight2 / 2;
-		int nWidth2= pDib->GetWidth() / 2;
+		int nHeight2 = pDib->GetHeight() / 2;
+		int nHeight4 = nHeight2 / 2;
+		int nWidth2 = pDib->GetWidth() / 2;
 		LPBYTE lpSrcBitsY = pDib->GetBits();
 		LPBYTE lpDstBitsY = lpSrcBitsY + (pDib->GetHeight() - 1) * pDib->GetWidth();
 		LPBYTE lpSrcBitsU = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth();
@@ -8677,6 +8681,8 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 		LPBYTE lpDstBitsV = lpSrcBitsV + (nHeight2 - 1) * nWidth2;
 
 		// Rotate Y
+		// pDib->GetHeight() needs to be divisible by 2,
+		// otherwise the middle line is not rotated!
 		for (CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
 		{
 			for (int i = 0 ; i < (int)pDib->GetWidth() ; i++)
@@ -8690,6 +8696,8 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 		}
 
 		// Rotate U
+		// pDib->GetHeight() needs to be divisible by 4,
+		// otherwise the middle line is not rotated!
 		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
 		{
 			for (int i = 0 ; i < nWidth2 ; i++)
@@ -8703,6 +8711,8 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 		}
 
 		// Rotate V
+		// pDib->GetHeight() needs to be divisible by 4,
+		// otherwise the middle line is not rotated!
 		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
 		{
 			for (int i = 0 ; i < nWidth2 ; i++)
@@ -8727,9 +8737,13 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 		BYTE SrcY0, SrcY1, SrcU, SrcV;
 		BYTE DstY0, DstY1, DstU, DstV;
 		int stride = 2 * pDib->GetWidth();
+		int nHeight2 = pDib->GetHeight() / 2;
 		LPBYTE lpSrcBits = pDib->GetBits();
 		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
-		for (int CurLine = 0 ; CurLine < (int)pDib->GetHeight() / 2 ; CurLine++)
+
+		// pDib->GetHeight() needs to be divisible by 2,
+		// otherwise the middle line is not rotated!
+		for (int CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
 		{
 			for (int i = 0 ; i < stride ; i += 4)
 			{
@@ -8765,9 +8779,13 @@ BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 		BYTE SrcY0, SrcY1, SrcU, SrcV;
 		BYTE DstY0, DstY1, DstU, DstV;
 		int stride = 2 * pDib->GetWidth();
+		int nHeight2 = pDib->GetHeight() / 2;
 		LPBYTE lpSrcBits = pDib->GetBits();
 		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
-		for (int CurLine = 0 ; CurLine < (int)pDib->GetHeight() / 2 ; CurLine++)
+
+		// pDib->GetHeight() needs to be divisible by 2,
+		// otherwise the middle line is not rotated!
+		for (int CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
 		{
 			for (int i = 0 ; i < stride ; i += 4)
 			{
