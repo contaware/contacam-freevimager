@@ -1942,7 +1942,10 @@ protected:
 	// Y42B
 	// YV12
 	// I420 (and the equivalent : IYUV)
+	// YVU9
+	// YUV9
 	// YUY2 (and the equivalents: VYUY, V422, YUYV, YUNV)
+	// YVYU
 	// UYVY (and the equivalents: UYNV, Y422)
 	//
 	// Note: Min. copy size is one byte ->

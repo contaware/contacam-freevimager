@@ -264,7 +264,6 @@ bool RGB32ToYUV(	DWORD dwFourCC,
 	return false;
 }
 
-// Equivalent FCC Is: IYUV
 // V and U Planes have half the stride of the Y Plane!
 bool RGB24ToYV12(	unsigned char *src,	// RGB24 Dib
 					unsigned char *dst,	// Y Plane, V Plane and U Plane
@@ -394,7 +393,6 @@ bool RGB24ToYV12(	unsigned char *src,	// RGB24 Dib
 	return true;
 }
 
-// Equivalent FCC Is: IYUV
 // V and U Planes have half the stride of the Y Plane!
 bool RGB32ToYV12(	unsigned char *src,	// RGB32 Dib
 					unsigned char *dst,	// Y Plane, V Plane and U Plane
