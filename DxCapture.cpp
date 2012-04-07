@@ -1258,7 +1258,7 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - nId is the device id, if it is negative m_sDeviceName and m_sDevicePath are used
 // - If dFrameRate is zero or negative, the default Frame-Rate is used
 // - If nFormatId is -1, the format is chosen in the following order:
-//   I420, IYUV, YV12, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
+//   I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
 // - With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
 //   (for DV devices the media subtype is fixed to YUY2)
