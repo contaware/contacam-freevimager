@@ -71,8 +71,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD_PAUSE, OnCaptureRecordPause)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD_PAUSE, OnUpdateCaptureRecordPause)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_CAPTURE_DEINTERLACE, OnCaptureDeinterlace)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_DEINTERLACE, OnUpdateCaptureDeinterlace)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_VIEW_FIT, OnViewFit)
@@ -88,8 +86,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
 	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
-	ON_COMMAND(ID_CAPTURE_ROTATE180, OnCaptureRotate180)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ROTATE180, OnUpdateCaptureRotate180)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -6726,38 +6722,6 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 					0, 0);
 
 	return TRUE;
-}
-
-void CVideoDeviceDoc::OnCaptureDeinterlace() 
-{
-	if (IsDeinterlaceSupported((LPBITMAPINFO)&m_ProcessFrameBMI))
-		m_bDeinterlace = !m_bDeinterlace;
-	else
-	{
-		::AfxMessageBox(ML_STRING(1467, "Live De-Interlacing is only supported with the\n") +
-						ML_STRING(1468, "I420, IYUV or YV12 video formats.\n") +
-						ML_STRING(1469, "De-Interlacing can still be performed at save time.\n") +
-						ML_STRING(1470, "Check the De-Interlace box of the saving settings."),
-						MB_ICONINFORMATION);
-	}
-}
-
-void CVideoDeviceDoc::OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI) 
-{
-	if (IsDeinterlaceSupported((LPBITMAPINFO)&m_ProcessFrameBMI))
-		pCmdUI->SetCheck(m_bDeinterlace ? 1 : 0);
-	else
-		pCmdUI->SetCheck(0);
-}
-
-void CVideoDeviceDoc::OnCaptureRotate180() 
-{
-	m_bRotate180 = !m_bRotate180;
-}
-
-void CVideoDeviceDoc::OnUpdateCaptureRotate180(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bRotate180 ? 1 : 0);
 }
 
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)

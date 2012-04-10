@@ -1699,8 +1699,6 @@ protected:
 	afx_msg void OnCaptureRecordPause();
 	afx_msg void OnUpdateCaptureRecordPause(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
-	afx_msg void OnCaptureDeinterlace();
-	afx_msg void OnUpdateCaptureDeinterlace(CCmdUI* pCmdUI);
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnViewFit();
@@ -1716,8 +1714,6 @@ protected:
 	afx_msg void OnEditImportZones();
 	afx_msg void OnCaptureAssistant();
 	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
-	afx_msg void OnCaptureRotate180();
-	afx_msg void OnUpdateCaptureRotate180(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

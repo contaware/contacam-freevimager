@@ -69,8 +69,10 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DELETE_RECORDINGS_DAYS, m_nDeleteRecordingsOlderThanDays);
 	DDV_MinMaxInt(pDX, m_nDeleteRecordingsOlderThanDays, 0, 4000000);
 	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
+	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
+	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
-	DDX_Check(pDX, IDC_CHECK_DEINTERLACE, m_bRecDeinterlace);
+	DDX_Check(pDX, IDC_CHECK_REC_DEINTERLACE, m_bRecDeinterlace);
 	//}}AFX_DATA_MAP
 }
 
@@ -102,7 +104,9 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_DELETE_RECORDINGS_DAYS, OnChangeEditDeleteRecordingsDays)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
-	ON_BN_CLICKED(IDC_CHECK_DEINTERLACE, OnCheckDeinterlace)
+	ON_BN_CLICKED(IDC_CHECK_REC_DEINTERLACE, OnCheckRecDeinterlace)
+	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
+	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(MM_MIXM_CONTROL_CHANGE, OnMixerCtrlChange)
 	ON_MESSAGE(WM_PEAKMETER_UPDATE, OnPeakMeterUpdate)
@@ -254,6 +258,8 @@ BOOL CGeneralPage::OnInitDialog()
 	int i;
 	
 	// Init vars
+	m_bDeinterlace = FALSE;
+	m_bRotate180 = FALSE;
 	m_bRecDeinterlace = FALSE;
 	m_nVideoRecQualityBitrate = 0;
 	m_bRecTimeSegmentation = FALSE;
@@ -268,6 +274,10 @@ BOOL CGeneralPage::OnInitDialog()
 		m_bAutorun = TRUE;
 	else
 		m_bAutorun = FALSE;
+
+	// Init Live Deinterlace and Live Rotate 180° Vars
+	m_bDeinterlace = m_pDoc->m_bDeinterlace;
+	m_bRotate180 = m_pDoc->m_bRotate180;
 
 	// Init Rec Auto Open Var
 	m_bRecAutoOpen = m_pDoc->m_bRecAutoOpen;
@@ -1014,7 +1024,7 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
 }
 
-void CGeneralPage::OnCheckDeinterlace() 
+void CGeneralPage::OnCheckRecDeinterlace() 
 {
 	UpdateData(TRUE);
 	m_pDoc->m_bRecDeinterlace = m_bRecDeinterlace;
@@ -1043,6 +1053,18 @@ void CGeneralPage::OnChangeEditDeleteRecordingsDays()
 		if (bRunning)
 			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 	}
+}
+
+void CGeneralPage::OnCheckLiveDeinterlace() 
+{
+	UpdateData(TRUE);
+	m_pDoc->m_bDeinterlace = m_bDeinterlace;
+}
+
+void CGeneralPage::OnCheckLiveRotate180() 
+{
+	UpdateData(TRUE);
+	m_pDoc->m_bRotate180 = m_bRotate180;
 }
 
 void CGeneralPage::OnCheckAutoopen() 
@@ -1407,3 +1429,4 @@ void CGeneralPage::OnCheckSchedulerDaily()
 }
 
 #endif
+

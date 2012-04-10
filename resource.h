@@ -2145,6 +2145,7 @@
 #define IDS_STRING1651                  1651
 #define IDC_COMBO_MP3_SAMPLINGRATE      1652
 #define IDS_STRING1652                  1652
+#define IDC_CHECK_LIVE_DEINTERLACE      1652
 #define IDC_COMBO_ADPCM_CHANNELS        1653
 #define IDC_VIDEO_COMPRESSION_QUALITY   1653
 #define IDS_STRING1653                  1653
@@ -2192,6 +2193,7 @@
 #define IDC_CHECK_TIME_SEGMENTATION     1676
 #define IDS_STRING1676                  1676
 #define IDS_STRING1677                  1677
+#define IDC_CHECK_LIVE_ROTATE180        1677
 #define IDC_CHECK_AUTORUN               1678
 #define IDS_STRING1678                  1678
 #define IDC_CHECK_ADJACENT_ZONES_DET    1679
@@ -3233,6 +3235,7 @@
 #define IDC_DETECTION_MODE              2543
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
+#define IDC_CHECK_REC_DEINTERLACE       2546
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3449,7 +3452,6 @@
 #define ID_FILE_ACQUIRE_TO_TIFF         33067
 #define ID_FILE_ACQUIRE_TO_PDF          33068
 #define ID_FILE_ACQUIRE_AND_EMAIL       33069
-#define ID_CAPTURE_DEINTERLACE          33070
 #define ID_OPEN_FROM_TRAY               33072
 #define ID_TOOLS_TRAYICON               33073
 #define ID_FILE_ACQUIRE_TO_PDF_DIRECT   33080
@@ -3517,7 +3519,6 @@
 #define ID_TOOLS_DEL_CAM_FOLDERS        33170
 #define ID_DET_COMBOX                   33171
 #define ID_CAPTURE_ASSISTANT            33172
-#define ID_CAPTURE_ROTATE180            33173
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3526,8 +3527,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33174
-#define _APS_NEXT_CONTROL_VALUE         2546
+#define _APS_NEXT_COMMAND_VALUE         33173
+#define _APS_NEXT_CONTROL_VALUE         2547
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

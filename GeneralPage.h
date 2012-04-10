@@ -64,6 +64,8 @@ public:
 	int		m_nTimeSegmentationIndex;
 	BOOL	m_bRecAutoOpen;
 	BOOL	m_bRecDeinterlace;
+	BOOL	m_bDeinterlace;
+	BOOL	m_bRotate180;
 	//}}AFX_DATA
 
 
@@ -104,8 +106,10 @@ protected:
 	afx_msg void OnCheckAutorun();
 	afx_msg void OnChangeEditDeleteRecordingsDays();
 	afx_msg void OnSelchangeTimeSegmentation();
+	afx_msg void OnCheckLiveDeinterlace();
+	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
-	afx_msg void OnCheckDeinterlace();
+	afx_msg void OnCheckRecDeinterlace();
 	//}}AFX_MSG
 	afx_msg LRESULT OnMixerCtrlChange(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnPeakMeterUpdate(WPARAM wParam, LPARAM lParam);

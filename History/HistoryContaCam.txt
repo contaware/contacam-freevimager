@@ -1,8 +1,10 @@
 VERSION HISTORY
 
-3.9.9 beta1 (March 30th 2012)
+3.9.9 beta2 (April 10th 2012)
 
 - Possibility to rotate the video source by 180°
+- Moved the De-Interlace and the Rotate 180° commands from
+  the Capture menu to Device Settings - General Tab
 
 3.9.7 (March 27th 2012)
 

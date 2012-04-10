@@ -599,9 +599,6 @@ BEGIN
         MENUITEM "Device Assistant...\tA",      ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
         MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
-        MENUITEM SEPARATOR
-        MENUITEM "De-Interlace",                ID_CAPTURE_DEINTERLACE
-        MENUITEM "Rotate 180°",                 ID_CAPTURE_ROTATE180
     END
     POPUP "&Tools"
     BEGIN
@@ -1627,29 +1624,34 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
                     UDS_ALIGNRIGHT | UDS_ARROWKEYS,121,11,11,13
-    PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,75,60,14
-    PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,99,75,81,14
-    PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,93,60,14
-    PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,99,93,81,14
+    CONTROL         "De-Interlace (I420,IYUV,YV12)",
+                    IDC_CHECK_LIVE_DEINTERLACE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,13,74,113,10
+    CONTROL         "Rotate 180°",IDC_CHECK_LIVE_ROTATE180,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,130,74,54,10
+    PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,89,67,14
+    PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,100,89,81,14
+    PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,107,67,14
+    PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,100,107,81,14
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,132,38,10
-    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,96,129,84,14
+                    WS_TABSTOP,13,144,38,10
+    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,97,141,84,14
     CONTROL         "Slider1",IDC_REC_VOL_LEFT,"msctls_trackbar32",
-                    TBS_NOTICKS | WS_TABSTOP,33,147,98,16
+                    TBS_NOTICKS | WS_TABSTOP,33,158,98,16
     CONTROL         "Slider1",IDC_REC_VOL_RIGHT,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,33,170,98,16
-    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,140,149,40,14
-    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,140,169,40,15
+                    TBS_NOTICKS | WS_TABSTOP,33,181,98,16
+    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,141,160,40,14
+    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,141,178,40,15
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,214,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,98,212,82,67,CBS_DROPDOWNLIST | 
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,217,81,10
+    COMBOBOX        IDC_TIME_SEGMENTATION,99,215,82,67,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    CONTROL         "De-Interlace",IDC_CHECK_DEINTERLACE,"Button",
+    CONTROL         "De-Interlace",IDC_CHECK_REC_DEINTERLACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,204,16,57,10
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,254,32,149,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1695,14 +1697,14 @@ BEGIN
                     ES_NUMBER
     LTEXT           "frames/sec",IDC_STATIC2183,132,14,40,8
     LTEXT           "Set Framerate:",IDC_STATIC2155,13,14,47,8
-    GROUPBOX        "Video Source",IDC_STATIC2156,7,2,178,111
-    GROUPBOX        "Audio",IDC_STATIC2157,7,119,178,72
-    LTEXT           "Static",IDC_PEAKMETER,44,162,87,9
-    LTEXT           "Left",IDC_STATIC2158,13,150,13,8
-    LTEXT           "Right",IDC_STATIC2159,13,174,18,8
+    GROUPBOX        "Video Source",IDC_STATIC2156,7,2,180,126
+    GROUPBOX        "Audio",IDC_STATIC2157,7,133,180,67
+    LTEXT           "Static",IDC_PEAKMETER,44,173,87,9
+    LTEXT           "Left",IDC_STATIC2158,13,161,13,8
+    LTEXT           "Right",IDC_STATIC2159,13,185,18,8
     EDITTEXT        IDC_RECORD_SAVEAS_PATH,107,238,284,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "",IDC_VOLUME_MUTED,59,132,31,10,SS_CENTERIMAGE
+    LTEXT           "",IDC_VOLUME_MUTED,59,143,31,10,SS_CENTERIMAGE
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
@@ -1725,7 +1727,7 @@ BEGIN
     LTEXT           "Process Frame Time:",IDC_STATIC2172,13,49,67,8
     RTEXT           "",IDC_PROCESS_TIME,91,49,37,8
     LTEXT           "ms",IDC_STATIC2173,132,49,10,8
-    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,198,178,35
+    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,205,180,28
     LTEXT           "Compression:",IDC_STATIC2177,204,33,41,8
     LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,71,17,11
     LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,72,30,8
@@ -4786,15 +4788,14 @@ BEGIN
         VERTGUIDE, 22
         VERTGUIDE, 34
         VERTGUIDE, 42
-        VERTGUIDE, 73
+        VERTGUIDE, 80
         VERTGUIDE, 91
         VERTGUIDE, 104
         VERTGUIDE, 109
         VERTGUIDE, 128
         VERTGUIDE, 132
         VERTGUIDE, 146
-        VERTGUIDE, 180
-        VERTGUIDE, 185
+        VERTGUIDE, 181
         VERTGUIDE, 196
         VERTGUIDE, 204
         VERTGUIDE, 282
@@ -6279,10 +6280,6 @@ BEGIN
     IDS_MULTILANG_1459      "Sound Input Cannot Open Device!"
     IDS_MULTILANG_1465      "Cannot connect to the specified network device or server"
     IDS_MULTILANG_1466      "The capture device is already in use or not compatible"
-    IDS_MULTILANG_1467      "Live De-Interlacing is only supported with the\n"
-    IDS_MULTILANG_1468      "I420, IYUV or YV12 video formats.\n"
-    IDS_MULTILANG_1469      "De-Interlacing can still be performed at save time.\n"
-    IDS_MULTILANG_1470      "Check the De-Interlace box of the saving settings."
 END
 
 STRINGTABLE DISCARDABLE 
@@ -6630,7 +6627,6 @@ BEGIN
     ID_FILE_ACQUIRE_TO_PDF  "Scan from selected source to Pdf\nScan to Pdf"
     ID_FILE_ACQUIRE_AND_EMAIL 
                             "Scan from selected source and Email as Pdf\nScan and Email"
-    ID_CAPTURE_DEINTERLACE  "De-Interlace Video Source\nDe-Interlace"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -7252,7 +7248,6 @@ BEGIN
                             "Select camera folder(s) to delete\nDelete Camera Folder(s)"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
     ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
-    ID_CAPTURE_ROTATE180    "Rotate 180° Video Source\nRotate 180°"
 END
 
 STRINGTABLE DISCARDABLE 
