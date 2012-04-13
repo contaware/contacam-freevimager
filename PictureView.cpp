@@ -928,8 +928,12 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			return;
 		}
 
-		// Convert to high resolution for faster and better stretching
-		if (Dib.GetBitCount() <= 16 && !Dib.ConvertTo24bits(pDoc->GetView(), TRUE))
+		// Convert low res to 24 bpp for faster and better stretching.
+		// Convert also 32 bpp to use less memory and to remove the alpha
+		// component which some printers are interpreting even if the BMI
+		// is not a alpha version!
+		if ((Dib.GetBitCount() <= 16 || Dib.GetBitCount() == 32) &&
+			!Dib.ConvertTo24bits(pDoc->GetView(), TRUE))
 		{
 			// Restore Pixel Scaling
 			m_dXFontPixelScale = 1.0;

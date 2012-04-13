@@ -154,7 +154,7 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 	BOOL bCopySrcToDst = FALSE;
 	if (pSrcDib == NULL || this == pSrcDib)
 	{
-		// Alpha Check
+		// Check
 		if (GetBitCount() != 32)
 			return FALSE;
 
@@ -179,7 +179,7 @@ BOOL CDib::GrayToAlphaChannel(COLORREF crColor, CDib* pSrcDib/*=NULL*/, CWnd* pP
 	}
 	else
 	{
-		// Alpha Check
+		// Check
 		if (pSrcDib->GetBitCount() != 32)
 			return FALSE;
 
