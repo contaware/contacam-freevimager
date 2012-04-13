@@ -89,7 +89,7 @@ BEGIN
     BUTTON      ID_FILE_OPEN_DIR
     BUTTON      ID_FILE_SAVE
     BUTTON      ID_FILE_SAVE_AS
-    BUTTON      ID_FILE_SAVE_AS_PDF_DIRECT
+    BUTTON      ID_FILE_SAVE_AS_PDF
     SEPARATOR
     BUTTON      ID_EDIT_COPY
     BUTTON      ID_EDIT_PASTE
@@ -101,7 +101,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_FILE_ACQUIRE
     BUTTON      ID_FILE_ACQUIRE_TO_TIFF
-    BUTTON      ID_FILE_ACQUIRE_TO_PDF_DIRECT
+    BUTTON      ID_FILE_ACQUIRE_TO_PDF
     SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
@@ -6627,8 +6627,6 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_TOOLS_TRAYICON       "Use tray icon\nTray Icon"
-    ID_FILE_ACQUIRE_TO_PDF_DIRECT 
-                            "Scan from selected source to Pdf\nScan to Pdf"
     ID_VIEW_FIT             "Fit\nFit"
     ID_APP_FAQ              "Open the FAQs page of contaware.com\nFAQs Page"
     ID_VIEW_NO_BORDERS      "No borders\nNo Borders"
@@ -6677,7 +6675,6 @@ BEGIN
     ID_LAYEREDDLG_SIZE_BOTTOMRIGHT "View bottom - right\nBottom - Right"
     ID_LAYEREDDLG_SIZE_1600 "Size to 1600 %\n1600 %"
     ID_FILE_SAVE_AS_PDF     "Save a copy as pdf choosing paper size and compression\nSave As Pdf"
-    ID_FILE_SAVE_AS_PDF_DIRECT "Save a copy as pdf\nSave As Pdf"
     ID_EDIT_PASTE_INTO_TOPLEFT 
                             "Paste into top - left corner\nPaste Into Top - Left"
     ID_EDIT_PASTE_INTO_TOPRIGHT 

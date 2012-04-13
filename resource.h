@@ -3454,7 +3454,6 @@
 #define ID_FILE_ACQUIRE_AND_EMAIL       33069
 #define ID_OPEN_FROM_TRAY               33072
 #define ID_TOOLS_TRAYICON               33073
-#define ID_FILE_ACQUIRE_TO_PDF_DIRECT   33080
 #define ID_VIEW_FIT                     33083
 #define ID_APP_FAQ                      33084
 #define ID_VIEW_NO_BORDERS              33087
@@ -3491,7 +3490,6 @@
 #define ID_LAYEREDDLG_SIZE_BOTTOMRIGHT  33125
 #define ID_LAYEREDDLG_SIZE_1600         33126
 #define ID_FILE_SAVE_AS_PDF             33128
-#define ID_FILE_SAVE_AS_PDF_DIRECT      33130
 #define ID_EDIT_PASTE_INTO_TOPLEFT      33131
 #define ID_EDIT_PASTE_INTO_TOPRIGHT     33132
 #define ID_EDIT_PASTE_INTO_BOTTOMLEFT   33133

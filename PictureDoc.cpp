@@ -326,8 +326,6 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_LAYEREDDLG_SIZE_1600, OnUpdateLayereddlgSize1600)
 	ON_COMMAND(ID_FILE_SAVE_AS_PDF, OnFileSaveAsPdf)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS_PDF, OnUpdateFileSaveAsPdf)
-	ON_COMMAND(ID_FILE_SAVE_AS_PDF_DIRECT, OnFileSaveAsPdfDirect)
-	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS_PDF_DIRECT, OnUpdateFileSaveAsPdfDirect)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_TOPLEFT, OnEditPasteIntoTopleft)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_TOPRIGHT, OnEditPasteIntoTopright)
 	ON_COMMAND(ID_EDIT_PASTE_INTO_BOTTOMLEFT, OnEditPasteIntoBottomleft)
@@ -4609,7 +4607,7 @@ void CPictureDoc::OnUpdateFileSaveCopyAs(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnFileSaveAsPdf() 
 {
-	SaveAsPdf(TRUE);
+	SaveAsPdf();
 }
 
 void CPictureDoc::OnUpdateFileSaveAsPdf(CCmdUI* pCmdUI) 
@@ -4634,39 +4632,12 @@ void CPictureDoc::OnUpdateFileSaveAsPdf(CCmdUI* pCmdUI)
 					!m_bPrintPreviewMode);
 }
 
-void CPictureDoc::OnFileSaveAsPdfDirect() 
-{
-	SaveAsPdf(FALSE);
-}
-
-void CPictureDoc::OnUpdateFileSaveAsPdfDirect(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	m_pDib												&&
-					(m_dwIDAfterFullLoadCommand == 0					||
-					m_dwIDAfterFullLoadCommand == ID_FILE_SAVE_AS_PDF_DIRECT)	&&
-					!(m_SlideShowThread.IsSlideshowRunning()			||
-					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-					!m_bMetadataModified								&&
-					!m_pRotationFlippingDlg								&&
-					!m_pWndPalette										&&
-					!m_pHLSDlg											&&
-					!m_pRedEyeDlg										&&
-					!m_bDoRedEyeColorPickup								&&
-					!m_pMonochromeConversionDlg							&&
-					!m_pSharpenDlg										&&
-					!m_pSoftenDlg										&&
-					!m_pSoftBordersDlg									&&
-					!m_bCrop											&&
-					!m_bPrintPreviewMode);
-}
-
-BOOL CPictureDoc::SaveAsPdf(BOOL bShowPdfSaveDlg)
+BOOL CPictureDoc::SaveAsPdf()
 {
 	BOOL res = FALSE;
 
 	// Wait and schedule command if dib not fully loaded!
-	if (!IsDibReadyForCommand(bShowPdfSaveDlg ? ID_FILE_SAVE_AS_PDF : ID_FILE_SAVE_AS_PDF_DIRECT))
+	if (!IsDibReadyForCommand(ID_FILE_SAVE_AS_PDF))
 		return FALSE;
 
 	// Force Cursor
@@ -4710,31 +4681,28 @@ BOOL CPictureDoc::SaveAsPdf(BOOL bShowPdfSaveDlg)
 		}
 
 		// Show the Pdf Dialog and use the same vars as for Pdf Scan
-		if (bShowPdfSaveDlg)
+		CPdfSaveDlg dlg(GetView());
+		dlg.m_nCompressionQuality = ((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality;
+		dlg.m_sPdfScanPaperSize = ((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize;
+		if (dlg.DoModal() == IDOK)
 		{
-			CPdfSaveDlg dlg(GetView());
-			dlg.m_nCompressionQuality = ((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality;
-			dlg.m_sPdfScanPaperSize = ((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize;
-			if (dlg.DoModal() == IDOK)
+			// Set Pdf Vars
+			((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlg.m_nCompressionQuality;
+			((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize = dlg.m_sPdfScanPaperSize;
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 			{
-				// Set Pdf Vars
-				((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlg.m_nCompressionQuality;
-				((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize = dlg.m_sPdfScanPaperSize;
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				{
-					((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-																	_T("PdfScanCompressionQuality"),
-																	((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);
-					((CUImagerApp*)::AfxGetApp())->WriteProfileString(_T("GeneralApp"),
-																	_T("PdfScanPaperSize"),
-																	((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize);
-				}
+				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
+																_T("PdfScanCompressionQuality"),
+																((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);
+				((CUImagerApp*)::AfxGetApp())->WriteProfileString(_T("GeneralApp"),
+																_T("PdfScanPaperSize"),
+																((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize);
 			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+		}
+		else
+		{
+			GetView()->ForceCursor(FALSE);
+			return FALSE;
 		}
 
 		// Begin Wait Cursor

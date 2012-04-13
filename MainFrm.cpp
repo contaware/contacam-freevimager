@@ -76,7 +76,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_SYSCOMMAND()
 	ON_WM_QUERYENDSESSION()
 	ON_WM_ENDSESSION()
-	ON_COMMAND(ID_FILE_ACQUIRE_TO_PDF_DIRECT, OnFileAcquireToPdfDirect)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
 	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
@@ -912,63 +911,6 @@ void CMainFrame::OnFileAcquireToPdf()
 			((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = _T("");
 			((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("");
 		}
-	}
-	else
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = _T("");
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("");
-	}
-}
-
-void CMainFrame::OnFileAcquireToPdfDirect() 
-{
-	// Init and check
-	if (!TwainIsValidDriver())
-	{
-		if (!InitTwain(GetSafeHwnd()))
-		{
-			::AfxMessageBox(ML_STRING(1223, "No twain driver found."), MB_OK | MB_ICONSTOP);
-			return;
-		}
-		TwainSelectDefaultSource();
-	}
-	if (!TwainIsSourceSelected())
-	{
-		::AfxMessageBox(ML_STRING(1224, "No twain source found."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
-
-	// Reset Flag
-	m_bScanAndEmail = FALSE;
-
-	// Display the Save As Dialog
-	TCHAR szFileName[MAX_PATH];
-	CNoVistaFileDlg dlgFile(FALSE);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("PdfScanFileName"), _T("scan.pdf"));
-		if (!::IsExistingDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName)))
-			((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::GetShortFileName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
-	}
-	else
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("scan.pdf");
-	_tcscpy(szFileName, ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
-	dlgFile.m_ofn.lpstrFile = szFileName;
-	dlgFile.m_ofn.nMaxFile = MAX_PATH;
-	dlgFile.m_ofn.lpstrCustomFilter = NULL;
-	dlgFile.m_ofn.Flags |= OFN_EXPLORER;
-	dlgFile.m_ofn.lpstrFilter = _T("Pdf Document (*.pdf)\0*.pdf\0");
-	dlgFile.m_ofn.lpstrDefExt = _T("pdf");
-	if (dlgFile.DoModal() == IDOK)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = szFileName;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("PdfScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
-		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-																					::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName) + _T(".tif"));
-		
-		// Acquire
-		TwainAcquire(TWCPP_ANYCOUNT);
 	}
 	else
 	{

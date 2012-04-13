@@ -806,7 +806,7 @@ protected:
 	BOOL DeleteDocFile();
 
 	// Save File
-	BOOL SaveAsPdf(BOOL bShowPdfSaveDlg);
+	BOOL SaveAsPdf();
 	BOOL SaveAsFromAnimGIF(	BOOL bSaveCopyAs,
 							CString sDlgTitle = _T(""));
 	BOOL SaveAsFromAnimGIFToAnimGIF(const CString& sFileName,
@@ -1154,8 +1154,6 @@ protected:
 	afx_msg void OnUpdateLayereddlgSize1600(CCmdUI* pCmdUI);
 	afx_msg void OnFileSaveAsPdf();
 	afx_msg void OnUpdateFileSaveAsPdf(CCmdUI* pCmdUI);
-	afx_msg void OnFileSaveAsPdfDirect();
-	afx_msg void OnUpdateFileSaveAsPdfDirect(CCmdUI* pCmdUI);
 	afx_msg void OnEditPasteIntoTopleft();
 	afx_msg void OnEditPasteIntoTopright();
 	afx_msg void OnEditPasteIntoBottomleft();
