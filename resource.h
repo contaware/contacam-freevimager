@@ -3455,7 +3455,6 @@
 #define ID_OPEN_FROM_TRAY               33072
 #define ID_TOOLS_TRAYICON               33073
 #define ID_FILE_ACQUIRE_TO_PDF_DIRECT   33080
-#define ID_FILE_LOCK_TWAINCLOSE         33081
 #define ID_VIEW_FIT                     33083
 #define ID_APP_FAQ                      33084
 #define ID_VIEW_NO_BORDERS              33087

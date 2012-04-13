@@ -66,7 +66,7 @@ protected:
 	BOOL TwainGetImageInfo(TW_IMAGEINFO& info);
 
 	virtual BOOL TwainDisableSource();
-	virtual BOOL TwainCanClose()  {return TRUE;};
+	virtual void TwainClosing(){;};
 
 	void TwainTranslateMessage(TW_EVENT* ptwEvent);
 	void TwainTransferImage();
@@ -125,8 +125,6 @@ protected:
 	BOOL m_bTwainModalUI;
 
 	int m_nTwainImageCount;
-	BOOL m_bTwainCloseLocked;
-	BOOL m_bTwainTransferDone;
 };
 
 

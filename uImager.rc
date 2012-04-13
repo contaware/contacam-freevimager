@@ -219,7 +219,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
@@ -555,7 +554,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         POPUP "Email"
         BEGIN
@@ -651,7 +649,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         POPUP "Email"
         BEGIN
@@ -768,7 +765,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         POPUP "Email"
         BEGIN
@@ -1079,7 +1075,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         POPUP "Email"
         BEGIN
@@ -1429,7 +1424,6 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
-            MENUITEM "Lock Scan Dialog",            ID_FILE_LOCK_TWAINCLOSE
         END
         POPUP "Email"
         BEGIN
@@ -6624,7 +6618,7 @@ BEGIN
                             "VfW codecs have priority over the internal one\nVfW Codec Priority"
     ID_PLAY_INTERNALCODECPRIORITY 
                             "Internal codecs have priority over the VfW one\nInternal Codec Priority"
-    ID_FILE_ACQUIRE_TO_TIFF "Scan from selected source to Multi-Page Tiff\nScan to Tiff"
+    ID_FILE_ACQUIRE_TO_TIFF "Scan from selected source to Tiff\nScan to Tiff"
     ID_FILE_ACQUIRE_TO_PDF  "Scan from selected source to Pdf\nScan to Pdf"
     ID_FILE_ACQUIRE_AND_EMAIL 
                             "Scan from selected source and Email as Pdf\nScan and Email"
@@ -6635,7 +6629,6 @@ BEGIN
     ID_TOOLS_TRAYICON       "Use tray icon\nTray Icon"
     ID_FILE_ACQUIRE_TO_PDF_DIRECT 
                             "Scan from selected source to Pdf\nScan to Pdf"
-    ID_FILE_LOCK_TWAINCLOSE "Lock the scan dialog, enable this if you have problems scanning multiple pages\nLock Scan Dialog"
     ID_VIEW_FIT             "Fit\nFit"
     ID_APP_FAQ              "Open the FAQs page of contaware.com\nFAQs Page"
     ID_VIEW_NO_BORDERS      "No borders\nNo Borders"

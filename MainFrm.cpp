@@ -77,8 +77,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_QUERYENDSESSION()
 	ON_WM_ENDSESSION()
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_PDF_DIRECT, OnFileAcquireToPdfDirect)
-	ON_COMMAND(ID_FILE_LOCK_TWAINCLOSE, OnFileLockTwainclose)
-	ON_UPDATE_COMMAND_UI(ID_FILE_LOCK_TWAINCLOSE, OnUpdateFileLockTwainclose)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_INDICATOR_XCOORDINATE, OnXCoordinatesDoubleClick)
 	ON_COMMAND(ID_INDICATOR_YCOORDINATE, OnYCoordinatesDoubleClick)
@@ -208,10 +206,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
- 
-	// Init Twain Close Locked Flag
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		m_bTwainCloseLocked = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("TwainCloseLocked"), FALSE);
 	
 #ifdef VIDEODEVICEDOC
 	// Poll Timer
@@ -436,7 +430,7 @@ LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 	return 1;
 }
 
-BOOL CMainFrame::TwainCanClose()
+void CMainFrame::TwainClosing()
 {
 	if (m_TiffScan)
 	{
@@ -496,8 +490,6 @@ BOOL CMainFrame::TwainCanClose()
 				::AfxGetApp()->OpenDocumentFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 		}
 	}
-
-	return TRUE;
 }
 
 void CMainFrame::TwainSetImage(HANDLE hDib, int width, int height, int bpp)
@@ -1075,18 +1067,6 @@ void CMainFrame::OnFileSelecttwainsource()
 		}
 	}
 	TwainSelectSource();
-}
-
-void CMainFrame::OnFileLockTwainclose() 
-{
-	m_bTwainCloseLocked = !m_bTwainCloseLocked;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("TwainCloseLocked"), m_bTwainCloseLocked);
-}
-
-void CMainFrame::OnUpdateFileLockTwainclose(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bTwainCloseLocked ? 1 : 0);
 }
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) 

@@ -93,7 +93,7 @@ public:
 	virtual ~CMainFrame();
 	void TwainSetImage(HANDLE hDib, int width, int height, int bpp);
 	void TwainCopyImage(HANDLE hBitmap,TW_IMAGEINFO& info);
-	BOOL TwainCanClose();
+	void TwainClosing();
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
 
@@ -283,8 +283,6 @@ protected:
 	afx_msg BOOL OnQueryEndSession();
 	afx_msg void OnEndSession(BOOL bEnding);
 	afx_msg void OnFileAcquireToPdfDirect();
-	afx_msg void OnFileLockTwainclose();
-	afx_msg void OnUpdateFileLockTwainclose(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnXCoordinatesDoubleClick();
 	afx_msg void OnYCoordinatesDoubleClick();

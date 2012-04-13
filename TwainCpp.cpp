@@ -49,10 +49,6 @@ CTwain::CTwain(HWND hWnd)
 	memset(&m_TwainStatus, 0, sizeof(m_TwainStatus));
 	memset(&m_TwainAppId, 0, sizeof(m_TwainAppId));
 	memset(&m_TwainSource, 0, sizeof(m_TwainSource));
-	m_bTwainCloseLocked = FALSE;	// Some stupid twain drivers do not let you scan multiple pages
-									// this variable avoids closing when you do not want to close!
-	m_bTwainTransferDone = FALSE;
-
 	if (hWnd)
 		InitTwain(hWnd);
 }
@@ -262,9 +258,8 @@ void CTwain::TwainTranslateMessage(TW_EVENT* ptwEvent)
 			break;
 
 		case MSG_CLOSEDSREQ :
-			if (!(m_bTwainCloseLocked && m_bTwainTransferDone) && TwainCanClose())
-				TwainCloseDS();
-			m_bTwainTransferDone = FALSE;
+			TwainClosing();
+			TwainCloseDS();
 			break;
 
 		// No message from the Source to the App
@@ -598,7 +593,6 @@ BOOL CTwain::TwainGetImage(TW_IMAGEINFO& info)
 	{
 		case TWRC_XFERDONE :
 			TwainCopyImage(hBitmap,info);
-			m_bTwainTransferDone = TRUE;
 			res = TwainEndTransfer();
 			GlobalFree(hBitmap);
 			return res;
