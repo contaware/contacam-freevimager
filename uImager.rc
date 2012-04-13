@@ -103,6 +103,8 @@ BEGIN
     BUTTON      ID_FILE_ACQUIRE_TO_TIFF
     BUTTON      ID_FILE_ACQUIRE_TO_PDF
     SEPARATOR
+    BUTTON      ID_FILE_SENDMAIL_CURRENT_DOC
+    SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
 
@@ -5977,7 +5979,7 @@ BEGIN
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
     IDS_MULTILANG_1176      "Wait till all processing is done."
-    IDS_MULTILANG_1177      "No documents open."
+    IDS_MULTILANG_1177      "No pictures or videos open."
     IDS_MULTILANG_1178      "No picture file loaded."
     IDS_MULTILANG_1179      "Please try again later, a command is executed when picture fully loaded."
     IDS_MULTILANG_1180      "Try again after saving the picture file."
@@ -7255,6 +7257,19 @@ BEGIN
     IDS_STRING1849          "Snapshot Saved"
     IDS_STRING1850          "Snapshot Save Failed!"
     IDS_STRING1851          "Both"
+    IDS_STRING1852          "Name"
+    IDS_STRING1853          "Date Taken"
+    IDS_STRING1854          "Date Created"
+    IDS_STRING1855          "Date Modified"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1856          "File Size"
+    IDS_STRING1857          "Image Size"
+    IDS_STRING1858          "Width"
+    IDS_STRING1859          "Height"
+    IDS_STRING1860          "Path"
 END
 
 #endif    // English (U.S.) resources

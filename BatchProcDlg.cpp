@@ -1994,15 +1994,15 @@ BOOL CBatchProcDlg::OnInitDialog()
 	m_List.SetUseResDragImage(TRUE);
 	CRect rcListClient;
 	m_List.GetClientRect(&rcListClient);
-	m_List.InsertColumn(0, _T("Path"), LVCFMT_LEFT, 80);
-	m_List.InsertColumn(0, _T("Height"), LVCFMT_LEFT, 80);
-	m_List.InsertColumn(0, _T("Width"), LVCFMT_LEFT, 80);
-	m_List.InsertColumn(0, _T("Image Size"), LVCFMT_LEFT, 95);
-	m_List.InsertColumn(0, _T("File Size"), LVCFMT_LEFT, 95);
-	m_List.InsertColumn(0, _T("Date Modified"), LVCFMT_LEFT, 120);
-	m_List.InsertColumn(0, _T("Date Created"), LVCFMT_LEFT, 120);
-	m_List.InsertColumn(0, _T("Date Taken"), LVCFMT_LEFT, 120);
-	m_List.InsertColumn(0, _T("Name"), LVCFMT_LEFT, rcListClient.Width());
+	m_List.InsertColumn(0, ML_STRING(1860, "Path"), LVCFMT_LEFT, 80);
+	m_List.InsertColumn(0, ML_STRING(1859, "Height"), LVCFMT_LEFT, 80);
+	m_List.InsertColumn(0, ML_STRING(1858, "Width"), LVCFMT_LEFT, 80);
+	m_List.InsertColumn(0, ML_STRING(1857, "Image Size"), LVCFMT_LEFT, 95);
+	m_List.InsertColumn(0, ML_STRING(1856, "File Size"), LVCFMT_LEFT, 95);
+	m_List.InsertColumn(0, ML_STRING(1855, "Date Modified"), LVCFMT_LEFT, 120);
+	m_List.InsertColumn(0, ML_STRING(1854, "Date Created"), LVCFMT_LEFT, 120);
+	m_List.InsertColumn(0, ML_STRING(1853, "Date Taken"), LVCFMT_LEFT, 120);
+	m_List.InsertColumn(0, ML_STRING(1852, "Name"), LVCFMT_LEFT, rcListClient.Width());
 	CHeaderCtrl* pHeader = (CHeaderCtrl*)m_List.GetHeaderCtrl();
 	if (pHeader)
 	{

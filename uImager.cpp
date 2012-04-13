@@ -1831,16 +1831,13 @@ void CUImagerApp::OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI)
 void CUImagerApp::OnFileSendmailCurrentDoc() 
 {
 	if (!m_bMailAvailable)
-	{
 		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
-	if (AreProcessingThreadsRunning())
-	{
+	else if (AreProcessingThreadsRunning())
 		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
-	if (SaveModifiedCurrentDoc())
+	else if (!ArePictureDocsOpen() &&
+			!AreVideoAviDocsOpen())
+		::AfxMessageBox(ML_STRING(1177, "No pictures or videos open."), MB_OK | MB_ICONINFORMATION);
+	else if (SaveModifiedCurrentDoc())
 	{
 		if (IsCurrentDocAvailable(TRUE))
 			SendCurrentDocAsMailInit();
@@ -1860,7 +1857,7 @@ void CUImagerApp::OnFileSendmailOpenDocs()
 		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
 	else if (!ArePictureDocsOpen() &&
 			!AreVideoAviDocsOpen())
-		::AfxMessageBox(ML_STRING(1177, "No documents open."), MB_OK | MB_ICONINFORMATION);
+		::AfxMessageBox(ML_STRING(1177, "No pictures or videos open."), MB_OK | MB_ICONINFORMATION);
 	else if (ArePictureDocsOpen() &&
 			!AreVideoAviDocsOpen())
 	{
