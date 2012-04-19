@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_WTSSESSION_CHANGE, OnSessionChange)
+	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 #ifdef VIDEODEVICEDOC
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 #endif
@@ -412,11 +413,6 @@ void CMainFrame::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
 
-void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
-{
-	TwainSetImage((HBITMAP)hBitmap, info.ImageWidth, info.ImageLength, info.BitsPerPixel);
-}
-
 LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 {
 	// Send
@@ -429,39 +425,28 @@ LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 	return 1;
 }
 
-void CMainFrame::TwainClosing()
+LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 {
 	if (m_TiffScan)
 	{
-		// Close TIFF
-		::TIFFClose(m_TiffScan);
-		m_TiffScan = NULL;
-
-		// Delete first single page file if only one page scanned
-		if (m_nScanPageNumber == 1 && !m_sScanCurrentTiffPageFileName.IsEmpty())
-			::DeleteFile(m_sScanCurrentTiffPageFileName);
-
-		// E-Mail it?
-		if (m_bScanAndEmail)
+		if (::AfxMessageBox(ML_STRING(1861, "Scan more pages?"),
+							MB_YESNO | MB_ICONQUESTION) == IDYES)
 		{
-			BeginWaitCursor();
-			if (::Tiff2Pdf(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
-							((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
-							((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize,
-							TRUE,		// Fit Window
-							TRUE,		// Interpolate
-							((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality))
-			{
-				EndWaitCursor();
-				PostMessage(WM_SCANANDEMAIL, 0, 0);
-			}
-			else
-				EndWaitCursor();
+			// Acquire
+			TwainAcquire(TWCPP_ANYCOUNT);
 		}
 		else
 		{
-			// Pdf Wanted?
-			if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
+			// Close TIFF
+			::TIFFClose(m_TiffScan);
+			m_TiffScan = NULL;
+
+			// Delete first single page file if only one page scanned
+			if (m_nScanPageNumber == 1 && !m_sScanCurrentTiffPageFileName.IsEmpty())
+				::DeleteFile(m_sScanCurrentTiffPageFileName);
+
+			// E-Mail it?
+			if (m_bScanAndEmail)
 			{
 				BeginWaitCursor();
 				if (::Tiff2Pdf(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
@@ -471,179 +456,198 @@ void CMainFrame::TwainClosing()
 								TRUE,		// Interpolate
 								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality))
 				{
-					// End Wait Cursor
 					EndWaitCursor();
-
-					// Delete Tiff
-					::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
-
-					// Open Pdf with external program
-					if (!((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg)
-						::ShellExecute(NULL, _T("open"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName, NULL, NULL, SW_SHOWNORMAL);
+					PostMessage(WM_SCANANDEMAIL, 0, 0);
 				}
 				else
 					EndWaitCursor();
 			}
-			// Open Multi-Page Tiff
 			else
-				::AfxGetApp()->OpenDocumentFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+			{
+				// Pdf Wanted?
+				if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
+				{
+					BeginWaitCursor();
+					if (::Tiff2Pdf(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
+									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
+									((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize,
+									TRUE,		// Fit Window
+									TRUE,		// Interpolate
+									((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality))
+					{
+						// End Wait Cursor
+						EndWaitCursor();
+
+						// Delete Tiff
+						::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+
+						// Open Pdf with external program
+						if (!((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg)
+							::ShellExecute(NULL, _T("open"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName, NULL, NULL, SW_SHOWNORMAL);
+					}
+					else
+						EndWaitCursor();
+				}
+				// Open Multi-Page Tiff
+				else
+					::AfxGetApp()->OpenDocumentFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+			}
 		}
 	}
+
+	return 1;
 }
 
-void CMainFrame::TwainSetImage(HANDLE hDib, int width, int height, int bpp)
+void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 {
 	m_sScanCurrentTiffPageFileName = _T("");
-	if (!m_bFullScreenMode)
+	if (((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName != _T(""))
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName != _T(""))
+		CDib Dib;
+
+		// Copy Bitmap
+		Dib.CopyFromHandle(hBitmap);
+
+		// Count the Unique Colors
+		int nNumColors = Dib.CountUniqueColors(this, TRUE);
+
+		// Choose Right Compression Type
+		int nCompression;
+		if (nNumColors <= 2)
+			nCompression = COMPRESSION_CCITTFAX4;
+		else if (nNumColors <= 32)
 		{
-			CDib Dib;
-
-			// Copy Bitmap
-			Dib.CopyFromHandle(hDib);
-
-			// Count the Unique Colors
-			int nNumColors = Dib.CountUniqueColors(this, TRUE);
-
-			// Choose Right Compression Type
-			int nCompression;
-			if (nNumColors <= 2)
-				nCompression = COMPRESSION_CCITTFAX4;
-			else if (nNumColors <= 32)
+			// Convert to 4bpp
+			if (info.BitsPerPixel != 4)
 			{
-				// Convert to 4bpp
-				if (bpp != 4)
-				{
-					CQuantizer Quantizer(16, 8);
-					Quantizer.ProcessImage(&Dib, this, TRUE);
-					RGBQUAD* pColors = (RGBQUAD*)new RGBQUAD[16];
-					Quantizer.SetColorTable(pColors);
-					Dib.CreatePaletteFromColors(16, pColors);
-					Dib.ConvertTo4bitsErrDiff(Dib.GetPalette(), this, TRUE);
-					delete [] pColors;
-				}
-				nCompression = COMPRESSION_LZW;
+				CQuantizer Quantizer(16, 8);
+				Quantizer.ProcessImage(&Dib, this, TRUE);
+				RGBQUAD* pColors = (RGBQUAD*)new RGBQUAD[16];
+				Quantizer.SetColorTable(pColors);
+				Dib.CreatePaletteFromColors(16, pColors);
+				Dib.ConvertTo4bitsErrDiff(Dib.GetPalette(), this, TRUE);
+				delete [] pColors;
 			}
-			else if (nNumColors <= 512)
+			nCompression = COMPRESSION_LZW;
+		}
+		else if (nNumColors <= 512)
+		{
+			// Convert to 8bpp
+			if (info.BitsPerPixel != 8)
 			{
-				// Convert to 8bpp
-				if (bpp != 8)
-				{
-					CQuantizer Quantizer(256, 8);
-					Quantizer.ProcessImage(&Dib, this, TRUE);
-					RGBQUAD* pColors = (RGBQUAD*)new RGBQUAD[256];
-					Quantizer.SetColorTable(pColors);
-					Dib.CreatePaletteFromColors(256, pColors);
-					Dib.ConvertTo8bitsErrDiff(Dib.GetPalette(), this, TRUE);
-					delete [] pColors;
-				}
-
-				// Choose Compression
-				if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
-				{
-					Dib.UpdateGrayscaleFlag();
-					if (Dib.IsGrayscale())
-						nCompression = COMPRESSION_JPEG;
-					else
-						nCompression = COMPRESSION_LZW;
-				}
-				else
-					nCompression = COMPRESSION_LZW;
+				CQuantizer Quantizer(256, 8);
+				Quantizer.ProcessImage(&Dib, this, TRUE);
+				RGBQUAD* pColors = (RGBQUAD*)new RGBQUAD[256];
+				Quantizer.SetColorTable(pColors);
+				Dib.CreatePaletteFromColors(256, pColors);
+				Dib.ConvertTo8bitsErrDiff(Dib.GetPalette(), this, TRUE);
+				delete [] pColors;
 			}
-			else
+
+			// Choose Compression
+			if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
 			{
-				if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
+				Dib.UpdateGrayscaleFlag();
+				if (Dib.IsGrayscale())
 					nCompression = COMPRESSION_JPEG;
 				else
 					nCompression = COMPRESSION_LZW;
 			}
-
-			// First Page?
-			if (m_TiffScan == NULL)
-			{
-				m_nScanPageNumber = 1;
-				Dib.SaveFirstTIFF(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
-									&m_TiffScan,
-									0, // We do not know how many pages
-									nCompression,
-									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T("") ? DEFAULT_JPEGCOMPRESSION :
-									((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
-									this,
-									TRUE);
-			}
 			else
-			{
-				m_nScanPageNumber++;
-				Dib.SaveNextTIFF(	m_TiffScan,
-									0, // We do not know the page number
-									0, // We do not know how many pages
-									nCompression,
-									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T("") ? DEFAULT_JPEGCOMPRESSION :
-									((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
-									this,
-									TRUE);
-			}
-
-			// Save also the single pages as separate tiff files
-			if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T(""))
-			{
-				CString sTime(CTime::GetCurrentTime().Format(_T("%Y_%m_%d_%H_%M_%S")));
-				m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d_%s%s"),
-														::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
-														m_nScanPageNumber,
-														sTime,
-														::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
-				Dib.SaveTIFF(	m_sScanCurrentTiffPageFileName,
-								nCompression,
-								DEFAULT_JPEGCOMPRESSION,
-								this,
-								TRUE);
-			}
+				nCompression = COMPRESSION_LZW;
 		}
 		else
 		{
-			// Make New Document
-			CPictureDoc* pDoc = (CPictureDoc*)((CUImagerApp*)::AfxGetApp())->GetPictureDocTemplate()->OpenDocumentFile(NULL);
-			if (pDoc)
+			if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName != _T(""))
+				nCompression = COMPRESSION_JPEG;
+			else
+				nCompression = COMPRESSION_LZW;
+		}
+
+		// First Page?
+		if (m_TiffScan == NULL)
+		{
+			m_nScanPageNumber = 1;
+			Dib.SaveFirstTIFF(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
+								&m_TiffScan,
+								0, // We do not know how many pages
+								nCompression,
+								((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T("") ? DEFAULT_JPEGCOMPRESSION :
+								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
+								this,
+								TRUE);
+		}
+		else
+		{
+			m_nScanPageNumber++;
+			Dib.SaveNextTIFF(	m_TiffScan,
+								0, // We do not know the page number
+								0, // We do not know how many pages
+								nCompression,
+								((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T("") ? DEFAULT_JPEGCOMPRESSION :
+								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
+								this,
+								TRUE);
+		}
+
+		// Save also the single pages as separate tiff files
+		if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T(""))
+		{
+			CString sTime(CTime::GetCurrentTime().Format(_T("%Y_%m_%d_%H_%M_%S")));
+			m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d_%s%s"),
+													::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
+													m_nScanPageNumber,
+													sTime,
+													::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
+			Dib.SaveTIFF(	m_sScanCurrentTiffPageFileName,
+							nCompression,
+							DEFAULT_JPEGCOMPRESSION,
+							this,
+							TRUE);
+		}
+	}
+	else
+	{
+		// Make New Document
+		CPictureDoc* pDoc = (CPictureDoc*)((CUImagerApp*)::AfxGetApp())->GetPictureDocTemplate()->OpenDocumentFile(NULL);
+		if (pDoc)
+		{
+			// Check
+			if (!pDoc->m_pDib)
 			{
-				// Check
-				if (!pDoc->m_pDib)
-				{
-					pDoc->CloseDocumentForce();
-					return;
-				}
-
-				// Get Bits
-				pDoc->m_pDib->CopyFromHandle(hDib);
-				pDoc->SetModifiedFlag();
-
-				// Init Vars
-				pDoc->m_DocRect.top = 0;
-				pDoc->m_DocRect.left = 0;
-				pDoc->m_DocRect.right = pDoc->m_pDib->GetWidth();
-				pDoc->m_DocRect.bottom = pDoc->m_pDib->GetHeight();
-				pDoc->m_nPixelAlignX = 1;
-				pDoc->m_nPixelAlignY = 1;
-				pDoc->SetDocumentTitle();
-
-				// Zoom
-				CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-				pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
-				pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
-
-				// Fit to document
-				if (!pDoc->GetFrame()->IsZoomed())
-				{
-					pDoc->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																	0, 0, 0, 0,
-																	SWP_NOSIZE |
-																	SWP_NOZORDER);
-					pDoc->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-				}
-				else
-					pDoc->GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+				pDoc->CloseDocumentForce();
+				return;
 			}
+
+			// Get Bits
+			pDoc->m_pDib->CopyFromHandle(hBitmap);
+			pDoc->SetModifiedFlag();
+
+			// Init Vars
+			pDoc->m_DocRect.top = 0;
+			pDoc->m_DocRect.left = 0;
+			pDoc->m_DocRect.right = pDoc->m_pDib->GetWidth();
+			pDoc->m_DocRect.bottom = pDoc->m_pDib->GetHeight();
+			pDoc->m_nPixelAlignX = 1;
+			pDoc->m_nPixelAlignY = 1;
+			pDoc->SetDocumentTitle();
+
+			// Zoom
+			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(pDoc->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+			pZoomCB->SetCurSel(pDoc->m_nZoomComboBoxIndex = 1); // Fit Big
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(1))));
+
+			// Fit to document
+			if (!pDoc->GetFrame()->IsZoomed())
+			{
+				pDoc->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																0, 0, 0, 0,
+																SWP_NOSIZE |
+																SWP_NOZORDER);
+				pDoc->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+			}
+			else
+				pDoc->GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
 		}
 	}
 }

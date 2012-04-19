@@ -7,6 +7,7 @@
 #define TWCPP_CANCELTHIS	(1)
 #define TWCPP_CANCELALL		(2)
 #define TWCPP_DOTRANSFER	(0)
+#define WM_TWAIN_CLOSED		WM_USER + 114
 
 class CTwain
 {
@@ -66,7 +67,6 @@ protected:
 	BOOL TwainGetImageInfo(TW_IMAGEINFO& info);
 
 	virtual BOOL TwainDisableSource();
-	virtual void TwainClosing(){;};
 
 	void TwainTranslateMessage(TW_EVENT* ptwEvent);
 	void TwainTransferImage();

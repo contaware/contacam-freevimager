@@ -258,8 +258,9 @@ void CTwain::TwainTranslateMessage(TW_EVENT* ptwEvent)
 			break;
 
 		case MSG_CLOSEDSREQ :
-			TwainClosing();
 			TwainCloseDS();
+			if (::IsWindow(m_hTwainMessageWnd))
+				::PostMessage(m_hTwainMessageWnd, WM_TWAIN_CLOSED, 0, 0);
 			break;
 
 		// No message from the Source to the App

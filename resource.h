@@ -2564,6 +2564,7 @@
 #define IDC_STATIC1860                  1860
 #define IDS_STRING1860                  1860
 #define IDC_STATIC1861                  1861
+#define IDS_STRING1861                  1861
 #define IDC_STATIC1862                  1862
 #define IDC_STATIC1863                  1863
 #define IDC_STATIC1864                  1864

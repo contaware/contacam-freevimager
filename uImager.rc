@@ -7270,6 +7270,7 @@ BEGIN
     IDS_STRING1858          "Width"
     IDS_STRING1859          "Height"
     IDS_STRING1860          "Path"
+    IDS_STRING1861          "Scan more pages?"
 END
 
 #endif    // English (U.S.) resources

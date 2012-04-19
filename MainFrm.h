@@ -91,9 +91,7 @@ class CMainFrame : public CMDIFrameWnd, public CTwain
 public:
 	CMainFrame();
 	virtual ~CMainFrame();
-	void TwainSetImage(HANDLE hDib, int width, int height, int bpp);
-	void TwainCopyImage(HANDLE hBitmap,TW_IMAGEINFO& info);
-	void TwainClosing();
+	void TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info);
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
 
@@ -301,6 +299,7 @@ protected:
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnSessionChange(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 #endif
