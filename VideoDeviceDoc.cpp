@@ -6300,7 +6300,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 		if (bOpened)
 		{
 			// Update format
-			OnChangeVideoFormat();
+			OnChangeDxVideoFormat();
 
 			// Start capturing video data
 			StopProcessFrame(PROCESSFRAME_DXOPEN);
@@ -7051,7 +7051,7 @@ void CVideoDeviceDoc::CaptureRecordPause()
 }
 
 // Function called from the UI thread and when ProcessFrame() is not called
-void CVideoDeviceDoc::OnChangeVideoFormat()
+void CVideoDeviceDoc::OnChangeDxVideoFormat()
 {
 	DWORD dwSize;
 
@@ -9070,7 +9070,7 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 
 void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 {
-	// To debug YUV formats, enable in OnChangeVideoFormat()!
+	// To debug YUV formats, enable in OnChangeDxVideoFormat()!
 #ifdef _DEBUG
 	if (m_pProcessFrameDebugSrcDib->GetBMI())
 	{

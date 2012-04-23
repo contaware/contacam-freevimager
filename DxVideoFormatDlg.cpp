@@ -199,7 +199,7 @@ void CDxVideoFormatDlg::Apply()
 
 		// Update
 		m_pDoc->m_bSizeToDoc = TRUE;
-		m_pDoc->OnChangeVideoFormat();
+		m_pDoc->OnChangeDxVideoFormat();
 		m_pDoc->m_nDeviceFormatId = nID;
 		m_pDoc->m_nDeviceFormatWidth = m_Sizes[m_VideoSize.GetCurSel()].cx;
 		m_pDoc->m_nDeviceFormatHeight = m_Sizes[m_VideoSize.GetCurSel()].cy;

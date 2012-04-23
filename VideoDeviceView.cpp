@@ -93,7 +93,7 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 
 				// Update
 				pDoc->m_bSizeToDoc = TRUE;
-				pDoc->OnChangeVideoFormat();
+				pDoc->OnChangeDxVideoFormat();
 
 				// Reset vars
 				pDoc->m_dwFrameCountUp = 0U;
@@ -1095,7 +1095,7 @@ BOOL CVideoDeviceView::ReOpenDxDevice()
 										pDoc->m_pDxCapture->GetOpenMediaSubType()))
 		{
 			// Update format
-			pDoc->OnChangeVideoFormat();
+			pDoc->OnChangeDxVideoFormat();
 				
 			// Start capturing video data
 			if (pDoc->m_pDxCapture->Run())

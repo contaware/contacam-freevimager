@@ -1249,8 +1249,8 @@ public:
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
 	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
 
-	// Function called when the video grabbing format has been changed
-	void OnChangeVideoFormat();
+	// Function called when the directx video grabbing format has been changed
+	void OnChangeDxVideoFormat();
 
 	// Networking Type and Mode
 	typedef enum {
