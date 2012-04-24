@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.9.9 beta2 (April 10th 2012)
+3.9.9 beta3 (April 24th 2012)
 
 - Possibility to rotate the video source by 180°
 - Moved the De-Interlace and the Rotate 180° commands from

@@ -499,15 +499,9 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 				nLengthHour	= (int)(dLength / 3600.0);
 				nLengthMin	= (int)((dLength - nLengthHour * 3600.0) / 60.0);
 				dLengthSec	= dLength - nLengthHour * 3600.0 - nLengthMin * 60.0;
-				if ((nLengthHour == 0) && (nLengthMin != 0))
-					t.Format(_T("%02d min %.3f sec"),		nLengthMin,
-															dLengthSec);
-				else if ((nLengthHour == 0) && (nLengthMin == 0))	
-					t.Format(_T("%.3f sec"),				dLengthSec);
-				else
-					t.Format(_T("%02d hr %02d min %.3f sec"),nLengthHour,
-															nLengthMin,
-															dLengthSec);
+				t.Format(_T("%02d:%02d:%02d"),	nLengthHour,
+												nLengthMin,
+												Round(dLengthSec));
 				s += t;
 			}
 		}

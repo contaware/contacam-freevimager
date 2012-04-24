@@ -210,68 +210,28 @@ void CCDAudioView::OnTimer(UINT nIDEvent)
 		m_SliderPos.SetPos(nCurrentTrackPos);
 
 		// Tracks
-		s.Format(_T("Track %d of %d"),	nCurrentTrackNum,
-										nTotalTracks);
+		s.Format(_T("%02d / %02d"),	nCurrentTrackNum,
+									nTotalTracks);
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_TEXT_TRACKS);
 		pEdit->GetWindowText(t);
 		if (t != s)
 			pEdit->SetWindowText(s);
 
 		// Total Length
-		if (nTotalSeconds / 3600)
-		{
-			s.Format(_T("Total %02dhr %02dmin %dsec\n"),
-							nTotalSeconds / 3600,
+		s.Format(_T("Tot %02d:%02d"),
 							nTotalSeconds / 60,
 							nTotalSeconds % 60);
-		}
-		else if (nTotalSeconds / 60)
-		{
-			s.Format(_T("Total %02dmin %dsec\n"),
-							nTotalSeconds / 60,
-							nTotalSeconds % 60);
-
-		}
-		else
-			s.Format(_T("Total %dsec\n"), nTotalSeconds);
 		pEdit = (CEdit*)GetDlgItem(IDC_TEXT_TOTAL);
 		pEdit->GetWindowText(t);
 		if (t != s)
 			pEdit->SetWindowText(s);
 
 		// Current Position
-		if (nCurrentTrackPos / 3600)
-		{
-			t.Format(_T("%02dhr %02dmin %dsec"),
-							nCurrentTrackPos / 3600,
+		s.Format(_T("%02d:%02d / %02d:%02d"),
 							nCurrentTrackPos / 60,
-							nCurrentTrackPos % 60);
-		}
-		else if (nCurrentTrackPos / 60)
-		{
-			t.Format(_T("%02dmin %dsec"),
-							nCurrentTrackPos / 60,
-							nCurrentTrackPos % 60);
-		}
-		else
-			t.Format(_T("%dsec"), nCurrentTrackPos);
-		s = t;
-		if (nCurrentTrackSeconds / 3600)
-		{
-			t.Format(_T(" of %02dhr %02dmin %dsec"),
-							nCurrentTrackSeconds / 3600,
+							nCurrentTrackPos % 60,
 							nCurrentTrackSeconds / 60,
 							nCurrentTrackSeconds % 60);
-		}
-		else if (nCurrentTrackSeconds / 60)
-		{
-			t.Format(_T(" of %02dmin %dsec"),
-							nCurrentTrackSeconds / 60,
-							nCurrentTrackSeconds % 60);
-		}
-		else
-			t.Format(_T(" of %dsec"), nCurrentTrackSeconds);
-		s += t;
 		pEdit = (CEdit*)GetDlgItem(IDC_TEXT_CURRENT);
 		pEdit->GetWindowText(t);
 		if (t != s)
@@ -325,7 +285,7 @@ void CCDAudioView::OnButtonTrack()
 			{
 				int nLength = pDoc->m_pCDAudio->GetTrackLength(nTrack);
 				CString sTrack;
-				sTrack.Format(_T("Track %02d\t%02d:%02d"), nTrack, (nLength / 60), (nLength % 60));
+				sTrack.Format(_T("%02d\t%02d:%02d"), nTrack, (nLength / 60), (nLength % 60));
 				menu.AppendMenu(MF_ENABLED | MF_STRING, (WM_USER + nTrack), sTrack);
 			}
 			menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, rect.left, rect.top, this);

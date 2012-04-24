@@ -1036,15 +1036,9 @@ CString CDibStatic::GetFormattedTime(LONG lMilliseconds)
 	double dLengthSec	= dLength - nLengthHour * 3600.0 - nLengthMin * 60.0;	// Seconds Part
 
 	CString t;
-	if ((nLengthHour == 0) && (nLengthMin != 0))
-		t.Format(_T("%02d min %.1f sec"),			nLengthMin,
-													dLengthSec);
-	else if ((nLengthHour == 0) && (nLengthMin == 0))	
-		t.Format(_T("%.1f sec"),					dLengthSec);
-	else
-		t.Format(_T("%02d hr %02d min %.1f sec"),	nLengthHour,
-													nLengthMin,
-													dLengthSec);
+	t.Format(_T("%02d:%02d:%02d"),	nLengthHour,
+									nLengthMin,
+									Round(dLengthSec));
 	return t;
 }
 
@@ -1087,8 +1081,8 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 		if (m_lMusicPos >= 0 && m_lMusicLength > 0)
 		{
 			CString sPos, sLength;
-			sPos.Format(_T("Pos: %s"),		GetFormattedTime(m_lMusicPos));
-			sLength.Format(_T("Tot: %s"),	GetFormattedTime(m_lMusicLength));
+			sPos.Format(_T("Pos %s"),		GetFormattedTime(m_lMusicPos));
+			sLength.Format(_T("Tot %s"),	GetFormattedTime(m_lMusicLength));
 			CSize szPosTextSize = pMemDC->GetTextExtent(sPos);
 			rcPaint.top += (rcPaint.Height() / 2 - szPosTextSize.cy);
 			pMemDC->DrawText(sPos + _T('\n') + sLength,

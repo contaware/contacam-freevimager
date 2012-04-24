@@ -1,10 +1,16 @@
 VERSION HISTORY
 
-3.9.9 beta2 (April 10th 2012)
+3.9.9 beta3 (April 24th 2012)
 
 - Beside the multi-page file the Scan to Tiff command
   saves now also the single pages in separate files 
-- New toolbar button for Scan to Tiff
+- New toolbar button for Scan to Tiff and for Email
+- When Scan to Tiff or Scan to Pdf dialogs are closed
+  the program asks whether more pages are to be scanned
+  (removed the superfluous Lock Scan Dialog option)
+- Convert 32 bpp images to 24 bpp when sending them to the
+  printer; this because the alpha component is interpreted
+  by some printers even if it's not an image with alpha channel
   
 3.9.7 (March 27th 2012)
 

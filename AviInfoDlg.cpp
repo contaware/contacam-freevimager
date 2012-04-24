@@ -136,11 +136,17 @@ void CAviInfoDlg::UpdateDisplay()
 				t.Format(_T("Video Stream %d:\r\n"), dwStreamNum);
 			s += t;
 
+			// Length
+			t.Format(_T("    %02d:%02d:%02d\r\n"),	nLengthHour,
+													nLengthMin,
+													Round(dLengthSec));
+			s += t;
+
 			// Name & FourCC
 			if (pVideoStream->IsRgb() ||	// Uncompressed RGB
 				pVideoStream->IsYuv())		// YUV Color Space Encoded
 			{
-				t.Format(_T("    Format: %s\r\n"),
+				t.Format(_T("    %s\r\n"),
 					CDib::GetCompressionName(pVideoStream->GetFormat(true)));
 			}
 			else
@@ -151,13 +157,13 @@ void CAviInfoDlg::UpdateDisplay()
 					switch (pVideoStream->GetAVCodecCtx()->pix_fmt)
 					{
 						case PIX_FMT_YUVJ420P :
-							sFormat = _T("Planar YUV 4:2:0, 12bpp, full scale (jpeg)");
+							sFormat = _T("Planar YUV 4:2:0, 12bpp");
 							break;
 						case PIX_FMT_YUVJ422P :
-							sFormat = _T("Planar YUV 4:2:2, 16bpp, full scale (jpeg)");
+							sFormat = _T("Planar YUV 4:2:2, 16bpp");
 							break;
 						case PIX_FMT_YUVJ444P :
-							sFormat = _T("Planar YUV 4:4:4, 24bpp, full scale (jpeg)");
+							sFormat = _T("Planar YUV 4:4:4, 24bpp");
 							break;
 						case PIX_FMT_YUV420P :
 							sFormat = _T("Planar YUV 4:2:0, 12bpp");
@@ -169,10 +175,10 @@ void CAviInfoDlg::UpdateDisplay()
 							sFormat = _T("Planar YUV 4:2:2, 16bpp");
 							break;
 						case PIX_FMT_YUV410P :
-							sFormat = _T("Planar YUV 4:1:0, 9bpp, (1 Cr & Cb sample per 4x4 Y samples)");
+							sFormat = _T("Planar YUV 4:1:0, 9bpp");
 							break;
 						case PIX_FMT_YUV411P :
-							sFormat = _T("Planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples)");
+							sFormat = _T("Planar YUV 4:1:1, 12bpp");
 							break;
 						case PIX_FMT_PAL8 :
 							sFormat = _T("RGB8 with Palette");
@@ -201,77 +207,50 @@ void CAviInfoDlg::UpdateDisplay()
 					}
 					if (sFormat != _T(""))
 					{
-						t.Format(_T("    Decompressor: Internal to %s\r\n    FourCC: %s\r\n"),
-										sFormat,
-										CDib::GetCompressionName(pVideoStream->GetFormat(true)));
+						t.Format(_T("    %s -> %s\r\n"),
+										CDib::GetCompressionName(pVideoStream->GetFormat(true)),
+										sFormat);
 					}
 					else
 					{
-						t.Format(_T("    Decompressor: Internal\r\n    FourCC: %s\r\n"),
+						t.Format(_T("    %s\r\n"),
 									CDib::GetCompressionName(pVideoStream->GetFormat(true)));
 					}
 				}
 				else if (pVideoStream->IsUsingVCM())
 				{
-					t.Format(_T("    Decompressor: %s\r\n    FourCC: %s\r\n"),
-								pVideoStream->GetDecompressorDescription(),
-								CDib::GetCompressionName(pVideoStream->GetFormat(true)));
+					t.Format(_T("    %s, %s\r\n"),
+								CDib::GetCompressionName(pVideoStream->GetFormat(true)),
+								pVideoStream->GetDecompressorDescription());
 				}
 				else
 				{	
-					t.Format(_T("    Decompressor: None\r\n    FourCC: %s\r\n"),
+					t.Format(_T("    %s\r\n"),
 								CDib::GetCompressionName(pVideoStream->GetFormat(true)));
 				}
 			}
 			s += t;
 
-			// Size
-			t.Format(_T("    Size: %dx%d\r\n"),	pVideoStream->GetWidth(),
-												pVideoStream->GetHeight());
+			// Size, Frame Rate and Data Rate
+			t.Format(_T("    %dx%d, %.3f fps, %d kbps\r\n"),
+											pVideoStream->GetWidth(),
+											pVideoStream->GetHeight(),
+											pVideoStream->GetFrameRate(),
+											dLength > 0.0 ? Round(((double)pVideoStream->GetTotalBytes() / dLength * 8.0) / 1000.0) : 0);
 			s += t;
-
-			// Frame Rate
-			t.Format(_T("    Frame Rate: %.3f fps (%u / %u)\r\n"),
-												pVideoStream->GetFrameRate(),
-												pVideoStream->GetRate(),
-												pVideoStream->GetScale());
-			s += t;
-			
-			// Data Rate
-			t.Format(_T("    Data Rate: %d kbps\r\n"),
-				Round(((double)pVideoStream->GetTotalBytes() / dLength * 8.0) / 1000.0));
-			s += t;
-
-			// Keyframes Rate
-			double dKeyframesRate = 0.0;
-			if (pVideoStream->GetTotalKeyFrames() > 0)
-				dKeyframesRate = (double)pVideoStream->GetTotalFrames() / (double)pVideoStream->GetTotalKeyFrames();
-			if (dKeyframesRate > 1.0)
-			{
-				t.Format(_T("    Keyframes Rate: %0.1f\r\n"), dKeyframesRate);
-				s += t;
-			}
 
 			// Totals
-			t.Format(_T("    Total: %d frame%s , %I64d byte%s , %d keyframe%s\r\n"), 
+			double dKeyframesPercent = 0.0;
+			if (pVideoStream->GetTotalFrames() > 0)
+				dKeyframesPercent = 100.0 * (double)pVideoStream->GetTotalKeyFrames() / (double)pVideoStream->GetTotalFrames();
+			t.Format(_T("    %d frame%s, %I64d byte%s, %d keyframe%s (%.2f%%)"), 
 												pVideoStream->GetTotalFrames(),
 												pVideoStream->GetTotalFrames() == 1 ? _T("") : _T("s"),
 												pVideoStream->GetTotalBytes(),
 												pVideoStream->GetTotalBytes() == 1 ? _T("") : _T("s"),
 												pVideoStream->GetTotalKeyFrames(),
-												pVideoStream->GetTotalKeyFrames() == 1 ? _T("") : _T("s"));
-			s += t;
-
-			// Length
-			if ((nLengthHour == 0) && (nLengthMin != 0))
-				t.Format(_T("    Length: %02d min %.3f sec"),		nLengthMin,
-																	dLengthSec);
-			else if ((nLengthHour == 0) && (nLengthMin == 0))	
-				t.Format(_T("    Length: %.3f sec"),				dLengthSec);
-			else
-				t.Format(_T("    Length: %02d hr %02d min %.3f sec"),nLengthHour,
-																	nLengthMin,
-																	dLengthSec);
+												pVideoStream->GetTotalKeyFrames() == 1 ? _T("") : _T("s"),
+												dKeyframesPercent);
 			s += t;
 		}
 		if (pDoc->m_pAVIPlay->GetVideoStreamsCount() == 0)
@@ -307,17 +286,11 @@ void CAviInfoDlg::UpdateDisplay()
 				t.Format(_T("Audio Stream %d:\r\n"), dwStreamNum);
 			s += t;
 
-			// Decompressor
-			if (pAudioStream->GetFormatTag(true) != WAVE_FORMAT_PCM)
-			{
-				if (pAudioStream->IsUsingAVCodec())
-					t.Format(_T("    Decompressor: Internal\r\n"));
-				else if (pAudioStream->IsUsingACM())
-					t.Format(_T("    Decompressor: %s\r\n"), pAudioStream->GetACMDecompressorLongName());
-				else
-					t.Format(_T("    Decompressor: None\r\n"));
-				s += t;
-			}
+			// Length
+			t.Format(_T("    %02d:%02d:%02d\r\n"),	nLengthHour,
+													nLengthMin,
+													Round(dLengthSec));
+			s += t;
 
 			// Wave Format Tag
 			if (CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)) != _T(""))
@@ -326,11 +299,11 @@ void CAviInfoDlg::UpdateDisplay()
 				{
 					if (pAudioStream->IsVBR())
 					{
-						t.Format(_T("    Format: Mp3 VBR (%i samples/chunk)\r\n"),
+						t.Format(_T("    Mp3 VBR (%i samples/chunk)"),
 														pAudioStream->GetVBRSamplesPerChunk());
 					}
 					else
-						t.Format(_T("    Format: Mp3 CBR\r\n"));
+						t.Format(_T("    Mp3 CBR"));
 				}
 				else if (pAudioStream->GetFormatTag(true) == WAVE_FORMAT_MPEG)
 				{
@@ -338,29 +311,29 @@ void CAviInfoDlg::UpdateDisplay()
 					{
 						if (pAudioStream->GetMpegAudioLayer() == 2)
 						{
-							t.Format(_T("    Format: Mp2 VBR (%i samples/chunk)\r\n"),
+							t.Format(_T("    Mp2 VBR (%i samples/chunk)"),
 														pAudioStream->GetVBRSamplesPerChunk());
 						}
 						else if (pAudioStream->GetMpegAudioLayer() == 1)
 						{
-							t.Format(_T("    Format: Mp1 VBR (%i samples/chunk)\r\n"),
+							t.Format(_T("    Mp1 VBR (%i samples/chunk)"),
 														pAudioStream->GetVBRSamplesPerChunk());
 						}
 						else
 						{
-							t.Format(_T("    Format: %s\r\n"),
+							t.Format(_T("    %s"),
 								CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)));
 						}
 					}
 					else
 					{
 						if (pAudioStream->GetMpegAudioLayer() == 2)
-							t.Format(_T("    Format: Mp2 CBR\r\n"));
+							t.Format(_T("    Mp2 CBR"));
 						else if (pAudioStream->GetMpegAudioLayer() == 1)
-							t.Format(_T("    Format: Mp1 CBR\r\n"));
+							t.Format(_T("    Mp1 CBR"));
 						else
 						{
-							t.Format(_T("    Format: %s\r\n"),
+							t.Format(_T("    %s"),
 								CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)));
 						}
 					}
@@ -369,34 +342,39 @@ void CAviInfoDlg::UpdateDisplay()
 				{
 					if (pAudioStream->IsVBR())
 					{
-						t.Format(_T("    Format: %s VBR (%i samples/chunk)\r\n"),
+						t.Format(_T("    %s VBR (%i samples/chunk)"),
 							CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)),
 							pAudioStream->GetVBRSamplesPerChunk());
 					}
 					else
 					{
-						t.Format(_T("    Format: %s CBR\r\n"),
+						t.Format(_T("    %s CBR"),
 							CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)));
 					}
 				}
 			}
 			else
-				t.Format(_T("    Format: 0x%04x\r\n"), pAudioStream->GetFormatTag(true));
+				t.Format(_T("    0x%04x"), pAudioStream->GetFormatTag(true));
 			s += t;
-	
-			// Bits
+			if (pAudioStream->GetFormatTag(true) != WAVE_FORMAT_PCM && pAudioStream->IsUsingACM())	
+				t.Format(_T(", %s\r\n"), pAudioStream->GetACMDecompressorLongName());
+			else
+				t = _T("\r\n");
+			s += t;
+
+			// Hz, bits, channels and data rate
 			if (pAudioStream->GetBits(true) != 0)
 			{
 				if (pAudioStream->GetChannels(true) == 1) // Mono
-					t.Format(_T("    Quality: %dHz , %dbits , mono\r\n"),
+					t.Format(_T("    %dHz, %dbits, mono"),
 															pAudioStream->GetSampleRate(true),
 															pAudioStream->GetBits(true));
 				else if (pAudioStream->GetChannels(true) == 2) // Stereo
-					t.Format(_T("    Quality: %dHz , %dbits , stereo\r\n"),
+					t.Format(_T("    %dHz, %dbits, stereo"),
 															pAudioStream->GetSampleRate(true),
 															pAudioStream->GetBits(true));
 				else // Multi-Channel
-					t.Format(_T("    Quality: %dHz , %dbits , %d channels\r\n"),
+					t.Format(_T("    %dHz, %dbits, %d channels"),
 															pAudioStream->GetSampleRate(true),
 															pAudioStream->GetBits(true),
 															pAudioStream->GetChannels(true));
@@ -404,71 +382,39 @@ void CAviInfoDlg::UpdateDisplay()
 			else
 			{
 				if (pAudioStream->GetChannels(true) == 1) // Mono
-					t.Format(_T("    Quality: %dHz , mono\r\n"),
+					t.Format(_T("    %dHz, mono"),
 															pAudioStream->GetSampleRate(true));
 				else if (pAudioStream->GetChannels(true) == 2) // Stereo
-					t.Format(_T("    Quality: %dHz , stereo\r\n"),
+					t.Format(_T("    %dHz, stereo"),
 															pAudioStream->GetSampleRate(true));
 				else // Multi-Channel
-					t.Format(_T("    Quality: %dHz , %d channels\r\n"),
+					t.Format(_T("    %dHz, %d channels"),
 															pAudioStream->GetSampleRate(true),
 															pAudioStream->GetChannels(true));
 			}
 			s += t;
-
-			// Sample Size in Bytes
-			if (pAudioStream->GetFormatTag(true) == WAVE_FORMAT_PCM)
-			{
-				t.Format(_T("    Sample Size: %d byte%s\r\n"),
-															pAudioStream->GetSampleSize(true),
-															pAudioStream->GetSampleSize(true) == 1 ? _T("") : _T("s"));
-				s += t;
-			}
-
-			// Data Rate
 			DWORD dwVBRKBitsPerSecond = 0;
 			if (pAudioStream->IsVBR())
 				dwVBRKBitsPerSecond = pAudioStream->CalcVBRBytesPerSeconds() * 8 / 1000;
 			DWORD dwKBitsPerSecond = pAudioStream->GetBytesPerSeconds(true) * 8 / 1000;
 			if (dwKBitsPerSecond > 0 && dwVBRKBitsPerSecond == 0)
-			{
-				t.Format(_T("    Data Rate: %d kbps\r\n"),	dwKBitsPerSecond);
-				s += t;
-			}
+				t.Format(_T(", %d kbps\r\n"), dwKBitsPerSecond);
 			else if (dwKBitsPerSecond == 0 && dwVBRKBitsPerSecond > 0)
-			{
-				t.Format(_T("    Data Rate: %d kbps\r\n"), dwVBRKBitsPerSecond);
-				s += t;
-			}
+				t.Format(_T(", %d kbps\r\n"), dwVBRKBitsPerSecond);
 			else if (dwKBitsPerSecond > 0 && dwVBRKBitsPerSecond > 0)
-			{
-				if (dwKBitsPerSecond != dwVBRKBitsPerSecond)
-					t.Format(_T("    Data Rate: %d kbps (effective: %d kbps)\r\n"), dwKBitsPerSecond, dwVBRKBitsPerSecond);
-				else
-					t.Format(_T("    Data Rate: %d kbps\r\n"),	dwKBitsPerSecond);
-				s += t;
-			}
+				t.Format(_T(", %d kbps\r\n"), dwVBRKBitsPerSecond);
+			else
+				t = _T("\r\n");
+			s += t;
 
 			// Totals
-			t.Format(_T("    Total: %I64d sample%s , %I64d byte%s , %d chunk%s\r\n"),	
+			t.Format(_T("    %I64d sample%s, %I64d byte%s, %d chunk%s"),	
 														pAudioStream->GetTotalSamples(),
 														pAudioStream->GetTotalSamples() == 1 ? _T("") : _T("s"),
 														pAudioStream->GetTotalBytes(),
 														pAudioStream->GetTotalBytes() == 1 ? _T("") : _T("s"),
 														pAudioStream->GetTotalChunks(),
 														pAudioStream->GetTotalChunks() == 1 ? _T("") : _T("s"));
-			s += t;
-
-			// Length
-			if ((nLengthHour == 0) && (nLengthMin != 0))
-				t.Format(_T("    Length: %02d min %.3f sec"),		nLengthMin,
-																	dLengthSec);
-			else if ((nLengthHour == 0) && (nLengthMin == 0))	
-				t.Format(_T("    Length: %.3f sec"),				dLengthSec);
-			else
-				t.Format(_T("    Length: %02d hr %02d min %.3f sec"),nLengthHour,
-																	nLengthMin,
-																	dLengthSec);
 			s += t;
 		}
 		if (pDoc->m_pAVIPlay->GetAudioStreamsCount() == 0)
