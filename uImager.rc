@@ -4675,7 +4675,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10
@@ -4726,7 +4726,7 @@ BEGIN
     LTEXT           "Note: if the disk space becomes less than 10% the oldest files are automatically deleted to make room for the new one",
                     IDC_STATIC,188,169,214,19
     GROUPBOX        "4. Finish",IDC_STATIC,5,201,407,37
-    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu",
+    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",
                     IDC_STATIC,16,213,386,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
                     33,60,8
