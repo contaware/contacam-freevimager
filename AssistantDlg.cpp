@@ -1273,6 +1273,13 @@ void CAssistantDlg::ApplySettings()
 	// End wait cursor
 	EndWaitCursor();
 
+	// Update data from vars to view because m_sName may have been changed
+	UpdateData(FALSE);
+
+	// Save Settings (BeginWaitCursor() / EndWaitCursor() called inside this function)
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		m_pDoc->SaveSettings();
+
 	// Restore var
 	m_pDoc->m_bRecAutoOpenAllowed = TRUE;
 
@@ -1281,7 +1288,7 @@ void CAssistantDlg::ApplySettings()
 		m_pDoc->m_pVideoDevicePropertySheet->UpdateTitle();
 	m_pDoc->SetDocumentTitle();
 
-	// Close us
+	// This calls UpdateData(TRUE) -> view to vars
 	CDialog::OnOK();
 }
 
