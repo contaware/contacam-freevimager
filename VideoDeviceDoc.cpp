@@ -4895,6 +4895,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// REPOTEC, TRENDNET, PLANET
 	m_HttpGetFrameLocations.Add(_T("/goform/video"));					// REPOTEC, TRENDNET, PLANET
 	m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// REPOTEC, TRENDNET, PLANET
+	m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// TRENDNET
 	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// PLANET, SOLWISE, GADSPOT, VEO Observer
 	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// STARDOT
 	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// EDIMAX, INTELLINET
@@ -10943,6 +10944,17 @@ JPEG
 _T("GET /goform/video HTTP/1.1\r\n")       -> get one frame, don't response until frame ready
 _T("GET /goform/video2 HTTP/1.1\r\n")      -> get one frame, response no matter frame ready or not
 _T("GET /goform/capture HTTP/1.1\r\n")     -> get one frame, server will disconnect the connection after
+
+
+TRENDNET TV-IP410W, TV-IP110WN, TV-IP442W, TV-IP312W
+----------------------------------------------------
+
+JPEG
+_T("GET /cgi/jpg/image.cgi HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /cgi/mjpg/mjpg.cgi HTTP/1.1\r\n")
+_T("GET /cgi/mjpg/mjpeg.cgi HTTP/1.1\r\n")
 
 
 D-LINK

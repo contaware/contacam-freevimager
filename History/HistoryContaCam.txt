@@ -1,10 +1,14 @@
 VERSION HISTORY
 
-3.9.9 beta3 (April 24th 2012)
+3.9.9 beta4 (April 27th 2012)
 
 - Possibility to rotate the video source by 180°
 - Moved the De-Interlace and the Rotate 180° commands from
   the Capture menu to Device Settings - General Tab
+- The Device Assistant dialog was not storing the changes to the
+  registry (or INI file) when pressing OK. These settings were
+  not lost because ContaCam saves everything to the registry
+  (or INI file) when closing
 
 3.9.7 (March 27th 2012)
 
