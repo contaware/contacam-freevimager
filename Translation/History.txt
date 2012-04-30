@@ -1,0 +1,10 @@
+TRANSLATIONS HISTORY
+
+3.9.9 (May 1st 2012)
+
+- Menu description made shorter: 'Scan from selected source to Tiff'
+- Dialog 304 updated step 4.
+- Dialog 140 new De-Interlace and Rotate 180° checkboxes,
+  modified dialogs 278 and 297 to be consistent with De-Interlace string
+- String 1177 changed to be more precise
+- New strings from 1852 to 1861
