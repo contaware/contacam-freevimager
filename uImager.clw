@@ -169,7 +169,7 @@ Resource28=IDD_SENDMAIL_OPEN_DOCS (English (U.S.))
 Resource29=IDD_RESIZING (English (U.S.))
 Resource30=IDD_AUDIOOUT_DESTINATION (English (U.S.))
 Resource31=IDD_HLS (English (U.S.))
-Resource32=IDR_MAINFRAME (English (U.S.))
+Resource32=IDD_DELETE_CAM_FOLDERS (English (U.S.))
 Resource33=IDD_OUTVOL (English (U.S.))
 Resource34=IDD_SAVEAS_STREAMS_SELECT (English (U.S.))
 Resource35=IDD_JPEG_COMPRESSION_QUALITY (English (U.S.))
@@ -239,7 +239,7 @@ Resource98=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
 Resource99=IDD_SNAPSHOT_FTP_CONFIGURATION (English (U.S.))
 Resource100=IDD_IMAPI2_DOWNLOAD (English (U.S.))
 Resource101=IDD_GENERAL (English (U.S.))
-Resource102=IDD_DELETE_CAM_FOLDERS (English (U.S.))
+Resource102=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -489,7 +489,7 @@ HeaderFile=GeneralPage.h
 ImplementationFile=GeneralPage.cpp
 Filter=D
 VirtualFilter=idWC
-LastObject=IDC_AUDIO_FORMAT
+LastObject=CGeneralPage
 
 [CLS:CHLSDlgModeless]
 Type=0

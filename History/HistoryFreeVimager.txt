@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-3.9.9 beta4 (April 27th 2012)
+3.9.9 (May 1st 2012)
 
 - Beside the multi-page file the Scan to Tiff command
   saves now also the single pages in separate files 
