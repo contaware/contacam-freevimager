@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+4.0.0 (... 2012)
+
+- 
+
 3.9.9 (May 1st 2012)
 
 - Possibility to rotate the video source by 180°
