@@ -71,7 +71,7 @@ public:
 
     STDMETHODIMP BufferCB(double Time, BYTE *pBuffer, long BufferLen)
     {
-		switch (m_pDoc->m_dwCaptureFourCC)
+		switch (m_pDoc->m_CaptureBMI.bmiHeader.biCompression)
 		{
 			case FCC('MJPG') :	m_pDoc->ProcessMJPGFrame(pBuffer, BufferLen);	break;
 			case FCC('M420') :	m_pDoc->ProcessM420Frame(pBuffer, BufferLen);	break;

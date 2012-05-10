@@ -1402,6 +1402,7 @@ public:
 	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
 	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessFrame()
+	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
@@ -1415,7 +1416,6 @@ public:
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessFrame()
 	CTime m_4SecTime;									// For the 4 sec tick in ProcessFrame()
-	volatile DWORD m_dwCaptureFourCC;					// Capture device source format
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread

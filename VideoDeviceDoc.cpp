@@ -4822,6 +4822,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRotate180 = FALSE;
 	m_bRecDeinterlace = FALSE;
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
+	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
 	m_dEffectiveFrameRate = 0.0;
 	m_dEffectiveFrameTimeSum = 0.0;
@@ -4843,7 +4844,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDeviceFirstRun = FALSE;
 	m_1SecTime = t;
 	m_4SecTime = t;
-	m_dwCaptureFourCC = BI_RGB;
 
 	// Capture Devices
 	m_pDxCapture = NULL;
@@ -5353,7 +5353,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 
 		// Set format string
 		CString sFormat = _T("");
-		switch (m_dwCaptureFourCC)
+		switch (m_CaptureBMI.bmiHeader.biCompression)
 		{
 			case FCC('MJPG') :	sFormat = _T("MJPG -> ");	break;
 			case FCC('M420') :	sFormat = _T("M420 -> ");	break;
@@ -7065,7 +7065,7 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 		// DV
 		if (m_pDxCapture->IsDV())
 		{
-			m_dwCaptureFourCC = FCC('DV  ');
+			m_CaptureBMI.bmiHeader.biCompression = FCC('DV  ');
 			_DVENCODERVIDEOFORMAT VideoFormat;
 			if (m_pDxCapture->GetDVFormat(&VideoFormat))
 			{
@@ -7115,9 +7115,9 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 			dwSize = MIN(sizeof(BITMAPINFOFULL), pmtConfig->cbFormat - SIZE_PREHEADER);
 			VIDEOINFOHEADER* pVideoHeader = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
 			memcpy(&m_ProcessFrameBMI, HEADER(pVideoHeader), dwSize);
+			memcpy(&m_CaptureBMI, HEADER(pVideoHeader), dwSize);
 			m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
 			m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
-			m_dwCaptureFourCC = m_ProcessFrameBMI.bmiHeader.biCompression;
 			if (m_ProcessFrameBMI.bmiHeader.biCompression == FCC('MJPG') ||
 				m_ProcessFrameBMI.bmiHeader.biCompression == FCC('M420'))
 			{
@@ -13169,13 +13169,13 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 	enum CodecID CodecId = (enum CodecID)FrameHdr.dwCodecID;
 	switch (CodecId)
 	{
-		case  CODEC_ID_MJPEG	:	m_pDoc->m_dwCaptureFourCC = FCC('MJPG'); break;
+		case  CODEC_ID_MJPEG	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG'); break;
 		case  CODEC_ID_H263		:
-		case  CODEC_ID_H263P	:	m_pDoc->m_dwCaptureFourCC = FCC('H263'); break;
-		case  CODEC_ID_MPEG4	:	m_pDoc->m_dwCaptureFourCC = FCC('DIVX'); break;
-		case  CODEC_ID_THEORA	:	m_pDoc->m_dwCaptureFourCC = FCC('theo'); break;
-		case  CODEC_ID_SNOW		:	m_pDoc->m_dwCaptureFourCC = FCC('SNOW'); break;
-		default					:	m_pDoc->m_dwCaptureFourCC = BI_RGB;      break;
+		case  CODEC_ID_H263P	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('H263'); break;
+		case  CODEC_ID_MPEG4	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('DIVX'); break;
+		case  CODEC_ID_THEORA	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('theo'); break;
+		case  CODEC_ID_SNOW		:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('SNOW'); break;
+		default					:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = BI_RGB;      break;
 	}
 	if (CodecId == CODEC_ID_H263P)
 		CodecId = CODEC_ID_H263;
@@ -14967,7 +14967,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::OpenAVCodec()
 	m_pCodec = avcodec_find_decoder(CODEC_ID_MJPEG);
     if (!m_pCodec)
         goto error_noclose;
-	m_pDoc->m_dwCaptureFourCC = FCC('MJPG');
+	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG');
 
 	// Allocate Context
 	m_pCodecCtx = avcodec_alloc_context();
