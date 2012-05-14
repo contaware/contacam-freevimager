@@ -4794,19 +4794,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Disable Message Box Show
 	m_pDib->SetShowMessageBoxOnError(FALSE);
 	
-	// Allocate Helper Dibs used in ProcessFrame(), ProcessMJPGFrame() and DecodeFrameToRgb32()
+	// Allocate Helper Dibs
 	m_pProcessFrameDib = new CDib;
 	m_pProcessFrameDib->SetShowMessageBoxOnError(FALSE);
 	m_pProcessFrameExtraDib = new CDib;
 	m_pProcessFrameExtraDib->SetShowMessageBoxOnError(FALSE);
-	m_pProcessFrameDeinterlaceDib = new CDib;
-	m_pProcessFrameDeinterlaceDib->SetShowMessageBoxOnError(FALSE);
-#ifdef _DEBUG
-	m_pProcessFrameDebugSrcDib = new CDib;
-	m_pProcessFrameDebugSrcDib->SetShowMessageBoxOnError(FALSE);
-	m_pProcessFrameDebugDstDib = new CDib;
-	m_pProcessFrameDebugDstDib->SetShowMessageBoxOnError(FALSE);
-#endif
 
 	// General Vars
 	m_bResetSettings = FALSE;
@@ -4821,8 +4813,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
 	m_bRecDeinterlace = FALSE;
-	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
+	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
 	m_dEffectiveFrameRate = 0.0;
 	m_dEffectiveFrameTimeSum = 0.0;
@@ -4830,7 +4822,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pVideoAviDoc = NULL;
 	m_bDoEditCopy = FALSE;
 	m_bDoEditSnapshot = FALSE;
-	m_bRgb32Frame = FALSE;
 	m_lProcessFrameTime = 0;
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
@@ -5217,23 +5208,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		delete m_pProcessFrameExtraDib;
 		m_pProcessFrameExtraDib = NULL;
 	}
-	if (m_pProcessFrameDeinterlaceDib)
-	{
-		delete m_pProcessFrameDeinterlaceDib;
-		m_pProcessFrameDeinterlaceDib = NULL;
-	}
-#ifdef _DEBUG
-	if (m_pProcessFrameDebugSrcDib)
-	{
-		delete m_pProcessFrameDebugSrcDib;
-		m_pProcessFrameDebugSrcDib = NULL;
-	}
-	if (m_pProcessFrameDebugDstDib)
-	{
-		delete m_pProcessFrameDebugDstDib;
-		m_pProcessFrameDebugDstDib = NULL;
-	}
-#endif
 }
 
 void CVideoDeviceDoc::FreeMovementDetector()
@@ -5344,32 +5318,12 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	if (m_DocRect.Width() > 0 && 
 		m_DocRect.Height() > 0)
 	{
-		// Converting?
-		BOOL bConverting = FALSE;
-		if (m_bRgb32Frame	&&
-			(m_ProcessFrameBMI.bmiHeader.biCompression != BI_RGB ||
-			m_ProcessFrameBMI.bmiHeader.biBitCount != 32))
-			bConverting = TRUE;
-
 		// Set format string
 		CString sFormat = _T("");
-		switch (m_CaptureBMI.bmiHeader.biCompression)
-		{
-			case FCC('MJPG') :	sFormat = _T("MJPG -> ");	break;
-			case FCC('M420') :	sFormat = _T("M420 -> ");	break;
-			case FCC('H263') :	sFormat = _T("H263 -> ");	break;
-			case FCC('DIVX') :	sFormat = _T("MPEG4 -> ");	break;
-			case FCC('theo') :	sFormat = _T("THEORA -> ");	break;
-			case FCC('SNOW') :	sFormat = _T("SNOW -> ");	break;
-			case FCC('DV  ') :	sFormat = _T("DV -> ");		break;
-			default          :								break;
-		}
-#ifdef _DEBUG
-		if (m_pProcessFrameDebugSrcDib->GetBMI())
-			sFormat += m_pProcessFrameDebugSrcDib->GetCompressionName() + _T(" -> ");
-#endif
+		if (m_CaptureBMI.bmiHeader.biCompression != m_ProcessFrameBMI.bmiHeader.biCompression)
+			sFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI) + _T(" -> ");
 		sFormat += CDib::GetCompressionName((LPBITMAPINFO)&m_ProcessFrameBMI);
-		if (bConverting)
+		if (m_bDecodeFramesForPreview)
 			sFormat += _T(" -> RGB32");
 
 		// Name , Size , Frame rate , Pixel format
@@ -6681,16 +6635,23 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 	m_dEffectiveFrameRate = m_dFrameRate;
 
 	// Format and Size
+	memcpy(&m_CaptureBMI, pDib->GetBMI(), MIN(sizeof(BITMAPINFOFULL), pDib->GetBMISize()));
 	memcpy(&m_ProcessFrameBMI, pDib->GetBMI(), MIN(sizeof(BITMAPINFOFULL), pDib->GetBMISize()));
+	if (m_ProcessFrameBMI.bmiHeader.biCompression != FCC('I420'))
+	{
+		m_ProcessFrameBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
+		m_ProcessFrameBMI.bmiHeader.biPlanes =			1;
+		m_ProcessFrameBMI.bmiHeader.biCompression =		FCC('I420');
+		m_ProcessFrameBMI.bmiHeader.biBitCount =		12;
+		int stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
+		m_ProcessFrameBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
+	}
 	m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
 	m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
 
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
 	ResetMovementDetector();
-
-	// Reset Flag
-	m_bDecodeFramesForPreview = FALSE;
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
@@ -6827,20 +6788,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
 	BITMAPINFOFULL DstBmi;
 	memset(&SrcBmi, 0, sizeof(BITMAPINFOFULL));
 	memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
-	SrcBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	SrcBmi.bmiHeader.biWidth = m_DocRect.right;
-	SrcBmi.bmiHeader.biHeight = m_DocRect.bottom;
-	SrcBmi.bmiHeader.biPlanes = 1;
-	if (m_bRgb32Frame)
-	{
-		SrcBmi.bmiHeader.biBitCount = 32;
-		SrcBmi.bmiHeader.biCompression = BI_RGB;
-		SrcBmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(	SrcBmi.bmiHeader.biBitCount	*
-															SrcBmi.bmiHeader.biWidth)	*
-															SrcBmi.bmiHeader.biHeight;
-	}
-	else
-		memcpy(&SrcBmi, &m_ProcessFrameBMI, CDib::GetBMISize((LPBITMAPINFO)&m_ProcessFrameBMI));
+	memcpy(&SrcBmi, &m_ProcessFrameBMI, CDib::GetBMISize((LPBITMAPINFO)&m_ProcessFrameBMI));
 	if (m_dwVideoRecFourCC == BI_RGB)
 		memcpy(&DstBmi, &SrcBmi, CDib::GetBMISize((LPBITMAPINFO)&SrcBmi));
 	else
@@ -7051,7 +6999,7 @@ void CVideoDeviceDoc::CaptureRecordPause()
 	m_bCaptureRecordPause = !m_bCaptureRecordPause;
 }
 
-// Function called from the UI thread and when ProcessFrame() is not called
+// Function called from the UI thread and when ProcessI420Frame() is not called
 void CVideoDeviceDoc::OnChangeDxVideoFormat()
 {
 	DWORD dwSize;
@@ -7065,7 +7013,6 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 		// DV
 		if (m_pDxCapture->IsDV())
 		{
-			m_CaptureBMI.bmiHeader.biCompression = FCC('DV  ');
 			_DVENCODERVIDEOFORMAT VideoFormat;
 			if (m_pDxCapture->GetDVFormat(&VideoFormat))
 			{
@@ -7078,14 +7025,22 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 			int nWidth, nHeight;
 			if (m_pDxCapture->GetDVSize(&nWidth, &nHeight))
 			{
+				m_CaptureBMI.bmiHeader.biSize =					sizeof(BITMAPINFOHEADER);
+				m_CaptureBMI.bmiHeader.biWidth =				(LONG)nWidth;
+				m_CaptureBMI.bmiHeader.biHeight =				(LONG)nHeight;
+				m_CaptureBMI.bmiHeader.biPlanes =				1;
+				m_CaptureBMI.bmiHeader.biCompression =			FCC('YUY2');
+				m_CaptureBMI.bmiHeader.biBitCount =				16;
+				int stride = ::CalcYUVStride(m_CaptureBMI.bmiHeader.biCompression, (int)m_CaptureBMI.bmiHeader.biWidth);
+				m_CaptureBMI.bmiHeader.biSizeImage =			::CalcYUVSize(m_CaptureBMI.bmiHeader.biCompression, stride, (int)m_CaptureBMI.bmiHeader.biHeight);
 				m_ProcessFrameBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
 				m_ProcessFrameBMI.bmiHeader.biWidth =			(LONG)nWidth;
 				m_ProcessFrameBMI.bmiHeader.biHeight =			(LONG)nHeight;
 				m_ProcessFrameBMI.bmiHeader.biPlanes =			1;
-				m_ProcessFrameBMI.bmiHeader.biCompression =		FCC('YUY2');
-				m_ProcessFrameBMI.bmiHeader.biBitCount =		16;
-				int stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
-				m_ProcessFrameBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
+				m_ProcessFrameBMI.bmiHeader.biCompression =		FCC('I420');
+				m_ProcessFrameBMI.bmiHeader.biBitCount =		12;
+				stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
+				m_ProcessFrameBMI.bmiHeader.biSizeImage =		::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
 				m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
 				m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
 			}
@@ -7114,12 +7069,9 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 			}
 			dwSize = MIN(sizeof(BITMAPINFOFULL), pmtConfig->cbFormat - SIZE_PREHEADER);
 			VIDEOINFOHEADER* pVideoHeader = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-			memcpy(&m_ProcessFrameBMI, HEADER(pVideoHeader), dwSize);
 			memcpy(&m_CaptureBMI, HEADER(pVideoHeader), dwSize);
-			m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
-			m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
-			if (m_ProcessFrameBMI.bmiHeader.biCompression == FCC('MJPG') ||
-				m_ProcessFrameBMI.bmiHeader.biCompression == FCC('M420'))
+			memcpy(&m_ProcessFrameBMI, HEADER(pVideoHeader), dwSize);
+			if (m_ProcessFrameBMI.bmiHeader.biCompression != FCC('I420'))
 			{
 				m_ProcessFrameBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
 				m_ProcessFrameBMI.bmiHeader.biPlanes =			1;
@@ -7128,6 +7080,8 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 				int stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
 				m_ProcessFrameBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
 			}
+			m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
+			m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
 			m_lCompressedDataRate = 0;
 			m_lCompressedDataRateSum = 0;
 			m_pDxCapture->DeleteMediaType(pmtConfig);
@@ -7136,24 +7090,9 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 	else
 		return;
 
-	// To debug YUV formats
-//#define DEBUG_YUV_FOURCC		FCC('YVYU')		//  uncomment this if you want to debug the given YUV format
-#if defined(_DEBUG) && defined(DEBUG_YUV_FOURCC)
-	m_pProcessFrameDebugSrcDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI);
-	m_ProcessFrameBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-	m_ProcessFrameBMI.bmiHeader.biPlanes =			1;
-	m_ProcessFrameBMI.bmiHeader.biCompression =		DEBUG_YUV_FOURCC;
-	m_ProcessFrameBMI.bmiHeader.biBitCount =		::FourCCToBpp(m_ProcessFrameBMI.bmiHeader.biCompression);
-	int stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
-	m_ProcessFrameBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
-#endif
-
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
 	ResetMovementDetector();
-
-	// Reset Flag
-	m_bDecodeFramesForPreview = FALSE;
 
 	// Update
 	if (m_bSizeToDoc)
@@ -7395,7 +7334,12 @@ void CVideoDeviceDoc::ViewVideo()
 {
 	m_bVideoView = !m_bVideoView;
 	if (!m_bVideoView)
-		m_bDecodeFramesForPreview = FALSE;	// Reset Flag
+	{
+		m_bDecodeFramesForPreview = FALSE;
+		::PostMessage(	GetView()->GetSafeHwnd(),
+						WM_THREADSAFE_SETDOCUMENTTITLE,
+						0, 0);
+	}
 }
 
 void CVideoDeviceDoc::OnViewVideo() 
@@ -8515,290 +8459,70 @@ CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
 	return _T("");
 }
 
-BOOL CVideoDeviceDoc::DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib)
-{
-	if (!pSrcBits || (dwSrcSize == 0) || !pDstDib)
-		return FALSE;
-
-	// Is YUV?
-	if (::IsSupportedYuvToRgbFormat(m_ProcessFrameBMI.bmiHeader.biCompression))
-	{
-		// De-Interlace?
-		if (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_ProcessFrameBMI))
-		{
-			if (Deinterlace((LPBITMAPINFO)&m_ProcessFrameBMI, pSrcBits, m_pProcessFrameDeinterlaceDib))
-				pSrcBits = m_pProcessFrameDeinterlaceDib->GetBits();
-		}
-
-		// Allocate Dst Bits?
-		BITMAPINFO Bmi;
-		memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		Bmi.bmiHeader.biWidth = m_ProcessFrameBMI.bmiHeader.biWidth;
-		Bmi.bmiHeader.biHeight = m_ProcessFrameBMI.bmiHeader.biHeight;
-		Bmi.bmiHeader.biPlanes = 1;
-		Bmi.bmiHeader.biCompression = BI_RGB;
-		Bmi.bmiHeader.biBitCount = 32;
-		Bmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(Bmi.bmiHeader.biWidth * Bmi.bmiHeader.biBitCount) * Bmi.bmiHeader.biHeight;
-		if (!pDstDib->SetBMI(&Bmi))
-			return FALSE;
-		if (!pDstDib->GetBits())
-		{
-			if (!pDstDib->AllocateBitsFast(	pDstDib->GetBitCount(),
-											pDstDib->GetCompression(),
-											pDstDib->GetWidth(),
-											pDstDib->GetHeight()))
-				return FALSE;
-		}
-
-		// Decode
-		if (!::YUVToRGB32(	m_ProcessFrameBMI.bmiHeader.biCompression,
-							pSrcBits,
-							pDstDib->GetBits(),
-							pDstDib->GetWidth(),
-							pDstDib->GetHeight()))
-			return FALSE;
-	}
-	else
-	{
-		// Set BMI & Bits
-		if (!pDstDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI))
-			return FALSE;
-		if (!pDstDib->SetBits(pSrcBits, dwSrcSize))
-			return FALSE;
-
-		// Decompress to 32 bpp
-		if (pDstDib->IsCompressed())
-		{
-			if (!pDstDib->Decompress(32))
-				return FALSE;
-		}
-		else if (pDstDib->GetBitCount() != 32)
-		{		
-			if (!pDstDib->ConvertTo32bits())
-				return FALSE;
-		}
-	}
-
-	return TRUE;
-}
-
-__forceinline BOOL CVideoDeviceDoc::IsRotate180Supported(LPBITMAPINFO pBmi)
-{
-	if (pBmi && (
-
-		// RGB
-		(pBmi->bmiHeader.biCompression == BI_RGB		||
-		pBmi->bmiHeader.biCompression == BI_BITFIELDS)		
-															
-														||
-
-		// Planar 420
-		((pBmi->bmiHeader.biCompression == FCC('YV12')	||
-		pBmi->bmiHeader.biCompression == FCC('I420')	||
-		pBmi->bmiHeader.biCompression == FCC('IYUV'))	&& 
-		(pBmi->bmiHeader.biHeight & 0x3) == 0)				// Divisible by 4
-															
-														||
-
-		// Packed 422
-		((pBmi->bmiHeader.biCompression == FCC('YUY2')	||	// Y0 U0 Y1 V0
-		pBmi->bmiHeader.biCompression == FCC('V422')	||	// Equivalent to YUY2
-		pBmi->bmiHeader.biCompression == FCC('VYUY')	||	// Equivalent to YUY2
-		pBmi->bmiHeader.biCompression == FCC('YUNV')	||	// Equivalent to YUY2
-		pBmi->bmiHeader.biCompression == FCC('YUYV')	||	// Equivalent to YUY2
-		pBmi->bmiHeader.biCompression == FCC('YVYU')	||	// Y0 V0 Y1 U0
-		pBmi->bmiHeader.biCompression == FCC('UYVY')	||	// U0 Y0 V0 Y1
-		pBmi->bmiHeader.biCompression == FCC('Y422')	||	// Equivalent to UYVY
-		pBmi->bmiHeader.biCompression == FCC('UYNV'))	&&	// Equivalent to UYVY
-		(pBmi->bmiHeader.biHeight & 0x1) == 0)				// Divisible by 2
-		
-		))
-
-		return TRUE;
-	else
-		return FALSE;
-}
-
 BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 {
 	// Check
 	if (!pDib || !pDib->GetBMI() || !pDib->GetBits())
 		return FALSE;
 	
-	if (pDib->GetCompression() == BI_RGB ||
-		pDib->GetCompression() == BI_BITFIELDS)
-		return pDib->Rotate180();
-	else if (pDib->GetCompression() == FCC('YV12')	||
-			pDib->GetCompression() == FCC('I420')	||
-			pDib->GetCompression() == FCC('IYUV'))
+	BYTE pix;
+	int CurLine;
+	int nHeight2 = pDib->GetHeight() / 2;
+	int nHeight4 = nHeight2 / 2;
+	int nWidth2 = pDib->GetWidth() / 2;
+	LPBYTE lpSrcBitsY = pDib->GetBits();
+	LPBYTE lpDstBitsY = lpSrcBitsY + (pDib->GetHeight() - 1) * pDib->GetWidth();
+	LPBYTE lpSrcBitsU = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth();
+	LPBYTE lpDstBitsU = lpSrcBitsU + (nHeight2 - 1) * nWidth2;
+	LPBYTE lpSrcBitsV = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth() + nHeight2 * nWidth2;
+	LPBYTE lpDstBitsV = lpSrcBitsV + (nHeight2 - 1) * nWidth2;
+
+	// Rotate Y
+	// pDib->GetHeight() needs to be divisible by 2,
+	// otherwise the middle line is not rotated!
+	for (CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
 	{
-		BYTE pix;
-		int CurLine;
-		int nHeight2 = pDib->GetHeight() / 2;
-		int nHeight4 = nHeight2 / 2;
-		int nWidth2 = pDib->GetWidth() / 2;
-		LPBYTE lpSrcBitsY = pDib->GetBits();
-		LPBYTE lpDstBitsY = lpSrcBitsY + (pDib->GetHeight() - 1) * pDib->GetWidth();
-		LPBYTE lpSrcBitsU = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth();
-		LPBYTE lpDstBitsU = lpSrcBitsU + (nHeight2 - 1) * nWidth2;
-		LPBYTE lpSrcBitsV = pDib->GetBits() + pDib->GetHeight() * pDib->GetWidth() + nHeight2 * nWidth2;
-		LPBYTE lpDstBitsV = lpSrcBitsV + (nHeight2 - 1) * nWidth2;
-
-		// Rotate Y
-		// pDib->GetHeight() needs to be divisible by 2,
-		// otherwise the middle line is not rotated!
-		for (CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
+		for (int i = 0 ; i < (int)pDib->GetWidth() ; i++)
 		{
-			for (int i = 0 ; i < (int)pDib->GetWidth() ; i++)
-			{
-				pix = lpSrcBitsY[i];
-				lpSrcBitsY[i] = lpDstBitsY[pDib->GetWidth() - i - 1];
-				lpDstBitsY[pDib->GetWidth() - i - 1] = pix;
-			}
-			lpDstBitsY -= pDib->GetWidth();
-			lpSrcBitsY += pDib->GetWidth();
+			pix = lpSrcBitsY[i];
+			lpSrcBitsY[i] = lpDstBitsY[pDib->GetWidth() - i - 1];
+			lpDstBitsY[pDib->GetWidth() - i - 1] = pix;
 		}
-
-		// Rotate U
-		// pDib->GetHeight() needs to be divisible by 4,
-		// otherwise the middle line is not rotated!
-		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
-		{
-			for (int i = 0 ; i < nWidth2 ; i++)
-			{
-				pix = lpSrcBitsU[i];
-				lpSrcBitsU[i] = lpDstBitsU[nWidth2 - i - 1];
-				lpDstBitsU[nWidth2 - i - 1] = pix;
-			}
-			lpDstBitsU -= nWidth2;
-			lpSrcBitsU += nWidth2;
-		}
-
-		// Rotate V
-		// pDib->GetHeight() needs to be divisible by 4,
-		// otherwise the middle line is not rotated!
-		for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
-		{
-			for (int i = 0 ; i < nWidth2 ; i++)
-			{
-				pix = lpSrcBitsV[i];
-				lpSrcBitsV[i] = lpDstBitsV[nWidth2 - i - 1];
-				lpDstBitsV[nWidth2 - i - 1] = pix;
-			}
-			lpDstBitsV -= nWidth2;
-			lpSrcBitsV += nWidth2;
-		}
-
-		return TRUE;
-	}
-	else if (pDib->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0
-			pDib->GetCompression() == FCC('V422')	||	// Y0 U0 Y1 V0
-			pDib->GetCompression() == FCC('VYUY')	||	// Y0 U0 Y1 V0
-			pDib->GetCompression() == FCC('YUNV')	||	// Y0 U0 Y1 V0
-			pDib->GetCompression() == FCC('YUYV')	||	// Y0 U0 Y1 V0
-			pDib->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0
-	{
-		BYTE SrcY0, SrcY1, SrcU, SrcV;
-		BYTE DstY0, DstY1, DstU, DstV;
-		int stride = 2 * pDib->GetWidth();
-		int nHeight2 = pDib->GetHeight() / 2;
-		LPBYTE lpSrcBits = pDib->GetBits();
-		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
-
-		// pDib->GetHeight() needs to be divisible by 2,
-		// otherwise the middle line is not rotated!
-		for (int CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
-		{
-			for (int i = 0 ; i < stride ; i += 4)
-			{
-				// Store values
-				SrcY0 = lpSrcBits[i + 0];
-				SrcU  = lpSrcBits[i + 1];
-				SrcY1 = lpSrcBits[i + 2];
-				SrcV  = lpSrcBits[i + 3];
-				DstY0 = lpDstBits[stride - i - 4];
-				DstU  = lpDstBits[stride - i - 3];
-				DstY1 = lpDstBits[stride - i - 2];
-				DstV  = lpDstBits[stride - i - 1];
-				
-				// Assign values
-				lpDstBits[stride - i - 4] = SrcY1;	// flip Y
-				lpDstBits[stride - i - 3] = SrcU;
-				lpDstBits[stride - i - 2] = SrcY0;	// flip Y
-				lpDstBits[stride - i - 1] = SrcV;
-				lpSrcBits[i + 0] = DstY1;			// flip Y
-				lpSrcBits[i + 1] = DstU;
-				lpSrcBits[i + 2] = DstY0;			// flip Y
-				lpSrcBits[i + 3] = DstV;
-			}
-			lpDstBits -= stride;
-			lpSrcBits += stride;
-		}
-		return TRUE;
-	}
-	else if (pDib->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1
-			pDib->GetCompression() == FCC('Y422')	||	// U0 Y0 V0 Y1
-			pDib->GetCompression() == FCC('UYNV'))		// U0 Y0 V0 Y1
-	{
-		BYTE SrcY0, SrcY1, SrcU, SrcV;
-		BYTE DstY0, DstY1, DstU, DstV;
-		int stride = 2 * pDib->GetWidth();
-		int nHeight2 = pDib->GetHeight() / 2;
-		LPBYTE lpSrcBits = pDib->GetBits();
-		LPBYTE lpDstBits = pDib->GetBits() + (pDib->GetHeight() - 1) * stride;
-
-		// pDib->GetHeight() needs to be divisible by 2,
-		// otherwise the middle line is not rotated!
-		for (int CurLine = 0 ; CurLine < nHeight2 ; CurLine++)
-		{
-			for (int i = 0 ; i < stride ; i += 4)
-			{
-				// Store values
-				SrcU  = lpSrcBits[i + 0];
-				SrcY0 = lpSrcBits[i + 1];
-				SrcV  = lpSrcBits[i + 2];
-				SrcY1 = lpSrcBits[i + 3];
-				DstU  = lpDstBits[stride - i - 4];
-				DstY0 = lpDstBits[stride - i - 3];
-				DstV  = lpDstBits[stride - i - 2];
-				DstY1 = lpDstBits[stride - i - 1];
-
-				// Assign values
-				lpDstBits[stride - i - 4] = SrcU;
-				lpDstBits[stride - i - 3] = SrcY1;	// flip Y
-				lpDstBits[stride - i - 2] = SrcV;
-				lpDstBits[stride - i - 1] = SrcY0;	// flip Y
-				lpSrcBits[i + 0] = DstU;
-				lpSrcBits[i + 1] = DstY1;			// flip Y
-				lpSrcBits[i + 2] = DstV;
-				lpSrcBits[i + 3] = DstY0;			// flip Y
-			}
-			lpDstBits -= stride;
-			lpSrcBits += stride;
-		}
-		return TRUE;
+		lpDstBitsY -= pDib->GetWidth();
+		lpSrcBitsY += pDib->GetWidth();
 	}
 
-	return FALSE;
-}
-
-__forceinline BOOL CVideoDeviceDoc::IsDeinterlaceSupported(LPBITMAPINFO pBmi)
-{
-	if (pBmi)
+	// Rotate U
+	// pDib->GetHeight() needs to be divisible by 4,
+	// otherwise the middle line is not rotated!
+	for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
 	{
-		PixelFormat src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
-		if (((pBmi->bmiHeader.biWidth & 3) == 0)	&&
-			((pBmi->bmiHeader.biHeight & 3) == 0))
+		for (int i = 0 ; i < nWidth2 ; i++)
 		{
-			if (src_pix_fmt == PIX_FMT_YUV420P ||
-				src_pix_fmt == PIX_FMT_YUV422P ||
-				src_pix_fmt == PIX_FMT_YUV444P ||
-				src_pix_fmt == PIX_FMT_YUV411P)
-				return TRUE;
+			pix = lpSrcBitsU[i];
+			lpSrcBitsU[i] = lpDstBitsU[nWidth2 - i - 1];
+			lpDstBitsU[nWidth2 - i - 1] = pix;
 		}
+		lpDstBitsU -= nWidth2;
+		lpSrcBitsU += nWidth2;
 	}
-	return FALSE;
+
+	// Rotate V
+	// pDib->GetHeight() needs to be divisible by 4,
+	// otherwise the middle line is not rotated!
+	for (CurLine = 0 ; CurLine < nHeight4 ; CurLine++)
+	{
+		for (int i = 0 ; i < nWidth2 ; i++)
+		{
+			pix = lpSrcBitsV[i];
+			lpSrcBitsV[i] = lpDstBitsV[nWidth2 - i - 1];
+			lpDstBitsV[nWidth2 - i - 1] = pix;
+		}
+		lpDstBitsV -= nWidth2;
+		lpSrcBitsV += nWidth2;
+	}
+
+	return TRUE;
 }
 
 BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
@@ -8819,97 +8543,38 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 									pDib->GetHeight()) >= 0);
 }
 
-BOOL CVideoDeviceDoc::Deinterlace(LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, CDib* pDstDib)
-{
-	// Check
-	if (!pSrcBMI || !pSrcBits || !pDstDib)
-		return FALSE;
-
-	// Get Pix Format
-	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
-
-	// Allocate Dst Bits?
-	if (!pDstDib->SetBMI(pSrcBMI))
-		return FALSE;
-	if (!pDstDib->GetBits())
-	{
-		if (!pDstDib->AllocateBitsFast(	pDstDib->GetBitCount(),
-										pDstDib->GetCompression(),
-										pDstDib->GetWidth(),
-										pDstDib->GetHeight()))
-			return FALSE;
-	}
-
-	// Set Bits to Frames
-	AVPicture DstFrame;
-	AVPicture SrcFrame;
-	avpicture_fill(	&DstFrame,
-					(uint8_t*)pDstDib->GetBits(),
-					pix_fmt,
-					pSrcBMI->bmiHeader.biWidth,
-					pSrcBMI->bmiHeader.biHeight);
-	avpicture_fill(	&SrcFrame,
-					(uint8_t*)pSrcBits,
-					pix_fmt,
-					pSrcBMI->bmiHeader.biWidth,
-					pSrcBMI->bmiHeader.biHeight);
-
-	// De-Interlace
-	return (avpicture_deinterlace(	&DstFrame,
-									&SrcFrame,
-									pix_fmt,
-									pSrcBMI->bmiHeader.biWidth,
-									pSrcBMI->bmiHeader.biHeight) >= 0);
-}
-
-void CVideoDeviceDoc::ProcessMJPGFrame(LPBYTE pData, DWORD dwSize)
-{
-	// Set wanted destination format
-	BITMAPINFO DstBmi;
-	memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-	DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	DstBmi.bmiHeader.biWidth = m_ProcessFrameBMI.bmiHeader.biWidth;
-	DstBmi.bmiHeader.biHeight = m_ProcessFrameBMI.bmiHeader.biHeight;
-	DstBmi.bmiHeader.biPlanes = 1;
-	DstBmi.bmiHeader.biCompression = FCC('I420');
-	DstBmi.bmiHeader.biBitCount = 12;
-	int stride = ::CalcYUVStride(DstBmi.bmiHeader.biCompression, DstBmi.bmiHeader.biWidth);
-	DstBmi.bmiHeader.biSizeImage = ::CalcYUVSize(DstBmi.bmiHeader.biCompression, stride, DstBmi.bmiHeader.biHeight);
-	if (!m_pProcessFrameExtraDib->SetBMI(&DstBmi))
-	{
-		CString sMsg;
-		sMsg.Format(_T("%s, error setting I420 format for MJPG decoding!\n"), GetDeviceName());
-		TRACE(sMsg);
-		::LogLine(sMsg);
-		return;
-	}
-
-	// Decode
-	BITMAPINFO SrcBmi;
-	memset(&SrcBmi, 0, sizeof(BITMAPINFOHEADER));
-	SrcBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	SrcBmi.bmiHeader.biWidth = m_ProcessFrameBMI.bmiHeader.biWidth;
-	SrcBmi.bmiHeader.biHeight = m_ProcessFrameBMI.bmiHeader.biHeight;
-	SrcBmi.bmiHeader.biPlanes = 1;
-	SrcBmi.bmiHeader.biCompression = FCC('MJPG');
-	if (m_MJPGDecoder.Decode(	&SrcBmi,
-								pData,
-								dwSize,
-								m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
+void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
+{	
+	// Decode ffmpeg supported formats
+	m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI);
+	if (m_AVDecoder.Decode(	(LPBITMAPINFO)&m_CaptureBMI,
+							pData,
+							dwSize,
+							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
 		m_lCompressedDataRateSum += dwSize;
-		ProcessFrame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
+		ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 	}
 	// In case that avcodec_decode_video fails
 	// use LoadJPEG which is more fault tolerant, but slower...
-	else
+	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
 	{
 		TRACE(_T("*** Error: ffmpeg failed to decode mjpeg, trying CDib::LoadJPEG() ***\n"));
 		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
 		{
 			m_lCompressedDataRateSum += dwSize;
-			ProcessFrame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
+			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 		}
+	}
+	// Other formats
+	else
+	{
+		m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_CaptureBMI);
+		m_pProcessFrameExtraDib->SetBits(pData, dwSize);
+		if (m_pProcessFrameExtraDib->IsCompressed())
+			m_pProcessFrameExtraDib->Decompress(32);
+		if (m_pProcessFrameExtraDib->Compress(FCC('I420')))
+			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 	}
 }
 
@@ -9066,25 +8731,11 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 #endif
 
 	// Call Process Frame
-	ProcessFrame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
+	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 }
 
-void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
+void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 {
-	// To debug YUV formats, enable in OnChangeDxVideoFormat()!
-#ifdef _DEBUG
-	if (m_pProcessFrameDebugSrcDib->GetBMI())
-	{
-		m_pProcessFrameDebugSrcDib->SetBits(pData, dwSize);
-		*m_pProcessFrameDebugDstDib = *m_pProcessFrameDebugSrcDib;
-		if (m_pProcessFrameDebugDstDib->IsCompressed())
-			m_pProcessFrameDebugDstDib->Decompress(32);
-		m_pProcessFrameDebugDstDib->Compress(m_ProcessFrameBMI.bmiHeader.biCompression);
-		pData = m_pProcessFrameDebugDstDib->GetBits();
-		dwSize = m_pProcessFrameDebugDstDib->GetImageSize();
-	}
-#endif
-
 	// Timing
 	DWORD dwCurrentFrameTime;
 	DWORD dwPrevInitUpTime = (DWORD)m_lCurrentInitUpTime;
@@ -9117,80 +8768,30 @@ void CVideoDeviceDoc::ProcessFrame(LPBYTE pData, DWORD dwSize)
 	BOOL bDoProcessFrame = (m_dwProcessFrameStopped == 0U);
 	::LeaveCriticalSection(&m_csProcessFrameStop);
 	
-	// Decode, Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
+	// Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
 	if (bDoProcessFrame && pData && dwSize > 0)
 	{
 		// Init Vars
 		BOOL bOk;
 		BOOL bShowFrameTime = m_bShowFrameTime;
-		BOOL bRotate180 = m_bRotate180;
-		BOOL bDecodeToRgb32 = FALSE;
-		BOOL bAVCodecSrcFormatSupport = TRUE;
-		if (CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat((LPBITMAPINFO)&m_ProcessFrameBMI) == PIX_FMT_NONE)
-			bAVCodecSrcFormatSupport = FALSE;
-		BOOL bIsAddSingleLineSupported = CDib::IsAddSingleLineTextSupported((LPBITMAPINFO)&m_ProcessFrameBMI);
-		BOOL bIsRotate180Supported = IsRotate180Supported((LPBITMAPINFO)&m_ProcessFrameBMI);
-		if ((bShowFrameTime && !bIsAddSingleLineSupported)	||
-			(bRotate180 && !bIsRotate180Supported)			||
-			m_bDecodeFramesForPreview						||
-			!bAVCodecSrcFormatSupport)
-		{
-			if ((m_ProcessFrameBMI.bmiHeader.biBitCount != 24 &&
-				m_ProcessFrameBMI.bmiHeader.biBitCount != 32) ||
-				m_ProcessFrameBMI.bmiHeader.biCompression != BI_RGB)
-				bDecodeToRgb32 = TRUE;
-		}
 
 		// Set Dib Pointer
 		CDib* pDib = m_pProcessFrameDib;
 		if (!pDib)
 			goto exit;
 
-		// Decode Rgb (other than 24bpp and 32bpp) or Yuv to Rgb32
-		if (bDecodeToRgb32)
-		{
-			// Decode Frame (De-Interlace inside this function)
-			if (!DecodeFrameToRgb32(pData, dwSize, pDib))
-				goto exit;
-		}
-		// No decode
-		else
-		{
-			// Copy Bits
-			if (!pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI))
-				goto exit;
-			if (!pDib->SetBits(pData, dwSize))
-				goto exit;
-
-			// De-Interlace
-			if (m_bDeinterlace && IsDeinterlaceSupported((LPBITMAPINFO)&m_ProcessFrameBMI))
-				Deinterlace(pDib);
-		}
-
-		// Set Rgb32 Frame Flag
-		if ((pDib->GetBitCount() == 32) && (pDib->GetCompression() == BI_RGB))
-		{
-			if (!m_bRgb32Frame)
-			{
-				m_bRgb32Frame = TRUE;
-				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_SETDOCUMENTTITLE,
-								0, 0);
-			}
-		}
-		else 
-		{
-			if (m_bRgb32Frame)
-			{
-				m_bRgb32Frame = FALSE;
-				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_SETDOCUMENTTITLE,
-								0, 0);
-			}
-		}
+		// Copy Bits
+		if (!pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI))
+			goto exit;
+		if (!pDib->SetBits(pData, dwSize))
+			goto exit;
 		
-		// Rotate by 180°
-		if (bRotate180)
+		// De-Interlace if divisible by 4
+		if (m_bDeinterlace && (pDib->GetWidth() & 3) == 0 && (pDib->GetHeight() & 3) == 0)
+			Deinterlace(pDib);
+
+		// Rotate by 180° if divisible by 4
+		if (m_bRotate180 && (pDib->GetHeight() & 3) == 0)
 			Rotate180(pDib);
 
 		// Set the UpTime Var
@@ -10683,7 +10284,7 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditCopy() 
 {
-	// Copy Done in ProcessFrame()
+	// Copy Done in ProcessI420Frame()
 	m_bDoEditCopy = TRUE;
 }
 
@@ -10703,7 +10304,7 @@ void CVideoDeviceDoc::OnUpdateEditCopy(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditSnapshot() 
 {
-	// Snapshot Done in ProcessFrame()
+	// Snapshot Done in ProcessI420Frame()
 	m_bDoEditSnapshot = TRUE;
 }
 
@@ -13252,9 +12853,6 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 			m_pDoc->FreeMovementDetector();
 			m_pDoc->ResetMovementDetector();
 
-			// Reset Flag
-			m_pDoc->m_bDecodeFramesForPreview = FALSE;
-
 			// Update
 			if (m_pDoc->m_bSizeToDoc)
 			{
@@ -13316,14 +12914,14 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 				p += width2;
 			}
 			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
-			m_pDoc->ProcessFrame(	(LPBYTE)(m_pOutbuf),
-									m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
+			m_pDoc->ProcessI420Frame(	(LPBYTE)(m_pOutbuf),
+										m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
 		}
 		else
 		{
 			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
-			m_pDoc->ProcessFrame(	(LPBYTE)(m_pFrame->data[0]),
-									m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
+			m_pDoc->ProcessI420Frame(	(LPBYTE)(m_pFrame->data[0]),
+										m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
 		}
 		return TRUE;
 	}
@@ -14882,9 +14480,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 			m_pDoc->FreeMovementDetector();
 			m_pDoc->ResetMovementDetector();
 
-			// Reset Flag
-			m_pDoc->m_bDecodeFramesForPreview = FALSE;
-
 			// Update
 			if (m_pDoc->m_bSizeToDoc)
 			{
@@ -14932,7 +14527,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		if (res == 1)
 		{
 			m_pDoc->m_lCompressedDataRateSum += nSize;
-			m_pDoc->ProcessFrame(m_pI420Buf, m_dwI420ImageSize);
+			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize);
 		}
 	}
 	// In case that avcodec_decode_video fails
@@ -14945,7 +14540,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		if (Dib.LoadJPEG(pLinBuf, nSize) && Dib.Compress(FCC('I420')))
 		{
 			m_pDoc->m_lCompressedDataRateSum += nSize;
-			m_pDoc->ProcessFrame(Dib.GetBits(), Dib.GetImageSize());
+			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize());
 		}
 	}
 	

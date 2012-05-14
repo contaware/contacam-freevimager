@@ -1202,9 +1202,9 @@ public:
 																	// m_nMilliSecondsRecBeforeMovementBegin of frames
 
 	// Main Decode & Process Functions
-	void ProcessMJPGFrame(LPBYTE pData, DWORD dwSize);
+	void ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
-	void ProcessFrame(LPBYTE pData, DWORD dwSize);
+	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);
@@ -1330,15 +1330,11 @@ public:
 // Protected Functions
 protected:
 	BOOL InitOpenDxCapture(int nId);
-	BOOL DecodeFrameToRgb32(LPBYTE pSrcBits, DWORD dwSrcSize, CDib* pDstDib);
 	BOOL Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
-	static __forceinline BOOL IsRotate180Supported(LPBITMAPINFO pBmi);
 	BOOL Rotate180(CDib* pDib);
-	static __forceinline BOOL IsDeinterlaceSupported(LPBITMAPINFO pBmi);
-	BOOL Deinterlace(CDib* pDib);											// Inplace De-Interlace
-	BOOL Deinterlace(LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, CDib* pDstDib);	// De-Interlace from Src to Dst
+	BOOL Deinterlace(CDib* pDib);
 	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
@@ -1397,25 +1393,24 @@ public:
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
 	volatile double m_dEffectiveFrameRate;				// Current Calculated Frame Rate
-	volatile BOOL m_bRgb32Frame;						// Current Frame is RGB32 (Converted to or originally 32 bpp)
-	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessFrame()
+	volatile LONG m_lProcessFrameTime;					// Time in ms inside ProcessI420Frame()
 	volatile LONG m_lCompressedDataRate;				// Compressed data rate in bytes / sec
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
-	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessFrame()
 	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
+	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessI420Frame()
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
-	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessFrame()
+	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
 	volatile DWORD m_dwVideoProcessorMode;				// The Processor Mode Variable
 	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
-	CTime m_1SecTime;									// For the 1 sec tick in ProcessFrame()
-	CTime m_4SecTime;									// For the 4 sec tick in ProcessFrame()
+	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()
+	CTime m_4SecTime;									// For the 4 sec tick in ProcessI420Frame()
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
@@ -1428,15 +1423,15 @@ public:
 
 	// Drawing
 	CDxDraw* m_pDxDraw;									// Direct Draw Object
-	volatile BOOL m_bDecodeFramesForPreview;			// Decode the frames from YUV to RGB for display
-														// because the format isn't supported for display
+	volatile BOOL m_bDecodeFramesForPreview;			// Decode the frames from YUV to RGB32 for display
+														// because the format isn't supported by the graphics card
 	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
 	volatile DWORD m_dwOSDMessageUpTime;				// OSD message UpTime
 	CString m_sOSDMessage;								// OSD message string
 	volatile COLORREF m_crOSDMessageColor;				// OSD message color
 
 	// Watchdog vars
-	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessFrame()
+	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()
 	volatile BOOL m_bWatchDogAlarm;						// WatchDog Alarm
 
 	// DirectShow Capture Vars
@@ -1652,14 +1647,9 @@ protected:
 	BOOL m_bResetSettings;
 	CVideoDeviceView* m_pView;
 	CVideoDeviceChildFrame* m_pFrame;
-	CDib* volatile m_pProcessFrameDib;				// Helper Dib used in ProcessFrame()
-	CDib* volatile m_pProcessFrameExtraDib;			// Helper Dib used in ProcessMJPGFrame() and ProcessM420Frame()
-	CDib* volatile m_pProcessFrameDeinterlaceDib;	// Helper Dib used in DecodeFrameToRgb32()
-#ifdef _DEBUG
-	CDib* volatile m_pProcessFrameDebugSrcDib;		// To debug YUV formats
-	CDib* volatile m_pProcessFrameDebugDstDib;		// To debug YUV formats
-#endif
-	CAVDecoder m_MJPGDecoder;
+	CDib* volatile m_pProcessFrameDib;
+	CDib* volatile m_pProcessFrameExtraDib;
+	CAVDecoder m_AVDecoder;
 	volatile DWORD m_dwStopProcessFrame;
 	volatile DWORD m_dwProcessFrameStopped;
 	CRITICAL_SECTION m_csProcessFrameStop;

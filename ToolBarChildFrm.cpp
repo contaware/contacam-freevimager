@@ -1568,8 +1568,8 @@ void CVideoDeviceChildFrame::OnClose()
 		// The given wait time may be exceeded if a small framerate is set or if the UDP
 		// server has been closed just before this client. That's not a problem given that
 		// after MAX_CLOSE_CHILDFRAME_WAITTIME / 3 milliseconds that we called StopProcessFrame()
-		// we are not anymore inside ProcessFrame() and because of the StopProcessFrame() call
-		// we cannot enter ProcessFrame() again!
+		// we are not anymore inside ProcessI420Frame() and because of the StopProcessFrame() call
+		// we cannot enter ProcessI420Frame() again!
 		if (IsShutdown1Done() ||
 			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
 			StartShutdown2();
@@ -1688,7 +1688,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Stop m_pVideoAviDoc calling ProcessFrame()
+	// Stop m_pVideoAviDoc calling ProcessI420Frame()
 	if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc))
 	{
 		::EnterCriticalSection(&pDoc->m_pVideoAviDoc->m_csVideoDeviceDoc);
@@ -1722,7 +1722,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	}
 
 	// The next step must happen last, because it sets to NULL
-	// the following pointers (used inside ProcessFrame()
+	// the following pointers (used inside ProcessI420Frame()
 	// and the Audio Thread for the PeakMeter):
 	//
 	// m_pVideoDevicePropertySheet

@@ -49,11 +49,17 @@ CVideoDeviceView::CVideoDeviceView()
 	m_bDxDrawInitFailed = FALSE;
 	m_bDxDrawFirstInitOk = FALSE;
 	m_dwDxDrawUpTime = ::timeGetTime();
+	m_pDxDrawDib = new CDib;
+	m_pDxDrawDib->SetShowMessageBoxOnError(FALSE);
 }
 
 CVideoDeviceView::~CVideoDeviceView()
 {
-	
+	if (m_pDxDrawDib)
+	{
+		delete m_pDxDrawDib;
+		m_pDxDrawDib = NULL;
+	}	
 }
 
 #ifdef _DEBUG
@@ -356,6 +362,9 @@ BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC)
 		else
 		{
 			pDoc->m_bDecodeFramesForPreview = TRUE;
+			::PostMessage(	GetSafeHwnd(),
+							WM_THREADSAFE_SETDOCUMENTTITLE,
+							0, 0);
 			if (!m_bDxDrawInitFailed && dwFourCC == 0U) // if also BI_RGB failed, display "DirectX failed" in OnDraw()
 			{
 				m_bDxDrawInitFailed = TRUE;
@@ -417,7 +426,7 @@ __forceinline void CVideoDeviceView::EraseDxDrawBkgnd(BOOL bFullErase)
 		pDoc->m_pDxDraw->ClearBack();
 }
 
-__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent(BOOL bVideoView)
+__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -426,37 +435,17 @@ __forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent(BOOL bVideoVie
 		return (BI_RGB != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 	else
 	{
-		// YUY2 Format Equivalents
-		if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2')	&&
-			(pDoc->m_pDib->GetCompression() == FCC('YUNV')			||
-			pDoc->m_pDib->GetCompression() == FCC('VYUY')			||
-			pDoc->m_pDib->GetCompression() == FCC('V422')			||
-			pDoc->m_pDib->GetCompression() == FCC('YUYV')))
-			return FALSE;
 		// Special Handling for YV12 Format
-		else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
+		if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
 		{
-			if (!pDoc->m_pDxDraw->GetCurrentSrcFlipUV()			&&
-				pDoc->m_pDib->GetCompression() == FCC('YV12'))
-				return FALSE;
-			else if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV()		&&
-				(pDoc->m_pDib->GetCompression() == FCC('I420')	||
-				pDoc->m_pDib->GetCompression() == FCC('IYUV')))
+			if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV() &&
+				pDib->GetCompression() == FCC('I420'))
 				return FALSE;
 			else
 				return TRUE;
 		}
-		// RGB Format Equivalents
-		else if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == BI_RGB	&&
-				(pDoc->m_pDib->GetCompression() == BI_BITFIELDS	||
-				pDoc->m_pDib->GetCompression() == BI_RLE4		||
-				pDoc->m_pDib->GetCompression() == FCC('RLE4')	||
-				pDoc->m_pDib->GetCompression() == BI_RLE8		||
-				pDoc->m_pDib->GetCompression() == FCC('RLE8')))
-			return FALSE;
-		// Remaining Formats
 		else
-			return (pDoc->m_pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
+			return (pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
 	}
 }
 
@@ -476,6 +465,51 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		return FALSE;
 	}
 
+	// Convert to RGB32?
+	CDib* pDib = pDoc->m_pDib;
+	if (pDoc->m_bDecodeFramesForPreview)
+	{	
+		// Allocate Dst Bits?
+		BITMAPINFO Bmi;
+		memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
+		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		Bmi.bmiHeader.biWidth = pDib->GetWidth();
+		Bmi.bmiHeader.biHeight = pDib->GetHeight();
+		Bmi.bmiHeader.biPlanes = 1;
+		Bmi.bmiHeader.biCompression = BI_RGB;
+		Bmi.bmiHeader.biBitCount = 32;
+		Bmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(Bmi.bmiHeader.biWidth * Bmi.bmiHeader.biBitCount) * Bmi.bmiHeader.biHeight;
+		if (!m_pDxDrawDib->SetBMI(&Bmi))
+		{
+			::LeaveCriticalSection(&pDoc->m_csDib);
+			return FALSE;
+		}
+		if (!m_pDxDrawDib->GetBits())
+		{
+			if (!m_pDxDrawDib->AllocateBitsFast(m_pDxDrawDib->GetBitCount(),
+												m_pDxDrawDib->GetCompression(),
+												m_pDxDrawDib->GetWidth(),
+												m_pDxDrawDib->GetHeight()))
+			{
+				::LeaveCriticalSection(&pDoc->m_csDib);
+				return FALSE;
+			}
+		}
+
+		// Convert
+		if (!::YUVToRGB32(	pDib->GetCompression(),
+							pDib->GetBits(),
+							m_pDxDrawDib->GetBits(),
+							m_pDxDrawDib->GetWidth(),
+							m_pDxDrawDib->GetHeight()))
+		{
+			::LeaveCriticalSection(&pDoc->m_csDib);
+			return FALSE;
+		}
+		else
+			pDib = m_pDxDrawDib;
+	}
+
 	// Init
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
@@ -483,13 +517,13 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	if (!pDoc->m_pDxDraw->IsInit()										||
 		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-		pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
-		pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
-		IsDxDrawCompressionDifferent(bVideoView))
+		pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
+		pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
+		IsDxDrawCompressionDifferent(pDib, bVideoView))
 	{
 		m_dwDxDrawUpTime = dwCurrentUpTime;
-		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(),
-						bVideoView ? pDoc->m_pDib->GetCompression() : BI_RGB))
+		if (!InitDxDraw(pDib->GetWidth(), pDib->GetHeight(),
+						bVideoView ? pDib->GetCompression() : BI_RGB))
 		{
 			::LeaveCriticalSection(&pDoc->m_csDib);
 			return FALSE;
@@ -503,7 +537,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		HDC hDC; 
 
 		// Draw Rect
-		CRect rc(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
+		CRect rc(0, 0, pDib->GetWidth(), pDib->GetHeight());
 
 		// Update Current Device
 		pDoc->m_pDxDraw->UpdateCurrentDevice();
@@ -542,17 +576,17 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		else if (bVideoView)
 		{
 			// Draw Frame
-			pDoc->m_pDxDraw->RenderDib(pDoc->m_pDib, m_ZoomRect);
+			pDoc->m_pDxDraw->RenderDib(pDib, m_ZoomRect);
 			
 			// Draw Zones
 			if (pDoc->m_bShowEditDetectionZones ||
 				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
-				DxDrawZones();
+				DxDrawZones(pDib);
 
 			// Draw Text
 			if (pDoc->m_SaveFrameListThread.IsWorking() ||
 				!sOSDMessage.IsEmpty())
-				DxDrawText(sOSDMessage, crOSDMessageColor);
+				DxDrawText(pDib, sOSDMessage, crOSDMessageColor);
 		}
 		// Display: Preview Off
 		else
@@ -575,7 +609,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	return TRUE;
 }
 
-void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMessageColor)
+void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -589,11 +623,11 @@ void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMess
 		{
 			// Calc. font size
 			int nMaxFontSize;
-			if (pDoc->m_pDib->GetHeight() <= 144)
+			if (pDib->GetHeight() <= 144)
 				nMaxFontSize = 9;
-			else if (pDoc->m_pDib->GetHeight() <= 288)
+			else if (pDib->GetHeight() <= 288)
 				nMaxFontSize = 16;
-			else if (pDoc->m_pDib->GetHeight() <= 576)
+			else if (pDib->GetHeight() <= 576)
 				nMaxFontSize = 24;
 			else
 				nMaxFontSize = 36;
@@ -606,13 +640,13 @@ void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMess
 				sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
 			if (sProgress != _T(""))
 			{
-				::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+				::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
 								sProgress, DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
 								OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 			}
 
 			// Show that we are working
-			::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
 							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
@@ -620,7 +654,7 @@ void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMess
 		// Draw OSD message
 		if (!sOSDMessage.IsEmpty())
 		{
-			::DrawBigText(	hDC, CRect(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()),
+			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
 							sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
 							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
@@ -630,7 +664,7 @@ void CVideoDeviceView::DxDrawText(const CString& sOSDMessage, COLORREF crOSDMess
 	}
 }
 
-void CVideoDeviceView::DxDrawZones()
+void CVideoDeviceView::DxDrawZones(CDib* pDib)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -647,8 +681,8 @@ void CVideoDeviceView::DxDrawZones()
 				if (pDoc->m_DoMovementDetection[i])
 				{
 					RECT rcDetZone;
-					int nZoneWidth = pDoc->m_pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
-					int nZoneHeight = pDoc->m_pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+					int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
+					int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
 					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
 					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
 					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
@@ -678,8 +712,8 @@ void CVideoDeviceView::DxDrawZones()
 				if (pDoc->m_MovementDetections[i])
 				{
 					RECT rcDetZone;
-					int nZoneWidth = pDoc->m_pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
-					int nZoneHeight = pDoc->m_pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+					int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
+					int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
 					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
 					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
 					rcDetZone.left = MAX(0, nZoneOffsetX - 1);

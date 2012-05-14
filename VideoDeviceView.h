@@ -30,10 +30,10 @@ public:
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
-	void DxDrawText(const CString& sOSDMessage, COLORREF crOSDMessageColor);
-	void DxDrawZones();
+	void DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	void DxDrawZones(CDib* pDib);
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
-	__forceinline BOOL IsDxDrawCompressionDifferent(BOOL bVideoView);
+	__forceinline BOOL IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView);
 	BOOL ReOpenDxDevice();
 
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
@@ -86,6 +86,7 @@ protected:
 	volatile BOOL m_bDxDrawInitFailed;
 	volatile BOOL m_bDxDrawFirstInitOk;
 	CFont m_GDIDrawFont;
+	CDib* volatile m_pDxDrawDib; // DirectDraw Helper Dib
 };
 
 #ifndef _DEBUG

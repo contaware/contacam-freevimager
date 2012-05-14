@@ -2035,8 +2035,18 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 			::EnterCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
 			if (m_pDoc->m_pVideoDeviceDoc && m_pDoc->m_pVideoDeviceDocDib && m_pDoc->m_pVideoDeviceDocDib->IsValid())
 			{
-				m_pDoc->m_pVideoDeviceDoc->ProcessFrame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
-														m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
+				switch (m_pDoc->m_pVideoDeviceDocDib->GetCompression())
+				{
+					case FCC('I420') :	m_pDoc->m_pVideoDeviceDoc->ProcessI420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
+																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
+										break;
+					case FCC('M420') :	m_pDoc->m_pVideoDeviceDoc->ProcessM420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
+																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
+										break;
+					default :			m_pDoc->m_pVideoDeviceDoc->ProcessNoI420NoM420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
+																							m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
+										break;
+				}
 			}
 			::LeaveCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
 #endif

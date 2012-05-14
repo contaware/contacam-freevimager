@@ -6211,9 +6211,7 @@ void CUImagerApp::CSchedulerEntry::Start()
 			return;
 		}
 
-		// Start record, the format may still change because of
-		// the m_bDecodeFramesForPreview flag, but that's not a
-		// problem for CAVRec::AddFrame() which manages it well.
+		// Start record
 		if (!pDoc->CaptureRecord(FALSE)) // No Message Box on Error					
 		{
 			m_bInsideStart = FALSE;
