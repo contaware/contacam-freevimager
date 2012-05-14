@@ -583,8 +583,6 @@ public:
 							m_pI420Buf = NULL;						
 							m_dwI420BufSize = 0;
 							m_dwI420ImageSize = 0;
-							m_pFlipBuf = NULL;
-							m_dwFlipBufSize = 0;
 							memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
 							m_nCurrentDataRate = 0;
 							m_nCurrentSizeDiv = 0;
@@ -605,8 +603,6 @@ public:
 			LPBYTE m_pI420Buf;						
 			DWORD m_dwI420BufSize;
 			DWORD m_dwI420ImageSize;
-			LPBYTE m_pFlipBuf;
-			DWORD m_dwFlipBufSize;
 			BITMAPINFOFULL m_CurrentBMI;
 			int m_nCurrentDataRate;
 			int m_nCurrentSizeDiv;
@@ -1235,12 +1231,8 @@ public:
 	void MovementDetectionProcessing(	CDib* pDib,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
-	BOOL LumChangeDetector(	CDib* pDibY,
-							BOOL bPlanar,
-							int nPackedYOffset);
-	BOOL MovementDetector(	CDib* pDib,
-							BOOL bPlanar,					
-							int nDetectionLevel);
+	BOOL LumChangeDetector(CDib* pDib);
+	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void ResetMovementDetector();
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection();
@@ -1342,7 +1334,6 @@ protected:
 						DWORD dwFirstUpTime,
 						DWORD dwLastUpTime);
 	__forceinline int SummRectArea(	CDib* pDib,
-									BOOL bPlanar,
 									int width,
 									int posX,
 									int posY,
@@ -1581,7 +1572,6 @@ public:
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
 	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
-	CDib* volatile m_pMovementDetectorY800Dib;			// If source Dib is in RGB format that's the converted Y800 Dib
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 

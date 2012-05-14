@@ -3400,94 +3400,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 		// Do detect?
 		if ((m_dwFrameCountUp % m_nMovDetFreqDiv) == 0)
 		{
-			if (pDib->GetCompression() == BI_RGB ||
-				pDib->GetCompression() == BI_BITFIELDS)
-			{
-				// If first RGB Frame:
-				// 1. Allocated m_pMovementDetectorY800Dib
-				// 2. Free m_pDifferencingDib and m_pMovementDetectorBackgndDib
-				if (!m_pMovementDetectorY800Dib)
-				{
-					m_pMovementDetectorY800Dib = new CDib;
-					if (!m_pMovementDetectorY800Dib)
-						return;
-					m_pMovementDetectorY800Dib->SetShowMessageBoxOnError(FALSE);
-					if (m_pDifferencingDib)
-					{
-						delete m_pDifferencingDib;
-						m_pDifferencingDib = NULL;
-					}
-					if (m_pMovementDetectorBackgndDib)
-					{
-						delete m_pMovementDetectorBackgndDib;
-						m_pMovementDetectorBackgndDib = NULL;
-					}
-				}
-				
-				// 24 bpp
-				if (pDib->GetBitCount() == 24)
-				{
-					if (!m_pMovementDetectorY800Dib->GetBits())
-					{
-						if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																			FCC('Y800'),
-																			pDib->GetWidth(),
-																			pDib->GetHeight()))
-							return;
-					}
-					if (!::RGB24ToY800(	pDib->GetBits(),						// RGB24 Dib
-										m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-										pDib->GetWidth(),
-										pDib->GetHeight()))
-						return;
-				}
-				// 32 bpp
-				else if (pDib->GetBitCount() == 32)
-				{
-					if (!m_pMovementDetectorY800Dib->GetBits())
-					{
-						if (!m_pMovementDetectorY800Dib->AllocateBitsFast(	8,
-																			FCC('Y800'),
-																			pDib->GetWidth(),
-																			pDib->GetHeight()))
-							return;
-					}
-					if (!::RGB32ToY800(	pDib->GetBits(),						// RGB32 Dib
-										m_pMovementDetectorY800Dib->GetBits(),	// Y Plane
-										pDib->GetWidth(),
-										pDib->GetHeight()))
-						return;
-				}
-				// 16 bpp
-				else
-				{
-					*m_pMovementDetectorY800Dib = *pDib;
-					if (!m_pMovementDetectorY800Dib->Compress(FCC('Y800')))
-						return;
-				}
-			}
-			// If first no RGB Frame:
-			// Free m_pMovementDetectorY800Dib,
-			//		m_pDifferencingDib and m_pMovementDetectorBackgndDib
-			else if (m_pMovementDetectorY800Dib)
-			{
-				delete m_pMovementDetectorY800Dib;
-				m_pMovementDetectorY800Dib = NULL;
-				if (m_pDifferencingDib)
-				{
-					delete m_pDifferencingDib;
-					m_pDifferencingDib = NULL;
-				}
-				if (m_pMovementDetectorBackgndDib)
-				{
-					delete m_pMovementDetectorBackgndDib;
-					m_pMovementDetectorBackgndDib = NULL;
-				}
-			}
-			CDib* pDibY = m_pMovementDetectorY800Dib ? m_pMovementDetectorY800Dib : pDib;
 			if (!m_pMovementDetectorBackgndDib)
 			{
-				m_pMovementDetectorBackgndDib = new CDib(*pDibY);
+				m_pMovementDetectorBackgndDib = new CDib(*pDib);
 				if (!m_pMovementDetectorBackgndDib)
 					return;
 				m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
@@ -3498,58 +3413,16 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 				if (!m_pDifferencingDib)
 					return;
 				m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
-				if (!m_pDifferencingDib->AllocateBitsFast(	pDibY->GetBitCount(),
-															pDibY->GetCompression(),
-															pDibY->GetWidth(),
-															pDibY->GetHeight()))
+				if (!m_pDifferencingDib->AllocateBitsFast(	pDib->GetBitCount(),
+															pDib->GetCompression(),
+															pDib->GetWidth(),
+															pDib->GetHeight()))
 					return;
-			}
-
-			// Color Space Type
-			BOOL bPlanar;
-			int nPackedYOffset = 0;
-			if (pDibY->GetCompression() == FCC('I420')	||
-				pDibY->GetCompression() == FCC('IYUV')	||
-				pDibY->GetCompression() == FCC('YV12')	||
-				pDibY->GetCompression() == FCC('YUV9')	||
-				pDibY->GetCompression() == FCC('YVU9')	||
-				pDibY->GetCompression() == FCC('Y41B')	||
-				pDibY->GetCompression() == FCC('YV16')	||
-				pDibY->GetCompression() == FCC('Y42B')	||
-				pDibY->GetCompression() == FCC('  Y8')	||
-				pDibY->GetCompression() == FCC('Y800')	||
-				pDibY->GetCompression() == FCC('GREY'))
-			{
-				bPlanar = TRUE;
-			}
-			// Packed 422 with Y beginning the 16 bits pixel
-			else if (	pDibY->GetCompression() == FCC('YUY2')	||	// Y0 U0 Y1 V0, Y2 U2 Y3 V2, ...
-						pDibY->GetCompression() == FCC('YUNV')	||	// Equivalent to YUY2
-						pDibY->GetCompression() == FCC('VYUY')	||	// Equivalent to YUY2
-						pDibY->GetCompression() == FCC('V422')	||	// Equivalent to YUY2
-						pDibY->GetCompression() == FCC('YUYV')	||	// Equivalent to YUY2
-						pDibY->GetCompression() == FCC('YVYU'))		// Y0 V0 Y1 U0, Y2 V2 Y3 U2, ...
-			{
-				bPlanar = FALSE;
-			}
-			// Packed 422 with Y as the second byte of the 16 bits pixel
-			else if (	pDibY->GetCompression() == FCC('UYVY')	||	// U0 Y0 V0 Y1, U2 Y2 V2 Y3, ...
-						pDibY->GetCompression() == FCC('Y422')	||	// Equivalent to UYVY
-						pDibY->GetCompression() == FCC('UYNV'))		// Equivalent to UYVY
-			{
-				bPlanar = FALSE;
-				nPackedYOffset = 1;
-			}
-			// Not Supported Format!
-			else
-			{
-				TRACE(_T("Video Format Not Supported by Motion Detector!\n"));
-				return;
 			}
 
 			// Luminosity change detector
 			if (m_bDoLumChangeDetection)
-				bLumChange = LumChangeDetector(pDibY, bPlanar, nPackedYOffset);
+				bLumChange = LumChangeDetector(pDib);
 
 			// Differencing
 			BYTE p[16];
@@ -3564,50 +3437,42 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			MinDiff[7] = MinDiff[0];
 
 			// Size in 8 bytes units
-			int nSize8;
-			if (bPlanar)
-				nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 3;
-			else
-				nSize8 = (pDibY->GetWidth() * pDibY->GetHeight()) >> 2;
+			int nSize8 = (pDib->GetWidth() * pDib->GetHeight()) >> 3;
 
 			// Do Differencing
 			::DiffMMX(	m_pDifferencingDib->GetBits(),				// Dst
-						pDibY->GetBits(),							// Src1
+						pDib->GetBits(),							// Src1
 						m_pMovementDetectorBackgndDib->GetBits(),	// Src2
 						nSize8,										// Size in 8 bytes units
 						MinDiff);
 
 			// Call Detector
 			m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
-			bMovement = MovementDetector(	m_pDifferencingDib,
-											bPlanar,
-											m_nDetectionLevel);
+			bMovement = MovementDetector(m_pDifferencingDib, m_nDetectionLevel);
 
 			// Update background
+			// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
+			// which is available only on SSE processors
 			if (g_bSSE)
 			{
 				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
 				{
 					::Mix7To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-									pDibY->GetBits(),							// Src2
+									pDib->GetBits(),							// Src2
 									nSize8);									// Size in 8 bytes units
 				}
 				else
 				{
 					::Mix3To1MMX(	m_pMovementDetectorBackgndDib->GetBits(),	// Src1 & Dst
-									pDibY->GetBits(),							// Src2
+									pDib->GetBits(),							// Src2
 									nSize8);									// Size in 8 bytes units
 				}
 			}
 			else
 			{
-				int nSize;
-				if (bPlanar)
-					nSize = pDibY->GetWidth() * pDibY->GetHeight();
-				else
-					nSize = (pDibY->GetWidth() * pDibY->GetHeight()) << 1;
+				int nSize = pDib->GetWidth() * pDib->GetHeight();
 				LPBYTE p1 = m_pMovementDetectorBackgndDib->GetBits();
-				LPBYTE p2 = pDibY->GetBits();
+				LPBYTE p2 = pDib->GetBits();
 				if (m_dMovDetFrameRateFreqDivCalc / m_nMovDetFreqDiv >= MOVDET_MIX_THRESHOLD)
 				{
 					for (int i = 0 ; i < nSize ; i++)
@@ -4965,7 +4830,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Movement Detection
 	m_pDifferencingDib = NULL;
 	m_pMovementDetectorBackgndDib = NULL;
-	m_pMovementDetectorY800Dib = NULL;
 	m_bShowMovementDetections = FALSE;
 	m_bShowEditDetectionZones = FALSE;
 	m_bShowEditDetectionZonesMinus = FALSE;
@@ -5221,11 +5085,6 @@ void CVideoDeviceDoc::FreeMovementDetector()
 	{
 		delete m_pMovementDetectorBackgndDib;
 		m_pMovementDetectorBackgndDib = NULL;
-	}
-	if (m_pMovementDetectorY800Dib)
-	{
-		delete m_pMovementDetectorY800Dib;
-		m_pMovementDetectorY800Dib = NULL;
 	}
 	::InterlockedExchange(&m_lMovDetTotalZones, 0);
 }
@@ -9578,7 +9437,6 @@ BOOL CVideoDeviceDoc::NextAviFile()
 }
 
 // pDib    : the frame pointer
-// bPlanar : Planar Y format flag
 // width   : image width in pixels
 // posX    : start pixel position in x direction
 // posY    : start pixel position in y direction
@@ -9594,7 +9452,6 @@ EBX, ESI or EDI in inline assembly code, you force the compiler to save and rest
 those registers in the function prologue and epilogue.
 */
 __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
-												BOOL bPlanar,
 												int width,
 												int posX,
 												int posY,
@@ -9603,14 +9460,6 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 {
 	int summ = 0;
 	LPBYTE data = pDib->GetBits();
-
-	// If not planar
-	if (!bPlanar)
-	{
-		width <<= 1;
-		posX <<= 1;
-		rx <<= 1;
-	}
 
 	// Offset
 	data += (width*posY + posX);
@@ -9671,11 +9520,8 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 // Movement Detector
 //
 // pDib				: Difference Dib from which to detect movement
-// bPlanar			: Planar Y format flag
 // nDetectionLevel	: 1 - 100 (1 - > low movement sensibility, 100 -> high movement sensibility)
-BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
-										BOOL bPlanar,
-										int nDetectionLevel)
+BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 {
 	// Check Params
 	if ((pDib == NULL) || !pDib->IsValid())
@@ -9691,11 +9537,7 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 
 	// 235 is the MAX Y value, 16 is the MIN Y value
 	// -> The maximum reachable difference is 235 - 16
-	int nMaxIntensityPerZone;
-	if (bPlanar)
-		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * (235 - 16);
-	else
-		nMaxIntensityPerZone = nZoneWidth * nZoneHeight * 260;	// Guessed value, because there is the contribution of the chroma components!
+	int nMaxIntensityPerZone = nZoneWidth * nZoneHeight * (235 - 16);
 
 	// Calculate the Intensities of the enabled zones
 	for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
@@ -9705,7 +9547,6 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 			if (m_DoMovementDetection[y*m_lMovDetXZonesCount+x])
 			{
 				m_MovementDetectorCurrentIntensity[y*m_lMovDetXZonesCount+x] = SummRectArea(pDib,
-																							bPlanar,
 																							pDib->GetWidth(),
 																							x*nZoneWidth,	// start pixel in x direction
 																							y*nZoneHeight,	// start pixel in y direction
@@ -9824,22 +9665,15 @@ BOOL CVideoDeviceDoc::MovementDetector(	CDib* pDib,
 	}
 }
 
-BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
-										BOOL bPlanar,
-										int nPackedYOffset)
+BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDib)
 {
 	int x, y;
 	int nCount = 0;
 	LPBYTE pDataBkg = m_pMovementDetectorBackgndDib->GetBits();
-	LPBYTE pDataCur = pDibY->GetBits();
-	int width = pDibY->GetWidth();
-	int nZoneWidth = pDibY->GetWidth() / m_lMovDetXZonesCount;
-	int nZoneHeight = pDibY->GetHeight() / m_lMovDetYZonesCount;
-	if (!bPlanar)
-	{
-		nZoneWidth <<= 1;	// 16 bits pixels, skip chroma
-		nZoneHeight <<= 1;	// 16 bits pixels, skip chroma
-	}
+	LPBYTE pDataCur = pDib->GetBits();
+	int width = pDib->GetWidth();
+	int nZoneWidth = pDib->GetWidth() / m_lMovDetXZonesCount;
+	int nZoneHeight = pDib->GetHeight() / m_lMovDetYZonesCount;
 
 	// Calc. difference between current Y and background Y
 	// at the grid intersection points
@@ -9850,7 +9684,7 @@ BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDibY,
 		{
 			// Offset
 			int posX = x*nZoneWidth;
-			int nOffset = width*posY + posX + nPackedYOffset;
+			int nOffset = width*posY + posX;
 
 			// Consider pixels which can shift with a luminosity change
 			// and remember that the Y range is: [16,235] (220 steps)
@@ -11365,61 +11199,15 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 	if (!m_pCodecCtx)
 		return -1;
 
-	// If RGB Flip Vertically
-	LPBYTE pBits;
-	if (pDib->GetCompression() == BI_RGB ||
-		pDib->GetCompression() == BI_BITFIELDS)
-	{
-		DWORD dwDWAlignedLineSize = DWALIGNEDWIDTHBYTES(pDib->GetBitCount() * pDib->GetWidth());
-		DWORD dwFlipBufSize = dwDWAlignedLineSize * pDib->GetHeight();
-		if (!m_pFlipBuf || m_dwFlipBufSize < dwFlipBufSize)
-		{
-			if (m_pFlipBuf)
-				delete [] m_pFlipBuf;
-			m_pFlipBuf = new BYTE[dwFlipBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
-			if (!m_pFlipBuf)
-			{
-				m_dwFlipBufSize = 0;
-				return -1;
-			}
-			m_dwFlipBufSize = dwFlipBufSize;
-		}
-		LPBYTE lpSrcBits = pDib->GetBits();
-		LPBYTE lpDstBits = m_pFlipBuf + (pDib->GetHeight() - 1) * dwDWAlignedLineSize;
-		for (DWORD dwCurLine = 0 ; dwCurLine < pDib->GetHeight() ; dwCurLine++)
-		{
-			memcpy((void*)lpDstBits, (void*)lpSrcBits, dwDWAlignedLineSize); 
-			lpSrcBits += dwDWAlignedLineSize;
-			lpDstBits -= dwDWAlignedLineSize;
-		}
-		pBits = m_pFlipBuf;
-	}
-	else
-		pBits = pDib->GetBits();
-
 	// Fill Src Frame
 	avpicture_fill(	(AVPicture*)m_pFrame,
-					(uint8_t*)pBits,
+					(uint8_t*)pDib->GetBits(),
 					CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI()),
 					pDib->GetWidth(),
 					pDib->GetHeight());
 
-	// Flip Src Frame U <-> V pointers
-	if (pDib->GetCompression() == FCC('YV12') ||
-		pDib->GetCompression() == FCC('YV16') ||
-		pDib->GetCompression() == FCC('YVU9'))
-	{
-		uint8_t* pTemp = m_pFrame->data[1];
-		m_pFrame->data[1] = m_pFrame->data[2];
-		m_pFrame->data[2] = pTemp;
-		// Line Sizes for U and V are the same no need to swap
-	}
-
 	// Direct Encode?
-	if ((pDib->GetCompression() == FCC('I420')	||
-		pDib->GetCompression() == FCC('IYUV')	||
-		pDib->GetCompression() == FCC('YV12'))	&&
-		m_nCurrentSizeDiv == 0)
+	if (m_nCurrentSizeDiv == 0)
 	{
 		// Encode
 		int nEncodedSize = avcodec_encode_video(m_pCodecCtx,
@@ -11453,7 +11241,7 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 	}
 	else
 	{
-		// Color Space Conversion
+		// Shrink
 		if (m_pImgConvertCtx)
 		{
 			int sws_scale_res = sws_scale(	m_pImgConvertCtx,		// Image Convert Context
@@ -11630,10 +11418,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFO pBMI)
 	}
 
 	// Init Image Convert
-	if ((pBMI->bmiHeader.biCompression != FCC('I420')	&&
-		pBMI->bmiHeader.biCompression != FCC('IYUV')	&&
-		pBMI->bmiHeader.biCompression != FCC('YV12'))	||
-		m_nCurrentSizeDiv != 0)
+	if (m_nCurrentSizeDiv != 0)
 	{
 		// Determine required buffer size and allocate buffer if necessary
 		m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
@@ -11721,12 +11506,6 @@ void CVideoDeviceDoc::CSendFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*
 	}
 	m_dwI420BufSize = 0;
 	m_dwI420ImageSize = 0;
-	if (m_pFlipBuf)
-	{
-		delete [] m_pFlipBuf;
-		m_pFlipBuf = NULL;
-	}
-	m_dwFlipBufSize = 0;
 	memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
 	if (m_pOutbuf)
 	{
