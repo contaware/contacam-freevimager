@@ -157,7 +157,26 @@ class CMovementDetectionPage;
 #define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
 
 // UDP Networking
-#define DEFAULT_SENDFRAME_FRAGMENT_SIZE		1400		// bytes
+/*
+IPv4 and IPv6 define minimum reassembly buffer size, the minimum 
+datagram size that we are guaranteed any implementation must support. 
+For IPv4, this is 576 bytes. IPv6 raises this to 1500 bytes.
+
+This pretty much means that you want to limit your datagram size to 
+under 576 if you work over public internet. 
+
+It is true that a typical IPv4 header is 20 bytes, and the UDP header is 
+8 bytes. However it is possible to include IP options which can increase 
+the size of the IP header to as much as 60 bytes. In addition, sometimes 
+it is necessary for intermediate nodes to encapsulate datagrams inside 
+of another protocol such as IPsec (used for VPNs and the like) in order 
+to route the packet to its destination. So if you do not know the MTU on 
+your particular network path, it is best to leave a reasonable margin 
+for other header information that you may not have anticipated. A 
+512-byte UDP payload is generally considered to do that, although even 
+that does not leave quite enough space for a maximum size IP header.
+*/
+#define DEFAULT_SENDFRAME_FRAGMENT_SIZE		512			// bytes
 #define SENDFRAME_MIN_FRAGMENT_SIZE			256			// bytes
 #define SENDFRAME_MAX_FRAGMENT_SIZE			1400		// bytes
 #define DEFAULT_SENDFRAME_DATARATE			300000		// Bits / Sec
