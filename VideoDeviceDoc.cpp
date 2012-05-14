@@ -8555,19 +8555,8 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 		m_lCompressedDataRateSum += dwSize;
 		ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
 	}
-	// In case that avcodec_decode_video fails
-	// use LoadJPEG which is more fault tolerant, but slower...
-	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
-	{
-		TRACE(_T("*** Error: ffmpeg failed to decode mjpeg, trying CDib::LoadJPEG() ***\n"));
-		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
-		{
-			m_lCompressedDataRateSum += dwSize;
-			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize());
-		}
-	}
 	// Other formats
-	else
+	else if (m_CaptureBMI.bmiHeader.biCompression != FCC('MJPG'))
 	{
 		m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_CaptureBMI);
 		m_pProcessFrameExtraDib->SetBits(pData, dwSize);
