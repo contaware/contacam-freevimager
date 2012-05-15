@@ -3245,7 +3245,6 @@
 #define IDC_DETECTION_MODE              2543
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
-#define IDC_CHECK_REC_DEINTERLACE       2546
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3535,7 +3534,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33173
-#define _APS_NEXT_CONTROL_VALUE         2547
+#define _APS_NEXT_CONTROL_VALUE         2546
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

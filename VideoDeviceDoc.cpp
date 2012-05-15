@@ -399,7 +399,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
 										false,	// No interleave for Video only
-										m_pDoc->m_bVideoDetSwfDeinterlace ? true : false,
+										false,
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
@@ -446,7 +446,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
 										false,	// No interleave for Video only
-										m_pDoc->m_bVideoDetDeinterlace ? true : false,
+										false,
 										bShowFrameTime ? true : false,
 										RefTime,
 										dwRefUpTime);
@@ -4677,7 +4677,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
-	m_bRecDeinterlace = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
 	memset(&m_ProcessFrameBMI, 0, sizeof(BITMAPINFOFULL));
 	m_dFrameRate = DEFAULT_FRAMERATE;
@@ -4873,13 +4872,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_fVideoDetQuality = ((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality;
 	m_nVideoDetQualityBitrate = 0;
 	m_dwVideoDetFourCC = ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC;
-	m_bVideoDetDeinterlace = FALSE;
 	m_nVideoDetSwfDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoDetSwfKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoDetSwfQuality = DEFAULT_VIDEO_QUALITY;
 	m_nVideoDetSwfQualityBitrate = 0;
 	m_dwVideoDetSwfFourCC = FCC('FLV1');
-	m_bVideoDetSwfDeinterlace = FALSE;
 	m_bDetectionStartStop = FALSE;
 	m_DetectionStartTime = t;
 	m_DetectionStopTime = t;
@@ -5431,7 +5428,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
 	m_bDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
 	m_bRotate180 = (BOOL) pApp->GetProfileInt(sSection, _T("Rotate180"), FALSE);
-	m_bRecDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("RecDeinterlace"), FALSE);
 	m_bRecAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("RecAutoOpen"), TRUE);
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
@@ -5505,13 +5501,11 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nVideoRecDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_nVideoRecQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoRecQualityBitrate"), 0);
 	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
-	m_bVideoDetDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("VideoDetDeinterlace"), FALSE);
 	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
 	m_nVideoDetQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoDetQualityBitrate"), 0);
 	m_nVideoDetKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoDetDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_dwVideoDetSwfFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetSwfFourCC"), FCC('FLV1'));
-	m_bVideoDetSwfDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("VideoDetSwfDeinterlace"), FALSE);
 	m_fVideoDetSwfQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetSwfQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoDetSwfQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), 0);
 	m_nVideoDetSwfKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), DEFAULT_KEYFRAMESRATE);
@@ -5699,7 +5693,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
 			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
-			pApp->WriteProfileInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
@@ -5758,13 +5751,11 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate);
 			pApp->WriteProfileInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoDetDeinterlace"), m_bVideoDetDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
 			pApp->WriteProfileInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfDeinterlace"), m_bVideoDetSwfDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality);
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
@@ -5888,7 +5879,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("Rotate180"), (int)m_bRotate180, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecDeinterlace"), m_bRecDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
@@ -5947,13 +5937,11 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetDeinterlace"), m_bVideoDetDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfDeinterlace"), m_bVideoDetSwfDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate, sTempFileName);
@@ -8619,10 +8607,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	// Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
 	if (bDoProcessFrame && pData && dwSize > 0)
 	{
-		// Init Vars
-		BOOL bOk;
-		BOOL bShowFrameTime = m_bShowFrameTime;
-
 		// Set Dib Pointer
 		CDib* pDib = m_pProcessFrameDib;
 		if (!pDib)
@@ -8686,6 +8670,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// Timed Snapshot
 		Snapshot(pDib, CurrentTime);
 
+		// Add Frame Time if User Wants it
+		if (m_bShowFrameTime)
+			CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+
 		// Record Video
 		if (m_bVideoRecWait == FALSE)
 		{
@@ -8693,25 +8681,13 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			if (m_pAVRec)
 			{
 				// Add Frame
-				bool bAVRecShowFrameTime = false;
-				bool bRecDeinterlace = m_bRecDeinterlace ? true : false;
-				if (bShowFrameTime)
-				{
-					if (!bRecDeinterlace)
-					{
-						CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
-						bShowFrameTime = FALSE;
-					}
-					else
-						bAVRecShowFrameTime = true;
-				}
-				bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-											pDib,
-											m_bInterleave ? true : false,
-											bRecDeinterlace,
-											bAVRecShowFrameTime,
-											CurrentTime,
-											dwCurrentInitUpTime);
+				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+												pDib,
+												m_bInterleave ? true : false,
+												false,
+												false,
+												CurrentTime,
+												dwCurrentInitUpTime);
 
 				// Recording Up-Time Init
 				if (m_bRecFirstFrame)
@@ -8779,10 +8755,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			}
 			::LeaveCriticalSection(&m_csAVRec);
 		}
-
-		// Add Frame Time if User Wants it
-		if (bShowFrameTime)
-			CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Send Video Frame
 		if (m_bSendVideoFrame)

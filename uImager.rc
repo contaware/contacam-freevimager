@@ -1647,19 +1647,17 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,217,81,10
     COMBOBOX        IDC_TIME_SEGMENTATION,99,215,82,67,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    CONTROL         "De-Interlace",IDC_CHECK_REC_DEINTERLACE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,204,16,57,10
-    COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,254,32,149,220,
+    COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,254,22,149,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Quality",IDC_RADIO_QUALITY,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,203,56,37,10
+                    WS_GROUP,203,49,37,10
     CONTROL         "Datarate",IDC_RADIO_BITRATE,"Button",BS_AUTORADIOBUTTON,
-                    251,56,43,10
-    EDITTEXT        IDC_EDIT_DATARATE,238,70,44,12,ES_NUMBER
+                    251,49,43,10
+    EDITTEXT        IDC_EDIT_DATARATE,238,65,44,12,ES_NUMBER
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
-                    204,67,173,18
-    EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,261,92,21,12,ES_NUMBER
+                    204,62,173,18
+    EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,261,89,21,12,ES_NUMBER
     CONTROL         "Once:",IDC_CHECK_SCHEDULER_ONCE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,204,133,42,10
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_START,"SysDateTimePick32",
@@ -1711,8 +1709,8 @@ BEGIN
     LTEXT           "Stop",IDC_STATIC2164,204,170,16,8
     LTEXT           "Start",IDC_STATIC2165,204,212,16,8
     LTEXT           "Stop",IDC_STATIC2166,310,212,16,8
-    LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,204,94,51,8
-    LTEXT           "kbps",IDC_LABEL_DATARATE1,288,73,24,8
+    LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,204,91,51,8
+    LTEXT           "kbps",IDC_LABEL_DATARATE1,288,68,24,8
     RTEXT           "",IDC_DROPPED_FRAMES,91,60,37,8
     LTEXT           "Dropped:",IDC_STATIC2167,13,60,30,8
     LTEXT           "frames/sec",IDC_STATIC2168,132,27,40,8
@@ -1724,10 +1722,10 @@ BEGIN
     RTEXT           "",IDC_PROCESS_TIME,91,49,37,8
     LTEXT           "ms",IDC_STATIC2173,132,49,10,8
     GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,205,180,28
-    LTEXT           "Compression:",IDC_STATIC2177,204,33,41,8
-    LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,71,17,11
-    LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,72,30,8
-    LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,287,94,21,8
+    LTEXT           "Compression:",IDC_STATIC2177,204,24,41,8
+    LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,66,17,11
+    LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,67,30,8
+    LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,287,91,21,8
     LTEXT           "Keep dir content for",IDC_STATIC2180,56,255,63,8
     LTEXT           "day(s)",IDC_STATIC2181,150,255,19,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
@@ -4674,7 +4672,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 268
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,16,124,10

@@ -72,7 +72,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
-	DDX_Check(pDX, IDC_CHECK_REC_DEINTERLACE, m_bRecDeinterlace);
 	//}}AFX_DATA_MAP
 }
 
@@ -104,7 +103,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_DELETE_RECORDINGS_DAYS, OnChangeEditDeleteRecordingsDays)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
-	ON_BN_CLICKED(IDC_CHECK_REC_DEINTERLACE, OnCheckRecDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	//}}AFX_MSG_MAP
@@ -260,7 +258,6 @@ BOOL CGeneralPage::OnInitDialog()
 	// Init vars
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
-	m_bRecDeinterlace = FALSE;
 	m_nVideoRecQualityBitrate = 0;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
@@ -290,7 +287,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
 	m_nVideoRecDataRate = m_pDoc->m_nVideoRecDataRate / 1000;
 	m_nVideoRecQualityBitrate = m_pDoc->m_nVideoRecQualityBitrate;
-	m_bRecDeinterlace = m_pDoc->m_bRecDeinterlace;
 
 	// Recordings Delete
 	m_nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
@@ -1022,12 +1018,6 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	}
 	
 	CPropertyPage::OnHScroll(nSBCode, nPos, (CScrollBar*)pScrollBar);
-}
-
-void CGeneralPage::OnCheckRecDeinterlace() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bRecDeinterlace = m_bRecDeinterlace;
 }
 
 void CGeneralPage::OnChangeEditKeyframesRate() 

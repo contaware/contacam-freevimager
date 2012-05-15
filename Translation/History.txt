@@ -1,5 +1,10 @@
 TRANSLATIONS HISTORY
 
+4.0.0 (xxx 2012)
+
+- Live De-Interlace simplified string and removed AVI rec De-Interlace checkbox
+- ...
+
 3.9.9 (May 1st 2012)
 
 - Menu description made shorter: 'Scan from selected source to Tiff'

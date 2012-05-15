@@ -1476,7 +1476,6 @@ public:
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
 	CString m_sRecordAutoSaveDir;						// The Record Directory
-	volatile BOOL m_bRecDeinterlace;					// Recording De-Interlace
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoRecDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
@@ -1609,13 +1608,11 @@ public:
 	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
 	volatile BOOL m_bDoLumChangeDetection;				// Discard movement detection if a luminosity change happens
 	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
-	volatile BOOL m_bVideoDetDeinterlace;				// Deinterlace video when saving
 	volatile int m_nVideoDetDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoDetKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoDetQuality;					// 2.0f best quality, 31.0f worst quality
 	volatile int m_nVideoDetQualityBitrate;				// 0 -> use quality, 1 -> use bitrate
 	volatile DWORD m_dwVideoDetSwfFourCC;				// Video Compressor FourCC
-	volatile BOOL m_bVideoDetSwfDeinterlace;			// Deinterlace video when saving
 	volatile int m_nVideoDetSwfDataRate;				// Data Rate in Bits / Sec
 	volatile int m_nVideoDetSwfKeyframesRate;			// Keyframes Rate
 	volatile float m_fVideoDetSwfQuality;				// 2.0f best quality, 31.0f worst quality
