@@ -2,7 +2,8 @@ TRANSLATIONS HISTORY
 
 4.0.0 (xxx 2012)
 
-- Live De-Interlace simplified string and removed AVI rec De-Interlace checkbox
+- Live De-Interlace simplified string, removed AVI rec and
+  SWF Snapshot History De-Interlace check-boxes
 - ...
 
 3.9.9 (May 1st 2012)

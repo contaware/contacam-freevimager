@@ -218,7 +218,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		{
 			RefTime = CTime::GetCurrentTime();
 			dwRefUpTime = ::timeGetTime();
-			FirstTime = CAVRec::CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
+			FirstTime = CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
 			if (FirstTime < LastTime)
 			{
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
@@ -232,7 +232,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		while ((dwRefUpTime - dwStartUpTime) <= 1100U); // be safe in case computer time has been changed
 		ASSERT(FirstTime >= LastTime);
-		LastTime = CAVRec::CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
+		LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
 		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 
 		// Directory to Store Detection
@@ -372,6 +372,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				SWFSaveDib = *pDib;
 
+				// Add Frame Time
+				if (bShowFrameTime)
+					AddFrameTime(&SWFSaveDib, RefTime, dwRefUpTime);
+
 				// Open
 				if (!AVRecSwf.IsOpen())
 				{
@@ -399,10 +403,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
 										false,	// No interleave for Video only
-										false,
-										bShowFrameTime ? true : false,
-										RefTime,
-										dwRefUpTime);
+										false);
 				}
 			}
 
@@ -410,6 +411,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (DoSaveAvi())
 			{
 				AVISaveDib = *pDib;
+
+				// Add Frame Time
+				if (bShowFrameTime)
+					AddFrameTime(&AVISaveDib, RefTime, dwRefUpTime);
 
 				// Open
 				if (!AVRecAvi.IsOpen())
@@ -446,10 +451,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
 										false,	// No interleave for Video only
-										false,
-										bShowFrameTime ? true : false,
-										RefTime,
-										dwRefUpTime);
+										false);
 				}
 			}
 
@@ -776,7 +778,7 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 														DWORD dwRefUpTime)
 {
 	// Calc. time and create file name
-	CTime Time = CAVRec::CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 	CString sTime(Time.Format(_T("%Y_%m_%d_%H_%M_%S")));
 	sJPGDir += _T("det_") + sTime + _T(".jpg");
 
@@ -788,7 +790,7 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
 		pDib->Decompress(32);
 	if (bShowFrameTime)
-		CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
+		AddFrameTime(pDib, RefTime, dwRefUpTime);
 
 	// Save
 	if (pDib->SaveJPEG(sJPGDir))
@@ -915,7 +917,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 
 	// Add Frame Time to include the colors of the time and date
 	if (bShowFrameTime)
-		CAVRec::AddFrameTime(&DibForPalette, RefTime, dwRefUpTime);
+		AddFrameTime(&DibForPalette, RefTime, dwRefUpTime);
 	
 	// Calc. Palette
 	CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
@@ -976,7 +978,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 
 		// Add Frame Time
 		if (bShowFrameTime)
-			CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
+			AddFrameTime(pDib, RefTime, dwRefUpTime);
 
 		// Convert to 8 bpp
 		if (pDib->GetBitCount() > 8)
@@ -1013,7 +1015,7 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 
 	// Add Frame Time
 	if (bShowFrameTime)
-		CAVRec::AddFrameTime(pDib, RefTime, dwRefUpTime);
+		AddFrameTime(pDib, RefTime, dwRefUpTime);
 
 	// Convert to 8 bpp
 	if (pDib->GetBitCount() > 8)
@@ -1273,6 +1275,10 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 									_T("Genre"));
 			CDib SWFSaveDib = m_Dib;
 
+			// Add frame time
+			if (m_bShowFrameTime)
+				AddFrameTime(&SWFSaveDib, m_Time, dwUpTime);
+
 			// Open
 			if (!m_pAVRecSwf->IsOpen())
 			{
@@ -1300,10 +1306,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 				m_pAVRecSwf->AddFrame(	m_pAVRecSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
 										false,	// No interleave for Video only
-										m_bSnapshotHistoryDeinterlace ? true : false,
-										m_bShowFrameTime ? true : false,
-										m_Time,
-										dwUpTime);
+										false);
 			}
 		}
 		if (m_bSnapshotThumb)
@@ -1324,6 +1327,10 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 											_T("Album"),
 											_T("Genre"));
 				CDib SWFSaveDib = DibThumb;
+
+				// Add frame time
+				if (m_bShowFrameTime)
+					AddFrameTime(&SWFSaveDib, m_Time, dwUpTime);
 
 				// Open
 				if (!m_pAVRecThumbSwf->IsOpen())
@@ -1352,10 +1359,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 					m_pAVRecThumbSwf->AddFrame(	m_pAVRecThumbSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												&SWFSaveDib,
 												false,	// No interleave for Video only
-												m_bSnapshotHistoryDeinterlace ? true : false,
-												m_bShowFrameTime ? true : false,
-												m_Time,
-												dwUpTime);
+												false);
 				}
 			}
 		}
@@ -1363,14 +1367,14 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		CAVRec::AddFrameTime(&m_Dib, m_Time, dwUpTime);
+		AddFrameTime(&m_Dib, m_Time, dwUpTime);
 
 	// Save Thumb to Temp
 	if (m_bSnapshotThumb)
 	{
 		// Add frame time
 		if (m_bShowFrameTime)
-			CAVRec::AddFrameTime(&DibThumb, m_Time, dwUpTime);
+			AddFrameTime(&DibThumb, m_Time, dwUpTime);
 
 		// Save
 		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
@@ -3680,10 +3684,10 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		DWORD dwRefUpTime = ::timeGetTime();
 
 		// First Frame Time
-		CTime FirstTime = CAVRec::CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
+		CTime FirstTime = CalcTime(dwFirstUpTime, RefTime, dwRefUpTime);
 		
 		// Last Frame Time
-		CTime LastTime = CAVRec::CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
+		CTime LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
 
 		// Check Whether Detection Dir Exists
 		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
@@ -4779,7 +4783,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotLiveJpegFtp = FALSE;
 	m_bSnapshotHistoryJpegFtp = FALSE;
 	m_bSnapshotHistorySwfFtp = FALSE;
-	m_bSnapshotHistoryDeinterlace = FALSE;
 	m_bManualSnapshotAutoOpen = TRUE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
@@ -5452,7 +5455,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
 	m_bSnapshotHistoryJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), FALSE);
 	m_bSnapshotHistorySwfFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), FALSE);
-	m_bSnapshotHistoryDeinterlace = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryDeinterlace"), FALSE);
 	m_bManualSnapshotAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("ManualSnapshotAutoOpen"), TRUE);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
@@ -5705,7 +5707,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryDeinterlace"), (int)m_bSnapshotHistoryDeinterlace);
 			pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
 			pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
@@ -5891,7 +5892,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistoryDeinterlace"), (int)m_bSnapshotHistoryDeinterlace, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
@@ -8306,6 +8306,76 @@ CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
 	return _T("");
 }
 
+CTime CVideoDeviceDoc::CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime)
+{
+	// Ref. time older
+	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
+	if (dwTimeDifference >= 0x80000000U)
+	{
+		CTimeSpan TimeSpan((time_t)Round((double)(dwUpTime - dwRefUpTime) / 1000.0));
+		return RefTime + TimeSpan;
+	}
+	// Ref. time younger
+	else
+	{
+		CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
+		return RefTime - TimeSpan;
+	}
+}
+
+void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
+{
+	// Check
+	if (!pDib)
+		return;
+
+	RefTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
+	CRect rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = pDib->GetWidth();
+	rcRect.bottom = pDib->GetHeight();
+
+	CFont Font;
+	double dFactorX = (double)(rcRect.right) / ADDFRAMETIME_REFWIDTH;
+	if (dFactorX < 1.0)
+		dFactorX = 1.0;
+	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETIME_REFHEIGHT;
+	if (dFactorY < 1.0)
+		dFactorY = 1.0;
+	int nFontSize;
+	if (dFactorX > dFactorY)
+		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorX);
+	else
+		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorY);
+	if (nFontSize > ADDFRAMETIME_REFFONTSIZE)
+	{
+		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
+		// metric-compatible variant of MS Sans Serif, first distributed with
+		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
+		// used when passing a NULL pointer to AddSingleLineText().
+		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
+	}
+
+	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
+	pDib->AddSingleLineText(sTime,
+							rcRect,
+							nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+							(DT_LEFT | DT_BOTTOM),
+							FRAMETIME_COLOR,
+							OPAQUE,
+							RGB(0,0,0));
+
+	CString sDate = ::MakeDateLocalFormat(RefTime);
+	pDib->AddSingleLineText(sDate,
+							rcRect,
+							nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+							(DT_LEFT | DT_TOP),
+							FRAMEDATE_COLOR,
+							OPAQUE,
+							RGB(0,0,0));
+}
+
 BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
 {
 	// Check
@@ -8672,7 +8742,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Add Frame Time if User Wants it
 		if (m_bShowFrameTime)
-			CAVRec::AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
+			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Record Video
 		if (m_bVideoRecWait == FALSE)
@@ -8684,10 +8754,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,
 												m_bInterleave ? true : false,
-												false,
-												false,
-												CurrentTime,
-												dwCurrentInitUpTime);
+												false);
 
 				// Recording Up-Time Init
 				if (m_bRecFirstFrame)
@@ -9083,7 +9150,6 @@ BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 	m_SaveSnapshotThread.m_bSnapshotHistorySwfFtp = m_bSnapshotHistorySwfFtp;
-	m_SaveSnapshotThread.m_bSnapshotHistoryDeinterlace = m_bSnapshotHistoryDeinterlace;
 	m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 	m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 	m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
@@ -9117,7 +9183,7 @@ BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)
 
 	// Add frame time
 	if (m_bShowFrameTime)
-		CAVRec::AddFrameTime(&Dib, Time, dwUpTime);
+		AddFrameTime(&Dib, Time, dwUpTime);
 	
 	// Copy to clipboard
 	Dib.EditCopy();
@@ -9165,9 +9231,9 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Add frame time
 	if (m_bShowFrameTime)
 	{
-		CAVRec::AddFrameTime(&Dib, Time, dwUpTime);
+		AddFrameTime(&Dib, Time, dwUpTime);
 		if (DibThumb.IsValid())
-			CAVRec::AddFrameTime(&DibThumb, Time, dwUpTime);
+			AddFrameTime(&DibThumb, Time, dwUpTime);
 	}
 	
 	// Copy to clipboard (not necessary but can be useful)
@@ -11243,11 +11309,12 @@ int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, D
 				Bmi.biBitCount = 12;
 				Bmi.biCompression = FCC('I420');
 				Bmi.biSizeImage = m_dwI420ImageSize;
-				CAVRec::AddFrameTime((LPBITMAPINFO)&Bmi,
-									(LPBYTE)m_pFrameI420->data[0],
-									pDib->GetUpTime(),
-									RefTime,
-									dwRefUpTime);
+				CDib TmpDib;
+				TmpDib.SetShowMessageBoxOnError(FALSE);
+				TmpDib.SetDibPointers((LPBITMAPINFO)&Bmi, (LPBYTE)m_pFrameI420->data[0]);
+				TmpDib.SetUpTime(pDib->GetUpTime());
+				AddFrameTime(&TmpDib, RefTime, dwRefUpTime);
+				TmpDib.SetDibPointers(NULL, NULL);
 			}
 
 			// Encode

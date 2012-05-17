@@ -2386,7 +2386,6 @@
 #define IDS_STRING1769                  1769
 #define IDS_STRING1770                  1770
 #define IDS_STRING1771                  1771
-#define IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE 1772
 #define IDS_STRING1772                  1772
 #define IDS_STRING1773                  1773
 #define IDC_CHECK_FTP_SNAPSHOT          1774

@@ -1454,90 +1454,6 @@ bool CAVRec::AddRawVideoPacket(DWORD dwStreamNum,
 	}
 }
 
-CTime CAVRec::CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime)
-{
-	// Ref. time older
-	DWORD dwTimeDifference = dwRefUpTime - dwUpTime;
-	if (dwTimeDifference >= 0x80000000U)
-	{
-		CTimeSpan TimeSpan((time_t)Round((double)(dwUpTime - dwRefUpTime) / 1000.0));
-		return RefTime + TimeSpan;
-	}
-	// Ref. time younger
-	else
-	{
-		CTimeSpan TimeSpan((time_t)Round((double)dwTimeDifference / 1000.0));
-		return RefTime - TimeSpan;
-	}
-}
-
-bool CAVRec::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
-{
-	BOOL res1, res2;
-	RefTime = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
-	CRect rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = pDib->GetWidth();
-	rcRect.bottom = pDib->GetHeight();
-
-	CFont Font;
-	double dFactorX = (double)(rcRect.right) / ADDFRAMETIME_REFWIDTH;
-	if (dFactorX < 1.0)
-		dFactorX = 1.0;
-	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETIME_REFHEIGHT;
-	if (dFactorY < 1.0)
-		dFactorY = 1.0;
-	int nFontSize;
-	if (dFactorX > dFactorY)
-		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorX);
-	else
-		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorY);
-	if (nFontSize > ADDFRAMETIME_REFFONTSIZE)
-	{
-		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
-		// metric-compatible variant of MS Sans Serif, first distributed with
-		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
-		// used when passing a NULL pointer to AddSingleLineText().
-		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
-	}
-
-	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
-	res1 = pDib->AddSingleLineText(	sTime,
-									rcRect,
-									nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
-									(DT_LEFT | DT_BOTTOM),
-									FRAMETIME_COLOR,
-									OPAQUE,
-									RGB(0,0,0));
-
-	CString sDate = ::MakeDateLocalFormat(RefTime);
-	res2 = pDib->AddSingleLineText(	sDate,
-									rcRect,
-									nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
-									(DT_LEFT | DT_TOP),
-									FRAMEDATE_COLOR,
-									OPAQUE,
-									RGB(0,0,0));
-
-	return (bool)(res1 && res2);
-}
-
-bool CAVRec::AddFrameTime(	LPBITMAPINFO pBmi,
-							LPBYTE pBits,
-							DWORD dwUpTime,
-							CTime RefTime,
-							DWORD dwRefUpTime)
-{
-	CDib TmpDib;
-	TmpDib.SetShowMessageBoxOnError(FALSE);
-	TmpDib.SetDibPointers(pBmi, pBits);
-	TmpDib.SetUpTime(dwUpTime);
-	bool res = AddFrameTime(&TmpDib, RefTime, dwRefUpTime);
-	TmpDib.SetDibPointers(NULL, NULL);
-	return res;
-}
-
 /* Supported Color Spaces
 
 CODEC_ID_MPEG2VIDEO:
@@ -1551,11 +1467,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 					  LPBITMAPINFO pBmi,
 					  LPBYTE pBits,
 					  bool bInterleaved,
-					  bool bDeinterlace/*=false*/,
-					  bool bAddFrameTime/*=false*/,
-					  DWORD dwUpTime/*=0*/,
-					  CTime RefTime/*=CTime(2000, 1, 1, 12, 0, 0)*/,
-					  DWORD dwRefUpTime/*=0*/)
+					  bool bDeinterlace)
 {
 	bool res;
 
@@ -1585,11 +1497,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 								pBits,
 								true,
 								bInterleaved,
-								bDeinterlace,
-								bAddFrameTime,
-								dwUpTime,
-								RefTime,
-								dwRefUpTime);
+								bDeinterlace);
 		::LeaveCriticalSection(&m_csAVI);
 		return res;
     }
@@ -1613,11 +1521,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 										pBits,
 										true,
 										bInterleaved,
-										true,	// Do De-Interlacing
-										bAddFrameTime,
-										dwUpTime,
-										RefTime,
-										dwRefUpTime);
+										true);	// Do De-Interlacing
 				::LeaveCriticalSection(&m_csAVI);
 				return res;
 			}
@@ -1631,11 +1535,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 										pBits,
 										true,
 										bInterleaved,
-										true,	// Do De-Interlacing
-										bAddFrameTime,
-										dwUpTime,
-										RefTime,
-										dwRefUpTime);
+										true);	// Do De-Interlacing
 				::LeaveCriticalSection(&m_csAVI);
 				return res;
 			}
@@ -1647,11 +1547,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 									pBits,
 									true,
 									bInterleaved,
-									false,		// No De-Interlacing
-									bAddFrameTime,
-									dwUpTime,
-									RefTime,
-									dwRefUpTime);
+									false);		// No De-Interlacing
 			::LeaveCriticalSection(&m_csAVI);
 			return res;
 		}
@@ -1790,11 +1686,7 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 								(LPBYTE)(m_pFrameBuf4[dwStreamNum]),
 								false,	// Can modify bits for in-place De-Interlacing
 								bInterleaved,
-								true,	// Do De-Interlacing
-								bAddFrameTime,
-								dwUpTime,
-								RefTime,
-								dwRefUpTime);
+								true);	// Do De-Interlacing
 		::LeaveCriticalSection(&m_csAVI);
 		return res;
 	}
@@ -1839,11 +1731,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 								LPBYTE pBits,
 								bool bBitsReadonly,
 								bool bInterleaved,
-								bool bDeinterlace/*=false*/,
-								bool bAddFrameTime/*=false*/,
-								DWORD dwUpTime/*=0*/,
-								CTime RefTime/*=CTime(2000, 1, 1, 12, 0, 0)*/,
-								DWORD dwRefUpTime/*=0*/)
+								bool bDeinterlace)
 {
 	int ret;
 	LONG lBytesWritten = 0;
@@ -1888,17 +1776,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 						pCodecCtx->pix_fmt == PIX_FMT_YUV444P	||
 						pCodecCtx->pix_fmt == PIX_FMT_YUV411P)
 				bDstDeinterlace = true;
-		}
-
-		// Add Frame Time here if not De-Interlacing
-		// Attention: time is added to the source bits!
-		if (bAddFrameTime && !bSrcDeinterlace && !bDstDeinterlace)
-		{
-			AddFrameTime(	pBmi,
-							pBits,
-							dwUpTime,
-							RefTime,
-							dwRefUpTime);
 		}
 
 		// Flip Vertically
@@ -2048,16 +1925,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 											pBmi->bmiHeader.biWidth,
 											pBmi->bmiHeader.biHeight) < 0)
 					return false;
-
-				// Add Frame Time
-				if (bAddFrameTime)
-				{
-					AddFrameTime(	pBmi,
-									lpTopDownBits,
-									dwUpTime,
-									RefTime,
-									dwRefUpTime);
-				}
 			}
 
 			// Convert
@@ -2085,25 +1952,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 											pCodecCtx->width,
 											pCodecCtx->height) < 0)
 					return false;
-
-				// Add Frame Time
-				if (bAddFrameTime)
-				{
-					BITMAPINFOHEADER Bmi;
-					memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-					Bmi.biSize = sizeof(BITMAPINFOHEADER);
-					Bmi.biWidth = pCodecCtx->width;
-					Bmi.biHeight = pCodecCtx->height;
-					Bmi.biPlanes = 1;
-					Bmi.biBitCount = DstDeinterlacePixFormatToBitsCount(pCodecCtx->pix_fmt);
-					Bmi.biCompression = DstDeinterlacePixFormatToFourCC(pCodecCtx->pix_fmt);
-					Bmi.biSizeImage = nDstSize;
-					AddFrameTime(	(LPBITMAPINFO)&Bmi,
-									m_pFrameBuf2[dwStreamNum],
-									dwUpTime,
-									RefTime,
-									dwRefUpTime);
-				}
 			}
         }
 		else
@@ -2134,16 +1982,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 											pCodecCtx->width,
 											pCodecCtx->height) < 0)
 					return false;
-
-				// Add Frame Time
-				if (bAddFrameTime)
-				{
-					AddFrameTime(	pBmi,
-									lpTopDownBits,
-									dwUpTime,
-									RefTime,
-									dwRefUpTime);
-				}
 			}
 		}
     }

@@ -1119,7 +1119,6 @@ public:
 			BOOL m_bSnapshotLiveJpegFtp;
 			BOOL m_bSnapshotHistoryJpegFtp;
 			BOOL m_bSnapshotHistorySwfFtp;
-			BOOL m_bSnapshotHistoryDeinterlace;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
 			int m_nSnapshotCompressionQuality;
@@ -1185,6 +1184,10 @@ public:
 	void CaptureSettings();
 	void VideoFormatDialog();
 	void AudioFormatDialog();
+
+	// Time tag
+	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
+	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
 	
 	// On Change Frame Rate
 	void OnChangeFrameRate();
@@ -1543,7 +1546,6 @@ public:
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
 	volatile BOOL m_bSnapshotHistoryJpegFtp;			// Upload Jpeg Snapshot history files
 	volatile BOOL m_bSnapshotHistorySwfFtp;				// Upload Swf Snapshot history files
-	volatile BOOL m_bSnapshotHistoryDeinterlace;		// Snapshot history deinterlace
 	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate

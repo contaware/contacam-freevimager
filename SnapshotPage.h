@@ -62,7 +62,6 @@ protected:
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnCheckSnapshotThumb();
 	afx_msg void OnChangeEditSnapshotHistoryFramerate();
-	afx_msg void OnCheckSnapshotHistoryDeinterlace();
 	afx_msg void OnCheckSnapshotLiveJpeg();
 	afx_msg void OnCheckSnapshotHistoryJpeg();
 	afx_msg void OnCheckSnapshotHistorySwf();

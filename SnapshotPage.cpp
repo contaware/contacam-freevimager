@@ -68,7 +68,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_THUMB, OnCheckSnapshotThumb)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE, OnChangeEditSnapshotHistoryFramerate)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE, OnCheckSnapshotHistoryDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_LIVE_JPEG, OnCheckSnapshotLiveJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_JPEG, OnCheckSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_SWF, OnCheckSnapshotHistorySwf)
@@ -124,10 +123,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Snapshot History Swf Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistorySwfFtp);
-
-	// Snapshot History Deinterlace Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryDeinterlace);
 
 	// Manual Snapshot Auto-Open Document File
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
@@ -202,15 +197,6 @@ void CSnapshotPage::OnCheckSnapshotThumb()
 		m_pDoc->m_bSnapshotThumb = TRUE;
 	else
 		m_pDoc->m_bSnapshotThumb = FALSE;
-}
-
-void CSnapshotPage::OnCheckSnapshotHistoryDeinterlace() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_DEINTERLACE);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistoryDeinterlace = TRUE;
-	else
-		m_pDoc->m_bSnapshotHistoryDeinterlace = FALSE;
 }
 
 void CSnapshotPage::OnCheckManualshotAutoopen() 

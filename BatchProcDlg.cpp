@@ -858,7 +858,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 	}
 	else
 	{
-		if (!m_pAVRec->AddFrame(0, &m_Dib, false))
+		if (!m_pAVRec->AddFrame(0, &m_Dib, false, false))
 			throw (int)0;
 	}
 }

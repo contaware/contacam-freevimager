@@ -111,45 +111,23 @@ public:
 	// Video Streams Number to Overall Stream Number
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
 
-	// Add frame time
-	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
-	static bool AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
-	static bool AddFrameTime(LPBITMAPINFO pBmi,
-							LPBYTE pBits,
-							DWORD dwUpTime,
-							CTime RefTime,
-							DWORD dwRefUpTime);
-
 	// Video Frame Write
-	// Attention: if bAddFrameTime is set and if
-	// not deinterlacing the time is added to the source bits!
 	__forceinline bool AddFrame(DWORD dwStreamNum,
 								CDib* pDib,
 								bool bInterleaved,
-								bool bDeinterlace = false,
-								bool bAddFrameTime = false,
-								CTime RefTime = CTime(2000, 1, 1, 12, 0, 0),
-								DWORD dwRefUpTime = 0)
+								bool bDeinterlace)
 	{
 		return AddFrame(dwStreamNum,
 						pDib ? pDib->GetBMI() : NULL,
 						pDib ? pDib->GetBits() : NULL,
 						bInterleaved,
-						bDeinterlace,
-						bAddFrameTime,
-						pDib ? pDib->GetUpTime() : 0,
-						RefTime,
-						dwRefUpTime);
+						bDeinterlace);
 	};
 	bool AddFrame(	DWORD dwStreamNum,
 					LPBITMAPINFO pBmi,
 					LPBYTE pBits,
 					bool bInterleaved,
-					bool bDeinterlace = false,
-					bool bAddFrameTime = false,
-					DWORD dwUpTime = 0,
-					CTime RefTime = CTime(2000, 1, 1, 12, 0, 0),
-					DWORD dwRefUpTime = 0);
+					bool bDeinterlace);
 	
 	// Get theora encoder statistics after first pass
 	void TheoraStats(DWORD dwStreamNum);
@@ -220,11 +198,7 @@ protected:
 							LPBYTE pBits,
 							bool bBitsReadonly,
 							bool bInterleaved,
-							bool bDeinterlace = false,
-							bool bAddFrameTime = false,
-							DWORD dwUpTime = 0,
-							CTime RefTime = CTime(2000, 1, 1, 12, 0, 0),
-							DWORD dwRefUpTime = 0);
+							bool bDeinterlace);
 	static __forceinline WORD DstDeinterlacePixFormatToBitsCount(PixelFormat pix_fmt);
 	static __forceinline DWORD DstDeinterlacePixFormatToFourCC(PixelFormat pix_fmt);
 	AVStream* CreateVideoStream(CodecID codec_id,
