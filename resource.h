@@ -2141,7 +2141,6 @@
 #define IDC_COMBO_MP3_CHANNELS          1650
 #define IDS_STRING1650                  1650
 #define IDC_COMBO_MP2_SAMPLINGRATE      1651
-#define IDC_CHECK_DEINTERLACE           1651
 #define IDS_STRING1651                  1651
 #define IDC_COMBO_MP3_SAMPLINGRATE      1652
 #define IDS_STRING1652                  1652

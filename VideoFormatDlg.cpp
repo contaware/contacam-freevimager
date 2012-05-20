@@ -28,7 +28,6 @@ CVideoFormatDlg::CVideoFormatDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CVideoFormatDlg)
 	m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE / 1000;
 	m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_bDeinterlace = FALSE;
 	m_nRawCompressionIndex = 0;
 	m_nQualityBitrate = 0;
 	//}}AFX_DATA_INIT
@@ -36,7 +35,6 @@ CVideoFormatDlg::CVideoFormatDlg(CWnd* pParent /*=NULL*/)
 	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
 	m_dVideoLength = 0.0;
 	m_llTotalAudioBytes = 0;
-	m_bShowDeinterlaceCheck = TRUE;
 	m_bShowRawChoose = TRUE;
 	m_nFileType = FILETYPE_AVI;
 }
@@ -49,7 +47,6 @@ void CVideoFormatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
 	DDX_Text(pDX, IDC_EDIT_DATARATE, m_nVideoCompressorDataRate);
 	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoCompressorKeyframesRate);
-	DDX_Check(pDX, IDC_CHECK_DEINTERLACE, m_bDeinterlace);
 	DDX_Radio(pDX, IDC_RADIO_RGB, m_nRawCompressionIndex);
 	DDX_Radio(pDX, IDC_RADIO_QUALITY, m_nQualityBitrate);
 	//}}AFX_DATA_MAP
@@ -153,10 +150,6 @@ void CVideoFormatDlg::ShowHideCtrls()
 		pRadio = (CButton*)GetDlgItem(IDC_RADIO_BITRATE);
 		pRadio->ShowWindow(SW_HIDE);
 	}
-
-	// De-interlace check
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DEINTERLACE);
-	pCheck->ShowWindow(m_bShowDeinterlaceCheck ? SW_SHOW : SW_HIDE);
 	
 	// Raw radio
 	if (m_bShowRawChoose && m_dwVideoCompressorFourCC == BI_RGB)

@@ -402,8 +402,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				{
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
-										false,	// No interleave for Video only
-										false);
+										false);	// No interleave for Video only
 				}
 			}
 
@@ -450,8 +449,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				{
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
-										false,	// No interleave for Video only
-										false);
+										false);	// No interleave for Video only
 				}
 			}
 
@@ -1305,8 +1303,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 			{
 				m_pAVRecSwf->AddFrame(	m_pAVRecSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
-										false,	// No interleave for Video only
-										false);
+										false);	// No interleave for Video only
 			}
 		}
 		if (m_bSnapshotThumb)
@@ -1358,8 +1355,7 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 				{
 					m_pAVRecThumbSwf->AddFrame(	m_pAVRecThumbSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												&SWFSaveDib,
-												false,	// No interleave for Video only
-												false);
+												false);	// No interleave for Video only
 				}
 			}
 		}
@@ -8753,8 +8749,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				// Add Frame
 				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,
-												m_bInterleave ? true : false,
-												false);
+												m_bInterleave ? true : false);
 
 				// Recording Up-Time Init
 				if (m_bRecFirstFrame)

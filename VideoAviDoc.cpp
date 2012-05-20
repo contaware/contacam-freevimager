@@ -2300,7 +2300,6 @@ CVideoAviDoc::CVideoAviDoc()
 		m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE;
 		m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
 		m_nVideoCompressorQualityBitrate = 0;
-		m_bDeinterlace = FALSE;
 
 		// Audio Format set Default to: Mono , 11025 Hz , 8 bits
 		m_pAudioCompressorWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
@@ -2478,7 +2477,6 @@ void CVideoAviDoc::LoadSettings()
 	m_nVideoCompressorKeyframesRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoCompressorDataRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_nVideoCompressorQualityBitrate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorQualityBitrate"), 0);
-	m_bDeinterlace = (BOOL)pApp->GetProfileInt(sSection, _T("Deinterlace"), FALSE);
 
 	if (m_pAudioCompressorWaveFormat)
 		delete [] m_pAudioCompressorWaveFormat;
@@ -2528,7 +2526,6 @@ void CVideoAviDoc::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
 		pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
 		pApp->WriteProfileInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate);
-		pApp->WriteProfileInt(sSection, _T("Deinterlace"), m_bDeinterlace);
 		
 		if (m_pAudioCompressorWaveFormat)
 			pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
@@ -2560,7 +2557,6 @@ void CVideoAviDoc::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("Deinterlace"), m_bDeinterlace, sTempFileName);
 		
 		if (m_pAudioCompressorWaveFormat)
 			::WriteProfileIniBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
@@ -3060,7 +3056,6 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 								m_nVideoCompressorKeyframesRate,
 								m_fVideoCompressorQuality,
 								m_nVideoCompressorQualityBitrate,
-								m_bDeinterlace,
 								m_pAudioCompressorWaveFormat,
 								pbVideoStreamsSave,
 								pbVideoStreamsChange,
@@ -3152,7 +3147,6 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 									int& nVideoCompressorKeyframesRate,
 									float& fVideoCompressorQuality,
 									int& nVideoCompressorQualityBitrate,
-									BOOL& bDeinterlace,
 									LPWAVEFORMATEX pAudioCompressorWaveFormat,
 									bool* pbVideoStreamsSave,
 									bool* pbVideoStreamsChange,
@@ -3345,10 +3339,8 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 				VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
 				VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
 				VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
-				VideoFormatDlg.m_bDeinterlace = bDeinterlace;
 				if (VideoFormatDlg.DoModal() != IDOK)
 					return 0;
-				bDeinterlace = VideoFormatDlg.m_bDeinterlace;
 				nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 				fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
 				nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
@@ -3403,12 +3395,10 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 				VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
 				VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
 				VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
-				VideoFormatDlg.m_bDeinterlace = bDeinterlace;
 				VideoFormatDlg.m_bShowRawChoose = FALSE;
 				VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
 				if (VideoFormatDlg.DoModal() != IDOK)
 					return 0;
-				bDeinterlace = VideoFormatDlg.m_bDeinterlace;
 				nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 				fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
 				nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
@@ -3431,7 +3421,6 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
 										nVideoCompressorQualityBitrate,
-										bDeinterlace ? true : false,
 										pAudioCompressorWaveFormat,
 										pbVideoStreamsSave,
 										pbVideoStreamsChange,
@@ -3453,7 +3442,6 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First
 									int nVideoCompressorKeyframesRate,
 									float fVideoCompressorQuality,
 									int nVideoCompressorQualityBitrate,
-									bool bDeinterlace,
 									LPWAVEFORMATEX pAudioCompressorWaveFormat,
 									bool* pbVideoStreamsSave,
 									bool* pbVideoStreamsChange,
@@ -3482,7 +3470,6 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
 										nVideoCompressorQualityBitrate,
-										bDeinterlace,
 										pAudioCompressorWaveFormat,
 										pbVideoStreamsSave,
 										pbVideoStreamsChange,
@@ -3560,7 +3547,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass
 											int nVideoCompressorKeyframesRate,
 											float fVideoCompressorQuality,
 											int nVideoCompressorQualityBitrate,
-											bool bDeinterlace,
 											LPWAVEFORMATEX pAudioCompressorWaveFormat,
 											bool* pbVideoStreamsSave,
 											bool* pbVideoStreamsChange,
@@ -3580,7 +3566,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
 										nVideoCompressorQualityBitrate,
-										bDeinterlace,
 										pAudioCompressorWaveFormat,
 										pbVideoStreamsSave,
 										pbVideoStreamsChange,
@@ -3613,7 +3598,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 											int nVideoCompressorKeyframesRate,
 											float fVideoCompressorQuality,
 											int nVideoCompressorQualityBitrate,
-											bool bDeinterlace,
 											LPWAVEFORMATEX pAudioCompressorWaveFormat,
 											bool* pbVideoStreamsSave,
 											bool* pbVideoStreamsChange,
@@ -3772,45 +3756,42 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 						!bVideoStreamsRawInput[dwVideoStreamNum])
 						bDecompressorForceRgb = true;
 
-					// If raw or lossless compression selected, if input and output are the same
-					// and if no deinterlacing is wanted then we can copy input to output
+					// If raw or lossless compression selected and if input and output are the same
+					// then we can copy input to output
 					bool bCopy = false;
-					if (!bDeinterlace)
+					if (dwVideoCompressorFourCC == BI_RGB)
 					{
-						if (dwVideoCompressorFourCC == BI_RGB)
-						{
-							if (pSrcVideoFormat->biCompression == BI_RGB		||
-								pSrcVideoFormat->biCompression == BI_BITFIELDS	||
-								pSrcVideoFormat->biCompression == BI_RGB16		||
-								pSrcVideoFormat->biCompression == BI_RGB15		||
-								pSrcVideoFormat->biCompression == BI_BGR16		||
-								pSrcVideoFormat->biCompression == BI_BGR15)
-							{
-								bCopy = true;
-								bVideoStreamsRawInput[dwVideoStreamNum] = true;
-								bVideoStreamsRawOutput[dwVideoStreamNum] = true;
-							}
-						}
-						else if (pSrcVideoFormat->biCompression == dwVideoCompressorFourCC	&&
-								(dwVideoCompressorFourCC == FCC('I420')	||
-								dwVideoCompressorFourCC == FCC('YV12')	||
-								dwVideoCompressorFourCC == FCC('YV16')	||
-								dwVideoCompressorFourCC == FCC('Y42B')	||
-								dwVideoCompressorFourCC == FCC('YVU9')	||
-								dwVideoCompressorFourCC == FCC('YUV9')	||
-								dwVideoCompressorFourCC == FCC('YUY2')	||
-								dwVideoCompressorFourCC == FCC('UYVY')	||
-								dwVideoCompressorFourCC == FCC('Y800')	||
-								dwVideoCompressorFourCC == FCC('YVYU')	||
-								dwVideoCompressorFourCC == FCC('Y41P')	||
-								dwVideoCompressorFourCC == FCC('HFYU')	||
-								dwVideoCompressorFourCC == FCC('FFVH')	||
-								dwVideoCompressorFourCC == FCC('FFV1')))
+						if (pSrcVideoFormat->biCompression == BI_RGB		||
+							pSrcVideoFormat->biCompression == BI_BITFIELDS	||
+							pSrcVideoFormat->biCompression == BI_RGB16		||
+							pSrcVideoFormat->biCompression == BI_RGB15		||
+							pSrcVideoFormat->biCompression == BI_BGR16		||
+							pSrcVideoFormat->biCompression == BI_BGR15)
 						{
 							bCopy = true;
 							bVideoStreamsRawInput[dwVideoStreamNum] = true;
 							bVideoStreamsRawOutput[dwVideoStreamNum] = true;
 						}
+					}
+					else if (pSrcVideoFormat->biCompression == dwVideoCompressorFourCC	&&
+							(dwVideoCompressorFourCC == FCC('I420')	||
+							dwVideoCompressorFourCC == FCC('YV12')	||
+							dwVideoCompressorFourCC == FCC('YV16')	||
+							dwVideoCompressorFourCC == FCC('Y42B')	||
+							dwVideoCompressorFourCC == FCC('YVU9')	||
+							dwVideoCompressorFourCC == FCC('YUV9')	||
+							dwVideoCompressorFourCC == FCC('YUY2')	||
+							dwVideoCompressorFourCC == FCC('UYVY')	||
+							dwVideoCompressorFourCC == FCC('Y800')	||
+							dwVideoCompressorFourCC == FCC('YVYU')	||
+							dwVideoCompressorFourCC == FCC('Y41P')	||
+							dwVideoCompressorFourCC == FCC('HFYU')	||
+							dwVideoCompressorFourCC == FCC('FFVH')	||
+							dwVideoCompressorFourCC == FCC('FFV1')))
+					{
+						bCopy = true;
+						bVideoStreamsRawInput[dwVideoStreamNum] = true;
+						bVideoStreamsRawOutput[dwVideoStreamNum] = true;
 					}
 
 					// If not copying
@@ -3848,7 +3829,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 						}
 						// YUV Formats not supported by CAVRec, but supported by Compress() of CDib
 						// Note: Y800 is supported by CAVRec, but with errors!
-						// Note: No De-interlacing because we are using raw output!
 						else if (	dwVideoCompressorFourCC == FCC('Y800')	||
 									dwVideoCompressorFourCC == FCC('YVYU')	||
 									dwVideoCompressorFourCC == FCC('Y41P'))
@@ -4030,8 +4010,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 								(*ppAVRec)->AddFrame(	dwRecStreamNum,
 														pSrcVideoStream->GetFormat(true),
 														pSrcBuf,
-														bInterleave,
-														bDeinterlace);
+														bInterleave);
 								dwVideoRawChunkPos[dwVideoStreamNum]++;
 							}
 						}
@@ -4049,8 +4028,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 
 								(*ppAVRec)->AddFrame(	dwRecStreamNum,
 														pDib,
-														bInterleave,
-														bDeinterlace);
+														bInterleave);
 							}
 						}
 
@@ -5743,7 +5721,6 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 							DEFAULT_KEYFRAMESRATE,
 							fVideoQuality,
 							0,		// Use Quality
-							false,	// No De-interlace
 							&WaveFormat,
 							bVideoStreamsSave,
 							bVideoStreamsChange,
@@ -6163,7 +6140,6 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 										m_nVideoCompressorKeyframesRate,
 										m_fVideoCompressorQuality,
 										m_nVideoCompressorQualityBitrate,
-										m_bDeinterlace,
 										m_pAudioCompressorWaveFormat,
 										GetView(),
 										&m_ProcessingThread,
@@ -6486,7 +6462,6 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 												int& nVideoCompressorKeyframesRate,
 												float& fVideoCompressorQuality,
 												int& nVideoCompressorQualityBitrate,
-												BOOL& bDeinterlace,
 												LPWAVEFORMATEX pAudioCompressorWaveFormat,
 												CWnd* pWnd,
 												CWorkerThread* pThread,
@@ -6596,7 +6571,6 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
 										nVideoCompressorQualityBitrate,
-										bDeinterlace,
 										pAudioCompressorWaveFormat,
 										bVideoStreamsSave,
 										bVideoStreamsChange,
@@ -6681,7 +6655,6 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
 										nVideoCompressorQualityBitrate,
-										bDeinterlace ? true : false,
 										pAudioCompressorWaveFormat,
 										bVideoStreamsSave,
 										bVideoStreamsChange,

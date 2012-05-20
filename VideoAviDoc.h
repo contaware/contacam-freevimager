@@ -502,7 +502,6 @@ public:
 	int m_nVideoCompressorKeyframesRate;		// Keyframes Rate
 	float m_fVideoCompressorQuality;			// 2.0f best quality, 31.0f worst quality
 	int m_nVideoCompressorQualityBitrate;		// 0 -> use quality, 1 -> use bitrate
-	BOOL m_bDeinterlace;
 	LPWAVEFORMATEX m_pAudioCompressorWaveFormat;
 
 	// If Positive Values the Audio leads (is played before)
@@ -571,7 +570,6 @@ protected:
 										int nVideoCompressorKeyframesRate,
 										float fVideoCompressorQuality,
 										int nVideoCompressorQualityBitrate,
-										bool bDeinterlace,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
 										bool* pbVideoStreamsSave,
 										bool* pbVideoStreamsChange,
@@ -589,7 +587,6 @@ protected:
 										int nVideoCompressorKeyframesRate,
 										float fVideoCompressorQuality,
 										int nVideoCompressorQualityBitrate,
-										bool bDeinterlace,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
 										bool* pbVideoStreamsSave,
 										bool* pbVideoStreamsChange,
@@ -612,7 +609,6 @@ protected:
 								int& nVideoCompressorKeyframesRate,
 								float& fVideoCompressorQuality,
 								int& nVideoCompressorQualityBitrate,
-								BOOL& bDeinterlace,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
 								bool* pbVideoStreamsSave,
 								bool* pbVideoStreamsChange,
@@ -639,7 +635,6 @@ protected:
 								int nVideoCompressorKeyframesRate,
 								float fVideoCompressorQuality,
 								int nVideoCompressorQualityBitrate,
-								bool bDeinterlace,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
 								bool* pbVideoStreamsSave,
 								bool* pbVideoStreamsChange,
@@ -676,7 +671,6 @@ protected:
 									int& nVideoCompressorKeyframesRate,
 									float& fVideoCompressorQuality,
 									int& nVideoCompressorQualityBitrate,
-									BOOL& bDeinterlace,
 									LPWAVEFORMATEX pAudioCompressorWaveFormat,
 									CWnd* pWnd,
 									CWorkerThread* pThread,

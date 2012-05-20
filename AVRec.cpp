@@ -49,15 +49,10 @@ void CAVRec::InitVars()
 		m_pFrame[dwStreamNum] = NULL;
 		m_pFrameTemp[dwStreamNum] = NULL;
 		m_pImgConvertCtx[dwStreamNum] = NULL;
-		m_pDeinterlaceImgConvertCtx[dwStreamNum] = NULL;
 		m_pFrameBuf1[dwStreamNum] = NULL;
 		m_nFrameBufSize1[dwStreamNum] = 0;
 		m_pFrameBuf2[dwStreamNum] = NULL;
 		m_nFrameBufSize2[dwStreamNum] = 0;
-		m_pFrameBuf3[dwStreamNum] = NULL;
-		m_nFrameBufSize3[dwStreamNum] = 0;
-		m_pFrameBuf4[dwStreamNum] = NULL;
-		m_nFrameBufSize4[dwStreamNum] = 0;
 		m_p2PassLogFiles[dwStreamNum] = NULL;
 		m_nPassNumber[dwStreamNum] = 0;
 		
@@ -1266,11 +1261,6 @@ bool CAVRec::Close()
 				sws_freeContext(m_pImgConvertCtx[dwStreamNum]);
 				m_pImgConvertCtx[dwStreamNum] = NULL;
 			}
-			if (m_pDeinterlaceImgConvertCtx[dwStreamNum])
-			{
-				sws_freeContext(m_pDeinterlaceImgConvertCtx[dwStreamNum]);
-				m_pDeinterlaceImgConvertCtx[dwStreamNum] = NULL;
-			}
 
 			// Free the Frame Buffers
 			if (m_pFrameBuf1[dwStreamNum])
@@ -1284,18 +1274,6 @@ bool CAVRec::Close()
 				delete [] m_pFrameBuf2[dwStreamNum];
 				m_pFrameBuf2[dwStreamNum] = NULL;
 				m_nFrameBufSize2[dwStreamNum] = 0;
-			}
-			if (m_pFrameBuf3[dwStreamNum])
-			{
-				delete [] m_pFrameBuf3[dwStreamNum];
-				m_pFrameBuf3[dwStreamNum] = NULL;
-				m_nFrameBufSize3[dwStreamNum] = 0;
-			}
-			if (m_pFrameBuf4[dwStreamNum])
-			{
-				delete [] m_pFrameBuf4[dwStreamNum];
-				m_pFrameBuf4[dwStreamNum] = NULL;
-				m_nFrameBufSize4[dwStreamNum] = 0;
 			}
 			if (m_pFrame[dwStreamNum])
 			{
@@ -1454,22 +1432,14 @@ bool CAVRec::AddRawVideoPacket(DWORD dwStreamNum,
 	}
 }
 
-/* Supported Color Spaces
-
-CODEC_ID_MPEG2VIDEO:
-PIX_FMT_YUV420P and PIX_FMT_YUV422P
-
-CODEC_ID_LJPEG and CODEC_ID_MJPEG:
-PIX_FMT_YUVJ420P and PIX_FMT_YUVJ422P
-
-*/
-bool CAVRec::AddFrame(DWORD dwStreamNum,
-					  LPBITMAPINFO pBmi,
-					  LPBYTE pBits,
-					  bool bInterleaved,
-					  bool bDeinterlace)
+bool CAVRec::AddFrame(	DWORD dwStreamNum,
+						LPBITMAPINFO pBmi,
+						LPBYTE pBits,
+						bool bInterleaved)
 {
-	bool res;
+	int ret;
+	LONG lBytesWritten = 0;
+	int nCurLine;
 
 	::EnterCriticalSection(&m_csAVI);
 
@@ -1492,291 +1462,11 @@ bool CAVRec::AddFrame(DWORD dwStreamNum,
 		// No more frame to compress. The codec has a latency of a few
 		// frames if using B frames, so we get the last frames by
 		// passing the same picture again
-		res = AddFrameInternal(	dwStreamNum,
-								pBmi,
-								pBits,
-								true,
-								bInterleaved,
-								bDeinterlace);
-		::LeaveCriticalSection(&m_csAVI);
-		return res;
     }
 	else
 	{
 		// Get Src Pixel Format
 		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
-
-		// Check whether AddFrameInternal() can De-Interlace
-		if (bDeinterlace							&&
-			((pBmi->bmiHeader.biWidth & 3) == 0)	&&
-			((pBmi->bmiHeader.biHeight & 3) == 0))
-		{
-			if (SrcPixFormat == PIX_FMT_YUV420P ||
-				SrcPixFormat == PIX_FMT_YUV422P ||
-				SrcPixFormat == PIX_FMT_YUV444P ||
-				SrcPixFormat == PIX_FMT_YUV411P)
-			{
-				res = AddFrameInternal(	dwStreamNum,
-										pBmi,
-										pBits,
-										true,
-										bInterleaved,
-										true);	// Do De-Interlacing
-				::LeaveCriticalSection(&m_csAVI);
-				return res;
-			}
-			else if (	pCodecCtx->pix_fmt == PIX_FMT_YUV420P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV422P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV444P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV411P)
-			{
-				res = AddFrameInternal(	dwStreamNum,
-										pBmi,
-										pBits,
-										true,
-										bInterleaved,
-										true);	// Do De-Interlacing
-				::LeaveCriticalSection(&m_csAVI);
-				return res;
-			}
-		}
-		else
-		{
-			res = AddFrameInternal(	dwStreamNum,
-									pBmi,
-									pBits,
-									true,
-									bInterleaved,
-									false);		// No De-Interlacing
-			::LeaveCriticalSection(&m_csAVI);
-			return res;
-		}
-
-		// Convert to YUV420 for De-Interlacing
-
-		// Flip Vertically
-		LPBYTE lpTopDownBits;
-		if (pBmi->bmiHeader.biCompression == BI_RGB		||
-			pBmi->bmiHeader.biCompression == BI_BITFIELDS)
-		{
-			int nDWAlignedLineSize = DWALIGNEDWIDTHBYTES(pBmi->bmiHeader.biBitCount * pBmi->bmiHeader.biWidth);
-			int nFlipBufSize = nDWAlignedLineSize * pBmi->bmiHeader.biHeight;
-			if (!m_pFrameBuf3[dwStreamNum] || m_nFrameBufSize3[dwStreamNum] < nFlipBufSize)
-			{
-				if (m_pFrameBuf3[dwStreamNum])
-					delete [] m_pFrameBuf3[dwStreamNum];
-				m_pFrameBuf3[dwStreamNum] = new BYTE[nFlipBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
-				if (!m_pFrameBuf3[dwStreamNum])
-				{
-					m_nFrameBufSize3[dwStreamNum] = 0;
-					::LeaveCriticalSection(&m_csAVI);
-					return false;
-				}
-				m_nFrameBufSize3[dwStreamNum] = nFlipBufSize;
-			}
-			LPBYTE lpSrcBits = pBits;
-			LPBYTE lpDstBits = m_pFrameBuf3[dwStreamNum] + (pBmi->bmiHeader.biHeight - 1) * nDWAlignedLineSize;
-			for (int nCurLine = 0 ; nCurLine < (int)pBmi->bmiHeader.biHeight ; nCurLine++)
-			{
-				memcpy((void*)lpDstBits, (void*)lpSrcBits, nDWAlignedLineSize); 
-				lpSrcBits += nDWAlignedLineSize;
-				lpDstBits -= nDWAlignedLineSize;
-			}
-			lpTopDownBits = m_pFrameBuf3[dwStreamNum];
-		}
-		else
-			lpTopDownBits = pBits;
-
-		// Init Image Convert
-		m_pDeinterlaceImgConvertCtx[dwStreamNum] = sws_getCachedContext(m_pDeinterlaceImgConvertCtx[dwStreamNum],
-																		pBmi->bmiHeader.biWidth,	// Src Width
-																		pBmi->bmiHeader.biHeight,	// Src Height
-																		SrcPixFormat,				// Src Format
-																		pBmi->bmiHeader.biWidth,	// Dst Width
-																		pBmi->bmiHeader.biHeight,	// Dst Height
-																		PIX_FMT_YUV420P,			// Dst Format
-																		SWS_BICUBIC,
-																		NULL, NULL, NULL);
-        if (!m_pDeinterlaceImgConvertCtx[dwStreamNum])
-		{
-            TRACE(_T("Cannot initialize the deinterlace conversion context\n"));
-			::LeaveCriticalSection(&m_csAVI);
-            return false;
-        }
-
-		// Init Src
-		avpicture_fill(	(AVPicture*)(m_pFrameTemp[dwStreamNum]),
-						(uint8_t*)lpTopDownBits,
-						SrcPixFormat,
-						pBmi->bmiHeader.biWidth,
-						pBmi->bmiHeader.biHeight);
-
-		// Init Dst
-		int nDstSize = avpicture_get_size(	PIX_FMT_YUV420P,
-											pBmi->bmiHeader.biWidth,
-											pBmi->bmiHeader.biHeight);
-		int nNewFrameBufSize4 = avpicture_get_size(	PIX_FMT_YUV420P,
-													DOALIGN(pBmi->bmiHeader.biWidth, 16),
-													DOALIGN(pBmi->bmiHeader.biHeight, 16));
-		if (!m_pFrameBuf4[dwStreamNum] || m_nFrameBufSize4[dwStreamNum] < nNewFrameBufSize4)
-		{
-			if (m_pFrameBuf4[dwStreamNum])
-				delete [] m_pFrameBuf4[dwStreamNum];
-			m_pFrameBuf4[dwStreamNum] = new BYTE[nNewFrameBufSize4 + FF_INPUT_BUFFER_PADDING_SIZE];
-			if (!m_pFrameBuf4[dwStreamNum])
-			{
-				m_nFrameBufSize4[dwStreamNum] = 0;
-				::LeaveCriticalSection(&m_csAVI);
-				return false;
-			}
-			m_nFrameBufSize4[dwStreamNum] = nNewFrameBufSize4;
-		}
-		avpicture_fill(	(AVPicture*)(m_pFrame[dwStreamNum]),
-						(uint8_t*)(m_pFrameBuf4[dwStreamNum]),
-						PIX_FMT_YUV420P,
-						pBmi->bmiHeader.biWidth,
-						pBmi->bmiHeader.biHeight);
-
-		// Flip U <-> V pointers
-		if (pBmi->bmiHeader.biCompression == FCC('YVU9'))
-		{
-			uint8_t* pTemp = m_pFrameTemp[dwStreamNum]->data[1];
-			m_pFrameTemp[dwStreamNum]->data[1] = m_pFrameTemp[dwStreamNum]->data[2];
-			m_pFrameTemp[dwStreamNum]->data[2] = pTemp;
-			// Line Sizes for U and V are the same no need to swap
-		}
-
-		// Convert
-        int sws_scale_res = sws_scale(	m_pDeinterlaceImgConvertCtx[dwStreamNum],
-										m_pFrameTemp[dwStreamNum]->data,			// Src Pixels
-										m_pFrameTemp[dwStreamNum]->linesize,		// Src Stride
-										0,
-										pBmi->bmiHeader.biHeight,
-										m_pFrame[dwStreamNum]->data,				// Dst Pixels
-										m_pFrame[dwStreamNum]->linesize);			// Dst Stride
-#ifdef SUPPORT_LIBSWSCALE
-		if (sws_scale_res <= 0)
-		{
-			::LeaveCriticalSection(&m_csAVI);
-			return false;
-		}
-#else
-		if (sws_scale_res < 0)
-		{
-			::LeaveCriticalSection(&m_csAVI);
-			return false;
-		}
-#endif
-
-		// Add Frame
-		BITMAPINFOHEADER Bmi;
-		Bmi.biSize = sizeof(BITMAPINFOHEADER);
-		Bmi.biWidth = pBmi->bmiHeader.biWidth;
-		Bmi.biHeight = pBmi->bmiHeader.biHeight;
-		Bmi.biPlanes = 1;
-		Bmi.biBitCount = 12;
-		Bmi.biCompression = FCC('I420');
-		Bmi.biSizeImage = nDstSize;
-		Bmi.biXPelsPerMeter = 0; 
-		Bmi.biYPelsPerMeter = 0; 
-		Bmi.biClrUsed = 0; 
-		Bmi.biClrImportant = 0;
-		res = AddFrameInternal(	dwStreamNum,
-								(LPBITMAPINFO)(&Bmi),
-								(LPBYTE)(m_pFrameBuf4[dwStreamNum]),
-								false,	// Can modify bits for in-place De-Interlacing
-								bInterleaved,
-								true);	// Do De-Interlacing
-		::LeaveCriticalSection(&m_csAVI);
-		return res;
-	}
-}
-
-__forceinline WORD CAVRec::DstDeinterlacePixFormatToBitsCount(PixelFormat pix_fmt)
-{
-	switch (pix_fmt)
-	{
-		case PIX_FMT_YUV420P :
-			return 12;
-		case PIX_FMT_YUV422P :
-			return 16;
-		case PIX_FMT_YUV444P :
-			return 24;
-		case PIX_FMT_YUV411P :
-			return 12;
-		default :
-			return 0;
-	}
-}
-
-__forceinline DWORD CAVRec::DstDeinterlacePixFormatToFourCC(PixelFormat pix_fmt)
-{
-	switch (pix_fmt)
-	{
-		case PIX_FMT_YUV420P :
-			return FCC('I420');
-		case PIX_FMT_YUV422P :
-			return FCC('Y42B');
-		case PIX_FMT_YUV444P :
-			return FCC('0000');	// No Known FCC
-		case PIX_FMT_YUV411P :
-			return FCC('Y41B');
-		default :
-			return FCC('0000'); // Unknown
-	}
-}
-
-bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
-								LPBITMAPINFO pBmi,
-								LPBYTE pBits,
-								bool bBitsReadonly,
-								bool bInterleaved,
-								bool bDeinterlace)
-{
-	int ret;
-	LONG lBytesWritten = 0;
-	int nCurLine;
-
-	// Check
-	if (!m_pFormatCtx								||
-		dwStreamNum >= m_pFormatCtx->nb_streams		||
-		!m_pFormatCtx->streams[dwStreamNum]			||
-		!m_pFormatCtx->streams[dwStreamNum]->codec	||
-		m_pFormatCtx->streams[dwStreamNum]->codec->codec_type != CODEC_TYPE_VIDEO)
-		return false;
-
-	// Get the attached codec context
-	AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
-
-    if (!pBits || !pBmi)
-	{
-		// No more frame to compress. The codec has a latency of a few
-		// frames if using B frames, so we get the last frames by
-		// passing the same picture again
-    }
-	else
-	{
-		// Get Src Pixel Format
-		enum PixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
-
-		// Check whether we can De-Interlace
-		bool bSrcDeinterlace = false;
-		bool bDstDeinterlace = false;
-		if (bDeinterlace							&&
-			((pBmi->bmiHeader.biWidth & 3) == 0)	&&
-			((pBmi->bmiHeader.biHeight & 3) == 0))
-		{
-			if (SrcPixFormat == PIX_FMT_YUV420P ||
-				SrcPixFormat == PIX_FMT_YUV422P ||
-				SrcPixFormat == PIX_FMT_YUV444P ||
-				SrcPixFormat == PIX_FMT_YUV411P)
-				bSrcDeinterlace = true;
-			else if (	pCodecCtx->pix_fmt == PIX_FMT_YUV420P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV422P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV444P	||
-						pCodecCtx->pix_fmt == PIX_FMT_YUV411P)
-				bDstDeinterlace = true;
-		}
 
 		// Flip Vertically
 		LPBYTE lpTopDownBits;
@@ -1806,6 +1496,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				if (!m_pFrameBuf1[dwStreamNum])
 				{
 					m_nFrameBufSize1[dwStreamNum] = 0;
+					::LeaveCriticalSection(&m_csAVI);
 					return false;
 				}
 				m_nFrameBufSize1[dwStreamNum] = nFlipBufSize;
@@ -1822,36 +1513,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 		}
 		else
 			lpTopDownBits = pBits;
-
-		// Duplicate input buffer otherwise we De-Interlace the input bits
-		if (bSrcDeinterlace && lpTopDownBits == pBits && bBitsReadonly)
-		{
-			// Init Deinterlace Buffer
-			int nDeinterlaceSize = avpicture_get_size(	SrcPixFormat,
-														pBmi->bmiHeader.biWidth,
-														pBmi->bmiHeader.biHeight);
-			int nNewFrameBufSize1 = avpicture_get_size(	SrcPixFormat,
-														DOALIGN(pBmi->bmiHeader.biWidth, 16),
-														DOALIGN(pBmi->bmiHeader.biHeight, 16));
-			if (!m_pFrameBuf1[dwStreamNum] || m_nFrameBufSize1[dwStreamNum] < nNewFrameBufSize1)
-			{
-				if (m_pFrameBuf1[dwStreamNum])
-					delete [] m_pFrameBuf1[dwStreamNum];
-				m_pFrameBuf1[dwStreamNum] = new BYTE[nNewFrameBufSize1 + FF_INPUT_BUFFER_PADDING_SIZE];
-				if (!m_pFrameBuf1[dwStreamNum])
-				{
-					m_nFrameBufSize1[dwStreamNum] = 0;
-					return false;
-				}
-				m_nFrameBufSize1[dwStreamNum] = nNewFrameBufSize1;
-			}
-
-			// Copy Bits
-			memcpy((void*)m_pFrameBuf1[dwStreamNum], (void*)lpTopDownBits, nDeinterlaceSize);
-
-			// Set Pointer
-			lpTopDownBits = m_pFrameBuf1[dwStreamNum];
-		}
 
 		// Convert to codec's pixel format or codec's size?
         if (pCodecCtx->pix_fmt != SrcPixFormat			||
@@ -1870,6 +1531,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
             if (!m_pImgConvertCtx[dwStreamNum])
 			{
                 TRACE(_T("Cannot initialize the conversion context\n"));
+				::LeaveCriticalSection(&m_csAVI);
                 return false;
             }
 
@@ -1906,6 +1568,7 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				if (!m_pFrameBuf2[dwStreamNum])
 				{
 					m_nFrameBufSize2[dwStreamNum] = 0;
+					::LeaveCriticalSection(&m_csAVI);
 					return false;
 				}
 				m_nFrameBufSize2[dwStreamNum] = nNewFrameBufSize2;
@@ -1915,17 +1578,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 							pCodecCtx->pix_fmt,
 							pCodecCtx->width,
 							pCodecCtx->height);
-
-			// De-Interlace
-			if (bSrcDeinterlace)
-			{
-				if (avpicture_deinterlace(	(AVPicture*)m_pFrameTemp[dwStreamNum],	// Dst
-											(AVPicture*)m_pFrameTemp[dwStreamNum],	// Src
-											SrcPixFormat,
-											pBmi->bmiHeader.biWidth,
-											pBmi->bmiHeader.biHeight) < 0)
-					return false;
-			}
 
 			// Convert
             int sws_scale_res = sws_scale(	m_pImgConvertCtx[dwStreamNum],
@@ -1937,22 +1589,17 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 											m_pFrame[dwStreamNum]->linesize);		// Dst Stride
 #ifdef SUPPORT_LIBSWSCALE
 			if (sws_scale_res <= 0)
+			{
+				::LeaveCriticalSection(&m_csAVI);
 				return false;
+			}
 #else
 			if (sws_scale_res < 0)
-				return false;
-#endif
-
-			// De-Interlace
-			if (bDstDeinterlace)
 			{
-				if (avpicture_deinterlace(	(AVPicture*)m_pFrame[dwStreamNum],		// Dst
-											(AVPicture*)m_pFrame[dwStreamNum],		// Src
-											pCodecCtx->pix_fmt,
-											pCodecCtx->width,
-											pCodecCtx->height) < 0)
-					return false;
+				::LeaveCriticalSection(&m_csAVI);
+				return false;
 			}
+#endif
         }
 		else
 		{
@@ -1971,17 +1618,6 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
 				m_pFrame[dwStreamNum]->data[1] = m_pFrame[dwStreamNum]->data[2];
 				m_pFrame[dwStreamNum]->data[2] = pTemp;
 				// Line Sizes for U and V are the same no need to swap
-			}
-
-			// De-Interlace
-			if (bSrcDeinterlace)
-			{
-				if (avpicture_deinterlace(	(AVPicture*)m_pFrame[dwStreamNum],		// Dst
-											(AVPicture*)m_pFrame[dwStreamNum],		// Src
-											pCodecCtx->pix_fmt,
-											pCodecCtx->width,
-											pCodecCtx->height) < 0)
-					return false;
 			}
 		}
     }
@@ -2146,11 +1782,15 @@ bool CAVRec::AddFrameInternal(	DWORD dwStreamNum,
     }
 
     if (ret != 0)
+	{
+		::LeaveCriticalSection(&m_csAVI);
 		return false;
+	}
 	else
 	{
 		m_llTotalFramesOrSamples[dwStreamNum]++;
 		m_llTotalWrittenBytes[dwStreamNum] += lBytesWritten;
+		::LeaveCriticalSection(&m_csAVI);
 		return true;
 	}
 }

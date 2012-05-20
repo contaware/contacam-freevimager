@@ -453,7 +453,6 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 		VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDlg->m_nVideoCompressorKeyframesRate;
 		VideoFormatDlg.m_fVideoCompressorQuality = m_pDlg->m_fVideoCompressorQuality;
 		VideoFormatDlg.m_nQualityBitrate = m_pDlg->m_nQualityBitrate;
-		VideoFormatDlg.m_bShowDeinterlaceCheck = FALSE;
 		VideoFormatDlg.m_bShowRawChoose = FALSE;
 		if (VideoFormatDlg.DoModal() == IDOK)
 		{
@@ -858,7 +857,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 	}
 	else
 	{
-		if (!m_pAVRec->AddFrame(0, &m_Dib, false, false))
+		if (!m_pAVRec->AddFrame(0, &m_Dib, false))
 			throw (int)0;
 	}
 }

@@ -114,20 +114,17 @@ public:
 	// Video Frame Write
 	__forceinline bool AddFrame(DWORD dwStreamNum,
 								CDib* pDib,
-								bool bInterleaved,
-								bool bDeinterlace)
+								bool bInterleaved)
 	{
 		return AddFrame(dwStreamNum,
 						pDib ? pDib->GetBMI() : NULL,
 						pDib ? pDib->GetBits() : NULL,
-						bInterleaved,
-						bDeinterlace);
+						bInterleaved);
 	};
 	bool AddFrame(	DWORD dwStreamNum,
 					LPBITMAPINFO pBmi,
 					LPBYTE pBits,
-					bool bInterleaved,
-					bool bDeinterlace);
+					bool bInterleaved);
 	
 	// Get theora encoder statistics after first pass
 	void TheoraStats(DWORD dwStreamNum);
@@ -193,14 +190,6 @@ public:
 	__forceinline LPWAVEFORMATEX GetIntermediateWaveFormat(DWORD dwStreamNum)		{return m_pIntermediateWaveFormat[dwStreamNum];};
 	
 protected:
-	bool AddFrameInternal(	DWORD dwStreamNum,
-							LPBITMAPINFO pBmi,
-							LPBYTE pBits,
-							bool bBitsReadonly,
-							bool bInterleaved,
-							bool bDeinterlace);
-	static __forceinline WORD DstDeinterlacePixFormatToBitsCount(PixelFormat pix_fmt);
-	static __forceinline DWORD DstDeinterlacePixFormatToFourCC(PixelFormat pix_fmt);
 	AVStream* CreateVideoStream(CodecID codec_id,
 								const LPBITMAPINFO pDstVideoFormat,
 								DWORD dwRate,
@@ -242,23 +231,18 @@ protected:
 	// Video Vars
 	volatile DWORD m_dwTotalVideoStreams;
 	SwsContext* m_pImgConvertCtx[MAX_STREAMS];
-	SwsContext* m_pDeinterlaceImgConvertCtx[MAX_STREAMS];
 	AVFrame* m_pFrame[MAX_STREAMS];
 	AVFrame* m_pFrameTemp[MAX_STREAMS];
 	LPBYTE m_pFrameBuf1[MAX_STREAMS];
 	int m_nFrameBufSize1[MAX_STREAMS];
 	LPBYTE m_pFrameBuf2[MAX_STREAMS];
 	int m_nFrameBufSize2[MAX_STREAMS];
-	LPBYTE m_pFrameBuf3[MAX_STREAMS];
-	int m_nFrameBufSize3[MAX_STREAMS];
-	LPBYTE m_pFrameBuf4[MAX_STREAMS];
-	int m_nFrameBufSize4[MAX_STREAMS];
 	FILE* m_p2PassLogFiles[MAX_STREAMS];
 	CString m_s2PassLogFileName[MAX_STREAMS];
 	int m_nPassNumber[MAX_STREAMS];
 	CString m_sTempDir;
 
-	// LIBAVCodec Audio Vars
+	// Audio Vars
 	volatile DWORD m_dwTotalAudioStreams;
 	LPWAVEFORMATEX volatile m_pSrcWaveFormat[MAX_STREAMS];
 	LPWAVEFORMATEX volatile m_pIntermediateWaveFormat[MAX_STREAMS];

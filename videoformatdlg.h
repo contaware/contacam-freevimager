@@ -23,14 +23,12 @@ public:
 	CComboBox	m_VideoCompressionChoose;
 	int		m_nVideoCompressorDataRate;		// Data Rate in kbps
 	int		m_nVideoCompressorKeyframesRate;
-	BOOL	m_bDeinterlace;
 	int		m_nRawCompressionIndex;
 	int		m_nQualityBitrate;
 	//}}AFX_DATA
 	DWORD m_dwVideoCompressorFourCC;
 	float m_fVideoCompressorQuality;
 	double m_dVideoLength;
-	BOOL m_bShowDeinterlaceCheck;
 	BOOL m_bShowRawChoose;
 	LONGLONG m_llTotalAudioBytes;
 	enum FILETYPE {FILETYPE_AVI, FILETYPE_SWF};
