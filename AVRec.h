@@ -19,13 +19,6 @@ extern "C"
 // Also defined in AviPlay.h!
 #define AUDIO_PCM_MIN_BUF_SIZE				8192
 
-// Frame date / time display constants
-#define ADDFRAMETIME_REFFONTSIZE			9
-#define ADDFRAMETIME_REFWIDTH				640
-#define ADDFRAMETIME_REFHEIGHT				480
-#define FRAMETIME_COLOR						RGB(0,0xff,0)
-#define FRAMEDATE_COLOR						RGB(0x80,0x80,0xff)
-
 class CAVRec
 {
 public:

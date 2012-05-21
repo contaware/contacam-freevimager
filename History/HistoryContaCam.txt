@@ -1,8 +1,13 @@
 VERSION HISTORY
 
-4.0.0 (... 2012)
+4.0.0 beta1 (May 21st 2012)
 
-- 
+- Within a day the detection movies are now tagged by a number:
+  1 .. detection movies count
+- Live De-Interlacing works now for all capture formats,
+  no need for rec/det time De-Interlacing
+- UDP networking lowered default fragment size from 1400 bytes
+  to 512 bytes so that it works well for all network types
 
 3.9.9 (May 1st 2012)
 

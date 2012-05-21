@@ -272,6 +272,27 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
+		// Get and update the saves count
+		CString sSection;
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		{
+			sSection = m_pDoc->GetDevicePathName();
+			m_pDoc->m_nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 0);
+			m_pDoc->m_nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), RefTime.GetDay());
+			m_pDoc->m_nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), RefTime.GetMonth());
+			m_pDoc->m_nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), RefTime.GetYear());
+		}
+		if (m_pDoc->m_nMovDetSavesCountDay != RefTime.GetDay()		||
+			m_pDoc->m_nMovDetSavesCountMonth != RefTime.GetMonth()	||
+			m_pDoc->m_nMovDetSavesCountYear != RefTime.GetYear())
+		{
+			m_pDoc->m_nMovDetSavesCount = 0;
+			m_pDoc->m_nMovDetSavesCountDay = RefTime.GetDay();
+			m_pDoc->m_nMovDetSavesCountMonth = RefTime.GetMonth();
+			m_pDoc->m_nMovDetSavesCountYear = RefTime.GetYear();
+		}
+		m_pDoc->m_nMovDetSavesCount++;
+
 		// Detection File Names
 		CString sAVIFileName;
 		CString sSWFFileName;
@@ -372,9 +393,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				SWFSaveDib = *pDib;
 
-				// Add Frame Time
+				// Add Frame Tags
 				if (bShowFrameTime)
+				{
 					AddFrameTime(&SWFSaveDib, RefTime, dwRefUpTime);
+					AddFrameCount(&SWFSaveDib, m_pDoc->m_nMovDetSavesCount);
+				}
 
 				// Open
 				if (!AVRecSwf.IsOpen())
@@ -411,9 +435,12 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			{
 				AVISaveDib = *pDib;
 
-				// Add Frame Time
+				// Add Frame Tags
 				if (bShowFrameTime)
+				{
 					AddFrameTime(&AVISaveDib, RefTime, dwRefUpTime);
+					AddFrameCount(&AVISaveDib, m_pDoc->m_nMovDetSavesCount);
+				}
 
 				// Open
 				if (!AVRecAvi.IsOpen())
@@ -462,7 +489,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					if (pDib->IsUserFlag())
 					{
 						JPGSaveDib = *pDib;
-						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime, m_pDoc->m_nMovDetSavesCount);
 						if (sJPGFileName != _T(""))
 							sJPGFileNames.Add(sJPGFileName);
 					}
@@ -475,7 +502,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					if (nFrames <= m_nNumFramesToSave / 2)
 					{
 						JPGSaveDib = *pDib;
-						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+						CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime, m_pDoc->m_nMovDetSavesCount);
 						if (sJPGFileName != _T(""))
 							sJPGFileNames.Add(sJPGFileName);
 					}
@@ -486,7 +513,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (nFrames == 1)
 				{
 					JPGSaveDib = *pDib;
-					CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime);
+					CString sJPGFileName = SaveJpeg(&JPGSaveDib, sJPGDir, bShowFrameTime, RefTime, dwRefUpTime, m_pDoc->m_nMovDetSavesCount);
 					if (sJPGFileName != _T(""))
 						sJPGFileNames.Add(sJPGFileName);
 				}	
@@ -509,7 +536,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									dCalcFrameRate,
 									bShowFrameTime,
 									RefTime,
-									dwRefUpTime);
+									dwRefUpTime,
+									m_pDoc->m_nMovDetSavesCount);
 				}
 				// Next Frame?
 				else
@@ -526,7 +554,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									MOVDET_ANIMGIF_DIFF_MINLEVEL,
 									bShowFrameTime,
 									RefTime,
-									dwRefUpTime);
+									dwRefUpTime,
+									m_pDoc->m_nMovDetSavesCount);
 				}
 			}
 
@@ -550,7 +579,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							pGIFColors,
 							bShowFrameTime,
 							RefTime,
-							dwRefUpTime);
+							dwRefUpTime,
+							m_pDoc->m_nMovDetSavesCount);
 		}
 
 		// Clean-Up
@@ -568,6 +598,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Free
 		m_pDoc->RemoveOldestMovementDetectionList();
+
+		// Store the saves count
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		{
+			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), m_pDoc->m_nMovDetSavesCount);
+			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), m_pDoc->m_nMovDetSavesCountDay);
+			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), m_pDoc->m_nMovDetSavesCountMonth);
+			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), m_pDoc->m_nMovDetSavesCountYear);
+		}
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
@@ -773,7 +812,8 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 														CString sJPGDir,
 														BOOL bShowFrameTime,
 														const CTime& RefTime,
-														DWORD dwRefUpTime)
+														DWORD dwRefUpTime,
+														int nMovDetSavesCount)
 {
 	// Calc. time and create file name
 	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
@@ -784,11 +824,14 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 	if (::IsExistingFile(sJPGDir))
 		return _T("");
 
-	// Decompress to 32bpp and add frame time stamp
+	// Decompress to 32bpp and add frame tags
 	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
 		pDib->Decompress(32);
 	if (bShowFrameTime)
+	{
 		AddFrameTime(pDib, RefTime, dwRefUpTime);
+		AddFrameCount(pDib, nMovDetSavesCount);
+	}
 
 	// Save
 	if (pDib->SaveJPEG(sJPGDir))
@@ -803,7 +846,8 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 																double dCalcFrameRate,
 																BOOL bShowFrameTime,
 																const CTime& RefTime,
-																DWORD dwRefUpTime)
+																DWORD dwRefUpTime,
+																int nMovDetSavesCount)
 {
 	// Check
 	if (!pGIFColors)
@@ -913,9 +957,12 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 		pSrcBits += nScanLineSize;
 	}
 
-	// Add Frame Time to include the colors of the time and date
+	// Add frame tags to include its colors
 	if (bShowFrameTime)
+	{
 		AddFrameTime(&DibForPalette, RefTime, dwRefUpTime);
+		AddFrameCount(&DibForPalette, nMovDetSavesCount);
+	}
 	
 	// Calc. Palette
 	CQuantizer Quantizer(239, 8); // 239 = 256 (8 bits colors) - 1 (transparency index) - 16 (vga palette)
@@ -962,7 +1009,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 															RGBQUAD* pGIFColors,
 															BOOL bShowFrameTime,
 															const CTime& RefTime,
-															DWORD dwRefUpTime)
+															DWORD dwRefUpTime,
+															int nMovDetSavesCount)
 {
 #ifdef SUPPORT_GIFLIB
 	if (pDib && pGIFColors)
@@ -974,9 +1022,12 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 		// Resize
 		pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 
-		// Add Frame Time
+		// Add Frame Tags
 		if (bShowFrameTime)
+		{
 			AddFrameTime(pDib, RefTime, dwRefUpTime);
+			AddFrameCount(pDib, nMovDetSavesCount);
+		}
 
 		// Convert to 8 bpp
 		if (pDib->GetBitCount() > 8)
@@ -1002,7 +1053,8 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 																		RGBQUAD* pGIFColors,
 																		BOOL bShowFrameTime,
 																		const CTime& RefTime,
-																		DWORD dwRefUpTime)
+																		DWORD dwRefUpTime,
+																		int nMovDetSavesCount)
 {
 	// Make sure we have a true RGB format
 	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
@@ -1011,9 +1063,12 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 	// Resize
 	pDib->StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 
-	// Add Frame Time
+	// Add Frame Tags
 	if (bShowFrameTime)
+	{
 		AddFrameTime(pDib, RefTime, dwRefUpTime);
+		AddFrameCount(pDib, nMovDetSavesCount);
+	}
 
 	// Convert to 8 bpp
 	if (pDib->GetBitCount() > 8)
@@ -1035,7 +1090,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 															int nDiffMinLevel,
 															BOOL bShowFrameTime,
 															const CTime& RefTime,
-															DWORD dwRefUpTime)
+															DWORD dwRefUpTime,
+															int nMovDetSavesCount)
 {
 	BOOL res = FALSE;
 
@@ -1049,7 +1105,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	if (*pbFirstGIFSave)
 	{
 		// Convert to 255 colors
-		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		
 		// Copy First Frame
 		*pGIFSaveDib = **ppGIFDibPrev;
@@ -1086,7 +1142,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		if (bLastGIFSave)
 		{
 			// Convert to 255 colors and save
-			To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
+			To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 			pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 			(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -1100,7 +1156,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	else if (bLastGIFSave)
 	{
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -1110,7 +1166,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 		
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
+		To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
 		(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -1123,7 +1179,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	else if ((int)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime);
+		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
@@ -4653,8 +4709,8 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 CVideoDeviceDoc::CVideoDeviceDoc()
 {
 	// Current Time
-	CTime t = CTime::GetCurrentTime();
-	t = CTime(2000, 1, 1, t.GetHour(), t.GetMinute(), t.GetSecond());
+	CTime CurrentTime = CTime::GetCurrentTime();
+	CTime CurrentTimeOnly = CTime(2000, 1, 1, CurrentTime.GetHour(), CurrentTime.GetMinute(), CurrentTime.GetSecond());
 
 	// Disable Message Box Show
 	m_pDib->SetShowMessageBoxOnError(FALSE);
@@ -4691,14 +4747,18 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lCompressedDataRateSum = 0;
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
+	m_nMovDetSavesCount = 0;
+	m_nMovDetSavesCountDay = CurrentTime.GetDay();
+	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
+	m_nMovDetSavesCountYear = CurrentTime.GetYear();
 	m_bVideoView = TRUE;
 	m_dwVideoProcessorMode = NO_DETECTOR;
 	m_bDecodeFramesForPreview = FALSE;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
-	m_1SecTime = t;
-	m_4SecTime = t;
+	m_1SecTime = CurrentTimeOnly;
+	m_4SecTime = CurrentTimeOnly;
 
 	// Capture Devices
 	m_pDxCapture = NULL;
@@ -4790,8 +4850,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
 	m_bSnapshotStartStop = FALSE;
-	m_SnapshotStartTime = t;
-	m_SnapshotStopTime = t;
+	m_SnapshotStartTime = CurrentTimeOnly;
+	m_SnapshotStopTime = CurrentTimeOnly;
 	m_nDeleteSnapshotsOlderThanDays = 0;
 
 	// Threads Init
@@ -4877,8 +4937,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nVideoDetSwfQualityBitrate = 0;
 	m_dwVideoDetSwfFourCC = FCC('FLV1');
 	m_bDetectionStartStop = FALSE;
-	m_DetectionStartTime = t;
-	m_DetectionStopTime = t;
+	m_DetectionStartTime = CurrentTimeOnly;
+	m_DetectionStopTime = CurrentTimeOnly;
 	m_nDeleteDetectionsOlderThanDays = 0;
 	m_bUnsupportedVideoSizeForMovDet = FALSE;
 	m_nMovDetFreqDiv = 1;
@@ -8333,18 +8393,18 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	double dFactorX = (double)(rcRect.right) / ADDFRAMETIME_REFWIDTH;
+	double dFactorX = (double)(rcRect.right) / ADDFRAMETAG_REFWIDTH;
 	if (dFactorX < 1.0)
 		dFactorX = 1.0;
-	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETIME_REFHEIGHT;
+	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETAG_REFHEIGHT;
 	if (dFactorY < 1.0)
 		dFactorY = 1.0;
 	int nFontSize;
 	if (dFactorX > dFactorY)
-		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorX);
+		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorX);
 	else
-		nFontSize = Round(ADDFRAMETIME_REFFONTSIZE * dFactorY);
-	if (nFontSize > ADDFRAMETIME_REFFONTSIZE)
+		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorY);
+	if (nFontSize > ADDFRAMETAG_REFFONTSIZE)
 	{
 		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
 		// metric-compatible variant of MS Sans Serif, first distributed with
@@ -8356,7 +8416,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,
 							rcRect,
-							nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
 							(DT_LEFT | DT_BOTTOM),
 							FRAMETIME_COLOR,
 							OPAQUE,
@@ -8365,9 +8425,53 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	CString sDate = ::MakeDateLocalFormat(RefTime);
 	pDib->AddSingleLineText(sDate,
 							rcRect,
-							nFontSize > ADDFRAMETIME_REFFONTSIZE ? &Font : NULL,
+							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
 							(DT_LEFT | DT_TOP),
 							FRAMEDATE_COLOR,
+							OPAQUE,
+							RGB(0,0,0));
+}
+
+void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount)
+{
+	// Check
+	if (!pDib)
+		return;
+
+	CRect rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = pDib->GetWidth();
+	rcRect.bottom = pDib->GetHeight();
+
+	CFont Font;
+	double dFactorX = (double)(rcRect.right) / ADDFRAMETAG_REFWIDTH;
+	if (dFactorX < 1.0)
+		dFactorX = 1.0;
+	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETAG_REFHEIGHT;
+	if (dFactorY < 1.0)
+		dFactorY = 1.0;
+	int nFontSize;
+	if (dFactorX > dFactorY)
+		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorX);
+	else
+		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorY);
+	if (nFontSize > ADDFRAMETAG_REFFONTSIZE)
+	{
+		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
+		// metric-compatible variant of MS Sans Serif, first distributed with
+		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
+		// used when passing a NULL pointer to AddSingleLineText().
+		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
+	}
+
+	CString sCount;
+	sCount.Format(_T("%d"), nCount);
+	pDib->AddSingleLineText(sCount,
+							rcRect,
+							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
+							(DT_RIGHT | DT_BOTTOM),
+							FRAMECOUNT_COLOR,
 							OPAQUE,
 							RGB(0,0,0));
 }

@@ -59,6 +59,14 @@ class CMovementDetectionPage;
 #define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
 #define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
 
+// Frame time, date and count display constants
+#define ADDFRAMETAG_REFFONTSIZE				9
+#define ADDFRAMETAG_REFWIDTH				640
+#define ADDFRAMETAG_REFHEIGHT				480
+#define FRAMETIME_COLOR						RGB(0,0xFF,0)
+#define FRAMEDATE_COLOR						RGB(0x80,0x80,0xFF)
+#define FRAMECOUNT_COLOR					RGB(0xFF,0xFF,0xFF)
+
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// ms
 #define PROCESSFRAME_ASSISTANT				0x01
@@ -907,25 +915,29 @@ public:
 								CString sJPGDir,
 								BOOL bShowFrameTime,
 								const CTime& RefTime,
-								DWORD dwRefUpTime);
+								DWORD dwRefUpTime,
+								int nMovDetSavesCount);
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									int nMovDetSavesCount);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
 									double& dSpeedMul,
 									double dCalcFrameRate,
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									int nMovDetSavesCount);
 			__forceinline void To255Colors(	CDib* pDib,
 											RGBQUAD* pGIFColors,
 											BOOL bShowFrameTime,
 											const CTime& RefTime,
-											DWORD dwRefUpTime);
+											DWORD dwRefUpTime,
+											int nMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib** ppGIFDib,
 									CDib** ppGIFDibPrev,
@@ -938,7 +950,8 @@ public:
 									int nDiffMinLevel,
 									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime);
+									DWORD dwRefUpTime,
+									int nMovDetSavesCount);
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sAVIFileName,
 									const CString& sGIFFileName,
@@ -1185,9 +1198,10 @@ public:
 	void VideoFormatDialog();
 	void AudioFormatDialog();
 
-	// Time tag
+	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
+	static void AddFrameCount(CDib* pDib, int nCount);
 	
 	// On Change Frame Rate
 	void OnChangeFrameRate();
@@ -1627,6 +1641,10 @@ public:
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
+	volatile int m_nMovDetSavesCount;					// Count of the saved movement detection movies during current day
+	volatile int m_nMovDetSavesCountDay;				// Day of the above count
+	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
+	volatile int m_nMovDetSavesCountYear;				// Year of the above count
 
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;

@@ -1,8 +1,8 @@
 VERSION HISTORY
 
-4.0.0 (... 2012)
+4.0.0 beta1 (May 21st 2012)
 
-- 
+- ...
 
 3.9.9 (May 1st 2012)
 
@@ -276,7 +276,7 @@ VERSION HISTORY
   between tiffs and from jpeg to tiff
 - on-screen display in full-screen mode
 
-0.9.7 (August 31th 2006)
+0.9.7 (August 31st 2006)
 
 - Save Copy As... file menu entry
 - Negative edit menu entry
