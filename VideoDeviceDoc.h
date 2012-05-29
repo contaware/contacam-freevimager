@@ -56,9 +56,11 @@ class CMovementDetectionPage;
 #define MIN_DISKFREE_PERCENT				10			// Belove this disk free percentage the oldest files are deleted
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
 #define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
-#define AUDIO_IN_MIN_BUF_SIZE				8192		// Bytes
-#define AUDIO_IN_MIN_SMALL_BUF_SIZE			1024		// Bytes
-
+#define AUDIO_IN_MIN_BUF_SIZE				256			// Bytes
+#define AUDIO_MAX_LIST_SIZE					1024		// Maximum number of elements in audio list
+#define AUDIO_UNCOMPRESSED_BUFS_COUNT		8
+#define AUDIO_CAPTURE_THREAD_PRIORITY		THREAD_PRIORITY_ABOVE_NORMAL
+ 
 // Frame time, date and count display constants
 #define ADDFRAMETAG_REFFONTSIZE				9
 #define ADDFRAMETAG_REFWIDTH				640
@@ -704,11 +706,9 @@ public:
 			UINT GetDeviceID() const {return m_pDoc->m_dwCaptureAudioDeviceID;};
 			HWAVEIN GetWaveHandle() const {return m_hWaveIn;};
 			BOOL IsOpen() const {return (m_hWaveIn != NULL);};
-			void SetSmallBuffers(BOOL bSmallBuffers); // Used for fast reaction, like fft calculation for peak meter
-			BOOL IsSmallBuffers() {return m_bSmallBuffers;};
 			BOOL OpenInAudio();
 			void CloseInAudio();
-			BOOL DataInAudio(LPBYTE lpData, DWORD dwSize);
+			BOOL DataInAudio();
 			void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
 			CTime GetMeanLevelTime() const {return m_MeanLevelTime;}; // System Time When Mean Level Has Been Calculated
 
@@ -716,11 +716,12 @@ public:
 			LPWAVEFORMATEX m_pSrcWaveFormat;
 			LPWAVEFORMATEX m_pDstWaveFormat;
 
-			// Switch to Next AVI File for Segmented Recording
-			BOOL NextAviFile(DWORD dwSize, LPBYTE pBuf);
-
 			// Input Mixer Var
 			CMixerIn m_Mixer;
+
+			// Audio list
+			CList<CUserBuf,CUserBuf> m_AudioList;
+			CRITICAL_SECTION m_csAudioList;
 			
 		protected:
 			
@@ -733,29 +734,26 @@ public:
 										LPBYTE pBuf,
 										double& dPeakLeft,
 										double& dPeakRight);
-			BOOL Record(DWORD dwSize, LPBYTE pBuf);
 
 			// General Vars
 			HWAVEIN m_hWaveIn;
 			CVideoDeviceDoc* m_pDoc;
 			WAVEINCAPS m_WaveInDevCaps;
-			WAVEHDR m_WaveHeader[2];
-			HANDLE m_hRestartEvent;
+			WAVEHDR m_WaveHeader[AUDIO_UNCOMPRESSED_BUFS_COUNT];
 			HANDLE m_hWaveInEvent;
-			HANDLE m_hEventArray[3];
-			int m_nWaveInToggle;
+			HANDLE m_hEventArray[2];
+			unsigned int m_uiWaveInBufPos;
 			CTime m_MeanLevelTime; // System Time At Mean Level Calculation
-			volatile BOOL m_bSmallBuffers;
 
 			// ACM
-			LPBYTE m_pUncompressedBuf[2];
+			LPBYTE m_pUncompressedBuf[AUDIO_UNCOMPRESSED_BUFS_COUNT];
 			DWORD m_dwUncompressedBufSize;
 
 			// Buffers for Peak Meter
-			double m_dInLeft[AUDIO_IN_MIN_SMALL_BUF_SIZE];
-			double m_dInRight[AUDIO_IN_MIN_SMALL_BUF_SIZE];
-			double m_dOutRe[AUDIO_IN_MIN_SMALL_BUF_SIZE];
-			double m_dOutIm[AUDIO_IN_MIN_SMALL_BUF_SIZE];
+			double m_dInLeft[AUDIO_IN_MIN_BUF_SIZE];
+			double m_dInRight[AUDIO_IN_MIN_BUF_SIZE];
+			double m_dOutRe[AUDIO_IN_MIN_BUF_SIZE];
+			double m_dOutIm[AUDIO_IN_MIN_BUF_SIZE];
 	};
 
 	// Http Get Frame Thread
@@ -1253,7 +1251,6 @@ public:
 	// Video / Audio Recording
 	BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
 	CString MakeRecFileName();
-	void ChangeRecFileFrameRate(const CString& sFileName, double dFrameRate = 0.0);
 	void OpenAVIFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();
@@ -1475,13 +1472,8 @@ public:
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
 
 	// Audio / Video Rec
-	volatile BOOL m_bAudioRecWait;						// If set the Audio Recording is Waiting, not recording
-	volatile BOOL m_bVideoRecWait;						// If set the Video Recording is Waiting, not recording
-	volatile BOOL m_bStopRec;							// Do Start Stopping Recording
 	volatile BOOL m_bCaptureRecordPause;				// Recording Paused
-	volatile BOOL m_bRecResume;							// Resume After Recording
-	volatile BOOL m_bAboutToStopRec;					// Recording is Stopping
-	volatile BOOL m_bAboutToStartRec;					// Recording is Starting
+	volatile BOOL m_bRecResume;							// Resume After Rec Pause
 	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
 	volatile DWORD m_dwRecLastUpTime;					// Up-Time of Last Recorded Frame
 	volatile BOOL m_bRecFirstFrame;						// Recording Just Started

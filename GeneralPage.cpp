@@ -738,7 +738,7 @@ void CGeneralPage::OnRecAudio()
 	if (m_pDoc->m_bCaptureAudio)
 	{
 		m_pDoc->m_CaptureAudioThread.m_Mixer.Close();
-		m_pDoc->m_CaptureAudioThread.Start();
+		m_pDoc->m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 	}
 	else
 		m_pDoc->m_CaptureAudioThread.Kill_NoBlocking();

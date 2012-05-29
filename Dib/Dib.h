@@ -345,6 +345,16 @@ typedef struct {
 // All Scan Lines are DWORD aligned with 0 paddings! 
 //
 
+// User Buffer
+class CUserBuf
+{
+	public:
+		CUserBuf() {m_dwSize = 0; m_pBuf = NULL;};
+		virtual ~CUserBuf() {;};
+		DWORD m_dwSize;
+		LPBYTE m_pBuf;
+};
+
 // Gif Support
 #ifdef SUPPORT_GIFLIB
 #include "DibGif.h"
@@ -397,6 +407,9 @@ public:
 
 	// Halftone Colors
 	static RGBQUAD ms_StdColors[];
+
+	// General Purpose User List
+	CList<CUserBuf,CUserBuf> m_UserList;
 
 protected:
 	int m_nStretchMode;			// Stretch Mode: COLORONCOLOR or HALFTONE

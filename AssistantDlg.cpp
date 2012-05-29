@@ -599,12 +599,8 @@ void CAssistantDlg::OnTimer(UINT nIDEvent)
 		if (m_pDoc->m_pAVRec)
 		{
 			// Stop Rec
-			if (!m_pDoc->m_bAboutToStopRec &&
-				!m_pDoc->m_bAboutToStartRec)
-			{
-				m_pDoc->m_bRecAutoOpenAllowed = FALSE;
-				m_pDoc->CaptureRecord();
-			}
+			m_pDoc->m_bRecAutoOpenAllowed = FALSE;
+			m_pDoc->CaptureRecord();
 		}
 		else
 		{

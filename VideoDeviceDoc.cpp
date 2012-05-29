@@ -2025,18 +2025,13 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread() 
 {
 	m_pDoc = NULL;
-	memset(&m_WaveHeader[0], 0, sizeof(m_WaveHeader[0]));
-	memset(&m_WaveHeader[1], 0, sizeof(m_WaveHeader[1]));
 
 	// Create Input Event
 	m_hWaveInEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hRestartEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventArray[0] = GetKillEvent();
-	m_hEventArray[1] = m_hRestartEvent;
-	m_hEventArray[2] = m_hWaveInEvent;
+	m_hEventArray[1] = m_hWaveInEvent;
 	m_hWaveIn = NULL;
 	m_MeanLevelTime = (0,0,0,0);
-	m_bSmallBuffers = TRUE;
 
 	// Audio Format set Default to: Mono , 11025 Hz , 8 bits
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
@@ -2063,9 +2058,15 @@ CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread()
 	}
 
 	// ACM
-	m_pUncompressedBuf[0] = NULL;
-	m_pUncompressedBuf[0] = NULL;
+	for (int i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
+	{
+		memset(&m_WaveHeader[i], 0, sizeof(WAVEHDR));
+		m_pUncompressedBuf[i] = NULL;
+	}
 	m_dwUncompressedBufSize = 0;
+
+	// Init Samples List Critical Section
+	::InitializeCriticalSection(&m_csAudioList);
 }
 
 CVideoDeviceDoc::CCaptureAudioThread::~CCaptureAudioThread() 
@@ -2081,15 +2082,22 @@ CVideoDeviceDoc::CCaptureAudioThread::~CCaptureAudioThread()
 		delete [] m_pDstWaveFormat;
 		m_pDstWaveFormat = NULL;
 	}
-	if (m_pUncompressedBuf[0])
+	for (int i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
 	{
-		delete [] m_pUncompressedBuf[0];
-		m_pUncompressedBuf[0] = NULL;
-		m_pUncompressedBuf[1] = NULL;
+		if (m_pUncompressedBuf[i])
+		{
+			delete [] m_pUncompressedBuf[i];
+			m_pUncompressedBuf[i] = NULL;
+		}
 	}
-	::CloseHandle(m_hRestartEvent);
+	while (!m_AudioList.IsEmpty())
+	{
+		CUserBuf UserBuf = m_AudioList.RemoveHead();
+		delete [] UserBuf.m_pBuf;
+	}
 	::CloseHandle(m_hWaveInEvent);
 	m_hWaveInEvent = NULL;
+	::DeleteCriticalSection(&m_csAudioList);
 }
 
 void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
@@ -2124,107 +2132,107 @@ void CVideoDeviceDoc::CCaptureAudioThread::WaveInitFormat(WORD wCh, DWORD dwSamp
 
 int CVideoDeviceDoc::CCaptureAudioThread::Work() 
 {
-	DWORD Event;
-	bool bExit, bDoRestart;
-
+	// Check
 	if (!m_pDoc)
 		return 0;
-	
-	do
+
+	// Open Audio
+	if (!OpenInAudio())
+		return 0;
+
+	// Reset The Open Event
+	::ResetEvent(m_hWaveInEvent);
+
+	// Start Buffering
+	CUserBuf UserBuf;
+	::EnterCriticalSection(&m_csAudioList);
+	while (!m_AudioList.IsEmpty())
 	{
-		// Init Vars
-		bExit = false;
-		bDoRestart = false;
-
-		// Open Audio
-		if (!OpenInAudio())
-			return 0;
-
-		// Uncompressed Buffers
-		if (m_pUncompressedBuf[0])
-			delete [] m_pUncompressedBuf[0];
-		LPBYTE p = new BYTE[2 * (m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE)];
-		m_pUncompressedBuf[0] = p;
-		m_pUncompressedBuf[1] = p + m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE;
-
-		// Reset The Open Event
-		::ResetEvent(m_hWaveInEvent);
-
-		// Start Buffering
-		m_nWaveInToggle = 0;	
-		if (!DataInAudio(&m_pUncompressedBuf[m_nWaveInToggle][0], m_dwUncompressedBufSize))
-			bExit = true;
-		else if (!DataInAudio(&m_pUncompressedBuf[m_nWaveInToggle][0], m_dwUncompressedBufSize))
-			bExit = true;
-
-		while (!bExit)
-		{
-			Event = ::WaitForMultipleObjects(3, m_hEventArray, FALSE, INFINITE);
-			switch (Event)
-			{
-				// Shutdown Event
-				case WAIT_OBJECT_0 :		bExit = true;
-											break;
-
-				// Restart Event
-				case WAIT_OBJECT_0 + 1 :	::ResetEvent(m_hRestartEvent);
-											bExit = true;
-											bDoRestart = true;
-											break;
-
-				// Wave In Event
-				case WAIT_OBJECT_0 + 2 :	::ResetEvent(m_hWaveInEvent);
-
-											// Record
-											if (!Record(m_WaveHeader[m_nWaveInToggle].dwBytesRecorded,
-														&m_pUncompressedBuf[m_nWaveInToggle][0]))
-											{
-												// Stop Recording
-												m_pDoc->m_bAboutToStopRec = TRUE;
-												m_pDoc->m_bStopRec = TRUE;
-											}
-
-											// If Video Audio Settings Page Opened and Visible
-											// -> Calculate Mean Level For Peak-Meter and Display it.
-											if (m_pDoc->m_pGeneralPage &&
-												m_pDoc->m_pGeneralPage->IsWindowVisible())
-											{
-												CalcMeanLevel(	m_WaveHeader[m_nWaveInToggle].dwBytesRecorded,
-																&m_pUncompressedBuf[m_nWaveInToggle][0]);
-											}
-											
-											// New Buffer
-											if (!DataInAudio(&m_pUncompressedBuf[m_nWaveInToggle][0], m_dwUncompressedBufSize))
-												bExit = true;
-											break;
-
-				// Default
-				default :					bExit = true;
-											break;
-			}
-		}
-		
-		// Clean-Up
-		::waveInReset(m_hWaveIn);
-		::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[0], sizeof(WAVEHDR));
-		::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[1], sizeof(WAVEHDR));
-		memset(&m_WaveHeader[0], 0, sizeof(m_WaveHeader[0]));
-		memset(&m_WaveHeader[1], 0, sizeof(m_WaveHeader[1]));
-		CloseInAudio();
+		UserBuf = m_AudioList.RemoveHead();
+		delete [] UserBuf.m_pBuf;
 	}
-	while (bDoRestart);
+	::LeaveCriticalSection(&m_csAudioList);
+	m_uiWaveInBufPos = 0;
+	BOOL bExit = FALSE;
+	int i;
+	for (i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
+	{
+		if (m_pUncompressedBuf[i])
+			delete [] m_pUncompressedBuf[i];
+		m_pUncompressedBuf[i] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+		if (!DataInAudio())
+		{
+			bExit = TRUE;
+			break;
+		}
+	}
+
+	// Samples loop
+	while (!bExit)
+	{
+		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, INFINITE);
+		switch (Event)
+		{
+			// Shutdown Event
+			case WAIT_OBJECT_0 :		bExit = TRUE;
+										break;
+
+			// Wave In Event
+			case WAIT_OBJECT_0 + 1 :	::ResetEvent(m_hWaveInEvent);
+										for (i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
+										{
+											if (m_WaveHeader[m_uiWaveInBufPos].dwFlags & WHDR_DONE)
+											{
+												// If Video Audio Settings Page Opened and Visible
+												// -> Calculate Mean Level For Peak-Meter and Display it.
+												if (m_pDoc->m_pGeneralPage &&
+													m_pDoc->m_pGeneralPage->IsWindowVisible())
+												{
+													CalcMeanLevel(	m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded,
+																	m_pUncompressedBuf[m_uiWaveInBufPos]);
+												}
+
+												// Add samples to queue and limit its size
+												::EnterCriticalSection(&m_csAudioList);
+												UserBuf.m_dwSize = m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded;
+												UserBuf.m_pBuf = m_pUncompressedBuf[m_uiWaveInBufPos];
+												m_AudioList.AddTail(UserBuf);
+												if (m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
+												{
+													UserBuf = m_AudioList.RemoveHead();
+													delete [] UserBuf.m_pBuf;
+												}
+												::LeaveCriticalSection(&m_csAudioList);
+
+												// New Buffer
+												m_pUncompressedBuf[m_uiWaveInBufPos] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+												if (!DataInAudio())
+												{
+													bExit = TRUE;
+													break;
+												}
+											}
+											else
+												break;
+										}
+										break;
+
+			// Default
+			default :					bExit = TRUE;
+										break;
+		}
+	}
+	
+	// Clean-Up
+	::waveInReset(m_hWaveIn);
+	for (i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
+	{
+		::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[i], sizeof(WAVEHDR));
+		memset(&m_WaveHeader[i], 0, sizeof(WAVEHDR));
+	}
+	CloseInAudio();
 
 	return 0;
-}
-
-void CVideoDeviceDoc::CCaptureAudioThread::SetSmallBuffers(BOOL bSmallBuffers)
-{
-	if (m_bSmallBuffers != bSmallBuffers)
-	{
-		m_bSmallBuffers = bSmallBuffers;
-		if (IsAlive())
-			SetEvent(m_hRestartEvent);
-	}
 }
 
 //
@@ -2262,12 +2270,12 @@ void CVideoDeviceDoc::CCaptureAudioThread::CalcMeanLevel(DWORD dwSize, LPBYTE pB
 	int nAudioBits = m_pSrcWaveFormat->wBitsPerSample;
 	
 	// Calc. max Peak(s)
-	int nRep = nNumOfSamples / AUDIO_IN_MIN_SMALL_BUF_SIZE;
+	int nRep = nNumOfSamples / AUDIO_IN_MIN_BUF_SIZE;
 	for (int i = 0 ; i < nRep ; i++)
 	{
 		double dPL;
 		double dPR;
-		CalcPeak(AUDIO_IN_MIN_SMALL_BUF_SIZE,
+		CalcPeak(AUDIO_IN_MIN_BUF_SIZE,
 				nNumOfChannels,
 				nAudioBits, 
 				pBuf,
@@ -2275,7 +2283,7 @@ void CVideoDeviceDoc::CCaptureAudioThread::CalcMeanLevel(DWORD dwSize, LPBYTE pB
 				dPR);
 		dPeakLeft = max(dPeakLeft, dPL);
 		dPeakRight = max(dPeakRight, dPR);
-		pBuf += AUDIO_IN_MIN_SMALL_BUF_SIZE * nBlockAlign;
+		pBuf += AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
 	}
 
 	// Clip Peak Levels
@@ -2320,7 +2328,7 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 	int nValueRight;
 
 	// Check
-	ASSERT(nNumOfSamples <= AUDIO_IN_MIN_SMALL_BUF_SIZE);
+	ASSERT(nNumOfSamples <= AUDIO_IN_MIN_BUF_SIZE);
 
 	// Reset
 	dPeakLeft = 0.0;
@@ -2396,189 +2404,6 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 	}
 }
 
-BOOL CVideoDeviceDoc::CCaptureAudioThread::Record(DWORD dwSize, LPBYTE pBuf)
-{
-	BOOL res = TRUE;
-
-	// Record Audio
-	if (m_pDoc->m_pAVRec)
-	{
-		// Do Stop Recording?
-		if (m_pDoc->m_bStopRec)
-		{
-			if ((m_pDoc->m_bAudioRecWait == FALSE) && (m_pDoc->m_bVideoRecWait == FALSE))
-				m_pDoc->m_bVideoRecWait = TRUE; // Stop Video Recording, record last buffer later in this function
-			else if ((m_pDoc->m_bAudioRecWait == FALSE) && (m_pDoc->m_bVideoRecWait == TRUE))
-			{
-				m_pDoc->m_bAudioRecWait = TRUE; // Stop Video Recording
-				m_pDoc->m_bStopRec = FALSE;		// Recording Stopped
-
-				// Close Avi if not pausing!
-				if (!m_pDoc->m_bCaptureRecordPause)
-				{
-					::EnterCriticalSection(&m_pDoc->m_csAVRec);
-					m_pDoc->CloseAndShowAviRec();
-					::LeaveCriticalSection(&m_pDoc->m_csAVRec);
-				}
-
-				// Stopped
-				m_pDoc->m_bAboutToStopRec = FALSE;
-			}
-		}
-		// Start or Running Recording
-		else
-		{
-			// If paused, do nothing
-			if (m_pDoc->m_bCaptureRecordPause)
-				return TRUE;
-
-			// Do Start?
-			if (m_pDoc->m_bAudioRecWait && m_pDoc->m_bVideoRecWait)
-				m_pDoc->m_bVideoRecWait = FALSE; // Video Record Can Start, Audio Record starts with the Next Buffer!
-			else if (m_pDoc->m_bAudioRecWait && (m_pDoc->m_bVideoRecWait == FALSE))
-			{
-				// Also Audio Record can start now
-				m_pDoc->m_bAudioRecWait = FALSE;
-
-				// Started
-				m_pDoc->m_bAboutToStartRec = FALSE;
-			}
-		}
-
-		// Record Audio
-		if (m_pDoc->m_bAudioRecWait == FALSE)
-		{
-			// Check for segmentation
-			BOOL bNextAviFileCalled = FALSE;
-			if (!m_pDoc->m_bStopRec)
-			{
-				if (m_pDoc->m_bRecTimeSegmentation)
-				{
-					CTime t = CTime::GetCurrentTime();
-					if (t >= m_pDoc->m_NextRecTime)
-					{
-						// Update m_pDoc->m_NextRecTime
-						m_pDoc->NextRecTime(t);
-
-						// Note: NextAviFile() always adds the samples to
-						// the old file, even if returning FALSE!
-						res = NextAviFile(dwSize, pBuf);
-						bNextAviFileCalled = TRUE;
-					}
-				}
-			}
-
-			// If samples not added by NextAviFile() add them here
-			if (!bNextAviFileCalled)
-			{
-				// Compress Stream & Store to Avi File
-				::EnterCriticalSection(&m_pDoc->m_csAVRec);
-				if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
-				{
-					res = m_pDoc->m_pAVRec->AddRawAudioPacket(	m_pDoc->m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-																dwSize,
-																pBuf,
-																m_pDoc->m_bInterleave ? true : false);
-				}
-				else
-				{
-					int nNumOfSrcSamples = (m_pSrcWaveFormat && (m_pSrcWaveFormat->nBlockAlign > 0)) ? dwSize / m_pSrcWaveFormat->nBlockAlign : 0;
-					res = m_pDoc->m_pAVRec->AddAudioSamples(	m_pDoc->m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-																nNumOfSrcSamples,
-																pBuf,
-																m_pDoc->m_bInterleave ? true : false);
-				}
-				::LeaveCriticalSection(&m_pDoc->m_csAVRec);
-			}
-		}
-	}
-
-	return res;
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::NextAviFile(DWORD dwSize, LPBYTE pBuf)
-{
-	BOOL res = FALSE;
-	int nRecordedFrames = 0;
-	CAVRec* pNextAVRec = NULL;
-	CAVRec* pOldAVRec = NULL;
-	BOOL bFreeOldAVRec = FALSE;
-
-	// Set Old AVRec Pointer
-	pOldAVRec = m_pDoc->m_pAVRec;
-	
-	// Allocate & Init pNextAVRec
-	if (m_pDoc->MakeAVRec(m_pDoc->MakeRecFileName(), &pNextAVRec))
-	{
-		// Change Pointer and
-		// restart with frame counting and time measuring
-		::EnterCriticalSection(&m_pDoc->m_csAVRec);
-		m_pDoc->m_pAVRec = pNextAVRec;
-		nRecordedFrames = m_pDoc->m_nRecordedFrames;
-		m_pDoc->m_bRecFirstFrame = TRUE; // Video thread will reset m_pDoc->m_nRecordedFrames!
-		::LeaveCriticalSection(&m_pDoc->m_csAVRec);				
-
-		// Set Free Flag
-		bFreeOldAVRec = TRUE;
-
-		// Set Ok
-		res = TRUE;
-	}
-	else
-	{
-		if (pNextAVRec)
-			delete pNextAVRec;
-		
-	}
-
-	// Store samples to Old File
-	if (pOldAVRec)
-	{
-		if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
-		{
-			pOldAVRec->AddRawAudioPacket(	pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-											dwSize,
-											pBuf,
-											m_pDoc->m_bInterleave ? true : false);
-		}
-		else
-		{
-			int nNumOfSrcSamples = (m_pSrcWaveFormat && (m_pSrcWaveFormat->nBlockAlign > 0)) ? dwSize / m_pSrcWaveFormat->nBlockAlign : 0;
-			pOldAVRec->AddAudioSamples(	pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-										nNumOfSrcSamples,
-										pBuf,
-										m_pDoc->m_bInterleave ? true : false);
-		}
-		if (bFreeOldAVRec)
-		{
-			// Get Samples Count
-			LONGLONG llSamplesCount = pOldAVRec->GetSampleCount(pOldAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
-
-			// Store old rec file name
-			CString sOldRecFileName = pOldAVRec->GetFileName();
-
-			// Free
-			delete pOldAVRec;
-
-			// Change Frame Rate
-			double dFrameRate = 0.0;
-			if (nRecordedFrames > 0	&&
-				llSamplesCount > 0	&&
-				m_pDstWaveFormat->nSamplesPerSec > 0)
-			{
-				dFrameRate =	(double)nRecordedFrames /
-								((double)llSamplesCount / (double)m_pDstWaveFormat->nSamplesPerSec);
-			}
-			m_pDoc->ChangeRecFileFrameRate(sOldRecFileName, dFrameRate);
-
-			// Open the video file
-			m_pDoc->OpenAVIFile(sOldRecFileName);
-		}
-	}
-
-	return res;
-}
-
 BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 {
 	MMRESULT res;
@@ -2611,52 +2436,37 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 	}
 
 	// Calculate The Source (=Uncompressed) Buffer Size
-	if (m_bSmallBuffers)
-	{
-		int nSamplesPerSec = m_pSrcWaveFormat->nSamplesPerSec;
-		int nBlockAlign = m_pSrcWaveFormat->nBlockAlign;
-		if (nSamplesPerSec <= 11025) 
-			m_dwUncompressedBufSize = 1 * AUDIO_IN_MIN_SMALL_BUF_SIZE * nBlockAlign;
-		else if (nSamplesPerSec <= 22050)
-			m_dwUncompressedBufSize = 2 * AUDIO_IN_MIN_SMALL_BUF_SIZE * nBlockAlign;
-		else
-			m_dwUncompressedBufSize = 4 * AUDIO_IN_MIN_SMALL_BUF_SIZE * nBlockAlign;
-	}
+	int nSamplesPerSec = m_pSrcWaveFormat->nSamplesPerSec;
+	int nBlockAlign = m_pSrcWaveFormat->nBlockAlign;
+	if (nSamplesPerSec <= 11025) 
+		m_dwUncompressedBufSize = 1 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
+	else if (nSamplesPerSec <= 22050)
+		m_dwUncompressedBufSize = 2 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
+	else if (nSamplesPerSec <= 32000)
+		m_dwUncompressedBufSize = 3 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
+	else if (nSamplesPerSec <= 44100)
+		m_dwUncompressedBufSize = 4 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
+	else if (nSamplesPerSec <= 48000)
+		m_dwUncompressedBufSize = 5 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
 	else
+		m_dwUncompressedBufSize = 8 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
+
+	// Get Frame Size in Bytes
+	int nFrameSize = 0;
+	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEG ||
+		m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
+		nFrameSize = 2 * 1152 * m_pDstWaveFormat->nChannels;
+	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
+		nFrameSize = 2 * ((1024 - 4 * m_pDstWaveFormat->nChannels) * 8 / (4 * m_pDstWaveFormat->nChannels) + 1) * m_pDstWaveFormat->nChannels;
+	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_FLAC)
+		nFrameSize = 2 * 4608 * m_pDstWaveFormat->nChannels;
+
+	// Set the buffer size a multiple of the frame size
+	if (nFrameSize > 0)
 	{
-		// Buffer Size
-		int nSamplesPerSec = m_pSrcWaveFormat->nSamplesPerSec;
-		int nBlockAlign = m_pSrcWaveFormat->nBlockAlign;
-		if (nSamplesPerSec <= 11025) 
-			m_dwUncompressedBufSize = 1 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-		else if (nSamplesPerSec <= 22050)
-			m_dwUncompressedBufSize = 2 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-		else if (nSamplesPerSec <= 32000)
-			m_dwUncompressedBufSize = 3 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-		else if (nSamplesPerSec <= 44100)
-			m_dwUncompressedBufSize = 4 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-		else if (nSamplesPerSec <= 48000)
-			m_dwUncompressedBufSize = 5 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-		else
-			m_dwUncompressedBufSize = 8 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-
-		// Get Frame Size in Bytes
-		int nFrameSize = 0;
-		if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEG ||
-			m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
-			nFrameSize = 2 * 1152 * m_pDstWaveFormat->nChannels;
-		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
-			nFrameSize = 2 * ((1024 - 4 * m_pDstWaveFormat->nChannels) * 8 / (4 * m_pDstWaveFormat->nChannels) + 1) * m_pDstWaveFormat->nChannels;
-		else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_FLAC)
-			nFrameSize = 2 * 4608 * m_pDstWaveFormat->nChannels;
-
-		// Set the buffer size a multiple of the frame size
-		if (nFrameSize > 0)
-		{
-			int nRemainder = m_dwUncompressedBufSize % nFrameSize;
-			if (nFrameSize > 0 && nRemainder > 0)
-				m_dwUncompressedBufSize += nFrameSize - nRemainder;
-		}
+		int nRemainder = m_dwUncompressedBufSize % nFrameSize;
+		if (nRemainder > 0)
+			m_dwUncompressedBufSize += nFrameSize - nRemainder;
 	}
 
 	// Open Input
@@ -2686,21 +2496,15 @@ void CVideoDeviceDoc::CCaptureAudioThread::CloseInAudio()
 	}
 }
 
-BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio(LPBYTE lpData, DWORD dwSize)
+BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 {
 	MMRESULT res;
 
-	if (lpData == NULL)
-		return FALSE;
-
-	if (dwSize == 0)
-		return FALSE;
-
 	// Obs.: waveInUnprepareHeader in Win2000 fails if the WAVEHDR is empty (all zeros)
 	// Make sure the buffer has been used (not first 2 buffers)
-	if (m_WaveHeader[m_nWaveInToggle].dwFlags & WHDR_DONE)
+	if (m_WaveHeader[m_uiWaveInBufPos].dwFlags & WHDR_DONE)
 	{
-		res = ::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[m_nWaveInToggle], sizeof(WAVEHDR)); 
+		res = ::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR)); 
 		if (res != MMSYSERR_NOERROR) 
 		{
 			TRACE(_T("Sound Input Cannot UnPrepareHeader!\n"));
@@ -2708,19 +2512,19 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio(LPBYTE lpData, DWORD dwSi
 		}
 	}
 
-    m_WaveHeader[m_nWaveInToggle].lpData = (CHAR*)lpData;
-    m_WaveHeader[m_nWaveInToggle].dwBufferLength = dwSize;
-	m_WaveHeader[m_nWaveInToggle].dwLoops = 0;
-	m_WaveHeader[m_nWaveInToggle].dwFlags = 0;
+    m_WaveHeader[m_uiWaveInBufPos].lpData = (CHAR*)m_pUncompressedBuf[m_uiWaveInBufPos];
+    m_WaveHeader[m_uiWaveInBufPos].dwBufferLength = m_dwUncompressedBufSize;
+	m_WaveHeader[m_uiWaveInBufPos].dwLoops = 0;
+	m_WaveHeader[m_uiWaveInBufPos].dwFlags = 0;
 
-    res = ::waveInPrepareHeader(m_hWaveIn, &m_WaveHeader[m_nWaveInToggle], sizeof(WAVEHDR)); 
-	if ((res != MMSYSERR_NOERROR) || (m_WaveHeader[m_nWaveInToggle].dwFlags != WHDR_PREPARED))
+    res = ::waveInPrepareHeader(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR)); 
+	if ((res != MMSYSERR_NOERROR) || (m_WaveHeader[m_uiWaveInBufPos].dwFlags != WHDR_PREPARED))
 	{
 		TRACE(_T("Sound Input Cannot PrepareHeader!\n"));
 		return FALSE;
 	}
 
-	res = ::waveInAddBuffer(m_hWaveIn, &m_WaveHeader[m_nWaveInToggle], sizeof(WAVEHDR));
+	res = ::waveInAddBuffer(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR));
 	if (res != MMSYSERR_NOERROR) 
 	{
 		TRACE(_T("Sound Input Cannot Add Buffer!\n"));
@@ -2734,7 +2538,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio(LPBYTE lpData, DWORD dwSi
 		return FALSE;
 	}
 
-	m_nWaveInToggle = !m_nWaveInToggle;
+	m_uiWaveInBufPos = (m_uiWaveInBufPos + 1) % AUDIO_UNCOMPRESSED_BUFS_COUNT;
 
 	return TRUE;
 }
@@ -4867,13 +4671,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecAutoOpenAllowed = TRUE;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
-	m_bAudioRecWait = TRUE;
-	m_bVideoRecWait = TRUE;
-	m_bStopRec = FALSE;
 	m_bCaptureRecordPause = FALSE;
 	m_bRecResume = FALSE;
-	m_bAboutToStopRec = FALSE;
-	m_bAboutToStartRec = FALSE;
 	m_dwRecFirstUpTime = 0;
 	m_dwRecLastUpTime = 0;
 	m_bRecFirstFrame = FALSE;
@@ -6183,7 +5982,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 
 				// Start Audio Capture Thread
 				if (m_bCaptureAudio)
-					m_CaptureAudioThread.Start();
+					m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 
 				// Title
 				SetDocumentTitle();
@@ -6346,7 +6145,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start();
+		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 
 	return TRUE;
 }
@@ -6504,7 +6303,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start();
+		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 
 	return TRUE;
 }
@@ -6558,7 +6357,7 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start();
+		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 
 	// Update
 	if (m_bSizeToDoc)
@@ -6745,12 +6544,6 @@ BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec)
 
 	// Leave CS
 	::LeaveCriticalSection(&m_csAVRec);
-
-	if (m_bCaptureAudio)
-	{
-		m_bAboutToStartRec = FALSE;
-		m_CaptureAudioThread.SetSmallBuffers(TRUE);
-	}
 	
 	CString sMsg = ML_STRING(1493, "Cannot Create the AVI File!\n");
 	TRACE(sMsg);
@@ -6762,14 +6555,12 @@ BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec)
 
 void CVideoDeviceDoc::OnCaptureRecord() 
 {
-	if (!m_bAboutToStopRec && !m_bAboutToStartRec)
-		CaptureRecord();
+	CaptureRecord();
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI) 
 {	
 	pCmdUI->SetCheck(m_pAVRec != NULL ? 1 : 0);
-	pCmdUI->Enable(!m_bAboutToStopRec && !m_bAboutToStartRec);
 }
 
 BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/) 
@@ -6789,16 +6580,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 			m_bCaptureRecordPause = FALSE;
 		}
 		else
-		{
-			// Samples/Frames Synchronized Stopping of Video And Audio Threads
-			if (m_bCaptureAudio)
-			{ 
-				m_bAboutToStopRec = TRUE;
-				m_bStopRec = TRUE;
-			}
-			else
-				CloseAndShowAviRec();
-		}
+			CloseAndShowAviRec();
 
 		// Leave CS
 		::LeaveCriticalSection(&m_csAVRec);
@@ -6808,16 +6590,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 	// Start Recording
 	else
 	{
-		// Capture Audio?
-		if (m_bCaptureAudio)
-		{
-			// Set Big Buffers for a stable recording
-			m_CaptureAudioThread.SetSmallBuffers(FALSE);
-			m_bAboutToStartRec = TRUE;
-		}
-		else
-			m_bAboutToStartRec = FALSE;
-
 		// Set next rec time for time segmentation
 		if (m_bRecTimeSegmentation)
 		{
@@ -6839,10 +6611,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		// Start Recording
 		m_bRecFirstFrame = TRUE;
 
-		// Do Not Wait Audio, if No Audio
-		if (!m_bCaptureAudio)
-			m_bVideoRecWait = FALSE;
-
 		// Leave CS
 		::LeaveCriticalSection(&m_csAVRec);
 
@@ -6852,52 +6620,21 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 
 void CVideoDeviceDoc::OnCaptureRecordPause() 
 {
-	if (m_pAVRec					&&
-		!m_bAboutToStopRec			&&
-		!m_bAboutToStartRec)
+	if (m_pAVRec)
 		CaptureRecordPause();
 }
 
 void CVideoDeviceDoc::OnUpdateCaptureRecordPause(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_bCaptureRecordPause ? 1 : 0);
-	pCmdUI->Enable(	m_pAVRec					&&
-					!m_bAboutToStopRec			&&
-					!m_bAboutToStartRec);
+	pCmdUI->Enable(m_pAVRec != NULL);
 }
 
 void CVideoDeviceDoc::CaptureRecordPause()
 {
-	// Enter Pause
-	if (!m_bCaptureRecordPause)
-	{
-		// Stop Recording
-		// (Avi file is left open)
-		if (m_bCaptureAudio)
-		{ 
-			m_bAboutToStopRec = TRUE;
-			m_bStopRec = TRUE;
-		}
-		else
-		{
-			m_bVideoRecWait = TRUE;
-			m_bAudioRecWait = TRUE;
-			m_bStopRec = FALSE;
-		}
-	}
-	// Leave Pause
-	else
-	{
-		if (m_bCaptureAudio)
-			m_bAboutToStartRec = TRUE;
-
-		// Resume Recording
+	// Resume Recording
+	if (m_bCaptureRecordPause)
 		m_bRecResume = TRUE;
-
-		// Do Not Wait Audio, if No Audio
-		if (!m_bCaptureAudio)
-			m_bVideoRecWait = FALSE;
-	}
 
 	m_bCaptureRecordPause = !m_bCaptureRecordPause;
 }
@@ -7103,7 +6840,7 @@ void CVideoDeviceDoc::AudioFormatDialog()
 
 		// Start Audio Thread
 		if (m_bCaptureAudio)
-			m_CaptureAudioThread.Start();
+			m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 	}
 }
 
@@ -8775,19 +8512,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	::LeaveCriticalSection(&m_csProcessFrameStop);
 	
 	// Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
-	if (bDoProcessFrame && pData && dwSize > 0)
+	CDib* pDib = m_pProcessFrameDib;
+	if (bDoProcessFrame && pData && dwSize > 0 && pDib &&
+		pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI) &&
+		pDib->SetBits(pData, dwSize))
 	{
-		// Set Dib Pointer
-		CDib* pDib = m_pProcessFrameDib;
-		if (!pDib)
-			goto exit;
-
-		// Copy Bits
-		if (!pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI))
-			goto exit;
-		if (!pDib->SetBits(pData, dwSize))
-			goto exit;
-		
 		// De-Interlace if divisible by 4
 		if (m_bDeinterlace && (pDib->GetWidth() & 3) == 0 && (pDib->GetHeight() & 3) == 0)
 			Deinterlace(pDib);
@@ -8798,6 +8527,20 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
+
+		// Free and then add Audio Samples to the Dib
+		while (!pDib->m_UserList.IsEmpty())
+		{
+			CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
+			delete [] UserBuf.m_pBuf;
+		}
+		if (m_bCaptureAudio)
+		{
+			::EnterCriticalSection(&m_CaptureAudioThread.m_csAudioList);
+			while (!m_CaptureAudioThread.m_AudioList.IsEmpty())
+				pDib->m_UserList.AddTail(m_CaptureAudioThread.m_AudioList.RemoveHead());
+			::LeaveCriticalSection(&m_CaptureAudioThread.m_csAudioList);
+		}
 
 		// Movement Detection
 		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
@@ -8845,7 +8588,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
 		// Record Video
-		if (m_bVideoRecWait == FALSE)
+		if (!m_bCaptureRecordPause)
 		{
 			::EnterCriticalSection(&m_csAVRec);
 			if (m_pAVRec)
@@ -8854,6 +8597,31 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,
 												m_bInterleave ? true : false);
+
+				// Add Audio Samples
+				if (m_bCaptureAudio)
+				{
+					while (!pDib->m_UserList.IsEmpty())
+					{
+						CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
+						if (m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
+						{
+							m_pAVRec->AddRawAudioPacket(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+														UserBuf.m_dwSize,
+														UserBuf.m_pBuf,
+														m_bInterleave ? true : false);
+						}
+						else
+						{
+							int nNumOfSrcSamples = (m_CaptureAudioThread.m_pSrcWaveFormat && (m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+							m_pAVRec->AddAudioSamples(	m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+														nNumOfSrcSamples,
+														UserBuf.m_pBuf,
+														m_bInterleave ? true : false);
+						}
+						delete [] UserBuf.m_pBuf;
+					}
+				}
 
 				// Recording Up-Time Init
 				if (m_bRecFirstFrame)
@@ -8868,8 +8636,8 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 					if (m_nRecordedFrames > 1)
 					{
 						// Calc. the Frame Time
-						double dFrameTime = dFrameTime = (double)(	m_dwRecLastUpTime - m_dwRecFirstUpTime) /
-																	(m_nRecordedFrames - 1);
+						double dFrameTime = (double)(m_dwRecLastUpTime - m_dwRecFirstUpTime) /
+													(m_nRecordedFrames - 1);
 
 						// Add the Pause Time minus one Frame
 						// Time to the First Up-Time,
@@ -8889,12 +8657,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				}
 					
 				// Every second check for segmentation
-				//
-				// Note: if capturing audio the following is handled
-				//       inside the audio thread
-				if (bOk					&&
-					!m_bCaptureAudio	&&
-					b1SecTick)
+				if (bOk && b1SecTick)
 				{
 					if (m_bRecTimeSegmentation)
 					{
@@ -8909,17 +8672,16 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 				// If not OK -> Stop Recording
 				if (!bOk)
-				{
-					if (m_bCaptureAudio)
-					{ 
-						m_bAboutToStopRec = TRUE;
-						m_bStopRec = TRUE;
-					}
-					else
-						CloseAndShowAviRec();
-				}
+					CloseAndShowAviRec();
 			}
 			::LeaveCriticalSection(&m_csAVRec);
+		}
+
+		// Free Audio Samples
+		while (!pDib->m_UserList.IsEmpty())
+		{
+			CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
+			delete [] UserBuf.m_pBuf;
 		}
 
 		// Send Video Frame
@@ -9167,7 +8929,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		}
 	}
 
-exit:
 	DWORD dwCurrentEndUpTime = ::timeGetTime();
 	DWORD dwProcessFrameTime = dwCurrentEndUpTime - dwCurrentInitUpTime;
 	::InterlockedExchange(&m_lProcessFrameTime, (LONG)dwProcessFrameTime);
@@ -9395,24 +9156,6 @@ void CVideoDeviceDoc::ShowSendFrameMsg()
 	}
 }
 
-void CVideoDeviceDoc::ChangeRecFileFrameRate(const CString& sFileName, double dFrameRate/*=0.0*/)
-{
-	if (dFrameRate == 0.0)
-	{
-		if (m_nRecordedFrames > 1)
-		{
-			dFrameRate =	(1000.0 * (m_nRecordedFrames - 1)) /
-							(double)(m_dwRecLastUpTime - m_dwRecFirstUpTime);
-		}
-		else
-			dFrameRate =	1.0;
-	}
-	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sFileName,
-										0,
-										dFrameRate,
-										false);
-}
-
 void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
 {
 	if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
@@ -9438,17 +9181,13 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 		sOldRecFileName = m_pAVRec->GetFileName();
 	}
 
-	// Free & Reset Vars
+	// Free
 	FreeAVIFile();
-	m_bVideoRecWait = TRUE;
-	m_bAudioRecWait = TRUE;
-	m_bStopRec = FALSE;
 
-	// Change Frame Rate(s)
+	// Change Frame Rate
+	double dFrameRate = 1.0;
 	if (m_bCaptureAudio)
 	{
-		// Change Frame Rate
-		double dFrameRate = 0.0;
 		if (m_nRecordedFrames > 0	&&
 			llSamplesCount > 0		&&
 			m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec > 0)
@@ -9456,18 +9195,24 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 			dFrameRate =	(double)m_nRecordedFrames /
 							((double)llSamplesCount / (double)m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec);
 		}
-		ChangeRecFileFrameRate(sOldRecFileName, dFrameRate);
 	}
 	else
-		ChangeRecFileFrameRate(sOldRecFileName);
+	{
+		if (m_nRecordedFrames > 1	&&
+			m_dwRecLastUpTime - m_dwRecFirstUpTime > 0U)
+		{
+			dFrameRate =	(1000.0 * (m_nRecordedFrames - 1)) /
+							(double)(m_dwRecLastUpTime - m_dwRecFirstUpTime);
+		}
+	}
+	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sOldRecFileName,
+										0,
+										dFrameRate,
+										false);
 
 	// If ending the windows session do not perform the following
 	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
 	{
-		// Set Small Buffers for a faster Peak Meter Reaction
-		if (m_bCaptureAudio)
-			m_CaptureAudioThread.SetSmallBuffers(TRUE);
-
 		// Open the video file
 		OpenAVIFile(sOldRecFileName);
 	}
@@ -9551,6 +9296,11 @@ BOOL CVideoDeviceDoc::NextAviFile()
 	// Close old file, change frame rate and open it
 	if (m_pAVRec)
 	{
+		// Get Samples Count
+		LONGLONG llSamplesCount = 0;
+		if (m_bCaptureAudio)
+			llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
+
 		// Store old rec file name
 		CString sOldRecFileName = m_pAVRec->GetFileName();
 
@@ -9558,7 +9308,30 @@ BOOL CVideoDeviceDoc::NextAviFile()
 		delete m_pAVRec;
 
 		// Change Frame Rate
-		ChangeRecFileFrameRate(sOldRecFileName);
+		double dFrameRate = 1.0;
+		if (m_bCaptureAudio)
+		{
+			if (m_nRecordedFrames > 0	&&
+				llSamplesCount > 0		&&
+				m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec > 0)
+			{
+				dFrameRate =	(double)m_nRecordedFrames /
+								((double)llSamplesCount / (double)m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec);
+			}
+		}
+		else
+		{
+			if (m_nRecordedFrames > 1	&&
+				m_dwRecLastUpTime - m_dwRecFirstUpTime > 0U)
+			{
+				dFrameRate =	(1000.0 * (m_nRecordedFrames - 1)) /
+								(double)(m_dwRecLastUpTime - m_dwRecFirstUpTime);
+			}
+		}
+		CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sOldRecFileName,
+											0,
+											dFrameRate,
+											false);
 
 		// Open the video file
 		OpenAVIFile(sOldRecFileName);

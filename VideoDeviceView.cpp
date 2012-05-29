@@ -977,14 +977,11 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case _T('R') :
-			if (!pDoc->m_bAboutToStopRec && !pDoc->m_bAboutToStartRec)
-				pDoc->CaptureRecord();
+			pDoc->CaptureRecord();
 			break;
 
 		case VK_PAUSE :
-			if (pDoc->m_pAVRec						&&
-				!pDoc->m_bAboutToStopRec			&&
-				!pDoc->m_bAboutToStartRec)
+			if (pDoc->m_pAVRec)
 				pDoc->CaptureRecordPause();
 			break;
 
