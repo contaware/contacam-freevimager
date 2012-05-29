@@ -53,12 +53,13 @@ class CMovementDetectionPage;
 #define MAX_DEVICE_AUTORUN_KEYS				32			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
-#define MIN_DISKFREE_PERCENT				10			// Belove this disk free percentage the oldest files are deleted
+#define MIN_DISKFREE_PERCENT				10			// Below this disk free percentage the oldest files are deleted
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
 #define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
-#define AUDIO_IN_MIN_BUF_SIZE				256			// Bytes
-#define AUDIO_MAX_LIST_SIZE					1024		// Maximum number of elements in audio list
-#define AUDIO_UNCOMPRESSED_BUFS_COUNT		8
+#define AUDIO_IN_MIN_BUF_SIZE				256			// bytes, must be a power of 2!
+#define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
+														// (see CCaptureAudioThread::OpenInAudio())
+#define AUDIO_UNCOMPRESSED_BUFS_COUNT		8			// Number of audio buffers
 #define AUDIO_CAPTURE_THREAD_PRIORITY		THREAD_PRIORITY_ABOVE_NORMAL
  
 // Frame time, date and count display constants
@@ -720,7 +721,7 @@ public:
 			CMixerIn m_Mixer;
 
 			// Audio list
-			CList<CUserBuf,CUserBuf> m_AudioList;
+			CDib::USERLIST m_AudioList;
 			CRITICAL_SECTION m_csAudioList;
 			
 		protected:

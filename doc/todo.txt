@@ -4,9 +4,6 @@ Picture:
 
 Detection:
 ----------
-- Save also audio on detection
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection
 - Advanced detection scheduler with weekday selection
-- Number the detections of a day starting from 1 up to ...,
-  detection splits are numbered: 1, 1b, 1c, 1d

@@ -285,6 +285,7 @@ CDib::~CDib()
 {
 	Free();
 	FreeGetClosestColorIndex();
+	FreeUserList();
 	if (m_hDrawDib)
 	{
 		::DrawDibClose(m_hDrawDib);
@@ -309,6 +310,40 @@ void CDib::FreeList(CDib::LIST& l)
 		if (l.GetTail())
 			delete l.GetTail();
 		l.RemoveTail();
+	}
+}
+
+void CDib::CopyUserList(const USERLIST& UserList)
+{
+	FreeUserList();
+	POSITION pos = UserList.GetHeadPosition();
+	while (pos)
+	{
+		CUserBuf UserBuf = UserList.GetNext(pos);
+		if (UserBuf.m_pBuf && UserBuf.m_dwSize > 0)
+		{
+			LPBYTE p = new BYTE[UserBuf.m_dwSize];
+			if (p)
+				memcpy(p, UserBuf.m_pBuf, UserBuf.m_dwSize);
+			UserBuf.m_pBuf = p;
+			m_UserList.AddTail(UserBuf);
+		}
+	}
+}
+
+void CDib::MoveUserList(USERLIST& UserList)
+{
+	FreeUserList();
+	while (!UserList.IsEmpty())
+		m_UserList.AddTail(UserList.RemoveHead());
+}
+
+void CDib::FreeUserList()
+{
+	while (!m_UserList.IsEmpty())
+	{
+		CUserBuf UserBuf = m_UserList.RemoveHead();
+		delete [] UserBuf.m_pBuf;
 	}
 }
 

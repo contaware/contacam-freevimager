@@ -379,6 +379,9 @@ public:
 	// List
 	typedef CList<CDib*,CDib*> LIST;
 
+	// User List
+	typedef CList<CUserBuf,CUserBuf> USERLIST;
+
 	// Constructors
 	CDib(); // Constructs an empty Dib class
 
@@ -409,7 +412,7 @@ public:
 	static RGBQUAD ms_StdColors[];
 
 	// General Purpose User List
-	CList<CUserBuf,CUserBuf> m_UserList;
+	USERLIST m_UserList;
 
 protected:
 	int m_nStretchMode;			// Stretch Mode: COLORONCOLOR or HALFTONE
@@ -668,6 +671,11 @@ public:
 
 	// Init vars
 	void Init();
+
+	// User list handling
+	void CopyUserList(const USERLIST& UserList);
+	void MoveUserList(USERLIST& UserList);
+	void FreeUserList();
 
 	// Is the given File Name an existing file?
 	static BOOL IsFile(LPCTSTR lpszFileName);

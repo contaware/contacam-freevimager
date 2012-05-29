@@ -418,15 +418,81 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetSwfDataRate : 0,		// Bitrate in bits/s
 											m_pDoc->m_nVideoDetSwfKeyframesRate,// Keyframes Rate				
 											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetSwfQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+					if (m_pDoc->m_bCaptureAudio)
+					{	
+						// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz and 11025 Hz
+						WAVEFORMATEX SwfWaveFormat;
+						memset(&SwfWaveFormat, 0, sizeof(WAVEFORMATEX));
+						SwfWaveFormat.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
+						if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec >= 44100)
+						{
+							SwfWaveFormat.nSamplesPerSec = 44100;
+							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
+							{
+								SwfWaveFormat.nChannels = 2;
+								SwfWaveFormat.nAvgBytesPerSec = (96000 / 8);
+							}
+							else
+							{
+								SwfWaveFormat.nChannels = 1;
+								SwfWaveFormat.nAvgBytesPerSec = (56000 / 8);
+							}
+						}
+						else if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec >= 22050)
+						{
+							SwfWaveFormat.nSamplesPerSec = 22050;
+							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
+							{
+								SwfWaveFormat.nChannels = 2;
+								SwfWaveFormat.nAvgBytesPerSec = (56000 / 8);
+							}
+							else
+							{
+								SwfWaveFormat.nChannels = 1;
+								SwfWaveFormat.nAvgBytesPerSec = (32000 / 8);
+							}
+						}
+						else
+						{
+							SwfWaveFormat.nSamplesPerSec = 11025;
+							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
+							{
+								SwfWaveFormat.nChannels = 2;
+								SwfWaveFormat.nAvgBytesPerSec = (32000 / 8);
+							}
+							else
+							{
+								SwfWaveFormat.nChannels = 1;
+								SwfWaveFormat.nAvgBytesPerSec = (24000 / 8);
+							}
+						}
+						AVRecSwf.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
+												&SwfWaveFormat);	// Dst Wave Format
+					}
 					AVRecSwf.Open();
 				}
 
-				// Add Frame
 				if (AVRecSwf.IsOpen())
 				{
+					// Add Frame
 					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&SWFSaveDib,
-										false);	// No interleave for Video only
+										false);	// No interleave
+
+					// Add Audio Samples
+					if (m_pDoc->m_bCaptureAudio)
+					{
+						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
+						while (posUserBuf)
+						{
+							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
+							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+							AVRecSwf.AddAudioSamples(	AVRecSwf.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+														nNumOfSrcSamples,
+														UserBuf.m_pBuf,
+														false);	// No interleave
+						}
+					}
 				}
 			}
 
@@ -468,15 +534,45 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetDataRate : 0,		// Bitrate in bits/s
 											m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
 											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+					if (m_pDoc->m_bCaptureAudio)
+					{
+						AVRecAvi.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
+												m_pDoc->m_CaptureAudioThread.m_pDstWaveFormat);	// Dst Wave Format
+					}
 					AVRecAvi.Open();
 				}
 
-				// Add Frame
 				if (AVRecAvi.IsOpen())
 				{
+					// Add Frame
 					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 										&AVISaveDib,
-										false);	// No interleave for Video only
+										false);	// No interleave
+
+					// Add Audio Samples
+					if (m_pDoc->m_bCaptureAudio)
+					{
+						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
+						while (posUserBuf)
+						{
+							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
+							if (m_pDoc->m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
+							{
+								AVRecAvi.AddRawAudioPacket(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+															UserBuf.m_dwSize,
+															UserBuf.m_pBuf,
+															false);	// No interleave
+							}
+							else
+							{
+								int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+								AVRecAvi.AddAudioSamples(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+															nNumOfSrcSamples,
+															UserBuf.m_pBuf,
+															false);	// No interleave
+							}
+						}
+					}
 				}
 			}
 
@@ -2269,7 +2365,7 @@ void CVideoDeviceDoc::CCaptureAudioThread::CalcMeanLevel(DWORD dwSize, LPBYTE pB
 	int nNumOfChannels = m_pSrcWaveFormat->nChannels;
 	int nAudioBits = m_pSrcWaveFormat->wBitsPerSample;
 	
-	// Calc. max Peak(s)
+	// Calc. max Peak
 	int nRep = nNumOfSamples / AUDIO_IN_MIN_BUF_SIZE;
 	for (int i = 0 ; i < nRep ; i++)
 	{
@@ -2381,7 +2477,7 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 		for (i = 0 ; i < nNumOfSamples / 2 ; i++)
 		{
 			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
-			dPeakLeft = dLeft > dPeakLeft? dLeft : dPeakLeft;
+			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
 		}
 		dPeakLeft /= (nNumOfSamples * 100.0);
 	}
@@ -2391,7 +2487,7 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 		for (i = 0 ; i < nNumOfSamples / 2 ; i++)
 		{
 			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
-			dPeakLeft = dLeft > dPeakLeft? dLeft : dPeakLeft;
+			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
 		}
 		dPeakLeft /= (nNumOfSamples * 100.0);
 		fft_double(nNumOfSamples, false, m_dInRight, NULL, m_dOutRe, m_dOutIm);
@@ -8528,19 +8624,15 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// Set the UpTime Var
 		pDib->SetUpTime(dwCurrentInitUpTime);
 
-		// Free and then add Audio Samples to the Dib
-		while (!pDib->m_UserList.IsEmpty())
-		{
-			CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
-			delete [] UserBuf.m_pBuf;
-		}
+		// Move samples from audio queue to Dib
 		if (m_bCaptureAudio)
 		{
 			::EnterCriticalSection(&m_CaptureAudioThread.m_csAudioList);
-			while (!m_CaptureAudioThread.m_AudioList.IsEmpty())
-				pDib->m_UserList.AddTail(m_CaptureAudioThread.m_AudioList.RemoveHead());
+			pDib->MoveUserList(m_CaptureAudioThread.m_AudioList);
 			::LeaveCriticalSection(&m_CaptureAudioThread.m_csAudioList);
 		}
+		else
+			pDib->FreeUserList();
 
 		// Movement Detection
 		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
@@ -8678,11 +8770,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		}
 
 		// Free Audio Samples
-		while (!pDib->m_UserList.IsEmpty())
-		{
-			CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
-			delete [] UserBuf.m_pBuf;
-		}
+		pDib->FreeUserList();
 
 		// Send Video Frame
 		if (m_bSendVideoFrame)
@@ -9807,7 +9895,10 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 				// Add
 				CDib* pNewDib = new CDib(*pDib);
 				if (pNewDib)
+				{
+					pNewDib->CopyUserList(pDib->m_UserList); // copy audio bufs if any
 					pTail->AddTail(pNewDib);
+				}
 			}
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);
@@ -9847,7 +9938,10 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 				{
 					pNewDib = new CDib(*pDib);
 					if (pNewDib)
+					{
+						pNewDib->CopyUserList(pDib->m_UserList);		// copy audio bufs if any
 						pTail->AddTail(pNewDib);
+					}
 				}
 				// Remove old frame(s) and add the new one recycling the oldest one
 				else
@@ -9859,16 +9953,20 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 					// Add new frame recycling the oldest one
 					if (pHeadDib)
 					{
-						pHeadDib->SetBits(pDib->GetBits());
-						pHeadDib->SetUpTime(pDib->GetUpTime());
-						pHeadDib->SetUserFlag(pDib->IsUserFlag());
+						pHeadDib->SetBits(pDib->GetBits());				// copy bits
+						pHeadDib->SetUpTime(pDib->GetUpTime());			// copy frame uptime
+						pHeadDib->SetUserFlag(pDib->IsUserFlag());		// copy movement detection frame flag
+						pHeadDib->CopyUserList(pDib->m_UserList);		// copy audio bufs if any
 						pTail->AddTail(pHeadDib);
 					}
 					else
 					{
 						pNewDib = new CDib(*pDib);
 						if (pNewDib)
+						{
+							pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
 							pTail->AddTail(pNewDib);
+						}
 					}
 
 					// Other old ones to remove?
