@@ -118,7 +118,7 @@ void CMonochromeConversionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
 			(SB_LINEUP  == nSBCode) ||		// Keyboard Arrow
 			(SB_LINEDOWN  == nSBCode) ||	// Keyboard Arrow
 			(SB_PAGEUP == nSBCode) ||		// Mouse Press Above Slider
-			(SB_PAGEDOWN == nSBCode) ||		// Mouse Press Belove Slider
+			(SB_PAGEDOWN == nSBCode) ||		// Mouse Press Below Slider
 			(SB_LEFT == nSBCode)	||		// Home Button
 			(SB_RIGHT == nSBCode))			// End Button  
 		{
@@ -133,7 +133,7 @@ void CMonochromeConversionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
 			(SB_LINEUP  == nSBCode) ||		// Keyboard Arrow
 			(SB_LINEDOWN  == nSBCode) ||	// Keyboard Arrow
 			(SB_PAGEUP == nSBCode) ||		// Mouse Press Above Slider
-			(SB_PAGEDOWN == nSBCode) ||		// Mouse Press Belove Slider
+			(SB_PAGEDOWN == nSBCode) ||		// Mouse Press Below Slider
 			(SB_LEFT == nSBCode)	||		// Home Button
 			(SB_RIGHT == nSBCode))			// End Button  
 		{

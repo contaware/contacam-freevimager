@@ -2471,10 +2471,11 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 	}
 	
 	// FFT & Calc. Peak
+	// ignore i = 0 (DC Slot) and i = nNumOfSamples / 2 (Nyquist Slot)
 	if (nNumOfChannels == 1)
 	{
 		fft_double(nNumOfSamples, false, m_dInLeft, NULL, m_dOutRe, m_dOutIm);
-		for (i = 0 ; i < nNumOfSamples / 2 ; i++)
+		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
 		{
 			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
 			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
@@ -2484,14 +2485,14 @@ __forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSam
 	else
 	{
 		fft_double(nNumOfSamples, false, m_dInLeft, NULL, m_dOutRe, m_dOutIm);
-		for (i = 0 ; i < nNumOfSamples / 2 ; i++)
+		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
 		{
 			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
 			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
 		}
 		dPeakLeft /= (nNumOfSamples * 100.0);
 		fft_double(nNumOfSamples, false, m_dInRight, NULL, m_dOutRe, m_dOutIm);
-		for (i = 0 ; i < nNumOfSamples / 2 ; i++)
+		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
 		{
 			dRight = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
 			dPeakRight = dRight > dPeakRight ? dRight : dPeakRight;
