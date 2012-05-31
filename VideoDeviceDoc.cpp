@@ -2199,18 +2199,26 @@ CVideoDeviceDoc::CCaptureAudioThread::~CCaptureAudioThread()
 void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 {
 	CAudioInSourceDlg dlg(m_pDoc->m_dwCaptureAudioDeviceID);
-	if (dlg.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK && dlg.m_uiDeviceID != m_pDoc->m_dwCaptureAudioDeviceID)
 	{
-		if (dlg.m_uiDeviceID != m_pDoc->m_dwCaptureAudioDeviceID)
+		// Stop Save Frame List Thread
+		m_pDoc->m_SaveFrameListThread.Kill();
+
+		// Stop Rec
+		if (m_pDoc->m_pAVRec)
+			m_pDoc->CaptureRecord();
+
+		// Stop and Restart Capture Audio Thread
+		SetDeviceID(dlg.m_uiDeviceID);
+		if (m_pDoc->m_bCaptureAudio)
 		{
-			SetDeviceID(dlg.m_uiDeviceID);
-			if (m_pDoc->m_bCaptureAudio)
-			{
-				Kill();
-				m_Mixer.Close();
-				Start();
-			}
+			Kill();
+			m_Mixer.Close();
+			Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 		}
+
+		// Restart Save Frame List Thread
+		m_pDoc->m_SaveFrameListThread.Start();
 	}
 }
 
@@ -4765,7 +4773,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Recording
 	m_sRecordAutoSaveDir = _T("");
 	m_bRecAutoOpen = TRUE;
-	m_bRecAutoOpenAllowed = TRUE;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
 	m_bCaptureRecordPause = FALSE;
@@ -6630,26 +6637,6 @@ BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
 		return TRUE;
 }
 
-BOOL CVideoDeviceDoc::RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec)
-{
-	// Free
-	if (pAVRec)
-	{
-		delete pAVRec;
-		pAVRec = NULL;
-	}
-
-	// Leave CS
-	::LeaveCriticalSection(&m_csAVRec);
-	
-	CString sMsg = ML_STRING(1493, "Cannot Create the AVI File!\n");
-	TRACE(sMsg);
-	if (bShowMessageBoxOnError)
-		::AfxMessageBox(sMsg, MB_ICONSTOP);
-	
-	return FALSE;
-}
-
 void CVideoDeviceDoc::OnCaptureRecord() 
 {
 	CaptureRecord();
@@ -6700,7 +6687,24 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		// Allocate & Init pAVRec
 		CAVRec* pAVRec = NULL;
 		if (!MakeAVRec(MakeRecFileName(), &pAVRec))
-			return RecError(bShowMessageBoxOnError, pAVRec);
+		{
+			// Free
+			if (pAVRec)
+			{
+				delete pAVRec;
+				pAVRec = NULL;
+			}
+
+			// Leave CS
+			::LeaveCriticalSection(&m_csAVRec);
+			
+			CString sMsg = ML_STRING(1493, "Cannot Create the AVI File!\n");
+			TRACE(sMsg);
+			if (bShowMessageBoxOnError)
+				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			
+			return FALSE;
+		}
 
 		// Set AV Rec Pointer
 		m_pAVRec = pAVRec;
@@ -6909,6 +6913,13 @@ void CVideoDeviceDoc::AudioFormatDialog()
 		memcpy(&dlg.m_WaveFormat, m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
 	if (dlg.DoModal() == IDOK)
 	{
+		// Stop Save Frame List Thread
+		m_SaveFrameListThread.Kill();
+
+		// Stop Rec
+		if (m_pAVRec)
+			CaptureRecord();
+
 		// Stop Audio Thread
 		if (m_bCaptureAudio)
 		{
@@ -6938,6 +6949,9 @@ void CVideoDeviceDoc::AudioFormatDialog()
 		// Start Audio Thread
 		if (m_bCaptureAudio)
 			m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+
+		// Restart Save Frame List Thread
+		m_SaveFrameListThread.Start();
 	}
 }
 
@@ -9247,7 +9261,7 @@ void CVideoDeviceDoc::ShowSendFrameMsg()
 
 void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
 {
-	if (m_bRecAutoOpen && m_bRecAutoOpenAllowed)
+	if (m_bRecAutoOpen)
 	{
 		::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 						WM_THREADSAFE_OPEN_DOC,

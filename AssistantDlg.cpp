@@ -596,12 +596,9 @@ void CAssistantDlg::OnTimer(UINT nIDEvent)
 {
 	if (m_bDoApplySettings)
 	{
+		// Stop Rec
 		if (m_pDoc->m_pAVRec)
-		{
-			// Stop Rec
-			m_pDoc->m_bRecAutoOpenAllowed = FALSE;
 			m_pDoc->CaptureRecord();
-		}
 		else
 		{
 			// Apply settings if we are not inside the processing function
@@ -1275,9 +1272,6 @@ void CAssistantDlg::ApplySettings()
 	// Save Settings (BeginWaitCursor() / EndWaitCursor() called inside this function)
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		m_pDoc->SaveSettings();
-
-	// Restore var
-	m_pDoc->m_bRecAutoOpenAllowed = TRUE;
 
 	// Update titles because of possible device name change
 	if (m_pDoc->m_pVideoDevicePropertySheet)

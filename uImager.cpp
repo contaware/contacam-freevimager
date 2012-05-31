@@ -2100,7 +2100,7 @@ void CUImagerApp::SaveOnEndSession()
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 				{
 					// Stop recording so that the index is not missing!
-					if (((CVideoDeviceDoc*)pDoc)->IsRecording())
+					if (((CVideoDeviceDoc*)pDoc)->m_pAVRec)
 						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
 					if (m_bUseSettings)
 						((CVideoDeviceDoc*)pDoc)->SaveSettings();
@@ -6192,7 +6192,7 @@ void CUImagerApp::CSchedulerEntry::Start()
 	}
 
 	// Start recording if not already started
-	if (!pDoc->IsRecording())
+	if (!pDoc->m_pAVRec)
 	{
 		// Ready?
 		if (!pDoc->m_bCaptureStarted)
@@ -6241,7 +6241,7 @@ BOOL CUImagerApp::CSchedulerEntry::Stop()
 	}
 
 	// Stop recording if not already stopped
-	if (m_pDoc->IsRecording())
+	if (m_pDoc->m_pAVRec)
 		m_pDoc->CaptureRecord(FALSE); // No Message Box on Error
 	
 	// Not Running

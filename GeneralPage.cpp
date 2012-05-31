@@ -733,6 +733,14 @@ void CGeneralPage::OnChangeFrameRate()
 
 void CGeneralPage::OnRecAudio() 
 {
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
+
+	// Stop Rec
+	if (m_pDoc->m_pAVRec)
+		m_pDoc->CaptureRecord();
+
+	// Start/Stop Capture Audio Thread
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
 	m_pDoc->m_bCaptureAudio = (pCheck->GetCheck() == 1);
 	if (m_pDoc->m_bCaptureAudio)
@@ -741,7 +749,10 @@ void CGeneralPage::OnRecAudio()
 		m_pDoc->m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
 	}
 	else
-		m_pDoc->m_CaptureAudioThread.Kill_NoBlocking();
+		m_pDoc->m_CaptureAudioThread.Kill();
+
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CGeneralPage::OnTimer(UINT nIDEvent) 

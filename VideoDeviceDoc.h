@@ -1255,7 +1255,6 @@ public:
 	void OpenAVIFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();
-	__forceinline BOOL IsRecording() {return m_pAVRec != NULL;};
 	BOOL NextAviFile();
 	void NextRecTime(CTime t);
 	void CloseAndShowAviRec();
@@ -1361,7 +1360,6 @@ protected:
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	BOOL Rotate180(CDib* pDib);
 	BOOL Deinterlace(CDib* pDib);
-	BOOL RecError(BOOL bShowMessageBoxOnError, CAVRec* pAVRec);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,
@@ -1481,7 +1479,6 @@ public:
 	volatile DWORD m_nRecordedFrames;					// Recorded Frames Count
 														// -> For Frame Rate Calculation
 	volatile BOOL m_bRecAutoOpen;						// Auto open avi after recording
-	volatile BOOL m_bRecAutoOpenAllowed;				// Flag which allows auto open of avi after recording
 	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
