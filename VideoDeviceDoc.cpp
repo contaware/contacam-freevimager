@@ -4626,7 +4626,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
-	m_DoMovementDetection = new BOOL[MOVDET_MAX_ZONES];
+	m_DoMovementDetection = new int[MOVDET_MAX_ZONES];
 	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
@@ -5807,7 +5807,7 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 	{
 		CString sZone;
 		sZone.Format(MOVDET_ZONE_FORMAT, i);
-		m_DoMovementDetection[i] = ::GetProfileIniInt(_T("MovementDetectionZones"), sZone, TRUE, sFileName);
+		m_DoMovementDetection[i] = ::GetProfileIniInt(_T("MovementDetectionZones"), sZone, 1, sFileName);
 	}
 
 	// Store settings
@@ -9367,7 +9367,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 		{
 			if (m_DoMovementDetection[i] &&
-				m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold)
+				m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * m_DoMovementDetection[i])
 			{
 				bSingleZoneDetection = TRUE;
 				m_MovementDetections[i] = TRUE;

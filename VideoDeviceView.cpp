@@ -32,6 +32,14 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
+	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_100, OnEditZoneSensibility100)
+	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_50, OnEditZoneSensibility50)
+	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_25, OnEditZoneSensibility25)
+	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_10, OnEditZoneSensibility10)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_100, OnUpdateEditZoneSensibility100)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_50, OnUpdateEditZoneSensibility50)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_25, OnUpdateEditZoneSensibility25)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_10, OnUpdateEditZoneSensibility10)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTUREASSISTANT, OnThreadSafeCaptureAssistant)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -51,6 +59,7 @@ CVideoDeviceView::CVideoDeviceView()
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_pDxDrawDib = new CDib;
 	m_pDxDrawDib->SetShowMessageBoxOnError(FALSE);
+	m_nMovDetSingleZoneSensibility = 1;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -287,7 +296,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			{
 				CString sZone;
 				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				pDoc->m_DoMovementDetection[i] = (BOOL)pApp->GetProfileInt(sSection, sZone, TRUE);
+				pDoc->m_DoMovementDetection[i] = pApp->GetProfileInt(sSection, sZone, 1);
 			}
 		}
 		else
@@ -296,7 +305,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
-				pDoc->m_DoMovementDetection[i] = TRUE;
+				pDoc->m_DoMovementDetection[i] = 1;
 				CString sZone;
 				sZone.Format(MOVDET_ZONE_FORMAT, i);
 				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
@@ -306,7 +315,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	else
 	{
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-			pDoc->m_DoMovementDetection[i] = TRUE;
+			pDoc->m_DoMovementDetection[i] = 1;
 	}
 
 	// Update current detection zone size var
@@ -664,6 +673,69 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 	}
 }
 
+__forceinline void CVideoDeviceView::DxDrawZoneSensibility(int i, HDC hDC, const RECT& rcDetZone, int n)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
+
+	POINT ptCenter;
+	ptCenter.x = rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 2;
+	ptCenter.y = rcDetZone.top + (rcDetZone.bottom - rcDetZone.top) / 2;
+
+	// 10 %
+	if (pDoc->m_DoMovementDetection[i] >= 10)
+	{
+		// Draw a 1
+		::MoveToEx(hDC, ptCenter.x - (2+n/2), ptCenter.y - (1+n/2), NULL);
+		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x - 1, ptCenter.y + (3+n));
+
+		// Draw a 0
+		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n));
+	}
+	// 25 %
+	else if (pDoc->m_DoMovementDetection[i] >= 4)
+	{
+		// Draw a 2
+		::MoveToEx(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x - 1, ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x - 1, ptCenter.y);
+		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y);
+		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x, ptCenter.y + (2+n));
+
+		// Draw a 5
+		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y);
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y);
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x, ptCenter.y + (2+n));
+	}
+	// 50 %
+	else if (pDoc->m_DoMovementDetection[i] >= 2)
+	{
+		// Draw a 5
+		::MoveToEx(hDC, ptCenter.x - 1, ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x - (2+n), ptCenter.y);
+		::LineTo(hDC, ptCenter.x - 1 , ptCenter.y);
+		::LineTo(hDC, ptCenter.x - 1, ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x - (3+n), ptCenter.y + (2+n));
+
+		// Draw a 0
+		::MoveToEx(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n), NULL);
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y - (2+n));
+		::LineTo(hDC, ptCenter.x + 1, ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y + (2+n));
+		::LineTo(hDC, ptCenter.x + (2+n), ptCenter.y - (2+n));
+	}
+}
+
 void CVideoDeviceView::DxDrawZones(CDib* pDib)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -673,47 +745,55 @@ void CVideoDeviceView::DxDrawZones(CDib* pDib)
 	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
 	if (hDC)
 	{
+		RECT rcDetZone;
+		int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
+		int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+		int nSensibilityTextSize;
+		if (nZoneWidth == 8 || nZoneHeight == 8)
+			nSensibilityTextSize = 0;
+		else if (nZoneWidth == 16 || nZoneHeight == 16)
+			nSensibilityTextSize = 2;
+		else
+			nSensibilityTextSize = 4;
+
 		// Draw Zones where Detection is enabled
 		if (pDoc->m_bShowEditDetectionZones)
 		{
+			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
+			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
+			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
 			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				if (pDoc->m_DoMovementDetection[i])
 				{
-					RECT rcDetZone;
-					int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
-					int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
 					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
 					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
 					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
 					rcDetZone.top = MAX(0, nZoneOffsetY - 1);
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
-
-					HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
-					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
-					HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
+					
+					DxDrawZoneSensibility(i, hDC, rcDetZone, nSensibilityTextSize);
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
 					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
-					::SelectObject(hDC, hOldBrush);
-					::SelectObject(hDC, hOldPen);
-					::DeleteObject(hPen);
 				}
 			}
+			::SelectObject(hDC, hOldBrush);
+			::SelectObject(hDC, hOldPen);
+			::DeleteObject(hPen);
 		}
 
 		// Draw Detected Zones
 		if ((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections)
 		{
-			DWORD dwCurrentTime = ::timeGetTime();
+			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
+			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
+			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
 			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				if (pDoc->m_MovementDetections[i])
 				{
-					RECT rcDetZone;
-					int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
-					int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
 					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
 					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
 					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
@@ -721,17 +801,15 @@ void CVideoDeviceView::DxDrawZones(CDib* pDib)
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
-					HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
-					HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
-					HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
+					DxDrawZoneSensibility(i, hDC, rcDetZone, nSensibilityTextSize);
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
 					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
-					::SelectObject(hDC, hOldBrush);
-					::SelectObject(hDC, hOldPen);
-					::DeleteObject(hPen);
 				}
 			}
+			::SelectObject(hDC, hOldBrush);
+			::SelectObject(hDC, hOldPen);
+			::DeleteObject(hPen);
 		}
 
 		// Release Back DC
@@ -917,10 +995,10 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// Reset Zone State
 		if ((nFlags & MK_SHIFT) ||
 			(nFlags & MK_CONTROL))
-			pDoc->m_DoMovementDetection[nZone] = FALSE;
+			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone State
 		else
-			pDoc->m_DoMovementDetection[nZone] = TRUE;
+			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
 
 		// Store Settings
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -1263,10 +1341,10 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// Reset Zone State
 		if ((nFlags & MK_SHIFT) ||
 			(nFlags & MK_CONTROL))
-			pDoc->m_DoMovementDetection[nZone] = FALSE;
+			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone State
 		else
-			pDoc->m_DoMovementDetection[nZone] = TRUE;
+			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
 
 		// Store Settings
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -1288,7 +1366,7 @@ void CVideoDeviceView::OnEditSelectall()
 	int i;
 
 	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		pDoc->m_DoMovementDetection[i] = TRUE;
+		pDoc->m_DoMovementDetection[i] = 1;
 
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
@@ -1309,7 +1387,7 @@ void CVideoDeviceView::OnEditSelectnone()
 	int i;
 
 	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		pDoc->m_DoMovementDetection[i] = FALSE;
+		pDoc->m_DoMovementDetection[i] = 0;
 
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
@@ -1321,6 +1399,46 @@ void CVideoDeviceView::OnEditSelectnone()
 			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
 		}
 	}
+}
+
+void CVideoDeviceView::OnEditZoneSensibility100() 
+{
+	m_nMovDetSingleZoneSensibility = 1;
+}
+
+void CVideoDeviceView::OnUpdateEditZoneSensibility100(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 1);
+}
+
+void CVideoDeviceView::OnEditZoneSensibility50() 
+{
+	m_nMovDetSingleZoneSensibility = 2;
+}
+
+void CVideoDeviceView::OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 2);
+}
+
+void CVideoDeviceView::OnEditZoneSensibility25() 
+{
+	m_nMovDetSingleZoneSensibility = 4;
+}
+
+void CVideoDeviceView::OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 4);
+}
+
+void CVideoDeviceView::OnEditZoneSensibility10() 
+{
+	m_nMovDetSingleZoneSensibility = 10;
+}
+
+void CVideoDeviceView::OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 10);
 }
 
 BOOL CVideoDeviceView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 

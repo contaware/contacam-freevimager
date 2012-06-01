@@ -3522,6 +3522,10 @@
 #define ID_TOOLS_DEL_CAM_FOLDERS        33170
 #define ID_DET_COMBOX                   33171
 #define ID_CAPTURE_ASSISTANT            33172
+#define ID_EDIT_ZONE_SENSIBILITY_100    33173
+#define ID_EDIT_ZONE_SENSIBILITY_50     33174
+#define ID_EDIT_ZONE_SENSIBILITY_25     33175
+#define ID_EDIT_ZONE_SENSIBILITY_10     33176
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3530,7 +3534,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33173
+#define _APS_NEXT_COMMAND_VALUE         33177
 #define _APS_NEXT_CONTROL_VALUE         2546
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

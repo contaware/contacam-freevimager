@@ -5,9 +5,6 @@ Picture:
 Detection:
 ----------
 - Compress frames before putting them into the detection buffer
-- Clicking blue rectangles sets relative percentages of
-  0% (no rectangle), 33% (light-blue), 66%(blue), 100%(dark-blue)
-  with respect to the detection sensibility slider
 - Possibility to save a sequence of jpegs on detection
   or to enable snapshots only on detection
 - Advanced detection scheduler with weekday selection

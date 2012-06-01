@@ -31,11 +31,12 @@ protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
 	void DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	__forceinline void DxDrawZoneSensibility(int i, HDC hDC, const RECT& rcDetZone, int n);
 	void DxDrawZones(CDib* pDib);
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
 	__forceinline BOOL IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView);
 	BOOL ReOpenDxDevice();
-
+	int m_nMovDetSingleZoneSensibility;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
 // Overrides
@@ -71,6 +72,14 @@ protected:
 	afx_msg void OnEditSelectall();
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	afx_msg void OnEditZoneSensibility100();
+	afx_msg void OnEditZoneSensibility50();
+	afx_msg void OnEditZoneSensibility25();
+	afx_msg void OnEditZoneSensibility10();
+	afx_msg void OnUpdateEditZoneSensibility100(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);

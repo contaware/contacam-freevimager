@@ -1017,6 +1017,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
         MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
+        MENUITEM SEPARATOR
+        MENUITEM "Sensibility 100 %",           ID_EDIT_ZONE_SENSIBILITY_100
+        MENUITEM "Sensibility 50 %",            ID_EDIT_ZONE_SENSIBILITY_50
+        MENUITEM "Sensibility 25 %",            ID_EDIT_ZONE_SENSIBILITY_25
+        MENUITEM "Sensibility 10 %",            ID_EDIT_ZONE_SENSIBILITY_10
     END
 END
 
@@ -1621,7 +1626,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -7233,6 +7238,14 @@ BEGIN
                             "Select camera folder(s) to delete\nDelete Camera Folder(s)"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
     ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
+    ID_EDIT_ZONE_SENSIBILITY_100 
+                            "Set detection zone sensibility to 100 %\nZone Sensibility 100 %"
+    ID_EDIT_ZONE_SENSIBILITY_50 
+                            "Set detection zone sensibility to 50 %\nZone Sensibility 50 %"
+    ID_EDIT_ZONE_SENSIBILITY_25 
+                            "Set detection zone sensibility to 25 %\nZone Sensibility 25 %"
+	ID_EDIT_ZONE_SENSIBILITY_10 
+                            "Set detection zone sensibility to 10 %\nZone Sensibility 10 %"
 END
 
 STRINGTABLE DISCARDABLE 

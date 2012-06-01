@@ -1588,7 +1588,9 @@ public:
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
 	BOOL* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
-	BOOL* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone (array allocated in constructor)
+	int* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensibility
+														// 0 -> No Detection, 1 -> Full Sensibility=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
+														// (array allocated in constructor)
 	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
