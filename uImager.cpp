@@ -212,13 +212,6 @@ CUImagerApp::~CUImagerApp()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CMallocSpy object
-
-#ifndef NDEBUG
-CMallocSpy MallocSpy;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
 // The one and only CUImagerApp object
 
 CUImagerApp theApp;
@@ -322,22 +315,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			throw (int)0;
 		}
 		AfxEnableControlContainer();
-
-		// Initialize the COM memory checker.
-		//
-		// If you want to analize a specific portion of code do:
-		// MallocSpy.Clear();
-		// .. code ..
-		// MallocSpy.Dump();
-		//
-		// To break at a given allocation num call:
-		// MallocSpy.SetBreakAlloc(num);
-		//
-		// Note: some leaking is always there do to the different
-		// COM objects we do not have access to...
-#ifndef NDEBUG
-		::CoRegisterMallocSpy(&MallocSpy);
-#endif
 
 #if _MFC_VER < 0x0700
 		// Standard initialization
@@ -2834,11 +2811,6 @@ int CUImagerApp::ExitInstance()
 		g_bAVCodecCSInited = FALSE;
 		::DeleteCriticalSection(&g_csAVCodec);
 	}
-
-	// Unregister the malloc spy
-#ifndef NDEBUG
-	::CoRevokeMallocSpy();
-#endif
 
 	// From CWinApp::ExitInstance(), I modified it:
 

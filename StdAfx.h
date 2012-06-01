@@ -53,10 +53,6 @@
 #include <atlenc.h>
 #include <atlsocket.h>
 #endif
-#ifndef NDEBUG
-#include "cmallspy.h"
-extern CMallocSpy MallocSpy;
-#endif
 
 // App Command Defines
 #ifndef WM_APPCOMMAND

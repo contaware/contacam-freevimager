@@ -2473,12 +2473,6 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pReservedMB) *pReservedMB = sum_reserve;
 	if (pCommittedMB) *pCommittedMB = sum_commit;
 	if (pFragmentation) *pFragmentation = dFragmentation;
-
-	// Trace
-	CString sMsg;
-	sMsg.Format(_T("Regions=%u, Free=%uMB, Reserved=%uMB, Committed=%uMB, Fragmentation=%0.1f%%%%\n"),
-					region, sum_free, sum_reserve, sum_commit, dFragmentation);
-	TRACE(sMsg);
 }
 
 typedef BOOL (WINAPI * FPGETDISKFREESPACEEX)(LPCTSTR lpDirectoryName,

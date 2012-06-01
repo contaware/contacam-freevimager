@@ -267,10 +267,6 @@ SOURCE=.\ChildFrm.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Cmallspy.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ColorButton.cpp
 # End Source File
 # Begin Source File
@@ -961,10 +957,6 @@ SOURCE=.\Cfile64.h
 # Begin Source File
 
 SOURCE=.\ChildFrm.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Cmallspy.h
 # End Source File
 # Begin Source File
 

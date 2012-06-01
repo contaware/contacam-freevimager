@@ -2127,29 +2127,11 @@ CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread()
 	m_hEventArray[1] = m_hWaveInEvent;
 	m_hWaveIn = NULL;
 
-	// Audio Format set Default to: Mono , 11025 Hz , 8 bits
+	// Audio Format set Default to: Mono , 11025 Hz , 16 bits
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	if (m_pSrcWaveFormat)
-	{
-		m_pSrcWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-		m_pSrcWaveFormat->nChannels = 1;
-		m_pSrcWaveFormat->nSamplesPerSec = 11025;
-		m_pSrcWaveFormat->nAvgBytesPerSec = 11025;
-		m_pSrcWaveFormat->nBlockAlign = 1;
-		m_pSrcWaveFormat->wBitsPerSample = 8;
-		m_pSrcWaveFormat->cbSize = 0;
-	}
+	WaveInitFormat(1, 11025, 16, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	if (m_pDstWaveFormat)
-	{
-		m_pDstWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-		m_pDstWaveFormat->nChannels = 1;
-		m_pDstWaveFormat->nSamplesPerSec = 11025;
-		m_pDstWaveFormat->nAvgBytesPerSec = 11025;
-		m_pDstWaveFormat->nBlockAlign = 1;
-		m_pDstWaveFormat->wBitsPerSample = 8;
-		m_pDstWaveFormat->cbSize = 0;
-	}
+	WaveInitFormat(1, 11025, 16, m_pDstWaveFormat);
 
 	// ACM
 	for (int i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
@@ -5325,37 +5307,25 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		delete [] m_CaptureAudioThread.m_pSrcWaveFormat;
 	UINT uiSize = 0;
 	pApp->GetProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE*)&m_CaptureAudioThread.m_pSrcWaveFormat, &uiSize);
-	if (m_CaptureAudioThread.m_pSrcWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 8 bits
+	if (m_CaptureAudioThread.m_pSrcWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 16 bits
 	{
 		// Make Sure Nothing Has Been Allocated!
 		if (m_CaptureAudioThread.m_pSrcWaveFormat)
 			delete [] m_CaptureAudioThread.m_pSrcWaveFormat;
 		m_CaptureAudioThread.m_pSrcWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
-		m_CaptureAudioThread.m_pSrcWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-		m_CaptureAudioThread.m_pSrcWaveFormat->nChannels = 1;
-		m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec = 11025;
-		m_CaptureAudioThread.m_pSrcWaveFormat->nAvgBytesPerSec = 11025;
-		m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign = 1;
-		m_CaptureAudioThread.m_pSrcWaveFormat->wBitsPerSample = 8;
-		m_CaptureAudioThread.m_pSrcWaveFormat->cbSize = 0;
+		CCaptureAudioThread::WaveInitFormat(1, 11025, 16, m_CaptureAudioThread.m_pSrcWaveFormat);
 	}
 	if (m_CaptureAudioThread.m_pDstWaveFormat)
 		delete [] m_CaptureAudioThread.m_pDstWaveFormat;
 	uiSize = 0;
 	pApp->GetProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE*)&m_CaptureAudioThread.m_pDstWaveFormat, &uiSize);
-	if (m_CaptureAudioThread.m_pDstWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 8 bits
+	if (m_CaptureAudioThread.m_pDstWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 16 bits
 	{
 		// Make Sure Nothing Has Been Allocated!
 		if (m_CaptureAudioThread.m_pDstWaveFormat)
 			delete [] m_CaptureAudioThread.m_pDstWaveFormat;
 		m_CaptureAudioThread.m_pDstWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
-		m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-		m_CaptureAudioThread.m_pDstWaveFormat->nChannels = 1;
-		m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec = 11025;
-		m_CaptureAudioThread.m_pDstWaveFormat->nAvgBytesPerSec = 11025;
-		m_CaptureAudioThread.m_pDstWaveFormat->nBlockAlign = 1;
-		m_CaptureAudioThread.m_pDstWaveFormat->wBitsPerSample = 8;
-		m_CaptureAudioThread.m_pDstWaveFormat->cbSize = 0;
+		CCaptureAudioThread::WaveInitFormat(1, 11025, 16, m_CaptureAudioThread.m_pDstWaveFormat);
 	}
 
 	// Create dirs

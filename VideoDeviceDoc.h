@@ -709,7 +709,7 @@ public:
 			BOOL OpenInAudio();
 			void CloseInAudio();
 			BOOL DataInAudio();
-			void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
+			static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
 
 			// Wave Formats
 			LPWAVEFORMATEX m_pSrcWaveFormat;
