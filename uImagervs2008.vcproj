@@ -1786,37 +1786,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Fourier.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="FTPTransfer.cpp"
 				>
 				<FileConfiguration
@@ -2650,37 +2619,6 @@
 			<File
 				RelativePath=".\PdfSaveDlg.cpp"
 				>
-			</File>
-			<File
-				RelativePath="PeakMeterCtrl.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="PictureDoc.cpp"
@@ -4572,10 +4510,6 @@
 				>
 			</File>
 			<File
-				RelativePath="Fourier.h"
-				>
-			</File>
-			<File
 				RelativePath="FTPTransfer.h"
 				>
 			</File>
@@ -4753,10 +4687,6 @@
 			</File>
 			<File
 				RelativePath=".\PdfSaveDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="PeakMeterCtrl.h"
 				>
 			</File>
 			<File

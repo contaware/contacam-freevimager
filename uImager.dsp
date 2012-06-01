@@ -371,10 +371,6 @@ SOURCE=.\EnumPrinters.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Fourier.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\FTPTransfer.cpp
 # End Source File
 # Begin Source File
@@ -559,10 +555,6 @@ SOURCE=.\PaletteWnd.cpp
 # Begin Source File
 
 SOURCE=.\PdfSaveDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PeakMeterCtrl.cpp
 # End Source File
 # Begin Source File
 
@@ -1076,10 +1068,6 @@ SOURCE=.\EnumPrinters.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Fourier.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\FTPTransfer.h
 # End Source File
 # Begin Source File
@@ -1245,10 +1233,6 @@ SOURCE=.\PaletteWnd.h
 # Begin Source File
 
 SOURCE=.\PdfSaveDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\PeakMeterCtrl.h
 # End Source File
 # Begin Source File
 

@@ -56,11 +56,10 @@ class CMovementDetectionPage;
 #define MIN_DISKFREE_PERCENT				10			// Below this disk free percentage the oldest files are deleted
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
 #define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
-#define AUDIO_IN_MIN_BUF_SIZE				256			// bytes, must be a power of 2!
+#define AUDIO_IN_MIN_BUF_SIZE				256			// bytes
 #define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 														// (see CCaptureAudioThread::OpenInAudio())
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		8			// Number of audio buffers
-#define AUDIO_CAPTURE_THREAD_PRIORITY		THREAD_PRIORITY_ABOVE_NORMAL
  
 // Frame time, date and count display constants
 #define ADDFRAMETAG_REFFONTSIZE				9
@@ -711,7 +710,6 @@ public:
 			void CloseInAudio();
 			BOOL DataInAudio();
 			void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
-			CTime GetMeanLevelTime() const {return m_MeanLevelTime;}; // System Time When Mean Level Has Been Calculated
 
 			// Wave Formats
 			LPWAVEFORMATEX m_pSrcWaveFormat;
@@ -726,17 +724,10 @@ public:
 			
 		protected:
 			
-			// Thread Functions
+			// Thread Function
 			int Work();
-			void CalcMeanLevel(DWORD dwSize, LPBYTE pBuf);
-			__forceinline void CalcPeak(int nNumOfSamples,
-										int nNumOfChannels,
-										int nAudioBits, 
-										LPBYTE pBuf,
-										double& dPeakLeft,
-										double& dPeakRight);
 
-			// General Vars
+			// Vars
 			HWAVEIN m_hWaveIn;
 			CVideoDeviceDoc* m_pDoc;
 			WAVEINCAPS m_WaveInDevCaps;
@@ -744,17 +735,8 @@ public:
 			HANDLE m_hWaveInEvent;
 			HANDLE m_hEventArray[2];
 			unsigned int m_uiWaveInBufPos;
-			CTime m_MeanLevelTime; // System Time At Mean Level Calculation
-
-			// ACM
 			LPBYTE m_pUncompressedBuf[AUDIO_UNCOMPRESSED_BUFS_COUNT];
 			DWORD m_dwUncompressedBufSize;
-
-			// Buffers for Peak Meter
-			double m_dInLeft[AUDIO_IN_MIN_BUF_SIZE];
-			double m_dInRight[AUDIO_IN_MIN_BUF_SIZE];
-			double m_dOutRe[AUDIO_IN_MIN_BUF_SIZE];
-			double m_dOutIm[AUDIO_IN_MIN_BUF_SIZE];
 	};
 
 	// Http Get Frame Thread

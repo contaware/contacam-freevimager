@@ -1722,8 +1722,7 @@ void CVideoDeviceChildFrame::EndShutdown()
 	}
 
 	// The next step must happen last, because it sets to NULL
-	// the following pointers (used inside ProcessI420Frame()
-	// and the Audio Thread for the PeakMeter):
+	// the following pointers (used inside ProcessI420Frame()):
 	//
 	// m_pVideoDevicePropertySheet
 	// m_pGeneralPage

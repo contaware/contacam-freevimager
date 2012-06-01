@@ -10,12 +10,9 @@
 #ifdef VIDEODEVICEDOC
 
 #include "resource.h"
-#include "PeakMeterCtrl.h"
 #include "StaticLink.h"
 #include "NumSpinCtrl.h"
 #include "NumEdit.h"
-
-#define WM_PEAKMETER_UPDATE		WM_USER + 200
 
 // Forward Declaration
 class CVideoDeviceDoc;
@@ -48,7 +45,6 @@ public:
 	CSliderCtrl	m_RecVolumeLeft;
 	CNumEdit	m_FrameRate;
 	CNumSpinCtrl m_SpinFrameRate;
-	CPeakMeterCtrl	m_PeakMeter;
 	CTime	m_SchedulerOnceDateStart;
 	CTime	m_SchedulerOnceTimeStart;
 	CTime	m_SchedulerOnceTimeStop;
@@ -110,7 +106,6 @@ protected:
 	afx_msg void OnCheckAutoopen();
 	//}}AFX_MSG
 	afx_msg LRESULT OnMixerCtrlChange(WPARAM wParam, LPARAM lParam);
-	afx_msg LONG OnPeakMeterUpdate(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 	CVideoDeviceDoc* m_pDoc;

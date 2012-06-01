@@ -19,7 +19,6 @@
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "FTPTransfer.h"
-#include "Fourier.h"
 #include "NetFrameHdr.h"
 #include "NetworkPage.h"
 #include "getdxver.h"
@@ -2127,7 +2126,6 @@ CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread()
 	m_hEventArray[0] = GetKillEvent();
 	m_hEventArray[1] = m_hWaveInEvent;
 	m_hWaveIn = NULL;
-	m_MeanLevelTime = (0,0,0,0);
 
 	// Audio Format set Default to: Mono , 11025 Hz , 8 bits
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
@@ -2214,7 +2212,7 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 		{
 			Kill();
 			m_Mixer.Close();
-			Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+			Start();
 		}
 
 		// Restart Save Frame List Thread
@@ -2287,15 +2285,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 										{
 											if (m_WaveHeader[m_uiWaveInBufPos].dwFlags & WHDR_DONE)
 											{
-												// If Video Audio Settings Page Opened and Visible
-												// -> Calculate Mean Level For Peak-Meter and Display it.
-												if (m_pDoc->m_pGeneralPage &&
-													m_pDoc->m_pGeneralPage->IsWindowVisible())
-												{
-													CalcMeanLevel(	m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded,
-																	m_pUncompressedBuf[m_uiWaveInBufPos]);
-												}
-
 												// Add samples to queue and limit its size
 												::EnterCriticalSection(&m_csAudioList);
 												UserBuf.m_dwSize = m_WaveHeader[m_uiWaveInBufPos].dwBytesRecorded;
@@ -2337,176 +2326,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 	CloseInAudio();
 
 	return 0;
-}
-
-//
-// Data format     Maximum value      Minimum value      Midpoint value 
-// 8-bit PCM     : 255 (0xFF)         0                  128 (0x80) 
-// 16-bit PCM    : 32,767 (0x7FFF)    -32,768 (0x8000)   0 
-//
-// 8-bit mono    : Each sample is 1 byte that corresponds to a single audio channel.
-//                 Sample 1 is followed by samples 2, 3, 4, and so on.  
-// 8-bit stereo  : Each sample is 2 bytes. Sample 1 is followed by samples 2, 3, 4, and so on.
-//                 For each sample, the first byte is channel 0 (the left channel)
-//                 and the second byte is channel 1 (the right channel). 
-// 16-bit mono   : Each sample is 2 bytes. Sample 1 is followed by samples 2, 3, 4, and so on.
-//                 For each sample, the first byte is the low-order byte of channel 0
-//                 and the second byte is the high-order byte of channel 0.
-// 16-bit stereo : Each sample is 4 bytes. Sample 1 is followed by samples 2, 3, 4, and so on.
-//                 For each sample, the first byte is the low-order byte of channel 0 (left channel);
-//                 the second byte is the high-order byte of channel 0;
-//                 the third byte is the low-order byte of channel 1 (right channel);
-//                 and the fourth byte is the high-order byte of channel 1. 
-//
-void CVideoDeviceDoc::CCaptureAudioThread::CalcMeanLevel(DWORD dwSize, LPBYTE pBuf)
-{
-	// Check
-	if (!m_pSrcWaveFormat || m_pSrcWaveFormat->nBlockAlign == 0)
-		return;
-
-	// Vars
-	double dPeakLeft = 0.0;
-	double dPeakRight = 0.0;
-	int nLevels[2];
-	int nBlockAlign = m_pSrcWaveFormat->nBlockAlign;
-	int nNumOfSamples = dwSize / nBlockAlign;	
-	int nNumOfChannels = m_pSrcWaveFormat->nChannels;
-	int nAudioBits = m_pSrcWaveFormat->wBitsPerSample;
-	
-	// Calc. max Peak
-	int nRep = nNumOfSamples / AUDIO_IN_MIN_BUF_SIZE;
-	for (int i = 0 ; i < nRep ; i++)
-	{
-		double dPL;
-		double dPR;
-		CalcPeak(AUDIO_IN_MIN_BUF_SIZE,
-				nNumOfChannels,
-				nAudioBits, 
-				pBuf,
-				dPL,
-				dPR);
-		dPeakLeft = max(dPeakLeft, dPL);
-		dPeakRight = max(dPeakRight, dPR);
-		pBuf += AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
-	}
-
-	// Clip Peak Levels
-	if (nNumOfChannels == 1)
-	{
-		nLevels[1] = nLevels[0] = MIN(100, Round(dPeakLeft));
-		if (nLevels[0] <= 10)
-			nLevels[1] = nLevels[0] = 0;
-	}
-	else
-	{
-		nLevels[0] = MIN(100, Round(dPeakLeft));
-		nLevels[1] = MIN(100, Round(dPeakRight));
-		if (nLevels[0] <= 10)
-			nLevels[0] = 0;
-		if (nLevels[1] <= 10)
-			nLevels[1] = 0;
-	}
-	
-	// Update Peak Meter
-	::PostMessage(	m_pDoc->m_pGeneralPage->GetSafeHwnd(),
-					WM_PEAKMETER_UPDATE,
-					(WPARAM)nLevels[0],
-					(LPARAM)nLevels[1]);
-
-	// Store Current Time to know the Age of a Mean Level
-	m_MeanLevelTime = CTime::GetCurrentTime();
-}
-
-__forceinline void CVideoDeviceDoc::CCaptureAudioThread::CalcPeak(	int nNumOfSamples,
-																	int nNumOfChannels,
-																	int nAudioBits, 
-																	LPBYTE pBuf,
-																	double& dPeakLeft,
-																	double& dPeakRight)
-{
-	// Vars
-	int i;
-	double dLeft;
-	double dRight;
-	int nValueLeft;
-	int nValueRight;
-
-	// Check
-	ASSERT(nNumOfSamples <= AUDIO_IN_MIN_BUF_SIZE);
-
-	// Reset
-	dPeakLeft = 0.0;
-	dPeakRight = 0.0;
-
-	// Copy audio signal to FFT Real Component
-	for (i = 0 ; i < nNumOfSamples ; i++)
-	{
-		if (nAudioBits == 8) // 8 bits
-		{
-			if (nNumOfChannels == 1) // Mono
-			{
-				nValueLeft = ((LPBYTE)(pBuf))[i];
-				nValueLeft -= 128;
-				m_dInLeft[i] = (double)nValueLeft * (32767.0 / 127.0); // To Have the same Levels as with 16 bits
-			}
-			else // Stereo
-			{
-				WORD wSample = ((LPWORD)(pBuf))[i];
-				nValueLeft = (int)(wSample & 0xFF);
-				nValueRight = (int)((wSample >> 8) & 0xFF);
-				nValueLeft -= 128;
-				nValueRight -= 128;
-				m_dInLeft[i] = (double)nValueLeft * (32767.0 / 127.0); // To Have the same Levels as with 16 bits
-				m_dInRight[i] = (double)nValueRight * (32767.0 / 127.0); // To Have the same Levels as with 16 bits
-			}
-		}
-		else // 16 bits
-		{
-			if (nNumOfChannels == 1) // Mono
-			{
-				nValueLeft = ((SHORT*)(pBuf))[i];
-				m_dInLeft[i] = (double)nValueLeft;
-			}
-			else // Stereo
-			{
-				DWORD dwSample = ((LPDWORD)(pBuf))[i];
-				nValueLeft = (SHORT)(dwSample & 0xFFFF);
-				nValueRight = (SHORT)((dwSample >> 16) & 0xFFFF);
-				m_dInLeft[i] = (double)nValueLeft;
-				m_dInRight[i] = (double)nValueRight;
-			}
-		}
-	}
-	
-	// FFT & Calc. Peak
-	// ignore i = 0 (DC Slot) and i = nNumOfSamples / 2 (Nyquist Slot)
-	if (nNumOfChannels == 1)
-	{
-		fft_double(nNumOfSamples, false, m_dInLeft, NULL, m_dOutRe, m_dOutIm);
-		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
-		{
-			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
-			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
-		}
-		dPeakLeft /= (nNumOfSamples * 100.0);
-	}
-	else
-	{
-		fft_double(nNumOfSamples, false, m_dInLeft, NULL, m_dOutRe, m_dOutIm);
-		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
-		{
-			dLeft = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
-			dPeakLeft = dLeft > dPeakLeft ? dLeft : dPeakLeft;
-		}
-		dPeakLeft /= (nNumOfSamples * 100.0);
-		fft_double(nNumOfSamples, false, m_dInRight, NULL, m_dOutRe, m_dOutIm);
-		for (i = 1 ; i < nNumOfSamples / 2 ; i++)
-		{
-			dRight = fabs(INTENSITY(m_dOutRe[i], m_dOutIm[i]));
-			dPeakRight = dRight > dPeakRight ? dRight : dPeakRight;
-		}
-		dPeakRight /= (nNumOfSamples * 100.0);
-	}
 }
 
 BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
@@ -6086,7 +5905,7 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 
 				// Start Audio Capture Thread
 				if (m_bCaptureAudio)
-					m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+					m_CaptureAudioThread.Start();
 
 				// Title
 				SetDocumentTitle();
@@ -6249,7 +6068,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+		m_CaptureAudioThread.Start();
 
 	return TRUE;
 }
@@ -6407,7 +6226,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+		m_CaptureAudioThread.Start();
 
 	return TRUE;
 }
@@ -6461,7 +6280,7 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+		m_CaptureAudioThread.Start();
 
 	// Update
 	if (m_bSizeToDoc)
@@ -6948,7 +6767,7 @@ void CVideoDeviceDoc::AudioFormatDialog()
 
 		// Start Audio Thread
 		if (m_bCaptureAudio)
-			m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+			m_CaptureAudioThread.Start();
 
 		// Restart Save Frame List Thread
 		m_SaveFrameListThread.Start();

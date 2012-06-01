@@ -1003,7 +1003,6 @@
 #define IDS_MULTILANG_1073              1073
 #define IDC_REC_AUDIO                   1073
 #define IDS_MULTILANG_1074              1074
-#define IDC_PEAKMETER                   1074
 #define IDS_MULTILANG_1075              1075
 #define IDC_REC_VOL_LEFT                1075
 #define IDS_MULTILANG_1076              1076

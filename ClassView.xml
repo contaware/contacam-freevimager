@@ -38,6 +38,7 @@
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
+<CLASS NAME="CAssistantDlg"/>
 <CLASS NAME="CAudioFormatDlg"/>
 <CLASS NAME="CAudioInSourceDlg"/>
 <CLASS NAME="CAudioOutDestinationDlg"/>
@@ -111,12 +112,11 @@
 <CLASS NAME="CXmpDlg"/>
 <CLASS NAME="CYesNoAllCancelDlg"/>
 <CLASS NAME="CZipProgressDlg"/>
-<CLASS NAME="CAssistantDlg"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Controls">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="25">
+<CLASSES COUNT="23">
 <CLASS NAME="CBkgColEdit"/>
 <CLASS NAME="CColorButton"/>
 <CLASS NAME="CColorButtonPicker"/>
@@ -131,8 +131,6 @@
 <CLASS NAME="CNumSpinCtrl"/>
 <CLASS NAME="COddButton"/>
 <CLASS NAME="CPaletteWnd"/>
-<CLASS NAME="CPeakMeterCtrl"/>
-<CLASS NAME="PeakMeterData"/>
 <CLASS NAME="CPrintPreviewScaleEdit"/>
 <CLASS NAME="CSeparatorComboBox"/>
 <CLASS NAME="CStaticLink"/>

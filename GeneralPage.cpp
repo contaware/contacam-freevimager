@@ -107,7 +107,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(MM_MIXM_CONTROL_CHANGE, OnMixerCtrlChange)
-	ON_MESSAGE(WM_PEAKMETER_UPDATE, OnPeakMeterUpdate)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -523,17 +522,6 @@ BOOL CGeneralPage::OnInitDialog()
 	else
 		pCheck->SetCheck(0);
 
-	// Initialize Peak-Meter Control
-	CStatic* pStatic = static_cast<CStatic*>(GetDlgItem(IDC_PEAKMETER));
-	ASSERT(pStatic != NULL);
-	CRect rc;
-	pStatic->GetWindowRect(rc);
-	pStatic->DestroyWindow(); // destroy previous window- was used for position
-	ScreenToClient(rc);
-	m_PeakMeter.Create(WS_CHILD|WS_VISIBLE|PMS_VERTICAL, rc, this, IDC_PEAKMETER);
-	m_PeakMeter.SetMeterBands(2, 15);
-	m_PeakMeter.Start(1000 / 25); // 25 fps
-
 	// Video Compressor Quality
 	m_VideoRecQuality.SetRange(2, 31);
 	m_VideoRecQuality.SetPageSize(5);
@@ -746,7 +734,7 @@ void CGeneralPage::OnRecAudio()
 	if (m_pDoc->m_bCaptureAudio)
 	{
 		m_pDoc->m_CaptureAudioThread.m_Mixer.Close();
-		m_pDoc->m_CaptureAudioThread.Start(AUDIO_CAPTURE_THREAD_PRIORITY);
+		m_pDoc->m_CaptureAudioThread.Start();
 	}
 	else
 		m_pDoc->m_CaptureAudioThread.Kill();
@@ -827,16 +815,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			pSlider->EnableWindow(TRUE);
 			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
 			pSlider->EnableWindow(TRUE);
-		}
-
-		// If Mean Level is Older Than a Second -> Set Peak Meter To Zero
-		CTime CurrentTime = CTime::GetCurrentTime();
-		CTimeSpan ElapsedTime = CurrentTime - m_pDoc->m_CaptureAudioThread.GetMeanLevelTime();
-		int Data[2];
-		if (ElapsedTime.GetTotalSeconds() > 1 || ElapsedTime.GetTotalSeconds() < 0)
-		{
-			Data[1] = Data[0] = 0;
-			m_PeakMeter.SetData(Data, 0, 2);
 		}
 
 		// Inconsistency Detection:
@@ -1112,15 +1090,6 @@ void CGeneralPage::OnRadioBitrate()
 void CGeneralPage::OnAudioInput() 
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();	
-}
-
-LONG CGeneralPage::OnPeakMeterUpdate(WPARAM wParam, LPARAM lParam)
-{
-	int nLevels[2];
-	nLevels[0] = (DWORD)wParam;
-	nLevels[1] = (DWORD)lParam;
-	m_PeakMeter.SetData(nLevels, 0, 2);
-	return 0;
 }
 
 LRESULT CGeneralPage::OnMixerCtrlChange(WPARAM wParam, LPARAM lParam)
