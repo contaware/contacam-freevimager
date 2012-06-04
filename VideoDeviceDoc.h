@@ -646,77 +646,16 @@ public:
 	class CCaptureAudioThread : public CWorkerThread
 	{
 		public:
-			class CMixerIn
-			{
-				public:
-					CMixerIn();
-					virtual ~CMixerIn();
-					BOOL Open(HWAVEIN hWaveIn, HWND hWndCallBack = NULL);
-					void Close();
-					BOOL IsOpen() {return (m_hMixer != NULL);};
-					BOOL IsWithWndHandleOpen() {return ((m_hMixer != NULL) && (m_hWndMixerCallback != NULL));};
-					HMIXER GetHandle() const {return m_hMixer;};
-					DWORD GetMux() const;		// Get Current Selected Source
-					DWORD GetMuxControlID() const {return m_dwMuxControlID;};
-					BOOL GetDstMute(BOOL bForceMono = FALSE) const;
-					BOOL GetSrcMute(BOOL bForceMono = FALSE) const;
-					BOOL GetDstVolume(DWORD& dwVolumeLeft, DWORD& dwVolumeRight) const;
-					BOOL GetSrcVolume(DWORD& dwVolumeLeft, DWORD& dwVolumeRight) const;
-					BOOL SetDstVolume(DWORD dwVolumeLeft, DWORD dwVolumeRight);
-					BOOL SetSrcVolume(DWORD dwVolumeLeft, DWORD dwVolumeRight);
-					DWORD GetDstVolumeControlMin() const {return m_dwVolumeControlMin;};
-					DWORD GetDstVolumeControlMax() const {return m_dwVolumeControlMax;};
-					DWORD GetSrcVolumeControlMin() const;
-					DWORD GetSrcVolumeControlMax() const;
-					DWORD GetDstVolumeControlID() const {return m_dwVolumeControlID;};
-					DWORD GetSrcVolumeControlID() const;
-					DWORD GetDstMuteControlID() const {return m_dwMuteControlID;};
-					DWORD GetSrcMuteControlID() const;
-					DWORD GetDstNumOfChannels() const;
-					DWORD GetSrcNumOfChannels() const;
-
-				protected:
-					HMIXER m_hMixer;
-					HWND m_hWndMixerCallback;
-					UINT m_uiMixerID;
-					DWORD m_dwVolumeControlID;
-					DWORD m_dwMuteControlID;
-					LPDWORD m_pVolumeControlID;
-					LPDWORD m_pMuteControlID;
-					DWORD m_dwVolumeControlMin;
-					DWORD m_dwVolumeControlMax;
-					LPDWORD m_pVolumeControlMin;
-					LPDWORD m_pVolumeControlMax;
-					DWORD m_dwMuxControlID;
-					DWORD m_dwMuxControlMin;
-					DWORD m_dwMuxControlMax;
-					DWORD m_dwMuxMultipleItems;
-					DWORD m_dwSourcesCount;
-					DWORD m_dwChannels;
-					LPDWORD m_pChannels;
-					LPDWORD m_pLineID;
-			};
-
-			// General Functions
+			// Functions
 			CCaptureAudioThread();
 			virtual ~CCaptureAudioThread();
 			void AudioInSourceDialog();
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			void SetDeviceID(UINT uiDeviceID) {m_pDoc->m_dwCaptureAudioDeviceID = uiDeviceID;};
-			UINT GetDeviceID() const {return m_pDoc->m_dwCaptureAudioDeviceID;};
-			HWAVEIN GetWaveHandle() const {return m_hWaveIn;};
-			BOOL IsOpen() const {return (m_hWaveIn != NULL);};
-			BOOL OpenInAudio();
-			void CloseInAudio();
-			BOOL DataInAudio();
 			static void WaveInitFormat(WORD wCh, DWORD dwSampleRate, WORD wBitsPerSample, LPWAVEFORMATEX pWaveFormat);
 
 			// Wave Formats
 			LPWAVEFORMATEX m_pSrcWaveFormat;
 			LPWAVEFORMATEX m_pDstWaveFormat;
-
-			// Input Mixer Var
-			CMixerIn m_Mixer;
 
 			// Audio list
 			CDib::USERLIST m_AudioList;
@@ -724,8 +663,11 @@ public:
 			
 		protected:
 			
-			// Thread Function
+			// Functions
 			int Work();
+			BOOL OpenInAudio();
+			void CloseInAudio();
+			BOOL DataInAudio();
 
 			// Vars
 			HWAVEIN m_hWaveIn;

@@ -2188,12 +2188,11 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 		if (m_pDoc->m_pAVRec)
 			m_pDoc->CaptureRecord();
 
-		// Stop and Restart Capture Audio Thread
-		SetDeviceID(dlg.m_uiDeviceID);
+		// Set new ID, Stop and Restart Capture Audio Thread
+		m_pDoc->m_dwCaptureAudioDeviceID = dlg.m_uiDeviceID;
 		if (m_pDoc->m_bCaptureAudio)
 		{
 			Kill();
-			m_Mixer.Close();
 			Start();
 		}
 
@@ -2223,9 +2222,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 	// Open Audio
 	if (!OpenInAudio())
 		return 0;
-
-	// Reset The Open Event
-	::ResetEvent(m_hWaveInEvent);
 
 	// Start Buffering
 	CUserBuf UserBuf;
@@ -2312,8 +2308,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 
 BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 {
-	MMRESULT res;
-
 	// Check Wave Format Pointers
 	if (!m_pSrcWaveFormat || !m_pDstWaveFormat)
 		return FALSE;
@@ -2334,8 +2328,9 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 		m_pDoc->m_dwCaptureAudioDeviceID = 0;
 
 	// Test for Audio In availability
-	res = ::waveInGetDevCaps(m_pDoc->m_dwCaptureAudioDeviceID, &m_WaveInDevCaps, sizeof(WAVEINCAPS));
-	if (res != MMSYSERR_NOERROR)
+	if (::waveInGetDevCaps(	m_pDoc->m_dwCaptureAudioDeviceID,
+							&m_WaveInDevCaps,
+							sizeof(WAVEINCAPS)) != MMSYSERR_NOERROR)
 	{
 	   ::AfxMessageBox(ML_STRING(1355, "Sound Input Cannot Determine Card Capabilities!"));
 	   return FALSE;
@@ -2375,20 +2370,23 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 			m_dwUncompressedBufSize += nFrameSize - nRemainder;
 	}
 
-	// Open Input
-	res = ::waveInOpen(	&m_hWaveIn,
+	// Open Input 
+	if (::waveInOpen(	&m_hWaveIn,
 						m_pDoc->m_dwCaptureAudioDeviceID,
 						m_pSrcWaveFormat,
 						(DWORD)m_hWaveInEvent,
 						NULL,
-						CALLBACK_EVENT); 
-	if (res != MMSYSERR_NOERROR)
+						CALLBACK_EVENT) != MMSYSERR_NOERROR)
 	{
+		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
         ::AfxMessageBox(ML_STRING(1459, "Sound Input Cannot Open Device!"));
 	    return FALSE;
 	}
-
-	return TRUE;
+	else
+	{
+		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
+		return TRUE;
+	}
 }
 
 void CVideoDeviceDoc::CCaptureAudioThread::CloseInAudio()
@@ -2397,8 +2395,7 @@ void CVideoDeviceDoc::CCaptureAudioThread::CloseInAudio()
 	{
 		::waveInClose(m_hWaveIn);
 		m_hWaveIn = NULL;
-		// Reset The Close Event
-		::ResetEvent(m_hWaveInEvent);
+		::ResetEvent(m_hWaveInEvent); // Reset The Close Event
 	}
 }
 
@@ -2447,689 +2444,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 	m_uiWaveInBufPos = (m_uiWaveInBufPos + 1) % AUDIO_UNCOMPRESSED_BUFS_COUNT;
 
 	return TRUE;
-}
-
-CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::CMixerIn()
-{
-	m_hMixer = NULL;
-	m_hWndMixerCallback =	NULL;
-	m_uiMixerID =			0xFFFFFFFF;
-	m_dwChannels =			0;
-	m_pChannels =			NULL;
-	m_pLineID =				NULL;
-	m_dwVolumeControlID =	0xFFFFFFFF;
-	m_dwMuteControlID =		0xFFFFFFFF;
-	m_pVolumeControlID =	NULL;
-	m_pMuteControlID =		NULL;
-	m_dwMuxControlID =		0xFFFFFFFF;
-	m_dwMuxMultipleItems =	0;
-	m_dwVolumeControlMin =	0;
-	m_dwVolumeControlMax =	0;
-	m_pVolumeControlMin =	NULL;
-	m_pVolumeControlMax =	NULL;
-	m_dwMuxControlMin =		0;
-	m_dwMuxControlMax =		0;
-	m_dwSourcesCount =		0;
-}
-
-CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::~CMixerIn()
-{
-	Close();
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::Open(HWAVEIN hWaveIn, HWND hWndCallBack/*=NULL*/)
-{
-	MMRESULT res;
-	int dest;
-	int source;
-
-	if (hWaveIn == NULL)
-		return FALSE;
-
-	res = ::mixerGetID((HMIXEROBJ)hWaveIn, &m_uiMixerID, MIXER_OBJECTF_HWAVEIN);
-	if (res != MMSYSERR_NOERROR)
-	{
-		TRACE(_T("Sound Input Mixer Is Not Available\n"));
-		return FALSE;
-	}
-
-	MIXERCAPS MixerCaps;
-	res = ::mixerGetDevCaps(m_uiMixerID, &MixerCaps, sizeof(MIXERCAPS));
-	if (res != MMSYSERR_NOERROR)
-	{
-		TRACE(_T("Sound Input Mixer Cannot Get Mixer Capabilities\n"));
-		return FALSE;
-	}
-
-	// Close It if Already Open
-	if (m_hMixer)
-		Close();
-
-	// Open Mixer
-	if (hWndCallBack == NULL)
-		res = ::mixerOpen(&m_hMixer, m_uiMixerID, 0, 0L, MIXER_OBJECTF_MIXER | CALLBACK_NULL);
-	else
-		res = ::mixerOpen(&m_hMixer, m_uiMixerID, DWORD(hWndCallBack), 0L, MIXER_OBJECTF_MIXER | CALLBACK_WINDOW);
-	if (res != MMSYSERR_NOERROR)
-	{
-		TRACE(_T("Sound Input Mixer Cannot Be Opened\n"));
-		return FALSE;
-	}
-
-	// Store Callback Window Handle
-	m_hWndMixerCallback = hWndCallBack;
-
-	// Mixer Vars
-	MIXERLINE mxl;
-	MIXERLINECONTROLS mxlc;
-	MIXERCONTROL mxc;
-	mxl.cbStruct = sizeof(MIXERLINE);
-	mxlc.cbStruct = sizeof(MIXERLINECONTROLS);
-	mxc.cbStruct = sizeof(MIXERCONTROL);
-
-	// Find The Wave In Destination
-	for (dest = 0 ; dest < (int)(MixerCaps.cDestinations) ; dest++)
-	{
-		mxl.dwSource = 0xFFFFFFF; // Not Used
-		mxl.dwDestination = dest;
-		res = ::mixerGetLineInfo((HMIXEROBJ)m_hMixer, &mxl, MIXER_GETLINEINFOF_DESTINATION);
-		if (res != MMSYSERR_NOERROR)
-		{
-			TRACE(_T("Sound Input Cannot Get Line Information\n"));
-			return FALSE;
-		}
-
-		if (mxl.dwComponentType == MIXERLINE_COMPONENTTYPE_DST_WAVEIN)
-			break;
-	}
-
-	// Number Of Channels
-	m_dwChannels = mxl.cChannels;
-
-	// Volume Destination Control
-	mxlc.dwLineID = mxl.dwLineID;
-	mxlc.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
-	mxlc.cControls = 1;
-	mxlc.cbmxctrl = sizeof(MIXERCONTROL);
-	mxlc.pamxctrl = &mxc;
-	res = ::mixerGetLineControls((HMIXEROBJ)m_hMixer, &mxlc, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE);
-	if (res == MMSYSERR_NOERROR)
-	{
-		m_dwVolumeControlID = mxc.dwControlID;
-		m_dwVolumeControlMin = mxc.Bounds.dwMinimum;
-		m_dwVolumeControlMax = mxc.Bounds.dwMaximum;
-	}
-
-	// Mute Destination Control
-	mxlc.dwLineID = mxl.dwLineID;
-	mxlc.dwControlType = MIXERCONTROL_CONTROLTYPE_MUTE;
-	mxlc.cControls = 1;
-	mxlc.cbmxctrl = sizeof(MIXERCONTROL);
-	mxlc.pamxctrl = &mxc;
-	res = ::mixerGetLineControls((HMIXEROBJ)m_hMixer, &mxlc, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE);
-	if (res == MMSYSERR_NOERROR)
-	{
-		m_dwMuteControlID = mxc.dwControlID;
-	}
-
-	// Mux Destination Control
-	mxlc.dwLineID = mxl.dwLineID;
-	mxlc.dwControlType = MIXERCONTROL_CONTROLTYPE_MUX;
-	mxlc.cControls = 1;
-	mxlc.cbmxctrl = sizeof(MIXERCONTROL);
-	mxlc.pamxctrl = &mxc;
-	res = ::mixerGetLineControls((HMIXEROBJ)m_hMixer, &mxlc, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE);
-	if (res == MMSYSERR_NOERROR)
-	{
-		m_dwMuxControlID = mxc.dwControlID;
-		m_dwMuxControlMin = mxc.Bounds.dwMinimum;
-		m_dwMuxControlMax = mxc.Bounds.dwMaximum;
-		m_dwMuxMultipleItems = mxc.cMultipleItems;
-	}
-
-	// Source Connections
-	m_dwSourcesCount = mxl.cConnections;
-	if (m_dwSourcesCount > 0)
-	{
-		if (m_pChannels) delete [] m_pChannels;
-		m_pChannels = new DWORD[m_dwSourcesCount];
-
-		if (m_pLineID) delete [] m_pLineID;
-		m_pLineID = new DWORD[m_dwSourcesCount];
-
-		if (m_pVolumeControlID) 
-		{
-			delete [] m_pVolumeControlID;
-			m_pVolumeControlID = NULL;
-		}
-	
-		if (m_pMuteControlID) 
-		{
-			delete [] m_pMuteControlID;
-			m_pMuteControlID = NULL;
-		}
-
-		if (m_pVolumeControlMin) 
-		{
-			delete [] m_pVolumeControlMin;
-			m_pVolumeControlMin = NULL;
-		}
-
-		if (m_pVolumeControlMax) 
-		{
-			delete [] m_pVolumeControlMax;
-			m_pVolumeControlMax = NULL;
-		}
-	}
-	for (source = 0 ; source < (int)m_dwSourcesCount ; source++)
-	{
-		mxl.dwSource = source;
-		mxl.dwDestination = dest;
-		res = ::mixerGetLineInfo((HMIXEROBJ)m_hMixer, &mxl, MIXER_GETLINEINFOF_SOURCE);
-		if (res != MMSYSERR_NOERROR)
-		{
-			TRACE(_T("Sound Input Cannot Get Line Information\n"));
-			return FALSE;
-		}
-
-		// Number Of Channels
-		m_pChannels[source] = mxl.cChannels;
-
-		// Line Id
-		m_pLineID[source] = mxl.dwLineID;
-
-		// Volume Source Controls
-		mxlc.dwLineID = mxl.dwLineID;
-		mxlc.dwControlType = MIXERCONTROL_CONTROLTYPE_VOLUME;
-		mxlc.cControls = 1;
-		mxlc.cbmxctrl = sizeof(MIXERCONTROL);
-		mxlc.pamxctrl = &mxc;
-		res = ::mixerGetLineControls((HMIXEROBJ)m_hMixer, &mxlc, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE);
-		if (res == MMSYSERR_NOERROR)
-		{
-			if (m_pVolumeControlID == NULL)
-				m_pVolumeControlID = new DWORD[m_dwSourcesCount];
-			m_pVolumeControlID[source] = mxc.dwControlID;
-
-			if (m_pVolumeControlMin == NULL)
-				m_pVolumeControlMin = new DWORD[m_dwSourcesCount];
-			m_pVolumeControlMin[source] = mxc.Bounds.dwMinimum;
-
-			if (m_pVolumeControlMax == NULL)
-				m_pVolumeControlMax = new DWORD[m_dwSourcesCount];
-			m_pVolumeControlMax[source] = mxc.Bounds.dwMaximum;
-		}
-
-		// Mute Source Controls
-		mxlc.dwLineID = mxl.dwLineID;
-		mxlc.dwControlType = MIXERCONTROL_CONTROLTYPE_MUTE;
-		mxlc.cControls = 1;
-		mxlc.cbmxctrl = sizeof(MIXERCONTROL);
-		mxlc.pamxctrl = &mxc;
-		res = ::mixerGetLineControls((HMIXEROBJ)m_hMixer, &mxlc, MIXER_OBJECTF_HMIXER | MIXER_GETLINECONTROLSF_ONEBYTYPE);
-		if (res == MMSYSERR_NOERROR)
-		{
-			if (m_pMuteControlID == NULL)
-				m_pMuteControlID = new DWORD[m_dwSourcesCount];
-			m_pMuteControlID[source] = mxc.dwControlID;
-		}
-	}
-
-	return TRUE;
-}
-
-void CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::Close()
-{
-	if (m_hMixer)
-	{
-		::mixerClose(m_hMixer);
-		m_hMixer = NULL;
-	}
-	m_hWndMixerCallback =	NULL;
-	m_uiMixerID =			0xFFFFFFFF;
-	m_dwChannels =			0;
-	m_dwVolumeControlID =	0xFFFFFFFF;
-	m_dwMuxControlID =		0xFFFFFFFF;
-	m_dwMuteControlID =		0xFFFFFFFF;
-	m_dwVolumeControlMin =	0;
-	m_dwVolumeControlMax =	0;
-	m_dwMuxControlMin =		0;
-	m_dwMuxControlMax =		0;
-	if (m_pChannels)
-	{
-		delete [] m_pChannels;
-		m_pChannels = NULL;
-	}
-	if (m_pLineID)
-	{
-		delete [] m_pLineID;
-		m_pLineID = NULL;
-	}
-	if (m_pVolumeControlID)
-	{
-		delete [] m_pVolumeControlID;
-		m_pVolumeControlID = NULL;
-	}
-	if (m_pMuteControlID)
-	{
-		delete [] m_pMuteControlID;
-		m_pMuteControlID = NULL;
-	}
-	if (m_pVolumeControlMin)
-	{
-		delete [] m_pVolumeControlMin;
-		m_pVolumeControlMin = NULL;
-	}
-	if (m_pVolumeControlMax)
-	{
-		delete [] m_pVolumeControlMax;
-		m_pVolumeControlMax = NULL;
-	}
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetMux() const
-{
-	MMRESULT res;
-	MIXERCONTROLDETAILS mxcd;
-
-	if (m_hMixer == NULL)
-		return 0;
-
-	if (m_dwMuxControlID == 0xFFFFFFFF)
-		return 0;
-	
-	// Mux List Text, m_dwChannels in the allocation size is not needed,
-	// but I found some cards which wrote some bytes after the last list text label
-	// -> Better to follow the specifications and use also the channel size!
-	LPMIXERCONTROLDETAILS_LISTTEXT mxcd_listtext = new MIXERCONTROLDETAILS_LISTTEXT[m_dwChannels * m_dwMuxMultipleItems];
-	mxcd.cbStruct = sizeof(mxcd);
-	mxcd.dwControlID = m_dwMuxControlID;
-	mxcd.cChannels = m_dwChannels;
-	mxcd.cMultipleItems = m_dwMuxMultipleItems;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_LISTTEXT);
-	mxcd.paDetails = mxcd_listtext;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_LISTTEXT);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_listtext;
-		return 0;
-	}
-
-	// Mux Value, same like above for m_dwChannels!
-	LPMIXERCONTROLDETAILS_BOOLEAN mxcd_bool = new MIXERCONTROLDETAILS_BOOLEAN[m_dwChannels * m_dwMuxMultipleItems]; 
-	mxcd.cbStruct = sizeof(mxcd);
-	mxcd.dwControlID = m_dwMuxControlID;
-	mxcd.cChannels = m_dwChannels;
-	mxcd.cMultipleItems = m_dwMuxMultipleItems;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_BOOLEAN);
-	mxcd.paDetails = mxcd_bool;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_listtext;
-		delete [] mxcd_bool;
-		return 0;
-	}
-	
-	for (int i = 0 ; i < (int)m_dwMuxMultipleItems ; i++)
-	{
-		if (mxcd_bool[i].fValue)
-		{
-			for (int j = 0 ; j < (int)m_dwMuxMultipleItems ; j++)
-			{
-				// dwParam1 is the LineID and dwParam2 is the ComponentType
-				if (mxcd_listtext[i].dwParam1 == m_pLineID[j])
-				{
-					delete [] mxcd_listtext;
-					delete [] mxcd_bool;
-					return j;
-				}
-			}
-		}
-	}
-
-	// Should Never Reach Here, But You Never Know...
-	delete [] mxcd_listtext;
-	delete [] mxcd_bool;
-	return 0;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcVolumeControlID() const
-{
-	if (m_pVolumeControlID)
-		return m_pVolumeControlID[GetMux()];
-	else
-		return 0xFFFFFFFF;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcVolumeControlMin() const
-{
-	if (m_pVolumeControlMin)
-		return m_pVolumeControlMin[GetMux()];
-	else
-		return 0;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcVolumeControlMax() const 
-{
-	if (m_pVolumeControlMax)
-		return m_pVolumeControlMax[GetMux()];
-	else
-		return 0;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcMuteControlID() const
-{
-	if (m_pMuteControlID)
-		return m_pMuteControlID[GetMux()];
-	else
-		return 0xFFFFFFFF;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetDstNumOfChannels() const
-{
-	if (m_dwVolumeControlID != 0xFFFFFFFF)
-		return m_dwChannels;
-	else
-		return 0;
-}
-
-DWORD CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcNumOfChannels() const
-{
-	if (m_pChannels)
-		return m_pChannels[GetMux()];
-	else
-		return 0;
-}
-
-// Some controls are stereo (2 channels), but work only if queried with mono (1 channel).
-// This is the purpose of the bForceMono parameter
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetDstMute(BOOL bForceMono/*=FALSE*/) const
-{
-	MMRESULT res;
-	BOOL bMute;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-
-	if (m_hMixer == NULL)
-		return FALSE;
-
-	if (m_dwMuteControlID != 0xFFFFFFFF)
-	{
-		mxcd.dwControlID = m_dwMuteControlID;
-		if (bForceMono)
-			mxcd.cChannels = 1;
-		else
-			mxcd.cChannels = m_dwChannels;
-	}
-	else
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_BOOLEAN mxcd_bool = new MIXERCONTROLDETAILS_BOOLEAN[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_BOOLEAN);
-	mxcd.paDetails = mxcd_bool;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_bool;
-		if (!bForceMono)
-			return GetDstMute(TRUE);
-		else
-			return FALSE;
-	}
-	if (mxcd.cChannels >= 1)
-	{
-		bMute = (BOOL)(mxcd_bool[0].fValue);
-		delete [] mxcd_bool;
-		return bMute;
-	}
-	
-	delete [] mxcd_bool;
-	return FALSE;
-}
-
-// Some controls are stereo (2 channels), but work only if queried with mono (1 channel).
-// This is the purpose of the bForceMono parameter
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcMute(BOOL bForceMono/*=FALSE*/) const
-{
-	MMRESULT res;
-	BOOL bMute;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-	
-	if (m_hMixer == NULL)
-		return FALSE;
-
-	if (m_pMuteControlID)
-	{
-		mxcd.dwControlID = m_pMuteControlID[GetMux()];
-		if (bForceMono)
-			mxcd.cChannels = 1;
-		else
-			mxcd.cChannels = m_pChannels[GetMux()];
-	}
-	else
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_BOOLEAN mxcd_bool = new MIXERCONTROLDETAILS_BOOLEAN[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_BOOLEAN);
-	mxcd.paDetails = mxcd_bool;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_bool;
-		if (!bForceMono)
-			return GetSrcMute(TRUE);
-		else
-			return FALSE;
-	}
-	if (mxcd.cChannels >= 1)
-	{
-		bMute = (BOOL)(mxcd_bool[0].fValue);
-		delete [] mxcd_bool;
-		return bMute;
-	}
-	
-	delete [] mxcd_bool;
-	return FALSE;
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetDstVolume(DWORD& dwVolumeLeft, DWORD& dwVolumeRight) const
-{
-	MMRESULT res;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-	
-	if (m_hMixer == NULL)
-		return FALSE;
-
-	if (m_dwVolumeControlID != 0xFFFFFFFF)
-	{
-		mxcd.dwControlID = m_dwVolumeControlID;
-		mxcd.cChannels = m_dwChannels;
-	}
-	else
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_UNSIGNED mxcd_u = new MIXERCONTROLDETAILS_UNSIGNED[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_UNSIGNED);
-	mxcd.paDetails = mxcd_u;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	if (mxcd.cChannels == 1) // Mono
-	{
-		dwVolumeLeft = mxcd_u[0].dwValue;
-		dwVolumeRight = mxcd_u[0].dwValue;
-		
-	}
-	else if (mxcd.cChannels > 1) // Stereo or More Channels
-	{
-		dwVolumeLeft = mxcd_u[0].dwValue;
-		dwVolumeRight = mxcd_u[1].dwValue;
-	}
-	delete [] mxcd_u;
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::GetSrcVolume(DWORD& dwVolumeLeft, DWORD& dwVolumeRight) const
-{
-	MMRESULT res;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-	
-	if (m_hMixer == NULL)
-		return FALSE;
-
-	if (m_pVolumeControlID)
-	{
-		mxcd.dwControlID = m_pVolumeControlID[GetMux()];
-		mxcd.cChannels = m_pChannels[GetMux()];
-	}
-	else
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_UNSIGNED mxcd_u = new MIXERCONTROLDETAILS_UNSIGNED[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_UNSIGNED);
-	mxcd.paDetails = mxcd_u;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	if (mxcd.cChannels == 1) // Mono
-	{
-		dwVolumeLeft = mxcd_u[0].dwValue;
-		dwVolumeRight = mxcd_u[0].dwValue;
-		
-	}
-	else if (mxcd.cChannels > 1) // Stereo or More Channels
-	{
-		dwVolumeLeft = mxcd_u[0].dwValue;
-		dwVolumeRight = mxcd_u[1].dwValue;
-	}
-	delete [] mxcd_u;
-	return TRUE;
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetDstVolume(DWORD dwVolumeLeft, DWORD dwVolumeRight)
-{
-	MMRESULT res;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-
-	if (m_hMixer == NULL)
-		return FALSE;
-		
-	if (m_dwVolumeControlID != 0xFFFFFFFF)
-	{
-		mxcd.dwControlID = m_dwVolumeControlID;
-		mxcd.cChannels = m_dwChannels;
-	}
-	else
-		return FALSE;
-
-	if ((dwVolumeLeft > m_dwVolumeControlMax) ||
-		(dwVolumeLeft < m_dwVolumeControlMin) ||
-		(dwVolumeRight > m_dwVolumeControlMax) ||
-		(dwVolumeRight < m_dwVolumeControlMin))
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_UNSIGNED mxcd_u = new MIXERCONTROLDETAILS_UNSIGNED[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_UNSIGNED);
-	mxcd.paDetails = mxcd_u;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res) 
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	if (mxcd.cChannels == 1) // Mono
-	{
-		DWORD dwValueMono = (dwVolumeLeft + dwVolumeRight) / 2;
-		mxcd_u[0].dwValue  = dwValueMono;
-	}
-	else if (mxcd.cChannels > 1) // Stereo or More Channels
-	{
-		mxcd_u[0].dwValue  = dwVolumeLeft;
-		mxcd_u[1].dwValue  = dwVolumeRight;
-	}
-	res = ::mixerSetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_SETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	else
-	{
-		delete [] mxcd_u;
-		return TRUE;
-	}
-}
-
-BOOL CVideoDeviceDoc::CCaptureAudioThread::CMixerIn::SetSrcVolume(DWORD dwVolumeLeft, DWORD dwVolumeRight)
-{
-	MMRESULT res;
-	MIXERCONTROLDETAILS mxcd;
-	mxcd.cbStruct = sizeof(mxcd);
-
-	if (m_hMixer == NULL)
-		return FALSE;
-		
-	if (m_pVolumeControlID)
-	{
-		mxcd.dwControlID = m_pVolumeControlID[GetMux()];
-		mxcd.cChannels = m_pChannels[GetMux()];
-	}
-	else
-		return FALSE;
-
-	if ((dwVolumeLeft > m_pVolumeControlMax[GetMux()]) ||
-		(dwVolumeLeft < m_pVolumeControlMin[GetMux()]) ||
-		(dwVolumeRight > m_pVolumeControlMax[GetMux()]) ||
-		(dwVolumeRight < m_pVolumeControlMin[GetMux()]))
-		return FALSE;
-
-	LPMIXERCONTROLDETAILS_UNSIGNED mxcd_u = new MIXERCONTROLDETAILS_UNSIGNED[mxcd.cChannels];
-	mxcd.cMultipleItems = 0;
-	mxcd.cbDetails = sizeof(MIXERCONTROLDETAILS_UNSIGNED);
-	mxcd.paDetails = mxcd_u;
-	res = ::mixerGetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_GETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res) 
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	if (mxcd.cChannels == 1) // Mono
-	{
-		DWORD dwValueMono = (dwVolumeLeft + dwVolumeRight) / 2;
-		mxcd_u[0].dwValue  = dwValueMono;
-	}
-	else if (mxcd.cChannels > 1) // Stereo or More Channels
-	{
-		mxcd_u[0].dwValue  = dwVolumeLeft;
-		mxcd_u[1].dwValue  = dwVolumeRight;
-	}
-	res = ::mixerSetControlDetails((HMIXEROBJ)m_hMixer, &mxcd, MIXER_SETCONTROLDETAILSF_VALUE);
-	if (MMSYSERR_NOERROR != res)
-	{
-		delete [] mxcd_u;
-		return FALSE;
-	}
-	else
-	{
-		delete [] mxcd_u;
-		return TRUE;
-	}
 }
 
 void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
@@ -6711,10 +6025,7 @@ void CVideoDeviceDoc::AudioFormatDialog()
 
 		// Stop Audio Thread
 		if (m_bCaptureAudio)
-		{
 			m_CaptureAudioThread.Kill();
-			m_CaptureAudioThread.m_Mixer.Close();
-		}
 
 		// Copy from Dialog to Doc
 		if (m_CaptureAudioThread.m_pSrcWaveFormat && m_CaptureAudioThread.m_pDstWaveFormat)

@@ -1640,17 +1640,13 @@ BEGIN
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,107,67,14
     PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,100,107,81,14
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,144,38,10
-    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,97,141,84,14
-    CONTROL         "Slider1",IDC_REC_VOL_LEFT,"msctls_trackbar32",
-                    TBS_NOTICKS | WS_TABSTOP,33,158,98,16
-    CONTROL         "Slider1",IDC_REC_VOL_RIGHT,"msctls_trackbar32",TBS_TOP | 
-                    TBS_NOTICKS | WS_TABSTOP,33,181,98,16
-    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,141,160,40,14
-    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,141,178,40,15
+                    WS_TABSTOP,13,149,38,10
+    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,100,147,81,16
+    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,167,67,16
+    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,100,167,81,16
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,217,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,99,215,82,67,CBS_DROPDOWNLIST | 
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,214,81,10
+    COMBOBOX        IDC_TIME_SEGMENTATION,99,212,82,67,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,254,22,149,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1697,12 +1693,9 @@ BEGIN
     LTEXT           "frames/sec",IDC_STATIC2183,132,14,40,8
     LTEXT           "Set Framerate:",IDC_STATIC2155,13,14,47,8
     GROUPBOX        "Video Source",IDC_STATIC2156,7,2,180,126
-    GROUPBOX        "Audio",IDC_STATIC2157,7,133,180,67
-    LTEXT           "Left",IDC_STATIC2158,13,161,13,8
-    LTEXT           "Right",IDC_STATIC2159,13,185,18,8
+    GROUPBOX        "Audio",IDC_STATIC2157,7,135,180,56
     EDITTEXT        IDC_RECORD_SAVEAS_PATH,107,238,284,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
-    CTEXT           "",IDC_VOLUME_MUTED,49,172,66,10,SS_CENTERIMAGE
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
@@ -1725,7 +1718,7 @@ BEGIN
     LTEXT           "Process Frame Time:",IDC_STATIC2172,13,49,67,8
     RTEXT           "",IDC_PROCESS_TIME,91,49,37,8
     LTEXT           "ms",IDC_STATIC2173,132,49,10,8
-    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,205,180,28
+    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,198,180,35
     LTEXT           "Compression:",IDC_STATIC2177,204,24,41,8
     LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,66,17,11
     LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,67,30,8
@@ -4779,13 +4772,8 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 409
         VERTGUIDE, 13
-        VERTGUIDE, 22
-        VERTGUIDE, 34
-        VERTGUIDE, 42
         VERTGUIDE, 80
-        VERTGUIDE, 91
-        VERTGUIDE, 104
-        VERTGUIDE, 109
+        VERTGUIDE, 100
         VERTGUIDE, 128
         VERTGUIDE, 132
         VERTGUIDE, 146
@@ -4793,23 +4781,8 @@ BEGIN
         VERTGUIDE, 196
         VERTGUIDE, 204
         VERTGUIDE, 282
-        VERTGUIDE, 296
-        VERTGUIDE, 349
-        VERTGUIDE, 379
         VERTGUIDE, 402
         TOPMARGIN, 2
-        HORZGUIDE, 12
-        HORZGUIDE, 23
-        HORZGUIDE, 31
-        HORZGUIDE, 42
-        HORZGUIDE, 53
-        HORZGUIDE, 64
-        HORZGUIDE, 82
-        HORZGUIDE, 100
-        HORZGUIDE, 180
-        HORZGUIDE, 198
-        HORZGUIDE, 244
-        HORZGUIDE, 259
     END
 
     IDD_RESIZING, DIALOG

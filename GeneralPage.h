@@ -41,8 +41,6 @@ public:
 	enum { IDD = IDD_GENERAL };
 	CSliderCtrl	m_VideoRecQuality;
 	CComboBox	m_VideoCompressionChoose;
-	CSliderCtrl	m_RecVolumeRight;
-	CSliderCtrl	m_RecVolumeLeft;
 	CNumEdit	m_FrameRate;
 	CNumSpinCtrl m_SpinFrameRate;
 	CTime	m_SchedulerOnceDateStart;
@@ -105,7 +103,6 @@ protected:
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
 	//}}AFX_MSG
-	afx_msg LRESULT OnMixerCtrlChange(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
 	CVideoDeviceDoc* m_pDoc;

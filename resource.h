@@ -1004,13 +1004,11 @@
 #define IDC_REC_AUDIO                   1073
 #define IDS_MULTILANG_1074              1074
 #define IDS_MULTILANG_1075              1075
-#define IDC_REC_VOL_LEFT                1075
 #define IDS_MULTILANG_1076              1076
 #define IDC_COMBO_AUDIOIN_SOURCE        1076
 #define IDS_MULTILANG_1077              1077
 #define IDC_AUDIO_INPUT                 1077
 #define IDS_MULTILANG_1078              1078
-#define IDC_REC_VOL_RIGHT               1078
 #define IDS_MULTILANG_1079              1079
 #define IDC_VERSION                     1079
 #define IDS_MULTILANG_1080              1080
@@ -1259,7 +1257,6 @@
 #define IDC_AUDIO_MIXER                 1205
 #define IDC_CHECK_AIF                   1205
 #define IDS_MULTILANG_1206              1206
-#define IDC_VOLUME_MUTED                1206
 #define IDC_CHECK_WAV                   1206
 #define IDS_MULTILANG_1207              1207
 #define IDC_COMBO_VIDEOFORMAT           1207

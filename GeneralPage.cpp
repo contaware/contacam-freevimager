@@ -51,8 +51,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGeneralPage)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
-	DDX_Control(pDX, IDC_REC_VOL_RIGHT, m_RecVolumeRight);
-	DDX_Control(pDX, IDC_REC_VOL_LEFT, m_RecVolumeLeft);
 	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
 	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_START, m_SchedulerOnceDateStart);
@@ -106,7 +104,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(MM_MIXM_CONTROL_CHANGE, OnMixerCtrlChange)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -732,10 +729,7 @@ void CGeneralPage::OnRecAudio()
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
 	m_pDoc->m_bCaptureAudio = (pCheck->GetCheck() == 1);
 	if (m_pDoc->m_bCaptureAudio)
-	{
-		m_pDoc->m_CaptureAudioThread.m_Mixer.Close();
 		m_pDoc->m_CaptureAudioThread.Start();
-	}
 	else
 		m_pDoc->m_CaptureAudioThread.Kill();
 
@@ -746,87 +740,7 @@ void CGeneralPage::OnRecAudio()
 void CGeneralPage::OnTimer(UINT nIDEvent) 
 {
 	if (!m_pDoc->m_bClosing)
-	{	
-		// Open Mixer If Not Open
-		if (m_pDoc->m_CaptureAudioThread.IsOpen() && !m_pDoc->m_CaptureAudioThread.m_Mixer.IsWithWndHandleOpen())
-		{
-			// Open Mixer
-			m_pDoc->m_CaptureAudioThread.m_Mixer.Open(m_pDoc->m_CaptureAudioThread.GetWaveHandle(), GetSafeHwnd());
-
-			// Adjust Volume Slider
-			DWORD dwVolLeft, dwVolRight;
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
-			{
-				m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-											m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-				m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-											m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight))
-				{
-					m_RecVolumeLeft.SetPos(dwVolLeft);	
-					m_RecVolumeRight.SetPos(dwVolRight);
-				}
-			}
-			else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-			{
-				m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-											m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-				m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-											m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight))
-				{
-					m_RecVolumeLeft.SetPos(dwVolLeft);	
-					m_RecVolumeRight.SetPos(dwVolRight);
-				}
-			}
-
-			// If Device Has Both Dst & Src, Turn Src Volume to Maximum!
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF &&
-				m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-			{
-				m_pDoc->m_CaptureAudioThread.m_Mixer.SetSrcVolume(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(),
-																	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax());
-			}
-
-			// Set Muted Warning Label if muted
-			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstMute() ||
-				m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcMute())
-				pEdit->SetWindowText(ML_STRING(1455, "Muted!"));
-			else
-				pEdit->SetWindowText(_T(""));
-		}
-
-		// Clear Muted Warning Label if audio not open
-		if (!m_pDoc->m_CaptureAudioThread.IsOpen())
-		{
-			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
-			CString sMutedText;
-			pEdit->GetWindowText(sMutedText);
-			if (!sMutedText.IsEmpty())
-				pEdit->SetWindowText(_T(""));
-		}
-
-		// Enable / Disable Volume Slider
-		if (!m_pDoc->m_CaptureAudioThread.IsOpen())
-		{
-			CSliderCtrl* pSlider;
-			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
-			pSlider->SetPos(0);
-			pSlider->EnableWindow(FALSE);
-			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
-			pSlider->SetPos(0);
-			pSlider->EnableWindow(FALSE);
-		}
-		else
-		{
-			CSliderCtrl* pSlider;
-			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_LEFT);
-			pSlider->EnableWindow(TRUE);
-			pSlider = (CSliderCtrl*)GetDlgItem(IDC_REC_VOL_RIGHT);
-			pSlider->EnableWindow(TRUE);
-		}
-
+	{
 		// Inconsistency Detection:
 		// audio input may not be able to start
 		if ((m_pDoc->m_CaptureAudioThread.IsRunning()	&&
@@ -967,45 +881,7 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			(SB_LEFT == nSBCode)	||		// Home Button
 			(SB_RIGHT == nSBCode))			// End Button  
 		{
-			if (pSlider->GetDlgCtrlID() == IDC_REC_VOL_LEFT)
-			{
-				DWORD dwVolLeft = 0;
-				DWORD dwVolRight = 0;
-				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
-				{
-					m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight);
-					dwVolLeft = (DWORD)((double)m_RecVolumeLeft.GetPos() / (double)m_RecVolumeLeft.GetRangeMax() *
-									(double)m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax());
-					m_pDoc->m_CaptureAudioThread.m_Mixer.SetDstVolume(dwVolLeft, dwVolRight);
-				}
-				else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-				{
-					m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight);
-					dwVolLeft = (DWORD)((double)m_RecVolumeLeft.GetPos() / (double)m_RecVolumeLeft.GetRangeMax() *
-									(double)m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax());
-					m_pDoc->m_CaptureAudioThread.m_Mixer.SetSrcVolume(dwVolLeft, dwVolRight);
-				}
-			}
-			else if (pSlider->GetDlgCtrlID() == IDC_REC_VOL_RIGHT)
-			{
-				DWORD dwVolLeft = 0;
-				DWORD dwVolRight = 0;
-				if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
-				{
-					m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight);
-					dwVolRight = (DWORD)((double)m_RecVolumeRight.GetPos() / (double)m_RecVolumeRight.GetRangeMax() *
-										 (double)m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax());
-					m_pDoc->m_CaptureAudioThread.m_Mixer.SetDstVolume(dwVolLeft, dwVolRight);
-				}
-				else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-				{
-					m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight);
-					dwVolRight = (DWORD)((double)m_RecVolumeRight.GetPos() / (double)m_RecVolumeRight.GetRangeMax() *
-										 (double)m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax());
-					m_pDoc->m_CaptureAudioThread.m_Mixer.SetSrcVolume(dwVolLeft, dwVolRight);
-				}
-			}
-			else if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
+			if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
 				m_pDoc->m_fVideoRecQuality = (float)(33 - m_VideoRecQuality.GetPos());
 				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
@@ -1100,54 +976,6 @@ void CGeneralPage::OnRadioBitrate()
 void CGeneralPage::OnAudioInput() 
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();	
-}
-
-LRESULT CGeneralPage::OnMixerCtrlChange(WPARAM wParam, LPARAM lParam)
-{
-	if ((HMIXER)wParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetHandle() &&
-		((DWORD)lParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() ||
-		(DWORD)lParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstMuteControlID() ||
-		(DWORD)lParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() ||
-		(DWORD)lParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcMuteControlID() ||
-		(DWORD)lParam == m_pDoc->m_CaptureAudioThread.m_Mixer.GetMuxControlID()))
-	{
-		// Adjust Volume Slider
-		DWORD dwVolLeft, dwVolRight;
-		if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlID() != 0xFFFFFFFF)
-		{
-			m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-			m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolumeControlMax(), TRUE);
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstVolume(dwVolLeft, dwVolRight))
-			{
-				m_RecVolumeLeft.SetPos(dwVolLeft);	
-				m_RecVolumeRight.SetPos(dwVolRight);
-			}
-		}
-		else if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlID() != 0xFFFFFFFF)
-		{
-			m_RecVolumeLeft.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-			m_RecVolumeRight.SetRange(	m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMin(),
-										m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolumeControlMax(), TRUE);
-			if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcVolume(dwVolLeft, dwVolRight))
-			{
-				m_RecVolumeLeft.SetPos(dwVolLeft);	
-				m_RecVolumeRight.SetPos(dwVolRight);
-			}
-		}
-
-		// Set Muted Warning Label
-		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
-		if (m_pDoc->m_CaptureAudioThread.m_Mixer.GetDstMute() ||
-			m_pDoc->m_CaptureAudioThread.m_Mixer.GetSrcMute())
-			pEdit->SetWindowText(ML_STRING(1455, "Muted!"));
-		else
-			pEdit->SetWindowText(_T(""));
-	}
-
-	return 0;
 }
 
 void CGeneralPage::OnSelchangeVideoCompressionChoose() 
