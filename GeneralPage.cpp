@@ -797,6 +797,16 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 				pEdit->SetWindowText(_T(""));
 		}
 
+		// Clear Muted Warning Label if audio not open
+		if (!m_pDoc->m_CaptureAudioThread.IsOpen())
+		{
+			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VOLUME_MUTED);
+			CString sMutedText;
+			pEdit->GetWindowText(sMutedText);
+			if (!sMutedText.IsEmpty())
+				pEdit->SetWindowText(_T(""));
+		}
+
 		// Enable / Disable Volume Slider
 		if (!m_pDoc->m_CaptureAudioThread.IsOpen())
 		{

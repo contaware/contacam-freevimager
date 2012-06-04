@@ -1626,7 +1626,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -1702,7 +1702,7 @@ BEGIN
     LTEXT           "Right",IDC_STATIC2159,13,185,18,8
     EDITTEXT        IDC_RECORD_SAVEAS_PATH,107,238,284,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "",IDC_VOLUME_MUTED,59,143,31,10,SS_CENTERIMAGE
+    CTEXT           "",IDC_VOLUME_MUTED,49,172,66,10,SS_CENTERIMAGE
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
@@ -7244,7 +7244,7 @@ BEGIN
                             "Set detection zone sensibility to 50 %\nZone Sensibility 50 %"
     ID_EDIT_ZONE_SENSIBILITY_25 
                             "Set detection zone sensibility to 25 %\nZone Sensibility 25 %"
-	ID_EDIT_ZONE_SENSIBILITY_10 
+    ID_EDIT_ZONE_SENSIBILITY_10 
                             "Set detection zone sensibility to 10 %\nZone Sensibility 10 %"
 END
 

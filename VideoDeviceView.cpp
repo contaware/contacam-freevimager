@@ -969,12 +969,6 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
-		// Width & Height
-		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
-		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
-		if (nZoneWidth <= 0 || nZoneHeight <= 0)
-			return;
-
 		// Offset Remove
 		point.x -= m_ZoomRect.left;
 		point.y -= m_ZoomRect.top;
@@ -982,21 +976,26 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// Check if inside Frame
 		if (point.x < 0 ||
 			point.y < 0 ||
-			point.x > m_ZoomRect.Width() ||
-			point.y > m_ZoomRect.Height())
+			point.x >= m_ZoomRect.Width() ||
+			point.y >= m_ZoomRect.Height())
 			return;
 
-		int x = point.x / nZoneWidth;
-		int y = point.y / nZoneHeight;
+		// Calc. x and y offsets
+		int x = 0;
+		if (m_ZoomRect.Width() > 0)
+			x = pDoc->m_lMovDetXZonesCount * point.x / m_ZoomRect.Width(); // note: point.x < m_ZoomRect.Width()  -> x < pDoc->m_lMovDetXZonesCount
+		int y = 0;
+		if (m_ZoomRect.Height() > 0)
+			y = pDoc->m_lMovDetYZonesCount * point.y / m_ZoomRect.Height();// note: point.y < m_ZoomRect.Height() -> y < pDoc->m_lMovDetYZonesCount
 
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
-		// Reset Zone State
+		// Reset Zone Value
 		if ((nFlags & MK_SHIFT) ||
 			(nFlags & MK_CONTROL))
 			pDoc->m_DoMovementDetection[nZone] = 0;
-		// Set Zone State
+		// Set Zone Value
 		else
 			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
 
@@ -1315,12 +1314,6 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		(nFlags & MK_LBUTTON)			&&
 		pDoc->m_lMovDetTotalZones > 0)
 	{
-		// Width & Height
-		int nZoneWidth = m_ZoomRect.Width() / pDoc->m_lMovDetXZonesCount;
-		int nZoneHeight = m_ZoomRect.Height() / pDoc->m_lMovDetYZonesCount;
-		if (nZoneWidth <= 0 || nZoneHeight <= 0)
-			return;
-
 		// Offset Remove
 		point.x -= m_ZoomRect.left;
 		point.y -= m_ZoomRect.top;
@@ -1328,26 +1321,35 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// Check if inside Frame
 		if (point.x < 0 ||
 			point.y < 0 ||
-			point.x > m_ZoomRect.Width() ||
-			point.y > m_ZoomRect.Height())
+			point.x >= m_ZoomRect.Width() ||
+			point.y >= m_ZoomRect.Height())
 			return;
 
-		int x = point.x / nZoneWidth;
-		int y = point.y / nZoneHeight;
+		// Calc. x and y offsets
+		int x = 0;
+		if (m_ZoomRect.Width() > 0)
+			x = pDoc->m_lMovDetXZonesCount * point.x / m_ZoomRect.Width(); // note: point.x < m_ZoomRect.Width()  -> x < pDoc->m_lMovDetXZonesCount
+		int y = 0;
+		if (m_ZoomRect.Height() > 0)
+			y = pDoc->m_lMovDetYZonesCount * point.y / m_ZoomRect.Height();// note: point.y < m_ZoomRect.Height() -> y < pDoc->m_lMovDetYZonesCount
 
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
-		// Reset Zone State
+		// Store Current Zone value
+		int nCurrentDoMovementDetectionValue = pDoc->m_DoMovementDetection[nZone];
+
+		// Reset Zone Value
 		if ((nFlags & MK_SHIFT) ||
 			(nFlags & MK_CONTROL))
 			pDoc->m_DoMovementDetection[nZone] = 0;
-		// Set Zone State
+		// Set Zone Value
 		else
 			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
 
-		// Store Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		// Store Settings if changes happened
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
+			nCurrentDoMovementDetectionValue != pDoc->m_DoMovementDetection[nZone])
 		{
 			CString sSection(pDoc->GetDevicePathName());
 			CString sZone;
