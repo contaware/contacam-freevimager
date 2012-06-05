@@ -7874,17 +7874,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				}
 					
 				// Every second check for segmentation
-				if (bOk && b1SecTick)
+				if (bOk && b1SecTick && m_bRecTimeSegmentation &&
+					CurrentTime >= m_NextRecTime)
 				{
-					if (m_bRecTimeSegmentation)
-					{
-						CTime t = CurrentTime;
-						if (t >= m_NextRecTime)
-						{
-							NextRecTime(t);
-							bOk = NextAviFile();
-						}
-					}
+					NextRecTime(CurrentTime);
+					bOk = NextAviFile();
 				}
 
 				// If not OK -> Stop Recording
