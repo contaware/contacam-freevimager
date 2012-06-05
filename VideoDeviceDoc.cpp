@@ -5776,10 +5776,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 	{
 		// Set next rec time for time segmentation
 		if (m_bRecTimeSegmentation)
-		{
-			CTime t = CTime::GetCurrentTime();
-			NextRecTime(t);
-		}
+			NextRecTime(CTime::GetCurrentTime());
 
 		// Free
 		FreeAVIFile();
