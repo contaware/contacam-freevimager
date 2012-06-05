@@ -2,6 +2,7 @@ TRANSLATIONS HISTORY
 
 4.0.0 (xxx 2012)
 
+- Changed Email to Email(s) in Email Send Configuration dialog
 - Added detection zone relative sensibility menu entries
   in zone designer context menu
 - Live De-Interlace simplified string, removed AVI rec and

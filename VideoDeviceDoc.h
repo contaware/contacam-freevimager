@@ -46,6 +46,7 @@ class CMovementDetectionPage;
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
 #define PROCESS_MAX_FRAMETIME				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
+#define STARTUP_SETTLE_TIME_SEC				3			// sec
 #define DEFAULT_FRAMERATE					10.0		// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps

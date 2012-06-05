@@ -3292,9 +3292,6 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 		}
 		if (m_pDoc->m_bCaptureStarted)
 		{
-			// Store start time
-			m_pDoc->m_CaptureStartTime = CTime::GetCurrentTime();
-
 			// Log the starting (no log for Video Avi mode)
 			if (!m_pDoc->m_pVideoAviDoc)
 			{
@@ -7709,6 +7706,14 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		b4SecTick = TRUE;
 		m_4SecTime = CurrentTime;
 	}
+	BOOL bStartupSettled = FALSE;
+	if (m_bCaptureStarted)
+	{
+		CTimeSpan TimeSinceStart = CurrentTime - m_CaptureStartTime;
+		if (TimeSinceStart.GetTotalSeconds() >= STARTUP_SETTLE_TIME_SEC ||
+			TimeSinceStart.GetTotalSeconds() < 0)
+			bStartupSettled = TRUE;
+	}
 
 	// Process Frame Stop Engine
 	::EnterCriticalSection(&m_csProcessFrameStop);
@@ -7749,35 +7754,39 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			pDib->FreeUserList();
 
-		// Movement Detection
-		DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
-		if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
+		// Movement Detection only when start-up settled
+		// (especially for audio/video synchronization)
+		if (bStartupSettled)
 		{
-			CTime timeonly(	2000,
-							1,
-							1,
-							CurrentTime.GetHour(),
-							CurrentTime.GetMinute(),
-							CurrentTime.GetSecond());
-			if (m_DetectionStartTime <= m_DetectionStopTime)
+			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
+			if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
 			{
-				if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
-					dwVideoProcessorMode = NO_DETECTOR;
+				CTime timeonly(	2000,
+								1,
+								1,
+								CurrentTime.GetHour(),
+								CurrentTime.GetMinute(),
+								CurrentTime.GetSecond());
+				if (m_DetectionStartTime <= m_DetectionStopTime)
+				{
+					if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
+						dwVideoProcessorMode = NO_DETECTOR;
+				}
+				else
+				{
+					if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
+						dwVideoProcessorMode = NO_DETECTOR;
+				}
 			}
-			else
+			if (dwVideoProcessorMode && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
 			{
-				if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
-					dwVideoProcessorMode = NO_DETECTOR;
+				delete m_pMovementDetectorBackgndDib;
+				m_pMovementDetectorBackgndDib = NULL;
 			}
+			MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
+			if (!dwVideoProcessorMode && !m_bFirstMovementDetection)
+				m_bFirstMovementDetection = TRUE;
 		}
-		if (dwVideoProcessorMode && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
-		{
-			delete m_pMovementDetectorBackgndDib;
-			m_pMovementDetectorBackgndDib = NULL;
-		}
-		MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
-		if (!dwVideoProcessorMode && !m_bFirstMovementDetection)
-			m_bFirstMovementDetection = TRUE;
 
 		// Copy to Clipboard
 		if (m_bDoEditCopy)
@@ -7794,8 +7803,9 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		if (m_bShowFrameTime)
 			AddFrameTime(pDib, CurrentTime, dwCurrentInitUpTime);
 
-		// Record Video
-		if (!m_bCaptureRecordPause)
+		// Record Video only when start-up settled
+		// (especially for audio/video synchronization)
+		if (bStartupSettled && !m_bCaptureRecordPause)
 		{
 			::EnterCriticalSection(&m_csAVRec);
 			if (m_pAVRec)
@@ -8015,9 +8025,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		if (m_bVideoView)
 			m_WatchdogAndDrawThread.TriggerDraw();
 
-		// Set started flag and open the Assistant dialog
+		// Set start time, flag and open the Assistant dialog
 		if (!m_bCaptureStarted)
 		{
+			// Do not invert the order of the following two assignments!
+			m_CaptureStartTime = CurrentTime;
 			m_bCaptureStarted = TRUE;
 			if (m_bDeviceFirstRun)
 			{
