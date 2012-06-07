@@ -220,7 +220,7 @@ if ($handle = @opendir($dir)) {
 				(($path_parts['extension'] == 'jpg') && ($file_postfix == 'thumb'))	||	// Snapshot thumbs
 				(($file_prefix == 'rec') && ($path_parts['extension'] == 'avi'))) {		// Avi recordings
 				$file_time = mktime($file_hour, $file_min, $file_sec, $file_month, $file_day, $file_year); 
-				$file_array[$file_time] = $file;
+				$file_array[$file] = $file_time;
 			}
 		}
 	}
@@ -236,15 +236,15 @@ if ($handle = @opendir($dir)) {
 		
 		// Sort file time
 		if (SORT_OLDEST_FIRST == 1)
-			ksort($file_array);
+			asort($file_array);
 		else
-			krsort($file_array);
+			arsort($file_array);
 		
 		// Get html query string of swfs pointed to by gifs
 		$pos = 0;
 		$count = 0;
 		$swfpos = 0;
-		foreach($file_array as $file) {
+		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
@@ -269,7 +269,7 @@ if ($handle = @opendir($dir)) {
 		echo "<h2>";
 		PrintFileDate($days_elapsed);
 		echo "</h2>\n";
-		foreach($file_array as $file_time => $file) {
+		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
@@ -328,7 +328,7 @@ if ($handle = @opendir($dir)) {
 		echo "<hr />\n";
 		echo "<div align=\"center\">" . PAGES . " [\n";
 		$current_page_offset = 0;
-		$file_time_array = array_keys($file_array);
+		$file_time_array = array_values($file_array);
 		for ($page=1 ; $page <= $pages ; $page++) {
 			$file_date = getdate($file_time_array[$current_page_offset]);
 			$file_timestamp = sprintf("%02d:%02d", $file_date['hours'], $file_date['minutes']);
