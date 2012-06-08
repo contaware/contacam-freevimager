@@ -1,8 +1,8 @@
 VERSION HISTORY
 
-4.0.0 beta2 (June 1st 2012)
+4.0.0 beta2 (June 8th 2012)
 
-- ...
+- libpng updated to 1.2.49
 
 3.9.9 (May 1st 2012)
 

@@ -54,6 +54,7 @@ public:
 protected:
 	CVideoDeviceDoc* m_pDoc;
 	void UpdateDetectionStartStopTimes();
+	void UpdateExecHelp();
 
 	// Generated message map functions
 	//{{AFX_MSG(CMovementDetectionPage)

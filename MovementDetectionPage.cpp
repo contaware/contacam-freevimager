@@ -219,12 +219,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckWaitExecCommandMovementDetection->SetCheck(1);
 	else
 		pCheckWaitExecCommandMovementDetection->SetCheck(0);
-
-	// On detection execution example
-	CStatic* pStatic = (CStatic*)GetDlgItem(IDC_STATIC2301);
-	CString s;
-	s.Format(ML_STRING(1719, "Example to play a sound on detection\nCmd\tmplay32.exe (or path to %s)\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
-	pStatic->SetWindowText(s);
+	UpdateExecHelp();
 
 	// Update Detection State
 	UpdateDetectionState();
@@ -408,10 +403,22 @@ void CMovementDetectionPage::OnSelchangeDetectionZoneSize()
 	m_pDoc->m_nDetectionZoneSize = pComboBox->GetCurSel();
 }
 
+void CMovementDetectionPage::UpdateExecHelp() 
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_EXEC_HELP);
+	CString s;
+	if (m_pDoc->m_nExecModeMovementDetection == 0)
+		s.Format(ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tmplay32.exe (or path to %s)\r\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
+	else
+		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%");
+	pEdit->SetWindowText(s);
+}
+
 void CMovementDetectionPage::OnSelchangeExecmodeMovementDetection() 
 {
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	m_pDoc->m_nExecModeMovementDetection = pComboBox->GetCurSel();
+	UpdateExecHelp();
 }
 
 void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult) 

@@ -1193,7 +1193,12 @@ public:
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
 	void ResetMovementDetector();
 	void FreeMovementDetector();
-	void ExecCommandMovementDetection();
+	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
+										CTime StartTime = CTime(0),
+										const CString& sAVIFileName = _T(""),
+										const CString& sGIFFileName = _T(""),
+										const CString& sSWFFileName = _T(""),
+										int nMovDetSavesCount = 0);
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!

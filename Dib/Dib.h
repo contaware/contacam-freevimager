@@ -532,7 +532,7 @@ public:
 	__forceinline BOOL IsValid() const;
 	__forceinline DWORD GetUpTime() const;
 	__forceinline void SetUpTime(DWORD dwUpTime);
-	__forceinline DWORD IsUserFlag()	const;
+	__forceinline BOOL IsUserFlag()	const;
 	__forceinline void SetUserFlag(BOOL bUserFlag = TRUE);
 	__forceinline DWORD GetCompression() const;
 	__forceinline CDib* GetThumbnailDib();

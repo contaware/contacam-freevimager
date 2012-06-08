@@ -724,7 +724,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Execute Command
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
-			m_pDoc->ExecCommandMovementDetection();
+		{
+			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
+													sAVIFileName, sGIFFileName, sSWFFileName,
+													m_pDoc->m_nMovDetSavesCount);
+		}
 
 		// Delete Files if not wanted
 		if (!m_pDoc->m_bSaveAVIMovementDetection)
@@ -2707,7 +2711,12 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 	}
 }
 
-void CVideoDeviceDoc::ExecCommandMovementDetection()
+void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
+													CTime StartTime/*=CTime(0)*/,
+													const CString& sAVIFileName/*=_T("")*/,
+													const CString& sGIFFileName/*=_T("")*/,
+													const CString& sSWFFileName/*=_T("")*/,
+													int nMovDetSavesCount/*=0*/)
 {
 	::EnterCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_bWaitExecCommandMovementDetection)
@@ -2729,13 +2738,35 @@ void CVideoDeviceDoc::ExecCommandMovementDetection()
 	if (m_sExecCommandMovementDetection != _T("") &&
 		m_hExecCommandMovementDetection == NULL)
 	{
+		CString sExecParamsMovementDetection = m_sExecParamsMovementDetection;
+		if (bReplaceVars)
+		{
+			CString sSecond, sMinute, sHour, sDay, sMonth, sYear, sMovDetSavesCount;
+			sSecond.Format(_T("%02d"), StartTime.GetSecond());
+			sMinute.Format(_T("%02d"), StartTime.GetMinute());
+			sHour.Format(_T("%02d"), StartTime.GetHour());
+			sDay.Format(_T("%02d"), StartTime.GetDay());
+			sMonth.Format(_T("%02d"), StartTime.GetMonth());
+			sYear.Format(_T("%04d"), StartTime.GetYear());
+			sMovDetSavesCount.Format(_T("%d"), nMovDetSavesCount);
+			sExecParamsMovementDetection.Replace(_T("%sec%"), sSecond);
+			sExecParamsMovementDetection.Replace(_T("%min%"), sMinute);
+			sExecParamsMovementDetection.Replace(_T("%hour%"), sHour);
+			sExecParamsMovementDetection.Replace(_T("%day%"), sDay);
+			sExecParamsMovementDetection.Replace(_T("%month%"), sMonth);
+			sExecParamsMovementDetection.Replace(_T("%year%"), sYear);
+			sExecParamsMovementDetection.Replace(_T("%avi%"), sAVIFileName);
+			sExecParamsMovementDetection.Replace(_T("%gif%"), sGIFFileName);
+			sExecParamsMovementDetection.Replace(_T("%swf%"), sSWFFileName);
+			sExecParamsMovementDetection.Replace(_T("%counter%"), sMovDetSavesCount);
+		}
 		SHELLEXECUTEINFO sei;
 		memset(&sei, 0, sizeof(sei));
 		sei.cbSize = sizeof(sei);
 		sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 		sei.nShow = m_bHideExecCommandMovementDetection ? SW_HIDE : SW_SHOWNORMAL;
 		sei.lpFile = m_sExecCommandMovementDetection;
-		sei.lpParameters = m_sExecParamsMovementDetection; 
+		sei.lpParameters = sExecParamsMovementDetection; 
 		if (::ShellExecuteEx(&sei))
 			m_hExecCommandMovementDetection = sei.hProcess;
 	}

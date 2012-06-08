@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.0 beta2 (June 1st 2012)
+4.0.0 beta2 (June 8th 2012)
 
 - Audio also for detection movies (both avi and swf files)
 - It's now possible to set a relative sensibility for the single
@@ -10,6 +10,11 @@ VERSION HISTORY
   1 .. detection movies count
 - Live De-Interlacing works now for all capture formats,
   no need for rec/det time De-Interlacing
+- Fixed a bug in the web interface which prevented showing
+  recs, detections and snapshots with the same timestamp
+  (only one of them was shown)
+- Introduced variables like %avi%, %gif%, %swf%, ...
+  passed as parameters in command execution on detection end
 - UDP networking lowered default fragment size from 1400 bytes
   to 512 bytes so that it works well for all network types
 

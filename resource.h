@@ -2560,6 +2560,7 @@
 #define IDC_STATIC1861                  1861
 #define IDS_STRING1861                  1861
 #define IDC_STATIC1862                  1862
+#define IDS_STRING1862                  1862
 #define IDC_STATIC1863                  1863
 #define IDC_STATIC1864                  1864
 #define IDC_STATIC1865                  1865
@@ -3239,6 +3240,7 @@
 #define IDC_DETECTION_MODE              2543
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
+#define IDC_EDIT_EXEC_HELP              2546
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3532,7 +3534,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33177
-#define _APS_NEXT_CONTROL_VALUE         2546
+#define _APS_NEXT_CONTROL_VALUE         2547
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

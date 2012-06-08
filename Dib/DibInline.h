@@ -240,7 +240,7 @@ __forceinline BOOL CDib::IsValid()			const { return ((m_pBMI != NULL && m_pBits 
 															(m_pBMI != NULL && m_hDibSection != NULL)); };
 __forceinline DWORD CDib::GetUpTime()		const {return m_dwUpTime;};
 __forceinline void CDib::SetUpTime(DWORD dwUpTime) {m_dwUpTime = dwUpTime;};
-__forceinline DWORD CDib::IsUserFlag()	const {return m_bUserFlag;};
+__forceinline BOOL CDib::IsUserFlag() const {return m_bUserFlag;};
 __forceinline void CDib::SetUserFlag(BOOL bUserFlag/*=TRUE*/) {m_bUserFlag = bUserFlag;};
 __forceinline DWORD CDib::GetCompression()		const {return (m_pBMI ? m_pBMI->bmiHeader.biCompression : 0);};
 __forceinline CDib* CDib::GetThumbnailDib() {return m_pThumbnailDib;};

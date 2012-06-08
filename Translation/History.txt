@@ -2,6 +2,7 @@ TRANSLATIONS HISTORY
 
 4.0.0 (xxx 2012)
 
+- Added string 1862 and updated string 1719 changing \n to \r\n
 - Changed Email to Email(s) in Email Send Configuration dialog
 - Added detection zone relative sensibility menu entries
   in zone designer context menu

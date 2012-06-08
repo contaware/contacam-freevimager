@@ -2334,7 +2334,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2395,6 +2395,8 @@ BEGIN
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,236,181,145,10
+    EDITTEXT        IDC_EDIT_EXEC_HELP,236,194,165,30,ES_MULTILINE | 
+                    ES_READONLY | NOT WS_TABSTOP
     LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
                     WS_GROUP
     EDITTEXT        IDC_DETECTION_SAVEAS_PATH,34,236,356,12,ES_AUTOHSCROLL | 
@@ -2420,7 +2422,6 @@ BEGIN
                     IDC_STATIC2294,131,255,277,8
     LTEXT           "Cmd",IDC_STATIC2299,236,143,15,8
     LTEXT           "Params",IDC_STATIC2300,236,156,24,8
-    LTEXT           "",IDC_STATIC2301,236,195,165,29,SS_SUNKEN
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
                     IDC_WARNING,152,6,256,11,SS_CENTERIMAGE
     LTEXT           "Store",IDC_STATIC,14,34,18,8
@@ -7051,7 +7052,7 @@ BEGIN
     IDS_STRING1715          "Flash:\tno\r\n"
     IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
     IDS_STRING1717          "The latest version for your os may be downloaded from:"
-    IDS_STRING1719          "Example to play a sound on detection\nCmd\tmplay32.exe (or path to %s)\nParams\t/play /close ""audio file path"""
+    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tmplay32.exe (or path to %s)\r\nParams\t/play /close ""audio file path"""
     IDS_STRING1720          "Starting Device..."
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
@@ -7249,6 +7250,7 @@ BEGIN
     IDS_STRING1859          "Height"
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
+    IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%"
 END
 
 #endif    // English (U.S.) resources
