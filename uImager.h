@@ -616,6 +616,12 @@ public:
 	void InitPrinter();
 	int GetCurrentPrinterIndex() {return m_PrinterControl.GetPrinterIndex(m_hDevMode, m_hDevNames);};
 
+	// Capture entire virtual screen to clipboard
+	static void CaptureScreenToClipboard();
+
+	// Paste clipboard to given file
+	static BOOL PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor = RGB(255,255,255));
+
 	// Application Runs as Slideshow-Only Program
 	BOOL m_bSlideShowOnly;
 

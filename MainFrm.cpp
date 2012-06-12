@@ -1766,7 +1766,7 @@ LONG CMainFrame::OnVideoAviFullScreenModeOff(WPARAM wparam, LPARAM lparam)
 	return 1;
 }
 
-BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor,LPRECT lprcMonitor, LPARAM dwData)
+BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
 {
 	CDWordArray* p = (CDWordArray*)dwData;
 	if (p)
@@ -3594,6 +3594,9 @@ LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)
 			int nStartIndex = sFiles.Find(_T("\""));
 			if (nStartIndex < 0)
 			{
+				// If the file is empty or not existing try to paste the clipboard into it
+				if (::GetFileSize64(pszFiles).QuadPart == 0)
+					((CUImagerApp*)::AfxGetApp())->PasteToFile(pszFiles);
 				CDocument* pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(pszFiles);
 				if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)) && 
 					nShellCommand == CCommandLineInfo::FilePrint)

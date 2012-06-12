@@ -1587,6 +1587,93 @@ void CUImagerApp::OnFileOpen()
 	}
 }
 
+#ifndef CAPTUREBLT
+#define CAPTUREBLT	(DWORD)0x40000000 /* Include layered windows like Vista Sidebar */
+#endif
+void CUImagerApp::CaptureScreenToClipboard()
+{
+	// Desktop rectangle
+	CRect rcDesktop;
+	if (::GetSystemMetrics(SM_CXVIRTUALSCREEN) <= 0 ||
+		::GetSystemMetrics(SM_CYVIRTUALSCREEN) <= 0)
+	{
+		rcDesktop.left = 0;
+		rcDesktop.top = 0;
+		rcDesktop.right = ::GetSystemMetrics(SM_CXSCREEN);
+		rcDesktop.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+	}
+	else
+	{
+		rcDesktop.left = ::GetSystemMetrics(SM_XVIRTUALSCREEN);
+		rcDesktop.top = ::GetSystemMetrics(SM_YVIRTUALSCREEN);
+		rcDesktop.right = rcDesktop.left + ::GetSystemMetrics(SM_CXVIRTUALSCREEN);
+		rcDesktop.bottom = rcDesktop.top + ::GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	}
+
+	// Copy screen to bitmap
+	HDC hScreenDC = ::GetDC(NULL);
+	HDC hMemDC = ::CreateCompatibleDC(hScreenDC);
+	HBITMAP hBitmap = ::CreateCompatibleBitmap(hScreenDC, rcDesktop.Width(), rcDesktop.Height());
+	HGDIOBJ hOldBitmap = ::SelectObject(hMemDC, hBitmap);
+	::BitBlt(	hMemDC, 0, 0, rcDesktop.Width(), rcDesktop.Height(), hScreenDC,
+				rcDesktop.left, rcDesktop.top, SRCCOPY | (g_bWin2000OrHigher ? CAPTUREBLT : 0));
+
+	// Save bitmap to clipboard
+	CDib Dib;
+	Dib.SetShowMessageBoxOnError(FALSE);
+	Dib.SetBitsFromDDB(hBitmap, NULL);
+	Dib.EditCopy();
+
+	// Clean-up
+	::SelectObject(hMemDC, hOldBitmap);
+	::DeleteObject(hBitmap);
+	::DeleteDC(hMemDC);
+	::ReleaseDC(NULL, hScreenDC);
+}
+
+BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*=RGB(255,255,255)*/)
+{
+	CDib Dib;
+	Dib.SetShowMessageBoxOnError(FALSE);
+	Dib.SetBackgroundColor(crBackgroundColor);
+	Dib.EditPaste();
+	if (!Dib.IsValid())
+		Dib.AllocateBits(32, BI_RGB, 1, 1, crBackgroundColor);
+	CString sExt = ::GetFileExt(lpszFileName);
+	if (sExt == _T(".jpg") || sExt == _T(".jpe") || sExt == _T(".jpeg") || sExt == _T(".thm"))
+	{
+		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
+		{
+			Dib.RenderAlphaWithSrcBackground();
+			Dib.SetAlpha(FALSE);
+		}
+		return Dib.SaveJPEG(lpszFileName, DEFAULT_JPEGCOMPRESSION);
+	}
+	else if (sExt == _T(".png"))
+		return CPictureDoc::SavePNG(lpszFileName, &Dib, FALSE);
+	else if (sExt == _T(".tif") || sExt == _T(".jfx") || sExt == _T(".tiff"))
+		return Dib.SaveTIFF(lpszFileName, COMPRESSION_LZW);
+	else if (sExt == _T(".gif"))
+		return CPictureDoc::SaveGIF(lpszFileName, &Dib);
+	else if (sExt == _T(".bmp") || sExt == _T(".dib"))
+	{
+		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
+			Dib.BMIToBITMAPV4HEADER();
+		return Dib.SaveBMP(lpszFileName);
+	}
+	else if (sExt == _T(".pcx"))
+	{
+		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
+		{
+			Dib.RenderAlphaWithSrcBackground();
+			Dib.SetAlpha(FALSE);
+		}
+		return Dib.SavePCX(lpszFileName);
+	}
+
+	return FALSE;
+}
+
 void CUImagerApp::FileTypeNotSupportedMessageBox(LPCTSTR lpszFileName)
 {
 	CString sMsg;
@@ -3406,6 +3493,9 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 		case CCommandLineInfo::FileOpen:
 			if (rCmdInfo.m_strFileNames.GetSize() <= 1)
 			{
+				// If the file is empty or not existing try to paste the clipboard into it
+				if (::GetFileSize64(rCmdInfo.m_strFileName).QuadPart == 0)
+					PasteToFile(rCmdInfo.m_strFileName);
 				m_bStartMaximized = TRUE;
 				if (!OpenDocumentFile(rCmdInfo.m_strFileName))
 					bResult = FALSE;	// Error -> Exit Program
