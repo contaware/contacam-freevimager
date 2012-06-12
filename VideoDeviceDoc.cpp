@@ -4592,8 +4592,15 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
 	m_bExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoExecCommandMovementDetection"), FALSE);
 	m_nExecModeMovementDetection = pApp->GetProfileInt(sSection, _T("ExecModeMovementDetection"), 0);
+	
+	// Attention: GetPrivateProfileString() used by GetProfileString() for INI files strips quotes!
 	m_sExecCommandMovementDetection = pApp->GetProfileString(sSection, _T("ExecCommandMovementDetection"), _T(""));
+	m_sExecCommandMovementDetection.Replace(_T("%singlequote%"), _T("\'"));
+	m_sExecCommandMovementDetection.Replace(_T("%doublequote%"), _T("\""));
 	m_sExecParamsMovementDetection = pApp->GetProfileString(sSection, _T("ExecParamsMovementDetection"), _T(""));
+	m_sExecParamsMovementDetection.Replace(_T("%singlequote%"), _T("\'"));
+	m_sExecParamsMovementDetection.Replace(_T("%doublequote%"), _T("\""));
+
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
 	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
@@ -4832,8 +4839,18 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
-			pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), m_sExecCommandMovementDetection);
-			pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), m_sExecParamsMovementDetection);
+			
+			// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+			// strips quotes -> encode quotes here!
+			CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
+			sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+			sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+			pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection);
+			CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
+			sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+			sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+			pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection);
+			
 			pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC);
@@ -5017,8 +5034,18 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection, sTempFileName);
-			::WriteProfileIniString(sSection, _T("ExecCommandMovementDetection"), m_sExecCommandMovementDetection, sTempFileName);
-			::WriteProfileIniString(sSection, _T("ExecParamsMovementDetection"), m_sExecParamsMovementDetection, sTempFileName);
+			
+			// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+			// strips quotes -> encode quotes here!
+			CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
+			sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+			sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+			::WriteProfileIniString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection, sTempFileName);
+			CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
+			sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+			sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+			::WriteProfileIniString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection, sTempFileName);
+			
 			::WriteProfileIniInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC, sTempFileName);

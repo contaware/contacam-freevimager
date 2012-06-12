@@ -16,9 +16,10 @@ UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCT
 	ASSERT(lpszSection != NULL);
 	ASSERT(lpszEntry != NULL);
 	ASSERT(lpszProfileName != NULL);
-	return ::GetPrivateProfileInt(lpszSection, lpszEntry, nDefault, lpszProfileName);
+	return GetPrivateProfileInt(lpszSection, lpszEntry, nDefault, lpszProfileName);
 }
 
+// Attention: GetPrivateProfileString strips quotes!
 CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName)
 {
 	ASSERT(lpszSection != NULL);
@@ -28,7 +29,7 @@ CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpsz
 	if (lpszDefault == NULL)
 		lpszDefault = _T("");    // don't pass in NULL
 	TCHAR szT[4096];
-	DWORD dw = ::GetPrivateProfileString(lpszSection, lpszEntry,
+	DWORD dw = GetPrivateProfileString(lpszSection, lpszEntry,
 		lpszDefault, szT, _countof(szT), lpszProfileName);
 	ASSERT(dw < 4095);
 	return szT;
@@ -62,10 +63,10 @@ BOOL GetProfileIniBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, BYTE** ppData, 
 typedef BOOL (WINAPI * FPCRYPTUNPROTECTDATA)(DATA_BLOB*, LPWSTR*, DATA_BLOB*, PVOID*, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
 CString GetSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName)
 {
-	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	HINSTANCE h = LoadLibrary(_T("crypt32.dll"));
 	if (!h)
 		return GetProfileIniString(lpszSection, lpszEntry, lpszDefault, lpszProfileName);
-	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)::GetProcAddress(h, "CryptUnprotectData");
+	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)GetProcAddress(h, "CryptUnprotectData");
 	if (fpCryptUnprotectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
@@ -98,16 +99,16 @@ CString GetSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTST
 				else if (sType == L"ASCII")
 					s = CString((LPCSTR)blobOut.pbData);
 				delete [] blobIn.pbData;
-				::LocalFree(pDescrOut);
-				::LocalFree(blobOut.pbData);
-				::FreeLibrary(h);
+				LocalFree(pDescrOut);
+				LocalFree(blobOut.pbData);
+				FreeLibrary(h);
 				return s;
 			}
 			else
 			{
 				delete [] blobIn.pbData;
-				::LocalFree(pDescrOut);
-				::LocalFree(blobOut.pbData);
+				LocalFree(pDescrOut);
+				LocalFree(blobOut.pbData);
 			}
 		}
 		else
@@ -115,12 +116,12 @@ CString GetSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTST
 			if (blobIn.pbData)
 				delete [] blobIn.pbData;
 		}
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return _T("");
 	}
 	else
 	{
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return GetProfileIniString(lpszSection, lpszEntry, lpszDefault, lpszProfileName);
 	}
 }
@@ -133,7 +134,7 @@ BOOL WriteProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue, LPCT
 
 	TCHAR szT[16];
 	_stprintf(szT, _T("%d"), nValue);
-	return ::WritePrivateProfileString(lpszSection, lpszEntry, szT, lpszProfileName);
+	return WritePrivateProfileString(lpszSection, lpszEntry, szT, lpszProfileName);
 }
 
 BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName)
@@ -141,7 +142,7 @@ BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszV
 	ASSERT(lpszSection != NULL);
 	ASSERT(lpszProfileName != NULL);
 	ASSERT(lstrlen(lpszProfileName) < 4095); // can't read in bigger
-	return ::WritePrivateProfileString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
+	return WritePrivateProfileString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
 }
 
 BOOL WriteProfileIniBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE pData, UINT nBytes, LPCTSTR lpszProfileName)
@@ -168,10 +169,10 @@ BOOL WriteProfileIniBinary(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPBYTE pData,
 typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);
 BOOL WriteSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName)
 {
-	HINSTANCE h = ::LoadLibrary(_T("crypt32.dll"));
+	HINSTANCE h = LoadLibrary(_T("crypt32.dll"));
 	if (!h)
 		return WriteProfileIniString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
-	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)::GetProcAddress(h, "CryptProtectData");
+	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)GetProcAddress(h, "CryptProtectData");
 	if (fpCryptProtectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
@@ -198,20 +199,20 @@ BOOL WriteSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR
 								&blobOut))
 		{
 			BOOL res = WriteProfileIniBinary(lpszSection, lpszEntry, (LPBYTE)blobOut.pbData, (UINT)blobOut.cbData, lpszProfileName);
-			::LocalFree(blobOut.pbData);
-			::FreeLibrary(h);
+			LocalFree(blobOut.pbData);
+			FreeLibrary(h);
 			return res;
 		}
 		else
 		{
-			::LocalFree(blobOut.pbData);
-			::FreeLibrary(h);
+			LocalFree(blobOut.pbData);
+			FreeLibrary(h);
 			return FALSE;
 		}
 	}
 	else
 	{
-		::FreeLibrary(h);
+		FreeLibrary(h);
 		return WriteProfileIniString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
 	}
 }
