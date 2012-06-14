@@ -7873,9 +7873,10 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 				// Add Audio Samples
 				if (m_bCaptureAudio)
 				{
-					while (!pDib->m_UserList.IsEmpty())
+					POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
+					while (posUserBuf)
 					{
-						CUserBuf UserBuf = pDib->m_UserList.RemoveHead();
+						CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
 						if (m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
 						{
 							m_pAVRec->AddRawAudioPacket(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
@@ -7891,7 +7892,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 														UserBuf.m_pBuf,
 														m_bInterleave ? true : false);
 						}
-						delete [] UserBuf.m_pBuf;
 					}
 				}
 
@@ -7942,9 +7942,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			}
 			::LeaveCriticalSection(&m_csAVRec);
 		}
-
-		// Free Audio Samples
-		pDib->FreeUserList();
 
 		// Send Video Frame
 		if (m_bSendVideoFrame)
