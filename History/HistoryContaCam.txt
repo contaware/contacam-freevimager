@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.0 beta2 (June 8th 2012)
+4.0.0 (June 15th 2012)
 
 - Audio also for detection movies (both avi and swf files)
 - It's now possible to set a relative sensibility for the single

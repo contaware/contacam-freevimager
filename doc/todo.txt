@@ -4,7 +4,10 @@ Picture:
 
 Detection:
 ----------
-- Compress frames before putting them into the detection buffer
-- Possibility to save a sequence of jpegs on detection
-  or to enable snapshots only on detection
+- Compress frames before putting them into the detection buffer,
+  decompress them on usage
 - Advanced detection scheduler with weekday selection
+
+Networking:
+-----------
+- Make a light-weighted CNetComClient class from CNetCom

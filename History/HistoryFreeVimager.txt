@@ -1,7 +1,10 @@
 VERSION HISTORY
 
-4.0.0 beta2 (June 8th 2012)
+4.0.0 (June 15th 2012)
 
+- If file to open through command line (double-clicking on it)
+  is empty or not existing paste the clipboard into it;
+  if nothing in clipboard make it a 1x1 image
 - libpng updated to 1.2.49
 
 3.9.9 (May 1st 2012)
