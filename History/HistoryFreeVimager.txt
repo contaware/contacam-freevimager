@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+4.0.1 (xxx 2012)
+
+- Fixed uniqueness of temporary files
+
 4.0.0 (June 15th 2012)
 
 - If file to open through command line (double-clicking on it)

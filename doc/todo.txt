@@ -11,3 +11,4 @@ Detection:
 Networking:
 -----------
 - Make a light-weighted CNetComClient class from CNetCom
+- UDP networking stream also audio
