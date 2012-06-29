@@ -16,6 +16,9 @@ extern "C"
 #include "zlib.h"
 }
 
+// Get uuid, implemented in Helpers.cpp
+extern CString GetUuidString();
+
 #define FILEHEADERSIZE	46
 #define LOCALFILEHEADERSIZE	30
 #define VERSIONMADEBY 20
@@ -29,7 +32,6 @@ CFileHeader::CFileHeader()
 	m_uExternalAttr = FILE_ATTRIBUTE_ARCHIVE;
 	m_uModDate = m_uModTime = m_uInternalAttr = 0;
 	m_uMethod = Z_DEFLATED;
-	m_dwLastTimeGetTime = 0;
 }
 
 CFileHeader::~CFileHeader()
@@ -94,18 +96,6 @@ CTime CFileHeader::GetTime()
 	return CTime(m_uModDate, m_uModTime);
 }
 
-CString CFileHeader::MakeTempFileName(CString sExt)
-{
-	CString sTime;
-	DWORD dwCurrentTimeGetTime = ::timeGetTime();
-	if (dwCurrentTimeGetTime != m_dwLastTimeGetTime)
-		sTime.Format(_T("%X"), dwCurrentTimeGetTime);
-	else
-		sTime.Format(_T("%X"), ++dwCurrentTimeGetTime);
-	m_dwLastTimeGetTime = dwCurrentTimeGetTime; 
-	return (sTime + sExt);
-}
-
 // write the header to the central dir
 DWORD CFileHeader::Write(CZipStorage *pStorage)
 {
@@ -116,7 +106,7 @@ DWORD CFileHeader::Write(CZipStorage *pStorage)
 		size_t size = ::wcstombs(filename, (LPCTSTR)m_szFileName, 2*m_szFileName.GetLength() + 1);
 		if (size == -1)
 		{
-			m_szFileName = MakeTempFileName(CZipArchive::GetFileExt(m_szFileName));
+			m_szFileName = ::GetUuidString() + CZipArchive::GetFileExt(m_szFileName);
 			delete [] filename;
 			filename = new char[2*m_szFileName.GetLength() + 1];
 			if (filename)
@@ -249,7 +239,7 @@ void CFileHeader::WriteLocal(CZipStorage& storage)
 		size_t size = ::wcstombs(filename, (LPCTSTR)m_szFileName, 2*m_szFileName.GetLength() + 1);
 		if (size == -1)
 		{
-			m_szFileName = MakeTempFileName(CZipArchive::GetFileExt(m_szFileName));
+			m_szFileName = ::GetUuidString() + CZipArchive::GetFileExt(m_szFileName);
 			delete [] filename;
 			filename = new char[2*m_szFileName.GetLength() + 1];
 			if (filename)

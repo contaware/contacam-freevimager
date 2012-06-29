@@ -38,15 +38,6 @@ BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
-static BOOL g_bMakeTempFileNameCSInit = FALSE;
-static CRITICAL_SECTION g_csMakeTempFileName;
-// To Avoid duplicated Temp File Names,
-// for example if calling this function
-// several times one after the other,
-// keep track of the last used timeGetTime
-// value and inc. the current timeGetTime
-// if they are the same.
-static volatile DWORD g_dwLastTimeGetTime = 0;
 
 // Cpu Instruction Set Support
 #define CPU_FEATURE_MMX		0x0001
@@ -121,23 +112,6 @@ void InitHelpers()
 		g_bSSE2 = TRUE;
 	if (nInstructionSets & CPU_FEATURE_3DNOW)
 		g_b3DNOW = TRUE;
-
-	// Init Critical Section
-	if (!g_bMakeTempFileNameCSInit)
-	{
-		InitializeCriticalSection(&g_csMakeTempFileName);
-		g_bMakeTempFileNameCSInit = TRUE;
-	}
-}
-
-void EndHelpers()
-{
-	// Delete Critical Section
-	if (g_bMakeTempFileNameCSInit)
-	{
-		DeleteCriticalSection(&g_csMakeTempFileName);
-		g_bMakeTempFileNameCSInit = FALSE;
-	}
 }
 
 //
@@ -1229,37 +1203,13 @@ CTime ParseShortDateLocalFormat(CString sDate)
 
 CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName)
 {
-	// Enter CS for thread safety
-	if (g_bMakeTempFileNameCSInit)
-		EnterCriticalSection(&g_csMakeTempFileName);
-
 	// Make sure the Temp Path terminates with a backslash
 	if (sTempPath.GetLength() > 0)
 	{
 		if (sTempPath[sTempPath.GetLength() - 1] != _T('\\'))
 			sTempPath += _T('\\');
 	}
-
-	// Initial temp file
-	CString sTempFile = sTempPath + GetShortFileNameNoExt(lpszFileName);
-	
-	// Get current tick, avoid duplicates
-	CString sTime;
-	DWORD dwCurrentTimeGetTime = timeGetTime();
-	if (dwCurrentTimeGetTime != g_dwLastTimeGetTime)
-		sTime.Format(_T("%X"), dwCurrentTimeGetTime);
-	else
-		sTime.Format(_T("%X"), ++dwCurrentTimeGetTime);
-	g_dwLastTimeGetTime = dwCurrentTimeGetTime;
-	
-	// Full temp file
-	sTempFile = (sTempFile + _T("_") + sTime + GetFileExt(lpszFileName));
-
-	// Leave CS
-	if (g_bMakeTempFileNameCSInit)
-		LeaveCriticalSection(&g_csMakeTempFileName);
-	
-	return sTempFile;
+	return sTempPath + GetShortFileNameNoExt(lpszFileName) + _T("_") + GetUuidString() + GetFileExt(lpszFileName);
 }
 
 BOOL IsExistingFile(LPCTSTR lpszFileName)

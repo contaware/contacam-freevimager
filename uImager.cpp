@@ -2889,9 +2889,6 @@ int CUImagerApp::ExitInstance()
 	// Clean-Up Trace Log File
 	::EndTraceLogFile();
 
-	// Clean-Up Global Helper Functions
-	::EndHelpers();
-
 	// Delete Critical Section
 	if (g_bAVCodecCSInited)
 	{

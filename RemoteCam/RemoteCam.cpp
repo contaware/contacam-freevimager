@@ -141,9 +141,6 @@ BOOL CRemoteCamApp::InitInstance()
 // Called only once also if multiple controls in a application!
 int CRemoteCamApp::ExitInstance()
 {
-	// Clean-Up Global Helper Functions
-	::EndHelpers();
-
 	// Delete Critical Section
 	if (g_bAVCodecCSInited)
 	{

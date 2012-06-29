@@ -80,8 +80,6 @@ protected:
 	bool Read(CZipStorage *pStorage);
 	bool ReadLocal(CZipStorage *pStorage, WORD& iLocExtrFieldSize, bool& bIsDataDescr);
 	DWORD Write(CZipStorage *pStorage);
-	CString MakeTempFileName(CString sExt);
-	DWORD m_dwLastTimeGetTime;
 };
 
 #endif // !defined(AFX_FILEHEADER_H__0081FC65_C9C9_4D48_AF72_DBF37DF5E0CF__INCLUDED_)

@@ -32,11 +32,8 @@ extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
 
-// Call This Once Before Using the following Functions!
+// Call This Before Using the following Functions!
 extern void InitHelpers();
-
-// Call This Once When finished Using the following Functions!
-extern void EndHelpers();
 
 //
 // Example c:\mydir1\mydir2\hello.jpeg
@@ -90,7 +87,7 @@ extern CString MakeDateLocalFormat(	const CTime& Time,
 extern CString GetDateLocalFormat(BOOL bLongDate = FALSE);
 extern CTime ParseShortDateLocalFormat(CString sDate);
 
-// Create a Temp File Name
+// Create a Unique Temp File Name
 extern CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName);
 
 // File / Dir Existence Check
