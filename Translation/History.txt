@@ -1,6 +1,10 @@
 TRANSLATIONS HISTORY
 
-4.0.0 (xxx 2012)
+4.0.1 (xxx 2012)
+
+- Added string 1863 (Full Rate)
+
+4.0.0 (June 15th 2012)
 
 - Added string 1862 and updated string 1719 changing \n to \r\n
 - Updated libpng credit to version 1.2.49

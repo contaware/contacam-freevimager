@@ -60,7 +60,7 @@ class CMovementDetectionPage;
 #define AUDIO_IN_MIN_BUF_SIZE				256			// bytes
 #define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 														// (see CCaptureAudioThread::OpenInAudio())
-#define AUDIO_UNCOMPRESSED_BUFS_COUNT		8			// Number of audio buffers
+#define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
  
 // Frame time, date and count display constants
 #define ADDFRAMETAG_REFFONTSIZE				9
