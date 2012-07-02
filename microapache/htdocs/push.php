@@ -49,10 +49,14 @@ function doServerPush($file,$type,$poll) {
 				ob_flush();
 				flush();
 			}
-			// Poll the filesystem until the file changes, then send the update
-			// the file may not always exist for the instant it is being replaced on the filesystem
+			// Poll the filesystem until the file changes, then send the update.
+			// The file may not always exist for the instant it is being replaced on the filesystem,
 			// nested loop and filemtime check inspired by http://web.they.org/software/php-push.php
-		} while (!connection_aborted() && (!file_exists($file) || ($lastupdate == filemtime($file))));
+			if (SNAPSHOTREFRESHSEC >= 1)
+				$wait = !connection_aborted() && (!file_exists($file) || ($lastupdate == filemtime($file)));
+			else
+				$wait = false;
+		} while ($wait);
 	} while (!connection_aborted()); // if aborts are ignored, exit anyway to avoid endless threads
 }
 if (SNAPSHOT_THUMB == 1)

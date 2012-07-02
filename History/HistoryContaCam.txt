@@ -3,6 +3,10 @@ VERSION HISTORY
 4.0.1 (xxx 2012)
 
 - Fixed uniqueness of temporary files
+- Allow a snapshot rate of 0 (choose Full Rate in Assistant
+  Dialog) in which case the maximum possible rate is used.
+  Usually that corresponds to the frame-rate, but if the
+  hard-disk is slow it may be less
 
 4.0.0 (June 15th 2012)
 

@@ -318,7 +318,7 @@ void CSnapshotPage::OnChangeEditSnapshotRate()
 	pEdit->GetWindowText(sText);
 	int nRate = _tcstol(sText.GetBuffer(0), NULL, 10);
 	sText.ReleaseBuffer();
-	if (nRate > 0)
+	if (nRate >= 0)
 	{
 		if (nRate != m_pDoc->m_nSnapshotRate)
 		{

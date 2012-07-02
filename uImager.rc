@@ -7251,6 +7251,7 @@ BEGIN
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%"
+    IDS_STRING1863          "Full Rate"
 END
 
 #endif    // English (U.S.) resources

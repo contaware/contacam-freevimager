@@ -95,6 +95,7 @@ BOOL CAssistantDlg::OnInitDialog()
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 	if (pComboBox)
 	{
+		pComboBox->AddString(ML_STRING(1863, "Full Rate"));
 		pComboBox->AddString(ML_STRING(1741, "1 Second Rate"));
 		pComboBox->AddString(ML_STRING(1742, "2 Seconds Rate"));
 		pComboBox->AddString(ML_STRING(1743, "3 Seconds Rate"));
@@ -246,31 +247,33 @@ BOOL CAssistantDlg::OnInitDialog()
 			m_nComboSnapshotHistorySize = 3;// 1 / 4 Size
 	}
 	if (m_pDoc->m_nSnapshotRate > 240)
-		m_nComboSnapshotRate = 12;			// 5 Minutes
+		m_nComboSnapshotRate = 13;			// 5 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 180)
-		m_nComboSnapshotRate = 11;			// 4 Minutes
+		m_nComboSnapshotRate = 12;			// 4 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 120)
-		m_nComboSnapshotRate = 10;			// 3 Minutes
+		m_nComboSnapshotRate = 11;			// 3 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 60)
-		m_nComboSnapshotRate = 9;			// 2 Minutes
+		m_nComboSnapshotRate = 10;			// 2 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 30)
-		m_nComboSnapshotRate = 8;			// 1 Minute
+		m_nComboSnapshotRate = 9;			// 1 Minute
 	else if (m_pDoc->m_nSnapshotRate > 15)
-		m_nComboSnapshotRate = 7;			// 30 Seconds
+		m_nComboSnapshotRate = 8;			// 30 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 10)
-		m_nComboSnapshotRate = 6;			// 15 Seconds
+		m_nComboSnapshotRate = 7;			// 15 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 5)
-		m_nComboSnapshotRate = 5;			// 10 Seconds
+		m_nComboSnapshotRate = 6;			// 10 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 4)
-		m_nComboSnapshotRate = 4;			// 5 Seconds
+		m_nComboSnapshotRate = 5;			// 5 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 3)
-		m_nComboSnapshotRate = 3;			// 4 Seconds
+		m_nComboSnapshotRate = 4;			// 4 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 2)
-		m_nComboSnapshotRate = 2;			// 3 Seconds
+		m_nComboSnapshotRate = 3;			// 3 Seconds
 	else if (m_pDoc->m_nSnapshotRate > 1)
-		m_nComboSnapshotRate = 1;			// 2 Seconds
+		m_nComboSnapshotRate = 2;			// 2 Seconds
+	else if (m_pDoc->m_nSnapshotRate > 0)
+		m_nComboSnapshotRate = 1;			// 1 Second
 	else
-		m_nComboSnapshotRate = 0;			// 1 Second
+		m_nComboSnapshotRate = 0;			// Full Rate
 	CString sMaxPerPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_MAX_PER_PAGE);
 	int nMaxPerPage = PHPCONFIG_DEFAULT_THUMSPERPAGE;
 	if (sMaxPerPage != _T(""))
@@ -1045,18 +1048,19 @@ void CAssistantDlg::ApplySettings()
 			int nSnapshotRate;
 			switch (m_nComboSnapshotRate)
 			{
-				case 0  : nSnapshotRate = 1;    break;	// 1 Second
-				case 1  : nSnapshotRate = 2;    break;	// 2 Seconds
-				case 2  : nSnapshotRate = 3;    break;	// 3 Seconds
-				case 3  : nSnapshotRate = 4;    break;	// 4 Seconds
-				case 4  : nSnapshotRate = 5;    break;	// 5 Seconds
-				case 5  : nSnapshotRate = 10;   break;	// 10 Seconds
-				case 6  : nSnapshotRate = 15;   break;	// 15 Seconds
-				case 7  : nSnapshotRate = 30;   break;	// 30 Seconds
-				case 8  : nSnapshotRate = 60;   break;	// 1 Minute
-				case 9  : nSnapshotRate = 120;  break;	// 2 Minutes
-				case 10 : nSnapshotRate = 180;  break;	// 3 Minutes
-				case 11 : nSnapshotRate = 240;  break;	// 4 Minutes
+				case 0  : nSnapshotRate = 0;    break;	// Full Rate
+				case 1  : nSnapshotRate = 1;    break;	// 1 Second
+				case 2  : nSnapshotRate = 2;    break;	// 2 Seconds
+				case 3  : nSnapshotRate = 3;    break;	// 3 Seconds
+				case 4  : nSnapshotRate = 4;    break;	// 4 Seconds
+				case 5  : nSnapshotRate = 5;    break;	// 5 Seconds
+				case 6  : nSnapshotRate = 10;   break;	// 10 Seconds
+				case 7  : nSnapshotRate = 15;   break;	// 15 Seconds
+				case 8  : nSnapshotRate = 30;   break;	// 30 Seconds
+				case 9  : nSnapshotRate = 60;   break;	// 1 Minute
+				case 10 : nSnapshotRate = 120;  break;	// 2 Minutes
+				case 11 : nSnapshotRate = 180;  break;	// 3 Minutes
+				case 12 : nSnapshotRate = 240;  break;	// 4 Minutes
 				default : nSnapshotRate = 300;  break;	// 5 Minutes
 			}
 			CString sSnapShotRate;
