@@ -90,6 +90,13 @@ protected:
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnChangeDetectionTriggerFilename();
 	afx_msg void OnSelchangeExecmodeMovementDetection();
+	afx_msg void OnCheckSchedulerSunday();
+	afx_msg void OnCheckSchedulerMonday();
+	afx_msg void OnCheckSchedulerTuesday();
+	afx_msg void OnCheckSchedulerWednesday();
+	afx_msg void OnCheckSchedulerThursday();
+	afx_msg void OnCheckSchedulerFriday();
+	afx_msg void OnCheckSchedulerSaturday();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

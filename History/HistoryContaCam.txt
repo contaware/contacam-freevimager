@@ -1,8 +1,9 @@
 VERSION HISTORY
 
-4.0.1 beta2 (July 2nd 2012)
+4.0.1 beta3 (July 3rd 2012)
 
 - Fixed uniqueness of temporary files
+- Motion detection scheduler has now day of week check-boxes
 - Allow a snapshot rate of 0 (choose Full Rate in Assistant
   Dialog) in which case the maximum possible rate is used.
   Usually that corresponds to the frame-rate, but if the

@@ -1626,7 +1626,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -2193,7 +2193,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Email Send Configuration"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_RECEIVER_MAIL,60,20,139,13,ES_AUTOHSCROLL
     COMBOBOX        IDC_ATTACHMENT,60,38,139,124,CBS_DROPDOWNLIST | 
@@ -2336,36 +2336,50 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,32,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,33,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,48,25,12,
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,32,11,12
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,47,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,48,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,47,11,12
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,67,132,12
-    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,86,99,72,CBS_DROPDOWNLIST | 
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,65,132,12
+    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,83,99,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,121,185,10
+                    WS_TABSTOP,13,114,185,10
     CONTROL         "Only detect if no camera luminosity change occurs",
                     IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,132,185,10
+                    WS_TABSTOP,13,125,185,10
     CONTROL         "Enable Detection (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,14,164,175,10
+                    WS_TABSTOP,13,154,175,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,46,176,66,
-                    16
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,37,166,66,
+                    14
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,176,
-                    66,16
-    EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,14,213,187,12,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,166,
+                    66,14
+    CONTROL         "Su",IDC_CHECK_SCHEDULER_SUNDAY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,13,184,27,10
+    CONTROL         "Mo",IDC_CHECK_SCHEDULER_MONDAY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,41,184,27,10
+    CONTROL         "Tu",IDC_CHECK_SCHEDULER_TUESDAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,69,184,27,10
+    CONTROL         "We",IDC_CHECK_SCHEDULER_WEDNESDAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,97,184,27,10
+    CONTROL         "Th",IDC_CHECK_SCHEDULER_THURSDAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,125,184,27,10
+    CONTROL         "Fr",IDC_CHECK_SCHEDULER_FRIDAY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,153,184,27,10
+    CONTROL         "Sa",IDC_CHECK_SCHEDULER_SATURDAY,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,181,184,27,10
+    EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,13,213,189,12,
                     ES_AUTOHSCROLL
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,226,37,51,10
@@ -2405,17 +2419,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,50,120,8
+                    62,49,120,8
     LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,61,34,131,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,14,65,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,200,84
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,68,13,12,ES_RIGHT | 
+                    IDC_STATIC2283,61,33,131,8
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,63,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,203,80
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,66,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,215,20,193,210
-    LTEXT           "From",IDC_STATIC2289,27,180,16,8
-    LTEXT           "To",IDC_STATIC2290,124,180,10,8
-    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,153,200,43
+    GROUPBOX        "On Detection",IDC_STATIC2288,218,20,190,210
+    LTEXT           "From",IDC_STATIC2289,13,169,16,8
+    LTEXT           "To",IDC_STATIC2290,120,169,10,8
+    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,143,203,55
     LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,63,8
     LTEXT           "day(s)",IDC_STATIC2293,103,255,20,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
@@ -2424,12 +2438,12 @@ BEGIN
     LTEXT           "Params",IDC_STATIC2300,236,156,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
                     IDC_WARNING,152,6,256,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,14,34,18,8
-    LTEXT           "Store",IDC_STATIC,14,50,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,110,200,37
-    LTEXT           "Detection Zones Size",IDC_STATIC2287,14,88,76,8
+    LTEXT           "Store",IDC_STATIC,13,33,18,8
+    LTEXT           "Store",IDC_STATIC,13,49,18,8
+    GROUPBOX        "Detection Constraints",IDC_STATIC,7,104,203,35
+    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,85,76,8
     GROUPBOX        "External Detection Trigger File (write to it to trigger)",
-                    IDC_STATIC,7,202,200,28
+                    IDC_STATIC,7,202,203,28
     LTEXT           "Detection:",IDC_STATIC2544,7,6,36,11,SS_CENTERIMAGE
     LTEXT           "Off",IDC_DETECTION_MODE,46,6,95,11,SS_CENTERIMAGE | 
                     SS_SUNKEN
@@ -2718,7 +2732,7 @@ IDD_CREDITS DIALOGEX 0, 0, 236, 265
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -5009,10 +5023,9 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 408
-        VERTGUIDE, 14
+        VERTGUIDE, 13
         VERTGUIDE, 22
         VERTGUIDE, 64
-        VERTGUIDE, 215
         VERTGUIDE, 226
         VERTGUIDE, 236
         VERTGUIDE, 266

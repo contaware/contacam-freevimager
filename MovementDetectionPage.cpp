@@ -98,6 +98,13 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_TUESDAY, OnCheckSchedulerTuesday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_WEDNESDAY, OnCheckSchedulerWednesday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_THURSDAY, OnCheckSchedulerThursday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_FRIDAY, OnCheckSchedulerFriday)
+	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SATURDAY, OnCheckSchedulerSaturday)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -151,9 +158,23 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Detection Zone Size
 	pComboBoxZoneSize->SetCurSel(m_pDoc->m_nDetectionZoneSize);
 
-	// Detection Scheduler Check Box
+	// Detection Scheduler Check-Boxes
 	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionStartStop);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSunday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionMonday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionTuesday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionWednesday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionThursday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionFriday);
+	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
+	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSaturday);
 
 	// Adjacent Zones Detection
 	CButton* pCheckAdjacentZonesDetection = (CButton*)GetDlgItem(IDC_CHECK_ADJACENT_ZONES_DET);
@@ -644,6 +665,48 @@ void CMovementDetectionPage::OnCheckSchedulerDaily()
 	else
 		m_pDoc->m_bDetectionStartStop = FALSE;
 	UpdateDetectionStartStopTimes();
+}
+
+void CMovementDetectionPage::OnCheckSchedulerSunday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSunday = FALSE : m_pDoc->m_bDetectionSunday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerMonday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionMonday = FALSE : m_pDoc->m_bDetectionMonday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerTuesday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_TUESDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionTuesday = FALSE : m_pDoc->m_bDetectionTuesday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerWednesday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_WEDNESDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionWednesday = FALSE : m_pDoc->m_bDetectionWednesday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerThursday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_THURSDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionThursday = FALSE : m_pDoc->m_bDetectionThursday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerFriday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_FRIDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionFriday = FALSE : m_pDoc->m_bDetectionFriday = TRUE;
+}
+
+void CMovementDetectionPage::OnCheckSchedulerSaturday() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
+	pCheck->GetCheck() == 0 ? m_pDoc->m_bDetectionSaturday = FALSE : m_pDoc->m_bDetectionSaturday = TRUE;
 }
 
 void CMovementDetectionPage::OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult) 

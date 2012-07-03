@@ -2576,9 +2576,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			m_MovementDetections[i] = FALSE;
 	}
 
-	// Trigger file detection enabled?
-	if ((dwVideoProcessorMode & TRIGGER_FILE_DETECTOR) &&
-		b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
+	// Trigger file detection
+	if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
 	{
 		CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 		sDetectionTriggerFileName.TrimLeft();
@@ -2591,15 +2590,20 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			sDetectionAutoSaveDir.TrimRight(_T('\\'));
 			sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 		}
-		FILETIME LastWriteTime;
-		if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
-			(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
-			LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
+		if (dwVideoProcessorMode & TRIGGER_FILE_DETECTOR)
 		{
-			m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
-			m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
-			bExternalFileTriggerMovement = TRUE;
+			FILETIME LastWriteTime;
+			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
+				(LastWriteTime.dwLowDateTime != m_DetectionTriggerLastWriteTime.dwLowDateTime	||
+				LastWriteTime.dwHighDateTime != m_DetectionTriggerLastWriteTime.dwHighDateTime))
+			{
+				m_DetectionTriggerLastWriteTime.dwLowDateTime = LastWriteTime.dwLowDateTime;
+				m_DetectionTriggerLastWriteTime.dwHighDateTime = LastWriteTime.dwHighDateTime;
+				bExternalFileTriggerMovement = TRUE;
+			}
 		}
+		else
+			::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
 	}
 
 	// Store frames?
@@ -3983,6 +3987,13 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nVideoDetSwfQualityBitrate = 0;
 	m_dwVideoDetSwfFourCC = FCC('FLV1');
 	m_bDetectionStartStop = FALSE;
+	m_bDetectionSunday = TRUE;
+	m_bDetectionMonday = TRUE;
+	m_bDetectionTuesday = TRUE;
+	m_bDetectionWednesday = TRUE;
+	m_bDetectionThursday = TRUE;
+	m_bDetectionFriday = TRUE;
+	m_bDetectionSaturday = TRUE;
 	m_DetectionStartTime = CurrentTimeOnly;
 	m_DetectionStopTime = CurrentTimeOnly;
 	m_nDeleteDetectionsOlderThanDays = 0;
@@ -4622,6 +4633,13 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nVideoDetSwfKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoDetSwfDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_bDetectionStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), FALSE);
+	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
+	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
+	m_bDetectionTuesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionTuesday"), TRUE);
+	m_bDetectionWednesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionWednesday"), TRUE);
+	m_bDetectionThursday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionThursday"), TRUE);
+	m_bDetectionFriday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionFriday"), TRUE);
+	m_bDetectionSaturday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSaturday"), TRUE);
 	m_DetectionStartTime = CTime(2000, 1, 1,	pApp->GetProfileInt(sSection, _T("DetectionStartHour"), t.GetHour()),
 												pApp->GetProfileInt(sSection, _T("DetectionStartMin"), t.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStartSec"), t.GetSecond()));
@@ -4869,6 +4887,13 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
 			pApp->WriteProfileInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate);
 			pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop);
+			pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
+			pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
+			pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday);
+			pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday);
+			pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday);
+			pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday);
+			pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday);
 			pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour());
 			pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute());
 			pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond());
@@ -5064,6 +5089,13 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour(), sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute(), sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond(), sTempFileName);
@@ -7816,6 +7848,17 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
 			if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
 			{
+				switch (CurrentTime.GetDayOfWeek())
+				{
+					case 1 : if (!m_bDetectionSunday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 2 : if (!m_bDetectionMonday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 3 : if (!m_bDetectionTuesday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 4 : if (!m_bDetectionWednesday)dwVideoProcessorMode = NO_DETECTOR; break;
+					case 5 : if (!m_bDetectionThursday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 6 : if (!m_bDetectionFriday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 7 : if (!m_bDetectionSaturday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					default: break;
+				}
 				CTime timeonly(	2000,
 								1,
 								1,
