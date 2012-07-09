@@ -6,7 +6,6 @@ Detection:
 ----------
 - Compress frames before putting them into the detection buffer,
   decompress them on usage
-- Advanced detection scheduler with weekday selection
 
 Networking:
 -----------

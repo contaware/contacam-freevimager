@@ -1,0 +1,186 @@
+/* @ marks rules with specific selectors to override base CSS */
+
+/* Old New Thing custom classes */
+
+blockquote.q {
+	background-color: #FFFFD0;
+	border:1px dotted #000000;
+	font-style:normal;
+	padding:1ex;
+}
+BLOCKQUOTE.m {
+	border: 1px dotted #000;
+	padding: 1ex;
+	font-style: normal;
+}
+CODE {
+	font-family: Lucida Console, monospace;
+	font-size: medium;
+}
+
+PRE {
+	/* overflow: auto; */
+	white-space: pre-wrap;
+}
+
+KBD {
+    background-color: buttonface;
+    border-width: 1px;
+    border-color: buttonhighlight buttonshadow buttonshadow buttonhighlight;
+    border-style: solid;
+    padding: 1px 3px;
+}
+
+/* Old New Thing overrides */
+
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: medium;
+	color : #000;
+}
+
+/* main background */
+.layout {
+	background-color: #DDDDCC;
+	max-width:100%; min-width:100%; width:100%; /* make content fill page width */
+}
+
+/* @ Remove name from postings */
+.content-fragment.blog-post-list .content-list.standard .post-author,
+.content-fragment.blog-post .full-post .post-author,
+.abbreviated-post .post-author { display: none; }
+
+/* @ Remove blog name from article list */
+.content-fragment.blog-post-list .content-list.standard .post-application {
+	display:none
+}
+
+/* post on front page */
+.abbreviated-post {
+	padding: 8pt 8pt 0pt 8pt;
+	background-color: #FFFFEE;
+	border: .75pt solid black;
+}
+
+/* post on article page */
+.content-fragment.blog-post .full-post .post-content {
+	padding: 8pt 8pt 0pt 8pt;
+        background-color:#FFFFEE;
+        border: .75pt solid black;
+        line-height: normal !important;
+}
+
+/* @ Don't make the post title quite so big - front page */
+.content-fragment.blog-post-list .content-list.standard .content-item h4.post-name { font-size: 1.2em }
+
+/* @ Don't underline the post title - front page */
+.abbreviated-post .post-name a, .content-fragment.blog-post .full-post .post-name {
+	text-decoration:none
+}
+
+/* @ Remove the breadcrumbs */
+.breadcrumb-list { display: none; }
+
+/* @ Use normal line spacing on front page, too */
+.abbreviated-post .post-content { line-height: normal !important; }
+
+/* @ Don't make the post title quite so big - article page */
+.content-fragment.blog-post .full-post .post-name { font-size:1.2em }
+
+/* @ Add more spacing between entries - front page */
+.content-fragment.blog-post-list .content-list.standard .content-item { margin-bottom:26px }
+
+/* Hyperlink treatment */
+a:visited, a:active, a:link {
+	color : #700;
+	text-decoration: underline;
+	font-weight:normal; /* override boldface in base.css */
+}
+/* Make separate rule since not all browsers support INHERIT */
+a:visited, a:active, a:link { font-weight:inherit; }
+
+/* Don't underline in the sidebar... */
+.right-sidebar a {
+	text-decoration:none
+}
+/* ... unless they're hovering */
+.right-sidebar a:hover {
+	text-decoration:underline
+}
+
+/* @ Comments */
+.content-fragment.blog-feedback-list .full-post {
+	padding: 10px 13px 0px 13px;
+	background-color: white;
+}
+
+/* @ Old-style response to comments */
+DIV.user-is-author { background-color:#FFFFEE; }
+
+/* Response to comments */
+.full-post DIV.post {
+        background-color:#FFFFEE; border: .75pt dotted black; padding: 1ex;
+}
+
+/* Starred comments */
+.starred { background-color: #B3B3FF; }
+.star { color: yellow; }
+
+/* Site header */
+.header-fragments {
+	background-color:#999988
+}
+
+/* @ Remove 6 pixels from the top margin of the page */
+.header-fragment.site-banner .site-banner {
+	margin:0
+}
+
+/* @ Links in site header - override */
+.header-fragment.user-welcome-without-login A,
+.header-fragment.login-logout .navigation-item A {
+	color: #FFF;
+}
+
+/* @ Banner */
+.layout-region.header {
+	background-color:#999988;
+	/* padding-bottom:10px;
+	border-bottom:2px solid #444433 */
+}
+
+/* Make sidebar a smidge smaller */
+.layout-region.right-sidebar {
+	font-size:8pt
+}
+
+/* @ Sidebar color */
+.content-fragment-content { background-color: #DDDDCC; }
+/* @ Sidebar block header */
+.content-fragment.with-header .content-fragment-header {
+	background-color: #BBBBAA;
+	border: 0px;
+}
+/* @ Sidebar block text */
+.content-fragment.with-header .content-fragment-header DIV {
+	font-size: 9pt;
+	color: black;
+}
+/* @ Sidebar block border */
+.layout-region.right-sidebar .full-border .content-fragment-content { border: .75pt solid #BBBBAA; }
+
+/* @ Indent definitions */
+dd { margin-left: 1pc; }
+
+/* @ Jumping to different pages, at bottom */
+.pager a { background-color: #F1F1E9; text-decoration: none; color: black; border-style: none; margin-right: 5pt; }
+.pager a.selected { background-color: #BBBBAA; border-style: none; }
+
+/* Reduce list indent */
+ul, ol { padding-left: 0pt; }
+li { margin-left: 1em; }
+
+/* Add some left and right padding to our post content */
+.full-post { padding: 0pt 8pt; }
+
+#MicrosoftTranslatorWidget {margin:10px 0 0 10px;}
