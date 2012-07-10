@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.0.1 (xxx 2012)
+4.0.1 (July 10th 2012)
 
 - Added Sunday ... Saturday motion scheduler check-boxes
 - Added string 1863 (Full Rate)

@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.1 beta3 (July 3rd 2012)
+4.0.1 (July 10th 2012)
 
 - Fixed uniqueness of temporary files
 
