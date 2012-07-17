@@ -586,9 +586,7 @@ public:
 	void StretchHalftone();
 
 	// Save
-	BOOL Save(BOOL bSaveAsWithSameFileName = FALSE);// When in SaveAs() the same file
-													// name is selected, Save() is called
-													// with bSaveAsWithSameFileName set.
+	BOOL Save();
 
 	// Save As
 	// If bSaveCopyAs is TRUE a new document is opened with the saved file.
@@ -738,12 +736,6 @@ public:
 
 	// Make Lossless Jpeg Crop
 	BOOL m_bLosslessCrop;
-
-	// Various Save Dialogs Settings
-	BOOL m_bSaveBmpRleEncoded;
-	BOOL m_bSaveJpegAsGrayscale;
-	int m_nJpegSaveAsCompressionQuality;
-	BOOL m_bSavePngBackground;
 
 	// Get Pixel Align, Compression
 	// and load full sized jpeg.

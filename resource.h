@@ -39,7 +39,6 @@
 #define IDC_HAND_CURSOR                 157
 #define IDD_OUTVOL                      158
 #define IDD_AUDIOOUT_DESTINATION        159
-#define IDD_JPEG_COMPRESSION_QUALITY    164
 #define IDD_SAVEAS_STREAMS_SELECT       165
 #define IDD_OPEN_STREAMS_SELECT         167
 #define IDD_IMAGEINFO                   170
@@ -106,9 +105,6 @@
 #define IDD_ANIMGIF_SAVE                259
 #define IDD_ADD_BORDERS                 260
 #define IDD_SOFT_BORDERS                261
-#define IDD_TIFF_SAVE                   262
-#define IDD_PNG_SAVE                    263
-#define IDD_BMP_SAVE                    264
 #define IDD_ANIMGIF_SAVE_SMALL          265
 #define IDD_XMP_IMPORT                  267
 #define IDD_BATCH_PROC_GENERALTAB       268
@@ -117,7 +113,6 @@
 #define IDD_BATCH_PROC_TIFFTAB          271
 #define IDD_OSD                         272
 #define IDD_XMP                         273
-#define IDD_PDF_SAVE                    274
 #define IDD_DELETEPAGE                  275
 #define IDD_OCR_LANGUAGE                276
 #define IDD_AUDIOFORMAT                 277
@@ -1047,7 +1042,6 @@
 #define IDS_MULTILANG_1099              1099
 #define IDC_COMPRESSION_QUALITY_EDIT    1099
 #define IDS_MULTILANG_1100              1100
-#define IDC_SAVE_GRAYSCALE              1100
 #define IDS_MULTILANG_1101              1101
 #define IDC_VIDEO_PORT                  1101
 #define IDS_MULTILANG_1102              1102
@@ -1659,11 +1653,8 @@
 #define IDS_MULTILANG_1406              1406
 #define IDC_RADIO_COMPRESSION_JPEG      1406
 #define IDS_MULTILANG_1407              1407
-#define IDC_COMPRESSION_QUALITY_TEXT    1407
 #define IDS_MULTILANG_1408              1408
-#define IDC_CHECK_STORE_BACKGROUND_COLOR 1408
 #define IDS_MULTILANG_1409              1409
-#define IDC_CHECK_RLE_ENCODE            1409
 #define IDS_MULTILANG_1410              1410
 #define IDC_CHECK_BLUR                  1410
 #define IDS_MULTILANG_1411              1411
@@ -2564,6 +2555,7 @@
 #define IDC_STATIC1863                  1863
 #define IDS_STRING1863                  1863
 #define IDC_STATIC1864                  1864
+#define IDS_STRING1864                  1864
 #define IDC_STATIC1865                  1865
 #define IDC_STATIC1866                  1866
 #define IDC_STATIC1867                  1867

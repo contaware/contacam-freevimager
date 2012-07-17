@@ -35,7 +35,6 @@
 #include "PostDelayedMessage.h"
 #include "YuvToRgb.h"
 #include "RgbToYuv.h"
-#include "TiffSaveDlg.h"
 #include "sinstance.h"
 #include <atlbase.h>
 #include "IniFile.h"
@@ -185,7 +184,6 @@ CUImagerApp::CUImagerApp()
 	m_bFFMpegAudioEnc = FALSE;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
-	m_sPdfScanPaperSize = _T("Fit");
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
 	m_bStartFullScreenMode = FALSE;
@@ -1316,7 +1314,7 @@ void CUImagerApp::OnFileOpen()
 					_T("Audio Files (*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif)\0")
 					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
 					_T("Zip File (*.zip)\0*.zip\0");
-		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 		dlgFile.m_ofn.lpstrFile = FileNames;
 		dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
 
@@ -4598,10 +4596,6 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 	// Last Opened Directory
 	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));
 
-	// Scan Vars
-	m_nPdfScanCompressionQuality = GetProfileInt(sSection, _T("PdfScanCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
-	m_sPdfScanPaperSize = GetProfileString(sSection, _T("PdfScanPaperSize"), _T("Fit"));
-
 	// ESC to exit the program
 	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
 
@@ -5193,57 +5187,6 @@ BOOL CUImagerApp::RequireDirectXVersion7()
 	}
 	else
 		return TRUE;
-}
-
-BOOL CUImagerApp::BackupFile(CString sFileName)
-{
-	CString sBackUpDir = GetAppTempDir() + _T("Backup");
-
-	// Create Backup Directory if not Existing
-	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		if (!::CreateDir(sBackUpDir))
-		{
-			::ShowLastError(TRUE);
-			return FALSE;
-		}
-	}
-
-	// Backup File
-	return ::CopyFile(sFileName, sBackUpDir + _T("\\") + GetShortFileName(sFileName), FALSE);
-}
-
-BOOL CUImagerApp::RestoreFile(CString sFileName)
-{
-	CString sBackUpDir = GetAppTempDir() + _T("Backup");
-
-	// Backup Directory Not Existing?
-	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-		return FALSE;
-
-	// Restore File & Delete Backup Copy
-	if (::CopyFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName), sFileName, FALSE))
-	{
-		::DeleteFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName));
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CUImagerApp::DeleteBackupFile(CString sFileName)
-{
-	CString sBackUpDir = GetAppTempDir() + _T("Backup");
-
-	// Backup Directory Not Existing?
-	DWORD dwAttrib = ::GetFileAttributes(sBackUpDir);
-	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-		return FALSE;
-
-	// Delete Backup Copy
-	return ::DeleteFile(sBackUpDir + _T("\\") + GetShortFileName(sFileName));
 }
 
 BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)

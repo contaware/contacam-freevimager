@@ -990,37 +990,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BmpSaveDlg.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="BrowseDlg.cpp"
 				>
 				<FileConfiguration
@@ -2108,37 +2077,6 @@
 				>
 			</File>
 			<File
-				RelativePath="JpegCompressionQualityDlg.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\LayeredDlg.cpp"
 				>
 			</File>
@@ -2613,10 +2551,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\PdfSaveDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="PictureDoc.cpp"
 				>
 				<FileConfiguration
@@ -2746,37 +2680,6 @@
 			</File>
 			<File
 				RelativePath="PlayerToolBarDlg.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="PngSaveDlg.cpp"
 				>
 				<FileConfiguration
 					Name="FreeVimagerw|Win32"
@@ -3494,37 +3397,6 @@
 			</File>
 			<File
 				RelativePath="TabPageSSL.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="TiffSaveDlg.cpp"
 				>
 				<FileConfiguration
 					Name="FreeVimagerw|Win32"
@@ -4358,10 +4230,6 @@
 				>
 			</File>
 			<File
-				RelativePath="BmpSaveDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="BrowseDlg.h"
 				>
 			</File>
@@ -4566,10 +4434,6 @@
 				>
 			</File>
 			<File
-				RelativePath="JpegCompressionQualityDlg.h"
-				>
-			</File>
-			<File
 				RelativePath=".\LayeredDlg.h"
 				>
 			</File>
@@ -4678,10 +4542,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PdfSaveDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="Performance.h"
 				>
 			</File>
@@ -4711,10 +4571,6 @@
 			</File>
 			<File
 				RelativePath="PlayerToolBarDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="PngSaveDlg.h"
 				>
 			</File>
 			<File
@@ -4847,10 +4703,6 @@
 			</File>
 			<File
 				RelativePath="TabPageSSL.h"
-				>
-			</File>
-			<File
-				RelativePath="TiffSaveDlg.h"
 				>
 			</File>
 			<File

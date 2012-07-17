@@ -34,9 +34,6 @@
 #define AUDIOONLY_DEFAULT_WIDTH						400
 #define AUDIOONLY_DEFAULT_HEIGHT					40
 
-// Save As Jpeg sequence default quality
-#define DEFAULT_AVISAVEAS_JPEGCOMPRESSION			80
-
 // Forward Declaration
 class CVideoAviView;
 class CVideoAviChildFrame;

@@ -17,7 +17,6 @@
 #include "RenameDlg.h"
 #include "PostDelayedMessage.h"
 #include "Quantizer.h"
-#include "JpegCompressionQualityDlg.h"
 #include "AnimGifSave.h"
 #include "NoVistaFileDlg.h"
 #include "VideoFormatDlg.h"
@@ -2591,7 +2590,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	BOOL bSaveCopyAs;
 	TCHAR FileName[MAX_PATH] = _T("");
 	_tcscpy(FileName, m_sFileName);
-	CAviSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
+	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR defext[10] = _T("");
 	LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
 	if (lpPos != NULL)
@@ -2599,6 +2598,12 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = defext;
+	dlgFile.m_ofn.lpstrFilter = _T("Avi File (*.avi)\0*.avi\0")
+								_T("Swf File (*.swf)\0*.swf\0")
+								_T("Animated GIF (*.gif)\0*.gif\0")						
+								_T("BMP Sequence (*.bmp)\0*.bmp\0")
+								_T("PNG Sequence (*.png)\0*.png\0")
+								_T("JPEG Sequence (*.jpg)\0*.jpg\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
@@ -2677,23 +2682,13 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 				(extension == _T("thm")))
 		{
 #ifdef SUPPORT_LIBJPEG
-			CJpegCompressionQualityDlg JpegCompressionQualityDlg(GetView());
-			JpegCompressionQualityDlg.m_nCompressionQuality = DEFAULT_AVISAVEAS_JPEGCOMPRESSION;
-			if (JpegCompressionQualityDlg.DoModal() == IDOK)
+			CString sFirstFileName = SaveAsJPEG(FileName,
+												dlgFile.GetJpegCompressionQuality(),
+												FALSE);
+			if (sFirstFileName != _T(""))
 			{
-				CString sFirstFileName = SaveAsJPEG(FileName,
-													JpegCompressionQualityDlg.m_nCompressionQuality,
-													JpegCompressionQualityDlg.m_bSaveAsGrayscale);
-				if (sFirstFileName != _T(""))
-				{
-					res = TRUE;
-					_tcscpy(FileName, sFirstFileName);
-				}
-			}
-			else
-			{
-				// Set user interruption so that the error message box is not shown
-				m_ProcessingThread.Kill_NoBlocking();
+				res = TRUE;
+				_tcscpy(FileName, sFirstFileName);
 			}
 #endif
 		}
@@ -6069,7 +6064,7 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 	OpenFilesDlg.m_ofn.lpstrFile = OpenFileNames;
 	OpenFilesDlg.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
 	OpenFilesDlg.m_ofn.lpstrCustomFilter = NULL;
-	OpenFilesDlg.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+	OpenFilesDlg.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 	OpenFilesDlg.m_ofn.lpstrFilter = _T("Avi File (*.avi;*.divx)\0*.avi;*.divx\0");
 	if (OpenFilesDlg.DoModal() != IDOK)
 	{
@@ -6119,7 +6114,6 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 	SaveFileDlg.m_ofn.lpstrFile = SaveFileName;
 	SaveFileDlg.m_ofn.nMaxFile = MAX_PATH;
 	SaveFileDlg.m_ofn.lpstrCustomFilter = NULL;
-	SaveFileDlg.m_ofn.Flags |= OFN_EXPLORER;
 	SaveFileDlg.m_ofn.lpstrFilter = _T("Avi File (*.avi)\0*.avi\0");
 	SaveFileDlg.m_ofn.lpstrDefExt = _T("avi");
 	if (SaveFileDlg.DoModal() != IDOK)

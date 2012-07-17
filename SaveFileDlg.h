@@ -9,6 +9,15 @@
 
 #include "resource.h"
 
+#define ID_TIMER_SAVEFILEDLG			1
+#define SAVEFILEDLG_TIMER_MS			100U
+#define SAVEFILEDLG_LEFT_OFFSET			9
+#define SAVEFILEDLG_RIGHT_OFFSET		30
+#define SAVEFILEDLG_BOTTOM_OFFSET		8
+#define SAVEFILEDLG_SLIDERLABEL_WIDTH	120
+#define SAVEFILEDLG_SLIDER_HEIGHT		30
+#define SAVEFILEDLG_SLIDERTEXT_WIDTH	25
+
 /////////////////////////////////////////////////////////////////////////////
 // CSaveFileDlg dialog
 
@@ -17,94 +26,30 @@ class CSaveFileDlg : public CFileDialog
 	DECLARE_DYNAMIC(CSaveFileDlg)
 
 public:
-	CSaveFileDlg(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
-		LPCTSTR lpszDefExt = NULL,
-		LPCTSTR lpszFileName = NULL,
-		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		LPCTSTR lpszFilter = NULL,
-		CWnd* pParentWnd = NULL);
+	CSaveFileDlg(	BOOL bShowJPEGCompression,
+					LPCTSTR lpszDefExt = NULL,
+					LPCTSTR lpszFileName = NULL,
+					DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+					LPCTSTR lpszFilter = NULL,
+					CWnd* pParentWnd = NULL);
+	__forceinline int GetJpegCompressionQuality() const {return m_nJpegCompressionQuality;};
 
 protected:
 	//{{AFX_MSG(CSaveFileDlg)
+	afx_msg void OnDestroy();
+	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 protected:
+	BOOL m_bShowJPEGCompression;
+	int m_nJpegCompressionQuality;
+	CStatic m_SliderLabel;
+	CStatic m_SliderText;
+	CSliderCtrl m_SliderCtrl;
+	virtual void OnInitDone();
 	virtual void OnTypeChange();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-// CAviSaveFileDlg dialog
-
-class CAviSaveFileDlg : public CFileDialog
-{
-	DECLARE_DYNAMIC(CAviSaveFileDlg)
-
-public:
-	CAviSaveFileDlg(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
-		LPCTSTR lpszDefExt = NULL,
-		LPCTSTR lpszFileName = NULL,
-		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		LPCTSTR lpszFilter = NULL,
-		CWnd* pParentWnd = NULL);
-
-protected:
-	//{{AFX_MSG(CAviSaveFileDlg)
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-protected:
-	virtual void OnTypeChange();
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CAnimGifSaveFileDlg dialog
-
-class CAnimGifSaveFileDlg : public CFileDialog
-{
-	DECLARE_DYNAMIC(CAnimGifSaveFileDlg)
-
-public:
-	CAnimGifSaveFileDlg(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
-		LPCTSTR lpszDefExt = NULL,
-		LPCTSTR lpszFileName = NULL,
-		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		LPCTSTR lpszFilter = NULL,
-		CWnd* pParentWnd = NULL);
-
-protected:
-	//{{AFX_MSG(CAnimGifSaveFileDlg)
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-protected:
-	virtual void OnTypeChange();
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CBatchProcSaveFileDlg dialog
-
-class CBatchProcSaveFileDlg : public CFileDialog
-{
-	DECLARE_DYNAMIC(CBatchProcSaveFileDlg)
-
-public:
-	CBatchProcSaveFileDlg(BOOL bOpenFileDialog, // TRUE for FileOpen, FALSE for FileSaveAs
-		LPCTSTR lpszDefExt = NULL,
-		LPCTSTR lpszFileName = NULL,
-		DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-		LPCTSTR lpszFilter = NULL,
-		CWnd* pParentWnd = NULL);
-
-protected:
-	//{{AFX_MSG(CBatchProcSaveFileDlg)
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-protected:
-	virtual void OnTypeChange();
-};
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

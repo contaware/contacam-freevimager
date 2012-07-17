@@ -16,7 +16,6 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CNoVistaFileDlg, CFileDialog)
 
-// For VS2008 disable Vista Style because OnTypeChange() not working!
 #if _MFC_VER >= 0x0900
 CNoVistaFileDlg::CNoVistaFileDlg(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
 							DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
@@ -28,7 +27,7 @@ CNoVistaFileDlg::CNoVistaFileDlg(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTS
 #endif
 {
 	m_ofn.lpstrCustomFilter = NULL;
-	m_ofn.Flags |= OFN_EXPLORER;
+	m_ofn.Flags |= (OFN_EXPLORER | OFN_ENABLESIZING);
 }
 
 BEGIN_MESSAGE_MAP(CNoVistaFileDlg, CFileDialog)

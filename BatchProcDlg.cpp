@@ -2397,12 +2397,12 @@ void CBatchProcDlg::OnButtonDstFile()
 		if ( m_sOutputFileName == _T(""))
 			 m_sOutputFileName = _T("Pictures.zip");
 		_tcscpy(FileName, m_sOutputFileName);
-		CBatchProcSaveFileDlg fd(	FALSE,
-									NULL,
-									NULL,
-									OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-									NULL,
-									this);
+		CSaveFileDlg fd(FALSE,
+						NULL,
+						NULL,
+						OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
+						NULL,
+						this);
 		TCHAR defext[10] = _T("");
 		LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
 		if (lpPos != NULL)
@@ -2410,6 +2410,23 @@ void CBatchProcDlg::OnButtonDstFile()
 		fd.m_ofn.lpstrFile = FileName;
 		fd.m_ofn.nMaxFile = MAX_PATH;
 		fd.m_ofn.lpstrDefExt = defext;
+		if (((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
+		{
+			fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
+									_T("Avi File (*.avi)\0*.avi\0")
+									_T("Animated GIF (*.gif)\0*.gif\0")						
+									_T("Multi-Page TIFF (*.tif)\0*.tif\0")
+									_T("Pdf Document (*.pdf)\0*.pdf\0")
+									_T("Text Document (*.txt)\0*.txt\0");
+		}
+		else
+		{
+			fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
+									_T("Avi File (*.avi)\0*.avi\0")
+									_T("Animated GIF (*.gif)\0*.gif\0")						
+									_T("Multi-Page TIFF (*.tif)\0*.tif\0")
+									_T("Pdf Document (*.pdf)\0*.pdf\0");
+		}
 		CString defextension = defext;
 		defextension.MakeLower();
 		if (defextension == _T("zip"))
@@ -4047,7 +4064,7 @@ void CBatchProcDlg::OnButtonListAdd()
 				_T("Audio Video Interchange (*.avi;*.divx)\0*.avi;*.divx\0")
 	            _T("Audio Files (*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
 				_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0");
-	dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+	dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 	dlgFile.m_ofn.lpstrFile = FileNames;
 	dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
 

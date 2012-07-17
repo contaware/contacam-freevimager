@@ -34,7 +34,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="77">
+<CLASSES COUNT="69">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -52,7 +52,6 @@
 <CLASS NAME="CBatchProcJpegTab"/>
 <CLASS NAME="CBatchProcShrinkTab"/>
 <CLASS NAME="CBatchProcTiffTab"/>
-<CLASS NAME="CBmpSaveDlg"/>
 <CLASS NAME="CBrowseDlg"/>
 <CLASS NAME="cdxCDynamicChildDlg"/>
 <CLASS NAME="cdxCDynamicDialog"/>
@@ -74,7 +73,6 @@
 <CLASS NAME="CImageInfoDlg"/>
 <CLASS NAME="CIMAPI2Dlg"/>
 <CLASS NAME="CIMAPI2DownloadDlg"/>
-<CLASS NAME="CJpegCompressionQualityDlg"/>
 <CLASS NAME="CLayeredDlg"/>
 <CLASS NAME="CLicenseDlg"/>
 <CLASS NAME="CMonochromeConversionDlg"/>
@@ -83,9 +81,7 @@
 <CLASS NAME="COCRLanguageDlg"/>
 <CLASS NAME="COsdDlg"/>
 <CLASS NAME="COutVolDlg"/>
-<CLASS NAME="CPdfSaveDlg"/>
 <CLASS NAME="CPlayerToolBarDlg"/>
-<CLASS NAME="CPngSaveDlg"/>
 <CLASS NAME="CPreviewFileDlg"/>
 <CLASS NAME="CProgressDlg"/>
 <CLASS NAME="CProgressDlgThread"/>
@@ -94,9 +90,6 @@
 <CLASS NAME="CResizingDlg"/>
 <CLASS NAME="CResizingDpiDlg"/>
 <CLASS NAME="CRotationFlippingDlg"/>
-<CLASS NAME="CAnimGifSaveFileDlg"/>
-<CLASS NAME="CAviSaveFileDlg"/>
-<CLASS NAME="CBatchProcSaveFileDlg"/>
 <CLASS NAME="CSaveFileDlg"/>
 <CLASS NAME="CSendMailConfigurationDlg"/>
 <CLASS NAME="CSendMailDocsDlg"/>
@@ -105,7 +98,6 @@
 <CLASS NAME="CSharpenDlg"/>
 <CLASS NAME="CSoftBordersDlg"/>
 <CLASS NAME="CSoftenDlg"/>
-<CLASS NAME="CTiffSaveDlg"/>
 <CLASS NAME="CAboutDlg"/>
 <CLASS NAME="CVideoFormatDlg"/>
 <CLASS NAME="CWinsock2MissingDlg"/>

@@ -2,13 +2,13 @@
 
 [General Info]
 Version=1
-LastClass=CMovementDetectionPage
+LastClass=CAboutDlg
 LastTemplate=CDialog
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "uimager.h"
 LastPage=0
 
-ClassCount=126
+ClassCount=118
 Class1=CAddBordersDlg
 Class2=CAnimGifSaveDlg
 Class3=CAnimGifSaveSmallDlg
@@ -29,131 +29,123 @@ Class17=CBatchProcJpegTab
 Class18=CBatchProcShrinkTab
 Class19=CBatchProcTiffTab
 Class20=CBkgColEdit
-Class21=CBmpSaveDlg
-Class22=CBrowseDlg
-Class23=CCDAudioDoc
-Class24=CCDAudioView
-Class25=cdxCDynamicDialog
-Class26=cdxCSizeIconCtrl
-Class27=CChildFrame
-Class28=CColorButton
-Class29=CColorButtonPicker
-Class30=CColourPopup
-Class31=CCreditsDlg
-Class32=CDecreaseBppDlg
-Class33=CDeleteCamFoldersDlg
-Class34=CDeletePageDlg
-Class35=CDibStatic
-Class36=CDirectX7Dlg
-Class37=CDragDropListCtrl
-Class38=CDxVideoFormatDlg
-Class39=CDxVideoInputDlg
-Class40=CFTPUploadConfigurationDlg
-Class41=CGeneralPage
-Class42=CHLSDlgModeless
-Class43=CHostPortDlg
-Class44=CHScrollListBox
-Class45=CHttpVideoFormatDlg
-Class46=CImageInfoDlg
-Class47=CIMAPI2Dlg
-Class48=CIMAPI2DownloadDlg
-Class49=CJpegCompressionQualityDlg
-Class50=CLayeredDlg
-Class51=CLicenseDlg
-Class52=CListCtrlEx
-Class53=CMacProgressCtrl
-Class54=CMainFrame
-Class55=CMDIClientWnd
-Class56=CMonochromeConversionDlg
-Class57=CMovementDetectionPage
-Class58=CNetworkPage
-Class59=CNewDlg
-Class60=CNoVistaFileDlg
-Class61=CNumEdit
-Class62=CNumSpinCtrl
-Class63=COCRLanguageDlg
-Class64=COddButton
-Class65=COsdDlg
-Class66=COutVolDlg
-Class67=CPaletteWnd
-Class68=CPdfSaveDlg
-Class69=CPictureDoc
-Class70=CPicturePrintPreviewView
-Class71=CPictureView
-Class72=CPlayerToolBarDlg
-Class73=CPngSaveDlg
-Class74=CPreviewFileDlg
-Class75=CPrintPreviewScaleEdit
-Class76=CProgressDlg
-Class77=CProgressDlgThread
-Class78=CRedEyeDlg
-Class79=CRenameDlg
-Class80=CResizingDlg
-Class81=CResizingDpiDlg
-Class82=CRotationFlippingDlg
-Class83=CSaveFileDlg
-Class84=CAviSaveFileDlg
-Class85=CAnimGifSaveFileDlg
-Class86=CBatchProcSaveFileDlg
-Class87=CSendMailConfigurationDlg
-Class88=CSendMailDocsDlg
-Class89=CSettingsDlg
-Class90=CSettingsDlgVideoDeviceDoc
-Class91=CSharpenDlg
-Class92=CSnapshotPage
-Class93=CSoftBordersDlg
-Class94=CSoftenDlg
-Class95=CStaticLink
-Class96=CStatusBarACT
-Class97=CTabCtrlSSL
-Class98=CTiffSaveDlg
-Class99=CChildToolBar
-Class100=CVideoAviToolBar
-Class101=CDetComboBox
-Class102=CVideoDeviceToolBar
-Class103=CPictureToolBar
-Class104=CToolBarChildFrame
-Class105=CAudioMCIChildFrame
-Class106=CCDAudioChildFrame
-Class107=CZoomComboBox
-Class108=CVideoAviChildFrame
-Class109=CPictureChildFrame
-Class110=CVideoDeviceChildFrame
-Class111=CToolbarSliderCtrl
-Class112=CUImagerApp
-Class113=CAboutDlg
-Class114=CUImagerDoc
-Class115=CUImagerView
-Class116=CVideoAviDoc
-Class117=CVideoAviView
-Class118=CVideoDeviceDoc
-Class119=CVideoDevicePropertySheet
-Class120=CVideoDeviceView
-Class121=CVideoFormatDlg
-Class122=CWinsock2MissingDlg
-Class123=CXButtonXP
-Class124=CXmpDlg
-Class125=CYesNoAllCancelDlg
-Class126=CZipProgressDlg
+Class21=CBrowseDlg
+Class22=CCDAudioDoc
+Class23=CCDAudioView
+Class24=cdxCDynamicDialog
+Class25=cdxCSizeIconCtrl
+Class26=CChildFrame
+Class27=CColorButton
+Class28=CColorButtonPicker
+Class29=CColourPopup
+Class30=CCreditsDlg
+Class31=CDecreaseBppDlg
+Class32=CDeleteCamFoldersDlg
+Class33=CDeletePageDlg
+Class34=CDibStatic
+Class35=CDirectX7Dlg
+Class36=CDragDropListCtrl
+Class37=CDxVideoFormatDlg
+Class38=CDxVideoInputDlg
+Class39=CFTPUploadConfigurationDlg
+Class40=CGeneralPage
+Class41=CHLSDlgModeless
+Class42=CHostPortDlg
+Class43=CHScrollListBox
+Class44=CHttpVideoFormatDlg
+Class45=CImageInfoDlg
+Class46=CIMAPI2Dlg
+Class47=CIMAPI2DownloadDlg
+Class48=CLayeredDlg
+Class49=CLicenseDlg
+Class50=CListCtrlEx
+Class51=CMacProgressCtrl
+Class52=CMainFrame
+Class53=CMDIClientWnd
+Class54=CMonochromeConversionDlg
+Class55=CMovementDetectionPage
+Class56=CNetworkPage
+Class57=CNewDlg
+Class58=CNoVistaFileDlg
+Class59=CNumEdit
+Class60=CNumSpinCtrl
+Class61=COCRLanguageDlg
+Class62=COddButton
+Class63=COsdDlg
+Class64=COutVolDlg
+Class65=CPaletteWnd
+Class66=CPictureDoc
+Class67=CPicturePrintPreviewView
+Class68=CPictureView
+Class69=CPlayerToolBarDlg
+Class70=CPreviewFileDlg
+Class71=CPrintPreviewScaleEdit
+Class72=CProgressDlg
+Class73=CProgressDlgThread
+Class74=CRedEyeDlg
+Class75=CRenameDlg
+Class76=CResizingDlg
+Class77=CResizingDpiDlg
+Class78=CRotationFlippingDlg
+Class79=CSaveFileDlg
+Class80=CSendMailConfigurationDlg
+Class81=CSendMailDocsDlg
+Class82=CSettingsDlg
+Class83=CSettingsDlgVideoDeviceDoc
+Class84=CSharpenDlg
+Class85=CSnapshotPage
+Class86=CSoftBordersDlg
+Class87=CSoftenDlg
+Class88=CStaticLink
+Class89=CStatusBarACT
+Class90=CTabCtrlSSL
+Class91=CChildToolBar
+Class92=CVideoAviToolBar
+Class93=CDetComboBox
+Class94=CVideoDeviceToolBar
+Class95=CPictureToolBar
+Class96=CToolBarChildFrame
+Class97=CAudioMCIChildFrame
+Class98=CCDAudioChildFrame
+Class99=CZoomComboBox
+Class100=CVideoAviChildFrame
+Class101=CPictureChildFrame
+Class102=CVideoDeviceChildFrame
+Class103=CToolbarSliderCtrl
+Class104=CUImagerApp
+Class105=CAboutDlg
+Class106=CUImagerDoc
+Class107=CUImagerView
+Class108=CVideoAviDoc
+Class109=CVideoAviView
+Class110=CVideoDeviceDoc
+Class111=CVideoDevicePropertySheet
+Class112=CVideoDeviceView
+Class113=CVideoFormatDlg
+Class114=CWinsock2MissingDlg
+Class115=CXButtonXP
+Class116=CXmpDlg
+Class117=CYesNoAllCancelDlg
+Class118=CZipProgressDlg
 
-ResourceCount=102
-Resource1=IDD_MONOCHROME (English (U.S.))
-Resource2=IDR_VIDEO_AVI_TOOLBAR (English (U.S.))
-Resource3=IDR_VIDEO_DEVICE_TOOLBAR (English (U.S.))
-Resource4=IDR_PICTURE_TOOLBAR (English (U.S.))
-Resource5=IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN (English (U.S.))
-Resource6=IDR_MAINFRAME_VIDEODEVICEDOC (English (U.S.))
+ResourceCount=97
+Resource1=IDD_DIRECTX7 (English (U.S.))
+Resource2=IDR_MAINFRAME_VIDEODEVICEDOC (English (U.S.))
+Resource3=IDR_VIDEO_AVI_TOOLBAR (English (U.S.))
+Resource4=IDR_VIDEO_DEVICE_TOOLBAR (English (U.S.))
+Resource5=IDR_PICTURE_TOOLBAR (English (U.S.))
+Resource6=IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN (English (U.S.))
 Resource7=IDR_CONTEXT_VIDEO_DEVICE_ZONES (English (U.S.))
 Resource8=IDR_CONTEXT_TASKBAR (English (U.S.))
 Resource9=IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY (English (U.S.))
-Resource10=IDD_AUDIOVIDEO_SHIFT (English (U.S.))
+Resource10=IDR_CONTEXT_FILTER (English (U.S.))
 Resource11=IDR_AUDIOMCI (English (U.S.))
 Resource12=IDR_CONTEXT_PICTURE_FULLSCREEN (English (U.S.))
 Resource13=IDR_CONTEXT_OSD (English (U.S.))
 Resource14=IDR_TRAYICON (English (U.S.))
 Resource15=IDR_CDAUDIO (English (U.S.))
 Resource16=IDR_CONTEXT_LAYERED_DLG (English (U.S.))
-Resource17=IDD_PLAYER_TOOLBAR (English (U.S.))
+Resource17=IDR_CONTEXT_TASKBAR_FULLSCREEN (English (U.S.))
 Resource18=IDR_CONTEXT_SLIDESHOW_ONLY (English (U.S.))
 Resource19=IDR_CONTEXT_PICTURE (English (U.S.))
 Resource20=IDR_CONTEXT_VIDEO_AVI (English (U.S.))
@@ -162,83 +154,78 @@ Resource22=IDR_VIDEODEVICE (English (U.S.))
 Resource23=IDR_VIDEOAVI (English (U.S.))
 Resource24=IDR_PICTURE (English (U.S.))
 Resource25=IDR_CONTEXT_CROP (English (U.S.))
-Resource26=IDD_SNAPSHOT (English (U.S.))
-Resource27=IDD_TIFF_SAVE (English (U.S.))
-Resource28=IDD_SENDMAIL_CONFIGURATION (English (U.S.))
-Resource29=IDD_BATCH_PROC_GENERALTAB (English (U.S.))
-Resource30=IDD_JPEG_COMPRESSION_QUALITY (English (U.S.))
-Resource31=IDD_MOVDET_FTP_CONFIGURATION (English (U.S.))
-Resource32=IDD_AUDIOFORMAT (English (U.S.))
-Resource33=IDD_NETWORK (English (U.S.))
-Resource34=IDD_NEW (English (U.S.))
-Resource35=IDD_PDF_SAVE (English (U.S.))
-Resource36=IDD_PROGRESS (English (U.S.))
-Resource37=IDD_DECREASE_BPP (English (U.S.))
+Resource26=IDD_SHARPEN (English (U.S.))
+Resource27=IDD_MCIAUDIOPLAYER (English (U.S.))
+Resource28=IDD_ANIMGIF_SAVE (English (U.S.))
+Resource29=IDD_ADD_BORDERS (English (U.S.))
+Resource30=IDD_SOFT_BORDERS (English (U.S.))
+Resource31=IDD_ANIMGIF_SAVE_SMALL (English (U.S.))
+Resource32=IDD_XMP_IMPORT (English (U.S.))
+Resource33=IDD_BATCH_PROC_GENERALTAB (English (U.S.))
+Resource34=IDD_BATCH_PROC_JPEGTAB (English (U.S.))
+Resource35=IDD_BATCH_PROC_SHRINKTAB (English (U.S.))
+Resource36=IDD_BATCH_PROC_TIFFTAB (English (U.S.))
+Resource37=IDD_OSD (English (U.S.))
 Resource38=IDD_XMP (English (U.S.))
-Resource39=IDR_CONTEXT_FILTER (English (U.S.))
-Resource40=IDD_AUDIOIN_SOURCE (English (U.S.))
-Resource41=IDD_SNAPSHOT_FTP_CONFIGURATION (English (U.S.))
-Resource42=IDD_OSD (English (U.S.))
-Resource43=IDD_RESIZING_DPI (English (U.S.))
-Resource44=IDD_IMAPI2_DOWNLOAD (English (U.S.))
-Resource45=IDD_YESNOALLCANCEL (English (U.S.))
-Resource46=IDD_DX_VIDEOFORMAT (English (U.S.))
-Resource47=IDD_LICENSE (English (U.S.))
-Resource48=IDR_CONTEXT_TASKBAR_FULLSCREEN (English (U.S.))
-Resource49=IDD_ANIMGIF_SAVE_SMALL (English (U.S.))
-Resource50=IDD_RESIZING (English (U.S.))
-Resource51=IDD_ADD_BORDERS (English (U.S.))
-Resource52=IDD_HOSTPORT (English (U.S.))
-Resource53=IDD_DIRECTX7 (English (U.S.))
-Resource54=IDD_IMAPI2 (English (U.S.))
-Resource55=IDD_MCIAUDIOPLAYER (English (U.S.))
-Resource56=IDD_SOFT_BORDERS (English (U.S.))
-Resource57=IDD_BMP_SAVE (English (U.S.))
-Resource58=IDD_OCR_LANGUAGE (English (U.S.))
-Resource59=IDD_IMAGEINFO (English (U.S.))
-Resource60=IDD_SETTINGS (English (U.S.))
-Resource61=IDD_FILEOPENPREVIEWWIN2000 (English (U.S.))
-Resource62=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
-Resource63=IDD_ANIMGIF_SAVE (English (U.S.))
-Resource64=IDD_AUDIOOUT_DESTINATION (English (U.S.))
-Resource65=IDD_BATCH_PROC_SHRINKTAB (English (U.S.))
-Resource66=IDD_RENAME (English (U.S.))
-Resource67=IDD_OPEN_STREAMS_SELECT (English (U.S.))
-Resource68=IDD_ABOUTBOX (English (U.S.))
-Resource69=IDD_VIDEOFORMAT (English (U.S.))
-Resource70=IDD_BATCH_PROC (English (U.S.))
-Resource71=IDD_PICTUREPRINTPREVIEW (English (U.S.))
-Resource72=IDD_HLS (English (U.S.))
-Resource73=IDD_DELETEPAGE (English (U.S.))
-Resource74=IDD_OUTVOL (English (U.S.))
-Resource75=IDD_SAVEAS_STREAMS_SELECT (English (U.S.))
-Resource76=IDD_HTTP_AUTHENTICATION (English (U.S.))
-Resource77=IDD_SOFTEN (English (U.S.))
-Resource78=IDR_MAINFRAME (English (U.S.))
-Resource79=IDD_HTTP_VIDEOFORMAT (English (U.S.))
-Resource80=IDD_PNG_SAVE (English (U.S.))
-Resource81=IDD_XMP_IMPORT (English (U.S.))
-Resource82=IDD_FILEOPENPREVIEWXP (English (U.S.))
-Resource83=IDD_CDAUDIOPLAYER (English (U.S.))
-Resource84=IDD_SENDMAIL_CURRENT_PICTUREDOC (English (U.S.))
-Resource85=IDD_BATCH_PROC_JPEGTAB (English (U.S.))
-Resource86=IDD_DX_VIDEOINPUT (English (U.S.))
-Resource87=IDD_MOVDET (English (U.S.))
-Resource88=IDD_ZIP_PROGRESS (English (U.S.))
-Resource89=IDD_ASSISTANT (English (U.S.))
-Resource90=IDD_GENERAL (English (U.S.))
-Resource91=IDD_FILEOPENPREVIEW (English (U.S.))
-Resource92=IDD_REDEYE (English (U.S.))
-Resource93=IDD_SENDMAIL_OPEN_DOCS (English (U.S.))
-Resource94=IDD_SENDMAIL_CURRENT_VIDEOAVIDOC (English (U.S.))
-Resource95=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
-Resource96=IDD_WINSOCK2_MISSING (English (U.S.))
-Resource97=IDD_SHARPEN (English (U.S.))
-Resource98=IDD_BATCH_PROC_TIFFTAB (English (U.S.))
-Resource99=IDD_CREDITS (English (U.S.))
-Resource100=IDD_LAYERED (English (U.S.))
-Resource101=IDD_AVIINFO (English (U.S.))
-Resource102=IDD_DELETE_CAM_FOLDERS (English (U.S.))
+Resource39=IDD_DELETEPAGE (English (U.S.))
+Resource40=IDD_OCR_LANGUAGE (English (U.S.))
+Resource41=IDD_PICTUREPRINTPREVIEW (English (U.S.))
+Resource42=IDD_AUDIOFORMAT (English (U.S.))
+Resource43=IDD_VIDEOFORMAT (English (U.S.))
+Resource44=IDD_WINSOCK2_MISSING (English (U.S.))
+Resource45=IDD_HTTP_VIDEOFORMAT (English (U.S.))
+Resource46=IDD_HTTP_AUTHENTICATION (English (U.S.))
+Resource47=IDD_CDAUDIOPLAYER (English (U.S.))
+Resource48=IDD_LAYERED (English (U.S.))
+Resource49=IDD_SOFTEN (English (U.S.))
+Resource50=IDD_NEW (English (U.S.))
+Resource51=IDD_SNAPSHOT (English (U.S.))
+Resource52=IDD_PROGRESS (English (U.S.))
+Resource53=IDD_SNAPSHOT_FTP_CONFIGURATION (English (U.S.))
+Resource54=IDD_SETTINGS_VIDEODEVICEDOC (English (U.S.))
+Resource55=IDD_IMAPI2 (English (U.S.))
+Resource56=IDD_IMAPI2_DOWNLOAD (English (U.S.))
+Resource57=IDD_ASSISTANT (English (U.S.))
+Resource58=IDD_RENAME (English (U.S.))
+Resource59=IDD_DELETE_CAM_FOLDERS (English (U.S.))
+Resource60=IDD_ABOUTBOX (English (U.S.))
+Resource61=IDD_GENERAL (English (U.S.))
+Resource62=IDD_RESIZING (English (U.S.))
+Resource63=IDD_SENDMAIL_OPEN_DOCS (English (U.S.))
+Resource64=IDD_HLS (English (U.S.))
+Resource65=IDD_AUDIOIN_SOURCE (English (U.S.))
+Resource66=IDD_OUTVOL (English (U.S.))
+Resource67=IDD_AUDIOOUT_DESTINATION (English (U.S.))
+Resource68=IDD_SAVEAS_STREAMS_SELECT (English (U.S.))
+Resource69=IDD_OPEN_STREAMS_SELECT (English (U.S.))
+Resource70=IDD_IMAGEINFO (English (U.S.))
+Resource71=IDD_MONOCHROME (English (U.S.))
+Resource72=IDD_AVIINFO (English (U.S.))
+Resource73=IDD_SETTINGS (English (U.S.))
+Resource74=IDD_DX_VIDEOFORMAT (English (U.S.))
+Resource75=IDD_DX_VIDEOINPUT (English (U.S.))
+Resource76=IDD_SENDMAIL_CONFIGURATION (English (U.S.))
+Resource77=IDD_MOVDET_FTP_CONFIGURATION (English (U.S.))
+Resource78=IDD_HOSTPORT (English (U.S.))
+Resource79=IDD_NETWORK (English (U.S.))
+Resource80=IDD_MOVDET (English (U.S.))
+Resource81=IDD_REDEYE (English (U.S.))
+Resource82=IDD_FILEOPENPREVIEW (English (U.S.))
+Resource83=IDD_DECREASE_BPP (English (U.S.))
+Resource84=IDD_FILEOPENPREVIEWXP (English (U.S.))
+Resource85=IDD_FILEOPENPREVIEWWIN2000 (English (U.S.))
+Resource86=IDD_ROTATE_FLIP_MODELESS (English (U.S.))
+Resource87=IDD_RESIZING_DPI (English (U.S.))
+Resource88=IDD_PLAYER_TOOLBAR (English (U.S.))
+Resource89=IDD_AUDIOVIDEO_SHIFT (English (U.S.))
+Resource90=IDD_ZIP_PROGRESS (English (U.S.))
+Resource91=IDD_LICENSE (English (U.S.))
+Resource92=IDD_CREDITS (English (U.S.))
+Resource93=IDD_YESNOALLCANCEL (English (U.S.))
+Resource94=IDD_BATCH_PROC (English (U.S.))
+Resource95=IDD_SENDMAIL_CURRENT_PICTUREDOC (English (U.S.))
+Resource96=IDD_SENDMAIL_CURRENT_VIDEOAVIDOC (English (U.S.))
+Resource97=IDR_MAINFRAME (English (U.S.))
 
 [CLS:CAddBordersDlg]
 Type=0
@@ -359,12 +346,6 @@ Type=0
 BaseClass=CEdit
 HeaderFile=BkgColEdit.h
 ImplementationFile=BkgColEdit.cpp
-
-[CLS:CBmpSaveDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=BmpSaveDlg.h
-ImplementationFile=BmpSaveDlg.cpp
 
 [CLS:CBrowseDlg]
 Type=0
@@ -528,12 +509,6 @@ BaseClass=CDialog
 HeaderFile=IMAPI2DownloadDlg.h
 ImplementationFile=IMAPI2DownloadDlg.cpp
 
-[CLS:CJpegCompressionQualityDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=JpegCompressionQualityDlg.h
-ImplementationFile=JpegCompressionQualityDlg.cpp
-
 [CLS:CLayeredDlg]
 Type=0
 BaseClass=CDialog
@@ -581,9 +556,6 @@ Type=0
 BaseClass=CPropertyPage
 HeaderFile=MovementDetectionPage.h
 ImplementationFile=MovementDetectionPage.cpp
-Filter=D
-VirtualFilter=idWC
-LastObject=IDC_CHECK_SCHEDULER_SATURDAY
 
 [CLS:CNetworkPage]
 Type=0
@@ -645,12 +617,6 @@ BaseClass=CWnd
 HeaderFile=PaletteWnd.h
 ImplementationFile=PaletteWnd.cpp
 
-[CLS:CPdfSaveDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=PdfSaveDlg.h
-ImplementationFile=PdfSaveDlg.cpp
-
 [CLS:CPictureDoc]
 Type=0
 BaseClass=CUImagerDoc
@@ -674,12 +640,6 @@ Type=0
 BaseClass=CDialog
 HeaderFile=PlayerToolBarDlg.h
 ImplementationFile=PlayerToolBarDlg.cpp
-
-[CLS:CPngSaveDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=PngSaveDlg.h
-ImplementationFile=PngSaveDlg.cpp
 
 [CLS:CPreviewFileDlg]
 Type=0
@@ -741,24 +701,6 @@ BaseClass=CFileDialog
 HeaderFile=SaveFileDlg.h
 ImplementationFile=SaveFileDlg.cpp
 
-[CLS:CAviSaveFileDlg]
-Type=0
-BaseClass=CFileDialog
-HeaderFile=SaveFileDlg.h
-ImplementationFile=SaveFileDlg.cpp
-
-[CLS:CAnimGifSaveFileDlg]
-Type=0
-BaseClass=CFileDialog
-HeaderFile=SaveFileDlg.h
-ImplementationFile=SaveFileDlg.cpp
-
-[CLS:CBatchProcSaveFileDlg]
-Type=0
-BaseClass=CFileDialog
-HeaderFile=SaveFileDlg.h
-ImplementationFile=SaveFileDlg.cpp
-
 [CLS:CSendMailConfigurationDlg]
 Type=0
 BaseClass=CDialog
@@ -794,7 +736,6 @@ Type=0
 BaseClass=CPropertyPage
 HeaderFile=SnapshotPage.h
 ImplementationFile=SnapshotPage.cpp
-LastObject=CSnapshotPage
 
 [CLS:CSoftBordersDlg]
 Type=0
@@ -825,12 +766,6 @@ Type=0
 BaseClass=CTabCtrl
 HeaderFile=TabCtrlSSL.h
 ImplementationFile=TabCtrlSSL.cpp
-
-[CLS:CTiffSaveDlg]
-Type=0
-BaseClass=CDialog
-HeaderFile=TiffSaveDlg.h
-ImplementationFile=TiffSaveDlg.cpp
 
 [CLS:CChildToolBar]
 Type=0
@@ -964,9 +899,6 @@ Type=0
 BaseClass=CUImagerView
 HeaderFile=VideoDeviceView.h
 ImplementationFile=VideoDeviceView.cpp
-Filter=C
-VirtualFilter=VWC
-LastObject=CVideoDeviceView
 
 [CLS:CVideoFormatDlg]
 Type=0
@@ -1076,10 +1008,6 @@ Class=CBatchProcShrinkTab
 Type=1
 Class=CBatchProcTiffTab
 
-[DLG:IDD_BMP_SAVE]
-Type=1
-Class=CBmpSaveDlg
-
 [DLG:IDD_CDAUDIOPLAYER]
 Type=1
 Class=CCDAudioView
@@ -1136,10 +1064,6 @@ Class=CIMAPI2Dlg
 Type=1
 Class=CIMAPI2DownloadDlg
 
-[DLG:IDD_JPEG_COMPRESSION_QUALITY]
-Type=1
-Class=CJpegCompressionQualityDlg
-
 [DLG:IDD_LAYERED]
 Type=1
 Class=CLayeredDlg
@@ -1176,17 +1100,9 @@ Class=COsdDlg
 Type=1
 Class=COutVolDlg
 
-[DLG:IDD_PDF_SAVE]
-Type=1
-Class=CPdfSaveDlg
-
 [DLG:IDD_PLAYER_TOOLBAR]
 Type=1
 Class=CPlayerToolBarDlg
-
-[DLG:IDD_PNG_SAVE]
-Type=1
-Class=CPngSaveDlg
 
 [DLG:IDD_PROGRESS]
 Type=1
@@ -1243,10 +1159,6 @@ Class=CSoftBordersDlg
 [DLG:IDD_SOFTEN]
 Type=1
 Class=CSoftenDlg
-
-[DLG:IDD_TIFF_SAVE]
-Type=1
-Class=CTiffSaveDlg
 
 [DLG:IDD_ABOUTBOX]
 Type=1
@@ -2413,17 +2325,6 @@ Control1=IDC_COMBO_AUDIOOUT_DESTINATION,combobox,1344339971
 Control2=IDOK,button,1342242817
 Control3=IDCANCEL,button,1342242816
 
-[DLG:IDD_JPEG_COMPRESSION_QUALITY (English (U.S.))]
-Type=1
-Class=?
-ControlCount=6
-Control1=IDC_COMPRESSION_QUALITY_SLIDER,msctls_trackbar32,1342242821
-Control2=IDC_SAVE_GRAYSCALE,button,1342242819
-Control3=IDOK,button,1342242817
-Control4=IDCANCEL,button,1342242816
-Control5=IDC_STATIC2227,static,1342308352
-Control6=IDC_COMPRESSION_QUALITY_EDIT,edit,1342253056
-
 [DLG:IDD_SAVEAS_STREAMS_SELECT (English (U.S.))]
 Type=1
 Class=?
@@ -3103,36 +3004,6 @@ Control5=IDC_STATIC2367,static,1342308352
 Control6=IDC_STATIC2368,static,1342308352
 Control7=IDC_TEXT_SOFT_BORDERS,static,1342312449
 
-[DLG:IDD_TIFF_SAVE (English (U.S.))]
-Type=1
-Class=?
-ControlCount=9
-Control1=IDC_RADIO_COMPRESSION,button,1342308361
-Control2=IDC_RADIO_COMPRESSION_CCITTFAX4,button,1342177289
-Control3=IDC_RADIO_COMPRESSION_LZW,button,1342177289
-Control4=IDC_RADIO_COMPRESSION_JPEG,button,1342177289
-Control5=IDC_COMPRESSION_QUALITY_TEXT,static,1342308352
-Control6=IDC_COMPRESSION_QUALITY_EDIT,edit,1342253056
-Control7=IDC_COMPRESSION_QUALITY_SLIDER,msctls_trackbar32,1342242821
-Control8=IDOK,button,1342242817
-Control9=IDCANCEL,button,1342242816
-
-[DLG:IDD_PNG_SAVE (English (U.S.))]
-Type=1
-Class=?
-ControlCount=3
-Control1=IDC_CHECK_STORE_BACKGROUND_COLOR,button,1342242819
-Control2=IDOK,button,1342242817
-Control3=IDCANCEL,button,1342242816
-
-[DLG:IDD_BMP_SAVE (English (U.S.))]
-Type=1
-Class=?
-ControlCount=3
-Control1=IDC_CHECK_RLE_ENCODE,button,1342242819
-Control2=IDOK,button,1342242817
-Control3=IDCANCEL,button,1342242816
-
 [DLG:IDD_ANIMGIF_SAVE_SMALL (English (U.S.))]
 Type=1
 Class=?
@@ -3710,18 +3581,6 @@ Control235=IDC_STATIC2449,static,1342308352
 Control236=IDC_STATIC2450,static,1342308352
 Control237=IDC_STATIC2451,static,1342308352
 Control238=IDC_STATIC2452,button,1342177287
-
-[DLG:IDD_PDF_SAVE (English (U.S.))]
-Type=1
-Class=?
-ControlCount=7
-Control1=IDC_COMBO_PAPER_SIZE,combobox,1344339971
-Control2=IDC_COMPRESSION_QUALITY_SLIDER,msctls_trackbar32,1342242821
-Control3=IDOK,button,1342242817
-Control4=IDCANCEL,button,1342242816
-Control5=IDC_COMPRESSION_QUALITY_TEXT,static,1342308352
-Control6=IDC_COMPRESSION_QUALITY_EDIT,edit,1342253056
-Control7=IDC_STATIC2453,static,1342308352
 
 [DLG:IDD_DELETEPAGE (English (U.S.))]
 Type=1

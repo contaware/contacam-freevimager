@@ -23,7 +23,7 @@
 #include "Dib.h"
 #include "Quantizer.h"
 #include "Tiff2Pdf.h"
-#include "PdfSaveDlg.h"
+#include "SaveFileDlg.h"
 #include "NoVistaFileDlg.h"
 #include "AVRec.h"
 
@@ -451,7 +451,7 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 				BeginWaitCursor();
 				if (::Tiff2Pdf(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
 								((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
-								((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize,
+								_T("Fit"),
 								TRUE,		// Fit Window
 								TRUE,		// Interpolate
 								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality))
@@ -470,7 +470,7 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 					BeginWaitCursor();
 					if (::Tiff2Pdf(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
 									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
-									((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize,
+									_T("Fit"),
 									TRUE,		// Fit Window
 									TRUE,		// Interpolate
 									((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality))
@@ -810,7 +810,7 @@ void CMainFrame::OnFileAcquireToTiff()
 
 	// Display the Save As Dialog
 	TCHAR szFileName[MAX_PATH];
-	CNoVistaFileDlg dlgFile(FALSE);
+	CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, this);
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("TiffScanFileName"), _T("scan.tif"));
@@ -823,7 +823,6 @@ void CMainFrame::OnFileAcquireToTiff()
 	dlgFile.m_ofn.lpstrFile = szFileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
-	dlgFile.m_ofn.Flags |= OFN_EXPLORER;
 	dlgFile.m_ofn.lpstrFilter = _T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0");
 	dlgFile.m_ofn.lpstrDefExt = _T("tif");
 	if (dlgFile.DoModal() == IDOK)
@@ -864,7 +863,7 @@ void CMainFrame::OnFileAcquireToPdf()
 
 	// Display the Save As Dialog
 	TCHAR szFileName[MAX_PATH];
-	CNoVistaFileDlg dlgFile(FALSE);
+	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, this);
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("PdfScanFileName"), _T("scan.pdf"));
@@ -877,44 +876,19 @@ void CMainFrame::OnFileAcquireToPdf()
 	dlgFile.m_ofn.lpstrFile = szFileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
-	dlgFile.m_ofn.Flags |= OFN_EXPLORER;
 	dlgFile.m_ofn.lpstrFilter = _T("Pdf Document (*.pdf)\0*.pdf\0");
 	dlgFile.m_ofn.lpstrDefExt = _T("pdf");
 	if (dlgFile.DoModal() == IDOK)
 	{
+		((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlgFile.GetJpegCompressionQuality();
 		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = szFileName;
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 			::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("PdfScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 																					::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName) + _T(".tif"));
-		
-		// Show the PDF Dialog
-		CPdfSaveDlg dlg(this);
-		dlg.m_nCompressionQuality = ((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality;
-		dlg.m_sPdfScanPaperSize = ((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize;
-		if (dlg.DoModal() == IDOK)
-		{
-			// Set Pdf Vars
-			((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlg.m_nCompressionQuality;
-			((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize = dlg.m_sPdfScanPaperSize;
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-																_T("PdfScanCompressionQuality"),
-																((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);
-				((CUImagerApp*)::AfxGetApp())->WriteProfileString(_T("GeneralApp"),
-																_T("PdfScanPaperSize"),
-																((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize);
-			}
-			
-			// Acquire
-			TwainAcquire(TWCPP_ANYCOUNT);
-		}
-		else
-		{
-			((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = _T("");
-			((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("");
-		}
+
+		// Acquire
+		TwainAcquire(TWCPP_ANYCOUNT);
 	}
 	else
 	{
@@ -970,36 +944,14 @@ void CMainFrame::OnFileAcquireAndEmail()
 	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() +
 															TMP_SCAN_AND_EMAIL_DIR + _T("\\Document.tif");
 
-	// Show the PDF Dialog
-	CPdfSaveDlg dlg(this);
-	dlg.m_nCompressionQuality = ((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality;
-	dlg.m_sPdfScanPaperSize = ((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize;
-	if (dlg.DoModal() == IDOK)
-	{
-		// Set Scan & Email Flag
-		m_bScanAndEmail = TRUE;
+	// Set Scan & Email Flag
+	m_bScanAndEmail = TRUE;
+
+	// Set the default compression
+	((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 		
-		// Set Pdf Vars
-		((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlg.m_nCompressionQuality;
-		((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize = dlg.m_sPdfScanPaperSize;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-															_T("PdfScanCompressionQuality"),
-															((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileString(_T("GeneralApp"),
-															_T("PdfScanPaperSize"),
-															((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize);
-		}
-		
-		// Acquire
-		TwainAcquire(TWCPP_ANYCOUNT);
-	}
-	else
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = _T("");
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("");
-	}
+	// Acquire
+	TwainAcquire(TWCPP_ANYCOUNT);
 }
 
 void CMainFrame::OnFileSelecttwainsource() 

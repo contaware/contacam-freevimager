@@ -596,11 +596,6 @@ public:
 	// Application Temporary Directory
 	CString GetAppTempDir() const {return m_sAppTempDir;}; // Ends With a _T('\\')
 
-	// Store / Restore Files to / from Temporary Folder
-	BOOL BackupFile(CString sFileName);
-	BOOL RestoreFile(CString sFileName);
-	BOOL DeleteBackupFile(CString sFileName);
-
 	// Show color dialog with custom
 	// colors store in registry.
 	// Inits the dialog with crColor and
@@ -762,7 +757,6 @@ public:
 
 	// Scan Vars
 	int m_nPdfScanCompressionQuality;
-	CString m_sPdfScanPaperSize;
 	CString m_sScanToTiffFileName;
 	CString m_sScanToPdfFileName;
 

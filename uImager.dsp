@@ -223,10 +223,6 @@ SOURCE=.\BkgColEdit.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BmpSaveDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\BrowseDlg.cpp
 # End Source File
 # Begin Source File
@@ -423,10 +419,6 @@ SOURCE=.\IniFile.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\JpegCompressionQualityDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\LayeredDlg.cpp
 # End Source File
 # Begin Source File
@@ -550,10 +542,6 @@ SOURCE=.\PaletteWnd.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PdfSaveDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\PictureDoc.cpp
 # End Source File
 # Begin Source File
@@ -575,10 +563,6 @@ SOURCE=.\PJNSMTP_vc6.cpp
 # Begin Source File
 
 SOURCE=.\PlayerToolBarDlg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PngSaveDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -700,10 +684,6 @@ SOURCE=.\TabCtrlSSL.cpp
 # Begin Source File
 
 SOURCE=.\TabPageSSL.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TiffSaveDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -916,10 +896,6 @@ SOURCE=.\BkgColEdit.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\BmpSaveDlg.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\BrowseDlg.h
 # End Source File
 # Begin Source File
@@ -1124,10 +1100,6 @@ SOURCE=.\ISampleGrabber.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\JpegCompressionQualityDlg.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\LayeredDlg.h
 # End Source File
 # Begin Source File
@@ -1224,10 +1196,6 @@ SOURCE=.\PaletteWnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\PdfSaveDlg.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\Performance.h
 # End Source File
 # Begin Source File
@@ -1257,10 +1225,6 @@ SOURCE=.\PJNSMTP_vc6.h
 # Begin Source File
 
 SOURCE=.\PlayerToolBarDlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\PngSaveDlg.h
 # End Source File
 # Begin Source File
 
@@ -1393,10 +1357,6 @@ SOURCE=.\TabCtrlSSL.h
 # Begin Source File
 
 SOURCE=.\TabPageSSL.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TiffSaveDlg.h
 # End Source File
 # Begin Source File
 

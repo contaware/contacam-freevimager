@@ -7,10 +7,6 @@
 #include "SaveFileDlg.h"
 #include "RotationFlippingDlg.h"
 #include "ResizingDpiDlg.h"
-#include "JpegCompressionQualityDlg.h"
-#include "TiffSaveDlg.h"
-#include "BmpSaveDlg.h"
-#include "PngSaveDlg.h"
 #include "AnimGifSaveDlg.h"
 #include "AnimGifSaveSmallDlg.h"
 #include "MonochromeConversionDlg.h"
@@ -27,7 +23,6 @@
 #include "PostDelayedMessage.h"
 #include "DeletePageDlg.h"
 #include "Tiff2Pdf.h"
-#include "PdfSaveDlg.h"
 #include "NoVistaFileDlg.h"
 #include "AVRec.h"
 
@@ -2147,12 +2142,6 @@ CPictureDoc::CPictureDoc()
 	m_pSoftBordersDlg = NULL;
 	m_pWndPalette = NULL;
 	m_pLayeredDlg = NULL;
-	
-	// Various Save Dialogs Settings
-	m_bSaveBmpRleEncoded = FALSE;
-	m_bSaveJpegAsGrayscale = FALSE;
-	m_nJpegSaveAsCompressionQuality = DEFAULT_JPEGCOMPRESSION;
-	m_bSavePngBackground = FALSE;
 
 	// Layered Dialog attributes
 	m_bFirstLayeredDlgUpdate = TRUE;
@@ -2566,7 +2555,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	}
 	else
 		_tcscpy(FileName, m_sFileName);
-	CSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
+	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR defext[10] = _T("");
 	LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
 	if (lpPos != NULL)
@@ -2574,6 +2563,13 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = defext;
+	dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp)\0*.bmp\0")
+								_T("Graphics Interchange Format (*.gif)\0*.gif\0")
+								_T("Portable Network Graphics (*.png)\0*.png\0")
+								_T("JPEG File Interchange Format (*.jpg)\0*.jpg\0")
+								_T("Tag Image File Format (*.tif)\0*.tif\0")
+								_T("PC Paintbrush (*.pcx)\0*.pcx\0")
+								_T("Enhanced Metafile (*.emf)\0*.emf\0");
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
 	CString defextension = defext;
@@ -2621,19 +2617,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), ::GetFileExt(FileName));
 
 		// Save to itself?
-		if (m_sFileName.CompareNoCase(FileName) == 0)
+		if (m_sFileName.CompareNoCase(FileName) == 0 && bSaveCopyAs)
 		{
-			if (bSaveCopyAs)
-			{
-				::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourself"), MB_OK | MB_ICONSTOP);
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return Save(TRUE);
-			}
+			::AfxMessageBox(ML_STRING(1249, "Cannot save a copy to ourself"), MB_OK | MB_ICONSTOP);
+			GetView()->ForceCursor(FALSE);
+			return FALSE;
 		}
 
 		// Check whether the file is read only
@@ -2658,82 +2646,56 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 
 		BOOL res = FALSE;
 		CDib Dib;
-		BOOL bAviSaveOk = FALSE;
 		TCHAR ext[10] = _T("");
 		lpPos = _tcsrchr(FileName, _T('.'));
 		if (lpPos != NULL)
 			_tcscpy(ext, lpPos+1);
 		CString extension = ext;
 		extension.MakeLower();
-
 		if ((extension == _T("bmp")) || (extension == _T("dib")))
 		{
 #ifdef SUPPORT_BMP
+			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
 			{
-				CBmpSaveDlg dlg(GetView());
-				dlg.m_bRleEncode =	(m_pDib->m_FileInfo.m_nType == CDib::CFileInfo::BMP	&&
-									(m_pDib->m_FileInfo.m_nCompression == BI_RLE4		||
-									m_pDib->m_FileInfo.m_nCompression == BI_RLE8))		||
-									m_bSaveBmpRleEncoded;
-				if (dlg.DoModal() == IDOK)
+				// RLE Encode?
+				if (m_pDib->m_FileInfo.m_nType == CDib::CFileInfo::BMP	&&
+					(m_pDib->m_FileInfo.m_nCompression == BI_RLE4		||
+					m_pDib->m_FileInfo.m_nCompression == BI_RLE8))
 				{
-					BeginWaitCursor();
-					m_bSaveBmpRleEncoded = dlg.m_bRleEncode;
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					{
-						::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-														_T("SaveBmpRleEncoded"),
-														m_bSaveBmpRleEncoded);
-					}
+					// Compress
+					Dib = *m_pDib;
+					Dib.Compress((m_pDib->GetBitCount() == 4)
+									? BI_RLE4 : BI_RLE8);
 
-					// RLE Encode?
-					if (dlg.m_bRleEncode)
-					{
-						// Compress
-						Dib = *m_pDib;
-						Dib.Compress((m_pDib->GetBitCount() == 4)
-										? BI_RLE4 : BI_RLE8);
-
-						// Save
-						res = Dib.SaveBMP(	FileName,
-											GetView(),
-											TRUE);
-					}
-					else
-					{
-						res = m_pDib->SaveBMP(	FileName,
-												GetView(),
-												TRUE);
-					}
-
-					EndWaitCursor();
+					// Save
+					res = Dib.SaveBMP(	FileName,
+										GetView(),
+										TRUE);
 				}
 				else
 				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
+					res = m_pDib->SaveBMP(	FileName,
+											GetView(),
+											TRUE);
 				}
 			}
 			// Store Alpha using the V4 Header
 			else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
-				BeginWaitCursor();
 				Dib = *m_pDib;
 				Dib.BMIToBITMAPV4HEADER();
 				res = Dib.SaveBMP(	FileName,
 									GetView(),
 									TRUE);
-				EndWaitCursor();
 			}
 			else
 			{
-				BeginWaitCursor();
 				res = m_pDib->SaveBMP(	FileName,
 										GetView(),
 										TRUE);
-				EndWaitCursor();
 			}
+			EndWaitCursor();
 #endif
 		}
 		else if (extension == _T("gif"))
@@ -2754,35 +2716,19 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		else if (extension == _T("png"))
 		{
 #ifdef SUPPORT_LIBPNG
-			CPngSaveDlg dlg(GetView());
-			dlg.m_bStoreBackgroundColor =	m_pDib->m_FileInfo.m_bHasBackgroundColor ||
-											m_bSavePngBackground;
-			if (dlg.DoModal() == IDOK)
-			{
-				BeginWaitCursor();
-				m_bSavePngBackground = dlg.m_bStoreBackgroundColor;
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				{
-					::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-													_T("SavePngBackground"),
-													m_bSavePngBackground);
-				}
-				if (m_bImageBackgroundColor)
-					m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
-				else
-					m_pDib->SetBackgroundColor(m_crBackgroundColor);
-				res = SavePNG(	FileName,
-								m_pDib,
-								dlg.m_bStoreBackgroundColor,
-								GetView(),
-								TRUE);
-				EndWaitCursor();
-			}
+			BeginWaitCursor();
+			if (m_bImageBackgroundColor)
+				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
 			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+				m_pDib->SetBackgroundColor(m_crBackgroundColor);
+			BOOL bStoreBackgroundColor = m_pDib->m_FileInfo.m_bHasBackgroundColor ||
+										(m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32);
+			res = SavePNG(	FileName,
+							m_pDib,
+							bStoreBackgroundColor,
+							GetView(),
+							TRUE);
+			EndWaitCursor();
 #endif
 		}
 		else if ((extension == _T("jpg"))	||
@@ -2791,122 +2737,95 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				(extension == _T("thm")))
 		{
 #ifdef SUPPORT_LIBJPEG
-			CJpegCompressionQualityDlg dlg(GetView());
-			dlg.m_bSaveAsGrayscale = m_pDib->IsGrayscale() || m_bSaveJpegAsGrayscale;
-			BOOL bWaitCursor;
-			if (m_JpegThread.IsRunning())
+			BeginWaitCursor();
+			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
-				BeginWaitCursor();
-				bWaitCursor = TRUE;
+				Dib = *m_pDib;
+				Dib.RenderAlphaWithSrcBackground();
+				Dib.SetAlpha(FALSE);
+				if ((defextension != _T("jpg"))		&&
+					(defextension != _T("jpe"))		&&
+					(defextension != _T("jpeg"))	&&
+					(defextension != _T("thm")))
+				{
+					// Clear Orientation
+					Dib.GetExifInfo()->Orientation = 1;
+					res = Dib.SaveJPEG(	FileName,
+										dlgFile.GetJpegCompressionQuality(),
+										m_pDib->IsGrayscale(),
+										_T(""),
+										TRUE,
+										FALSE,
+										GetView(),
+										TRUE);
+				}
+				else
+				{
+					// In case we are saving to ourself stop calculating compression quality
+					if (m_sFileName.CompareNoCase(FileName) == 0)
+						m_JpegThread.Kill();
+					res = Dib.SaveJPEG(	FileName,
+										dlgFile.GetJpegCompressionQuality(),
+										m_pDib->IsGrayscale(),
+										m_sFileName,
+										FALSE,
+										TRUE,
+										GetView(),
+										TRUE);
+					// Clear Orientation,
+					// this because orientation is copied from m_sFileName!
+					if (res)
+					{
+						CDib::JPEGSetOrientationInplace(FileName,
+														1,
+														FALSE);
+					}
+				}
 			}
 			else
-				bWaitCursor = FALSE;
-			int nQ = m_JpegThread.GetJpegCompressionQualityBlocking();
-			if (nQ >= 0)
-				m_nJpegSaveAsCompressionQuality = nQ;
-			if (bWaitCursor)
-				EndWaitCursor();
-			dlg.m_nCompressionQuality = m_nJpegSaveAsCompressionQuality;
-			if (dlg.DoModal() == IDOK)
 			{
-				BeginWaitCursor();
-				m_bSaveJpegAsGrayscale = dlg.m_bSaveAsGrayscale;
-				m_nJpegSaveAsCompressionQuality = dlg.m_nCompressionQuality;
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+				if ((defextension != _T("jpg"))		&&
+					(defextension != _T("jpe"))		&&
+					(defextension != _T("jpeg"))	&&
+					(defextension != _T("thm")))
 				{
-					::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SaveJpegAsGrayscale"), m_bSaveJpegAsGrayscale);
-					::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), m_nJpegSaveAsCompressionQuality);
-				}
-
-				if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
-				{
-					Dib = *m_pDib;
-					Dib.RenderAlphaWithSrcBackground();
-					Dib.SetAlpha(FALSE);
-					if ((defextension != _T("jpg"))		&&
-						(defextension != _T("jpe"))		&&
-						(defextension != _T("jpeg"))	&&
-						(defextension != _T("thm")))
-					{
-						// Clear Orientation
-						Dib.GetExifInfo()->Orientation = 1;
-						res = Dib.SaveJPEG(	FileName,
-											m_nJpegSaveAsCompressionQuality,
-											dlg.m_bSaveAsGrayscale,
+					// Clear Orientation
+					int nOrientation = m_pDib->GetExifInfo()->Orientation;
+					m_pDib->GetExifInfo()->Orientation = 1;
+					res = m_pDib->SaveJPEG(	FileName,
+											dlgFile.GetJpegCompressionQuality(),
+											m_pDib->IsGrayscale(),
 											_T(""),
 											TRUE,
 											FALSE,
 											GetView(),
 											TRUE);
-					}
-					else
-					{
-						res = Dib.SaveJPEG(	FileName,
-											m_nJpegSaveAsCompressionQuality,
-											dlg.m_bSaveAsGrayscale,
+					m_pDib->GetExifInfo()->Orientation = nOrientation;
+				}
+				else
+				{
+					// In case we are saving to ourself stop calculating compression quality
+					if (m_sFileName.CompareNoCase(FileName) == 0)
+						m_JpegThread.Kill();
+					res = m_pDib->SaveJPEG(	FileName,
+											dlgFile.GetJpegCompressionQuality(),
+											m_pDib->IsGrayscale(),
 											m_sFileName,
 											FALSE,
 											TRUE,
 											GetView(),
 											TRUE);
-						// Clear Orientation,
-						// this because orientation is copied from m_sFileName!
-						if (res)
-						{
-							CDib::JPEGSetOrientationInplace(FileName,
-															1,
-															FALSE);
-						}
+					// Clear Orientation,
+					// this because orientation is copied from m_sFileName!
+					if (res)
+					{
+						CDib::JPEGSetOrientationInplace(FileName,
+														1,
+														FALSE);
 					}
 				}
-				else
-				{
-					if ((defextension != _T("jpg"))		&&
-						(defextension != _T("jpe"))		&&
-						(defextension != _T("jpeg"))	&&
-						(defextension != _T("thm")))
-					{
-						// Clear Orientation
-						int nOrientation = m_pDib->GetExifInfo()->Orientation;
-						m_pDib->GetExifInfo()->Orientation = 1;
-						res = m_pDib->SaveJPEG(	FileName,
-												m_nJpegSaveAsCompressionQuality,
-												dlg.m_bSaveAsGrayscale,
-												_T(""),
-												TRUE,
-												FALSE,
-												GetView(),
-												TRUE);
-						m_pDib->GetExifInfo()->Orientation = nOrientation;
-					}
-					else
-					{
-						res = m_pDib->SaveJPEG(	FileName,
-												m_nJpegSaveAsCompressionQuality,
-												dlg.m_bSaveAsGrayscale,
-												m_sFileName,
-												FALSE,
-												TRUE,
-												GetView(),
-												TRUE);
-						// Clear Orientation,
-						// this because orientation is copied from m_sFileName!
-						if (res)
-						{
-							CDib::JPEGSetOrientationInplace(FileName,
-															1,
-															FALSE);
-						}
-					}
-				}
-
-				EndWaitCursor();
 			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+			EndWaitCursor();
 #endif
 		}
 		else if ((extension == _T("tif"))	||
@@ -2914,130 +2833,47 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				(extension == _T("tiff")))
 		{
 #ifdef SUPPORT_LIBTIFF
-			CTiffSaveDlg dlg(GetView());
-			dlg.m_nBpp = m_pDib->GetBitCount();
-			dlg.m_bGrayscale = m_pDib->IsGrayscale();
-			
-			if ((defextension == _T("jpg"))		||
-				(defextension == _T("jpe"))		||
-				(defextension == _T("jpeg"))	||
-				(defextension == _T("thm")))
-			{
-				dlg.m_nCompression = 3; // Select Jpeg Compression
-				BOOL bWaitCursor;
-				if (m_JpegThread.IsRunning())
-				{
-					BeginWaitCursor();
-					bWaitCursor = TRUE;
-				}
-				else
-					bWaitCursor = FALSE;
-				int nQ = m_JpegThread.GetJpegCompressionQualityBlocking();
-				if (nQ >= 0)
-					m_nJpegSaveAsCompressionQuality = nQ;
-				if (bWaitCursor)
-					EndWaitCursor();
-
-			}
-			else if ((defextension == _T("tif"))	||
-					(defextension == _T("jfx"))		||
-					(defextension == _T("tiff")))
-			{
-				switch (m_pDib->m_FileInfo.m_nCompression)
-				{	
-					case COMPRESSION_NONE : 
-						dlg.m_nCompression = 0;
-						break;
-					case COMPRESSION_CCITTRLE :
-					case COMPRESSION_CCITTFAX3 :
-					case COMPRESSION_CCITTFAX4 : 
-						dlg.m_nCompression = 1;
-						break;
-					case COMPRESSION_LZW : 
-						dlg.m_nCompression = 2;
-						break;
-					case COMPRESSION_JPEG :
-					case COMPRESSION_OJPEG :
-						dlg.m_nCompression = 3;
-						break;
-					default :
-						dlg.m_nCompression = 2;
-						break;
-				}
-			}
+			BeginWaitCursor();
+			int nTiffCompression;
+			if ((defextension == _T("tif"))	||
+				(defextension == _T("jfx"))	||
+				(defextension == _T("tiff")))
+				nTiffCompression = m_pDib->m_FileInfo.m_nCompression;
 			else
 			{
 				if (m_pDib->GetBitCount() == 1)
-					dlg.m_nCompression = 1; // CCITT Fax 4 for 1bpp images
+					nTiffCompression = COMPRESSION_CCITTFAX4;
 				else
-					dlg.m_nCompression = 2; // LZW for all the others
+					nTiffCompression = COMPRESSION_LZW;
 			}
-			dlg.m_nCompressionQuality = m_nJpegSaveAsCompressionQuality;
-			if (dlg.DoModal() == IDOK)
+			int nOrientation = m_pDib->GetExifInfo()->Orientation;
+			m_pDib->GetExifInfo()->Orientation = 1;
+			if (IsMultiPageTIFF())
 			{
-				m_nJpegSaveAsCompressionQuality = dlg.m_nCompressionQuality;
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				{
-					::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-													_T("JpegSaveAsCompressionQuality"),
-													m_nJpegSaveAsCompressionQuality);
-				}
-				int nTiffCompression;
-				switch (dlg.m_nCompression)
-				{	
-					case 0 : 
-						nTiffCompression = COMPRESSION_NONE;
-						break;
-					case 1 : 
-						nTiffCompression = COMPRESSION_CCITTFAX4;
-						break;
-					case 2 : 
-						nTiffCompression = COMPRESSION_LZW;
-						break;
-					case 3 : 
-						nTiffCompression = COMPRESSION_JPEG;
-						break;
-					default :
-						nTiffCompression = COMPRESSION_NONE;
-						break;
-				}
-			
-				BeginWaitCursor();
-				int nOrientation = m_pDib->GetExifInfo()->Orientation;
-				m_pDib->GetExifInfo()->Orientation = 1;
-				if (IsMultiPageTIFF())
-				{
-					res = m_pDib->SaveMultiPageTIFF(FileName,
-													m_sFileName,
-													((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-													nTiffCompression,
-													m_nJpegSaveAsCompressionQuality,
-													GetView(),
-													TRUE);
-				}
-				else
-				{
-					res = m_pDib->SaveTIFF(	FileName,
-											nTiffCompression,
-											m_nJpegSaveAsCompressionQuality,
-											GetView(),
-											TRUE);
-				}
-				m_pDib->GetExifInfo()->Orientation = nOrientation;
-				EndWaitCursor();
+				res = m_pDib->SaveMultiPageTIFF(FileName,
+												m_sFileName,
+												((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+												nTiffCompression,
+												dlgFile.GetJpegCompressionQuality(),
+												GetView(),
+												TRUE);
 			}
 			else
 			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
+				res = m_pDib->SaveTIFF(	FileName,
+										nTiffCompression,
+										dlgFile.GetJpegCompressionQuality(),
+										GetView(),
+										TRUE);
 			}
+			m_pDib->GetExifInfo()->Orientation = nOrientation;
+			EndWaitCursor();
 #endif
 		}
 		else if (extension == _T("pcx"))
 		{
 #ifdef SUPPORT_PCX
 			BeginWaitCursor();
-
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
@@ -3060,6 +2896,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			// only a reference dc with a given dpi can be chosen.
 			// We can choose between the printer dc which usually has 300 dpi or 600 dpi and
 			// the display dc that has 96 dpi (or 72 dpi)
+			BeginWaitCursor();
 			int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
 			HDC hPrinterDC = NULL;
 			if (index >= 0							&&
@@ -3069,7 +2906,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				CString sPrinterName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
 				hPrinterDC = ::CreateDC(NULL, sPrinterName, NULL, NULL);
 			}
-			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
@@ -3079,9 +2915,9 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			else
 				res = m_pDib->SaveEMF(FileName, hPrinterDC);
-			EndWaitCursor();
 			if (hPrinterDC)
 				::DeleteDC(hPrinterDC);
+			EndWaitCursor();
 		}
 
 		// Load
@@ -3350,10 +3186,13 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 	// Display the Save As Dialog
 	TCHAR FileName[MAX_PATH] = _T("");
 	_tcscpy(FileName, m_sFileName);
-	CAnimGifSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
+	CSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = _T("gif");
+	dlgFile.m_ofn.lpstrFilter = _T("Animated GIF (*.gif)\0*.gif\0")	
+								_T("Avi File (*.avi)\0*.avi\0")
+								_T("BMP Sequence (*.bmp)\0*.bmp\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
@@ -3780,7 +3619,7 @@ CString CPictureDoc::SaveAsFromAnimGIFToBMP(const CString& sFileName)
 	return sFirstFileName;
 }
 
-BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/) 
+BOOL CPictureDoc::Save() 
 {
 	if (m_sFileName == _T(""))
 		return SaveAs(FALSE);
@@ -3812,10 +3651,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 			return FALSE;
 		}
 
-		// Backup the file in case the saving fails,
-		// (saving may corrupt the original file!)
-		((CUImagerApp*)::AfxGetApp())->BackupFile(m_sFileName);
-
 		TCHAR FileName[MAX_PATH] = _T("");
 		_tcscpy(FileName, m_sFileName);
 		TCHAR ext[10] = _T("");
@@ -3827,119 +3662,46 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 		if ((extension == _T("bmp")) || (extension == _T("dib")))
 		{
 #ifdef SUPPORT_BMP
-			if (bSaveAsWithSameFileName)
+			BeginWaitCursor();
+			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
 			{
-				if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
+				// RLE Encode?
+				if (m_pDib->m_FileInfo.m_nCompression == BI_RLE4 ||
+					m_pDib->m_FileInfo.m_nCompression == BI_RLE8)
 				{
-					CBmpSaveDlg dlg(GetView());
-					dlg.m_bRleEncode =	(m_pDib->m_FileInfo.m_nCompression == BI_RLE4	||
-										m_pDib->m_FileInfo.m_nCompression == BI_RLE8)	||
-										m_bSaveBmpRleEncoded;
-					if (dlg.DoModal() == IDOK)
-					{
-						BeginWaitCursor();
-						m_bSaveBmpRleEncoded = dlg.m_bRleEncode;
-						if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-						{
-							::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-															_T("SaveBmpRleEncoded"),
-															m_bSaveBmpRleEncoded);
-						}
-
-						// RLE Encode?
-						if (dlg.m_bRleEncode)
-						{
-							// Compress
-							Dib = *m_pDib;
-							Dib.Compress((m_pDib->GetBitCount() == 4)
-											? BI_RLE4 : BI_RLE8);
-
-							// Save
-							res = Dib.SaveBMP(	FileName,
-												GetView(),
-												TRUE);
-						}
-						else
-						{
-							res = m_pDib->SaveBMP(	FileName,
-													GetView(),
-													TRUE);
-						}
-
-						EndWaitCursor();
-					}
-					else
-					{
-						GetView()->ForceCursor(FALSE);
-						return FALSE;
-					}
-				}
-				// Store Alpha using the V4 Header
-				else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
-				{
-					BeginWaitCursor();
+					// Compress
 					Dib = *m_pDib;
-					Dib.BMIToBITMAPV4HEADER();
+					Dib.Compress((m_pDib->GetBitCount() == 4)
+									? BI_RLE4 : BI_RLE8);
+
+					// Save
 					res = Dib.SaveBMP(	FileName,
 										GetView(),
 										TRUE);
-					EndWaitCursor();
 				}
 				else
 				{
-					BeginWaitCursor();
 					res = m_pDib->SaveBMP(	FileName,
 											GetView(),
 											TRUE);
-					EndWaitCursor();
 				}
+			}
+			// Store Alpha using the V4 Header
+			else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
+			{
+				Dib = *m_pDib;
+				Dib.BMIToBITMAPV4HEADER();
+				res = Dib.SaveBMP(	FileName,
+									GetView(),
+									TRUE);
 			}
 			else
 			{
-				BeginWaitCursor();
-
-				// Compress?
-				if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
-				{
-					// RLE Encode?
-					if (m_pDib->m_FileInfo.m_nCompression == BI_RLE4 ||
-						m_pDib->m_FileInfo.m_nCompression == BI_RLE8)
-					{
-						// Compress
-						Dib = *m_pDib;
-						Dib.Compress((m_pDib->GetBitCount() == 4)
-										? BI_RLE4 : BI_RLE8);
-
-						// Save
-						res = Dib.SaveBMP(	FileName,
-											GetView(),
-											TRUE);
-					}
-					else
-					{
-						res = m_pDib->SaveBMP(	FileName,
-												GetView(),
-												TRUE);
-					}
-				}
-				// Store Alpha using the V4 Header
-				else if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
-				{
-					Dib = *m_pDib;
-					Dib.BMIToBITMAPV4HEADER();
-					res = Dib.SaveBMP(	FileName,
+				res = m_pDib->SaveBMP(	FileName,
 										GetView(),
 										TRUE);
-				}
-				else
-				{
-					res = m_pDib->SaveBMP(	FileName,
-											GetView(),
-											TRUE);
-				}
-
-				EndWaitCursor();
 			}
+			EndWaitCursor();
 #endif
 		}
 		else if (extension == _T("gif"))
@@ -3960,284 +3722,79 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 		else if (extension == _T("png"))
 		{
 #ifdef SUPPORT_LIBPNG
-			if (bSaveAsWithSameFileName)
-			{
-				CPngSaveDlg dlg(GetView());
-				dlg.m_bStoreBackgroundColor =	m_pDib->m_FileInfo.m_bHasBackgroundColor ||
-												m_bSavePngBackground;
-				if (dlg.DoModal() == IDOK)
-				{
-					BeginWaitCursor();
-					m_bSavePngBackground = dlg.m_bStoreBackgroundColor;
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					{
-						::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-														_T("SavePngBackground"),
-														m_bSavePngBackground);
-					}
-					if (m_bImageBackgroundColor)
-						m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
-					else
-						m_pDib->SetBackgroundColor(m_crBackgroundColor);
-					res = SavePNG(	FileName,
-									m_pDib,
-									dlg.m_bStoreBackgroundColor,
-									GetView(),
-									TRUE);
-					EndWaitCursor();
-				}
-				else
-				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
-			}
+			BeginWaitCursor();
+			if (m_bImageBackgroundColor)
+				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
 			else
-			{
-				BeginWaitCursor();
-				if (m_bImageBackgroundColor)
-					m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
-				else
-					m_pDib->SetBackgroundColor(m_crBackgroundColor);
-				res = SavePNG(	FileName,
-								m_pDib,
-								m_pDib->m_FileInfo.m_bHasBackgroundColor,
-								GetView(),
-								TRUE);
-				EndWaitCursor();
-			}
+				m_pDib->SetBackgroundColor(m_crBackgroundColor);
+			res = SavePNG(	FileName,
+							m_pDib,
+							m_pDib->m_FileInfo.m_bHasBackgroundColor,
+							GetView(),
+							TRUE);
+			EndWaitCursor();
 #endif
 		}
 		else if ((extension == _T("jpg"))	||
 				(extension == _T("jpe"))	||
 				(extension == _T("jpeg"))	||
-				(extension == _T("thm")))	
+				(extension == _T("thm")))
 		{
 #ifdef SUPPORT_LIBJPEG
-			if (bSaveAsWithSameFileName)
+			BeginWaitCursor();
+			res = m_pDib->SaveJPEG(	FileName,
+									m_JpegThread.GetJpegCompressionQualityBlocking(),
+									m_pDib->IsGrayscale(),
+									m_sFileName,
+									FALSE,
+									TRUE,
+									GetView(),
+									TRUE);
+			// Clear Orientation,
+			// this because orientation is copied from m_sFileName!
+			if (res)
 			{
-				CJpegCompressionQualityDlg dlg(GetView());
-				dlg.m_bSaveAsGrayscale = m_pDib->IsGrayscale() || m_bSaveJpegAsGrayscale;
-				BOOL bWaitCursor;
-				if (m_JpegThread.IsRunning())
-				{
-					BeginWaitCursor();
-					bWaitCursor = TRUE;
-				}
-				else
-					bWaitCursor = FALSE;
-				int nQ = m_JpegThread.GetJpegCompressionQualityBlocking();
-				if (nQ >= 0)
-					m_nJpegSaveAsCompressionQuality = nQ;
-				if (bWaitCursor)
-					EndWaitCursor();
-				dlg.m_nCompressionQuality = m_nJpegSaveAsCompressionQuality;
-				if (dlg.DoModal() == IDOK)
-				{	
-					BeginWaitCursor();
-					m_bSaveJpegAsGrayscale = dlg.m_bSaveAsGrayscale;
-					m_nJpegSaveAsCompressionQuality = dlg.m_nCompressionQuality;
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					{
-						::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SaveJpegAsGrayscale"), m_bSaveJpegAsGrayscale);
-						::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), m_nJpegSaveAsCompressionQuality);
-					}
-
-					if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
-					{
-						Dib = *m_pDib;
-						Dib.RenderAlphaWithSrcBackground();
-						Dib.SetAlpha(FALSE);
-						res = Dib.SaveJPEG(	FileName,
-											m_nJpegSaveAsCompressionQuality,
-											dlg.m_bSaveAsGrayscale,
-											m_sFileName,
-											FALSE,
-											TRUE,
-											GetView(),
-											TRUE);
-						// Clear Orientation,
-						// this because orientation is copied from m_sFileName!
-						if (res)
-						{
-							CDib::JPEGSetOrientationInplace(FileName,
-															1,
-															FALSE);
-						}
-					}
-					else
-					{
-						res = m_pDib->SaveJPEG(	FileName,
-												m_nJpegSaveAsCompressionQuality,
-												dlg.m_bSaveAsGrayscale,
-												m_sFileName,
-												FALSE,
-												TRUE,
-												GetView(),
-												TRUE);
-						// Clear Orientation,
-						// this because orientation is copied from m_sFileName!
-						if (res)
-						{
-							CDib::JPEGSetOrientationInplace(FileName,
-															1,
-															FALSE);
-						}
-					}
-
-					EndWaitCursor();
-				}
-				else
-				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
+				CDib::JPEGSetOrientationInplace(FileName,
+												1,
+												FALSE);
 			}
-			else
-			{
-				BeginWaitCursor();
-				res = m_pDib->SaveJPEG(	FileName,
-										m_JpegThread.GetJpegCompressionQualityBlocking(),
-										m_pDib->IsGrayscale(),
-										m_sFileName,
-										FALSE,
-										TRUE,
-										GetView(),
-										TRUE);
-				// Clear Orientation,
-				// this because orientation is copied from m_sFileName!
-				if (res)
-				{
-					CDib::JPEGSetOrientationInplace(FileName,
-													1,
-													FALSE);
-				}
-				EndWaitCursor();
-			}
+			EndWaitCursor();
 #endif
 		}
-		else if ((extension == _T("tif")) || (extension == _T("jfx")) || (extension == _T("tiff")))
+		else if ((extension == _T("tif"))	||
+				(extension == _T("jfx"))	||
+				(extension == _T("tiff")))
 		{
 #ifdef SUPPORT_LIBTIFF
-			if (bSaveAsWithSameFileName)
+			BeginWaitCursor();
+			int nOrientation = m_pDib->GetExifInfo()->Orientation;
+			m_pDib->GetExifInfo()->Orientation = 1;
+			if (IsMultiPageTIFF())
 			{
-				CTiffSaveDlg dlg(GetView());
-				dlg.m_nBpp = m_pDib->GetBitCount();
-				dlg.m_bGrayscale = m_pDib->IsGrayscale();
-				switch (m_pDib->m_FileInfo.m_nCompression)
-				{	
-					case COMPRESSION_NONE : 
-						dlg.m_nCompression = 0;
-						break;
-					case COMPRESSION_CCITTRLE :
-					case COMPRESSION_CCITTFAX3 :
-					case COMPRESSION_CCITTFAX4 : 
-						dlg.m_nCompression = 1;
-						break;
-					case COMPRESSION_LZW : 
-						dlg.m_nCompression = 2;
-						break;
-					case COMPRESSION_JPEG :
-					case COMPRESSION_OJPEG :
-						dlg.m_nCompression = 3;
-						break;
-					default :
-						dlg.m_nCompression = 2;
-						break;
-				}
-				dlg.m_nCompressionQuality = m_nJpegSaveAsCompressionQuality;
-				if (dlg.DoModal() == IDOK)
-				{
-					m_nJpegSaveAsCompressionQuality = dlg.m_nCompressionQuality;
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					{
-						::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-														_T("JpegSaveAsCompressionQuality"),
-														m_nJpegSaveAsCompressionQuality);
-					}
-					int nTiffCompression;
-					switch (dlg.m_nCompression)
-					{	
-						case 0 : 
-							nTiffCompression = COMPRESSION_NONE;
-							break;
-						case 1 : 
-							nTiffCompression = COMPRESSION_CCITTFAX4;
-							break;
-						case 2 : 
-							nTiffCompression = COMPRESSION_LZW;
-							break;
-						case 3 : 
-							nTiffCompression = COMPRESSION_JPEG;
-							break;
-						default :
-							nTiffCompression = COMPRESSION_NONE;
-							break;
-					}
-				
-					BeginWaitCursor();
-					int nOrientation = m_pDib->GetExifInfo()->Orientation;
-					m_pDib->GetExifInfo()->Orientation = 1;
-					if (IsMultiPageTIFF())
-					{
-						res = m_pDib->SaveMultiPageTIFF(FileName,
-														m_sFileName,
-														((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-														nTiffCompression,
-														m_nJpegSaveAsCompressionQuality,
-														GetView(),
-														TRUE);
-					}
-					else
-					{
-						res = m_pDib->SaveTIFF(	FileName,
-												nTiffCompression,
-												m_nJpegSaveAsCompressionQuality,
+				res = m_pDib->SaveMultiPageTIFF(FileName,
+												m_sFileName,
+												((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+												m_pDib->m_FileInfo.m_nCompression,
+												DEFAULT_JPEGCOMPRESSION,
 												GetView(),
 												TRUE);
-					}
-					m_pDib->GetExifInfo()->Orientation = nOrientation;
-					EndWaitCursor();
-				}
-				else
-				{
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
-				}
 			}
 			else
 			{
-				BeginWaitCursor();
-				int nOrientation = m_pDib->GetExifInfo()->Orientation;
-				m_pDib->GetExifInfo()->Orientation = 1;
-				if (IsMultiPageTIFF())
-				{
-					res = m_pDib->SaveMultiPageTIFF(FileName,
-													m_sFileName,
-													((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-													m_pDib->m_FileInfo.m_nCompression,
-													DEFAULT_JPEGCOMPRESSION,
-													GetView(),
-													TRUE);
-				}
-				else
-				{
-					res = m_pDib->SaveTIFF(	FileName,
-											m_pDib->m_FileInfo.m_nCompression,
-											DEFAULT_JPEGCOMPRESSION,
-											GetView(),
-											TRUE);
-				}
-				m_pDib->GetExifInfo()->Orientation = nOrientation;
-				EndWaitCursor();
+				res = m_pDib->SaveTIFF(	FileName,
+										m_pDib->m_FileInfo.m_nCompression,
+										DEFAULT_JPEGCOMPRESSION,
+										GetView(),
+										TRUE);
 			}
+			m_pDib->GetExifInfo()->Orientation = nOrientation;
+			EndWaitCursor();
 #endif
 		}
 		else if (extension == _T("pcx"))
 		{
 #ifdef SUPPORT_PCX
 			BeginWaitCursor();
-
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
@@ -4260,6 +3817,7 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 			// only a reference dc with a given dpi can be chosen.
 			// We can choose between the printer dc which usually has 300 dpi or 600 dpi and
 			// the display dc that has 96 dpi (or 72 dpi)
+			BeginWaitCursor();
 			int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
 			HDC hPrinterDC = NULL;
 			if (index >= 0							&&
@@ -4269,7 +3827,6 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 				CString sPrinterName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
 				hPrinterDC = ::CreateDC(NULL, sPrinterName, NULL, NULL);
 			}
-			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
 				Dib = *m_pDib;
@@ -4279,25 +3836,19 @@ BOOL CPictureDoc::Save(BOOL bSaveAsWithSameFileName/*=FALSE*/)
 			}
 			else
 				res = m_pDib->SaveEMF(FileName, hPrinterDC);
-			EndWaitCursor();
 			if (hPrinterDC)
 				::DeleteDC(hPrinterDC);
+			EndWaitCursor();
 		}
 
 		// Load
 		if (res)
 		{
 			SetModifiedFlag(FALSE);
-			if (LoadPicture(&m_pDib, FileName))
-				((CUImagerApp*)::AfxGetApp())->DeleteBackupFile(m_sFileName);
-			else
-				((CUImagerApp*)::AfxGetApp())->RestoreFile(m_sFileName);
+			LoadPicture(&m_pDib, FileName);
 		}
 		else
-		{
-			((CUImagerApp*)::AfxGetApp())->RestoreFile(m_sFileName);
 			::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_OK | MB_ICONSTOP);
-		}
 
 		GetView()->ForceCursor(FALSE);
 
@@ -4644,7 +4195,7 @@ BOOL CPictureDoc::SaveAsPdf()
 	GetView()->ForceCursor();
 
 	// Display the Save As Pdf Dialog
-	CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
+	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR FileName[MAX_PATH] = _T("");
 	if (m_sFileName == _T(""))
 		_tcscpy(FileName, _T("Picture.pdf"));
@@ -4655,7 +4206,6 @@ BOOL CPictureDoc::SaveAsPdf()
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
 	CString sDlgTitle(ML_STRING(1263, "Save As Pdf"));
 	dlgFile.m_ofn.lpstrTitle = sDlgTitle;
-	dlgFile.m_ofn.Flags |= OFN_EXPLORER;
 	dlgFile.m_ofn.lpstrFilter = _T("Pdf File (*.pdf)\0*.pdf\0");
 	dlgFile.m_ofn.lpstrDefExt = _T("pdf");
 	if (dlgFile.DoModal() == IDOK)
@@ -4676,31 +4226,6 @@ BOOL CPictureDoc::SaveAsPdf()
 			CString str;
 			str.Format(ML_STRING(1251, "Access denied to %s"), FileName);
 			::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-			GetView()->ForceCursor(FALSE);
-			return FALSE;
-		}
-
-		// Show the Pdf Dialog and use the same vars as for Pdf Scan
-		CPdfSaveDlg dlg(GetView());
-		dlg.m_nCompressionQuality = ((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality;
-		dlg.m_sPdfScanPaperSize = ((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize;
-		if (dlg.DoModal() == IDOK)
-		{
-			// Set Pdf Vars
-			((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlg.m_nCompressionQuality;
-			((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize = dlg.m_sPdfScanPaperSize;
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-																_T("PdfScanCompressionQuality"),
-																((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);
-				((CUImagerApp*)::AfxGetApp())->WriteProfileString(_T("GeneralApp"),
-																_T("PdfScanPaperSize"),
-																((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize);
-			}
-		}
-		else
-		{
 			GetView()->ForceCursor(FALSE);
 			return FALSE;
 		}
@@ -4758,7 +4283,7 @@ BOOL CPictureDoc::SaveAsPdf()
 											m_sFileName,
 											((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 											-1,	// -1: automatically select compression
-											((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
+											dlgFile.GetJpegCompressionQuality(),
 											GetView(),
 											TRUE);
 			}
@@ -4766,7 +4291,7 @@ BOOL CPictureDoc::SaveAsPdf()
 			{
 				res = Dib.SaveTIFF(	sTiffFileName,
 									-1,	// -1: automatically select compression
-									((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
+									dlgFile.GetJpegCompressionQuality(),
 									GetView(),
 									TRUE);
 			}
@@ -4788,10 +4313,10 @@ BOOL CPictureDoc::SaveAsPdf()
 			//   -> T2P_COMPRESS_ZIP
 			res = ::Tiff2Pdf(	sTiffFileName,	// Tiff
 								FileName,		// Pdf
-								((CUImagerApp*)::AfxGetApp())->m_sPdfScanPaperSize,
+								_T("Fit"),
 								TRUE,			// Fit Window
 								TRUE,			// Interpolate
-								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality);				
+								dlgFile.GetJpegCompressionQuality());				
 		}
 
 		// Delete temp tiff
@@ -5039,10 +4564,6 @@ void CPictureDoc::LoadSettings()
 		m_nLayeredDlgOpacity = MIN_LAYERED_DLG_OPACITY;
 	else if (m_nLayeredDlgOpacity > MAX_LAYERED_DLG_OPACITY)
 		m_nLayeredDlgOpacity = MAX_LAYERED_DLG_OPACITY;
-	m_bSaveBmpRleEncoded = pApp->GetProfileInt(sSection, _T("SaveBmpRleEncoded"), FALSE);
-	m_bSaveJpegAsGrayscale = pApp->GetProfileInt(sSection, _T("SaveJpegAsGrayscale"), FALSE);
-	m_nJpegSaveAsCompressionQuality = pApp->GetProfileInt(sSection, _T("JpegSaveAsCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
-	m_bSavePngBackground = pApp->GetProfileInt(sSection, _T("SavePngBackground"), FALSE);
 	m_sCopyOrMoveDirName = pApp->GetProfileString(sSection, _T("CopyOrMoveDirName"), _T(""));
 	m_bZoomTool = pApp->GetProfileInt(sSection, _T("ZoomTool"), FALSE);
 	if (m_bZoomTool)
@@ -10608,7 +10129,6 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 				dlgFile.m_ofn.lpstrFile = szFileName;
 				dlgFile.m_ofn.nMaxFile = MAX_PATH;
 				dlgFile.m_ofn.lpstrCustomFilter = NULL;
-				dlgFile.m_ofn.Flags |= OFN_EXPLORER;
 				dlgFile.m_ofn.lpstrFilter = _T("JPEG File Interchange Format (*.jpg;*.jpeg;*.jpe;*.thm)\0*.jpg;*.jpeg;*.jpe;*.thm\0");
 				dlgFile.m_ofn.lpstrDefExt = _T("jpg");
 				if (dlgFile.DoModal() == IDOK)

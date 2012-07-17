@@ -1286,10 +1286,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 		// Prepare Iptc for Save
 		SetIptc();
 
-		// Backup the file in case the saving fails,
-		// (saving may corrupt the original file!)
-		((CUImagerApp*)::AfxGetApp())->BackupFile(m_pDoc->m_sFileName);
-
 		// Update Iptc Data
 		if (m_pDoc->m_pDib->GetMetadata()->m_pIptcLegacyData)
 		{
@@ -1320,14 +1316,9 @@ BOOL CImageInfoDlg::SaveMetadata()
 		if (Dib.LoadTIFF(	m_pDoc->m_sFileName,	// File Name
 							m_pDoc->m_nPageNum,		// Load the given page
 							TRUE))					// Only Header & Metadatas
-		{
 			*(m_pDoc->m_pDib->GetMetadata()) = *(Dib.GetMetadata());
-			((CUImagerApp*)::AfxGetApp())->DeleteBackupFile(m_pDoc->m_sFileName);
-		}
 		else
 		{
-			((CUImagerApp*)::AfxGetApp())->RestoreFile(m_pDoc->m_sFileName);
-			m_pDoc->LoadPicture(&m_pDoc->m_pDib, m_pDoc->m_sFileName);
 			EndWaitCursor();
 			return FALSE;
 		}
