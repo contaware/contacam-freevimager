@@ -2077,7 +2077,7 @@ IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "bmp Files",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,45,10
@@ -2117,9 +2117,8 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,19,140,77,10
     CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,154,46,10
-    CONTROL         "ESC key exits the program in full-screen",
-                    IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    19,168,140,10
+    CONTROL         "ESC key exits the program",IDC_CHECK_ESC_EXIT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,19,168,99,10
     CONTROL         "Disable auto-opening with external program",
                     IDC_CHECK_DISABLE_EXTPROG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,182,151,10
@@ -4454,7 +4453,7 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -4462,9 +4461,8 @@ BEGIN
                     WS_TABSTOP,10,29,46,10
     CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,41,72,10
-    CONTROL         "ESC key exits the program in full-screen",
-                    IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,53,140,10
+    CONTROL         "ESC key exits the program",IDC_CHECK_ESC_EXIT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,53,99,10
     CONTROL         "Disable auto-opening with external program",
                     IDC_CHECK_DISABLE_EXTPROG,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,10,66,150,10

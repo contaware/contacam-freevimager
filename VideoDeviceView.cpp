@@ -1063,19 +1063,14 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (::GetKeyState(VK_SHIFT) < 0)
+			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else
 			{
 				if (pDoc->m_pVideoDevicePropertySheet && pDoc->m_pVideoDevicePropertySheet->IsVisible())
 					pDoc->m_pVideoDevicePropertySheet->Hide();
 				else if (m_bFullScreenMode)
-				{
-					if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
-						::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-					else
-						::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-				}
+					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 				else
 					pDoc->CloseDocument();
 			}

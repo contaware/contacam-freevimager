@@ -961,13 +961,13 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (::GetKeyState(VK_SHIFT) < 0)
+			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else
 			{
-				if (pDoc->m_pAviInfoDlg ||
-					pDoc->m_pOutVolDlg ||
-					pDoc->m_pAudioVideoShiftDlg ||
+				if (pDoc->m_pAviInfoDlg			||
+					pDoc->m_pOutVolDlg			||
+					pDoc->m_pAudioVideoShiftDlg	||
 					pDoc->m_pPlayerToolBarDlg)
 				{
 					if (pDoc->m_pAviInfoDlg)
@@ -980,19 +980,11 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 						pDoc->m_pPlayerToolBarDlg->Close();
 				}
 				else if (m_bFullScreenMode)
-				{
-					if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
-						::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-					else
-						::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-				}
+					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
+				else if (pDoc->m_ProcessingThread.IsRunning())
+					pDoc->m_ProcessingThread.Kill_NoBlocking();
 				else
-				{
-					if (pDoc->m_ProcessingThread.IsRunning())
-						pDoc->m_ProcessingThread.Kill_NoBlocking();
-					else
-						pDoc->CloseDocument();
-				}
+					pDoc->CloseDocument();
 			}
 			break;
 

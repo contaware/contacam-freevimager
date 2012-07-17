@@ -1729,7 +1729,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (::GetKeyState(VK_SHIFT) < 0)
+			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else
 			{
@@ -1781,18 +1781,10 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 					::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 				else if (pDoc->m_bCrop)
 					pDoc->CancelCrop();
+				else if (m_bFullScreenMode)
+					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 				else
-				{
-					if (m_bFullScreenMode)
-					{
-						if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
-							::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-						else
-							::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-					}
-					else
-						pDoc->CloseDocument();
-				}
+					pDoc->CloseDocument();
 			}
 			break;
 
