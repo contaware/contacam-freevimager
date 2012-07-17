@@ -1,5 +1,11 @@
 VERSION HISTORY
 
+4.0.3 (August xxx 2012)
+
+- More productive working because less dialogs are popping-up
+  when saving files and scanning to PDF
+  (the save as dialogs have now a jpeg quality slider)
+
 4.0.1 (July 10th 2012)
 
 - Fixed uniqueness of temporary files
