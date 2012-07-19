@@ -2451,14 +2451,17 @@ void CBatchProcDlg::OnButtonDstFile()
 		{
 			fd.m_ofn.nFilterIndex = 5;
 		}
+		else if (defextension == _T("txt") &&
+				((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
+		{
+			fd.m_ofn.nFilterIndex = 6;
+		}
 		if (fd.DoModal() == IDOK)
 		{
 			m_sOutputFileName = FileName;
 			m_OutputFileNameLabel.SetLink(m_sOutputFileName);
 		}
-
 		UpdateData(FALSE);
-
 		UpdateDstFileSize();
 	}
 }
