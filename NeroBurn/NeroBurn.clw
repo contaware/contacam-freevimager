@@ -14,10 +14,10 @@ Class2=CAboutDlg
 Class3=CNeroBurnDlg
 
 ResourceCount=4
-Resource1=IDD_ABOUTBOX (English (U.S.))
-Resource2=IDD_NEROBURN_DIALOG (English (U.S.))
+Resource1=IDD_NEROBURN_DIALOG
+Resource2=IDD_ABOUTBOX (English (U.S.))
 Resource3=IDD_ABOUTBOX
-Resource4=IDD_NEROBURN_DIALOG
+Resource4=IDD_NEROBURN_DIALOG (English (U.S.))
 
 [CLS:CNeroBurnApp]
 Type=0
@@ -67,7 +67,7 @@ Control10=IDC_BURN_DVD,button,1342242816
 Type=1
 Class=?
 ControlCount=4
-Control1=IDC_STATIC,static,1342177283
+Control1=IDC_STATIC,static,1342179331
 Control2=IDC_STATIC,static,1342308480
 Control3=IDC_STATIC,static,1342308352
 Control4=IDOK,button,1342373889

@@ -58,15 +58,6 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\NeroBurn.ico"
 #endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -82,18 +73,28 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\NeroBurn.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 50
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About NeroBurn"
 FONT 8, "MS Sans Serif"
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "NeroBurn Version 1.0",IDC_STATIC,40,10,119,8,
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,14,21,20,SS_REALSIZEIMAGE
+    LTEXT           "NeroBurn, Version 2.0.0",IDC_STATIC,40,11,119,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright (C) 2005 Nero AG",IDC_STATIC,40,25,139,8
+    LTEXT           "Copyright © 2003 - 2012 Contaware.com, Switzerland",
+                    IDC_STATIC,40,29,188,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
 
@@ -126,8 +127,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 2,0,0,0
+ PRODUCTVERSION 2,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -145,14 +146,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "NeroBurn\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "2, 0, 0, 0\0"
             VALUE "InternalName", "NeroBurn\0"
             VALUE "LegalCopyright", "Copyright (C) 2012 Contaware\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "NeroBurn.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "NeroBurn Application\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "2, 0, 0, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -178,7 +179,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 228
         TOPMARGIN, 7
-        BOTTOMMARGIN, 48
+        BOTTOMMARGIN, 43
     END
 
     IDD_NEROBURN_DIALOG, DIALOG
