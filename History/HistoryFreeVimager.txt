@@ -5,6 +5,8 @@ VERSION HISTORY
 - More productive working because less dialogs are popping-up
   when saving files and scanning to PDF
   (the save as dialogs have now a jpeg quality slider)
+- Icons update
+- Fixed uniqueness of temporary directories
 
 4.0.1 (July 10th 2012)
 

@@ -2,7 +2,8 @@ VERSION HISTORY
 
 4.0.3 (August xxx 2012)
 
-- ... 
+- Icons update
+- Fixed uniqueness of temporary directories
 
 4.0.1 (July 10th 2012)
 

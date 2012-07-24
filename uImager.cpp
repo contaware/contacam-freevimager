@@ -3738,6 +3738,8 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		sSrcFileName.TrimRight(_T('\\'));
 
 		// Destination File Name
+		// Note: if there are open docs with same filename
+		// only the last one gets into szDstDirPath!
 		CString sDstFileName = sSrcFileName;
 		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
@@ -3813,6 +3815,8 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		sSrcFileName.TrimRight(_T('\\'));
 
 		// Destination File Name
+		// Note: if there are open docs with same filename
+		// only the last one gets into szDstDirPath!
 		CString sDstFileName = sSrcFileName;
 		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
@@ -4734,9 +4738,12 @@ void CUImagerApp::SendCurrentDocAsMailInit()
 			m_sZipFile = _T("");
 
 		// Create & Empty Email Temp Dir
-		if (!::IsExistingDir(GetAppTempDir() + _T("Email")))
+		CString sTempEmailDir;
+		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
+		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
+		if (!::IsExistingDir(sTempEmailDir))
 		{
-			if (!::CreateDir(GetAppTempDir() + _T("Email")))
+			if (!::CreateDir(sTempEmailDir))
 			{
 				::ShowLastError(TRUE);
 				return;
@@ -4744,7 +4751,7 @@ void CUImagerApp::SendCurrentDocAsMailInit()
 		}
 		else
 		{
-			if (!::DeleteDirContent(GetAppTempDir() + _T("Email")))
+			if (!::DeleteDirContent(sTempEmailDir))
 			{
 				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
 				return;
@@ -4761,7 +4768,7 @@ void CUImagerApp::SendCurrentDocAsMailInit()
 			sDstExt = ShrinkGetDstExt(::GetFileExt(pDoc->m_sFileName));
 
 		// Destination File Name
-		CString sDstFileName = GetAppTempDir() + _T("Email") + _T("\\") + ::GetShortFileNameNoExt(pDoc->m_sFileName) + sDstExt;
+		CString sDstFileName = sTempEmailDir + _T("\\") + ::GetShortFileNameNoExt(pDoc->m_sFileName) + sDstExt;
 
 		// Shrink
 		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
@@ -4829,9 +4836,12 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 			m_sZipFile = _T("");
 
 		// Create & Empty Email Temp Dir
-		if (!::IsExistingDir(GetAppTempDir() + _T("Email")))
+		CString sTempEmailDir;
+		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
+		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
+		if (!::IsExistingDir(sTempEmailDir))
 		{
-			if (!::CreateDir(GetAppTempDir() + _T("Email")))
+			if (!::CreateDir(sTempEmailDir))
 			{
 				::ShowLastError(TRUE);
 				return;
@@ -4839,7 +4849,7 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		}
 		else
 		{
-			if (!::DeleteDirContent(GetAppTempDir() + _T("Email")))
+			if (!::DeleteDirContent(sTempEmailDir))
 			{
 				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
 				return;
@@ -4849,7 +4859,7 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		// Shrink
 		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
 		{
-			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+			res = ShrinkOpenDocs(sTempEmailDir,
 								AUTO_SHRINK_MAX_SIZE,
 								FALSE,
 								DEFAULT_JPEGCOMPRESSION,
@@ -4860,7 +4870,7 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
 		{
-			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+			res = ShrinkOpenDocs(sTempEmailDir,
 								0,
 								FALSE,
 								0,
@@ -4871,7 +4881,7 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
 		{
-			res = ShrinkOpenDocs(GetAppTempDir() + _T("Email"),
+			res = ShrinkOpenDocs(sTempEmailDir,
 								(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
 								(dlg.m_nPixelsPercentSel == 1),
 								dlg.m_nJpegQuality,
@@ -4900,6 +4910,14 @@ void CUImagerApp::SendDocAsMailFinish(BOOL bOk)
 
 	if (bOk)
 	{
+		// The Email Temp Dirs
+		CString sTempEmailDir;
+		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
+		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
+		CString sTempEmailZipDir;
+		sTempEmailZipDir.Format(_T("EmailZip%X"), ::GetCurrentProcessId());
+		sTempEmailZipDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailZipDir;
+
 		// Do Zip?
 		if (m_sZipFile != _T(""))
 		{
@@ -4908,9 +4926,9 @@ void CUImagerApp::SendDocAsMailFinish(BOOL bOk)
 			m_sZipFile += _T(".zip");
 
 			// Create Email Zip Temp Directory if not existing
-			if (!::IsExistingDir(GetAppTempDir() + _T("EmailZip")))
+			if (!::IsExistingDir(sTempEmailZipDir))
 			{
-				if (!::CreateDir(GetAppTempDir() + _T("EmailZip")))
+				if (!::CreateDir(sTempEmailZipDir))
 				{
 					::ShowLastError(TRUE);
 					::AfxGetMainFrame()->StatusText();
@@ -4919,16 +4937,16 @@ void CUImagerApp::SendDocAsMailFinish(BOOL bOk)
 			}
 
 			// Compress & Send
-			if (CompressToZip(GetAppTempDir() + _T("Email"), GetAppTempDir() + _T("EmailZip\\") + m_sZipFile))
-				SendMail(GetAppTempDir() + _T("EmailZip\\") + m_sZipFile);
+			if (CompressToZip(sTempEmailDir, sTempEmailZipDir + _T("\\") + m_sZipFile))
+				SendMail(sTempEmailZipDir + _T("\\") + m_sZipFile);
 
 			// Delete Email Zip Temp Directory
-			::DeleteDir(GetAppTempDir() + _T("EmailZip"));
+			::DeleteDir(sTempEmailZipDir);
 		}
 		else
-			SendMail(GetAppTempDir() + _T("Email")); // Send Email Directory Content
+			SendMail(sTempEmailDir); // Send Email Directory Content
 	
-		::DeleteDir(GetAppTempDir() + _T("Email"));
+		::DeleteDir(sTempEmailDir);
 	}
 
 	// Reset Status Text
