@@ -146,6 +146,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	m_bWorking = FALSE;
 	CTime FirstTime(0);
 	CTime LastTime(0);
+	CString sTempDetectionDir; 
+	sTempDetectionDir.Format(_T("Detection%X"), ::GetCurrentThreadId());
+	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
 	while (TRUE)
 	{
 		// Poll for Work
@@ -167,7 +170,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 				// Shutdown?
 				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
+				{
+					if (::IsExistingDir(sTempDetectionDir))
+						::DeleteDir(sTempDetectionDir);
 					return 0;
+				}
 			}
 			while (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
 			{
@@ -223,6 +230,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
 					m_bWorking = FALSE;
+					if (::IsExistingDir(sTempDetectionDir))
+						::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
 			}
@@ -235,8 +244,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sFirstTime(FirstTime.Format(_T("%Y_%m_%d_%H_%M_%S")));
 
 		// Directory to Store Detection
-		CString sThreadUniqueName;
-		sThreadUniqueName.Format(_T("Detection%X"), ::GetCurrentThreadId());
 		CString sDetectionAutoSaveDir;
 		if (m_pDoc->m_bSaveSWFMovementDetection	||
 			m_pDoc->m_bSaveAVIMovementDetection ||
@@ -248,7 +255,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
 				// Temp Dir To Store Files
-				sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sThreadUniqueName;
+				sDetectionAutoSaveDir = sTempDetectionDir;
 				dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 				if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 				{
@@ -262,7 +269,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Temp Dir To Store Files For Email Sending and/or Ftp Upload
 		else
 		{
-			sDetectionAutoSaveDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sThreadUniqueName;
+			sDetectionAutoSaveDir = sTempDetectionDir;
 			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
@@ -380,6 +387,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
+				if (::IsExistingDir(sTempDetectionDir))
+					::DeleteDir(sTempDetectionDir);
 				return 0;
 			}
 
@@ -718,6 +727,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
+			if (::IsExistingDir(sTempDetectionDir))
+				::DeleteDir(sTempDetectionDir);
 			return 0;
 		}
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
@@ -766,6 +777,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	}
 	ASSERT(FALSE); // should never end up here...
 	m_bWorking = FALSE;
+	if (::IsExistingDir(sTempDetectionDir))
+		::DeleteDir(sTempDetectionDir);
 	return 0;
 }
 
