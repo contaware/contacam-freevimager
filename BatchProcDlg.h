@@ -35,10 +35,7 @@
 #define HDF_SORTDOWN						0x0200
 #endif
 
-#define TMP_BATCH_OUT_DIR					_T("BatchOut")
-
 #define DEFAULT_OUTFILE_FRAMERATE			0.25		// Default Framerate for Animated GIFs and AVIs
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CBatchProcDlg dialog

@@ -1704,7 +1704,7 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 
 	// Delete Tmp Dir
 	if (bOk)
-		::DeleteDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR);
+		::DeleteDir(m_ProcessThread.m_szTempDstDirPath);
 
 	// Reset Progress
 	m_ProcessThread.m_nPrevPercentDone = -5;
@@ -2615,9 +2615,12 @@ void CBatchProcDlg::OnOK()
 		}
 		
 		// Create & Empty Temp Dir
-		if (!::IsExistingDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+		CString sTempBatchOutDir;
+		sTempBatchOutDir.Format(_T("BatchOut%X"), ::GetCurrentProcessId());
+		sTempBatchOutDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempBatchOutDir;
+		if (!::IsExistingDir(sTempBatchOutDir))
 		{
-			if (!::CreateDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+			if (!::CreateDir(sTempBatchOutDir))
 			{
 				::ShowLastError(TRUE);
 				return;
@@ -2625,7 +2628,7 @@ void CBatchProcDlg::OnOK()
 		}
 		else
 		{
-			if (!::DeleteDirContent(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR))
+			if (!::DeleteDirContent(sTempBatchOutDir))
 			{
 				::AfxMessageBox(ML_STRING(1225, "Error While Deleting The Temporary Folder."), MB_OK | MB_ICONSTOP);
 				return;
@@ -2645,7 +2648,7 @@ void CBatchProcDlg::OnOK()
 		{
 			if (m_nOptimizationSelection == AUTO_OPT) // Auto
 			{
-				m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szTempDstDirPath = sTempBatchOutDir;
 				m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 				m_ProcessThread.m_dwMaxSize = AUTO_SHRINK_MAX_SIZE;
 				m_ProcessThread.m_bMaxSizePercent = FALSE;
@@ -2679,7 +2682,7 @@ void CBatchProcDlg::OnOK()
 			}
 			else
 			{
-				m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+				m_ProcessThread.m_szTempDstDirPath = sTempBatchOutDir;
 				m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 				m_ProcessThread.m_dwMaxSize = (m_ShrinkTab.m_nPixelsPercentSel == 0) ? m_ShrinkTab.m_nShrinkingPixels : m_ShrinkTab.m_nShrinkingPercent;
 				m_ProcessThread.m_bMaxSizePercent = (m_ShrinkTab.m_nPixelsPercentSel == 1);
@@ -2734,7 +2737,7 @@ void CBatchProcDlg::OnOK()
 		}
 		else
 		{
-			m_ProcessThread.m_szTempDstDirPath = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_BATCH_OUT_DIR;
+			m_ProcessThread.m_szTempDstDirPath = sTempBatchOutDir;
 			m_ProcessThread.m_szOrigDstDirPath = sOutputDirectory;
 			m_ProcessThread.m_dwMaxSize = 0;
 			m_ProcessThread.m_bMaxSizePercent = FALSE;
