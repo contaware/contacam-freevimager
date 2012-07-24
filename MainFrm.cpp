@@ -418,9 +418,8 @@ LONG CMainFrame::OnScanAndEmail(WPARAM wparam, LPARAM lparam)
 	// Send
 	((CUImagerApp*)::AfxGetApp())->SendMail(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 
-	// Delete
-	::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
-	::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+	// Delete temporary directory containing tiff file and pdf file
+	::DeleteDir(::GetDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName));
 
 	return 1;
 }
@@ -921,9 +920,12 @@ void CMainFrame::OnFileAcquireAndEmail()
 	}
 
 	// Create & Empty Temp Dir
-	if (!::IsExistingDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_SCAN_AND_EMAIL_DIR))
+	CString sScanAndEmailDir;
+	sScanAndEmailDir.Format(_T("ScanAndEmail%X"), ::GetCurrentProcessId());
+	sScanAndEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sScanAndEmailDir;
+	if (!::IsExistingDir(sScanAndEmailDir))
 	{
-		if (!::CreateDir(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_SCAN_AND_EMAIL_DIR))
+		if (!::CreateDir(sScanAndEmailDir))
 		{
 			::ShowLastError(TRUE);
 			return;
@@ -931,7 +933,7 @@ void CMainFrame::OnFileAcquireAndEmail()
 	}
 	else
 	{
-		if (!::DeleteDirContent(((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + TMP_SCAN_AND_EMAIL_DIR))
+		if (!::DeleteDirContent(sScanAndEmailDir))
 		{
 			::AfxMessageBox(ML_STRING(1225, "Error While Deleting The Temporary Folder."), MB_OK | MB_ICONSTOP);
 			return;
@@ -939,10 +941,8 @@ void CMainFrame::OnFileAcquireAndEmail()
 	}
 
 	// Set Temp File Names
-	((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() +
-															TMP_SCAN_AND_EMAIL_DIR + _T("\\Document.pdf");
-	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() +
-															TMP_SCAN_AND_EMAIL_DIR + _T("\\Document.tif");
+	((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = sScanAndEmailDir + _T("\\Document.pdf");
+	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = sScanAndEmailDir + _T("\\Document.tif");
 
 	// Set Scan & Email Flag
 	m_bScanAndEmail = TRUE;

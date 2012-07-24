@@ -351,8 +351,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (::GetTempPath(MAX_PATH, szTempPath))
 		{
 			// Do not delete temp directory to clean-up,
-			// because if in single instance mode we
-			// have sharing problems!  
+			// because other instances may be running!  
 			m_sAppTempDir = CString(szTempPath) + sName + _T("\\");
 			if (!::IsExistingDir(m_sAppTempDir))
 			{

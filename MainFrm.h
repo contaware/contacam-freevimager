@@ -74,9 +74,6 @@ extern "C"
 // Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				15000U	// ms
 
-// Temporary Scan & Email Directory
-#define TMP_SCAN_AND_EMAIL_DIR						_T("ScanAndEmail")
-
 // Forward Declarations
 class CUImagerDoc;
 class CBatchProcDlg;
