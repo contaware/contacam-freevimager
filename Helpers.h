@@ -266,6 +266,9 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL term
 // Get uuid
 extern CString GetUuidString();
 
+// Is the given string in the supplied array (case insensitive)?
+extern BOOL InStringArray(const CString& s, const CStringArray& arr);
+
 // Does the given rectangle intersect a valid monitor?
 extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
 

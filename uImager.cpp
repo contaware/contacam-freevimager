@@ -3719,6 +3719,9 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 	// Begin Wait Cursor
 	BeginWaitCursor();
 
+	// Keep track of all added file names to avoid duplicates
+	CStringArray DstFileNames;
+
 	// Picture Docs
 	curTemplate = GetPictureDocTemplate();
 	pos = curTemplate->GetFirstDocPosition();
@@ -3738,10 +3741,13 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		sSrcFileName.TrimRight(_T('\\'));
 
 		// Destination File Name
-		// Note: if there are open docs with same filename
-		// only the last one gets into szDstDirPath!
 		CString sDstFileName = sSrcFileName;
 		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
+		CString sOrigDstFileName = sDstFileName;
+		int i = 0;
+		while (::InStringArray(sDstFileName, DstFileNames))
+			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
+		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
 		if (bPictureExtChange && !bOnlyCopyFiles)
 		{
@@ -3815,10 +3821,13 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		sSrcFileName.TrimRight(_T('\\'));
 
 		// Destination File Name
-		// Note: if there are open docs with same filename
-		// only the last one gets into szDstDirPath!
 		CString sDstFileName = sSrcFileName;
 		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
+		CString sOrigDstFileName = sDstFileName;
+		int i = 0;
+		while (::InStringArray(sDstFileName, DstFileNames))
+			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
+		DstFileNames.Add(sDstFileName);
 		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
 		
 		// Status Text

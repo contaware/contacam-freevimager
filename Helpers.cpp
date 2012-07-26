@@ -2912,6 +2912,16 @@ CString GetUuidString()
 	return sUUID;
 }
 
+BOOL InStringArray(const CString& s, const CStringArray& arr)
+{
+	for (int i = 0 ; i < arr.GetSize() ; i++)
+	{
+		if (s.CompareNoCase(arr[i]) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 BOOL IntersectsValidMonitor(LPCRECT lpRect)
 {
 	BOOL res;
