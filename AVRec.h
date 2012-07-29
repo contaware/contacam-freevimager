@@ -32,7 +32,6 @@ public:
 	// Construction which calls Init()
 	CAVRec(	LPCTSTR lpszFileName,
 			int nPassNumber = 0,
-			LPCTSTR lpszTempDir = _T(""),
 			bool bFastEncode = false);
 
 	// Destructor
@@ -42,7 +41,6 @@ public:
 	// nPassNumber 0: Single Pass, 1: First Pass, 2: Second Pass
 	bool Init(	LPCTSTR lpszFileName,
 				int nPassNumber = 0,
-				LPCTSTR lpszTempDir = _T(""),
 				bool bFastEncode = false);
 
 	// Add Video Stream
@@ -233,7 +231,6 @@ protected:
 	FILE* m_p2PassLogFiles[MAX_STREAMS];
 	CString m_s2PassLogFileName[MAX_STREAMS];
 	int m_nPassNumber[MAX_STREAMS];
-	CString m_sTempDir;
 
 	// Audio Vars
 	volatile DWORD m_dwTotalAudioStreams;

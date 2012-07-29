@@ -3674,7 +3674,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		*ppAVRec = new CAVRec;
 		if (!(*ppAVRec))
 			goto error;
-		if (!(*ppAVRec)->Init(sDstFileName, nPassNumber, ((CUImagerApp*)::AfxGetApp())->GetAppTempDir()))
+		if (!(*ppAVRec)->Init(sDstFileName, nPassNumber))
 			goto error;
 		bFirstFile = TRUE;
 	}

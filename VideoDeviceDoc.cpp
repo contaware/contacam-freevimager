@@ -327,7 +327,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Note: CAVRec needs a file with .avi or .swf extention!
 
 		// Create the Avi File
-		CAVRec AVRecAvi(sAVIFileName, 0, _T(""), true); // fast encoding!
+		CAVRec AVRecAvi(sAVIFileName, 0, true); // fast encoding!
 		AVRecAvi.SetInfo(	_T("Title"),
 							_T("Author"),
 							_T("Copyright"),
@@ -336,7 +336,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							_T("Genre"));
 
 		// Create the Swf File
-		CAVRec AVRecSwf(sSWFFileName, 0, _T(""), true); // fast encoding!
+		CAVRec AVRecSwf(sSWFFileName, 0, true); // fast encoding!
 		AVRecSwf.SetInfo(	_T("Title"),
 							_T("Author"),
 							_T("Copyright"),
@@ -5780,7 +5780,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
 		return FALSE;
 
 	// Set File Name
-	if (!(*ppAVRec)->Init(sFileName, 0, _T(""), true)) // fast encoding!
+	if (!(*ppAVRec)->Init(sFileName, 0, true)) // fast encoding!
 		return FALSE;
 
 	// Set File Info

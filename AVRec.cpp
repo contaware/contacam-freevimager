@@ -21,11 +21,10 @@ CAVRec::CAVRec()
 
 CAVRec::CAVRec(	LPCTSTR lpszFileName,
 				int nPassNumber/*=0*/,
-				LPCTSTR lpszTempDir/*=_T("")*/,
 				bool bFastEncode/*=false*/)
 {
 	InitVars();
-	Init(lpszFileName, nPassNumber, lpszTempDir, bFastEncode);
+	Init(lpszFileName, nPassNumber, bFastEncode);
 }
 
 void CAVRec::InitVars()
@@ -34,7 +33,6 @@ void CAVRec::InitVars()
 
 	m_pOutputFormat = NULL;
     m_pFormatCtx = NULL;
-	m_sTempDir = _T("");
 	m_sFileName = _T("");
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
@@ -449,19 +447,8 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	// Two pass mode
 	if (m_nPassNumber[pStream->index] > 0)
 	{
-		CString sFileName;
-		if (m_sTempDir != _T(""))
-		{
-			// Make sure the Path terminates with a backslash
-			if (m_sTempDir[m_sTempDir.GetLength() - 1] != _T('\\'))
-				m_sTempDir += _T('\\');
-			sFileName = m_sTempDir + ::GetShortFileName(m_sFileName);
-		}
-		else
-			sFileName = m_sFileName;
 		m_s2PassLogFileName[pStream->index].Format(_T("%s_stream%d_twopass.log"),
-										::GetFileNameNoExt(sFileName), pStream->index);
-
+										::GetFileNameNoExt(m_sFileName), pStream->index);
 		if (m_nPassNumber[pStream->index] == 2)
 		{
 			if (::IsExistingFile(m_s2PassLogFileName[pStream->index]))
@@ -478,7 +465,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 
 bool CAVRec::Init(	LPCTSTR lpszFileName,
 					int nPassNumber/*=0*/,
-					LPCTSTR lpszTempDir/*=_T("")*/,
 					bool bFastEncode/*=false*/)
 {
 	// Make ffmpeg compatible file name
@@ -508,7 +494,6 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 	Close();
 
 	m_sFileName = lpszFileName;
-	m_sTempDir = lpszTempDir;
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
 	m_nGlobalPassNumber = nPassNumber;
@@ -693,9 +678,22 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
         FILE* f;
         if (pCodecCtx->flags & CODEC_FLAG_PASS1)
 		{
+			// Write the log file
+			//
+			// If CREATE_ALWAYS and FILE_ATTRIBUTE_NORMAL are specified, CreateFile fails and sets the last error to
+			// ERROR_ACCESS_DENIED if the file exists and has the FILE_ATTRIBUTE_HIDDEN or FILE_ATTRIBUTE_SYSTEM
+			// attribute. To avoid the error, specify the same attributes as the existing file.
+			//
+			// -> You can open hidden file using fopen("r") but you cannot do this with fopen("w").
+			// The reason is that if you want to open a hidden file for writing you must provide the correct attribute
+			// and fopen("w") always  calls CreateFile with FILE_ATTRIBUTE_NORMAL.
+			//
+			// -> Set the hidden attribute after the file is opened!
+			::DeleteFile(m_s2PassLogFileName[nStreamNum]);
             f = _tfopen(m_s2PassLogFileName[nStreamNum], _T("w"));
             if (!f)
                return -1;
+			::SetFileAttributes(m_s2PassLogFileName[nStreamNum], ::GetFileAttributes(m_s2PassLogFileName[nStreamNum]) | FILE_ATTRIBUTE_HIDDEN);
             m_p2PassLogFiles[nStreamNum] = f;
         }
 		else
@@ -1364,7 +1362,6 @@ bool CAVRec::Close()
 		m_nPassNumber[dwStreamNum] = 0;
 	}
 
-	m_sTempDir = _T("");
 	m_sFileName = _T("");
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
