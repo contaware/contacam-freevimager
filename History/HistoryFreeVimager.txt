@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.3 beta1 (30th July 2012)
+4.0.3 beta1 (August 3rd 2012)
 
 - More productive working because less dialogs are popping-up
   when saving files and scanning to PDF

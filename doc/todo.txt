@@ -1,7 +1,7 @@
 Picture:
 --------
 - Using numbers to jump to a specific file in current directory
-- Update icons to be similar to ACDSee ones
+- Email button should send all open, not just the active doc
 
 Detection:
 ----------

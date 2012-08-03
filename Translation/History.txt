@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.0.3 (August xxx 2012)
+4.0.3 beta1 (August 3rd 2012)
 
 - Added string 1864 JPEG Quality\n(0: worst, 100: best)
 - ESC key exits the program in full-screen -> ESC key exits the program

@@ -1,9 +1,10 @@
 VERSION HISTORY
 
-4.0.3 beta1 (30th July 2012)
+4.0.3 beta1 (August 3rd 2012)
 
-- Icons update
 - Fixed uniqueness of temporary subdirectories
+- ESC key always exits the program if set so in Global Settings
+- Icons update
 
 4.0.1 (July 10th 2012)
 
