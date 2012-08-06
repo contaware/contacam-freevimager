@@ -1,9 +1,10 @@
 TRANSLATIONS HISTORY
 
-4.0.3 beta1 (August 3rd 2012)
+4.0.3 beta2 (August 6th 2012)
 
 - Added string 1864 JPEG Quality\n(0: worst, 100: best)
 - ESC key exits the program in full-screen -> ESC key exits the program
+- Changed menu's Email string
 
 4.0.1 (July 10th 2012)
 

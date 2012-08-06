@@ -103,7 +103,7 @@ BEGIN
     BUTTON      ID_FILE_ACQUIRE_TO_TIFF
     BUTTON      ID_FILE_ACQUIRE_TO_PDF
     SEPARATOR
-    BUTTON      ID_FILE_SENDMAIL_CURRENT_DOC
+    BUTTON      ID_FILE_SENDMAIL_OPEN_DOCS
     SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
@@ -222,6 +222,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
@@ -557,11 +558,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
-        POPUP "Email"
-        BEGIN
-            MENUITEM "All Open",                    ID_FILE_SENDMAIL_OPEN_DOCS
-
-        END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
@@ -652,13 +649,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
-        POPUP "Email"
-        BEGIN
-            MENUITEM "Current",                     ID_FILE_SENDMAIL_CURRENT_DOC
-
-            MENUITEM "All Open",                    ID_FILE_SENDMAIL_OPEN_DOCS
-
-        END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
@@ -768,13 +759,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
-        POPUP "Email"
-        BEGIN
-            MENUITEM "Current",                     ID_FILE_SENDMAIL_CURRENT_DOC
-
-            MENUITEM "All Open",                    ID_FILE_SENDMAIL_OPEN_DOCS
-
-        END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tI",      ID_FILE_INFO
@@ -1083,11 +1068,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
-        POPUP "Email"
-        BEGIN
-            MENUITEM "All Open",                    ID_FILE_SENDMAIL_OPEN_DOCS
-
-        END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
@@ -1432,11 +1413,7 @@ BEGIN
             MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
 
         END
-        POPUP "Email"
-        BEGIN
-            MENUITEM "All Open",                    ID_FILE_SENDMAIL_OPEN_DOCS
-
-        END
+        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "Global Settings...",          ID_FILE_SETTINGS
@@ -2077,7 +2054,7 @@ IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "bmp Files",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,19,34,45,10
@@ -2852,71 +2829,6 @@ BEGIN
                     WS_GROUP
     LTEXT           "Dir",IDC_TEXT_INPUT_DIR,24,16,10,8,SS_NOTIFY | NOT 
                     WS_GROUP
-END
-
-IDD_SENDMAIL_CURRENT_PICTUREDOC DIALOGEX 0, 0, 217, 182
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Send Current Image By E-Mail"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Optimize For E-Mail Sending (Fast Send)",
-                    IDC_RADIO_OPTIMIZE_EMAIL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,12,16,142,10
-    CONTROL         "Leave File Unchanged (Maybe Very Slow)",
-                    IDC_RADIO_OPTIMIZE_UNCHANGED,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,12,31,149,10
-    CONTROL         "Advanced Settings:",IDC_RADIO_OPTIMIZE_ADVANCED,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,12,46,78,10
-    CONTROL         "Allow Image Extension Change",
-                    IDC_CHECK_PICTURE_EXTCHANGE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,60,113,10
-    CONTROL         "Enable Image Shrinking:",IDC_CHECK_SHRINKINGPICTURES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,73,93,10
-    CONTROL         "Max Pixels:",IDC_RADIO_PIXELS,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,87,51,10
-    EDITTEXT        IDC_EDIT_PIXELS,71,86,37,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PIXELS,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,107,86,11,13
-    CONTROL         "Percent:",IDC_RADIO_PERCENT,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,127,87,43,10
-    EDITTEXT        IDC_EDIT_PERCENT,171,86,31,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PERCENT,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,199,86,11,13
-    EDITTEXT        IDC_EDIT_QUALITY,127,108,34,12,ES_AUTOHSCROLL
-    CONTROL         "Spin1",IDC_SPIN_QUALITY,"msctls_updown32",
-                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
-                    UDS_ARROWKEYS | UDS_NOTHOUSANDS,161,108,11,13
-    CONTROL         "Attachment As A Zip File:",IDC_CHECK_ZIP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,142,91,10
-    EDITTEXT        IDC_EDIT_ZIPFILE_NAME,101,140,109,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,7,161,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,160,161,50,14
-    GROUPBOX        "Settings",IDC_STATIC2357,7,4,203,125
-    LTEXT           "Jpeg Quality (100 best, 0 worst):",IDC_STATIC2358,18,
-                    111,102,8
-END
-
-IDD_SENDMAIL_CURRENT_VIDEOAVIDOC DIALOGEX 0, 0, 217, 94
-STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Send Current AVI By E-Mail"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Optimize For E-Mail Sending (Fast Send)",
-                    IDC_RADIO_OPTIMIZE_EMAIL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,12,16,142,10
-    CONTROL         "Leave File Unchanged (Maybe Very Slow)",
-                    IDC_RADIO_OPTIMIZE_UNCHANGED,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,12,31,149,10
-    CONTROL         "Attachment As A Zip File:",IDC_CHECK_ZIP,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,56,91,10
-    EDITTEXT        IDC_EDIT_ZIPFILE_NAME,101,54,109,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,7,73,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,160,73,50,14
-    GROUPBOX        "Settings",IDC_STATIC2359,7,4,203,41
 END
 
 IDD_DIRECTX7 DIALOG DISCARDABLE  0, 0, 236, 79
@@ -4453,7 +4365,7 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -5091,28 +5003,6 @@ BEGIN
         HORZGUIDE, 101
         HORZGUIDE, 263
         HORZGUIDE, 268
-    END
-
-    IDD_SENDMAIL_CURRENT_PICTUREDOC, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 210
-        VERTGUIDE, 12
-        VERTGUIDE, 18
-        VERTGUIDE, 127
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 175
-        HORZGUIDE, 92
-    END
-
-    IDD_SENDMAIL_CURRENT_VIDEOAVIDOC, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 210
-        VERTGUIDE, 12
-        VERTGUIDE, 18
-        TOPMARGIN, 4
-        BOTTOMMARGIN, 87
     END
 
     IDD_DIRECTX7, DIALOG
@@ -5831,7 +5721,6 @@ BEGIN
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
     IDS_MULTILANG_1176      "Wait till all processing is done."
-    IDS_MULTILANG_1177      "No pictures or videos open."
     IDS_MULTILANG_1178      "No picture file loaded."
     IDS_MULTILANG_1179      "Please try again later, a command is executed when picture fully loaded."
     IDS_MULTILANG_1180      "Try again after saving the picture file."
@@ -6356,10 +6245,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_PLAY_MUSIC           "Enable / disable background music\nBackground Music"
     ID_FILE_SHRINK_DIR_DOCS "Batch convert, rename and slideshow\nBatch Proc. / Slideshow"
-    ID_FILE_SENDMAIL_OPEN_DOCS 
-                            "Send all open documents by email attachment\nSend All"
-    ID_FILE_SENDMAIL_CURRENT_DOC 
-                            "Send current document by email attachment\nSend Current"
+    ID_FILE_SENDMAIL_OPEN_DOCS "Send by Email attachment\nSend by Email"
     ID_EDIT_FILTER_SHARPEN  "Sharpen current image\nSharpen"
     ID_EDIT_FILTER_SOFTEN   "Soften current image\nSoften"
 END

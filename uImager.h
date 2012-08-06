@@ -411,7 +411,6 @@ public:
 	BOOL SendMail(LPCTSTR szAttachment);
 
 	// Send Document(s) by e-mail
-	void SendCurrentDocAsMailInit();
 	void SendOpenDocsAsMailInit();
 	void SendDocAsMailFinish(BOOL bOk);
 
@@ -419,12 +418,6 @@ public:
 	// -1 : Not Finished
 	// 0  : Error
 	// 1  : Ok
-	int ShrinkCurrentDoc(	LPCTSTR szDstFileName,
-							DWORD dwMaxSize,
-							BOOL bMaxSizePercent,
-							DWORD dwJpegQuality,
-							BOOL bShrinkPictures,
-							BOOL bShrinkVideos);
 	int ShrinkOpenDocs(	LPCTSTR szDstDirPath,
 						DWORD dwMaxSize,
 						BOOL bMaxSizePercent,
@@ -508,10 +501,6 @@ public:
 	// Broser autostart
 	void BrowserAutostart();
 #endif
-
-	// Save current document if it is modified,
-	// returns TRUE if not modified or if saved successfully
-	BOOL SaveModifiedCurrentDoc();
 
 	// Is Showing a Print Preview other than pThisDoc?
 	BOOL HasPicturePrintPreview(CPictureDoc* pThisDoc = NULL);
@@ -856,8 +845,6 @@ public:
 	afx_msg void OnUpdateFileMruFile1(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileCloseall(CCmdUI* pCmdUI);
 	afx_msg void OnFileShrinkDirDocs();
-	afx_msg void OnFileSendmailCurrentDoc();
-	afx_msg void OnUpdateFileSendmailCurrentDoc(CCmdUI* pCmdUI);
 	afx_msg void OnFileSendmailOpenDocs();
 	afx_msg void OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI);
 	afx_msg void OnToolsAvimergeSerialAs();

@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.3 beta1 (August 3rd 2012)
+4.0.3 beta2 (August 6th 2012)
 
 - Fixed uniqueness of temporary subdirectories
 - ESC key always exits the program if set so in Global Settings

@@ -16,7 +16,7 @@ class CSendMailDocsDlg : public CDialog
 {
 // Construction
 public:
-	CSendMailDocsDlg(int nID, CWnd* pParent);
+	CSendMailDocsDlg(CWnd* pParent = NULL);
 
 	enum OPTIMIZATION_SELECTION
 						{	EMAIL_OPT=0,
@@ -48,7 +48,6 @@ public:
 
 // Implementation
 protected:
-	int m_nID;
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailDocsDlg)
 	virtual BOOL OnInitDialog();

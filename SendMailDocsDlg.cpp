@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "SendMailDocsDlg.h"
-#include "BrowseDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -16,8 +15,8 @@ static char THIS_FILE[] = __FILE__;
 // CSendMailDocsDlg dialog
 
 
-CSendMailDocsDlg::CSendMailDocsDlg(int nID, CWnd* pParent)
-	: CDialog(nID, pParent)
+CSendMailDocsDlg::CSendMailDocsDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CSendMailDocsDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSendMailDocsDlg)
 	m_nOptimizationSelection = EMAIL_OPT;
@@ -31,7 +30,6 @@ CSendMailDocsDlg::CSendMailDocsDlg(int nID, CWnd* pParent)
 	m_bShrinkingVideos = TRUE;
 	m_bPictureExtChange = TRUE;
 	//}}AFX_DATA_INIT
-	m_nID = nID;
 }
 
 void CSendMailDocsDlg::DoDataExchange(CDataExchange* pDX)
@@ -41,23 +39,17 @@ void CSendMailDocsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_OPTIMIZE_EMAIL, m_nOptimizationSelection);
 	DDX_Check(pDX, IDC_CHECK_ZIP, m_bZipFile);
 	DDX_Text(pDX, IDC_EDIT_ZIPFILE_NAME, m_sZipFileName);
+	DDX_Check(pDX, IDC_CHECK_SHRINKINGVIDEOS, m_bShrinkingVideos);
+	DDX_Radio(pDX, IDC_RADIO_PIXELS, m_nPixelsPercentSel);
+	DDX_Check(pDX, IDC_CHECK_SHRINKINGPICTURES, m_bShrinkingPictures);
+	DDX_Text(pDX, IDC_EDIT_PERCENT, m_nShrinkingPercent);
+	DDV_MinMaxInt(pDX, m_nShrinkingPercent, 1, 100);
+	DDX_Text(pDX, IDC_EDIT_PIXELS, m_nShrinkingPixels);
+	DDV_MinMaxInt(pDX, m_nShrinkingPixels, 1, 30000);
+	DDX_Text(pDX, IDC_EDIT_QUALITY, m_nJpegQuality);
+	DDV_MinMaxInt(pDX, m_nJpegQuality, 1, 100);
+	DDX_Check(pDX, IDC_CHECK_PICTURE_EXTCHANGE, m_bPictureExtChange);
 	//}}AFX_DATA_MAP
-
-	if (m_nID == IDD_SENDMAIL_OPEN_DOCS)
-		DDX_Check(pDX, IDC_CHECK_SHRINKINGVIDEOS, m_bShrinkingVideos);
-
-	if (m_nID != IDD_SENDMAIL_CURRENT_VIDEOAVIDOC)
-	{
-		DDX_Radio(pDX, IDC_RADIO_PIXELS, m_nPixelsPercentSel);
-		DDX_Check(pDX, IDC_CHECK_SHRINKINGPICTURES, m_bShrinkingPictures);
-		DDX_Text(pDX, IDC_EDIT_PERCENT, m_nShrinkingPercent);
-		DDV_MinMaxInt(pDX, m_nShrinkingPercent, 1, 100);
-		DDX_Text(pDX, IDC_EDIT_PIXELS, m_nShrinkingPixels);
-		DDV_MinMaxInt(pDX, m_nShrinkingPixels, 1, 30000);
-		DDX_Text(pDX, IDC_EDIT_QUALITY, m_nJpegQuality);
-		DDV_MinMaxInt(pDX, m_nJpegQuality, 1, 100);
-		DDX_Check(pDX, IDC_CHECK_PICTURE_EXTCHANGE, m_bPictureExtChange);
-	}
 }
 
 

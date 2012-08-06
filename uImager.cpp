@@ -96,8 +96,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateFileMruFile1)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
-	ON_COMMAND(ID_FILE_SENDMAIL_CURRENT_DOC, OnFileSendmailCurrentDoc)
-	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_CURRENT_DOC, OnUpdateFileSendmailCurrentDoc)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
 	ON_COMMAND(ID_TOOLS_AVIMERGESERIAL_AS, OnToolsAvimergeSerialAs)
@@ -1889,52 +1887,36 @@ void CUImagerApp::OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(::AfxGetMainFrame()->m_pBatchProcDlg ? 1 : 0);
 }
 
-void CUImagerApp::OnFileSendmailCurrentDoc() 
-{
-	if (!m_bMailAvailable)
-		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
-	else if (AreProcessingThreadsRunning())
-		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
-	else if (!ArePictureDocsOpen() &&
-			!AreVideoAviDocsOpen())
-		::AfxMessageBox(ML_STRING(1177, "No pictures or videos open."), MB_OK | MB_ICONINFORMATION);
-	else if (SaveModifiedCurrentDoc())
-	{
-		if (IsCurrentDocAvailable(TRUE))
-			SendCurrentDocAsMailInit();
-	}
-}
-
-void CUImagerApp::OnUpdateFileSendmailCurrentDoc(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(TRUE);	
-}
-
 void CUImagerApp::OnFileSendmailOpenDocs() 
 {
+	// Check and prompt to open files if none open
 	if (!m_bMailAvailable)
+	{
 		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
+		return;
+	}
 	else if (AreProcessingThreadsRunning())
+	{
 		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
-	else if (!ArePictureDocsOpen() &&
-			!AreVideoAviDocsOpen())
-		::AfxMessageBox(ML_STRING(1177, "No pictures or videos open."), MB_OK | MB_ICONINFORMATION);
-	else if (ArePictureDocsOpen() &&
-			!AreVideoAviDocsOpen())
+		return;
+	}
+	else if (!ArePictureDocsOpen() && !AreVideoAviDocsOpen())
+		OnFileOpen();
+
+	// Send open doc(s)
+	if (ArePictureDocsOpen() && !AreVideoAviDocsOpen())
 	{
 		if (AreOpenPictureDocsAvailable(TRUE))
 			SendOpenDocsAsMailInit();
 	}
-	else if (!ArePictureDocsOpen() &&
-			AreVideoAviDocsOpen())
+	else if (!ArePictureDocsOpen() && AreVideoAviDocsOpen())
 	{
 		if (AreOpenVideoAviDocsAvailable(TRUE))
 			SendOpenDocsAsMailInit();
 	}
-	else
+	else if (ArePictureDocsOpen() && AreVideoAviDocsOpen())
 	{
-		if (AreOpenPictureDocsAvailable(TRUE) &&
-			AreOpenVideoAviDocsAvailable(TRUE))
+		if (AreOpenPictureDocsAvailable(TRUE) && AreOpenVideoAviDocsAvailable(TRUE))
 			SendOpenDocsAsMailInit();
 	}
 }
@@ -2314,19 +2296,6 @@ CString CUImagerApp::VideoAviMakeMsg(CVideoAviDoc* pDoc)
 		sMsg = _T("");	
 		
 	return sMsg;
-}
-
-BOOL CUImagerApp::SaveModifiedCurrentDoc()
-{
-	if (!::AfxGetMainFrame())
-		return FALSE;
-	CDocument* pDoc = NULL;
-	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = ::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
-	if (!pDoc)
-		return FALSE;
-
-	return pDoc->SaveModified();
 }
 
 BOOL CUImagerApp::IsDocAvailable(CDocument* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
@@ -3611,94 +3580,6 @@ void CUImagerApp::ShrinkStatusText(	CString sSrcFileName,
 // -1 : Not Finished
 // 0  : Error
 // 1  : Ok
-int CUImagerApp::ShrinkCurrentDoc(	LPCTSTR szDstFileName,
-									DWORD dwMaxSize,
-									BOOL bMaxSizePercent,
-									DWORD dwJpegQuality,
-									BOOL bShrinkPictures,
-									BOOL bShrinkVideos)
-{
-	CUImagerDoc* pDoc = NULL;
-	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
-	if (!pDoc)
-		return 0;
-
-	// Picture Doc?
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-	{
-		BeginWaitCursor();
-
-		// Status Text
-		ShrinkStatusText(((CPictureDoc*)pDoc)->m_sFileName, szDstFileName);
-
-		if (ShrinkPicture(	pDoc->m_sFileName,
-							szDstFileName,
-							dwMaxSize,
-							bMaxSizePercent,
-							dwJpegQuality,
-							FALSE,				// Do not force jpeg quality change if already a jpeg
-							COMPRESSION_JPEG,	// Use Jpeg Compression inside Tiff
-							TRUE,				// Force the change to Jpeg Compression for Tiff files
-							bShrinkPictures,		
-							FALSE,				// Do not sharpen after shrink
-							TRUE,				// Work on all pages of a multi-page Tiff
-							::AfxGetMainFrame(),
-							TRUE,
-							NULL) != 0)
-		{
-			EndWaitCursor();
-			return 1;
-		}
-		else
-		{
-			EndWaitCursor();
-			return 0;
-		}
-	}
-		
-	// Video Avi Doc?
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-	{
-		int res = 1;
-
-		// Status Text
-		ShrinkStatusText(((CPictureDoc*)pDoc)->m_sFileName, szDstFileName);
-
-		if (bShrinkVideos)
-		{
-			if (!((CVideoAviDoc*)pDoc)->StartShrinkDocTo(szDstFileName))
-			{
-				::AfxMessageBox(ML_STRING(1213, "AVI Files with VBR Mp3 Audio cannot be Shrinked."), MB_OK | MB_ICONSTOP);
-				return 0;
-			}
-			else
-				res = -1; // Not finished
-		}
-		else
-		{
-			if (!::CopyFile(pDoc->m_sFileName, szDstFileName, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-			if (!::SetFileAttributes(szDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-		}
-
-		return res;
-	}
-
-	return 0;
-}
-
-// Return Value:
-// -1 : Not Finished
-// 0  : Error
-// 1  : Ok
 int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 								 DWORD dwMaxSize,
 								 BOOL bMaxSizePercent,
@@ -4714,122 +4595,11 @@ void CUImagerApp::SaveSettings()
 	}
 }
 
-void CUImagerApp::SendCurrentDocAsMailInit()
-{
-	int res = 0;
-	CUImagerDoc* pDoc = NULL;
-	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = (CUImagerDoc*)::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
-	if (!pDoc)
-		return;
-
-	int nID;
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-		nID = IDD_SENDMAIL_CURRENT_PICTUREDOC;
-	else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-		nID = IDD_SENDMAIL_CURRENT_VIDEOAVIDOC;
-	else
-		return;
-
-	CSendMailDocsDlg dlg(nID, ::AfxGetMainFrame());
-
-	if (dlg.DoModal() == IDOK)
-	{	
-		// Check & Store Var
-		if (dlg.m_bZipFile)
-		{
-			if (dlg.m_sZipFileName == _T(""))
-				m_sZipFile = _T("Files.zip"); 
-			else
-				m_sZipFile = dlg.m_sZipFileName;
-		}
-		else
-			m_sZipFile = _T("");
-
-		// Create & Empty Email Temp Dir
-		CString sTempEmailDir;
-		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
-		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
-		if (!::IsExistingDir(sTempEmailDir))
-		{
-			if (!::CreateDir(sTempEmailDir))
-			{
-				::ShowLastError(TRUE);
-				return;
-			}
-		}
-		else
-		{
-			if (!::DeleteDirContent(sTempEmailDir))
-			{
-				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
-				return;
-			}
-		}
-
-		// Destination Extension
-		CString sDstExt;
-		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT ||
-			(dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT &&
-			!dlg.m_bPictureExtChange))
-			sDstExt = ::GetFileExt(pDoc->m_sFileName);
-		else
-			sDstExt = ShrinkGetDstExt(::GetFileExt(pDoc->m_sFileName));
-
-		// Destination File Name
-		CString sDstFileName = sTempEmailDir + _T("\\") + ::GetShortFileNameNoExt(pDoc->m_sFileName) + sDstExt;
-
-		// Shrink
-		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
-		{
-			res = ShrinkCurrentDoc(	sDstFileName,
-									AUTO_SHRINK_MAX_SIZE,
-									FALSE,
-									DEFAULT_JPEGCOMPRESSION,
-									TRUE,
-									TRUE);
-		}
-		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
-		{
-			if (!::CopyFile(pDoc->m_sFileName, sDstFileName, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return;
-			}
-			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				::ShowLastError(TRUE);
-				return;
-			}
-			res = 1;	
-		}
-		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
-		{
-			res = ShrinkCurrentDoc(	sDstFileName,
-									(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
-									(dlg.m_nPixelsPercentSel == 1),
-									dlg.m_nJpegQuality,
-									dlg.m_bShrinkingPictures,
-									dlg.m_bShrinkingVideos);
-		}
-
-		// If No Avi Files, we can finish now,
-		// if avi file we have to wait untill all shrinking threads terminate!
-		// See CMainFrame::OnShrinkDocTerminated()
-		if (res == 1)
-			SendDocAsMailFinish(TRUE);		// Ok
-		else if (res == -1)
-			m_bWaitingMailFinish = TRUE;	// Wait
-		else
-			SendDocAsMailFinish(FALSE);		// Error
-	}
-}
-
 void CUImagerApp::SendOpenDocsAsMailInit()
 {
 	int res;
 
-	CSendMailDocsDlg dlg(IDD_SENDMAIL_OPEN_DOCS, ::AfxGetMainFrame());
+	CSendMailDocsDlg dlg(::AfxGetMainFrame());
 
 	if (dlg.DoModal() == IDOK)
 	{	
