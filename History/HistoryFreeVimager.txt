@@ -1,13 +1,14 @@
 VERSION HISTORY
 
-4.0.3 beta2 (August 6th 2012)
+4.0.3 (August 9th 2012)
 
 - More productive working because less dialogs are popping-up
   when saving files and scanning to PDF
   (the save as dialogs have now a jpeg quality slider)
 - ESC key always exits the program if set so in Global Settings
 - Icons update
-- Fixed emailing of open docs with same file name
+- Email button pops-up the open file dialog if no documents open;
+  fixed emailing of two or more files with the same name
 - 2pass log file is not overwritten if encoding at the same
   time two or more videos with the same destination file name
   (obviously to different directories)
