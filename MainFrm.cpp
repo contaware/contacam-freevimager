@@ -592,12 +592,18 @@ void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 		// Save also the single pages as separate tiff files
 		if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T(""))
 		{
-			CString sTime(CTime::GetCurrentTime().Format(_T("%Y_%m_%d_%H_%M_%S")));
-			m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d_%s%s"),
+			m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d%s"),
 													::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
 													m_nScanPageNumber,
-													sTime,
 													::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
+			if (::IsExistingFile(m_sScanCurrentTiffPageFileName))
+			{
+				m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d_%s%s"),
+														::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
+														m_nScanPageNumber,
+														::GetUuidString(),
+														::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
+			}
 			Dib.SaveTIFF(	m_sScanCurrentTiffPageFileName,
 							nCompression,
 							DEFAULT_JPEGCOMPRESSION,
