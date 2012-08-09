@@ -596,12 +596,13 @@ void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 													::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
 													m_nScanPageNumber,
 													::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
-			if (::IsExistingFile(m_sScanCurrentTiffPageFileName))
+			int i = 0;
+			while (::IsExistingFile(m_sScanCurrentTiffPageFileName))
 			{
-				m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d_%s%s"),
+				m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d(%d)%s"),
 														::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
 														m_nScanPageNumber,
-														::GetUuidString(),
+														++i,
 														::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
 			}
 			Dib.SaveTIFF(	m_sScanCurrentTiffPageFileName,
