@@ -2080,7 +2080,7 @@ void CBatchProcDlg::LoadSettings()
 	CWinApp* pApp = ::AfxGetApp();
 
 	m_nOptimizationSelection = (int)pApp->GetProfileInt(sSection, _T("OptimizationSelection"), AUTO_OPT);
-	m_ShrinkTab.m_nPixelsPercentSel = (int)pApp->GetProfileInt(sSection, _T("PixelsPercentSel"), 1);
+	m_ShrinkTab.m_nPixelsPercentSel = (int)pApp->GetProfileInt(sSection, _T("PixelsPercentSel"), 0);
 	m_ShrinkTab.m_bShrinkingPictures = (BOOL)pApp->GetProfileInt(sSection, _T("ShrinkingPictures"), FALSE);
 	m_ShrinkTab.m_nShrinkingPercent = (int)pApp->GetProfileInt(sSection, _T("ShrinkingPercent"), 50);
 	m_ShrinkTab.m_nShrinkingPixels = (int)pApp->GetProfileInt(sSection, _T("ShrinkingPixels"), AUTO_SHRINK_MAX_SIZE);

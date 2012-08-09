@@ -22,7 +22,7 @@ CBatchProcShrinkTab::CBatchProcShrinkTab(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CBatchProcShrinkTab)
 	m_bShrinkingPictures = FALSE;
 	m_bSharpen = FALSE;
-	m_nPixelsPercentSel = 1;
+	m_nPixelsPercentSel = 0;
 	m_nShrinkingPercent = 50;
 	m_nShrinkingPixels = AUTO_SHRINK_MAX_SIZE;
 	//}}AFX_DATA_INIT

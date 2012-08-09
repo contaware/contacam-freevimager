@@ -20,7 +20,7 @@ CSendMailDocsDlg::CSendMailDocsDlg(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CSendMailDocsDlg)
 	m_nOptimizationSelection = EMAIL_OPT;
-	m_nPixelsPercentSel = 1;
+	m_nPixelsPercentSel = 0;
 	m_bShrinkingPictures = TRUE;
 	m_bZipFile = FALSE;
 	m_nShrinkingPercent = 50;
