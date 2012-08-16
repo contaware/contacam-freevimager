@@ -1,8 +1,12 @@
 TRANSLATIONS HISTORY
 
+4.0.5 (xxx)
+
+- Added string 1865: Extract single pages?
+
 4.0.3 (August 9th 2012)
 
-- Added string 1864 JPEG Quality\n(0: worst, 100: best)
+- Added string 1864: JPEG Quality\n(0: worst, 100: best)
 - ESC key exits the program in full-screen -> ESC key exits the program
 - Changed menu's Email string
 

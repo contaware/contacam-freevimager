@@ -7020,6 +7020,7 @@ BEGIN
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%"
     IDS_STRING1863          "Full Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
+    IDS_STRING1865          "Extract single pages?"
 END
 
 #endif    // English (U.S.) resources

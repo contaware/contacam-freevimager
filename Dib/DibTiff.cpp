@@ -2624,4 +2624,67 @@ BOOL CDib::TIFFDeletePage(	int nDeletePageNum,
 		return FALSE;
 }
 
+BOOL CDib::TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName)
+{
+	// Check File Extension
+	if ((::GetFileExt(szDstFileName) == _T(".tif")	||
+		::GetFileExt(szDstFileName) == _T(".jfx")	||
+		::GetFileExt(szDstFileName) == _T(".tiff"))
+													&&
+		(::GetFileExt(szSrcFileName) == _T(".tif")	||
+		::GetFileExt(szSrcFileName) == _T(".jfx")	||
+		::GetFileExt(szSrcFileName) == _T(".tiff")))
+	{
+		// Get Input Metadata
+		CDib Dib;
+		Dib.LoadTIFF(szSrcFileName, 0, TRUE); // Load Header only
+
+		// Check Images Count
+		if (Dib.m_FileInfo.m_nImageCount < 1)
+			return FALSE;
+
+		// Number of Digits for File Names
+		int nDigits = (int)log10((double)Dib.m_FileInfo.m_nImageCount) + 1;
+
+		// Loop Through all Pages
+		for (int i = 0 ; i < Dib.m_FileInfo.m_nImageCount ; i++)
+		{
+			CString sPageFormat;
+			CString sCurrentFileName;
+			sPageFormat.Format(_T("%%0%dd"), nDigits);
+			sCurrentFileName.Format(_T("%s") + sPageFormat + _T("%s"),
+									::GetFileNameNoExt(szDstFileName),
+									i + 1,
+									::GetFileExt(szDstFileName));
+			int iCopy = 0;
+			while (::IsExistingFile(sCurrentFileName))
+			{
+				sCurrentFileName.Format(_T("%s") + sPageFormat + _T("(%d)%s"),
+									::GetFileNameNoExt(szDstFileName),
+									i + 1,
+									++iCopy,
+									::GetFileExt(szDstFileName));
+			}
+			TIFF* out = NULL;
+#ifdef _UNICODE
+			out = ::TIFFOpenW(sCurrentFileName, "w");
+#else
+			out = ::TIFFOpen(sCurrentFileName, "w");
+#endif    
+			if (!out)
+				return FALSE;
+			if (!TIFFCopy(szSrcFileName, i, out, 0, 1))
+			{
+				::TIFFClose(out);
+				return FALSE;
+			}
+			::TIFFClose(out);
+		}
+
+		return TRUE;
+	}
+	else
+		return FALSE;
+}
+
 #endif

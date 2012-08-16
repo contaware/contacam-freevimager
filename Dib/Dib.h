@@ -1520,6 +1520,9 @@ public:
 	static BOOL TIFFDeletePage(	int nDeletePageNum,
 								LPCTSTR szFileName,
 								LPCTSTR szTempDir);
+
+	// Extract all pages to files with filename composed from szDstFileName and sPageNum
+	static BOOL TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName);
 #endif
 
 	// JPEG Support

@@ -2857,6 +2857,8 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 												dlgFile.GetJpegCompressionQuality(),
 												GetView(),
 												TRUE);
+				if (res && ::AfxMessageBox(ML_STRING(1865, "Extract single pages?"), MB_YESNO | MB_ICONQUESTION) == IDYES)
+					CDib::TIFFExtractPages(FileName, m_sFileName);
 			}
 			else
 			{
