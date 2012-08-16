@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.0.5 (xxx)
+4.0.5 (xxx xth 2012)
 
 - Added string 1865: Extract single pages?
 

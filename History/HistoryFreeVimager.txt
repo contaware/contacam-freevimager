@@ -1,5 +1,11 @@
 VERSION HISTORY
 
+4.0.5 (xxx xth 2012)
+
+- Possibility to extract all pages from a multi-page tiff file
+  (call Save As tiff and answer "Yes" to the
+  "Extract single pages?" question)
+
 4.0.3 (August 9th 2012)
 
 - More productive working because less dialogs are popping-up
