@@ -4209,8 +4209,7 @@ CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 	if (pVideoStream)
 	{
 		// Number of Digits for File Names
-		double dDigits = log10((double)pVideoStream->GetTotalFrames());
-		int nDigits = (int)ceil(dDigits);
+		int nDigits = (int)log10((double)pVideoStream->GetTotalFrames()) + 1;
 
 		// Save BMP Files
 		pVideoStream->Rew();
@@ -4231,7 +4230,7 @@ CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 				Dib.Decompress(24);
 
 				// Save BMP
-				sFormat.Format(_T("_%%0%du.bmp"), nDigits);
+				sFormat.Format(_T("%%0%du.bmp"), nDigits);
 				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
 				if (!Dib.SaveBMP(	sCurrentFileName,
 									NULL,
@@ -4271,8 +4270,7 @@ CString CVideoAviDoc::SaveAsPNG(const CString& sFileName)
 	if (pVideoStream)
 	{
 		// Number of Digits for File Names
-		double dDigits = log10((double)pVideoStream->GetTotalFrames());
-		int nDigits = (int)ceil(dDigits);
+		int nDigits = (int)log10((double)pVideoStream->GetTotalFrames()) + 1;
 
 		// Save PNG Files
 		pVideoStream->Rew();
@@ -4293,7 +4291,7 @@ CString CVideoAviDoc::SaveAsPNG(const CString& sFileName)
 				Dib.Decompress(24);
 
 				// Save PNG
-				sFormat.Format(_T("_%%0%du.png"), nDigits);
+				sFormat.Format(_T("%%0%du.png"), nDigits);
 				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
 				if (!Dib.SavePNG(	sCurrentFileName,
 									FALSE,
@@ -4337,8 +4335,7 @@ CString CVideoAviDoc::SaveAsJPEG(	const CString& sFileName,
 	if (pVideoStream)
 	{
 		// Number of Digits for File Names
-		double dDigits = log10((double)pVideoStream->GetTotalFrames());
-		int nDigits = (int)ceil(dDigits);
+		int nDigits = (int)log10((double)pVideoStream->GetTotalFrames()) + 1;
 
 		// Save JPEG Files
 		pVideoStream->Rew();
@@ -4359,7 +4356,7 @@ CString CVideoAviDoc::SaveAsJPEG(	const CString& sFileName,
 				Dib.Decompress(24);
 
 				// Save JPEG
-				sFormat.Format(_T("_%%0%du.jpg"), nDigits);
+				sFormat.Format(_T("%%0%du.jpg"), nDigits);
 				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
 				if (!Dib.SaveJPEG(	sCurrentFileName,
 									nCompressionQuality,

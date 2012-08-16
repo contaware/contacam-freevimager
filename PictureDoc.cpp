@@ -3565,8 +3565,7 @@ CString CPictureDoc::SaveAsFromAnimGIFToBMP(const CString& sFileName)
 	CString sCurrentFileName;
 	
 	// Number of Digits for File Names
-	double dDigits = log10((double)m_GifAnimationThread.m_dwDibAnimationCount);
-	int nDigits = (int)ceil(dDigits);
+	int nDigits = (int)log10((double)m_GifAnimationThread.m_dwDibAnimationCount) + 1;
 
 	// Save BMP Files
 	DIB_INIT_PROGRESS;
@@ -3579,7 +3578,7 @@ CString CPictureDoc::SaveAsFromAnimGIFToBMP(const CString& sFileName)
 			DIB_PROGRESS(GetView()->GetSafeHwnd(), TRUE, i, m_GifAnimationThread.m_dwDibAnimationCount);
 
 			// Save BMP
-			sFormat.Format(_T("_%%0%du.bmp"), nDigits);
+			sFormat.Format(_T("%%0%du.bmp"), nDigits);
 			sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
 			if (pDib->HasAlpha() && pDib->GetBitCount() == 32)
 			{
