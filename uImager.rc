@@ -743,6 +743,7 @@ BEGIN
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM "Save Copy &As...",            ID_FILE_SAVE_COPY_AS
         MENUITEM "Save As Pdf...",              ID_FILE_SAVE_AS_PDF
+        MENUITEM "Extract Pages/Frames...",     ID_FILE_EXTRACT
         MENUITEM SEPARATOR
         MENUITEM "&Move To...\tM",              ID_FILE_MOVE_TO
         MENUITEM "&Copy To...\tC",              ID_FILE_COPY_TO
@@ -6987,6 +6988,7 @@ BEGIN
                             "Set detection zone sensibility to 25 %\nZone Sensibility 25 %"
     ID_EDIT_ZONE_SENSIBILITY_10 
                             "Set detection zone sensibility to 10 %\nZone Sensibility 10 %"
+    ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -7020,7 +7022,6 @@ BEGIN
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%"
     IDS_STRING1863          "Full Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
-    IDS_STRING1865          "Extract single pages?"
 END
 
 #endif    // English (U.S.) resources

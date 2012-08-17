@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.0.5 (xxx xth 2012)
 
-- Added string 1865: Extract single pages?
+- Added File - Extract... menu entries
 
 4.0.3 (August 9th 2012)
 

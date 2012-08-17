@@ -805,7 +805,7 @@ protected:
 									UINT uiPlayTimes,
 									CArray<int, int>* pDelaysArray);
 	BOOL SaveAsFromAnimGIFToAVI(const CString& sFileName);
-	CString SaveAsFromAnimGIFToBMP(const CString& sFileName);
+	CString ExtractFromAnimGIFToBMP(const CString& sFileName);
 
 	// Crop/Copy/Cut
 	void EditCrop();
@@ -1167,6 +1167,8 @@ protected:
 	afx_msg void OnUpdateEditCut(CCmdUI* pCmdUI);
 	afx_msg void OnEditRename();
 	afx_msg void OnUpdateEditRename(CCmdUI* pCmdUI);
+	afx_msg void OnFileExtract();
+	afx_msg void OnUpdateFileExtract(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

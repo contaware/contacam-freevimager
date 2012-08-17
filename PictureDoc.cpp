@@ -342,6 +342,8 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateEditCut)
 	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateEditRename)
+	ON_COMMAND(ID_FILE_EXTRACT, OnFileExtract)
+	ON_UPDATE_COMMAND_UI(ID_FILE_EXTRACT, OnUpdateFileExtract)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -2527,6 +2529,93 @@ void CPictureDoc::SetDocumentTitle()
 	CDocument::SetTitle(sShortFileName + strInfo);
 }
 
+
+void CPictureDoc::OnFileExtract() 
+{
+	if (IsMultiPageTIFF())
+	{
+		// Display the Save As Dialog
+		CString sFirstFileName;
+		TCHAR FileName[MAX_PATH];
+		_tcscpy(FileName, m_sFileName);
+		CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY, NULL, GetView());
+		dlgFile.m_ofn.lpstrFile = FileName;
+		dlgFile.m_ofn.nMaxFile = MAX_PATH;
+		dlgFile.m_ofn.lpstrDefExt = _T("tif");
+		dlgFile.m_ofn.lpstrFilter = _T("TIFF Sequence (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0");
+		dlgFile.m_ofn.nFilterIndex = 1;
+		GetView()->ForceCursor();
+		if (dlgFile.DoModal() == IDOK)
+		{
+			// Extract
+			BeginWaitCursor();
+			sFirstFileName = CDib::TIFFExtractPages(FileName, m_sFileName, GetView(), TRUE);
+			EndWaitCursor();
+
+			// Load first extracted picture
+			if (sFirstFileName != _T(""))
+				::AfxGetApp()->OpenDocumentFile(sFirstFileName);
+			else
+				::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_OK | MB_ICONSTOP);
+		}
+		GetView()->ForceCursor(FALSE);
+	}
+	else if (m_GifAnimationThread.IsAlive() &&
+			m_GifAnimationThread.m_dwDibAnimationCount > 1)
+	{
+		// Display the Save As Dialog
+		CString sFirstFileName;
+		TCHAR FileName[MAX_PATH];
+		_tcscpy(FileName, ::GetFileNameNoExt(m_sFileName) + _T(".bmp"));
+		CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY, NULL, GetView());
+		dlgFile.m_ofn.lpstrFile = FileName;
+		dlgFile.m_ofn.nMaxFile = MAX_PATH;
+		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
+		dlgFile.m_ofn.lpstrFilter = _T("BMP Sequence (*.bmp)\0*.bmp\0");
+		dlgFile.m_ofn.nFilterIndex = 1;
+		GetView()->ForceCursor();
+		if (dlgFile.DoModal() == IDOK)
+		{
+			// Extract
+			BeginWaitCursor();
+			sFirstFileName = ExtractFromAnimGIFToBMP(FileName);
+			EndWaitCursor();
+
+			// Load first extracted picture
+			if (sFirstFileName != _T(""))
+				::AfxGetApp()->OpenDocumentFile(sFirstFileName);
+			else
+				::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_OK | MB_ICONSTOP);
+		}
+		GetView()->ForceCursor(FALSE);
+	}
+}
+
+void CPictureDoc::OnUpdateFileExtract(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(IsMultiPageTIFF() ||
+					(m_GifAnimationThread.IsAlive() &&
+					m_GifAnimationThread.m_dwDibAnimationCount > 1))	&&
+					m_pDib												&&
+					m_dwIDAfterFullLoadCommand == 0						&&
+					!IsModified()										&&
+					!m_bMetadataModified								&&
+					!(m_SlideShowThread.IsSlideshowRunning()			||
+					m_bDoRestartSlideshow)								&&
+					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
+					!m_pRotationFlippingDlg								&&
+					!m_pWndPalette										&&
+					!m_pHLSDlg											&&
+					!m_pRedEyeDlg										&&
+					!m_bDoRedEyeColorPickup								&&
+					!m_pMonochromeConversionDlg							&&
+					!m_pSharpenDlg										&&
+					!m_pSoftenDlg										&&
+					!m_pSoftBordersDlg									&&
+					!m_bCrop											&&
+					!m_bPrintPreviewMode);
+}
+
 BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 						 CString sDlgTitle/*=_T("")*/) 
 {
@@ -2857,8 +2946,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 												dlgFile.GetJpegCompressionQuality(),
 												GetView(),
 												TRUE);
-				if (res && ::AfxMessageBox(ML_STRING(1865, "Extract single pages?"), MB_YESNO | MB_ICONQUESTION) == IDYES)
-					CDib::TIFFExtractPages(FileName, m_sFileName);
 			}
 			else
 			{
@@ -3193,8 +3280,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = _T("gif");
 	dlgFile.m_ofn.lpstrFilter = _T("Animated GIF (*.gif)\0*.gif\0")	
-								_T("Avi File (*.avi)\0*.avi\0")
-								_T("BMP Sequence (*.bmp)\0*.bmp\0");
+								_T("Avi File (*.avi)\0*.avi\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
@@ -3278,17 +3364,6 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 					extension == _T("divx"))
 		{
 			res = SaveAsFromAnimGIFToAVI(FileName);
-		}
-		else if (extension == _T("bmp"))
-		{
-			BeginWaitCursor();
-			CString sFirstFileName = SaveAsFromAnimGIFToBMP(FileName);
-			if (sFirstFileName != _T(""))
-			{
-				res = TRUE;
-				_tcscpy(FileName, sFirstFileName);
-			}
-			EndWaitCursor();
 		}
 
 		// Load
@@ -3557,18 +3632,15 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAVI(const CString& sFileName)
 	return res;
 }
 
-CString CPictureDoc::SaveAsFromAnimGIFToBMP(const CString& sFileName)
+CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
 {
-	CDib* pDib = NULL;
-	CString sFormat;
-	CString sFirstFileName;
-	CString sCurrentFileName;
-	
 	// Number of Digits for File Names
 	int nDigits = (int)log10((double)m_GifAnimationThread.m_dwDibAnimationCount) + 1;
 
 	// Save BMP Files
 	DIB_INIT_PROGRESS;
+	CDib* pDib = NULL;
+	CString sFirstFileName;
 	BOOL bFirst = TRUE;
 	for (unsigned int i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
 	{
@@ -3578,8 +3650,22 @@ CString CPictureDoc::SaveAsFromAnimGIFToBMP(const CString& sFileName)
 			DIB_PROGRESS(GetView()->GetSafeHwnd(), TRUE, i, m_GifAnimationThread.m_dwDibAnimationCount);
 
 			// Save BMP
-			sFormat.Format(_T("%%0%du.bmp"), nDigits);
-			sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
+			CString sFormat;
+			CString sCurrentFileName;
+			sFormat.Format(_T("%%0%du"), nDigits);
+			sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
+									::GetFileNameNoExt(sFileName),
+									i + 1,
+									::GetFileExt(sFileName));
+			int iCopy = 0;
+			while (::IsExistingFile(sCurrentFileName))
+			{
+				sCurrentFileName.Format(_T("%s") + sFormat + _T("(%d)%s"),
+									::GetFileNameNoExt(sFileName),
+									i + 1,
+									++iCopy,
+									::GetFileExt(sFileName));
+			}
 			if (pDib->HasAlpha() && pDib->GetBitCount() == 32)
 			{
 				CDib Dib = *pDib;

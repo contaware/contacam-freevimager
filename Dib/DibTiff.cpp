@@ -2624,7 +2624,10 @@ BOOL CDib::TIFFDeletePage(	int nDeletePageNum,
 		return FALSE;
 }
 
-BOOL CDib::TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName)
+CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
+								LPCTSTR szSrcFileName,
+								CWnd* pProgressWnd/*=NULL*/,
+								BOOL bProgressSend/*=TRUE*/)
 {
 	// Check File Extension
 	if ((::GetFileExt(szDstFileName) == _T(".tif")	||
@@ -2641,25 +2644,32 @@ BOOL CDib::TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName)
 
 		// Check Images Count
 		if (Dib.m_FileInfo.m_nImageCount < 1)
-			return FALSE;
+			return _T("");
 
 		// Number of Digits for File Names
 		int nDigits = (int)log10((double)Dib.m_FileInfo.m_nImageCount) + 1;
 
 		// Loop Through all Pages
+		DIB_INIT_PROGRESS;
+		CString sFirstFileName;
+		BOOL bFirst = TRUE;
 		for (int i = 0 ; i < Dib.m_FileInfo.m_nImageCount ; i++)
 		{
-			CString sPageFormat;
+			// Progress
+			DIB_PROGRESS(pProgressWnd->GetSafeHwnd(), bProgressSend, i, Dib.m_FileInfo.m_nImageCount);
+
+			// Save TIFF
+			CString sFormat;
 			CString sCurrentFileName;
-			sPageFormat.Format(_T("%%0%dd"), nDigits);
-			sCurrentFileName.Format(_T("%s") + sPageFormat + _T("%s"),
+			sFormat.Format(_T("%%0%dd"), nDigits);
+			sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
 									::GetFileNameNoExt(szDstFileName),
 									i + 1,
 									::GetFileExt(szDstFileName));
 			int iCopy = 0;
 			while (::IsExistingFile(sCurrentFileName))
 			{
-				sCurrentFileName.Format(_T("%s") + sPageFormat + _T("(%d)%s"),
+				sCurrentFileName.Format(_T("%s") + sFormat + _T("(%d)%s"),
 									::GetFileNameNoExt(szDstFileName),
 									i + 1,
 									++iCopy,
@@ -2672,19 +2682,33 @@ BOOL CDib::TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName)
 			out = ::TIFFOpen(sCurrentFileName, "w");
 #endif    
 			if (!out)
-				return FALSE;
+			{
+				DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+				return _T("");
+			}
 			if (!TIFFCopy(szSrcFileName, i, out, 0, 1))
 			{
 				::TIFFClose(out);
-				return FALSE;
+				DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+				return _T("");
 			}
 			::TIFFClose(out);
+
+			// Set First File Name
+			if (bFirst)
+			{
+				sFirstFileName = sCurrentFileName;
+				bFirst = FALSE;
+			}
 		}
 
-		return TRUE;
+		DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());
+
+		// OK
+		return sFirstFileName;
 	}
 	else
-		return FALSE;
+		return _T("");
 }
 
 #endif

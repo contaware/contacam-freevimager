@@ -1522,7 +1522,10 @@ public:
 								LPCTSTR szTempDir);
 
 	// Extract all pages to files with filename composed from szDstFileName and sPageNum
-	static BOOL TIFFExtractPages(LPCTSTR szDstFileName, LPCTSTR szSrcFileName);
+	static CString TIFFExtractPages(LPCTSTR szDstFileName,
+									LPCTSTR szSrcFileName,
+									CWnd* pProgressWnd = NULL,
+									BOOL bProgressSend = TRUE);
 #endif
 
 	// JPEG Support
