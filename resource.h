@@ -2555,7 +2555,6 @@
 #define IDC_STATIC1864                  1864
 #define IDS_STRING1864                  1864
 #define IDC_STATIC1865                  1865
-#define IDS_STRING1865                  1865
 #define IDC_STATIC1866                  1866
 #define IDC_STATIC1867                  1867
 #define IDC_STATIC1868                  1868
@@ -3524,6 +3523,7 @@
 #define ID_EDIT_ZONE_SENSIBILITY_25     33175
 #define ID_EDIT_ZONE_SENSIBILITY_10     33176
 #define ID_FILE_EXTRACT                 33177
+#define ID_FILE_EXTRACTFRAMES           33178
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3532,7 +3532,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33178
+#define _APS_NEXT_COMMAND_VALUE         33179
 #define _APS_NEXT_CONTROL_VALUE         2554
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

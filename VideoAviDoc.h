@@ -318,6 +318,11 @@ public:
 		public:
 			virtual BOOL Do() {return m_pDoc->SaveAs();};
 	};
+	class CExtractframes : public CFunct
+	{
+		public:
+			virtual BOOL Do() {return m_pDoc->FileExtractframes();};
+	};
 	class CPercentProgress
 	{
 		public:
@@ -435,6 +440,9 @@ public:
 	BOOL SaveAs(CString sDlgTitle = _T(""));	// Open File Dialog Title
 												// If _T("") the default is used
 
+	// Extract frames
+	BOOL FileExtractframes();
+
 	// End of Position Slider Thumbtrack
 	void EndThumbTrack();			// No blocking restart playing at m_nThumbTrackPos
 									// if it was playing. If it wasn't playing just
@@ -548,11 +556,8 @@ public:
 protected:
 	void DeleteDocFile();
 	BOOL PlayAVI(BOOL bDoRewind, int nSpeedPercent);
-	CString SaveAsBMP(const CString& sFileName);
-	CString SaveAsPNG(const CString& sFileName);
-	CString SaveAsJPEG(	const CString& sFileName,
-						int nCompressionQuality,
-						BOOL bGrayscale);
+	CString ExtractAsBMP(const CString& sFileName);
+	CString ExtractAsJPEG(const CString& sFileName, int nCompressionQuality);
 	BOOL SaveAsAnimGIF(	const CString& sFileName,
 						BOOL bUniqueColorTable,
 						BOOL bDitherColorConversion,
@@ -687,6 +692,7 @@ protected:
 
 	// Processing Classes
 	CSaveAs m_SaveAsProcessing;
+	CExtractframes m_ExtractframesProcessing;
 	CFileMergeSerialAs m_FileMergeSerialAsProcessing;
 	CFileMergeParallelAs m_FileMergeParallelAsProcessing;
 	CShrinkDocTo m_ShrinkDocToProcessing;
@@ -755,6 +761,8 @@ protected:
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
 	afx_msg void OnEditRename();
 	afx_msg void OnUpdateEditRename(CCmdUI* pCmdUI);
+	afx_msg void OnFileExtractframes();
+	afx_msg void OnUpdateFileExtractframes(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnCaptureAviplay();

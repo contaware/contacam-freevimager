@@ -636,6 +636,7 @@ BEGIN
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Extract Frames...",           ID_FILE_EXTRACTFRAMES
         MENUITEM SEPARATOR
         POPUP "Scan"
         BEGIN
@@ -6989,6 +6990,7 @@ BEGIN
     ID_EDIT_ZONE_SENSIBILITY_10 
                             "Set detection zone sensibility to 10 %\nZone Sensibility 10 %"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
+    ID_FILE_EXTRACTFRAMES   "Extract all frames\nExtract Frames"
 END
 
 STRINGTABLE DISCARDABLE 

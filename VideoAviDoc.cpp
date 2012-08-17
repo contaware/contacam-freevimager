@@ -85,6 +85,8 @@ BEGIN_MESSAGE_MAP(CVideoAviDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
 	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateEditRename)
+	ON_COMMAND(ID_FILE_EXTRACTFRAMES, OnFileExtractframes)
+	ON_UPDATE_COMMAND_UI(ID_FILE_EXTRACTFRAMES, OnUpdateFileExtractframes)
 	//}}AFX_MSG_MAP
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_CAPTURE_AVIPLAY, OnCaptureAviplay)
@@ -2273,6 +2275,7 @@ CVideoAviDoc::CVideoAviDoc()
 	m_PlayVideoFileThread.SetDoc(this);
 	m_ProcessingThread.SetDoc(this);
 	m_SaveAsProcessing.SetDoc(this);
+	m_ExtractframesProcessing.SetDoc(this);
 	m_FileMergeSerialAsProcessing.SetDoc(this);
 	m_FileMergeParallelAsProcessing.SetDoc(this);
 	m_ShrinkDocToProcessing.SetDoc(this);
@@ -2590,7 +2593,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	BOOL bSaveCopyAs;
 	TCHAR FileName[MAX_PATH] = _T("");
 	_tcscpy(FileName, m_sFileName);
-	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
+	CSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR defext[10] = _T("");
 	LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
 	if (lpPos != NULL)
@@ -2600,10 +2603,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	dlgFile.m_ofn.lpstrDefExt = defext;
 	dlgFile.m_ofn.lpstrFilter = _T("Avi File (*.avi)\0*.avi\0")
 								_T("Swf File (*.swf)\0*.swf\0")
-								_T("Animated GIF (*.gif)\0*.gif\0")						
-								_T("BMP Sequence (*.bmp)\0*.bmp\0")
-								_T("PNG Sequence (*.png)\0*.png\0")
-								_T("JPEG Sequence (*.jpg)\0*.jpg\0");
+								_T("Animated GIF (*.gif)\0*.gif\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
@@ -2654,47 +2654,8 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 
 		BOOL bSaveAsVideoFile = FALSE;
 
-		if ((extension == _T("bmp")) || (extension == _T("dib")))
+		if (extension == _T("gif"))
 		{
-#ifdef SUPPORT_BMP
-			CString sFirstFileName = SaveAsBMP(FileName);
-			if (sFirstFileName != _T(""))
-			{
-				res = TRUE;
-				_tcscpy(FileName, sFirstFileName);
-			}
-#endif
-		}
-		else if (extension == _T("png"))
-		{
-#ifdef SUPPORT_LIBPNG
-			CString sFirstFileName = SaveAsPNG(FileName);
-			if (sFirstFileName != _T(""))
-			{
-				res = TRUE;
-				_tcscpy(FileName, sFirstFileName);
-			}
-#endif
-		}
-		else if ((extension == _T("jpg"))	||
-				(extension == _T("jpe"))	||
-				(extension == _T("jpeg"))	||
-				(extension == _T("thm")))
-		{
-#ifdef SUPPORT_LIBJPEG
-			CString sFirstFileName = SaveAsJPEG(FileName,
-												dlgFile.GetJpegCompressionQuality(),
-												FALSE);
-			if (sFirstFileName != _T(""))
-			{
-				res = TRUE;
-				_tcscpy(FileName, sFirstFileName);
-			}
-#endif
-		}
-		else if (extension == _T("gif"))
-		{
-#ifdef SUPPORT_GIFLIB
 			CAnimGifSaveDlg AnimGifSaveDlg(GetView());
 			if (AnimGifSaveDlg.DoModal() == IDOK)
 			{	
@@ -2726,7 +2687,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 				// Set user interruption so that the error message box is not shown
 				m_ProcessingThread.Kill_NoBlocking();
 			}
-#endif
 		}
 		else
 		{
@@ -2837,20 +2797,16 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 								WM_THREADSAFE_OPEN_DOC,
 								(WPARAM)(new CString(FileName)),
 								(LPARAM)NULL);
-				if (bSaveCopyAs)
-					RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-				else
-					CloseDocumentForce();
 			}
 			else
 			{
 				// Show Error Message if not interrupted by user
 				if (!m_ProcessingThread.DoExit())
 					::AfxMessageBox(ML_STRING(1431, "Error while saving file"), MB_ICONSTOP);
-
-				// Restore Frame
-				RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 			}
+
+			// Restore Frame
+			RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 		}
 	}
 	
@@ -4199,12 +4155,96 @@ free:
 	return res;
 }
 
-CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
+void CVideoAviDoc::OnFileExtractframes() 
 {
-	CDib Dib;
-	CString sFormat;
-	CString sFirstFileName;
-	CString sCurrentFileName;
+	if (((CUImagerApp*)::AfxGetApp())->IsCurrentDocAvailable(TRUE))
+	{
+		ResetPercentDone();
+		m_ProcessingThread.SetProcessingFunct(&m_ExtractframesProcessing);
+		m_ProcessingThread.Start();
+	}
+}
+
+void CVideoAviDoc::OnUpdateFileExtractframes(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	!IsProcessing()	&&
+					!GetView()->m_bFullScreenMode);
+}
+
+BOOL CVideoAviDoc::FileExtractframes()
+{
+	BOOL res = FALSE;
+	TCHAR FileName[MAX_PATH];
+	_tcscpy(FileName, ::GetFileNameNoExt(m_sFileName) + _T(".bmp"));
+	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY, NULL, GetView());
+	dlgFile.m_ofn.lpstrFile = FileName;
+	dlgFile.m_ofn.nMaxFile = MAX_PATH;
+	dlgFile.m_ofn.lpstrDefExt = _T("bmp");
+	dlgFile.m_ofn.lpstrFilter = _T("BMP Sequence (*.bmp)\0*.bmp\0")
+								_T("JPEG Sequence (*.jpg)\0*.jpg\0");
+	dlgFile.m_ofn.nFilterIndex = 1;
+	if (dlgFile.DoModal() == IDOK)
+	{
+		// Store Current Frame Position
+		int nCurrentFramePos = 0;
+		CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
+		if (pVideoStream)
+			nCurrentFramePos = pVideoStream->GetCurrentFramePos();
+
+		// Extract
+		TCHAR ext[10] = _T("");
+		LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
+		if (lpPos != NULL)
+			_tcscpy(ext, lpPos+1);
+		CString extension = ext;
+		extension.MakeLower();
+		CString sFirstFileName;
+		if ((extension == _T("bmp")) || (extension == _T("dib")))
+		{
+			sFirstFileName = ExtractAsBMP(FileName);
+			res = (sFirstFileName != _T(""));
+		}
+		else if ((extension == _T("jpg"))	||
+				(extension == _T("jpe"))	||
+				(extension == _T("jpeg"))	||
+				(extension == _T("thm")))
+		{
+			sFirstFileName = ExtractAsJPEG(FileName, dlgFile.GetJpegCompressionQuality());
+			res = (sFirstFileName != _T(""));
+		}
+
+		// Restore Current Frame Position
+		pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
+		if (pVideoStream)
+		{
+			pVideoStream->SetCurrentFramePos(nCurrentFramePos);
+			m_PlayAudioFileThread.PlaySyncAudioFromVideo();
+		}
+
+		// Open Document
+		if (res)
+		{
+			::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+							WM_THREADSAFE_OPEN_DOC,
+							(WPARAM)(new CString(sFirstFileName)),
+							(LPARAM)NULL);
+		}
+		else
+		{
+			// Show Error Message if not interrupted by user
+			if (!m_ProcessingThread.DoExit())
+				::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_ICONSTOP);
+		}
+
+		// Restore Frame
+		RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
+	}
+
+	return res;
+}
+
+CString CVideoAviDoc::ExtractAsBMP(const CString& sFileName)
+{
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
 	if (pVideoStream)
 	{
@@ -4215,11 +4255,14 @@ CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 		pVideoStream->Rew();
 		int nPercentDone;
 		int nPrevPercentDone = -1;
+		CDib Dib;
+		CString sFirstFileName;
 		BOOL bFirst = TRUE;
 		for (unsigned int i = 0 ; i < pVideoStream->GetTotalFrames() ; i++)
 		{
 			if (pVideoStream->GetFrame(&Dib))
 			{
+				// Progress
 				nPercentDone = Round(	(double)pVideoStream->GetNextFramePos() * 100.0 /
 										(double)pVideoStream->GetTotalFrames());
 				if (nPercentDone > nPrevPercentDone)
@@ -4230,8 +4273,22 @@ CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 				Dib.Decompress(24);
 
 				// Save BMP
-				sFormat.Format(_T("%%0%du.bmp"), nDigits);
-				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
+				CString sFormat;
+				CString sCurrentFileName;
+				sFormat.Format(_T("%%0%du"), nDigits);
+				sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
+										::GetFileNameNoExt(sFileName),
+										i + 1,
+										::GetFileExt(sFileName));
+				int iCopy = 0;
+				while (::IsExistingFile(sCurrentFileName))
+				{
+					sCurrentFileName.Format(_T("%s") + sFormat + _T("(%d)%s"),
+										::GetFileNameNoExt(sFileName),
+										i + 1,
+										++iCopy,
+										::GetFileExt(sFileName));
+				}
 				if (!Dib.SaveBMP(	sCurrentFileName,
 									NULL,
 									TRUE,
@@ -4260,77 +4317,8 @@ CString CVideoAviDoc::SaveAsBMP(const CString& sFileName)
 		return _T("");
 }
 
-CString CVideoAviDoc::SaveAsPNG(const CString& sFileName)
+CString CVideoAviDoc::ExtractAsJPEG(const CString& sFileName, int nCompressionQuality)
 {
-	CDib Dib;
-	CString sFormat;
-	CString sFirstFileName;
-	CString sCurrentFileName;
-	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
-	if (pVideoStream)
-	{
-		// Number of Digits for File Names
-		int nDigits = (int)log10((double)pVideoStream->GetTotalFrames()) + 1;
-
-		// Save PNG Files
-		pVideoStream->Rew();
-		int nPercentDone;
-		int nPrevPercentDone = -1;
-		BOOL bFirst = TRUE;
-		for (unsigned int i = 0 ; i < pVideoStream->GetTotalFrames() ; i++)
-		{
-			if (pVideoStream->GetFrame(&Dib))
-			{
-				nPercentDone = Round(	(double)pVideoStream->GetNextFramePos() * 100.0 /
-										(double)pVideoStream->GetTotalFrames());
-				if (nPercentDone > nPrevPercentDone)
-					::PostMessage(GetView()->GetSafeHwnd(), WM_AVIFILE_PROGRESS, (WPARAM)streamtypeVIDEO, (LPARAM)nPercentDone);
-				nPrevPercentDone = nPercentDone;
-
-				// Decompress to 24 bpp
-				Dib.Decompress(24);
-
-				// Save PNG
-				sFormat.Format(_T("%%0%du.png"), nDigits);
-				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
-				if (!Dib.SavePNG(	sCurrentFileName,
-									FALSE,
-									FALSE,
-									NULL,
-									TRUE,
-									&m_ProcessingThread))
-					return _T("");
-
-				// Set First File Name
-				if (bFirst)
-				{
-					sFirstFileName = sCurrentFileName;
-					bFirst = FALSE;
-				}
-
-				// Do Exit?
-				if (m_ProcessingThread.DoExit())
-					return _T("");					
-			}
-			else
-				return _T("");
-		}
-
-		// OK
-		return sFirstFileName;
-	}
-	else
-		return _T("");
-}
-
-CString CVideoAviDoc::SaveAsJPEG(	const CString& sFileName,
-									int nCompressionQuality,
-									BOOL bGrayscale)
-{
-	CDib Dib;
-	CString sFormat;
-	CString sFirstFileName;
-	CString sCurrentFileName;
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
 	if (pVideoStream)
 	{
@@ -4341,11 +4329,14 @@ CString CVideoAviDoc::SaveAsJPEG(	const CString& sFileName,
 		pVideoStream->Rew();
 		int nPercentDone;
 		int nPrevPercentDone = -1;
+		CDib Dib;
+		CString sFirstFileName;
 		BOOL bFirst = TRUE;
 		for (unsigned int i = 0 ; i < pVideoStream->GetTotalFrames() ; i++)
 		{
 			if (pVideoStream->GetFrame(&Dib))
 			{
+				// Progress
 				nPercentDone = Round(	(double)pVideoStream->GetNextFramePos() * 100.0 /
 										(double)pVideoStream->GetTotalFrames());
 				if (nPercentDone > nPrevPercentDone)
@@ -4356,11 +4347,25 @@ CString CVideoAviDoc::SaveAsJPEG(	const CString& sFileName,
 				Dib.Decompress(24);
 
 				// Save JPEG
-				sFormat.Format(_T("%%0%du.jpg"), nDigits);
-				sCurrentFileName.Format(_T("%s") + sFormat, ::GetFileNameNoExt(sFileName), i + 1);
+				CString sFormat;
+				CString sCurrentFileName;
+				sFormat.Format(_T("%%0%du"), nDigits);
+				sCurrentFileName.Format(_T("%s") + sFormat + _T("%s"),
+										::GetFileNameNoExt(sFileName),
+										i + 1,
+										::GetFileExt(sFileName));
+				int iCopy = 0;
+				while (::IsExistingFile(sCurrentFileName))
+				{
+					sCurrentFileName.Format(_T("%s") + sFormat + _T("(%d)%s"),
+										::GetFileNameNoExt(sFileName),
+										i + 1,
+										++iCopy,
+										::GetFileExt(sFileName));
+				}
 				if (!Dib.SaveJPEG(	sCurrentFileName,
 									nCompressionQuality,
-									bGrayscale,
+									FALSE,
 									_T(""),
 									FALSE,
 									FALSE,
