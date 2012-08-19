@@ -624,8 +624,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 
 			// Animated Gif, because of differencing the saving is shifted by one frame
-			BOOL bSaveGif = DoSaveGif();
-			if (bSaveGif)
+			if (DoSaveGif())
 			{
 				// First Frame?
 				if (nFrames == m_nNumFramesToSave)
@@ -647,7 +646,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				else
 				{
 					SaveAnimatedGif(&GIFSaveDib,
-									&pDib,
+									pDib,
 									&pDibPrev,
 									sGIFTempFileName,
 									&bFirstGIFSave,	// First Frame To Save?
@@ -661,17 +660,23 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 									dwRefUpTime,
 									m_pDoc->m_nMovDetSavesCount);
 				}
+
+				// Free unused memory
+				if (pDib != pDibPrev)
+				{
+					delete pDib;
+					m_pFrameList->SetAt(currentpos, NULL);
+				}
 			}
-
-			// Dec. Frame Count
-			nFrames--;
-
-			// Free some memory if possible
-			if (!bSaveGif)
+			// Free memory
+			else
 			{
 				delete pDib;
 				m_pFrameList->SetAt(currentpos, NULL);
 			}
+
+			// Dec. Frame Count
+			nFrames--;
 		}
 
 		// Save single gif image if nothing done above:
@@ -1191,7 +1196,7 @@ __forceinline void CVideoDeviceDoc::CSaveFrameListThread::To255Colors(	CDib* pDi
 }
 
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
-															CDib** ppGIFDib,
+															CDib* pGIFDib,
 															CDib** ppGIFDibPrev,
 															const CString& sGIFFileName,
 															BOOL* pbFirstGIFSave,
@@ -1247,18 +1252,18 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		*pbFirstGIFSave = FALSE;
 	
 		// Update Pointer
-		*ppGIFDibPrev = *ppGIFDib;
+		*ppGIFDibPrev = pGIFDib;
 
 		// If it is also the last frame,
 		// this happens if we have only 2 frames to save
 		if (bLastGIFSave)
 		{
 			// Convert to 255 colors and save
-			To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
+			To255Colors(pGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 			pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 			pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
-			(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
-			res = pGIFSaveDib->SaveNextGIF(	*ppGIFDib,
+			pGIFDib->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
+			res = pGIFSaveDib->SaveNextGIF(	pGIFDib,
 											NULL,
 											TRUE,
 											this);
@@ -1270,7 +1275,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -1278,22 +1283,22 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 		
 		// Convert to 255 colors and save
-		To255Colors(*ppGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
+		To255Colors(pGIFDib, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
 		pGIFSaveDib->GetGif()->SetDelay(MOVDET_ANIMGIF_LAST_FRAME_DELAY);
-		(*ppGIFDib)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
-		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDib,
+		pGIFDib->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
+		res = pGIFSaveDib->SaveNextGIF(	pGIFDib,
 										NULL,
 										TRUE,
 										this);
 	}
 	// Middle Frame?
-	else if ((int)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
+	else if ((int)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) >= Round(dDelayMul * MOVDET_ANIMGIF_DELAY))
 	{
 		// Convert to 255 colors and save
 		To255Colors(*ppGIFDibPrev, pGIFColors, bShowFrameTime, RefTime, dwRefUpTime, nMovDetSavesCount);
 		pGIFSaveDib->GetGif()->SetDispose(GIF_DISPOSE_RESTORE);
-		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)((*ppGIFDib)->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
+		pGIFSaveDib->GetGif()->SetDelay(MAX(100, Round((double)(pGIFDib->GetUpTime() - (*ppGIFDibPrev)->GetUpTime()) / dSpeedMul)));
 		(*ppGIFDibPrev)->DiffTransp8(pGIFSaveDib, nDiffMinLevel, 255);
 		res = pGIFSaveDib->SaveNextGIF(	*ppGIFDibPrev,
 										NULL,
@@ -1301,7 +1306,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 										this);
 
 		// Update Pointer
-		*ppGIFDibPrev = *ppGIFDib;
+		*ppGIFDibPrev = pGIFDib;
 	}
 	else
 		res = TRUE; // Skip Frame

@@ -863,7 +863,7 @@ public:
 											DWORD dwRefUpTime,
 											int nMovDetSavesCount);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
-									CDib** ppGIFDib,
+									CDib* pGIFDib,
 									CDib** ppGIFDibPrev,
 									const CString& sGIFFileName, 
 									BOOL* pbFirstGIFSave,
