@@ -2,7 +2,7 @@ VERSION HISTORY
 
 4.0.5 (xxx xth 2012)
 
-- ...
+- Fast free memory when saving anim. gifs on movement detection
 
 4.0.3 (August 9th 2012)
 

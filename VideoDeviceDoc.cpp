@@ -300,6 +300,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		m_pDoc->m_nMovDetSavesCount++;
 
 		// Detection File Names
+		BOOL bMakeAvi = DoMakeAvi();
+		BOOL bMakeSwf = DoMakeSwf();
+		BOOL bMakeJpeg = DoMakeJpeg();
+		BOOL bMakeGif = DoMakeGif();
 		CString sAVIFileName;
 		CString sSWFFileName;
 		CString sGIFFileName;
@@ -323,26 +327,32 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
 		if (sJPGDir != _T(""))
 			sJPGDir = sJPGDir + _T("\\");
-		
-		// Note: CAVRec needs a file with .avi or .swf extention!
 
 		// Create the Avi File
-		CAVRec AVRecAvi(sAVIFileName, 0, true); // fast encoding!
-		AVRecAvi.SetInfo(	_T("Title"),
-							_T("Author"),
-							_T("Copyright"),
-							_T("Comment"),
-							_T("Album"),
-							_T("Genre"));
+		CAVRec AVRecAvi;
+		if (bMakeAvi)
+		{
+			AVRecAvi.Init(sAVIFileName, 0, true); // fast encoding!
+			AVRecAvi.SetInfo(	_T("Title"),
+								_T("Author"),
+								_T("Copyright"),
+								_T("Comment"),
+								_T("Album"),
+								_T("Genre"));
+		}
 
 		// Create the Swf File
-		CAVRec AVRecSwf(sSWFFileName, 0, true); // fast encoding!
-		AVRecSwf.SetInfo(	_T("Title"),
-							_T("Author"),
-							_T("Copyright"),
-							_T("Comment"),
-							_T("Album"),
-							_T("Genre"));
+		CAVRec AVRecSwf;
+		if (bMakeSwf)
+		{
+			AVRecSwf.Init(sSWFFileName, 0, true); // fast encoding!
+			AVRecSwf.SetInfo(	_T("Title"),
+								_T("Author"),
+								_T("Copyright"),
+								_T("Comment"),
+								_T("Album"),
+								_T("Genre"));
+		}
 		
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -378,9 +388,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					delete [] pGIFColors;
 				AVRecAvi.Close();
 				::DeleteFile(sAVIFileName);
-#ifdef SUPPORT_GIFLIB
 				GIFSaveDib.GetGif()->Close();
-#endif
 				::DeleteFile(sGIFTempFileName);
 				AVRecSwf.Close();
 				::DeleteFile(sSWFFileName);
@@ -397,7 +405,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			pDib = m_pFrameList->GetNext(nextpos);
 
 			// Swf
-			if (DoSaveSwf())
+			if (bMakeSwf)
 			{
 				SWFSaveDib = *pDib;
 
@@ -505,7 +513,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 
 			// Avi
-			if (DoSaveAvi())
+			if (bMakeAvi)
 			{
 				AVISaveDib = *pDib;
 
@@ -585,7 +593,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 
 			// Jpeg
-			if (DoSaveJpeg())
+			if (bMakeJpeg)
 			{
 				// FIRST movement frame
 				if (sJPGFileNames.GetSize() == 0)
@@ -624,7 +632,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 
 			// Animated Gif, because of differencing the saving is shifted by one frame
-			if (DoSaveGif())
+			if (bMakeGif)
 			{
 				// First Frame?
 				if (nFrames == m_nNumFramesToSave)
@@ -681,7 +689,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Save single gif image if nothing done above:
 		// this happens if m_nNumFramesToSave is 1
-		if (DoSaveGif() && !::IsExistingFile(sGIFTempFileName))
+		if (bMakeGif && !::IsExistingFile(sGIFTempFileName))
 		{
 			SaveSingleGif(	m_pFrameList->GetHead(),
 							sGIFTempFileName,
@@ -695,9 +703,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Clean-Up
 		if (pGIFColors)
 			delete [] pGIFColors;
-#ifdef SUPPORT_GIFLIB
 		GIFSaveDib.GetGif()->Close();
-#endif
 		AVRecAvi.Close();
 		AVRecSwf.Close();
 
@@ -1129,7 +1135,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 															DWORD dwRefUpTime,
 															int nMovDetSavesCount)
 {
-#ifdef SUPPORT_GIFLIB
 	if (pDib && pGIFColors)
 	{
 		// Make sure we have a true RGB format
@@ -1162,7 +1167,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveSingleGif(	CDib* pDib,
 							this);
 	}
 	else
-#endif
 		return FALSE;
 }
 
@@ -1215,8 +1219,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	// Check
 	if (!pGIFColors)
 		return FALSE;
-
-#ifdef SUPPORT_GIFLIB
 
 	// Is First Frame To Save?
 	if (*pbFirstGIFSave)
@@ -1310,8 +1312,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	}
 	else
 		res = TRUE; // Skip Frame
-
-#endif
 
 	return res;
 }

@@ -890,7 +890,7 @@ public:
 															const CString& sGIFFileName,
 															const CString& sSWFFileName);
 
-			__forceinline BOOL DoSaveAvi() const {
+			__forceinline BOOL DoMakeAvi() const {
 							return m_pDoc->m_bSaveAVIMovementDetection				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
@@ -921,7 +921,7 @@ public:
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 
-			__forceinline BOOL DoSaveSwf() const {
+			__forceinline BOOL DoMakeSwf() const {
 							return m_pDoc->m_bSaveSWFMovementDetection				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
@@ -936,7 +936,7 @@ public:
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 
-			__forceinline BOOL DoSaveJpeg() const {
+			__forceinline BOOL DoMakeJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
 								CVideoDeviceDoc::ATTACHMENT_JPG)					||
@@ -953,7 +953,7 @@ public:
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
 								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI);};
 
-			__forceinline BOOL DoSaveGif() const {
+			__forceinline BOOL DoMakeGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
