@@ -333,26 +333,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (bMakeAvi)
 		{
 			AVRecAvi.Init(sAVIFileName, 0, true); // fast encoding!
-			AVRecAvi.SetInfo(	_T("Title"),
-								_T("Author"),
-								_T("Copyright"),
-								_T("Comment"),
-								_T("Album"),
-								_T("Genre"));
+			AVRecAvi.SetInfo(	_T("Det: ") + ::MakeDateLocalFormat(FirstTime) +
+								_T(", ") + ::MakeTimeLocalFormat(FirstTime, TRUE),
+								APPNAME_NOEXT, MYCOMPANY_WEB);
 		}
 
 		// Create the Swf File
 		CAVRec AVRecSwf;
 		if (bMakeSwf)
-		{
 			AVRecSwf.Init(sSWFFileName, 0, true); // fast encoding!
-			AVRecSwf.SetInfo(	_T("Title"),
-								_T("Author"),
-								_T("Copyright"),
-								_T("Comment"),
-								_T("Album"),
-								_T("Genre"));
-		}
 		
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -1438,12 +1427,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		if (m_pAVRecSwf)
 		{
 			// Setup
-			m_pAVRecSwf->SetInfo(	_T("Title"),
-									_T("Author"),
-									_T("Copyright"),
-									_T("Comment"),
-									_T("Album"),
-									_T("Genre"));
 			CDib SWFSaveDib = m_Dib;
 
 			// Add frame time
@@ -1490,12 +1473,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 			if (m_pAVRecThumbSwf)
 			{
 				// Setup
-				m_pAVRecThumbSwf->SetInfo(	_T("Title"),
-											_T("Author"),
-											_T("Copyright"),
-											_T("Comment"),
-											_T("Album"),
-											_T("Genre"));
 				CDib SWFSaveDib = DibThumb;
 
 				// Add frame time
@@ -5744,40 +5721,31 @@ void CVideoDeviceDoc::FreeAVIFile()
 	}
 }
 
-CString CVideoDeviceDoc::MakeRecFileName()
+BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 {
-	CString sYearMonthDayDir(_T(""));
+	// Check
+	if (!ppAVRec)
+		return FALSE;
 
-	// Recording time
-	CTime Time = CTime::GetCurrentTime();
-	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
-
-	// Adjust Directory Name
+	// Record time and file name
+	CString sFileName;
+	CString sYearMonthDayDir;
+	CTime CurrentTime = CTime::GetCurrentTime();
+	CString sCurrentTime = CurrentTime.Format(_T("%Y_%m_%d_%H_%M_%S"));
 	CString sRecordAutoSaveDir = m_sRecordAutoSaveDir;
 	sRecordAutoSaveDir.TrimRight(_T('\\'));
-
-	// Create directory if necessary
 	if (sRecordAutoSaveDir != _T(""))
 	{
 		DWORD dwAttrib = ::GetFileAttributes(sRecordAutoSaveDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
 			::CreateDir(sRecordAutoSaveDir);
-		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(Time, sRecordAutoSaveDir, sYearMonthDayDir))
-			return _T("");
+		if (!CVideoDeviceDoc::CreateCheckYearMonthDayDir(CurrentTime, sRecordAutoSaveDir, sYearMonthDayDir))
+			return FALSE;
 	}
-	
-	// Return file name
 	if (sYearMonthDayDir == _T(""))
-		return _T("rec_") + sTime + _T(".avi");
+		sFileName = _T("rec_") + sCurrentTime + _T(".avi");
 	else
-		return sYearMonthDayDir + _T("\\") + _T("rec_") + sTime + _T(".avi");
-}
-
-BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
-{
-	// Check
-	if (!ppAVRec)
-		return FALSE;
+		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + _T(".avi");
 
 	// Allocate
 	*ppAVRec = new CAVRec;
@@ -5789,12 +5757,9 @@ BOOL CVideoDeviceDoc::MakeAVRec(const CString& sFileName, CAVRec** ppAVRec)
 		return FALSE;
 
 	// Set File Info
-	if (!(*ppAVRec)->SetInfo(	_T("Title"),
-								_T("Author"),
-								_T("Copyright"),
-								_T("Comment"),
-								_T("Album"),
-								_T("Genre")))
+	if (!(*ppAVRec)->SetInfo(	_T("Rec: ") + ::MakeDateLocalFormat(CurrentTime) +
+								_T(", ") + ::MakeTimeLocalFormat(CurrentTime, TRUE),
+								APPNAME_NOEXT, MYCOMPANY_WEB))
 		return FALSE;
 
 	// Add Video Stream
@@ -5891,7 +5856,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 		
 		// Allocate & Init pAVRec
 		CAVRec* pAVRec = NULL;
-		if (!MakeAVRec(MakeRecFileName(), &pAVRec))
+		if (!MakeAVRec(&pAVRec))
 		{
 			// Free
 			if (pAVRec)
@@ -8608,7 +8573,7 @@ BOOL CVideoDeviceDoc::NextAviFile()
 {
 	// Allocate & Init pNextAVRec
 	CAVRec* pNextAVRec = NULL;
-	if (!MakeAVRec(MakeRecFileName(), &pNextAVRec))
+	if (!MakeAVRec(&pNextAVRec))
 	{
 		if (pNextAVRec)
 			delete pNextAVRec;

@@ -1175,8 +1175,7 @@ public:
 															return res;};
 	
 	// Video / Audio Recording
-	BOOL MakeAVRec(const CString& sFileName, CAVRec** ppAVRec);
-	CString MakeRecFileName();
+	BOOL MakeAVRec(CAVRec** ppAVRec);
 	void OpenAVIFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
 	void CaptureRecordPause();

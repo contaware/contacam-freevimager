@@ -25,7 +25,6 @@
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #define BROSERAUTORUN_NAME								_T("ContaCamBrowser")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/contacamfaq/")
-#define REGISTRATION_ONLINE_PAGE						_T("http://www.contaware.com/contacambuy/")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")

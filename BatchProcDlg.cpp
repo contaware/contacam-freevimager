@@ -439,12 +439,7 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 			throw (int)0;
 
 		// Set File Info
-		m_pAVRec->SetInfo(	_T("Title"),
-							_T("Author"),
-							_T("Copyright"),
-							_T("Comment"),
-							_T("Album"),
-							_T("Genre"));
+		m_pAVRec->SetInfo(::GetShortFileNameNoExt(m_pDlg->m_sOutputFileName), APPNAME_NOEXT, MYCOMPANY_WEB);
 
 		// Prompt for Compression
 		CVideoFormatDlg VideoFormatDlg(m_pDlg);

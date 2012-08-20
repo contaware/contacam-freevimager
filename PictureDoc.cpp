@@ -3558,12 +3558,7 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAVI(const CString& sFileName)
 	CAVRec AVRec(sFileName);
 
 	// Set File Info
-	AVRec.SetInfo(	_T("Title"),
-					_T("Author"),
-					_T("Copyright"),
-					_T("Comment"),
-					_T("Album"),
-					_T("Genre"));
+	AVRec.SetInfo(::GetShortFileNameNoExt(sFileName), APPNAME_NOEXT, MYCOMPANY_WEB);
 
 	BeginWaitCursor();
 	DIB_INIT_PROGRESS;

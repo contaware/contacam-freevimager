@@ -3,6 +3,8 @@ VERSION HISTORY
 4.0.5 (xxx xth 2012)
 
 - Fast free memory when saving anim. gifs on movement detection
+- For avi files store detection or record start date and time
+  in metadata title
 
 4.0.3 (August 9th 2012)
 

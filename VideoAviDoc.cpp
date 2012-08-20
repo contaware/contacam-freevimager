@@ -3635,15 +3635,10 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		bFirstFile = TRUE;
 	}
 
-	// TODO: Get Info from pAVIPlay and set it here
+	// Set Info
 	if (bFirstFile)
 	{
-		if (!(*ppAVRec)->SetInfo(_T("Title"),
-							_T("Author"),
-							_T("Copyright"),
-							_T("Comment"),
-							_T("Album"),
-							_T("Genre")))
+		if (!(*ppAVRec)->SetInfo(::GetShortFileNameNoExt(sDstFileName), APPNAME_NOEXT, MYCOMPANY_WEB))
 			goto error;
 	}
 
@@ -6235,12 +6230,7 @@ BOOL CVideoAviDoc::AVIFileMergeParallelAVCODEC(	CString sSaveFileName,
 		goto error;
 
 	// Set Info
-	if (!pAVRec->SetInfo(_T("Title"),
-						_T("Author"),
-						_T("Copyright"),
-						_T("Comment"),
-						_T("Album"),
-						_T("Genre")))
+	if (!pAVRec->SetInfo(::GetShortFileNameNoExt(sSaveFileName), APPNAME_NOEXT, MYCOMPANY_WEB))
 		goto error;
 
 	// Loop through all input files

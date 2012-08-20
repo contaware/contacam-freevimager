@@ -75,9 +75,9 @@ public:
 	bool SetInfo(	LPCTSTR szTitle,
 					LPCTSTR szAuthor,
 					LPCTSTR szCopyright,
-					LPCTSTR szComment,
-					LPCTSTR szAlbum,
-					LPCTSTR szGenre,
+					LPCTSTR szComment = _T(""),
+					LPCTSTR szAlbum = _T(""),
+					LPCTSTR szGenre = _T(""),
 					int nTrack = 0,
 					int nYear = 0);
 
