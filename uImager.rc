@@ -6416,7 +6416,7 @@ BEGIN
     ID_LAYEREDDLG_SIZE_BOTTOMLEFT "View bottom - left\nBottom - Left"
     ID_LAYEREDDLG_SIZE_BOTTOMRIGHT "View bottom - right\nBottom - Right"
     ID_LAYEREDDLG_SIZE_1600 "Size to 1600 %\n1600 %"
-    ID_FILE_SAVE_AS_PDF     "Save a copy as pdf choosing paper size and compression\nSave As Pdf"
+    ID_FILE_SAVE_AS_PDF     "Save a copy as pdf choosing quality\nSave As Pdf"
     ID_EDIT_PASTE_INTO_TOPLEFT 
                             "Paste into top - left corner\nPaste Into Top - Left"
     ID_EDIT_PASTE_INTO_TOPRIGHT 

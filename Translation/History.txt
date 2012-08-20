@@ -3,6 +3,7 @@ TRANSLATIONS HISTORY
 4.0.5 (xxx xth 2012)
 
 - Added File - Extract... menu entries
+- File - Save As Pdf... original and translation fixes
 
 4.0.3 (August 9th 2012)
 
