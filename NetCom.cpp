@@ -26,6 +26,8 @@ const struct in6_addr my_in6addr_loopback = MY_IN6ADDR_LOOPBACK_INIT;
 // Buffer Class
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef NETCOM_BUF_SERIALIZE
+
 #define RUNTIME_NESTED_CLASS(class_name, enclosing_class_name) ((CRuntimeClass*)(&enclosing_class_name::class_name::class##enclosing_class_name##class_name))
 
 #ifdef _AFXDLL
@@ -59,6 +61,8 @@ const struct in6_addr my_in6addr_loopback = MY_IN6ADDR_LOOPBACK_INIT;
 			return ar; } \
 
 IMPLEMENT_NESTED_SERIAL(CBuf, CNetCom, CObject, 1)
+
+#endif
 
 CNetCom::CBuf::CBuf()
 {
@@ -124,6 +128,8 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	return *this;
 }
 
+#ifdef NETCOM_BUF_SERIALIZE
+
 void CNetCom::CBuf::Serialize(CArchive& archive)
 {
 	unsigned int i;
@@ -160,6 +166,8 @@ void CNetCom::CBuf::Serialize(CArchive& archive)
 			archive >> m_Buf[i];
 	}
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // The Parser & Processor Base Class

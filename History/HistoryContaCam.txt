@@ -2,7 +2,9 @@ VERSION HISTORY
 
 4.0.5 (xxx xth 2012)
 
-- Fast free memory when saving anim. gifs on movement detection
+- The movement detection engine does now fast memory freeing
+  when saving animated gifs
+- Optimized network buffers
 - For avi files store detection or record start date and time
   in metadata title
 

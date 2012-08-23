@@ -118,6 +118,9 @@
 #define FD_CONNECTFAILED_BIT			12
 #define FD_CONNECTFAILED				(1 << FD_CONNECTFAILED_BIT)
 
+
+#ifdef NETCOM_BUF_SERIALIZE
+
 //////////////////////////////////////////////////////////////////////////////
 // Helper macros for declaring nested CRuntimeClass compatible classes
 // See original afx.h file
@@ -162,15 +165,22 @@ public: \
 	_DECLARE_NESTED_DYNCREATE(class_name, enclosing_class_name) \
 	AFX_API friend CArchive& AFXAPI operator>>(CArchive& ar, class_name* &pOb);
 
+#endif
+
 // The Network Communication Class
 class CNetCom
 {		
 public:
 	// The Buffer Class
-	class CBuf : public CObject
+	class CBuf
+#ifdef NETCOM_BUF_SERIALIZE
+				: public CObject
+#endif
 	{
+#ifdef NETCOM_BUF_SERIALIZE
+		DECLARE_NESTED_SERIAL(CBuf, CNetCom)
+#endif
 		public:
-			DECLARE_NESTED_SERIAL(CBuf, CNetCom)
 			CBuf();
 			CBuf(unsigned int Size);
 			virtual ~CBuf();
@@ -181,7 +191,9 @@ public:
 			__forceinline unsigned int GetBufSize() const {return m_BufSize;};
 			__forceinline char* GetBuf() const {return m_Buf;};
 			__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
+#ifdef NETCOM_BUF_SERIALIZE
 			void Serialize(CArchive& archive);
+#endif
 #ifdef NETCOM_BUF_TICKCOUNT
 			DWORD m_dwTickCount;
 #endif
