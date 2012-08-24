@@ -443,6 +443,10 @@ SOURCE=.\MDIClientWnd.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MJPEGEncoder.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MlString.cpp
 # End Source File
 # Begin Source File
@@ -1125,6 +1129,10 @@ SOURCE=.\MDIClientWnd.h
 # Begin Source File
 
 SOURCE=.\MDIVWCTL.tlh
+# End Source File
+# Begin Source File
+
+SOURCE=.\MJPEGEncoder.h
 # End Source File
 # Begin Source File
 

@@ -126,8 +126,20 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 		return FALSE;
 
 	// Re-open?
-	if (!CDib::IsSameBMI(pSrcBMI, (LPBITMAPINFO)(&m_SrcBMI)) ||
-		!pDstDib->IsSameBMI((LPBITMAPINFO)(&m_DstBMI)))
+	BOOL bSrcSame;
+	if (CDib::GetBMISize(pSrcBMI) == sizeof(BITMAPINFOHEADER) &&
+		CDib::GetBMISize((LPBITMAPINFO)(&m_SrcBMI)) == sizeof(BITMAPINFOHEADER))
+	{
+		// Size changes with each frame for compressed formats like mjpeg -> do not compare size!
+		bSrcSame =	pSrcBMI->bmiHeader.biWidth			==	m_SrcBMI.bmiHeader.biWidth			&&
+					pSrcBMI->bmiHeader.biHeight			==	m_SrcBMI.bmiHeader.biHeight			&&
+					pSrcBMI->bmiHeader.biCompression	==	m_SrcBMI.bmiHeader.biCompression	&&
+					pSrcBMI->bmiHeader.biBitCount		==	m_SrcBMI.bmiHeader.biBitCount;
+	}
+	else
+		bSrcSame = CDib::IsSameBMI(pSrcBMI, (LPBITMAPINFO)(&m_SrcBMI));
+	BOOL bDstSame = pDstDib->IsSameBMI((LPBITMAPINFO)(&m_DstBMI));
+	if (!bSrcSame || !bDstSame)
 		Close();
 
 	// Open?

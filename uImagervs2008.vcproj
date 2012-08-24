@@ -2209,6 +2209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MJPEGEncoder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\MlString.cpp"
 				>
 			</File>
@@ -4459,6 +4463,10 @@
 			</File>
 			<File
 				RelativePath=".\MDIVWCTL.tlh"
+				>
+			</File>
+			<File
+				RelativePath=".\MJPEGEncoder.h"
 				>
 			</File>
 			<File

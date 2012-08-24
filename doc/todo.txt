@@ -2,12 +2,14 @@ Picture:
 --------
 - Using numbers to jump to a specific file in current directory
 
-Detection:
+Snapshot:
+---------
+- One button to take a manual snapshot of all open cams
+
+Recording:
 ----------
-- Compress frames before putting them into the detection buffer,
-  decompress them on usage
+- One button to start/stop manual rec of all open cams
 
 Networking:
 -----------
-- Make a light-weighted CNetComClient class from CNetCom
 - UDP networking stream also audio

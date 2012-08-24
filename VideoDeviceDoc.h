@@ -19,6 +19,7 @@
 #include "NetCom.h"
 #include "AVRec.h"
 #include "AVDecoder.h"
+#include "MJPEGEncoder.h"
 #include "YuvToRgb.h"
 #include "NetFrameHdr.h"
 #include "SortableFileFind.h"
@@ -115,7 +116,7 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
 #define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
-#define MOVDET_SAVEFRAMES_POLL				500U		// ms
+#define MOVDET_SAVEFRAMES_POLL				1000U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
 														// case of insufficient memory
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// 16000 is the limit for swf files -> be safe and start
@@ -835,6 +836,8 @@ public:
 
 		protected:
 			int Work();
+			__forceinline void CalcMovementDetectionListsSize();
+			BOOL DecodeFrame(CDib* pDib);
 			CString SaveJpeg(	CDib* pDib,
 								CString sJPGDir,
 								BOOL bShowFrameTime,
@@ -998,6 +1001,7 @@ public:
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
 			int m_nNumFramesToSave;
+			CAVDecoder m_AVDecoder;
 			volatile int m_nSendMailProgress;
 			volatile int m_nFTPUploadProgress;
 			volatile BOOL m_bWorking;
@@ -1144,7 +1148,14 @@ public:
 	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
 	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
 	__forceinline void SaveFrameList();								// Add new empty list to tail
-	__forceinline int  GetTotalMovementDetectionFrames();			// Get the total frames over all lists
+	__forceinline DWORD GetTotalMovementDetectionListSize()  {	::EnterCriticalSection(&m_csMovementDetectionsList);
+																DWORD dwTotalMovementDetectionListSize = m_dwTotalMovementDetectionListSize;
+																::LeaveCriticalSection(&m_csMovementDetectionsList);
+																return dwTotalMovementDetectionListSize;};
+	__forceinline DWORD GetNewestMovementDetectionListSize()  {	::EnterCriticalSection(&m_csMovementDetectionsList);
+																DWORD dwNewestMovementDetectionListSize = m_dwNewestMovementDetectionListSize;
+																::LeaveCriticalSection(&m_csMovementDetectionsList);
+																return dwNewestMovementDetectionListSize;};
 
 	// Detection list handling
 	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
@@ -1496,6 +1507,7 @@ public:
 														// 0 means never delete any file!
 
 	// Movement Detector Vars
+	volatile BOOL m_bDetectionCompressFrames;			// Compress detection frames?
 	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
@@ -1525,6 +1537,8 @@ public:
 	HANDLE volatile m_hExecCommandMovementDetection;	// Exec command handle
 	CRITICAL_SECTION m_csExecCommandMovementDetection;	// Command Exec critical section
 	CDib* volatile m_pMovementDetectorBackgndDib;		// Moving Background Dib
+	volatile DWORD m_dwTotalMovementDetectionListSize;	// The total size in bytes of all movement detection lists
+	volatile DWORD m_dwNewestMovementDetectionListSize;	// The size in bytes of the newest movement detection list
 	DIBLISTLIST m_MovementDetectionsList;				// The List of Movement Detection Frame Grabbing Lists
 	CRITICAL_SECTION m_csMovementDetectionsList;		// Critical Section of the Movement Detections List
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 
@@ -1604,6 +1618,7 @@ protected:
 	CDib* volatile m_pProcessFrameDib;
 	CDib* volatile m_pProcessFrameExtraDib;
 	CAVDecoder m_AVDecoder;
+	CMJPEGEncoder m_MJPEGEncoder;
 	volatile DWORD m_dwStopProcessFrame;
 	volatile DWORD m_dwProcessFrameStopped;
 	CRITICAL_SECTION m_csProcessFrameStop;
