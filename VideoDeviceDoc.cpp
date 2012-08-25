@@ -140,7 +140,7 @@ BOOL CVideoDeviceDoc::CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, C
 	return TRUE;
 }
 
-__forceinline void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
+void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 {
 	m_pDoc->m_dwTotalMovementDetectionListSize = 0U;
 	m_pDoc->m_dwNewestMovementDetectionListSize = 0U;
@@ -2721,6 +2721,42 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			m_dwWithoutMovementDetection = pDib->GetUpTime();
 	}
 
+	// Check memory load if having MOVDET_MIN_FRAMES_IN_LIST
+	// frames and MOVDET_MIN_FRAMES_IN_LIST passed since last check
+	double dDocLoad = 0.0;
+	double dNewestListLoad = 0.0;
+	double dAppLoad = 0.0;
+	double dTotalDocsMovementDetecting = 0.0;
+	int nFramesCount = GetNewestMovementDetectionsListCount();
+	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
+		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
+	{
+		// Usable RAM for this 32 bits application
+		int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
+		if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
+			nTotalPhysInMB = MOVDET_MEM_MAX_MB;
+		else if (nTotalPhysInMB <= 0)
+			nTotalPhysInMB = 1;		// At least 1MB...
+
+		// This document load in %
+		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB;
+
+		// Newest list load in %
+		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB;
+
+		// This application load in %
+		// Note: on Win9x this always returns 100.0 because the necessary function is not supported.
+		// In the below check memory load we use an AND operation so that the check is ok also on Win9x!
+		dAppLoad = GetAppMemoryLoad();
+
+		// Get the total amount of devices which are movement detecting
+		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
+
+		// Debug
+		TRACE(_T("%s, buf frames=%d, buf mem load=%0.1f, doc mem load=%0.1f, app mem load=%0.1f\n"),
+						GetDeviceName(), nFramesCount, dNewestListLoad, dDocLoad, dAppLoad);
+	}
+
 	// If in detection state
 	if (m_bDetectingMovement)
 	{
@@ -2737,58 +2773,57 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			// Save frames
 			SaveFrameList();
 		}
-		else 
+		// Check memory load?
+		else if (dTotalDocsMovementDetecting > 0.0)
 		{
-			// Check memory load if having MOVDET_MIN_FRAMES_IN_LIST
-			// frames and MOVDET_MIN_FRAMES_IN_LIST passed since last check
-			int nFramesCount = GetNewestMovementDetectionsListCount();
-			if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST	&&
-				((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
+			// High thresholds, should not end up here,
+			// this means that frames saving is to slow!
+			// -> Throw the oldest MOVDET_MIN_FRAMES_IN_LIST frames 
+			if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
+				dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
 			{
-				// This document load
-				int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
-				if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
-					nTotalPhysInMB = MOVDET_MEM_MAX_MB;
-				else if (nTotalPhysInMB <= 0)
-					nTotalPhysInMB = 1;		// At least 1MB...
-				double dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB; // Load in %
-				double dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
-
-				// This application load
-				double dAppLoad = GetAppMemoryLoad(); // Load in %, on Win9x this always returns 100.0
-
-				// High thresholds, should not end up here,
-				// this means that frames saving is to slow!
-				// -> Throw the oldest MOVDET_MIN_FRAMES_IN_LIST frames 
-				if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
-					dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
-				{
-					DWORD dwFirstUpTime, dwLastUpTime;
-					ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST, dwFirstUpTime, dwLastUpTime);
-					ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
-									ML_STRING(1818, "set lower framerate"),
-									ML_STRING(1819, "or resolution!"),
-									dwFirstUpTime, dwLastUpTime);
-					CString sMsg;
-					sMsg.Format(_T("%s, doc mem load %0.1f%%%%, app mem load %0.1f%%%% -> dropping det frames!\n"),
-																			GetDeviceName(), dDocLoad, dAppLoad);
-					TRACE(sMsg);
-					::LogLine(sMsg);
-				}
-				
-				// Low load threshold or maximum number of frames reached
-				if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
-					(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
-					nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
-					SaveFrameList();
+				DWORD dwFirstUpTime, dwLastUpTime;
+				ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST + 1, dwFirstUpTime, dwLastUpTime); // + 1 to settle down on an avg value
+				ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
+								ML_STRING(1818, "set lower framerate"),
+								ML_STRING(1819, "or resolution!"),
+								dwFirstUpTime, dwLastUpTime);
+				CString sMsg;
+				sMsg.Format(_T("%s, dropping det frames -> set lower framerate or resolution!\n"),
+							GetDeviceName());
+				TRACE(sMsg);
+				::LogLine(sMsg);
 			}
+			
+			// Low load threshold or maximum number of frames reached
+			if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
+				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
+				nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
+				SaveFrameList();
 		}
 	}
 	else
 	{
-		// Add new frame
 		if (bStoreFrames)
+		{
+			// Add new frame
 			AddNewFrameToNewestListAndShrink(pDib);
+			
+			// Check memory load?
+			if (dTotalDocsMovementDetecting > 0.0)
+			{
+				if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_THRESHOLD)
+				{
+					DWORD dwFirstUpTime, dwLastUpTime;
+					ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST + 1, dwFirstUpTime, dwLastUpTime); // + 1 to settle down on an avg value
+					CString sMsg;
+					sMsg.Format(_T("%s, cannot store %ds of det pre-buffer -> lower that!\n"),
+								GetDeviceName(), m_nMilliSecondsRecBeforeMovementBegin / 1000);
+					TRACE(sMsg);
+					::LogLine(sMsg);
+				}
+			}
+		}
 		else
 			ClearNewestFrameList();
 	}
@@ -3763,7 +3798,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 			if (bDeletingOld)
 			{
 				CString sMsg;
-				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is less than %d%%%%\n"),
+				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is less than %d percent\n"),
 							m_pDoc->GetDeviceName(), sAutoSaveDir, MIN_DISKFREE_PERCENT);
 				TRACE(sMsg);
 				::LogLine(sMsg);
