@@ -105,6 +105,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_THURSDAY, OnCheckSchedulerThursday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_FRIDAY, OnCheckSchedulerFriday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SATURDAY, OnCheckSchedulerSaturday)
+	ON_BN_CLICKED(IDC_CHECK_DETECTION_COMPRESS_FRAMES, OnCheckDetectionCompressFrames)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -146,6 +147,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
 	m_SpinSecondsBeforeMovementBegin.SetRange(1, 99);
 	m_SpinSecondsAfterMovementEnd.SetRange(1, 99);
+
+	// Movement Detection Compress Frames in Buffer
+	CButton* pCheckDetectionCompressFrames = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
+	pCheckDetectionCompressFrames->SetCheck(m_pDoc->m_bDetectionCompressFrames ? 1 : 0);
 
 	// Detection Level Slider & Edit Controls
 	m_DetectionLevel.SetRange(1, 100, TRUE);
@@ -373,6 +378,12 @@ void CMovementDetectionPage::OnChangeSecondsBeforeMovementBegin()
 			m_pDoc->ResetMovementDetector();
 		}
 	}
+}
+
+void CMovementDetectionPage::OnCheckDetectionCompressFrames() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
+	m_pDoc->m_bDetectionCompressFrames = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnChangeEditDeleteDetectionsDays() 

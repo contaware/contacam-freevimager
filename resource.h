@@ -1346,6 +1346,7 @@
 #define IDS_MULTILANG_1250              1250
 #define IDC_CHECK_SCHEDULER_DAILY       1250
 #define IDS_MULTILANG_1251              1251
+#define IDC_CHECK_DETECTION_COMPRESS_FRAMES 1251
 #define IDS_MULTILANG_1252              1252
 #define IDC_TIME_DAILY_START            1252
 #define IDS_MULTILANG_1253              1253

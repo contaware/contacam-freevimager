@@ -4050,7 +4050,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDeleteRecordingsOlderThanDays = 0;
 
 	// Movement Detection
-	m_bDetectionCompressFrames = FALSE;
 	m_pDifferencingDib = NULL;
 	m_pMovementDetectorBackgndDib = NULL;
 	m_bShowMovementDetections = FALSE;
@@ -4063,6 +4062,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
+	m_bDetectionCompressFrames = FALSE;
 	m_bDoAdjacentZonesDetection = TRUE;
 	m_bDoLumChangeDetection = TRUE;
 	m_bSaveSWFMovementDetection = TRUE;
@@ -4709,6 +4709,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDeviceFormatHeight = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), 0);
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
+	m_bDetectionCompressFrames = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionCompressFrames"), FALSE);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bDoAdjacentZonesDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoAdjacentZonesDetection"), TRUE);
@@ -4963,6 +4964,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
+			pApp->WriteProfileInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 			pApp->WriteProfileInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection);
@@ -5165,6 +5167,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection, sTempFileName);
@@ -9196,7 +9199,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 				CDib* pNewDib;
 				if (m_bDetectionCompressFrames)
 				{
-					DWORD dwEncodedLen = m_MJPEGEncoder.Encode(4, pDib->GetBMI(), pDib->GetBits());
+					DWORD dwEncodedLen = m_MJPEGEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
+																pDib->GetBMI(), pDib->GetBits());
 					BITMAPINFO Bmi;
 					memset(&Bmi, 0, sizeof(BITMAPINFO));
 					Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);

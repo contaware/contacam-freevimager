@@ -2,6 +2,9 @@ VERSION HISTORY
 
 4.0.5 (xxx xth 2012)
 
+- In Movement Detection tab there is a new option to generate
+  longer detection files so that most single detections are
+  not split anymore into several movies
 - The movement detection engine does now fast memory freeing
   when saving animated gifs
 - Fixed crash when the detection pre-buffer is set too big

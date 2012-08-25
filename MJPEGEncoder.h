@@ -23,7 +23,7 @@ class CMJPEGEncoder
 						m_pOutbuf = NULL;
 						m_nOutbufSize = 0;}
 		virtual ~CMJPEGEncoder(){Close();}
-		DWORD Encode(	int qscale,		// 2: best, 31: worst
+		DWORD Encode(	int qscale,		// 2: best quality, 31: worst quality
 						LPBITMAPINFO pSrcBMI,	
 						LPBYTE pSrcBits);
 		uint8_t* GetEncodedBuf() {return m_pOutbuf;};

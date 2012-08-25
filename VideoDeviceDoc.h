@@ -111,6 +111,7 @@ class CMovementDetectionPage;
 #define SOFTWARE_MOVEMENT_DETECTOR			0x02
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			8000		// ms
+#define MOVDET_BUFFER_COMPRESSIONQUALITY	4			// 2: best quality, 31: worst quality
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
@@ -138,7 +139,7 @@ class CMovementDetectionPage;
 #define MOVDET_ANIMGIF_DEFAULT_HEIGHT		96			// Default animated gif height
 #define MOVDET_DETECTING_ZONES_COLOR		RGB(0xFF,0x00,0x00)
 #define MOVDET_SELECTED_ZONES_COLOR			RGB(0x00,0x00,0xFF)
-#define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3 to 1 to 7 to 1 mixer
+#define MOVDET_MIX_THRESHOLD				4.0			// Above this engine frequency switch from 3To1 to the 7To1 mixer
 #define MOVDET_WANTED_FREQ					5.0			// Wanted motion detection engine frequency (calculations / sec)
 														// Half of DEFAULT_FRAMERATE
 
@@ -1509,7 +1510,6 @@ public:
 														// 0 means never delete any file!
 
 	// Movement Detector Vars
-	volatile BOOL m_bDetectionCompressFrames;			// Compress detection frames?
 	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
@@ -1525,6 +1525,7 @@ public:
 	volatile DWORD m_dwWithoutMovementDetection;		// Uptime of last movement detection
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
+	volatile BOOL m_bDetectionCompressFrames;			// Compress detection frames?
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
 	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF

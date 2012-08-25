@@ -97,6 +97,7 @@ protected:
 	afx_msg void OnCheckSchedulerThursday();
 	afx_msg void OnCheckSchedulerFriday();
 	afx_msg void OnCheckSchedulerSaturday();
+	afx_msg void OnCheckDetectionCompressFrames();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -2294,20 +2294,27 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,32,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,27,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,32,11,12
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,47,25,12,
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,27,11,12
+    LTEXT           "seconds of frames before detection begin",
+                    IDC_STATIC2283,62,28,144,8
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,40,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,47,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,40,11,12
+    LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
+                    62,42,144,8
+    CONTROL         "Longer detection files (enabling this uses more CPU)",
+                    IDC_CHECK_DETECTION_COMPRESS_FRAMES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,54,192,10
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,65,132,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,68,132,12
     COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,83,99,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
@@ -2342,34 +2349,34 @@ BEGIN
     EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,13,213,189,12,
                     ES_AUTOHSCROLL
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,37,51,10
-    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,36,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,29,51,10
+    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,28,96,12
     CONTROL         "Save AVI",IDC_SAVE_AVI_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,55,46,10
-    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,54,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,47,46,10
+    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,46,96,12
     CONTROL         "Save Anim. GIF",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,73,62,10
-    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,72,96,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,65,62,10
+    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,64,96,
                     12
     CONTROL         "Send Email",IDC_SENDMAIL_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,91,53,10
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,90,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,83,53,10
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,82,96,12
     CONTROL         "Ftp Upload",IDC_FTP_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,109,51,9
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,108,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,101,51,9
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,100,96,12
     CONTROL         "Execute Command:",IDC_EXEC_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,127,77,10
-    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,125,96,72,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,226,119,77,10
+    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,117,96,72,
                     CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,266,140,135,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,266,154,135,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_EXE,266,134,135,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,266,149,135,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",
                     IDC_CHECK_HIDE_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,169,129,10
+                    WS_TABSTOP,236,166,129,10
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,181,145,10
-    EDITTEXT        IDC_EDIT_EXEC_HELP,236,194,165,30,ES_MULTILINE | 
+                    WS_TABSTOP,236,179,145,10
+    EDITTEXT        IDC_EDIT_EXEC_HELP,236,193,165,32,ES_MULTILINE | 
                     ES_READONLY | NOT WS_TABSTOP
     LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
                     WS_GROUP
@@ -2378,15 +2385,11 @@ BEGIN
     PUSHBUTTON      "...",IDC_DETECTION_SAVEAS,392,236,16,12
     EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
                     ES_NUMBER
-    LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,49,120,8
-    LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,61,33,131,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,63,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,20,203,80
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,66,13,12,ES_RIGHT | 
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,66,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,16,203,84
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,69,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,218,20,190,210
+    GROUPBOX        "On Detection",IDC_STATIC2288,218,16,190,214
     LTEXT           "From",IDC_STATIC2289,13,169,16,8
     LTEXT           "To",IDC_STATIC2290,120,169,10,8
     GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,143,203,55
@@ -2394,18 +2397,18 @@ BEGIN
     LTEXT           "day(s)",IDC_STATIC2293,103,255,20,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
                     IDC_STATIC2294,131,255,277,8
-    LTEXT           "Cmd",IDC_STATIC2299,236,143,15,8
-    LTEXT           "Params",IDC_STATIC2300,236,156,24,8
+    LTEXT           "Cmd",IDC_STATIC2299,236,137,15,8
+    LTEXT           "Params",IDC_STATIC2300,236,151,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
-                    IDC_WARNING,152,6,256,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,13,33,18,8
-    LTEXT           "Store",IDC_STATIC,13,49,18,8
+                    IDC_WARNING,152,3,256,11,SS_CENTERIMAGE
+    LTEXT           "Store",IDC_STATIC,13,28,18,8
+    LTEXT           "Store",IDC_STATIC,13,42,18,8
     GROUPBOX        "Detection Constraints",IDC_STATIC,7,104,203,35
-    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,85,76,8
+    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,85,84,8
     GROUPBOX        "External Detection Trigger File (write to it to trigger)",
                     IDC_STATIC,7,202,203,28
-    LTEXT           "Detection:",IDC_STATIC2544,7,6,36,11,SS_CENTERIMAGE
-    LTEXT           "Off",IDC_DETECTION_MODE,46,6,95,11,SS_CENTERIMAGE | 
+    LTEXT           "Detection:",IDC_STATIC2544,7,3,36,11,SS_CENTERIMAGE
+    LTEXT           "Off",IDC_DETECTION_MODE,46,3,95,11,SS_CENTERIMAGE | 
                     SS_SUNKEN
 END
 
@@ -4840,14 +4843,12 @@ BEGIN
         RIGHTMARGIN, 408
         VERTGUIDE, 13
         VERTGUIDE, 22
-        VERTGUIDE, 64
         VERTGUIDE, 226
         VERTGUIDE, 236
         VERTGUIDE, 266
         VERTGUIDE, 305
         VERTGUIDE, 401
         TOPMARGIN, 2
-        HORZGUIDE, 12
         HORZGUIDE, 259
     END
 
