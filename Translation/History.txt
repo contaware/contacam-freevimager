@@ -4,6 +4,7 @@ TRANSLATIONS HISTORY
 
 - Added File - Extract... menu entries
 - File - Save As Pdf... original and translation fixes
+- Added Longer detection files (enabling this uses more CPU) check-box
 
 4.0.3 (August 9th 2012)
 
