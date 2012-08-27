@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.5 (xxx xth 2012)
+4.0.5 (August 27th 2012)
 
 - In Movement Detection tab there is a new option to generate
   longer detection files so that most single detections are

@@ -43,7 +43,7 @@ Release procedure
    - 2x in uImager.rc2
    - RemoteCam and RemoteCamViewer version and about dialog resources
    - CurrentVersion.nsh
-   - HistoryFreeVimager.txt and HistoryContaCam.txt
+   - HistoryFreeVimager.txt, HistoryContaCam.txt and translation History.txt
 
 2. Build release target of RemoteCam and RemoteCamViewer with vc6
 
