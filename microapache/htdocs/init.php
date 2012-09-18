@@ -1,4 +1,5 @@
 <?php
+session_start();
 $filesdirpath = str_replace("\\", "/", FILESDIRPATH);
 $filesdirpath = rtrim($filesdirpath,"/");
 if ($filesdirpath == "") {

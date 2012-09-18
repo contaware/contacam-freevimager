@@ -10,6 +10,7 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
 <?php
+require_once( 'setusertz.php' );
 $serveruri = str_replace("&", "&amp;", $_SERVER['REQUEST_URI']);
 echo "<meta http-equiv=\"refresh\" content=\"" . SUMMARYREFRESHSEC . "; URL=" . $serveruri . "\" />\n";
 echo "<title>" . SUMMARYTITLE . "</title>\n";
