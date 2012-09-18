@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+4.0.7 (October xxx 2012)
+
+- ...
+
 4.0.5 (August 27th 2012)
 
 - Possibility to extract all pages from a multi-page tiff file

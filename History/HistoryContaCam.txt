@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+4.0.7 (October xxx 2012)
+
+- Fixed possible timezone problem's by getting browser's timezone
+  and setting it in PHP
+
 4.0.5 (August 27th 2012)
 
 - In Movement Detection tab there is a new option to generate
