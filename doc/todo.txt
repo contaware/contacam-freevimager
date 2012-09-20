@@ -1,6 +1,7 @@
 Picture:
 --------
 - Using numbers to jump to a specific file in current directory
+- Multi-page tiff print
 
 Snapshot:
 ---------

@@ -3990,7 +3990,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-LINK
 	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin")); // Blue Net Video Server
 	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// LINKSYS
-	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// BSTI, Heden VisionCam
+	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// Foscam and clones
 	m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// SONY
 	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// CANON
 	// then try mixed JPEG/MJPEG
@@ -9826,8 +9826,12 @@ _T("GET /img/video.mjpeg HTTP/1.1\r\n")
 _T("GET /img/mjpeg.jpg HTTP/1.1\r\n")
 
 
-BSTI or Heden VisionCam
------------------------
+Foscam, 7Links, Acromedia, Agasio, Apexis, Aztech, BiQu, BSTI, cowKey, CVLM, Dericam,
+EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam, Heden, HooToo, ICam, iCam+,
+INSTAR, KARE, Loftek, Maygion, MyiHome, PROCCTV, Smarthome, Solwise, Storage Options,
+Tenvis, Vonnic, Vstarcam, Wanscam, Wansview, X10, Xenta, Zmodo and other cheap clones
+(unbranded IP cameras or chinese IP cameras)
+-------------------------------------------------------------------------------------
 
 JPEG
 _T("GET /snapshot.cgi HTTP/1.1\r\n")
