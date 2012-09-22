@@ -475,21 +475,20 @@ BOOL CGeneralPage::OnInitDialog()
 	else if (m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 	{
 		// Axis and Edimax support only integer values starting at 1 fps
-		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP	||
+		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP ||
 			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
-		// Frequency not settable on client side by panasonic devices in server push mode
-		// and TP-Link is crappy for setting params...
-		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PANASONIC_SP	||
-				m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::TPLINK_SP)
+		// Pixord
+		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PIXORD_SP)
+			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
+		// Disable all other Server Push devices,
+		// Client Poll devices will be enabled in OnTimer()
+		else
 		{
 			m_SpinFrameRate.SetRange(0.0, 0.0);
 			m_SpinFrameRate.EnableWindow(FALSE);
 			pEdit->EnableWindow(FALSE);
 		}
-		// Pixord in server push mode and all client poll
-		else
-			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 	}
 	else
 	{
@@ -822,6 +821,21 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 			pEdit->SetWindowText(sDataRate);
 		}
 
+		// Enable Frame Rate Edit Control for Client Poll devices
+		CString sFrameRate;
+		pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
+		if (m_pDoc->m_pGetFrameNetCom &&
+			m_pDoc->m_pGetFrameNetCom->IsClient() &&
+			m_pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG &&
+			!pEdit->IsWindowEnabled())
+		{
+			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
+			m_SpinFrameRate.EnableWindow(TRUE);
+			pEdit->EnableWindow(TRUE);
+			sFrameRate.Format(_T("%0.1f"), m_pDoc->m_dFrameRate);
+			pEdit->SetWindowText(sFrameRate);
+		}
+
 		// Change The Frame Rate if Necessary
 		if (m_bDoChangeFrameRate)
 		{
@@ -832,8 +846,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 				m_bDoChangeFrameRate = FALSE;
 
 				// Frame Rate Edit Control
-				CString sFrameRate;
-				pEdit = (CEdit*)GetDlgItem(IDC_FRAMERATE);
 				pEdit->GetWindowText(sFrameRate);
 				BOOL bOk = FALSE;
 				BOOL bRestore = FALSE;
