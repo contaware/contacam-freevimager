@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.0.7 (October xxx 2012)
 
-- ...
+- Added strings 1865 and 1866
 
 4.0.5 (August 27th 2012)
 
