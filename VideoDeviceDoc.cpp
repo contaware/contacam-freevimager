@@ -3341,6 +3341,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				CString sRequest = m_sRequest;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
+				::PostMessage(m_pDoc->GetView()->GetSafeHwnd(), WM_THREADSAFE_SETDOCUMENTTITLE, 0, 0); // update device settings title
 				if (sRequest == _T(""))
 					m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
 				else
@@ -3973,33 +3974,140 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
-	m_HttpGetFrameLocations.Add(_T("/"));								// Start trying home to see whether cam is reachable
-	// First try JPEG because we can change the framerate
-	m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// Many cams
-	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Many cams
-	m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// REPOTEC, TRENDNET, PLANET
-	m_HttpGetFrameLocations.Add(_T("/goform/video"));					// REPOTEC, TRENDNET, PLANET
-	m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// REPOTEC, TRENDNET, PLANET
-	m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// TRENDNET
-	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// PLANET, SOLWISE, GADSPOT, VEO Observer
-	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// STARDOT
-	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// EDIMAX, INTELLINET
-	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// MOBOTIX
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GADSPOT GS1200G
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));				// D-LINK
-	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-LINK
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/image.cgi?control=0&id=admin&passwd=admin")); // Blue Net Video Server
-	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// LINKSYS
-	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// Foscam and clones
-	m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// SONY
-	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// CANON
-	// then try mixed JPEG/MJPEG
-	m_HttpGetFrameLocations.Add(_T("/image"));							// JPEG for ARECONT VISION and MJPEG for SONY
-	// finally try MJPEG
-	m_HttpGetFrameLocations.Add(_T("/video.cgi"));						// Many cams
-	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));						// Many cams
-	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// GADSPOT, ORITE, PLANET
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/auto.cgi"));				// ANEXTEK
+
+	/*********************************************************
+	 *** Start trying home to see whether cam is reachable ***
+	 *********************************************************/
+	m_HttpGetFrameLocations.Add(_T("/"));
+	
+	/******************************************************************
+	 *** First try MJPEG because the frame-rate is better than JPEG ***
+	 ******************************************************************/
+	m_HttpGetFrameLocations.Add(_T("/videostream.cgi"));				// 7Links, Acromedia, Agasio, AirLink, Apexis, Aztech, BiQu, BSTI, cowKey,
+																		// CVLM, Dericam, EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam,
+																		// Foscam, Heden, HooToo, ICam, iCam+, INSTAR, KARE, Loftek, Maygion,
+																		// PROCCTV, Smarthome, Solwise, Storage Options, Tenvis, Vonnic, Vstarcam,
+																		// Wanscam, Wansview, X10, Xenta, Zmodo
+	
+	m_HttpGetFrameLocations.Add(_T("/video.cgi"));						// 7Links, ABS, AirLink, AirLive, A-Link, Bowya, corega, D-Link, EasySE,
+																		// Foscam, Genius, Grandtec, Heden, Imogen, Intellinet, Loftek, LongShine,
+																		// Nilox, Ovislink, Planet, QNAP, Rosewill, Savitmicro, Topica, TrendNet, Trust
+	
+	m_HttpGetFrameLocations.Add(_T("/mjpeg.cgi"));						// AirLink, Cellvision, corega, Digicom, D-Link, Elro, EMSTONE, Hamlet, LinkPro,
+																		// NeuFusion, QNAP, Sertek, Sparklan, Surecom, Topcom, TrendNet, Trust
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpeg.cgi"));				// 7Links, AirLink, A-Link, Allnet, Conceptronic, corega, Digicom, Fitivision,
+																		// Marmitek, QNAP, Swann, TrendNet, Zonet
+	
+	m_HttpGetFrameLocations.Add(_T("/video.mjpg"));						// ABUS, AirLive, Allnet, Beward, GadSpot, Intellinet, LevelOne, Lorex,
+																		// Planet, TP-Link, Vivotek, Yawcam, Zavio
+	
+	m_HttpGetFrameLocations.Add(_T("/mjpg/video.mjpg"));				// AirLink, AirLive, BlueStork, Edimax, Hawking, Planet, Rosewill, Savitmicro,
+																		// Sitecom, Zonet
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpg.cgi"));				// 7Links, Activa, AirLink, Digitus, Encore, IPUX, QNAP, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/img/video.mjpeg"));				// Allnet, Cisco, Clas, LevelOne, Linksys, Sercomm, Sitecom
+	
+	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec, Sparklan
+	
+	m_HttpGetFrameLocations.Add(_T("/MJPEG.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec
+	
+	m_HttpGetFrameLocations.Add(_T("/img/mjpeg.cgi"));					// Planet, Sony, Allnet, NorthQ
+	
+	m_HttpGetFrameLocations.Add(_T("/ipcam/stream.cgi"));				// Appro, D-Link, Eneo, HDL
+	
+	m_HttpGetFrameLocations.Add(_T("/ipcam/mjpeg.cgi"));				// AirLive, Appro, Aviosys, MESSOA
+	
+	m_HttpGetFrameLocations.Add(_T("/image.cgi?type=motion"));			// ALinking, Asante, TELCA, VISIONxIP
+	
+	m_HttpGetFrameLocations.Add(_T("/img/mjpeg.jpg"));					// Cisco, Linksys, Planet
+	
+	m_HttpGetFrameLocations.Add(_T("/mjpeg"));							// Arecont, Celius, Tenvis
+	
+	m_HttpGetFrameLocations.Add(_T("/video/mjpg.cgi"));					// D-Link, Sparklan, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/mjpegStreamer.cgi"));				// Compro, PROCCTV, Zyxel
+	
+	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
+	
+	m_HttpGetFrameLocations.Add(_T("/video2.mjpg"));					// Cisco, D-Link
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
+	
+	m_HttpGetFrameLocations.Add(_T("/nph-mjpeg.cgi"));					// Stardot
+	
+	m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
+
+	/**********************************************************************************************
+	 *** Then try mixed (it depends from the maker whether those commands return JPEG or MJPEG) ***
+	 **********************************************************************************************/
+	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// Active, ALinking, Asante, ASIP, Asoni, Aviosys, Aviptek, BVUSA,
+																		// Defender, GadSpot, Grand, Hesavision, Hunt, INVID, Lorex, Lupus,
+																		// Orite, Piczel, Pixord, Planet, Sertek, Skyway Security, SVAT,
+																		// Sweex, Toshiba, TrendNet, Veo, Well, WowWee
+	
+	m_HttpGetFrameLocations.Add(_T("/getimage"));						// Lorex, Merit, Pixord, Seteye, Speco, TCLINK
+	
+	m_HttpGetFrameLocations.Add(_T("/image"));							// Arecont, Sony
+	
+	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// 7Links, Acromedia, AirLink, Apexis, Aviosys, Aztech, BiQu, BSTI, CVLM,
+																		// Dericam, EasyN, EasySE, Edimax, Elro, Eminent, EZCam, Foscam, GKB, Hama,
+																		// Heden, HooToo, ICam, iCam+, INSTAR, Intellinet, Loftek, LogiLink, LongShine,
+																		// Maygion, Micronet, Nilox, Planet, Planex, PROCCTV, Smarthome, Solwise,
+																		// Storage Options, Tenvis, Ubiquiti, Vonnic, Wansview, X10, XTS, Zmodo
+	
+	m_HttpGetFrameLocations.Add(_T("/image.cgi"));						// AirLive, A-Link, ALinking, Asante, Intellinet, MonoPrice, NetMedia, 
+																		// Planet, Rosewill, Savitmicro, TELCA, Topica, VISIONxIP
+	
+	/************************
+	 *** Finally try JPEG ***
+	 ************************/
+	m_HttpGetFrameLocations.Add(_T("/snapshot.jpg"));					// Aviosys, BluePix, Compro, Digitus, EasyN, Edimax, Eminent, GadSpot,
+																		// Gembird, GKB, Goscam, Hama, Hungtek, Intellinet, LevelOne, LogiLink,
+																		// LTS, Micronet, Planet, Planex, PROCCTV, Rimax, Sharx, SmartIndustry,
+																		// Swann, ZyXEL
+
+	m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// AirLink, Asante, D-Link, Genius, Hawking, Sparklan, TrendNet, Trust 
+	
+	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Conceptronic, D-Link, Elro, Genius, Hawking, Marmitek, Planet,
+																		// Repotec, Sparklan
+	
+	m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// AirLink, Planet, Repotec, Sparklan, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// AirLink, Cellvision, corega, Digitus, Micronet, NeuFusion, Planet,
+																		// QNAP, Quimz, Repotec, Sparklan, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// 7Links, Activa, AirLink, A-Link, Allnet, Conceptronic, Digicom,
+																		// Digitus, Encore, Fitivision, IPUX, Marmitek, QNAP, Swann, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// Aviosys, GadSpot, Grandtec, Orite, Pixord, Planet, Security,
+																		// Skyway Security, Solwise, SVAT, Sweex, Toshiba, Veo/Vidi, WowWee, Yoko
+	
+	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// ABUS, AirLink, AirLive, Allnet, AVS, Axis, Beward, CNB, Edimax,
+																		// GadSpot, Hawking, Intellinet, Lorex, Planet, Rosewill, Savitmicro,
+																		// Sitecom, TP-Link, TSM, Vivotek, Zavio
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));				// 4XEM, ABUS, Allnet, Cellvision, ConnectionNC, Digi-Lan, Digitus, D-Link,
+																		// Eyseo, Hawking, JVC, LevelOne, Moxa, NeuFusion, Ovislink, Planex, Quimz,
+																		// Sertek, Telefonica, TrendNet, Trendware, Vivotek
+	
+	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// Allnet, Cisco, Clas, LevelOne, Linksys, NorthQ, Sercomm, Sitecom
+
+	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
+	
+	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
+	
+	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GadSpot
+
+	m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// Sony
+	
+	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// Canon
+
+	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
+
 
 	// Snapshot
 	m_sSnapshotAutoSaveDir = _T("");
@@ -4426,6 +4534,10 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	}
 	else
 		strInfo = sName;
+
+	// Update Property Sheet Title
+	if (m_pVideoDevicePropertySheet)
+		m_pVideoDevicePropertySheet->UpdateTitle();
 
 	// Set title string
 	CDocument::SetTitle(strInfo);
@@ -9682,174 +9794,6 @@ sif      -> 352x240 (NTSC)
 full     -> 704x480 (NTSC)
 delay=10 -> 100 ms
 
-
-TRENDNET or  Raytalk RTAV 600W or Airlink101 or TRUST or GENIUS or
-D-LINK DCS-700 and DCS-900 or PLANET ICA-100C and ICA-100PE
-------------------------------------------------------------------
-
-Note: Some people are writing image.jpg and video.cgi
-lowercase some other highercase -> Try both!
-
-JPEG
-_T("GET /image.jpg HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /video.cgi HTTP/1.1\r\n")
-
-
-REPOTEC or TRENDNET TV-IP201W, TV-IP301 and TV-IP301W or PLANET ICA-110, ICA-210
---------------------------------------------------------------------------------
-
-JPEG
-_T("GET /goform/video HTTP/1.1\r\n")       -> get one frame, don't response until frame ready
-_T("GET /goform/video2 HTTP/1.1\r\n")      -> get one frame, response no matter frame ready or not
-_T("GET /goform/capture HTTP/1.1\r\n")     -> get one frame, server will disconnect the connection after
-
-
-TRENDNET TV-IP410W, TV-IP110WN, TV-IP442W, TV-IP312W
-----------------------------------------------------
-
-JPEG
-_T("GET /cgi/jpg/image.cgi HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /cgi/mjpg/mjpg.cgi HTTP/1.1\r\n")
-_T("GET /cgi/mjpg/mjpeg.cgi HTTP/1.1\r\n")
-
-
-D-LINK
-------
-
-JPEG for DCS-2000, DCS-2100, DCS-3230, DCS-5300, DCS-6620G, DVS-104, DVS-301
-_T("GET /cgi-bin/video.jpg HTTP/1.1\r\n")
-
-JPEG for DCS-920, DCS-2121, DCS-2102, ...
-_T("GET /image/jpeg.cgi HTTP/1.1\r\n")
-
-MJPEG for DCS-920, DCS-2121, DCS-2102, ...
-_T("GET /video/mjpg.cgi HTTP/1.1\r\n")
-
-
-PLANET or SOLWISE or GADSPOT or VEO Observer
---------------------------------------------
-
-JPEG
-_T("GET /Jpeg/CamImg.jpg HTTP/1.1\r\n")
-
-
-GADSPOT or ORITE or PLANET IVS-100, ICA-300, ICA-302, ICA-500
--------------------------------------------------------------
-
-MJPEG
-_T("GET /GetData.cgi HTTP/1.1\r\n")
-
-
-GADSPOT GS1200G
----------------
-
-JPEG
-_T("GET /cgi-bin/getimage.cgi?motion=0 HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /cgi-bin/getimage.cgi?motion=1 HTTP/1.1\r\n")
-
-
-STARDOT (http://www.stardot-tech.com/developer/api.html)
---------------------------------------------------------
-
-JPEG
-_T("GET /netcam.jpg HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /nph-mjpeg.cgi?x HTTP/1.1\r\n")  ,  (where x = input number, 0 origin) 
-
-
-INTELLINET
-----------
-
-JPEG
-_T("GET /jpg/image.jpg HTTP/1.1\r\n")
-
-
-ANEXTEK
--------
-
-MJPEG
-_T("GET /cgi-bin/auto.cgi HTTP/1.1\r\n")
-
-
-SONY
-----
-
-JPEG
-_T("GET /oneshotimage.jpg HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /image HTTP/1.1\r\n")
-
-
-ARECONT VISION
---------------
-
-JPEG
-_T("GET /image HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /mjpeg HTTP/1.1\r\n")
-
-
-MOBOTIX (http://developer.mobotix.com/mobotix_sdk_1.0.2/paks/help_cgi-image.html)
----------------------------------------------------------------------------------
-
-JPEG (this HTTP API supports so-called HTTP Keep Alive connections!)
-_T("GET /record/current.jpg HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /cgi-bin/faststream.jpg HTTP/1.1\r\n")
-
-
-Blue Net Video Server
----------------------
-
-JPEG
-_T("GET /cgi-bin/image.cgi?control=0&id=admin&passwd=admin HTTP/1.1\r\n")
-
-
-LINKSYS
--------
-
-JPEG
-_T("GET /img/snapshot.cgi HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /img/video.mjpeg HTTP/1.1\r\n")
-_T("GET /img/mjpeg.jpg HTTP/1.1\r\n")
-
-
-Foscam, 7Links, Acromedia, Agasio, Apexis, Aztech, BiQu, BSTI, cowKey, CVLM, Dericam,
-EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam, Heden, HooToo, ICam, iCam+,
-INSTAR, KARE, Loftek, Maygion, MyiHome, PROCCTV, Smarthome, Solwise, Storage Options,
-Tenvis, Vonnic, Vstarcam, Wanscam, Wansview, X10, Xenta, Zmodo and other cheap clones
-(unbranded IP cameras or chinese IP cameras)
--------------------------------------------------------------------------------------
-
-JPEG
-_T("GET /snapshot.cgi HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /videostream.cgi HTTP/1.1\r\n")
-
-
-CANON
------
-
-JPEG
-_T("GET /-wvhttp-01-/GetLiveImage HTTP/1.1\r\n")
-_T("GET /-wvhttp-01-/image.cgi HTTP/1.1\r\n")
-
-MJPEG
-_T("GET /-wvhttp-01-/GetOneShot HTTP/1.1\r\n")
-_T("GET /-wvhttp-01-/video.cgi HTTP/1.1\r\n")
 */
 
 BOOL CVideoDeviceDoc::ConnectGetFrame()

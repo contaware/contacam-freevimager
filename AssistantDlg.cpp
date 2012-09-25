@@ -1278,8 +1278,6 @@ void CAssistantDlg::ApplySettings()
 		m_pDoc->SaveSettings();
 
 	// Update titles because of possible device name change
-	if (m_pDoc->m_pVideoDevicePropertySheet)
-		m_pDoc->m_pVideoDevicePropertySheet->UpdateTitle();
 	m_pDoc->SetDocumentTitle();
 
 	// This calls UpdateData(TRUE) -> view to vars

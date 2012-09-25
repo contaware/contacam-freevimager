@@ -65,11 +65,23 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 		{
 			case CVideoDeviceDoc::INTERNAL_UDP	: sTitle += CString(_T(" , ")) + ML_STRING(1547, "Internal UDP Server"); break;
 			case CVideoDeviceDoc::OTHERONE		:
-				if (pDoc->m_HttpGetFrameLocations[0] == _T("/"))
+			{
+				int nHttpGetFrameLocationPos = pDoc->m_nHttpGetFrameLocationPos; // make a local copy because it is updated by another thread
+				if (nHttpGetFrameLocationPos > 0 && nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
+					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[nHttpGetFrameLocationPos];
+				else if (pDoc->m_HttpGetFrameLocations[0] == _T("/"))
 					sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Device");
 				else
 					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0];
+				if (pDoc->m_pHttpGetFrameParseProcess)
+				{
+					if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATMJPEG)
+						sTitle += _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")");
+					else if (pDoc->m_pHttpGetFrameParseProcess->m_FormatType == CVideoDeviceDoc::CHttpGetFrameParseProcess::FORMATJPEG)
+						sTitle += _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")");
+				}
 				break;
+			}
 			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1549, "Axis (Server Push Mode)"); break;
 			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1550, "Axis (Client Poll Mode)"); break;
 			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + ML_STRING(1551, "Panasonic (Server Push Mode)"); break;
