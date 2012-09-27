@@ -6618,16 +6618,10 @@ BEGIN
     IDS_STRING1546          "Stereo"
     IDS_STRING1547          "Internal UDP Server"
     IDS_STRING1548          "Other HTTP Device"
-    IDS_STRING1549          "Axis (Server Push Mode)"
-    IDS_STRING1550          "Axis (Client Poll Mode)"
-    IDS_STRING1551          "Panasonic (Server Push Mode)"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_STRING1552          "Panasonic (Client Poll Mode)"
-    IDS_STRING1553          "Pixord or NetComm (Server Push Mode)"
-    IDS_STRING1554          "Pixord or NetComm (Client Poll Mode)"
     IDS_STRING1555          "Full"
     IDS_STRING1558          "1 hour"
     IDS_STRING1559          "2 hours"
@@ -6909,7 +6903,6 @@ BEGIN
     IDS_STRING1786          "Shrink"
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
-    IDS_STRING1789          "Edimax (Server Push Mode)"
     IDS_STRING1790          "Burn %d%%"
     IDS_STRING1791          "Burn..."
 END
@@ -6971,7 +6964,6 @@ BEGIN
     IDS_STRING1836          "Big"
     IDS_STRING1837          "Medium"
     IDS_STRING1838          "Small"
-    IDS_STRING1839          "Edimax (Client Poll Mode)"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -6996,8 +6988,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_STRING1840          "TP-Link (Server Push Mode)"
-    IDS_STRING1841          "TP-Link (Client Poll Mode)"
     IDS_STRING1842          "On first movement frame"
     IDS_STRING1843          "After Save,Email,Ftp"
     IDS_STRING1844          "Det"

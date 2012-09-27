@@ -82,16 +82,16 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 				}
 				break;
 			}
-			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1549, "Axis (Server Push Mode)"); break;
-			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1550, "Axis (Client Poll Mode)"); break;
-			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + ML_STRING(1551, "Panasonic (Server Push Mode)"); break;
-			case CVideoDeviceDoc::PANASONIC_CP	: sTitle += CString(_T(" , ")) + ML_STRING(1552, "Panasonic (Client Poll Mode)"); break;
-			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1553, "Pixord or NetComm (Server Push Mode)"); break;
-			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"); break;
-			case CVideoDeviceDoc::EDIMAX_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1789, "Edimax (Server Push Mode)"); break;
-			case CVideoDeviceDoc::EDIMAX_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1839, "Edimax (Client Poll Mode)"); break;
-			case CVideoDeviceDoc::TPLINK_SP		: sTitle += CString(_T(" , ")) + ML_STRING(1840, "TP-Link (Server Push Mode)"); break;
-			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + ML_STRING(1841, "TP-Link (Client Poll Mode)"); break;
+			case CVideoDeviceDoc::AXIS_SP		: sTitle += CString(_T(" , ")) + _T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + _T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PANASONIC_CP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + _T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + _T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::EDIMAX_SP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::EDIMAX_CP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::TPLINK_SP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			default : break;
 		}
 		if (pDoc->m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)

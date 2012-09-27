@@ -60,16 +60,16 @@ BOOL CHostPortDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	pComboBox->AddString(ML_STRING(1547, "Internal UDP Server"));
 	pComboBox->AddString(ML_STRING(1548, "Other HTTP Device"));
-	pComboBox->AddString(ML_STRING(1549, "Axis (Server Push Mode)"));
-	pComboBox->AddString(ML_STRING(1550, "Axis (Client Poll Mode)"));
-	pComboBox->AddString(ML_STRING(1551, "Panasonic (Server Push Mode)"));
-	pComboBox->AddString(ML_STRING(1552, "Panasonic (Client Poll Mode)"));
-	pComboBox->AddString(ML_STRING(1553, "Pixord or NetComm (Server Push Mode)"));
-	pComboBox->AddString(ML_STRING(1554, "Pixord or NetComm (Client Poll Mode)"));
-	pComboBox->AddString(ML_STRING(1789, "Edimax (Server Push Mode)"));
-	pComboBox->AddString(ML_STRING(1839, "Edimax (Client Poll Mode)"));
-	pComboBox->AddString(ML_STRING(1840, "TP-Link (Server Push Mode)"));
-	pComboBox->AddString(ML_STRING(1841, "TP-Link (Client Poll Mode)"));
+	pComboBox->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBox->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBox->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBox->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBox->AddString(_T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBox->AddString(_T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBox->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBox->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBox->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBox->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 
 	CDialog::OnInitDialog();
 
