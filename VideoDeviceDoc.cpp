@@ -4710,11 +4710,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Update m_ZoomRect and show the Please wait... message
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 
-	// Device First Run, ForceDeviceFirstRun is a new setting
-	// -> for backward compatibility default must be FALSE
-	m_bDeviceFirstRun = pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ||
-						(BOOL)pApp->GetProfileInt(sSection, _T("ForceDeviceFirstRun"), FALSE);
-	pApp->WriteProfileInt(sSection, _T("ForceDeviceFirstRun"), FALSE); // reset here, not in SaveSettings()!
+	// Device First Run
+	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ||
+						(BOOL)pApp->GetProfileInt(sSection, _T("RestoreWebFiles"), FALSE));
 
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));

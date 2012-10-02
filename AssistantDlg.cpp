@@ -72,6 +72,10 @@ BOOL CAssistantDlg::OnInitDialog()
 	CString sAutoSaveDir = m_pDoc->GetAutoSaveDir();
 	m_pDoc->MicroApacheCheckWebFiles(sAutoSaveDir);
 
+	// Clear restore web files flag
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("RestoreWebFiles"), FALSE);
+
 	// Init Combo Boxes
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 	if (pComboBox)

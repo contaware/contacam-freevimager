@@ -79,7 +79,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 				::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 				TCHAR achKey[MAX_KEY_BUFFER];
 				DWORD cbName;
-				for (int i = 0 ; i < cSubKeys; i++)
+				for (DWORD i = 0 ; i < cSubKeys; i++)
 				{ 
 					cbName = MAX_KEY_BUFFER;
 					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
@@ -134,7 +134,7 @@ void CDeleteCamFoldersDlg::OnOK()
 			// Delete folder
 			::DeleteToRecycleBin(sDirName, FALSE, GetSafeHwnd());
 			
-			// Force web files copy, Assistant Dialog pop-up and autorun-clear for all devices which save to the above deleted folder
+			// Web files copy, Assistant Dialog pop-up and autorun-clear for all devices which save to the above deleted folder
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
@@ -149,7 +149,7 @@ void CDeleteCamFoldersDlg::OnOK()
 						sDirName.CompareNoCase(sDetectionAutoSaveDir) == 0	||
 						sDirName.CompareNoCase(sSnapshotAutoSaveDir) == 0)
 					{
-						::AfxGetApp()->WriteProfileInt(m_DevicePathNames[i], _T("ForceDeviceFirstRun"), TRUE);
+						::AfxGetApp()->WriteProfileInt(m_DevicePathNames[i], _T("RestoreWebFiles"), TRUE);
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
 					}
 				}
