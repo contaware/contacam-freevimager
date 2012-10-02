@@ -5160,10 +5160,7 @@ void CVideoDeviceDoc::SaveSettings()
 	else
 	{
 		if (m_bResetSettings)
-		{
-			TCHAR s[2] = {_T('\0'), _T('\0')};
-			::WritePrivateProfileSection(sSection, s, pApp->m_pszProfileName);
-		}
+			::WritePrivateProfileString(sSection, NULL, NULL, pApp->m_pszProfileName);
 		else
 		{
 			// Ini file writing is slow, especially on memory sticks
