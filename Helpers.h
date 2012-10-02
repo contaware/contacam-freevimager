@@ -213,6 +213,9 @@ extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 extern LPVOID new16align(unsigned int size); // size in bytes
 extern void delete16align(LPVOID ptr);
 
+// Get the local NetBIOS computer name
+extern CString GetComputerName();
+
 // Get the Total Physical Memory in MB installed on the computer
 // or available to the OS
 extern int GetTotPhysMemMB(BOOL bInstalled);

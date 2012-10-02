@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.0.7 (October xxx 2012)
 
-- Added strings 1865 and 1866
+- Added strings 1865, 1866 and 1867
 - Removed strings 1549, 1550, 1551, 1552, 1553, 1554, 1789, 1839, 1840, 1841
 - Corrected Server Push and Client Poll usage instructions translations in dialog 185
 

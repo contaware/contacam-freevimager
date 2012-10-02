@@ -2327,6 +2327,16 @@ void delete16align(LPVOID ptr)
 	delete [] (LPBYTE)(((LPVOID*)ptr)[-1]);
 }
 
+CString GetComputerName()
+{
+	TCHAR szComputerName[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD dwSize = MAX_COMPUTERNAME_LENGTH + 1;
+	if (GetComputerName(szComputerName, &dwSize))
+		return CString(szComputerName);
+	else
+		return _T("");
+}
+
 int GetTotPhysMemMB(BOOL bInstalled)
 {
 	/* The GetPhysicallyInstalledSystemMemory function retrieves

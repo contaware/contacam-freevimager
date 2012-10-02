@@ -7017,6 +7017,7 @@ BEGIN
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "Server Push Mode"
     IDS_STRING1866          "Client Poll Mode"
+    IDS_STRING1867          "or type in Web Browser's address bar: http://"
 END
 
 #endif    // English (U.S.) resources

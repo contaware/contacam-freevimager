@@ -651,6 +651,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		}
 	}
 
+	// Redraw web server port
+	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+
 	EndWaitCursor();
 }
 

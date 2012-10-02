@@ -176,6 +176,19 @@ void CMDIClientWnd::OnPaint()
 					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
 					NULL);
 	s.ReleaseBuffer();
+
+	rcDraw.top += nLineHeight;
+	if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
+		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar: http://") + _T("%s)"), ::GetComputerName());
+	else
+		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar: http://") + _T("%s:%d)"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	::DrawTextEx(	memDC.GetSafeHdc(),
+					s.GetBuffer(s.GetLength() + 1),
+					s.GetLength(),
+					&rcDraw,
+					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
+					NULL);
+	s.ReleaseBuffer();
 #else
 	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
 	::DrawTextEx(	memDC.GetSafeHdc(),

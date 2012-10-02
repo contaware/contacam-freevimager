@@ -398,6 +398,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
 
 		// Do not use registry if application is not installed
+		// Note: on newer NT systems the ini files are not limited to 64k
 #ifndef _DEBUG
 		CString sSoftwareCompany = CString(_T("Software\\")) + CString(MYCOMPANY) + CString(_T("\\"));
 		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName))
@@ -941,8 +942,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				// Reset silent install flag
 				WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
-				// Auto-starts
 #ifdef VIDEODEVICEDOC
+				// Redraw web server port
+				::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+
+				// Auto-starts
 				if (!m_bForceSeparateInstance)
 				{
 					// Start Micro Apache
