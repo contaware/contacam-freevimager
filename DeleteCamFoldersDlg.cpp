@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "uimager.h"
+#include "VideoDeviceDoc.h"
 #include "DeleteCamFoldersDlg.h"
 
 #ifdef _DEBUG
@@ -49,6 +50,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
+	// Enum all folders
 	CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	sMicroApacheDocRoot.TrimRight(_T('\\'));
 	m_DirFind.Init(sMicroApacheDocRoot + _T("\\*"));
@@ -62,6 +64,59 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 		m_CamFolders.AddString(sDirName);
 	}
 	
+	// Enum all device entries in registry or ini file
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	{
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+		{
+			const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
+			HKEY hKey;
+			if (::RegOpenKeyEx(	HKEY_CURRENT_USER,
+								_T("Software\\") + CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT),
+								0, KEY_READ, &hKey) == ERROR_SUCCESS)
+			{
+				DWORD cSubKeys = 0;
+				::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+				TCHAR achKey[MAX_KEY_BUFFER];
+				DWORD cbName;
+				for (int i = 0 ; i < cSubKeys; i++)
+				{ 
+					cbName = MAX_KEY_BUFFER;
+					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
+					CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
+					CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("DetectionAutoSaveDir"), _T(""));
+					CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("SnapshotAutoSaveDir"), _T(""));
+					if (sRecordAutoSaveDir != _T("")	&&
+						sDetectionAutoSaveDir != _T("")	&&
+						sSnapshotAutoSaveDir != _T(""))
+						m_DevicePathNames.Add(achKey);
+				}
+				::RegCloseKey(hKey);
+			}
+		}
+		else
+		{
+			const int MAX_SECTIONNAMES_BUFFER = 1024 * 1024; // 1 MB is enough!
+			TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
+			::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, ::AfxGetApp()->m_pszProfileName);
+			TCHAR* sSource = pSectionNames;
+			while (*sSource != 0) // If 0 -> end of list
+			{
+				CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
+				CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("DetectionAutoSaveDir"), _T(""));
+				CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("SnapshotAutoSaveDir"), _T(""));
+				if (sRecordAutoSaveDir != _T("")	&&
+					sDetectionAutoSaveDir != _T("")	&&
+					sSnapshotAutoSaveDir != _T(""))
+					m_DevicePathNames.Add(sSource);
+				while (*sSource != 0)
+					sSource++;
+				sSource++; // Skip the 0
+			}
+			delete [] pSectionNames;
+		}
+	}
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -72,7 +127,34 @@ void CDeleteCamFoldersDlg::OnOK()
 	for (int pos = 0 ; pos < m_DirFind.GetDirsCount() ; pos++)
 	{
 		if (m_CamFolders.GetSel(pos) > 0)
-			::DeleteToRecycleBin(m_DirFind.GetDirName(pos), FALSE, GetSafeHwnd());
+		{
+			CString sDirName(m_DirFind.GetDirName(pos));
+			sDirName.TrimRight(_T('\\'));
+
+			// Delete folder
+			::DeleteToRecycleBin(sDirName, FALSE, GetSafeHwnd());
+			
+			// Force web files copy, Assistant Dialog pop-up and autorun-clear for all devices which save to the above deleted folder
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			{
+				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
+				{
+					CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
+					CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("DetectionAutoSaveDir"), _T(""));
+					CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("SnapshotAutoSaveDir"), _T(""));
+					sRecordAutoSaveDir.TrimRight(_T('\\'));
+					sDetectionAutoSaveDir.TrimRight(_T('\\'));
+					sSnapshotAutoSaveDir.TrimRight(_T('\\'));
+					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0		||
+						sDirName.CompareNoCase(sDetectionAutoSaveDir) == 0	||
+						sDirName.CompareNoCase(sSnapshotAutoSaveDir) == 0)
+					{
+						::AfxGetApp()->WriteProfileInt(m_DevicePathNames[i], _T("ForceDeviceFirstRun"), TRUE);
+						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
+					}
+				}
+			}
+		}
 	}
 	EnableWindow(TRUE);
 	CDialog::OnOK();

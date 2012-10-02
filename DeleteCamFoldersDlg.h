@@ -37,6 +37,7 @@ public:
 
 // Implementation
 protected:
+	CStringArray m_DevicePathNames;
 	CSortableFileFind m_DirFind;
 	// Generated message map functions
 	//{{AFX_MSG(CDeleteCamFoldersDlg)
