@@ -2278,7 +2278,7 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 					double* pFragmentation/*=NULL*/)
 {
 	MEMORY_BASIC_INFORMATION memory_info;
-	memset(&memory_info, 0, sizeof (memory_info));
+	memset(&memory_info, 0, sizeof(memory_info));
 	DWORD region = 0;
 	DWORD sum_free = 0, max_free = 0;
 	DWORD sum_reserve = 0, max_reserve = 0;

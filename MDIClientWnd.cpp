@@ -179,9 +179,9 @@ void CMDIClientWnd::OnPaint()
 
 	rcDraw.top += nLineHeight;
 	if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
-		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar: http://") + _T("%s)"), ::GetComputerName());
+		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(" http://%s)"), ::GetComputerName());
 	else
-		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar: http://") + _T("%s:%d)"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(" http://%s:%d)"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
 	::DrawTextEx(	memDC.GetSafeHdc(),
 					s.GetBuffer(s.GetLength() + 1),
 					s.GetLength(),
