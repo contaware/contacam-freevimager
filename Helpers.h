@@ -59,7 +59,7 @@ extern BOOL IsReadonly(LPCTSTR lpszFileName);
 // Do we have write access to the given file
 extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
 
-// API file / directory operations
+// File / directory operations
 extern BOOL TakeOwnership(LPCTSTR lpszFile);
 extern BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege,BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
@@ -71,13 +71,7 @@ extern BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles = FALSE);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
 										int* pFilesCount = NULL, // optional Files Count
 										CWorkerThread* pThread = NULL);
-
-// Shell file / directory operations
-extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE, HWND hwnd = NULL);					// delete file or directory
-extern BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent = TRUE, HWND hwnd = NULL);	// rename file or directory
-extern BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE, HWND hwnd = NULL);		// move file or directory
-extern BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent = TRUE, HWND hwnd = NULL);		// copy file or directory
-extern BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent = TRUE, HWND hwnd = NULL);
+extern BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent = TRUE, HWND hwnd = NULL); // delete file or directory
 
 // Date / Time Formatting According to Local Settings
 extern CString MakeTimeLocalFormat(	const CTime& Time,

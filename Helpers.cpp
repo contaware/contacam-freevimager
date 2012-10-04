@@ -932,7 +932,7 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	TCHAR pFrom[MAX_PATH+1]; // +1 for double NULL Termination
-	memset(pFrom, 0, MAX_PATH+1);
+	memset(pFrom, 0, (MAX_PATH+1) * sizeof(TCHAR));
 	_tcsncpy(pFrom, szName, MAX_PATH);
 
 	SHFILEOPSTRUCT FileOp;
@@ -945,117 +945,6 @@ BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*
     FileOp.lpszProgressTitle = NULL; 
 	FileOp.fAnyOperationsAborted = FALSE; 
 	FileOp.wFunc = FO_DELETE;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Rename
-BOOL RenameShell(LPCTSTR szOldName, LPCTSTR szNewName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
-{
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+1];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+1);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szOldName, MAX_PATH);
-	_tcsncpy(pTo, szNewName, MAX_PATH);
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = hwnd; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_RENAME;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Move
-BOOL MoveShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
-{
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+1];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+1);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szFromName, MAX_PATH);
-	_tcsncpy(pTo, szToName, MAX_PATH);
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = hwnd; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_MOVE;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Copy
-BOOL CopyShell(LPCTSTR szFromName, LPCTSTR szToName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
-{
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+1];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+1);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szFromName, MAX_PATH);
-	_tcsncpy(pTo, szToName, MAX_PATH);
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = hwnd; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_COPY;
-
-	return (SHFileOperation(&FileOp) == 0);
-}
-
-// Shell Directory Content Copy
-BOOL CopyDirContentShell(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
-{
-	// Check
-	if (_tcslen(szFromDir) <= 0 ||
-		_tcslen(szToDir) <= 0)
-		return FALSE;
-
-	// pFrom and pTo have to be double NULL terminated! 
-	TCHAR pFrom[MAX_PATH+5];
-	TCHAR pTo[MAX_PATH+1];
-	memset(pFrom, 0, MAX_PATH+5);
-	memset(pTo, 0, MAX_PATH+1);
-	_tcsncpy(pFrom, szFromDir, MAX_PATH);
-	_tcsncpy(pTo, szToDir, MAX_PATH);
-	int pos = _tcslen(szFromDir) - 1;
-	if (pFrom[pos++] != _T('\\')) 
-		pFrom[pos++] = _T('\\');
-	pFrom[pos++] = _T('*');
-	pFrom[pos++] = _T('.');
-	pFrom[pos++] = _T('*');
-
-	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = hwnd; 
-    FileOp.pFrom = pFrom;
-    FileOp.pTo = pTo;
-    FileOp.fFlags = bSilent ? FOF_SILENT | FOF_NOERRORUI | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR : 0;
-    FileOp.hNameMappings = NULL; 
-    FileOp.lpszProgressTitle = NULL; 
-	FileOp.fAnyOperationsAborted = FALSE; 
-	FileOp.wFunc = FO_COPY;
 
 	return (SHFileOperation(&FileOp) == 0);
 }
