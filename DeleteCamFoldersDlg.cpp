@@ -96,8 +96,9 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 		}
 		else
 		{
-			const int MAX_SECTIONNAMES_BUFFER = 1024 * 1024; // 1 MB is enough!
+			const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
 			TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
+			memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
 			::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, ::AfxGetApp()->m_pszProfileName);
 			TCHAR* sSource = pSectionNames;
 			while (*sSource != 0) // If 0 -> end of list
