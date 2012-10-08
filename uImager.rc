@@ -907,8 +907,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
         MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
-        MENUITEM "All Next Image\tCtrl+ Space", ID_VIEW_ALL_NEXT_PICTURE
-        MENUITEM "All Prev. Image\tCtrl+ Backspace", 
+        MENUITEM "All Next Image\tCtrl+Space",  ID_VIEW_ALL_NEXT_PICTURE
+        MENUITEM "All Prev. Image\tCtrl+Backspace", 
                                                 ID_VIEW_ALL_PREVIOUS_PICTURE
         MENUITEM SEPARATOR
         MENUITEM "Hi Quality Stretch\tQ",       ID_VIEW_STRETCH_HALFTONE

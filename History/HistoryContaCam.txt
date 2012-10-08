@@ -4,6 +4,10 @@ VERSION HISTORY
 
 - Fixed possible timezone problem's by getting browser's timezone
   and setting it in PHP
+- The Other HTTP Device option of the Network dialog supports
+  many more ip cameras and performs higher frame-rates because
+  it first tries server push mode
+- Small fixes
 
 4.0.5 (August 27th 2012)
 

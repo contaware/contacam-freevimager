@@ -14,3 +14,7 @@ Recording:
 Networking:
 -----------
 - UDP networking stream also audio
+
+Web Interface:
+--------------
+- Use jquerymobile for slider and other elements
