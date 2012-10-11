@@ -572,10 +572,8 @@ void CMovementDetectionPage::OnSendmailConfigure()
 	m_pDoc->m_SaveFrameListThread.Kill();
 
 	// SendMail Config Dialog
-	CSendMailConfigurationDlg dlg;
-	dlg.m_SendMailConfiguration = m_pDoc->m_MovDetSendMailConfiguration;
-	if (dlg.DoModal() == IDOK)
-		m_pDoc->m_MovDetSendMailConfiguration = dlg.m_SendMailConfiguration;
+	CSendMailConfigurationDlg dlg(m_pDoc);
+	dlg.DoModal();
 
 	// Restart Save Frame List Thread
 	m_pDoc->m_SaveFrameListThread.Start();

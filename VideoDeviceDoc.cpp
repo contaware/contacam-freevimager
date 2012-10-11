@@ -884,7 +884,8 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 																						const CString& sGIFFileName,
 																						const CStringArray& sJPGFileNames)
 {
-	CString sSubject(Time.Format(_T("Movement Detection on %A, %d %B %Y at %H:%M:%S")));
+	CString sSubject(_T("Movement Detection: ") + m_pDoc->GetAssignedDeviceName() + _T(" on ") +
+				::MakeDateLocalFormat(Time) + _T(" at ") + ::MakeTimeLocalFormat(Time, TRUE));
 	m_pDoc->m_MovDetSendMailConfiguration.m_sSubject = sSubject;
 	CStringArray sFileNames;
 	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
@@ -2027,7 +2028,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 			{
 				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
 				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection!");
+				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection: ") + m_pDoc->GetAssignedDeviceName();
 
 				// Attachment(s)
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
@@ -2064,10 +2065,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 				related.SetContentType(_T("multipart/related"));
 				CPJNSMTPBodyPart html;
 				CString sHtml(_T("<html><body>"));
-				if (sFiles.GetSize() > 0)
-					sHtml += _T("<p><b>Movement Detection:</b></p>");
-				else
-					sHtml += _T("<p><b>Movement Detection!</b></p>");
+				sHtml += _T("<p>Movement Detection: ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>");
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
 					CString s;

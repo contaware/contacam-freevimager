@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "uimager.h"
+#include "Helpers.h"
 #include "VideoDeviceDoc.h"
 #include "SendMailConfigurationDlg.h"
 
@@ -17,12 +18,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSendMailConfigurationDlg dialog
 
-CSendMailConfigurationDlg::CSendMailConfigurationDlg()
+CSendMailConfigurationDlg::CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc)
 	: CDialog(CSendMailConfigurationDlg::IDD, NULL)
 {
 	//{{AFX_DATA_INIT(CSendMailConfigurationDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+	ASSERT_VALID(pDoc);
+	m_pDoc = pDoc;
+	m_SendMailConfiguration = pDoc->m_MovDetSendMailConfiguration;
 }
 
 void CSendMailConfigurationDlg::DoDataExchange(CDataExchange* pDX)
@@ -215,6 +219,7 @@ void CSendMailConfigurationDlg::CopyToStruct()
 void CSendMailConfigurationDlg::OnOK() 
 {
 	CopyToStruct();
+	m_pDoc->m_MovDetSendMailConfiguration = m_SendMailConfiguration;
 	CDialog::OnOK();
 }
 
@@ -235,13 +240,14 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		{
 			// Subject
 			CTime Time = CTime::GetCurrentTime();
-			CString sSubject(Time.Format(_T("Movement Detection on %A, %d %B %Y at %H:%M:%S")));
+			CString sSubject(_T("Test Email: ") + m_pDoc->GetAssignedDeviceName() + _T(" on ") +
+				::MakeDateLocalFormat(Time) + _T(" at ") + ::MakeTimeLocalFormat(Time, TRUE));
 			m_SendMailConfiguration.m_sSubject = sSubject;
 
 			if (m_SendMailConfiguration.m_bHTML == FALSE)
 			{
 				m_SendMailConfiguration.m_bMime = FALSE;
-				m_SendMailConfiguration.m_sBody = _T("Movement Detection Test Email");
+				m_SendMailConfiguration.m_sBody = _T("Test Email: ") + m_pDoc->GetAssignedDeviceName();
 
 				// No Attachment(s)
 				m_SendMailConfiguration.m_sFiles = _T("");
@@ -266,7 +272,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				related.SetContentType(_T("multipart/related"));
 
 				CPJNSMTPBodyPart html;
-				html.SetText(_T("<p><b>Movement Detection Test Email</b></p>"));
+				html.SetText(_T("<p>Test Email: ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>"));
 				html.SetContentType(_T("text/html"));
 
 				related.AddChildBodyPart(html);

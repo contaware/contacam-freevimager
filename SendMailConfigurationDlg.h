@@ -18,7 +18,7 @@ class CSendMailConfigurationDlg : public CDialog
 {
 // Construction
 public:
-	CSendMailConfigurationDlg();
+	CSendMailConfigurationDlg(CVideoDeviceDoc* pDoc);
 	CVideoDeviceDoc::SendMailConfigurationStruct m_SendMailConfiguration;
 // Dialog Data
 	//{{AFX_DATA(CSendMailConfigurationDlg)
@@ -35,6 +35,7 @@ public:
 
 // Implementation
 protected:
+	CVideoDeviceDoc* m_pDoc;
 	void CopyToStruct();
 	// Generated message map functions
 	//{{AFX_MSG(CSendMailConfigurationDlg)

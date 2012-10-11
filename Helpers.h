@@ -255,6 +255,9 @@ extern CString GetASCIICompatiblePath(const CString& sPath);
 // set bEncodeReserved to FALSE if encoding an entire URL
 extern CString UrlEncode(const CString& s, BOOL bEncodeReserved);
 
+// Html encode given string
+extern CString HtmlEncode(CString s);
+
 // Unicode (=UTF16) <-> UTF8 Conversion
 extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);	// Note: pUtf8 must not be NULL terminated.
 extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL terminated buffer,

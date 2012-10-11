@@ -2684,6 +2684,16 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 	return sEscaped;
 }
 
+CString HtmlEncode(CString s)
+{
+	s.Replace(_T("&"), _T("&amp;")); // must be first!
+	s.Replace(_T("\""), _T("&quot;"));
+	s.Replace(_T("\'"), _T("&apos;"));
+	s.Replace(_T("<"), _T("&lt;"));
+	s.Replace(_T(">"), _T("&gt;"));
+	return s;
+}
+
 CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len)
 {
 	// Check
