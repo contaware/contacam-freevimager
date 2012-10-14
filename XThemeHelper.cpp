@@ -66,6 +66,7 @@ PFNISTHEMEACTIVE					CXThemeHelper::m_IsThemeActive = NULL;
 PFNOPENTHEMEDATA					CXThemeHelper::m_OpenThemeData = NULL;
 PFNGETTHEMECOLOR					CXThemeHelper::m_GetThemeColor = NULL;
 PFNGETTHEMESYSCOLOR					CXThemeHelper::m_GetThemeSysColor = NULL;
+PFNENABLETHEMEDIALOGTEXTURE			CXThemeHelper::m_EnableThemeDialogTexture = NULL;
 HMODULE 							CXThemeHelper::m_hThemeLib = NULL;
 BOOL								CXThemeHelper::m_bThemeLibLoaded = FALSE;
 int									CXThemeHelper::m_nUseCount = 0;
@@ -108,8 +109,10 @@ void CXThemeHelper::Init()
 																			"IsThemeBackgroundPartiallyTransparent");
 		m_GetThemeColor					= (PFNGETTHEMECOLOR)GetProcAddress(	m_hThemeLib,
 																			"GetThemeColor");
-		m_GetThemeSysColor					= (PFNGETTHEMESYSCOLOR)GetProcAddress(	m_hThemeLib,
-																					"GetThemeSysColor");
+		m_GetThemeSysColor				= (PFNGETTHEMESYSCOLOR)GetProcAddress(	m_hThemeLib,
+																				"GetThemeSysColor");
+		m_EnableThemeDialogTexture		= (PFNENABLETHEMEDIALOGTEXTURE)GetProcAddress(	m_hThemeLib,
+																						"EnableThemeDialogTexture");
 
 		if (m_CloseThemeData &&
 			m_DrawThemeBackground &&
@@ -121,7 +124,8 @@ void CXThemeHelper::Init()
 			m_DrawThemeParentBackground &&
 			m_IsThemeBackgroundPartiallyTransparent &&
 			m_GetThemeColor &&
-			m_GetThemeSysColor)
+			m_GetThemeSysColor &&
+			m_EnableThemeDialogTexture)
 		{
 			m_bThemeLibLoaded = TRUE;
 		}
@@ -413,4 +417,16 @@ COLORREF CXThemeHelper::GetThemeSysColor(HTHEME hTheme,
 		return ::GetSysColor(iColorID);
 }
 
+BOOL CXThemeHelper::EnableThemeDialogTexture(HWND hwnd, DWORD dwFlags)
+{
+	BOOL ok = FALSE;
 
+	if (m_bThemeLibLoaded)
+	{
+		HRESULT hr = m_EnableThemeDialogTexture(hwnd, dwFlags);
+		if (SUCCEEDED(hr))
+			ok = TRUE;
+	}
+
+	return ok;
+}

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TabPageSSL.h"
+#include "XThemeHelper.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -37,6 +38,17 @@ CTabPageSSL::~CTabPageSSL () {
 
 /////////////////////////////////////////////////////////////////////////////
 // Message Handlers
+
+BOOL CTabPageSSL::OnInitDialog() 
+{
+	CDialog::OnInitDialog();
+
+	if (ThemeHelper.IsAppThemed() && ThemeHelper.IsThemeComCtl32())
+		ThemeHelper.EnableThemeDialogTexture(this->m_hWnd, ETDT_ENABLETAB);
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
 
 void CTabPageSSL::OnOK (void) {
 	//

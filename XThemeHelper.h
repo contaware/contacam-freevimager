@@ -53,6 +53,7 @@ typedef HRESULT (__stdcall *PFNGETTHEMECOLOR)(	HTHEME hTheme, int iPartId,
 												int iStateId, int iPropId,
 												OUT COLORREF *pColor);
 typedef HRESULT (__stdcall *PFNGETTHEMESYSCOLOR)(HTHEME hTheme, int iColorID);
+typedef HRESULT (__stdcall *PFNENABLETHEMEDIALOGTEXTURE)(HWND hwnd, DWORD dwFlags);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -109,6 +110,7 @@ public:
 							OUT COLORREF *pColor);
 	COLORREF GetThemeSysColor(	HTHEME hTheme,
 								int iColorID);
+	BOOL EnableThemeDialogTexture(HWND hwnd, DWORD dwFlags);
 
 // Implementation
 private:
@@ -123,6 +125,7 @@ private:
 	static PFNOPENTHEMEDATA					m_OpenThemeData;
 	static PFNGETTHEMECOLOR					m_GetThemeColor;
 	static PFNGETTHEMESYSCOLOR				m_GetThemeSysColor;
+	static PFNENABLETHEMEDIALOGTEXTURE		m_EnableThemeDialogTexture;
 	static HMODULE							m_hThemeLib;
 	static BOOL								m_bThemeLibLoaded;
 	static int								m_nUseCount;

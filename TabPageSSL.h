@@ -25,6 +25,7 @@ public:
 
 protected:
 // Message Handlers
+	virtual BOOL OnInitDialog();
 	virtual BOOL OnCommand (WPARAM wParam, LPARAM lParam);
 	virtual BOOL OnNotify (WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 	virtual void OnOK (void);
