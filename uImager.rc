@@ -2294,7 +2294,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,27,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2758,7 +2758,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Batch Conversion, Rename and Slideshow"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "",IDC_RADIO_INPUT,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,11,16,10,10
@@ -4256,14 +4256,14 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,101,10
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,116,16,101,17
     EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,351,19,34,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",
-                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,101,45,161,18
+                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,101,46,161,18
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,300,46,101,17
     CONTROL         "Enable Snapshots (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
@@ -4287,10 +4287,10 @@ BEGIN
                     WS_TABSTOP,13,192,99,10
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
-                    182,190,128,18
+                    190,190,120,18
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,350,194,51,9
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,177,211,14,12,
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,183,211,14,12,
                     ES_RIGHT | ES_NUMBER
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,238,89,10
@@ -4303,19 +4303,19 @@ BEGIN
     LTEXT           "sec",IDC_STATIC2477,389,21,14,10
     GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,120,401,34
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,162,401,70
-    LTEXT           "quality",IDC_COMPRESSION_QUALITY_NUM,265,49,17,11
+    LTEXT           "quality",IDC_COMPRESSION_QUALITY_NUM,265,50,17,11
     LTEXT           "Jpeg Compression Quality",IDC_STATIC2480,13,50,82,8
     LTEXT           "Shot Dir",IDC_TEXT_DIR,100,238,26,8,SS_NOTIFY | NOT 
                     WS_GROUP
     GROUPBOX        "General Settings",IDC_STATIC2481,7,2,401,69
     LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,116,213,58,8
-    LTEXT           "frames/sec",IDC_STATIC2483,195,213,40,8
+    LTEXT           "frames/sec",IDC_STATIC2483,206,213,40,8
     LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,194,17,
                     11
     GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,77,401,36
     LTEXT           "From",IDC_STATIC2485,228,93,16,8
     LTEXT           "To",IDC_STATIC2486,323,93,10,8
-    LTEXT           "Compression Quality",IDC_STATIC2487,116,193,64,8
+    LTEXT           "Compression Quality",IDC_STATIC2487,116,193,72,8
     LTEXT           "Keep dir content for",IDC_STATIC2488,7,255,63,8
     LTEXT           "day(s)",IDC_STATIC2489,103,255,20,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
