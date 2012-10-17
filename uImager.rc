@@ -7018,6 +7018,7 @@ BEGIN
     IDS_STRING1865          "Server Push Mode"
     IDS_STRING1866          "Client Poll Mode"
     IDS_STRING1867          "or type in Web Browser's address bar"
+    IDS_STRING1868          "or"
 END
 
 #endif    // English (U.S.) resources

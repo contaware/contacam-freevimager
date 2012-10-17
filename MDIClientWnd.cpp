@@ -18,6 +18,11 @@ CMDIClientWnd::CMDIClientWnd()
 	m_nFontSize = 10;
 	m_sFontFace = _T("Verdana");
 	m_crFontColor = RGB(255,255,255);
+	m_crLinkColor = RGB(0x99,0xdd,0xff);
+	m_nLeftMargin = 2;
+	m_nTopMargin = 0;
+	m_rcLinkComputer = CRect(0,0,0,0);
+	m_rcLinkLocalhost = CRect(0,0,0,0);
 }
 
 CMDIClientWnd::~CMDIClientWnd()
@@ -31,6 +36,8 @@ BEGIN_MESSAGE_MAP(CMDIClientWnd, CWnd)
 	ON_WM_ERASEBKGND()
 	ON_WM_PAINT()
 	ON_WM_SIZE()
+	ON_WM_SETCURSOR()
+	ON_WM_LBUTTONUP()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -52,18 +59,29 @@ void CMDIClientWnd::OnPaint()
 	// Erase Background
 	memDC.FillSolidRect(&rcClient, ::GetSysColor(COLOR_APPWORKSPACE));
 
-	// Font Sizes
-	int nFontHeight = ::MulDiv(m_nFontSize, ::GetDeviceCaps(dc.GetSafeHdc(), LOGPIXELSY), 72);
-
 	// Create Font
 	if (!m_bFontCreated)
 	{
+		int nFontHeight = ::MulDiv(m_nFontSize, ::GetDeviceCaps(dc.GetSafeHdc(), LOGPIXELSY), 72);
 		m_Font.DeleteObject();
+		m_FontUnderline.DeleteObject();
 		m_Font.CreateFont(	-nFontHeight,
 							0, 0, 0,
 							FW_NORMAL,
 							FALSE,		// Italic
 							FALSE,		// Underline
+							FALSE,		// Strikethrough
+							DEFAULT_CHARSET,
+							OUT_CHARACTER_PRECIS,
+							CLIP_CHARACTER_PRECIS,
+							ANTIALIASED_QUALITY,
+							DEFAULT_PITCH | FF_DONTCARE,
+							m_sFontFace);
+		m_FontUnderline.CreateFont(	-nFontHeight,
+							0, 0, 0,
+							FW_NORMAL,
+							FALSE,		// Italic
+							TRUE,		// Underline
 							FALSE,		// Strikethrough
 							DEFAULT_CHARSET,
 							OUT_CHARACTER_PRECIS,
@@ -85,119 +103,76 @@ void CMDIClientWnd::OnPaint()
 	memDC.GetTextMetrics(&TextMetrics);
 	int nLineHeight = TextMetrics.tmHeight;
 	
-	// Draw
-	const int nLeftRightMargin = 2;
-	const int nTopMargin = 0;
-	const int nBottomMargin = 2;
-	CRect rcDraw(	nLeftRightMargin,
-					nTopMargin,
-					rcClient.right - nLeftRightMargin,
-					rcClient.bottom - nBottomMargin);
+	// Draw app name and version
+	CRect rcDraw(	m_nLeftMargin,
+					m_nTopMargin,
+					rcClient.right,
+					rcClient.bottom);
 	rcDraw.top += TextMetrics.tmAscent;
-
 	CString s;
+	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
+	DrawT(memDC, s, rcDraw);
 
 #ifdef VIDEODEVICEDOC
-	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
-	::DrawTextEx(memDC.GetSafeHdc(),
-				s.GetBuffer(s.GetLength() + 1),
-				s.GetLength(),
-				&rcDraw,
-				DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-				NULL);
-	s.ReleaseBuffer();
-
+	// Draw point 1.
 	rcDraw.top += 2*nLineHeight;
-	s = ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
-
+	DrawT(memDC, ML_STRING(1751, "1. Make sure your video capture device is plugged-in and drivers are installed"), rcDraw);
 	rcDraw.top += nLineHeight;
-	s = _T("    ") + ML_STRING(1752, "(network and DV cameras do not need specific drivers)");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+	DrawT(memDC, _T("    ") + ML_STRING(1752, "(network and DV cameras do not need specific drivers)"), rcDraw);
 
+	// Draw point 2.
 	rcDraw.top += nLineHeight;
-	s = ML_STRING(1753, "2. From the Capture menu select the device you want to use");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+	DrawT(memDC, ML_STRING(1753, "2. From the Capture menu select the device you want to use"), rcDraw);
+	rcDraw.top += nLineHeight;
+	DrawT(memDC, _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and device type)"), rcDraw);
 
+	// Draw point 3.
 	rcDraw.top += nLineHeight;
-	s = _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and device type)");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+	DrawT(memDC, ML_STRING(1755, "3. Follow the Device Assistant"), rcDraw);
+	rcDraw.top += nLineHeight;
+	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it is not popping-up select Device Assistant from the Capture menu)"), rcDraw);
 
-	rcDraw.top += nLineHeight;
-	s = ML_STRING(1755, "3. Follow the Device Assistant");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+	// Draw point 4.
+	rcDraw.top += nLineHeight;	
+	DrawT(memDC, ML_STRING(1757, "4. Choose Browse from the View menu") +  _T(" ") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(":"), rcDraw);
 
+	// Draw indent
 	rcDraw.top += nLineHeight;
-	s = _T("    ") + ML_STRING(1756, "(if it is not popping-up select Device Assistant from the Capture menu)");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+	CRect rcLastText = DrawTAndCalcRect(memDC, _T("    "), rcDraw);
 
-	rcDraw.top += nLineHeight;
-	s = ML_STRING(1757, "4. Choose Browse from the View menu");
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
-
-	rcDraw.top += nLineHeight;
+	// Draw computer link
+	rcDraw.left = rcLastText.right;
+	CFont* pPrevFont = memDC.SelectObject(&m_FontUnderline);
+	COLORREF crPrevTextColor = memDC.SetTextColor(m_crLinkColor);
 	if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
-		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(" http://%s)"), ::GetComputerName());
+		s.Format(_T("http://%s"), ::GetComputerName());
 	else
-		s.Format(_T("    (") + ML_STRING(1867, "or type in Web Browser's address bar") + _T(" http://%s:%d)"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
-#else
-	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
-	::DrawTextEx(	memDC.GetSafeHdc(),
-					s.GetBuffer(s.GetLength() + 1),
-					s.GetLength(),
-					&rcDraw,
-					DT_END_ELLIPSIS | DT_WORD_ELLIPSIS | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
-					NULL);
-	s.ReleaseBuffer();
+		s.Format(_T("http://%s:%d"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	rcLastText = DrawTAndCalcRect(memDC, s, rcDraw);
+	memDC.SelectObject(pPrevFont);
+	memDC.SetTextColor(crPrevTextColor);
+	m_rcLinkComputer = rcLastText;
+	m_rcLinkComputer.top -= TextMetrics.tmAscent;
+	m_rcLinkComputer.bottom -= TextMetrics.tmAscent;
+
+	// Draw " or "
+	rcDraw.left = rcLastText.right;
+	rcLastText = DrawTAndCalcRect(memDC, _T(" ") + ML_STRING(1868, "or") + _T(" "), rcDraw);
+
+	// Draw localhost link
+	rcDraw.left = rcLastText.right;		
+	pPrevFont = memDC.SelectObject(&m_FontUnderline);
+	crPrevTextColor = memDC.SetTextColor(m_crLinkColor);
+	if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
+		s = _T("http://localhost");
+	else
+		s.Format(_T("http://localhost:%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	rcLastText = DrawTAndCalcRect(memDC, s, rcDraw);
+	memDC.SelectObject(pPrevFont);
+	memDC.SetTextColor(crPrevTextColor);
+	m_rcLinkLocalhost = rcLastText;
+	m_rcLinkLocalhost.top -= TextMetrics.tmAscent;
+	m_rcLinkLocalhost.bottom -= TextMetrics.tmAscent;
 #endif
 
 	// Clean-Up
@@ -207,8 +182,92 @@ void CMDIClientWnd::OnPaint()
 	memDC.SetTextColor(crOldTextColor);
 }
 
+void CMDIClientWnd::DrawT(CMyMemDC& memDC, CString s, CRect rcDraw)
+{
+	::DrawTextEx(	memDC.GetSafeHdc(),
+					s.GetBuffer(s.GetLength() + 1),
+					s.GetLength(),
+					&rcDraw,
+					DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
+					NULL);
+	s.ReleaseBuffer();
+}
+
+CRect CMDIClientWnd::DrawTAndCalcRect(CMyMemDC& memDC, CString s, CRect rcDraw)
+{
+	CRect rcLastText(rcDraw);
+	::DrawTextEx(	memDC.GetSafeHdc(),
+					s.GetBuffer(s.GetLength() + 1),
+					s.GetLength(),
+					&rcLastText,
+					DT_CALCRECT | DT_LEFT | DT_NOCLIP | DT_NOPREFIX,
+					NULL);
+	s.ReleaseBuffer();
+	DrawT(memDC, s, rcDraw);
+	return rcLastText;
+}
+
 void CMDIClientWnd::OnSize(UINT nType, int cx, int cy) 
 {
 	Invalidate();
 	CWnd::OnSize(nType, cx, cy);
+}
+
+BOOL CMDIClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+{
+#ifdef VIDEODEVICEDOC
+	CPoint pt;
+	::GetCursorPos(&pt);
+	ScreenToClient(&pt); // Client coordinates of mouse position
+	if (nHitTest == HTCLIENT &&
+		(m_rcLinkComputer.PtInRect(pt) || m_rcLinkLocalhost.PtInRect(pt)))
+	{
+		// IDC_HAND_CURSOR has to be in Resource
+		HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_HAND_CURSOR);	
+		ASSERT(hCursor);
+		::SetCursor(hCursor);		
+		return TRUE;
+	}
+	else
+#endif
+		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+}
+
+void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+#ifdef VIDEODEVICEDOC
+	if (m_rcLinkComputer.PtInRect(point))
+	{
+		CString s;
+		if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
+			s.Format(_T("http://%s"), ::GetComputerName());
+		else
+			s.Format(_T("http://%s:%d"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+		BeginWaitCursor();
+		::ShellExecute(	NULL,
+						_T("open"),
+						::UrlEncode(s, FALSE),
+						NULL,
+						NULL,
+						SW_SHOWNORMAL);
+		EndWaitCursor();
+	}
+	else if (m_rcLinkLocalhost.PtInRect(point))
+	{
+		CString s;
+		if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
+			s = _T("http://localhost");
+		else
+			s.Format(_T("http://localhost:%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+		BeginWaitCursor();
+		::ShellExecute(	NULL,
+						_T("open"),
+						::UrlEncode(s, FALSE),
+						NULL,
+						NULL,
+						SW_SHOWNORMAL);
+		EndWaitCursor();
+	}
+#endif
+	CWnd::OnLButtonUp(nFlags, point);
 }
