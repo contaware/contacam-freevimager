@@ -69,6 +69,8 @@ public:
 
 // Implementation
 protected:
+	CString m_sLastValidApacheUsername;
+	BOOL m_bRejectingApacheUsernameChange;
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlgVideoDeviceDoc)
 	afx_msg void OnButtonClearall();
@@ -77,6 +79,7 @@ protected:
 	afx_msg void OnWebserverRootdir();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnCheckFullscreenbrowser();
+	afx_msg void OnUpdateAuthUsername();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

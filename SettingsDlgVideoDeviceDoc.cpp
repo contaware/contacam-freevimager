@@ -75,6 +75,10 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
+
+	// For validating apache user name
+	m_bRejectingApacheUsernameChange = FALSE;
+	m_sLastValidApacheUsername = m_sMicroApacheUsername;
 }
 
 void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
@@ -124,6 +128,7 @@ BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_SETALL, OnButtonSetall)
 	ON_BN_CLICKED(IDC_WEBSERVER_ROOTDIR, OnWebserverRootdir)
 	ON_BN_CLICKED(IDC_CHECK_FULLSCREENBROWSER, OnCheckFullscreenbrowser)
+	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -708,6 +713,41 @@ void CSettingsDlgVideoDeviceDoc::OnWebserverRootdir()
 	dlg.DoModal();
 	m_MicroApacheDocRootLabel.SetLink(m_sMicroApacheDocRoot);
 	UpdateData(FALSE);
+}
+
+void CSettingsDlgVideoDeviceDoc::OnUpdateAuthUsername() 
+{
+	if (!m_bRejectingApacheUsernameChange)
+	{
+		// Get new text which is not yet shown
+		CString s;
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+		pEdit->GetWindowText(s);
+		
+		// New text has invalid char?
+		// Note: user cannot contain the ':' separator char
+		// (password is the last field and thus it can contain ':')
+		if (s.Find(_T(':')) >= 0)
+		{
+			// Get new caret position and calc. offset to restore old position
+			int nStart, nEnd;
+			pEdit->GetSel(nStart, nEnd);
+			int nOffset = s.GetLength() - m_sLastValidApacheUsername.GetLength();
+			
+			// Restore previous text
+			m_bRejectingApacheUsernameChange = TRUE;
+			pEdit->SetWindowText(m_sLastValidApacheUsername); // this calls OnUpdateAuthUsername()
+			m_bRejectingApacheUsernameChange = FALSE;
+			
+			// Restore previous caret position
+			pEdit->SetSel(nStart - nOffset, nEnd - nOffset);
+
+			// Alert sound
+			::MessageBeep((DWORD)-1);
+		}
+		else
+			m_sLastValidApacheUsername = s;
+	}
 }
 
 #endif
