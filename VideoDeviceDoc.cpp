@@ -6794,7 +6794,7 @@ LogLevel crit\r\n");
 		sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
 		sConfig += _T("AuthDigestFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
 		sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		sConfig += _T("AuthName \"") + CString(MICROAPACHE_REALM) + _T("\"\r\n");
+		sConfig += _T("AuthName \"Secure Area\"\r\n");
 		sConfig += _T("AuthType Digest\r\n");
 		sConfig += _T("AuthDigestDomain /\r\n");
 		sConfig += _T("Require valid-user\r\n");
@@ -6816,17 +6816,18 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 	// Make password file
 	if (bDigest)
 	{
+		CString sRealm = MicroApacheConfigFileGetParam(_T("AuthName"));
+		sRealm.TrimLeft(_T("'\""));
+		sRealm.TrimRight(_T("'\""));
 		USES_CONVERSION;
 		CPJNMD5 hmac;
 		CPJNMD5Hash hash;
-		CString sToHash = sUsername + _T(":")					+
-						CString(MICROAPACHE_REALM) + _T(":")	+
-						sPassword;
+		CString sToHash = sUsername + _T(":") + sRealm + _T(":") + sPassword;
 		char* pszA1 = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
 		if (hmac.Hash((const BYTE*)pszA1, (DWORD)strlen(pszA1), hash))
 		{
 			CString sHA1 = hash.Format(FALSE);
-			CString sPasswordFileData = sUsername + _T(":") + CString(MICROAPACHE_REALM) + _T(":") + sHA1 + _T("\n");
+			CString sPasswordFileData = sUsername + _T(":") + sRealm + _T(":") + sHA1 + _T("\n");
 			LPSTR pData = NULL;
 			int nLen = ::ToANSI(sPasswordFileData, &pData);
 			if (nLen <= 0 || !pData)
