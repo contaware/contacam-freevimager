@@ -14,6 +14,7 @@
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
 #include "AudioFormatDlg.h"
+#include "ConnectErrMsgBoxDlg.h"
 #include "HttpVideoFormatDlg.h"
 #include "AuthenticationDlg.h"
 #include "SendMailConfigurationDlg.h"
@@ -3156,8 +3157,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 int CVideoDeviceDoc::CHttpGetFrameThread::OnError()
 {
 	CleanUpAllConnections();
-	::AfxMessageBox(ML_STRING(1465, "Cannot connect to the specified network device or server"), MB_ICONSTOP);
-	m_pDoc->CloseDocRemoveAutorunDev();
+	m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+	m_pDoc->CloseDocument();
 	return 0;
 }
 
@@ -4410,6 +4411,24 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 }
 
+void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName)
+{
+	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		::LogLine(sDeviceName + _T(", ") + lpszText);
+	else
+	{
+		if (AutorunGetDeviceKey(sDevicePathName) != _T(""))
+		{
+			CConnectErrMsgBoxDlg dlg(lpszText);
+			dlg.DoModal();
+			if (!dlg.m_bAutorun)
+				AutorunRemoveDevice(sDevicePathName);
+		}
+		else
+			::AfxMessageBox(lpszText, MB_OK | MB_ICONSTOP);
+	}
+}
+
 void CVideoDeviceDoc::FreeMovementDetector()
 {
 	if (m_pDifferencingDib)
@@ -4428,13 +4447,6 @@ void CVideoDeviceDoc::FreeMovementDetector()
 void CVideoDeviceDoc::CloseDocument()
 {
 	GetFrame()->PostMessage(WM_CLOSE, 0, 0);
-}
-
-void CVideoDeviceDoc::CloseDocRemoveAutorunDev()
-{
-	::PostMessage(	GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC,
-					0, 0);
 }
 
 CString CVideoDeviceDoc::GetDevicePathName()
@@ -5520,40 +5532,35 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 
 BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 {
-	if (nId >= 0)
-	{
-		// Already open?
-		if (m_pDxCapture)
-			return TRUE;
+	// Already open?
+	if (m_pDxCapture)
+		return TRUE;
 
-		// Load Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			CString sDevicePathName = CDxCapture::GetDevicePath(nId);
-			CString sDeviceName = CDxCapture::GetDeviceName(nId);
-			sDevicePathName.Replace(_T('\\'), _T('/'));
-			LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
-		}
+	// Device path and name
+	CString sDevicePathName = CDxCapture::GetDevicePath(nId);
+	CString sDeviceName = CDxCapture::GetDeviceName(nId);
+	sDevicePathName.Replace(_T('\\'), _T('/'));
 
-		// Start Delete Detections Thread
-		if (!m_DeleteThread.IsAlive())
-			m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
+	// Load Settings
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
 
-		// Reset vars
-		m_dwFrameCountUp = 0U;
-		m_dwNextSnapshotUpTime = ::timeGetTime();
-		::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
+	// Start Delete Detections Thread
+	if (!m_DeleteThread.IsAlive())
+		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
-		// Init and Open Dx Capture
-		if (InitOpenDxCapture(nId))
-			return TRUE;
+	// Reset vars
+	m_dwFrameCountUp = 0U;
+	m_dwNextSnapshotUpTime = ::timeGetTime();
+	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
-		// Failure
-		::AfxMessageBox(ML_STRING(1466, "The capture device is already in use or not compatible"), MB_ICONSTOP);
-		return FALSE;
-	}
-	else
-		return FALSE;
+	// Init and Open Dx Capture
+	if (InitOpenDxCapture(nId))
+		return TRUE;
+
+	// Failure
+	ConnectErr(ML_STRING(1466, "The capture device is already in use or not compatible"), sDevicePathName, sDeviceName);
+	return FALSE;
 }
 
 double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode) 
@@ -5663,7 +5670,10 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 
 	// Connect
 	if (!ConnectGetFrame())
+	{
+		ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
 		return FALSE;
+	}
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
@@ -5674,9 +5684,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 
 BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg) 
 {
-	// Check
-	if (!pDlg)
-		return FALSE;
+	ASSERT(pDlg);
 
 	// Init Vars
 	int nPos, nPosEnd;
@@ -5819,7 +5827,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	// Connect
 	if (!ConnectGetFrame())
 	{
-		::AfxMessageBox(ML_STRING(1465, "Cannot connect to the specified network device or server"), MB_ICONSTOP);
+		ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
 		return FALSE;
 	}
 
@@ -6360,8 +6368,9 @@ void CVideoDeviceDoc::OnCaptureReset()
 	if (::AfxMessageBox(ML_STRING(1740, "Settings are reset to the default and\nthe capture window will be closed.\nDo you want to proceed?"),
 						MB_YESNO | MB_ICONQUESTION) == IDYES)
 	{
+		AutorunRemoveDevice(GetDevicePathName());
 		m_bResetSettings = TRUE;
-		CloseDocRemoveAutorunDev();
+		CloseDocument();
 	}
 }
 
@@ -13116,13 +13125,13 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_bTryConnecting = FALSE;
 
 					// Msg
-					::AfxMessageBox(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), MB_ICONSTOP);
+					m_pDoc->ConnectErr(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 
 					// Close
-					m_pDoc->CloseDocRemoveAutorunDev();
+					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
@@ -13149,13 +13158,13 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_bTryConnecting = FALSE;
 
 					// Msg
-					::AfxMessageBox(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), MB_ICONSTOP);
+					m_pDoc->ConnectErr(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
 					
 					// Close
-					m_pDoc->CloseDocRemoveAutorunDev();
+					m_pDoc->CloseDocument();
 				}
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
@@ -13271,13 +13280,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				dlg.m_sUsername = m_pDoc->m_sHttpGetFrameUsername;
 				if (dlg.DoModal() == IDCANCEL)
 				{
-					if (m_bTryConnecting)
-					{
-						m_bTryConnecting = FALSE;
-						m_pDoc->CloseDocRemoveAutorunDev();
-					}
-					else
-						m_pDoc->CloseDocument();
+					// Reset flag
+					m_bTryConnecting = FALSE;
+
+					// Close
+					m_pDoc->CloseDocument();
+
 					delete [] pMsg;
 					return FALSE; // Do not call Processor
 				}
@@ -13410,15 +13418,15 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 
 				// Msg
 				if (sCode == _T("503")) // Service Unavailable
-					::AfxMessageBox(ML_STRING(1491, "Server is to busy, try later"), MB_ICONSTOP);
+					m_pDoc->ConnectErr(ML_STRING(1491, "Server is to busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 				else
-					::AfxMessageBox(ML_STRING(1490, "Unsupported network device type or mode"), MB_ICONSTOP);
+					m_pDoc->ConnectErr(ML_STRING(1490, "Unsupported network device type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();
 
 				// Close
-				m_pDoc->CloseDocRemoveAutorunDev();
+				m_pDoc->CloseDocument();
 			}
 			// Maybe we polled to fast or we changed a param and camera is not yet ready
 			else
@@ -13748,8 +13756,7 @@ CString CVideoDeviceDoc::AutorunGetDeviceKey(const CString& sDevicePathName)
 
 void CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess) // No autorun changes in service mode!
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		AutorunRemoveDevice(sDevicePathName);
 		CString sSection(_T("DeviceAutorun"));
@@ -13769,8 +13776,7 @@ void CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
 
 void CVideoDeviceDoc::AutorunRemoveDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-		!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess) // No autorun changes in service mode!
+	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
 		CString sSection(_T("DeviceAutorun"));
 		CWinApp* pApp = ::AfxGetApp();

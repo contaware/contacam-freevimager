@@ -275,6 +275,10 @@ SOURCE=.\ColourPopup.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ConnectErrMsgBoxDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ConvertUTF.cpp
 # End Source File
 # Begin Source File
@@ -949,6 +953,10 @@ SOURCE=.\ColorButtonPicker.h
 # Begin Source File
 
 SOURCE=.\ColourPopup.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ConnectErrMsgBoxDlg.h
 # End Source File
 # Begin Source File
 

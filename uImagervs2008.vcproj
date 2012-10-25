@@ -1312,6 +1312,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\ConnectErrMsgBoxDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ConvertUTF.cpp"
 				>
 				<FileConfiguration
@@ -4283,6 +4287,10 @@
 			</File>
 			<File
 				RelativePath="ColourPopup.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ConnectErrMsgBoxDlg.h"
 				>
 			</File>
 			<File

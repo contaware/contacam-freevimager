@@ -3085,19 +3085,13 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 				if (nID >= 0)
 				{
 					if (!pDoc->OpenVideoDevice(nID))
-					{
 						pDoc->CloseDocument();
-						CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
-					}
 				}
 				// Network Device or unplugged Direct Show Device
 				else
 				{
 					if (!pDoc->OpenGetVideo(sDevRegistry))
-					{
 						pDoc->CloseDocument();
-						CVideoDeviceDoc::AutorunRemoveDevice(sDevRegistry);
-					}
 				}
 			}
 		}

@@ -144,6 +144,7 @@
 #define IDD_ASSISTANT                   304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
+#define IDD_CONNECTERR_MSGBOX           307
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
 #define IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART 313
 #define IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART 314
@@ -3244,6 +3245,7 @@
 #define IDC_CHECK_SCHEDULER_THURSDAY    2551
 #define IDC_CHECK_SCHEDULER_FRIDAY      2552
 #define IDC_CHECK_SCHEDULER_SATURDAY    2553
+#define IDC_CONNECTERR_ICON             2554
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3538,7 +3540,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33179
-#define _APS_NEXT_CONTROL_VALUE         2554
+#define _APS_NEXT_CONTROL_VALUE         2555
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

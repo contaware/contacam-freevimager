@@ -1098,8 +1098,8 @@ protected: // create from serialization only
 public:
 	
 	// General Functions
+	void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
 	void CloseDocument();				// Close Document by sending a WM_CLOSE to the Parent Frame
-	void CloseDocRemoveAutorunDev();	// Closes Document and remove device from autorun
 	CString GetAssignedDeviceName();	// Get User Assigned Device Name	
 	CString GetDeviceName();			// Friendly Device Name
 	CString GetDevicePathName();		// Used For Settings, Scheduler and Autorun

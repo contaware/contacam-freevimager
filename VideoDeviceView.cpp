@@ -46,7 +46,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
-	ON_MESSAGE(WM_THREADSAFE_AUTORUNREMOVEDEVICE_CLOSEDOC, OnThreadSafeAutorunRemoveDeviceCloseDoc)
 	ON_MESSAGE(WM_THREADSAFE_SENDFRAME_MSG, OnThreadSafeSendFrameMsg)
 END_MESSAGE_MAP()
 
@@ -321,15 +320,6 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	// Update current detection zone size var
 	pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
-	return 1;
-}
-
-afx_msg LONG CVideoDeviceView::OnThreadSafeAutorunRemoveDeviceCloseDoc(WPARAM wparam, LPARAM lparam)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	CVideoDeviceDoc::AutorunRemoveDevice(pDoc->GetDevicePathName());
-	pDoc->CloseDocument();
 	return 1;
 }
 
