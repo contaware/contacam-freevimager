@@ -215,22 +215,34 @@ void CMDIClientWnd::OnSize(UINT nType, int cx, int cy)
 
 BOOL CMDIClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
-#ifdef VIDEODEVICEDOC
-	CPoint pt;
-	::GetCursorPos(&pt);
-	ScreenToClient(&pt); // Client coordinates of mouse position
-	if (nHitTest == HTCLIENT &&
-		(m_rcLinkComputer.PtInRect(pt) || m_rcLinkLocalhost.PtInRect(pt)))
+	// If Wait Cursor leave it!
+	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
 	{
-		// IDC_HAND_CURSOR has to be in Resource
-		HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_HAND_CURSOR);	
-		ASSERT(hCursor);
-		::SetCursor(hCursor);		
+		RestoreWaitCursor();
 		return TRUE;
 	}
+#ifdef VIDEODEVICEDOC
 	else
-#endif
+	{
+		CPoint pt;
+		::GetCursorPos(&pt);
+		ScreenToClient(&pt); // Client coordinates of mouse position
+		if (nHitTest == HTCLIENT && pWnd->GetSafeHwnd() == GetSafeHwnd() &&
+			(m_rcLinkComputer.PtInRect(pt) || m_rcLinkLocalhost.PtInRect(pt)))
+		{
+			// IDC_HAND_CURSOR has to be in Resource
+			HCURSOR hCursor = ::AfxGetApp()->LoadCursor(IDC_HAND_CURSOR);	
+			ASSERT(hCursor);
+			::SetCursor(hCursor);		
+			return TRUE;
+		}
+		else
+			return CWnd::OnSetCursor(pWnd, nHitTest, message);
+	}
+#else
+	else
 		return CWnd::OnSetCursor(pWnd, nHitTest, message);
+#endif	
 }
 
 void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point) 
