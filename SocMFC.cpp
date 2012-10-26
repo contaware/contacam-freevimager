@@ -2,105 +2,107 @@
 Module : SocMFC.cpp
 Purpose: Implementation for an MFC wrapper class for sockets
 Created: PJN / 05-08-1998
-History: 03-03-2003 1. Addition of a number of preprocessor defines, namely W3MFC_EXT_CLASS, 
-                    THRDPOOL_EXT_CLASS and SOCKMFC_EXT_CLASS. This allows the classes to easily 
-                    be added and exported from a MFC extension dll.
-                    2. Now implements support for connecting via Socks 4 and Socks 5 proxies
-         21-09-2003 1. Now supports UDP sockets.
-                    2. Now supports UDP relaying via Socks 5 proxy.
-         26-09-2003 1. Now supports connection via HTTP proxies which support the CONNECT verb
-         13-01-2004 1. Used newer form of #pragma pack to avoid problems with non standard 
-                    packing sizes.
-         25-10-2004 1. Updated to compile cleanly when Detect 64 bit issues and Force conformance 
-                    in for loop options are enabled in Visual Studio .NET
-         29-12-2004 Almost all of the following updates were to match the functionality provided
-                    by the MFC CAsyncSocket class but without the overhead of hidden windows and 
-                    its async behaviour.
-                    1. Now automatically links to Winsock via #pragma comment
-                    2. Addition of a GetPeerName method.
-                    3. Replaced all calls to ZeroMemory to memset.
-                    4. Addtion of a GetSockName method.
-                    5. Addition of a SetSockOpt method.
-                    6. Addition of a Flags parameter to Receive method.
-                    7. Addition of a IOCtl method.
-                    8. Optimized the code in Listen.
-                    9. Addition of a ReceiveFrom method.
-                    10. Addition of a ShutDown method.
-                    11. Optimized the code in Close.
-                    12. Remove of pszLocalBoundAddress parameter from Connect methods to make it 
-                    consistent with CAsyncSocket.
-                    13. Addition of a Flags parameter to Send method.
-                    14. Optimized code in CWSocket destructor
-                    15. Addition of an overloaded Create method which allows all of the socket
-                    parameters to be set
-                    16. Use of _tcslen has been minimized when NULL string parameters can be passed
-                    to various CWSocket methods.
-                    17. Change of various parameter names to be consistent with names as used in
-                    CAsyncSocket.
-         31-01-2005 1. Fixed a bug in CWSocket::Receive where it throws an error when a graceful 
-                    disconnect occurs. Now the code only throws an exception if the return value
-                    from recv is SOCKET_ERROR
-         01-05-2005 1. Send method now uses a const void* parameter.
-         21-06-2005 1. Provision of connect methods which allows a timeout to be specified. Please note
-                    that if you use a host name in these calls as opposed to an IP address, the DNS
-                    lookup is still done using the OS supplied timeout. Only the actual connection
-                    to the server is implemented using a timeout after the DNS lookup is done (if it
-                    is necessary).
-         04-11-2005 1. Send method now returns the number of bytes written. Thanks to Owen O'Flaherty
-                    for pointing out this omission.
-         19-02-2006 1. Replaced all calls to ZeroMemory and CopyMemory with memset and memcpy
-         27-06-2006 1. Updated copyright details.
-                    2. Made ThrowWSocketException part of CWSocket class and renamed to 
-                    ThrowWSocketException.
-                    3. CWSocketException::GetErrorMessage now uses safestring functionality.
-                    4. Optimized CWSocketException constructor code.
-                    5. Removed unnecessary CWSocketException destructor
-                    6. Code now uses new C++ style casts rather than old style C casts where necessary. 
-         19-11-2007 1. Updated copyright details.
-         26-12-2007 1. CWSocketException::GetErrorMessage now uses the FORMAT_MESSAGE_IGNORE_INSERTS flag. 
-                    For more information please see Raymond Chen's blog at 
-                    http://blogs.msdn.com/oldnewthing/archive/2007/11/28/6564257.aspx. Thanks to Alexey 
-                    Kuznetsov for reporting this issue.
-                    2. All username and password temp strings are now securely destroyed using 
-                    SecureZeroMemory. This version of the code and onwards will be supported only
-                    on VC 2005 or later.
-         27-12-2007 1. CWSocketException::GetErrorMessage now uses Checked::tcsncpy_s similiar to the 
-                    built in MFC exception classes
-         31-12-2007 1. Minor coding updates to CWSocketException::GetErrorMessage
-         02-02-2008 1. Updated copyright details.
-                    2. Fixed potential heap memory leaks in CWSocket::ReadHTTPProxyResponse.Thanks to 
-                    Michal Urbanczyk for reporting this bug.
-                    3. Fixed a memory leak in CWSocket::ConnectViaSocks5
-                    4. Restructured CWSocket::ReadSocks5ConnectReply to avoid the need to allocate 
-                    heap memory
-         01-03-2008 1. Since the code is now for VC 2005 or later only, the code now uses the Base64 
-                    encoding support from the ATL atlenc.h header file. Thanks to Mat Berchtold for 
-                    reporting this optimization. This means that client projects no longer need to include 
-                    Base64.cpp/h in their projects.
-         31-05-2008 1. Code now compiles cleanly using Code Analysis (/analyze)
-                    2. Tidied up the CWSocket::ReadHTTPProxyResponse implementation
-         23-05-2009 1. Removed use of CT2A throughout the code
-         09-01-2011 1. Updated copyright details.
-                    2. Updated Create method which takes a BOOL to include another default parameter to 
-                    indicate IPv6
-                    3. Updated CWSocket::GetPeerName to operate for IPv6 as well as IPv4
-                    4. All Connect methods now try to connect all addresses returned from address lookups
-                    5. Addition of a CreateAndBind method which support IPv6 binding
-                    6. ReceiveFrom(void* pBuf, int nBufLen, CString& sSocketAddress, UINT& nSocketPort, int nFlags)
-                    method has been updated to support IPv6.
-                    7. SendTo(const void* pBuf, int nBufLen, UINT nHostPort, LPCTSTR pszHostAddress, int nFlags) 
-                    method has been updated to support IPv6 as well as connecting to all addresses returned from
-                    address lookups.
-                    8. Removed all _alloca calls
-                    9. Addition of a number of CreateConnect methods which support IPv6
-         08-02-2011 1. The state of whether a socket should be bound or not is now decided by a new m_sBindAddress 
-                    member variable. This variable can be modified through new Get/SetBindAddress methods.
-                    2. Fixed a number of compile problems in VC 2005 related to ATL::CSocketAddr::GetAddrInfoList()
-                    return value.
-         03-04-2011 1. Fix for a bug in CreateAndConnect where the wrong family socket type was being passed to
-                    Create.
+History: PJN / 03-03-2003 1. Addition of a number of preprocessor defines, namely W3MFC_EXT_CLASS, 
+                          THRDPOOL_EXT_CLASS and SOCKMFC_EXT_CLASS. This allows the classes to easily 
+                          be added and exported from a MFC extension dll.
+                          2. Now implements support for connecting via Socks 4 and Socks 5 proxies
+         PJN / 21-09-2003 1. Now supports UDP sockets.
+                          2. Now supports UDP relaying via Socks 5 proxy.
+         PJN / 26-09-2003 1. Now supports connection via HTTP proxies which support the CONNECT verb
+         PJN / 13-01-2004 1. Used newer form of #pragma pack to avoid problems with non standard 
+                          packing sizes.
+         PJN / 25-10-2004 1. Updated to compile cleanly when Detect 64 bit issues and Force conformance 
+                          in for loop options are enabled in Visual Studio .NET
+         PJN / 29-12-2004 Almost all of the following updates were to match the functionality provided
+                          by the MFC CAsyncSocket class but without the overhead of hidden windows and 
+                          its async behaviour.
+                          1. Now automatically links to Winsock via #pragma comment
+                          2. Addition of a GetPeerName method.
+                          3. Replaced all calls to ZeroMemory to memset.
+                          4. Addtion of a GetSockName method.
+                          5. Addition of a SetSockOpt method.
+                          6. Addition of a Flags parameter to Receive method.
+                          7. Addition of a IOCtl method.
+                          8. Optimized the code in Listen.
+                          9. Addition of a ReceiveFrom method.
+                          10. Addition of a ShutDown method.
+                          11. Optimized the code in Close.
+                          12. Remove of pszLocalBoundAddress parameter from Connect methods to make it 
+                          consistent with CAsyncSocket.
+                          13. Addition of a Flags parameter to Send method.
+                          14. Optimized code in CWSocket destructor
+                          15. Addition of an overloaded Create method which allows all of the socket
+                          parameters to be set
+                          16. Use of _tcslen has been minimized when NULL string parameters can be passed
+                          to various CWSocket methods.
+                          17. Change of various parameter names to be consistent with names as used in
+                          CAsyncSocket.
+         PJN / 31-01-2005 1. Fixed a bug in CWSocket::Receive where it throws an error when a graceful 
+                          disconnect occurs. Now the code only throws an exception if the return value
+                          from recv is SOCKET_ERROR
+         PJN / 01-05-2005 1. Send method now uses a const void* parameter.
+         PJN / 21-06-2005 1. Provision of connect methods which allows a timeout to be specified. Please note
+                          that if you use a host name in these calls as opposed to an IP address, the DNS
+                          lookup is still done using the OS supplied timeout. Only the actual connection
+                          to the server is implemented using a timeout after the DNS lookup is done (if it
+                          is necessary).
+         PJN / 04-11-2005 1. Send method now returns the number of bytes written. Thanks to Owen O'Flaherty
+                          for pointing out this omission.
+         PJN / 19-02-2006 1. Replaced all calls to ZeroMemory and CopyMemory with memset and memcpy
+         PJN / 27-06-2006 1. Updated copyright details.
+                          2. Made ThrowWSocketException part of CWSocket class and renamed to 
+                          ThrowWSocketException.
+                          3. CWSocketException::GetErrorMessage now uses safestring functionality.
+                          4. Optimized CWSocketException constructor code.
+                          5. Removed unnecessary CWSocketException destructor
+                          6. Code now uses new C++ style casts rather than old style C casts where necessary. 
+         PJN / 19-11-2007 1. Updated copyright details.
+         PJN / 26-12-2007 1. CWSocketException::GetErrorMessage now uses the FORMAT_MESSAGE_IGNORE_INSERTS flag. 
+                          For more information please see Raymond Chen's blog at 
+                          http://blogs.msdn.com/oldnewthing/archive/2007/11/28/6564257.aspx. Thanks to Alexey 
+                          Kuznetsov for reporting this issue.
+                          2. All username and password temp strings are now securely destroyed using 
+                          SecureZeroMemory. This version of the code and onwards will be supported only
+                          on VC 2005 or later.
+         PJN / 27-12-2007 1. CWSocketException::GetErrorMessage now uses Checked::tcsncpy_s similiar to the 
+                          built in MFC exception classes
+         PJN / 31-12-2007 1. Minor coding updates to CWSocketException::GetErrorMessage
+         PJN / 02-02-2008 1. Updated copyright details.
+                          2. Fixed potential heap memory leaks in CWSocket::ReadHTTPProxyResponse.Thanks to 
+                          Michal Urbanczyk for reporting this bug.
+                          3. Fixed a memory leak in CWSocket::ConnectViaSocks5
+                          4. Restructured CWSocket::ReadSocks5ConnectReply to avoid the need to allocate 
+                          heap memory
+         PJN / 01-03-2008 1. Since the code is now for VC 2005 or later only, the code now uses the Base64 
+                          encoding support from the ATL atlenc.h header file. Thanks to Mat Berchtold for 
+                          reporting this optimization. This means that client projects no longer need to include 
+                          Base64.cpp/h in their projects.
+         PJN / 31-05-2008 1. Code now compiles cleanly using Code Analysis (/analyze)
+                          2. Tidied up the CWSocket::ReadHTTPProxyResponse implementation
+         PJN / 23-05-2009 1. Removed use of CT2A throughout the code
+         PJN / 09-01-2011 1. Updated copyright details.
+                          2. Updated Create method which takes a BOOL to include another default parameter to 
+                          indicate IPv6
+                          3. Updated CWSocket::GetPeerName to operate for IPv6 as well as IPv4
+                          4. All Connect methods now try to connect all addresses returned from address lookups
+                          5. Addition of a CreateAndBind method which support IPv6 binding
+                          6. ReceiveFrom(void* pBuf, int nBufLen, CString& sSocketAddress, UINT& nSocketPort, int nFlags)
+                          method has been updated to support IPv6.
+                          7. SendTo(const void* pBuf, int nBufLen, UINT nHostPort, LPCTSTR pszHostAddress, int nFlags) 
+                          method has been updated to support IPv6 as well as connecting to all addresses returned from
+                          address lookups.
+                          8. Removed all _alloca calls
+                          9. Addition of a number of CreateConnect methods which support IPv6
+         PJN / 08-02-2011 1. The state of whether a socket should be bound or not is now decided by a new m_sBindAddress 
+                          member variable. This variable can be modified through new Get/SetBindAddress methods.
+                          2. Fixed a number of compile problems in VC 2005 related to ATL::CSocketAddr::GetAddrInfoList()
+                          return value.
+         PJN / 03-04-2011 1. Fix for a bug in CreateAndConnect where the wrong family socket type was being passed to
+                          Create.
+         PJN / 11-08-2012 1. Updated copyright details.
+                          2. Updated the code to compile cleanly on VC 2012
 
-Copyright (c) 2002 - 2011 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2002 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -238,10 +240,14 @@ struct WSOCKET_SOCKS5_USERNAME_AUTHENTICATION_REPLY
 };
 #pragma pack(pop)
 
-BOOL CWSocketException::GetErrorMessage(LPTSTR pstrError, UINT nMaxError, PUINT pnHelpContext)
+#if _MSC_VER >= 1700
+BOOL CWSocketException::GetErrorMessage(_Out_writes_z_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError,	_Out_opt_ PUINT pnHelpContext)
+#else	
+BOOL CWSocketException::GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszError, __in UINT nMaxError, __out_opt PUINT pnHelpContext)
+#endif
 {
   //Validate our parameters
-	ASSERT(pstrError != NULL && AfxIsValidString(pstrError, nMaxError));
+	ASSERT(lpszError != NULL && AfxIsValidString(lpszError, nMaxError));
 
 	if (pnHelpContext != NULL)
 		*pnHelpContext = 0;
@@ -254,11 +260,11 @@ BOOL CWSocketException::GetErrorMessage(LPTSTR pstrError, UINT nMaxError, PUINT 
 			                           NULL,  m_nError, MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT),
 			                           reinterpret_cast<LPTSTR>(&lpBuffer), 0, NULL);
 	if (dwReturn == 0)
-		*pstrError = _T('\0');
+		*lpszError = _T('\0');
 	else
 	{
     bSuccess = TRUE;
-	  Checked::tcsncpy_s(pstrError, nMaxError, lpBuffer, _TRUNCATE);
+	  Checked::tcsncpy_s(lpszError, nMaxError, lpBuffer, _TRUNCATE);
 		LocalFree(lpBuffer);
 	}
 
@@ -480,7 +486,7 @@ void CWSocket::CreateAndBind(UINT nSocketPort, int nSocketType, int nDefaultAddr
   if (m_sBindAddress.GetLength())
   {
     CString sPort;
-    sPort.Format(_T("%d"), nSocketPort);
+    sPort.Format(_T("%u"), nSocketPort);
 
     //Do the address lookup
     ATL::CSocketAddr lookup;
@@ -557,7 +563,7 @@ void CWSocket::Connect(const SOCKADDR* pSockAddr, int nSockAddrLen)
 void CWSocket::Connect(LPCTSTR pszHostAddress, UINT nHostPort)
 {
   CString sHostPort;
-  sHostPort.Format(_T("%d"), nHostPort);
+  sHostPort.Format(_T("%u"), nHostPort);
   _Connect(pszHostAddress, sHostPort);
 }
 
@@ -601,7 +607,7 @@ void CWSocket::_Connect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName)
 void CWSocket::CreateAndConnect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType)
 {
   CString sHostPort;
-  sHostPort.Format(_T("%d"), nHostPort);
+  sHostPort.Format(_T("%u"), nHostPort);
   CreateAndConnect(pszHostAddress, sHostPort, nSocketType);
 }
 
@@ -807,7 +813,7 @@ void CWSocket::CreateAndConnect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrService
 void CWSocket::CreateAndConnect(LPCTSTR pszHostAddress, UINT nHostPort, DWORD dwTimeout, BOOL bResetToBlockingMode, int nSocketType)
 {
   CString sHostPort;
-  sHostPort.Format(_T("%d"), nHostPort);
+  sHostPort.Format(_T("%u"), nHostPort);
   CreateAndConnect(pszHostAddress, sHostPort, dwTimeout, bResetToBlockingMode, nSocketType);
 }
 
@@ -921,7 +927,7 @@ int CWSocket::SendTo(const void* pBuf, int nBufLen, UINT nHostPort, LPCTSTR pszH
   //Do the address lookup
   ATL::CSocketAddr lookup;
   CString sPort;
-  sPort.Format(_T("%d"), nHostPort);
+  sPort.Format(_T("%u"), nHostPort);
   int nError = lookup.FindAddr(pszHostAddress, sPort, 0, 0, 0, 0);
   if (nError != 0)
     ThrowWSocketException();
@@ -1006,7 +1012,7 @@ void CWSocket::ConnectViaSocks4(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR 
 
   //connect to the proxy
   CString sSocksPort;
-  sSocksPort.Format(_T("%d"), nSocksPort);
+  sSocksPort.Format(_T("%u"), nSocksPort);
   _Connect(pszSocksServer, sSocksPort);
 
   try
@@ -1316,7 +1322,7 @@ void CWSocket::ConnectViaHTTPProxy(LPCTSTR pszHostAddress, UINT nHostPort, LPCTS
   {  
     //Form the HTTP CONNECT request header
     CString sLine;
-    sLine.Format(_T("CONNECT %s:%d HTTP/1.0\r\n"), pszHostAddress, nHostPort);
+    sLine.Format(_T("CONNECT %s:%u HTTP/1.0\r\n"), pszHostAddress, nHostPort);
     CString sRequest(sLine);
     
     //Form the authorization line if required  

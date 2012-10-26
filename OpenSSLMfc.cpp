@@ -23,8 +23,10 @@ History: PJN / 29-12-2004 1. Updated to suit new layout of CWSocket methods
          PJN / 09-01-2011 1. Updated copyright details.
                           2. Updated a number of methods to support the new IPv6 functionality of CWSocket
          PJN / 08-02-2011 1. Reinstated Sockv4, Socksv5 and HTTP proxy methods
+         PJN / 07-08-2012 1. CSSL::Close now provides a bGracefully parameter
+                          2. CSSLSocket::Close now provides a bGracefully parameter
 
-Copyright (c) 2002 - 2011 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2002 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -110,12 +112,15 @@ CSSL::~CSSL()
   Close();
 }
 
-void CSSL::Close()
+void CSSL::Close(BOOL bGracefully)
 {
   if (m_pSSL)
   {
-    for (int i=0; i<3 && SSL_shutdown(m_pSSL)== 0; i++) 
-      Sleep(0); 
+    if (bGracefully)
+    {
+      for (int i=0; i<3 && SSL_shutdown(m_pSSL)== 0; i++) 
+        Sleep(0); 
+    }
 
     SSL_free(m_pSSL);
     m_pSSL = NULL;
@@ -302,11 +307,11 @@ BOOL CSSLSocket::Accept(DWORD dwSSLNegotiationTimeout)
   return TRUE;
 }
 
-void CSSLSocket::Close()
+void CSSLSocket::Close(BOOL bGracefully)
 {
   //Close down the SSL connection
   if (m_SSL.operator SSL*())
-    m_SSL.Close();
+    m_SSL.Close(bGracefully);
 
   //Close down the socket connection
   if (m_pSocket)

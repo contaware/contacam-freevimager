@@ -34,7 +34,7 @@ CPJNSMTPConnection 2.67 with w3 mfc 1.83 for VC6
      and changed the "Date:" header creation so that it is always in English.
 
 
-CPJNSMTPConnection 2.93 with w3 mfc 1.94 for VC2008
+CPJNSMTPConnection 2.93 with w3 mfc 1.95 for VC2008
 ---------------------------------------------------
 
 - Thread Safe
