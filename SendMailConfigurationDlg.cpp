@@ -283,10 +283,6 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// Init Connection class
 			CPJNSMTPConnection connection;
 
-			// Auto connect to the internet?
-			if (m_SendMailConfiguration.m_bAutoDial)
-				connection.ConnectToInternet();
-
 			CString sHost;
 			BOOL bSend = TRUE;
 			if (m_SendMailConfiguration.m_bDNSLookup)
@@ -381,10 +377,6 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				EndWaitCursor();
 				::AfxMessageBox(ML_STRING(1409, "Success: Email Sent."), MB_ICONINFORMATION);
 			}
-
-			// Auto disconnect from the internet
-			if (m_SendMailConfiguration.m_bAutoDial)
-				connection.CloseInternetConnection();
 
 			// Clean-up
 			if (pMessage)

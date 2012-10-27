@@ -2942,145 +2942,100 @@ void CPJNSMTPConnection::Disconnect(BOOL bGracefully)
     ThrowPJNSMTPException(hr, sLastResponse);
 }
 
-// Oli changed
-//void CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot)
-BOOL CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot,
-									  DWORD dwSendBufferSize/*=4096*/)
+void CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot)
 {
-	BOOL bContinue = TRUE; // Oli added
+  if (!bRoot)
+  {
+    //First send this body parts header
+    LPSTR pszHeader = NULL;
+    int nHeaderSize = 0;
+    if (!pBodyPart->GetHeader(pszHeader, nHeaderSize))
+    {
+      if (pszHeader)
+        pBodyPart->FreeHeader(pszHeader);
+        
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART, FACILITY_ITF);
+    }
 
-	if (!bRoot)
-	{
-		//First send this body parts header
-		LPSTR pszHeader = NULL;
-		int nHeaderSize = 0;
-		if (!pBodyPart->GetHeader(pszHeader, nHeaderSize))
-		{
-			if (pszHeader)
-				pBodyPart->FreeHeader(pszHeader);
+    try
+    {
+		  _Send(pszHeader, nHeaderSize);
+    }
+    catch(CWSocketException* pEx)
+    {
+      if (pszHeader)
+        pBodyPart->FreeHeader(pszHeader);
+    
+      DWORD dwError = pEx->m_nError;
+      pEx->Delete();
+      ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+    }
 
-			ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART, FACILITY_ITF);
-		}
+    //Free up the temp memory we have used
+    if (pszHeader)
+      pBodyPart->FreeHeader(pszHeader);
+  }
+  
+  //Then the body parts body
+  LPSTR pszBody = NULL;
+  int nBodySize = 0;
+  if (!pBodyPart->GetBody(TRUE, pszBody, nBodySize))
+  {
+    if (pszBody)
+      pBodyPart->FreeBody(pszBody);
+      
+    ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART, FACILITY_ITF);
+  }
+    
+  try
+  {
+    _Send(pszBody, nBodySize);
+  }
+  catch(CWSocketException* pEx)
+  {
+    if (pszBody)
+      pBodyPart->FreeBody(pszBody);
+  
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
-		try
-		{
-			_Send(pszHeader, nHeaderSize);
-		}
-		catch(CWSocketException* pEx)
-		{
-			if (pszHeader)
-				pBodyPart->FreeHeader(pszHeader);
+  //Free up the temp memory we have used
+  if (pszBody)
+    pBodyPart->FreeBody(pszBody);
 
-			DWORD dwError = pEx->m_nError;
-			pEx->Delete();
-			ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-		}
+  //The recursively send all the child body parts
+  int nChildBodyParts = pBodyPart->GetNumberOfChildBodyParts();
+  for (int i=0; i<nChildBodyParts; i++)
+  {
+    CPJNSMTPBodyPart* pChildBodyPart = pBodyPart->GetChildBodyPart(i);
+    SendBodyPart(pChildBodyPart, FALSE);
+  }
 
-		//Free up the temp memory we have used
-		if (pszHeader)
-			pBodyPart->FreeHeader(pszHeader);
-	}
+  //Then the MIME footer if need be
+  BOOL bSendFooter = (pBodyPart->GetNumberOfChildBodyParts() != 0);
+  if (bSendFooter)
+  {
+    LPSTR pszFooter = NULL;
+    int nFooterSize = 0;
+    if (!pBodyPart->GetFooter(pszFooter, nFooterSize))
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_FOOTER_OF_BODY_PART, FACILITY_ITF);
 
-	//Then the body parts body
-	LPSTR pszBody = NULL;
-	int nBodySize = 0;
-	if (!pBodyPart->GetBody(TRUE, pszBody, nBodySize))
-	{
-		if (pszBody)
-			pBodyPart->FreeBody(pszBody);
+    try
+    {
+	    _Send(pszFooter, nFooterSize);
+    }
+    catch(CWSocketException* pEx)
+    {
+      DWORD dwError = pEx->m_nError;
+      pEx->Delete();
+      ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+    }
 
-		ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART, FACILITY_ITF);
-	}
-	// Oli changed from here -->
-	BOOL bMore = TRUE;
-	DWORD dwBytesSent = 0;
-	BYTE* pSendBuf = (BYTE*)pszBody; 
-	do
-	{
-		DWORD dwRead = min(dwSendBufferSize, nBodySize-dwBytesSent);
-		dwBytesSent += dwRead;
-
-		// Call the progress virtual method
-		if (OnSendProgress(dwBytesSent, nBodySize))
-		{
-			try
-			{
-				_Send(pSendBuf, dwRead);
-			}
-			catch(CWSocketException* pEx)
-			{
-				if (pszBody)
-					pBodyPart->FreeBody(pszBody);
-
-				DWORD dwError = pEx->m_nError;
-				pEx->Delete();
-				ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-			}
-		}
-		else
-		{
-			// Abort the mail send (due to the progress virtual method returning FALSE
-			bContinue = FALSE;
-		}
-
-		// Prepare for the next time around
-		pSendBuf += dwRead;
-		bMore = ((int)dwBytesSent < nBodySize);
-	}
-	while (bMore && bContinue);
-	// <-- Oli changed till here
-
-	//Free up the temp memory we have used
-	if (pszBody)
-		pBodyPart->FreeBody(pszBody);
-
-	if (bContinue) // Oli added check
-	{
-		//Then recursively send all the child body parts
-		int nChildBodyParts = pBodyPart->GetNumberOfChildBodyParts();
-		for (int i=0; i<nChildBodyParts; i++)
-		{
-			CPJNSMTPBodyPart* pChildBodyPart = pBodyPart->GetChildBodyPart(i);
-			// Oli reads return value and added last param
-			bContinue = SendBodyPart(pChildBodyPart, FALSE, dwSendBufferSize);
-			if (!bContinue)
-				break;
-		}
-
-		if (bContinue) // Oli added check
-		{
-			//Then the MIME footer if need be
-			BOOL bSendFooter = (pBodyPart->GetNumberOfChildBodyParts() != 0);
-			if (bSendFooter)
-			{
-				LPSTR pszFooter = NULL;
-				int nFooterSize = 0;
-				if (!pBodyPart->GetFooter(pszFooter, nFooterSize))
-					ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_GET_FOOTER_OF_BODY_PART, FACILITY_ITF);
-
-				try
-				{
-					_Send(pszFooter, nFooterSize);
-				}
-				catch(CWSocketException* pEx)
-				{
-					// Oli added this free
-					if (pszFooter)
-						pBodyPart->FreeFooter(pszFooter);
-
-					DWORD dwError = pEx->m_nError;
-					pEx->Delete();
-					ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-				}
-
-				//Free up the temp memory we have used
-				if (pszFooter) // Oli added check
-					pBodyPart->FreeFooter(pszFooter);
-			}
-		}
-	}
-
-	return bContinue; // Oli added this return value
+    //Free up the temp memory we have used
+    pBodyPart->FreeFooter(pszFooter);
+  }
 }
 
 CString CPJNSMTPConnection::FormMailFromCommand(const CString& sEmailAddress, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType, CString& sENVID)
@@ -3108,189 +3063,156 @@ CString CPJNSMTPConnection::FormMailFromCommand(const CString& sEmailAddress, DW
   return sBuf;  
 }
 
-// Oli changed
-//void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
-void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message,
-									 DWORD dwSendBufferSize/*=4096*/)
+void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
 {
 	USES_CONVERSION;
 
 	//paramater validity checking
-	ASSERT(m_bConnected); //Must be connected to send a message
+  ASSERT(m_bConnected); //Must be connected to send a message
 
-	//Send the MAIL command
-	CString sBuf(FormMailFromCommand(Message.m_From.m_sEmailAddress, Message.m_DSN, Message.m_DSNReturnType, Message.m_sENVID));
-	LPCSTR pszMailFrom = T2A(const_cast<LPTSTR>(sBuf.operator LPCTSTR()));
-	int nCmdLength = static_cast<int>(strlen(pszMailFrom));
+  //Send the MAIL command
+  CString sBuf(FormMailFromCommand(Message.m_From.m_sEmailAddress, Message.m_DSN, Message.m_DSNReturnType, Message.m_sENVID));
+  LPCSTR pszMailFrom = T2A(const_cast<LPTSTR>(sBuf.operator LPCTSTR()));
+  int nCmdLength = static_cast<int>(strlen(pszMailFrom));
 
-	try
-	{
-		_Send(pszMailFrom, nCmdLength);
-	}
-	catch(CWSocketException* pEx)
-	{
-		DWORD dwError = pEx->m_nError;
-		pEx->Delete();
-		ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-	}
+  try
+  {
+    _Send(pszMailFrom, nCmdLength);
+  }
+  catch(CWSocketException* pEx)
+  {
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
-	//check the response to the MAIL command
-	if (!ReadCommandResponse(250))
-		ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_MAIL_FROM_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
+  //check the response to the MAIL command
+  if (!ReadCommandResponse(250))
+    ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_MAIL_FROM_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	//Send the RCPT command, one for each recipient (includes the TO, CC & BCC recipients)
+  //Send the RCPT command, one for each recipient (includes the TO, CC & BCC recipients)
 
-	//Must be sending to someone
-	ASSERT(	Message.GetNumberOfRecipients(CPJNSMTPMessage::TO) + 
-			Message.GetNumberOfRecipients(CPJNSMTPMessage::CC) + 
-			Message.GetNumberOfRecipients(CPJNSMTPMessage::BCC));
+  //Must be sending to someone
+  ASSERT(Message.GetNumberOfRecipients(CPJNSMTPMessage::TO) + 
+         Message.GetNumberOfRecipients(CPJNSMTPMessage::CC) + 
+         Message.GetNumberOfRecipients(CPJNSMTPMessage::BCC));
 
-	//First the "To" recipients
-	int i;
-	for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::TO); i++)
-	{
-		CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::TO);
-		ASSERT(pRecipient);
-		SendRCPTForRecipient(Message.m_DSN, *pRecipient);
-	}
+  //First the "To" recipients
+  int i;
+  for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::TO); i++)
+  {
+    CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::TO);
+    ASSERT(pRecipient);
+    SendRCPTForRecipient(Message.m_DSN, *pRecipient);
+  }
 
-	//Then the "CC" recipients
-	for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::CC); i++)
-	{
-		CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::CC);
-		ASSERT(pRecipient);
-		SendRCPTForRecipient(Message.m_DSN, *pRecipient);
-	}
+  //Then the "CC" recipients
+  for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::CC); i++)
+  {
+    CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::CC);
+    ASSERT(pRecipient);
+    SendRCPTForRecipient(Message.m_DSN, *pRecipient);
+  }
 
-	//Then the "BCC" recipients
-	for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::BCC); i++)
-	{
-		CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::BCC);
-		ASSERT(pRecipient);
-		SendRCPTForRecipient(Message.m_DSN, *pRecipient);
-	}
+  //Then the "BCC" recipients
+  for (i=0; i<Message.GetNumberOfRecipients(CPJNSMTPMessage::BCC); i++)
+  {
+    CPJNSMTPAddress* pRecipient = Message.GetRecipient(i, CPJNSMTPMessage::BCC);
+    ASSERT(pRecipient);
+    SendRCPTForRecipient(Message.m_DSN, *pRecipient);
+  }
 
-	//Send the DATA command
-	char* pszDataCommand = "DATA\r\n";
-	nCmdLength = static_cast<int>(strlen(pszDataCommand));
-	try
-	{
-		_Send(pszDataCommand, nCmdLength);
-	}
-	catch(CWSocketException* pEx)
-	{
-		DWORD dwError = pEx->m_nError;
-		pEx->Delete();
-		ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-	}
+  //Send the DATA command
+  char* pszDataCommand = "DATA\r\n";
+  nCmdLength = static_cast<int>(strlen(pszDataCommand));
+  try
+  {
+    _Send(pszDataCommand, nCmdLength);
+  }
+  catch(CWSocketException* pEx)
+  {
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
-	//check the response to the DATA command
-	if (!ReadCommandResponse(354))
-		ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_DATA_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
+  //check the response to the DATA command
+  if (!ReadCommandResponse(354))
+    ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_DATA_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	//Send the Message Header
-	std::string sHeader = Message.getHeader();
-	nCmdLength = static_cast<int>(sHeader.length());
-	try
-	{
-		_Send(sHeader.c_str(), nCmdLength);
-	}
-	catch(CWSocketException* pEx)
-	{
-		DWORD dwError = pEx->m_nError;
-		pEx->Delete();
-		ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-	}
+  //Send the Message Header
+  std::string sHeader = Message.getHeader();
+  nCmdLength = static_cast<int>(sHeader.length());
+  try
+  {
+    _Send(sHeader.c_str(), nCmdLength);
+  }
+  catch(CWSocketException* pEx)
+  {
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
 	//Send the Header / body Separator
-	char* pszBodyHeader = "\r\n";
-	nCmdLength = static_cast<int>(strlen(pszBodyHeader));
-	try
-	{
-		_Send(pszBodyHeader, nCmdLength);
-	}
-	catch(CWSocketException* pEx)
-	{
-		DWORD dwError = pEx->m_nError;
-		pEx->Delete();
-		ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-	}
+  char* pszBodyHeader = "\r\n";
+  nCmdLength = static_cast<int>(strlen(pszBodyHeader));
+  try
+  {
+    _Send(pszBodyHeader, nCmdLength);
+  }
+  catch(CWSocketException* pEx)
+  {
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
-	//Now send the contents of the mail
-	BOOL bContinue = TRUE; // Oli added
-	BOOL bHasChildParts = (Message.m_RootPart.GetNumberOfChildBodyParts() != 0);
-	if (bHasChildParts || Message.m_bMime)
-	{
-		//Send the root body part (and all its children)
-		// Oli reads return value and added last param
-		bContinue = SendBodyPart(&Message.m_RootPart, TRUE, dwSendBufferSize);
-	}
-	else
-	{
-		CString sBody = Message.m_RootPart.GetText();
-		CPJNSMTPBodyPart::FixSingleDotT(sBody);
-		  LPCSTR pszBody = T2CA(sBody);
-		ASSERT(pszBody);
-		nCmdLength = static_cast<int>(strlen(pszBody));
+  //Now send the contents of the mail    
+  BOOL bHasChildParts = (Message.m_RootPart.GetNumberOfChildBodyParts() != 0);
+  if (bHasChildParts || Message.m_bMime)
+  {
+    //Send the root body part (and all its children)
+    SendBodyPart(&Message.m_RootPart, TRUE);
+  }
+  else
+  {
+    CString sBody = Message.m_RootPart.GetText();
+    CPJNSMTPBodyPart::FixSingleDotT(sBody);
+	  LPCSTR pszBody = T2CA(sBody);
+    ASSERT(pszBody);
+    nCmdLength = static_cast<int>(strlen(pszBody));
 
-		//Send the body
-		// Oli changed from here -->
-		BOOL bMore = TRUE;
-		DWORD dwBytesSent = 0;
-		BYTE* pSendBuf = (BYTE*)pszBody; 
-		do
-		{
-			DWORD dwRead = min(dwSendBufferSize, nCmdLength-dwBytesSent);
-			dwBytesSent += dwRead;
+    //Send the body
+    try
+    {
+      _Send(pszBody, nCmdLength);
+    }
+    catch(CWSocketException* pEx)
+    {
+      DWORD dwError = pEx->m_nError;
+      pEx->Delete();
+      ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+    }
+  }
 
-			// Call the progress virtual method
-			if (OnSendProgress(dwBytesSent, nCmdLength))
-			{
-				try
-				{
-					_Send(pSendBuf, dwRead);
-				}
-				catch(CWSocketException* pEx)
-				{
-					DWORD dwError = pEx->m_nError;
-					pEx->Delete();
-					ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-				}
-			}
-			else
-			{
-				// Abort the mail send (due to the progress virtual method returning FALSE
-				bContinue = FALSE;
-			}
+  //Send the end of message indicator
+  char* pszEOM = "\r\n.\r\n";
+	nCmdLength = static_cast<int>(strlen(pszEOM));
+  try
+  {
+    _Send(pszEOM, nCmdLength);
+  }
+  catch(CWSocketException* pEx)
+  {
+    DWORD dwError = pEx->m_nError;
+    pEx->Delete();
+    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
+  }
 
-			// Prepare for the next time around
-			pSendBuf += dwRead;
-			bMore = ((int)dwBytesSent < nCmdLength);
-		}
-		while (bMore && bContinue);
-		// <-- Oli changed till here
-	}
-
-	if (bContinue) // Oli added check
-	{
-		//Send the end of message indicator
-		char* pszEOM = "\r\n.\r\n";
-		nCmdLength = static_cast<int>(strlen(pszEOM));
-		try
-		{
-			_Send(pszEOM, nCmdLength);
-		}
-		catch(CWSocketException* pEx)
-		{
-			DWORD dwError = pEx->m_nError;
-			pEx->Delete();
-			ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-		}
-
-		//check the response to the End of Message command
-		if (!ReadCommandResponse(250))
-			ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_END_OF_MESSAGE_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
-	}
+  //check the response to the End of Message command
+  if (!ReadCommandResponse(250))
+    ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_END_OF_MESSAGE_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
 BOOL CPJNSMTPConnection::OnSendProgress(DWORD /*dwCurrentBytes*/, DWORD /*dwTotalBytes*/)

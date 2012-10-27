@@ -22,11 +22,6 @@ CPJNSMTPConnection 2.67 with w3 mfc 1.83 for VC6
 
 - Thread Safe
 
-- Changed in class CPJNSMTPConnection:
-  SendMessage(CPJNSMTPMessage& Message, DWORD dwSendBufferSize/*=4096*/)
-  SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize/*=4096*/)
-  -> to Support OnSendProgress()
-
 - Backported from newer version:
   1. Updated the AUTH_AUTO login support to fall back to no
      authentication if no authentication scheme is supported by the SMTP server.
@@ -34,16 +29,27 @@ CPJNSMTPConnection 2.67 with w3 mfc 1.83 for VC6
      and changed the "Date:" header creation so that it is always in English.
 
 
-CPJNSMTPConnection 2.93 with w3 mfc 1.95 for VC2008
+CPJNSMTPConnection 2.98 with w3 mfc 1.95 for VC2008
 ---------------------------------------------------
 
 - Thread Safe
 
-- Changed in class CPJNSMTPConnection:
-  SendMessage(CPJNSMTPMessage& Message, DWORD dwSendBufferSize/*=4096*/)
-  SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize/*=4096*/)
-  -> to Support OnSendProgress()
+- fixed compile if not using SSL in CPJNSMTPConnection::Connect():
+  ...
+  try
+  {
+    //check the response to the login
+    if (!ReadCommandResponse(220))
+      ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
+	  //Negotiate Extended SMTP connection if required
+	  if (DoEHLO(am, m_ConnectionType))  // <---------- changed connectionType to m_ConnectionType
+		  ConnectESMTP(m_sHeloHostname, pszUsername, pszPassword, am);
+      else
+		  ConnectSMTP(m_sHeloHostname);
+  }
+  ...
+  
 - added in SocMFC.cpp to compile also for Windows 2000 target:
   const struct in6_addr my_in6addr_any = { 0 };
   sockAddr.sin6_addr = my_in6addr_any;

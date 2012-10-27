@@ -26,8 +26,10 @@ History: PJN / 05-09-2005 1. Function pointer to CompleteAuthToken is now constr
                           string. This avoids NTLM authentication issues when authenticating as a non-domain user with certain
                           mail servers. Thanks to Wouter Demuynck for reporting this issue.
          PJN / 31-05-2008 1. Code now compiles cleanly using Code Analysis (/analyze)
+         PJN / 30-09-2012 1. Updated the code to avoid DLL planting security issues when calling LoadLibrary. Thanks to Mat 
+                          Berchtold for reporting this issue.
 
-Copyright (c) 2005 - 2010 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2005 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -50,6 +52,7 @@ to maintain a single distribution point for the source code.
 #pragma message("To avoid this message, please put Sspi.h in your pre compiled header (usually stdafx.h)")
 #include <Sspi.h>
 #endif
+#include "PJNLoadLibraryFromSystem32.h"
 
 
 //////////////// Macros / Locals //////////////////////////////////////////////
@@ -71,7 +74,7 @@ CNTLMClientAuth::CNTLMClientAuth() : m_dwBufferSize(16384)
   memset(&m_hCred, 0, sizeof(m_hCred));
   memset(&m_hContext, 0, sizeof(m_hContext));
 
-  m_hSecur32 = LoadLibrary(_T("SECUR32.DLL"));
+  m_hSecur32 = PJNLoadLibraryFromSystem32(_T("SECUR32.DLL"));
   if (m_hSecur32)
   {
     m_lpfnCompleteAuthToken = reinterpret_cast<COMPLETE_AUTH_TOKEN_FN>(GetProcAddress(m_hSecur32, "CompleteAuthToken"));
@@ -312,3 +315,4 @@ SECURITY_STATUS CNTLMClientAuth::GenClientContext(BYTE* pIn, DWORD cbIn, BYTE* p
 
   return ss;
 }
+

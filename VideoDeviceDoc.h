@@ -796,7 +796,6 @@ public:
 #endif
 		CString			m_sUsername;
 		CString			m_sPassword;
-		BOOL			m_bAutoDial;
 		CString			m_sBoundIP;
 		CString			m_sEncodingFriendly;
 		CString			m_sEncodingCharset;
@@ -822,6 +821,7 @@ public:
 	} FTPUploadConfigurationStruct;
 
 	// The Save Frame List Thread Class
+	class CSaveFrameListSMTPConnection; // forward declaration
 	class CSaveFrameListThread : public CWorkerThread
 	{
 		public:
@@ -998,8 +998,8 @@ public:
 			// -1 : Do Exit Thread
 			// 0  : Error Sending Email
 			// 1  : Ok
-			int SendMailMessage(CPJNSMTPMessage* pMessage);
 			int SendMail(const CStringArray& sFiles);
+			void SendMailMessage(const CString& sTempEmailFile, CSaveFrameListSMTPConnection& connection, CPJNSMTPMessage* pMessage);
 
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;

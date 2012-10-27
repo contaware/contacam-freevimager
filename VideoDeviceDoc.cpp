@@ -1868,28 +1868,18 @@ BOOL CVideoDeviceDoc::CSaveFrameListSMTPConnection::OnSendProgress(DWORD dwCurre
 			m_pThread->SetSendMailProgress(Round(dwCurrentBytes * 100.0 / dwTotalBytes));
 		else
 			m_pThread->SetSendMailProgress(0);
+		if (m_bDoExit)
+			Disconnect(FALSE);
 		return (m_bDoExit == false);
 	}
 	else
 		return TRUE;
 }
 
-// Return Values
-// -1 : Do Exit Thread
-// 0  : Error Sending Email
-// 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(CPJNSMTPMessage* pMessage)
+void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTempEmailFile, CVideoDeviceDoc::CSaveFrameListSMTPConnection& connection, CPJNSMTPMessage* pMessage)
 {
 	// Check
-	if (!pMessage)
-		return 0;
-
-	// Init Connection class
-	CVideoDeviceDoc::CSaveFrameListSMTPConnection connection(this);
-
-	// Auto connect to the internet?
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
-		connection.ConnectToInternet();
+	ASSERT(pMessage);
 
 	CString sHost;
 	BOOL bSend = TRUE;
@@ -1980,23 +1970,21 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(CPJNSMTPMessage* pMes
 #endif
 								);
 		}
-		connection.SendMessage(*pMessage);
-	}
 
-	// Auto disconnect from the internet
-	if (m_pDoc->m_MovDetSendMailConfiguration.m_bAutoDial)
-		connection.CloseInternetConnection();
-
-	// Sending Interrupted?
-	if (connection.m_bDoExit)
-	{
-		connection.Disconnect(FALSE);	// Disconnect no Gracefully,
-										// otherwise the thread blocks
-										// long time to get a answer!
-		return -1;
+		// First save the message to disk then send it from disk
+		// so that we have a unique progress display from 0%..100%
+		// Note: connection.SendMessage(*pMessage) is not calling
+		//       CSaveFrameListSMTPConnection::OnSendProgress()
+		pMessage->SaveToDisk(sTempEmailFile);
+		CString sENVID;
+#if (_MSC_VER > 1200)
+		connection.SendMessage(sTempEmailFile, pMessage->m_To, pMessage->m_From, sENVID);
+#else
+		CPJNSMTPAddressArray Recipients;
+		CPJNSMTPMessage::ParseMultipleRecipients(m_pDoc->m_MovDetSendMailConfiguration.m_sTo, Recipients);
+		connection.SendMessage(sTempEmailFile, Recipients, pMessage->m_From, sENVID);
+#endif
 	}
-	else
-		return 1;
 }
 
 // Return Values
@@ -2005,7 +1993,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(CPJNSMTPMessage* pMes
 // 1  : Ok
 int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles) 
 {
-	int res = 0;
 	int i;
 
 	// Check size -> Return Error
@@ -2023,6 +2010,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 	else 
 	{
 		CPJNSMTPMessage* pMessage = NULL;
+		CVideoDeviceDoc::CSaveFrameListSMTPConnection connection(this);
+		CString sTempEmailFile = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), _T("email.eml"));
 		try
 		{
 			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
@@ -2099,31 +2088,46 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 			}
 
 			// Send It
-			res = SendMailMessage(pMessage);
+			SendMailMessage(sTempEmailFile, connection, pMessage);
 
 			// Clean-up
 			if (pMessage)
 				delete pMessage;
+			::DeleteFile(sTempEmailFile);
+
+			// Sending Interrupted (for old PJNSMTP version)
+			if (connection.m_bDoExit)
+				return -1;
+			else
+				return 1;
 		}
 		catch (CPJNSMTPException* pEx)
 		{
 			// Clean-up
 			if (pMessage)
 				delete pMessage;
+			::DeleteFile(sTempEmailFile);
 
+			// Sending Interrupted (new PJNSMTP version throws an exception for that)
+			if (connection.m_bDoExit)
+			{
+				pEx->Delete();
+				return -1;
+			}
 			// Display the error
-			CString sMsg;
-			sMsg.Format(_T("%s, an error occured sending the message, Error:%x\nDescription:%s\n"),
-						m_pDoc->GetDeviceName(),
-						pEx->m_hr,
-						pEx->GetErrorMessage());
-			TRACE(sMsg);
-			::LogLine(sMsg);
-			pEx->Delete();
-			return 0;
+			else
+			{
+				CString sMsg;
+				sMsg.Format(_T("%s, an error occured sending the message, Error:%x\nDescription:%s\n"),
+							m_pDoc->GetDeviceName(),
+							pEx->m_hr,
+							pEx->GetErrorMessage());
+				TRACE(sMsg);
+				::LogLine(sMsg);
+				pEx->Delete();
+				return 0;
+			}
 		}
-
-		return res;
 	}
 }
 
@@ -4249,7 +4253,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_Auth = CPJNSMTPConnection::AUTH_AUTO;
 	m_MovDetSendMailConfiguration.m_sUsername = _T("");
 	m_MovDetSendMailConfiguration.m_sPassword = _T("");
-	m_MovDetSendMailConfiguration.m_bAutoDial = FALSE;
 	m_MovDetSendMailConfiguration.m_sBoundIP = _T("");
 	m_MovDetSendMailConfiguration.m_sEncodingFriendly = _T("Western European (ISO)");
 	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("iso-8859-1");

@@ -4574,6 +4574,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PJNLoadLibraryFromSystem32.h"
+				>
+			</File>
+			<File
 				RelativePath="PJNMD5.h"
 				>
 			</File>

@@ -140,7 +140,12 @@ public:
 #ifdef _DEBUG
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-	virtual BOOL GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpstrError, __in UINT nMaxError,	__out_opt PUINT pnHelpContext = NULL);
+
+#if _MSC_VER >= 1700
+  virtual BOOL GetErrorMessage(_Out_writes_z_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError,	_Out_opt_ PUINT pnHelpContext = NULL);
+#else	
+  virtual BOOL GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszError, __in UINT nMaxError, __out_opt PUINT pnHelpContext = NULL);
+#endif
 	CString GetErrorMessage();
 
 //Members variables
@@ -215,9 +220,6 @@ public:
 	void    SetCharset(const CString& sCharset) { m_sCharset = sCharset; };
 	CString GetCharset() const { return m_sCharset; };
 
-  void    SetContentBase(const CString& sContentBase) { m_sContentBase = sContentBase; };
-  CString GetContentBase() const { return m_sContentBase; };
-
   void    SetContentID(const CString& sContentID);
   CString GetContentID() const;
 
@@ -234,7 +236,7 @@ public:
   CString GetBoundary() const { return m_sBoundary; };
 
 //Misc methods
-  CStringA          GetHeader();
+  CStringA          GetHeader(const CString& sRootCharset);
   CStringA          GetBody(BOOL bDoSingleDotFix);
   CStringA          GetFooter();
   CPJNSMTPBodyPart* FindFirstBodyPart(const CString sContentType);
@@ -251,7 +253,6 @@ public:
   static char       HexDigit(int nDigit);
   static CString    CreateGUID();
   static CStringA   HeaderEncode(const CString& sText, const CString& sCharset);
-  static CStringA   FoldHeader(const CStringA& sHeader);
   static CStringA   FoldSubjectHeader(const CString& sSubject, const CString& sCharset);
 
 protected:
@@ -260,7 +261,6 @@ protected:
   CString                                       m_sTitle;              //What is it to be know as when emailed
   CString                                       m_sContentType;        //The mime content type for this body part
   CString                                       m_sCharset;            //The charset for this body part
-  CString                                       m_sContentBase;        //The absolute URL to use for when you need to resolve any relative URL's in this body part
   CString                                       m_sContentID;          //The uniqiue ID for this body part (allows other body parts to refer to us via a CID URL)
   CString                                       m_sContentLocation;    //The relative URL for this body part (allows other body parts to refer to us via a relative URL)
   CString                                       m_sText;               //If using strings rather than file, then this is it!
@@ -344,7 +344,7 @@ public:
   virtual CStringA     GetHeader();
   void                 AddTextBody(const CString& sBody, LPCTSTR pszRootMIMEType = _T("multipart/mixed"));
   CString              GetTextBody();
-  void                 AddHTMLBody(const CString& sBody, const CString& sContentBase, LPCTSTR pszRootMIMEType = _T("multipart/mixed"));
+  void                 AddHTMLBody(const CString& sBody, LPCTSTR pszRootMIMEType = _T("multipart/mixed"));
   CString              GetHTMLBody();
   void                 AddCustomHeader(const CString& sHeader);
   CString              GetCustomHeader(int nIndex);
@@ -375,7 +375,7 @@ public:
 
 protected:
 //Methods
-  void             WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPart, BOOL bRoot);
+  void             WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, const CString& sRootCharset);
   CString          ConvertHTMLToPlainText(const CString& sHtml);
   virtual CStringA FormDateHeader();
 
@@ -427,7 +427,8 @@ public:
     PlainText = 0,
   #ifndef CPJNSMTP_NOSSL  
     SSL_TLS = 1,
-    STARTTLS = 2
+    STARTTLS = 2,
+    AutoUpgradeToSTARTTLS = 3
   #endif  
   };
 
@@ -447,8 +448,7 @@ public:
   int     GetLastCommandResponseCode() const { return m_nLastCommandResponseCode; };
   DWORD   GetTimeout() const { return m_dwTimeout; };
   void    SetTimeout(DWORD dwTimeout) { m_dwTimeout = dwTimeout; };
-  //void    SendMessage(CPJNSMTPMessage& Message);
-  void    SendMessage(CPJNSMTPMessage& Message, DWORD dwSendBufferSize = 4096);
+	void    SendMessage(CPJNSMTPMessage& Message);
   void    SendMessage(const CString& sMessageOnFile, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
   void    SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
   void    SetHeloHostname(const CString& sHostname);
@@ -506,7 +506,7 @@ protected:
 //Methods
 #ifndef CPJNSMTP_NOSSL
   virtual CString GetOpenSSLError();
-  virtual void DoSTARTTLS(LPCTSTR pszLocalName);
+  virtual void DoSTARTTLS();
 #endif
 	virtual void AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword);
   virtual void ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername, LPCTSTR pszPassword, AuthenticationMethod am);
@@ -516,8 +516,7 @@ protected:
 	virtual void AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword);
   virtual CString FormMailFromCommand(const CString& sEmailAddress, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType, CString& sENVID);
 	virtual void SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient);
-  //virtual void SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot);
-  virtual BOOL SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize = 4096);
+  virtual void SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, const CString& sRootCharset);
 	virtual BOOL ReadCommandResponse(int nExpectedCode);
   virtual BOOL ReadCommandResponse(int nExpectedCode1, int nExpectedCode2);
 	virtual BOOL ReadResponse(CStringA& sResponse);
@@ -532,9 +531,11 @@ protected:
   virtual void _Connect(LPCTSTR lpszHostAddress, UINT nHostPort);
   virtual int  _Send(const void *pBuffer, int nBuf);
   virtual int  _Receive(void *pBuffer, int nBuf);
-  virtual void _Close();
+  virtual void _Close(BOOL bGracefully);
   virtual BOOL _IsReadible(DWORD dwTimeout);
-  
+  virtual BOOL DoEHLO(AuthenticationMethod am, ConnectionType connectionType);
+  virtual void SendEHLO(LPCTSTR pszLocalName, CString& sLastResponse);
+    
 //Static methods
   __forceinline static void SecureEmptyString(CStringA& sVal);
   __forceinline static void SecureEmptyString(CStringW& sVal);

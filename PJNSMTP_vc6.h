@@ -399,8 +399,7 @@ public:
   int     GetLastCommandResponseCode() const { return m_nLastCommandResponseCode; };
   DWORD   GetTimeout() const { return m_dwTimeout; };
   void    SetTimeout(DWORD dwTimeout) { m_dwTimeout = dwTimeout; };
-  //void    SendMessage(CPJNSMTPMessage& Message); // Oli changed
-  void    SendMessage(CPJNSMTPMessage& Message, DWORD dwSendBufferSize = 4096);
+	void    SendMessage(CPJNSMTPMessage& Message);
   void    SendMessage(const CString& sMessageOnFile, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = PJNSMTP_DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HEADERS_ONLY);
   void    SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = PJNSMTP_DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HEADERS_ONLY);
   void    SetHeloHostname(const CString& sHostname);
@@ -464,8 +463,7 @@ protected:
 	virtual void AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword);
   virtual CString FormMailFromCommand(const CString& sEmailAddress, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType, CString& sENVID);
 	virtual void SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient);
-  //virtual void SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot); // Oli changed
-  virtual BOOL SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, DWORD dwSendBufferSize = 4096);
+  virtual void SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot);
 	virtual BOOL ReadCommandResponse(int nExpectedCode);
   virtual BOOL ReadCommandResponse(int nExpectedCode1, int nExpectedCode2);
 	virtual BOOL ReadResponse(LPSTR pszBuffer, int nInitialBufSize, LPSTR* ppszOverFlowBuffer, int nGrowBy=4096);
