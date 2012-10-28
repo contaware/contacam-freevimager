@@ -7,8 +7,10 @@ VERSION HISTORY
 - The Other HTTP Device option of the Network dialog supports
   many more ip cameras and performs higher frame-rates because
   it first tries server push mode
-- Motion detection emails include now also the camera name
-- Small fixes
+- Device autostart is not cleared when camera is unreachable
+  (autostart can be removed in popping-up error message box)
+- Motion detection emails include now the camera name
+- Better Hotmail (Windows Live) email sending support
 
 4.0.5 (August 27th 2012)
 

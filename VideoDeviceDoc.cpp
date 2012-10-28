@@ -930,9 +930,15 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 
 	// Do Exit?
 	if (SendMail(sFileNames) == -1)
+	{
+		m_nSendMailProgress = 100; // hide progress display
 		return FALSE;
+	}
 	else
+	{
+		m_nSendMailProgress = 100; // hide progress display
 		return TRUE;
+	}
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
@@ -992,6 +998,9 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 		default :
 				break;
 	}
+
+	// Hide progress display
+	m_nFTPUploadProgress = 100;
 
 	// Do Exit?
 	if (result == -1)
@@ -1867,7 +1876,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListSMTPConnection::OnSendProgress(DWORD dwCurre
 		if (dwTotalBytes > 0)
 			m_pThread->SetSendMailProgress(Round(dwCurrentBytes * 100.0 / dwTotalBytes));
 		else
-			m_pThread->SetSendMailProgress(0);
+			m_pThread->SetSendMailProgress(100);
 		if (m_bDoExit)
 			Disconnect(FALSE);
 		return (m_bDoExit == false);
