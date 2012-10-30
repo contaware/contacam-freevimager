@@ -854,6 +854,8 @@ public:
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnToolsViewLogfile();
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
+	afx_msg void OnEditScreenshot();
+	afx_msg void OnUpdateEditScreenshot(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC

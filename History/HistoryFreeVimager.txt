@@ -1,7 +1,9 @@
 VERSION HISTORY
 
-4.0.7 (October xxx 2012)
+4.0.7 (November 1st 2012)
 
+- New Scan and Email toolbar button
+- New Screenshot toolbar button
 - Small fixes
 
 4.0.5 (August 27th 2012)

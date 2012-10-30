@@ -6,6 +6,8 @@ Picture:
 Snapshot:
 ---------
 - One button to take a manual snapshot of all open cams
+- Possibility to change the default snapshot.jpg name,
+  or at least change the ftp upload name
 
 Recording:
 ----------

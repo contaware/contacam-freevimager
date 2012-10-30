@@ -106,6 +106,8 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
+	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_SCREENSHOT, OnUpdateEditScreenshot)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -5256,6 +5258,22 @@ void CUImagerApp::OnUpdateEditPaste(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	(::IsClipboardFormatAvailable(CF_DIB)								||
 					::IsClipboardFormatAvailable(CF_ENHMETAFILE))						&&
 					(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode)	&&
+					!m_bSlideShowOnly);
+}
+
+void CUImagerApp::OnEditScreenshot() 
+{
+	if (!::AfxGetMainFrame()->m_bFullScreenMode &&
+		!m_bSlideShowOnly)
+	{
+		CaptureScreenToClipboard();
+		OnEditPaste();
+	}
+}
+
+void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	(::AfxGetMainFrame() && !::AfxGetMainFrame()->m_bFullScreenMode) &&
 					!m_bSlideShowOnly);
 }
 

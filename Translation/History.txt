@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.0.7 (October xxx 2012)
+4.0.7 (November 1st 2012)
 
 - Added strings 1865, 1866, 1867 and 1868 and new dialog 307
 - Removed strings 1549, 1550, 1551, 1552, 1553, 1554, 1789, 1839, 1840, 1841

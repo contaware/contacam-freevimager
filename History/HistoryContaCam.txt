@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.7 (October xxx 2012)
+4.0.7 (November 1st 2012)
 
 - Fixed possible timezone problem's by getting browser's timezone
   and setting it in PHP
