@@ -52,7 +52,7 @@ class CMovementDetectionPage;
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define MAX_DEVICE_AUTORUN_KEYS				32			// Maximum number of devices that can autorun at start-up
+#define MAX_DEVICE_AUTORUN_KEYS				100			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
 #define MIN_DISKFREE_PERCENT				10			// Below this disk free percentage the oldest files are deleted
