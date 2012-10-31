@@ -932,8 +932,9 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
 {
 	TCHAR pFrom[MAX_PATH+1]; // +1 for double NULL Termination
-	memset(pFrom, 0, (MAX_PATH+1) * sizeof(TCHAR));
 	_tcsncpy(pFrom, szName, MAX_PATH);
+	pFrom[MAX_PATH - 1] = _T('\0');
+	pFrom[MAX_PATH] = _T('\0');
 
 	SHFILEOPSTRUCT FileOp;
 	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));

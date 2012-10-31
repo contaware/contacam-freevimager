@@ -7,7 +7,7 @@ VERSION HISTORY
 - The Other HTTP Device option of the Network dialog supports
   many more ip cameras and performs higher frame-rates because
   it first tries server push mode
-- Device autostart is not cleared when camera is unreachable
+- Device autostart is now not cleared when camera is unreachable
   (autostart can be removed in popping-up error message box)
 - Motion detection emails include now the camera name
 - Better Hotmail (Windows Live) email sending support
