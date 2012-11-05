@@ -1658,10 +1658,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\DxTuner.cpp"
-				>
-			</File>
-			<File
 				RelativePath="DxVideoFormatDlg.cpp"
 				>
 				<FileConfiguration
@@ -4363,10 +4359,6 @@
 			</File>
 			<File
 				RelativePath="DxDraw.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DxTuner.h"
 				>
 			</File>
 			<File

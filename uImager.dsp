@@ -351,10 +351,6 @@ SOURCE=.\DxDraw.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\DxTuner.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\DxVideoFormatDlg.cpp
 # End Source File
 # Begin Source File
@@ -1029,10 +1025,6 @@ SOURCE=.\DxCapture.h
 # Begin Source File
 
 SOURCE=.\DxDraw.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\DxTuner.h
 # End Source File
 # Begin Source File
 

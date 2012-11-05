@@ -15,7 +15,6 @@
 #include "Dib.h"
 #include "DxCapture.h"
 #include "xprtdefs.h"
-#include "DxTuner.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -73,21 +72,6 @@ CDxCapture::CDxCapture()
 CDxCapture::~CDxCapture()
 {
 	Close();
-}
-
-BOOL CDxCapture::ShowError(HRESULT hr)
-{
-    if (FAILED(hr))
-    {
-        TCHAR szErr[MAX_ERROR_TEXT_LEN];
-        DWORD res = ::AMGetErrorText(hr, szErr, MAX_ERROR_TEXT_LEN);
-        if (res == 0)
-            _stprintf(szErr, _T("Unknown Error: 0x%2x"), hr);
-        ::MessageBox(0, szErr, _T("Error!"), MB_OK | MB_ICONERROR);
-		return TRUE;
-    }
-	else
-		return FALSE;
 }
 
 BOOL CDxCapture::InitInterfaces()
@@ -2469,46 +2453,6 @@ BOOL CDxCapture::GetDVFormat(_DVENCODERVIDEOFORMAT* pVideoFormat)
 	SAFE_RELEASE(pIAMExtTransport);
 
     return TRUE;
-}
-
-void CDxCapture::ShowTVTunerInfo()
-{ 
-	HRESULT hr;
-	CComPtr<IAMTVTuner> pTVTuner;
-	hr = m_pCaptureGraphBuilder->FindInterface(&LOOK_UPSTREAM_ONLY,
-											  NULL, m_pSrcFilter,
-											  IID_IAMTVTuner, (void**)&pTVTuner);
-	if (SUCCEEDED(hr))
-	{
-		CDxTuner Tuner(pTVTuner);
-		CString s, sTunerMode, sSignalType;
-		AMTunerModeType tunerMode = Tuner.GetTunerMode();
-		switch (tunerMode)
-		{
-			case AMTUNER_MODE_DEFAULT :		sTunerMode = _T("Default"); break;
-			case AMTUNER_MODE_TV :			sTunerMode = _T("TV"); break;
-			case AMTUNER_MODE_FM_RADIO :	sTunerMode = _T("FM Radio"); break;
-			case AMTUNER_MODE_AM_RADIO :	sTunerMode = _T("AM Radio"); break;
-			case AMTUNER_MODE_DSS :			sTunerMode = _T("DSS"); break;
-			default :						sTunerMode = _T("Unknown"); break;
-		}
-		long TunerModes = Tuner.GetAvailableModes();
-		long minFreq, maxFreq;
-		Tuner.GetMinMaxFrequency(minFreq, maxFreq);
-		AnalogVideoStandard tvFormat = Tuner.GetTVFormat();
-		CDxTuner::eSignalType signalType;
-		long signalStrenght = Tuner.GetSignalStrength(signalType);
-		switch (signalType)
-		{
-			case CDxTuner::SIGNALTYPE_NONE :			sSignalType = _T("None"); break;
-			case CDxTuner::SIGNALTYPE_PLL :				sSignalType = _T("PLL"); break;
-			case CDxTuner::SIGNALTYPE_SIGNALSTRENGTH :	sSignalType = _T("Signalstrength"); break;
-			default :									sSignalType = _T("Unknown"); break;
-		}
-		s.Format(_T("Tuner Mode: %s , Current Freq: %dHz\nMin Freq: %dHz , Max Freq: %dHz\nCurrent Input: %d , Num. Inputs: %d\nSignal Strenght: %d , Signal Type: %s"),
-						sTunerMode, Tuner.GetFrequency(), minFreq, maxFreq, Tuner.GetInput(), Tuner.GetNumInputs(), signalStrenght, sSignalType);
-		::AfxMessageBox(s, MB_ICONINFORMATION);
-	}
 }
 
 #endif

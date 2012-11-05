@@ -96,7 +96,6 @@ public:
 	__forceinline BOOL IsDV() const {return m_bDV;};	// Is the output DV
 	__forceinline const GUID* GetOpenMediaSubType() {return &m_OpenMediaSubType;};
 	__forceinline BOOL IsOpenWithMediaSubType() {return m_OpenMediaSubType != MEDIASUBTYPE_None;};
-	BOOL ShowError(HRESULT hr);							// Show Message Box with error
 	int GetDeviceID();									// Get the Device ID from the m_sDevicePath string
 														// (Device IDs dynamically change when a 
 														// plug&play device is removed)
@@ -173,8 +172,6 @@ public:
 
 	BOOL HasVideoTVTunerDlg();							// Is Video TV Tuner Dialog Supported?
 	BOOL ShowVideoTVTunerDlg();							// Show Video TV Tuner Dialog
-
-	void ShowTVTunerInfo();								// TV Tuner info
 
 	CCaptureGraphBuilder* GetCaptureGraphBuilder() const {return m_pCaptureGraphBuilder;};
 
