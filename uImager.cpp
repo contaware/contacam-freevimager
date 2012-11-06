@@ -2967,6 +2967,52 @@ CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
 }
 
 #ifdef VIDEODEVICEDOC
+
+BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount, CString sName)
+{
+	if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
+	{
+		// Retry in AUTORUN_VIDEODEVICES_RETRY_DELAY ms
+		CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+														WM_AUTORUN_VIDEODEVICES,
+														AUTORUN_VIDEODEVICES_RETRY_DELAY,
+														(WPARAM)nRetryCount, 0);
+
+		// Log message
+		CString sMsg;
+		sMsg.Format(_T("Cannot reach %s, retry in %d seconds\n"),
+					sName, AUTORUN_VIDEODEVICES_RETRY_DELAY / 1000);
+		sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
+		TRACE(sMsg);
+		::LogLine(sMsg);
+
+		// Show starting progress dialog
+		if (!m_bServiceProcess								&&
+			!m_pAutorunProgressDlg							&&
+			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
+			!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+		{
+			m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
+														ML_STRING(1720, "Starting Device..."),
+														(nRetryCount - 1) * AUTORUN_VIDEODEVICES_RETRY_DELAY,
+														AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY);
+		}
+
+		return TRUE;
+	}
+	else
+	{
+		// Log message
+		CString sMsg;
+		sMsg.Format(_T("Trying to start anyway %s\n"), sName);
+		sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
+		TRACE(sMsg);
+		::LogLine(sMsg);
+		
+		return FALSE;
+	}
+}
+
 void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 {
 	CString sSection(_T("DeviceAutorun"));
@@ -2987,74 +3033,30 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 			sKey.Format(_T("%02u"), i);
 			if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
 			{
-				CString sDev(sDevRegistry);
-				sDev.Replace(_T('/'), _T('\\'));
-				int nID = CDxCapture::GetDeviceID(sDev);
-				if (nID < 0) // It is a Network Device or a unplugged Direct Show Device
+				CString sHost;
+				if ((sHost = CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry)) != _T(""))
 				{
-					// Get Host of the network device which has the format:
-					// Host:Port:FrameLocation:NetworkDeviceTypeMode
-					// (use reverse find because Host maybe a IP6 address with :)
-					CString sAddress(sDevRegistry);
-					int index = sAddress.ReverseFind(_T(':'));
-					if (index >= 0)
-					{
-						sAddress = sAddress.Left(index);
-						index = sAddress.ReverseFind(_T(':'));
-						if (index >= 0)
-						{
-							sAddress = sAddress.Left(index);
-							index = sAddress.ReverseFind(_T(':'));
-							if (index >= 0)
-								sAddress = sAddress.Left(index);
-						}
-					}
-
 					// This function checks whether there is a network interface
-					// that can connect to the given address
-					// Note: if we have a unplugged Direct Show Device it just
-					// returns FALSE so that we wait for it to get re-plugged
-					if (!CNetCom::HasInterface(sAddress))
+					// that can connect to the given host
+					if (!CNetCom::HasInterface(sHost))
 					{
-						if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
-						{
-							// Retry in AUTORUN_VIDEODEVICES_RETRY_DELAY ms
-							CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
-																			WM_AUTORUN_VIDEODEVICES,
-																			AUTORUN_VIDEODEVICES_RETRY_DELAY,
-																			(WPARAM)nRetryCount, 0);
-
-							// Log message
-							CString sMsg;
-							sMsg.Format(_T("Cannot reach %s, retry in %d seconds\n"),
-										sAddress, AUTORUN_VIDEODEVICES_RETRY_DELAY / 1000);
-							sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
-							TRACE(sMsg);
-							::LogLine(sMsg);
-
-							// Show starting progress dialog
-							if (!m_bServiceProcess								&&
-								!m_pAutorunProgressDlg							&&
-								(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
-								!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
-							{
-								m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
-																			ML_STRING(1720, "Starting Device..."),
-																			(nRetryCount - 1) * AUTORUN_VIDEODEVICES_RETRY_DELAY,
-																			AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY);
-							}
+						if (AutorunVideoDevicesDoWait(nRetryCount, sHost))
 							return;
-						}
 						else
-						{
-							// Log message
-							CString sMsg;
-							sMsg.Format(_T("Trying to start anyway %s\n"), sAddress);
-							sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
-							TRACE(sMsg);
-							::LogLine(sMsg);
 							break;
-						}
+					}
+				}
+				else
+				{
+					CString sDev(sDevRegistry);
+					sDev.Replace(_T('/'), _T('\\'));
+					int nID = CDxCapture::GetDeviceID(sDev);
+					if (nID < 0)
+					{
+						if (AutorunVideoDevicesDoWait(nRetryCount, sDevRegistry))
+							return;
+						else
+							break;
 					}
 				}
 			}
@@ -3080,20 +3082,26 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 			pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 			if (pDoc)
 			{
-				// Open Direct Show Device
-				CString sDev(sDevRegistry);
-				sDev.Replace(_T('/'), _T('\\'));
-				int nID = CDxCapture::GetDeviceID(sDev);
-				if (nID >= 0)
-				{
-					if (!pDoc->OpenVideoDevice(nID))
-						pDoc->CloseDocument();
-				}
-				// Network Device or unplugged Direct Show Device
-				else
+				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
 				{
 					if (!pDoc->OpenGetVideo(sDevRegistry))
 						pDoc->CloseDocument();
+				}
+				else
+				{
+					CString sDev(sDevRegistry);
+					sDev.Replace(_T('/'), _T('\\'));
+					int nID = CDxCapture::GetDeviceID(sDev);
+					if (nID >= 0)
+					{
+						if (!pDoc->OpenVideoDevice(nID))
+							pDoc->CloseDocument();
+					}
+					else
+					{
+						pDoc->ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
+						pDoc->CloseDocument();
+					}
 				}
 			}
 		}

@@ -1099,17 +1099,18 @@ public:
 	
 	// General Functions
 	void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
-	void CloseDocument();				// Close Document by sending a WM_CLOSE to the Parent Frame
-	CString GetAssignedDeviceName();	// Get User Assigned Device Name	
-	CString GetDeviceName();			// Friendly Device Name
-	CString GetDevicePathName();		// Used For Settings, Scheduler and Autorun
+	void CloseDocument();														// Close Document by sending a WM_CLOSE to the Parent Frame
+	CString GetAssignedDeviceName();											// Get User Assigned Device Name
+	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
+	CString GetDeviceName();													// Friendly Device Name
+	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
 	void SetDocumentTitle();
 	CVideoDeviceView* GetView() const {return m_pView;};
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
 	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
-	void ViewVideo();					// Show / Hide Video Preview
+	void ViewVideo();												// Show / Hide Video Preview
 
 	// Open Video Device
 	BOOL OpenVideoDevice(int nId);

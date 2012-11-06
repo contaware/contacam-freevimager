@@ -4431,13 +4431,13 @@ void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDevicePathNam
 	{
 		if (AutorunGetDeviceKey(sDevicePathName) != _T(""))
 		{
-			CConnectErrMsgBoxDlg dlg(lpszText);
+			CConnectErrMsgBoxDlg dlg(sDeviceName + _T(", ") + lpszText);
 			dlg.DoModal();
 			if (!dlg.m_bAutorun)
 				AutorunRemoveDevice(sDevicePathName);
 		}
 		else
-			::AfxMessageBox(lpszText, MB_OK | MB_ICONSTOP);
+			::AfxMessageBox(sDeviceName + _T(", ") + lpszText, MB_OK | MB_ICONSTOP);
 	}
 }
 
@@ -4459,6 +4459,45 @@ void CVideoDeviceDoc::FreeMovementDetector()
 void CVideoDeviceDoc::CloseDocument()
 {
 	GetFrame()->PostMessage(WM_CLOSE, 0, 0);
+}
+
+CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathName)
+{
+	// Network devices have the format:
+	// Host:Port:FrameLocation:NetworkDeviceTypeMode
+	// (use reverse find because Host maybe a IP6 address with :)
+
+	// NetworkDeviceTypeMode
+	CString sAddress(sDevicePathName);
+	int i = sAddress.ReverseFind(_T(':'));
+	if (i < 0)
+		return _T("");
+	CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
+	NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
+	sNetworkDeviceTypeMode.ReleaseBuffer();
+	if (nNetworkDeviceTypeMode < INTERNAL_UDP || nNetworkDeviceTypeMode >= LAST_DEVICE)
+		return _T("");
+	
+	// FrameLocation
+	sAddress = sAddress.Left(i);
+	i = sAddress.ReverseFind(_T(':'));
+	if (i < 0)
+		return _T("");
+	CString sFrameLocation = sAddress.Right(sAddress.GetLength() - i - 1);
+
+	// Port
+	sAddress = sAddress.Left(i);
+	i = sAddress.ReverseFind(_T(':'));
+	if (i < 0)
+		return _T("");
+	CString sPort = sAddress.Right(sAddress.GetLength() - i - 1);
+	int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+	sPort.ReleaseBuffer();
+	if (nPort <= 0 || nPort > 65535) // Port 0 is Reserved
+		return _T("");
+
+	// Host
+	return sAddress.Left(i);
 }
 
 CString CVideoDeviceDoc::GetDevicePathName()

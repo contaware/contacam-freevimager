@@ -485,6 +485,7 @@ public:
 	int GetTotalVideoDeviceDocsMovementDetecting();
 
 	// Autorun Video Devices
+	BOOL AutorunVideoDevicesDoWait(int nRetryCount, CString sName);
 	void AutorunVideoDevices(int nRetryCount = 0);
 
 	// Get current ContaCamService state

@@ -75,7 +75,10 @@ void CProgressDlg::OnClose()
 
 void CProgressDlg::Close()
 {
-	PostMessage(WM_CLOSE, 0, 0);
+	if (m_bUseThread)
+		PostMessage(WM_CLOSE, 0, 0);
+	else
+		OnClose();
 }
 
 // Avoid closing dialog with ALT+F4
