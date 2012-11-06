@@ -178,12 +178,34 @@ void CConnectErrMsgBoxDlg::OnPaint()
 	int nOldMode = dc.SetBkMode(TRANSPARENT);
 	COLORREF crOldText = dc.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
 
-	// Draw text
+	// Break long strings that have no spaces
+	CString s(m_sMsgText);
 	CRect rcText(rect);
 	rcText.bottom = 0;
-	dc.DrawText(m_sMsgText, m_sMsgText.GetLength(), rcText, DT_WORDBREAK | DT_CALCRECT);
+	dc.DrawText(s, s.GetLength(), rcText, DT_WORDBREAK | DT_CALCRECT);
+	while (rcText.Width() > rect.Width())
+	{
+		for (int nCount = s.GetLength() ; nCount > 0 ; nCount--)
+		{
+			CRect rc(rect);
+			rc.bottom = 0;
+			dc.DrawText(s, nCount, rc, DT_WORDBREAK | DT_CALCRECT);
+			if (rc.Width() <= rect.Width())
+			{
+				s.Insert(nCount, _T("\r\n"));
+				break;
+			}
+		}
+		rcText = rect;
+		rcText.bottom = 0;
+		dc.DrawText(s, s.GetLength(), rcText, DT_WORDBREAK | DT_CALCRECT);
+	}
+
+	// Center vertically
 	rcText.OffsetRect(0, (rect.Height() - rcText.Height()) / 2);
-	dc.DrawText(m_sMsgText, m_sMsgText.GetLength(), rcText, DT_WORDBREAK);
+
+	// Draw text
+	dc.DrawText(s, s.GetLength(), rcText, DT_WORDBREAK);
 	
 	// Clean-up
 	dc.SetTextColor(crOldText);
