@@ -1,8 +1,13 @@
 VERSION HISTORY
 
+4.0.9 (xxx 2012)
+
+- On ContaCam start the unplugged WDM devices are now popping-up
+  the new error message box which permits to clear autostart
+
 4.0.7 (November 1st 2012)
 
-- Fixed possible timezone problem's by getting browser's timezone
+- Fixed possible timezone problems by getting browser's timezone
   and setting it in PHP
 - The Other HTTP Device option of the Network dialog supports
   many more ip cameras and performs higher frame-rates because

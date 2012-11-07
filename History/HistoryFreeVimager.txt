@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+4.0.9 (xxx 2012)
+
+- ... 
+
 4.0.7 (November 1st 2012)
 
 - New Scan and Email toolbar button
