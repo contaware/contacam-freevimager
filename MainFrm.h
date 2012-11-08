@@ -231,8 +231,6 @@ protected:
 
 	// Scan Vars
 	BOOL m_bScanAndEmail;
-	int m_nScanPageNumber;
-	CString m_sScanCurrentTiffPageFileName;
 	TIFF* m_TiffScan;
 
 protected:

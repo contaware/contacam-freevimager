@@ -2,7 +2,9 @@ VERSION HISTORY
 
 4.0.9 (xxx 2012)
 
-- ... 
+- Removed single pages save when tiff multi-page scanning because
+  since version 4.0.5 there is the lossless extract all pages
+  command if somebody wants the single tiff pages
 
 4.0.7 (November 1st 2012)
 

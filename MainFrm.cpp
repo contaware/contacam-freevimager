@@ -149,8 +149,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_sJPEGAdvancedMenuItem = _T("");
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
-	m_nScanPageNumber = 0;
-	m_sScanCurrentTiffPageFileName = _T("");
 	m_pBatchProcDlg = NULL;
 	m_pIMAPI2Dlg = NULL;
 }
@@ -440,10 +438,6 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 			::TIFFClose(m_TiffScan);
 			m_TiffScan = NULL;
 
-			// Delete first single page file if only one page scanned
-			if (m_nScanPageNumber == 1 && !m_sScanCurrentTiffPageFileName.IsEmpty())
-				::DeleteFile(m_sScanCurrentTiffPageFileName);
-
 			// E-Mail it?
 			if (m_bScanAndEmail)
 			{
@@ -499,7 +493,6 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 
 void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 {
-	m_sScanCurrentTiffPageFileName = _T("");
 	if (((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName != _T(""))
 	{
 		CDib Dib;
@@ -566,7 +559,6 @@ void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 		// First Page?
 		if (m_TiffScan == NULL)
 		{
-			m_nScanPageNumber = 1;
 			Dib.SaveFirstTIFF(	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName,
 								&m_TiffScan,
 								0, // We do not know how many pages
@@ -578,7 +570,6 @@ void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 		}
 		else
 		{
-			m_nScanPageNumber++;
 			Dib.SaveNextTIFF(	m_TiffScan,
 								0, // We do not know the page number
 								0, // We do not know how many pages
@@ -587,29 +578,6 @@ void CMainFrame::TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info)
 								((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality,
 								this,
 								TRUE);
-		}
-
-		// Save also the single pages as separate tiff files
-		if (((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName == _T(""))
-		{
-			m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d%s"),
-													::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
-													m_nScanPageNumber,
-													::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
-			int i = 0;
-			while (::IsExistingFile(m_sScanCurrentTiffPageFileName))
-			{
-				m_sScanCurrentTiffPageFileName.Format(	_T("%s%04d(%d)%s"),
-														::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName),
-														m_nScanPageNumber,
-														++i,
-														::GetFileExt(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName));
-			}
-			Dib.SaveTIFF(	m_sScanCurrentTiffPageFileName,
-							nCompression,
-							DEFAULT_JPEGCOMPRESSION,
-							this,
-							TRUE);
 		}
 	}
 	else
