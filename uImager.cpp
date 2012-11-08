@@ -3872,7 +3872,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 										dwMaxSize,
 										bMaxSizePercent,
 										dwJpegQuality,
-										bForceJpegQuality,
 										nTiffCompression,
 										bTiffForceCompression,
 										bShrinkPictureSize,
@@ -4189,16 +4188,14 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 }
 
 // Return Value:
-// -1 : Just Copied
 // 0  : Error
-// 1  : Shrinked
+// 1  : Ok
 // Shrink All Pages of a Multi-Page Tiff
 int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
 										LPCTSTR szDstFileName,
 										DWORD dwMaxSize,
 										BOOL bMaxSizePercent,
 										DWORD dwJpegQuality,
-										BOOL bForceJpegQuality,
 										int nTiffCompression,
 										BOOL bTiffForceCompression,
 										BOOL bShrinkPictureSize,
@@ -4239,7 +4236,10 @@ int CUImagerApp::ShrinkPictureMultiPage(LPCTSTR szSrcFileName,
 			// Load
 			a.Add(new CDib);
 			if (!a[a.GetUpperBound()])
-				
+			{
+				CDib::FreeArray(a);
+				return 0;
+			}	
 			a[a.GetUpperBound()]->SetShowMessageBoxOnError(FALSE);
 			if (!a[a.GetUpperBound()]->LoadTIFF(szSrcFileName,
 												nPageNum,
