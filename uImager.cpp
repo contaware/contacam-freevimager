@@ -961,9 +961,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 						}
 						else
 						{
-							CString sMsg(_T("Failed to start the web server\n"));
-							TRACE(sMsg);
-							::LogLine(sMsg);
+							TRACE(ML_STRING(1475, "Failed to start the web server") + _T("\n"));
+							::LogLine(ML_STRING(1475, "Failed to start the web server"));
 						}
 					}
 
