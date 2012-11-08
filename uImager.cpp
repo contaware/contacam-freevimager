@@ -2968,7 +2968,7 @@ CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
 
 #ifdef VIDEODEVICEDOC
 
-BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount, CString sName)
+BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount)
 {
 	if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
 	{
@@ -2977,14 +2977,6 @@ BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount, CString sName)
 														WM_AUTORUN_VIDEODEVICES,
 														AUTORUN_VIDEODEVICES_RETRY_DELAY,
 														(WPARAM)nRetryCount, 0);
-
-		// Log message
-		CString sMsg;
-		sMsg.Format(_T("Cannot reach %s, retry in %d seconds\n"),
-					sName, AUTORUN_VIDEODEVICES_RETRY_DELAY / 1000);
-		sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
-		TRACE(sMsg);
-		::LogLine(sMsg);
 
 		// Show starting progress dialog
 		if (!m_bServiceProcess								&&
@@ -3001,16 +2993,7 @@ BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount, CString sName)
 		return TRUE;
 	}
 	else
-	{
-		// Log message
-		CString sMsg;
-		sMsg.Format(_T("Trying to start anyway %s\n"), sName);
-		sMsg.Replace(_T("%"), _T(":interface")); // for IP6 link-local addresses
-		TRACE(sMsg);
-		::LogLine(sMsg);
-		
 		return FALSE;
-	}
 }
 
 void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
@@ -3040,7 +3023,7 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 					// that can connect to the given host
 					if (!CNetCom::HasInterface(sHost))
 					{
-						if (AutorunVideoDevicesDoWait(nRetryCount, sHost))
+						if (AutorunVideoDevicesDoWait(nRetryCount))
 							return;
 						else
 							break;
@@ -3053,7 +3036,7 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 					int nID = CDxCapture::GetDeviceID(sDev);
 					if (nID < 0)
 					{
-						if (AutorunVideoDevicesDoWait(nRetryCount, sDevRegistry))
+						if (AutorunVideoDevicesDoWait(nRetryCount))
 							return;
 						else
 							break;
