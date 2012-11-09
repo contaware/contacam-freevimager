@@ -4276,6 +4276,14 @@ BOOL CPictureDoc::SaveAsPdf()
 	// Force Cursor
 	GetView()->ForceCursor();
 
+	// Check
+	if (IsModified() && IsMultiPageTIFF())
+	{
+		::AfxMessageBox(ML_STRING(1180, "Try again after saving the picture file."), MB_OK | MB_ICONINFORMATION);
+		GetView()->ForceCursor(FALSE);
+		return FALSE;
+	}
+
 	// Display the Save As Pdf Dialog
 	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	TCHAR FileName[MAX_PATH] = _T("");
@@ -4314,14 +4322,33 @@ BOOL CPictureDoc::SaveAsPdf()
 
 		// Begin Wait Cursor
 		BeginWaitCursor();
-
-		// Save as Tiff
-		CString sTiffFileName;
-		BOOL bSkipTiffSave = IsTIFF() && !IsModified() && !(m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32);
-		if (bSkipTiffSave)
+		
+		// Save as tiff
+		CString sTiffFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+													::GetFileNameNoExt(FileName) + _T(".tif"));
+		if (IsMultiPageTIFF())
 		{
-			sTiffFileName = m_sFileName;
-			res = TRUE;
+#ifdef _UNICODE
+			TIFF* TiffDst = TIFFOpenW(sTiffFileName, "w");
+#else
+			TIFF* TiffDst = TIFFOpen(sTiffFileName, "w");
+#endif    
+			if (TiffDst)
+			{
+				res = CDib::TIFFCopyAllPages(	m_sFileName,					// Source file name
+												TiffDst,						// Destination file
+												0,								// Start page number
+												m_pDib->m_FileInfo.m_nImageCount,// Total pages count
+												-1,								// Work on all pages
+												COMPRESSION_JPEG,				// Use Jpeg compression
+												dlgFile.GetJpegCompressionQuality(), // Jpeg compression quality
+												TRUE,							// Flatten all pages with a alpha channel
+												RGB(255,255,255),				// White background for PDFs is ok
+												TRUE,	// Limit to 1,2,4 or 8 Bits per Sample because PDF is not supporting others!
+												TRUE);	// Photoshop produces YCbCr Jpegs inside Tiff with a
+														// CbCr subsampling of 1, this is not supported by Tiff2Pdf -> reencode
+				::TIFFClose(TiffDst);
+			}
 		}
 		else
 		{
@@ -4342,6 +4369,7 @@ BOOL CPictureDoc::SaveAsPdf()
 			}
 #endif
 
+			// Flatten
 			CDib Dib(*m_pDib);
 			if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
 			{
@@ -4349,37 +4377,17 @@ BOOL CPictureDoc::SaveAsPdf()
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
 			}
-			sTiffFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-													::GetFileNameNoExt(FileName) + _T(".tif"));
+			
+			// Save
 			int nOrientation = Dib.GetExifInfo()->Orientation;
 			Dib.GetExifInfo()->Orientation = 1;
-			//
-			// Automatically select compression means:
-			//
-			// 1bpp						-> COMPRESSION_CCITTFAX4
-			// 4bpp and 8bpp			-> COMPRESSION_LZW
-			// 16bpp, 24bpp and 32bpp	-> COMPRESSION_JPEG
-			if (IsMultiPageTIFF())
-			{
-				res = Dib.SaveMultiPageTIFF(sTiffFileName,
-											m_sFileName,
-											((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-											-1,	// -1: automatically select compression
-											dlgFile.GetJpegCompressionQuality(),
-											GetView(),
-											TRUE);
-			}
-			else
-			{
-				res = Dib.SaveTIFF(	sTiffFileName,
-									-1,	// -1: automatically select compression
-									dlgFile.GetJpegCompressionQuality(),
-									GetView(),
-									TRUE);
-			}
+			res = Dib.SaveTIFF(	sTiffFileName,
+								COMPRESSION_JPEG,
+								dlgFile.GetJpegCompressionQuality(),
+								GetView(),
+								TRUE);
 			Dib.GetExifInfo()->Orientation = nOrientation;
 		}
-
 
 		// To pdf
 		if (res)
@@ -4398,12 +4406,11 @@ BOOL CPictureDoc::SaveAsPdf()
 								_T("Fit"),
 								TRUE,			// Fit Window
 								TRUE,			// Interpolate
-								dlgFile.GetJpegCompressionQuality());				
+								dlgFile.GetJpegCompressionQuality());
 		}
 
 		// Delete temp tiff
-		if (!bSkipTiffSave)
-			::DeleteFile(sTiffFileName);
+		::DeleteFile(sTiffFileName);
 
 		// End Wait Cursor
 		EndWaitCursor();
