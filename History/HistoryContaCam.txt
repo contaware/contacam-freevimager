@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.0.9 (xxx 2012)
+4.0.9 (November 11th 2012)
 
 - On ContaCam start the unplugged WDM devices are now popping-up
   the new error message box which permits to clear autostart

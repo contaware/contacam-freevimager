@@ -1,9 +1,9 @@
 VERSION HISTORY
 
-4.0.9 (xxx 2012)
+4.0.9 (November 11th 2012)
 
-- Save As Pdf converts now all high resolution bit depths to jpeg
-  compression (this are 8bpp grayscale, 16bpp, 24bpp and higher)
+- Save As Pdf stores now all high resolution bit depths with jpeg
+  compression (8bpp grayscale, 16bpp, 24bpp and higher -> jpeg)
 - Removed single pages save when tiff multi-page scanning because
   since version 4.0.5 there is the lossless extract all pages
   command if somebody wants the single tiff pages

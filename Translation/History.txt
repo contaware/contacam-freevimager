@@ -1,8 +1,8 @@
 TRANSLATIONS HISTORY
 
-4.0.9 (xxx 2012)
+4.0.9 (November 11th 2012)
 
-- ... 
+- No changes
 
 4.0.7 (November 1st 2012)
 
