@@ -2,7 +2,8 @@ TRANSLATIONS HISTORY
 
 4.0.9 (November 11th 2012)
 
-- No changes
+- Just after 4.0.9 release added Spanish for Jordi and sent to him for translation
+  (http://www.jordigonzalezboada.com)
 
 4.0.7 (November 1st 2012)
 
