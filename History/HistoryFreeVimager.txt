@@ -1,5 +1,10 @@
 VERSION HISTORY
 
+4.1.0 (xxx)
+
+- Fixed wrong parsing of dpi value for some type of jpeg files
+  (thanks to Nicolai Ehemann for reporting the problem)
+
 4.0.9 (November 11th 2012)
 
 - Save As Pdf stores now all high resolution bit depths with jpeg

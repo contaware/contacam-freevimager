@@ -99,7 +99,7 @@ CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,14,20,20
-    LTEXT           "RemoteCamViewer, Version 4.0.9",IDC_STATIC,40,10,119,8,
+    LTEXT           "RemoteCamViewer, Version 4.1.0",IDC_STATIC,40,10,119,8,
                     SS_NOPREFIX
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
     LTEXT           "Copyright © 2003 - 2012 Contaware.com, Switzerland",
@@ -147,8 +147,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,9,0
- PRODUCTVERSION 4,0,9,0
+ FILEVERSION 4,1,0,0
+ PRODUCTVERSION 4,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -166,14 +166,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "RemoteCamViewer for RemoteCam Application\0"
-            VALUE "FileVersion", "4, 0, 9, 0\0"
+            VALUE "FileVersion", "4, 1, 0, 0\0"
             VALUE "InternalName", "RemoteCamViewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2003 - 2012\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "RemoteCamViewer.EXE\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "RemoteCamViewer Application\0"
-            VALUE "ProductVersion", "4, 0, 9, 0\0"
+            VALUE "ProductVersion", "4, 1, 0, 0\0"
             VALUE "SpecialBuild", "\0"
         END
     END
