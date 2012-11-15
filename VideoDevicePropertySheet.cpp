@@ -128,8 +128,8 @@ void CVideoDevicePropertySheet::Hide()
 
 void CVideoDevicePropertySheet::OnShowWindow(BOOL bShow, UINT nStatus) 
 {
-	// Closing the application with File - Exit or ALT+F4 calls this function
-	// two times -> avoid calling SaveSettings() two times by checking visibility!
+	// Closing the application calls this function two times
+	// -> avoid calling SaveSettings() two times by checking visibility!
 	CPropertySheet::OnShowWindow(bShow, nStatus);
 	if (!bShow && IsVisible() && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		m_pDoc->SaveSettings();
