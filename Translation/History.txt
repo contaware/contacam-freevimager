@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.1.0 (xxx)
 
--
+- Simple Exit menu string
 
 4.0.9 (November 11th 2012)
 
