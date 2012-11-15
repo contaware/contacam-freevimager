@@ -3246,22 +3246,27 @@ bool CMetadata::ParseTIFFDir(	int nIFD,
                 break;
 
             case TAG_XRESOLUTION:
-                pExifInfo->Xresolution = (float)ConvertFromAnyFormat(ValuePtr, Format);
+                if (!bExifSection || nIFD != 1) // some exif thumbs have a dpi value set...
+					pExifInfo->Xresolution = (float)ConvertFromAnyFormat(ValuePtr, Format);
                 break;
 
             case TAG_YRESOLUTION:
-                pExifInfo->Yresolution = (float)ConvertFromAnyFormat(ValuePtr, Format);
+                if (!bExifSection || nIFD != 1) // some exif thumbs have a dpi value set...
+					pExifInfo->Yresolution = (float)ConvertFromAnyFormat(ValuePtr, Format);
                 break;
 
 			case TAG_RESOLUTIONUNIT:
-                switch ((int)ConvertFromAnyFormat(ValuePtr, Format))
+				if (!bExifSection || nIFD != 1) // some exif thumbs have a dpi value set...
 				{
-                    case 1: pExifInfo->ResolutionUnit = 1.0f;			break;	// inch
-                    case 2:	pExifInfo->ResolutionUnit = 1.0f;			break;	// inch
-                    case 3: pExifInfo->ResolutionUnit = 0.393701f;		break;	// centimeter
-                    case 4: pExifInfo->ResolutionUnit = 0.0393701f;		break;	// millimeter
-                    case 5: pExifInfo->ResolutionUnit = 0.0000393701f;	break;	// micrometer
-                }
+					switch ((int)ConvertFromAnyFormat(ValuePtr, Format))
+					{
+						case 1: pExifInfo->ResolutionUnit = 1.0f;			break;	// inch
+						case 2:	pExifInfo->ResolutionUnit = 1.0f;			break;	// inch
+						case 3: pExifInfo->ResolutionUnit = 0.393701f;		break;	// centimeter
+						case 4: pExifInfo->ResolutionUnit = 0.0393701f;		break;	// millimeter
+						case 5: pExifInfo->ResolutionUnit = 0.0000393701f;	break;	// micrometer
+					}
+				}
                 break;
 
 			case TAG_COMPRESSION:
