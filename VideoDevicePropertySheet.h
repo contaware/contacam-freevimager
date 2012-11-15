@@ -53,6 +53,7 @@ protected:
 protected:
 	//{{AFX_MSG(CVideoDevicePropertySheet)
 	afx_msg void OnClose();
+	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

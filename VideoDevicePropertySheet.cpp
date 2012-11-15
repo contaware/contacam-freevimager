@@ -18,6 +18,7 @@ IMPLEMENT_DYNAMIC(CVideoDevicePropertySheet, CPropertySheet)
 BEGIN_MESSAGE_MAP(CVideoDevicePropertySheet, CPropertySheet)
 	//{{AFX_MSG_MAP(CVideoDevicePropertySheet)
 	ON_WM_CLOSE()
+	ON_WM_SHOWWINDOW()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -123,7 +124,14 @@ void CVideoDevicePropertySheet::Hide()
 {
 	ShowWindow(SW_HIDE);
 	m_pDoc->GetView()->ForceCursor(FALSE);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+}
+
+void CVideoDevicePropertySheet::OnShowWindow(BOOL bShow, UINT nStatus) 
+{
+	// Closing the application with File - Exit or ALT+F4 calls this function
+	// two times -> avoid calling SaveSettings() two times by checking visibility!
+	CPropertySheet::OnShowWindow(bShow, nStatus);
+	if (!bShow && IsVisible() && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		m_pDoc->SaveSettings();
 }
 
