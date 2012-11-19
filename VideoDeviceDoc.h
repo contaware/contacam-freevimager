@@ -456,6 +456,8 @@ public:
 			__forceinline int FindSOI(	int nPos,
 										int nSize,
 										const char* pMsg);
+			__forceinline int FindEndOfLine(const CString& s,
+											int nStart);
 			BOOL OpenAVCodec();
 			void FreeAVCodec(BOOL bNoClose = FALSE);
 			BOOL InitImgConvert();

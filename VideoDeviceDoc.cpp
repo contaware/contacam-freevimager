@@ -12679,6 +12679,20 @@ __forceinline int CVideoDeviceDoc::CHttpGetFrameParseProcess::FindSOI(	int nPos,
 	return -1;
 }
 
+__forceinline int CVideoDeviceDoc::CHttpGetFrameParseProcess::FindEndOfLine(const CString& s, int nStart)
+{
+	int nPosCR = s.Find(_T('\r'), nStart);
+	int nPosLF = s.Find(_T('\n'), nStart);
+	if (nPosCR >= 0 && nPosLF >= 0)
+		return MIN(nPosCR, nPosLF);
+	else if (nPosCR >= 0)
+		return nPosCR;
+	else if (nPosLF >= 0)
+		return nPosLF;
+	else
+		return -1;
+}
+
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom,
 																int nPos,
 																int nSize,
@@ -12729,9 +12743,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 		if ((nPosType = sMsgLowerCase.Find(_T("content-type:"), nPos)) >= 0)
 		{
 			nPosType += 13;
-			if ((nPosEnd = sMsg.Find(_T("\r\n"), nPosType)) < 0)
-			if ((nPosEnd = sMsg.Find(_T('\n'), nPosType)) < 0)
-			if ((nPosEnd = sMsg.Find(_T('\r'), nPosType)) < 0)
+			if ((nPosEnd = FindEndOfLine(sMsg, nPosType)) < 0)
 				return FALSE;
 			sContentType = sMsgLowerCase.Mid(nPosType, nPosEnd - nPosType);
 			sContentType.TrimLeft();
@@ -12745,9 +12757,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 			return FALSE;
 		}
 		nPos += 15;
-		if ((nPosEnd = sMsg.Find(_T("\r\n"), nPos)) < 0)
-		if ((nPosEnd = sMsg.Find(_T('\n'), nPos)) < 0)
-		if ((nPosEnd = sMsg.Find(_T('\r'), nPos)) < 0)
+		if ((nPosEnd = FindEndOfLine(sMsg, nPos)) < 0)
 			return FALSE;
 
 		// Parse Content Length
@@ -12757,9 +12767,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseMultipart(CNetCom* pNetCom
 		sMultipartLength.TrimLeft();
 		if ((nPos = sMultipartLength.Find(_T(' '), 0)) >= 0)
 			sMultipartLength = sMultipartLength.Left(nPos);
-		nMultipartLength = _ttoi(sMultipartLength);
-		if (nMultipartLength <= 0)
-			return FALSE;
+		nMultipartLength = MAX(0, _ttoi(sMultipartLength)); // zero length is valid
 
 		// Find Start of Multipart Data
 		if ((nPos = sMsg.Find(_T("\r\n\r\n"), nPosEnd)) < 0)
@@ -12820,9 +12828,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	BOOL bLastCall,
 	if ((nPos = sMsgLowerCase.Find(_T("content-length:"))) >= 0)
 	{
 		nPos += 15;
-		if ((nPosEnd = sMsg.Find(_T("\r\n"), nPos)) < 0)
-		if ((nPosEnd = sMsg.Find(_T('\n'), nPos)) < 0)
-		if ((nPosEnd = sMsg.Find(_T('\r'), nPos)) < 0)
+		if ((nPosEnd = FindEndOfLine(sMsg, nPos)) < 0)
 			return FALSE;
 		CString sSinglepartLength = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
 		if (sSinglepartLength == _T(""))
@@ -12830,11 +12836,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::ParseSingle(	BOOL bLastCall,
 		sSinglepartLength.TrimLeft();
 		if ((nPos = sSinglepartLength.Find(_T(' '), 0)) >= 0)
 			sSinglepartLength = sSinglepartLength.Left(nPos);
-		int nSinglepartLength = _ttoi(sSinglepartLength);
-		if (nSinglepartLength <= 0)
-			return FALSE;
-		else
-			m_nProcessSize = nSinglepartLength;
+		m_nProcessSize = MAX(0, _ttoi(sSinglepartLength)); // zero length is valid
 	}
 	// Wait last parser call if image with no Content Length
 	else if (bLastCall)
@@ -13004,13 +13006,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					delete [] pMsg;
 					return FALSE; // Do not call Processor
 				}
-				if ((nPosEnd = sMsg.Find(_T("\r\n"), nPos)) < 0)
+				if ((nPosEnd = FindEndOfLine(sMsg, nPos)) < 0)
 				{
-					if ((nPosEnd = sMsg.Find(_T("\n\n"), nPos)) < 0)
-					{
-						delete [] pMsg;
-						return FALSE; // Do not call Processor
-					}
+					delete [] pMsg;
+					return FALSE; // Do not call Processor
 				}
 				int nPosEndLine = nPosEnd;
 				nPos += 9;
@@ -13240,7 +13239,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
 			}
-			if ((nPosEnd = sMsgLowerCase.Find(_T("\r\n"), nPos)) < 0)
+			if ((nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) < 0)
 			{
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
@@ -13296,7 +13295,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
 			}
-			if ((nPosEnd = sMsgLowerCase.Find(_T("\r\n"), nPos)) < 0)
+			if ((nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) < 0)
 			{
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
@@ -13309,7 +13308,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			CString sAuthLine2(_T(""));
 			if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), nPosEnd)) >= 0)
 			{
-				if ((nPosEnd = sMsgLowerCase.Find(_T("\r\n"), nPos)) < 0)
+				if ((nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) < 0)
 				{
 					delete [] pMsg;
 					return FALSE; // Do not call Processor
