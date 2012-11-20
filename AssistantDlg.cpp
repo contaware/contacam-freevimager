@@ -871,6 +871,10 @@ void CAssistantDlg::ApplySettings()
 	// Rename
 	Rename();
 
+	// Title
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
+
 	// Language
 	CString sLanguageName;
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
@@ -943,7 +947,6 @@ void CAssistantDlg::ApplySettings()
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
@@ -1019,7 +1022,6 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, bUseThumb ? _T("1") : _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
@@ -1090,7 +1092,6 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
@@ -1141,7 +1142,6 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
@@ -1154,27 +1154,6 @@ void CAssistantDlg::ApplySettings()
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
-
-			break;
-		}
-		case 4 :
-		{
-			// Update configuration.php
-			CString sDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
-			if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_NAME) == 0)		// Current usage 0
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
-			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_NAME) == 0)	// Current usage 1
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
-			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_NAME) == 0 ||		// Current usage 2
-					sDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_NAME) == 0)
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
-			else if (sDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_NAME) == 0)		// Current usage 3
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
-			else
-			{
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SUMMARYTITLE, m_sName);
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTITLE, m_sName);
-			}
 
 			break;
 		}
