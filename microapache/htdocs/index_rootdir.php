@@ -69,7 +69,10 @@ if ($handle = @opendir($dir)) {
 				if ($match != 0)
 					$iframe_height = $matches[1];
 				$url = "$rel_path/$file/";
-				$url_iframe = $url . "snapshotthumb.php?title=no&amp;menu=no&amp;countdown=no";
+				if (is_file("$dir/$file/snapshotthumb.php"))
+					$url_iframe = $url . "snapshotthumb.php?title=no&amp;menu=no&amp;countdown=no";
+				else
+					$url_iframe = $url . "snapshot.php?title=no&amp;menu=no&amp;countdown=no";
 				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\" scrolling=\"no\" onload=\"this.contentWindow.document.body.style.cursor = 'pointer'; this.contentWindow.document.body.onclick = function(){parent.location.href='$url'}\"></iframe><br /><a href=\"$url\">$file</a></span>";
 				$count++;
 			}
