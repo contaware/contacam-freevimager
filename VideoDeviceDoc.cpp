@@ -12039,14 +12039,39 @@ BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWO
 		return FALSE;
 }
 
-BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& sRequest)
+BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest)
 {
-	CString sMsg;
+	// Store last request
 	m_sLastRequest = sRequest;
 
+	// Debug
 	TRACE(sRequest);
 
-	if (m_AnswerAuthorizationType == AUTHBASIC)
+	// Url encode uri inside request
+	CString sMethod;
+	CString sUri;
+	int nPos, nPosEnd;
+	if ((nPos = sRequest.Find(_T(' '))) >= 0)
+	{
+		sMethod = sRequest.Left(nPos);
+		nPos++; // skip space
+		if ((nPosEnd = sRequest.ReverseFind(_T(' '))) >= 0)
+		{
+			sUri = sRequest.Mid(nPos, nPosEnd - nPos);
+			sUri = ::UrlEncode(sUri, FALSE);
+			sRequest = sMethod + _T(" ") + sUri + sRequest.Mid(nPosEnd);
+		}
+	}
+
+	// Host
+	CString sHost;
+	if (m_pDoc->m_nGetFrameVideoPort != 80)
+		sHost.Format(_T("Host: %s:%d\r\n"), m_pDoc->m_sGetFrameVideoHost, m_pDoc->m_nGetFrameVideoPort);
+	else
+		sHost.Format(_T("Host: %s\r\n"), m_pDoc->m_sGetFrameVideoHost);
+
+	CString sMsg;
+	if (m_AnswerAuthorizationType == AUTHBASIC) // http://tools.ietf.org/html/rfc2617
 	{
 		m_LastRequestAuthorizationType = AUTHBASIC;
 		USES_CONVERSION;
@@ -12063,21 +12088,17 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 
 		// Keep it short because some stupid ip cams (like Planet)
 		// run out of buffer or do not parse well if we send to much!
-		sMsg.Format(_T("%s")
-					_T("Host: %s\r\n")
-					/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
+		sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
 					/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
 					/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
 					/*_T("Accept-Charset: ISO-8859-1\r\n")*/
 					_T("Connection: keep-alive\r\n")
 					_T("Authorization: Basic %s\r\n\r\n"),
-					sRequest,
-					m_pDoc->m_sGetFrameVideoHost,
 					/*APPNAME_NOEXT,
 					APPVERSION,*/
 					lpszAuthorization);
 	}
-	else if (m_AnswerAuthorizationType == AUTHDIGEST)
+	else if (m_AnswerAuthorizationType == AUTHDIGEST) // http://tools.ietf.org/html/rfc2617
 	{
 		m_AnswerAuthorizationType = AUTHNONE; // reset it!
 		m_LastRequestAuthorizationType = AUTHDIGEST;
@@ -12087,22 +12108,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 		if (sQopLowerCase.Find(_T("auth")) >= 0)
 			bQop = TRUE;
 		USES_CONVERSION;
-		int nPos, nPosEnd;
-		CString sMethod;
-		CString sUri;
 		CString sHA1;
 		CString sHA2;
 		CString sHResponse;
 		CString sToHash;
 		CPJNMD5 hmac;
 		CPJNMD5Hash hash;
-		if ((nPos = sRequest.Find(_T(' '), 0)) >= 0)
-		{
-			sMethod = sRequest.Left(nPos);
-			nPos++;
-			if ((nPosEnd = sRequest.Find(_T(' '), nPos)) >= 0)
-				sUri = sRequest.Mid(nPos, nPosEnd - nPos);
-		}
 
 		// HA1
 		sToHash =	m_pDoc->m_sHttpGetFrameUsername + _T(":")	+
@@ -12140,16 +12151,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 
 			// Keep it short because some stupid ip cams (like Planet)
 			// run out of buffer or do not parse well if we send to much!
-			sMsg.Format(_T("%s")
-						_T("Host: %s\r\n")
-						/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
+			sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
 						/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
 						/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
 						/*_T("Accept-Charset: ISO-8859-1\r\n")*/
 						_T("Connection: keep-alive\r\n")
-						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",qop=auth,nc=%s,cnonce=\"%s\",response=\"%s\",opaque=\"%s\"\r\n\r\n"),
-						sRequest,
-						m_pDoc->m_sGetFrameVideoHost,
+						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",qop=auth,nc=%s,cnonce=\"%s\",response=\"%s\""),
 						/*APPNAME_NOEXT,
 						APPVERSION,*/
 						m_pDoc->m_sHttpGetFrameUsername,
@@ -12158,8 +12165,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 						sUri,
 						sCNonceCount,
 						sCNonce,
-						sHResponse,
-						m_sOpaque);
+						sHResponse);
 		}
 		else
 		{
@@ -12172,46 +12178,48 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(const CString& s
 
 			// Keep it short because some stupid ip cams (like Planet)
 			// run out of buffer or do not parse well if we send to much!
-			sMsg.Format(_T("%s")
-						_T("Host: %s\r\n")
-						/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
+			sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
 						/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
 						/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
 						/*_T("Accept-Charset: ISO-8859-1\r\n")*/
 						_T("Connection: keep-alive\r\n")
-						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",response=\"%s\",opaque=\"%s\"\r\n\r\n"),
-						sRequest,
-						m_pDoc->m_sGetFrameVideoHost,
+						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",response=\"%s\""),
 						/*APPNAME_NOEXT,
 						APPVERSION,*/
 						m_pDoc->m_sHttpGetFrameUsername,
 						m_sRealm,
 						m_sNonce,
 						sUri,
-						sHResponse,
-						m_sOpaque);
+						sHResponse);
 		}
+
+		// Supply Algorithm?
+		if (!m_sAlgorithm.IsEmpty())
+			sMsg += _T(",algorithm=") + m_sAlgorithm;
+		
+		// Supply Opaque?
+		if (!m_sOpaque.IsEmpty())
+			sMsg += _T(",opaque=\"") + m_sOpaque + _T("\"");
+
+		// Ending
+		sMsg += _T("\r\n\r\n");
 	}
 	else
 	{
 		m_LastRequestAuthorizationType = AUTHNONE;
 		// Keep it short because some stupid ip cams (like Planet)
 		// run out of buffer or do not parse well if we send to much!
-		sMsg.Format(_T("%s")
-					_T("Host: %s\r\n")
-					/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
+		sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
 					/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
 					/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
 					/*_T("Accept-Charset: ISO-8859-1\r\n")*/
-					_T("Connection: keep-alive\r\n\r\n"),
-					sRequest,
-					m_pDoc->m_sGetFrameVideoHost/*,
+					_T("Connection: keep-alive\r\n\r\n")/*,
 					APPNAME_NOEXT,
 					APPVERSION*/);
 	}
 
 	// Send
-	return (m_pNetCom->WriteStr(sMsg) > 0);
+	return (m_pNetCom->WriteStr(sRequest + sHost + sMsg) > 0);
 }
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
@@ -12866,6 +12874,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::HasResolution(const CSize& Size
 for all protocol elements except the Entity-Body.
 The end-of-line marker within an Entity-Body is defined by its
 associated media type.
+http://tools.ietf.org/html/rfc2616
 */
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
 {
@@ -13430,6 +13439,17 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				nPos += 7;
 				if ((nPosEnd = sChosenAuthLineLowerCase.Find(_T('\"'), nPos)) >= 0)
 					m_sNonce = sChosenAuthLine.Mid(nPos, nPosEnd - nPos); 
+			}
+
+			// Algorithm
+			if ((nPos = sChosenAuthLineLowerCase.Find(_T("algorithm="), 0)) >= 0)
+			{
+				nPos += 10;
+				m_sAlgorithm = sChosenAuthLine.Mid(nPos);
+				m_sAlgorithm.TrimLeft();
+				if ((nPosEnd = m_sAlgorithm.Find(_T(','))) >= 0)
+					m_sAlgorithm = m_sAlgorithm.Left(nPosEnd); 
+				m_sAlgorithm.TrimRight();
 			}
 
 			// Opaque (m_sOpaque will not contain the double quotes)

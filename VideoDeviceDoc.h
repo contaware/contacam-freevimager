@@ -392,7 +392,7 @@ public:
 			CHttpGetFrameParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; m_dwCNonceCount = 0U; Clear();};
 			virtual ~CHttpGetFrameParseProcess() {FreeAVCodec();};
 			void Close() {FreeAVCodec(); Clear();};
-			BOOL SendRawRequest(const CString& sRequest);
+			BOOL SendRawRequest(CString sRequest);
 			BOOL SendRequest();
 			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
 			virtual BOOL Process(unsigned char* pLinBuf, int nSize);
@@ -402,6 +402,7 @@ public:
 			CString m_sRealm;
 			CString m_sQop;
 			CString m_sNonce;
+			CString m_sAlgorithm;
 			CString m_sOpaque;
 			volatile enum {FORMATUNKNOWN = 0, FORMATJPEG, FORMATMJPEG} m_FormatType;
 			typedef enum {AUTHNONE = 0, AUTHBASIC, AUTHDIGEST} AUTHTYPE;
