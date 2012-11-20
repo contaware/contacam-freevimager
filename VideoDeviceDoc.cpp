@@ -10766,7 +10766,7 @@ BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFO pBMI)
 		m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
 												m_pCodecCtx->width,
 												m_pCodecCtx->height);
-		if ((int)(m_dwI420BufSize) < m_dwI420ImageSize || m_pI420Buf == NULL)
+		if (m_dwI420BufSize < m_dwI420ImageSize || m_pI420Buf == NULL)
 		{
 			if (m_pI420Buf)
 				delete [] m_pI420Buf;
@@ -13768,11 +13768,18 @@ void CVideoDeviceDoc::CHttpGetFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FAL
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 {
-	// Determine required buffer size and allocate buffer if necessary
-	m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
-											m_pCodecCtx->width,
-											m_pCodecCtx->height);
-	if ((int)(m_dwI420BufSize) < m_dwI420ImageSize || m_pI420Buf == NULL)
+	// Determine required buffer size and allocate buffer if necessary.
+	// Make sure width and height are not 0 because otherwise
+	// avpicture_get_size() returns -1 which cast to DWORD gives 4GB - 1
+	if (m_pCodecCtx->width > 0 && m_pCodecCtx->height > 0)
+	{
+		m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
+												m_pCodecCtx->width,
+												m_pCodecCtx->height);
+	}
+	else
+		m_dwI420ImageSize = 0;
+	if (m_dwI420BufSize < m_dwI420ImageSize || m_pI420Buf == NULL)
 	{
 		if (m_pI420Buf)
 			delete [] m_pI420Buf;
