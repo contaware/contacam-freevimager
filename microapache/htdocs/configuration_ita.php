@@ -56,8 +56,7 @@ define ("SHOW_PRINTCOMMAND","0");     // 0 = Hide , 1 = Show
 // Show / hide the save command
 define ("SHOW_SAVECOMMAND","0");      // 0 = Hide , 1 = Show
 
-// Use normal or thumb version for the snapshot viewer
-define ("SNAPSHOT_THUMB","1");        // 0 = Fullsize version , 1 = Thumb version
+// Use normal or thumb version for the snapshot history viewer
 define ("SNAPSHOTHISTORY_THUMB","0"); // 0 = Fullsize version , 1 = Thumb version
 
 // Snapshots will refresh each given seconds

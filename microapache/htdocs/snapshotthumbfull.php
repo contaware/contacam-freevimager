@@ -1,6 +1,5 @@
 <?php
 require_once( 'configuration.php' );
-require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -11,12 +10,11 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <meta name="author" content="Oliver Pfister" />
 <?php
 echo "<title>" . SNAPSHOTTITLE . "</title>\n";
-echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
-if (USESERVERPUSH == 0 || getIEVersion() >= 0 || !isset($_GET['countdown']) || $_GET['countdown'] != 'no')
+if (USESERVERPUSH == 0 || getIEVersion() >= 0)
 	$doPoll = 1;
 else
 	$doPoll = 0;
-$filename = "$filesdirpath/poll.php";
+$filename = "$filesdirpath/pollthumb.php";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
@@ -31,7 +29,6 @@ if ($doPoll) {
 	echo "        setTimeout(\"startClock()\", fastpollrate);\n";
 	echo "    } else {\n";
 	echo "        x = x - 1;\n";
-	echo "        document.form1.clock.value = x;\n";
 	echo "        if (x < 1)\n";
 	echo "            reload();\n";
 	echo "        setTimeout(\"startClock()\", 1000);\n";
@@ -55,38 +52,28 @@ if ($doPoll) {
 	echo "    tmpimage.onerror = snapshotErrorLoading;\n";
 	echo "    tmpimage.src = camImg;\n";
 	echo "    x = " . SNAPSHOTREFRESHSEC . ";\n";
-	echo "    document.form1.clock.value = x;\n";
 	echo "}\n";
 	echo "//]]>\n";
 	echo "</script>\n";
 }
 ?>
+<style type="text/css">
+/*<![CDATA[*/
+* {
+	margin: 0;
+	padding: 0;
+}
+/*]]>*/
+</style>
 </head>
 
 <body>
 <?php
-if (!isset($_GET['title']) || $_GET['title'] != 'no')
-	echo "<div align=\"center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
-if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
-	echo "<div class=\"menutop\">\n";
-	echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
-	echo "<a href=\"" . getParentUrl() . "\" target=\"_top\">" . HOME . "</a>\n";
-	if (SHOW_PRINTCOMMAND == 1)
-		echo "| <a href=\"#\" onclick=\"window.focus(); window.print(); window.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
-	echo "</div>\n";
-}
-echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
-if ($doPoll) {
-	echo "<form name=\"form1\" action=\"\">\n";
-	echo "<img name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" align=\"middle\" />\n";
-	if (!isset($_GET['countdown']) || $_GET['countdown'] != 'no')
-		echo "<div id=\"imagereloading\">" . IMAGERELOADIN . " <input type=\"text\" readonly=\"readonly\" id=\"clock\" name=\"clock\" size=\"3\" value=\"\" /> " . SECONDS . "</div>\n";
-	else
-		echo "<div id=\"imagereloading\"><input type=\"hidden\" id=\"clock\" name=\"clock\" value=\"\" /></div>\n";
-	echo "</form>\n";
-}
+echo "<div style=\"position:absolute; width:100%; height:100%; margin:0; padding:0; left:0; right:0\">\n";
+if ($doPoll)
+	echo "<img name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
 else
-	echo "<img name=\"campicture\" src=\"push.php\" alt=\"Snapshot Image\" align=\"middle\" />\n";
+	echo "<img name=\"campicture\" src=\"pushthumb.php\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
 echo "</div>\n";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";

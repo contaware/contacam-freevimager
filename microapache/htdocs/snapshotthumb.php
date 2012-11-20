@@ -16,7 +16,7 @@ if (USESERVERPUSH == 0 || getIEVersion() >= 0 || !isset($_GET['countdown']) || $
 	$doPoll = 1;
 else
 	$doPoll = 0;
-$filename = "$filesdirpath/poll.php";
+$filename = "$filesdirpath/pollthumb.php";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
@@ -86,7 +86,7 @@ if ($doPoll) {
 	echo "</form>\n";
 }
 else
-	echo "<img name=\"campicture\" src=\"push.php\" alt=\"Snapshot Image\" align=\"middle\" />\n";
+	echo "<img name=\"campicture\" src=\"pushthumb.php\" alt=\"Snapshot Image\" align=\"middle\" />\n";
 echo "</div>\n";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";

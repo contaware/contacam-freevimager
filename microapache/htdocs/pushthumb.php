@@ -89,7 +89,7 @@ function doServerPush($file,$type,$poll) {
 		} while ($wait);
 	} while (!connection_aborted()); // if aborts are ignored, exit anyway to avoid endless threads
 }
-$filename = "$filesdirpath/".SNAPSHOTNAME;
+$filename = "$filesdirpath/".SNAPSHOTTHUMBNAME;
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");

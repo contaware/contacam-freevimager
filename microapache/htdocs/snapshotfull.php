@@ -14,10 +14,7 @@ if (USESERVERPUSH == 0 || getIEVersion() >= 0)
 	$doPoll = 1;
 else
 	$doPoll = 0;
-if (SNAPSHOT_THUMB == 1)
-	$filename = "$filesdirpath/".SNAPSHOTTHUMBNAME;
-else
-	$filename = "$filesdirpath/".SNAPSHOTNAME;
+$filename = "$filesdirpath/poll.php";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
