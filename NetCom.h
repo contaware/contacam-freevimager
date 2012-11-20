@@ -732,13 +732,13 @@ protected:
 	// Shutdown Threads
 	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->Kill() == false)
 												if (m_pMsgOut)
-													Notice(GetName() + _T(" MsgThread failed to end (ID = 0x%08X)"), m_pMsgThread->GetId());};
+													Warning(GetName() + _T(" MsgThread failed to end (ID = 0x%08X)"), m_pMsgThread->GetId());};
 	__forceinline void ShutdownRxThread() {	if (m_pRxThread->Kill() == false)		
 												if (m_pMsgOut)
-													Notice(GetName() + _T(" RxThread failed to end (ID = 0x%08X)"), m_pRxThread->GetId());};
+													Warning(GetName() + _T(" RxThread failed to end (ID = 0x%08X)"), m_pRxThread->GetId());};
 	__forceinline void ShutdownTxThread() {	if (m_pTxThread->Kill() == false)
 												if (m_pMsgOut)
-													Notice(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
+													Warning(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
 
 	// Error, Warning and Notice Functions
 	void ProcessWSAError(const CString& sErrorText);

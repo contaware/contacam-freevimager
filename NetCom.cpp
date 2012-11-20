@@ -327,7 +327,7 @@ int CNetCom::CMsgThread::Work()
 				if (!m_pNetCom->m_bServer)
 					m_pNetCom->m_bClientConnected = FALSE;
 				if (m_pNetCom->m_pMsgOut)
-					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
+					m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
 				return 0;
 
 			// Start Connection Shutdown Event
@@ -561,7 +561,7 @@ int CNetCom::CMsgThread::Work()
 																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[7]));
 								}
 								else
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept Unknown Address Family"));
+									m_pNetCom->Warning(m_pNetCom->GetName() + _T(" Socket Accept Unknown Address Family"));
 							}
 
 							// Turn On all Network Events
@@ -924,7 +924,7 @@ int CNetCom::CMsgThread::Work()
 						m_pNetCom->m_hSocket = INVALID_SOCKET;
 					SignalClosing();
 					if (m_pNetCom->m_pMsgOut)
-						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended, we started shutdown, peer did not answer (ID = 0x%08X)"), GetId());
+						m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended, we started shutdown, peer did not answer (ID = 0x%08X)"), GetId());
 					return 0;
 				}
 				else
@@ -2540,7 +2540,7 @@ BOOL CNetCom::StartMsgThread()
 		else
 		{
 			if (m_pMsgOut)
-				Notice(GetName() + _T(" MsgThread start failed (ID = 0x%08X)"), m_pMsgThread->GetId());
+				Error(GetName() + _T(" MsgThread start failed (ID = 0x%08X)"), m_pMsgThread->GetId());
 			return FALSE;
 		}
 	}
@@ -2558,7 +2558,7 @@ BOOL CNetCom::StartRxThread()
 		else
 		{
 			if (m_pMsgOut)
-				Notice(GetName() + _T(" RxThread start failed (ID = 0x%08X)"), m_pRxThread->GetId());
+				Error(GetName() + _T(" RxThread start failed (ID = 0x%08X)"), m_pRxThread->GetId());
 			return FALSE;
 		}
 	}
@@ -2576,7 +2576,7 @@ BOOL CNetCom::StartTxThread()
 		else
 		{
 			if (m_pMsgOut)
-				Notice(GetName() + _T(" TxThread start failed (ID = 0x%08X)"), m_pTxThread->GetId());
+				Error(GetName() + _T(" TxThread start failed (ID = 0x%08X)"), m_pTxThread->GetId());
 			return FALSE;
 		}
 	}
@@ -3799,7 +3799,7 @@ void CNetCom::CMsgOut::MessageOut(MsgOutCode code, const TCHAR* pFormat, ...)
 				TRACE(_T("NETCOM WARNING %s\n"), s);
 				break;
 			case CMsgOut::NOTICE_MSG :
-				TRACE(_T("NETCOM NOTICE %s\n"), s);
+				//TRACE(_T("NETCOM NOTICE %s\n"), s);
 				break;
 			default :
 				break;
