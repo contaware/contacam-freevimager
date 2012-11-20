@@ -2,8 +2,12 @@ VERSION HISTORY
 
 4.1.0 (xxx)
 
+- Improved live image on web interface
 - Closing the Device Settings dialog was not always storing
   the configurations to disk
+- Fixes for HTTP requests, HTTP parser and HTTP authentication
+- Fixed absolute URL issues with HTTPS servers
+  (thanks to Cesare for reporting the problem)
 
 4.0.9 (November 11th 2012)
 

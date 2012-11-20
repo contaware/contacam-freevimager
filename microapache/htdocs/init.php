@@ -26,6 +26,8 @@ function getParentUrl() {
 	$parent_path = str_replace("\\", "/", $parent_path);
 	$parent_path = rtrim($parent_path, "/");
 	$host = (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];
-	return "http://$host$parent_path/";
+	if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
+		return "https://$host$parent_path/";
+	else
+		return "http://$host$parent_path/";
 }
-?>
