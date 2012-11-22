@@ -1042,23 +1042,24 @@ int CNetCom::CRxThread::Work()
 				break;
 		}
 
-		if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() > 0))
+		unsigned int uiCurrentMsgSize;
+		if (m_pCurrentBuf && ((uiCurrentMsgSize = m_pCurrentBuf->GetMsgSize()) > 0))
 		{
 			// Statistics
-			m_pNetCom->m_uiRxByteCount += m_pCurrentBuf->GetMsgSize();
+			m_pNetCom->m_uiRxByteCount += uiCurrentMsgSize;
 			if (m_pNetCom->m_bServer && m_pNetCom->m_pMainServer)
 			{	
 				::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
-				m_pNetCom->m_pMainServer->m_uiRxByteCount += m_pCurrentBuf->GetMsgSize();
+				m_pNetCom->m_pMainServer->m_uiRxByteCount += uiCurrentMsgSize;
 				::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
 			}
 
 			// Make a Copy if RxBuf and RxFifo are both available
 			if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled && m_pNetCom->m_pRxFifo)
 			{
-				CBuf* pCopyBuf = new CBuf(m_pCurrentBuf->GetMsgSize());
-				memcpy((void*)(pCopyBuf->GetBuf()), (void*)(m_pCurrentBuf->GetBuf()), m_pCurrentBuf->GetMsgSize());
-				pCopyBuf->SetMsgSize(m_pCurrentBuf->GetMsgSize());
+				CBuf* pCopyBuf = new CBuf(uiCurrentMsgSize);
+				memcpy((void*)(pCopyBuf->GetBuf()), (void*)(m_pCurrentBuf->GetBuf()), uiCurrentMsgSize);
+				pCopyBuf->SetMsgSize(uiCurrentMsgSize);
 
 				// Add Message to Buffer
 				::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
@@ -1112,6 +1113,9 @@ int CNetCom::CRxThread::Work()
 					delete m_pCurrentBuf;
 			}
 
+			// Set to NULL!
+			m_pCurrentBuf = NULL;
+
 			// Check the Fifo Size
 			::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 			if (m_pNetCom->m_pRxFifo				&&
@@ -1132,7 +1136,7 @@ int CNetCom::CRxThread::Work()
 			// or if the Rx Timeout elapsed.
 			if (m_pNetCom->m_uiRxMsgTrigger)
 			{
-				TriggerBytesReceived += m_pCurrentBuf->GetMsgSize();
+				TriggerBytesReceived += uiCurrentMsgSize;
 				if (m_pNetCom->m_uiRxMsgTrigger <= TriggerBytesReceived)
 				{
 					Timeout = INFINITE; // Reset Timeout
@@ -1150,9 +1154,6 @@ int CNetCom::CRxThread::Work()
 						::SetEvent(m_pNetCom->m_hRxMsgTriggerEvent);		
 				}
 			}
-
-			// Set to NULL!
-			m_pCurrentBuf = NULL;
 		}
 	}
 	return 0;
