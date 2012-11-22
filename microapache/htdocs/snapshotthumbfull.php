@@ -63,18 +63,26 @@ if ($doPoll) {
 	margin: 0;
 	padding: 0;
 }
+html, body {
+	height: 100%;
+}
+img#campictureid {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
 /*]]>*/
 </style>
 </head>
 
 <body>
 <?php
-echo "<div style=\"position:absolute; width:100%; height:100%; margin:0; padding:0; left:0; right:0\">\n";
 if ($doPoll)
-	echo "<img name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
+	echo "<img id=\"campictureid\" name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
 else
-	echo "<img name=\"campicture\" src=\"pushthumb.php\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
-echo "</div>\n";
+	echo "<img id=\"campictureid\" name=\"campicture\" src=\"pushthumb.php\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
