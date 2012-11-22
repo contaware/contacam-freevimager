@@ -1,5 +1,8 @@
 <?php
+// Start session
 session_start();
+
+// Image and video files directory (path relative to document root)
 $filesdirpath = str_replace("\\", "/", FILESDIRPATH);
 $filesdirpath = rtrim($filesdirpath,"/");
 if ($filesdirpath == "") {
@@ -7,10 +10,20 @@ if ($filesdirpath == "") {
 	$filesdirpath = str_replace("\\", "/", $filesdirpath);
 	$filesdirpath = rtrim($filesdirpath, "/");
 }
+
+// Current style name
 $path_parts = pathinfo(STYLEFILEPATH);
 if (!isset($path_parts['filename']))
 	$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
 $style_postfix = $path_parts['filename'];
+
+// Current protocol
+if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
+	$scheme = 'https';
+else
+	$scheme = 'http';
+
+// Get Internet Explorer version
 function getIEVersion() {
 	$match = preg_match('/MSIE ([0-9]+\.[0-9]+)/', $_SERVER['HTTP_USER_AGENT'], $reg);
 	if ($match == 0)
@@ -18,7 +31,10 @@ function getIEVersion() {
 	else
 		return floatval($reg[1]);
 }
+
+// Get parent URL
 function getParentUrl() {
+	global $scheme;
 	$parent_path = dirname($_SERVER['PHP_SELF']);
 	$parent_path = str_replace("\\", "/", $parent_path);
 	$parent_path = rtrim($parent_path, "/");
@@ -26,8 +42,5 @@ function getParentUrl() {
 	$parent_path = str_replace("\\", "/", $parent_path);
 	$parent_path = rtrim($parent_path, "/");
 	$host = (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) ? $_SERVER['HTTP_X_FORWARDED_HOST'] : $_SERVER['HTTP_HOST'];
-	if (!empty($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) != 'off'))
-		return "https://$host$parent_path/";
-	else
-		return "http://$host$parent_path/";
+	return "$scheme://$host$parent_path/";
 }

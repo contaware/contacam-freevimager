@@ -165,7 +165,7 @@ var hasRightVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion,
 if (hasRightVersion)
 {
 	var oeTags = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"'
-	+ 'codebase="http://active.macromedia.com/flash6/cabs/swflash.cab#version=6,0,40,0"'
+	+ 'codebase="<?php echo $scheme;?>://fpdownload.adobe.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"'
 	+ 'id="myFlashMovie" width="<?php echo $width;?>" height="<?php echo $height;?>">'
 	+ '<?php echo "<param name=\"movie\" value=\"$filename\">";?>'
 	+ '<param name="quality" value="high" />'
@@ -181,14 +181,14 @@ if (hasRightVersion)
 	+ 'play="false" swliveconnect="false" name="myFlashMovie" quality="high" wmode="opaque"'  
 	+ 'width="<?php echo $width;?>" height="<?php echo $height;?>" menu="false" allownetworking="internal" allowScriptAccess="never"'
 	+ 'loop="false" scale="exactfit" type="application/x-shockwave-flash"'
-	+ 'pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash">'
+	+ 'pluginspage="<?php echo $scheme;?>://www.adobe.com/go/getflashplayer">'
 	+ '</embed>'
 	+ '</object>';
 	document.write(oeTags);   // embed the flash movie
 }
 else {
 	var alternateContent = 'This content requires the Flash Player '
-	+ '<a href="http://www.adobe.com/go/getflashplayer" target="_blank">Get Flash</a>';
+	+ '<a href="<?php echo $scheme;?>://www.adobe.com/go/getflashplayer" target="_blank">Get Flash</a>';
 	document.write(alternateContent);  // insert non-flash content
 }
 //]]>
