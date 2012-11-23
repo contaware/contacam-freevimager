@@ -39,7 +39,7 @@ define("SUMMARYTITLE","Summary");
 define("SNAPSHOTTITLE","Snapshot");
 
 // Default page (index.php redirects to this page)
-// Choose between: summary.php, summarysnapshot.php, summarylive.php
+// Choose between: summary.php, summarysnapshot.php
 // summaryiframe.php, snapshot.php, snapshotfull.php, snapshothistory.php
 define ("DEFAULTPAGE","summarysnapshot.php");
 
@@ -61,7 +61,7 @@ define ("SNAPSHOTHISTORY_THUMB","0"); // 0 = Fullsize version , 1 = Thumb versio
 // Snapshots will refresh each given seconds
 define ("SNAPSHOTREFRESHSEC","1");
 
-// Top-right preview size for summarysnapshot.php and summarylive.php
+// Top-right preview size for summarysnapshot.php
 // and snapshot history thumb size
 define ("THUMBWIDTH","228");
 define ("THUMBHEIGHT","172");
@@ -77,13 +77,6 @@ define ("MAX_PER_PAGE","27");
 
 // Sort order of summary thumbnails
 define ("SORT_OLDEST_FIRST","1"); // 0 = newest first , 1 = oldest first
-
-// Live jpeg(=client poll) and mjpeg(=server push) urls for summarylive.php
-define ("LIVEJPEGURL","http://192.168.1.19/axis-cgi/jpg/image.cgi?resolution=320x240&compression=60");
-define ("LIVEMJPEGURL","http://192.168.1.19/axis-cgi/mjpg/video.cgi?resolution=320x240&compression=60&fps=1");
-
-// Live jpeg reload in seconds for summarylive.php if mjpeg(=server push) disabled
-define ("LIVEJPEGREFRESHSEC","1");
 
 
 /**************************************
