@@ -22,12 +22,11 @@ define ("STARTOFFSET_YEARS","4");
 define ("MAX_YEARS","11");
 // Linear date picker maximum number of shown days ago
 define ("MAX_DAYSAGO","20");
-// mjpeg(=server push) is not supported by internet explorer.
-// If this flag is set 1 internet explorer will continue to work
-// in client poll mode, all the other browsers will work in server
-// push mode. Firefox supports it well, opera and safari have some
-// problems, so I suggest to set this to 1 only if you are using
-// firefox!
+// mjpeg(=server push) is not supported by Internet Explorer.
+// If this flag is set to 1 Internet Explorer will continue to work
+// in client poll mode, all the other browsers will switch to server
+// push mode: Firefox, Chrome, Safari and iPhone support that well,
+// Opera and Android have problems.
 define ("USESERVERPUSH","0");
 
 
