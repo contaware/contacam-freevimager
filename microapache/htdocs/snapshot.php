@@ -16,7 +16,14 @@ if (USESERVERPUSH == 0 || getIEVersion() >= 0 || !isset($_GET['countdown']) || $
 	$doPoll = 1;
 else
 	$doPoll = 0;
-$filename = "$filesdirpath/poll.php";
+if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no') {
+	$pollfilename = "poll.php?dummy=";
+	$pushfilename = "push.php";
+}
+else {
+	$pollfilename = "poll.php?thumb=yes&dummy=";
+	$pushfilename = "push.php?thumb=yes";
+}
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
@@ -50,7 +57,7 @@ if ($doPoll) {
 	echo "}\n";
 	echo "function reload(){\n";
 	echo "    var now = new Date();\n";
-	echo "    var camImg = '$filename' + '?dummy=' + now.getTime().toString(10);\n";
+	echo "    var camImg = '$pollfilename' + now.getTime().toString(10);\n";
 	echo "    tmpimage.onload = snapshotLoaded;\n";
 	echo "    tmpimage.onerror = snapshotErrorLoading;\n";
 	echo "    tmpimage.src = camImg;\n";
@@ -78,15 +85,24 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
 if ($doPoll) {
 	echo "<form name=\"form1\" action=\"\">\n";
-	echo "<img name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" align=\"middle\" />\n";
+	if (isset($_GET['clickurl']))
+		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<img name=\"campicture\" style=\"border: 0; margin: 0; padding: 0;\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
+	if (isset($_GET['clickurl']))
+		echo "</a>\n";
 	if (!isset($_GET['countdown']) || $_GET['countdown'] != 'no')
 		echo "<div id=\"imagereloading\">" . IMAGERELOADIN . " <input type=\"text\" readonly=\"readonly\" id=\"clock\" name=\"clock\" size=\"3\" value=\"\" /> " . SECONDS . "</div>\n";
 	else
 		echo "<div id=\"imagereloading\"><input type=\"hidden\" id=\"clock\" name=\"clock\" value=\"\" /></div>\n";
 	echo "</form>\n";
 }
-else
-	echo "<img name=\"campicture\" src=\"push.php\" alt=\"Snapshot Image\" align=\"middle\" />\n";
+else {
+	if (isset($_GET['clickurl']))
+		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<img name=\"campicture\" style=\"border: 0; margin: 0; padding: 0;\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
+	if (isset($_GET['clickurl']))
+		echo "</a>\n";
+}
 echo "</div>\n";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";

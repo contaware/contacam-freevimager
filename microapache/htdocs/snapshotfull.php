@@ -14,7 +14,14 @@ if (USESERVERPUSH == 0 || getIEVersion() >= 0)
 	$doPoll = 1;
 else
 	$doPoll = 0;
-$filename = "$filesdirpath/poll.php";
+if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no') {
+	$pollfilename = "poll.php?dummy=";
+	$pushfilename = "push.php";
+}
+else {
+	$pollfilename = "poll.php?thumb=yes&dummy=";
+	$pushfilename = "push.php?thumb=yes";
+}
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
@@ -47,7 +54,7 @@ if ($doPoll) {
 	echo "}\n";
 	echo "function reload(){\n";
 	echo "    var now = new Date();\n";
-	echo "    var camImg = '$filename' + '?dummy=' + now.getTime().toString(10);\n";
+	echo "    var camImg = '$pollfilename' + now.getTime().toString(10);\n";
 	echo "    tmpimage.onload = snapshotLoaded;\n";
 	echo "    tmpimage.onerror = snapshotErrorLoading;\n";
 	echo "    tmpimage.src = camImg;\n";
@@ -64,9 +71,13 @@ if ($doPoll) {
 	padding: 0;
 }
 html, body {
+	overflow: hidden;
 	height: 100%;
 }
 img#campictureid {
+	border: 0;
+	margin: 0;
+	padding: 0;
 	position: absolute;
 	width: 100%;
 	height: 100%;
@@ -79,10 +90,20 @@ img#campictureid {
 
 <body>
 <?php
-if ($doPoll)
-	echo "<img id=\"campictureid\" name=\"campicture\" src=\"" . $filename . "?dummy=" . time() . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
-else
-	echo "<img id=\"campictureid\" name=\"campicture\" src=\"push.php\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />\n";
+if ($doPoll) {
+	if (isset($_GET['clickurl']))
+		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
+	if (isset($_GET['clickurl']))
+		echo "</a>\n";
+}
+else {
+	if (isset($_GET['clickurl']))
+		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
+	if (isset($_GET['clickurl']))
+		echo "</a>\n";
+}
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";

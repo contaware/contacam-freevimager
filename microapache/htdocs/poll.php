@@ -1,5 +1,6 @@
 <?php
 require_once( 'configuration.php' );
+session_write_close(); // end the current session and store session data otherwise other frames are not loading!
 function doClientPoll($file,$type) {
 	// No Cache
 	header('Cache-Control: no-cache');
@@ -27,7 +28,10 @@ function doClientPoll($file,$type) {
 	// Output content data
 	echo $filecontent;
 }
-$filename = "$filesdirpath/".SNAPSHOTNAME;
+if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no')
+	$filename = "$filesdirpath/".SNAPSHOTNAME;
+else
+	$filename = "$filesdirpath/".SNAPSHOTTHUMBNAME;
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
 if ($doc_root == "")
 	$full_path = trim($filename,"\\/");

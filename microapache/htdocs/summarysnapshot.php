@@ -17,7 +17,7 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <?php
 $summaryuri = "summary.php";
 $summaryuri_noheader = $summaryuri . "?header=no";
-$snapshoturi = "snapshotthumb.php?title=no&amp;menu=no&amp;countdown=no";
+$snapshoturi = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=" . urlencode("snapshotfull.php?clickurl=summarysnapshot.php");
 echo "<frameset rows=\"" . THUMBHEIGHT . ",12,*\" border=\"0\" frameborder=\"0\" framespacing=\"0\">\n";
 	echo "<frameset cols=\"*," . THUMBWIDTH . "\" border=\"0\" frameborder=\"0\" framespacing=\"0\">\n";
 		echo "<frame src=\"summarynav.php\" scrolling=\"no\" noresize=\"noresize\" />\n";
