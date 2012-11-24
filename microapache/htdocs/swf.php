@@ -244,16 +244,16 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	echo "<div align=\"center\">\n";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
-		$prevrequesturi = str_replace("&", "&amp;", $prevrequesturi);
+		$prevrequesturi = htmlspecialchars($prevrequesturi);
 		echo "<a class=\"back\" href=\"$prevrequesturi\" onclick=\"top.window.name = '" . $_GET["$prevkey"] . "';\">&lt;</a>&nbsp;\n";
 	}
 	if (isset($_GET['backuri']))
-		echo "<a class=\"back\" href=\"" . str_replace("&", "&amp;", $_GET['backuri']) . "\">" . BACK . "</a>\n";
+		echo "<a class=\"back\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>\n";
 	else
 		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
-		$nextrequesturi = str_replace("&", "&amp;", $nextrequesturi);
+		$nextrequesturi = htmlspecialchars($nextrequesturi);
 		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"top.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
 	}
 	echo "</div>\n";

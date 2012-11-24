@@ -11,7 +11,7 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <meta name="author" content="Oliver Pfister" />
 <?php
 require_once( 'setusertz.php' );
-$serveruri = str_replace("&", "&amp;", $_SERVER['REQUEST_URI']);
+$serveruri = htmlspecialchars($_SERVER['REQUEST_URI']);
 echo "<meta http-equiv=\"refresh\" content=\"" . SUMMARYREFRESHSEC . "; URL=" . $serveruri . "\" />\n";
 echo "<title>" . SUMMARYTITLE . "</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
@@ -292,9 +292,9 @@ if ($handle = @opendir($dir)) {
 					$swffile = $dir."/".basename($file, ".gif").".swf";
 					$avifile = $dir."/".basename($file, ".gif").".avi";
 					if (is_file($swffile) && is_file($avifile))
-						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
+						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
 					else if (is_file($swffile))
-						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else if (is_file($avifile))
 						echo "<a href=\"$aviuri\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 					else
@@ -304,7 +304,7 @@ if ($handle = @opendir($dir)) {
 					$jpegthumburi = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
 					$jpeguri_get = urlencode($jpeguri);
-					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode($_SERVER['REQUEST_URI']) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi') {
 					$aviuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
