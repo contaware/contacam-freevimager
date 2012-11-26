@@ -5,8 +5,9 @@ if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
 	$full_path = "$doc_root/" . trim($filename,"\\/");
-if (ini_get('zlib.output_compression'))
-	ini_set('zlib.output_compression', 'Off');
+@set_time_limit(0); // PHP must not terminate this script
+if (@ini_get('zlib.output_compression'))
+	@ini_set('zlib.output_compression', 'Off');
 $file_extension = strtolower(substr(strrchr($full_path,"."),1));
 if ($full_path == "" || !file_exists($full_path) || $file_extension != "swf") 
 {
@@ -15,7 +16,7 @@ if ($full_path == "" || !file_exists($full_path) || $file_extension != "swf")
 }
 $ctype = "application/x-shockwave-flash";
 header("Pragma: public");
-header("Expires: 0");
+header("Expires: Thu, 01 Dec 1994 16:00:00 GMT");
 header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 header("Cache-Control: private",false);
 header("Content-Type: $ctype");
