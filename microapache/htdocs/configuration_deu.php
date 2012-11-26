@@ -83,4 +83,3 @@ define ("SORT_OLDEST_FIRST","1"); // 0 = newest first , 1 = oldest first
 * Initialization, do not remove that! *
 **************************************/
 require_once( 'init.php' );
-?>

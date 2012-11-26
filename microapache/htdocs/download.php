@@ -25,5 +25,4 @@ header("Content-Length: ".filesize($full_path));
 ob_clean();
 flush();
 readfile("$full_path");
-exit();
-?>
+exit;

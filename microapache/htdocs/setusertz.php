@@ -62,4 +62,3 @@ if (!isset($_SESSION['timezonename'])) {
 }
 else if (function_exists('date_default_timezone_set'))
 	date_default_timezone_set($_SESSION['timezonename']);
-?>

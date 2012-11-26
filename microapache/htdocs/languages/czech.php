@@ -26,4 +26,3 @@ define("SECONDS","sekund");
 define("RELOAD","Obnovit");
 define("HOME","Vybrat kameru");
 define("PRINTCOMMAND","Vytisknout");
-?>

@@ -26,4 +26,3 @@ define("SECONDS","secondes");
 define("RELOAD","Recharger");
 define("HOME","Sélection Caméra");
 define("PRINTCOMMAND","Imprimer");
-?>
