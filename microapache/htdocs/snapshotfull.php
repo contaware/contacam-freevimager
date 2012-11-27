@@ -90,19 +90,19 @@ img#campictureid {
 
 <body>
 <?php
+if (isset($_GET['clickurl']))
+	$clickurl = $_GET['clickurl'];
+else
+	$clickurl = getParentUrl();
 if ($doPoll) {
-	if (isset($_GET['clickurl']))
-		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
 	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
-	if (isset($_GET['clickurl']))
-		echo "</a>\n";
+	echo "</a>\n";
 }
 else {
-	if (isset($_GET['clickurl']))
-		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
 	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
-	if (isset($_GET['clickurl']))
-		echo "</a>\n";
+	echo "</a>\n";
 }
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";

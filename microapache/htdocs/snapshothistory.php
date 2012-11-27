@@ -78,7 +78,7 @@ function loadIFrame(y,m,d) {
 			todayselected = true;
 			document.forms[0].datetext.value = todaytext;
 			<?php
-			$srcuri = "snapshot.php?title=no&menu=no";
+			$srcuri = "snapshot.php?title=no&menu=no&clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
 			echo "var srcuri = '$srcuri';\n";
 			?>
 		}
@@ -172,8 +172,8 @@ function positionCalendar() {
 }
 //]]>
 </script>
-<?php      
-$srcuri = "snapshot.php";
+<?php
+$srcuri = "snapshot.php?title=no&amp;menu=no&amp;clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
 if (intval(WIDTH) > intval(THUMBWIDTH))
 	$iframe_width = intval(WIDTH) + 60;
 else
@@ -188,9 +188,8 @@ if ($iframe_width < 380)
 if ($iframe_height < 330)
 	$iframe_height = 330;
 echo "<div align=\"center\">\n";
-echo "<iframe name=\"myiframe\" src=\"$srcuri?title=no&amp;menu=no\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\">\n";
-echo "<p>Click <a href=\"$srcuri\">Snapshots</a> ";
-echo "to see today's sequence of snapshots</p>\n";
+echo "<iframe name=\"myiframe\" src=\"$srcuri\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\">\n";
+echo "<p>Click <a href=\"snapshot.php\">here</a> to see today's sequence of snapshots</p>\n";
 echo "</iframe>\n";
 echo "</div>\n";
 ?>

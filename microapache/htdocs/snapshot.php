@@ -82,14 +82,16 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 		echo "| <a href=\"#\" onclick=\"window.focus(); window.print(); window.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
 	echo "</div>\n";
 }
+if (isset($_GET['clickurl']))
+	$clickurl = $_GET['clickurl'];
+else
+	$clickurl = "snapshotfull.php?clickurl=" . urlencode(urldecode($_SERVER['REQUEST_URI']));
 echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
 if ($doPoll) {
 	echo "<form name=\"form1\" action=\"\">\n";
-	if (isset($_GET['clickurl']))
-		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
 	echo "<img name=\"campicture\" style=\"border: 0; margin: 0; padding: 0;\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
-	if (isset($_GET['clickurl']))
-		echo "</a>\n";
+	echo "</a>\n";
 	if (!isset($_GET['countdown']) || $_GET['countdown'] != 'no')
 		echo "<div id=\"imagereloading\">" . IMAGERELOADIN . " <input type=\"text\" readonly=\"readonly\" id=\"clock\" name=\"clock\" size=\"3\" value=\"\" /> " . SECONDS . "</div>\n";
 	else
@@ -97,11 +99,9 @@ if ($doPoll) {
 	echo "</form>\n";
 }
 else {
-	if (isset($_GET['clickurl']))
-		echo "<a href=\"" . htmlspecialchars($_GET['clickurl']) . "\" target=\"_top\">";
+	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
 	echo "<img name=\"campicture\" style=\"border: 0; margin: 0; padding: 0;\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
-	if (isset($_GET['clickurl']))
-		echo "</a>\n";
+	echo "</a>\n";
 }
 echo "</div>\n";
 if ($doPoll) {
