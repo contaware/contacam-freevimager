@@ -10,6 +10,8 @@ VERSION HISTORY
 - Fixes for HTTP requests, HTTP parser and HTTP authentication
 - Fixed absolute URL issues with HTTPS servers
   (thanks to Cesare Gilardi for reporting the problem)
+- Added Bulgarian web interface language
+  (thanks to Mitko for doing the translation)
 
 4.0.9 (November 11th 2012)
 
