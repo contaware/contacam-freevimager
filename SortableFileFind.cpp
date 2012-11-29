@@ -132,7 +132,7 @@ int CSortableFileFind::WaitRecursiveStarted(HANDLE hKillEvent/*=NULL*/)
 
 			case WAIT_OBJECT_0 + 2 :	return -1;	// Kill Event
 
-			default:					return -2;
+			default:					return -2;	// Error
 		}
 	}
 	else
@@ -144,7 +144,7 @@ int CSortableFileFind::WaitRecursiveStarted(HANDLE hKillEvent/*=NULL*/)
 
 			case WAIT_OBJECT_0 + 1 :	return 0;	// No Files Event
 
-			default:					return -2;
+			default:					return -2;	// Error
 		}
 	}
 }
@@ -170,7 +170,7 @@ int CSortableFileFind::WaitRecursiveDone(HANDLE hKillEvent/*=NULL*/)
 
 			case WAIT_OBJECT_0 + 1 :	return -1;		// Kill Event
 
-			default:					return -2;
+			default:					return -2;		// Error
 		}
 
 	}
@@ -181,7 +181,7 @@ int CSortableFileFind::WaitRecursiveDone(HANDLE hKillEvent/*=NULL*/)
 		{
 			case WAIT_OBJECT_0 :		return 1;		// Thread Exited
 
-			default:					return -2;
+			default:					return -2;		// Error
 		}
 	}
 }
@@ -563,6 +563,7 @@ void CSortableFileFind::Close()
 	m_nFilePos = -1;
 	m_bRecursiveFileFindStarted = FALSE;
 	::ResetEvent(m_hRecursiveFileFindStarted);
+	::ResetEvent(m_hRecursiveFileFindNoFiles);
 }
 
 CString CSortableFileFind::GetShortFileName()
