@@ -3760,9 +3760,11 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 		int nAutoSaveDirSize = sAutoSaveDir.GetLength() + 1;
 
 		// Do recursive file find
-		FileFind.InitRecursive(sAutoSaveDir + _T("\\*"));
-		if (FileFind.WaitRecursiveDone(GetKillEvent()) == -1)
-			return FALSE; // Exit Thread
+		if (FileFind.InitRecursive(sAutoSaveDir + _T("\\*"), FALSE))
+		{
+			if (FileFind.WaitRecursiveDone(GetKillEvent()) == -1)
+				return FALSE; // Exit Thread
+		}
 
 		// Get current time
 		CurrentTime = CTime::GetCurrentTime();
@@ -6575,8 +6577,10 @@ BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverw
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 	CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
 	CSortableFileFind FileFind;
-	FileFind.InitRecursive(sMicroapacheHtDocs + _T("*"), FALSE);
-	FileFind.WaitRecursiveDone();
+	if (!FileFind.InitRecursive(sMicroapacheHtDocs + _T("*"), FALSE))
+		return FALSE;
+	if (FileFind.WaitRecursiveDone() != 1)
+		return FALSE;
 	CString sRootDirName = FileFind.GetRootDirName();
 	sRootDirName.TrimRight(_T('\\'));
 	int nRootDirNameSize = sRootDirName.GetLength() + 1;
