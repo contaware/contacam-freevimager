@@ -3761,7 +3761,7 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 
 		// Do recursive file find
 		FileFind.InitRecursive(sAutoSaveDir + _T("\\*"));
-		if (FileFind.WaitRecursiveDone(GetKillEvent()) < 0)
+		if (FileFind.WaitRecursiveDone(GetKillEvent()) == -1)
 			return FALSE; // Exit Thread
 
 		// Get current time
@@ -3834,7 +3834,7 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 		// If using a constant deletion time interval in case of multiple devices running
 		// the first started one would be cleared more than the last one. To fix that
 		// we use a random generator for the deletion interval
-		srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId()));   // Seed
+		srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
 		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
 
 		// dwDeleteInMs should never be to small (at least 60 seconds)
