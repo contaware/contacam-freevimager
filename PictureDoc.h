@@ -480,9 +480,6 @@ public:
 	// Resize
 	BOOL EditResize(BOOL bShowMessageBoxOnError);
 
-	// Linear Filter
-	BOOL EditLinearFilter(BOOL bShowMessageBoxOnError, int nTypeID);
-
 	// Grayscale
 	BOOL EditGrayscale(BOOL bShowMessageBoxOnError);
 
@@ -985,16 +982,6 @@ protected:
 	afx_msg void OnUpdateEditFilterSharpen(CCmdUI* pCmdUI);
 	afx_msg void OnEditFilterSoften();
 	afx_msg void OnUpdateEditFilterSoften(CCmdUI* pCmdUI);
-	afx_msg void OnEditFilterEdge();
-	afx_msg void OnUpdateEditFilterEdge(CCmdUI* pCmdUI);
-	afx_msg void OnEditFilterEmboss();
-	afx_msg void OnUpdateEditFilterEmboss(CCmdUI* pCmdUI);
-	afx_msg void OnEditFilterBlur();
-	afx_msg void OnUpdateEditFilterBlur(CCmdUI* pCmdUI);
-	afx_msg void OnEditFilterGaussian3x3();
-	afx_msg void OnUpdateEditFilterGaussian3x3(CCmdUI* pCmdUI);
-	afx_msg void OnEditFilterGaussian5x5();
-	afx_msg void OnUpdateEditFilterGaussian5x5(CCmdUI* pCmdUI);
 	afx_msg void OnEditRemoveIptc();
 	afx_msg void OnUpdateEditRemoveIptc(CCmdUI* pCmdUI);
 	afx_msg void OnViewBackgroundColorMenu();

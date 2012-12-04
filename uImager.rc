@@ -1046,18 +1046,6 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_FILTER MENU DISCARDABLE 
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "Edge",                        ID_EDIT_FILTER_EDGE
-        MENUITEM "Emboss",                      ID_EDIT_FILTER_EMBOSS
-        MENUITEM "Blur",                        ID_EDIT_FILTER_BLUR
-        MENUITEM "Gaussian 3x3",                ID_EDIT_FILTER_GAUSSIAN3X3
-        MENUITEM "Gaussian 5x5",                ID_EDIT_FILTER_GAUSSIAN5X5
-    END
-END
-
 IDR_AUDIOMCI MENU DISCARDABLE 
 BEGIN
     POPUP "&File"

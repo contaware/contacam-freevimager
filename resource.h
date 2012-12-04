@@ -86,7 +86,6 @@
 #define IDD_BATCH_PROC                  229
 #define IDD_SHRINK_CURRENT_VIDEOAVIDOC  233
 #define IDD_DIRECTX7                    234
-#define IDR_CONTEXT_FILTER              239
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
@@ -3374,11 +3373,6 @@
 #define ID_FILE_SENDMAIL_OPEN_DOCS      32970
 #define ID_EDIT_FILTER_SHARPEN          32973
 #define ID_EDIT_FILTER_SOFTEN           32974
-#define ID_EDIT_FILTER_EDGE             32975
-#define ID_EDIT_FILTER_EMBOSS           32976
-#define ID_EDIT_FILTER_BLUR             32977
-#define ID_EDIT_FILTER_GAUSSIAN3X3      32978
-#define ID_EDIT_FILTER_GAUSSIAN5X5      32979
 #define ID_EDIT_REMOVE_IPTC             32980
 #define ID_VIEW_DIRECTX_RGB             32983
 #define ID_VIEW_DIRECTX_YUV             32984

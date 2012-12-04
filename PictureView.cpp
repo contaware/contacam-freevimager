@@ -2868,21 +2868,10 @@ void CPictureView::OnRButtonDown(UINT nFlags, CPoint point)
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_SLIDESHOW_ONLY));
 	else if (pDoc->m_bCrop)
 		VERIFY(menu.LoadMenu(IDR_CONTEXT_CROP));
+	else if (m_bFullScreenMode)
+		VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
 	else
-	{
-#ifdef _DEBUG
-		if ((nFlags & MK_SHIFT) ||
-			(nFlags & MK_CONTROL)) 
-			VERIFY(menu.LoadMenu(IDR_CONTEXT_FILTER));
-		else
-#endif
-		{
-			if (m_bFullScreenMode)
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE_FULLSCREEN));
-			else
-				VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
-		}
-	}
+		VERIFY(menu.LoadMenu(IDR_CONTEXT_PICTURE));
 		
 	CMenu* pPopup = menu.GetSubMenu(0);
 	ASSERT(pPopup != NULL);
