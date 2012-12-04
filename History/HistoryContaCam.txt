@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.1.0 (xxx)
+4.1.0 (December 4th 2012)
 
 - In the web interface it is now possible to click on the live
   image to see it in fullscreen (to get this new feature run

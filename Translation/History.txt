@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.1.0 (xxx)
+4.1.0 (December 4th 2012)
 
 - Simple Exit menu string
 
