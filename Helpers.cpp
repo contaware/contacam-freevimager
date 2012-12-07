@@ -2621,6 +2621,7 @@ CString GetASCIICompatiblePath(const CString& sPath)
 		return sPath;
 }
 
+// http://tools.ietf.org/html/rfc3986
 CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 {
 	// Empty String is already ok!
@@ -2643,15 +2644,13 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 			if ( (48 <= c[i] && c[i] <= 57) ||	// 0-9
 				 (65 <= c[i] && c[i] <= 90) ||	// ABC...XYZ
 				 (97 <= c[i] && c[i] <= 122)||	// abc...xyz
-				 (c[i]== '-' || c[i] == '_' ||
-				 c[i] == '.' || c[i] == '!' ||
-				 c[i] == '*' || c[i] == '\''||
-				 c[i] == '(' || c[i] == ')'))
+				 (c[i]== '-' || c[i] == '.' ||	// unreserved chars
+				 c[i] == '_' || c[i] == '~'))	// unreserved chars
 				sEscaped += CString(c[i]);
 			else
 			{
 				sEscaped += _T("%");
-				sHex.Format(_T("%02x"), ((int)c[i]) & 0xFF);
+				sHex.Format(_T("%02X"), ((int)c[i]) & 0xFF);
 				sEscaped += sHex;
 			}
 		}
@@ -2660,29 +2659,57 @@ CString UrlEncode(const CString& s, BOOL bEncodeReserved)
 	{
 		for (int i = 0 ; i < (int)strlen(c) ; i++)
 		{
-			if ( (48 <= c[i] && c[i] <= 57) || // 0-9
-				 (65 <= c[i] && c[i] <= 90) || // ABC...XYZ
-				 (97 <= c[i] && c[i] <= 122)|| // abc...xyz
-				 (c[i]== '-' || c[i] == '_' ||
-				 c[i] == '.' || c[i] == '!' ||
-				 c[i] == '*' || c[i] == '\''||
-				 c[i] == '(' || c[i] == ')'	||
-				 c[i] == '$' || c[i] == '&' || // reserved chars
-				 c[i] == '+' || c[i] == ',' || // reserved chars
-				 c[i] == '/' || c[i] == ':' || // reserved chars
-				 c[i] == ';' || c[i] == '=' || // reserved chars
-				 c[i] == '?' || c[i] == '@'))  // reserved chars
+			if ( (48 <= c[i] && c[i] <= 57) ||	// 0-9
+				 (65 <= c[i] && c[i] <= 90) ||	// ABC...XYZ
+				 (97 <= c[i] && c[i] <= 122)||	// abc...xyz
+				 (c[i]== '-' || c[i] == '.' ||	// unreserved chars
+				 c[i] == '_' || c[i] == '~' ||	// unreserved chars
+				 c[i] == ':' || c[i] == '/' ||	// reserved chars
+				 c[i] == '?' || c[i] == '#' ||	// reserved chars
+				 c[i] == '[' || c[i] == ']' ||	// reserved chars
+				 c[i] == '@' || c[i] == '!' ||	// reserved chars
+				 c[i] == '$' || c[i] == '&'	||	// reserved chars
+				 c[i] == '\''|| c[i] == '(' ||	// reserved chars
+				 c[i] == ')' || c[i] == '*'	||	// reserved chars
+				 c[i] == '+' || c[i] == ','	||	// reserved chars
+				 c[i] == ';' || c[i] == '='))	// reserved chars
 				sEscaped += CString(c[i]);
 			else
 			{
 				sEscaped += _T("%");
-				sHex.Format(_T("%02x"), ((int)c[i]) & 0xFF);
+				sHex.Format(_T("%02X"), ((int)c[i]) & 0xFF);
 				sEscaped += sHex;
 			}
 		}
 	}
 	delete [] c;
 	return sEscaped;
+}
+
+CString UrlDecode(const CString& s)
+{
+	// Empty String is already ok!
+	if (s.IsEmpty())
+		return _T("");
+
+	// Decode
+	CString sDecoded;
+	for (int i = 0 ; i < s.GetLength() ; i++)
+	{
+		if ((s[i] == _T('%')) && ((i + 2) < s.GetLength()))
+		{
+			unsigned long ulCode = _tcstoul(s.Mid(i + 1, 2), NULL, 16);
+			if (ulCode > 0U && ulCode < 256U)
+			{
+				sDecoded += CString((char)ulCode);
+				i += 2; // skip the two hex digits
+				continue;
+			}
+		}
+		sDecoded += s[i];
+	}
+
+	return sDecoded;
 }
 
 CString HtmlEncode(CString s)
@@ -2692,6 +2719,16 @@ CString HtmlEncode(CString s)
 	s.Replace(_T("\'"), _T("&apos;"));
 	s.Replace(_T("<"), _T("&lt;"));
 	s.Replace(_T(">"), _T("&gt;"));
+	return s;
+}
+
+CString HtmlDecode(CString s)
+{
+	s.Replace(_T("&gt;"), _T(">"));
+	s.Replace(_T("&lt;"), _T("<"));
+	s.Replace(_T("&apos;"), _T("\'"));
+	s.Replace(_T("&quot;"), _T("\""));
+	s.Replace(_T("&amp;"), _T("&")); // must be last!
 	return s;
 }
 

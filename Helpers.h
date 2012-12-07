@@ -250,13 +250,19 @@ extern int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar = NUL
 extern BOOL IsASCIICompatiblePath(const CString& sPath);
 extern CString GetASCIICompatiblePath(const CString& sPath);
 
-// Url encode given string
+// Url encode given string according to RFC 3986
 // set bEncodeReserved to TRUE if encoding GET values
 // set bEncodeReserved to FALSE if encoding an entire URL
 extern CString UrlEncode(const CString& s, BOOL bEncodeReserved);
 
+// Url decode given string (only decode percent encoded values, the + char is NOT decoded as space)
+extern CString UrlDecode(const CString& s);
+
 // Html encode given string
 extern CString HtmlEncode(CString s);
+
+// Html decode given string
+extern CString HtmlDecode(CString s);
 
 // Unicode (=UTF16) <-> UTF8 Conversion
 extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);	// Note: pUtf8 must not be NULL terminated.
