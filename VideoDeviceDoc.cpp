@@ -12048,9 +12048,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 	// Store last request
 	m_sLastRequest = sRequest;
 
-	// Debug
-	TRACE(sRequest);
-
 	// Url encode uri inside request
 	CString sMethod;
 	CString sUri;
@@ -12062,10 +12059,18 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 		if ((nPosEnd = sRequest.ReverseFind(_T(' '))) >= 0)
 		{
 			sUri = sRequest.Mid(nPos, nPosEnd - nPos);
+			sUri = ::UrlDecode(sUri); // make sure not already encoded!
 			sUri = ::UrlEncode(sUri, FALSE);
 			sRequest = sMethod + _T(" ") + sUri + sRequest.Mid(nPosEnd);
 		}
 	}
+
+	// Debug
+#ifdef _DEBUG
+	CString sTrace(sRequest);
+	sTrace.Replace(_T("%"), _T("%%"));
+	TRACE(sTrace);
+#endif
 
 	// Host
 	CString sHost;
