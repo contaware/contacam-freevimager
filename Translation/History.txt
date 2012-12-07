@@ -3,7 +3,9 @@ TRANSLATIONS HISTORY
 4.1.0 (December 4th 2012)
 
 - Simple Exit menu string
-
+- Just after 4.1.0 release added Bulgarian for Mitko and sent to him for translation
+  (asdfgga12@gmail.com)
+  
 4.0.9 (November 11th 2012)
 
 - Just after 4.0.9 release added Spanish for Jordi and sent to him for translation
