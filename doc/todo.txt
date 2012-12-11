@@ -1,3 +1,8 @@
+General:
+--------
+- Enable translation for accelerators and move single letter
+  press to accelerators
+
 Picture:
 --------
 - Using numbers to jump to a specific file in current directory

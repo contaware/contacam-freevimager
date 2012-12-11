@@ -3121,9 +3121,13 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 			if (wParam == AFX_IDS_SCCLOSE && m_lpfnCloseProc != NULL)
 				wParam = AFX_IDS_PREVIEW_CLOSE;
 
-			// get message associated with the ID indicated by wParam
+			// do not show idle message if a status bar string has been set
             if (wParam == AFX_IDS_IDLEMESSAGE && m_sStatusBarString != _T(""))
 				sMsg = m_sStatusBarString;
+			// special handling for DirectX devices
+			else if (wParam >= ID_DIRECTSHOW_VIDEODEV_FIRST && wParam <= ID_DIRECTSHOW_VIDEODEV_LAST)
+				sMsg = _T("DirectX");
+			// get message associated with the ID indicated by wParam
 			else
 			{
 				GetMessageString(wParam, strMessage);

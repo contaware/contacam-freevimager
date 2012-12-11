@@ -6177,40 +6177,10 @@ BEGIN
     ID_TOOLS_AVIMERGEPARALLEL_AS "Merge avi streams\nMerge Avi streams"
     ID_FILE_SETTINGS        "File associations and global settings\nGlobal Settings"
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
-    ID_DIRECTSHOW_VIDEODEV_1 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_2 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_3 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_4 
-                            "Capture frames from this directx device\nDirectX Capture"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_DIRECTSHOW_VIDEODEV_5 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_6 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_7 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_8 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_9 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_10 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_11 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_12 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_13 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_14 
-                            "Capture frames from this directx device\nDirectX Capture"
-    ID_DIRECTSHOW_VIDEODEV_15 
-                            "Capture frames from this directx device\nDirectX Capture"
     ID_CAPTURE_AVIPLAY      "Capture from avi player\nCapture From Avi"
     ID_VIEW_DETECTIONS      "Enable / disable detection zones display\nShow Detections"
     ID_VIEW_DETECTION_ZONES "Show / setup detection zones\nDetection Zones"
