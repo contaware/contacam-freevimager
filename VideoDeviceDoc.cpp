@@ -3276,6 +3276,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
 	BOOL bCheckConnectionTimeout = FALSE;
+	BOOL bHasConnectionKeepAlive = FALSE;
 
 	for (;;)
 	{
@@ -3322,6 +3323,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
+				bHasConnectionKeepAlive = FALSE;
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				DWORD dwConnectDelay = m_dwConnectDelay;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
@@ -3399,8 +3401,16 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				// Poll (only client poll mode)
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg)
 				{
+					// Keep-alive: just send the request to the already open connection
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)
+					{
+						bHasConnectionKeepAlive = TRUE;
 						m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
+					}
+					// Some servers by default limit the amount of requests per connection,
+					// after a while the connection is closed by the server -> reconnect
+					else if (bHasConnectionKeepAlive)
+						SetEventConnect();
 					else
 					{
 						if (m_HttpGetFrameNetComList.GetCount() >= HTTPGETFRAME_MAXCOUNT_ALARM3)
@@ -13161,7 +13171,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bSetCompression)
 				{
@@ -13173,7 +13183,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bSetFramerate)
 				{
@@ -13185,7 +13195,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					pNetCom->Read();
 
 					// Start Connection
-					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""));
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 				}
 				else if (m_bTryConnecting)
 				{
