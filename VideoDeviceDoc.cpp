@@ -6849,6 +6849,7 @@ AddType application/x-httpd-php .php .php3\r\n\
 AcceptPathInfo off\r\n\
 KeepAlive on\r\n\
 KeepAliveTimeout 15\r\n\
+MaxKeepAliveRequests 0\r\n\
 TimeOut 30\r\n\
 DirectoryIndex index.html index.htm index.php\r\n\
 LogLevel crit\r\n");
