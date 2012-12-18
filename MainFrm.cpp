@@ -3124,9 +3124,9 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 			// do not show idle message if a status bar string has been set
             if (wParam == AFX_IDS_IDLEMESSAGE && m_sStatusBarString != _T(""))
 				sMsg = m_sStatusBarString;
-			// special handling for DirectX devices
+			// special handling for DirectShow devices
 			else if (wParam >= ID_DIRECTSHOW_VIDEODEV_FIRST && wParam <= ID_DIRECTSHOW_VIDEODEV_LAST)
-				sMsg = _T("DirectX");
+				sMsg = _T("DirectShow / WDM");
 			// get message associated with the ID indicated by wParam
 			else
 			{
