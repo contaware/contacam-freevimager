@@ -1,5 +1,9 @@
 VERSION HISTORY
 
+4.3.0 (xxx)
+
+- ...
+
 4.1.0 (December 4th 2012)
 
 - Fixed wrong parsing of dpi value for some type of jpeg files

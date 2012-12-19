@@ -1,5 +1,12 @@
 VERSION HISTORY
 
+4.3.0 (xxx)
+
+- For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
+  avoid frame jumps which were happening when the keep alive
+  request count reached 0 and a reconnection was necessary
+- Increased support from 15 to 100 DirectX devices
+
 4.1.0 (December 4th 2012)
 
 - In the web interface it is now possible to click on the live
