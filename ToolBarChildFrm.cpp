@@ -1492,7 +1492,7 @@ void CVideoDeviceChildFrame::OnClose()
 				!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 			{
 				new CProgressDlg(	this->GetSafeHwnd(),
-									ML_STRING(1566, "Closing ") + pDoc->GetDeviceName() + _T("..."),
+									ML_STRING(1566, "Closing ") + pDoc->GetAssignedDeviceName() + _T("..."),
 									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
 			}
 
@@ -1508,7 +1508,7 @@ void CVideoDeviceChildFrame::OnClose()
 				if (TimeSpan.GetDays() > 0)
 				{
 					sMsg.Format(_T("%s stopping (running for %I64dday%s, %dhour%s, %dmin and %dsec)\n"),
-						pDoc->GetDeviceName(),
+						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetDays(),
 						(TimeSpan.GetDays() == 1) ? _T("") : _T("s"),
 						TimeSpan.GetHours(),
@@ -1519,7 +1519,7 @@ void CVideoDeviceChildFrame::OnClose()
 				else if (TimeSpan.GetTotalHours() > 0)
 				{
 					sMsg.Format(_T("%s stopping (running for %I64dhour%s, %dmin and %dsec)\n"),
-						pDoc->GetDeviceName(),
+						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalHours(),
 						(TimeSpan.GetTotalHours() == 1) ? _T("") : _T("s"),
 						TimeSpan.GetMinutes(),
@@ -1528,18 +1528,18 @@ void CVideoDeviceChildFrame::OnClose()
 				else if (TimeSpan.GetTotalMinutes() > 0)
 				{
 					sMsg.Format(_T("%s stopping (running for %I64dmin and %dsec)\n"),
-						pDoc->GetDeviceName(),
+						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalMinutes(),
 						TimeSpan.GetSeconds());
 				}
 				else if (TimeSpan.GetTotalSeconds() > 0)
 				{
 					sMsg.Format(_T("%s stopping (running for %I64dsec)\n"),
-						pDoc->GetDeviceName(),
+						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalSeconds());
 				}
 				else
-					sMsg.Format(_T("%s stopping\n"), pDoc->GetDeviceName());
+					sMsg.Format(_T("%s stopping\n"), pDoc->GetAssignedDeviceName());
 				TRACE(sMsg);
 				::LogLine(sMsg);
 			}
@@ -1589,7 +1589,7 @@ void CVideoDeviceChildFrame::OnClose()
 		if (!IsShutdown2Done() || !IsShutdown3Done())
 		{
 			CString sMsg, t;
-			sMsg.Format(_T("%s forced stopping"), pDoc->GetDeviceName());
+			sMsg.Format(_T("%s forced stopping"), pDoc->GetAssignedDeviceName());
 			if (pDoc->m_HttpGetFrameThread.IsAlive())
 				t += _T(", http get frame thread still alive");
 			if (pDoc->m_pGetFrameNetCom && !pDoc->m_pGetFrameNetCom->IsShutdown())
