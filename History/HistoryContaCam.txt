@@ -6,6 +6,7 @@ VERSION HISTORY
   avoid frame jumps which were happening when the keep alive
   request count reached 0 and a reconnection was necessary
 - Increased support from 15 to 100 DirectX devices
+- In log messages the user assigned device name is now shown
 
 4.1.0 (December 4th 2012)
 
