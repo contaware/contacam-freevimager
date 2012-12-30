@@ -4716,36 +4716,32 @@ void CVideoAviDoc::DeleteDocFile()
 
 void CVideoAviDoc::OnEditRename()
 {
-	if (!IsModified() &&
-		!IsProcessing() &&
-		!GetView()->m_bFullScreenMode &&
-		!m_PlayVideoFileThread.IsAlive() &&
-		!m_PlayAudioFileThread.IsAlive())
-	{
-		CRenameDlg dlg;
-		dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
-		if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
-		{	
-			// New file name
-			CString sNewFileName =	::GetDriveName(m_sFileName) +
-									::GetDirName(m_sFileName) +
-									dlg.m_sFileName +
-									::GetFileExt(m_sFileName);
+	/* If an accelerator has the same identifier as a menu item and the menu item is grayed or disabled,
+	the accelerator is disabled and does not generate a WM_COMMAND or WM_SYSCOMMAND message.
+	Also, an accelerator does not generate a command message if the corresponding window is minimized. */
+	CRenameDlg dlg;
+	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
+	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
+	{	
+		// New file name
+		CString sNewFileName =	::GetDriveName(m_sFileName) +
+								::GetDirName(m_sFileName) +
+								dlg.m_sFileName +
+								::GetFileExt(m_sFileName);
 
-			// Delete
-			delete m_pAVIPlay;
-			m_pAVIPlay = NULL;
+		// Delete
+		delete m_pAVIPlay;
+		m_pAVIPlay = NULL;
 
-			// Rename
-			if (!::MoveFile(m_sFileName, sNewFileName))
-			{
-				::ShowLastError(TRUE);
-				sNewFileName = m_sFileName;
-			}
-			
-			// Reload active streams
-			LoadAVI(sNewFileName, 0, TRUE);
+		// Rename
+		if (!::MoveFile(m_sFileName, sNewFileName))
+		{
+			::ShowLastError(TRUE);
+			sNewFileName = m_sFileName;
 		}
+		
+		// Reload active streams
+		LoadAVI(sNewFileName, 0, TRUE);
 	}
 }
 
