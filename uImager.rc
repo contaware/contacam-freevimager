@@ -1552,8 +1552,6 @@ BEGIN
     VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
     VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
     VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
     VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
     VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
     VK_HOME,        ID_VIEW_ALL_FIRST_PICTURE, VIRTKEY, CONTROL, NOINVERT
@@ -6502,12 +6500,6 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_APP_ABOUT            "Display program and system information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application (prompts to save documents)\nExit"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
-    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
 STRINGTABLE DISCARDABLE 

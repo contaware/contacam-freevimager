@@ -4,14 +4,14 @@ TRANSLATIONS HISTORY
 
 - Added Picture Reload command with F5 accelerator
 
-- Changed accelerators
-  * Fullscreen from      F -> F11
-  * File Info from       I -> Ctrl+I
-  * Preview Display from D -> Ctrl+U
-  * Move To from         M -> F7
-  * Copy To from         C -> F8
+- Changed accelerators for
+  * Fullscreen       F -> F11
+  * File Info        I -> Ctrl+I
+  * Preview Display  D -> Ctrl+U
+  * Move To          M -> F7
+  * Copy To          C -> F8
   
-- Removed accelerators
+- Removed accelerators for
     ID_PLAY_LOOP, ID_PLAY_RANDOM, ID_VIEW_ZOOM_TOOL, ID_VIEW_BACKGROUND_COLOR_MENU
     ID_VIEW_NO_BORDERS, ID_VIEW_MAP, ID_VIEW_STRETCH_HALFTONE, ID_EDIT_PALETTE
 	ID_EDIT_COLORS_COUNT, ID_VIEW_ENABLE_OSD, ID_PLAY_AUDIOVIDEOSHIFT, ID_PLAY_VOL

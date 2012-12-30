@@ -321,12 +321,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
-    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
