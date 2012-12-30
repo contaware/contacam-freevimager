@@ -1021,35 +1021,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case _T('A') :
-			if (pDoc->m_bCaptureStarted	&& !pDoc->m_bClosing)
-				pDoc->CaptureAssistant();
-			break;
-
-		case _T('S') :
-			if (pDoc->m_pDxCapture															||
-				((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)(pDoc->m_pVideoAviDoc))	||
-				pDoc->m_pGetFrameNetCom)
-				pDoc->CaptureSettings();
-			break;
-
-		case _T('P') :
-			pDoc->ViewVideo();
-			break;
-
-		case _T('T') :
-			pDoc->m_bShowFrameTime = !pDoc->m_bShowFrameTime;
-			break;
-
-		case _T('R') :
-			pDoc->CaptureRecord();
-			break;
-
-		case VK_PAUSE :
-			if (pDoc->m_pAVRec)
-				pDoc->CaptureRecordPause();
-			break;
-
 		case VK_ESCAPE :
 			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);

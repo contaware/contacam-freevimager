@@ -1112,7 +1112,6 @@ public:
 	CVideoDeviceChildFrame* GetFrame() const {return m_pFrame;};
 	void SetFrame(CVideoDeviceChildFrame* pFrame) {m_pFrame = pFrame;};
 	static BOOL CreateCheckYearMonthDayDir(CTime Time, CString sBaseDir, CString& sYearMonthDayDir);
-	void ViewVideo();												// Show / Hide Video Preview
 
 	// Open Video Device
 	BOOL OpenVideoDevice(int nId);
@@ -1128,7 +1127,6 @@ public:
 
 	// Dialogs
 	void CaptureAssistant();
-	void CaptureSettings();
 	void VideoFormatDialog();
 	void AudioFormatDialog();
 

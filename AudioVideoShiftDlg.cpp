@@ -92,20 +92,6 @@ BOOL CAudioVideoShiftDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
-BOOL CAudioVideoShiftDlg::PreTranslateMessage(MSG* pMsg) 
-{
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		int nVirtKey = (int)pMsg->wParam;
-		if (nVirtKey == _T('s') || nVirtKey == _T('S'))
-		{
-			OnClose();
-			return TRUE;
-		}
-	}
-	return CDialog::PreTranslateMessage(pMsg);
-}
-
 void CAudioVideoShiftDlg::PostNcDestroy() 
 {
 	CVideoAviView* pView = (CVideoAviView*)m_pParentWnd;

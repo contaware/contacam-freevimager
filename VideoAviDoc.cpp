@@ -5752,15 +5752,10 @@ void CVideoAviDoc::OnUpdateFileInfo(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pAviInfoDlg != NULL ? 1 : 0);
 }
 
-void CVideoAviDoc::ViewTimeposition()
+void CVideoAviDoc::OnViewTimeposition() 
 {
 	m_bTimePositionShow = !m_bTimePositionShow;
 	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
-}
-
-void CVideoAviDoc::OnViewTimeposition() 
-{
-	ViewTimeposition();
 }
 
 void CVideoAviDoc::OnUpdateViewTimeposition(CCmdUI* pCmdUI) 

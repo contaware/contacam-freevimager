@@ -513,10 +513,10 @@ BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_AVI
         MENUITEM "&Stop\tPause",                ID_STOP_AVI
         MENUITEM "Infinite Loop",               ID_PLAY_LOOP
-        MENUITEM "Show Time Position\tT",       ID_VIEW_TIMEPOSITION
-        MENUITEM "A/V Sync...\tS",              ID_PLAY_AUDIOVIDEOSHIFT
+        MENUITEM "Show Time Position",          ID_VIEW_TIMEPOSITION
+        MENUITEM "A/V Sync...",                 ID_PLAY_AUDIOVIDEOSHIFT
         MENUITEM SEPARATOR
-        MENUITEM "Volume...\tV",                ID_PLAY_VOL
+        MENUITEM "Volume...",                   ID_PLAY_VOL
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
@@ -528,16 +528,16 @@ IDR_CONTEXT_VIDEO_DEVICE MENU DISCARDABLE
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Record\tR",                   ID_CAPTURE_RECORD
-        MENUITEM "&Pause\tPause",               ID_CAPTURE_RECORD_PAUSE
+        MENUITEM "Record",                      ID_CAPTURE_RECORD
+        MENUITEM "Pause",                       ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
-        MENUITEM "Device Assistant...\tA",      ID_CAPTURE_ASSISTANT
-        MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
+        MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
+        MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
+        MENUITEM "Preview",                     ID_VIEW_VIDEO
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Show Frame Time\tT",          ID_VIEW_FRAMETIME
+        MENUITEM "Show Frame Time",             ID_VIEW_FRAMETIME
     END
 END
 
@@ -581,11 +581,11 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
+        MENUITEM "Preview",                     ID_VIEW_VIDEO
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Show Frame Time\tT",          ID_VIEW_FRAMETIME
+        MENUITEM "Show Frame Time",             ID_VIEW_FRAMETIME
         MENUITEM SEPARATOR
         MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
         MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
@@ -596,11 +596,11 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
-        MENUITEM "&Record\tR",                  ID_CAPTURE_RECORD
-        MENUITEM "&Pause\tPause",               ID_CAPTURE_RECORD_PAUSE
+        MENUITEM "Record",                      ID_CAPTURE_RECORD
+        MENUITEM "Pause",                       ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
-        MENUITEM "Device Assistant...\tA",      ID_CAPTURE_ASSISTANT
-        MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
+        MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
+        MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
         MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
     END
     POPUP "&Tools"
@@ -680,7 +680,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "Show &Time Position\tT",      ID_VIEW_TIMEPOSITION
+        MENUITEM "Show Time Position",          ID_VIEW_TIMEPOSITION
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -699,9 +699,9 @@ BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_AVI
         MENUITEM "&Stop\tPause",                ID_STOP_AVI
         MENUITEM "Infinite Loop",               ID_PLAY_LOOP
-        MENUITEM "A/V Sync...\tS",              ID_PLAY_AUDIOVIDEOSHIFT
+        MENUITEM "A/V Sync...",                 ID_PLAY_AUDIOVIDEOSHIFT
         MENUITEM SEPARATOR
-        MENUITEM "Volume...\tV",                ID_PLAY_VOL
+        MENUITEM "Volume...",                   ID_PLAY_VOL
         MENUITEM SEPARATOR
         MENUITEM "Increment Speed\t+",          ID_PLAY_INC
         MENUITEM "Decrement Speed\t-",          ID_PLAY_DEC

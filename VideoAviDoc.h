@@ -467,9 +467,6 @@ public:
 	// Show / Hide Player Controls in FullScreen Mode
 	void PlayerToolBarDlg(CPoint ptPos);
 
-	// Show / Hide Time Position Display
-	void ViewTimeposition();
-
 	// Enable / Disable Infinite Play Loop
 	void PlayLoop();
 

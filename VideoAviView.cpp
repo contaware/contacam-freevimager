@@ -922,27 +922,6 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case _T('V') :
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasAudio()		&&
-				(pDoc->m_nActiveAudioStream >= 0)	&&
-				!pDoc->IsProcessing())
-				pDoc->PlayVolDlg();
-			break;
-
-		case _T('S') :
-			if (pDoc->m_pAVIPlay &&
-				!pDoc->IsProcessing() &&
-				pDoc->m_pAVIPlay->HasVideo() &&
-				(pDoc->m_nActiveVideoStream >= 0))
-				pDoc->AudioVideoShiftDlg();
-			break;
-
-		case _T('T') :
-			if (!pDoc->IsProcessing())
-				pDoc->ViewTimeposition();
-			break;
-
 		case VK_ESCAPE :
 			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);

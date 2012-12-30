@@ -85,20 +85,6 @@ BOOL COutVolDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
-BOOL COutVolDlg::PreTranslateMessage(MSG* pMsg) 
-{	
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		int nVirtKey = (int)pMsg->wParam;
-		if (nVirtKey == _T('v') || nVirtKey == _T('V'))
-		{
-			OnClose();
-			return TRUE;
-		}
-	}
-	return CDialog::PreTranslateMessage(pMsg);
-}
-
 void COutVolDlg::PostNcDestroy() 
 {
 	CVideoAviView* pView = (CVideoAviView*)m_pParentWnd;

@@ -6455,22 +6455,6 @@ void CVideoDeviceDoc::CaptureAssistant()
 
 void CVideoDeviceDoc::OnCaptureSettings() 
 {
-	CaptureSettings();
-}
-
-void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	m_pDxCapture														||
-					((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc)	||
-					m_pGetFrameNetCom);
-	if (m_pVideoDevicePropertySheet)
-		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsVisible() ? 1 : 0);
-	else
-		pCmdUI->SetCheck(0);
-}
-
-void CVideoDeviceDoc::CaptureSettings() 
-{
 	// Create if First Time
 	if (!m_pVideoDevicePropertySheet)
 	{
@@ -6490,6 +6474,17 @@ void CVideoDeviceDoc::CaptureSettings()
 		m_pVideoDevicePropertySheet->Toggle();
 
 	SetDocumentTitle();
+}
+
+void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(	m_pDxCapture														||
+					((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc)	||
+					m_pGetFrameNetCom);
+	if (m_pVideoDevicePropertySheet)
+		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsVisible() ? 1 : 0);
+	else
+		pCmdUI->SetCheck(0);
 }
 
 void CVideoDeviceDoc::VideoFormatDialog() 
@@ -6553,7 +6548,7 @@ void CVideoDeviceDoc::VideoFormatDialog()
 	}
 }
 
-void CVideoDeviceDoc::ViewVideo() 
+void CVideoDeviceDoc::OnViewVideo() 
 {
 	m_bVideoView = !m_bVideoView;
 	if (!m_bVideoView)
@@ -6563,11 +6558,6 @@ void CVideoDeviceDoc::ViewVideo()
 						WM_THREADSAFE_SETDOCUMENTTITLE,
 						0, 0);
 	}
-}
-
-void CVideoDeviceDoc::OnViewVideo() 
-{
-	ViewVideo();
 }
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
