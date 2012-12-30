@@ -294,9 +294,7 @@ BOOL CPaletteWnd::PreTranslateMessage(MSG* pMsg)
 	if (pMsg->message == WM_KEYDOWN)
 	{
 		int nVirtKey = (int)pMsg->wParam;
-		if ((nVirtKey == VK_ESCAPE)	||
-			(nVirtKey == _T('p'))	||
-			(nVirtKey == _T('P')))
+		if (nVirtKey == VK_ESCAPE)
 		{
 			OnClose();
 			return TRUE;

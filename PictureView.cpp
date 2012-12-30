@@ -1569,76 +1569,16 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case _T('B') :
-			if (!pDoc->m_pHLSDlg				&&
-				!pDoc->m_bCrop					&&
-				!pDoc->m_pRedEyeDlg				&&
-				!pDoc->m_bDoRedEyeColorPickup)
-				pDoc->ViewBackgroundColorDlg();
-			break;
-
 		case _T('C') :
 			if (pDoc->m_sFileName != _T("")	&&
 				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
 				pDoc->FileCopyTo();
 			break;
 
-		case _T('D') :
-			pDoc->ViewLayeredDlg();
-			break;
-
-		case _T('G') :
-			pDoc->ViewMap();
-			break;
-
 		case _T('M') :
 			if (pDoc->m_sFileName != _T("")	&&
 				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
 				pDoc->FileMoveTo();
-			break;
-
-		case _T('N') :
-			pDoc->ViewNoBorders();
-			break;
-
-		case _T('P') :
-			if ((pDoc->m_dwIDAfterFullLoadCommand == 0 ||
-				pDoc->m_dwIDAfterFullLoadCommand == ID_EDIT_PALETTE)	&&
-				pDoc->m_pDib && pDoc->m_pDib->GetColors()				&&
-				!(pDoc->m_SlideShowThread.IsSlideshowRunning() ||
-				pDoc->m_bDoRestartSlideshow)							&&
-				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly		&&
-#ifdef SUPPORT_GIFLIB
-				!pDoc->m_GifAnimationThread.IsAlive()					&&
-#endif
-				!pDoc->m_bMetadataModified								&&
-				!pDoc->m_pHLSDlg										&&
-				!pDoc->m_pRedEyeDlg										&&
-				!pDoc->m_pRotationFlippingDlg							&&
-				!pDoc->m_bDoRedEyeColorPickup							&&
-				!pDoc->m_pMonochromeConversionDlg						&&
-				!pDoc->m_pSharpenDlg									&&
-				!pDoc->m_pSoftenDlg										&&
-				!pDoc->m_pSoftBordersDlg								&&
-				!pDoc->m_bCrop)
-				pDoc->EditPalette();
-			break;
-
-		case _T('Q') :
-			if (((CUImagerApp*)::AfxGetApp())->m_bStretchModeHalftoneAvailable)
-				pDoc->StretchHalftone();
-			break;
-
-		case _T('U') :
-			if ((pDoc->m_dwIDAfterFullLoadCommand == 0 ||
-				pDoc->m_dwIDAfterFullLoadCommand == ID_EDIT_COLORS_COUNT) &&
-				pDoc->DoEnableCommand())
-				pDoc->EditColorsCount();
-			break;
-
-		case _T('Z') :
-			if (!m_bFullScreenMode)
-				OnViewZoomTool();
 			break;
 
 		case VK_CONTROL :
@@ -1691,20 +1631,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_MULTIPLY :
 			if (!m_bFullScreenMode)
 				OnViewZoom100();
-			break;
-
-		case _T('O') :
-			if (m_bFullScreenMode)
-			{
-				pDoc->m_bEnableOsd = !pDoc->m_bEnableOsd;
-				pDoc->ShowOsd(pDoc->m_bEnableOsd);
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				{
-					::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-													_T("EnableOSD"),
-													pDoc->m_bEnableOsd);
-				}
-			}
 			break;
 
 		case VK_RETURN : // Enter

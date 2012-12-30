@@ -3,10 +3,13 @@ TRANSLATIONS HISTORY
 4.3.0 (xxx)
 
 - Changed accelerators
-  * Fullscreen from F -> F11
-  * File Info from  I -> Ctrl+I
-- Remote accelerators
-  * ID_PLAY_LOOP, ID_PLAY_RANDOM
+  * Fullscreen from      F -> F11
+  * File Info from       I -> Ctrl+I
+  * Preview Display from D -> Ctrl+U
+- Removed accelerators
+  * ID_PLAY_LOOP, ID_PLAY_RANDOM, ID_VIEW_ZOOM_TOOL, ID_VIEW_BACKGROUND_COLOR_MENU
+    ID_VIEW_NO_BORDERS, ID_VIEW_MAP, ID_VIEW_STRETCH_HALFTONE, ID_EDIT_PALETTE
+	ID_EDIT_COLORS_COUNT, ID_VIEW_ENABLE_OSD
 
 4.1.0 (December 4th 2012)
 

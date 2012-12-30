@@ -11423,7 +11423,8 @@ BOOL CPictureDoc::ViewLayeredDlg()
 
 void CPictureDoc::OnViewLayeredDlg()
 {
-	ViewLayeredDlg();
+	if (!m_bPrintPreviewMode)
+		ViewLayeredDlg();
 }
 
 void CPictureDoc::OnUpdateViewLayeredDlg(CCmdUI* pCmdUI)

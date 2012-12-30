@@ -282,9 +282,9 @@ BEGIN
             MENUITEM "To Next\tTAB",                ID_VIEW_NEXT_MONITOR
             MENUITEM "To Previous\tShift+TAB",      ID_VIEW_PREVIOUS_MONITOR
         END
-        MENUITEM "Background Color...\tB",      ID_VIEW_BACKGROUND_COLOR_MENU
+        MENUITEM "Background Color...",         ID_VIEW_BACKGROUND_COLOR_MENU
 
-        MENUITEM "Preview Display\tD",          ID_VIEW_LAYERED_DLG
+        MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
         POPUP "Preview Display Settings"
         BEGIN
             MENUITEM "Max Size 2/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_66
@@ -350,7 +350,7 @@ BEGIN
         MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
+        MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
         POPUP "OSD Settings"
         BEGIN
             POPUP "Display"
@@ -809,8 +809,8 @@ BEGIN
         MENUITEM "Add Borders...\tCtrl+L",      ID_EDIT_ADD_BORDERS
         MENUITEM "Soft Borders...\tCtrl+M",     ID_EDIT_SOFT_BORDERS
         MENUITEM SEPARATOR
-        MENUITEM "Palette...\tP",               ID_EDIT_PALETTE
-        MENUITEM "Count Unique Colors\tU",      ID_EDIT_COLORS_COUNT
+        MENUITEM "Palette...",                  ID_EDIT_PALETTE
+        MENUITEM "Count Unique Colors",         ID_EDIT_COLORS_COUNT
         MENUITEM SEPARATOR
         POPUP "Convert To"
         BEGIN
@@ -870,12 +870,12 @@ BEGIN
             MENUITEM "800 %",                       ID_VIEW_ZOOM_800
             MENUITEM "1600 %",                      ID_VIEW_ZOOM_1600
         END
-        MENUITEM "&Zoom Click\tZ",              ID_VIEW_ZOOM_TOOL
-        MENUITEM "Background Color...\tB",      ID_VIEW_BACKGROUND_COLOR_MENU
+        MENUITEM "&Zoom Click",                 ID_VIEW_ZOOM_TOOL
+        MENUITEM "Background Color...",         ID_VIEW_BACKGROUND_COLOR_MENU
 
-        MENUITEM "No Borders\tN",               ID_VIEW_NO_BORDERS
+        MENUITEM "No Borders",                  ID_VIEW_NO_BORDERS
         MENUITEM SEPARATOR
-        MENUITEM "Preview Display\tD",          ID_VIEW_LAYERED_DLG
+        MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
         POPUP "Preview Display Settings"
         BEGIN
             MENUITEM "Max Size 2/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_66
@@ -912,7 +912,7 @@ BEGIN
             MENUITEM "Opacity 20 %",                ID_LAYEREDDLG_OPACITY_20
         END
         MENUITEM SEPARATOR
-        MENUITEM "Map\tG",                      ID_VIEW_MAP
+        MENUITEM "Map",                         ID_VIEW_MAP
         MENUITEM SEPARATOR
         MENUITEM "&Next Image\tSpace",          ID_VIEW_NEXT_PICTURE
         MENUITEM "&Previous Image\tBackspace",  ID_VIEW_PREVIOUS_PICTURE
@@ -920,7 +920,7 @@ BEGIN
         MENUITEM "All Prev. Image\tCtrl+Backspace", 
                                                 ID_VIEW_ALL_PREVIOUS_PICTURE
         MENUITEM SEPARATOR
-        MENUITEM "Hi Quality Stretch\tQ",       ID_VIEW_STRETCH_HALFTONE
+        MENUITEM "Hi Quality Stretch",          ID_VIEW_STRETCH_HALFTONE
         MENUITEM SEPARATOR
         MENUITEM "Next Page/Frame\tPageDn",     ID_VIEW_NEXT_PAGE_FRAME
         MENUITEM "Prev. Page/Frame\tPageUp",    ID_VIEW_PREVIOUS_PAGE_FRAME
@@ -1152,7 +1152,7 @@ BEGIN
             MENUITEM "To Next\tTAB",                ID_VIEW_NEXT_MONITOR
             MENUITEM "To Previous\tShift+TAB",      ID_VIEW_PREVIOUS_MONITOR
         END
-        MENUITEM "Preview Display\tD",          ID_VIEW_LAYERED_DLG
+        MENUITEM "Preview Display\tCtrl+U",     ID_VIEW_LAYERED_DLG
         POPUP "Preview Display Settings"
         BEGIN
             MENUITEM "Max Size 2/3 Screen",         ID_LAYEREDDLG_MAXSIZE_0_66
@@ -1220,7 +1220,7 @@ BEGIN
         MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
+        MENUITEM "On-Screen Display",           ID_VIEW_ENABLE_OSD
         POPUP "OSD Settings"
         BEGIN
             POPUP "Display"
@@ -1539,6 +1539,7 @@ BEGIN
     "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     "T",            ID_EDIT_FILTER_SOFTEN,  VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
