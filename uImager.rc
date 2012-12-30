@@ -346,8 +346,8 @@ BEGIN
 
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
-        MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
+        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
+        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD
@@ -495,8 +495,8 @@ BEGIN
 
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
-        MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
+        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
+        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM SEPARATOR
@@ -512,7 +512,7 @@ BEGIN
     BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_AVI
         MENUITEM "&Stop\tPause",                ID_STOP_AVI
-        MENUITEM "Infinite Loop\tL",            ID_PLAY_LOOP
+        MENUITEM "Infinite Loop",               ID_PLAY_LOOP
         MENUITEM "Show Time Position\tT",       ID_VIEW_TIMEPOSITION
         MENUITEM "A/V Sync...\tS",              ID_PLAY_AUDIOVIDEOSHIFT
         MENUITEM SEPARATOR
@@ -698,7 +698,7 @@ BEGIN
     BEGIN
         MENUITEM "&Play\tEnter",                ID_PLAY_AVI
         MENUITEM "&Stop\tPause",                ID_STOP_AVI
-        MENUITEM "Infinite Loop\tL",            ID_PLAY_LOOP
+        MENUITEM "Infinite Loop",               ID_PLAY_LOOP
         MENUITEM "A/V Sync...\tS",              ID_PLAY_AUDIOVIDEOSHIFT
         MENUITEM SEPARATOR
         MENUITEM "Volume...\tV",                ID_PLAY_VOL
@@ -959,8 +959,8 @@ BEGIN
 
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
-        MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
+        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
+        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "Play Animated GIF",           ID_PLAY_ANIMATION
         MENUITEM "Stop Animated GIF",           ID_STOP_ANIMATION
@@ -1216,8 +1216,8 @@ BEGIN
 
             MENUITEM "Blend",                       ID_PLAY_TRANSITION_BLEND
         END
-        MENUITEM "Slideshow Infinite Loop\tL",  ID_PLAY_LOOP
-        MENUITEM "Slideshow Random\tR",         ID_PLAY_RANDOM
+        MENUITEM "Slideshow Infinite Loop",     ID_PLAY_LOOP
+        MENUITEM "Slideshow Random",            ID_PLAY_RANDOM
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM "On-Screen Display\tO",        ID_VIEW_ENABLE_OSD

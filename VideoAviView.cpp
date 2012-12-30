@@ -943,11 +943,6 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->ViewTimeposition();
 			break;
 
-		case _T('L') :
-			if (!pDoc->IsProcessing())
-				pDoc->PlayLoop();
-			break;
-
 		case VK_ESCAPE :
 			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);

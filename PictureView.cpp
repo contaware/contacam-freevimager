@@ -1591,14 +1591,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			pDoc->ViewMap();
 			break;
 
-		case _T('L') :
-			pDoc->PlayLoop();
-			break;
-
-		case _T('R') :
-			pDoc->PlayRandom();
-			break;
-
 		case _T('M') :
 			if (pDoc->m_sFileName != _T("")	&&
 				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
