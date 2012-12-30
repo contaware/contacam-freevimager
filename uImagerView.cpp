@@ -24,8 +24,6 @@ BEGIN_MESSAGE_MAP(CUImagerView, CScrollView)
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MBUTTONDBLCLK()
 	ON_WM_RBUTTONDBLCLK()
-	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_WM_TIMER()
 	ON_WM_MOUSEMOVE()
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -484,16 +482,6 @@ void CUImagerView::OnRButtonDblClk(UINT nFlags, CPoint point)
 {
 	EnableCursor();	
 	CScrollView::OnRButtonDblClk(nFlags, point);
-}
-
-void CUImagerView::OnViewFullscreen() 
-{
-	::AfxGetMainFrame()->EnterExitFullscreen();
-}
-
-void CUImagerView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
 void CUImagerView::OnTimer(UINT nIDEvent) 

@@ -29,6 +29,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_SETCURSOR()
 	ON_WM_MOUSEMOVE()
 	ON_WM_KEYUP()
+	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
@@ -1024,10 +1026,6 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->CaptureAssistant();
 			break;
 
-		case _T('F') :
-			::AfxGetMainFrame()->EnterExitFullscreen();
-			break;
-
 		case _T('S') :
 			if (pDoc->m_pDxCapture															||
 				((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)(pDoc->m_pVideoAviDoc))	||
@@ -1344,6 +1342,16 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 	}
 	
 	CUImagerView::OnMouseMove(nFlags, point);
+}
+
+void CVideoDeviceView::OnViewFullscreen() 
+{
+	::AfxGetMainFrame()->EnterExitFullscreen();
+}
+
+void CVideoDeviceView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
 }
 
 void CVideoDeviceView::OnEditSelectall() 

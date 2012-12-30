@@ -34,6 +34,7 @@ BEGIN_MESSAGE_MAP(CVideoAviView, CUImagerView)
 	ON_WM_RBUTTONDBLCLK()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_LBUTTONUP()
+	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_WM_SETCURSOR()
 	ON_COMMAND(ID_VIEW_GDI_RGB, OnViewGdiRgb)
@@ -935,14 +936,6 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->m_pAVIPlay->HasVideo() &&
 				(pDoc->m_nActiveVideoStream >= 0))
 				pDoc->AudioVideoShiftDlg();
-			break;
-
-		case _T('F') :
-			if (pDoc->m_pAVIPlay					&&
-				pDoc->m_pAVIPlay->HasVideo()		&&
-				(pDoc->m_nActiveVideoStream >= 0)	&&
-				!pDoc->IsProcessing())
-				::AfxGetMainFrame()->EnterExitFullscreen();
 			break;
 
 		case _T('I') :
@@ -2884,6 +2877,17 @@ void CVideoAviView::OnLButtonUp(UINT nFlags, CPoint point)
 	ReleaseCapture();
 	
 	CUImagerView::OnLButtonUp(nFlags, point);
+}
+
+void CVideoAviView::OnViewFullscreen() 
+{
+	CVideoAviDoc* pDoc = (CVideoAviDoc*)GetDocument();
+	ASSERT_VALID(pDoc);
+	if (pDoc->m_pAVIPlay					&&
+		pDoc->m_pAVIPlay->HasVideo()		&&
+		(pDoc->m_nActiveVideoStream >= 0)	&&
+		!pDoc->IsProcessing())
+		::AfxGetMainFrame()->EnterExitFullscreen();
 }
 
 void CVideoAviView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 

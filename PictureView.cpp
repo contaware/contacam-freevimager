@@ -43,6 +43,8 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_DIRECT, OnUpdateFilePrintDirect)
 	ON_WM_RBUTTONUP()
 	ON_WM_RBUTTONDBLCLK()
+	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_COMMAND(ID_VIEW_ZOOM_FIT, OnViewZoomFit)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_ZOOM_FIT, OnUpdateViewZoomFit)
 	ON_COMMAND(ID_VIEW_ZOOM_FITBIG, OnViewZoomFitbig)
@@ -1066,6 +1068,22 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 	m_dYFontPixelScale = 1.0;
 }
 
+void CPictureView::OnViewFullscreen() 
+{
+#ifndef _DEBUG
+	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
+#endif
+		::AfxGetMainFrame()->EnterExitFullscreen();
+}
+
+void CPictureView::OnUpdateViewFullscreen(CCmdUI* pCmdUI) 
+{
+#ifndef _DEBUG
+	pCmdUI->Enable(!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly);
+#endif
+	pCmdUI->SetCheck(m_bFullScreenMode ? 1 : 0);	
+}
+
 void CPictureView::OnViewZoomFit() 
 {
 	CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)GetParentFrame())->GetToolBar())->m_ZoomComboBox);
@@ -1699,13 +1717,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 		case _T('I') :
 			pDoc->FileInfo();
-			break;
-
-		case _T('F') :
-#ifndef _DEBUG
-			if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-#endif
-				::AfxGetMainFrame()->EnterExitFullscreen();
 			break;
 
 		case VK_RETURN : // Enter

@@ -254,6 +254,8 @@ protected:
 	afx_msg void OnUpdateFilePrintDirect(CCmdUI* pCmdUI);
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnViewFullscreen();
+	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	afx_msg void OnViewZoomFit();
 	afx_msg void OnUpdateViewZoomFit(CCmdUI* pCmdUI);
 	afx_msg void OnViewZoomFitbig();

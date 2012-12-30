@@ -502,7 +502,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
     END
 END
 
@@ -520,7 +520,7 @@ BEGIN
         MENUITEM "File Information...\tI",      ID_FILE_INFO
         MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
     END
 END
 
@@ -535,7 +535,7 @@ BEGIN
         MENUITEM "Device Settings...\tS",       ID_CAPTURE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Show Frame Time\tT",          ID_VIEW_FRAMETIME
     END
@@ -583,7 +583,7 @@ BEGIN
     BEGIN
         MENUITEM "Preview\tP",                  ID_VIEW_VIDEO
         MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "Show Frame Time\tT",          ID_VIEW_FRAMETIME
         MENUITEM SEPARATOR
@@ -682,7 +682,7 @@ BEGIN
     BEGIN
         MENUITEM "Show &Time Position\tT",      ID_VIEW_TIMEPOSITION
         MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         MENUITEM "GDI RGB",                     ID_VIEW_GDI_RGB
         MENUITEM "GDI YUV",                     ID_VIEW_GDI_YUV
@@ -854,7 +854,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
         POPUP "Zoom"
         BEGIN
@@ -1303,7 +1303,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Print...\tCtrl+P",            ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
-        MENUITEM "&Full Screen\tF",             ID_VIEW_FULLSCREEN
+        MENUITEM "&Full Screen\tF11",             ID_VIEW_FULLSCREEN
     END
 END
 
@@ -1544,6 +1544,7 @@ BEGIN
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     VK_DOWN,        ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
     VK_END,         ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
@@ -6097,7 +6098,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_VIEW_FULLSCREEN      "Go to full screen mode (exit with ESC or F)\nFull Screen"
+    ID_VIEW_FULLSCREEN      "Go to full screen mode (exit with ESC or F11)\nFull Screen"
     ID_FILE_OPEN_DIR        "Open a directory\nOpen Directory"
     ID_FILE_CLOSEALL        "Close all open documents\nClose All"
     ID_SLIDESHOW_DELAY_2    "Set slideshow delay to 2 seconds\n2 s"

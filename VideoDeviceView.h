@@ -79,6 +79,8 @@ protected:
 	afx_msg void OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI);
+	afx_msg void OnViewFullscreen();
+	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
