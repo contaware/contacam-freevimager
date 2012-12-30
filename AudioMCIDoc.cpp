@@ -142,33 +142,6 @@ void CAudioMCIDoc::DeleteDocFile()
 	CloseDocument();
 }
 
-void CAudioMCIDoc::EditRename()
-{
-	CRenameDlg dlg;
-	dlg.m_sFileName = ::GetShortFileNameNoExt(GetPathName());
-	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
-	{
-		// New file name
-		CString sNewFileName =	::GetDriveName(GetPathName()) +
-								::GetDirName(GetPathName()) +
-								dlg.m_sFileName +
-								::GetFileExt(GetPathName());
-		
-		// Destroy MCI Wnd
-		GetView()->m_DibStatic.FreeMusic();
-
-		// Rename
-		if (!::MoveFile(GetPathName(), sNewFileName))
-		{
-			::ShowLastError(TRUE);
-			sNewFileName = GetPathName();
-		}
-		
-		// Reload
-		LoadAudio(sNewFileName);
-	}
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CAudioMCIDoc serialization
 
@@ -197,7 +170,29 @@ void CAudioMCIDoc::OnEditDelete()
 
 void CAudioMCIDoc::OnEditRename() 
 {
-	EditRename();
+	CRenameDlg dlg;
+	dlg.m_sFileName = ::GetShortFileNameNoExt(GetPathName());
+	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
+	{
+		// New file name
+		CString sNewFileName =	::GetDriveName(GetPathName()) +
+								::GetDirName(GetPathName()) +
+								dlg.m_sFileName +
+								::GetFileExt(GetPathName());
+		
+		// Destroy MCI Wnd
+		GetView()->m_DibStatic.FreeMusic();
+
+		// Rename
+		if (!::MoveFile(GetPathName(), sNewFileName))
+		{
+			::ShowLastError(TRUE);
+			sNewFileName = GetPathName();
+		}
+		
+		// Reload
+		LoadAudio(sNewFileName);
+	}
 }
 
 void CAudioMCIDoc::OnUpdateFileSave(CCmdUI* pCmdUI) 

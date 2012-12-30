@@ -435,9 +435,6 @@ public:
 	// Delete Current Page or Picture and Load Next One
 	void EditDelete(BOOL bPrompt);
 
-	// Rename Current Picture and Reload it
-	void EditRename();
-
 	// Clear the Previous and Next Loaded Pictures
 	// Used in Save As (to avoid the save as file is the next or previous),
 	// Crop, FileMoveTo, EditRename, DeleteDocFile
@@ -464,10 +461,6 @@ public:
 	// BI_RLE8 : Compress to RLE8
 	// BI_RLE4 : Compress to RLE4
 	BOOL CompressRLE(int nCompression);
-
-	// File Copy and Move
-	void FileCopyTo();
-	void FileMoveTo();
 
 	// Edit Palette
 	BOOL EditPalette();
@@ -1104,9 +1097,7 @@ protected:
 	afx_msg void OnEditTo32bitsAlpha();
 	afx_msg void OnUpdateEditTo32bitsAlpha(CCmdUI* pCmdUI);
 	afx_msg void OnFileCopyTo();
-	afx_msg void OnUpdateFileCopyTo(CCmdUI* pCmdUI);
 	afx_msg void OnFileMoveTo();
-	afx_msg void OnUpdateFileMoveTo(CCmdUI* pCmdUI);
 	afx_msg void OnLayereddlgSize0125();
 	afx_msg void OnUpdateLayereddlgSize0125(CCmdUI* pCmdUI);
 	afx_msg void OnLayereddlgSize025();
@@ -1153,9 +1144,9 @@ protected:
 	afx_msg void OnEditCut();
 	afx_msg void OnUpdateEditCut(CCmdUI* pCmdUI);
 	afx_msg void OnEditRename();
-	afx_msg void OnUpdateEditRename(CCmdUI* pCmdUI);
 	afx_msg void OnFileExtract();
 	afx_msg void OnUpdateFileExtract(CCmdUI* pCmdUI);
+	afx_msg void OnFileReload();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

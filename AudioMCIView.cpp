@@ -124,11 +124,6 @@ BOOL CAudioMCIView::PreTranslateMessage(MSG* pMsg)
 				pDoc->EditDelete(TRUE);	// Delete with prompting
 			return TRUE;
 		}
-		else if (pMsg->wParam == VK_F2)
-		{
-			pDoc->EditRename();
-			return TRUE;
-		}
 	}
 	else if (pMsg->message == WM_LBUTTONDOWN ||
 			pMsg->message == WM_LBUTTONUP)

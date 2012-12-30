@@ -4714,9 +4714,39 @@ void CVideoAviDoc::DeleteDocFile()
 	CloseDocument();
 }
 
-void CVideoAviDoc::OnEditRename() 
+void CVideoAviDoc::OnEditRename()
 {
-	EditRename();
+	if (!IsModified() &&
+		!IsProcessing() &&
+		!GetView()->m_bFullScreenMode &&
+		!m_PlayVideoFileThread.IsAlive() &&
+		!m_PlayAudioFileThread.IsAlive())
+	{
+		CRenameDlg dlg;
+		dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
+		if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
+		{	
+			// New file name
+			CString sNewFileName =	::GetDriveName(m_sFileName) +
+									::GetDirName(m_sFileName) +
+									dlg.m_sFileName +
+									::GetFileExt(m_sFileName);
+
+			// Delete
+			delete m_pAVIPlay;
+			m_pAVIPlay = NULL;
+
+			// Rename
+			if (!::MoveFile(m_sFileName, sNewFileName))
+			{
+				::ShowLastError(TRUE);
+				sNewFileName = m_sFileName;
+			}
+			
+			// Reload active streams
+			LoadAVI(sNewFileName, 0, TRUE);
+		}
+	}
 }
 
 void CVideoAviDoc::OnUpdateEditRename(CCmdUI* pCmdUI) 
@@ -4726,34 +4756,6 @@ void CVideoAviDoc::OnUpdateEditRename(CCmdUI* pCmdUI)
 					!GetView()->m_bFullScreenMode &&
 					!m_PlayVideoFileThread.IsAlive() &&
 					!m_PlayAudioFileThread.IsAlive());
-}
-
-void CVideoAviDoc::EditRename()
-{
-	CRenameDlg dlg;
-	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
-	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
-	{	
-		// New file name
-		CString sNewFileName =	::GetDriveName(m_sFileName) +
-								::GetDirName(m_sFileName) +
-								dlg.m_sFileName +
-								::GetFileExt(m_sFileName);
-
-		// Delete
-		delete m_pAVIPlay;
-		m_pAVIPlay = NULL;
-
-		// Rename
-		if (!::MoveFile(m_sFileName, sNewFileName))
-		{
-			::ShowLastError(TRUE);
-			sNewFileName = m_sFileName;
-		}
-		
-		// Reload active streams
-		LoadAVI(sNewFileName, 0, TRUE);
-	}
 }
 
 BOOL CVideoAviDoc::LoadAVI(CString sFileName,

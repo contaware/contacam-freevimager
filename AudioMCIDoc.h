@@ -46,9 +46,6 @@ public:
 	// Delete File
 	void EditDelete(BOOL bPrompt);
 
-	// Rename File
-	void EditRename();
-
 	// Audio Load Function
 	BOOL LoadAudio(LPCTSTR lpszFileName);
 

@@ -747,14 +747,16 @@ BEGIN
         MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
+        MENUITEM "Reload\tF5",                  ID_FILE_RELOAD
+        MENUITEM SEPARATOR
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM "Save Copy &As...",            ID_FILE_SAVE_COPY_AS
         MENUITEM "Save As Pdf...",              ID_FILE_SAVE_AS_PDF
         MENUITEM "Extract Pages/Frames...",     ID_FILE_EXTRACT
         MENUITEM SEPARATOR
-        MENUITEM "&Move To...\tM",              ID_FILE_MOVE_TO
-        MENUITEM "&Copy To...\tC",              ID_FILE_COPY_TO
+        MENUITEM "&Move To...\tF7",             ID_FILE_MOVE_TO
+        MENUITEM "&Copy To...\tF8",             ID_FILE_COPY_TO
         MENUITEM SEPARATOR
         POPUP "Scan"
         BEGIN
@@ -1548,8 +1550,12 @@ BEGIN
     VK_END,         ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
     VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
+    VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
+    VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
     VK_HOME,        ID_VIEW_ALL_FIRST_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
@@ -7013,6 +7019,11 @@ BEGIN
     IDS_STRING1866          "Client Poll Mode"
     IDS_STRING1867          "or type in Web Browser's address bar"
     IDS_STRING1868          "or"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_RELOAD          "Reload current file\nReload File"
 END
 
 #endif    // English (U.S.) resources

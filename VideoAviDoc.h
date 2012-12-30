@@ -384,7 +384,6 @@ public:
 	void UpdateAviInfoDlg();
 	void EditSnapshot();
 	void EditDelete(BOOL bPrompt);
-	void EditRename();
 
 	// Player Control
 	void PlayAVI();				// Not blocking start (starts playing if not already playing)

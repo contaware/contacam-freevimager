@@ -3511,6 +3511,7 @@
 #define ID_EDIT_SCREENSHOT              33179
 #define ID_DIRECTSHOW_VIDEODEV_FIRST    33180
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33279
+#define ID_FILE_RELOAD                  33280
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3519,7 +3520,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33280
+#define _APS_NEXT_COMMAND_VALUE         33281
 #define _APS_NEXT_CONTROL_VALUE         2555
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

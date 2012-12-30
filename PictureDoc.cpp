@@ -282,9 +282,7 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_TO32BITS_ALPHA, OnEditTo32bitsAlpha)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_TO32BITS_ALPHA, OnUpdateEditTo32bitsAlpha)
 	ON_COMMAND(ID_FILE_COPY_TO, OnFileCopyTo)
-	ON_UPDATE_COMMAND_UI(ID_FILE_COPY_TO, OnUpdateFileCopyTo)
 	ON_COMMAND(ID_FILE_MOVE_TO, OnFileMoveTo)
-	ON_UPDATE_COMMAND_UI(ID_FILE_MOVE_TO, OnUpdateFileMoveTo)
 	ON_COMMAND(ID_LAYEREDDLG_SIZE_0125, OnLayereddlgSize0125)
 	ON_UPDATE_COMMAND_UI(ID_LAYEREDDLG_SIZE_0125, OnUpdateLayereddlgSize0125)
 	ON_COMMAND(ID_LAYEREDDLG_SIZE_025, OnLayereddlgSize025)
@@ -331,9 +329,9 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdateEditCut)
 	ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateEditRename)
 	ON_COMMAND(ID_FILE_EXTRACT, OnFileExtract)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXTRACT, OnUpdateFileExtract)
+	ON_COMMAND(ID_FILE_RELOAD, OnFileReload)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -3928,10 +3926,11 @@ BOOL CPictureDoc::Save()
 	}
 }
 
-void CPictureDoc::FileCopyTo() 
+void CPictureDoc::OnFileCopyTo()
 {
 	GetView()->ForceCursor();
-	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
+		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		// Copy To Dialog
 		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
@@ -3969,20 +3968,11 @@ void CPictureDoc::FileCopyTo()
 	GetView()->ForceCursor(FALSE);
 }
 
-void CPictureDoc::OnFileCopyTo() 
-{
-	FileCopyTo();
-}
-
-void CPictureDoc::OnUpdateFileCopyTo(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(m_sFileName != _T(""));
-}
-
-void CPictureDoc::FileMoveTo() 
+void CPictureDoc::OnFileMoveTo()
 {
 	GetView()->ForceCursor();
-	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
+		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		// Be Sure We Are Not Working On This File
 		m_JpegThread.Kill();
@@ -4032,14 +4022,13 @@ void CPictureDoc::FileMoveTo()
 	GetView()->ForceCursor(FALSE);
 }
 
-void CPictureDoc::OnFileMoveTo() 
+void CPictureDoc::OnFileReload() 
 {
-	FileMoveTo();
-}
-
-void CPictureDoc::OnUpdateFileMoveTo(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(m_sFileName != _T(""));
+	GetView()->ForceCursor();
+	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
+		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+		LoadPicture(&m_pDib, m_sFileName);
+	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::OnFileSave() 
@@ -4555,60 +4544,38 @@ BOOL CPictureDoc::DeleteDocFile()
 
 void CPictureDoc::OnEditRename() 
 {
-	EditRename();
-}
-
-void CPictureDoc::OnUpdateEditRename(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	m_dwIDAfterFullLoadCommand == 0						&&
-					!IsModified()										&&
-					!m_bMetadataModified								&&
-					!(m_SlideShowThread.IsSlideshowRunning()			||
-					m_bDoRestartSlideshow)								&&
-					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-					!m_pRotationFlippingDlg								&&
-					!m_pWndPalette										&&
-					!m_pHLSDlg											&&
-					!m_pRedEyeDlg										&&
-					!m_bDoRedEyeColorPickup								&&
-					!m_pMonochromeConversionDlg							&&
-					!m_pSharpenDlg										&&
-					!m_pSoftenDlg										&&
-					!m_pSoftBordersDlg									&&
-					!m_bCrop											&&
-					!m_bPrintPreviewMode);
-}
-
-void CPictureDoc::EditRename()
-{
-	CRenameDlg dlg;
-	dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
 	GetView()->ForceCursor();
-	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
-	{	
-		// New file name
-		CString sNewFileName =	::GetDriveName(m_sFileName) +
-								::GetDirName(m_sFileName) +
-								dlg.m_sFileName +
-								::GetFileExt(m_sFileName);
+	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
+		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	{
+		CRenameDlg dlg;
+		dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
+		if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
+		{	
+			// New file name
+			CString sNewFileName =	::GetDriveName(m_sFileName) +
+									::GetDirName(m_sFileName) +
+									dlg.m_sFileName +
+									::GetFileExt(m_sFileName);
 
-		// Be Sure We Are Not Working On This File
-		m_JpegThread.Kill();
+			// Be Sure We Are Not Working On This File
+			m_JpegThread.Kill();
 #ifdef SUPPORT_GIFLIB
-		m_GifAnimationThread.Kill();
+			m_GifAnimationThread.Kill();
 #endif
 
-		// Rename
-		if (!::MoveFile(m_sFileName, sNewFileName))
-		{
-			::ShowLastError(TRUE);
-			sNewFileName = m_sFileName;
+			// Rename
+			if (!::MoveFile(m_sFileName, sNewFileName))
+			{
+				::ShowLastError(TRUE);
+				sNewFileName = m_sFileName;
+			}
+			
+			// Reload
+			ClearPrevNextPictures();
+			if (LoadPicture(&m_pDib, sNewFileName))
+				SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 		}
-		
-		// Reload
-		ClearPrevNextPictures();
-		if (LoadPicture(&m_pDib, sNewFileName))
-			SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 	}
 	GetView()->ForceCursor(FALSE);
 }
@@ -5541,7 +5508,6 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 
 			EndWaitCursor();
 			GetView()->ForceCursor(FALSE);
-			UpdateImageInfo();
 
 			return TRUE;
 		}
@@ -5655,7 +5621,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 
 			EndWaitCursor();
 			GetView()->ForceCursor(FALSE);
-			UpdateImageInfo();
 
 			return TRUE;
 		}
@@ -5769,7 +5734,6 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 
 			EndWaitCursor();
 			GetView()->ForceCursor(FALSE);
-			UpdateImageInfo();
 
 			return TRUE;
 		}
@@ -10138,7 +10102,6 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 			
 			EndWaitCursor();
 			GetView()->ForceCursor(FALSE);
-			UpdateImageInfo();
 
 			return TRUE;
 		}

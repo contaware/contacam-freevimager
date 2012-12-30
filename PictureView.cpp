@@ -1569,18 +1569,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	switch (nChar)
 	{
-		case _T('C') :
-			if (pDoc->m_sFileName != _T("")	&&
-				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-				pDoc->FileCopyTo();
-			break;
-
-		case _T('M') :
-			if (pDoc->m_sFileName != _T("")	&&
-				!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-				pDoc->FileMoveTo();
-			break;
-
 		case VK_CONTROL :
 		case VK_SHIFT :
 			if (pDoc->m_bZoomTool)
@@ -1771,19 +1759,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->EditDelete(FALSE);// Delete without prompting
 			else
 				pDoc->EditDelete(TRUE);	// Delete with prompting
-			break;
-
-		case VK_F2 : // Rename Doc
-			if ((pDoc->m_dwIDAfterFullLoadCommand != 0) ||
-				pDoc->IsModified() || pDoc->m_bMetadataModified ||
-				pDoc->m_SlideShowThread.IsSlideshowRunning() ||
-				((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly ||
-				pDoc->m_bDoRestartSlideshow || pDoc->m_pRotationFlippingDlg || pDoc->m_pHLSDlg || 
-				pDoc->m_pWndPalette || pDoc->m_bDoRedEyeColorPickup || pDoc->m_pRedEyeDlg ||
-				pDoc->m_pMonochromeConversionDlg || pDoc->m_pSharpenDlg || pDoc->m_pSoftenDlg ||
-				pDoc->m_pSoftBordersDlg || pDoc->m_bCrop)
-				break;
-			pDoc->EditRename();
 			break;
 
 		case VK_APPS :
