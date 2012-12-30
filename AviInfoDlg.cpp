@@ -458,20 +458,6 @@ BOOL CAviInfoDlg::OnCommand(WPARAM wParam, LPARAM lParam)
 	return CDialog::OnCommand(wParam, lParam);
 }
 
-BOOL CAviInfoDlg::PreTranslateMessage(MSG* pMsg) 
-{
-	if (pMsg->message == WM_KEYDOWN)
-	{
-		int nVirtKey = (int)pMsg->wParam;
-		if (nVirtKey == _T('i') || nVirtKey == _T('I'))
-		{
-			OnClose();
-			return TRUE;
-		}
-	}	
-	return CDialog::PreTranslateMessage(pMsg);
-}
-
 void CAviInfoDlg::PostNcDestroy() 
 {
 	CVideoAviView* pView = (CVideoAviView*)m_pParentWnd;

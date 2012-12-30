@@ -4,7 +4,7 @@ TRANSLATIONS HISTORY
 
 - Changed accelerators
   * Fullscreen from F -> F11
-  
+  * File Info from  I -> Ctrl+I
 
 4.1.0 (December 4th 2012)
 

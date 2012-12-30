@@ -1715,10 +1715,6 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			}
 			break;
 
-		case _T('I') :
-			pDoc->FileInfo();
-			break;
-
 		case VK_RETURN : // Enter
 			if (pDoc->m_bCrop)
 				pDoc->DoCropRect();

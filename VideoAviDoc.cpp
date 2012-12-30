@@ -5742,12 +5742,14 @@ BOOL CVideoAviDoc::StartShrinkDocTo(CString sOutFileName)
 void CVideoAviDoc::OnFileInfo() 
 {
 	// Center if in Full-Screen Mode
-	AviInfoDlg(GetView()->m_bFullScreenMode);
+	if (!IsProcessing())
+		AviInfoDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdateFileInfo(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(!IsProcessing());
+	pCmdUI->SetCheck(m_pAviInfoDlg != NULL ? 1 : 0);
 }
 
 void CVideoAviDoc::ViewTimeposition()

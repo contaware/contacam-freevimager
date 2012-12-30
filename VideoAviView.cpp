@@ -938,11 +938,6 @@ void CVideoAviView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				pDoc->AudioVideoShiftDlg();
 			break;
 
-		case _T('I') :
-			if (!pDoc->IsProcessing())
-				pDoc->AviInfoDlg();
-			break;
-
 		case _T('T') :
 			if (!pDoc->IsProcessing())
 				pDoc->ViewTimeposition();
