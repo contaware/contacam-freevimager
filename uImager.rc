@@ -211,7 +211,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM SEPARATOR
         POPUP "Scan"
         BEGIN
@@ -547,7 +547,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         POPUP "Scan"
@@ -637,7 +637,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
@@ -744,7 +744,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "Reload\tF5",                  ID_FILE_RELOAD
@@ -797,19 +797,19 @@ BEGIN
         MENUITEM "Rotate 90° CW\tCtrl+Right",   ID_EDIT_ROTATE_90CW
         MENUITEM "Rotate 90° CCW\tCtrl+Left",   ID_EDIT_ROTATE_90CCW
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
-        MENUITEM "Rotate && Flip...\tCtrl+J",   ID_EDIT_ROTATE_FLIP
-        MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy/Cut rectangle\tCtrl+K", ID_EDIT_CROP
+        MENUITEM "Rotate && Flip...",           ID_EDIT_ROTATE_FLIP
+        MENUITEM "Resize...",                   ID_EDIT_RESIZE
+        MENUITEM "Crop/Copy/Cut rectangle",     ID_EDIT_CROP
         MENUITEM SEPARATOR
-        MENUITEM "Grayscale\tCtrl+G",           ID_EDIT_GRAYSCALE
-        MENUITEM "Negative\tCtrl+Q",            ID_EDIT_NEGATIVE
-        MENUITEM "Brightness, Contrast...\tCtrl+B", ID_EDIT_HLS
-        MENUITEM "Red Eye...\tCtrl+E",          ID_EDIT_REDEYE
-        MENUITEM "Sharpen...\tCtrl+H",          ID_EDIT_FILTER_SHARPEN
-        MENUITEM "Soften...\tCtrl+T",           ID_EDIT_FILTER_SOFTEN
+        MENUITEM "Grayscale",                   ID_EDIT_GRAYSCALE
+        MENUITEM "Negative",                    ID_EDIT_NEGATIVE
+        MENUITEM "Brightness, Contrast...",     ID_EDIT_HLS
+        MENUITEM "Red Eye...",                  ID_EDIT_REDEYE
+        MENUITEM "Sharpen...",                  ID_EDIT_FILTER_SHARPEN
+        MENUITEM "Soften...",                   ID_EDIT_FILTER_SOFTEN
         MENUITEM SEPARATOR
-        MENUITEM "Add Borders...\tCtrl+L",      ID_EDIT_ADD_BORDERS
-        MENUITEM "Soft Borders...\tCtrl+M",     ID_EDIT_SOFT_BORDERS
+        MENUITEM "Add Borders...",              ID_EDIT_ADD_BORDERS
+        MENUITEM "Soft Borders...",             ID_EDIT_SOFT_BORDERS
         MENUITEM SEPARATOR
         MENUITEM "Palette...",                  ID_EDIT_PALETTE
         MENUITEM "Count Unique Colors",         ID_EDIT_COLORS_COUNT
@@ -1054,7 +1054,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         POPUP "Scan"
@@ -1401,7 +1401,7 @@ BEGIN
     BEGIN
         MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...\tCtrl+D",        ID_FILE_OPEN_DIR
+        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
         MENUITEM SEPARATOR
         POPUP "Scan"
@@ -1523,24 +1523,12 @@ END
 
 IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
-    "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_FILE_OPEN_DIR,       VIRTKEY, CONTROL, NOINVERT
-    "E",            ID_EDIT_REDEYE,         VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_EDIT_GRAYSCALE,      VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_EDIT_FILTER_SHARPEN, VIRTKEY, CONTROL, NOINVERT
     "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
-    "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
-    "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_EDIT_ADD_BORDERS,    VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_EDIT_SOFT_BORDERS,   VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT_PREVIEW,  VIRTKEY, CONTROL, NOINVERT
-    "Q",            ID_EDIT_NEGATIVE,       VIRTKEY, CONTROL, NOINVERT
-    "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    "T",            ID_EDIT_FILTER_SOFTEN,  VIRTKEY, CONTROL, NOINVERT
     "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_BACK,        ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
@@ -1558,9 +1546,6 @@ BEGIN
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     VK_LEFT,        ID_EDIT_ROTATE_90CCW,   VIRTKEY, CONTROL, NOINVERT
-    VK_NEXT,        ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_PRIOR,       ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_RETURN,      ID_VIEW_ALL_NEXT_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_EDIT_ROTATE_90CW,    VIRTKEY, CONTROL, NOINVERT
     VK_SPACE,       ID_VIEW_ALL_NEXT_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_UP,          ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
