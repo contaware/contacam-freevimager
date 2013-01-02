@@ -1598,7 +1598,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -1612,72 +1612,72 @@ BEGIN
     PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,107,67,14
     PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,100,107,81,14
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,149,38,10
-    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,100,147,81,16
-    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,167,67,16
-    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,100,167,81,16
+                    WS_TABSTOP,13,145,38,10
+    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,100,143,81,16
+    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,163,67,16
+    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,100,163,81,16
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,214,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,99,212,82,67,CBS_DROPDOWNLIST | 
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,204,85,10
+    COMBOBOX        IDC_TIME_SEGMENTATION,99,202,82,67,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,254,22,149,220,
+    COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,264,22,140,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Quality",IDC_RADIO_QUALITY,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,203,49,37,10
     CONTROL         "Datarate",IDC_RADIO_BITRATE,"Button",BS_AUTORADIOBUTTON,
-                    251,49,43,10
+                    264,49,43,10
     EDITTEXT        IDC_EDIT_DATARATE,238,65,44,12,ES_NUMBER
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
                     204,62,173,18
     EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,261,89,21,12,ES_NUMBER
     CONTROL         "Once:",IDC_CHECK_SCHEDULER_ONCE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,204,133,42,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,204,130,42,10
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,221,147,
-                    56,15
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,142,
+                    58,15
     CONTROL         "DateTimePicker2",IDC_DATE_ONCE_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,282,147,
-                    121,15
+                    DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,142,
+                    112,15
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,221,167,
-                    56,15
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,160,
+                    58,15
     CONTROL         "DateTimePicker2",IDC_DATE_ONCE_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,282,167,
-                    121,15
+                    DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,160,
+                    112,15
     CONTROL         "Daily:",IDC_CHECK_SCHEDULER_DAILY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,204,195,33,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,204,186,33,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,225,209,
-                    71,15
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,198,
+                    59,15
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,330,209,
-                    71,15
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,344,198,
+                    59,15
     CONTROL         "Open after rec",IDC_CHECK_AUTOOPEN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,240,61,10
-    LTEXT           "Rec Dir",IDC_TEXT_VIDEO_REC,79,240,25,8,SS_NOTIFY | NOT 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,227,61,10
+    LTEXT           "Rec Dir",IDC_TEXT_VIDEO_REC,87,228,25,8,SS_NOTIFY | NOT 
                     WS_GROUP
-    PUSHBUTTON      "...",IDC_RECORD_SAVEAS,393,238,16,12
+    PUSHBUTTON      "...",IDC_RECORD_SAVEAS,392,226,16,12
     CONTROL         "Autostart",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,254,44,11
-    EDITTEXT        IDC_EDIT_DELETE_RECORDINGS_DAYS,120,253,28,13,ES_RIGHT | 
+                    WS_TABSTOP,7,240,44,11
+    EDITTEXT        IDC_EDIT_DELETE_RECORDINGS_DAYS,86,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "frames/sec",IDC_STATIC2183,132,14,40,8
     LTEXT           "Set Framerate:",IDC_STATIC2155,13,14,47,8
     GROUPBOX        "Video Source",IDC_STATIC2156,7,2,180,126
-    GROUPBOX        "Audio",IDC_STATIC2157,7,135,180,56
-    EDITTEXT        IDC_RECORD_SAVEAS_PATH,107,238,284,12,ES_AUTOHSCROLL | 
+    GROUPBOX        "Audio",IDC_STATIC2157,7,132,180,54
+    EDITTEXT        IDC_RECORD_SAVEAS_PATH,118,226,272,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
-                    IDC_STATIC2161,196,118,213,115
-    GROUPBOX        "Recording Video Compression",IDC_STATIC2162,196,2,213,
+                    IDC_STATIC2161,196,118,212,101
+    GROUPBOX        "Recording Video Compression",IDC_STATIC2162,196,2,212,
                     111
-    LTEXT           "Start",IDC_STATIC2163,204,150,16,8
-    LTEXT           "Stop",IDC_STATIC2164,204,170,16,8
-    LTEXT           "Start",IDC_STATIC2165,204,212,16,8
-    LTEXT           "Stop",IDC_STATIC2166,310,212,16,8
+    LTEXT           "Start",IDC_STATIC2163,205,145,25,8
+    LTEXT           "Stop",IDC_STATIC2164,205,163,25,8
+    LTEXT           "Start",IDC_STATIC2165,205,202,25,8
+    LTEXT           "Stop",IDC_STATIC2166,316,202,25,8
     LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,204,91,51,8
     LTEXT           "kbps",IDC_LABEL_DATARATE1,288,68,24,8
     RTEXT           "",IDC_DROPPED_FRAMES,91,60,37,8
@@ -1690,15 +1690,15 @@ BEGIN
     LTEXT           "Process Frame Time:",IDC_STATIC2172,13,49,67,8
     RTEXT           "",IDC_PROCESS_TIME,91,49,37,8
     LTEXT           "ms",IDC_STATIC2173,132,49,10,8
-    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,198,180,35
+    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,192,180,27
     LTEXT           "Compression:",IDC_STATIC2177,204,24,41,8
-    LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,66,17,11
-    LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,67,30,8
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,66,17,11
+    LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,67,29,8
     LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,287,91,21,8
-    LTEXT           "Keep dir content for",IDC_STATIC2180,56,255,63,8
-    LTEXT           "day(s)",IDC_STATIC2181,150,255,19,8
+    LTEXT           "Keep dir content for",IDC_STATIC2180,7,255,75,8
+    LTEXT           "day(s)",IDC_STATIC2181,117,255,25,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2182,175,255,234,8
+                    IDC_STATIC2182,147,255,262,8
 END
 
 IDD_RESIZING DIALOGEX 0, 0, 171, 143
@@ -1791,7 +1791,7 @@ IDD_HLS DIALOGEX 0, 0, 278, 219
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Regulate"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER_BRIGHTNESS,"msctls_trackbar32",
                     TBS_AUTOTICKS | TBS_VERT | WS_TABSTOP,13,15,25,95,
@@ -1808,11 +1808,12 @@ BEGIN
     CONTROL         "Slider1",IDC_SLIDER_GAMMA,"msctls_trackbar32",TBS_VERT | 
                     TBS_NOTICKS | WS_BORDER | WS_TABSTOP,231,15,21,95,
                     WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Undo",IDC_BUTTON_UNDO,233,131,41,14
-    PUSHBUTTON      "Cancel",IDCANCEL,233,157,41,14
-    PUSHBUTTON      "OK",IDOK,233,175,41,14
+    PUSHBUTTON      "Undo",IDC_BUTTON_UNDO,229,131,45,14
+    PUSHBUTTON      "Cancel",IDCANCEL,229,157,45,14
+    PUSHBUTTON      "OK",IDOK,229,175,45,14
     CONTROL         "Show Original",IDC_CHECK_SHOW_ORIGINAL,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,219,197,57,10
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,230,197,46,
+                    19
     CONTROL         "Progress1",IDC_BANDMIN,"msctls_progress32",PBS_VERTICAL | 
                     PBS_SMOOTH,7,131,7,64
     CONTROL         "Progress1",IDC_BAND0,"msctls_progress32",PBS_VERTICAL | 
@@ -2016,16 +2017,16 @@ IDD_MONOCHROME DIALOGEX 0, 0, 167, 63
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Monochrom Conversion"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    PUSHBUTTON      "Dark",IDC_COLOR_DARK,8,4,24,13
-    PUSHBUTTON      "Bright",IDC_COLOR_BRIGHT,135,4,25,13
+    PUSHBUTTON      "Dark",IDC_COLOR_DARK,8,4,33,13
+    PUSHBUTTON      "Bright",IDC_COLOR_BRIGHT,126,4,33,13
     CONTROL         "Slider1",IDC_SLIDER_BW_THRESHOLD,"msctls_trackbar32",
                     TBS_TOP | TBS_NOTICKS | WS_TABSTOP,8,19,152,20,
                     WS_EX_CLIENTEDGE
     PUSHBUTTON      "OK",IDOK,73,43,41,14
     PUSHBUTTON      "Cancel",IDCANCEL,119,43,41,14
-    CTEXT           "Static",IDC_BW_THRESHOLD,77,4,15,9,SS_SUNKEN
+    CTEXT           "Static",IDC_BW_THRESHOLD,74,6,21,10,SS_SUNKEN
 END
 
 IDD_AVIINFO DIALOGEX 0, 0, 234, 271
@@ -2287,7 +2288,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,27,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2376,7 +2377,7 @@ BEGIN
     EDITTEXT        IDC_DETECTION_SAVEAS_PATH,34,236,356,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
     PUSHBUTTON      "...",IDC_DETECTION_SAVEAS,392,236,16,12
-    EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,72,253,28,13,ES_RIGHT | 
+    EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,86,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,66,35,17
     GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,16,203,84
@@ -2386,10 +2387,10 @@ BEGIN
     LTEXT           "From",IDC_STATIC2289,13,169,16,8
     LTEXT           "To",IDC_STATIC2290,120,169,10,8
     GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,143,203,55
-    LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,63,8
-    LTEXT           "day(s)",IDC_STATIC2293,103,255,20,8
+    LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,75,8
+    LTEXT           "day(s)",IDC_STATIC2293,117,255,25,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2294,131,255,277,8
+                    IDC_STATIC2294,146,255,263,8
     LTEXT           "Cmd",IDC_STATIC2299,236,137,15,8
     LTEXT           "Params",IDC_STATIC2300,236,151,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
@@ -4073,7 +4074,7 @@ IDD_VIDEOFORMAT DIALOGEX 0, 0, 208, 107
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Video Compression"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,7,7,194,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -4088,7 +4089,7 @@ BEGIN
                     158,70,43,10
     DEFPUSHBUTTON   "OK",IDOK,47,86,44,14
     PUSHBUTTON      "Cancel",IDCANCEL,107,86,50,14
-    LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,184,30,17,11
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,184,30,17,11
     LTEXT           "kbps",IDC_LABEL_DATARATE1,82,26,24,8
     LTEXT           "Data rate",IDC_LABEL_DATARATE0,7,26,31,8
     LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,7,54,49,8
@@ -4249,7 +4250,7 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,101,10
@@ -4290,29 +4291,28 @@ BEGIN
     EDITTEXT        IDC_SNAPSHOT_SAVEAS_PATH,130,236,260,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
     PUSHBUTTON      "...",IDC_SNAPSHOT_SAVEAS,392,236,16,12
-    EDITTEXT        IDC_EDIT_DELETE_SNAPSHOTS_DAYS,72,253,28,13,ES_RIGHT | 
+    EDITTEXT        IDC_EDIT_DELETE_SNAPSHOTS_DAYS,86,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "Snapshot each",IDC_STATIC2476,300,21,50,10
     LTEXT           "sec",IDC_STATIC2477,389,21,14,10
     GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,120,401,34
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,162,401,70
-    LTEXT           "quality",IDC_COMPRESSION_QUALITY_NUM,265,50,17,11
+    LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,265,50,17,11
     LTEXT           "Jpeg Compression Quality",IDC_STATIC2480,13,50,82,8
     LTEXT           "Shot Dir",IDC_TEXT_DIR,100,238,26,8,SS_NOTIFY | NOT 
                     WS_GROUP
     GROUPBOX        "General Settings",IDC_STATIC2481,7,2,401,69
     LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,116,213,58,8
     LTEXT           "frames/sec",IDC_STATIC2483,206,213,40,8
-    LTEXT           "quality",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,194,17,
-                    11
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,194,17,11
     GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,77,401,36
     LTEXT           "From",IDC_STATIC2485,228,93,16,8
     LTEXT           "To",IDC_STATIC2486,323,93,10,8
     LTEXT           "Compression Quality",IDC_STATIC2487,116,193,72,8
-    LTEXT           "Keep dir content for",IDC_STATIC2488,7,255,63,8
-    LTEXT           "day(s)",IDC_STATIC2489,103,255,20,8
+    LTEXT           "Keep dir content for",IDC_STATIC2488,7,255,75,8
+    LTEXT           "day(s)",IDC_STATIC2489,117,255,25,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2490,131,255,277,8
+                    IDC_STATIC2490,146,255,263,8
     LTEXT           "(multiple of 4)",IDC_STATIC2491,221,21,49,9
     LTEXT           "Attention: Swf files are limited to 16000 frames!",
                     IDC_STATIC,26,206,82,19,SS_SUNKEN
@@ -4615,7 +4615,7 @@ BEGIN
     IDD_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 409
+        RIGHTMARGIN, 408
         VERTGUIDE, 13
         VERTGUIDE, 80
         VERTGUIDE, 100
@@ -4625,8 +4625,7 @@ BEGIN
         VERTGUIDE, 181
         VERTGUIDE, 196
         VERTGUIDE, 204
-        VERTGUIDE, 282
-        VERTGUIDE, 402
+        VERTGUIDE, 233
         TOPMARGIN, 2
     END
 
@@ -4853,7 +4852,6 @@ BEGIN
         VERTGUIDE, 305
         VERTGUIDE, 401
         TOPMARGIN, 2
-        HORZGUIDE, 259
     END
 
     IDD_REDEYE, DIALOG
@@ -5368,7 +5366,6 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 408
         VERTGUIDE, 13
-        VERTGUIDE, 116
         VERTGUIDE, 401
         TOPMARGIN, 2
         BOTTOMMARGIN, 262
