@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.3.0 (xxx)
+4.3.0 (xxx 2013)
 
 - Added Picture Reload command with F5 accelerator
 

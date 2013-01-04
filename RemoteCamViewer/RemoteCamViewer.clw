@@ -21,9 +21,9 @@ Resource2=IDD_REMOTECAMVIEWER_FORM
 Resource3=IDD_ABOUTBOX
 Class6=CSettingsDlg
 Resource4=IDD_SETTINGS
-Resource5=IDD_REMOTECAMVIEWER_FORM (English (U.S.))
-Resource6=IDR_MAINFRAME (English (U.S.))
-Resource7=IDD_ABOUTBOX (English (U.S.))
+Resource5=IDD_ABOUTBOX (English (U.S.))
+Resource6=IDD_REMOTECAMVIEWER_FORM (English (U.S.))
+Resource7=IDR_MAINFRAME (English (U.S.))
 Resource8=IDD_SETTINGS (English (U.S.))
 
 [CLS:CMainFrame]

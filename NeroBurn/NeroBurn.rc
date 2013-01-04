@@ -90,10 +90,10 @@ STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About NeroBurn"
 FONT 8, "MS Sans Serif"
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,11,14,21,20,SS_REALSIZEIMAGE
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,14,20,20,SS_REALSIZEIMAGE
     LTEXT           "NeroBurn, Version 2.0.0",IDC_STATIC,40,11,119,8,
                     SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2012 Contaware.com, Switzerland",
+    LTEXT           "Copyright © 2003 - 2013 Contaware.com, Switzerland",
                     IDC_STATIC,40,29,188,8
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
@@ -148,7 +148,7 @@ BEGIN
             VALUE "FileDescription", "NeroBurn\0"
             VALUE "FileVersion", "2, 0, 0, 0\0"
             VALUE "InternalName", "NeroBurn\0"
-            VALUE "LegalCopyright", "Copyright (C) 2012 Contaware\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2013\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "NeroBurn.exe\0"
             VALUE "PrivateBuild", "\0"

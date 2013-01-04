@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.3.0 (xxx)
+4.3.0 (xxx 2013)
 
 - For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
   avoid frame jumps which were happening when the keep alive

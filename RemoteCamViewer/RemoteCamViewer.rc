@@ -102,7 +102,7 @@ BEGIN
     LTEXT           "RemoteCamViewer, Version 4.3.0",IDC_STATIC,40,10,119,8,
                     SS_NOPREFIX
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
-    LTEXT           "Copyright © 2003 - 2012 Contaware.com, Switzerland",
+    LTEXT           "Copyright © 2003 - 2013 Contaware.com, Switzerland",
                     IDC_STATIC,40,28,181,8
 END
 
@@ -168,7 +168,7 @@ BEGIN
             VALUE "FileDescription", "RemoteCamViewer for RemoteCam Application\0"
             VALUE "FileVersion", "4, 3, 0, 0\0"
             VALUE "InternalName", "RemoteCamViewer\0"
-            VALUE "LegalCopyright", "Copyright (C) 2003 - 2012\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003 - 2013\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "RemoteCamViewer.EXE\0"
             VALUE "PrivateBuild", "\0"
