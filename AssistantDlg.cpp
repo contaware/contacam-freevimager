@@ -866,7 +866,7 @@ void CAssistantDlg::ApplySettings()
 	// (at this point the process frame is stopped but
 	// the snapshot threads may still be running)
 	m_pDoc->m_SaveSnapshotThread.Kill();
-	m_pDoc->m_SaveSnapshotFTPThread.Kill();
+	m_pDoc->m_SaveSnapshotSWFThread.Kill();
 
 	// Rename
 	Rename();
@@ -955,7 +955,6 @@ void CAssistantDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
-			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
@@ -1030,7 +1029,6 @@ void CAssistantDlg::ApplySettings()
 
 			// Enable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = TRUE;
-			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1); // Make new swf because Size or Name may have been changed
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
@@ -1100,7 +1098,6 @@ void CAssistantDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
-			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
@@ -1150,7 +1147,6 @@ void CAssistantDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
-			::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 
 			// Update
 			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);

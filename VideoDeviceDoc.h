@@ -1033,61 +1033,51 @@ public:
 			CSaveFrameListThread* m_pThread;
 	};
 
-	// The Save Snapshot Ftp Upload Thread Class
-	class CSaveSnapshotFTPThread : public CWorkerThread
+	// The Save Snapshot SWF Thread Class
+	class CSaveSnapshotSWFThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotFTPThread(){;};
-			virtual ~CSaveSnapshotFTPThread() {Kill();};
-			CString m_sLocalFileName;
-			CString m_sRemoteFileName;
-			CString m_sLocalThumbFileName;
-			CString m_sRemoteThumbFileName;
+			CSaveSnapshotSWFThread(){m_ThreadExecutedForTime = CTime(0);};
+			virtual ~CSaveSnapshotSWFThread() {Kill();};
+
+			BOOL m_bSnapshotHistoryJpeg;
+			BOOL m_bSnapshotHistorySwfFtp;
+			float m_fSnapshotVideoCompressorQuality;
+			double m_dSnapshotHistoryFrameRate;
+			CTime m_Time;
+			CTime m_ThreadExecutedForTime;
+			CString m_sSnapshotAutoSaveDir;
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
 			int Work();
+			__forceinline CString MakeSwfHistoryFileName();
 	};
 
 	// The Save Snapshot Thread Class
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){m_pSaveSnapshotFTPThread = NULL; m_pAVRecSwf = NULL; m_pAVRecThumbSwf = NULL;};
-			virtual ~CSaveSnapshotThread() {Kill(); SWFFreeCopyFtp();};
+			CSaveSnapshotThread(){;};
+			virtual ~CSaveSnapshotThread() {Kill();};
 
 			CDib m_Dib;
+			BOOL m_bSnapshotHistoryJpeg;
+			BOOL m_bSnapshotHistoryJpegFtp;
 			BOOL m_bShowFrameTime;
 			BOOL m_bSnapshotThumb;
 			BOOL m_bSnapshotLiveJpeg;
-			BOOL m_bSnapshotHistoryJpeg;
-			BOOL m_bSnapshotHistorySwf;
 			BOOL m_bSnapshotLiveJpegFtp;
-			BOOL m_bSnapshotHistoryJpegFtp;
-			BOOL m_bSnapshotHistorySwfFtp;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
 			int m_nSnapshotCompressionQuality;
-			float m_fSnapshotVideoCompressorQuality;
-			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
-			CTime m_NextRecTime;
 			CString m_sSnapshotAutoSaveDir;
-			CSaveSnapshotFTPThread* m_pSaveSnapshotFTPThread;
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
 			int Work();
-			__forceinline void SWFFreeCopyFtp(BOOL bFtp = FALSE);
 			__forceinline CString MakeJpegHistoryFileName();
-			__forceinline CString MakeSwfHistoryFileName();
-
-			CAVRec* m_pAVRecSwf;
-			CAVRec* m_pAVRecThumbSwf;
-			CString m_sSWFFileName;
-			CString m_sSWFTempFileName;
-			CString m_sSWFThumbFileName;
-			CString m_sSWFTempThumbFileName;
 	};
 
 protected: // create from serialization only
@@ -1299,7 +1289,7 @@ public:
 // Protected Functions
 protected:
 	BOOL InitOpenDxCapture(int nId);
-	BOOL Snapshot(CDib* pDib, const CTime& Time);
+	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	BOOL Rotate180(CDib* pDib);
@@ -1386,7 +1376,7 @@ public:
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
-	CSaveSnapshotFTPThread m_SaveSnapshotFTPThread;		// Thread which ftp uploads the swf snapshots history
+	CSaveSnapshotSWFThread m_SaveSnapshotSWFThread;		// Thread which creates the history SWF video file and FTP uploads it
 
 	// Drawing
 	CDxDraw* m_pDxDraw;									// Direct Draw Object
@@ -1497,7 +1487,6 @@ public:
 	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
-	volatile LONG m_bSnapshotHistoryCloseSwfFile;		// Close the Snapshot history swf file
 	volatile int m_nSnapshotCompressionQuality;			// Snapshot compression quality
 	volatile float m_fSnapshotVideoCompressorQuality;	// Snapshots swf compression quality
 	volatile BOOL m_bSnapshotThumb;						// Snapshot thumbnail enable / disable flag

@@ -2,6 +2,9 @@ VERSION HISTORY
 
 4.3.0 (xxx 2013)
 
+- Swf snapshot history file is now correctly created even if
+  restarting ContaCam (snapshots preceding restart are not lost).
+  That's useful when occasionally updating and rebooting the PC
 - For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
   avoid frame jumps which were happening when the keep alive
   request count reached 0 and a reconnection was necessary

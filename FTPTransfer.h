@@ -56,7 +56,7 @@ public:
 	BOOL			m_bUsePreconfig;			// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 	BOOL			m_bUseProxy;				// Should a proxy be used
 	CString			m_sProxy;					// The proxy connect string to use if "m_bUseProxy" is TRUE
-	double			m_dbLimit;					// For BANDWIDTH throttling, the value in Bytes / Second to limit the connection to
+	double			m_dbLimit;					// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 	DWORD			m_dwStartPos;				// Offset to resume the download at   
 	DWORD			m_dwConnectionTimeout;		// The connection timeout to use (in milliseconds)
 
@@ -79,8 +79,7 @@ protected:
 	BOOL			m_bSafeToClose;
 	CFile			m_LocalFile;
 	DWORD			m_dwTempConnectionError;
-	CWorkerThread* m_pThread;
-	HANDLE m_hEventArray[2];
+	CWorkerThread*	m_pThread;
 };
 
 #endif

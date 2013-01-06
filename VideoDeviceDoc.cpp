@@ -1400,89 +1400,180 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 	return res;
 }
 
-int CVideoDeviceDoc::CSaveSnapshotFTPThread::Work() 
+int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 {
-	CFTPTransfer FTP(this);
-	if (m_sLocalThumbFileName != _T("") && m_sRemoteThumbFileName != _T(""))
+	// Init
+	CDib Dib;
+	Dib.SetShowMessageBoxOnError(FALSE);
+	CAVRec* pAVRecSwf = NULL;
+	CAVRec* pAVRecThumbSwf = NULL;
+	CString sSWFFileName = MakeSwfHistoryFileName();
+	CString sSWFThumbFileName = ::GetFileNameNoExt(sSWFFileName) + _T("_thumb.swf");
+	CString sSWFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sSWFFileName);
+	CString sSWFTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sSWFThumbFileName);
+
+	// Find and process jpg snapshot history files
+	CSortableFileFind FileFind;
+	FileFind.AddAllowedExtension(_T(".jpg"));
+	if (FileFind.Init(::GetDriveAndDirName(sSWFFileName) + _T("\\") + _T("*")))
 	{
-		CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
-									m_sLocalThumbFileName,
-									m_sRemoteThumbFileName);
-		::DeleteFile(m_sLocalThumbFileName);
+		for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
+		{
+			CString sShortFileNameNoExt(::GetShortFileNameNoExt(FileFind.GetFileName(pos)));
+			sShortFileNameNoExt.MakeLower();
+			if (sShortFileNameNoExt.Left(5) == _T("shot_"))
+			{
+				if (Dib.LoadJPEG(FileFind.GetFileName(pos)))
+				{
+					if (sShortFileNameNoExt.Right(6) != _T("_thumb"))
+					{
+						// Alloc
+						if (!pAVRecSwf)
+							pAVRecSwf = new CAVRec(sSWFTempFileName);
+						if (pAVRecSwf)
+						{
+							// Open
+							if (!pAVRecSwf->IsOpen())
+							{
+								AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
+								BITMAPINFOHEADER DstBmi;
+								memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+								DstBmi.biSize = sizeof(BITMAPINFOHEADER);
+								DstBmi.biWidth = Dib.GetWidth();
+								DstBmi.biHeight = Dib.GetHeight();
+								DstBmi.biPlanes = 1;
+								DstBmi.biCompression = FCC('FLV1');								// FLV1, need Flash 6 to play it
+								pAVRecSwf->AddVideoStream(	Dib.GetBMI(),						// Source Video Format
+															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
+															FrameRate.num,						// Rate
+															FrameRate.den,						// Scale
+															0,									// Not using bitrate
+															DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
+															m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+								pAVRecSwf->Open();
+							}
+
+							// Add Frame
+							if (pAVRecSwf->IsOpen())
+							{
+								pAVRecSwf->AddFrame(pAVRecSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+													&Dib,
+													false);	// No interleave for Video only
+							}
+						}
+					}
+					else
+					{
+						// Alloc
+						if (!pAVRecThumbSwf)
+							pAVRecThumbSwf = new CAVRec(sSWFTempThumbFileName);
+						if (pAVRecThumbSwf)
+						{
+							// Open
+							if (!pAVRecThumbSwf->IsOpen())
+							{
+								AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
+								BITMAPINFOHEADER DstBmi;
+								memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+								DstBmi.biSize = sizeof(BITMAPINFOHEADER);
+								DstBmi.biWidth = Dib.GetWidth();
+								DstBmi.biHeight = Dib.GetHeight();
+								DstBmi.biPlanes = 1;
+								DstBmi.biCompression = FCC('FLV1');									// FLV1, need Flash 6 to play it
+								pAVRecThumbSwf->AddVideoStream(	Dib.GetBMI(),						// Source Video Format
+																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
+																FrameRate.num,						// Rate
+																FrameRate.den,						// Scale
+																0,									// Not using bitrate
+																DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
+																m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+								pAVRecThumbSwf->Open();
+							}
+
+							// Add Frame
+							if (pAVRecThumbSwf->IsOpen())
+							{
+								pAVRecThumbSwf->AddFrame(pAVRecThumbSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+														&Dib,
+														false);	// No interleave for Video only
+							}
+						}
+					}
+				}
+
+				// Delete unwanted history jpg files
+				if (!m_bSnapshotHistoryJpeg)
+					::DeleteFile(FileFind.GetFileName(pos));
+			}
+
+			// Do Exit?
+			if (DoExit())
+				goto exit;
+		}
 	}
-	if (m_sLocalFileName != _T("") && m_sRemoteFileName != _T(""))
+
+	// Close temp file(s) by freeing CAVRec object(s)
+	if (pAVRecSwf)
 	{
-		CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
-									m_sLocalFileName,
-									m_sRemoteFileName);
-		::DeleteFile(m_sLocalFileName);
+		delete pAVRecSwf;
+		pAVRecSwf = NULL;
 	}
+	if (pAVRecThumbSwf)
+	{
+		delete pAVRecThumbSwf;
+		pAVRecThumbSwf = NULL;
+	}
+
+	// Copy from temp to snapshots folder
+	if (::IsExistingFile(sSWFTempFileName))
+		::CopyFile(sSWFTempFileName, sSWFFileName, FALSE);
+	if (::IsExistingFile(sSWFTempThumbFileName))
+		::CopyFile(sSWFTempThumbFileName, sSWFThumbFileName, FALSE);
+
+	// Ftp upload
+	if (m_bSnapshotHistorySwfFtp)
+	{
+		CString sYear = m_Time.Format(_T("%Y"));
+		CString sMonth = m_Time.Format(_T("%m"));
+		CString sDay = m_Time.Format(_T("%d"));
+		CString sUploadDir(sYear + _T("/") + sMonth + _T("/") + sDay);
+		CFTPTransfer FTP(this);
+		if (::IsExistingFile(sSWFTempThumbFileName))
+		{
+			// Do Exit?
+			if (CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
+											sSWFTempThumbFileName,
+											sUploadDir + _T("/") + ::GetShortFileName(sSWFThumbFileName)) == -1)
+				goto exit;
+		}
+		if (::IsExistingFile(sSWFTempFileName))
+		{
+			// Do Exit?
+			if (CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
+											sSWFTempFileName,
+											sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName)) == -1)
+				goto exit;
+		}
+	}
+
+	// Set thread executed variable
+	// (if thread is killed this var is not set, that's the correct behavior)
+	m_ThreadExecutedForTime = m_Time;
+
+	// Clean-up
+exit:
+	if (pAVRecSwf)
+		delete pAVRecSwf;
+	if (pAVRecThumbSwf)
+		delete pAVRecThumbSwf;
+	::DeleteFile(sSWFTempFileName);
+	::DeleteFile(sSWFTempThumbFileName);
+
 	return 0;
-}
-
-__forceinline void CVideoDeviceDoc::CSaveSnapshotThread::SWFFreeCopyFtp(BOOL bFtp/*=FALSE*/)
-{
-	// Close files and free
-	if (m_pAVRecSwf)
-		delete m_pAVRecSwf;
-	if (m_pAVRecThumbSwf)
-		delete m_pAVRecThumbSwf;
-
-	// Copy
-	if (m_sSnapshotAutoSaveDir != _T(""))
-	{
-		if (m_pAVRecSwf && m_sSWFTempFileName != _T("") && m_sSWFFileName != _T(""))
-			::CopyFile(m_sSWFTempFileName, m_sSWFFileName, FALSE);
-		if (m_pAVRecThumbSwf && m_sSWFTempThumbFileName != _T("") && m_sSWFThumbFileName != _T(""))
-			::CopyFile(m_sSWFTempThumbFileName, m_sSWFThumbFileName, FALSE);
-	}
-
-	// Ftp
-	if (bFtp && m_pSaveSnapshotFTPThread)
-	{
-		if (m_pSaveSnapshotFTPThread->IsAlive())
-			m_pSaveSnapshotFTPThread->Kill();
-		CString sUploadDir;
-		int nYear, nMonth, nDay;
-		if (m_pAVRecSwf && m_sSWFTempFileName != _T("") && m_sSWFFileName != _T(""))
-		{
-			CString sSWFShortFileName = ::GetShortFileName(m_sSWFFileName);
-			_stscanf(sSWFShortFileName, _T("shot_%d_%d_%d.swf"), &nYear, &nMonth, &nDay);
-			sUploadDir.Format(_T("%d/%02d/%02d"), nYear, nMonth, nDay);
-			m_pSaveSnapshotFTPThread->m_sLocalFileName = m_sSWFTempFileName;
-			m_pSaveSnapshotFTPThread->m_sRemoteFileName = sUploadDir + _T("/") + sSWFShortFileName;
-		}
-		if (m_pAVRecThumbSwf && m_sSWFTempThumbFileName != _T("") && m_sSWFThumbFileName != _T(""))
-		{
-			CString sSWFThumbShortFileName = ::GetShortFileName(m_sSWFThumbFileName);
-			_stscanf(sSWFThumbShortFileName, _T("shot_%d_%d_%d.swf"), &nYear, &nMonth, &nDay);
-			sUploadDir.Format(_T("%d/%02d/%02d"), nYear, nMonth, nDay);
-			m_pSaveSnapshotFTPThread->m_sLocalThumbFileName = m_sSWFTempThumbFileName;
-			m_pSaveSnapshotFTPThread->m_sRemoteThumbFileName = sUploadDir + _T("/") + sSWFThumbShortFileName;
-		}
-		m_pSaveSnapshotFTPThread->m_Config = m_Config;
-		m_pSaveSnapshotFTPThread->Start();
-	}
-	else
-	{
-		if (m_pAVRecSwf && m_sSWFTempFileName != _T(""))
-			::DeleteFile(m_sSWFTempFileName);
-		if (m_pAVRecThumbSwf && m_sSWFTempThumbFileName != _T(""))
-			::DeleteFile(m_sSWFTempThumbFileName);
-	}
-
-	// Reset
-	m_pAVRecSwf = NULL;
-	m_pAVRecThumbSwf = NULL;
 }
 
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
-	// Free and copy and ev. ftp the swf files
-	if (m_Time >= m_NextRecTime &&
-		(m_pAVRecSwf || m_pAVRecThumbSwf))
-		SWFFreeCopyFtp(m_bSnapshotHistorySwfFtp);
-
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
 
@@ -1503,107 +1594,6 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 
 		// Resize
 		DibThumb.StretchBits(m_nSnapshotThumbWidth, m_nSnapshotThumbHeight, &m_Dib);
-	}
-
-	// Save history as Swf to Temp
-	if (m_bSnapshotHistorySwf)
-	{
-		if (!m_pAVRecSwf)
-		{
-			CTime TempTime = m_Time + CTimeSpan(1, 0, 0, 0);	// + 1 day
-			m_NextRecTime = CTime(	TempTime.GetYear(),
-									TempTime.GetMonth(),
-									TempTime.GetDay(),
-									0, 0, 0);					// Back to midnight
-			m_sSWFFileName = MakeSwfHistoryFileName();
-			m_sSWFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sSWFFileName);
-			m_pAVRecSwf = new CAVRec(m_sSWFTempFileName);
-		}
-		if (m_pAVRecSwf)
-		{
-			// Setup
-			CDib SWFSaveDib = m_Dib;
-
-			// Add frame time
-			if (m_bShowFrameTime)
-				AddFrameTime(&SWFSaveDib, m_Time, dwUpTime);
-
-			// Open
-			if (!m_pAVRecSwf->IsOpen())
-			{
-				AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
-				BITMAPINFOHEADER DstBmi;
-				memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-				DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-				DstBmi.biWidth = SWFSaveDib.GetWidth();
-				DstBmi.biHeight = SWFSaveDib.GetHeight();
-				DstBmi.biPlanes = 1;
-				DstBmi.biCompression = FCC('FLV1');								// FLV1, need Flash 6 to play it
-				m_pAVRecSwf->AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
-											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-											FrameRate.num,						// Rate
-											FrameRate.den,						// Scale
-											0,									// Not using bitrate
-											DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-											m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-				m_pAVRecSwf->Open();
-			}
-
-			// Add Frame
-			if (m_pAVRecSwf->IsOpen())
-			{
-				m_pAVRecSwf->AddFrame(	m_pAVRecSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-										&SWFSaveDib,
-										false);	// No interleave for Video only
-			}
-		}
-		if (m_bSnapshotThumb)
-		{
-			if (!m_pAVRecThumbSwf)
-			{
-				m_sSWFThumbFileName = ::GetFileNameNoExt(m_sSWFFileName) + _T("_thumb.swf");
-				m_sSWFTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sSWFThumbFileName);
-				m_pAVRecThumbSwf = new CAVRec(m_sSWFTempThumbFileName);
-			}
-			if (m_pAVRecThumbSwf)
-			{
-				// Setup
-				CDib SWFSaveDib = DibThumb;
-
-				// Add frame time
-				if (m_bShowFrameTime)
-					AddFrameTime(&SWFSaveDib, m_Time, dwUpTime);
-
-				// Open
-				if (!m_pAVRecThumbSwf->IsOpen())
-				{
-					AVRational FrameRate = av_d2q(m_dSnapshotHistoryFrameRate, MAX_SIZE_FOR_RATIONAL);
-					BITMAPINFOHEADER DstBmi;
-					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-					DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-					DstBmi.biWidth = SWFSaveDib.GetWidth();
-					DstBmi.biHeight = SWFSaveDib.GetHeight();
-					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = FCC('FLV1');									// FLV1, need Flash 6 to play it
-					m_pAVRecThumbSwf->AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
-													(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-													FrameRate.num,						// Rate
-													FrameRate.den,						// Scale
-													0,									// Not using bitrate
-													DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-													m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-					m_pAVRecThumbSwf->Open();
-				}
-
-				// Add Frame
-				if (m_pAVRecThumbSwf->IsOpen())
-				{
-					m_pAVRecThumbSwf->AddFrame(	m_pAVRecThumbSwf->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-												&SWFSaveDib,
-												false);	// No interleave for Video only
-				}
-			}
-		}
 	}
 
 	// Add frame time
@@ -1762,7 +1752,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeJpegHistoryFileN
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + _T(".jpg");
 }
 
-__forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileName()
+__forceinline CString CVideoDeviceDoc::CSaveSnapshotSWFThread::MakeSwfHistoryFileName()
 {
 	CString sYearMonthDayDir(_T(""));
 
@@ -1774,7 +1764,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotThread::MakeSwfHistoryFileNa
 	sSnapshotDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
-	if (sSnapshotDir != _T("") && m_bSnapshotHistorySwf)
+	if (sSnapshotDir != _T(""))
 	{
 		DWORD dwAttrib = ::GetFileAttributes(sSnapshotDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
@@ -2181,12 +2171,11 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		else
 		{
 			// Adjust Remote File Name
-			if (sRemoteFileName.GetAt(0) == _T('/') || sRemoteFileName.GetAt(0) == _T('\\'))
-				sRemoteFileName.Delete(0);
+			sRemoteFileName.TrimLeft(_T("\\/"));
 
 			// Adjust Remote Dir Path
 			CString sRemoteDir = pConfig->m_sRemoteDir;
-			sRemoteDir.TrimRight(_T('\\'));
+			sRemoteDir.TrimRight(_T("\\/"));
 			
 			pFTP->m_sRemoteFile = sRemoteDir + _T("/") + sRemoteFileName;
 		}
@@ -2196,7 +2185,7 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		pFTP->m_bDownload = FALSE;
 		pFTP->m_bBinary = pConfig->m_bBinary;
 		pFTP->m_bPromptOverwrite = FALSE;
-		pFTP->m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in Bytes / Second to limit the connection to
+		pFTP->m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 		pFTP->m_bPasv = pConfig->m_bPasv;
 		pFTP->m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		pFTP->m_bUseProxy = pConfig->m_bProxy;
@@ -4144,7 +4133,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bManualSnapshotAutoOpen = TRUE;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
-	m_bSnapshotHistoryCloseSwfFile = 0;
 	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
 	m_fSnapshotVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
 	m_bSnapshotThumb = TRUE;
@@ -8520,11 +8508,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	::InterlockedExchange(&m_lProcessFrameTime, (LONG)dwProcessFrameTime);
 }
 
-BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
+void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
 	// Check
 	if (m_SaveSnapshotThread.IsAlive())
-		return FALSE;
+		return;
 
 	// Get uptime
 	DWORD dwUpTime = pDib->GetUpTime();
@@ -8579,7 +8567,7 @@ BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 
 	// If nothing to do, return
 	if (!bDoSnapshot)
-		return FALSE;
+		return;
 
 	// Decode if compressed
 	m_SaveSnapshotThread.m_Dib.SetShowMessageBoxOnError(FALSE);
@@ -8587,32 +8575,47 @@ BOOL CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	if (m_SaveSnapshotThread.m_Dib.IsCompressed())
 		m_SaveSnapshotThread.m_Dib.Decompress(32);
 
-	// Start Thread 
+	// Start Snapshot Thread
+	// (we need the history jpgs to make the swf video file inside the snapshot SWF thread,
+	// user unwanted history jpgs are deleted in snapshot SWF thread)
+	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistorySwf);
+	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 	m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 	m_SaveSnapshotThread.m_bSnapshotThumb = m_bSnapshotThumb;
 	m_SaveSnapshotThread.m_bSnapshotLiveJpeg = m_bSnapshotLiveJpeg;
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
-	m_SaveSnapshotThread.m_bSnapshotHistorySwf = m_bSnapshotHistorySwf;
 	m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
-	m_SaveSnapshotThread.m_bSnapshotHistorySwfFtp = m_bSnapshotHistorySwfFtp;
 	m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 	m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 	m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
-	m_SaveSnapshotThread.m_fSnapshotVideoCompressorQuality = m_fSnapshotVideoCompressorQuality;
-	m_SaveSnapshotThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 	m_SaveSnapshotThread.m_Time = Time;
+	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
 	::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
 	::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
-	m_SaveSnapshotThread.m_pSaveSnapshotFTPThread = &m_SaveSnapshotFTPThread;
-	if (m_bSnapshotHistoryCloseSwfFile)
+	m_SaveSnapshotThread.Start();
+
+	// Start Snapshot SWF Thread?
+	if (!m_sSnapshotAutoSaveDir.IsEmpty() && m_bSnapshotHistorySwf && !m_SaveSnapshotSWFThread.IsAlive())
 	{
-		m_SaveSnapshotThread.m_NextRecTime = Time;
-		::InterlockedExchange(&m_bSnapshotHistoryCloseSwfFile, 0);
+		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
+		Yesterday = CTime(	Yesterday.GetYear(),
+							Yesterday.GetMonth(),
+							Yesterday.GetDay(),
+							0, 0, 0);					// Back to midnight
+		if (m_SaveSnapshotSWFThread.m_ThreadExecutedForTime < Yesterday)
+		{
+			m_SaveSnapshotSWFThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
+			m_SaveSnapshotSWFThread.m_bSnapshotHistorySwfFtp = m_bSnapshotHistorySwfFtp;
+			m_SaveSnapshotSWFThread.m_fSnapshotVideoCompressorQuality = m_fSnapshotVideoCompressorQuality;
+			m_SaveSnapshotSWFThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
+			m_SaveSnapshotSWFThread.m_Time = Yesterday;
+			m_SaveSnapshotSWFThread.m_sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
+			::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+			m_SaveSnapshotSWFThread.m_Config = m_SnapshotFTPUploadConfiguration;
+			::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+			m_SaveSnapshotSWFThread.Start();
+		}
 	}
-	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
-	return m_SaveSnapshotThread.Start();
 }
 
 BOOL CVideoDeviceDoc::EditCopy(CDib* pDib, const CTime& Time)

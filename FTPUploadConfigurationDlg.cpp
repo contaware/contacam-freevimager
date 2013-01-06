@@ -168,7 +168,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		FTP.m_bDownload = FALSE;
 		FTP.m_bBinary = m_FTPUploadConfiguration.m_bBinary;
 		FTP.m_bPromptOverwrite = FALSE;
-		FTP.m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in Bytes / Second to limit the connection to
+		FTP.m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 		FTP.m_bPasv = m_FTPUploadConfiguration.m_bPasv;
 		FTP.m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		FTP.m_bUseProxy = m_FTPUploadConfiguration.m_bProxy;

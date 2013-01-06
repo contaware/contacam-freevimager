@@ -98,10 +98,6 @@ CFTPTransfer::CFTPTransfer(CWorkerThread* pThread)
 	m_dwLastPercentage = 100;
 	m_bShowMessageBoxOnError = TRUE;
 	m_pThread = pThread;
-	if (m_pThread)
-		m_hEventArray[0] = m_pThread->GetKillEvent();
-	else
-		m_hEventArray[0] = NULL;
 	m_hInternetSession = NULL;
 	m_hFTPConnection = NULL;
 	m_hFTPFile = NULL;
@@ -406,8 +402,10 @@ int CFTPTransfer::Transfer()
 	}
 	else
 	{
-		m_hEventArray[1] = MakeConnectionThread.GetHandle();
-		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, m_dwConnectionTimeout);
+		HANDLE hEventArray[2];
+		hEventArray[0] = m_pThread->GetKillEvent();
+		hEventArray[1] = MakeConnectionThread.GetHandle();
+		DWORD Event = ::WaitForMultipleObjects(2, hEventArray, FALSE, m_dwConnectionTimeout);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -649,7 +647,6 @@ int CFTPTransfer::Transfer()
 
 	// Now do the actual reading / writing of the file
 	DWORD dwStartTicks = ::GetTickCount();
-	DWORD dwCurrentTicks = dwStartTicks;
 	DWORD dwBytesRead = 0;
 	DWORD dwBytesWritten = 0;
 	char szReadBuf[1024];

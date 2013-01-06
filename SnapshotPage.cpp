@@ -232,10 +232,7 @@ void CSnapshotPage::OnCheckSnapshotHistorySwf()
 	if (pCheck->GetCheck())
 		m_pDoc->m_bSnapshotHistorySwf = TRUE;
 	else
-	{
 		m_pDoc->m_bSnapshotHistorySwf = FALSE;
-		::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
-	}
 }
 
 void CSnapshotPage::OnCheckFtpSnapshot() 
@@ -345,13 +342,10 @@ void CSnapshotPage::OnChangeEditSnapshotHistoryFramerate()
 	pEdit->GetWindowText(sText);
 	int nRate = _tcstol(sText.GetBuffer(0), NULL, 10);
 	sText.ReleaseBuffer();
-	int nPreviousRate = m_pDoc->m_nSnapshotHistoryFrameRate;
 	if (nRate >= MIN_SNAPSHOT_HISTORY_FRAMERATE && nRate <= MAX_SNAPSHOT_HISTORY_FRAMERATE)
 		m_pDoc->m_nSnapshotHistoryFrameRate = nRate;
 	else
 		m_pDoc->m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
-	if (nPreviousRate != m_pDoc->m_nSnapshotHistoryFrameRate)
-		::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 }
 
 void CSnapshotPage::OnChangeEditDeleteSnapshotsDays() 
@@ -392,14 +386,11 @@ void CSnapshotPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			}
 			else if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
-				float fPreviousVideoCompressorQuality = m_pDoc->m_fSnapshotVideoCompressorQuality;
 				m_pDoc->m_fSnapshotVideoCompressorQuality = (float)(33 - m_VideoCompressorQuality.GetPos());
 				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
 				CString sQuality;
 				sQuality.Format(_T("%i"), (int)((m_VideoCompressorQuality.GetPos() - 2) * 3.45)); // 0 .. 100
 				pEdit->SetWindowText(sQuality);
-				if (fPreviousVideoCompressorQuality != m_pDoc->m_fSnapshotVideoCompressorQuality)
-					::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 			}
 		}
 	}
@@ -441,8 +432,6 @@ void CSnapshotPage::OnButtonThumbSize()
 
 void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 {
-	int nPreviousThumbWidth = m_pDoc->m_nSnapshotThumbWidth;
-	int nPreviousThumbHeight = m_pDoc->m_nSnapshotThumbHeight;
 	m_pDoc->m_nSnapshotThumbWidth = nNewWidth & ~0x3;
 	m_pDoc->m_nSnapshotThumbHeight = nNewHeight & ~0x3;
 	CString sSize;
@@ -450,9 +439,6 @@ void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 															m_pDoc->m_nSnapshotThumbHeight);
 	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_THUMB_SIZE);
 	pButton->SetWindowText(sSize);
-	if ((nPreviousThumbWidth != m_pDoc->m_nSnapshotThumbWidth) ||
-		(nPreviousThumbHeight != m_pDoc->m_nSnapshotThumbHeight))
-		::InterlockedExchange(&m_pDoc->m_bSnapshotHistoryCloseSwfFile, 1);
 }
 
 void CSnapshotPage::OnFtpConfigure()
