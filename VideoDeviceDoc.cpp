@@ -68,8 +68,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_SETTINGS, OnUpdateCaptureSettings)
 	ON_COMMAND(ID_VIEW_DETECTION_ZONES, OnViewDetectionZones)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES, OnUpdateViewDetectionZones)
-	ON_COMMAND(ID_CAPTURE_RECORD_PAUSE, OnCaptureRecordPause)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD_PAUSE, OnUpdateCaptureRecordPause)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
@@ -4156,8 +4154,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecAutoOpen = TRUE;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
-	m_bCaptureRecordPause = FALSE;
-	m_bRecResume = FALSE;
 	m_dwRecFirstUpTime = 0;
 	m_dwRecLastUpTime = 0;
 	m_bRecFirstFrame = FALSE;
@@ -6120,16 +6116,8 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 	// Stop Recording
 	if (m_pAVRec)
 	{
-		// If paused, just close avi
-		if (m_bCaptureRecordPause)
-		{
-			CloseAndShowAviRec();
-		
-			// Recording Stopped, no pausing available
-			m_bCaptureRecordPause = FALSE;
-		}
-		else
-			CloseAndShowAviRec();
+		// Close avi and show it (if set so by user)
+		CloseAndShowAviRec();
 
 		// Leave CS
 		::LeaveCriticalSection(&m_csAVRec);
@@ -6179,27 +6167,6 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 
 		return TRUE;
 	}
-}
-
-void CVideoDeviceDoc::OnCaptureRecordPause() 
-{
-	if (m_pAVRec)
-		CaptureRecordPause();
-}
-
-void CVideoDeviceDoc::OnUpdateCaptureRecordPause(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck(m_bCaptureRecordPause ? 1 : 0);
-	pCmdUI->Enable(m_pAVRec != NULL);
-}
-
-void CVideoDeviceDoc::CaptureRecordPause()
-{
-	// Resume Recording
-	if (m_bCaptureRecordPause)
-		m_bRecResume = TRUE;
-
-	m_bCaptureRecordPause = !m_bCaptureRecordPause;
 }
 
 // Function called from the UI thread and when ProcessI420Frame() is not called
@@ -8173,7 +8140,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 
 		// Record Video only when start-up settled
 		// (especially for audio/video synchronization)
-		if (bStartupSettled && !m_bCaptureRecordPause)
+		if (bStartupSettled)
 		{
 			::EnterCriticalSection(&m_csAVRec);
 			if (m_pAVRec)
@@ -8214,25 +8181,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 					m_dwRecLastUpTime  = m_dwRecFirstUpTime = dwCurrentInitUpTime;
 					m_nRecordedFrames = 1;
 					m_bRecFirstFrame = FALSE;
-				}
-				// Resume Recording After Pause
-				else if (m_bRecResume)
-				{
-					if (m_nRecordedFrames > 1)
-					{
-						// Calc. the Frame Time
-						double dFrameTime = (double)(m_dwRecLastUpTime - m_dwRecFirstUpTime) /
-													(m_nRecordedFrames - 1);
-
-						// Add the Pause Time minus one Frame
-						// Time to the First Up-Time,
-						// this to get a correct frame rate calculation!
-						m_dwRecFirstUpTime += (DWORD)Round(dwCurrentInitUpTime - m_dwRecLastUpTime - dFrameTime);
-					}
-
-					m_dwRecLastUpTime = dwCurrentInitUpTime;
-					m_nRecordedFrames++;
-					m_bRecResume = FALSE;
 				}
 				// Recording Up-Time Update
 				else

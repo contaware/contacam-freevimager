@@ -1183,7 +1183,6 @@ public:
 	BOOL MakeAVRec(CAVRec** ppAVRec);
 	void OpenAVIFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
-	void CaptureRecordPause();
 	BOOL NextAviFile();
 	void NextRecTime(CTime t);
 	void CloseAndShowAviRec();
@@ -1405,8 +1404,6 @@ public:
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
 
 	// Audio / Video Rec
-	volatile BOOL m_bCaptureRecordPause;				// Recording Paused
-	volatile BOOL m_bRecResume;							// Resume After Rec Pause
 	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
 	volatile DWORD m_dwRecLastUpTime;					// Up-Time of Last Recorded Frame
 	volatile BOOL m_bRecFirstFrame;						// Recording Just Started
@@ -1648,8 +1645,6 @@ protected:
 	afx_msg void OnUpdateCaptureSettings(CCmdUI* pCmdUI);
 	afx_msg void OnViewDetectionZones();
 	afx_msg void OnUpdateViewDetectionZones(CCmdUI* pCmdUI);
-	afx_msg void OnCaptureRecordPause();
-	afx_msg void OnUpdateCaptureRecordPause(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);

@@ -3320,7 +3320,6 @@
 #define ID_EDIT_SELECTALL               32913
 #define ID_EDIT_SELECTNONE              32914
 #define ID_CAPTURE_NETWORK              32915
-#define ID_CAPTURE_RECORD_PAUSE         32917
 #define ID_CAPTURE_RECORD               32918
 #define ID_VIEW_ALL_NEXT_PICTURE        32919
 #define ID_VIEW_ALL_PREVIOUS_PICTURE    32920

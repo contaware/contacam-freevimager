@@ -133,7 +133,6 @@ BEGIN
     BUTTON      ID_CAPTURE_SETTINGS
     BUTTON      ID_EDIT_SNAPSHOT
     BUTTON      ID_CAPTURE_RECORD
-    BUTTON      ID_CAPTURE_RECORD_PAUSE
     BUTTON      ID_VIEW_FRAMETIME
     BUTTON      ID_VIEW_FIT
     BUTTON      ID_VIEW_DETECTIONS
@@ -529,7 +528,6 @@ BEGIN
     POPUP "_Context Menu_"
     BEGIN
         MENUITEM "Record",                      ID_CAPTURE_RECORD
-        MENUITEM "Pause",                       ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
@@ -597,7 +595,6 @@ BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "Record",                      ID_CAPTURE_RECORD
-        MENUITEM "Pause",                       ID_CAPTURE_RECORD_PAUSE
         MENUITEM SEPARATOR
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
@@ -1565,7 +1562,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            120,IDC_STATIC,17,10,20,20
     LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
@@ -1598,7 +1595,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -1791,7 +1788,7 @@ IDD_HLS DIALOGEX 0, 0, 278, 219
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Regulate"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER_BRIGHTNESS,"msctls_trackbar32",
                     TBS_AUTOTICKS | TBS_VERT | WS_TABSTOP,13,15,25,95,
@@ -2017,7 +2014,7 @@ IDD_MONOCHROME DIALOGEX 0, 0, 167, 63
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Monochrom Conversion"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Dark",IDC_COLOR_DARK,8,4,33,13
     PUSHBUTTON      "Bright",IDC_COLOR_BRIGHT,126,4,33,13
@@ -2288,7 +2285,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,27,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -4074,7 +4071,7 @@ IDD_VIDEOFORMAT DIALOGEX 0, 0, 208, 107
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Video Compression"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,7,7,194,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -4250,7 +4247,7 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,101,10
@@ -6180,7 +6177,6 @@ BEGIN
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD_PAUSE "Pause the recording\nPause Record"
     ID_CAPTURE_RECORD       "Record video and audio to a avi file\nRecord To Avi File"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
