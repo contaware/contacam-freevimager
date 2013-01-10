@@ -681,7 +681,7 @@ void CAssistantDlg::Rename()
 	// Prompt for merging
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&&
 		::IsExistingDir(sNewRecordAutoSaveDir)			&&
-		sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
+		sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) != 0)
 	{
 		CString sMsg;
 		sMsg.Format(ML_STRING(1765, "%s already exists.\nDo you want to proceed and merge the files?"), m_sName);
@@ -696,8 +696,9 @@ void CAssistantDlg::Rename()
 	// Error code
 	DWORD dwLastError = ERROR_SUCCESS;
 
-	// Record directory
-	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) && sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
+	// Merge or move
+	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) &&
+		sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) != 0)
 	{
 		if (::IsExistingDir(sNewRecordAutoSaveDir) || !::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 		{
@@ -710,6 +711,18 @@ void CAssistantDlg::Rename()
 				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir); // No error message on failure
 		}
 	}
+	// Rename if just case changed
+	else if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)							&&
+			sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) == 0	&&	
+			sNewRecordAutoSaveDir.Compare(m_pDoc->m_sRecordAutoSaveDir) != 0)
+	{
+		if (!::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
+		{
+			dwLastError = ::GetLastError();
+			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+		}
+	}
+	// Create if nothing exists
 	else if (!::IsExistingDir(sNewRecordAutoSaveDir) && !::CreateDir(sNewRecordAutoSaveDir))
 	{
 		dwLastError = ::GetLastError();
