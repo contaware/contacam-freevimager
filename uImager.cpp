@@ -3723,13 +3723,8 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		// Shrink
 		if (bShrinkVideos)
 		{
-			if (!pDoc->StartShrinkDocTo(sDstFileName))
-			{
-				::AfxMessageBox(ML_STRING(1213, "AVI Files with VBR Mp3 Audio cannot be Shrinked."), MB_OK | MB_ICONSTOP);
-				return 0;
-			}
-			else
-				res = -1; // Not finished
+			pDoc->StartShrinkDocTo(sDstFileName);
+			res = -1; // Not finished
 		}
 		else
 		{

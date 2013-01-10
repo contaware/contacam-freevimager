@@ -5674,7 +5674,6 @@ BEGIN
     IDS_MULTILANG_1210      "No Burner Was Detected."
     IDS_MULTILANG_1211      "Burning Is Not Supported For Your Operating System."
     IDS_MULTILANG_1212      "Loading Folder's First Picture"
-    IDS_MULTILANG_1213      "AVI Files with VBR Mp3 Audio cannot be Shrinked."
     IDS_MULTILANG_1214      "To Many Attached Files. Max Number is %i.\n"
     IDS_MULTILANG_1215      "Tip: Use a Zip File to put all your files in it."
 END

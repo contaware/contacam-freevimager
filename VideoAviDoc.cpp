@@ -5729,12 +5729,12 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	return res;
 }
 
-BOOL CVideoAviDoc::StartShrinkDocTo(CString sOutFileName) 
+void CVideoAviDoc::StartShrinkDocTo(CString sOutFileName) 
 {
 	ResetPercentDone();
 	m_ShrinkDocToProcessing.m_sOutFileName = sOutFileName;
 	m_ProcessingThread.SetProcessingFunct(&m_ShrinkDocToProcessing);
-	return (m_ProcessingThread.Start() == true);
+	m_ProcessingThread.Start();
 }
 
 void CVideoAviDoc::OnFileInfo() 

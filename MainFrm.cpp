@@ -84,7 +84,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
-	ON_MESSAGE(WM_THREADSAFE_AVISTART_SHRINKTO, OnThreadSafeAviStartShrinkTo)
 	ON_MESSAGE(WM_SHRINKDOC_TERMINATED, OnShrinkDocTerminated)
 	ON_MESSAGE(WM_TASKBAR_BUTTON, OnTaskBarButton)
 	ON_MESSAGE(WM_RESTORE_FRAME, OnRestoreAllFrames)
@@ -1055,28 +1054,7 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices((int)wparam);
 	return 0;
 }
-#endif
-
-LONG CMainFrame::OnThreadSafeAviStartShrinkTo(WPARAM wparam, LPARAM lparam)
-{
-	BOOL res = FALSE;
-	CString* pSrcFileName = (CString*)wparam;
-	CString* pDstFileName = (CString*)lparam;
-	if (pSrcFileName && pDstFileName)
-	{
-		CVideoAviDoc* pDoc = (CVideoAviDoc*)((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pSrcFileName);
-		if (pDoc && pDoc->StartShrinkDocTo(*pDstFileName))
-			res = TRUE;
-	}
-
-	if (pSrcFileName)
-		delete pSrcFileName;
-
-	if (pDstFileName)
-		delete pDstFileName;
-
-	return res;
-}				
+#endif				
 
 LONG CMainFrame::OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam)
 {

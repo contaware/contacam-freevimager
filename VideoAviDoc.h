@@ -425,7 +425,7 @@ public:
 												||
 												(m_sProcessingError != _T("")));};
 	void ResetPercentDone();
-	BOOL StartShrinkDocTo(CString sOutFileName);
+	void StartShrinkDocTo(CString sOutFileName);
 	BOOL ShrinkDocTo(CShrinkDocTo* pShrinkDocTo);
 	void StartFileMergeSerialAs();
 	void StartFileMergeParallelAs();

@@ -23,15 +23,14 @@ extern "C"
 // Window Message IDs
 #define WM_TASKBAR_BUTTON							0x0313
 #define WM_THREADSAFE_OPEN_DOC						WM_USER + 100
-#define WM_THREADSAFE_AVISTART_SHRINKTO				WM_USER + 101
-#define WM_SHRINKDOC_TERMINATED						WM_USER + 102
-#define WM_ALL_CLOSED								WM_USER + 103
-#define WM_VIDEOAVI_FULLSCREEN_MODE_ON				WM_USER + 104
-#define WM_VIDEOAVI_FULLSCREEN_MODE_OFF				WM_USER + 105
-#define WM_SCANANDEMAIL								WM_USER + 106
-#define WM_TRAY_NOTIFICATION						WM_USER + 107
+#define WM_SHRINKDOC_TERMINATED						WM_USER + 101
+#define WM_ALL_CLOSED								WM_USER + 102
+#define WM_VIDEOAVI_FULLSCREEN_MODE_ON				WM_USER + 103
+#define WM_VIDEOAVI_FULLSCREEN_MODE_OFF				WM_USER + 104
+#define WM_SCANANDEMAIL								WM_USER + 105
+#define WM_TRAY_NOTIFICATION						WM_USER + 106
 #ifdef VIDEODEVICEDOC
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 108
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 107
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -283,7 +282,6 @@ protected:
 	afx_msg void OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI);
 	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeAviStartShrinkTo(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTaskBarButton(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnRestoreAllFrames(WPARAM wparam, LPARAM lparam);
