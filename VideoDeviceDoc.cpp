@@ -316,8 +316,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			m_pDoc->m_bSaveAVIMovementDetection ||
 			m_pDoc->m_bSaveAnimGIFMovementDetection)
 		{
-			// Check Whether Detection Dir Exists
-			sDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
+			// Check Whether Dir Exists
+			sDetectionAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			{
@@ -2664,7 +2664,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 		sDetectionTriggerFileName.TrimRight(_T('\"'));
 		if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
 		{
-			CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+			CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
 			sDetectionAutoSaveDir.TrimRight(_T('\\'));
 			sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 		}
@@ -2913,8 +2913,8 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		// Last Frame Time
 		CTime LastTime = CalcTime(dwLastUpTime, RefTime, dwRefUpTime);
 
-		// Check Whether Detection Dir Exists
-		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+		// Check Whether Dir Exists
+		CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
 		DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 		if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
 			return FALSE;
@@ -3848,33 +3848,10 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 				return 0;
 
 			// Delete
-			case WAIT_TIMEOUT :		
-			{
-				// Alternatively call them
-				if (m_dwCounter & 0x1U)
-				{
-					if (!DeleteIt(m_pDoc->m_sDetectionAutoSaveDir,	m_pDoc->m_nDeleteDetectionsOlderThanDays))
-						return 0; // Exit Thread
-					if (!DeleteIt(m_pDoc->m_sSnapshotAutoSaveDir,	m_pDoc->m_nDeleteSnapshotsOlderThanDays))
-						return 0; // Exit Thread
-					if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir,		m_pDoc->m_nDeleteRecordingsOlderThanDays))
-						return 0; // Exit Thread
-				}
-				else
-				{
-					if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir,		m_pDoc->m_nDeleteRecordingsOlderThanDays))
-						return 0; // Exit Thread
-					if (!DeleteIt(m_pDoc->m_sSnapshotAutoSaveDir,	m_pDoc->m_nDeleteSnapshotsOlderThanDays))
-						return 0; // Exit Thread
-					if (!DeleteIt(m_pDoc->m_sDetectionAutoSaveDir,	m_pDoc->m_nDeleteDetectionsOlderThanDays))
-						return 0; // Exit Thread
-				}
-
-				// Inc. Counter
-				m_dwCounter++;
-
+			case WAIT_TIMEOUT :
+				if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir, m_pDoc->m_nDeleteRecordingsOlderThanDays))
+					return 0; // Exit Thread
 				break;
-			}
 
 			default:
 				break;
@@ -4121,7 +4098,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 
 	// Snapshot
-	m_sSnapshotAutoSaveDir = _T("");
 	m_bSnapshotLiveJpeg = TRUE;
 	m_bSnapshotHistoryJpeg = FALSE;
 	m_bSnapshotHistorySwf = FALSE;
@@ -4140,7 +4116,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotStartStop = FALSE;
 	m_SnapshotStartTime = CurrentTimeOnly;
 	m_SnapshotStopTime = CurrentTimeOnly;
-	m_nDeleteSnapshotsOlderThanDays = 0;
 
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
@@ -4172,7 +4147,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowEditDetectionZones = FALSE;
 	m_bShowEditDetectionZonesMinus = FALSE;
 	m_bDetectingMovement = FALSE;
-	m_sDetectionAutoSaveDir = _T("");
 	m_sDetectionTriggerFileName = _T("");
 	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
@@ -4229,7 +4203,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bDetectionSaturday = TRUE;
 	m_DetectionStartTime = CurrentTimeOnly;
 	m_DetectionStopTime = CurrentTimeOnly;
-	m_nDeleteDetectionsOlderThanDays = 0;
 	m_bUnsupportedVideoSizeForMovDet = FALSE;
 	m_nMovDetFreqDiv = 1;
 	m_dMovDetFrameRateFreqDivCalc = 0.0;
@@ -4523,7 +4496,7 @@ CString CVideoDeviceDoc::GetDevicePathName()
 
 CString CVideoDeviceDoc::GetAssignedDeviceName()
 {
-	CString sName = GetAutoSaveDir();
+	CString sName = m_sRecordAutoSaveDir;
 	sName.TrimRight(_T('\\'));
 	int index = sName.ReverseFind(_T('\\'));
 	if (index >= 0)
@@ -4835,7 +4808,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bRecTimeSegmentation = (BOOL) pApp->GetProfileInt(sSection, _T("RecTimeSegmentation"), FALSE);
 	m_nTimeSegmentationIndex = pApp->GetProfileInt(sSection, _T("TimeSegmentationIndex"), 0);
 	m_sRecordAutoSaveDir = pApp->GetProfileString(sSection, _T("RecordAutoSaveDir"), sDefaultAutoSaveDir);
-	m_sDetectionAutoSaveDir = pApp->GetProfileString(sSection, _T("DetectionAutoSaveDir"), sDefaultAutoSaveDir);
 	m_sDetectionTriggerFileName = pApp->GetProfileString(sSection, _T("DetectionTriggerFileName"), _T("movtrigger.txt"));
 	CString sDetectionTriggerFileName(m_sDetectionTriggerFileName);
 	sDetectionTriggerFileName.TrimLeft();
@@ -4844,7 +4816,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	sDetectionTriggerFileName.TrimRight(_T('\"'));
 	if (sDetectionTriggerFileName.Find(_T('\\')) < 0)
 	{
-		CString sDetectionAutoSaveDir = m_sDetectionAutoSaveDir;
+		CString sDetectionAutoSaveDir = m_sRecordAutoSaveDir;
 		sDetectionAutoSaveDir.TrimRight(_T('\\'));
 		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 	}
@@ -4860,7 +4832,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	m_fSnapshotVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_sSnapshotAutoSaveDir = pApp->GetProfileString(sSection, _T("SnapshotAutoSaveDir"), sDefaultAutoSaveDir);
 	m_bSnapshotThumb = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotThumb"), TRUE);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
@@ -4939,9 +4910,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
-	m_nDeleteDetectionsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), 0);
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), 0);
-	m_nDeleteSnapshotsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteSnapshotsOlderThanDays"), 0);
 
 	unsigned int nSize = sizeof(m_dFrameRate);
 	volatile double* pFrameRate = &m_dFrameRate;
@@ -4983,16 +4952,12 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		CCaptureAudioThread::WaveInitFormat(1, 11025, 16, m_CaptureAudioThread.m_pDstWaveFormat);
 	}
 
-	// Create dirs
+	// Create dir
 	::CreateDir(m_sRecordAutoSaveDir);
-	::CreateDir(m_sDetectionAutoSaveDir);
-	::CreateDir(m_sSnapshotAutoSaveDir);
 
-	// Check whether the web files exist in the given directory.
-	// With first device run m_sRecordAutoSaveDir, m_sDetectionAutoSaveDir
-	// and m_sSnapshotAutoSaveDir are the same
+	// Check whether the web files exist in the given directory
 	if (m_bDeviceFirstRun)
-		MicroApacheCheckWebFiles(GetAutoSaveDir());
+		MicroApacheCheckWebFiles(m_sRecordAutoSaveDir);
 
 	// Start Send Frame
 	if (m_bSendVideoFrame)
@@ -5102,7 +5067,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
 			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
 			pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-			pApp->WriteProfileString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir);
 			pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
 			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
@@ -5115,7 +5079,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
 			pApp->WriteProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality);
-			pApp->WriteProfileString(sSection, _T("SnapshotAutoSaveDir"), m_sSnapshotAutoSaveDir);
 			pApp->WriteProfileInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb);
 			pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
 			pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
@@ -5194,9 +5157,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 			pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
-			pApp->WriteProfileInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays);
 			pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
-			pApp->WriteProfileInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays);
 
 			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
 			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
@@ -5302,7 +5263,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
 			::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
-			::WriteProfileIniString(sSection, _T("DetectionAutoSaveDir"), m_sDetectionAutoSaveDir, sTempFileName);
 			::WriteProfileIniString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg, sTempFileName);
@@ -5315,7 +5275,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotAutoSaveDir"), m_sSnapshotAutoSaveDir, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight, sTempFileName);
@@ -5394,9 +5353,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DeleteDetectionsOlderThanDays"), m_nDeleteDetectionsOlderThanDays, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DeleteSnapshotsOlderThanDays"), m_nDeleteSnapshotsOlderThanDays, sTempFileName);
 
 			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
 			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
@@ -5973,7 +5930,7 @@ CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 	CString sTime = Time.Format(_T("%Y_%m_%d_%H_%M_%S"));
 
 	// Adjust Directory Name
-	CString sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
+	CString sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 	sSnapshotAutoSaveDir.TrimRight(_T('\\'));
 
 	// Create directory if necessary
@@ -6646,23 +6603,10 @@ void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& 
 	}
 }
 
-CString CVideoDeviceDoc::GetAutoSaveDir()
-{
-	if (m_sRecordAutoSaveDir != _T(""))
-		return m_sRecordAutoSaveDir;
-	else if (m_sDetectionAutoSaveDir != _T(""))
-		return m_sDetectionAutoSaveDir;
-	else if (m_sSnapshotAutoSaveDir != _T(""))
-		return m_sSnapshotAutoSaveDir;
-	else
-		return _T("");
-}
-
 void CVideoDeviceDoc::OnViewWeb() 
 {
-	CString sAutoSaveDir = GetAutoSaveDir();
-	if (sAutoSaveDir != _T(""))
-		MicroApacheViewOnWeb(sAutoSaveDir, _T("index.php"));
+	if (m_sRecordAutoSaveDir != _T(""))
+		MicroApacheViewOnWeb(m_sRecordAutoSaveDir, _T("index.php"));
 	else
 		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
 }
@@ -7342,7 +7286,7 @@ BOOL CVideoDeviceDoc::SaveMicroApacheConfigFile(const CString& sConfig)
 
 CString CVideoDeviceDoc::PhpGetConfigFileName()
 {
-	CString sAutoSaveDir = GetAutoSaveDir();
+	CString sAutoSaveDir = m_sRecordAutoSaveDir;
 	sAutoSaveDir.TrimRight(_T('\\'));
 	if (sAutoSaveDir != _T(""))
 		return sAutoSaveDir + _T("\\") + PHP_CONFIGNAME_EXT;
@@ -8536,14 +8480,14 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
 	m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
 	m_SaveSnapshotThread.m_Time = Time;
-	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
+	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 	::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
 	::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	m_SaveSnapshotThread.Start();
 
 	// Start Snapshot SWF Thread?
-	if (!m_sSnapshotAutoSaveDir.IsEmpty() && m_bSnapshotHistorySwf && !m_SaveSnapshotSWFThread.IsAlive())
+	if (!m_sRecordAutoSaveDir.IsEmpty() && m_bSnapshotHistorySwf && !m_SaveSnapshotSWFThread.IsAlive())
 	{
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
 		Yesterday = CTime(	Yesterday.GetYear(),
@@ -8557,7 +8501,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotSWFThread.m_fSnapshotVideoCompressorQuality = m_fSnapshotVideoCompressorQuality;
 			m_SaveSnapshotSWFThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotSWFThread.m_Time = Yesterday;
-			m_SaveSnapshotSWFThread.m_sSnapshotAutoSaveDir = m_sSnapshotAutoSaveDir;
+			m_SaveSnapshotSWFThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
 			::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 			m_SaveSnapshotSWFThread.m_Config = m_SnapshotFTPUploadConfiguration;
 			::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);

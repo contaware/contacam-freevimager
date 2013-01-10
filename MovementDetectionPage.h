@@ -9,8 +9,6 @@
 
 #ifdef VIDEODEVICEDOC
 
-#include "StaticLink.h"
-
 // Forward Declaration
 class CVideoDeviceDoc;
 
@@ -27,7 +25,6 @@ public:
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	void UpdateDetectionState();
 	~CMovementDetectionPage();
-	CStaticLink m_DirLabel;
 
 // Dialog Data
 	//{{AFX_DATA(CMovementDetectionPage)
@@ -39,7 +36,6 @@ public:
 	CSliderCtrl	m_DetectionLevel;
 	CTime	m_DetectionStartTime;
 	CTime	m_DetectionStopTime;
-	int		m_nDeleteDetectionsOlderThanDays;
 	//}}AFX_DATA
 
 
@@ -60,7 +56,6 @@ protected:
 	//{{AFX_MSG(CMovementDetectionPage)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
-	afx_msg void OnDetectionSaveas();
 	afx_msg void OnChangeSecondsAfterMovementEnd();
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
@@ -78,7 +73,6 @@ protected:
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSaveSwfMovementDetection();
 	afx_msg void OnCheckAdjacentZonesDet();
-	afx_msg void OnChangeEditDeleteDetectionsDays();
 	afx_msg void OnSwfConfigure();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnChangeEditExe();

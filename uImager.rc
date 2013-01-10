@@ -1595,7 +1595,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_FRAMERATE,97,11,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -1651,25 +1651,25 @@ BEGIN
                     DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,344,198,
                     59,15
     CONTROL         "Open after rec",IDC_CHECK_AUTOOPEN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,7,227,61,10
-    LTEXT           "Rec Dir",IDC_TEXT_VIDEO_REC,87,228,25,8,SS_NOTIFY | NOT 
-                    WS_GROUP
-    PUSHBUTTON      "...",IDC_RECORD_SAVEAS,392,226,16,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,226,61,10
     CONTROL         "Autostart",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,240,44,11
+                    WS_TABSTOP,7,239,44,11
+    LTEXT           "Rec Dir",IDC_TEXT_VIDEO_REC,86,233,25,8,SS_NOTIFY | NOT 
+                    WS_GROUP
+    EDITTEXT        IDC_RECORD_SAVEAS_PATH,117,231,274,12,ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_TABSTOP
+    PUSHBUTTON      "...",IDC_RECORD_SAVEAS,395,231,16,12
     EDITTEXT        IDC_EDIT_DELETE_RECORDINGS_DAYS,86,253,28,13,ES_RIGHT | 
                     ES_NUMBER
     LTEXT           "frames/sec",IDC_STATIC2183,132,14,40,8
     LTEXT           "Set Framerate:",IDC_STATIC2155,13,14,47,8
     GROUPBOX        "Video Source",IDC_STATIC2156,7,2,180,126
     GROUPBOX        "Audio",IDC_STATIC2157,7,132,180,54
-    EDITTEXT        IDC_RECORD_SAVEAS_PATH,118,226,272,12,ES_AUTOHSCROLL | 
-                    ES_READONLY | NOT WS_TABSTOP
     RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,27,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,27,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
-                    IDC_STATIC2161,196,118,212,101
-    GROUPBOX        "Recording Video Compression",IDC_STATIC2162,196,2,212,
+                    IDC_STATIC2161,197,118,214,101
+    GROUPBOX        "Recording Video Compression",IDC_STATIC2162,197,2,214,
                     111
     LTEXT           "Start",IDC_STATIC2163,205,145,25,8
     LTEXT           "Stop",IDC_STATIC2164,205,163,25,8
@@ -1695,7 +1695,7 @@ BEGIN
     LTEXT           "Keep dir content for",IDC_STATIC2180,7,255,75,8
     LTEXT           "day(s)",IDC_STATIC2181,117,255,25,8
     RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2182,147,255,262,8
+                    IDC_STATIC2182,148,255,262,8
 END
 
 IDD_RESIZING DIALOGEX 0, 0, 171, 143
@@ -2285,121 +2285,110 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,27,25,12,
+    EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,30,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_SECONDS_BEFORE_MOVEMENT_BEGIN,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,27,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,30,11,12
     LTEXT           "seconds of frames before detection begin",
-                    IDC_STATIC2283,62,28,144,8
-    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,40,25,12,
+                    IDC_STATIC2283,62,31,144,8
+    EDITTEXT        IDC_SECONDS_AFTER_MOVEMENT_END,33,44,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Spin2",IDC_SPIN_SECONDS_AFTER_MOVEMENT_END,
                     "msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | 
-                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,40,11,12
+                    UDS_AUTOBUDDY | UDS_ARROWKEYS,50,44,11,12
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,
-                    62,42,144,8
+                    62,46,144,8
     CONTROL         "Longer detection files (enabling this uses more CPU)",
                     IDC_CHECK_DETECTION_COMPRESS_FRAMES,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,13,54,192,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,60,192,10
     CONTROL         "Slider1",IDC_DETECTION_LEVEL,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,68,132,12
-    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,83,99,72,CBS_DROPDOWNLIST | 
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,77,132,12
+    COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,95,99,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,114,185,10
+                    WS_TABSTOP,13,133,185,10
     CONTROL         "Only detect if no camera luminosity change occurs",
                     IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,125,185,10
+                    WS_TABSTOP,13,144,185,10
     CONTROL         "Enable Detection (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,154,175,10
+                    WS_TABSTOP,13,177,175,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,37,166,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,37,190,66,
                     14
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,166,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,136,190,
                     66,14
     CONTROL         "Su",IDC_CHECK_SCHEDULER_SUNDAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,184,27,10
+                    WS_TABSTOP,13,208,27,10
     CONTROL         "Mo",IDC_CHECK_SCHEDULER_MONDAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,41,184,27,10
+                    WS_TABSTOP,41,208,27,10
     CONTROL         "Tu",IDC_CHECK_SCHEDULER_TUESDAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,69,184,27,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,69,208,27,10
     CONTROL         "We",IDC_CHECK_SCHEDULER_WEDNESDAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,97,184,27,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,97,208,27,10
     CONTROL         "Th",IDC_CHECK_SCHEDULER_THURSDAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,125,184,27,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,125,208,27,10
     CONTROL         "Fr",IDC_CHECK_SCHEDULER_FRIDAY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,153,184,27,10
+                    WS_TABSTOP,153,208,27,10
     CONTROL         "Sa",IDC_CHECK_SCHEDULER_SATURDAY,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,181,184,27,10
-    EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,13,213,189,12,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,181,208,27,10
+    EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,13,241,189,12,
                     ES_AUTOHSCROLL
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,29,51,10
-    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,28,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,33,51,10
+    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,32,97,12
     CONTROL         "Save AVI",IDC_SAVE_AVI_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,47,46,10
-    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,46,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,54,46,10
+    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,53,97,12
     CONTROL         "Save Anim. GIF",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,65,62,10
-    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,64,96,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,227,75,62,10
+    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,74,97,
                     12
     CONTROL         "Send Email",IDC_SENDMAIL_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,83,53,10
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,82,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,96,53,10
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,95,97,12
     CONTROL         "Ftp Upload",IDC_FTP_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,101,51,9
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,100,96,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,117,51,9
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,116,97,12
     CONTROL         "Execute Command:",IDC_EXEC_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,226,119,77,10
-    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,117,96,72,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,227,138,77,10
+    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,136,97,72,
                     CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,266,134,135,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,266,149,135,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_EXE,266,155,136,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,266,172,136,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",
                     IDC_CHECK_HIDE_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,166,129,10
+                    WS_TABSTOP,238,190,129,10
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,236,179,145,10
-    EDITTEXT        IDC_EDIT_EXEC_HELP,236,193,165,32,ES_MULTILINE | 
+                    WS_TABSTOP,238,204,145,10
+    EDITTEXT        IDC_EDIT_EXEC_HELP,238,219,164,34,ES_MULTILINE | 
                     ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "Det Dir",IDC_TEXT_VIDEO_DET,7,238,23,8,SS_NOTIFY | NOT 
-                    WS_GROUP
-    EDITTEXT        IDC_DETECTION_SAVEAS_PATH,34,236,356,12,ES_AUTOHSCROLL | 
-                    ES_READONLY | NOT WS_TABSTOP
-    PUSHBUTTON      "...",IDC_DETECTION_SAVEAS,392,236,16,12
-    EDITTEXT        IDC_EDIT_DELETE_DETECTIONS_DAYS,86,253,28,13,ES_RIGHT | 
-                    ES_NUMBER
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,66,35,17
-    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,16,203,84
-    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,69,13,12,ES_RIGHT | 
+    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,75,35,17
+    GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,18,203,96
+    EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,78,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,218,16,190,214
-    LTEXT           "From",IDC_STATIC2289,13,169,16,8
-    LTEXT           "To",IDC_STATIC2290,120,169,10,8
-    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,143,203,55
-    LTEXT           "Keep dir content for",IDC_STATIC2292,7,255,75,8
-    LTEXT           "day(s)",IDC_STATIC2293,117,255,25,8
-    RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2294,146,255,263,8
-    LTEXT           "Cmd",IDC_STATIC2299,236,137,15,8
-    LTEXT           "Params",IDC_STATIC2300,236,151,24,8
+    GROUPBOX        "On Detection",IDC_STATIC2288,219,17,192,245
+    LTEXT           "From",IDC_STATIC2289,13,193,16,8
+    LTEXT           "To",IDC_STATIC2290,120,193,10,8
+    GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,164,203,58
+    LTEXT           "Cmd",IDC_STATIC2299,238,158,15,8
+    LTEXT           "Params",IDC_STATIC2300,238,174,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",
-                    IDC_WARNING,152,3,256,11,SS_CENTERIMAGE
-    LTEXT           "Store",IDC_STATIC,13,28,18,8
-    LTEXT           "Store",IDC_STATIC,13,42,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,104,203,35
-    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,85,84,8
+                    IDC_WARNING,154,4,256,11,SS_CENTERIMAGE
+    LTEXT           "Store",IDC_STATIC,13,31,18,8
+    LTEXT           "Store",IDC_STATIC,13,46,18,8
+    GROUPBOX        "Detection Constraints",IDC_STATIC,7,120,203,38
+    LTEXT           "Detection Zones Size",IDC_STATIC2287,13,97,84,8
     GROUPBOX        "External Detection Trigger File (write to it to trigger)",
-                    IDC_STATIC,7,202,203,28
-    LTEXT           "Detection:",IDC_STATIC2544,7,3,36,11,SS_CENTERIMAGE
-    LTEXT           "Off",IDC_DETECTION_MODE,46,3,95,11,SS_CENTERIMAGE | 
+                    IDC_STATIC,7,229,203,33
+    LTEXT           "Detection:",IDC_STATIC2544,7,4,36,11,SS_CENTERIMAGE
+    LTEXT           "Off",IDC_DETECTION_MODE,46,4,95,11,SS_CENTERIMAGE | 
                     SS_SUNKEN
 END
 
@@ -4247,7 +4236,7 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,101,10
@@ -4258,61 +4247,50 @@ BEGIN
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,300,46,101,17
     CONTROL         "Enable Snapshots (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,92,177,10
+                    WS_TABSTOP,13,93,177,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,89,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,90,66,
                     16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,335,89,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,335,90,66,
                     16
     CONTROL         "Save a Snapshot as Jpeg",IDC_CHECK_SNAPSHOT_LIVE_JPEG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,134,97,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,136,97,10
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,135,51,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,137,51,9
     CONTROL         "Save History as Jpegs",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,174,86,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,179,86,10
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,175,51,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,180,51,9
     CONTROL         "Save History as Daily Swf:",
                     IDC_CHECK_SNAPSHOT_HISTORY_SWF,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,192,99,10
+                    WS_TABSTOP,13,197,99,10
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
-                    190,190,120,18
+                    190,195,120,18
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,194,51,9
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,183,211,14,12,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,199,51,9
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,183,220,14,12,
                     ES_RIGHT | ES_NUMBER
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,238,89,10
-    EDITTEXT        IDC_SNAPSHOT_SAVEAS_PATH,130,236,260,12,ES_AUTOHSCROLL | 
-                    ES_READONLY | NOT WS_TABSTOP
-    PUSHBUTTON      "...",IDC_SNAPSHOT_SAVEAS,392,236,16,12
-    EDITTEXT        IDC_EDIT_DELETE_SNAPSHOTS_DAYS,86,253,28,13,ES_RIGHT | 
-                    ES_NUMBER
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,251,89,10
     LTEXT           "Snapshot each",IDC_STATIC2476,300,21,50,10
     LTEXT           "sec",IDC_STATIC2477,389,21,14,10
-    GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,120,401,34
-    GROUPBOX        "Snapshot History",IDC_STATIC2479,7,162,401,70
+    GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,122,404,34
+    GROUPBOX        "Snapshot History",IDC_STATIC2479,7,165,404,77
     LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,265,50,17,11
     LTEXT           "Jpeg Compression Quality",IDC_STATIC2480,13,50,82,8
-    LTEXT           "Shot Dir",IDC_TEXT_DIR,100,238,26,8,SS_NOTIFY | NOT 
-                    WS_GROUP
-    GROUPBOX        "General Settings",IDC_STATIC2481,7,2,401,69
-    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,116,213,58,8
-    LTEXT           "frames/sec",IDC_STATIC2483,206,213,40,8
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,194,17,11
-    GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,77,401,36
-    LTEXT           "From",IDC_STATIC2485,228,93,16,8
-    LTEXT           "To",IDC_STATIC2486,323,93,10,8
-    LTEXT           "Compression Quality",IDC_STATIC2487,116,193,72,8
-    LTEXT           "Keep dir content for",IDC_STATIC2488,7,255,75,8
-    LTEXT           "day(s)",IDC_STATIC2489,117,255,25,8
-    RTEXT           "(0 to not del any file; if disk space less than 10% oldest one are always del)",
-                    IDC_STATIC2490,146,255,263,8
+    GROUPBOX        "General Settings",IDC_STATIC2481,7,2,404,69
+    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,116,222,58,8
+    LTEXT           "frames/sec",IDC_STATIC2483,206,222,40,8
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,199,17,11
+    GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,78,404,36
+    LTEXT           "From",IDC_STATIC2485,228,94,16,8
+    LTEXT           "To",IDC_STATIC2486,323,94,10,8
+    LTEXT           "Compression Quality",IDC_STATIC2487,116,198,72,8
     LTEXT           "(multiple of 4)",IDC_STATIC2491,221,21,49,9
     LTEXT           "Attention: Swf files are limited to 16000 frames!",
-                    IDC_STATIC,26,206,82,19,SS_SUNKEN
+                    IDC_STATIC,26,212,82,20,SS_SUNKEN
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 186, 31
@@ -4612,7 +4590,7 @@ BEGIN
     IDD_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 408
+        RIGHTMARGIN, 410
         VERTGUIDE, 13
         VERTGUIDE, 80
         VERTGUIDE, 100
@@ -4840,15 +4818,15 @@ BEGIN
     IDD_MOVDET, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 408
+        RIGHTMARGIN, 410
         VERTGUIDE, 13
         VERTGUIDE, 22
-        VERTGUIDE, 226
-        VERTGUIDE, 236
+        VERTGUIDE, 227
+        VERTGUIDE, 238
         VERTGUIDE, 266
         VERTGUIDE, 305
-        VERTGUIDE, 401
-        TOPMARGIN, 2
+        VERTGUIDE, 402
+        TOPMARGIN, 3
     END
 
     IDD_REDEYE, DIALOG
@@ -5361,7 +5339,7 @@ BEGIN
     IDD_SNAPSHOT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 408
+        RIGHTMARGIN, 411
         VERTGUIDE, 13
         VERTGUIDE, 401
         TOPMARGIN, 2
@@ -5966,7 +5944,6 @@ BEGIN
     IDS_MULTILANG_1396      "Please save the metadata before proceeding\n"
     IDS_MULTILANG_1397      "Error parsing Xml!"
     IDS_MULTILANG_1398      "No Xml available."
-    IDS_MULTILANG_1399      "Select Folder For Detection Saving"
     IDS_MULTILANG_1400      "Please enter a number between %s and %s"
     IDS_MULTILANG_1401      "Yes"
     IDS_MULTILANG_1402      "No"
@@ -5982,7 +5959,6 @@ BEGIN
     IDS_MULTILANG_1411      "Unable to determine the domain for the email address %s\n"
     IDS_MULTILANG_1413      "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"
     IDS_MULTILANG_1414      "An error occured sending the message, Error:%x\nDescription:%s\n"
-    IDS_MULTILANG_1419      "Select Folder For Snapshot Saving"
     IDS_MULTILANG_1422      "Sound Output Playback Speed Not Supported"
     IDS_MULTILANG_1423      "Sound Output Cannot Set Playback Speed"
 END

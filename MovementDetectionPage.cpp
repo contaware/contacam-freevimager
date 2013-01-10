@@ -59,8 +59,6 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_DETECTION_LEVEL, m_DetectionLevel);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_DetectionStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_DetectionStopTime);
-	DDX_Text(pDX, IDC_EDIT_DELETE_DETECTIONS_DAYS, m_nDeleteDetectionsOlderThanDays);
-	DDV_MinMaxInt(pDX, m_nDeleteDetectionsOlderThanDays, 0, 4000000);
 	//}}AFX_DATA_MAP
 }
 
@@ -68,7 +66,6 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CMovementDetectionPage)
 	ON_WM_DESTROY()
-	ON_BN_CLICKED(IDC_DETECTION_SAVEAS, OnDetectionSaveas)
 	ON_EN_CHANGE(IDC_SECONDS_AFTER_MOVEMENT_END, OnChangeSecondsAfterMovementEnd)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
 	ON_WM_HSCROLL()
@@ -86,7 +83,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_ADJACENT_ZONES_DET, OnCheckAdjacentZonesDet)
-	ON_EN_CHANGE(IDC_EDIT_DELETE_DETECTIONS_DAYS, OnChangeEditDeleteDetectionsDays)
 	ON_BN_CLICKED(IDC_SWF_CONFIGURE, OnSwfConfigure)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -119,7 +115,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
 	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
-	m_nDeleteDetectionsOlderThanDays = m_pDoc->m_nDeleteDetectionsOlderThanDays;
 
 	// Init Combo Boxes
 	CComboBox* pComboBoxZoneSize = (CComboBox*)GetDlgItem(IDC_DETECTION_ZONE_SIZE);
@@ -133,15 +128,8 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
 
-	// Detection Dir
-	m_DirLabel.SubclassDlgItem(IDC_TEXT_VIDEO_DET, this);
-	m_DirLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
-
 	// The external detection trigger file name
-	pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
 	pEdit->SetWindowText(m_pDoc->m_sDetectionTriggerFileName);
 	
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
@@ -295,26 +283,6 @@ void CMovementDetectionPage::OnDestroy()
 	m_pDoc->m_pMovementDetectionPage = NULL;
 }
 
-void CMovementDetectionPage::OnDetectionSaveas() 
-{
-	// Stop Threads
-	m_pDoc->m_SaveFrameListThread.Kill();
-	m_pDoc->m_DeleteThread.Kill();
-
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&m_pDoc->m_sDetectionAutoSaveDir,
-					ML_STRING(1399, "Select Folder For Detection Saving"),
-					TRUE);
-	dlg.DoModal();
-	m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
-
-	// Restart Threads
-	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-	m_pDoc->m_SaveFrameListThread.Start();
-}
-
 HBRUSH CMovementDetectionPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
 {
 	HBRUSH hbr; 
@@ -384,19 +352,6 @@ void CMovementDetectionPage::OnCheckDetectionCompressFrames()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
 	m_pDoc->m_bDetectionCompressFrames = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnChangeEditDeleteDetectionsDays() 
-{
-	if (UpdateData(TRUE))
-	{
-		BOOL bRunning = m_pDoc->m_DeleteThread.IsRunning();
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Kill();
-		m_pDoc->m_nDeleteDetectionsOlderThanDays = m_nDeleteDetectionsOlderThanDays;
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-	}
 }
 
 void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 

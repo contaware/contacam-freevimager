@@ -757,7 +757,7 @@ public:
 	class CDeleteThread : public CWorkerThread
 	{
 		public:
-			CDeleteThread(){m_pDoc = NULL; m_dwCounter = 0;};
+			CDeleteThread(){m_pDoc = NULL;};
 			virtual ~CDeleteThread(){Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
@@ -773,7 +773,6 @@ public:
 							LONGLONG llDeleteOlderThanDays,
 							const CTime& CurrentTime);
 			CVideoDeviceDoc* m_pDoc;
-			DWORD m_dwCounter;
 	};
 
 	// Email sending configuration structure
@@ -1261,9 +1260,6 @@ public:
 	static void AutorunAddDevice(const CString& sDevicePathName);
 	static void AutorunRemoveDevice(const CString& sDevicePathName);
 
-	// Get common auto-save directory
-	CString GetAutoSaveDir();
-
 	// Micro Apache
 	static CString MicroApacheGetConfigFileName();
 	static CString MicroApacheGetLogFileName();
@@ -1474,7 +1470,6 @@ public:
 	CString m_sSendFramePassword;						// UDP Password
 
 	// Snapshot Vars
-	CString m_sSnapshotAutoSaveDir;						// The directory for the snapshots
 	volatile BOOL m_bSnapshotLiveJpeg;					// Live snapshot save as Jpeg
 	volatile BOOL m_bSnapshotHistoryJpeg;				// Snapshot history save Jpegs
 	volatile BOOL m_bSnapshotHistorySwf;				// Snapshot history save Swf
@@ -1493,11 +1488,8 @@ public:
 	volatile BOOL m_bSnapshotStartStop;					// Enable / Disable Daily Timed Snapshots
 	CTime m_SnapshotStartTime;							// Daily Snapshots Start Time
 	CTime m_SnapshotStopTime;							// Daily Snapshots Stop Time
-	volatile int m_nDeleteSnapshotsOlderThanDays;		// Delete Snapshots older than the given amount of days,
-														// 0 means never delete any file!
 
 	// Movement Detector Vars
-	CString m_sDetectionAutoSaveDir;					// The Detection Directory
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
@@ -1568,8 +1560,6 @@ public:
 	volatile BOOL m_bDetectionSaturday;					// Do detections on Saturday
 	CTime m_DetectionStartTime;							// Daily Detection Start Time
 	CTime m_DetectionStopTime;							// Daily Detection Stop Time
-	volatile int m_nDeleteDetectionsOlderThanDays;		// Delete Detections older than the given amount of days,
-														// 0 means never delete any file!
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider

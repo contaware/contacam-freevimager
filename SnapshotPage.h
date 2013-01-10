@@ -12,8 +12,6 @@
 // Forward Declaration
 class CVideoDeviceDoc;
 
-#include "StaticLink.h"
-
 /////////////////////////////////////////////////////////////////////////////
 // CSnapshotPage dialog
 
@@ -27,8 +25,6 @@ public:
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CSnapshotPage();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
-	CStaticLink m_FileLabel;
-	CStaticLink m_DirLabel;
 
 // Dialog Data
 	//{{AFX_DATA(CSnapshotPage)
@@ -37,7 +33,6 @@ public:
 	CSliderCtrl	m_CompressionQuality;
 	CTime	m_SnapshotStartTime;
 	CTime	m_SnapshotStopTime;
-	int		m_nDeleteSnapshotsOlderThanDays;
 	//}}AFX_DATA
 
 
@@ -57,7 +52,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnChangeEditSnapshotRate();
-	afx_msg void OnSnapshotSaveas();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnButtonThumbSize();
 	afx_msg void OnCheckSnapshotThumb();
@@ -68,7 +62,6 @@ protected:
 	afx_msg void OnCheckSchedulerDaily();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnChangeEditDeleteSnapshotsDays();
 	afx_msg void OnFtpConfigure();
 	afx_msg void OnCheckFtpSnapshot();
 	afx_msg void OnCheckFtpSnapshotHistoryJpeg();

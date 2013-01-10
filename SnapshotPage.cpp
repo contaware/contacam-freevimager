@@ -53,8 +53,6 @@ void CSnapshotPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMPRESSION_QUALITY, m_CompressionQuality);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SnapshotStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SnapshotStopTime);
-	DDX_Text(pDX, IDC_EDIT_DELETE_SNAPSHOTS_DAYS, m_nDeleteSnapshotsOlderThanDays);
-	DDV_MinMaxInt(pDX, m_nDeleteSnapshotsOlderThanDays, 0, 4000000);
 	//}}AFX_DATA_MAP
 }
 
@@ -63,7 +61,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSnapshotPage)
 	ON_WM_DESTROY()
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
-	ON_BN_CLICKED(IDC_SNAPSHOT_SAVEAS, OnSnapshotSaveas)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_THUMB, OnCheckSnapshotThumb)
@@ -74,7 +71,6 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
-	ON_EN_CHANGE(IDC_EDIT_DELETE_SNAPSHOTS_DAYS, OnChangeEditDeleteSnapshotsDays)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
@@ -91,7 +87,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	// Init vars
 	m_SnapshotStartTime = m_pDoc->m_SnapshotStartTime;
 	m_SnapshotStopTime = m_pDoc->m_SnapshotStopTime;
-	m_nDeleteSnapshotsOlderThanDays = m_pDoc->m_nDeleteSnapshotsOlderThanDays;
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -142,13 +137,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE);
 	sText.Format(_T("%i"), m_pDoc->m_nSnapshotHistoryFrameRate);
 	pEdit->SetWindowText(sText);
-
-	// Snapshot Dir
-	m_DirLabel.SubclassDlgItem(IDC_TEXT_DIR, this);
-	m_DirLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
-	pEdit = (CEdit*)GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
 
 	// Compression Quality
 	m_CompressionQuality.SetRange(0, 100);
@@ -348,19 +336,6 @@ void CSnapshotPage::OnChangeEditSnapshotHistoryFramerate()
 		m_pDoc->m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 }
 
-void CSnapshotPage::OnChangeEditDeleteSnapshotsDays() 
-{
-	if (UpdateData(TRUE))
-	{
-		BOOL bRunning = m_pDoc->m_DeleteThread.IsRunning();
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Kill();
-		m_pDoc->m_nDeleteSnapshotsOlderThanDays = m_nDeleteSnapshotsOlderThanDays;
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-	}
-}
-
 void CSnapshotPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
 	if (pScrollBar)
@@ -395,24 +370,6 @@ void CSnapshotPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		}
 	}
 	CPropertyPage::OnHScroll(nSBCode, nPos, pScrollBar);
-}
-
-void CSnapshotPage::OnSnapshotSaveas() 
-{
-	// Stop Thread
-	m_pDoc->m_DeleteThread.Kill();
-
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&m_pDoc->m_sSnapshotAutoSaveDir,
-					ML_STRING(1419, "Select Folder For Snapshot Saving"),
-					TRUE);
-	dlg.DoModal();
-	m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
-
-	// Restart Thread
-	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 }
 
 void CSnapshotPage::OnButtonThumbSize() 

@@ -68,8 +68,8 @@ END_MESSAGE_MAP()
 
 BOOL CAssistantDlg::OnInitDialog() 
 {
-	// Check whether the web files exist in the given directory.
-	CString sAutoSaveDir = m_pDoc->GetAutoSaveDir();
+	// Check whether the web files exist in the given directory
+	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	m_pDoc->MicroApacheCheckWebFiles(sAutoSaveDir);
 
 	// Clear restore web files flag
@@ -667,40 +667,21 @@ void CAssistantDlg::Rename()
 	if (m_sName == _T(""))
 		m_sName = m_pDoc->GetDeviceName();
 	
-	// Adjust old dirs
+	// Adjust old dir
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
-	m_pDoc->m_sDetectionAutoSaveDir.TrimRight(_T('\\'));
-	m_pDoc->m_sSnapshotAutoSaveDir.TrimRight(_T('\\'));
 
-	// Make new dirs
+	// Make new dir
 	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir);
-	CString sNewDetectionAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sDetectionAutoSaveDir);
-	CString sNewSnapshotAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sSnapshotAutoSaveDir);
 	sNewRecordAutoSaveDir.TrimRight(_T('\\'));
-	sNewDetectionAutoSaveDir.TrimRight(_T('\\'));
-	sNewSnapshotAutoSaveDir.TrimRight(_T('\\'));
-	if (m_pDoc->m_sRecordAutoSaveDir.ReverseFind(_T('\\')) < 0)		// It's just the drive letter?
+	if (m_pDoc->m_sRecordAutoSaveDir.ReverseFind(_T('\\')) < 0) // It's just the drive letter?
 		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	else
 		sNewRecordAutoSaveDir += _T('\\') + m_sName;
-	if (m_pDoc->m_sDetectionAutoSaveDir.ReverseFind(_T('\\')) < 0)	// It's just the drive letter?
-		sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-	else
-		sNewDetectionAutoSaveDir += _T('\\') + m_sName;
-	if (m_pDoc->m_sSnapshotAutoSaveDir.ReverseFind(_T('\\')) < 0)	// It's just the drive letter?
-		sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-	else
-		sNewSnapshotAutoSaveDir += _T('\\') + m_sName;
 	
 	// Prompt for merging
-	if ((::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)    && ::IsExistingDir(sNewRecordAutoSaveDir)    &&
-		sNewRecordAutoSaveDir    != m_pDoc->m_sRecordAutoSaveDir)                                      ||
-
-		(::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && ::IsExistingDir(sNewDetectionAutoSaveDir) &&
-		sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)                                   ||
-
-		(::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir)  && ::IsExistingDir(sNewSnapshotAutoSaveDir)  &&
-		sNewSnapshotAutoSaveDir  != m_pDoc->m_sSnapshotAutoSaveDir))
+	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&&
+		::IsExistingDir(sNewRecordAutoSaveDir)			&&
+		sNewRecordAutoSaveDir != m_pDoc->m_sRecordAutoSaveDir)
 	{
 		CString sMsg;
 		sMsg.Format(ML_STRING(1765, "%s already exists.\nDo you want to proceed and merge the files?"), m_sName);
@@ -740,60 +721,6 @@ void CAssistantDlg::Rename()
 		m_pDoc->m_pGeneralPage->m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
 		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_RECORD_SAVEAS_PATH);
 		pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
-	}
-
-	// Detection directory
-	if (::IsExistingDir(m_pDoc->m_sDetectionAutoSaveDir) && sNewDetectionAutoSaveDir != m_pDoc->m_sDetectionAutoSaveDir)
-	{
-		if (::IsExistingDir(sNewDetectionAutoSaveDir) || !::MoveFile(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
-		{
-			if (!::MergeDirContent(m_pDoc->m_sDetectionAutoSaveDir, sNewDetectionAutoSaveDir))
-			{
-				dwLastError = ::GetLastError();
-				sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-			}
-			else
-				::DeleteDir(m_pDoc->m_sDetectionAutoSaveDir); // No error message on failure
-		}
-	}
-	else if (!::IsExistingDir(sNewDetectionAutoSaveDir) && !::CreateDir(sNewDetectionAutoSaveDir))
-	{
-		dwLastError = ::GetLastError();
-		sNewDetectionAutoSaveDir = m_pDoc->m_sDetectionAutoSaveDir;
-	}
-	m_pDoc->m_sDetectionAutoSaveDir = sNewDetectionAutoSaveDir;
-	if (m_pDoc->m_pMovementDetectionPage)
-	{
-		m_pDoc->m_pMovementDetectionPage->m_DirLabel.SetLink(m_pDoc->m_sDetectionAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sDetectionAutoSaveDir);
-	}
-	
-	// Snapshot directory
-	if (::IsExistingDir(m_pDoc->m_sSnapshotAutoSaveDir) && sNewSnapshotAutoSaveDir != m_pDoc->m_sSnapshotAutoSaveDir)
-	{
-		if (::IsExistingDir(sNewSnapshotAutoSaveDir) || !::MoveFile(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
-		{
-			if (!::MergeDirContent(m_pDoc->m_sSnapshotAutoSaveDir, sNewSnapshotAutoSaveDir))
-			{
-				dwLastError = ::GetLastError();
-				sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-			}
-			else
-				::DeleteDir(m_pDoc->m_sSnapshotAutoSaveDir); // No error message on failure
-		}
-	}
-	else if (!::IsExistingDir(sNewSnapshotAutoSaveDir) && !::CreateDir(sNewSnapshotAutoSaveDir))
-	{
-		dwLastError = ::GetLastError();
-		sNewSnapshotAutoSaveDir = m_pDoc->m_sSnapshotAutoSaveDir;
-	}
-	m_pDoc->m_sSnapshotAutoSaveDir = sNewSnapshotAutoSaveDir;
-	if (m_pDoc->m_pSnapshotPage)
-	{	
-		m_pDoc->m_pSnapshotPage->m_DirLabel.SetLink(m_pDoc->m_sSnapshotAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_SNAPSHOT_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sSnapshotAutoSaveDir);
 	}
 
 	// On Error
@@ -1175,30 +1102,12 @@ void CAssistantDlg::ApplySettings()
 		default : nKeepForDays = 0;   break;
 	}
 	m_pDoc->m_nDeleteRecordingsOlderThanDays = nKeepForDays;
-	m_pDoc->m_nDeleteDetectionsOlderThanDays = nKeepForDays;
-	m_pDoc->m_nDeleteSnapshotsOlderThanDays = nKeepForDays;
 	if (m_pDoc->m_pGeneralPage)
 	{
 		m_pDoc->m_pGeneralPage->m_nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
 		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_EDIT_DELETE_RECORDINGS_DAYS);
 		CString s;
 		s.Format(_T("%d"), m_pDoc->m_pGeneralPage->m_nDeleteRecordingsOlderThanDays);
-		pEdit->SetWindowText(s);
-	}
-	if (m_pDoc->m_pMovementDetectionPage)
-	{
-		m_pDoc->m_pMovementDetectionPage->m_nDeleteDetectionsOlderThanDays = m_pDoc->m_nDeleteDetectionsOlderThanDays;
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pMovementDetectionPage->GetDlgItem(IDC_EDIT_DELETE_DETECTIONS_DAYS);
-		CString s;
-		s.Format(_T("%d"), m_pDoc->m_pMovementDetectionPage->m_nDeleteDetectionsOlderThanDays);
-		pEdit->SetWindowText(s);
-	}
-	if (m_pDoc->m_pSnapshotPage)
-	{
-		m_pDoc->m_pSnapshotPage->m_nDeleteSnapshotsOlderThanDays = m_pDoc->m_nDeleteSnapshotsOlderThanDays;
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_DELETE_SNAPSHOTS_DAYS);
-		CString s;
-		s.Format(_T("%d"), m_pDoc->m_pSnapshotPage->m_nDeleteSnapshotsOlderThanDays);
 		pEdit->SetWindowText(s);
 	}
 
@@ -1244,7 +1153,7 @@ void CAssistantDlg::ApplySettings()
 	}
 
 	// New versions of the web files
-	m_pDoc->MicroApacheCheckWebFiles(m_pDoc->GetAutoSaveDir(), TRUE);
+	m_pDoc->MicroApacheCheckWebFiles(m_pDoc->m_sRecordAutoSaveDir, TRUE);
 
 	// End wait cursor
 	EndWaitCursor();

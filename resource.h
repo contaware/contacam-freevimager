@@ -871,7 +871,6 @@
 #define IDS_MULTILANG_1013              1013
 #define IDC_PROMPT_SECONDS              1013
 #define IDS_MULTILANG_1014              1014
-#define IDC_DETECTION_SAVEAS            1014
 #define IDS_MULTILANG_1015              1015
 #define IDS_MULTILANG_1016              1016
 #define IDC_RECORD_SAVEAS               1016
@@ -1221,7 +1220,6 @@
 #define IDS_MULTILANG_1192              1192
 #define IDC_RECORD_SAVEAS_PATH          1192
 #define IDS_MULTILANG_1193              1193
-#define IDC_DETECTION_SAVEAS_PATH       1193
 #define IDS_MULTILANG_1194              1194
 #define IDC_VIDEOINFO                   1194
 #define IDC_DETECTION_TRIGGER_FILENAME  1194
@@ -2184,7 +2182,6 @@
 #define IDC_CHECK_ADJACENT_ZONES_DET    1679
 #define IDC_CHECK_AUTOOPEN              1679
 #define IDS_STRING1679                  1679
-#define IDC_EDIT_DELETE_DETECTIONS_DAYS 1680
 #define IDS_STRING1680                  1680
 #define IDC_CHECK_AUTH_SAVE             1681
 #define IDS_STRING1681                  1681
@@ -2337,17 +2334,14 @@
 #define IDS_STRING1751                  1751
 #define IDC_TEXT_VIDEO_REC              1752
 #define IDS_STRING1752                  1752
-#define IDC_TEXT_VIDEO_DET              1753
 #define IDS_STRING1753                  1753
 #define IDS_STRING1754                  1754
 #define IDC_EDIT_SNAPSHOT_RATE          1755
 #define IDS_STRING1755                  1755
 #define IDS_STRING1756                  1756
-#define IDC_SNAPSHOT_SAVEAS_PATH        1757
 #define IDS_STRING1757                  1757
 #define IDC_BUTTON_SET_FILE             1758
 #define IDS_STRING1758                  1758
-#define IDC_SNAPSHOT_SAVEAS             1759
 #define IDS_STRING1759                  1759
 #define IDC_BUTTON_CLEAR_FILE           1760
 #define IDS_STRING1760                  1760
@@ -2361,7 +2355,6 @@
 #define IDS_STRING1764                  1764
 #define IDC_BUTTON_THUMB_SIZE           1765
 #define IDS_STRING1765                  1765
-#define IDC_TEXT_DIR                    1766
 #define IDS_STRING1766                  1766
 #define IDC_TEXT_FILE                   1767
 #define IDS_STRING1767                  1767
@@ -2385,7 +2378,6 @@
 #define IDS_STRING1778                  1778
 #define IDC_CHECK_SNAPSHOT_LIVE_JPEG    1779
 #define IDS_STRING1779                  1779
-#define IDC_EDIT_DELETE_SNAPSHOTS_DAYS  1780
 #define IDS_STRING1780                  1780
 #define IDC_STATIC1781                  1781
 #define IDS_STRING1781                  1781
