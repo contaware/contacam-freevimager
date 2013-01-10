@@ -110,7 +110,6 @@
 #define IDD_OSD                         272
 #define IDD_XMP                         273
 #define IDD_DELETEPAGE                  275
-#define IDD_OCR_LANGUAGE                276
 #define IDD_AUDIOFORMAT                 277
 #define IDD_VIDEOFORMAT                 278
 #define IDD_WINSOCK2_MISSING            280

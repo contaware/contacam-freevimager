@@ -12,7 +12,6 @@
 #include "SortableFileFind.h"
 #include "SaveFileDlg.h"
 #include "Tiff2Pdf.h"
-#include "OCRLanguageDlg.h"
 #include "VideoFormatDlg.h"
 #include "IMAPI2DownloadDlg.h"
 #include "IniFile.h"
@@ -478,19 +477,6 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 		m_sTempOutputFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 													::GetFileNameNoExt(m_pDlg->m_sOutputFileName) + _T(".tif"));
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".txt") &&
-			((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
-	{
-		m_sTempOutputFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-													::GetFileNameNoExt(m_pDlg->m_sOutputFileName) + _T(".tif"));
-		
-		COCRLanguageDlg dlg(m_pDlg);
-		dlg.m_lLangId = m_pDlg->m_lOcrLangId;
-		if (dlg.DoModal() == IDOK)
-			m_pDlg->m_lOcrLangId = dlg.m_lLangId;
-		else
-			throw (int)0;
-	}
 }
 
 void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
@@ -539,49 +525,6 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 							TRUE,						// Interpolate
 							m_nTiffJpegQuality))
 				::AfxMessageBox(ML_STRING(1357, "Error while converting to Pdf"), MB_ICONSTOP);
-		}
-		::DeleteFile(m_sTempOutputFileName);
-	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".txt"))
-	{
-		if (m_TiffOutFile)
-		{
-			::TIFFClose(m_TiffOutFile);
-			m_TiffOutFile = NULL;
-		}
-		if (((CUImagerApp*)::AfxGetApp())->IsMODIAvailable() && !bException)
-		{
-			if (((CUImagerApp*)::AfxGetApp())->OCRByMODI(m_sTempOutputFileName, m_sOcrText, m_pDlg->m_lOcrLangId))
-			{
-				m_sOcrText.Replace(_T("\n"), _T("\r\n"));
-				LPBYTE pData = NULL;
-				try
-				{
-					int nSize = ::ToUTF8(m_sOcrText, &pData);
-					if (pData)
-					{
-						const unsigned char BOM[3] = {0xEF, 0xBB, 0xBF};
-						CFile f(m_pDlg->m_sOutputFileName,
-								CFile::modeCreate		|
-								CFile::modeWrite		|
-								CFile::shareDenyWrite);
-						f.Write(BOM, 3);
-						f.Write(pData, nSize);
-						delete [] pData;
-					}
-					else
-						::AfxMessageBox(ML_STRING(1358, "Unable to write text"), MB_ICONSTOP);
-				}
-				catch (CFileException* e)
-				{
-					if (pData)
-						delete [] pData;
-					e->ReportError();
-					e->Delete();
-				}
-			}
-			else
-				::AfxMessageBox(ML_STRING(1359, "Unable to recognize text"), MB_ICONSTOP);
 		}
 		::DeleteFile(m_sTempOutputFileName);
 	}
@@ -660,13 +603,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 			AddToOutputPdf(	nFilesCount,
 							sFileName,
 							m_sTempOutputFileName);
-		}
-		else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".txt") &&
-				((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
-		{
-			AddToOutputOcr(	nFilesCount,
-							sFileName,
-							m_sTempOutputFileName);	
 		}
 	}
 	m_bFirstOutputFile = FALSE;
@@ -1112,100 +1048,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 										this))
 					throw (int)0;
 			}
-		}
-	}
-}
-
-void CBatchProcDlg::CProcessThread::AddToOutputOcr(	int nFilesCount,
-													CString sInFileName,
-													CString sOutFileName)
-{
-	// Load Image
-	if (!m_Dib.LoadImage(	sInFileName,
-							0,		// X Full Size Load
-							0,		// Y Full Size Load
-							0,		// Load Page 0
-							TRUE,	// Decompress Bmps
-							FALSE,	// Not Only Header
-							NULL,	// No Progress Wnd
-							FALSE,	// No Progress Send
-							this))	// Thread
-		throw (int)0;
-
-	// Auto Orientate
-	CDib::AutoOrientateDib(&m_Dib);
-		
-	// Clear Orientation
-	m_Dib.GetExifInfo()->Orientation = 1;
-
-	// Flatten
-	if (m_Dib.HasAlpha() && m_Dib.GetBitCount() == 32)
-	{
-		m_Dib.SetBackgroundColor(RGB(255,255,255)); // White background for OCR is ok
-		m_Dib.RenderAlphaWithSrcBackground();
-		m_Dib.SetAlpha(FALSE);
-	}
-
-	// Grayscale
-	if (!m_Dib.IsGrayscale())
-	{
-		if (!m_Dib.Grayscale())
-			throw (int)0;
-	}
-
-	// To 8 Bpp
-	if (m_Dib.GetBitCount() > 8)
-	{
-		RGBQUAD* pColors = (RGBQUAD*)new RGBQUAD[256];
-		if (!pColors)
-			throw (int)0;
-		if (!CDib::FillGrayscaleColors(pColors, 256))
-			throw (int)0;
-		if (!m_Dib.CreatePaletteFromColors(256, pColors))
-			throw (int)0;
-		if (!m_Dib.ConvertTo8bits(m_Dib.GetPalette()))
-			throw (int)0;
-		delete [] pColors;
-	}
-
-	// Save Multi-Page TIFF
-	if (nFilesCount == 1)
-	{
-		if (!m_Dib.SaveTIFF(sOutFileName,
-							COMPRESSION_LZW,	
-							DEFAULT_JPEGCOMPRESSION,
-							NULL,
-							FALSE,
-							this))
-			throw (int)0;
-	}
-	else if (nFilesCount > 1)
-	{
-		// Save first TIFF page
-		if (m_bFirstOutputFile)
-		{
-			if (!m_Dib.SaveFirstTIFF(sOutFileName,
-									&m_TiffOutFile,
-									0, // We do not know how many pages
-									COMPRESSION_LZW,
-									DEFAULT_JPEGCOMPRESSION,
-									NULL,
-									FALSE,
-									this))
-				throw (int)0;
-		}
-		// Save next TIFF page
-		else
-		{
-			if (!m_Dib.SaveNextTIFF(m_TiffOutFile,
-									0, // We do not know the page number
-									0, // We do not know how many pages
-									COMPRESSION_LZW,
-									DEFAULT_JPEGCOMPRESSION,
-									NULL,
-									FALSE,
-									this))
-				throw (int)0;
 		}
 	}
 }
@@ -1817,9 +1659,6 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	// Init Tab
 	m_nInitTab = 0;
 
-	// Ocr Language Id
-	m_lOcrLangId = miLANG_ENGLISH;
-
 	// Load Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		LoadSettings();
@@ -2121,7 +1960,6 @@ void CBatchProcDlg::LoadSettings()
 	m_nStoredListFilesCount = (int)pApp->GetProfileInt(sSection, _T("ListFilesCount"), 0);
 	m_bMusicPreview = (BOOL)pApp->GetProfileInt(sSection, _T("MusicPreview"), FALSE);
 	m_nInitTab = (int)pApp->GetProfileInt(sSection, _T("InitTab"), 0);
-	m_lOcrLangId = (enum MiLANGUAGES)pApp->GetProfileInt(sSection, _T("OcrLangId"), (int)miLANG_ENGLISH);
 	unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
 	double* pFrameRate = &m_GeneralTab.m_dFrameRate;
 	pApp->GetProfileBinary(sSection, _T("FrameRate"), (LPBYTE*)&pFrameRate, &nSize);
@@ -2193,7 +2031,6 @@ void CBatchProcDlg::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("ListFilesCount"), m_List.GetItemCount());
 		pApp->WriteProfileInt(sSection, _T("MusicPreview"), m_bMusicPreview);
 		pApp->WriteProfileInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()));
-		pApp->WriteProfileInt(sSection, _T("OcrLangId"), (int)m_lOcrLangId);
 		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 		{
 			CString s;
@@ -2258,7 +2095,6 @@ void CBatchProcDlg::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("ListFilesCount"), m_List.GetItemCount(), sTempFileName);
 		::WriteProfileIniInt(sSection, _T("MusicPreview"), m_bMusicPreview, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()), sTempFileName);
-		::WriteProfileIniInt(sSection, _T("OcrLangId"), (int)m_lOcrLangId, sTempFileName);
 		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 		{
 			CString s;
@@ -2405,23 +2241,11 @@ void CBatchProcDlg::OnButtonDstFile()
 		fd.m_ofn.lpstrFile = FileName;
 		fd.m_ofn.nMaxFile = MAX_PATH;
 		fd.m_ofn.lpstrDefExt = defext;
-		if (((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
-		{
-			fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
-									_T("Avi File (*.avi)\0*.avi\0")
-									_T("Animated GIF (*.gif)\0*.gif\0")						
-									_T("Multi-Page TIFF (*.tif)\0*.tif\0")
-									_T("Pdf Document (*.pdf)\0*.pdf\0")
-									_T("Text Document (*.txt)\0*.txt\0");
-		}
-		else
-		{
-			fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
-									_T("Avi File (*.avi)\0*.avi\0")
-									_T("Animated GIF (*.gif)\0*.gif\0")						
-									_T("Multi-Page TIFF (*.tif)\0*.tif\0")
-									_T("Pdf Document (*.pdf)\0*.pdf\0");
-		}
+		fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
+								_T("Avi File (*.avi)\0*.avi\0")
+								_T("Animated GIF (*.gif)\0*.gif\0")						
+								_T("Multi-Page TIFF (*.tif)\0*.tif\0")
+								_T("Pdf Document (*.pdf)\0*.pdf\0");
 		CString defextension = defext;
 		defextension.MakeLower();
 		if (defextension == _T("zip"))
@@ -2445,11 +2269,6 @@ void CBatchProcDlg::OnButtonDstFile()
 		else if (defextension == _T("pdf"))
 		{
 			fd.m_ofn.nFilterIndex = 5;
-		}
-		else if (defextension == _T("txt") &&
-				((CUImagerApp*)::AfxGetApp())->IsMODIAvailable())
-		{
-			fd.m_ofn.nFilterIndex = 6;
 		}
 		if (fd.DoModal() == IDOK)
 		{

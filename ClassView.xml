@@ -28,7 +28,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="70">
+<CLASSES COUNT="69">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -73,7 +73,6 @@
 <CLASS NAME="CMonochromeConversionDlg"/>
 <CLASS NAME="CNewDlg"/>
 <CLASS NAME="CNoVistaFileDlg"/>
-<CLASS NAME="COCRLanguageDlg"/>
 <CLASS NAME="COsdDlg"/>
 <CLASS NAME="COutVolDlg"/>
 <CLASS NAME="CPlayerToolBarDlg"/>
@@ -130,7 +129,7 @@
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Helpers">
-<FOLDERS COUNT="7">
+<FOLDERS COUNT="6">
 <FOLDER NAME="Twain">
 <FOLDERS COUNT="0"/>
 <CLASSES COUNT="41">
@@ -180,8 +179,6 @@
 <FOLDER NAME="Email">
 <FOLDERS COUNT="0"/>
 <CLASSES COUNT="22">
-<CLASS NAME="CPJNMD5"/>
-<CLASS NAME="CPJNMD5Hash"/>
 <CLASS NAME="WSOCKET_SOCK4_CONNECT_REQUEST"/>
 <CLASS NAME="WSOCKET_SOCKS4_CONNECT_REPLY"/>
 <CLASS NAME="WSOCKET_SOCKS5_BASE_REQUEST_DETAILS"/>
@@ -193,6 +190,8 @@
 <CLASS NAME="WSOCKET_SOCKS5_USERNAME_AUTHENTICATION_REPLY"/>
 <CLASS NAME="CMailState"/>
 <CLASS NAME="CBase64"/>
+<CLASS NAME="CPJNMD5"/>
+<CLASS NAME="CPJNMD5Hash"/>
 <CLASS NAME="CNTLMClientAuth"/>
 <CLASS NAME="CPJNSMPTBase64"/>
 <CLASS NAME="CPJNSMTPAddress"/>
@@ -222,30 +221,6 @@
 <CLASS NAME="_tagXMLEntitys"/>
 <CLASS NAME="_tagXMLNode"/>
 <CLASS NAME="_tagXmlEntity"/>
-</CLASSES>
-</FOLDER>
-<FOLDER NAME="Ocr">
-<FOLDERS COUNT="0"/>
-<CLASSES COUNT="19">
-<CLASS NAME="IDocument"/>
-<CLASS NAME="IImage"/>
-<CLASS NAME="IImages"/>
-<CLASS NAME="ILayout"/>
-<CLASS NAME="IMiDocSearch"/>
-<CLASS NAME="IMiDocView"/>
-<CLASS NAME="IMiFont"/>
-<CLASS NAME="IMiRect"/>
-<CLASS NAME="IMiRects"/>
-<CLASS NAME="IMiSearchCallback"/>
-<CLASS NAME="IMiSelectRect"/>
-<CLASS NAME="IMiSelectRects"/>
-<CLASS NAME="IMiSelectableImage"/>
-<CLASS NAME="IMiSelectableItem"/>
-<CLASS NAME="IWord"/>
-<CLASS NAME="IWords"/>
-<CLASS NAME="_IDocumentEvents"/>
-<CLASS NAME="_IImageEvents"/>
-<CLASS NAME="_IMiDocViewEvents"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Networking">
@@ -288,7 +263,6 @@
 </FOLDER>
 </FOLDERS>
 <CLASSES COUNT="29">
-<CLASS NAME="CWorkerThread"/>
 <CLASS NAME="CWindowInstance"/>
 <CLASS NAME="_SINSTANCE_DATA"/>
 <CLASS NAME="CAVDecoder"/>
@@ -316,6 +290,7 @@
 <CLASS NAME="tagMONITORINFOEXW"/>
 <CLASS NAME="CTrayIcon"/>
 <CLASS NAME="CTryEnterCriticalSection"/>
+<CLASS NAME="CWorkerThread"/>
 <CLASS NAME="CXThemeHelper"/>
 </CLASSES>
 </FOLDER>

@@ -522,10 +522,6 @@ SOURCE=.\NumSpinCtrl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\OCRLanguageDlg.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\OddButton.cpp
 # End Source File
 # Begin Source File
@@ -1124,10 +1120,6 @@ SOURCE=.\MDIClientWnd.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MDIVWCTL.tlh
-# End Source File
-# Begin Source File
-
 SOURCE=.\MJPEGEncoder.h
 # End Source File
 # Begin Source File
@@ -1169,10 +1161,6 @@ SOURCE=.\NumEdit.h
 # Begin Source File
 
 SOURCE=.\NumSpinCtrl.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\OCRLanguageDlg.h
 # End Source File
 # Begin Source File
 

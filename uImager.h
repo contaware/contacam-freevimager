@@ -20,7 +20,6 @@
 #include "WorkerThread.h"
 #include "XmpDlg.h"
 #include "SettingsXml.h"
-#include "MDIVWCTL.tlh"
 
 // Fullscreen Browser
 #define FULLSCREENBROWSER_NOEXT							_T("FullscreenBrowser")
@@ -809,16 +808,6 @@ public:
 	// Do start from service
 	BOOL m_bDoStartFromService;
 #endif
-
-	// MODI OCR
-
-	// This function checks MODI is available in the system or not
-	BOOL IsMODIAvailable();
-
-	// This function uses MODI to OCR content of the image
-	BOOL OCRByMODI(	const CString& sFileName,
-					CString& sText,
-					enum MiLANGUAGES LangId = miLANG_SYSDEFAULT);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

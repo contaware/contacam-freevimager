@@ -91,7 +91,6 @@ public:
 		protected:
 			CAnimGifSave* m_pAnimGifSave;
 			TIFF* m_TiffOutFile;
-			CString m_sOcrText;
 			CDib m_FirstDib;
 			CDib m_Dib;
 			CString m_sTempOutputFileName;
@@ -110,9 +109,6 @@ public:
 									CString sInFileName,
 									CString sOutFileName);
 			void AddToOutputPdf(	int nFilesCount,
-									CString sInFileName,
-									CString sOutFileName);
-			void AddToOutputOcr(	int nFilesCount,
 									CString sInFileName,
 									CString sOutFileName);
 			void DoRename(	int& num,
@@ -287,7 +283,6 @@ public:
 	CStaticLink m_InputDirLabel;
 	CStaticLink m_OutputDirLabel;
 	CStaticLink m_OutputFileNameLabel;
-	enum MiLANGUAGES m_lOcrLangId;
 
 protected:
 	// Settings

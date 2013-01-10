@@ -3921,18 +3921,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,122,5,36,14
 END
 
-IDD_OCR_LANGUAGE DIALOGEX 0, 0, 114, 46
-STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Select Document Language"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    COMBOBOX        IDC_COMBO_LANGUAGE,7,7,100,214,CBS_DROPDOWNLIST | 
-                    WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,7,25,44,14
-    PUSHBUTTON      "Cancel",IDCANCEL,57,25,50,14
-END
-
 IDD_PICTUREPRINTPREVIEW DIALOG DISCARDABLE  0, 0, 418, 20
 STYLE DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg"
@@ -5164,14 +5152,6 @@ BEGIN
         BOTTOMMARGIN, 19
     END
 
-    IDD_OCR_LANGUAGE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 107
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 39
-    END
-
     IDD_PICTUREPRINTPREVIEW, DIALOG
     BEGIN
         VERTGUIDE, 176
@@ -5820,8 +5800,6 @@ BEGIN
     IDS_MULTILANG_1355      "Sound Input Cannot Determine Card Capabilities!"
     IDS_MULTILANG_1356      "Sound Output Cannot Determine Card Capabilities!"
     IDS_MULTILANG_1357      "Error while converting to Pdf"
-    IDS_MULTILANG_1358      "Unable to write text"
-    IDS_MULTILANG_1359      "Unable to recognize text"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -6448,31 +6426,6 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_STRING1520          "English"
-    IDS_STRING1521          "French"
-    IDS_STRING1522          "German"
-    IDS_STRING1523          "Italian"
-    IDS_STRING1524          "Spanish"
-    IDS_STRING1525          "Portuguese"
-    IDS_STRING1526          "Czech"
-    IDS_STRING1527          "Greek"
-    IDS_STRING1528          "Hungarian"
-    IDS_STRING1529          "Polish"
-    IDS_STRING1530          "Dutch"
-    IDS_STRING1531          "Danish"
-    IDS_STRING1532          "Finnish"
-    IDS_STRING1533          "Swedish"
-    IDS_STRING1534          "Norwegian"
-    IDS_STRING1535          "Russian"
-END
-
-STRINGTABLE DISCARDABLE 
-BEGIN
-    IDS_STRING1536          "Turkish"
-    IDS_STRING1537          "Japanese"
-    IDS_STRING1538          "Korean"
-    IDS_STRING1539          "Simplified Chinese"
-    IDS_STRING1540          "Traditional Chinese"
     IDS_STRING1541          "Low"
     IDS_STRING1542          "Medium"
     IDS_STRING1543          "Good"

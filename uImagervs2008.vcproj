@@ -2384,10 +2384,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\OCRLanguageDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="OddButton.cpp"
 				>
 				<FileConfiguration
@@ -4431,10 +4427,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MDIVWCTL.tlh"
-				>
-			</File>
-			<File
 				RelativePath=".\MJPEGEncoder.h"
 				>
 			</File>
@@ -4476,10 +4468,6 @@
 			</File>
 			<File
 				RelativePath="NumSpinCtrl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OCRLanguageDlg.h"
 				>
 			</File>
 			<File
