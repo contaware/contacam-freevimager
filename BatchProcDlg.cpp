@@ -5671,26 +5671,6 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 			::AfxGetMainFrame()->m_pIMAPI2Dlg->SetFocus();
 		}
 	}
-	// Burn with Nero
-	else if (CanBurnWithNero())
-	{
-		// Get Module Name
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return;
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sNeroBurnExe = CString(szDrive) + CString(szDir) + CString(NEROBURNNAME);
-
-		// Start Nero Burn
-		::ShellExecute(	NULL,
-						_T("open"),
-						sNeroBurnExe,
-						_T("\"") + m_sDst + _T("\""),
-						NULL,
-						SW_SHOWNORMAL);
-	}
 	// Can burn with IMAPI, but first suggest to update to IMAPI2
 	else if (((CUImagerApp*)::AfxGetApp())->HasRecordableDrive())
 	{
@@ -5723,8 +5703,7 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 	else
 	{
 		CString sText;
-		sText.Format(ML_STRING(1380, "To automatically Burn the Slideshow you need at least Windows XP\n") +
-					ML_STRING(1381, "or the software Nero Burning ROM from Ahead.\n") +
+		sText.Format(ML_STRING(1380, "To automatically Burn the Slideshow you need at least Windows XP.\n") +
 					ML_STRING(1382, "To proceed anyway open your preferred CD / DVD maker Tool\n") +
 					ML_STRING(1383, "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."),
 					m_sDst);
@@ -5825,38 +5804,6 @@ void CBatchProcDlg::UpdateDstFileSize()
 		m_sDstFileSize = sFileSize + _T('\n') + sFilesCount;
 		PostMessage(WM_SET_DST_SIZE, 0, 0);
 	}
-}
-
-BOOL CBatchProcDlg::CanBurnWithNero()
-{
-	// Check Helper Program Presence
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-		return FALSE;
-	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	CString sNeroBurnExe = CString(szDrive) + CString(szDir) + CString(NEROBURNNAME);
-	if (!::IsExistingFile(sNeroBurnExe))
-		return FALSE;
-
-	// Get the NeroAPI Location From Registry
-	CString sNeroAPIDll = ::GetRegistryStringValue(	HKEY_LOCAL_MACHINE,
-													_T("Software\\Ahead\\shared"),
-													_T("NeroAPI"));
-
-	// Check For the Presence of the Nero API Dll
-	if (sNeroAPIDll != _T(""))
-	{
-		sNeroAPIDll.TrimRight(_T('\\'));
-		sNeroAPIDll += _T("\\NeroAPI.dll");
-		if (::IsExistingFile(sNeroAPIDll))
-			return TRUE;
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
 }
 
 void CBatchProcDlg::OnCancel() 

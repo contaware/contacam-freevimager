@@ -2219,7 +2219,7 @@ STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Connect To"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO_HOST,14,17,184,49,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -5826,8 +5826,7 @@ BEGIN
     IDS_MULTILANG_1377      "(see Start.exe, Settings.xml and autorun.inf)"
     IDS_MULTILANG_1378      "Before Viewing the Slideshow do Step 1:\nAdd the Slideshow EXE."
     IDS_MULTILANG_1379      "Before Burning the Slideshow do Step 1:\nAdd the Slideshow EXE."
-    IDS_MULTILANG_1380      "To automatically Burn the Slideshow you need at least Windows XP\n"
-    IDS_MULTILANG_1381      "or the software Nero Burning ROM from Ahead.\n"
+    IDS_MULTILANG_1380      "To automatically Burn the Slideshow you need at least Windows XP.\n"
     IDS_MULTILANG_1382      "To proceed anyway open your preferred CD / DVD maker Tool\n"
     IDS_MULTILANG_1383      "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."
     IDS_MULTILANG_1384      "Loading..."

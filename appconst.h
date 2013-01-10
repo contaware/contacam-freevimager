@@ -35,7 +35,6 @@
 #define APPVERSION										_T("4.3.0")
 #define SLIDESHOWNAME									_T("Start.exe")
 #define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
-#define NEROBURNNAME									_T("NeroBurn.exe")
 
 // Company
 #define MYCOMPANY										_T("Contaware")

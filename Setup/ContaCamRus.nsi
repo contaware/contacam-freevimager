@@ -291,7 +291,6 @@ stopend:
 !endif
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
-  File "..\NeroBurn\Release\NeroBurn.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"

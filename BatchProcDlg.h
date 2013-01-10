@@ -357,9 +357,6 @@ protected:
 	// Update Dst File Size
 	void UpdateDstFileSize();
 
-	// Nero Burn API Available
-	BOOL CanBurnWithNero();
-
 	// Starting with version 4.71, the Shell and common
 	// controls DLLs, among others, began exporting DllGetVersion
 	int GetComCtl32MajorVersion();

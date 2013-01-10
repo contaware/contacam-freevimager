@@ -2,7 +2,6 @@ Both
 ----
 - Only installers with Tutorials
 - Drop support for old Win9x
-- Remove Nero Burn
 
 ContaCam Program
 ----------------
@@ -10,6 +9,7 @@ ContaCam Program
   snapshot_thumb.jpg filenames
 - More compact storing in registry / ini file of detection zones
 - Use ffmpeg to save snapshots
+- Always overwrite web files on device start
 
 ContaCam Web Interface
 ----------------------

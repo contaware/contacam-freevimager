@@ -234,7 +234,6 @@ Section "${APPNAME_NOEXT} Program (required)"
 !endif
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
-  File "..\NeroBurn\Release\NeroBurn.exe"
 !ifdef WITH_TUTORIALS
   File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
   File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
