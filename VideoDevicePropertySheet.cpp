@@ -33,13 +33,11 @@ CPropertySheet(MakeTitle(pDoc), NULL)
 	m_GeneralPropertyPage.SetDoc(pDoc);
 	m_SnapshotPropertyPage.SetDoc(pDoc);
 	m_MovementDetectionPropertyPage.SetDoc(pDoc);
-	m_NetworkPropertyPage.SetDoc(pDoc);
 
 	// Add pages
 	AddPage(&m_GeneralPropertyPage);
 	AddPage(&m_SnapshotPropertyPage);
 	AddPage(&m_MovementDetectionPropertyPage);
-	AddPage(&m_NetworkPropertyPage);
 }
 
 CVideoDevicePropertySheet::~CVideoDevicePropertySheet()
@@ -64,8 +62,8 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 	{
 		switch(pDoc->m_nNetworkDeviceTypeMode)
 		{
-			case CVideoDeviceDoc::INTERNAL_UDP	: sTitle += CString(_T(" , ")) + ML_STRING(1547, "Internal UDP Server"); break;
-			case CVideoDeviceDoc::OTHERONE		:
+			case CVideoDeviceDoc::OTHERONE_SP		:
+			case CVideoDeviceDoc::OTHERONE_CP		:
 			{
 				int nHttpGetFrameLocationPos = pDoc->m_nHttpGetFrameLocationPos; // make a local copy because it is updated by another thread
 				if (nHttpGetFrameLocationPos > 0 && nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())

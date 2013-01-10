@@ -10,7 +10,6 @@
 
 // *** Remember To Change the Version in this file                     ***
 // *** Remember To Change the Version in uImager.rc2                   ***
-// *** Remember To Change the Version in RemoteCam and RemoteCamViewer ***
 // *** (version and about dialog resources)                            ***
 // *** Remember To Change the Version in the Installer                 ***
 // *** Update the History.txt files                                    ***

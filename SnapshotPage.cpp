@@ -6,7 +6,6 @@
 #include "SnapshotPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "NetFrameHdr.h"
 #include "NoVistaFileDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"

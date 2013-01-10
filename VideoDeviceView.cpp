@@ -48,7 +48,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
 	ON_MESSAGE(WM_DIRECTSHOW_GRAPHNOTIFY, OnDirectShowGraphNotify)
-	ON_MESSAGE(WM_THREADSAFE_SENDFRAME_MSG, OnThreadSafeSendFrameMsg)
 END_MESSAGE_MAP()
 
 	
@@ -323,22 +322,6 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	pDoc->m_nCurrentDetectionZoneSize = pDoc->m_nDetectionZoneSize;
 
 	return 1;
-}
-
-afx_msg LONG CVideoDeviceView::OnThreadSafeSendFrameMsg(WPARAM wparam, LPARAM lparam)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (wparam)
-	{
-		CString* pStr = (CString*)wparam;
-		pDoc->m_sSendFrameMsg = *pStr;
-		delete pStr;
-		pDoc->ShowSendFrameMsg();
-		return 1;
-	}
-	else
-		return 0;
 }
 
 BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC)

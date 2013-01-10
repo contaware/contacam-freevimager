@@ -278,7 +278,6 @@ stopend:
   RMDir /r "$INSTDIR\microapache"
     
   ; Create Directories
-  CreateDirectory "$INSTDIR\ActiveX"
   CreateDirectory "$INSTDIR\Tutorials"
   
   ; Source Program File Path
@@ -297,9 +296,6 @@ stopend:
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
   SetOverwrite on
-  File "/oname=ActiveX\RemoteCam.htm" "..\ActiveX\RemoteCam.htm"
-  File "/oname=ActiveX\RemoteCam.ocx" "..\ActiveX\RemoteCam.ocx"
-  File "/oname=ActiveX\RemoteCamViewer.exe" "..\ActiveX\RemoteCamViewer.exe"
 !ifdef WITH_TUTORIALS
   File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
   File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
@@ -368,9 +364,6 @@ unicode_end:
   ; Firewall add to the authorized list
   nsisFirewall::AddAuthorizedApplication "$INSTDIR\${APPNAME_EXT}" "${APPNAME_NOEXT}"
   nsisFirewall::AddAuthorizedApplication "$INSTDIR\microapache\mapache.exe" "Micro Apache Server (used by ${APPNAME_NOEXT})"
-  
-  ; Register ocx
-  RegDLL "$INSTDIR\ActiveX\RemoteCam.ocx"
   
   ; File Associations
   
@@ -612,9 +605,6 @@ uninstallsrvandstopitend:
   ; Firewall remove from the authorized list
   nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\${APPNAME_EXT}"
   nsisFirewall::RemoveAuthorizedApplication "$INSTDIR\microapache\mapache.exe"
-  
-  ; Unregister ocx
-  UnRegDLL "$INSTDIR\ActiveX\RemoteCam.ocx"
 
   ; Remove autostart registry value
   DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "${APPNAME_NOEXT}"

@@ -18,11 +18,6 @@ copy ..\Translation\FreeVimagerwDEU.exe .\%CURRENTVERSION%\german\FreeVimagerDeu
 copy ..\Translation\FreeVimagerwITA.exe .\%CURRENTVERSION%\italian\FreeVimagerIta-%CURRENTVERSION%.exe
 copy ..\Translation\FreeVimagerwRUS.exe .\%CURRENTVERSION%\russian\FreeVimagerRus-%CURRENTVERSION%.exe
 
-REM Update ActiveX directory (this must be done before starting with all the ContaCam nsis)
-copy ..\bin\RemoteCam\ReleaseNoDLL\RemoteCam.ocx ..\ActiveX\RemoteCam.ocx
-copy ..\bin\RemoteCamViewer\ReleaseNoDLL\RemoteCamViewer.exe ..\ActiveX\RemoteCamViewer.exe
-upx --ultra-brute ..\ActiveX\RemoteCam.ocx
-
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT /DWITH_TUTORIALS ContaCam.nsi

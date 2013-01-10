@@ -2314,37 +2314,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="NetworkPage.cpp"
-				>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\NewDlg.cpp"
 				>
 			</File>
@@ -4491,14 +4460,6 @@
 			</File>
 			<File
 				RelativePath="NetCom.h"
-				>
-			</File>
-			<File
-				RelativePath="NetFrameHdr.h"
-				>
-			</File>
-			<File
-				RelativePath="NetworkPage.h"
 				>
 			</File>
 			<File

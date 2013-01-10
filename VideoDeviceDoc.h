@@ -21,7 +21,6 @@
 #include "AVDecoder.h"
 #include "MJPEGEncoder.h"
 #include "YuvToRgb.h"
-#include "NetFrameHdr.h"
 #include "SortableFileFind.h"
 #include "FTPTransfer.h"
 #include "HostPortDlg.h"
@@ -40,7 +39,6 @@ class CVideoAviDoc;
 class CGeneralPage;
 class CSnapshotPage;
 class CVideoDevicePropertySheet;
-class CNetworkPage;
 class CMovementDetectionPage;
 
 // General Settings
@@ -168,45 +166,6 @@ class CMovementDetectionPage;
 #define PHPCONFIG_MAX_THUMSPERPAGE			36
 #define PHPCONFIG_DEFAULT_THUMSPERPAGE		27
 
-// UDP Networking
-/*
-IPv4 and IPv6 define minimum reassembly buffer size, the minimum 
-datagram size that we are guaranteed any implementation must support. 
-For IPv4, this is 576 bytes. IPv6 raises this to 1500 bytes.
-
-This pretty much means that you want to limit your datagram size to 
-under 576 if you work over public internet. 
-
-It is true that a typical IPv4 header is 20 bytes, and the UDP header is 
-8 bytes. However it is possible to include IP options which can increase 
-the size of the IP header to as much as 60 bytes. In addition, sometimes 
-it is necessary for intermediate nodes to encapsulate datagrams inside 
-of another protocol such as IPsec (used for VPNs and the like) in order 
-to route the packet to its destination. So if you do not know the MTU on 
-your particular network path, it is best to leave a reasonable margin 
-for other header information that you may not have anticipated. A 
-512-byte UDP payload is generally considered to do that, although even 
-that does not leave quite enough space for a maximum size IP header.
-*/
-#define DEFAULT_SENDFRAME_FRAGMENT_SIZE		512			// bytes
-#define SENDFRAME_MIN_FRAGMENT_SIZE			256			// bytes
-#define SENDFRAME_MAX_FRAGMENT_SIZE			1400		// bytes
-#define DEFAULT_SENDFRAME_DATARATE			300000		// Bits / Sec
-#define SENDFRAME_MIN_DATARATE				5000		// Bits / Sec
-#define SENDFRAME_MAX_DATARATE				5000000		// Bits / Sec
-#define SENDFRAME_MIN_FREQDIV				1
-#define SENDFRAME_MAX_FREQDIV				99
-#define SENDFRAME_MIN_CONNECTIONS			1
-#define SENDFRAME_MAX_CONNECTIONS			99
-#define DEFAULT_SENDFRAME_CONNECTIONS		8
-#define SENDFRAME_MAX_CONNECTION_TIMEOUT	10000U		// ms
-#define SENDFRAME_EXTRADATA_SENDRATE		5000U		// ms
-#define SENDFRAME_MIN_KEYFRAME_TIMEDIFF		500U		// Minimum time difference between keyframes in ms
-#define SENDFRAME_MAX_KEYFRAME_TIMEDIFF		5000U		// Maximum time difference between keyframes in ms
-#define SENDFRAME_MIN_KEYFRAME_BYTESDIFF	100U		// Minimum bytes difference between keyframes
-#define SENDFRAME_AUTH_TIMEOUT				60000U		// ms
-#define GETFRAME_GENERATOR_RATE				3000U		// ms
-
 // Http Networking
 #define DEFAULT_TCP_PORT					80
 #define HTTP_MAX_HEADER_SIZE				1400
@@ -255,133 +214,6 @@ public:
 		FILES_TO_UPLOAD_AVI_GIF		= 3,
 		FILES_TO_UPLOAD_SWF_GIF		= 4,
 		FILES_TO_UPLOAD_AVI_SWF_GIF	= 5
-	};
-
-	// Get Frame Generator Class
-	class CGetFrameGenerator : public CNetCom::CIdleGenerator
-	{
-		public:
-			CGetFrameGenerator() {;};
-			BOOL Generate(CNetCom* pNetCom);
-	};
-
-	// The Networking Get Frame Parser & Processor Class
-	class CGetFrameParseProcess : public CNetCom::CParseProcess
-	{
-		public:
-			CGetFrameParseProcess(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc; Clear();};
-			virtual ~CGetFrameParseProcess() {Free();};
-			void Close() {Free(); Clear();};
-			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
-			__forceinline DWORD GetLostCount() const {return m_dwLostCount;};
-#ifdef _DEBUG
-			void TraceReSendCount();
-#endif
-
-		protected:
-			void Free() {	for (DWORD dwFrame = 0U ; dwFrame < NETFRAME_MAX_FRAMES ; dwFrame++)
-								FreeFrameFragments(dwFrame);
-							if (m_pExtradata)
-								av_freep(&m_pExtradata);
-							m_nExtradataSize = 0;
-							m_nMaxExtradata = 0;
-							FreeAVCodec();};
-			void Clear() {	for (DWORD dwFrame = 0U ; dwFrame < NETFRAME_MAX_FRAMES ; dwFrame++)
-							{
-								m_nTotalFragments[dwFrame] = 0;
-								m_dwUpTime[dwFrame] = 0U;
-								m_dwFrameSize[dwFrame] = 0U;
-								m_wFrameSeq[dwFrame] = 0U;
-								m_bKeyFrame[dwFrame] = FALSE;
-							}
-							memset(&m_ReSendCount, 0, NETFRAME_RESEND_ARRAY_SIZE);
-							memset(&m_ReSendCountDown, 0, NETFRAME_RESEND_ARRAY_SIZE);
-							memset(m_Fragment, 0, sizeof(m_Fragment));
-							m_dwPingRT = 0U;
-							m_dwLostCount = 0U;
-							m_dwLastReSendUpTime = 0U;
-							m_dwLastFrameUpTime = 0U;
-							m_dwAvgFrameTime = NETFRAME_MIN_FRAME_TIME;
-							m_dwLastPresentationUpTime = 0U;
-							m_wPrevSeq = 0U;
-							m_bInitialized = FALSE;
-							m_bFirstFrame = TRUE;
-							m_bSeekToKeyFrame = FALSE;
-							m_pCodec = NULL;
-							m_pCodecCtx = NULL;
-							m_CodecId = CODEC_ID_NONE;
-							m_pFrame = NULL;
-							m_pOutbuf = NULL;
-							m_nOutbufSize = 0;
-							m_pExtradata = NULL;
-							m_nExtradataSize = 0;
-							m_nMaxExtradata = 0;
-							m_dwEncryptionType = 0U;};
-			BOOL SendConfirmation(	CNetCom* pNetCom,
-									DWORD dwUpTime,
-									DWORD dwFrameSize,
-									WORD wSeq,
-									BOOL bKeyFrame);
-			BOOL SendLostCount(	CNetCom* pNetCom,
-								WORD wFirstLostSeq,
-								WORD wLastLostSeq,
-								WORD wLostCount);
-			__forceinline BOOL ReSendFrame(CNetCom* pNetCom, WORD wSeq);
-			__forceinline BYTE ReSendCountDown(	int nReSendCount,
-												int nCount,
-												int nCountOffset);
-			__forceinline DWORD CalcFrameSize(DWORD dwFrame);
-			__forceinline BOOL IsFrameReady(WORD wSeq);
-			__forceinline void FreeFrameFragments(DWORD dwFrame)
-			{
-				for (int i = 0 ; i < NETFRAME_MAX_FRAGMENTS ; i++)
-				{
-					if (m_Fragment[dwFrame][i])
-					{
-						delete m_Fragment[dwFrame][i];
-						m_Fragment[dwFrame][i] = NULL;
-					}
-				}
-			}
-			// Use the following count function and not a variable
-			// because of possible duplicated fragments!
-			__forceinline int GetReceivedFragmentsCount(DWORD dwFrame);
-			BOOL OpenAVCodec(enum CodecID CodecId, int width, int height);
-			void FreeAVCodec(BOOL bNoClose = FALSE);
-			BOOL DecodeAndProcess(LPBYTE pFrame, DWORD dwFrameSize);
-#ifdef _DEBUG
-			void TraceIncompleteFrame(DWORD dwFrame);
-#endif
-
-			CVideoDeviceDoc* m_pDoc;
-			AVCodec* m_pCodec;
-			AVCodecContext* m_pCodecCtx;
-			AVFrame* m_pFrame;
-			uint8_t* m_pOutbuf;
-			int m_nOutbufSize;		// In Bytes
-			uint8_t* m_pExtradata;
-			int m_nMaxExtradata;
-			int m_nExtradataSize;
-			CNetCom::CBuf* m_Fragment[NETFRAME_MAX_FRAMES][NETFRAME_MAX_FRAGMENTS];
-			int m_nTotalFragments[NETFRAME_MAX_FRAMES];
-			DWORD m_dwFrameSize[NETFRAME_MAX_FRAMES];
-			DWORD m_dwUpTime[NETFRAME_MAX_FRAMES];
-			DWORD m_dwPingRT;
-			volatile DWORD m_dwLostCount;
-			DWORD m_dwLastReSendUpTime;
-			DWORD m_dwLastFrameUpTime;
-			DWORD m_dwLastPresentationUpTime;
-			DWORD m_dwAvgFrameTime;
-			WORD m_wFrameSeq[NETFRAME_MAX_FRAMES];
-			WORD m_wPrevSeq;
-			BOOL m_bKeyFrame[NETFRAME_MAX_FRAMES];
-			BYTE m_ReSendCount[NETFRAME_RESEND_ARRAY_SIZE];
-			BYTE m_ReSendCountDown[NETFRAME_RESEND_ARRAY_SIZE];
-			BOOL m_bInitialized;
-			BOOL m_bFirstFrame;
-			BOOL m_bSeekToKeyFrame;
-			enum CodecID m_CodecId;
-			DWORD m_dwEncryptionType;
 	};
 
 	// The Http Networking Get Frame Parser & Processor Class
@@ -479,173 +311,6 @@ public:
 			DWORD m_dwI420ImageSize;
 	};
 	typedef CList<CHttpGetFrameParseProcess*,CHttpGetFrameParseProcess*> NETCOMPARSEPROCESSLIST;
-
-	// Re-Send Frame
-	class CReSendFrame
-	{
-		public:
-			CReSendFrame(	BYTE* Data,
-							int Size,
-							DWORD dwFrameUpTime,
-							WORD wFrameSeq,
-							BOOL bKeyFrame)
-						{
-							if (Data && Size)
-							{
-								m_Data = new BYTE[Size];
-								if (m_Data)
-								{
-									memcpy(m_Data, Data, Size);
-									m_Size = Size;
-								}
-							}
-							m_dwFrameUpTime = dwFrameUpTime;
-							m_wFrameSeq = wFrameSeq;
-							m_bKeyFrame = bKeyFrame;
-						};
-			virtual ~CReSendFrame() {	if (m_Data)
-											delete [] m_Data;
-									};
-			BYTE* m_Data;
-			int m_Size;
-			DWORD m_dwFrameUpTime;
-			BOOL m_bKeyFrame;
-			WORD m_wFrameSeq;
-	};
-	typedef CList<CReSendFrame*,CReSendFrame*> NETCOMRESENDFRAMELIST;
-
-	// The Networking Send Frame Parser & Processor Class
-	class CSendFrameParseProcess : public CNetCom::CParseProcess
-	{
-		public:
-			class CSendFrameToEntry
-			{
-				public:
-					CSendFrameToEntry() {	memset(&m_Addr, 0, sizeof(sockaddr_in6));
-											Clear();};
-					virtual ~CSendFrameToEntry() {;};
-					__forceinline void Clear() {m_bSendingKeyFrame = FALSE;
-												m_bDoSendFirstFrame = FALSE;
-												m_dwSentFrameCount = 0U;
-												m_dwReSentFrameCount = 0U;
-												m_dwLostFrameCount = 0U;
-												m_dwConfirmedFrameCount = 0U;
-												m_bAuthSent = FALSE;
-												m_bAuthFailed = FALSE;
-												m_bSet = FALSE;};
-					__forceinline BOOL IsAddrSet() {return m_bSet;};
-					__forceinline void SetCurrentKeepAliveUpTime() {m_dwKeepAliveUpTime = ::timeGetTime();};
-					__forceinline BOOL IsKeepAliveOlderThan(DWORD dwMilliSeconds) {return (::timeGetTime() - m_dwKeepAliveUpTime > dwMilliSeconds);};
-					__forceinline void SetAddr(sockaddr* pAddr) {memcpy(&m_Addr, pAddr, SOCKADDRSIZE(pAddr)); m_bSet = TRUE;};
-					__forceinline sockaddr* GetAddrPtr() {return (sockaddr*)(&m_Addr);};
-					__forceinline BOOL IsAddrEqualTo(sockaddr* pAddr) {return IsAddrSet() ? (memcmp(pAddr, &m_Addr, SOCKADDRSIZE(pAddr)) == 0) : FALSE;};
-
-					// Sending Keyframe Flag
-					volatile BOOL m_bSendingKeyFrame;
-
-					// Do Init Sending First Frame
-					volatile BOOL m_bDoSendFirstFrame;
-
-					// Variable updated with each Sent Frame
-					volatile DWORD m_dwSentFrameCount;
-
-					// Variable updated with each Re-Sent Frame
-					volatile DWORD m_dwReSentFrameCount;
-
-					// Client informs about the lost frames with a message
-					volatile DWORD m_dwLostFrameCount;
-					
-					// Variables Update with each Confirmed Frame
-					volatile DWORD m_dwConfirmedFrameCount;
-
-					// Authentication up-time
-					volatile DWORD m_dwAuthUpTime;
-
-					// Authentication sequence number
-					volatile WORD m_wAuthSeq;
-
-					// Authentication request has been sent
-					volatile BOOL m_bAuthSent;
-					
-					// Last received authentication was wrong
-					volatile BOOL m_bAuthFailed;
-
-				protected:
-					volatile DWORD m_dwKeepAliveUpTime;			// Up-Time of the last received keep alive packet 
-					sockaddr_in6 m_Addr;						// Address to which to send frames, maybe IP4 or IP6
-					volatile BOOL m_bSet;						// Is Table Entry Set (Valid)
-			};
-
-		public:
-			CSendFrameParseProcess(CVideoDeviceDoc* pDoc) {	::InitializeCriticalSection(&m_csSendToTable); 
-															m_pDoc = pDoc; Clear();};
-			virtual ~CSendFrameParseProcess() {FreeAVCodec(); ::DeleteCriticalSection(&m_csSendToTable);};
-			void Close() {FreeAVCodec(); Clear();};
-			virtual BOOL Parse(CNetCom* pNetCom, BOOL bLastCall);
-			void ClearTable();
-			BOOL OpenAVCodec(LPBITMAPINFO pBMI);
-			void FreeAVCodec(BOOL bNoClose = FALSE);
-			__forceinline double GetSendFrameRate() const {		return m_pDoc->m_dEffectiveFrameRate > 0.0 ?
-																m_pDoc->m_dEffectiveFrameRate / (double)m_nCurrentFreqDiv :
-																m_pDoc->m_dFrameRate / (double)m_nCurrentFreqDiv;};
-			__forceinline double GetSendKeyFrameRate() const {	return m_pCodecCtx->gop_size > 0 ?
-																GetSendFrameRate() / m_pCodecCtx->gop_size :
-																GetSendFrameRate();};
-			int Encode(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
-			__forceinline BOOL IsKeyFrame() const {return m_pCodecCtx && m_pCodecCtx->coded_frame ?
-								(m_pCodecCtx->coded_frame->key_frame == 1 ? TRUE : FALSE) : FALSE;};
-			__forceinline unsigned char* GetEncodedDataBuf() const {return (unsigned char*)m_pOutbuf;};
-
-			CSendFrameToEntry m_SendToTable[SENDFRAME_MAX_CONNECTIONS];
-			CRITICAL_SECTION m_csSendToTable;
-			
-		protected:
-			BOOL Authenticate(	CNetCom* pNetCom,
-								CNetCom::CBuf* pBuf,
-								NetFrameHdrPingAuth* pHdr,
-								CSendFrameToEntry* pTableEntry);
-			void Clear() {	m_pCodec = NULL;
-							m_pCodecCtx = NULL;
-							m_CodecID = CODEC_ID_H263P;	// Working well: CODEC_ID_MJPEG, CODEC_ID_H263P, CODEC_ID_MPEG4
-														// CODEC_ID_THEORA not optimal because it sends the quantization tables with
-														// the frames in the extra data field, that uses some bandwidth more!
-														// CODEC_ID_H263 is only working with standard resolution of 176 x 144 or 352 x 288						
-														// CODEC_ID_SNOW is locking with low resolutions...
-							m_pFrame = NULL;
-							m_pFrameI420 = NULL;
-							m_pImgConvertCtx = NULL;
-							m_pI420Buf = NULL;						
-							m_dwI420BufSize = 0;
-							m_dwI420ImageSize = 0;
-							memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
-							m_nCurrentDataRate = 0;
-							m_nCurrentSizeDiv = 0;
-							m_nCurrentFreqDiv = 1;
-							m_dCurrentSendFrameRate = 0.0;
-							m_pOutbuf = NULL;
-							m_nOutbufSize = 0;
-							m_dwEncryptionType = 0U;};
-
-			double m_dCurrentSendFrameRate;
-			CVideoDeviceDoc* m_pDoc;
-			AVCodec* m_pCodec;
-			AVCodecContext* m_pCodecCtx;
-			enum CodecID m_CodecID;
-			AVFrame* m_pFrame;
-			AVFrame* m_pFrameI420;
-			SwsContext* m_pImgConvertCtx;
-			LPBYTE m_pI420Buf;						
-			DWORD m_dwI420BufSize;
-			DWORD m_dwI420ImageSize;
-			BITMAPINFOFULL m_CurrentBMI;
-			int m_nCurrentDataRate;
-			int m_nCurrentSizeDiv;
-			int m_nCurrentFreqDiv;
-			uint8_t* m_pOutbuf;
-			int m_nOutbufSize;		// In Bytes
-			DWORD m_dwLastExtradataSendUpTime;
-			DWORD m_dwEncryptionType;
-	};
 
 	// The Record Audio File Thread Class
 	class CCaptureAudioThread : public CWorkerThread
@@ -1209,10 +874,10 @@ public:
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
 
-	// Networking Type and Mode
+	// Connect to the chosen Networking Type and Mode
 	typedef enum {
-		INTERNAL_UDP = 0,	// Internal UDP Server
-		OTHERONE,			// Other HTTP device
+		OTHERONE_SP = 0,	// Other HTTP device (mjpeg)
+		OTHERONE_CP,		// Other HTTP device (jpegs)
 		AXIS_SP,			// Axis Server Push (mjpeg)
 		AXIS_CP,			// Axis Client Poll (jpegs)
 		PANASONIC_SP,		// Panasonic Server Push (mjpeg)
@@ -1227,24 +892,6 @@ public:
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
 	BOOL ConnectGetFrame();
-	
-	// UDP Networking Functions
-	BOOL ConnectSendFrameUDP(CNetCom* pNetCom, int nPort);
-	BOOL ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort);
-	BOOL StoreUDPFrame(BYTE* Data, int Size, DWORD dwFrameUpTime, WORD wFrameSeq, BOOL bKeyFrame);
-	BOOL ReSendUDPFrame(sockaddr* pTo, WORD wFrameSeq);
-	void ClearReSendUDPFrameList();
-	BOOL SendUDPFrame(	CNetCom* pNetCom,
-						sockaddr* pTo, // if NULL send to all!
-						BYTE* Data,
-						int Size,
-						DWORD dwFrameUpTime,
-						WORD wFrameSeq,
-						BOOL bKeyFrame,
-						int nMaxFragmentSize,
-						BOOL bHighPriority,
-						BOOL bReSending);
-	void ShowSendFrameMsg();
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -1304,24 +951,8 @@ protected:
 	__forceinline double GetAppMemoryLoad();
 
 	// Networking Functions
+	void InitHttpGetFrameLocations();
 	static double GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode);
-	__forceinline BOOL SendUDPFragment(	CNetCom* pNetCom,
-										sockaddr* pTo, // if NULL send to all!
-										BYTE* Hdr,
-										int HdrSize,
-										BYTE* Data,
-										int DataSize,
-										BOOL bHighPriority,
-										BOOL bReSending);
-	__forceinline void SendUDPFragmentInternal(	CNetCom* pNetCom,
-												int nTo,
-												BYTE* Hdr,
-												int HdrSize,
-												BYTE* Data,
-												int DataSize,
-												BOOL bHighPriority,
-												BOOL bReSending);
-	void UpdateFrameSendToTableAndFlowControl(BOOL b4SecTick);
 
 	// Micro Apache Functions
 	static CString LoadMicroApacheConfigFile();
@@ -1362,7 +993,6 @@ public:
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()
-	CTime m_4SecTime;									// For the 4 sec tick in ProcessI420Frame()
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
@@ -1417,21 +1047,11 @@ public:
 	volatile int m_nVideoRecQualityBitrate;				// 0 -> use quality, 1 -> use bitrate
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
-	// Get Frame Networking for both UDP and HTTP
+	// HTTP Get Frame Networking
 	CNetCom* volatile m_pGetFrameNetCom;				// Get Frame Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Get Frame Network Device Type and Mode
 	CString m_sGetFrameVideoHost;						// Get Frame video host
 	volatile int m_nGetFrameVideoPort;					// Get Frame video port
-
-	// UDP Get Frame Networking
-	CGetFrameParseProcess* volatile m_pGetFrameParseProcess;// UDP Get Frame Parse & Process
-	CGetFrameGenerator* volatile m_pGetFrameGenerator;	// UDP Get Frame Generator (Keep Alive Pings)
-	volatile DWORD m_dwGetFrameMaxFrames;				// Buffering queue size
-	volatile BOOL m_bGetFrameDisableResend;				// Enable / Disable re-send feature
-	CString m_sGetFrameUsername;						// UDP Username
-	CString m_sGetFramePassword;						// UDP Password
-
-	// HTTP Get Frame Networking
 	CString m_sHttpGetFrameUsername;					// HTTP Username
 	CString m_sHttpGetFramePassword;					// HTTP Password
 	CHttpGetFrameParseProcess* volatile m_pHttpGetFrameParseProcess; // HTTP Get Frame Parse & Process
@@ -1442,32 +1062,6 @@ public:
 	CRITICAL_SECTION m_csHttpProcess;					// Critical Section for Processing Image Data
 	volatile int m_nHttpGetFrameLocationPos;			// Automatic camera type detection position
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
-
-	// Send Frame Networking
-	CNetCom* volatile m_pSendFrameNetCom;				// UDP Send Frame Instance
-	CSendFrameParseProcess* volatile m_pSendFrameParseProcess;// UDP Send Frame Parse & Process	
-	CRITICAL_SECTION m_csSendFrameNetCom;				// UDP Send Frame Critical Section
-	volatile BOOL m_bSendVideoFrame;					// Enable / Disable UDP Send Frame
-	volatile int m_nSendFrameVideoPort;					// Send Frame Video Port
-	volatile int m_nSendFrameMaxConnections;			// Current Send Frame max number of supported connections
-	volatile int m_nSendFrameMaxConnectionsConfig;		// Send Frame max number of supported connections configuration
-	volatile int m_nSendFrameMTU;						// Send Frame max fragment size
-	volatile int m_nSendFrameDataRate;					// Data Rate in Bits / Sec
-	volatile int m_nSendFrameSizeDiv;					// Size divider (0 = full size, 1 = half size, 2 = 1/4 size, ...)
-	volatile int m_nSendFrameFreqDiv;					// Frequency divider (1 = full freq., 2 = half freq., 3 = 1/3 freq., ...)
-	CString m_sSendFrameMsg;							// Send Frame message shown in networking tab
-	volatile int m_nSendFrameConnectionsCount;			// The current number of send frame active connections
-	volatile DWORD m_dwLastSendUDPKeyFrameUpTime;		// The up-time of the last sent key-frame
-	volatile WORD m_wLastSendUDPFrameSeq;				// The sequence of the last sent frame
-	NETCOMRESENDFRAMELIST m_ReSendUDPFrameList;			// List of frame to be re-sent if asked for
-	CRITICAL_SECTION m_csReSendUDPFrameList;			// Critical section of the re-send list
-	volatile DWORD m_dwMaxSendFrameFragmentsPerFrame;	// Max sent fragments / frame
-	volatile DWORD m_dwSendFrameTotalSentBytes;			// Both wrap around, no problem, using only the difference
-	volatile DWORD m_dwSendFrameTotalLastSentBytes;		// of them to calculate the overall datarate
-	volatile DWORD m_dwSendFrameOverallDatarate;		// bytes / sec
-	volatile double m_dSendFrameDatarateCorrection;		// Correction factor
-	CString m_sSendFrameUsername;						// UDP Username
-	CString m_sSendFramePassword;						// UDP Password
 
 	// Snapshot Vars
 	volatile BOOL m_bSnapshotLiveJpeg;					// Live snapshot save as Jpeg
@@ -1571,7 +1165,6 @@ public:
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;
 	CSnapshotPage* volatile m_pSnapshotPage;
-	CNetworkPage* volatile m_pNetworkPage;
 	CGeneralPage* volatile m_pGeneralPage;
 	CMovementDetectionPage* volatile m_pMovementDetectionPage;
 

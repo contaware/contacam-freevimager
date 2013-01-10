@@ -1565,11 +1565,10 @@ void CVideoDeviceChildFrame::OnClose()
 	// StartShutdown2()?
 	else if (!m_bShutdown2Started)
 	{
-		// The given wait time may be exceeded if a small framerate is set or if the UDP
-		// server has been closed just before this client. That's not a problem given that
-		// after MAX_CLOSE_CHILDFRAME_WAITTIME / 3 milliseconds that we called StopProcessFrame()
-		// we are not anymore inside ProcessI420Frame() and because of the StopProcessFrame() call
-		// we cannot enter ProcessI420Frame() again!
+		// The given wait time may be exceeded if a small framerate is set.
+		// That's not a problem given that after MAX_CLOSE_CHILDFRAME_WAITTIME / 3 milliseconds
+		// that we called StopProcessFrame() we are not anymore inside ProcessI420Frame() and
+		// because of the StopProcessFrame() call we cannot enter ProcessI420Frame() again!
 		if (IsShutdown1Done() ||
 			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
 			StartShutdown2();
@@ -1594,8 +1593,6 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", http get frame thread still alive");
 			if (pDoc->m_pGetFrameNetCom && !pDoc->m_pGetFrameNetCom->IsShutdown())
 				t += _T(", netcom get frame threads still alive");
-			if (pDoc->m_pSendFrameNetCom && !pDoc->m_pSendFrameNetCom->IsShutdown())
-				t += _T(", netcom udp send frame threads still alive");
 			if (pDoc->m_DeleteThread.IsAlive())
 				t += _T(", delete thread still alive");
 			if (pDoc->m_CaptureAudioThread.IsAlive())
@@ -1677,8 +1674,6 @@ void CVideoDeviceChildFrame::StartShutdown3()
 	// can be established)
 	if (pDoc->m_pGetFrameNetCom)
 		pDoc->m_pGetFrameNetCom->ShutdownConnection_NoBlocking();
-	if (pDoc->m_pSendFrameNetCom)
-		pDoc->m_pSendFrameNetCom->ShutdownConnection_NoBlocking();
 }
 
 void CVideoDeviceChildFrame::EndShutdown()
@@ -1704,16 +1699,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 		pDoc->m_pGetFrameNetCom = NULL;
 	}
 
-	// Frame Stream-Server Clean-Up
-	// (threads already stopped)
-	::EnterCriticalSection(&pDoc->m_csSendFrameNetCom);
-	if (pDoc->m_pSendFrameNetCom)
-	{
-		delete pDoc->m_pSendFrameNetCom;
-		pDoc->m_pSendFrameNetCom = NULL;
-	}
-	::LeaveCriticalSection(&pDoc->m_csSendFrameNetCom);
-
 	// Delete DirectShow Capture Object
 	if (pDoc->m_pDxCapture)
 	{
@@ -1727,7 +1712,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// m_pVideoDevicePropertySheet
 	// m_pGeneralPage
 	// m_pSnapshotPage
-	// m_pNetworkPage
 	// m_pMovementDetectionPage
 	//
 	if (pDoc->m_pVideoDevicePropertySheet)
@@ -1784,8 +1768,7 @@ BOOL CVideoDeviceChildFrame::IsShutdown3Done()
 	ASSERT_VALID(pDoc);
 
 	// Check whether the connections have been shutdown
-	if ((pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE) &&
-		(pDoc->m_pSendFrameNetCom ? pDoc->m_pSendFrameNetCom->IsShutdown() : TRUE))
+	if (pDoc->m_pGetFrameNetCom ? pDoc->m_pGetFrameNetCom->IsShutdown() : TRUE)
 		return TRUE;
 	else
 		return FALSE;

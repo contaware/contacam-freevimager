@@ -9,7 +9,6 @@
 
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
-#include "NetworkPage.h"
 #include "MovementDetectionPage.h"
 
 #ifdef VIDEODEVICEDOC
@@ -36,7 +35,6 @@ protected:
 // Attributes
 	CGeneralPage m_GeneralPropertyPage;
 	CSnapshotPage m_SnapshotPropertyPage;
-	CNetworkPage m_NetworkPropertyPage;
 	CMovementDetectionPage m_MovementDetectionPropertyPage;
 	CVideoDeviceDoc* m_pDoc;
 

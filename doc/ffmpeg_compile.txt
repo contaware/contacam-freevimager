@@ -9,10 +9,6 @@ cd /C/uimager/ffmpeg
 
 For FreeVimager and ContaCam:
 ./config_lgpl_nosnow
-
-For RemoteCam:
-./config_ocx
-(after the make command copy the libs to the RemoteCam dir!)
 		
 For available options:
 ./configure --help

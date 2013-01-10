@@ -1,12 +1,6 @@
 <CLV STREAM="ClassView Window" SIZE="9216" VERSION="0x00050001">
-<PROJECTS COUNT="12">
+<PROJECTS COUNT="10">
 <PROJECT NAME="Dib">
-<FOLDERS COUNT="0"/>
-</PROJECT>
-<PROJECT NAME="RemoteCam">
-<FOLDERS COUNT="0"/>
-</PROJECT>
-<PROJECT NAME="RemoteCamViewer">
 <FOLDERS COUNT="0"/>
 </PROJECT>
 <PROJECT NAME="Zip">
@@ -256,13 +250,8 @@
 </FOLDER>
 <FOLDER NAME="Networking">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="6">
+<CLASSES COUNT="1">
 <CLASS NAME="CNetCom"/>
-<CLASS NAME="NetFrameHdrPingAuth"/>
-<CLASS NAME="NetFrameHdrStruct"/>
-<CLASS NAME="NetFrameHdrStructConf"/>
-<CLASS NAME="NetFrameHdrStructFramesLost"/>
-<CLASS NAME="NetFrameStruct"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Burn">
@@ -350,10 +339,9 @@
 </FOLDER>
 <FOLDER NAME="PropertySheets">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="5">
+<CLASSES COUNT="4">
 <CLASS NAME="CGeneralPage"/>
 <CLASS NAME="CMovementDetectionPage"/>
-<CLASS NAME="CNetworkPage"/>
 <CLASS NAME="CSnapshotPage"/>
 <CLASS NAME="CVideoDevicePropertySheet"/>
 </CLASSES>

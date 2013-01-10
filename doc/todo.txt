@@ -1,27 +1,17 @@
-General:
---------
-- Enable translation for accelerators and move single letter
-  press to accelerators
+Both
+----
+- Only installers with Tutorials
+- Drop support for old Win9x
+- Remove Nero Burn
 
-Picture:
---------
-- Using numbers to jump to a specific file in current directory
-- Multi-page tiff print
+ContaCam Program
+----------------
+- Possibility to configure the ftp uploaded snapshot.jpg and
+  snapshot_thumb.jpg filenames
+- More compact storing in registry / ini file of detection zones
+- Use ffmpeg to save snapshots
 
-Snapshot:
----------
-- One button to take a manual snapshot of all open cams
-- Possibility to change the default snapshot.jpg name,
-  or at least change the ftp upload name
-
-Recording:
-----------
-- One button to start/stop manual rec of all open cams
-
-Networking:
------------
-- UDP networking stream also audio
-
-Web Interface:
---------------
-- Use jquerymobile for slider and other elements
+ContaCam Web Interface
+----------------------
+- Replace swf with html5 video (mp4 and webm formats)
+- Find a way to show avi detections if only avi selected

@@ -14,9 +14,8 @@
 // Window Message IDs
 #define WM_THREADSAFE_CAPTUREASSISTANT				WM_USER + 600
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 601
-#define WM_THREADSAFE_SENDFRAME_MSG					WM_USER + 602
-#define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 603
-#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 604
+#define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 602
+#define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 603
 		
 class CVideoDeviceView : public CUImagerView
 {
@@ -87,7 +86,6 @@ protected:
 	afx_msg LONG OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnThreadSafeSendFrameMsg(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 
 protected:

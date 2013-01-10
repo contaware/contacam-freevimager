@@ -28,7 +28,6 @@ Additional requirements for Visual Studio 2008:
 Necessary free tools:
 - http://nsis.sourceforge.net    -> to make the installers
   (needed also the nsisFirewall, KillProc and UAC plugins)
-- http://upx.sourceforge.net     -> to compress the activex
 - http://www.debugmode.com/wink  -> for tutorials build
 
 Non-free tool to make the translations:
@@ -41,17 +40,14 @@ Release procedure
 1. Update Version Number and History
    - appconst.h
    - 2x in uImager.rc2
-   - RemoteCam and RemoteCamViewer version and about dialog resources
    - CurrentVersion.nsh
    - HistoryFreeVimager.txt, HistoryContaCam.txt and translation History.txt
 
-2. Build release target of RemoteCam and RemoteCamViewer with vc6
+2. Build release target of FreeVimager and ContaCam with vc6 and with vc2008
 
-3. Build release target of FreeVimager and ContaCam with vc6 and with vc2008
-
-4. Copy FreeVimagerw.exe and ContaCamw.exe to Translation directory,
+3. Copy FreeVimagerw.exe and ContaCamw.exe to Translation directory,
    call Update Source in appTranslator and Build all Target Files
    
-5. Run Make_All.bat in Setup folder
+4. Run Make_All.bat in Setup folder
    
-6. SVN Commit as: Final release x.x.x
+5. SVN Commit as: Final release x.x.x

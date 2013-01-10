@@ -506,10 +506,6 @@ SOURCE=.\NetCom.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\NetworkPage.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\NewDlg.cpp
 # End Source File
 # Begin Source File
@@ -1157,14 +1153,6 @@ SOURCE=.\MyMemDC.h
 # Begin Source File
 
 SOURCE=.\NetCom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\NetFrameHdr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\NetworkPage.h
 # End Source File
 # Begin Source File
 

@@ -784,8 +784,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 				else
 					sDroppedFrames = _T("0");	// Unsupported
 			}
-			else if (m_pDoc->m_pGetFrameParseProcess)
-				sDroppedFrames.Format(_T("%u"), m_pDoc->m_pGetFrameParseProcess->GetLostCount());
 			else
 				sDroppedFrames = _T("0");	// Unsupported
 			pEdit->SetWindowText(sDroppedFrames);

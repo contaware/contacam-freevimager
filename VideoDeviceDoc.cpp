@@ -20,8 +20,6 @@
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "FTPTransfer.h"
-#include "NetFrameHdr.h"
-#include "NetworkPage.h"
 #include "getdxver.h"
 #include "BrowseDlg.h"
 #include "PostDelayedMessage.h"
@@ -3917,7 +3915,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
 	m_1SecTime = CurrentTimeOnly;
-	m_4SecTime = CurrentTimeOnly;
 
 	// Capture Devices
 	m_pDxCapture = NULL;
@@ -3932,170 +3929,16 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bWatchDogAlarm = FALSE;
 
 	// Networking
-	m_pSendFrameNetCom = NULL;
 	m_pGetFrameNetCom = NULL;
 	m_pHttpGetFrameParseProcess = NULL;
-	m_pSendFrameParseProcess = (CSendFrameParseProcess*)new CSendFrameParseProcess(this);
-	m_pGetFrameParseProcess = NULL;
-	m_pGetFrameGenerator = NULL;
-	m_nSendFrameConnectionsCount = 0;
-	m_nSendFrameVideoPort = DEFAULT_UDP_PORT;
-	m_nSendFrameMaxConnectionsConfig = m_nSendFrameMaxConnections = DEFAULT_SENDFRAME_CONNECTIONS;
-	m_nSendFrameMTU = DEFAULT_SENDFRAME_FRAGMENT_SIZE;
-	m_nSendFrameDataRate = DEFAULT_SENDFRAME_DATARATE;
-	m_nSendFrameSizeDiv = 0;
-	m_nSendFrameFreqDiv = 1;
-	m_bSendVideoFrame = FALSE;
-	m_dwLastSendUDPKeyFrameUpTime = 0U;
-	m_wLastSendUDPFrameSeq = 0U;
 	m_sGetFrameVideoHost = _T("");
-	m_nGetFrameVideoPort = DEFAULT_UDP_PORT;
-	m_dwGetFrameMaxFrames = NETFRAME_DEFAULT_FRAMES;
-	m_bGetFrameDisableResend = FALSE;
-	m_nNetworkDeviceTypeMode = INTERNAL_UDP;
-	m_dwMaxSendFrameFragmentsPerFrame = 0U;
-	m_dwSendFrameTotalSentBytes = 0U;
-	m_dwSendFrameOverallDatarate = 0U;
-	m_dSendFrameDatarateCorrection = 1.0;
-	m_dwSendFrameTotalLastSentBytes = 0U;
+	m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+	m_nNetworkDeviceTypeMode = OTHERONE_SP;
 	m_nHttpVideoQuality = DEFAULT_HTTP_VIDEO_QUALITY;
 	m_nHttpVideoSizeX = DEFAULT_HTTP_VIDEO_SIZE_CX;
 	m_nHttpVideoSizeY = DEFAULT_HTTP_VIDEO_SIZE_CY;
 	m_nHttpGetFrameLocationPos = 0;
-
-	/*********************************************************
-	 *** Start trying home to see whether cam is reachable ***
-	 *********************************************************/
-	m_HttpGetFrameLocations.Add(_T("/"));
-	
-	/******************************************************************
-	 *** First try MJPEG because the frame-rate is better than JPEG ***
-	 ******************************************************************/
-	m_HttpGetFrameLocations.Add(_T("/videostream.cgi"));				// 7Links, Acromedia, Agasio, AirLink, Apexis, Aztech, BiQu, BSTI, cowKey,
-																		// CVLM, Dericam, EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam,
-																		// Foscam, Heden, HooToo, ICam, iCam+, INSTAR, KARE, Loftek, Maygion,
-																		// PROCCTV, Smarthome, Solwise, Storage Options, Tenvis, Vonnic, Vstarcam,
-																		// Wanscam, Wansview, X10, Xenta, Zmodo
-	
-	m_HttpGetFrameLocations.Add(_T("/video.cgi"));						// 7Links, ABS, AirLink, AirLive, A-Link, Bowya, corega, D-Link, EasySE,
-																		// Foscam, Genius, Grandtec, Heden, Imogen, Intellinet, Loftek, LongShine,
-																		// Nilox, Ovislink, Planet, QNAP, Rosewill, Savitmicro, Topica, TrendNet, Trust
-	
-	m_HttpGetFrameLocations.Add(_T("/mjpeg.cgi"));						// AirLink, Cellvision, corega, Digicom, D-Link, Elro, EMSTONE, Hamlet, LinkPro,
-																		// NeuFusion, QNAP, Sertek, Sparklan, Surecom, Topcom, TrendNet, Trust
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpeg.cgi"));				// 7Links, AirLink, A-Link, Allnet, Conceptronic, corega, Digicom, Fitivision,
-																		// Marmitek, QNAP, Swann, TrendNet, Zonet
-	
-	m_HttpGetFrameLocations.Add(_T("/video.mjpg"));						// ABUS, AirLive, Allnet, Beward, GadSpot, Intellinet, LevelOne, Lorex,
-																		// Planet, TP-Link, Vivotek, Yawcam, Zavio
-	
-	m_HttpGetFrameLocations.Add(_T("/mjpg/video.mjpg"));				// AirLink, AirLive, BlueStork, Edimax, Hawking, Planet, Rosewill, Savitmicro,
-																		// Sitecom, Zonet
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpg.cgi"));				// 7Links, Activa, AirLink, Digitus, Encore, IPUX, QNAP, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/img/video.mjpeg"));				// Allnet, Cisco, Clas, LevelOne, Linksys, Sercomm, Sitecom
-	
-	m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec, Sparklan
-	
-	m_HttpGetFrameLocations.Add(_T("/MJPEG.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec
-	
-	m_HttpGetFrameLocations.Add(_T("/img/mjpeg.cgi"));					// Planet, Sony, Allnet, NorthQ
-	
-	m_HttpGetFrameLocations.Add(_T("/ipcam/stream.cgi"));				// Appro, D-Link, Eneo, HDL
-	
-	m_HttpGetFrameLocations.Add(_T("/ipcam/mjpeg.cgi"));				// AirLive, Appro, Aviosys, MESSOA
-	
-	m_HttpGetFrameLocations.Add(_T("/image.cgi?type=motion"));			// ALinking, Asante, TELCA, VISIONxIP
-	
-	m_HttpGetFrameLocations.Add(_T("/img/mjpeg.jpg"));					// Cisco, Linksys, Planet
-	
-	m_HttpGetFrameLocations.Add(_T("/mjpeg"));							// Arecont, Celius, Tenvis
-	
-	m_HttpGetFrameLocations.Add(_T("/video/mjpg.cgi"));					// D-Link, Sparklan, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/mjpegStreamer.cgi"));				// Compro, PROCCTV, Zyxel
-	
-	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
-	
-	m_HttpGetFrameLocations.Add(_T("/video2.mjpg"));					// Cisco, D-Link
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
-	
-	m_HttpGetFrameLocations.Add(_T("/nph-mjpeg.cgi"));					// Stardot
-	
-	m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
-
-	/**********************************************************************************************
-	 *** Then try mixed (it depends from the maker whether those commands return JPEG or MJPEG) ***
-	 **********************************************************************************************/
-	m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// Active, ALinking, Asante, ASIP, Asoni, Aviosys, Aviptek, BVUSA,
-																		// Defender, GadSpot, Grand, Hesavision, Hunt, INVID, Lorex, Lupus,
-																		// Orite, Piczel, Pixord, Planet, Sertek, Skyway Security, SVAT,
-																		// Sweex, Toshiba, TrendNet, Veo, Well, WowWee
-	
-	m_HttpGetFrameLocations.Add(_T("/getimage"));						// Lorex, Merit, Pixord, Seteye, Speco, TCLINK
-	
-	m_HttpGetFrameLocations.Add(_T("/image"));							// Arecont, Sony
-	
-	m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// 7Links, Acromedia, AirLink, Apexis, Aviosys, Aztech, BiQu, BSTI, CVLM,
-																		// Dericam, EasyN, EasySE, Edimax, Elro, Eminent, EZCam, Foscam, GKB, Hama,
-																		// Heden, HooToo, ICam, iCam+, INSTAR, Intellinet, Loftek, LogiLink, LongShine,
-																		// Maygion, Micronet, Nilox, Planet, Planex, PROCCTV, Smarthome, Solwise,
-																		// Storage Options, Tenvis, Ubiquiti, Vonnic, Wansview, X10, XTS, Zmodo
-	
-	m_HttpGetFrameLocations.Add(_T("/image.cgi"));						// AirLive, A-Link, ALinking, Asante, Intellinet, MonoPrice, NetMedia, 
-																		// Planet, Rosewill, Savitmicro, TELCA, Topica, VISIONxIP
-	
-	/************************
-	 *** Finally try JPEG ***
-	 ************************/
-	m_HttpGetFrameLocations.Add(_T("/snapshot.jpg"));					// Aviosys, BluePix, Compro, Digitus, EasyN, Edimax, Eminent, GadSpot,
-																		// Gembird, GKB, Goscam, Hama, Hungtek, Intellinet, LevelOne, LogiLink,
-																		// LTS, Micronet, Planet, Planex, PROCCTV, Rimax, Sharx, SmartIndustry,
-																		// Swann, ZyXEL
-
-	m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// AirLink, Asante, D-Link, Genius, Hawking, Sparklan, TrendNet, Trust 
-	
-	m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Conceptronic, D-Link, Elro, Genius, Hawking, Marmitek, Planet,
-																		// Repotec, Sparklan
-	
-	m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// AirLink, Planet, Repotec, Sparklan, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// AirLink, Cellvision, corega, Digitus, Micronet, NeuFusion, Planet,
-																		// QNAP, Quimz, Repotec, Sparklan, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// 7Links, Activa, AirLink, A-Link, Allnet, Conceptronic, Digicom,
-																		// Digitus, Encore, Fitivision, IPUX, Marmitek, QNAP, Swann, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// Aviosys, GadSpot, Grandtec, Orite, Pixord, Planet, Security,
-																		// Skyway Security, Solwise, SVAT, Sweex, Toshiba, Veo/Vidi, WowWee, Yoko
-	
-	m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// ABUS, AirLink, AirLive, Allnet, AVS, Axis, Beward, CNB, Edimax,
-																		// GadSpot, Hawking, Intellinet, Lorex, Planet, Rosewill, Savitmicro,
-																		// Sitecom, TP-Link, TSM, Vivotek, Zavio
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));				// 4XEM, ABUS, Allnet, Cellvision, ConnectionNC, Digi-Lan, Digitus, D-Link,
-																		// Eyseo, Hawking, JVC, LevelOne, Moxa, NeuFusion, Ovislink, Planex, Quimz,
-																		// Sertek, Telefonica, TrendNet, Trendware, Vivotek
-	
-	m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// Allnet, Cisco, Clas, LevelOne, Linksys, NorthQ, Sercomm, Sitecom
-
-	m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
-	
-	m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
-	
-	m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GadSpot
-
-	m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// Sony
-	
-	m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// Canon
-
-	m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
-
+	m_HttpGetFrameLocations.Add(_T("/")); // start trying home to see whether cam is reachable
 
 	// Snapshot
 	m_bSnapshotLiveJpeg = TRUE;
@@ -4211,7 +4054,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pMovementDetectionPage = NULL;
 	m_pGeneralPage = NULL;
 	m_pSnapshotPage = NULL;
-	m_pNetworkPage = NULL;
 	m_pVideoDevicePropertySheet = NULL;
 
 	// Email Settings
@@ -4270,17 +4112,11 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
 
-	// Init Re-Send UDP Frame List Critical Section
-	::InitializeCriticalSection(&m_csReSendUDPFrameList);
-
 	// Init Avi File Critical Section
 	::InitializeCriticalSection(&m_csAVRec);
 
 	// Init Movement Detections List Critical Section
 	::InitializeCriticalSection(&m_csMovementDetectionsList);
-
-	// Init Send Frame Critical Section
-	::InitializeCriticalSection(&m_csSendFrameNetCom);
 
 	// Init Http Video Size and Compression Critical Section
 	::InitializeCriticalSection(&m_csHttpParams);
@@ -4317,21 +4153,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		delete m_pHttpGetFrameParseProcess;
 		m_pHttpGetFrameParseProcess = NULL;
 	}
-	if (m_pSendFrameParseProcess)
-	{
-		delete m_pSendFrameParseProcess;
-		m_pSendFrameParseProcess = NULL;
-	}
-	if (m_pGetFrameParseProcess)
-	{
-		delete m_pGetFrameParseProcess;
-		m_pGetFrameParseProcess = NULL;
-	}
-	if (m_pGetFrameGenerator)
-	{
-		delete m_pGetFrameGenerator;
-		m_pGetFrameGenerator = NULL;
-	}
 	FreeMovementDetector();
 	if (m_LumChangeDetectorBkgY)
 	{
@@ -4364,16 +4185,13 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_DoMovementDetection = NULL;
 	}
 	ClearMovementDetectionsList();
-	ClearReSendUDPFrameList();
 	::DeleteCriticalSection(&m_csProcessFrameStop);
 	::DeleteCriticalSection(&m_csOSDMessage);
 	::DeleteCriticalSection(&m_csSnapshotFTPUploadConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
-	::DeleteCriticalSection(&m_csSendFrameNetCom);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
 	::DeleteCriticalSection(&m_csAVRec);
-	::DeleteCriticalSection(&m_csReSendUDPFrameList);
 	::DeleteCriticalSection(&m_csExecCommandMovementDetection);
 	if (m_hExecCommandMovementDetection)
 	{
@@ -4444,7 +4262,7 @@ CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathNam
 	CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
 	NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
 	sNetworkDeviceTypeMode.ReleaseBuffer();
-	if (nNetworkDeviceTypeMode < INTERNAL_UDP || nNetworkDeviceTypeMode >= LAST_DEVICE)
+	if (nNetworkDeviceTypeMode < OTHERONE_SP || nNetworkDeviceTypeMode >= LAST_DEVICE)
 		return _T("");
 	
 	// FrameLocation
@@ -4781,24 +4599,11 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_SnapshotFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SnapshotFTPPassword"), _T(""));
 
 	// Networking
-	m_nSendFrameVideoPort = (int) pApp->GetProfileInt(sSection, _T("SendFrameVideoPort"), DEFAULT_UDP_PORT);
-	m_nSendFrameMaxConnectionsConfig = m_nSendFrameMaxConnections = (int) pApp->GetProfileInt(sSection, _T("SendFrameMaxConnections"), DEFAULT_SENDFRAME_CONNECTIONS);
-	m_nSendFrameMTU = (int) pApp->GetProfileInt(sSection, _T("SendFrameMTU"), DEFAULT_SENDFRAME_FRAGMENT_SIZE);
-	m_nSendFrameDataRate = (int) pApp->GetProfileInt(sSection, _T("SendFrameDataRate"), DEFAULT_SENDFRAME_DATARATE);
-	m_nSendFrameSizeDiv = (int) pApp->GetProfileInt(sSection, _T("SendFrameSizeDiv"), 0);
-	m_nSendFrameFreqDiv = (int) pApp->GetProfileInt(sSection, _T("SendFrameFreqDiv"), 1);
-	m_bSendVideoFrame = (int) pApp->GetProfileInt(sSection, _T("DoSendVideoFrame"), FALSE);
-	m_dwGetFrameMaxFrames = (DWORD) pApp->GetProfileInt(sSection, _T("GetFrameMaxFrames"), NETFRAME_DEFAULT_FRAMES);
-	m_bGetFrameDisableResend = (BOOL) pApp->GetProfileInt(sSection, _T("GetFrameDisableResend"), FALSE); 
 	m_nHttpVideoQuality = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoQuality"), DEFAULT_HTTP_VIDEO_QUALITY);
 	m_nHttpVideoSizeX = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeX"), DEFAULT_HTTP_VIDEO_SIZE_CX);
 	m_nHttpVideoSizeY = (int) pApp->GetProfileInt(sSection, _T("HTTPVideoSizeY"), DEFAULT_HTTP_VIDEO_SIZE_CY);
 	m_sHttpGetFrameUsername = pApp->GetSecureProfileString(sSection, _T("HTTPGetFrameUsername"), _T(""));
 	m_sHttpGetFramePassword = pApp->GetSecureProfileString(sSection, _T("HTTPGetFramePassword"), _T(""));
-	m_sGetFrameUsername = pApp->GetSecureProfileString(sSection, _T("GetFrameUsername"), _T(""));
-	m_sGetFramePassword = pApp->GetSecureProfileString(sSection, _T("GetFramePassword"), _T(""));
-	m_sSendFrameUsername = pApp->GetSecureProfileString(sSection, _T("SendFrameUsername"), _T(""));
-	m_sSendFramePassword = pApp->GetSecureProfileString(sSection, _T("SendFramePassword"), _T(""));
 
 	// All other
 	m_bVideoView = (BOOL) pApp->GetProfileInt(sSection, _T("VideoView"), TRUE);
@@ -4958,23 +4763,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Check whether the web files exist in the given directory
 	if (m_bDeviceFirstRun)
 		MicroApacheCheckWebFiles(m_sRecordAutoSaveDir);
-
-	// Start Send Frame
-	if (m_bSendVideoFrame)
-	{
-		CNetCom* pSendFrameNetCom = (CNetCom*)new CNetCom;
-		if (ConnectSendFrameUDP(pSendFrameNetCom, m_nSendFrameVideoPort))
-		{
-			::EnterCriticalSection(&m_csSendFrameNetCom);
-			m_pSendFrameNetCom = pSendFrameNetCom;
-			::LeaveCriticalSection(&m_csSendFrameNetCom);
-		}
-		else
-		{
-			m_bSendVideoFrame = FALSE;
-			delete pSendFrameNetCom;
-		}
-	}
 }
 
 void CVideoDeviceDoc::SaveSettings()
@@ -5044,20 +4832,9 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword);
 
 			// Networking
-			pApp->WriteProfileInt(sSection, _T("SendFrameVideoPort"), m_nSendFrameVideoPort);
-			pApp->WriteProfileInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnectionsConfig);
-			pApp->WriteProfileInt(sSection, _T("SendFrameMTU"), m_nSendFrameMTU);
-			pApp->WriteProfileInt(sSection, _T("SendFrameDataRate"), m_nSendFrameDataRate);
-			pApp->WriteProfileInt(sSection, _T("SendFrameSizeDiv"), m_nSendFrameSizeDiv);
-			pApp->WriteProfileInt(sSection, _T("SendFrameFreqDiv"), m_nSendFrameFreqDiv);
-			pApp->WriteProfileInt(sSection, _T("DoSendVideoFrame"), m_bSendVideoFrame);
-			pApp->WriteProfileInt(sSection, _T("GetFrameMaxFrames"), (int)m_dwGetFrameMaxFrames);
-			pApp->WriteProfileInt(sSection, _T("GetFrameDisableResend"), (int)m_bGetFrameDisableResend);
 			pApp->WriteProfileInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality);
 			pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX);
 			pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY);
-			pApp->WriteSecureProfileString(sSection, _T("SendFrameUsername"), m_sSendFrameUsername);
-			pApp->WriteSecureProfileString(sSection, _T("SendFramePassword"), m_sSendFramePassword);
 
 			// All other
 			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
@@ -5240,20 +5017,9 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteSecureProfileIniString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword, sTempFileName);
 
 			// Networking
-			::WriteProfileIniInt(sSection, _T("SendFrameVideoPort"), m_nSendFrameVideoPort, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameMaxConnections"), m_nSendFrameMaxConnectionsConfig, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameMTU"), m_nSendFrameMTU, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameDataRate"), m_nSendFrameDataRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameSizeDiv"), m_nSendFrameSizeDiv, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendFrameFreqDiv"), m_nSendFrameFreqDiv, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoSendVideoFrame"), m_bSendVideoFrame, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("GetFrameMaxFrames"), (int)m_dwGetFrameMaxFrames, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("GetFrameDisableResend"), (int)m_bGetFrameDisableResend, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SendFrameUsername"), m_sSendFrameUsername, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SendFramePassword"), m_sSendFramePassword, sTempFileName);
 
 			// All other
 			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
@@ -5567,12 +5333,150 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 	return FALSE;
 }
 
+void CVideoDeviceDoc::InitHttpGetFrameLocations()
+{
+	// Free
+	while (m_HttpGetFrameLocations.GetSize() > 1)
+		m_HttpGetFrameLocations.RemoveAt(m_HttpGetFrameLocations.GetUpperBound());
+
+	// MJPEG
+	if (m_nNetworkDeviceTypeMode == OTHERONE_SP)
+	{
+		m_HttpGetFrameLocations.Add(_T("/videostream.cgi"));				// 7Links, Acromedia, Agasio, AirLink, Apexis, Aztech, BiQu, BSTI, cowKey,
+																			// CVLM, Dericam, EasyN, EasySE, Elro, Eminent, ENSIDIO, EyeSight, EZCam,
+																			// Foscam, Heden, HooToo, ICam, iCam+, INSTAR, KARE, Loftek, Maygion,
+																			// PROCCTV, Smarthome, Solwise, Storage Options, Tenvis, Vonnic, Vstarcam,
+																			// Wanscam, Wansview, X10, Xenta, Zmodo
+		
+		m_HttpGetFrameLocations.Add(_T("/video.cgi"));						// 7Links, ABS, AirLink, AirLive, A-Link, Bowya, corega, D-Link, EasySE,
+																			// Foscam, Genius, Grandtec, Heden, Imogen, Intellinet, Loftek, LongShine,
+																			// Nilox, Ovislink, Planet, QNAP, Rosewill, Savitmicro, Topica, TrendNet, Trust
+		
+		m_HttpGetFrameLocations.Add(_T("/mjpeg.cgi"));						// AirLink, Cellvision, corega, Digicom, D-Link, Elro, EMSTONE, Hamlet, LinkPro,
+																			// NeuFusion, QNAP, Sertek, Sparklan, Surecom, Topcom, TrendNet, Trust
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpeg.cgi"));				// 7Links, AirLink, A-Link, Allnet, Conceptronic, corega, Digicom, Fitivision,
+																			// Marmitek, QNAP, Swann, TrendNet, Zonet
+		
+		m_HttpGetFrameLocations.Add(_T("/video.mjpg"));						// ABUS, AirLive, Allnet, Beward, GadSpot, Intellinet, LevelOne, Lorex,
+																			// Planet, TP-Link, Vivotek, Yawcam, Zavio
+		
+		m_HttpGetFrameLocations.Add(_T("/mjpg/video.mjpg"));				// AirLink, AirLive, BlueStork, Edimax, Hawking, Planet, Rosewill, Savitmicro,
+																			// Sitecom, Zonet
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi/mjpg/mjpg.cgi"));				// 7Links, Activa, AirLink, Digitus, Encore, IPUX, QNAP, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/img/video.mjpeg"));				// Allnet, Cisco, Clas, LevelOne, Linksys, Sercomm, Sitecom
+		
+		m_HttpGetFrameLocations.Add(_T("/VIDEO.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec, Sparklan
+		
+		m_HttpGetFrameLocations.Add(_T("/MJPEG.CGI"));						// Conceptronic, D-Link, Elro, Marmitek, Repotec
+		
+		m_HttpGetFrameLocations.Add(_T("/img/mjpeg.cgi"));					// Planet, Sony, Allnet, NorthQ
+		
+		m_HttpGetFrameLocations.Add(_T("/ipcam/stream.cgi"));				// Appro, D-Link, Eneo, HDL
+		
+		m_HttpGetFrameLocations.Add(_T("/ipcam/mjpeg.cgi"));				// AirLive, Appro, Aviosys, MESSOA
+		
+		m_HttpGetFrameLocations.Add(_T("/image.cgi?type=motion"));			// ALinking, Asante, TELCA, VISIONxIP
+		
+		m_HttpGetFrameLocations.Add(_T("/img/mjpeg.jpg"));					// Cisco, Linksys, Planet
+		
+		m_HttpGetFrameLocations.Add(_T("/mjpeg"));							// Arecont, Celius, Tenvis
+		
+		m_HttpGetFrameLocations.Add(_T("/video/mjpg.cgi"));					// D-Link, Sparklan, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/mjpegStreamer.cgi"));				// Compro, PROCCTV, Zyxel
+		
+		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
+		
+		m_HttpGetFrameLocations.Add(_T("/video2.mjpg"));					// Cisco, D-Link
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
+		
+		m_HttpGetFrameLocations.Add(_T("/nph-mjpeg.cgi"));					// Stardot
+		
+		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
+	}
+	// JPEG
+	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
+	{
+		m_HttpGetFrameLocations.Add(_T("/snapshot.jpg"));					// Aviosys, BluePix, Compro, Digitus, EasyN, Edimax, Eminent, GadSpot,
+																			// Gembird, GKB, Goscam, Hama, Hungtek, Intellinet, LevelOne, LogiLink,
+																			// LTS, Micronet, Planet, Planex, PROCCTV, Rimax, Sharx, SmartIndustry,
+																			// Swann, ZyXEL
+
+		m_HttpGetFrameLocations.Add(_T("/image.jpg"));						// AirLink, Asante, D-Link, Genius, Hawking, Sparklan, TrendNet, Trust 
+		
+		m_HttpGetFrameLocations.Add(_T("/IMAGE.JPG"));						// Conceptronic, D-Link, Elro, Genius, Hawking, Marmitek, Planet,
+																			// Repotec, Sparklan
+		
+		m_HttpGetFrameLocations.Add(_T("/goform/video2"));					// AirLink, Planet, Repotec, Sparklan, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/goform/capture"));					// AirLink, Cellvision, corega, Digitus, Micronet, NeuFusion, Planet,
+																			// QNAP, Quimz, Repotec, Sparklan, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi/jpg/image.cgi"));				// 7Links, Activa, AirLink, A-Link, Allnet, Conceptronic, Digicom,
+																			// Digitus, Encore, Fitivision, IPUX, Marmitek, QNAP, Swann, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/Jpeg/CamImg.jpg"));				// Aviosys, GadSpot, Grandtec, Orite, Pixord, Planet, Security,
+																			// Skyway Security, Solwise, SVAT, Sweex, Toshiba, Veo/Vidi, WowWee, Yoko
+		
+		m_HttpGetFrameLocations.Add(_T("/jpg/image.jpg"));					// ABUS, AirLink, AirLive, Allnet, AVS, Axis, Beward, CNB, Edimax,
+																			// GadSpot, Hawking, Intellinet, Lorex, Planet, Rosewill, Savitmicro,
+																			// Sitecom, TP-Link, TSM, Vivotek, Zavio
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/video.jpg"));				// 4XEM, ABUS, Allnet, Cellvision, ConnectionNC, Digi-Lan, Digitus, D-Link,
+																			// Eyseo, Hawking, JVC, LevelOne, Moxa, NeuFusion, Ovislink, Planex, Quimz,
+																			// Sertek, Telefonica, TrendNet, Trendware, Vivotek
+		
+		m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// Allnet, Cisco, Clas, LevelOne, Linksys, NorthQ, Sercomm, Sitecom
+
+		m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
+		
+		m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
+		
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=0"));	// GadSpot
+
+		m_HttpGetFrameLocations.Add(_T("/oneshotimage.jpg"));				// Sony
+		
+		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// Canon
+
+		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
+	}
+
+	// Finally add the mixed commands (it depends from the maker whether those commands return JPEG or MJPEG)
+	if (m_nNetworkDeviceTypeMode == OTHERONE_SP ||
+		m_nNetworkDeviceTypeMode == OTHERONE_CP)
+	{
+		m_HttpGetFrameLocations.Add(_T("/GetData.cgi"));					// Active, ALinking, Asante, ASIP, Asoni, Aviosys, Aviptek, BVUSA,
+																			// Defender, GadSpot, Grand, Hesavision, Hunt, INVID, Lorex, Lupus,
+																			// Orite, Piczel, Pixord, Planet, Sertek, Skyway Security, SVAT,
+																			// Sweex, Toshiba, TrendNet, Veo, Well, WowWee
+		
+		m_HttpGetFrameLocations.Add(_T("/getimage"));						// Lorex, Merit, Pixord, Seteye, Speco, TCLINK
+		
+		m_HttpGetFrameLocations.Add(_T("/image"));							// Arecont, Sony
+		
+		m_HttpGetFrameLocations.Add(_T("/snapshot.cgi"));					// 7Links, Acromedia, AirLink, Apexis, Aviosys, Aztech, BiQu, BSTI, CVLM,
+																			// Dericam, EasyN, EasySE, Edimax, Elro, Eminent, EZCam, Foscam, GKB, Hama,
+																			// Heden, HooToo, ICam, iCam+, INSTAR, Intellinet, Loftek, LogiLink, LongShine,
+																			// Maygion, Micronet, Nilox, Planet, Planex, PROCCTV, Smarthome, Solwise,
+																			// Storage Options, Tenvis, Ubiquiti, Vonnic, Wansview, X10, XTS, Zmodo
+		
+		m_HttpGetFrameLocations.Add(_T("/image.cgi"));						// AirLive, A-Link, ALinking, Asante, Intellinet, MonoPrice, NetMedia, 
+																			// Planet, Rosewill, Savitmicro, TELCA, Topica, VISIONxIP
+	}
+}
+
 double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode) 
 {
 	switch(nNetworkDeviceTypeMode)
 	{
-		case INTERNAL_UDP :	return DEFAULT_FRAMERATE;
-		case OTHERONE :		return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		case OTHERONE_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
+		case OTHERONE_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case AXIS_SP :		return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case AXIS_CP :		return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case PANASONIC_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
@@ -5589,8 +5493,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 
 // sAddress: Must have the IP:Port:FrameLocation:NetworkDeviceTypeMode or
 //           HostName:Port:FrameLocation:NetworkDeviceTypeMode Format
-// For http FrameLocation is m_HttpGetFrameLocations[0],
-// for udp it is not used and set to _T('/') 
+// Note: FrameLocation is m_HttpGetFrameLocations[0]
 BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress) 
 {
 	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
@@ -5600,10 +5503,10 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 		CString sNetworkDeviceTypeMode = sAddress.Right(sAddress.GetLength() - i - 1);
 		NetworkDeviceTypeMode nNetworkDeviceTypeMode = (NetworkDeviceTypeMode)_tcstol(sNetworkDeviceTypeMode.GetBuffer(0), NULL, 10);
 		sNetworkDeviceTypeMode.ReleaseBuffer();
-		if (nNetworkDeviceTypeMode >= INTERNAL_UDP && nNetworkDeviceTypeMode < LAST_DEVICE)
+		if (nNetworkDeviceTypeMode >= OTHERONE_SP && nNetworkDeviceTypeMode < LAST_DEVICE)
 			m_nNetworkDeviceTypeMode = nNetworkDeviceTypeMode;
 		else
-			m_nNetworkDeviceTypeMode = INTERNAL_UDP;
+			m_nNetworkDeviceTypeMode = OTHERONE_SP;
 		sAddress = sAddress.Left(i);
 		i = sAddress.ReverseFind(_T(':'));
 		if (i >= 0)
@@ -5619,34 +5522,28 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 				if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
 					m_nGetFrameVideoPort = nPort;
 				else
-					m_nGetFrameVideoPort = DEFAULT_UDP_PORT;
+					m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 				m_sGetFrameVideoHost = sAddress.Left(i);
 			}
 			else
 			{
 				m_sGetFrameVideoHost = sAddress;
-				if (m_nNetworkDeviceTypeMode == INTERNAL_UDP)
-					m_nGetFrameVideoPort = DEFAULT_UDP_PORT;
-				else
-					m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+				m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 			}
 		}
 		else
 		{
 			m_sGetFrameVideoHost = sAddress;
-			if (m_nNetworkDeviceTypeMode == INTERNAL_UDP)
-				m_nGetFrameVideoPort = DEFAULT_UDP_PORT;
-			else
-				m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
+			m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 			m_HttpGetFrameLocations[0] = _T("/");
 		}
 	}
 	else
 	{
 		m_sGetFrameVideoHost = sAddress;
-		m_nGetFrameVideoPort = DEFAULT_UDP_PORT;
+		m_nGetFrameVideoPort = DEFAULT_TCP_PORT;
 		m_HttpGetFrameLocations[0] = _T("/");
-		m_nNetworkDeviceTypeMode = INTERNAL_UDP;
+		m_nNetworkDeviceTypeMode = OTHERONE_SP;
 	}
 
 	// Free if Necessary
@@ -5655,6 +5552,9 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 		delete m_pGetFrameNetCom;
 		m_pGetFrameNetCom = NULL;
 	}
+
+	// Init http get frame locations array
+	InitHttpGetFrameLocations();
 
 	// Allocate
 	m_pGetFrameNetCom = (CNetCom*)new CNetCom;
@@ -5799,7 +5699,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	sGetFrameVideoHost.TrimRight();
 	m_sGetFrameVideoHost = sGetFrameVideoHost;
 	m_nGetFrameVideoPort = bUrl ? nUrlPort : pDlg->m_nPort;
-	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
+	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE_SP : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
 
 	// Free if Necessary
 	if (m_pGetFrameNetCom)
@@ -5807,6 +5707,9 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 		delete m_pGetFrameNetCom;
 		m_pGetFrameNetCom = NULL;
 	}
+
+	// Init http get frame locations array
+	InitHttpGetFrameLocations();
 
 	// Allocate
 	m_pGetFrameNetCom = (CNetCom*)new CNetCom;
@@ -5818,10 +5721,6 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	// Start Delete Detections Thread
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-
-	// Overwrite the loaded values
-	m_dwGetFrameMaxFrames = pDlg->m_dwMaxFrames;			
-	m_bGetFrameDisableResend = pDlg->m_bDisableResend;
 
 	// Reset vars
 	m_dwFrameCountUp = 0U;
@@ -6431,7 +6330,8 @@ void CVideoDeviceDoc::VideoFormatDialog()
 	}
 	else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 	{
-		if (m_nNetworkDeviceTypeMode == OTHERONE	||
+		if (m_nNetworkDeviceTypeMode == OTHERONE_SP	||
+			m_nNetworkDeviceTypeMode == OTHERONE_CP	||
 			m_nNetworkDeviceTypeMode == TPLINK_SP	||
 			m_nNetworkDeviceTypeMode == TPLINK_CP)
 		{
@@ -7961,18 +7861,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	CTime CurrentTime = CTime::GetCurrentTime();
 	DWORD dwCurrentInitUpTime = ::timeGetTime();
 	CTimeSpan TimeDiff1(CurrentTime - m_1SecTime);
-	CTimeSpan TimeDiff4(CurrentTime - m_4SecTime);
 	BOOL b1SecTick = FALSE;
-	BOOL b4SecTick = FALSE;
 	if (TimeDiff1.GetTotalSeconds() >= 1 || TimeDiff1.GetTotalSeconds() < 0)
 	{
 		b1SecTick = TRUE;
 		m_1SecTime = CurrentTime;
-	}
-	if (TimeDiff4.GetTotalSeconds() >= 4 || TimeDiff4.GetTotalSeconds() < 0)
-	{
-		b4SecTick = TRUE;
-		m_4SecTime = CurrentTime;
 	}
 	BOOL bStartupSettled = FALSE;
 	if (m_bCaptureStarted)
@@ -7995,7 +7888,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 	BOOL bDoProcessFrame = (m_dwProcessFrameStopped == 0U);
 	::LeaveCriticalSection(&m_csProcessFrameStop);
 	
-	// Detect, Copy, Snapshot, Record, Send over UDP Network and finally Draw
+	// Detect, Copy, Snapshot, Record and finally Draw
 	CDib* pDib = m_pProcessFrameDib;
 	if (bDoProcessFrame && pData && dwSize > 0 && pDib &&
 		pDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI) &&
@@ -8146,124 +8039,6 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 					CloseAndShowAviRec();
 			}
 			::LeaveCriticalSection(&m_csAVRec);
-		}
-
-		// Send Video Frame
-		if (m_bSendVideoFrame)
-		{
-			// Encode and Send
-			if ((m_dwFrameCountUp % m_nSendFrameFreqDiv) == 0)
-			{
-				int nEncodedSize;
-				::EnterCriticalSection(&m_csSendFrameNetCom);
-				if (m_nSendFrameConnectionsCount > 0	&&
-					(nEncodedSize = m_pSendFrameParseProcess->Encode(	pDib,
-																		CurrentTime,
-																		dwCurrentInitUpTime)) > 0)
-				{
-					SendUDPFrame(	m_pSendFrameNetCom,
-									NULL, // To All
-									m_pSendFrameParseProcess->GetEncodedDataBuf(),
-									nEncodedSize,
-									dwCurrentInitUpTime,
-									++m_wLastSendUDPFrameSeq,
-									m_pSendFrameParseProcess->IsKeyFrame(),
-									m_nSendFrameMTU,
-									FALSE,	// Normal Priority
-									FALSE);	// Not Re-Sending
-					StoreUDPFrame(	m_pSendFrameParseProcess->GetEncodedDataBuf(),
-									nEncodedSize,
-									dwCurrentInitUpTime,
-									m_wLastSendUDPFrameSeq,
-									m_pSendFrameParseProcess->IsKeyFrame());
-				}
-				::LeaveCriticalSection(&m_csSendFrameNetCom);
-			}
-
-			// Every 1 sec Update
-			if (b1SecTick)
-			{
-				// Get Tx Fifo Size
-				::EnterCriticalSection(&m_csSendFrameNetCom);
-				int nTxFifoSize = 0;
-				if (m_pSendFrameNetCom)
-					nTxFifoSize = (int)m_pSendFrameNetCom->GetTxFifoSize();
-				::LeaveCriticalSection(&m_csSendFrameNetCom);
-
-				// Update Frame Send To Table and Flow Control
-				UpdateFrameSendToTableAndFlowControl(b4SecTick);
-
-				// Prepare Statistics
-				CString sMsg;
-				if (m_nSendFrameConnectionsCount == 0)
-				{
-					if (m_nSendFrameMaxConnections == 0)
-						sMsg = ML_STRING(1820, "Overload: lower maximum number of connections!\r\n\r\n");
-					else
-						sMsg = ML_STRING(1479, "Listening Ok\r\n\r\n");
-				}
-				else
-					sMsg.Format(ML_STRING(1480, "Listening Ok:\r\n%d connection%s, Tx size / connection: %d fragments, Max fragments / frame: %u\r\n") +
-								ML_STRING(1481, "Datarate / connection: %dkbps , Overall Datarate: %ukbps (+%ukbps)\r\n\r\n"),
-								m_nSendFrameConnectionsCount,
-								m_nSendFrameConnectionsCount > 1 ? _T("s") : _T(""),
-								nTxFifoSize / m_nSendFrameConnectionsCount,
-								m_dwMaxSendFrameFragmentsPerFrame,
-								m_nSendFrameDataRate / 1000,					// bps -> kbps
-								m_dwSendFrameOverallDatarate * 8U / 1000U,		// bytes / sec -> kbps
-								(DWORD)Round((m_dSendFrameDatarateCorrection - 1.0) * (m_dwSendFrameOverallDatarate * 8U / 1000U)));	// bytes / sec -> kbps
-
-				::EnterCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-
-				for (int i = 0 ; i < m_nSendFrameMaxConnections ; i++)
-				{
-					CString sTableEntry;
-					if (m_pSendFrameParseProcess->m_SendToTable[i].IsAddrSet())
-					{
-						CString sPeerAddress;
-						if (m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr()->sa_family == AF_INET6)
-						{
-							sPeerAddress.Format(_T("%x:%x:%x:%x:%x:%x:%x:%x"),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[0]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[1]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[2]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[3]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[4]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[5]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[6]),
-									ntohs(((sockaddr_in6*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin6_addr.u.Word[7]));
-						}
-						else
-						{
-							sPeerAddress.Format(_T("%d.%d.%d.%d"),
-									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b1,
-									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b2,
-									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b3,
-									((sockaddr_in*)m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())->sin_addr.S_un.S_un_b.s_b4);
-						}
-						sTableEntry.Format(	ML_STRING(1482, "%02i: %s, Port: %i, Sent: %u, Re-Sent: %u, Confirmed: %u, Lost: %u\r\n"),
-											i,
-											sPeerAddress,
-											ntohs(SOCKADDRPORT(m_pSendFrameParseProcess->m_SendToTable[i].GetAddrPtr())),
-											m_pSendFrameParseProcess->m_SendToTable[i].m_dwSentFrameCount,
-											m_pSendFrameParseProcess->m_SendToTable[i].m_dwReSentFrameCount,
-											m_pSendFrameParseProcess->m_SendToTable[i].m_dwConfirmedFrameCount,
-											m_pSendFrameParseProcess->m_SendToTable[i].m_dwLostFrameCount);
-					}
-					else
-						sTableEntry.Format(_T("%02i: Not Set\r\n"), i);
-
-					sMsg += sTableEntry;
-				}
-
-				::LeaveCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-
-				// Show Statistics
-				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_SENDFRAME_MSG,
-								(WPARAM)(new CString(sMsg)),
-								0);
-			}
 		}
 
 		// Swap Dib pointers
@@ -8619,22 +8394,6 @@ void CVideoDeviceDoc::ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDM
 	m_sOSDMessage = sOSDMessage;
 	m_crOSDMessageColor = crOSDMessageColor;
 	::LeaveCriticalSection(&m_csOSDMessage);
-}
-
-void CVideoDeviceDoc::ShowSendFrameMsg()
-{
-	if (m_pNetworkPage)
-	{
-		CString sCurrentMsg;
-		CEdit* pEdit = (CEdit*)m_pNetworkPage->GetDlgItem(IDC_VIDEO_SENDFRAME_MSG);
-		pEdit->GetWindowText(sCurrentMsg);
-		if (sCurrentMsg != m_sSendFrameMsg)
-		{
-			int nPos = pEdit->GetScrollPos(SB_VERT);
-			pEdit->SetWindowText(m_sSendFrameMsg);
-			pEdit->LineScroll(nPos);
-		}
-	}
 }
 
 void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
@@ -9575,92 +9334,6 @@ void CVideoDeviceDoc::OnUpdateFileSaveAs(CCmdUI* pCmdUI)
 	pCmdUI->Enable(FALSE);
 }
 
-BOOL CVideoDeviceDoc::ConnectSendFrameUDP(	CNetCom* pNetCom,
-											int nPort)
-{
-	// Check
-	if (!pNetCom)
-		return FALSE;
-
-	// Clear Table
-	m_pSendFrameParseProcess->ClearTable();
-
-	// Set Thread Priority
-	pNetCom->SetThreadsPriority(THREAD_PRIORITY_HIGHEST);
-
-	// Init
-	if (!pNetCom->Init(
-					FALSE,					// No Meaning For Datagram
-					NULL,					// The Optional Owner Window to which send the Network Events.
-					NULL,					// The lParam to send with the Messages
-					NULL,					// The Optional Rx Buffer.
-					NULL,					// The Optional Critical Section for the Rx Buffer.
-					NULL,					// The Optional Rx Fifo.
-					NULL,					// The Optional Critical Section fot the Rx Fifo.
-					NULL,					// The Optional Tx Buffer.
-					NULL,					// The Optional Critical Section for the Tx Buffer.
-					NULL,					// The Optional Tx Fifo.
-					NULL,					// The Optional Critical Section for the Tx Fifo.
-					m_pSendFrameParseProcess,// Parser
-					NULL,					// No Generator
-					SOCK_DGRAM,				// SOCK_DGRAM (UDP)
-					_T(""),					// Local Address (IP or Host Name).
-					nPort,					// Local Port.
-					_T(""),					// Peer Address (IP or Host Name).
-					0,						// Peer Port.
-					NULL,					// Handle to an Event Object that will get Accept Events.
-					NULL,					// Handle to an Event Object that will get Connect Events.
-					NULL,					// Handle to an Event Object that will get Connect Failed Events.
-					NULL,					// Handle to an Event Object that will get Close Events.
-					NULL,					// Handle to an Event Object that will get Read Events.
-					NULL,					// Handle to an Event Object that will get Write Events.
-					NULL,					// Handle to an Event Object that will get OOB Events.
-					NULL,					// Handle to an Event Object that will get an event when 
-											// all connection of a server have been closed.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-											// A set value means that instead of setting an event it is reset.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-											// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-											// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-											// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
-					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-											// (if hRxMsgTriggerEvent != NULL).
-											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-											// (if pOwnerWnd != NULL).
-											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-											// each time uiRxMsgTrigger bytes arrived.
-					0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
-											// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
-					0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
-					0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
-											// even if no Write Event Happened (A zero meens INFINITE Timeout).
-											// This is also the Generator rate,
-											// if set to zero the Generator is never called!
-					NULL,					// Message Class for Notice, Warning and Error Visualization.
-					((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET)) // Socket family
-	{
-		m_sSendFrameMsg = ML_STRING(1486, "Error: cannot bind to the specified port, it may already be in use");
-		ShowSendFrameMsg();
-		return FALSE;
-	}
-	else
-	{
-		m_sSendFrameMsg = ML_STRING(1487, "Listening Ok");
-		ShowSendFrameMsg();
-		return TRUE;
-	}
-}
-
 /*
 AXIS
 ----
@@ -9768,18 +9441,8 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 	// Connect
 	switch (m_nNetworkDeviceTypeMode)
 	{
-		case INTERNAL_UDP :	// Internal UDP Server
-		{
-			if (m_pGetFrameParseProcess)
-				m_pGetFrameParseProcess->Close();
-			else
-				m_pGetFrameParseProcess = (CGetFrameParseProcess*)new CGetFrameParseProcess(this);
-			if (!m_pGetFrameGenerator)
-				m_pGetFrameGenerator = (CGetFrameGenerator*)new CGetFrameGenerator;
-			res = ConnectGetFrameUDP(m_sGetFrameVideoHost, m_nGetFrameVideoPort);
-			break;
-		}
-		case OTHERONE :		// Other HTTP device
+		case OTHERONE_SP :	// Other HTTP device (mjpeg)
+		case OTHERONE_CP :	// Other HTTP device (jpegs)
 		{
 			if (m_pHttpGetFrameParseProcess)
 				m_pHttpGetFrameParseProcess->Close();
@@ -9788,6 +9451,7 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 			if (m_pHttpGetFrameParseProcess)
 			{
 				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
+				// Format not yet known because there are ambivalent connection strings in m_HttpGetFrameLocations
 				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATUNKNOWN;
 				m_nHttpGetFrameLocationPos = 0;
 			}
@@ -9983,1960 +9647,6 @@ BOOL CVideoDeviceDoc::ConnectGetFrame()
 	}
 
 	return res;
-}
-
-BOOL CVideoDeviceDoc::ConnectGetFrameUDP(LPCTSTR pszHostName, int nPort)
-{
-	// Set Thread Priority
-	m_pGetFrameNetCom->SetThreadsPriority(THREAD_PRIORITY_HIGHEST);
-
-	// Init UDP
-	if (!m_pGetFrameNetCom->Init(
-					FALSE,					// No Meaning For Datagram
-					NULL,					// The Optional Owner Window to which send the Network Events.
-					NULL,					// The lParam to send with the Messages
-					NULL,					// The Optional Rx Buffer.
-					NULL,					// The Optional Critical Section for the Rx Buffer.
-					NULL,					// The Optional Rx Fifo.
-					NULL,					// The Optional Critical Section fot the Rx Fifo.
-					NULL,					// The Optional Tx Buffer.
-					NULL,					// The Optional Critical Section for the Tx Buffer.
-					NULL,					// The Optional Tx Fifo.
-					NULL,					// The Optional Critical Section for the Tx Fifo.
-					m_pGetFrameParseProcess,// Parser
-					m_pGetFrameGenerator,	// Generator
-					SOCK_DGRAM,				// SOCK_DGRAM (UDP)
-					_T(""),					// Local Address (IP or Host Name).
-					0,						// Local Port, let the OS choose one
-					pszHostName,			// Peer Address (IP or Host Name).
-					nPort,					// Peer Port.
-					NULL,					// Handle to an Event Object that will get Accept Events.
-					NULL,					// Handle to an Event Object that will get Connect Events.
-					NULL,					// Handle to an Event Object that will get Connect Failed Events.
-					NULL,					// Handle to an Event Object that will get Close Events.
-					NULL,					// Handle to an Event Object that will get Read Events.
-					NULL,					// Handle to an Event Object that will get Write Events.
-					NULL,					// Handle to an Event Object that will get OOB Events.
-					NULL,					// Handle to an Event Object that will get an event when 
-											// all connection of a server have been closed.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-											// A set value means that instead of setting an event it is reset.
-					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-											// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-											// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-											// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
-					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-											// (if hRxMsgTriggerEvent != NULL).
-											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-											// (if pOwnerWnd != NULL).
-											// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-					NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-											// each time uiRxMsgTrigger bytes arrived.
-					0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
-											// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
-					0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-											// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
-					GETFRAME_GENERATOR_RATE,/*uiTxPacketTimeout*/// After this timeout a Packet is sent
-											// even if no Write Event Happened (A zero meens INFINITE Timeout).
-											// This is also the Generator rate,
-											// if set to zero the Generator is never called!
-					NULL,					// Message Class for Notice, Warning and Error Visualization.
-					((CUImagerApp*)::AfxGetApp())->m_bIPv6 ? AF_INET6 : AF_INET)) // Socket family
-		return FALSE;
-	else
-	{
-		m_pGetFrameNetCom->SetMaxTxDatagramBandwidth(NETFRAME_10MBPS_BANDWIDTH);
-		m_pGetFrameNetCom->EnableIdleGenerator(TRUE);
-		return TRUE;
-	}
-}
-
-BOOL CVideoDeviceDoc::StoreUDPFrame(BYTE* Data,
-									int Size,
-									DWORD dwFrameUpTime,
-									WORD wFrameSeq,
-									BOOL bKeyFrame)
-{
-	CReSendFrame* pReSendFrame = new CReSendFrame(	Data,
-													Size,
-													dwFrameUpTime,
-													wFrameSeq,
-													bKeyFrame);
-	if (pReSendFrame)
-	{
-		::EnterCriticalSection(&m_csReSendUDPFrameList);
-		m_ReSendUDPFrameList.AddTail(pReSendFrame);
-		if (m_ReSendUDPFrameList.GetCount() > NETFRAME_MAX_FRAMES)
-		{
-			delete m_ReSendUDPFrameList.GetHead();
-			m_ReSendUDPFrameList.RemoveHead();
-		}
-		::LeaveCriticalSection(&m_csReSendUDPFrameList);
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-BOOL CVideoDeviceDoc::ReSendUDPFrame(sockaddr* pTo, WORD wFrameSeq)
-{
-	BOOL res = FALSE;
-	::EnterCriticalSection(&m_csReSendUDPFrameList);
-	POSITION nextpos = m_ReSendUDPFrameList.GetHeadPosition();
-	while (nextpos)
-	{
-		POSITION currentpos = nextpos;
-		CReSendFrame* pReSendFrame = m_ReSendUDPFrameList.GetNext(nextpos);
-		if (pReSendFrame && pReSendFrame->m_wFrameSeq == wFrameSeq)
-		{
-			res = SendUDPFrame(	m_pSendFrameNetCom,
-								pTo,
-								pReSendFrame->m_Data,
-								pReSendFrame->m_Size,
-								pReSendFrame->m_dwFrameUpTime,
-								pReSendFrame->m_wFrameSeq,
-								pReSendFrame->m_bKeyFrame,
-								m_nSendFrameMTU,
-								TRUE,	// High Priority
-								TRUE);	// Re-Sending
-			break;
-		}
-	}
-	::LeaveCriticalSection(&m_csReSendUDPFrameList);
-	return res;
-}
-
-void CVideoDeviceDoc::ClearReSendUDPFrameList()
-{
-	::EnterCriticalSection(&m_csReSendUDPFrameList);
-	while (!m_ReSendUDPFrameList.IsEmpty())
-	{
-		delete m_ReSendUDPFrameList.GetHead();
-		m_ReSendUDPFrameList.RemoveHead();
-	}
-	::LeaveCriticalSection(&m_csReSendUDPFrameList);
-}
-
-BOOL CVideoDeviceDoc::SendUDPFrame(	CNetCom* pNetCom,
-									sockaddr* pTo, // if NULL send to all!
-									BYTE* Data,
-									int Size,
-									DWORD dwFrameUpTime,
-									WORD wFrameSeq,
-									BOOL bKeyFrame,
-									int nMaxFragmentSize,
-									BOOL bHighPriority,
-									BOOL bReSending)
-{
-	// Check
-	if (Data == NULL || Size <= 0 || pNetCom == NULL)
-		return FALSE;
-
-	// Fragment Size Init Value
-	if (nMaxFragmentSize <= 0)
-		nMaxFragmentSize = NETCOM_MAX_TX_BUFFER_SIZE;
-	else
-		nMaxFragmentSize = MIN(nMaxFragmentSize, NETCOM_MAX_TX_BUFFER_SIZE);
-	if (nMaxFragmentSize <= sizeof(NetFrameHdrStruct))
-		nMaxFragmentSize = sizeof(NetFrameHdrStruct) + 1;
-	int nDataFragmentSize = nMaxFragmentSize - sizeof(NetFrameHdrStruct);
-	
-	// Fragments Count Calculation and Check
-	int nTotalFragments = Size / nDataFragmentSize + 1; 
-	if (nTotalFragments > NETFRAME_MAX_FRAGMENTS)
-		return FALSE;
-
-	// Header
-	NetFrameHdrStruct Hdr;
-	Hdr.dwUpTime = dwFrameUpTime;
-	Hdr.wSeq = wFrameSeq;
-	Hdr.TotalFragments = nTotalFragments;
-	Hdr.Type = NETFRAME_TYPE_FRAME_ANS;
-	Hdr.Flags = NETFRAME_FLAG_VIDEO;
-	if (bKeyFrame)
-	{
-		Hdr.Flags |= NETFRAME_FLAG_KEYFRAME;
-		if (!bReSending)
-		{
-			DWORD dwTimeDiff = dwFrameUpTime - m_dwLastSendUDPKeyFrameUpTime;
-			DWORD dwBytesDiff = m_dwSendFrameTotalSentBytes - m_dwSendFrameTotalLastSentBytes;
-			if (dwTimeDiff >= SENDFRAME_MIN_KEYFRAME_TIMEDIFF	&&
-				dwTimeDiff <= SENDFRAME_MAX_KEYFRAME_TIMEDIFF	&&
-				dwBytesDiff >= SENDFRAME_MIN_KEYFRAME_BYTESDIFF)
-				m_dwSendFrameOverallDatarate = (DWORD)Round((double)dwBytesDiff / (double)dwTimeDiff * 1000.0);
-			m_dwSendFrameTotalLastSentBytes = m_dwSendFrameTotalSentBytes;
-			m_dwLastSendUDPKeyFrameUpTime = dwFrameUpTime;
-		}
-	}
-
-	// Update the Maximum Total Fragments Per Stream And Per Frame
-	m_dwMaxSendFrameFragmentsPerFrame = MAX(m_dwMaxSendFrameFragmentsPerFrame, (DWORD)nTotalFragments);
-	
-	// Send
-	int nDataSendCount = 0;
-	for (Hdr.FragmentNum = 0 ; Hdr.FragmentNum < nTotalFragments ; (Hdr.FragmentNum)++)
-	{
-		nDataSendCount += nDataFragmentSize;
-		
-		// Is Last Fragment?
-		if (nDataSendCount > Size)
-		{
-			if (!SendUDPFragment(	pNetCom,
-									pTo,
-									(LPBYTE)&Hdr,
-									sizeof(NetFrameHdrStruct),
-									Data + (Hdr.FragmentNum * nDataFragmentSize),
-									nDataFragmentSize - (nDataSendCount - Size),
-									bHighPriority,
-									bReSending))
-				return FALSE;
-		}
-		else
-		{
-			if (!SendUDPFragment(	pNetCom,
-									pTo,
-									(LPBYTE)&Hdr,
-									sizeof(NetFrameHdrStruct),
-									Data + (Hdr.FragmentNum * nDataFragmentSize),
-									nDataFragmentSize,
-									bHighPriority,
-									bReSending))
-				return FALSE;
-		}
-	}
-
-	return TRUE; 
-}
-
-__forceinline BOOL CVideoDeviceDoc::SendUDPFragment(CNetCom* pNetCom,
-													sockaddr* pTo, // if NULL send to all!
-													BYTE* Hdr,
-													int HdrSize,
-													BYTE* Data,
-													int DataSize,
-													BOOL bHighPriority,
-													BOOL bReSending)
-{
-	// Check
-	if (pNetCom == NULL)
-		return FALSE;
-
-	// Send
-	::EnterCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-	for (int i = 0 ; i < m_nSendFrameMaxConnections ; i++)
-	{
-		if (m_pSendFrameParseProcess->m_SendToTable[i].IsAddrSet())
-		{
-			// Send to All
-			if (pTo == NULL)
-			{
-				SendUDPFragmentInternal(pNetCom,
-										i,
-										Hdr,
-										HdrSize,
-										Data,
-										DataSize,
-										bHighPriority,
-										bReSending);
-			}
-			// Send to given one only
-			else if (m_pSendFrameParseProcess->m_SendToTable[i].IsAddrEqualTo(pTo))
-			{
-				SendUDPFragmentInternal(pNetCom,
-										i,
-										Hdr,
-										HdrSize,
-										Data,
-										DataSize,
-										bHighPriority,
-										bReSending);
-				break;
-			}
-		}
-	}
-	::LeaveCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-
-	return TRUE;
-}
-
-__forceinline void CVideoDeviceDoc::SendUDPFragmentInternal(	CNetCom* pNetCom,
-																int nTo,
-																BYTE* Hdr,
-																int HdrSize,
-																BYTE* Data,
-																int DataSize,
-																BOOL bHighPriority,
-																BOOL bReSending)
-{
-	NetFrameHdrStruct* pHdr = (NetFrameHdrStruct*)Hdr;
-
-	if (m_pSendFrameParseProcess->m_SendToTable[nTo].m_bDoSendFirstFrame)
-	{
-		// Send Keyframe?
-		if ((pHdr->FragmentNum == 0) && (pHdr->Flags & NETFRAME_FLAG_KEYFRAME))
-			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bSendingKeyFrame = TRUE;
-
-		// Do Send?
-		if (m_pSendFrameParseProcess->m_SendToTable[nTo].m_bSendingKeyFrame)
-		{
-			// Inc. Count
-			if (pHdr->FragmentNum == 0)
-			{
-				if (bReSending)
-					++m_pSendFrameParseProcess->m_SendToTable[nTo].m_dwReSentFrameCount;
-				else
-					++m_pSendFrameParseProcess->m_SendToTable[nTo].m_dwSentFrameCount;
-			}
-
-			// Send Fragment
-			m_dwSendFrameTotalSentBytes += (DWORD)pNetCom->WriteDatagramTo(	m_pSendFrameParseProcess->m_SendToTable[nTo].GetAddrPtr(),
-																			Hdr, HdrSize, Data, DataSize, bHighPriority);
-		}
-
-		// Is Last Fragment of Keyframe?
-		if (pHdr->FragmentNum == pHdr->TotalFragments - 1 &&
-			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bSendingKeyFrame)
-		{
-			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bSendingKeyFrame = FALSE;
-			m_pSendFrameParseProcess->m_SendToTable[nTo].m_bDoSendFirstFrame = FALSE;
-		}
-	}
-	else
-	{
-		// Inc. Count
-		if (pHdr->FragmentNum == 0)
-		{
-			if (bReSending)
-				++m_pSendFrameParseProcess->m_SendToTable[nTo].m_dwReSentFrameCount;
-			else
-				++m_pSendFrameParseProcess->m_SendToTable[nTo].m_dwSentFrameCount;
-		}
-			
-		// Send Fragment
-		m_dwSendFrameTotalSentBytes += (DWORD)pNetCom->WriteDatagramTo(	m_pSendFrameParseProcess->m_SendToTable[nTo].GetAddrPtr(),
-																		Hdr, HdrSize, Data, DataSize, bHighPriority);
-	}
-}
-
-void CVideoDeviceDoc::UpdateFrameSendToTableAndFlowControl(BOOL b4SecTick)
-{
-	// Clear dead streams and count the number of alive connections
-	int nCount = 0;
-	::EnterCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-	for (int i = 0 ; i < m_nSendFrameMaxConnections ; i++)
-	{
-		if (m_pSendFrameParseProcess->m_SendToTable[i].IsAddrSet())
-		{
-			if (m_pSendFrameParseProcess->m_SendToTable[i].IsKeepAliveOlderThan(SENDFRAME_MAX_CONNECTION_TIMEOUT))
-				m_pSendFrameParseProcess->m_SendToTable[i].Clear();
-			else
-				nCount++;
-		}
-	}
-	::LeaveCriticalSection(&m_pSendFrameParseProcess->m_csSendToTable);
-	m_nSendFrameConnectionsCount = nCount;
-
-	// Flow control every 4 sec
-	if (b4SecTick)
-	{
-		// Get Tx Fifo Size
-		::EnterCriticalSection(&m_csSendFrameNetCom);
-		int nTxFifoSize = 0;
-		if (m_pSendFrameNetCom)
-			nTxFifoSize = (int)m_pSendFrameNetCom->GetTxFifoSize();
-		::LeaveCriticalSection(&m_csSendFrameNetCom);
-
-		// Update SendFrame Datarate Correction and SendFrame Max Connections
-		double dNewSendFrameDatarateCorrection = m_dSendFrameDatarateCorrection;
-		int nTxFifoSizePerConnection = 0;
-		if (m_nSendFrameConnectionsCount > 0)
-			nTxFifoSizePerConnection = nTxFifoSize / m_nSendFrameConnectionsCount;
-		if (nTxFifoSizePerConnection > 32 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-		{
-			m_nSendFrameMaxConnections = 0;
-			dNewSendFrameDatarateCorrection = 1.0;
-		}
-		else if (nTxFifoSizePerConnection > 16 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-			dNewSendFrameDatarateCorrection += 2.0;
-		else if (nTxFifoSizePerConnection > 8 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-			dNewSendFrameDatarateCorrection += 1.2;
-		else if (nTxFifoSizePerConnection > 4 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-			dNewSendFrameDatarateCorrection += 0.7;
-		else if (nTxFifoSizePerConnection > 2 * (int)m_dwMaxSendFrameFragmentsPerFrame)
-			dNewSendFrameDatarateCorrection += 0.3;
-		else if (nTxFifoSizePerConnection > (3 * (int)m_dwMaxSendFrameFragmentsPerFrame / 2))
-			dNewSendFrameDatarateCorrection += 0.1;
-		else if (nTxFifoSizePerConnection <= (int)m_dwMaxSendFrameFragmentsPerFrame)
-		{
-			// Restore max connections
-			if (m_nSendFrameMaxConnections == 0 && nTxFifoSize == 0)
-			{
-				m_nSendFrameMaxConnections = m_nSendFrameMaxConnectionsConfig;
-				dNewSendFrameDatarateCorrection = 1.25;
-			}
-			// Decrease datarate correction
-			else
-				dNewSendFrameDatarateCorrection -= 0.2;
-		}
-
-		// Clip
-		if (dNewSendFrameDatarateCorrection < 1.0)
-			dNewSendFrameDatarateCorrection = 1.0;
-		else if (dNewSendFrameDatarateCorrection > 10.0)
-			dNewSendFrameDatarateCorrection = 10.0;
-		m_dSendFrameDatarateCorrection = dNewSendFrameDatarateCorrection;
-	}
-
-	// Update Total Send Bandwidth
-	DWORD dwOverallDatarate;
-	if (m_nSendFrameMaxConnections == 0)
-	{
-		dwOverallDatarate = MAX(m_dwSendFrameOverallDatarate,
-							(DWORD)m_nSendFrameMaxConnectionsConfig * (DWORD)(m_nSendFrameDataRate / 8)); // bps -> bytes / sec
-	}
-	else
-	{
-		dwOverallDatarate = m_dwSendFrameOverallDatarate;
-		if (dwOverallDatarate == 0)
-			dwOverallDatarate = (DWORD)m_nSendFrameConnectionsCount * (DWORD)(m_nSendFrameDataRate / 8); // bps -> bytes / sec
-		if (dwOverallDatarate == 0)
-			dwOverallDatarate = (DWORD)m_nSendFrameMaxConnectionsConfig * (DWORD)(m_nSendFrameDataRate / 8); // bps -> bytes / sec
-	}
-	DWORD dwMaxBandwidth = MAX((DWORD)(SENDFRAME_MIN_DATARATE / 8),	// bps -> bytes / sec
-							(DWORD)Round(m_dSendFrameDatarateCorrection * dwOverallDatarate));
-	::EnterCriticalSection(&m_csSendFrameNetCom);
-	if (m_pSendFrameNetCom)
-		m_pSendFrameNetCom->SetMaxTxDatagramBandwidth(dwMaxBandwidth);
-	::LeaveCriticalSection(&m_csSendFrameNetCom);
-}
-
-int CVideoDeviceDoc::CSendFrameParseProcess::Encode(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
-{
-	int res = 0;
-
-	// Check
-	if (!pDib)
-		return -1;
-
-	// (Re)Open AV Codec
-	double dSendFrameRate = GetSendFrameRate();
-	if (!pDib->IsSameBMI((LPBITMAPINFO)&m_CurrentBMI)			||
-		m_nCurrentDataRate != m_pDoc->m_nSendFrameDataRate		||
-		m_nCurrentSizeDiv != m_pDoc->m_nSendFrameSizeDiv		||
-		m_nCurrentFreqDiv != m_pDoc->m_nSendFrameFreqDiv		||
-		dSendFrameRate > m_dCurrentSendFrameRate * 1.3			||
-		dSendFrameRate < m_dCurrentSendFrameRate * 0.7)
-		OpenAVCodec(pDib->GetBMI());
-
-	// Check Codec Context
-	if (!m_pCodecCtx)
-		return -1;
-
-	// Fill Src Frame
-	avpicture_fill(	(AVPicture*)m_pFrame,
-					(uint8_t*)pDib->GetBits(),
-					CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI()),
-					pDib->GetWidth(),
-					pDib->GetHeight());
-
-	// Direct Encode?
-	if (m_nCurrentSizeDiv == 0)
-	{
-		// Encode
-		int nEncodedSize = avcodec_encode_video(m_pCodecCtx,
-												m_pOutbuf + NETFRAME_HEADER_SIZE,
-												m_nOutbufSize - NETFRAME_HEADER_SIZE,
-												m_pFrame);
-		if (nEncodedSize < 0)
-			return -1;
-		ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
-		*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
-		*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;
-		*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
-		*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
-		*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
-		*((DWORD*)&m_pOutbuf[24]) = 0U; // Reserved1
-		*((DWORD*)&m_pOutbuf[28]) = 0U; // Reserved2
-		if (m_pCodecCtx->extradata_size > 0 &&
-			IsKeyFrame()					&&
-			dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
-		{
-			m_dwLastExtradataSendUpTime = dwRefUpTime;
-			memcpy(&m_pOutbuf[NETFRAME_HEADER_SIZE + nEncodedSize], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
-			*((DWORD*)&m_pOutbuf[12]) = (DWORD)m_pCodecCtx->extradata_size;
-			return NETFRAME_HEADER_SIZE + nEncodedSize + m_pCodecCtx->extradata_size;
-		}
-		else
-		{
-			*((DWORD*)&m_pOutbuf[12]) = 0U;
-			return NETFRAME_HEADER_SIZE + nEncodedSize;
-		}
-	}
-	else
-	{
-		// Shrink
-		if (m_pImgConvertCtx)
-		{
-			int sws_scale_res = sws_scale(	m_pImgConvertCtx,		// Image Convert Context
-											m_pFrame->data,			// Source Data
-											m_pFrame->linesize,		// Source Stride
-											0,						// Source Slice Y
-											pDib->GetHeight(),		// Source Height
-											m_pFrameI420->data,		// Destination Data
-											m_pFrameI420->linesize);// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
-			res = sws_scale_res > 0 ? 1 : -1;
-#else
-			res = sws_scale_res >= 0 ? 1 : -1;
-#endif
-		}		
-		if (res == 1)
-		{
-			// Re-add frame time after shrinking
-			if (m_pDoc->m_bShowFrameTime)
-			{
-				BITMAPINFOHEADER Bmi;
-				memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-				Bmi.biSize = sizeof(BITMAPINFOHEADER);
-				Bmi.biWidth = m_pCodecCtx->width;
-				Bmi.biHeight = m_pCodecCtx->height;
-				Bmi.biPlanes = 1;
-				Bmi.biBitCount = 12;
-				Bmi.biCompression = FCC('I420');
-				Bmi.biSizeImage = m_dwI420ImageSize;
-				CDib TmpDib;
-				TmpDib.SetShowMessageBoxOnError(FALSE);
-				TmpDib.SetDibPointers((LPBITMAPINFO)&Bmi, (LPBYTE)m_pFrameI420->data[0]);
-				TmpDib.SetUpTime(pDib->GetUpTime());
-				AddFrameTime(&TmpDib, RefTime, dwRefUpTime);
-				TmpDib.SetDibPointers(NULL, NULL);
-			}
-
-			// Encode
-			int nEncodedSize = avcodec_encode_video(m_pCodecCtx,
-													m_pOutbuf + NETFRAME_HEADER_SIZE,
-													m_nOutbufSize - NETFRAME_HEADER_SIZE,
-													m_pFrameI420);
-			if (nEncodedSize < 0)
-				return -1;
-			ASSERT(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE >= nEncodedSize + NETFRAME_HEADER_SIZE + m_pCodecCtx->extradata_size);
-			*((DWORD*)&m_pOutbuf[0]) = (DWORD)m_CodecID;
-			*((DWORD*)&m_pOutbuf[4]) = m_dwEncryptionType;
-			*((DWORD*)&m_pOutbuf[8]) = (DWORD)nEncodedSize;
-			*((DWORD*)&m_pOutbuf[16]) = (DWORD)m_pCodecCtx->width;
-			*((DWORD*)&m_pOutbuf[20]) = (DWORD)m_pCodecCtx->height;
-			*((DWORD*)&m_pOutbuf[24]) = 0U; // Reserved1
-			*((DWORD*)&m_pOutbuf[28]) = 0U; // Reserved2
-			if (m_pCodecCtx->extradata_size > 0 &&
-				IsKeyFrame()					&&
-				dwRefUpTime - m_dwLastExtradataSendUpTime > SENDFRAME_EXTRADATA_SENDRATE)
-			{
-				m_dwLastExtradataSendUpTime = dwRefUpTime;
-				memcpy(&m_pOutbuf[NETFRAME_HEADER_SIZE + nEncodedSize], m_pCodecCtx->extradata, m_pCodecCtx->extradata_size);
-				*((DWORD*)&m_pOutbuf[12]) = (DWORD)m_pCodecCtx->extradata_size;
-				return NETFRAME_HEADER_SIZE + nEncodedSize + m_pCodecCtx->extradata_size;
-			}
-			else
-			{
-				*((DWORD*)&m_pOutbuf[12]) = 0U;
-				return NETFRAME_HEADER_SIZE + nEncodedSize;
-			}
-		}
-	}
-
-	return -1;
-}
-
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::OpenAVCodec(LPBITMAPINFO pBMI)
-{
-	// Check
-	if (!pBMI)
-		return FALSE;
-
-	// Free
-	FreeAVCodec();
-
-	// Frequency
-	m_nCurrentFreqDiv = m_pDoc->m_nSendFrameFreqDiv;
-	m_dCurrentSendFrameRate = GetSendFrameRate();
-	AVRational CalcFrameRate = av_d2q(m_dCurrentSendFrameRate, MAX_SIZE_FOR_RATIONAL);
-
-    // Find the encoder for the video stream
-	m_pCodec = avcodec_find_encoder(m_CodecID);
-    if (!m_pCodec)
-        goto error_noclose;
-
-	// Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
-	if (!m_pCodecCtx)
-		goto error_noclose;
-
-	// Set Output Width and Height
-	m_nCurrentSizeDiv = m_pDoc->m_nSendFrameSizeDiv;
-	m_pCodecCtx->width = pBMI->bmiHeader.biWidth >> m_nCurrentSizeDiv;
-	m_pCodecCtx->height = pBMI->bmiHeader.biHeight >> m_nCurrentSizeDiv;
-
-	// Key frame each second
-	m_pCodecCtx->gop_size = m_dCurrentSendFrameRate <= 1.0 ? 1 : Round(m_dCurrentSendFrameRate);
-
-	// No B-Frames
-	m_pCodecCtx->max_b_frames = 0;
-
-	// Format
-	m_pCodecCtx->pix_fmt = PIX_FMT_YUV420P;
-	m_pCodecCtx->codec_type = CODEC_TYPE_VIDEO;
-
-	// Codec specific settings
-	if (m_CodecID == CODEC_ID_SNOW)
-	{
-		m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-		m_pCodecCtx->prediction_method = 0;
-		m_pCodecCtx->me_cmp = 1;
-		m_pCodecCtx->me_sub_cmp = 1;
-		m_pCodecCtx->mb_cmp = 1;
-		m_pCodecCtx->flags |= CODEC_FLAG_QPEL;
-	}
-	else if (m_CodecID == CODEC_ID_MPEG4)
-	{
-		m_pCodecCtx->mb_decision = 2;							// mbd: macroblock decision mode
-		m_pCodecCtx->flags |= (CODEC_FLAG_AC_PRED			|	// aic: MPEG-4 AC prediction
-								CODEC_FLAG_4MV);				// mv4: 4 MV per MB allowed
-	}
-	else if (	m_CodecID == CODEC_ID_H263P ||
-				m_CodecID == CODEC_ID_H263)
-	{
-		m_pCodecCtx->mb_decision = 2;							// mbd: macroblock decision mode
-		m_pCodecCtx->flags |=	(CODEC_FLAG_AC_PRED			|	// aic: H.263 advanced intra coding
-								CODEC_FLAG_4MV				|	// mv4: advanced prediction for H.263
-								CODEC_FLAG_LOOP_FILTER		|	// lf:  use loop filter (h263+)
-								/*CODEC_FLAG_H263P_SLICE_STRUCT	|*/	// ssm: necessary if multi-threading (h263+)
-								CODEC_FLAG_H263P_AIV		|	// aiv: H.263+ alternative inter VLC
-								CODEC_FLAG_H263P_UMV);			// umv: Enable Unlimited Motion Vector (h263+)
-	}
-	else if (m_CodecID == CODEC_ID_THEORA)
-		m_pCodecCtx->flags |= CODEC_FLAG2_FAST;
-	else if (m_CodecID == CODEC_ID_MJPEG)
-		m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_INOFFICIAL; // to allow the PIX_FMT_YUV420P format
-
-	// Set Datarate
-	m_nCurrentDataRate = m_pCodecCtx->bit_rate = m_pDoc->m_nSendFrameDataRate;
-
-	/* time base: this is the fundamental unit of time (in seconds) in terms
-       of which frame timestamps are represented. for fixed-fps content,
-       timebase should be 1/framerate and timestamp increments should be
-       identically 1. */
-	m_pCodecCtx->time_base.den = CalcFrameRate.num;
-	m_pCodecCtx->time_base.num = CalcFrameRate.den;
-
-	// Open codec
-    if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
-        goto error_noclose;
-
-	// Allocate video frames
-    m_pFrame = avcodec_alloc_frame();
-	if (!m_pFrame)
-        goto error;
-	m_pFrameI420 = avcodec_alloc_frame();
-	if (!m_pFrameI420)
-        goto error;
-
-	// Allocate Outbuf
-	m_nOutbufSize = NETFRAME_HEADER_SIZE + 4 * m_pCodecCtx->width * m_pCodecCtx->height + m_pCodecCtx->extradata_size;
-	if (m_nOutbufSize < FF_MIN_BUFFER_SIZE)
-		m_nOutbufSize = FF_MIN_BUFFER_SIZE;
-	m_pOutbuf = new uint8_t[m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE];
-	if (!m_pOutbuf)
-	{
-		m_nOutbufSize = 0;
-		return FALSE;
-	}
-
-	// Init Image Convert
-	if (m_nCurrentSizeDiv != 0)
-	{
-		// Determine required buffer size and allocate buffer if necessary
-		m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
-												m_pCodecCtx->width,
-												m_pCodecCtx->height);
-		if (m_dwI420BufSize < m_dwI420ImageSize || m_pI420Buf == NULL)
-		{
-			if (m_pI420Buf)
-				delete [] m_pI420Buf;
-			m_pI420Buf = new BYTE[m_dwI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE];
-			if (!m_pI420Buf)
-				return FALSE;
-			m_dwI420BufSize = m_dwI420ImageSize;
-		}
-
-		// Assign appropriate parts of buffer to image planes
-		avpicture_fill((AVPicture*)m_pFrameI420,
-						(unsigned __int8 *)m_pI420Buf,
-						PIX_FMT_YUV420P,
-						m_pCodecCtx->width,
-						m_pCodecCtx->height);
-
-		// Prepare Image Conversion Context
-		m_pImgConvertCtx = sws_getContext(	pBMI->bmiHeader.biWidth,	// Source Width
-											pBMI->bmiHeader.biHeight,	// Source Height
-											CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBMI), // Source Format
-											m_pCodecCtx->width,			// Destination Width
-											m_pCodecCtx->height,		// Destination Height
-											m_pCodecCtx->pix_fmt,		// Destination Format
-											SWS_BICUBIC,				// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-											NULL,						// No Src Filter
-											NULL,						// No Dst Filter
-											NULL);						// Param
-	}
-
-	// Set Current BMI
-	memcpy(&m_CurrentBMI, pBMI, MIN(sizeof(BITMAPINFOFULL), CDib::GetBMISize(pBMI)));
-
-	return (m_pImgConvertCtx != NULL);
-
-error:
-	FreeAVCodec();
-	return FALSE;
-error_noclose:
-	FreeAVCodec(TRUE);
-	return FALSE;
-}
-
-void CVideoDeviceDoc::CSendFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*/)
-{
-	if (m_pCodecCtx)
-	{
-		// Close
-		if (!bNoClose)
-			avcodec_close_thread_safe(m_pCodecCtx);
-
-		// Free
-		if (m_pCodecCtx->stats_in)
-			av_freep(&m_pCodecCtx->stats_in);
-		if (m_pCodecCtx->extradata)
-			av_freep(&m_pCodecCtx->extradata);
-		m_pCodecCtx->extradata_size = 0;
-		av_freep(&m_pCodecCtx);
-		m_pCodec = NULL;
-	}
-	if (m_pFrame)
-	{
-		av_free(m_pFrame);
-		m_pFrame = NULL;
-	}
-	if (m_pFrameI420)
-    {
-		av_free(m_pFrameI420);
-		m_pFrameI420 = NULL;
-	}
-	if (m_pImgConvertCtx)
-	{
-		sws_freeContext(m_pImgConvertCtx);
-		m_pImgConvertCtx = NULL;
-	}
-	if (m_pI420Buf)
-	{
-		delete [] m_pI420Buf;
-		m_pI420Buf = NULL;
-	}
-	m_dwI420BufSize = 0;
-	m_dwI420ImageSize = 0;
-	memset(&m_CurrentBMI, 0, sizeof(BITMAPINFOFULL));
-	if (m_pOutbuf)
-	{
-		delete [] m_pOutbuf;
-		m_pOutbuf = NULL;
-	}
-	m_nOutbufSize = 0;
-}
-
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
-{
-	int i;
-
-	// The Received Datagram
-	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
-	
-	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
-	{
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-
-	// Get Header
-	NetFrameHdrStruct Hdr;
-	if (pBuf->GetMsgSize() < sizeof(NetFrameHdrStruct))
-	{
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-	memcpy(&Hdr, pBuf->GetBuf(), sizeof(NetFrameHdrStruct));
-
-	// Ping Request?
-	if (Hdr.Type & NETFRAME_TYPE_PING_REQ)
-	{
-		// Header
-		NetFrameHdrPingAuth* pReqPingHdr = (NetFrameHdrPingAuth*)&Hdr;
-		NetFrameHdrPingAuth AnsPingHdr;
-		AnsPingHdr.dwUpTime = pReqPingHdr->dwUpTime;
-		AnsPingHdr.wSeq = pReqPingHdr->wSeq;
-		AnsPingHdr.dwExtraSize = pReqPingHdr->dwExtraSize;
-		AnsPingHdr.Type = NETFRAME_TYPE_PING_ANS;
-		AnsPingHdr.Flags = 0;
-
-		// Send
-		pNetCom->WriteDatagramTo(pBuf->GetAddrPtr(),
-								(LPBYTE)&AnsPingHdr,
-								sizeof(NetFrameHdrPingAuth),
-								NULL,
-								0,
-								TRUE);
-
-	}
-	
-	// Video?
-	if (Hdr.Flags & NETFRAME_FLAG_VIDEO)
-	{
-		// Frame Confirmation?
-		if (Hdr.Type & NETFRAME_TYPE_FRAME_CONF)
-		{
-			// Update Confirmed Frames Count
-			::EnterCriticalSection(&m_csSendToTable);
-			for (i = 0 ; i < m_pDoc->m_nSendFrameMaxConnections ; i++)
-			{
-				if (m_SendToTable[i].IsAddrEqualTo(pBuf->GetAddrPtr()))
-				{
-					m_SendToTable[i].m_dwConfirmedFrameCount++;
-					break;
-				}
-			}
-			::LeaveCriticalSection(&m_csSendToTable);
-		}
-		else if (Hdr.Type & NETFRAME_TYPE_FRAME_RESEND)
-		{
-			NetFrameHdrStructConf* pHdrConf = (NetFrameHdrStructConf*)&Hdr;
-			m_pDoc->ReSendUDPFrame(pBuf->GetAddrPtr(), pHdrConf->wSeq);
-		}
-		else if (Hdr.Type & NETFRAME_TYPE_FRAMES_LOST)
-		{
-			NetFrameHdrStructFramesLost* pHdrLost = (NetFrameHdrStructFramesLost*)&Hdr;
-
-			// Update Lost Frames Count
-			::EnterCriticalSection(&m_csSendToTable);
-			for (i = 0 ; i < m_pDoc->m_nSendFrameMaxConnections ; i++)
-			{
-				if (m_SendToTable[i].IsAddrEqualTo(pBuf->GetAddrPtr()))
-				{
-					m_SendToTable[i].m_dwLostFrameCount += pHdrLost->wLostCount;
-					break;
-				}
-			}
-			::LeaveCriticalSection(&m_csSendToTable);
-		}
-		
-		// Frame Request & Keep-Alive?
-		if ((Hdr.Type & NETFRAME_TYPE_FRAME_REQ)	||
-			(Hdr.Type & NETFRAME_TYPE_FRAME_REQ_AUTH))
-		{
-			BOOL bKeepAlive = FALSE;
-
-			::EnterCriticalSection(&m_csSendToTable);
-
-			for (i = 0 ; i < m_pDoc->m_nSendFrameMaxConnections ; i++)
-			{
-				// Is Keep Alive?
-				if (m_SendToTable[i].IsAddrEqualTo(pBuf->GetAddrPtr()))
-				{
-					if (Authenticate(pNetCom, pBuf, (NetFrameHdrPingAuth*)&Hdr, &m_SendToTable[i]))
-						m_SendToTable[i].SetCurrentKeepAliveUpTime();
-					bKeepAlive = TRUE;
-					break;
-				}
-			}
-
-			// New Addr?
-			if (!bKeepAlive)
-			{
-				// Find an empty place, if any left
-				for (i = 0 ; i < m_pDoc->m_nSendFrameMaxConnections ; i++)
-				{
-					if (!m_SendToTable[i].IsAddrSet())
-					{
-						if (Authenticate(pNetCom, pBuf, (NetFrameHdrPingAuth*)&Hdr, &m_SendToTable[i]))
-						{
-							m_SendToTable[i].SetCurrentKeepAliveUpTime();
-							m_SendToTable[i].m_bDoSendFirstFrame = TRUE;
-							m_SendToTable[i].SetAddr(pBuf->GetAddrPtr());
-						}
-						break;
-					}
-				}
-			}
-
-			::LeaveCriticalSection(&m_csSendToTable);
-		}
-	}
-
-	// Clean-up
-	pNetCom->RemoveReadHeadBuf();
-	delete pBuf;
-
-	return FALSE; // Never Call Processor!
-}
-
-BOOL CVideoDeviceDoc::CSendFrameParseProcess::Authenticate(CNetCom* pNetCom,
-														   CNetCom::CBuf* pBuf,
-														   NetFrameHdrPingAuth* pHdr,
-														   CSendFrameToEntry* pTableEntry)
-{
-	// Get current up-time
-	DWORD dwCurrentUpTime = ::timeGetTime();
-
-	// Send an authentication request?
-	if ((pHdr->Type & NETFRAME_TYPE_FRAME_REQ)	&&
-		(m_pDoc->m_sSendFrameUsername != _T("")	||
-		m_pDoc->m_sSendFramePassword != _T("")))
-	{
-		if ((dwCurrentUpTime - pTableEntry->m_dwAuthUpTime > GETFRAME_GENERATOR_RATE)	&&
-			(!pTableEntry->m_bAuthSent || (dwCurrentUpTime - pTableEntry->m_dwAuthUpTime > SENDFRAME_AUTH_TIMEOUT)))
-		{
-			// Header
-			NetFrameHdrPingAuth AuthHrd;
-			pTableEntry->m_dwAuthUpTime = dwCurrentUpTime;
-			AuthHrd.dwUpTime = pTableEntry->m_dwAuthUpTime;
-			AuthHrd.wSeq = ++(pTableEntry->m_wAuthSeq);
-			AuthHrd.dwExtraSize = 0;
-			AuthHrd.Type = NETFRAME_TYPE_FRAME_REQ_AUTH;
-			AuthHrd.Flags = NETFRAME_FLAG_VIDEO;
-			if (pTableEntry->m_bAuthFailed)
-				AuthHrd.Flags |= NETFRAME_FLAG_AUTH_FAILED;
-
-			// Send
-			if (pNetCom->WriteDatagramTo(pBuf->GetAddrPtr(),
-										(LPBYTE)&AuthHrd,
-										sizeof(NetFrameHdrPingAuth),
-										NULL,
-										0,
-										TRUE) > 0)
-				pTableEntry->m_bAuthSent = TRUE;
-			else
-				pTableEntry->m_bAuthSent = FALSE;
-		}
-
-		return FALSE; // Not authenticated yet
-	}
-	else
-	{
-		// Authentication response received, verify it
-		if (pHdr->Type & NETFRAME_TYPE_FRAME_REQ_AUTH)
-		{
-			if (pHdr->dwExtraSize == 16									&&
-				pBuf->GetMsgSize() >= sizeof(NetFrameHdrPingAuth) + 16	&&
-				pTableEntry->m_bAuthSent								&&
-				pHdr->wSeq == pTableEntry->m_wAuthSeq)
-			{
-				pTableEntry->m_bAuthSent = FALSE;
-				USES_CONVERSION;
-				CPJNMD5 hmac;
-				CPJNMD5Hash calc_hash;
-				CPJNMD5Hash rx_hash;
-				memcpy(rx_hash.m_byHash, pBuf->GetBuf() + sizeof(NetFrameHdrPingAuth), 16);
-				CString sNonce, sCNonce, sToHash;
-				sNonce.Format(_T("%08x"), pTableEntry->m_dwAuthUpTime);
-				sCNonce.Format(_T("%08x"), pHdr->dwUpTime);
-				sToHash = m_pDoc->m_sSendFrameUsername + sNonce + m_pDoc->m_sSendFramePassword + sCNonce;
-				char* psz = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
-				if (hmac.Hash((const BYTE*)psz, (DWORD)strlen(psz), calc_hash))
-				{
-					if (memcmp(calc_hash.m_byHash, rx_hash.m_byHash, 16) == 0)
-					{
-						pTableEntry->m_bAuthFailed = FALSE;
-						return TRUE; // Authentication ok
-					}
-					else
-						pTableEntry->m_bAuthFailed = TRUE;
-				}
-			}
-
-			return FALSE; // Not authenticated
-		}
-		// NETFRAME_TYPE_FRAME_REQ request with username and password not set
-		else
-			return TRUE; // Authentication ok
-	}
-}
-
-void CVideoDeviceDoc::CSendFrameParseProcess::ClearTable()
-{
-	::EnterCriticalSection(&m_csSendToTable);
-
-	for (int i = 0 ; i < m_pDoc->m_nSendFrameMaxConnections ; i++)
-		m_SendToTable[i].Clear();
-
-	::LeaveCriticalSection(&m_csSendToTable);
-}
-
-BOOL CVideoDeviceDoc::CGetFrameGenerator::Generate(CNetCom* pNetCom)
-{
-	// Header
-	NetFrameHdrPingAuth Hdr;
-	Hdr.dwUpTime = ::timeGetTime();
-	Hdr.wSeq = 0;
-	Hdr.dwExtraSize = 0;
-	Hdr.Type = NETFRAME_TYPE_FRAME_REQ | NETFRAME_TYPE_PING_REQ;
-	Hdr.Flags = NETFRAME_FLAG_VIDEO;
-	
-	// Send
-	pNetCom->WriteDatagram((LPBYTE)&Hdr,
-							sizeof(NetFrameHdrStruct),
-							NULL,
-							0,
-							TRUE);
-
-	return TRUE; // Call the Generator again with the next tx timeout
-}
-
-__forceinline BYTE CVideoDeviceDoc::CGetFrameParseProcess::ReSendCountDown(	int nReSendCount,
-																			int nCount,
-																			int nCountOffset)
-{
-	int i;
-	switch (nReSendCount)
-	{
-		case 0 : i = 2;   break;
-		case 1 : i = 8;   break;
-		case 2 : i = 34;  break;
-		case 3 : i = 144; break;
-		default: return 255;
-	}
-	int z;
-	switch (m_pDoc->m_dwGetFrameMaxFrames)
-	{
-		case 8 :   z = 0; break;
-		case 16 :  z = 1; break;
-		case 32 :  z = 2; break;
-		case 64 :  z = 3; break;
-		case 96 :  z = 4; break;
-		case 128 : z = 5; break;
-		case 192 : z = 6; break;
-		default:   z = 7; break;
-	}
-	return (BYTE)MIN(255, i + nCount + MAX(nCountOffset, z));
-}
-
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bLastCall)
-{
-	ASSERT(m_pDoc);
-	DWORD dwFrame;
-	DWORD dwTimeDiff;
-	DWORD dwMaxFragmentAge = m_pDoc->m_dwGetFrameMaxFrames * 1000U; // ms
-
-	// The Received Datagram
-	CNetCom::CBuf* pBuf = pNetCom->GetReadHeadBuf();
-	
-	// Check Packet Family
-	if (pBuf->GetAddrPtr()->sa_family != AF_INET && pBuf->GetAddrPtr()->sa_family != AF_INET6)
-	{
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-
-	// Check Datagram Size
-	ASSERT(pBuf->GetMsgSize() <= NETCOM_MAX_TX_BUFFER_SIZE);
-
-	// Get Header
-	NetFrameHdrStruct Hdr;
-	if (pBuf->GetMsgSize() < sizeof(NetFrameHdrStruct))
-	{
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-	memcpy(&Hdr, pBuf->GetBuf(), sizeof(NetFrameHdrStruct));
-
-	// Get Current Up-Time
-	DWORD dwCurrentUpTime = ::timeGetTime();
-
-	// Ping Request?
-	if (Hdr.Type & NETFRAME_TYPE_PING_REQ)
-	{
-		// Header
-		NetFrameHdrPingAuth* pReqPingHdr = (NetFrameHdrPingAuth*)&Hdr;
-		NetFrameHdrPingAuth AnsPingHdr;
-		AnsPingHdr.dwUpTime = pReqPingHdr->dwUpTime;
-		AnsPingHdr.wSeq = pReqPingHdr->wSeq;
-		AnsPingHdr.dwExtraSize = pReqPingHdr->dwExtraSize;
-		AnsPingHdr.Type = NETFRAME_TYPE_PING_ANS;
-		AnsPingHdr.Flags = 0;
-
-		// Send
-		pNetCom->WriteDatagram((LPBYTE)&AnsPingHdr,
-								sizeof(NetFrameHdrPingAuth),
-								NULL,
-								0,
-								TRUE);
-
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-	// Ping Answer?
-	else if (Hdr.Type & NETFRAME_TYPE_PING_ANS)
-	{
-		// Header
-		NetFrameHdrPingAuth* pAnsPingHdr = (NetFrameHdrPingAuth*)&Hdr;
-		if (m_dwPingRT == 0)
-		{
-			dwTimeDiff = dwCurrentUpTime - pAnsPingHdr->dwUpTime;
-			if (dwTimeDiff <= NETFRAME_MAX_PING_RT)
-				m_dwPingRT = MAX(1U, dwTimeDiff);
-			else
-				m_dwPingRT = NETFRAME_MAX_PING_RT;
-		}
-		TRACE(_T("Ping RT : %ums\n"), m_dwPingRT);
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-	// Authentication Request?
-	else if (Hdr.Type & NETFRAME_TYPE_FRAME_REQ_AUTH)
-	{
-		// Header
-		NetFrameHdrPingAuth* pReqAuthHdr = (NetFrameHdrPingAuth*)&Hdr;
-		NetFrameHdrPingAuth AuthHrd;
-		AuthHrd.dwUpTime = ::timeGetTime();
-		AuthHrd.wSeq = pReqAuthHdr->wSeq;
-		AuthHrd.dwExtraSize = 16;
-		AuthHrd.Type = pReqAuthHdr->Type;
-		AuthHrd.Flags = pReqAuthHdr->Flags;
-
-		// Prompt for username and password?
-		if ((pReqAuthHdr->Flags & NETFRAME_FLAG_AUTH_FAILED)	||	// Wrong username and/or password
-			(m_pDoc->m_sGetFrameUsername == _T("")	&&	// No username
-			m_pDoc->m_sGetFramePassword == _T("")))		// No password
-		{
-			CAuthenticationDlg dlg;
-			dlg.m_sUsername = m_pDoc->m_sGetFrameUsername;
-			if (dlg.DoModal() == IDCANCEL)
-			{
-				pNetCom->RemoveReadHeadBuf();
-				delete pBuf;
-				return FALSE;
-			}
-			else
-			{
-				m_pDoc->m_sGetFrameUsername = dlg.m_sUsername;
-				m_pDoc->m_sGetFramePassword = dlg.m_sPassword;
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-					dlg.m_bSaveAuthenticationData)
-				{
-					CString sSection(m_pDoc->GetDevicePathName());
-					((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sSection, _T("GetFrameUsername"), m_pDoc->m_sGetFrameUsername);
-					((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sSection, _T("GetFramePassword"), m_pDoc->m_sGetFramePassword);
-				}
-			}
-		}
-
-		// Calc. hash and send it back
-		USES_CONVERSION;
-		CPJNMD5 hmac;
-		CPJNMD5Hash calc_hash;
-		CString sNonce, sCNonce, sToHash;
-		sNonce.Format(_T("%08x"), pReqAuthHdr->dwUpTime);
-		sCNonce.Format(_T("%08x"), AuthHrd.dwUpTime);
-		sToHash = m_pDoc->m_sGetFrameUsername + sNonce + m_pDoc->m_sGetFramePassword + sCNonce;
-		char* psz = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
-		if (hmac.Hash((const BYTE*)psz, (DWORD)strlen(psz), calc_hash))
-		{
-			pNetCom->WriteDatagram(	(LPBYTE)&AuthHrd,
-									sizeof(NetFrameHdrPingAuth),
-									calc_hash.m_byHash,
-									16,
-									TRUE);
-		}
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-
-	// Check Header Type and Flag
-	if (!(Hdr.Type & NETFRAME_TYPE_FRAME_ANS) ||
-		!(Hdr.Flags & NETFRAME_FLAG_VIDEO))
-	{
-		pNetCom->RemoveReadHeadBuf();
-		delete pBuf;
-		return FALSE;
-	}
-
-	// Server stopped and restarted?
-	dwTimeDiff = Hdr.dwUpTime - m_dwLastFrameUpTime;
-	if (dwTimeDiff > dwMaxFragmentAge && dwTimeDiff < 0x80000000U)
-		m_bInitialized = FALSE;
-
-	// If First Frame
-	if (!m_bInitialized)
-	{
-		m_nTotalFragments[0] = Hdr.TotalFragments;
-		m_wPrevSeq = m_wFrameSeq[0] = Hdr.wSeq;
-		m_wPrevSeq = m_wPrevSeq - 1U;
-		for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-		{
-			m_dwUpTime[dwFrame] = Hdr.dwUpTime;
-			m_dwFrameSize[dwFrame] = 0U;
-			m_bKeyFrame[dwFrame] = FALSE;
-		}
-		for (dwFrame = 1U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-		{
-			m_nTotalFragments[dwFrame] = 0;
-			m_wFrameSeq[dwFrame] = 0U;
-			m_dwUpTime[dwFrame] -= dwFrame;
-		}
-		memset(&m_ReSendCount, 0, NETFRAME_RESEND_ARRAY_SIZE);
-		memset(&m_ReSendCountDown, 0, NETFRAME_RESEND_ARRAY_SIZE);
-		m_bInitialized = TRUE;
-		m_bFirstFrame = TRUE;
-		m_bSeekToKeyFrame = TRUE;
-		m_dwLastFrameUpTime = Hdr.dwUpTime;
-		m_dwLastReSendUpTime = dwCurrentUpTime;
-		m_dwLastPresentationUpTime = dwCurrentUpTime;
-	}
-
-	// Clean-up really old fragments
-	for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-	{
-		dwTimeDiff = Hdr.dwUpTime - m_dwUpTime[dwFrame];
-		if (dwTimeDiff > dwMaxFragmentAge && dwTimeDiff < 0x80000000U)
-		{
-			FreeFrameFragments(dwFrame);
-			m_bKeyFrame[dwFrame] = FALSE;
-			m_nTotalFragments[dwFrame] = 0;
-			m_dwUpTime[dwFrame] = 0U;
-			m_wFrameSeq[dwFrame] = 0U;
-			m_dwFrameSize[dwFrame] = 0U;
-		}
-	}
-
-	// Check whether fragment is part of a known frame
-	BOOL bFragmentAdded = FALSE;
-	for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-	{
-		if (m_wFrameSeq[dwFrame] == Hdr.wSeq)
-		{
-			// Set Vars
-			bFragmentAdded = TRUE;
-			if (m_Fragment[dwFrame][Hdr.FragmentNum])
-				delete m_Fragment[dwFrame][Hdr.FragmentNum];
-			m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
-			pNetCom->RemoveReadHeadBuf();
-			m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-			m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
-			m_dwUpTime[dwFrame] = Hdr.dwUpTime;
-			if (GetReceivedFragmentsCount(dwFrame) == m_nTotalFragments[dwFrame])
-			{
-				m_dwFrameSize[dwFrame] = CalcFrameSize(dwFrame);
-				SendConfirmation(pNetCom, Hdr.dwUpTime, m_dwFrameSize[dwFrame], Hdr.wSeq,
-								(Hdr.wSeq & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-			}
-			else
-				m_dwFrameSize[dwFrame] = 0U;
-			break;
-		}
-	}
-
-	// Fragment is not part of a known frame
-	if (!bFragmentAdded)
-	{
-		// Find empty space
-		for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-		{
-			if (m_nTotalFragments[dwFrame] == 0)
-			{
-				// Set Vars
-				bFragmentAdded = TRUE;
-				if (m_Fragment[dwFrame][Hdr.FragmentNum])
-					delete m_Fragment[dwFrame][Hdr.FragmentNum];
-				m_Fragment[dwFrame][Hdr.FragmentNum] = pBuf;
-				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwFrame] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-				m_nTotalFragments[dwFrame] = Hdr.TotalFragments;
-				m_dwUpTime[dwFrame] = Hdr.dwUpTime;
-				m_wFrameSeq[dwFrame] = Hdr.wSeq;
-				if (m_nTotalFragments[dwFrame] == 1)
-				{
-					m_dwFrameSize[dwFrame] = CalcFrameSize(dwFrame);
-					SendConfirmation(pNetCom, Hdr.dwUpTime, m_dwFrameSize[dwFrame], Hdr.wSeq,
-									(Hdr.wSeq & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-				}
-				else
-					m_dwFrameSize[dwFrame] = 0U;
-				break;
-			}
-		}
-
-		// Throw oldest because we could not find an empty space 
-		if (!bFragmentAdded)
-		{
-			// Find oldest place
-			WORD wOldestSeq = m_wFrameSeq[0];
-			DWORD dwOldestIndex = 0U;
-			for (dwFrame = 1U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-			{
-				if ((WORD)(m_wFrameSeq[dwFrame] - wOldestSeq) >= 0x8000U)
-				{
-					wOldestSeq = m_wFrameSeq[dwFrame];
-					dwOldestIndex = dwFrame;
-				}
-			}
-
-			// Current fragment is newer than oldest?
-			if ((WORD)(Hdr.wSeq - wOldestSeq) < 0x8000U) 
-			{
-				// Free
-				FreeFrameFragments(dwOldestIndex);
-				
-				// Set Vars
-				bFragmentAdded = TRUE;
-				if (m_Fragment[dwOldestIndex][Hdr.FragmentNum])
-					delete m_Fragment[dwOldestIndex][Hdr.FragmentNum];
-				m_Fragment[dwOldestIndex][Hdr.FragmentNum] = pBuf;
-				pNetCom->RemoveReadHeadBuf();
-				m_bKeyFrame[dwOldestIndex] = ((Hdr.Flags & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-				m_nTotalFragments[dwOldestIndex] = Hdr.TotalFragments;
-				m_dwUpTime[dwOldestIndex] = Hdr.dwUpTime;
-				m_wFrameSeq[dwOldestIndex] = Hdr.wSeq;
-				if (m_nTotalFragments[dwOldestIndex] == 1)
-				{
-					m_dwFrameSize[dwOldestIndex] = CalcFrameSize(dwOldestIndex);
-					SendConfirmation(pNetCom, Hdr.dwUpTime, m_dwFrameSize[dwOldestIndex], Hdr.wSeq,
-									(Hdr.wSeq & NETFRAME_FLAG_KEYFRAME) == NETFRAME_FLAG_KEYFRAME);
-				}
-				else
-					m_dwFrameSize[dwOldestIndex] = 0U;
-			}
-			else
-			{
-				pNetCom->RemoveReadHeadBuf();
-				delete pBuf;
-			}
-		}
-	}
-
-	// Calc. ready frames count
-	DWORD dwReadyFramesCount = 0U;
-	for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-	{
-		if (m_dwFrameSize[dwFrame] > 0U)
-			++dwReadyFramesCount;
-	}
-
-	// Frame Presentation
-	DWORD dwFrameIndex;
-	BOOL bFrameReady = FALSE;
-	DWORD dwUpTimeDiff = dwCurrentUpTime - m_dwLastPresentationUpTime;
-	DWORD dwUnit = m_pDoc->m_dwGetFrameMaxFrames / NETFRAME_MIN_FRAMES;
-	DWORD dwMaxFrames2 = m_pDoc->m_dwGetFrameMaxFrames / 2U;
-	if ((dwReadyFramesCount >= dwMaxFrames2 + 3U * dwUnit)
-																		||
-		(dwReadyFramesCount >= dwMaxFrames2 + dwUnit					&&
-		dwUpTimeDiff >= m_dwAvgFrameTime / 2U)
-																		||
-		(dwReadyFramesCount >= dwMaxFrames2								&&
-		dwUpTimeDiff >= 3U * m_dwAvgFrameTime / 4U)
-																		||
-		(dwReadyFramesCount >= dwMaxFrames2 - dwUnit					&&
-		dwUpTimeDiff >= 5U * m_dwAvgFrameTime / 4U)						
-																		||
-		(dwReadyFramesCount >= dwMaxFrames2 - 3U * dwUnit				&&
-		dwUpTimeDiff >= 2U * m_dwAvgFrameTime))
-	{
-		// Find successive frame in the frame seq.
-		BOOL bNextFrameIncomplete = FALSE;
-		for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-		{
-			if ((WORD)(m_wFrameSeq[dwFrame] - m_wPrevSeq) == 1U)
-			{
-				dwFrameIndex = dwFrame;
-				if (m_dwFrameSize[dwFrame] > 0U)
-				{
-					bFrameReady = TRUE;
-					dwFrameIndex = dwFrame;
-					bNextFrameIncomplete = FALSE;
-					break;
-				}
-				else
-					bNextFrameIncomplete = TRUE;
-			}
-		}
-		
-		// No frame with the right sequence has been found
-		// (the wanted one has been dropped)
-		// -> take the next one and enable seek to key frame
-		if (!bFrameReady)
-		{
-			// Warn
-#ifdef _DEBUG
-			if (bNextFrameIncomplete)
-			{
-				if (m_bKeyFrame[dwFrameIndex])
-				{
-					TRACE(_T("Seeking to next key-frame because we found an incomplete key-frame %u (available %d fragments of %d)\n"),
-															m_wFrameSeq[dwFrameIndex],
-															GetReceivedFragmentsCount(dwFrameIndex),
-															m_nTotalFragments[dwFrameIndex]);
-				}
-				else
-				{
-					TRACE(_T("Seeking to next frame because we found an incomplete frame %u (available %d fragments of %d)\n"),
-															m_wFrameSeq[dwFrameIndex],
-															GetReceivedFragmentsCount(dwFrameIndex),
-															m_nTotalFragments[dwFrameIndex]);
-				}
-				TraceIncompleteFrame(dwFrameIndex);
-			}
-#endif
-
-			WORD wSeqDiff = 0x8000U;
-			for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-			{
-				if (m_dwFrameSize[dwFrame] > 0U)
-				{
-					if ((WORD)(m_wFrameSeq[dwFrame] - m_wPrevSeq) < wSeqDiff)
-					{
-						bFrameReady = TRUE;
-						m_bSeekToKeyFrame = TRUE;
-						dwFrameIndex = dwFrame;
-						wSeqDiff = m_wFrameSeq[dwFrame] - m_wPrevSeq;
-					}
-				}
-			}	
-		}
-	}
-
-	// Re-Send?
-	if (!m_pDoc->m_bGetFrameDisableResend)
-	{
-		if (dwCurrentUpTime - m_dwLastReSendUpTime > 3U * m_dwAvgFrameTime / 2U)
-		{
-			WORD wHighestReadySeqDiff = 0U;
-			for (dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-			{
-				if (m_dwFrameSize[dwFrame] > 0U)
-				{
-					WORD wSeqDiff = m_wFrameSeq[dwFrame] - m_wPrevSeq;
-					if (wSeqDiff > wHighestReadySeqDiff && wSeqDiff < 0x8000U)
-						wHighestReadySeqDiff = wSeqDiff;
-				}
-			}
-			WORD wSeqDiff = wHighestReadySeqDiff - (WORD)m_pDoc->m_dwGetFrameMaxFrames;
-			if (wSeqDiff < 1U || wSeqDiff >= 0x8000U)
-				wSeqDiff = 1U;
-			int nCount = 0;
-			int nCountOffset = 0;
-			if (m_dwAvgFrameTime > 0U)
-				nCountOffset = m_dwPingRT / m_dwAvgFrameTime;
-			for ( ; wSeqDiff < wHighestReadySeqDiff ; wSeqDiff++)
-			{
-				WORD wReSendSeq = m_wPrevSeq + wSeqDiff;
-				if (!IsFrameReady(wReSendSeq))
-				{
-					if (m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq] == 0U)
-					{
-						ReSendFrame(pNetCom, wReSendSeq);
-						m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq] = ReSendCountDown(	m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq],
-																										nCount,
-																										nCountOffset);
-						m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq]++;
-						TRACE(_T("%u Re-Send Req for Frame with Seq : %u (next countdown : %u)\n"),
-																		m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq],
-																		wReSendSeq,
-																		m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq]);
-						if (++nCount >= 2)
-							break;
-					}
-					else
-						m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & wReSendSeq]--;
-				}
-			}
-			m_dwLastReSendUpTime = dwCurrentUpTime;
-		}
-	}
-
-	// Compose, decode, process and free ready frame
-	if (bFrameReady)
-	{
-		// Reset Re-Send counts
-		m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & m_wFrameSeq[dwFrameIndex]] = 0U;
-		m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & m_wFrameSeq[dwFrameIndex]] = 0U;
-
-		// Send Lost Count and reset lost Re-Send counts 
-		WORD wHighestReadySeqDiff = m_wFrameSeq[dwFrameIndex] - m_wPrevSeq;
-		if (wHighestReadySeqDiff > 1U && wHighestReadySeqDiff < 0x8000U)
-		{
-			TRACE(_T("SendLostCount: %u\n\n"), (WORD)(wHighestReadySeqDiff - 1U));
-			SendLostCount(pNetCom, m_wPrevSeq + 1U, m_wFrameSeq[dwFrameIndex] - 1U, wHighestReadySeqDiff - 1U);
-			for (WORD wSeqDiff = 1U ; wSeqDiff < wHighestReadySeqDiff ; wSeqDiff++)
-			{
-				WORD wLostSeq = m_wPrevSeq + wSeqDiff;
-				m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & wLostSeq] = 0U;
-				m_ReSendCountDown[NETFRAME_RESEND_ARRAY_MASK & wLostSeq] = 0U;
-			}
-		}
-
-		// Calc. Avg. Frame Time
-		m_wPrevSeq = m_wFrameSeq[dwFrameIndex];
-
-		// Calc. Avg Frame Time
-		if (wHighestReadySeqDiff == 1U)
-		{
-			m_dwAvgFrameTime = (3U * m_dwAvgFrameTime + (m_dwUpTime[dwFrameIndex] - m_dwLastFrameUpTime)) / 4U;
-			if (m_dwAvgFrameTime < NETFRAME_MIN_FRAME_TIME)
-				m_dwAvgFrameTime = NETFRAME_MIN_FRAME_TIME;
-			else if (m_dwAvgFrameTime > NETFRAME_MAX_FRAME_TIME)
-				m_dwAvgFrameTime = NETFRAME_DEFAULT_FRAME_TIME;
-		}
-
-		// Update Last Up-Times
-		m_dwLastFrameUpTime = m_dwUpTime[dwFrameIndex];
-		m_dwLastPresentationUpTime = dwCurrentUpTime;
-
-		// Seek to KeyFrame?
-		if (m_bSeekToKeyFrame && m_bKeyFrame[dwFrameIndex])
-		{
-			m_bSeekToKeyFrame = FALSE;
-			if (m_pCodecCtx)
-				avcodec_flush_buffers(m_pCodecCtx);
-		}
-		if (!m_bSeekToKeyFrame)
-		{
-			// Allocate
-			LPBYTE pFrame = new BYTE [m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE];
-			if (pFrame)
-			{
-				// Reset
-				memset(pFrame, 0, m_dwFrameSize[dwFrameIndex] + FF_INPUT_BUFFER_PADDING_SIZE);
-
-				// Compose Fragments
-				LPBYTE p = pFrame;
-				for (int i = 0 ; i < m_nTotalFragments[dwFrameIndex] ; i++)
-				{
-					int nDataFragmentSize = m_Fragment[dwFrameIndex][i]->GetMsgSize() - sizeof(NetFrameHdrStruct);
-					memcpy(p, m_Fragment[dwFrameIndex][i]->GetBuf() + sizeof(NetFrameHdrStruct), nDataFragmentSize);
-					p += nDataFragmentSize;
-				}
-
-				// Decode and Process
-				DecodeAndProcess(pFrame, m_dwFrameSize[dwFrameIndex]);
-
-				// Clean-Up
-				delete [] pFrame;
-			}
-		}
-
-		// Clean-Up
-		FreeFrameFragments(dwFrameIndex);
-
-		// Reset vars
-		m_nTotalFragments[dwFrameIndex] = 0;
-		m_dwFrameSize[dwFrameIndex] = 0U;
-		m_bKeyFrame[dwFrameIndex] = FALSE;
-	}
-
-	return FALSE; // Never Call Processor!
-}
-
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::SendConfirmation(	CNetCom* pNetCom,
-																DWORD dwUpTime,
-																DWORD dwFrameSize,
-																WORD wSeq,
-																BOOL bKeyFrame)
-{
-	// Header
-	NetFrameHdrStructConf Hdr;
-	Hdr.dwUpTime = dwUpTime;
-	Hdr.dwFrameSize = dwFrameSize;
-	Hdr.wSeq = wSeq;
-	Hdr.Type = NETFRAME_TYPE_FRAME_CONF | NETFRAME_TYPE_FRAME_REQ;
-	Hdr.Flags = NETFRAME_FLAG_VIDEO;
-	if (bKeyFrame)
-		Hdr.Flags |= NETFRAME_FLAG_KEYFRAME;
-	
-	// Send
-	return (pNetCom->WriteDatagram(	(LPBYTE)&Hdr,
-									sizeof(NetFrameHdrStructConf),
-									NULL,
-									0,
-									FALSE) > 0);
-}
-
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::SendLostCount(	CNetCom* pNetCom,
-															WORD wFirstLostSeq,
-															WORD wLastLostSeq,
-															WORD wLostCount)
-{
-	// Header
-	NetFrameHdrStructFramesLost Hdr;
-	Hdr.wFirstLostSeq = wFirstLostSeq;
-	Hdr.wLastLostSeq = wLastLostSeq;
-	Hdr.wLostCount = wLostCount;
-	Hdr.Type = NETFRAME_TYPE_FRAMES_LOST | NETFRAME_TYPE_FRAME_REQ;
-	Hdr.Flags = NETFRAME_FLAG_VIDEO;
-	
-	// Counter
-	m_dwLostCount += wLostCount;
-
-	// Send
-	return (pNetCom->WriteDatagram(	(LPBYTE)&Hdr,
-									sizeof(NetFrameHdrStructFramesLost),
-									NULL,
-									0,
-									FALSE) > 0);
-}
-
-__forceinline BOOL CVideoDeviceDoc::CGetFrameParseProcess::ReSendFrame(	CNetCom* pNetCom,
-																		WORD wSeq)
-{
-	// Header
-	NetFrameHdrStructConf Hdr;
-	Hdr.wSeq = wSeq;
-	Hdr.Type = NETFRAME_TYPE_FRAME_RESEND | NETFRAME_TYPE_FRAME_REQ;
-	Hdr.Flags = NETFRAME_FLAG_VIDEO;
-	
-	// Send
-	return (pNetCom->WriteDatagram(	(LPBYTE)&Hdr,
-									sizeof(NetFrameHdrStructConf),
-									NULL,
-									0,
-									FALSE) > 0);
-}
-
-__forceinline DWORD CVideoDeviceDoc::CGetFrameParseProcess::CalcFrameSize(DWORD dwFrame)
-{
-	DWORD dwSize = 0U;
-	for (int i = 0 ; i < m_nTotalFragments[dwFrame] ; i++)
-	{
-		if (m_Fragment[dwFrame][i])
-			dwSize += (m_Fragment[dwFrame][i]->GetMsgSize() - sizeof(NetFrameHdrStruct));
-	}
-	return dwSize;
-}
-
-__forceinline int CVideoDeviceDoc::CGetFrameParseProcess::GetReceivedFragmentsCount(DWORD dwFrame)
-{
-	int nCount = 0;
-	for (int i = 0 ; i < m_nTotalFragments[dwFrame] ; i++)
-	{
-		if (m_Fragment[dwFrame][i])
-			++nCount;
-	}
-	return nCount;
-}
-
-__forceinline BOOL CVideoDeviceDoc::CGetFrameParseProcess::IsFrameReady(WORD wSeq)
-{
-	for (DWORD dwFrame = 0U ; dwFrame < m_pDoc->m_dwGetFrameMaxFrames ; dwFrame++)
-		if (wSeq == m_wFrameSeq[dwFrame] && m_dwFrameSize[dwFrame])
-			return TRUE;
-	return FALSE;
-}
-
-#ifdef _DEBUG
-void CVideoDeviceDoc::CGetFrameParseProcess::TraceIncompleteFrame(DWORD dwFrame)
-{
-	CString sMsg(_T("Missing fragment nums: "));
-	CString t;
-	for (int i = 0 ; i < m_nTotalFragments[dwFrame] ; i++)
-	{
-		if (m_Fragment[dwFrame][i] == NULL)
-		{
-			t.Format(_T("%d,"), i);
-			sMsg += t;
-		}
-	}
-	sMsg.Delete(sMsg.GetLength() - 1);
-	sMsg += _T("\n");
-	TRACE(sMsg);
-}
-
-void CVideoDeviceDoc::CGetFrameParseProcess::TraceReSendCount()
-{
-	TRACE(_T("Prev Seq=%u\n"), m_wPrevSeq);
-	for (int i = 0 ; i < NETFRAME_RESEND_ARRAY_SIZE ; i++)
-	{
-		if (m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & i] != 0)
-		{
-			TRACE(_T("m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & %d] = %u\n"),
-								i, m_ReSendCount[NETFRAME_RESEND_ARRAY_MASK & i]);
-		}
-	}
-	TRACE(_T("\n"));
-}
-#endif
-
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::OpenAVCodec(enum CodecID CodecId, int width, int height)
-{
-	// Free
-	FreeAVCodec();
-
-    // Find the decoder for the video stream
-	m_pCodec = avcodec_find_decoder(CodecId);
-    if (!m_pCodec)
-        goto error_noclose;
-
-	// Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
-	if (!m_pCodecCtx)
-		goto error_noclose;
-
-	// Width and Height, put the right width & height for SNOW otherwise it is not working!
-	m_pCodecCtx->coded_width = width;
-	m_pCodecCtx->coded_height = height;
-
-	// Format
-	m_pCodecCtx->pix_fmt = PIX_FMT_YUV420P;
-	m_pCodecCtx->bits_per_coded_sample = 12;
-	m_pCodecCtx->codec_type = CODEC_TYPE_VIDEO;
-
-	// Set some other values
-	m_pCodecCtx->error_concealment = 3;
-	m_pCodecCtx->error_recognition = 1;
-
-	// Extradata
-	if (m_nExtradataSize > 0)
-	{
-		m_pCodecCtx->extradata = m_pExtradata;
-		m_pCodecCtx->extradata_size = m_nExtradataSize;
-	}
-
-	// Open codec
-    if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
-        goto error_noclose;
-
-	// Allocate video frame
-    m_pFrame = avcodec_alloc_frame();
-	if (!m_pFrame)
-        goto error;
-
-	return TRUE;
-
-error:
-	FreeAVCodec();
-	return FALSE;
-error_noclose:
-	FreeAVCodec(TRUE);
-	return FALSE;
-}
-
-void CVideoDeviceDoc::CGetFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*/)
-{
-	if (m_pCodecCtx)
-	{
-		// Close
-		if (!bNoClose)
-			avcodec_close_thread_safe(m_pCodecCtx);
-
-		// Free
-		av_freep(&m_pCodecCtx);
-		m_pCodec = NULL;
-	}
-	if (m_pFrame)
-	{
-		av_free(m_pFrame);
-		m_pFrame = NULL;
-	}
-	if (m_pOutbuf)
-	{
-		delete [] m_pOutbuf;
-		m_pOutbuf = NULL;
-	}
-	m_nOutbufSize = 0;
-}
-
-BOOL CVideoDeviceDoc::CGetFrameParseProcess::DecodeAndProcess(LPBYTE pFrame, DWORD dwFrameSize)
-{
-	// Minimum size check
-	if (dwFrameSize < NETFRAME_HEADER_SIZE)
-		return FALSE;
-
-	// Get frame header
-	NetFrameStruct FrameHdr;
-	memcpy(&FrameHdr, pFrame, NETFRAME_HEADER_SIZE);
-
-	// Check header consistency
-	if (NETFRAME_HEADER_SIZE + FrameHdr.dwFrameDataSize + FrameHdr.dwExtraDataSize != dwFrameSize)
-		return FALSE;
-
-	// Init vars
-	enum CodecID CodecId = (enum CodecID)FrameHdr.dwCodecID;
-	switch (CodecId)
-	{
-		case  CODEC_ID_MJPEG	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG'); break;
-		case  CODEC_ID_H263		:
-		case  CODEC_ID_H263P	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('H263'); break;
-		case  CODEC_ID_MPEG4	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('DIVX'); break;
-		case  CODEC_ID_THEORA	:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('theo'); break;
-		case  CODEC_ID_SNOW		:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('SNOW'); break;
-		default					:	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = BI_RGB;      break;
-	}
-	if (CodecId == CODEC_ID_H263P)
-		CodecId = CODEC_ID_H263;
-	m_dwEncryptionType = FrameHdr.dwEncryptionType;
-	if (m_dwEncryptionType != 0U) // Encryption not yet supported...
-		return FALSE;
-	DWORD dwFrameDataSize = FrameHdr.dwFrameDataSize;
-	m_nExtradataSize = (int)FrameHdr.dwExtraDataSize;
-	int width = (int)FrameHdr.dwWidth;
-	int height = (int)FrameHdr.dwHeight;
-	if (m_nExtradataSize > 0)
-	{
-		if (!m_pExtradata || m_nMaxExtradata < m_nExtradataSize)
-		{
-			if (m_pExtradata)
-				av_freep(&m_pExtradata);
-			m_nMaxExtradata = m_nExtradataSize;
-			m_pExtradata = (uint8_t*)av_malloc(	m_nMaxExtradata +
-												FF_INPUT_BUFFER_PADDING_SIZE);
-			if (!m_pExtradata)
-			{
-				m_nMaxExtradata = 0;
-				m_nExtradataSize = 0;
-				return FALSE;
-			}
-		}
-		memcpy(	m_pExtradata,
-				&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize],
-				m_nExtradataSize);
-		memset(&pFrame[NETFRAME_HEADER_SIZE + dwFrameDataSize], 0, m_nExtradataSize);
-	}
-
-	// Re-init
-	if (width != m_pDoc->m_DocRect.Width() || height != m_pDoc->m_DocRect.Height())
-		FreeAVCodec();
-
-	// Init?
-	if (!m_pCodecCtx)
-	{
-		if (!OpenAVCodec(CodecId, width, height))
-			return FALSE;
-	}
-
-	// Decode
-	int got_picture = 0;
-	int len = avcodec_decode_video(	m_pCodecCtx,
-									m_pFrame,
-									&got_picture,
-									(unsigned __int8 *)(pFrame + NETFRAME_HEADER_SIZE),
-									(int)dwFrameDataSize);
-	if (len > 0 && got_picture)
-	{
-		// Init Doc?
-		if (m_bFirstFrame									||
-			m_CodecId != CodecId							||
-			m_pDoc->m_DocRect.Width() != m_pCodecCtx->width	||
-			m_pDoc->m_DocRect.Height() != m_pCodecCtx->height)
-		{
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth = (DWORD)m_pCodecCtx->width;
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight = (DWORD)m_pCodecCtx->height;
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biPlanes = 1; // must be 1
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biBitCount = 12;
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biCompression = FCC('I420');    
-			m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage = avpicture_get_size(PIX_FMT_YUV420P,
-																				m_pCodecCtx->width,
-																				m_pCodecCtx->height);
-			m_pDoc->m_DocRect.right = m_pDoc->m_ProcessFrameBMI.bmiHeader.biWidth;
-			m_pDoc->m_DocRect.bottom = m_pDoc->m_ProcessFrameBMI.bmiHeader.biHeight;
-			m_CodecId = CodecId;
-			m_bFirstFrame = FALSE;
-
-			// Free Movement Detector because we changed size and/or format!
-			m_pDoc->FreeMovementDetector();
-			m_pDoc->ResetMovementDetector();
-
-			// Update
-			if (m_pDoc->m_bSizeToDoc)
-			{
-				// This sizes the view to m_DocRect in normal screen mode,
-				// in full-screen mode it updates m_ZoomRect from m_DocRect
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
-								(LPARAM)0);
-				m_pDoc->m_bSizeToDoc = FALSE;
-			}
-			else
-			{
-				// In full-screen mode it updates m_ZoomRect from m_DocRect
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)0,
-								(LPARAM)0);
-			}
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_SETDOCUMENTTITLE,
-							0, 0);
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATE_PHPPARAMS,
-							0, 0);
-		}
-
-		// Convert to minimal stride
-		int width2 = m_pCodecCtx->width >> 1;
-		int height2 = m_pCodecCtx->height >> 1;
-		if (m_pFrame->linesize[0] > m_pCodecCtx->width	||
-			m_pFrame->linesize[1] > width2				||
-			m_pFrame->linesize[2] > width2)
-		{
-			if (m_nOutbufSize < (12 * m_pCodecCtx->width * m_pCodecCtx->height / 8) || m_pOutbuf == NULL)
-			{
-				if (m_pOutbuf)
-					delete [] m_pOutbuf;
-				m_nOutbufSize = 12 * m_pCodecCtx->width * m_pCodecCtx->height / 8;
-				m_pOutbuf = new uint8_t[m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE];
-				if (!m_pOutbuf)
-					return FALSE;
-			}
-			int h;
-			LPBYTE p = (LPBYTE)m_pOutbuf;
-			for (h = 0 ; h < m_pCodecCtx->height ; h++)
-			{
-				memcpy(p, m_pFrame->data[0] + h * m_pFrame->linesize[0], m_pCodecCtx->width);
-				p += m_pCodecCtx->width;
-			}
-			for (h = 0 ; h < height2 ; h++)
-			{
-				memcpy(p, m_pFrame->data[1] + h * m_pFrame->linesize[1], width2);
-				p += width2;
-			}
-			for (h = 0 ; h < height2 ; h++)
-			{
-				memcpy(p, m_pFrame->data[2] + h * m_pFrame->linesize[2], width2);
-				p += width2;
-			}
-			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
-			m_pDoc->ProcessI420Frame(	(LPBYTE)(m_pOutbuf),
-										m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
-		}
-		else
-		{
-			m_pDoc->m_lCompressedDataRateSum += dwFrameSize;
-			m_pDoc->ProcessI420Frame(	(LPBYTE)(m_pFrame->data[0]),
-										m_pDoc->m_ProcessFrameBMI.bmiHeader.biSizeImage);
-		}
-		return TRUE;
-	}
-	else
-		return FALSE;
 }
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest)
@@ -12136,7 +9846,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 
 	switch (m_pDoc->m_nNetworkDeviceTypeMode)
 	{
-		case OTHERONE :		// Other HTTP device
+		case OTHERONE_SP :	// Other HTTP device (mjpeg)
+		case OTHERONE_CP :	// Other HTTP device (jpegs)
 		{
 			if (m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
@@ -12978,7 +10689,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			// Text
 			else if ((nPos = sMsgLowerCase.Find(_T("content-type: text/plain"), 0)) >= 0)
 			{
-				if (m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE && m_bTryConnecting &&
+				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
+					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+					m_bTryConnecting									&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -13107,7 +10820,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			// Html
 			else if ((nPos = sMsgLowerCase.Find(_T("content-type: text/html"), 0)) >= 0)
 			{
-				if (m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE && m_bTryConnecting &&
+				if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
+					m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+					m_bTryConnecting									&&
 					++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 				{
 					// Empty the buffers, so that parser stops calling us!
@@ -13377,7 +11092,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 		}
 		else
 		{
-			if (m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE && m_bTryConnecting &&
+			if ((m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_SP	||
+				m_pDoc->m_nNetworkDeviceTypeMode == OTHERONE_CP)	&&
+				m_bTryConnecting									&&
 				++m_pDoc->m_nHttpGetFrameLocationPos < m_pDoc->m_HttpGetFrameLocations.GetSize())
 			{
 				// Empty the buffers, so that parser stops calling us!
