@@ -1,0 +1,29 @@
+﻿Licenza, Oliver Pfister, Svizzera, Web: www.contaware.com 
+
+Usando questo Software FREEWARE e/o il codice sorgente, si concorda di
+accettare i termini di questa licenza.
+
+Questo Software e il codice sorgente sono forniti 'così come sono',
+senza alcuna garanzia implicita o esplicita. In nessun caso può
+l'autore/programmatore/traduttore essere ritenuto responsabile di un
+qualsiasi danno derivante dall'uso del Software o del codice sorgente.
+
+È permesso a ogni singolo di usare/modificare il Software e il codice
+sorgente a scopo privato (a casa) o a scopo commerciale (al lavoro). Il
+permesso di usare/modificare il Software e il codice sorgente è soggetto
+alle seguenti restrizioni:
+
+1. L'origine del Software e del codice sorgente non deve essere falsata.
+Non si può affermare di aver scritto, sviluppato o possedere il Software
+o il codice sorgente.
+
+2. Il presente avviso non può essere rimosso o modificato da qualsiasi
+tipo di distribuzione di questo Software e da qualsiasi tipo di
+distribuzione del codice sorgente.
+
+3. Questa Licenza viene applicata alle parti di codice sorgente scritte
+da Oliver Pfister distinguibili da intestazioni di licenza mancanti.
+Biblioteche e codice sorgente di terze parti sono utilizzati per creare
+il software; è d'obbligo seguirne le licenze.
+
+FINE DEI TERMINI E DELLE CONDIZIONI

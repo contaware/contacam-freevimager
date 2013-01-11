@@ -3,8 +3,8 @@
 By using the FREEWARE Software and/or the Source Code, you are agreeing 
 to be bound by the terms of this License. 
 
-The Software and the Source Code are provided 'as-is', without any 
-express or implied warranty. In no event will the author/developer be 
+The Software and the Source Code are provided 'as-is', without any express
+or implied warranty. In no event will the author/developer/translator be 
 held liable or accountable in any way for any damages arising from the 
 use of the Software and/or from the use of the Source Code. 
 

@@ -2214,29 +2214,29 @@ BEGIN
     GROUPBOX        "File(s) To Upload",IDC_STATIC2271,7,198,200,35
 END
 
-IDD_HOSTPORT DIALOGEX 0, 0, 210, 164
+IDD_HOSTPORT DIALOGEX 0, 0, 220, 164
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Connect To"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    COMBOBOX        IDC_COMBO_HOST,14,17,184,49,CBS_DROPDOWN | 
+    COMBOBOX        IDC_COMBO_HOST,14,17,194,49,CBS_DROPDOWN | 
                     CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_PORT,14,56,184,14,ES_AUTOHSCROLL | ES_NUMBER
-    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,97,184,157,CBS_DROPDOWNLIST | 
+    EDITTEXT        IDC_EDIT_PORT,14,56,194,14,ES_AUTOHSCROLL | ES_NUMBER
+    COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,97,194,157,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,52,146,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,112,146,50,14
+    DEFPUSHBUTTON   "OK",IDOK,58,146,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,118,146,50,14
     GROUPBOX        "Host name or Host IP or URL starting with http://",
-                    IDC_STATIC2272,7,5,197,32
-    GROUPBOX        "Port (not used if URL set)",IDC_STATIC2273,7,44,197,34
+                    IDC_STATIC2272,7,5,207,32
+    GROUPBOX        "Port (not used if URL set)",IDC_STATIC2273,7,44,207,34
     GROUPBOX        "Select the Device Type and Mode (not used if URL set)",
-                    IDC_STATIC2274,7,85,197,54
+                    IDC_STATIC2274,7,85,207,54
     LTEXT           "Client poll mode for framerates < 1 frame/sec",
-                    IDC_STATIC,14,125,184,8
+                    IDC_STATIC,14,125,194,8
     LTEXT           "Server push mode for framerates > 1 frame/sec",
-                    IDC_STATIC,14,114,184,8
+                    IDC_STATIC,14,114,194,8
 END
 
 IDD_MOVDET DIALOGEX 0, 0, 417, 268
@@ -4182,15 +4182,15 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,19,101,10
-    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,116,16,101,17
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,351,19,34,12,ES_RIGHT | ES_NUMBER
+    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,128,16,101,17
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,353,19,34,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",
-                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,101,46,161,18
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,300,46,101,17
+                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,126,46,136,18
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,303,46,101,17
     CONTROL         "Enable Snapshots (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,93,177,10
@@ -4198,45 +4198,45 @@ BEGIN
                     DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,90,66,
                     16
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",
-                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,335,90,66,
+                    DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,90,66,
                     16
     CONTROL         "Save a Snapshot as Jpeg",IDC_CHECK_SNAPSHOT_LIVE_JPEG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,136,97,10
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,137,51,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,137,54,9
     CONTROL         "Save History as Jpegs",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,179,86,10
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,180,51,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,180,54,9
     CONTROL         "Save History as Daily Swf:",
                     IDC_CHECK_SNAPSHOT_HISTORY_SWF,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,197,99,10
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
-                    190,195,120,18
+                    229,195,86,18
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,350,199,51,9
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,183,220,14,12,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,350,199,54,9
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,231,220,14,12,
                     ES_RIGHT | ES_NUMBER
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,251,89,10
-    LTEXT           "Snapshot each",IDC_STATIC2476,300,21,50,10
-    LTEXT           "sec",IDC_STATIC2477,389,21,14,10
+    LTEXT           "Snapshot each",IDC_STATIC2476,299,21,52,10
+    LTEXT           "sec",IDC_STATIC2477,390,21,14,10
     GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,122,404,34
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,165,404,77
     LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,265,50,17,11
-    LTEXT           "Jpeg Compression Quality",IDC_STATIC2480,13,50,82,8
+    LTEXT           "Jpeg Compression Quality",IDC_STATIC2480,13,50,111,8
     GROUPBOX        "General Settings",IDC_STATIC2481,7,2,404,69
-    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,116,222,58,8
-    LTEXT           "frames/sec",IDC_STATIC2483,206,222,40,8
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,315,199,17,11
+    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,151,222,77,8
+    LTEXT           "frames/sec",IDC_STATIC2483,260,222,62,8
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,320,199,17,11
     GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,78,404,36
     LTEXT           "From",IDC_STATIC2485,228,94,16,8
     LTEXT           "To",IDC_STATIC2486,323,94,10,8
-    LTEXT           "Compression Quality",IDC_STATIC2487,116,198,72,8
-    LTEXT           "(multiple of 4)",IDC_STATIC2491,221,21,49,9
+    LTEXT           "Compression Quality",IDC_STATIC2487,151,199,75,8
+    LTEXT           "(multiple of 4)",IDC_STATIC2491,233,21,49,9
     LTEXT           "Attention: Swf files are limited to 16000 frames!",
-                    IDC_STATIC,26,212,82,20,SS_SUNKEN
+                    IDC_STATIC,26,211,95,21,SS_SUNKEN
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 186, 31
@@ -4742,9 +4742,9 @@ BEGIN
     IDD_HOSTPORT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 204
+        RIGHTMARGIN, 214
         VERTGUIDE, 14
-        VERTGUIDE, 198
+        VERTGUIDE, 208
         TOPMARGIN, 7
         BOTTOMMARGIN, 160
     END
@@ -5267,7 +5267,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 411
         VERTGUIDE, 13
-        VERTGUIDE, 401
+        VERTGUIDE, 404
         TOPMARGIN, 2
         BOTTOMMARGIN, 262
     END

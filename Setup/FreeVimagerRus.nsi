@@ -86,7 +86,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\License.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\LicenseRus.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -232,7 +232,7 @@ Section "${APPNAME_NOEXT} Program (required)"
 !ifdef INSTALLER_NT
   File "/oname=${APPNAME_NOEXT}w.exe" "..\Translation\${APPNAME_NOEXT}wRus.exe"
 !endif
-  File "/oname=License.txt" "..\License\License.txt"
+  File "/oname=License.txt" "..\License\LicenseRus.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
 !ifdef WITH_TUTORIALS
   File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
