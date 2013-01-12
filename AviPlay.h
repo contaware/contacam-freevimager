@@ -1284,6 +1284,8 @@ __forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(
 			pBMI->bmiHeader.biCompression == FCC('I420')			||
 			pBMI->bmiHeader.biCompression == FCC('IYUV'))
 			return PIX_FMT_YUV420P;	// For YV12 we have to invert the planes!
+		else if (pBMI->bmiHeader.biCompression == FCC('J420'))
+			return PIX_FMT_YUVJ420P;
 		else if (	pBMI->bmiHeader.biCompression == FCC('YUY2')	||
 					pBMI->bmiHeader.biCompression == FCC('YUNV')	||
 					pBMI->bmiHeader.biCompression == FCC('VYUY')	||
@@ -1302,6 +1304,8 @@ __forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(
 		else if (	pBMI->bmiHeader.biCompression == FCC('YV16')	||
 					pBMI->bmiHeader.biCompression == FCC('Y42B'))
 			return PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
+		else if (pBMI->bmiHeader.biCompression == FCC('J422'))
+			return PIX_FMT_YUVJ422P;
 		else if (	pBMI->bmiHeader.biCompression == FCC('  Y8')	||
 					pBMI->bmiHeader.biCompression == FCC('Y800')	||
 					pBMI->bmiHeader.biCompression == FCC('GREY'))

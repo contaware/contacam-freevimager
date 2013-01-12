@@ -12,7 +12,15 @@ extern "C"
 #include "ffmpeg\\libswscale\\swscale.h"
 }
 
-// AV Encoder
+// MJPEG Encoder
+//
+// Source pixel format must be
+//
+// PIX_FMT_YUVJ420P
+// PIX_FMT_YUVJ422P
+// PIX_FMT_YUV420P (FF_COMPLIANCE_INOFFICIAL)
+// PIX_FMT_YUV422P (FF_COMPLIANCE_INOFFICIAL)
+
 class CMJPEGEncoder 
 {
 	public:

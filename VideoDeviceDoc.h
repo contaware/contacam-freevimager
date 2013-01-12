@@ -852,6 +852,14 @@ public:
 	void CloseAndShowAviRec();
 	void FreeAVIFile();
 
+	// Fast bicubic resize
+	// Source and destination Dibs must already have the bits allocated! 
+	static BOOL ResizeFast(CDib* pSrcDib, CDib* pDstDib);
+
+	// Fast jpeg saving
+	// Quality ranges from 0 to 100 (0: worst, 100: best)
+	static BOOL SaveJpegFast(CDib* pDib, const CString& sFileName, int quality);
+
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
 										DWORD dwVideoProcessorMode,

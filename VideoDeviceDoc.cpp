@@ -1589,7 +1589,9 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		DibThumb.SetShowMessageBoxOnError(FALSE);
 
 		// Resize
-		DibThumb.StretchBits(m_nSnapshotThumbWidth, m_nSnapshotThumbHeight, &m_Dib);
+		DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight);
+		CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
+		DibThumb.SetUpTime(m_Dib.GetUpTime());
 	}
 
 	// Add frame time
@@ -1606,12 +1608,12 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		// Save
 		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 										::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
-		DibThumb.SaveJPEG(sTempThumbFileName, m_nSnapshotCompressionQuality);
+		CVideoDeviceDoc::SaveJpegFast(&DibThumb, sTempThumbFileName, m_nSnapshotCompressionQuality);
 	}
 
 	// Save Full-size to Temp
 	sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName);
-	m_Dib.SaveJPEG(sTempFileName, m_nSnapshotCompressionQuality);
+	CVideoDeviceDoc::SaveJpegFast(&m_Dib, sTempFileName, m_nSnapshotCompressionQuality);
 	
 	// Copy from Temp and Ftp Upload
 	if (m_bSnapshotLiveJpeg)
@@ -2886,6 +2888,213 @@ void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
 			m_hExecCommandMovementDetection = sei.hProcess;
 	}
 	::LeaveCriticalSection(&m_csExecCommandMovementDetection);
+}
+
+BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
+{
+	BOOL res = FALSE;
+	AVFrame* pSrcFrame = NULL;
+	AVFrame* pDstFrame = NULL;
+	SwsContext* pImgConvertCtx = NULL;
+	int sws_scale_res;
+	PixelFormat src_pix_fmt, dst_pix_fmt;
+
+	// Check
+	if (!pSrcDib || !pSrcDib->GetBits() || !pDstDib || !pDstDib->GetBits())
+		goto exit;
+
+	// Source frame
+	pSrcFrame = avcodec_alloc_frame();
+	if (!pSrcFrame)
+        goto exit;
+	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
+	avpicture_fill(	(AVPicture*)pSrcFrame,
+					(uint8_t*)pSrcDib->GetBits(),
+					src_pix_fmt,
+					pSrcDib->GetWidth(),
+					pSrcDib->GetHeight());
+
+	// Destination frame
+	pDstFrame = avcodec_alloc_frame();
+	if (!pDstFrame)
+        goto exit;
+	dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
+	avpicture_fill(	(AVPicture*)pDstFrame,
+					(uint8_t*)pDstDib->GetBits(),
+					dst_pix_fmt,
+					pDstDib->GetWidth(),
+					pDstDib->GetHeight());
+
+	// Prepare Image Conversion Context
+	pImgConvertCtx = sws_getContext(pSrcDib->GetWidth(),	// Source Width
+									pSrcDib->GetHeight(),	// Source Height
+									src_pix_fmt,			// Source Format
+									pDstDib->GetWidth(),	// Destination Width
+									pDstDib->GetHeight(),	// Destination Height
+									dst_pix_fmt,			// Destination Format
+									SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
+									NULL,					// No Src Filter
+									NULL,					// No Dst Filter
+									NULL);					// Param
+	if (!pImgConvertCtx)
+		goto exit;
+
+	// Resize
+	sws_scale_res = sws_scale(	pImgConvertCtx,			// Image Convert Context
+								pSrcFrame->data,		// Source Data
+								pSrcFrame->linesize,	// Source Stride
+								0,						// Source Slice Y
+								pSrcDib->GetHeight(),	// Source Height
+								pDstFrame->data,		// Destination Data
+								pDstFrame->linesize);	// Destination Stride
+#ifdef SUPPORT_LIBSWSCALE
+	if (sws_scale_res > 0)
+		res = TRUE;
+#else
+	if (sws_scale_res >= 0)
+		res = TRUE;
+#endif
+
+exit:
+	if (pSrcFrame)
+		av_freep(&pSrcFrame);
+	if (pDstFrame)
+		av_freep(&pDstFrame);
+	if (pImgConvertCtx)
+	{
+		sws_freeContext(pImgConvertCtx);
+		pImgConvertCtx = NULL;
+	}
+	return res;
+}
+
+BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, const CString& sFileName, int quality)
+{
+	BOOL res = FALSE;
+	AVFrame* pSrcFrame = NULL;
+	AVFrame* pDstFrame = NULL;
+	LPBYTE pJ420Buf = NULL;
+	SwsContext* pImgConvertCtx = NULL;
+	CMJPEGEncoder MJPEGEncoder;
+	BITMAPINFO DstBmi;
+	DWORD dwEncodedLen;
+	int nJ420ImageSize, qscale, sws_scale_res;
+	PixelFormat src_pix_fmt, dst_pix_fmt;
+
+	// Check
+	if (!pDib || !pDib->GetBits() || sFileName.IsEmpty())
+		goto exit;
+
+	// Source frame
+	pSrcFrame = avcodec_alloc_frame();
+	if (!pSrcFrame)
+        goto exit;
+	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
+	avpicture_fill(	(AVPicture*)pSrcFrame,
+					(uint8_t*)pDib->GetBits(),
+					src_pix_fmt,
+					pDib->GetWidth(),
+					pDib->GetHeight());
+
+	// Destination frame
+	pDstFrame = avcodec_alloc_frame();
+	if (!pDstFrame)
+        goto exit;
+	dst_pix_fmt = PIX_FMT_YUVJ420P; // Full range YUV (0..255)
+	nJ420ImageSize = avpicture_get_size(dst_pix_fmt,
+										pDib->GetWidth(),
+										pDib->GetHeight());
+	if (nJ420ImageSize > 0)
+		pJ420Buf = new BYTE[nJ420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE];
+	if (!pJ420Buf)
+		goto exit;
+	avpicture_fill(	(AVPicture*)pDstFrame,
+					(uint8_t*)pJ420Buf,
+					dst_pix_fmt,
+					pDib->GetWidth(),
+					pDib->GetHeight());
+
+	// Prepare Image Conversion Context
+	pImgConvertCtx = sws_getContext(pDib->GetWidth(),		// Source Width
+									pDib->GetHeight(),		// Source Height
+									src_pix_fmt,			// Source Format
+									pDib->GetWidth(),		// Destination Width
+									pDib->GetHeight(),		// Destination Height
+									dst_pix_fmt,			// Destination Format
+									SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
+									NULL,					// No Src Filter
+									NULL,					// No Dst Filter
+									NULL);					// Param
+	if (!pImgConvertCtx)
+		goto exit;
+
+	// Convert
+	sws_scale_res = sws_scale(	pImgConvertCtx,			// Image Convert Context
+								pSrcFrame->data,		// Source Data
+								pSrcFrame->linesize,	// Source Stride
+								0,						// Source Slice Y
+								pDib->GetHeight(),		// Source Height
+								pDstFrame->data,		// Destination Data
+								pDstFrame->linesize);	// Destination Stride
+#ifdef SUPPORT_LIBSWSCALE
+	if (sws_scale_res <= 0)
+		goto exit;
+#else
+	if (sws_scale_res < 0)
+		goto exit;
+#endif
+
+	// Set Dst Header
+	memset(&DstBmi, 0, sizeof(BITMAPINFO));
+	DstBmi.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
+	DstBmi.bmiHeader.biWidth =			pDib->GetWidth();
+	DstBmi.bmiHeader.biHeight =			pDib->GetHeight();
+	DstBmi.bmiHeader.biPlanes =			1;
+	DstBmi.bmiHeader.biCompression =	FCC('J420');
+	DstBmi.bmiHeader.biBitCount =		12;
+	DstBmi.bmiHeader.biSizeImage =		nJ420ImageSize;
+
+	// Empirically found exponential quality scale conversion
+	// function which gives libjpeg comparable image size and quality
+	qscale = Round(pow(1.02083, (double)(170 - quality)) - 2.233); // from 0 .. 100 -> 31 .. 2
+
+	// JPEG encode
+	dwEncodedLen = MJPEGEncoder.Encode(	qscale, // 2: best quality, 31: worst quality
+										&DstBmi, pJ420Buf);
+	if (dwEncodedLen == 0U)
+		goto exit;
+
+	// Save to file
+	try
+	{
+		CFile f(sFileName,
+				CFile::modeCreate		|
+				CFile::modeWrite		|
+				CFile::shareDenyWrite);
+		f.Write(MJPEGEncoder.GetEncodedBuf(), dwEncodedLen);
+		res = TRUE;
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();
+	}
+
+exit:
+	if (pSrcFrame)
+		av_freep(&pSrcFrame);
+	if (pDstFrame)
+		av_freep(&pDstFrame);
+	if (pImgConvertCtx)
+	{
+		sws_freeContext(pImgConvertCtx);
+		pImgConvertCtx = NULL;
+	}
+	if (pJ420Buf)
+	{
+		delete [] pJ420Buf;
+		pJ420Buf = NULL;
+	}
+	return res;
 }
 
 BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
@@ -8236,15 +8445,10 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	if (!bDoSnapshot)
 		return;
 
-	// Decode if compressed
-	m_SaveSnapshotThread.m_Dib.SetShowMessageBoxOnError(FALSE);
-	m_SaveSnapshotThread.m_Dib = *pDib;
-	if (m_SaveSnapshotThread.m_Dib.IsCompressed())
-		m_SaveSnapshotThread.m_Dib.Decompress(32);
-
 	// Start Snapshot Thread
 	// (we need the history jpgs to make the swf video file inside the snapshot SWF thread,
 	// user unwanted history jpgs are deleted in snapshot SWF thread)
+	m_SaveSnapshotThread.m_Dib = *pDib;
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistorySwf);
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 	m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;

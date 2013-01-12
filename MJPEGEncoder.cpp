@@ -31,7 +31,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI)
 	m_pCodecCtx->codec_id = CODEC_ID_MJPEG;
 	m_pCodecCtx->pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
 	m_pCodecCtx->codec_type = CODEC_TYPE_VIDEO;
-	m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_INOFFICIAL; // to allow the PIX_FMT_YUV420P format
+	m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_INOFFICIAL; // to allow the PIX_FMT_YUV420P and the PIX_FMT_YUV422P formats
 	m_pCodecCtx->flags |= CODEC_FLAG_QSCALE;
 	m_pCodecCtx->bit_rate = 0;
 	m_pCodecCtx->time_base.den = 1;
