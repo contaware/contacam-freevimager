@@ -1608,12 +1608,12 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		// Save
 		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 										::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
-		CVideoDeviceDoc::SaveJpegFast(&DibThumb, sTempThumbFileName, m_nSnapshotCompressionQuality);
+		CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
 	}
 
 	// Save Full-size to Temp
 	sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName);
-	CVideoDeviceDoc::SaveJpegFast(&m_Dib, sTempFileName, m_nSnapshotCompressionQuality);
+	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
 	
 	// Copy from Temp and Ftp Upload
 	if (m_bSnapshotLiveJpeg)
@@ -2968,21 +2968,20 @@ exit:
 	return res;
 }
 
-BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, const CString& sFileName, int quality)
+BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality)
 {
 	BOOL res = FALSE;
 	AVFrame* pSrcFrame = NULL;
 	AVFrame* pDstFrame = NULL;
 	LPBYTE pJ420Buf = NULL;
 	SwsContext* pImgConvertCtx = NULL;
-	CMJPEGEncoder MJPEGEncoder;
 	BITMAPINFO DstBmi;
 	DWORD dwEncodedLen;
 	int nJ420ImageSize, qscale, sws_scale_res;
 	PixelFormat src_pix_fmt, dst_pix_fmt;
 
 	// Check
-	if (!pDib || !pDib->GetBits() || sFileName.IsEmpty())
+	if (!pDib || !pDib->GetBits() || !pMJPEGEncoder || sFileName.IsEmpty())
 		goto exit;
 
 	// Source frame
@@ -3059,7 +3058,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, const CString& sFileName, int qua
 	qscale = Round(pow(1.02083, (double)(170 - quality)) - 2.233); // from 0 .. 100 -> 31 .. 2
 
 	// JPEG encode
-	dwEncodedLen = MJPEGEncoder.Encode(	qscale, // 2: best quality, 31: worst quality
+	dwEncodedLen = pMJPEGEncoder->Encode(qscale, // 2: best quality, 31: worst quality
 										&DstBmi, pJ420Buf);
 	if (dwEncodedLen == 0U)
 		goto exit;
@@ -3071,7 +3070,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, const CString& sFileName, int qua
 				CFile::modeCreate		|
 				CFile::modeWrite		|
 				CFile::shareDenyWrite);
-		f.Write(MJPEGEncoder.GetEncodedBuf(), dwEncodedLen);
+		f.Write(pMJPEGEncoder->GetEncodedBuf(), dwEncodedLen);
 		res = TRUE;
 	}
 	catch (CFileException* e)

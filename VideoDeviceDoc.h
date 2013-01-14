@@ -740,6 +740,8 @@ public:
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
+			CMJPEGEncoder m_MJPEGEncoder;
+			CMJPEGEncoder m_MJPEGThumbEncoder;
 			int Work();
 			__forceinline CString MakeJpegHistoryFileName();
 	};
@@ -858,7 +860,7 @@ public:
 
 	// Fast jpeg saving
 	// Quality ranges from 0 to 100 (0: worst, 100: best)
-	static BOOL SaveJpegFast(CDib* pDib, const CString& sFileName, int quality);
+	static BOOL SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, const CString& sFileName, int quality);
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
