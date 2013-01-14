@@ -670,7 +670,7 @@ public:
 			CVideoDeviceDoc* m_pDoc;
 			CDib::LIST* m_pFrameList;
 			int m_nNumFramesToSave;
-			CAVDecoder m_AVDecoder;
+			CAVDecoder m_AVDetDecoder;
 			volatile int m_nSendMailProgress;
 			volatile int m_nFTPUploadProgress;
 			volatile BOOL m_bWorking;
@@ -1201,7 +1201,7 @@ protected:
 	CDib* volatile m_pProcessFrameDib;
 	CDib* volatile m_pProcessFrameExtraDib;
 	CAVDecoder m_AVDecoder;
-	CMJPEGEncoder m_MJPEGEncoder;
+	CMJPEGEncoder m_MJPEGDetEncoder;
 	volatile DWORD m_dwStopProcessFrame;
 	volatile DWORD m_dwProcessFrameStopped;
 	CRITICAL_SECTION m_csProcessFrameStop;

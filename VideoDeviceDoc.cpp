@@ -187,10 +187,10 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 	pDib->SetBMI(&NewBmi);
 
 	// Decode
-	if (m_AVDecoder.Decode(	pOldBmi,
-							pOldBits,
-							pOldBmi->bmiHeader.biSizeImage,
-							pDib))
+	if (m_AVDetDecoder.Decode(	pOldBmi,
+								pOldBits,
+								pOldBmi->bmiHeader.biSizeImage,
+								pDib))
 	{
 		delete [] pOldBmi;
 		BIGFREE(pOldBits);
@@ -1021,9 +1021,7 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 	if (::IsExistingFile(sJPGDir))
 		return _T("");
 
-	// Decompress to 32bpp and add frame tags
-	if (pDib->IsCompressed() || pDib->GetBitCount() <= 8)
-		pDib->Decompress(32);
+	// Add frame tags
 	if (bShowFrameTime)
 	{
 		AddFrameTime(pDib, RefTime, dwRefUpTime);
@@ -1031,7 +1029,8 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 	}
 
 	// Save
-	if (pDib->SaveJPEG(sJPGDir))
+	CMJPEGEncoder MJPEGEncoder;
+	if (CVideoDeviceDoc::SaveJpegFast(pDib, &MJPEGEncoder, sJPGDir, DEFAULT_JPEGCOMPRESSION))
 		return sJPGDir;
 	else
 		return _T("");
@@ -9229,8 +9228,8 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 				CDib* pNewDib;
 				if (m_bDetectionCompressFrames)
 				{
-					DWORD dwEncodedLen = m_MJPEGEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
-																pDib->GetBMI(), pDib->GetBits());
+					DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
+																	pDib->GetBMI(), pDib->GetBits());
 					BITMAPINFO Bmi;
 					memset(&Bmi, 0, sizeof(BITMAPINFO));
 					Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -9243,7 +9242,7 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 					pNewDib = new CDib;
 					pNewDib->SetShowMessageBoxOnError(FALSE);
 					pNewDib->SetBMI((LPBITMAPINFO)&Bmi);						// set BMI	
-					pNewDib->SetBits((LPBYTE)m_MJPEGEncoder.GetEncodedBuf());	// copy bits
+					pNewDib->SetBits((LPBYTE)m_MJPEGDetEncoder.GetEncodedBuf());// copy bits
 					pNewDib->SetUpTime(pDib->GetUpTime());						// copy frame uptime
 					pNewDib->SetUserFlag(pDib->IsUserFlag());					// copy movement detection frame flag
 				}
