@@ -1594,28 +1594,25 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		DibThumb.SetUpTime(m_Dib.GetUpTime());
 	}
 
-	// Add frame time
+	// Save Full-size to Temp
 	if (m_bShowFrameTime)
 		AddFrameTime(&m_Dib, m_Time, dwUpTime);
+	sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName);
+	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
 
 	// Save Thumb to Temp
 	if (m_bSnapshotThumb)
 	{
-		// Add frame time
 		if (m_bShowFrameTime)
 			AddFrameTime(&DibThumb, m_Time, dwUpTime);
-
-		// Save
 		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 										::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
 		CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
 	}
-
-	// Save Full-size to Temp
-	sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName);
-	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
 	
 	// Copy from Temp and Ftp Upload
+	// Note: always first copy/ftp upload full-size file then the
+	// thumb version which links to the full-size in web interface!
 	if (m_bSnapshotLiveJpeg)
 	{
 		CString sLiveFileName;
@@ -8529,12 +8526,8 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Get uptime
 	DWORD dwUpTime = pDib->GetUpTime();
 
-	// Decode if compressed
-	CDib Dib;
-	Dib.SetShowMessageBoxOnError(FALSE);
-	Dib = *pDib;
-	if (Dib.IsCompressed())
-		Dib.Decompress(32);
+	// Dib
+	CDib Dib(*pDib);
 
 	// Resize Thumb
 	CDib DibThumb;
@@ -8544,7 +8537,9 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		DibThumb.SetShowMessageBoxOnError(FALSE);
 
 		// Resize
-		DibThumb.StretchBits(m_nSnapshotThumbWidth, m_nSnapshotThumbHeight, &Dib);
+		DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight);
+		CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
+		DibThumb.SetUpTime(Dib.GetUpTime());
 	}
 
 	// Add frame time
@@ -8559,11 +8554,15 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	Dib.EditCopy();
 
 	// Save to JPEG File(s)
-	BOOL res = Dib.SaveJPEG(sFileName, m_nSnapshotCompressionQuality);
+	// Note: always first save full-size file then the thumb
+	// version which links to the full-size in web interface!
+	CMJPEGEncoder MJPEGEncoder;
+	BOOL res = CVideoDeviceDoc::SaveJpegFast(&Dib, &MJPEGEncoder, sFileName, m_nSnapshotCompressionQuality);
 	if (DibThumb.IsValid())
 	{
-		DibThumb.SaveJPEG(	::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
-							m_nSnapshotCompressionQuality);
+		CVideoDeviceDoc::SaveJpegFast(	&DibThumb, &MJPEGEncoder,
+										::GetFileNameNoExt(sFileName) + _T("_thumb.jpg"),
+										m_nSnapshotCompressionQuality);
 	}
 
 	// Open Document File
