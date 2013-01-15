@@ -931,7 +931,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 #ifdef VIDEODEVICEDOC
 					// Update / create config file and doc root index.php for microapache
-					MicroApacheUpdateFiles(TRUE); // overwrite doc root index.php
+					MicroApacheUpdateMainFiles();
 #else
 					// Open Settings Dialog for file association and other preferences
 					if (!m_bSilentInstall)
@@ -6447,7 +6447,7 @@ BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
 	return bUsed;
 }
 
-void CUImagerApp::MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex/*=FALSE*/)
+void CUImagerApp::MicroApacheUpdateMainFiles()
 {
 	// Check config file, create it if not existing
 	CVideoDeviceDoc::MicroApacheCheckConfigFile();
@@ -6473,7 +6473,7 @@ void CUImagerApp::MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex/*=FALSE*/)
 		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), MICROAPACHE_FAKE_LOCATION);
 	}
 
-	// Copy index.php to Doc Root
+	// Copy index.php to Doc Root (overwrite if existing)
 	CString sDocRoot = m_sMicroApacheDocRoot;
 	sDocRoot.TrimRight(_T('\\'));
 	TCHAR szDrive[_MAX_DRIVE];
@@ -6483,7 +6483,7 @@ void CUImagerApp::MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex/*=FALSE*/)
 	{
 		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), !bOverwriteDocRootIndex);
+		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
 	}
 
 	// Set Doc Root to config file

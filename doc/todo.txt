@@ -8,7 +8,6 @@ ContaCam Program
 - Possibility to configure the ftp uploaded snapshot.jpg and
   snapshot_thumb.jpg filenames
 - More compact storing in registry / ini file of detection zones
-- Always overwrite web files on device start
 
 ContaCam Web Interface
 ----------------------

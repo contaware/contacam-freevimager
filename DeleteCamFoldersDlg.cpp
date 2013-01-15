@@ -84,11 +84,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 					cbName = MAX_KEY_BUFFER;
 					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
 					CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
-					CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("DetectionAutoSaveDir"), _T(""));
-					CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("SnapshotAutoSaveDir"), _T(""));
-					if (sRecordAutoSaveDir != _T("")	&&
-						sDetectionAutoSaveDir != _T("")	&&
-						sSnapshotAutoSaveDir != _T(""))
+					if (sRecordAutoSaveDir != _T(""))
 						m_DevicePathNames.Add(achKey);
 				}
 				::RegCloseKey(hKey);
@@ -104,11 +100,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 			while (*sSource != 0) // If 0 -> end of list
 			{
 				CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
-				CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("DetectionAutoSaveDir"), _T(""));
-				CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("SnapshotAutoSaveDir"), _T(""));
-				if (sRecordAutoSaveDir != _T("")	&&
-					sDetectionAutoSaveDir != _T("")	&&
-					sSnapshotAutoSaveDir != _T(""))
+				if (sRecordAutoSaveDir != _T(""))
 					m_DevicePathNames.Add(sSource);
 				while (*sSource != 0)
 					sSource++;
@@ -141,14 +133,8 @@ void CDeleteCamFoldersDlg::OnOK()
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
 				{
 					CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
-					CString sDetectionAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("DetectionAutoSaveDir"), _T(""));
-					CString sSnapshotAutoSaveDir = ::AfxGetApp()->GetProfileString(m_DevicePathNames[i], _T("SnapshotAutoSaveDir"), _T(""));
 					sRecordAutoSaveDir.TrimRight(_T('\\'));
-					sDetectionAutoSaveDir.TrimRight(_T('\\'));
-					sSnapshotAutoSaveDir.TrimRight(_T('\\'));
-					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0		||
-						sDirName.CompareNoCase(sDetectionAutoSaveDir) == 0	||
-						sDirName.CompareNoCase(sSnapshotAutoSaveDir) == 0)
+					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0)
 					{
 						::AfxGetApp()->WriteProfileInt(m_DevicePathNames[i], _T("RestoreWebFiles"), TRUE);
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);

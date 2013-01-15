@@ -68,9 +68,9 @@ END_MESSAGE_MAP()
 
 BOOL CAssistantDlg::OnInitDialog() 
 {
-	// Check whether the web files exist in the given directory
+	// Overwrite web files in given directory
 	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-	m_pDoc->MicroApacheCheckWebFiles(sAutoSaveDir);
+	m_pDoc->MicroApacheUpdateWebFiles(sAutoSaveDir);
 
 	// Clear restore web files flag
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -1165,8 +1165,10 @@ void CAssistantDlg::ApplySettings()
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
 	}
 
-	// New versions of the web files
-	m_pDoc->MicroApacheCheckWebFiles(m_pDoc->m_sRecordAutoSaveDir, TRUE);
+	// Overwrite web files in given directory
+	// (do it again here just in case something went wrong
+	// with the directory rename)
+	m_pDoc->MicroApacheUpdateWebFiles(m_pDoc->m_sRecordAutoSaveDir);
 
 	// End wait cursor
 	EndWaitCursor();

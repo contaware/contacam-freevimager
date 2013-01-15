@@ -308,7 +308,7 @@ public:
 	static BOOL MicroApacheIsPortUsed(int nPort);
 
 	// Update / create config file and doc root index.php for microapache
-	void MicroApacheUpdateFiles(BOOL bOverwriteDocRootIndex = FALSE);
+	void MicroApacheUpdateMainFiles();
 
 	// FullscreenBrowser Ini file handling
 	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);

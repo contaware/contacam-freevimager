@@ -923,7 +923,7 @@ public:
 	static CString MicroApacheGetPidFileName();
 	static CString MicroApacheGetPwFileName();
 	static BOOL MicroApacheCheckConfigFile();
-	static BOOL MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite = FALSE);
+	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();

@@ -4964,9 +4964,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Create dir
 	::CreateDir(m_sRecordAutoSaveDir);
 
-	// Check whether the web files exist in the given directory
-	if (m_bDeviceFirstRun)
-		MicroApacheCheckWebFiles(m_sRecordAutoSaveDir);
+	// Overwrite web files in given directory
+	MicroApacheUpdateWebFiles(m_sRecordAutoSaveDir);
 }
 
 void CVideoDeviceDoc::SaveSettings()
@@ -6581,7 +6580,7 @@ void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
-BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverwrite/*=FALSE*/)
+BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 {
 	sAutoSaveDir.TrimRight(_T('\\'));
 	sAutoSaveDir += _T('\\');
@@ -6618,7 +6617,7 @@ BOOL CVideoDeviceDoc::MicroApacheCheckWebFiles(CString sAutoSaveDir, BOOL bOverw
 			if (sShortName.CompareNoCase(PHP_CONFIGNAME_EXT) == 0)
 				::CopyFile(sName, sAutoSaveDir + sRelName, TRUE);	// Never overwrite the configuration file!
 			else
-				::CopyFile(sName, sAutoSaveDir + sRelName, !bOverwrite);
+				::CopyFile(sName, sAutoSaveDir + sRelName, FALSE);	// Always overwrite to get new version!
 		}
 	}
 	return TRUE;
@@ -6638,8 +6637,8 @@ void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& 
 		return;
 	}
 
-	// Check whether the web files exist in the given auto-save directory
-	MicroApacheCheckWebFiles(sAutoSaveDir);
+	// Overwrite web files in given directory
+	MicroApacheUpdateWebFiles(sAutoSaveDir);
 	
 	// Execute Browser
 	CString sRelPath(sAutoSaveDir.Right(sAutoSaveDir.GetLength() - sMicroApacheDocRoot.GetLength()));
@@ -7213,7 +7212,7 @@ int CVideoDeviceDoc::MicroApacheReload()
 	else
 	{
 		// Update / create config file and doc root index.php for microapache
-		pApp->MicroApacheUpdateFiles(); // do not overwrite doc root index.php
+		pApp->MicroApacheUpdateMainFiles();
 
 		// Start server
 		if (pApp->m_bStartMicroApache)
