@@ -73,6 +73,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
+	m_sMicroApacheAreaname = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname;;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
 
@@ -111,8 +112,9 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_WEBSERVER_ROOTDIR_PATH, m_sMicroApacheDocRoot);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
 	DDV_MinMaxInt(pDX, m_nMicroApachePort, 0, 65535);
-	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
+	DDX_Text(pDX, IDC_AUTH_AREANAME, m_sMicroApacheAreaname);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
+	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
 	DDX_Check(pDX, IDC_CHECK_FULLSCREENBROWSER, m_bFullscreenBrowser);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Text(pDX, IDC_EDIT_FULLSCREENBROWSER_EXITSTRING, m_sFullscreenBrowserExitString);
@@ -509,10 +511,13 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->m_bIPv6 = m_bIPv6;
 
 	// Micro Apache
+	if (m_sMicroApacheAreaname.IsEmpty())
+		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
 		pApp->m_sMicroApacheDocRoot != m_sMicroApacheDocRoot		||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
 		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
+		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
 		pApp->m_sMicroApachePassword != m_sMicroApachePassword)
 	{
@@ -521,6 +526,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
 		pApp->m_bMicroApacheDigestAuth = m_bMicroApacheDigestAuth;
+		pApp->m_sMicroApacheAreaname = m_sMicroApacheAreaname;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
 
@@ -579,6 +585,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("MicroApacheDigestAuth"),
 											m_bMicroApacheDigestAuth);
+			pApp->WriteProfileString(		_T("GeneralApp"),
+											_T("MicroApacheAreaname"),
+											m_sMicroApacheAreaname);
 			pApp->WriteSecureProfileString(	_T("GeneralApp"),
 											_T("MicroApacheUsername"),
 											m_sMicroApacheUsername);
@@ -639,6 +648,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("MicroApacheDigestAuth"),
 											m_bMicroApacheDigestAuth,
+											sTempFileName);
+			::WriteProfileIniString(		_T("GeneralApp"),
+											_T("MicroApacheAreaname"),
+											m_sMicroApacheAreaname,
 											sTempFileName);
 			::WriteSecureProfileIniString(	_T("GeneralApp"),
 											_T("MicroApacheUsername"),

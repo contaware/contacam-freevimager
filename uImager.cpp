@@ -148,6 +148,7 @@ CUImagerApp::CUImagerApp()
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
+	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -948,7 +949,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				// Auto-starts
 				if (!m_bForceSeparateInstance)
 				{
-					// Update / create config file and doc root index.php for microapache
+					// Update / create doc root index.php and config file for microapache
 					CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
 					// Start Micro Apache
@@ -4515,6 +4516,7 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 
 	// Micro Apache Authentication
 	m_bMicroApacheDigestAuth = (BOOL)GetProfileInt(sSection, _T("MicroApacheDigestAuth"), TRUE);
+	m_sMicroApacheAreaname = GetProfileString(sSection, _T("MicroApacheAreaname"), MICROAPACHE_DEFAULT_AUTH_AREANAME);
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"), _T(""));
 	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"), _T(""));
 

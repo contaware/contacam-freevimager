@@ -4280,11 +4280,11 @@ BEGIN
     LTEXT           "User Name:",IDC_STATIC2500,14,153,38,8
 END
 
-IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 279
+IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 290
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -4347,23 +4347,24 @@ BEGIN
     EDITTEXT        IDC_EDIT_PORT,29,157,27,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_WEBSERVER_ROOTDIR,315,181,16,12
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,219,108,10
-    EDITTEXT        IDC_AUTH_USERNAME,52,240,80,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,179,240,80,13,ES_PASSWORD | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,218,108,10
+    EDITTEXT        IDC_AUTH_AREANAME,52,233,80,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,52,249,80,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,179,249,80,13,ES_PASSWORD | 
                     ES_AUTOHSCROLL
     CONTROL         "Secure\nAuthentication",IDC_CHECK_DIGESTAUTH,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,271,237,61,
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,271,246,61,
                     18
-    DEFPUSHBUTTON   "OK",IDOK,135,262,36,14
-    PUSHBUTTON      "Cancel",IDCANCEL,182,262,36,14
+    DEFPUSHBUTTON   "OK",IDOK,135,273,36,14
+    PUSHBUTTON      "Cancel",IDCANCEL,182,273,36,14
     LTEXT           "Root Dir",IDC_TEXT_WEBSERVER_ROOTDIR,11,183,27,8,
                     SS_NOTIFY | NOT WS_GROUP
     EDITTEXT        IDC_WEBSERVER_ROOTDIR_PATH,43,181,270,12,ES_AUTOHSCROLL | 
                     ES_READONLY | NOT WS_TABSTOP
     LTEXT           "NOTE: The root directory is the parent directory of all detections, recordings and snapshots. http://localhost:port will point to the content of the root directory.",
                     IDC_STATIC,61,153,269,20,SS_SUNKEN
-    LTEXT           "User Name",IDC_STATIC,11,242,38,8
-    LTEXT           "Password",IDC_STATIC,142,242,33,8
+    LTEXT           "User Name",IDC_STATIC,11,251,38,8
+    LTEXT           "Password",IDC_STATIC,142,251,33,8
     LTEXT           "Graphics Files:",IDC_STATIC2244,179,23,47,10,0,
                     WS_EX_STATICEDGE
     LTEXT           "Audio Files:",IDC_STATIC2245,234,23,43,10,0,
@@ -4372,7 +4373,7 @@ BEGIN
                     WS_EX_STATICEDGE
     GROUPBOX        "File Associations",IDC_STATIC2247,173,7,162,127
     GROUPBOX        "General",IDC_STATIC2248,5,7,161,84
-    GROUPBOX        "Internal Web Server",IDC_STATIC,5,205,330,52
+    GROUPBOX        "Internal Web Server",IDC_STATIC,5,205,330,63
     LTEXT           "Port",IDC_STATIC,11,159,14,8
     GROUPBOX        "Web Browser",IDC_STATIC,5,95,161,39
     LTEXT           "Exit pressing ESC +",IDC_LABEL_FULLSCREENBROWSER,11,119,
@@ -4380,7 +4381,8 @@ BEGIN
     GROUPBOX        "Web Server (always supply Port and Root Dir, even if using another Web Server)",
                     IDC_STATIC,5,138,330,63
     LTEXT           "NOTE: Clear User Name and Password when using the Internal Fullscreen Browser!",
-                    IDC_STATIC,143,214,187,20,SS_SUNKEN
+                    IDC_STATIC,143,216,187,20,SS_SUNKEN
+    LTEXT           "Area Name",IDC_STATIC,11,235,38,8
 END
 
 IDD_IMAPI2 DIALOG DISCARDABLE  0, 0, 298, 124
@@ -5303,7 +5305,7 @@ BEGIN
         VERTGUIDE, 11
         VERTGUIDE, 330
         TOPMARGIN, 6
-        BOTTOMMARGIN, 276
+        BOTTOMMARGIN, 287
     END
 
     IDD_IMAPI2, DIALOG
@@ -5908,7 +5910,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_MULTILANG_1473      "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"
+    IDS_MULTILANG_1473      "Record directory must reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
     IDS_MULTILANG_1476      "Please configure a directory in the Device Settings dialog"

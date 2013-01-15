@@ -6582,40 +6582,72 @@ void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 {
-	// Overwrite config file
+	// Copy index.php to Doc Root (overwrite if existing)
+	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+	sDocRoot.TrimRight(_T('\\'));
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
+		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
+	}
+
+	// Warning
+	CString sConfig, sFormat;
+	sConfig =  _T("# DO NOT MODIFY THIS FILE (ContaCam will overwrite your changes)\r\n");
+	sConfig += _T("# Make your customizations in ") + CString(MICROAPACHE_EDITABLE_CONFIGNAME_EXT) + _T("\r\n\r\n");
+
+	// Listen Port
+	sFormat.Format(_T("Listen %d\r\n"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	sConfig += sFormat;
+
+	// Server name, root and admin email
+	sConfig += _T("ServerName localhost\r\n");
+	sConfig += _T("ServerRoot .\r\n");
+	sConfig += _T("ServerAdmin webmaster@nowhere.com\r\n");
+
+	// Document root
+	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
+	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
+	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
+	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
+										// Add a trailing "
+	sFormat.Format(_T("DocumentRoot %s\r\n"), sDocRoot);
+	sConfig += sFormat;
+
+	// Global settings
+	sConfig += _T("ThreadsPerChild 128\r\n");
+	sConfig += _T("Win32DisableAcceptEx On\r\n");
+	sConfig += _T("LoadModule access_module modules/mod_access.dll\r\n");
+	sConfig += _T("LoadModule dir_module modules/mod_dir.dll\r\n");
+	sConfig += _T("LoadModule mime_module modules/mod_mime.dll\r\n");
+	sConfig += _T("LoadModule rewrite_module modules/mod_rewrite.dll\r\n");
+	sConfig += _T("LoadModule auth_module modules/mod_auth.dll\r\n");
+	sConfig += _T("LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n");
+	sConfig += _T("LoadModule php5_module \"php5apache2.dll\"\r\n");
+	sConfig += _T("AddType application/x-httpd-php .php .php3\r\n");
+	sConfig += _T("AcceptPathInfo off\r\n");
+	sConfig += _T("KeepAlive on\r\n");
+	sConfig += _T("KeepAliveTimeout 15\r\n");
+	sConfig += _T("MaxKeepAliveRequests 0\r\n");
+	sConfig += _T("TimeOut 300\r\n");
+	sConfig += _T("DirectoryIndex index.html index.htm index.php\r\n");
+	sConfig += _T("LogLevel crit\r\n");
+	
+	// Error log and pid file locations
 	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
-	CString sConfig;
-	sConfig = _T("# Change the Listen directive if you want to use a different port\r\n\
-# Decrease ThreadsPerChild to a lower value if you want a faster start-up and less memory usage\r\n\
-# Increase ThreadsPerChild for a high load server (250 is a good value)\r\n\r\n\
-Listen 8800\r\n\
-ServerName localhost\r\n\
-ServerRoot .\r\n\
-ServerAdmin webmaster@nowhere.com\r\n\
-DocumentRoot \"./htdocs/\"\r\n\
-ThreadsPerChild 128\r\n\
-Win32DisableAcceptEx On\r\n\
-LoadModule access_module modules/mod_access.dll\r\n\
-LoadModule dir_module modules/mod_dir.dll\r\n\
-LoadModule mime_module modules/mod_mime.dll\r\n\
-LoadModule rewrite_module modules/mod_rewrite.dll\r\n\
-LoadModule auth_module modules/mod_auth.dll\r\n\
-LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n\
-LoadModule php5_module \"php5apache2.dll\"\r\n\
-AddType application/x-httpd-php .php .php3\r\n\
-AcceptPathInfo off\r\n\
-KeepAlive on\r\n\
-KeepAliveTimeout 15\r\n\
-MaxKeepAliveRequests 0\r\n\
-TimeOut 30\r\n\
-DirectoryIndex index.html index.htm index.php\r\n\
-LogLevel crit\r\n");
+	CString sConfigDir = ::GetDriveAndDirName(sMicroapacheConfigFile);
+	if (!::IsExistingDir(sConfigDir))
+		::CreateDir(sConfigDir);
+	sConfigDir = ::GetASCIICompatiblePath(sConfigDir); // directory must exist!
+	sConfigDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
+	sConfig += _T("ErrorLog \"") + sConfigDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
+	sConfig += _T("PidFile \"") + sConfigDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
 	
-	CString sDir = ::GetASCIICompatiblePath(::GetDriveAndDirName(sMicroapacheConfigFile)); // directory must exist!
-	sDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
-	sConfig += _T("ErrorLog \"") + sDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
-	sConfig += _T("PidFile \"") + sDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
-	
+	// Rewrite engine
 	sConfig += _T("<Directory />\r\n");
 	sConfig += _T("RewriteEngine on\r\n");
 	sConfig += _T("RewriteBase /\r\n");
@@ -6623,16 +6655,33 @@ LogLevel crit\r\n");
 	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
 	sConfig += _T("</Directory>\r\n");
 
-	sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
-	sConfig += _T("AuthDigestFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-	sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-	sConfig += _T("AuthName \"Secure Area\"\r\n");
-	sConfig += _T("AuthType Digest\r\n");
-	sConfig += _T("AuthDigestDomain /\r\n");
-	sConfig += _T("Require valid-user\r\n");
-	sConfig += _T("</Location>\r\n");
-	sConfig += _T("Include \"") + sDir + MICROAPACHE_EDITABLE_CONFIGNAME_EXT + _T("\"");
-
+	// Make password file and set authentication type
+	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
+		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
+	{
+		MicroApacheMakePasswordFile(((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth,
+									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname,						
+									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername,
+									((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword);
+		sConfig += _T("<Location />\r\n");
+		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth)
+		{
+			sConfig += _T("AuthType Digest\r\n");
+			sConfig += _T("AuthDigestDomain /\r\n");
+			sConfig += _T("AuthDigestFile \"") + sConfigDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
+		}
+		else
+		{
+			sConfig += _T("AuthType Basic\r\n");
+			sConfig += _T("AuthUserFile \"") + sConfigDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
+		}
+		sConfig += _T("AuthName \"") + ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname + _T("\"\r\n");
+		sConfig += _T("Require valid-user\r\n");
+		sConfig += _T("</Location>\r\n");
+	}
+	
+	// Include custom configurations file (create an empty one if not existing)
+	sConfig += _T("Include \"") + sConfigDir + MICROAPACHE_EDITABLE_CONFIGNAME_EXT + _T("\"");
 	CString sMicroapacheEditableConfigFile = MicroApacheGetEditableConfigFileName();
 	if (!::IsExistingFile(sMicroapacheEditableConfigFile))
 	{
@@ -6657,52 +6706,26 @@ LogLevel crit\r\n");
 			delete [] pData;
 	}
 
-	SaveMicroApacheConfigFile(sConfig);
-
-	// Set Port
-	CString sPort;
-	sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-	MicroApacheConfigFileSetParam(_T("Listen"), sPort);
-	
-	// Make password file and set authentication type
-	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
-		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
+	// Finally save config file (overwrite if existing)
+	LPSTR pData = NULL;
+	int nLen = ::ToANSI(sConfig, &pData);
+	if (nLen > 0 && pData)
 	{
-		MicroApacheMakePasswordFile(((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth,
-									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername,
-									((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword);
-		MicroApacheConfigFileSetParam(_T("<Location"), _T("/>"));
-		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth)
-			MicroApacheConfigFileSetParam(_T("AuthType"), _T("Digest"));
-		else
-			MicroApacheConfigFileSetParam(_T("AuthType"), _T("Basic"));
+		try
+		{
+			CFile f(sMicroapacheConfigFile,
+					CFile::modeCreate		|
+					CFile::modeWrite		|
+					CFile::shareDenyWrite);
+			f.Write(pData, nLen);
+		}
+		catch (CFileException* e)
+		{
+			e->Delete();
+		}
 	}
-	else
-	{
-		// Disable protection adding a fake location
-		MicroApacheConfigFileSetParam(_T("<Location"), MICROAPACHE_FAKE_LOCATION);
-	}
-
-	// Copy index.php to Doc Root (overwrite if existing)
-	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-	sDocRoot.TrimRight(_T('\\'));
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
-	}
-
-	// Set Doc Root to config file
-	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
-	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
-	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
-	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
-										// Add a trailing "
-	MicroApacheConfigFileSetParam(_T("DocumentRoot"), sDocRoot);
+	if (pData)
+		delete [] pData;
 }
 
 BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
@@ -6748,93 +6771,91 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	return TRUE;
 }
 
-void CVideoDeviceDoc::MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& sWebPageFileName)
+void CVideoDeviceDoc::OnViewWeb() 
 {
-	// Trim ending backslash
-	sAutoSaveDir.TrimRight(_T('\\'));
-	CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
-	sMicroApacheDocRoot.TrimRight(_T('\\'));
+	if (m_sRecordAutoSaveDir != _T(""))
+	{
+		// Init vars
+		CString sAutoSaveDir = m_sRecordAutoSaveDir;
+		sAutoSaveDir.TrimRight(_T('\\'));
+		CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+		sMicroApacheDocRoot.TrimRight(_T('\\'));
 
-	// Check whether sAutoSaveDir is inside the document root directory
-	if (sAutoSaveDir.Find(sMicroApacheDocRoot) < 0)
-	{
-		::AfxMessageBox(ML_STRING(1473, "Movement detection, recording and snapshot directories\nmust all reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
-		return;
-	}
-
-	// Overwrite web files in given directory
-	MicroApacheUpdateWebFiles(sAutoSaveDir);
-	
-	// Execute Browser
-	CString sRelPath(sAutoSaveDir.Right(sAutoSaveDir.GetLength() - sMicroApacheDocRoot.GetLength()));
-	sRelPath.TrimLeft(_T('\\'));
-	sRelPath.Replace(_T('\\'), _T('/'));// Change path from \ to /
-	CString sUrl, sPort;
-	sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-	if (sPort != _T("80"))
-	{
-		if (sRelPath != _T(""))
-			sUrl = _T("http://localhost:") + sPort + _T("/") + sRelPath + _T("/") + sWebPageFileName;
-		else
-			sUrl = _T("http://localhost:") + sPort + _T("/") + sWebPageFileName;
-	}
-	else
-	{
-		if (sRelPath != _T(""))
-			sUrl = _T("http://localhost/") + sRelPath + _T("/") + sWebPageFileName;
-		else
-			sUrl = _T("http://localhost/") + sWebPageFileName;
-	}
-	sUrl = ::UrlEncode(sUrl, FALSE);
-	if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
-	{
-		int nRet = IDYES;
-		if (((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString != _T(""))
+		// Check whether sAutoSaveDir is inside the document root directory
+		if (sAutoSaveDir.Find(sMicroApacheDocRoot) < 0)
 		{
-			CString sMsg;
-			sMsg.Format(ML_STRING(1762, "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"),
-						((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString);
-			nRet = ::AfxMessageBox(sMsg, MB_YESNO | MB_ICONINFORMATION);
+			::AfxMessageBox(ML_STRING(1473, "Record directory must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
+			return;
 		}
-		if (nRet == IDYES)
+
+		// Overwrite web files in given directory
+		MicroApacheUpdateWebFiles(sAutoSaveDir);
+		
+		// Execute Browser
+		CString sRelPath(sAutoSaveDir.Right(sAutoSaveDir.GetLength() - sMicroApacheDocRoot.GetLength()));
+		sRelPath.TrimLeft(_T('\\'));
+		sRelPath.Replace(_T('\\'), _T('/'));// Change path from \ to /
+		CString sUrl, sPort;
+		sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+		if (sPort != _T("80"))
+		{
+			if (sRelPath != _T(""))
+				sUrl = _T("http://localhost:") + sPort + _T("/") + sRelPath + _T("/");
+			else
+				sUrl = _T("http://localhost:") + sPort + _T("/");
+		}
+		else
+		{
+			if (sRelPath != _T(""))
+				sUrl = _T("http://localhost/") + sRelPath + _T("/");
+			else
+				sUrl = _T("http://localhost/");
+		}
+		sUrl = ::UrlEncode(sUrl, FALSE);
+		if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
+		{
+			int nRet = IDYES;
+			if (((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString != _T(""))
+			{
+				CString sMsg;
+				sMsg.Format(ML_STRING(1762, "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"),
+							((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString);
+				nRet = ::AfxMessageBox(sMsg, MB_YESNO | MB_ICONINFORMATION);
+			}
+			if (nRet == IDYES)
+			{
+				BeginWaitCursor();
+				TCHAR szDrive[_MAX_DRIVE];
+				TCHAR szDir[_MAX_DIR];
+				TCHAR szProgramName[MAX_PATH];
+				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+				{
+					EndWaitCursor();
+					return;
+				}
+				_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+				CString sFullscreenExe = CString(szDrive) + CString(szDir) + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
+				::ShellExecute(	NULL,
+								_T("open"),
+								sFullscreenExe,
+								sUrl,
+								NULL,
+								SW_SHOWNORMAL);
+				EndWaitCursor();
+			}
+		}
+		else
 		{
 			BeginWaitCursor();
-			TCHAR szDrive[_MAX_DRIVE];
-			TCHAR szDir[_MAX_DIR];
-			TCHAR szProgramName[MAX_PATH];
-			if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			{
-				EndWaitCursor();
-				return;
-			}
-			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-			CString sFullscreenExe = CString(szDrive) + CString(szDir) + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
 			::ShellExecute(	NULL,
 							_T("open"),
-							sFullscreenExe,
 							sUrl,
+							NULL,
 							NULL,
 							SW_SHOWNORMAL);
 			EndWaitCursor();
 		}
 	}
-	else
-	{
-		BeginWaitCursor();
-		::ShellExecute(	NULL,
-						_T("open"),
-						sUrl,
-						NULL,
-						NULL,
-						SW_SHOWNORMAL);
-		EndWaitCursor();
-	}
-}
-
-void CVideoDeviceDoc::OnViewWeb() 
-{
-	if (m_sRecordAutoSaveDir != _T(""))
-		MicroApacheViewOnWeb(m_sRecordAutoSaveDir, _T("index.php"));
 	else
 		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
 }
@@ -6964,7 +6985,7 @@ CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 	return sMicroapachePwFile;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword)
+BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword)
 {
 	// Delete password file if existing
 	CString sMicroapachePwFile = MicroApacheGetPwFileName();
@@ -6974,18 +6995,15 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 	// Make password file
 	if (bDigest)
 	{
-		CString sRealm = MicroApacheConfigFileGetParam(_T("AuthName"));
-		sRealm.TrimLeft(_T("'\""));
-		sRealm.TrimRight(_T("'\""));
 		USES_CONVERSION;
 		CPJNMD5 hmac;
 		CPJNMD5Hash hash;
-		CString sToHash = sUsername + _T(":") + sRealm + _T(":") + sPassword;
+		CString sToHash = sUsername + _T(":") + sAreaname + _T(":") + sPassword;
 		char* pszA1 = T2A(const_cast<LPTSTR>(sToHash.operator LPCTSTR()));
 		if (hmac.Hash((const BYTE*)pszA1, (DWORD)strlen(pszA1), hash))
 		{
 			CString sHA1 = hash.Format(FALSE);
-			CString sPasswordFileData = sUsername + _T(":") + sRealm + _T(":") + sHA1 + _T("\n");
+			CString sPasswordFileData = sUsername + _T(":") + sAreaname + _T(":") + sHA1 + _T("\n");
 			LPSTR pData = NULL;
 			int nLen = ::ToANSI(sPasswordFileData, &pData);
 			if (nLen <= 0 || !pData)
@@ -7395,7 +7413,7 @@ int CVideoDeviceDoc::MicroApacheReload()
 		return 0;
 	else
 	{
-		// Update / create config file and doc root index.php for microapache
+		// Update / create doc root index.php and config file for microapache
 		MicroApacheUpdateMainFiles();
 
 		// Start server
@@ -7413,164 +7431,6 @@ int CVideoDeviceDoc::MicroApacheReload()
 	return 1;
 }
 
-BOOL CVideoDeviceDoc::MicroApacheConfigFileSetParam(const CString& sParam, const CString& sValue)
-{
-	// Load Config File
-	CString sConfig = LoadMicroApacheConfigFile();
-	if (sConfig == _T(""))
-		return FALSE;
-
-	// Find Param
-	CString s;
-	int nIndexEnd;
-	int nIndexStart = sConfig.Find(sParam);
-	int i = nIndexStart;
-	while (--i >= 0)
-	{
-		// Start of line, ok
-		if (sConfig[i] == _T('\r') || sConfig[i] == _T('\n'))
-			break;
-		// Ops it was a comment, find next
-		else if (sConfig[i] == _T('#'))
-		{
-			nIndexStart = sConfig.Find(sParam, nIndexStart + 1);
-			i = nIndexStart;
-		}
-	}
-
-	// Append new Param
-	if (nIndexStart < 0)
-		sConfig += _T("\r\n") + sParam + _T(" ") + sValue;
-	// Update existing Param
-	else
-	{
-		nIndexStart += sParam.GetLength(); // Size of Param
-		s = sConfig.Right(sConfig.GetLength() - nIndexStart);
-		nIndexEnd = s.FindOneOf(_T("\r\n"));
-		if (nIndexEnd > 0)
-			sConfig.Delete(nIndexStart, nIndexEnd);
-		else
-			sConfig.Delete(nIndexStart, s.GetLength());
-		sConfig.Insert(nIndexStart, _T(" ") + sValue);
-	}
-
-	return SaveMicroApacheConfigFile(sConfig);
-}
-
-CString CVideoDeviceDoc::MicroApacheConfigFileGetParam(const CString& sParam)
-{
-	// Load Config File
-	CString sConfig = LoadMicroApacheConfigFile();
-	if (sConfig == _T(""))
-		return _T("");
-
-	// Find Param
-	CString s;
-	int nIndexEnd;
-	int nIndexStart = sConfig.Find(sParam);
-	int i = nIndexStart;
-	while (--i >= 0)
-	{
-		// Start of line, ok
-		if (sConfig[i] == _T('\r') || sConfig[i] == _T('\n'))
-			break;
-		// Ops it was a comment, find next
-		else if (sConfig[i] == _T('#'))
-		{
-			nIndexStart = sConfig.Find(sParam, nIndexStart + 1);
-			i = nIndexStart;
-		}
-	}
-
-	// Not found
-	if (nIndexStart < 0)
-		return _T("");
-	else
-	{
-		CString sValue;
-		nIndexStart += sParam.GetLength(); // Size of Param
-		s = sConfig.Right(sConfig.GetLength() - nIndexStart);
-		nIndexEnd = s.FindOneOf(_T("\r\n"));
-		if (nIndexEnd > 0)
-			sValue = sConfig.Mid(nIndexStart, nIndexEnd);
-		else
-			sValue = sConfig.Mid(nIndexStart, s.GetLength());
-		sValue.TrimLeft();
-		sValue.TrimRight();
-		return sValue;
-	}
-}
-
-CString CVideoDeviceDoc::LoadMicroApacheConfigFile() 
-{
-	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
-	LPBYTE pData = NULL;
-	try
-	{
-		// Open Config File
-		CFile f(sMicroapacheConfigFile,
-				CFile::modeRead |
-				CFile::shareDenyWrite);
-		DWORD dwLength = (DWORD)f.GetLength();
-		if (dwLength == 0)
-			return _T("");
-
-		// Allocate Buffer
-		pData = new BYTE [dwLength+1];
-		if (!pData)
-			return _T("");
-		
-		// Read Data
-		dwLength = f.Read(pData, dwLength);
-		pData[dwLength] = '\0';
-		CString s((LPCSTR)pData);
-		delete [] pData;
-		return s;
-	}
-	catch (CFileException* e)
-	{
-		if (pData)
-			delete [] pData;
-		e->Delete();
-		return _T("");
-	}
-}
-
-BOOL CVideoDeviceDoc::SaveMicroApacheConfigFile(const CString& sConfig)
-{
-	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
-	CString sPath = ::GetDriveAndDirName(sMicroapacheConfigFile);
-	if (!::IsExistingDir(sPath))
-	{
-		if (!::CreateDir(sPath))
-			return FALSE;
-	}
-	LPSTR pData = NULL;
-	int nLen = ::ToANSI(sConfig, &pData);
-	if (nLen <= 0 || !pData)
-	{
-		if (pData)
-			delete [] pData;
-		return FALSE;
-	}
-	try
-	{
-		CFile f(sMicroapacheConfigFile,
-				CFile::modeCreate		|
-				CFile::modeWrite		|
-				CFile::shareDenyWrite);
-		f.Write(pData, nLen);
-		delete [] pData;
-		return TRUE;
-	}
-	catch (CFileException* e)
-	{
-		delete [] pData;
-		e->Delete();
-		return FALSE;
-	}
-}
-
 CString CVideoDeviceDoc::PhpGetConfigFileName()
 {
 	CString sAutoSaveDir = m_sRecordAutoSaveDir;
@@ -7581,7 +7441,7 @@ CString CVideoDeviceDoc::PhpGetConfigFileName()
 		return _T("");
 }
 
-CString CVideoDeviceDoc::LoadPhpConfigFile() 
+CString CVideoDeviceDoc::PhpLoadConfigFile() 
 {
 	CString sPhpConfigFile = PhpGetConfigFileName();
 	if (sPhpConfigFile == _T(""))
@@ -7618,7 +7478,7 @@ CString CVideoDeviceDoc::LoadPhpConfigFile()
 	}
 }
 
-BOOL CVideoDeviceDoc::SavePhpConfigFile(const CString& sConfig)
+BOOL CVideoDeviceDoc::PhpSaveConfigFile(const CString& sConfig)
 {
 	CString sPhpConfigFile = PhpGetConfigFileName();
 	if (sPhpConfigFile == _T(""))
@@ -7658,7 +7518,7 @@ BOOL CVideoDeviceDoc::SavePhpConfigFile(const CString& sConfig)
 BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString& sValue)
 {
 	// Load Config File
-	CString sConfig = LoadPhpConfigFile();
+	CString sConfig = PhpLoadConfigFile();
 	if (sConfig == _T(""))
 		return FALSE;
 
@@ -7733,7 +7593,7 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 					{
 						sConfig.Delete(nIndexValueStart, i - nIndexValueStart);
 						sConfig.Insert(nIndexValueStart, _T("\"") + sValue + _T("\""));
-						return SavePhpConfigFile(sConfig);
+						return PhpSaveConfigFile(sConfig);
 					}
 					i++;
 				}
@@ -7751,7 +7611,7 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 	if (nIndexInsert >= 0)
 	{
 		sConfig.Insert(nIndexInsert, sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");") + _T("\r\n\r\n"));
-		return SavePhpConfigFile(sConfig);
+		return PhpSaveConfigFile(sConfig);
 	}
 	// If also not found -> insert after <?php
 	else
@@ -7761,7 +7621,7 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 		{
 			nIndexInsert += 5; // Skip <?php
 			sConfig.Insert(nIndexInsert, _T("\r\n") + sDefine + _T(" (\"") + sParam + _T("\",\"") + sValue + _T("\");"));
-			return SavePhpConfigFile(sConfig);
+			return PhpSaveConfigFile(sConfig);
 		}
 	}
 
@@ -7771,7 +7631,7 @@ BOOL CVideoDeviceDoc::PhpConfigFileSetParam(const CString& sParam, const CString
 CString CVideoDeviceDoc::PhpConfigFileGetParam(const CString& sParam)
 {
 	// Load Config File
-	CString sConfig = LoadPhpConfigFile();
+	CString sConfig = PhpLoadConfigFile();
 	if (sConfig == _T(""))
 		return _T("");
 

@@ -48,8 +48,9 @@ public:
 	BOOL	m_bStartMicroApache;
 	CString	m_sMicroApacheDocRoot;
 	int		m_nMicroApachePort;
-	CString	m_sMicroApachePassword;
+	CString	m_sMicroApacheAreaname;
 	CString	m_sMicroApacheUsername;
+	CString	m_sMicroApachePassword;
 	BOOL	m_bFullscreenBrowser;
 	BOOL	m_bBrowserAutostart;
 	CString	m_sFullscreenBrowserExitString;

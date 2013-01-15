@@ -52,11 +52,11 @@
 #define MICROAPACHE_CONFIG_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_CONFIGNAME_EXT))
 #define MICROAPACHE_EDITABLE_CONFIG_FILE				(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_EDITABLE_CONFIGNAME_EXT))
 #define MICROAPACHE_PW_FILE								(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_PWNAME_EXT))
-#define MICROAPACHE_FAKE_LOCATION						_T("/PwProt0123x>")
 #define MICROAPACHE_INDEX_ROOTDIR_FILENAME				_T("index_rootdir.php")
 #define MICROAPACHE_LANGUAGES_DIR						_T("languages")
 #define MICROAPACHE_STYLE_DIR							_T("styles")
 #define MICROAPACHE_JS_DIR								_T("js")
+#define MICROAPACHE_DEFAULT_AUTH_AREANAME				_T("Secure Area")
 
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
@@ -786,6 +786,7 @@ public:
 
 	// Micro Apache Authentication
 	BOOL m_bMicroApacheDigestAuth;
+	CString m_sMicroApacheAreaname;
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 

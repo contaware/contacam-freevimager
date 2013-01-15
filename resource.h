@@ -1285,6 +1285,7 @@
 #define IDS_MULTILANG_1221              1221
 #define IDC_HOST_NAME                   1221
 #define IDC_SWF_CONFIGURE               1221
+#define IDC_AUTH_AREANAME               1221
 #define IDS_MULTILANG_1222              1222
 #define IDC_HOST_PORT                   1222
 #define IDS_MULTILANG_1223              1223

@@ -925,20 +925,17 @@ public:
 	static CString MicroApacheGetPwFileName();
 	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
-	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);
+	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sAreaname, const CString& sUsername, const CString& sPassword);
 	static BOOL MicroApacheIsPortUsed(int nPort);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();
 	static BOOL MicroApacheWaitCanConnect();
 	static BOOL MicroApacheShutdown();
 	static int MicroApacheReload(); // Return Values: 1=OK, 0=Failed to stop the web server, -1=Failed to start the web server
-	static CString MicroApacheConfigFileGetParam(const CString& sParam);						// sParam is case sensitive!
-	static BOOL MicroApacheConfigFileSetParam(const CString& sParam, const CString& sValue);	// sParam is case sensitive!
 	
 	// Php
-	CString PhpGetConfigFileName();
-	BOOL PhpConfigFileSetParam(const CString& sParam, const CString& sValue);					// sParam is case sensitive!
-	CString PhpConfigFileGetParam(const CString& sParam);										// sParam is case sensitive!
+	BOOL PhpConfigFileSetParam(const CString& sParam, const CString& sValue);	// sParam is case sensitive!
+	CString PhpConfigFileGetParam(const CString& sParam);						// sParam is case sensitive!
 
 // Protected Functions
 protected:
@@ -966,14 +963,10 @@ protected:
 	void InitHttpGetFrameLocations();
 	static double GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode);
 
-	// Micro Apache Functions
-	static CString LoadMicroApacheConfigFile();
-	static BOOL SaveMicroApacheConfigFile(const CString& sConfig);
-	void MicroApacheViewOnWeb(CString sAutoSaveDir, const CString& sWebPageFileName);
-
 	// Php
-	CString LoadPhpConfigFile();
-	BOOL SavePhpConfigFile(const CString& sConfig);
+	CString PhpGetConfigFileName();
+	CString PhpLoadConfigFile();
+	BOOL PhpSaveConfigFile(const CString& sConfig);
 
 	// Manual Snapshot
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
