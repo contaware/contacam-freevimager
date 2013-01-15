@@ -919,12 +919,14 @@ public:
 
 	// Micro Apache
 	static CString MicroApacheGetConfigFileName();
+	static CString MicroApacheGetEditableConfigFileName();
 	static CString MicroApacheGetLogFileName();
 	static CString MicroApacheGetPidFileName();
 	static CString MicroApacheGetPwFileName();
-	static BOOL MicroApacheCheckConfigFile();
+	static void MicroApacheUpdateMainFiles();
 	static BOOL MicroApacheUpdateWebFiles(CString sAutoSaveDir);
 	static BOOL MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword);
+	static BOOL MicroApacheIsPortUsed(int nPort);
 	static BOOL MicroApacheInitStart();
 	static BOOL MicroApacheWaitStartDone();
 	static BOOL MicroApacheWaitCanConnect();

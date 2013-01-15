@@ -45,10 +45,12 @@
 #define MICROAPACHE_LOGNAME_EXT							_T("httpd_log.txt")
 #define MICROAPACHE_PIDNAME_EXT							_T("httpd_pid.txt")
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
+#define MICROAPACHE_EDITABLE_CONFIGNAME_EXT				_T("httpd_conf_editable.txt")
 #define MICROAPACHE_PWNAME_EXT							_T("httpd_pw.txt")
 #define MICROAPACHE_LOG_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_LOGNAME_EXT))
 #define MICROAPACHE_PID_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_PIDNAME_EXT))
 #define MICROAPACHE_CONFIG_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_CONFIGNAME_EXT))
+#define MICROAPACHE_EDITABLE_CONFIG_FILE				(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_EDITABLE_CONFIGNAME_EXT))
 #define MICROAPACHE_PW_FILE								(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_PWNAME_EXT))
 #define MICROAPACHE_FAKE_LOCATION						_T("/PwProt0123x>")
 #define MICROAPACHE_INDEX_ROOTDIR_FILENAME				_T("index_rootdir.php")
@@ -303,12 +305,6 @@ public:
 	CSchedulerEntry* GetDailySchedulerEntry(CString sDevicePathName);
 	void DeleteOnceSchedulerEntry(CString sDevicePathName);
 	void DeleteDailySchedulerEntry(CString sDevicePathName);
-
-	// Check whether the given port is already used by another tcp server
-	static BOOL MicroApacheIsPortUsed(int nPort);
-
-	// Update / create config file and doc root index.php for microapache
-	void MicroApacheUpdateMainFiles();
 
 	// FullscreenBrowser Ini file handling
 	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);

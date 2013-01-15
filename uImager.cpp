@@ -913,7 +913,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					{
 #ifdef VIDEODEVICEDOC
 						// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
-						if (!MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
+						if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
 						{
 							m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
 							WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
@@ -929,10 +929,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					// Update file associations (necessary when changing the icons)
 					UpdateFileAssociations();
 
-#ifdef VIDEODEVICEDOC
-					// Update / create config file and doc root index.php for microapache
-					MicroApacheUpdateMainFiles();
-#else
+#ifndef VIDEODEVICEDOC
 					// Open Settings Dialog for file association and other preferences
 					if (!m_bSilentInstall)
 						OnFileSettings();
@@ -951,6 +948,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				// Auto-starts
 				if (!m_bForceSeparateInstance)
 				{
+					// Update / create config file and doc root index.php for microapache
+					CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+
 					// Start Micro Apache
 					if (m_bStartMicroApache)
 					{
@@ -6352,147 +6352,6 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 			break;
 		}
 	}
-}
-
-BOOL CUImagerApp::MicroApacheIsPortUsed(int nPort)
-{
-	BOOL bUsed = FALSE;
-	CNetCom NetCom;
-	HANDLE hEventArray[2];
-	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
-	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
-	if (NetCom.Init(
-				FALSE,					// Be Client
-				NULL,					// The Optional Owner Window to which send the Network Events.
-				NULL,					// The lParam to send with the Messages
-				NULL,					// The Optional Rx Buffer.
-				NULL,					// The Optional Critical Section for the Rx Buffer.
-				NULL,					// The Optional Rx Fifo.
-				NULL,					// The Optional Critical Section fot the Rx Fifo.
-				NULL,					// The Optional Tx Buffer.
-				NULL,					// The Optional Critical Section for the Tx Buffer.
-				NULL,					// The Optional Tx Fifo.
-				NULL,					// The Optional Critical Section for the Tx Fifo.
-				NULL,					// Parser
-				NULL,					// Generator
-				SOCK_STREAM,			// TCP
-				_T(""),					// Local Address (IP or Host Name).
-				0,						// Local Port, let the OS choose one
-				_T("localhost"),		// Peer Address (IP or Host Name).
-				nPort,					// Peer Port.
-				NULL,					// Handle to an Event Object that will get Accept Events.
-				hEventArray[0],			// Handle to an Event Object that will get Connect Events.
-				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
-				NULL,					// Handle to an Event Object that will get Close Events.
-				NULL,					// Handle to an Event Object that will get Read Events.
-				NULL,					// Handle to an Event Object that will get Write Events.
-				NULL,					// Handle to an Event Object that will get OOB Events.
-				NULL,					// Handle to an Event Object that will get an event when 
-										// all connection of a server have been closed.
-				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-										// A set value means that instead of setting an event it is reset.
-				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
-										// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
-										// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
-										// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
-										// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
-										// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
-										// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
-										// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
-										// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-										// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
-				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
-										// (if hRxMsgTriggerEvent != NULL).
-										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
-										// (if pOwnerWnd != NULL).
-										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
-				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
-										// each time uiRxMsgTrigger bytes arrived.
-				0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
-										// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
-				0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
-										// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
-				0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
-										// even if no Write Event Happened (A zero meens INFINITE Timeout).
-										// This is also the Generator rate,
-										// if set to zero the Generator is never called!
-				NULL,					// Message Class for Notice, Warning and Error Visualization.
-				AF_UNSPEC))				// Socket family
-	{
-		DWORD Event = ::WaitForMultipleObjects(	2,
-												hEventArray,
-												FALSE,
-												MICROAPACHE_TIMEOUT_MS);
-		switch (Event)
-		{
-			// Http Connected Event
-			case WAIT_OBJECT_0 :
-				bUsed = TRUE;
-				break;
-
-			// Http Connection failed Event
-			case WAIT_OBJECT_0 + 1 :
-				break;
-
-			// Timeout
-			default :
-				break;
-		}
-	}
-	NetCom.Close();
-	::CloseHandle(hEventArray[0]);
-	::CloseHandle(hEventArray[1]);
-	return bUsed;
-}
-
-void CUImagerApp::MicroApacheUpdateMainFiles()
-{
-	// Check config file, create it if not existing
-	CVideoDeviceDoc::MicroApacheCheckConfigFile();
-
-	// Set Port
-	CString sPort;
-	sPort.Format(_T("%d"), m_nMicroApachePort);
-	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("Listen"), sPort);
-	
-	// Make password file and set authentication type
-	if (m_sMicroApacheUsername != _T("") || m_sMicroApachePassword != _T(""))
-	{
-		CVideoDeviceDoc::MicroApacheMakePasswordFile(m_bMicroApacheDigestAuth, m_sMicroApacheUsername, m_sMicroApachePassword);
-		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), _T("/>"));
-		if (m_bMicroApacheDigestAuth)
-			CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("AuthType"), _T("Digest"));
-		else
-			CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("AuthType"), _T("Basic"));
-	}
-	else
-	{
-		// Disable protection adding a fake location
-		CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("<Location"), MICROAPACHE_FAKE_LOCATION);
-	}
-
-	// Copy index.php to Doc Root (overwrite if existing)
-	CString sDocRoot = m_sMicroApacheDocRoot;
-	sDocRoot.TrimRight(_T('\\'));
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
-		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
-	}
-
-	// Set Doc Root to config file
-	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
-	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
-	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
-	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
-										// Add a trailing "
-	CVideoDeviceDoc::MicroApacheConfigFileSetParam(_T("DocumentRoot"), sDocRoot);
 }
 
 CString CUImagerApp::GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)

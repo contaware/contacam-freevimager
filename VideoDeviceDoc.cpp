@@ -6580,6 +6580,131 @@ void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bVideoView ? 1 : 0);
 }
 
+void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
+{
+	// Overwrite config file
+	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
+	CString sConfig;
+	sConfig = _T("# Change the Listen directive if you want to use a different port\r\n\
+# Decrease ThreadsPerChild to a lower value if you want a faster start-up and less memory usage\r\n\
+# Increase ThreadsPerChild for a high load server (250 is a good value)\r\n\r\n\
+Listen 8800\r\n\
+ServerName localhost\r\n\
+ServerRoot .\r\n\
+ServerAdmin webmaster@nowhere.com\r\n\
+DocumentRoot \"./htdocs/\"\r\n\
+ThreadsPerChild 128\r\n\
+Win32DisableAcceptEx On\r\n\
+LoadModule access_module modules/mod_access.dll\r\n\
+LoadModule dir_module modules/mod_dir.dll\r\n\
+LoadModule mime_module modules/mod_mime.dll\r\n\
+LoadModule rewrite_module modules/mod_rewrite.dll\r\n\
+LoadModule auth_module modules/mod_auth.dll\r\n\
+LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n\
+LoadModule php5_module \"php5apache2.dll\"\r\n\
+AddType application/x-httpd-php .php .php3\r\n\
+AcceptPathInfo off\r\n\
+KeepAlive on\r\n\
+KeepAliveTimeout 15\r\n\
+MaxKeepAliveRequests 0\r\n\
+TimeOut 30\r\n\
+DirectoryIndex index.html index.htm index.php\r\n\
+LogLevel crit\r\n");
+	
+	CString sDir = ::GetASCIICompatiblePath(::GetDriveAndDirName(sMicroapacheConfigFile)); // directory must exist!
+	sDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
+	sConfig += _T("ErrorLog \"") + sDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
+	sConfig += _T("PidFile \"") + sDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
+	
+	sConfig += _T("<Directory />\r\n");
+	sConfig += _T("RewriteEngine on\r\n");
+	sConfig += _T("RewriteBase /\r\n");
+	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
+	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
+	sConfig += _T("</Directory>\r\n");
+
+	sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
+	sConfig += _T("AuthDigestFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
+	sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
+	sConfig += _T("AuthName \"Secure Area\"\r\n");
+	sConfig += _T("AuthType Digest\r\n");
+	sConfig += _T("AuthDigestDomain /\r\n");
+	sConfig += _T("Require valid-user\r\n");
+	sConfig += _T("</Location>\r\n");
+	sConfig += _T("Include \"") + sDir + MICROAPACHE_EDITABLE_CONFIGNAME_EXT + _T("\"");
+
+	CString sMicroapacheEditableConfigFile = MicroApacheGetEditableConfigFileName();
+	if (!::IsExistingFile(sMicroapacheEditableConfigFile))
+	{
+		LPSTR pData = NULL;
+		int nLen = ::ToANSI(_T("# Add apache custom configurations here (this file is not modified by ContaCam)\r\n\r\n"), &pData);
+		if (nLen > 0 && pData)
+		{
+			try
+			{
+				CFile f(sMicroapacheEditableConfigFile,
+						CFile::modeCreate		|
+						CFile::modeWrite		|
+						CFile::shareDenyWrite);
+				f.Write(pData, nLen);
+			}
+			catch (CFileException* e)
+			{
+				e->Delete();
+			}
+		}
+		if (pData)
+			delete [] pData;
+	}
+
+	SaveMicroApacheConfigFile(sConfig);
+
+	// Set Port
+	CString sPort;
+	sPort.Format(_T("%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
+	MicroApacheConfigFileSetParam(_T("Listen"), sPort);
+	
+	// Make password file and set authentication type
+	if (((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername != _T("") ||
+		((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword != _T(""))
+	{
+		MicroApacheMakePasswordFile(((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth,
+									((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername,
+									((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword);
+		MicroApacheConfigFileSetParam(_T("<Location"), _T("/>"));
+		if (((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth)
+			MicroApacheConfigFileSetParam(_T("AuthType"), _T("Digest"));
+		else
+			MicroApacheConfigFileSetParam(_T("AuthType"), _T("Basic"));
+	}
+	else
+	{
+		// Disable protection adding a fake location
+		MicroApacheConfigFileSetParam(_T("<Location"), MICROAPACHE_FAKE_LOCATION);
+	}
+
+	// Copy index.php to Doc Root (overwrite if existing)
+	CString sDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+	sDocRoot.TrimRight(_T('\\'));
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
+		::CopyFile(sMicroapacheHtDocs + MICROAPACHE_INDEX_ROOTDIR_FILENAME, sDocRoot + _T("\\") + _T("index.php"), FALSE);
+	}
+
+	// Set Doc Root to config file
+	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
+	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
+	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
+	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
+										// Add a trailing "
+	MicroApacheConfigFileSetParam(_T("DocumentRoot"), sDocRoot);
+}
+
 BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 {
 	sAutoSaveDir.TrimRight(_T('\\'));
@@ -6739,6 +6864,31 @@ CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
 	return sMicroapacheConfigFile;
 }
 
+CString CVideoDeviceDoc::MicroApacheGetEditableConfigFileName()
+{
+	// Get App Data Folder
+	CString sMicroapacheEditableConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
+
+	// It's important to have a place to write the config file,
+	// under win95 and NT4 CSIDL_APPDATA is not available
+	// return the program's directory
+	if (sMicroapacheEditableConfigFile == _T(""))
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
+			return _T("");
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sMicroapacheEditableConfigFile = CString(szDrive) + CString(szDir);
+		sMicroapacheEditableConfigFile += MICROAPACHE_EDITABLE_CONFIGNAME_EXT;
+	}
+	else
+		sMicroapacheEditableConfigFile += _T("\\") + MICROAPACHE_EDITABLE_CONFIG_FILE;
+
+	return sMicroapacheEditableConfigFile;
+}
+
 CString CVideoDeviceDoc::MicroApacheGetLogFileName()
 {
 	// Get App Data Folder
@@ -6812,65 +6962,6 @@ CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 		sMicroapachePwFile += _T("\\") + MICROAPACHE_PW_FILE;
 
 	return sMicroapachePwFile;
-}
-
-BOOL CVideoDeviceDoc::MicroApacheCheckConfigFile()
-{
-	CString sMicroapacheConfigFile = MicroApacheGetConfigFileName();
-	if (!::IsExistingFile(sMicroapacheConfigFile))
-	{
-		CString sConfig;
-		sConfig = _T("# Change the Listen directive if you want to use a different port\r\n\
-# Decrease ThreadsPerChild to a lower value if you want a faster start-up and less memory usage\r\n\
-# Increase ThreadsPerChild for a high load server (250 is a good value)\r\n\r\n\
-Listen 8800\r\n\
-ServerName localhost\r\n\
-ServerRoot .\r\n\
-ServerAdmin webmaster@nowhere.com\r\n\
-DocumentRoot \"./htdocs/\"\r\n\
-ThreadsPerChild 128\r\n\
-Win32DisableAcceptEx On\r\n\
-LoadModule access_module modules/mod_access.dll\r\n\
-LoadModule dir_module modules/mod_dir.dll\r\n\
-LoadModule mime_module modules/mod_mime.dll\r\n\
-LoadModule rewrite_module modules/mod_rewrite.dll\r\n\
-LoadModule auth_module modules/mod_auth.dll\r\n\
-LoadModule auth_digest_module modules/mod_auth_digest.dll\r\n\
-LoadModule php5_module \"php5apache2.dll\"\r\n\
-AddType application/x-httpd-php .php .php3\r\n\
-AcceptPathInfo off\r\n\
-KeepAlive on\r\n\
-KeepAliveTimeout 15\r\n\
-MaxKeepAliveRequests 0\r\n\
-TimeOut 30\r\n\
-DirectoryIndex index.html index.htm index.php\r\n\
-LogLevel crit\r\n");
-		
-		CString sDir = ::GetASCIICompatiblePath(::GetDriveAndDirName(sMicroapacheConfigFile)); // directory must exist!
-		sDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
-		sConfig += _T("ErrorLog \"") + sDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
-		sConfig += _T("PidFile \"") + sDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
-		
-		sConfig += _T("<Directory />\r\n");
-		sConfig += _T("RewriteEngine on\r\n");
-		sConfig += _T("RewriteBase /\r\n");
-		sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
-		sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
-		sConfig += _T("</Directory>\r\n");
-
-		sConfig += _T("<Location ") + CString(MICROAPACHE_FAKE_LOCATION) + _T("\r\n");
-		sConfig += _T("AuthDigestFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		sConfig += _T("AuthUserFile \"") + sDir + MICROAPACHE_PWNAME_EXT + _T("\"\r\n");
-		sConfig += _T("AuthName \"Secure Area\"\r\n");
-		sConfig += _T("AuthType Digest\r\n");
-		sConfig += _T("AuthDigestDomain /\r\n");
-		sConfig += _T("Require valid-user\r\n");
-		sConfig += _T("</Location>");
-
-		return SaveMicroApacheConfigFile(sConfig);
-	}
-	else
-		return TRUE;
 }
 
 BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& sUsername, const CString& sPassword)
@@ -6954,6 +7045,99 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 		CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
 		return ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
 	}
+}
+
+BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
+{
+	BOOL bUsed = FALSE;
+	CNetCom NetCom;
+	HANDLE hEventArray[2];
+	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
+	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
+	if (NetCom.Init(
+				FALSE,					// Be Client
+				NULL,					// The Optional Owner Window to which send the Network Events.
+				NULL,					// The lParam to send with the Messages
+				NULL,					// The Optional Rx Buffer.
+				NULL,					// The Optional Critical Section for the Rx Buffer.
+				NULL,					// The Optional Rx Fifo.
+				NULL,					// The Optional Critical Section fot the Rx Fifo.
+				NULL,					// The Optional Tx Buffer.
+				NULL,					// The Optional Critical Section for the Tx Buffer.
+				NULL,					// The Optional Tx Fifo.
+				NULL,					// The Optional Critical Section for the Tx Fifo.
+				NULL,					// Parser
+				NULL,					// Generator
+				SOCK_STREAM,			// TCP
+				_T(""),					// Local Address (IP or Host Name).
+				0,						// Local Port, let the OS choose one
+				_T("localhost"),		// Peer Address (IP or Host Name).
+				nPort,					// Peer Port.
+				NULL,					// Handle to an Event Object that will get Accept Events.
+				hEventArray[0],			// Handle to an Event Object that will get Connect Events.
+				hEventArray[1],			// Handle to an Event Object that will get Connect Failed Events.
+				NULL,					// Handle to an Event Object that will get Close Events.
+				NULL,					// Handle to an Event Object that will get Read Events.
+				NULL,					// Handle to an Event Object that will get Write Events.
+				NULL,					// Handle to an Event Object that will get OOB Events.
+				NULL,					// Handle to an Event Object that will get an event when 
+										// all connection of a server have been closed.
+				0,						// A combination of network events:
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// A set value means that instead of setting an event it is reset.
+				0,						// A combination of network events:
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
+										// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
+										// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
+										// WM_NETCOM_CONNECTFAILED_EVENT -> Notification of connection failure.
+										// WM_NETCOM_CLOSE_EVENT -> Notification of socket closure.
+										// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
+										// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
+										// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
+										// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
+				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
+										// (if hRxMsgTriggerEvent != NULL).
+										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
+										// (if pOwnerWnd != NULL).
+										// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
+				NULL,/*hRxMsgTriggerEvent*/	// Handle to an Event Object that will get an Event
+										// each time uiRxMsgTrigger bytes arrived.
+				0,/*uiMaxTxPacketSize*/	// The maximum size for transmitted packets,
+										// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
+				0,/*uiRxPacketTimeout*/	// After this timeout a Packet is returned
+										// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
+				0,/*uiTxPacketTimeout*/	// After this timeout a Packet is sent
+										// even if no Write Event Happened (A zero meens INFINITE Timeout).
+										// This is also the Generator rate,
+										// if set to zero the Generator is never called!
+				NULL,					// Message Class for Notice, Warning and Error Visualization.
+				AF_UNSPEC))				// Socket family
+	{
+		DWORD Event = ::WaitForMultipleObjects(	2,
+												hEventArray,
+												FALSE,
+												MICROAPACHE_TIMEOUT_MS);
+		switch (Event)
+		{
+			// Http Connected Event
+			case WAIT_OBJECT_0 :
+				bUsed = TRUE;
+				break;
+
+			// Http Connection failed Event
+			case WAIT_OBJECT_0 + 1 :
+				break;
+
+			// Timeout
+			default :
+				break;
+		}
+	}
+	NetCom.Close();
+	::CloseHandle(hEventArray[0]);
+	::CloseHandle(hEventArray[1]);
+	return bUsed;
 }
 
 BOOL CVideoDeviceDoc::MicroApacheInitStart()
@@ -7212,7 +7396,7 @@ int CVideoDeviceDoc::MicroApacheReload()
 	else
 	{
 		// Update / create config file and doc root index.php for microapache
-		pApp->MicroApacheUpdateMainFiles();
+		MicroApacheUpdateMainFiles();
 
 		// Start server
 		if (pApp->m_bStartMicroApache)
