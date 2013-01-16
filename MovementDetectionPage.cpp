@@ -198,6 +198,13 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	else
 		pCheckAnimGIFSaveMovementDetection->SetCheck(0);
 
+	// Animated GIF Button
+	CString sSize;
+	sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),	m_pDoc->m_dwAnimatedGifWidth,
+															m_pDoc->m_dwAnimatedGifHeight);
+	CButton* pButtonAnimGIFSize = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
+	pButtonAnimGIFSize->SetWindowText(sSize);
+
 	// Send Email Movement Detection Check Box
 	CButton* pCheckSendMailMovementDetection = (CButton*)GetDlgItem(IDC_SENDMAIL_MOVEMENT_DETECTION);
 	if (m_pDoc->m_bSendMailMovementDetection)
@@ -506,9 +513,14 @@ void CMovementDetectionPage::OnAnimatedgifSize()
 					(int)m_pDoc->m_dwAnimatedGifWidth, (int)m_pDoc->m_dwAnimatedGifHeight,
 					this);
 	if (dlg.DoModal() == IDOK)
-	{	
+	{
 		m_pDoc->m_dwAnimatedGifWidth = (DWORD)dlg.m_nPixelsWidth;
 		m_pDoc->m_dwAnimatedGifHeight = (DWORD)dlg.m_nPixelsHeight;
+		CString sSize;
+		sSize.Format(ML_STRING(1769, "Thumbnail Size %i x %i"),	m_pDoc->m_dwAnimatedGifWidth,
+																m_pDoc->m_dwAnimatedGifHeight);
+		CButton* pButton = (CButton*)GetDlgItem(IDC_ANIMATEDGIF_SIZE);
+		pButton->SetWindowText(sSize);
 	}
 
 	// Restart Save Frame List Thread

@@ -2,6 +2,8 @@ TRANSLATIONS HISTORY
 
 4.3.0 (xxx 2013)
 
+- Corrected string 1473
+
 - Added Picture Reload command with F5 accelerator
 
 - Changed accelerators for

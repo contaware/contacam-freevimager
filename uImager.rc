@@ -1557,37 +1557,37 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 253, 225
+IDD_ABOUTBOX DIALOGEX 0, 0, 276, 236
 STYLE DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | 
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    ICON            120,IDC_STATIC,17,10,20,20
-    LTEXT           "Unknown",IDC_VERSION,117,46,126,8,SS_NOPREFIX
+    ICON            120,IDC_STATIC,15,10,21,20
+    LTEXT           "Unknown",IDC_VERSION,130,49,136,8,SS_NOPREFIX
     LTEXT           "Copyright © 2003 - 2013 Contaware.com, Switzerland",
-                    IDC_STATIC2141,40,213,181,8
-    DEFPUSHBUTTON   "OK",IDOK,103,195,50,14,WS_GROUP
-    LTEXT           "Version:",IDC_STATIC2142,17,46,39,8
-    LTEXT           "",IDC_APPNAME,70,17,176,8
-    LTEXT           "Homepage:",IDC_STATIC2143,17,72,42,8
-    LTEXT           "www.contaware.com",IDC_WEB_LINK,70,72,70,8,SS_NOTIFY
-    LTEXT           "Developed By:",IDC_STATIC2144,17,99,48,8
-    LTEXT           "Oliver Pfister",IDC_STATIC2145,70,99,44,8
-    GROUPBOX        "",IDC_STATIC2146,7,37,239,23
-    LTEXT           "",IDC_APPVER,70,46,41,8
-    GROUPBOX        "",IDC_STATIC2147,7,64,239,21
-    GROUPBOX        "",IDC_STATIC2148,7,89,239,39
-    GROUPBOX        "",IDC_STATIC2149,7,132,239,58
-    LTEXT           "1000 MHz",IDC_CPUSPEED,70,141,173,8
-    LTEXT           "System Info:",IDC_STATIC2150,17,158,44,8
-    LTEXT           "1000 MB",IDC_PHYSMEM,70,166,173,8
-    LTEXT           "CPU Count",IDC_CPUCOUNT,70,152,173,8
-    LTEXT           "Translated By:",IDC_STATIC2151,17,113,51,8
-    LTEXT           "This is the original language",IDC_STATIC2152,70,113,
-                    173,8
-    LTEXT           "Mem Stats",IDC_MEMSTATS,70,177,173,8
+                    IDC_STATIC2141,51,226,181,8
+    DEFPUSHBUTTON   "OK",IDOK,116,208,50,14,WS_GROUP
+    LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
+    LTEXT           "",IDC_APPNAME,74,17,192,8
+    LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
+    LTEXT           "www.contaware.com",IDC_WEB_LINK,74,80,70,8,SS_NOTIFY
+    LTEXT           "Developed By:",IDC_STATIC2144,15,110,48,8
+    LTEXT           "Oliver Pfister",IDC_STATIC2145,74,110,192,8
+    GROUPBOX        "",IDC_STATIC2146,7,38,262,26
+    LTEXT           "",IDC_APPVER,74,49,53,8
+    GROUPBOX        "",IDC_STATIC2148,7,100,262,39
+    GROUPBOX        "",IDC_STATIC2149,7,144,262,58
+    LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,192,8
+    LTEXT           "System Info:",IDC_STATIC2150,15,170,44,8
+    LTEXT           "1000 MB",IDC_PHYSMEM,74,178,192,8
+    LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,192,8
+    LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
+    LTEXT           "This is the original language",IDC_STATIC2152,74,124,
+                    192,8
+    LTEXT           "Mem Stats",IDC_MEMSTATS,74,189,192,8
+    GROUPBOX        "",IDC_STATIC2147,7,69,262,26
 END
 
 IDD_GENERAL DIALOGEX 0, 0, 417, 268
@@ -2243,7 +2243,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,30,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2268,7 +2268,7 @@ BEGIN
                     WS_TABSTOP
     CONTROL         "Only detect if movement between two adjacent zones",
                     IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,133,185,10
+                    WS_TABSTOP,13,132,185,10
     CONTROL         "Only detect if no camera luminosity change occurs",
                     IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,144,185,10
@@ -2298,40 +2298,39 @@ BEGIN
     EDITTEXT        IDC_DETECTION_TRIGGER_FILENAME,13,241,189,12,
                     ES_AUTOHSCROLL
     CONTROL         "Save SWF",IDC_SAVE_SWF_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,227,33,51,10
-    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,32,97,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,223,33,51,10
+    PUSHBUTTON      "Swf Settings",IDC_SWF_CONFIGURE,305,31,100,14
     CONTROL         "Save AVI",IDC_SAVE_AVI_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,227,54,46,10
-    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,53,97,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,223,54,46,10
+    PUSHBUTTON      "Avi Settings",IDC_AVI_CONFIGURE,305,51,100,14
     CONTROL         "Save Anim. GIF",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,227,75,62,10
-    PUSHBUTTON      "Animated Gif Settings",IDC_ANIMATEDGIF_SIZE,305,74,97,
-                    12
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,75,62,10
+    PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,305,72,100,14
     CONTROL         "Send Email",IDC_SENDMAIL_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,227,96,53,10
-    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,95,97,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,223,96,53,10
+    PUSHBUTTON      "Email Settings",IDC_SENDMAIL_CONFIGURE,305,93,100,14
     CONTROL         "Ftp Upload",IDC_FTP_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,227,117,51,9
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,116,97,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,223,117,51,9
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,305,114,100,14
     CONTROL         "Execute Command:",IDC_EXEC_MOVEMENT_DETECTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,227,138,77,10
-    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,136,97,72,
+                    BS_AUTOCHECKBOX | WS_TABSTOP,223,138,77,10
+    COMBOBOX        IDC_EXECMODE_MOVEMENT_DETECTION,305,136,100,72,
                     CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_EXE,266,155,136,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EDIT_PARAMS,266,172,136,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_EXE,266,155,139,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMS,266,172,139,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",
                     IDC_CHECK_HIDE_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,238,190,129,10
     CONTROL         "Only one instance of executed command",
                     IDC_CHECK_WAIT_EXEC_COMMAND,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,238,204,145,10
-    EDITTEXT        IDC_EDIT_EXEC_HELP,238,219,164,34,ES_MULTILINE | 
+    EDITTEXT        IDC_EDIT_EXEC_HELP,238,219,167,34,ES_MULTILINE | 
                     ES_READONLY | NOT WS_TABSTOP
     LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,75,35,17
     GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,18,203,96
     EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,78,13,12,ES_RIGHT | 
                     ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
-    GROUPBOX        "On Detection",IDC_STATIC2288,219,17,192,245
+    GROUPBOX        "On Detection",IDC_STATIC2288,217,17,194,245
     LTEXT           "From",IDC_STATIC2289,13,193,16,8
     LTEXT           "To",IDC_STATIC2290,120,193,10,8
     GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,164,203,58
@@ -4348,9 +4347,9 @@ BEGIN
     PUSHBUTTON      "...",IDC_WEBSERVER_ROOTDIR,315,181,16,12
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,11,218,108,10
-    EDITTEXT        IDC_AUTH_AREANAME,52,233,80,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_USERNAME,52,249,80,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,179,249,80,13,ES_PASSWORD | 
+    EDITTEXT        IDC_AUTH_AREANAME,57,233,75,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,57,249,75,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,186,249,75,13,ES_PASSWORD | 
                     ES_AUTOHSCROLL
     CONTROL         "Secure\nAuthentication",IDC_CHECK_DIGESTAUTH,"Button",
                     BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,271,246,61,
@@ -4364,7 +4363,7 @@ BEGIN
     LTEXT           "NOTE: The root directory is the parent directory of all detections, recordings and snapshots. http://localhost:port will point to the content of the root directory.",
                     IDC_STATIC,61,153,269,20,SS_SUNKEN
     LTEXT           "User Name",IDC_STATIC,11,251,38,8
-    LTEXT           "Password",IDC_STATIC,142,251,33,8
+    LTEXT           "Password",IDC_STATIC,145,251,33,8
     LTEXT           "Graphics Files:",IDC_STATIC2244,179,23,47,10,0,
                     WS_EX_STATICEDGE
     LTEXT           "Audio Files:",IDC_STATIC2245,234,23,43,10,0,
@@ -4381,7 +4380,7 @@ BEGIN
     GROUPBOX        "Web Server (always supply Port and Root Dir, even if using another Web Server)",
                     IDC_STATIC,5,138,330,63
     LTEXT           "NOTE: Clear User Name and Password when using the Internal Fullscreen Browser!",
-                    IDC_STATIC,143,216,187,20,SS_SUNKEN
+                    IDC_STATIC,145,216,185,20,SS_SUNKEN
     LTEXT           "Area Name",IDC_STATIC,11,235,38,8
 END
 
@@ -4527,12 +4526,12 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 246
-        VERTGUIDE, 17
-        VERTGUIDE, 70
-        VERTGUIDE, 243
+        RIGHTMARGIN, 269
+        VERTGUIDE, 15
+        VERTGUIDE, 74
+        VERTGUIDE, 266
         TOPMARGIN, 7
-        BOTTOMMARGIN, 220
+        BOTTOMMARGIN, 231
     END
 
     IDD_GENERAL, DIALOG
@@ -4757,11 +4756,11 @@ BEGIN
         RIGHTMARGIN, 410
         VERTGUIDE, 13
         VERTGUIDE, 22
-        VERTGUIDE, 227
+        VERTGUIDE, 223
         VERTGUIDE, 238
         VERTGUIDE, 266
         VERTGUIDE, 305
-        VERTGUIDE, 402
+        VERTGUIDE, 405
         TOPMARGIN, 3
     END
 
