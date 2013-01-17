@@ -777,9 +777,26 @@ public:
 
 	// Open Video From Network
 	BOOL OpenGetVideo(CHostPortDlg* pDlg);
+	BOOL OpenGetVideo(CString sAddress);
 
-	// Open Video From Network
-	BOOL OpenGetVideo(CString sAddress);	
+	// Connect to the chosen Networking Type and Mode
+	typedef enum {
+		OTHERONE_SP = 0,	// Other HTTP device (mjpeg)
+		OTHERONE_CP,		// Other HTTP device (jpegs)
+		AXIS_SP,			// Axis Server Push (mjpeg)
+		AXIS_CP,			// Axis Client Poll (jpegs)
+		PANASONIC_SP,		// Panasonic Server Push (mjpeg)
+		PANASONIC_CP,		// Panasonic Client Poll (jpegs)
+		PIXORD_SP,			// Pixord Server Push (mjpeg)
+		PIXORD_CP,			// Pixord Client Poll (jpegs)
+		EDIMAX_SP,			// Edimax Server Push (mjpeg)
+		EDIMAX_CP,			// Edimax Client Poll (jpegs)
+		TPLINK_SP,			// TP-Link Server Push (mjpeg)
+		TPLINK_CP,			// TP-Link Client Poll (jpegs)
+		// Add more devices here...	
+		LAST_DEVICE			// Placeholder for range check
+	} NetworkDeviceTypeMode;
+	BOOL ConnectGetFrame();
 
 	// Dialogs
 	void CaptureAssistant();
@@ -791,6 +808,9 @@ public:
 	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
 	static void AddFrameCount(CDib* pDib, int nCount);
 	
+	// Function called when the directx video grabbing format has been changed
+	void OnChangeDxVideoFormat();
+
 	// On Change Frame Rate
 	void OnChangeFrameRate();
 
@@ -881,27 +901,13 @@ public:
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
 	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
 
-	// Function called when the directx video grabbing format has been changed
-	void OnChangeDxVideoFormat();
-
-	// Connect to the chosen Networking Type and Mode
-	typedef enum {
-		OTHERONE_SP = 0,	// Other HTTP device (mjpeg)
-		OTHERONE_CP,		// Other HTTP device (jpegs)
-		AXIS_SP,			// Axis Server Push (mjpeg)
-		AXIS_CP,			// Axis Client Poll (jpegs)
-		PANASONIC_SP,		// Panasonic Server Push (mjpeg)
-		PANASONIC_CP,		// Panasonic Client Poll (jpegs)
-		PIXORD_SP,			// Pixord Server Push (mjpeg)
-		PIXORD_CP,			// Pixord Client Poll (jpegs)
-		EDIMAX_SP,			// Edimax Server Push (mjpeg)
-		EDIMAX_CP,			// Edimax Client Poll (jpegs)
-		TPLINK_SP,			// TP-Link Server Push (mjpeg)
-		TPLINK_CP,			// TP-Link Client Poll (jpegs)
-		// Add more devices here...	
-		LAST_DEVICE			// Placeholder for range check
-	} NetworkDeviceTypeMode;
-	BOOL ConnectGetFrame();
+	// FTP Upload
+	// Return Values
+	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)
+	// 0  : Error
+	// 1  : Ok
+	static int FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
+							CString sLocalFileName, CString sRemoteFileName);
 
 	// Validate Name
 	static CString GetValidName(CString sName);
@@ -933,7 +939,10 @@ public:
 	static BOOL MicroApacheShutdown();
 	static int MicroApacheReload(); // Return Values: 1=OK, 0=Failed to stop the web server, -1=Failed to start the web server
 	
-	// Php
+	// Php config file manipulation
+	CString PhpGetConfigFileName();
+	CString PhpLoadConfigFile();
+	BOOL PhpSaveConfigFile(const CString& sConfig);
 	BOOL PhpConfigFileSetParam(const CString& sParam, const CString& sValue);	// sParam is case sensitive!
 	CString PhpConfigFileGetParam(const CString& sParam);						// sParam is case sensitive!
 
@@ -943,6 +952,7 @@ protected:
 	void Snapshot(CDib* pDib, const CTime& Time);
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
+	CString MakeJpegManualSnapshotFileName(const CTime& Time);
 	BOOL Rotate180(CDib* pDib);
 	BOOL Deinterlace(CDib* pDib);
 	BOOL ThumbMessage(	const CString& sMessage1,
@@ -962,14 +972,6 @@ protected:
 	// Networking Functions
 	void InitHttpGetFrameLocations();
 	static double GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetworkDeviceTypeMode);
-
-	// Php
-	CString PhpGetConfigFileName();
-	CString PhpLoadConfigFile();
-	BOOL PhpSaveConfigFile(const CString& sConfig);
-
-	// Manual Snapshot
-	CString MakeJpegManualSnapshotFileName(const CTime& Time);
 
 // Public Variables
 public:
@@ -1180,13 +1182,6 @@ public:
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
 	CRITICAL_SECTION m_csSnapshotFTPUploadConfiguration;
-
-	// Return Values
-	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)
-	// 0  : Error
-	// 1  : Ok
-	static int FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
-							CString sLocalFileName, CString sRemoteFileName);
 
 // Protected Variables
 protected:
