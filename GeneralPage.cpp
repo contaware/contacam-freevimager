@@ -64,8 +64,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_QUALITY, m_nVideoRecQualityBitrate);
 	DDX_Check(pDX, IDC_CHECK_TIME_SEGMENTATION, m_bRecTimeSegmentation);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
-	DDX_Text(pDX, IDC_EDIT_DELETE_RECORDINGS_DAYS, m_nDeleteRecordingsOlderThanDays);
-	DDV_MinMaxInt(pDX, m_nDeleteRecordingsOlderThanDays, 0, 4000000);
 	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
@@ -86,7 +84,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_AUDIO_INPUT, OnAudioInput)
 	ON_CBN_SELCHANGE(IDC_VIDEO_COMPRESSION_CHOOSE, OnSelchangeVideoCompressionChoose)
-	ON_BN_CLICKED(IDC_RECORD_SAVEAS, OnRecordSaveas)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
 	ON_BN_CLICKED(IDC_VIDEO_INPUT, OnVideoInput)
 	ON_BN_CLICKED(IDC_VIDEO_TUNER, OnVideoTuner)
@@ -98,7 +95,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_RADIO_BITRATE, OnRadioBitrate)
 	ON_BN_CLICKED(IDC_CHECK_TIME_SEGMENTATION, OnCheckTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTORUN, OnCheckAutorun)
-	ON_EN_CHANGE(IDC_EDIT_DELETE_RECORDINGS_DAYS, OnChangeEditDeleteRecordingsDays)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
@@ -283,9 +279,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
 	m_nVideoRecDataRate = m_pDoc->m_nVideoRecDataRate / 1000;
 	m_nVideoRecQualityBitrate = m_pDoc->m_nVideoRecQualityBitrate;
-
-	// Recordings Delete
-	m_nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
 
 	// Init Scheduler Values
 	if (!m_pDoc->m_pVideoAviDoc)
@@ -503,13 +496,6 @@ BOOL CGeneralPage::OnInitDialog()
 		pEdit->SetWindowText(sFrameRate);
 	else
 		pEdit->SetWindowText(_T(""));
-
-	// Recording Dir
-	m_DirLabel.SubclassDlgItem(IDC_TEXT_VIDEO_REC, this);
-	m_DirLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
-	pEdit = (CEdit*)GetDlgItem(IDC_RECORD_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
 
 	// Capture Audio Check Box
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
@@ -917,19 +903,6 @@ void CGeneralPage::OnChangeEditDatarate()
 	m_pDoc->m_nVideoRecDataRate = m_nVideoRecDataRate * 1000;
 }
 
-void CGeneralPage::OnChangeEditDeleteRecordingsDays() 
-{
-	if (UpdateData(TRUE))
-	{
-		BOOL bRunning = m_pDoc->m_DeleteThread.IsRunning();
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Kill();
-		m_pDoc->m_nDeleteRecordingsOlderThanDays = m_nDeleteRecordingsOlderThanDays;
-		if (bRunning)
-			m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-	}
-}
-
 void CGeneralPage::OnCheckLiveDeinterlace() 
 {
 	UpdateData(TRUE);
@@ -993,24 +966,6 @@ void CGeneralPage::OnSelchangeVideoCompressionChoose()
 	UpdateData(TRUE);
 	m_pDoc->m_dwVideoRecFourCC = m_VideoCompressionFcc[m_VideoCompressionChoose.GetCurSel()];
 	ShowHideCtrls();
-}
-
-void CGeneralPage::OnRecordSaveas() 
-{
-	// Stop Thread
-	m_pDoc->m_DeleteThread.Kill();
-
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&m_pDoc->m_sRecordAutoSaveDir,
-					ML_STRING(1453, "Select Folder For Record Saving"),
-					TRUE);
-	dlg.DoModal();
-	m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_RECORD_SAVEAS_PATH);
-	pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
-
-	// Restart Thread
-	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 }
 
 /*

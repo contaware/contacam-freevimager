@@ -872,7 +872,6 @@
 #define IDS_MULTILANG_1014              1014
 #define IDS_MULTILANG_1015              1015
 #define IDS_MULTILANG_1016              1016
-#define IDC_RECORD_SAVEAS               1016
 #define IDS_MULTILANG_1017              1017
 #define IDC_RADIO_TRANSFORMATION0       1017
 #define IDS_MULTILANG_1018              1018
@@ -1215,7 +1214,6 @@
 #define IDS_MULTILANG_1191              1191
 #define IDC_PICK_COLOR_FROM_IMAGE       1191
 #define IDS_MULTILANG_1192              1192
-#define IDC_RECORD_SAVEAS_PATH          1192
 #define IDS_MULTILANG_1193              1193
 #define IDS_MULTILANG_1194              1194
 #define IDC_VIDEOINFO                   1194
@@ -2309,7 +2307,6 @@
 #define IDS_STRING1743                  1743
 #define IDC_LABEL_EXIF_TIMEOFFSET_SEC   1744
 #define IDS_STRING1744                  1744
-#define IDC_EDIT_DELETE_RECORDINGS_DAYS 1745
 #define IDS_STRING1745                  1745
 #define IDS_STRING1746                  1746
 #define IDC_TIME_SEGMENTATION           1747
@@ -2322,7 +2319,6 @@
 #define IDS_STRING1750                  1750
 #define IDC_CHECK_WAIT_EXEC_COMMAND     1751
 #define IDS_STRING1751                  1751
-#define IDC_TEXT_VIDEO_REC              1752
 #define IDS_STRING1752                  1752
 #define IDS_STRING1753                  1753
 #define IDS_STRING1754                  1754
@@ -3497,6 +3493,7 @@
 #define ID_DIRECTSHOW_VIDEODEV_FIRST    33180
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33279
 #define ID_FILE_RELOAD                  33280
+#define ID_VIEW_FILES                   33281
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3505,7 +3502,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33281
+#define _APS_NEXT_COMMAND_VALUE         33282
 #define _APS_NEXT_CONTROL_VALUE         2558
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

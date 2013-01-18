@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
 	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
+	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -4044,11 +4045,6 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 		// we use a random generator for the deletion interval
 		srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
 		DWORD dwDeleteInMs = FILES_DELETE_INTERVAL_MIN + irand(FILES_DELETE_INTERVAL_RANGE); // [10min,15min[
-
-		// dwDeleteInMs should never be to small (at least 60 seconds)
-		// otherwise when entering a new days value for deletion like 30 after
-		// typing the number 3 all files older than 3 days are deleted even if we
-		// intended 30!
 		Event = ::WaitForSingleObject(GetKillEvent(), dwDeleteInMs);
 		switch (Event)
 		{
@@ -6873,6 +6869,16 @@ void CVideoDeviceDoc::OnViewWeb()
 	}
 	else
 		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
+}
+
+void CVideoDeviceDoc::OnViewFiles() 
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					m_sRecordAutoSaveDir,
+					NULL,
+					NULL,
+					SW_SHOWNORMAL);
 }
 
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()

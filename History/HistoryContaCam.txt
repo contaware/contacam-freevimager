@@ -4,8 +4,9 @@ VERSION HISTORY
 
 - Split the 'Other HTTP Device' mode in Server Push and Client Poll
 - Swf snapshot history file is now correctly created even if
-  restarting ContaCam (snapshots preceding restart are not lost).
-  That's useful when occasionally updating and rebooting the PC
+  restarting ContaCam (snapshots preceding restart are not lost)
+- Live snapshot names can now be configured
+- In Device Assistant added possibility to move the camera folder
 - Increased support from 15 to 100 DirectX devices
 - In log messages the user assigned device name is now shown
 - For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
@@ -15,8 +16,7 @@ VERSION HISTORY
   streaming protocol not compatible with any current standard
   (it's still possible to stream a video source through the web
   server, a FAQ entry has been added illustrating that)
-- Only one directory for continuous records, snapshots and detections
-- Removed manual record pause command which is in most cases of no use
+- Removed manual record pause command which was of no use
 
 4.1.0 (December 4th 2012)
 

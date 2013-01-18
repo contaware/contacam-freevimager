@@ -10,7 +10,6 @@
 #ifdef VIDEODEVICEDOC
 
 #include "resource.h"
-#include "StaticLink.h"
 #include "NumSpinCtrl.h"
 #include "NumEdit.h"
 
@@ -34,7 +33,6 @@ public:
 	void ClearOnceScheduler();
 	void SetCheckSchedulerOnce(BOOL bCheck);
 	void SetCheckSchedulerDaily(BOOL bCheck);
-	CStaticLink m_DirLabel;
 
 // Dialog Data
 	//{{AFX_DATA(CGeneralPage)
@@ -54,7 +52,6 @@ public:
 	int		m_nVideoRecQualityBitrate;
 	BOOL	m_bRecTimeSegmentation;
 	BOOL	m_bAutorun;
-	int		m_nDeleteRecordingsOlderThanDays;
 	int		m_nTimeSegmentationIndex;
 	BOOL	m_bRecAutoOpen;
 	BOOL	m_bDeinterlace;
@@ -85,7 +82,6 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnAudioInput();
 	afx_msg void OnSelchangeVideoCompressionChoose();
-	afx_msg void OnRecordSaveas();
 	afx_msg void OnAudioMixer();
 	afx_msg void OnVideoInput();
 	afx_msg void OnVideoTuner();
@@ -97,7 +93,6 @@ protected:
 	afx_msg void OnRadioBitrate();
 	afx_msg void OnCheckTimeSegmentation();
 	afx_msg void OnCheckAutorun();
-	afx_msg void OnChangeEditDeleteRecordingsDays();
 	afx_msg void OnSelchangeTimeSegmentation();
 	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();

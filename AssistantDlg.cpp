@@ -759,12 +759,6 @@ void CAssistantDlg::Rename()
 		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
 	}
 	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
-	if (m_pDoc->m_pGeneralPage)
-	{			
-		m_pDoc->m_pGeneralPage->m_DirLabel.SetLink(m_pDoc->m_sRecordAutoSaveDir);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_RECORD_SAVEAS_PATH);
-		pEdit->SetWindowText(m_pDoc->m_sRecordAutoSaveDir);
-	}
 
 	// On Error
 	if (dwLastError != ERROR_SUCCESS)
@@ -1145,14 +1139,6 @@ void CAssistantDlg::ApplySettings()
 		default : nKeepForDays = 0;   break;
 	}
 	m_pDoc->m_nDeleteRecordingsOlderThanDays = nKeepForDays;
-	if (m_pDoc->m_pGeneralPage)
-	{
-		m_pDoc->m_pGeneralPage->m_nDeleteRecordingsOlderThanDays = m_pDoc->m_nDeleteRecordingsOlderThanDays;
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pGeneralPage->GetDlgItem(IDC_EDIT_DELETE_RECORDINGS_DAYS);
-		CString s;
-		s.Format(_T("%d"), m_pDoc->m_pGeneralPage->m_nDeleteRecordingsOlderThanDays);
-		pEdit->SetWindowText(s);
-	}
 
 	// Restart delete thread
 	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);

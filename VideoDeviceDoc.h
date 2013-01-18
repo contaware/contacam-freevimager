@@ -1247,6 +1247,7 @@ protected:
 	afx_msg void OnEditImportZones();
 	afx_msg void OnCaptureAssistant();
 	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
+	afx_msg void OnViewFiles();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
