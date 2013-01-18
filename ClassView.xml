@@ -28,7 +28,7 @@
 <FOLDERS COUNT="5">
 <FOLDER NAME="Dialogs">
 <FOLDERS COUNT="0"/>
-<CLASSES COUNT="69">
+<CLASSES COUNT="70">
 <CLASS NAME="CAddBordersDlg"/>
 <CLASS NAME="CAnimGifSaveDlg"/>
 <CLASS NAME="CAnimGifSaveSmallDlg"/>
@@ -98,6 +98,7 @@
 <CLASS NAME="CXmpDlg"/>
 <CLASS NAME="CYesNoAllCancelDlg"/>
 <CLASS NAME="CZipProgressDlg"/>
+<CLASS NAME="CSnapshotNamesDlg"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Controls">

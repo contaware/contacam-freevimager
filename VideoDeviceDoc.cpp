@@ -1619,17 +1619,17 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		{
 			sLiveFileName = m_sSnapshotAutoSaveDir;
 			sLiveFileName.TrimRight(_T('\\'));
-			sLiveFileName = sLiveFileName + _T("\\") + DEFAULT_SNAPSHOT_LIVE_FILE;
+			sLiveFileName = sLiveFileName + _T("\\") + m_sSnapshotLiveJpegName + _T(".jpg");
 			::CopyFile(sTempFileName, sLiveFileName, FALSE);
 		}
 		else
-			sLiveFileName = DEFAULT_SNAPSHOT_LIVE_FILE;
+			sLiveFileName = m_sSnapshotLiveJpegName + _T(".jpg");
 		if (m_bSnapshotLiveJpegFtp) // FTP Upload
 		{
 			int result;
 			CFTPTransfer FTP(this);
 			result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-												sTempFileName, DEFAULT_SNAPSHOT_LIVE_FILE);
+												sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
 			if (result == -1) // Do Exit?
 			{
 				// Delete Temp
@@ -1642,15 +1642,22 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		}
 		if (m_bSnapshotThumb)
 		{
-			CString sLiveThumbFileName = ::GetFileNameNoExt(sLiveFileName) + _T("_thumb.jpg");
+			CString sLiveThumbFileName;
 			if (m_sSnapshotAutoSaveDir != _T(""))
+			{
+				sLiveThumbFileName = m_sSnapshotAutoSaveDir;
+				sLiveThumbFileName.TrimRight(_T('\\'));
+				sLiveThumbFileName = sLiveThumbFileName + _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
 				::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
+			}
+			else
+				sLiveThumbFileName = m_sSnapshotLiveJpegThumbName + _T(".jpg");
 			if (m_bSnapshotLiveJpegFtp) // FTP Upload
 			{
 				int result;
 				CFTPTransfer FTP(this);
 				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-													sTempThumbFileName, ::GetShortFileName(sLiveThumbFileName));
+													sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 				if (result == -1) // Do Exit?
 				{
 					// Delete Temp
@@ -4152,6 +4159,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bSnapshotHistoryJpegFtp = FALSE;
 	m_bSnapshotHistorySwfFtp = FALSE;
 	m_bManualSnapshotAutoOpen = TRUE;
+	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
+	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
@@ -4328,8 +4337,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Http Video Processing Image Data Critical Section
 	::InitializeCriticalSection(&m_csHttpProcess);
 
-	// Init Snapshot FTP Upload Configuration Critical Section
-	::InitializeCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+	// Init Snapshot Configuration Critical Section
+	::InitializeCriticalSection(&m_csSnapshotConfiguration);
 
 	// Init OSD Message Critical Section
 	::InitializeCriticalSection(&m_csOSDMessage);
@@ -4391,7 +4400,7 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	ClearMovementDetectionsList();
 	::DeleteCriticalSection(&m_csProcessFrameStop);
 	::DeleteCriticalSection(&m_csOSDMessage);
-	::DeleteCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+	::DeleteCriticalSection(&m_csSnapshotConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
 	::DeleteCriticalSection(&m_csMovementDetectionsList);
@@ -4837,6 +4846,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bSnapshotHistoryJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), FALSE);
 	m_bSnapshotHistorySwfFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), FALSE);
 	m_bManualSnapshotAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("ManualSnapshotAutoOpen"), TRUE);
+	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
+	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
@@ -5055,6 +5066,8 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp);
 			pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
+			pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
+			pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
 			pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 			pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
@@ -5240,6 +5253,8 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen, sTempFileName);
+			::WriteProfileIniString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName, sTempFileName);
+			::WriteProfileIniString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
@@ -6784,7 +6799,7 @@ void CVideoDeviceDoc::OnViewWeb()
 		// Check whether sAutoSaveDir is inside the document root directory
 		if (sAutoSaveDir.Find(sMicroApacheDocRoot) < 0)
 		{
-			::AfxMessageBox(ML_STRING(1473, "Record directory must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1473, "Camera folder must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
 			return;
 		}
 
@@ -8467,6 +8482,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 						Time.GetHour(),
 						Time.GetMinute(),
 						Time.GetSecond());
+		::EnterCriticalSection(&m_csSnapshotConfiguration);
 		if (m_SnapshotStartTime <= m_SnapshotStopTime)
 		{
 			if (timeonly < m_SnapshotStartTime || timeonly > m_SnapshotStopTime)
@@ -8477,6 +8493,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			if (timeonly < m_SnapshotStartTime && timeonly > m_SnapshotStopTime)
 				bDoSnapshot = FALSE;
 		}
+		::LeaveCriticalSection(&m_csSnapshotConfiguration);
 	}
 
 	// If nothing to do, return
@@ -8498,9 +8515,11 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.m_nSnapshotCompressionQuality = m_nSnapshotCompressionQuality;
 	m_SaveSnapshotThread.m_Time = Time;
 	m_SaveSnapshotThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-	::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+	::EnterCriticalSection(&m_csSnapshotConfiguration);
+	m_SaveSnapshotThread.m_sSnapshotLiveJpegName = m_sSnapshotLiveJpegName;
+	m_SaveSnapshotThread.m_sSnapshotLiveJpegThumbName = m_sSnapshotLiveJpegThumbName;
 	m_SaveSnapshotThread.m_Config = m_SnapshotFTPUploadConfiguration;
-	::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+	::LeaveCriticalSection(&m_csSnapshotConfiguration);
 	m_SaveSnapshotThread.Start();
 
 	// Start Snapshot SWF Thread?
@@ -8519,9 +8538,9 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotSWFThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotSWFThread.m_Time = Yesterday;
 			m_SaveSnapshotSWFThread.m_sSnapshotAutoSaveDir = m_sRecordAutoSaveDir;
-			::EnterCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+			::EnterCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotSWFThread.m_Config = m_SnapshotFTPUploadConfiguration;
-			::LeaveCriticalSection(&m_csSnapshotFTPUploadConfiguration);
+			::LeaveCriticalSection(&m_csSnapshotConfiguration);
 			m_SaveSnapshotSWFThread.Start();
 		}
 	}

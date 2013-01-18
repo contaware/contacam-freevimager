@@ -10,6 +10,7 @@
 #include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"
 #include "ResizingDlg.h"
+#include "SnapshotNamesDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,6 +76,7 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF, OnCheckFtpSnapshotHistorySwf)
 	ON_BN_CLICKED(IDC_CHECK_MANUALSHOT_AUTOOPEN, OnCheckManualshotAutoopen)
+	ON_BN_CLICKED(IDC_BUTTON_SNAPSHOT_NAMES, OnButtonSnapshotNames)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -253,21 +255,20 @@ void CSnapshotPage::UpdateSnapshotStartStopTimes()
 {
 	if (m_pDoc->m_bSnapshotStartStop)
 	{
-		// Start Time
+		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
 		m_pDoc->m_SnapshotStartTime = CTime(	2000,
 												1,
 												1,
 												m_SnapshotStartTime.GetHour(),
 												m_SnapshotStartTime.GetMinute(),
 												m_SnapshotStartTime.GetSecond());
-
-		// Stop Time
 		m_pDoc->m_SnapshotStopTime = CTime(	2000,
 												1,
 												1,
 												m_SnapshotStopTime.GetHour(),
 												m_SnapshotStopTime.GetMinute(),
 												m_SnapshotStopTime.GetSecond());
+		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
 	}
 }
 
@@ -404,9 +405,28 @@ void CSnapshotPage::OnFtpConfigure()
 	dlg.m_FTPUploadConfiguration = m_pDoc->m_SnapshotFTPUploadConfiguration;
 	if (dlg.DoModal() == IDOK)
 	{
-		::EnterCriticalSection(&m_pDoc->m_csSnapshotFTPUploadConfiguration);
+		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
 		m_pDoc->m_SnapshotFTPUploadConfiguration = dlg.m_FTPUploadConfiguration;
-		::LeaveCriticalSection(&m_pDoc->m_csSnapshotFTPUploadConfiguration);
+		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
+	}
+}
+
+void CSnapshotPage::OnButtonSnapshotNames() 
+{
+	// Snapshot Names Dialog
+	CSnapshotNamesDlg dlg;
+	dlg.m_sSnapshotLiveJpegName = m_pDoc->m_sSnapshotLiveJpegName;
+	dlg.m_sSnapshotLiveJpegThumbName = m_pDoc->m_sSnapshotLiveJpegThumbName;
+	if (dlg.DoModal() == IDOK)
+	{
+		::EnterCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
+		if (!dlg.m_sSnapshotLiveJpegName.IsEmpty())
+			m_pDoc->m_sSnapshotLiveJpegName = dlg.m_sSnapshotLiveJpegName;
+		if (!dlg.m_sSnapshotLiveJpegThumbName.IsEmpty())
+			m_pDoc->m_sSnapshotLiveJpegThumbName = dlg.m_sSnapshotLiveJpegThumbName;
+		::LeaveCriticalSection(&m_pDoc->m_csSnapshotConfiguration);
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTNAME, m_pDoc->m_sSnapshotLiveJpegName + _T(".jpg"));
+		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTHUMBNAME, m_pDoc->m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 	}
 }
 

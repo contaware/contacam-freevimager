@@ -7,6 +7,7 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "VideoDevicePropertySheet.h"
+#include "BrowseDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,17 +61,29 @@ BEGIN_MESSAGE_MAP(CAssistantDlg, CDialog)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
 	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
+	ON_BN_CLICKED(IDC_BUTTON_PARENT_DIR, OnButtonParentDir)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAssistantDlg message handlers
 
-BOOL CAssistantDlg::OnInitDialog() 
+BOOL CAssistantDlg::OnInitDialog()
 {
-	// Overwrite web files in given directory
+	// Get a copy of m_sRecordAutoSaveDir
+	// (do not modify it now because various threads
+	// using it are still running)
 	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	sAutoSaveDir.TrimRight(_T('\\'));
+
+	// Overwrite web files in given directory
 	m_pDoc->MicroApacheUpdateWebFiles(sAutoSaveDir);
+
+	// Get parent directory
+	m_sParentDir = sAutoSaveDir;
+	int index;
+	if ((index = m_sParentDir.ReverseFind(_T('\\'))) >= 0)
+		m_sParentDir = m_sParentDir.Left(index);
 
 	// Clear restore web files flag
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -140,7 +153,6 @@ BOOL CAssistantDlg::OnInitDialog()
 			pComboBox->AddString(sNum);
 		}
 	}
-	sAutoSaveDir.TrimRight(_T('\\'));
 	if (sAutoSaveDir != _T(""))
 	{
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_LANGUAGE);
@@ -644,6 +656,15 @@ void CAssistantDlg::OnOK()
 	EnableDisableAllCtrls(FALSE);
 }
 
+void CAssistantDlg::OnButtonParentDir() 
+{
+	CBrowseDlg dlg(	::AfxGetMainFrame(),
+					&m_sParentDir,
+					ML_STRING(1869, "Select parent directory for camera folder"),
+					TRUE);
+	dlg.DoModal();
+}
+
 void CAssistantDlg::Rename()
 {
 	// Store current name
@@ -671,13 +692,22 @@ void CAssistantDlg::Rename()
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
 
 	// Make new dir
-	CString sNewRecordAutoSaveDir = ::GetDriveAndDirName(m_pDoc->m_sRecordAutoSaveDir);
+	CString sNewRecordAutoSaveDir = m_sParentDir;
 	sNewRecordAutoSaveDir.TrimRight(_T('\\'));
-	if (m_pDoc->m_sRecordAutoSaveDir.ReverseFind(_T('\\')) < 0) // It's just the drive letter?
-		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-	else
-		sNewRecordAutoSaveDir += _T('\\') + m_sName;
+	sNewRecordAutoSaveDir += _T('\\') + m_sName;
 	
+	// Fail if sNewRecordAutoSaveDir is inside the old one
+	if (sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) != 0 &&
+		sNewRecordAutoSaveDir.Find(m_pDoc->m_sRecordAutoSaveDir) >= 0)
+	{
+		// Error Message
+		::AfxMessageBox(ML_STRING(1870, "The new camera folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
+		
+		// Restore old name
+		m_sName = sOldName;
+		return;
+	}
+
 	// Prompt for merging
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&&
 		::IsExistingDir(sNewRecordAutoSaveDir)			&&

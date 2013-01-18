@@ -67,6 +67,7 @@ protected:
 	afx_msg void OnCheckFtpSnapshotHistoryJpeg();
 	afx_msg void OnCheckFtpSnapshotHistorySwf();
 	afx_msg void OnCheckManualshotAutoopen();
+	afx_msg void OnButtonSnapshotNames();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

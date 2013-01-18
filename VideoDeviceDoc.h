@@ -98,7 +98,8 @@ class CMovementDetectionPage;
 #define DEFAULT_SNAPSHOT_HISTORY_FRAMERATE	15			// fps
 #define MIN_SNAPSHOT_HISTORY_FRAMERATE		1			// fps
 #define MAX_SNAPSHOT_HISTORY_FRAMERATE		95			// fps
-#define DEFAULT_SNAPSHOT_LIVE_FILE			_T("snapshot.jpg")
+#define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot")
+#define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality 
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of swf
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of swf
@@ -151,6 +152,8 @@ class CMovementDetectionPage;
 #define PHPCONFIG_SUMMARYIFRAME_NAME		_T("summaryiframe.php")
 #define PHPCONFIG_SUMMARYTITLE				_T("SUMMARYTITLE")
 #define PHPCONFIG_SNAPSHOTTITLE				_T("SNAPSHOTTITLE")
+#define PHPCONFIG_SNAPSHOTNAME				_T("SNAPSHOTNAME")
+#define PHPCONFIG_SNAPSHOTTHUMBNAME			_T("SNAPSHOTTHUMBNAME")
 #define PHPCONFIG_SNAPSHOTHISTORY_THUMB		_T("SNAPSHOTHISTORY_THUMB")
 #define PHPCONFIG_SNAPSHOTREFRESHSEC		_T("SNAPSHOTREFRESHSEC")
 #define PHPCONFIG_THUMBWIDTH				_T("THUMBWIDTH")
@@ -737,6 +740,8 @@ public:
 			int m_nSnapshotCompressionQuality;
 			CTime m_Time;
 			CString m_sSnapshotAutoSaveDir;
+			CString m_sSnapshotLiveJpegName;
+			CString m_sSnapshotLiveJpegThumbName;
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
@@ -1089,6 +1094,10 @@ public:
 	volatile BOOL m_bSnapshotStartStop;					// Enable / Disable Daily Timed Snapshots
 	CTime m_SnapshotStartTime;							// Daily Snapshots Start Time
 	CTime m_SnapshotStopTime;							// Daily Snapshots Stop Time
+	CString m_sSnapshotLiveJpegName;					// Live snapshot jpeg name (without .jpg extension)
+	CString m_sSnapshotLiveJpegThumbName;				// Live snapshot jpeg thumb name (without .jpg extension)
+	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
+	CRITICAL_SECTION m_csSnapshotConfiguration;			// Critical section for snapshot configurations
 
 	// Movement Detector Vars
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
@@ -1168,20 +1177,14 @@ public:
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count
+	SendMailConfigurationStruct m_MovDetSendMailConfiguration;
+	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
 	// Property Sheet Pointer
 	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;
 	CSnapshotPage* volatile m_pSnapshotPage;
 	CGeneralPage* volatile m_pGeneralPage;
 	CMovementDetectionPage* volatile m_pMovementDetectionPage;
-
-	// Email sending
-	SendMailConfigurationStruct m_MovDetSendMailConfiguration;
-
-	// FTP Upload
-	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
-	FTPUploadConfigurationStruct m_SnapshotFTPUploadConfiguration;
-	CRITICAL_SECTION m_csSnapshotFTPUploadConfiguration;
 
 // Protected Variables
 protected:

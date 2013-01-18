@@ -638,6 +638,10 @@ SOURCE=.\sinstance.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\SnapshotNamesDlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SnapshotPage.cpp
 # End Source File
 # Begin Source File
@@ -1297,6 +1301,10 @@ SOURCE=.\SharpenDlg.h
 # Begin Source File
 
 SOURCE=.\sinstance.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SnapshotNamesDlg.h
 # End Source File
 # Begin Source File
 

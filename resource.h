@@ -142,6 +142,7 @@
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
 #define IDD_CONNECTERR_MSGBOX           307
+#define IDD_SNAPSHOT_NAMES              308
 #define IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 312
 #define IDS_PJNSMTP_FAIL_GET_HEADER_OF_BODY_PART 313
 #define IDS_PJNSMTP_FAIL_GET_BODY_OF_BODY_PART 314
@@ -1300,6 +1301,7 @@
 #define IDC_FTP_CONFIGURE               1228
 #define IDS_MULTILANG_1229              1229
 #define IDC_SENDMAIL_MOVEMENT_DETECTION 1229
+#define IDC_BUTTON_SNAPSHOT_NAMES       1229
 #define IDS_MULTILANG_1230              1230
 #define IDC_FTP_MOVEMENT_DETECTION      1230
 #define IDS_MULTILANG_1231              1231
@@ -2544,7 +2546,9 @@
 #define IDC_STATIC1868                  1868
 #define IDS_STRING1868                  1868
 #define IDC_STATIC1869                  1869
+#define IDS_STRING1869                  1869
 #define IDC_STATIC1870                  1870
+#define IDS_STRING1870                  1870
 #define IDC_STATIC1871                  1871
 #define IDC_STATIC1872                  1872
 #define IDC_STATIC1873                  1873
@@ -3225,6 +3229,9 @@
 #define IDC_CHECK_SCHEDULER_FRIDAY      2552
 #define IDC_CHECK_SCHEDULER_SATURDAY    2553
 #define IDC_CONNECTERR_ICON             2554
+#define IDC_EDIT_SNAPSHOT_LIVE_JPEGNAME 2555
+#define IDC_EDIT_SNAPSHOT_LIVE_JPEGTHUMBNAME 2556
+#define IDC_BUTTON_PARENT_DIR           2557
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3499,7 +3506,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33281
-#define _APS_NEXT_CONTROL_VALUE         2555
+#define _APS_NEXT_CONTROL_VALUE         2558
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

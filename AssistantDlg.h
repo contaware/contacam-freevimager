@@ -50,6 +50,7 @@ public:
 // Implementation
 protected:
 	CVideoDeviceDoc* m_pDoc;
+	CString	m_sParentDir;
 	BOOL m_bDoApplySettings;
 	int m_nRetryTimeMs;
 	void EnableDisableCtrls();
@@ -71,6 +72,7 @@ protected:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnRadioNochange();
 	virtual void OnOK();
+	afx_msg void OnButtonParentDir();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
