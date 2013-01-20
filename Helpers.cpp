@@ -1132,6 +1132,24 @@ BOOL IsExistingDir(LPCTSTR lpszFileName)
 		return FALSE;
 }
 
+BOOL IsSubDir(CString sDir, CString sSubDir)
+{
+	sDir.MakeLower();
+	sSubDir.MakeLower();
+	sDir.Replace(_T('/'), _T('\\'));
+	sSubDir.Replace(_T('/'), _T('\\'));
+	sDir.TrimRight(_T('\\'));
+	sSubDir.TrimRight(_T('\\'));
+	int index;
+	while ((index = sSubDir.ReverseFind(_T('\\'))) >= 0)
+	{
+		sSubDir = sSubDir.Left(index);
+		if (sSubDir == sDir)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;

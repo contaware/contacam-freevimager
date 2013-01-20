@@ -1598,32 +1598,32 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
 FONT 8, "MS Shell Dlg"
 BEGIN
-    EDITTEXT        IDC_FRAMERATE,97,13,31,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMERATE,111,13,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
-                    UDS_ALIGNRIGHT | UDS_ARROWKEYS,121,13,11,13
+                    UDS_ALIGNRIGHT | UDS_ARROWKEYS,135,13,11,13
     CONTROL         "De-Interlace",IDC_CHECK_LIVE_DEINTERLACE,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,13,77,55,10
     CONTROL         "Rotate 180°",IDC_CHECK_LIVE_ROTATE180,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,119,77,56,10
-    PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,94,75,16
-    PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,100,94,81,16
-    PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,114,75,16
-    PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,100,114,81,16
+                    BS_AUTOCHECKBOX | WS_TABSTOP,115,77,56,10
+    PUSHBUTTON      "General Settings",IDC_VIDEO_SOURCE,13,94,82,16
+    PUSHBUTTON      "Video Size && Format",IDC_VIDEO_FORMAT,98,94,87,16
+    PUSHBUTTON      "TV Tuner",IDC_VIDEO_TUNER,13,114,82,16
+    PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,98,114,87,16
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,161,38,10
-    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,100,159,81,16
-    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,181,75,16
-    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,100,181,81,16
+                    WS_TABSTOP,14,162,38,10
+    PUSHBUTTON      "Format && Compression",IDC_AUDIO_FORMAT,98,161,87,16
+    PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,180,82,16
+    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,98,180,87,16
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,229,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,99,227,82,67,CBS_DROPDOWNLIST | 
+    COMBOBOX        IDC_TIME_SEGMENTATION,117,227,68,67,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,264,24,140,220,
                     CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Quality (0: worst, 100: best)",IDC_RADIO_QUALITY,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP,203,56,101,10
     CONTROL         "Data rate",IDC_RADIO_BITRATE,"Button",
-                    BS_AUTORADIOBUTTON,318,56,46,10
+                    BS_AUTORADIOBUTTON,333,56,46,10
     EDITTEXT        IDC_EDIT_DATARATE,240,80,44,12,ES_NUMBER
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
@@ -1654,12 +1654,12 @@ BEGIN
     CONTROL         "Autostart",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,7,254,44,11
     CONTROL         "Open after rec",IDC_CHECK_AUTOOPEN,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,100,255,61,10
-    LTEXT           "frames/sec",IDC_STATIC2183,132,16,40,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,117,255,61,10
+    LTEXT           "frames/sec",IDC_STATIC2183,145,16,40,8
     LTEXT           "Set Framerate:",IDC_STATIC2155,13,16,47,8
-    GROUPBOX        "Video Source",IDC_STATIC2156,7,4,180,133
-    GROUPBOX        "Audio",IDC_STATIC2157,7,145,180,59
-    RTEXT           "",IDC_EFFECTIVE_FRAMERATE,91,29,37,8
+    GROUPBOX        "Video Source",IDC_STATIC2156,7,4,183,133
+    GROUPBOX        "Audio",IDC_STATIC2157,7,145,183,59
+    RTEXT           "",IDC_EFFECTIVE_FRAMERATE,105,29,37,8
     LTEXT           "Effective Framerate:",IDC_STATIC2160,13,29,63,8
     GROUPBOX        "Recording Scheduler (device must be running)",
                     IDC_STATIC2161,197,145,214,104
@@ -1671,17 +1671,17 @@ BEGIN
     LTEXT           "Stop",IDC_STATIC2166,316,231,25,8
     LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,204,115,51,8
     LTEXT           "kbps",IDC_LABEL_DATARATE1,290,82,24,8
-    RTEXT           "",IDC_DROPPED_FRAMES,91,62,37,8
+    RTEXT           "",IDC_DROPPED_FRAMES,87,62,55,8
     LTEXT           "Dropped:",IDC_STATIC2167,13,62,30,8
-    LTEXT           "frames/sec",IDC_STATIC2168,132,29,40,8
-    LTEXT           "frames",IDC_STATIC2169,132,62,22,8
-    RTEXT           "",IDC_DATA_RATE,58,40,70,8
+    LTEXT           "frames/sec",IDC_STATIC2168,145,29,40,8
+    LTEXT           "frames",IDC_STATIC2169,145,62,22,8
+    RTEXT           "",IDC_DATA_RATE,63,40,79,8
     LTEXT           "Data Rate:",IDC_STATIC2170,13,40,36,8
-    LTEXT           "KB/sec",IDC_STATIC2171,132,40,25,8
+    LTEXT           "KB/sec",IDC_STATIC2171,145,40,25,8
     LTEXT           "Process Frame Time:",IDC_STATIC2172,13,51,67,8
-    RTEXT           "",IDC_PROCESS_TIME,91,51,37,8
-    LTEXT           "ms",IDC_STATIC2173,132,51,10,8
-    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,212,180,37
+    RTEXT           "",IDC_PROCESS_TIME,105,51,37,8
+    LTEXT           "ms",IDC_STATIC2173,145,51,10,8
+    GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,212,183,37
     LTEXT           "Compression:",IDC_STATIC2177,204,26,41,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,81,17,11
     LTEXT           "Data rate",IDC_LABEL_DATARATE0,204,81,29,8
@@ -4177,7 +4177,7 @@ BEGIN
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,128,18,101,17
     EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,353,21,34,12,ES_RIGHT | ES_NUMBER
     CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",
-                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,126,48,136,18
+                    TBS_TOP | TBS_NOTICKS | WS_TABSTOP,122,48,140,18
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,303,48,101,17
     CONTROL         "Enable Snapshots (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
@@ -4203,7 +4203,7 @@ BEGIN
                     WS_TABSTOP,13,205,99,10
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,
-                    229,203,86,18
+                    230,203,85,18
     CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,350,205,54,9
     EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,231,228,14,12,
@@ -4215,17 +4215,17 @@ BEGIN
     GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,125,404,39
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,172,404,77
     LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,265,52,17,11
-    LTEXT           "JPEG Quality (0: worst, 100: best)",IDC_STATIC2480,13,
-                    52,106,8
+    LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,15,
+                    48,104,17
     GROUPBOX        "General Settings",IDC_STATIC2481,7,4,404,69
-    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,151,230,77,8
+    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,143,230,77,8
     LTEXT           "frames/sec",IDC_STATIC2483,260,230,62,8
     LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,320,207,17,11
     GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,81,404,36
     LTEXT           "From",IDC_STATIC2485,228,97,16,8
     LTEXT           "To",IDC_STATIC2486,323,97,10,8
-    LTEXT           "Quality (0: worst, 100: best)",IDC_STATIC2487,136,207,
-                    86,8
+    LTEXT           "Quality\n(0: worst, 100: best)",IDC_STATIC2487,143,202,
+                    82,18
     LTEXT           "(multiple of 4)",IDC_STATIC2491,233,23,49,9
     LTEXT           "Attention: Swf files are limited to 16000 frames!",
                     IDC_STATIC,26,219,95,21,SS_SUNKEN
@@ -4414,7 +4414,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 287
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,124,10
@@ -4439,7 +4439,7 @@ BEGIN
                     WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",
                     IDC_CHECK_FULLSTRETCH,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,263,44,131,10
+                    WS_TABSTOP,262,44,131,10
     EDITTEXT        IDC_EDIT_NAME,147,104,107,13,ES_AUTOHSCROLL
     PUSHBUTTON      "Move camera folder...",IDC_BUTTON_PARENT_DIR,277,103,
                     125,15
@@ -4469,7 +4469,7 @@ BEGIN
     GROUPBOX        "5. Finish",IDC_STATIC,5,218,407,39
     LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",
                     IDC_STATIC,16,231,386,18
-    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,263,
+    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,262,
                     29,60,8
     GROUPBOX        "3. Appearance",IDC_STATIC,5,133,407,41
     LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,111,
@@ -4555,10 +4555,8 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 410
         VERTGUIDE, 13
-        VERTGUIDE, 128
-        VERTGUIDE, 132
-        VERTGUIDE, 146
-        VERTGUIDE, 181
+        VERTGUIDE, 142
+        VERTGUIDE, 185
         VERTGUIDE, 196
         VERTGUIDE, 204
         VERTGUIDE, 233
@@ -6860,7 +6858,7 @@ BEGIN
     IDS_STRING1866          "Client Poll Mode"
     IDS_STRING1867          "or type in Web Browser's address bar"
     IDS_STRING1868          "or"
-    IDS_STRING1869          "Select parent directory for camera folder"
+    IDS_STRING1869          "Move camera folder to selected directory. ATTENTION: all camera folders have to be moved to this directory!"
     IDS_STRING1870          "The new camera folder cannot be a subfolder of the old one"
 END
 

@@ -660,7 +660,7 @@ void CAssistantDlg::OnButtonParentDir()
 {
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_sParentDir,
-					ML_STRING(1869, "Select parent directory for camera folder"),
+					ML_STRING(1869, "Move camera folder to selected directory. ATTENTION: all camera folders have to be moved to this directory!"),
 					TRUE);
 	dlg.DoModal();
 }
@@ -696,9 +696,8 @@ void CAssistantDlg::Rename()
 	sNewRecordAutoSaveDir.TrimRight(_T('\\'));
 	sNewRecordAutoSaveDir += _T('\\') + m_sName;
 	
-	// Fail if sNewRecordAutoSaveDir is inside the old one
-	if (sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) != 0 &&
-		sNewRecordAutoSaveDir.Find(m_pDoc->m_sRecordAutoSaveDir) >= 0)
+	// Fail if sNewRecordAutoSaveDir is a nested subdir of the old one
+	if (::IsSubDir(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 	{
 		// Error Message
 		::AfxMessageBox(ML_STRING(1870, "The new camera folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
@@ -768,6 +767,25 @@ void CAssistantDlg::Rename()
 
 		// Restore old name
 		m_sName = sOldName;
+	}
+	// Update Doc Root
+	else if (m_sParentDir != ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot)
+	{
+		((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot = m_sParentDir;
+		int nRet = CVideoDeviceDoc::MicroApacheReload();
+		if (nRet <= 0)
+		{
+			if (nRet == 0)
+				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+			else
+				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+		}
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		{
+			::AfxGetApp()->WriteProfileString(	_T("GeneralApp"),
+												_T("MicroApacheDocRoot"),
+												((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot);
+		}
 	}
 }
 

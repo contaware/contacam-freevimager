@@ -88,6 +88,9 @@ extern CString MakeTempFileName(CString sTempPath, LPCTSTR lpszFileName);
 extern BOOL IsExistingFile(LPCTSTR lpszFileName);
 extern BOOL IsExistingDir(LPCTSTR lpszFileName);
 
+// Is sSubDir a nested subfolder of sDir?
+extern BOOL IsSubDir(CString sDir, CString sSubDir);
+
 // File Size
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
 

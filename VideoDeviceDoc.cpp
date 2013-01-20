@@ -6792,8 +6792,8 @@ void CVideoDeviceDoc::OnViewWeb()
 		CString sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 		sMicroApacheDocRoot.TrimRight(_T('\\'));
 
-		// Check whether sAutoSaveDir is inside the document root directory
-		if (sAutoSaveDir.Find(sMicroApacheDocRoot) < 0)
+		// Fail if sAutoSaveDir is not inside document root
+		if (!::IsSubDir(sMicroApacheDocRoot, sAutoSaveDir))
 		{
 			::AfxMessageBox(ML_STRING(1473, "Camera folder must reside inside the document root directory!"), MB_OK | MB_ICONSTOP);
 			return;
