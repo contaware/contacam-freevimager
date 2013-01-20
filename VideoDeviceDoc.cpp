@@ -2547,7 +2547,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 		if (::SendMessage(	GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_INIT_MOVDET,
 							0, 0) == 0)
-			return; // Cannot init, unsupported resolution
+			goto end_of_software_detection; // Cannot init, unsupported resolution
 	}
 
 	// Software Detection Enabled?
@@ -2572,20 +2572,20 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			{
 				m_pMovementDetectorBackgndDib = new CDib(*pDib);
 				if (!m_pMovementDetectorBackgndDib)
-					return;
+					goto end_of_software_detection;
 				m_pMovementDetectorBackgndDib->SetShowMessageBoxOnError(FALSE);
 			}
 			if (!m_pDifferencingDib)
 			{
 				m_pDifferencingDib = new CDib;
 				if (!m_pDifferencingDib)
-					return;
+					goto end_of_software_detection;
 				m_pDifferencingDib->SetShowMessageBoxOnError(FALSE);
 				if (!m_pDifferencingDib->AllocateBitsFast(	pDib->GetBitCount(),
 															pDib->GetCompression(),
 															pDib->GetWidth(),
 															pDib->GetHeight()))
-					return;
+					goto end_of_software_detection;
 			}
 
 			// Luminosity change detector
@@ -2660,6 +2660,9 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			m_MovementDetections[i] = FALSE;
 	}
 
+	// End of software detection
+end_of_software_detection:
+
 	// Trigger file detection
 	if (b1SecTick && !m_sDetectionTriggerFileName.IsEmpty())
 	{
@@ -2730,7 +2733,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 	// frames and MOVDET_MIN_FRAMES_IN_LIST passed since last check
 	double dDocLoad = 0.0;
 	double dNewestListLoad = 0.0;
-	double dAppLoad = 0.0;
 	double dTotalDocsMovementDetecting = 0.0;
 	int nFramesCount = GetNewestMovementDetectionsListCount();
 	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
@@ -2749,17 +2751,30 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 		// Newest list load in %
 		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB;
 
-		// This application load in %
-		// Note: on Win9x this always returns 100.0 because the necessary function is not supported.
-		// In the below check memory load we use an AND operation so that the check is ok also on Win9x!
-		dAppLoad = GetAppMemoryLoad();
-
 		// Get the total amount of devices which are movement detecting
 		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
 
 		// Debug
-		TRACE(_T("%s, buf frames=%d, buf mem load=%0.1f, doc mem load=%0.1f, app mem load=%0.1f\n"),
-						GetAssignedDeviceName(), nFramesCount, dNewestListLoad, dDocLoad, dAppLoad);
+		TRACE(_T("%s, buf frames=%d, buf mem load=%0.1f, doc mem load=%0.1f\n"),
+						GetAssignedDeviceName(), nFramesCount, dNewestListLoad, dDocLoad);
+
+		// High threshold reached, frames saving is to slow:
+		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames 
+		// -> notify user with a gif thumb and in log file 
+		if (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
+		{
+			DWORD dwFirstUpTime, dwLastUpTime;
+			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
+			ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
+							ML_STRING(1818, "set lower framerate"),
+							ML_STRING(1819, "or resolution!"),
+							dwFirstUpTime, dwLastUpTime);
+			CString sMsg;
+			sMsg.Format(_T("%s, dropping det frames -> set lower framerate or resolution!\n"),
+						GetAssignedDeviceName());
+			TRACE(sMsg);
+			::LogLine(sMsg);
+		}
 	}
 
 	// If in detection state
@@ -2778,60 +2793,33 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 			// Save frames
 			SaveFrameList();
 		}
-		// Check memory load?
-		else if (dTotalDocsMovementDetecting > 0.0)
-		{
-			// High thresholds, should not end up here,
-			// this means that frames saving is to slow!
-			// -> Throw the oldest MOVDET_MIN_FRAMES_IN_LIST frames 
-			if (dAppLoad >= MOVDET_MEM_LOAD_CRITICAL &&
-				dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
-			{
-				DWORD dwFirstUpTime, dwLastUpTime;
-				ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST + 1, dwFirstUpTime, dwLastUpTime); // + 1 to settle down on an avg value
-				ThumbMessage(	ML_STRING(1817, "Dropping det frames:"),
-								ML_STRING(1818, "set lower framerate"),
-								ML_STRING(1819, "or resolution!"),
-								dwFirstUpTime, dwLastUpTime);
-				CString sMsg;
-				sMsg.Format(_T("%s, dropping det frames -> set lower framerate or resolution!\n"),
-							GetAssignedDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
-			}
-			
-			// Low load threshold or maximum number of frames reached
-			if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
+		// Low load threshold or maximum number of frames reached
+		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
 				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
 				nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
-				SaveFrameList();
+			SaveFrameList();
+	}
+	else if (bStoreFrames)
+	{
+		// Add new frame
+		AddNewFrameToNewestListAndShrink(pDib);
+		
+		// If pre-buffer is set to big:
+		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
+		// -> notify user in log file
+		if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_THRESHOLD)
+		{
+			DWORD dwFirstUpTime, dwLastUpTime;
+			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
+			CString sMsg;
+			sMsg.Format(_T("%s, cannot store %ds of det pre-buffer -> lower that!\n"),
+						GetAssignedDeviceName(), m_nMilliSecondsRecBeforeMovementBegin / 1000);
+			TRACE(sMsg);
+			::LogLine(sMsg);
 		}
 	}
 	else
-	{
-		if (bStoreFrames)
-		{
-			// Add new frame
-			AddNewFrameToNewestListAndShrink(pDib);
-			
-			// Check memory load?
-			if (dTotalDocsMovementDetecting > 0.0)
-			{
-				if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_THRESHOLD)
-				{
-					DWORD dwFirstUpTime, dwLastUpTime;
-					ShrinkNewestFrameListBy(MOVDET_MIN_FRAMES_IN_LIST + 1, dwFirstUpTime, dwLastUpTime); // + 1 to settle down on an avg value
-					CString sMsg;
-					sMsg.Format(_T("%s, cannot store %ds of det pre-buffer -> lower that!\n"),
-								GetAssignedDeviceName(), m_nMilliSecondsRecBeforeMovementBegin / 1000);
-					TRACE(sMsg);
-					::LogLine(sMsg);
-				}
-			}
-		}
-		else
-			ClearNewestFrameList();
-	}
+		ClearNewestFrameList();
 }
 
 void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
@@ -3236,40 +3224,6 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 	}
 	
 	return TRUE;
-}
-
-__forceinline int CVideoDeviceDoc::GetAppMemoryUsageMB()
-{
-	PROCESS_MEMORY_COUNTERS pmc;
-	typedef BOOL (WINAPI * FPGETPROCESSMEMORYINFO) (HANDLE, PPROCESS_MEMORY_COUNTERS, DWORD);
-	HINSTANCE h = LoadLibrary(_T("psapi.dll"));
-	if (!h)
-		return -1;
-	FPGETPROCESSMEMORYINFO lpGetProcessMemoryInfo = (FPGETPROCESSMEMORYINFO)GetProcAddress(h, "GetProcessMemoryInfo");
-    if (lpGetProcessMemoryInfo && lpGetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
-    {   
-		FreeLibrary(h);
-		return MAX(pmc.WorkingSetSize >> 20, pmc.PagefileUsage >> 20);
-    }
-	else
-	{
-		FreeLibrary(h);
-		return -1;
-	}
-}
-
-__forceinline double CVideoDeviceDoc::GetAppMemoryLoad()
-{
-	int nUsageInMB = GetAppMemoryUsageMB();
-	if (nUsageInMB < 0)
-		return 100;
-	int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
-	if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
-		nTotalPhysInMB = MOVDET_MEM_MAX_MB;
-	if (nTotalPhysInMB > 0)
-		return (double)nUsageInMB * 100.0 / (double)nTotalPhysInMB;
-	else
-		return 100.0;
 }
 
 BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)

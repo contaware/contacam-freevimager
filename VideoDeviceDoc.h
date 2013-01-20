@@ -971,8 +971,6 @@ protected:
 									int posY,
 									int rx,
 									int ry);
-	__forceinline int GetAppMemoryUsageMB();
-	__forceinline double GetAppMemoryLoad();
 
 	// Networking Functions
 	void InitHttpGetFrameLocations();
