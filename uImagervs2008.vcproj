@@ -223,8 +223,9 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-				HandleVerification="0"
-				LocksVerification="0"
+				HandleVerification="3"
+				LocksVerification="3"
+				PageHeapConserveMemory="true"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"

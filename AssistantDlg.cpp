@@ -674,7 +674,9 @@ void CAssistantDlg::Rename()
 	if (!::IsANSIConvertible(m_sName))
 	{
 		// Error Message
+		EndWaitCursor();
 		::AfxMessageBox(ML_STRING(1767, "Only the ANSI character set is supported for the camera name"), MB_OK | MB_ICONERROR);
+		BeginWaitCursor();
 		
 		// Restore old name
 		m_sName = sOldName;
@@ -700,8 +702,10 @@ void CAssistantDlg::Rename()
 	if (::IsSubDir(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 	{
 		// Error Message
+		EndWaitCursor();
 		::AfxMessageBox(ML_STRING(1870, "The new camera folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
-		
+		BeginWaitCursor();
+
 		// Restore old name
 		m_sName = sOldName;
 		return;
@@ -714,12 +718,18 @@ void CAssistantDlg::Rename()
 	{
 		CString sMsg;
 		sMsg.Format(ML_STRING(1765, "%s already exists.\nDo you want to proceed and merge the files?"), m_sName);
+		EndWaitCursor();
 		if (::AfxMessageBox(sMsg, MB_YESNO | MB_ICONQUESTION) == IDNO)
 		{
+			// Restore cursor
+			BeginWaitCursor();
+
 			// Restore old name
 			m_sName = sOldName;
 			return;
 		}
+		else
+			BeginWaitCursor();
 	}
 
 	// Error code
@@ -763,7 +773,9 @@ void CAssistantDlg::Rename()
 	if (dwLastError != ERROR_SUCCESS)
 	{
 		// Error Message
+		EndWaitCursor();
 		::ShowError(dwLastError, TRUE);
+		BeginWaitCursor();
 
 		// Restore old name
 		m_sName = sOldName;
@@ -775,10 +787,12 @@ void CAssistantDlg::Rename()
 		int nRet = CVideoDeviceDoc::MicroApacheReload();
 		if (nRet <= 0)
 		{
+			EndWaitCursor();
 			if (nRet == 0)
 				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
 			else
 				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+			BeginWaitCursor();
 		}
 		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
