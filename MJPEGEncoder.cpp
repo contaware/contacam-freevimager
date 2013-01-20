@@ -58,10 +58,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI)
 		m_nOutbufSize = FF_MIN_BUFFER_SIZE;
 	m_pOutbuf = new uint8_t[m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE];
 	if (!m_pOutbuf)
-	{
-		m_nOutbufSize = 0;
-		return FALSE;
-	}
+		goto error;
 
 	return TRUE;
 

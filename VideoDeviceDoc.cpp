@@ -1589,9 +1589,11 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		DibThumb.SetShowMessageBoxOnError(FALSE);
 
 		// Resize
-		DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight);
-		CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
-		DibThumb.SetUpTime(m_Dib.GetUpTime());
+		if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
+		{
+			CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
+			DibThumb.SetUpTime(m_Dib.GetUpTime());
+		}
 	}
 
 	// Save Full-size to Temp
@@ -8604,9 +8606,11 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		DibThumb.SetShowMessageBoxOnError(FALSE);
 
 		// Resize
-		DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight);
-		CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
-		DibThumb.SetUpTime(Dib.GetUpTime());
+		if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
+		{
+			CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
+			DibThumb.SetUpTime(Dib.GetUpTime());
+		}
 	}
 
 	// Add frame time
