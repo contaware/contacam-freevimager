@@ -20,7 +20,11 @@ extern "C"
 // PIX_FMT_YUVJ422P
 // PIX_FMT_YUV420P (FF_COMPLIANCE_INOFFICIAL)
 // PIX_FMT_YUV422P (FF_COMPLIANCE_INOFFICIAL)
-
+//
+// Note: if using PIX_FMT_YUV420P or PIX_FMT_YUV422P ffmpeg adds a
+// "CS=ITU601" string to the Jpeg COM marker emphasizing that a
+// non-JPEG compliant colorspace is used. The ffmpeg decoder recognizes
+// that, thus only use ITU601 colorspace if encoding AND decoding with ffmpeg!
 class CMJPEGEncoder 
 {
 	public:
