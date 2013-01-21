@@ -21,25 +21,21 @@ copy ..\Translation\FreeVimagerwRUS.exe .\%CURRENTVERSION%\russian\FreeVimagerRu
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT /DWITH_TUTORIALS ContaCam.nsi
-echo NSIS make ContaCam no tutorials installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT ContaCam.nsi
 echo NSIS make ContaCamDeu installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT ContaCamDeu.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS ContaCamDeu.nsi
 echo NSIS make ContaCamIta installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT ContaCamIta.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS ContaCamIta.nsi
 echo NSIS make ContaCamRus installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT ContaCamRus.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS ContaCamRus.nsi
 
 REM Make all the different FreeVimager installers
 echo NSIS make FreeVimager installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT /DWITH_TUTORIALS FreeVimager.nsi
-echo NSIS make FreeVimager no tutorials installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_WIN9X /DINSTALLER_NT FreeVimager.nsi
 echo NSIS make FreeVimagerDeu installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT FreeVimagerDeu.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS FreeVimagerDeu.nsi
 echo NSIS make FreeVimagerIta installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT FreeVimagerIta.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS FreeVimagerIta.nsi
 echo NSIS make FreeVimagerRus installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT FreeVimagerRus.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_NT /DWITH_TUTORIALS FreeVimagerRus.nsi
 
 pause
