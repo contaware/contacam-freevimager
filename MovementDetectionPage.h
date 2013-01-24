@@ -33,6 +33,8 @@ public:
 	int	m_nSecondsBeforeMovementBegin;
 	CSpinButtonCtrl	m_SpinSecondsBeforeMovementBegin;
 	CSpinButtonCtrl	m_SpinSecondsAfterMovementEnd;
+	int	m_nDetectionMinLengthSeconds;
+	CSpinButtonCtrl	m_SpinDetectionMinLengthSeconds;
 	CSliderCtrl	m_DetectionLevel;
 	CTime	m_DetectionStartTime;
 	CTime	m_DetectionStopTime;
@@ -90,6 +92,7 @@ protected:
 	afx_msg void OnCheckSchedulerFriday();
 	afx_msg void OnCheckSchedulerSaturday();
 	afx_msg void OnCheckDetectionCompressFrames();
+	afx_msg void OnChangeEditDetectionMinLength();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

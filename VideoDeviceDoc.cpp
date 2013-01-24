@@ -2702,13 +2702,14 @@ end_of_software_detection:
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(TRUE);
 
-		// Reset var
-		m_dwWithoutMovementDetection = pDib->GetUpTime();
+		// Update the Up-Time
+		m_dwLastDetFrameUpTime = pDib->GetUpTime();
 
 		// First detected frame?
 		if (!m_bDetectingMovement)
 		{
 			m_bDetectingMovement = TRUE;
+			m_dwFirstDetFrameUpTime = pDib->GetUpTime();
 			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
 				ExecCommandMovementDetection();
 		}
@@ -2718,10 +2719,6 @@ end_of_software_detection:
 	{
 		// Mark the Frame as no Movement Cause
 		pDib->SetUserFlag(FALSE);
-
-		// Reset var
-		if (!m_bDetectingMovement)
-			m_dwWithoutMovementDetection = pDib->GetUpTime();
 	}
 
 	// Check memory load if having MOVDET_MIN_FRAMES_IN_LIST
@@ -2780,13 +2777,14 @@ end_of_software_detection:
 			AddNewFrameToNewestList(pDib);
 
 		// Check if end of detection period
-		if ((pDib->GetUpTime() - m_dwWithoutMovementDetection) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
+		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
 		{
 			// Reset var
 			m_bDetectingMovement = FALSE;
 
-			// Save frames
-			SaveFrameList();
+			// Save frames if minimum length reached (if m_nDetectionMinLengthMilliSeconds is 0 always save frames)
+			if ((m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
+				SaveFrameList();
 		}
 		// Low load threshold or maximum number of frames reached
 		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
@@ -4155,6 +4153,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
+	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 	m_bDetectionCompressFrames = FALSE;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
@@ -4806,6 +4805,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDeviceFormatHeight = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), 0);
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
+	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
 	m_bDetectionCompressFrames = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionCompressFrames"), FALSE);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
@@ -5024,6 +5024,7 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
+			pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
 			pApp->WriteProfileInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
@@ -5209,6 +5210,7 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
+			::WriteProfileIniInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);

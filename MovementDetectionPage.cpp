@@ -59,6 +59,9 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_DETECTION_LEVEL, m_DetectionLevel);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_DetectionStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_DetectionStopTime);
+	DDX_Text(pDX, IDC_EDIT_DETECTION_MIN_LENGTH, m_nDetectionMinLengthSeconds);
+	DDV_MinMaxInt(pDX, m_nDetectionMinLengthSeconds, 0, 99);
+	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
 	//}}AFX_DATA_MAP
 }
 
@@ -100,6 +103,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_FRIDAY, OnCheckSchedulerFriday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SATURDAY, OnCheckSchedulerSaturday)
 	ON_BN_CLICKED(IDC_CHECK_DETECTION_COMPRESS_FRAMES, OnCheckDetectionCompressFrames)
+	ON_EN_CHANGE(IDC_EDIT_DETECTION_MIN_LENGTH, OnChangeEditDetectionMinLength)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -111,6 +115,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Init vars
 	m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
 	m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
+	m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
 	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
 
@@ -133,6 +138,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
 	m_SpinSecondsBeforeMovementBegin.SetRange(1, 99);
 	m_SpinSecondsAfterMovementEnd.SetRange(1, 99);
+
+	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
+	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
 
 	// Movement Detection Compress Frames in Buffer
 	CButton* pCheckDetectionCompressFrames = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
@@ -336,6 +344,15 @@ void CMovementDetectionPage::OnChangeSecondsBeforeMovementBegin()
 	{
 		if (UpdateData(TRUE))
 			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
+	}
+}
+
+void CMovementDetectionPage::OnChangeEditDetectionMinLength() 
+{
+	if (::IsWindow(m_SpinDetectionMinLengthSeconds.GetSafeHwnd()))
+	{
+		if (UpdateData(TRUE))
+			m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 	}
 }
 

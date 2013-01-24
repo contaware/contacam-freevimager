@@ -109,7 +109,8 @@ class CMovementDetectionPage;
 #define TRIGGER_FILE_DETECTOR				0x01
 #define SOFTWARE_MOVEMENT_DETECTOR			0x02
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
-#define DEFAULT_POST_BUFFER_MSEC			8000		// ms
+#define DEFAULT_POST_BUFFER_MSEC			6000		// ms
+#define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
 #define MOVDET_BUFFER_COMPRESSIONQUALITY	4			// 2: best quality, 31: worst quality
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
@@ -1106,9 +1107,11 @@ public:
 														// a high sensibility may Detect Video Noise!)
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
-	volatile DWORD m_dwWithoutMovementDetection;		// Uptime of last movement detection
+	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
+	volatile DWORD m_dwLastDetFrameUpTime;				// Uptime of last movement detection frame
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
+	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile BOOL m_bDetectionCompressFrames;			// Compress detection frames?
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
 	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
