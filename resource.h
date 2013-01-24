@@ -2173,7 +2173,6 @@
 #define IDC_CHECK_LIVE_ROTATE180        1677
 #define IDC_CHECK_AUTORUN               1678
 #define IDS_STRING1678                  1678
-#define IDC_CHECK_ADJACENT_ZONES_DET    1679
 #define IDC_CHECK_AUTOOPEN              1679
 #define IDS_STRING1679                  1679
 #define IDS_STRING1680                  1680
@@ -2181,7 +2180,6 @@
 #define IDS_STRING1681                  1681
 #define IDC_CPUSPEED                    1682
 #define IDS_STRING1682                  1682
-#define IDC_CHECK_LUMCHANGE_DET         1682
 #define IDC_PHYSMEM                     1683
 #define IDS_STRING1683                  1683
 #define IDC_CPUCOUNT                    1684

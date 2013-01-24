@@ -2537,7 +2537,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProcessorMode, BOOL b1SecTick)
 {
 	BOOL bMovement = FALSE;
-	BOOL bLumChange = FALSE;
 	BOOL bExternalFileTriggerMovement = FALSE;
 
 	// Init from UI thread because of a UI control update and
@@ -2587,10 +2586,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, DWORD dwVideoProce
 															pDib->GetHeight()))
 					goto end_of_software_detection;
 			}
-
-			// Luminosity change detector
-			if (m_bDoLumChangeDetection)
-				bLumChange = LumChangeDetector(pDib);
 
 			// Differencing
 			BYTE p[16];
@@ -2702,7 +2697,7 @@ end_of_software_detection:
 						m_bFTPUploadMovementDetection);
 
 	// If Movement
-	if ((bMovement && !bLumChange) || bExternalFileTriggerMovement)
+	if (bMovement || bExternalFileTriggerMovement)
 	{
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(TRUE);
@@ -4161,8 +4156,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_bDetectionCompressFrames = FALSE;
-	m_bDoAdjacentZonesDetection = TRUE;
-	m_bDoLumChangeDetection = TRUE;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
@@ -4182,8 +4175,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovementDetectorIntensityLimit = DEFAULT_MOVDET_INTENSITY_LIMIT;
 	m_dwAnimatedGifWidth = MOVDET_ANIMGIF_DEFAULT_WIDTH;
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
-	m_LumChangeDetectorBkgY = new int[MOVDET_MAX_ZONES];
-	m_LumChangeDetectorDiffY = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
 	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
@@ -4300,7 +4291,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 	// Init Movement Detector
 	OneEmptyFrameList();
-	ResetMovementDetector();
+	FreeMovementDetector();
 
 	// Start Save Frame List Thread
 	m_SaveFrameListThread.Start();
@@ -4319,16 +4310,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 		m_pHttpGetFrameParseProcess = NULL;
 	}
 	FreeMovementDetector();
-	if (m_LumChangeDetectorBkgY)
-	{
-		delete [] m_LumChangeDetectorBkgY;
-		m_LumChangeDetectorBkgY = NULL;
-	}
-	if (m_LumChangeDetectorDiffY)
-	{
-		delete [] m_LumChangeDetectorDiffY;
-		m_LumChangeDetectorDiffY = NULL;
-	}
 	if (m_MovementDetectorCurrentIntensity)
 	{
 		delete [] m_MovementDetectorCurrentIntensity;
@@ -4406,6 +4387,9 @@ void CVideoDeviceDoc::FreeMovementDetector()
 		m_pMovementDetectorBackgndDib = NULL;
 	}
 	::InterlockedExchange(&m_lMovDetTotalZones, 0);
+	m_bDetectingMovement = FALSE;
+	if (m_MovementDetections)
+		memset(m_MovementDetections, 0, sizeof(m_MovementDetections[0]) * MOVDET_MAX_ZONES);
 }
 
 void CVideoDeviceDoc::CloseDocument()
@@ -4825,8 +4809,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_bDetectionCompressFrames = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionCompressFrames"), FALSE);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
-	m_bDoAdjacentZonesDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoAdjacentZonesDetection"), TRUE);
-	m_bDoLumChangeDetection = (BOOL) pApp->GetProfileInt(sSection, _T("DoLumChangeDetection"), TRUE);
 	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
 	m_bSaveAVIMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAVIMovementDetection"), FALSE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -5045,8 +5027,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
-			pApp->WriteProfileInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection);
-			pApp->WriteProfileInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection);
 			pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
 			pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
@@ -5232,8 +5212,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoAdjacentZonesDetection"), m_bDoAdjacentZonesDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoLumChangeDetection"), m_bDoLumChangeDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection, sTempFileName);
@@ -5956,7 +5934,6 @@ BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib)
 
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
-	ResetMovementDetector();
 
 	// Start Audio Capture
 	if (m_bCaptureAudio)
@@ -6288,7 +6265,6 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 
 	// Free Movement Detector because we changed size and/or format!
 	FreeMovementDetector();
-	ResetMovementDetector();
 
 	// Update
 	if (m_bSizeToDoc)
@@ -6324,7 +6300,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 		if (m_pDxCapture)
 		{
 			m_pDxCapture->Stop();
-			ResetMovementDetector();
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
 			if (m_pDxCapture->Run())
 			{
@@ -6340,7 +6315,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 		}
 		else if (m_pGetFrameNetCom && m_pGetFrameNetCom->IsClient())
 		{
-			ResetMovementDetector();
 			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
 			{
 				if (m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
@@ -6351,14 +6325,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			SetDocumentTitle();
 		}
 	}
-}
-
-void CVideoDeviceDoc::ResetMovementDetector()
-{
-	m_bFirstMovementDetection = TRUE;			
-	m_bDetectingMovement = FALSE;
-	for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-		m_MovementDetections[i] = FALSE;
 }
 
 void CVideoDeviceDoc::AudioFormatDialog() 
@@ -8143,6 +8109,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 		// (especially for audio/video synchronization)
 		if (bStartupSettled)
 		{
+			// Scheduler
 			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
 			if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
 			{
@@ -8174,14 +8141,19 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize)
 						dwVideoProcessorMode = NO_DETECTOR;
 				}
 			}
-			if (dwVideoProcessorMode && m_bFirstMovementDetection && m_pMovementDetectorBackgndDib)
-			{
-				delete m_pMovementDetectorBackgndDib;
-				m_pMovementDetectorBackgndDib = NULL;
+
+			// Reset moving background frame if software detection engine has been turned-off
+			if (!(dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR))
+			{	
+				if (m_pMovementDetectorBackgndDib)
+				{
+					delete m_pMovementDetectorBackgndDib;
+					m_pMovementDetectorBackgndDib = NULL;
+				}
 			}
+
+			// Do Motion Detection Processing
 			MovementDetectionProcessing(pDib, dwVideoProcessorMode, b1SecTick);
-			if (!dwVideoProcessorMode && !m_bFirstMovementDetection)
-				m_bFirstMovementDetection = TRUE;
 		}
 
 		// Copy to Clipboard
@@ -8933,238 +8905,29 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 		}
 	}
 	
-	// First Frame Already Passed?
-	if (!m_bFirstMovementDetection)
+	// Set Detection flag and Current Time
+	BOOL bDetection = FALSE;
+	int nIntensityThreshold = Round(dDetectionLevel * nMaxIntensityPerZone);
+	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 	{
-		// Single Zone Detection and Current Time Set
-		BOOL bSingleZoneDetection = FALSE;
-		int nIntensityThreshold = Round(dDetectionLevel * nMaxIntensityPerZone);
-		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
+		if (m_DoMovementDetection[i] &&
+			m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * m_DoMovementDetection[i])
 		{
-			if (m_DoMovementDetection[i] &&
-				m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * m_DoMovementDetection[i])
-			{
-				bSingleZoneDetection = TRUE;
-				m_MovementDetections[i] = TRUE;
-				m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
-			}
+			bDetection = TRUE;
+			m_MovementDetections[i] = TRUE;
+			m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
 		}
-
-		// Clear Old Detection Zones
-		for (i = 0 ; i < m_lMovDetTotalZones ; i++)
-		{
-			if (m_MovementDetections[i]	&&
-				(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
-				m_MovementDetections[i] = FALSE;
-		}
-
-		// Adjacent Zones Detection
-		BOOL bAdjacentZonesDetection = FALSE;
-		if (bSingleZoneDetection && m_bDoAdjacentZonesDetection)
-		{
-			for (y = 0 ; y < m_lMovDetYZonesCount ; y++)
-			{
-				for (x = 0 ; x < m_lMovDetXZonesCount ; x++)
-				{
-					if (m_DoMovementDetection[y*m_lMovDetXZonesCount+x] && m_MovementDetections[y*m_lMovDetXZonesCount+x])
-					{
-						if (x > 0													&&
-							y > 0													&&
-							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+(x-1)]	&&
-							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+(x-1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (y > 0													&&
-							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+x]		&&
-							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+x])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (y > 0													&&
-							x < (m_lMovDetXZonesCount - 1)							&&
-							m_DoMovementDetection[(y-1)*m_lMovDetXZonesCount+(x+1)]	&&
-							m_MovementDetections[(y-1)*m_lMovDetXZonesCount+(x+1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (x > 0													&&
-							m_DoMovementDetection[y*m_lMovDetXZonesCount+(x-1)]		&&
-							m_MovementDetections[y*m_lMovDetXZonesCount+(x-1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (x < (m_lMovDetXZonesCount - 1)							&&
-							m_DoMovementDetection[y*m_lMovDetXZonesCount+(x+1)]		&&
-							m_MovementDetections[y*m_lMovDetXZonesCount+(x+1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (x > 0													&&
-							y < (m_lMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+(x-1)]	&&
-							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+(x-1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (y < (m_lMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+x]		&&
-							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+x])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-						if (x < (m_lMovDetXZonesCount - 1)							&&
-							y < (m_lMovDetYZonesCount - 1)							&&
-							m_DoMovementDetection[(y+1)*m_lMovDetXZonesCount+(x+1)]	&&
-							m_MovementDetections[(y+1)*m_lMovDetXZonesCount+(x+1)])
-						{
-							bAdjacentZonesDetection = TRUE;
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		return m_bDoAdjacentZonesDetection ? bAdjacentZonesDetection : bSingleZoneDetection;
 	}
-	else
-	{		
-		m_bFirstMovementDetection = FALSE;
-		return FALSE;
-	}
-}
 
-BOOL CVideoDeviceDoc::LumChangeDetector(CDib* pDib)
-{
-	int x, y;
-	int nCount = 0;
-	LPBYTE pDataBkg = m_pMovementDetectorBackgndDib->GetBits();
-	LPBYTE pDataCur = pDib->GetBits();
-	int width = pDib->GetWidth();
-	int nZoneWidth = pDib->GetWidth() / m_lMovDetXZonesCount;
-	int nZoneHeight = pDib->GetHeight() / m_lMovDetYZonesCount;
-
-	// Calc. difference between current Y and background Y
-	// at the grid intersection points
-	for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
+	// Clear Old Detection Zones
+	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 	{
-		int posY = y*nZoneHeight;
-		for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
-		{
-			// Offset
-			int posX = x*nZoneWidth;
-			int nOffset = width*posY + posX;
-
-			// Consider pixels which can shift with a luminosity change
-			// and remember that the Y range is: [16,235] (220 steps)
-			if (pDataBkg[nOffset] > 71 && pDataBkg[nOffset] < 180)
-			{
-				// Inc.
-				nCount++;
-
-				// Store
-				m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] = pDataBkg[nOffset];
-
-				// Diff
-				m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] = pDataCur[nOffset] - pDataBkg[nOffset];
-			}
-			else
-			{
-				m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] = 0;
-				m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] = 0;
-			}
-		}
+		if (m_MovementDetections[i]	&&
+			(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
+			m_MovementDetections[i] = FALSE;
 	}
 
-	// Statistics (only if we have "statistically" enough samples)
-	int nTotalGridIntersections = (m_lMovDetXZonesCount - 1) * (m_lMovDetYZonesCount - 1);
-	int nTotalGridIntersections20 = 2 * nTotalGridIntersections / 10; // 20%
-	if (nCount > 0 && nCount >= nTotalGridIntersections20)
-	{
-		// Avg
-		int nAvg = 0;
-		int nCountPlus = 0;
-		int nCountMinus = 0;
-		for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
-		{
-			for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
-			{
-				if (m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] > 0)
-				{
-					if (m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] > 0)
-						nCountPlus++;
-					else if (m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] < 0)
-						nCountMinus++;
-					nAvg += m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x];
-				}
-			}
-		}
-		nAvg = nAvg / nCount;
-		int nAvgAbs;
-		if (nAvg >= 0)
-			nAvgAbs = nAvg;
-		else
-			nAvgAbs = -nAvg;
-
-		// Std Dev
-		int nStdDev = 0;
-		for (y = 1 ; y < m_lMovDetYZonesCount ; y++)
-		{
-			for (x = 1 ; x < m_lMovDetXZonesCount ; x++)
-			{
-				if (m_LumChangeDetectorBkgY[y*m_lMovDetXZonesCount+x] > 0)
-				{
-					int nDistance = m_LumChangeDetectorDiffY[y*m_lMovDetXZonesCount+x] - nAvg;
-					if (nDistance < 0)
-						nDistance = -nDistance;
-					nStdDev += nDistance;
-				}
-			}
-		}
-		nStdDev = nStdDev / nCount;
-
-		// Check conditions for luminosity change
-		// Note: do not set the compare nAvgAbs > 8 less than 8 because the Mix15To1
-		// mixer can settle to a difference of 8 between current and background
-		// bitmaps even if both are identical, that's correct and it's a consequence of the rounding!
-		// Note for release 3.9.0 and above:
-		// Mix15To1 has been removed, Mix7To1 remains -> we could set the compare as low as 4.
-		if (nAvgAbs > 8)
-		{
-			double dThreshold = 256.0; // Just a high value in case nStdDev is 0...
-			if (nStdDev > 0)
-				dThreshold = (double)nAvgAbs / (double)nStdDev;
-			if (dThreshold >= 1.2)
-			{
-				int nCount80 = 8 * nCount / 10; // 80%
-				if (nCountPlus >= nCount80)
-				{
-					TRACE(_T("+++: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
-					return TRUE;
-				}
-				else if (nCountMinus >= nCount80)
-				{
-					TRACE(_T("---: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
-					return TRUE;
-				}
-			}
-			//TRACE(_T("FALSE: nAvgAbs=%d , nStdDev=%d , nAvgAbs / nStdDev=%0.2f , nCountPlus=%d, nCountMinus=%d, nCount=%d\n"), nAvgAbs, nStdDev, dThreshold, nCountPlus, nCountMinus, nCount);
-		}
-		//else
-		//	TRACE(_T("FALSE: nAvgAbs <= 8\n"));
-	}
-	//else
-	//	TRACE(_T("FALSE: nCount < %d\n"), nTotalGridIntersections20);
-
-	return FALSE;
+	return bDetection;
 }
 
 __forceinline int CVideoDeviceDoc::GetNewestMovementDetectionsListCount()
@@ -11455,7 +11218,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 
 			// Free Movement Detector because we changed size and/or format!
 			m_pDoc->FreeMovementDetector();
-			m_pDoc->ResetMovementDetector();
 
 			// Update
 			if (m_pDoc->m_bSizeToDoc)

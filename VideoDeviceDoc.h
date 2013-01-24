@@ -125,7 +125,7 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					1536		// Maximum allocable memory in MB for 32 bits applications
+#define MOVDET_MEM_MAX_MB					1152		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
@@ -891,9 +891,7 @@ public:
 	void MovementDetectionProcessing(	CDib* pDib,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
-	BOOL LumChangeDetector(CDib* pDib);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
-	void ResetMovementDetector();
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
 										CTime StartTime = CTime(0),
@@ -1104,7 +1102,6 @@ public:
 	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone
 	volatile BOOL m_bDetectingMovement;					// Flag Indicating a Detection
-	volatile BOOL m_bFirstMovementDetection;			// Start Detecting when this is FALSE
 	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 (100 Max Sensibility)
 														// a high sensibility may Detect Video Noise!)
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
@@ -1134,8 +1131,6 @@ public:
 	volatile DWORD m_dwAnimatedGifWidth;				// Width of Detection Animated Gif 
 	volatile DWORD m_dwAnimatedGifHeight;				// Height of Detection Animated Gif
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
-	int* volatile m_LumChangeDetectorBkgY;				// Luminosity change background by zones (array allocated in constructor)
-	int* volatile m_LumChangeDetectorDiffY;				// Luminosity change difference by zones (array allocated in constructor)
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
 	BOOL* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
@@ -1146,8 +1141,6 @@ public:
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
-	volatile BOOL m_bDoAdjacentZonesDetection;			// Fire a detection only if moving between two adjacent zones
-	volatile BOOL m_bDoLumChangeDetection;				// Discard movement detection if a luminosity change happens
 	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoDetDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoDetKeyframesRate;				// Keyframes Rate

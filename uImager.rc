@@ -1596,7 +1596,7 @@ STYLE DS_FIXEDSYS | DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION |
     WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "General"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_FRAMERATE,111,13,31,13,ES_AUTOHSCROLL
     CONTROL         "Spin3",IDC_SPIN_FRAMERATE,"msctls_updown32",
@@ -2232,7 +2232,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,30,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2255,12 +2255,6 @@ BEGIN
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,51,77,132,12
     COMBOBOX        IDC_DETECTION_ZONE_SIZE,101,95,99,72,CBS_DROPDOWNLIST | 
                     WS_TABSTOP
-    CONTROL         "Only detect if movement between two adjacent zones",
-                    IDC_CHECK_ADJACENT_ZONES_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,132,185,10
-    CONTROL         "Only detect if no camera luminosity change occurs",
-                    IDC_CHECK_LUMCHANGE_DET,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,13,144,185,10
     CONTROL         "Enable Detection (if not checked always enabled):",
                     IDC_CHECK_SCHEDULER_DAILY,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,13,177,175,10
@@ -4170,7 +4164,7 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,21,101,10
@@ -4414,7 +4408,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 287
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,124,10

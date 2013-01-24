@@ -850,7 +850,7 @@ void CAssistantDlg::ApplySettings()
 		bDoMovDet = FALSE;
 	m_pDoc->m_SaveFrameListThread.Kill();
 	m_pDoc->OneEmptyFrameList();
-	m_pDoc->ResetMovementDetector();
+	m_pDoc->FreeMovementDetector();
 
 	// Is 24h rec.?
 	BOOL bDo24hRec = Is24hRec();

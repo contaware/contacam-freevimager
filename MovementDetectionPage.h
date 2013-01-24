@@ -72,7 +72,6 @@ protected:
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSaveSwfMovementDetection();
-	afx_msg void OnCheckAdjacentZonesDet();
 	afx_msg void OnSwfConfigure();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnChangeEditExe();
@@ -80,7 +79,6 @@ protected:
 	afx_msg void OnCheckHideExecCommand();
 	afx_msg void OnCheckWaitExecCommand();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	afx_msg void OnCheckLumChangeDet();
 	afx_msg void OnSelchangeDetectionZoneSize();
 	afx_msg void OnChangeDetectionTriggerFilename();
 	afx_msg void OnSelchangeExecmodeMovementDetection();

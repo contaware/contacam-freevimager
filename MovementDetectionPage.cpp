@@ -82,7 +82,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
-	ON_BN_CLICKED(IDC_CHECK_ADJACENT_ZONES_DET, OnCheckAdjacentZonesDet)
 	ON_BN_CLICKED(IDC_SWF_CONFIGURE, OnSwfConfigure)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
@@ -90,7 +89,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_HIDE_EXEC_COMMAND, OnCheckHideExecCommand)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
-	ON_BN_CLICKED(IDC_CHECK_LUMCHANGE_DET, OnCheckLumChangeDet)
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
 	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
@@ -168,14 +166,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionFriday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSaturday);
-
-	// Adjacent Zones Detection
-	CButton* pCheckAdjacentZonesDetection = (CButton*)GetDlgItem(IDC_CHECK_ADJACENT_ZONES_DET);
-	pCheckAdjacentZonesDetection->SetCheck(m_pDoc->m_bDoAdjacentZonesDetection ? 1 : 0);
-
-	// Discard movement detection if a luminosity change happens
-	CButton* pCheckLumChangeDetection = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
-	pCheckLumChangeDetection->SetCheck(m_pDoc->m_bDoLumChangeDetection ? 1 : 0);
 
 	// Save SWF Movement Detection Check Box
 	CButton* pCheckSWFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
@@ -336,10 +326,7 @@ void CMovementDetectionPage::OnChangeSecondsAfterMovementEnd()
 	if (::IsWindow(m_SpinSecondsAfterMovementEnd.GetSafeHwnd()))
 	{
 		if (UpdateData(TRUE))
-		{
 			m_pDoc->m_nMilliSecondsRecAfterMovementEnd = m_nSecondsAfterMovementEnd * 1000;
-			m_pDoc->ResetMovementDetector();
-		}
 	}
 }
 
@@ -348,10 +335,7 @@ void CMovementDetectionPage::OnChangeSecondsBeforeMovementBegin()
 	if (::IsWindow(m_SpinSecondsBeforeMovementBegin.GetSafeHwnd()))
 	{
 		if (UpdateData(TRUE))
-		{
 			m_pDoc->m_nMilliSecondsRecBeforeMovementBegin = m_nSecondsBeforeMovementBegin * 1000;
-			m_pDoc->ResetMovementDetector();
-		}
 	}
 }
 
@@ -419,18 +403,6 @@ void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRES
 {
 	UpdateData(TRUE);
 	*pResult = 0;
-}
-
-void CMovementDetectionPage::OnCheckAdjacentZonesDet() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_ADJACENT_ZONES_DET);
-	m_pDoc->m_bDoAdjacentZonesDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnCheckLumChangeDet() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LUMCHANGE_DET);
-	m_pDoc->m_bDoLumChangeDetection = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnSaveSwfMovementDetection() 
