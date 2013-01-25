@@ -2785,6 +2785,8 @@ end_of_software_detection:
 			// Save frames if minimum length reached (if m_nDetectionMinLengthMilliSeconds is 0 always save frames)
 			if ((m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
 				SaveFrameList();
+			else
+				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
 		// Low load threshold or maximum number of frames reached
 		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
@@ -2794,7 +2796,7 @@ end_of_software_detection:
 	}
 	else if (bStoreFrames)
 	{
-		// Add new frame
+		// Add new frame and shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		AddNewFrameToNewestListAndShrink(pDib);
 		
 		// If pre-buffer is set to big:
@@ -4154,7 +4156,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
-	m_bDetectionCompressFrames = FALSE;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
@@ -4806,7 +4807,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
-	m_bDetectionCompressFrames = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionCompressFrames"), FALSE);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
@@ -5025,7 +5025,6 @@ void CVideoDeviceDoc::SaveSettings()
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 			pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
-			pApp->WriteProfileInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames);
 			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 			pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
@@ -5211,7 +5210,6 @@ void CVideoDeviceDoc::SaveSettings()
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionCompressFrames"), m_bDetectionCompressFrames, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
 			::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);
@@ -8995,6 +8993,39 @@ __forceinline void CVideoDeviceDoc::ClearNewestFrameList()
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
+__forceinline CDib* CVideoDeviceDoc::AllocMJPGFrame(CDib* pDib)
+{
+	CDib* pNewDib = NULL;
+	if (pDib)
+	{
+		DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
+														pDib->GetBMI(), pDib->GetBits());
+		if (dwEncodedLen > 0U)
+		{
+			BITMAPINFO Bmi;
+			memset(&Bmi, 0, sizeof(BITMAPINFO));
+			Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			Bmi.bmiHeader.biWidth = pDib->GetWidth();
+			Bmi.bmiHeader.biHeight = pDib->GetHeight();
+			Bmi.bmiHeader.biPlanes = 1;
+			Bmi.bmiHeader.biBitCount = 12;
+			Bmi.bmiHeader.biCompression = FCC('MJPG');
+			Bmi.bmiHeader.biSizeImage = dwEncodedLen;
+			pNewDib = new CDib;
+			if (pNewDib)
+			{
+				pNewDib->SetShowMessageBoxOnError(FALSE);
+				pNewDib->SetBMI((LPBITMAPINFO)&Bmi);						// set BMI	
+				pNewDib->SetBits((LPBYTE)m_MJPEGDetEncoder.GetEncodedBuf());// copy bits
+				pNewDib->SetUpTime(pDib->GetUpTime());						// copy frame uptime
+				pNewDib->SetUserFlag(pDib->IsUserFlag());					// copy movement detection frame flag
+				pNewDib->CopyUserList(pDib->m_UserList);					// copy audio bufs if any
+			}
+		}
+	}
+	return pNewDib;
+}
+
 __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 {
 	if (pDib)
@@ -9015,35 +9046,10 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib)
 						CDib::FreeList(*pTail);
 				}
 
-				// Add
-				CDib* pNewDib;
-				if (m_bDetectionCompressFrames)
-				{
-					DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
-																	pDib->GetBMI(), pDib->GetBits());
-					BITMAPINFO Bmi;
-					memset(&Bmi, 0, sizeof(BITMAPINFO));
-					Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-					Bmi.bmiHeader.biWidth = pDib->GetWidth();
-					Bmi.bmiHeader.biHeight = pDib->GetHeight();
-					Bmi.bmiHeader.biPlanes = 1;
-					Bmi.bmiHeader.biBitCount = 12;
-					Bmi.bmiHeader.biCompression = FCC('MJPG');
-					Bmi.bmiHeader.biSizeImage = dwEncodedLen;
-					pNewDib = new CDib;
-					pNewDib->SetShowMessageBoxOnError(FALSE);
-					pNewDib->SetBMI((LPBITMAPINFO)&Bmi);						// set BMI	
-					pNewDib->SetBits((LPBYTE)m_MJPEGDetEncoder.GetEncodedBuf());// copy bits
-					pNewDib->SetUpTime(pDib->GetUpTime());						// copy frame uptime
-					pNewDib->SetUserFlag(pDib->IsUserFlag());					// copy movement detection frame flag
-				}
-				else
-					pNewDib = new CDib(*pDib);
+				// Add the new frame
+				CDib* pNewDib = AllocMJPGFrame(pDib);
 				if (pNewDib)
-				{
-					pNewDib->CopyUserList(pDib->m_UserList);					// copy audio bufs if any
 					pTail->AddTail(pNewDib);
-				}
 			}
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);
@@ -9061,83 +9067,69 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib)
 			if (pTail)
 			{
 				// Check whether video size changed
-				CDib* pHeadDib;
 				if (!pTail->IsEmpty())
 				{
-					pHeadDib = pTail->GetHead();
+					CDib* pHeadDib = pTail->GetHead();
 					if (pHeadDib &&
 						(pDib->GetWidth() != pHeadDib->GetWidth() ||
 						pDib->GetHeight() != pHeadDib->GetHeight()))
 						CDib::FreeList(*pTail);
 				}
 
-				// New dib
-				DWORD dwNewUpTime = pDib->GetUpTime();
-				CDib* pNewDib;
-				
-				// Get current queue length in milliseconds
-				DWORD dwQueueLengthMs = 0U;
-				if (!pTail->IsEmpty() && pTail->GetTail() && pTail->GetHead())
-					dwQueueLengthMs = pTail->GetTail()->GetUpTime() - pTail->GetHead()->GetUpTime();
-
-				// Only add the new frame
-				if (dwQueueLengthMs < (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
+				// Alloc MJPG frame
+				CDib* pNewDib = AllocMJPGFrame(pDib);
+				if (pNewDib)
 				{
-					pNewDib = new CDib(*pDib);
-					if (pNewDib)
-					{
-						pNewDib->CopyUserList(pDib->m_UserList);		// copy audio bufs if any
-						pTail->AddTail(pNewDib);
-					}
-				}
-				// Remove old frame(s) and add the new one recycling the oldest one
-				else
-				{
-					// Get head dib and remove from head position
-					pHeadDib = pTail->GetHead();
-					pTail->RemoveHead();
+					// Add the new frame
+					pTail->AddTail(pNewDib);
 
-					// Add new frame recycling the oldest one
-					if (pHeadDib)
+					// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
+					while (pTail->GetCount() > 1)
 					{
-						pHeadDib->SetBMI(pDib->GetBMI());				// set BMI
-						pHeadDib->SetBits(pDib->GetBits());				// copy bits
-						pHeadDib->SetUpTime(pDib->GetUpTime());			// copy frame uptime
-						pHeadDib->SetUserFlag(pDib->IsUserFlag());		// copy movement detection frame flag
-						pHeadDib->CopyUserList(pDib->m_UserList);		// copy audio bufs if any
-						pTail->AddTail(pHeadDib);
-					}
-					else
-					{
-						pNewDib = new CDib(*pDib);
-						if (pNewDib)
+						CDib* pHeadDib = pTail->GetHead();
+						if (pHeadDib)
 						{
-							pNewDib->CopyUserList(pDib->m_UserList);	// copy audio bufs if any
-							pTail->AddTail(pNewDib);
+							if ((pNewDib->GetUpTime() - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
+								break;
+							delete pHeadDib;
 						}
-					}
-
-					// Other old ones to remove?
-					if ((int)dwQueueLengthMs > m_nMilliSecondsRecBeforeMovementBegin + 500) // +500ms to avoid continuous adds and removes
-					{																		// (working well for high framerates, for low framerates it doesn't matter)
-						// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
-						while (pTail->GetCount() > 1)
-						{
-							pHeadDib = pTail->GetHead();
-							if (pHeadDib)
-							{
-								if ((dwNewUpTime - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
-									break;
-								delete pHeadDib;
-							}
-							pTail->RemoveHead();
-						}
+						pTail->RemoveHead();
 					}
 				}
 			}
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);
 	}
+}
+
+__forceinline void CVideoDeviceDoc::ShrinkNewestFrameList()
+{
+	::EnterCriticalSection(&m_csMovementDetectionsList);
+	if (!m_MovementDetectionsList.IsEmpty())
+	{
+		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
+		if (pTail && !pTail->IsEmpty())
+		{
+			// Get Tail Dib
+			CDib* pTailDib = pTail->GetTail();
+			if (pTailDib)
+			{
+				// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
+				while (pTail->GetCount() > 1)
+				{
+					CDib* pHeadDib = pTail->GetHead();
+					if (pHeadDib)
+					{
+						if ((pTailDib->GetUpTime() - pHeadDib->GetUpTime()) <= (DWORD)m_nMilliSecondsRecBeforeMovementBegin)
+							break;
+						delete pHeadDib;
+					}
+					pTail->RemoveHead();
+				}
+			}
+		}
+	}
+	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
 __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dwFirstUpTime, DWORD& dwLastUpTime)

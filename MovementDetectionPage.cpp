@@ -102,7 +102,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_THURSDAY, OnCheckSchedulerThursday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_FRIDAY, OnCheckSchedulerFriday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SATURDAY, OnCheckSchedulerSaturday)
-	ON_BN_CLICKED(IDC_CHECK_DETECTION_COMPRESS_FRAMES, OnCheckDetectionCompressFrames)
 	ON_EN_CHANGE(IDC_EDIT_DETECTION_MIN_LENGTH, OnChangeEditDetectionMinLength)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -141,10 +140,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// Movement Detection minimum detection length in seconds, below this value SaveFrameList() is not called
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
-
-	// Movement Detection Compress Frames in Buffer
-	CButton* pCheckDetectionCompressFrames = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
-	pCheckDetectionCompressFrames->SetCheck(m_pDoc->m_bDetectionCompressFrames ? 1 : 0);
 
 	// Detection Level Slider & Edit Controls
 	m_DetectionLevel.SetRange(1, 100, TRUE);
@@ -354,12 +349,6 @@ void CMovementDetectionPage::OnChangeEditDetectionMinLength()
 		if (UpdateData(TRUE))
 			m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 	}
-}
-
-void CMovementDetectionPage::OnCheckDetectionCompressFrames() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_DETECTION_COMPRESS_FRAMES);
-	m_pDoc->m_bDetectionCompressFrames = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 

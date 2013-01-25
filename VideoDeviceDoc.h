@@ -126,7 +126,7 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					1152		// Maximum allocable memory in MB for 32 bits applications
+#define MOVDET_MEM_MAX_MB					1024		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
@@ -846,10 +846,13 @@ public:
 	// Detection list handling
 	__forceinline void ClearFrameList(CDib::LIST* pFrameList);		// Free all frames in list
 	__forceinline void ClearNewestFrameList();						// Free all frames in newest list
+	__forceinline void ShrinkNewestFrameList();						// Free oldest frames from newest frame list
+																	// making the list m_nMilliSecondsRecBeforeMovementBegin long
 	__forceinline void ShrinkNewestFrameListBy(	int nSize,			// Free oldest nSize frames from newest frame list
 												DWORD& dwFirstUpTime,
 												DWORD& dwLastUpTime);
 	__forceinline int  GetNewestMovementDetectionsListCount();		// Get the newest list's count
+	__forceinline CDib* AllocMJPGFrame(CDib* pDib);					// Allocate MJPG encoded frame (copies also audio samples)
 	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
 	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
 																	// m_nMilliSecondsRecBeforeMovementBegin of frames
@@ -1112,7 +1115,6 @@ public:
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
-	volatile BOOL m_bDetectionCompressFrames;			// Compress detection frames?
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
 	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
