@@ -3262,7 +3262,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 	// Set some other values
 	m_pCodecCtx->error_concealment = 3;
 	m_pCodecCtx->error_recognition = 1;
-	if (mpeg_codec(id) || mjpeg_codex(id))
+	if (mpeg_codec(id) || mjpeg_codec(id))
 		m_pCodecCtx->flags |= CODEC_FLAG_TRUNCATED;
 
 	// By Default Autodetect is set

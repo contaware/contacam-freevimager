@@ -6396,8 +6396,10 @@ void CVideoDeviceDoc::OnUpdateCaptureAssistant(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::CaptureAssistant()
 {
+	GetView()->ForceCursor();
 	CAssistantDlg dlg(this, GetView());
 	dlg.DoModal();
+	GetView()->ForceCursor(FALSE);
 }
 
 void CVideoDeviceDoc::OnCaptureSettings() 

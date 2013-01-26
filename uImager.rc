@@ -532,10 +532,10 @@ BEGIN
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "Preview",                     ID_VIEW_VIDEO
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
-        MENUITEM "Show Frame Time",             ID_VIEW_FRAMETIME
+        MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
+        MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
     END
 END
 
@@ -1018,6 +1018,11 @@ BEGIN
         MENUITEM "Sensibility 50 %",            ID_EDIT_ZONE_SENSIBILITY_50
         MENUITEM "Sensibility 25 %",            ID_EDIT_ZONE_SENSIBILITY_25
         MENUITEM "Sensibility 10 %",            ID_EDIT_ZONE_SENSIBILITY_10
+        MENUITEM SEPARATOR
+        MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
+        MENUITEM SEPARATOR
+        MENUITEM "Show Detections",             ID_VIEW_DETECTIONS
+        MENUITEM "Detection Zones",             ID_VIEW_DETECTION_ZONES
     END
 END
 
@@ -2325,7 +2330,7 @@ BEGIN
                     IDC_WARNING,154,4,256,11,SS_CENTERIMAGE
     LTEXT           "Store",IDC_STATIC,13,34,18,8
     LTEXT           "Store",IDC_STATIC,13,49,18,8
-    GROUPBOX        "Detection Constraints",IDC_STATIC,7,117,203,33
+    GROUPBOX        "Detection Filtering",IDC_STATIC,7,117,203,33
     LTEXT           "Detection Zones Size",IDC_STATIC2287,13,92,84,8
     GROUPBOX        "External Detection Trigger File (write to it to trigger)",
                     IDC_STATIC,7,229,203,33
@@ -2615,49 +2620,49 @@ BEGIN
                     WS_VSCROLL
 END
 
-IDD_CREDITS DIALOGEX 0, 0, 236, 265
+IDD_CREDITS DIALOGEX 0, 0, 249, 265
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
-    GROUPBOX        "People",IDC_STATIC2339,7,2,222,24
+    GROUPBOX        "People",IDC_STATIC2339,7,2,235,24
     LTEXT           "A big thanks to everybody giving support or help",
-                    IDC_STATIC2340,15,12,208,10
-    GROUPBOX        "Libraries",IDC_STATIC2341,7,29,222,156
+                    IDC_STATIC2340,15,12,223,10
+    GROUPBOX        "Libraries",IDC_STATIC2341,7,29,235,156
     LTEXT           "Thanks to the Independent JPEG Group for libjpeg 6b",
-                    IDC_STATIC2342,15,59,208,8
+                    IDC_STATIC2342,15,59,223,8
     LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,68,71,8,SS_NOTIFY
     LTEXT           "Thanks to the TIFF Library Authors for libtiff 3.8.2",
-                    IDC_STATIC2343,15,80,208,8
+                    IDC_STATIC2343,15,80,223,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,89,78,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.49",
-                    IDC_STATIC2344,15,101,208,8
+                    IDC_STATIC2344,15,101,223,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,110,83,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the ZLIB Library Authors for zlib 1.2.3",
-                    IDC_STATIC2346,15,122,208,8
+                    IDC_STATIC2346,15,122,223,8
     LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,131,74,8,
                     SS_NOTIFY
     LTEXT           "Thanks to the GIF Library Authors for giflib 4.1.3",
-                    IDC_STATIC2349,15,143,208,8
+                    IDC_STATIC2349,15,143,223,8
     LTEXT           "http://sourceforge.net/projects/giflib",IDC_LINK_GIFLIB,
                     15,152,126,8,SS_NOTIFY
     LTEXT           "Thanks to Graeme W. Gill for icclib 2.0.3",
-                    IDC_STATIC2350,15,164,208,8
+                    IDC_STATIC2350,15,164,223,8
     LTEXT           "http://freshmeat.net/projects/icclib",IDC_LINK_ICCLIB,
                     15,173,122,8,SS_NOTIFY
-    GROUPBOX        "Tools",IDC_STATIC2347,7,189,222,54
+    GROUPBOX        "Tools",IDC_STATIC2347,7,189,235,54
     LTEXT           "Thanks to Debug Mode for Wink (tutorial creation software)",
-                    IDC_STATIC2345,15,199,208,8
+                    IDC_STATIC2345,15,199,223,8
     LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,208,121,
                     8,SS_NOTIFY
     LTEXT           "Thanks to Nullsoft for NSIS (a scriptable install system)",
-                    IDC_STATIC2348,15,221,208,8
+                    IDC_STATIC2348,15,221,223,8
     LTEXT           "http://nsis.sourceforge.net",IDC_LINK_NSIS,15,230,96,8,
                     SS_NOTIFY
-    DEFPUSHBUTTON   "OK",IDOK,96,247,50,15
+    DEFPUSHBUTTON   "OK",IDOK,99,247,50,15
     LTEXT           "Thanks to the FFMPEG Library Authors for ffmpeg rev.15375 (lgpl)",
                     IDC_STATIC2351,15,39,209,8
     LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,48,83,8,
@@ -4892,9 +4897,9 @@ BEGIN
     IDD_CREDITS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 229
+        RIGHTMARGIN, 242
         VERTGUIDE, 15
-        VERTGUIDE, 223
+        VERTGUIDE, 238
         TOPMARGIN, 4
         BOTTOMMARGIN, 262
     END

@@ -59,7 +59,7 @@ extern "C"
 
 // Lib AVCodec Defines: Codec Id as Parameter
 #define mpeg_codec(x)		((x)==CODEC_ID_MPEG1VIDEO || (x)==CODEC_ID_MPEG2VIDEO)
-#define mjpeg_codex(x)		((x)==CODEC_ID_MJPEG || (x)==CODEC_ID_MJPEGB || (x)==CODEC_ID_SP5X)
+#define mjpeg_codec(x)		((x)==CODEC_ID_MJPEG || (x)==CODEC_ID_MJPEGB || (x)==CODEC_ID_SP5X)
 
 /*
 Timing of an AVI stream is governed by several variables:

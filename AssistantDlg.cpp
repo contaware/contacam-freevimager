@@ -188,21 +188,21 @@ BOOL CAssistantDlg::OnInitDialog()
 	CString sInitDefaultPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_DEFAULTPAGE);
 	m_bCheckPrintCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_PRINTCOMMAND) == _T("1"));
 	m_bCheckSaveCommand = (m_pDoc->PhpConfigFileGetParam(PHPCONFIG_SHOW_SAVECOMMAND) == _T("1"));
-	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_NAME) == 0)
+	if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYSNAPSHOT_PHP) == 0)
 		m_nUsage = 0;
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_NAME) == 0)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTHISTORY_PHP) == 0)
 		m_nUsage = 1;
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_NAME) == 0)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOT_PHP) == 0)
 	{
 		m_nUsage = 2;
 		m_bCheckFullStretch = FALSE;
 	}
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_NAME) == 0)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SNAPSHOTFULL_PHP) == 0)
 	{
 		m_nUsage = 2;
 		m_bCheckFullStretch = TRUE;
 	}
-	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_NAME) == 0)
+	else if (sInitDefaultPage.CompareNoCase(PHPCONFIG_SUMMARYIFRAME_PHP) == 0)
 		m_nUsage = 3;
 	else
 		m_nUsage = 4;
@@ -741,7 +741,7 @@ void CAssistantDlg::Rename()
 	{
 		if (::IsExistingDir(sNewRecordAutoSaveDir) || !::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 		{
-			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
+			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir)) // overwrite existing
 			{
 				dwLastError = ::GetLastError();
 				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
@@ -899,6 +899,10 @@ void CAssistantDlg::ApplySettings()
 	else
 		m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SHOW_SAVECOMMAND, _T("0"));
 
+	// Snapshot file names
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTNAME, m_pDoc->m_sSnapshotLiveJpegName + _T(".jpg"));
+	m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTTHUMBNAME, m_pDoc->m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+
 	// Usage
 	switch (m_nUsage)
 	{
@@ -934,7 +938,7 @@ void CAssistantDlg::ApplySettings()
 				pComboBox->GetLBText(pComboBox->GetCurSel(), sMaxPerPage);
 
 			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYSNAPSHOT_PHP);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
@@ -1010,7 +1014,7 @@ void CAssistantDlg::ApplySettings()
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
 
 			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTHISTORY_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTHISTORY_PHP);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
@@ -1077,9 +1081,9 @@ void CAssistantDlg::ApplySettings()
 
 			// Update configuration.php
 			if (m_bCheckFullStretch)
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTFULL_NAME);
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOTFULL_PHP);
 			else
-				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_NAME);
+				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SNAPSHOT_PHP);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
@@ -1128,7 +1132,7 @@ void CAssistantDlg::ApplySettings()
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
 
 			// Update configuration.php
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_NAME);
+			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_DEFAULTPAGE, PHPCONFIG_SUMMARYIFRAME_PHP);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_WIDTH, sWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_HEIGHT, sHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
@@ -1212,11 +1216,6 @@ void CAssistantDlg::ApplySettings()
 		}
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
 	}
-
-	// Overwrite web files in given directory
-	// (do it again here just in case something went wrong
-	// with the directory rename)
-	m_pDoc->MicroApacheUpdateWebFiles(m_pDoc->m_sRecordAutoSaveDir);
 
 	// End wait cursor
 	EndWaitCursor();
