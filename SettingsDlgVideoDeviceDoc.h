@@ -9,8 +9,6 @@
 
 #ifdef VIDEODEVICEDOC
 
-#include "StaticLink.h"
-
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlgVideoDeviceDoc dialog
 
@@ -46,7 +44,6 @@ public:
 	BOOL	m_bDisableExtProg;
 	BOOL	m_bTopMost;
 	BOOL	m_bStartMicroApache;
-	CString	m_sMicroApacheDocRoot;
 	int		m_nMicroApachePort;
 	CString	m_sMicroApacheAreaname;
 	CString	m_sMicroApacheUsername;
@@ -58,8 +55,6 @@ public:
 	BOOL	m_bMicroApacheDigestAuth;
 	BOOL	m_bIPv6;
 	//}}AFX_DATA
-
-	CStaticLink m_MicroApacheDocRootLabel;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -77,7 +72,6 @@ protected:
 	afx_msg void OnButtonClearall();
 	afx_msg void OnButtonSetall();
 	virtual void OnOK();
-	afx_msg void OnWebserverRootdir();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnCheckFullscreenbrowser();
 	afx_msg void OnUpdateAuthUsername();

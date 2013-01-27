@@ -2237,7 +2237,7 @@ IDD_MOVDET DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Movement Detection"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_SECONDS_BEFORE_MOVEMENT_BEGIN,33,33,25,12,
                     ES_AUTOHSCROLL | ES_NUMBER
@@ -2624,7 +2624,7 @@ IDD_CREDITS DIALOGEX 0, 0, 249, 265
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Credits"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "People",IDC_STATIC2339,7,2,235,24
     LTEXT           "A big thanks to everybody giving support or help",
@@ -4275,11 +4275,11 @@ BEGIN
     LTEXT           "User Name:",IDC_STATIC2500,14,153,38,8
 END
 
-IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 290
+IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 234
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -4339,27 +4339,20 @@ BEGIN
                     WS_TABSTOP,285,52,39,10
     PUSHBUTTON      "Select All",IDC_BUTTON_SETALL,285,77,40,14
     PUSHBUTTON      "Clear All",IDC_BUTTON_CLEARALL,285,96,40,14
-    EDITTEXT        IDC_EDIT_PORT,29,157,27,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_WEBSERVER_ROOTDIR,315,181,16,12
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,11,218,108,10
-    EDITTEXT        IDC_AUTH_AREANAME,57,233,75,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_USERNAME,57,249,75,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,186,249,75,13,ES_PASSWORD | 
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,150,108,10
+    EDITTEXT        IDC_EDIT_PORT,165,149,27,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_AREANAME,57,171,75,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,57,194,75,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,186,194,75,13,ES_PASSWORD | 
                     ES_AUTOHSCROLL
     CONTROL         "Secure\nAuthentication",IDC_CHECK_DIGESTAUTH,"Button",
-                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,271,246,61,
+                    BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,271,191,61,
                     18
-    DEFPUSHBUTTON   "OK",IDOK,135,273,36,14
-    PUSHBUTTON      "Cancel",IDCANCEL,182,273,36,14
-    LTEXT           "Root Dir",IDC_TEXT_WEBSERVER_ROOTDIR,11,183,27,8,
-                    SS_NOTIFY | NOT WS_GROUP
-    EDITTEXT        IDC_WEBSERVER_ROOTDIR_PATH,43,181,270,12,ES_AUTOHSCROLL | 
-                    ES_READONLY | NOT WS_TABSTOP
-    LTEXT           "NOTE: The root directory is the parent directory of all detections, recordings and snapshots. http://localhost:port will point to the content of the root directory.",
-                    IDC_STATIC,61,153,269,20,SS_SUNKEN
-    LTEXT           "User Name",IDC_STATIC,11,251,38,8
-    LTEXT           "Password",IDC_STATIC,145,251,33,8
+    DEFPUSHBUTTON   "OK",IDOK,135,217,36,14
+    PUSHBUTTON      "Cancel",IDCANCEL,182,217,36,14
+    LTEXT           "User Name",IDC_STATIC,11,196,38,8
+    LTEXT           "Password",IDC_STATIC,145,196,33,8
     LTEXT           "Graphics Files:",IDC_STATIC2244,179,23,47,10,0,
                     WS_EX_STATICEDGE
     LTEXT           "Audio Files:",IDC_STATIC2245,234,23,43,10,0,
@@ -4368,16 +4361,14 @@ BEGIN
                     WS_EX_STATICEDGE
     GROUPBOX        "File Associations",IDC_STATIC2247,173,7,162,127
     GROUPBOX        "General",IDC_STATIC2248,5,7,161,84
-    GROUPBOX        "Internal Web Server",IDC_STATIC,5,205,330,63
-    LTEXT           "Port",IDC_STATIC,11,159,14,8
+    LTEXT           "Port",IDC_STATIC,145,151,14,8
     GROUPBOX        "Web Browser",IDC_STATIC,5,95,161,39
     LTEXT           "Exit pressing ESC +",IDC_LABEL_FULLSCREENBROWSER,11,119,
                     62,8
-    GROUPBOX        "Web Server (always supply Port and Root Dir, even if using another Web Server)",
-                    IDC_STATIC,5,138,330,63
+    GROUPBOX        "Web Server",IDC_STATIC,5,138,330,75
     LTEXT           "NOTE: Clear User Name and Password when using the Internal Fullscreen Browser!",
-                    IDC_STATIC,145,216,185,20,SS_SUNKEN
-    LTEXT           "Area Name",IDC_STATIC,11,235,38,8
+                    IDC_STATIC,145,167,185,20,SS_SUNKEN
+    LTEXT           "Area Name",IDC_STATIC,11,173,38,8
 END
 
 IDD_IMAPI2 DIALOG DISCARDABLE  0, 0, 298, 124
@@ -5319,7 +5310,7 @@ BEGIN
         VERTGUIDE, 11
         VERTGUIDE, 330
         TOPMARGIN, 6
-        BOTTOMMARGIN, 287
+        BOTTOMMARGIN, 231
     END
 
     IDD_IMAPI2, DIALOG
@@ -5953,7 +5944,6 @@ BEGIN
     IDS_MULTILANG_1491      "Server is to busy, try later"
     IDS_MULTILANG_1493      "Cannot Create the AVI File!\n"
     IDS_STRING1494          "Paper: "
-    IDS_STRING1495          "Select Document Root Folder"
     IDS_STRING1496          "cm"
     IDS_STRING1497          "inch"
     IDS_STRING1498          "Avg (shrink, thumb)"

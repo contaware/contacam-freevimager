@@ -70,7 +70,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
-	m_sMicroApacheDocRoot = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
 	m_sMicroApacheAreaname = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname;;
@@ -109,7 +108,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_DISABLE_EXTPROG, m_bDisableExtProg);
 	DDX_Check(pDX, IDC_CHECK_TOPMOST, m_bTopMost);
 	DDX_Check(pDX, IDC_CHECK_WEBSERVER, m_bStartMicroApache);
-	DDX_Text(pDX, IDC_WEBSERVER_ROOTDIR_PATH, m_sMicroApacheDocRoot);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
 	DDV_MinMaxInt(pDX, m_nMicroApachePort, 0, 65535);
 	DDX_Text(pDX, IDC_AUTH_AREANAME, m_sMicroApacheAreaname);
@@ -128,7 +126,6 @@ BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_BN_CLICKED(IDC_BUTTON_CLEARALL, OnButtonClearall)
 	ON_BN_CLICKED(IDC_BUTTON_SETALL, OnButtonSetall)
-	ON_BN_CLICKED(IDC_WEBSERVER_ROOTDIR, OnWebserverRootdir)
 	ON_BN_CLICKED(IDC_CHECK_FULLSCREENBROWSER, OnCheckFullscreenbrowser)
 	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
 	//}}AFX_MSG_MAP
@@ -514,7 +511,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	if (m_sMicroApacheAreaname.IsEmpty())
 		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	if (pApp->m_bStartMicroApache != m_bStartMicroApache			||
-		pApp->m_sMicroApacheDocRoot != m_sMicroApacheDocRoot		||
 		pApp->m_nMicroApachePort != m_nMicroApachePort				||
 		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
 		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
@@ -523,7 +519,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	{
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
-		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 		pApp->m_nMicroApachePort = m_nMicroApachePort;
 		pApp->m_bMicroApacheDigestAuth = m_bMicroApacheDigestAuth;
 		pApp->m_sMicroApacheAreaname = m_sMicroApacheAreaname;
@@ -576,9 +571,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("StartMicroApache"),
 											m_bStartMicroApache);
-			pApp->WriteProfileString(		_T("GeneralApp"),
-											_T("MicroApacheDocRoot"),
-											m_sMicroApacheDocRoot);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("MicroApachePort"),
 											m_nMicroApachePort);
@@ -637,10 +629,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											_T("StartMicroApache"),
 											m_bStartMicroApache,
 											sTempFileName);
-			::WriteProfileIniString(		_T("GeneralApp"),
-											_T("MicroApacheDocRoot"),
-											m_sMicroApacheDocRoot,
-											sTempFileName);
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("MicroApachePort"),
 											m_nMicroApachePort,
@@ -679,11 +667,6 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	// Micro Apache Doc Root Dir
-	m_MicroApacheDocRootLabel.SubclassDlgItem(IDC_TEXT_WEBSERVER_ROOTDIR, this);
-	m_MicroApacheDocRootLabel.SetVisitedColor(RGB(0, 0, 255));
-	m_MicroApacheDocRootLabel.SetLink(m_sMicroApacheDocRoot);
-	
 	// Shield Icon on OK Button
 	if (g_bWinVistaOrHigher)
 	{
@@ -714,18 +697,6 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CSettingsDlgVideoDeviceDoc::OnWebserverRootdir() 
-{
-	UpdateData(TRUE);
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&m_sMicroApacheDocRoot,
-					ML_STRING(1495, "Select Document Root Folder"),
-					TRUE);
-	dlg.DoModal();
-	m_MicroApacheDocRootLabel.SetLink(m_sMicroApacheDocRoot);
-	UpdateData(FALSE);
 }
 
 void CSettingsDlgVideoDeviceDoc::OnUpdateAuthUsername() 
