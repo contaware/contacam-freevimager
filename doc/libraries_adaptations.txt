@@ -29,26 +29,10 @@ CPJNSMTPConnection 2.67 with w3 mfc 1.83 for VC6
      and changed the "Date:" header creation so that it is always in English.
 
 
-CPJNSMTPConnection 2.98 with w3 mfc 1.95 for VC2008
+CPJNSMTPConnection 2.99 with w3 mfc 1.95 for VC2008
 ---------------------------------------------------
 
 - Thread Safe
-
-- fixed compile if not using SSL in CPJNSMTPConnection::Connect():
-  ...
-  try
-  {
-    //check the response to the login
-    if (!ReadCommandResponse(220))
-      ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
-
-	  //Negotiate Extended SMTP connection if required
-	  if (DoEHLO(am, m_ConnectionType))  // <---------- changed connectionType to m_ConnectionType
-		  ConnectESMTP(m_sHeloHostname, pszUsername, pszPassword, am);
-      else
-		  ConnectSMTP(m_sHeloHostname);
-  }
-  ...
   
 - added in SocMFC.cpp to compile also for Windows 2000 target:
   const struct in6_addr my_in6addr_any = { 0 };

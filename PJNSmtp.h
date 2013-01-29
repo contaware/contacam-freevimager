@@ -437,11 +437,7 @@ public:
   virtual ~CPJNSMTPConnection();
 
 //Methods
-#ifndef CPJNSMTP_NOSSL
   void    Connect(LPCTSTR pszHostName, AuthenticationMethod am = AUTH_NONE, LPCTSTR pszUsername = NULL, LPCTSTR pszPassword = NULL, int nPort = 25, ConnectionType connectionType = PlainText);
-#else
-  void    Connect(LPCTSTR pszHostName, AuthenticationMethod am = AUTH_NONE, LPCTSTR pszUsername = NULL, LPCTSTR pszPassword = NULL, int nPort = 25);
-#endif
   void    Disconnect(BOOL bGracefully = TRUE);
   BOOL    IsConnected() const	{ return m_bConnected; };
   CString GetLastCommandResponse() const { return m_sLastCommandResponse; };

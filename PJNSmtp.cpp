@@ -531,6 +531,8 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
                           4. Updated the logic in the FolderSubjectHeader method to correctly handle the last line of text to fold.
          PJN / 24-09-2012 1. Removed an unnecessary line of code from CPJNSMTPConnection::SendRCPTForRecipient. Thanks to Mat Berchtold for reporting this issue.
          PJN / 30-09-2012 1. Updated the code to avoid DLL planting security issues when calling LoadLibrary. Thanks to Mat Berchtold for reporting this issue.
+         PJN / 25-11-2012 1. Fixed some issues in the code when CPJNSMTP_NOSSL was defined. Looks like support for compiling without SSL support has been 
+                          broken for a few versions. Thanks to Bostjan Erzen for reporting this issue.
                           
 Copyright (c) 1998 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
@@ -1548,7 +1550,7 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
 }
 
 
-CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v2.98")), 
+CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v2.99")), 
                                      m_bMime(FALSE), 
                                      m_Priority(NoPriority),
                                      m_DSNReturnType(HeadersOnly),
@@ -2420,7 +2422,11 @@ int CPJNSMTPConnection::_Receive(void *pBuffer, int nBuf)
 		return m_Socket.Receive(pBuffer, nBuf);
 }
 
+#ifdef CPJNSMTP_NOSSL
+void CPJNSMTPConnection::_Close(BOOL /*bGracefully*/)
+#else
 void CPJNSMTPConnection::_Close(BOOL bGracefully)
+#endif
 {
 #ifndef CPJNSMTP_NOSSL
 	if (m_SSL.operator SSL*())
@@ -2440,13 +2446,17 @@ BOOL CPJNSMTPConnection::_IsReadible(DWORD dwTimeout)
 		return m_Socket.IsReadible(dwTimeout);
 }
 
+#ifdef CPJNSMTP_NOSSL
+BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType /*connectionType*/)
+#else
 BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType connectionType)
+#endif
 {
   //What will be the return value from this method (assume the worst)
   BOOL bDoEHLO = FALSE;
 
   //Determine if we should connect using EHLO instead of HELO
-#ifndef CPJNSMTP_NOSSL  
+#ifndef CPJNSMTP_NOSSL
 	if (connectionType == STARTTLS || connectionType == AutoUpgradeToSTARTTLS)
 	  bDoEHLO = TRUE;
 #endif
@@ -2456,11 +2466,7 @@ BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType connecti
   return bDoEHLO;
 }
 
-#ifndef CPJNSMTP_NOSSL
 void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, LPCTSTR pszUsername, LPCTSTR pszPassword, int nPort, ConnectionType connectionType)
-#else
-void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, LPCTSTR pszUsername, LPCTSTR pszPassword, int nPort)
-#endif
 {
 	//Validate our parameters
   ASSERT(pszHostName);
@@ -2550,7 +2556,7 @@ void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, L
       ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
 	  //Negotiate Extended SMTP connection if required
-	  if (DoEHLO(am, m_ConnectionType))
+	  if (DoEHLO(am, connectionType))
 		  ConnectESMTP(m_sHeloHostname, pszUsername, pszPassword, am);
     else
 		  ConnectSMTP(m_sHeloHostname);
