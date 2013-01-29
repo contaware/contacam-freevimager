@@ -85,10 +85,6 @@ BOOL CAssistantDlg::OnInitDialog()
 	if ((index = m_sParentDir.ReverseFind(_T('\\'))) >= 0)
 		m_sParentDir = m_sParentDir.Left(index);
 
-	// Clear restore web files flag
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("RestoreWebFiles"), FALSE);
-
 	// Init Combo Boxes
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 	if (pComboBox)
@@ -703,7 +699,7 @@ void CAssistantDlg::Rename()
 	{
 		// Error Message
 		EndWaitCursor();
-		::AfxMessageBox(ML_STRING(1870, "The new camera folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
+		::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
 		BeginWaitCursor();
 
 		// Restore old name

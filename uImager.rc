@@ -250,6 +250,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Help"
@@ -599,7 +600,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
-        MENUITEM "Reset to Default...",         ID_CAPTURE_RESET
     END
     POPUP "&Tools"
     BEGIN
@@ -609,6 +609,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -716,6 +717,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -973,6 +975,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -1101,6 +1104,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -1445,6 +1449,7 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
+        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -4279,7 +4284,7 @@ IDD_SETTINGS_VIDEODEVICEDOC DIALOGEX 0, 0, 340, 234
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Global Settings"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,10,17,77,10
@@ -6414,7 +6419,6 @@ BEGIN
                             "View the web server log file with the default text editor\nView Web Server Log"
     ID_PLAY_INC             "Increment the video playback speed\nIncrement Speed"
     ID_PLAY_DEC             "Decrement the video playback speed\nDecrement Speed"
-    ID_CAPTURE_RESET        "Reset to default settings\nReset to Default"
     ID_EDIT_SNAPSHOT        "Take a snapshot\nSnapshot"
     ID_EDIT_PASTE_INTO_FILE_HELP 
                             "Coordinates text file help\nCoordinates Text File Help"
@@ -6673,7 +6677,6 @@ BEGIN
     IDS_STRING1737          "3 Minutes Rate"
     IDS_STRING1738          "4 Minutes Rate"
     IDS_STRING1739          "5 Minutes Rate"
-    IDS_STRING1740          "Settings are reset to the default and\nthe capture window will be closed.\nDo you want to proceed?"
     IDS_STRING1741          "1 Second Rate"
     IDS_STRING1742          "2 Seconds Rate"
     IDS_STRING1743          "3 Seconds Rate"
@@ -6852,13 +6855,21 @@ BEGIN
     IDS_STRING1867          "or type in Web Browser's address bar"
     IDS_STRING1868          "or"
     IDS_STRING1869          "Move camera folder to selected directory. ATTENTION: all camera folders have to be moved to this directory!"
-    IDS_STRING1870          "The new camera folder cannot be a subfolder of the old one"
+    IDS_STRING1870          "The new folder cannot be a subfolder of the old one"
+    IDS_STRING1871          "Move all camera folders to selected directory"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
+    ID_TOOLS_MOVE_CAM_FOLDERS 
+                            "Move all camera folders to selected directory\nMove Camera Folders"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_STRING1872          "Try again after closing all devices"
 END
 
 #endif    // English (U.S.) resources

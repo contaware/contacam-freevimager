@@ -108,6 +108,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SCREENSHOT, OnUpdateEditScreenshot)
+	ON_COMMAND(ID_TOOLS_MOVE_CAM_FOLDERS, OnToolsMoveCamFolders)
 	//}}AFX_MSG_MAP
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
@@ -5891,8 +5892,145 @@ void CUImagerApp::OnToolsViewWebLogfile()
 
 }
 
+void CUImagerApp::EnumConfiguredDevicePathNames(CStringArray& DevicePathNames)
+{
+	if (m_bUseSettings)
+	{
+		if (m_bUseRegistry)
+		{
+			const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
+			HKEY hKey;
+			if (::RegOpenKeyEx(	HKEY_CURRENT_USER,
+								_T("Software\\") + CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT),
+								0, KEY_READ, &hKey) == ERROR_SUCCESS)
+			{
+				DWORD cSubKeys = 0;
+				::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+				TCHAR achKey[MAX_KEY_BUFFER];
+				DWORD cbName;
+				for (DWORD i = 0 ; i < cSubKeys; i++)
+				{ 
+					cbName = MAX_KEY_BUFFER;
+					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
+					CString sRecordAutoSaveDir = GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
+					if (sRecordAutoSaveDir != _T(""))
+						DevicePathNames.Add(achKey);
+				}
+				::RegCloseKey(hKey);
+			}
+		}
+		else
+		{
+			const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
+			TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
+			memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
+			::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, m_pszProfileName);
+			TCHAR* sSource = pSectionNames;
+			while (*sSource != 0) // If 0 -> end of list
+			{
+				CString sRecordAutoSaveDir = GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
+				if (sRecordAutoSaveDir != _T(""))
+					DevicePathNames.Add(sSource);
+				while (*sSource != 0)
+					sSource++;
+				sSource++; // Skip the 0
+			}
+			delete [] pSectionNames;
+		}
+	}
+}
+
+void CUImagerApp::OnToolsMoveCamFolders()
+{
+	// Check
+	if (AreVideoDeviceDocsOpen())
+	{
+		::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	// Call browse for folder dialog
+	CString sMicroApacheDocRoot = m_sMicroApacheDocRoot;
+	sMicroApacheDocRoot.TrimRight(_T('\\'));
+	CString sNewMicroApacheDocRoot = sMicroApacheDocRoot;
+	CBrowseDlg dlg(	::AfxGetMainFrame(),
+					&sNewMicroApacheDocRoot,
+					ML_STRING(1871, "Move all camera folders to selected directory"),
+					TRUE);
+	if (dlg.DoModal() == IDOK)
+	{
+		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
+		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
+		if (::IsSubDir(sMicroApacheDocRoot, sNewMicroApacheDocRoot))
+		{
+			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
+			return;
+		}
+
+		// Begin Wait Cursor
+		BeginWaitCursor();
+
+		// Update all RecordAutoSaveDir configuration entries
+		CStringArray DevicePathNames;
+		EnumConfiguredDevicePathNames(DevicePathNames);
+		for (int i = 0 ; i < DevicePathNames.GetSize() ; i++)
+		{
+			CString sRecordAutoSaveDir = GetProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
+			sRecordAutoSaveDir.TrimRight(_T('\\'));
+			int index;
+			if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
+				sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
+			WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), sNewMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
+		}
+
+		// Merge if different directories
+		if (sNewMicroApacheDocRoot.CompareNoCase(sMicroApacheDocRoot) != 0)
+		{
+			if (!::MergeDirContent(sMicroApacheDocRoot, sNewMicroApacheDocRoot)) // overwrite existing
+			{
+				DWORD dwLastError = ::GetLastError();
+				EndWaitCursor();
+				::ShowError(dwLastError, TRUE);
+				BeginWaitCursor();
+			}
+			else
+				::DeleteDir(sMicroApacheDocRoot); // no error message on failure
+		}
+
+		// Update doc root and reload web server
+		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
+		if (m_bUseSettings)
+		{
+			WriteProfileString(	_T("GeneralApp"),
+								_T("MicroApacheDocRoot"),
+								m_sMicroApacheDocRoot);
+		}
+		int nRet = CVideoDeviceDoc::MicroApacheReload();
+
+		// End Wait Cursor
+		EndWaitCursor();
+
+		// Micro apache error message
+		if (nRet <= 0)
+		{
+			if (nRet == 0)
+				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
+			else
+				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
+		}
+	}
+}
+
 void CUImagerApp::OnToolsDelCamFolders() 
 {
+	// Check
+	if (AreVideoDeviceDocsOpen())
+	{
+		::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	// Call delete camera folder(s) dialog
 	CDeleteCamFoldersDlg dlg;
 	dlg.DoModal();
 }

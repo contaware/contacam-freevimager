@@ -75,7 +75,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
-	ON_COMMAND(ID_CAPTURE_RESET, OnCaptureReset)
 	ON_COMMAND(ID_EDIT_SNAPSHOT, OnEditSnapshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
 	ON_COMMAND(ID_EDIT_EXPORT_ZONES, OnEditExportZones)
@@ -4037,7 +4036,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pProcessFrameExtraDib->SetShowMessageBoxOnError(FALSE);
 
 	// General Vars
-	m_bResetSettings = FALSE;
 	m_pView = NULL;
 	m_pFrame = NULL;
 	m_pDxDraw = NULL;
@@ -4708,8 +4706,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 
 	// Device First Run
-	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T("") ||
-						(BOOL)pApp->GetProfileInt(sSection, _T("RestoreWebFiles"), FALSE));
+	m_bDeviceFirstRun = (pApp->GetProfileString(sSection, _T("DeviceName"), _T("")) == _T(""));
 
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
@@ -4921,378 +4918,363 @@ void CVideoDeviceDoc::SaveSettings()
 
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
 	{
-		if (m_bResetSettings)
+		// Store the device name to identify the entry when manually looking the registry
+		// and to know that it is not the first run of the device
+		pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
+
+		// Store Placement
+		if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
 		{
-			::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
-													CString(MYCOMPANY) + CString(_T("\\")) +
-													CString(APPNAME_NOEXT) + _T("\\") +
-													sSection);
+			memset(&wndpl, 0, sizeof(wndpl));
+			wndpl.length = sizeof(wndpl);
+			if (GetFrame()->GetWindowPlacement(&wndpl))
+				pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
 		}
-		else
-		{
-			// Store the device name to identify the entry when manually looking the registry
-			// and to know that it is not the first run of the device
-			pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
 
-			// Store Placement
-			if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
-			{
-				memset(&wndpl, 0, sizeof(wndpl));
-				wndpl.length = sizeof(wndpl);
-				if (GetFrame()->GetWindowPlacement(&wndpl))
-					pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
-			}
-
-			// Email Settings
-			pApp->WriteProfileString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles);
-			pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType);
-			pApp->WriteProfileString(sSection, _T("SendMailSubject"), m_MovDetSendMailConfiguration.m_sSubject);
-			pApp->WriteProfileString(sSection, _T("SendMailTo"), m_MovDetSendMailConfiguration.m_sTo);
-			pApp->WriteProfileInt(sSection, _T("SendMailPort"), m_MovDetSendMailConfiguration.m_nPort);
-			pApp->WriteProfileString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom);
-			pApp->WriteProfileString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost);
-			pApp->WriteProfileString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName);
-			pApp->WriteProfileInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth);
-			pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
-			pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
-			pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
+		// Email Settings
+		pApp->WriteProfileString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles);
+		pApp->WriteProfileInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType);
+		pApp->WriteProfileString(sSection, _T("SendMailSubject"), m_MovDetSendMailConfiguration.m_sSubject);
+		pApp->WriteProfileString(sSection, _T("SendMailTo"), m_MovDetSendMailConfiguration.m_sTo);
+		pApp->WriteProfileInt(sSection, _T("SendMailPort"), m_MovDetSendMailConfiguration.m_nPort);
+		pApp->WriteProfileString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom);
+		pApp->WriteProfileString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost);
+		pApp->WriteProfileString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName);
+		pApp->WriteProfileInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth);
+		pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
+		pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
+		pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
 #if (_MSC_VER > 1200)
-			pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType);
+		pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType);
 #endif
 
-			// FTP Settings
-			pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
-			pApp->WriteProfileString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir);
-			pApp->WriteProfileInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort);
-			pApp->WriteProfileInt(sSection, _T("MovDetFTPPasv"), m_MovDetFTPUploadConfiguration.m_bPasv);
-			pApp->WriteProfileInt(sSection, _T("MovDetFTPProxy"), m_MovDetFTPUploadConfiguration.m_bProxy);
-			pApp->WriteProfileString(sSection, _T("MovDetFTPProxyHost"), m_MovDetFTPUploadConfiguration.m_sProxy);
-			pApp->WriteSecureProfileString(sSection, _T("MovDetFTPUsername"), m_MovDetFTPUploadConfiguration.m_sUsername);
-			pApp->WriteSecureProfileString(sSection, _T("MovDetFTPPassword"), m_MovDetFTPUploadConfiguration.m_sPassword);
-			pApp->WriteProfileInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload);
-			pApp->WriteProfileString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost);
-			pApp->WriteProfileString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir);
-			pApp->WriteProfileInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort);
-			pApp->WriteProfileInt(sSection, _T("SnapshotFTPPasv"), m_SnapshotFTPUploadConfiguration.m_bPasv);
-			pApp->WriteProfileInt(sSection, _T("SnapshotFTPProxy"), m_SnapshotFTPUploadConfiguration.m_bProxy);
-			pApp->WriteProfileString(sSection, _T("SnapshotFTPProxyHost"), m_SnapshotFTPUploadConfiguration.m_sProxy);
-			pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPUsername"), m_SnapshotFTPUploadConfiguration.m_sUsername);
-			pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword);
+		// FTP Settings
+		pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
+		pApp->WriteProfileString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir);
+		pApp->WriteProfileInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort);
+		pApp->WriteProfileInt(sSection, _T("MovDetFTPPasv"), m_MovDetFTPUploadConfiguration.m_bPasv);
+		pApp->WriteProfileInt(sSection, _T("MovDetFTPProxy"), m_MovDetFTPUploadConfiguration.m_bProxy);
+		pApp->WriteProfileString(sSection, _T("MovDetFTPProxyHost"), m_MovDetFTPUploadConfiguration.m_sProxy);
+		pApp->WriteSecureProfileString(sSection, _T("MovDetFTPUsername"), m_MovDetFTPUploadConfiguration.m_sUsername);
+		pApp->WriteSecureProfileString(sSection, _T("MovDetFTPPassword"), m_MovDetFTPUploadConfiguration.m_sPassword);
+		pApp->WriteProfileInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload);
+		pApp->WriteProfileString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost);
+		pApp->WriteProfileString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir);
+		pApp->WriteProfileInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort);
+		pApp->WriteProfileInt(sSection, _T("SnapshotFTPPasv"), m_SnapshotFTPUploadConfiguration.m_bPasv);
+		pApp->WriteProfileInt(sSection, _T("SnapshotFTPProxy"), m_SnapshotFTPUploadConfiguration.m_bProxy);
+		pApp->WriteProfileString(sSection, _T("SnapshotFTPProxyHost"), m_SnapshotFTPUploadConfiguration.m_sProxy);
+		pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPUsername"), m_SnapshotFTPUploadConfiguration.m_sUsername);
+		pApp->WriteSecureProfileString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword);
 
-			// Networking
-			pApp->WriteProfileInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality);
-			pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX);
-			pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY);
+		// Networking
+		pApp->WriteProfileInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality);
+		pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX);
+		pApp->WriteProfileInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY);
 
-			// All other
-			pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
-			pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
-			pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
-			pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
-			pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
-			pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
-			pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
-			pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
-			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf);
-			pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp);
-			pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
-			pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
-			pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
-			pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
-			pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
-			pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
-			pApp->WriteProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality);
-			pApp->WriteProfileInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb);
-			pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
-			pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
-			pApp->WriteProfileInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop);
-			pApp->WriteProfileInt(sSection, _T("SnapshotStartHour"), m_SnapshotStartTime.GetHour());
-			pApp->WriteProfileInt(sSection, _T("SnapshotStartMin"), m_SnapshotStartTime.GetMinute());
-			pApp->WriteProfileInt(sSection, _T("SnapshotStartSec"), m_SnapshotStartTime.GetSecond());
-			pApp->WriteProfileInt(sSection, _T("SnapshotStopHour"), m_SnapshotStopTime.GetHour());
-			pApp->WriteProfileInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute());
-			pApp->WriteProfileInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond());
-			pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
-			pApp->WriteProfileInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID);
-			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId);
-			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
-			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth);
-			pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
-			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
-			pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
-			pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
-			pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
-			pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
-			pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
-			
-			// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
-			// strips quotes -> encode quotes here!
-			CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
-			sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-			sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-			pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection);
-			CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
-			sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-			sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-			pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection);
-			
-			pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
-			pApp->WriteProfileInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
-			pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
-			pApp->WriteProfileInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate);
-			pApp->WriteProfileInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
-			pApp->WriteProfileInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
-			pApp->WriteProfileInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate);
-			pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop);
-			pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
-			pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
-			pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday);
-			pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday);
-			pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday);
-			pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday);
-			pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday);
-			pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour());
-			pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute());
-			pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond());
-			pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
-			pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
-			pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
-			pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime);
-			pApp->WriteProfileInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections);
-			pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
-			pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
-			pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
-			pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
+		// All other
+		pApp->WriteProfileInt(sSection, _T("VideoView"), m_bVideoView);
+		pApp->WriteProfileInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace);
+		pApp->WriteProfileInt(sSection, _T("Rotate180"), (int)m_bRotate180);
+		pApp->WriteProfileInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen);
+		pApp->WriteProfileInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation);
+		pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
+		pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
+		pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
+		pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
+		pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
+		pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf);
+		pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
+		pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp);
+		pApp->WriteProfileInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp);
+		pApp->WriteProfileInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen);
+		pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
+		pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
+		pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
+		pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
+		pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
+		pApp->WriteProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality);
+		pApp->WriteProfileInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb);
+		pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
+		pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
+		pApp->WriteProfileInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop);
+		pApp->WriteProfileInt(sSection, _T("SnapshotStartHour"), m_SnapshotStartTime.GetHour());
+		pApp->WriteProfileInt(sSection, _T("SnapshotStartMin"), m_SnapshotStartTime.GetMinute());
+		pApp->WriteProfileInt(sSection, _T("SnapshotStartSec"), m_SnapshotStartTime.GetSecond());
+		pApp->WriteProfileInt(sSection, _T("SnapshotStopHour"), m_SnapshotStopTime.GetHour());
+		pApp->WriteProfileInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute());
+		pApp->WriteProfileInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond());
+		pApp->WriteProfileInt(sSection, _T("CaptureAudio"), m_bCaptureAudio);
+		pApp->WriteProfileInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID);
+		pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId);
+		pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId);
+		pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth);
+		pApp->WriteProfileInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight);
+		pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
+		pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
+		pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
+		pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
+		pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
+		pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection);
+		
+		// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+		// strips quotes -> encode quotes here!
+		CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
+		sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+		sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+		pApp->WriteProfileString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection);
+		CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
+		sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+		sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+		pApp->WriteProfileString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection);
+		
+		pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
+		pApp->WriteProfileInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC);
+		pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
+		pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
+		pApp->WriteProfileInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate);
+		pApp->WriteProfileInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
+		pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
+		pApp->WriteProfileInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC);
+		pApp->WriteProfileInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality);
+		pApp->WriteProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
+		pApp->WriteProfileInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate);
+		pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop);
+		pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
+		pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
+		pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday);
+		pApp->WriteProfileInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday);
+		pApp->WriteProfileInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday);
+		pApp->WriteProfileInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday);
+		pApp->WriteProfileInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday);
+		pApp->WriteProfileInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour());
+		pApp->WriteProfileInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute());
+		pApp->WriteProfileInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond());
+		pApp->WriteProfileInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour());
+		pApp->WriteProfileInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute());
+		pApp->WriteProfileInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond());
+		pApp->WriteProfileInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime);
+		pApp->WriteProfileInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections);
+		pApp->WriteProfileInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit);
+		pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
+		pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
+		pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 
-			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-			{
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
-			}
-
-			if (m_CaptureAudioThread.m_pSrcWaveFormat)
-				pApp->WriteProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX));
-			if (m_CaptureAudioThread.m_pDstWaveFormat)
-				pApp->WriteProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
-			pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
-			unsigned int nSize = sizeof(m_dFrameRate);
-			pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
+		pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
+		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+		{
+			CString sZone;
+			sZone.Format(MOVDET_ZONE_FORMAT, i);
+			pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
 		}
+
+		if (m_CaptureAudioThread.m_pSrcWaveFormat)
+			pApp->WriteProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX));
+		if (m_CaptureAudioThread.m_pDstWaveFormat)
+			pApp->WriteProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
+		pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
+		unsigned int nSize = sizeof(m_dFrameRate);
+		pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
 	}
 	else
 	{
-		if (m_bResetSettings)
-			::WritePrivateProfileString(sSection, NULL, NULL, pApp->m_pszProfileName);
-		else
+		// Ini file writing is slow, especially on memory sticks
+		BeginWaitCursor();
+
+		// Make a temporary copy because writing to memory sticks is so slow! 
+		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
+		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
+		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
+	
+		// Store the device name to identify the entry when manually looking the registry
+		// and to know that it is not the first run of the device
+		::WriteProfileIniString(sSection, _T("DeviceName"), GetDeviceName(), sTempFileName);
+
+		// Store Placement
+		if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
 		{
-			// Ini file writing is slow, especially on memory sticks
-			BeginWaitCursor();
+			memset(&wndpl, 0, sizeof(wndpl));
+			wndpl.length = sizeof(wndpl);
+			if (GetFrame()->GetWindowPlacement(&wndpl))
+				::WriteProfileIniBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl), sTempFileName);
+		}
 
-			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-			::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-		
-			// Store the device name to identify the entry when manually looking the registry
-			// and to know that it is not the first run of the device
-			::WriteProfileIniString(sSection, _T("DeviceName"), GetDeviceName(), sTempFileName);
-
-			// Store Placement
-			if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
-			{
-				memset(&wndpl, 0, sizeof(wndpl));
-				wndpl.length = sizeof(wndpl);
-				if (GetFrame()->GetWindowPlacement(&wndpl))
-					::WriteProfileIniBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl), sTempFileName);
-			}
-
-			// Email Settings
-			::WriteProfileIniString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SendMailSubject"), m_MovDetSendMailConfiguration.m_sSubject, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SendMailTo"), m_MovDetSendMailConfiguration.m_sTo, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendMailPort"), m_MovDetSendMailConfiguration.m_nPort, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML, sTempFileName);
+		// Email Settings
+		::WriteProfileIniString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("AttachmentType"), (int)m_MovDetSendMailConfiguration.m_AttachmentType, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SendMailSubject"), m_MovDetSendMailConfiguration.m_sSubject, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SendMailTo"), m_MovDetSendMailConfiguration.m_sTo, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SendMailPort"), m_MovDetSendMailConfiguration.m_nPort, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SendMailFrom"), m_MovDetSendMailConfiguration.m_sFrom, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SendMailHost"), m_MovDetSendMailConfiguration.m_sHost, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SendMailFromName"), m_MovDetSendMailConfiguration.m_sFromName, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SendMailAuth"), (int)m_MovDetSendMailConfiguration.m_Auth, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML, sTempFileName);
 #if (_MSC_VER > 1200)
-			::WriteProfileIniInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType, sTempFileName);
 #endif
 
-			// FTP Settings
-			::WriteProfileIniString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost, sTempFileName);
-			::WriteProfileIniString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MovDetFTPPasv"), m_MovDetFTPUploadConfiguration.m_bPasv, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MovDetFTPProxy"), m_MovDetFTPUploadConfiguration.m_bProxy, sTempFileName);
-			::WriteProfileIniString(sSection, _T("MovDetFTPProxyHost"), m_MovDetFTPUploadConfiguration.m_sProxy, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("MovDetFTPUsername"), m_MovDetFTPUploadConfiguration.m_sUsername, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("MovDetFTPPassword"), m_MovDetFTPUploadConfiguration.m_sPassword, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotFTPPasv"), m_SnapshotFTPUploadConfiguration.m_bPasv, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotFTPProxy"), m_SnapshotFTPUploadConfiguration.m_bProxy, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotFTPProxyHost"), m_SnapshotFTPUploadConfiguration.m_sProxy, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SnapshotFTPUsername"), m_SnapshotFTPUploadConfiguration.m_sUsername, sTempFileName);
-			::WriteSecureProfileIniString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword, sTempFileName);
+		// FTP Settings
+		::WriteProfileIniString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost, sTempFileName);
+		::WriteProfileIniString(sSection, _T("MovDetFTPRemoteDir"), m_MovDetFTPUploadConfiguration.m_sRemoteDir, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MovDetFTPPort"), m_MovDetFTPUploadConfiguration.m_nPort, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MovDetFTPPasv"), m_MovDetFTPUploadConfiguration.m_bPasv, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MovDetFTPProxy"), m_MovDetFTPUploadConfiguration.m_bProxy, sTempFileName);
+		::WriteProfileIniString(sSection, _T("MovDetFTPProxyHost"), m_MovDetFTPUploadConfiguration.m_sProxy, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("MovDetFTPUsername"), m_MovDetFTPUploadConfiguration.m_sUsername, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("MovDetFTPPassword"), m_MovDetFTPUploadConfiguration.m_sPassword, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MovDetFilesToUpload"), (int)m_MovDetFTPUploadConfiguration.m_FilesToUpload, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SnapshotFTPHost"), m_SnapshotFTPUploadConfiguration.m_sHost, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SnapshotFTPRemoteDir"), m_SnapshotFTPUploadConfiguration.m_sRemoteDir, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotFTPPort"), m_SnapshotFTPUploadConfiguration.m_nPort, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotFTPPasv"), m_SnapshotFTPUploadConfiguration.m_bPasv, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotFTPProxy"), m_SnapshotFTPUploadConfiguration.m_bProxy, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SnapshotFTPProxyHost"), m_SnapshotFTPUploadConfiguration.m_sProxy, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("SnapshotFTPUsername"), m_SnapshotFTPUploadConfiguration.m_sUsername, sTempFileName);
+		::WriteSecureProfileIniString(sSection, _T("SnapshotFTPPassword"), m_SnapshotFTPUploadConfiguration.m_sPassword, sTempFileName);
 
-			// Networking
-			::WriteProfileIniInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY, sTempFileName);
+		// Networking
+		::WriteProfileIniInt(sSection, _T("HTTPVideoQuality"), m_nHttpVideoQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("HTTPVideoSizeX"), m_nHttpVideoSizeX, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("HTTPVideoSizeY"), m_nHttpVideoSizeY, sTempFileName);
 
-			// All other
-			::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("Rotate180"), (int)m_bRotate180, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
-			::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
-			::WriteProfileIniString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName, sTempFileName);
-			::WriteProfileIniString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStartHour"), m_SnapshotStartTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStartMin"), m_SnapshotStartTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStartSec"), m_SnapshotStartTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStopHour"), m_SnapshotStopTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("CaptureAudio"), m_bCaptureAudio, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection, sTempFileName);
-			
-			// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
-			// strips quotes -> encode quotes here!
-			CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
-			sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-			sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-			::WriteProfileIniString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection, sTempFileName);
-			CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
-			sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
-			sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
-			::WriteProfileIniString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection, sTempFileName);
-			
-			::WriteProfileIniInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
+		// All other
+		::WriteProfileIniInt(sSection, _T("VideoView"), m_bVideoView, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("Deinterlace"), (int)m_bDeinterlace, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("Rotate180"), (int)m_bRotate180, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("RecAutoOpen"), m_bRecAutoOpen, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("RecTimeSegmentation"), m_bRecTimeSegmentation, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex, sTempFileName);
+		::WriteProfileIniString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir, sTempFileName);
+		::WriteProfileIniString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotHistorySwf"), (int)m_bSnapshotHistorySwf, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotHistoryJpegFtp"), (int)m_bSnapshotHistoryJpegFtp, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotHistorySwfFtp"), (int)m_bSnapshotHistorySwfFtp, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("ManualSnapshotAutoOpen"), (int)m_bManualSnapshotAutoOpen, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName, sTempFileName);
+		::WriteProfileIniString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStartHour"), m_SnapshotStartTime.GetHour(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStartMin"), m_SnapshotStartTime.GetMinute(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStartSec"), m_SnapshotStartTime.GetSecond(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStopHour"), m_SnapshotStopTime.GetHour(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStopMin"), m_SnapshotStopTime.GetMinute(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotStopSec"), m_SnapshotStopTime.GetSecond(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("CaptureAudio"), m_bCaptureAudio, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("AudioCaptureDeviceID"), m_dwCaptureAudioDeviceID, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceInputID"), m_nDeviceInputId, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatID"), m_nDeviceFormatId, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatWidth"), m_nDeviceFormatWidth, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoCaptureDeviceFormatHeight"), m_nDeviceFormatHeight, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DoExecCommandMovementDetection"), m_bExecCommandMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("ExecModeMovementDetection"), m_nExecModeMovementDetection, sTempFileName);
+		
+		// Attention: GetPrivateProfileString() used by GetProfileString() for INI files
+		// strips quotes -> encode quotes here!
+		CString sExecCommandMovementDetection(m_sExecCommandMovementDetection); 
+		sExecCommandMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+		sExecCommandMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+		::WriteProfileIniString(sSection, _T("ExecCommandMovementDetection"), sExecCommandMovementDetection, sTempFileName);
+		CString sExecParamsMovementDetection(m_sExecParamsMovementDetection); 
+		sExecParamsMovementDetection.Replace(_T("\'"), _T("%singlequote%"));
+		sExecParamsMovementDetection.Replace(_T("\""), _T("%doublequote%"));
+		::WriteProfileIniString(sSection, _T("ExecParamsMovementDetection"), sExecParamsMovementDetection, sTempFileName);
+		
+		::WriteProfileIniInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoRecDataRate"), m_nVideoRecDataRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoRecQualityBitrate"), m_nVideoRecQualityBitrate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetQualityBitrate"), m_nVideoDetQualityBitrate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetDataRate"), m_nVideoDetDataRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionWednesday"), (int)m_bDetectionWednesday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionThursday"), (int)m_bDetectionThursday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionFriday"), (int)m_bDetectionFriday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionSaturday"), (int)m_bDetectionSaturday, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStartHour"), m_DetectionStartTime.GetHour(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStartMin"), m_DetectionStartTime.GetMinute(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStartSec"), m_DetectionStartTime.GetSecond(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStopHour"), m_DetectionStopTime.GetHour(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStopMin"), m_DetectionStopTime.GetMinute(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStopSec"), m_DetectionStopTime.GetSecond(), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("ShowFrameTime"), m_bShowFrameTime, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("ShowMovementDetections"), m_bShowMovementDetections, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("IntensityLimit"), m_nMovementDetectorIntensityLimit, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
 
-			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
-			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-			{
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
-			}
-
-			if (m_CaptureAudioThread.m_pSrcWaveFormat)
-				::WriteProfileIniBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
-			if (m_CaptureAudioThread.m_pDstWaveFormat)
-				::WriteProfileIniBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode, sTempFileName);
-			unsigned int nSize = sizeof(m_dFrameRate);
-			::WriteProfileIniBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize, sTempFileName);
-
-			// Move it
-			::DeleteFile(pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, pApp->m_pszProfileName);
-
-			// Ini file writing is slow, especially on memory sticks
-			EndWaitCursor();
+		::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
+		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+		{
+			CString sZone;
+			sZone.Format(MOVDET_ZONE_FORMAT, i);
+			::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
 		}
+
+		if (m_CaptureAudioThread.m_pSrcWaveFormat)
+			::WriteProfileIniBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
+		if (m_CaptureAudioThread.m_pDstWaveFormat)
+			::WriteProfileIniBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
+		::WriteProfileIniInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode, sTempFileName);
+		unsigned int nSize = sizeof(m_dFrameRate);
+		::WriteProfileIniBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize, sTempFileName);
+
+		// Move it
+		::DeleteFile(pApp->m_pszProfileName);
+		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+		::MoveFile(sTempFileName, pApp->m_pszProfileName);
+
+		// Ini file writing is slow, especially on memory sticks
+		EndWaitCursor();
 	}
 }
 
@@ -6370,17 +6352,6 @@ void CVideoDeviceDoc::AudioFormatDialog()
 
 		// Restart Save Frame List Thread
 		m_SaveFrameListThread.Start();
-	}
-}
-
-void CVideoDeviceDoc::OnCaptureReset() 
-{
-	if (::AfxMessageBox(ML_STRING(1740, "Settings are reset to the default and\nthe capture window will be closed.\nDo you want to proceed?"),
-						MB_YESNO | MB_ICONQUESTION) == IDYES)
-	{
-		AutorunRemoveDevice(GetDevicePathName());
-		m_bResetSettings = TRUE;
-		CloseDocument();
 	}
 }
 

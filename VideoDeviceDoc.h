@@ -1184,7 +1184,6 @@ public:
 
 // Protected Variables
 protected:
-	BOOL m_bResetSettings;
 	CVideoDeviceView* m_pView;
 	CVideoDeviceChildFrame* m_pFrame;
 	CDib* volatile m_pProcessFrameDib;
@@ -1236,7 +1235,6 @@ protected:
 	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
 	afx_msg void OnFileSaveAs();
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
-	afx_msg void OnCaptureReset();
 	afx_msg void OnEditSnapshot();
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
 	afx_msg void OnEditExportZones();

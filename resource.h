@@ -2543,7 +2543,9 @@
 #define IDC_STATIC1870                  1870
 #define IDS_STRING1870                  1870
 #define IDC_STATIC1871                  1871
+#define IDS_STRING1871                  1871
 #define IDC_STATIC1872                  1872
+#define IDS_STRING1872                  1872
 #define IDC_STATIC1873                  1873
 #define IDC_STATIC1874                  1874
 #define IDC_STATIC1875                  1875
@@ -3468,7 +3470,6 @@
 #define ID_TOOLS_VIEW_WEB_LOGFILE       33156
 #define ID_PLAY_INC                     33157
 #define ID_PLAY_DEC                     33158
-#define ID_CAPTURE_RESET                33159
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
 #define ID_PLAY_RANDOM                  33165
@@ -3490,6 +3491,7 @@
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33279
 #define ID_FILE_RELOAD                  33280
 #define ID_VIEW_FILES                   33281
+#define ID_TOOLS_MOVE_CAM_FOLDERS       33282
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
@@ -3498,7 +3500,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
-#define _APS_NEXT_COMMAND_VALUE         33282
+#define _APS_NEXT_COMMAND_VALUE         33283
 #define _APS_NEXT_CONTROL_VALUE         2560
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

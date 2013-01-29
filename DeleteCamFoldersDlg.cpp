@@ -65,50 +65,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 	}
 	
 	// Enum all device entries in registry or ini file
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
-		{
-			const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
-			HKEY hKey;
-			if (::RegOpenKeyEx(	HKEY_CURRENT_USER,
-								_T("Software\\") + CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT),
-								0, KEY_READ, &hKey) == ERROR_SUCCESS)
-			{
-				DWORD cSubKeys = 0;
-				::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-				TCHAR achKey[MAX_KEY_BUFFER];
-				DWORD cbName;
-				for (DWORD i = 0 ; i < cSubKeys; i++)
-				{ 
-					cbName = MAX_KEY_BUFFER;
-					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
-					CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
-					if (sRecordAutoSaveDir != _T(""))
-						m_DevicePathNames.Add(achKey);
-				}
-				::RegCloseKey(hKey);
-			}
-		}
-		else
-		{
-			const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
-			TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
-			memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
-			::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, ::AfxGetApp()->m_pszProfileName);
-			TCHAR* sSource = pSectionNames;
-			while (*sSource != 0) // If 0 -> end of list
-			{
-				CString sRecordAutoSaveDir = ::AfxGetApp()->GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
-				if (sRecordAutoSaveDir != _T(""))
-					m_DevicePathNames.Add(sSource);
-				while (*sSource != 0)
-					sSource++;
-				sSource++; // Skip the 0
-			}
-			delete [] pSectionNames;
-		}
-	}
+	((CUImagerApp*)::AfxGetApp())->EnumConfiguredDevicePathNames(m_DevicePathNames);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -127,8 +84,9 @@ void CDeleteCamFoldersDlg::OnOK()
 			// Delete folder
 			::DeleteToRecycleBin(sDirName, FALSE, GetSafeHwnd());
 			
-			// Web files copy, Assistant Dialog pop-up and autorun-clear for all devices which save to the above deleted folder
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			// Autorun-clear and device configuration delete
+			if (!::IsExistingDir(sDirName) &&	// make sure dir has been deleted, we cannot trust the return value of DeleteToRecycleBin()
+				((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
 				{
@@ -136,8 +94,14 @@ void CDeleteCamFoldersDlg::OnOK()
 					sRecordAutoSaveDir.TrimRight(_T('\\'));
 					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0)
 					{
-						::AfxGetApp()->WriteProfileInt(m_DevicePathNames[i], _T("RestoreWebFiles"), TRUE);
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
+						if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+							::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
+																	CString(MYCOMPANY) + CString(_T("\\")) +
+																	CString(APPNAME_NOEXT) + _T("\\") +
+																	m_DevicePathNames[i]);
+						else
+							::WritePrivateProfileString(m_DevicePathNames[i], NULL, NULL, ::AfxGetApp()->m_pszProfileName);
 					}
 				}
 			}

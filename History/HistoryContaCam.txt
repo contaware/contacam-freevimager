@@ -5,8 +5,10 @@ VERSION HISTORY
 - Split the 'Other HTTP Device' mode in Server Push and Client Poll
 - Swf snapshot history file is now correctly created even if
   restarting ContaCam (snapshots preceding restart are not lost)
+- In Device Assistant added a button to move the camera folder
+  and under Tools menu there is now the possibility to move all
+  camera folders in one command
 - Live snapshot names can now be configured
-- In Device Assistant added possibility to move the camera folder
 - Increased support from 15 to 100 DirectX devices
 - In log messages the user assigned device name is now shown
 - For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
@@ -17,10 +19,9 @@ VERSION HISTORY
   (it's still possible to stream a video source through the web
   server, a FAQ entry has been added illustrating that)
 - Removed manual record pause command which was of no use
-- Removed possibility to (miss-)configure the doc root folder
-  in Global Settings dialog
 - Longer detection files option introduced in version 4.0.5
-  is now always on because of the widespread HD cams
+  is now always on (that uses a bit more CPU but decreases
+  significantly the RAM usage)
 
 4.1.0 (December 4th 2012)
 

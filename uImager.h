@@ -305,10 +305,6 @@ public:
 	CSchedulerEntry* GetDailySchedulerEntry(CString sDevicePathName);
 	void DeleteOnceSchedulerEntry(CString sDevicePathName);
 	void DeleteDailySchedulerEntry(CString sDevicePathName);
-
-	// FullscreenBrowser Ini file handling
-	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
-	BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
 #endif
 
 	// Constructor & Destructor
@@ -495,6 +491,13 @@ public:
 
 	// Broser autostart
 	void BrowserAutostart();
+
+	// FullscreenBrowser Ini file handling
+	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
+	BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
+
+	// Enumerate all configured (in registry or ini file) devices
+	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
 #endif
 
 	// Is Showing a Print Preview other than pThisDoc?
@@ -843,6 +846,7 @@ public:
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	afx_msg void OnEditScreenshot();
 	afx_msg void OnUpdateEditScreenshot(CCmdUI* pCmdUI);
+	afx_msg void OnToolsMoveCamFolders();
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC
