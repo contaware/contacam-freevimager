@@ -965,7 +965,7 @@ ULONG CDxCapture::GetCurrentAnalogVideoStandards()
 	return 0;
 }
 
-int CDxCapture::GetFormatID(DWORD biCompression, DWORD biBitCount)
+int CDxCapture::GetFormatID(DWORD biCompression, DWORD biBitCount/*=0xFFFFFFFF*/)
 {
 	HRESULT hr;
 
@@ -1002,7 +1002,8 @@ int CDxCapture::GetFormatID(DWORD biCompression, DWORD biBitCount)
 					LPBITMAPINFOHEADER lpCurrentBmiH = pCurrentVih != NULL ? &pCurrentVih->bmiHeader : NULL;
 					if (lpBmiH									&&
 						lpBmiH->biCompression == biCompression	&&
-						lpBmiH->biBitCount == biBitCount)
+						(biBitCount == 0xFFFFFFFF				||
+						lpBmiH->biBitCount == biBitCount))
 					{
 						DeleteMediaType(pmtConfig);
 						DeleteMediaType(pmtCurrentConfig);
@@ -1242,7 +1243,7 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - nId is the device id, if it is negative m_sDeviceName and m_sDevicePath are used
 // - If dFrameRate is zero or negative, the default Frame-Rate is used
 // - If nFormatId is -1, the format is chosen in the following order:
-//   I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
+//   MJPG, I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
 // - With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
 //   (for DV devices the media subtype is fixed to YUY2)
@@ -1539,26 +1540,29 @@ BOOL CDxCapture::Open(	HWND hWnd,
 		{
 			// Try Formats: from first choice down to last one
 
+			// MJPG
+			if ((nFormatId = GetFormatID(mmioFOURCC('M','J','P','G'))) == -1)
+
 			// I420
-			if ((nFormatId = GetFormatID(mmioFOURCC('I','4','2','0'), 12)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('I','4','2','0'))) == -1)
 			
 			// I420 Equivalent	
-			if ((nFormatId = GetFormatID(mmioFOURCC('I','Y','U','V'), 12)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('I','Y','U','V'))) == -1)
 			
 			// YV12
-			if ((nFormatId = GetFormatID(mmioFOURCC('Y','V','1','2'), 12)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('Y','V','1','2'))) == -1)
 			
 			// M420
-			if ((nFormatId = GetFormatID(mmioFOURCC('M','4','2','0'), 12)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('M','4','2','0'))) == -1)
 
 			// YUY2	
-			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','2'), 16)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','2'))) == -1)
 
 			// YUY2 Equivalents
-			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','N','V'), 16)) == -1)
-			if ((nFormatId = GetFormatID(mmioFOURCC('V','Y','U','Y'), 16)) == -1)
-			if ((nFormatId = GetFormatID(mmioFOURCC('V','4','2','2'), 16)) == -1)
-			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','V'), 16)) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','N','V'))) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('V','Y','U','Y'))) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('V','4','2','2'))) == -1)
+			if ((nFormatId = GetFormatID(mmioFOURCC('Y','U','Y','V'))) == -1)
 
 			// RGB Formats
 			if ((nFormatId = GetFormatID(BI_RGB, 32)) == -1)

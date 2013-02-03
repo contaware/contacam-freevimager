@@ -73,7 +73,7 @@ public:
     {
 		switch (m_pDoc->m_CaptureBMI.bmiHeader.biCompression)
 		{
-			case FCC('I420') :	m_pDoc->ProcessI420Frame(pBuffer, BufferLen);			break;
+			case FCC('I420') :	m_pDoc->ProcessI420Frame(pBuffer, BufferLen, NULL, 0U);	break;
 			case FCC('M420') :	m_pDoc->ProcessM420Frame(pBuffer, BufferLen);			break;
 			default :			m_pDoc->ProcessNoI420NoM420Frame(pBuffer, BufferLen);	break;
 		}
@@ -87,7 +87,7 @@ public:
 				int nId,								// device id, if it is negative m_sDeviceName and m_sDevicePath are used
 				double dFrameRate,						// if zero or negative, the default Frame-Rate is used
 				int nFormatId,							// If -1, the format is chosen in the following order:
-														// I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
+														// MJPG, I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 				int nWidth,								// If Width or Height are <= 0 the sizes are tried in the following order:
 				int nHeight,							// 640x480, 352x288, 352x240, 320x240
 				const GUID *pMediaSubType = NULL);		// With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
@@ -147,7 +147,8 @@ public:
 	BOOL SetCurrentFormat(AM_MEDIA_TYPE* pmtConfig);	// Set new Video Format
 	BOOL SetCurrentFormatByID(int nId);					// Set new Video Format by Format ID
 	int GetCurrentFormatID();							// Returns the Current Selected Format ID
-	int GetFormatID(DWORD biCompression, DWORD biBitCount);	// Returns Matching Format ID given the Compression and the Bits Count
+	int GetFormatID(DWORD biCompression,				// Returns Matching Format ID given the Compression
+					DWORD biBitCount = 0xFFFFFFFF);		// and the Bits Count (if 0xFFFFFFFF ignore it)
 	ULONG GetCurrentAnalogVideoStandards();				// The Current Selected Analog Video Standards
 	static CString GetAnalogVideoStandards(ULONG VideoStandard);
 														// Returns the Analog Video Standards String

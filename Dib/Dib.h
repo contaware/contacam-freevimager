@@ -461,7 +461,7 @@ protected:
 
 	// Special Vars
 	DWORD m_dwUpTime;			// Up-time (in milliseconds) when the frame was taken
-	BOOL m_bUserFlag;			// General Purpose User Flag
+	DWORD m_dwUserFlag;			// General Purpose User Flag
 
 	// 16 bits Masks
 	WORD m_wRedMask16;
@@ -532,8 +532,8 @@ public:
 	__forceinline BOOL IsValid() const;
 	__forceinline DWORD GetUpTime() const;
 	__forceinline void SetUpTime(DWORD dwUpTime);
-	__forceinline BOOL IsUserFlag()	const;
-	__forceinline void SetUserFlag(BOOL bUserFlag = TRUE);
+	__forceinline DWORD GetUserFlag() const;
+	__forceinline void SetUserFlag(DWORD dwUserFlag);
 	__forceinline DWORD GetCompression() const;
 	__forceinline CDib* GetThumbnailDib();
 	__forceinline CDib* GetPreviewDib();

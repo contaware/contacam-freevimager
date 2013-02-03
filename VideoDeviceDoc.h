@@ -60,6 +60,9 @@ class CMovementDetectionPage;
 #define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 														// (see CCaptureAudioThread::OpenInAudio())
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
+#define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
+#define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
+#define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
  
 // Frame time, date and count display constants
 #define ADDFRAMETAG_REFFONTSIZE				9
@@ -852,15 +855,20 @@ public:
 												DWORD& dwFirstUpTime,
 												DWORD& dwLastUpTime);
 	__forceinline int  GetNewestMovementDetectionsListCount();		// Get the newest list's count
-	__forceinline CDib* AllocMJPGFrame(CDib* pDib);					// Allocate MJPG encoded frame (copies also audio samples)
-	__forceinline void AddNewFrameToNewestList(CDib* pDib);			// Add new frame to newest list
-	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib);// Add new frame to newest list leaving in the list
-																	// m_nMilliSecondsRecBeforeMovementBegin of frames
+	__forceinline CDib* AllocMJPGFrame(CDib* pDib,					// Allocate new MJPG frame compressing pDib or copying pMJPGData if available
+								LPBYTE pMJPGData, DWORD dwMJPGSize);// (copies also audio samples)
+	__forceinline void AddNewFrameToNewestList(CDib* pDib,			// Add new frame to newest list
+								LPBYTE pMJPGData, DWORD dwMJPGSize);
+	__forceinline void AddNewFrameToNewestListAndShrink(CDib* pDib,	// Add new frame to newest list leaving in the list
+								LPBYTE pMJPGData, DWORD dwMJPGSize);// m_nMilliSecondsRecBeforeMovementBegin of frames
+																	
 
 	// Main Decode & Process Functions
 	void ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
-	void ProcessI420Frame(LPBYTE pData, DWORD dwSize);
+	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize);
+	static BOOL Rotate180(CDib* pDib);
+	static BOOL Deinterlace(CDib* pDib);
 
 	// To Start / Stop Frame Processing and Avoid Dead-Locks!
 	__forceinline void StopProcessFrame(DWORD dwMask) {		::EnterCriticalSection(&m_csProcessFrameStop);
@@ -893,6 +901,8 @@ public:
 
 	// Movement Detection
 	void MovementDetectionProcessing(	CDib* pDib,
+										LPBYTE pMJPGData,
+										DWORD dwMJPGSize,
 										DWORD dwVideoProcessorMode,
 										BOOL b1SecTick);
 	BOOL MovementDetector(CDib* pDib, int nDetectionLevel);
@@ -960,8 +970,6 @@ protected:
 	BOOL EditCopy(CDib* pDib, const CTime& Time);
 	BOOL EditSnapshot(CDib* pDib, const CTime& Time);
 	CString MakeJpegManualSnapshotFileName(const CTime& Time);
-	BOOL Rotate180(CDib* pDib);
-	BOOL Deinterlace(CDib* pDib);
 	BOOL ThumbMessage(	const CString& sMessage1,
 						const CString& sMessage2,
 						const CString& sMessage3,

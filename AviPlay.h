@@ -1495,15 +1495,12 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP62"))	// VP62
 		return CODEC_ID_VP6;
 
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MJPG"))	// MJPG
-		return CODEC_ID_MJPEG;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("IJPG"))	// IJPG
-		return CODEC_ID_MJPEG;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DMB1"))	// DMB1
-		return CODEC_ID_MJPEG;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("JPGL"))	// JPGL
-		return CODEC_ID_MJPEG;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("QIVG"))	// QIVG
+	else if (FourCCToStringUpperCase(dwFourCC) == _T("MJPG")	||	// MJPG
+			FourCCToStringUpperCase(dwFourCC) == _T("M601")		||	// M601: contaware introduced this fourcc to distinguish the inofficial jpeg ITU601 color space
+			FourCCToStringUpperCase(dwFourCC) == _T("IJPG")		||	// IJPG
+			FourCCToStringUpperCase(dwFourCC) == _T("DMB1")		||	// DMB1
+			FourCCToStringUpperCase(dwFourCC) == _T("JPGL")		||	// JPGL
+			FourCCToStringUpperCase(dwFourCC) == _T("QIVG"))		// QIVG
 		return CODEC_ID_MJPEG;
 	else if (FourCCToStringUpperCase(dwFourCC) == _T("SP54"))	// SP54
 		return CODEC_ID_SP5X;

@@ -2039,7 +2039,8 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 				switch (m_pDoc->m_pVideoDeviceDocDib->GetCompression())
 				{
 					case FCC('I420') :	m_pDoc->m_pVideoDeviceDoc->ProcessI420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
-																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
+																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize(),
+																					NULL, 0U);
 										break;
 					case FCC('M420') :	m_pDoc->m_pVideoDeviceDoc->ProcessM420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
 																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
