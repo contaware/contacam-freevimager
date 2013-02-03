@@ -846,11 +846,11 @@ public:
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	afx_msg void OnEditScreenshot();
 	afx_msg void OnUpdateEditScreenshot(CCmdUI* pCmdUI);
-	afx_msg void OnToolsMoveCamFolders();
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnToolsViewWebLogfile();
+	afx_msg void OnToolsMoveCamFolders();
 	afx_msg void OnToolsDelCamFolders();
 	afx_msg void OnCaptureNetwork();
 	afx_msg void OnFileDxVideoDevice(UINT nID);

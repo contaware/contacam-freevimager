@@ -14,14 +14,13 @@ VERSION HISTORY
 - For microapache set MaxKeepAliveRequests to 0 (=No Limit) to
   avoid frame jumps which were happening when the keep alive
   request count reached 0 and a reconnection was necessary
+- Longer detection files option introduced in version 4.0.5
+  is now always on
 - Removed UDP networking because it was ContaCam's proprietary
   streaming protocol not compatible with any current standard
   (it's still possible to stream a video source through the web
   server, a FAQ entry has been added illustrating that)
 - Removed manual record pause command which was of no use
-- Longer detection files option introduced in version 4.0.5
-  is now always on (that uses a bit more CPU but decreases
-  significantly the RAM usage)
 
 4.1.0 (December 4th 2012)
 
