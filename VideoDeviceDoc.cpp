@@ -11280,19 +11280,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, pLinBuf, nSize);
 		}
 	}
-	// In case that avcodec_decode_video fails
-	// use LoadJPEG which is more fault tolerant, but slower...
-	else
-	{
-		TRACE(_T("*** Error: ffmpeg failed to decode mjpeg, trying CDib::LoadJPEG() ***\n"));
-		CDib Dib;
-		Dib.SetShowMessageBoxOnError(FALSE);
-		if (Dib.LoadJPEG(pLinBuf, nSize) && Dib.Compress(FCC('I420')))
-		{
-			m_pDoc->m_lCompressedDataRateSum += nSize;
-			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), pLinBuf, nSize);
-		}
-	}
 	
 	// Reset first frame flag after the process frame,
 	// otherwise the watchdog is restarting the connection!
