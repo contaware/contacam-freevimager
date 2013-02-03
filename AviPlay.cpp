@@ -2753,187 +2753,30 @@ bool CAVIPlay::CAVIVideoStream::PrepareWantedDstBMI(LPBITMAPINFOHEADER pDstBMIH)
 
 bool CAVIPlay::CAVIVideoStream::IsYUV420Out(DWORD dwFourCC)
 {
-	if (FourCCToStringUpperCase(dwFourCC) == _T("XVID"))		// XVID
+	enum CodecID id = AVCodecFourCCToCodecID(dwFourCC);
+	if (id == CODEC_ID_MPEG4		||
+		id == CODEC_ID_MSMPEG4V1	||
+		id == CODEC_ID_MSMPEG4V2	||
+		id == CODEC_ID_MSMPEG4V3	||
+		id == CODEC_ID_SNOW			||
+		id == CODEC_ID_WMV1			||
+		id == CODEC_ID_WMV2			||
+		id == CODEC_ID_FLV1			||
+		id == CODEC_ID_VP3			||
+		id == CODEC_ID_THEORA		||
+		id == CODEC_ID_VP5			||
+		id == CODEC_ID_VP6F			||
+		id == CODEC_ID_VP6			||
+		id == CODEC_ID_H261			||
+		id == CODEC_ID_H263			||
+		id == CODEC_ID_H263I		||
+		id == CODEC_ID_H264			||
+		id == CODEC_ID_VC1			||
+		id == CODEC_ID_FFVHUFF		||
+		id == CODEC_ID_FFV1			||
+		id == CODEC_ID_MPEG1VIDEO	||
+		id == CODEC_ID_MPEG2VIDEO)
 		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("XVIX"))	// XVIX
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIVX"))	// DIVX
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP4S"))	// MP4S
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP4V"))	// MP4V
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("M4S2"))	// M4S2
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("3IV1"))	// 3IV1
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("3IV2"))	// 3IV2
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("3IVX"))	// 3IVX
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("RMP4"))	// RMP4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DM4V"))	// DM4V
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("WV1F"))	// WV1F
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FMP4"))	// FMP4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("HDX4"))	// HDX4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("SMP4"))	// SMP4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP45"))	// MP45
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("UMP4"))	// UMP4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("SEDG"))	// SEDG
-		return true;
-	else if (dwFourCC == mmioFOURCC(0x04, 0, 0, 0))				// Some broken avis
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FFDS"))	// FFDS
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FVFW"))	// FVFW
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DX50"))	// DX50
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("BLZ0"))	// BLZ0
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DXGM"))	// DXGM
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP41"))	// MP41
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MPG4"))	// MPG4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV1"))	// DIV1
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP42"))	// MP42
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV2"))	// DIV2
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV3"))	// DIV3
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV4"))	// DIV4
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV5"))	// DIV5
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DIV6"))	// DIV6
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("AP41"))	// AP41
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("COL0"))	// COL0
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("COL1"))	// COL1
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DVX3"))	// DVX3
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MPG3"))	// MPG3
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MP43"))	// MP43
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("SNOW"))	// SNOW
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("WMV1"))	// WMV1
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("WMV2"))	// WMV2
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FLV1"))	// FLV1
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP30"))	// VP30
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP31"))	// VP31
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("THEO"))	// Theora
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP50"))	// VP50
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP6F"))	// VP6F
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP60"))	// VP60
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP61"))	// VP61
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VP62"))	// VP62
-		return true;
-	
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("H261"))	// H261
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("M261"))	// Microsoft M261
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("H263"))	// H263
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("S263"))	// S263
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("M263"))	// Microsoft M263
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("I263"))	// Intel I263
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("U263"))	// U263
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VIV1"))	// VIV1
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("H264"))	// H264
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("X264"))	// X264
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VSSH"))	// VSSH
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DAVC"))	// DAVC
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("AVC1"))	// AVC1
-		return true;
-	
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VC-1"))	// SMPTE RP 2025
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FFVH"))	// FFVH
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("FFV1"))	// FFV1
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MPEG"))	// MPEG
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MPG1"))	// MPG1
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("PIM1"))	// PIM1
-		return true;
-	else if (dwFourCC == 0x10000001)
-		return true;
-
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("VCR2"))	// VCR2, only intra frame compression
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MPG2"))	// MPG2
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("HDV2"))	// MPEG2 produced by Sony HD camera
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("HDV3"))	// HDV produced by FCP
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MX5N"))	// MPEG2 IMX NTSC 525/60 50mb/s produced by FCP
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MX5P"))	// MPEG2 IMX PAL 625/50 50mb/s produced by FCP
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MX3N"))	// MPEG2 IMX NTSC 525/60 30mb/s produced by FCP
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("MX3P"))	// MPEG2 IMX PAL 625/50 30mb/s produced by FCP
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("EM2V"))	// EM2V
-		return true;
-	else if (FourCCToStringUpperCase(dwFourCC) == _T("DVR "))	// DVR
-		return true;
-	else if (dwFourCC == 0x10000002)
-		return true;
-
 	else
 		return false;
 }
