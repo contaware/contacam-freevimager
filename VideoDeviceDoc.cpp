@@ -7856,14 +7856,16 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 							dwSize,
 							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
-		m_lCompressedDataRateSum += dwSize;
-		if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
+		if (m_AVDecoder.GetCodecId() == CODEC_ID_MJPEG)
+		{
+			m_lCompressedDataRateSum += dwSize;
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
+		}
 		else
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
 	}
 	// Other formats
-	else if (m_CaptureBMI.bmiHeader.biCompression != FCC('MJPG'))
+	else
 	{
 		m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_CaptureBMI);
 		m_pProcessFrameExtraDib->SetBits(pData, dwSize);

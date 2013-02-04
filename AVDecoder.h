@@ -28,6 +28,8 @@ class CAVDecoder
 					LPBYTE pSrcBits,
 					DWORD dwSrcSize,
 					CDib* pDstDib);
+		__forceinline CodecID GetCodecId() {return (m_pCodecCtx ? m_pCodecCtx->codec_id : CODEC_ID_NONE);};
+
 	protected:
 		BOOL Open(LPBITMAPINFO pSrcBMI);
 		void Close();
