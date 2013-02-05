@@ -47,10 +47,6 @@ function doServerPush($file,$type,$poll) {
 		}
 		$filecontentsize = strlen($filecontent);
 		
-		// Calculate the md5 hash
-		if (SNAPSHOTREFRESHSEC < 1)
-			$filehash = md5($filecontent);
-		
 		// Output Content-Length and the content data
 		echo "Content-Length: $filecontentsize\r\n\r\n";
 		echo $filecontent;
@@ -82,11 +78,13 @@ function doServerPush($file,$type,$poll) {
 				flush();
 			}
 			
-			// Poll the filesystem until the file changes, then send the update
+			// Poll the filesystem until the file changes, then send the update.
+			// The file time resolution is 1 second, so in case of sub-second
+			// refresh do not wait and send with the given $poll rate
 			if (SNAPSHOTREFRESHSEC >= 1)
 				$wait = !connection_aborted() && $lastupdate == @filemtime($file);
 			else
-				$wait = !connection_aborted() && $filecontentsize == @filesize($file) && $filehash == @md5_file($file);
+				$wait = false;
 		} while ($wait);
 	} while (!connection_aborted()); // if aborts are ignored, exit anyway to avoid endless threads
 }
@@ -99,4 +97,7 @@ if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
 	$full_path = "$doc_root/" . trim($filename,"\\/");
-doServerPush($full_path,'image/jpeg',SERVERPUSH_POLLRATE_MS);
+if (isset($_GET['fps']) && $_GET['fps'] > 0.0)
+	doServerPush($full_path, 'image/jpeg', 1000.0 / $_GET['fps']);
+else
+	doServerPush($full_path, 'image/jpeg', SERVERPUSH_POLLRATE_MS);
