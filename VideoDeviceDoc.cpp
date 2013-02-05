@@ -5840,7 +5840,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	sGetFrameVideoHost.TrimRight();
 	m_sGetFrameVideoHost = sGetFrameVideoHost;
 	m_nGetFrameVideoPort = bUrl ? nUrlPort : pDlg->m_nPort;
-	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE_SP : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
+	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE_CP : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
 
 	// Free if Necessary
 	if (m_pGetFrameNetCom)

@@ -1,6 +1,8 @@
 Both
 ----
 - Drop support for old Win9x
+- When views are tiled and resizing mainframe then resize also childs
+- Possibility to hide menu, statusbar and toolbars
 
 ContaCam Program
 ----------------
