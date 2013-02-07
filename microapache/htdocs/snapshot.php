@@ -75,12 +75,6 @@ img#campictureid {
 	margin: 0;
 	padding: 0;
 }
-/* Fix for Firefox image flashing/flicker bug introduced with Firefox 8 */
-@-moz-document url-prefix() {
-	img.imgflashingfix {
-		opacity: 0.99;
-	}
-}
 /*]]>*/
 </style>
 </head>
@@ -105,7 +99,7 @@ echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
 if ($doPoll) {
 	echo "<form name=\"form1\" action=\"\">\n";
 	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img name=\"campicture\" class=\"imgflashingfix\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
+	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" align=\"middle\" />";
 	echo "</a>\n";
 	if (!isset($_GET['countdown']) || $_GET['countdown'] != 'no')
 		echo "<div id=\"imagereloading\">" . IMAGERELOADIN . " <input type=\"text\" readonly=\"readonly\" id=\"clock\" name=\"clock\" size=\"3\" value=\"\" /> " . SECONDS . "</div>\n";

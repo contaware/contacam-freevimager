@@ -84,12 +84,6 @@ img#campictureid {
 	left: 0;
 	top: 0;
 }
-/* Fix for Firefox image flashing/flicker bug introduced with Firefox 8 */
-@-moz-document url-prefix() {
-	img.imgflashingfix {
-		opacity: 0.99;
-	}
-}
 /*]]>*/
 </style>
 </head>
@@ -102,7 +96,7 @@ else
 	$clickurl = getParentUrl();
 if ($doPoll) {
 	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img name=\"campicture\" class=\"imgflashingfix\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
+	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
 	echo "</a>\n";
 }
 else {
