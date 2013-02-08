@@ -10,6 +10,7 @@ require_once( 'configuration.php' );
 <meta name="author" content="Oliver Pfister" />
 <?php
 echo "<title>" . SNAPSHOTTITLE . "</title>\n";
+echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 if (USESERVERPUSH == 0 || getIEVersion() >= 0)
 	$doPoll = 1;
 else
@@ -28,9 +29,29 @@ if ($doPoll) {
 	echo "var x = " . SNAPSHOTREFRESHSEC . ";\n";
 	echo "var loadingterminated = true;\n";
 	echo "var tmpimage = new Image();\n";
-	echo "function snapshotLoaded(){\n";
-	echo "    document.campicture.src = tmpimage.src;\n";
+	echo "var rate = " . SNAPSHOTREFRESHSEC . ";\n";
+	echo "var fastpollrate = " . SERVERPUSH_POLLRATE_MS . ";\n";
+	echo "function doFlip(){\n"; // always flip with some delay otherwise Firefox is flickering (it shows background) and the others are displaying the old image
+	echo "    if (document.campicture0.style.zIndex == 3){\n";
+	echo "        document.campicture1.style.zIndex = 2;\n";	// 1. Gently 3 steps flip of previously loaded image
+	echo "        document.campicture0.style.zIndex = 1;\n";	// 2. Flip
+	echo "        document.campicture1.style.zIndex = 3;\n";	// 3. Restore index
+	echo "    } else {\n";
+	echo "        document.campicture0.style.zIndex = 2;\n";	// 1. Gently 3 steps flip of previously loaded image
+	echo "        document.campicture1.style.zIndex = 1;\n";	// 2. Flip
+	echo "        document.campicture0.style.zIndex = 3;\n";	// 3. Restore index
+	echo "    }\n";
 	echo "    loadingterminated = true;\n";
+	echo "}\n";
+	echo "function snapshotLoaded(){\n"; // this function is triggered when the image has been downloaded from network to file and not when loaded from file into memory
+	echo "    if (rate < 1)\n";
+	echo "        doFlip();\n";									// flip the image which started to decode in previous call
+	echo "    if (document.campicture1.style.zIndex == 3)\n";
+	echo "        document.campicture0.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
+	echo "    else\n";
+	echo "        document.campicture1.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
+	echo "    if (rate >= 1)\n";
+	echo "        setTimeout(\"doFlip()\", 500);\n";			// flip with some delay to give the decoder enough time
 	echo "}\n";
 	echo "function snapshotNotLoaded(){\n";
 	echo "    loadingterminated = true;\n";
@@ -48,9 +69,7 @@ if ($doPoll) {
 	echo "    }\n";
 	echo "}\n";
 	echo "function startClock(){\n";
-	echo "    var rate = " . SNAPSHOTREFRESHSEC . ";\n";
 	echo "    if (rate < 1){\n";
-	echo "        var fastpollrate = " . SERVERPUSH_POLLRATE_MS . ";\n";
 	echo "        reload();\n";
 	echo "        setTimeout(\"startClock()\", fastpollrate);\n";
 	echo "    } else {\n";
@@ -74,11 +93,20 @@ html, body {
 	overflow: hidden;
 	height: 100%;
 }
-img#campictureid {
+a#pollimglink {
+	position: relative;
+	display: block;
+	z-index: 4;
+	width: 100%;
+	height: 100%;
+	outline: none;
+}
+img.campicture, a:link img.campicture, a:visited img.campicture, a:hover img.campicture, a:active img.campicture, a:focus img.campicture {
 	border: 0;
 	margin: 0;
 	padding: 0;
 	position: absolute;
+	display: block;
 	width: 100%;
 	height: 100%;
 	left: 0;
@@ -95,13 +123,13 @@ if (isset($_GET['clickurl']))
 else
 	$clickurl = getParentUrl();
 if ($doPoll) {
-	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
-	echo "</a>\n";
+	echo "<a id=\"pollimglink\" class=\"transparentbkg\" href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\"></a>\n";
+	echo "<img class=\"campicture\" style=\"z-index: 3;\" name=\"campicture0\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
+	echo "<img class=\"campicture\" style=\"z-index: 1;\" name=\"campicture1\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
 }
 else {
 	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img name=\"campicture\" id=\"campictureid\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
+	echo "<img class=\"campicture\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
 	echo "</a>\n";
 }
 if ($doPoll) {

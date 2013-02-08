@@ -74,6 +74,11 @@ a.back {
 	font-size: 20px;
 }
 
+/* Transparent background */
+.transparentbkg {
+	background: transparent url('transparent.gif');
+}
+
 /* Highlight currently selected date for summary.php */
 a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover {
 	color: #ffa23c;
