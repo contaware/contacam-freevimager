@@ -70,7 +70,7 @@ if ($handle = @opendir($dir)) {
 					$iframe_height = $matches[1];
 				$url = "$rel_path/$file/";
 				$url_iframe = $url . "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=" . urlencode($url);
-				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\" scrolling=\"no\"></iframe><br /><a href=\"$url\">$file</a></span>";
+				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" frameborder=\"0\" scrolling=\"no\"></iframe><br /><a href=\"$url\">$file</a></span>";
 				$count++;
 			}
 		}

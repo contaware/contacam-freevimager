@@ -188,7 +188,7 @@ if ($iframe_width < 380)
 if ($iframe_height < 330)
 	$iframe_height = 330;
 echo "<div align=\"center\">\n";
-echo "<iframe name=\"myiframe\" src=\"$srcuri\" width=\"" . $iframe_width . "px\" height=\"" . $iframe_height . "px\" frameborder=\"0\">\n";
+echo "<iframe name=\"myiframe\" src=\"$srcuri\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" frameborder=\"0\">\n";
 echo "<p>Click <a href=\"snapshot.php\">here</a> to see today's sequence of snapshots</p>\n";
 echo "</iframe>\n";
 echo "</div>\n";

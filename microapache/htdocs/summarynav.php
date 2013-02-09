@@ -43,14 +43,14 @@ if (SHOW_PRINTCOMMAND == 1)
 <input type="hidden" name="dateall" value="" />
 <table id="navcontrols">
 <tr>
-<td height="24px" align="left"><?php echo VIEWFILESFOR;?></td>
-<td height="24px" align="left"><input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" />
+<td height="24" align="left"><?php echo VIEWFILESFOR;?></td>
+<td height="24" align="left"><input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" />
 <a href="#" onclick="positionCalendar(); var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
 </td>
 </tr>
 <tr>
-<td height="24px" align="left"><?php echo LOCALTIME;?></td>
-<td height="24px" align="left"><input type="text" readonly="readonly" id="clock" name="clock" value="" size="44" /></td>
+<td height="24" align="left"><?php echo LOCALTIME;?></td>
+<td height="24" align="left"><input type="text" readonly="readonly" id="clock" name="clock" value="" size="44" /></td>
 </tr>
 <tr align="center">
 <?php echo "<td colspan=\"2\" align=\"center\"><h1>" . SUMMARYTITLE . "</h1></td>\n";?>

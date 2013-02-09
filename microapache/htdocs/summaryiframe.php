@@ -178,7 +178,7 @@ echo "<hr />\n";
 $srcuri = "summary.php";
 $srcuri_noheader = $srcuri . "?header=no";
 echo "<div align=\"center\">\n";
-echo "<iframe id=\"myiframe\" name=\"myiframe\" src=\"$srcuri_noheader\" width=\"100%\" height=\"400px\" frameborder=\"0\">\n";
+echo "<iframe id=\"myiframe\" name=\"myiframe\" src=\"$srcuri_noheader\" width=\"100%\" height=\"400\" frameborder=\"0\">\n";
 echo "<p>Click <a href=\"$srcuri\">here</a> to see the Summary</p>\n";
 echo "</iframe>\n";
 echo "</div>\n";
