@@ -13,7 +13,7 @@ define ("SNAPSHOTNAME","snapshot.jpg");
 define ("SNAPSHOTTHUMBNAME","snapshot_thumb.jpg");
 // In mjpeg(=server push) mode snapshots will be checked each
 // given milliseconds to see if they have changed
-define ("SERVERPUSH_POLLRATE_MS","150");
+define ("SERVERPUSH_POLLRATE_MS","200");
 // Summary will auto-reload each given seconds
 define ("SUMMARYREFRESHSEC","300");
 // Javascript date picker years start offset
