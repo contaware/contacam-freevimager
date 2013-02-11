@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.3.0 (xxx 2013)
+4.3.0 (February xxx 2013)
 
 - New image Reload (from disk) command
 - Changes for the command accelerators to be more

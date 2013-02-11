@@ -1,13 +1,13 @@
 VERSION HISTORY
 
-4.3.0 (xxx 2013)
+4.3.0 (February xxx 2013)
 
 - Split the 'Other HTTP Device' mode in Server Push and Client Poll
 - Swf snapshot history file is now correctly created even if
   restarting ContaCam (snapshots preceding restart are not lost)
-- In Device Assistant added a button to move the camera folder
-  and under Tools menu there is now the possibility to move all
-  camera folders in one command
+- In Device Assistant added a button to move the camera folder;
+  under Tools menu there is the possibility to move all camera
+  folders in one command
 - Live snapshot names can now be configured
 - Increased support from 15 to 100 DirectX devices
 - In log messages the user assigned device name is now shown

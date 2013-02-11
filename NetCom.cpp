@@ -194,8 +194,8 @@ void CNetCom::CParseProcess::NewData(BOOL bLastCall)
 		// done inside the parse function)
 		if (m_nProcessOffset < 0)
 			m_nProcessOffset = 0;
-		else if (m_nProcessOffset >= nAvailableRxBytes)
-			m_nProcessOffset = nAvailableRxBytes - 1;
+		else if (m_nProcessOffset > nAvailableRxBytes)
+			m_nProcessOffset = nAvailableRxBytes;
 		if (m_nProcessSize < 0 || (m_nProcessSize > nAvailableRxBytes - m_nProcessOffset))
 			m_nProcessSize = nAvailableRxBytes - m_nProcessOffset;
 

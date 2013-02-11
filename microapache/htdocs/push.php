@@ -35,12 +35,13 @@ function doServerPush($file,$type,$poll) {
 		// Output Content-Type
 		echo "Content-Type: $type\r\n";
 		
-		// Load content and get its size in bytes
-		$retry = 200;
+		// Load content and get its size in bytes,
+		// retry for a maximum of ~ 5 seconds
+		$retry = 333;
 		while ($retry > 0) {
 			$retry--;
 			$filecontent = @file_get_contents($file);
-			if ($filecontent == false)
+			if ($filecontent === false)
 				usleep(15000); // wait 15ms
 			else
 				break;
