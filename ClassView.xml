@@ -90,6 +90,7 @@
 <CLASS NAME="CSettingsDlg"/>
 <CLASS NAME="CSettingsDlgVideoDeviceDoc"/>
 <CLASS NAME="CSharpenDlg"/>
+<CLASS NAME="CSnapshotNamesDlg"/>
 <CLASS NAME="CSoftBordersDlg"/>
 <CLASS NAME="CSoftenDlg"/>
 <CLASS NAME="CAboutDlg"/>
@@ -98,7 +99,6 @@
 <CLASS NAME="CXmpDlg"/>
 <CLASS NAME="CYesNoAllCancelDlg"/>
 <CLASS NAME="CZipProgressDlg"/>
-<CLASS NAME="CSnapshotNamesDlg"/>
 </CLASSES>
 </FOLDER>
 <FOLDER NAME="Controls">

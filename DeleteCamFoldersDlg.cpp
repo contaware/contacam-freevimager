@@ -73,7 +73,7 @@ BOOL CDeleteCamFoldersDlg::OnInitDialog()
 
 void CDeleteCamFoldersDlg::OnOK() 
 {
-	EnableWindow(FALSE);
+	BeginWaitCursor();
 	for (int pos = 0 ; pos < m_DirFind.GetDirsCount() ; pos++)
 	{
 		if (m_CamFolders.GetSel(pos) > 0)
@@ -82,10 +82,10 @@ void CDeleteCamFoldersDlg::OnOK()
 			sDirName.TrimRight(_T('\\'));
 
 			// Delete folder
-			::DeleteToRecycleBin(sDirName, FALSE, GetSafeHwnd());
+			::DeleteToRecycleBin(sDirName);
 			
 			// Autorun-clear and device configuration delete
-			if (!::IsExistingDir(sDirName) &&	// make sure dir has been deleted, we cannot trust the return value of DeleteToRecycleBin()
+			if (!::IsExistingDir(sDirName) &&	// make sure dir has been deleted
 				((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
@@ -107,7 +107,7 @@ void CDeleteCamFoldersDlg::OnOK()
 			}
 		}
 	}
-	EnableWindow(TRUE);
+	EndWaitCursor();
 	CDialog::OnOK();
 }
 

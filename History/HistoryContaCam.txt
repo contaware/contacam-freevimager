@@ -1,6 +1,6 @@
 VERSION HISTORY
 
-4.3.0 (February xxx 2013)
+4.3.0 (February 12th 2013)
 
 - Split the 'Other HTTP Device' mode in Server Push and Client Poll
 - Swf snapshot history file is now correctly created even if

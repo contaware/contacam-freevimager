@@ -1,10 +1,9 @@
 VERSION HISTORY
 
-4.3.0 (February xxx 2013)
+4.3.0 (February 12th 2013)
 
 - New image Reload (from disk) command
-- Changes for the command accelerators to be more
-  translations friendly
+- Changed command accelerators to be more translation friendly
 - Removed Burning with Nero support (the Microsoft Windows
   burning API works well since Windows XP)
 - Removed OCR txt batch output support because it needed

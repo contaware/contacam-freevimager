@@ -929,7 +929,7 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 }
 
 // Shell deletion
-BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*/)
+BOOL DeleteToRecycleBin(LPCTSTR szName)
 {
 	TCHAR pFrom[MAX_PATH+1];			// +1 for double NULL termination
 	_tcsncpy(pFrom, szName, MAX_PATH);	// this pads pFrom with NULLs -> already double NULL terminated
@@ -937,11 +937,10 @@ BOOL DeleteToRecycleBin(LPCTSTR szName, BOOL bSilent/*=TRUE*/, HWND hwnd/*=NULL*
 	pFrom[MAX_PATH] = _T('\0');			// if szName to big make sure pFrom is double NULL terminated
 
 	SHFILEOPSTRUCT FileOp;
-	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT));
-	FileOp.hwnd = hwnd; 
-    FileOp.pFrom = pFrom; 
+	memset(&FileOp, 0, sizeof(SHFILEOPSTRUCT)); 
+    FileOp.pFrom = pFrom;
     FileOp.pTo = NULL; 
-    FileOp.fFlags = FOF_ALLOWUNDO | (bSilent ? FOF_SILENT | FOF_NOCONFIRMATION : 0);
+    FileOp.fFlags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOCONFIRMATION;
     FileOp.hNameMappings = NULL; 
     FileOp.lpszProgressTitle = NULL; 
 	FileOp.fAnyOperationsAborted = FALSE; 
