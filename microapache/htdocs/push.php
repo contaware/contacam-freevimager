@@ -23,7 +23,7 @@ function doServerPush($file,$type,$poll) {
 	header('Expires: Thu, 01 Dec 1994 16:00:00 GMT');
 	
 	// The multipart header
-	header("Content-Type: multipart/x-mixed-replace;boundary=$separator");
+	header("Content-Type: multipart/x-mixed-replace; boundary=$separator");
 	$extrabreaks = '';
 
 	do {
