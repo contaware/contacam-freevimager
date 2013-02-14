@@ -7,6 +7,8 @@ Both
 ContaCam Program
 ----------------
 - More compact storing in registry / ini file of detection zones
+- Remove Avi Play feature because vlc can be used to stream a avi
+  file to multipart/x-mixed-replace mjpeg
 
 ContaCam Web Interface
 ----------------------
