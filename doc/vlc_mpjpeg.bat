@@ -1,0 +1,2 @@
+@echo off
+start "VLC RTSP -> MJPEG" /MIN vlc.exe -I dummy --dummy-quiet -R rtsp://user:password@ip/path --sout "#transcode{vcodec=mjpg,vb=2500,scale=0.5,fps=10,acodec=none}:standard{access=http{mime=multipart/x-mixed-replace; boundary=7b3cc56e5f51db803f790dad720ed50a},mux=mpjpeg,dst=:8080/videostream.cgi}"
