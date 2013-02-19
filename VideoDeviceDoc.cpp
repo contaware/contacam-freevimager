@@ -4536,7 +4536,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 			sName,
 			m_DocRect.Width(), 
 			m_DocRect.Height(),
-			m_dEffectiveFrameRate >= MIN_FRAMERATE ? m_dEffectiveFrameRate : m_dFrameRate,
+			m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate,
 			sFormat);
 	}
 	else
