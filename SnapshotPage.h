@@ -24,6 +24,7 @@ public:
 	CSnapshotPage();
 	void SetDoc(CVideoDeviceDoc* pDoc);
 	~CSnapshotPage();
+	void DisplaySnapshotRate();
 	void ChangeThumbSize(int nNewWidth, int nNewHeight);
 
 // Dialog Data

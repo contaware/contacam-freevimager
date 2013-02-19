@@ -98,7 +98,4 @@ if ($doc_root == "")
 	$full_path = trim($filename,"\\/");
 else
 	$full_path = "$doc_root/" . trim($filename,"\\/");
-if (isset($_GET['fps']) && $_GET['fps'] > 0.0)
-	doServerPush($full_path, 'image/jpeg', 1000.0 / $_GET['fps']);
-else
-	doServerPush($full_path, 'image/jpeg', SERVERPUSH_POLLRATE_MS);
+doServerPush($full_path, 'image/jpeg', SERVERPUSH_POLLRATE_MS);

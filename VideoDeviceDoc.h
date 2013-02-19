@@ -106,6 +106,7 @@ class CMovementDetectionPage;
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality 
 #define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of swf
 #define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of swf
+#define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
 
 // Movement Detection
 #define NO_DETECTOR							0x00
@@ -160,6 +161,7 @@ class CMovementDetectionPage;
 #define PHPCONFIG_SNAPSHOTTHUMBNAME			_T("SNAPSHOTTHUMBNAME")
 #define PHPCONFIG_SNAPSHOTHISTORY_THUMB		_T("SNAPSHOTHISTORY_THUMB")
 #define PHPCONFIG_SNAPSHOTREFRESHSEC		_T("SNAPSHOTREFRESHSEC")
+#define PHPCONFIG_SERVERPUSH_POLLRATE_MS	_T("SERVERPUSH_POLLRATE_MS")
 #define PHPCONFIG_THUMBWIDTH				_T("THUMBWIDTH")
 #define PHPCONFIG_THUMBHEIGHT				_T("THUMBHEIGHT")
 #define PHPCONFIG_WIDTH						_T("WIDTH")
@@ -823,6 +825,9 @@ public:
 	// On Change Frame Rate
 	void OnChangeFrameRate();
 
+	// Changes the snapshot rate
+	void SnapshotRate(double dRate);
+
 	// Show OSD message
 	void ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor);
 	
@@ -1092,6 +1097,7 @@ public:
 	volatile BOOL m_bSnapshotHistorySwfFtp;				// Upload Swf Snapshot history files
 	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
+	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
 	volatile int m_nSnapshotCompressionQuality;			// Snapshot compression quality
 	volatile float m_fSnapshotVideoCompressorQuality;	// Snapshots swf compression quality

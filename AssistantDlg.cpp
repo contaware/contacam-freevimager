@@ -108,7 +108,7 @@ BOOL CAssistantDlg::OnInitDialog()
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOT_RATE);
 	if (pComboBox)
 	{
-		pComboBox->AddString(ML_STRING(1863, "Full Rate"));
+		pComboBox->AddString(ML_STRING(1863, "Fast Rate"));
 		pComboBox->AddString(ML_STRING(1741, "1 Second Rate"));
 		pComboBox->AddString(ML_STRING(1742, "2 Seconds Rate"));
 		pComboBox->AddString(ML_STRING(1743, "3 Seconds Rate"));
@@ -285,7 +285,7 @@ BOOL CAssistantDlg::OnInitDialog()
 	else if (m_pDoc->m_nSnapshotRate > 0)
 		m_nComboSnapshotRate = 1;			// 1 Second
 	else
-		m_nComboSnapshotRate = 0;			// Full Rate
+		m_nComboSnapshotRate = 0;			// Fast Rate
 	CString sMaxPerPage = m_pDoc->PhpConfigFileGetParam(PHPCONFIG_MAX_PER_PAGE);
 	int nMaxPerPage = PHPCONFIG_DEFAULT_THUMSPERPAGE;
 	if (sMaxPerPage != _T(""))
@@ -799,8 +799,9 @@ void CAssistantDlg::Rename()
 	}
 }
 
-void CAssistantDlg::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate)
+void CAssistantDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
 {
+	m_pDoc->SnapshotRate(dSnapshotRate);
 	if (m_pDoc->m_pSnapshotPage)
 	{
 		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
@@ -811,8 +812,7 @@ void CAssistantDlg::ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const
 		pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpeg ? 1 : 0);
 		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
 		pCheck->SetCheck(m_pDoc->m_bSnapshotThumb ? 1 : 0);
-		CEdit* pEdit = (CEdit*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-		pEdit->SetWindowText(sSnapShotRate);
+		m_pDoc->m_pSnapshotPage->DisplaySnapshotRate();
 
 		// Snapshot history
 		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
@@ -913,11 +913,6 @@ void CAssistantDlg::ApplySettings()
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
-			// Init snapshot rate vars
-			int nSnapshotRate = MIN_SNAPSHOT_RATE;
-			CString sSnapShotRate;
-			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
-
 			// Init thumb vars
 			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
 								m_pDoc->m_nSnapshotThumbWidth > 2 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3) ?
@@ -942,18 +937,16 @@ void CAssistantDlg::ApplySettings()
 			if (sMaxPerPage != _T(""))
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
 			m_pDoc->m_bSnapshotThumb = TRUE;
-			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 
-			// Update
-			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
+			// Update snapshot settings
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
 
 			break;
 		}
@@ -980,8 +973,6 @@ void CAssistantDlg::ApplySettings()
 				case 5  : nSnapshotRate = 240;  break;	// 4 Minutes
 				default : nSnapshotRate = 300;  break;	// 5 Minutes
 			}
-			CString sSnapShotRate;
-			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars, must be a multiple of 4 because of swf
 			BOOL bUseThumb = TRUE;
@@ -1016,18 +1007,16 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, bUseThumb ? _T("1") : _T("0"));
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
 			m_pDoc->m_bSnapshotThumb = TRUE;
-			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Enable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = TRUE;
 
-			// Update
-			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
+			// Update snapshot settings
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, nSnapshotRate);
 
 			break;
 		}
@@ -1043,26 +1032,24 @@ void CAssistantDlg::ApplySettings()
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
 
 			// Init snapshot rate vars
-			int nSnapshotRate;
+			double dSnapshotRate;
 			switch (m_nComboSnapshotRate)
 			{
-				case 0  : nSnapshotRate = 0;    break;	// Full Rate
-				case 1  : nSnapshotRate = 1;    break;	// 1 Second
-				case 2  : nSnapshotRate = 2;    break;	// 2 Seconds
-				case 3  : nSnapshotRate = 3;    break;	// 3 Seconds
-				case 4  : nSnapshotRate = 4;    break;	// 4 Seconds
-				case 5  : nSnapshotRate = 5;    break;	// 5 Seconds
-				case 6  : nSnapshotRate = 10;   break;	// 10 Seconds
-				case 7  : nSnapshotRate = 15;   break;	// 15 Seconds
-				case 8  : nSnapshotRate = 30;   break;	// 30 Seconds
-				case 9  : nSnapshotRate = 60;   break;	// 1 Minute
-				case 10 : nSnapshotRate = 120;  break;	// 2 Minutes
-				case 11 : nSnapshotRate = 180;  break;	// 3 Minutes
-				case 12 : nSnapshotRate = 240;  break;	// 4 Minutes
-				default : nSnapshotRate = 300;  break;	// 5 Minutes
+				case 0  : dSnapshotRate = DEFAULT_SERVERPUSH_POLLRATE_MS / 1000.0;	break;	// Fast Rate
+				case 1  : dSnapshotRate = 1.0;										break;	// 1 Second
+				case 2  : dSnapshotRate = 2.0;										break;	// 2 Seconds
+				case 3  : dSnapshotRate = 3.0;										break;	// 3 Seconds
+				case 4  : dSnapshotRate = 4.0;										break;	// 4 Seconds
+				case 5  : dSnapshotRate = 5.0;										break;	// 5 Seconds
+				case 6  : dSnapshotRate = 10.0;										break;	// 10 Seconds
+				case 7  : dSnapshotRate = 15.0;										break;	// 15 Seconds
+				case 8  : dSnapshotRate = 30.0;										break;	// 30 Seconds
+				case 9  : dSnapshotRate = 60.0;										break;	// 1 Minute
+				case 10 : dSnapshotRate = 120.0;									break;	// 2 Minutes
+				case 11 : dSnapshotRate = 180.0;									break;	// 3 Minutes
+				case 12 : dSnapshotRate = 240.0;									break;	// 4 Minutes
+				default : dSnapshotRate = 300.0;									break;	// 5 Minutes
 			}
-			CString sSnapShotRate;
-			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
 			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
@@ -1085,18 +1072,16 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
 			m_pDoc->m_bSnapshotThumb = TRUE;
-			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 
-			// Update
-			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
+			// Update snapshot settings
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
 
 			break;
 		}
@@ -1110,11 +1095,6 @@ void CAssistantDlg::ApplySettings()
 			CString sWidth, sHeight;
 			sWidth.Format(_T("%d"), m_pDoc->m_DocRect.right);
 			sHeight.Format(_T("%d"), m_pDoc->m_DocRect.bottom);
-
-			// Init snapshot rate vars
-			int nSnapshotRate = MIN_SNAPSHOT_RATE;
-			CString sSnapShotRate;
-			sSnapShotRate.Format(_T("%d"), nSnapshotRate);
 
 			// Init thumb vars
 			int nThumbWidth =	(m_pDoc->m_nSnapshotThumbWidth < 4 * DEFAULT_SNAPSHOT_THUMB_WIDTH / 3 &&
@@ -1134,18 +1114,16 @@ void CAssistantDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sSnapShotRate);
 
 			// Enable live snapshots
 			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
 			m_pDoc->m_bSnapshotThumb = TRUE;
-			m_pDoc->m_nSnapshotRate = nSnapshotRate;
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistorySwf = FALSE;
 
-			// Update
-			ApplySettingsUpdate(nThumbWidth, nThumbHeight, sSnapShotRate);
+			// Update snapshot settings
+			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
 
 			break;
 		}

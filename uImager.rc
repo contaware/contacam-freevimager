@@ -4178,12 +4178,12 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
+FONT 8, "MS Shell Dlg"
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,21,101,10
     PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,128,18,101,17
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,353,21,34,12,ES_RIGHT | ES_NUMBER
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,353,21,34,12,ES_RIGHT
     CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",
                     TBS_TOP | TBS_NOTICKS | WS_TABSTOP,122,48,140,18
     PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,303,48,101,17
@@ -6848,7 +6848,7 @@ BEGIN
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
     IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%"
-    IDS_STRING1863          "Full Rate"
+    IDS_STRING1863          "Fast Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "Server Push Mode"
     IDS_STRING1866          "Client Poll Mode"

@@ -58,7 +58,7 @@ protected:
 	void Rename();
 	void EnableDisable24hRec(BOOL bEnable);
 	BOOL Is24hRec();
-	void ApplySettingsUpdate(int nThumbWidth, int nThumbHeight, const CString& sSnapShotRate);
+	void ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate);
 	void ApplySettings();
 	// Generated message map functions
 	//{{AFX_MSG(CAssistantDlg)

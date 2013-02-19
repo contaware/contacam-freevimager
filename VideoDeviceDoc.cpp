@@ -4118,6 +4118,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_sSnapshotLiveJpegName = DEFAULT_SNAPSHOT_LIVE_JPEGNAME;
 	m_sSnapshotLiveJpegThumbName = DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME;
 	m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
+	m_nSnapshotRateMs = 0;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
 	m_fSnapshotVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
@@ -4793,6 +4794,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
 	m_nSnapshotRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotRate"), DEFAULT_SNAPSHOT_RATE);
+	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
 	m_fSnapshotVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
@@ -5002,6 +5004,7 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName);
 		pApp->WriteProfileString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName);
 		pApp->WriteProfileInt(sSection, _T("SnapshotRate"), m_nSnapshotRate);
+		pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 		pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 		pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
 		pApp->WriteProfileInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality);
@@ -5182,6 +5185,7 @@ void CVideoDeviceDoc::SaveSettings()
 		::WriteProfileIniString(sSection, _T("SnapshotLiveJpegName"), m_sSnapshotLiveJpegName, sTempFileName);
 		::WriteProfileIniString(sSection, _T("SnapshotLiveJpegThumbName"), m_sSnapshotLiveJpegThumbName, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SnapshotRate"), m_nSnapshotRate, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SnapshotVideoCompressorQuality"), (int)m_fSnapshotVideoCompressorQuality, sTempFileName);
@@ -8369,6 +8373,40 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 	::InterlockedExchange(&m_lProcessFrameTime, (LONG)dwProcessFrameTime);
 }
 
+void CVideoDeviceDoc::SnapshotRate(double dRate)
+{
+	CString sText;
+	double dRateFloor = floor(dRate);
+	int nRate = (int)dRateFloor;
+	int nRateMs = Round(1000.0 * (dRate - dRateFloor));
+
+	// Set seconds rate
+	if (nRate >= 0)
+	{
+		sText.Format(_T("%d"), nRate);
+		m_nSnapshotRate = nRate;
+	}
+	else
+	{
+		sText.Format(_T("%d"), DEFAULT_SNAPSHOT_RATE);
+		m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
+	}
+	PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
+
+	// Set milliseconds rate
+	if (nRate == 0 && nRateMs != 0) // rate values in range ]0.0,1.0[
+	{
+		sText.Format(_T("%d"), nRateMs);
+		m_nSnapshotRateMs = nRateMs;
+	}
+	else
+	{
+		sText.Format(_T("%d"), DEFAULT_SERVERPUSH_POLLRATE_MS);
+		m_nSnapshotRateMs = 0;
+	}
+	PhpConfigFileSetParam(PHPCONFIG_SERVERPUSH_POLLRATE_MS, sText);
+}
+
 void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 {
 	// Check
@@ -8383,11 +8421,12 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	int nFrameTime = Round(1000.0 / m_dFrameRate);
 	if (m_dEffectiveFrameRate > 0.0)
 		nFrameTime = Round(1000.0 / m_dEffectiveFrameRate);
-	if (nFrameTime >= m_nSnapshotRate * 1000)
+	int nSnapshotRateMs = 1000 * m_nSnapshotRate + m_nSnapshotRateMs;
+	if (nFrameTime >= nSnapshotRateMs)
 		bDoSnapshot = TRUE;
 	else
 	{
-		DWORD dwMaxUpTimeDiff = (DWORD)m_nSnapshotRate * 2500U;
+		DWORD dwMaxUpTimeDiff = (DWORD)(3 * nSnapshotRateMs);
 		DWORD dwCurrentUpTimeDiff = dwUpTime - m_dwNextSnapshotUpTime;
 		DWORD dwCurrentUpTimeDiffInv = m_dwNextSnapshotUpTime - dwUpTime;
 		if (dwCurrentUpTimeDiff >= 0x80000000U)
@@ -8401,7 +8440,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 				m_dwNextSnapshotUpTime = dwUpTime;			// reset it!
 			else
 			{
-				m_dwNextSnapshotUpTime += (DWORD)m_nSnapshotRate * 1000U;
+				m_dwNextSnapshotUpTime += (DWORD)nSnapshotRateMs;
 				bDoSnapshot = TRUE;
 			}
 		}

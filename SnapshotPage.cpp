@@ -129,13 +129,11 @@ BOOL CSnapshotPage::OnInitDialog()
 	pCheck->SetCheck(m_pDoc->m_bSnapshotStartStop);
 
 	// Snapshot rate
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
-	CString sText;
-	sText.Format(_T("%i"), m_pDoc->m_nSnapshotRate);
-	pEdit->SetWindowText(sText);
+	DisplaySnapshotRate();
 
 	// Snapshot history framerate
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE);
+	CString sText;
 	sText.Format(_T("%i"), m_pDoc->m_nSnapshotHistoryFrameRate);
 	pEdit->SetWindowText(sText);
 
@@ -296,31 +294,27 @@ void CSnapshotPage::OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResul
 	*pResult = 0;
 }
 
+void CSnapshotPage::DisplaySnapshotRate()
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
+	CString sText;
+	if (m_pDoc->m_nSnapshotRate >= 1)
+		sText.Format(_T("%i"), m_pDoc->m_nSnapshotRate);
+	else if (m_pDoc->m_nSnapshotRate == 0 && m_pDoc->m_nSnapshotRateMs == 0)
+		sText = _T("0");
+	else
+		sText.Format(_T("%.3f"), (double)(m_pDoc->m_nSnapshotRate) + (double)(m_pDoc->m_nSnapshotRateMs) / 1000.0);
+	pEdit->SetWindowText(sText);
+}
+
 void CSnapshotPage::OnChangeEditSnapshotRate() 
 {
 	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_SNAPSHOT_RATE);
 	pEdit->GetWindowText(sText);
-	int nRate = _tcstol(sText.GetBuffer(0), NULL, 10);
+	double dRate = _tcstod(sText.GetBuffer(0), NULL);
 	sText.ReleaseBuffer();
-	if (nRate >= 0)
-	{
-		if (nRate != m_pDoc->m_nSnapshotRate)
-		{
-			sText.Format(_T("%d"), nRate);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
-			m_pDoc->m_nSnapshotRate = nRate;
-		}
-	}
-	else
-	{
-		if (DEFAULT_SNAPSHOT_RATE != m_pDoc->m_nSnapshotRate)
-		{
-			sText.Format(_T("%d"), DEFAULT_SNAPSHOT_RATE);
-			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTREFRESHSEC, sText);
-			m_pDoc->m_nSnapshotRate = DEFAULT_SNAPSHOT_RATE;
-		}
-	}
+	m_pDoc->SnapshotRate(dRate);
 }
 
 void CSnapshotPage::OnChangeEditSnapshotHistoryFramerate() 

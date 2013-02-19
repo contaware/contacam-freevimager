@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+4.5.0 (xxx 2013)
+
+- Changed 1863 string from Full Rate -> Fast Rate
+
 4.3.0 (February 12th 2013)
 
 - Added strings 1869, 1870, 1871, 1872
