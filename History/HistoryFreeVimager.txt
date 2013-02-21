@@ -1,4 +1,8 @@
-VERSION HISTORY
+FREEVIMAGER HISTORY
+
+4.5.0 (xxx 2013)
+
+- ...
 
 4.3.0 (February 12th 2013)
 

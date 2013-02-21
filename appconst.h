@@ -10,7 +10,6 @@
 
 // *** Remember To Change the Version in this file                     ***
 // *** Remember To Change the Version in uImager.rc2                   ***
-// *** (version and about dialog resources)                            ***
 // *** Remember To Change the Version in the Installer                 ***
 // *** Update the History.txt files                                    ***
 
@@ -32,7 +31,7 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #endif
-#define APPVERSION										_T("4.3.0")
+#define APPVERSION										_T("4.5.0")
 #define SLIDESHOWNAME									_T("Start.exe")
 #define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
 
