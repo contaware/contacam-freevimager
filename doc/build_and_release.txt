@@ -21,8 +21,8 @@ The file inclusion order under Tools - Options is:
 1. DirectX  2. Platform SDK  3. Standard files 
 
 Additional requirements for Visual Studio 2008:
-- install sp1 or higher
-- Microsoft Windows SDK v6.0A
+- install sp1 (KB945140) or higher
+- install MS11-025 KB2538241
 - Microsoft DirectX 9.0 SDK or higher
 
 Necessary free tools:
