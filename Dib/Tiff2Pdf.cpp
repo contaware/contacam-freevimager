@@ -4611,35 +4611,37 @@ tsize_t t2p_write_pdf_xobject_stream_filter(ttile_t tile, T2P* t2p, TIFF* output
 		case T2P_COMPRESS_JPEG:
 			written += TIFFWriteFile(output, (tdata_t) "/DCTDecode ", 11);
 			/*
-			Oliver Pfister Notes
-			--------------------
-			
-			The following code was added in 3.8.1 with this entry:
-			2006-02-07  Frank Warmerdam  <warmerdam@pobox.com>
-			tools/tiff2pdf.c: Fixed support for non-YCbCr encoded JPEG compressed TIFF files,
-			per submission from Dan Cobra.
+			Optional ColorTransform parameter of the DCTDecode filter
+			---------------------------------------------------------
 
-			TIFFTechNote2 extract:
-			"Implementors should note that many popular JPEG codecs
-			(compressor/decompressors) provide automatic color conversion and
-			downsampling, so that the application may supply full-size RGB data which
-			is nonetheless converted to downsampled YCbCr.  This is an implementation
-			convenience which does not excuse the TIFF control layer from its
-			responsibility to know what is really going on.  The
-			PhotometricInterpretation and subsampling fields written to the file must
-			describe what is actually in the file.
-			A JPEG-compressed TIFF file will typically have PhotometricInterpretation =
-			YCbCr and YCbCrSubSampling = [2,1] or [2,2], unless the source data was
-			grayscale or CMYK."
+			A code specifying the transformation to be performed on the sample values:
+			0: No transformation.
+			1: If the image has three color components, transform RGB values to YUV 
+			before encoding and from YUV to RGB after decoding. If the image has 
+			four components, transform CMYK values to YUVK before encoding and from 
+			YUVK to CMYK after decoding. This option is ignored if the image has one 
+			or two color components.
 
-			Currently FreeVimager feeds PHOTOMETRIC_RGB jpeg-tiffs and Tiff2Pdf() re-encodes them
-			to PHOTOMETRIC_YCBCR jpeg-pdfs. The following check should be on the output photometric
-			and not the input! Waiting for a better solution we just comment it out...
+			The default value of ColorTransform is 1 if the image has three 
+			components and 0 otherwise. In other words, conversion between RGB and 
+			YUV is performed for all three-component images unless explicitly 
+			disabled by setting ColorTransform to 0.
+
+			Oliver Pfister Fix
+			------------------
+
+			Currently FreeVimager passes PHOTOMETRIC_RGB jpeg-tiffs to Tiff2Pdf() which
+			re-encodes them to PHOTOMETRIC_YCBCR jpeg-pdfs because pdf_nopassthrough
+			is set to 1. To be correct the photometric check would be on the output
+			photometric and not the input, but that's not possible because this function
+			is called before the output photometric is initialized. The solution is to
+			check the pdf_nopassthrough flag which if set tells us that the output is a
+			YCbCr jpeg.
 			*/
-			/*if(t2p->tiff_photometric != PHOTOMETRIC_YCBCR) {
+			if(t2p->pdf_nopassthrough == 0 && t2p->tiff_photometric != PHOTOMETRIC_YCBCR) {
 				written += TIFFWriteFile(output, (tdata_t) "/DecodeParms ", 13);
 				written += TIFFWriteFile(output, (tdata_t) "<< /ColorTransform 0 >>\n", 24);
-			}*/
+			}
 			break;
 		case T2P_COMPRESS_ZIP:
 			written += TIFFWriteFile(output, (tdata_t) "/FlateDecode ", 13);
