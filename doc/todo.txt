@@ -11,9 +11,28 @@ ContaCam Program
   file to multipart/x-mixed-replace mjpeg
 - Start deleting files from MIN(10% of HD space, 10 GB) -> in Device
   Assistant write 'if the free disk space is getting low...'
+- Save JPEG snapshots once the motion detection is triggered
+- Document the way to have different parameters for the same cam,
+  like two different snapshot rates, or ...
+- Output static .htm files through the PHP parser so that also Dropbox
+  users can access it? -> to many files for all the days in a month
+  and for all the pages, do not do that!
+- Seems that some dynamic dns providers do html or javascript redirects:
+  http://g4534.vipcam.org. Should we support that? vipcam.org is from D-Link
+- Remove Tray Icon because if in service mode ContaCam sometimes is not notified
+  that a user is logging-off and also the settings are not always stored well.
+  Since Windows 7 the tray icons are obsolete.
+- Rotate by 90 degrees
+- Add support for new Foscams:
+  JPEG:  /cgi-bin/CGIProxy.fcgi?cmd=snapPicture2
+  MJPEG: /cgi-bin/CGIStream.cgi?cmd=GetMJStream
 
 ContaCam Web Interface
 ----------------------
 - Replace swf with html5 video (mp4 and webm formats)
 - Find a way to show avi detections if only avi selected
 - Find a way to show swf detections if only swf selected
+
+ContaCam internet site
+----------------------
+- Write on main page that's possible to remotely watch through port forwarding or Dropbox

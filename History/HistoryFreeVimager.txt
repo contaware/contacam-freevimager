@@ -2,7 +2,9 @@ FREEVIMAGER HISTORY
 
 4.5.0 (xxx 2013)
 
-- ...
+- The generated pdfs are now smaller and compatible with all
+  current viewers (solved wrong color display issue of
+  Nitro Pdf Reader and some mobile pdf viewers)
 
 4.3.0 (February 12th 2013)
 
