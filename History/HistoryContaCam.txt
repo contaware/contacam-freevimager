@@ -2,7 +2,9 @@ CONTACAM HISTORY
 
 4.5.0 (xxx 2013)
 
-- Millisecond snapshot rates
+- Possibility for millisecond snapshot rates
+- Added support for Foscam FI9821W, FI9801W and FI9802W
+  (update Foscam firmware to the latest version!)
 
 4.3.0 (February 12th 2013)
 

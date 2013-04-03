@@ -5536,6 +5536,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
 		
 		m_HttpGetFrameLocations.Add(_T("/video2.mjpg"));					// Cisco, D-Link
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")); // Foscam
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
 		
@@ -5580,6 +5582,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2"));	// Foscam
 		
 		m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
 		
