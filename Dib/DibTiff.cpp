@@ -2305,10 +2305,9 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 					int nJpegQuality/*=DEFAULT_JPEGCOMPRESSION*/,
 					BOOL bFlatten/*=FALSE*/,						// if TRUE flatten the image if it has a alpha channel
 					COLORREF crBackgroundColor/*=RGB(0,0,0)*/,		// Flatten Background Color
-					BOOL bLimitToStandardBitsPerSample/*=FALSE*/,	// If set images with Bits per Samples other than
+					BOOL bLimitToStandardBitsPerSample/*=FALSE*/,	// If set -> the images with Bits per Samples other than
 																	// 1, 2, 4 or 8 are converted to a standard Bits per Sample
-					BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// Photoshop produces YCbCr Jpegs inside Tiff with a
-																	// CbCr subsampling of 1, this is not supported by Tiff2Pdf!
+					BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {				
 	// Check File Extension
 	if ((::GetFileExt(szInFileName) == _T(".tif")) ||
@@ -2362,12 +2361,7 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 		uint16 PhotometricInterpretation = -1;
 		::TIFFGetField(in, TIFFTAG_PHOTOMETRIC, &PhotometricInterpretation);
 
-		// Get CbCr Subsampling
-		uint16 HorzSubsampling = 0;
-		uint16 VertSubsampling = 0;
-		::TIFFGetField(in, TIFFTAG_YCBCRSUBSAMPLING, &HorzSubsampling, &VertSubsampling);
-
-		// Re-encode if compression set or if flattening wanted
+		// Re-encode?
 		if (nCompression >= 0								||
 			(bFlatten && Dib.m_FileInfo.m_bAlphaChannel)	||	// m_bAlpha is not set if loading the Header only!
 			(bLimitToStandardBitsPerSample	&&
@@ -2377,8 +2371,7 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 			BitsPerSample != 8)								||
 			(bReencodeYCbCrJpegs			&&
 			compression == COMPRESSION_JPEG &&
-			PhotometricInterpretation == PHOTOMETRIC_YCBCR &&
-			HorzSubsampling == 1 && VertSubsampling == 1))
+			PhotometricInterpretation == PHOTOMETRIC_YCBCR))
 		{
 			// Set Compression if not set
 			if (nCompression < 0)
@@ -2491,10 +2484,9 @@ BOOL CDib::TIFFCopyAllPages(LPCTSTR szInFileName,
 							int nJpegQuality/*=DEFAULT_JPEGCOMPRESSION*/,
 							BOOL bFlatten/*=FALSE*/,						// if TRUE flatten all pages with a alpha channel
 							COLORREF crBackgroundColor/*=RGB(0,0,0)*/,		// Flatten Background Color
-							BOOL bLimitToStandardBitsPerSample/*=FALSE*/,	// If set images with Bits per Samples other than
+							BOOL bLimitToStandardBitsPerSample/*=FALSE*/,	// If set -> the images with Bits per Samples other than
 																			// 1, 2, 4 or 8 are converted to a standard Bits per Sample
-							BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// Photoshop produces YCbCr Jpegs inside Tiff with a
-																			// CbCr subsampling of 1, this is not supported by Tiff2Pdf!
+							BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {
 	// Check File Extension
 	if ((::GetFileExt(szInFileName) == _T(".tif")) ||

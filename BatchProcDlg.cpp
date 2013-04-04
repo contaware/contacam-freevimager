@@ -940,8 +940,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 										TRUE,		// Flatten all pages with a alpha channel
 										RGB(255,255,255),// White background for PDFs is ok
 										TRUE,		// Limit to 1,2,4 or 8 Bits per Sample because PDF is not supporting others!
-										TRUE))		// Photoshop produces YCbCr Jpegs inside Tiff with a
-													// CbCr subsampling of 1, this is not supported by Tiff2Pdf -> reencode
+										TRUE))		// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf -> re-encode
 				throw (int)0;
 		}
 		else
@@ -971,8 +970,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 										TRUE,		// Flatten all pages with a alpha channel
 										RGB(255,255,255),// White background for PDFs is ok
 										TRUE,		// Limit to 1,2,4 or 8 Bits per Sample because PDF is not supporting others!
-										TRUE))		// Photoshop produces YCbCr Jpegs inside Tiff with a
-													// CbCr subsampling of 1, this is not supported by Tiff2Pdf -> reencode
+										TRUE))		// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf -> re-encode
 				throw (int)0;
 		}
 	}

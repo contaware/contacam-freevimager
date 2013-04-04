@@ -1498,10 +1498,9 @@ public:
 						int nJpegQuality = DEFAULT_JPEGCOMPRESSION,
 						BOOL bFlatten = FALSE,							// if TRUE flatten the image if it has a alpha channel
 						COLORREF crBackgroundColor = RGB(0,0,0),		// Flatten Background Color
-						BOOL bLimitToStandardBitsPerSample = FALSE,		// If set images with Bits per Samples other than
+						BOOL bLimitToStandardBitsPerSample = FALSE,		// If set -> the images with Bits per Samples other than
 																		// 1, 2, 4 or 8 are converted to a standard Bits per Sample
-						BOOL bReencodeYCbCrJpegs = FALSE);				// Photoshop produces YCbCr Jpegs inside Tiff with a
-																		// CbCr subsampling of 1, this is not supported by Tiff2Pdf!
+						BOOL bReencodeYCbCrJpegs = FALSE);				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 	// Copy all pages of input tiff file to output tif
 	static BOOL TIFFCopyAllPages(LPCTSTR szInFileName,
 								TIFF* out,
@@ -1512,10 +1511,9 @@ public:
 								int nJpegQuality = DEFAULT_JPEGCOMPRESSION,
 								BOOL bFlatten = FALSE,						// if TRUE flatten all pages with a alpha channel
 								COLORREF crBackgroundColor = RGB(0,0,0),	// Flatten Background Color
-								BOOL bLimitToStandardBitsPerSample = FALSE,	// If set images with Bits per Samples other than
+								BOOL bLimitToStandardBitsPerSample = FALSE,	// If set -> the images with Bits per Samples other than
 																			// 1, 2, 4 or 8 are converted to a standard Bits per Sample
-								BOOL bReencodeYCbCrJpegs = FALSE);			// Photoshop produces YCbCr Jpegs inside Tiff with a
-																			// CbCr subsampling of 1, this is not supported by Tiff2Pdf!
+								BOOL bReencodeYCbCrJpegs = FALSE);			// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 
 	// Delete the given page number
 	static BOOL TIFFDeletePage(	int nDeletePageNum,
