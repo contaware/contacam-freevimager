@@ -1859,7 +1859,7 @@ static BOOL TiffCp(TIFF* in, TIFF* out)
 	CopyField(TIFFTAG_YPOSITION, floatv);
 	CopyField(TIFFTAG_IMAGEDEPTH, longv);
 	CopyField(TIFFTAG_TILEDEPTH, longv);
-	CopyField(TIFFTAG_SAMPLEFORMAT, longv);
+	CopyField(TIFFTAG_SAMPLEFORMAT, shortv);
 	CopyField2(TIFFTAG_EXTRASAMPLES, shortv, shortav);
 	CopyField3(TIFFTAG_COLORMAP, red, green, blue);
 	CopyField(TIFFTAG_WHITEPOINT, floatav);
