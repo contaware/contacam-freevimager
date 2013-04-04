@@ -9,8 +9,6 @@ ContaCam Program
 - More compact storing in registry / ini file of detection zones
 - Remove Avi Play feature because vlc can be used to stream a avi
   file to multipart/x-mixed-replace mjpeg
-- Start deleting files from MIN(10% of HD space, 10 GB) -> in Device
-  Assistant write 'if the free disk space is getting low...'
 - Save JPEG snapshots once the motion detection is triggered
 - Document the way to have different parameters for the same cam,
   like two different snapshot rates, or ...

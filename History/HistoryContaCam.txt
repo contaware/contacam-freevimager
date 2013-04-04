@@ -3,6 +3,8 @@ CONTACAM HISTORY
 4.5.0 (xxx 2013)
 
 - Possibility for millisecond snapshot rates
+- Delete old files if the free disk space gets lower than:
+  MIN(10% of HD space, 10 GB)
 - Added support for Foscam FI9821W, FI9801W and FI9802W
   (update Foscam firmware to the latest version!)
 

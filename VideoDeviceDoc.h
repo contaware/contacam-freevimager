@@ -53,7 +53,6 @@ class CMovementDetectionPage;
 #define MAX_DEVICE_AUTORUN_KEYS				100			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
-#define MIN_DISKFREE_PERCENT				10			// Below this disk free percentage the oldest files are deleted
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
 #define	FILES_DELETE_INTERVAL_RANGE			300000		// in ms -> each [10min,15min[ check whether we can delete old files
 #define AUDIO_IN_MIN_BUF_SIZE				256			// bytes

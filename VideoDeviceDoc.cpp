@@ -3916,9 +3916,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 	CTimeSpan TimeDiff;
 	LONGLONG llDaysAgo;
 	BOOL bDeletingOld;
-	ULONGLONG llDiskTotalSize;
-	ULONGLONG llDiskFreeSpace;
-	int nDiskFreeSpacePercent;
+	ULONGLONG ullDiskTotalSize;
+	ULONGLONG ullMinDiskFreeSpace;
 
 	// Check and adjust Auto-Save directory
 	dwAttrib = ::GetFileAttributes(sAutoSaveDir);
@@ -3948,9 +3947,12 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 		}
 
 		// Delete oldest files if we are short of disk space
-		llDiskTotalSize = ::GetDiskSize(sAutoSaveDir);
-		if (llDiskTotalSize > 0)
+		ullDiskTotalSize = ::GetDiskSize(sAutoSaveDir);
+		if (ullDiskTotalSize > 0)
 		{
+			// Minimum wanted disk space: MIN(10% of HD size, 10 GB)
+			ullMinDiskFreeSpace = MIN(ullDiskTotalSize / 10, 10737418240UI64);
+
 			// Get the time of the oldest existing directory
 			if (!CalcOldestDir(	FileFind,
 								nAutoSaveDirSize,
@@ -3960,10 +3962,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 
 			TimeDiff = CurrentTime - OldestDirTime;
 			llDaysAgo = (LONGLONG)TimeDiff.GetDays();
-			llDiskFreeSpace = ::GetDiskSpace(sAutoSaveDir);
-			nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			bDeletingOld = FALSE;
-			while (llDaysAgo > 0 && nDiskFreeSpacePercent < MIN_DISKFREE_PERCENT)
+			while (llDaysAgo > 0 && ::GetDiskSpace(sAutoSaveDir) < ullMinDiskFreeSpace)
 			{
 				// Delete old
 				if (!DeleteOld(	FileFind,
@@ -3973,16 +3973,14 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteO
 					return FALSE; // Exit Thread
 				bDeletingOld = TRUE;
 				llDaysAgo--;
-				llDiskFreeSpace = ::GetDiskSpace(sAutoSaveDir);
-				nDiskFreeSpacePercent = (int)(100 * llDiskFreeSpace / llDiskTotalSize);
 			}
 
 			// Log
 			if (bDeletingOld)
 			{
 				CString sMsg;
-				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is less than %d percent\n"),
-							m_pDoc->GetAssignedDeviceName(), sAutoSaveDir, MIN_DISKFREE_PERCENT);
+				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is low\n"),
+							m_pDoc->GetAssignedDeviceName(), sAutoSaveDir);
 				TRACE(sMsg);
 				::LogLine(sMsg);
 			}
