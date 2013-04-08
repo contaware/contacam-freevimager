@@ -1,0 +1,24 @@
+new is much faster. You should normally prefer new to VirtualAlloc.
+
+VirtualAlloc can't allocate less than one page (4KB or 8KB depending
+on architecture). And because of the 64 KB allocation granularity, it
+usually doesn't make sense to allocate blocks that are less than 64 KB
+in size (if you VirtualAlloc one 4 KB page, you waste 60 KB of virtual
+memory, which is a finite resource on 32 bit).
+
+Even for blocks that are a small multiple of 64 KB, new/malloc/HeapAlloc
+are likely to be faster because most of the time they don't require a
+transition to kernel mode, unlike VirtualAlloc which is a system call.
+
+So basically you should always use new/malloc/HeapAlloc, unless you
+really need additional functionality provided by VirtualAlloc, or
+you're implementing your own custom allocator.
+
+
+VirtualAlloc sould be used only:
+
+1. If you need allocation aligned on page boundary
+   (usually for non-buffered I/O).
+2. You don't want to commit full amount of memory (sparse allocation).
+3. You want to allocate very large amount at once. There are limits
+   on a single allocation in HeapAlloc.
