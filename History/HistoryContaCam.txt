@@ -7,6 +7,8 @@ CONTACAM HISTORY
   MIN(10% of HD space, 10 GB)
 - Added support for Foscam FI9821W, FI9801W and FI9802W
   (update Foscam firmware to the latest version!)
+- Removed Capture - Avi Play command because vlc can be used to
+  stream a avi file to multipart/x-mixed-replace mjpeg
 
 4.3.0 (February 12th 2013)
 

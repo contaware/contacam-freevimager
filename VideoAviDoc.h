@@ -37,7 +37,6 @@
 // Forward Declaration
 class CVideoAviView;
 class CVideoAviChildFrame;
-class CVideoDeviceDoc;
 class CAviInfoDlg;
 class COutVolDlg;
 class CAudioVideoShiftDlg;
@@ -519,13 +518,6 @@ public:
 	// User Zoom Rect of the previous full-screen
 	CRect m_PrevUserZoomRect;
 
-	// Send Frames to the given Video Device Doc
-#ifdef VIDEODEVICEDOC
-	CVideoDeviceDoc* volatile m_pVideoDeviceDoc;
-	CDib* volatile m_pVideoDeviceDocDib;
-	CRITICAL_SECTION m_csVideoDeviceDoc;
-#endif
-
 	// Draw
 	CDxDraw m_DxDraw;					// Direct Draw Object
 	volatile BOOL m_bUseDxDraw;			// Use Direct Draw?
@@ -760,11 +752,6 @@ protected:
 	afx_msg void OnFileExtractframes();
 	afx_msg void OnUpdateFileExtractframes(CCmdUI* pCmdUI);
 	//}}AFX_MSG
-#ifdef VIDEODEVICEDOC
-	afx_msg void OnCaptureAviplay();
-	afx_msg void OnUpdateCaptureAviplay(CCmdUI* pCmdUI);
-#endif
-
 	DECLARE_MESSAGE_MAP()
 };
 

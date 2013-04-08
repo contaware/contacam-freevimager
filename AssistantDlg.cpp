@@ -348,7 +348,7 @@ void CAssistantDlg::EnableDisableCtrls()
 		CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FULLSTRETCH);
 		pCheck->EnableWindow(FALSE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
-		pCheck->EnableWindow(!m_pDoc->m_pVideoAviDoc);
+		pCheck->EnableWindow(TRUE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(TRUE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
@@ -591,20 +591,18 @@ void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
 
 BOOL CAssistantDlg::Is24hRec() 
 {
-	if (!m_pDoc->m_pVideoAviDoc)
-	{
-		CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
-			((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-		if (pOnceSchedulerEntry											&&
-			pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
+	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
+		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
+	if (pOnceSchedulerEntry											&&
+		pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
 #if _MFC_VER >= 0x0700
-			pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
+		pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
 #else
-			pOnceSchedulerEntry->m_StopTime == CTime(2037, 12, 31, 23, 59, 59))
+		pOnceSchedulerEntry->m_StopTime == CTime(2037, 12, 31, 23, 59, 59))
 #endif
-			return TRUE;
-	}
-	return FALSE;
+		return TRUE;
+	else
+		return FALSE;
 }
 
 void CAssistantDlg::OnTimer(UINT nIDEvent) 
@@ -1169,7 +1167,7 @@ void CAssistantDlg::ApplySettings()
 	m_pDoc->StartProcessFrame(PROCESSFRAME_ASSISTANT);
 
 	// Set Autorun
-	if (!m_pDoc->m_pVideoAviDoc && m_nUsage >= 0 && m_nUsage <= 2)
+	if (m_nUsage >= 0 && m_nUsage <= 2)
 	{
 		if (m_pDoc->m_pGeneralPage)
 		{

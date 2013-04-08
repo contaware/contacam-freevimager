@@ -3,8 +3,7 @@
 #include "VideoDeviceView.h"
 #include "MainFrm.h"
 #include "VideoDeviceDoc.h"
-#include "VideoAviDoc.h"
-#include "VideoAviView.h"
+#include "AviPlay.h"
 #include "AudioInSourceDlg.h"
 #include "AssistantDlg.h"
 #include "GeneralPage.h"
@@ -3622,15 +3621,11 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 		}
 		if (m_pDoc->m_bCaptureStarted)
 		{
-			// Log the starting (no log for Video Avi mode)
-			if (!m_pDoc->m_pVideoAviDoc)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s starting\n"), m_pDoc->GetAssignedDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
-			}
-
+			// Log the starting
+			CString sMsg;
+			sMsg.Format(_T("%s starting\n"), m_pDoc->GetAssignedDeviceName());
+			TRACE(sMsg);
+			::LogLine(sMsg);
 			break;
 		}
 		else if (m_pDoc->GetView())
@@ -4061,7 +4056,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dEffectiveFrameRate = 0.0;
 	m_dEffectiveFrameTimeSum = 0.0;
 	m_dwEffectiveFrameTimeCountUp = 0U;
-	m_pVideoAviDoc = NULL;
 	m_bDoEditCopy = FALSE;
 	m_bDoEditSnapshot = FALSE;
 	m_lProcessFrameTime = 0;
@@ -4450,15 +4444,6 @@ CString CVideoDeviceDoc::GetDevicePathName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDevicePath();
-	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
-	{
-		CString sShortFileName;
-		int index;
-		if ((index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\'))) >= 0)
-			sDevice = m_pVideoAviDoc->GetPathName().Right(m_pVideoAviDoc->GetPathName().GetLength() - index - 1);
-		else
-			sDevice = m_pVideoAviDoc->GetPathName();
-	}
 	else if (m_pGetFrameNetCom)
 		sDevice.Format(_T("%s:%d:%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
 
@@ -4487,15 +4472,6 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDeviceName();
-	else if (((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc))
-	{
-		CString sShortFileName;
-		int index;
-		if ((index = m_pVideoAviDoc->GetPathName().ReverseFind(_T('\\'))) >= 0)
-			sDevice = m_pVideoAviDoc->GetPathName().Right(m_pVideoAviDoc->GetPathName().GetLength() - index - 1);
-		else
-			sDevice = m_pVideoAviDoc->GetPathName();
-	}
 	else if (m_pGetFrameNetCom)
 	{
 		sDevice.Format(_T("%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort);
@@ -5888,85 +5864,6 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib) 
-{
-	// Check
-	if (!((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)pDoc)	||
-		!pDib														||
-		!pDib->IsValid())
-		return FALSE;
-
-	// Set pointer
-	m_pVideoAviDoc = pDoc;
-	
-	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings(DEFAULT_FRAMERATE, GetDevicePathName(), GetDeviceName());
-
-	// Start Delete Detections Thread
-	if (!m_DeleteThread.IsAlive())
-		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
-
-	// Reset vars
-	m_dwFrameCountUp = 0U;
-	m_dwNextSnapshotUpTime = ::timeGetTime();
-	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
-	
-	// Frame Rate
-	m_dFrameRate = m_pVideoAviDoc->m_PlayVideoFileThread.GetFrameRate();
-	m_dEffectiveFrameRate = m_dFrameRate;
-
-	// Format and Size
-	memcpy(&m_CaptureBMI, pDib->GetBMI(), MIN(sizeof(BITMAPINFOFULL), pDib->GetBMISize()));
-	memcpy(&m_ProcessFrameBMI, pDib->GetBMI(), MIN(sizeof(BITMAPINFOFULL), pDib->GetBMISize()));
-	if (m_ProcessFrameBMI.bmiHeader.biCompression != FCC('I420'))
-	{
-		m_ProcessFrameBMI.bmiHeader.biSize =			sizeof(BITMAPINFOHEADER);
-		m_ProcessFrameBMI.bmiHeader.biPlanes =			1;
-		m_ProcessFrameBMI.bmiHeader.biCompression =		FCC('I420');
-		m_ProcessFrameBMI.bmiHeader.biBitCount =		12;
-		int stride = ::CalcYUVStride(m_ProcessFrameBMI.bmiHeader.biCompression, (int)m_ProcessFrameBMI.bmiHeader.biWidth);
-		m_ProcessFrameBMI.bmiHeader.biSizeImage = ::CalcYUVSize(m_ProcessFrameBMI.bmiHeader.biCompression, stride, (int)m_ProcessFrameBMI.bmiHeader.biHeight);
-	}
-	m_DocRect.right = m_ProcessFrameBMI.bmiHeader.biWidth;
-	m_DocRect.bottom = m_ProcessFrameBMI.bmiHeader.biHeight;
-
-	// Free Movement Detector because we changed size and/or format!
-	FreeMovementDetector();
-
-	// Start Audio Capture
-	if (m_bCaptureAudio)
-		m_CaptureAudioThread.Start();
-
-	// Update
-	if (m_bSizeToDoc)
-	{
-		// This sizes the view to m_DocRect in normal screen mode,
-		// in full-screen mode it updates m_ZoomRect from m_DocRect
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_UPDATEWINDOWSIZES,
-						(WPARAM)UPDATEWINDOWSIZES_SIZETODOC,
-						(LPARAM)0);
-		m_bSizeToDoc = FALSE;
-	}
-	else
-	{
-		// In full-screen mode it updates m_ZoomRect from m_DocRect
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_UPDATEWINDOWSIZES,
-						(WPARAM)0,
-						(LPARAM)0);
-	}
-	::PostMessage(	GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_SETDOCUMENTTITLE,
-					0, 0);
-	::PostMessage(	GetView()->GetSafeHwnd(),
-					WM_THREADSAFE_UPDATE_PHPPARAMS,
-					0, 0);
-
-	return TRUE;
-}
-
 CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 {
 	CString sYearMonthDayDir(_T(""));
@@ -6415,9 +6312,7 @@ void CVideoDeviceDoc::OnCaptureSettings()
 
 void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(	m_pDxCapture														||
-					((CUImagerApp*)::AfxGetApp())->IsDoc((CUImagerDoc*)m_pVideoAviDoc)	||
-					m_pGetFrameNetCom);
+	pCmdUI->Enable(m_pDxCapture || m_pGetFrameNetCom);
 	if (m_pVideoDevicePropertySheet)
 		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsVisible() ? 1 : 0);
 	else

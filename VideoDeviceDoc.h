@@ -35,7 +35,6 @@ extern "C"
 class CVideoDeviceView;
 class CVideoDeviceChildFrame;
 class CDxCapture;
-class CVideoAviDoc;
 class CGeneralPage;
 class CSnapshotPage;
 class CVideoDevicePropertySheet;
@@ -782,9 +781,6 @@ public:
 	// Open Video Device
 	BOOL OpenVideoDevice(int nId);
 
-	// Open Video From Avi Player
-	BOOL OpenVideoAvi(CVideoAviDoc* pDoc, CDib* pDib);
-
 	// Open Video From Network
 	BOOL OpenGetVideo(CHostPortDlg* pDlg);
 	BOOL OpenGetVideo(CString sAddress);
@@ -1013,7 +1009,6 @@ public:
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
 	volatile DWORD m_dwVideoProcessorMode;				// The Processor Mode Variable
-	CVideoAviDoc* volatile m_pVideoAviDoc;				// Video source from a Avi Player Doc
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()

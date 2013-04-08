@@ -3,7 +3,6 @@
 #include "MainFrm.h"
 #include "AviPlay.h"
 #include "VideoAviDoc.h"
-#include "VideoDeviceDoc.h"
 #include "VideoAviView.h"
 #include "AviInfoDlg.h"
 #include "OutVolDlg.h"
@@ -771,9 +770,6 @@ void CVideoAviView::OnUpdateViewGdiRgb(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
 					pDoc->m_pAVIPlay->HasVideo()									&&
 					(pDoc->m_nActiveVideoStream >= 0)								&&
-#ifdef VIDEODEVICEDOC
-					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
 					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
 					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
@@ -792,9 +788,6 @@ void CVideoAviView::OnUpdateViewGdiYuv(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
 					pDoc->m_pAVIPlay->HasVideo()									&&
 					(pDoc->m_nActiveVideoStream >= 0)								&&
-#ifdef VIDEODEVICEDOC
-					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
 					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
 					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
@@ -814,9 +807,6 @@ void CVideoAviView::OnUpdateViewDirectxRgb(CCmdUI* pCmdUI)
 					pDoc->m_pAVIPlay->HasVideo()									&&
 					(pDoc->m_nActiveVideoStream >= 0)								&&
 					pDoc->m_DxDraw.HasDxDraw()										&&
-#ifdef VIDEODEVICEDOC
-					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
 					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
 					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());
@@ -836,9 +826,6 @@ void CVideoAviView::OnUpdateViewDirectxYuv(CCmdUI* pCmdUI)
 					pDoc->m_pAVIPlay->HasVideo()									&&
 					(pDoc->m_nActiveVideoStream >= 0)								&&
 					pDoc->m_DxDraw.HasDxDraw()										&&
-#ifdef VIDEODEVICEDOC
-					!((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc)	&&
-#endif
 					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
 					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
 					!pDoc->IsProcessing());

@@ -1149,16 +1149,6 @@ void CVideoAviChildFrame::EndShutdown()
 	CVideoAviDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-#ifdef VIDEODEVICEDOC
-	// Close Avi File Capture Document
-	if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoDeviceDoc))
-	{
-		// Close Video Device Doc
-		pDoc->m_pVideoDeviceDoc->GetFrame()->PostMessage(WM_CLOSE,
-														0, 0);
-	}
-#endif
-
 	// Close DirectDraw
 	pDoc->m_DxDraw.Free();
 }
@@ -1500,8 +1490,8 @@ void CVideoDeviceChildFrame::OnClose()
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();
 
-			// Log the stopping (no log for Video Avi mode)
-			if (pDoc->m_bCaptureStarted && pDoc->m_pVideoAviDoc == NULL)
+			// Log the stopping
+			if (pDoc->m_bCaptureStarted)
 			{
 				CTimeSpan TimeSpan = CTime::GetCurrentTime() - pDoc->m_CaptureStartTime;
 				CString sMsg;
@@ -1682,14 +1672,6 @@ void CVideoDeviceChildFrame::EndShutdown()
 	ASSERT_VALID(pView);
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
-
-	// Stop m_pVideoAviDoc calling ProcessI420Frame()
-	if (((CUImagerApp*)::AfxGetApp())->IsDoc(pDoc->m_pVideoAviDoc))
-	{
-		::EnterCriticalSection(&pDoc->m_pVideoAviDoc->m_csVideoDeviceDoc);
-		pDoc->m_pVideoAviDoc->m_pVideoDeviceDoc = NULL;
-		::LeaveCriticalSection(&pDoc->m_pVideoAviDoc->m_csVideoDeviceDoc);
-	}
 
 	// Network Client Clean-Up
 	// (threads already stopped)

@@ -3,7 +3,6 @@
 #include "MainFrm.h"
 #include "VideoAviDoc.h"
 #include "VideoAviView.h"
-#include "VideoDeviceDoc.h"
 #include "SaveFileDlg.h"
 #include "ResizingDlg.h"
 #include "AudioOutDestinationDlg.h"
@@ -88,10 +87,6 @@ BEGIN_MESSAGE_MAP(CVideoAviDoc, CUImagerDoc)
 	ON_COMMAND(ID_FILE_EXTRACTFRAMES, OnFileExtractframes)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXTRACTFRAMES, OnUpdateFileExtractframes)
 	//}}AFX_MSG_MAP
-#ifdef VIDEODEVICEDOC
-	ON_COMMAND(ID_CAPTURE_AVIPLAY, OnCaptureAviplay)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_AVIPLAY, OnUpdateCaptureAviplay)
-#endif
 END_MESSAGE_MAP()
 
 CVideoAviDoc::CPlayAudioFileThread::CPlayAudioFileThread()
@@ -1876,19 +1871,7 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 					break;
 				}
 				else
-				{
-#ifdef VIDEODEVICEDOC
-					::EnterCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
-					if (m_pDoc->m_pVideoDeviceDoc && m_pDoc->m_pDib && m_pDoc->m_pDib->IsValid() && m_pDoc->m_pVideoDeviceDocDib)
-					{
-						*m_pDoc->m_pVideoDeviceDocDib = *m_pDoc->m_pDib;
-						if (!m_pDoc->m_pVideoDeviceDocDib->IsCompressed() && m_pDoc->m_pVideoDeviceDocDib->GetBitCount() <= 16)
-							m_pDoc->m_pVideoDeviceDocDib->ConvertTo32bits();
-					}
-					::LeaveCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
-#endif
 					::LeaveCriticalSection(&m_pDoc->m_csDib);
-				}
 			}
 			else
 			{
@@ -2030,28 +2013,6 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 					nOldMilliSecondsCorrectionAvg = m_nMilliSecondsCorrectionAvg;
 				}
 			}
-
-			// Send To Capture Doc
-#ifdef VIDEODEVICEDOC
-			::EnterCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
-			if (m_pDoc->m_pVideoDeviceDoc && m_pDoc->m_pVideoDeviceDocDib && m_pDoc->m_pVideoDeviceDocDib->IsValid())
-			{
-				switch (m_pDoc->m_pVideoDeviceDocDib->GetCompression())
-				{
-					case FCC('I420') :	m_pDoc->m_pVideoDeviceDoc->ProcessI420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
-																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize(),
-																					NULL, 0U);
-										break;
-					case FCC('M420') :	m_pDoc->m_pVideoDeviceDoc->ProcessM420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
-																					m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
-										break;
-					default :			m_pDoc->m_pVideoDeviceDoc->ProcessNoI420NoM420Frame(m_pDoc->m_pVideoDeviceDocDib->GetBits(),
-																							m_pDoc->m_pVideoDeviceDocDib->GetImageSize());
-										break;
-				}
-			}
-			::LeaveCriticalSection(&m_pDoc->m_csVideoDeviceDoc);
-#endif
 
 			// Display Frame
 			if (bDxDraw)
@@ -2265,11 +2226,6 @@ CVideoAviDoc::CVideoAviDoc()
 	m_pAudioCompressorWaveFormat = NULL;
 	m_PrevUserZoomRect = CRect(0,0,0,0);
 	m_bAVCodecPriority = true;
-#ifdef VIDEODEVICEDOC
-	m_pVideoDeviceDoc = NULL;
-	m_pVideoDeviceDocDib = NULL;
-	::InitializeCriticalSection(&m_csVideoDeviceDoc);
-#endif
 
 	// Threads Init
 	m_PlayAudioFileThread.SetDoc(this);
@@ -2333,15 +2289,6 @@ CVideoAviDoc::~CVideoAviDoc()
 		delete m_pAVIPlay;
 		m_pAVIPlay = NULL;
 	}
-
-#ifdef VIDEODEVICEDOC
-	if (m_pVideoDeviceDocDib)
-	{
-		delete m_pVideoDeviceDocDib;
-		m_pVideoDeviceDocDib = NULL;
-	}
-	::DeleteCriticalSection(&m_csVideoDeviceDoc);
-#endif
 
 	::DeleteCriticalSection(&m_csPlayWaitingForStart);
 	::CloseHandle(m_hPlaySyncEvent);
@@ -5765,63 +5712,6 @@ void CVideoAviDoc::OnUpdateViewTimeposition(CCmdUI* pCmdUI)
 	pCmdUI->Enable(bHasVideo && !IsProcessing());
 	pCmdUI->SetCheck(m_bTimePositionShow || !bHasVideo ? 1 : 0);
 }
-
-#ifdef VIDEODEVICEDOC
-
-void CVideoAviDoc::OnCaptureAviplay() 
-{
-	if (((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc))
-	{
-		// Close Video Device Doc
-		m_pVideoDeviceDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
-	}
-	else
-	{
-		// Switch to GDI!
-		if (m_bUseDxDraw)
-			::AfxMessageBox(ML_STRING(1763, "Switch to GDI under the View menu"));
-		else
-		{
-			// Open New
-			CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-			if (pDoc)
-			{
-				if (!m_pVideoDeviceDocDib)
-					m_pVideoDeviceDocDib = new CDib;
-				::EnterCriticalSection(&m_csDib);
-				if (m_pDib && m_pDib->IsValid() && m_pVideoDeviceDocDib)
-				{
-					*m_pVideoDeviceDocDib = *m_pDib;
-					if (!m_pVideoDeviceDocDib->IsCompressed() && m_pVideoDeviceDocDib->GetBitCount() <= 16)
-						m_pVideoDeviceDocDib->ConvertTo32bits();
-				}
-				::LeaveCriticalSection(&m_csDib);
-				if (pDoc->OpenVideoAvi(this, m_pVideoDeviceDocDib))
-				{
-					::EnterCriticalSection(&m_csVideoDeviceDoc);
-					m_pVideoDeviceDoc = pDoc;
-					::LeaveCriticalSection(&m_csVideoDeviceDoc);
-				}
-				else
-				{
-					// Close Video Device Doc
-					pDoc->GetFrame()->PostMessage(WM_CLOSE, 0, 0);
-				}
-			}
-		}
-	}
-}
-
-void CVideoAviDoc::OnUpdateCaptureAviplay(CCmdUI* pCmdUI) 
-{
-	pCmdUI->Enable(	m_pAVIPlay &&
-					m_pAVIPlay->HasVideo() &&
-					(m_nActiveVideoStream >= 0) &&
-					!IsProcessing());
-	pCmdUI->SetCheck(((CUImagerApp*)::AfxGetApp())->IsDoc(m_pVideoDeviceDoc) ? 1 : 0);
-}
-
-#endif
 
 void CVideoAviDoc::OnFileClose() 
 {

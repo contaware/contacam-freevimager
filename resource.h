@@ -3295,7 +3295,6 @@
 #define ID_TOOLS_AVIMERGEPARALLEL_AS    32887
 #define ID_FILE_SETTINGS                32889
 #define ID_VIEW_TIMEPOSITION            32890
-#define ID_CAPTURE_AVIPLAY              32909
 #define ID_VIEW_DETECTIONS              32910
 #define ID_VIEW_DETECTION_ZONES         32911
 #define ID_EDIT_SELECTALL               32913
