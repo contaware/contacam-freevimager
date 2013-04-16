@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "SortableStringArray.h"
+#include "Helpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,15 +12,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-int CSortableStringArray::Compare(CString * pstr1, CString * pstr2)
-{
-	ASSERT(pstr1);
-	ASSERT(pstr2);
-	return pstr1->CompareNoCase(*pstr2);	
-}
-
-void CSortableStringArray::Sort(STRINGCOMPAREFN pfnCompare /*=CSortedStringArray::Compare*/)
+void CSortableStringArray::Sort()
 {
 	CString * prgstr = GetData();
-	qsort(prgstr,GetSize(), sizeof(CString), (GENERICCOMPAREFN)pfnCompare);
+	typedef int (__cdecl *GENERICCOMPAREFN)(const void * elem1, const void * elem2);
+	qsort(prgstr, GetSize(), sizeof(CString), (GENERICCOMPAREFN)::CompareNatural);
 }

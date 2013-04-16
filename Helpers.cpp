@@ -39,6 +39,10 @@ BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
 
+// CompareNatural() helper variable
+typedef int (WINAPI *PFNSTRCMPLOGICALW)(PCWSTR, PCWSTR);
+PFNSTRCMPLOGICALW g_pfnStrCmpLogicalW = NULL;
+
 // Cpu Instruction Set Support
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
@@ -112,6 +116,16 @@ void InitHelpers()
 		g_bSSE2 = TRUE;
 	if (nInstructionSets & CPU_FEATURE_3DNOW)
 		g_b3DNOW = TRUE;
+
+	// From LoadLibrary doc
+	// --------------------
+	// The system maintains a per-process reference count on all loaded modules.
+	// Calling LoadLibrary increments the reference count. Calling the FreeLibrary
+	// or FreeLibraryAndExitThread function decrements the reference count.
+	// The system unloads a module when its reference count reaches zero or when
+	// the process terminates (regardless of the reference count).
+	// -> it's ok to not call FreeLibrary
+	g_pfnStrCmpLogicalW = (PFNSTRCMPLOGICALW)GetProcAddress(LoadLibrary(_T("Shlwapi.dll")), "StrCmpLogicalW");
 }
 
 //
@@ -2874,6 +2888,27 @@ CString GetUuidString()
 	FreeLibrary(h);
 
 	return sUUID;
+}
+
+int __cdecl CompareNatural(CString * pstr1, CString * pstr2)
+{
+	if (pstr1 == NULL || pstr2 == NULL)
+		return 0;
+	if (g_pfnStrCmpLogicalW)
+	{
+#ifdef _UNICODE
+		LPCWSTR pwstr1 = (LPCWSTR)(*pstr1);
+		LPCWSTR pwstr2 = (LPCWSTR)(*pstr2);
+#else
+		// Convert CString to Unicode
+		USES_CONVERSION;
+		LPCWSTR pwstr1 = T2CW(*pstr1);
+		LPCWSTR pwstr2 = T2CW(*pstr2);
+#endif
+		return g_pfnStrCmpLogicalW(pwstr1, pwstr2);
+	}
+	else
+		return pstr1->CompareNoCase(*pstr2);
 }
 
 BOOL InStringArray(const CString& s, const CStringArray& arr)

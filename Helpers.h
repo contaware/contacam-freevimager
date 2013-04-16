@@ -275,6 +275,9 @@ extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL term
 // Get uuid
 extern CString GetUuidString();
 
+// Natural order string comparision function
+extern int __cdecl CompareNatural(CString * pstr1, CString * pstr2);
+
 // Is the given string in the supplied array (case insensitive)?
 extern BOOL InStringArray(const CString& s, const CStringArray& arr);
 

@@ -4444,10 +4444,10 @@ int CBatchProcDlg::Compare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 	switch (nSortType)
 	{
 		case FILENAME_ASC :
-			return pListElement1->m_sShortFileName.CompareNoCase(pListElement2->m_sShortFileName);
+			return ::CompareNatural(&pListElement1->m_sShortFileName, &pListElement2->m_sShortFileName);
 			
 		case FILENAME_DES :
-			return pListElement2->m_sShortFileName.CompareNoCase(pListElement1->m_sShortFileName);
+			return ::CompareNatural(&pListElement2->m_sShortFileName, &pListElement1->m_sShortFileName);
 	
 		case EXIFDATE_ASC :
 		{
@@ -4605,10 +4605,10 @@ int CBatchProcDlg::Compare(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 				return 0;
 		}
 		case PATH_ASC :
-			return pListElement1->m_sPath.CompareNoCase(pListElement2->m_sPath);
+			return ::CompareNatural(&pListElement1->m_sPath, &pListElement2->m_sPath);
 
 		case PATH_DES :
-			return pListElement2->m_sPath.CompareNoCase(pListElement1->m_sPath);
+			return ::CompareNatural(&pListElement2->m_sPath, &pListElement1->m_sPath);
 
 		default :
 			return 0;
