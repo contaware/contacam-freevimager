@@ -4177,7 +4177,7 @@ IDD_SNAPSHOT DIALOGEX 0, 0, 417, 268
 STYLE DS_CENTER | WS_CHILD | WS_DISABLED | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Make Snapshot Thumbnail:",IDC_CHECK_SNAPSHOT_THUMB,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,21,101,10
@@ -4412,7 +4412,7 @@ IDD_ASSISTANT DIALOGEX 0, 0, 417, 287
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,124,10
@@ -6867,6 +6867,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_STRING1872          "Try again after closing all devices"
+    IDS_STRING1873          "Files are not shown in web interface if disabling this!"
 END
 
 #endif    // English (U.S.) resources

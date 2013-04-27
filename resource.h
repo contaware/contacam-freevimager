@@ -2547,6 +2547,7 @@
 #define IDC_STATIC1872                  1872
 #define IDS_STRING1872                  1872
 #define IDC_STATIC1873                  1873
+#define IDS_STRING1873                  1873
 #define IDC_STATIC1874                  1874
 #define IDC_STATIC1875                  1875
 #define IDC_STATIC1876                  1876

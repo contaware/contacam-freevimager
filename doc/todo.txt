@@ -23,8 +23,6 @@ ContaCam Program
 ContaCam Web Interface
 ----------------------
 - Replace swf with html5 video (mp4 and webm formats)
-- Find a way to show avi detections if only avi selected
-- Find a way to show swf detections if only swf selected
 
 ContaCam internet site
 ----------------------

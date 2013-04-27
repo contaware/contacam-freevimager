@@ -427,6 +427,8 @@ void CMovementDetectionPage::OnSaveAnimGifMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveAnimGIFMovementDetection = pCheck->GetCheck() > 0;
+	if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
+		::AfxMessageBox(ML_STRING(1873, "Files are not shown in web interface if disabling this!"), MB_OK | MB_ICONWARNING);
 }
 
 void CMovementDetectionPage::OnSwfConfigure() 
