@@ -598,7 +598,7 @@ DWORD Install(LPCTSTR pPath, LPCTSTR pName, LPCTSTR pServiceStartName, LPCTSTR p
 			pPath,						// service's binary
 			NULL,						// no load ordering group
 			NULL,						// no tag identifier
-			NULL,						// no dependencies
+			_T("Tcpip\0Afd\0"),			// Tcpip is self evident and Afd is the winsock handler
 			pServiceStartName[0] != _T('\0') ? pServiceStartName : NULL, // set NULL for LocalSystem account
 			pServiceStartPassword[0] != _T('\0') ? pServiceStartPassword : NULL  // set NULL for no password 
 		);
