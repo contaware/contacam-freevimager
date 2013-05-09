@@ -5551,6 +5551,14 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 																			// Eyseo, Hawking, JVC, LevelOne, Moxa, NeuFusion, Ovislink, Planex, Quimz,
 																			// Sertek, Telefonica, TrendNet, Trendware, Vivotek
 		
+		m_HttpGetFrameLocations.Add(_T("/snap.jpg"));						// Agasio, A-MTK, Apexis, Aztech, Bosch, Dericam, EasyN, EasySE, EZCam,
+																			// Foscam, iCam+, Instar, IPC, IPCMontor, Jen-Fu, Loftek, Maygion,
+																			// Micronet, PelcoNet, PROCCTV, SmartEye, Vonnic, Wanscam, Wansview, Xenta
+
+		m_HttpGetFrameLocations.Add(_T("/tmpfs/auto.jpg"));					// Apexis, Astak, Aztech, Dannovo, Dericam, Ensidio, Foscam, iCam+,
+																			// Instar, IPCMontor, Loftek, Maygion, Niceview, PROCCTV, SmartEye,
+																			// Suneyes, Tenvis, Vonnic, Vstarcam, Wansview, Xenta
+
 		m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// Allnet, Cisco, Clas, LevelOne, Linksys, NorthQ, Sercomm, Sitecom
 
 		m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
