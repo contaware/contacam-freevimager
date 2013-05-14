@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-4.5.0 (xxx 2013)
+4.5.0 (May 14th 2013)
 
 - Possibility for millisecond snapshot rates
 - Delete old files if the free disk space gets lower than:

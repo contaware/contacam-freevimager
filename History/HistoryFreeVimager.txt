@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-4.5.0 (xxx 2013)
+4.5.0 (May 14th 2013)
 
 - The generated pdfs are now smaller and compatible with all
   current viewers (solved wrong color display issue of

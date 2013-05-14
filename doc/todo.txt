@@ -23,7 +23,3 @@ ContaCam Program
 ContaCam Web Interface
 ----------------------
 - Replace swf with html5 video (mp4 and webm formats)
-
-ContaCam internet site
-----------------------
-- Write on main page that's possible to remotely watch through port forwarding or Dropbox
