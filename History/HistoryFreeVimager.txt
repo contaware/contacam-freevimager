@@ -5,7 +5,7 @@ FREEVIMAGER HISTORY
 - The generated pdfs are now smaller and compatible with all
   current viewers (solved wrong color display issue of
   Nitro Pdf Reader and some mobile pdf viewers)
-- Files sorting an viewing is now done like in Windows
+- Files sorting and viewing is now done like in Windows
   Explorer (1.jpg, 2.jpg .. 10.jpg, 11.jpg, 12.jpg)
 
 4.3.0 (February 12th 2013)
