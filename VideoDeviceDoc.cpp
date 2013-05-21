@@ -5060,12 +5060,16 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 		pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 
-		pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+		// Store detection zones only if the total size has already been calculated by OnThreadSafeInitMovDet()
+		if (m_lMovDetTotalZones > 0)
 		{
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, i);
-			pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
+			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
+			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+			{
+				CString sZone;
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
+				pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
+			}
 		}
 
 		if (m_CaptureAudioThread.m_pSrcWaveFormat)
@@ -5241,12 +5245,16 @@ void CVideoDeviceDoc::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays, sTempFileName);
 
-		::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
-		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+		// Store detection zones only if the total size has already been calculated by OnThreadSafeInitMovDet()
+		if (m_lMovDetTotalZones > 0)
 		{
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, i);
-			::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
+			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
+			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
+			{
+				CString sZone;
+				sZone.Format(MOVDET_ZONE_FORMAT, i);
+				::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
+			}
 		}
 
 		if (m_CaptureAudioThread.m_pSrcWaveFormat)

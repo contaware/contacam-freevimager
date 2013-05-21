@@ -292,6 +292,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		CString sSection(pDoc->GetDevicePathName());
 		if (pDoc->m_lMovDetTotalZones == pApp->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
 		{
+			// Load Zones Settings
 			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			{
 				CString sZone;
@@ -314,6 +315,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	}
 	else
 	{
+		// Enable All Zones
 		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
 			pDoc->m_DoMovementDetection[i] = 1;
 	}
