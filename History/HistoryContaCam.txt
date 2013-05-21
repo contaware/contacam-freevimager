@@ -1,5 +1,11 @@
 CONTACAM HISTORY
 
+4.7.0 (May xxx 2013)
+
+- Fixed the lost motion detection configuration zones bug seen
+  when applying the Assistant Settings or when opening and closing
+  ContaCam quickly
+
 4.5.0 (May 14th 2013)
 
 - Possibility for millisecond snapshot rates
