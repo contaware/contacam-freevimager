@@ -797,8 +797,8 @@ BEGIN
         MENUITEM "Rotate 90° CCW\tCtrl+Left",   ID_EDIT_ROTATE_90CCW
         MENUITEM "Rotate 180°\tCtrl+Down",      ID_EDIT_ROTATE_180
         MENUITEM "Rotate && Flip...",           ID_EDIT_ROTATE_FLIP
-        MENUITEM "Resize...",                   ID_EDIT_RESIZE
-        MENUITEM "Crop/Copy/Cut rectangle",     ID_EDIT_CROP
+        MENUITEM "Resize...\tCtrl+R",           ID_EDIT_RESIZE
+        MENUITEM "Crop/Copy/Cut rectangle\tCtrl+K", ID_EDIT_CROP
         MENUITEM SEPARATOR
         MENUITEM "Grayscale",                   ID_EDIT_GRAYSCALE
         MENUITEM "Negative",                    ID_EDIT_NEGATIVE
@@ -1532,9 +1532,11 @@ IDR_MAINFRAME ACCELERATORS MOVEABLE PURE
 BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT_PREVIEW,  VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
