@@ -9766,6 +9766,7 @@ void CPictureDoc::EditCrop()
 		GetView()->m_nAspectRatioPos = 0;
 		m_rcCropDelta = CRect(0,0,0,0);
 		m_rcCropCenter = CRect(0,0,0,0);
+		GetView()->ForceCursor();
 		m_bCrop = TRUE;
 
 		BeginWaitCursor();
@@ -9896,6 +9897,7 @@ void CPictureDoc::DoCropRect()
 		GetView()->StopAutoScroll();
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	::AfxGetMainFrame()->StatusText();
+	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::DoCopyRect()
@@ -9907,6 +9909,7 @@ void CPictureDoc::DoCopyRect()
 		GetView()->StopAutoScroll();
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	::AfxGetMainFrame()->StatusText();
+	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::DoCutRect()
@@ -9918,6 +9921,7 @@ void CPictureDoc::DoCutRect()
 		GetView()->StopAutoScroll();
 	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	::AfxGetMainFrame()->StatusText();
+	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::CancelCrop()
@@ -9939,6 +9943,7 @@ void CPictureDoc::CancelCrop()
 		if (GetView()->m_nAutoScroll)
 			GetView()->StopAutoScroll();
 		::AfxGetMainFrame()->StatusText();
+		GetView()->ForceCursor(FALSE);
 	}
 }
 

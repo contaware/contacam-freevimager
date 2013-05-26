@@ -125,6 +125,11 @@ protected:
 	// Load Full Jpeg Transition
 	void DrawLoadFullJpegTransition(CDC* pDC);
 
+	// Set cursor position and send also a WM_MOUSEMOVE
+	// - cursor position is kept inside the client area
+	// - point is in view coordinates
+	void SetCursorPosInsideClientRect(CPoint point);
+
 	// Crop Functions
 	void DrawCropTools(CDC* pDC);
 	void DrawCropBkgImage(CDC* pDC, BOOL bUseMemDC);
@@ -138,6 +143,11 @@ protected:
 	void CropClipTop(int nPixelAlignY);
 	void CropClipBottom(int nPixelAlignY);
 	void DoAutoScroll();
+	void UpdateCropRectangles();
+	void StepLeftCropEdge(BOOL bDirectionLeft, BOOL bCursorTop);
+	void StepRightCropEdge(BOOL bDirectionLeft, BOOL bCursorTop);
+	void StepTopCropEdge(BOOL bDirectionUp, BOOL bCursorLeft);
+	void StepBottomCropEdge(BOOL bDirectionUp, BOOL bCursorLeft);
 
 	// Print Fit
 	CRect PrintFit(int nWidth, int nHeight, double dXDpiRatio, double dYDpiRatio);
