@@ -802,7 +802,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Grayscale",                   ID_EDIT_GRAYSCALE
         MENUITEM "Negative",                    ID_EDIT_NEGATIVE
-        MENUITEM "Brightness, Contrast...",     ID_EDIT_HLS
+        MENUITEM "Brightness, Contrast...\tCtrl+B", ID_EDIT_HLS
         MENUITEM "Red Eye...",                  ID_EDIT_REDEYE
         MENUITEM "Sharpen...",                  ID_EDIT_FILTER_SHARPEN
         MENUITEM "Soften...",                   ID_EDIT_FILTER_SOFTEN
@@ -1530,6 +1530,7 @@ END
 
 IDR_MAINFRAME ACCELERATORS MOVEABLE PURE 
 BEGIN
+    "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
     "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
