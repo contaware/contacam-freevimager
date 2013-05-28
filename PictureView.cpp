@@ -1694,6 +1694,37 @@ void CPictureView::StepBottomCropEdge(BOOL bDirectionUp, BOOL bCursorLeft)
 	}
 }
 
+void CPictureView::StepCropCenter(CPoint delta)
+{
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	if (pDoc->m_bCrop && !m_bCropMouseCaptured)
+	{
+		// Simulate a centered mouse movement
+		int nZoomedPixelAlignX;
+		if (pDoc->IsModified() || !pDoc->m_bLosslessCrop)
+			nZoomedPixelAlignX = MAX(1, Round(pDoc->m_dZoomFactor));
+		else
+			nZoomedPixelAlignX = m_nZoomedPixelAlignX;
+		int nZoomedPixelAlignY;
+		if (pDoc->IsModified() || !pDoc->m_bLosslessCrop)
+			nZoomedPixelAlignY = MAX(1, Round(pDoc->m_dZoomFactor));
+		else
+			nZoomedPixelAlignY = m_nZoomedPixelAlignY;
+		pDoc->m_rcCropCenter = pDoc->m_rcCropDelta;
+		delta.x *= nZoomedPixelAlignX;
+		delta.y *= nZoomedPixelAlignY;
+		CropCenter(delta, CROP_RECT_X_INSIDE, CROP_RECT_Y_INSIDE);
+
+		// Update the crop rectangles
+		UpdateCropRectangles();
+		
+		// Set cursor position
+		SetCursorPosInsideClientRect(m_CropZoomRect.CenterPoint());
+	}
+}
+
 void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 
 {
 	CPictureDoc* pDoc = GetDocument();
@@ -1863,7 +1894,11 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::GetCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
-				if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
+				CPoint center(m_CropZoomRect.CenterPoint());
+				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
+					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+					StepCropCenter(CPoint(0, 1));
+				else if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 				{
 					if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 						StepTopCropEdge(FALSE, TRUE);		// Go down and cursor top-left
@@ -1893,7 +1928,11 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::GetCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
-				if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
+				CPoint center(m_CropZoomRect.CenterPoint());
+				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
+					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+					StepCropCenter(CPoint(1, 0));
+				else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 				{
 					if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 						StepLeftCropEdge(FALSE, TRUE);		// Go right and cursor left-top
@@ -1929,7 +1968,11 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::GetCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
-				if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
+				CPoint center(m_CropZoomRect.CenterPoint());
+				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
+					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+					StepCropCenter(CPoint(0, -1));
+				else if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 				{
 					if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 						StepTopCropEdge(TRUE, TRUE);		// Go up and cursor top-left
@@ -1959,7 +2002,11 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::GetCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
-				if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
+				CPoint center(m_CropZoomRect.CenterPoint());
+				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
+					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+					StepCropCenter(CPoint(-1, 0));
+				else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 				{
 					if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 						StepLeftCropEdge(TRUE, TRUE);		// Go left and cursor left-top
@@ -4610,16 +4657,16 @@ void CPictureView::CropCenter(CPoint delta, int nRectSizeXInside, int nRectSizeY
 		int nZoomedFirstRightCrop = m_ZoomRect.Width() % nZoomedPixelAlignX;
 		if (nFirstRightCrop == 0)
 			nZoomedFirstRightCrop = 0;
-		if (delta.x < nZoomedFirstRightCrop)
+		if (-delta.x > nZoomedFirstRightCrop)
 		{
 			pDoc->m_rcCropDelta.right =		nFirstRightCrop;
-			pDoc->m_rcCropDelta.right -=	Round((	delta.x - nZoomedFirstRightCrop) / nZoomedPixelAlignX *
+			pDoc->m_rcCropDelta.right +=	Round((	-delta.x - nZoomedFirstRightCrop) / nZoomedPixelAlignX *
 													nZoomedPixelAlignX /
 													pDoc->m_dZoomFactor);
 		}
 	}
 	else
-		pDoc->m_rcCropDelta.right -=		Round(	delta.x / nZoomedPixelAlignX *
+		pDoc->m_rcCropDelta.right +=		Round(	-delta.x / nZoomedPixelAlignX *
 													nZoomedPixelAlignX /
 													pDoc->m_dZoomFactor);
 
@@ -4630,16 +4677,16 @@ void CPictureView::CropCenter(CPoint delta, int nRectSizeXInside, int nRectSizeY
 		int nZoomedFirstBottomCrop = m_ZoomRect.Height() % nZoomedPixelAlignY;
 		if (nFirstBottomCrop == 0)
 			nZoomedFirstBottomCrop = 0;
-		if (delta.y < nZoomedFirstBottomCrop)
+		if (-delta.y > nZoomedFirstBottomCrop)
 		{
 			pDoc->m_rcCropDelta.bottom =	nFirstBottomCrop;
-			pDoc->m_rcCropDelta.bottom -=	Round((	delta.y - nZoomedFirstBottomCrop) / nZoomedPixelAlignY *
+			pDoc->m_rcCropDelta.bottom +=	Round((	-delta.y - nZoomedFirstBottomCrop) / nZoomedPixelAlignY *
 													nZoomedPixelAlignY /
 													pDoc->m_dZoomFactor);
 		}
 	}
 	else
-		pDoc->m_rcCropDelta.bottom -=		Round(	delta.y / nZoomedPixelAlignY *
+		pDoc->m_rcCropDelta.bottom +=		Round(	-delta.y / nZoomedPixelAlignY *
 													nZoomedPixelAlignY /
 													pDoc->m_dZoomFactor);
 

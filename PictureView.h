@@ -148,6 +148,7 @@ protected:
 	void StepRightCropEdge(BOOL bDirectionLeft, BOOL bCursorTop);
 	void StepTopCropEdge(BOOL bDirectionUp, BOOL bCursorLeft);
 	void StepBottomCropEdge(BOOL bDirectionUp, BOOL bCursorLeft);
+	void StepCropCenter(CPoint delta);
 
 	// Print Fit
 	CRect PrintFit(int nWidth, int nHeight, double dXDpiRatio, double dYDpiRatio);
