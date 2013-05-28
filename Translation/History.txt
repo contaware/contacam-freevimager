@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+4.7.0 (May xxx 2013)
+
+- Readded accelerators for crop, resize and HLS
+
 4.5.0 (May 14th 2013)
 
 - Added strings 1873
