@@ -1759,19 +1759,53 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		case VK_TAB :
 			if (pDoc->m_bCrop && !m_bCropMouseCaptured)
 			{
-				// Set cursor position to diagonally opposite site
 				CPoint point;
 				::GetCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
-				if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
-					point.x = m_CropZoomRect.right;
+				CPoint center(m_CropZoomRect.CenterPoint());
+				if (::GetKeyState(VK_SHIFT) < 0)
+				{
+					// Center -> Left-Top
+					if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+						ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
+					{
+						point.x = m_CropZoomRect.left;
+						point.y = m_CropZoomRect.top;
+					}
+					// Left -> Right-Bottom
+					else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
+					{
+						point.x = m_CropZoomRect.right - 1;
+						point.y = m_CropZoomRect.bottom - 1;
+					}
+					// Right -> Center
+					else
+					{
+						point = center;
+					}
+				}
 				else
-					point.x = m_CropZoomRect.left;
-				if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
-					point.y = m_CropZoomRect.bottom;
-				else
-					point.y = m_CropZoomRect.top;
+				{
+					// Center -> Right-Bottom
+					if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+						ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
+					{
+						point.x = m_CropZoomRect.right - 1;
+						point.y = m_CropZoomRect.bottom - 1;
+					}
+					// Left -> Center
+					else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
+					{
+						point = center;
+					}
+					// Right -> Left-Top
+					else
+					{
+						point.x = m_CropZoomRect.left;
+						point.y = m_CropZoomRect.top;
+					}
+				}
 				SetCursorPosInsideClientRect(point);
 			}
 			else if (m_bFullScreenMode)
@@ -1895,8 +1929,8 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
-				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
-					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+				if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+					ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
 					StepCropCenter(CPoint(0, 1));
 				else if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 				{
@@ -1929,8 +1963,8 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
-				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
-					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+				if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+					ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
 					StepCropCenter(CPoint(1, 0));
 				else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 				{
@@ -1969,8 +2003,8 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
-				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
-					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+				if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+					ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
 					StepCropCenter(CPoint(0, -1));
 				else if (ABS(m_CropZoomRect.top - point.y) < ABS(m_CropZoomRect.bottom - point.y))
 				{
@@ -2003,8 +2037,8 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
-				if (ABS(center.x - point.x) < (CROP_MARKER_RECT_WIDTH + CROP_RECT_X_INSIDE)/2 &&
-					ABS(center.y - point.y) < (CROP_MARKER_RECT_HEIGHT + CROP_RECT_Y_INSIDE)/2)
+				if (ABS(center.x - point.x) < m_CropZoomRect.Width() / 4 &&
+					ABS(center.y - point.y) < m_CropZoomRect.Height() / 4)
 					StepCropCenter(CPoint(-1, 0));
 				else if (ABS(m_CropZoomRect.left - point.x) < ABS(m_CropZoomRect.right - point.x))
 				{
