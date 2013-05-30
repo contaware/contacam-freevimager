@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-4.7.0 (May xxx 2013)
+4.7.0 (May 30th 2013)
 
 - The crop tool permits now precise selections through the
   arrow keys (use the tab key to switch crop handle)

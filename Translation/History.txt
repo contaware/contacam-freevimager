@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.7.0 (May xxx 2013)
+4.7.0 (May 30th 2013)
 
 - Readded accelerators for crop, resize and HLS
 

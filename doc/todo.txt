@@ -19,7 +19,13 @@ ContaCam Program
   that a user is logging-off and also the settings are not always stored well.
   Since Windows 7 the tray icons are obsolete.
 - Rotate by 0,90,180,270 degrees
+- Next time we update the Assistant dialog change "24h hours recording" to
+  "continuous 24h hours recording"
+- Think about changing Device Assistant to Device Usage, Name,
+  Appearance, Storage or change it to Device Basic Settings
 
 ContaCam Web Interface
 ----------------------
 - Replace swf with html5 video (mp4 and webm formats)
+- Back click if in full-screen stream should
+  return to the correct day and page
