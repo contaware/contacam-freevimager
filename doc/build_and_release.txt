@@ -22,8 +22,10 @@ The file inclusion order under Tools - Options is:
 
 Additional requirements for Visual Studio 2008:
 - install sp1 (KB945140) or higher
-- install MS11-025 KB2538241
+- install MS11-025 KB2538241 (installed by Windows Update)
 - Microsoft DirectX 9.0 SDK or higher
+  (see http://support.microsoft.com/kb/2728613 if you have problems
+  installing the latest DXSDK_Jun10.exe)
 
 Necessary free tools:
 - http://nsis.sourceforge.net    -> to make the installers
