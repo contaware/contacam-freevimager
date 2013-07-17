@@ -28,6 +28,7 @@ ContaCam Program
 - Add ACTi support
   JPEG:  cgi-bin/encoder?SNAPSHOT
   MJPEG: cgi-bin/cmd/system?GET_STREAM
+- ...
 
 ContaCam Web Interface
 ----------------------
