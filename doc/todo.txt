@@ -23,6 +23,11 @@ ContaCam Program
   "continuous 24h hours recording"
 - Think about changing Device Assistant to Device Usage, Name,
   Appearance, Storage or change it to Device Basic Settings
+- Update theora or remove completely as it is not working
+  anymore on vlc and mpc-hc
+- Add ACTi support
+  JPEG:  cgi-bin/encoder?SNAPSHOT
+  MJPEG: cgi-bin/cmd/system?GET_STREAM
 
 ContaCam Web Interface
 ----------------------

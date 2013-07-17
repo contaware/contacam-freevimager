@@ -245,6 +245,7 @@ if ($handle = @opendir($dir)) {
 		$pos = 0;
 		$count = 0;
 		$swfpos = 0;
+		$swfs = "";
 		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
