@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+4.9.0 (xx xth 2013)
+
+- Added suppport for ACTi and some newer Intellinet ip cams 
+  
 4.7.0 (May 30th 2013)
 
 - Fixed the lost motion detection configuration zones bug seen

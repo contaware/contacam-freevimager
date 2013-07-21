@@ -5524,7 +5524,11 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
 		
 		m_HttpGetFrameLocations.Add(_T("/nph-mjpeg.cgi"));					// Stardot
-		
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/cmd/system?GET_STREAM"));	// ACTi
+
+		m_HttpGetFrameLocations.Add(_T("/image.cgi?id=guest&passwd=guest&mode=http"));	// Intellinet
+
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
 	}
 	// JPEG
@@ -5584,6 +5588,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetLiveImage"));		// Canon
 
 		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
+
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/encoder?SNAPSHOT"));		// ACTi
 	}
 
 	// Finally add the mixed commands (it depends from the maker whether those commands return JPEG or MJPEG)
