@@ -15,6 +15,9 @@ class CMDIClientWnd : public CWnd
 public:
 	CMDIClientWnd();
 	virtual ~CMDIClientWnd();
+#ifdef VIDEODEVICEDOC
+	void ViewWeb(CString sHost);
+#endif
 
 	// Generated message map functions
 protected:

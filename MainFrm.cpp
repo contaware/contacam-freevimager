@@ -97,6 +97,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 #ifdef VIDEODEVICEDOC
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
+	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
+	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 #endif
 END_MESSAGE_MAP()
 
@@ -1053,6 +1055,41 @@ LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 {
 	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices((int)wparam);
 	return 0;
+}
+
+void CMainFrame::OnViewWeb()
+{
+	CMDIChildWnd* pChild = MDIGetActive();
+	if (pChild)
+	{
+		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+		if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+		{
+			pDoc->ViewWeb();
+			return;
+		}
+	}
+	m_MDIClientWnd.ViewWeb(_T("localhost"));
+}
+
+void CMainFrame::OnViewFiles()
+{
+	CMDIChildWnd* pChild = MDIGetActive();
+	if (pChild)
+	{
+		CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)pChild->GetActiveDocument();
+		if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+		{
+			pDoc->ViewFiles();
+			return;
+		}
+	}
+	::ShellExecute(	NULL,
+					_T("open"),
+					((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot,
+					NULL,
+					NULL,
+					SW_SHOWNORMAL);
 }
 #endif				
 

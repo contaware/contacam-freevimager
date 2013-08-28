@@ -70,7 +70,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_VIEW_FIT, OnViewFit)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIT, OnUpdateViewFit)
-	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY, OnUpdateEditCopy)
 	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
@@ -80,7 +79,6 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
 	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
-	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -6611,7 +6609,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	return TRUE;
 }
 
-void CVideoDeviceDoc::OnViewWeb() 
+void CVideoDeviceDoc::ViewWeb() 
 {
 	if (m_sRecordAutoSaveDir != _T(""))
 	{
@@ -6700,7 +6698,7 @@ void CVideoDeviceDoc::OnViewWeb()
 		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
 }
 
-void CVideoDeviceDoc::OnViewFiles() 
+void CVideoDeviceDoc::ViewFiles() 
 {
 	::ShellExecute(	NULL,
 					_T("open"),

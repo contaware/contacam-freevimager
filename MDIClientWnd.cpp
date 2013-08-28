@@ -245,26 +245,16 @@ BOOL CMDIClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 #endif	
 }
 
-void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point) 
-{
 #ifdef VIDEODEVICEDOC
-	CString sUrl;
-	if (m_rcLinkComputer.PtInRect(point))
+void CMDIClientWnd::ViewWeb(CString sHost)
+{
+	if (!sHost.IsEmpty())
 	{
+		CString sUrl;
 		if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
-			sUrl.Format(_T("http://%s"), ::GetComputerName());
+			sUrl.Format(_T("http://%s"), sHost);
 		else
-			sUrl.Format(_T("http://%s:%d"), ::GetComputerName(), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-	}
-	else if (m_rcLinkLocalhost.PtInRect(point))
-	{
-		if (((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort == 80)
-			sUrl = _T("http://localhost");
-		else
-			sUrl.Format(_T("http://localhost:%d"), ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
-	}
-	if (!sUrl.IsEmpty())
-	{
+			sUrl.Format(_T("http://%s:%d"), sHost, ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
 		sUrl = ::UrlEncode(sUrl, FALSE);
 		if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
 		{
@@ -308,6 +298,18 @@ void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point)
 			EndWaitCursor();
 		}
 	}
+}
+#endif
+
+void CMDIClientWnd::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+#ifdef VIDEODEVICEDOC
+	CString sHost;
+	if (m_rcLinkComputer.PtInRect(point))
+		sHost = ::GetComputerName();
+	else if (m_rcLinkLocalhost.PtInRect(point))
+		sHost =  _T("localhost");
+	ViewWeb(sHost);
 #endif
 	CWnd::OnLButtonUp(nFlags, point);
 }

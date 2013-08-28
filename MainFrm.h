@@ -295,6 +295,8 @@ protected:
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
+	afx_msg void OnViewWeb();
+	afx_msg void OnViewFiles();
 #endif
 	DECLARE_MESSAGE_MAP()
 };

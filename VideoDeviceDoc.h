@@ -941,6 +941,8 @@ public:
 	static void AutorunRemoveDevice(const CString& sDevicePathName);
 
 	// Micro Apache
+	void ViewWeb();
+	void ViewFiles();
 	static CString MicroApacheGetConfigFileName();
 	static CString MicroApacheGetEditableConfigFileName();
 	static CString MicroApacheGetLogFileName();
@@ -1239,7 +1241,6 @@ protected:
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnViewFit();
 	afx_msg void OnUpdateViewFit(CCmdUI* pCmdUI);
-	afx_msg void OnViewWeb();
 	afx_msg void OnUpdateEditCopy(CCmdUI* pCmdUI);
 	afx_msg void OnFileSaveAs();
 	afx_msg void OnUpdateFileSaveAs(CCmdUI* pCmdUI);
@@ -1249,7 +1250,6 @@ protected:
 	afx_msg void OnEditImportZones();
 	afx_msg void OnCaptureAssistant();
 	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
-	afx_msg void OnViewFiles();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -4,6 +4,21 @@ Both
 - When views are tiled and resizing mainframe then resize also childs
 - Possibility to hide menu, statusbar and toolbars
 
+FreeVimager Program
+-------------------
+- Possibility to only show some XMP metadata, like:
+Contact: Creator (byline)
+Content: Headline
+Content: Description (caption)
+Content: Keywords
+Image: Location
+Image: City
+Image: State/Province
+Image: Country
+Status: Title (object name)
+Status: Source
+Status: Copyright notice
+
 ContaCam Program
 ----------------
 - More compact storing in registry / ini file of detection zones
@@ -19,14 +34,13 @@ ContaCam Program
   that a user is logging-off and also the settings are not always stored well.
   Since Windows 7 the tray icons are obsolete.
 - Rotate by 0,90,180,270 degrees
-- Next time we update the Assistant dialog change "24h hours recording" to
-  "continuous 24h hours recording"
 - Think about changing Device Assistant to Device Usage, Name,
   Appearance, Storage or change it to Device Basic Settings
 - Update theora or remove completely as it is not working
   anymore on vlc and mpc-hc
 - Add ACTi support to homapage FAQ!
 - Modify motion scheduler to be able to set not working hours
+- Make thumbnail anim. gif for avi records?
 
 ContaCam Web Interface
 ----------------------
