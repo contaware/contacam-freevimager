@@ -39,7 +39,6 @@ ContaCam Program
 - Update theora or remove completely as it is not working
   anymore on vlc and mpc-hc
 - Add ACTi support to homapage FAQ!
-- Modify motion scheduler to be able to set not working hours
 - Make thumbnail anim. gif for avi records?
 
 ContaCam Web Interface

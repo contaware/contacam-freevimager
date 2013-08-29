@@ -4192,7 +4192,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_fVideoDetSwfQuality = DEFAULT_VIDEO_QUALITY;
 	m_nVideoDetSwfQualityBitrate = 0;
 	m_dwVideoDetSwfFourCC = FCC('FLV1');
-	m_bDetectionStartStop = FALSE;
+	m_nDetectionStartStop = 0;
 	m_bDetectionSunday = TRUE;
 	m_bDetectionMonday = TRUE;
 	m_bDetectionTuesday = TRUE;
@@ -4827,7 +4827,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nVideoDetSwfQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), 0);
 	m_nVideoDetSwfKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoDetSwfDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfDataRate"), DEFAULT_VIDEO_DATARATE);
-	m_bDetectionStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), FALSE);
+	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
 	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
 	m_bDetectionTuesday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionTuesday"), TRUE);
@@ -5037,7 +5037,7 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate);
 		pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
 		pApp->WriteProfileInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate);
-		pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop);
+		pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 		pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
 		pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);
 		pApp->WriteProfileInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday);
@@ -5222,7 +5222,7 @@ void CVideoDeviceDoc::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("VideoDetSwfQualityBitrate"), m_nVideoDetSwfQualityBitrate, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("VideoDetSwfDataRate"), m_nVideoDetSwfDataRate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("DetectionStartStop"), (int)m_bDetectionStartStop, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionTuesday"), (int)m_bDetectionTuesday, sTempFileName);
@@ -8028,19 +8028,20 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 		// (especially for audio/video synchronization)
 		if (bStartupSettled)
 		{
-			// Scheduler
+			// Detection Scheduler
 			DWORD dwVideoProcessorMode = m_dwVideoProcessorMode;
-			if (dwVideoProcessorMode && m_bDetectionStartStop) // Detection Scheduler
+			if (dwVideoProcessorMode > 0 && m_nDetectionStartStop > 0)
 			{
+				BOOL bInSchedule = TRUE;
 				switch (CurrentTime.GetDayOfWeek())
 				{
-					case 1 : if (!m_bDetectionSunday)	dwVideoProcessorMode = NO_DETECTOR; break;
-					case 2 : if (!m_bDetectionMonday)	dwVideoProcessorMode = NO_DETECTOR; break;
-					case 3 : if (!m_bDetectionTuesday)	dwVideoProcessorMode = NO_DETECTOR; break;
-					case 4 : if (!m_bDetectionWednesday)dwVideoProcessorMode = NO_DETECTOR; break;
-					case 5 : if (!m_bDetectionThursday)	dwVideoProcessorMode = NO_DETECTOR; break;
-					case 6 : if (!m_bDetectionFriday)	dwVideoProcessorMode = NO_DETECTOR; break;
-					case 7 : if (!m_bDetectionSaturday)	dwVideoProcessorMode = NO_DETECTOR; break;
+					case 1 : if (!m_bDetectionSunday)	bInSchedule = FALSE; break;
+					case 2 : if (!m_bDetectionMonday)	bInSchedule = FALSE; break;
+					case 3 : if (!m_bDetectionTuesday)	bInSchedule = FALSE; break;
+					case 4 : if (!m_bDetectionWednesday)bInSchedule = FALSE; break;
+					case 5 : if (!m_bDetectionThursday)	bInSchedule = FALSE; break;
+					case 6 : if (!m_bDetectionFriday)	bInSchedule = FALSE; break;
+					case 7 : if (!m_bDetectionSaturday)	bInSchedule = FALSE; break;
 					default: break;
 				}
 				CTime timeonly(	2000,
@@ -8052,11 +8053,24 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 				if (m_DetectionStartTime <= m_DetectionStopTime)
 				{
 					if (timeonly < m_DetectionStartTime || timeonly > m_DetectionStopTime)
-						dwVideoProcessorMode = NO_DETECTOR;
+						bInSchedule = FALSE;
 				}
 				else
 				{
 					if (timeonly < m_DetectionStartTime && timeonly > m_DetectionStopTime)
+						bInSchedule = FALSE;
+				}
+
+				// 1 -> Enable detection on specified schedule
+				if (m_nDetectionStartStop == 1) 
+				{
+					if (!bInSchedule)
+						dwVideoProcessorMode = NO_DETECTOR;
+				}
+				// 2 -> Disable detection on specified schedule
+				else
+				{
+					if (bInSchedule)
 						dwVideoProcessorMode = NO_DETECTOR;
 				}
 			}

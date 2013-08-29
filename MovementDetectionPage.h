@@ -70,7 +70,7 @@ protected:
 	afx_msg void OnFtpMovementDetection();
 	afx_msg void OnFtpConfigure();
 	afx_msg void OnAviConfigure();
-	afx_msg void OnCheckSchedulerDaily();
+	afx_msg void OnCbnSelchangeComboboxDetectionScheduler();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSaveSwfMovementDetection();

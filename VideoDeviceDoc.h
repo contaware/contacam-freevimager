@@ -1166,7 +1166,9 @@ public:
 	volatile int m_nVideoDetSwfKeyframesRate;			// Keyframes Rate
 	volatile float m_fVideoDetSwfQuality;				// 2.0f best quality, 31.0f worst quality
 	volatile int m_nVideoDetSwfQualityBitrate;			// 0 -> use quality, 1 -> use bitrate
-	volatile BOOL m_bDetectionStartStop;				// Enable / Disable Daily Timed Detection
+	volatile int m_nDetectionStartStop;					// 0 -> Detection Alwayn on
+														// 1 -> Enable detection on specified times and days
+														// 2 -> Disable detection on specified times and days
 	volatile BOOL m_bDetectionSunday;					// Do detections on Sunday
 	volatile BOOL m_bDetectionMonday;					// Do detections on Monday
 	volatile BOOL m_bDetectionTuesday;					// Do detections on Tuesday

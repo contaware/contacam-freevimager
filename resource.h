@@ -2549,8 +2549,11 @@
 #define IDC_STATIC1873                  1873
 #define IDS_STRING1873                  1873
 #define IDC_STATIC1874                  1874
+#define IDS_STRING1874                  1874
 #define IDC_STATIC1875                  1875
+#define IDS_STRING1875                  1875
 #define IDC_STATIC1876                  1876
+#define IDS_STRING1876                  1876
 #define IDC_STATIC1877                  1877
 #define IDC_STATIC1878                  1878
 #define IDC_STATIC1879                  1879
@@ -3213,6 +3216,7 @@
 #define IDC_DETECTION_MODE              2543
 #define IDC_STATIC2544                  2544
 #define IDC_CAM_FOLDERS                 2545
+#define IDC_COMBOBOX_DETECTION_SCHEDULER 2545
 #define IDC_EDIT_EXEC_HELP              2546
 #define IDC_CHECK_SCHEDULER_SUNDAY      2547
 #define IDC_CHECK_SCHEDULER_MONDAY      2548

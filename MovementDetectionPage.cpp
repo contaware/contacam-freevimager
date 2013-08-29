@@ -81,7 +81,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_FTP_MOVEMENT_DETECTION, OnFtpMovementDetection)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_AVI_CONFIGURE, OnAviConfigure)
-	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
+	ON_CBN_SELCHANGE(IDC_COMBOBOX_DETECTION_SCHEDULER, OnCbnSelchangeComboboxDetectionScheduler)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
@@ -123,6 +123,10 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pComboBoxZoneSize->AddString(ML_STRING(1836, "Big"));
 	pComboBoxZoneSize->AddString(ML_STRING(1837, "Medium"));
 	pComboBoxZoneSize->AddString(ML_STRING(1838, "Small"));
+	CComboBox* pComboBoxDetectionScheduler = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1874, "Detection always enabled (scheduler is off)"));
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Detection enabled:"));
+	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Detection disabled:"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
 	pComboBoxExexMode->AddString(ML_STRING(1842, "On first movement frame"));
 	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));
@@ -152,10 +156,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	// Detection Zone Size
 	pComboBoxZoneSize->SetCurSel(m_pDoc->m_nDetectionZoneSize);
 
-	// Detection Scheduler Check-Boxes
-	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionStartStop);
-	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
+	// Detection Scheduler
+	pComboBoxDetectionScheduler->SetCurSel(m_pDoc->m_nDetectionStartStop);
+	CButton* pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SUNDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSunday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_MONDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionMonday);
@@ -593,7 +596,7 @@ void CMovementDetectionPage::OnCheckWaitExecCommand()
 
 void CMovementDetectionPage::UpdateDetectionStartStopTimes()
 {
-	if (m_pDoc->m_bDetectionStartStop)
+	if (m_pDoc->m_nDetectionStartStop > 0)
 	{
 		// Start Time
 		m_pDoc->m_DetectionStartTime = CTime(	2000,
@@ -613,13 +616,10 @@ void CMovementDetectionPage::UpdateDetectionStartStopTimes()
 	}
 }
 
-void CMovementDetectionPage::OnCheckSchedulerDaily() 
+void CMovementDetectionPage::OnCbnSelchangeComboboxDetectionScheduler()
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bDetectionStartStop = TRUE;
-	else
-		m_pDoc->m_bDetectionStartStop = FALSE;
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBOBOX_DETECTION_SCHEDULER);
+	m_pDoc->m_nDetectionStartStop = pComboBox->GetCurSel();
 	UpdateDetectionStartStopTimes();
 }
 
