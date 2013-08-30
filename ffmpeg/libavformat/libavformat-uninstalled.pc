@@ -6,7 +6,7 @@ includedir=${pcfiledir}/..
 Name: libavformat
 Description: FFmpeg container format library
 Version: 52.22.1
-Requires:  theora libavcodec = 52.0.0
+Requires:  libavcodec = 52.0.0
 Conflicts:
-Libs: ${libdir}/libavformat.a   -lm -lmp3lame -lm -ltheora -logg
+Libs: ${libdir}/libavformat.a   -lm -lmp3lame -lm
 Cflags: -I${includedir}

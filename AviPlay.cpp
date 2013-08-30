@@ -19,8 +19,8 @@ int avcodec_close_thread_safe(AVCodecContext *avctx);
 #pragma comment(lib, "ffmpeg\\lib\\libgcc.a")
 #pragma comment(lib, "ffmpeg\\lib\\libmingwex.a")
 #pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")
-#pragma comment(lib, "ffmpeg\\lib\\libogg.a")
-#pragma comment(lib, "ffmpeg\\lib\\libtheora.a")
+//#pragma comment(lib, "ffmpeg\\lib\\libogg.a")
+//#pragma comment(lib, "ffmpeg\\lib\\libtheora.a")
 // Integer division by zero exception using libvorbis...
 //#pragma comment(lib, "ffmpeg\\lib\\libvorbis.a")
 //#pragma comment(lib, "ffmpeg\\lib\\libvorbisenc.a")

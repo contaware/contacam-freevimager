@@ -6,7 +6,7 @@ includedir=${pcfiledir}/..
 Name: libavdevice
 Description: FFmpeg device handling library
 Version: 52.1.0
-Requires:  theora libavformat = 52.22.1
+Requires:  libavformat = 52.22.1
 Conflicts:
-Libs: ${libdir}/libavdevice.a   -lm -lmp3lame -lm -ltheora -logg
+Libs: ${libdir}/libavdevice.a   -lm -lmp3lame -lm
 Cflags: -I${includedir}

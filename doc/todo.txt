@@ -36,8 +36,6 @@ ContaCam Program
 - Rotate by 0,90,180,270 degrees
 - Think about changing Device Assistant to Device Usage, Name,
   Appearance, Storage or change it to Device Basic Settings
-- Update theora or remove completely as it is not working
-  anymore on vlc and mpc-hc
 - Add ACTi support to homapage FAQ!
 - Make thumbnail anim. gif for avi records?
 

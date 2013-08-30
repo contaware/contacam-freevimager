@@ -1,21 +1,15 @@
 1. Open MSys Console
 
+2. cd to ffmpeg sources (for example: cd /c/uimager/ffmpeg)
 
-2. cd to ffmpeg sources:
-cd /C/uimager/ffmpeg
+3. Configure (for available options call ./configure --help)
 
+Edit
+./config_lgpl by setting the correct prefix (for example: --prefix=/c/uimager/ffmpeg)
+Run
+./config_lgpl
 
-3. Configure:
-
-For FreeVimager and ContaCam:
-./config_lgpl_nosnow
-		
-For available options:
-./configure --help
-
-
-4. Build:
-make
+4. Build calling: make
 
 
 To Clean:
