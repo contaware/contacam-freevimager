@@ -3,9 +3,15 @@ CONTACAM HISTORY
 4.9.0 (xx xth 2013)
 
 - Added suppport for ACTi and some newer Intellinet ip cams 
+- Global toolbar buttons for Browse and Browse Files commands
+- Motion scheduler has got a 'detection disabled from..to and on'
+- First version especially optimized for Windows 2000 and higher
+- Dropped support for theora encoding because many modern
+  players are not able to play avi files encoded in such a way
   
 4.7.0 (May 30th 2013)
 
+- Last version with Win95, Win98, NT4 and WinMe support
 - Fixed the lost motion detection configuration zones bug seen
   when applying the Assistant Settings or when opening and closing
   ContaCam quickly
