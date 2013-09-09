@@ -17,6 +17,15 @@ int avcodec_close_thread_safe(AVCodecContext *avctx);
 #pragma comment(lib, "ffmpeg\\libavformat\\libavformat.a")
 #pragma comment(lib, "ffmpeg\\libavutil\\libavutil.a")
 #pragma comment(lib, "ffmpeg\\lib\\libgcc.a")
+/*
+To correctly link in VS2010 we have to remove mbrtowc.o and wcrtomb.o from libmingwex.a,
+perform the following in visual studio command prompt:
+1. cd uimager\ffmpeg\lib
+2. lib -remove:mbrtowc.o libmingwex.a
+3. lib -remove:wcrtomb.o libmingwex.lib (note the ending .lib)
+4. del libmingwex.a
+5. rename libmingwex.lib libmingwex.a
+*/
 #pragma comment(lib, "ffmpeg\\lib\\libmingwex.a")
 #pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")
 //#pragma comment(lib, "ffmpeg\\lib\\libogg.a")
