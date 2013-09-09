@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode"
-			IntermediateDirectory=".\../Obj/Debug_Unicode"
+			OutputDirectory="..\Bin\Debug_Unicode\Zip"
+			IntermediateDirectory="..\Obj\Debug_Unicode\Zip"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -49,9 +49,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/"
-				ObjectFile=".\../Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\Zip\"
+				ObjectFile="..\Obj\Debug_Unicode\Zip\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\Zip\"
 				BrowseInformation="1"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
@@ -71,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode\zip.lib"
+				OutputFile="..\Bin\Debug_Unicode\Zip\zip.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -83,7 +83,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/zip.bsc"
+				OutputFile="..\Bin\Debug_Unicode\Zip\zip.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -94,8 +94,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw"
-			IntermediateDirectory=".\../Obj/ContaCamw"
+			OutputDirectory="..\Bin\ContaCamw\Zip"
+			IntermediateDirectory="..\Obj\ContaCamw\Zip"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -129,9 +129,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/ContaCamw/"
-				ObjectFile=".\../Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/"
+				AssemblerListingLocation="..\Obj\ContaCamw\Zip\"
+				ObjectFile="..\Obj\ContaCamw\Zip\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\Zip\"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 			/>
@@ -148,7 +148,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw\zip.lib"
+				OutputFile="..\Bin\ContaCamw\Zip\zip.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -160,7 +160,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/zip.bsc"
+				OutputFile="..\Bin\ContaCamw\Zip\zip.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -171,8 +171,8 @@
 		</Configuration>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw"
-			IntermediateDirectory=".\../Obj/FreeVimagerw"
+			OutputDirectory="..\Bin\FreeVimagerw\Zip"
+			IntermediateDirectory="..\Obj\FreeVimagerw\Zip"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -206,9 +206,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/"
-				ObjectFile=".\../Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\Zip\"
+				ObjectFile="..\Obj\FreeVimagerw\Zip\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\Zip\"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 			/>
@@ -225,7 +225,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw\zip.lib"
+				OutputFile="..\Bin\FreeVimagerw\Zip\zip.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -237,7 +237,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/zip.bsc"
+				OutputFile="..\Bin\FreeVimagerw\Zip\zip.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

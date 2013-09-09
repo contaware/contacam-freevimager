@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\Bin/FreeVimagerw"
-			IntermediateDirectory=".\Obj/FreeVimagerw"
+			OutputDirectory="Bin\FreeVimagerw"
+			IntermediateDirectory="Obj\FreeVimagerw"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -67,9 +67,9 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Obj/FreeVimagerw/FreeVimagerw.pch"
-				AssemblerListingLocation=".\Obj/FreeVimagerw/"
-				ObjectFile=".\Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\Obj/FreeVimagerw/"
+				AssemblerListingLocation="Obj\FreeVimagerw\"
+				ObjectFile="Obj\FreeVimagerw\"
+				ProgramDataBaseFileName="Obj\FreeVimagerw\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -87,11 +87,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Bin/FreeVimagerw/FreeVimagerw.exe"
+				OutputFile="Bin\FreeVimagerw\FreeVimagerw.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
-				ProgramDatabaseFile=".\Bin/FreeVimagerw/FreeVimagerw.pdb"
+				ProgramDatabaseFile="Bin\FreeVimagerw\FreeVimagerw.pdb"
 				SubSystem="2"
 				EntryPointSymbol="wWinMainCRTStartup"
 				RandomizedBaseAddress="1"
@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Bin/FreeVimagerw/FreeVimagerw.bsc"
+				OutputFile="Bin\FreeVimagerw\FreeVimagerw.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -124,8 +124,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\Bin/Debug_Unicode"
-			IntermediateDirectory=".\Obj/Debug_Unicode"
+			OutputDirectory="Bin\Debug_Unicode"
+			IntermediateDirectory="Obj\Debug_Unicode"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -168,9 +168,9 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Obj/Debug_Unicode/ContaCamw.pch"
-				AssemblerListingLocation=".\Obj/Debug_Unicode/"
-				ObjectFile=".\Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\Obj/Debug_Unicode/"
+				AssemblerListingLocation="Obj\Debug_Unicode\"
+				ObjectFile="Obj\Debug_Unicode\"
+				ProgramDataBaseFileName="Obj\Debug_Unicode\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -190,12 +190,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Bin/Debug_Unicode/ContaCamw.exe"
+				OutputFile="Bin\Debug_Unicode\ContaCamw.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Bin/Debug_Unicode/ContaCamw.pdb"
+				ProgramDatabaseFile="Bin\Debug_Unicode\ContaCamw.pdb"
 				SubSystem="2"
 				EntryPointSymbol="wWinMainCRTStartup"
 				RandomizedBaseAddress="1"
@@ -215,7 +215,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Bin/Debug_Unicode/ContaCamw.bsc"
+				OutputFile="Bin\Debug_Unicode\ContaCamw.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -233,8 +233,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\Bin/ContaCamw"
-			IntermediateDirectory=".\Obj/ContaCamw"
+			OutputDirectory="Bin\ContaCamw"
+			IntermediateDirectory="Obj\ContaCamw"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -283,9 +283,9 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\Obj/ContaCamw/ContaCamw.pch"
-				AssemblerListingLocation=".\Obj/ContaCamw/"
-				ObjectFile=".\Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\Obj/ContaCamw/"
+				AssemblerListingLocation="Obj\ContaCamw\"
+				ObjectFile="Obj\ContaCamw\"
+				ProgramDataBaseFileName="Obj\ContaCamw\"
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -303,13 +303,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Bin/ContaCamw/ContaCamw.exe"
+				OutputFile="Bin\ContaCamw\ContaCamw.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="false"
 				GenerateDebugInformation="false"
 				AssemblyDebug="0"
-				ProgramDatabaseFile=".\Bin/ContaCamw/ContaCamw.pdb"
+				ProgramDatabaseFile="Bin\ContaCamw\ContaCamw.pdb"
 				SubSystem="2"
 				LinkTimeCodeGeneration="1"
 				EntryPointSymbol="wWinMainCRTStartup"
@@ -329,7 +329,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Bin/ContaCamw/ContaCamw.bsc"
+				OutputFile="Bin\ContaCamw\ContaCamw.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw"
-			IntermediateDirectory=".\../Obj/FreeVimagerw"
+			OutputDirectory="..\Bin\FreeVimagerw\directx_base"
+			IntermediateDirectory="..\Obj\FreeVimagerw\directx_base"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -50,9 +50,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/"
-				ObjectFile=".\../Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\directx_base\"
+				ObjectFile="..\Obj\FreeVimagerw\directx_base\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\directx_base\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw\directx_base.lib"
+				OutputFile="..\Bin\FreeVimagerw\directx_base\directx_base.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/directx_base.bsc"
+				OutputFile="..\Bin\FreeVimagerw\directx_base\directx_base.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw"
-			IntermediateDirectory=".\../Obj/ContaCamw"
+			OutputDirectory="..\Bin\ContaCamw\directx_base"
+			IntermediateDirectory="..\Obj\ContaCamw\directx_base"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -126,9 +126,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/ContaCamw/"
-				ObjectFile=".\../Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/"
+				AssemblerListingLocation="..\Obj\ContaCamw\directx_base\"
+				ObjectFile="..\Obj\ContaCamw\directx_base\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\directx_base\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw\directx_base.lib"
+				OutputFile="..\Bin\ContaCamw\directx_base\directx_base.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -157,7 +157,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/directx_base.bsc"
+				OutputFile="..\Bin\ContaCamw\directx_base\directx_base.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -168,8 +168,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode"
-			IntermediateDirectory=".\../Obj/Debug_Unicode"
+			OutputDirectory="..\Bin\Debug_Unicode\directx_base"
+			IntermediateDirectory="..\Obj\Debug_Unicode\directx_base"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -199,9 +199,10 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/"
-				ObjectFile=".\../Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\directx_base\"
+				ObjectFile="..\Obj\Debug_Unicode\directx_base\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\directx_base\"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -219,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode\directx_base.lib"
+				OutputFile="..\Bin\Debug_Unicode\directx_base\directx_base.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -231,7 +232,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/directx_base.bsc"
+				OutputFile="..\Bin\Debug_Unicode\directx_base\directx_base.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

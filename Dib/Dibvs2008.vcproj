@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw/Dib"
-			IntermediateDirectory=".\../Obj/ContaCamw/Dib"
+			OutputDirectory="..\Bin\ContaCamw\Dib"
+			IntermediateDirectory="..\Obj\ContaCamw\Dib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -55,9 +55,9 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\../Obj/ContaCamw/Dib/Dib.pch"
-				AssemblerListingLocation=".\../Obj/ContaCamw/Dib/"
-				ObjectFile=".\../Obj/ContaCamw/Dib/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/Dib/"
+				AssemblerListingLocation="..\Obj\ContaCamw\Dib\"
+				ObjectFile="..\Obj\ContaCamw\Dib\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\Dib\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw/Dib\Dib.lib"
+				OutputFile="..\Bin\ContaCamw\Dib\Dib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -86,7 +86,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/Dib/Dib.bsc"
+				OutputFile="..\Bin\ContaCamw\Dib\Dib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -97,8 +97,8 @@
 		</Configuration>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw/Dib"
-			IntermediateDirectory=".\../Obj/FreeVimagerw/Dib"
+			OutputDirectory="..\Bin\FreeVimagerw\Dib"
+			IntermediateDirectory="..\Obj\FreeVimagerw\Dib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -134,9 +134,9 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\../Obj/FreeVimagerw/Dib/Dib.pch"
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/Dib/"
-				ObjectFile=".\../Obj/FreeVimagerw/Dib/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/Dib/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\Dib\"
+				ObjectFile="..\Obj\FreeVimagerw\Dib\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\Dib\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -153,7 +153,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw/Dib\Dib.lib"
+				OutputFile="..\Bin\FreeVimagerw\Dib\Dib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -165,7 +165,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/Dib/Dib.bsc"
+				OutputFile="..\Bin\FreeVimagerw\Dib\Dib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -176,8 +176,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode/Dib"
-			IntermediateDirectory=".\../Obj/Debug_Unicode/Dib"
+			OutputDirectory="..\Bin\Debug_Unicode\Dib"
+			IntermediateDirectory="..\Obj\Debug_Unicode\Dib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="1"
@@ -211,9 +211,10 @@
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
 				PrecompiledHeaderFile=".\../Obj/Debug_Unicode/Dib/Dib.pch"
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/Dib/"
-				ObjectFile=".\../Obj/Debug_Unicode/Dib/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/Dib/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\Dib\"
+				ObjectFile="..\Obj\Debug_Unicode\Dib\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\Dib\"
+				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -232,7 +233,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode/Dib\Dib.lib"
+				OutputFile="..\Bin\Debug_Unicode\Dib\Dib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -244,7 +245,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/Dib/Dib.bsc"
+				OutputFile="..\Bin\Debug_Unicode\Dib\Dib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

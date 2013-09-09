@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode"
-			IntermediateDirectory=".\../Obj/Debug_Unicode"
+			OutputDirectory="..\Bin\Debug_Unicode\libpng"
+			IntermediateDirectory="..\Obj\Debug_Unicode\libpng"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -50,9 +50,9 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/"
-				ObjectFile=".\../Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\libpng\"
+				ObjectFile="..\Obj\Debug_Unicode\libpng\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\libpng\"
 				BrowseInformation="1"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
@@ -72,7 +72,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode\libpng.lib"
+				OutputFile="..\Bin\Debug_Unicode\libpng\libpng.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -84,7 +84,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/libpng.bsc"
+				OutputFile="..\Bin\Debug_Unicode\libpng\libpng.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -95,8 +95,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw"
-			IntermediateDirectory=".\../Obj/ContaCamw"
+			OutputDirectory="..\Bin\ContaCamw\libpng"
+			IntermediateDirectory="..\Obj\ContaCamw\libpng"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -132,9 +132,9 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/ContaCamw/"
-				ObjectFile=".\../Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/"
+				AssemblerListingLocation="..\Obj\ContaCamw\libpng\"
+				ObjectFile="..\Obj\ContaCamw\libpng\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\libpng\"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
 			/>
@@ -152,7 +152,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw\libpng.lib"
+				OutputFile="..\Bin\ContaCamw\libpng\libpng.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -164,7 +164,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/libpng.bsc"
+				OutputFile="..\Bin\ContaCamw\libpng\libpng.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -175,8 +175,8 @@
 		</Configuration>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw"
-			IntermediateDirectory=".\../Obj/FreeVimagerw"
+			OutputDirectory="..\Bin\FreeVimagerw\libpng"
+			IntermediateDirectory="..\Obj\FreeVimagerw\libpng"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -212,9 +212,9 @@
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/"
-				ObjectFile=".\../Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\libpng\"
+				ObjectFile="..\Obj\FreeVimagerw\libpng\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\libpng\"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
 			/>
@@ -232,7 +232,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw\libpng.lib"
+				OutputFile="..\Bin\FreeVimagerw\libpng\libpng.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -244,7 +244,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/libpng.bsc"
+				OutputFile="..\Bin\FreeVimagerw\libpng\libpng.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode"
-			IntermediateDirectory=".\../Obj/Debug_Unicode"
+			OutputDirectory="..\Bin\Debug_Unicode\icclib"
+			IntermediateDirectory="..\Obj\Debug_Unicode\icclib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -48,9 +48,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/"
-				ObjectFile=".\../Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\icclib\"
+				ObjectFile="..\Obj\Debug_Unicode\icclib\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\icclib\"
 				BrowseInformation="1"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode\icclib.lib"
+				OutputFile="..\Bin\Debug_Unicode\icclib\icclib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -81,7 +81,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/icclib.bsc"
+				OutputFile="..\Bin\Debug_Unicode\icclib\icclib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw"
-			IntermediateDirectory=".\../Obj/FreeVimagerw"
+			OutputDirectory="..\Bin\FreeVimagerw\icclib"
+			IntermediateDirectory="..\Obj\FreeVimagerw\icclib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -126,9 +126,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/"
-				ObjectFile=".\../Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\icclib\"
+				ObjectFile="..\Obj\FreeVimagerw\icclib\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\icclib\"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
 			/>
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw\icclib.lib"
+				OutputFile="..\Bin\FreeVimagerw\icclib\icclib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -157,7 +157,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/icclib.bsc"
+				OutputFile="..\Bin\FreeVimagerw\icclib\icclib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -168,8 +168,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw"
-			IntermediateDirectory=".\../Obj/ContaCamw"
+			OutputDirectory="..\Bin\ContaCamw\icclib"
+			IntermediateDirectory="..\Obj\ContaCamw\icclib"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -202,9 +202,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/ContaCamw/"
-				ObjectFile=".\../Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/"
+				AssemblerListingLocation="..\Obj\ContaCamw\icclib\"
+				ObjectFile="..\Obj\ContaCamw\icclib\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\icclib\"
 				WarningLevel="2"
 				SuppressStartupBanner="true"
 			/>
@@ -221,7 +221,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw\icclib.lib"
+				OutputFile="..\Bin\ContaCamw\icclib\icclib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -233,7 +233,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/icclib.bsc"
+				OutputFile="..\Bin\ContaCamw\icclib\icclib.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"

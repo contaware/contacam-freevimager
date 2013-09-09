@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug_Unicode|Win32"
-			OutputDirectory=".\../Bin/Debug_Unicode"
-			IntermediateDirectory=".\../Obj/Debug_Unicode"
+			OutputDirectory="..\Bin\Debug_Unicode\libtiff"
+			IntermediateDirectory="..\Obj\Debug_Unicode\libtiff"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -48,9 +48,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/Debug_Unicode/"
-				ObjectFile=".\../Obj/Debug_Unicode/"
-				ProgramDataBaseFileName=".\../Obj/Debug_Unicode/"
+				AssemblerListingLocation="..\Obj\Debug_Unicode\libtiff\"
+				ObjectFile="..\Obj\Debug_Unicode\libtiff\"
+				ProgramDataBaseFileName="..\Obj\Debug_Unicode\libtiff\"
 				BrowseInformation="1"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/Debug_Unicode\libtiff.lib"
+				OutputFile="..\Bin\Debug_Unicode\libtiff\libtiff.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -80,7 +80,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/Debug_Unicode/libtiff.bsc"
+				OutputFile="..\Bin\Debug_Unicode\libtiff\libtiff.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -91,8 +91,8 @@
 		</Configuration>
 		<Configuration
 			Name="ContaCamw|Win32"
-			OutputDirectory=".\../Bin/ContaCamw"
-			IntermediateDirectory=".\../Obj/ContaCamw"
+			OutputDirectory="..\Bin\ContaCamw\libtiff"
+			IntermediateDirectory="..\Obj\ContaCamw\libtiff"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -126,9 +126,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/ContaCamw/"
-				ObjectFile=".\../Obj/ContaCamw/"
-				ProgramDataBaseFileName=".\../Obj/ContaCamw/"
+				AssemblerListingLocation="..\Obj\ContaCamw\libtiff\"
+				ObjectFile="..\Obj\ContaCamw\libtiff\"
+				ProgramDataBaseFileName="..\Obj\ContaCamw\libtiff\"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/ContaCamw\libtiff.lib"
+				OutputFile="..\Bin\ContaCamw\libtiff\libtiff.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -156,7 +156,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/ContaCamw/libtiff.bsc"
+				OutputFile="..\Bin\ContaCamw\libtiff\libtiff.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -167,8 +167,8 @@
 		</Configuration>
 		<Configuration
 			Name="FreeVimagerw|Win32"
-			OutputDirectory=".\../Bin/FreeVimagerw"
-			IntermediateDirectory=".\../Obj/FreeVimagerw"
+			OutputDirectory="..\Bin\FreeVimagerw\libtiff"
+			IntermediateDirectory="..\Obj\FreeVimagerw\libtiff"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -202,9 +202,9 @@
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=""
-				AssemblerListingLocation=".\../Obj/FreeVimagerw/"
-				ObjectFile=".\../Obj/FreeVimagerw/"
-				ProgramDataBaseFileName=".\../Obj/FreeVimagerw/"
+				AssemblerListingLocation="..\Obj\FreeVimagerw\libtiff\"
+				ObjectFile="..\Obj\FreeVimagerw\libtiff\"
+				ProgramDataBaseFileName="..\Obj\FreeVimagerw\libtiff\"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -220,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\../Bin/FreeVimagerw\libtiff.lib"
+				OutputFile="..\Bin\FreeVimagerw\libtiff\libtiff.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -232,7 +232,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\../Bin/FreeVimagerw/libtiff.bsc"
+				OutputFile="..\Bin\FreeVimagerw\libtiff\libtiff.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
