@@ -1455,39 +1455,39 @@
     <None Include="res\ZoomPlus.cur" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Dib\Dibvs2008.vcxproj">
+    <ProjectReference Include="Dib\Dibvs2010.vcxproj">
       <Project>{3510b7ce-0804-4d79-95cd-caa0983d2313}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="directx_base\directx_basevs2008.vcxproj">
+    <ProjectReference Include="directx_base\directx_basevs2010.vcxproj">
       <Project>{41d79391-4bb7-450c-89ea-5a9ab5d166e6}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="giflib\giflibvs2008.vcxproj">
+    <ProjectReference Include="giflib\giflibvs2010.vcxproj">
       <Project>{5faafb31-c3fd-404d-9272-0a17157e8304}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="icclib\icclibvs2008.vcxproj">
+    <ProjectReference Include="icclib\icclibvs2010.vcxproj">
       <Project>{9fef590d-a2c2-4219-8dd5-f0cd9e4e274b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libjpeg\libjpegvs2008.vcxproj">
+    <ProjectReference Include="libjpeg\libjpegvs2010.vcxproj">
       <Project>{047eb7f2-222e-47ee-a83b-f68e3c0fc0e3}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libpng\libpngvs2008.vcxproj">
+    <ProjectReference Include="libpng\libpngvs2010.vcxproj">
       <Project>{bbb92a7c-22cb-449a-bfd6-691b254f9803}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="libtiff\libtiffvs2008.vcxproj">
+    <ProjectReference Include="libtiff\libtiffvs2010.vcxproj">
       <Project>{68927a2e-9628-49ff-a825-45810dc6edd1}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="zip\zipvs2008.vcxproj">
+    <ProjectReference Include="zip\zipvs2010.vcxproj">
       <Project>{28c8334f-e02a-44a8-b1b5-d81e1e11f5ca}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="zlib\zlibvs2008.vcxproj">
+    <ProjectReference Include="zlib\zlibvs2010.vcxproj">
       <Project>{968949f9-b4f2-4ebc-98cc-3c47e7909c19}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
