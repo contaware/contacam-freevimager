@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectName>ContaCamService</ProjectName>
     <ProjectGuid>{D74BC924-2842-4055-8136-74D3F14941D4}</ProjectGuid>
     <RootNamespace>ContaCamService</RootNamespace>
   </PropertyGroup>
