@@ -985,46 +985,12 @@ UINT CPicturePrintPreviewView::GetMouseScrollLines()
 {
 	// if we've already got it and we're not refreshing,
 	// return what we've already got
-
 	if (m_bGotScrollLines)
 		return m_uCachedScrollLines;
 
-	// see if we can find the mouse window
-
 	m_bGotScrollLines = TRUE;
-
-	static UINT msgGetScrollLines;
-	static WORD nRegisteredMessage;
-
-	if (g_bWin9x)		// Win95, Win98 or WinMe
-	{
-		if (nRegisteredMessage == 0)
-		{
-			msgGetScrollLines = ::RegisterWindowMessage(MSH_SCROLL_LINES);
-			if (msgGetScrollLines == 0)
-				nRegisteredMessage = 1;     // couldn't register!  never try again
-			else
-				nRegisteredMessage = 2;     // it worked: use it
-		}
-
-		if (nRegisteredMessage == 2)
-		{
-			HWND hwMouseWheel = NULL;
-			hwMouseWheel = ::FindWindow(MSH_WHEELMODULE_CLASS, MSH_WHEELMODULE_TITLE);
-			if (hwMouseWheel && msgGetScrollLines)
-			{
-				m_uCachedScrollLines = (UINT)
-					::SendMessage(hwMouseWheel, msgGetScrollLines, 0, 0);
-			}
-		}
-	}
-	else
-	{
-		// couldn't use the window -- try system settings
-		m_uCachedScrollLines = 3; // reasonable default
-		if (!g_bWin9x)			// Win95, Win98 or WinMe
-			::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &m_uCachedScrollLines, 0);
-	}
+	m_uCachedScrollLines = 3; // reasonable default
+	::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &m_uCachedScrollLines, 0);
 
 	return m_uCachedScrollLines;
 }

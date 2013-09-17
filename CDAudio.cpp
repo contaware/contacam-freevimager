@@ -26,16 +26,8 @@ CCDAudio::CCDAudio(LPCTSTR lpszFileName)
 	m_sDrive.MakeLower();
 	
 	CString s;
-	if (g_bWin95 || g_bNT4OrOlder)
-	{
-		m_sDeviceName = _T("cdaudio");
-		s = _T("open cdaudio");
-	}
-	else
-	{
-		m_sDeviceName = ::GetUuidString(); // Get a unique name
-		s.Format(_T("open %s type cdaudio alias %s"), m_sDrive, m_sDeviceName);
-	}
+	m_sDeviceName = ::GetUuidString(); // Get a unique name
+	s.Format(_T("open %s type cdaudio alias %s"), m_sDrive, m_sDeviceName);
 	
 	m_nErrorCode = mciSendString(s, NULL, 0, NULL );
 	if (m_nErrorCode == 0)

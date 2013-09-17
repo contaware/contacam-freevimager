@@ -27,13 +27,8 @@ CEnumPrinters::CEnumPrinters()
 	m_PrinterName.RemoveAll();
 	m_PrinterLocation.RemoveAll();
 	m_PrinterShareName.RemoveAll();
-
-	// For Win9x and Me this will also enumerate the Network Printers
 	ReadLocalPrinters();
-
-	// For NT Platforms
-	if (g_bNT)
-		ReadRemotePrinters();
+	ReadRemotePrinters();
 }
 
 CEnumPrinters::~CEnumPrinters()
@@ -113,143 +108,75 @@ CString CEnumPrinters::GetDefaultPrinterName()
 {
 	CString sPrinterName;
 
-	// NT Platform?
-	if (g_bNT)
+	HINSTANCE h = ::LoadLibrary(_T("winspool.drv"));
+#ifdef _UNICODE
+	typedef BOOL (WINAPI * FPGETDEFAULTPRINTERW)(LPWSTR pszBuffer, LPDWORD pcchBuffer);
+	FPGETDEFAULTPRINTERW fpGetDefaultPrinter;
+#else
+	typedef BOOL (WINAPI * FPGETDEFAULTPRINTERA)(LPSTR pszBuffer, LPDWORD pcchBuffer);
+	FPGETDEFAULTPRINTERA fpGetDefaultPrinter;
+#endif
+	if (h)
 	{
-		if (g_bWin2000OrHigher)
+#ifdef _UNICODE
+		fpGetDefaultPrinter = (FPGETDEFAULTPRINTERW)::GetProcAddress(h, "GetDefaultPrinterW");
+#else
+		fpGetDefaultPrinter = (FPGETDEFAULTPRINTERA)::GetProcAddress(h, "GetDefaultPrinterA");
+#endif
+	}
+	else
+		fpGetDefaultPrinter = NULL;
+	if (fpGetDefaultPrinter)
+	{
+		// I had a problem in win 2003 server with no printer installed:
+		// DWORD size was not inited to zero before, so that
+		// fpGetDefaultPrinter(NULL, &size) did not set size to zero
+		// -> out of memory exception because size was very big in
+		// release build.
+		DWORD size = 0;
+		fpGetDefaultPrinter(NULL, &size);
+		if (size)
 		{
-			HINSTANCE h = ::LoadLibrary(_T("winspool.drv"));
-#ifdef _UNICODE
-			typedef BOOL (WINAPI * FPGETDEFAULTPRINTERW)(LPWSTR pszBuffer, LPDWORD pcchBuffer);
-			FPGETDEFAULTPRINTERW fpGetDefaultPrinter;
-#else
-			typedef BOOL (WINAPI * FPGETDEFAULTPRINTERA)(LPSTR pszBuffer, LPDWORD pcchBuffer);
-			FPGETDEFAULTPRINTERA fpGetDefaultPrinter;
-#endif
-			if (h)
+			TCHAR* buffer = sPrinterName.GetBuffer(size);
+			if (fpGetDefaultPrinter(buffer, &size))
 			{
-#ifdef _UNICODE
-				fpGetDefaultPrinter = (FPGETDEFAULTPRINTERW)::GetProcAddress(h, "GetDefaultPrinterW");
-#else
-				fpGetDefaultPrinter = (FPGETDEFAULTPRINTERA)::GetProcAddress(h, "GetDefaultPrinterA");
-#endif
-			}
-			else
-				fpGetDefaultPrinter = NULL;
-			if (fpGetDefaultPrinter)
-			{
-				// I had a problem in win 2003 server with no printer installed:
-				// DWORD size was not inited to zero before, so that
-				// fpGetDefaultPrinter(NULL, &size) did not set size to zero
-				// -> out of memory exception because size was very big in
-				// release build.
-				DWORD size = 0;
-				fpGetDefaultPrinter(NULL, &size);
-				if (size)
-				{
-					TCHAR* buffer = sPrinterName.GetBuffer(size);
-					if (fpGetDefaultPrinter(buffer, &size))
-					{
-						sPrinterName.ReleaseBuffer();
-						::FreeLibrary(h);
-						return sPrinterName;
-					}
-					sPrinterName.ReleaseBuffer();
-				}
-				::FreeLibrary(h);
-				return _T("");
-			}
-			else
-			{
-				TCHAR* buffer = sPrinterName.GetBuffer(1024);
-				if (::GetProfileString(	_T("windows"),
-										_T("device"),
-										_T(""),
-										buffer,
-										1024) <= 0)
-				{
-					sPrinterName.ReleaseBuffer();
-					if (h)
-						::FreeLibrary(h);
-					return _T("");
-				}
 				sPrinterName.ReleaseBuffer();
-				int pos = sPrinterName.Find(_T(','));
-				if (pos < 0)
-				{
-					if (h)
-						::FreeLibrary(h);
-					return _T("");
-				}
-				else
-				{
-					if (h)
-						::FreeLibrary(h);
-					return sPrinterName.Left(pos);
-				}
+				::FreeLibrary(h);
+				return sPrinterName;
 			}
+			sPrinterName.ReleaseBuffer();
+		}
+		::FreeLibrary(h);
+		return _T("");
+	}
+	else
+	{
+		TCHAR* buffer = sPrinterName.GetBuffer(1024);
+		if (::GetProfileString(	_T("windows"),
+								_T("device"),
+								_T(""),
+								buffer,
+								1024) <= 0)
+		{
+			sPrinterName.ReleaseBuffer();
 			if (h)
 				::FreeLibrary(h);
+			return _T("");
+		}
+		sPrinterName.ReleaseBuffer();
+		int pos = sPrinterName.Find(_T(','));
+		if (pos < 0)
+		{
+			if (h)
+				::FreeLibrary(h);
+			return _T("");
 		}
 		else
 		{
-			TCHAR* buffer = sPrinterName.GetBuffer(1024);
-			if (::GetProfileString(	_T("windows"),
-									_T("device"),
-									_T(""),
-									buffer,
-									1024) <= 0)
-			{
-				sPrinterName.ReleaseBuffer();
-				return _T("");
-			}
-			sPrinterName.ReleaseBuffer();
-			int pos = sPrinterName.Find(_T(','));
-			if (pos < 0)
-				return _T("");
-			else
-				return sPrinterName.Left(pos);
+			if (h)
+				::FreeLibrary(h);
+			return sPrinterName.Left(pos);
 		}
-	}
-	// Win95, Win98 & Me
-	else
-	{
-		DWORD dwNeeded = 0;
-		DWORD dwReturned = 0;
-
-		// The first EnumPrinters() tells you how big our buffer should
-		// be in order to hold ALL of PRINTER_INFO_2. Note that this will
-		// usually return FALSE. This only means that the buffer (the 4th
-		// parameter) was not filled in. You don't want it filled in here...
-		::EnumPrinters(PRINTER_ENUM_DEFAULT, NULL, 2, NULL, 0, &dwNeeded, &dwReturned);
-		if (dwNeeded == 0)
-			return _T("");
-
-		// Allocate enough space for PRINTER_INFO_2...
-		PRINTER_INFO_2* ppi2 = (PRINTER_INFO_2*)::GlobalAlloc(GPTR, dwNeeded);
-		if (!ppi2)
-			return _T("");
-
-		// The second EnumPrinters() will fill in all the current information...
-		if (!::EnumPrinters(PRINTER_ENUM_DEFAULT,
-							NULL,
-							2,
-							(LPBYTE)ppi2,
-							dwNeeded,
-							&dwNeeded,
-							&dwReturned))
-		{
-			::GlobalFree(ppi2);
-			return _T("");
-		}
-
-		// Set Printer Name
-		sPrinterName = CString(ppi2->pPrinterName);
-
-		// Cleanup
-		::GlobalFree(ppi2);
-
-		return sPrinterName;
 	}
 }
 

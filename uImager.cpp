@@ -567,14 +567,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		CPostDelayedMessageThread::Init();
 
 		// Get the CPU Count
-		if (g_bNT)
-		{
-			unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
-						 TotAvailCore		= 0, // Number of available cores in the system
-						 PhysicalNum		= 0; // Total number of physical processors in the system
-			::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-			m_nCoresCount = TotAvailCore;
-		}
+		unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
+					 TotAvailCore		= 0, // Number of available cores in the system
+					 PhysicalNum		= 0; // Total number of physical processors in the system
+		::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
+		m_nCoresCount = TotAvailCore;
 
 		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
 		// variable for the PrintPreview.
@@ -598,10 +595,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 
 		// HALFTONE stretching is supported?
-		if (g_bNT)
-			m_bStretchModeHalftoneAvailable = TRUE;
-		else
-			m_bStretchModeHalftoneAvailable = FALSE;
+		m_bStretchModeHalftoneAvailable = TRUE;
 
 		// Picture Doc Template Registration
 		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
@@ -720,12 +714,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		FF_MM_SSE3		// Prescott SSE3 functions
 		FF_MM_SSSE3		// Conroe SSSE3 functions
 		*/
-		// Win95 and NT4 (or older NT) always crash if enabling higher than mmx.
-		// On newer systems I had some strange crashes...better to always disable sse2 and higher!
-		if (g_bWin95 || g_bNT4OrOlder)
-			mm_support_mask = FF_MM_MMX;
-		else
-			mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
+		// On newer systems I had some strange crashes ... better to always disable sse2 and higher!
+		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
 		av_register_all();
 		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
 		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
@@ -758,25 +748,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			if (LOBYTE(wsadata.wVersion) != 2 || HIBYTE(wsadata.wVersion) != 2)
 			{
 				::WSACleanup();
-				if (g_bWin95)
-				{
-					CWinsock2MissingDlg dlg;
-					dlg.DoModal();
-				}
-				else
-					::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
+				::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
 				throw (int)0;
 			}
 		}
 		else
 		{
-			if (g_bWin95)
-			{
-				CWinsock2MissingDlg dlg;
-				dlg.DoModal();
-			}
-			else
-				::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
+			::AfxMessageBox(ML_STRING(1171, "No usable WinSock DLL found"), MB_OK | MB_ICONSTOP);
 			throw (int)0;
 		}
 
@@ -1599,7 +1577,7 @@ void CUImagerApp::CaptureScreenToClipboard()
 	HBITMAP hBitmap = ::CreateCompatibleBitmap(hScreenDC, rcDesktop.Width(), rcDesktop.Height());
 	HGDIOBJ hOldBitmap = ::SelectObject(hMemDC, hBitmap);
 	::BitBlt(	hMemDC, 0, 0, rcDesktop.Width(), rcDesktop.Height(), hScreenDC,
-				rcDesktop.left, rcDesktop.top, SRCCOPY | (g_bWin2000OrHigher ? CAPTUREBLT : 0));
+				rcDesktop.left, rcDesktop.top, SRCCOPY | CAPTUREBLT);
 
 	// Save bitmap to clipboard
 	CDib Dib;
@@ -2991,38 +2969,35 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 	// check whether they are ready, if not try again in
 	// AUTORUN_VIDEODEVICES_RETRY_DELAY msec for a maximum of
 	// AUTORUN_VIDEODEVICES_MAX_RETRIES retries
-	if (g_bWin2000OrHigher)
+	for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
-		for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
+		sKey.Format(_T("%02u"), i);
+		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
 		{
-			sKey.Format(_T("%02u"), i);
-			if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
+			CString sHost;
+			if ((sHost = CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry)) != _T(""))
 			{
-				CString sHost;
-				if ((sHost = CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry)) != _T(""))
+				// This function checks whether there is a network interface
+				// that can connect to the given host
+				if (!CNetCom::HasInterface(sHost))
 				{
-					// This function checks whether there is a network interface
-					// that can connect to the given host
-					if (!CNetCom::HasInterface(sHost))
-					{
-						if (AutorunVideoDevicesDoWait(nRetryCount))
-							return;
-						else
-							break;
-					}
+					if (AutorunVideoDevicesDoWait(nRetryCount))
+						return;
+					else
+						break;
 				}
-				else
+			}
+			else
+			{
+				CString sDev(sDevRegistry);
+				sDev.Replace(_T('/'), _T('\\'));
+				int nID = CDxCapture::GetDeviceID(sDev);
+				if (nID < 0)
 				{
-					CString sDev(sDevRegistry);
-					sDev.Replace(_T('/'), _T('\\'));
-					int nID = CDxCapture::GetDeviceID(sDev);
-					if (nID < 0)
-					{
-						if (AutorunVideoDevicesDoWait(nRetryCount))
-							return;
-						else
-							break;
-					}
+					if (AutorunVideoDevicesDoWait(nRetryCount))
+						return;
+					else
+						break;
 				}
 			}
 		}
@@ -6672,7 +6647,7 @@ BOOL CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntr
 	if (!h)
 		return WriteProfileString(lpszSection, lpszEntry, lpszValue);
 	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)::GetProcAddress(h, "CryptProtectData");
-	if (fpCryptProtectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	if (fpCryptProtectData)
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
 		blobIn.pbData = (BYTE*)lpszValue;
@@ -6723,7 +6698,7 @@ CString CUImagerApp::GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEnt
 	if (!h)
 		return GetProfileString(lpszSection, lpszEntry, lpszDefault);
 	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)::GetProcAddress(h, "CryptUnprotectData");
-	if (fpCryptUnprotectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	if (fpCryptUnprotectData)
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
 		blobIn.cbData = 0;

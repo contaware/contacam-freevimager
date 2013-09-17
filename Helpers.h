@@ -15,14 +15,6 @@
 #  define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
-extern BOOL g_bWin95;
-extern BOOL g_bWin9x;
-extern BOOL g_bNT;
-extern BOOL g_bNT4OrOlder;
-extern BOOL g_bWin2000;
-extern BOOL g_bWin2000OrHigher;
-extern BOOL g_bWinXP;
-extern BOOL g_bWinXPOrHigher;
 extern BOOL g_bWin2003;
 extern BOOL g_bWin2003OrHigher;
 extern BOOL g_bWinVista;
@@ -192,12 +184,13 @@ extern void ShowLastError(	BOOL bShowMessageBoxOnError,
 						   CString sHeader = _T(""),
 						   CString sFooter = _T(""));
 
-// Win95 Compatible timeSetEvent Function.
-// Under Win95 timer events are not working!
-extern MMRESULT timeSetEventCompatible(	UINT uDelay,                
-										UINT uResolution,           
-										LPTIMECALLBACK lpTimeProc,  
-										DWORD dwUser,               
+// This function prevents the event from occurring
+// after the user calls timeKillEvent() to destroy it.
+// (Introduced with Windows XP)
+extern MMRESULT timeSetEventCompatible(	UINT uDelay,
+										UINT uResolution,
+										LPTIMECALLBACK lpTimeProc,
+										DWORD dwUser,
 										UINT fuEvent);
 
 // Just Play An Audio File

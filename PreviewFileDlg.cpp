@@ -171,21 +171,8 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 	}
 	else if (g_nComCtl32MajorVersion == 5)
 	{
-		if (g_bWin2000)
-		{
-			m_bNewSizeDlg = TRUE;
-			m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWWIN2000);
-		}
-		else if (g_bWinXPOrHigher)
-		{
-			m_bNewSizeDlg = TRUE;
-			m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
-		}
-		else
-		{
-			m_bNewSizeDlg = FALSE;
-			m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEW);
-		}
+		m_bNewSizeDlg = TRUE;
+		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
 	}
 	// Also if Manifest Available and WinXP it must be a newer MFC Compile!
 	else

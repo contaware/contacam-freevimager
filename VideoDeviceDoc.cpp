@@ -7598,7 +7598,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 		// metric-compatible variant of MS Sans Serif, first distributed with
 		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
 		// used when passing a NULL pointer to AddSingleLineText().
-		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
+		Font.CreatePointFont(nFontSize * 10, _T("Microsoft Sans Serif"));
 	}
 
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
@@ -7650,7 +7650,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount)
 		// metric-compatible variant of MS Sans Serif, first distributed with
 		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
 		// used when passing a NULL pointer to AddSingleLineText().
-		Font.CreatePointFont(nFontSize * 10, g_bWin2000OrHigher ? _T("Microsoft Sans Serif") : _T("Arial"));
+		Font.CreatePointFont(nFontSize * 10, _T("Microsoft Sans Serif"));
 	}
 
 	CString sCount;

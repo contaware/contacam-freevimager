@@ -2322,10 +2322,7 @@ HDC CMainFrame::CreateMonitorDC(CWnd* pWnd/*=NULL*/)
 			return NULL;
 		}
 		::FreeLibrary(h);
-		if (g_bNT)
-			hMonitorDC = ::CreateDC(_T("DISPLAY"), monInfo.szDevice, NULL, NULL);
-		else
-			hMonitorDC = ::CreateDC(NULL, monInfo.szDevice, NULL, NULL);
+		hMonitorDC = ::CreateDC(_T("DISPLAY"), monInfo.szDevice, NULL, NULL);
 	}
 	else
 	{

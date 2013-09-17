@@ -67,7 +67,7 @@ CString GetSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTST
 	if (!h)
 		return GetProfileIniString(lpszSection, lpszEntry, lpszDefault, lpszProfileName);
 	FPCRYPTUNPROTECTDATA fpCryptUnprotectData = (FPCRYPTUNPROTECTDATA)GetProcAddress(h, "CryptUnprotectData");
-	if (fpCryptUnprotectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	if (fpCryptUnprotectData)
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
 		blobIn.cbData = 0;
@@ -173,7 +173,7 @@ BOOL WriteSecureProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR
 	if (!h)
 		return WriteProfileIniString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
 	FPCRYPTPROTECTDATA fpCryptProtectData = (FPCRYPTPROTECTDATA)GetProcAddress(h, "CryptProtectData");
-	if (fpCryptProtectData && g_bWin2000OrHigher) // System version check necessary because win98 is returning a function pointer which does nothing!
+	if (fpCryptProtectData)
 	{
 		DATA_BLOB blobIn, blobOut, blobEntropy;
 		blobIn.pbData = (BYTE*)lpszValue;

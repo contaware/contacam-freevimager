@@ -17,19 +17,7 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Wininet.lib")
 
-#ifndef WC_NO_BEST_FIT_CHARS
-#define WC_NO_BEST_FIT_CHARS      0x00000400  // Do not use best fit chars
-#endif
-
-// If InitHelpers() is not called use worst case (Win95)
-BOOL g_bWin95 = TRUE;
-BOOL g_bWin9x = TRUE;
-BOOL g_bNT = FALSE;
-BOOL g_bNT4OrOlder = FALSE;
-BOOL g_bWin2000 = FALSE;
-BOOL g_bWin2000OrHigher = FALSE;
-BOOL g_bWinXP = FALSE;
-BOOL g_bWinXPOrHigher = FALSE;
+// If InitHelpers() is not called use worst case which is WinXP
 BOOL g_bWin2003 = FALSE;
 BOOL g_bWin2003OrHigher = FALSE;
 BOOL g_bWinVista = FALSE;
@@ -55,38 +43,6 @@ void InitHelpers()
 	OSVERSIONINFO ovi = {0};
     ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
-
-	// Win95
-	g_bWin95 =				(ovi.dwPlatformId == 1)		&&
-							(ovi.dwMajorVersion == 4)	&&
-							(ovi.dwMinorVersion < 10);
-
-	// Win9x (Win95, Win98 or WinMe)
-	g_bWin9x =				(ovi.dwPlatformId == 1);
-
-	// NT Platform
-	g_bNT =					(ovi.dwPlatformId == 2);
-
-	// NT 4 or Older
-	g_bNT4OrOlder =			(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion <= 4);                
-	
-	// Win 2000
-	g_bWin2000 =			(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion == 5)	&&
-							(ovi.dwMinorVersion == 0);
-
-	g_bWin2000OrHigher =	(ovi.dwPlatformId == 2)	&&
-							(ovi.dwMajorVersion >= 5);
-
-	// XP
-	g_bWinXP =				(ovi.dwPlatformId == 2)		&&
-							(ovi.dwMajorVersion == 5)	&&
-							(ovi.dwMinorVersion == 1);
-
-	g_bWinXPOrHigher =		(ovi.dwPlatformId == 2)		&&
-							((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 1) ||
-							(ovi.dwMajorVersion > 5));
 
 	// Win 2003 Server
 	g_bWin2003 =			(ovi.dwPlatformId == 2)		&&
@@ -1986,58 +1942,20 @@ static void CALLBACK timerCallbackPulseEvent(UINT uTimerID, UINT uMsg, DWORD dwU
 	PulseEvent((HANDLE)dwUser);
 }
 
-// Win95 Compatible timeSetEvent Function.
-// Under Win95 timer events are not working!
-#ifndef TIME_KILL_SYNCHRONOUS
-#define TIME_KILL_SYNCHRONOUS   0x0100  /* This flag prevents the event from occurring */
-                                        /* after the user calls timeKillEvent() to */
-                                        /* destroy it. Introduced with Windows XP */
-#endif
 MMRESULT timeSetEventCompatible(UINT uDelay,                
 								UINT uResolution,           
 								LPTIMECALLBACK lpTimeProc,  
 								DWORD dwUser,               
 								UINT fuEvent)
 {
-	UINT uiOneShot_Periodic_Flag = fuEvent & 0x1;
-
-	if (g_bWin95)
-	{
-		if ((fuEvent & TIME_CALLBACK_EVENT_SET) == TIME_CALLBACK_EVENT_SET)
-			return timeSetEvent(	uDelay,
-									uResolution,
-									(LPTIMECALLBACK)timerCallbackSetEvent,
-									(DWORD)lpTimeProc,
-									uiOneShot_Periodic_Flag | TIME_CALLBACK_FUNCTION);
-		else if ((fuEvent & TIME_CALLBACK_EVENT_PULSE) == TIME_CALLBACK_EVENT_PULSE)
-			return timeSetEvent(	uDelay,
-									uResolution,
-									(LPTIMECALLBACK)timerCallbackPulseEvent,
-									(DWORD)lpTimeProc,
-									uiOneShot_Periodic_Flag | TIME_CALLBACK_FUNCTION);
-		else
-			return timeSetEvent(	uDelay,
-									uResolution,
-									lpTimeProc,
-									dwUser,
-									fuEvent);
-	}
-	else if (g_bWinXPOrHigher)
-	{
-		return timeSetEvent(	uDelay,
-								uResolution,
-								lpTimeProc,
-								dwUser,
-								fuEvent | TIME_KILL_SYNCHRONOUS);
-	}
-	else
-	{
-		return timeSetEvent(	uDelay,
-								uResolution,
-								lpTimeProc,
-								dwUser,
-								fuEvent);
-	}
+	// The TIME_KILL_SYNCHRONOUS flag prevents the event from occurring
+	// after the user calls timeKillEvent() to destroy it.
+	// (Introduced with Windows XP)
+	return timeSetEvent(	uDelay,
+							uResolution,
+							lpTimeProc,
+							dwUser,
+							fuEvent | TIME_KILL_SYNCHRONOUS);
 }
 
 // Plays a specified file using MCI_OPEN and MCI_PLAY. 
