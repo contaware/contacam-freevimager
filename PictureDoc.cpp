@@ -4898,8 +4898,7 @@ void CPictureDoc::OnViewStretchHalftone()
 
 void CPictureDoc::OnUpdateViewStretchHalftone(CCmdUI* pCmdUI) 
 {
-	pCmdUI->Enable(((CUImagerApp*)::AfxGetApp())->m_bStretchModeHalftoneAvailable	&&
-					!m_bPrintPreviewMode);
+	pCmdUI->Enable(!m_bPrintPreviewMode);
 	pCmdUI->SetCheck(m_bStretchModeHalftone ? 1 : 0);
 }
 

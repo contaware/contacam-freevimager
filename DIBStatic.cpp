@@ -402,24 +402,21 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			throw (int)FULLLOAD_HDRERROR;
 
 		// Set Stretch Mode
-		if (((CUImagerApp*)::AfxGetApp())->m_bStretchModeHalftoneAvailable)
+		if (m_pDibStatic->m_pDibFull->GetBitCount() > 8)
 		{
-			if (m_pDibStatic->m_pDibFull->GetBitCount() > 8)
-			{
-				m_pDibStatic->m_pDibFull->SetStretchMode(HALFTONE);
-				if (m_pDibStatic->m_pDibFull->GetThumbnailDib())
-					m_pDibStatic->m_pDibFull->GetThumbnailDib()->SetStretchMode(HALFTONE);
-				if (m_pDibStatic->m_pAlphaRenderedDib)
-					m_pDibStatic->m_pAlphaRenderedDib->SetStretchMode(HALFTONE);
-			}
-			else
-			{
-				m_pDibStatic->m_pDibFull->SetStretchMode(COLORONCOLOR);
-				if (m_pDibStatic->m_pDibFull->GetThumbnailDib())
-					m_pDibStatic->m_pDibFull->GetThumbnailDib()->SetStretchMode(COLORONCOLOR);
-				if (m_pDibStatic->m_pAlphaRenderedDib)
-					m_pDibStatic->m_pAlphaRenderedDib->SetStretchMode(COLORONCOLOR);
-			}
+			m_pDibStatic->m_pDibFull->SetStretchMode(HALFTONE);
+			if (m_pDibStatic->m_pDibFull->GetThumbnailDib())
+				m_pDibStatic->m_pDibFull->GetThumbnailDib()->SetStretchMode(HALFTONE);
+			if (m_pDibStatic->m_pAlphaRenderedDib)
+				m_pDibStatic->m_pAlphaRenderedDib->SetStretchMode(HALFTONE);
+		}
+		else
+		{
+			m_pDibStatic->m_pDibFull->SetStretchMode(COLORONCOLOR);
+			if (m_pDibStatic->m_pDibFull->GetThumbnailDib())
+				m_pDibStatic->m_pDibFull->GetThumbnailDib()->SetStretchMode(COLORONCOLOR);
+			if (m_pDibStatic->m_pAlphaRenderedDib)
+				m_pDibStatic->m_pAlphaRenderedDib->SetStretchMode(COLORONCOLOR);
 		}
 
 		// Realize Palette

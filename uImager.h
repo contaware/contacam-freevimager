@@ -723,9 +723,6 @@ public:
 	// MAPI Mail Support Available Flag
 	BOOL m_bMailAvailable;
 
-	// Is Halftone Stretching Supported
-	BOOL m_bStretchModeHalftoneAvailable;
-
 	// Xmp Dialogs
 	CXmpDlg* m_pXmpImportDlg;
 	CXmpDlg* m_pXmpDlg;

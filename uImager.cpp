@@ -593,9 +593,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			}
 		}
 
-		// HALFTONE stretching is supported?
-		m_bStretchModeHalftoneAvailable = TRUE;
-
 		// Picture Doc Template Registration
 		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
 			IDR_PICTURE,
