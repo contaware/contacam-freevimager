@@ -8,9 +8,6 @@
 #include "Dib.h"
 #include "YuvToRgb.h"
 #include "DxDraw.h"
-#if (_MSC_VER <= 1200)
-#include "BigFile.h"
-#endif
 extern "C"
 {
 #include "ffmpeg\\libavcodec\\avcodec.h"
@@ -422,11 +419,7 @@ class CAVIPlay
 		friend class CAVIPlay;
 
 		public:
-#if (_MSC_VER <= 1200)
-			CAVIStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CBigFile* pFile) :
-#else
 			CAVIStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CFile* pFile) :
-#endif
 				m_dwStreamNum(dwStreamNum),
 				m_pAVIPlay(pAVIPlay),
 				m_pFile(pFile)
@@ -483,11 +476,7 @@ class CAVIPlay
 		protected:
 			void CalcMinChunkSize();
 			void CalcMaxChunkSize();
-#if (_MSC_VER <= 1200)
-			CBigFile*			m_pFile;
-#else
 			CFile*				m_pFile;
-#endif
 			CAVIPlay*			m_pAVIPlay;
 			AVISTREAMHDR		m_Hdr;
 			LPBYTE				m_pSrcFormat;
@@ -521,11 +510,7 @@ class CAVIPlay
 
 		public:
 			// Constructor
-#if (_MSC_VER <= 1200)
-			CAVIAudioStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CBigFile* pFile) :
-#else
 			CAVIAudioStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CFile* pFile) :
-#endif
 				CAVIStream(dwStreamNum, pAVIPlay, pFile)
 								{	m_dwDstMinBytesCount = 0;
 									m_dwSrcMinBytesCount = 0;
@@ -744,11 +729,7 @@ class CAVIPlay
 
 		public:
 			// Constructor
-#if (_MSC_VER <= 1200)
-			CAVIPaletteStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CBigFile* pFile) :
-#else
 			CAVIPaletteStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CFile* pFile) :
-#endif
 				CAVIStream(dwStreamNum, pAVIPlay, pFile)
 								{m_pChangePaletteTable = NULL;
 								m_dwChangePaletteTableSize = 0;}; 
@@ -786,11 +767,7 @@ class CAVIPlay
 
 		public:
 			// Constructor
-#if (_MSC_VER <= 1200)
-			CAVIVideoStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CBigFile* pFile) :
-#else
 			CAVIVideoStream(DWORD dwStreamNum, CAVIPlay* pAVIPlay, CFile* pFile) :
-#endif
 				CAVIStream(dwStreamNum, pAVIPlay, pFile)		
 								{	m_pPaletteStream = NULL;
 									m_pSrcBuf = NULL;
@@ -1218,17 +1195,10 @@ public:
 	// Avi File Parsing
 	static bool IsFourCCInArray(DWORD dwFourCC, DWORD* pFourCCs, DWORD nSize);
 	static __forceinline int GetChunkType(DWORD fcc);
-#if (_MSC_VER <= 1200)
-	static __forceinline LONGLONG SeekToNextChunk(CBigFile* pFile, RIFFCHUNK& chunk);
-	static __forceinline LONGLONG SeekToNextChunk(CBigFile* pFile, RIFFCHUNK& chunk, LONGLONG llNextListPos);
-	static __forceinline LONGLONG SeekToNextChunkFromList(CBigFile* pFile, const RIFFLIST& list, RIFFCHUNK& chunk);
-	static __forceinline LONGLONG SeekToNextList(CBigFile* pFile, RIFFLIST& list);
-#else
 	static __forceinline LONGLONG SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk);
 	static __forceinline LONGLONG SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk, LONGLONG llNextListPos);
 	static __forceinline LONGLONG SeekToNextChunkFromList(CFile* pFile, const RIFFLIST& list, RIFFCHUNK& chunk);
 	static __forceinline LONGLONG SeekToNextList(CFile* pFile, RIFFLIST& list);
-#endif
 
 	// Use AVCodecs as first choice flag
 	bool m_bAVCodecPriority;
@@ -1256,11 +1226,7 @@ protected:
 	PALETTESTREAMARRAY m_PaletteStreams;
 	volatile UINT m_uiOpenFlags;
 	bool m_bShowMessageBoxOnError; // Display MessageBox on Error
-#if (_MSC_VER <= 1200)
-	CBigFile* m_pFile;
-#else
 	CFile* m_pFile;
-#endif
 };
 
 __forceinline DWORD CAVIPlay::CAVIAudioStream::GetBufSamplesCount() const

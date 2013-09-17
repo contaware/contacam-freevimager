@@ -5650,11 +5650,7 @@ bool CAVIPlay::Open(	LPCTSTR szFileName,
 		Close();
 
 		// Open File
-#if (_MSC_VER <= 1200)	
-		m_pFile = new CBigFile(szFileName, m_uiOpenFlags);
-#else
 		m_pFile = new CFile(szFileName, m_uiOpenFlags);
-#endif
 		if (!m_pFile)
 			throw (int)OUT_OF_MEM;
 
@@ -6610,11 +6606,7 @@ void CAVIPlay::Close()
 //			chunk, seeked chunk 
 // Return:	position of file (data begin of the seeked chunk),
 //			0 if an error happened
-#if (_MSC_VER <= 1200)
-__forceinline LONGLONG CAVIPlay::SeekToNextChunk(CBigFile* pFile, RIFFCHUNK& chunk)
-#else
 __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk)
-#endif
 {
 	if (!pFile)
 		return 0;
@@ -6652,11 +6644,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk)
 //			chunk, seeked chunk
 // Return:	position of file (data begin of the seeked chunk),
 //			0 if an error happened
-#if (_MSC_VER <= 1200)
-__forceinline LONGLONG CAVIPlay::SeekToNextChunk(CBigFile* pFile, RIFFCHUNK& chunk, LONGLONG llNextListPos)
-#else
 __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk, LONGLONG llNextListPos)
-#endif
 {
 	if (!pFile)
 		return 0;
@@ -6697,11 +6685,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk,
 //			chunk, seeked chunk
 // Return:	position of file (data begin of the seeked chunk),
 //			0 if an error happened
-#if (_MSC_VER <= 1200)
-__forceinline LONGLONG CAVIPlay::SeekToNextChunkFromList(CBigFile* pFile, const RIFFLIST& list, RIFFCHUNK& chunk)
-#else
 __forceinline LONGLONG CAVIPlay::SeekToNextChunkFromList(CFile* pFile, const RIFFLIST& list, RIFFCHUNK& chunk)
-#endif
 {
 	if (!pFile)
 		return 0;
@@ -6738,11 +6722,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunkFromList(CFile* pFile, const RIF
 //			list, seeked list
 // Return:	position of file (data begin of the seeked list),
 //			0 if an error happened
-#if (_MSC_VER <= 1200)
-__forceinline LONGLONG CAVIPlay::SeekToNextList(CBigFile* pFile, RIFFLIST& list)
-#else
 __forceinline LONGLONG CAVIPlay::SeekToNextList(CFile* pFile, RIFFLIST& list)
-#endif
 {
 	if (!pFile)
 		return 0;
@@ -6949,16 +6929,10 @@ bool CAVIPlay::AviChangeVideoFrameRate(LPCTSTR szFileName,
 									   bool bShowMessageBoxOnError)
 {
 	try
-	{			
-#if (_MSC_VER <= 1200)
-		CBigFile f(szFileName,
-				CFile::modeReadWrite |
-				CFile::shareDenyNone);
-#else
+	{
 		CFile f(szFileName,
 				CFile::modeReadWrite |
-				CFile::shareDenyNone);
-#endif	
+				CFile::shareDenyNone);	
 		RIFFLIST list;
 		RIFFCHUNK chunk;
 		DWORD dwCurrentVideoStreamNum = 0;
@@ -7097,16 +7071,10 @@ bool CAVIPlay::AviChangeVideoStartOffset(LPCTSTR szFileName,
 										 bool bShowMessageBoxOnError)
 {
 	try
-	{			
-#if (_MSC_VER <= 1200)
-		CBigFile f(szFileName,
-				CFile::modeReadWrite |
-				CFile::shareDenyNone);
-#else
+	{
 		CFile f(szFileName,
 				CFile::modeReadWrite |
-				CFile::shareDenyNone);
-#endif	
+				CFile::shareDenyNone);	
 		RIFFLIST list;
 		RIFFCHUNK chunk;
 		DWORD dwCurrentVideoStreamNum = 0;
@@ -7244,16 +7212,10 @@ bool CAVIPlay::AviChangeAudioStartOffset(LPCTSTR szFileName,
 										 bool bShowMessageBoxOnError)
 {
 	try
-	{			
-#if (_MSC_VER <= 1200)
-		CBigFile f(szFileName,
-				CFile::modeReadWrite |
-				CFile::shareDenyNone);
-#else
+	{
 		CFile f(szFileName,
 				CFile::modeReadWrite |
 				CFile::shareDenyNone);
-#endif
 		RIFFLIST list;
 		RIFFCHUNK chunk;
 		DWORD dwCurrentAudioStreamNum = 0;

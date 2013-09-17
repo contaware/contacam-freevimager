@@ -20,9 +20,6 @@
 #include "NoVistaFileDlg.h"
 #include "VideoFormatDlg.h"
 #include "AudioFormatDlg.h"
-#if (_MSC_VER <= 1200)
-#include "BigFile.h"
-#endif
 #include "IniFile.h"
 
 #ifdef _DEBUG
@@ -4718,15 +4715,9 @@ BOOL CVideoAviDoc::LoadAVI(CString sFileName,
 			throw (int)AVI_E_WRONGEXTENTION;
 			
 		// Check File Size
-#if (_MSC_VER <= 1200)
-		CBigFile file(sFileName, CFile::modeRead | CFile::shareDenyNone);
-		if (file.GetLength64() == 0)
-			throw (int)AVI_E_FILEEMPTY;
-#else
 		CFile file(sFileName, CFile::modeRead | CFile::shareDenyNone);
 		if (file.GetLength() == 0)
 			throw (int)AVI_E_FILEEMPTY;
-#endif
 		file.Close();
 	}
 	catch (CFileException* e)

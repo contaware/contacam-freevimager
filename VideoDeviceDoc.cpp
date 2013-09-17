@@ -24,11 +24,7 @@
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"
 #include "Base64.h"
-#if (_MSC_VER <= 1200)
-#include "PJNMD5_vc6.h"
-#else
 #include "PJNMD5.h"
-#endif
 #include "Psapi.h"
 #include "IniFile.h"
 #include "NoVistaFileDlg.h"

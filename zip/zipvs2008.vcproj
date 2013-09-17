@@ -286,37 +286,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BigFile.cpp"
-				>
-				<FileConfiguration
-					Name="Debug_Unicode|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ContaCamw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FreeVimagerw|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="CentralDir.cpp"
 				>
 				<FileConfiguration
@@ -509,10 +478,6 @@
 			>
 			<File
 				RelativePath="AutoBuffer.h"
-				>
-			</File>
-			<File
-				RelativePath="BigFile.h"
 				>
 			</File>
 			<File
