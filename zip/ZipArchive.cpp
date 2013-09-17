@@ -446,15 +446,10 @@ bool CZipArchive::GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 	//rStatus.m_size = (LONG)findFileData.nFileSizeLow;
 
 	// Get the Correct Size
-#if _MFC_VER >= 0x0700
 	rStatus.m_size = (ULONGLONG)findFileData.nFileSizeLow |
 					((ULONGLONG)findFileData.nFileSizeHigh) << 32;
-#else
-	rStatus.m_size = (LONG)findFileData.nFileSizeLow;
-#endif
 
 	// convert times as appropriate
-#if _MFC_VER >= 0x0700
 	if (CTime::IsValidFILETIME(findFileData.ftCreationTime))
 	{
 		rStatus.m_ctime = CTime(findFileData.ftCreationTime);
@@ -463,11 +458,7 @@ bool CZipArchive::GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 	{
 		rStatus.m_ctime = CTime();
 	}
-#else
-	rStatus.m_ctime = CTime(findFileData.ftCreationTime);
-#endif
 
-#if _MFC_VER >= 0x0700
 	if (CTime::IsValidFILETIME(findFileData.ftLastAccessTime))
 	{
 		rStatus.m_atime = CTime(findFileData.ftLastAccessTime);
@@ -476,11 +467,7 @@ bool CZipArchive::GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 	{
 		rStatus.m_atime = CTime();
 	}
-#else
-	rStatus.m_atime = CTime(findFileData.ftLastAccessTime);
-#endif
 
-#if _MFC_VER >= 0x0700
 	if (CTime::IsValidFILETIME(findFileData.ftLastWriteTime))
 	{
 		rStatus.m_mtime = CTime(findFileData.ftLastWriteTime);
@@ -489,9 +476,6 @@ bool CZipArchive::GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 	{
 		rStatus.m_mtime = CTime();
 	}
-#else
-	rStatus.m_mtime = CTime(findFileData.ftLastWriteTime);
-#endif
 
 	if (rStatus.m_ctime.GetTime() == 0)
 		rStatus.m_ctime = rStatus.m_mtime;

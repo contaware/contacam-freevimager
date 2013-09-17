@@ -569,11 +569,7 @@ BOOL CGeneralPage::OnInitDialog()
 	// Set scheduler date range
 	CDateTimeCtrl* pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_START);
 	CTime t1(CTime::GetCurrentTime());
-#if _MFC_VER >= 0x0700
 	CTime t2(3000, 12, 31, 23, 59, 59);
-#else
-	CTime t2(2037, 12, 31, 23, 59, 59);
-#endif
 	pDateTimeCtrl->SetRange(&t1, &t2);
 	pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_STOP);
 	pDateTimeCtrl->SetRange(&t1, &t2);

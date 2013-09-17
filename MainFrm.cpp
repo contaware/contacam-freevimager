@@ -271,17 +271,6 @@ void CMainFrame::ChangeCoordinatesUnit()
 		((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit = COORDINATES_PIX;
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("CoordinateUnit"), ((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit);
-	
-	// Update Print Preview's Pane and Status Text for Old MFC
-#if _MFC_VER < 0x0700
-	CView* pView = GetActiveView();
-	if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
-	{
-		((CPicturePrintPreviewView*)pView)->UpdatePaneText();
-		((CPicturePrintPreviewView*)pView)->UpdateStatusText();
-		return;
-	}
-#endif
 
 	// Update Active View's Pane and Status Text
 	CMDIChildWnd* pChild = MDIGetActive();
@@ -955,22 +944,6 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	// For Print Preview Mouse Scroll
 	if (pMsg->message == WM_MOUSEWHEEL)
 	{
-#if _MFC_VER < 0x0700
-		CView* pView = GetActiveView();
-		if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
-		{
-			if (((CPicturePrintPreviewView*)pView)->m_pScaleEdit && 
-				(CWnd::GetFocus() == (CWnd*)(((CPicturePrintPreviewView*)pView)->m_pScaleEdit)))
-			{
-				pView->SetFocus(); // To Remove Focus From CDialogBar's Edit Box in Print Preview Mode
-				pView->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
-				return TRUE; // Do Not Dispatch
-			}
-			else
-				pView->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
-		}
-#else
-		// With vs2003 and vs2005 GetActiveView() returns NULL
 		CMDIChildWnd* pChild = MDIGetActive();
 		if (pChild)
 		{
@@ -988,18 +961,11 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 					pView->SendMessage(WM_MOUSEWHEEL, pMsg->wParam, pMsg->lParam);
 			}
 		}
-#endif
 	}
 	// To Remove Focus From CDialogBar's Edit Box in Print Preview Mode
 	else if (	pMsg->message == WM_LBUTTONDBLCLK ||
 				pMsg->message == WM_LBUTTONDOWN)
 	{
-#if _MFC_VER < 0x0700
-		CView* pView = GetActiveView();
-		if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
-			pView->SetFocus();
-#else
-		// With vs2003 and vs2005 GetActiveView() returns NULL
 		CMDIChildWnd* pChild = MDIGetActive();
 		if (pChild)
 		{
@@ -1007,21 +973,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 			if (pView && pView->IsKindOf(RUNTIME_CLASS(CPicturePrintPreviewView)))
 				pView->SetFocus();
 		}
-#endif
 	}
-	// No menu in print preview mode -> we do not need menu activation keys
-	// otherwise the pointer changes from hand to arrow!
-	// Note: with new MFC in full-screen print preview mode the menu
-	// activation keys are de-activate automatically.
-#if _MFC_VER < 0x0700
-	else if (pMsg->message == WM_SYSKEYDOWN)
-	{
-		if ((pMsg->wParam ==  VK_MENU		||	// ALT
-			pMsg->wParam ==  VK_F10)		&&	// F10
-			((CUImagerApp*)::AfxGetApp())->HasPicturePrintPreview())
-			return TRUE;
-	}
-#endif
 	// App Exit Pressing ESC
 	else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE)
 	{
@@ -3511,13 +3463,7 @@ LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)
 	int nShellCommand = (int)pCDS->dwData;
 	if (pszFiles)
 	{
-		if (!m_bFullScreenMode
-#if _MFC_VER < 0x0700
-			// With old MFC we should not open other files when in print preview
-			&&
-			!((CUImagerApp*)::AfxGetApp())->HasPicturePrintPreview()
-#endif
-			)
+		if (!m_bFullScreenMode)
 		{
 			OnOpenFromTray();
 			CString sFiles(pszFiles);

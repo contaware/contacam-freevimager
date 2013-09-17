@@ -996,11 +996,7 @@ UINT CPicturePrintPreviewView::GetMouseScrollLines()
 	static UINT msgGetScrollLines;
 	static WORD nRegisteredMessage;
 
-#if _MFC_VER < 0x0900
-	if (afxData.bWin95)	// Win95, Win98 or WinMe
-#else
 	if (g_bWin9x)		// Win95, Win98 or WinMe
-#endif
 	{
 		if (nRegisteredMessage == 0)
 		{
@@ -1026,11 +1022,7 @@ UINT CPicturePrintPreviewView::GetMouseScrollLines()
 	{
 		// couldn't use the window -- try system settings
 		m_uCachedScrollLines = 3; // reasonable default
-#if _MFC_VER < 0x0900
-		if (!afxData.bWin95)	// Win95, Win98 or WinMe
-#else
 		if (!g_bWin9x)			// Win95, Win98 or WinMe
-#endif
 			::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &m_uCachedScrollLines, 0);
 	}
 

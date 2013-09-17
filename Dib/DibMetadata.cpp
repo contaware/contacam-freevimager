@@ -483,11 +483,7 @@ CTime CMetadata::GetDateTimeFromExifString(const CString& sExifDateTime)
 	}
 
 	// Validate
-#if _MFC_VER >= 0x0700
 	if (nDate[0] < 1971 || nDate[0] > 3000) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#else
-	if (nDate[0] < 1971 || nDate[0] > 2037) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#endif
 		nDate[0] = 1971;
 	if (nDate[1] < 1 || nDate[1] > 12)
 		nDate[1] = 1;
@@ -584,11 +580,7 @@ CTime CMetadata::GetDateFromIptcLegacyString(const CString& sIptcDate)
 		// Year
 		t = sIptcDate.Left(4);
 		i = _ttoi(t);
-#if _MFC_VER >= 0x0700
 		if (i >= 1971 && i <= 3000) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#else
-		if (i >= 1971 && i <= 2037) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#endif
 			nDate[0] = i;
 
 		// Month
@@ -619,11 +611,7 @@ CTime CMetadata::GetDateFromXmpString(const CString& sXmpDate)
 		// Year
 		t = sXmpDate.Left(4);
 		i = _ttoi(t);
-#if _MFC_VER >= 0x0700
 		if (i >= 1971 && i <= 3000) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#else
-		if (i >= 1971 && i <= 2037) // MFC CTime Limitation (January 1, 1970 00:00:00 crashes also...)
-#endif
 			nDate[0] = i;
 
 		// Month

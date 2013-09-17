@@ -7,14 +7,7 @@
 
 #include <afxpriv.h>
 #include "PictureDoc.h"
-#if (_MFC_VER >= 0x0900) && (_WIN32_WINNT < 0x0501)
-DECLARE_HANDLE(HRAWINPUT);
-#endif
-#if _MFC_VER < 0x0700
-#include <..\src\afximpl.h>
-#else
 #include <..\src\mfc\afximpl.h>
-#endif
 #include "XButtonXP.h"
 
 /*

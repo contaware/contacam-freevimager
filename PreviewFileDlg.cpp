@@ -141,8 +141,7 @@ BEGIN_MESSAGE_MAP(CPreviewFileDlg, CFileDialog)
 	ON_MESSAGE(WM_LOADDONE, OnLoadDone)
 END_MESSAGE_MAP()
 
-// For VS2008 disable Vista Style because otherwise it is not working!
-#if _MFC_VER >= 0x0900
+// Disable Vista Style because otherwise it is not working!
 CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 									BOOL bPreview,
 									LPCTSTR lpszDefExt,
@@ -156,20 +155,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 												lpszFilter,
 												pParentWnd,
 												0, FALSE)
-#else
-CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
-									BOOL bPreview,
-									LPCTSTR lpszDefExt,
-									LPCTSTR lpszFileName,
-									LPCTSTR lpszFilter,
-									CWnd* pParentWnd) :
-									CFileDialog(bOpenFileDialog,
-												lpszDefExt,
-												lpszFileName,
-												OFN_HIDEREADONLY,
-												lpszFilter,
-												pParentWnd)
-#endif
 {
 	m_ofn.Flags |= (OFN_EXPLORER | OFN_ENABLETEMPLATE | OFN_ENABLESIZING);
 	g_nComCtl32MajorVersion = GetComCtl32MajorVersion();
@@ -186,7 +171,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 	}
 	else if (g_nComCtl32MajorVersion == 5)
 	{
-#if _MFC_VER >= 0x0700
 		if (g_bWin2000)
 		{
 			m_bNewSizeDlg = TRUE;
@@ -198,7 +182,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 			m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
 		}
 		else
-#endif
 		{
 			m_bNewSizeDlg = FALSE;
 			m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEW);
@@ -207,13 +190,8 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 	// Also if Manifest Available and WinXP it must be a newer MFC Compile!
 	else
 	{
-#if _MFC_VER >= 0x0700
 		m_bNewSizeDlg = TRUE;
 		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
-#else
-		m_bNewSizeDlg = FALSE;
-		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEW);
-#endif
 	}
 
 	m_bPreview = bPreview;

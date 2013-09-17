@@ -316,18 +316,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		AfxEnableControlContainer();
 
-#if _MFC_VER < 0x0700
-		// Standard initialization
-		// If you are not using these features and wish to reduce the size
-		// of your final executable, you should remove from the following
-		// the specific initialization routines you do not need.
-#ifdef _AFXDLL
-		Enable3dControls();			// Call this when using MFC in a shared DLL
-#else
-		Enable3dControlsStatic();	// Call this when linking to MFC statically
-#endif
-#endif
-
 		// Get Module Name and Split it
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];
@@ -502,9 +490,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			cmdInfo.m_bRunAutomated										||
 			cmdInfo.m_nShellCommand == CCommandLineInfo::FilePrintTo	||
 			cmdInfo.m_nShellCommand == CCommandLineInfo::FileDDE		||
-#if _MFC_VER >= 0x0700
 			cmdInfo.m_nShellCommand == CCommandLineInfo::AppRegister	||
-#endif
 			cmdInfo.m_nShellCommand == CCommandLineInfo::AppUnregister	||
 			m_bSlideShowOnly;
 
@@ -605,13 +591,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			DWORD dwCount = MAX_PATH;
 			if (RegKey.Open(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) == ERROR_SUCCESS)
 			{
-#if _MFC_VER < 0x0700
-				if (RegKey.QueryValue(szCurrentPath, APPNAME_NOEXT, &dwCount) == ERROR_SUCCESS)
-					RegKey.SetValue(szProgramName, APPNAME_NOEXT);
-#else
 				if (RegKey.QueryStringValue(APPNAME_NOEXT, szCurrentPath, &dwCount) == ERROR_SUCCESS)
 					RegKey.SetStringValue(APPNAME_NOEXT, szProgramName);
-#endif
 				RegKey.Close();
 			}
 		}
@@ -3288,7 +3269,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 }
 #endif // UNICODE
 
-#if _MFC_VER >= 0x0700
 void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
 {
 	// OLE command switches are case insensitive, while
@@ -3326,42 +3306,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
 		m_bShowSplash = FALSE;
 	}
 }
-#else
-void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
-{
-	// OLE command switches are case insensitive, while
-	// shell command switches are case sensitive
-
-	if (lstrcmpA(pszParam, "pt") == 0)
-	{
-		m_nShellCommand = FilePrintTo;
-		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
-	}
-	else if (lstrcmpA(pszParam, "p") == 0)
-		m_nShellCommand = FilePrint;
-	else if (lstrcmpiA(pszParam, "Unregister") == 0 ||
-			 lstrcmpiA(pszParam, "Unregserver") == 0)
-		m_nShellCommand = AppUnregister;
-	else if (lstrcmpA(pszParam, "dde") == 0)
-	{
-		AfxOleSetUserCtrl(FALSE);
-		m_nShellCommand = FileDDE;
-		((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
-	}
-	else if (lstrcmpiA(pszParam, "Embedding") == 0)
-	{
-		AfxOleSetUserCtrl(FALSE);
-		m_bRunEmbedded = TRUE;
-		m_bShowSplash = FALSE;
-	}
-	else if (lstrcmpiA(pszParam, "Automation") == 0)
-	{
-		AfxOleSetUserCtrl(FALSE);
-		m_bRunAutomated = TRUE;
-		m_bShowSplash = FALSE;
-	}
-}
-#endif
 
 void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const TCHAR* pszParam)
 {
@@ -6657,19 +6601,11 @@ BOOL CUImagerApp::Autostart(BOOL bEnable)
 			);
 
 		// Set the value
-#if _MFC_VER < 0x0700
-		if (RegKey.SetValue(lpFilename, APPNAME_NOEXT) != ERROR_SUCCESS)
-		{
-			RegKey.Close();
-			return FALSE;
-		}
-#else
 		if (RegKey.SetStringValue(APPNAME_NOEXT, lpFilename) != ERROR_SUCCESS)
 		{
 			RegKey.Close();
 			return FALSE;
 		}
-#endif
 	}
 	// Clear
 	else
@@ -6710,25 +6646,6 @@ BOOL CUImagerApp::IsAutostart()
 		);
 
 	// Get the value
-#if _MFC_VER < 0x0700
-	DWORD dwCount = MAX_PATH;
-	if (RegKey.QueryValue(lpRegFilename, APPNAME_NOEXT, &dwCount) == ERROR_SUCCESS)
-	{
-		lpRegFilename[MAX_PATH - 1] = _T('\0');
-		CString sFilename(lpFilename);
-		CString sRegFilename(lpRegFilename);
-		RegKey.Close();
-		if (sFilename.CompareNoCase(sRegFilename) == 0)
-			return TRUE;
-		else
-			return FALSE;
-	}
-	else
-	{
-		RegKey.Close();
-		return FALSE;
-	}
-#else
 	ULONG nChars = MAX_PATH;
 	if (RegKey.QueryStringValue(APPNAME_NOEXT, lpRegFilename, &nChars) == ERROR_SUCCESS)
 	{
@@ -6746,7 +6663,6 @@ BOOL CUImagerApp::IsAutostart()
 		RegKey.Close();
 		return FALSE;
 	}
-#endif
 }
 
 typedef BOOL (WINAPI * FPCRYPTPROTECTDATA)(DATA_BLOB*, LPCWSTR, DATA_BLOB*, PVOID, CRYPTPROTECT_PROMPTSTRUCT*, DWORD, DATA_BLOB*);

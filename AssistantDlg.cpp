@@ -510,11 +510,7 @@ void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
 																		CurrentTime.GetSecond());
 
 			// Stop Time
-#if _MFC_VER >= 0x0700
 			CTime MaxTime(3000, 12, 31, 23, 59, 59);
-#else
-			CTime MaxTime(2037, 12, 31, 23, 59, 59);
-#endif
 			m_pDoc->m_pGeneralPage->m_SchedulerOnceDateStop = CTime(	MaxTime.GetYear(),
 																		MaxTime.GetMonth(),
 																		MaxTime.GetDay(),
@@ -565,11 +561,7 @@ void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
 			pSchedulerEntry->m_StartTime = CTime::GetCurrentTime();
 
 			// Stop Time
-#if _MFC_VER >= 0x0700
 			pSchedulerEntry->m_StopTime = CTime(3000, 12, 31, 23, 59, 59);
-#else
-			pSchedulerEntry->m_StopTime = CTime(2037, 12, 31, 23, 59, 59);
-#endif
 			
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = TRUE;
@@ -595,11 +587,7 @@ BOOL CAssistantDlg::Is24hRec()
 		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
 	if (pOnceSchedulerEntry											&&
 		pOnceSchedulerEntry->m_StartTime <= CTime::GetCurrentTime()	&&
-#if _MFC_VER >= 0x0700
 		pOnceSchedulerEntry->m_StopTime == CTime(3000, 12, 31, 23, 59, 59))
-#else
-		pOnceSchedulerEntry->m_StopTime == CTime(2037, 12, 31, 23, 59, 59))
-#endif
 		return TRUE;
 	else
 		return FALSE;

@@ -16,15 +16,9 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CNoVistaFileDlg, CFileDialog)
 
-#if _MFC_VER >= 0x0900
 CNoVistaFileDlg::CNoVistaFileDlg(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
 							DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
 	CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd, 0, FALSE)
-#else
-CNoVistaFileDlg::CNoVistaFileDlg(BOOL bOpenFileDialog, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
-							DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
-	CFileDialog(bOpenFileDialog, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
-#endif
 {
 	m_ofn.lpstrCustomFilter = NULL;
 	m_ofn.Flags |= (OFN_EXPLORER | OFN_ENABLESIZING);

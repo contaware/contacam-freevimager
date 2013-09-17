@@ -131,11 +131,7 @@ protected:
     afx_msg void OnPaletteChanged(CWnd* pFocusWnd);
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	//}}AFX_MSG
-#if _MFC_VER < 0x0700
-	afx_msg void OnActivateApp(BOOL bActive, HTASK hTask);
-#else
 	afx_msg void OnActivateApp(BOOL bActive, DWORD dwThreadID);
-#endif
     DECLARE_MESSAGE_MAP()
 };
 

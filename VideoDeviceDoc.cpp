@@ -3790,17 +3790,9 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 				nNextMonth = 1;
 			}
 			if (nNextYear < 1971	||
-#if _MFC_VER >= 0x0700
 				nNextYear > 3000	||	// MFC CTime Limitation
-#else
-				nNextYear > 2037	||	// MFC CTime Limitation
-#endif
 				nYear < 1971		||
-#if _MFC_VER >= 0x0700
-				nYear > 3000		||	// MFC CTime Limitation
-#else
-				nYear > 2037		||	// MFC CTime Limitation
-#endif		
+				nYear > 3000		||	// MFC CTime Limitation		
 				nNextMonth < 1		||
 				nNextMonth > 12		||
 				nMonth < 1			||
@@ -3823,12 +3815,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 			continue;
 
 		// Check
-		if (nYear < 1971	||												
-#if _MFC_VER >= 0x0700
+		if (nYear < 1971	||
 			nYear > 3000	||		// MFC CTime Limitation
-#else
-			nYear > 2037	||		// MFC CTime Limitation
-#endif
 			nMonth < 1		||
 			nMonth > 12		||
 			nDay < 1		||
@@ -3875,12 +3863,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
 			continue;
 
 		// Check
-		if (nYear < 1971	||												
-#if _MFC_VER >= 0x0700
+		if (nYear < 1971	||
 			nYear > 3000	||		// MFC CTime Limitation
-#else
-			nYear > 2037	||		// MFC CTime Limitation
-#endif
 			nMonth < 1		||
 			nMonth > 12		||
 			nDay < 1		||

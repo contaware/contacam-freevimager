@@ -24,16 +24,10 @@ lst1                        The window that is used to browse the namespace
 
 IMPLEMENT_DYNAMIC(CSaveFileDlg, CFileDialog)
 
-// For VS2008 disable Vista Style because OnTypeChange() not working!
-#if _MFC_VER >= 0x0900
+// Disable Vista Style because OnTypeChange() not working!
 CSaveFileDlg::CSaveFileDlg(BOOL bShowJPEGCompression, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
 							DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
 	CFileDialog(FALSE, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd, 0, FALSE)
-#else
-CSaveFileDlg::CSaveFileDlg(BOOL bShowJPEGCompression, LPCTSTR lpszDefExt, LPCTSTR lpszFileName,
-							DWORD dwFlags, LPCTSTR lpszFilter, CWnd* pParentWnd) :
-	CFileDialog(FALSE, lpszDefExt, lpszFileName, dwFlags, lpszFilter, pParentWnd)
-#endif
 {
 	m_ofn.lpstrCustomFilter = NULL;
 	m_ofn.Flags |= (OFN_EXPLORER | OFN_ENABLESIZING);

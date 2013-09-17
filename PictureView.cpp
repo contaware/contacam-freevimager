@@ -480,15 +480,6 @@ void CPictureView::OnFilePrintPreview()
 	// Init
 	((CUImagerApp*)::AfxGetApp())->InitPrinter();
 
-	// Only one print preview at the time for old MFC version
-#if _MFC_VER < 0x0700
-	if (((CUImagerApp*)::AfxGetApp())->HasPicturePrintPreview(pDoc))
-	{
-		pDoc->m_bPrintPreviewMode = FALSE;
-		return;
-	}
-#endif
-
 	// Set Flag
 	pDoc->m_bPrintPreviewMode = TRUE;
 
@@ -571,12 +562,10 @@ void CPictureView::OnFilePrintPreview()
 		if (m_bFullScreenMode)
 		{
 			// Hack to Not Show the Child Borders
-#if _MFC_VER >= 0x0700
 			CRect rcMonitor = ::AfxGetMainFrame()->GetMonitorFullRect();
 			int nMonitorWidth = rcMonitor.right - rcMonitor.left;
 			int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
 			SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
-#endif
 
 			// Re-Enable OSD
 			if (pDoc->m_bOSDWasEnabled)
@@ -634,12 +623,10 @@ void CPictureView::OnEndPrintPreview(CDC* pDC, CPrintInfo* pInfo, POINT point, C
 	if (m_bFullScreenMode)
 	{
 		// Hack to Not Show the Child Borders
-#if _MFC_VER >= 0x0700
 		CRect rcMonitor = ::AfxGetMainFrame()->GetMonitorFullRect();
 		int nMonitorWidth = rcMonitor.right - rcMonitor.left;
 		int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
 		SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
-#endif
 
 		// Re-Enable OSD
 		if (pDoc->m_bOSDWasEnabled)
