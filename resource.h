@@ -58,12 +58,10 @@
 #define IDD_HOSTPORT                    185
 #define IDD_MOVDET                      187
 #define IDD_REDEYE                      188
-#define IDD_FILEOPENPREVIEW1            189
 #define IDC_ZOOMMINUS                   200
 #define IDC_ZOOMPLUS                    201
 #define IDD_DECREASE_BPP                202
 #define IDD_FILEOPENPREVIEWXP           204
-#define IDD_FILEOPENPREVIEWWIN2000      205
 #define IDD_ROTATE_FLIP_MODELESS        206
 #define IDD_RESIZING_DPI                207
 #define IDD_PICTUREPRINTPREVIEW         209
@@ -112,7 +110,6 @@
 #define IDD_DELETEPAGE                  275
 #define IDD_AUDIOFORMAT                 277
 #define IDD_VIDEOFORMAT                 278
-#define IDD_WINSOCK2_MISSING            280
 #define IDD_HTTP_VIDEOFORMAT            281
 #define IDD_HTTP_AUTHENTICATION         282
 #define IDR_TRAYICON                    283
@@ -3134,9 +3131,6 @@
 #define IDC_STATIC2454                  2454
 #define IDC_STATIC2455                  2455
 #define IDC_STATIC2456                  2456
-#define IDC_STATIC2457                  2457
-#define IDC_STATIC2458                  2458
-#define IDC_STATIC2459                  2459
 #define IDC_STATIC2460                  2460
 #define IDC_STATIC2461                  2461
 #define IDC_STATIC2462                  2462

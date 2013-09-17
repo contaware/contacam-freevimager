@@ -29,7 +29,6 @@
 #include "SortableFileFind.h"
 #include "getdxver.h"
 #include "DirectX7Dlg.h"
-#include "Winsock2MissingDlg.h"
 #include "CPUCount.h"
 #include "CPUSpeed.h"
 #include "PostDelayedMessage.h"

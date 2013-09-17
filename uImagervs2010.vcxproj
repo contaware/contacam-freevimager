@@ -1175,7 +1175,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimagerw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="VideoFormatDlg.cpp" />
-    <ClCompile Include="Winsock2MissingDlg.cpp" />
     <ClCompile Include="WorkerThread.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1405,7 +1404,6 @@
     <ClInclude Include="VideoDevicePropertySheet.h" />
     <ClInclude Include="VideoDeviceView.h" />
     <ClInclude Include="videoformatdlg.h" />
-    <ClInclude Include="Winsock2MissingDlg.h" />
     <ClInclude Include="WorkerThread.h" />
     <ClInclude Include="XButtonXP.h" />
     <ClInclude Include="XMLite.h" />

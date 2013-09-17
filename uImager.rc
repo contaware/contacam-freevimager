@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -82,7 +80,7 @@ IDR_MAINFRAME_VIDEODEVICEDOC BITMAP                  "res\\toolbarvideodevicedoc
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR  16, 15
+IDR_MAINFRAME TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_EDIT_SCREENSHOT
     SEPARATOR
@@ -111,7 +109,7 @@ BEGIN
     BUTTON      ID_APP_ABOUT
 END
 
-IDR_VIDEO_AVI_TOOLBAR TOOLBAR  16, 15
+IDR_VIDEO_AVI_TOOLBAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_PLAY_AVI
     BUTTON      ID_STOP_AVI
@@ -127,7 +125,7 @@ BEGIN
     BUTTON      ID_PLAY_FRAME_LAST
 END
 
-IDR_VIDEO_DEVICE_TOOLBAR TOOLBAR  16, 15
+IDR_VIDEO_DEVICE_TOOLBAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_CAPTURE_ASSISTANT
     BUTTON      ID_CAPTURE_SETTINGS
@@ -140,7 +138,7 @@ BEGIN
     BUTTON      ID_DET_COMBOX
 END
 
-IDR_PICTURE_TOOLBAR TOOLBAR  16, 15
+IDR_PICTURE_TOOLBAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_FILE_INFO
     BUTTON      ID_PLAY_SLIDESHOW
@@ -165,7 +163,7 @@ BEGIN
     BUTTON      ID_VIEW_STRETCH_HALFTONE
 END
 
-IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN TOOLBAR  16, 15
+IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_PLAY_AVI
     BUTTON      ID_STOP_AVI
@@ -184,7 +182,7 @@ BEGIN
     BUTTON      ID_PLAY_FRAME_LAST
 END
 
-IDR_MAINFRAME_VIDEODEVICEDOC TOOLBAR  16, 15
+IDR_MAINFRAME_VIDEODEVICEDOC TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
@@ -207,7 +205,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -264,7 +262,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_SLIDESHOW_ONLY MENU 
+IDR_CONTEXT_SLIDESHOW_ONLY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -409,7 +407,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_PICTURE MENU 
+IDR_CONTEXT_PICTURE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -463,7 +461,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_VIDEO_AVI MENU 
+IDR_CONTEXT_VIDEO_AVI MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -481,7 +479,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_VIDEO_DEVICE MENU 
+IDR_CONTEXT_VIDEO_DEVICE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -497,7 +495,7 @@ BEGIN
     END
 END
 
-IDR_VIDEODEVICE MENU 
+IDR_VIDEODEVICE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -585,7 +583,7 @@ BEGIN
     END
 END
 
-IDR_VIDEOAVI MENU 
+IDR_VIDEOAVI MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -689,7 +687,7 @@ BEGIN
     END
 END
 
-IDR_PICTURE MENU 
+IDR_PICTURE MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -925,7 +923,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_CROP MENU 
+IDR_CONTEXT_CROP MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -936,7 +934,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_VIDEO_DEVICE_ZONES MENU 
+IDR_CONTEXT_VIDEO_DEVICE_ZONES MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -958,7 +956,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_TASKBAR MENU 
+IDR_CONTEXT_TASKBAR MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -972,7 +970,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY MENU 
+IDR_CONTEXT_TASKBAR_SLIDESHOW_ONLY MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -983,7 +981,7 @@ BEGIN
     END
 END
 
-IDR_AUDIOMCI MENU 
+IDR_AUDIOMCI MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1052,7 +1050,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_PICTURE_FULLSCREEN MENU 
+IDR_CONTEXT_PICTURE_FULLSCREEN MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -1205,7 +1203,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_OSD MENU 
+IDR_CONTEXT_OSD MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -1270,7 +1268,7 @@ BEGIN
     END
 END
 
-IDR_TRAYICON MENU 
+IDR_TRAYICON MENU
 BEGIN
     POPUP "&Tray"
     BEGIN
@@ -1282,7 +1280,7 @@ BEGIN
     END
 END
 
-IDR_CDAUDIO MENU 
+IDR_CDAUDIO MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1348,7 +1346,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_LAYERED_DLG MENU 
+IDR_CONTEXT_LAYERED_DLG MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -1382,7 +1380,7 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_TASKBAR_FULLSCREEN MENU 
+IDR_CONTEXT_TASKBAR_FULLSCREEN MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
@@ -1405,7 +1403,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
@@ -2096,16 +2094,6 @@ BEGIN
     LTEXT           "",1119,0,0,8,234
 END
 
-IDD_FILEOPENPREVIEWWIN2000 DIALOGEX 0, 0, 150, 195
-STYLE DS_SETFONT | DS_3DLOOK | DS_NOFAILCREATE | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "&Preview",IDC_PREVIEW,"Button",BS_AUTOCHECKBOX | BS_LEFT | BS_VCENTER | WS_TABSTOP,8,119,38,10
-    CONTROL         "",IDC_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_SUNKEN,8,4,137,112,WS_EX_NOPARENTNOTIFY | WS_EX_CLIENTEDGE
-    EDITTEXT        IDC_PREVIEW_INFO,8,130,137,64,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "",1119,0,0,8,195
-END
-
 IDD_ROTATE_FLIP_MODELESS DIALOGEX 0, 0, 143, 182
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -2177,7 +2165,7 @@ BEGIN
     LTEXT           "x H",IDC_STATIC2336,73,70,15,8
 END
 
-IDD_PLAYER_TOOLBAR DIALOG  0, 0, 172, 17
+IDD_PLAYER_TOOLBAR DIALOG 0, 0, 172, 17
 STYLE DS_SETFONT | WS_POPUP
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2254,7 +2242,7 @@ BEGIN
     LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,48,83,8,SS_NOTIFY
 END
 
-IDD_YESNOALLCANCEL DIALOG  0, 0, 244, 52
+IDD_YESNOALLCANCEL DIALOG 0, 0, 244, 52
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2326,7 +2314,7 @@ BEGIN
     LTEXT           "Dir",IDC_TEXT_INPUT_DIR,24,16,10,8,SS_NOTIFY | NOT WS_GROUP
 END
 
-IDD_DIRECTX7 DIALOG  0, 0, 236, 79
+IDD_DIRECTX7 DIALOG 0, 0, 236, 79
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2350,7 +2338,7 @@ BEGIN
     LTEXT           "Sharper",IDC_STATIC2361,109,4,26,8
 END
 
-IDD_MCIAUDIOPLAYER DIALOG  0, 0, 186, 65
+IDD_MCIAUDIOPLAYER DIALOG 0, 0, 186, 65
 STYLE DS_SETFONT | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2709,7 +2697,7 @@ BEGIN
     LTEXT           "frames/sec",IDC_STATIC2412,181,64,38,8
 END
 
-IDD_BATCH_PROC_JPEGTAB DIALOG  0, 0, 226, 78
+IDD_BATCH_PROC_JPEGTAB DIALOG 0, 0, 226, 78
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2729,7 +2717,7 @@ BEGIN
     LTEXT           "Remove\nSections:",IDC_LABEL_REMOVE,6,50,32,16
 END
 
-IDD_BATCH_PROC_SHRINKTAB DIALOG  0, 0, 226, 78
+IDD_BATCH_PROC_SHRINKTAB DIALOG 0, 0, 226, 78
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2744,7 +2732,7 @@ BEGIN
     CONTROL         "Sharpen after shrinking",IDC_CHECK_SHARPEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,48,89,10
 END
 
-IDD_BATCH_PROC_TIFFTAB DIALOG  0, 0, 226, 78
+IDD_BATCH_PROC_TIFFTAB DIALOG 0, 0, 226, 78
 STYLE DS_SETFONT | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -2765,7 +2753,7 @@ BEGIN
     LTEXT           "Pdf Paper Size:",IDC_LABEL_PAPER_SIZE,166,4,54,8
 END
 
-IDD_OSD DIALOG  0, 0, 78, 15
+IDD_OSD DIALOG 0, 0, 78, 15
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_THICKFRAME
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -3018,7 +3006,7 @@ BEGIN
     GROUPBOX        "Get Date Created Information From",IDC_STATIC2452,3,226,206,22
 END
 
-IDD_DELETEPAGE DIALOG  0, 0, 166, 26
+IDD_DELETEPAGE DIALOG 0, 0, 166, 26
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Delete Current Page or File?"
 FONT 8, "MS Shell Dlg"
@@ -3028,7 +3016,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,122,5,36,14
 END
 
-IDD_PICTUREPRINTPREVIEW DIALOG  0, 0, 418, 20
+IDD_PICTUREPRINTPREVIEW DIALOG 0, 0, 418, 20
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -3111,17 +3099,6 @@ BEGIN
     CONTROL         "YUY2",IDC_RADIO_YUY2,"Button",BS_AUTORADIOBUTTON,166,27,35,10
 END
 
-IDD_WINSOCK2_MISSING DIALOG  0, 0, 231, 70
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Shell Dlg"
-BEGIN
-    LTEXT           "No usable WinSock DLL found.",IDC_STATIC2457,7,7,102,8
-    LTEXT           "http://support.microsoft.com/kb/182108",IDC_WEB_LINK,86,20,129,8,SS_NOTIFY
-    LTEXT           "Please download it from:",IDC_STATIC2458,7,20,78,8
-    LTEXT           "When done with the update press OK and run this program again!",IDC_STATIC2459,7,33,207,8
-    DEFPUSHBUTTON   "OK",IDOK,93,49,44,14
-END
-
 IDD_HTTP_VIDEOFORMAT DIALOGEX 0, 0, 178, 102
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
@@ -3155,7 +3132,7 @@ BEGIN
     LTEXT           "Password:",IDC_STATIC2463,7,26,34,8
 END
 
-IDD_CDAUDIOPLAYER DIALOG  0, 0, 186, 65
+IDD_CDAUDIOPLAYER DIALOG 0, 0, 186, 65
 STYLE DS_SETFONT | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -3171,7 +3148,7 @@ BEGIN
     LTEXT           "Tracks",IDC_TEXT_TRACKS,7,5,60,9
 END
 
-IDD_LAYERED DIALOG  0, 0, 131, 89
+IDD_LAYERED DIALOG 0, 0, 131, 89
 STYLE DS_SETFONT | WS_POPUP
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -3371,7 +3348,7 @@ BEGIN
     LTEXT           "Area Name",IDC_STATIC,11,173,38,8
 END
 
-IDD_IMAPI2 DIALOG  0, 0, 298, 124
+IDD_IMAPI2 DIALOG 0, 0, 298, 124
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Burn Slideshow"
 FONT 8, "MS Shell Dlg"
@@ -3392,7 +3369,7 @@ BEGIN
     LTEXT           "0:00",IDC_TIME_LEFT,210,59,44,8
 END
 
-IDD_IMAPI2_DOWNLOAD DIALOG  0, 0, 254, 66
+IDD_IMAPI2_DOWNLOAD DIALOG 0, 0, 254, 66
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Shell Dlg"
 BEGIN
@@ -3448,7 +3425,7 @@ BEGIN
     LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,111,112,8
 END
 
-IDD_RENAME DIALOG  0, 0, 186, 47
+IDD_RENAME DIALOG 0, 0, 186, 47
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Rename"
 FONT 8, "MS Shell Dlg"
@@ -3471,7 +3448,7 @@ BEGIN
     PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,183,186,35,14
 END
 
-IDD_CONNECTERR_MSGBOX DIALOG  0, 0, 249, 74
+IDD_CONNECTERR_MSGBOX DIALOG 0, 0, 249, 74
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg"
@@ -3504,7 +3481,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -3774,13 +3751,6 @@ BEGIN
     END
 
     IDD_FILEOPENPREVIEWXP, DIALOG
-    BEGIN
-        VERTGUIDE, 8
-        VERTGUIDE, 107
-        VERTGUIDE, 145
-    END
-
-    IDD_FILEOPENPREVIEWWIN2000, DIALOG
     BEGIN
         VERTGUIDE, 8
         VERTGUIDE, 107
@@ -4173,17 +4143,6 @@ BEGIN
         HORZGUIDE, 75
     END
 
-    IDD_WINSOCK2_MISSING, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 224
-        VERTGUIDE, 17
-        VERTGUIDE, 70
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 63
-        HORZGUIDE, 24
-    END
-
     IDD_HTTP_VIDEOFORMAT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -4486,7 +4445,7 @@ IDC_GRAB_CLOSED         CURSOR                  "res\\grab_closed.cur"
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_AUDIOMCI            "\nAudio\nAudio\n\n\nAudio.Document\nAudio Document"
     IDR_CDAUDIO             "\nCDAudio\nCDAudio\n\n\nCDAudio.Document\nCDAudio Document"
@@ -4494,12 +4453,12 @@ BEGIN
     IDR_PICTURE             "\nPicture\nPicture\n\n\nPicture.Document\nPicture Document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDR_VIDEODEVICE         "\nVideoDevice\nVideoDevice\n\n\nVideoDevice.Document\nVideoDevice Document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE 
                             "Unexpected SMTP Login response, Last Response: %1"
@@ -4518,7 +4477,7 @@ BEGIN
                             "Unexpected MAIL FROM response, Last Response: %1"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PJNSMTP_UNEXPECTED_DATA_RESPONSE 
                             "Unexpected DATA response, Last Response: %1"
@@ -4552,7 +4511,7 @@ BEGIN
                             "Unexpected CRAM-MD5 response, Last Response: %1"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PJNSMTP_UNEXPECTED_CRAMD_MD5_DIGEST_RESPONSE 
                             "Unexpected CRAM-MD5 digest response, Last Response: %1"
@@ -4582,22 +4541,22 @@ BEGIN
                             "Unexpected STARTTLS response, Last Response: %1"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_463       "Music"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_898       "Advanced >>"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_963       "Recursive"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
@@ -4614,7 +4573,7 @@ BEGIN
     IDS_MULTILANG_1183      "Close the Palette dialog and try again."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1184      "Close the Brightness, Contrast... dialog and try again."
     IDS_MULTILANG_1185      "Finish the redeye remove and try again."
@@ -4634,7 +4593,7 @@ BEGIN
     IDS_MULTILANG_1199      "This is not a Picture or a Video File."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1201      "No open documents available."
     IDS_MULTILANG_1202      "No video documents open."
@@ -4651,7 +4610,7 @@ BEGIN
     IDS_MULTILANG_1215      "Tip: Use a Zip File to put all your files in it."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1216      "DirectX %s installed."
     IDS_MULTILANG_1217      "DirectX not installed."
@@ -4671,7 +4630,7 @@ BEGIN
     IDS_MULTILANG_1231      "*** CTRL / SHIFT + Click to add / remove mask pixel ***"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1232      "No Redeye with Hue: %0.1f° , Red/Green: %0.1f "
     IDS_MULTILANG_1233      "Hue: %0.1f° "
@@ -4690,7 +4649,7 @@ BEGIN
     IDS_MULTILANG_1247      " , File %i of %i in Directories, %dx%d , %s , File: %d %s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1248      " , File %i of %i in Directory, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1249      "Cannot save a copy to ourself"
@@ -4710,7 +4669,7 @@ BEGIN
     IDS_MULTILANG_1263      "Save As Pdf"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1264      "Could Not Save The Picture As a Pdf File."
     IDS_MULTILANG_1265      "Cannot delete page %d"
@@ -4725,7 +4684,7 @@ BEGIN
     IDS_MULTILANG_1277      "Unique Colors Count: %u\r\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1286      "Please Save Before Performing This Operation."
     IDS_MULTILANG_1287      "EXIF Thumbnail Was Successfully Updated"
@@ -4739,7 +4698,7 @@ BEGIN
     IDS_MULTILANG_1295      "No XMP Section Found."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1296      "Do You Really Want To Remove the XMP Section?"
     IDS_MULTILANG_1297      "No JFIF Section Found."
@@ -4759,7 +4718,7 @@ BEGIN
     IDS_MULTILANG_1311      "Error Reading Timestamp\r\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1312      "Dim: %dx%d , Dpi: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nCompression Quality: calc...\r\nUnc. Image Size: %d %s , File Size: %d %s"
     IDS_MULTILANG_1313      "Dim: %dx%d , Dpi: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nCompression Quality: %d\r\nUnc. Image Size: %d %s , File Size: %d %s"
@@ -4779,7 +4738,7 @@ BEGIN
     IDS_MULTILANG_1327      "Do You Want To Save The Cropped Image To A New File?"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1329      "Stop playing the Animated GIF before viewing it frame by frame."
     IDS_MULTILANG_1330      "Preview Display available starting from Windows 2000 or higher"
@@ -4787,7 +4746,7 @@ BEGIN
     IDS_MULTILANG_1332      "Please try again later, picture is loading."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1354      "No Sound Input Device."
     IDS_MULTILANG_1355      "Sound Input Cannot Determine Card Capabilities!"
@@ -4795,7 +4754,7 @@ BEGIN
     IDS_MULTILANG_1357      "Error while converting to Pdf"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1360      "Please Select a Valid Input Directory."
     IDS_MULTILANG_1361      "Please Add Input Files."
@@ -4813,7 +4772,7 @@ BEGIN
     IDS_MULTILANG_1375      "metadata and the file names!"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1376      "Successfully added / updated the executable and the configuration files.\n"
     IDS_MULTILANG_1377      "(see Start.exe, Settings.xml and autorun.inf)"
@@ -4829,7 +4788,7 @@ BEGIN
     IDS_MULTILANG_1391      "Please save the image before proceeding\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1392      "with the Metadata editing."
     IDS_MULTILANG_1393      "Could Not Save The Metadata."
@@ -4846,7 +4805,7 @@ BEGIN
     IDS_MULTILANG_1406      "Please Enter A Host Name, a From and a To Address"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1409      "Success: Email Sent."
     IDS_MULTILANG_1410      "At least one recipient must be specified to use the DNS lookup option\n"
@@ -4857,7 +4816,7 @@ BEGIN
     IDS_MULTILANG_1423      "Sound Output Cannot Set Playback Speed"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1424      "Sound Output Pitch Not Supported"
     IDS_MULTILANG_1425      "Sound Output Cannot Set Pitch"
@@ -4875,7 +4834,7 @@ BEGIN
     IDS_MULTILANG_1439      "The file name is zero"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1440      "The file extention is not .avi or .divx"
     IDS_MULTILANG_1441      "File is empty"
@@ -4888,7 +4847,7 @@ BEGIN
     IDS_MULTILANG_1455      "Muted!"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1456      "%s already existing."
     IDS_MULTILANG_1457      "Zip Extraction Progress"
@@ -4898,7 +4857,7 @@ BEGIN
     IDS_MULTILANG_1466      "The capture device is already in use or not compatible"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
@@ -4909,7 +4868,7 @@ BEGIN
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_MULTILANG_1488      "Camera is telling you something,\nfirst open it in a browser, then come back here."
     IDS_MULTILANG_1489      "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."
@@ -4926,7 +4885,7 @@ BEGIN
     IDS_STRING1502          "Lanczos (slowest)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_ROTATE_FLIP     "Rotate / flip current image\nRotate / Flip"
     ID_FILE_SELECTTWAINSOURCE 
@@ -4935,7 +4894,7 @@ BEGIN
     ID_CAPTURE_SETTINGS     "Device settings\nDevice Settings"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_VIDEO           "Enable / disable video input preview\nPreview Video"
     ID_PLAY_FRAME_FRONT     "Jump to next frame\nNext Frame"
@@ -4943,7 +4902,7 @@ BEGIN
     ID_ZOOM_COMBOX          "Select image zoom level\nZoom Image"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_FULLSCREEN      "Go to full screen mode (exit with ESC or F11)\nFull Screen"
     ID_FILE_OPEN_DIR        "Open a directory\nOpen Directory"
@@ -4956,7 +4915,7 @@ BEGIN
     ID_SLIDESHOW_DELAY_30   "Set slideshow delay to 30 seconds\n30 s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_SLIDESHOW_DELAY_60   "Set slideshow delay to 1 minute\n1 min"
     ID_PLAY_LOOP            "Infinite loop\nInfinite Loop"
@@ -4964,7 +4923,7 @@ BEGIN
     ID_EDIT_GRAYSCALE       "Convert current image to grayscales\nTo Grayscales"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_DELETE          "Delete current document\nDelete Document"
     ID_EDIT_ROTATE_90CW     "Rotate current image 90° clockwise (Ctrl + Right Arrow)\nRotate 90° CW"
@@ -4977,7 +4936,7 @@ BEGIN
     ID_PLAY_FRAME_FRONT_FAST "Jump Forward\nJump Forward"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PLAY_FRAME_BACK_FAST "Jump Backward\nJump Backward"
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
@@ -4996,7 +4955,7 @@ BEGIN
                             "Slide in transition effect\nSlide-InTransition"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PLAY_TRANSITION_CHESSBOARD 
                             "Chessboard transition effect\nChessboard Transition"
@@ -5014,7 +4973,7 @@ BEGIN
     ID_VIEW_NEXT_PAGE_FRAME "Show next page/frame\nNext Page/Frame"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_PREVIOUS_PAGE_FRAME 
                             "Show previous page/frame\nPrevious Page/Frame"
@@ -5027,13 +4986,13 @@ BEGIN
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_DETECTIONS      "Enable / disable detection zones display\nShow Detections"
     ID_VIEW_DETECTION_ZONES "Show / setup detection zones\nDetection Zones"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
@@ -5051,7 +5010,7 @@ BEGIN
     ID_INDICATOR_XCOORDINATE "X:               "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_YCOORDINATE "Y:               "
     ID_VIEW_ZOOM_TOOL       "Click to zoom-in, right click to zoom-out\nZoom Click"
@@ -5067,7 +5026,7 @@ BEGIN
     ID_BACKGROUND_COLOR     "Click to choose the background color\nBackground Color"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CROP_LOSSLESS   "Perform a lossless crop\nLossless Crop"
     ID_RESTORE              "Restores the window to normal size\nRestore"
@@ -5080,7 +5039,7 @@ BEGIN
     ID_VIEW_STRETCH_HALFTONE "Hi quality stretch\nHi Quality Stretch"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_PLAY_MUSIC           "Enable / disable background music\nBackground Music"
     ID_FILE_SHRINK_DIR_DOCS "Batch convert, rename and slideshow\nBatch Proc. / Slideshow"
@@ -5089,7 +5048,7 @@ BEGIN
     ID_EDIT_FILTER_SOFTEN   "Soften current image\nSoften"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_REMOVE_IPTC     "Remove the legacy IPTC section\nRemove Legacy IPTC"
     ID_VIEW_DIRECTX_RGB     "Render video using DirectX RGB surface\nDirectX RGB"
@@ -5101,7 +5060,7 @@ BEGIN
     ID_VIEW_ZOOM_FITBIG     "Fit big images only\nFit Big Images"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_ZOOM_625        "Zoom to 6.25 %\nZoom 6.25 %"
     ID_VIEW_ZOOM_125        "Zoom to 12.5 %\nZoom 12.5 %"
@@ -5120,7 +5079,7 @@ BEGIN
     ID_VIEW_ENABLE_OSD      "Show on-screen information in full screen mode\nOn-Screen Info"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_OSD_FONTSIZE_SMALL   "Set a small font size\nSmall Font Size"
     ID_OSD_FONTSIZE_MEDIUM  "Set a medium font size\nMedium Font Size"
@@ -5139,7 +5098,7 @@ BEGIN
                             "Use the times new roman font\nTimes New Romans Font"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_OSD_FONTFACE_COMICSANSMS 
                             "Use the comic sans ms font\nComic Sans MS Font"
@@ -5160,7 +5119,7 @@ BEGIN
                             "Display the focal length\nDisplay Focal Length"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_OSD_DISPLAY_ISOEQUIV "Display the iso equivalent\nDisplay ISO Equivalent"
     ID_OSD_DISPLAY_APERTURE "Display the aperture\nDisplay Aperture"
@@ -5182,7 +5141,7 @@ BEGIN
     ID_HELP_TUTORIAL_8      "Start this tutorial\nStart Tutorial"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HELP_TUTORIAL_9      "Start this tutorial\nStart Tutorial"
     ID_HELP_TUTORIAL_10     "Start this tutorial\nStart Tutorial"
@@ -5203,7 +5162,7 @@ BEGIN
                             "Scan from selected source and Email as Pdf\nScan and Email"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_TOOLS_TRAYICON       "Use tray icon\nTray Icon"
     ID_VIEW_FIT             "Fit\nFit"
@@ -5211,7 +5170,7 @@ BEGIN
     ID_VIEW_NO_BORDERS      "No borders\nNo Borders"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_NEXT_MONITOR    "Switch to next monitor\nTo Next Monitor"
     ID_VIEW_PREVIOUS_MONITOR "Switch to previous monitor\nTo Previous Monitor"
@@ -5227,7 +5186,7 @@ BEGIN
     ID_LAYEREDDLG_MAXSIZE_0_33 "Choose the maximum size\nMax Size"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_LAYEREDDLG_MAXSIZE_0_25 "Choose the maximum size\nMax Size"
     ID_EDIT_COLORS_COUNT    "Count the unique colors of the current image\nCount Unique Colors"
@@ -5244,7 +5203,7 @@ BEGIN
     ID_LAYEREDDLG_SIZE_200  "Size to 200 %\n200 %"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_LAYEREDDLG_SIZE_400  "Size to 400 %\n400 %"
     ID_LAYEREDDLG_SIZE_800  "Size to 800 %\n800 %"
@@ -5265,19 +5224,19 @@ BEGIN
     ID_EDIT_PASTE_INTO_FILE "Paste into from a coordinates text file\nPaste Into From File"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_WEB             "Open web browser\nBrowse"
     ID_TOOLS_VIEW_LOGFILE   "View the application log file with the default text editor\nView Application Log"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing Document\nOpen Document"
@@ -5291,7 +5250,7 @@ BEGIN
     ID_FILE_SAVE_COPY_AS    "Save a copy of the active document with a new name\nSave Copy As"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -5311,7 +5270,7 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -5326,7 +5285,7 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
@@ -5335,13 +5294,13 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "Display program and system information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application (prompts to save documents)\nExit"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -5351,13 +5310,13 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -5368,19 +5327,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_TOOLS_VIEW_WEB_LOGFILE 
                             "View the web server log file with the default text editor\nView Web Server Log"
@@ -5394,7 +5353,7 @@ BEGIN
     ID_EDIT_RENAME          "Rename current document\nRename Document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1506          "No Image Extension Change"
     IDS_STRING1507          "Auto Optimize Image Extensions"
@@ -5412,7 +5371,7 @@ BEGIN
     IDS_STRING1519          "Auto (Size Paper Automatically)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1541          "Low"
     IDS_STRING1542          "Medium"
@@ -5423,7 +5382,7 @@ BEGIN
     IDS_STRING1548          "Other HTTP Device"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1555          "Full"
     IDS_STRING1558          "1 hour"
@@ -5437,7 +5396,7 @@ BEGIN
     IDS_STRING1566          "Closing "
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1568          "Unplugged"
     IDS_STRING1569          "Change Size"
@@ -5455,7 +5414,7 @@ BEGIN
     IDS_STRING1583          "Creator's job title (Byline title)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1584          "Address"
     IDS_STRING1585          "City"
@@ -5474,7 +5433,7 @@ BEGIN
     IDS_STRING1599          "Date created"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1600          "Intellectual genre"
     IDS_STRING1602          "IPTC scene(s)"
@@ -5492,7 +5451,7 @@ BEGIN
     IDS_STRING1615          "Copyright URL"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1616          "Copyright status"
     IDS_STRING1617          "_____________ Contact ______________"
@@ -5512,7 +5471,7 @@ BEGIN
     IDS_STRING1631          "Headline:\t\t%s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1632          "Description:\t%s"
     IDS_STRING1633          "Keywords:\t%s"
@@ -5532,7 +5491,7 @@ BEGIN
     IDS_STRING1647          "Source:\t\t%s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1648          "Copyright notice:\t%s"
     IDS_STRING1649          "RightsUsageTerms:\t%s"
@@ -5551,7 +5510,7 @@ BEGIN
     IDS_STRING1663          "Artist:\t\t%s"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1664          "Photographer©:\t%s"
     IDS_STRING1665          "Editor©:\t\t%s"
@@ -5571,7 +5530,7 @@ BEGIN
     IDS_STRING1679          "ISO equiv.:\t%2d\r\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1680          "Exposure bias:\t%.2f\r\n"
     IDS_STRING1681          "White balance:\tauto\r\n"
@@ -5591,7 +5550,7 @@ BEGIN
     IDS_STRING1695          "Exposure program:\tshutter priority (semi-auto)\r\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1696          "Exposure program:\tcreative program (based towards depth of field)\r\n"
     IDS_STRING1697          "Exposure program:\taction program (based towards fast shutter speed)\r\n"
@@ -5611,7 +5570,7 @@ BEGIN
     IDS_STRING1711          "Convert All Images To Emf"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1712          "Flash: yes"
     IDS_STRING1713          "Flash: no"
@@ -5630,7 +5589,7 @@ BEGIN
     IDS_STRING1727          "1 Month"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1728          "2 Month"
     IDS_STRING1729          "3 Month"
@@ -5649,7 +5608,7 @@ BEGIN
     IDS_STRING1743          "3 Seconds Rate"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1744          "4 Seconds Rate"
     IDS_STRING1745          "5 Seconds Rate"
@@ -5666,7 +5625,7 @@ BEGIN
     IDS_STRING1759          "&Snapshot\tIns"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1761          "Web Server Log File has not yet been created"
@@ -5684,12 +5643,12 @@ BEGIN
     IDS_STRING1775          "Failed connecting to the FTP server in a timely manner\n"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed. Make sure that the OLE libraries are the correct version"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1776          "An exception occured while writing to the download file:\n%s\n"
     IDS_STRING1777          "An exception occured while reading the local file:\n%s\n"
@@ -5708,7 +5667,7 @@ BEGIN
     IDS_STRING1791          "Burn..."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1792          "Erase %d%%"
     IDS_STRING1793          "Erase..."
@@ -5728,7 +5687,7 @@ BEGIN
     IDS_STRING1807          "Adding %s to file system..."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1808          "Recorder not supported"
     IDS_STRING1809          "Recorder cannot be used"
@@ -5747,7 +5706,7 @@ BEGIN
     IDS_STRING1823          "Fit Big"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1824          "File Size: "
     IDS_STRING1825          "MB"
@@ -5766,7 +5725,7 @@ BEGIN
     IDS_STRING1838          "Small"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
@@ -5787,7 +5746,7 @@ BEGIN
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1842          "On first movement frame"
     IDS_STRING1843          "After Save,Email,Ftp"
@@ -5805,7 +5764,7 @@ BEGIN
     IDS_STRING1855          "Date Modified"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1856          "File Size"
     IDS_STRING1857          "Image Size"
@@ -5825,7 +5784,7 @@ BEGIN
     IDS_STRING1871          "Move all camera folders to selected directory"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
@@ -5833,7 +5792,7 @@ BEGIN
                             "Move all camera folders to selected directory\nMove Camera Folders"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_STRING1872          "Try again after closing all devices"
     IDS_STRING1873          "Files are not shown in web interface if disabling this!"
@@ -5842,7 +5801,7 @@ BEGIN
     IDS_STRING1876          "Detection disabled:"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

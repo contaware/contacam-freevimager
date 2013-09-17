@@ -3874,10 +3874,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Winsock2MissingDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="WorkerThread.cpp"
 				>
 				<FileConfiguration
@@ -4741,10 +4737,6 @@
 			</File>
 			<File
 				RelativePath=".\videoformatdlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Winsock2MissingDlg.h"
 				>
 			</File>
 			<File

@@ -456,9 +456,6 @@
     <ClCompile Include="VideoFormatDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Winsock2MissingDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WorkerThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -964,9 +961,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="videoformatdlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Winsock2MissingDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WorkerThread.h">
