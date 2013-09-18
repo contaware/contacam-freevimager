@@ -4,10 +4,10 @@ Purpose: Implementation for a MFC class encapsulation of the SMTP protocol
 Created: PJN / 22-05-1998
 History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
                              in the body of a message
-				              	  2. Class now supports Reply-To Header Field
+                          2. Class now supports Reply-To Header Field
                           3. Class now supports file attachments
-   		   PJN / 18-06-1998 1. Fixed a memory overwrite problem which was occurring 
-	  		                 with the buffer used for encoding base64 attachments
+         PJN / 18-06-1998 1. Fixed a memory overwrite problem which was occurring 
+                         with the buffer used for encoding base64 attachments
          PJN / 27-06-1998 1. The case where a line begins with a "." but contains
                           other text is now also catered for. See RFC821, Section 4.5.2
                           for further details.
@@ -58,22 +58,22 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
          PJN / 28-03-2000 1. Set the release mode timeout to be 10 seconds. 2 seconds was causing problems for slow dial
                           up networking connections.
          PJN / 07-05-2000 1. Addition of some ASSERT's in CPJNSMTPSocket::Connect
-		     PP  / 16-06-2000 The following modifications were done by Puneet Pawaia
-						              1. Removed the base64 encoder from this file
-						              2. Added the base64 encoder/decoder implementation in a separate 
-						              file. This was done because base64 decoding was not part of 
-							            the previous implementation
-						              3. Added support for ESMTP connection. The class now attempts to 
-						              authenticate the user on the ESMTP server using the username and
-							            passwords supplied. For this connect now takes the username and 
-							            passwords as parameters. These can be null in which case ESMTP 
-							            authentication is not attempted
-						              4. This class can now handle AUTH LOGIN and AUTH LOGIN PLAIN authentication
-						              schemes on 
-		     PP  / 19-06-2000 The following modifications were done by Puneet Pawaia
-				         		      1. Added the files md5.* containing the MD5 digest generation code
-						              after modifications so that it compiles with VC++ 6
-						              2. Added the CRAM-MD5 login procedure.
+         PP  / 16-06-2000 The following modifications were done by Puneet Pawaia
+                          1. Removed the base64 encoder from this file
+                          2. Added the base64 encoder/decoder implementation in a separate 
+                          file. This was done because base64 decoding was not part of 
+                          the previous implementation
+                          3. Added support for ESMTP connection. The class now attempts to 
+                          authenticate the user on the ESMTP server using the username and
+                          passwords supplied. For this connect now takes the username and 
+                          passwords as parameters. These can be null in which case ESMTP 
+                          authentication is not attempted
+                          4. This class can now handle AUTH LOGIN and AUTH LOGIN PLAIN authentication
+                          schemes on 
+         PP  / 19-06-2000 The following modifications were done by Puneet Pawaia
+                          1. Added the files md5.* containing the MD5 digest generation code
+                          after modifications so that it compiles with VC++ 6
+                          2. Added the CRAM-MD5 login procedure.
          PJN / 10-07-2000 1. Fixed a problem with sending attachments > 1K in size
                           2. Changed the parameters to CPJNSMTPConnection::Connect
          PJN / 30-07-2000 1. Fixed a bug in AuthLogin which was transmitting the username and password
@@ -533,8 +533,19 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
          PJN / 30-09-2012 1. Updated the code to avoid DLL planting security issues when calling LoadLibrary. Thanks to Mat Berchtold for reporting this issue.
          PJN / 25-11-2012 1. Fixed some issues in the code when CPJNSMTP_NOSSL was defined. Looks like support for compiling without SSL support has been 
                           broken for a few versions. Thanks to Bostjan Erzen for reporting this issue.
+         PJN / 12-03-2013 1. Updated copyright details.
+                          2. CPJNSMTPAddressArray typedef is now defined in the CPJNSMTPMessage class instead of in the global namespace. In addition this typedef
+                          class is now known as "CAddressArray"
+                          3. The sample project included in the download now links to the various OpenSSL libraries via defines in stdafx.h instead of via project
+                          settings. Thanks to Ed Nafziger for suggesting this nice addition. 
+                          4. The sample app no longer adds the author's hotmail address to the list of MDN's. Thanks to Ed Nafziger for spotting this.
+                          5. The sample app is now linked against the latest OpenSSL v1.0.1e dlls.
+                          6. Sample app now statically links to MFC
+         PJN / 03-06-2013 1. The demo app now disables the MIME checkbox after checking it if the email is to be sent as HTML
+                          2. Fixed a bug in the sample app where the mime type of the root body part would be incorrectly set to an empty string when it should 
+                          use the default which is "multipart/mixed". Thanks to Ting L for reporting this bug.
                           
-Copyright (c) 1998 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 1998 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -735,10 +746,10 @@ BOOL CPJNSMTPException::GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszErr
 #endif
 {
   //Validate our parameters
-	ASSERT(lpszError != NULL && AfxIsValidString(lpszError, nMaxError));
+  ASSERT(lpszError != NULL && AfxIsValidString(lpszError, nMaxError));
 
-	if (pnHelpContext != NULL)
-		*pnHelpContext = 0;
+  if (pnHelpContext != NULL)
+    *pnHelpContext = 0;
 
   //What will be the return value from this function (assume the worst)
   BOOL bSuccess = FALSE;
@@ -754,21 +765,21 @@ BOOL CPJNSMTPException::GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszErr
   }
   else
   {
-  	LPTSTR lpBuffer;
-	  DWORD dwReturn = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			                             NULL, HRESULT_CODE(m_hr), MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT),
-			                             reinterpret_cast<LPTSTR>(&lpBuffer), 0, NULL);
-	  if (dwReturn == 0)
-		  *lpszError = _T('\0');
-	  else
-	  {
-	    bSuccess = TRUE;
-	    Checked::tcsncpy_s(lpszError, nMaxError, lpBuffer, _TRUNCATE);
-		  LocalFree(lpBuffer);
-	  }
+    LPTSTR lpBuffer;
+    DWORD dwReturn = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                   NULL, HRESULT_CODE(m_hr), MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT),
+                                   reinterpret_cast<LPTSTR>(&lpBuffer), 0, NULL);
+    if (dwReturn == 0)
+      *lpszError = _T('\0');
+    else
+    {
+      bSuccess = TRUE;
+      Checked::tcsncpy_s(lpszError, nMaxError, lpBuffer, _TRUNCATE);
+      LocalFree(lpBuffer);
+    }
   }
 
-	return bSuccess;
+  return bSuccess;
 }
 
 CString CPJNSMTPException::GetErrorMessage()
@@ -786,9 +797,9 @@ IMPLEMENT_DYNAMIC(CPJNSMTPException, CException)
 void CPJNSMTPException::Dump(CDumpContext& dc) const
 {
   //Let the base class do its thing
-	CObject::Dump(dc);
+  CObject::Dump(dc);
 
-	dc << _T("m_hr = ") << m_hr << _T("\n");
+  dc << _T("m_hr = ") << m_hr << _T("\n");
 }
 #endif
 
@@ -808,38 +819,38 @@ CPJNSMTPAddress::CPJNSMTPAddress(const CString& sAddress)
   CString sTemp(sAddress);
   sTemp.Trim();
 
-	//divide the substring into friendly names and e-mail addresses
-	int nMark = sTemp.Find(_T('<'));
-	int nMark2 = sTemp.Find(_T('>'));
-	if ((nMark != -1) && (nMark2 != -1) && (nMark2 > (nMark+1)))
-	{
-		m_sEmailAddress = sTemp.Mid(nMark + 1, nMark2 - nMark - 1);
-		m_sFriendlyName = sTemp.Left(nMark);
-		
-		//Tidy up the parsed values
+  //divide the substring into friendly names and e-mail addresses
+  int nMark = sTemp.Find(_T('<'));
+  int nMark2 = sTemp.Find(_T('>'));
+  if ((nMark != -1) && (nMark2 != -1) && (nMark2 > (nMark+1)))
+  {
+    m_sEmailAddress = sTemp.Mid(nMark + 1, nMark2 - nMark - 1);
+    m_sFriendlyName = sTemp.Left(nMark);
+    
+    //Tidy up the parsed values
     m_sFriendlyName.Trim();
     m_sFriendlyName = RemoveQuotes(m_sFriendlyName);
     m_sEmailAddress.Trim();
     m_sEmailAddress = RemoveQuotes(m_sEmailAddress);
   }
-	else
-	{
-		nMark = sTemp.Find(_T('('));
-		nMark2 = sTemp.Find(_T(')'));
-		if ((nMark != -1) && (nMark2 != -1) && (nMark2 > (nMark+1)))
-		{
-			m_sEmailAddress = sTemp.Left(nMark);
-			m_sFriendlyName = sTemp.Mid(nMark + 1, nMark2 - nMark - 1);
-			
-			//Tidy up the parsed values
-			m_sFriendlyName.Trim();
+  else
+  {
+    nMark = sTemp.Find(_T('('));
+    nMark2 = sTemp.Find(_T(')'));
+    if ((nMark != -1) && (nMark2 != -1) && (nMark2 > (nMark+1)))
+    {
+      m_sEmailAddress = sTemp.Left(nMark);
+      m_sFriendlyName = sTemp.Mid(nMark + 1, nMark2 - nMark - 1);
+      
+      //Tidy up the parsed values
+      m_sFriendlyName.Trim();
       m_sFriendlyName = RemoveQuotes(m_sFriendlyName);
- 			m_sEmailAddress.Trim();
+      m_sEmailAddress.Trim();
       m_sEmailAddress = RemoveQuotes(m_sEmailAddress);
-		}
-		else
-  		m_sEmailAddress = sTemp;
-	}
+    }
+    else
+      m_sEmailAddress = sTemp;
+  }
 }
 
 CPJNSMTPAddress::CPJNSMTPAddress(const CString& sFriendly, const CString& sAddress) : m_sFriendlyName(sFriendly), 
@@ -851,8 +862,8 @@ CPJNSMTPAddress::CPJNSMTPAddress(const CString& sFriendly, const CString& sAddre
 CPJNSMTPAddress& CPJNSMTPAddress::operator=(const CPJNSMTPAddress& r) 
 { 
   m_sFriendlyName = r.m_sFriendlyName; 
-	m_sEmailAddress = r.m_sEmailAddress; 
-	return *this;
+  m_sEmailAddress = r.m_sEmailAddress; 
+  return *this;
 }
 
 CString CPJNSMTPAddress::GetRegularFormat(BOOL bEncode, const CString& sCharset) const
@@ -978,21 +989,21 @@ CString CPJNSMTPBodyPart::CreateGUID()
   //Free up the temp memory
   RpcStringFree(&pszGuid);
 
-	return sGUID;
+  return sGUID;
 }
 
 BOOL CPJNSMTPBodyPart::SetFilename(const CString& sFilename)
 {
-	//Validate our parameters
-	ASSERT(sFilename.GetLength());  //You need to a valid Filename!
+  //Validate our parameters
+  ASSERT(sFilename.GetLength());  //You need to a valid Filename!
 
-	//Hive away the filename and form the title from the filename
+  //Hive away the filename and form the title from the filename
   TCHAR sPath[_MAX_PATH];
   TCHAR sFname[_MAX_FNAME];
   TCHAR sExt[_MAX_EXT];
   _tsplitpath_s(sFilename, NULL, 0, NULL, 0, sFname, sizeof(sFname)/sizeof(TCHAR), sExt, sizeof(sExt)/sizeof(TCHAR));
   _tmakepath_s(sPath, sizeof(sPath)/sizeof(TCHAR), NULL, NULL, sFname, sExt);
-	m_sFilename = sFilename;
+  m_sFilename = sFilename;
   m_sTitle = sPath;
 
   //Also set the content type to be appropiate for an attachment
@@ -1102,19 +1113,19 @@ CStringA CPJNSMTPBodyPart::GetHeader(const CString& sRootCharset)
     //Ok, it's an attachment
     
     //Check if filename title has non-ASCII characters
-	  BOOL bNeedTitleEscaping = FALSE;
-	  for (int i=0; i<m_sTitle.GetLength() && !bNeedTitleEscaping; i++)
-	  {
-	    TCHAR cChar = m_sTitle.GetAt(i);
-		  if (cChar <  _T(' ') || cChar > _T('~')) 
-		    bNeedTitleEscaping = TRUE;
-	  }
+    BOOL bNeedTitleEscaping = FALSE;
+    for (int i=0; i<m_sTitle.GetLength() && !bNeedTitleEscaping; i++)
+    {
+      TCHAR cChar = m_sTitle.GetAt(i);
+      if (cChar <  _T(' ') || cChar > _T('~')) 
+        bNeedTitleEscaping = TRUE;
+    }
     //Encode the title of the file if required
     CString sTitle;
-	  if (bNeedTitleEscaping)
-	    sTitle = HeaderEncode(m_sTitle, sRootCharset);
-	  else 
-	    sTitle = m_sTitle;
+    if (bNeedTitleEscaping)
+      sTitle = HeaderEncode(m_sTitle, sRootCharset);
+    else 
+      sTitle = m_sTitle;
 
     //Form the header to go along with this body part
     if (GetNumberOfChildBodyParts())
@@ -1123,19 +1134,19 @@ CStringA CPJNSMTPBodyPart::GetHeader(const CString& sRootCharset)
       {
         case BASE64_ENCODING:
         {
-		      sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), m_sBoundary.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
         case QP_ENCODING:
         {
-		      sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), m_sBoundary.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
         default:
         {
-		      sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"; Boundary=\"%s\"\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), m_sBoundary.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
@@ -1147,19 +1158,19 @@ CStringA CPJNSMTPBodyPart::GetHeader(const CString& sRootCharset)
       {
         case BASE64_ENCODING:
         {
-  		    sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
         case QP_ENCODING:
         {
-		      sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Transfer-Encoding: quoted-printable\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
         default:
         {
-		      sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
+          sHeaderT.Format(_T("\r\n\r\n--%s\r\nContent-Type: %s; name=\"%s\"\r\nContent-Disposition: attachment; filename=\"%s\"\r\n"), 
                           m_pParentBodyPart->m_sBoundary.operator LPCTSTR(), m_sContentType.operator LPCTSTR(), sTitle.operator LPCTSTR(), sTitle.operator LPCTSTR());
           break;
         }
@@ -1242,18 +1253,18 @@ CStringA CPJNSMTPBodyPart::GetHeader(const CString& sRootCharset)
 
 CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
 {
-	//if the body is text we must convert it to the declared encoding, this could create some
-	//problems since windows conversion functions (such as WideCharToMultiByte) uses UINT
-	//code page and not a String like HTTP uses.
-	//For now we will add the support for UTF-8, to support other encodings we have to 
-	//implement a mapping between the "internet name" of the encoding and its LCID(UINT)
+  //if the body is text we must convert it to the declared encoding, this could create some
+  //problems since windows conversion functions (such as WideCharToMultiByte) uses UINT
+  //code page and not a String like HTTP uses.
+  //For now we will add the support for UTF-8, to support other encodings we have to 
+  //implement a mapping between the "internet name" of the encoding and its LCID(UINT)
 
   //What will be the return value from this function
   CStringA sBodyA;
-	
-	if (m_pszRawBody)
-	  sBodyA = m_pszRawBody;
-	else if (m_sFilename.GetLength())
+  
+  if (m_pszRawBody)
+    sBodyA = m_pszRawBody;
+  else if (m_sFilename.GetLength())
   {
     //Ok, it's a file  
     HANDLE hFile = CreateFile(m_sFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -1299,7 +1310,7 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
                 encode.Encode(pszIn, dwBytesWritten, 0);
 
                 //Form the body for this body part
-	              sBodyA = encode.Result();
+                sBodyA = encode.Result();
                 break;
               }
               default:
@@ -1338,9 +1349,9 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
       case BASE64_ENCODING:
       {
         //Do the UTF8 conversion if necessary
-  	    CStringA sBuff;
+        CStringA sBuff;
         if (m_sCharset.CompareNoCase(_T("UTF-8")) == 0)
-	        sBuff = ConvertToUTF8(m_sText);
+          sBuff = ConvertToUTF8(m_sText);
         else
           sBuff = m_sText;
 
@@ -1355,16 +1366,16 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
       case QP_ENCODING:
       {
         //Do the UTF8 conversion if necessary
-  	    CStringA sBuff;
+        CStringA sBuff;
         if (m_sCharset.CompareNoCase(_T("UTF-8")) == 0)
-	        sBuff = ConvertToUTF8(m_sText);
+          sBuff = ConvertToUTF8(m_sText);
         else
           sBuff = m_sText;
 
         //Do the encoding
         CPJNSMPTQPEncode encode;
         encode.Encode(sBuff, 0);
-	      sBodyA = encode.Result();
+        sBodyA = encode.Result();
         if (bDoSingleDotFix)
           FixSingleDotA(sBodyA);
         break;
@@ -1373,7 +1384,7 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
       {
         //Do the UTF8 conversion if necessary
         if (m_sCharset.CompareNoCase(_T("UTF-8")) == 0)
-	        sBodyA = ConvertToUTF8(m_sText);
+          sBodyA = ConvertToUTF8(m_sText);
         else
           sBodyA = m_sText;
 
@@ -1391,7 +1402,7 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
 CStringA CPJNSMTPBodyPart::GetFooter()
 {
   //Form the MIME footer
-	CStringA sFooter;
+  CStringA sFooter;
   sFooter.Format("\r\n--%s--", CStringA(m_sBoundary).operator LPCSTR());
 
   return sFooter;
@@ -1464,9 +1475,9 @@ CPJNSMTPBodyPart* CPJNSMTPBodyPart::FindFirstBodyPart(const CString sContentType
 CStringA CPJNSMTPBodyPart::HeaderEncode(const CString& sText, const CString& sCharset)
 {
   //Do the UTF8 conversion if necessary
-	CStringA sLocalText;
+  CStringA sLocalText;
   if (sCharset.CompareNoCase(_T("UTF-8")) == 0)
-	  sLocalText = CPJNSMTPBodyPart::ConvertToUTF8(sText);
+    sLocalText = CPJNSMTPBodyPart::ConvertToUTF8(sText);
   else
     sLocalText = sText;
 
@@ -1483,9 +1494,9 @@ CStringA CPJNSMTPBodyPart::HeaderEncode(const CString& sText, const CString& sCh
 CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CString& sCharset)
 {
   //Do the UTF8 conversion if necessary
-	CStringA sLocalSubject;
+  CStringA sLocalSubject;
   if (sCharset.CompareNoCase(_T("UTF-8")) == 0)
-	  sLocalSubject = CPJNSMTPBodyPart::ConvertToUTF8(sSubject);
+    sLocalSubject = CPJNSMTPBodyPart::ConvertToUTF8(sSubject);
   else
     sLocalSubject = sSubject;
 
@@ -1500,31 +1511,31 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
   LPCSTR pszLine = sLocalSubject.operator LPCSTR();
   int nHeaderLeftLength = sLocalSubject.GetLength();
   int nLineNumber = 0;
-	while (nHeaderLeftLength > 78)
-	{
-	  //Remember what line number we are working on. This is required 
-	  ++nLineNumber;
-	
-		//Calculate the line length to use for this line
-		int nLineLength = 0;
-	  int nMaxLineLength = 78 - nCharsetLength - 7 - 9;
-	  if (nLineNumber != 1)
-	    --nMaxLineLength;
-	  ASSERT(nMaxLineLength > 0);
+  while (nHeaderLeftLength > 78)
+  {
+    //Remember what line number we are working on. This is required 
+    ++nLineNumber;
+  
+    //Calculate the line length to use for this line
+    int nLineLength = 0;
+    int nMaxLineLength = 78 - nCharsetLength - 7 - 9;
+    if (nLineNumber != 1)
+      --nMaxLineLength;
+    ASSERT(nMaxLineLength > 0);
 
-	  if (nHeaderLeftLength > nMaxLineLength)
-	    nLineLength = nMaxLineLength;
-	  else
-	    nLineLength = nHeaderLeftLength;
-		
-		//copy the current line to a local buffer
-		char szLineBuf[79];
-		AFXASSUME(nLineLength < 79);
+    if (nHeaderLeftLength > nMaxLineLength)
+      nLineLength = nMaxLineLength;
+    else
+      nLineLength = nHeaderLeftLength;
+    
+    //copy the current line to a local buffer
+    char szLineBuf[79];
+    AFXASSUME(nLineLength < 79);
     strncpy_s(szLineBuf, sizeof(szLineBuf), pszLine, nLineLength);
     szLineBuf[nLineLength] = '\0';
 
     //Prepare for the next time around
-		pszLine += nLineLength;
+    pszLine += nLineLength;
     nHeaderLeftLength -= nLineLength;
 
     //Add the current line to the output parameter
@@ -1535,22 +1546,22 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
     //And prepare for folding the next line if we still have some header to process
     if (nHeaderLeftLength)
       sOutputHeader += "\r\n ";  
-	}
-	
-	//Finish up the remaining text left
-	if (nHeaderLeftLength)
-	{
+  }
+  
+  //Finish up the remaining text left
+  if (nHeaderLeftLength)
+  {
     //Add the last line
     CPJNSMPTQEncode encode;
     encode.Encode(pszLine, sAsciiCharset);
     sOutputHeader += encode.Result();
-	}
+  }
   
   return sOutputHeader;
 }
 
 
-CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v2.99")), 
+CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.01")), 
                                      m_bMime(FALSE), 
                                      m_Priority(NoPriority),
                                      m_DSNReturnType(HeadersOnly),
@@ -1584,7 +1595,7 @@ CPJNSMTPMessage& CPJNSMTPMessage::operator=(const CPJNSMTPMessage& message)
   m_MessageDispositionEmailAddresses.Copy(message.m_MessageDispositionEmailAddresses);
   m_CustomHeaders.Copy(message.m_CustomHeaders);
 
-	return *this;
+  return *this;
 }
 
 void CPJNSMTPMessage::SetCharset(const CString& sCharset)
@@ -1600,22 +1611,22 @@ CString CPJNSMTPMessage::GetCharset() const
 INT_PTR CPJNSMTPMessage::AddBodyPart(CPJNSMTPBodyPart& Attachment)
 {
   SetMime(TRUE); //Body parts implies Mime
-	return m_RootPart.AddChildBodyPart(Attachment);
+  return m_RootPart.AddChildBodyPart(Attachment);
 }
 
 void CPJNSMTPMessage::RemoveBodyPart(INT_PTR nIndex)
 {
-	m_RootPart.RemoveChildBodyPart(nIndex);
+  m_RootPart.RemoveChildBodyPart(nIndex);
 }
 
 CPJNSMTPBodyPart* CPJNSMTPMessage::GetBodyPart(INT_PTR nIndex)
 {
-	return m_RootPart.GetChildBodyPart(nIndex);
+  return m_RootPart.GetChildBodyPart(nIndex);
 }
 
 INT_PTR CPJNSMTPMessage::GetNumberOfBodyParts() const
 {
-	return m_RootPart.GetNumberOfChildBodyParts();
+  return m_RootPart.GetNumberOfChildBodyParts();
 }
 
 void CPJNSMTPMessage::AddCustomHeader(const CString& sHeader)
@@ -1713,7 +1724,7 @@ CStringA CPJNSMTPMessage::GetHeader()
   {
     CString sLine(m_To.ElementAt(i).GetRegularFormat(m_bAddressHeaderEncoding, sCharset));
     if (i < (nTo - 1))
- 		  sLine += _T(",");
+      sLine += _T(",");
     sTo += sLine;
     if (i < (nTo - 1))
       sTo += "\r\n ";
@@ -1728,7 +1739,7 @@ CStringA CPJNSMTPMessage::GetHeader()
   {
     CString sLine(m_CC.ElementAt(i).GetRegularFormat(m_bAddressHeaderEncoding, sCharset));
     if (i < (nCC - 1))
- 		  sLine += _T(",");
+      sLine += _T(",");
     sCc += sLine;
     if (i < (nCC - 1))
       sCc += "\r\n ";
@@ -1764,7 +1775,7 @@ CStringA CPJNSMTPMessage::GetHeader()
     {
       CString sLine(m_MessageDispositionEmailAddresses.ElementAt(i));
       if (i < (nMessageDispositionEmailAddresses - 1))
- 		    sLine += _T(",");
+        sLine += _T(",");
       sMDN += sLine;
       if (i < (nMessageDispositionEmailAddresses - 1))
         sMDN += "\r\n ";
@@ -1796,14 +1807,14 @@ CStringA CPJNSMTPMessage::GetHeader()
     sHeader += sPartHeader;
   }
   
-	//Add the optional Reply-To Field
-	if (m_ReplyTo.m_sEmailAddress.GetLength())
-	{
+  //Add the optional Reply-To Field
+  if (m_ReplyTo.m_sEmailAddress.GetLength())
+  {
     CStringA sReplyTo("Reply-To: ");
     sReplyTo += m_ReplyTo.GetRegularFormat(m_bAddressHeaderEncoding, sCharset);
     sHeader += sReplyTo;
     sHeader += "\r\n";
-	}
+  }
 
   //Date header
   sHeader += FormDateHeader();
@@ -1847,42 +1858,42 @@ CStringA CPJNSMTPMessage::GetHeader()
     sHeader += "\r\n";
   }
 
-	//Return the result
-	return sHeader;
+  //Return the result
+  return sHeader;
 }
 
-INT_PTR CPJNSMTPMessage::ParseMultipleRecipients(const CString& sRecipients, CPJNSMTPAddressArray& recipients)
+INT_PTR CPJNSMTPMessage::ParseMultipleRecipients(const CString& sRecipients, CPJNSMTPMessage::CAddressArray& recipients)
 {
-	ASSERT(sRecipients.GetLength()); //An empty string is now allowed
+  ASSERT(sRecipients.GetLength()); //An empty string is now allowed
 
   //Empty out the array
   recipients.SetSize(0);
-	
-	//Loop through the whole string, adding recipients as they are encountered
-	int length = sRecipients.GetLength();
-	TCHAR* buf = new TCHAR[length + 1];	//Allocate a work area (don't touch parameter itself)
+  
+  //Loop through the whole string, adding recipients as they are encountered
+  int length = sRecipients.GetLength();
+  TCHAR* buf = new TCHAR[length + 1];	//Allocate a work area (don't touch parameter itself)
   _tcscpy_s(buf, length+1, sRecipients);
 
   BOOL bLeftQuotationMark = FALSE;
-	for (int pos=0, start=0; pos<=length; pos++)
-	{
-		if (bLeftQuotationMark && buf[pos] != _T('"') )
-			continue;
-		if (bLeftQuotationMark && buf[pos] == _T('"'))
-		{
-			bLeftQuotationMark = FALSE;
-			continue;
-		}
-		if (buf[pos] == _T('"'))
-		{
-			bLeftQuotationMark = TRUE;
-			continue;
-		}
-	
-		//Valid separators between addresses are ',' or ';'
-		if ((buf[pos] == _T(',')) || (buf[pos] == _T(';')) || (buf[pos] == 0))
-		{
-			buf[pos] = 0;	//Redundant when at the end of string, but who cares.
+  for (int pos=0, start=0; pos<=length; pos++)
+  {
+    if (bLeftQuotationMark && buf[pos] != _T('"') )
+      continue;
+    if (bLeftQuotationMark && buf[pos] == _T('"'))
+    {
+      bLeftQuotationMark = FALSE;
+      continue;
+    }
+    if (buf[pos] == _T('"'))
+    {
+      bLeftQuotationMark = TRUE;
+      continue;
+    }
+  
+    //Valid separators between addresses are ',' or ';'
+    if ((buf[pos] == _T(',')) || (buf[pos] == _T(';')) || (buf[pos] == 0))
+    {
+      buf[pos] = 0;	//Redundant when at the end of string, but who cares.
       CString sTemp(&buf[start]);
       sTemp.Trim();
 
@@ -1892,15 +1903,15 @@ INT_PTR CPJNSMTPMessage::ParseMultipleRecipients(const CString& sRecipients, CPJ
         recipients.Add(To);
 
       //Move on to the next position
-			start = pos + 1;
-		}
-	}
+      start = pos + 1;
+    }
+  }
     
   //Tidy up the heap memory we have used
-	delete [] buf;
+  delete [] buf;
 
   //Return the number of recipients parsed
-	return recipients.GetSize();
+  return recipients.GetSize();
 }
 
 int CPJNSMTPMessage::AddMultipleAttachments(const CString& sAttachments)
@@ -1908,21 +1919,21 @@ int CPJNSMTPMessage::AddMultipleAttachments(const CString& sAttachments)
   //What will be the return value from this function
   int nAttachments = 0;
 
-	//Loop through the whole string, adding attachments as they are encountered
-	int length = sAttachments.GetLength();
-	TCHAR* buf = new TCHAR[length + 1];	// Allocate a work area (don't touch parameter itself)
+  //Loop through the whole string, adding attachments as they are encountered
+  int length = sAttachments.GetLength();
+  TCHAR* buf = new TCHAR[length + 1];	// Allocate a work area (don't touch parameter itself)
   _tcscpy_s(buf, length+1, sAttachments);
-	for (int pos=0, start=0; pos<=length; pos++)
-	{
-		//Valid separators between attachments are ',' or ';'
-		if ((buf[pos] == _T(',')) || (buf[pos] == _T(';')) || (buf[pos] == 0))
-		{
-			buf[pos] = 0;	//Redundant when at the end of string, but who cares.
+  for (int pos=0, start=0; pos<=length; pos++)
+  {
+    //Valid separators between attachments are ',' or ';'
+    if ((buf[pos] == _T(',')) || (buf[pos] == _T(';')) || (buf[pos] == 0))
+    {
+      buf[pos] = 0;	//Redundant when at the end of string, but who cares.
       CString sTemp(&buf[start]);
 
       //Finally add the new attachment to the array of attachments
       CPJNSMTPBodyPart attachment;
-			sTemp.Trim();
+      sTemp.Trim();
       if (sTemp.GetLength())
       {
         BOOL bAdded = attachment.SetFilename(sTemp);
@@ -1934,14 +1945,14 @@ int CPJNSMTPMessage::AddMultipleAttachments(const CString& sAttachments)
       }
 
       //Move on to the next position
-			start = pos + 1;
-		}
-	}
+      start = pos + 1;
+    }
+  }
 
   //Tidy up the heap memory we have used
-	delete [] buf;
+  delete [] buf;
 
-	return nAttachments;
+  return nAttachments;
 }
 
 CString CPJNSMTPMessage::ConvertHTMLToPlainText(const CString& sHtml)
@@ -2141,15 +2152,15 @@ void CPJNSMTPMessage::WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPa
   {
     //First send this body parts header
     CStringA sHeader(pBodyPart->GetHeader(sRootCharset));
-		HRESULT hr = file.Write(sHeader.operator LPCSTR(), sHeader.GetLength());
-		if (FAILED(hr))
+    HRESULT hr = file.Write(sHeader.operator LPCSTR(), sHeader.GetLength());
+    if (FAILED(hr))
       CPJNSMTPConnection::ThrowPJNSMTPException(hr);
   }
   
   //Then the body parts body
   CStringA sBody(pBodyPart->GetBody(FALSE));
-	HRESULT hr = file.Write(sBody.operator LPCSTR(), sBody.GetLength());
-	if (FAILED(hr))
+  HRESULT hr = file.Write(sBody.operator LPCSTR(), sBody.GetLength());
+  if (FAILED(hr))
     CPJNSMTPConnection::ThrowPJNSMTPException(hr);
 
   //Recursively save all the child body parts
@@ -2165,8 +2176,8 @@ void CPJNSMTPMessage::WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPa
   if (bSendFooter)
   {
     CStringA sFooter(pBodyPart->GetFooter());
-  	hr = file.Write(sFooter.operator LPCSTR(), sFooter.GetLength());
-  	if (FAILED(hr))
+    hr = file.Write(sFooter.operator LPCSTR(), sFooter.GetLength());
+    if (FAILED(hr))
       CPJNSMTPConnection::ThrowPJNSMTPException(hr);
   }
 }
@@ -2247,35 +2258,35 @@ CPJNSMTPConnection::~CPJNSMTPConnection()
 
 void CPJNSMTPConnection::ThrowPJNSMTPException(DWORD dwError, DWORD dwFacility, const CString& sLastResponse)
 {
-	if (dwError == 0)
-		dwError = ::WSAGetLastError();
+  if (dwError == 0)
+    dwError = ::WSAGetLastError();
 
-	CPJNSMTPException* pException = new CPJNSMTPException(dwError, dwFacility, sLastResponse);
+  CPJNSMTPException* pException = new CPJNSMTPException(dwError, dwFacility, sLastResponse);
 
-	TRACE(_T("Warning: throwing CPJNSMTPException for error %08X\n"), pException->m_hr);
-	THROW(pException);
+  TRACE(_T("Warning: throwing CPJNSMTPException for error %08X\n"), pException->m_hr);
+  THROW(pException);
 }
 
 void CPJNSMTPConnection::ThrowPJNSMTPException(HRESULT hr, const CString& sLastResponse)
 {
-	CPJNSMTPException* pException = new CPJNSMTPException(hr, sLastResponse);
+  CPJNSMTPException* pException = new CPJNSMTPException(hr, sLastResponse);
 
-	TRACE(_T("Warning: throwing CPJNSMTPException for error %08X\n"), pException->m_hr);
-	THROW(pException);
+  TRACE(_T("Warning: throwing CPJNSMTPException for error %08X\n"), pException->m_hr);
+  THROW(pException);
 }
 
 void CPJNSMTPConnection::SetHeloHostname(const CString& sHostname)
 {
-	//retrieve the localhost name if we are supplied the magic "auto" host name
-	if (sHostname == _T("auto"))
-	{
-		//retrieve the localhost name
-		char sHostName[_MAX_PATH] = "\0";
-		if (gethostname(sHostName, sizeof(sHostName)) == 0)
-		  m_sHeloHostname = CA2T(sHostName);
+  //retrieve the localhost name if we are supplied the magic "auto" host name
+  if (sHostname == _T("auto"))
+  {
+    //retrieve the localhost name
+    char sHostName[_MAX_PATH] = "\0";
+    if (gethostname(sHostName, sizeof(sHostName)) == 0)
+      m_sHeloHostname = CA2T(sHostName);
     else
       m_sHeloHostname = sHostname;
-	}
+  }
   else
     m_sHeloHostname = sHostname;
 }
@@ -2306,44 +2317,44 @@ CString CPJNSMTPConnection::GetOpenSSLError()
 
 void CPJNSMTPConnection::_ConnectViaSocks4(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, DWORD dwConnectionTimeout)
 {
-	m_Socket.Create();
-	m_Socket.SetBindAddress(m_sBindAddress);
+  m_Socket.Create();
+  m_Socket.SetBindAddress(m_sBindAddress);
 
 #ifndef CPJNSMTP_NOSSL
-	if (m_ConnectionType == SSL_TLS)
+  if (m_ConnectionType == SSL_TLS)
   {
-		m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-		if (!m_SSL.Create(m_SSLCtx, m_Socket))
+    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
+    if (!m_SSL.Create(m_SSLCtx, m_Socket))
       ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
   
-		if (!m_SSL.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout)) 
-			ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS4_VIASSL, FACILITY_ITF, GetOpenSSLError());
-	}
-	else 
+    if (!m_SSL.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout)) 
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS4_VIASSL, FACILITY_ITF, GetOpenSSLError());
+  }
+  else 
 #endif
   {
     m_Socket.SetBindAddress(m_sBindAddress);
-		m_Socket.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout);
+    m_Socket.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout);
   }
 }
 
 void CPJNSMTPConnection::_ConnectViaSocks5(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, LPCTSTR lpszUserName, LPCTSTR lpszPassword, DWORD dwConnectionTimeout, BOOL bUDP)
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_ConnectionType == SSL_TLS)
+  if (m_ConnectionType == SSL_TLS)
   {
-		m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-		if (!m_SSL.Create(m_SSLCtx, m_Socket))
+    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
+    if (!m_SSL.Create(m_SSLCtx, m_Socket))
       ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
   
-		if (!m_SSL.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP)) 
-			ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS5_VIASSL, FACILITY_ITF, GetOpenSSLError());
-	}
-	else 
+    if (!m_SSL.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP)) 
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS5_VIASSL, FACILITY_ITF, GetOpenSSLError());
+  }
+  else 
 #endif
   { 
     m_Socket.SetBindAddress(m_sBindAddress);
-		m_Socket.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP);
+    m_Socket.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP);
   }
 }
 
@@ -2351,21 +2362,21 @@ void CPJNSMTPConnection::_ConnectViaHTTPProxy(LPCTSTR lpszHostAddress, UINT nHos
                                               LPCTSTR lpszUserName, LPCTSTR pszPassword, DWORD dwConnectionTimeout, LPCTSTR lpszUserAgent)
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_ConnectionType == SSL_TLS)
+  if (m_ConnectionType == SSL_TLS)
   {
-		m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-		if (!m_SSL.Create(m_SSLCtx, m_Socket))
+    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
+    if (!m_SSL.Create(m_SSLCtx, m_Socket))
       ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
 
-		if (!m_SSL.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent))
-			ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_HTTPPROXY_VIASSL, FACILITY_ITF, GetOpenSSLError());
-	}
-	else 
+    if (!m_SSL.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent))
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_HTTPPROXY_VIASSL, FACILITY_ITF, GetOpenSSLError());
+  }
+  else 
 #endif
   {
     m_Socket.SetBindAddress(m_sBindAddress);
-		m_Socket.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent);
-	}
+    m_Socket.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent);
+  }
 }
 
 void CPJNSMTPConnection::_Connect(LPCTSTR lpszHostAddress, UINT nHostPort)
@@ -2373,42 +2384,42 @@ void CPJNSMTPConnection::_Connect(LPCTSTR lpszHostAddress, UINT nHostPort)
 #ifndef CPJNSMTP_NOSSL
   if (m_ConnectionType == SSL_TLS)
   {
-		m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-		if (!m_SSL.Create(m_SSLCtx, m_Socket))
+    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
+    if (!m_SSL.Create(m_SSLCtx, m_Socket))
       ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
 
-		if (!m_SSL.Connect(lpszHostAddress, nHostPort)) 
-			ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_VIASSL, FACILITY_ITF, GetOpenSSLError());
-	}
-	else 
+    if (!m_SSL.Connect(lpszHostAddress, nHostPort)) 
+      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_VIASSL, FACILITY_ITF, GetOpenSSLError());
+  }
+  else 
 #endif
   {
     m_Socket.SetBindAddress(m_sBindAddress);
-		m_Socket.CreateAndConnect(lpszHostAddress, nHostPort);
-	}
+    m_Socket.CreateAndConnect(lpszHostAddress, nHostPort);
+  }
 }
 
 int CPJNSMTPConnection::_Send(const void* pBuffer, int nBuf)
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_SSL.operator SSL*())
+  if (m_SSL.operator SSL*())
   {
-		int nSSLWrite = m_SSL.Send(pBuffer, nBuf);
+    int nSSLWrite = m_SSL.Send(pBuffer, nBuf);
     if (nSSLWrite < 1)
       ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_SEND_VIASSL, FACILITY_ITF, GetOpenSSLError());
     return nSSLWrite;
   }
-	else 
+  else 
 #endif
-		return m_Socket.Send(pBuffer, nBuf);
+    return m_Socket.Send(pBuffer, nBuf);
 }
 
 int CPJNSMTPConnection::_Receive(void *pBuffer, int nBuf)
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_SSL.operator SSL*())
+  if (m_SSL.operator SSL*())
   {
-		int nSSLReceive = m_SSL.Receive(pBuffer, nBuf);
+    int nSSLReceive = m_SSL.Receive(pBuffer, nBuf);
     if (nSSLReceive <= 0)
     {
       int nSSLError = SSL_get_error(m_SSL, nSSLReceive);
@@ -2417,9 +2428,9 @@ int CPJNSMTPConnection::_Receive(void *pBuffer, int nBuf)
     }
     return nSSLReceive;
   }
-	else 
+  else 
 #endif
-		return m_Socket.Receive(pBuffer, nBuf);
+    return m_Socket.Receive(pBuffer, nBuf);
 }
 
 #ifdef CPJNSMTP_NOSSL
@@ -2429,21 +2440,21 @@ void CPJNSMTPConnection::_Close(BOOL bGracefully)
 #endif
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_SSL.operator SSL*())
-		m_SSL.Close(bGracefully);
-	else 
+  if (m_SSL.operator SSL*())
+    m_SSL.Close(bGracefully);
+  else 
 #endif
-		m_Socket.Close();
+    m_Socket.Close();
 }
 
 BOOL CPJNSMTPConnection::_IsReadible(DWORD dwTimeout)
 {
 #ifndef CPJNSMTP_NOSSL
-	if (m_SSL.operator SSL*())
-		return m_SSL.IsReadible(dwTimeout);
-	else 
+  if (m_SSL.operator SSL*())
+    return m_SSL.IsReadible(dwTimeout);
+  else 
 #endif
-		return m_Socket.IsReadible(dwTimeout);
+    return m_Socket.IsReadible(dwTimeout);
 }
 
 #ifdef CPJNSMTP_NOSSL
@@ -2457,8 +2468,8 @@ BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType connecti
 
   //Determine if we should connect using EHLO instead of HELO
 #ifndef CPJNSMTP_NOSSL
-	if (connectionType == STARTTLS || connectionType == AutoUpgradeToSTARTTLS)
-	  bDoEHLO = TRUE;
+  if (connectionType == STARTTLS || connectionType == AutoUpgradeToSTARTTLS)
+    bDoEHLO = TRUE;
 #endif
   if (!bDoEHLO)
     bDoEHLO = (am != AUTH_NONE);
@@ -2468,7 +2479,7 @@ BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType connecti
 
 void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, LPCTSTR pszUsername, LPCTSTR pszPassword, int nPort, ConnectionType connectionType)
 {
-	//Validate our parameters
+  //Validate our parameters
   ASSERT(pszHostName);
   ASSERT(!m_bConnected);
 
@@ -2555,11 +2566,11 @@ void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, L
     if (!ReadCommandResponse(220))
       ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_SMTP_LOGIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	  //Negotiate Extended SMTP connection if required
-	  if (DoEHLO(am, connectionType))
-		  ConnectESMTP(m_sHeloHostname, pszUsername, pszPassword, am);
+    //Negotiate Extended SMTP connection if required
+    if (DoEHLO(am, connectionType))
+      ConnectESMTP(m_sHeloHostname, pszUsername, pszPassword, am);
     else
-		  ConnectSMTP(m_sHeloHostname);
+      ConnectSMTP(m_sHeloHostname);
   }
   catch(CPJNSMTPException* pEx)
   {
@@ -2588,17 +2599,17 @@ CPJNSMTPConnection::AuthenticationMethod CPJNSMTPConnection::ChooseAuthenticatio
   AuthenticationMethod am = AUTH_AUTO;
 
   //decide which protocol to choose
-	if (_tcsstr(sAuthMethods, _T("NTLM")) != NULL)
-		am = AUTH_NTLM;
-	else if (_tcsstr(sAuthMethods, _T("CRAM-MD5")) != NULL)
-		am = AUTH_CRAM_MD5;
-	else if (_tcsstr(sAuthMethods, _T("LOGIN")) != NULL)
-		am = AUTH_LOGIN;
-	else if (_tcsstr(sAuthMethods, _T("PLAIN")) != NULL)
-		am = AUTH_PLAIN;
-	else 
-		am = AUTH_NONE;
-		
+  if (_tcsstr(sAuthMethods, _T("NTLM")) != NULL)
+    am = AUTH_NTLM;
+  else if (_tcsstr(sAuthMethods, _T("CRAM-MD5")) != NULL)
+    am = AUTH_CRAM_MD5;
+  else if (_tcsstr(sAuthMethods, _T("LOGIN")) != NULL)
+    am = AUTH_LOGIN;
+  else if (_tcsstr(sAuthMethods, _T("PLAIN")) != NULL)
+    am = AUTH_PLAIN;
+  else 
+    am = AUTH_NONE;
+    
   return am;
 }
 
@@ -2638,8 +2649,8 @@ void CPJNSMTPConnection::DoSTARTTLS()
 void CPJNSMTPConnection::SendEHLO(LPCTSTR pszLocalName, CString& sLastResponse)
 {
   //Send the EHLO command
-	CStringA sBuf;
-	sBuf.Format("EHLO %s\r\n", CStringA(pszLocalName).operator LPCSTR());
+  CStringA sBuf;
+  sBuf.Format("EHLO %s\r\n", CStringA(pszLocalName).operator LPCSTR());
   try
   {
     _Send(sBuf.operator LPCSTR(), sBuf.GetLength());
@@ -2707,27 +2718,27 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
   if (am == AUTH_AUTO)
   {
     //Find the authentication methods supported by the SMTP server
-		TCHAR* sBegin = _T("250-AUTH ");
-		TCHAR* sEnd = _T("\r\n");
-		int PosBegin = sResponse.Find(sBegin);
-		if (PosBegin >= 0)
-		{
-			CString sAuthMethods;
-			int PosEnd = sResponse.Find(sEnd, PosBegin);
-			if (PosEnd >= 0)
-				sAuthMethods = sResponse.Mid(PosBegin + 9, PosEnd - PosBegin - 9);
-			else
-				sAuthMethods = sResponse.Mid(PosBegin + 9);
-			sAuthMethods.MakeUpper();
+    TCHAR* sBegin = _T("250-AUTH ");
+    TCHAR* sEnd = _T("\r\n");
+    int PosBegin = sResponse.Find(sBegin);
+    if (PosBegin >= 0)
+    {
+      CString sAuthMethods;
+      int PosEnd = sResponse.Find(sEnd, PosBegin);
+      if (PosEnd >= 0)
+        sAuthMethods = sResponse.Mid(PosBegin + 9, PosEnd - PosBegin - 9);
+      else
+        sAuthMethods = sResponse.Mid(PosBegin + 9);
+      sAuthMethods.MakeUpper();
 
       //Now decide which protocol to choose via the virtual function to allow further client customization
-			am = ChooseAuthenticationMethod(sAuthMethods);
-		}
-		else
-		{
-			//If AUTH is not found the server does not support authentication
-			am = AUTH_NONE;
-		}
+      am = ChooseAuthenticationMethod(sAuthMethods);
+    }
+    else
+    {
+      //If AUTH is not found the server does not support authentication
+      am = AUTH_NONE;
+    }
   }
 
   //What we do next depends on what authentication protocol we are using
@@ -2758,15 +2769,15 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
     }
   #endif  
     case AUTH_AUTO:
-		{
-			ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_EHLO_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
-			break;
-		}
-		case AUTH_NONE:
-		{
-			//authentication not requried
-			break;    
-	  }
+    {
+      ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_EHLO_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
+      break;
+    }
+    case AUTH_NONE:
+    {
+      //authentication not requried
+      break;    
+    }
     default:
     {
       ASSERT(FALSE);
@@ -2779,11 +2790,11 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
 void CPJNSMTPConnection::ConnectSMTP(LPCTSTR pszLocalName)
 {
   //Send the HELO command
-	CStringA sBuf;
-	sBuf.Format("HELO %s\r\n", CStringA(pszLocalName).operator LPCSTR());
+  CStringA sBuf;
+  sBuf.Format("HELO %s\r\n", CStringA(pszLocalName).operator LPCSTR());
   try
   {
-	  _Send(sBuf.operator LPCSTR(), sBuf.GetLength());
+    _Send(sBuf.operator LPCSTR(), sBuf.GetLength());
   }
   catch(CWSocketException* pEx)
   {
@@ -2792,8 +2803,8 @@ void CPJNSMTPConnection::ConnectSMTP(LPCTSTR pszLocalName)
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
 
-	//check the response to the HELO command
-	if (!ReadCommandResponse(250))
+  //check the response to the HELO command
+  if (!ReadCommandResponse(250))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_HELO_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
@@ -2862,7 +2873,7 @@ void CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, c
     {
       int nHeaderLength = sHeader.GetLength();
       if (nHeaderLength)
-		    _Send(sHeader.operator LPCSTR(), nHeaderLength);
+        _Send(sHeader.operator LPCSTR(), nHeaderLength);
     }
     catch(CWSocketException* pEx)
     {
@@ -2904,7 +2915,7 @@ void CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, c
     {
       int nFooterLength = sFooter.GetLength();
       if (nFooterLength)
-	      _Send(sFooter.operator LPCSTR(), nFooterLength);
+        _Send(sFooter.operator LPCSTR(), nFooterLength);
     }
     catch(CWSocketException* pEx)
     {
@@ -2918,9 +2929,9 @@ void CPJNSMTPConnection::SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, c
 CString CPJNSMTPConnection::FormMailFromCommand(const CString& sEmailAddress, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType, CString& sENVID)
 {
   //Validate our parameters
-	ASSERT(sEmailAddress.GetLength());
-	
-	//What will be the return value from this function
+  ASSERT(sEmailAddress.GetLength());
+  
+  //What will be the return value from this function
   CString sBuf;
   
   if (DSN == CPJNSMTPMessage::DSN_NOT_SPECIFIED)
@@ -2942,7 +2953,7 @@ CString CPJNSMTPConnection::FormMailFromCommand(const CString& sEmailAddress, DW
 
 void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
 {
-	//paramater validity checking
+  //paramater validity checking
   ASSERT(m_bConnected); //Must be connected to send a message
 
   //Send the MAIL command
@@ -3018,7 +3029,7 @@ void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
 
-	//Send the Header / body Separator
+  //Send the Header / body Separator
   static char* szBodyHeader = "\r\n";
   try
   {
@@ -3079,9 +3090,9 @@ BOOL CPJNSMTPConnection::OnSendProgress(DWORD /*dwCurrentBytes*/, DWORD /*dwTota
   return TRUE; 
 }
 
-void CPJNSMTPConnection::SendMessage(BYTE* pMessage, DWORD dwTotalBytes, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType)
+void CPJNSMTPConnection::SendMessage(BYTE* pMessage, DWORD dwTotalBytes, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType)
 {
-	//paramater validity checking
+  //paramater validity checking
   ASSERT(m_bConnected); //Must be connected to send a message
 
   //Send the MAIL command
@@ -3182,9 +3193,9 @@ void CPJNSMTPConnection::SendMessage(BYTE* pMessage, DWORD dwTotalBytes, CPJNSMT
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_END_OF_MESSAGE_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
-void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType)
+void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType)
 {
-	//paramater validity checking
+  //paramater validity checking
   ASSERT(m_bConnected); //Must be connected to send a message
 
   //Open up the file we want to send
@@ -3217,7 +3228,7 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPAddr
   try
   {
     //Send the MAIL command
-	  ASSERT(From.m_sEmailAddress.GetLength());
+    ASSERT(From.m_sEmailAddress.GetLength());
     CStringA sBuf(FormMailFromCommand(From.m_sEmailAddress, DSN, DSNReturnType, sENVID));
     try
     {
@@ -3349,7 +3360,7 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPAddr
 void CPJNSMTPConnection::SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient)
 {
   //Validate our parameters
-	ASSERT(recipient.m_sEmailAddress.GetLength()); //must have an email address for this recipient
+  ASSERT(recipient.m_sEmailAddress.GetLength()); //must have an email address for this recipient
 
   //form the command to send
   CStringA sBuf;
@@ -3421,27 +3432,27 @@ BOOL CPJNSMTPConnection::ReadCommandResponse(int nExpectedCode1, int nExpectedCo
 
 BOOL CPJNSMTPConnection::ReadResponse(CStringA& sResponse)
 {
-	//must have been created first
-	ASSERT(m_bConnected);
+  //must have been created first
+  ASSERT(m_bConnected);
 
   static const char* pszTerminator = "\r\n";
   static int nTerminatorLen = 2;
 
-	//retrieve the reponse until we 
-	//get the full response or a timeout occurs
-	BOOL bFoundFullResponse = FALSE;
-	int nStartOfLastLine = 0;
-	while (!bFoundFullResponse)
-	{
-		//check the socket for readability
+  //retrieve the reponse until we 
+  //get the full response or a timeout occurs
+  BOOL bFoundFullResponse = FALSE;
+  int nStartOfLastLine = 0;
+  while (!bFoundFullResponse)
+  {
+    //check the socket for readability
     try
     {
-		  if (!_IsReadible(m_dwTimeout)) //A timeout has occured so fail the function call
-		  {
-		    //Hive away the last command reponse
-			  m_sLastCommandResponse = CA2T(sResponse);
-			  return FALSE;
-		  }
+      if (!_IsReadible(m_dwTimeout)) //A timeout has occured so fail the function call
+      {
+        //Hive away the last command reponse
+        m_sLastCommandResponse = CA2T(sResponse);
+        return FALSE;
+      }
     }
     catch(CWSocketException* pEx)
     {
@@ -3450,9 +3461,9 @@ BOOL CPJNSMTPConnection::ReadResponse(CStringA& sResponse)
       ThrowPJNSMTPException(dwError, FACILITY_WIN32);
     }
 
-		//receive the data from the socket
-		char sBuf[4096];
-		int nData = 0;
+    //receive the data from the socket
+    char sBuf[4096];
+    int nData = 0;
     try
     {
       nData = _Receive(sBuf, sizeof(sBuf) - 1);
@@ -3468,16 +3479,16 @@ BOOL CPJNSMTPConnection::ReadResponse(CStringA& sResponse)
     if (nData == 0)
       ThrowPJNSMTPException(IDS_PJNSMTP_GRACEFUL_DISCONNECT, FACILITY_ITF, CString(CA2T(sResponse)));
 
-		//NULL terminate the data received
-		sBuf[nData] = '\0';
+    //NULL terminate the data received
+    sBuf[nData] = '\0';
 
     //Grow the response data
     sResponse += sBuf;
-		
-		//Check to see if we got a full response yet
-		int nReceived = sResponse.GetLength();
-		LPSTR szResponse = sResponse.GetBuffer();
-	  BOOL bFoundTerminator = (strncmp(&szResponse[nReceived - nTerminatorLen], pszTerminator, nTerminatorLen) == 0);
+    
+    //Check to see if we got a full response yet
+    int nReceived = sResponse.GetLength();
+    LPSTR szResponse = sResponse.GetBuffer();
+    BOOL bFoundTerminator = (strncmp(&szResponse[nReceived - nTerminatorLen], pszTerminator, nTerminatorLen) == 0);
     if (bFoundTerminator && (nReceived > 5))
     {
       //Find the start of the last line we have received
@@ -3493,19 +3504,19 @@ BOOL CPJNSMTPConnection::ReadResponse(CStringA& sResponse)
           --i;
         }
       }
-		  bFoundFullResponse = (szResponse[nStartOfLastLine + 3] == ' ');
+      bFoundFullResponse = (szResponse[nStartOfLastLine + 3] == ' ');
     }		
-	  sResponse.ReleaseBuffer();
-	}
+    sResponse.ReleaseBuffer();
+  }
 
-	//determine if Numeric response code
-	CStringA sCode(sResponse.Mid(nStartOfLastLine, 3));
+  //determine if Numeric response code
+  CStringA sCode(sResponse.Mid(nStartOfLastLine, 3));
   sscanf_s(sCode, "%d", &m_nLastCommandResponseCode);
 
-	//Hive away the last command reponse
-	m_sLastCommandResponse = CA2T(sResponse);
+  //Hive away the last command reponse
+  m_sLastCommandResponse = CA2T(sResponse);
 
-	return TRUE;
+  return TRUE;
 }
 
 void CPJNSMTPConnection::SecureEmptyString(CStringA& sVal)
@@ -3532,10 +3543,10 @@ void CPJNSMTPConnection::SecureEmptyString(CT2A& sVal)
 void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
 {
   //Send the AUTH LOGIN command
-	static char* szAuth = "AUTH LOGIN\r\n";
+  static char* szAuth = "AUTH LOGIN\r\n";
   try
   {
-	  _Send(szAuth, static_cast<int>(strlen(szAuth)));
+    _Send(szAuth, static_cast<int>(strlen(szAuth)));
   }
   catch(CWSocketException* pEx)
   {
@@ -3545,27 +3556,27 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
 
   //check the response to the AUTH LOGIN command
-	if (!ReadCommandResponse(334))
+  if (!ReadCommandResponse(334))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
   //Check that the response has a username request in it
-	CString sLastCommandString(m_sLastCommandResponse);
-	sLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
+  CString sLastCommandString(m_sLastCommandResponse);
+  sLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
   CStringA sAsciiLastCommandString(sLastCommandString);
   CPJNSMPTBase64Encode encode;
-	encode.Decode(sAsciiLastCommandString);
-	if (_stricmp(encode.Result(), "username:") != 0)
-		ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_USERNAME_REQUEST, FACILITY_ITF, GetLastCommandResponse());
+  encode.Decode(sAsciiLastCommandString);
+  if (_stricmp(encode.Result(), "username:") != 0)
+    ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_USERNAME_REQUEST, FACILITY_ITF, GetLastCommandResponse());
 
-	//send base64 encoded username
-	CStringA sAsciiUsername(pszUsername);
-	encode.Encode(sAsciiUsername, ATL_BASE64_FLAG_NOCRLF);
+  //send base64 encoded username
+  CStringA sAsciiUsername(pszUsername);
+  encode.Encode(sAsciiUsername, ATL_BASE64_FLAG_NOCRLF);
   SecureEmptyString(sAsciiUsername);
-	CStringA sUser;
-	sUser.Format("%s\r\n", encode.Result());
+  CStringA sUser;
+  sUser.Format("%s\r\n", encode.Result());
   try
   {
-	  _Send(sUser.operator LPCSTR(), sUser.GetLength());
+    _Send(sUser.operator LPCSTR(), sUser.GetLength());
   }
   catch(CWSocketException* pEx)
   {
@@ -3576,26 +3587,26 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   SecureEmptyString(sUser);
 
-	//check the response to the username 
-	if (!ReadCommandResponse(334))
+  //check the response to the username 
+  if (!ReadCommandResponse(334))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_USERNAME_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	//Check that the response has a password request in it
-	sLastCommandString = m_sLastCommandResponse;
-	sAsciiLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
-	encode.Decode(sAsciiLastCommandString);
-	if (_stricmp(encode.Result(), "password:") != 0)
+  //Check that the response has a password request in it
+  sLastCommandString = m_sLastCommandResponse;
+  sAsciiLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
+  encode.Decode(sAsciiLastCommandString);
+  if (_stricmp(encode.Result(), "password:") != 0)
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_PASSWORD_REQUEST, FACILITY_ITF, GetLastCommandResponse());
 
   //send password as base64 encoded
   CStringA sAsciiPassword(pszPassword);
-	encode.Encode(sAsciiPassword, ATL_BASE64_FLAG_NOCRLF);
-	SecureEmptyString(sAsciiPassword);
-	CStringA sPwd;
-	sPwd.Format("%s\r\n", encode.Result());
+  encode.Encode(sAsciiPassword, ATL_BASE64_FLAG_NOCRLF);
+  SecureEmptyString(sAsciiPassword);
+  CStringA sPwd;
+  sPwd.Format("%s\r\n", encode.Result());
   try
   {
-	  _Send(sPwd.operator LPCSTR(), sPwd.GetLength());
+    _Send(sPwd.operator LPCSTR(), sPwd.GetLength());
   }
   catch(CWSocketException* pEx)
   {
@@ -3606,18 +3617,18 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   SecureEmptyString(sPwd);
 
-	//check if authentication is successful
-	if (!ReadCommandResponse(235))
+  //check if authentication is successful
+  if (!ReadCommandResponse(235))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_PASSWORD_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
 void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
 {
   //Send the AUTH PLAIN command
-	static char* szAuth = "AUTH PLAIN\r\n";
+  static char* szAuth = "AUTH PLAIN\r\n";
   try
   {
-	  _Send(szAuth, static_cast<int>(strlen(szAuth)));
+    _Send(szAuth, static_cast<int>(strlen(szAuth)));
   }
   catch(CWSocketException* pEx)
   {
@@ -3627,36 +3638,36 @@ void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
 
   //Check the response to the AUTH PLAIN command
-	if (!ReadCommandResponse(334))
+  if (!ReadCommandResponse(334))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_PLAIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	//Send the username and password in the base64 encoded AUTH PLAIN format of "authid\0userid\0passwd". Note 
-	//that since authid is optional, we omit it which means take the authid to be the userid value.
-	CStringA sAsciiUserName(pszUsername);
-	int nAsciiUserNameLen = sAsciiUserName.GetLength();
-	CStringA sAsciiPassword(pszPassword);
-	int nAuthLen = nAsciiUserNameLen + sAsciiPassword.GetLength() + 3;
-	
-	//Allocate some heap space for the auth request packet
-	ATL::CHeapPtr<char> authRequest;
-	if (!authRequest.Allocate(nAuthLen))
-	  ThrowPJNSMTPException(ERROR_OUTOFMEMORY, FACILITY_WIN32); 
-	
-	//Form the auth request
-	memset(authRequest.m_pData, 0, nAuthLen);
-	strcpy_s(authRequest.m_pData+1, nAuthLen - 1, sAsciiUserName);
-	SecureEmptyString(sAsciiUserName);
-	strcpy_s(authRequest.m_pData + 2 + nAsciiUserNameLen, nAuthLen - 2 - nAsciiUserNameLen, sAsciiPassword);
-	SecureEmptyString(sAsciiPassword);
-	CPJNSMPTBase64Encode encode;
-	encode.Encode(reinterpret_cast<const BYTE*>(authRequest.m_pData), nAuthLen, ATL_BASE64_FLAG_NOCRLF);
-	SecureZeroMemory(authRequest.m_pData, nAuthLen);
-	
-	CStringA sAuthB64;
-	sAuthB64.Format("%s\r\n", encode.Result());
+  //Send the username and password in the base64 encoded AUTH PLAIN format of "authid\0userid\0passwd". Note 
+  //that since authid is optional, we omit it which means take the authid to be the userid value.
+  CStringA sAsciiUserName(pszUsername);
+  int nAsciiUserNameLen = sAsciiUserName.GetLength();
+  CStringA sAsciiPassword(pszPassword);
+  int nAuthLen = nAsciiUserNameLen + sAsciiPassword.GetLength() + 3;
+  
+  //Allocate some heap space for the auth request packet
+  ATL::CHeapPtr<char> authRequest;
+  if (!authRequest.Allocate(nAuthLen))
+    ThrowPJNSMTPException(ERROR_OUTOFMEMORY, FACILITY_WIN32); 
+  
+  //Form the auth request
+  memset(authRequest.m_pData, 0, nAuthLen);
+  strcpy_s(authRequest.m_pData+1, nAuthLen - 1, sAsciiUserName);
+  SecureEmptyString(sAsciiUserName);
+  strcpy_s(authRequest.m_pData + 2 + nAsciiUserNameLen, nAuthLen - 2 - nAsciiUserNameLen, sAsciiPassword);
+  SecureEmptyString(sAsciiPassword);
+  CPJNSMPTBase64Encode encode;
+  encode.Encode(reinterpret_cast<const BYTE*>(authRequest.m_pData), nAuthLen, ATL_BASE64_FLAG_NOCRLF);
+  SecureZeroMemory(authRequest.m_pData, nAuthLen);
+  
+  CStringA sAuthB64;
+  sAuthB64.Format("%s\r\n", encode.Result());
   try
   {
-	  _Send(sAuthB64.operator LPCSTR(), sAuthB64.GetLength());
+    _Send(sAuthB64.operator LPCSTR(), sAuthB64.GetLength());
   }
   catch(CWSocketException* pEx)
   {
@@ -3667,18 +3678,18 @@ void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   SecureEmptyString(sAuthB64);
 
-	//check if authentication is successful
-	if (!ReadCommandResponse(235))
+  //check if authentication is successful
+  if (!ReadCommandResponse(235))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_PLAIN_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
 void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
 {
   //Send the AUTH CRAM-MD5 command
-	static char* szAuth = "AUTH CRAM-MD5\r\n";
+  static char* szAuth = "AUTH CRAM-MD5\r\n";
   try
   {
-	  _Send(szAuth, static_cast<int>(strlen(szAuth)));
+    _Send(szAuth, static_cast<int>(strlen(szAuth)));
   }
   catch(CWSocketException* pEx)
   {
@@ -3687,19 +3698,19 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
 
-	//Check the response to the AUTH CRAM-MD5 command
-	if (!ReadCommandResponse(334))
+  //Check the response to the AUTH CRAM-MD5 command
+  if (!ReadCommandResponse(334))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_CRAM_MD5_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
-	//Get the base64 decoded challange 
-	CString sLastCommandString(m_sLastCommandResponse);
-	sLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
+  //Get the base64 decoded challange 
+  CString sLastCommandString(m_sLastCommandResponse);
+  sLastCommandString = sLastCommandString.Right(sLastCommandString.GetLength() - 4);
   CStringA sAsciiLastCommandString(sLastCommandString);
-	CPJNSMPTBase64Encode encode;
-	encode.Decode(sAsciiLastCommandString);
-	LPCSTR pszChallenge = encode.Result();
+  CPJNSMPTBase64Encode encode;
+  encode.Decode(sAsciiLastCommandString);
+  LPCSTR pszChallenge = encode.Result();
 
-	//generate the MD5 digest from the challenge and password
+  //generate the MD5 digest from the challenge and password
   CPJNMD5 hmac;
   CPJNMD5Hash hash;
   CStringA sAsciiPassword(pszPassword);
@@ -3709,22 +3720,22 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
     ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
   }
   SecureEmptyString(sAsciiPassword);
-	
-	//make the CRAM-MD5 response
-	CString sCramDigest(pszUsername);
-	sCramDigest += _T(" ");
+  
+  //make the CRAM-MD5 response
+  CString sCramDigest(pszUsername);
+  sCramDigest += _T(" ");
   sCramDigest += hash.Format(FALSE); //CRAM-MD5 requires a lowercase hash
-		
-	//send the digest response
+    
+  //send the digest response
   CStringA sAsciiCramDigest(sCramDigest);
   SecureEmptyString(sCramDigest);
-	encode.Encode(sAsciiCramDigest, ATL_BASE64_FLAG_NOCRLF);
-	SecureEmptyString(sAsciiCramDigest);
-	CStringA sEncodedDigest;
-	sEncodedDigest.Format("%s\r\n", encode.Result());
+  encode.Encode(sAsciiCramDigest, ATL_BASE64_FLAG_NOCRLF);
+  SecureEmptyString(sAsciiCramDigest);
+  CStringA sEncodedDigest;
+  sEncodedDigest.Format("%s\r\n", encode.Result());
   try
   {
-	  _Send(sEncodedDigest.operator LPCSTR(), sEncodedDigest.GetLength());
+    _Send(sEncodedDigest.operator LPCSTR(), sEncodedDigest.GetLength());
   }
   catch(CWSocketException* pEx)
   {
@@ -3735,8 +3746,8 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   SecureEmptyString(sEncodedDigest);
 
-	//check if authentication is successful
-	if (!ReadCommandResponse(235))
+  //check if authentication is successful
+  if (!ReadCommandResponse(235))
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_CRAMD_MD5_DIGEST_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 }
 
@@ -3876,25 +3887,25 @@ BOOL CPJNSMTPConnection::MXLookup(LPCTSTR lpszHostDomain,	CStringArray& arrHosts
   if ((m_lpfnDnsRecordListFree != NULL) && (m_lpfnDnsQuery != NULL))
   {
     //Do the DNS MX lookup  
-	  PDNS_RECORD pRec = NULL;
+    PDNS_RECORD pRec = NULL;
     DNS_STATUS status = m_lpfnDnsQuery(lpszHostDomain, DNS_TYPE_MX, fOptions, aipServers, &pRec, NULL);
-	  if (status == ERROR_SUCCESS)
-	  {
+    if (status == ERROR_SUCCESS)
+    {
       bSuccess = TRUE;
 
       PDNS_RECORD pRecFirst = pRec;
-		  while (pRec)
-		  {
+      while (pRec)
+      {
         //We're only interested in MX records
-			  if (pRec->wType == DNS_TYPE_MX)
+        if (pRec->wType == DNS_TYPE_MX)
         {
-				  arrHosts.Add(pRec->Data.MX.pNameExchange);
+          arrHosts.Add(pRec->Data.MX.pNameExchange);
           arrPreferences.Add(pRec->Data.MX.wPreference);
         }
-			  pRec = pRec->pNext;
-		  }
-		  m_lpfnDnsRecordListFree(pRecFirst, DnsFreeRecordList);
-	  }
+        pRec = pRec->pNext;
+      }
+      m_lpfnDnsRecordListFree(pRecFirst, DnsFreeRecordList);
+    }
     else
       SetLastError(status);
   }
@@ -3920,10 +3931,10 @@ CString CPJNSMTPConnection::CreateNEWENVID()
   CString sEnvID(CPJNSMTPBodyPart::CreateGUID());
 
   //Remove all but the hex digits
-	sEnvID.Remove('{');
-	sEnvID.Remove('}');
-	sEnvID.Remove('-');
+  sEnvID.Remove('{');
+  sEnvID.Remove('}');
+  sEnvID.Remove('-');
   sEnvID.MakeUpper();
 
-	return sEnvID;
+  return sEnvID;
 }

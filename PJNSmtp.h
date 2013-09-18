@@ -3,7 +3,7 @@ Module : PJNSmtp.h
 Purpose: Defines the interface for a MFC class encapsulation of the SMTP protocol
 Created: PJN / 22-05-1998
 
-Copyright (c) 1998 - 2011 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 1998 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -280,11 +280,6 @@ protected:
 };
 
 
-////////////////// typedefs ///////////////////////////////////////////////////
-
-typedef CArray<CPJNSMTPAddress, CPJNSMTPAddress&> CPJNSMTPAddressArray;
-
-
 ////////////////// Forward declaration ////////////////////////////////////////
 
 class PJNSMTP_EXT_CLASS CPJNSMTPConnection;
@@ -295,6 +290,9 @@ class PJNSMTP_EXT_CLASS CPJNSMTPConnection;
 class PJNSMTP_EXT_CLASS CPJNSMTPMessage
 {
 public:
+//Typedefs
+  typedef CArray<CPJNSMTPAddress, CPJNSMTPAddress&> CAddressArray;
+
 //Enums
 	enum RECIPIENT_TYPE 
 	{ 
@@ -328,10 +326,10 @@ public:
   CPJNSMTPMessage& operator=(const CPJNSMTPMessage& message);
 
 //Recipient support
-	CPJNSMTPAddressArray m_To;
-	CPJNSMTPAddressArray m_CC;
-	CPJNSMTPAddressArray m_BCC;
-  static INT_PTR       ParseMultipleRecipients(const CString& sRecipients, CPJNSMTPAddressArray& recipients);
+	CAddressArray m_To;
+	CAddressArray m_CC;
+	CAddressArray m_BCC;
+  static INT_PTR       ParseMultipleRecipients(const CString& sRecipients, CAddressArray& recipients);
 
 //Body Part support
   INT_PTR              GetNumberOfBodyParts() const;
@@ -385,6 +383,7 @@ protected:
 
   friend class CPJNSMTPConnection;
 };
+
 
 //////// The main class which encapsulates the SMTP connection ////////////////
 
@@ -445,8 +444,8 @@ public:
   DWORD   GetTimeout() const { return m_dwTimeout; };
   void    SetTimeout(DWORD dwTimeout) { m_dwTimeout = dwTimeout; };
 	void    SendMessage(CPJNSMTPMessage& Message);
-  void    SendMessage(const CString& sMessageOnFile, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
-  void    SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
+  void    SendMessage(const CString& sMessageOnFile, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
+  void    SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
   void    SetHeloHostname(const CString& sHostname);
   CString GetHeloHostName() const { return m_sHeloHostname; };
 

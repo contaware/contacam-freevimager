@@ -8,7 +8,7 @@ Purpose: Simple header definition of a PJNLoadLibraryFromSystem32 function. This
          information.
 Created: PJN / 30-09-2012
 
-Copyright (c) 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2012 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 

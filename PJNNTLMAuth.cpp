@@ -29,7 +29,7 @@ History: PJN / 05-09-2005 1. Function pointer to CompleteAuthToken is now constr
          PJN / 30-09-2012 1. Updated the code to avoid DLL planting security issues when calling LoadLibrary. Thanks to Mat 
                           Berchtold for reporting this issue.
 
-Copyright (c) 2005 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2005 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 

@@ -17,26 +17,10 @@ CXButtonXP 1.2
 - Centering multiline text
 
 
-CPJNSMTPConnection 2.67 with w3 mfc 1.83 for VC6
-------------------------------------------------
+CPJNSMTPConnection 3.01 with w3 mfc 1.95
+----------------------------------------
 
 - Thread Safe
-
-- Backported from newer version:
-  1. Updated the AUTH_AUTO login support to fall back to no
-     authentication if no authentication scheme is supported by the SMTP server.
-  2. Added abs() to sTZBias.Format(_T("%+.2d%.2d"), -nTZBias/60, abs(nTZBias)%60)
-     and changed the "Date:" header creation so that it is always in English.
-
-
-CPJNSMTPConnection 2.99 with w3 mfc 1.95 for VC2008
----------------------------------------------------
-
-- Thread Safe
-  
-- added in SocMFC.cpp to compile also for Windows 2000 target:
-  const struct in6_addr my_in6addr_any = { 0 };
-  sockAddr.sin6_addr = my_in6addr_any;
 
 
 CFTPTransfer
