@@ -16,11 +16,6 @@ static char THIS_FILE[] = __FILE__;
 // The Current Selected View Mode
 int g_nPreviewFileDlgViewMode = SHVIEW_Default;
 
-// The Used ComCtl32 Version
-static int g_nComCtl32MajorVersion = 4;
-static int g_nComCtl32MinorVersion = 7;
-static BOOL g_bVer581 = FALSE;
-
 // Original SHELLDLL_DefView window proc
 static WNDPROC g_pOldShellDefWndProc = NULL;
 
@@ -29,9 +24,7 @@ static WNDPROC g_pOldShellDefWndProc = NULL;
 LRESULT CALLBACK NewShellDefWndProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD wID = LOWORD(wParam);
-
-	// This Works For Not Vers. 5.81 of the comctl32
-	if (!g_bVer581 && (uiMsg == WM_COMMAND))
+	if (uiMsg == WM_COMMAND)
 	{
 		switch (wID)
 		{
@@ -68,43 +61,7 @@ LRESULT CALLBACK NewShellDefWndProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPARAM
 
 	// Pass the message on to the original SHELLDLL_DefView window proc,
 	// for standard handling.
-	LRESULT res = ::CallWindowProc(g_pOldShellDefWndProc, hwnd, uiMsg, wParam, lParam);
-
-	// For Ver. 5.81 of the comctl32
-	if (g_bVer581 && (uiMsg == WM_COMMAND))
-	{
-		if (wID == 0x702E)
-		{
-			// Get the Current Selected View
-			HWND hListCtrl32 = ::GetDlgItem(hwnd, 1);
-			LONG style = ::GetWindowLong(hListCtrl32, GWL_STYLE);
-			
-			// Thumbnail view
-			if ((style & 0x10000000) == 0)
-				g_nPreviewFileDlgViewMode = SHVIEW581_THUMBNAIL;
-			// Icon or Small Icons, Style: LVS_SMALLICON
-			else if ((style & LVS_TYPEMASK) == LVS_SMALLICON)
-				g_nPreviewFileDlgViewMode = SHVIEW581_SMALLICON;
-			// List, Style: LVS_LIST
-			else if ((style & LVS_TYPEMASK) == LVS_LIST)
-				g_nPreviewFileDlgViewMode = SHVIEW581_LIST;
-			// Tile or Big Icons, Style: LVS_ICON
-			else if ((style & LVS_TYPEMASK) == LVS_ICON)
-				g_nPreviewFileDlgViewMode = SHVIEW581_LARGEICON;
-			// Report or Details, Style: LVS_REPORT
-			else if ((style & LVS_TYPEMASK) == LVS_REPORT)
-				g_nPreviewFileDlgViewMode = SHVIEW581_DETAIL;
-
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-																_T("PreviewFileDlgViewMode"),
-																g_nPreviewFileDlgViewMode);
-			}
-		}
-	}
-
-	return res;
+	return ::CallWindowProc(g_pOldShellDefWndProc, hwnd, uiMsg, wParam, lParam);
 }
 
 // Subclass the window procedure of the SHELLDLL_DefView, diverting all
@@ -137,7 +94,6 @@ BEGIN_MESSAGE_MAP(CPreviewFileDlg, CFileDialog)
 	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_POST_INITDONE, OnPostInitDone)
-	ON_MESSAGE(WM_POST_CHANGEFILEVIEWMODE5, OnPostChangeFileViewMode5)
 	ON_MESSAGE(WM_LOADDONE, OnLoadDone)
 END_MESSAGE_MAP()
 
@@ -157,29 +113,10 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 												0, FALSE)
 {
 	m_ofn.Flags |= (OFN_EXPLORER | OFN_ENABLETEMPLATE | OFN_ENABLESIZING);
-	g_nComCtl32MajorVersion = GetComCtl32MajorVersion();
-	g_nComCtl32MinorVersion = GetComCtl32MinorVersion();
-	g_bVer581 =	((g_nComCtl32MajorVersion == 5) &&
-				(g_nComCtl32MinorVersion == 81));
 	g_pOldShellDefWndProc = NULL;
 
 	// Template Is Attached To the Top-Right of The File Dialog
-	if (g_nComCtl32MajorVersion < 5)
-	{
-		m_bNewSizeDlg = FALSE;
-		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEW);
-	}
-	else if (g_nComCtl32MajorVersion == 5)
-	{
-		m_bNewSizeDlg = TRUE;
-		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
-	}
-	// Also if Manifest Available and WinXP it must be a newer MFC Compile!
-	else
-	{
-		m_bNewSizeDlg = TRUE;
-		m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEWXP);
-	}
+	m_ofn.lpTemplateName = MAKEINTRESOURCE(IDD_FILEOPENPREVIEW);
 
 	m_bPreview = bPreview;
 	m_sLastFileName = _T("");
@@ -234,7 +171,7 @@ LONG CPreviewFileDlg::OnPostInitDone(WPARAM wparam, LPARAM lparam)
 	return 0;
 }
 
-void CPreviewFileDlg::SendChangeFileViewMode(int nFileViewMode)
+void CPreviewFileDlg::ChangeFileViewMode(int nFileViewMode)
 {	
 	// This is also working: CWnd* pWnd = GetParent()->GetDlgItem(lst2);
 	HWND hShellDllView = ::FindWindowEx(GetParent()->GetSafeHwnd(), NULL, _T("SHELLDLL_DefView"), NULL);
@@ -254,49 +191,7 @@ void CPreviewFileDlg::SendChangeFileViewMode(int nFileViewMode)
 		// (The command ID value was obtained by inspection using Spy++)
 		const int CMD_REFRESH = 40966;
 		::SendMessage(GetParent()->GetSafeHwnd(), WM_COMMAND, CMD_REFRESH, 0);
-	}
-}
-
-void CPreviewFileDlg::ChangeFileViewMode(int nFileViewMode)
-{	
-	if (g_bVer581)
-		ChangeFileViewMode581(nFileViewMode);
-	else
-		SendChangeFileViewMode(nFileViewMode);	
-}
-
-// Hack For Version 5.81 on WinMe:
-// When Opening the Context Menu,
-// not clicking on a file or dir item,
-// and closing right after the thumbnail
-// view works fine then!
-void CPreviewFileDlg::ChangeFileViewMode581(int nFileViewMode)
-{
-	HWND hShellDllView = ::FindWindowEx(GetParent()->GetSafeHwnd(), NULL, _T("SHELLDLL_DefView"), NULL );
-	HWND hListView = ::FindWindowEx(hShellDllView, NULL, _T("SysListView32"), NULL);
-
-	// Open Context Menu Outside Screen
-	::PostMessage(hListView, WM_RBUTTONDOWN, MK_RBUTTON, 0xFFFFFFFF);
-	::PostMessage(hListView, WM_RBUTTONUP, 0, 0xFFFFFFFF);
-
-	// Close It with ESC Key
-	DWORD dwScanCode = 1;
-	DWORD dwRepeat = 1;
-	LPARAM lParam = (dwRepeat) | (dwScanCode << 16);
-	::PostMessage(hListView, WM_KEYDOWN, VK_ESCAPE, lParam);
-	lParam |= 0xC0000000;
-	::PostMessage(hListView, WM_KEYUP, VK_ESCAPE, lParam);
-
-	// Ok, now really done!!
-	PostMessage(WM_POST_CHANGEFILEVIEWMODE5, (WPARAM)nFileViewMode, 0);
-}
-
-LONG CPreviewFileDlg::OnPostChangeFileViewMode5(WPARAM wparam, LPARAM lparam)
-{
-	SendChangeFileViewMode((int)wparam);
-	HWND hEditView = ::FindWindowEx(GetParent()->GetSafeHwnd(), NULL, _T("Edit"), NULL );
-	::SetFocus(hEditView);
-	return 0;
+	}	
 }
 
 CString CPreviewFileDlg::GetLongFileName() const
@@ -340,13 +235,7 @@ void CPreviewFileDlg::OnFolderChange()
 	// different folder, since the control gets recreated. So, re-subclass
 	// the SHELLDLL_DefView window proc.
 	if (g_pOldShellDefWndProc)
-	{
 		SetSHELLDefViewWindowProc();
-
-		// For Ver. 5.81
-		if (g_bVer581 && (g_nPreviewFileDlgViewMode == SHVIEW581_THUMBNAIL))
-			ChangeFileViewMode581(SHVIEW581_THUMBNAIL);
-	}
 }
 
 CString CPreviewFileDlg::GetCreationFileTime(CString sFileName)
@@ -481,187 +370,97 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 			if (nXDpi == 0 || nYDpi == 0)
 				bDpi = FALSE;
 
-			// Older Common Dialog
-			if (!m_bNewSizeDlg)
-			{
-				s.Format(_T("%d x %d\r\n"),	pDib->GetWidth(),
-											pDib->GetHeight());
+			// Create Info Text
+			s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
+												pDib->GetHeight());
 
 #ifdef SUPPORT_LIBJPEG
-				if (pDib->GetExifInfo()->bHasExif)
-				{
-					// If One Missing add depth
-					if (!pDib->GetExifInfo()->ExposureTime ||
-						!pDib->GetExifInfo()->ApertureFNumber ||
-						!pDib->GetExifInfo()->CameraModel[0] ||
-						!bDpi)
-					{
-						t.Format(_T("%s\r\n"), pDib->m_FileInfo.GetDepthName());
-						s += t;
-					}
-
-					if (pDib->GetExifInfo()->ExposureTime)
-					{
-						t.Format(_T("%.3fs "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
-						if (pDib->GetExifInfo()->ExposureTime <= 0.5)
-						{
-							t.Format(_T("(1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
-							s+=t;
-						}
-						if (pDib->GetExifInfo()->ApertureFNumber)
-						{
-							t.Format(_T(" , f/%.1f"), (double)pDib->GetExifInfo()->ApertureFNumber);
-							s+=t;
-						}
-						t.Format(_T("\r\n"));
-						s+=t;
-					}
-
-					if (bDpi)
-					{
-						t.Format(_T("Dpi: %d x %d\r\n"), nXDpi, nYDpi);
-						s += t;
-					}
-
-					if (pDib->GetExifInfo()->CameraModel[0])
-					{
-						t.Format(_T("%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
-						s+=t;
-					}
-
-					if (pDib->GetExifInfo()->DateTime[0])
-					{
-						CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
-						CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
-						s += sTime;
-					}
-					else
-						s += GetCreationFileTime(sLastFileName);
-				}
-				else
-#endif
-				{
-					t.Format(_T("%s\r\n"), pDib->m_FileInfo.GetDepthName());
-					s += t;
-
-					if (bDpi)
-					{
-						t.Format(_T("Dpi: %d x %d\r\n"), nXDpi, nYDpi);
-						s += t;
-					}
-
-#ifdef SUPPORT_GIFLIB
-					if (::GetFileExt(sLastFileName) == _T(".gif"))
-					{
-						t.Format(_T("Ver. %s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
-						s += t;
-						if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
-							m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
-						{
-							t.Format(_T("%d Frames\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
-															m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
-							s += t;
-						}
-					}
-#endif
-
-					s += GetCreationFileTime(sLastFileName);
-				}
-			}
-			// Newer Common Dialog
-			else
+			if (pDib->GetExifInfo()->bHasExif)
 			{
-				s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
-													pDib->GetHeight());
+				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+				s += t;
 
-#ifdef SUPPORT_LIBJPEG
-				if (pDib->GetExifInfo()->bHasExif)
+				if (bDpi)
 				{
-					t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+					t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
 					s += t;
-
-					if (bDpi)
-					{
-						t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
-						s += t;
-					}
+				}
 					
-					if (pDib->GetExifInfo()->CameraModel[0])
-					{
-						t.Format(_T("Model:\t%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
-						s+=t;
-					}
+				if (pDib->GetExifInfo()->CameraModel[0])
+				{
+					t.Format(_T("Model:\t%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
+					s+=t;
+				}
 
-					if (pDib->GetExifInfo()->Flash >= 0)
-					{
-						if (pDib->GetExifInfo()->Flash & 1)
-							t = ML_STRING(1714, "Flash:\tyes\r\n");
-						else
-							t = ML_STRING(1715, "Flash:\tno\r\n");
-						s+=t;
-					}
-
-					if (pDib->GetExifInfo()->ExposureTime)
-					{
-						t.Format(_T("Exp.:\t%.3f s "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
-						if (pDib->GetExifInfo()->ExposureTime <= 0.5)
-						{
-							t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
-							s+=t;
-						}
-						t.Format(_T("\r\n"));
-						s+=t;
-					}
-
-					if (pDib->GetExifInfo()->ApertureFNumber)
-					{
-						t.Format(_T("Aperture:\tf/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
-						s+=t;
-					}
-
-					if (pDib->GetExifInfo()->DateTime[0])
-					{
-						CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
-						CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
-						t.Format(_T("Taken:\t%s"), sTime);
-						s+=t;
-					}
+				if (pDib->GetExifInfo()->Flash >= 0)
+				{
+					if (pDib->GetExifInfo()->Flash & 1)
+						t = ML_STRING(1714, "Flash:\tyes\r\n");
 					else
-						s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
+						t = ML_STRING(1715, "Flash:\tno\r\n");
+					s+=t;
+				}
+
+				if (pDib->GetExifInfo()->ExposureTime)
+				{
+					t.Format(_T("Exp.:\t%.3f s "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
+					if (pDib->GetExifInfo()->ExposureTime <= 0.5)
+					{
+						t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
+						s+=t;
+					}
+					t.Format(_T("\r\n"));
+					s+=t;
+				}
+
+				if (pDib->GetExifInfo()->ApertureFNumber)
+				{
+					t.Format(_T("Aperture:\tf/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
+					s+=t;
+				}
+
+				if (pDib->GetExifInfo()->DateTime[0])
+				{
+					CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
+					CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
+					t.Format(_T("Taken:\t%s"), sTime);
+					s+=t;
 				}
 				else
+					s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
+			}
+			else
 #endif
+			{
+				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+				s += t;
+
+				t.Format(_T("Image:\t%d %s\r\n"),		(pDib->GetImageSize() >= 1024) ? pDib->GetImageSize() >> 10 : pDib->GetImageSize(),
+														(pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+				s += t;
+
+				if (bDpi)
 				{
-					t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+					t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
 					s += t;
-
-					t.Format(_T("Image:\t%d %s\r\n"),		(pDib->GetImageSize() >= 1024) ? pDib->GetImageSize() >> 10 : pDib->GetImageSize(),
-															(pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-					s += t;
-
-					if (bDpi)
-					{
-						t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
-						s += t;
-					}
+				}
 
 #ifdef SUPPORT_GIFLIB
-					if (::GetFileExt(sLastFileName) == _T(".gif"))
+				if (::GetFileExt(sLastFileName) == _T(".gif"))
+				{
+					t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
+					s += t;
+					if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
+						m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
 					{
-						t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
+						t.Format(_T("Frames:\t%d\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
+														m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
 						s += t;
-						if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
-							m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
-						{
-							t.Format(_T("Frames:\t%d\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
-															m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
-							s += t;
-						}
 					}
+				}
 #endif
 
-					s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
-				}
+				s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 			}
 		}
 
@@ -708,62 +507,6 @@ void CPreviewFileDlg::OnSetFocus(CWnd* pOldWnd)
 void CPreviewFileDlg::SetInfoText(CString str)
 {
 	GetDlgItem(IDC_PREVIEW_INFO)->SetWindowText(str);
-}
-
-// Starting with version 4.71, the Shell and common
-// controls DLLs, among others, began exporting DllGetVersion
-int CPreviewFileDlg::GetComCtl32MajorVersion()
-{
-	int ret = 4;
-
-	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
-	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
-    if (hModComCtl)
-    {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
-        if (pDLLGETVERSION)
-        {
-            DLLVERSIONINFO dvi = {0};
-            dvi.cbSize = sizeof dvi;
-            if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
-                ret = dvi.dwMajorVersion;
-            }
-        }
-		::FreeLibrary(hModComCtl);                 
-    }
-
-	return ret;
-}
-
-// Starting with version 4.71, the Shell and common
-// controls DLLs, among others, began exporting DllGetVersion
-int CPreviewFileDlg::GetComCtl32MinorVersion()
-{
-	int ret = 7;
-
-	typedef HRESULT (CALLBACK *DLLGETVERSION)(DLLVERSIONINFO*);
-	DLLGETVERSION pDLLGETVERSION = NULL;
-	HMODULE hModComCtl = ::LoadLibrary(_T("comctl32.dll"));
-    if (hModComCtl)
-    {
-        pDLLGETVERSION = (DLLGETVERSION)(
-			::GetProcAddress(hModComCtl, "DllGetVersion"));
-        if (pDLLGETVERSION)
-        {
-            DLLVERSIONINFO dvi = {0};
-            dvi.cbSize = sizeof dvi;
-            if (pDLLGETVERSION(&dvi) == NOERROR)
-            {
-                ret = dvi.dwMinorVersion;
-            }
-        }
-		::FreeLibrary(hModComCtl);                 
-    }
-
-	return ret;
 }
 
 #ifdef _DEBUG

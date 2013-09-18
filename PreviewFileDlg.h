@@ -12,22 +12,10 @@
 #include "Dib.h"
 #include "AviPlay.h"
 
-/*
-Comctl32.dll Versions:
-4.0   Microsoft Windows 95/Microsoft Windows NT 4.0. 
-4.7   Microsoft Internet Explorer 3.x. 
-4.71  Internet Explorer 4.0. 
-4.72  Internet Explorer 4.01 and Windows 98.
-5.8   Internet Explorer 5.
-5.81  Windows 2000 and Windows Me.
-6.0   Windows XP.
-*/
-
 #ifndef MAX_FILEDLG_PATH
 #define MAX_FILEDLG_PATH			65535 // If you put 65536 it's not working on win2000...
 #endif
-#define WM_POST_INITDONE			WM_USER + 3000 
-#define WM_POST_CHANGEFILEVIEWMODE5	WM_USER + 3001
+#define WM_POST_INITDONE			WM_USER + 3000
 
 extern int g_nPreviewFileDlgViewMode;
 
@@ -39,15 +27,6 @@ enum SHVIEW_ListViewModes
 	SHVIEW_DETAIL		= 0x702C,	// Style: LVS_REPORT
 	SHVIEW_THUMBNAIL	= 0x702D,	// Style: LVS_REPORT + 0x10000000 not set!
 	SHVIEW_TILE			= 0x702E	// Style: LVS_ICON
-};
-
-enum SHVIEW581_ListViewModes
-{
-	SHVIEW581_LARGEICON	= 0x7029,	// Style: LVS_ICON
-	SHVIEW581_SMALLICON	= 0x702A,	// Style: LVS_SMALLICON
-	SHVIEW581_LIST		= 0x702B,	// Style: LVS_LIST
-	SHVIEW581_DETAIL	= 0x702C,	// Style: LVS_REPORT
-	SHVIEW581_THUMBNAIL	= 0x7031	// Style: LVS_REPORT + 0x10000000 not set!
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -92,7 +71,6 @@ protected:
 	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	afx_msg LONG OnPostInitDone(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnPostChangeFileViewMode5(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnLoadDone(WPARAM wparam, LPARAM lparam);
 
 	virtual void OnInitDone();
@@ -100,16 +78,11 @@ protected:
 	virtual void OnFolderChange();
 	void Load(BOOL bOnlyHeader = FALSE);
 	BOOL ParseSubstrings(CString s, CStringArray& a);
-	void SendChangeFileViewMode(int nFileViewMode);
-	void ChangeFileViewMode581(int nFileViewMode);
 	CString GetLongFileName() const;
 	void SetSHELLDefViewWindowProc();
 	CString GetCreationFileTime(CString sFileName);
-	int GetComCtl32MajorVersion();
-	int GetComCtl32MinorVersion();
 
 protected:
-	BOOL m_bNewSizeDlg;
 	CString m_sLastFileName;
 	CDib m_DibHdr;
 	CDib m_DibFull;
