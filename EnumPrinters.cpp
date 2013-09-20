@@ -1,11 +1,3 @@
-// EnumPrinters.cpp: implementation of the CEnumPrinters class.
-//
-// Written By : R.I.Allen
-// 3rd May 2002
-// Roger.Allen@sirius-analytical.com
-// You can use this source as you like, but without any warranties of any kind!
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "EnumPrinters.h"
 #include <Winspool.h>
@@ -336,30 +328,11 @@ clean_up:
 bool CEnumPrinters::SetDefault(	HANDLE& hDevMode,
 								HANDLE& hDevNames)
 {
-	// Note: For Win95, win98 and Me the dmFormName member
-	// of DEVMODE is not initialized!
-	// (this is correct because in the documentation it's written
-	// that the entry is not supported)
-
 	int index = GetDefaultPrinterIndex();
 	if (index >= 0)
 		return SetNewPrinter(hDevMode, hDevNames, index, true);
 	else
 		return false;
-
-	// Alternatively we could use the following code to init m_hDevMode
-	// and m_hDevNames of the Application Class, but also doing so
-	// under Win95, win98 and Me the dmFormName member
-	// of DEVMODE is Not initialized!
-
-	//PRINTDLG pd;
-	//pd.lStructSize = (DWORD)sizeof(PRINTDLG);
-	//BOOL bRet = ::AfxGetApp()->GetPrinterDeviceDefaults(&pd);
-
-	// Note: After the first time that you call the Print Setup Dialog
-	// the dmFormName is initialized also under Win95, win98 and Me.
-	// I think the Dialog Routines Fill-in dmFormName because they need
-	// the information for the Paper Select ComboBox.
 }
 
 bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,

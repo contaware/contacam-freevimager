@@ -1,11 +1,3 @@
-// EnumPrinters.h: interface for the CEnumPrinters class.
-//
-// Written By : R.I.Allen
-// 3rd May 2002
-// Roger.Allen@sirius-analytical.com
-// You can use this source as you like, but without any warranties of any kind!
-//////////////////////////////////////////////////////////////////////
-
 #if !defined(AFX_ENUMPRINTERS_H__496315A4_5B64_11D6_AD8C_00B0D0652E95__INCLUDED_)
 #define AFX_ENUMPRINTERS_H__496315A4_5B64_11D6_AD8C_00B0D0652E95__INCLUDED_
 
@@ -30,8 +22,8 @@ public:
 	int					GetPrinterIndex(HANDLE &hDevMode, HANDLE& hDevNames) const;
 
 	// Enumerating printers
-	void				ReadLocalPrinters();	// For Win9x and Me this enumarates also Network Printers
-	void				ReadRemotePrinters();	// For NT, 2000, XP, Vista
+	void				ReadLocalPrinters();
+	void				ReadRemotePrinters();
 
 	// Actually changing or configuring the printer
 	bool				SetDefault(	HANDLE& hDevMode,
