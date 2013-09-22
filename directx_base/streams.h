@@ -10,7 +10,6 @@
 #ifndef __STREAMS__
 #define __STREAMS__
 
-#ifdef	_MSC_VER
 // disable some level-4 warnings, use #pragma warning(enable:###) to re-enable
 #pragma warning(disable:4100) // warning C4100: unreferenced formal parameter
 #pragma warning(disable:4127) // warning C4127: conditional expression is constant
@@ -21,12 +20,7 @@
 #pragma warning(disable:4514) // warning C4514: unreferenced inline function has been removed
 #pragma warning(disable:4710) // warning C4710: 'function' not inlined
 
-#if _MSC_VER>=1100
 #define AM_NOVTABLE __declspec(novtable)
-#else
-#define AM_NOVTABLE
-#endif
-#endif	// MSC_VER
 
 // Because of differences between Visual C++ and older Microsoft SDKs,
 // you may have defined _DEBUG without defining DEBUG.  This logic

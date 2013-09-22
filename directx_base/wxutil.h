@@ -519,11 +519,7 @@ public:
 	{
 		return (T*)QzAtlComPtrAssign((IUnknown**)&p, lp.p);
 	}
-#if _MSC_VER>1020
 	bool operator!(){return (p == NULL);}
-#else
-	BOOL operator!(){return (p == NULL) ? TRUE : FALSE;}
-#endif
 	T* p;
 };
 

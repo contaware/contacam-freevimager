@@ -237,19 +237,6 @@ public:
     STDMETHODIMP_(ULONG) NonDelegatingRelease();
 };
 
-#if (_MSC_VER <= 1200)
-#pragma warning(disable:4211)
-
-/* The standard InterlockedXXX functions won't take volatiles */
-static inline LONG WINAPI InterlockedIncrement( volatile LONG * plong )
-{ return InterlockedIncrement( const_cast<LONG*>( plong ) ); }
-
-static inline LONG WINAPI InterlockedDecrement( volatile LONG * plong )
-{ return InterlockedDecrement( const_cast<LONG*>( plong ) ); }
-
-#pragma warning(default:4211)
-#endif
-
 
 /* Return an interface pointer to a requesting client
    performing a thread safe AddRef as necessary */

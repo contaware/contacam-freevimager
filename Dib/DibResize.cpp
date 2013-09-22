@@ -2666,7 +2666,6 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 		}
 
 		// Interpolate
-#if (_MSC_VER > 1200)
 		if (g_bSSE)
 		{
 			if (!BicubicResample24_SSE(	(int)dwNewWidth,
@@ -2687,7 +2686,6 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 				BIGFREE(f);
 		}
 		else
-#endif
 		{
 			if (!BicubicResample24_C(	(int)dwNewWidth,
 										(int)dwNewHeight,
@@ -2847,7 +2845,6 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 		}
 
 		// Interpolate
-#if (_MSC_VER > 1200)
 		if (g_bSSE)
 		{
 			if (!BicubicResample32_SSE(	(int)dwNewWidth,
@@ -2868,7 +2865,6 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 				BIGFREE(f);
 		}
 		else
-#endif
 		{
 			if (!BicubicResample32_C(	(int)dwNewWidth,
 										(int)dwNewHeight,
@@ -2953,8 +2949,6 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 
 	return TRUE;
 }
-
-#if (_MSC_VER > 1200)
 
 typedef __declspec(align(16)) union
 {
@@ -4006,8 +4000,6 @@ BOOL CDib::BicubicResample32_SSE(	int nNewWidth,
 
 	return TRUE;
 }
-
-#endif
 
 BOOL CDib::BicubicResample24_C(	int nNewWidth,
 								int nNewHeight,

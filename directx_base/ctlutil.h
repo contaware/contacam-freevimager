@@ -275,11 +275,7 @@ private:
     //  Prevent bugs from constructing from LONG (which gets
     //  converted to double and then multiplied by 10000000
 	COARefTime(LONG);
-#if (_MSC_VER <= 1200)
-    operator=(LONG);
-#else
     LONG operator=(LONG);
-#endif
 };
 
 

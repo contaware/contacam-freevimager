@@ -1887,7 +1887,6 @@ protected:
 	void FreeGetClosestColorIndex();
 
 	// Bicubic Resample Helpers
-#if (_MSC_VER > 1200)
 	BOOL BicubicResample24_SSE(	int nNewWidth,
 								int nNewHeight,
 								float xScale,
@@ -1908,7 +1907,6 @@ protected:
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
 								CWorkerThread* pThread = NULL);
-#endif
 	BOOL BicubicResample24_C(	int nNewWidth,
 								int nNewHeight,
 								float xScale,
