@@ -1,9 +1,6 @@
 //
 // TryEnterCriticalSection.cpp
 //
-// The Problem is that Win9x doesn't support TryEnterCriticalSection(),
-// the more heavy loaded Mutexes are used for Win9x.
-//
 
 #include "stdafx.h"
 #include "TryEnterCriticalSection.h"

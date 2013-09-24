@@ -46,101 +46,15 @@
 #include "TraceLogFile.h"
 #include "appconst.h"
 #include "bigalloc.h"
-#if (_MSC_VER > 1200)
 #include <atlfile.h>
 #include <atlenc.h>
 #include <atlsocket.h>
-#endif
-
-// App Command Defines
-#ifndef WM_APPCOMMAND
-#define WM_APPCOMMAND					0x0319
-#endif
-#ifndef APPCOMMAND_BROWSER_BACKWARD
-#define APPCOMMAND_BROWSER_BACKWARD		1
-#endif
-#ifndef APPCOMMAND_BROWSER_FORWARD
-#define APPCOMMAND_BROWSER_FORWARD		2
-#endif
-#ifndef FAPPCOMMAND_MASK
-#define FAPPCOMMAND_MASK				0xF000
-#endif
-#ifndef GET_APPCOMMAND_LPARAM
-#define GET_APPCOMMAND_LPARAM(lParam) ((short)(HIWORD(lParam) & ~FAPPCOMMAND_MASK))
-#endif
-
-// Transparency Defines
-#ifndef WS_EX_LAYERED
-#define WS_EX_LAYERED					0x00080000
-#endif
-#ifndef LWA_COLORKEY
-#define LWA_COLORKEY					0x00000001
-#endif
-#ifndef LWA_ALPHA
-#define LWA_ALPHA						0x00000002
-#endif
-#ifndef ULW_COLORKEY
-#define ULW_COLORKEY					0x00000001
-#endif
-#ifndef ULW_ALPHA
-#define ULW_ALPHA						0x00000002
-#endif
-#ifndef ULW_OPAQUE
-#define ULW_OPAQUE						0x00000004
-#endif
 
 // Memory Alignment
 #define ISALIGNED(x, a) (0==((unsigned int)(x) & ((a) - 1)))
 #define DOALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 
-// PopUp Menu No-Animation define
-#ifndef TPM_NOANIMATION
-#define TPM_NOANIMATION					0x4000
-#endif
-
-#ifndef SM_CMONITORS
-
-	#define MONITOR_DEFAULTTONULL       0x00000000
-	#define MONITOR_DEFAULTTOPRIMARY    0x00000001
-	#define MONITOR_DEFAULTTONEAREST    0x00000002
-	#define MONITORINFOF_PRIMARY        0x00000001
-	#define SM_XVIRTUALSCREEN			76
-	#define SM_YVIRTUALSCREEN			77
-	#define SM_CXVIRTUALSCREEN			78
-	#define SM_CYVIRTUALSCREEN			79
-	#define SM_CMONITORS				80
-	#define SM_SAMEDISPLAYFORMAT		81
-	#if !defined(HMONITOR_DECLARED) && (WINVER < 0x0500)
-        #define HMONITOR_DECLARED
-        DECLARE_HANDLE(HMONITOR);
-    #endif
-
-	typedef struct tagMONITORINFO
-	{
-		DWORD   cbSize;
-		RECT    rcMonitor;
-		RECT    rcWork;
-		DWORD   dwFlags;
-	} MONITORINFO, *LPMONITORINFO;
-
-	typedef struct tagMONITORINFOEXA : public tagMONITORINFO
-	{
-		CHAR        szDevice[CCHDEVICENAME];
-	} MONITORINFOEXA, *LPMONITORINFOEXA;
-	typedef struct tagMONITORINFOEXW : public tagMONITORINFO
-	{
-		WCHAR       szDevice[CCHDEVICENAME];
-	} MONITORINFOEXW, *LPMONITORINFOEXW;
-#ifdef UNICODE
-	typedef MONITORINFOEXW MONITORINFOEX;
-	typedef LPMONITORINFOEXW LPMONITORINFOEX;
-#else
-	typedef MONITORINFOEXA MONITORINFOEX;
-	typedef LPMONITORINFOEXA LPMONITORINFOEX;
-#endif
-
-#endif
-
+// Multi monitor functions
 typedef BOOL (CALLBACK* MONITORENUMPROC)(HMONITOR, HDC, LPRECT, LPARAM);
 typedef BOOL (WINAPI * FPENUMDISPLAYMONITORS)(HDC hdc, LPCRECT lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData);
 typedef HMONITOR (WINAPI * FPMONITORFROMWINDOW)(HWND hwnd, DWORD dwFlags);
@@ -150,40 +64,20 @@ typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
 
 // Session change notification
 #ifndef NOTIFY_FOR_ALL_SESSIONS
-#define NOTIFY_FOR_ALL_SESSIONS     1
+#define NOTIFY_FOR_ALL_SESSIONS		1
 #endif
 #ifndef NOTIFY_FOR_THIS_SESSION
-#define NOTIFY_FOR_THIS_SESSION     0
-#endif
-#ifndef WM_WTSSESSION_CHANGE
-#define WM_WTSSESSION_CHANGE			0x02B1
-#define WTS_CONSOLE_CONNECT				0x1
-#define WTS_CONSOLE_DISCONNECT			0x2
-#define WTS_REMOTE_CONNECT				0x3
-#define WTS_REMOTE_DISCONNECT			0x4
-#define WTS_SESSION_LOGON				0x5
-#define WTS_SESSION_LOGOFF				0x6
-#define WTS_SESSION_LOCK				0x7
-#define WTS_SESSION_UNLOCK				0x8
-#define WTS_SESSION_REMOTE_CONTROL		0x9
+#define NOTIFY_FOR_THIS_SESSION		0
 #endif
 
+// Maximum file path size for file dialog
 #ifndef MAX_FILEDLG_PATH
-#define MAX_FILEDLG_PATH				65535 // If you put 65536 it's not working on win2000...
+#define MAX_FILEDLG_PATH			65535 // If you put 65536 it's not working on win2000...
 #endif
 
 // Vista and higher Shield Icon
-#ifndef BCM_FIRST
-#define BCM_FIRST			0x1600
-#endif
 #ifndef BCM_SETSHIELD
-#define BCM_SETSHIELD		(BCM_FIRST + 0x000C)
-#endif
-
-// ws2def.h doesn't define the following for older than XP
-#if (_MSC_VER > 1200) && (_WIN32_WINNT < 0x0501)
-typedef SOCKADDR_STORAGE_XP SOCKADDR_STORAGE;
-typedef SOCKADDR_STORAGE *PSOCKADDR_STORAGE, FAR *LPSOCKADDR_STORAGE;
+#define BCM_SETSHIELD				(BCM_FIRST + 0x000C)
 #endif
 
 //{{AFX_INSERT_LOCATION}}

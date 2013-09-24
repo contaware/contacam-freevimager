@@ -136,7 +136,7 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	// Connection Type
 	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
 	pComboBox->AddString(ML_STRING(1833, "Plain Text (Port 25 or 587)"));
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+#ifndef CPJNSMTP_NOSSL
     pComboBox->AddString(ML_STRING(1834, "SSL/TLS (Port 465)"));	
     pComboBox->AddString(ML_STRING(1835, "STARTTLS (Port 25 or 587)"));
 	pComboBox->SetCurSel(m_SendMailConfiguration.m_ConnectionType);
@@ -209,11 +209,9 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sPassword = sText;
 
-#if (_MSC_VER > 1200)
 	pComboBox = (CComboBox*)GetDlgItem(IDC_CONNECTIONTYPE);
 	m_SendMailConfiguration.m_ConnectionType =
 			(CPJNSMTPConnection::ConnectionType)pComboBox->GetCurSel();
-#endif
 }
 
 void CSendMailConfigurationDlg::OnOK() 
@@ -287,11 +285,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			BOOL bSend = TRUE;
 			if (m_SendMailConfiguration.m_bDNSLookup)
 			{
-#if (_MSC_VER > 1200)
 				if (pMessage->m_To.GetSize() == 0)
-#else
-				if (pMessage->GetNumberOfRecipients() == 0)
-#endif
 				{
 					EndWaitCursor();
 					CString sMsg(ML_STRING(1410, "At least one recipient must be specified to use the DNS lookup option\n"));
@@ -301,11 +295,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				}
 				else
 				{
-#if (_MSC_VER > 1200)
 					CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
-#else
-					CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
-#endif
 					int nAmpersand = sAddress.Find(_T("@"));
 					if (nAmpersand == -1)
 					{
@@ -343,11 +333,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 			// Connect and send the message
 			if (bSend)
 			{
-#if (_MSC_VER > 1200)
 				connection.SetBindAddress(m_SendMailConfiguration.m_sBoundIP);
-#else
-				connection.SetBoundAddress(m_SendMailConfiguration.m_sBoundIP);
-#endif
 				if (m_SendMailConfiguration.m_sUsername == _T("") &&
 					m_SendMailConfiguration.m_sPassword == _T(""))
 				{
@@ -356,7 +342,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 										m_SendMailConfiguration.m_sUsername,
 										m_SendMailConfiguration.m_sPassword,
 										m_SendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+#ifndef CPJNSMTP_NOSSL
 										, m_SendMailConfiguration.m_ConnectionType
 #endif
 										);
@@ -368,7 +354,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 										m_SendMailConfiguration.m_sUsername,
 										m_SendMailConfiguration.m_sPassword,
 										m_SendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+#ifndef CPJNSMTP_NOSSL
 										, m_SendMailConfiguration.m_ConnectionType
 #endif
 										);

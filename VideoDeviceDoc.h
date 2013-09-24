@@ -458,9 +458,7 @@ public:
 		CString			m_sFromName;
 		int				m_nPort;
 		CPJNSMTPConnection::AuthenticationMethod m_Auth;
-#if (_MSC_VER > 1200)
 		CPJNSMTPConnection::ConnectionType m_ConnectionType;
-#endif
 		CString			m_sUsername;
 		CString			m_sPassword;
 		CString			m_sBoundIP;

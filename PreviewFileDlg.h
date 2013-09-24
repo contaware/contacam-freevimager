@@ -11,9 +11,6 @@
 #include "Dib.h"
 #include "AviPlay.h"
 
-#ifndef MAX_FILEDLG_PATH
-#define MAX_FILEDLG_PATH			65535 // If you put 65536 it's not working on win2000...
-#endif
 #define WM_POST_INITDONE			WM_USER + 3000
 
 extern int g_nPreviewFileDlgViewMode;

@@ -1817,27 +1817,11 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct
 
 	// Setup the all the recipient types for this message,
 	// valid separators between addresses are ',' or ';'
-#if (_MSC_VER > 1200)
 	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
-#else
-	pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sTo, CPJNSMTPMessage::TO);
-#endif
 	if (!pSendMailConfiguration->m_sCC.IsEmpty())
-	{
-#if (_MSC_VER > 1200)
 		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
-#else
-		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sCC, CPJNSMTPMessage::CC);
-#endif
-	}
-	if (!pSendMailConfiguration->m_sBCC.IsEmpty()) 
-	{
-#if (_MSC_VER > 1200)
+	if (!pSendMailConfiguration->m_sBCC.IsEmpty())
 		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
-#else
-		pMessage->AddMultipleRecipients(pSendMailConfiguration->m_sBCC, CPJNSMTPMessage::BCC);
-#endif
-	}
 	if (!pSendMailConfiguration->m_sSubject.IsEmpty()) 
 		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
 	if (!pSendMailConfiguration->m_sBody.IsEmpty())
@@ -1897,11 +1881,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 	BOOL bSend = TRUE;
 	if (m_pDoc->m_MovDetSendMailConfiguration.m_bDNSLookup)
 	{
-#if (_MSC_VER > 1200)
 		if (pMessage->m_To.GetSize() == 0)
-#else
-		if (pMessage->GetNumberOfRecipients() == 0)
-#endif
 		{
 			CString sMsg;
 			sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetAssignedDeviceName());
@@ -1911,11 +1891,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 		}
 		else
 		{
-#if (_MSC_VER > 1200)
 			CString sAddress(pMessage->m_To.ElementAt(0).m_sEmailAddress);
-#else
-			CString sAddress(pMessage->GetRecipient(0)->m_sEmailAddress);
-#endif
 			int nAmpersand = sAddress.Find(_T("@"));
 			if (nAmpersand == -1)
 			{
@@ -1952,11 +1928,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 	// Connect and send the message
 	if (bSend)
 	{
-#if (_MSC_VER > 1200)
 		connection.SetBindAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-#else
-		connection.SetBoundAddress(m_pDoc->m_MovDetSendMailConfiguration.m_sBoundIP);
-#endif
 		if (m_pDoc->m_MovDetSendMailConfiguration.m_sUsername == _T("") &&
 			m_pDoc->m_MovDetSendMailConfiguration.m_sPassword == _T(""))
 		{
@@ -1965,7 +1937,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
 								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
 								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+#ifndef CPJNSMTP_NOSSL
 								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
 #endif
 								);
@@ -1977,7 +1949,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 								m_pDoc->m_MovDetSendMailConfiguration.m_sUsername,
 								m_pDoc->m_MovDetSendMailConfiguration.m_sPassword,
 								m_pDoc->m_MovDetSendMailConfiguration.m_nPort
-#if !defined (CPJNSMTP_NOSSL) && (_MSC_VER > 1200)
+#ifndef CPJNSMTP_NOSSL
 								, m_pDoc->m_MovDetSendMailConfiguration.m_ConnectionType
 #endif
 								);
@@ -1989,13 +1961,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 		//       CSaveFrameListSMTPConnection::OnSendProgress()
 		pMessage->SaveToDisk(sTempEmailFile);
 		CString sENVID;
-#if (_MSC_VER > 1200)
 		connection.SendMessage(sTempEmailFile, pMessage->m_To, pMessage->m_From, sENVID);
-#else
-		CPJNSMTPAddressArray Recipients;
-		CPJNSMTPMessage::ParseMultipleRecipients(m_pDoc->m_MovDetSendMailConfiguration.m_sTo, Recipients);
-		connection.SendMessage(sTempEmailFile, Recipients, pMessage->m_From, sENVID);
-#endif
 	}
 }
 
@@ -4214,12 +4180,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("iso-8859-1");
 	m_MovDetSendMailConfiguration.m_bMime = TRUE;
 	m_MovDetSendMailConfiguration.m_bHTML = TRUE;
-#if (_MSC_VER > 1200)
 	m_MovDetSendMailConfiguration.m_ConnectionType = CPJNSMTPConnection::PlainText;
 	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NoPriority;
-#else
-	m_MovDetSendMailConfiguration.m_Priority = CPJNSMTPMessage::NO_PRIORITY;
-#endif
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = _T("");
@@ -4685,9 +4647,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetSendMailConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("SendMailUsername"), _T(""));
 	m_MovDetSendMailConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("SendMailPassword"), _T(""));
 	m_MovDetSendMailConfiguration.m_bHTML = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailHTML"), TRUE);
-#if (_MSC_VER > 1200)
 	m_MovDetSendMailConfiguration.m_ConnectionType = (CPJNSMTPConnection::ConnectionType) pApp->GetProfileInt(sSection, _T("SendMailConnectionType"), CPJNSMTPConnection::PlainText);
-#endif
 
 	// FTP Settings
 	m_MovDetFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("MovDetFTPHost"), _T(""));
@@ -4909,9 +4869,7 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteSecureProfileString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername);
 		pApp->WriteSecureProfileString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword);
 		pApp->WriteProfileInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML);
-#if (_MSC_VER > 1200)
 		pApp->WriteProfileInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType);
-#endif
 
 		// FTP Settings
 		pApp->WriteProfileString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost);
@@ -5094,9 +5052,7 @@ void CVideoDeviceDoc::SaveSettings()
 		::WriteSecureProfileIniString(sSection, _T("SendMailUsername"), m_MovDetSendMailConfiguration.m_sUsername, sTempFileName);
 		::WriteSecureProfileIniString(sSection, _T("SendMailPassword"), m_MovDetSendMailConfiguration.m_sPassword, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SendMailHTML"), m_MovDetSendMailConfiguration.m_bHTML, sTempFileName);
-#if (_MSC_VER > 1200)
 		::WriteProfileIniInt(sSection, _T("SendMailConnectionType"), (int)m_MovDetSendMailConfiguration.m_ConnectionType, sTempFileName);
-#endif
 
 		// FTP Settings
 		::WriteProfileIniString(sSection, _T("MovDetFTPHost"), m_MovDetFTPUploadConfiguration.m_sHost, sTempFileName);
@@ -7856,7 +7812,6 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	}
 
 	// Unpack UV
-#if (_MSC_VER > 1200)
 	if (g_bSSE2						&&
 		ISALIGNED(halfwidth, 16)	&&
 		ISALIGNED(src_uv, 16)		&&
@@ -7914,20 +7869,6 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 			src_uv += 2 * width;
 		}
 	}
-#else
-	for (y = 0 ; y < halfheight ; y++)
-	{
-		for (int x = 0 ; x < halfwidth ; x++)
-		{
-			dst_u[0] = src_uv[0];
-			dst_v[0] = src_uv[1];
-			src_uv += 2;
-			dst_u++;
-			dst_v++;
-		}
-		src_uv += 2 * width;
-	}
-#endif
 
 	// Call Process Frame
 	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
@@ -8761,7 +8702,6 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 	// Offset
 	data += (width*posY + posX);
 
-#if (_MSC_VER > 1200)
 	if (g_bSSE)
 	{
 		int rx8 = rx>>3;
@@ -8802,15 +8742,6 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 			}
 		}
 	}
-#else
-	for (int y = 0 ; y < ry ; y++ , data += width)
-	{
-		for (int x = 0 ; x < rx ; x++)
-		{
-			summ += data[x]; 
-		}
-	}
-#endif
 	return summ;
 }
 

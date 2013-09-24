@@ -584,11 +584,7 @@ bool CAVIPlay::CAVIStream::GetChunkData(DWORD dwChunkNum, LPBYTE pData, DWORD* p
 			}
 			m_LastReadMoviChunk = chunk;
 			m_dwLastReadMoviChunkNum = dwChunkNum;
-#if (_MSC_VER <= 1200)
-			m_llLastReadMoviChunkOffset = m_pFile->GetPosition64();
-#else
 			m_llLastReadMoviChunkOffset = m_pFile->GetPosition();
-#endif
 			*pSize = MIN(chunk.cb, dwBufSize);
 			if (pData)
 			{
@@ -5664,11 +5660,7 @@ bool CAVIPlay::Open(	LPCTSTR szFileName,
 		// Read hdrl List
 		if (m_pFile->Read(&list, sizeof(RIFFLIST)) < sizeof(RIFFLIST))
 			throw (int)UNEXPECTED_EOF;
-#if (_MSC_VER <= 1200)
-		hdrl_pos = m_pFile->GetPosition64();
-#else
 		hdrl_pos = m_pFile->GetPosition();
-#endif
 		if ((list.fcc != FCC('LIST')) ||
 			list.fccListType != FCC('hdrl'))
 			throw (int)WRONG_LIST_TYPE;
@@ -5702,12 +5694,7 @@ bool CAVIPlay::Open(	LPCTSTR szFileName,
 			
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
-			LONGLONG llNextListPos;
-#if (_MSC_VER <= 1200)
-			llNextListPos = m_pFile->GetPosition64() + dwListSize;
-#else
-			llNextListPos = m_pFile->GetPosition() + dwListSize;
-#endif
+			LONGLONG llNextListPos = m_pFile->GetPosition() + dwListSize;
 
 			// Read strh Chunk
 			AVISTREAMHDR AviStreamHdr;
@@ -5960,11 +5947,7 @@ bool CAVIPlay::Open(	LPCTSTR szFileName,
 				if (list.fccListType == FCC('movi'))
 				{
 					// Store movi list position
-#if (_MSC_VER <= 1200)
-					LONGLONG llMoviAddr = m_pFile->GetPosition64();
-#else
 					LONGLONG llMoviAddr = m_pFile->GetPosition();
-#endif
 
 					// Init vars in case of no index
 					if (m_pFile->Read(&firstmovichunk, sizeof(RIFFCHUNK)) < sizeof(RIFFCHUNK))
@@ -6095,11 +6078,7 @@ void CAVIPlay::InitNoIndex(const RIFFCHUNK& firstmovichunk, LONGLONG llFirstMovi
 				throw (int)UNEXPECTED_EOF;
 		}
 		pVideoStream->m_FirstMoviChunk = chunk;
-#if (_MSC_VER <= 1200)
-		pVideoStream->m_llFirstMoviChunkOffset = m_pFile->GetPosition64();
-#else
 		pVideoStream->m_llFirstMoviChunkOffset = m_pFile->GetPosition();
-#endif
 		pVideoStream->m_LastReadMoviChunk = pVideoStream->m_FirstMoviChunk;
 		pVideoStream->m_llLastReadMoviChunkOffset = pVideoStream->m_llFirstMoviChunkOffset;
 		pVideoStream->m_dwLastReadMoviChunkNum = 0;
@@ -6145,11 +6124,7 @@ void CAVIPlay::InitNoIndex(const RIFFCHUNK& firstmovichunk, LONGLONG llFirstMovi
 				throw (int)UNEXPECTED_EOF;
 		}
 		pAudioStream->m_FirstMoviChunk = chunk;
-#if (_MSC_VER <= 1200)
-		pAudioStream->m_llFirstMoviChunkOffset = m_pFile->GetPosition64();
-#else
 		pAudioStream->m_llFirstMoviChunkOffset = m_pFile->GetPosition();
-#endif
 		pAudioStream->m_LastReadMoviChunk = pAudioStream->m_FirstMoviChunk;
 		pAudioStream->m_llLastReadMoviChunkOffset = pAudioStream->m_llFirstMoviChunkOffset;
 		pAudioStream->m_dwLastReadMoviChunkNum = 0;
@@ -6221,12 +6196,7 @@ bool CAVIPlay::ParseLegacyIndex(int nSize, LONGLONG llMoviAddr)
 		goto error;
 	if (m_pFile->Read(pAviOldIndexTable, nSize) < (UINT)nSize)
 		goto error;
-	LONGLONG orig_pos;
-#if (_MSC_VER <= 1200)
-	orig_pos = m_pFile->GetPosition64();
-#else
-	orig_pos = m_pFile->GetPosition();
-#endif
+	LONGLONG orig_pos = m_pFile->GetPosition();
 	for (nCount = index = 0 ; nCount < (int)nSize ; nCount += sizeof(AVIOLDINDEXENTRY) , index++)
 	{
 		// First Find The Streams Numeration
@@ -6621,13 +6591,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk)
 		if (chunk.fcc == FCC('JUNK'))
 			return SeekToNextChunk(pFile, chunk);
 		else
-		{
-#if (_MSC_VER <= 1200)
-			return (LONGLONG)pFile->GetPosition64();
-#else
 			return (LONGLONG)pFile->GetPosition();
-#endif
-		}
 	}
 	catch (CFileException* e)
 	{
@@ -6660,13 +6624,8 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunk(CFile* pFile, RIFFCHUNK& chunk,
 			return SeekToNextChunk(pFile, chunk, llNextListPos);
 		else
 		{
-#if (_MSC_VER <= 1200)
-			if ((LONGLONG)pFile->GetPosition64() < llNextListPos)
-				return (LONGLONG)pFile->GetPosition64();
-#else
 			if ((LONGLONG)pFile->GetPosition() < llNextListPos)
 				return (LONGLONG)pFile->GetPosition();
-#endif
 			else
 				return 0;
 		}
@@ -6700,13 +6659,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextChunkFromList(CFile* pFile, const RIF
 		if (chunk.fcc == FCC('JUNK'))
 			return SeekToNextChunk(pFile, chunk);
 		else
-		{
-#if (_MSC_VER <= 1200)
-			return (LONGLONG)pFile->GetPosition64();
-#else
 			return (LONGLONG)pFile->GetPosition();
-#endif
-		}
 	}
 	catch (CFileException* e)
 	{
@@ -6737,13 +6690,7 @@ __forceinline LONGLONG CAVIPlay::SeekToNextList(CFile* pFile, RIFFLIST& list)
 		if (list.fcc == FCC('JUNK'))
 			return SeekToNextList(pFile, list);
 		else
-		{
-#if (_MSC_VER <= 1200)
-			return (LONGLONG)pFile->GetPosition64();
-#else
 			return (LONGLONG)pFile->GetPosition();
-#endif
-		}
 	}
 	catch (CFileException* e)
 	{
@@ -6980,12 +6927,7 @@ bool CAVIPlay::AviChangeVideoFrameRate(LPCTSTR szFileName,
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
-			LONGLONG llNextListPos;
-#if (_MSC_VER <= 1200)
-			llNextListPos = f.GetPosition64() + dwListSize;
-#else
-			llNextListPos = f.GetPosition() + dwListSize;
-#endif
+			LONGLONG llNextListPos = f.GetPosition() + dwListSize;
 
 			// Read strh Chunk
 			AVISTREAMHDR AviStreamHdr;
@@ -6993,12 +6935,7 @@ bool CAVIPlay::AviChangeVideoFrameRate(LPCTSTR szFileName,
 				throw (int)UNEXPECTED_EOF;
 			if (chunk.fcc != FCC('strh'))
 				throw (int)WRONG_CHUNK_TYPE;
-			LONGLONG llAviStreamHdrPos;
-#if (_MSC_VER <= 1200)
-			llAviStreamHdrPos = f.GetPosition64();
-#else
-			llAviStreamHdrPos = f.GetPosition();
-#endif
+			LONGLONG llAviStreamHdrPos = f.GetPosition();
 			if (f.Read(&AviStreamHdr, sizeof(AVISTREAMHDR)) < sizeof(AVISTREAMHDR))
 				throw (int)UNEXPECTED_EOF;
 			f.Seek(-((LONGLONG)sizeof(AVISTREAMHDR)), CFile::current);
@@ -7122,12 +7059,7 @@ bool CAVIPlay::AviChangeVideoStartOffset(LPCTSTR szFileName,
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
-			LONGLONG llNextListPos;
-#if (_MSC_VER <= 1200)
-			llNextListPos = f.GetPosition64() + dwListSize;
-#else
-			llNextListPos = f.GetPosition() + dwListSize;
-#endif
+			LONGLONG llNextListPos = f.GetPosition() + dwListSize;
 
 			// Read strh Chunk
 			AVISTREAMHDR AviStreamHdr;
@@ -7135,12 +7067,7 @@ bool CAVIPlay::AviChangeVideoStartOffset(LPCTSTR szFileName,
 				throw (int)UNEXPECTED_EOF;
 			if (chunk.fcc != FCC('strh'))
 				throw (int)WRONG_CHUNK_TYPE;
-			LONGLONG llAviStreamHdrPos;
-#if (_MSC_VER <= 1200)
-			llAviStreamHdrPos = f.GetPosition64();
-#else
-			llAviStreamHdrPos = f.GetPosition();
-#endif
+			LONGLONG llAviStreamHdrPos = f.GetPosition();
 			if (f.Read(&AviStreamHdr, sizeof(AVISTREAMHDR)) < sizeof(AVISTREAMHDR))
 				throw (int)UNEXPECTED_EOF;
 			f.Seek(-((LONGLONG)sizeof(AVISTREAMHDR)), CFile::current);
@@ -7263,12 +7190,7 @@ bool CAVIPlay::AviChangeAudioStartOffset(LPCTSTR szFileName,
 
 			// Calc the Next List Pos
 			DWORD dwListSize = list.cb - 4;
-			LONGLONG llNextListPos;
-#if (_MSC_VER <= 1200)
-			llNextListPos = f.GetPosition64() + dwListSize;
-#else
-			llNextListPos = f.GetPosition() + dwListSize;
-#endif
+			LONGLONG llNextListPos = f.GetPosition() + dwListSize;
 
 			// Read strh Chunk
 			AVISTREAMHDR AviStreamHdr;
@@ -7276,12 +7198,7 @@ bool CAVIPlay::AviChangeAudioStartOffset(LPCTSTR szFileName,
 				throw (int)UNEXPECTED_EOF;
 			if (chunk.fcc != FCC('strh'))
 				throw (int)WRONG_CHUNK_TYPE;
-			LONGLONG llAviStreamHdrPos;
-#if (_MSC_VER <= 1200)
-			llAviStreamHdrPos = f.GetPosition64();
-#else
-			llAviStreamHdrPos = f.GetPosition();
-#endif
+			LONGLONG llAviStreamHdrPos = f.GetPosition();
 			if (f.Read(&AviStreamHdr, sizeof(AVISTREAMHDR)) < sizeof(AVISTREAMHDR))
 				throw (int)UNEXPECTED_EOF;
 			f.Seek(-((LONGLONG)sizeof(AVISTREAMHDR)), CFile::current);

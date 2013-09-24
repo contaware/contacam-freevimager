@@ -8,10 +8,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#if _MSC_VER < 1100
-#define rdtsc __asm _emit 0x0f __asm _emit 0x31
-#endif // _MSC_VER < 1100
-
 #ifndef MAX
 #define MAX(a,b)  ((a) > (b) ? (a) : (b))
 #endif

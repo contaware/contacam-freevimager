@@ -482,14 +482,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimagerw|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimagerw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="Cfile64.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug_Unicode|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimagerw|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimagerw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='ContaCamw|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1283,7 +1275,6 @@
     <ClInclude Include="cdxCDynamicWnd.h" />
     <ClInclude Include="cdxCDynamicWndEx.h" />
     <ClInclude Include="cdxCSizeIconCtrl.h" />
-    <ClInclude Include="Cfile64.h" />
     <ClInclude Include="ChildFrm.h" />
     <ClInclude Include="ColorButton.h" />
     <ClInclude Include="ColorButtonPicker.h" />

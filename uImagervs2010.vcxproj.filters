@@ -114,9 +114,6 @@
     <ClCompile Include="cdxCSizeIconCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Cfile64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ChildFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -589,9 +586,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cdxCSizeIconCtrl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Cfile64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ChildFrm.h">

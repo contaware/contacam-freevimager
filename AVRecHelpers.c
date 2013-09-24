@@ -6,10 +6,6 @@ static char THIS_FILE[] = __FILE__;
 
 #include <ctype.h>
 
-#if (_MSC_VER < 1400)
-int _get_output_format( void ){ return 0; } // for libmingwex.a
-#endif
-
 int strcasecmp(const char *s1, const char *s2)
 {
 	const unsigned char *us1 = (const unsigned char *)s1,

@@ -1,9 +1,6 @@
 //
 // TryEnterCriticalSection.h
 //
-// The Problem is that Win9x doesn't support TryEnterCriticalSection(),
-// the more heavy loaded Mutexes are used for Win9x.
-//
 
 #if !defined(AFX_TRYENTERCRITICALSECTION_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
 #define AFX_TRYENTERCRITICALSECTION_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_

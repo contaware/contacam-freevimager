@@ -2826,7 +2826,6 @@ int CUImagerApp::ExitInstance()
 
 	// From CWinApp::ExitInstance(), I modified it:
 
-#if _MSC_VER > 1200
 	// If we remember that we're unregistering,
 	// don't save our profile settings
 	if (m_pCmdInfo == NULL ||
@@ -2864,32 +2863,6 @@ int CUImagerApp::ExitInstance()
 	}
 
 	return nReturnValue; // returns the value from PostQuitMessage
-#else
-	// If we remember that we're unregistering,
-	// don't save our profile settings
-	if (m_pCmdInfo == NULL ||
-		m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister)
-	{
-		if (!afxContextIsDLL && m_bUseSettings) // Added m_bUseSettings check
-			SaveStdProfileSettings();
-	}
-
-	// Start from Service after writing with SaveStdProfileSettings()!
-#ifdef VIDEODEVICEDOC
-	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
-		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
-#endif
-
-	// Cleanup DAO if necessary
-	if (m_lpfnDaoTerm != NULL)
-	{
-		// If a DLL, YOU must call AfxDaoTerm prior to ExitInstance
-		ASSERT(!afxContextIsDLL);
-		(*m_lpfnDaoTerm)();
-	}
-
-	return m_msgCur.wParam; // returns the value from PostQuitMessage
-#endif
 }
 
 CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
