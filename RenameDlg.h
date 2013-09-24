@@ -1,9 +1,8 @@
 #if !defined(AFX_RENAMEDLG_H__7B107DC0_4568_4CAC_B9F2_6F7E790C9CD3__INCLUDED_)
 #define AFX_RENAMEDLG_H__7B107DC0_4568_4CAC_B9F2_6F7E790C9CD3__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // RenameDlg.h : header file
 //
 

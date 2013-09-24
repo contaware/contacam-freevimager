@@ -5,9 +5,7 @@
 #if !defined(AFX_CDAUDIO_H__FDE356E6_CB80_41FE_82BE_9F051620A4A0__INCLUDED_)
 #define AFX_CDAUDIO_H__FDE356E6_CB80_41FE_82BE_9F051620A4A0__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "mmsystem.h"
 

@@ -1,9 +1,8 @@
 #if !defined(AFX_CDAUDIODOC_H__CDB9A65F_0E23_4DB1_A99F_BDC77E607F42__INCLUDED_)
 #define AFX_CDAUDIODOC_H__CDB9A65F_0E23_4DB1_A99F_BDC77E607F42__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // CDAudioDoc.h : header file
 //
 

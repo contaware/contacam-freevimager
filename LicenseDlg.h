@@ -1,9 +1,8 @@
 #if !defined(AFX_LICENSEDLG_H__6F2B2BF7_7B72_4FC7_99F4_938AFC9A956E__INCLUDED_)
 #define AFX_LICENSEDLG_H__6F2B2BF7_7B72_4FC7_99F4_938AFC9A956E__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // LicenseDlg.h : header file
 //
 

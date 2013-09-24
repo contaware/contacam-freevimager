@@ -1,9 +1,8 @@
 #if !defined(AFX_DIRECTX7DLG_H__9226541B_3040_4454_97FC_14E326FA7043__INCLUDED_)
 #define AFX_DIRECTX7DLG_H__9226541B_3040_4454_97FC_14E326FA7043__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // DirectX7Dlg.h : header file
 //
 

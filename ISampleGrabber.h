@@ -1,10 +1,7 @@
 #ifndef __ISampleGrabber_h__
 #define __ISampleGrabber_h__
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
 
 #ifndef __ISampleGrabberCB_INTERFACE_DEFINED__
 #define __ISampleGrabberCB_INTERFACE_DEFINED__

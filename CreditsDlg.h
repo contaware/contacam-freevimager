@@ -1,9 +1,8 @@
 #if !defined(AFX_CREDITSDLG_H__442BFF16_8433_4F58_87D9_BBCA1C196C5F__INCLUDED_)
 #define AFX_CREDITSDLG_H__442BFF16_8433_4F58_87D9_BBCA1C196C5F__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // CreditsDlg.h : header file
 //
 

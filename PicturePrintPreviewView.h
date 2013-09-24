@@ -1,9 +1,7 @@
 #if !defined(AFX_PICTUREPRINTPREVIEWVIEW_H__CC2899D2_7CC9_45E8_A971_E6FC0E02639C__INCLUDED_)
 #define AFX_PICTUREVIEW_H__CC2899D2_7CC9_45E8_A971_E6FC0E02639C__INCLUDED_
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
 #include <afxpriv.h>
 #include "PictureDoc.h"

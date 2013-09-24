@@ -1,9 +1,8 @@
 #if !defined(AFX_PALETTEWND_H__71DAEF19_5ED9_4537_9008_92F1F70D45CE__INCLUDED_)
 #define AFX_PALETTEWND_H__71DAEF19_5ED9_4537_9008_92F1F70D45CE__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // PaletteWnd.h : header file
 //
 

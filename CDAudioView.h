@@ -1,9 +1,8 @@
 #if !defined(AFX_CDAUDIOVIEW_H__DAC2D8F9_1ED2_42BD_8BFF_73ECE3445B8E__INCLUDED_)
 #define AFX_CDAUDIOVIEW_H__DAC2D8F9_1ED2_42BD_8BFF_73ECE3445B8E__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // CDAudioView.h : header file
 //
 

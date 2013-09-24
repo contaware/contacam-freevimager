@@ -1,9 +1,7 @@
 #if !defined(AFX_DXDRAW_H__1E152EB4_ED1D_4079_BDD4_773383DD98C8__INCLUDED_)
 #define AFX_DXDRAW_H__1E152EB4_ED1D_4079_BDD4_773383DD98C8__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include <ddraw.h>
 #include "Dib.h"

@@ -1,9 +1,8 @@
 #if !defined(AFX_BKGCOLEDIT_H__FEF70A48_84EF_4E70_9FA7_46D652532BCE__INCLUDED_)
 #define AFX_BKGCOLEDIT_H__FEF70A48_84EF_4E70_9FA7_46D652532BCE__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // BkgColEdit.h : header file
 //
 

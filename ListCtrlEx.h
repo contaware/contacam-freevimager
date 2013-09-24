@@ -1,9 +1,8 @@
 #if !defined(AFX_LISTCTRLEX_H__4786AB0E_4866_46B5_BE12_B75B467F7AD0__INCLUDED_)
 #define AFX_LISTCTRLEX_H__4786AB0E_4866_46B5_BE12_B75B467F7AD0__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // ListCtrlEx.h : header file
 //
 

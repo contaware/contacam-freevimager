@@ -1,10 +1,7 @@
 #ifndef COLOURPOPUP_INCLUDED
 #define COLOURPOPUP_INCLUDED
-#pragma once 
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
 // ColourPopup.h : header file
 //

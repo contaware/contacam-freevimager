@@ -1,9 +1,8 @@
 #if !defined(AFX_SHARPENDLG_H__414863E8_CA8A_477E_949E_FA089FAC56DE__INCLUDED_)
 #define AFX_SHARPENDLG_H__414863E8_CA8A_477E_949E_FA089FAC56DE__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SharpenDlg.h : header file
 //
 

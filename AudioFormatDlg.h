@@ -1,9 +1,8 @@
 #if !defined(AFX_AUDIOFORMATDLG_H__6B10DA54_67C5_49A9_A505_A1DC76307613__INCLUDED_)
 #define AFX_AUDIOFORMATDLG_H__6B10DA54_67C5_49A9_A505_A1DC76307613__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // AudioFormatDlg.h : header file
 //
 

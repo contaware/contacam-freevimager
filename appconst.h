@@ -4,9 +4,7 @@
 #if !defined(AFX_APPCONST_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)
 #define AFX_APPCONST_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 // *** Remember To Change the Version in this file                     ***
 // *** Remember To Change the Version in uImager.rc2                   ***

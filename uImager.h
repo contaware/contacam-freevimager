@@ -4,9 +4,7 @@
 #if !defined(AFX_UIMAGER_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_)
 #define AFX_UIMAGER_H__FFD88286_7192_47B9_B311_4C2F27BF8B85__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #ifndef __AFXWIN_H__
 	#error include 'stdafx.h' before including this file for PCH

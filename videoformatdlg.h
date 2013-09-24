@@ -1,9 +1,8 @@
 #if !defined(AFX_VIDEOFORMATDLG_H__D6D9A878_9585_44A0_95D8_1FB0677FB155__INCLUDED_)
 #define AFX_VIDEOFORMATDLG_H__D6D9A878_9585_44A0_95D8_1FB0677FB155__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // VideoFormatDlg.h : header file
 //
 

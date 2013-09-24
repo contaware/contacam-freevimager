@@ -1,9 +1,8 @@
 #if !defined(AFX_NUMEDIT_H__7482F7FF_A479_11D2_A6A7_00600844997A__INCLUDED_)
 #define AFX_NUMEDIT_H__7482F7FF_A479_11D2_A6A7_00600844997A__INCLUDED_
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // NumEdit.h : header file
 //
 

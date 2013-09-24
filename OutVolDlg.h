@@ -1,9 +1,8 @@
 #if !defined(AFX_OUTVOLDLG_H__D0252745_C340_485E_865E_A3BE2F0CCB8F__INCLUDED_)
 #define AFX_OUTVOLDLG_H__D0252745_C340_485E_865E_A3BE2F0CCB8F__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // OutVolDlg.h : header file
 //
 

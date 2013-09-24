@@ -7,9 +7,7 @@
 //
 // Written by Eric Haddan
 //
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "Imapi2Small.h"
 #include "DiscRecorder.h"

@@ -1,9 +1,8 @@
 #if !defined(AFX_ADDBORDERSDLG_H__051426CD_80E8_4699_A3E6_D9CC3BDC19B9__INCLUDED_)
 #define AFX_ADDBORDERSDLG_H__051426CD_80E8_4699_A3E6_D9CC3BDC19B9__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // AddBordersDlg.h : header file
 //
 

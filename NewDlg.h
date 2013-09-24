@@ -1,9 +1,8 @@
 #if !defined(AFX_NEWDLG_H__F1B48863_D6E1_4937_9740_2CDE8D26762F__INCLUDED_)
 #define AFX_NEWDLG_H__F1B48863_D6E1_4937_9740_2CDE8D26762F__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // NewDlg.h : header file
 //
 

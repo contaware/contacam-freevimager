@@ -1,9 +1,8 @@
 #if !defined(AFX_OSDDLG_H__132EC743_2DD4_400E_8D77_BDACD793ADB6__INCLUDED_)
 #define AFX_OSDDLG_H__132EC743_2DD4_400E_8D77_BDACD793ADB6__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // OsdDlg.h : header file
 //
 

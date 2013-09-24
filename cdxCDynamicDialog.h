@@ -1,9 +1,8 @@
 #if !defined(AFX_CDXCDYNAMICDIALOG_H__E8F2A005_63C6_11D3_802B_000000000000__INCLUDED_)
 #define AFX_CDXCDYNAMICDIALOG_H__E8F2A005_63C6_11D3_802B_000000000000__INCLUDED_
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // cdxCDynamicDialog.h : header file
 //
 

@@ -1,9 +1,8 @@
 #if !defined(AFX_ZIPPROGRESSDLG_H__D29C6CAF_A7A7_4226_91EE_FF48531B84A2__INCLUDED_)
 #define AFX_ZIPPROGRESSDLG_H__D29C6CAF_A7A7_4226_91EE_FF48531B84A2__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // ZipProgressDlg.h : header file
 //
 

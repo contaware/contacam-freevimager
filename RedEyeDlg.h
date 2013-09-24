@@ -1,9 +1,8 @@
 #if !defined(AFX_REDEYEDLG_H__DA2AC880_77BB_4C21_A192_A9CE728EA2AE__INCLUDED_)
 #define AFX_REDEYEDLG_H__DA2AC880_77BB_4C21_A192_A9CE728EA2AE__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // RedEyeDlg.h : header file
 //
 

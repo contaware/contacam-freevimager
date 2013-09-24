@@ -1,9 +1,8 @@
 #if !defined(AFX_TOOLBARSLIDERCTRL_H__021A6935_B2FE_11D3_90FC_0020AFBC499D__INCLUDED_)
 #define AFX_TOOLBARSLIDERCTRL_H__021A6935_B2FE_11D3_90FC_0020AFBC499D__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // ToolbarSliderCtrl.h : header file
 
 #include "uxtheme.h"

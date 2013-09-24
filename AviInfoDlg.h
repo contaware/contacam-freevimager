@@ -1,9 +1,8 @@
 #if !defined(AFX_AVIINFODLG_H__DAB93E92_63DD_4B2F_8139_BF1D64A05F74__INCLUDED_)
 #define AFX_AVIINFODLG_H__DAB93E92_63DD_4B2F_8139_BF1D64A05F74__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // AviInfoDlg.h : header file
 //
 

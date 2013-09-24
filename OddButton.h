@@ -15,9 +15,8 @@
 #if !defined(AFX_ODDBUTTON_H__4CA1E42E_E3C3_4FEA_99A1_E865DEB500DA__INCLUDED_)
 #define AFX_ODDBUTTON_H__4CA1E42E_E3C3_4FEA_99A1_E865DEB500DA__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // OddButton.h : header file
 //
 

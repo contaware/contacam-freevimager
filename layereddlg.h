@@ -1,9 +1,8 @@
 #if !defined(AFX_LAYEREDDLG_H__B0F2328B_122D_489E_8587_38D5BDB00278__INCLUDED_)
 #define AFX_LAYEREDDLG_H__B0F2328B_122D_489E_8587_38D5BDB00278__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // LayeredDlg.h : header file
 //
 

@@ -1,9 +1,8 @@
 #if !defined(AFX_SOFTBORDERSDLG_H__FD749E98_D020_4588_9900_587E28CE3821__INCLUDED_)
 #define AFX_SOFTBORDERSDLG_H__FD749E98_D020_4588_9900_587E28CE3821__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SoftBordersDlg.h : header file
 //
 

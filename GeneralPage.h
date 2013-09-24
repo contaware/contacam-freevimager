@@ -1,9 +1,8 @@
 #if !defined(AFX_GENERALPAGE_H__0C566865_8717_497C_BFF4_68AC9FB23F18__INCLUDED_)
 #define AFX_GENERALPAGE_H__0C566865_8717_497C_BFF4_68AC9FB23F18__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // GeneralPage.h : header file
 //
 

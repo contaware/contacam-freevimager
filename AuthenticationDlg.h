@@ -1,9 +1,8 @@
 #if !defined(AFX_AUTHENTICATIONDLG_H__43A61683_0E19_45B4_8256_84ABBF44A947__INCLUDED_)
 #define AFX_AUTHENTICATIONDLG_H__43A61683_0E19_45B4_8256_84ABBF44A947__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // AuthenticationDlg.h : header file
 //
 

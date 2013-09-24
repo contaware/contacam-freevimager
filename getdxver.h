@@ -1,9 +1,7 @@
 #if !defined(AFX_GETDXVER_H__B14182E4_3AF2_4D7A_AED5_B77789819D79__INCLUDED_)
 #define AFX_GETDXVER_H__B14182E4_3AF2_4D7A_AED5_B77789819D79__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 HRESULT GetDXVersion(DWORD* pdwDirectXVersion,
 					 TCHAR* strDirectXVersion,

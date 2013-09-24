@@ -1,9 +1,7 @@
 #ifndef __FTPTRANSFER_H__
 #define __FTPTRANSFER_H__
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #ifndef _WININET_
 #include <afxinet.h>    // MFC Internet support

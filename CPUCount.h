@@ -1,9 +1,7 @@
 #if !defined(AFX_CPUCOUNT_H__E852AF35_48F6_4D85_A507_3A77724D2AE5__INCLUDED_)
 #define AFX_CPUCOUNT_H__E852AF35_48F6_4D85_A507_3A77724D2AE5__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 extern void	DisplayCpuCount(void);
 extern unsigned int  CpuIDSupported(void);

@@ -1,9 +1,8 @@
 #if !defined(AFX_SETTINGSDLG_H__0997CB57_6EF4_460E_8A48_98C75661EBB5__INCLUDED_)
 #define AFX_SETTINGSDLG_H__0997CB57_6EF4_460E_8A48_98C75661EBB5__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SettingsDlg.h : header file
 //
 

@@ -1,9 +1,8 @@
 #if !defined(AFX_SOFTENDLG_H__3D6462DC_50E7_4CDE_8262_D4183F1222A6__INCLUDED_)
 #define AFX_SOFTENDLG_H__3D6462DC_50E7_4CDE_8262_D4183F1222A6__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SoftenDlg.h : header file
 //
 

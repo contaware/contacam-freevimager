@@ -1,9 +1,8 @@
 #if !defined(AFX_SAVEFILEDLG_H__8F42E4A5_F751_11D4_B4C9_00010223337E__INCLUDED_)
 #define AFX_SAVEFILEDLG_H__8F42E4A5_F751_11D4_B4C9_00010223337E__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // SaveFileDlg.h : header file
 //
 

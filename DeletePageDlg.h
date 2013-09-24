@@ -1,9 +1,8 @@
 #if !defined(AFX_DELETEPAGEDLG_H__9D401485_F03A_4890_BDD7_20A7FFE8AFD9__INCLUDED_)
 #define AFX_DELETEPAGEDLG_H__9D401485_F03A_4890_BDD7_20A7FFE8AFD9__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // DeletePageDlg.h : header file
 //
 

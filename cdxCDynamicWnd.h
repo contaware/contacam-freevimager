@@ -5,9 +5,7 @@
 #if !defined(AFX_CDXCDYNAMICWND_H__1FEFDD69_5C1C_11D3_800D_000000000000__INCLUDED_)
 #define AFX_CDXCDYNAMICWND_H__1FEFDD69_5C1C_11D3_800D_000000000000__INCLUDED_
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
 #include <afxwin.h>
 #include <afxtempl.h>

@@ -1,9 +1,8 @@
 #if !defined(AFX_XMPDLG_H__1F20D25C_EA66_4F02_9DD3_CE18A31969B2__INCLUDED_)
 #define AFX_XMPDLG_H__1F20D25C_EA66_4F02_9DD3_CE18A31969B2__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // XmpDlg.h : header file
 //
 

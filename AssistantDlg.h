@@ -1,9 +1,8 @@
 #if !defined(AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
 #define AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // AssistantDlg.h : header file
 //
 

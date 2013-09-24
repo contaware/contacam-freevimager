@@ -25,9 +25,8 @@
 #if !defined(AFX_COLORBUTTON_H__EB5FACDB_272F_4883_A997_659DDA42FD38__INCLUDED_)
 #define AFX_COLORBUTTON_H__EB5FACDB_272F_4883_A997_659DDA42FD38__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // ColorButton.h : header file
 //
 

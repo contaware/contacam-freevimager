@@ -1,9 +1,8 @@
 #if !defined(AFX_TABCTRLSSL_H__75BE48A7_864C_11D5_9F04_000102FB9990__INCLUDED_)
 #define AFX_TABCTRLSSL_H__75BE48A7_864C_11D5_9F04_000102FB9990__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // TabCtrlEx.h : header file
 //
 

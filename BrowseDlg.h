@@ -1,9 +1,8 @@
 #if !defined(AFX_BROWSEDLG_H__1D054314_0872_11D2_8A46_0000E81D3D27__INCLUDED_)
 #define AFX_BROWSEDLG_H__1D054314_0872_11D2_8A46_0000E81D3D27__INCLUDED_
 
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
+
 // BrowseDlg.h : header file
 //
 

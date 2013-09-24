@@ -1,9 +1,8 @@
 #if !defined(AFX_DECREASEBPPDLG_H__28383D87_CC27_4CED_80D6_26AF94AA4584__INCLUDED_)
 #define AFX_DECREASEBPPDLG_H__28383D87_CC27_4CED_80D6_26AF94AA4584__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // DecreaseBppDlg.h : header file
 //
 

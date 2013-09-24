@@ -1,9 +1,7 @@
 #if !defined(AFX_PICTUREDOC_H__24956A13_6E82_4959_931F_F512BE9B17A0__INCLUDED_)
 #define AFX_PICTUREDOC_H__24956A13_6E82_4959_931F_F512BE9B17A0__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
