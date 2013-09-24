@@ -59,11 +59,11 @@ static char THIS_FILE[] = __FILE__;
 // OpenSSL library
 #ifndef CPJNSMTP_NOSSL
 #ifdef _DEBUG
-#pragma comment(lib, "openssl\\ssleay32MTd.lib")
-#pragma comment(lib, "openssl\\libeay32MTd.lib")
+#pragma comment(lib, "openssl\\Build32MTd\\lib\\ssleay32.lib")
+#pragma comment(lib, "openssl\\Build32MTd\\lib\\libeay32.lib")
 #else
-#pragma comment(lib, "openssl\\ssleay32MT.lib")
-#pragma comment(lib, "openssl\\libeay32MT.lib")
+#pragma comment(lib, "openssl\\Build32MT\\lib\\ssleay32.lib")
+#pragma comment(lib, "openssl\\Build32MT\\lib\\libeay32.lib")
 #endif
 CCriticalSection* CUImagerApp::m_pOpenSSLCritSections = NULL;
 void __cdecl CUImagerApp::OpenSSLLockingCallback(int mode, int type, const char* /*file*/, int /*line*/)
