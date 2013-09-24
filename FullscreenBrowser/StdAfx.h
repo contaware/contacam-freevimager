@@ -5,9 +5,7 @@
 #if !defined(StdAfx_defined)
 #define StdAfx_defined
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "tchar.h"
 

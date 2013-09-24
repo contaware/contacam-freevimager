@@ -8,12 +8,9 @@
 #if !defined(AFX_FILEHEADER_H__0081FC65_C9C9_4D48_AF72_DBF37DF5E0CF__INCLUDED_)
 #define AFX_FILEHEADER_H__0081FC65_C9C9_4D48_AF72_DBF37DF5E0CF__INCLUDED_
 
-#include <afxwin.h>         // MFC core and standard components
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
+#include <afxwin.h>         // MFC core and standard components
 #include "ZipException.h"
 #include "ZipStorage.h"
 #include "AutoBuffer.h"

@@ -47,9 +47,8 @@ and then search through the whole list for the best match.
 #if !defined(AFX_QUANTIZER_H__C2E689E1_C05D_11D4_B4BC_00010223337E__INCLUDED_)
 #define AFX_QUANTIZER_H__C2E689E1_C05D_11D4_B4BC_00010223337E__INCLUDED_
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+
 // Quantizer.h : header file
 //
 
