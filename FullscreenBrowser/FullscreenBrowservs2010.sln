@@ -5,17 +5,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FullscreenBrowser", "Fullsc
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug Unicode|Win32 = Debug Unicode|Win32
-		Release Unicode LockBrowser|Win32 = Release Unicode LockBrowser|Win32
-		Release Unicode|Win32 = Release Unicode|Win32
+		Debug|Win32 = Debug|Win32
+		Release LockBrowser|Win32 = Release LockBrowser|Win32
+		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Debug Unicode|Win32.ActiveCfg = Debug Unicode|Win32
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Debug Unicode|Win32.Build.0 = Debug Unicode|Win32
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Release Unicode LockBrowser|Win32.ActiveCfg = Release Unicode LockBrowser|Win32
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Release Unicode LockBrowser|Win32.Build.0 = Release Unicode LockBrowser|Win32
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Release Unicode|Win32.ActiveCfg = Release Unicode|Win32
-		{E748BE08-2D77-422B-B017-E4C419179D18}.Release Unicode|Win32.Build.0 = Release Unicode|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Debug|Win32.Build.0 = Debug|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Release LockBrowser|Win32.ActiveCfg = Release LockBrowser|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Release LockBrowser|Win32.Build.0 = Release LockBrowser|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Release|Win32.ActiveCfg = Release|Win32
+		{E748BE08-2D77-422B-B017-E4C419179D18}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
