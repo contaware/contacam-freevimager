@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.9.0 (xx xth 2013)
 
-- ...
+- Removed the unicode w suffix from all executables
 
 4.7.0 (May 30th 2013)
 
