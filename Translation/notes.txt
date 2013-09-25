@@ -2,7 +2,7 @@ Note on DLGINIT resources problem:
 ----------------------------------
 
 In DLGINIT all strings are stored as ANSI strings.
-All others Windows resouces are stored as UNICODE strings.
+All other Windows resources are stored as UNICODE strings.
 DLGINIT items must be converted to the target language using a
 specific code page. This is done correctly by AppTranslator.
 It is required that the operating system has the same code page
@@ -12,7 +12,7 @@ you can run it on an english Windows. All translations show correctly.
 All but DLGINIT items, because those were saved as ANSI strings and have
 been converted to the russian code page (1251). The english Windows has code page 1252.
 It is recommended to not use DLGINIT at all, but populate list- and comboboxes
-by resource strings at runtime (resource strings are allways UNICODE).
+by resource strings at runtime (resource strings are always UNICODE).
 
 
 Note on synchronization:
@@ -47,17 +47,16 @@ install the translation application and unzip the project file
 
 2. Start the installed application and open the .apt
 translation project file. Note: the .apt file and the program exe
-have to be in the same directory (exe's ending 'w' stands for
-wide chars = unicode)
+have to be in the same directory
 
 3. While translating you can resize/reposition the dialog controls
 to make room for longer strings; use the search and replace feature,
 especially for menus (there are duplicated items, it's normal)
 
 4. Attention:
-- Please do not change the menu shortcuts like Ctrl+P for print,
-you can change the Ctrl string but do not change the P!
-- In the string table respect the new lines!
+- If changing the menu short-cuts like Ctrl+P for printing,
+  remember to update the values under both Menus and Accelerators!
+- In the String Table respect/keep the new lines!
 
 5. Press the Build Target File to create the output exe,
 test it sometimes by double-clicking on it
