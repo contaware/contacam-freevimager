@@ -1942,22 +1942,6 @@ static void CALLBACK timerCallbackPulseEvent(UINT uTimerID, UINT uMsg, DWORD dwU
 	PulseEvent((HANDLE)dwUser);
 }
 
-MMRESULT timeSetEventCompatible(UINT uDelay,                
-								UINT uResolution,           
-								LPTIMECALLBACK lpTimeProc,  
-								DWORD dwUser,               
-								UINT fuEvent)
-{
-	// The TIME_KILL_SYNCHRONOUS flag prevents the event from occurring
-	// after the user calls timeKillEvent() to destroy it.
-	// (Introduced with Windows XP)
-	return timeSetEvent(	uDelay,
-							uResolution,
-							lpTimeProc,
-							dwUser,
-							fuEvent | TIME_KILL_SYNCHRONOUS);
-}
-
 // Plays a specified file using MCI_OPEN and MCI_PLAY. 
 // Returns when playback begins.
 // Returns the device id on success,

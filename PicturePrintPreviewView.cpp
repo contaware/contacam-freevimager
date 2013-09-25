@@ -1575,7 +1575,6 @@ BOOL CPicturePrintPreviewView::IsInchPaperFormat()
 		case DMPAPER_FANFOLD_LGL_GERMAN :		/* German Legal Fanfold 8 1/2 x 13 in */
 			return TRUE;
 
-#if(WINVER >= 0x0400)
 		case DMPAPER_ISO_B4 :					/* B4 (ISO) 250 x 353 mm              */
 			return FALSE;
 
@@ -1656,9 +1655,7 @@ BOOL CPicturePrintPreviewView::IsInchPaperFormat()
 
 		case DMPAPER_A3_EXTRA_TRANSVERSE :		/* A3 Extra Transverse 322 x 445 mm   */
 			return FALSE;
-#endif /* WINVER >= 0x0400 */
 
-#if(WINVER >= 0x0500)
 		case DMPAPER_DBL_JAPANESE_POSTCARD :	/* Japanese Double Postcard 200 x 148 mm */
 			return FALSE;
 
@@ -1809,8 +1806,6 @@ BOOL CPicturePrintPreviewView::IsInchPaperFormat()
 		case DMPAPER_PENV_10_ROTATED :			/* PRC Envelope #10 Rotated 458 x 324 mm */
 			return FALSE;
 
-#endif /* WINVER >= 0x0500 */
-
 		default :
 			return FALSE;
 	}
@@ -1944,7 +1939,6 @@ CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 		case DMPAPER_FANFOLD_LGL_GERMAN :
 			return CString(_T("German Legal Fanfold 8 1/2 x 13 in"));
 
-#if(WINVER >= 0x0400)
 		case DMPAPER_ISO_B4 :
 			return CString(_T("B4 (ISO) 250 x 353 mm"));
 
@@ -2025,9 +2019,7 @@ CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 
 		case DMPAPER_A3_EXTRA_TRANSVERSE :
 			return CString(_T("A3 Extra Transverse 322 x 445 mm"));
-#endif /* WINVER >= 0x0400 */
 
-#if(WINVER >= 0x0500)
 		case DMPAPER_DBL_JAPANESE_POSTCARD :
 			return CString(_T("Japanese Double Postcard 200 x 148 mm"));
 
@@ -2177,8 +2169,6 @@ CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 
 		case DMPAPER_PENV_10_ROTATED :
 			return CString(_T("PRC Envelope #10 Rotated 458 x 324 mm"));
-
-#endif /* WINVER >= 0x0500 */
 
 		default :
 			return CString(_T(""));

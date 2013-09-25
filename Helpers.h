@@ -184,12 +184,19 @@ extern void ShowLastError(	BOOL bShowMessageBoxOnError,
 
 // This function prevents the event from occurring
 // after the user calls timeKillEvent() to destroy it.
-// (Introduced with Windows XP)
-extern MMRESULT timeSetEventCompatible(	UINT uDelay,
-										UINT uResolution,
-										LPTIMECALLBACK lpTimeProc,
-										DWORD dwUser,
-										UINT fuEvent);
+// (TIME_KILL_SYNCHRONOUS flag introduced with Windows XP)
+__forceinline MMRESULT timeSetEventCompatible(	UINT uDelay,                
+												UINT uResolution,           
+												LPTIMECALLBACK lpTimeProc,  
+												DWORD dwUser,               
+												UINT fuEvent)
+{
+	return timeSetEvent(	uDelay,
+							uResolution,
+							lpTimeProc,
+							dwUser,
+							fuEvent | TIME_KILL_SYNCHRONOUS);
+}
 
 // Just Play An Audio File
 extern int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName);

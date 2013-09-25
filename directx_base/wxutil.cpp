@@ -1206,21 +1206,17 @@ the Platform SDK for more information.
 ******************************************************************************/
 MMRESULT CompatibleTimeSetEvent( UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent )
 {
-    #if WINVER >= 0x0501
-    {
-        static bool fCheckedVersion = false;
-        static bool fTimeKillSynchronousFlagAvailable = false; 
+    static bool fCheckedVersion = false;
+    static bool fTimeKillSynchronousFlagAvailable = false; 
 
-        if( !fCheckedVersion ) {
-            fTimeKillSynchronousFlagAvailable = TimeKillSynchronousFlagAvailable();
-            fCheckedVersion = true;
-        }
-
-        if( fTimeKillSynchronousFlagAvailable ) {
-            fuEvent = fuEvent | TIME_KILL_SYNCHRONOUS;
-        }
+    if( !fCheckedVersion ) {
+        fTimeKillSynchronousFlagAvailable = TimeKillSynchronousFlagAvailable();
+        fCheckedVersion = true;
     }
-    #endif // WINVER >= 0x0501
+	
+    if( fTimeKillSynchronousFlagAvailable ) {
+        fuEvent = fuEvent | TIME_KILL_SYNCHRONOUS;
+    }
 
     return timeSetEvent( uDelay, uResolution, lpTimeProc, dwUser, fuEvent );
 }
