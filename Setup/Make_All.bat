@@ -21,7 +21,9 @@ if "%nsisdir%"=="" (
 
 REM Create output directories
 for /F "tokens=3" %%V in (CurrentVersion.nsh) do set CURRENTVERSION=%%~V
+echo Deleting %CURRENTVERSION% output folder
 rmdir /S /Q .\%CURRENTVERSION%
+echo Making %CURRENTVERSION% output folder
 mkdir .\%CURRENTVERSION%
 mkdir .\%CURRENTVERSION%\german
 mkdir .\%CURRENTVERSION%\italian
