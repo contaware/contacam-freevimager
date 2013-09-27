@@ -1,28 +1,13 @@
 Build system
 ------------
 
-Two build systems are used: Visual Studio 6 to make Win9x & NT4
-ANSI executables and Visual Studio 2008 to make Win2000 or higher
-UNICODE executables (do not use Visual Studio 2010, this will not
-support Win2000). For historical reasons the name of the project
-is uImager. uImager.dsw is the Visual Studio 6 project file and
-uImagervs2008.sln the Visual Studio 2008 project file.
-MFC is necessary, the express editions are not
-supporting MFC natively but the library can be obtained from
-alternative sources such as the free-to-download Windows Driver Kit.
+uImagervs2010.sln is the main solution file for Visual Studio 2010 which 
+builds exes for XP and higher. MFC is necessary, the express editions 
+are not supporting MFC natively but the library can be obtained from 
+alternative sources such as the free-to-download Windows Driver Kit. 
 
-Additional requirements for Visual Studio 6:
-- install sp6
-- Microsoft DirectX 9.0 SDK (October 2004)
-- install Platform SDK Feb 2003
-- put the MASM 6.15 files (ml.err and ml.exe) to
-  C:\Program Files\Microsoft Visual Studio\VC98\Bin
-The file inclusion order under Tools - Options is:
-1. DirectX  2. Platform SDK  3. Standard files 
-
-Additional requirements for Visual Studio 2008:
-- install sp1 (KB945140) or higher
-- install MS11-025 KB2538241 (installed by Windows Update)
+Additional requirements for Visual Studio 2010:
+- install sp1 or higher
 - Microsoft DirectX 9.0 SDK or higher
   (see http://support.microsoft.com/kb/2728613 if you have problems
   installing the latest DXSDK_Jun10.exe)
@@ -45,9 +30,9 @@ Release procedure
    - CurrentVersion.nsh
    - HistoryFreeVimager.txt, HistoryContaCam.txt and translation History.txt
 
-2. Build release target of FreeVimager and ContaCam with vc6 and with vc2008
+2. Build release target of FreeVimager and ContaCam with vs2010
 
-3. Copy FreeVimagerw.exe and ContaCamw.exe to Translation directory,
+3. Copy FreeVimager.exe and ContaCam.exe to Translation directory,
    call Update Source in appTranslator and Build all Target Files
    
 4. Run Make_All.bat in Setup folder

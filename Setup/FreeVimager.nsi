@@ -1,9 +1,19 @@
 ; Adds a user (no admin) manifest (for vista or higher)
 RequestExecutionLevel user
 
-; Possible defines: INSTALLER_WIN9X, INSTALLER_NT, WITH_TUTORIALS
-!ifndef INSTALLER_WIN9X & INSTALLER_NT
-!define INSTALLER_NT
+; Language defines
+!ifndef INSTALLER_LANGUAGE
+	!define INSTALLER_LANGUAGE "English"
+	!define INSTALLER_LANGUAGE_SUFFIX ""
+!endif
+!if ${INSTALLER_LANGUAGE} == "German"
+	!define INSTALLER_LANGUAGE_ID ${LANG_GERMAN}
+!else if ${INSTALLER_LANGUAGE} == "Italian"
+	!define INSTALLER_LANGUAGE_ID ${LANG_ITALIAN}
+!else if ${INSTALLER_LANGUAGE} == "Russian"
+	!define INSTALLER_LANGUAGE_ID ${LANG_RUSSIAN}
+!else
+	!define INSTALLER_LANGUAGE_ID ${LANG_ENGLISH}
 !endif
 
 ; Name Defines
@@ -14,7 +24,7 @@ RequestExecutionLevel user
 !define UNINSTNAME_LNK "Uninstall.lnk"
 
 ; Mutex Name Define
-; Remenber to change the Application Mutex
+; Remember to change the Application Mutex
 ; Name in the C++ Source!
 !define APPMUTEXNAME "${APPNAME_NOEXT}AppMutex"
 !define INSTALLERMUTEXNAME "${APPNAME_NOEXT}InstallerMutex"
@@ -31,26 +41,10 @@ Name "${APPNAME_NOEXT} ${APPVERSION}"
 !include "ContawareParams.nsh"
 
 ; The file to write
-!ifdef WITH_TUTORIALS
-!ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
+!if ${INSTALLER_LANGUAGE} == "English"
+	OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup.exe"
 !else
-!ifdef INSTALLER_WIN9X
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x.exe"
-!else
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NT.exe"
-!endif
-!endif
-!else
-!ifdef INSTALLER_WIN9X & INSTALLER_NT
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NoTutorials.exe"
-!else
-!ifdef INSTALLER_WIN9X
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-Win9x-NoTutorials.exe"
-!else
-OutFile "${APPVERSION}\${APPNAME_NOEXT}-${APPVERSION}-Setup-NT-NoTutorials.exe"
-!endif
-!endif
+	OutFile "${APPNAME_NOEXT}-${APPVERSION}-Setup-${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
 
 ; The default installation directory
@@ -86,7 +80,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\License.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\License${INSTALLER_LANGUAGE_SUFFIX}.txt"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -96,9 +90,19 @@ xpstyle on
 
 ;--------------------------------
 
-; Language File Modern UI,
-; change also the Version Information language!
-!insertmacro MUI_LANGUAGE "English"
+; Language File Modern UI
+!insertmacro MUI_LANGUAGE ${INSTALLER_LANGUAGE}
+
+; Multilingual Messages
+!if ${INSTALLER_LANGUAGE} == "German"
+	LangString StoppingApplicationMessage ${LANG_GERMAN} "Anwendung stoppen, bitte warten..."
+!else if ${INSTALLER_LANGUAGE} == "Italian"
+	LangString StoppingApplicationMessage ${LANG_ITALIAN} "Fermando l'applicazione, per favore pazientare..."
+!else if ${INSTALLER_LANGUAGE} == "Russian"
+	LangString StoppingApplicationMessage ${LANG_RUSSIAN} "Stopping application, please be patient..."
+!else
+	LangString StoppingApplicationMessage ${LANG_ENGLISH} "Stopping application, please be patient..."
+!endif
 
 ;--------------------------------
 
@@ -134,24 +138,32 @@ Function .onInit
 InstallCheckInstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
-  StrCmp $R0 0 InstallCheckApplicationRunning
+  StrCmp $R0 0 lbl_end
   MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer is already running" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
-  
-  ; Application Must not be Running
-InstallCheckApplicationRunning:
+
+lbl_end:
+  Pop $R1
+  Pop $R0
+ 
+FunctionEnd
+
+;--------------------------------
+
+Function KillApp
+
+  Push $R0
+  Push $R1
   ClearErrors
+  
+  ; Kill Application
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
-  StrCmp $R0 0 lbl_check_exe_type
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
+  StrCmp $R0 0 lbl_end
   StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
   StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
   ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
@@ -162,7 +174,7 @@ KillApp:
   KillProc::KillProcesses
   StrCmp $1 "-1" KillAppError
   Sleep 1500
-  Goto lbl_check_exe_type
+  Goto lbl_end
 KillAppError:
   MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
 KillAppAbort:
@@ -171,22 +183,11 @@ KillAppAbort:
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
-    
-  ; Check
-lbl_check_exe_type:
-!ifndef INSTALLER_WIN9X
-  StrCmp $INSTALLTYPE 'UNICODE' lbl_end
-    MessageBox MB_OK|MB_ICONEXCLAMATION "This Installer works only on Win2000, XP and newer Systems" /SD IDOK
-    Pop $R1
-    Pop $R0
-    ${UAC.Unload} ;Must call unload!
-    Abort
-lbl_end:
-!endif
-  
+
+lbl_end:  
   Pop $R1
   Pop $R0
- 
+  
 FunctionEnd
 
 ;--------------------------------
@@ -213,6 +214,10 @@ Section "${APPNAME_NOEXT} Program (required)"
   ; Section Read-Only (=User Cannot Change it's state)
   SectionIn RO
   
+  ; Stop app
+  DetailPrint $(StoppingApplicationMessage)
+  call KillApp
+
   ; Remove previous install files and directories
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
@@ -224,17 +229,15 @@ Section "${APPNAME_NOEXT} Program (required)"
     
   ; Create Tutorials Directory
   CreateDirectory "$INSTDIR\Tutorials"
-   
+  
   ; Source Program File Path
-!ifdef INSTALLER_WIN9X
+!if ${INSTALLER_LANGUAGE} == "English"
   File "..\Bin\${APPNAME_NOEXT}\${APPNAME_EXT}"
+!else
+  File "/oname=${APPNAME_NOEXT}.exe" "..\Translation\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
-!ifdef INSTALLER_NT
-  File "..\Bin\${APPNAME_NOEXT}w\${APPNAME_NOEXT}w.exe"
-!endif
-  File "/oname=License.txt" "..\License\License.txt"
+  File "/oname=License.txt" "..\License\License${INSTALLER_LANGUAGE_SUFFIX}.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
-!ifdef WITH_TUTORIALS
   File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
   File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
   File "/oname=Tutorials\Basics.js" "..\Tutorials\Basics.js"
@@ -250,22 +253,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "/oname=Tutorials\Redeye_Remove.htm" "..\Tutorials\Redeye_Remove.htm"
   File "/oname=Tutorials\Redeye_Remove.swf" "..\Tutorials\Redeye_Remove.swf"
   File "/oname=Tutorials\Redeye_Remove.js" "..\Tutorials\Redeye_Remove.js"
-!endif
-  
-  ; Install Unicode?
-  StrCmp $INSTALLTYPE 'UNICODE' unicode
-!ifdef INSTALLER_NT
-    Delete "$INSTDIR\${APPNAME_NOEXT}w.exe"
-!endif
-    goto unicode_end
-unicode:
-!ifdef INSTALLER_WIN9X & INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_EXT}" "$INSTDIR\Start.exe"
-!endif
-!ifdef INSTALLER_NT
-    Rename "$INSTDIR\${APPNAME_NOEXT}w.exe" "$INSTDIR\${APPNAME_EXT}"
-!endif
-unicode_end:
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\Contaware\${APPNAME_NOEXT}" "Install_Dir" "$INSTDIR"
@@ -345,13 +332,13 @@ SectionEnd
 ;Version Information
 
 VIProductVersion "${APPVERSION}.0"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${APPNAME_NOEXT} Application"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "MM Application"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Contaware.com"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "© Contaware.com"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${APPVERSION}.0"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductName" "${APPNAME_NOEXT} Application"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "Comments" "MM Application"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "CompanyName" "Contaware.com"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "© Contaware.com"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileVersion" "${APPVERSION}.0"
 
 ;--------------------------------
 
@@ -388,24 +375,32 @@ Function un.onInit
 UninstallCheckUninstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
-  StrCmp $R0 0 UninstallCheckApplicationRunning
+  StrCmp $R0 0 lbl_end
   MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
+
+lbl_end:
+  Pop $R1
+  Pop $R0
   
-  ; Application Must not be Running
-UninstallCheckApplicationRunning:
+FunctionEnd
+
+;--------------------------------
+
+Function un.KillApp
+
+  Push $R0
+  Push $R1
   ClearErrors
+  
+  ; Kill Application
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
-  StrCmp $INSTALLTYPE 'UNICODE' KillAppAsk 0 ; UNICODE is set for Win2000 or higher <-> KillProcesses works for Win2000 or higher
-  MessageBox MB_OK|MB_ICONEXCLAMATION "Application is running. Close it and retry!" /SD IDOK
-  goto KillAppAbort
-KillAppAsk:
   MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the uninstallation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
@@ -422,13 +417,13 @@ KillAppAbort:
   Pop $R0
   ${UAC.Unload} ;Must call unload!
   Abort
-    
+  
 lbl_end:
   Pop $R1
   Pop $R0
   
 FunctionEnd
-  
+
 ;--------------------------------
 
 Function un.RefreshShellIcons
@@ -440,6 +435,10 @@ FunctionEnd
 
 ; The stuff to uninstall
 Section "Uninstall"
+  
+   ; Stop app
+  DetailPrint $(StoppingApplicationMessage)
+  call un.KillApp
   
   ; Remove / Restore All File Associations
   
