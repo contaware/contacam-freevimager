@@ -144,11 +144,7 @@ BOOL Tiff2Pdf(	LPCTSTR lpszTiff,
 	}
 
 	// Open Input File
-#ifdef _UNICODE
 	input = TIFFOpenW(lpszTiff, "r");
-#else
-	input = TIFFOpen(lpszTiff, "r");
-#endif 
 	if (input == NULL)
 	{
 		TIFFError(TIFF2PDF_MODULE, "Can't open input file %s for reading", lpszTiff);
@@ -156,11 +152,7 @@ BOOL Tiff2Pdf(	LPCTSTR lpszTiff,
 	}
 
 	// Open Output File
-#ifdef _UNICODE
 	output = TIFFOpenW(lpszPdf, "w");
-#else
-	output = TIFFOpen(lpszPdf, "w");
-#endif 
 	if (output == NULL)
 	{
 		TIFFError(TIFF2PDF_MODULE, "Can't open output file %s for writing", lpszPdf);

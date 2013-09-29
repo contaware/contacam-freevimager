@@ -99,11 +99,7 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 		if (m_FileInfo.m_dwFileSize == 0)
 			throw (int)TIFF_E_FILEEMPTY;       
    
-#ifdef _UNICODE
-		tif = TIFFOpenW(lpszPathName, "r");
-#else
-		tif = TIFFOpen(lpszPathName, "r");
-#endif    
+		tif = TIFFOpenW(lpszPathName, "r");   
 		if (!tif)
 			throw (int)TIFF_E_READ;
 
@@ -639,11 +635,7 @@ BOOL CDib::SaveFirstTIFF(	LPCTSTR lpszPathName,
 				throw (int)TIFF_E_BADBMP;
 		}
    
-#ifdef _UNICODE
-		*ptif = TIFFOpenW(lpszPathName, "w");
-#else
-		*ptif = TIFFOpen(lpszPathName, "w");
-#endif    
+		*ptif = TIFFOpenW(lpszPathName, "w");   
 		if (!(*ptif))
 			throw (int)TIFF_E_WRITE;
 
@@ -1930,22 +1922,12 @@ BOOL CDib::SaveMultiPageTIFF(	LPCTSTR lpszSavePathName,
 		}
    
 		// Open Input File
-		TIFF* in = NULL;
-#ifdef _UNICODE
-		in = TIFFOpenW(lpszOrigPathName, "r");
-#else
-		in = TIFFOpen(lpszOrigPathName, "r");
-#endif    
+		TIFF* in = TIFFOpenW(lpszOrigPathName, "r");    
 		if (!in)
 			return FALSE;
 
 		// Open Output File
-		TIFF* out = NULL;
-#ifdef _UNICODE
-		out = TIFFOpenW(sSaveFileName, "w");
-#else
-		out = TIFFOpen(sSaveFileName, "w");
-#endif    
+		TIFF* out = TIFFOpenW(sSaveFileName, "w");   
 		if (!out)
 		{
 			TIFFClose(in);
@@ -2118,12 +2100,7 @@ BOOL CDib::TIFFWriteMetadata(LPCTSTR szFileName, LPCTSTR szTempDir)
 		}
 
 		// Open Input File
-		TIFF* in = NULL;
-#ifdef _UNICODE
-		in = ::TIFFOpenW(szFileName, "r");
-#else
-		in = ::TIFFOpen(szFileName, "r");
-#endif    
+		TIFF* in = ::TIFFOpenW(szFileName, "r");   
 		if (!in)
 		{
 			str = _T("Cannot open the file for reading\n");
@@ -2134,12 +2111,7 @@ BOOL CDib::TIFFWriteMetadata(LPCTSTR szFileName, LPCTSTR szTempDir)
 		}
 
 		// Open Output File
-		TIFF* out = NULL;
-#ifdef _UNICODE
-		out = ::TIFFOpenW(sTempFileName, "w");
-#else
-		out = ::TIFFOpen(sTempFileName, "w");
-#endif    
+		TIFF* out = ::TIFFOpenW(sTempFileName, "w");   
 		if (!out)
 		{
 			::TIFFClose(in);
@@ -2325,12 +2297,7 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 			return FALSE;
 
 		// Open Input File
-		TIFF* in = NULL;
-#ifdef _UNICODE
-		in = ::TIFFOpenW(szInFileName, "r");
-#else
-		in = ::TIFFOpen(szInFileName, "r");
-#endif    
+		TIFF* in = ::TIFFOpenW(szInFileName, "r");   
 		if (!in)
 			return FALSE;
 
@@ -2566,12 +2533,7 @@ BOOL CDib::TIFFDeletePage(	int nDeletePageNum,
 			return FALSE;
 
 		// Open Output File
-		TIFF* out = NULL;
-#ifdef _UNICODE
-		out = ::TIFFOpenW(sTempFileName, "w");
-#else
-		out = ::TIFFOpen(sTempFileName, "w");
-#endif    
+		TIFF* out = ::TIFFOpenW(sTempFileName, "w");    
 		if (!out)
 			return FALSE;
 
@@ -2667,12 +2629,7 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 									++iCopy,
 									::GetFileExt(szDstFileName));
 			}
-			TIFF* out = NULL;
-#ifdef _UNICODE
-			out = ::TIFFOpenW(sCurrentFileName, "w");
-#else
-			out = ::TIFFOpen(sCurrentFileName, "w");
-#endif    
+			TIFF* out = ::TIFFOpenW(sCurrentFileName, "w");   
 			if (!out)
 			{
 				DIB_END_PROGRESS(pProgressWnd->GetSafeHwnd());

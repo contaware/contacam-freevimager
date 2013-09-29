@@ -4307,11 +4307,7 @@ BOOL CPictureDoc::SaveAsPdf()
 													::GetFileNameNoExt(FileName) + _T(".tif"));
 		if (IsMultiPageTIFF())
 		{
-#ifdef _UNICODE
-			TIFF* TiffDst = TIFFOpenW(sTiffFileName, "w");
-#else
-			TIFF* TiffDst = TIFFOpen(sTiffFileName, "w");
-#endif    
+			TIFF* TiffDst = TIFFOpenW(sTiffFileName, "w");   
 			if (TiffDst)
 			{
 				res = CDib::TIFFCopyAllPages(	m_sFileName,					// Source file name

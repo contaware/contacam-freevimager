@@ -270,29 +270,9 @@ BOOL CXThemeHelper::DrawThemeText(HTHEME hTheme,
 
 	if (m_bThemeLibLoaded && hTheme)
 	{
-		HRESULT hr = S_OK;
-
-#ifdef _UNICODE
-
-		hr = m_DrawThemeText(hTheme, hdc, iPartId, iStateId,
-						lpszText, wcslen(lpszText),
-						dwTextFlags, dwTextFlags2, pRect);
-
-#else
-
-		int nLen = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, lpszText, _tcslen(lpszText)+1, NULL, 0);
-		WCHAR * pszWide = new WCHAR[nLen];
-		if (pszWide)
-		{
-			::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, lpszText, _tcslen(lpszText)+1, pszWide, nLen);
-			hr = m_DrawThemeText(hTheme, hdc, iPartId, iStateId,
-							pszWide, wcslen(pszWide),
-							dwTextFlags, dwTextFlags2, pRect);
-			delete pszWide;
-		}
-
-#endif
-
+		HRESULT hr = m_DrawThemeText(hTheme, hdc, iPartId, iStateId,
+									lpszText, wcslen(lpszText),
+									dwTextFlags, dwTextFlags2, pRect);
 		if (SUCCEEDED(hr))
 			ok = TRUE;
 	}
@@ -354,33 +334,7 @@ HTHEME CXThemeHelper::OpenThemeData(HWND hWnd, LPCTSTR lpszClassList)
 	HTHEME hTheme = NULL;
 
 	if (m_bThemeLibLoaded)
-	{
-
-#ifdef _UNICODE
-
 		hTheme = m_OpenThemeData(hWnd, lpszClassList);
-
-#else
-		int nLen = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
-										lpszClassList, 
-										_tcslen(lpszClassList) + 1,
-										NULL,
-										0);
-		WCHAR* pszWide = new WCHAR[nLen];
-		if (pszWide)
-		{
-			::MultiByteToWideChar(	CP_ACP, MB_PRECOMPOSED,
-									lpszClassList, 
-									_tcslen(lpszClassList) + 1,
-									pszWide,
-									nLen);
-			hTheme = m_OpenThemeData(hWnd, pszWide);
-			delete pszWide;
-		}
-
-#endif
-
-	}
 
 	return hTheme;
 }

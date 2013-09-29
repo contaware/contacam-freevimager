@@ -390,11 +390,7 @@ void CSettingsDlg::OnOK()
 	// Single Instance
 	if (m_bSingleInstance != pApp->m_bSingleInstance)
 	{
-#ifdef _UNICODE
 		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
-#else
-		CInstanceChecker instanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Ascii")));
-#endif
 		if (m_bSingleInstance)
 		{
 			instanceChecker.ActivateChecker();

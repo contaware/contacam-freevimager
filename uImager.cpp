@@ -169,10 +169,6 @@ CUImagerApp::CUImagerApp()
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
 	m_bSilentInstall = FALSE;
-	m_bHasUnicodeExe = FALSE;
-	m_bHasAsciiExe = FALSE;
-	m_sUnicodeExeFileName = _T("");
-	m_sAsciiExeFileName = _T("");
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
@@ -249,22 +245,16 @@ static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 	sFmt.Replace(_T("%ti"), _T("%i"));	// %ti not supported by vc++
 	
 	// Convert fixed format to Ascii
-#ifdef _UNICODE
 	char* asciifmt = new char[sFmt.GetLength() + 1];
 	if (!asciifmt)
 		return;
 	::wcstombs(asciifmt, (LPCTSTR)sFmt, sFmt.GetLength() + 1);
 	asciifmt[sFmt.GetLength()] = '\0';
-#endif
 	
 	// Make message string
 	char s[1024];
-#ifdef _UNICODE
 	_vsnprintf(s, 1024, asciifmt, vl);
 	delete [] asciifmt;
-#else
-	_vsnprintf(s, 1024, (LPCTSTR)sFmt, vl);
-#endif
 	s[1023] = '\0';
 
 	// Output message string
@@ -455,7 +445,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			m_pszProfileName = _tcsdup(sDriveDir + sName + _T(".ini"));
 
 			// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
-#ifdef _UNICODE
 			if (!::IsExistingFile(m_pszProfileName))
 			{
 				const WORD wBOM = 0xFEFF;
@@ -470,7 +459,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					::CloseHandle(hFile);
 				}
 			}
-#endif
 		}
 
 		// Let the possibly running UI process terminate,
@@ -506,12 +494,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			m_bSingleInstance)
 		{
 			// Cannot pass filenames between Ascii and Unicode
-			// -> two different instances for them:
-#ifdef _UNICODE
+			// -> two different instances for them (old non-UNICODE build was using "_Ascii")
 			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Unicode")));
-#else
-			pInstanceChecker = new CInstanceChecker(CString(APPNAME_NOEXT) + CString(_T("_Ascii")));
-#endif
 			if (!pInstanceChecker)
 				throw (int)0;
 			pInstanceChecker->ActivateChecker();
@@ -651,20 +635,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Is Mail Available?
 		m_bMailAvailable =	(::GetProfileInt(_T("MAIL"), _T("MAPI"), 0) != 0) &&
 							(SearchPath(NULL, _T("MAPI32.DLL"), NULL, 0, NULL, NULL) != 0);
-
-		// Init Exe Files Type
-#ifdef _UNICODE
-		m_bHasUnicodeExe = TRUE;
-		m_sUnicodeExeFileName = szProgramName;
-		if (::IsExistingFile(sDriveDir + SLIDESHOWNAME))
-		{
-			m_bHasAsciiExe = TRUE;
-			m_sAsciiExeFileName = sDriveDir + SLIDESHOWNAME;
-		}
-#else
-		m_bHasAsciiExe = TRUE;
-		m_sAsciiExeFileName = szProgramName;
-#endif
 
 		// Check for MMX
 		if (!g_bMMX)
@@ -1124,12 +1094,10 @@ BOOL CAboutDlg::OnInitDialog()
 		CString(_T(__DATE__)) +
 		CString(_T(")"));
 #endif
-#ifdef _UNICODE
 #ifdef _DEBUG
 	s += ML_STRING(1172, "    Unicode");
 #else
 	s += ML_STRING(1172, "    Unicode Support");
-#endif
 #endif
 	SetDlgItemText(IDC_VERSION, s);
 	
@@ -3181,7 +3149,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 	ParseLast(bLast);
 }
 
-#ifdef UNICODE
 void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast)
 {
 	if (bFlag)
@@ -3211,7 +3178,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 
 	ParseLast(bLast);
 }
-#endif // UNICODE
 
 void CUImagerApp::CUImagerCommandLineInfo::ParseParamFlag(const char* pszParam)
 {
@@ -3268,7 +3234,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const TCHAR* pszPar
 		m_strFileNames.Add(pszParam);
 }
 
-#ifdef UNICODE
 void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const char* pszParam)
 {
 	if (m_strFileName.IsEmpty())
@@ -3285,7 +3250,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParamNotFlag(const char* pszPara
 	else
 		m_strFileNames.Add(CString(pszParam));
 }
-#endif
 
 void CUImagerApp::CUImagerCommandLineInfo::ParseLast(BOOL bLast)
 {
@@ -4631,10 +4595,8 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 	TCHAR szExt[_MAX_EXT];
 	TCHAR szTitle[MAX_ATTACHMENTS][_MAX_PATH];
 	TCHAR szTempName[MAX_ATTACHMENTS][_MAX_PATH];
-#ifdef _UNICODE
 	char szTitleA[MAX_ATTACHMENTS][_MAX_PATH];
 	char szTempNameA[MAX_ATTACHMENTS][_MAX_PATH];
-#endif
 	int nFileCount = 0;
 	MapiFileDesc fileDesc[MAX_ATTACHMENTS];
 	
@@ -4701,27 +4663,18 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 
 					// File Path
 					_tcscpy(szTempName[nFileCount], name);
-#ifdef _UNICODE
 					_wcstombsz(szTempNameA[nFileCount], szTempName[nFileCount], _MAX_PATH);
-#endif
 
 					// Build an appropriate title for the attachment
 					_tsplitpath(name, NULL, NULL, szName, szExt);
 					_tcscpy(szTitle[nFileCount], CString(szName) + CString(szExt));
-#ifdef _UNICODE
 					_wcstombsz(szTitleA[nFileCount], szTitle[nFileCount], _MAX_PATH);
-#endif
 
 					// Prepare the file description (for the attachment)
 					memset(&fileDesc[nFileCount], 0, sizeof(MapiFileDesc));
 					fileDesc[nFileCount].nPosition = (ULONG)-1;
-#ifdef _UNICODE
 					fileDesc[nFileCount].lpszPathName = szTempNameA[nFileCount];
 					fileDesc[nFileCount].lpszFileName = szTitleA[nFileCount];
-#else
-					fileDesc[nFileCount].lpszPathName = szTempName[nFileCount];
-					fileDesc[nFileCount].lpszFileName = szTitle[nFileCount];
-#endif
 
 					nFileCount++;
 				}
@@ -4735,27 +4688,19 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 		{
 			// File Path
 			_tcscpy(szTempName[0], szAttachment);
-#ifdef _UNICODE
 			_wcstombsz(szTempNameA[0], szTempName[0], _MAX_PATH);
-#endif
 
 			// Build an appropriate title for the attachment
 			_tsplitpath(szAttachment, NULL, NULL, szName, szExt);
 			_tcscpy(szTitle[0], CString(szName) + CString(szExt));
-#ifdef _UNICODE
 			_wcstombsz(szTitleA[0], szTitle[0], _MAX_PATH);
-#endif
 
 			// Prepare the file description (for the attachment)
 			memset(&fileDesc[0], 0, sizeof(MapiFileDesc));
 			fileDesc[0].nPosition = (ULONG)-1;
-#ifdef _UNICODE
 			fileDesc[0].lpszPathName = szTempNameA[0];
 			fileDesc[0].lpszFileName = szTitleA[0];
-#else
-			fileDesc[0].lpszPathName = szTempName[0];
-			fileDesc[0].lpszFileName = szTitle[0];
-#endif
+
 			nFileCount = 1;
 		}
 	}
@@ -6630,11 +6575,7 @@ BOOL CUImagerApp::WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntr
 		blobEntropy.cbData = sizeof(Entropy);
 
 		if (fpCryptProtectData(	&blobIn,
-#ifdef _UNICODE
 								L"UNICODE",	// Windows 2000:  This parameter is required and cannot be set to NULL
-#else
-								L"ASCII",	// Windows 2000:  This parameter is required and cannot be set to NULL
-#endif
 								&blobEntropy,
 								NULL,
 								NULL,

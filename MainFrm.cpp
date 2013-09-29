@@ -1771,11 +1771,7 @@ CRect CMainFrame::GetPreviousMonitorFullRect()
 		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
 		return rcMonitor;
 	}
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor = GetPreviousMonitor();
@@ -1817,11 +1813,7 @@ CRect CMainFrame::GetNextMonitorFullRect()
 		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
 		return rcMonitor;
 	}
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor = GetNextMonitor();
@@ -1863,11 +1855,7 @@ CSize CMainFrame::GetMonitorSize(CWnd* pWnd/*=NULL*/)
 		return CSize(nMonitorWidth, nMonitorHeight);
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor;
@@ -1909,11 +1897,7 @@ CSize CMainFrame::GetMonitorSize(CPoint pt)
 		return CSize(nMonitorWidth, nMonitorHeight);
 	}
 	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromPoint && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
@@ -2000,11 +1984,7 @@ CRect CMainFrame::GetPrimaryMonitorWorkRect()
 		return rcWork;
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hPrimaryMonitor;
@@ -2046,11 +2026,7 @@ CRect CMainFrame::GetMonitorWorkRect(CWnd* pWnd/*=NULL*/)
 		return rcWork;
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor;
@@ -2095,11 +2071,7 @@ CRect CMainFrame::GetMonitorWorkRect(CPoint pt)
 		return rcWork;
 	}
 	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromPoint && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
@@ -2166,11 +2138,7 @@ CRect CMainFrame::GetPrimaryMonitorFullRect()
 		return rcMonitor;
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hPrimaryMonitor;
@@ -2212,11 +2180,7 @@ CRect CMainFrame::GetMonitorFullRect(CWnd* pWnd/*=NULL*/)
 		return rcMonitor;
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor;
@@ -2261,11 +2225,7 @@ CRect CMainFrame::GetMonitorFullRect(CPoint pt)
 		return rcMonitor;
 	}
 	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromPoint && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
@@ -2304,11 +2264,7 @@ HDC CMainFrame::CreateMonitorDC(CWnd* pWnd/*=NULL*/)
 		return hMonitorDC;
 	}
 	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpMonitorFromWindow && fpGetMonitorInfo)
 	{
 		HMONITOR hMonitor;

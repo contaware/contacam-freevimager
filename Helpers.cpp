@@ -1250,11 +1250,7 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 	HINSTANCE h = LoadLibrary(_T("shell32.dll"));
 	if (!h)
 		return _T("");
-#ifdef _UNICODE
 	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)GetProcAddress(h, "SHGetSpecialFolderPathW");
-#else
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)GetProcAddress(h, "SHGetSpecialFolderPathA");
-#endif
 	if (fpSHGetSpecialFolderPath)
 	{
 		TCHAR path[MAX_PATH] = {0};
@@ -1284,11 +1280,7 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 		DWORD (WINAPI *lpfGetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
 		lpfEnumProcesses = (BOOL(WINAPI*)(DWORD *, DWORD, DWORD*))GetProcAddress(hInstLib, "EnumProcesses");
 		lpfEnumProcessModules = (BOOL(WINAPI*)(HANDLE, HMODULE *, DWORD, LPDWORD))GetProcAddress(hInstLib, "EnumProcessModules");
-#ifdef _UNICODE
-		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameW");
-#else
-		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameA");
-#endif	
+		lpfGetModuleBaseName = (DWORD(WINAPI*)(HANDLE, HMODULE, LPTSTR, DWORD))GetProcAddress(hInstLib, "GetModuleBaseNameW");	
 		if (lpfEnumProcesses		&&
 			lpfEnumProcessModules	&&
 			lpfGetModuleBaseName)
@@ -1352,17 +1344,10 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 	BOOL (WINAPI *lpfModule32First)(HANDLE, LPMODULEENTRY32);
 	BOOL (WINAPI *lpfModule32Next)(HANDLE, LPMODULEENTRY32);
 	lpfCreateToolhelp32Snapshot= (HANDLE(WINAPI*)(DWORD,DWORD))GetProcAddress(hInstLib, "CreateToolhelp32Snapshot");
-#ifdef _UNICODE
 	lpfProcess32First = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32FirstW") ;
 	lpfProcess32Next = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32NextW");
 	lpfModule32First = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32FirstW");
 	lpfModule32Next = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32NextW");
-#else
-	lpfProcess32First = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32First") ;
-	lpfProcess32Next = (BOOL(WINAPI*)(HANDLE,LPPROCESSENTRY32))GetProcAddress(hInstLib, "Process32Next");
-	lpfModule32First = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32First");
-	lpfModule32Next = (BOOL(WINAPI*)(HANDLE,LPMODULEENTRY32))GetProcAddress(hInstLib, "Module32Next");
-#endif
 	if (lpfProcess32Next == NULL	||
 		lpfProcess32First == NULL	||
 		lpfModule32Next == NULL		||
@@ -2248,11 +2233,7 @@ ULONGLONG GetDiskSize(LPCTSTR lpszPath)
 	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
 	if (!h)
 		return 0;
-#ifdef _UNICODE
 	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExW");
-#else
-	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExA");
-#endif
 	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
 												// disk available to the caller
 	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
@@ -2285,11 +2266,7 @@ ULONGLONG GetDiskSpace(LPCTSTR lpszPath)
 	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
 	if (!h)
 		return 0;
-#ifdef _UNICODE
 	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExW");
-#else
-	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExA");
-#endif
 	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
 												// disk available to the caller
 	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
@@ -2736,20 +2713,11 @@ CString GetUuidString()
 	if (!h)
 		return _T("");
 	FPUUIDCREATE fpUuidCreate = (FPUUIDCREATE)GetProcAddress(h, "UuidCreate");
-#ifdef _UNICODE
 	FPUUIDTOSTRINGW fpUuidToString = (FPUUIDTOSTRINGW)GetProcAddress(h, "UuidToStringW");
 	FPRPCSTRINGFREEW fpRpcStringFree = (FPRPCSTRINGFREEW)GetProcAddress(h, "RpcStringFreeW");
-#else
-	FPUUIDTOSTRINGA fpUuidToString = (FPUUIDTOSTRINGA)GetProcAddress(h, "UuidToStringA");
-	FPRPCSTRINGFREEA fpRpcStringFree = (FPRPCSTRINGFREEA)GetProcAddress(h, "RpcStringFreeA");
-#endif
 	if (fpUuidCreate && fpUuidToString && fpRpcStringFree)
 	{
-#ifdef _UNICODE
 		unsigned short* sTemp;
-#else
-		unsigned char* sTemp;
-#endif
 		UUID* pUUID = new UUID;
 		if (pUUID)
 		{
@@ -2778,15 +2746,8 @@ int __cdecl CompareNatural(CString * pstr1, CString * pstr2)
 		return 0;
 	if (g_pfnStrCmpLogicalW)
 	{
-#ifdef _UNICODE
 		LPCWSTR pwstr1 = (LPCWSTR)(*pstr1);
 		LPCWSTR pwstr2 = (LPCWSTR)(*pstr2);
-#else
-		// Convert CString to Unicode
-		USES_CONVERSION;
-		LPCWSTR pwstr1 = T2CW(*pstr1);
-		LPCWSTR pwstr2 = T2CW(*pstr2);
-#endif
 		return g_pfnStrCmpLogicalW(pwstr1, pwstr2);
 	}
 	else

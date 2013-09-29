@@ -221,9 +221,8 @@ public:
 
 			//plain char* version on UNICODE for source-code backwards compatibility
 			virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast);
-#ifdef _UNICODE
 			virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast);
-#endif
+
 			BOOL DoStartSlideShow() {return m_bStartSlideShow;};
 
 			// For Multiple Files
@@ -234,9 +233,7 @@ public:
 
 			void ParseParamFlag(const char* pszParam);
 			void ParseParamNotFlag(const TCHAR* pszParam);
-#ifdef _UNICODE
 			void ParseParamNotFlag(const char* pszParam);
-#endif
 			void ParseLast(BOOL bLast);
 	};
 	void ParseCommandLine(CUImagerCommandLineInfo& rCmdInfo);
@@ -711,12 +708,6 @@ public:
 	// Printers Enumeration
 	BOOL m_bPrinterInit;
 	CEnumPrinters m_PrinterControl;
-
-	// Exe Files in Dir
-	BOOL m_bHasUnicodeExe;
-	BOOL m_bHasAsciiExe;
-	CString m_sUnicodeExeFileName;
-	CString m_sAsciiExeFileName;
 
 	// MAPI Mail Support Available Flag
 	BOOL m_bMailAvailable;

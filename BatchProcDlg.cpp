@@ -803,11 +803,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 		{
 			if (m_bFirstOutputFile)
 			{
-#ifdef _UNICODE
-				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");
-#else
-				m_TiffOutFile = TIFFOpen(sOutFileName, "w");
-#endif    
+				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");    
 				if (!m_TiffOutFile)
 					throw (int)0;
 			}
@@ -831,11 +827,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 			{
 				if (m_bFirstOutputFile)
 				{
-#ifdef _UNICODE
-					m_TiffOutFile = TIFFOpenW(sOutFileName, "w");
-#else
-					m_TiffOutFile = TIFFOpen(sOutFileName, "w");
-#endif    
+					m_TiffOutFile = TIFFOpenW(sOutFileName, "w");    
 					if (!m_TiffOutFile)
 						throw (int)0;
 				}
@@ -922,11 +914,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 		{
 			if (m_bFirstOutputFile)
 			{
-#ifdef _UNICODE
-				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");
-#else
-				m_TiffOutFile = TIFFOpen(sOutFileName, "w");
-#endif    
+				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");    
 				if (!m_TiffOutFile)
 					throw (int)0;
 			}
@@ -952,11 +940,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 			// - or recompress it because it is a YCbCr Jpeg!
 			if (m_bFirstOutputFile)
 			{
-#ifdef _UNICODE
-				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");
-#else
-				m_TiffOutFile = TIFFOpen(sOutFileName, "w");
-#endif    
+				m_TiffOutFile = TIFFOpenW(sOutFileName, "w");    
 				if (!m_TiffOutFile)
 					throw (int)0;
 			}
@@ -5519,46 +5503,11 @@ void CBatchProcDlg::OnButtonAddSlideshowExe()
 		}
 	}
 
-	// Ask whether Unicode support is wanted
-	if (((CUImagerApp*)::AfxGetApp())->m_bHasAsciiExe && 
-		((CUImagerApp*)::AfxGetApp())->m_bHasUnicodeExe)
+	// Copy executable renaming it to SLIDESHOWNAME
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
 	{
-		if (::AfxMessageBox(ML_STRING(1372, "Do you want Unicode support?\n") +
-							ML_STRING(1373, "Note: a Slideshow with Unicode support will only run on Windows 2000\n") +
-							ML_STRING(1374, "or higher, but will allow you to use any type of language for the\n") +
-							ML_STRING(1375, "metadata and the file names!"),
-							MB_YESNO | MB_ICONQUESTION) == IDYES)
-		{
-			if (!::CopyFile(((CUImagerApp*)::AfxGetApp())->m_sUnicodeExeFileName,
-							m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return;
-			}
-		}
-		else
-		{	
-			if (!::CopyFile(((CUImagerApp*)::AfxGetApp())->m_sAsciiExeFileName,
-						m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return;
-			}
-		}
-	}
-	else if (((CUImagerApp*)::AfxGetApp())->m_bHasAsciiExe)
-	{
-		if (!::CopyFile(((CUImagerApp*)::AfxGetApp())->m_sAsciiExeFileName,
-						m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
-		{
-			::ShowLastError(TRUE);
-			return;
-		}
-	}
-	else if (((CUImagerApp*)::AfxGetApp())->m_bHasUnicodeExe)
-	{
-		if (!::CopyFile(((CUImagerApp*)::AfxGetApp())->m_sUnicodeExeFileName,
-						m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
+		if (!::CopyFile(szProgramName, m_sDst + _T("\\") + SLIDESHOWNAME, FALSE))
 		{
 			::ShowLastError(TRUE);
 			return;

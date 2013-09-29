@@ -4748,10 +4748,6 @@ BEGIN
     IDS_MULTILANG_1367      "Do You want to Proceed?"
     IDS_MULTILANG_1368      "Files will be Renamed in place.\n"
     IDS_MULTILANG_1369      "Are You Sure You Want to Proceed?"
-    IDS_MULTILANG_1372      "Do you want Unicode support?\n"
-    IDS_MULTILANG_1373      "Note: a Slideshow with Unicode support will only run on Windows 2000\n"
-    IDS_MULTILANG_1374      "or higher, but will allow you to use any type of language for the\n"
-    IDS_MULTILANG_1375      "metadata and the file names!"
 END
 
 STRINGTABLE
