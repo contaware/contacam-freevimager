@@ -209,14 +209,7 @@ HRESULT GetDirectXVersionViaDxDiag(DWORD* pdwDirectXVersionMajor,
                     hr = pDxDiagSystemInfo->GetProp( L"szDirectXVersionLetter", &var );
                     if (SUCCEEDED(hr) && var.vt == VT_BSTR && SysStringLen( var.bstrVal ) != 0)
                     {
-#ifdef UNICODE
-                        *pcDirectXVersionLetter = var.bstrVal[0]; 
-#else
-                        char strDestination[10];
-                        WideCharToMultiByte( CP_ACP, 0, var.bstrVal, -1, strDestination, 10*sizeof(char), NULL, NULL );
-                        if ( pcDirectXVersionLetter )
-                            *pcDirectXVersionLetter = strDestination[0]; 
-#endif
+                        *pcDirectXVersionLetter = var.bstrVal[0];
                         bSuccessGettingLetter = true;
                     }
                     VariantClear( &var );

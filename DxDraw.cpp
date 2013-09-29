@@ -91,11 +91,7 @@ void WINAPI GetMonitorRect(HMONITOR hMonitor, RECT& rcMonitor)
 		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
 		return;
 	}
-#ifdef _UNICODE
 	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	if (fpGetMonitorInfo)
 	{
 		if (fpGetMonitorInfo(hMonitor, &monInfo) == 0)
@@ -140,11 +136,7 @@ BOOL WINAPI DDEnumCallbackExA(GUID* pGuid, LPSTR pszDesc, LPSTR pszDriverName,
         pScreen->m_guid = pScreen->m_guidNull;
     else
         pScreen->m_guid = *pGuid;
-#ifdef _UNICODE
 	mbstowcs(pScreen->m_szDesc, pszDesc, MAX_DD7_DEVICE_DESCRIPTION_SIZE);
-#else
-    _tcsncpy(pScreen->m_szDesc, pszDesc, MAX_DD7_DEVICE_DESCRIPTION_SIZE);
-#endif
     pScreen->m_hMonitor = hmon;
 	::GetMonitorRect(hmon, pScreen->m_rcMonitor);
 
@@ -1810,11 +1802,7 @@ BOOL CDxDraw::DrawText(LPCTSTR sText, int x, int y, UINT uiAlign)
 	}
 
 	// Init c
-#ifdef _UNICODE
 	wctomb(&c, sText[i]);
-#else
-	c = sText[i];
-#endif
 
 	// Loop Chars
 	while (c != _T('\0') && (i >= 0))
@@ -1906,11 +1894,7 @@ BOOL CDxDraw::DrawText(LPCTSTR sText, int x, int y, UINT uiAlign)
 			--i;
 
 		// Update c
-#ifdef _UNICODE
 		wctomb(&c, sText[i]);
-#else
-		c = sText[i];
-#endif
 	}
 
 	return TRUE;

@@ -101,21 +101,10 @@ CString CEnumPrinters::GetDefaultPrinterName()
 	CString sPrinterName;
 
 	HINSTANCE h = ::LoadLibrary(_T("winspool.drv"));
-#ifdef _UNICODE
 	typedef BOOL (WINAPI * FPGETDEFAULTPRINTERW)(LPWSTR pszBuffer, LPDWORD pcchBuffer);
 	FPGETDEFAULTPRINTERW fpGetDefaultPrinter;
-#else
-	typedef BOOL (WINAPI * FPGETDEFAULTPRINTERA)(LPSTR pszBuffer, LPDWORD pcchBuffer);
-	FPGETDEFAULTPRINTERA fpGetDefaultPrinter;
-#endif
 	if (h)
-	{
-#ifdef _UNICODE
 		fpGetDefaultPrinter = (FPGETDEFAULTPRINTERW)::GetProcAddress(h, "GetDefaultPrinterW");
-#else
-		fpGetDefaultPrinter = (FPGETDEFAULTPRINTERA)::GetProcAddress(h, "GetDefaultPrinterA");
-#endif
-	}
 	else
 		fpGetDefaultPrinter = NULL;
 	if (fpGetDefaultPrinter)

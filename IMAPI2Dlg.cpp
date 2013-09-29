@@ -557,28 +557,12 @@ BOOL CIMAPI2Dlg::CIMAPI2DlgThread::CreateStream(const CString& sPath, IStream** 
 	fpSHCreateStreamOnFileEx = (FPSHCREATESTREAMONFILEEX)::GetProcAddress(h, "SHCreateStreamOnFileEx");
 	if (ppStream && fpSHCreateStreamOnFileEx)
 	{
-#ifdef _UNICODE
 		hr = fpSHCreateStreamOnFileEx(	sPath, 
 										STGM_READ|STGM_SHARE_DENY_NONE|STGM_DELETEONRELEASE,
 										FILE_ATTRIBUTE_NORMAL, 
 										FALSE, 
 										NULL, 
-										ppStream);	
-#else
-		int nLen = ::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, sPath, _tcslen(sPath)+1, NULL, 0);
-		WCHAR * pszWide = new WCHAR[nLen];
-		if (pszWide)
-		{
-			::MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, sPath, _tcslen(sPath)+1, pszWide, nLen);
-			hr = fpSHCreateStreamOnFileEx(	pszWide, 
-											STGM_READ|STGM_SHARE_DENY_NONE|STGM_DELETEONRELEASE,
-											FILE_ATTRIBUTE_NORMAL, 
-											FALSE, 
-											NULL, 
-											ppStream);	
-			delete pszWide;
-		}
-#endif
+										ppStream);
 	}
 	::FreeLibrary(h);
     return (hr == S_OK);

@@ -6720,19 +6720,12 @@ void CAVIPlay::ClearStreamsArrays()
 
 DWORD CAVIPlay::StringToFourCC(CString sFourCC)
 {
-#ifdef _UNICODE
 	char FourCC[5];
 	wcstombs(FourCC, sFourCC, 5);
 	return ((DWORD)(BYTE)(FourCC[0]) |
 			((DWORD)(BYTE)(FourCC[1]) << 8) |
 			((DWORD)(BYTE)(FourCC[2]) << 16) |
 			((DWORD)(BYTE)(FourCC[3]) << 24 ));
-#else	
-    return ((DWORD)(BYTE)(sFourCC[0]) |
-			((DWORD)(BYTE)(sFourCC[1]) << 8) |
-			((DWORD)(BYTE)(sFourCC[2]) << 16) |
-			((DWORD)(BYTE)(sFourCC[3]) << 24 ));
-#endif
 }
 
 CString CAVIPlay::FourCCToString(DWORD dwFourCC)
@@ -6741,16 +6734,12 @@ CString CAVIPlay::FourCCToString(DWORD dwFourCC)
 	char ch1 = (char)((dwFourCC >> 8) & 0xFF);
 	char ch2 = (char)((dwFourCC >> 16) & 0xFF);
 	char ch3 = (char)((dwFourCC >> 24) & 0xFF);
-#ifdef _UNICODE
 	WCHAR wch0, wch1, wch2, wch3;
 	mbtowc(&wch0, &ch0, sizeof(WCHAR));
 	mbtowc(&wch1, &ch1, sizeof(WCHAR));
 	mbtowc(&wch2, &ch2, sizeof(WCHAR));
 	mbtowc(&wch3, &ch3, sizeof(WCHAR));
 	return (CString(wch0) + CString(wch1) + CString(wch2) + CString(wch3));
-#else
-	return (CString(ch0) + CString(ch1) + CString(ch2) + CString(ch3));
-#endif
 }
 
 CString CAVIPlay::FourCCToStringLowerCase(DWORD dwFourCC)

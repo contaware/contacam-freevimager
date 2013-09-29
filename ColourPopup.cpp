@@ -236,11 +236,7 @@ void CColourPopup::Initialise()
 	if (m_hUser32)
 	{
 		m_fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(m_hUser32, "MonitorFromWindow");
-#ifdef _UNICODE
 		m_fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(m_hUser32, "GetMonitorInfoW");
-#else
-		m_fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(m_hUser32, "GetMonitorInfoA");
-#endif
 	}
 	else
 	{

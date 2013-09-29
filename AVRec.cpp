@@ -484,11 +484,7 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 	}
 	CString sASCIICompatiblePath = ::GetASCIICompatiblePath(lpszFileName); // file must exist!
 	char filename[1024];
-#ifdef _UNICODE
 	wcstombs(filename, sASCIICompatiblePath, 1024);
-#else
-	strncpy(filename, sASCIICompatiblePath, 1023);
-#endif
 	filename[1023] = '\0';
 
 	Close();
@@ -1062,46 +1058,22 @@ bool CAVRec::SetInfo(LPCTSTR szTitle,
 	if (!m_pFormatCtx)
 		return false;
 
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->title, szTitle, sizeof(m_pFormatCtx->title));
-#else
-	strncpy(m_pFormatCtx->title, szTitle, sizeof(m_pFormatCtx->title) - 1);
-#endif
 	m_pFormatCtx->title[sizeof(m_pFormatCtx->title) - 1] = '\0';
 
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->author, szAuthor, sizeof(m_pFormatCtx->author));
-#else
-	strncpy(m_pFormatCtx->author, szAuthor, sizeof(m_pFormatCtx->author) - 1);
-#endif
 	m_pFormatCtx->author[sizeof(m_pFormatCtx->author) - 1] = '\0';
 
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->copyright, szCopyright, sizeof(m_pFormatCtx->copyright));
-#else
-	strncpy(m_pFormatCtx->copyright, szCopyright, sizeof(m_pFormatCtx->copyright) - 1);
-#endif
 	m_pFormatCtx->copyright[sizeof(m_pFormatCtx->copyright) - 1] = '\0';
     
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->comment, szComment, sizeof(m_pFormatCtx->comment));
-#else
-	strncpy(m_pFormatCtx->comment, szComment, sizeof(m_pFormatCtx->comment) - 1);
-#endif
 	m_pFormatCtx->comment[sizeof(m_pFormatCtx->comment) - 1] = '\0';
    
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->album, szAlbum, sizeof(m_pFormatCtx->album));
-#else
-	strncpy(m_pFormatCtx->album, szAlbum, sizeof(m_pFormatCtx->album) - 1);
-#endif
 	m_pFormatCtx->album[sizeof(m_pFormatCtx->album) - 1] = '\0';
 
-#ifdef _UNICODE
 	wcstombs(m_pFormatCtx->genre, szGenre, sizeof(m_pFormatCtx->genre));
-#else
-	strncpy(m_pFormatCtx->genre, szGenre, sizeof(m_pFormatCtx->genre) - 1);
-#endif
 	m_pFormatCtx->genre[sizeof(m_pFormatCtx->genre) - 1] = '\0';
 
     m_pFormatCtx->track = nTrack;

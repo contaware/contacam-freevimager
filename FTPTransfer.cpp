@@ -41,13 +41,7 @@ _FTP_DOWNLOAD_DATA::_FTP_DOWNLOAD_DATA()
 {
 	m_hWininet = ::GetModuleHandle(_T("WININET.DLL"));
 	if (m_hWininet)
-	{
-#ifdef _UNICODE
 		m_lpfnFtpCommand = (LPFTPCOMMAND)::GetProcAddress(m_hWininet, "FtpCommandW");
-#else
-		m_lpfnFtpCommand = (LPFTPCOMMAND)::GetProcAddress(m_hWininet, "FtpCommandA");
-#endif
-	}
 }
 
 _FTP_DOWNLOAD_DATA::~_FTP_DOWNLOAD_DATA()
