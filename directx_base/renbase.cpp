@@ -1270,11 +1270,11 @@ HRESULT CBaseRenderer::SendEndOfStream()
 
     // Signal a timer callback on another worker thread
 
-    m_EndOfStreamTimer = CompatibleTimeSetEvent((UINT) Delay, // Period of timer
-                                      TIMEOUT_RESOLUTION,     // Timer resolution
-                                      EndOfStreamTimer,       // Callback function
-                                      DWORD_PTR(this),        // Used information
-                                      TIME_ONESHOT);          // Type of callback
+    m_EndOfStreamTimer = ::timeSetEvent((UINT)Delay,                           // Period of timer
+                                        TIMEOUT_RESOLUTION,                    // Timer resolution
+                                        EndOfStreamTimer,                      // Callback function
+                                        DWORD_PTR(this),                       // Used information
+                                        TIME_ONESHOT | TIME_KILL_SYNCHRONOUS); // Type of callback
     if (m_EndOfStreamTimer == 0) {
         return NotifyEndOfStream();
     }

@@ -523,7 +523,4 @@ public:
 	T* p;
 };
 
-MMRESULT CompatibleTimeSetEvent( UINT uDelay, UINT uResolution, LPTIMECALLBACK lpTimeProc, DWORD_PTR dwUser, UINT fuEvent );
-bool TimeKillSynchronousFlagAvailable( void );
-
 #endif /* __WXUTIL__ */

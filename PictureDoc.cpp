@@ -436,11 +436,11 @@ void CPictureDoc::CSlideShowThread::RestartRunningTimer()
 		m_uiSlideshowTimerId = 0;
 
 		// Setup Timer
-		m_uiSlideshowTimerId = ::timeSetEventCompatible(m_nMilliSecondsDelay,
-														SLIDESHOW_TIMER_RESOLUTION,
-														(LPTIMECALLBACK)m_hSlideshowTimerEvent,
-														0,
-														TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
+												SLIDESHOW_TIMER_RESOLUTION,
+												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
+												0,
+												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 	}
 }
 
@@ -467,11 +467,11 @@ void CPictureDoc::CSlideShowThread::RunSlideshow()
 		}
 
 		// Setup Timer
-		m_uiSlideshowTimerId = ::timeSetEventCompatible(m_nMilliSecondsDelay,
-														SLIDESHOW_TIMER_RESOLUTION,
-														(LPTIMECALLBACK)m_hSlideshowTimerEvent,
-														0,
-														TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+		m_uiSlideshowTimerId = ::timeSetEvent(	m_nMilliSecondsDelay,
+												SLIDESHOW_TIMER_RESOLUTION,
+												(LPTIMECALLBACK)m_hSlideshowTimerEvent,
+												0,
+												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 	}
 	
 #ifdef SUPPORT_LIBJPEG
@@ -1417,10 +1417,10 @@ int CPictureDoc::CJpegThread::Work()
 		}
 
 		// Set Timer	
-		UINT uiTimerId = ::timeSetEventCompatible(	JPEG_LOADFULL_TRANSITIONDELAY,
-													TRANSITION_TIMER_RESOLUTION,
-													(LPTIMECALLBACK)m_hTimerEvent, 0,
-													TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+		UINT uiTimerId = ::timeSetEvent(JPEG_LOADFULL_TRANSITIONDELAY,
+										TRANSITION_TIMER_RESOLUTION,
+										(LPTIMECALLBACK)m_hTimerEvent, 0,
+										TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 		if (uiTimerId == 0)
 			TRACE(_T("Load Full Jpeg Transition Effect Cannot Init Timer!\n"));
 
@@ -1882,10 +1882,10 @@ int CPictureDoc::CTransitionThread::Work()
 							m_pDoc->m_nTransitionType;
 
 	// Set Timer				
-	UINT uiTimerId = ::timeSetEventCompatible(	m_pDoc->m_nTransitionDelay,
-												TRANSITION_TIMER_RESOLUTION,
-												(LPTIMECALLBACK)m_hTimerEvent, 0,
-												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+	UINT uiTimerId = ::timeSetEvent(m_pDoc->m_nTransitionDelay,
+									TRANSITION_TIMER_RESOLUTION,
+									(LPTIMECALLBACK)m_hTimerEvent, 0,
+									TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 	if (uiTimerId == 0)
 		TRACE(_T("Transition Effect Cannot Init Timer!\n"));
 

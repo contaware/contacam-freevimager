@@ -1911,9 +1911,9 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 			{
 				if (uiTimerId) 
 					::timeKillEvent(uiTimerId);
-				uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = nFrameTime,
-														0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-														TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+				uiTimerId = ::timeSetEvent(	m_uiTimerDelay = nFrameTime,
+											0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+											TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 				m_nMilliSecondsCorrection = 0;
 				m_nMilliSecondsCorrectionAvg = 0;
 				nOldMilliSecondsCorrectionAvg = 0;
@@ -1935,9 +1935,9 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 				{
 					if (uiTimerId) 
 						::timeKillEvent(uiTimerId);
-					uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = (nFrameTime + m_nMilliSecondsCorrectionAvg),
-															0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-															TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+					uiTimerId = ::timeSetEvent(	m_uiTimerDelay = (nFrameTime + m_nMilliSecondsCorrectionAvg),
+												0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 					nWaitForCorrectionCountDown = 4;
 					bFirstPlayedFrame = TRUE;
 				}
@@ -1963,9 +1963,9 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 						nRemainingTime = 1;
 					if (uiTimerId) 
 						::timeKillEvent(uiTimerId);
-					uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = nRemainingTime,
-															0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-															TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+					uiTimerId = ::timeSetEvent(	m_uiTimerDelay = nRemainingTime,
+												0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 
 					// Come back faster if we skipped many frames!
 					nWaitForCorrectionCountDown = 4 / nSkipCount;
@@ -1979,9 +1979,9 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 					nTimeCorrection++;
 					if (uiTimerId) 
 						::timeKillEvent(uiTimerId);
-					uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = (nFrameTime + nTimeCorrection),
-															0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-															TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+					uiTimerId = ::timeSetEvent(	m_uiTimerDelay = (nFrameTime + nTimeCorrection),
+												0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 					nWaitForCorrectionCountDown = 8;
 					nOldMilliSecondsCorrectionAvg = m_nMilliSecondsCorrectionAvg;
 				}
@@ -1996,15 +1996,15 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 					if ((nFrameTime + nTimeCorrection) <= 0)
 					{
 						nTimeCorrection++;
-						uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = 1,
-																0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-																TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+						uiTimerId = ::timeSetEvent(	m_uiTimerDelay = 1,
+													0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+													TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 					}
 					else
 					{
-						uiTimerId = ::timeSetEventCompatible(	m_uiTimerDelay = (nFrameTime + nTimeCorrection),
-																0, (LPTIMECALLBACK)m_hTimerEvent, 0,
-																TIME_PERIODIC | TIME_CALLBACK_EVENT_SET);
+						uiTimerId = ::timeSetEvent(	m_uiTimerDelay = (nFrameTime + nTimeCorrection),
+													0, (LPTIMECALLBACK)m_hTimerEvent, 0,
+													TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 					}
 					nWaitForCorrectionCountDown = 8;
 					nOldMilliSecondsCorrectionAvg = m_nMilliSecondsCorrectionAvg;
