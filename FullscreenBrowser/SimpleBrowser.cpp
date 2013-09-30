@@ -285,33 +285,6 @@ void SimpleBrowser::NavigateResource(int resource_ID)
 
 					// convert resource document if required
 
-#if !defined(UNICODE)
-
-					if (UNICODE_document) {
-
-						char *MBCS_buffer = resource_string.GetBufferSetLength(resource_size + 1);
-
-						int MBCS_length = ::WideCharToMultiByte(CP_ACP,
-						                                        0,
-											                    UNICODE_memory,
-											                    UNICODE_size,
-											                    MBCS_buffer,
-											                    resource_size + 1,
-											                    NULL,
-											                    NULL);
-
-						resource_string.ReleaseBuffer(MBCS_length);
-
-					}
-
-					else {
-
-						resource_string = CString((char *)resource_memory,resource_size);
-
-					}
-
-#else
-
 					if (UNICODE_document) {
 
 						resource_string = CString(UNICODE_memory,UNICODE_size);
@@ -332,9 +305,6 @@ void SimpleBrowser::NavigateResource(int resource_ID)
 						resource_string.ReleaseBuffer(UNICODE_length);
 
 					}
-
-#endif
-
 
 				}
 

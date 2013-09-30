@@ -19,7 +19,4 @@
 #include <afxcmn.h>
 #endif
 
-typedef HMONITOR (WINAPI * FPMONITORFROMWINDOW)(HWND hwnd, DWORD dwFlags);
-typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
-
 #endif // !defined(StdAfx_defined)

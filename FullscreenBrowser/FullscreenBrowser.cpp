@@ -449,25 +449,9 @@ BOOL FullscreenBrowserApp::CreateDir(LPCTSTR szNewDir)
 
 CString FullscreenBrowserApp::GetSpecialFolderPath(int nSpecialFolder)
 {
-	CString sSpecialFolderPath;
-	typedef HRESULT (WINAPI * FPSHGETSPECIALFOLDERPATH)(HWND hwndOwner, LPTSTR lpszPath, int nFolder, BOOL fCreate);
-	FPSHGETSPECIALFOLDERPATH fpSHGetSpecialFolderPath;
-	HINSTANCE h = ::LoadLibrary(_T("shell32.dll"));
-	if (!h)
-		return _T("");
-#ifdef _UNICODE
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)::GetProcAddress(h, "SHGetSpecialFolderPathW");
-#else
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)::GetProcAddress(h, "SHGetSpecialFolderPathA");
-#endif
-	if (fpSHGetSpecialFolderPath)
-	{
-		TCHAR path[MAX_PATH] = {0};
-		fpSHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
-		sSpecialFolderPath = path;
-	}
-	::FreeLibrary(h);
-	return sSpecialFolderPath;
+	TCHAR path[MAX_PATH] = {0};
+	SHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
+	return CString(path);
 }
 
 BOOL FullscreenBrowserApp::InitInstance()
@@ -510,7 +494,6 @@ BOOL FullscreenBrowserApp::InitInstance()
 	m_pszProfileName = _tcsdup(sProfileName);
 
 	// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
-#ifdef _UNICODE
 	if (!IsExistingFile(m_pszProfileName))
 	{
 		const WORD wBOM = 0xFEFF;
@@ -525,7 +508,6 @@ BOOL FullscreenBrowserApp::InitInstance()
 			::CloseHandle(hFile);
 		}
 	}
-#endif	
 
 	// All varieties of Windows NT since 3.51 include the ability to create and run multiple desktops.
 	// Normally, this feature isn't used, and all applications run within the "Default" desktop.
@@ -618,41 +600,18 @@ END_MESSAGE_MAP()
 
 CSize FullscreenBrowserDlg::GetMonitorSize(CWnd* pWnd/*=NULL*/)
 {
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-#ifdef _UNICODE
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-#else
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoA");
-#endif
 	int nMonitorWidth, nMonitorHeight;
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		if (pWnd)
-			hMonitor = fpMonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		else
-			hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CSize(0, 0);
-		}
-		::FreeLibrary(h);
-		nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
-		nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
-	}
+	HMONITOR hMonitor;
+	if (pWnd)
+		hMonitor = MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-	{
-		::FreeLibrary(h);
-		nMonitorWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		nMonitorHeight = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
+		hMonitor = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (!GetMonitorInfo(hMonitor, &monInfo))
+		return CSize(0, 0);
+	nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+	nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
 	return CSize(nMonitorWidth, nMonitorHeight);
 }
 
@@ -685,14 +644,7 @@ BOOL FullscreenBrowserDlg::OnInitDialog()
 
 BSTR ToBSTR(LPCTSTR szFileName)
 {
-#ifndef _UNICODE
-	WCHAR wszURL[MAX_PATH];
-    ::MultiByteToWideChar(CP_ACP, 0, szFileName, -1, wszURL, MAX_PATH);
-	wszURL[MAX_PATH - 1] = L'\0';
-	return ::SysAllocString(wszURL);
-#else
     return ::SysAllocString(szFileName);
-#endif
 }
 
 BOOL FullscreenBrowserDlg::PreTranslateMessage(MSG* pMsg) 
