@@ -27,10 +27,6 @@ BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
 
-// CompareNatural() helper variable
-typedef int (WINAPI *PFNSTRCMPLOGICALW)(PCWSTR, PCWSTR);
-PFNSTRCMPLOGICALW g_pfnStrCmpLogicalW = NULL;
-
 // Cpu Instruction Set Support
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
@@ -72,16 +68,6 @@ void InitHelpers()
 		g_bSSE2 = TRUE;
 	if (nInstructionSets & CPU_FEATURE_3DNOW)
 		g_b3DNOW = TRUE;
-
-	// From LoadLibrary doc
-	// --------------------
-	// The system maintains a per-process reference count on all loaded modules.
-	// Calling LoadLibrary increments the reference count. Calling the FreeLibrary
-	// or FreeLibraryAndExitThread function decrements the reference count.
-	// The system unloads a module when its reference count reaches zero or when
-	// the process terminates (regardless of the reference count).
-	// -> it's ok to not call FreeLibrary
-	g_pfnStrCmpLogicalW = (PFNSTRCMPLOGICALW)GetProcAddress(LoadLibrary(_T("Shlwapi.dll")), "StrCmpLogicalW");
 }
 
 //
@@ -1244,21 +1230,9 @@ BOOL GetFileStatus(LPCTSTR lpszFileName, CFileStatus& rStatus)
 
 CString GetSpecialFolderPath(int nSpecialFolder)
 {
-	CString sSpecialFolderPath;
-	typedef HRESULT (WINAPI * FPSHGETSPECIALFOLDERPATH)(HWND hwndOwner, LPTSTR lpszPath, int nFolder, BOOL fCreate);
-	FPSHGETSPECIALFOLDERPATH fpSHGetSpecialFolderPath;
-	HINSTANCE h = LoadLibrary(_T("shell32.dll"));
-	if (!h)
-		return _T("");
-	fpSHGetSpecialFolderPath = (FPSHGETSPECIALFOLDERPATH)GetProcAddress(h, "SHGetSpecialFolderPathW");
-	if (fpSHGetSpecialFolderPath)
-	{
-		TCHAR path[MAX_PATH] = {0};
-		fpSHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
-		sSpecialFolderPath = path;
-	}
-	FreeLibrary(h);
-	return sSpecialFolderPath;
+	TCHAR path[MAX_PATH] = {0};
+	SHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
+	return CString(path);
 }
 
 int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
@@ -1917,16 +1891,6 @@ void ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CStr
 	ShowError(GetLastError(), bShowMessageBoxOnError, sHeader, sFooter);
 }
 
-static void CALLBACK timerCallbackSetEvent(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
-{
-	SetEvent((HANDLE)dwUser);
-}
-
-static void CALLBACK timerCallbackPulseEvent(UINT uTimerID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
-{
-	PulseEvent((HANDLE)dwUser);
-}
-
 // Plays a specified file using MCI_OPEN and MCI_PLAY. 
 // Returns when playback begins.
 // Returns the device id on success,
@@ -2223,75 +2187,34 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pFragmentation) *pFragmentation = dFragmentation;
 }
 
-typedef BOOL (WINAPI * FPGETDISKFREESPACEEX)(LPCTSTR lpDirectoryName,
-												PULARGE_INTEGER lpFreeBytesAvailableToCaller,
-												PULARGE_INTEGER lpTotalNumberOfBytes,
-												PULARGE_INTEGER lpTotalNumberOfFreeBytes);
-
 ULONGLONG GetDiskSize(LPCTSTR lpszPath)
 {
-	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
-	if (!h)
-		return 0;
-	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExW");
 	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
 												// disk available to the caller
 	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
 	ULARGE_INTEGER TotalNumberOfFreeBytes;		// receives the free bytes on disk
-	if (fpGetDiskFreeSpaceEx)
-	{
-		if (!fpGetDiskFreeSpaceEx(
-				GetDriveName(lpszPath) + _T("\\"),
-				&FreeBytesAvailableToCaller,
-				&TotalNumberOfBytes,
-				&TotalNumberOfFreeBytes))
-		{
-			FreeLibrary(h);
-			return 0;
-		}
-	}
-	else
-	{
-		FreeLibrary(h);
+	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
+							&FreeBytesAvailableToCaller,
+							&TotalNumberOfBytes,
+							&TotalNumberOfFreeBytes))
 		return 0;
-	}
-
-	FreeLibrary(h);
-
-	return TotalNumberOfBytes.QuadPart;
+	else
+		return TotalNumberOfBytes.QuadPart;
 }
 
 ULONGLONG GetDiskSpace(LPCTSTR lpszPath)
 {
-	HINSTANCE h = LoadLibrary(_T("kernel32.dll"));
-	if (!h)
-		return 0;
-	FPGETDISKFREESPACEEX fpGetDiskFreeSpaceEx = (FPGETDISKFREESPACEEX)GetProcAddress(h, "GetDiskFreeSpaceExW");
 	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
 												// disk available to the caller
 	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
 	ULARGE_INTEGER TotalNumberOfFreeBytes;		// receives the free bytes on disk
-	if (fpGetDiskFreeSpaceEx)
-	{
-		if (!fpGetDiskFreeSpaceEx(
-				GetDriveName(lpszPath) + _T("\\"),
-				&FreeBytesAvailableToCaller,
-				&TotalNumberOfBytes,
-				&TotalNumberOfFreeBytes))
-		{
-			FreeLibrary(h);
-			return 0;
-		}
-	}
-	else
-	{
-		FreeLibrary(h);
+	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
+							&FreeBytesAvailableToCaller,
+							&TotalNumberOfBytes,
+							&TotalNumberOfFreeBytes))
 		return 0;
-	}
-
-	FreeLibrary(h);
-
-	return FreeBytesAvailableToCaller.QuadPart;
+	else
+		return FreeBytesAvailableToCaller.QuadPart;
 }
 
 CString FileNameToMime(LPCTSTR lpszFileName)
@@ -2703,40 +2626,23 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 
 CString GetUuidString()
 {
-	typedef RPC_STATUS (RPC_ENTRY * FPUUIDCREATE)(UUID*  Uuid);
-	typedef RPC_STATUS (RPC_ENTRY * FPUUIDTOSTRINGA)(UUID*  Uuid, unsigned char** StringUuid);
-	typedef RPC_STATUS (RPC_ENTRY * FPRPCSTRINGFREEA)(unsigned char** String);
-	typedef RPC_STATUS (RPC_ENTRY * FPUUIDTOSTRINGW)(UUID*  Uuid, unsigned short** StringUuid);
-	typedef RPC_STATUS (RPC_ENTRY * FPRPCSTRINGFREEW)(unsigned short** String);
 	CString sUUID(_T(""));
-	HINSTANCE h = LoadLibrary(_T("Rpcrt4.dll"));
-	if (!h)
-		return _T("");
-	FPUUIDCREATE fpUuidCreate = (FPUUIDCREATE)GetProcAddress(h, "UuidCreate");
-	FPUUIDTOSTRINGW fpUuidToString = (FPUUIDTOSTRINGW)GetProcAddress(h, "UuidToStringW");
-	FPRPCSTRINGFREEW fpRpcStringFree = (FPRPCSTRINGFREEW)GetProcAddress(h, "RpcStringFreeW");
-	if (fpUuidCreate && fpUuidToString && fpRpcStringFree)
+	unsigned short* sTemp;
+	UUID* pUUID = new UUID;
+	if (pUUID)
 	{
-		unsigned short* sTemp;
-		UUID* pUUID = new UUID;
-		if (pUUID)
+		HRESULT hr = UuidCreate(pUUID);
+		if (hr == (HRESULT)RPC_S_OK || hr == (HRESULT)RPC_S_UUID_LOCAL_ONLY)
 		{
-			HRESULT hr = fpUuidCreate(pUUID);
-			if (hr == (HRESULT)RPC_S_OK || hr == (HRESULT)RPC_S_UUID_LOCAL_ONLY)
+			hr = UuidToString(pUUID, &sTemp);
+			if (hr == RPC_S_OK)
 			{
-				hr = fpUuidToString(pUUID, &sTemp);
-				if (hr == RPC_S_OK)
-				{
-					sUUID = CString((LPCTSTR)sTemp);
-					fpRpcStringFree(&sTemp);
-				}
+				sUUID = CString((LPCTSTR)sTemp);
+				RpcStringFree(&sTemp);
 			}
-			delete pUUID;
 		}
+		delete pUUID;
 	}
-
-	FreeLibrary(h);
-
 	return sUUID;
 }
 
@@ -2744,14 +2650,9 @@ int __cdecl CompareNatural(CString * pstr1, CString * pstr2)
 {
 	if (pstr1 == NULL || pstr2 == NULL)
 		return 0;
-	if (g_pfnStrCmpLogicalW)
-	{
-		LPCWSTR pwstr1 = (LPCWSTR)(*pstr1);
-		LPCWSTR pwstr2 = (LPCWSTR)(*pstr2);
-		return g_pfnStrCmpLogicalW(pwstr1, pwstr2);
-	}
-	else
-		return pstr1->CompareNoCase(*pstr2);
+	LPCWSTR pwstr1 = (LPCWSTR)(*pstr1);
+	LPCWSTR pwstr2 = (LPCWSTR)(*pstr2);
+	return StrCmpLogicalW(pwstr1, pwstr2);
 }
 
 BOOL InStringArray(const CString& s, const CStringArray& arr)
@@ -2766,34 +2667,7 @@ BOOL InStringArray(const CString& s, const CStringArray& arr)
 
 BOOL IntersectsValidMonitor(LPCRECT lpRect)
 {
-	BOOL res;
-	HINSTANCE h = LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		CRect rcMonitor, rcIntersection;
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = GetSystemMetrics(SM_CYSCREEN);
-		res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
-	}
-	else
-	{
-		FPMONITORFROMRECT fpMonitorFromRect = (FPMONITORFROMRECT)GetProcAddress(h, "MonitorFromRect");
-		if (fpMonitorFromRect)
-			res = (fpMonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);
-		else
-		{
-			CRect rcMonitor, rcIntersection;
-			rcMonitor.left = 0;
-			rcMonitor.top = 0;
-			rcMonitor.right = GetSystemMetrics(SM_CXSCREEN);
-			rcMonitor.bottom = GetSystemMetrics(SM_CYSCREEN);
-			res = rcIntersection.IntersectRect(&rcMonitor, lpRect);
-		}
-		FreeLibrary(h);
-	}
-	return res;
+	return (MonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);
 }
 
 // From: http://www.azillionmonkeys.com/qed/random.html
