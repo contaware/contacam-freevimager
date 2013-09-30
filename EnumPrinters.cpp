@@ -98,67 +98,25 @@ CString CEnumPrinters::GetPrinterPortName(int index) const
 
 CString CEnumPrinters::GetDefaultPrinterName()
 {
-	CString sPrinterName;
-
-	HINSTANCE h = ::LoadLibrary(_T("winspool.drv"));
-	typedef BOOL (WINAPI * FPGETDEFAULTPRINTERW)(LPWSTR pszBuffer, LPDWORD pcchBuffer);
-	FPGETDEFAULTPRINTERW fpGetDefaultPrinter;
-	if (h)
-		fpGetDefaultPrinter = (FPGETDEFAULTPRINTERW)::GetProcAddress(h, "GetDefaultPrinterW");
-	else
-		fpGetDefaultPrinter = NULL;
-	if (fpGetDefaultPrinter)
+	// I had a problem in win 2003 server with no printer installed:
+	// DWORD size was not inited to zero before, so that
+	// GetDefaultPrinter(NULL, &size) did not set size to zero
+	// -> out of memory exception because size was very big in
+	// release build.
+	DWORD size = 0;
+	::GetDefaultPrinter(NULL, &size);
+	if (size)
 	{
-		// I had a problem in win 2003 server with no printer installed:
-		// DWORD size was not inited to zero before, so that
-		// fpGetDefaultPrinter(NULL, &size) did not set size to zero
-		// -> out of memory exception because size was very big in
-		// release build.
-		DWORD size = 0;
-		fpGetDefaultPrinter(NULL, &size);
-		if (size)
-		{
-			TCHAR* buffer = sPrinterName.GetBuffer(size);
-			if (fpGetDefaultPrinter(buffer, &size))
-			{
-				sPrinterName.ReleaseBuffer();
-				::FreeLibrary(h);
-				return sPrinterName;
-			}
-			sPrinterName.ReleaseBuffer();
-		}
-		::FreeLibrary(h);
-		return _T("");
-	}
-	else
-	{
-		TCHAR* buffer = sPrinterName.GetBuffer(1024);
-		if (::GetProfileString(	_T("windows"),
-								_T("device"),
-								_T(""),
-								buffer,
-								1024) <= 0)
+		CString sPrinterName;
+		TCHAR* buffer = sPrinterName.GetBuffer(size);
+		if (::GetDefaultPrinter(buffer, &size))
 		{
 			sPrinterName.ReleaseBuffer();
-			if (h)
-				::FreeLibrary(h);
-			return _T("");
+			return sPrinterName;
 		}
 		sPrinterName.ReleaseBuffer();
-		int pos = sPrinterName.Find(_T(','));
-		if (pos < 0)
-		{
-			if (h)
-				::FreeLibrary(h);
-			return _T("");
-		}
-		else
-		{
-			if (h)
-				::FreeLibrary(h);
-			return sPrinterName.Left(pos);
-		}
 	}
+	return _T("");
 }
 
 // This procedure returns the index of the default printer,

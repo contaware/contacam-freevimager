@@ -230,27 +230,12 @@ void CColourPopup::Initialise()
         pLogPalette->palPalEntry[i].peFlags = 0;
     }
     m_Palette.CreatePalette(pLogPalette);
-
-	// Has Multiple Monitor Functions?
-	m_hUser32 = ::LoadLibrary(_T("user32.dll"));
-	if (m_hUser32)
-	{
-		m_fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(m_hUser32, "MonitorFromWindow");
-		m_fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(m_hUser32, "GetMonitorInfoW");
-	}
-	else
-	{
-		m_fpMonitorFromWindow = NULL;
-		m_fpGetMonitorInfo = NULL;
-	}
 }
 
 CColourPopup::~CColourPopup()
 {
     m_Font.DeleteObject();
     m_Palette.DeleteObject();
-	if (m_hUser32)
-		::FreeLibrary(m_hUser32);
 }
 
 BOOL CColourPopup::Create(CPoint p, COLORREF crColour, CWnd* pParentWnd,
@@ -775,40 +760,18 @@ void CColourPopup::SetWindowSize()
 						);
 	
 	// Clip the window rectangle to the nearest monitor
-	if (m_fpMonitorFromWindow && m_fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		MONITORINFO mi;
-		hMonitor = m_fpMonitorFromWindow(m_pParent->m_hWnd, MONITOR_DEFAULTTONEAREST);
-		mi.cbSize = sizeof(mi);
-		m_fpGetMonitorInfo(hMonitor, &mi);
-		CRect rc = mi.rcWork;
-		int w = m_WindowRect.Width();
-		int h = m_WindowRect.Height();
-		m_WindowRect.left = max(rc.left, min(rc.right-w, m_WindowRect.left));
-		m_WindowRect.top = max(rc.top, min(rc.bottom-h, m_WindowRect.top));
-		m_WindowRect.right = m_WindowRect.left + w;
-		m_WindowRect.bottom = m_WindowRect.top + h;
-	}
-	else
-	{
-		// Need to check it'll fit on screen: Too far right?
-		CSize ScreenSize(::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
-		if (m_WindowRect.right > ScreenSize.cx)
-			m_WindowRect.OffsetRect(-(m_WindowRect.right - ScreenSize.cx), 0);
-
-		// Too far left?
-		if (m_WindowRect.left < 0)
-			m_WindowRect.OffsetRect( -m_WindowRect.left, 0);
-
-		// Bottom falling out of screen?
-		if (m_WindowRect.bottom > ScreenSize.cy)
-		{
-			CRect ParentRect;
-			m_pParent->GetWindowRect(ParentRect);
-			m_WindowRect.OffsetRect(0, -(ParentRect.Height() + m_WindowRect.Height()));
-		}
-	}
+	HMONITOR hMonitor;
+	MONITORINFO mi;
+	hMonitor = ::MonitorFromWindow(m_pParent->m_hWnd, MONITOR_DEFAULTTONEAREST);
+	mi.cbSize = sizeof(mi);
+	::GetMonitorInfo(hMonitor, &mi);
+	CRect rc = mi.rcWork;
+	int w = m_WindowRect.Width();
+	int h = m_WindowRect.Height();
+	m_WindowRect.left = max(rc.left, min(rc.right-w, m_WindowRect.left));
+	m_WindowRect.top = max(rc.top, min(rc.bottom-h, m_WindowRect.top));
+	m_WindowRect.right = m_WindowRect.left + w;
+	m_WindowRect.bottom = m_WindowRect.top + h;
 
     // Set the window size and position
     MoveWindow(m_WindowRect, TRUE);

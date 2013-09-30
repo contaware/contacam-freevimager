@@ -600,15 +600,15 @@ END_MESSAGE_MAP()
 
 CSize FullscreenBrowserDlg::GetMonitorSize(CWnd* pWnd/*=NULL*/)
 {
+	int nMonitorWidth, nMonitorHeight;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	int nMonitorWidth, nMonitorHeight;
 	HMONITOR hMonitor;
 	if (pWnd)
-		hMonitor = MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+		hMonitor = ::MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-		hMonitor = MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-	if (!GetMonitorInfo(hMonitor, &monInfo))
+		hMonitor = ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (!::GetMonitorInfo(hMonitor, &monInfo))
 		return CSize(0, 0);
 	nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
 	nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;

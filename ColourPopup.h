@@ -112,10 +112,6 @@ protected:
 
 	CString        m_strProfileSection;
 
-	HINSTANCE      m_hUser32;
-	FPMONITORFROMWINDOW m_fpMonitorFromWindow;
-	FPGETMONITORINFO	m_fpGetMonitorInfo;
-
     // Generated message map functions
 protected:
     //{{AFX_MSG(CColourPopup)

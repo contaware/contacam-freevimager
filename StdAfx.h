@@ -54,14 +54,6 @@
 #define ISALIGNED(x, a) (0==((unsigned int)(x) & ((a) - 1)))
 #define DOALIGN(x, a) (((x)+(a)-1)&~((a)-1))
 
-// Multi monitor functions
-typedef BOOL (CALLBACK* MONITORENUMPROC)(HMONITOR, HDC, LPRECT, LPARAM);
-typedef BOOL (WINAPI * FPENUMDISPLAYMONITORS)(HDC hdc, LPCRECT lprcClip, MONITORENUMPROC lpfnEnum, LPARAM dwData);
-typedef HMONITOR (WINAPI * FPMONITORFROMWINDOW)(HWND hwnd, DWORD dwFlags);
-typedef HMONITOR (WINAPI * FPMONITORFROMPOINT)(POINT pt, DWORD dwFlags);
-typedef HMONITOR (WINAPI * FPMONITORFROMRECT)(LPCRECT lprc, DWORD dwFlags);
-typedef BOOL (WINAPI * FPGETMONITORINFO)(HMONITOR hMonitor, LPMONITORINFO lpmi);
-
 // Session change notification
 #ifndef NOTIFY_FOR_ALL_SESSIONS
 #define NOTIFY_FOR_ALL_SESSIONS		1

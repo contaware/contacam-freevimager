@@ -79,40 +79,17 @@ CDxDraw::~CDxDraw()
 
 void WINAPI GetMonitorRect(HMONITOR hMonitor, RECT& rcMonitor)
 {
-	FPGETMONITORINFO fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
+	if (GetMonitorInfo(hMonitor, &monInfo) == 0)
 	{
 		rcMonitor.left = 0;
 		rcMonitor.top = 0;
 		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
 		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return;
-	}
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpGetMonitorInfo)
-	{
-		if (fpGetMonitorInfo(hMonitor, &monInfo) == 0)
-		{
-			rcMonitor.left = 0;
-			rcMonitor.top = 0;
-			rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-			rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		}
-		else
-			rcMonitor = monInfo.rcMonitor;
 	}
 	else
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	::FreeLibrary(h);
+		rcMonitor = monInfo.rcMonitor;
 }
 
 // Note:
@@ -138,7 +115,7 @@ BOOL WINAPI DDEnumCallbackExA(GUID* pGuid, LPSTR pszDesc, LPSTR pszDriverName,
         pScreen->m_guid = *pGuid;
 	mbstowcs(pScreen->m_szDesc, pszDesc, MAX_DD7_DEVICE_DESCRIPTION_SIZE);
     pScreen->m_hMonitor = hmon;
-	::GetMonitorRect(hmon, pScreen->m_rcMonitor);
+	GetMonitorRect(hmon, pScreen->m_rcMonitor);
 
 	p->m_ScreenArray.Add(pScreen);
 

@@ -1677,21 +1677,7 @@ BOOL CMainFrame::EnumerateMonitors(CDWordArray* pMonitors)
 	if (pMonitors)
 	{
 		pMonitors->RemoveAll();
-		HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-		if (!h)
-			return FALSE;
-		FPENUMDISPLAYMONITORS fpEnumDisplayMonitors = (FPENUMDISPLAYMONITORS)::GetProcAddress(h, "EnumDisplayMonitors");
-		if (fpEnumDisplayMonitors)
-		{
-			BOOL res = fpEnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)pMonitors);
-			::FreeLibrary(h);
-			return res;
-		}
-		else
-		{
-			::FreeLibrary(h);
-			return FALSE;
-		}
+		return ::EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, (LPARAM)pMonitors);
 	}
 	else
 		return FALSE;
@@ -1739,184 +1725,58 @@ HMONITOR CMainFrame::GetNextMonitor()
 
 HMONITOR CMainFrame::GetCurrentMonitor()
 {
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-		return NULL;
-	FPMONITORFROMWINDOW fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	if (fpMonitorFromWindow)
-	{
-		HMONITOR hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		::FreeLibrary(h);
-		return hMonitor;
-	}
-	else
-	{
-		::FreeLibrary(h);
-		return NULL;
-	}
+	return ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 }
 
 CRect CMainFrame::GetPreviousMonitorFullRect()
 {
-	CRect rcMonitor;
-	FPGETMONITORINFO fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcMonitor;
-	}
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor = GetPreviousMonitor();
-		if (hMonitor && fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			rcMonitor = monInfo.rcMonitor;
-		}
-		else
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-	}
+	HMONITOR hMonitor = GetPreviousMonitor();
+	if (hMonitor && ::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcMonitor);
 	else
-	{
-		::FreeLibrary(h);
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcMonitor;
+		return CRect(0, 0, 0, 0);
 }
 
 CRect CMainFrame::GetNextMonitorFullRect()
 {
-	CRect rcMonitor;
-	FPGETMONITORINFO fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcMonitor;
-	}
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor = GetNextMonitor();
-		if (hMonitor && fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			rcMonitor = monInfo.rcMonitor;
-		}
-		else
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-	}
+	HMONITOR hMonitor = GetNextMonitor();
+	if (hMonitor && ::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcMonitor);
 	else
-	{
-		::FreeLibrary(h);
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcMonitor;
+		return CRect(0, 0, 0, 0);
 }
 
 CSize CMainFrame::GetMonitorSize(CWnd* pWnd/*=NULL*/)
 {
 	int nMonitorWidth, nMonitorHeight;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		nMonitorWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		nMonitorHeight = ::GetSystemMetrics(SM_CYSCREEN);
-		return CSize(nMonitorWidth, nMonitorHeight);
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		if (pWnd)
-			hMonitor = fpMonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		else
-			hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CSize(0, 0);
-		}
-		::FreeLibrary(h);
-		nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
-		nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
-	}
+	HMONITOR hMonitor;
+	if (pWnd)
+		hMonitor = ::MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-	{
-		::FreeLibrary(h);
-		nMonitorWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		nMonitorHeight = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
+		hMonitor = ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (!::GetMonitorInfo(hMonitor, &monInfo))
+		return CSize(0, 0);
+	nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+	nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
 	return CSize(nMonitorWidth, nMonitorHeight);
 }
 
 CSize CMainFrame::GetMonitorSize(CPoint pt)
 {
 	int nMonitorWidth, nMonitorHeight;
-	FPMONITORFROMPOINT fpMonitorFromPoint;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		nMonitorWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		nMonitorHeight = ::GetSystemMetrics(SM_CYSCREEN);
-		return CSize(nMonitorWidth, nMonitorHeight);
-	}
-	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromPoint && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CSize(0, 0);
-		}
-		::FreeLibrary(h);
-		nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
-		nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
-	}
-	else
-	{
-		::FreeLibrary(h);
-		nMonitorWidth = ::GetSystemMetrics(SM_CXSCREEN);
-		nMonitorHeight = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
+	HMONITOR hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	if (!::GetMonitorInfo(hMonitor, &monInfo))
+		return CSize(0, 0);
+	nMonitorWidth = monInfo.rcMonitor.right - monInfo.rcMonitor.left;
+	nMonitorHeight = monInfo.rcMonitor.bottom - monInfo.rcMonitor.top;
 	return CSize(nMonitorWidth, nMonitorHeight);
 }
 
@@ -1969,130 +1829,39 @@ void CMainFrame::ClipToMDIRect(LPRECT lpRect) const
 
 CRect CMainFrame::GetPrimaryMonitorWorkRect()
 {
-	CRect rcWork;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcWork;
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hPrimaryMonitor;
-		hPrimaryMonitor = fpMonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
-		if (!fpGetMonitorInfo(hPrimaryMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcWork = monInfo.rcWork;
-	}
+	HMONITOR hPrimaryMonitor = ::MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
+	if (::GetMonitorInfo(hPrimaryMonitor, &monInfo))
+		return CRect(monInfo.rcWork);
 	else
-	{
-		::FreeLibrary(h);
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcWork;
+		return CRect(0, 0, 0, 0);
 }
 
 CRect CMainFrame::GetMonitorWorkRect(CWnd* pWnd/*=NULL*/)
 {
-	CRect rcWork;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcWork;
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		if (pWnd)
-			hMonitor = fpMonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		else
-			hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcWork = monInfo.rcWork;
-	}
+	HMONITOR hMonitor;
+	if (pWnd)
+		hMonitor = ::MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-	{
-		::FreeLibrary(h);
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcWork;
+		hMonitor = ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcWork);
+	else
+		return CRect(0, 0, 0, 0);
 }
 
 CRect CMainFrame::GetMonitorWorkRect(CPoint pt)
 {
-	CRect rcWork;
-	FPMONITORFROMPOINT fpMonitorFromPoint;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcWork;
-	}
-	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromPoint && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcWork = monInfo.rcWork;
-	}
+	HMONITOR hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	if (::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcWork);
 	else
-	{
-		::FreeLibrary(h);
-		rcWork.left = 0;
-		rcWork.top = 0;
-		rcWork.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcWork.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcWork;
+		return CRect(0, 0, 0, 0);
 }
 
 void CMainFrame::ClipToFullRect(CRect& rc, CWnd* pWnd/*=NULL*/)
@@ -2123,170 +1892,55 @@ void CMainFrame::ClipToFullRect(CRect& rc, CPoint pt)
 
 CRect CMainFrame::GetPrimaryMonitorFullRect()
 {
-	CRect rcMonitor;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcMonitor;
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hPrimaryMonitor;
-		hPrimaryMonitor = fpMonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
-		if (!fpGetMonitorInfo(hPrimaryMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcMonitor = monInfo.rcMonitor;
-	}
+	HMONITOR hPrimaryMonitor = ::MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY);
+	if (::GetMonitorInfo(hPrimaryMonitor, &monInfo))
+		return CRect(monInfo.rcMonitor);
 	else
-	{
-		::FreeLibrary(h);
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcMonitor;
+		return CRect(0, 0, 0, 0);
 }
 
 CRect CMainFrame::GetMonitorFullRect(CWnd* pWnd/*=NULL*/)
 {
-	CRect rcMonitor;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcMonitor;
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		if (pWnd)
-			hMonitor = fpMonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		else
-			hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcMonitor = monInfo.rcMonitor;
-	}
+	HMONITOR hMonitor;
+	if (pWnd)
+		hMonitor = ::MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-	{
-		::FreeLibrary(h);
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcMonitor;
+		hMonitor = ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcMonitor);
+	else
+		return CRect(0, 0, 0, 0);
 }
 
 CRect CMainFrame::GetMonitorFullRect(CPoint pt)
 {
-	CRect rcMonitor;
-	FPMONITORFROMPOINT fpMonitorFromPoint;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFO monInfo;
 	monInfo.cbSize = sizeof(MONITORINFO);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-		return rcMonitor;
-	}
-	fpMonitorFromPoint = (FPMONITORFROMPOINT)::GetProcAddress(h, "MonitorFromPoint");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromPoint && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor = fpMonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return CRect(0, 0, 0, 0);
-		}
-		::FreeLibrary(h);
-		rcMonitor = monInfo.rcMonitor;
-	}
+	HMONITOR hMonitor = ::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	if (::GetMonitorInfo(hMonitor, &monInfo))
+		return CRect(monInfo.rcMonitor);
 	else
-	{
-		::FreeLibrary(h);
-		rcMonitor.left = 0;
-		rcMonitor.top = 0;
-		rcMonitor.right = ::GetSystemMetrics(SM_CXSCREEN);
-		rcMonitor.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	}
-
-	return rcMonitor;
+		return CRect(0, 0, 0, 0);
 }
 
 // Remember to delete it with ::DeleteDC() !!!
 HDC CMainFrame::CreateMonitorDC(CWnd* pWnd/*=NULL*/)
 {
-	HDC hMonitorDC;
-	FPMONITORFROMWINDOW fpMonitorFromWindow;
-	FPGETMONITORINFO	fpGetMonitorInfo;
 	MONITORINFOEX monInfo;
 	monInfo.cbSize = sizeof(MONITORINFOEX);
-	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-	if (!h)
-	{
-		hMonitorDC = ::CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-		return hMonitorDC;
-	}
-	fpMonitorFromWindow = (FPMONITORFROMWINDOW)::GetProcAddress(h, "MonitorFromWindow");
-	fpGetMonitorInfo = (FPGETMONITORINFO)::GetProcAddress(h, "GetMonitorInfoW");
-	if (fpMonitorFromWindow && fpGetMonitorInfo)
-	{
-		HMONITOR hMonitor;
-		if (pWnd)
-			hMonitor = fpMonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		else
-			hMonitor = fpMonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
-		if (!fpGetMonitorInfo(hMonitor, &monInfo))
-		{
-			::FreeLibrary(h);
-			return NULL;
-		}
-		::FreeLibrary(h);
-		hMonitorDC = ::CreateDC(_T("DISPLAY"), monInfo.szDevice, NULL, NULL);
-	}
+	HMONITOR hMonitor;
+	if (pWnd)
+		hMonitor = ::MonitorFromWindow(pWnd->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
 	else
-	{
-		::FreeLibrary(h);
-		hMonitorDC = ::CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
-	}
-
-	return hMonitorDC;
+		hMonitor = ::MonitorFromWindow(this->GetSafeHwnd(), MONITOR_DEFAULTTONEAREST);
+	if (::GetMonitorInfo(hMonitor, &monInfo))
+		return ::CreateDC(_T("DISPLAY"), monInfo.szDevice, NULL, NULL);
+	else
+		return NULL;
 }
 
 int CMainFrame::GetMonitorBpp(CWnd* pWnd/*=NULL*/)
