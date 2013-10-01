@@ -2,13 +2,13 @@ FREEVIMAGER HISTORY
 
 4.9.0 (xx xth 2013)
 
-- First version especially optimized for Windows 2000 and higher
+- First version especially optimized for Windows XP and higher
 - Dropped support for theora encoding because many modern
   players are not able to play avi files encoded in such a way
   
 4.7.0 (May 30th 2013)
 
-- Last version with Win95, Win98, NT4 and WinMe support
+- Last version with Win95, Win98, NT4, WinMe and Win2000 support
 - The crop tool permits now precise selections through the
   arrow keys (use the tab key to switch crop handle)
 

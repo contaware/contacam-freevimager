@@ -3376,43 +3376,44 @@ CAPTION "Device Assistant"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,124,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOTHISTORY,
-                    "Button",BS_AUTORADIOBUTTON,16,28,86,10
-    CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,43,101,10
-    CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,57,68,10
+                    "Button",BS_AUTORADIOBUTTON,16,28,89,10
+    CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,43,100,10
+    CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,57,61,10
     CONTROL         "No change (to update name, appearance and storage)",IDC_RADIO_NOCHANGE,
-                    "Button",BS_AUTORADIOBUTTON,16,71,200,10
-    CONTROL         "24h continuous recording",IDC_CHECK_24H_REC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,14,107,10
-    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,328,13,38,289,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,147,27,107,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,328,27,38,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,147,42,107,198,CBS_DROPDOWNLIST | WS_TABSTOP
+                    "Button",BS_AUTORADIOBUTTON,16,71,191,10
+    CONTROL         "24h continuous recording",IDC_CHECK_24H_REC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,14,97,10
+    COMBOBOX        IDC_COMBO_THUMBSPERPAGE,345,13,38,289,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,27,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,345,27,38,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,42,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,262,44,131,10
-    EDITTEXT        IDC_EDIT_NAME,147,104,107,13,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,44,129,10
+    EDITTEXT        IDC_EDIT_NAME,152,104,114,13,ES_AUTOHSCROLL
     PUSHBUTTON      "Move camera folder...",IDC_BUTTON_PARENT_DIR,277,103,125,15
-    COMBOBOX        IDC_COMBO_LANGUAGE,147,142,107,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,147,156,107,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,144,62,10
-    CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,158,62,10
-    COMBOBOX        IDC_COMBO_KEEPFOR,63,193,107,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    PUSHBUTTON      "OK",IDOK,147,263,58,20,BS_MULTILINE
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,142,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_STYLE,152,156,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,144,63,10
+    CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,158,64,10
+    COMBOBOX        IDC_COMBO_KEEPFOR,64,193,107,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    PUSHBUTTON      "OK",IDOK,152,263,58,20,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,220,263,58,20
     GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,81
-    LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,262,15,62,8
+    LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,279,15,56,8
     GROUPBOX        "2. Name",IDC_STATIC,5,90,407,37
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,101,118,8
-    LTEXT           "Web interface language",IDC_STATIC,16,145,82,8
-    LTEXT           "Web interface style",IDC_STATIC,16,159,66,8
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,101,123,8
+    LTEXT           "Web interface language",IDC_STATIC,16,145,78,8
+    LTEXT           "Web interface style",IDC_STATIC,16,159,64,8
     GROUPBOX        "4. Storage",IDC_STATIC,5,180,407,33
-    LTEXT           "Keep files for",IDC_STATIC,16,195,42,8
+    LTEXT           "Keep files for",IDC_STATIC,16,195,43,8
     LTEXT           "Note: if the free disk space becomes low the oldest files are automatically deleted to make room for the new one",IDC_STATIC,188,191,214,19
     GROUPBOX        "5. Finish",IDC_STATIC,5,218,407,39
     LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",IDC_STATIC,16,231,386,18
-    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,262,29,60,8
+    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,279,29,57,8
     GROUPBOX        "3. Appearance",IDC_STATIC,5,133,407,41
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,111,112,8
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,111,117,8
+    LTEXT           "+",IDC_LABEL_PLUS_SIGN,139,15,8,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -4250,8 +4251,8 @@ BEGIN
         LEFTMARGIN, 5
         RIGHTMARGIN, 412
         VERTGUIDE, 16
-        VERTGUIDE, 147
-        VERTGUIDE, 254
+        VERTGUIDE, 152
+        VERTGUIDE, 266
         VERTGUIDE, 402
         TOPMARGIN, 2
         BOTTOMMARGIN, 283

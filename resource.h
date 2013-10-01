@@ -3201,6 +3201,7 @@
 #define IDC_CHECK_SAVECOMMAND           2536
 #define IDC_AUTH_METHOD                 2536
 #define IDC_STATIC2537                  2537
+#define IDC_LABEL_PLUS_SIGN             2537
 #define IDC_CONNECTIONTYPE              2538
 #define IDC_STATIC2539                  2539
 #define IDC_DETECTION_ZONE_SIZE         2541

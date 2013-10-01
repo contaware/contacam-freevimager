@@ -349,6 +349,8 @@ void CAssistantDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(TRUE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
+		pEdit->EnableWindow(TRUE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(TRUE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
@@ -368,6 +370,8 @@ void CAssistantDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
+		pEdit->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
@@ -387,6 +391,8 @@ void CAssistantDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(TRUE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
+		pEdit->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
@@ -406,6 +412,8 @@ void CAssistantDlg::EnableDisableCtrls()
 		pCheck->EnableWindow(FALSE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
+		pEdit->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
@@ -431,6 +439,8 @@ void CAssistantDlg::EnableDisableAllCtrls(BOOL bEnable)
 		pCheck->EnableWindow(FALSE);
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_24H_REC);
 		pCheck->EnableWindow(FALSE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_PLUS_SIGN);
+		pEdit->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_THUMBSPERPAGE);
 		pEdit->EnableWindow(FALSE);
 		pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_THUMBSPERPAGE);
