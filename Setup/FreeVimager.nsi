@@ -4,16 +4,19 @@ RequestExecutionLevel user
 ; Language defines
 !ifndef INSTALLER_LANGUAGE
 	!define INSTALLER_LANGUAGE "English"
-	!define INSTALLER_LANGUAGE_SUFFIX ""
 !endif
 !if ${INSTALLER_LANGUAGE} == "German"
 	!define INSTALLER_LANGUAGE_ID ${LANG_GERMAN}
+	!define INSTALLER_LANGUAGE_SUFFIX "Deu"
 !else if ${INSTALLER_LANGUAGE} == "Italian"
 	!define INSTALLER_LANGUAGE_ID ${LANG_ITALIAN}
+	!define INSTALLER_LANGUAGE_SUFFIX "Ita"
 !else if ${INSTALLER_LANGUAGE} == "Russian"
 	!define INSTALLER_LANGUAGE_ID ${LANG_RUSSIAN}
+	!define INSTALLER_LANGUAGE_SUFFIX "Rus"
 !else
 	!define INSTALLER_LANGUAGE_ID ${LANG_ENGLISH}
+	!define INSTALLER_LANGUAGE_SUFFIX ""
 !endif
 
 ; Name Defines
@@ -94,15 +97,7 @@ xpstyle on
 !insertmacro MUI_LANGUAGE ${INSTALLER_LANGUAGE}
 
 ; Multilingual Messages
-!if ${INSTALLER_LANGUAGE} == "German"
-	LangString StoppingApplicationMessage ${LANG_GERMAN} "Anwendung stoppen, bitte warten..."
-!else if ${INSTALLER_LANGUAGE} == "Italian"
-	LangString StoppingApplicationMessage ${LANG_ITALIAN} "Fermando l'applicazione, per favore pazientare..."
-!else if ${INSTALLER_LANGUAGE} == "Russian"
-	LangString StoppingApplicationMessage ${LANG_RUSSIAN} "Stopping application, please be patient..."
-!else
-	LangString StoppingApplicationMessage ${LANG_ENGLISH} "Stopping application, please be patient..."
-!endif
+!include "${INSTALLER_LANGUAGE}.nsh"
 
 ;--------------------------------
 
@@ -139,7 +134,7 @@ InstallCheckInstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer is already running" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION $(AlreadyRunning) /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
@@ -167,7 +162,7 @@ Function KillApp
   StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
   StrCmp $KILL "0" KillAppError 0 ; If param cleared -> do not kill
   ; If kill param not set -> ask (silent install answers no to the following question -> no killing):
-  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the installation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
+  MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
   StrCpy $0 "${APPNAME_EXT}"
@@ -176,7 +171,7 @@ KillApp:
   Sleep 1500
   Goto lbl_end
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Installer could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1
@@ -376,7 +371,7 @@ UninstallCheckUninstallerRunning:
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller is already running" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION $(AlreadyRunning) /SD IDOK
   ClearErrors
   Pop $R1
   Pop $R0
@@ -401,7 +396,7 @@ Function un.KillApp
   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
-  MessageBox MB_YESNO|MB_ICONQUESTION "Application is running.$\nDo you want me to close it and continue the uninstallation?$\n(Choose No if you have some unsaved data left)" /SD IDNO IDYES KillApp
+  MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
   StrCpy $0 "${APPNAME_EXT}"
@@ -410,7 +405,7 @@ KillApp:
   Sleep 1500
   Goto lbl_end
 KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION "The Uninstaller could not close the running application" /SD IDOK
+  MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1

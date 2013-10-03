@@ -43,31 +43,31 @@ copy ..\Translation\FreeVimagerRUS.exe .\%CURRENTVERSION%\russian\FreeVimagerRus
 
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
-"%nsisdir%\makensis.exe" /V2 ContaCam.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=English ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\
 echo NSIS make ContaCamDeu installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German /DINSTALLER_LANGUAGE_SUFFIX=Deu ContaCam.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\german\
 echo NSIS make ContaCamIta installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian /DINSTALLER_LANGUAGE_SUFFIX=Ita ContaCam.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\italian\
 echo NSIS make ContaCamRus installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian /DINSTALLER_LANGUAGE_SUFFIX=Rus ContaCam.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\russian\
 
 
 REM Make all the different FreeVimager installers
 echo NSIS make FreeVimager installer
-"%nsisdir%\makensis.exe" /V2 FreeVimager.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=English FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup.exe .\%CURRENTVERSION%\
 echo NSIS make FreeVimagerDeu installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German /DINSTALLER_LANGUAGE_SUFFIX=Deu FreeVimager.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=German FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Deu.exe .\%CURRENTVERSION%\german\
 echo NSIS make FreeVimagerIta installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian /DINSTALLER_LANGUAGE_SUFFIX=Ita FreeVimager.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Italian FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\italian\
 echo NSIS make FreeVimagerRus installer
-"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian /DINSTALLER_LANGUAGE_SUFFIX=Rus FreeVimager.nsi
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\russian\
 
 

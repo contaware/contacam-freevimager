@@ -2,7 +2,7 @@
   nsi and the nsh files encoded as UTF16 or UTF8,
   UAC plugin is not working with it...not using Unicode NSIS...
 
-- The MessageBox strings in FreeVimagerRus.nsi con be converted to the russian
+- The MessageBox strings for russian or bulgarian con be converted to the respective
   codepage if a translation of them is wanted
 
 - NSIS supports a license file in utf8 (with BOM) format
