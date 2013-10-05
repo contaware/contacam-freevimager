@@ -1,11 +1,9 @@
-; Do not encode in Unicode (some non-ASCII chars: ������) use code-pages!
-
 ; Detail Print
-LangString StoppingServiceMessage ${LANG_RUSSIAN} "Stopping service, please be patient..."
-LangString StoppingApplicationMessage ${LANG_RUSSIAN} "Stopping application, please be patient..."
-LangString UninstallingServiceMessage ${LANG_RUSSIAN} "Uninstalling service, please be patient..."
+LangString StoppingServiceMessage ${LANG_RUSSIAN} "Остановка обслуживания, пожалуйста, будьте терпеливы..."
+LangString StoppingApplicationMessage ${LANG_RUSSIAN} "Остановка приложения, пожалуйста, будьте терпеливы..."
+LangString UninstallingServiceMessage ${LANG_RUSSIAN} "Удаление обслуживания, пожалуйста, будьте терпеливы..."
 
 ; Message Box
-LangString AlreadyRunning ${LANG_RUSSIAN} "This routine is already running"
-LangString CloseAppPrompt ${LANG_RUSSIAN} "Application is running.$\nDo you want me to close it and continue?$\n(Choose No if you have some unsaved data left)"
-LangString CloseAppError ${LANG_RUSSIAN} "Could not close the running application"
+LangString AlreadyRunning ${LANG_RUSSIAN} "Эта процедура уже запущена"
+LangString CloseAppPrompt ${LANG_RUSSIAN} "Приложение уже запущено.$\nТы хочешь, чтобы закрыть его и продолжить?$\n(Выберите Нет, если у вас есть некоторые несохраненные данные)"
+LangString CloseAppError ${LANG_RUSSIAN} "Не удалось закрыть запущенное приложение"

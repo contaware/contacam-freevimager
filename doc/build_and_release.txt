@@ -13,8 +13,8 @@ Additional requirements for Visual Studio 2010:
   installing the latest DXSDK_Jun10.exe)
 
 Necessary free tools:
-- http://nsis.sourceforge.net    -> to make the installers
-  (needed also the nsisFirewall, KillProc and UAC plugins)
+- http://www.scratchpaper.com    -> to make the Unicode NSIS installers
+  (needed also the nsisFirewall, KillProc and UAC unicode plugins)
 - http://www.debugmode.com/wink  -> for tutorials build
 
 Non-free tool to make the translations:

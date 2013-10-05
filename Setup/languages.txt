@@ -1,11 +1,5 @@
-- Unicode Version of NSIS works for win2k or higher, it needs all the
-  nsi and the nsh files encoded as UTF16 or UTF8 (with BOM or without),
-  UAC plugin is not working with it...not using Unicode NSIS...
-
-- The MessageBox strings for russian or bulgarian con be converted to the respective
-  codepage if a translation of them is wanted
-
-- NSIS supports a license file in UTF8 (with BOM) format
+- Used Unicode Version of NSIS, convert all txt, nsi and the nsh files
+  to UTF-8 without BOM
 
 - Supported languages:
 

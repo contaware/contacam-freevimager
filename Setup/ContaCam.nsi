@@ -140,7 +140,7 @@ Function .onInit
   
   ; Single Instance of Installer
 InstallCheckInstallerRunning:
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutex(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
   MessageBox MB_OK|MB_ICONEXCLAMATION $(AlreadyRunning) /SD IDOK
@@ -165,7 +165,7 @@ Function KillApp
   ClearErrors
   
   ; Kill Application
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutex(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
   StrCmp $KILL "1" KillApp 0      ; If param set -> kill without asking
@@ -375,7 +375,7 @@ VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "ProductName" "${APPNAME_NOEXT} A
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "Comments" "MM Application"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "CompanyName" "Contaware.com"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalTrademarks" "${APPNAME_NOEXT} is a trademark of Contaware.com"
-VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "© Contaware.com"
+VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "LegalCopyright" "Â© Contaware.com"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileDescription" "Installation Routine of ${APPNAME_NOEXT}"
 VIAddVersionKey /LANG=${INSTALLER_LANGUAGE_ID} "FileVersion" "${APPVERSION}.0"
 
@@ -412,7 +412,7 @@ Function un.onInit
   
   ; Single Instance of Uninstaller
 UninstallCheckUninstallerRunning:
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutex(i 0, i 0, t "${INSTALLERMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
   MessageBox MB_OK|MB_ICONEXCLAMATION $(AlreadyRunning) /SD IDOK
@@ -437,7 +437,7 @@ Function un.KillApp
   ClearErrors
   
   ; Kill Application
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutex(i 0, i 0, t "${APPMUTEXNAME}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 lbl_end
   MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp

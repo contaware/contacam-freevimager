@@ -1,5 +1,3 @@
-; Do not encode in Unicode (some non-ASCII chars: טüציהא) use code-pages!
-
 ; Detail Print
 LangString StoppingServiceMessage ${LANG_ENGLISH} "Stopping service, please be patient..."
 LangString StoppingApplicationMessage ${LANG_ENGLISH} "Stopping application, please be patient..."

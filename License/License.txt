@@ -1,4 +1,4 @@
-﻿License, Oliver Pfister, Switzerland, Web: www.contaware.com 
+License, Oliver Pfister, Switzerland, Web: www.contaware.com 
 
 By using the FREEWARE Software and/or the Source Code, you are agreeing 
 to be bound by the terms of this License. 
