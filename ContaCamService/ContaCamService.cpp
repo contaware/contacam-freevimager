@@ -605,7 +605,13 @@ DWORD Install(LPCTSTR pPath, LPCTSTR pName, LPCTSTR pServiceStartName, LPCTSTR p
 		if (schService == 0)
 			dwError = GetLastError();
 		else
+		{
+			SERVICE_DESCRIPTION sd;
+			memset(&sd, 0, sizeof(sd));
+			sd.lpDescription = _T("This service launches and monitors the ContaCam application without user interface");
+			ChangeServiceConfig2(schService, SERVICE_CONFIG_DESCRIPTION, &sd);
 			CloseServiceHandle(schService);
+		}
 		CloseServiceHandle(schSCManager);
 	}
 	return dwError;
