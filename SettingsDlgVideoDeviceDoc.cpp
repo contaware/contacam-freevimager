@@ -69,6 +69,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
+	m_bUseCustomTempFolder = ((CUImagerApp*)::AfxGetApp())->m_bUseCustomTempFolder;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
@@ -119,6 +120,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
+	DDX_Check(pDX, IDC_CHECK_CUSTOMTEMP, m_bUseCustomTempFolder);
 	//}}AFX_DATA_MAP
 }
 
@@ -507,6 +509,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Priority to IPv6
 	pApp->m_bIPv6 = m_bIPv6;
 
+	// Use Custom Temp Folder
+	pApp->m_bUseCustomTempFolder = m_bUseCustomTempFolder;
+
 	// Micro Apache
 	if (m_sMicroApacheAreaname.IsEmpty())
 		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
@@ -569,6 +574,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											_T("IPv6"),
 											m_bIPv6);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
+											_T("UseCustomTempFolder"),
+											m_bUseCustomTempFolder);
+			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("StartMicroApache"),
 											m_bStartMicroApache);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -624,6 +632,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("IPv6"),
 											m_bIPv6,
+											sTempFileName);
+			::WriteProfileIniInt(			_T("GeneralApp"),
+											_T("UseCustomTempFolder"),
+											m_bUseCustomTempFolder,
 											sTempFileName);
 			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("StartMicroApache"),

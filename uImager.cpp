@@ -131,7 +131,7 @@ CUImagerApp::CUImagerApp()
 {
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
-	m_sAppTempDir = _T("");
+	m_sSysTempDir = _T("");
 	m_sZipFile = _T("");
 	m_sShrinkDestination = _T("");
 	m_bExtractHere = FALSE;
@@ -144,6 +144,7 @@ CUImagerApp::CUImagerApp()
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
+	m_bUseCustomTempFolder = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -325,16 +326,16 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// double-clicked!
 		::SetCurrentDirectory(sDriveDir); // Locks program's dir
 
-		// Create Temporary Directory
+		// Create System Temporary Directory
 		TCHAR szTempPath[MAX_PATH];
 		if (::GetTempPath(MAX_PATH, szTempPath))
 		{
 			// Do not delete temp directory to clean-up,
 			// because other instances may be running!  
-			m_sAppTempDir = CString(szTempPath) + sName + _T("\\");
-			if (!::IsExistingDir(m_sAppTempDir))
+			m_sSysTempDir = CString(szTempPath) + sName + _T("\\");
+			if (!::IsExistingDir(m_sSysTempDir))
 			{
-				if (!::CreateDir(m_sAppTempDir))
+				if (!::CreateDir(m_sSysTempDir))
 					::ShowLastError(TRUE);
 			}
 		}
@@ -4345,6 +4346,9 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 
 	// Priority to IPv6
 	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
+
+	// Use Custom Temp Folder
+	m_bUseCustomTempFolder = (BOOL)GetProfileInt(sSection, _T("UseCustomTempFolder"), FALSE);
 
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);

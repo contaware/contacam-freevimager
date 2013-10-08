@@ -575,8 +575,25 @@ public:
 	BOOL AssociateFileType(CString sExt, BOOL* pbHasUserChoice = NULL);
 	BOOL UnassociateFileType(CString sExt);
 
-	// Application Temporary Directory
-	CString GetAppTempDir() const {return m_sAppTempDir;}; // Ends With a _T('\\')
+	// Get Application Temporary Directory (the returned string ends with a _T('\\'))
+	__forceinline CString GetAppTempDir() const {
+#ifdef VIDEODEVICEDOC
+		if (m_bUseCustomTempFolder)
+		{
+			CString sCustomTempDir = m_sMicroApacheDocRoot;
+			sCustomTempDir.TrimRight(_T('\\'));
+			sCustomTempDir += _T("\\Temp\\");
+			if (!::IsExistingDir(sCustomTempDir))
+			{
+				if (!::CreateDir(sCustomTempDir))
+					return m_sSysTempDir; // on failure return sys temp folder
+			}
+			return sCustomTempDir;
+		}
+		else
+#endif
+			return m_sSysTempDir;
+	};
 
 	// Show color dialog with custom
 	// colors store in registry.
@@ -761,6 +778,9 @@ public:
 	// Priority to IPv6
 	volatile BOOL m_bIPv6;
 
+	// Use Custom Temp Folder
+	volatile BOOL m_bUseCustomTempFolder;
+
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
 
@@ -887,9 +907,8 @@ protected:
 							DWORD& dwResizeWidth,
 							DWORD& dwResizeHeight);
 
-	// Application Temporary Directory,
-	// it is _T('\\') terminated
-	CString m_sAppTempDir;
+	// System's Temporary Directory (it is _T('\\') terminated)
+	CString m_sSysTempDir;
 
 	// Mutex for the Installer / Uninstaller to check
 	// whether this program is running

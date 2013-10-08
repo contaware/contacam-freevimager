@@ -2223,6 +2223,7 @@
 #define IDS_STRING1703                  1703
 #define IDC_BANDMAX                     1704
 #define IDS_STRING1704                  1704
+#define IDC_CHECK_CUSTOMTEMP            1704
 #define IDC_EDIT_BANDMIN                1705
 #define IDS_STRING1705                  1705
 #define IDC_EDIT_BAND0                  1706

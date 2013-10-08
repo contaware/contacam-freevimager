@@ -53,6 +53,7 @@ public:
 	BOOL	m_bStartFromService;
 	BOOL	m_bMicroApacheDigestAuth;
 	BOOL	m_bIPv6;
+	BOOL	m_bUseCustomTempFolder;
 	//}}AFX_DATA
 
 // Overrides

@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "cdxCDynamicWndEx.h"
+#include "uImager.h"
 #include "IniFile.h"
 #include "Helpers.h"
 
@@ -212,27 +213,21 @@ bool cdxCDynamicWndEx::StoreWindowPosition(LPCTSTR lpszProfile)
 	else
 	{
 		// Make a temporary copy because writing to memory sticks is so slow!
-		TCHAR szTempPath[MAX_PATH];
-		if (::GetTempPath(MAX_PATH, szTempPath))
-		{
-			CString sTempFileName = ::MakeTempFileName(szTempPath, app->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, app->m_pszProfileName); // recache
-			::CopyFile(app->m_pszProfileName, sTempFileName, FALSE);
-			bool res =	::WriteProfileIniInt(lpszProfile,	lpszRegVal_Valid,	REGVAL_INVALID, sTempFileName) &&	// invalidate first
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Left,	wpl.rcNormalPosition.left, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Right,	wpl.rcNormalPosition.right, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Top,		wpl.rcNormalPosition.top, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Bottom,	wpl.rcNormalPosition.bottom, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Visible,	bVisible ? REGVAL_VISIBLE : REGVAL_HIDDEN, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_State,	iState, sTempFileName) &&
-						::WriteProfileIniInt(lpszProfile,	lpszRegVal_Valid,	REGVAL_VALID, sTempFileName);		// validate position
-			::DeleteFile(app->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, app->m_pszProfileName);
-			return res;
-		}
-		else
-			return FALSE;
+		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)app)->GetAppTempDir(), app->m_pszProfileName);
+		::WritePrivateProfileString(NULL, NULL, NULL, app->m_pszProfileName); // recache
+		::CopyFile(app->m_pszProfileName, sTempFileName, FALSE);
+		bool res =	::WriteProfileIniInt(lpszProfile,	lpszRegVal_Valid,	REGVAL_INVALID, sTempFileName) &&	// invalidate first
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Left,	wpl.rcNormalPosition.left, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Right,	wpl.rcNormalPosition.right, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Top,		wpl.rcNormalPosition.top, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Bottom,	wpl.rcNormalPosition.bottom, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Visible,	bVisible ? REGVAL_VISIBLE : REGVAL_HIDDEN, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_State,	iState, sTempFileName) &&
+					::WriteProfileIniInt(lpszProfile,	lpszRegVal_Valid,	REGVAL_VALID, sTempFileName);		// validate position
+		::DeleteFile(app->m_pszProfileName);
+		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
+		::MoveFile(sTempFileName, app->m_pszProfileName);
+		return res;
 	}
 }
 

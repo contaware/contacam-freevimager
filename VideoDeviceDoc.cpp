@@ -6385,12 +6385,9 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 
 	// Document root
 	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
-	sDocRoot.Replace(_T('\\'), _T('/'));// Change path from \ to / (otherwise apache is not happy)
-	sDocRoot.Insert(0, _T('\"'));		// Add a leading "
-	sDocRoot += _T("/\"");				// Add a trailing /, otherwise it is not working when the root directory is the drive itself (c: for example)
-										// Add a trailing "
-	sFormat.Format(_T("DocumentRoot %s\r\n"), sDocRoot);
-	sConfig += sFormat;
+	sDocRoot.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
+	sFormat.Format(_T("DocumentRoot \"%s/\"\r\n"), sDocRoot); // add a trailing /, otherwise it is not
+	sConfig += sFormat;			// working when the root directory is the drive itself (c: for example)
 
 	// Global settings
 	sConfig += _T("ThreadsPerChild 128\r\n");
@@ -6427,6 +6424,13 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("RewriteBase /\r\n");
 	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
 	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
+	sConfig += _T("</Directory>\r\n");
+
+	// Deny Access to Temp folder
+	sFormat.Format(_T("<Directory \"%s/Temp/\">\r\n"), sDocRoot);
+	sConfig += sFormat;
+	sConfig += _T("Order allow,deny\r\n");
+	sConfig += _T("Deny from all\r\n");
 	sConfig += _T("</Directory>\r\n");
 
 	// Make password file and set authentication type
