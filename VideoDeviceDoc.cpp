@@ -6646,126 +6646,36 @@ void CVideoDeviceDoc::ViewFiles()
 
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
 {
-	// Get App Data Folder
 	CString sMicroapacheConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-	// It's important to have a place to write the config file,
-	// under win95 and NT4 CSIDL_APPDATA is not available
-	// return the program's directory
-	if (sMicroapacheConfigFile == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sMicroapacheConfigFile = CString(szDrive) + CString(szDir);
-		sMicroapacheConfigFile += MICROAPACHE_CONFIGNAME_EXT;
-	}
-	else
-		sMicroapacheConfigFile += _T("\\") + MICROAPACHE_CONFIG_FILE;
-
+	sMicroapacheConfigFile += _T("\\") + MICROAPACHE_CONFIG_FILE;
 	return sMicroapacheConfigFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetEditableConfigFileName()
 {
-	// Get App Data Folder
 	CString sMicroapacheEditableConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-	// It's important to have a place to write the config file,
-	// under win95 and NT4 CSIDL_APPDATA is not available
-	// return the program's directory
-	if (sMicroapacheEditableConfigFile == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sMicroapacheEditableConfigFile = CString(szDrive) + CString(szDir);
-		sMicroapacheEditableConfigFile += MICROAPACHE_EDITABLE_CONFIGNAME_EXT;
-	}
-	else
-		sMicroapacheEditableConfigFile += _T("\\") + MICROAPACHE_EDITABLE_CONFIG_FILE;
-
+	sMicroapacheEditableConfigFile += _T("\\") + MICROAPACHE_EDITABLE_CONFIG_FILE;
 	return sMicroapacheEditableConfigFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetLogFileName()
 {
-	// Get App Data Folder
 	CString sMicroapacheLogFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-	// It's important to have a place to write the log file,
-	// under win95 and NT4 CSIDL_APPDATA is not available
-	// return the program's directory
-	if (sMicroapacheLogFile == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sMicroapacheLogFile = CString(szDrive) + CString(szDir);
-		sMicroapacheLogFile += MICROAPACHE_LOGNAME_EXT;
-	}
-	else
-		sMicroapacheLogFile += _T("\\") + MICROAPACHE_LOG_FILE;
-
+	sMicroapacheLogFile += _T("\\") + MICROAPACHE_LOG_FILE;
 	return sMicroapacheLogFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 {
-	// Get App Data Folder
 	CString sMicroapachePidFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-	// It's important to have a place to write the pid file,
-	// under win95 and NT4 CSIDL_APPDATA is not available
-	// return the program's directory
-	if (sMicroapachePidFile == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sMicroapachePidFile = CString(szDrive) + CString(szDir);
-		sMicroapachePidFile += MICROAPACHE_PIDNAME_EXT;
-	}
-	else
-		sMicroapachePidFile += _T("\\") + MICROAPACHE_PID_FILE;
-
+	sMicroapachePidFile += _T("\\") + MICROAPACHE_PID_FILE;
 	return sMicroapachePidFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 {
-	// Get App Data Folder
 	CString sMicroapachePwFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-	// It's important to have a place to write the pid file,
-	// under win95 and NT4 CSIDL_APPDATA is not available
-	// return the program's directory
-	if (sMicroapachePwFile == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sMicroapachePwFile = CString(szDrive) + CString(szDir);
-		sMicroapachePwFile += MICROAPACHE_PWNAME_EXT;
-	}
-	else
-		sMicroapachePwFile += _T("\\") + MICROAPACHE_PW_FILE;
-
+	sMicroapachePwFile += _T("\\") + MICROAPACHE_PW_FILE;
 	return sMicroapachePwFile;
 }
 

@@ -344,17 +344,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 #ifdef VIDEODEVICEDOC
 		// Create our application folder
-		// Note: under win95 and NT4 CSIDL_APPDATA is not
-		// available, sAppData is then _T("")
-		if (sAppData != _T(""))
+		CString sOurAppFolder = sAppData + _T("\\") +
+				CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT);
+		if (!::IsExistingDir(sOurAppFolder))
 		{
-			CString sOurAppFolder = sAppData + _T("\\") +
-					CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT);
-			if (!::IsExistingDir(sOurAppFolder))
-			{
-				if (!::CreateDir(sOurAppFolder))
-					::ShowLastError(TRUE);
-			}
+			if (!::CreateDir(sOurAppFolder))
+				::ShowLastError(TRUE);
 		}
 
 		// Set default location for Document Root,
@@ -367,15 +362,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init Trace and Log Files Location
 		// (Containing folder is created when Trace or Log Files are written)
 		CString sLogFile = sAppData;
-		if (sLogFile == _T(""))		// In case of win95 and NT4
-			sLogFile = sDriveDir + LOGNAME_EXT;
-		else
-			sLogFile += _T("\\") + LOG_FILE;
+		sLogFile += _T("\\") + LOG_FILE;
 		CString sTraceFile = sAppData;
-		if (sTraceFile == _T(""))	// In case of win95 and NT4
-			sTraceFile = sDriveDir + TRACENAME_EXT;
-		else
-			sTraceFile += _T("\\") + TRACE_FILE;
+		sTraceFile += _T("\\") + TRACE_FILE;
 		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
 
 		// Do not use registry if application is not installed
@@ -6330,40 +6319,14 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 CString CUImagerApp::GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
 {
 	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	if (sProfileName == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return _T("");
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sDrive(szDrive);
-		CString sDir(szDir);
-		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	else
-		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
+	sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
 	return ::GetProfileIniString(_T("General"), lpszEntry, lpszDefault, sProfileName);
 }
 
 BOOL CUImagerApp::WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue)
 {
 	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	if (sProfileName == _T(""))
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-			return FALSE;
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		CString sDrive(szDrive);
-		CString sDir(szDir);
-		sProfileName = sDrive + sDir + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	else
-		sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
+	sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
 	CString sProfileNamePath = ::GetDriveAndDirName(sProfileName);
 	if (!::IsExistingDir(sProfileNamePath))
 		::CreateDir(sProfileNamePath);

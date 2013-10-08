@@ -2290,12 +2290,14 @@ BOOL IsANSIConvertible(const CString& s)
 	// Convert UTF-16 to ANSI
 	BOOL bUsedDefaultChar = FALSE;
 	int res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
-									WC_NO_BEST_FIT_CHARS,	// Not supported by Win95 and NT4
+									WC_NO_BEST_FIT_CHARS,	// translate any Unicode characters that do not
+															// translate directly to multibyte equivalents to
+															// the default character specified by lpDefaultChar
 									psuBuff,				// wide-character string
 									nUtf16Len,				// number of chars in string.
 									NULL,					// buffer for new string
 									0,						// size of buffer
-									NULL,					// default for unmappable chars
+									NULL,					// default for unmappable chars given by system
 									&bUsedDefaultChar);		// set when default char used
 	if (res <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{
@@ -2332,12 +2334,14 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 
 	// Convert UTF-16 to ANSI
 	int res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
-									WC_NO_BEST_FIT_CHARS,	// Not supported by Win95 and NT4
+									WC_NO_BEST_FIT_CHARS,	// translate any Unicode characters that do not
+															// translate directly to multibyte equivalents to
+															// the default character specified by lpDefaultChar
 									psuBuff,				// wide-character string
 									nUtf16Len,				// number of chars in string.
 									*ppAnsi,				// buffer for new string
 									nUtf16Len+1,			// size of buffer
-									NULL,					// default for unmappable chars
+									NULL,					// default for unmappable chars given by system
 									pbUsedDefaultChar);		// set when default char used
 	if (res <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{

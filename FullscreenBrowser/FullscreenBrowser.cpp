@@ -458,18 +458,10 @@ BOOL FullscreenBrowserApp::InitInstance()
 {
 	AfxEnableControlContainer();
 
-	// Get Module Name and Split it
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szName[_MAX_FNAME];
+	// Get Module Name
 	TCHAR szProgramName[MAX_PATH];
 	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
 		return FALSE;
-	_tsplitpath(szProgramName, szDrive, szDir, szName, NULL);
-	CString sDrive(szDrive);
-	CString sDir(szDir);
-	CString sName(szName);
-	CString sDriveDir = sDrive + sDir;
 
 	// Get Command Line
 	CCommandLineInfo cmdInfo;
@@ -482,16 +474,11 @@ BOOL FullscreenBrowserApp::InitInstance()
 
 	// Change the name of the .INI file
 	CString sProfileName = GetSpecialFolderPath(CSIDL_APPDATA);
-	if (sProfileName == _T(""))
-		sProfileName = sDriveDir + INI_NAME_EXT;
-	else
-		sProfileName += _T("\\") + INI_FILE;
+	sProfileName += _T("\\") + INI_FILE;
 	CString sProfileNamePath = GetDriveAndDirName(sProfileName);
 	if (!IsExistingDir(sProfileNamePath))
 		CreateDir(sProfileNamePath);
-
-	// The CWinApp destructor will free the memory
-	m_pszProfileName = _tcsdup(sProfileName);
+	m_pszProfileName = _tcsdup(sProfileName); // the CWinApp destructor will free the memory
 
 	// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
 	if (!IsExistingFile(m_pszProfileName))

@@ -154,7 +154,6 @@ extern CString GetSpecialFolderPath(int nSpecialFolder);
 
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
-// On NT4 you need to install psapi.dll from the Platform SDK
 extern int EnumKillProcByName(CString sProcessName, BOOL bKill = FALSE);
 
 // Execute an app with hidden window (working for both console and windowed apps)
