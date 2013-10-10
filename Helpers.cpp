@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "mmsystem.h"
 #include "wininet.h"
-#include "ConvertUTF.h"
 #include "Helpers.h"
 #include "Round.h"
 #include "Rpc.h"
@@ -2282,18 +2281,16 @@ BOOL IsANSIConvertible(const CString& s)
 	if (s.IsEmpty())
 		return TRUE;
 
-	// Convert CString to Unicode
-	USES_CONVERSION;
-	LPCWSTR psuBuff = T2CW(s);
-	int nUtf16Len = (int)wcslen(psuBuff);
+	// UTF16 string length (null termination not included)
+	int nUtf16Len = s.GetLength();
 
-	// Convert UTF-16 to ANSI
+	// Convert UTF16 to ANSI
 	BOOL bUsedDefaultChar = FALSE;
 	int res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
 									WC_NO_BEST_FIT_CHARS,	// translate any Unicode characters that do not
 															// translate directly to multibyte equivalents to
 															// the default character specified by lpDefaultChar
-									psuBuff,				// wide-character string
+									s,						// wide-character string
 									nUtf16Len,				// number of chars in string.
 									NULL,					// buffer for new string
 									0,						// size of buffer
@@ -2303,7 +2300,7 @@ BOOL IsANSIConvertible(const CString& s)
 	{
 		res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
 									0, 
-									psuBuff,				// wide-character string
+									s,						// wide-character string
 									nUtf16Len,				// number of chars in string.
 									NULL,					// buffer for new string
 									0,						// size of buffer
@@ -2322,48 +2319,51 @@ int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar/*=NULL*/)
 	if (!ppAnsi)
 		return 0;
 
-	// Convert CString to Unicode
-	USES_CONVERSION;
-	LPCWSTR psuBuff = T2CW(s);
-	int nUtf16Len = (int)wcslen(psuBuff);
+	// UTF16 string length (null termination not included)
+	int nUtf16Len = s.GetLength();
 
-	// Allocate enough buffer
-	*ppAnsi = new char[nUtf16Len+1];
+	// Allocate enough buffer:
+	// the MBCS schemes used in Windows contain two character types,
+	// single-byte characters and double-byte characters. Since the
+	// largest multi-byte character used in Windows is two bytes long,
+	// the term double-byte character set, or DBCS, is commonly used
+	// in place of MBCS.
+	*ppAnsi = new char[2*nUtf16Len + 1];
 	if (*ppAnsi == NULL)
 		return 0;
 
-	// Convert UTF-16 to ANSI
-	int res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
-									WC_NO_BEST_FIT_CHARS,	// translate any Unicode characters that do not
-															// translate directly to multibyte equivalents to
-															// the default character specified by lpDefaultChar
-									psuBuff,				// wide-character string
-									nUtf16Len,				// number of chars in string.
-									*ppAnsi,				// buffer for new string
-									nUtf16Len+1,			// size of buffer
-									NULL,					// default for unmappable chars given by system
-									pbUsedDefaultChar);		// set when default char used
-	if (res <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
+	// Convert UTF16 to ANSI
+	int nBytesWritten = WideCharToMultiByte(CP_ACP,					// ANSI Code Page
+											WC_NO_BEST_FIT_CHARS,	// translate any Unicode characters that do not
+																	// translate directly to multibyte equivalents to
+																	// the default character specified by lpDefaultChar
+											s,						// wide-character string
+											nUtf16Len,				// number of chars in string.
+											*ppAnsi,				// buffer for new string
+											2*nUtf16Len,			// size of allocated buffer minus null termination
+											NULL,					// default for unmappable chars given by system
+											pbUsedDefaultChar);		// set when default char used
+	if (nBytesWritten <= 0 && GetLastError() == ERROR_INVALID_FLAGS)
 	{
-		res = WideCharToMultiByte(	CP_ACP,					// ANSI Code Page
-									0, 
-									psuBuff,				// wide-character string
-									nUtf16Len,				// number of chars in string.
-									*ppAnsi,				// buffer for new string
-									nUtf16Len+1,			// size of buffer
-									NULL,					// default for unmappable chars
-									pbUsedDefaultChar);		// set when default char used
+		nBytesWritten = WideCharToMultiByte(CP_ACP,					// ANSI Code Page
+											0, 
+											s,						// wide-character string
+											nUtf16Len,				// number of chars in string
+											*ppAnsi,				// buffer for new string
+											2*nUtf16Len,			// size of allocated buffer minus null termination
+											NULL,					// default for unmappable chars
+											pbUsedDefaultChar);		// set when default char used
 	}
-	if (res <= 0)
+	if (nBytesWritten > 0)
+	{
+		(*ppAnsi)[nBytesWritten] = '\0'; // null terminate
+		return nBytesWritten;
+	}
+	else
 	{
 		delete [] *ppAnsi;
 		*ppAnsi = NULL;
 		return 0;
-	}
-	else
-	{
-		(*ppAnsi)[MIN(res, nUtf16Len)] = '\0';
-		return res;
 	}
 }
 
@@ -2555,36 +2555,21 @@ CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len)
 	if (!pUtf8 || nUtf8Len <= 0)
 		return _T("");
 
-	// Allocate enough buffer
-	UTF16* pUtf16 = new UTF16[nUtf8Len+1];
-	if (pUtf16 == NULL)
-		return _T("");
-
-	// Convert UTF-8 to UTF-16
-	UTF8* sourceStart = (UTF8*)pUtf8; 
-	UTF8* sourceEnd = sourceStart + nUtf8Len;
-	UTF16* targetStart = (UTF16*)(pUtf16);
-	UTF16* targetEnd = targetStart + nUtf8Len+1;
-	ConversionResult res = ConvertUTF8toUTF16(	(const UTF8**)&sourceStart,
-												(const UTF8*)sourceEnd, 
-												&targetStart,
-												targetEnd,
-												lenientConversion);
-	if (res != conversionOK)
+	// Convert UTF8 to UTF16
+	CString s;
+	LPWSTR p = s.GetBuffer(nUtf8Len + 1);	// allocate enough buffer
+											// (according to documentation the +1 should not
+											// be necessary because the null termination char
+											// should already be given, but you never know if
+											// that's correct...)
+	if (p)
 	{
-		delete [] pUtf16;
-		pUtf16 = NULL;
-		return _T("");
+		int nCharsWritten = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)pUtf8, nUtf8Len, p, nUtf8Len);
+		if (nCharsWritten > 0)
+			p[nCharsWritten] = L'\0'; // null terminate
+		s.ReleaseBuffer();
 	}
-	else
-	{
-		int nUtf16Len = targetStart - pUtf16;
-		ASSERT(nUtf16Len+1 <= nUtf8Len+1);
-		pUtf16[nUtf16Len] = L'\0';
-		CString s((LPCWSTR)pUtf16);
-		delete [] pUtf16;
-		return s;
-	}
+	return s;
 }
 
 int ToUTF8(const CString& s, LPBYTE* ppUtf8)
@@ -2593,38 +2578,35 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 	if (!ppUtf8)
 		return 0;
 
-	// Convert CString to Unicode
-	USES_CONVERSION;
-	LPCWSTR psuBuff = T2CW(s);
-	int nUtf16Len = (int)wcslen(psuBuff);
-
-	// Allocate enough buffer
-	*ppUtf8 = new BYTE[4*nUtf16Len+1];
+	// UTF16 string length (null termination not included)
+	int nUtf16Len = s.GetLength();
+	
+	// Allocate enough buffer:
+	// in UTF8, characters from the U+0000..U+10FFFF range (the UTF-16 accessible range)
+	// are encoded using sequences of 1 to 4 octets.
+	*ppUtf8 = new BYTE[4*nUtf16Len + 1];
 	if (*ppUtf8 == NULL)
 		return 0;
-
-	// Convert UTF-16 to UTF-8
-	UTF16* sourceStart = (UTF16*)psuBuff; 
-	UTF16* sourceEnd = sourceStart + nUtf16Len;
-	UTF8* targetStart = (UTF8*)(*ppUtf8);
-	UTF8* targetEnd = targetStart + 4*nUtf16Len+1;
-	ConversionResult res = ConvertUTF16toUTF8(	(const UTF16**)&sourceStart,
-												(const UTF16*)sourceEnd, 
-												&targetStart,
-												targetEnd,
-												lenientConversion);
-	if (res != conversionOK)
+	
+	// Convert UTF16 to UTF8
+	int nBytesWritten = WideCharToMultiByte(CP_UTF8,
+											0,
+											s,					// wide-character string
+											nUtf16Len,			// number of chars in string
+											(LPSTR)(*ppUtf8),	// buffer for new string
+											4*nUtf16Len,		// size of allocated buffer minus null termination
+											NULL,
+											NULL);
+	if (nBytesWritten > 0)
+	{
+		(*ppUtf8)[nBytesWritten] = '\0'; // null terminate
+		return nBytesWritten;
+	}
+	else
 	{
 		delete [] *ppUtf8;
 		*ppUtf8 = NULL;
 		return 0;
-	}
-	else
-	{
-		int nUtf8Len = targetStart - *ppUtf8;
-		ASSERT(nUtf8Len+1 <= 4*nUtf16Len+1);
-		(*ppUtf8)[nUtf8Len] = '\0';
-		return nUtf8Len;
 	}
 }
 

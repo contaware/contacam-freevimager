@@ -1,5 +1,13 @@
-Note on DLGINIT resources problem:
-----------------------------------
+Fully Support Unicode in Dialogs
+--------------------------------
+
+To Fully Support Unicode in CEdit we have to change the font of the dialog
+using the control:
+FONT 8, "MS Sans Serif", 0, 0, 0x1  ->  FONT 8, "MS Shell Dlg", 0, 0, 0x1
+
+
+Note on DLGINIT resources problem
+---------------------------------
 
 In DLGINIT all strings are stored as ANSI strings.
 All other Windows resources are stored as UNICODE strings.
@@ -15,8 +23,8 @@ It is recommended to not use DLGINIT at all, but populate list- and comboboxes
 by resource strings at runtime (resource strings are always UNICODE).
 
 
-Note on synchronization:
-------------------------
+Note on synchronization
+-----------------------
 
 Always do the modifications to ContaCam.apt then backport to FreeVimager.apt
 by making a copy of ContaCam.apt and renaming it to FreeVimager.apt.
@@ -27,8 +35,8 @@ This way around because with ContaCam we can check all the resources.
 FREEVIMAGER AND CONTACAM BOTH COMMITTED MEANS THEY ARE IN SYNC!
 
 
-Instructions for translators:
------------------------------
+Instructions for translators
+----------------------------
 
 Hi,
 

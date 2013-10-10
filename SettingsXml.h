@@ -27,8 +27,6 @@ public:
 	BOOL WriteInt(LPXNode p, const CString& sName, int nValue);
 
 private:
-	CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);
-	int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 	CString m_sFileName;
 	XDoc m_Xml;
 };

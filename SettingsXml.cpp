@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "ConvertUTF.h"
 #include "TraceLogFile.h"
 #include "SettingsXml.h"
 
@@ -8,85 +7,6 @@
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
-
-CString CSettingsXml::FromUTF8(const unsigned char* pUtf8, int nUtf8Len)
-{
-	// Check
-	if (!pUtf8 || nUtf8Len <= 0)
-		return _T("");
-
-	// Allocate enough buffer
-	UTF16* pUtf16 = new UTF16[nUtf8Len+1];
-	if (pUtf16 == NULL)
-		return _T("");
-
-	// Convert UTF-8 to UTF-16
-	UTF8* sourceStart = (UTF8*)pUtf8; 
-	UTF8* sourceEnd = sourceStart + nUtf8Len;
-	UTF16* targetStart = (UTF16*)(pUtf16);
-	UTF16* targetEnd = targetStart + nUtf8Len+1;
-	ConversionResult res = ConvertUTF8toUTF16(	(const UTF8**)&sourceStart,
-												(const UTF8*)sourceEnd, 
-												&targetStart,
-												targetEnd,
-												lenientConversion);
-	if (res != conversionOK)
-	{
-		delete [] pUtf16;
-		pUtf16 = NULL;
-		return _T("");
-	}
-	else
-	{
-		int nUtf16Len = targetStart - pUtf16;
-		ASSERT(nUtf16Len+1 <= nUtf8Len+1);
-		pUtf16[nUtf16Len] = L'\0';
-		CString s((LPCWSTR)pUtf16);
-		delete [] pUtf16;
-		return s;
-	}
-}
-
-int CSettingsXml::ToUTF8(const CString& s, LPBYTE* ppUtf8)
-{
-	// Check
-	if (!ppUtf8)
-		return 0;
-
-	// Convert CString to Unicode
-	USES_CONVERSION;
-	LPCWSTR psuBuff = T2CW(s);
-	int nUtf16Len = (int)wcslen(psuBuff);
-
-	// Allocate enough buffer
-	*ppUtf8 = new BYTE[4*nUtf16Len+1];
-	if (*ppUtf8 == NULL)
-		return 0;
-
-	// Convert UTF-16 to UTF-8
-	UTF16* sourceStart = (UTF16*)psuBuff; 
-	UTF16* sourceEnd = sourceStart + nUtf16Len;
-	UTF8* targetStart = (UTF8*)(*ppUtf8);
-	UTF8* targetEnd = targetStart + 4*nUtf16Len+1;
-	ConversionResult res = ConvertUTF16toUTF8(	(const UTF16**)&sourceStart,
-												(const UTF16*)sourceEnd, 
-												&targetStart,
-												targetEnd,
-												lenientConversion);
-	if (res != conversionOK)
-	{
-		delete [] *ppUtf8;
-		*ppUtf8 = NULL;
-		return 0;
-	}
-	else
-	{
-		int nUtf8Len = targetStart - *ppUtf8;
-		ASSERT(nUtf8Len+1 <= 4*nUtf16Len+1);
-		(*ppUtf8)[nUtf8Len] = '\0';
-		return nUtf8Len;
-	}
-}
 
 CString CSettingsXml::GetString(LPXNode p, const CString& sName, const CString& sDefault)
 {
@@ -171,7 +91,7 @@ BOOL CSettingsXml::LoadSettings(const CString& sFileName)
 		goto error;
 
 	// Convert from UTF8
-	sXml = FromUTF8(	(const unsigned char*)pData,
+	sXml = ::FromUTF8(	(const unsigned char*)pData,
 						(int)dwSizeFile);
 	if (sXml == _T(""))
 		goto error;
@@ -297,7 +217,7 @@ BOOL CSettingsXml::StoreSettings(CString sFileName/*=CString(_T(""))*/)
 	sXml.TrimLeft(_T("\r\n")); // Remove initial \r\n
 	
 	// Convert to UTF8
-	nSize = ToUTF8(sXml, &pData);
+	nSize = ::ToUTF8(sXml, &pData);
 	if (nSize > 0)
 	{
 		// Create File

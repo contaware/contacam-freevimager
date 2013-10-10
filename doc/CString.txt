@@ -1,0 +1,41 @@
+- Starting with MFC 7.x the CString comes from the Template Class CStringT
+- In VS6 the CString::Find() start index Documentation is wrong. The start
+  index is always included in the search for all MFC versions!
+
+  
+LPTSTR CString::GetBuffer(int nMinBufLength)
+--------------------------------------------
+
+nMinBufLength is the minimum number of characters that the character 
+buffer can hold. This value does not include space for a null 
+terminator. If nMinBufLength is larger than the length of the current 
+buffer, GetBuffer destroys the current buffer, replaces it with a buffer 
+of the requested size. The return value is a pointer to the object's 
+(null-terminated) character buffer. 
+
+Calling CString::GetBuffer() or the equivalent CString::GetBuffer(0) 
+does not allocate memory, it simply returns a non-const pointer to the 
+existing internal string data. The official MSDN documentation on 
+GetBuffer does not mention the behaviour if the nMinBufLength is omitted 
+(or if zero is set). In this case you cannot safely modify this buffer, 
+because its size is undetermined. It should be equal to the string 
+length + 1 at the time when GetBuffer() was called, however this is not 
+officially documented. 
+
+Thus you must specify a nMinBufLength value when calling GetBuffer that 
+is LARGER than what you expect to use. The pointer returned by GetBuffer 
+is a dumb TCHAR*, it will not automatically reallocate on demand. 
+
+
+void CString::ReleaseBuffer(int nNewLength = -1)
+------------------------------------------------
+
+nNewLength is the new length of the string in characters, not counting a 
+null terminator. 
+
+If you keep track of the string length yourself, you should not append 
+the terminating null character. You must, however, specify the final 
+string length when you release the buffer with ReleaseBuffer. If you do 
+append a terminating null character, you should pass –1 for the length 
+to ReleaseBuffer and ReleaseBuffer will perform a strlen on the buffer 
+to determine its length. 

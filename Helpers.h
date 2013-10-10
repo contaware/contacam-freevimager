@@ -248,10 +248,16 @@ extern CString HtmlEncode(CString s);
 // Html decode given string
 extern CString HtmlDecode(CString s);
 
-// Unicode (=UTF16) <-> UTF8 Conversion
-extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);	// Note: pUtf8 must not be NULL terminated.
-extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);				// Allocates a NULL terminated buffer,
-																	// returns the Utf-8 size (null termination not included!)
+// UTF8 -> UTF16 conversion
+// pUtf8 must not be NULL terminated (it doesn't harm if it is)
+// nUtf8Len is the size in bytes (optional NULL termination should
+// not be included in this size, but it doesn't harm if it is)
+extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);
+
+// UTF16 -> UTF8 conversion
+// Allocates a NULL terminated buffer
+// returns the Utf8 string size in bytes (NULL termination not included)
+extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
 // Get uuid
 extern CString GetUuidString();
