@@ -5,6 +5,7 @@ CONTACAM HISTORY
 - Added suppport for ACTi and some newer Intellinet ip cams 
 - Global toolbar buttons for Browse and Browse Files commands
 - Motion scheduler has got a 'detection disabled from..to and on'
+- Possibility to store temp files under the cameras root folder
 - First version especially optimized for Windows XP and higher
 - Dropped support for theora encoding because many modern
   players are not able to play avi files encoded in such a way
