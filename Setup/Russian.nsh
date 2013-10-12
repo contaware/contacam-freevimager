@@ -5,5 +5,5 @@ LangString UninstallingServiceMessage ${LANG_RUSSIAN} "Удаление обсл
 
 ; Message Box
 LangString AlreadyRunning ${LANG_RUSSIAN} "Эта процедура уже запущена"
-LangString CloseAppPrompt ${LANG_RUSSIAN} "Приложение уже запущено.$\nТы хочешь, чтобы закрыть его и продолжить?$\n(Выберите Нет, если у вас есть некоторые несохраненные данные)"
+LangString CloseAppPrompt ${LANG_RUSSIAN} "Приложение уже запущено.$\nХочешь, чтобы закрыть его и продолжить?$\n(Выберите Нет, если у вас есть некоторые несохраненные данные)"
 LangString CloseAppError ${LANG_RUSSIAN} "Не удалось закрыть запущенное приложение"

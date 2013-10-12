@@ -28,7 +28,7 @@ mkdir .\%CURRENTVERSION%
 mkdir .\%CURRENTVERSION%\german
 mkdir .\%CURRENTVERSION%\italian
 mkdir .\%CURRENTVERSION%\russian
-
+mkdir .\%CURRENTVERSION%\bulgarian
 
 REM Copy FreeVimager standalone versions
 echo Copy FreeVimager.exe
@@ -39,7 +39,8 @@ echo Copy FreeVimagerIta.exe
 copy ..\Translation\FreeVimagerITA.exe .\%CURRENTVERSION%\italian\FreeVimagerIta-%CURRENTVERSION%.exe
 echo Copy FreeVimagerRus.exe
 copy ..\Translation\FreeVimagerRUS.exe .\%CURRENTVERSION%\russian\FreeVimagerRus-%CURRENTVERSION%.exe
-
+echo Copy FreeVimagerBgr.exe
+copy ..\Translation\FreeVimagerBGR.exe .\%CURRENTVERSION%\bulgarian\FreeVimagerBgr-%CURRENTVERSION%.exe
 
 REM Make all the different ContaCam installers
 echo NSIS make ContaCam installer
@@ -54,7 +55,9 @@ move .\ContaCam-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\italian\
 echo NSIS make ContaCamRus installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian ContaCam.nsi
 move .\ContaCam-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\russian\
-
+echo NSIS make ContaCamBgr installer
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Bulgarian ContaCam.nsi
+move .\ContaCam-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\bulgarian\
 
 REM Make all the different FreeVimager installers
 echo NSIS make FreeVimager installer
@@ -69,7 +72,9 @@ move .\FreeVimager-%CURRENTVERSION%-Setup-Ita.exe .\%CURRENTVERSION%\italian\
 echo NSIS make FreeVimagerRus installer
 "%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Russian FreeVimager.nsi
 move .\FreeVimager-%CURRENTVERSION%-Setup-Rus.exe .\%CURRENTVERSION%\russian\
-
+echo NSIS make FreeVimagerBgr installer
+"%nsisdir%\makensis.exe" /V2 /DINSTALLER_LANGUAGE=Bulgarian FreeVimager.nsi
+move .\FreeVimager-%CURRENTVERSION%-Setup-Bgr.exe .\%CURRENTVERSION%\bulgarian\
 
 REM exit
 :batchpause
