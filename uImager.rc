@@ -483,7 +483,7 @@ IDR_CONTEXT_VIDEO_DEVICE MENU
 BEGIN
     POPUP "_Context Menu_"
     BEGIN
-        MENUITEM "Record",                      ID_CAPTURE_RECORD
+        MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM SEPARATOR
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
@@ -549,7 +549,7 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
-        MENUITEM "Record",                      ID_CAPTURE_RECORD
+        MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM SEPARATOR
         MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
         MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
