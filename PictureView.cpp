@@ -1399,6 +1399,8 @@ BOOL CPictureView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 			pDoc->m_SlideShowThread.NextPicture();
 	}
 	// Zoom In / Out?
+	// (for legacy support the zoom touch gesture triggers
+	// this mouse wheel message + CTRL key) 
 	else if ((MK_CONTROL & nFlags)	&&
 			!m_bFullScreenMode		&&
 			!pDoc->m_bZoomTool)
@@ -1517,6 +1519,14 @@ LRESULT CPictureView::OnColorPickerClosed(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+// Swipe or pan touch gesture handling
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd940543%28v=vs.85%29.aspx
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms701172%28v=vs.85%29.aspx
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646275%28v=vs.85%29.aspx
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms694980%28v=vs.85%29.aspx
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd356077%28v=vs.85%29.aspx
+// Pan-Back, Pan-Forward: if the WM_TABLET_FLICK is not handled a WM_APPCOMMAND is
+// fired and if also this one is not regarded the WM_HSCROLL message is sent
 LRESULT CPictureView::OnApplicationCommand(WPARAM wParam, LPARAM lParam)
 {
     CPictureDoc* pDoc = GetDocument();
