@@ -664,7 +664,7 @@ void CImageInfoDlg::SetEditMetadataText()
 		bEnableComment = TRUE;
 
 	// Enable Iptc
-	if (m_pDoc->IsJPEG() || m_pDoc->IsTIFF())
+	if (m_pDoc->IsJPEG() || ::IsTIFF(m_pDoc->m_sFileName))
 		bEnableIptc = TRUE;
 
 	switch (m_nMetadataType)
@@ -1278,7 +1278,7 @@ BOOL CImageInfoDlg::SaveMetadata()
 		}
 #endif
 	}
-	else if (m_pDoc->IsTIFF())
+	else if (::IsTIFF(m_pDoc->m_sFileName))
 	{
 #ifdef SUPPORT_LIBTIFF
 		BeginWaitCursor();
@@ -1496,7 +1496,7 @@ BOOL CImageInfoDlg::ExportXmp(LPCTSTR lpszFileName)
 	{
 		CMetadata Metadata;
 		Metadata.m_IptcFromXmpInfo = m_CurrentIptc;
-		if (m_pDoc->IsTIFF())
+		if (::IsTIFF(m_pDoc->m_sFileName))
 		{
 			if (!Metadata.UpdateXmpData(_T("image/tiff")))
 				return FALSE;
@@ -2837,7 +2837,7 @@ void CImageInfoDlg::UpdateMetadata()
 
 	// Tiff
 #ifdef SUPPORT_LIBTIFF
-	if (m_pDoc->IsTIFF())
+	if (::IsTIFF(m_pDoc->m_sFileName))
 	{
 		GetIptc();
 	}

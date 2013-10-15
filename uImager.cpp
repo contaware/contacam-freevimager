@@ -3677,7 +3677,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 
 		(!bShrinkPictureSize											&&
 		!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality)		&&
-		!(CPictureDoc::IsTIFF(szSrcFileName) && bTiffForceCompression))))
+		!(::IsTIFF(szSrcFileName) && bTiffForceCompression))))
 	{
 		if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
 		{
@@ -3703,8 +3703,8 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	// Work On All Pages of a Multi-Page TIFF?
 	if (bWorkOnAllPages							&&
 		(SrcDib.m_FileInfo.m_nImageCount > 1)	&&
-		CPictureDoc::IsTIFF(szSrcFileName)		&&
-		CPictureDoc::IsTIFF(szDstFileName))
+		::IsTIFF(szSrcFileName)					&&
+		::IsTIFF(szDstFileName))
 	{
 		return ShrinkPictureMultiPage(	szSrcFileName,
 										szDstFileName,
@@ -3795,7 +3795,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			//   and not Tiff with Force Compression
 			//   and Same Extension
 			if (!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
-				!(CPictureDoc::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
+				!(::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
 				(::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)))
 			{
 				if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))

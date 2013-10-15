@@ -329,7 +329,7 @@ int CBatchProcDlg::CProcessThread::Work()
 					}
 
 					// Special Processing for Tiff Files
-					if (CPictureDoc::IsTIFF(sDstFileName))
+					if (::IsTIFF(sDstFileName))
 					{
 						TiffProcessing(sDstFileName);
 					}
@@ -501,7 +501,7 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 			m_pAnimGifSave = NULL;
 		}
 	}
-	else if (CPictureDoc::IsTIFF(m_pDlg->m_sOutputFileName))
+	else if (::IsTIFF(m_pDlg->m_sOutputFileName))
 	{
 		if (m_TiffOutFile)
 		{
@@ -592,7 +592,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 			if (!m_pAnimGifSave->SaveAsAnimGIF(&m_Dib, ::Round(1000.0 / m_dFrameRate)))
 				throw (int)0;
 		}
-		else if (CPictureDoc::IsTIFF(m_pDlg->m_sOutputFileName))
+		else if (::IsTIFF(m_pDlg->m_sOutputFileName))
 		{
 			AddToOutputTiff(nFilesCount,
 							sFileName,
@@ -797,7 +797,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 													CString sInFileName,
 													CString sOutFileName)
 {
-	if (CPictureDoc::IsTIFF(sInFileName))
+	if (::IsTIFF(sInFileName))
 	{
 		if (m_bTiffForceCompression)
 		{
@@ -858,7 +858,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
 
 		// Decide about the Compression Type
 		int nCompression = m_nTiffCompression;
-		if (CPictureDoc::IsTIFF(sInFileName) && !m_bTiffForceCompression)
+		if (::IsTIFF(sInFileName) && !m_bTiffForceCompression)
 			nCompression = m_Dib.m_FileInfo.m_nCompression;
 
 		// Save Multi-Page TIFF
@@ -908,7 +908,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 													CString sInFileName,
 													CString sOutFileName)
 {
-	if (CPictureDoc::IsTIFF(sInFileName))
+	if (::IsTIFF(sInFileName))
 	{
 		if (m_bTiffForceCompression)
 		{
@@ -988,7 +988,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputPdf(	int nFilesCount,
 
 		// Decide about the Compression Type
 		int nCompression = m_nTiffCompression;
-		if (CPictureDoc::IsTIFF(sInFileName) && !m_bTiffForceCompression)
+		if (::IsTIFF(sInFileName) && !m_bTiffForceCompression)
 			nCompression = m_Dib.m_FileInfo.m_nCompression;
 
 		// Save Multi-Page TIFF

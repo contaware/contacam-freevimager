@@ -210,6 +210,21 @@ extern void GetMemoryStats(	int* pRegions = NULL,
 extern ULONGLONG GetDiskSize(LPCTSTR lpszPath);
 extern ULONGLONG GetDiskSpace(LPCTSTR lpszPath);
 
+// Tiff Functions
+__forceinline BOOL IsTIFFExt(const CString& sExt)
+{
+	return ((sExt.CompareNoCase(_T(".tif")) == 0)	||
+			(sExt.CompareNoCase(_T("tif")) == 0)	||
+			(sExt.CompareNoCase(_T(".tiff")) == 0)	||
+			(sExt.CompareNoCase(_T("tiff")) == 0)	||
+			(sExt.CompareNoCase(_T(".jfx")) == 0)	||
+			(sExt.CompareNoCase(_T("jfx")) == 0));
+}
+__forceinline BOOL IsTIFF(const CString& sFileName)
+{
+	return IsTIFFExt(GetFileExt(sFileName));
+}
+
 // File Name to Mime
 extern CString FileNameToMime(LPCTSTR lpszFileName);
 

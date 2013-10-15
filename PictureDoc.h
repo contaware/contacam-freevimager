@@ -391,16 +391,11 @@ public:
 	void Undo(BOOL bUpdate = TRUE);		// Always uses m_pDib, if TRUE updates the View
 	void Redo(BOOL bUpdate = TRUE);		// Always uses m_pDib, if TRUE updates the View
 
-	// Tiff Functions
-	__forceinline BOOL IsTIFF()
-			{return (	(::GetFileExt(m_sFileName) == _T(".tif"))	||
-						(::GetFileExt(m_sFileName) == _T(".jfx"))	||
-						(::GetFileExt(m_sFileName) == _T(".tiff")));};
-	static BOOL IsTIFF(LPCTSTR szFileName);
+	// Multi-page tiff check function
 	__forceinline BOOL IsMultiPageTIFF()
 			{return 	m_pDib &&
 						m_pDib->m_FileInfo.m_nImageCount > 1 &&
-						IsTIFF();};
+						::IsTIFF(m_sFileName);};
 
 	// Jpeg Functions
 	__forceinline BOOL IsJPEG()

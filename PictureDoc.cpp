@@ -2363,13 +2363,6 @@ BOOL CPictureDoc::IsJPEG(LPCTSTR szFileName)
 			(::GetFileExt(szFileName) == _T(".thm")));
 }
 
-BOOL CPictureDoc::IsTIFF(LPCTSTR szFileName)
-{
-	return ((::GetFileExt(szFileName) == _T(".tif"))	||
-			(::GetFileExt(szFileName) == _T(".jfx"))	||
-			(::GetFileExt(szFileName) == _T(".tiff")));
-}
-
 void CPictureDoc::SetDocumentTitle()
 {
 	CString strInfo;
@@ -9309,7 +9302,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 		}
 
 		// Update Metadata Edit Buttons
-		BOOL bFileMayHaveMetadata = IsJPEG() || IsTIFF();
+		BOOL bFileMayHaveMetadata = IsJPEG() || ::IsTIFF(m_sFileName);
 		CButton* pButton = (CButton*)m_pImageInfoDlg->GetDlgItem(IDC_BUTTON_EXPORT_METADATA);
 		pButton->EnableWindow(bFileMayHaveMetadata);
 		pButton = (CButton*)m_pImageInfoDlg->GetDlgItem(IDC_BUTTON_IMPORT_METADATA);
