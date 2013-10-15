@@ -8762,8 +8762,15 @@ void CPictureDoc::OnEditTo32bits()
 		AddUndo();
 		if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 		{
-			m_pDib->RenderAlphaWithSrcBackground();
-			m_pDib->SetAlpha(FALSE);
+			m_pDib->RenderAlphaWithSrcBackground(); // flatten with background
+			m_pDib->AlphaOffset(255);				// remove alpha information by making it fully opaque
+			m_pDib->SetAlpha(FALSE);				// clear alpha flag
+			if (m_pDib->GetBMIH()->biSize == sizeof(BITMAPV4HEADER) ||
+				m_pDib->GetBMIH()->biSize == sizeof(BITMAPV5HEADER))
+			{
+				LPBITMAPV4HEADER pBV4 = (LPBITMAPV4HEADER)m_pDib->GetBMI();
+				pBV4->bV4AlphaMask = 0;				// clear alpha mask
+			}
 		}
 		else
 			m_pDib->ConvertTo32bits(GetView(), TRUE);
