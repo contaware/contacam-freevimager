@@ -225,6 +225,23 @@ __forceinline BOOL IsTIFF(const CString& sFileName)
 	return IsTIFFExt(GetFileExt(sFileName));
 }
 
+// Jpeg Functions
+__forceinline BOOL IsJPEGExt(const CString& sExt)
+{
+	return ((sExt.CompareNoCase(_T(".jpg")) == 0)	||
+			(sExt.CompareNoCase(_T("jpg")) == 0)	||
+			(sExt.CompareNoCase(_T(".jpeg")) == 0)	||
+			(sExt.CompareNoCase(_T("jpeg")) == 0)	||
+			(sExt.CompareNoCase(_T(".jpe")) == 0)	||
+			(sExt.CompareNoCase(_T("jpe")) == 0)	||
+			(sExt.CompareNoCase(_T(".thm")) == 0)	||
+			(sExt.CompareNoCase(_T("thm")) == 0));
+}
+__forceinline BOOL IsJPEG(const CString& sFileName)
+{
+	return IsJPEGExt(GetFileExt(sFileName));
+}
+
 // File Name to Mime
 extern CString FileNameToMime(LPCTSTR lpszFileName);
 

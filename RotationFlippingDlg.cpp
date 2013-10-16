@@ -97,7 +97,7 @@ BOOL CRotationFlippingDlg::OnInitDialog()
 	CButton* pButton = (CButton*)GetDlgItem(IDC_UNDO);
 	pButton->EnableWindow(FALSE);
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LOSSLESS);
-	if (pDoc->IsJPEG() && !pDoc->IsModified() && !pDoc->m_bPrintPreviewMode)
+	if (::IsJPEG(pDoc->m_sFileName) && !pDoc->IsModified() && !pDoc->m_bPrintPreviewMode)
 	{
 		if (pDoc->m_bForceLossyTrafo)
 			pCheck->SetCheck(0);

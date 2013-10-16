@@ -3676,7 +3676,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		(CDib::IsAnimatedGIF(szSrcFileName, FALSE)						||
 
 		(!bShrinkPictureSize											&&
-		!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality)		&&
+		!(::IsJPEG(szSrcFileName) && bForceJpegQuality)					&&
 		!(::IsTIFF(szSrcFileName) && bTiffForceCompression))))
 	{
 		if (!::CopyFile(szSrcFileName, szDstFileName, FALSE))
@@ -3794,7 +3794,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			// - Not Jpeg with Force Quality
 			//   and not Tiff with Force Compression
 			//   and Same Extension
-			if (!(CPictureDoc::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
+			if (!(::IsJPEG(szSrcFileName) && bForceJpegQuality) &&
 				!(::IsTIFF(szSrcFileName) && bTiffForceCompression) &&
 				(::GetFileExt(szSrcFileName) == ::GetFileExt(szDstFileName)))
 			{

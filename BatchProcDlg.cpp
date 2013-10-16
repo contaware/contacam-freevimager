@@ -294,7 +294,7 @@ int CBatchProcDlg::CProcessThread::Work()
 																	sDstFileName,
 																	m_dwMaxSize,
 																	m_bMaxSizePercent,
-																	CPictureDoc::IsJPEG(sDstFileName) ?
+																	::IsJPEG(sDstFileName) ?
 																	m_nJpegQuality :
 																	m_nTiffJpegQuality,
 																	m_bForceJpegQuality,
@@ -321,7 +321,7 @@ int CBatchProcDlg::CProcessThread::Work()
 				else
 				{
 					// Special Processing for Jpeg Files
-					if (CPictureDoc::IsJPEG(sDstFileName))
+					if (::IsJPEG(sDstFileName))
 					{
 						JpegProcessing(	(nShrinkPictureRes == 1) ? TRUE : FALSE,
 										sDstFileName,

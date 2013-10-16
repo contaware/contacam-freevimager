@@ -397,14 +397,6 @@ public:
 						m_pDib->m_FileInfo.m_nImageCount > 1 &&
 						::IsTIFF(m_sFileName);};
 
-	// Jpeg Functions
-	__forceinline BOOL IsJPEG()
-			{return (	(::GetFileExt(m_sFileName) == _T(".jpg"))	||
-						(::GetFileExt(m_sFileName) == _T(".jpe"))	||
-						(::GetFileExt(m_sFileName) == _T(".jpeg"))	||
-						(::GetFileExt(m_sFileName) == _T(".thm")));};
-	static BOOL IsJPEG(LPCTSTR szFileName);
-
 #ifdef SUPPORT_LIBJPEG
 	// Gets the Pixel Alignment and starts the Jpeg Thread
 	// (compression calculation and full size jpeg load)

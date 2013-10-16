@@ -2255,7 +2255,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					else if (idx == ((CPictureDoc*)pDoc)->m_nEditMenuPos)
 					{
 						// Restore the JPEG Advanced menu item if the file is a jpeg
-						if (CPictureDoc::IsJPEG(((CPictureDoc*)pDoc)->m_sFileName))
+						if (::IsJPEG(((CPictureDoc*)pDoc)->m_sFileName))
 						{
 							// Only restore if not already done!	
 							if (m_hJPEGAdvancedMenu)
