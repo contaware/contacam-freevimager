@@ -2220,10 +2220,7 @@ CString FileNameToMime(LPCTSTR lpszFileName)
 {
 	CString sExt = GetFileExt(lpszFileName);
 
-	if (sExt == _T(".jpeg")		||
-		sExt == _T(".jpg")		||
-		sExt == _T(".jpe")		||
-		sExt == _T(".thm"))
+	if (IsJPEGExt(sExt))
 		return _T("image/jpeg");
 	else if (IsTIFFExt(sExt))
 		return _T("image/tiff");

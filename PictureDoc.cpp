@@ -2649,10 +2649,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	{
 		dlgFile.m_ofn.nFilterIndex = 3;
 	}
-	else if ((defextension == _T("jpg"))	||
-			(defextension == _T("jpe"))		||
-			(defextension == _T("jpeg"))	||
-			(defextension == _T("thm")))
+	else if (::IsJPEGExt(defextension))
 	{
 		dlgFile.m_ofn.nFilterIndex = 4;
 	}
@@ -2791,10 +2788,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			EndWaitCursor();
 #endif
 		}
-		else if ((extension == _T("jpg"))	||
-				(extension == _T("jpe"))	||
-				(extension == _T("jpeg"))	||
-				(extension == _T("thm")))
+		else if (::IsJPEGExt(extension))
 		{
 #ifdef SUPPORT_LIBJPEG
 			BeginWaitCursor();
@@ -2803,10 +2797,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				Dib = *m_pDib;
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
-				if ((defextension != _T("jpg"))		&&
-					(defextension != _T("jpe"))		&&
-					(defextension != _T("jpeg"))	&&
-					(defextension != _T("thm")))
+				if (!::IsJPEGExt(defextension))
 				{
 					// Clear Orientation
 					Dib.GetExifInfo()->Orientation = 1;
@@ -2844,10 +2835,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			else
 			{
-				if ((defextension != _T("jpg"))		&&
-					(defextension != _T("jpe"))		&&
-					(defextension != _T("jpeg"))	&&
-					(defextension != _T("thm")))
+				if (!::IsJPEGExt(defextension))
 				{
 					// Clear Orientation
 					int nOrientation = m_pDib->GetExifInfo()->Orientation;
@@ -3784,10 +3772,7 @@ BOOL CPictureDoc::Save()
 			EndWaitCursor();
 #endif
 		}
-		else if ((extension == _T("jpg"))	||
-				(extension == _T("jpe"))	||
-				(extension == _T("jpeg"))	||
-				(extension == _T("thm")))
+		else if (::IsJPEGExt(extension))
 		{
 #ifdef SUPPORT_LIBJPEG
 			BeginWaitCursor();

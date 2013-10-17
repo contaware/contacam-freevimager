@@ -1555,7 +1555,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	if (!Dib.IsValid())
 		Dib.AllocateBits(32, BI_RGB, 1, 1, crBackgroundColor);
 	CString sExt = ::GetFileExt(lpszFileName);
-	if (sExt == _T(".jpg") || sExt == _T(".jpe") || sExt == _T(".jpeg") || sExt == _T(".thm"))
+	if (::IsJPEGExt(sExt))
 	{
 		if (Dib.HasAlpha() && Dib.GetBitCount() == 32)
 		{
@@ -3855,10 +3855,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	CString sDstExt = ::GetFileExt(szDstFileName);
 	sSrcExt.MakeLower();
 	sDstExt.MakeLower();
-	if (sDstExt == _T(".jpg")	||
-		sDstExt == _T(".jpe")	||
-		sDstExt == _T(".jpeg")	||
-		sDstExt == _T(".thm"))
+	if (::IsJPEGExt(sDstExt))
 	{
 		// Flatten
 		if (pSaveDib->HasAlpha() && pSaveDib->GetBitCount() == 32)
@@ -3868,10 +3865,7 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		}
 
 #ifdef SUPPORT_LIBJPEG
-		if (sSrcExt == _T(".jpg")	||
-			sSrcExt == _T(".jpe")	||
-			sSrcExt == _T(".jpeg")	||
-			sSrcExt == _T(".thm"))
+		if (::IsJPEGExt(sSrcExt))
 		{
 			if (!pSaveDib->SaveJPEG(szDstFileName,
 									dwJpegQuality,
@@ -4180,8 +4174,9 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 	sSrcExt.TrimLeft(_T('.'));
 	sSrcExt.MakeLower();
 
-	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) || (sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
-		(sSrcExt == _T("jpg")) || (sSrcExt == _T("jpe")) || (sSrcExt == _T("jpeg"))	|| (sSrcExt == _T("thm")))
+	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) ||
+		(sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
+		::IsJPEGExt(sSrcExt))
 		return _T(".jpg");
 	else if (::IsTIFFExt(sSrcExt))
 		return _T(".tif");
@@ -4802,24 +4797,14 @@ BOOL CUImagerApp::RequireDirectXVersion7()
 BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 {
 	CString sExt = ::GetFileExt(sFileName);
-
-	if ((sExt == _T(".bmp"))		||
-		(sExt == _T(".dib")))
-		return TRUE;
-	else if (sExt == _T(".emf"))
-		return TRUE;
-	else if (sExt == _T(".png"))
-		return TRUE;
-	else if ((sExt == _T(".jpg"))	||
-			(sExt == _T(".jpe"))	||
-			(sExt == _T(".jpeg"))	||
-			(sExt == _T(".thm")))
-		return TRUE;
-	else if (::IsTIFFExt(sExt))
-		return TRUE;
-	else if (sExt == _T(".pcx"))
-		return TRUE;
-	else if (sExt == _T(".gif"))
+	if ((sExt == _T(".bmp"))	||
+		(sExt == _T(".dib"))	||
+		(sExt == _T(".emf"))	||
+		(sExt == _T(".png"))	||
+		(sExt == _T(".pcx"))	||
+		(sExt == _T(".gif"))	||
+		::IsJPEGExt(sExt)		||
+		::IsTIFFExt(sExt))
 		return TRUE;
 	else
 		return FALSE;
@@ -5544,7 +5529,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",17"));
 		else if (sExtNoPoint == _T("gif"))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
-		else if (sExtNoPoint == _T("jpg") || sExtNoPoint == _T("jpeg") || sExtNoPoint == _T("jpe") || sExtNoPoint == _T("thm"))
+		else if (::IsJPEGExt(sExtNoPoint))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
 		else if (::IsTIFFExt(sExtNoPoint))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));

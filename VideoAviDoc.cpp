@@ -4144,10 +4144,7 @@ BOOL CVideoAviDoc::FileExtractframes()
 			sFirstFileName = ExtractAsBMP(FileName);
 			res = (sFirstFileName != _T(""));
 		}
-		else if ((extension == _T("jpg"))	||
-				(extension == _T("jpe"))	||
-				(extension == _T("jpeg"))	||
-				(extension == _T("thm")))
+		else if (::IsJPEGExt(extension))
 		{
 			sFirstFileName = ExtractAsJPEG(FileName, dlgFile.GetJpegCompressionQuality());
 			res = (sFirstFileName != _T(""));

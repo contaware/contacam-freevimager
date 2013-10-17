@@ -89,11 +89,8 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
 
-		// Check for JPEG Extensions
-		if ((::GetFileExt(sPathName) != _T(".jpg"))		&&
-			(::GetFileExt(sPathName) != _T(".jpe"))		&&
-			(::GetFileExt(sPathName) != _T(".jpeg"))	&&
-			(::GetFileExt(sPathName) != _T(".thm")))
+		// Check for JPEG filename
+		if (!::IsJPEG(sPathName))
 			throw (int)JPEG_E_WRONGEXTENTION;
 
 		// Check whether file is empty
@@ -487,7 +484,7 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 		{
 			case JPEG_E_ZEROPATH :		str += _T("The file name is zero\n");
 			break;
-			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is not .jpg, .jpe, .jpeg or .thm\n");
+			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
@@ -2336,11 +2333,8 @@ BOOL CDib::LossLessJPEGTrans(	LPCTSTR lpszInPathName, LPCTSTR lpszOutPathName,
 		if (sOutPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
 
-		// Check for JPEG Extensions
-		if ((::GetFileExt(sInPathName) != _T(".jpg"))	&&
-			(::GetFileExt(sInPathName) != _T(".jpe"))	&&
-			(::GetFileExt(sInPathName) != _T(".jpeg"))	&&
-			(::GetFileExt(sInPathName) != _T(".thm")))
+		// Check for JPEG filename
+		if (!::IsJPEG(sInPathName))
 			throw (int)JPEG_E_WRONGEXTENTION;
 
 		// Open the input file
@@ -2476,7 +2470,7 @@ BOOL CDib::LossLessJPEGTrans(	LPCTSTR lpszInPathName, LPCTSTR lpszOutPathName,
 		{
 			case JPEG_E_ZEROPATH :		str += _T("The file name is zero\n");
 			break;
-			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is not .jpg, .jpe, .jpeg or .thm\n");
+			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_LIBJPEG_LOAD :	str += CString(jsrcerr.szLastLibJpegError) + _T("\n");
 			break;
@@ -3088,11 +3082,8 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
 
-		// Check for JPEG Extensions
-		if ((::GetFileExt(sPathName) != _T(".jpg"))		&&
-			(::GetFileExt(sPathName) != _T(".jpe"))		&&
-			(::GetFileExt(sPathName) != _T(".jpeg"))	&&
-			(::GetFileExt(sPathName) != _T(".thm")))
+		// Check for JPEG filename
+		if (!::IsJPEG(sPathName))
 			throw (int)JPEG_E_WRONGEXTENTION;
 
 		// Get File Size
@@ -3156,7 +3147,7 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 			break;
 			case JPEG_E_ZEROPATH :			str += _T("The file name is zero\n");
 			break;
-			case JPEG_E_WRONGEXTENTION :	str += _T("The file extention is not .jpg, .jpe, .jpeg or .thm\n");
+			case JPEG_E_WRONGEXTENTION :	str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_LIBJPEG_LOAD :		str += CString(jsrcerr.szLastLibJpegError) + _T("\n");
 			break;
@@ -3180,10 +3171,7 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 
 BOOL CDib::JPEGLoadMetadata(LPCTSTR lpszPathName)
 {
-	if (::GetFileExt(lpszPathName) != _T(".jpg")	&&
-		::GetFileExt(lpszPathName) != _T(".jpe")	&&
-		::GetFileExt(lpszPathName) != _T(".jpeg")	&&
-		::GetFileExt(lpszPathName) != _T(".thm"))
+	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Open File
@@ -3488,10 +3476,7 @@ BOOL CDib::JPEGWriteSection(int SectionType,						// Like: M_JFIF, M_EXIF_XMP or
 							LPBYTE pData,
 							BOOL bShowMessageBoxOnError)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		// Temporary File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -3559,15 +3544,8 @@ BOOL CDib::AddEXIFThumbnail(LPCTSTR lpszInPathName,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -3891,15 +3869,8 @@ BOOL CDib::RemoveEXIFThumbnail(	LPCTSTR lpszInPathName,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4091,15 +4062,8 @@ BOOL CDib::JPEGAddSection(	int SectionType,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4284,15 +4248,8 @@ BOOL CDib::JPEGReplaceSection(	int SectionType,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4494,15 +4451,8 @@ BOOL CDib::JPEGRemoveSection(	int SectionType,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4664,15 +4614,8 @@ BOOL CDib::JPEGRemoveSections(	int SectionTypeStart,
 
 	try
 	{
-		// Check Extensions
-		if (::GetFileExt(lpszInPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszInPathName) != _T(".jpeg")		&&
-			::GetFileExt(lpszInPathName) != _T(".thm")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpg")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpe")		&&
-			::GetFileExt(lpszOutPathName) != _T(".jpeg")	&&
-			::GetFileExt(lpszOutPathName) != _T(".thm"))
+		// Check filenames
+		if (!::IsJPEG(lpszInPathName) || !::IsJPEG(lpszOutPathName))
 			throw 0;
 
 		// Is Out File Read-Only?
@@ -4802,10 +4745,7 @@ BOOL CDib::JPEGWriteEXIFInplace(LPCTSTR lpszPathName)
 {
 	const bool bDoWrite = true;
 
-	if (::GetFileExt(lpszPathName) != _T(".jpg")	&&
-		::GetFileExt(lpszPathName) != _T(".jpe")	&&
-		::GetFileExt(lpszPathName) != _T(".jpeg")	&&
-		::GetFileExt(lpszPathName) != _T(".thm"))
+	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
 	DWORD dwAttrib = ::GetFileAttributes(lpszPathName);
@@ -4898,11 +4838,8 @@ BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
 	if (nMaxSizeX < 1 && nMaxSizeY < 1)
 		return FALSE;
 
-	// Check for jpg Extension
-	if ((::GetFileExt(lpszPathName) != _T(".jpg"))	&&
-		(::GetFileExt(lpszPathName) != _T(".jpe"))	&&
-		(::GetFileExt(lpszPathName) != _T(".jpeg"))	&&
-		(::GetFileExt(lpszPathName) != _T(".thm")))
+	// Check for jpg filename
+	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Load Header to Get the Picture Sizes
@@ -5011,11 +4948,8 @@ BOOL CDib::CreateThumbnailDibFromJPEG(	LPCTSTR lpszPathName,
 	if (nMaxSizeX < 1 && nMaxSizeY < 1)
 		return FALSE;
 
-	// Check for jpg Extension
-	if ((::GetFileExt(lpszPathName) != _T(".jpg"))	&&
-		(::GetFileExt(lpszPathName) != _T(".jpe"))	&&
-		(::GetFileExt(lpszPathName) != _T(".jpeg"))	&&
-		(::GetFileExt(lpszPathName) != _T(".thm")))
+	// Check for jpg filename
+	if (!::IsJPEG(lpszPathName))
 		return FALSE;
 
 	// Load Header to Get the Sizes
@@ -5126,10 +5060,7 @@ BOOL CDib::JPEGSetOrientationInplace(LPCTSTR szFileName,
 									int nNewOrientation,
 									BOOL bShowMessageBoxOnError)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5151,10 +5082,7 @@ BOOL CDib::JPEGSetOleDateTimeInplace(	LPCTSTR szFileName,
 										const COleDateTime& Time,
 										BOOL bShowMessageBoxOnError)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5174,10 +5102,7 @@ BOOL CDib::JPEGSetDateTimeInplace(	LPCTSTR szFileName,
 									const CTime& Time,
 									BOOL bShowMessageBoxOnError)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5199,10 +5124,7 @@ BOOL CDib::JPEGAutoOrientate(	LPCTSTR szFileName,
 								CWnd* pProgressWnd/*=NULL*/,
 								BOOL bProgressSend/*=TRUE*/)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
@@ -5297,10 +5219,7 @@ BOOL CDib::JPEGWriteComment(LPCTSTR szFileName,
 							LPCSTR szComment,
 							BOOL bShowMessageBoxOnError)
 {
-	if ((::GetFileExt(szFileName) == _T(".jpg"))	||
-		(::GetFileExt(szFileName) == _T(".jpe"))	||
-		(::GetFileExt(szFileName) == _T(".jpeg"))	||
-		(::GetFileExt(szFileName) == _T(".thm")))
+	if (::IsJPEG(szFileName))
 	{
 		// Temporary File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);

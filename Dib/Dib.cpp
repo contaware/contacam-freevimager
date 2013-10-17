@@ -3011,10 +3011,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 						pThread);
 #endif
 	}
-	else if ((sExt == _T(".jpg"))	||
-			(sExt == _T(".jpe"))	||
-			(sExt == _T(".jpeg"))	||
-			(sExt == _T(".thm")))
+	else if (::IsJPEGExt(sExt))
 	{
 #ifdef SUPPORT_LIBJPEG
 		if (bOnlyHeader || (nMaxSizeX <= 0 && nMaxSizeY <= 0))
