@@ -1566,7 +1566,7 @@ BOOL CUImagerApp::PasteToFile(LPCTSTR lpszFileName, COLORREF crBackgroundColor/*
 	}
 	else if (sExt == _T(".png"))
 		return CPictureDoc::SavePNG(lpszFileName, &Dib, FALSE);
-	else if (sExt == _T(".tif") || sExt == _T(".jfx") || sExt == _T(".tiff"))
+	else if (::IsTIFFExt(sExt))
 		return Dib.SaveTIFF(lpszFileName, COMPRESSION_LZW);
 	else if (sExt == _T(".gif"))
 		return CPictureDoc::SaveGIF(lpszFileName, &Dib);
@@ -3905,10 +3905,10 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 		}
 #endif
 	}
-	else if (sDstExt == _T(".tif") || sDstExt == _T(".jfx") || sDstExt == _T(".tiff"))
+	else if (::IsTIFFExt(sDstExt))
 	{
 #ifdef SUPPORT_LIBTIFF
-		if (sSrcExt == _T(".tif") || sSrcExt == _T(".jfx") || sSrcExt == _T(".tiff"))
+		if (::IsTIFFExt(sSrcExt))
 		{
 			if (SrcDib.m_FileInfo.m_nImageCount > 1)
 			{
@@ -4183,7 +4183,7 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 	if ((sSrcExt == _T("bmp")) || (sSrcExt == _T("dib")) || (sSrcExt == _T("emf")) || (sSrcExt == _T("pcx")) ||
 		(sSrcExt == _T("jpg")) || (sSrcExt == _T("jpe")) || (sSrcExt == _T("jpeg"))	|| (sSrcExt == _T("thm")))
 		return _T(".jpg");
-	else if ((sSrcExt == _T("tif")) || (sSrcExt == _T("jfx")) || (sSrcExt == _T("tiff")))
+	else if (::IsTIFFExt(sSrcExt))
 		return _T(".tif");
 	else if (sSrcExt == _T("gif"))
 		return _T(".gif");
@@ -4815,9 +4815,7 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 			(sExt == _T(".jpeg"))	||
 			(sExt == _T(".thm")))
 		return TRUE;
-	else if ((sExt == _T(".tif"))	||
-			(sExt == _T(".jfx"))	||
-			(sExt == _T(".tiff")))
+	else if (::IsTIFFExt(sExt))
 		return TRUE;
 	else if (sExt == _T(".pcx"))
 		return TRUE;
@@ -5548,7 +5546,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",18"));
 		else if (sExtNoPoint == _T("jpg") || sExtNoPoint == _T("jpeg") || sExtNoPoint == _T("jpe") || sExtNoPoint == _T("thm"))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",19"));
-		else if (sExtNoPoint == _T("tif") || sExtNoPoint == _T("tiff") || sExtNoPoint == _T("jfx"))
+		else if (::IsTIFFExt(sExtNoPoint))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",20"));
 		else if (sExtNoPoint == _T("png"))
 			::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",21"));

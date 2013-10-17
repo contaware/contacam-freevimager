@@ -2225,19 +2225,15 @@ CString FileNameToMime(LPCTSTR lpszFileName)
 		sExt == _T(".jpe")		||
 		sExt == _T(".thm"))
 		return _T("image/jpeg");
-	else if (	sExt == _T(".tif")	||
-				sExt == _T(".jfx")	||
-				sExt == _T(".tiff"))
+	else if (IsTIFFExt(sExt))
 		return _T("image/tiff");
-	else if (	sExt == _T(".bmp")	||
-				sExt == _T(".dib"))
+	else if (sExt == _T(".bmp")	|| sExt == _T(".dib"))
 		return _T("image/bmp");
 	else if (sExt == _T(".gif"))
 		return _T("image/gif");
 	else if (sExt == _T(".png"))
 		return _T("image/png");
-	else if (	sExt == _T(".avi")	||
-				sExt == _T(".divx"))
+	else if (sExt == _T(".avi")	|| sExt == _T(".divx"))
 		return _T("video/avi");
 	else
 		return _T(""); 

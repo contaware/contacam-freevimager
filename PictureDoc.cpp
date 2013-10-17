@@ -2656,9 +2656,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	{
 		dlgFile.m_ofn.nFilterIndex = 4;
 	}
-	else if (defextension == _T("tif")		||
-			(defextension == _T("jfx"))		||
-			(defextension == _T("tiff")))
+	else if (::IsTIFFExt(defextension))
 	{
 		dlgFile.m_ofn.nFilterIndex = 5;
 	}
@@ -2890,16 +2888,12 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			EndWaitCursor();
 #endif
 		}
-		else if ((extension == _T("tif"))	||
-				(extension == _T("jfx"))	||
-				(extension == _T("tiff")))
+		else if (::IsTIFFExt(extension))
 		{
 #ifdef SUPPORT_LIBTIFF
 			BeginWaitCursor();
 			int nTiffCompression;
-			if ((defextension == _T("tif"))	||
-				(defextension == _T("jfx"))	||
-				(defextension == _T("tiff")))
+			if (::IsTIFFExt(defextension))
 				nTiffCompression = m_pDib->m_FileInfo.m_nCompression;
 			else
 			{
@@ -3816,9 +3810,7 @@ BOOL CPictureDoc::Save()
 			EndWaitCursor();
 #endif
 		}
-		else if ((extension == _T("tif"))	||
-				(extension == _T("jfx"))	||
-				(extension == _T("tiff")))
+		else if (::IsTIFFExt(extension))
 		{
 #ifdef SUPPORT_LIBTIFF
 			BeginWaitCursor();

@@ -3062,9 +3062,7 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 
 		return LoadDibSectionEx(lpszPathName);			// Loads jpg as DIBSECTION
 	}
-	else if ((sExt == _T(".tif"))	||
-			(sExt == _T(".jfx"))	||
-			(sExt == _T(".tiff")))
+	else if (::IsTIFFExt(sExt))
 	{
 #ifdef SUPPORT_LIBTIFF
 		return LoadTIFF(lpszPathName,					// Loads tif as BMI + bits

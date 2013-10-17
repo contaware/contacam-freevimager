@@ -87,10 +87,8 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)TIFF_E_ZEROPATH;
 
-		// Check for .tif , .jfx or .tiff Extension
-		if ((::GetFileExt(sPathName) != _T(".tif")) && 
-			(::GetFileExt(sPathName) != _T(".jfx")) &&
-			(::GetFileExt(sPathName) != _T(".tiff")))
+		// Check for tiff filename
+		if (!::IsTIFF(sPathName))
 			throw (int)TIFF_E_WRONGEXTENTION;
 
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
@@ -549,7 +547,7 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 			break;
 			case TIFF_E_ZEROPATH :			str += _T("The file name is zero\n");
 			break;
-			case TIFF_E_WRONGEXTENTION :	str += _T("The file extention is not .tif, .jfx or .tiff\n");
+			case TIFF_E_WRONGEXTENTION :	str += _T("The file extention is wrong\n");
 			break;
 			case TIFF_E_NOMEM :				str += _T("Could not alloc memory\n");
 			break;
@@ -1891,10 +1889,8 @@ BOOL CDib::SaveMultiPageTIFF(	LPCTSTR lpszSavePathName,
 								BOOL bProgressSend/*=TRUE*/,
 								CWorkerThread* pThread/*=NULL*/)
 {
-	// Check File Extension
-	if ((::GetFileExt(lpszOrigPathName) == _T(".tif")) ||
-		(::GetFileExt(lpszOrigPathName) == _T(".jfx")) ||
-		(::GetFileExt(lpszOrigPathName) == _T(".tiff")))
+	// Check File Name
+	if (::IsTIFF(lpszOrigPathName))
 	{
 		// Temporary file if Save & Orig. File Name are the same
 		CString sSaveFileName = lpszSavePathName;
@@ -2073,10 +2069,8 @@ BOOL CDib::TIFFWriteMetadata(LPCTSTR szFileName, LPCTSTR szTempDir)
 {
 	CString str;
 
-	// Check File Extension
-	if ((::GetFileExt(szFileName) == _T(".tif")) ||
-		(::GetFileExt(szFileName) == _T(".jfx")) ||
-		(::GetFileExt(szFileName) == _T(".tiff")))
+	// Check File Name
+	if (::IsTIFF(szFileName))
 	{
 		// Temporary Dst File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -2281,10 +2275,8 @@ BOOL CDib::TIFFCopy(LPCTSTR szInFileName,
 																	// 1, 2, 4 or 8 are converted to a standard Bits per Sample
 					BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {				
-	// Check File Extension
-	if ((::GetFileExt(szInFileName) == _T(".tif")) ||
-		(::GetFileExt(szInFileName) == _T(".jfx")) ||
-		(::GetFileExt(szInFileName) == _T(".tiff")))
+	// Check File Name
+	if (::IsTIFF(szInFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;
@@ -2455,10 +2447,8 @@ BOOL CDib::TIFFCopyAllPages(LPCTSTR szInFileName,
 																			// 1, 2, 4 or 8 are converted to a standard Bits per Sample
 							BOOL bReencodeYCbCrJpegs/*=FALSE*/)				// YCbCr Jpegs inside Tiff are not supported by Tiff2Pdf
 {
-	// Check File Extension
-	if ((::GetFileExt(szInFileName) == _T(".tif")) ||
-		(::GetFileExt(szInFileName) == _T(".jfx")) ||
-		(::GetFileExt(szInFileName) == _T(".tiff")))
+	// Check File Name
+	if (::IsTIFF(szInFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;
@@ -2512,10 +2502,8 @@ BOOL CDib::TIFFDeletePage(	int nDeletePageNum,
 							LPCTSTR szFileName,
 							LPCTSTR szTempDir)
 {
-	// Check File Extension
-	if ((::GetFileExt(szFileName) == _T(".tif")) ||
-		(::GetFileExt(szFileName) == _T(".jfx")) ||
-		(::GetFileExt(szFileName) == _T(".tiff")))
+	// Check File Name
+	if (::IsTIFF(szFileName))
 	{
 		// Temporary Dst File
 		CString sTempFileName = ::MakeTempFileName(szTempDir, szFileName);
@@ -2583,14 +2571,8 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 								CWnd* pProgressWnd/*=NULL*/,
 								BOOL bProgressSend/*=TRUE*/)
 {
-	// Check File Extension
-	if ((::GetFileExt(szDstFileName) == _T(".tif")	||
-		::GetFileExt(szDstFileName) == _T(".jfx")	||
-		::GetFileExt(szDstFileName) == _T(".tiff"))
-													&&
-		(::GetFileExt(szSrcFileName) == _T(".tif")	||
-		::GetFileExt(szSrcFileName) == _T(".jfx")	||
-		::GetFileExt(szSrcFileName) == _T(".tiff")))
+	// Check File Names
+	if (::IsTIFF(szDstFileName) && ::IsTIFF(szSrcFileName))
 	{
 		// Get Input Metadata
 		CDib Dib;

@@ -2242,9 +2242,7 @@ void CBatchProcDlg::OnButtonDstFile()
 		{
 			fd.m_ofn.nFilterIndex = 3;
 		}
-		else if (defextension == _T("tif")		||
-				(defextension == _T("jfx"))		||
-				(defextension == _T("tiff")))
+		else if (::IsTIFFExt(defextension))
 		{
 			fd.m_ofn.nFilterIndex = 4;
 		}
