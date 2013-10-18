@@ -155,7 +155,7 @@ BOOL CAssistantDlg::OnInitDialog()
 		if (pComboBox)
 		{
 			CSortableFileFind FileFind;
-			FileFind.AddAllowedExtension(_T(".php"));
+			FileFind.AddAllowedExtension(_T("php"));
 			if (FileFind.Init(sAutoSaveDir + _T("\\") + CString(MICROAPACHE_LANGUAGES_DIR) + _T("\\") + _T("*")))
 			{
 				for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
@@ -166,7 +166,7 @@ BOOL CAssistantDlg::OnInitDialog()
 		if (pComboBox)
 		{
 			CSortableFileFind FileFind;
-			FileFind.AddAllowedExtension(_T(".css"));
+			FileFind.AddAllowedExtension(_T("css"));
 			if (FileFind.Init(sAutoSaveDir + _T("\\") + CString(MICROAPACHE_STYLE_DIR) + _T("\\") + _T("*")))
 			{
 				for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)

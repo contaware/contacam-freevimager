@@ -6393,7 +6393,7 @@ void CUImagerApp::OnHelpTutorial(UINT nID)
 	CString sTutorialsPath = CString(szDrive) + CString(szDir);
 	sTutorialsPath += _T("Tutorials");
 	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T(".htm"));
+	FileFind.AddAllowedExtension(_T("htm"));
 	if (FileFind.Init(sTutorialsPath + _T("\\*")))
 	{
 		::ShellExecute(	NULL,

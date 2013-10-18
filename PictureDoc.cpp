@@ -2195,44 +2195,44 @@ CPictureDoc::CPictureDoc()
 	m_bZoomToolMinus = FALSE;
 
 	// Allowed Extensions
-	m_FileFind.AddAllowedExtension(_T(".jpg"));
-	m_FileFind.AddAllowedExtension(_T(".gif"));
-	m_FileFind.AddAllowedExtension(_T(".bmp"));
-	m_FileFind.AddAllowedExtension(_T(".png"));
-	m_FileFind.AddAllowedExtension(_T(".tif"));
-	m_FileFind.AddAllowedExtension(_T(".pcx"));
-	m_FileFind.AddAllowedExtension(_T(".emf"));
-	m_FileFind.AddAllowedExtension(_T(".jpeg"));
-	m_FileFind.AddAllowedExtension(_T(".tiff"));
-	m_FileFind.AddAllowedExtension(_T(".jpe"));
-	m_FileFind.AddAllowedExtension(_T(".thm"));
-	m_FileFind.AddAllowedExtension(_T(".jfx"));
-	m_FileFind.AddAllowedExtension(_T(".dib"));
+	m_FileFind.AddAllowedExtension(_T("jpg"));
+	m_FileFind.AddAllowedExtension(_T("gif"));
+	m_FileFind.AddAllowedExtension(_T("bmp"));
+	m_FileFind.AddAllowedExtension(_T("png"));
+	m_FileFind.AddAllowedExtension(_T("tif"));
+	m_FileFind.AddAllowedExtension(_T("pcx"));
+	m_FileFind.AddAllowedExtension(_T("emf"));
+	m_FileFind.AddAllowedExtension(_T("jpeg"));
+	m_FileFind.AddAllowedExtension(_T("tiff"));
+	m_FileFind.AddAllowedExtension(_T("jpe"));
+	m_FileFind.AddAllowedExtension(_T("thm"));
+	m_FileFind.AddAllowedExtension(_T("jfx"));
+	m_FileFind.AddAllowedExtension(_T("dib"));
 	m_FileFind.AddAllowedNumericExtensions();
-	m_NewFileFind.AddAllowedExtension(_T(".jpg"));
-	m_NewFileFind.AddAllowedExtension(_T(".gif"));
-	m_NewFileFind.AddAllowedExtension(_T(".bmp"));
-	m_NewFileFind.AddAllowedExtension(_T(".png"));
-	m_NewFileFind.AddAllowedExtension(_T(".tif"));
-	m_NewFileFind.AddAllowedExtension(_T(".pcx"));
-	m_NewFileFind.AddAllowedExtension(_T(".emf"));
-	m_NewFileFind.AddAllowedExtension(_T(".jpeg"));
-	m_NewFileFind.AddAllowedExtension(_T(".tiff"));
-	m_NewFileFind.AddAllowedExtension(_T(".jpe"));
-	m_NewFileFind.AddAllowedExtension(_T(".thm"));
-	m_NewFileFind.AddAllowedExtension(_T(".jfx"));
-	m_NewFileFind.AddAllowedExtension(_T(".dib"));
+	m_NewFileFind.AddAllowedExtension(_T("jpg"));
+	m_NewFileFind.AddAllowedExtension(_T("gif"));
+	m_NewFileFind.AddAllowedExtension(_T("bmp"));
+	m_NewFileFind.AddAllowedExtension(_T("png"));
+	m_NewFileFind.AddAllowedExtension(_T("tif"));
+	m_NewFileFind.AddAllowedExtension(_T("pcx"));
+	m_NewFileFind.AddAllowedExtension(_T("emf"));
+	m_NewFileFind.AddAllowedExtension(_T("jpeg"));
+	m_NewFileFind.AddAllowedExtension(_T("tiff"));
+	m_NewFileFind.AddAllowedExtension(_T("jpe"));
+	m_NewFileFind.AddAllowedExtension(_T("thm"));
+	m_NewFileFind.AddAllowedExtension(_T("jfx"));
+	m_NewFileFind.AddAllowedExtension(_T("dib"));
 	m_NewFileFind.AddAllowedNumericExtensions();
 
 	// Allowed Extensions For Background Music
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".mp3"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".wav"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".wma"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".mid"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".rmi"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".au"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".aif"));
-	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".aiff"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("mp3"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("wav"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("wma"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("mid"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("rmi"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("au"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("aif"));
+	m_BackgroundMusicFileFind.AddAllowedExtension(_T("aiff"));
 
 	// Background Music Play Flag
 	m_bPlayBackgroundMusic = TRUE;

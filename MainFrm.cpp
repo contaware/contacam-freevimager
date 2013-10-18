@@ -2389,7 +2389,7 @@ void CMainFrame::PopulateHelpMenu(CMenu* pPopupMenu)
 	CString sTutorialsPath = CString(szDrive) + CString(szDir);
 	sTutorialsPath += _T("Tutorials");
 	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T(".htm"));
+	FileFind.AddAllowedExtension(_T("htm"));
 	int nTutorialsCount = 0;
 	if (FileFind.Init(sTutorialsPath + _T("\\*")))
 	{

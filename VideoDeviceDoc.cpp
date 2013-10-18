@@ -1419,7 +1419,7 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 
 	// Find and process jpg snapshot history files
 	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T(".jpg"));
+	FileFind.AddAllowedExtension(_T("jpg"));
 	if (FileFind.Init(::GetDriveAndDirName(sSWFFileName) + _T("\\") + _T("*")))
 	{
 		for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
