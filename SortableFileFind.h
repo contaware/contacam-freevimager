@@ -41,19 +41,14 @@ class CSortableFileFind
 								m_hRecursiveFileFindStarted = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 								m_hRecursiveFileFindNoFiles = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 								m_bRecursiveFileFindStarted = FALSE;
+								m_bExtensionFilterAllowNumeric = FALSE;
 								m_hWnd = NULL;
 								m_sRootDirName = _T("");
 								m_sFileName = _T("");
 								m_sDirName = _T("");
 								m_nDirPos = -1;
 								m_nFilePos = -1;};
-		CSortableFileFind(CString strName, BOOL bDoSort = TRUE){m_FileFindThread.SetPointer(this);
-																::InitializeCriticalSection(&m_csFileFindArray);
-																m_hRecursiveFileFindStarted = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-																m_hRecursiveFileFindNoFiles = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-																m_bRecursiveFileFindStarted = FALSE;
-																m_hWnd = NULL;
-																Init(strName, bDoSort);};
+
 		virtual ~CSortableFileFind() {	Close();
 										ClearAllowedExtensions();
 										::CloseHandle(m_hRecursiveFileFindStarted);
@@ -63,7 +58,7 @@ class CSortableFileFind
 		// Pass A string containing the name of the file to find.
 		// Call this member function to open a file search.
 		// If bDoSort is set, files and dirs are sorted
-		BOOL Init(const CString& strName, BOOL bDoSort = TRUE, CWorkerThread* pThread = NULL);
+		BOOL Init(const CString& strName, BOOL bDoSort = TRUE);
 
 		// Pass A string containing the name of the file to find.
 		// Call this member function to open a recursive file search.
@@ -87,11 +82,17 @@ class CSortableFileFind
 		// -2 : Error
 		int WaitRecursiveDone(HANDLE hKillEvent = NULL);
 
-		// Add an Allowed File Extension
+		// Enable extension filtering allowing the given file extension
+		// Notes: - sExt can be provided with or without leading dot
+		//        - if sExt is the empty string then all files without
+		//          an extension are allowed
 		void AddAllowedExtension(CString sExt);
 
-		// Clear All Allowed File Extensions
-		// -> All extensions are allowed
+		// Enable extension filtering allowing all numeric extensions like .012 or .1209, ...
+		void AddAllowedNumericExtensions() {m_bExtensionFilterAllowNumeric = TRUE;};
+
+		// Clear all previously allowed file extensions
+		// (extension filtering is disabled -> all extensions are now allowed)
 		void ClearAllowedExtensions();
 
 		// Set Window for Messages Send
@@ -222,6 +223,7 @@ class CSortableFileFind
 		CSortableStringArray m_Dirs;
 		CSortableStringArray m_Files;
 		CSortableStringArray m_AllowedExtensions;
+		BOOL m_bExtensionFilterAllowNumeric;
 		int m_nDirPos;
 		int m_nFilePos;
 		BOOL m_bRecursiveFileFindStarted;

@@ -2208,6 +2208,7 @@ CPictureDoc::CPictureDoc()
 	m_FileFind.AddAllowedExtension(_T(".thm"));
 	m_FileFind.AddAllowedExtension(_T(".jfx"));
 	m_FileFind.AddAllowedExtension(_T(".dib"));
+	m_FileFind.AddAllowedNumericExtensions();
 	m_NewFileFind.AddAllowedExtension(_T(".jpg"));
 	m_NewFileFind.AddAllowedExtension(_T(".gif"));
 	m_NewFileFind.AddAllowedExtension(_T(".bmp"));
@@ -2221,6 +2222,7 @@ CPictureDoc::CPictureDoc()
 	m_NewFileFind.AddAllowedExtension(_T(".thm"));
 	m_NewFileFind.AddAllowedExtension(_T(".jfx"));
 	m_NewFileFind.AddAllowedExtension(_T(".dib"));
+	m_NewFileFind.AddAllowedNumericExtensions();
 
 	// Allowed Extensions For Background Music
 	m_BackgroundMusicFileFind.AddAllowedExtension(_T(".mp3"));

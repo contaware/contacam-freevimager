@@ -210,31 +210,42 @@ extern void GetMemoryStats(	int* pRegions = NULL,
 extern ULONGLONG GetDiskSize(LPCTSTR lpszPath);
 extern ULONGLONG GetDiskSpace(LPCTSTR lpszPath);
 
-// Tiff Functions
-__forceinline BOOL IsTIFFExt(const CString& sExt)
+// Is it a positive numeric string (0, 1, 2, ...)?
+__forceinline BOOL IsNumeric(const CString& s)
 {
-	return ((sExt.CompareNoCase(_T(".tif")) == 0)	||
-			(sExt.CompareNoCase(_T("tif")) == 0)	||
-			(sExt.CompareNoCase(_T(".tiff")) == 0)	||
+	if (s.IsEmpty())
+		return FALSE;
+	for (int i = 0 ; i < s.GetLength() ; i++)
+	{
+		if (!_istdigit(s[i])) // if not 0 – 9
+			return FALSE;
+	}
+	return TRUE;
+}
+
+// Tiff check functions
+__forceinline BOOL IsTIFFExt(CString sExt)
+{
+	sExt.TrimLeft(_T('.'));
+	return ((sExt.CompareNoCase(_T("tif")) == 0)	||
 			(sExt.CompareNoCase(_T("tiff")) == 0)	||
-			(sExt.CompareNoCase(_T(".jfx")) == 0)	||
-			(sExt.CompareNoCase(_T("jfx")) == 0));
+			(sExt.CompareNoCase(_T("jfx")) == 0)	||
+			IsNumeric(sExt));	// some scan/fax programs save multi-page tiffs
+								// using numeric extensions (.001, .002, ...)
+								// which indicate the page count
 }
 __forceinline BOOL IsTIFF(const CString& sFileName)
 {
 	return IsTIFFExt(GetFileExt(sFileName));
 }
 
-// Jpeg Functions
-__forceinline BOOL IsJPEGExt(const CString& sExt)
+// Jpeg check functions
+__forceinline BOOL IsJPEGExt(CString sExt)
 {
-	return ((sExt.CompareNoCase(_T(".jpg")) == 0)	||
-			(sExt.CompareNoCase(_T("jpg")) == 0)	||
-			(sExt.CompareNoCase(_T(".jpeg")) == 0)	||
+	sExt.TrimLeft(_T('.'));
+	return ((sExt.CompareNoCase(_T("jpg")) == 0)	||
 			(sExt.CompareNoCase(_T("jpeg")) == 0)	||
-			(sExt.CompareNoCase(_T(".jpe")) == 0)	||
 			(sExt.CompareNoCase(_T("jpe")) == 0)	||
-			(sExt.CompareNoCase(_T(".thm")) == 0)	||
 			(sExt.CompareNoCase(_T("thm")) == 0));
 }
 __forceinline BOOL IsJPEG(const CString& sFileName)

@@ -11,7 +11,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-BOOL CSortableFileFind::Init(const CString& strName, BOOL bDoSort/*=TRUE*/, CWorkerThread* pThread/*=NULL*/)
+BOOL CSortableFileFind::Init(const CString& strName, BOOL bDoSort/*=TRUE*/)
 {
 	m_sFileName = _T("");
 	m_sDirName = _T("");
@@ -35,9 +35,8 @@ BOOL CSortableFileFind::Init(const CString& strName, BOOL bDoSort/*=TRUE*/, CWor
 
 	::EnterCriticalSection(&m_csFileFindArray);
 
-	BOOL bHasAllowedExtensions = FALSE;
-	if (m_AllowedExtensions.GetSize() > 0)
-		bHasAllowedExtensions = TRUE;
+	// Do extension filtering?
+	BOOL bDoExtensionFiltering = (m_AllowedExtensions.GetSize() > 0 || m_bExtensionFilterAllowNumeric);
 
 	do
     {
@@ -50,30 +49,26 @@ BOOL CSortableFileFind::Init(const CString& strName, BOOL bDoSort/*=TRUE*/, CWor
 		}
 		else
 		{
-			if (bHasAllowedExtensions)
+			if (bDoExtensionFiltering)
 			{
 				BOOL bAllowed = FALSE;
+				CString sExt(::GetFileExt(sFileName));	// returns lower case extension with dot
+				sExt.TrimLeft(_T('.'));					// extension without dot
 				for (int pos = 0 ; pos < m_AllowedExtensions.GetSize() ; pos++)
 				{
-					if (m_AllowedExtensions[pos].CompareNoCase(::GetFileExt(sFileName)) == 0)
+					if (sExt == m_AllowedExtensions[pos]) // extension in array is lower case without dot
 					{
 						bAllowed = TRUE;
 						break;
 					}
 				}
+				if (!bAllowed && m_bExtensionFilterAllowNumeric)
+					bAllowed = ::IsNumeric(sExt);
 				if (bAllowed)
 					m_Files.Add(sFileName);
 			}
 			else
 				m_Files.Add(sFileName);
-		}
-
-		// Do Exit?
-		if (pThread && pThread->DoExit())
-		{
-			::LeaveCriticalSection(&m_csFileFindArray);
-			::FindClose(hFileSearch);
-			return FALSE;
 		}
     }
     while (::FindNextFile(hFileSearch, &Info));
@@ -188,12 +183,12 @@ int CSortableFileFind::WaitRecursiveDone(HANDLE hKillEvent/*=NULL*/)
 
 void CSortableFileFind::AddAllowedExtension(CString sExt)
 {
-	BOOL bDuplicated = FALSE;
-
 	// Adjust
-	if (sExt[0] != _T('.'))
-		sExt.Insert(0, _T('.'));
+	sExt.MakeLower();
+	sExt.TrimLeft(_T('.'));
 
+	// Check whether extension is already in array
+	BOOL bDuplicated = FALSE;
 	for (int pos = 0 ; pos < m_AllowedExtensions.GetSize() ; pos++)
 	{
 		if (sExt == m_AllowedExtensions[pos])
@@ -203,6 +198,7 @@ void CSortableFileFind::AddAllowedExtension(CString sExt)
 		}
 	}
 
+	// Add the extension to the end if not already present
 	if (!bDuplicated)
 		m_AllowedExtensions.Add(sExt);
 }
@@ -210,6 +206,7 @@ void CSortableFileFind::AddAllowedExtension(CString sExt)
 void CSortableFileFind::ClearAllowedExtensions()
 {
 	m_AllowedExtensions.RemoveAll();
+	m_bExtensionFilterAllowNumeric = FALSE;
 }
 
 BOOL CSortableFileFind::FindPreviousFile()
@@ -696,9 +693,8 @@ BOOL CSortableFileFind::CFileFindThread::Recurse(const CString& strName)
 		return TRUE;
 	}
 
-	BOOL bHasAllowedExtensions = FALSE;
-	if (m_p->m_AllowedExtensions.GetSize() > 0)
-		bHasAllowedExtensions = TRUE;
+	// Do extension filtering?
+	BOOL bDoExtensionFiltering = (m_p->m_AllowedExtensions.GetSize() > 0 || m_p->m_bExtensionFilterAllowNumeric);
 
 	do
     {
@@ -720,17 +716,21 @@ BOOL CSortableFileFind::CFileFindThread::Recurse(const CString& strName)
 		}
 		else
 		{
-			if (bHasAllowedExtensions)
+			if (bDoExtensionFiltering)
 			{
 				BOOL bAllowed = FALSE;
+				CString sExt(::GetFileExt(sFileName));	// returns lower case extension with dot
+				sExt.TrimLeft(_T('.'));					// extension without dot
 				for (int pos = 0 ; pos < m_p->m_AllowedExtensions.GetSize() ; pos++)
 				{
-					if (m_p->m_AllowedExtensions[pos].CompareNoCase(::GetFileExt(sFileName)) == 0)
+					if (sExt == m_p->m_AllowedExtensions[pos]) // extension in array is lower case without dot
 					{
 						bAllowed = TRUE;
 						break;
 					}
 				}
+				if (!bAllowed && m_p->m_bExtensionFilterAllowNumeric)
+					bAllowed = ::IsNumeric(sExt);
 				if (bAllowed)
 					pLocalFiles->Add(sFileName);
 			}
