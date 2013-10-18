@@ -5704,6 +5704,7 @@ BEGIN
     IDS_STRING1836          "Big"
     IDS_STRING1837          "Medium"
     IDS_STRING1838          "Small"
+    IDS_STRING1839          "Before Save,Email,Ftp"
 END
 
 STRINGTABLE

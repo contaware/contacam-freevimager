@@ -1,8 +1,8 @@
 Both
 ----
-- Drop support for old Win9x
 - When views are tiled and resizing mainframe then resize also childs
 - Possibility to hide menu, statusbar and toolbars
+
 
 FreeVimager Program
 -------------------
@@ -18,6 +18,7 @@ Image: Country
 Status: Title (object name)
 Status: Source
 Status: Copyright notice
+
 
 ContaCam Program
 ----------------
@@ -38,9 +39,17 @@ ContaCam Program
   Appearance, Storage or change it to Device Basic Settings
 - Add ACTi support to homapage FAQ!
 - Make thumbnail anim. gif for avi records?
+- Support NV12 (NV21) camera source format
+- Check whether format select in capture class is case sensitive,
+  make it case insensitive?
+- Add duration to file names like:
+  det_2013_09_15-03_33_48-143.avi = 143 secs
+
 
 ContaCam Web Interface
 ----------------------
 - Replace swf with html5 video (mp4 and webm formats)
 - Back click if in full-screen stream should
   return to the correct day and page
+- If live snapshot time stamp remains the same then
+  output a red border to alert

@@ -422,6 +422,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (bMakeSwf)
 			AVRecSwf.Init(sSWFFileName, 0, true); // fast encoding!
 		
+		// Execute Command Before Save
+		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
+		{
+			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
+													sAVIFileName, sGIFFileName, sSWFFileName,
+													m_pDoc->m_nMovDetSavesCount);
+		}
+
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
 		POSITION currentpos;
@@ -821,8 +829,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
-		// Execute Command
-		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
+		// Execute Command After Save
+		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 2)
 		{
 			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
 													sAVIFileName, sGIFFileName, sSWFFileName,
