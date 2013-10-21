@@ -204,7 +204,10 @@ void CSnapshotPage::OnCheckSnapshotLiveJpeg()
 	if (pCheck->GetCheck())
 		m_pDoc->m_bSnapshotLiveJpeg = TRUE;
 	else
+	{
 		m_pDoc->m_bSnapshotLiveJpeg = FALSE;
+		::AfxMessageBox(ML_STRING(1873, "Files are not shown in web interface if disabling this!"), MB_OK | MB_ICONWARNING);
+	}
 }
 
 void CSnapshotPage::OnCheckSnapshotHistoryJpeg() 
