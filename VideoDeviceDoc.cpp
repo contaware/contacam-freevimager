@@ -6642,8 +6642,6 @@ void CVideoDeviceDoc::ViewWeb()
 			EndWaitCursor();
 		}
 	}
-	else
-		::AfxMessageBox(ML_STRING(1476, "Please configure a directory in the Device Settings dialog"));
 }
 
 void CVideoDeviceDoc::ViewFiles() 

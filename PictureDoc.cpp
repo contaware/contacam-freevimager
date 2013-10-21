@@ -11348,12 +11348,7 @@ BOOL CPictureDoc::ViewLayeredDlg()
 		}
 	}
 	else
-	{
-		GetView()->ForceCursor();
-		::AfxMessageBox(ML_STRING(1330, "Preview Display available starting from Windows 2000 or higher"), MB_OK | MB_ICONINFORMATION);
-		GetView()->ForceCursor(FALSE);
 		return FALSE;
-	}
 }
 
 void CPictureDoc::OnViewLayeredDlg()

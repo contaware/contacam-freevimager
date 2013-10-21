@@ -4574,7 +4574,6 @@ BEGIN
     IDS_MULTILANG_1195      "Try again after saving the file."
     IDS_MULTILANG_1196      "Try again after the video processing has terminated."
     IDS_MULTILANG_1197      "Stop playing the file and try again."
-    IDS_MULTILANG_1198      "No document open."
     IDS_MULTILANG_1199      "This is not a Picture or a Video File."
 END
 
@@ -4603,7 +4602,6 @@ BEGIN
     IDS_MULTILANG_1219      "DirectX 7.0 or higher is required for best video playback performance!"
     IDS_MULTILANG_1220      "The latest version may be downloaded from:"
     IDS_MULTILANG_1221      "DirectX 7.0 or higher is required!"
-    IDS_MULTILANG_1222      "Error While Deleting The Email Temporary Folder."
     IDS_MULTILANG_1223      "No twain driver found."
     IDS_MULTILANG_1224      "No twain source found."
     IDS_MULTILANG_1225      "Error While Deleting The Temporary Folder."
@@ -4624,7 +4622,6 @@ BEGIN
     IDS_MULTILANG_1236      "W=%0.2fin , H=%0.2fin , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
     IDS_MULTILANG_1237      "W=%0.2fcm , H=%0.2fcm , W/H=%0.2f (l=%0.2f,t=%0.2f,r=%0.2f,b=%0.2f) "
     IDS_MULTILANG_1239      " , %dx%d , %s , Image: %d %s"
-    IDS_MULTILANG_1240      " , %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1241      " , File %i of %i in Directories, Frame %i of %i, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1242      " , File %i of %i in Directory, Frame %i of %i, %dx%d , %s , File: %d %s"
     IDS_MULTILANG_1243      "KB"
@@ -4726,7 +4723,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1329      "Stop playing the Animated GIF before viewing it frame by frame."
-    IDS_MULTILANG_1330      "Preview Display available starting from Windows 2000 or higher"
     IDS_MULTILANG_1331      "Please paste over a picture document."
     IDS_MULTILANG_1332      "Please try again later, picture is loading."
 END
@@ -4759,8 +4755,7 @@ BEGIN
     IDS_MULTILANG_1377      "(see Start.exe, Settings.xml and autorun.inf)"
     IDS_MULTILANG_1378      "Before Viewing the Slideshow do Step 1:\nAdd the Slideshow EXE."
     IDS_MULTILANG_1379      "Before Burning the Slideshow do Step 1:\nAdd the Slideshow EXE."
-    IDS_MULTILANG_1380      "To automatically Burn the Slideshow you need at least Windows XP.\n"
-    IDS_MULTILANG_1382      "To proceed anyway open your preferred CD / DVD maker Tool\n"
+    IDS_MULTILANG_1382      "Open your preferred CD / DVD maker Tool\n"
     IDS_MULTILANG_1383      "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."
     IDS_MULTILANG_1384      "Loading..."
     IDS_MULTILANG_1385      "Unsupported File"
@@ -4779,8 +4774,6 @@ BEGIN
     IDS_MULTILANG_1397      "Error parsing Xml!"
     IDS_MULTILANG_1398      "No Xml available."
     IDS_MULTILANG_1400      "Please enter a number between %s and %s"
-    IDS_MULTILANG_1401      "Yes"
-    IDS_MULTILANG_1402      "No"
     IDS_MULTILANG_1403      "Advanced <<"
     IDS_MULTILANG_1404      "Please Save Before Doing A Lossless Jpeg Transformation."
     IDS_MULTILANG_1406      "Please Enter A Host Name, a From and a To Address"
@@ -4825,7 +4818,6 @@ BEGIN
     IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
     IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
     IDS_MULTILANG_1452      "Rendering mode not supported!"
-    IDS_MULTILANG_1455      "Muted!"
 END
 
 STRINGTABLE
@@ -4843,7 +4835,6 @@ BEGIN
     IDS_MULTILANG_1473      "Camera folder must reside inside the document root directory!"
     IDS_MULTILANG_1474      "Failed to stop the web server"
     IDS_MULTILANG_1475      "Failed to start the web server"
-    IDS_MULTILANG_1476      "Please configure a directory in the Device Settings dialog"
     IDS_MULTILANG_1483      "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"
     IDS_MULTILANG_1484      "&Copying...\tCtrl+C"
     IDS_MULTILANG_1485      "&Copy\tCtrl+C"
@@ -5349,7 +5340,6 @@ BEGIN
     IDS_STRING1516          "Add / Update EXIF Thumbnail"
     IDS_STRING1517          "Remove EXIF Thumbnail"
     IDS_STRING1518          "Auto"
-    IDS_STRING1519          "Auto (Size Paper Automatically)"
 END
 
 STRINGTABLE

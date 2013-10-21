@@ -5648,8 +5648,7 @@ void CBatchProcDlg::OnButtonBurnSlideshow()
 	else
 	{
 		CString sText;
-		sText.Format(ML_STRING(1380, "To automatically Burn the Slideshow you need at least Windows XP.\n") +
-					ML_STRING(1382, "To proceed anyway open your preferred CD / DVD maker Tool\n") +
+		sText.Format(ML_STRING(1382, "Open your preferred CD / DVD maker Tool\n") +
 					ML_STRING(1383, "and Burn the CONTENT of the following folder:\n%s\nto a Data CD / DVD."),
 					m_sDst);
 		::AfxMessageBox(sText, MB_ICONINFORMATION);
@@ -5690,13 +5689,13 @@ void CBatchProcDlg::UpdateDstFolderSizes(CWorkerThread* pThread/*=NULL*/)
 		::LeaveCriticalSection(&m_csOutDir);
 		CString sContentSize, sFilesCount;
 		if (OutDirContentSize.QuadPart >= (1024*1024*1024))
-			sContentSize.Format(_T("%I64d GB"), OutDirContentSize.QuadPart >> 30);
+			sContentSize.Format(_T("%I64d ") + ML_STRING(1826, "GB"), OutDirContentSize.QuadPart >> 30);
 		else if (OutDirContentSize.QuadPart >= (1024*1024))
-			sContentSize.Format(_T("%I64d MB"), OutDirContentSize.QuadPart >> 20);
+			sContentSize.Format(_T("%I64d ") + ML_STRING(1825, "MB"), OutDirContentSize.QuadPart >> 20);
 		else if (OutDirContentSize.QuadPart >= 1024)
-			sContentSize.Format(_T("%I64d KB"), OutDirContentSize.QuadPart >> 10);
+			sContentSize.Format(_T("%I64d ") + ML_STRING(1243, "KB"), OutDirContentSize.QuadPart >> 10);
 		else
-			sContentSize.Format(CString(_T("%I64d")) + CString(_T(" ")) + ML_STRING(1244, "Bytes"), OutDirContentSize.QuadPart);
+			sContentSize.Format(_T("%I64d ") + ML_STRING(1244, "Bytes"), OutDirContentSize.QuadPart);
 		if (nOutDirFilesCount == 1)
 			sFilesCount.Format(_T("%u ") + ML_STRING(1574, "File"), nOutDirFilesCount);
 		else
@@ -5735,13 +5734,13 @@ void CBatchProcDlg::UpdateDstFileSize()
 		}
 		CString sFileSize, sFilesCount;
 		if (FileSize.QuadPart >= (1024*1024*1024))
-			sFileSize.Format(_T("%I64d GB"), FileSize.QuadPart >> 30);
+			sFileSize.Format(_T("%I64d ") + ML_STRING(1826, "GB"), FileSize.QuadPart >> 30);
 		else if (FileSize.QuadPart >= (1024*1024))
-			sFileSize.Format(_T("%I64d MB"), FileSize.QuadPart >> 20);
+			sFileSize.Format(_T("%I64d ") + ML_STRING(1825, "MB"), FileSize.QuadPart >> 20);
 		else if (FileSize.QuadPart >= 1024)
-			sFileSize.Format(_T("%I64d KB"), FileSize.QuadPart >> 10);
+			sFileSize.Format(_T("%I64d ") + ML_STRING(1243, "KB"), FileSize.QuadPart >> 10);
 		else
-			sFileSize.Format(CString(_T("%I64d")) + CString(_T(" ")) + ML_STRING(1244, "Bytes"), FileSize.QuadPart);
+			sFileSize.Format(_T("%I64d ") + ML_STRING(1244, "Bytes"), FileSize.QuadPart);
 		if (nFilesCount == 1)
 			sFilesCount.Format(_T("%u ") + ML_STRING(1574, "File"), nFilesCount);
 		else

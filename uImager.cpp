@@ -2224,7 +2224,7 @@ BOOL CUImagerApp::IsDocAvailable(CDocument* pDoc, BOOL bShowMsgBoxIfNotAvailable
 	
 	if (!pDoc)
 	{
-		sMsg = ML_STRING(1198, "No document open.");
+		sMsg = ML_STRING(1201, "No open documents available.");
 		goto msg;
 	}
 
@@ -4458,7 +4458,7 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		{
 			if (!::DeleteDirContent(sTempEmailDir))
 			{
-				::AfxMessageBox(ML_STRING(1222, "Error While Deleting The Email Temporary Folder."), MB_OK | MB_ICONSTOP);
+				::AfxMessageBox(ML_STRING(1225, "Error While Deleting The Temporary Folder."), MB_OK | MB_ICONSTOP);
 				return;
 			}
 		}
