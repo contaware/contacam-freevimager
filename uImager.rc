@@ -5694,7 +5694,6 @@ BEGIN
     IDS_STRING1836          "Big"
     IDS_STRING1837          "Medium"
     IDS_STRING1838          "Small"
-    IDS_STRING1839          "Before Save,Email,Ftp"
 END
 
 STRINGTABLE
@@ -5720,7 +5719,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1842          "On first movement frame"
+    IDS_STRING1842          "After Detection Filter OK"
     IDS_STRING1843          "After Save,Email,Ftp"
     IDS_STRING1844          "Det"
     IDS_STRING1845          "Off"

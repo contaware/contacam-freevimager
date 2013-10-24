@@ -128,8 +128,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1875, "Detection enabled:"));
 	pComboBoxDetectionScheduler->AddString(ML_STRING(1876, "Detection disabled:"));
 	CComboBox* pComboBoxExexMode = (CComboBox*)GetDlgItem(IDC_EXECMODE_MOVEMENT_DETECTION);
-	pComboBoxExexMode->AddString(ML_STRING(1842, "On first movement frame"));
-	pComboBoxExexMode->AddString(ML_STRING(1839, "Before Save,Email,Ftp"));
+	pComboBoxExexMode->AddString(ML_STRING(1842, "After Detection Filter OK"));
 	pComboBoxExexMode->AddString(ML_STRING(1843, "After Save,Email,Ftp"));
 
 	// This calls UpdateData(FALSE)

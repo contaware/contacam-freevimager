@@ -421,14 +421,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CAVRec AVRecSwf;
 		if (bMakeSwf)
 			AVRecSwf.Init(sSWFFileName, 0, true); // fast encoding!
-		
-		// Execute Command Before Save
-		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
-		{
-			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
-													sAVIFileName, sGIFFileName, sSWFFileName,
-													m_pDoc->m_nMovDetSavesCount);
-		}
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -830,7 +822,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
 
 		// Execute Command After Save
-		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 2)
+		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
 		{
 			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
 													sAVIFileName, sGIFFileName, sSWFFileName,
@@ -2693,6 +2685,15 @@ end_of_software_detection:
 		{
 			m_bDetectingMovement = TRUE;
 			m_dwFirstDetFrameUpTime = pDib->GetUpTime();
+		}
+
+		// Do we have a movement of at least m_nDetectionMinLengthMilliSeconds?
+		// (if m_nDetectionMinLengthMilliSeconds is 0 then m_nDetectionMinLengthMilliSeconds
+		// is the same as m_bDetectingMovement)
+		if (!m_bDetectingMinLengthMovement &&
+			(m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
+		{
+			m_bDetectingMinLengthMovement = TRUE;
 			if (m_bExecCommandMovementDetection && m_nExecModeMovementDetection == 0)
 				ExecCommandMovementDetection();
 		}
@@ -2756,8 +2757,9 @@ end_of_software_detection:
 		// Check if end of detection period
 		if ((pDib->GetUpTime() - m_dwLastDetFrameUpTime) > (DWORD)m_nMilliSecondsRecAfterMovementEnd)
 		{
-			// Reset var
+			// Reset vars
 			m_bDetectingMovement = FALSE;
+			m_bDetectingMinLengthMovement = FALSE;
 
 			// Save frames if minimum length reached (if m_nDetectionMinLengthMilliSeconds is 0 always save frames)
 			if ((m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
@@ -4104,6 +4106,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowEditDetectionZones = FALSE;
 	m_bShowEditDetectionZonesMinus = FALSE;
 	m_bDetectingMovement = FALSE;
+	m_bDetectingMinLengthMovement = FALSE;
 	m_sDetectionTriggerFileName = _T("");
 	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
@@ -4338,6 +4341,7 @@ void CVideoDeviceDoc::FreeMovementDetector()
 	}
 	::InterlockedExchange(&m_lMovDetTotalZones, 0);
 	m_bDetectingMovement = FALSE;
+	m_bDetectingMinLengthMovement = FALSE;
 	if (m_MovementDetections)
 		memset(m_MovementDetections, 0, sizeof(m_MovementDetections[0]) * MOVDET_MAX_ZONES);
 }

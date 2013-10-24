@@ -1108,6 +1108,7 @@ public:
 	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone
 	volatile BOOL m_bDetectingMovement;					// Flag Indicating a Detection
+	volatile BOOL m_bDetectingMinLengthMovement;		// Flag Indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
 	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 (100 Max Sensibility)
 														// a high sensibility may Detect Video Noise!)
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
