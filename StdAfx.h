@@ -67,6 +67,10 @@
 #define MAX_FILEDLG_PATH			65535 // If you put 65536 it's not working on win2000...
 #endif
 
+// Default Font Face Families
+#define DEFAULT_FONTFACE			_T("Arial")
+#define DEFAULT_FONTFACE_NARROW		_T("Arial Narrow")
+
 // Vista and higher Shield Icon
 #ifndef BCM_SETSHIELD
 #define BCM_SETSHIELD				(BCM_FIRST + 0x000C)

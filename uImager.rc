@@ -5770,6 +5770,9 @@ BEGIN
     IDS_STRING1874          "Detection always enabled (scheduler is off)"
     IDS_STRING1875          "Detection enabled:"
     IDS_STRING1876          "Detection disabled:"
+    IDS_STRING1877          "Save: %d%%"
+    IDS_STRING1878          "Email: %d%%"
+    IDS_STRING1879          "FTP: %d%%"
 END
 
 #endif    // English (United States) resources

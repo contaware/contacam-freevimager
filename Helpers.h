@@ -5,6 +5,7 @@
 
 #include "MMSystem.h"
 #include "WorkerThread.h"
+#include "Round.h"
 
 #ifndef MAX
 #  define MAX(a,b)  ((a) > (b) ? (a) : (b))
@@ -322,6 +323,28 @@ extern double drand(); // returns a double in the range of [0.0,1.0[  (0.0 inclu
 // Mix the given params for srand seeding, as input we can use:
 // GetCurrentProcessId(), GetCurrentThreadId(), timeGetTime(), GetTickCount(), ...
 extern unsigned int makeseed(unsigned int a, unsigned int b, unsigned int c);
+
+// Scale a font size starting from a minimum reference
+__forceinline int ScaleFont(int nWidth, int nHeight,
+							int nMinRefFontSize,
+							int nMinRefWidth, int nMinRefHeight)
+{
+	// Check
+	if (nMinRefWidth <= 0 || nMinRefHeight <= 0)
+		return nMinRefFontSize;
+
+	// Scale
+	double dFactorX = (double)nWidth / nMinRefWidth;
+	if (dFactorX < 1.0)
+		dFactorX = 1.0;
+	double dFactorY = (double)nHeight / nMinRefHeight;
+	if (dFactorY < 1.0)
+		dFactorY = 1.0;
+	if (dFactorX > dFactorY)
+		return Round(nMinRefFontSize * dFactorX);
+	else
+		return Round(nMinRefFontSize * dFactorY);
+}
 
 // Draw big single line Arial text, if text doesn't fit in given rc width
 // then a smaller font size is chosen (minimum used font size is 8 points)

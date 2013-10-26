@@ -56,13 +56,14 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
  
-// Frame time, date and count display constants
-#define ADDFRAMETAG_REFFONTSIZE				9
-#define ADDFRAMETAG_REFWIDTH				640
-#define ADDFRAMETAG_REFHEIGHT				480
+// Frame time, date, count and thumb message constants
+#define FRAMETAG_REFFONTSIZE				9
+#define FRAMETAG_REFWIDTH					640
+#define FRAMETAG_REFHEIGHT					480
 #define FRAMETIME_COLOR						RGB(0,0xFF,0)
 #define FRAMEDATE_COLOR						RGB(0x80,0x80,0xFF)
 #define FRAMECOUNT_COLOR					RGB(0xFF,0xFF,0xFF)
+#define THUMBMESSAGE_FONTSIZE				8
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// ms
@@ -490,10 +491,12 @@ public:
 	class CSaveFrameListThread : public CWorkerThread
 	{
 		public:
-			CSaveFrameListThread(){m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
-						m_nSendMailProgress = 100; m_nFTPUploadProgress = 100; m_bWorking = FALSE;};
+			CSaveFrameListThread(){	m_pDoc = NULL; m_pFrameList = NULL; m_nNumFramesToSave = 0;
+									m_nSaveProgress = 100; m_nSendMailProgress = 100; m_nFTPUploadProgress = 100;
+									m_bWorking = FALSE;};
 			virtual ~CSaveFrameListThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
+			__forceinline int GetSaveProgress() const {return m_nSaveProgress;};
 			__forceinline void SetSendMailProgress(int nSendMailProgress) {m_nSendMailProgress = nSendMailProgress;};
 			__forceinline int GetSendMailProgress() const {return m_nSendMailProgress;};
 			__forceinline void SetFTPUploadProgress(int nFTPUploadProgress) {m_nFTPUploadProgress = nFTPUploadProgress;};
@@ -670,6 +673,7 @@ public:
 			CDib::LIST* m_pFrameList;
 			int m_nNumFramesToSave;
 			CAVDecoder m_AVDetDecoder;
+			volatile int m_nSaveProgress;
 			volatile int m_nSendMailProgress;
 			volatile int m_nFTPUploadProgress;
 			volatile BOOL m_bWorking;

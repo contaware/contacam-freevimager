@@ -2703,7 +2703,7 @@ int DrawBigText(HDC hDC,
 	while (TRUE)
 	{
 		memset(&lf, 0, sizeof(lf));
-		_tcscpy(lf.lfFaceName, _T("Arial"));
+		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
 		lf.lfHeight = -MulDiv(nMaxFontSize, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 		lf.lfWeight = FW_MEDIUM;
 		lf.lfItalic = 0;

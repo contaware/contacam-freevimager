@@ -232,6 +232,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Poll for Work
 		m_pFrameList = NULL;
 		m_nNumFramesToSave = 0;
+		m_nSaveProgress = 100;
 		BOOL bPolling = TRUE;
 		do
 		{	
@@ -762,6 +763,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 			// Dec. Frame Count
 			nFrames--;
+
+			// Update save progress
+			m_nSaveProgress = (int)((m_nNumFramesToSave - nFrames) * 100.0 / m_nNumFramesToSave);
 		}
 
 		// Save single gif image if nothing done above:
@@ -3114,48 +3118,52 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		rcRect.right = ThumbDib.GetWidth();
 		rcRect.bottom = ThumbDib.GetHeight();
 
+		// Font
+		CFont Font;
+		Font.CreatePointFont(THUMBMESSAGE_FONTSIZE * 10, DEFAULT_FONTFACE);
+
 		// Date
 		sTime = ::MakeDateLocalFormat(FirstTime);
 		if (!ThumbDib.AddSingleLineText(sTime,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_LEFT | DT_TOP),
 										FRAMEDATE_COLOR,
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message1
 		rcRect.top = rcRect.bottom / 4;
 		if (!ThumbDib.AddSingleLineText(sMessage1,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_CENTER | DT_TOP),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message2
 		rcRect.top = 0;
 		if (!ThumbDib.AddSingleLineText(sMessage2,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_CENTER | DT_VCENTER),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message3
 		rcRect.bottom = 3 * rcRect.bottom / 4;
 		if (!ThumbDib.AddSingleLineText(sMessage3,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_CENTER | DT_BOTTOM),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 
 		// Time
@@ -3163,29 +3171,29 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 		sTime = ::MakeTimeLocalFormat(FirstTime, TRUE);
 		if (!ThumbDib.AddSingleLineText(sTime,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_LEFT | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 		if (!ThumbDib.AddSingleLineText(_T("->"),
 										rcRect,
-										NULL,
+										&Font,
 										(DT_CENTER | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 		rcRect.right -= 1; // Looks nicer!
 		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
 		if (!ThumbDib.AddSingleLineText(sTime,
 										rcRect,
-										NULL,
+										&Font,
 										(DT_RIGHT | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										RGB(0,0,0)))
+										DXDRAW_BKG_COLOR))
 			return FALSE;
 
 		// Save
@@ -7461,43 +7469,26 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime)
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	double dFactorX = (double)(rcRect.right) / ADDFRAMETAG_REFWIDTH;
-	if (dFactorX < 1.0)
-		dFactorX = 1.0;
-	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETAG_REFHEIGHT;
-	if (dFactorY < 1.0)
-		dFactorY = 1.0;
-	int nFontSize;
-	if (dFactorX > dFactorY)
-		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorX);
-	else
-		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorY);
-	if (nFontSize > ADDFRAMETAG_REFFONTSIZE)
-	{
-		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
-		// metric-compatible variant of MS Sans Serif, first distributed with
-		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
-		// used when passing a NULL pointer to AddSingleLineText().
-		Font.CreatePointFont(nFontSize * 10, _T("Microsoft Sans Serif"));
-	}
+	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, FRAMETAG_REFFONTSIZE, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	Font.CreatePointFont(nFontSize * 10, DEFAULT_FONTFACE);
 
 	CString sTime = ::MakeTimeLocalFormat(RefTime, TRUE);
 	pDib->AddSingleLineText(sTime,
 							rcRect,
-							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
+							&Font,
 							(DT_LEFT | DT_BOTTOM),
 							FRAMETIME_COLOR,
 							OPAQUE,
-							RGB(0,0,0));
+							DXDRAW_BKG_COLOR);
 
 	CString sDate = ::MakeDateLocalFormat(RefTime);
 	pDib->AddSingleLineText(sDate,
 							rcRect,
-							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
+							&Font,
 							(DT_LEFT | DT_TOP),
 							FRAMEDATE_COLOR,
 							OPAQUE,
-							RGB(0,0,0));
+							DXDRAW_BKG_COLOR);
 }
 
 void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount)
@@ -7513,35 +7504,18 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount)
 	rcRect.bottom = pDib->GetHeight();
 
 	CFont Font;
-	double dFactorX = (double)(rcRect.right) / ADDFRAMETAG_REFWIDTH;
-	if (dFactorX < 1.0)
-		dFactorX = 1.0;
-	double dFactorY = (double)(rcRect.bottom) / ADDFRAMETAG_REFHEIGHT;
-	if (dFactorY < 1.0)
-		dFactorY = 1.0;
-	int nFontSize;
-	if (dFactorX > dFactorY)
-		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorX);
-	else
-		nFontSize = Round(ADDFRAMETAG_REFFONTSIZE * dFactorY);
-	if (nFontSize > ADDFRAMETAG_REFFONTSIZE)
-	{
-		// Microsoft Sans Serif is a TrueType font that is designed as a vectorized,
-		// metric-compatible variant of MS Sans Serif, first distributed with
-		// Windows 2000 and later. ANSI_VAR_FONT is a 8 points MS Sans Serif
-		// used when passing a NULL pointer to AddSingleLineText().
-		Font.CreatePointFont(nFontSize * 10, _T("Microsoft Sans Serif"));
-	}
+	int nFontSize = ::ScaleFont(rcRect.right, rcRect.bottom, FRAMETAG_REFFONTSIZE, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+	Font.CreatePointFont(nFontSize * 10, DEFAULT_FONTFACE);
 
 	CString sCount;
 	sCount.Format(_T("%d"), nCount);
 	pDib->AddSingleLineText(sCount,
 							rcRect,
-							nFontSize > ADDFRAMETAG_REFFONTSIZE ? &Font : NULL,
+							&Font,
 							(DT_RIGHT | DT_BOTTOM),
 							FRAMECOUNT_COLOR,
 							OPAQUE,
-							RGB(0,0,0));
+							DXDRAW_BKG_COLOR);
 }
 
 BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)

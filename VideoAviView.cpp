@@ -1172,7 +1172,7 @@ BOOL CVideoAviView::MakeFont(BOOL bBig)
 		// Create Big Font
 		LOGFONT lf;
 		memset(&lf, 0, sizeof(LOGFONT));
-		_tcscpy(lf.lfFaceName, _T("Arial Narrow"));
+		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE_NARROW);
 		HDC hDC = ::GetDC(GetSafeHwnd());
 		lf.lfHeight = -MulDiv(36, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 		::ReleaseDC(GetSafeHwnd(), hDC);
@@ -1190,7 +1190,7 @@ BOOL CVideoAviView::MakeFont(BOOL bBig)
 		// Create Small Font
 		LOGFONT lf;
 		memset(&lf, 0, sizeof(LOGFONT));
-		_tcscpy(lf.lfFaceName, _T("Arial"));
+		_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
 		HDC hDC = ::GetDC(GetSafeHwnd());
 		lf.lfHeight = -MulDiv(11, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 		::ReleaseDC(GetSafeHwnd(), hDC);

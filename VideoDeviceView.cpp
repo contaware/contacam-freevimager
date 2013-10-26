@@ -570,7 +570,8 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 				DxDrawZones(pDib);
 
 			// Draw Text
-			if (pDoc->m_SaveFrameListThread.IsWorking() ||
+			if (pDoc->m_bDetectingMinLengthMovement		||
+				pDoc->m_SaveFrameListThread.IsWorking() ||
 				!sOSDMessage.IsEmpty())
 				DxDrawText(pDib, sOSDMessage, crOSDMessageColor);
 		}
@@ -604,37 +605,34 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
 	if (hDC)
 	{
-		// Save frame list thread working?
+		// Calc. font size
+		int nMaxFontSize = ::ScaleFont(	pDib->GetWidth(), pDib->GetHeight(),
+										FRAMETAG_REFFONTSIZE, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+
+		// Motion Detection
+		if (pDoc->m_bDetectingMinLengthMovement)
+		{
+			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
+							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+							OPAQUE, DXDRAW_BKG_COLOR);
+		}
+
+		// Save / Email / FTP progress display
 		if (pDoc->m_SaveFrameListThread.IsWorking())
 		{
-			// Calc. font size
-			int nMaxFontSize;
-			if (pDib->GetHeight() <= 144)
-				nMaxFontSize = 9;
-			else if (pDib->GetHeight() <= 288)
-				nMaxFontSize = 16;
-			else if (pDib->GetHeight() <= 576)
-				nMaxFontSize = 24;
-			else
-				nMaxFontSize = 36;
-
-			// FTP / Email progress display
 			CString sProgress(_T(""));
-			if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
-				sProgress.Format(_T("FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
+			if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+				sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
 			else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
-				sProgress.Format(_T("Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
+				sProgress.Format(ML_STRING(1878, "Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
+			else if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
+				sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
 			if (sProgress != _T(""))
 			{
 				::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
-								sProgress, DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-								OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
+								sProgress, DXDRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+								OPAQUE, DXDRAW_BKG_COLOR);
 			}
-
-			// Show that we are working
-			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
-							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
 
 		// Draw OSD message
@@ -818,7 +816,7 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		{
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(lf));
-			_tcscpy(lf.lfFaceName, _T("Arial"));
+			_tcscpy(lf.lfFaceName, DEFAULT_FONTFACE);
 			lf.lfHeight = -MulDiv(11, pDC->GetDeviceCaps(LOGPIXELSY), 72);
 			lf.lfWeight = FW_NORMAL;
 			lf.lfItalic = 0;

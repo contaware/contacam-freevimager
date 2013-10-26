@@ -9,9 +9,13 @@ alternative sources such as the free-to-download Windows Driver Kit.
 Additional requirements for Visual Studio 2010:
 - install sp1 or higher
 - Microsoft DirectX 9.0 SDK or higher
-  (see http://support.microsoft.com/kb/2728613 if you have problems
-  installing the latest DXSDK_Jun10.exe)
-
+  Note: if you have problems installing the latest DXSDK_Jun10.exe
+        (http://support.microsoft.com/kb/2728613)
+  1. MsiExec.exe /passive /X{F0C3E5D1-1ADE-321E-8167-68EF0DE699A5}
+     MsiExec.exe /passive /X{1D8E6291-B0D5-35EC-8441-6616F567A0F7}
+  2. Install DXSDK_Jun10.exe
+  3. Reinstall http://www.microsoft.com/en-us/download/details.aspx?id=26999
+  
 Necessary free tools:
 - http://www.scratchpaper.com    -> to make the Unicode NSIS installers
   (needed also the nsisFirewall, KillProc and UAC unicode plugins)
