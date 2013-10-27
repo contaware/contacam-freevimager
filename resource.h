@@ -3229,6 +3229,7 @@
 #define IDC_BUTTON_PARENT_DIR           2557
 #define IDC_EDIT_DETECTION_MIN_LENGTH   2558
 #define IDC_SPIN_DETECTION_MIN_LENGTH   2559
+#define IDC_REF_FONTSIZE                2560
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3503,7 +3504,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33283
-#define _APS_NEXT_CONTROL_VALUE         2560
+#define _APS_NEXT_CONTROL_VALUE         2561
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

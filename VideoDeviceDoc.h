@@ -57,7 +57,6 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
  
 // Frame time, date, count and thumb message constants
-#define FRAMETAG_REFFONTSIZE				9
 #define FRAMETAG_REFWIDTH					640
 #define FRAMETAG_REFHEIGHT					480
 #define FRAMETIME_COLOR						RGB(0,0xFF,0)
@@ -511,31 +510,23 @@ public:
 			int Work();
 			CString SaveJpeg(	CDib* pDib,
 								CString sJPGDir,
-								BOOL bShowFrameTime,
 								const CTime& RefTime,
-								DWORD dwRefUpTime,
-								int nMovDetSavesCount);
+								DWORD dwRefUpTime);
 			BOOL SaveSingleGif(		CDib* pDib,
 									const CString& sGIFFileName,
 									RGBQUAD* pGIFColors,
-									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
-									int nMovDetSavesCount);
+									DWORD dwRefUpTime);
 			void AnimatedGifInit(	RGBQUAD* pGIFColors,
 									double& dDelayMul,
 									double& dSpeedMul,
 									double dCalcFrameRate,
-									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
-									int nMovDetSavesCount);
+									DWORD dwRefUpTime);
 			__forceinline void To255Colors(	CDib* pDib,
 											RGBQUAD* pGIFColors,
-											BOOL bShowFrameTime,
 											const CTime& RefTime,
-											DWORD dwRefUpTime,
-											int nMovDetSavesCount);
+											DWORD dwRefUpTime);
 			BOOL SaveAnimatedGif(	CDib* pGIFSaveDib,
 									CDib* pGIFDib,
 									CDib** ppGIFDibPrev,
@@ -546,10 +537,8 @@ public:
 									double dSpeedMul,
 									RGBQUAD* pGIFColors,
 									int nDiffMinLevel,
-									BOOL bShowFrameTime,
 									const CTime& RefTime,
-									DWORD dwRefUpTime,
-									int nMovDetSavesCount);
+									DWORD dwRefUpTime);
 			BOOL SendMailFTPUpload(	const CTime& Time,
 									const CString& sAVIFileName,
 									const CString& sGIFFileName,
@@ -732,6 +721,7 @@ public:
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistoryJpegFtp;
 			BOOL m_bShowFrameTime;
+			int m_nRefFontSize;
 			BOOL m_bSnapshotThumb;
 			BOOL m_bSnapshotLiveJpeg;
 			BOOL m_bSnapshotLiveJpegFtp;
@@ -807,8 +797,8 @@ public:
 
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);
-	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime);
-	static void AddFrameCount(CDib* pDib, int nCount);
+	static void AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime, int nRefFontSize);
+	static void AddFrameCount(CDib* pDib, int nCount, int nRefFontSize);
 	
 	// Function called when the directx video grabbing format has been changed
 	void OnChangeDxVideoFormat();
@@ -1003,6 +993,7 @@ public:
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed
 	volatile BOOL m_bShowFrameTime;						// Show / Hide Frame Time Inside the Frame (frame time is also recorded)
+	volatile int m_nRefFontSize;						// Minimum font size for frame time, detection indicator, save/email/ftp progress
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!

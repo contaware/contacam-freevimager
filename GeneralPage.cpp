@@ -99,6 +99,7 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
+	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -339,16 +340,26 @@ BOOL CGeneralPage::OnInitDialog()
 		m_SchedulerDailyTimeStop = t;
 	}
 
-	// Init Combo Box
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
-	if (pComboBox)
+	// Init Combo Boxes
+	CComboBox* pComboBoxTimeSeg = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
+	if (pComboBoxTimeSeg)
 	{
-		pComboBox->AddString(ML_STRING(1558, "1 hour"));
-		pComboBox->AddString(ML_STRING(1559, "2 hours"));
-		pComboBox->AddString(ML_STRING(1560, "3 hours"));
-		pComboBox->AddString(ML_STRING(1561, "6 hours"));
-		pComboBox->AddString(ML_STRING(1562, "12 hours"));
-		pComboBox->AddString(ML_STRING(1563, "24 hours"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1558, "1 hour"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1559, "2 hours"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1560, "3 hours"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1561, "6 hours"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1562, "12 hours"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1563, "24 hours"));
+	}
+	CComboBox* pComboBoxRefFontSize = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
+	if (pComboBoxRefFontSize)
+	{
+		pComboBoxRefFontSize->AddString(_T("8"));
+		pComboBoxRefFontSize->AddString(_T("9"));
+		pComboBoxRefFontSize->AddString(_T("10"));
+		pComboBoxRefFontSize->AddString(_T("11"));
+		pComboBoxRefFontSize->AddString(_T("12"));
+		pComboBoxRefFontSize->AddString(_T("14"));
 	}
 
 	// Init Codec's Supports
@@ -490,6 +501,20 @@ BOOL CGeneralPage::OnInitDialog()
 		pCheck->SetCheck(1);
 	else
 		pCheck->SetCheck(0);
+
+	// Set reference font size
+	if (m_pDoc->m_nRefFontSize == 8)
+		pComboBoxRefFontSize->SetCurSel(0);
+	else if (m_pDoc->m_nRefFontSize == 9)
+		pComboBoxRefFontSize->SetCurSel(1);
+	else if (m_pDoc->m_nRefFontSize == 10)
+		pComboBoxRefFontSize->SetCurSel(2);
+	else if (m_pDoc->m_nRefFontSize == 11)
+		pComboBoxRefFontSize->SetCurSel(3);
+	else if (m_pDoc->m_nRefFontSize == 12)
+		pComboBoxRefFontSize->SetCurSel(4);
+	else
+		pComboBoxRefFontSize->SetCurSel(5);
 
 	// Video Compressor Quality
 	m_VideoRecQuality.SetRange(2, 31);
@@ -918,6 +943,20 @@ void CGeneralPage::OnSelchangeVideoCompressionChoose()
 	UpdateData(TRUE);
 	m_pDoc->m_dwVideoRecFourCC = m_VideoCompressionFcc[m_VideoCompressionChoose.GetCurSel()];
 	ShowHideCtrls();
+}
+
+void CGeneralPage::OnSelchangeRefFontsize()
+{
+	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_REF_FONTSIZE);
+	switch (pComboBox->GetCurSel())
+	{
+		case 0 :	m_pDoc->m_nRefFontSize = 8;		break;
+		case 1 :	m_pDoc->m_nRefFontSize = 9;		break;
+		case 2 :	m_pDoc->m_nRefFontSize = 10;	break;
+		case 3 :	m_pDoc->m_nRefFontSize = 11;	break;
+		case 4 :	m_pDoc->m_nRefFontSize = 12;	break;
+		default :	m_pDoc->m_nRefFontSize = 14;	break;
+	}
 }
 
 /*

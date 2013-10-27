@@ -96,6 +96,7 @@ protected:
 	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
+	afx_msg void OnSelchangeRefFontsize();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

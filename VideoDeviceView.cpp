@@ -607,7 +607,7 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 	{
 		// Calc. font size
 		int nMaxFontSize = ::ScaleFont(	pDib->GetWidth(), pDib->GetHeight(),
-										FRAMETAG_REFFONTSIZE, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+										pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
 		// Motion Detection
 		if (pDoc->m_bDetectingMinLengthMovement)
