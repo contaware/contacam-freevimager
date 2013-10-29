@@ -1019,60 +1019,6 @@ int CDxCapture::GetFormatID(DWORD biCompression, DWORD biBitCount/*=0xFFFFFFFF*/
 	return -1;
 }
 
-BOOL CDxCapture::SetCurrentFormatByID(int nId)
-{
-	AM_MEDIA_TYPE* pmtConfig = NULL;
-	VIDEOINFOHEADER* pVih = NULL;
-	REFERENCE_TIME AvgTimePerFrame = 0;
-
-	if (nId < 0 || !m_pConfig)
-		return FALSE;
-
-	int iCount = 0, iSize = 0;
-	HRESULT hr = m_pConfig->GetNumberOfCapabilities(&iCount, &iSize);
-	if (FAILED(hr))
-		return FALSE;
-
-	if (nId < 0 || nId >= iCount)
-		return FALSE;
-
-	// Store Frame-Rate
-	if (!GetCurrentFormat(&pmtConfig))
-		return FALSE;
-	pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-	if (pVih)
-		AvgTimePerFrame = pVih->AvgTimePerFrame;
-	DeleteMediaType(pmtConfig);
-
-	// Check the size to make sure we pass in the correct structure.
-	if (iSize == sizeof(VIDEO_STREAM_CONFIG_CAPS))
-	{
-		for (int iFormat = 0 ; iFormat < iCount ; iFormat++)
-		{
-			VIDEO_STREAM_CONFIG_CAPS scc;
-			hr = m_pConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE*)&scc);
-			if (SUCCEEDED(hr))
-			{
-				if (nId == iFormat)
-				{
-					// Restore Frame-Rate
-					pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-					if (pVih									&&
-						AvgTimePerFrame >= scc.MinFrameInterval &&
-						AvgTimePerFrame <= scc.MaxFrameInterval)
-						pVih->AvgTimePerFrame = AvgTimePerFrame;
-					hr = m_pConfig->SetFormat(pmtConfig);
-					DeleteMediaType(pmtConfig);
-					return SUCCEEDED(hr);
-				}
-				DeleteMediaType(pmtConfig);
-			}
-		}
-	}
-
-	return FALSE;
-}
-
 int CDxCapture::GetDeviceID()
 {
 	return GetDeviceID(m_sDevicePath);
@@ -1629,6 +1575,8 @@ BOOL CDxCapture::Open(	HWND hWnd,
 				lpBmiH->biSizeImage = DWALIGNEDWIDTHBYTES(lpBmiH->biWidth * lpBmiH->biBitCount) * lpBmiH->biHeight;
 				pmtConfig->lSampleSize = lpBmiH->biSizeImage;
 				pVih->dwBitRate = 0; // Reset BitRate, driver will calculate it
+				::SetRectEmpty(&pVih->rcSource); // Some devices set right to lpBmiH->biWidth and
+				::SetRectEmpty(&pVih->rcTarget); // bottom to lpBmiH->biHeight -> clear that
 
 				// Set Frame Rate
 				if (Round(dFrameRate) == 30)

@@ -143,7 +143,6 @@ public:
 	BOOL GetFormatByID(int nId, AM_MEDIA_TYPE** ppmtConfig); // Get the Format given the Format ID
 	static void DeleteMediaType(AM_MEDIA_TYPE *pmt);	// Used to clean-up Media Types created by GetCurrentFormat() and GetFormatByID()
 	BOOL SetCurrentFormat(AM_MEDIA_TYPE* pmtConfig);	// Set new Video Format
-	BOOL SetCurrentFormatByID(int nId);					// Set new Video Format by Format ID
 	int GetCurrentFormatID();							// Returns the Current Selected Format ID
 	int GetFormatID(DWORD biCompression,				// Returns Matching Format ID given the Compression
 					DWORD biBitCount = 0xFFFFFFFF);		// and the Bits Count (if 0xFFFFFFFF ignore it)

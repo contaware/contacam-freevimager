@@ -173,6 +173,11 @@ void CDxVideoFormatDlg::Apply()
 			// Update Sample Size
 			pmtConfig->lSampleSize = lpBmiH->biSizeImage;
 
+			// Some devices set right to lpBmiH->biWidth and
+			// bottom to lpBmiH->biHeight -> clear that
+			::SetRectEmpty(&pVih->rcSource);
+			::SetRectEmpty(&pVih->rcTarget);
+
 			// Set Format
 			m_pDoc->m_pDxCapture->SetCurrentFormat(pmtConfig);
 		}
