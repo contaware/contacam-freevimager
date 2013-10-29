@@ -5344,11 +5344,6 @@ BOOL CVideoDeviceDoc::InitOpenDxCapture(int nId)
 				else
 					m_nDeviceInputId = m_pDxCapture->SetDefaultInput();
 
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				m_pDxCapture->Stop();
-				m_pDxCapture->Run();
-
 				// Restart process frame
 				StartProcessFrame(PROCESSFRAME_DXOPEN);
 
@@ -6162,11 +6157,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			m_pDxCapture->SetFrameRate(m_dFrameRate);
 			if (m_pDxCapture->Run())
 			{
-				// Some devices need that...
-				// Process frame must still be stopped when calling Dx Stop()!
-				m_pDxCapture->Stop();
-				m_pDxCapture->Run();
-
 				// Restart process frame
 				StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 			}
