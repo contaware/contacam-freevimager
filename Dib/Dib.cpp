@@ -4789,6 +4789,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		// Check Result
 		if (!res)
 		{
+			::DeleteObject(hTmpDib);
 			delete [] pBMI;
 			return FALSE;
 		}
