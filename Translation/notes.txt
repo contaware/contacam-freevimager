@@ -53,9 +53,9 @@ http://www.contaware.com/downloads/appTranslatorTESetup.exe
 http://www.contaware.com/downloads/ContaCam-X.Y.Z-LAN.zip
 install the translation application and unzip the project file
 
-2. Start the installed application and open the .apt
-translation project file. Note: the .apt file and the program exe
-have to be in the same directory
+2. Start the installed translator application and open the .apt
+translation project file. Note: the .apt file and the executable of
+the program to be translated have to be in the same directory
 
 3. While translating you can resize/reposition the dialog controls
 to make room for longer strings; use the search and replace feature,
@@ -63,14 +63,17 @@ especially for menus (there are duplicated items, it's normal)
 
 4. Attention:
 - If changing the menu short-cuts like Ctrl+P for printing,
-  remember to update the values under both Menus and Accelerators!
-- In the String Table respect/keep the new lines!
+  remember to update the values under both Menus and Accelerators
+- In the String Table respect/keep the new lines
 
 5. Press the Build Target File to create the output exe,
-test it sometimes by double-clicking on it
+test it sometimes by double-clicking on it and
+in File - Global Settings... dialog uncheck 'Start with Windows'
+and uncheck 'Tray Icon'
 
 6. When done send me back the .apt file
 
 If you have any questions please feel free to contact me,
 happy translating and thanks for helping,
+
 Oliver 

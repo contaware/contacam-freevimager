@@ -8,7 +8,7 @@ CONTACAM HISTORY
 - The minimum font size for frame time, for detection indicator
   and for detection save/email/ftp progress is now configurable
 - Better support of OmniVision webcams
-- Fixed memory leak for USB webcams producing sort of unusual MJPG
+- Fixed memory leak for cameras producing sort of unusual MJPG
   frames (thanks to Mitko for sending me the Neo NC-78 webcam)
 - Possibility to store temp files under the cameras root folder
 - Command is now executed when detection is confirmed by filter
