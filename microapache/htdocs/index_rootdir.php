@@ -15,24 +15,24 @@
 body {
 	font-family: Helvetica,Arial,sans-serif;
 	font-size: 12px;
-	background-color: #ffffff;
-	color: #666666;
+	background-color: #333333;
+	color: #bbbbbb;
 }
 a {
 	font-size: 14px;
 	text-decoration: none;
 }
 a:link {
-	color: #1188bb;
+	color: #33ccff;
 }
 a:visited {
-	color: #1188bb;
+	color: #33ccff;
 }
 a:active {
-	color: #1188bb;
+	color: #33ccff;
 }
 a:hover {
-	color: #116699;
+	color: #ffffff;
 	text-decoration: underline;
 }
 span.previewscontainer {
