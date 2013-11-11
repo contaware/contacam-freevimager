@@ -21,7 +21,7 @@ function GetFlashMovieObject(movieName)
 {
 	if (window.document[movieName])
 		return window.document[movieName];
-	else if (navigator.appName.indexOf("Microsoft") == -1 &&
+	else if (getIEVersion() < 0 &&
 			document.embeds && document.embeds[movieName])
 		return document.embeds[movieName];
 	else
@@ -33,7 +33,7 @@ function InitPlayerInternal()
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
 	
 	// For IE
-	if (navigator.appName.indexOf("Microsoft") != -1)
+	if (getIEVersion() >= 0)
 	{	
 		// Wait for ReadyState = 4
 		// (0=Loading, 1=Uninitialized, 2=Loaded, 3=Interactive, 4=Complete)

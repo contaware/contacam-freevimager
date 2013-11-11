@@ -39,7 +39,19 @@ End Function
 </script>
 <script language="JavaScript1.1" type="text/javascript">
 //<![CDATA[
-var isIE  = (navigator.appVersion.indexOf("MSIE") != -1) ? true : false;
+function getIEVersion() {
+	if (/MSIE (\d+\.\d+)/.test(navigator.userAgent)) {
+		var ieversion = new Number(RegExp.$1);
+		return ieversion;
+	}
+	else if (/Trident\/.*rv:(\d+\.\d+)/.test(navigator.userAgent)) {
+		var ieversion = new Number(RegExp.$1);
+		return ieversion;
+	}
+	else
+		return -1;
+}
+var isIE  = (getIEVersion() >= 0) ? true : false;
 var isWin = (navigator.appVersion.toLowerCase().indexOf("win") != -1) ? true : false;
 var isOpera = (navigator.userAgent.indexOf("Opera") != -1) ? true : false;
 // JavaScript helper required to detect Flash Player PlugIn version information
