@@ -51,9 +51,9 @@ function getIEVersion() {
 	else
 		return -1;
 }
-var isIE  = (getIEVersion() >= 0) ? true : false;
 var isWin = (navigator.appVersion.toLowerCase().indexOf("win") != -1) ? true : false;
 var isOpera = (navigator.userAgent.indexOf("Opera") != -1) ? true : false;
+var useVBScript = (getIEVersion() >= 0 && getIEVersion() < 11 && isWin && !isOpera);
 // JavaScript helper required to detect Flash Player PlugIn version information
 function JSGetSwfVer(i) {
 	// NS/Opera version >= 3 check for Flash plugin in plugin array
@@ -97,7 +97,7 @@ function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
 	reqVer = parseFloat(reqMajorVer + "." + reqRevision);
 	// loop backwards through the versions until we find the newest version 
 	for (i=25;i>0;i--) {    
-		if (isIE && isWin && !isOpera) {
+		if (useVBScript) {
 			versionStr = VBGetSwfVer(i);
 		} else {
 			versionStr = JSGetSwfVer(i);            
@@ -105,7 +105,7 @@ function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
 		if (versionStr == -1 ) { 
 			return false;
 		} else if (versionStr != 0) {
-			if(isIE && isWin && !isOpera) {
+			if (useVBScript) {
 				tempArray         = versionStr.split(" ");
 				tempString        = tempArray[1];
 				versionArray      = tempString .split(",");                             
