@@ -361,6 +361,8 @@ public:
 								// Note: this fails with DDERR_CANTCREATEDC,
 								// if switching user under XP or higher
 								// (no logout, ContaCam continues to run)
+								// On some PCs with buggy drivers GetDC() will crash
+								// when starting a program needing UAC admin privileges...
 								HRESULT hRet = m_ScreenArray[m_nCurrentDevice]->m_pFontBuffer->GetDC(&hDC);
 								if (hRet == DD_OK)
 									return hDC;

@@ -6,6 +6,7 @@ Both
 
 FreeVimager Program
 -------------------
+- Touch swipe/slide not working in Windows 8
 - Possibility to only show some XMP metadata, like:
 Contact: Creator (byline)
 Content: Headline
@@ -40,8 +41,6 @@ ContaCam Program
 - Add ACTi support to homapage FAQ!
 - Make thumbnail anim. gif for avi records?
 - Support NV12 (NV21) camera source format
-- Check whether format select in capture class is case sensitive,
-  make it case insensitive?
 - Add duration to file names like:
   det_2013_09_15-03_33_48-143.avi = 143 secs
 
