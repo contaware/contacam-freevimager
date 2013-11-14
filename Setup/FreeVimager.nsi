@@ -168,10 +168,9 @@ Function KillApp
   MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
+  Sleep 1500
   KillProcDLL::KillProc "${APPNAME_EXT}"
   StrCmp $R0 "0" KillApp 0
-  StrCmp $R0 "603" 0 KillAppError
-  Sleep 1500
   Goto lbl_end
 KillAppError:
   MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
@@ -403,13 +402,10 @@ Function un.KillApp
   MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
+  Sleep 1500
   KillProcDLL::KillProc "${APPNAME_EXT}"
   StrCmp $R0 "0" KillApp 0
-  StrCmp $R0 "603" 0 KillAppError
-  Sleep 1500
   Goto lbl_end
-KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1

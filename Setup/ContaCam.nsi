@@ -177,10 +177,9 @@ Function KillApp
   MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
+  Sleep 1500
   KillProcDLL::KillProc "${APPNAME_EXT}"
   StrCmp $R0 "0" KillApp 0
-  StrCmp $R0 "603" 0 KillAppError
-  Sleep 1500
   Goto lbl_end
 KillAppError:
   MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
@@ -206,9 +205,9 @@ Function KillMicroApache
   ClearErrors
 
 KillMApache:
+  Sleep 1500
   KillProcDLL::KillProc "mapache.exe"
   StrCmp $R0 "0" KillMApache 0
-  Sleep 1500
   
   Pop $R1
   Pop $R0
@@ -447,13 +446,10 @@ Function un.KillApp
   MessageBox MB_YESNO|MB_ICONQUESTION $(CloseAppPrompt) /SD IDNO IDYES KillApp
   goto KillAppAbort
 KillApp:
+  Sleep 1500
   KillProcDLL::KillProc "${APPNAME_EXT}"
   StrCmp $R0 "0" KillApp 0
-  StrCmp $R0 "603" 0 KillAppError
-  Sleep 1500
   Goto lbl_end
-KillAppError:
-  MessageBox MB_OK|MB_ICONEXCLAMATION $(CloseAppError) /SD IDOK
 KillAppAbort:
   ClearErrors
   Pop $R1
@@ -476,9 +472,9 @@ Function un.KillMicroApache
   ClearErrors
 
 KillMApache:
+  Sleep 1500
   KillProcDLL::KillProc "mapache.exe"
   StrCmp $R0 "0" KillMApache 0
-  Sleep 1500
   
   Pop $R1
   Pop $R0
