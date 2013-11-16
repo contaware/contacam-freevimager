@@ -6,7 +6,6 @@ Both
 
 FreeVimager Program
 -------------------
-- Touch swipe/slide not working in Windows 8
 - Possibility to only show some XMP metadata, like:
 Contact: Creator (byline)
 Content: Headline

@@ -755,6 +755,19 @@ void CUImagerView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* p
 	CScrollView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 
+// Enable Tablet Press-and-Hold Gesture, see:
+// http://support.microsoft.com/kb/2846829
+// Virtual function in CWnd is implemented like this:
+// ULONG CWnd::GetGestureStatus(CPoint /*ptTouch*/)
+// {
+//     return TABLET_DISABLE_PRESSANDHOLD;
+// }
+ULONG CUImagerView::GetGestureStatus(CPoint /*ptTouch*/)
+{
+	return 0;
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerView diagnostics
 

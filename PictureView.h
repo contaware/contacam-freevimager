@@ -21,6 +21,9 @@
 // Scroll Size For Mouse Wheel
 #define SCROLLWHEEL_STEPS						12
 
+// Minimum pan movement extension for a swipe
+#define GESTURE_PAN_MIN_SWIPE_LENGTH			24
+
 // Visible Doc Drawing Safety Margin
 #define VISIBLEDOC_INFLATE						32
 
@@ -203,6 +206,11 @@ protected:
 	UINT m_uiOnMouseMoveLastFlag;
 	CPoint m_OnMouseMoveLastPoint;
 
+	// Gesture
+	CPoint m_ptGesturePanStart;
+	CPoint m_ptGesturePanStartScrollPos;
+	BOOL m_bGesturePanExecuted;
+
 	// To Print Characters
 	double m_dXFontPixelScale;
 	double m_dYFontPixelScale;
@@ -300,7 +308,7 @@ protected:
 	afx_msg LONG OnBackgroundMusicTrackDone(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnColorPicked(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnColorPickerClosed(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnApplicationCommand(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnGesture(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -2,6 +2,8 @@ FREEVIMAGER HISTORY
 
 4.9.0 (xx xth 2013)
 
+- Updated touch screen gestures support for Windows 8 and added
+  next/previous tiff page/gif frame gestures (swipe up or down)
 - FreeVimager opens now all numeric extensions as tiff files
   because some fax/scan devices/programs highlight the pages
   count in the extension (.001, .002, .003, ...)

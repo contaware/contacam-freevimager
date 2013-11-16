@@ -84,7 +84,7 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_MESSAGE(MM_MCINOTIFY, OnBackgroundMusicTrackDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
 	ON_MESSAGE(WM_COLOR_PICKER_CLOSED, OnColorPickerClosed)
-	ON_MESSAGE(WM_APPCOMMAND, OnApplicationCommand)
+	ON_MESSAGE(WM_GESTURE, OnGesture)
 END_MESSAGE_MAP()
 
 CPictureView::CPictureView()
@@ -177,6 +177,25 @@ int CPictureView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	if (CScrollView::OnCreate(lpCreateStruct) == -1)
 		return -1;
+
+	typedef BOOL (WINAPI * FPSETGESTURECONFIG)(HWND hwnd, DWORD dwReserved, UINT cIDs, PGESTURECONFIG pGestureConfig, UINT cbSize);
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (h)
+	{
+		FPSETGESTURECONFIG fpSetGestureConfig = (FPSETGESTURECONFIG)::GetProcAddress(h, "SetGestureConfig");
+		if (fpSetGestureConfig)
+		{
+			DWORD dwPanWant  = GC_PAN | GC_PAN_WITH_INERTIA | GC_PAN_WITH_SINGLE_FINGER_VERTICALLY | GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+			DWORD dwPanBlock = GC_PAN_WITH_GUTTER;
+			GESTURECONFIG gc[] =	{{GID_ZOOM, GC_ZOOM, 0},				// Translated to legacy Ctrl + Mouse Wheel message which is handled in OnMouseWheel()
+									{GID_ROTATE, 0, GC_ROTATE},				// Disabled
+									{GID_PAN, dwPanWant , dwPanBlock},		// Handled in OnGesture()
+									{GID_TWOFINGERTAP, 0, GC_TWOFINGERTAP},	// Disabled
+									{GID_PRESSANDTAP, 0, GC_PRESSANDTAP}};	// Disabled
+			fpSetGestureConfig(GetSafeHwnd(), 0, 5, gc, sizeof(GESTURECONFIG));
+		}
+		::FreeLibrary(h);
+	}
 
 	return 0;
 }
@@ -1519,38 +1538,137 @@ LRESULT CPictureView::OnColorPickerClosed(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// Swipe or pan touch gesture handling
-// http://msdn.microsoft.com/en-us/library/windows/desktop/dd940543%28v=vs.85%29.aspx
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms701172%28v=vs.85%29.aspx
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646275%28v=vs.85%29.aspx
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms694980%28v=vs.85%29.aspx
-// http://msdn.microsoft.com/en-us/library/windows/desktop/dd356077%28v=vs.85%29.aspx
-// Pan-Back, Pan-Forward: if the WM_TABLET_FLICK is not handled a WM_APPCOMMAND is
-// fired and if also this one is not regarded the WM_HSCROLL message is sent
-LRESULT CPictureView::OnApplicationCommand(WPARAM wParam, LPARAM lParam)
+// Gesture handling
+LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 {
-    CPictureDoc* pDoc = GetDocument();
+	CPictureDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-    const int cmd = GET_APPCOMMAND_LPARAM(lParam);  
-    switch (cmd)
-    {
-        case APPCOMMAND_BROWSER_BACKWARD :
-			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc, TRUE))
-				pDoc->m_SlideShowThread.PreviousPicture();
-            return TRUE;  // return TRUE to indicate that we processed the button
 
-        case APPCOMMAND_BROWSER_FORWARD :
-			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc, TRUE))
-				pDoc->m_SlideShowThread.NextPicture();
-			return TRUE;  // return TRUE to indicate that we processed the button
+	// Get gesture function pointers
+	typedef	BOOL (WINAPI *FPGETGESTUREINFO)(HGESTUREINFO_COMPATIBLE, PGESTUREINFO_COMPATIBLE);
+	typedef	BOOL (WINAPI *FPCLOSEGESTUREINFOHANDLE)(HGESTUREINFO_COMPATIBLE);
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (!h)
+		return Default();
+	FPGETGESTUREINFO fpGetGestureInfo = (FPGETGESTUREINFO)::GetProcAddress(h, "GetGestureInfo");
+	FPCLOSEGESTUREINFOHANDLE fpCloseGestureInfoHandle = (FPCLOSEGESTUREINFOHANDLE)::GetProcAddress(h, "CloseGestureInfoHandle");
+	if (fpGetGestureInfo == NULL || fpCloseGestureInfoHandle == NULL)
+	{
+		::FreeLibrary(h);
+		return Default();
+	}
+
+	// Get current gesture info
+	GESTUREINFO_COMPATIBLE CurrentGestureInfo;
+	memset(&CurrentGestureInfo, 0, sizeof(GESTUREINFO_COMPATIBLE));
+	CurrentGestureInfo.cbSize = sizeof(GESTUREINFO_COMPATIBLE);
+	if (!fpGetGestureInfo((HGESTUREINFO_COMPATIBLE)lParam, &CurrentGestureInfo) || CurrentGestureInfo.hwndTarget != GetSafeHwnd())
+	{
+		::FreeLibrary(h);
+		return Default();
+	}
+
+	// Get current position in client coordinates
+	CPoint pt(CurrentGestureInfo.ptsLocation.x, CurrentGestureInfo.ptsLocation.y);
+	ScreenToClient(&pt);
+
+	// Process gesture
+	BOOL bDefaultProcessing = TRUE;
+	switch (CurrentGestureInfo.dwID)
+	{
+		case GID_PAN:
+		{
+			if (CurrentGestureInfo.dwFlags & GF_BEGIN)
+			{
+				m_ptGesturePanStart = pt;
+				m_ptGesturePanStartScrollPos = GetScrollPosition();
+				m_bGesturePanExecuted = FALSE;
+			}
+			else
+			{
+				int dx = pt.x - m_ptGesturePanStart.x;
+				int dy = pt.y - m_ptGesturePanStart.y;
+				if (IsXOrYScroll())
+				{
+					CPoint ptCurrentScrollPos = GetScrollPosition();
+					CPoint ptScrollPos = m_ptGesturePanStartScrollPos;
+					if (IsXScroll())
+						ptScrollPos.x -= dx;
+					else
+						ptScrollPos.x = ptCurrentScrollPos.x;
+					if (IsYScroll())
+						ptScrollPos.y -= dy;
+					else
+						ptScrollPos.y = ptCurrentScrollPos.y;
+					ScrollToPosition(ptScrollPos);
+				}
+				else
+				{
+					// Check
+					if (!((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc))
+						break; // do default processing
+
+					// Swipe
+					if (!m_bGesturePanExecuted)
+					{
+						// Set flag
+						m_bGesturePanExecuted = TRUE;
+
+						// Calc. ABS values
+						int dxABS = ABS(dx);
+						int dyABS = ABS(dy);
+
+						// Horizontal swipe
+						if (dxABS > dyABS && dxABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
+						{
+							// Left to right swipe
+							if (dx > 0)
+							{
+								pDoc->m_SlideShowThread.PreviousPicture();
+							}
+							// Right to left swipe
+							else
+							{
+								pDoc->m_SlideShowThread.NextPicture();
+							}
+						}
+						// Vertical swipe
+						else if (dyABS > dxABS && dyABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
+						{
+							// Top to bottom swipe
+							if (dy > 0)
+							{
+								if (!pDoc->ViewPreviousPageFrame())
+									pDoc->m_SlideShowThread.PreviousPicture();
+							}
+							// Bottom to top swipe
+							else
+							{
+								if (!pDoc->ViewNextPageFrame())
+									pDoc->m_SlideShowThread.NextPicture();
+							}
+						}
+					}
+				}
+			}
+
+			bDefaultProcessing = FALSE;
+			break;
+		}
 
 		default :
-			break;
-    }
-    
-    // This was a button we don't care about - return FALSE to indicate
-    // that we didn't process the command
-    return FALSE;
+			break; // do default processing
+	}
+
+	// Close info handle if processing stops here
+	if (!bDefaultProcessing)
+		fpCloseGestureInfoHandle((HGESTUREINFO_COMPATIBLE)lParam);
+
+	// Free library
+	::FreeLibrary(h);
+
+	// return 0 if processing done here
+	return bDefaultProcessing ? Default() : 0;
 }
 
 void CPictureView::UpdateCropRectangles()

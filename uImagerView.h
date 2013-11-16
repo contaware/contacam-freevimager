@@ -50,6 +50,7 @@ public:
 	virtual void OnInitialUpdate(); // called first time after construct
 	virtual void OnDraw(CDC* pDC);
 	virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
+	virtual ULONG GetGestureStatus(CPoint ptTouch);
 	//}}AFX_VIRTUAL
 
 public:
