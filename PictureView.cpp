@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CPictureView, CUImagerView)
 	ON_MESSAGE(MM_MCINOTIFY, OnBackgroundMusicTrackDone)
 	ON_MESSAGE(WM_COLOR_PICKED, OnColorPicked)
 	ON_MESSAGE(WM_COLOR_PICKER_CLOSED, OnColorPickerClosed)
+	ON_MESSAGE(WM_APPCOMMAND, OnApplicationCommand)
 	ON_MESSAGE(WM_GESTURE, OnGesture)
 END_MESSAGE_MAP()
 
@@ -1538,7 +1539,35 @@ LRESULT CPictureView::OnColorPickerClosed(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// Gesture handling
+// Flicks handling for Vista and Windows 7 (flicks were removed in Windows 8)
+// Note: if WM_TABLET_FLICK is not handled a WM_APPCOMMAND is fired
+LRESULT CPictureView::OnApplicationCommand(WPARAM /*wParam*/, LPARAM lParam)
+{
+    CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+    const int cmd = GET_APPCOMMAND_LPARAM(lParam);  
+    switch (cmd)
+    {
+        case APPCOMMAND_BROWSER_BACKWARD :
+			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc))
+				pDoc->m_SlideShowThread.PreviousPicture();
+            return TRUE;  // return TRUE to indicate that we processed the button
+
+        case APPCOMMAND_BROWSER_FORWARD :
+			if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc))
+				pDoc->m_SlideShowThread.NextPicture();
+			return TRUE;  // return TRUE to indicate that we processed the button
+
+		default :
+			break;
+    }
+    
+    // This was a button we don't care about - return FALSE to indicate
+    // that we didn't process the command
+    return FALSE;
+}
+
+// Gesture handling for Windows 7 and higher
 LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 {
 	CPictureDoc* pDoc = GetDocument();
@@ -1580,15 +1609,89 @@ LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 		{
 			if (CurrentGestureInfo.dwFlags & GF_BEGIN)
 			{
+				// Init vars
 				m_ptGesturePanStart = pt;
 				m_ptGesturePanStartScrollPos = GetScrollPosition();
-				m_bGesturePanExecuted = FALSE;
+				m_bGesturePanSlideDone = FALSE;
+
+				// Init crop
+				if (pDoc->m_bCrop)
+				{
+					pt += GetScrollPosition();
+					int nCropWidth4 = m_CropZoomRect.Width() / 4;
+					int nCropHeight4 = m_CropZoomRect.Height() / 4;
+					if (pt.x < (m_CropZoomRect.left + nCropWidth4) && pt.y < (m_CropZoomRect.top + nCropHeight4))
+						m_nGesturePanCropHandle = 0;	// top-left
+					else if (pt.x > (m_CropZoomRect.right - nCropWidth4) && pt.y > (m_CropZoomRect.bottom - nCropHeight4))
+						m_nGesturePanCropHandle = 1;	// bottom-right
+					else if (pt.x < (m_CropZoomRect.left + nCropWidth4) && pt.y > (m_CropZoomRect.bottom - nCropHeight4))
+						m_nGesturePanCropHandle = 2;	// bottom-left
+					else if (pt.x > (m_CropZoomRect.right - nCropWidth4) && pt.y < (m_CropZoomRect.top + nCropHeight4))
+						m_nGesturePanCropHandle = 3;	// top-right
+					else if (pt.y < (m_CropZoomRect.top + nCropHeight4))
+						m_nGesturePanCropHandle = 4;	// top
+					else if (pt.y > (m_CropZoomRect.bottom - nCropHeight4))
+						m_nGesturePanCropHandle = 5;	// bottom
+					else if (pt.x < (m_CropZoomRect.left + nCropWidth4))
+						m_nGesturePanCropHandle = 6;	// left
+					else if (pt.x > (m_CropZoomRect.right - nCropWidth4))
+						m_nGesturePanCropHandle = 7;	// right
+					else
+					{
+						m_nGesturePanCropHandle = 8;	// center
+						pDoc->m_rcCropCenter = pDoc->m_rcCropDelta;
+					}
+				}
 			}
 			else
 			{
+				// Calc. delta
 				int dx = pt.x - m_ptGesturePanStart.x;
 				int dy = pt.y - m_ptGesturePanStart.y;
-				if (IsXOrYScroll())
+
+				// Crop
+				if (pDoc->m_bCrop)
+				{
+					pt += GetScrollPosition();
+					switch (m_nGesturePanCropHandle)
+					{
+						// top-left
+						case 0 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
+									CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// bottom-right
+						case 1 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
+									CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// bottom-left
+						case 2 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
+									CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// top-right
+						case 3 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
+									CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// top
+						case 4 :	CropTop(pt, CROP_RECT_Y_INSIDE, FALSE);
+									break;
+						// bottom
+						case 5 :	CropBottom(pt, CROP_RECT_Y_INSIDE, FALSE);
+									break;
+						// left
+						case 6 :	CropLeft(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// right
+						case 7 :	CropRight(pt, CROP_RECT_X_INSIDE, FALSE);
+									break;
+						// center
+						case 8 :	CropCenter(CPoint(dx, dy), CROP_RECT_X_INSIDE, CROP_RECT_Y_INSIDE);
+									break;
+					}
+					UpdateCropRectangles();
+					UpdateCropStatusText();
+				}
+				// Scroll
+				else if (IsXOrYScroll())
 				{
 					CPoint ptCurrentScrollPos = GetScrollPosition();
 					CPoint ptScrollPos = m_ptGesturePanStartScrollPos;
@@ -1602,51 +1705,44 @@ LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 						ptScrollPos.y = ptCurrentScrollPos.y;
 					ScrollToPosition(ptScrollPos);
 				}
-				else
+				// Slide
+				else if (((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc) && !m_bGesturePanSlideDone)
 				{
-					// Check
-					if (!((CUImagerApp*)::AfxGetApp())->IsDocReadyToSlide(pDoc))
-						break; // do default processing
+					// Set flag
+					m_bGesturePanSlideDone = TRUE;
 
-					// Swipe
-					if (!m_bGesturePanExecuted)
+					// Calc. ABS
+					int dxABS = ABS(dx);
+					int dyABS = ABS(dy);
+
+					// Horizontal swipe
+					if (dxABS > dyABS && dxABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
 					{
-						// Set flag
-						m_bGesturePanExecuted = TRUE;
-
-						// Calc. ABS values
-						int dxABS = ABS(dx);
-						int dyABS = ABS(dy);
-
-						// Horizontal swipe
-						if (dxABS > dyABS && dxABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
+						// Left to right swipe
+						if (dx > 0)
 						{
-							// Left to right swipe
-							if (dx > 0)
-							{
-								pDoc->m_SlideShowThread.PreviousPicture();
-							}
-							// Right to left swipe
-							else
-							{
-								pDoc->m_SlideShowThread.NextPicture();
-							}
+							pDoc->m_SlideShowThread.PreviousPicture();
 						}
-						// Vertical swipe
-						else if (dyABS > dxABS && dyABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
+						// Right to left swipe
+						else
 						{
-							// Top to bottom swipe
-							if (dy > 0)
-							{
-								if (!pDoc->ViewPreviousPageFrame())
-									pDoc->m_SlideShowThread.PreviousPicture();
-							}
-							// Bottom to top swipe
-							else
-							{
-								if (!pDoc->ViewNextPageFrame())
-									pDoc->m_SlideShowThread.NextPicture();
-							}
+							pDoc->m_SlideShowThread.NextPicture();
+						}
+					}
+					// Vertical swipe
+					else if (dyABS > dxABS && dyABS > GESTURE_PAN_MIN_SWIPE_LENGTH)
+					{
+						// Top to bottom swipe
+						if (dy > 0)
+						{
+							if (!pDoc->ViewPreviousPageFrame())
+								pDoc->m_SlideShowThread.PreviousPicture();
+						}
+						// Bottom to top swipe
+						else
+						{
+							if (!pDoc->ViewNextPageFrame())
+								pDoc->m_SlideShowThread.NextPicture();
 						}
 					}
 				}

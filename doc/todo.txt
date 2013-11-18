@@ -37,7 +37,6 @@ ContaCam Program
 - Rotate by 0,90,180,270 degrees
 - Think about changing Device Assistant to Device Usage, Name,
   Appearance, Storage or change it to Device Basic Settings
-- Add ACTi support to homapage FAQ!
 - Make thumbnail anim. gif for avi records?
 - Support NV12 (NV21) camera source format
 - Add duration to file names like:

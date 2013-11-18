@@ -209,7 +209,8 @@ protected:
 	// Gesture
 	CPoint m_ptGesturePanStart;
 	CPoint m_ptGesturePanStartScrollPos;
-	BOOL m_bGesturePanExecuted;
+	int m_nGesturePanCropHandle;
+	BOOL m_bGesturePanSlideDone;
 
 	// To Print Characters
 	double m_dXFontPixelScale;
@@ -308,6 +309,7 @@ protected:
 	afx_msg LONG OnBackgroundMusicTrackDone(WPARAM wparam, LPARAM lparam);
 	afx_msg LRESULT OnColorPicked(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnColorPickerClosed(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnApplicationCommand(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnGesture(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
