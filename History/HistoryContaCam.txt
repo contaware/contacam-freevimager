@@ -1,9 +1,9 @@
 CONTACAM HISTORY
 
-4.9.0 (xx xth 2013)
+4.9.0 (November 19th 2013)
 
 - Added Internet Explorer 11 support
-- Added suppport for ACTi and some newer Intellinet ip cams 
+- Added support for ACTi and some newer Intellinet ip cams 
 - Global toolbar buttons for Browse and Browse Files commands
 - Motion scheduler has got a 'detection disabled from..to and on'
 - The minimum font size for frame time, for detection indicator
