@@ -213,6 +213,7 @@ void CDxCapture::ReadDeviceNameAndPath(IPropertyBag* pBag, CString& sDeviceName,
 		if (SUCCEEDED(hr)) 
 		{
 			sDeviceName = CString(var.bstrVal);
+			sDeviceName.Trim(); // avoid leading and trailing whitespaces!
 			SysFreeString(var.bstrVal);
 		}
 		hr = pBag->Read(L"DevicePath", &var, NULL);
