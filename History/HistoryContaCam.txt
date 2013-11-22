@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+4.9.5 (xxx xth 2013)
+
+- Avoid leading and trailing whitespaces in directx device names
+
 4.9.0 (November 19th 2013)
 
 - Added Internet Explorer 11 support
