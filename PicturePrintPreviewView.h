@@ -62,6 +62,9 @@ private:
 	CXButtonXP	m_ZoomInButton;			// Zoom In Button
 	CXButtonXP	m_ZoomOutButton;		// Zoom Out Button
 	CPoint		m_ptMouseMoveLastPoint;	// Last Point Of Movement
+	ULONGLONG	m_ullGestureZoomStart;	// Zoom gesture initial distance between the two points
+	double		m_dGestureZoomStartPrintScale;	// Zoom gesture start print scale value
+	CPoint		m_ptGesturePanStart;	// Pan gesture start position
 	//{{AFX_VIRTUAL(CPicturePrintPreviewView)
 	protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -126,6 +129,7 @@ protected:
 	afx_msg void OnLandscape();
 	afx_msg void OnPrintMargin();
 	//afx_msg void OnPreviewPages();
+	afx_msg LRESULT OnGesture(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

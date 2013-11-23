@@ -71,6 +71,7 @@ BEGIN_MESSAGE_MAP(CPicturePrintPreviewView, CPreviewView)
 	ON_COMMAND(IDC_CHECK_SIZE_FIT, OnSizeFit)
 	ON_COMMAND(ID_BUTTON_PRINT_SETUP, OnPrintSetup)
 	//ON_COMMAND(ID_PREVIEW_PAGES, OnPreviewPages)
+	ON_MESSAGE(WM_GESTURE, OnGesture)
 END_MESSAGE_MAP()
 
 BOOL CPicturePrintPreviewView::PreCreateWindow(CREATESTRUCT& cs)
@@ -545,6 +546,26 @@ int CPicturePrintPreviewView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Enable ToolTips
 	m_pToolBar->EnableToolTips(TRUE);
+
+	// Gesture Config
+	typedef BOOL (WINAPI * FPSETGESTURECONFIG)(HWND hwnd, DWORD dwReserved, UINT cIDs, PGESTURECONFIG pGestureConfig, UINT cbSize);
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (h)
+	{
+		FPSETGESTURECONFIG fpSetGestureConfig = (FPSETGESTURECONFIG)::GetProcAddress(h, "SetGestureConfig");
+		if (fpSetGestureConfig)
+		{
+			DWORD dwPanWant  = GC_PAN | GC_PAN_WITH_INERTIA | GC_PAN_WITH_SINGLE_FINGER_VERTICALLY | GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+			DWORD dwPanBlock = GC_PAN_WITH_GUTTER;
+			GESTURECONFIG gc[] =	{{GID_ZOOM, GC_ZOOM, 0},				// Handled in OnGesture()
+									{GID_ROTATE, 0, GC_ROTATE},				// Disabled
+									{GID_PAN, dwPanWant , dwPanBlock},		// Handled in OnGesture()
+									{GID_TWOFINGERTAP, 0, GC_TWOFINGERTAP},	// Disabled
+									{GID_PRESSANDTAP, 0, GC_PRESSANDTAP}};	// Disabled
+			fpSetGestureConfig(GetSafeHwnd(), 0, 5, gc, sizeof(GESTURECONFIG));
+		}
+		::FreeLibrary(h);
+	}
 
 	return 0;
 }
@@ -2173,4 +2194,134 @@ CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 		default :
 			return CString(_T(""));
 	}
+}
+
+// Gesture handling for Windows 7 and higher
+LRESULT CPicturePrintPreviewView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
+{
+	CPictureDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// Get gesture function pointers
+	typedef	BOOL (WINAPI *FPGETGESTUREINFO)(HGESTUREINFO_COMPATIBLE, PGESTUREINFO_COMPATIBLE);
+	typedef	BOOL (WINAPI *FPCLOSEGESTUREINFOHANDLE)(HGESTUREINFO_COMPATIBLE);
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (!h)
+		return Default();
+	FPGETGESTUREINFO fpGetGestureInfo = (FPGETGESTUREINFO)::GetProcAddress(h, "GetGestureInfo");
+	FPCLOSEGESTUREINFOHANDLE fpCloseGestureInfoHandle = (FPCLOSEGESTUREINFOHANDLE)::GetProcAddress(h, "CloseGestureInfoHandle");
+	if (fpGetGestureInfo == NULL || fpCloseGestureInfoHandle == NULL)
+	{
+		::FreeLibrary(h);
+		return Default();
+	}
+
+	// Get current gesture info
+	GESTUREINFO_COMPATIBLE CurrentGestureInfo;
+	memset(&CurrentGestureInfo, 0, sizeof(GESTUREINFO_COMPATIBLE));
+	CurrentGestureInfo.cbSize = sizeof(GESTUREINFO_COMPATIBLE);
+	if (!fpGetGestureInfo((HGESTUREINFO_COMPATIBLE)lParam, &CurrentGestureInfo) || CurrentGestureInfo.hwndTarget != GetSafeHwnd())
+	{
+		::FreeLibrary(h);
+		return Default();
+	}
+
+	// Process gesture
+	BOOL bDefaultProcessing = TRUE;
+	switch (CurrentGestureInfo.dwID)
+	{
+		case GID_ZOOM :
+		{
+			if (CurrentGestureInfo.dwFlags & GF_BEGIN)
+			{
+				// Init vars
+				m_ullGestureZoomStart = CurrentGestureInfo.ullArguments;
+				if (m_ullGestureZoomStart == 0)
+					m_ullGestureZoomStart = 1;
+				m_dGestureZoomStartPrintScale = pDoc->m_dPrintScale;
+			}
+			else
+			{
+				// Calc. zoom percent
+				double dValue = 100.0 * m_dGestureZoomStartPrintScale * CurrentGestureInfo.ullArguments / m_ullGestureZoomStart;
+				if (dValue >= MIN_PRINT_SCALE && dValue <= MAX_PRINT_SCALE)
+				{
+					// Set new print scale
+					pDoc->m_dPrintScale = dValue / 100.0;
+					m_pScaleEdit->SetPrintScale(pDoc->m_dPrintScale);
+
+					// Clear Print Size Fit Check Box
+					CButton* pCheck = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_SIZE_FIT);
+					pCheck->SetCheck(0);
+					pDoc->m_bPrintSizeFit = FALSE;
+
+					// Invalidate
+					Invalidate(FALSE);
+				}
+			}
+
+			bDefaultProcessing = FALSE;
+			break;
+		}
+
+		case GID_PAN :
+		{
+			// Get current position in client coordinates
+			CPoint pt(CurrentGestureInfo.ptsLocation.x, CurrentGestureInfo.ptsLocation.y);
+			ScreenToClient(&pt);
+
+			if (CurrentGestureInfo.dwFlags & GF_BEGIN)
+			{
+				// Init var
+				m_ptGesturePanStart = pt;
+			}
+			else if (CurrentGestureInfo.dwFlags & GF_END)
+			{
+				// Init var
+				pDoc->m_ptLastPrintOffset = pDoc->m_ptPrintOffset;
+			}
+			else
+			{
+				// Calc. delta
+				int dx = pt.x - m_ptGesturePanStart.x;
+				int dy = pt.y - m_ptGesturePanStart.y;
+				
+				// Print Offset Calculation
+				int nXOffset = MulDiv(dx, m_pPageInfo[0].sizeScaleRatio.cy, m_pPageInfo[0].sizeScaleRatio.cx);
+				int nYOffset = MulDiv(dy, m_pPageInfo[0].sizeScaleRatio.cy, m_pPageInfo[0].sizeScaleRatio.cx);
+
+				// Convert screen coordinates to printer coordinates 
+				nXOffset = MulDiv(nXOffset, m_sizePrinterPPI.cx, afxData.cxPixelsPerInch);
+				nYOffset = MulDiv(nYOffset, m_sizePrinterPPI.cy, afxData.cyPixelsPerInch);
+
+				// Set Offset
+				pDoc->m_ptPrintOffset.x = pDoc->m_ptLastPrintOffset.x + nXOffset;
+				pDoc->m_ptPrintOffset.y = pDoc->m_ptLastPrintOffset.y + nYOffset;
+
+				// Clear Print Size Fit Check Box
+				CButton* pCheck = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_SIZE_FIT);
+				pCheck->SetCheck(0);
+				pDoc->m_bPrintSizeFit = FALSE;
+
+				// Invalidate
+				Invalidate(FALSE);
+			}
+
+			bDefaultProcessing = FALSE;
+			break;
+		}
+
+		default :
+			break; // do default processing
+	}
+
+	// Close info handle if processing stops here
+	if (!bDefaultProcessing)
+		fpCloseGestureInfoHandle((HGESTUREINFO_COMPATIBLE)lParam);
+
+	// Free library
+	::FreeLibrary(h);
+
+	// return 0 if processing done here
+	return bDefaultProcessing ? Default() : 0;
 }

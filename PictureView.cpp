@@ -1597,16 +1597,16 @@ LRESULT CPictureView::OnGesture(WPARAM /*wParam*/, LPARAM lParam)
 		return Default();
 	}
 
-	// Get current position in client coordinates
-	CPoint pt(CurrentGestureInfo.ptsLocation.x, CurrentGestureInfo.ptsLocation.y);
-	ScreenToClient(&pt);
-
 	// Process gesture
 	BOOL bDefaultProcessing = TRUE;
 	switch (CurrentGestureInfo.dwID)
 	{
-		case GID_PAN:
+		case GID_PAN :
 		{
+			// Get current position in client coordinates
+			CPoint pt(CurrentGestureInfo.ptsLocation.x, CurrentGestureInfo.ptsLocation.y);
+			ScreenToClient(&pt);
+
 			if (CurrentGestureInfo.dwFlags & GF_BEGIN)
 			{
 				// Init vars
