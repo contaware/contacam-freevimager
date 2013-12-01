@@ -2,9 +2,13 @@
 var myTotalFrames = 3000; // Set some init value
 var TotalFramesSet = 0;
 var FirstRun = 1;
+var PrevPercentLoaded = 0;
+var CurrentPercentLoaded = 0;
+var PercentLoadedStallingCount = 0;
 
 // Constants
 var INIT_PLAYER_MS = 300;
+var MAX_PERCENT_LOADED_STALLING_COUNT = 30; // -> allow a max. of 9 seconds (INIT_PLAYER_MS * MAX_PERCENT_LOADED_STALLING_COUNT) of wait time between percent increases
 var UPDATE_SLIDER_MS = 500;
 var ZOOMIN_PERCENT = 90;
 var ZOOMOUT_PERCENT = 110;
@@ -49,11 +53,27 @@ function InitPlayerInternal()
 		myTotalFrames = flashMovie.TotalFrames();
 	}
 	
+	// Update and fix percent loaded variable
+	// Note: the following logic is necessary because some movies, for
+	// unknown reasons, are stalling in a percentage value smaller than
+	// 100 even if they are correctly and completely loaded...
+	CurrentPercentLoaded = flashMovie.PercentLoaded();
+	if (CurrentPercentLoaded < 0) // I have sometimes seen negative values...
+		CurrentPercentLoaded = 0;
+	else if (CurrentPercentLoaded > 100) // we never know...
+		CurrentPercentLoaded = 100;
+	if (CurrentPercentLoaded == PrevPercentLoaded)
+		PercentLoadedStallingCount++;
+	else
+		PercentLoadedStallingCount = 0;
+	if (PercentLoadedStallingCount > MAX_PERCENT_LOADED_STALLING_COUNT)
+		CurrentPercentLoaded = 100;
+		
 	// Display info
 	UpdateInfoText();
 	
 	// Check whether fully loaded
-	if (TotalFramesSet == 0 || flashMovie.PercentLoaded() != 100)
+	if (TotalFramesSet == 0 || CurrentPercentLoaded != 100)
 		window.setTimeout("InitPlayerInternal()", INIT_PLAYER_MS);
 	else
 	{
@@ -72,6 +92,9 @@ function InitPlayerInternal()
 		Event.observe(window, "resize", resizeSwf);
 		FirstRun = 0;
 	}
+	
+	// Update previous percent loaded variable
+	PrevPercentLoaded = CurrentPercentLoaded;
 }
 
 function UpdateSlider()
@@ -91,13 +114,13 @@ function UpdateSlider()
 function UpdateInfoText()
 {	
 	var flashMovie=GetFlashMovieObject("myFlashMovie");
-	if (flashMovie.PercentLoaded() == 100 || flashMovie.PercentLoaded() < 0) // I have sometimes seen negative values...
+	if (CurrentPercentLoaded == 100)
 	{
 		var currentFrame=flashMovie.TCurrentFrame("/");
 		document.controller.infotext.value = parseInt(currentFrame) + 1;
 	}
 	else
-		document.controller.infotext.value = flashMovie.PercentLoaded() + '%';
+		document.controller.infotext.value = CurrentPercentLoaded + '%';
 }
 
 function StopFlashMovie()
