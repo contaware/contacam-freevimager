@@ -4019,8 +4019,8 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		{
 			if (pPercentProgress)
 			{
-				nVideoPercent = pPercentProgress->nVideoPercentOffset +
-								(pPercentProgress->nVideoPercentSize * dwVideoFrame / dwTotalFrames);
+				nVideoPercent = (int)(pPercentProgress->dVideoPercentOffset +
+									(pPercentProgress->dVideoPercentSize * dwVideoFrame / dwTotalFrames));
 			}
 			else
 			{
@@ -4055,8 +4055,8 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		{
 			if (pPercentProgress)
 			{
-				nAudioPercent = pPercentProgress->nAudioPercentOffset +
-								(pPercentProgress->nAudioPercentSize * nCurrentAudioChunk / dwTotalAudioChunks);
+				nAudioPercent = (int)(pPercentProgress->dAudioPercentOffset +
+									(pPercentProgress->dAudioPercentSize * nCurrentAudioChunk / dwTotalAudioChunks));
 			}
 			else
 				nAudioPercent = 100 * nCurrentAudioChunk / dwTotalAudioChunks;
@@ -6328,7 +6328,7 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 												bool bShowMessageBoxOnError) 
 {
 	// Check
-	if (!pAviFileNames)
+	if (!pAviFileNames || pAviFileNames->GetSize() <= 0)
 		return FALSE;
 	
 	CAVRec* pAVRec = NULL;
@@ -6350,12 +6350,12 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 	bool bVideoStreamsChange[MAX_VIDEO_STREAMS];
 	bool bAudioStreamsSave[MAX_AUDIO_STREAMS];
 	bool bAudioStreamsChange[MAX_AUDIO_STREAMS];
-	int nPercentInc = 100 / pAviFileNames->GetSize();
+	double dPercentInc = 100.0 / pAviFileNames->GetSize();
 	CPercentProgress PercentProgress;
-	PercentProgress.nAudioPercentOffset = 0;
-	PercentProgress.nVideoPercentOffset = 0;
-	PercentProgress.nAudioPercentSize = nPercentInc;
-	PercentProgress.nVideoPercentSize = nPercentInc;
+	PercentProgress.dAudioPercentOffset = 0.0;
+	PercentProgress.dVideoPercentOffset = 0.0;
+	PercentProgress.dAudioPercentSize = dPercentInc;
+	PercentProgress.dVideoPercentSize = dPercentInc;
 	DWORD dwFirstVideoStreamsCount;
 	DWORD dwFirstAudioStreamsCount;
 	DWORD dwFirstWidth[MAX_VIDEO_STREAMS];
@@ -6539,9 +6539,9 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 		// Clear pointer
 		pAVIPlay = NULL;
 
-		// Increment progress
-		PercentProgress.nAudioPercentOffset += nPercentInc;
-		PercentProgress.nVideoPercentOffset += nPercentInc;
+		// Increment progress offset
+		PercentProgress.dAudioPercentOffset += dPercentInc;
+		PercentProgress.dVideoPercentOffset += dPercentInc;
 	}
 
 free:

@@ -323,10 +323,10 @@ public:
 	class CPercentProgress
 	{
 		public:
-			int nVideoPercentOffset;
-			int nVideoPercentSize;
-			int nAudioPercentOffset;
-			int nAudioPercentSize;
+			double dVideoPercentOffset;
+			double dVideoPercentSize;
+			double dAudioPercentOffset;
+			double dAudioPercentSize;
 	};
 	class CFileMergeSerialAs : public CFunct
 	{
