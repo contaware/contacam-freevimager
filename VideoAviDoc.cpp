@@ -6332,6 +6332,8 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 		return FALSE;
 	
 	CAVRec* pAVRec = NULL;
+	CAVIPlay* pAVIPlay = NULL;
+	CAVIPlay* pFirstAVIPlay = NULL;
 	int nPassNumber = 0;	// Single Pass
 	int ret = 0;			// Dlg Canceled
 	int i;
@@ -6339,7 +6341,6 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 	CAVIPlay::CAVIAudioStream* pSrcAudioStream;
 	DWORD dwVideoStreamNum;
 	DWORD dwAudioStreamNum;
-	CVideoAviDoc::AVIPLAYARRAY AVIPlayArray;
 	CDWordArray VideoStreamsSave;
 	CDWordArray VideoStreamsChange;
 	CDWordArray AudioStreamsSave;
@@ -6366,7 +6367,7 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 	for (i = 0 ; i < pAviFileNames->GetSize() ; i++)
 	{
 		// Open AVI
-		CAVIPlay* pAVIPlay = new CAVIPlay;
+		pAVIPlay = new CAVIPlay;
 		if (!pAVIPlay)
 		{
 			ret = -1;
@@ -6375,12 +6376,11 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 		pAVIPlay->SetShowMessageBoxOnError(bShowMessageBoxOnError);
 		if (!pAVIPlay->Open(pAviFileNames->ElementAt(i)))
 		{
-			delete pAVIPlay;
 			ret = -1;
 			goto free;
 		}
-		AVIPlayArray.Add(pAVIPlay);
 
+		// First file?
 		if (i == 0)
 		{
 			CAviSaveAsStreamsDlg dlgStreams(pAVIPlay,
@@ -6468,6 +6468,9 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 				ret = 0;
 				goto free;
 			}
+
+			// Init first AVI Play pointer (pAVIPlay set to NULL in next instruction)
+			pFirstAVIPlay = pAVIPlay;
 		}
 		else
 		{
@@ -6528,12 +6531,22 @@ int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
 				ret = -1;
 				goto free;
 			}
+
+			// Free (pAVIPlay set to NULL in next instruction)
+			delete pAVIPlay;
 		}
+
+		// Clear pointer
+		pAVIPlay = NULL;
+
+		// Increment progress
 		PercentProgress.nAudioPercentOffset += nPercentInc;
 		PercentProgress.nVideoPercentOffset += nPercentInc;
 	}
 
 free:
+
+	// Close output file and free pointer
 	if (pAVRec)
 	{
 		if (!pAVRec->Close())
@@ -6542,11 +6555,11 @@ free:
 	}
 
 	// Restore the original dwRate and dwScale
-	if (ret == 1 && AVIPlayArray[0])
+	if (ret == 1 && pFirstAVIPlay)
 	{
-		for (dwVideoStreamNum = 0 ; dwVideoStreamNum < AVIPlayArray[0]->GetVideoStreamsCount() ; dwVideoStreamNum++)
+		for (dwVideoStreamNum = 0 ; dwVideoStreamNum < pFirstAVIPlay->GetVideoStreamsCount() ; dwVideoStreamNum++)
 		{
-			pSrcVideoStream = AVIPlayArray[0]->GetVideoStream(dwVideoStreamNum);
+			pSrcVideoStream = pFirstAVIPlay->GetVideoStream(dwVideoStreamNum);
 			if (pSrcVideoStream)
 			{
 				int dst_rate, dst_scale;
@@ -6560,11 +6573,11 @@ free:
 		}
 	}
 
-	for (i = 0 ; i < AVIPlayArray.GetSize() ; i++)
-	{
-		if (AVIPlayArray[i])
-			delete AVIPlayArray[i];
-	}
+	// Free
+	if (pFirstAVIPlay)
+		delete pFirstAVIPlay;
+	if (pAVIPlay)
+		delete pAVIPlay;
 	
 	return ret;
 }
