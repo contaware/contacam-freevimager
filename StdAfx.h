@@ -63,9 +63,10 @@
 #endif
 
 // Maximum file path size for file dialog
-#ifndef MAX_FILEDLG_PATH
-#define MAX_FILEDLG_PATH			65535 // If you put 65536 it's not working on win2000...
-#endif
+// Note: WinXP seems to only support 32k, passing
+// a bigger buffer doesn't fail the file dialog
+// function but the above mentioned limit remains
+#define MAX_FILEDLG_PATH			1048576		// 1M
 
 // Default Font Face Families
 #define DEFAULT_FONTFACE			_T("Arial")
