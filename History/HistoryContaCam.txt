@@ -5,6 +5,8 @@ CONTACAM HISTORY
 - Avoid leading and trailing whitespaces in directx device names
 - Fixed 'Out of memory' error message when joining a huge amount
   of avi files (more than 100)
+- Verify HTTP/1.1 keep-alive support because some ip cams do not
+  follow the specifications
 
 4.9.0 (November 19th 2013)
 

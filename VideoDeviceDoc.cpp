@@ -3394,7 +3394,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
 	BOOL bCheckConnectionTimeout = FALSE;
-	BOOL bHasConnectionKeepAlive = FALSE;
+	int nConnectionKeepAliveSupported = -1; // -1: to be verified, 0: not supported, 1: supported
 
 	for (;;)
 	{
@@ -3441,7 +3441,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
-				bHasConnectionKeepAlive = FALSE;
+				nConnectionKeepAliveSupported = -1;
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				DWORD dwConnectDelay = m_dwConnectDelay;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
@@ -3520,14 +3520,27 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				if (m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg)
 				{
 					// Keep-alive: just send the request to the already open connection
-					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive)
+					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive &&
+						nConnectionKeepAliveSupported != 0)
 					{
-						bHasConnectionKeepAlive = TRUE;
-						m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
+						// Keep-alive support already verified
+						if (nConnectionKeepAliveSupported == 1)
+							m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
+						// Verify keep-alive support
+						// (some crappy HTTP/1.1 servers do not return the "Connection: close"
+						// response to our "Connection: keep-alive" request when they do not
+						// support keep-alive)
+						else
+						{
+							if (m_pDoc->m_pHttpGetFrameParseProcess->SendRequest())
+								nConnectionKeepAliveSupported = 1;
+							else
+								nConnectionKeepAliveSupported = 0;
+						}
 					}
 					// Some servers by default limit the amount of requests per connection,
 					// after a while the connection is closed by the server -> reconnect
-					else if (bHasConnectionKeepAlive)
+					else if (nConnectionKeepAliveSupported == 1)
 						SetEventConnect();
 					else
 					{
