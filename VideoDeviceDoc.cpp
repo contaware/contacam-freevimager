@@ -9486,14 +9486,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 
 		// Keep it short because some stupid ip cams (like Planet)
 		// run out of buffer or do not parse well if we send to much!
-		sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
-					/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
-					/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
-					/*_T("Accept-Charset: ISO-8859-1\r\n")*/
+		sMsg.Format(_T("User-Agent: %s/%s\r\n")
 					_T("Connection: keep-alive\r\n")
 					_T("Authorization: Basic %s\r\n\r\n"),
-					/*APPNAME_NOEXT,
-					APPVERSION,*/
+					APPNAME_NOEXT,
+					APPVERSION,
 					lpszAuthorization);
 	}
 	else if (m_AnswerAuthorizationType == AUTHDIGEST) // http://tools.ietf.org/html/rfc2617
@@ -9549,14 +9546,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 
 			// Keep it short because some stupid ip cams (like Planet)
 			// run out of buffer or do not parse well if we send to much!
-			sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
-						/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
-						/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
-						/*_T("Accept-Charset: ISO-8859-1\r\n")*/
+			sMsg.Format(_T("User-Agent: %s/%s\r\n")
 						_T("Connection: keep-alive\r\n")
 						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",qop=auth,nc=%s,cnonce=\"%s\",response=\"%s\""),
-						/*APPNAME_NOEXT,
-						APPVERSION,*/
+						APPNAME_NOEXT,
+						APPVERSION,
 						m_pDoc->m_sHttpGetFrameUsername,
 						m_sRealm,
 						m_sNonce,
@@ -9576,14 +9570,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 
 			// Keep it short because some stupid ip cams (like Planet)
 			// run out of buffer or do not parse well if we send to much!
-			sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
-						/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
-						/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
-						/*_T("Accept-Charset: ISO-8859-1\r\n")*/
+			sMsg.Format(_T("User-Agent: %s/%s\r\n")
 						_T("Connection: keep-alive\r\n")
 						_T("Authorization: Digest username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s\",response=\"%s\""),
-						/*APPNAME_NOEXT,
-						APPVERSION,*/
+						APPNAME_NOEXT,
+						APPVERSION,
 						m_pDoc->m_sHttpGetFrameUsername,
 						m_sRealm,
 						m_sNonce,
@@ -9607,13 +9598,10 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 		m_LastRequestAuthorizationType = AUTHNONE;
 		// Keep it short because some stupid ip cams (like Planet)
 		// run out of buffer or do not parse well if we send to much!
-		sMsg.Format(/*_T("User-Agent: Mozilla/4.0 (Windows) %s/%s\r\n")*/
-					/*_T("Accept: text/html,text/plain,image/jpeg,multipart/x-mixed-replace\r\n")*/
-					/*_T("Accept-Encoding:\r\n")	// No encoding accepted */
-					/*_T("Accept-Charset: ISO-8859-1\r\n")*/
-					_T("Connection: keep-alive\r\n\r\n")/*,
+		sMsg.Format(_T("User-Agent: %s/%s\r\n")
+					_T("Connection: keep-alive\r\n\r\n"),
 					APPNAME_NOEXT,
-					APPVERSION*/);
+					APPVERSION);
 	}
 
 	// Send
