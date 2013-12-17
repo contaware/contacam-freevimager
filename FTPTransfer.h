@@ -13,7 +13,8 @@
 #ifdef VIDEODEVICEDOC
 
 #define FTP_CONNECTION_TIMEOUT_MS		15000U
-	
+
+// RFC 959
 class CFTPTransfer
 {
 public:
@@ -55,7 +56,7 @@ public:
 	BOOL			m_bUseProxy;				// Should a proxy be used
 	CString			m_sProxy;					// The proxy connect string to use if "m_bUseProxy" is TRUE
 	double			m_dbLimit;					// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
-	DWORD			m_dwStartPos;				// Offset to resume the download at   
+	DWORD			m_dwStartPos;				// Offset to resume the transfer at   
 	DWORD			m_dwConnectionTimeout;		// The connection timeout to use (in milliseconds)
 
 protected:

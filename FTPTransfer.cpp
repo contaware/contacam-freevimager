@@ -10,46 +10,7 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-const UINT WM_FTPTRANSFER_THREAD_FINISHED = WM_APP + 1;
-const UINT WM_FTPTRANSFER_ASK_OVERWRITE_FILE = WM_APP + 2;
-
 #pragma comment(lib, "wininet.lib") // Automatically link with wininet dll
-
-
-// Class which handles dynamically calling function which must be constructed at run time
-// since support for resuming FTP requires IE5 to be installed, which we do not
-// want to limit the code to. To avoid the loader bringing up a message such as "Failed to 
-// load due to missing export...", the function is constructed using GetProcAddress. The 
-// CFTPTransfer function then checks to see if these function pointer is NULL and if it 
-// returns FALSE and sets the last error to ERROR_CALL_NOT_IMPLEMENTED and fails the call
-
-class _FTP_DOWNLOAD_DATA
-{
-public:
-	_FTP_DOWNLOAD_DATA();
-	~_FTP_DOWNLOAD_DATA();
-
-	HINSTANCE m_hWininet;
-
-	typedef BOOL (__stdcall FTPCOMMAND)(HINTERNET, BOOL, DWORD, LPCTSTR, DWORD, HINTERNET*);
-	typedef FTPCOMMAND* LPFTPCOMMAND;
-
-	LPFTPCOMMAND m_lpfnFtpCommand;
-};
-
-_FTP_DOWNLOAD_DATA::_FTP_DOWNLOAD_DATA()
-{
-	m_hWininet = ::GetModuleHandle(_T("WININET.DLL"));
-	if (m_hWininet)
-		m_lpfnFtpCommand = (LPFTPCOMMAND)::GetProcAddress(m_hWininet, "FtpCommandW");
-}
-
-_FTP_DOWNLOAD_DATA::~_FTP_DOWNLOAD_DATA()
-{
-	m_hWininet = NULL;
-}
-
-_FTP_DOWNLOAD_DATA _FtpDownloadData;
 
 int CFTPTransfer::CMakeConnectionThread::Work() 
 {
@@ -120,11 +81,12 @@ BOOL CFTPTransfer::OpenLocalFile()
 	CString sMsg;
 
 	// Check to see if the file we are downloading exists and if
-	// it does, then ask the user if they were it overwritten
+	// it does, then ask the user if he wants it overwritten
+	// (if not resuming the download)
 	ASSERT(m_sLocalFile.GetLength());
 	CFileStatus fs;
 	BOOL bDownloadFileExists = CFile::GetStatus(m_sLocalFile, fs);
-	if (m_bDownload && bDownloadFileExists && m_bPromptOverwrite)
+	if (m_bDownload && bDownloadFileExists && m_bPromptOverwrite && m_dwStartPos == 0)
 	{
 		sMsg.Format(ML_STRING(1388, "The file %s already exists.\nDo you want to replace it?"), m_sLocalFile);
 		if (::AfxMessageBox(sMsg, MB_YESNO) != IDYES)
@@ -171,7 +133,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 			if (m_bShowMessageBoxOnError)
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
 			return FALSE;
-		}	
+		}
 	}
 	else
 	{
@@ -186,27 +148,52 @@ BOOL CFTPTransfer::OpenLocalFile()
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
 			return FALSE;
 		}
+
+		// Seek to the resume point
+		try
+		{
+			m_LocalFile.Seek(m_dwStartPos, CFile::begin);
+		}
+		catch (CFileException* pEx)                                         
+		{
+			pEx->GetErrorMessage(szCause, 255);
+			pEx->Delete();
+			CString sError(szCause);
+			sMsg.Format(ML_STRING(1789, "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"), sError);
+			TRACE(sMsg);
+			if (m_bShowMessageBoxOnError)
+				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			return FALSE;
+		}
 	}
 
 	return TRUE;
 }
 
+/*
+FTP Upload Resume
+-----------------
+The FTP client sends a SIZE command to get the current size of the 
+partially uploaded file on the FTP server. If the REST FTP command is 
+supported by the server, then the SIZE command should also be supported, 
+see RFC 3659. The FTP client then sends a REST command with the current 
+file size. The file data is then sent starting at the byte position 
+previously indicated. 
+
+FTP Download Resume
+-------------------
+This is the same as upload, except that no SIZE command is required. The 
+FTP client simply knows the size of the partially downloaded file 
+because it exists in the local filesystem on the client.
+*/
 BOOL CFTPTransfer::ResumeTransfer(CString& sError)
 {
-	// Check that the FtpCommand function is available
-	if (_FtpDownloadData.m_lpfnFtpCommand == NULL)
-	{
-		sError = _T("Error Command Missing\n");
-		TRACE(_T("CFTPTransfer::ResumeTransfer, FtpCommand method not available in Wininet dll, FTP resumes are not supported\n"));
-		return FALSE;
-	}
-
 	// Form the resume request
 	CString sRequest;
 	sRequest.Format(_T("REST %d"), m_dwStartPos);
 
 	// Send the resume request
-	BOOL bSuccess = _FtpDownloadData.m_lpfnFtpCommand(m_hFTPConnection, FALSE, FTP_TRANSFER_TYPE_BINARY, sRequest, 0, NULL); 
+	BOOL bSuccess = ::FtpCommand(m_hFTPConnection, FALSE, FTP_TRANSFER_TYPE_BINARY, sRequest, 0, NULL); 
 	if (!bSuccess)
 	{
 		DWORD dwLastError = ::GetLastError();
@@ -513,7 +500,7 @@ int CFTPTransfer::Transfer()
 	}
 
 	// Check to see if the file already exists on the server  
-	if (!m_bDownload && m_bPromptOverwrite)
+	if (!m_bDownload && m_bPromptOverwrite && m_dwStartPos == 0)
 	{
 		WIN32_FIND_DATA wfd;
 		HINTERNET hFind = ::FtpFindFirstFile(m_hFTPConnection, m_sRemoteFile, &wfd, INTERNET_FLAG_RELOAD | 
@@ -702,7 +689,7 @@ int CFTPTransfer::Transfer()
 
 				// Statistics
 				if (bGotFileSize)
-					UpdatePercentage(dwTotalBytesRead, dwFileSize);
+					UpdatePercentage(dwTotalBytesRead, dwFileSize - m_dwStartPos);
 			}
 		}
 		else
@@ -712,7 +699,7 @@ int CFTPTransfer::Transfer()
 			{
 				dwBytesRead = m_LocalFile.Read(szReadBuf, 1024);
 			}
-			catch(CFileException* pEx)
+			catch (CFileException* pEx)
 			{
 				pEx->GetErrorMessage(szCause, 255);
 				sError = CString(szCause);
@@ -747,7 +734,7 @@ int CFTPTransfer::Transfer()
 
 					// Statistics
 					if (bGotFileSize)
-						UpdatePercentage(dwTotalBytesWritten, dwFileSize);
+						UpdatePercentage(dwTotalBytesWritten, dwFileSize - m_dwStartPos);
 				}
 
 				// For bandwidth throttling

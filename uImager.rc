@@ -5636,6 +5636,7 @@ BEGIN
     IDS_STRING1786          "Shrink"
     IDS_STRING1787          "Jpeg"
     IDS_STRING1788          "Tiff / Pdf"
+    IDS_STRING1789          "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"
     IDS_STRING1790          "Burn %d%%"
     IDS_STRING1791          "Burn..."
 END
