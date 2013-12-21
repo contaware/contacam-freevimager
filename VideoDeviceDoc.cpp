@@ -2131,7 +2131,6 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		return 0;
 	else 
 	{
-		pFTP->m_bShowMessageBoxOnError = FALSE; // Be Quiet!
 		if (pConfig->m_sRemoteDir.IsEmpty())
 			pFTP->m_sRemoteFile = sRemoteFileName;
 		else
@@ -2151,7 +2150,7 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		pFTP->m_bDownload = FALSE;
 		pFTP->m_bBinary = pConfig->m_bBinary;
 		pFTP->m_bPromptOverwrite = FALSE;
-		pFTP->m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
+		pFTP->m_dBandwidthLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 		pFTP->m_bPasv = pConfig->m_bPasv;
 		pFTP->m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		pFTP->m_bUseProxy = pConfig->m_bProxy;
@@ -2163,7 +2162,11 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 			pFTP->m_sPassword = pConfig->m_sPassword;
 		}
 
-		return pFTP->Transfer();
+		// Upload
+		int nRet = pFTP->Transfer();
+		if (nRet == 0 && pFTP->m_sError != _T(""))
+			::LogLine(pFTP->m_sError);
+		return nRet;
 	}
 }
 

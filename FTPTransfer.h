@@ -41,13 +41,13 @@ public:
 	BOOL Test();
 
 	// Public Member Variables
-	BOOL			m_bShowMessageBoxOnError;	// Show Message Box On Error
+	CString			m_sError;					// Returns error message if Transfer() or Test() failed
 	BOOL			m_bDownload;				// TRUE if it's a download, FALSE if an upload
 	CString			m_sServer;					// e.g. "ftp.microsoft.com"
 	CString			m_sRemoteFile;				// e.g. "/pub/somefile.ext"
-	CString			m_sLocalFile;				// e.g. "c:\temp\somfile.txt"
-	CString			m_sUserName;				// Username to login to the server with
-	CString			m_sPassword;				// Password to login to the server with
+	CString			m_sLocalFile;				// e.g. "c:\\temp\\somefile.txt"
+	CString			m_sUserName;				// Username to login to the server
+	CString			m_sPassword;				// Password to login to the server
 	INTERNET_PORT	m_nPort;					// If you want to change the port to make access on, by default it will be 21
 	BOOL			m_bBinary;					// TRUE if binary transfer, FALSE for ascii transfer
 	BOOL			m_bPromptOverwrite;			// Should the user be prompted to overwrite files
@@ -55,7 +55,7 @@ public:
 	BOOL			m_bUsePreconfig;			// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 	BOOL			m_bUseProxy;				// Should a proxy be used
 	CString			m_sProxy;					// The proxy connect string to use if "m_bUseProxy" is TRUE
-	double			m_dbLimit;					// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
+	double			m_dBandwidthLimit;			// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to (disable that with a value of 0.0)
 	DWORD			m_dwStartPos;				// Offset to resume the transfer at   
 	DWORD			m_dwConnectionTimeout;		// The connection timeout to use (in milliseconds)
 
@@ -65,19 +65,16 @@ protected:
 										LPVOID lpvStatusInformation, DWORD dwStatusInformationLength);
 	void OnStatusCallBack(HINTERNET hInternet, DWORD dwInternetStatus, 
 						LPVOID lpvStatusInformation, DWORD dwStatusInformationLength);
-	BOOL ResumeTransfer(CString& sError);
+	BOOL ResumeTransfer();
 	BOOL OpenLocalFile();
 	BOOL CreateRemoteDir(CString sDirName);
 
 	DWORD			m_dwPercentage;
 	DWORD			m_dwLastPercentage;
-	CString			m_sError;
 	HINTERNET		m_hInternetSession;
 	HINTERNET		m_hFTPConnection;
 	HINTERNET		m_hFTPFile;
-	BOOL			m_bSafeToClose;
 	CFile			m_LocalFile;
-	DWORD			m_dwTempConnectionError;
 	CWorkerThread*	m_pThread;
 };
 

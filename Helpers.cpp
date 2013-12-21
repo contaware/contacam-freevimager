@@ -1778,7 +1778,7 @@ BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 	return (RegDeleteKey(hOpenKey, sKey) == ERROR_SUCCESS);
 }
 
-void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
+CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
 	CString sText;
 	LPVOID lpMsgBuf = NULL;
@@ -1876,18 +1876,20 @@ void ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*
 	if (sText == _T(""))
 		sText.Format(ML_STRING(1784, "Error with code %u."), dwErrorCode);
 
-	// Show Error
-	CString sTraceMsg = sHeader + sText + sFooter;
-	if (sTraceMsg[sTraceMsg.GetLength() - 1] != _T('\n')) // This is ok because sTraceMsg is never empty
-		sTraceMsg += _T('\n');
-	TRACE(sTraceMsg);
+	// Format and show error
+	CString sMsg = sHeader + sText + sFooter;
+	if (sMsg[sMsg.GetLength() - 1] != _T('\n')) // this is ok because sMsg is never empty
+		TRACE(sMsg + _T('\n'));
+	else
+		TRACE(sMsg);
 	if (bShowMessageBoxOnError)
-		AfxMessageBox(sHeader + sText + sFooter, MB_ICONSTOP);
+		AfxMessageBox(sMsg, MB_ICONSTOP);
+	return sMsg;
 }
 
-void ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
+CString ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
-	ShowError(GetLastError(), bShowMessageBoxOnError, sHeader, sFooter);
+	return ShowError(GetLastError(), bShowMessageBoxOnError, sHeader, sFooter);
 }
 
 // Plays a specified file using MCI_OPEN and MCI_PLAY. 

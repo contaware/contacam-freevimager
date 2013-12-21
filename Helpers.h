@@ -172,15 +172,15 @@ extern CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szVa
 extern BOOL DeleteRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey);
 
-// TRACE and eventually Pop Message Box of String:
-// sHeader + GetLastError() in Readable Format + sFooter
-extern void ShowError(	DWORD dwErrorCode,
-						BOOL bShowMessageBoxOnError,
-						CString sHeader = _T(""),
-						CString sFooter = _T(""));
-extern void ShowLastError(	BOOL bShowMessageBoxOnError,
-						   CString sHeader = _T(""),
-						   CString sFooter = _T(""));
+// TRACE, eventually show Message Box and return error as:
+// sHeader + GetLastError() in readable format + sFooter
+extern CString ShowError(	DWORD dwErrorCode,
+							BOOL bShowMessageBoxOnError,
+							CString sHeader = _T(""),
+							CString sFooter = _T(""));
+extern CString ShowLastError(	BOOL bShowMessageBoxOnError,
+								CString sHeader = _T(""),
+								CString sFooter = _T(""));
 
 // Just Play An Audio File
 extern int MCIPlayFile(HWND hWndNotify, BOOL bStartPlaying, LPCTSTR lpszFileName);

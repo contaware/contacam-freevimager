@@ -160,7 +160,6 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		BeginWaitCursor();
 
 		CFTPTransfer FTP(NULL);
-		FTP.m_bShowMessageBoxOnError = TRUE; // Show Erros!
 		FTP.m_sRemoteFile = _T("");
 		FTP.m_sLocalFile = _T("");
 		FTP.m_sServer = m_FTPUploadConfiguration.m_sHost;
@@ -168,7 +167,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		FTP.m_bDownload = FALSE;
 		FTP.m_bBinary = m_FTPUploadConfiguration.m_bBinary;
 		FTP.m_bPromptOverwrite = FALSE;
-		FTP.m_dbLimit = 0.0;	// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
+		FTP.m_dBandwidthLimit = 0.0;// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to
 		FTP.m_bPasv = m_FTPUploadConfiguration.m_bPasv;
 		FTP.m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		FTP.m_bUseProxy = m_FTPUploadConfiguration.m_bProxy;
@@ -187,7 +186,10 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 			::AfxMessageBox(ML_STRING(1771, "Success: Host Reachable."), MB_ICONINFORMATION);
 		}
 		else
+		{
 			EndWaitCursor();
+			::AfxMessageBox(FTP.m_sError, MB_ICONSTOP);
+		}
 	}	
 }
 

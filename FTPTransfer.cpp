@@ -10,8 +10,17 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-#pragma comment(lib, "wininet.lib") // Automatically link with wininet dll
+// Automatically link with wininet dll
+#pragma comment(lib, "wininet.lib")
 
+/*
+KB224318 shows a workaround to the InternetSetOption API bug on setting timeout
+values by creating a second thread (KB176420):
+Create a worker thread to call the blocking WinInet APIs. If the connection takes
+more time than the specified timeout value, the original thread will call
+InternetCloseHandle to release the blocking WinInet function.
+Note: this timeout bug is present up to IE6 (included)
+*/
 int CFTPTransfer::CMakeConnectionThread::Work() 
 {
 	ASSERT(m_pFTPTransfer->m_hFTPConnection == NULL);
@@ -40,10 +49,7 @@ int CFTPTransfer::CMakeConnectionThread::Work()
 																(DWORD)m_pFTPTransfer);
 	}
 	if (m_pFTPTransfer->m_hFTPConnection == NULL)
-	{
-		// Hive away this threads error code as we have use for it in the main thread
-		m_pFTPTransfer->m_dwTempConnectionError = ::GetLastError();
-	}
+		m_pFTPTransfer->m_sError = ::ShowLastError(FALSE);
 	return 0;
 }
 
@@ -51,23 +57,20 @@ CFTPTransfer::CFTPTransfer(CWorkerThread* pThread)
 {
 	m_dwPercentage = 100;
 	m_dwLastPercentage = 100;
-	m_bShowMessageBoxOnError = TRUE;
 	m_pThread = pThread;
 	m_hInternetSession = NULL;
 	m_hFTPConnection = NULL;
 	m_hFTPFile = NULL;
-	m_bSafeToClose = FALSE;
 	m_bDownload = TRUE;
 	m_nPort = INTERNET_DEFAULT_FTP_PORT;
 	m_bBinary = TRUE;
 	m_bPromptOverwrite = FALSE;
-	m_dbLimit = 0.0;
+	m_dBandwidthLimit = 0.0;
 	m_bPasv = FALSE;
 	m_bUsePreconfig = TRUE;
 	m_bUseProxy = FALSE;
 	m_dwStartPos = 0;
 	m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
-	m_dwTempConnectionError = ERROR_SUCCESS;
 }
 
 CFTPTransfer::~CFTPTransfer()
@@ -78,22 +81,18 @@ CFTPTransfer::~CFTPTransfer()
 BOOL CFTPTransfer::OpenLocalFile() 
 {
 	TCHAR szCause[255];
-	CString sMsg;
 
 	// Check to see if the file we are downloading exists and if
 	// it does, then ask the user if he wants it overwritten
 	// (if not resuming the download)
-	ASSERT(m_sLocalFile.GetLength());
 	CFileStatus fs;
 	BOOL bDownloadFileExists = CFile::GetStatus(m_sLocalFile, fs);
 	if (m_bDownload && bDownloadFileExists && m_bPromptOverwrite && m_dwStartPos == 0)
 	{
+		CString sMsg;
 		sMsg.Format(ML_STRING(1388, "The file %s already exists.\nDo you want to replace it?"), m_sLocalFile);
-		if (::AfxMessageBox(sMsg, MB_YESNO) != IDYES)
-		{
-			TRACE(_T("Failed to confirm file overwrite, download aborted\n"));
+		if (::AfxMessageBox(sMsg, MB_YESNO) == IDNO)
 			return FALSE;
-		}
 	}
 
 	// Try and open the file we will downloading into / uploading from
@@ -109,11 +108,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		if (!m_LocalFile.Open(m_sLocalFile, dwFileFlags, &ex))
 		{
 			ex.GetErrorMessage(szCause, 255);
-			CString sError(szCause);
-			sMsg.Format(ML_STRING(1772, "An error occured while opening the file to be downloaded:\n%s\n"), sError);
-			TRACE(sMsg);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			m_sError.Format(ML_STRING(1772, "An error occured while opening the file to be downloaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 
@@ -127,11 +122,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		{
 			pEx->GetErrorMessage(szCause, 255);
 			pEx->Delete();
-			CString sError(szCause);
-			sMsg.Format(ML_STRING(1773, "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"), sError);
-			TRACE(sMsg);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			m_sError.Format(ML_STRING(1773, "An error occurred while seeking to the end of the file to be downloaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 	}
@@ -141,11 +132,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		if (!m_LocalFile.Open(m_sLocalFile, CFile::modeRead | CFile::shareDenyWrite, &ex))
 		{
 			ex.GetErrorMessage(szCause, 255);
-			CString sError(szCause);
-			sMsg.Format(ML_STRING(1774, "An error occured while opening the file to be uploaded:\n%s\n"), sError);
-			TRACE(sMsg);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			m_sError.Format(ML_STRING(1774, "An error occured while opening the file to be uploaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 
@@ -158,11 +145,7 @@ BOOL CFTPTransfer::OpenLocalFile()
 		{
 			pEx->GetErrorMessage(szCause, 255);
 			pEx->Delete();
-			CString sError(szCause);
-			sMsg.Format(ML_STRING(1789, "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"), sError);
-			TRACE(sMsg);
-			if (m_bShowMessageBoxOnError)
-				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			m_sError.Format(ML_STRING(1789, "An error occurred while seeking to the resume point of the file to be uploaded:\n%s\n"), szCause);
 			return FALSE;
 		}
 	}
@@ -186,7 +169,7 @@ This is the same as upload, except that no SIZE command is required. The
 FTP client simply knows the size of the partially downloaded file 
 because it exists in the local filesystem on the client.
 */
-BOOL CFTPTransfer::ResumeTransfer(CString& sError)
+BOOL CFTPTransfer::ResumeTransfer()
 {
 	// Form the resume request
 	CString sRequest;
@@ -195,13 +178,7 @@ BOOL CFTPTransfer::ResumeTransfer(CString& sError)
 	// Send the resume request
 	BOOL bSuccess = ::FtpCommand(m_hFTPConnection, FALSE, FTP_TRANSFER_TYPE_BINARY, sRequest, 0, NULL); 
 	if (!bSuccess)
-	{
-		DWORD dwLastError = ::GetLastError();
-		TRACE(_T("CFTPTransfer::ResumeTransfer, Failed in call to FtpCommand, Error:%d\n"), dwLastError);
-		CString sNumericError;
-		sNumericError.Format(_T("%d"), dwLastError);
-		sError.Format(_T("An error occurred while resuming the transfer, Error:%s"), sNumericError);
-	}
+		m_sError = ::ShowLastError(FALSE);
 	else
 	{
 		// Check the reponse to see if we get a "350" response code
@@ -214,16 +191,11 @@ BOOL CFTPTransfer::ResumeTransfer(CString& sError)
 
 		// Check to see if there is a 350 response code in the extended error text anywhere
 		bSuccess = (_ttoi(pszResponse) == 350);
+		if (!bSuccess)
+			m_sError = pszResponse;
 
 		// Tidy up the heap memory now that we have finished with it
 		delete [] pszResponse;
-
-		if (!bSuccess)
-		{
-			CString sResponse(pszResponse);
-			TRACE(_T("CFTPTransfer::ResumeTransfer, Resume not supported, Response: %s\n"), sResponse);
-			sError.Format(_T("The server reports that resume is not supported, Error:%s"), sResponse);
-		}
 	}
 
 	return bSuccess;
@@ -244,13 +216,14 @@ void CFTPTransfer::UpdatePercentage(DWORD dwTotalBytesDone, DWORD dwFileSize)
 
 // Return Values
 // -1 : Do Exit Thread
-// 0  : Error Uploading File
+// 0  : Error Uploading File (when user rejects file overwrite m_sError is empty)
 // 1  : Ok
 int CFTPTransfer::Transfer()
 {
 	TCHAR szCause[255];
-	CString sMsg;
 
+	// Clear
+	m_sError = _T("");
 	Close();
 
 	// Adjust Remote File Name by replacing '\' with '/'
@@ -265,7 +238,7 @@ int CFTPTransfer::Transfer()
 	m_sRemoteFile.TrimRight(_T('/'));
 
 	// Open Local File
-	if (!OpenLocalFile())
+	if (!OpenLocalFile()) // this function sets m_sError on failure
 		return 0;
 
 	// Should we exit the thread
@@ -277,8 +250,7 @@ int CFTPTransfer::Transfer()
 		return -1;
 	}
 
-	// Create the Internet session handle (if needed)
-	ASSERT(m_hInternetSession == NULL);
+	// Create the Internet session handle
     if (m_bUseProxy)
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PROXY, m_sProxy, NULL, 0);
 	else if (m_bUsePreconfig)
@@ -287,7 +259,7 @@ int CFTPTransfer::Transfer()
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (m_hInternetSession == NULL)
     {
-		::ShowLastError(m_bShowMessageBoxOnError);
+		m_sError = ::ShowLastError(FALSE);
 		m_LocalFile.Close();
 		if (m_bDownload)
 			::DeleteFile(m_sLocalFile);
@@ -303,14 +275,12 @@ int CFTPTransfer::Transfer()
 		Close();
 		return -1;
 	}
- 
-	ASSERT(m_hInternetSession);
 
 	// Setup the status callback function on the Internet session handle
 	INTERNET_STATUS_CALLBACK pOldCallback = ::InternetSetStatusCallback(m_hInternetSession, _OnStatusCallBack);
 	if (pOldCallback == INTERNET_INVALID_STATUS_CALLBACK)
 	{
-		::ShowLastError(m_bShowMessageBoxOnError);
+		m_sError = ::ShowLastError(FALSE);
 		m_LocalFile.Close();
 		if (m_bDownload)
 			::DeleteFile(m_sLocalFile);
@@ -330,23 +300,12 @@ int CFTPTransfer::Transfer()
 		return -1;
 	}  
 
-	// Make the connection to the FTP server,
-    // use a separate thread because InternetConnect()
-	// is known to have a bug, which blocks the function infinitely!
+	// Make the connection to the FTP server, use a separate
+	// thread because InternetConnect can block infinitely
 	CMakeConnectionThread MakeConnectionThread(this);
-    if (!MakeConnectionThread.Start())
-    {
-		TRACE(_T("Failed in create the connection thread\n"));
-		m_LocalFile.Close();
-		if (m_bDownload)
-			::DeleteFile(m_sLocalFile);
-		if (m_hInternetSession && pOldCallback)
-			::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
-		Close();
-		return 0;
-    }
+	MakeConnectionThread.Start();
 
-    // Wait for the thread to return or a timeout occurs
+    // Wait for the thread to return
 	if (m_pThread == NULL)
 	{
 		DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), m_dwConnectionTimeout);
@@ -357,24 +316,21 @@ int CFTPTransfer::Transfer()
 
 			// Timeout
 			case WAIT_TIMEOUT :			// Close the wininet session handle (which will cause the worker
-										// thread to return from its blocking call which most likely will
-										// be the call to InternetConnect)
+										// thread to return from its blocking InternetConnect call)
 										::InternetCloseHandle(m_hInternetSession);
 
 										// Wait until the worker thread exits and then set the handle to NULL
 										MakeConnectionThread.WaitDone_Blocking();
 										m_hInternetSession = NULL;
 
+										// Error string
+										m_sError = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
+
 										// Close
 										m_LocalFile.Close();
 										if (m_bDownload)
 											::DeleteFile(m_sLocalFile);
 										Close();
-
-										sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
-										TRACE(sMsg);
-										if (m_bShowMessageBoxOnError)
-											::AfxMessageBox(sMsg, MB_ICONSTOP);
 
 										return 0;
 			
@@ -391,20 +347,22 @@ int CFTPTransfer::Transfer()
 		{
 			// Shutdown Event
 			case WAIT_OBJECT_0 :		// Close the wininet session handle (which will cause the worker
-										// thread to return from its blocking call which most likely will
-										// be the call to InternetConnect)
+										// thread to return from its blocking InternetConnect call)
 										::InternetCloseHandle(m_hInternetSession);
 
 										// Wait until the worker thread exits and then set the handle to NULL
 										MakeConnectionThread.WaitDone_Blocking();
 										m_hInternetSession = NULL;
 
+										// Clear error string set in thread
+										m_sError = _T("");
+
 										// Close
 										m_LocalFile.Close();
 										if (m_bDownload)
 											::DeleteFile(m_sLocalFile);
 										Close();
-										
+
 										return -1;
 
 			// Make Connection Thread Terminated
@@ -412,24 +370,21 @@ int CFTPTransfer::Transfer()
 
 			// Timeout
 			case WAIT_TIMEOUT :			// Close the wininet session handle (which will cause the worker
-										// thread to return from its blocking call which most likely will
-										// be the call to InternetConnect)
+										// thread to return from its blocking InternetConnect call)
 										::InternetCloseHandle(m_hInternetSession);
 										
 										// Wait until the worker thread exits and then set the handle to NULL
 										MakeConnectionThread.WaitDone_Blocking();
 										m_hInternetSession = NULL;
 
+										// Error string
+										m_sError = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
+
 										// Close
 										m_LocalFile.Close();
 										if (m_bDownload)
 											::DeleteFile(m_sLocalFile);
 										Close();
-
-										sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
-										TRACE(sMsg);
-										if (m_bShowMessageBoxOnError)
-											::AfxMessageBox(sMsg, MB_ICONSTOP);
 
 										return 0;
 			
@@ -438,9 +393,8 @@ int CFTPTransfer::Transfer()
 	}
 
     // Check to see if the connection was successful
-    if (m_hFTPConnection == NULL)
+    if (m_hFTPConnection == NULL) // connection thread sets m_sError on failure
     {
-		::ShowError(m_dwTempConnectionError, m_bShowMessageBoxOnError);
 		m_LocalFile.Close();
 		if (m_bDownload)
 			::DeleteFile(m_sLocalFile);
@@ -461,8 +415,6 @@ int CFTPTransfer::Transfer()
 		Close();
 		return -1;
 	}
- 
-	ASSERT(m_hFTPConnection);
 
 	// Get the length of the file to transfer            
 	DWORD dwFileSize = 0;
@@ -514,8 +466,9 @@ int CFTPTransfer::Transfer()
 			InternetCloseHandle(hFind);
 		}
 
-		if (bFound)  
+		if (bFound)
 		{
+			CString sMsg;
 			sMsg.Format(ML_STRING(1388, "The file %s already exists.\nDo you want to replace it?"), m_sRemoteFile);
 			if (::AfxMessageBox(sMsg, MB_YESNO) == IDNO)
 			{
@@ -541,8 +494,7 @@ int CFTPTransfer::Transfer()
 	}
 
 	// Resume the transfer if requested to do so
-	CString sError;
-	if (m_dwStartPos && !ResumeTransfer(sError))
+	if (m_dwStartPos && !ResumeTransfer()) // this function sets m_sError on failure
 	{
 		m_LocalFile.Close();
 		if (m_bDownload)
@@ -554,7 +506,6 @@ int CFTPTransfer::Transfer()
 	}
 
 	// Open the remote file
-	ASSERT(m_hFTPFile == NULL);
 	if (m_bDownload)
 	{
 		if (m_bBinary)
@@ -603,7 +554,7 @@ int CFTPTransfer::Transfer()
 		// Ftp Open File Error?
 		if (bFtpOpenFileError)
 		{
-			::ShowLastError(m_bShowMessageBoxOnError);
+			m_sError = ::ShowLastError(FALSE);
 			m_LocalFile.Close();
 			if (m_bDownload)
 				::DeleteFile(m_sLocalFile);
@@ -643,7 +594,7 @@ int CFTPTransfer::Transfer()
 			// Read from the remote file
 			if (!::InternetReadFile(m_hFTPFile, szReadBuf, dwBytesToRead, &dwBytesRead))
 			{
-				::ShowLastError(m_bShowMessageBoxOnError);
+				m_sError = ::ShowLastError(FALSE);
 				m_LocalFile.Close();
 				::DeleteFile(m_sLocalFile);
 				if (m_hInternetSession && pOldCallback)
@@ -661,11 +612,7 @@ int CFTPTransfer::Transfer()
 				catch (CFileException* pEx)
 				{
 					pEx->GetErrorMessage(szCause, 255);
-					sError = CString(szCause);
-					sMsg.Format(ML_STRING(1776, "An exception occured while writing to the download file:\n%s\n"), sError);
-					TRACE(sMsg);
-					if (m_bShowMessageBoxOnError)
-						::AfxMessageBox(sMsg, MB_ICONSTOP);
+					m_sError.Format(ML_STRING(1776, "An exception occured while writing to the download file:\n%s\n"), szCause);
 					m_LocalFile.Close();
 					::DeleteFile(m_sLocalFile);
 					if (m_hInternetSession && pOldCallback)
@@ -676,12 +623,12 @@ int CFTPTransfer::Transfer()
 				}
 
 				// For bandwidth throttling
-				if (m_dbLimit > 0.0) 
+				if (m_dBandwidthLimit > 0.0) 
 				{
 					double t = (double)(::GetTickCount() - dwStartTicks);
 					q = (double)((double)dwTotalBytesRead / t);
-					if (q > m_dbLimit)	 
-						::Sleep((DWORD)((((q*t)/m_dbLimit)-t)));
+					if (q > m_dBandwidthLimit)	 
+						::Sleep((DWORD)((((q*t)/m_dBandwidthLimit)-t)));
 				}
 
 				// Increment the total number of bytes read
@@ -702,11 +649,7 @@ int CFTPTransfer::Transfer()
 			catch (CFileException* pEx)
 			{
 				pEx->GetErrorMessage(szCause, 255);
-				sError = CString(szCause);
-				sMsg.Format(ML_STRING(1777, "An exception occured while reading the local file:\n%s\n"), sError);
-				TRACE(sMsg);
-				if (m_bShowMessageBoxOnError)
-					::AfxMessageBox(sMsg, MB_ICONSTOP);
+				m_sError.Format(ML_STRING(1777, "An exception occured while reading the local file:\n%s\n"), szCause);
 				m_LocalFile.Close();
 				if (m_hInternetSession && pOldCallback)
 				  ::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
@@ -720,7 +663,7 @@ int CFTPTransfer::Transfer()
 			{
 				if (!::InternetWriteFile(m_hFTPFile, szReadBuf, dwBytesRead, &dwBytesWritten))
 				{
-					::ShowLastError(m_bShowMessageBoxOnError);
+					m_sError = ::ShowLastError(FALSE);
 					m_LocalFile.Close();
 					if (m_hInternetSession && pOldCallback)
 						::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
@@ -738,12 +681,12 @@ int CFTPTransfer::Transfer()
 				}
 
 				// For bandwidth throttling
-				if (m_dbLimit > 0.0) 
+				if (m_dBandwidthLimit > 0.0) 
 				{
 					double t = (double)(::GetTickCount() - dwStartTicks);
 					q = (double)((double)dwTotalBytesWritten / t);
-					if (q > m_dbLimit)	 
-						::Sleep((DWORD)((((q*t)/m_dbLimit)-t)));
+					if (q > m_dBandwidthLimit)	 
+						::Sleep((DWORD)((((q*t)/m_dBandwidthLimit)-t)));
 				}
 			}
 		}
@@ -773,12 +716,11 @@ int CFTPTransfer::Transfer()
 
 BOOL CFTPTransfer::Test()
 {
-	CString sMsg;
-
+	// Clear
+	m_sError = _T("");
 	Close();
 
-	// Create the Internet session handle (if needed)
-	ASSERT(m_hInternetSession == NULL);
+	// Create the Internet session handle
     if (m_bUseProxy)
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_PROXY, m_sProxy, NULL, 0);
 	else if (m_bUsePreconfig)
@@ -787,7 +729,7 @@ BOOL CFTPTransfer::Test()
 		m_hInternetSession = ::InternetOpen(AfxGetAppName(), INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
     if (m_hInternetSession == NULL)
     {
-		::ShowLastError(m_bShowMessageBoxOnError);
+		m_sError = ::ShowLastError(FALSE);
 		return FALSE;
     }
 
@@ -795,25 +737,17 @@ BOOL CFTPTransfer::Test()
 	INTERNET_STATUS_CALLBACK pOldCallback = ::InternetSetStatusCallback(m_hInternetSession, _OnStatusCallBack);
 	if (pOldCallback == INTERNET_INVALID_STATUS_CALLBACK)
 	{
-		::ShowLastError(m_bShowMessageBoxOnError);
+		m_sError = ::ShowLastError(FALSE);
 		Close();
 		return FALSE;
 	}
 
-	// Make the connection to the FTP server,
-    // use a separate thread because InternetConnect()
-	// is known to have a bug, which blocks the function infinitely!
+	// Make the connection to the FTP server, use a separate
+	// thread because InternetConnect can block infinitely
 	CMakeConnectionThread MakeConnectionThread(this);
-    if (!MakeConnectionThread.Start())
-    {
-		TRACE(_T("Failed in create the connection thread\n"));
-		if (m_hInternetSession && pOldCallback)
-			::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
-		Close();
-		return FALSE;
-    }
+	MakeConnectionThread.Start();
 
-    // Wait for the thread to return or a timeout occurs
+    // Wait for the thread to return
 	DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), m_dwConnectionTimeout);
     switch (Event)
 	{
@@ -822,21 +756,18 @@ BOOL CFTPTransfer::Test()
 
 		// Timeout
 		case WAIT_TIMEOUT :			// Close the wininet session handle (which will cause the worker
-									// thread to return from its blocking call which most likely will
-									// be the call to InternetConnect)
+									// thread to return from its blocking InternetConnect call)
 									::InternetCloseHandle(m_hInternetSession);
 
 									// Wait until the worker thread exits and then set the handle to NULL
 									MakeConnectionThread.WaitDone_Blocking();
 									m_hInternetSession = NULL;
 
+									// Error string
+									m_sError = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
+
 									// Close
 									Close();
-
-									sMsg = ML_STRING(1775, "Failed connecting to the FTP server in a timely manner\n");
-									TRACE(sMsg);
-									if (m_bShowMessageBoxOnError)
-										::AfxMessageBox(sMsg, MB_ICONSTOP);
 
 									return FALSE;
 		
@@ -844,9 +775,8 @@ BOOL CFTPTransfer::Test()
 	}
 
     // Check to see if the connection was successful
-    if (m_hFTPConnection == NULL)
+    if (m_hFTPConnection == NULL) // connection thread sets m_sError on failure
     {
-		::ShowError(m_dwTempConnectionError, m_bShowMessageBoxOnError);
 		if (m_hInternetSession && pOldCallback)
 			::InternetSetStatusCallback(m_hInternetSession, pOldCallback);
 		Close();
