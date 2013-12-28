@@ -7,6 +7,7 @@
 #include "VideoAviView.h"
 #include "VideoDeviceView.h"
 #include "PictureView.h"
+#include "PicturePrintPreviewView.h"
 #include "AudioMCIView.h"
 #include "CDAudioView.h"
 #include "PlayerToolBarDlg.h"
@@ -1262,6 +1263,10 @@ void CPictureChildFrame::OnClose()
 	// Exit Full-Screen
 	if (pView->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
+
+	// Close Print Preview
+	if (pView->GetPicturePrintPreviewView())
+		pView->GetPicturePrintPreviewView()->Close();
 
 	if (m_bFirstCloseAttempt)
 	{
