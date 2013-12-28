@@ -26,6 +26,9 @@ public:
 	// Actually changing or configuring the printer
 	bool				SetDefault(	HANDLE& hDevMode,
 									HANDLE& hDevNames);
+	
+	// Convert from dmPaperSize to dmFormName
+	CString				PaperSizeToFormName(LPCTSTR szPrinter, int nPaperSize);
 
 	// Note: As Parameter for bDefault pass the following:
 	// PrinterName == GetDefaultPrinterName()

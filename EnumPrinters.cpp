@@ -282,6 +282,56 @@ bool CEnumPrinters::SetDefault(	HANDLE& hDevMode,
 		return false;
 }
 
+CString CEnumPrinters::PaperSizeToFormName(LPCTSTR szPrinter, int nPaperSize)
+{
+	/* DC_PAPERNAMES : retrieves a list of supported paper names (for example, Letter or Legal).
+	The pOutput buffer receives an array of string buffers. Each string buffer is 64 characters
+	long and contains the name of a paper form. The return value indicates the number of entries
+	in the array. The name strings are null-terminated unless the name is 64 characters long.
+	If pOutput is NULL, the return value is the number of paper forms. */
+	int i;
+	CStringArray PaperNames;
+	TCHAR FormName[65];
+	int nFormNameCount = ::DeviceCapabilities(szPrinter, NULL, DC_PAPERNAMES, NULL, NULL);
+	if (nFormNameCount <= 0)
+		return _T("");
+	TCHAR* pPaperNames = new TCHAR[64 * nFormNameCount];
+	if (!pPaperNames)
+		return _T("");
+	memset(pPaperNames, 0, sizeof(TCHAR) * 64 * nFormNameCount);
+	::DeviceCapabilities(szPrinter, NULL, DC_PAPERNAMES, pPaperNames, NULL);
+	for (i = 0 ; i < nFormNameCount ; i++)
+	{
+		_tcsncpy(FormName, (LPCTSTR)(pPaperNames + 64 * i), 64);
+		FormName[64] = _T('\0');
+		PaperNames.Add(FormName);
+	}
+	delete [] pPaperNames;
+
+	/* DC_PAPERS : retrieves a list of supported paper sizes. The pOutput buffer receives an array
+	of WORD values that indicate the available paper sizes for the printer. The return value
+	indicates the number of entries in the array. For a list of the possible array values, see the
+	description of the dmPaperSize member of the DEVMODE structure. If pOutput is NULL, the return
+	value indicates the required number of entries in the array. */
+	int nPaperSizeCount = ::DeviceCapabilities(szPrinter, NULL, DC_PAPERS, NULL, NULL);
+	if (nPaperSizeCount != nFormNameCount)
+		return _T("");
+	WORD* pPapers = new WORD[nPaperSizeCount];
+	if (!pPapers)
+		return _T("");
+	::DeviceCapabilities(szPrinter, NULL, DC_PAPERS, (LPTSTR)pPapers, NULL);
+	for (i = 0 ; i < nPaperSizeCount ; i++)
+	{
+		if (pPapers[i] == nPaperSize)
+			break;
+	}
+	delete [] pPapers;
+	if (i < nPaperSizeCount)
+		return PaperNames[i];
+	else
+		return _T("");
+}
+
 bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 									HANDLE& hDevNames,
 									const CString& PrinterName,
@@ -318,7 +368,8 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 	local_hDevMode = ::GlobalAlloc(GHND, nSize); // Allocate on heap
 	LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(local_hDevMode); // Lock it
 
-	// Fill in the rest of the structure.
+	// Fill in the rest of the structure
+	memset(lpDevMode, 0, nSize);
 	if (::DocumentProperties(NULL, hPrinter, szPrinter, lpDevMode, NULL, DM_OUT_BUFFER) != IDOK)
 	{
 		// Failed to read printer properties, abort
@@ -334,6 +385,18 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 		delete [] szPrinter;
 		return false;
 	}
+
+	// Some drivers do not correctly initialize the User Form Name!
+	if (lpDevMode->dmPaperSize >= DMPAPER_USER)
+	{
+		CString sFormName = PaperSizeToFormName(szPrinter, lpDevMode->dmPaperSize);
+		if (sFormName != _T(""))
+		{
+			_tcsncpy((TCHAR*)lpDevMode->dmFormName, sFormName, CCHFORMNAME);
+			lpDevMode->dmFormName[CCHFORMNAME-1] = _T('\0');
+		}
+	}
+
 	// Finished interrogating for DEVMODE structure
 	::GlobalUnlock(local_hDevMode);
 	::ClosePrinter(hPrinter);
@@ -607,7 +670,7 @@ void CEnumPrinters::DumpHandles(HANDLE& hDevMode, HANDLE& hDevNames)
 			TRACE(_T("dmDriverVersion      : %d\n"), lpDevMode->dmDriverVersion);
 			TRACE(_T("dmSize               : %d\n"), lpDevMode->dmSize);
 			TRACE(_T("dmDriverExtra        : %d\n"), lpDevMode->dmDriverExtra);
-			TRACE(_T("dmFIelds             : %x\n"), lpDevMode->dmFields);
+			TRACE(_T("dmFields             : %x\n"), lpDevMode->dmFields);
 			TRACE(_T("dmScale              : %d\n"), lpDevMode->dmScale);
 			TRACE(_T("dmCopies             : %d\n"), lpDevMode->dmCopies);
 			TRACE(_T("dmDefaultSource      : %d\n"), lpDevMode->dmDefaultSource);

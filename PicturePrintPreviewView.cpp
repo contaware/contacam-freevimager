@@ -840,6 +840,8 @@ void CPicturePrintPreviewView::DisplayPaperAndDPI()
 		CFont* pOldFont = (CFont*)pDC->SelectObject(pEditPaperSize->GetFont());
 		CSize szTextExtentPaperSize = pDC->GetTextExtent(sPaperSize);
 		CSize szTextExtentDPI = pDC->GetTextExtent(sDpi);
+		pDC->SelectObject(pOldFont);
+		pEditPaperSize->ReleaseDC(pDC);
 		int nMaxTextExtent = MAX(szTextExtentPaperSize.cx, szTextExtentDPI.cx);
 		CRect rcWnd;
 		pEditPaperSize->GetWindowRect(&rcWnd);
@@ -849,8 +851,6 @@ void CPicturePrintPreviewView::DisplayPaperAndDPI()
 		rcWnd.OffsetRect(-rcParent.TopLeft());
 		pEditPaperSize->MoveWindow(rcWnd);
 		pEditPaperSize->SetWindowText(sPaperSize + sDpi);
-		pDC->SelectObject(pOldFont);
-		pEditPaperSize->ReleaseDC(pDC);
 	}
 }
 
@@ -1832,7 +1832,6 @@ BOOL CPicturePrintPreviewView::IsInchPaperFormat()
 	}
 }
 
-// On Win9x and Me dmFormName is not supported,
 CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 {
 	switch (papersize)
