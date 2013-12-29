@@ -1453,9 +1453,9 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            120,IDC_STATIC,15,10,21,20
+    ICON            120,IDC_STATIC,15,10,20,20
     LTEXT           "Unknown",IDC_VERSION,130,49,136,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2013 Contaware.com, Switzerland",IDC_STATIC2141,51,226,181,8
+    LTEXT           "Copyright © 2003 - 2014 Contaware.com, Switzerland",IDC_STATIC2141,51,226,181,8
     DEFPUSHBUTTON   "OK",IDOK,116,208,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,192,8

@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-4.9.5 (xxx xth 2013)
+4.9.5 (xxx xth 2014)
 
 - Avoid leading and trailing whitespaces in directx device names
 - Fixed 'Out of memory' error message when joining a huge amount

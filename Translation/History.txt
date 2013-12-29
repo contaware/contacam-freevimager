@@ -1,6 +1,6 @@
 TRANSLATIONS HISTORY
 
-4.9.5 (xxx xth 2013)
+4.9.5 (xxx xth 2014)
 
 - ...
 
