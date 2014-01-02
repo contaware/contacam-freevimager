@@ -820,37 +820,38 @@ void CPicturePrintPreviewView::OnPrintSetup()
 			pRadioLandscape->SetCheck(1);
 		}
 
-		// Update the Paper Size Name and the DPI
-		DisplayPaperAndDPI();
+		// Update the Printer Name, the Paper Size Name and the DPI
+		DisplayPrinterPaperDPI();
 
 		// Update The cm / inch format flag
 		m_bInchPaperFormat = IsInchPaperFormat();
 	}
 }
 
-void CPicturePrintPreviewView::DisplayPaperAndDPI()
+void CPicturePrintPreviewView::DisplayPrinterPaperDPI()
 {
-	CEdit* pEditPaperSize = (CEdit*)m_pToolBar->GetDlgItem(IDC_EDIT_PAPERSIZE_DPI);
-	if (pEditPaperSize)
+	CEdit* pEdit = (CEdit*)m_pToolBar->GetDlgItem(IDC_EDIT_PRINTER_PAPERSIZE_DPI);
+	if (pEdit)
 	{
-		CString sPaperSize = ML_STRING(1494, "Paper: ") + GetPaperSizeName();
-		CString sDpi;
-		sDpi.Format(_T("\r\n%d x %d dpi"), m_sizePrinterPPI.cx, m_sizePrinterPPI.cy);
-		CDC* pDC = pEditPaperSize->GetDC();
-		CFont* pOldFont = (CFont*)pDC->SelectObject(pEditPaperSize->GetFont());
-		CSize szTextExtentPaperSize = pDC->GetTextExtent(sPaperSize);
-		CSize szTextExtentDPI = pDC->GetTextExtent(sDpi);
+		int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
+		CString sPrinterName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
+		CString sPaperSizeDpi;
+		sPaperSizeDpi.Format(_T("%s , %dx%ddpi"), GetPaperSizeName(), m_sizePrinterPPI.cx, m_sizePrinterPPI.cy);
+		CDC* pDC = pEdit->GetDC();
+		CFont* pOldFont = (CFont*)pDC->SelectObject(pEdit->GetFont());
+		CSize szTextExtentPrinterName = pDC->GetTextExtent(sPrinterName);
+		CSize szTextExtentPaperSizeDpi = pDC->GetTextExtent(sPaperSizeDpi);
 		pDC->SelectObject(pOldFont);
-		pEditPaperSize->ReleaseDC(pDC);
-		int nMaxTextExtent = MAX(szTextExtentPaperSize.cx, szTextExtentDPI.cx);
+		pEdit->ReleaseDC(pDC);
+		int nMaxTextExtent = MAX(szTextExtentPrinterName.cx, szTextExtentPaperSizeDpi.cx);
 		CRect rcWnd;
-		pEditPaperSize->GetWindowRect(&rcWnd);
+		pEdit->GetWindowRect(&rcWnd);
 		CRect rcParent;
-		pEditPaperSize->GetParent()->GetWindowRect(&rcParent);
+		pEdit->GetParent()->GetWindowRect(&rcParent);
 		rcWnd.right = rcWnd.left + nMaxTextExtent + 8;
 		rcWnd.OffsetRect(-rcParent.TopLeft());
-		pEditPaperSize->MoveWindow(rcWnd);
-		pEditPaperSize->SetWindowText(sPaperSize + sDpi);
+		pEdit->MoveWindow(rcWnd);
+		pEdit->SetWindowText(sPrinterName + _T("\r\n") + sPaperSizeDpi);
 	}
 }
 

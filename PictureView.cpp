@@ -601,9 +601,9 @@ void CPictureView::OnFilePrintPreview()
 	}
 	else
 	{
-		// Init the Paper Size Name and the DPI
+		// Init the Printer Name, the Paper Size Name and the DPI
 		if (GetPicturePrintPreviewView())
-			GetPicturePrintPreviewView()->DisplayPaperAndDPI();
+			GetPicturePrintPreviewView()->DisplayPrinterPaperDPI();
 	}
 }
 

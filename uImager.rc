@@ -3023,7 +3023,7 @@ BEGIN
     LTEXT           "%",IDC_STATIC2454,270,7,8,8
     CONTROL         "Fit",IDC_CHECK_SIZE_FIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,283,7,21,10
     CONTROL         "Margin",IDC_CHECK_PRINTMARGIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,309,7,37,10
-    CTEXT           "",IDC_EDIT_PAPERSIZE_DPI,348,1,69,19,WS_BORDER
+    CTEXT           "",IDC_EDIT_PRINTER_PAPERSIZE_DPI,348,1,69,19,WS_BORDER
     CONTROL         "Spin1",IDC_SPIN_SIZE,"msctls_updown32",UDS_ALIGNLEFT | UDS_ARROWKEYS,231,5,11,13
 END
 
@@ -4849,7 +4849,6 @@ BEGIN
     IDS_MULTILANG_1490      "Unsupported network device type or mode"
     IDS_MULTILANG_1491      "Server is to busy, try later"
     IDS_MULTILANG_1493      "Cannot Create the AVI File!\n"
-    IDS_STRING1494          "Paper: "
     IDS_STRING1496          "cm"
     IDS_STRING1497          "inch"
     IDS_STRING1498          "Avg (shrink, thumb)"

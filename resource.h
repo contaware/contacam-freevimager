@@ -1448,7 +1448,7 @@
 #define IDC_LINK_LIBPNG                 1310
 #define IDC_APPVER                      1310
 #define IDS_MULTILANG_1311              1311
-#define IDC_EDIT_PAPERSIZE_DPI          1311
+#define IDC_EDIT_PRINTER_PAPERSIZE_DPI  1311
 #define IDC_LINK_WINK                   1311
 #define IDS_MULTILANG_1312              1312
 #define IDC_LINK_ZLIB                   1312

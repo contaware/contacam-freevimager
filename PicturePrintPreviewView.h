@@ -33,7 +33,7 @@ public:
 	CPictureDoc* GetDocument();
 	CDialogBar* GetToolBar() {return m_pToolBar;};
 	BOOL IsInchPaperFormat();
-	void DisplayPaperAndDPI();
+	void DisplayPrinterPaperDPI();
 	void UpdateStatusText();
 	void UpdatePaneText();
 	void Close() {OnPreviewClose();};
