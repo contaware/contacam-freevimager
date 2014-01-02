@@ -154,13 +154,13 @@ int CEnumPrinters::GetPrinterIndex(HANDLE &hDevMode, HANDLE& hDevNames) const
 	}
 
 	// To identify the current printer we need the info from the hDevNames object
-	LPDEVNAMES lpDevNames = (LPDEVNAMES)::GlobalLock(hDevNames);	// lock it
+	LPDEVNAMES lpDevNames = (LPDEVNAMES)::GlobalLock(hDevNames);
 	
 	// We only need the name of the printer to identify it
 	CString name;
 	if (lpDevNames)
 		name = CString(((TCHAR*)((TCHAR*)lpDevNames + lpDevNames->wDeviceOffset))); 
-	::GlobalUnlock(hDevNames); // unlock it
+	::GlobalUnlock(hDevNames);
 
 	for (int i = 0 ; i < GetPrinterCount() ; i++)
 	{
@@ -311,19 +311,19 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 									const CString& sFormName/*=_T("")*/)
 {
 	// We only update the existing hDevMode and hDevNames objects
-	// if we can successfgully setup the new hDevMode and hDevNames objects
+	// if we can successfully setup the new hDevMode and hDevNames objects
 	HANDLE local_hDevMode = INVALID_HANDLE_VALUE;
 	HANDLE local_hDevNames = INVALID_HANDLE_VALUE;
 
-	// To setup the new local_hDevMode object we need to open the printer name to get the information
+	// To setup the new local_hDevMode object we need to open the printer to get the information
 	HANDLE hPrinter;
 	if (!::OpenPrinter(sPrinterName.GetBuffer(), &hPrinter, NULL))
 		return false;
 
 	// A zero for last param returns the size of buffer needed for the information to be returned
 	int nSize = ::DocumentProperties(NULL, hPrinter, sPrinterName.GetBuffer(), NULL, NULL, 0);
-	local_hDevMode = ::GlobalAlloc(GHND, nSize); // Allocate on heap
-	LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(local_hDevMode); // Lock it
+	local_hDevMode = ::GlobalAlloc(GHND, nSize);
+	LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(local_hDevMode);
 
 	// Fill in the rest of the structure
 	memset(lpDevMode, 0, nSize);
@@ -335,8 +335,8 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 		return false;
 	}
 
-	// We need to allocate a new DEVNAMES object on the global heap we also need
-	// the size to include the strings PrinterName, PrinterSpooler and PrinterPort
+	// Allocate a new DEVNAMES object on the global heap, we also need space
+	// to include the strings sPrinterSpooler, sPrinterName and sPrinterPort
 	// Layout is:
 	// DEVNAMES structure
 	// PrinterSpooler\0
@@ -346,15 +346,14 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 			sizeof(TCHAR) * (sPrinterName.GetLength() + 1 +
 							sPrinterSpooler.GetLength() + 1 +
 							sPrinterPort.GetLength() + 1);
-	local_hDevNames = ::GlobalAlloc(GHND, nSize); // allocate on heap
-	LPDEVNAMES pNewDevNames = (LPDEVNAMES)::GlobalLock(local_hDevNames);	// lock it
+	local_hDevNames = ::GlobalAlloc(GHND, nSize);
+	LPDEVNAMES pNewDevNames = (LPDEVNAMES)::GlobalLock(local_hDevNames);
 	if (pNewDevNames)
 	{
 		// Init to 0
 		memset(pNewDevNames, 0, nSize);
 		
-		// Add the 3 strings to the end of the structure
-		// Offsets are all in TCHAR units!
+		// Add the 3 strings to the end of the structure, offsets are all in TCHAR units!
 		pNewDevNames->wDriverOffset = sizeof(DEVNAMES) / sizeof(TCHAR);
 		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wDriverOffset, sPrinterSpooler);
 		pNewDevNames->wDeviceOffset = pNewDevNames->wDriverOffset + sPrinterSpooler.GetLength() + 1;
@@ -439,12 +438,12 @@ bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 		::GlobalUnlock(hDevMode);
 	}
 	
-	VERIFY(pApp->WriteProfileString(_T("PrinterConfig"), _T("PrinterName"), printer));
-	VERIFY(pApp->WriteProfileString(_T("PrinterConfig"), _T("Spooler"), spooler));
-	VERIFY(pApp->WriteProfileString(_T("PrinterConfig"), _T("Port"), port));
-	VERIFY(pApp->WriteProfileInt(_T("PrinterConfig"), _T("Landscape"), landscape));
-	VERIFY(pApp->WriteProfileInt(_T("PrinterConfig"), _T("PaperSize"), papersize));
-	VERIFY(pApp->WriteProfileString(_T("PrinterConfig"), _T("PaperSizeName"), papersizename));
+	pApp->WriteProfileString(_T("PrinterConfig"), _T("PrinterName"), printer);
+	pApp->WriteProfileString(_T("PrinterConfig"), _T("Spooler"), spooler);
+	pApp->WriteProfileString(_T("PrinterConfig"), _T("Port"), port);
+	pApp->WriteProfileInt(_T("PrinterConfig"), _T("Landscape"), landscape);
+	pApp->WriteProfileInt(_T("PrinterConfig"), _T("PaperSize"), papersize);
+	pApp->WriteProfileString(_T("PrinterConfig"), _T("PaperSizeName"), papersizename);
 
 	return true;
 }
