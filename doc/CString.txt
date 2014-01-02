@@ -26,6 +26,10 @@ Thus you must specify a nMinBufLength value when calling GetBuffer that
 is LARGER than what you expect to use. The pointer returned by GetBuffer 
 is a dumb TCHAR*, it will not automatically reallocate on demand. 
 
+Only if you use the pointer returned by GetBuffer to change the string 
+contents, you must call ReleaseBuffer before you use any other member 
+methods. 
+
 
 void CString::ReleaseBuffer(int nNewLength = -1)
 ------------------------------------------------

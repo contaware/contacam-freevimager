@@ -26,39 +26,22 @@ public:
 	// Actually changing or configuring the printer
 	bool				SetDefault(	HANDLE& hDevMode,
 									HANDLE& hDevNames);
-	
-	// Convert from dmPaperSize to dmFormName
-	CString				PaperSizeToFormName(LPCTSTR szPrinter, int nPaperSize);
 
 	// Note: As Parameter for bDefault pass the following:
-	// PrinterName == GetDefaultPrinterName()
+	// sPrinterName == GetDefaultPrinterName()
 	bool				SetNewPrinter(	HANDLE& hDevMode,
 										HANDLE& hDevNames,
-										const CString& PrinterName,
-										const CString& PrinterSpooler,
-										const CString& PrinterPort,
-										bool bDefault);
-
-	// Note: As Parameter for bDefault pass the following:
-	// index == GetDefaultPrinterIndex()
-	bool				SetNewPrinter(	HANDLE& hDevMode,
-										HANDLE& hDevNames,
-										int index,
-										bool bDefault);
-
-	// Printer Settings
-	bool				SetPrintOrientation(HANDLE &hDevMode, int mode);
-	bool				SetPrintPaperSize(HANDLE& hDevMode, int papersize);
-	bool				SetPrintPaperSizeName(HANDLE &hDevMode, CString papersizename);
+										CString sPrinterName,
+										const CString& sPrinterSpooler,
+										const CString& sPrinterPort,
+										bool bDefault,
+										int nOrientation = 0,
+										int nPaperSize = 0,
+										const CString& sFormName = _T(""));
 
 	// Saving settings too/from the registry
 	bool				SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames);
 	bool				RestorePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames);
-
-	// Debug options only
-#ifdef _DEBUG
-	void				DumpHandles(HANDLE& hDevMode, HANDLE& hDevNames);
-#endif
 
 private:
 	int					m_NumPrinters;

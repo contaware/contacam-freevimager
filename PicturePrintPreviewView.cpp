@@ -969,36 +969,12 @@ int CPicturePrintPreviewView::GetPaperSize() const
 		// Protect memory handle with ::GlobalLock and ::GlobalUnlock
 		LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(pd.hDevMode);
 		
-		// Get orientation
+		// Get paper size
 		if (pDevMode)
 			papersize = pDevMode->dmPaperSize;
 		::GlobalUnlock(pd.hDevMode);
 	}
 	return papersize;
-}
-
-CString CPicturePrintPreviewView::GetPaperSizeName() const
-{
-	CString sSizeName;
-	sSizeName = GetPaperSizeName(GetPaperSize());
-	if (sSizeName == _T(""))
-	{
-		PRINTDLG pd;
-		pd.lStructSize = (DWORD)sizeof(PRINTDLG);
-		BOOL bRet = ::AfxGetApp()->GetPrinterDeviceDefaults(&pd);
-		if (bRet)
-		{
-			// Protect memory handle with ::GlobalLock and ::GlobalUnlock
-			LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(pd.hDevMode);
-			
-			// Get orientation
-			if (pDevMode)
-				sSizeName = pDevMode->dmFormName;
-			::GlobalUnlock(pd.hDevMode);
-		}
-	}
-	
-	return sSizeName;
 }
 
 // From MFC's UINT PASCAL _AfxGetMouseScrollLines()
@@ -1832,8 +1808,63 @@ BOOL CPicturePrintPreviewView::IsInchPaperFormat()
 	}
 }
 
-CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
+CString CPicturePrintPreviewView::PaperSizeToFormName(int nPaperSize) const
 {
+	// Get current printer name
+	int index = ((CUImagerApp*)::AfxGetApp())->GetCurrentPrinterIndex();
+	CString sPrinterName = ((CUImagerApp*)::AfxGetApp())->m_PrinterControl.GetPrinterName(index);
+
+	/* DC_PAPERNAMES : retrieves a list of supported paper names (for example, Letter or Legal).
+	The pOutput buffer receives an array of string buffers. Each string buffer is 64 characters
+	long and contains the name of a paper form. The return value indicates the number of entries
+	in the array. The name strings are null-terminated unless the name is 64 characters long.
+	If pOutput is NULL, the return value is the number of paper forms. */
+	int i;
+	CStringArray PaperNames;
+	TCHAR FormName[65];
+	int nFormNameCount = ::DeviceCapabilities(sPrinterName, NULL, DC_PAPERNAMES, NULL, NULL);
+	if (nFormNameCount <= 0)
+		return _T("");
+	TCHAR* pPaperNames = new TCHAR[64 * nFormNameCount];
+	if (!pPaperNames)
+		return _T("");
+	memset(pPaperNames, 0, sizeof(TCHAR) * 64 * nFormNameCount);
+	::DeviceCapabilities(sPrinterName, NULL, DC_PAPERNAMES, pPaperNames, NULL);
+	for (i = 0 ; i < nFormNameCount ; i++)
+	{
+		_tcsncpy(FormName, (LPCTSTR)(pPaperNames + 64 * i), 64);
+		FormName[64] = _T('\0');
+		PaperNames.Add(FormName);
+	}
+	delete [] pPaperNames;
+
+	/* DC_PAPERS : retrieves a list of supported paper sizes. The pOutput buffer receives an array
+	of WORD values that indicate the available paper sizes for the printer. The return value
+	indicates the number of entries in the array. For a list of the possible array values, see the
+	description of the dmPaperSize member of the DEVMODE structure. If pOutput is NULL, the return
+	value indicates the required number of entries in the array. */
+	int nPaperSizeCount = ::DeviceCapabilities(sPrinterName, NULL, DC_PAPERS, NULL, NULL);
+	if (nPaperSizeCount != nFormNameCount)
+		return _T("");
+	WORD* pPapers = new WORD[nPaperSizeCount];
+	if (!pPapers)
+		return _T("");
+	::DeviceCapabilities(sPrinterName, NULL, DC_PAPERS, (LPTSTR)pPapers, NULL);
+	for (i = 0 ; i < nPaperSizeCount ; i++)
+	{
+		if (pPapers[i] == nPaperSize)
+			break;
+	}
+	delete [] pPapers;
+	if (i < nPaperSizeCount)
+		return PaperNames[i];
+	else
+		return _T("");
+}
+
+CString CPicturePrintPreviewView::GetPaperSizeName() const
+{
+	int papersize = GetPaperSize();
 	switch (papersize)
 	{
 		case DMPAPER_LETTER :
@@ -2191,7 +2222,29 @@ CString CPicturePrintPreviewView::GetPaperSizeName(int papersize)
 			return CString(_T("PRC Envelope #10 Rotated 458 x 324 mm"));
 
 		default :
-			return CString(_T(""));
+			// Get the current form name from the DeviceCapabilities function
+			CString sFormName = PaperSizeToFormName(papersize);
+			if (sFormName != _T(""))
+				return sFormName;
+			// If the above fails use dmFormName, that must be the last option
+			// because many drivers do not support this field!
+			else
+			{
+				PRINTDLG pd;
+				pd.lStructSize = (DWORD)sizeof(PRINTDLG);
+				BOOL bRet = ::AfxGetApp()->GetPrinterDeviceDefaults(&pd);
+				if (bRet)
+				{
+					// Protect memory handle with ::GlobalLock and ::GlobalUnlock
+					LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(pd.hDevMode);
+			
+					// Get form name
+					if (pDevMode)
+						sFormName = pDevMode->dmFormName;
+					::GlobalUnlock(pd.hDevMode);
+				}
+				return sFormName;
+			}
 	}
 }
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "EnumPrinters.h"
 #include <Winspool.h>
+#include <..\src\mfc\afximpl.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -141,15 +142,7 @@ int CEnumPrinters::GetPrinterIndex(HANDLE &hDevMode, HANDLE& hDevNames) const
 	{
 		if (hDevMode != NULL && hDevMode != INVALID_HANDLE_VALUE)
 		{
-			// Just in case one handle is valid when the other is invalid
-			// we need to release it
-			ASSERT(::GlobalFlags(hDevMode) != GMEM_INVALID_HANDLE);
-			UINT nCount = ::GlobalFlags(hDevMode) & GMEM_LOCKCOUNT;
-			while (nCount--)
-				::GlobalUnlock(hDevMode);
-
-			// Finally, really free the handle
-			::GlobalFree(hDevMode);
+			::AfxGlobalFree(hDevMode);
 			hDevMode = INVALID_HANDLE_VALUE;
 		}
 		// No current printer is selected, get the system wide default
@@ -277,209 +270,131 @@ bool CEnumPrinters::SetDefault(	HANDLE& hDevMode,
 {
 	int index = GetDefaultPrinterIndex();
 	if (index >= 0)
-		return SetNewPrinter(hDevMode, hDevNames, index, true);
+	{
+		CString	printer = GetPrinterName(index);
+		CString spooler(_T("winspool"));
+		CString	port = GetPrinterPortName(index);
+		return SetNewPrinter(	hDevMode,
+								hDevNames,
+								printer,
+								spooler,
+								port,
+								true);
+	}
 	else
 		return false;
 }
 
-CString CEnumPrinters::PaperSizeToFormName(LPCTSTR szPrinter, int nPaperSize)
-{
-	/* DC_PAPERNAMES : retrieves a list of supported paper names (for example, Letter or Legal).
-	The pOutput buffer receives an array of string buffers. Each string buffer is 64 characters
-	long and contains the name of a paper form. The return value indicates the number of entries
-	in the array. The name strings are null-terminated unless the name is 64 characters long.
-	If pOutput is NULL, the return value is the number of paper forms. */
-	int i;
-	CStringArray PaperNames;
-	TCHAR FormName[65];
-	int nFormNameCount = ::DeviceCapabilities(szPrinter, NULL, DC_PAPERNAMES, NULL, NULL);
-	if (nFormNameCount <= 0)
-		return _T("");
-	TCHAR* pPaperNames = new TCHAR[64 * nFormNameCount];
-	if (!pPaperNames)
-		return _T("");
-	memset(pPaperNames, 0, sizeof(TCHAR) * 64 * nFormNameCount);
-	::DeviceCapabilities(szPrinter, NULL, DC_PAPERNAMES, pPaperNames, NULL);
-	for (i = 0 ; i < nFormNameCount ; i++)
-	{
-		_tcsncpy(FormName, (LPCTSTR)(pPaperNames + 64 * i), 64);
-		FormName[64] = _T('\0');
-		PaperNames.Add(FormName);
-	}
-	delete [] pPaperNames;
-
-	/* DC_PAPERS : retrieves a list of supported paper sizes. The pOutput buffer receives an array
-	of WORD values that indicate the available paper sizes for the printer. The return value
-	indicates the number of entries in the array. For a list of the possible array values, see the
-	description of the dmPaperSize member of the DEVMODE structure. If pOutput is NULL, the return
-	value indicates the required number of entries in the array. */
-	int nPaperSizeCount = ::DeviceCapabilities(szPrinter, NULL, DC_PAPERS, NULL, NULL);
-	if (nPaperSizeCount != nFormNameCount)
-		return _T("");
-	WORD* pPapers = new WORD[nPaperSizeCount];
-	if (!pPapers)
-		return _T("");
-	::DeviceCapabilities(szPrinter, NULL, DC_PAPERS, (LPTSTR)pPapers, NULL);
-	for (i = 0 ; i < nPaperSizeCount ; i++)
-	{
-		if (pPapers[i] == nPaperSize)
-			break;
-	}
-	delete [] pPapers;
-	if (i < nPaperSizeCount)
-		return PaperNames[i];
-	else
-		return _T("");
-}
-
-bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
-									HANDLE& hDevNames,
-									const CString& PrinterName,
-									const CString& PrinterSpooler,
-									const CString& PrinterPort,
-									bool bDefault)
+// From KB167345:
+// "Using a DEVMODE structure to modify printer settings is more difficult than
+// just changing the fields of the structure. Specifically, a valid DEVMODE
+// structure for a device contains private data that can only be modified by
+// the DocumentProperties() function."
+//
 // hDeMode - Handle to the current DEVMODE structure
 // hDevNames - Handle to the current DEVNAMES structure
-// PrinterName - E.g. HP LaserJet 4L
-// PrinterSpooler - e.g. "winspool"
-// PrinterPort - e.g. "LPT1:"
+// sPrinterName - e.g. "HP LaserJet 4L"
+// sPrinterSpooler - e.g. "winspool"
+// sPrinterPort - e.g. "LPT1:"
+// bDefault - is this printer the default one?
+// nOrientation - 0 do not set, otherwise DMORIENT_PORTRAIT or DMORIENT_LANDSCAPE
+// nPaperSize - 0 do not set, otherwise DMPAPER_LETTER ...
+// sFormName - _T("") do not set, otherwise the Paper Name
+bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
+									HANDLE& hDevNames,
+									CString sPrinterName,
+									const CString& sPrinterSpooler,
+									const CString& sPrinterPort,
+									bool bDefault,
+									int nOrientation/*=0*/,
+									int nPaperSize/*=0*/,
+									const CString& sFormName/*=_T("")*/)
 {
 	// We only update the existing hDevMode and hDevNames objects
-	// if we can successfgully setup the
-	// new hDevMode and hDevNames objects
+	// if we can successfgully setup the new hDevMode and hDevNames objects
 	HANDLE local_hDevMode = INVALID_HANDLE_VALUE;
 	HANDLE local_hDevNames = INVALID_HANDLE_VALUE;
 
-	// To setup the new local_hDevMode object we need
-	// to open the printer name to get the information
+	// To setup the new local_hDevMode object we need to open the printer name to get the information
 	HANDLE hPrinter;
-	TCHAR* szPrinter = new TCHAR[PrinterName.GetLength() + 1];
-	ASSERT(szPrinter);
-	_tcscpy(szPrinter, PrinterName);
-	if (!::OpenPrinter(szPrinter, &hPrinter, NULL))
-	{
-		delete [] szPrinter;
+	if (!::OpenPrinter(sPrinterName.GetBuffer(), &hPrinter, NULL))
 		return false;
-	}
 
 	// A zero for last param returns the size of buffer needed for the information to be returned
-	int nSize = ::DocumentProperties(NULL, hPrinter, szPrinter, NULL, NULL, 0);
-	ASSERT(nSize >= 0);
+	int nSize = ::DocumentProperties(NULL, hPrinter, sPrinterName.GetBuffer(), NULL, NULL, 0);
 	local_hDevMode = ::GlobalAlloc(GHND, nSize); // Allocate on heap
 	LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(local_hDevMode); // Lock it
 
 	// Fill in the rest of the structure
 	memset(lpDevMode, 0, nSize);
-	if (::DocumentProperties(NULL, hPrinter, szPrinter, lpDevMode, NULL, DM_OUT_BUFFER) != IDOK)
+	if (::DocumentProperties(NULL, hPrinter, sPrinterName.GetBuffer(), lpDevMode, NULL, DM_OUT_BUFFER) != IDOK)
 	{
-		// Failed to read printer properties, abort
-		ASSERT(::GlobalFlags(local_hDevMode) != GMEM_INVALID_HANDLE);
-		UINT nCount = ::GlobalFlags(local_hDevMode) & GMEM_LOCKCOUNT;
-		while (nCount--)
-			::GlobalUnlock(local_hDevMode);
-
-		// Finally, really free the handle
-		::GlobalFree(local_hDevMode);
+		::AfxGlobalFree(local_hDevMode);
 		local_hDevMode = NULL;
 		::ClosePrinter(hPrinter);
-		delete [] szPrinter;
 		return false;
 	}
 
-	// Some drivers do not correctly initialize the User Form Name!
-	if (lpDevMode->dmPaperSize >= DMPAPER_USER)
-	{
-		CString sFormName = PaperSizeToFormName(szPrinter, lpDevMode->dmPaperSize);
-		if (sFormName != _T(""))
-		{
-			_tcsncpy((TCHAR*)lpDevMode->dmFormName, sFormName, CCHFORMNAME);
-			lpDevMode->dmFormName[CCHFORMNAME-1] = _T('\0');
-		}
-	}
-
-	// Finished interrogating for DEVMODE structure
-	::GlobalUnlock(local_hDevMode);
-	::ClosePrinter(hPrinter);
-	delete [] szPrinter;
-
-	// We need to allocate a new DEVNAMES object on the global heap
-	// we also need the size to include the strings PrinterName, PrinterSpooler and PrinterPort
+	// We need to allocate a new DEVNAMES object on the global heap we also need
+	// the size to include the strings PrinterName, PrinterSpooler and PrinterPort
 	// Layout is:
 	// DEVNAMES structure
 	// PrinterSpooler\0
 	// PrinterName\0
 	// PrinterPort\0
-	int	size =	sizeof(DEVNAMES) +
-				sizeof(TCHAR) * (PrinterName.GetLength() + 1 +
-								PrinterSpooler.GetLength() + 1 +
-								PrinterPort.GetLength() + 1);
-	local_hDevNames = ::GlobalAlloc(GHND, size); // allocate on heap
+	nSize =	sizeof(DEVNAMES) +
+			sizeof(TCHAR) * (sPrinterName.GetLength() + 1 +
+							sPrinterSpooler.GetLength() + 1 +
+							sPrinterPort.GetLength() + 1);
+	local_hDevNames = ::GlobalAlloc(GHND, nSize); // allocate on heap
 	LPDEVNAMES pNewDevNames = (LPDEVNAMES)::GlobalLock(local_hDevNames);	// lock it
 	if (pNewDevNames)
 	{
-		memset(pNewDevNames, 0, size);											// init to 0
+		// Init to 0
+		memset(pNewDevNames, 0, nSize);
 		
 		// Add the 3 strings to the end of the structure
 		// Offsets are all in TCHAR units!
 		pNewDevNames->wDriverOffset = sizeof(DEVNAMES) / sizeof(TCHAR);
-		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wDriverOffset, PrinterSpooler);
-		pNewDevNames->wDeviceOffset = pNewDevNames->wDriverOffset + PrinterSpooler.GetLength() + 1;
-		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wDeviceOffset, PrinterName);
-		pNewDevNames->wOutputOffset = pNewDevNames->wDeviceOffset + PrinterName.GetLength() + 1;
-		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wOutputOffset, PrinterPort);
+		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wDriverOffset, sPrinterSpooler);
+		pNewDevNames->wDeviceOffset = pNewDevNames->wDriverOffset + sPrinterSpooler.GetLength() + 1;
+		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wDeviceOffset, sPrinterName);
+		pNewDevNames->wOutputOffset = pNewDevNames->wDeviceOffset + sPrinterName.GetLength() + 1;
+		_tcscpy((TCHAR*)pNewDevNames + pNewDevNames->wOutputOffset, sPrinterPort);
 
 		// Default Flag
 		if (bDefault)
 			pNewDevNames->wDefault = DN_DEFAULTPRN;
 	}
 
-	::GlobalUnlock(local_hDevNames); // free it
+	// Merge the new settings with the old ones
+	if ((lpDevMode->dmFields & DM_ORIENTATION) && nOrientation >= DMORIENT_PORTRAIT)
+		lpDevMode->dmOrientation = nOrientation;
+	if ((lpDevMode->dmFields & DM_PAPERSIZE) && nPaperSize >= DMPAPER_FIRST)
+		lpDevMode->dmPaperSize = nPaperSize;
+	if ((lpDevMode->dmFields & DM_FORMNAME) && sFormName != _T(""))
+	{
+		_tcsncpy((TCHAR*)lpDevMode->dmFormName, sFormName, CCHFORMNAME);
+		lpDevMode->dmFormName[CCHFORMNAME-1] = _T('\0');
+	}
+    LONG lRet = ::DocumentProperties(NULL, hPrinter, sPrinterName.GetBuffer(),
+									lpDevMode, lpDevMode,
+									DM_IN_BUFFER | DM_OUT_BUFFER);
+
+	// Free
+	::GlobalUnlock(local_hDevNames);
+	::GlobalUnlock(local_hDevMode);
+	::ClosePrinter(hPrinter);
 
 	// Now update the handles that were passed in
-	// free the existing handles if they exist first
 	if (hDevMode != NULL && hDevMode != INVALID_HANDLE_VALUE)
-	{
-		ASSERT(::GlobalFlags(hDevMode) != GMEM_INVALID_HANDLE);
-		UINT nCount = ::GlobalFlags(hDevMode) & GMEM_LOCKCOUNT;
-		while (nCount--)
-			::GlobalUnlock(hDevMode);
-
-		// Finally, really free the handle
-		::GlobalFree(hDevMode);
-		hDevMode = INVALID_HANDLE_VALUE;
-	}
+		::AfxGlobalFree(hDevMode);
 	if (hDevNames != NULL && hDevNames != INVALID_HANDLE_VALUE)
-	{
-		ASSERT(::GlobalFlags(hDevNames) != GMEM_INVALID_HANDLE);
-		UINT nCount = ::GlobalFlags(hDevNames) & GMEM_LOCKCOUNT;
-		while (nCount--)
-			::GlobalUnlock(hDevNames);
-
-		// Finally, really free the handle
-		::GlobalFree(hDevNames);
-		hDevNames = INVALID_HANDLE_VALUE;
-	}
+		::AfxGlobalFree(hDevNames);
 	hDevMode = local_hDevMode;
 	hDevNames = local_hDevNames;
 
-	return true;
-}
-
-bool CEnumPrinters::SetNewPrinter(HANDLE& hDevMode,
-								  HANDLE& hDevNames,
-								  int index,
-								  bool bDefault)
-{
-	CString	printer = GetPrinterName(index);
-	CString spooler(_T("winspool"));
-	CString	port = GetPrinterPortName(index);
-
-	return SetNewPrinter(	hDevMode,
-							hDevNames,
-							printer,
-							spooler,
-							port,
-							bDefault);
+	return (lRet == IDOK);
 }
 
 bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
@@ -576,141 +491,8 @@ bool CEnumPrinters::RestorePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 		return false;
 	}
 
-	if (printer == GetDefaultPrinterName())
-		VERIFY(SetNewPrinter(hDevMode, hDevNames, printer, spooler, port, true));
-	else
-		VERIFY(SetNewPrinter(hDevMode, hDevNames, printer, spooler, port, false));
-	VERIFY(SetPrintOrientation(hDevMode, landscape));
-	VERIFY(SetPrintPaperSize(hDevMode, papersize));
-	VERIFY(SetPrintPaperSizeName(hDevMode, papersizename));
-
-	return true;
+	return SetNewPrinter(	hDevMode, hDevNames,
+							printer, spooler, port,
+							printer == GetDefaultPrinterName(),
+							landscape, papersize, papersizename);
 }
-
-bool CEnumPrinters::SetPrintOrientation(HANDLE &hDevMode, int mode)
-{
-	if (hDevMode == INVALID_HANDLE_VALUE ||
-		hDevMode == NULL)
-		return false;
-
-	switch (mode)
-	{
-		case DMORIENT_PORTRAIT :
-		{
-			// Portrait mode
-			LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(hDevMode);
-			// Set orientation to portrait
-			if (pDevMode)
-				pDevMode->dmOrientation = DMORIENT_PORTRAIT;
-			::GlobalUnlock(hDevMode);
-			break;
-		}
-		case DMORIENT_LANDSCAPE :
-		{
-			// Landscape mode
-			LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(hDevMode);
-			// Set orientation to landscape
-			if (pDevMode)
-				pDevMode->dmOrientation = DMORIENT_LANDSCAPE;
-			::GlobalUnlock(hDevMode);
-			break;
-		}
-		default :	
-			ASSERT(FALSE); // invalid parameter
-			return false;
-	}
-	return true;
-}
-
-bool CEnumPrinters::SetPrintPaperSize(HANDLE &hDevMode, int papersize)
-{
-	if (hDevMode == INVALID_HANDLE_VALUE ||
-		hDevMode == NULL)
-		return false;
-
-	LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(hDevMode);
-	if (pDevMode)
-		pDevMode->dmPaperSize = papersize;
-	::GlobalUnlock(hDevMode);
-		
-	return true;
-}
-
-bool CEnumPrinters::SetPrintPaperSizeName(HANDLE &hDevMode, CString papersizename)
-{
-	if (hDevMode == INVALID_HANDLE_VALUE ||
-		hDevMode == NULL)
-		return false;
-
-	LPDEVMODE pDevMode = (LPDEVMODE)::GlobalLock(hDevMode);
-	if (pDevMode)
-	{
-		_tcsncpy((TCHAR*)pDevMode->dmFormName, papersizename, CCHFORMNAME);
-		pDevMode->dmFormName[CCHFORMNAME-1] = _T('\0');
-	}
-	::GlobalUnlock(hDevMode);	
-		
-	return true;
-}
-
-#ifdef _DEBUG
-
-void CEnumPrinters::DumpHandles(HANDLE& hDevMode, HANDLE& hDevNames)
-{
-	// Dump the content of the handles to the debug output
-	TRACE(_T("===================Dumping Print Object handles==============\n"));
-	if (hDevMode != INVALID_HANDLE_VALUE && hDevMode != NULL)
-	{
-		LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(hDevMode); // lock it
-		if (lpDevMode)
-		{
-			TRACE(_T("------hDevMode---------------------------\n"));
-			TRACE(_T("Device name          : %s\n"), lpDevMode->dmDeviceName);
-			TRACE(_T("dmSpecVersion        : %d\n"), lpDevMode->dmSpecVersion);
-			TRACE(_T("dmDriverVersion      : %d\n"), lpDevMode->dmDriverVersion);
-			TRACE(_T("dmSize               : %d\n"), lpDevMode->dmSize);
-			TRACE(_T("dmDriverExtra        : %d\n"), lpDevMode->dmDriverExtra);
-			TRACE(_T("dmFields             : %x\n"), lpDevMode->dmFields);
-			TRACE(_T("dmScale              : %d\n"), lpDevMode->dmScale);
-			TRACE(_T("dmCopies             : %d\n"), lpDevMode->dmCopies);
-			TRACE(_T("dmDefaultSource      : %d\n"), lpDevMode->dmDefaultSource);
-			TRACE(_T("dmPrintQuality       : %d\n"), lpDevMode->dmPrintQuality);
-			TRACE(_T("dmColor              : %d\n"), lpDevMode->dmColor);
-			TRACE(_T("dmDuplex             : %d\n"), lpDevMode->dmDuplex);
-			TRACE(_T("dmYResolution        : %d\n"), lpDevMode->dmYResolution);
-			TRACE(_T("dmTTOption           : %d\n"), lpDevMode->dmTTOption);
-			TRACE(_T("dmCollate            : %d\n"), lpDevMode->dmCollate);
-			TRACE(_T("dmFormName           : %s\n"), lpDevMode->dmFormName);
-			TRACE(_T("dmLogPixels          : %d\n"), lpDevMode->dmLogPixels);
-			TRACE(_T("dmBitsPerPel         : %d\n"), lpDevMode->dmBitsPerPel);
-			TRACE(_T("dmPelsWidth          : %d\n"), lpDevMode->dmPelsWidth);
-			TRACE(_T("dmPelsHeight         : %d\n"), lpDevMode->dmPelsHeight);
-			TRACE(_T("dmNup/dmDisplayFlags : %d\n"), lpDevMode->dmDisplayFlags);
-			TRACE(_T("dmDisplayFrequency   : %d\n"), lpDevMode->dmDisplayFrequency);
-		}
-		::GlobalUnlock(hDevMode);
-	}
-	else
-		TRACE(_T("hDevMode             : INVALID_HANDLE_VALUE\n"));
-
-	if (hDevNames != INVALID_HANDLE_VALUE && hDevNames != NULL)
-	{
-		LPDEVNAMES lpDevNames = (LPDEVNAMES)::GlobalLock(hDevNames);
-		if (lpDevNames)
-		{
-			TRACE(_T("------hDevNames--------------------------\n"));
-			TRACE(_T("wDriverOffset   : %d\n"), lpDevNames->wDriverOffset);
-			TRACE(_T("wDeviceOffset   : %d\n"), lpDevNames->wDeviceOffset);
-			TRACE(_T("wOutputOffset   : %d\n"), lpDevNames->wOutputOffset);
-			TRACE(_T("wDefault        : %x\n"), lpDevNames->wDefault);
-			TRACE(_T("DriverName      : %s\n"), (TCHAR*)((TCHAR*)lpDevNames + lpDevNames->wDriverOffset));
-			TRACE(_T("DeviceName      : %s\n"), (TCHAR*)((TCHAR*)lpDevNames + lpDevNames->wDeviceOffset));
-			TRACE(_T("OutputName      : %s\n"), (TCHAR*)((TCHAR*)lpDevNames + lpDevNames->wOutputOffset));
-		}
-		::GlobalUnlock(hDevNames);
-	}
-	else
-		TRACE(_T("hDevNames            : INVALID_HANDLE_VALUE\n"));
-	TRACE(_T("===================Dump Complete=============================\n"));
-}
-#endif

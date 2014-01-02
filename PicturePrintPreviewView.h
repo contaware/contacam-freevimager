@@ -76,8 +76,8 @@ protected:
 	BOOL			SetPrintOrientation(int orientation) const;
 	int				GetPrintOrientation() const;
 	int				GetPaperSize() const;
+	CString			PaperSizeToFormName(int nPaperSize) const;
 	CString			GetPaperSizeName() const;
-	static CString	GetPaperSizeName(int papersize);
 	void			CalcPhysPix(double& dX, double& dY);
 	void			CalcPhysInch(double& dX, double& dY);
 	void			CalcPhysCm(double& dX, double& dY);
