@@ -182,40 +182,32 @@ void CEnumPrinters::ReadLocalPrinters()
 
 	::EnumPrinters(Flags, NULL, Level, NULL, 0, &cbBuf, &pcReturned);
 	pPrinterEnum = (LPPRINTER_INFO_2)::LocalAlloc(LPTR, cbBuf);
-
 	if (!pPrinterEnum)
-	{
-		TRACE(_T("Error %1d\n"), ::GetLastError());
-		goto clean_up;
-	}
+		return;
 
-	if (!::EnumPrinters(Flags,							// DWORD Flags, printer object types 
+	if (::EnumPrinters(	Flags,							// DWORD Flags, printer object types 
 						NULL,							// LPTSTR Name, name of printer object 
 						Level,							// DWORD Level, information level 
 						(LPBYTE)pPrinterEnum,			// LPBYTE pPrinterEnum, printer information buffer 
 						cbBuf,							// DWORD cbBuf, size of printer information buffer
 						&cbBuf,							// LPDWORD pcbNeeded, bytes received or required 
-						&pcReturned)					// LPDWORD pcReturned number of printers enumerated 
-						)
+						&pcReturned))					// LPDWORD pcReturned number of printers enumerated
 	{
-		TRACE(_T("Error %1d\n"), ::GetLastError());
-		goto clean_up;
-	}
-
-	if (pcReturned > 0)
-	{
-		for (index = 0 ; index < pcReturned ; index++)
+		if (pcReturned > 0)
 		{
-			m_PrinterName.AddTail((pPrinterEnum + index)->pPrinterName);
-			m_PrinterShareName.AddTail((pPrinterEnum + index)->pShareName);
-			m_PrinterLocation.AddTail((pPrinterEnum + index)->pLocation);
-			m_PrinterPort.AddTail((pPrinterEnum + index)->pPortName);
-			m_NumPrinters++;
+			for (index = 0 ; index < pcReturned ; index++)
+			{
+				m_PrinterName.AddTail((pPrinterEnum + index)->pPrinterName);
+				m_PrinterShareName.AddTail((pPrinterEnum + index)->pShareName);
+				m_PrinterLocation.AddTail((pPrinterEnum + index)->pLocation);
+				m_PrinterPort.AddTail((pPrinterEnum + index)->pPortName);
+				m_NumPrinters++;
+			}
 		}
 	}
 
-clean_up:
-	::LocalFree(LocalHandle(pPrinterEnum));
+	// Clean-up
+	::LocalFree(pPrinterEnum);
 }
 
 void CEnumPrinters::ReadRemotePrinters()
@@ -229,40 +221,32 @@ void CEnumPrinters::ReadRemotePrinters()
 
 	::EnumPrinters(Flags, NULL, Level, NULL, 0, &cbBuf, &pcReturned);
 	pPrinterEnum = (LPPRINTER_INFO_4)::LocalAlloc(LPTR, cbBuf);
-
 	if (!pPrinterEnum)
-	{
-		TRACE(_T("Error %1d\n"), ::GetLastError());
-		goto clean_up;
-	}
+		return;
 
-	if (!::EnumPrinters(Flags,							// DWORD Flags, printer object types 
+	if (::EnumPrinters(	Flags,							// DWORD Flags, printer object types 
 						NULL,							// LPTSTR Name, name of printer object 
 						Level,							// DWORD Level, information level 
 						(LPBYTE)pPrinterEnum,			// LPBYTE pPrinterEnum, printer information buffer 
 						cbBuf,							// DWORD cbBuf, size of printer information buffer
 						&cbBuf,							// LPDWORD pcbNeeded, bytes received or required 
-						&pcReturned)					// LPDWORD pcReturned number of printers enumerated 
-						)
+						&pcReturned))					// LPDWORD pcReturned number of printers enumerated
 	{
-		TRACE(_T("Error %1d\n"), ::GetLastError());
-		goto clean_up;
-	}
-
-	if (pcReturned > 0)
-	{
-		for (index = 0 ; index < pcReturned ; index++)
+		if (pcReturned > 0)
 		{
-			m_PrinterName.AddTail((pPrinterEnum + index)->pPrinterName);
-			m_PrinterShareName.AddTail(_T(""));
-			m_PrinterLocation.AddTail(_T(""));
-			m_PrinterPort.AddTail(_T(""));
-			m_NumPrinters++;
+			for (index = 0 ; index < pcReturned ; index++)
+			{
+				m_PrinterName.AddTail((pPrinterEnum + index)->pPrinterName);
+				m_PrinterShareName.AddTail(_T(""));
+				m_PrinterLocation.AddTail(_T(""));
+				m_PrinterPort.AddTail(_T(""));
+				m_NumPrinters++;
+			}
 		}
 	}
-
-clean_up:
-	::LocalFree(LocalHandle(pPrinterEnum));
+	
+	// Clean-up
+	::LocalFree(pPrinterEnum);
 }
 
 bool CEnumPrinters::SetDefault(	HANDLE& hDevMode,
@@ -398,9 +382,6 @@ bool CEnumPrinters::SetNewPrinter(	HANDLE& hDevMode,
 
 bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 {
-	CWinApp* pApp = ::AfxGetApp();
-	ASSERT(pApp);
-
 	CString	printer;
 	CString	spooler;
 	CString	port;
@@ -409,8 +390,7 @@ bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 	CString papersizename;
 
 	// Get Printer Name, Spooler and Port
-	if (hDevNames != INVALID_HANDLE_VALUE &&
-		hDevNames != NULL)
+	if (hDevNames != INVALID_HANDLE_VALUE && hDevNames != NULL)
 	{
 		LPDEVNAMES lpDevNames = (LPDEVNAMES)::GlobalLock(hDevNames);
 		if (lpDevNames)
@@ -425,8 +405,7 @@ bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 		return false; // not setup!
 
 	// Get Printer Settings
-	if (hDevMode != INVALID_HANDLE_VALUE &&
-		hDevMode != NULL)
+	if (hDevMode != INVALID_HANDLE_VALUE && hDevMode != NULL)
 	{
 		LPDEVMODE lpDevMode = (LPDEVMODE)::GlobalLock(hDevMode);
 		if (lpDevMode)
@@ -438,6 +417,9 @@ bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 		::GlobalUnlock(hDevMode);
 	}
 	
+	// Store Settings
+	CWinApp* pApp = ::AfxGetApp();
+	ASSERT(pApp);
 	pApp->WriteProfileString(_T("PrinterConfig"), _T("PrinterName"), printer);
 	pApp->WriteProfileString(_T("PrinterConfig"), _T("Spooler"), spooler);
 	pApp->WriteProfileString(_T("PrinterConfig"), _T("Port"), port);
@@ -450,46 +432,35 @@ bool CEnumPrinters::SavePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 
 bool CEnumPrinters::RestorePrinterSelection(HANDLE &hDevMode, HANDLE& hDevNames)
 {
+	// Load Settings
 	CWinApp* pApp = ::AfxGetApp();
 	ASSERT(pApp);
+	CString	printer = pApp->GetProfileString(_T("PrinterConfig"), _T("PrinterName"), _T(""));
+	CString	spooler = pApp->GetProfileString(_T("PrinterConfig"), _T("Spooler"), _T(""));
+	CString	port = pApp->GetProfileString(_T("PrinterConfig"), _T("Port"), _T(""));
+	int	landscape = pApp->GetProfileInt(_T("PrinterConfig"), _T("Landscape"), DMORIENT_PORTRAIT);
+	int papersize = pApp->GetProfileInt(_T("PrinterConfig"), _T("PaperSize"), DMPAPER_LETTER);
+	CString papersizename = pApp->GetProfileString(_T("PrinterConfig"), _T("PaperSizeName"), _T(""));
 
-	CString	printer;
-	CString	spooler;
-	CString	port;
-	int	landscape = DMORIENT_PORTRAIT;
-	int papersize = DMPAPER_LETTER;
-	CString papersizename;
-
-	printer = pApp->GetProfileString(_T("PrinterConfig"), _T("PrinterName"), _T(""));
-	spooler = pApp->GetProfileString(_T("PrinterConfig"), _T("Spooler"), _T(""));
-	port = pApp->GetProfileString(_T("PrinterConfig"), _T("Port"), _T(""));
-	landscape = pApp->GetProfileInt(_T("PrinterConfig"), _T("Landscape"), DMORIENT_PORTRAIT);
-	papersize = pApp->GetProfileInt(_T("PrinterConfig"), _T("PaperSize"), DMPAPER_LETTER);
-	papersizename = pApp->GetProfileString(_T("PrinterConfig"), _T("PaperSizeName"), _T(""));
-
-	if (printer == _T("") || spooler == _T("") || port == _T(""))
+	// Checks
+	if (printer == _T("") || spooler == _T("") || port == _T("")) // not setup
 	{
 		SetDefault(hDevMode, hDevNames);
-		return false; // not setup
+		return false;
 	}
-
-	// Make sure the selected printer is in the list available
 	int i;
 	for (i = 0 ; i < m_NumPrinters ; i++)
 	{
 		if (printer == GetPrinterName(i))
 			break; // found!
 	}
-	if (i >= m_NumPrinters)
+	if (i >= m_NumPrinters) // no longer available
 	{
-		// The selected printer is no longer available
-		TRACE(	_T("Warning : Unable to re-select your preferred printer\n")
-				_T("as it is no longer available. The system default printer\n")
-				_T("will be used.")) ;
 		SetDefault(hDevMode, hDevNames);
 		return false;
 	}
 
+	// Init hDevMode and hDevNames
 	return SetNewPrinter(	hDevMode, hDevNames,
 							printer, spooler, port,
 							printer == GetDefaultPrinterName(),
