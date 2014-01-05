@@ -1113,6 +1113,7 @@ public:
 	volatile int m_nMilliSecondsRecBeforeMovementBegin;	// Do record in the circular buffer list this amount of millisec. before det.
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
+	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
 	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF

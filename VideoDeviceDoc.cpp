@@ -2760,7 +2760,7 @@ end_of_software_detection:
 		// Low load threshold or maximum number of frames reached
 		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
 				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
-				nFramesCount >= MOVDET_MAX_FRAMES_IN_LIST))
+				(nFramesCount + 1) >= m_nDetectionMaxFrames)) // + 1 because we added another frame after the counting
 			SaveFrameList();
 	}
 	else if (bStoreFrames)
@@ -4121,6 +4121,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecBeforeMovementBegin = DEFAULT_PRE_BUFFER_MSEC;
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
+	m_nDetectionMaxFrames = MOVDET_MAX_FRAMES_IN_LIST;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
@@ -4749,6 +4750,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMilliSecondsRecBeforeMovementBegin = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), DEFAULT_PRE_BUFFER_MSEC);
 	m_nMilliSecondsRecAfterMovementEnd = (int) pApp->GetProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), DEFAULT_POST_BUFFER_MSEC);
 	m_nDetectionMinLengthMilliSeconds = (int) pApp->GetProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), MOVDET_MIN_LENGTH_MSEC);
+	m_nDetectionMaxFrames = (int) pApp->GetProfileInt(sSection, _T("DetectionMaxFrames"), MOVDET_MAX_FRAMES_IN_LIST);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
@@ -4958,6 +4960,7 @@ void CVideoDeviceDoc::SaveSettings()
 		pApp->WriteProfileInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin);
 		pApp->WriteProfileInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd);
 		pApp->WriteProfileInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds);
+		pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
 		pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 		pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 		pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
@@ -5142,6 +5145,7 @@ void CVideoDeviceDoc::SaveSettings()
 		::WriteProfileIniInt(sSection, _T("MilliSecondsRecBeforeMovementBegin"), m_nMilliSecondsRecBeforeMovementBegin, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("MilliSecondsRecAfterMovementEnd"), m_nMilliSecondsRecAfterMovementEnd, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionMinLengthMilliSeconds"), m_nDetectionMinLengthMilliSeconds, sTempFileName);
+		::WriteProfileIniInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionLevel"), m_nDetectionLevel, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize, sTempFileName);
 		::WriteProfileIniInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection, sTempFileName);

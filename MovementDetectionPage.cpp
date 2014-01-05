@@ -62,6 +62,8 @@ void CMovementDetectionPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_DETECTION_MIN_LENGTH, m_nDetectionMinLengthSeconds);
 	DDV_MinMaxInt(pDX, m_nDetectionMinLengthSeconds, 0, 99);
 	DDX_Control(pDX, IDC_SPIN_DETECTION_MIN_LENGTH, m_SpinDetectionMinLengthSeconds);
+	DDX_Text(pDX, IDC_EDIT_DETECTION_MAX_FRAMES, m_nDetectionMaxFrames);
+	DDV_MinMaxInt(pDX, m_nDetectionMaxFrames, 1, 1000000);
 	//}}AFX_DATA_MAP
 }
 
@@ -103,6 +105,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_FRIDAY, OnCheckSchedulerFriday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SATURDAY, OnCheckSchedulerSaturday)
 	ON_EN_CHANGE(IDC_EDIT_DETECTION_MIN_LENGTH, OnChangeEditDetectionMinLength)
+	ON_EN_CHANGE(IDC_EDIT_DETECTION_MAX_FRAMES, OnChangeEditDetectionMaxFrames)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -115,6 +118,7 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_nSecondsBeforeMovementBegin = m_pDoc->m_nMilliSecondsRecBeforeMovementBegin / 1000;
 	m_nSecondsAfterMovementEnd = m_pDoc->m_nMilliSecondsRecAfterMovementEnd / 1000;
 	m_nDetectionMinLengthSeconds = m_pDoc->m_nDetectionMinLengthMilliSeconds / 1000;
+	m_nDetectionMaxFrames = m_pDoc->m_nDetectionMaxFrames;
 	m_DetectionStartTime = m_pDoc->m_DetectionStartTime;
 	m_DetectionStopTime = m_pDoc->m_DetectionStopTime;
 
@@ -352,6 +356,12 @@ void CMovementDetectionPage::OnChangeEditDetectionMinLength()
 		if (UpdateData(TRUE))
 			m_pDoc->m_nDetectionMinLengthMilliSeconds = m_nDetectionMinLengthSeconds * 1000;
 	}
+}
+
+void CMovementDetectionPage::OnChangeEditDetectionMaxFrames()
+{
+	if (UpdateData(TRUE))
+		m_pDoc->m_nDetectionMaxFrames = m_nDetectionMaxFrames;
 }
 
 void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
