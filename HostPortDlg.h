@@ -43,6 +43,7 @@ public:
 protected:
 	void LoadSettings();
 	void SaveSettings();
+	void EnableDisableCtrls(CString sHost);
 
 	CStringArray m_HostsHistory;
 	CDWordArray m_PortsHistory;
@@ -52,7 +53,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
 	afx_msg void OnSelchangeComboHost();
-	afx_msg void OnSelchangeComboDevicetypemode();
+	afx_msg void OnEditchangeComboHost();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1943,11 +1943,11 @@ BEGIN
     COMBOBOX        IDC_COMBO_DEVICETYPEMODE,14,97,194,157,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,58,146,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,118,146,50,14
-    GROUPBOX        "Host name or Host IP or URL starting with http://",IDC_STATIC2272,7,5,207,32
-    GROUPBOX        "Port (not used if URL set)",IDC_STATIC2273,7,44,207,34
-    GROUPBOX        "Select the Device Type and Mode (not used if URL set)",IDC_STATIC2274,7,85,207,54
-    LTEXT           "Client poll mode for framerates < 1 frame/sec",IDC_STATIC,14,125,194,8
-    LTEXT           "Server push mode for framerates > 1 frame/sec",IDC_STATIC,14,114,194,8
+    GROUPBOX        "Host name or Host IP or URL starting with http://",IDC_STATIC_IP,7,5,207,32
+    GROUPBOX        "Port (not used if URL set)",IDC_STATIC_PORT,7,44,207,34
+    GROUPBOX        "Select the Device Type and Mode (not used if URL set)",IDC_STATIC_DEVICETYPEMODE,7,85,207,54
+    LTEXT           "Client poll mode for framerates < 1 frame/sec",IDC_STATIC_CLIENTPOLL,14,125,194,8
+    LTEXT           "Server push mode for framerates > 1 frame/sec",IDC_STATIC_SERVERPUSH,14,114,194,8
 END
 
 IDD_MOVDET DIALOGEX 0, 0, 417, 268

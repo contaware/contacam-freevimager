@@ -2950,8 +2950,11 @@
 #define IDC_STATIC2270                  2270
 #define IDC_STATIC2271                  2271
 #define IDC_STATIC2272                  2272
+#define IDC_STATIC_IP                   2272
 #define IDC_STATIC2273                  2273
+#define IDC_STATIC_PORT                 2273
 #define IDC_STATIC2274                  2274
+#define IDC_STATIC_DEVICETYPEMODE       2274
 #define IDC_STATIC2275                  2275
 #define IDC_STATIC2276                  2276
 #define IDC_STATIC2277                  2277
@@ -3231,6 +3234,8 @@
 #define IDC_SPIN_DETECTION_MIN_LENGTH   2559
 #define IDC_REF_FONTSIZE                2560
 #define IDC_EDIT_DETECTION_MAX_FRAMES   2560
+#define IDC_STATIC_SERVERPUSH           2561
+#define IDC_STATIC_CLIENTPOLL           2562
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3505,7 +3510,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33283
-#define _APS_NEXT_CONTROL_VALUE         2561
+#define _APS_NEXT_CONTROL_VALUE         2563
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

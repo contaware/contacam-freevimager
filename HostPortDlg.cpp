@@ -29,7 +29,6 @@ CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	m_nPort = DEFAULT_TCP_PORT;
 }
 
-
 void CHostPortDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -38,31 +37,31 @@ void CHostPortDlg::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
-
 BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	//{{AFX_MSG_MAP(CHostPortDlg)
 	ON_CBN_SELCHANGE(IDC_COMBO_HOST, OnSelchangeComboHost)
-	ON_CBN_SELCHANGE(IDC_COMBO_DEVICETYPEMODE, OnSelchangeComboDevicetypemode)
+	ON_CBN_EDITCHANGE(IDC_COMBO_HOST, OnEditchangeComboHost)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 BOOL CHostPortDlg::OnInitDialog() 
 {
-	// Init Combo Box
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	pComboBox->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBox->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBox->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBox->AddString(_T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(_T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBox->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBox->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBox->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	// Init Device Type Mode Combo Box
+	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 
+	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
 
 	// Load Settings
@@ -70,7 +69,7 @@ BOOL CHostPortDlg::OnInitDialog()
 		LoadSettings();
 	
 	// Init
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
 	if (m_HostsHistory.GetSize() <= 0)
 	{
 		m_HostsHistory.InsertAt(0, _T(""));
@@ -79,10 +78,10 @@ BOOL CHostPortDlg::OnInitDialog()
 	}
 	for (int i = 0 ; i < m_HostsHistory.GetSize() ; i++)
 	{
-		// Host
-		pComboBox->AddString(m_HostsHistory[i]);
+		// Add Hosts
+		pComboBoxHost->AddString(m_HostsHistory[i]);
 		
-		// Port and Device Type Mode
+		// Set Port and Device Type Mode of first Host
 		if (i == 0)
 		{
 			// Port
@@ -92,12 +91,12 @@ BOOL CHostPortDlg::OnInitDialog()
 			pEdit->SetWindowText(sPort);
 
 			// Device Type Mode
-			CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 			if (m_DeviceTypeModesHistory[0] >= 0 && (int)m_DeviceTypeModesHistory[0] < pComboBoxDevTypeMode->GetCount())
 				pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[0]);
 		}
 	}
-	pComboBox->SetCurSel(0);
+	pComboBoxHost->SetCurSel(0);			// pComboBoxHost is never empty!
+	EnableDisableCtrls(m_HostsHistory[0]);	// m_HostsHistory is never empty!
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -105,13 +104,13 @@ BOOL CHostPortDlg::OnInitDialog()
 
 void CHostPortDlg::OnOK() 
 {
-	// Update Data
+	// Update m_nDeviceTypeMode necessary by SaveSettings()
 	UpdateData(TRUE);
 
 	// Host
 	CString sText;
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBox->GetWindowText(sText);
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	pComboBoxHost->GetWindowText(sText);
 	m_sHost = sText;
 		
 	// Port
@@ -128,14 +127,64 @@ void CHostPortDlg::OnOK()
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		SaveSettings();
 
+	// This calls UpdateData(TRUE) -> view to vars
 	CDialog::OnOK();
 }
 
+/*
+From: http://msdn.microsoft.com/en-us/library/windows/desktop/aa511459.aspx
+Don't disable group boxes. To indicate that a group of controls doesn't currently
+apply, disable all the controls within the group box, but not the group box itself.
+This approach is more accessible and can be supported consistently by all UI frameworks.
+*/
+void CHostPortDlg::EnableDisableCtrls(CString sHost)
+{
+	// Make lowercase
+	sHost.MakeLower();
+
+	// Disable / Enable
+	CEdit* pEditPort = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+	CStatic* pStaticServerPush = (CStatic*)GetDlgItem(IDC_STATIC_SERVERPUSH);
+	CStatic* pStaticClientPoll = (CStatic*)GetDlgItem(IDC_STATIC_CLIENTPOLL);
+	if (sHost.Find(_T("http://")) >= 0)
+	{
+		pEditPort->EnableWindow(FALSE);
+		pComboBoxDevTypeMode->EnableWindow(FALSE);
+		pStaticServerPush->EnableWindow(FALSE);
+		pStaticClientPoll->EnableWindow(FALSE);
+	}
+	else
+	{
+		pEditPort->EnableWindow(TRUE);
+		pComboBoxDevTypeMode->EnableWindow(TRUE);
+		pStaticServerPush->EnableWindow(TRUE);
+		pStaticClientPoll->EnableWindow(TRUE);
+	}
+}
+
+void CHostPortDlg::OnEditchangeComboHost()
+{
+	// Enable / Disable Controls
+	CString sHost;
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	pComboBoxHost->GetWindowText(sHost);
+	EnableDisableCtrls(sHost);
+}
+
+/*
+According to KB66365
+--------------------
+When an application receives the CBN_SELCHANGE notification message,
+the edit/static portion of the combo box has not been updated.
+To obtain the new selection, send a CB_GETLBTEXT message to the
+combo box control.
+*/
 void CHostPortDlg::OnSelchangeComboHost() 
 {
-	// Port
-	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	int nSel = pComboBox->GetCurSel();
+	// Set Port
+	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	int nSel = pComboBoxHost->GetCurSel();
 	if (nSel >= 0 && nSel < m_PortsHistory.GetSize())
 	{
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
@@ -144,7 +193,7 @@ void CHostPortDlg::OnSelchangeComboHost()
 		pEdit->SetWindowText(sPort);
 	}
 
-	// Device Type Mode
+	// Set Device Type Mode
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	if (nSel >= 0 && nSel < m_DeviceTypeModesHistory.GetSize())
 	{
@@ -152,12 +201,10 @@ void CHostPortDlg::OnSelchangeComboHost()
 			pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[nSel]);
 	}
 
-	UpdateData(TRUE);
-}
-
-void CHostPortDlg::OnSelchangeComboDevicetypemode() 
-{
-	UpdateData(TRUE);
+	// Enable / Disable Controls
+	CString sHost;
+	pComboBoxHost->GetLBText(pComboBoxHost->GetCurSel(), sHost);
+	EnableDisableCtrls(sHost);
 }
 
 void CHostPortDlg::LoadSettings()
