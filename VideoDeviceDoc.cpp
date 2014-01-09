@@ -4448,41 +4448,53 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 void CVideoDeviceDoc::SetDocumentTitle()
 {
-	CString strInfo(_T(""));
-
-	// Name
-	CString sName = GetAssignedDeviceName();
+	// Get name
+	CString sTitle = GetAssignedDeviceName();
 
 	// General info
-	if (m_DocRect.Width() > 0 && 
-		m_DocRect.Height() > 0)
+	CString sWidthHeight;
+	CString sFramerate;
+	CString sPixelFormat;
+	if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
 	{
-		// Set format string
-		CString sFormat = _T("");
+		// Width and Height
+		sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
+
+		// Framerate
+		sFramerate.Format(_T("%0.1ff/s"), m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate);
+
+		// Pixel Format
 		if (m_CaptureBMI.bmiHeader.biCompression != m_ProcessFrameBMI.bmiHeader.biCompression)
-			sFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI) + _T(" -> ");
-		sFormat += CDib::GetCompressionName((LPBITMAPINFO)&m_ProcessFrameBMI);
+			sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI) + _T(" -> ");
+		sPixelFormat += CDib::GetCompressionName((LPBITMAPINFO)&m_ProcessFrameBMI);
 		if (m_bDecodeFramesForPreview)
-			sFormat += _T(" -> RGB32");
-
-		// Name , Size , Frame rate , Pixel format
-		strInfo.Format(
-			_T("%s , %dx%d , %0.1ff/s , %s"),
-			sName,
-			m_DocRect.Width(), 
-			m_DocRect.Height(),
-			m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate,
-			sFormat);
+			sPixelFormat += _T(" -> RGB32");
 	}
-	else
-		strInfo = sName;
 
-	// Update Property Sheet Title
+	// Network info
+	CString sNetworkMode;
+	if (m_pGetFrameNetCom && m_pHttpGetFrameParseProcess)
+	{
+		if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
+			sNetworkMode = ML_STRING(1865, "Server Push Mode");
+		else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
+			sNetworkMode = ML_STRING(1866, "Client Poll Mode");
+	}
+
+	// Update Property Sheet title
 	if (m_pVideoDevicePropertySheet)
 		m_pVideoDevicePropertySheet->UpdateTitle();
 
-	// Set title string
-	CDocument::SetTitle(strInfo);
+	// Set main title
+	if (!sWidthHeight.IsEmpty())
+		sTitle += _T(" , ") + sWidthHeight;
+	if (!sFramerate.IsEmpty())
+		sTitle += _T(" , ") + sFramerate;
+	if (!sPixelFormat.IsEmpty())
+		sTitle += _T(" , ") + sPixelFormat;
+	if (!sNetworkMode.IsEmpty())
+		sTitle += _T(" , ") + sNetworkMode;
+	CDocument::SetTitle(sTitle);
 }
 
 CString CVideoDeviceDoc::GetValidName(CString sName)
@@ -5423,7 +5435,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 
 void CVideoDeviceDoc::InitHttpGetFrameLocations()
 {
-	// Free
+	// Free (always leave first element!)
 	while (m_HttpGetFrameLocations.GetSize() > 1)
 		m_HttpGetFrameLocations.RemoveAt(m_HttpGetFrameLocations.GetUpperBound());
 

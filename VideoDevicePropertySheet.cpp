@@ -62,8 +62,8 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 	{
 		switch(pDoc->m_nNetworkDeviceTypeMode)
 		{
-			case CVideoDeviceDoc::OTHERONE_SP		:
-			case CVideoDeviceDoc::OTHERONE_CP		:
+			case CVideoDeviceDoc::OTHERONE_SP	:
+			case CVideoDeviceDoc::OTHERONE_CP	:
 			{
 				int nHttpGetFrameLocationPos = pDoc->m_nHttpGetFrameLocationPos; // make a local copy because it is updated by another thread
 				if (nHttpGetFrameLocationPos > 0 && nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
