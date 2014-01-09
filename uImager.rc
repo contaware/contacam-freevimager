@@ -2018,7 +2018,7 @@ BEGIN
     LTEXT           "Detection:",IDC_STATIC2544,7,4,36,11,SS_CENTERIMAGE
     LTEXT           "Off",IDC_DETECTION_MODE,46,4,95,11,SS_CENTERIMAGE | SS_SUNKEN
     LTEXT           "Drop detections shorter than",IDC_STATIC,13,127,118,11
-    LTEXT           "second(s)",IDC_STATIC2292,170,127,37,8
+    LTEXT           "seconds",IDC_STATIC2292,170,127,37,8
     LTEXT           "Split detection files longer than",IDC_STATIC,13,140,118,11
     LTEXT           "frames",IDC_STATIC2293,170,140,37,8
 END
