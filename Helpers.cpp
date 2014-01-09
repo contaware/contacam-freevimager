@@ -2066,12 +2066,12 @@ notamd:
     return feature;
 }
 
-LPVOID new16align(unsigned int size)
+LPVOID new16align(SIZE_T size)
 {
 	LPBYTE mem = new BYTE[size+sizeof(LPVOID)+15];
-	LPVOID ptr = (LPVOID)((unsigned int)(mem+sizeof(LPVOID)+15) & ~0x0F);
+	LPVOID ptr = (LPVOID)((SIZE_T)(mem+sizeof(LPVOID)+15) & ~0x0F);
 	((LPVOID*)ptr)[-1] = (LPVOID)mem;
-	ASSERT(((unsigned int)ptr & 0x0F) == 0);
+	ASSERT(((SIZE_T)ptr & 0x0F) == 0);
 	return ptr;
 }
 

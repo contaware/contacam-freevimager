@@ -189,7 +189,7 @@ extern MCIERROR MCIPauseDevice(HWND hWndNotify, int nDeviceID);
 extern MCIERROR MCICloseDevice(HWND hWndNotify, int nDeviceID);
 
 // 16 bytes aligned new / delete
-extern LPVOID new16align(unsigned int size); // size in bytes
+extern LPVOID new16align(SIZE_T size); // size in bytes
 extern void delete16align(LPVOID ptr);
 
 // Get the local NetBIOS computer name
