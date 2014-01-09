@@ -33,7 +33,7 @@ class CPictureView;
 class CPictureChildFrame;
 
 // Default Save As file extension for new files
-#define DEFAULT_SAVEAS_EXT										_T(".png")
+#define DEFAULT_SAVEAS_EXT										_T(".jpg")
 
 // The CJpegThread waits for this amount of time
 // in ms before starting the full sized jpeg load. 
