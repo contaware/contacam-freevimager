@@ -12,7 +12,8 @@
 
 #ifdef VIDEODEVICEDOC
 
-#define FTP_CONNECTION_TIMEOUT_MS		15000U
+// Set a timeout in ms a bit above INTERNET_OPTION_CONNECT_TIMEOUT which usually is 60 seconds
+#define FTP_CONNECTION_TIMEOUT_MS			65000U
 
 // RFC 959
 class CFTPTransfer
@@ -56,8 +57,7 @@ public:
 	BOOL			m_bUseProxy;				// Should a proxy be used
 	CString			m_sProxy;					// The proxy connect string to use if "m_bUseProxy" is TRUE
 	double			m_dBandwidthLimit;			// For BANDWIDTH throttling, the value in KBytes / Second to limit the connection to (disable that with a value of 0.0)
-	DWORD			m_dwStartPos;				// Offset to resume the transfer at   
-	DWORD			m_dwConnectionTimeout;		// The connection timeout to use (in milliseconds)
+	DWORD			m_dwStartPos;				// Offset to resume the transfer at
 
 protected:
 	void UpdatePercentage(DWORD dwTotalBytesDone, DWORD dwFileSize);

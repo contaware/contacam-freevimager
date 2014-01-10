@@ -1821,6 +1821,14 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 			sText = pszResponse;
 		delete [] pszResponse;
 	}
+	else if (dwErrorCode == ERROR_INTERNET_CONNECTION_RESET)
+	{
+		CString sResponse(ML_STRING(1766, "The connection with the server has been reset."));
+		if (sText != _T(""))
+			sText = sText + _T('\n') + sResponse;
+		else
+			sText = sResponse;
+	}
 	else if (dwErrorCode == ERROR_INTERNET_NAME_NOT_RESOLVED)
 	{
 		CString sResponse(ML_STRING(1778, "The server name could not be resolved."));

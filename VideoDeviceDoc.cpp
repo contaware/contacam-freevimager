@@ -2155,7 +2155,6 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		pFTP->m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		pFTP->m_bUseProxy = pConfig->m_bProxy;
 		pFTP->m_sProxy = pConfig->m_sProxy;
-		pFTP->m_dwConnectionTimeout = pConfig->m_dwConnectionTimeout;
 		if (!pConfig->m_sUsername.IsEmpty())
 		{
 			pFTP->m_sUserName = pConfig->m_sUsername;
@@ -4209,7 +4208,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_nPort = 21;
 	m_MovDetFTPUploadConfiguration.m_bPasv = TRUE;
 	m_MovDetFTPUploadConfiguration.m_bBinary = TRUE;
-	m_MovDetFTPUploadConfiguration.m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
 	m_MovDetFTPUploadConfiguration.m_bProxy = FALSE;
 	m_MovDetFTPUploadConfiguration.m_sProxy = _T("");
 	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
@@ -4220,7 +4218,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
 	m_SnapshotFTPUploadConfiguration.m_bPasv = TRUE;
 	m_SnapshotFTPUploadConfiguration.m_bBinary = TRUE;
-	m_SnapshotFTPUploadConfiguration.m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
 	m_SnapshotFTPUploadConfiguration.m_bProxy = FALSE;
 	m_SnapshotFTPUploadConfiguration.m_sProxy = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");

@@ -172,7 +172,6 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		FTP.m_bUsePreconfig = TRUE;	// Should preconfigured settings be used i.e. take proxy settings etc from the control panel
 		FTP.m_bUseProxy = m_FTPUploadConfiguration.m_bProxy;
 		FTP.m_sProxy = m_FTPUploadConfiguration.m_sProxy;
-		FTP.m_dwConnectionTimeout = m_FTPUploadConfiguration.m_dwConnectionTimeout;
 		if (!m_FTPUploadConfiguration.m_sUsername.IsEmpty())
 		{
 			FTP.m_sUserName = m_FTPUploadConfiguration.m_sUsername;

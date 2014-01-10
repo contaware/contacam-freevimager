@@ -5607,6 +5607,7 @@ BEGIN
     IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
+    IDS_STRING1766          "The connection with the server has been reset."
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Double-click to change unit"
     IDS_STRING1769          "Thumbnail Size %i x %i"

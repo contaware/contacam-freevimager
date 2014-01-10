@@ -477,7 +477,6 @@ public:
 		int				m_nPort;
 		BOOL			m_bPasv;
 		BOOL			m_bBinary;
-		DWORD			m_dwConnectionTimeout;
 		BOOL			m_bProxy;
 		CString			m_sProxy;
 		CString			m_sUsername;

@@ -70,7 +70,6 @@ CFTPTransfer::CFTPTransfer(CWorkerThread* pThread)
 	m_bUsePreconfig = TRUE;
 	m_bUseProxy = FALSE;
 	m_dwStartPos = 0;
-	m_dwConnectionTimeout = FTP_CONNECTION_TIMEOUT_MS;
 }
 
 CFTPTransfer::~CFTPTransfer()
@@ -308,7 +307,7 @@ int CFTPTransfer::Transfer()
     // Wait for the thread to return
 	if (m_pThread == NULL)
 	{
-		DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), m_dwConnectionTimeout);
+		DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), FTP_CONNECTION_TIMEOUT_MS);
 		switch (Event)
 		{
 			// Make Connection Thread Terminated
@@ -342,7 +341,7 @@ int CFTPTransfer::Transfer()
 		HANDLE hEventArray[2];
 		hEventArray[0] = m_pThread->GetKillEvent();
 		hEventArray[1] = MakeConnectionThread.GetHandle();
-		DWORD Event = ::WaitForMultipleObjects(2, hEventArray, FALSE, m_dwConnectionTimeout);
+		DWORD Event = ::WaitForMultipleObjects(2, hEventArray, FALSE, FTP_CONNECTION_TIMEOUT_MS);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -748,7 +747,7 @@ BOOL CFTPTransfer::Test()
 	MakeConnectionThread.Start();
 
     // Wait for the thread to return
-	DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), m_dwConnectionTimeout);
+	DWORD Event = ::WaitForSingleObject(MakeConnectionThread.GetHandle(), FTP_CONNECTION_TIMEOUT_MS);
     switch (Event)
 	{
 		// Make Connection Thread Terminated
