@@ -5609,7 +5609,7 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 // sAddress: Must have the IP:Port:FrameLocation:NetworkDeviceTypeMode or
 //           HostName:Port:FrameLocation:NetworkDeviceTypeMode Format
 // Note: FrameLocation is m_HttpGetFrameLocations[0]
-BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress) 
+BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelay/*=0U*/) 
 {
 	// Init Host, Port, FrameLocation and NetworkDeviceTypeMode
 	int i = sAddress.ReverseFind(_T(':'));
@@ -5688,7 +5688,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress)
 	::InterlockedExchange(&m_lCurrentInitUpTime, (LONG)m_dwNextSnapshotUpTime);
 
 	// Connect
-	if (!ConnectGetFrame())
+	if (!ConnectGetFrame(dwConnectDelay))
 	{
 		ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), GetDevicePathName(), GetDeviceName());
 		return FALSE;
@@ -9225,227 +9225,108 @@ delay=10 -> 100 ms
 
 */
 
-BOOL CVideoDeviceDoc::ConnectGetFrame()
+BOOL CVideoDeviceDoc::ConnectGetFrame(DWORD dwConnectDelay/*=0U*/)
 {
-	BOOL res;
-
 	// Check
 	if (!m_pGetFrameNetCom || m_sGetFrameVideoHost == _T(""))
 		return FALSE;
 	
-	// Close and Kill
+	// Init
 	m_pGetFrameNetCom->Close();
 	m_HttpGetFrameThread.Kill();
-
-	// Connect
+	if (m_pHttpGetFrameParseProcess)
+		m_pHttpGetFrameParseProcess->Close();
+	else
+		m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
+	if (!m_pHttpGetFrameParseProcess)
+		return FALSE;
+	m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
 	switch (m_nNetworkDeviceTypeMode)
 	{
 		case OTHERONE_SP :	// Other HTTP device (mjpeg)
 		case OTHERONE_CP :	// Other HTTP device (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				// Format not yet known because there are ambivalent connection strings in m_HttpGetFrameLocations
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATUNKNOWN;
-				m_nHttpGetFrameLocationPos = 0;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			// Format not yet known because there are ambivalent connection strings in m_HttpGetFrameLocations
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATUNKNOWN;
+			m_nHttpGetFrameLocationPos = 0;
 			break;
-		}
+
 		case AXIS_SP :		// Axis Server Push (mjpeg)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			break;
-		}
+
 		case AXIS_CP :		// Axis Client Poll (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
 			break;
-		}
+
 		case PANASONIC_SP :	// Panasonic Server Push (mjpeg)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
-				m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(160, 120));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(192, 144));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(160, 120));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(192, 144));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			break;
-		}
+
 		case PANASONIC_CP :	// Panasonic Client Poll (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
-				m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(160, 120));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(192, 144));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(160, 120));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(192, 144));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(1280, 1024)); // Support models such as BB-HCM515
 			break;
-		}
+
 		case PIXORD_SP :	// Pixord Server Push (mjpeg)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
-				m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(176, 112));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(352, 240));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(176, 112));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(352, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
 			break;
-		}
+
 		case PIXORD_CP :	// Pixord Client Poll (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
-				m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(176, 112));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(352, 240));
-				m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(176, 112));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(352, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(704, 480));
 			break;
-		}
+
 		case EDIMAX_SP :	// Edimax Server Push (mjpeg)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+			m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
+			m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
+			m_pHttpGetFrameParseProcess->m_bSetFramerate = TRUE;
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			break;
-		}
+
 		case EDIMAX_CP :	// Edimax Client Poll (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
-				m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_bQueryProperties = TRUE;
+			m_pHttpGetFrameParseProcess->m_bSetResolution = TRUE;
+			m_pHttpGetFrameParseProcess->m_bSetCompression = TRUE;
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
 			break;
-		}
+
 		case TPLINK_SP :	// TP-Link Server Push (mjpeg)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
 			break;
-		}
+
 		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
-		{
-			if (m_pHttpGetFrameParseProcess)
-				m_pHttpGetFrameParseProcess->Close();
-			else
-				m_pHttpGetFrameParseProcess = (CHttpGetFrameParseProcess*)new CHttpGetFrameParseProcess(this);
-			if (m_pHttpGetFrameParseProcess)
-			{
-				m_pHttpGetFrameParseProcess->m_bTryConnecting = TRUE;
-				m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
-			}
-			m_HttpGetFrameThread.Start();
-			res = m_HttpGetFrameThread.SetEventConnect();
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
 			break;
-		}
+
 		default :
-		{
 			ASSERT(FALSE);
-			res = FALSE;
-			break;
-		}
+			return FALSE;
 	}
 
-	return res;
+	// Start thread and connect
+	m_HttpGetFrameThread.Start();
+	return m_HttpGetFrameThread.SetEventConnect(_T(""), dwConnectDelay);
 }
 
 BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest)

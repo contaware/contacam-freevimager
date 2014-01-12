@@ -144,6 +144,7 @@ CUImagerApp::CUImagerApp()
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
+	m_dwAutostartDelayMs = 0U;
 	m_bUseCustomTempFolder = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
@@ -2940,6 +2941,8 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 	}
 
 	// Start devices
+	DWORD dwInitTickCount = ::GetTickCount();
+	DWORD dwOpenNetworkDeviceCount = 0U;
 	for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
 		sKey.Format(_T("%02u"), i);
@@ -2951,8 +2954,17 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 			{
 				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
 				{
-					if (!pDoc->OpenGetVideo(sDevRegistry))
+					DWORD dwCurrentStartupDelay = ::GetTickCount() - dwInitTickCount;
+					DWORD dwWantedNetworkDeviceStartupDelay = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
+					DWORD dwConnectDelay;
+					if (dwWantedNetworkDeviceStartupDelay > dwCurrentStartupDelay)
+						dwConnectDelay = dwWantedNetworkDeviceStartupDelay - dwCurrentStartupDelay;
+					else
+						dwConnectDelay = 0U;
+					if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelay))
 						pDoc->CloseDocument();
+					else
+						dwOpenNetworkDeviceCount++;
 				}
 				else
 				{
@@ -4341,6 +4353,9 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 
 	// Priority to IPv6
 	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
+
+	// Device Autostart delay
+	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), 0);
 
 	// Use Custom Temp Folder
 	m_bUseCustomTempFolder = (BOOL)GetProfileInt(sSection, _T("UseCustomTempFolder"), FALSE);

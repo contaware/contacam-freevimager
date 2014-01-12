@@ -2,7 +2,7 @@ TRANSLATIONS HISTORY
 
 4.9.5 (xxx xth 2014)
 
-- ...
+- Added strings 1766, 1789
 
 4.9.0 (November 19th 2013)
 
@@ -16,7 +16,7 @@ TRANSLATIONS HISTORY
 
 4.5.0 (May 14th 2013)
 
-- Added strings 1873
+- Added string 1873
 - Changed 1863 string from Full Rate -> Fast Rate
 - Updated low disk note in Assistant dialog
 

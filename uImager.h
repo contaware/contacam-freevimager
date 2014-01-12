@@ -778,6 +778,9 @@ public:
 	// Priority to IPv6
 	volatile BOOL m_bIPv6;
 
+	// Device Autostart delay
+	volatile DWORD m_dwAutostartDelayMs;
+
 	// Use Custom Temp Folder
 	volatile BOOL m_bUseCustomTempFolder;
 

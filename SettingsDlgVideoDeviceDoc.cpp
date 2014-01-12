@@ -69,6 +69,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
+	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
 	m_bUseCustomTempFolder = ((CUImagerApp*)::AfxGetApp())->m_bUseCustomTempFolder;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
@@ -120,6 +121,8 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
+	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
+	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
 	DDX_Check(pDX, IDC_CHECK_CUSTOMTEMP, m_bUseCustomTempFolder);
 	//}}AFX_DATA_MAP
 }
@@ -219,7 +222,9 @@ void CSettingsDlgVideoDeviceDoc::OnButtonSetall()
 
 void CSettingsDlgVideoDeviceDoc::OnOK() 
 {
-	CDialog::OnOK(); // It calls UpdateData(TRUE) for us
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
 
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 
@@ -509,6 +514,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Priority to IPv6
 	pApp->m_bIPv6 = m_bIPv6;
 
+	// Device Autostart delay
+	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
+
 	// Use Custom Temp Folder
 	pApp->m_bUseCustomTempFolder = m_bUseCustomTempFolder;
 
@@ -574,6 +582,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											_T("IPv6"),
 											m_bIPv6);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
+											_T("AutostartDelayMs"),
+											1000 * m_nAutostartDelay);
+			pApp->WriteProfileInt(			_T("GeneralApp"),
 											_T("UseCustomTempFolder"),
 											m_bUseCustomTempFolder);
 			pApp->WriteProfileInt(			_T("GeneralApp"),
@@ -634,6 +645,10 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 											m_bIPv6,
 											sTempFileName);
 			::WriteProfileIniInt(			_T("GeneralApp"),
+											_T("AutostartDelayMs"),
+											1000 * m_nAutostartDelay,
+											sTempFileName);
+			::WriteProfileIniInt(			_T("GeneralApp"),
 											_T("UseCustomTempFolder"),
 											m_bUseCustomTempFolder,
 											sTempFileName);
@@ -673,6 +688,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
 	EndWaitCursor();
+
+	EndDialog(IDOK);
 }
 
 BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog() 

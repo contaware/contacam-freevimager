@@ -768,7 +768,7 @@ public:
 
 	// Open Video From Network
 	BOOL OpenGetVideo(CHostPortDlg* pDlg);
-	BOOL OpenGetVideo(CString sAddress);
+	BOOL OpenGetVideo(CString sAddress, DWORD dwConnectDelay = 0U);
 
 	// Connect to the chosen Networking Type and Mode
 	typedef enum {
@@ -787,7 +787,7 @@ public:
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;
-	BOOL ConnectGetFrame();
+	BOOL ConnectGetFrame(DWORD dwConnectDelay = 0U);
 
 	// Dialogs
 	void CaptureAssistant();

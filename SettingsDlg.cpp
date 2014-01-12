@@ -163,7 +163,9 @@ void CSettingsDlg::OnButtonSetall()
 
 void CSettingsDlg::OnOK() 
 {
-	CDialog::OnOK(); // It calls UpdateData(TRUE) for us
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
 
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 
@@ -473,6 +475,8 @@ void CSettingsDlg::OnOK()
 	}
 
 	EndWaitCursor();
+
+	EndDialog(IDOK);
 }
 
 BOOL CSettingsDlg::OnInitDialog() 
