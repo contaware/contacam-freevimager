@@ -96,9 +96,9 @@ void CAviInfoDlg::UpdateDisplay()
 		// File Size
 		ULARGE_INTEGER FileSize = pDoc->m_pAVIPlay->GetFileSize();
 		if (FileSize.QuadPart >= (1024*1024*1024))
-			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.2f ") + ML_STRING(1826, "GB")), (double)(LONGLONG)FileSize.QuadPart / 1073741824.0);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.2f ") + ML_STRING(1826, "GB")), (double)FileSize.QuadPart / 1073741824.0);
 		else if (FileSize.QuadPart >= (1024*1024))
-			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.1f ") + ML_STRING(1825, "MB")), (double)(LONGLONG)FileSize.QuadPart / 1048576.0);
+			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%0.1f ") + ML_STRING(1825, "MB")), (double)FileSize.QuadPart / 1048576.0);
 		else if (FileSize.QuadPart >= 1024)
 			t.Format(ML_STRING(1824, "File Size: ") + CString(_T("%d ") + ML_STRING(1243, "KB")), (int)FileSize.QuadPart >> 10);
 		else
