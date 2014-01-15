@@ -47,10 +47,11 @@ extern "C"
 #define ID_TIMER_ONESEC_POLL						13
 #define ID_TIMER_ASSISTANTDLG						14
 #endif
+#define ID_TIMER_ABOUTDLG							15
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms
-#define CLOSING_CHECK_INTERVAL_TIMER_MS				100U	// ms
+#define CLOSING_CHECK_INTERVAL_TIMER_MS				300U	// ms
 #define AVIPLAYSLIDER_TIMER_MS						300U	// ms
 #ifdef VIDEODEVICEDOC
 #define ONESEC_POLL_TIMER_MS						1000U	// ms
@@ -69,7 +70,7 @@ extern "C"
 #define SESSIONCHANGE_WAIT_SEC						5		// sec
 
 // Closing wait time
-#define MAX_CLOSE_CHILDFRAME_WAITTIME				15000U	// ms
+#define MAX_CLOSE_CHILDFRAME_WAITTIME				60000U	// ms
 
 // Forward Declarations
 class CUImagerDoc;

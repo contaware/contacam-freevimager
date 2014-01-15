@@ -37,8 +37,8 @@ class CMovementDetectionPage;
 // General Settings
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
-#define PROCESS_MAX_FRAMETIME				13000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define STARTUP_SETTLE_TIME_SEC				3			// sec
+#define PROCESS_MAX_FRAMETIME				15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
+#define STARTUP_SETTLE_TIME_SEC				5			// sec
 #define DEFAULT_FRAMERATE					10.0		// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
@@ -65,7 +65,7 @@ class CMovementDetectionPage;
 #define THUMBMESSAGE_FONTSIZE				8
 
 // Process Frame Stop Engine
-#define PROCESSFRAME_MAX_RETRY_TIME			3500		// ms
+#define PROCESSFRAME_MAX_RETRY_TIME			5000		// ms
 #define PROCESSFRAME_ASSISTANT				0x01
 #define PROCESSFRAME_DXFORMATDIALOG			0x02
 #define PROCESSFRAME_DVFORMATDIALOG			0x04
@@ -77,8 +77,8 @@ class CMovementDetectionPage;
 // Watch Dog and Draw
 #define WATCHDOG_LONGCHECK_TIME				1000U		// ms
 #define WATCHDOG_SHORTCHECK_TIME			300U		// ms
-#define WATCHDOG_THRESHOLD					15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define HTTPWATCHDOG_RETRY_TIMEOUT			35000U		// ms
+#define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
+#define HTTPWATCHDOG_RETRY_TIMEOUT			60000U		// ms
 #define DXDRAW_REINIT_TIMEOUT				5000U		// ms
 #define DXDRAW_BKG_COLOR					RGB(0,0,0)	// do not change this because dxdraw background is cleared to 0
 #define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
@@ -176,7 +176,7 @@ class CMovementDetectionPage;
 #define DEFAULT_HTTP_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
 #define DEFAULT_HTTP_VIDEO_SIZE_CX			640
 #define DEFAULT_HTTP_VIDEO_SIZE_CY			480
-#define HTTPGETFRAME_CONNECTION_STARTDELAY	1000U		// ms
+#define HTTPGETFRAME_RECONNECTION_DELAY		5000U		// ms
 #define HTTPGETFRAME_MAXCOUNT_ALARM1		30
 #define HTTPGETFRAME_MAXCOUNT_ALARM2		40
 #define HTTPGETFRAME_MAXCOUNT_ALARM3		50
@@ -185,7 +185,7 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MIN_DELAY_ALARM2		400U								// ms
 #define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U								// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		20			// Connection timeout in sec
+#define HTTPGETFRAME_CONNECTION_TIMEOUT		30			// Connection timeout in sec
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc

@@ -537,6 +537,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// (inits OSs flags and processor instruction sets flags)
 		::InitHelpers();
 
+		// Enable the low-fragmenation heap (LFH) for XP and Windows 2003
+		// (available for release build only)
+#ifndef _DEBUG
+		if (!g_bWinVistaOrHigher)
+			::EnableLFHeap();
+#endif
+
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
 
@@ -1048,58 +1055,99 @@ BOOL CAboutDlg::OnInitDialog()
 	int nInstalledPhysRamMB = ::GetTotPhysMemMB(TRUE);
 	int nAvailablePhysRamMB = ::GetTotPhysMemMB(FALSE);
 	CString sPhysMemMB;
-	if (nInstalledPhysRamMB >= (nAvailablePhysRamMB + 16)) // Allow some margin
-		sPhysMemMB.Format(_T("RAM  %d MB (usable %d MB)"), nInstalledPhysRamMB, nAvailablePhysRamMB);
+	if (nInstalledPhysRamMB >= (nAvailablePhysRamMB + 16)) // allow some margin
+		sPhysMemMB.Format(_T("RAM  %d ") + ML_STRING(1825, "MB") + _T(" (") + ML_STRING(1820, "usable") + _T(" %d ") + ML_STRING(1825, "MB") + _T(")"), nInstalledPhysRamMB, nAvailablePhysRamMB);
 	else
-		sPhysMemMB.Format(_T("RAM  %d MB"), nInstalledPhysRamMB);
+		sPhysMemMB.Format(_T("RAM  %d ") + ML_STRING(1825, "MB"), nInstalledPhysRamMB);
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
 	// Memory Stats
-	int nRegions = 0;
-	int nFreeMB = 0;
-	int nReservedMB = 0;
-	int nCommittedMB = 0;
-	double dFragmentation = 0.0;
-	::GetMemoryStats(&nRegions, &nFreeMB, &nReservedMB, &nCommittedMB, &dFragmentation);
-	CString sMemStats;
-	sMemStats.Format(ML_STRING(1821, "used %d MB, reserved %d MB, frag %0.1f%%"),
-						nCommittedMB, nReservedMB, dFragmentation);
-	CEdit* pMemStats = (CEdit*)GetDlgItem(IDC_MEMSTATS);
-	pMemStats->SetWindowText(sMemStats);
+	DisplayMemStats();
 
 	// Clickable Links?
 	if (m_bClickableLinks)
 		m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
 
 	// Compilation Time & Date
-	CString s;
-#ifdef _DEBUG
-	s =	CString(_T("(")) +
-		CString(_T(__TIME__)) +
-		CString(_T(" , ")) +
-		CString(_T(__DATE__)) +
-		CString(_T(")"));
-#else
-	s =	CString(_T("(")) +
-		CString(_T(__DATE__)) +
-		CString(_T(")"));
-#endif
-#ifdef _DEBUG
-	s += ML_STRING(1172, "    Unicode");
-#else
-	s += ML_STRING(1172, "    Unicode Support");
-#endif
-	SetDlgItemText(IDC_VERSION, s);
+	CString sCompilationTime;
+	sCompilationTime =	CString(_T("(")) +
+						CString(_T(__TIME__)) +
+						CString(_T("  ")) +
+						CString(_T(__DATE__)) +
+						CString(_T(")"));
+	SetDlgItemText(IDC_VERSION, sCompilationTime);
 	
+	// Set Timer
+	SetTimer(ID_TIMER_ABOUTDLG, ABOUTDLG_TIMER_MS, NULL);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+void CAboutDlg::DisplayMemStats()
+{
+	// Get virtual memory stats
+	int nCommittedMB = 0;
+	double dFragmentation = 0.0;
+	::GetMemoryStats(NULL, NULL, NULL, &nCommittedMB, &dFragmentation);
+	CString sCommittedSize;
+	sCommittedSize.Format(_T("%d ") + ML_STRING(1825, "MB"), nCommittedMB);
+	CString sFragmentation;
+	sFragmentation.Format(_T("%d %%"), Round(dFragmentation));
+
+	// Get heap stats
+	SIZE_T UsedHeapBytes = 0;
+	int nCRTHeapType = 0;
+	::GetHeapStats(&UsedHeapBytes, NULL, &nCRTHeapType);
+	CString sHeapType;
+	switch (nCRTHeapType)
+	{
+		case 0 :	sHeapType = _T("regular heap"); break;
+		case 1 :	sHeapType = _T("look-asides heap"); break;
+		case 2 :	sHeapType = _T("LFH heap"); break;
+		default :	sHeapType = _T("unknown heap"); break;
+	}
+	CString sUsedHeapSize;
+	if (UsedHeapBytes >= (1024*1024))
+		sUsedHeapSize.Format(_T("%Iu ") + ML_STRING(1825, "MB"), UsedHeapBytes >> 20);
+	else
+		sUsedHeapSize.Format(_T("%Iu ") + ML_STRING(1243, "KB"), UsedHeapBytes >> 10);
+
+	// Update text on dialog if necessary
+	CString sCurrentText, sNewTextStats;
+	sNewTextStats.Format(ML_STRING(1821, "used %s (%s %s), frag. %s"),
+						sCommittedSize, sHeapType, sUsedHeapSize, sFragmentation);
+	CEdit* pMemStats = (CEdit*)GetDlgItem(IDC_MEMSTATS);
+	if (pMemStats)
+	{
+		pMemStats->GetWindowText(sCurrentText);
+		if (sNewTextStats != sCurrentText)
+			pMemStats->SetWindowText(sNewTextStats);
+	}
+}
+
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
+	ON_WM_TIMER()
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+void CAboutDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	DisplayMemStats();
+	CDialog::OnTimer(nIDEvent);
+}
+
+void CAboutDlg::OnDestroy()
+{
+	// Kill timer
+	KillTimer(ID_TIMER_ABOUTDLG);
+
+	// Base class
+	CDialog::OnDestroy();
+}
 
 // App command to run the dialog
 void CUImagerApp::OnAppAbout()
@@ -2766,11 +2814,6 @@ int CUImagerApp::ExitInstance()
 	}
 
 	TRACE(_T("*** OPENSSL LEAKS 16 + 20 BYTES + SOMETIMES MORE, IT'S NORMAL ***\n"));
-#endif
-
-	// Trace memory (before EndTraceLogFile()!)
-#if defined(_DEBUG) || defined(TRACELOGFILE)
-	::GetMemoryStats();
 #endif
 
 	// Clean-Up Trace Log File

@@ -10795,7 +10795,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				pNetCom->Read();
 
 				// Retry start connection with delay
-				m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), HTTPGETFRAME_CONNECTION_STARTDELAY);
+				m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), HTTPGETFRAME_RECONNECTION_DELAY);
 			}
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)

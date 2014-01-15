@@ -2196,6 +2196,76 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pFragmentation) *pFragmentation = dFragmentation;
 }
 
+void GetHeapStats(	SIZE_T* pTotalUsedBytes/*=NULL*/,
+					int* pDefaultHeapType/*=NULL*/,
+					int* pCRTHeapType/*=NULL*/)
+{
+	// Get all the heaps in the process
+	HANDLE heaps[100];
+	DWORD c = GetProcessHeaps(100, heaps);
+	
+	// Get the default heap and the CRT heap
+	HANDLE default_heap = GetProcessHeap();
+	HANDLE crt_heap = (HANDLE)_get_heap_handle();
+
+	// Loop through all heaps
+	SIZE_T Size = 0U;
+	for (unsigned int i = 0 ; i < c ; i++)
+	{
+		// Query the heap attributes
+		ULONG heap_info = 0;
+		SIZE_T ret_size = 0;
+		if (HeapQueryInformation(heaps[i], HeapCompatibilityInformation,
+								&heap_info, sizeof(heap_info), &ret_size))
+		{
+			
+
+			// Heap types
+			if (heaps[i] == default_heap && pDefaultHeapType)
+				*pDefaultHeapType = heap_info;
+			if (heaps[i] == crt_heap && pCRTHeapType)
+				*pCRTHeapType = heap_info;
+
+			// Walk the heap and count each allocated block inside it
+			if (pTotalUsedBytes)
+			{
+				HeapLock(heaps[i]);
+				PROCESS_HEAP_ENTRY entry;
+				memset(&entry, 0, sizeof(entry));
+				while (HeapWalk(heaps[i], &entry))
+				{
+					if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+						Size += entry.cbData;
+				}
+				HeapUnlock(heaps[i]);
+			}
+		}
+	}
+
+	if (pTotalUsedBytes) *pTotalUsedBytes = Size;
+}
+
+BOOL EnableLFHeap()
+{
+	// Enable the low-fragmenation heap (LFH) for XP and Windows 2003.
+	// Starting with Windows Vista the LFH is enabled by default for
+	// the default heap and starting with Visual Studio 2010 it is
+	// enable by default for the CRT heap
+	ULONG HeapInformation = 2;	// LFH heap
+	BOOL bResDefaultHeap = HeapSetInformation(GetProcessHeap(),
+								HeapCompatibilityInformation,
+								&HeapInformation,
+								sizeof(HeapInformation));
+
+	HeapInformation = 2;		// LFH heap
+	BOOL bResCRTHeap = HeapSetInformation((HANDLE)_get_heap_handle(),
+								HeapCompatibilityInformation,
+								&HeapInformation,
+								sizeof(HeapInformation));
+
+	return (bResDefaultHeap && bResCRTHeap);
+}
+
 ULONGLONG GetDiskSize(LPCTSTR lpszPath)
 {
 	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on

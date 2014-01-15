@@ -503,8 +503,8 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	if (!pDoc->m_pDxDraw->IsInit()										||
 		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-		pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
-		pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()	||				
+		pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()				||
+		pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()			||				
 		IsDxDrawCompressionDifferent(pDib, bVideoView))
 	{
 		m_dwDxDrawUpTime = dwCurrentUpTime;
