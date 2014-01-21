@@ -315,8 +315,22 @@ extern CString FromUTF8(const unsigned char* pUtf8, int nUtf8Len);
 // returns the Utf8 string size in bytes (NULL termination not included)
 extern int ToUTF8(const CString& s, LPBYTE* ppUtf8);
 
-// Get uuid
-extern CString GetUuidString();
+/*
+GUID is Microsoft's UUID, GUID and UUID differ only when exchanged
+in binary form between machines with different endianness:
+
+Bytes Name   Endianness  Endianness
+             GUID        RFC 4122
+----- -----  ----------  ----------
+4     Data1  Native      Big
+2     Data2  Native      Big
+2     Data3  Native      Big
+8     Data4  Big         Big
+
+Note: 'Native' is Little Endian on Microsoft platforms
+*/
+extern CString UuidToString(const UUID* pUuid); // uuid/guid struct to string
+extern CString GetUuidString(); // generate a uuid/guid string
 
 // Natural order string comparision function
 extern int __cdecl CompareNatural(CString * pstr1, CString * pstr2);

@@ -763,26 +763,23 @@ void CVideoAviDoc::CPlayAudioFileThread::PlaySyncAudioFromVideo()
 void CVideoAviDoc::CPlayAudioFileThread::AudioOutDestinationDialog()
 {
 	CAudioOutDestinationDlg dlg(m_pDoc->GetView(), m_pDoc->m_dwPlayAudioDeviceID);
-	if (dlg.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK && dlg.m_uiDeviceID != m_pDoc->m_dwPlayAudioDeviceID)
 	{
-		if (dlg.m_uiDeviceID != m_pDoc->m_dwPlayAudioDeviceID)
+		m_pDoc->StopAVI();
+		if (m_pDoc->m_pOutVolDlg)
 		{
-			SetDeviceID(dlg.m_uiDeviceID);
-			m_pDoc->StopAVI();
-			if (m_pDoc->m_pOutVolDlg)
-			{
-				// m_pOutVolDlg pointer is set to NULL
-				// from the dialog class (selfdeletion)
-				m_pDoc->m_pOutVolDlg->Close();
-			}
-			m_pDoc->m_PlayAudioFileThread.WaitDone_Blocking();
-			CloseOutAudio();
-			if (m_pDoc && m_pDoc->m_pAVIPlay)
-			{
-				CAVIPlay::CAVIAudioStream* pAudioStream = m_pDoc->m_pAVIPlay->GetAudioStream(m_pDoc->m_nActiveAudioStream);
-				if (pAudioStream)
-					OpenOutAudio(pAudioStream->GetFormat(false));
-			}
+			// m_pOutVolDlg pointer is set to NULL
+			// from the dialog class (selfdeletion)
+			m_pDoc->m_pOutVolDlg->Close();
+		}
+		m_pDoc->m_PlayAudioFileThread.WaitDone_Blocking();
+		CloseOutAudio();
+		m_pDoc->m_dwPlayAudioDeviceID = dlg.m_uiDeviceID;
+		if (m_pDoc && m_pDoc->m_pAVIPlay)
+		{
+			CAVIPlay::CAVIAudioStream* pAudioStream = m_pDoc->m_pAVIPlay->GetAudioStream(m_pDoc->m_nActiveAudioStream);
+			if (pAudioStream)
+				OpenOutAudio(pAudioStream->GetFormat(false));
 		}
 	}
 }
@@ -801,14 +798,6 @@ BOOL CVideoAviDoc::CPlayAudioFileThread::OpenOutAudio(LPWAVEFORMATEX pWaveFormat
 	{
 		TRACE(_T("No Sound Output Device.\n"));
 		return FALSE;
-	}
-
-	// Test for Audio Out availability
-	res = ::waveOutGetDevCaps(0, &m_WaveOutDevCaps, sizeof(WAVEOUTCAPS));
-	if (res != MMSYSERR_NOERROR)
-	{
-	   ::AfxMessageBox(ML_STRING(1356, "Sound Output Cannot Determine Card Capabilities!"));
-	   return FALSE;
 	}
 
 	// Check Wave Format Pointer
@@ -836,7 +825,7 @@ BOOL CVideoAviDoc::CPlayAudioFileThread::OpenOutAudio(LPWAVEFORMATEX pWaveFormat
 	}
 
 	// Open First Output Device 
-	res = ::waveOutOpen(&m_hWaveOut, GetDeviceID(), (pUncompressedWaveFormat != NULL) ? pUncompressedWaveFormat : m_pWaveFormat, (DWORD)m_hWaveOutEvent, NULL, CALLBACK_EVENT); 
+	res = ::waveOutOpen(&m_hWaveOut, m_pDoc->m_dwPlayAudioDeviceID, (pUncompressedWaveFormat != NULL) ? pUncompressedWaveFormat : m_pWaveFormat, (DWORD)m_hWaveOutEvent, NULL, CALLBACK_EVENT); 
 	if (res != MMSYSERR_NOERROR)
 	{
 		if (pUncompressedWaveFormat)
@@ -2250,7 +2239,7 @@ CVideoAviDoc::CVideoAviDoc()
 	else
 	{
 		m_bTimePositionShow = FALSE;
-		m_dwPlayAudioDeviceID = 0;
+		m_dwPlayAudioDeviceID = 0U;
 		m_dwVideoCompressorFourCC = FCC('MJPG');
 		m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
 		m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE;
@@ -2414,16 +2403,16 @@ void CVideoAviDoc::LoadSettings()
 
 	// Doc settings
 	sSection = _T("VideoAviDoc");
-	m_bTimePositionShow = (int) pApp->GetProfileInt(sSection, _T("TimePositionShow"), FALSE);
-	m_bUseDxDraw = (int) pApp->GetProfileInt(sSection, _T("UseDxDraw"), TRUE);
-	m_bForceRgb = (int) pApp->GetProfileInt(sSection, _T("ForceRgb"), TRUE);
-	m_dwPlayAudioDeviceID = (int) pApp->GetProfileInt(sSection, _T("AudioPlayDeviceID"), 0);
+	m_bTimePositionShow = (BOOL) pApp->GetProfileInt(sSection, _T("TimePositionShow"), FALSE);
+	m_bUseDxDraw = (BOOL) pApp->GetProfileInt(sSection, _T("UseDxDraw"), TRUE);
+	m_bForceRgb = (BOOL) pApp->GetProfileInt(sSection, _T("ForceRgb"), TRUE);
+	m_dwPlayAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioPlayDeviceID"), 0);
 	
-	m_dwVideoCompressorFourCC = (DWORD)pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), FCC('MJPG'));
-	m_fVideoCompressorQuality = (float)pApp->GetProfileInt(sSection, _T("VideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_nVideoCompressorKeyframesRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_nVideoCompressorDataRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
-	m_nVideoCompressorQualityBitrate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorQualityBitrate"), 0);
+	m_dwVideoCompressorFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), FCC('MJPG'));
+	m_fVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("VideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
+	m_nVideoCompressorKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
+	m_nVideoCompressorDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
+	m_nVideoCompressorQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorQualityBitrate"), 0);
 
 	if (m_pAudioCompressorWaveFormat)
 		delete [] m_pAudioCompressorWaveFormat;
@@ -2448,10 +2437,10 @@ void CVideoAviDoc::LoadSettings()
 
 	// View settings
 	sSection = _T("VideoAviView");
-	m_PrevUserZoomRect.left   = (int)pApp->GetProfileInt(sSection, _T("UserZoomRectLeft"), 0);
-	m_PrevUserZoomRect.top    = (int)pApp->GetProfileInt(sSection, _T("UserZoomRectTop"), 0);
-	m_PrevUserZoomRect.right  = (int)pApp->GetProfileInt(sSection, _T("UserZoomRectRight"), 0);
-	m_PrevUserZoomRect.bottom = (int)pApp->GetProfileInt(sSection, _T("UserZoomRectBottom"), 0);
+	m_PrevUserZoomRect.left   = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectLeft"), 0);
+	m_PrevUserZoomRect.top    = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectTop"), 0);
+	m_PrevUserZoomRect.right  = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectRight"), 0);
+	m_PrevUserZoomRect.bottom = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectBottom"), 0);
 }
 
 void CVideoAviDoc::SaveSettings()

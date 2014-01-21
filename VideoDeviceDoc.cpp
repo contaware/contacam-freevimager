@@ -2240,13 +2240,12 @@ void CVideoDeviceDoc::CCaptureAudioThread::AudioInSourceDialog()
 		if (m_pDoc->m_pAVRec)
 			m_pDoc->CaptureRecord();
 
-		// Set new ID, Stop and Restart Capture Audio Thread
+		// Set new ID
+		if (m_pDoc->m_bCaptureAudio)
+			Kill();
 		m_pDoc->m_dwCaptureAudioDeviceID = dlg.m_uiDeviceID;
 		if (m_pDoc->m_bCaptureAudio)
-		{
-			Kill();
 			Start();
-		}
 
 		// Restart Save Frame List Thread
 		m_pDoc->m_SaveFrameListThread.Start();
@@ -2265,15 +2264,20 @@ void CVideoDeviceDoc::CCaptureAudioThread::WaveInitFormat(WORD wCh, DWORD dwSamp
 	pWaveFormat->cbSize = 0;
 }
 
-int CVideoDeviceDoc::CCaptureAudioThread::Work() 
+// return
+// 0:	exit thread
+// -1:	error
+int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 {
-	// Check
-	if (!m_pDoc)
-		return 0;
+	// nLoopState
+	// 1:	ok
+	// 0:	exit thread
+	// -1:	error
+	int nLoopState = 1;
 
 	// Open Audio
 	if (!OpenInAudio())
-		return 0;
+		return -1; // error
 
 	// Start Buffering
 	CUserBuf UserBuf;
@@ -2285,7 +2289,6 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 	}
 	::LeaveCriticalSection(&m_csAudioList);
 	m_uiWaveInBufPos = 0;
-	BOOL bExit = FALSE;
 	int i;
 	for (i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
 	{
@@ -2294,19 +2297,19 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 		m_pUncompressedBuf[i] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
 		if (!DataInAudio())
 		{
-			bExit = TRUE;
+			nLoopState = -1; // error
 			break;
 		}
 	}
 
 	// Samples loop
-	while (!bExit)
+	while (nLoopState == 1)
 	{
 		DWORD Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, INFINITE);
 		switch (Event)
 		{
 			// Shutdown Event
-			case WAIT_OBJECT_0 :		bExit = TRUE;
+			case WAIT_OBJECT_0 :		nLoopState = 0; // exit thread
 										break;
 
 			// Wave In Event
@@ -2331,7 +2334,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 												m_pUncompressedBuf[m_uiWaveInBufPos] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
 												if (!DataInAudio())
 												{
-													bExit = TRUE;
+													nLoopState = -1; // error
 													break;
 												}
 											}
@@ -2341,7 +2344,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 										break;
 
 			// Default
-			default :					bExit = TRUE;
+			default :					nLoopState = -1; // error
 										break;
 		}
 	}
@@ -2354,6 +2357,23 @@ int CVideoDeviceDoc::CCaptureAudioThread::Work()
 		memset(&m_WaveHeader[i], 0, sizeof(WAVEHDR));
 	}
 	CloseInAudio();
+
+	return nLoopState;
+}
+
+int CVideoDeviceDoc::CCaptureAudioThread::Work() 
+{
+	// Check
+	if (!m_pDoc)
+		return 0;
+
+	// Loop
+	while (Loop() != 0)
+	{
+		// On error try reconnecting after AUDIO_RECONNECTION_DELAY ms of wait time
+		if (::WaitForSingleObject(m_hKillEvent, AUDIO_RECONNECTION_DELAY) == WAIT_OBJECT_0)
+			break; // exit thread
+	}
 
 	return 0;
 }
@@ -2371,27 +2391,14 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 	UINT num = ::waveInGetNumDevs();
 	if (num == 0)
 	{
-		::AfxMessageBox(ML_STRING(1354, "No Sound Input Device."));
+		TRACE(_T("No Sound Input Device.\n"));
 		return FALSE;
-	}
-
-	// If a WebCam with Audio has been removed device ID my not exist
-	if (m_pDoc->m_dwCaptureAudioDeviceID > (num - 1))
-		m_pDoc->m_dwCaptureAudioDeviceID = 0;
-
-	// Test for Audio In availability
-	if (::waveInGetDevCaps(	m_pDoc->m_dwCaptureAudioDeviceID,
-							&m_WaveInDevCaps,
-							sizeof(WAVEINCAPS)) != MMSYSERR_NOERROR)
-	{
-	   ::AfxMessageBox(ML_STRING(1355, "Sound Input Cannot Determine Card Capabilities!"));
-	   return FALSE;
 	}
 
 	// Calculate The Source (=Uncompressed) Buffer Size
 	int nSamplesPerSec = m_pSrcWaveFormat->nSamplesPerSec;
 	int nBlockAlign = m_pSrcWaveFormat->nBlockAlign;
-	if (nSamplesPerSec <= 11025) 
+	if (nSamplesPerSec <= 11025)
 		m_dwUncompressedBufSize = 1 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
 	else if (nSamplesPerSec <= 22050)
 		m_dwUncompressedBufSize = 2 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign;
@@ -2431,7 +2438,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 						CALLBACK_EVENT) != MMSYSERR_NOERROR)
 	{
 		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
-        ::AfxMessageBox(ML_STRING(1459, "Sound Input Cannot Open Device!"));
+        TRACE(_T("Sound Input Cannot Open Device!\n"));
 	    return FALSE;
 	}
 	else
@@ -4751,7 +4758,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 											pApp->GetProfileInt(sSection, _T("SnapshotStopMin"), t.GetMinute()),
 											pApp->GetProfileInt(sSection, _T("SnapshotStopSec"), t.GetSecond()));
 	m_bCaptureAudio = (BOOL) pApp->GetProfileInt(sSection, _T("CaptureAudio"), FALSE);
-	m_dwCaptureAudioDeviceID = (int) pApp->GetProfileInt(sSection, _T("AudioCaptureDeviceID"), 0);
+	m_dwCaptureAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioCaptureDeviceID"), 0);
 	m_nDeviceInputId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceInputID"), -1);
 	m_nDeviceFormatId = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatID"), -1);
 	m_nDeviceFormatWidth = (int) pApp->GetProfileInt(sSection, _T("VideoCaptureDeviceFormatWidth"), 0);
@@ -4813,7 +4820,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 												pApp->GetProfileInt(sSection, _T("DetectionStopMin"), t.GetMinute()),
 												pApp->GetProfileInt(sSection, _T("DetectionStopSec"), t.GetSecond()));
 	m_bShowFrameTime = (BOOL) pApp->GetProfileInt(sSection, _T("ShowFrameTime"), TRUE);
-	m_nRefFontSize = pApp->GetProfileInt(sSection, _T("RefFontSize"), 9);
+	m_nRefFontSize = (int) pApp->GetProfileInt(sSection, _T("RefFontSize"), 9);
 	m_bShowMovementDetections = (BOOL) pApp->GetProfileInt(sSection, _T("ShowMovementDetections"), FALSE);
 	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);

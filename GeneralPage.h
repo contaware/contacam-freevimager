@@ -19,7 +19,6 @@ class CVideoDeviceDoc;
 // CGeneralPage dialog
 
 #define GENERALDLG_TIMER_MS					300
-#define AUDIOCAPTURE_INCONSISTENCY_TIMEOUT	2	// In GENERALDLG_TIMER_MS units
 #define FRAMERATE_CHANGE_TIMEOUT			4	// In GENERALDLG_TIMER_MS units
 
 class CGeneralPage : public CPropertyPage
@@ -107,7 +106,6 @@ protected:
 	CDWordArray m_VideoCompressionQualitySupport;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;
-	int m_nAudioCaptureInconsistencyTimeout;
 	BOOL m_bDlgInitialized;
 };
 

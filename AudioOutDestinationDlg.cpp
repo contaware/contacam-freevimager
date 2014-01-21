@@ -61,10 +61,10 @@ BOOL CAudioOutDestinationDlg::OnInitDialog()
 	m_Devices.SetSize(m_uiNumDev);
 
 	// Enumerate The Devices
-	WAVEOUTCAPS DevCaps;
+	WAVEOUTCAPS2 DevCaps;
 	for (UINT i = 0 ; i < m_uiNumDev ; i++)
 	{
-		res = ::waveOutGetDevCaps(i, &DevCaps, sizeof(WAVEOUTCAPS));
+		res = ::waveOutGetDevCaps(i, (LPWAVEOUTCAPS)(&DevCaps), sizeof(WAVEOUTCAPS2));
 		if (res != MMSYSERR_NOERROR)
 		{
 			::AfxMessageBox(ML_STRING(1356, "Sound Output Cannot Determine Card Capabilities!"));
@@ -72,14 +72,19 @@ BOOL CAudioOutDestinationDlg::OnInitDialog()
 		}
 		else
 		{
-			m_Devices.SetAt(i, (CString)DevCaps.szPname); 
+			CString sFullDeviceName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
+										_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
+										::UuidToString(&DevCaps.NameGuid) + _T("}"),
+										_T("Name"));
+			m_Devices.SetAt(i, sFullDeviceName.IsEmpty() ? (CString)DevCaps.szPname : sFullDeviceName);
 		}
 		m_AudioOutDestination.AddString(m_Devices[i]);
 	}
 
 	if (m_uiDeviceID > (m_uiNumDev - 1))
-		m_uiDeviceID = 0;
-	 m_AudioOutDestination.SelectString(0, m_Devices[m_uiDeviceID]);
+		m_AudioOutDestination.SetCurSel(-1);
+	else
+		m_AudioOutDestination.SelectString(0, m_Devices[m_uiDeviceID]);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -87,6 +92,8 @@ BOOL CAudioOutDestinationDlg::OnInitDialog()
 
 void CAudioOutDestinationDlg::OnOK()
 {
-	m_uiDeviceID = m_AudioOutDestination.GetCurSel();
+	int nSel = m_AudioOutDestination.GetCurSel();
+	if (nSel != CB_ERR)
+		m_uiDeviceID = nSel;
 	CDialog::OnOK();
 }

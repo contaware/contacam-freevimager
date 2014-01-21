@@ -2683,26 +2683,29 @@ int ToUTF8(const CString& s, LPBYTE* ppUtf8)
 	}
 }
 
+CString UuidToString(const UUID* pUuid)
+{
+	CString sUuid;
+	if (pUuid)
+	{
+		unsigned short* sTemp;
+		if (UuidToString(pUuid, &sTemp) == RPC_S_OK)
+		{
+			sUuid = CString((LPCTSTR)sTemp);
+			RpcStringFree(&sTemp);
+		}
+	}
+	return sUuid;
+}
+
 CString GetUuidString()
 {
-	CString sUUID(_T(""));
-	unsigned short* sTemp;
-	UUID* pUUID = new UUID;
-	if (pUUID)
-	{
-		HRESULT hr = UuidCreate(pUUID);
-		if (hr == (HRESULT)RPC_S_OK || hr == (HRESULT)RPC_S_UUID_LOCAL_ONLY)
-		{
-			hr = UuidToString(pUUID, &sTemp);
-			if (hr == RPC_S_OK)
-			{
-				sUUID = CString((LPCTSTR)sTemp);
-				RpcStringFree(&sTemp);
-			}
-		}
-		delete pUUID;
-	}
-	return sUUID;
+	UUID Uuid;
+	HRESULT hr = UuidCreate(&Uuid);
+	if (hr == (HRESULT)RPC_S_OK || hr == (HRESULT)RPC_S_UUID_LOCAL_ONLY)
+		return UuidToString(&Uuid);
+	else
+		return _T("");
 }
 
 int __cdecl CompareNatural(CString * pstr1, CString * pstr2)

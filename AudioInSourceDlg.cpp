@@ -61,10 +61,10 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 	m_Devices.SetSize(m_uiNumDev);
 
 	// Enumerate The Devices
-	WAVEINCAPS DevCaps;
+	WAVEINCAPS2 DevCaps;
 	for (UINT i = 0 ; i < m_uiNumDev ; i++)
 	{
-		res = ::waveInGetDevCaps(i, &DevCaps, sizeof(WAVEINCAPS));
+		res = ::waveInGetDevCaps(i, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
 		if (res != MMSYSERR_NOERROR)
 		{
 			::AfxMessageBox(ML_STRING(1355, "Sound Input Cannot Determine Card Capabilities!"));
@@ -72,14 +72,19 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 		}
 		else
 		{
-			m_Devices.SetAt(i, (CString)DevCaps.szPname); 
+			CString sFullDeviceName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
+										_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
+										::UuidToString(&DevCaps.NameGuid) + _T("}"),
+										_T("Name"));
+			m_Devices.SetAt(i, sFullDeviceName.IsEmpty() ? (CString)DevCaps.szPname : sFullDeviceName);
 		}
 		m_AudioInSource.AddString(m_Devices[i]);
 	}
 
 	if (m_uiDeviceID > (m_uiNumDev - 1))
-		m_uiDeviceID = 0;
-	 m_AudioInSource.SelectString(0, m_Devices[m_uiDeviceID]);
+		m_AudioInSource.SetCurSel(-1);
+	else
+		m_AudioInSource.SelectString(0, m_Devices[m_uiDeviceID]);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -87,6 +92,8 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 
 void CAudioInSourceDlg::OnOK()
 {
-	m_uiDeviceID = m_AudioInSource.GetCurSel();
+	int nSel = m_AudioInSource.GetCurSel();
+	if (nSel != CB_ERR)
+		m_uiDeviceID = nSel;
 	CDialog::OnOK();
 }

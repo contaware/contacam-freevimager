@@ -4833,7 +4833,6 @@ BEGIN
     IDS_MULTILANG_1456      "%s already existing."
     IDS_MULTILANG_1457      "Zip Extraction Progress"
     IDS_MULTILANG_1458      "Zip Compression Progress"
-    IDS_MULTILANG_1459      "Sound Input Cannot Open Device!"
     IDS_MULTILANG_1465      "Cannot connect to the specified network device or server"
     IDS_MULTILANG_1466      "The capture device is already in use or not compatible"
 END

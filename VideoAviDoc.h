@@ -241,8 +241,6 @@ public:
 			CPlayAudioFileThread();
 			virtual ~CPlayAudioFileThread();
 			void SetDoc(CVideoAviDoc* pDoc) {m_pDoc = pDoc;};
-			void SetDeviceID(UINT uiDeviceID) {m_pDoc->m_dwPlayAudioDeviceID = uiDeviceID;};
-			UINT GetDeviceID() const {return m_pDoc->m_dwPlayAudioDeviceID;};
 			BOOL SetPlaySpeedPercent(int nPlaySpeedPercent);
 			void SetPlaySyncEvent(HANDLE hPlaySyncEvent) {m_hPlaySyncEvent = hPlaySyncEvent; m_hPlaySyncEventArray[1] = hPlaySyncEvent;};
 			BOOL IsWaitingForStart() const	{return m_bWaitingForStart;};
@@ -288,7 +286,6 @@ public:
 			volatile int m_nPlaySpeedPercent;
 			CVideoAviDoc* m_pDoc;
 			LPWAVEFORMATEX m_pWaveFormat;
-			WAVEOUTCAPS m_WaveOutDevCaps;
 			WAVEHDR m_WaveHeader[2];
 			HANDLE m_hWaveOutEvent;
 			HANDLE m_hEventArray[2];

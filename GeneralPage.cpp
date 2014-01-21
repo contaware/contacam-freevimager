@@ -703,30 +703,6 @@ void CGeneralPage::OnTimer(UINT nIDEvent)
 {
 	if (!m_pDoc->m_bClosing)
 	{
-		// Inconsistency Detection:
-		// audio input may not be able to start
-		if ((m_pDoc->m_CaptureAudioThread.IsRunning()	&&
-			m_pDoc->m_bCaptureAudio == FALSE)			||
-			(!m_pDoc->m_CaptureAudioThread.IsRunning()	&&
-			m_pDoc->m_bCaptureAudio == TRUE))
-			m_nAudioCaptureInconsistencyTimeout--;
-		else
-			m_nAudioCaptureInconsistencyTimeout = AUDIOCAPTURE_INCONSISTENCY_TIMEOUT;
-		if (m_nAudioCaptureInconsistencyTimeout <= 0)
-		{
-			CButton* pCheck = (CButton*)GetDlgItem(IDC_REC_AUDIO);
-			if (m_pDoc->m_CaptureAudioThread.IsRunning())
-			{
-				pCheck->SetCheck(1);
-				m_pDoc->m_bCaptureAudio = TRUE;
-			}
-			else
-			{
-				pCheck->SetCheck(0);
-				m_pDoc->m_bCaptureAudio = FALSE;
-			}
-		}
-		
 		// Show Calculated Frame Rate
 		double dEffectiveFrameRate = m_pDoc->m_dEffectiveFrameRate;
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EFFECTIVE_FRAMERATE);

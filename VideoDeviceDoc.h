@@ -52,6 +52,7 @@ class CMovementDetectionPage;
 #define AUDIO_MAX_LIST_SIZE					1024		// make sure that: 1 / MIN_FRAMERATE < AUDIO_IN_MIN_BUF_SIZE * AUDIO_MAX_LIST_SIZE / 11025
 														// (see CCaptureAudioThread::OpenInAudio())
 #define AUDIO_UNCOMPRESSED_BUFS_COUNT		16			// Number of audio buffers
+#define AUDIO_RECONNECTION_DELAY			1000U		// ms
 #define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
 #define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
@@ -335,6 +336,7 @@ public:
 		protected:
 			
 			// Functions
+			int Loop();
 			int Work();
 			BOOL OpenInAudio();
 			void CloseInAudio();
@@ -343,7 +345,6 @@ public:
 			// Vars
 			HWAVEIN m_hWaveIn;
 			CVideoDeviceDoc* m_pDoc;
-			WAVEINCAPS m_WaveInDevCaps;
 			WAVEHDR m_WaveHeader[AUDIO_UNCOMPRESSED_BUFS_COUNT];
 			HANDLE m_hWaveInEvent;
 			HANDLE m_hEventArray[2];
@@ -1033,7 +1034,7 @@ public:
 	int m_nDeviceFormatHeight;							// Format Height
 	
 	// Audio Capture Vars
-	DWORD m_dwCaptureAudioDeviceID;						// Audio Capture Device ID
+	volatile DWORD m_dwCaptureAudioDeviceID;			// Audio Capture Device ID
 	volatile BOOL m_bCaptureAudio;						// Do Capture Audio Flag
 
 	// Audio / Video Rec
