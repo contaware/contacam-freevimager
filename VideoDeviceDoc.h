@@ -79,7 +79,6 @@ class CMovementDetectionPage;
 #define WATCHDOG_LONGCHECK_TIME				1000U		// ms
 #define WATCHDOG_SHORTCHECK_TIME			300U		// ms
 #define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define HTTPWATCHDOG_RETRY_TIMEOUT			60000U		// ms
 #define DXDRAW_REINIT_TIMEOUT				5000U		// ms
 #define DXDRAW_BKG_COLOR					RGB(0,0,0)	// do not change this because dxdraw background is cleared to 0
 #define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
@@ -181,12 +180,12 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MAXCOUNT_ALARM1		30
 #define HTTPGETFRAME_MAXCOUNT_ALARM2		40
 #define HTTPGETFRAME_MAXCOUNT_ALARM3		50
-#define HTTPGETFRAME_DELAY_DEFAULT			500U								// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM1		100U								// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM2		400U								// ms
-#define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U								// ms
-#define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE))	// ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		30			// Connection timeout in sec
+#define HTTPGETFRAME_DELAY_DEFAULT			500U		// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM1		100U		// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM2		400U		// ms
+#define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U		// ms
+#define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
+#define HTTPGETFRAME_CONNECTION_TIMEOUT		60			// Connection timeout in sec
 
 // The Document Class
 class CVideoDeviceDoc : public CUImagerDoc

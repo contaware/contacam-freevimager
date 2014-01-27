@@ -3251,37 +3251,23 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 		pNetCom = m_HttpGetFrameNetComList.GetHead();
 		if (pNetCom)
 		{
-			// Remove closed or old connections
+			// Remove oldest connection?
 			CTimeSpan ConnectionAge = CTime::GetCurrentTime() - pNetCom->m_InitTime;
-			if (pNetCom->IsShutdown()												||
-				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT	||
-				ConnectionAge.GetTotalSeconds() < 0)
+			if (pNetCom->IsShutdown()												||	// done?
+				ConnectionAge.GetTotalSeconds() >= HTTPGETFRAME_CONNECTION_TIMEOUT	||	// too old?
+				ConnectionAge.GetTotalSeconds() < 0									||	// "
+				!bDoNewPoll)															// too many open connections?
 			{
-				delete pNetCom;
+				delete pNetCom; // this calls Close() which blocks till all net threads are done
 				m_HttpGetFrameNetComList.RemoveHead();
 				pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
 				if (pHttpGetFrameParseProcess)
 					delete pHttpGetFrameParseProcess;
 				m_HttpGetFrameParseProcessList.RemoveHead();
 			}
+			// Nothing more to clean-up... exit loop
 			else
-			{
-				// Buffer is full, it's time to force a connection shutdown
-				// (connection may have been abruptly closed by the peer
-				// so that our socket has not been notified about that)
-				if (!bDoNewPoll)
-				{
-					delete pNetCom; // This calls Close() which blocks till all threads are done
-					m_HttpGetFrameNetComList.RemoveHead();
-					pHttpGetFrameParseProcess = m_HttpGetFrameParseProcessList.GetHead();
-					if (pHttpGetFrameParseProcess)
-						delete pHttpGetFrameParseProcess;
-					m_HttpGetFrameParseProcessList.RemoveHead();
-				}
-				// Nothing to clean-up ... exit from here
-				else
-					break;
-			}
+				break;
 		}
 		// Should never happen...
 		else
@@ -3696,7 +3682,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 					m_pDoc->SaveFrameList();
 
 				// Http Networking Reconnect
-				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > HTTPWATCHDOG_RETRY_TIMEOUT &&
+				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
 					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
