@@ -195,6 +195,9 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 									pOldBits,
 									pOldBmi->bmiHeader.biSizeImage,
 									pDib);
+		// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+		if (!res)
+			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
 
 		// Free
 		delete [] pOldBmi;
@@ -7642,6 +7645,15 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
 	}
+	// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
+	{
+		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize, 1, TRUE) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
+		{
+			m_lCompressedDataRateSum += dwSize;
+			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
+		}
+	}
 	// Other formats
 	else
 	{
@@ -10952,6 +10964,17 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		{
 			m_pDoc->m_lCompressedDataRateSum += nSize;
 			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, pLinBuf, nSize);
+		}
+	}
+	// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+	else
+	{
+		CDib Dib;
+		Dib.SetShowMessageBoxOnError(FALSE);
+		if (Dib.LoadJPEG(pLinBuf, nSize, 1, TRUE) && Dib.Compress(FCC('I420')))
+		{
+			m_pDoc->m_lCompressedDataRateSum += nSize;
+			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), pLinBuf, nSize);
 		}
 	}
 	

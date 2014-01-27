@@ -121,10 +121,14 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 
 		// Fast decompression?
 		if (bFast)
+		{
+			cinfo.dct_method = JDCT_IFAST;
 			cinfo.do_fancy_upsampling = FALSE;
-
-		// Choose floating point DCT method.
-		cinfo.dct_method = JDCT_FLOAT;
+			cinfo.do_block_smoothing = FALSE;
+			cinfo.dither_mode = JDITHER_NONE;
+		}
+		else
+			cinfo.dct_method = JDCT_FLOAT;
 		
 		// Scaled load
 		cinfo.scale_num = 1;
@@ -575,10 +579,14 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 
 		// Fast decompression?
 		if (bFast)
+		{
+			cinfo.dct_method = JDCT_IFAST;
 			cinfo.do_fancy_upsampling = FALSE;
-
-		// Choose floating point DCT method.
-		cinfo.dct_method = JDCT_FLOAT;
+			cinfo.do_block_smoothing = FALSE;
+			cinfo.dither_mode = JDITHER_NONE;
+		}
+		else
+			cinfo.dct_method = JDCT_FLOAT;
 		
 		// Scaled load
 		cinfo.scale_num = 1;
