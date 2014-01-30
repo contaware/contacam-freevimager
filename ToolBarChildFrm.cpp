@@ -1491,6 +1491,10 @@ void CVideoDeviceChildFrame::OnClose()
 									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
 			}
 
+			// Hide detection zones
+			if (pDoc->m_bShowEditDetectionZones)
+				pDoc->ToggleDetectionZones(FALSE); // without saving because done below
+	
 			// Save Settings
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 				pDoc->SaveSettings();

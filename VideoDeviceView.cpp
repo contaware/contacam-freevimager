@@ -59,7 +59,7 @@ CVideoDeviceView::CVideoDeviceView()
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_pDxDrawDib = new CDib;
 	m_pDxDrawDib->SetShowMessageBoxOnError(FALSE);
-	m_nMovDetSingleZoneSensibility = 1;
+	m_MovDetSingleZoneSensibility = 1;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -288,36 +288,25 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	// Load/Store Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
-		CWinApp* pApp = ::AfxGetApp();
 		CString sSection(pDoc->GetDevicePathName());
-		if (pDoc->m_lMovDetTotalZones == pApp->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
+		if (pDoc->m_lMovDetTotalZones == ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
 		{
 			// Load Zones Settings
-			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-			{
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				pDoc->m_DoMovementDetection[i] = pApp->GetProfileInt(sSection, sZone, 1);
-			}
+			if (!pDoc->LoadZonesSettings())
+				pDoc->LoadAndDeleteOldZonesSettings();
 		}
 		else
 		{
-			// Enable All Zones and Store Settings
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
-			for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-			{
-				pDoc->m_DoMovementDetection[i] = 1;
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
-			}
+			// Enable All Zones and Store Zones Settings
+			memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
+			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
+			pDoc->SaveZonesSettings();
 		}
 	}
 	else
 	{
 		// Enable All Zones
-		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-			pDoc->m_DoMovementDetection[i] = 1;
+		memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
 	}
 
 	// Update current detection zone size var
@@ -972,16 +961,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone Value
 		else
-			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
-
-		// Store Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			CString sSection(pDoc->GetDevicePathName());
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
-		}
+			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensibility;
 	}
 }
 
@@ -1277,26 +1257,13 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
 
-		// Store Current Zone value
-		int nCurrentDoMovementDetectionValue = pDoc->m_DoMovementDetection[nZone];
-
 		// Reset Zone Value
 		if ((nFlags & MK_SHIFT) ||
 			(nFlags & MK_CONTROL))
 			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone Value
 		else
-			pDoc->m_DoMovementDetection[nZone] = m_nMovDetSingleZoneSensibility;
-
-		// Store Settings if changes happened
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-			nCurrentDoMovementDetectionValue != pDoc->m_DoMovementDetection[nZone])
-		{
-			CString sSection(pDoc->GetDevicePathName());
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, nZone);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[nZone]);
-		}
+			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensibility;
 	}
 	
 	CUImagerView::OnMouseMove(nFlags, point);
@@ -1316,82 +1283,54 @@ void CVideoDeviceView::OnEditSelectall()
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	int i;
-
-	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		pDoc->m_DoMovementDetection[i] = 1;
-
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		CString sSection(pDoc->GetDevicePathName());
-		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		{
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, i);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
-		}
-	}
+	memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
 }
 
 void CVideoDeviceView::OnEditSelectnone() 
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	int i;
-
-	for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		pDoc->m_DoMovementDetection[i] = 0;
-
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		CString sSection(pDoc->GetDevicePathName());
-		for (i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
-		{
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, i);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, pDoc->m_DoMovementDetection[i]);
-		}
-	}
+	memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
 }
 
 void CVideoDeviceView::OnEditZoneSensibility100() 
 {
-	m_nMovDetSingleZoneSensibility = 1;
+	m_MovDetSingleZoneSensibility = 1;
 }
 
 void CVideoDeviceView::OnUpdateEditZoneSensibility100(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 1);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 1);
 }
 
 void CVideoDeviceView::OnEditZoneSensibility50() 
 {
-	m_nMovDetSingleZoneSensibility = 2;
+	m_MovDetSingleZoneSensibility = 2;
 }
 
 void CVideoDeviceView::OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 2);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 2);
 }
 
 void CVideoDeviceView::OnEditZoneSensibility25() 
 {
-	m_nMovDetSingleZoneSensibility = 4;
+	m_MovDetSingleZoneSensibility = 4;
 }
 
 void CVideoDeviceView::OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 4);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 4);
 }
 
 void CVideoDeviceView::OnEditZoneSensibility10() 
 {
-	m_nMovDetSingleZoneSensibility = 10;
+	m_MovDetSingleZoneSensibility = 10;
 }
 
 void CVideoDeviceView::OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_nMovDetSingleZoneSensibility == 10);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 10);
 }
 
 BOOL CVideoDeviceView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 

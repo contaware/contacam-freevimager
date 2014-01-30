@@ -32,7 +32,7 @@ protected:
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
 	__forceinline BOOL IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView);
 	BOOL ReOpenDxDevice();
-	int m_nMovDetSingleZoneSensibility;
+	BYTE m_MovDetSingleZoneSensibility;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
 // Overrides

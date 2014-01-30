@@ -38,7 +38,7 @@ class CMovementDetectionPage;
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
 #define PROCESS_MAX_FRAMETIME				15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define STARTUP_SETTLE_TIME_SEC				5			// sec
+#define STARTUP_SETTLE_TIME_SEC				3			// sec
 #define DEFAULT_FRAMERATE					10.0		// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
@@ -110,9 +110,11 @@ class CMovementDetectionPage;
 #define MOVDET_BUFFER_COMPRESSIONQUALITY	4			// 2: best quality, 31: worst quality
 #define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
+#define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
 #define MOVDET_MIN_ZONES_XORY				4			// Minimum number of zones in X or Y direction
 #define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
+#define MOVDET_ZONES_BLOCK_FORMAT			_T("MovDetZones%i")
 #define MOVDET_SAVEFRAMES_POLL				1000U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
 														// case of insufficient memory
@@ -898,6 +900,7 @@ public:
 										const CString& sGIFFileName = _T(""),
 										const CString& sSWFFileName = _T(""),
 										int nMovDetSavesCount = 0);
+	void ToggleDetectionZones(BOOL bSaveSettingsOnHiding);
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
@@ -915,6 +918,9 @@ public:
 	static CString GetValidName(CString sName);
 
 	// Settings
+	void LoadAndDeleteOldZonesSettings();
+	BOOL LoadZonesSettings();
+	void SaveZonesSettings(const CString& sProfileName = _T(""));
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
 	void SaveSettings();
 	void ExportDetectionZones(const CString& sFileName);
@@ -1136,8 +1142,8 @@ public:
 	CDib* volatile m_pDifferencingDib;					// Differencing Dib
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
-	BOOL* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
-	int* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensibility
+	BYTE* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
+	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensibility
 														// 0 -> No Detection, 1 -> Full Sensibility=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
 														// (array allocated in constructor)
 	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor

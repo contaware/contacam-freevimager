@@ -2624,10 +2624,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, 
 		}
 	}
 	else
-	{
-		for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-			m_MovementDetections[i] = FALSE;
-	}
+		memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
 
 	// End of software detection
 end_of_software_detection:
@@ -4138,8 +4135,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwAnimatedGifHeight = MOVDET_ANIMGIF_DEFAULT_HEIGHT;
 	m_MovementDetectorCurrentIntensity = new int[MOVDET_MAX_ZONES];
 	m_MovementDetectionsUpTime = new DWORD[MOVDET_MAX_ZONES];
-	m_MovementDetections = new BOOL[MOVDET_MAX_ZONES];
-	m_DoMovementDetection = new int[MOVDET_MAX_ZONES];
+	m_MovementDetections = new BYTE[MOVDET_MAX_ZONES];
+	m_DoMovementDetection = new BYTE[MOVDET_MAX_ZONES];
 	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
@@ -4345,7 +4342,7 @@ void CVideoDeviceDoc::FreeMovementDetector()
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
 	if (m_MovementDetections)
-		memset(m_MovementDetections, 0, sizeof(m_MovementDetections[0]) * MOVDET_MAX_ZONES);
+		memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
 }
 
 void CVideoDeviceDoc::CloseDocument()
@@ -4610,6 +4607,92 @@ CString CVideoDeviceDoc::GetValidName(CString sName)
 	}
 	delete [] c;
 	return sValidName;
+}
+
+void CVideoDeviceDoc::LoadAndDeleteOldZonesSettings()
+{
+	int i;
+	CString sSection(GetDevicePathName());
+	CString sZone;
+
+	// Load old style Zones Settings
+	for (i = 0 ; i < MOVDET_MAX_ZONES ; i++)
+	{
+		sZone.Format(MOVDET_ZONE_FORMAT, i);
+		m_DoMovementDetection[i] = (BYTE)::AfxGetApp()->GetProfileInt(sSection, sZone, 1);
+	}
+
+	// Store new style Zones Settings
+	SaveZonesSettings();
+
+	// Clean-up all old style Zones Settings
+	for (i = 0 ; i < MOVDET_MAX_ZONES ; i++)
+	{
+		sZone.Format(MOVDET_ZONE_FORMAT, i);
+		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+		{
+			::DeleteRegistryValue(	HKEY_CURRENT_USER,
+									CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") +
+									sSection,
+									sZone);
+		}
+		else
+		{
+			::WritePrivateProfileString(sSection,
+										sZone,
+										NULL,
+										::AfxGetApp()->m_pszProfileName);
+		}
+	}
+}
+
+BOOL CVideoDeviceDoc::LoadZonesSettings()
+{
+	BOOL bOK = FALSE;
+	CString sSection(GetDevicePathName());
+	for (int i = 0 ; i < MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE ; i++)
+	{
+		UINT uiSize = 0U;
+		LPBYTE pBlock = NULL;
+		CString sBlock;
+		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, i);
+		::AfxGetApp()->GetProfileBinary(sSection, sBlock, &pBlock, &uiSize);
+		if (pBlock && uiSize > 0U)
+		{
+			bOK = TRUE;
+			memcpy(	m_DoMovementDetection + i * MOVDET_MAX_ZONES_BLOCK_SIZE,
+					pBlock,
+					MIN(MOVDET_MAX_ZONES_BLOCK_SIZE, uiSize));
+		}
+		if (pBlock)
+			delete [] pBlock;
+	}
+	return bOK;
+}
+
+void CVideoDeviceDoc::SaveZonesSettings(const CString& sProfileName/*=_T("")*/)
+{
+	CString sSection(GetDevicePathName());
+	for (int i = 0 ; i < MOVDET_MAX_ZONES / MOVDET_MAX_ZONES_BLOCK_SIZE ; i++)
+	{
+		CString sBlock;
+		sBlock.Format(MOVDET_ZONES_BLOCK_FORMAT, i);
+		if (sProfileName.IsEmpty())
+		{
+			::AfxGetApp()->WriteProfileBinary(	sSection,
+												sBlock,
+												m_DoMovementDetection + i * MOVDET_MAX_ZONES_BLOCK_SIZE,
+												MOVDET_MAX_ZONES_BLOCK_SIZE);
+		}
+		else
+		{
+			::WriteProfileIniBinary(sSection,
+									sBlock,
+									m_DoMovementDetection + i * MOVDET_MAX_ZONES_BLOCK_SIZE,
+									MOVDET_MAX_ZONES_BLOCK_SIZE,
+									sProfileName);
+		}
+	}
 }
 
 void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName)
@@ -5030,12 +5113,7 @@ void CVideoDeviceDoc::SaveSettings()
 		if (m_lMovDetTotalZones > 0)
 		{
 			pApp->WriteProfileInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones);
-			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-			{
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				pApp->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
-			}
+			SaveZonesSettings();
 		}
 
 		if (m_CaptureAudioThread.m_pSrcWaveFormat)
@@ -5215,12 +5293,7 @@ void CVideoDeviceDoc::SaveSettings()
 		if (m_lMovDetTotalZones > 0)
 		{
 			::WriteProfileIniInt(sSection, _T("MovDetTotalZones"), m_lMovDetTotalZones, sTempFileName);
-			for (int i = 0 ; i < m_lMovDetTotalZones ; i++)
-			{
-				CString sZone;
-				sZone.Format(MOVDET_ZONE_FORMAT, i);
-				::WriteProfileIniInt(sSection, sZone, m_DoMovementDetection[i], sTempFileName);
-			}
+			SaveZonesSettings(sTempFileName);
 		}
 
 		if (m_CaptureAudioThread.m_pSrcWaveFormat)
@@ -5291,8 +5364,6 @@ void CVideoDeviceDoc::OnEditImportZones()
 
 void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 {
-	int i;
-
 	// Ini file writing is slow, especially on memory sticks
 	BeginWaitCursor();
 
@@ -5307,24 +5378,18 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 		CComboBox* pComboBox = (CComboBox*)m_pMovementDetectionPage->GetDlgItem(IDC_DETECTION_ZONE_SIZE);
 		pComboBox->SetCurSel(m_nDetectionZoneSize);
 	}
-	for (i = 0 ; i < lImportMovDetTotalZones ; i++)
+	for (int i = 0 ; i < lImportMovDetTotalZones ; i++)
 	{
 		CString sZone;
 		sZone.Format(MOVDET_ZONE_FORMAT, i);
-		m_DoMovementDetection[i] = ::GetProfileIniInt(_T("MovementDetectionZones"), sZone, 1, sFileName);
+		m_DoMovementDetection[i] = (BYTE)::GetProfileIniInt(_T("MovementDetectionZones"), sZone, 1, sFileName);
 	}
 
-	// Store settings
+	// Store Zones Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 	{
-		CString sSection(GetDevicePathName());
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, _T("MovDetTotalZones"), lImportMovDetTotalZones);
-		for (i = 0 ; i < lImportMovDetTotalZones ; i++)
-		{
-			CString sZone;
-			sZone.Format(MOVDET_ZONE_FORMAT, i);
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(sSection, sZone, m_DoMovementDetection[i]);
-		}
+		::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("MovDetTotalZones"), lImportMovDetTotalZones);
+		SaveZonesSettings();
 	}
 
 	// Ini file writing is slow, especially on memory sticks
@@ -8710,10 +8775,10 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	for (i = 0 ; i < m_lMovDetTotalZones ; i++)
 	{
 		if (m_DoMovementDetection[i] &&
-			m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * m_DoMovementDetection[i])
+			m_MovementDetectorCurrentIntensity[i] > nIntensityThreshold * (int)m_DoMovementDetection[i])
 		{
 			bDetection = TRUE;
-			m_MovementDetections[i] = TRUE;
+			m_MovementDetections[i] = 1;
 			m_MovementDetectionsUpTime[i] = pDib->GetUpTime();
 		}
 	}
@@ -8723,7 +8788,7 @@ BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 	{
 		if (m_MovementDetections[i]	&&
 			(pDib->GetUpTime() - m_MovementDetectionsUpTime[i]) >= MOVDET_TIMEOUT)
-			m_MovementDetections[i] = FALSE;
+			m_MovementDetections[i] = 0;
 	}
 
 	return bDetection;
@@ -9013,7 +9078,7 @@ void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
-void CVideoDeviceDoc::OnViewDetectionZones() 
+void CVideoDeviceDoc::ToggleDetectionZones(BOOL bSaveSettingsOnHiding)
 {
 	m_bShowEditDetectionZones = !m_bShowEditDetectionZones;
 	GetView()->ForceCursor(m_bShowEditDetectionZones);
@@ -9021,9 +9086,21 @@ void CVideoDeviceDoc::OnViewDetectionZones()
 	{
 		m_bShowEditDetectionZonesMinus = FALSE;
 		::AfxGetMainFrame()->StatusText();
+		if (bSaveSettingsOnHiding)
+		{
+			BeginWaitCursor();
+			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+				SaveZonesSettings();
+			EndWaitCursor();
+		}
 	}
 	else
 		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
+}
+
+void CVideoDeviceDoc::OnViewDetectionZones() 
+{
+	ToggleDetectionZones(TRUE);
 }
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
