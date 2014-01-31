@@ -900,7 +900,8 @@ public:
 										const CString& sGIFFileName = _T(""),
 										const CString& sSWFFileName = _T(""),
 										int nMovDetSavesCount = 0);
-	void ToggleDetectionZones(BOOL bSaveSettingsOnHiding);
+	void ShowDetectionZones();
+	void HideDetectionZones(BOOL bSaveSettingsOnHiding);
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!

@@ -22,10 +22,8 @@ public:
 	CVideoDevicePropertySheet(CVideoDeviceDoc* pDoc);
 	void Close();
 	void UpdateTitle();
-	BOOL IsVisible();
-	void Toggle();
 	void Show();
-	void Hide();
+	void Hide(BOOL bSaveSettingsOnHiding);
 
 protected:
 	virtual ~CVideoDevicePropertySheet();
@@ -50,7 +48,6 @@ protected:
 protected:
 	//{{AFX_MSG(CVideoDevicePropertySheet)
 	afx_msg void OnClose();
-	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

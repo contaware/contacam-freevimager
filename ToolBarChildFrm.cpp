@@ -1493,7 +1493,7 @@ void CVideoDeviceChildFrame::OnClose()
 
 			// Hide detection zones
 			if (pDoc->m_bShowEditDetectionZones)
-				pDoc->ToggleDetectionZones(FALSE); // without saving because done below
+				pDoc->HideDetectionZones(FALSE); // without saving because done below
 	
 			// Save Settings
 			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
@@ -1632,10 +1632,11 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	// Stop Processing Frames
 	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
 
-	// Hide Window Property Sheet
+	// Hide Window Property Sheet without saving
+	// because already done in OnClose()
 	if (pDoc->m_pVideoDevicePropertySheet &&
-		pDoc->m_pVideoDevicePropertySheet->IsVisible())
-		pDoc->m_pVideoDevicePropertySheet->Hide();
+		pDoc->m_pVideoDevicePropertySheet->IsWindowVisible())
+		pDoc->m_pVideoDevicePropertySheet->Hide(FALSE);
 }
 
 void CVideoDeviceChildFrame::StartShutdown2()

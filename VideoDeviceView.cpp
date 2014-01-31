@@ -993,8 +993,10 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else
 			{
-				if (pDoc->m_pVideoDevicePropertySheet && pDoc->m_pVideoDevicePropertySheet->IsVisible())
-					pDoc->m_pVideoDevicePropertySheet->Hide();
+				if (pDoc->m_pVideoDevicePropertySheet && pDoc->m_pVideoDevicePropertySheet->IsWindowVisible())
+					pDoc->m_pVideoDevicePropertySheet->Hide(TRUE);
+				else if (pDoc->m_bShowEditDetectionZones)
+					pDoc->HideDetectionZones(TRUE);
 				else if (m_bFullScreenMode)
 					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 				else

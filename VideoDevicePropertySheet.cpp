@@ -18,7 +18,6 @@ IMPLEMENT_DYNAMIC(CVideoDevicePropertySheet, CPropertySheet)
 BEGIN_MESSAGE_MAP(CVideoDevicePropertySheet, CPropertySheet)
 	//{{AFX_MSG_MAP(CVideoDevicePropertySheet)
 	ON_WM_CLOSE()
-	ON_WM_SHOWWINDOW()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -99,38 +98,24 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 	return sTitle;
 }
 
-void CVideoDevicePropertySheet::Toggle()
-{
-	if (IsVisible())
-		Hide();
-	else
-		Show();
-}
-
-BOOL CVideoDevicePropertySheet::IsVisible()
-{
-	return IsWindowVisible();
-}
-
 void CVideoDevicePropertySheet::Show()
 {
-	m_pDoc->GetView()->ForceCursor();
-	ShowWindow(SW_SHOW);
+	if (!IsWindowVisible())
+	{
+		m_pDoc->GetView()->ForceCursor();
+		ShowWindow(SW_SHOW);
+	}
 }
 
-void CVideoDevicePropertySheet::Hide()
+void CVideoDevicePropertySheet::Hide(BOOL bSaveSettingsOnHiding)
 {
-	ShowWindow(SW_HIDE);
-	m_pDoc->GetView()->ForceCursor(FALSE);
-}
-
-void CVideoDevicePropertySheet::OnShowWindow(BOOL bShow, UINT nStatus) 
-{
-	// Closing the application calls this function two times
-	// -> avoid calling SaveSettings() two times by checking visibility!
-	CPropertySheet::OnShowWindow(bShow, nStatus);
-	if (!bShow && IsVisible() && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		m_pDoc->SaveSettings();
+	if (IsWindowVisible())
+	{
+		if (bSaveSettingsOnHiding && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			m_pDoc->SaveSettings();
+		ShowWindow(SW_HIDE);
+		m_pDoc->GetView()->ForceCursor(FALSE);
+	}
 }
 
 void CVideoDevicePropertySheet::PostNcDestroy() 
@@ -144,12 +129,12 @@ void CVideoDevicePropertySheet::OnClose()
 {
 	// Instead of closing the modeless
 	// property sheet, just hide it
-	Hide();
+	Hide(TRUE);
 }
 
 void CVideoDevicePropertySheet::Close()
 {
-	if (IsVisible())
+	if (IsWindowVisible())
 		m_pDoc->GetView()->ForceCursor(FALSE);
 	DestroyWindow();
 }
@@ -161,7 +146,7 @@ BOOL CVideoDevicePropertySheet::PreTranslateMessage(MSG* pMsg)
 		int nVirtKey = (int)pMsg->wParam;
 		if (nVirtKey == VK_ESCAPE)
 		{
-			Hide();
+			Hide(TRUE);
 			return TRUE;
 		}
 	}

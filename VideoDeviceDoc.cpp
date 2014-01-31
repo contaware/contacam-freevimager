@@ -6358,7 +6358,12 @@ void CVideoDeviceDoc::OnCaptureSettings()
 	}
 	// Toggle Visible / Invisible State
 	else
-		m_pVideoDevicePropertySheet->Toggle();
+	{
+		if (m_pVideoDevicePropertySheet->IsWindowVisible())
+			m_pVideoDevicePropertySheet->Hide(TRUE);
+		else
+			m_pVideoDevicePropertySheet->Show();
+	}
 
 	SetDocumentTitle();
 }
@@ -6367,7 +6372,7 @@ void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(m_pDxCapture || m_pGetFrameNetCom);
 	if (m_pVideoDevicePropertySheet)
-		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsVisible() ? 1 : 0);
+		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsWindowVisible() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
 }
@@ -9078,29 +9083,39 @@ void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
-void CVideoDeviceDoc::ToggleDetectionZones(BOOL bSaveSettingsOnHiding)
+void CVideoDeviceDoc::ShowDetectionZones()
 {
-	m_bShowEditDetectionZones = !m_bShowEditDetectionZones;
-	GetView()->ForceCursor(m_bShowEditDetectionZones);
 	if (!m_bShowEditDetectionZones)
 	{
+		m_bShowEditDetectionZones = TRUE;
+		GetView()->ForceCursor();
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
+	}
+}
+
+void CVideoDeviceDoc::HideDetectionZones(BOOL bSaveSettingsOnHiding)
+{
+	if (m_bShowEditDetectionZones)
+	{
+		m_bShowEditDetectionZones = FALSE;
+		GetView()->ForceCursor(FALSE);
 		m_bShowEditDetectionZonesMinus = FALSE;
 		::AfxGetMainFrame()->StatusText();
-		if (bSaveSettingsOnHiding)
+		if (bSaveSettingsOnHiding && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		{
 			BeginWaitCursor();
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				SaveZonesSettings();
+			SaveZonesSettings();
 			EndWaitCursor();
 		}
 	}
-	else
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
 }
 
-void CVideoDeviceDoc::OnViewDetectionZones() 
+void CVideoDeviceDoc::OnViewDetectionZones()
 {
-	ToggleDetectionZones(TRUE);
+	if (m_bShowEditDetectionZones)
+		HideDetectionZones(TRUE);
+	else
+		ShowDetectionZones();
 }
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 
