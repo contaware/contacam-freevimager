@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "sinstance.h"
-#include "IniFile.h"
 #include "SettingsDlg.h"
 
 #ifdef _DEBUG
@@ -422,56 +421,21 @@ void CSettingsDlg::OnOK()
 	// Store settings
 	if (pApp->m_bUseSettings)
 	{
-		if (pApp->m_bUseRegistry)
-		{
-			pApp->WriteProfileInt(	_T("GeneralApp"),
-									_T("SingleInstance"),
-									m_bSingleInstance);
-			pApp->WriteProfileInt(	_T("GeneralApp"),
-									_T("TrayIcon"),
-									m_bTrayIcon);
-			pApp->WriteProfileInt(	_T("GeneralApp"),
-									_T("StartFullScreenMode"),
-									m_bStartFullScreenMode);
-			pApp->WriteProfileInt(	_T("GeneralApp"),
-									_T("ESCExit"),
-									m_bEscExit);
-			pApp->WriteProfileInt(	_T("GeneralApp"),
-									_T("DisableExtProg"),
-									m_bDisableExtProg);
-		}
-		else
-		{
-			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(pApp->GetAppTempDir(), pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-			::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-			::WriteProfileIniInt(	_T("GeneralApp"),
-									_T("SingleInstance"),
-									m_bSingleInstance,
-									sTempFileName);
-			::WriteProfileIniInt(	_T("GeneralApp"),
-									_T("TrayIcon"),
-									m_bTrayIcon,
-									sTempFileName);
-			::WriteProfileIniInt(	_T("GeneralApp"),
-									_T("StartFullScreenMode"),
-									m_bStartFullScreenMode,
-									sTempFileName);
-			::WriteProfileIniInt(	_T("GeneralApp"),
-									_T("ESCExit"),
-									m_bEscExit,
-									sTempFileName);
-			::WriteProfileIniInt(	_T("GeneralApp"),
-									_T("DisableExtProg"),
-									m_bDisableExtProg,
-									sTempFileName);
-
-			// Move it
-			::DeleteFile(pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, pApp->m_pszProfileName);
-		}
+		pApp->WriteProfileInt(	_T("GeneralApp"),
+								_T("SingleInstance"),
+								m_bSingleInstance);
+		pApp->WriteProfileInt(	_T("GeneralApp"),
+								_T("TrayIcon"),
+								m_bTrayIcon);
+		pApp->WriteProfileInt(	_T("GeneralApp"),
+								_T("StartFullScreenMode"),
+								m_bStartFullScreenMode);
+		pApp->WriteProfileInt(	_T("GeneralApp"),
+								_T("ESCExit"),
+								m_bEscExit);
+		pApp->WriteProfileInt(	_T("GeneralApp"),
+								_T("DisableExtProg"),
+								m_bDisableExtProg);
 	}
 
 	EndWaitCursor();

@@ -163,6 +163,12 @@ extern BOOL ExecHiddenApp(	const CString& sFileName,
 							BOOL bWaitTillDone = FALSE,
 							DWORD dwWaitMillisecondsTimeout = INFINITE);
 
+// Ini file Functions
+UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName);
+BOOL WriteProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue, LPCTSTR lpszProfileName);
+CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName);
+BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName);
+
 // Registry Functions
 extern BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey);

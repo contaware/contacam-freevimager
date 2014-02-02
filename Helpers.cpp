@@ -1421,6 +1421,46 @@ BOOL ExecHiddenApp(	const CString& sFileName,
 	return res;
 }
 
+UINT GetProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nDefault, LPCTSTR lpszProfileName)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	ASSERT(lpszProfileName != NULL);
+	return GetPrivateProfileInt(lpszSection, lpszEntry, nDefault, lpszProfileName);
+}
+
+// Attention: GetPrivateProfileString strips quotes!
+CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	ASSERT(lpszProfileName != NULL);
+	if (lpszDefault == NULL)
+		lpszDefault = _T("");    // don't pass in NULL
+	TCHAR szT[4096];
+	DWORD dw = GetPrivateProfileString(lpszSection, lpszEntry, lpszDefault, szT, _countof(szT), lpszProfileName);
+	ASSERT(dw < 4095);
+	return szT;
+}
+
+BOOL WriteProfileIniInt(LPCTSTR lpszSection, LPCTSTR lpszEntry, int nValue, LPCTSTR lpszProfileName)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	ASSERT(lpszProfileName != NULL);
+	TCHAR szT[16];
+	_stprintf_s(szT, _countof(szT), _T("%d"), nValue);
+	return WritePrivateProfileString(lpszSection, lpszEntry, szT, lpszProfileName);
+}
+
+BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszProfileName != NULL);
+	ASSERT(lstrlen(lpszProfileName) < 4095); // can't read in bigger
+	return WritePrivateProfileString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
+}
+
 BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
 {
 	LONG lRet;

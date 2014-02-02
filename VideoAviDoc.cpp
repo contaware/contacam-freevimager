@@ -20,7 +20,6 @@
 #include "NoVistaFileDlg.h"
 #include "VideoFormatDlg.h"
 #include "AudioFormatDlg.h"
-#include "IniFile.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2448,68 +2447,29 @@ void CVideoAviDoc::SaveSettings()
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection;
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
-	{
-		// Doc settings
-		sSection = _T("VideoAviDoc");
-		pApp->WriteProfileInt(sSection, _T("TimePositionShow"), m_bTimePositionShow);
-		pApp->WriteProfileInt(sSection, _T("UseDxDraw"), m_bUseDxDraw);
-		pApp->WriteProfileInt(sSection, _T("ForceRgb"), m_bForceRgb);
-		pApp->WriteProfileInt(sSection, _T("AudioPlayDeviceID"), m_dwPlayAudioDeviceID);
+	// Doc settings
+	sSection = _T("VideoAviDoc");
+	pApp->WriteProfileInt(sSection, _T("TimePositionShow"), m_bTimePositionShow);
+	pApp->WriteProfileInt(sSection, _T("UseDxDraw"), m_bUseDxDraw);
+	pApp->WriteProfileInt(sSection, _T("ForceRgb"), m_bForceRgb);
+	pApp->WriteProfileInt(sSection, _T("AudioPlayDeviceID"), m_dwPlayAudioDeviceID);
 		
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate);
 		
-		if (m_pAudioCompressorWaveFormat)
-			pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
-		pApp->WriteProfileInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority);
+	if (m_pAudioCompressorWaveFormat)
+		pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
+	pApp->WriteProfileInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority);
 
-		// View settings
-		sSection = _T("VideoAviView");
-		pApp->WriteProfileInt(sSection, _T("UserZoomRectLeft"), m_PrevUserZoomRect.left);
-		pApp->WriteProfileInt(sSection, _T("UserZoomRectTop"), m_PrevUserZoomRect.top);
-		pApp->WriteProfileInt(sSection, _T("UserZoomRectRight"), m_PrevUserZoomRect.right);
-		pApp->WriteProfileInt(sSection, _T("UserZoomRectBottom"), m_PrevUserZoomRect.bottom);
-	}
-	else
-	{
-		// Make a temporary copy because writing to memory sticks is so slow! 
-		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-
-		// Doc settings
-		sSection = _T("VideoAviDoc");
-		::WriteProfileIniInt(sSection, _T("TimePositionShow"), m_bTimePositionShow, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("UseDxDraw"), m_bUseDxDraw, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ForceRgb"), m_bForceRgb, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("AudioPlayDeviceID"), m_dwPlayAudioDeviceID, sTempFileName);
-		
-		::WriteProfileIniInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate, sTempFileName);
-		
-		if (m_pAudioCompressorWaveFormat)
-			::WriteProfileIniBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX), sTempFileName);
-		::WriteProfileIniInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority, sTempFileName);
-
-		// View settings
-		sSection = _T("VideoAviView");
-		::WriteProfileIniInt(sSection, _T("UserZoomRectLeft"), m_PrevUserZoomRect.left, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("UserZoomRectTop"), m_PrevUserZoomRect.top, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("UserZoomRectRight"), m_PrevUserZoomRect.right, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("UserZoomRectBottom"), m_PrevUserZoomRect.bottom, sTempFileName);
-
-		// Move it
-		::DeleteFile(pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-		::MoveFile(sTempFileName, pApp->m_pszProfileName);
-	}
+	// View settings
+	sSection = _T("VideoAviView");
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectLeft"), m_PrevUserZoomRect.left);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectTop"), m_PrevUserZoomRect.top);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectRight"), m_PrevUserZoomRect.right);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectBottom"), m_PrevUserZoomRect.bottom);
 }
 
 __forceinline BOOL CVideoAviDoc::GetPlayFrameRate(DWORD* pdwRate, DWORD* pdwScale) const

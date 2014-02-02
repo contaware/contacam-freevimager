@@ -5,7 +5,6 @@
 #include "uimager.h"
 #include "HostPortDlg.h"
 #include "VideoDeviceDoc.h"
-#include "IniFile.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -279,56 +278,23 @@ void CHostPortDlg::SaveSettings()
 		m_DeviceTypeModesHistory.RemoveAt(m_DeviceTypeModesHistory.GetUpperBound());
 	}
 
-	// Write to Registry
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+	// Write them
+	for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
 	{
-		for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
-		{
-			// Host
-			CString sHostEntry;
-			sHostEntry.Format(_T("HostHistory%d"), i);
-			pApp->WriteProfileString(sSection, sHostEntry, m_HostsHistory[i]);
+		// Host
+		CString sHostEntry;
+		sHostEntry.Format(_T("HostHistory%d"), i);
+		pApp->WriteProfileString(sSection, sHostEntry, m_HostsHistory[i]);
 			
-			// Port
-			CString sPortEntry;
-			sPortEntry.Format(_T("PortHistory%d"), i);
-			pApp->WriteProfileInt(sSection, sPortEntry, (int)m_PortsHistory[i]);
+		// Port
+		CString sPortEntry;
+		sPortEntry.Format(_T("PortHistory%d"), i);
+		pApp->WriteProfileInt(sSection, sPortEntry, (int)m_PortsHistory[i]);
 
-			// Device Type and Mode
-			CString sDeviceTypeModeEntry;
-			sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-			pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, (int)m_DeviceTypeModesHistory[i]);
-		}
-	}
-	// Write to INI File
-	else
-	{
-		// Make a temporary copy because writing to memory sticks is so slow! 
-		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-		for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
-		{
-			// Host
-			CString sHostEntry;
-			sHostEntry.Format(_T("HostHistory%d"), i);
-			::WriteProfileIniString(sSection, sHostEntry, m_HostsHistory[i], sTempFileName);
-
-			// Port
-			CString sPortEntry;
-			sPortEntry.Format(_T("PortHistory%d"), i);
-			::WriteProfileIniInt(sSection, sPortEntry, (int)m_PortsHistory[i], sTempFileName);
-
-			// Device Type and Mode
-			CString sDeviceTypeModeEntry;
-			sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-			::WriteProfileIniInt(sSection, sDeviceTypeModeEntry, (int)m_DeviceTypeModesHistory[i], sTempFileName);
-		}
-
-		// Move it
-		::DeleteFile(pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-		::MoveFile(sTempFileName, pApp->m_pszProfileName);
+		// Device Type and Mode
+		CString sDeviceTypeModeEntry;
+		sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
+		pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, (int)m_DeviceTypeModesHistory[i]);
 	}
 }
 

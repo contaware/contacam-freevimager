@@ -921,7 +921,7 @@ public:
 	// Settings
 	void LoadAndDeleteOldZonesSettings();
 	BOOL LoadZonesSettings();
-	void SaveZonesSettings(const CString& sProfileName = _T(""));
+	void SaveZonesSettings();
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
 	void SaveSettings();
 	void ExportDetectionZones(const CString& sFileName);

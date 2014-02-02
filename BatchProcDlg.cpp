@@ -14,7 +14,6 @@
 #include "Tiff2Pdf.h"
 #include "VideoFormatDlg.h"
 #include "IMAPI2DownloadDlg.h"
-#include "IniFile.h"
 #include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
@@ -1968,136 +1967,63 @@ void CBatchProcDlg::SaveSettings()
 	CString sSection(_T("BatchDlg"));
 	CWinApp* pApp = ::AfxGetApp();
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+	pApp->WriteProfileInt(sSection, _T("OptimizationSelection"), m_nOptimizationSelection);
+	pApp->WriteProfileInt(sSection, _T("PixelsPercentSel"), m_ShrinkTab.m_nPixelsPercentSel);
+	pApp->WriteProfileInt(sSection, _T("ShrinkingPictures"), m_ShrinkTab.m_bShrinkingPictures);
+	pApp->WriteProfileInt(sSection, _T("ShrinkingPercent"), m_ShrinkTab.m_nShrinkingPercent);
+	pApp->WriteProfileInt(sSection, _T("ShrinkingPixels"), m_ShrinkTab.m_nShrinkingPixels);
+	pApp->WriteProfileInt(sSection, _T("JpegQuality"), m_JpegTab.m_nJpegQuality);
+	pApp->WriteProfileInt(sSection, _T("TiffJpegQuality"), m_TiffTab.m_nJpegQuality);
+	pApp->WriteProfileInt(sSection, _T("TiffCompression"), m_TiffTab.m_nCompression);
+	pApp->WriteProfileInt(sSection, _T("TiffForceCompression"), m_TiffTab.m_bForceCompression);
+	pApp->WriteProfileString(sSection, _T("PdfPaperSize"), m_TiffTab.m_sPdfPaperSize);
+	pApp->WriteProfileInt(sSection, _T("Recursive"), m_bRecursive);
+	pApp->WriteProfileString(sSection, _T("Src"), m_sSrc);
+	pApp->WriteProfileString(sSection, _T("Dst"), m_sDst);
+	pApp->WriteProfileString(sSection, _T("OutputFileName"), m_sOutputFileName);
+	pApp->WriteProfileInt(sSection, _T("OutputSelection"), m_nOutputSelection);
+	pApp->WriteProfileInt(sSection, _T("InputSelection"), m_nInputSelection);
+	pApp->WriteProfileInt(sSection, _T("ExifThumbOperationType"), m_JpegTab.m_nExifThumbOperationType);
+	pApp->WriteProfileInt(sSection, _T("ExtChangeType"), m_GeneralTab.m_nExtChangeType);
+	pApp->WriteProfileInt(sSection, _T("IptcPriority"), m_GeneralTab.m_nIptcPriority);
+	pApp->WriteProfileInt(sSection, _T("AutoOrientate"), m_JpegTab.m_bAutoOrientate);
+	pApp->WriteProfileInt(sSection, _T("ForceJpegQuality"), m_JpegTab.m_bForceJpegQuality);
+	pApp->WriteProfileInt(sSection, _T("Rename"), m_bRename);
+	pApp->WriteProfileString(sSection, _T("RenamePattern"), m_sRename);
+	pApp->WriteProfileInt(sSection, _T("Conversion"), m_bConversion);
+	pApp->WriteProfileInt(sSection, _T("Sharpen"), m_ShrinkTab.m_bSharpen);
+	pApp->WriteProfileInt(sSection, _T("WorkOnAllPages"), m_TiffTab.m_bWorkOnAllPages);
+	pApp->WriteProfileInt(sSection, _T("RemoveCom"), m_JpegTab.m_bRemoveCom);
+	pApp->WriteProfileInt(sSection, _T("RemoveExif"), m_JpegTab.m_bRemoveExif);
+	pApp->WriteProfileInt(sSection, _T("RemoveIcc"), m_JpegTab.m_bRemoveIcc);
+	pApp->WriteProfileInt(sSection, _T("RemoveXmp"), m_JpegTab.m_bRemoveXmp);
+	pApp->WriteProfileInt(sSection, _T("RemoveIptc"), m_JpegTab.m_bRemoveIptc);
+	pApp->WriteProfileInt(sSection, _T("RemoveJfif"), m_JpegTab.m_bRemoveJfif);
+	pApp->WriteProfileInt(sSection, _T("RemoveOtherAppSections"), m_JpegTab.m_bRemoveOtherAppSections);
+	pApp->WriteProfileInt(sSection, _T("MergeXmp"), m_GeneralTab.m_bMergeXmp);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffset"), m_GeneralTab.m_bExifTimeOffset);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSign"), m_GeneralTab.m_nExifTimeOffsetSign);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetDays"), m_GeneralTab.m_nExifTimeOffsetDays);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetHours"), m_GeneralTab.m_nExifTimeOffsetHours);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetMin"), m_GeneralTab.m_nExifTimeOffsetMin);
+	pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec);
+	pApp->WriteProfileInt(sSection, _T("ListFilesCount"), m_List.GetItemCount());
+	pApp->WriteProfileInt(sSection, _T("MusicPreview"), m_bMusicPreview);
+	pApp->WriteProfileInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()));
+	for (int i = 0 ; i < m_List.GetItemCount() ; i++)
 	{
-		pApp->WriteProfileInt(sSection, _T("OptimizationSelection"), m_nOptimizationSelection);
-		pApp->WriteProfileInt(sSection, _T("PixelsPercentSel"), m_ShrinkTab.m_nPixelsPercentSel);
-		pApp->WriteProfileInt(sSection, _T("ShrinkingPictures"), m_ShrinkTab.m_bShrinkingPictures);
-		pApp->WriteProfileInt(sSection, _T("ShrinkingPercent"), m_ShrinkTab.m_nShrinkingPercent);
-		pApp->WriteProfileInt(sSection, _T("ShrinkingPixels"), m_ShrinkTab.m_nShrinkingPixels);
-		pApp->WriteProfileInt(sSection, _T("JpegQuality"), m_JpegTab.m_nJpegQuality);
-		pApp->WriteProfileInt(sSection, _T("TiffJpegQuality"), m_TiffTab.m_nJpegQuality);
-		pApp->WriteProfileInt(sSection, _T("TiffCompression"), m_TiffTab.m_nCompression);
-		pApp->WriteProfileInt(sSection, _T("TiffForceCompression"), m_TiffTab.m_bForceCompression);
-		pApp->WriteProfileString(sSection, _T("PdfPaperSize"), m_TiffTab.m_sPdfPaperSize);
-		pApp->WriteProfileInt(sSection, _T("Recursive"), m_bRecursive);
-		pApp->WriteProfileString(sSection, _T("Src"), m_sSrc);
-		pApp->WriteProfileString(sSection, _T("Dst"), m_sDst);
-		pApp->WriteProfileString(sSection, _T("OutputFileName"), m_sOutputFileName);
-		pApp->WriteProfileInt(sSection, _T("OutputSelection"), m_nOutputSelection);
-		pApp->WriteProfileInt(sSection, _T("InputSelection"), m_nInputSelection);
-		pApp->WriteProfileInt(sSection, _T("ExifThumbOperationType"), m_JpegTab.m_nExifThumbOperationType);
-		pApp->WriteProfileInt(sSection, _T("ExtChangeType"), m_GeneralTab.m_nExtChangeType);
-		pApp->WriteProfileInt(sSection, _T("IptcPriority"), m_GeneralTab.m_nIptcPriority);
-		pApp->WriteProfileInt(sSection, _T("AutoOrientate"), m_JpegTab.m_bAutoOrientate);
-		pApp->WriteProfileInt(sSection, _T("ForceJpegQuality"), m_JpegTab.m_bForceJpegQuality);
-		pApp->WriteProfileInt(sSection, _T("Rename"), m_bRename);
-		pApp->WriteProfileString(sSection, _T("RenamePattern"), m_sRename);
-		pApp->WriteProfileInt(sSection, _T("Conversion"), m_bConversion);
-		pApp->WriteProfileInt(sSection, _T("Sharpen"), m_ShrinkTab.m_bSharpen);
-		pApp->WriteProfileInt(sSection, _T("WorkOnAllPages"), m_TiffTab.m_bWorkOnAllPages);
-		pApp->WriteProfileInt(sSection, _T("RemoveCom"), m_JpegTab.m_bRemoveCom);
-		pApp->WriteProfileInt(sSection, _T("RemoveExif"), m_JpegTab.m_bRemoveExif);
-		pApp->WriteProfileInt(sSection, _T("RemoveIcc"), m_JpegTab.m_bRemoveIcc);
-		pApp->WriteProfileInt(sSection, _T("RemoveXmp"), m_JpegTab.m_bRemoveXmp);
-		pApp->WriteProfileInt(sSection, _T("RemoveIptc"), m_JpegTab.m_bRemoveIptc);
-		pApp->WriteProfileInt(sSection, _T("RemoveJfif"), m_JpegTab.m_bRemoveJfif);
-		pApp->WriteProfileInt(sSection, _T("RemoveOtherAppSections"), m_JpegTab.m_bRemoveOtherAppSections);
-		pApp->WriteProfileInt(sSection, _T("MergeXmp"), m_GeneralTab.m_bMergeXmp);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffset"), m_GeneralTab.m_bExifTimeOffset);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSign"), m_GeneralTab.m_nExifTimeOffsetSign);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetDays"), m_GeneralTab.m_nExifTimeOffsetDays);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetHours"), m_GeneralTab.m_nExifTimeOffsetHours);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetMin"), m_GeneralTab.m_nExifTimeOffsetMin);
-		pApp->WriteProfileInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec);
-		pApp->WriteProfileInt(sSection, _T("ListFilesCount"), m_List.GetItemCount());
-		pApp->WriteProfileInt(sSection, _T("MusicPreview"), m_bMusicPreview);
-		pApp->WriteProfileInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()));
-		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
-		{
-			CString s;
-			s.Format(_T("ListFile%i"), i+1);
-			pApp->WriteProfileString(sSection, s, m_List.GetItemText(i, LIST_PATH)
-												+ m_List.GetItemText(i, LIST_FILENAME));
-		}
-		unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
-		pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&(m_GeneralTab.m_dFrameRate), nSize);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
-		pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
-		pApp->WriteProfileInt(sSection, _T("QualityBitrate"), m_nQualityBitrate);
+		CString s;
+		s.Format(_T("ListFile%i"), i+1);
+		pApp->WriteProfileString(sSection, s, m_List.GetItemText(i, LIST_PATH)
+											+ m_List.GetItemText(i, LIST_FILENAME));
 	}
-	else
-	{
-		// Make a temporary copy because writing to memory sticks is so slow! 
-		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-		::WriteProfileIniInt(sSection, _T("OptimizationSelection"), m_nOptimizationSelection, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("PixelsPercentSel"), m_ShrinkTab.m_nPixelsPercentSel, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ShrinkingPictures"), m_ShrinkTab.m_bShrinkingPictures, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ShrinkingPercent"), m_ShrinkTab.m_nShrinkingPercent, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ShrinkingPixels"), m_ShrinkTab.m_nShrinkingPixels, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("JpegQuality"), m_JpegTab.m_nJpegQuality, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("TiffJpegQuality"), m_TiffTab.m_nJpegQuality, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("TiffCompression"), m_TiffTab.m_nCompression, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("TiffForceCompression"), m_TiffTab.m_bForceCompression, sTempFileName);
-		::WriteProfileIniString(sSection, _T("PdfPaperSize"), m_TiffTab.m_sPdfPaperSize, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("Recursive"), m_bRecursive, sTempFileName);
-		::WriteProfileIniString(sSection, _T("Src"), m_sSrc, sTempFileName);
-		::WriteProfileIniString(sSection, _T("Dst"), m_sDst, sTempFileName);
-		::WriteProfileIniString(sSection, _T("OutputFileName"), m_sOutputFileName, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("OutputSelection"), m_nOutputSelection, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("InputSelection"), m_nInputSelection, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifThumbOperationType"), m_JpegTab.m_nExifThumbOperationType, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExtChangeType"), m_GeneralTab.m_nExtChangeType, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("IptcPriority"), m_GeneralTab.m_nIptcPriority, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("AutoOrientate"), m_JpegTab.m_bAutoOrientate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ForceJpegQuality"), m_JpegTab.m_bForceJpegQuality, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("Rename"), m_bRename, sTempFileName);
-		::WriteProfileIniString(sSection, _T("RenamePattern"), m_sRename, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("Conversion"), m_bConversion, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("Sharpen"), m_ShrinkTab.m_bSharpen, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("WorkOnAllPages"), m_TiffTab.m_bWorkOnAllPages, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveCom"), m_JpegTab.m_bRemoveCom, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveExif"), m_JpegTab.m_bRemoveExif, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveIcc"), m_JpegTab.m_bRemoveIcc, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveXmp"), m_JpegTab.m_bRemoveXmp, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveIptc"), m_JpegTab.m_bRemoveIptc, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveJfif"), m_JpegTab.m_bRemoveJfif, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RemoveOtherAppSections"), m_JpegTab.m_bRemoveOtherAppSections, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("MergeXmp"), m_GeneralTab.m_bMergeXmp, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffset"), m_GeneralTab.m_bExifTimeOffset, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetSign"), m_GeneralTab.m_nExifTimeOffsetSign, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetDays"), m_GeneralTab.m_nExifTimeOffsetDays, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetHours"), m_GeneralTab.m_nExifTimeOffsetHours, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetMin"), m_GeneralTab.m_nExifTimeOffsetMin, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ExifTimeOffsetSec"), m_GeneralTab.m_nExifTimeOffsetSec, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("ListFilesCount"), m_List.GetItemCount(), sTempFileName);
-		::WriteProfileIniInt(sSection, _T("MusicPreview"), m_bMusicPreview, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("InitTab"), MAX(0, m_TabAdvSettings.GetSSLActivePage()), sTempFileName);
-		for (int i = 0 ; i < m_List.GetItemCount() ; i++)
-		{
-			CString s;
-			s.Format(_T("ListFile%i"), i+1);
-			::WriteProfileIniString(sSection, s,
-									m_List.GetItemText(i, LIST_PATH) + m_List.GetItemText(i, LIST_FILENAME),
-									sTempFileName);
-		}
-		unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
-		::WriteProfileIniBinary(sSection, _T("FrameRate"), (LPBYTE)&(m_GeneralTab.m_dFrameRate), nSize, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("QualityBitrate"), m_nQualityBitrate, sTempFileName);
-
-		// Move it
-		::DeleteFile(pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-		::MoveFile(sTempFileName, pApp->m_pszProfileName);
-	}
+	unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
+	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&(m_GeneralTab.m_dFrameRate), nSize);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
+	pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
+	pApp->WriteProfileInt(sSection, _T("QualityBitrate"), m_nQualityBitrate);
 }
 
 void CBatchProcDlg::OnRadioOptimizeAdvanced() 

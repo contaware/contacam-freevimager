@@ -7,7 +7,6 @@
 #include "OsdDlg.h"
 #include "MyMemDC.h"
 #include "Dib.h"
-#include "IniFile.h"
 #include "PictureDoc.h"
 #include "PictureView.h"
 
@@ -1284,59 +1283,25 @@ void COsdDlg::SaveSettings()
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("OsdDlg"));
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
-	{
-		GetWindowPlacement(&wpl);
-		pApp->WriteProfileInt(sSection,	_T("Left"),			wpl.rcNormalPosition.left);
-		pApp->WriteProfileInt(sSection,	_T("Right"),		wpl.rcNormalPosition.right);
-		pApp->WriteProfileInt(sSection,	_T("Top"),			wpl.rcNormalPosition.top);
-		pApp->WriteProfileInt(sSection,	_T("Bottom"),		wpl.rcNormalPosition.bottom);
-		pApp->WriteProfileInt(sSection,	_T("MonitorLeft"),	m_rcMonitor.left);
-		pApp->WriteProfileInt(sSection,	_T("MonitorRight"),	m_rcMonitor.right);
-		pApp->WriteProfileInt(sSection,	_T("MonitorTop"),	m_rcMonitor.top);
-		pApp->WriteProfileInt(sSection,	_T("MonitorBottom"),m_rcMonitor.bottom);
+	GetWindowPlacement(&wpl);
+	pApp->WriteProfileInt(sSection,	_T("Left"),			wpl.rcNormalPosition.left);
+	pApp->WriteProfileInt(sSection,	_T("Right"),		wpl.rcNormalPosition.right);
+	pApp->WriteProfileInt(sSection,	_T("Top"),			wpl.rcNormalPosition.top);
+	pApp->WriteProfileInt(sSection,	_T("Bottom"),		wpl.rcNormalPosition.bottom);
+	pApp->WriteProfileInt(sSection,	_T("MonitorLeft"),	m_rcMonitor.left);
+	pApp->WriteProfileInt(sSection,	_T("MonitorRight"),	m_rcMonitor.right);
+	pApp->WriteProfileInt(sSection,	_T("MonitorTop"),	m_rcMonitor.top);
+	pApp->WriteProfileInt(sSection,	_T("MonitorBottom"),m_rcMonitor.bottom);
 
-		pApp->WriteProfileInt(sSection,	_T("AutoSize"), m_bAutoSize);
-		pApp->WriteProfileInt(sSection, _T("FontSize"), m_nFontSize);
-		pApp->WriteProfileInt(sSection,	_T("TimeoutMs"), m_nTimeout);
-		pApp->WriteProfileInt(sSection,	_T("FontColor"), m_crFontColor);
-		pApp->WriteProfileInt(sSection,	_T("BackgroundColor"), m_crBackgroundColor);
-		pApp->WriteProfileInt(sSection,	_T("UsePictureDocBackgroundColor"), m_bUsePictureDocBackgroundColor);
-		pApp->WriteProfileString(sSection, _T("FontFace"), m_sFontFace);
-		pApp->WriteProfileInt(sSection,	_T("MaxOpacity"), m_nMaxOpacity);
-		pApp->WriteProfileInt(sSection, _T("DisplayState"),	m_dwDisplayState);
-	}
-	else
-	{
-		// Make a temporary copy because writing to memory sticks is so slow! 
-		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-		GetWindowPlacement(&wpl);
-		::WriteProfileIniInt(sSection,	_T("Left"),			wpl.rcNormalPosition.left, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("Right"),		wpl.rcNormalPosition.right, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("Top"),			wpl.rcNormalPosition.top, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("Bottom"),		wpl.rcNormalPosition.bottom, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("MonitorLeft"),	m_rcMonitor.left, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("MonitorRight"),	m_rcMonitor.right, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("MonitorTop"),	m_rcMonitor.top, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("MonitorBottom"),m_rcMonitor.bottom, sTempFileName);
-
-		::WriteProfileIniInt(sSection,	_T("AutoSize"), m_bAutoSize, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("FontSize"), m_nFontSize, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("TimeoutMs"), m_nTimeout, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("FontColor"), m_crFontColor, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("BackgroundColor"), m_crBackgroundColor, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("UsePictureDocBackgroundColor"), m_bUsePictureDocBackgroundColor, sTempFileName);
-		::WriteProfileIniString(sSection, _T("FontFace"), m_sFontFace, sTempFileName);
-		::WriteProfileIniInt(sSection,	_T("MaxOpacity"), m_nMaxOpacity, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("DisplayState"),	m_dwDisplayState, sTempFileName);
-
-		// Move it
-		::DeleteFile(pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-		::MoveFile(sTempFileName, pApp->m_pszProfileName);
-	}
+	pApp->WriteProfileInt(sSection,	_T("AutoSize"), m_bAutoSize);
+	pApp->WriteProfileInt(sSection, _T("FontSize"), m_nFontSize);
+	pApp->WriteProfileInt(sSection,	_T("TimeoutMs"), m_nTimeout);
+	pApp->WriteProfileInt(sSection,	_T("FontColor"), m_crFontColor);
+	pApp->WriteProfileInt(sSection,	_T("BackgroundColor"), m_crBackgroundColor);
+	pApp->WriteProfileInt(sSection,	_T("UsePictureDocBackgroundColor"), m_bUsePictureDocBackgroundColor);
+	pApp->WriteProfileString(sSection, _T("FontFace"), m_sFontFace);
+	pApp->WriteProfileInt(sSection,	_T("MaxOpacity"), m_nMaxOpacity);
+	pApp->WriteProfileInt(sSection, _T("DisplayState"),	m_dwDisplayState);
 }
 
 void COsdDlg::LoadSettingsXml()

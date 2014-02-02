@@ -702,7 +702,6 @@
     </ClCompile>
     <ClCompile Include="IMAPI2Dlg.cpp" />
     <ClCompile Include="IMAPI2DownloadDlg.cpp" />
-    <ClCompile Include="IniFile.cpp" />
     <ClCompile Include="LayeredDlg.cpp" />
     <ClCompile Include="LicenseDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1306,7 +1305,6 @@
     <ClInclude Include="IMAPI2Dlg.h" />
     <ClInclude Include="IMAPI2DownloadDlg.h" />
     <ClInclude Include="Imapi2Small.h" />
-    <ClInclude Include="IniFile.h" />
     <ClInclude Include="ISampleGrabber.h" />
     <ClInclude Include="LayeredDlg.h" />
     <ClInclude Include="LicenseDlg.h" />

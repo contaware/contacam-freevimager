@@ -36,7 +36,6 @@
 #include "RgbToYuv.h"
 #include "sinstance.h"
 #include <atlbase.h>
-#include "IniFile.h"
 #include "DiscMaster.h"
 #include "DiscRecorder.h"
 #include "ProgressDlg.h"
@@ -166,7 +165,6 @@ CUImagerApp::CUImagerApp()
 	m_bFileDlgPreview = TRUE;
 	m_bSettingsLoaded = FALSE;
 	m_bUseSettings = TRUE;
-	m_bUseRegistry = TRUE;
 	m_hAppMutex = NULL;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
@@ -371,6 +369,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Do not use registry if application is not installed
 		// Note: on newer NT systems the ini files are not limited to 64k
+		BOOL bUseRegistry = TRUE;
 #ifndef _DEBUG
 		CString sSoftwareCompany = CString(_T("Software\\")) + CString(MYCOMPANY) + CString(_T("\\"));
 		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName))
@@ -381,10 +380,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			sInstallDir.TrimRight(_T('\\'));
 			sInstallDir += _T("\\");
 			if (sInstallDir.CompareNoCase(sDriveDir) != 0)
-				m_bUseRegistry = FALSE;
+				bUseRegistry = FALSE;
 		}
 		else
-			m_bUseRegistry = FALSE;
+			bUseRegistry = FALSE;
 #endif
 
 #ifndef CPJNSMTP_NOSSL
@@ -418,12 +417,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		{
 			m_bSlideShowOnly = TRUE;
 			m_bUseSettings = FALSE;
-			m_bUseRegistry = FALSE;
+			bUseRegistry = FALSE;
 		}
 
 		// Registry key under which the settings are stored.
 		// This Will create the HKEY_CURRENT_USER\Software\Contaware key
-		if (m_bUseRegistry)
+		if (bUseRegistry)
 			SetRegistryKey(MYCOMPANY);
 		else if (m_bUseSettings)
 		{
@@ -4966,37 +4965,13 @@ void CUImagerApp::OnFileNew()
 				m_nNewPhysUnit = dlg.m_PhysUnit;
 				m_sNewPaperSize = dlg.m_sPaperSize;
 				m_crNewBackgroundColor = dlg.m_crBackgroundColor;
-				if (m_bUseRegistry)
-				{
-					WriteProfileInt(_T("GeneralApp"), _T("NewWidth"), m_nNewWidth);
-					WriteProfileInt(_T("GeneralApp"), _T("NewHeight"), m_nNewHeight);
-					WriteProfileInt(_T("GeneralApp"), _T("NewXDpi"), m_nNewXDpi);
-					WriteProfileInt(_T("GeneralApp"), _T("NewYDpi"), m_nNewYDpi);
-					WriteProfileInt(_T("GeneralApp"), _T("NewPhysUnit"), m_nNewPhysUnit);
-					WriteProfileString(_T("GeneralApp"), _T("NewPaperSize"), m_sNewPaperSize);
-					WriteProfileInt(_T("GeneralApp"), _T("NewBackgroundColor"), m_crNewBackgroundColor);
-				}
-				else
-				{
-					// Make a temporary copy because writing to memory sticks is so slow! 
-					CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
-					::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
-					::CopyFile(m_pszProfileName, sTempFileName, FALSE);
-
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewWidth"), m_nNewWidth, sTempFileName);
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewHeight"), m_nNewHeight, sTempFileName);
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewXDpi"), m_nNewXDpi, sTempFileName);
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewYDpi"), m_nNewYDpi, sTempFileName);
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewPhysUnit"), m_nNewPhysUnit, sTempFileName);
-					::WriteProfileIniString(_T("GeneralApp"), _T("NewPaperSize"), m_sNewPaperSize, sTempFileName);
-					::WriteProfileIniInt(_T("GeneralApp"), _T("NewBackgroundColor"), m_crNewBackgroundColor, sTempFileName);
-
-					// Move it
-					::DeleteFile(m_pszProfileName);
-					::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-					::MoveFile(sTempFileName, m_pszProfileName);
-
-				}
+				WriteProfileInt(_T("GeneralApp"), _T("NewWidth"), m_nNewWidth);
+				WriteProfileInt(_T("GeneralApp"), _T("NewHeight"), m_nNewHeight);
+				WriteProfileInt(_T("GeneralApp"), _T("NewXDpi"), m_nNewXDpi);
+				WriteProfileInt(_T("GeneralApp"), _T("NewYDpi"), m_nNewYDpi);
+				WriteProfileInt(_T("GeneralApp"), _T("NewPhysUnit"), m_nNewPhysUnit);
+				WriteProfileString(_T("GeneralApp"), _T("NewPaperSize"), m_sNewPaperSize);
+				WriteProfileInt(_T("GeneralApp"), _T("NewBackgroundColor"), m_crNewBackgroundColor);
 			}
 			else
 			{
@@ -5763,7 +5738,7 @@ void CUImagerApp::EnumConfiguredDevicePathNames(CStringArray& DevicePathNames)
 {
 	if (m_bUseSettings)
 	{
-		if (m_bUseRegistry)
+		if (m_pszRegistryKey)
 		{
 			const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
 			HKEY hKey;
@@ -6122,50 +6097,20 @@ void CUImagerApp::AddSchedulerEntry(CSchedulerEntry* pSchedulerEntry)
 				WriteProfileInt(_T("GeneralApp"), _T("SchedulerCount"), nCount);
 			}
 		}
-		if (m_bUseRegistry)
-		{
-			WriteProfileString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName);
-			WriteProfileInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type);
-			WriteProfileInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear());
-			WriteProfileInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth());
-			WriteProfileInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay());
-			WriteProfileInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour());
-			WriteProfileInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute());
-			WriteProfileInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond());
-			WriteProfileInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear());
-			WriteProfileInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth());
-			WriteProfileInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay());
-			WriteProfileInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour());
-			WriteProfileInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute());
-			WriteProfileInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond());
-		}
-		else
-		{
-			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
-			::CopyFile(m_pszProfileName, sTempFileName, FALSE);
-
-			::WriteProfileIniString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type, sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute(), sTempFileName);
-			::WriteProfileIniInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond(), sTempFileName);
-
-			// Move it
-			::DeleteFile(m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, m_pszProfileName);
-		}
+		WriteProfileString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName);
+		WriteProfileInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type);
+		WriteProfileInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear());
+		WriteProfileInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth());
+		WriteProfileInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay());
+		WriteProfileInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour());
+		WriteProfileInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute());
+		WriteProfileInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond());
+		WriteProfileInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear());
+		WriteProfileInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth());
+		WriteProfileInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay());
+		WriteProfileInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour());
+		WriteProfileInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute());
+		WriteProfileInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond());
 	}
 }
 
@@ -6224,52 +6169,21 @@ void CUImagerApp::DeleteOnceSchedulerEntry(CString sDevicePathName)
 					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
 						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
 					{
-						if (m_bUseRegistry)
-						{
-							WriteProfileString(sSection, _T("DevicePathName"), _T(""));
-							WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
-							WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
-							WriteProfileInt(sSection, _T("StartYear"), 2000);
-							WriteProfileInt(sSection, _T("StartMonth"), 1);
-							WriteProfileInt(sSection, _T("StartDay"), 1);
-							WriteProfileInt(sSection, _T("StartHour"), 12);
-							WriteProfileInt(sSection, _T("StartMin"), 0);
-							WriteProfileInt(sSection, _T("StartSec"), 0);
-							WriteProfileInt(sSection, _T("StopYear"), 2000);
-							WriteProfileInt(sSection, _T("StopMonth"), 1);
-							WriteProfileInt(sSection, _T("StopDay"), 1);
-							WriteProfileInt(sSection, _T("StopHour"), 12);
-							WriteProfileInt(sSection, _T("StopMin"), 0);
-							WriteProfileInt(sSection, _T("StopSec"), 0);
-						}
-						else
-						{
-							// Make a temporary copy because writing to memory sticks is so slow! 
-							CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
-							::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
-							::CopyFile(m_pszProfileName, sTempFileName, FALSE);
-
-							::WriteProfileIniString(sSection, _T("DevicePathName"), _T(""), sTempFileName);
-							::WriteProfileIniInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("Rec"), (int)TRUE, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartYear"), 2000, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartMonth"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartDay"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartHour"), 12, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartMin"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartSec"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopYear"), 2000, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopMonth"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopDay"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopHour"), 12, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopMin"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopSec"), 0, sTempFileName);
-
-							// Move it
-							::DeleteFile(m_pszProfileName);
-							::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-							::MoveFile(sTempFileName, m_pszProfileName);
-						}
+						WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+						WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+						WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+						WriteProfileInt(sSection, _T("StartYear"), 2000);
+						WriteProfileInt(sSection, _T("StartMonth"), 1);
+						WriteProfileInt(sSection, _T("StartDay"), 1);
+						WriteProfileInt(sSection, _T("StartHour"), 12);
+						WriteProfileInt(sSection, _T("StartMin"), 0);
+						WriteProfileInt(sSection, _T("StartSec"), 0);
+						WriteProfileInt(sSection, _T("StopYear"), 2000);
+						WriteProfileInt(sSection, _T("StopMonth"), 1);
+						WriteProfileInt(sSection, _T("StopDay"), 1);
+						WriteProfileInt(sSection, _T("StopHour"), 12);
+						WriteProfileInt(sSection, _T("StopMin"), 0);
+						WriteProfileInt(sSection, _T("StopSec"), 0);
 						break;
 					}
 				}
@@ -6304,52 +6218,21 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
 						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
 					{
-						if (m_bUseRegistry)
-						{
-							WriteProfileString(sSection, _T("DevicePathName"), _T(""));
-							WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
-							WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
-							WriteProfileInt(sSection, _T("StartYear"), 2000);
-							WriteProfileInt(sSection, _T("StartMonth"), 1);
-							WriteProfileInt(sSection, _T("StartDay"), 1);
-							WriteProfileInt(sSection, _T("StartHour"), 12);
-							WriteProfileInt(sSection, _T("StartMin"), 0);
-							WriteProfileInt(sSection, _T("StartSec"), 0);
-							WriteProfileInt(sSection, _T("StopYear"), 2000);
-							WriteProfileInt(sSection, _T("StopMonth"), 1);
-							WriteProfileInt(sSection, _T("StopDay"), 1);
-							WriteProfileInt(sSection, _T("StopHour"), 12);
-							WriteProfileInt(sSection, _T("StopMin"), 0);
-							WriteProfileInt(sSection, _T("StopSec"), 0);
-						}
-						else
-						{
-							// Make a temporary copy because writing to memory sticks is so slow! 
-							CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
-							::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
-							::CopyFile(m_pszProfileName, sTempFileName, FALSE);
-
-							::WriteProfileIniString(sSection, _T("DevicePathName"), _T(""), sTempFileName);
-							::WriteProfileIniInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("Rec"), (int)TRUE, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartYear"), 2000, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartMonth"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartDay"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartHour"), 12, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartMin"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StartSec"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopYear"), 2000, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopMonth"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopDay"), 1, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopHour"), 12, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopMin"), 0, sTempFileName);
-							::WriteProfileIniInt(sSection, _T("StopSec"), 0, sTempFileName);
-
-							// Move it
-							::DeleteFile(m_pszProfileName);
-							::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-							::MoveFile(sTempFileName, m_pszProfileName);
-						}
+						WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+						WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+						WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+						WriteProfileInt(sSection, _T("StartYear"), 2000);
+						WriteProfileInt(sSection, _T("StartMonth"), 1);
+						WriteProfileInt(sSection, _T("StartDay"), 1);
+						WriteProfileInt(sSection, _T("StartHour"), 12);
+						WriteProfileInt(sSection, _T("StartMin"), 0);
+						WriteProfileInt(sSection, _T("StartSec"), 0);
+						WriteProfileInt(sSection, _T("StopYear"), 2000);
+						WriteProfileInt(sSection, _T("StopMonth"), 1);
+						WriteProfileInt(sSection, _T("StopDay"), 1);
+						WriteProfileInt(sSection, _T("StopHour"), 12);
+						WriteProfileInt(sSection, _T("StopMin"), 0);
+						WriteProfileInt(sSection, _T("StopSec"), 0);
 						break;
 					}
 				}
@@ -6409,31 +6292,10 @@ BOOL CUImagerApp::ShowColorDlg(	COLORREF& crColor,
 
 	if (m_bUseSettings)
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+		for (int i = 0 ; i < 16 ; i++)
 		{
-			for (int i = 0 ; i < 16 ; i++)
-			{
-				szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-				WriteProfileInt(_T("GeneralApp"), szTemp, clCustomColors[i]);
-			}
-		}
-		else
-		{
-			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(GetAppTempDir(), m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, m_pszProfileName); // recache
-			::CopyFile(m_pszProfileName, sTempFileName, FALSE);
-			
-			for (int i = 0 ; i < 16 ; i++)
-			{
-				szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-				::WriteProfileIniInt(_T("GeneralApp"), szTemp, clCustomColors[i], sTempFileName);
-			}
-
-			// Move it
-			::DeleteFile(m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, m_pszProfileName);
+			szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+			WriteProfileInt(_T("GeneralApp"), szTemp, clCustomColors[i]);
 		}
 	}
 

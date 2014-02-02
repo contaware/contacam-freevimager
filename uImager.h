@@ -674,9 +674,6 @@ public:
 	// Should the settings be remembered?
 	BOOL m_bUseSettings;
 
-	// Should we use the registry and not a ini file
-	BOOL m_bUseRegistry;
-
 	// Ending session because of shutdown or log-off
 	volatile BOOL m_bEndSession;
 

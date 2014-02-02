@@ -95,7 +95,7 @@ void CDeleteCamFoldersDlg::OnOK()
 					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0)
 					{
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
-						if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
+						if (::AfxGetApp()->m_pszRegistryKey)
 							::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
 																	CString(MYCOMPANY) + CString(_T("\\")) +
 																	CString(APPNAME_NOEXT) + _T("\\") +

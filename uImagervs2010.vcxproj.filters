@@ -228,9 +228,6 @@
     <ClCompile Include="IMAPI2DownloadDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IniFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LayeredDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -700,9 +697,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Imapi2Small.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IniFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ISampleGrabber.h">

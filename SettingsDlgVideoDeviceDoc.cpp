@@ -5,7 +5,6 @@
 #include "uimager.h"
 #include "VideoDeviceDoc.h"
 #include "sinstance.h"
-#include "IniFile.h"
 #include "BrowseDlg.h"
 #include "SettingsDlgVideoDeviceDoc.h"
 
@@ -555,133 +554,54 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileFullscreenBrowser(FULLSCREENBROWSER_EXITSTRING_ENTRY, m_sFullscreenBrowserExitString);
 	if (pApp->m_bUseSettings)
 	{
-		if (pApp->m_bUseRegistry)
-		{
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("TopMost"),
-											m_bTopMost);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("TrayIcon"),
-											m_bTrayIcon);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("StartFullScreenMode"),
-											m_bStartFullScreenMode);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("ESCExit"),
-											m_bEscExit);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("DisableExtProg"),
-											m_bDisableExtProg);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("FullscreenBrowser"),
-											m_bFullscreenBrowser);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("BrowserAutostart"),
-											m_bBrowserAutostart);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("IPv6"),
-											m_bIPv6);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("AutostartDelayMs"),
-											1000 * m_nAutostartDelay);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("UseCustomTempFolder"),
-											m_bUseCustomTempFolder);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("StartMicroApache"),
-											m_bStartMicroApache);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("MicroApachePort"),
-											m_nMicroApachePort);
-			pApp->WriteProfileInt(			_T("GeneralApp"),
-											_T("MicroApacheDigestAuth"),
-											m_bMicroApacheDigestAuth);
-			pApp->WriteProfileString(		_T("GeneralApp"),
-											_T("MicroApacheAreaname"),
-											m_sMicroApacheAreaname);
-			pApp->WriteSecureProfileString(	_T("GeneralApp"),
-											_T("MicroApacheUsername"),
-											m_sMicroApacheUsername);
-			pApp->WriteSecureProfileString(	_T("GeneralApp"),
-											_T("MicroApachePassword"),
-											m_sMicroApachePassword);
-		}
-		else
-		{
-			// Make a temporary copy because writing to memory sticks is so slow! 
-			CString sTempFileName = ::MakeTempFileName(pApp->GetAppTempDir(), pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-			::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("TopMost"),
-											m_bTopMost,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("TrayIcon"),
-											m_bTrayIcon,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("StartFullScreenMode"),
-											m_bStartFullScreenMode,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("ESCExit"),
-											m_bEscExit,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("DisableExtProg"),
-											m_bDisableExtProg,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("FullscreenBrowser"),
-											m_bFullscreenBrowser,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("BrowserAutostart"),
-											m_bBrowserAutostart,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("IPv6"),
-											m_bIPv6,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("AutostartDelayMs"),
-											1000 * m_nAutostartDelay,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("UseCustomTempFolder"),
-											m_bUseCustomTempFolder,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("StartMicroApache"),
-											m_bStartMicroApache,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("MicroApachePort"),
-											m_nMicroApachePort,
-											sTempFileName);
-			::WriteProfileIniInt(			_T("GeneralApp"),
-											_T("MicroApacheDigestAuth"),
-											m_bMicroApacheDigestAuth,
-											sTempFileName);
-			::WriteProfileIniString(		_T("GeneralApp"),
-											_T("MicroApacheAreaname"),
-											m_sMicroApacheAreaname,
-											sTempFileName);
-			::WriteSecureProfileIniString(	_T("GeneralApp"),
-											_T("MicroApacheUsername"),
-											m_sMicroApacheUsername,
-											sTempFileName);
-			::WriteSecureProfileIniString(	_T("GeneralApp"),
-											_T("MicroApachePassword"),
-											m_sMicroApachePassword,
-											sTempFileName);
-
-			// Move it
-			::DeleteFile(pApp->m_pszProfileName);
-			::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-			::MoveFile(sTempFileName, pApp->m_pszProfileName);
-		}
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("TopMost"),
+										m_bTopMost);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("TrayIcon"),
+										m_bTrayIcon);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("StartFullScreenMode"),
+										m_bStartFullScreenMode);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("ESCExit"),
+										m_bEscExit);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("DisableExtProg"),
+										m_bDisableExtProg);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("FullscreenBrowser"),
+										m_bFullscreenBrowser);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("BrowserAutostart"),
+										m_bBrowserAutostart);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("IPv6"),
+										m_bIPv6);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("AutostartDelayMs"),
+										1000 * m_nAutostartDelay);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("UseCustomTempFolder"),
+										m_bUseCustomTempFolder);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("StartMicroApache"),
+										m_bStartMicroApache);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("MicroApachePort"),
+										m_nMicroApachePort);
+		pApp->WriteProfileInt(			_T("GeneralApp"),
+										_T("MicroApacheDigestAuth"),
+										m_bMicroApacheDigestAuth);
+		pApp->WriteProfileString(		_T("GeneralApp"),
+										_T("MicroApacheAreaname"),
+										m_sMicroApacheAreaname);
+		pApp->WriteSecureProfileString(	_T("GeneralApp"),
+										_T("MicroApacheUsername"),
+										m_sMicroApacheUsername);
+		pApp->WriteSecureProfileString(	_T("GeneralApp"),
+										_T("MicroApachePassword"),
+										m_sMicroApachePassword);
 	}
 
 	// Redraw web server port

@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "XmpDlg.h"
-#include "IniFile.h"
 #include "NoVistaFileDlg.h"
 
 #ifdef _DEBUG
@@ -1193,126 +1192,61 @@ void CXmpDlg::SaveSettings()
 	else
 		sSection = _T("XmpDlg");
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseRegistry)
-	{
-		// Contact
-		pApp->WriteProfileInt(sSection, _T("RadioByline"),		m_nRadioByline);
-		pApp->WriteProfileInt(sSection, _T("RadioBylineTitle"), m_nRadioBylineTitle); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiAdrExtadr"), m_nRadioCiAdrExtadr);
-		pApp->WriteProfileInt(sSection, _T("RadioCiAdrCity"),	m_nRadioCiAdrCity); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiAdrRegion"), m_nRadioCiAdrRegion); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiAdrPcode"),	m_nRadioCiAdrPcode); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiAdrCtry"),	m_nRadioCiAdrCtry); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiTelWork"),	m_nRadioCiTelWork); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiEmailWork"), m_nRadioCiEmailWork); 
-		pApp->WriteProfileInt(sSection, _T("RadioCiUrlWork"),	m_nRadioCiUrlWork); 
+	// Ini file writing is slow, especially on memory sticks and network devices
+	BeginWaitCursor();
 
-		// Content
-		pApp->WriteProfileInt(sSection, _T("RadioHeadline"),	m_nRadioHeadline);
-		pApp->WriteProfileInt(sSection, _T("RadioCaption"),		m_nRadioCaption);
-		pApp->WriteProfileInt(sSection, _T("RadioKeywords"),	m_nRadioKeywords);
-		pApp->WriteProfileInt(sSection, _T("RadioSubjectCode"), m_nRadioSubjectCode);
-		pApp->WriteProfileInt(sSection, _T("RadioCategory"),	m_nRadioCategory);
-		pApp->WriteProfileInt(sSection, _T("RadioSupplementalCategories"), m_nRadioSupplementalCategories);
-		pApp->WriteProfileInt(sSection, _T("RadioCaptionWriter"), m_nRadioCaptionWriter);
+	// Contact
+	pApp->WriteProfileInt(sSection, _T("RadioByline"),		m_nRadioByline);
+	pApp->WriteProfileInt(sSection, _T("RadioBylineTitle"), m_nRadioBylineTitle); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiAdrExtadr"), m_nRadioCiAdrExtadr);
+	pApp->WriteProfileInt(sSection, _T("RadioCiAdrCity"),	m_nRadioCiAdrCity); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiAdrRegion"), m_nRadioCiAdrRegion); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiAdrPcode"),	m_nRadioCiAdrPcode); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiAdrCtry"),	m_nRadioCiAdrCtry); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiTelWork"),	m_nRadioCiTelWork); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiEmailWork"), m_nRadioCiEmailWork); 
+	pApp->WriteProfileInt(sSection, _T("RadioCiUrlWork"),	m_nRadioCiUrlWork); 
 
-		// Image
-		pApp->WriteProfileInt(sSection, _T("RadioDateCreated"),	m_nRadioDateCreated);
-		pApp->WriteProfileInt(sSection, _T("RadioIntellectualGenre"), m_nRadioIntellectualGenre);
-		pApp->WriteProfileInt(sSection, _T("RadioScene"),		m_nRadioScene);
-		pApp->WriteProfileInt(sSection, _T("RadioLocation"),	m_nRadioLocation);
-		pApp->WriteProfileInt(sSection, _T("RadioCity"),		m_nRadioCity);
-		pApp->WriteProfileInt(sSection, _T("RadioProvinceState"), m_nRadioProvinceState);
-		pApp->WriteProfileInt(sSection, _T("RadioCountry"),		m_nRadioCountry);
-		pApp->WriteProfileInt(sSection, _T("RadioCountryCode"),	m_nRadioCountryCode);
+	// Content
+	pApp->WriteProfileInt(sSection, _T("RadioHeadline"),	m_nRadioHeadline);
+	pApp->WriteProfileInt(sSection, _T("RadioCaption"),		m_nRadioCaption);
+	pApp->WriteProfileInt(sSection, _T("RadioKeywords"),	m_nRadioKeywords);
+	pApp->WriteProfileInt(sSection, _T("RadioSubjectCode"), m_nRadioSubjectCode);
+	pApp->WriteProfileInt(sSection, _T("RadioCategory"),	m_nRadioCategory);
+	pApp->WriteProfileInt(sSection, _T("RadioSupplementalCategories"), m_nRadioSupplementalCategories);
+	pApp->WriteProfileInt(sSection, _T("RadioCaptionWriter"), m_nRadioCaptionWriter);
 
-		// Status
-		pApp->WriteProfileInt(sSection, _T("RadioObjectName"),	m_nRadioObjectName);
-		pApp->WriteProfileInt(sSection, _T("RadioOriginalTransmissionReference"), m_nRadioOriginalTransmissionReference);
-		pApp->WriteProfileInt(sSection, _T("RadioSpecialInstructions"), m_nRadioSpecialInstructions);
-		pApp->WriteProfileInt(sSection, _T("RadioCredits"),		m_nRadioCredits);
-		pApp->WriteProfileInt(sSection, _T("RadioSource"),		m_nRadioSource);
-		pApp->WriteProfileInt(sSection, _T("RadioCopyrightNotice"), m_nRadioCopyrightNotice);
-		pApp->WriteProfileInt(sSection, _T("RadioUsageTerms"),	m_nRadioUsageTerms);
-		pApp->WriteProfileInt(sSection, _T("RadioCopyrightUrl"),	m_nRadioCopyrightUrl);
-		pApp->WriteProfileInt(sSection, _T("RadioCopyrightMarked"), m_nRadioCopyrightMarked);
-		pApp->WriteProfileInt(sSection, _T("RadioUrgency"),		m_nRadioUrgency);
+	// Image
+	pApp->WriteProfileInt(sSection, _T("RadioDateCreated"),	m_nRadioDateCreated);
+	pApp->WriteProfileInt(sSection, _T("RadioIntellectualGenre"), m_nRadioIntellectualGenre);
+	pApp->WriteProfileInt(sSection, _T("RadioScene"),		m_nRadioScene);
+	pApp->WriteProfileInt(sSection, _T("RadioLocation"),	m_nRadioLocation);
+	pApp->WriteProfileInt(sSection, _T("RadioCity"),		m_nRadioCity);
+	pApp->WriteProfileInt(sSection, _T("RadioProvinceState"), m_nRadioProvinceState);
+	pApp->WriteProfileInt(sSection, _T("RadioCountry"),		m_nRadioCountry);
+	pApp->WriteProfileInt(sSection, _T("RadioCountryCode"),	m_nRadioCountryCode);
 
-		// Date Created Source
-		pApp->WriteProfileInt(sSection, _T("RadioDateCreatedSource"), m_nRadioDateCreatedSource);
+	// Status
+	pApp->WriteProfileInt(sSection, _T("RadioObjectName"),	m_nRadioObjectName);
+	pApp->WriteProfileInt(sSection, _T("RadioOriginalTransmissionReference"), m_nRadioOriginalTransmissionReference);
+	pApp->WriteProfileInt(sSection, _T("RadioSpecialInstructions"), m_nRadioSpecialInstructions);
+	pApp->WriteProfileInt(sSection, _T("RadioCredits"),		m_nRadioCredits);
+	pApp->WriteProfileInt(sSection, _T("RadioSource"),		m_nRadioSource);
+	pApp->WriteProfileInt(sSection, _T("RadioCopyrightNotice"), m_nRadioCopyrightNotice);
+	pApp->WriteProfileInt(sSection, _T("RadioUsageTerms"),	m_nRadioUsageTerms);
+	pApp->WriteProfileInt(sSection, _T("RadioCopyrightUrl"),	m_nRadioCopyrightUrl);
+	pApp->WriteProfileInt(sSection, _T("RadioCopyrightMarked"), m_nRadioCopyrightMarked);
+	pApp->WriteProfileInt(sSection, _T("RadioUrgency"),		m_nRadioUrgency);
 
-		// Xmp File
-		pApp->WriteProfileString(sSection, _T("XmpLoadFile"), m_sXmpLoadFile);
-		pApp->WriteProfileString(sSection, _T("XmpSaveFile"), m_sXmpSaveFile);
-	}
-	else
-	{
-		// Ini file writing is slow, especially on memory sticks
-		BeginWaitCursor();
+	// Date Created Source
+	pApp->WriteProfileInt(sSection, _T("RadioDateCreatedSource"), m_nRadioDateCreatedSource);
 
-		// Make a temporary copy because writing to memory sticks is so slow! 
-		CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, pApp->m_pszProfileName); // recache
-		::CopyFile(pApp->m_pszProfileName, sTempFileName, FALSE);
+	// Xmp File
+	pApp->WriteProfileString(sSection, _T("XmpLoadFile"), m_sXmpLoadFile);
+	pApp->WriteProfileString(sSection, _T("XmpSaveFile"), m_sXmpSaveFile);
 
-		// Contact
-		::WriteProfileIniInt(sSection, _T("RadioByline"),		m_nRadioByline, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioBylineTitle"), m_nRadioBylineTitle, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiAdrExtadr"), m_nRadioCiAdrExtadr, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCiAdrCity"),	m_nRadioCiAdrCity, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiAdrRegion"), m_nRadioCiAdrRegion, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiAdrPcode"),	m_nRadioCiAdrPcode, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiAdrCtry"),	m_nRadioCiAdrCtry, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiTelWork"),	m_nRadioCiTelWork, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiEmailWork"), m_nRadioCiEmailWork, sTempFileName); 
-		::WriteProfileIniInt(sSection, _T("RadioCiUrlWork"),	m_nRadioCiUrlWork, sTempFileName); 
-
-		// Content
-		::WriteProfileIniInt(sSection, _T("RadioHeadline"),	m_nRadioHeadline, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCaption"),		m_nRadioCaption, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioKeywords"),	m_nRadioKeywords, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioSubjectCode"), m_nRadioSubjectCode, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCategory"),	m_nRadioCategory, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioSupplementalCategories"), m_nRadioSupplementalCategories, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCaptionWriter"), m_nRadioCaptionWriter, sTempFileName);
-
-		// Image
-		::WriteProfileIniInt(sSection, _T("RadioDateCreated"),	m_nRadioDateCreated, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioIntellectualGenre"), m_nRadioIntellectualGenre, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioScene"),		m_nRadioScene, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioLocation"),	m_nRadioLocation, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCity"),		m_nRadioCity, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioProvinceState"), m_nRadioProvinceState, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCountry"),		m_nRadioCountry, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCountryCode"),	m_nRadioCountryCode, sTempFileName);
-
-		// Status
-		::WriteProfileIniInt(sSection, _T("RadioObjectName"),	m_nRadioObjectName, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioOriginalTransmissionReference"), m_nRadioOriginalTransmissionReference, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioSpecialInstructions"), m_nRadioSpecialInstructions, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCredits"),		m_nRadioCredits, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioSource"),		m_nRadioSource, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCopyrightNotice"), m_nRadioCopyrightNotice, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioUsageTerms"),	m_nRadioUsageTerms, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCopyrightUrl"),	m_nRadioCopyrightUrl, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioCopyrightMarked"), m_nRadioCopyrightMarked, sTempFileName);
-		::WriteProfileIniInt(sSection, _T("RadioUrgency"),		m_nRadioUrgency, sTempFileName);
-
-		// Date Created Source
-		::WriteProfileIniInt(sSection, _T("RadioDateCreatedSource"), m_nRadioDateCreatedSource, sTempFileName);
-
-		// Xmp File
-		::WriteProfileIniString(sSection, _T("XmpLoadFile"), m_sXmpLoadFile, sTempFileName);
-		::WriteProfileIniString(sSection, _T("XmpSaveFile"), m_sXmpSaveFile, sTempFileName);
-
-		// Move it
-		::DeleteFile(pApp->m_pszProfileName);
-		::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-		::MoveFile(sTempFileName, pApp->m_pszProfileName);
-
-		// Ini file writing is slow, especially on memory sticks
-		EndWaitCursor();
-	}
+	// Ini file writing is slow, especially on memory sticks and network devices
+	EndWaitCursor();
 }
 
 void CXmpDlg::OnButtonContactOverwrite() 

@@ -34,7 +34,6 @@
 #include "stdafx.h"
 #include <math.h>
 #include "uImager.h"
-#include "IniFile.h"
 #include "ColourPopup.h"
 #include "ColorButtonPicker.h"
 
@@ -864,30 +863,10 @@ void CColourPopup::EndSelection(int nMessage)
 
 		if (m_strProfileSection.GetLength() > 0)
 		{
-			if (::AfxGetApp()->m_pszRegistryKey && *(::AfxGetApp()->m_pszRegistryKey))
+			for (int i = 0 ; i < 16 ; i++)
 			{
-				for (int i = 0 ; i < 16 ; i++)
-				{
-					szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-					::AfxGetApp()->WriteProfileInt(m_strProfileSection, szTemp, clCustomColors[i]);
-				}
-			}
-			else
-			{
-				// Make a temporary copy because writing to memory sticks is so slow!
-				CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), ::AfxGetApp()->m_pszProfileName);
-				::WritePrivateProfileString(NULL, NULL, NULL, ::AfxGetApp()->m_pszProfileName); // recache
-				::CopyFile(::AfxGetApp()->m_pszProfileName, sTempFileName, FALSE);
-				for (int i = 0 ; i < 16 ; i++)
-				{
-					szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-					::WriteProfileIniInt(_T("GeneralApp"), szTemp, clCustomColors[i], sTempFileName);
-				}
-
-				// Move it
-				::DeleteFile(::AfxGetApp()->m_pszProfileName);
-				::WritePrivateProfileString(NULL, NULL, NULL, sTempFileName); // recache
-				::MoveFile(sTempFileName, ::AfxGetApp()->m_pszProfileName);
+				szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+				::AfxGetApp()->WriteProfileInt(m_strProfileSection, szTemp, clCustomColors[i]);
 			}
 		}
 
