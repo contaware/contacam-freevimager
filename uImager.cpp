@@ -1017,13 +1017,8 @@ BOOL CAboutDlg::OnInitDialog()
 	::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
 	CEdit* pCpuCount = (CEdit*)GetDlgItem(IDC_CPUCOUNT);
 	CString sCpuCount;
-	sCpuCount.Format(	ML_STRING(1173, "%d phys. processor%s, %d core%s, %d logical processor%s"),
-						PhysicalNum,
-						PhysicalNum == 1 ? _T("") : _T("s"),
-						TotAvailCore,
-						TotAvailCore == 1 ? _T("") : _T("s"),
-						TotAvailLogical,
-						TotAvailLogical == 1 ? _T("") : _T("s"));
+	sCpuCount.Format(	ML_STRING(1173, "%u phys. processor(s), %u core(s), %u logical processor(s)"),
+						PhysicalNum, TotAvailCore, TotAvailLogical);
 	pCpuCount->SetWindowText(sCpuCount);
 
 	// Total Physical Memory

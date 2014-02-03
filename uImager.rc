@@ -1447,34 +1447,34 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 276, 236
+IDD_ABOUTBOX DIALOGEX 0, 0, 299, 236
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            120,IDC_STATIC,15,10,20,20
-    LTEXT           "Unknown",IDC_VERSION,130,49,136,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2014 Contaware.com, Switzerland",IDC_STATIC2141,51,226,181,8
-    DEFPUSHBUTTON   "OK",IDOK,116,208,50,14,WS_GROUP
+    ICON            120,IDC_STATIC,15,10,21,20
+    LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
+    LTEXT           "Copyright © 2003 - 2014 Contaware.com, Switzerland",IDC_STATIC2141,62,226,181,8
+    DEFPUSHBUTTON   "OK",IDOK,125,208,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
-    LTEXT           "",IDC_APPNAME,74,17,192,8
+    LTEXT           "",IDC_APPNAME,74,17,216,8
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
     LTEXT           "www.contaware.com",IDC_WEB_LINK,74,80,70,8,SS_NOTIFY
     LTEXT           "Developed By:",IDC_STATIC2144,15,110,48,8
-    LTEXT           "Oliver Pfister",IDC_STATIC2145,74,110,192,8
-    GROUPBOX        "",IDC_STATIC2146,7,38,262,26
-    LTEXT           "",IDC_APPVER,74,49,53,8
-    GROUPBOX        "",IDC_STATIC2148,7,100,262,39
-    GROUPBOX        "",IDC_STATIC2149,7,144,262,58
-    LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,192,8
+    LTEXT           "Oliver Pfister",IDC_STATIC2145,74,110,216,8
+    GROUPBOX        "",IDC_STATIC2146,7,38,285,26
+    LTEXT           "",IDC_APPVER,74,49,67,8
+    GROUPBOX        "",IDC_STATIC2148,7,100,285,39
+    GROUPBOX        "",IDC_STATIC2149,7,144,285,58
+    LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,216,8
     LTEXT           "System Info:",IDC_STATIC2150,15,170,44,8
-    LTEXT           "1000 MB",IDC_PHYSMEM,74,178,192,8
-    LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,192,8
+    LTEXT           "1000 MB",IDC_PHYSMEM,74,178,216,8
+    LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,216,8
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
-    LTEXT           "This is the original language",IDC_STATIC2152,74,124,192,8
-    LTEXT           "Mem Stats",IDC_MEMSTATS,74,189,192,8
-    GROUPBOX        "",IDC_STATIC2147,7,69,262,26
+    LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
+    LTEXT           "Mem Stats",IDC_MEMSTATS,74,189,216,8
+    GROUPBOX        "",IDC_STATIC2147,7,69,285,26
 END
 
 IDD_GENERAL DIALOGEX 0, 0, 417, 268
@@ -3488,10 +3488,10 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 269
+        RIGHTMARGIN, 292
         VERTGUIDE, 15
         VERTGUIDE, 74
-        VERTGUIDE, 266
+        VERTGUIDE, 290
         TOPMARGIN, 7
         BOTTOMMARGIN, 231
     END
@@ -4554,7 +4554,7 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1170      "Error: No MMX Processor"
     IDS_MULTILANG_1171      "No usable WinSock DLL found"
-    IDS_MULTILANG_1173      "%d phys. processor%s, %d core%s, %d logical processor%s"
+    IDS_MULTILANG_1173      "%u phys. processor(s), %u core(s), %u logical processor(s)"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
     IDS_MULTILANG_1176      "Wait till all processing is done."
