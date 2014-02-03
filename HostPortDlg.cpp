@@ -64,8 +64,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 	
 	// Init
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
@@ -123,8 +122,7 @@ void CHostPortDlg::OnOK()
 		m_nPort = DEFAULT_TCP_PORT;
 
 	// Save Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		SaveSettings();
+	SaveSettings();
 
 	// This calls UpdateData(TRUE) -> view to vars
 	CDialog::OnOK();

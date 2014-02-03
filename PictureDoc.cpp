@@ -2238,8 +2238,7 @@ CPictureDoc::CPictureDoc()
 	m_bPlayBackgroundMusic = TRUE;
 
 	// Load the Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 }
 
 CPictureDoc::~CPictureDoc()
@@ -2592,8 +2591,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	CString sLastNewFileSaveAsExt(DEFAULT_SAVEAS_EXT);
 	if (m_sFileName == _T(""))
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			sLastNewFileSaveAsExt = ::AfxGetApp()->GetProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), DEFAULT_SAVEAS_EXT);
+		sLastNewFileSaveAsExt = ::AfxGetApp()->GetProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), DEFAULT_SAVEAS_EXT);
 		_tcscpy(FileName, _T("Picture") + sLastNewFileSaveAsExt);
 		bNewFile = TRUE;
 	}
@@ -2652,7 +2650,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	if (dlgFile.DoModal() == IDOK)
 	{
 		// Store default extension for new files
-		if (bNewFile && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		if (bNewFile)
 			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), ::GetFileExt(FileName));
 
 		// Save to itself?
@@ -3894,12 +3892,9 @@ void CPictureDoc::OnFileCopyTo()
 		{
 			// Store directory for next call
 			m_sCopyOrMoveDirName = ::GetDriveAndDirName(fd.GetPathName());
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				::AfxGetApp()->WriteProfileString(	_T("PictureDoc"),
-													_T("CopyOrMoveDirName"),
-													m_sCopyOrMoveDirName);
-			}
+			::AfxGetApp()->WriteProfileString(	_T("PictureDoc"),
+												_T("CopyOrMoveDirName"),
+												m_sCopyOrMoveDirName);
 
 			// Copy
 			if (!::CopyFile(m_sFileName, fd.GetPathName(), FALSE))
@@ -3942,12 +3937,9 @@ void CPictureDoc::OnFileMoveTo()
 		{
 			// Store directory for next call
 			m_sCopyOrMoveDirName = ::GetDriveAndDirName(fd.GetPathName());
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				::AfxGetApp()->WriteProfileString(	_T("PictureDoc"),
-													_T("CopyOrMoveDirName"),
-													m_sCopyOrMoveDirName);
-			}
+			::AfxGetApp()->WriteProfileString(	_T("PictureDoc"),
+												_T("CopyOrMoveDirName"),
+												m_sCopyOrMoveDirName);
 
 			// Move
 			::DeleteFile(fd.GetPathName());
@@ -4744,12 +4736,9 @@ void CPictureDoc::ViewZoomTool()
 	if (!GetView()->m_bFullScreenMode)
 	{
 		m_bZoomTool = TRUE;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("ZoomTool"),
-											TRUE);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("ZoomTool"),
+										TRUE);
 		::AfxGetMainFrame()->StatusText(ML_STRING(1226, "*** Right Click to Zoom Out ***"));
 	}
 }
@@ -4758,24 +4747,18 @@ void CPictureDoc::CancelZoomTool()
 {
 	m_bZoomTool = FALSE;
 	m_bZoomToolMinus = FALSE;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("ZoomTool"),
-										FALSE);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("ZoomTool"),
+									FALSE);
 	::AfxGetMainFrame()->StatusText();
 }
 
 void CPictureDoc::StretchHalftone() 
 {
 	m_bStretchModeHalftone = !m_bStretchModeHalftone;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("StretchModeHalftone"),
-										m_bStretchModeHalftone);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("StretchModeHalftone"),
+									m_bStretchModeHalftone);
 	if (m_pLayeredDlg)
 		m_pLayeredDlg->m_CurrentLayeredDib.Free();
 	GetView()->Draw();
@@ -5166,12 +5149,9 @@ BOOL CPictureDoc::SlideShow(BOOL bRecursive, BOOL bRunSlideshow)
 void CPictureDoc::OnSlideshowDelay2() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(2000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										2000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									2000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay2(CCmdUI* pCmdUI) 
@@ -5182,12 +5162,9 @@ void CPictureDoc::OnUpdateSlideshowDelay2(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay3() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(3000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										3000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									3000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay3(CCmdUI* pCmdUI) 
@@ -5198,12 +5175,9 @@ void CPictureDoc::OnUpdateSlideshowDelay3(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay4() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(4000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										4000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									4000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay4(CCmdUI* pCmdUI) 
@@ -5214,12 +5188,9 @@ void CPictureDoc::OnUpdateSlideshowDelay4(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay5() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(5000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										5000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									5000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay5(CCmdUI* pCmdUI) 
@@ -5230,12 +5201,9 @@ void CPictureDoc::OnUpdateSlideshowDelay5(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay10() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(10000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										10000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									10000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay10(CCmdUI* pCmdUI) 
@@ -5246,12 +5214,9 @@ void CPictureDoc::OnUpdateSlideshowDelay10(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay30() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(30000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										30000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									30000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay30(CCmdUI* pCmdUI) 
@@ -5262,12 +5227,9 @@ void CPictureDoc::OnUpdateSlideshowDelay30(CCmdUI* pCmdUI)
 void CPictureDoc::OnSlideshowDelay60() 
 {
 	m_SlideShowThread.SetMilliSecondsDelay(60000);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowDelay"),
-										60000);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowDelay"),
+									60000);
 }
 
 void CPictureDoc::OnUpdateSlideshowDelay60(CCmdUI* pCmdUI) 
@@ -8409,15 +8371,12 @@ void CPictureDoc::OnEditTo4bits()
 		{
 			m_uiMaxColors16 = dlg.m_uiMaxColors;
 			m_bDitherColorConversion = dlg.m_bDitherColorConversion;
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-												_T("MaxColors16"),
-												m_uiMaxColors16);
-				::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-												_T("DitherColorConversion"),
-												m_bDitherColorConversion);
-			}
+			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+											_T("MaxColors16"),
+											m_uiMaxColors16);
+			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+											_T("DitherColorConversion"),
+											m_bDitherColorConversion);
 		}
 
 		BeginWaitCursor();
@@ -8485,15 +8444,12 @@ void CPictureDoc::OnEditTo8bits()
 		{
 			m_uiMaxColors256 = dlg.m_uiMaxColors;
 			m_bDitherColorConversion = dlg.m_bDitherColorConversion;
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-												_T("MaxColors256"),
-												m_uiMaxColors256);
-				::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-												_T("DitherColorConversion"),
-												m_bDitherColorConversion);
-			}
+			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+											_T("MaxColors256"),
+											m_uiMaxColors256);
+			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+											_T("DitherColorConversion"),
+											m_bDitherColorConversion);
 		}
 
 		BeginWaitCursor();
@@ -8755,12 +8711,9 @@ void CPictureDoc::OnUpdatePlayStop(CCmdUI* pCmdUI)
 void CPictureDoc::PlayLoop() 
 {
 	m_SlideShowThread.SetLoop(!m_SlideShowThread.IsLoop());
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowInfiniteLoop"),
-										m_SlideShowThread.IsLoop());
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowInfiniteLoop"),
+									m_SlideShowThread.IsLoop());
 }
 
 void CPictureDoc::OnPlayLoop() 
@@ -8776,12 +8729,9 @@ void CPictureDoc::OnUpdatePlayLoop(CCmdUI* pCmdUI)
 void CPictureDoc::PlayRandom()
 {
 	m_SlideShowThread.SetRandom(!m_SlideShowThread.IsRandom());
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("SlideShowRandomPlay"),
-										m_SlideShowThread.IsRandom());
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("SlideShowRandomPlay"),
+									m_SlideShowThread.IsRandom());
 }
 
 void CPictureDoc::OnPlayRandom() 
@@ -9475,12 +9425,9 @@ void CPictureDoc::OnPlayTransitionOff()
 	{
 		CancelTransition();
 		m_nTransitionType = 0;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											0);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										0);
 	}
 }
 
@@ -9495,12 +9442,9 @@ void CPictureDoc::OnPlayTransitionRandom()
 	{
 		CancelTransition();
 		m_nTransitionType = 1;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											1);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										1);
 	}
 }
 
@@ -9515,12 +9459,9 @@ void CPictureDoc::OnPlayTransitionChessboard()
 	{
 		CancelTransition();
 		m_nTransitionType = 2;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											2);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										2);
 	}
 }
 
@@ -9535,12 +9476,9 @@ void CPictureDoc::OnPlayTransitionCurtainin()
 	{
 		CancelTransition();
 		m_nTransitionType = 3;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											3);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										3);
 	}
 }
 
@@ -9555,12 +9493,9 @@ void CPictureDoc::OnPlayTransitionRoolin()
 	{
 		CancelTransition();
 		m_nTransitionType = 4;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											4);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										4);
 	}
 }
 
@@ -9575,12 +9510,9 @@ void CPictureDoc::OnPlayTransitionSlidein()
 	{
 		CancelTransition();
 		m_nTransitionType = 5;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											5);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										5);
 	}
 }
 
@@ -9595,12 +9527,9 @@ void CPictureDoc::OnPlayTransitionBlend()
 	{
 		CancelTransition();
 		m_nTransitionType = 6;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("TransitionType"),
-											6);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("TransitionType"),
+										6);
 	}
 }
 
@@ -10473,12 +10402,9 @@ void CPictureDoc::ViewBackgroundColorDlg()
 		// Re-Render with new background color
 		UpdateAlphaRenderedDib();
 
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("BackgroundColor"),
-											m_crBackgroundColor);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("BackgroundColor"),
+										m_crBackgroundColor);
 
 		InvalidateAllViews(FALSE);
 	}
@@ -10640,12 +10566,9 @@ void CPictureDoc::OnUpdateViewMap(CCmdUI* pCmdUI)
 void CPictureDoc::ViewNoBorders()
 {
 	m_bNoBorders = !m_bNoBorders;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("NoBorders"),
-										m_bNoBorders);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("NoBorders"),
+									m_bNoBorders);
 	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
 }
 
@@ -10693,12 +10616,9 @@ void CPictureDoc::OnBackgroundColor()
 	// Re-Render with new background color
 	UpdateAlphaRenderedDib();
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("BackgroundColor"),
-										m_crBackgroundColor);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("BackgroundColor"),
+									m_crBackgroundColor);
 
 	InvalidateAllViews(FALSE);
 }
@@ -10739,12 +10659,9 @@ void CPictureDoc::OnViewEnableOsd()
 	{
 		m_bEnableOsd = !m_bEnableOsd;
 		ShowOsd(m_bEnableOsd);
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("EnableOSD"),
-											m_bEnableOsd);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("EnableOSD"),
+										m_bEnableOsd);
 	}
 }
 
@@ -11508,15 +11425,12 @@ void CPictureDoc::OnLayereddlgMaxsize066()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11534,15 +11448,12 @@ void CPictureDoc::OnLayereddlgMaxsize050()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11560,15 +11471,12 @@ void CPictureDoc::OnLayereddlgMaxsize033()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11586,15 +11494,12 @@ void CPictureDoc::OnLayereddlgMaxsize025()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11612,15 +11517,12 @@ void CPictureDoc::OnLayereddlgSize0125()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}	
 }
 
@@ -11638,15 +11540,12 @@ void CPictureDoc::OnLayereddlgSize025()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11664,15 +11563,12 @@ void CPictureDoc::OnLayereddlgSize050()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11690,15 +11586,12 @@ void CPictureDoc::OnLayereddlgSize100()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11716,15 +11609,12 @@ void CPictureDoc::OnLayereddlgSize200()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11742,15 +11632,12 @@ void CPictureDoc::OnLayereddlgSize400()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11768,15 +11655,12 @@ void CPictureDoc::OnLayereddlgSize800()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11794,15 +11678,12 @@ void CPictureDoc::OnLayereddlgSize1600()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgMaxsizePercent"),
-											m_nLayeredDlgMaxsizePercent);
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgSizePerthousand"),
-											m_nLayeredDlgSizePerthousand);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgMaxsizePercent"),
+										m_nLayeredDlgMaxsizePercent);
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgSizePerthousand"),
+										m_nLayeredDlgSizePerthousand);
 	}
 }
 
@@ -11819,12 +11700,9 @@ void CPictureDoc::OnLayereddlgSizeTopleft()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOrigin"),
-											m_nLayeredDlgOrigin);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOrigin"),
+										m_nLayeredDlgOrigin);
 	}
 }
 
@@ -11841,12 +11719,9 @@ void CPictureDoc::OnLayereddlgSizeTopright()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOrigin"),
-											m_nLayeredDlgOrigin);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOrigin"),
+										m_nLayeredDlgOrigin);
 	}
 }
 
@@ -11863,12 +11738,9 @@ void CPictureDoc::OnLayereddlgSizeBottomleft()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOrigin"),
-											m_nLayeredDlgOrigin);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOrigin"),
+										m_nLayeredDlgOrigin);
 	}
 }
 
@@ -11885,12 +11757,9 @@ void CPictureDoc::OnLayereddlgSizeBottomright()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOrigin"),
-											m_nLayeredDlgOrigin);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOrigin"),
+										m_nLayeredDlgOrigin);
 	}
 }
 
@@ -11907,12 +11776,9 @@ void CPictureDoc::OnLayereddlgOpacity100()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOpacity"),
-											m_nLayeredDlgOpacity);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOpacity"),
+										m_nLayeredDlgOpacity);
 	}
 }
 
@@ -11929,12 +11795,9 @@ void CPictureDoc::OnLayereddlgOpacity80()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOpacity"),
-											m_nLayeredDlgOpacity);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOpacity"),
+										m_nLayeredDlgOpacity);
 	}
 }
 
@@ -11951,12 +11814,9 @@ void CPictureDoc::OnLayereddlgOpacity60()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOpacity"),
-											m_nLayeredDlgOpacity);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOpacity"),
+										m_nLayeredDlgOpacity);
 	}
 }
 
@@ -11973,12 +11833,9 @@ void CPictureDoc::OnLayereddlgOpacity40()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOpacity"),
-											m_nLayeredDlgOpacity);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOpacity"),
+										m_nLayeredDlgOpacity);
 	}
 }
 
@@ -11995,12 +11852,9 @@ void CPictureDoc::OnLayereddlgOpacity20()
 		if (m_pLayeredDlg)
 			m_pLayeredDlg->m_CurrentLayeredDib.Free();
 		GetView()->Draw();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-											_T("LayeredDlgOpacity"),
-											m_nLayeredDlgOpacity);
-		}
+		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+										_T("LayeredDlgOpacity"),
+										m_nLayeredDlgOpacity);
 	}
 }
 

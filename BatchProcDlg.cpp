@@ -1545,8 +1545,7 @@ LONG CBatchProcDlg::OnExitHandler(WPARAM wparam, LPARAM lparam)
 	// Close Dlg?
 	if (m_bDoCloseDlg)
 	{
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			SaveSettings();
+		SaveSettings();
 		ListDeleteAll();
 		EndWaitCursor();
 		DestroyWindow();
@@ -1641,8 +1640,7 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	m_nInitTab = 0;
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 
 	// Create
 	CDialog::Create(CBatchProcDlg::IDD, pParent);
@@ -3802,12 +3800,9 @@ void CBatchProcDlg::OnButtonListAdd()
 
 		// Update preview flag
 		((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview = dlgFile.m_bPreview;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-															_T("FileDlgPreview"),
-															((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview);
-		}
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
+														_T("FileDlgPreview"),
+														((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview);
 
 		// Get File(s)
 		TCHAR* sSource = FileNames;
@@ -3860,12 +3855,9 @@ void CBatchProcDlg::OnButtonListAdd()
 			_tsplitpath(Path, szDrive, szDir, NULL, NULL);
 			((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir = CString(szDrive) + CString(szDir);
 			((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir.TrimRight(_T('\\'));
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				((CUImagerApp*)::AfxGetApp())->WriteProfileString(	_T("GeneralApp"),
-																	_T("LastOpenedDir"),
-																	((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir);
-			}
+			((CUImagerApp*)::AfxGetApp())->WriteProfileString(	_T("GeneralApp"),
+																_T("LastOpenedDir"),
+																((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir);
 		}
 		else // multiple files selected
 		{
@@ -3890,12 +3882,9 @@ void CBatchProcDlg::OnButtonListAdd()
 			// Store Last Opened Directory
 			((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir = CString(Path);
 			((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir.TrimRight(_T('\\'));
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			{
-				((CUImagerApp*)::AfxGetApp())->WriteProfileString(	_T("GeneralApp"),
-																	_T("LastOpenedDir"),
-																	((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir);
-			}
+			((CUImagerApp*)::AfxGetApp())->WriteProfileString(	_T("GeneralApp"),
+																_T("LastOpenedDir"),
+																((CUImagerApp*)::AfxGetApp())->m_sLastOpenedDir);
 
 			// Start Loading Dibs
 			StartLoadDibs();
@@ -3904,12 +3893,9 @@ void CBatchProcDlg::OnButtonListAdd()
 	else
 	{
 		((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview = dlgFile.m_bPreview;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-															_T("FileDlgPreview"),
-															((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview);
-		}
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
+														_T("FileDlgPreview"),
+														((CUImagerApp*)::AfxGetApp())->m_bFileDlgPreview);
 	}
 
 	// Free
@@ -5672,8 +5658,7 @@ void CBatchProcDlg::OnClose()
 		}
 		else
 		{
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				SaveSettings();
+			SaveSettings();
 			ListDeleteAll();
 			EndWaitCursor();
 			DestroyWindow();

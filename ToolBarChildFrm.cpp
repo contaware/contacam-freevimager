@@ -526,8 +526,7 @@ BOOL CPictureToolBar::Create(CWnd* pParentWnd)
 	m_BkgColorButtonPicker.TrackSelection	= TRUE;
 	m_BkgColorButtonPicker.SetCustomText(ML_STRING(1576, "More Colors..."));
 	m_BkgColorButtonPicker.SetDefaultText(ML_STRING(1273, "Default Background"));
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		m_BkgColorButtonPicker.SetProfileSection(_T("GeneralApp"));
+	m_BkgColorButtonPicker.SetProfileSection(_T("GeneralApp"));
 	m_BkgColorButtonPicker.EnableWindow(TRUE);
 
 	ShowWindow(SW_SHOW);
@@ -896,12 +895,9 @@ void CZoomComboBox::OnChangeZoomFactor(double dZoomFactor)
 	pDoc->m_nZoomComboBoxIndex = GetCurSel();
 
 	// Save Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("ZoomComboBoxIndex"),
-										pDoc->m_nZoomComboBoxIndex);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("ZoomComboBoxIndex"),
+									pDoc->m_nZoomComboBoxIndex);
 }
 
 void CZoomComboBox::OnSelEndOk()
@@ -1104,8 +1100,7 @@ void CVideoAviChildFrame::StartShutdown2()
 	m_bShutdown2Started = TRUE;
 
 	// Save Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		pDoc->SaveSettings();
+	pDoc->SaveSettings();
 
 	// Do Not Draw Now!
 	pDoc->m_bNoDrawing = TRUE;
@@ -1492,8 +1487,7 @@ void CVideoDeviceChildFrame::OnClose()
 				pDoc->HideDetectionZones(FALSE); // without saving because done below
 	
 			// Save Settings
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				pDoc->SaveSettings();
+			pDoc->SaveSettings();
 
 			// Log the stopping
 			if (pDoc->m_bCaptureStarted)

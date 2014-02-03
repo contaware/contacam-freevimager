@@ -2233,28 +2233,7 @@ CVideoAviDoc::CVideoAviDoc()
 	ResetPercentDone();
 
 	// Load the Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
-	else
-	{
-		m_bTimePositionShow = FALSE;
-		m_dwPlayAudioDeviceID = 0U;
-		m_dwVideoCompressorFourCC = FCC('MJPG');
-		m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
-		m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE;
-		m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
-		m_nVideoCompressorQualityBitrate = 0;
-
-		// Audio Format set Default to: Mono , 11025 Hz , 8 bits
-		m_pAudioCompressorWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
-		m_pAudioCompressorWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
-		m_pAudioCompressorWaveFormat->nChannels = 1;
-		m_pAudioCompressorWaveFormat->nSamplesPerSec = 11025;
-		m_pAudioCompressorWaveFormat->nAvgBytesPerSec = 11025;
-		m_pAudioCompressorWaveFormat->nBlockAlign = 1;
-		m_pAudioCompressorWaveFormat->wBitsPerSample = 8;
-		m_pAudioCompressorWaveFormat->cbSize = 0;
-	}
+	LoadSettings();
 
 	// If no DirectX make sure m_bUseDxDraw is not set
 	if (!m_DxDraw.HasDxDraw())

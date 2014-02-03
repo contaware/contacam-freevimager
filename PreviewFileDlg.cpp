@@ -51,12 +51,9 @@ LRESULT CALLBACK NewShellDefWndProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPARAM
 			default:
 				break;
 		}
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-															_T("PreviewFileDlgViewMode"),
-															g_nPreviewFileDlgViewMode);
-		}
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
+														_T("PreviewFileDlgViewMode"),
+														g_nPreviewFileDlgViewMode);
 	}
 
 	// Pass the message on to the original SHELLDLL_DefView window proc,
@@ -179,12 +176,9 @@ void CPreviewFileDlg::ChangeFileViewMode(int nFileViewMode)
 	{
 		// Send View Mode Change Command
 		g_nPreviewFileDlgViewMode = nFileViewMode;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
-															_T("PreviewFileDlgViewMode"),
-															nFileViewMode);
-		}
+		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(	_T("GeneralApp"),
+														_T("PreviewFileDlgViewMode"),
+														nFileViewMode);
 		::SendMessage(hShellDllView, WM_COMMAND, nFileViewMode, 0);
 
 		// Sent parent dialog a Refresh command (F5) to force repaint.

@@ -25,10 +25,8 @@ CSoftBordersDlg::CSoftBordersDlg(CWnd* pParent)
 	: CDialog(CSoftBordersDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSoftBordersDlg)
-	m_bBlur = FALSE;
 	//}}AFX_DATA_INIT
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		m_bBlur = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("SoftBorderBlur"), FALSE);
+	m_bBlur = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("SoftBorderBlur"), FALSE);
 	CPictureView* pView = (CPictureView*)m_pParentWnd;
 	ASSERT_VALID(pView);
 	pView->ForceCursor();
@@ -69,9 +67,7 @@ BOOL CSoftBordersDlg::OnInitDialog()
 	pSlider->SetRange(MIN_SOFTBORDER, MAX_SOFTBORDER, TRUE);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(1);
-	int nSoftborder = DEFAULT_SOFTBORDER;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		nSoftborder = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("SoftBorder"), DEFAULT_SOFTBORDER);
+	int nSoftborder = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("SoftBorder"), DEFAULT_SOFTBORDER);
 	pSlider->SetPos(nSoftborder);
 
 	// Init Edit Ctrl
@@ -171,8 +167,7 @@ void CSoftBordersDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			pEdit = (CEdit*)GetDlgItem(IDC_TEXT_SOFT_BORDERS);
 			CString Str;
 			nSoftborder = pSlider->GetPos();
-			if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-				::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SoftBorder"), nSoftborder);
+			::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SoftBorder"), nSoftborder);
 			Str.Format(_T("%d"), nSoftborder);
 			pEdit->SetWindowText(Str);
 		}
@@ -249,8 +244,7 @@ void CSoftBordersDlg::OnCheckBlur()
 		return;
 
 	UpdateData(TRUE);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SoftBorderBlur"), m_bBlur);
+	::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("SoftBorderBlur"), m_bBlur);
 
 	if (pSlider->GetPos() <= 0)
 		return;

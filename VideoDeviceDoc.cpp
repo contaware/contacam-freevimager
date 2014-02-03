@@ -361,15 +361,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Get and update the saves count
-		CString sSection;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			sSection = m_pDoc->GetDevicePathName();
-			m_pDoc->m_nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 0);
-			m_pDoc->m_nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), RefTime.GetDay());
-			m_pDoc->m_nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), RefTime.GetMonth());
-			m_pDoc->m_nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), RefTime.GetYear());
-		}
+		CString sSection(m_pDoc->GetDevicePathName());
+		m_pDoc->m_nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 0);
+		m_pDoc->m_nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), RefTime.GetDay());
+		m_pDoc->m_nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), RefTime.GetMonth());
+		m_pDoc->m_nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), RefTime.GetYear());
 		if (m_pDoc->m_nMovDetSavesCountDay != RefTime.GetDay()		||
 			m_pDoc->m_nMovDetSavesCountMonth != RefTime.GetMonth()	||
 			m_pDoc->m_nMovDetSavesCountYear != RefTime.GetYear())
@@ -791,13 +787,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		m_pDoc->RemoveOldestMovementDetectionList();
 
 		// Store the saves count
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), m_pDoc->m_nMovDetSavesCount);
-			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), m_pDoc->m_nMovDetSavesCountDay);
-			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), m_pDoc->m_nMovDetSavesCountMonth);
-			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), m_pDoc->m_nMovDetSavesCountYear);
-		}
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), m_pDoc->m_nMovDetSavesCount);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), m_pDoc->m_nMovDetSavesCountDay);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), m_pDoc->m_nMovDetSavesCountMonth);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), m_pDoc->m_nMovDetSavesCountYear);
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
@@ -5189,11 +5182,8 @@ void CVideoDeviceDoc::ImportDetectionZones(const CString& sFileName)
 	}
 
 	// Store Zones Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("MovDetTotalZones"), lImportMovDetTotalZones);
-		SaveZonesSettings();
-	}
+	::AfxGetApp()->WriteProfileInt(GetDevicePathName(), _T("MovDetTotalZones"), lImportMovDetTotalZones);
+	SaveZonesSettings();
 
 	// Ini file writing is slow, especially on memory sticks and network devices
 	EndWaitCursor();
@@ -5273,8 +5263,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 	sDevicePathName.Replace(_T('\\'), _T('/'));
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
+	LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
 
 	// Start Delete Detections Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5539,8 +5528,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelay/*=0U*/
 	m_pGetFrameNetCom = (CNetCom*)new CNetCom;
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
+	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
 
 	// Start Delete Detections Thread
 	if (!m_DeleteThread.IsAlive())
@@ -5694,8 +5682,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	m_pGetFrameNetCom = (CNetCom*)new CNetCom;
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
+	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
 
 	// Start Delete Detections Thread
 	if (!m_DeleteThread.IsAlive())
@@ -8904,7 +8891,7 @@ void CVideoDeviceDoc::HideDetectionZones(BOOL bSaveSettingsOnHiding)
 		GetView()->ForceCursor(FALSE);
 		m_bShowEditDetectionZonesMinus = FALSE;
 		::AfxGetMainFrame()->StatusText();
-		if (bSaveSettingsOnHiding && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		if (bSaveSettingsOnHiding)
 		{
 			BeginWaitCursor();
 			SaveZonesSettings();
@@ -10540,8 +10527,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				{
 					m_pDoc->m_sHttpGetFrameUsername = dlg.m_sUsername;
 					m_pDoc->m_sHttpGetFramePassword = dlg.m_sPassword;
-					if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings &&
-						dlg.m_bSaveAuthenticationData)
+					if (dlg.m_bSaveAuthenticationData)
 					{
 						CString sSection(m_pDoc->GetDevicePathName());
 						((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sSection, _T("HTTPGetFrameUsername"), m_pDoc->m_sHttpGetFrameUsername);
@@ -11001,60 +10987,51 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 
 CString CVideoDeviceDoc::AutorunGetDeviceKey(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	CString sSection(_T("DeviceAutorun"));
+	CWinApp* pApp = ::AfxGetApp();
+	CString sKey;
+	CString sDev;
+	for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
-		CString sSection(_T("DeviceAutorun"));
-		CWinApp* pApp = ::AfxGetApp();
-		CString sKey;
-		CString sDev;
-		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
-		{
-			sKey.Format(_T("%02u"), i);
-			if ((sDev = pApp->GetProfileString(sSection, sKey, _T(""))) != _T("")	&&
-				sDev == sDevicePathName)
-				return sKey;
-		}
+		sKey.Format(_T("%02u"), i);
+		if ((sDev = pApp->GetProfileString(sSection, sKey, _T(""))) != _T("")	&&
+			sDev == sDevicePathName)
+			return sKey;
 	}
 	return _T("");
 }
 
 void CVideoDeviceDoc::AutorunAddDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	AutorunRemoveDevice(sDevicePathName);
+	CString sSection(_T("DeviceAutorun"));
+	CWinApp* pApp = ::AfxGetApp();
+	CString sKey;
+	for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
-		AutorunRemoveDevice(sDevicePathName);
-		CString sSection(_T("DeviceAutorun"));
-		CWinApp* pApp = ::AfxGetApp();
-		CString sKey;
-		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
+		sKey.Format(_T("%02u"), i);
+		if (pApp->GetProfileString(sSection, sKey, _T("")) == _T(""))
 		{
-			sKey.Format(_T("%02u"), i);
-			if (pApp->GetProfileString(sSection, sKey, _T("")) == _T(""))
-			{
-				pApp->WriteProfileString(sSection, sKey, sDevicePathName);
-				return;
-			}
+			pApp->WriteProfileString(sSection, sKey, sDevicePathName);
+			return;
 		}
 	}
 }
 
 void CVideoDeviceDoc::AutorunRemoveDevice(const CString& sDevicePathName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	CString sSection(_T("DeviceAutorun"));
+	CWinApp* pApp = ::AfxGetApp();
+	CString sKey;
+	CString sDev;
+	for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
-		CString sSection(_T("DeviceAutorun"));
-		CWinApp* pApp = ::AfxGetApp();
-		CString sKey;
-		CString sDev;
-		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
+		sKey.Format(_T("%02u"), i);
+		if ((sDev = pApp->GetProfileString(sSection, sKey, _T(""))) != _T("")	&&
+			sDev == sDevicePathName)
 		{
-			sKey.Format(_T("%02u"), i);
-			if ((sDev = pApp->GetProfileString(sSection, sKey, _T(""))) != _T("")	&&
-				sDev == sDevicePathName)
-			{
-				pApp->WriteProfileString(sSection, sKey, _T(""));
-				return;
-			}
+			pApp->WriteProfileString(sSection, sKey, _T(""));
+			return;
 		}
 	}
 }

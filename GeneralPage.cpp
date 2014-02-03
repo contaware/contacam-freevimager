@@ -634,13 +634,6 @@ BOOL CGeneralPage::OnInitDialog()
 	// Set Timer
 	SetTimer(ID_TIMER_GENERALDLG, GENERALDLG_TIMER_MS, NULL);
 
-	// Disable Autorun?
-	if (!((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		pCheck = (CButton*)GetDlgItem(IDC_CHECK_AUTORUN);
-		pCheck->EnableWindow(FALSE);
-	}
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

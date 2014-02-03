@@ -60,8 +60,7 @@ CXmpDlg::CXmpDlg(CWnd* pParent, UINT idd)
 	//}}AFX_DATA_INIT
 	IDD = idd;
 	m_sXmpSaveFile = _T("");
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 }
 
 
@@ -578,8 +577,7 @@ void CXmpDlg::OnOK()
 	if (IDD == IDD_XMP)
 		GetMetadataFromDisplay();
 	CDialog::OnOK();
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		SaveSettings();
+	SaveSettings();
 }
 
 void CXmpDlg::OnCancel()
@@ -588,8 +586,7 @@ void CXmpDlg::OnCancel()
 	if (IDD == IDD_XMP)
 		GetMetadataFromDisplay();
 	CDialog::OnCancel();
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		SaveSettings();
+	SaveSettings();
 }
 
 void CXmpDlg::GetFields(CMetadata::IPTCINFO& IptcInfo,

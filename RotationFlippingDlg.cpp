@@ -473,12 +473,9 @@ void CRotationFlippingDlg::OnCheckLossless()
 
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_LOSSLESS);
 	pDoc->m_bForceLossyTrafo = !pCheck->GetCheck();
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("ForceLossyTrafo"),
-										pDoc->m_bForceLossyTrafo);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("ForceLossyTrafo"),
+									pDoc->m_bForceLossyTrafo);
 }
 
 void CRotationFlippingDlg::OnChangeEditAngle() 

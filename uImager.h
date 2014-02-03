@@ -670,9 +670,6 @@ public:
 	// CUImagerApp Settings have been loaded
 	BOOL m_bSettingsLoaded;
 
-	// Should the settings be remembered?
-	BOOL m_bUseSettings;
-
 	// Ending session because of shutdown or log-off
 	volatile BOOL m_bEndSession;
 
@@ -836,7 +833,6 @@ public:
 	afx_msg void OnAppLicense();
 	afx_msg void OnAppCredits();
 	afx_msg void OnUpdateFileSettings(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateFileMruFile1(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFileCloseall(CCmdUI* pCmdUI);
 	afx_msg void OnFileShrinkDirDocs();
 	afx_msg void OnFileSendmailOpenDocs();

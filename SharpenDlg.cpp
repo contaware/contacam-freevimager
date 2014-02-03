@@ -67,9 +67,7 @@ BOOL CSharpenDlg::OnInitDialog()
 	pSlider->SetRange(MIN_SHARPNESS, MAX_SHARPNESS, TRUE);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(1);
-	int nSharpen = DEFAULT_SHARPNESS;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		nSharpen = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("Sharpen"), DEFAULT_SHARPNESS);
+	int nSharpen = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("Sharpen"), DEFAULT_SHARPNESS);
 	pSlider->SetPos(nSharpen);
 
 	// Init Preview Undo Dib
@@ -143,8 +141,7 @@ void CSharpenDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 				Undo();
 				int nSharpen = pSlider->GetPos();
 				Sharpen(pDib, NULL, nSharpen);
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Sharpen"), nSharpen);
+				::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Sharpen"), nSharpen);
 				pDoc->UpdateAlphaRenderedDib();
 				EndWaitCursor();
 				pDoc->InvalidateAllViews(FALSE);

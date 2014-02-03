@@ -286,27 +286,19 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	}
 
 	// Load/Store Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	CString sSection(pDoc->GetDevicePathName());
+	if (pDoc->m_lMovDetTotalZones == ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
 	{
-		CString sSection(pDoc->GetDevicePathName());
-		if (pDoc->m_lMovDetTotalZones == ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
-		{
-			// Load Zones Settings
-			if (!pDoc->LoadZonesSettings())
-				pDoc->LoadAndDeleteOldZonesSettings();
-		}
-		else
-		{
-			// Enable All Zones and Store Zones Settings
-			memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
-			::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
-			pDoc->SaveZonesSettings();
-		}
+		// Load Zones Settings
+		if (!pDoc->LoadZonesSettings())
+			pDoc->LoadAndDeleteOldZonesSettings();
 	}
 	else
 	{
-		// Enable All Zones
+		// Enable All Zones and Store Zones Settings
 		memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
+		pDoc->SaveZonesSettings();
 	}
 
 	// Update current detection zone size var

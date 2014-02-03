@@ -91,7 +91,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_LICENSE, OnAppLicense)
 	ON_COMMAND(ID_APP_CREDITS, OnAppCredits)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SETTINGS, OnUpdateFileSettings)
-	ON_UPDATE_COMMAND_UI(ID_FILE_MRU_FILE1, OnUpdateFileMruFile1)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, OnUpdateFileCloseall)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
@@ -164,7 +163,6 @@ CUImagerApp::CUImagerApp()
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;
 	m_bSettingsLoaded = FALSE;
-	m_bUseSettings = TRUE;
 	m_hAppMutex = NULL;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
@@ -423,7 +421,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// This Will create the HKEY_CURRENT_USER\Software\Contaware key
 		if (bUseRegistry)
 			SetRegistryKey(MYCOMPANY);
-		else if (m_bUseSettings)
+		else
 		{
 			// First free the string allocated by MFC at CWinApp startup.
 			// The string is allocated before InitInstance is called.
@@ -473,8 +471,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Single Instance
 		// (if VIDEODEVICEDOC defined -> single instance is always set, see constructor)
 #ifndef VIDEODEVICEDOC
-		if (m_bUseSettings)
-			m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
+		m_bSingleInstance = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SingleInstance"), FALSE);
 #endif
 		if (!m_bForceSeparateInstance	&&
 #ifdef VIDEODEVICEDOC			
@@ -505,23 +502,22 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				throw (int)0;
 			}
 		}
-
+		
 		// First Time that the App runs after Install (or Upgrade)
-		// and first run ever or after a uninstall
-		if (m_bUseSettings)
-		{
-			// Get flags
-			m_bFirstRun = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
-			m_bFirstRunEver = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRunEver"), TRUE);
-			m_bSilentInstall = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
+		m_bFirstRun = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
 
-			// Fix inconsistency
-			if (m_bFirstRunEver && !m_bFirstRun)
-				m_bFirstRun = TRUE;
-		}
+		// First run ever or after an Uninstall
+		m_bFirstRunEver = (BOOL)GetProfileInt(_T("GeneralApp"), _T("FirstRunEver"), TRUE);
+
+		// Fix inconsistency
+		if (m_bFirstRunEver && !m_bFirstRun)
+			m_bFirstRun = TRUE;
+
+		// Silent install
+		m_bSilentInstall = (BOOL)GetProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 		// Set Tray Icon and Start FullScreen Mode flags
-		if (m_bUseSettings && !m_bHideMainFrame)
+		if (!m_bHideMainFrame)
 		{
 #ifdef VIDEODEVICEDOC
 			if (m_bFirstRunEver)
@@ -556,8 +552,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// variable for the PrintPreview.
 		// This Function uses 2 Keys (or Sections for INI Files):
 		// Recent File List and Settings (to store m_nNumPreviewPages)
-		if (m_bUseSettings)
-			LoadStdProfileSettings(6);
+		LoadStdProfileSettings(6);
 
 		// Picture Doc Template Registration
 		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
@@ -808,124 +803,121 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			m_sFullscreenBrowserExitString = GetProfileFullscreenBrowser(	FULLSCREENBROWSER_EXITSTRING_ENTRY,
 																			FULLSCREENBROWSER_DEFAULT_EXITSTRING);
 #endif
-			if (m_bUseSettings)
+			// Load Settings has to be here for the Window Placement restore to work!
+			LoadSettings(m_nCmdShow);
+
+			// First time that the App runs after Install (or Upgrade)
+			if (m_bFirstRun)
 			{
-				// Load Settings has to be here for the Window Placement restore to work!
-				LoadSettings(m_nCmdShow);
-
-				// First time that the App runs after Install (or Upgrade)
-				if (m_bFirstRun)
+				// First time ever that the App runs or after a uninstall
+				if (m_bFirstRunEver)
 				{
-					// First time ever that the App runs or after a uninstall
-					if (m_bFirstRunEver)
-					{
 #ifdef VIDEODEVICEDOC
-						// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
-						if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
-						{
-							m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
-							WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
-						}
-
-						// Enable autostart
-						Autostart(TRUE);
-#endif
-						// Reset first run ever flag
-						WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
+					// Try to set the microapache server to MICROAPACHE_PREFERRED_PORT
+					if (!CVideoDeviceDoc::MicroApacheIsPortUsed(MICROAPACHE_PREFERRED_PORT))
+					{
+						m_nMicroApachePort = MICROAPACHE_PREFERRED_PORT;
+						WriteProfileInt(_T("GeneralApp"), _T("MicroApachePort"), m_nMicroApachePort);
 					}
+
+					// Enable autostart
+					Autostart(TRUE);
+#endif
+					// Reset first run ever flag
+					WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
+				}
 		
-					// Update file associations (necessary when changing the icons)
-					UpdateFileAssociations();
+				// Update file associations (necessary when changing the icons)
+				UpdateFileAssociations();
 
 #ifndef VIDEODEVICEDOC
-					// Open Settings Dialog for file association and other preferences
-					if (!m_bSilentInstall)
-						OnFileSettings();
+				// Open Settings Dialog for file association and other preferences
+				if (!m_bSilentInstall)
+					OnFileSettings();
 #endif
-					// Reset first run flag
-					WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
-				}
+				// Reset first run flag
+				WriteProfileInt(_T("GeneralApp"), _T("FirstRun"), FALSE);
+			}
 
-				// Reset silent install flag
-				WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
+			// Reset silent install flag
+			WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 #ifdef VIDEODEVICEDOC
-				// Redraw web server port
-				::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
+			// Redraw web server port
+			::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
-				// Auto-starts
-				if (!m_bForceSeparateInstance)
+			// Auto-starts
+			if (!m_bForceSeparateInstance)
+			{
+				// Update / create doc root index.php and config file for microapache
+				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+
+				// Start Micro Apache
+				if (m_bStartMicroApache)
 				{
-					// Update / create doc root index.php and config file for microapache
-					CVideoDeviceDoc::MicroApacheUpdateMainFiles();
+					if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
+					{
+						m_bMicroApacheStarted = TRUE;
+						m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+					}
+					else
+					{
+						TRACE(ML_STRING(1475, "Failed to start the web server") + _T("\n"));
+						::LogLine(ML_STRING(1475, "Failed to start the web server"));
+					}
+				}
 
-					// Start Micro Apache
+				// Autorun Devices
+				AutorunVideoDevices();
+
+				// Start Browser
+				if (m_bBrowserAutostart && !m_bServiceProcess)
+				{
+					BOOL bDoStartBrowser = TRUE;
 					if (m_bStartMicroApache)
 					{
-						if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
+						bDoStartBrowser =	m_bMicroApacheStarted &&
+											CVideoDeviceDoc::MicroApacheWaitCanConnect();
+					}
+					if (bDoStartBrowser)
+					{
+						CString sUrl, sPort;
+						sPort.Format(_T("%d"), m_nMicroApachePort);
+						if (sPort != _T("80"))
+							sUrl = _T("http://localhost:") + sPort + _T("/");
+						else
+							sUrl = _T("http://localhost/");
+						if (m_bFullscreenBrowser)
 						{
-							m_bMicroApacheStarted = TRUE;
-							m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
+							CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
+							::ShellExecute(	NULL,
+											_T("open"),
+											sFullscreenExe,
+											sUrl,
+											NULL,
+											SW_SHOWNORMAL);
 						}
 						else
 						{
-							TRACE(ML_STRING(1475, "Failed to start the web server") + _T("\n"));
-							::LogLine(ML_STRING(1475, "Failed to start the web server"));
-						}
-					}
-
-					// Autorun Devices
-					AutorunVideoDevices();
-
-					// Start Browser
-					if (m_bBrowserAutostart && !m_bServiceProcess)
-					{
-						BOOL bDoStartBrowser = TRUE;
-						if (m_bStartMicroApache)
-						{
-							bDoStartBrowser =	m_bMicroApacheStarted &&
-												CVideoDeviceDoc::MicroApacheWaitCanConnect();
-						}
-						if (bDoStartBrowser)
-						{
-							CString sUrl, sPort;
-							sPort.Format(_T("%d"), m_nMicroApachePort);
-							if (sPort != _T("80"))
-								sUrl = _T("http://localhost:") + sPort + _T("/");
-							else
-								sUrl = _T("http://localhost/");
-							if (m_bFullscreenBrowser)
-							{
-								CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
-								::ShellExecute(	NULL,
-												_T("open"),
-												sFullscreenExe,
-												sUrl,
-												NULL,
-												SW_SHOWNORMAL);
-							}
-							else
-							{
-								::ShellExecute(	NULL,
-												_T("open"),
-												sUrl,
-												NULL,
-												NULL,
-												SW_SHOWNORMAL);
-							}
+							::ShellExecute(	NULL,
+											_T("open"),
+											sUrl,
+											NULL,
+											NULL,
+											SW_SHOWNORMAL);
 						}
 					}
 				}
+			}
 #endif
 
-				// When starting program open document in full screen mode
-				if (m_bStartFullScreenMode
+			// When starting program open document in full screen mode
+			if (m_bStartFullScreenMode
 #ifdef VIDEODEVICEDOC
-					&& !m_bServiceProcess
+				&& !m_bServiceProcess
 #endif
-					)
-					::AfxGetMainFrame()->EnterExitFullscreen();
-			}
+				)
+				::AfxGetMainFrame()->EnterExitFullscreen();
 		}
 
 		return TRUE;
@@ -1180,48 +1172,6 @@ void CUImagerApp::OnUpdateFileSettings(CCmdUI* pCmdUI)
 #ifdef VIDEODEVICEDOC
 	pCmdUI->Enable(!m_bForceSeparateInstance && !m_bServiceProcess);
 #endif
-
-	// Remove the menu item
-	CMenu* pMenu = pCmdUI->m_pMenu;
-	if (!m_bUseSettings && pMenu != NULL)
-	{
-		// Remove the Menu Item and surrounding separators
-		UINT nStateAbove = pMenu->GetMenuState(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-		UINT nStateBelow = pMenu->GetMenuState(pCmdUI->m_nIndex+1, MF_BYPOSITION);
-		pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		if (nStateAbove & nStateBelow & MF_SEPARATOR)
-		{
-			// A separator must be removed since this Menu Item is gone
-			if (nStateAbove != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-			else if (nStateBelow != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		}
-	}	
-}
-
-void CUImagerApp::OnUpdateFileMruFile1(CCmdUI* pCmdUI) 
-{
-	// Remove the menu item
-	CMenu* pMenu = pCmdUI->m_pMenu;
-	if (!m_bUseSettings && pMenu != NULL)
-	{
-		// Remove the Menu Item and surrounding separators
-		UINT nStateAbove = pMenu->GetMenuState(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-		UINT nStateBelow = pMenu->GetMenuState(pCmdUI->m_nIndex+1, MF_BYPOSITION);
-		pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		if (nStateAbove & nStateBelow & MF_SEPARATOR)
-		{
-			// A separator must be removed since this Menu Item is gone
-			if (nStateAbove != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex-1, MF_BYPOSITION);
-			else if (nStateBelow != (UINT)-1)
-				pMenu->RemoveMenu(pCmdUI->m_nIndex, MF_BYPOSITION);
-		}
-	}
-
-	if (m_bUseSettings)
-		CWinApp::OnUpdateRecentFileMenu(pCmdUI);
 }
 
 void CUImagerApp::OnFileOpen()
@@ -1277,12 +1227,9 @@ void CUImagerApp::OnFileOpen()
 
 			// Update preview flag
 			m_bFileDlgPreview = dlgFile.m_bPreview;
-			if (m_bUseSettings)
-			{
-				WriteProfileInt(_T("GeneralApp"),
-								_T("FileDlgPreview"),
-								m_bFileDlgPreview);
-			}
+			WriteProfileInt(_T("GeneralApp"),
+							_T("FileDlgPreview"),
+							m_bFileDlgPreview);
 			
 			// Get File(s)
 			TCHAR* sSource = FileNames;
@@ -1381,12 +1328,9 @@ void CUImagerApp::OnFileOpen()
 				_tsplitpath(Path, szDrive, szDir, NULL, NULL);
 				m_sLastOpenedDir = CString(szDrive) + CString(szDir);
 				m_sLastOpenedDir.TrimRight(_T('\\'));
-				if (m_bUseSettings)
-				{
-					WriteProfileString(	_T("GeneralApp"),
-										_T("LastOpenedDir"),
-										m_sLastOpenedDir);
-				}
+				WriteProfileString(	_T("GeneralApp"),
+									_T("LastOpenedDir"),
+									m_sLastOpenedDir);
 			}
 			else // multiple files selected
 			{
@@ -1500,12 +1444,9 @@ void CUImagerApp::OnFileOpen()
 				// Store Last Opened Directory
 				m_sLastOpenedDir = CString(Path);
 				m_sLastOpenedDir.TrimRight(_T('\\'));
-				if (m_bUseSettings)
-				{
-					WriteProfileString(	_T("GeneralApp"),
-										_T("LastOpenedDir"),
-										m_sLastOpenedDir);
-				}
+				WriteProfileString(	_T("GeneralApp"),
+									_T("LastOpenedDir"),
+									m_sLastOpenedDir);
 			}
 
 			// Open Zip File Content
@@ -1520,12 +1461,9 @@ void CUImagerApp::OnFileOpen()
 		else
 		{
 			m_bFileDlgPreview = dlgFile.m_bPreview;
-			if (m_bUseSettings)
-			{
-				WriteProfileInt(_T("GeneralApp"),
-								_T("FileDlgPreview"),
-								m_bFileDlgPreview);
-			}
+			WriteProfileInt(_T("GeneralApp"),
+							_T("FileDlgPreview"),
+							m_bFileDlgPreview);
 		}
 
 		// Free
@@ -1650,12 +1588,9 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 		m_sLastOpenedDir = CString(szDrive) + CString(szDir);
 	}
 	m_sLastOpenedDir.TrimRight(_T('\\'));
-	if (m_bUseSettings)
-	{
-		WriteProfileString(	_T("GeneralApp"),
-							_T("LastOpenedDir"),
-							m_sLastOpenedDir);
-	}
+	WriteProfileString(	_T("GeneralApp"),
+						_T("LastOpenedDir"),
+						m_sLastOpenedDir);
 
 	// Zip File Extraction
 	if (::GetFileExt(lpszFileName) == _T(".zip"))
@@ -1910,10 +1845,7 @@ void CUImagerApp::InitPrinter()
 	if (!m_bPrinterInit)
 	{
 		// Select last used printer
-		if (m_bUseSettings)
-			m_PrinterControl.RestorePrinterSelection(m_hDevMode, m_hDevNames);
-		else
-			m_PrinterControl.SetDefault(m_hDevMode, m_hDevNames);
+		m_PrinterControl.RestorePrinterSelection(m_hDevMode, m_hDevNames);
 		m_bPrinterInit = TRUE;
 	}
 }
@@ -2063,11 +1995,9 @@ BOOL CUImagerApp::AreAllDocsSaved()
 
 void CUImagerApp::SaveOnEndSession()
 {
-	if (m_bUseSettings)
-	{
-		SaveSettings();
-		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
-	}
+	SaveSettings();
+	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+
 	CDocument* pDoc;
 	CUImagerMultiDocTemplate* curTemplate;
 	POSITION posTemplate, posDoc;
@@ -2082,18 +2012,14 @@ void CUImagerApp::SaveOnEndSession()
 			if (pDoc)
 			{
 				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-				{
-					if (m_bUseSettings)
-						((CVideoAviDoc*)pDoc)->SaveSettings();
-				}
+					((CVideoAviDoc*)pDoc)->SaveSettings();
 #ifdef VIDEODEVICEDOC
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 				{
 					// Stop recording so that the index is not missing!
 					if (((CVideoDeviceDoc*)pDoc)->m_pAVRec)
 						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
-					if (m_bUseSettings)
-						((CVideoDeviceDoc*)pDoc)->SaveSettings();
+					((CVideoDeviceDoc*)pDoc)->SaveSettings();
 				}
 #endif
 			}
@@ -2772,8 +2698,7 @@ int CUImagerApp::ExitInstance()
 		::CloseHandle(m_hAppMutex);
 
 	// Store last selected printer
-	if (m_bUseSettings)
-		m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
+	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 
 #ifndef CPJNSMTP_NOSSL
 	// Clean up OpenSSL library
@@ -2812,7 +2737,7 @@ int CUImagerApp::ExitInstance()
 		(m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppUnregister &&
 		 m_pCmdInfo->m_nShellCommand != CCommandLineInfo::AppRegister))
 	{
-		if (!afxContextIsDLL && m_bUseSettings) // Added m_bUseSettings check
+		if (!afxContextIsDLL)
 			SaveStdProfileSettings();
 	}
 
@@ -3119,12 +3044,9 @@ void CUImagerApp::OnFileOpenDir()
 						FALSE,
 						FALSE,
 						dlg.IsChecked());
-			if (m_bUseSettings)
-			{
-				WriteProfileString(	_T("GeneralApp"),
-									_T("LastOpenedDir"),
-									m_sLastOpenedDir);
-			}
+			WriteProfileString(	_T("GeneralApp"),
+								_T("LastOpenedDir"),
+								m_sLastOpenedDir);
 		}
 	}
 }
@@ -5088,165 +5010,162 @@ void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI)
 
 void CUImagerApp::UpdateFileAssociations()
 {
-	if (m_bUseSettings)
-	{
-		// Graphics
-		BOOL bBmp =		IsFileTypeAssociated(_T("bmp"));
-		BOOL bJpeg =	IsFileTypeAssociated(_T("jpg"))	&&
-						IsFileTypeAssociated(_T("jpeg"))&&
-						IsFileTypeAssociated(_T("jpe"))	&&
-						IsFileTypeAssociated(_T("thm"));
-		BOOL bPcx =		IsFileTypeAssociated(_T("pcx"));
-		BOOL bEmf =		IsFileTypeAssociated(_T("emf"));
-		BOOL bPng =		IsFileTypeAssociated(_T("png"));
-		BOOL bTiff =	IsFileTypeAssociated(_T("tif"))	&&
-						IsFileTypeAssociated(_T("tiff"))&&
-						IsFileTypeAssociated(_T("jfx"));
-		BOOL bGif =		IsFileTypeAssociated(_T("gif"));
+	// Graphics
+	BOOL bBmp =		IsFileTypeAssociated(_T("bmp"));
+	BOOL bJpeg =	IsFileTypeAssociated(_T("jpg"))	&&
+					IsFileTypeAssociated(_T("jpeg"))&&
+					IsFileTypeAssociated(_T("jpe"))	&&
+					IsFileTypeAssociated(_T("thm"));
+	BOOL bPcx =		IsFileTypeAssociated(_T("pcx"));
+	BOOL bEmf =		IsFileTypeAssociated(_T("emf"));
+	BOOL bPng =		IsFileTypeAssociated(_T("png"));
+	BOOL bTiff =	IsFileTypeAssociated(_T("tif"))	&&
+					IsFileTypeAssociated(_T("tiff"))&&
+					IsFileTypeAssociated(_T("jfx"));
+	BOOL bGif =		IsFileTypeAssociated(_T("gif"));
 
-		// Audio
-		BOOL bAif =		IsFileTypeAssociated(_T("aif"))	&&
-						IsFileTypeAssociated(_T("aiff"));
-		BOOL bAu =		IsFileTypeAssociated(_T("au"));
-		BOOL bMidi =	IsFileTypeAssociated(_T("mid"))	&&
-						IsFileTypeAssociated(_T("rmi"));
-		BOOL bMp3 =		IsFileTypeAssociated(_T("mp3"));
-		BOOL bWav =		IsFileTypeAssociated(_T("wav"));
-		BOOL bWma =		IsFileTypeAssociated(_T("wma"));
-		BOOL bCda =		IsFileTypeAssociated(_T("cda"));
+	// Audio
+	BOOL bAif =		IsFileTypeAssociated(_T("aif"))	&&
+					IsFileTypeAssociated(_T("aiff"));
+	BOOL bAu =		IsFileTypeAssociated(_T("au"));
+	BOOL bMidi =	IsFileTypeAssociated(_T("mid"))	&&
+					IsFileTypeAssociated(_T("rmi"));
+	BOOL bMp3 =		IsFileTypeAssociated(_T("mp3"));
+	BOOL bWav =		IsFileTypeAssociated(_T("wav"));
+	BOOL bWma =		IsFileTypeAssociated(_T("wma"));
+	BOOL bCda =		IsFileTypeAssociated(_T("cda"));
 
-		// Others
-		BOOL bAvi =		IsFileTypeAssociated(_T("avi")) &&
-						IsFileTypeAssociated(_T("divx"));
-		BOOL bZip =		IsFileTypeAssociated(_T("zip"));
+	// Others
+	BOOL bAvi =		IsFileTypeAssociated(_T("avi")) &&
+					IsFileTypeAssociated(_T("divx"));
+	BOOL bZip =		IsFileTypeAssociated(_T("zip"));
 
 	
-		// Graphics
+	// Graphics
 
-		if (bBmp)
-			AssociateFileType(_T("bmp"));
-		else
-			UnassociateFileType(_T("bmp"));
+	if (bBmp)
+		AssociateFileType(_T("bmp"));
+	else
+		UnassociateFileType(_T("bmp"));
 
-		if (bJpeg)
-		{
-			AssociateFileType(_T("jpg"));
-			AssociateFileType(_T("jpeg"));
-			AssociateFileType(_T("jpe"));
-			AssociateFileType(_T("thm"));
-		}
-		else
-		{
-			UnassociateFileType(_T("jpg"));
-			UnassociateFileType(_T("jpeg"));
-			UnassociateFileType(_T("jpe"));
-			UnassociateFileType(_T("thm"));
-		}
-
-		if (bPcx)
-			AssociateFileType(_T("pcx"));
-		else
-			UnassociateFileType(_T("pcx"));
-
-		if (bEmf)
-			AssociateFileType(_T("emf"));
-		else
-			UnassociateFileType(_T("emf"));
-
-		if (bPng)
-			AssociateFileType(_T("png"));
-		else
-			UnassociateFileType(_T("png"));
-
-		if (bTiff)
-		{
-			AssociateFileType(_T("tif"));
-			AssociateFileType(_T("tiff"));
-			AssociateFileType(_T("jfx"));
-		}
-		else
-		{
-			UnassociateFileType(_T("tif"));
-			UnassociateFileType(_T("tiff"));
-			UnassociateFileType(_T("jfx"));
-		}
-
-		if (bGif)
-			AssociateFileType(_T("gif"));
-		else
-			UnassociateFileType(_T("gif"));
-
-
-		// Audio
-
-		if (bAif)
-		{
-			AssociateFileType(_T("aif"));
-			AssociateFileType(_T("aiff"));
-		}
-		else
-		{
-			UnassociateFileType(_T("aif"));
-			UnassociateFileType(_T("aiff"));
-		}
-
-		if (bAu)
-			AssociateFileType(_T("au"));
-		else
-			UnassociateFileType(_T("au"));
-
-		if (bMidi)
-		{
-			AssociateFileType(_T("mid"));
-			AssociateFileType(_T("rmi"));
-		}
-		else
-		{
-			UnassociateFileType(_T("mid"));
-			UnassociateFileType(_T("rmi"));
-		}
-
-		if (bMp3)
-			AssociateFileType(_T("mp3"));
-		else
-			UnassociateFileType(_T("mp3"));
-
-		if (bWav)
-			AssociateFileType(_T("wav"));
-		else
-			UnassociateFileType(_T("wav"));
-
-		if (bWma)
-			AssociateFileType(_T("wma"));
-		else
-			UnassociateFileType(_T("wma"));
-
-		if (bCda)
-			AssociateFileType(_T("cda"));
-		else
-			UnassociateFileType(_T("cda"));
-
-		// Others
-
-		if (bAvi)
-		{
-			AssociateFileType(_T("avi"));
-			AssociateFileType(_T("divx"));
-		}
-		else
-		{
-			UnassociateFileType(_T("avi"));
-			UnassociateFileType(_T("divx"));
-		}
-
-		if (bZip)
-			AssociateFileType(_T("zip"));
-		else
-			UnassociateFileType(_T("zip"));
-
-		// Notify Changes
-		::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+	if (bJpeg)
+	{
+		AssociateFileType(_T("jpg"));
+		AssociateFileType(_T("jpeg"));
+		AssociateFileType(_T("jpe"));
+		AssociateFileType(_T("thm"));
 	}
+	else
+	{
+		UnassociateFileType(_T("jpg"));
+		UnassociateFileType(_T("jpeg"));
+		UnassociateFileType(_T("jpe"));
+		UnassociateFileType(_T("thm"));
+	}
+
+	if (bPcx)
+		AssociateFileType(_T("pcx"));
+	else
+		UnassociateFileType(_T("pcx"));
+
+	if (bEmf)
+		AssociateFileType(_T("emf"));
+	else
+		UnassociateFileType(_T("emf"));
+
+	if (bPng)
+		AssociateFileType(_T("png"));
+	else
+		UnassociateFileType(_T("png"));
+
+	if (bTiff)
+	{
+		AssociateFileType(_T("tif"));
+		AssociateFileType(_T("tiff"));
+		AssociateFileType(_T("jfx"));
+	}
+	else
+	{
+		UnassociateFileType(_T("tif"));
+		UnassociateFileType(_T("tiff"));
+		UnassociateFileType(_T("jfx"));
+	}
+
+	if (bGif)
+		AssociateFileType(_T("gif"));
+	else
+		UnassociateFileType(_T("gif"));
+
+
+	// Audio
+
+	if (bAif)
+	{
+		AssociateFileType(_T("aif"));
+		AssociateFileType(_T("aiff"));
+	}
+	else
+	{
+		UnassociateFileType(_T("aif"));
+		UnassociateFileType(_T("aiff"));
+	}
+
+	if (bAu)
+		AssociateFileType(_T("au"));
+	else
+		UnassociateFileType(_T("au"));
+
+	if (bMidi)
+	{
+		AssociateFileType(_T("mid"));
+		AssociateFileType(_T("rmi"));
+	}
+	else
+	{
+		UnassociateFileType(_T("mid"));
+		UnassociateFileType(_T("rmi"));
+	}
+
+	if (bMp3)
+		AssociateFileType(_T("mp3"));
+	else
+		UnassociateFileType(_T("mp3"));
+
+	if (bWav)
+		AssociateFileType(_T("wav"));
+	else
+		UnassociateFileType(_T("wav"));
+
+	if (bWma)
+		AssociateFileType(_T("wma"));
+	else
+		UnassociateFileType(_T("wma"));
+
+	if (bCda)
+		AssociateFileType(_T("cda"));
+	else
+		UnassociateFileType(_T("cda"));
+
+	// Others
+
+	if (bAvi)
+	{
+		AssociateFileType(_T("avi"));
+		AssociateFileType(_T("divx"));
+	}
+	else
+	{
+		UnassociateFileType(_T("avi"));
+		UnassociateFileType(_T("divx"));
+	}
+
+	if (bZip)
+		AssociateFileType(_T("zip"));
+	else
+		UnassociateFileType(_T("zip"));
+
+	// Notify Changes
+	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
 }
 
 BOOL CUImagerApp::IsFileTypeAssociated(CString sExt)
@@ -5715,49 +5634,46 @@ void CUImagerApp::OnToolsViewWebLogfile()
 
 void CUImagerApp::EnumConfiguredDevicePathNames(CStringArray& DevicePathNames)
 {
-	if (m_bUseSettings)
+	if (m_pszRegistryKey)
 	{
-		if (m_pszRegistryKey)
+		const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
+		HKEY hKey;
+		if (::RegOpenKeyEx(	HKEY_CURRENT_USER,
+							_T("Software\\") + CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT),
+							0, KEY_READ, &hKey) == ERROR_SUCCESS)
 		{
-			const int MAX_KEY_BUFFER = 257; // http://www.sepago.de/e/holger/2010/07/20/how-long-can-a-registry-key-name-really-be
-			HKEY hKey;
-			if (::RegOpenKeyEx(	HKEY_CURRENT_USER,
-								_T("Software\\") + CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT),
-								0, KEY_READ, &hKey) == ERROR_SUCCESS)
-			{
-				DWORD cSubKeys = 0;
-				::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-				TCHAR achKey[MAX_KEY_BUFFER];
-				DWORD cbName;
-				for (DWORD i = 0 ; i < cSubKeys; i++)
-				{ 
-					cbName = MAX_KEY_BUFFER;
-					::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
-					CString sRecordAutoSaveDir = GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
-					if (sRecordAutoSaveDir != _T(""))
-						DevicePathNames.Add(achKey);
-				}
-				::RegCloseKey(hKey);
-			}
-		}
-		else
-		{
-			const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
-			TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
-			memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
-			::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, m_pszProfileName);
-			TCHAR* sSource = pSectionNames;
-			while (*sSource != 0) // If 0 -> end of list
-			{
-				CString sRecordAutoSaveDir = GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
+			DWORD cSubKeys = 0;
+			::RegQueryInfoKey(hKey, NULL, NULL, NULL, &cSubKeys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+			TCHAR achKey[MAX_KEY_BUFFER];
+			DWORD cbName;
+			for (DWORD i = 0 ; i < cSubKeys; i++)
+			{ 
+				cbName = MAX_KEY_BUFFER;
+				::RegEnumKeyEx(hKey, i, achKey, &cbName, NULL, NULL, NULL, NULL);
+				CString sRecordAutoSaveDir = GetProfileString(achKey, _T("RecordAutoSaveDir"), _T(""));
 				if (sRecordAutoSaveDir != _T(""))
-					DevicePathNames.Add(sSource);
-				while (*sSource != 0)
-					sSource++;
-				sSource++; // Skip the 0
+					DevicePathNames.Add(achKey);
 			}
-			delete [] pSectionNames;
+			::RegCloseKey(hKey);
 		}
+	}
+	else
+	{
+		const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
+		TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
+		memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
+		::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, m_pszProfileName);
+		TCHAR* sSource = pSectionNames;
+		while (*sSource != 0) // If 0 -> end of list
+		{
+			CString sRecordAutoSaveDir = GetProfileString(sSource, _T("RecordAutoSaveDir"), _T(""));
+			if (sRecordAutoSaveDir != _T(""))
+				DevicePathNames.Add(sSource);
+			while (*sSource != 0)
+				sSource++;
+			sSource++; // Skip the 0
+		}
+		delete [] pSectionNames;
 	}
 }
 
@@ -5820,12 +5736,9 @@ void CUImagerApp::OnToolsMoveCamFolders()
 
 		// Update doc root and reload web server
 		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
-		if (m_bUseSettings)
-		{
-			WriteProfileString(	_T("GeneralApp"),
-								_T("MicroApacheDocRoot"),
-								m_sMicroApacheDocRoot);
-		}
+		WriteProfileString(	_T("GeneralApp"),
+							_T("MicroApacheDocRoot"),
+							m_sMicroApacheDocRoot);
 		int nRet = CVideoDeviceDoc::MicroApacheReload();
 
 		// End Wait Cursor
@@ -6039,58 +5952,55 @@ void CUImagerApp::AddSchedulerEntry(CSchedulerEntry* pSchedulerEntry)
 	}
 
 	// Store Settings
-	if (m_bUseSettings)
-	{
-		CString sSection;
-		BOOL bFound = FALSE;
-		int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+	CString sSection;
+	BOOL bFound = FALSE;
+	int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
 		
-		// Overwrite?
+	// Overwrite?
+	for (int i = 0 ; i < nCount ; i++)
+	{
+		sSection.Format(_T("Scheduler%010d"), i);
+		if (pSchedulerEntry->m_sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+			pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
+		{
+			bFound = TRUE;
+			break;
+		}
+	}
+	if (!bFound)
+	{
+		// Find empty space?
 		for (int i = 0 ; i < nCount ; i++)
 		{
 			sSection.Format(_T("Scheduler%010d"), i);
-			if (pSchedulerEntry->m_sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
-				pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
+			if (GetProfileString(sSection, _T("DevicePathName"), _T("")) == _T(""))
 			{
 				bFound = TRUE;
 				break;
 			}
 		}
+		// Append
 		if (!bFound)
 		{
-			// Find empty space?
-			for (int i = 0 ; i < nCount ; i++)
-			{
-				sSection.Format(_T("Scheduler%010d"), i);
-				if (GetProfileString(sSection, _T("DevicePathName"), _T("")) == _T(""))
-				{
-					bFound = TRUE;
-					break;
-				}
-			}
-			// Append
-			if (!bFound)
-			{
-				sSection.Format(_T("Scheduler%010d"), nCount);
-				nCount++;
-				WriteProfileInt(_T("GeneralApp"), _T("SchedulerCount"), nCount);
-			}
+			sSection.Format(_T("Scheduler%010d"), nCount);
+			nCount++;
+			WriteProfileInt(_T("GeneralApp"), _T("SchedulerCount"), nCount);
 		}
-		WriteProfileString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName);
-		WriteProfileInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type);
-		WriteProfileInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear());
-		WriteProfileInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth());
-		WriteProfileInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay());
-		WriteProfileInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour());
-		WriteProfileInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute());
-		WriteProfileInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond());
-		WriteProfileInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear());
-		WriteProfileInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth());
-		WriteProfileInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay());
-		WriteProfileInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour());
-		WriteProfileInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute());
-		WriteProfileInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond());
 	}
+	WriteProfileString(sSection, _T("DevicePathName"), pSchedulerEntry->m_sDevicePathName);
+	WriteProfileInt(sSection, _T("Type"), (int)pSchedulerEntry->m_Type);
+	WriteProfileInt(sSection, _T("StartYear"), (int)pSchedulerEntry->m_StartTime.GetYear());
+	WriteProfileInt(sSection, _T("StartMonth"), (int)pSchedulerEntry->m_StartTime.GetMonth());
+	WriteProfileInt(sSection, _T("StartDay"), (int)pSchedulerEntry->m_StartTime.GetDay());
+	WriteProfileInt(sSection, _T("StartHour"), (int)pSchedulerEntry->m_StartTime.GetHour());
+	WriteProfileInt(sSection, _T("StartMin"), (int)pSchedulerEntry->m_StartTime.GetMinute());
+	WriteProfileInt(sSection, _T("StartSec"), (int)pSchedulerEntry->m_StartTime.GetSecond());
+	WriteProfileInt(sSection, _T("StopYear"), (int)pSchedulerEntry->m_StopTime.GetYear());
+	WriteProfileInt(sSection, _T("StopMonth"), (int)pSchedulerEntry->m_StopTime.GetMonth());
+	WriteProfileInt(sSection, _T("StopDay"), (int)pSchedulerEntry->m_StopTime.GetDay());
+	WriteProfileInt(sSection, _T("StopHour"), (int)pSchedulerEntry->m_StopTime.GetHour());
+	WriteProfileInt(sSection, _T("StopMin"), (int)pSchedulerEntry->m_StopTime.GetMinute());
+	WriteProfileInt(sSection, _T("StopSec"), (int)pSchedulerEntry->m_StopTime.GetSecond());
 }
 
 CUImagerApp::CSchedulerEntry* CUImagerApp::GetOnceSchedulerEntry(CString sDevicePathName)
@@ -6137,34 +6047,31 @@ void CUImagerApp::DeleteOnceSchedulerEntry(CString sDevicePathName)
 			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
 			pSchedulerEntry->m_Type == CSchedulerEntry::ONCE)
 		{
-			if (m_bUseSettings)
+			CString sSection;
+			BOOL bFound = FALSE;
+			int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+			for (int i = 0 ; i < nCount ; i++)
 			{
-				CString sSection;
-				BOOL bFound = FALSE;
-				int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
-				for (int i = 0 ; i < nCount ; i++)
+				sSection.Format(_T("Scheduler%010d"), i);
+				if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+					pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
 				{
-					sSection.Format(_T("Scheduler%010d"), i);
-					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
-						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
-					{
-						WriteProfileString(sSection, _T("DevicePathName"), _T(""));
-						WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
-						WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
-						WriteProfileInt(sSection, _T("StartYear"), 2000);
-						WriteProfileInt(sSection, _T("StartMonth"), 1);
-						WriteProfileInt(sSection, _T("StartDay"), 1);
-						WriteProfileInt(sSection, _T("StartHour"), 12);
-						WriteProfileInt(sSection, _T("StartMin"), 0);
-						WriteProfileInt(sSection, _T("StartSec"), 0);
-						WriteProfileInt(sSection, _T("StopYear"), 2000);
-						WriteProfileInt(sSection, _T("StopMonth"), 1);
-						WriteProfileInt(sSection, _T("StopDay"), 1);
-						WriteProfileInt(sSection, _T("StopHour"), 12);
-						WriteProfileInt(sSection, _T("StopMin"), 0);
-						WriteProfileInt(sSection, _T("StopSec"), 0);
-						break;
-					}
+					WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+					WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+					WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+					WriteProfileInt(sSection, _T("StartYear"), 2000);
+					WriteProfileInt(sSection, _T("StartMonth"), 1);
+					WriteProfileInt(sSection, _T("StartDay"), 1);
+					WriteProfileInt(sSection, _T("StartHour"), 12);
+					WriteProfileInt(sSection, _T("StartMin"), 0);
+					WriteProfileInt(sSection, _T("StartSec"), 0);
+					WriteProfileInt(sSection, _T("StopYear"), 2000);
+					WriteProfileInt(sSection, _T("StopMonth"), 1);
+					WriteProfileInt(sSection, _T("StopDay"), 1);
+					WriteProfileInt(sSection, _T("StopHour"), 12);
+					WriteProfileInt(sSection, _T("StopMin"), 0);
+					WriteProfileInt(sSection, _T("StopSec"), 0);
+					break;
 				}
 			}
 			delete pSchedulerEntry;
@@ -6186,34 +6093,31 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 			pSchedulerEntry->m_sDevicePathName == sDevicePathName &&
 			pSchedulerEntry->m_Type == CSchedulerEntry::DAILY)
 		{
-			if (m_bUseSettings)
+			CString sSection;
+			BOOL bFound = FALSE;
+			int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
+			for (int i = 0 ; i < nCount ; i++)
 			{
-				CString sSection;
-				BOOL bFound = FALSE;
-				int nCount = GetProfileInt(_T("GeneralApp"), _T("SchedulerCount"), 0);
-				for (int i = 0 ; i < nCount ; i++)
+				sSection.Format(_T("Scheduler%010d"), i);
+				if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
+					pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
 				{
-					sSection.Format(_T("Scheduler%010d"), i);
-					if (sDevicePathName == GetProfileString(sSection, _T("DevicePathName"), _T(""))	&&
-						pSchedulerEntry->m_Type == GetProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::NONE))
-					{
-						WriteProfileString(sSection, _T("DevicePathName"), _T(""));
-						WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
-						WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
-						WriteProfileInt(sSection, _T("StartYear"), 2000);
-						WriteProfileInt(sSection, _T("StartMonth"), 1);
-						WriteProfileInt(sSection, _T("StartDay"), 1);
-						WriteProfileInt(sSection, _T("StartHour"), 12);
-						WriteProfileInt(sSection, _T("StartMin"), 0);
-						WriteProfileInt(sSection, _T("StartSec"), 0);
-						WriteProfileInt(sSection, _T("StopYear"), 2000);
-						WriteProfileInt(sSection, _T("StopMonth"), 1);
-						WriteProfileInt(sSection, _T("StopDay"), 1);
-						WriteProfileInt(sSection, _T("StopHour"), 12);
-						WriteProfileInt(sSection, _T("StopMin"), 0);
-						WriteProfileInt(sSection, _T("StopSec"), 0);
-						break;
-					}
+					WriteProfileString(sSection, _T("DevicePathName"), _T(""));
+					WriteProfileInt(sSection, _T("Type"), (int)CSchedulerEntry::ONCE);
+					WriteProfileInt(sSection, _T("Rec"), (int)TRUE);
+					WriteProfileInt(sSection, _T("StartYear"), 2000);
+					WriteProfileInt(sSection, _T("StartMonth"), 1);
+					WriteProfileInt(sSection, _T("StartDay"), 1);
+					WriteProfileInt(sSection, _T("StartHour"), 12);
+					WriteProfileInt(sSection, _T("StartMin"), 0);
+					WriteProfileInt(sSection, _T("StartSec"), 0);
+					WriteProfileInt(sSection, _T("StopYear"), 2000);
+					WriteProfileInt(sSection, _T("StopMonth"), 1);
+					WriteProfileInt(sSection, _T("StopDay"), 1);
+					WriteProfileInt(sSection, _T("StopHour"), 12);
+					WriteProfileInt(sSection, _T("StopMin"), 0);
+					WriteProfileInt(sSection, _T("StopSec"), 0);
+					break;
 				}
 			}
 			delete pSchedulerEntry;
@@ -6251,13 +6155,8 @@ BOOL CUImagerApp::ShowColorDlg(	COLORREF& crColor,
 	CString szTemp;
 	for (int i = 0 ; i < 16 ; i++)
 	{
-		if (m_bUseSettings)
-		{
-			szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-			clCustomColors[i] = (COLORREF)GetProfileInt(_T("GeneralApp"), szTemp, RGB(255,255,255));
-		}
-		else
-			clCustomColors[i] = RGB(255,255,255);
+		szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+		clCustomColors[i] = (COLORREF)GetProfileInt(_T("GeneralApp"), szTemp, RGB(255,255,255));
 	}
 	dlg.m_cc.lpCustColors = clCustomColors;
 
@@ -6269,13 +6168,10 @@ BOOL CUImagerApp::ShowColorDlg(	COLORREF& crColor,
     else
 		res = FALSE;
 
-	if (m_bUseSettings)
+	for (int i = 0 ; i < 16 ; i++)
 	{
-		for (int i = 0 ; i < 16 ; i++)
-		{
-			szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
-			WriteProfileInt(_T("GeneralApp"), szTemp, clCustomColors[i]);
-		}
+		szTemp.Format(_T("BKG_CUSTOM_COLOR_%02d"), i);
+		WriteProfileInt(_T("GeneralApp"), szTemp, clCustomColors[i]);
 	}
 
 	return res;
@@ -6306,12 +6202,9 @@ void CUImagerApp::OnToolsTrayicon()
 {
 	m_bTrayIcon = !m_bTrayIcon;
 	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
-	if (m_bUseSettings)
-	{
-		WriteProfileInt(_T("GeneralApp"),
-						_T("TrayIcon"),
-						m_bTrayIcon);
-	}
+	WriteProfileInt(_T("GeneralApp"),
+					_T("TrayIcon"),
+					m_bTrayIcon);
 }
 
 void CUImagerApp::OnUpdateToolsTrayicon(CCmdUI* pCmdUI) 

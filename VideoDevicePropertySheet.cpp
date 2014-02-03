@@ -111,7 +111,7 @@ void CVideoDevicePropertySheet::Hide(BOOL bSaveSettingsOnHiding)
 {
 	if (IsWindowVisible())
 	{
-		if (bSaveSettingsOnHiding && ((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+		if (bSaveSettingsOnHiding)
 			m_pDoc->SaveSettings();
 		ShowWindow(SW_HIDE);
 		m_pDoc->GetView()->ForceCursor(FALSE);

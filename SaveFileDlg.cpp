@@ -72,8 +72,7 @@ void CSaveFileDlg::OnInitDone()
 		m_SliderCtrl.SetTicFreq(10);
 		m_SliderCtrl.SetPageSize(5);
 		m_SliderCtrl.SetLineSize(5);
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			m_nJpegCompressionQuality = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
+		m_nJpegCompressionQuality = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), DEFAULT_JPEGCOMPRESSION);
 		m_SliderCtrl.SetPos(m_nJpegCompressionQuality);
 
 		// Slider JPEG Quality Text
@@ -108,8 +107,7 @@ void CSaveFileDlg::OnDestroy()
 	if (m_bShowJPEGCompression)
 	{
 		m_nJpegCompressionQuality = m_SliderCtrl.GetPos();
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), m_nJpegCompressionQuality);
+		::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("JpegSaveAsCompressionQuality"), m_nJpegCompressionQuality);
 		KillTimer(ID_TIMER_SAVEFILEDLG);
 	}
 }

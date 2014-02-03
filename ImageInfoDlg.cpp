@@ -25,8 +25,6 @@ CImageInfoDlg::CImageInfoDlg(CPictureDoc* pDoc) : cdxCDynamicDialog(IDD = IDD_IM
 	//{{AFX_DATA_INIT(CImageInfoDlg)
 	m_nMetadataGroupView = EXIF;
 	//}}AFX_DATA_INIT
-	if (!((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		NoAutoPos();
 	m_nMetadataType = FILE_COMMENT;
 	m_bLayered = FALSE;
 	m_pDoc = pDoc;
@@ -50,8 +48,7 @@ CImageInfoDlg::CImageInfoDlg(CPictureDoc* pDoc) : cdxCDynamicDialog(IDD = IDD_IM
 	ModifyFlags(flSizeIcon, 0);
 	
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 
 	cdxCDynamicDialog::Create(CImageInfoDlg::IDD, NULL);
 }
@@ -374,8 +371,7 @@ void CImageInfoDlg::OnClose()
 	if (SaveModified())
 	{
 		// Save Settings
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			SaveSettings();
+		SaveSettings();
 
 		// Destroy Window
 		DestroyWindow();

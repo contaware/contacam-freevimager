@@ -786,12 +786,9 @@ void CAssistantDlg::Rename()
 				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
 			BeginWaitCursor();
 		}
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		{
-			::AfxGetApp()->WriteProfileString(	_T("GeneralApp"),
-												_T("MicroApacheDocRoot"),
-												((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot);
-		}
+		::AfxGetApp()->WriteProfileString(	_T("GeneralApp"),
+											_T("MicroApacheDocRoot"),
+											((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot);
 	}
 }
 
@@ -1194,8 +1191,7 @@ void CAssistantDlg::ApplySettings()
 	UpdateData(FALSE);
 
 	// Save Settings (BeginWaitCursor() / EndWaitCursor() called inside this function)
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		m_pDoc->SaveSettings();
+	m_pDoc->SaveSettings();
 
 	// Update titles because of possible device name change
 	m_pDoc->SetDocumentTitle();

@@ -85,8 +85,7 @@ void CDeleteCamFoldersDlg::OnOK()
 			::DeleteToRecycleBin(sDirName);
 			
 			// Autorun-clear and device configuration delete
-			if (!::IsExistingDir(sDirName) &&	// make sure dir has been deleted
-				((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
 				{

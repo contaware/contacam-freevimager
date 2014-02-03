@@ -215,12 +215,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	InitMenuPositions();
 	
 	// Set top most
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_bTopMost = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("TopMost"), FALSE);
-		if (((CUImagerApp*)::AfxGetApp())->m_bTopMost)
-			SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	}
+	((CUImagerApp*)::AfxGetApp())->m_bTopMost = (BOOL)((CUImagerApp*)::AfxGetApp())->GetProfileInt(_T("GeneralApp"), _T("TopMost"), FALSE);
+	if (((CUImagerApp*)::AfxGetApp())->m_bTopMost)
+		SetWindowPos(&wndTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	// Allocate Dlg Objects
 	((CUImagerApp*)::AfxGetApp())->m_pXmpImportDlg = new CXmpDlg(this, IDD_XMP_IMPORT);
@@ -269,8 +266,7 @@ void CMainFrame::ChangeCoordinatesUnit()
 	(((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit)++;
 	if (((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit > COORDINATES_CM)
 		((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit = COORDINATES_PIX;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("CoordinateUnit"), ((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit);
+	((CUImagerApp*)::AfxGetApp())->WriteProfileInt(_T("GeneralApp"), _T("CoordinateUnit"), ((CUImagerApp*)::AfxGetApp())->m_nCoordinateUnit);
 
 	// Update Active View's Pane and Status Text
 	CMDIChildWnd* pChild = MDIGetActive();
@@ -685,8 +681,7 @@ void CMainFrame::OnClose()
 		CPostDelayedMessageThread::Exit();
 
 		// Save Settings
-		if (pApp->m_bUseSettings)
-			pApp->SaveSettings();
+		pApp->SaveSettings();
 
 		// Release Twain
 		ReleaseTwain();
@@ -775,14 +770,9 @@ void CMainFrame::OnFileAcquireToTiff()
 	// Display the Save As Dialog
 	TCHAR szFileName[MAX_PATH];
 	CNoVistaFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, this);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("TiffScanFileName"), _T("scan.tif"));
-		if (!::IsExistingDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName)))
-			((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::GetShortFileName(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
-	}
-	else
-		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = _T("scan.tif");
+	((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("TiffScanFileName"), _T("scan.tif"));
+	if (!::IsExistingDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName)))
+		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::GetShortFileName(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 	_tcscpy(szFileName, ((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 	dlgFile.m_ofn.lpstrFile = szFileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
@@ -792,8 +782,7 @@ void CMainFrame::OnFileAcquireToTiff()
 	if (dlgFile.DoModal() == IDOK)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = szFileName;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("TiffScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+		::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("TiffScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("");
 		TwainAcquire(TWCPP_ANYCOUNT);
 	}
@@ -828,14 +817,9 @@ void CMainFrame::OnFileAcquireToPdf()
 	// Display the Save As Dialog
 	TCHAR szFileName[MAX_PATH];
 	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, this);
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("PdfScanFileName"), _T("scan.pdf"));
-		if (!::IsExistingDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName)))
-			((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::GetShortFileName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
-	}
-	else
-		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = _T("scan.pdf");
+	((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::AfxGetApp()->GetProfileString(_T("GeneralApp"), _T("PdfScanFileName"), _T("scan.pdf"));
+	if (!::IsExistingDir(::GetDriveAndDirName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName)))
+		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = ::GetShortFileName(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 	_tcscpy(szFileName, ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 	dlgFile.m_ofn.lpstrFile = szFileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
@@ -846,8 +830,7 @@ void CMainFrame::OnFileAcquireToPdf()
 	{
 		((CUImagerApp*)::AfxGetApp())->m_nPdfScanCompressionQuality = dlgFile.GetJpegCompressionQuality();
 		((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName = szFileName;
-		if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-			::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("PdfScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
+		::AfxGetApp()->WriteProfileString(_T("GeneralApp"), _T("PdfScanFileName"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 		((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName = ::MakeTempFileName(	((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 																					::GetFileNameNoExt(((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName) + _T(".tif"));
 
@@ -1258,8 +1241,7 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 	}
 
 	// Store placement
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		((CUImagerApp*)::AfxGetApp())->SaveSettings();
+	((CUImagerApp*)::AfxGetApp())->SaveSettings();
 
 	// Get Current Monitor Rectangle
 	m_rcEnterFullScreenMonitor = GetMonitorFullRect();
@@ -2982,17 +2964,14 @@ void CMainFrame::OnMainmonitor()
 												SWP_NOSIZE | SWP_NOZORDER);
 		}
 	}
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
+	HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
+	if (h)
 	{
-		HINSTANCE h = ::LoadLibrary(_T("user32.dll"));
-		if (h)
-		{
-			CString strAutoPos;
-			strAutoPos.Format(_T("ID=0x%08lx"), IDD_IMAGEINFO);
-			CString sSection = cdxCDynamicWndEx::MakeFullProfile(cdxCDynamicWndEx::M_lpszAutoPosProfileSection, strAutoPos);
-			::AfxGetApp()->WriteProfileInt(sSection, _T("(valid)"), 0);
-			::FreeLibrary(h);
-		}
+		CString strAutoPos;
+		strAutoPos.Format(_T("ID=0x%08lx"), IDD_IMAGEINFO);
+		CString sSection = cdxCDynamicWndEx::MakeFullProfile(cdxCDynamicWndEx::M_lpszAutoPosProfileSection, strAutoPos);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("(valid)"), 0);
+		::FreeLibrary(h);
 	}
 }
 

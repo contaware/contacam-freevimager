@@ -68,9 +68,7 @@ BOOL CSoftenDlg::OnInitDialog()
 	pSlider->SetRange(MIN_SOFTNESS, MAX_SOFTNESS, TRUE);
 	pSlider->SetLineSize(1);
 	pSlider->SetPageSize(1);
-	int nSoften = DEFAULT_SOFTNESS;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		nSoften = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("Soften"), DEFAULT_SOFTNESS);
+	int nSoften = ::AfxGetApp()->GetProfileInt(_T("PictureDoc"), _T("Soften"), DEFAULT_SOFTNESS);
 	pSlider->SetPos(nSoften);
 
 	// Init Preview Undo Dib
@@ -140,8 +138,7 @@ void CSoftenDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 				Undo();
 				int nSoften = pSlider->GetPos();
 				Soften(pDib, NULL, nSoften);
-				if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-					::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Soften"), nSoften);
+				::AfxGetApp()->WriteProfileInt(_T("PictureDoc"), _T("Soften"), nSoften);
 				pDoc->UpdateAlphaRenderedDib();
 				EndWaitCursor();
 				pDoc->InvalidateAllViews(FALSE);

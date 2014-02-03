@@ -780,12 +780,9 @@ void CPicturePrintPreviewView::OnPrintMargin()
 {
 	CButton* pCheck = (CButton*)m_pToolBar->GetDlgItem(IDC_CHECK_PRINTMARGIN);
 	GetDocument()->m_bPrintMargin = pCheck->GetCheck();
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-	{
-		::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
-										_T("PrintMargin"),
-										GetDocument()->m_bPrintMargin);
-	}
+	::AfxGetApp()->WriteProfileInt(	_T("PictureDoc"),
+									_T("PrintMargin"),
+									GetDocument()->m_bPrintMargin);
 	Invalidate(FALSE);
 }
 

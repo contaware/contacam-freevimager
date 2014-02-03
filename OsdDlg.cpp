@@ -56,8 +56,7 @@ COsdDlg::COsdDlg(CPictureDoc* pDoc)
 	Defaults();
 
 	// Load Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		LoadSettings();
+	LoadSettings();
 
 	// Create Dlg
 	CDialog::Create(COsdDlg::IDD, NULL);
@@ -125,10 +124,7 @@ int COsdDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_nMinDlgSizeY = rc.Height();
 
 	// Load Placement Settings
-	BOOL res = FALSE;
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		res = LoadPlacementSettings();
-	if (!res)
+	if (!LoadPlacementSettings())
 	{
 		WINDOWPLACEMENT	wpl;
 		GetWindowPlacement(&wpl);
@@ -210,8 +206,7 @@ void COsdDlg::OnClose()
 	}
 
 	// Save Settings
-	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		SaveSettings();
+	SaveSettings();
 
 	// Destroy Window
 	DestroyWindow();
