@@ -17,7 +17,6 @@
 #include "MainFrm.h"
 #include "WorkerThread.h"
 #include "XmpDlg.h"
-#include "SettingsXml.h"
 
 // Fullscreen Browser
 #define FULLSCREENBROWSER_NOEXT							_T("FullscreenBrowser")
@@ -732,9 +731,6 @@ public:
 	// Xmp Dialogs
 	CXmpDlg* m_pXmpImportDlg;
 	CXmpDlg* m_pXmpDlg;
-
-	// Settings Xml
-	CSettingsXml m_SettingsXml;
 
 	// When starting program open document in full screen mode
 	BOOL m_bStartFullScreenMode;

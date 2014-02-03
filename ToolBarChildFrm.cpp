@@ -1324,10 +1324,6 @@ void CPictureChildFrame::StartShutdown()
 {
 	CPictureDoc* pDoc = (CPictureDoc*)GetActiveDocument();
 	ASSERT_VALID(pDoc);
-
-	// Save The Settings
-	if (!((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
-		pDoc->SaveSettingsXml();
 	
 	// Cancel Crop Tool
 	pDoc->CancelCrop();

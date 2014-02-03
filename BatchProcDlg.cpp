@@ -5438,28 +5438,6 @@ void CBatchProcDlg::OnButtonAddSlideshowExe()
 		}
 	}
 
-	// Create Settings.xml if not existing
-	CString sSettingsFileName = m_sDst + _T("\\") + SLIDESHOWSETTINGSNAME;
-	if (!::IsExistingFile(sSettingsFileName))
-	{
-		CWinApp* pApp = ::AfxGetApp();
-		CString sSection(_T("PictureDoc"));
-		
-		CSettingsXml SettingsXml;
-		SettingsXml.WriteString(NULL, _T("windows"), _T(""));
-		LPXNode pWindows = SettingsXml.GetSection(NULL, _T("windows"));
-		SettingsXml.WriteString(pWindows, _T("slideshow"), _T(""));
-		LPXNode pSlideshow = SettingsXml.GetSection(pWindows, _T("slideshow"));
-		SettingsXml.WriteInt(pSlideshow, _T("delay"), DEFAULT_SLIDESHOW_DELAY);
-		SettingsXml.WriteInt(pSlideshow, _T("loop"), 1);
-		SettingsXml.WriteInt(pSlideshow, _T("random"), 0);
-		SettingsXml.WriteInt(pSlideshow, _T("transitiontype"), 0);
-		SettingsXml.WriteInt(pSlideshow, _T("fitbigzoom"), 0);
-		SettingsXml.WriteInt(pSlideshow, _T("backgroundcolor"), 0);
-		SettingsXml.WriteInt(pSlideshow, _T("enableosd"), 1);
-		SettingsXml.StoreSettings(sSettingsFileName);
-	}
-
 	// Create the autorun.inf File
 	try
 	{
@@ -5468,9 +5446,7 @@ void CBatchProcDlg::OnButtonAddSlideshowExe()
 		AutorunFile.WriteString(CString(_T("open=")) + CString(SLIDESHOWNAME) + CString(_T('\n')));
 		AutorunFile.WriteString(CString(_T("icon=")) + CString(SLIDESHOWNAME));
 		AutorunFile.Close();
-		::AfxMessageBox(ML_STRING(1376, "Successfully added / updated the executable and the configuration files.\n") +
-						ML_STRING(1377, "(see Start.exe, Settings.xml and autorun.inf)"),
-						MB_ICONINFORMATION);
+		::AfxMessageBox(ML_STRING(1376, "Successfully added / updated the executable file."), MB_ICONINFORMATION);
 	}
 	catch (CFileException* e)
 	{

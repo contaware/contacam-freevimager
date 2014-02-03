@@ -2240,26 +2240,6 @@ CPictureDoc::CPictureDoc()
 	// Load the Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		LoadSettings();
-	else
-	{
-		m_SlideShowThread.SetMilliSecondsDelay(DEFAULT_SLIDESHOW_DELAY);
-		m_nTransitionType = 0;
-		m_bDitherColorConversion = TRUE;
-		m_uiMaxColors16 = 16;
-		m_uiMaxColors256 = 256;
-		if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-		{
-			m_crBackgroundColor = RGB(0,0,0);
-			m_SlideShowThread.SetLoop(TRUE);
-		}
-		else
-		{
-			m_crBackgroundColor = ::GetSysColor(COLOR_WINDOW);
-			m_SlideShowThread.SetLoop(FALSE);
-		}
-		m_bForceLossyTrafo = FALSE;
-		LoadSettingsXml();
-	}
 }
 
 CPictureDoc::~CPictureDoc()
@@ -4575,55 +4555,6 @@ void CPictureDoc::LoadSettings()
 	m_bZoomTool = pApp->GetProfileInt(sSection, _T("ZoomTool"), FALSE);
 	if (m_bZoomTool)
 		::AfxGetMainFrame()->StatusText(ML_STRING(1226, "*** Right Click to Zoom Out ***"));
-}
-
-void CPictureDoc::LoadSettingsXml()
-{
-	LPXNode pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	if (pWindows)
-	{
-		LPXNode pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-		if (pSlideshow)
-		{
-			m_SlideShowThread.SetMilliSecondsDelay(((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("delay"),
-													DEFAULT_SLIDESHOW_DELAY));
-			m_SlideShowThread.SetLoop((BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("loop"), 1));
-			m_SlideShowThread.SetRandom((BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("random"), 0));
-			m_nTransitionType = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("transitiontype"), 0);
-			m_nZoomComboBoxIndex = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("fitbigzoom"), 0); // Default Fit
-			if (m_nZoomComboBoxIndex != 0)	// Only Fit or Fit Big allowed
-				m_nZoomComboBoxIndex = 1;	// Fit Big
-			m_crBackgroundColor = (COLORREF)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("backgroundcolor"), 0);
-			m_bEnableOsd = (BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pSlideshow, _T("enableosd"), 1);
-		}
-	}
-}
-
-void CPictureDoc::SaveSettingsXml()
-{
-	LPXNode pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	if (!pWindows)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(NULL, _T("windows"), _T(""));
-		pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	}
-	LPXNode pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-	if (!pSlideshow)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(pWindows, _T("slideshow"), _T(""));
-		pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-	}
-	if (pSlideshow)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("delay"), m_SlideShowThread.GetMilliSecondsDelay());
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("loop"), (int)m_SlideShowThread.IsLoop());
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("random"), (int)m_SlideShowThread.IsRandom());
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("transitiontype"), m_nTransitionType);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("fitbigzoom"), m_nZoomComboBoxIndex);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("backgroundcolor"), (int)m_crBackgroundColor);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pSlideshow, _T("enableosd"), (int)m_bEnableOsd);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.StoreSettings();
-	}
 }
 
 CDib* CPictureDoc::AddUndo(CDib* pDib/*=NULL*/)

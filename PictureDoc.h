@@ -366,8 +366,6 @@ public:
 
 	// Setings
 	void LoadSettings();
-	void LoadSettingsXml();
-	void SaveSettingsXml();
 	
 	// Get / Set View / Frame Functions
 	CPictureView* GetView() const {return m_pView;};

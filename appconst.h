@@ -31,7 +31,6 @@
 #endif
 #define APPVERSION										_T("4.9.5beta13")
 #define SLIDESHOWNAME									_T("Start.exe")
-#define SLIDESHOWSETTINGSNAME							_T("Settings.xml")
 
 // Company
 #define MYCOMPANY										_T("Contaware")

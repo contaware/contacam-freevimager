@@ -106,11 +106,8 @@ protected:
 	void LoadSettings();
 	BOOL LoadPlacementSettings();
 	void ClipToMonitorRect(RECT& rc);
-	BOOL LoadPlacementSettingsXml();
 	BOOL SetPlacement(WINDOWPLACEMENT&	wpl, const CRect& rcOrigMonitor);
 	void SaveSettings();
-	void LoadSettingsXml();
-	void SaveSettingsXml();
 	void PaintArray(CDC* pDC, CStringArray& a, CRect& rcDraw, CRect& rcDrawPrev, int nLineHeight);
 	BOOL FitsOneLine(CDC* pDC, CString s, const CRect& rc);
 	CSize GetOneLineTextSize(CDC* pDC, CString s);

@@ -354,9 +354,6 @@
     <ClCompile Include="SettingsDlgVideoDeviceDoc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SettingsXml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SharpenDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -847,9 +844,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SettingsDlgVideoDeviceDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SettingsXml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SharpenDlg.h">

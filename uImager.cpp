@@ -416,7 +416,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (cmdInfo.DoStartSlideShow() || sName.CompareNoCase(sSlideshowName) == 0)
 		{
 			m_bSlideShowOnly = TRUE;
-			m_bUseSettings = FALSE;
 			bUseRegistry = FALSE;
 		}
 
@@ -559,20 +558,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Recent File List and Settings (to store m_nNumPreviewPages)
 		if (m_bUseSettings)
 			LoadStdProfileSettings(6);
-
-		// Check the correctness of Autostart (the program location may change)
-		if (m_bUseSettings)
-		{
-			CRegKey RegKey;
-			TCHAR szCurrentPath[MAX_PATH];
-			DWORD dwCount = MAX_PATH;
-			if (RegKey.Open(HKEY_CURRENT_USER, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")) == ERROR_SUCCESS)
-			{
-				if (RegKey.QueryStringValue(APPNAME_NOEXT, szCurrentPath, &dwCount) == ERROR_SUCCESS)
-					RegKey.SetStringValue(APPNAME_NOEXT, szProgramName);
-				RegKey.Close();
-			}
-		}
 
 		// Picture Doc Template Registration
 		m_pPictureDocTemplate = new CUImagerMultiDocTemplate(
@@ -812,7 +797,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Slideshow only mode
 		if (m_bSlideShowOnly)
 		{
-			m_SettingsXml.LoadSettings(sDriveDir + SLIDESHOWSETTINGSNAME);
 			SlideShow(	sDriveDir,
 						TRUE,
 						TRUE,
@@ -2097,12 +2081,7 @@ void CUImagerApp::SaveOnEndSession()
 			pDoc = curTemplate->GetNextDoc(posDoc);
 			if (pDoc)
 			{
-				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-				{
-					if (!m_bUseSettings)
-						((CPictureDoc*)pDoc)->SaveSettingsXml();
-				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 				{
 					if (m_bUseSettings)
 						((CVideoAviDoc*)pDoc)->SaveSettings();

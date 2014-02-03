@@ -58,8 +58,6 @@ COsdDlg::COsdDlg(CPictureDoc* pDoc)
 	// Load Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		LoadSettings();
-	else
-		LoadSettingsXml();
 
 	// Create Dlg
 	CDialog::Create(COsdDlg::IDD, NULL);
@@ -130,8 +128,6 @@ int COsdDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	BOOL res = FALSE;
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		res = LoadPlacementSettings();
-	else
-		res = LoadPlacementSettingsXml();
 	if (!res)
 	{
 		WINDOWPLACEMENT	wpl;
@@ -216,8 +212,6 @@ void COsdDlg::OnClose()
 	// Save Settings
 	if (((CUImagerApp*)::AfxGetApp())->m_bUseSettings)
 		SaveSettings();
-	else
-		SaveSettingsXml();
 
 	// Destroy Window
 	DestroyWindow();
@@ -1084,42 +1078,6 @@ BOOL COsdDlg::LoadPlacementSettings()
 	return SetPlacement(wpl, rcOrigMonitor);
 }
 
-BOOL COsdDlg::LoadPlacementSettingsXml()
-{	
-	WINDOWPLACEMENT	wpl;
-	GetWindowPlacement(&wpl);
-	wpl.showCmd = SW_HIDE;
-	CRect rcOrigMonitor(0,0,0,0);
-	LPXNode pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	if (pWindows)
-	{
-		LPXNode pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-		if (pSlideshow)
-		{
-			LPXNode pOSD = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pSlideshow, _T("osd"));
-			if (pOSD)
-			{
-				wpl.rcNormalPosition.left	=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("left"), 0);
-				wpl.rcNormalPosition.right	=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("right"), 0);
-				wpl.rcNormalPosition.top	=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("top"), 0);
-				wpl.rcNormalPosition.bottom	=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("bottom"), 0);
-				rcOrigMonitor.left			=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("monitorleft"), 0);
-				rcOrigMonitor.right			=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("monitorright"), 0);
-				rcOrigMonitor.top			=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("monitortop"), 0);
-				rcOrigMonitor.bottom		=	((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("monitorbottom"), 0);
-			}
-			else
-				return FALSE;
-		}
-		else
-			return FALSE;
-	}
-	else
-		return FALSE;
-
-	return SetPlacement(wpl, rcOrigMonitor);
-}
-
 void COsdDlg::ClipToMonitorRect(RECT& rc)
 {
 	int w = rc.right - rc.left;
@@ -1302,80 +1260,6 @@ void COsdDlg::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("FontFace"), m_sFontFace);
 	pApp->WriteProfileInt(sSection,	_T("MaxOpacity"), m_nMaxOpacity);
 	pApp->WriteProfileInt(sSection, _T("DisplayState"),	m_dwDisplayState);
-}
-
-void COsdDlg::LoadSettingsXml()
-{
-	LPXNode pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	if (pWindows)
-	{
-		LPXNode pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-		if (pSlideshow)
-		{
-			LPXNode pOSD = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pSlideshow, _T("osd"));
-			if (pOSD)
-			{
-				m_bAutoSize = (BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("autosize"), 1);
-				m_nFontSize = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("fontsize"), FONT_MEDIUM);
-				m_nTimeout = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("timeoutms"), TIMEOUT_4SEC);
-				m_crFontColor = (COLORREF)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("fontcolor"), RGB(192,192,192));
-				m_crBackgroundColor = (COLORREF)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("backgroundcolor"), RGB(0,0,0));
-				m_bUsePictureDocBackgroundColor = (BOOL)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("usepicturedocbackgroundcolor"), 0);
-				m_sFontFace = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetString(pOSD, _T("fontface"), _T("Arial"));
-				m_nMaxOpacity = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("maxopacity"), DEFAULT_MAX_OPACITY);
-				m_dwDisplayState = (DWORD)((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetInt(pOSD, _T("displaystate"),
-																									DISPLAY_METADATADATE	|
-																									DISPLAY_LOCATION		|
-																									DISPLAY_HEADLINEDESCRIPTION);
-			}
-		}
-	}
-}
-
-void COsdDlg::SaveSettingsXml()
-{
-	LPXNode pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	if (!pWindows)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(NULL, _T("windows"), _T(""));
-		pWindows = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(NULL, _T("windows"));
-	}
-	LPXNode pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-	if (!pSlideshow)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(pWindows, _T("slideshow"), _T(""));
-		pSlideshow = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pWindows, _T("slideshow"));
-	}
-	LPXNode pOSD = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pSlideshow, _T("osd"));
-	if (!pOSD)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(pSlideshow, _T("osd"), _T(""));
-		pOSD = ((CUImagerApp*)::AfxGetApp())->m_SettingsXml.GetSection(pSlideshow, _T("osd"));
-	}
-	if (pOSD)
-	{
-		WINDOWPLACEMENT	wpl;
-		GetWindowPlacement(&wpl);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("left"), wpl.rcNormalPosition.left);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("right"), wpl.rcNormalPosition.right);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("top"), wpl.rcNormalPosition.top);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("bottom"), wpl.rcNormalPosition.bottom);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("monitorleft"), m_rcMonitor.left);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("monitorright"), m_rcMonitor.right);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("monitortop"), m_rcMonitor.top);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("monitorbottom"), m_rcMonitor.bottom);
-
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("autosize"), (int)m_bAutoSize);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("fontsize"), m_nFontSize);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("timeoutms"), m_nTimeout);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("fontcolor"), (int)m_crFontColor);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("backgroundcolor"), (int)m_crBackgroundColor);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("usepicturedocbackgroundcolor"), (int)m_bUsePictureDocBackgroundColor);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteString(pOSD, _T("fontface"), m_sFontFace);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("maxopacity"), m_nMaxOpacity);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.WriteInt(pOSD, _T("displaystate"), (int)m_dwDisplayState);
-		((CUImagerApp*)::AfxGetApp())->m_SettingsXml.StoreSettings();
-	}
 }
 
 void COsdDlg::UpdateDisplay()

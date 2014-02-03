@@ -3,7 +3,7 @@ TRANSLATIONS HISTORY
 4.9.5 (xxx xth 2014)
 
 - Added strings 1766, 1789, 1820
-- Updated string 1821
+- Updated string 1376, 1821
 
 4.9.0 (November 19th 2013)
 

@@ -4759,8 +4759,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1376      "Successfully added / updated the executable and the configuration files.\n"
-    IDS_MULTILANG_1377      "(see Start.exe, Settings.xml and autorun.inf)"
+    IDS_MULTILANG_1376      "Successfully added / updated the executable file."
     IDS_MULTILANG_1378      "Before Viewing the Slideshow do Step 1:\nAdd the Slideshow EXE."
     IDS_MULTILANG_1379      "Before Burning the Slideshow do Step 1:\nAdd the Slideshow EXE."
     IDS_MULTILANG_1382      "Open your preferred CD / DVD maker Tool\n"
