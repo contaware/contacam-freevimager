@@ -5680,7 +5680,7 @@ BEGIN
     IDS_STRING1818          "set lower framerate"
     IDS_STRING1819          "or resolution!"
     IDS_STRING1820          "usable"
-    IDS_STRING1821          "used %s (%s %s), frag. %s"
+    IDS_STRING1821          "used %s, reserved %s, fragmented %s"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
 END

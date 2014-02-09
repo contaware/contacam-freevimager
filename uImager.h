@@ -153,7 +153,7 @@ ICDBurn : public IUnknown
 };
 #endif 	/* __ICDBurn_FWD_DEFINED__ */
 
-#define ABOUTDLG_TIMER_MS		1000U
+#define ABOUTDLG_TIMER_MS		3000U
 class CAboutDlg : public CDialog
 {
 public:

@@ -36,17 +36,63 @@ VirtualAlloc should be used only
 4. You're implementing your own custom allocator
    
 
-Heap types
-----------
+LFH Heap
+--------
 
-Enabling the low-fragmentation heap (LFH) disables look-aside lists. The 
-LFH is not a separate heap. Instead, it is a policy that applications 
-can enable for their heaps. When the LFH is enabled, the system 
-allocates memory in certain predetermined sizes. When an application 
-requests a memory allocation from a heap that has the LFH enabled, the 
-system allocates the smallest block of memory that is large enough to 
-contain the requested size. The system does not use the LFH for 
-allocations larger than 16 KB, whether or not the LFH is enabled. 
+Starting with Windows Vista the low-fragmentation heap (LFH) is enabled 
+by default for the default heap and starting with Visual Studio 2010 it 
+is enable by default for the CRT heap. 
+Enabling the LFH disables look-aside lists. The LFH is not a separate 
+heap. Instead, it is a policy that applications can enable for their 
+heaps. When the LFH is enabled, the system allocates memory in certain 
+predetermined sizes. When an application requests a memory allocation 
+from a heap that has the LFH enabled, the system allocates the smallest 
+block of memory that is large enough to contain the requested size. The 
+system does not use the LFH for allocations larger than 16 KB, whether 
+or not the LFH is enabled. For memory blocks that are larger than 16 KB, 
+the LFH uses the standard heap. 
+
+The LFH avoids fragmentation by managing all allocated blocks in 128 
+predetermined different block-size ranges. Each of the 128 size ranges 
+is called a bucket. When an application needs to allocate memory from 
+the heap, the LFH chooses the bucket that can allocate the smallest 
+block large enough to contain the requested size. The smallest block 
+that can be allocated is 8 bytes. 
+
+The size ranges provided by the buckets are described in the following
+table:
+
+Buckets 	Granularity 	Range
+1-32        8               1-256
+33-48       16              257-512
+49-64       32              513-1024
+65-80       64              1025-2048
+81-96       128             2049-4096
+97-112      256             4097-8192
+113-128     512             8193-16384
+
+The first bucket is used for allocations between 1 and 8 bytes in size. 
+The next bucket is used for allocations between 9 and 16 bytes in size, 
+and so on until the 32nd bucket, which is used for allocations between 
+249 and 256 bytes in size. The 33rd bucket is used for allocations 
+between 257 and 272 bytes in size. The 34th bucket is used for 
+allocations between 273 and 288 bytes in size, and so on. The final 
+bucket (128th) is used for allocations between 15,873 and 16,384 bytes 
+in size. 
+
+For example, if an application needs to allocate 10 bytes of memory, the 
+smallest block size that can accommodate this request is 16 bytes. 
+Bucket two is used for allocations that are 16 bytes in size, therefore, 
+the LFH will allocate the memory from bucket two. 
+
+If the allocation is not a multiple of eight, there will be unused 
+bytes. This is another form of fragmentation called internal 
+fragmentation. The LFH was designed to balance internal and external 
+fragmentation. 
+
+
+Look-Aside Heap
+---------------
 
 A look-aside list is a fast memory allocation mechanism that contains 
 only fixed-sized blocks. Look-aside lists are enabled by default for 
@@ -58,3 +104,31 @@ addition, access to look-aside lists is generally synchronized using
 fast atomic processor exchange instructions instead of mutexes or 
 spinlocks. Look-aside lists can be created by the system or drivers. 
 They can be allocated from paged or nonpaged pool. 
+
+
+Fixed and growing Heaps
+-----------------------
+
+If dwMaximumSize in HeapCreate is not zero, the heap size is fixed and 
+cannot grow beyond the maximum size. Also, the largest memory block that 
+can be allocated from the heap is slightly less than 512 KB for a 32-bit 
+process and slightly less than 1024 KB for a 64-bit process. Requests 
+to allocate larger blocks fail, even if the maximum size of the heap is 
+large enough to contain the block. 
+
+If dwMaximumSize is 0, the heap can grow in size. The heap's size is 
+limited only by the available memory. Requests to allocate memory blocks 
+larger than the limit for a fixed-size heap do not automatically fail; 
+instead, the system calls the VirtualAlloc function to obtain the memory 
+that is needed for large blocks. Applications that need to allocate 
+large memory blocks should set dwMaximumSize to 0. The heap uncommits
+freed blocks, but address space is still reserved, heap may eat up all
+the address space if many large blocks are allocated (like 500 KB) and
+freed.
+
+
+Heap behaviour depends from allocation size
+-------------------------------------------
+
+LFH heap is active up to 16 KB, from 16 KB to 512 KB the standard heap 
+is used and above this value the VirtualAlloc function is called. 

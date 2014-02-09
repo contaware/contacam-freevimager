@@ -2116,10 +2116,10 @@ notamd:
 
 LPVOID new16align(SIZE_T size)
 {
-	LPBYTE mem = new BYTE[size+sizeof(LPVOID)+15];
-	LPVOID ptr = (LPVOID)((SIZE_T)(mem+sizeof(LPVOID)+15) & ~0x0F);
+	LPBYTE mem = new BYTE[size+sizeof(LPVOID)+0xf];
+	LPVOID ptr = (LPVOID)((SIZE_T)(mem+sizeof(LPVOID)+0xf) & ~0xf);
 	((LPVOID*)ptr)[-1] = (LPVOID)mem;
-	ASSERT(((SIZE_T)ptr & 0x0F) == 0);
+	ASSERT(((SIZE_T)ptr & 0xf) == 0);
 	return ptr;
 }
 
@@ -2195,7 +2195,7 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	DWORD sum_free = 0, max_free = 0;
 	DWORD sum_reserve = 0, max_reserve = 0;
 	DWORD sum_commit = 0, max_commit = 0;
-	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info)))
+	while (VirtualQuery(memory_info.BaseAddress, &memory_info, sizeof(memory_info))) // it stops when passing >= 0x7fff0000
 	{
 		++region;
 		switch (memory_info.State)
@@ -2234,55 +2234,6 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pReservedMB) *pReservedMB = sum_reserve;
 	if (pCommittedMB) *pCommittedMB = sum_commit;
 	if (pFragmentation) *pFragmentation = dFragmentation;
-}
-
-void GetHeapStats(	SIZE_T* pTotalUsedBytes/*=NULL*/,
-					int* pDefaultHeapType/*=NULL*/,
-					int* pCRTHeapType/*=NULL*/)
-{
-	// Get all the heaps in the process
-	HANDLE heaps[100];
-	DWORD c = GetProcessHeaps(100, heaps);
-	
-	// Get the default heap and the CRT heap
-	HANDLE default_heap = GetProcessHeap();
-	HANDLE crt_heap = (HANDLE)_get_heap_handle();
-
-	// Loop through all heaps
-	SIZE_T Size = 0U;
-	for (unsigned int i = 0 ; i < c ; i++)
-	{
-		// Query the heap attributes
-		ULONG heap_info = 0;
-		SIZE_T ret_size = 0;
-		if (HeapQueryInformation(heaps[i], HeapCompatibilityInformation,
-								&heap_info, sizeof(heap_info), &ret_size))
-		{
-			
-
-			// Heap types
-			if (heaps[i] == default_heap && pDefaultHeapType)
-				*pDefaultHeapType = heap_info;
-			if (heaps[i] == crt_heap && pCRTHeapType)
-				*pCRTHeapType = heap_info;
-
-			// Walk the heap and count each allocated block inside it
-			if (pTotalUsedBytes)
-			{
-				HeapLock(heaps[i]);
-				PROCESS_HEAP_ENTRY entry;
-				memset(&entry, 0, sizeof(entry));
-				while (HeapWalk(heaps[i], &entry))
-				{
-					if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
-						Size += entry.cbData;
-				}
-				HeapUnlock(heaps[i]);
-			}
-		}
-	}
-
-	if (pTotalUsedBytes) *pTotalUsedBytes = Size;
 }
 
 BOOL EnableLFHeap()

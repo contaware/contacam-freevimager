@@ -148,8 +148,10 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 					CDib* pDib = pList->GetNext(posDibs);
 					if (pDib)
 					{
-						m_pDoc->m_dwNewestMovementDetectionListSize +=
-							(sizeof(CDib) + pDib->GetBMISize() + pDib->GetImageSize() + pDib->GetUserListSize());
+						// BIGSIZE accounts for the 64 KB allocation granularity and the address space waste
+						m_pDoc->m_dwNewestMovementDetectionListSize += sizeof(CDib) +
+								pDib->GetBMISize() + BIGSIZE(pDib->GetImageSize() + SAFETY_BITALLOC_MARGIN) +
+								pDib->GetUserListSize();
 					}
 				}
 				m_pDoc->m_dwTotalMovementDetectionListSize += m_pDoc->m_dwNewestMovementDetectionListSize;

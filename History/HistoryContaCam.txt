@@ -12,8 +12,6 @@ CONTACAM HISTORY
   if all IP cams start at the same time (thanks to Sanford Gossman
   for the idea and for testing it)
 - Increased network timeouts
-- Moved frame buffer to low fragmentation heap (LFH). Previously
-  it was directly allocated in virtual memory
 
 4.9.0 (November 19th 2013)
 

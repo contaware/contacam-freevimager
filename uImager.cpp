@@ -1058,36 +1058,21 @@ BOOL CAboutDlg::OnInitDialog()
 void CAboutDlg::DisplayMemStats()
 {
 	// Get virtual memory stats
+	int nReservedMB = 0;
 	int nCommittedMB = 0;
 	double dFragmentation = 0.0;
-	::GetMemoryStats(NULL, NULL, NULL, &nCommittedMB, &dFragmentation);
+	::GetMemoryStats(NULL, NULL, &nReservedMB, &nCommittedMB, &dFragmentation);
+	CString sReservedSize;
+	sReservedSize.Format(_T("%d ") + ML_STRING(1825, "MB"), nReservedMB);
 	CString sCommittedSize;
 	sCommittedSize.Format(_T("%d ") + ML_STRING(1825, "MB"), nCommittedMB);
 	CString sFragmentation;
-	sFragmentation.Format(_T("%d %%"), Round(dFragmentation));
-
-	// Get heap stats
-	SIZE_T UsedHeapBytes = 0;
-	int nCRTHeapType = 0;
-	::GetHeapStats(&UsedHeapBytes, NULL, &nCRTHeapType);
-	CString sHeapType;
-	switch (nCRTHeapType)
-	{
-		case 0 :	sHeapType = _T("regular heap"); break;
-		case 1 :	sHeapType = _T("look-asides heap"); break;
-		case 2 :	sHeapType = _T("LFH heap"); break;
-		default :	sHeapType = _T("unknown heap"); break;
-	}
-	CString sUsedHeapSize;
-	if (UsedHeapBytes >= (1024*1024))
-		sUsedHeapSize.Format(_T("%Iu ") + ML_STRING(1825, "MB"), UsedHeapBytes >> 20);
-	else
-		sUsedHeapSize.Format(_T("%Iu ") + ML_STRING(1243, "KB"), UsedHeapBytes >> 10);
+	sFragmentation.Format(_T("%0.1f %%"), dFragmentation);
 
 	// Update text on dialog if necessary
 	CString sCurrentText, sNewTextStats;
-	sNewTextStats.Format(ML_STRING(1821, "used %s (%s %s), frag. %s"),
-						sCommittedSize, sHeapType, sUsedHeapSize, sFragmentation);
+	sNewTextStats.Format(ML_STRING(1821, "used %s, reserved %s, fragmented %s"),
+						sCommittedSize, sReservedSize, sFragmentation);
 	CEdit* pMemStats = (CEdit*)GetDlgItem(IDC_MEMSTATS);
 	if (pMemStats)
 	{

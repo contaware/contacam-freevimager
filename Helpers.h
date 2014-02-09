@@ -212,15 +212,6 @@ extern void GetMemoryStats(	int* pRegions = NULL,
 							int* pCommittedMB = NULL,
 							double* pFragmentation = NULL);
 
-// Get Heap Stats
-// Heap Type
-// 0: regular heap
-// 1: look-asides fast heap
-// 2: LFH (low-fragmentation) heap
-extern void GetHeapStats(	SIZE_T* pTotalUsedBytes = NULL,
-							int* pDefaultHeapType = NULL,
-							int* pCRTHeapType = NULL);
-
 // Enable the LFH heap for both the default heap and the CRT heap
 extern BOOL EnableLFHeap();
 
