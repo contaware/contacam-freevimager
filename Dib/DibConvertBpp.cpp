@@ -436,7 +436,7 @@ BOOL CDib::ConvertTo1bit(	int nThreshold/*=128*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -694,7 +694,7 @@ BOOL CDib::ConvertTo1bitDitherErrDiff(	int nMethod,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 2 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -1633,7 +1633,7 @@ BOOL CDib::ConvertTo4bits(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -1982,7 +1982,7 @@ BOOL CDib::ConvertTo4bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -2316,7 +2316,7 @@ BOOL CDib::ConvertTo4bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -2743,7 +2743,7 @@ BOOL CDib::ConvertTo8bits(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -3070,7 +3070,7 @@ BOOL CDib::ConvertTo8bitsPrecise(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -3382,7 +3382,7 @@ BOOL CDib::ConvertTo8bitsErrDiff(	CPalette* pPalette/*=NULL*/,
 		}
 		return FALSE;
 	}
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		if (!pPalette)
@@ -3778,7 +3778,7 @@ BOOL CDib::ConvertTo15bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4006,7 +4006,7 @@ BOOL CDib::ConvertTo16bitsMasks(WORD wRedMask/*=0xF800*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4213,7 +4213,7 @@ BOOL CDib::ConvertTo24bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4400,7 +4400,7 @@ BOOL CDib::ConvertTo32bits(	CWnd* pProgressWnd/*=NULL*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;
@@ -4601,7 +4601,7 @@ BOOL CDib::ConvertTo32bitsAlpha(BYTE Alpha/*=255*/,
 	LPBITMAPINFO lpNewBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 	if (!lpNewBMI)
 		return FALSE;
-	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpNewBitsStart = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * GetHeight());
 	if (!lpNewBitsStart)
 	{
 		delete [] lpNewBMI;

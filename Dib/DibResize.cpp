@@ -342,7 +342,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
@@ -350,7 +350,7 @@ BOOL CDib::ShrinkBits(	DWORD dwNewWidth,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	if (m_pBits == NULL)
 	{
@@ -1524,7 +1524,7 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
@@ -1532,7 +1532,7 @@ BOOL CDib::NearestNeighborResizeBits(	DWORD dwNewWidth,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -1805,7 +1805,7 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
@@ -1813,7 +1813,7 @@ BOOL CDib::BilinearResampleBits(DWORD dwNewWidth,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -2430,7 +2430,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
@@ -2438,7 +2438,7 @@ BOOL CDib::BicubicResampleBits(	DWORD dwNewWidth,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -4530,7 +4530,7 @@ BOOL CDib::LanczosResampleBits(	DWORD dwNewWidth,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwNewHeight)
@@ -4538,7 +4538,7 @@ BOOL CDib::LanczosResampleBits(	DWORD dwNewWidth,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwNewHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;

@@ -236,7 +236,7 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 			CreatePaletteFromBMI();
 
 			// Prepare a buffer large enough to hold the target DIB image pixels
-			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize);
 			if (m_pBits == NULL)
 			{
 				jpeg_finish_decompress(&cinfo);
@@ -353,7 +353,7 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 			CreatePaletteFromBMI();
 
 			// Prepare a buffer large enough to hold the target DIB image pixels
-			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize);
 			if (m_pBits == NULL)
 			{
 				jpeg_finish_decompress(&cinfo);
@@ -684,7 +684,7 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 			CreatePaletteFromBMI();
 
 			// Prepare a buffer large enough to hold the target DIB image pixels
-			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize);
 			if (m_pBits == NULL)
 			{
 				jpeg_finish_decompress(&cinfo);
@@ -800,7 +800,7 @@ BOOL CDib::LoadJPEG(LPBYTE pInput,
 			CreatePaletteFromBMI();
 
 			// Prepare a buffer large enough to hold the target DIB image pixels
-			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize);
 			if (m_pBits == NULL)
 			{
 				jpeg_finish_decompress(&cinfo);
@@ -3296,7 +3296,7 @@ BOOL CDib::LoadEXIFThumbnail()
 				m_pThumbnailDib->SetBMI(&Bmi);
 
 				// Pixels
-				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight + SAFETY_BITALLOC_MARGIN);
+				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight);
 				if (m_pThumbnailDib->m_pBits)
 				{
 					// Start Writing To Last Line (TIFF Bitmap is top-down, windows is bottom-up)
@@ -3380,7 +3380,7 @@ BOOL CDib::LoadEXIFThumbnail()
 				m_pThumbnailDib->SetBMI(&Bmi);
 
 				// Pixels
-				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight + SAFETY_BITALLOC_MARGIN);
+				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight);
 				if (m_pThumbnailDib->m_pBits)
 				{
 					// Start Writing To Last Line (TIFF Bitmap is top-down, windows is bottom-up)

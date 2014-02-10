@@ -311,7 +311,7 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		}
 
 		// Prepare a buffer large enough to hold the target DIB image pixels
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBImageSize);
 		if (m_pBits == NULL)
 			throw (int)PCX_E_NOMEM;
 

@@ -241,7 +241,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 		if (m_pBits == NULL)
 		{
 			// Allocate memory
-			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage);
 			if (m_pBits == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
@@ -251,7 +251,7 @@ BOOL CDib::LoadBMPNoFileHeader(CFile& file, BOOL bDecompress/*=TRUE*/)
 			BIGFREE(m_pBits);
 
 			// Allocate memory
-			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(m_pBMI->bmiHeader.biSizeImage);
 			if (m_pBits == NULL)
 				throw (int)BMP_E_NOMEM;
 		}
@@ -509,11 +509,11 @@ BOOL CDib::LoadBMP(	CFile& file,
 		{
 			DWORD dwBitsBytes = m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits;
 			DWORD dwMinImageSize = DWALIGNEDWIDTHBYTES(GetWidth() * GetBitCount()) * GetHeight();
-			m_pBits = (LPBYTE)BIGALLOC(MAX(dwBitsBytes, dwMinImageSize) + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(MAX(dwBitsBytes, dwMinImageSize));
 		}
 		else
 		{
-			m_pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - bmfHeader.bfOffBits);
 		}
 		if (m_pBits == NULL)
 			throw (int)BMP_E_NOMEM;

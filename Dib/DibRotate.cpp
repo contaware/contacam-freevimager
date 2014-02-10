@@ -80,7 +80,7 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
@@ -88,7 +88,7 @@ BOOL CDib::FlipTopDown(CDib* pSrcDib/*=NULL*/)
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -201,7 +201,7 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
@@ -209,7 +209,7 @@ BOOL CDib::FlipLeftRight(CDib* pSrcDib/*=NULL*/)
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -440,7 +440,7 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBScanLineSize * GetHeight())
@@ -448,7 +448,7 @@ BOOL CDib::Rotate180(CDib* pSrcDib/*=NULL*/)
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight() + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetHeight());
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -707,7 +707,7 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
@@ -715,7 +715,7 @@ BOOL CDib::Rotate90CW(CDib* pSrcDib/*=NULL*/)
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -962,7 +962,7 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nSrcWidth)
@@ -970,7 +970,7 @@ BOOL CDib::Rotate90CCW(CDib* pSrcDib/*=NULL*/)
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nSrcWidth);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -1315,7 +1315,7 @@ BOOL CDib::RotateCCW(	double angle,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * nDstHeight)
@@ -1323,7 +1323,7 @@ BOOL CDib::RotateCCW(	double angle,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * nDstHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;

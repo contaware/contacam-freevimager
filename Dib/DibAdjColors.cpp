@@ -70,7 +70,7 @@ BOOL CDib::SetColorUndo()
 		case 16:
 			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 16); // DWORD aligned (in bytes)
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight());
 			if (!m_pOrigBits)
 				return FALSE;
 
@@ -81,7 +81,7 @@ BOOL CDib::SetColorUndo()
 		case 24:
 			nWidthDWAligned = DWALIGNEDWIDTHBYTES(GetWidth() * 24); // DWORD aligned (in bytes)
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight());
 			if (!m_pOrigBits)
 				return FALSE;
 
@@ -92,7 +92,7 @@ BOOL CDib::SetColorUndo()
 		case 32:
 			nWidthDWAligned = 4*GetWidth();
 			if (!m_pOrigBits)
-				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight() + SAFETY_BITALLOC_MARGIN);
+				m_pOrigBits = (LPBYTE)BIGALLOC(nWidthDWAligned * GetHeight());
 			if (!m_pOrigBits)
 				return FALSE;
 

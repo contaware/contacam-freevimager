@@ -134,7 +134,7 @@ CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(d
 	// Copy Bits
 	if (dib.m_pBits)
 	{
-		m_pBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize);
 		if (m_pBits == NULL)
 			return;
 		memcpy((void*)m_pBits, (void*)dib.m_pBits, dib.m_dwImageSize);
@@ -143,7 +143,7 @@ CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(d
 	// Copy Orig Bits
 	if (dib.m_pOrigBits)
 	{
-		m_pOrigBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pOrigBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize);
 		if (m_pOrigBits == NULL)
 			return;
 		memcpy((void*)m_pOrigBits, (void*)dib.m_pOrigBits, dib.m_dwImageSize);
@@ -230,7 +230,7 @@ CDib& CDib::operator=(const CDib& dib) // Copy Assignment (CDib dib3; dib3 = dib
 		// Copy Bits
 		if (dib.m_pBits)
 		{
-			m_pBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize);
 			if (m_pBits == NULL)
 				return *this;
 			memcpy((void*)m_pBits, (void*)dib.m_pBits, dib.m_dwImageSize);
@@ -239,7 +239,7 @@ CDib& CDib::operator=(const CDib& dib) // Copy Assignment (CDib dib3; dib3 = dib
 		// Copy Orig Bits
 		if (dib.m_pOrigBits)
 		{
-			m_pOrigBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+			m_pOrigBits = (LPBYTE)BIGALLOC(dib.m_dwImageSize);
 			if (m_pOrigBits == NULL)
 				return *this;
 			memcpy((void*)m_pOrigBits, (void*)dib.m_pOrigBits, dib.m_dwImageSize);
@@ -1304,7 +1304,7 @@ BOOL CDib::AllocateBitsFast(WORD wBpp,
 		return FALSE;
 
 	// Allocate Bits
-	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 	if (!m_pBits)
 		return FALSE;
 
@@ -1686,7 +1686,7 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwCropHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwCropHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwCropHeight)
@@ -1694,7 +1694,7 @@ BOOL CDib::CropBits(DWORD dwOrigX,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwCropHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwCropHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -1950,7 +1950,7 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 	if (m_pBits == NULL)
 	{
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwDstHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwDstHeight);
 	}
 	// Need to ReAllocate Bits because they are of differente size
 	else if (m_dwImageSize != uiDIBTargetScanLineSize * dwDstHeight)
@@ -1958,7 +1958,7 @@ BOOL CDib::AddBorders(	DWORD dwLeft,
 		BIGFREE(m_pBits);
 
 		// Allocate memory
-		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwDstHeight + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(uiDIBTargetScanLineSize * dwDstHeight);
 	}
 	if (m_pBits == NULL)
 		return FALSE;
@@ -2719,7 +2719,7 @@ BOOL CDib::SetBits(LPBYTE lpBits, DWORD dwSize)
 	if (!m_pBits)
 	{
 		// Allocate Memory
-		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 		if (m_pBits == NULL)
 			return FALSE;
 	}
@@ -2737,7 +2737,7 @@ BOOL CDib::SetBits(LPBYTE lpBits)
 	if (!m_pBits)
 	{
 		// Allocate Memory
-		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 		if (m_pBits == NULL)
 			return FALSE;
 	}
@@ -3123,7 +3123,7 @@ BOOL CDib::LoadDibSection(HBITMAP hDibSection)
 	}
 
 	// Get the bits
-	pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+	pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 	if (!pBits)
 	{
 		::ReleaseDC(NULL, hDC);
@@ -3975,7 +3975,7 @@ BOOL CDib::SetBitsFromDDB(HBITMAP hBitmap, HPALETTE hPal)
 
 	ComputeImageSize();
 
-	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 	if (m_pBits == NULL)
 	{
 		delete [] m_pBMI;
@@ -4228,7 +4228,7 @@ BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection
 
 	HDC hDC = ::GetDC(NULL);
 
-	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+	m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 	if (!m_pBits)
 	{
 		::ReleaseDC(NULL, hDC);
@@ -4655,7 +4655,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		LPBITMAPINFO pBMI = (LPBITMAPINFO)new BYTE[sizeof(BITMAPINFOHEADER)];
 		if (!pBMI)
 			return FALSE;
-		LPBYTE pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		LPBYTE pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 		if (!pBits)
 		{
 			delete [] pBMI;
@@ -4878,7 +4878,7 @@ BOOL CDib::Compress(DWORD dwFourCC, int stride/*=0*/)
 	pBMI->bmiHeader.biClrImportant = 0;
 
 	// Allocate Bits
-	LPBYTE pBits = (LPBYTE)BIGALLOC(pBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
+	LPBYTE pBits = (LPBYTE)BIGALLOC(pBMI->bmiHeader.biSizeImage);
 	if (!pBits)
 	{
 		delete [] pBMI;
@@ -5298,7 +5298,7 @@ BOOL CDib::CompressRLE(int nCompression)
 	}
 	
 	// Allocate Bits
-	LPBYTE lpBits = (LPBYTE)BIGALLOC(2 * GetImageSize() + SAFETY_BITALLOC_MARGIN); // Be Safe!
+	LPBYTE lpBits = (LPBYTE)BIGALLOC(2 * GetImageSize()); // Be Safe!
 	if (!lpBits)
 	{
 		delete [] lpBMI;
@@ -5406,7 +5406,7 @@ BOOL CDib::DecompressRLE8(CDib* pBackgroundDib/*=NULL*/)
 	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
 
 	// Allocate Bits
-	LPBYTE lpUnencBitsStart = (LPBYTE)BIGALLOC(lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpUnencBitsStart = (LPBYTE)BIGALLOC(lpBMI->bmiHeader.biSizeImage);
 	if (!lpUnencBitsStart)
 	{
 		delete [] lpBMI;
@@ -5576,7 +5576,7 @@ BOOL CDib::DecompressRLE4(CDib* pBackgroundDib/*=NULL*/)
 	lpBMI->bmiHeader.biSizeImage = uiDIBScanLineSize * ABS(lpBMI->bmiHeader.biHeight);
 
 	// Allocate Bits
-	LPBYTE lpUnencBitsStart = (LPBYTE)BIGALLOC(lpBMI->bmiHeader.biSizeImage + SAFETY_BITALLOC_MARGIN);
+	LPBYTE lpUnencBitsStart = (LPBYTE)BIGALLOC(lpBMI->bmiHeader.biSizeImage);
 	if (!lpUnencBitsStart)
 	{
 		delete [] lpBMI;

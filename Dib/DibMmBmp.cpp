@@ -374,7 +374,7 @@ BOOL CDib::MMBMPToBits()
 	pBMI = (LPBITMAPINFO)new BYTE[pBmfHeader->bfOffBits - sizeof(BITMAPFILEHEADER)];
 	if (pBMI == NULL)
 		return FALSE;
-	pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - pBmfHeader->bfOffBits + SAFETY_BITALLOC_MARGIN);
+	pBits = (LPBYTE)BIGALLOC(m_FileInfo.m_dwFileSize - pBmfHeader->bfOffBits);
 	if (pBits == NULL)
 	{
 		delete [] pBMI;

@@ -385,7 +385,7 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		CreatePaletteFromBMI();
 
 		// Allocate Bits
-		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize + SAFETY_BITALLOC_MARGIN);
+		m_pBits = (LPBYTE)BIGALLOC(m_dwImageSize);
 		if (!m_pBits)
 			throw (int)PNG_E_NOMEM;
 
