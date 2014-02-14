@@ -4857,6 +4857,9 @@ void CBatchProcDlg::OnItemclickListInput(NMHDR* pNMHDR, LRESULT* pResult)
 
 			// Sort
 			m_List.SortItems(Compare, m_nSortType);
+
+			// Update Dibs
+			UpdateDibs();
 		}
 	}
 	
