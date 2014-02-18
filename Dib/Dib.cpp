@@ -313,15 +313,6 @@ void CDib::FreeList(CDib::LIST& l)
 	}
 }
 
-DWORD CDib::GetUserListSize()
-{
-	DWORD dwSize = 0U;
-	POSITION pos = m_UserList.GetHeadPosition();
-	while (pos)
-		dwSize += m_UserList.GetNext(pos).m_dwSize;
-	return dwSize;
-}
-
 void CDib::CopyUserList(const USERLIST& UserList)
 {
 	FreeUserList();

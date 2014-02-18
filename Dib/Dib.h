@@ -633,7 +633,6 @@ public:
 	void Init();
 
 	// User list handling
-	DWORD GetUserListSize();
 	void CopyUserList(const USERLIST& UserList);
 	void MoveUserList(USERLIST& UserList);
 	void FreeUserList();

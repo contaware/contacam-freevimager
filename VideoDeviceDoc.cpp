@@ -148,10 +148,23 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 					CDib* pDib = pList->GetNext(posDibs);
 					if (pDib)
 					{
-						// BIGALLOC_USEDSIZE accounts for the 64 KB allocation granularity and the address space waste
-						m_pDoc->m_dwNewestMovementDetectionListSize +=	sizeof(CDib) + pDib->GetBMISize() +
-																		BIGALLOC_USEDSIZE(pDib->GetImageSize()) +
-																		pDib->GetUserListSize();
+						// For video frames BIGALLOC_USEDSIZE accounts for the 64 KB
+						// allocation granularity and the address space waste
+						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize() + BIGALLOC_USEDSIZE(pDib->GetImageSize());
+
+						// For audio the maximum allocated size for a single buffer
+						// with AUDIO_IN_MIN_BUF_SIZE set to 256 is:
+						// PCM and Vorbis = 5120  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// ADPCM          = 8136  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// Flac           = 18432 bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// MP2 or MP3     = 9216  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						DWORD dwAudioUsedSize = 0U;
+						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
+						while (posAudioBuf)
+							dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize + FF_INPUT_BUFFER_PADDING_SIZE;
+
+						// Sum
+						m_pDoc->m_dwNewestMovementDetectionListSize += dwVideoUsedSize + dwAudioUsedSize;
 					}
 				}
 				m_pDoc->m_dwTotalMovementDetectionListSize += m_pDoc->m_dwNewestMovementDetectionListSize;
