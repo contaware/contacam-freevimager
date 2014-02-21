@@ -56,7 +56,8 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_MOTION				0x01		// mark the frame as a motion frame
 #define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
- 
+#define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
+
 // Frame time, date, count and thumb message constants
 #define FRAMETAG_REFWIDTH					640
 #define FRAMETAG_REFHEIGHT					480
@@ -823,7 +824,7 @@ public:
 	__forceinline void OneEmptyFrameList();							// One empty frame list
 	__forceinline void ClearMovementDetectionsList();				// Free and remove all lists
 	__forceinline void RemoveOldestMovementDetectionList();			// Free and remove oldest list
-	__forceinline void SaveFrameList();								// Add new empty list to tail
+	__forceinline void SaveFrameList(BOOL bDetectionSequenceDone);	// Add new empty list to tail
 	__forceinline DWORD GetTotalMovementDetectionListSize()  {	::EnterCriticalSection(&m_csMovementDetectionsList);
 																DWORD dwTotalMovementDetectionListSize = m_dwTotalMovementDetectionListSize;
 																::LeaveCriticalSection(&m_csMovementDetectionsList);
@@ -1176,7 +1177,7 @@ public:
 	BOOL m_bUnsupportedVideoSizeForMovDet;				// Flag indicating an unsupported resolution
 	volatile int m_nMovDetFreqDiv;						// Current frequency divider
 	volatile double m_dMovDetFrameRateFreqDivCalc;		// Framerate used to calculate the current frequency divider
-	volatile int m_nMovDetSavesCount;					// Count of the saved movement detection movies during current day
+	volatile int m_nMovDetSavesCount;					// Detection sequences counter for current day
 	volatile int m_nMovDetSavesCountDay;				// Day of the above count
 	volatile int m_nMovDetSavesCountMonth;				// Month of the above count
 	volatile int m_nMovDetSavesCountYear;				// Year of the above count

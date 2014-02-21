@@ -307,6 +307,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		ASSERT(m_nNumFramesToSave > 0);
 		ASSERT(m_bWorking);
 
+		// Is this frame list the last list of the detection sequence?
+		BOOL bDetectionSequenceDone = ((m_pFrameList->GetTail()->GetUserFlag() & FRAME_USER_FLAG_LAST) == FRAME_USER_FLAG_LAST);
+
 		// First & Last Up-Times
 		DWORD dwFirstUpTime = m_pFrameList->GetHead()->GetUpTime();
 		DWORD dwLastUpTime = m_pFrameList->GetTail()->GetUpTime();
@@ -375,22 +378,23 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			}
 		}
 
-		// Get and update the saves count
+		// Load the detection sequences counter and reset it if entering a new day.
+		// The detection sequences are tagged 1, 2, 3, ... A detection sequence is
+		// composed of 1 or more movies all tagged with the same sequence number
 		CString sSection(m_pDoc->GetDevicePathName());
-		m_pDoc->m_nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 0);
-		m_pDoc->m_nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), RefTime.GetDay());
-		m_pDoc->m_nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), RefTime.GetMonth());
-		m_pDoc->m_nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), RefTime.GetYear());
-		if (m_pDoc->m_nMovDetSavesCountDay != RefTime.GetDay()		||
-			m_pDoc->m_nMovDetSavesCountMonth != RefTime.GetMonth()	||
-			m_pDoc->m_nMovDetSavesCountYear != RefTime.GetYear())
+		m_pDoc->m_nMovDetSavesCount = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCount"), 1);
+		m_pDoc->m_nMovDetSavesCountDay = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountDay"), FirstTime.GetDay());
+		m_pDoc->m_nMovDetSavesCountMonth = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountMonth"), FirstTime.GetMonth());
+		m_pDoc->m_nMovDetSavesCountYear = ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetSavesCountYear"), FirstTime.GetYear());
+		if (m_pDoc->m_nMovDetSavesCountDay != FirstTime.GetDay()		||
+			m_pDoc->m_nMovDetSavesCountMonth != FirstTime.GetMonth()	||
+			m_pDoc->m_nMovDetSavesCountYear != FirstTime.GetYear())
 		{
-			m_pDoc->m_nMovDetSavesCount = 0;
-			m_pDoc->m_nMovDetSavesCountDay = RefTime.GetDay();
-			m_pDoc->m_nMovDetSavesCountMonth = RefTime.GetMonth();
-			m_pDoc->m_nMovDetSavesCountYear = RefTime.GetYear();
+			m_pDoc->m_nMovDetSavesCount = 1;
+			m_pDoc->m_nMovDetSavesCountDay = FirstTime.GetDay();
+			m_pDoc->m_nMovDetSavesCountMonth = FirstTime.GetMonth();
+			m_pDoc->m_nMovDetSavesCountYear = FirstTime.GetYear();
 		}
-		m_pDoc->m_nMovDetSavesCount++;
 
 		// Detection File Names
 		BOOL bMakeAvi = DoMakeAvi();
@@ -801,12 +805,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Free
 		m_pDoc->RemoveOldestMovementDetectionList();
 
-		// Store the saves count
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), m_pDoc->m_nMovDetSavesCount);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), m_pDoc->m_nMovDetSavesCountDay);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), m_pDoc->m_nMovDetSavesCountMonth);
-		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), m_pDoc->m_nMovDetSavesCountYear);
-
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
 		DWORD dwMailFTPTimeMs = ::timeGetTime();
@@ -845,6 +843,14 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::DeleteFile(sSWFFileName);
 		for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 			::DeleteFile(sJPGFileNames[i]);
+
+		// Increment if detection sequence done and store settings
+		if (bDetectionSequenceDone)
+			m_pDoc->m_nMovDetSavesCount++;
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCount"), m_pDoc->m_nMovDetSavesCount);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountDay"), m_pDoc->m_nMovDetSavesCountDay);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountMonth"), m_pDoc->m_nMovDetSavesCountMonth);
+		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetSavesCountYear"), m_pDoc->m_nMovDetSavesCountYear);
 
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
@@ -2766,7 +2772,7 @@ end_of_software_detection:
 
 			// Save frames if minimum length reached (if m_nDetectionMinLengthMilliSeconds is 0 always save frames)
 			if ((m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
-				SaveFrameList();
+				SaveFrameList(TRUE);
 			else
 				ShrinkNewestFrameList(); // shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
 		}
@@ -2774,7 +2780,7 @@ end_of_software_detection:
 		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
 				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
 				(nFramesCount + 1) >= m_nDetectionMaxFrames)) // + 1 because we added another frame after the counting
-			SaveFrameList();
+			SaveFrameList(FALSE);
 	}
 	else if (bStoreFrames)
 	{
@@ -3683,7 +3689,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
 					m_pDoc->m_bSendMailMovementDetection				||
 					m_pDoc->m_bFTPUploadMovementDetection))
-					m_pDoc->SaveFrameList();
+					m_pDoc->SaveFrameList(FALSE);
 
 				// Http Networking Reconnect
 				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
@@ -4024,7 +4030,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
 	m_nRefFontSize = 9;
-	m_nMovDetSavesCount = 0;
+	m_nMovDetSavesCount = 1;
 	m_nMovDetSavesCountDay = CurrentTime.GetDay();
 	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
@@ -8859,9 +8865,22 @@ __forceinline void CVideoDeviceDoc::ShrinkNewestFrameListBy(int nSize, DWORD& dw
 	::LeaveCriticalSection(&m_csMovementDetectionsList);
 }
 
-__forceinline void CVideoDeviceDoc::SaveFrameList()
+__forceinline void CVideoDeviceDoc::SaveFrameList(BOOL bDetectionSequenceDone)
 {
 	::EnterCriticalSection(&m_csMovementDetectionsList);
+	if (bDetectionSequenceDone && !m_MovementDetectionsList.IsEmpty())
+	{
+		CDib::LIST* pTail = m_MovementDetectionsList.GetTail();
+		if (pTail && !pTail->IsEmpty())
+		{
+			CDib* pTailDib = pTail->GetTail();
+			if (pTailDib)
+			{
+				// Mark the frame as being the last frame of the detection sequence
+				pTailDib->SetUserFlag(pTailDib->GetUserFlag() | FRAME_USER_FLAG_LAST);
+			}
+		}
+	}
 	CDib::LIST* pNewList = new CDib::LIST;
 	if (pNewList)
 		m_MovementDetectionsList.AddTail(pNewList);
