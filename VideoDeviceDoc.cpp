@@ -3681,6 +3681,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				// removes empty lists.
 				if (m_pDoc->m_bWatchDogAlarm							&&
 					m_pDoc->m_dwVideoProcessorMode						&&
+					m_pDoc->m_bDetectingMovement						&&
 					m_pDoc->GetTotalMovementDetectionListSize() > 0		&&
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
