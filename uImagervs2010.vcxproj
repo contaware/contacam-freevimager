@@ -334,7 +334,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="AuthenticationDlg.cpp" />
     <ClCompile Include="AVDecoder.cpp" />
     <ClCompile Include="AviInfoDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1242,7 +1241,6 @@
     <ClInclude Include="AudioMCIView.h" />
     <ClInclude Include="AudioOutDestinationDlg.h" />
     <ClInclude Include="AudioVideoShiftDlg.h" />
-    <ClInclude Include="AuthenticationDlg.h" />
     <ClInclude Include="AVDecoder.h" />
     <ClInclude Include="AviInfoDlg.h" />
     <ClInclude Include="AviOpenStreamsDlg.h" />

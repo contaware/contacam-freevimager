@@ -45,9 +45,6 @@
     <ClCompile Include="AudioVideoShiftDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AuthenticationDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AVDecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -508,9 +505,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioVideoShiftDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AuthenticationDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AVDecoder.h">

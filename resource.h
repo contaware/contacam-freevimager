@@ -110,7 +110,6 @@
 #define IDD_AUDIOFORMAT                 277
 #define IDD_VIDEOFORMAT                 278
 #define IDD_HTTP_VIDEOFORMAT            281
-#define IDD_HTTP_AUTHENTICATION         282
 #define IDR_TRAYICON                    283
 #define IDD_CDAUDIOPLAYER               283
 #define IDR_CONTEXT_LAYERED_DLG         284
@@ -2172,7 +2171,6 @@
 #define IDC_CHECK_AUTOOPEN              1679
 #define IDS_STRING1679                  1679
 #define IDS_STRING1680                  1680
-#define IDC_CHECK_AUTH_SAVE             1681
 #define IDS_STRING1681                  1681
 #define IDC_CPUSPEED                    1682
 #define IDS_STRING1682                  1682
@@ -2957,6 +2955,7 @@
 #define IDC_STATIC2274                  2274
 #define IDC_STATIC_DEVICETYPEMODE       2274
 #define IDC_STATIC2275                  2275
+#define IDC_STATIC_AUTHENTICATION       2275
 #define IDC_STATIC2276                  2276
 #define IDC_STATIC2277                  2277
 #define IDC_STATIC2278                  2278

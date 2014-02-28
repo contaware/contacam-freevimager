@@ -19,32 +19,26 @@ class CHostPortDlg : public CDialog
 public:
 	CHostPortDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CHostPortDlg() {;};
+	void ParseUrl(	CString& sGetFrameVideoHost,
+					int& nGetFrameVideoPort,
+					int& nNetworkDeviceTypeMode,
+					CString& sHttpGetFrameLocation);
 
 // Returned Data
 public:
 	CString m_sHost;
 	int m_nPort;
-
-// Dialog Data
-	//{{AFX_DATA(CHostPortDlg)
+	int	m_nDeviceTypeMode;
 	enum { IDD = IDD_HOSTPORT };
-	int		m_nDeviceTypeMode;
-	//}}AFX_DATA
-
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CHostPortDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
+	void EnableDisableCtrls();
+	void LoadCredentials();
+	void SaveCredentials();
 	void LoadSettings();
 	void SaveSettings();
-	void EnableDisableCtrls(CString sHost);
-
+	
 	CStringArray m_HostsHistory;
 	CDWordArray m_PortsHistory;
 	CDWordArray m_DeviceTypeModesHistory;
@@ -54,6 +48,8 @@ protected:
 	virtual void OnOK();
 	afx_msg void OnSelchangeComboHost();
 	afx_msg void OnEditchangeComboHost();
+	afx_msg void OnChangeEditPort();
+	afx_msg void OnSelchangeComboDeviceTypeMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1889,7 +1889,7 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 				dwErrorCode == ERROR_INTERNET_INCORRECT_USER_NAME	||
 				dwErrorCode == ERROR_INTERNET_LOGIN_FAILURE)
 	{
-		CString sResponse(ML_STRING(1780, "The request to connect and log on to\nthe server could not be completed\nbecause the supplied user name and / or\npassword are incorrect."));
+		CString sResponse(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."));
 		if (sText != _T(""))
 			sText = sText + _T('\n') + sResponse;
 		else

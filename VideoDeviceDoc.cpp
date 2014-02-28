@@ -15,7 +15,6 @@
 #include "AudioFormatDlg.h"
 #include "ConnectErrMsgBoxDlg.h"
 #include "HttpVideoFormatDlg.h"
-#include "AuthenticationDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "FTPTransfer.h"
@@ -5363,8 +5362,6 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/-wvhttp-01-/GetOneShot?frame_count=0")); // Canon, NuSpectra
 		
 		m_HttpGetFrameLocations.Add(_T("/video2.mjpg"));					// Cisco, D-Link
-
-		m_HttpGetFrameLocations.Add(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")); // Foscam
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/getimage.cgi?motion=1"));	// GadSpot
 		
@@ -5372,9 +5369,25 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/cmd/system?GET_STREAM"));	// ACTi
 
-		m_HttpGetFrameLocations.Add(_T("/image.cgi?id=guest&passwd=guest&mode=http"));	// Intellinet
-
 		m_HttpGetFrameLocations.Add(_T("/control/faststream.jpg?stream=full"));	// Mobotix
+		
+		m_HttpGetFrameLocations.Add(CString(_T("/image.cgi?mode=http")) +
+									_T("&id=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&passwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);	// Intellinet
+ 
+		m_HttpGetFrameLocations.Add(CString(_T("/videostream.cgi?resolution=32&rate=0")) +
+									_T("&user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +		// For devices which only support authentication
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// in CGI request (for example Tenvis IPROBOT3)
+
+		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setOSDSetting&isEnableTimeStamp=0&isEnableDevName=0&dispPos=0&isEnableOSDMask=0")) +
+									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Disable OSD for Foscam HD
+		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1")) +
+									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
+		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")) +
+									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Foscam HD
 	}
 	// JPEG
 	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
@@ -5421,8 +5434,6 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
 		
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/viewer/video.jpg"));		// ABUS, D-Link, Toshiba, Vivotek
-
-		m_HttpGetFrameLocations.Add(_T("/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2"));	// Foscam
 		
 		m_HttpGetFrameLocations.Add(_T("/record/current.jpg"));				// Mobotix
 		
@@ -5435,6 +5446,13 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/encoder?SNAPSHOT"));		// ACTi
+
+		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setOSDSetting&isEnableTimeStamp=0&isEnableDevName=0&dispPos=0&isEnableOSDMask=0")) +
+									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER); // Disable OSD for Foscam HD
+		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2")) +
+									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER); // Foscam HD
 	}
 
 	// Finally add the mixed commands (it depends from the maker whether those commands return JPEG or MJPEG)
@@ -5458,6 +5476,10 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		
 		m_HttpGetFrameLocations.Add(_T("/image.cgi"));						// AirLive, A-Link, ALinking, Asante, Intellinet, MonoPrice, NetMedia, 
 																			// Planet, Rosewill, Savitmicro, TELCA, Topica, VISIONxIP
+
+		m_HttpGetFrameLocations.Add(CString(_T("/snapshot.cgi")) +
+									_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +	// For devices which only support authentication
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);	// in CGI request
 	}
 }
 
@@ -5578,117 +5600,10 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelay/*=0U*/
 BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg) 
 {
 	ASSERT(pDlg);
-
-	// Init Vars
-	int nPos, nPosEnd;
-	BOOL bUrl = FALSE;
-	int nUrlPort = 80; // Default url port is always 80
-	CString sGetFrameVideoHost(pDlg->m_sHost);
-	CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
-	sGetFrameVideoHostLowerCase.MakeLower();
-
-	// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
-	if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
-	{
-		// Set flag
-		bUrl = TRUE;
-
-		// Remove leading http://[ from url
-		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
-
-		// Has Port?
-		if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
-		{
-			CString sPort;
-			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
-			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
-				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
-			}
-			else
-			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
-				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
-			}
-			sPort.TrimLeft();
-			sPort.TrimRight();
-			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-			sPort.ReleaseBuffer();
-			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-				nUrlPort = nPort;
-		}
-		else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
-			sGetFrameVideoHost.Delete(nPos);
-		else
-			nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
-
-		// Split
-		CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-		sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-
-		// Get Location which is set as first automatic camera type detection query string
-		nPos = sLocation.Find(_T('/'));
-		if (nPos >= 0)
-		{	
-			m_HttpGetFrameLocations[0] = sLocation.Right(sLocation.GetLength() - nPos);
-			m_HttpGetFrameLocations[0].TrimLeft();
-			m_HttpGetFrameLocations[0].TrimRight();
-		}
-		else
-			m_HttpGetFrameLocations[0] = _T("/");
-	}
-	// Numeric IP4 or hostname with format http://host:port/framelocation
-	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
-	{
-		// Set flag
-		bUrl = TRUE;
-
-		// Remove leading http:// from url
-		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
-
-		// Has Port?
-		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
-		{
-			CString sPort;
-			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
-			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
-			}
-			else
-			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
-			}
-			sPort.TrimLeft();
-			sPort.TrimRight();
-			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
-			sPort.ReleaseBuffer();
-			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-				nUrlPort = nPort;
-		}
-
-		// Get Location which is set as first automatic camera type detection query string
-		nPos = sGetFrameVideoHost.Find(_T('/'));
-		if (nPos >= 0)
-		{	
-			m_HttpGetFrameLocations[0] = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-			m_HttpGetFrameLocations[0].TrimLeft();
-			m_HttpGetFrameLocations[0].TrimRight();
-		}
-		else
-			m_HttpGetFrameLocations[0] = _T("/");
-	}
-	else
-		m_HttpGetFrameLocations[0] = _T("/");
-
-	// Set vars
-	sGetFrameVideoHost.TrimLeft();
-	sGetFrameVideoHost.TrimRight();
-	m_sGetFrameVideoHost = sGetFrameVideoHost;
-	m_nGetFrameVideoPort = bUrl ? nUrlPort : pDlg->m_nPort;
-	m_nNetworkDeviceTypeMode = bUrl ? OTHERONE_CP : (NetworkDeviceTypeMode)pDlg->m_nDeviceTypeMode;
+	pDlg->ParseUrl(	m_sGetFrameVideoHost,
+					(int&)m_nGetFrameVideoPort,
+					(int&)m_nNetworkDeviceTypeMode,
+					m_HttpGetFrameLocations[0]);
 
 	// Free if Necessary
 	if (m_pGetFrameNetCom)
@@ -9443,6 +9358,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 				sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
 			else
 				sLocation = m_pDoc->m_HttpGetFrameLocations[0];
+			sLocation.Replace(HTTPGETFRAME_USERNAME_PLACEHOLDER, m_pDoc->m_sHttpGetFrameUsername);
+			sLocation.Replace(HTTPGETFRAME_PASSWORD_PLACEHOLDER, m_pDoc->m_sHttpGetFramePassword);
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
@@ -10540,35 +10457,20 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			}
 			pNetCom->Read(); // Empty the buffers, so that parser stops calling us!
 
-			// Pop-up authentication dialog?
-			if (m_LastRequestAuthorizationType != AUTHNONE	||	// Wrong username and/or password
-				(m_pDoc->m_sHttpGetFrameUsername == _T("")	&&	// No username
-				m_pDoc->m_sHttpGetFramePassword == _T("")))		// No password
+			// Authentication failed?
+			if (m_LastRequestAuthorizationType != AUTHNONE)
 			{
-				CAuthenticationDlg dlg;
-				dlg.m_sUsername = m_pDoc->m_sHttpGetFrameUsername;
-				if (dlg.DoModal() == IDCANCEL)
-				{
-					// Reset flag
-					m_bTryConnecting = FALSE;
+				// Reset flag
+				m_bTryConnecting = FALSE;
 
-					// Close
-					m_pDoc->CloseDocument();
+				// Msg
+				m_pDoc->ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
-					delete [] pMsg;
-					return FALSE; // Do not call Processor
-				}
-				else
-				{
-					m_pDoc->m_sHttpGetFrameUsername = dlg.m_sUsername;
-					m_pDoc->m_sHttpGetFramePassword = dlg.m_sPassword;
-					if (dlg.m_bSaveAuthenticationData)
-					{
-						CString sSection(m_pDoc->GetDevicePathName());
-						((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sSection, _T("HTTPGetFrameUsername"), m_pDoc->m_sHttpGetFrameUsername);
-						((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sSection, _T("HTTPGetFramePassword"), m_pDoc->m_sHttpGetFramePassword);
-					}
-				}
+				// Close
+				m_pDoc->CloseDocument();
+
+				delete [] pMsg;
+				return FALSE; // Do not call Processor
 			}
 
 			// Choose best authentication type depending from the format type

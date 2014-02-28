@@ -21,25 +21,17 @@ static char THIS_FILE[] = __FILE__;
 CHostPortDlg::CHostPortDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHostPortDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CHostPortDlg)
-	m_nDeviceTypeMode = 0;
-	//}}AFX_DATA_INIT
 	m_sHost = _T("");
 	m_nPort = DEFAULT_TCP_PORT;
-}
-
-void CHostPortDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CHostPortDlg)
-	DDX_CBIndex(pDX, IDC_COMBO_DEVICETYPEMODE, m_nDeviceTypeMode);
-	//}}AFX_DATA_MAP
+	m_nDeviceTypeMode = 0;
 }
 
 BEGIN_MESSAGE_MAP(CHostPortDlg, CDialog)
 	//{{AFX_MSG_MAP(CHostPortDlg)
 	ON_CBN_SELCHANGE(IDC_COMBO_HOST, OnSelchangeComboHost)
 	ON_CBN_EDITCHANGE(IDC_COMBO_HOST, OnEditchangeComboHost)
+	ON_EN_CHANGE(IDC_EDIT_PORT, OnChangeEditPort)
+	ON_CBN_SELCHANGE(IDC_COMBO_DEVICETYPEMODE, OnSelchangeComboDeviceTypeMode)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -60,7 +52,6 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 
-	// This calls UpdateData(FALSE) -> vars to view
 	CDialog::OnInitDialog();
 
 	// Load Settings
@@ -68,7 +59,7 @@ BOOL CHostPortDlg::OnInitDialog()
 	
 	// Init
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	if (m_HostsHistory.GetSize() <= 0)
+	if (m_HostsHistory.GetSize() <= 0) // if empty add an item!
 	{
 		m_HostsHistory.InsertAt(0, _T(""));
 		m_PortsHistory.InsertAt(0, (DWORD)DEFAULT_TCP_PORT);
@@ -79,53 +70,149 @@ BOOL CHostPortDlg::OnInitDialog()
 		// Add Hosts
 		pComboBoxHost->AddString(m_HostsHistory[i]);
 		
-		// Set Port and Device Type Mode of first Host
+		// Set Host, Port and Device Type Mode of first entry
 		if (i == 0)
 		{
+			// Host
+			m_sHost = m_HostsHistory[0];
+
 			// Port
+			m_nPort = m_PortsHistory[0];
 			CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 			CString sPort;
-			sPort.Format(_T("%i"), m_PortsHistory[0]);
+			sPort.Format(_T("%i"), m_nPort);
 			pEdit->SetWindowText(sPort);
 
 			// Device Type Mode
 			if (m_DeviceTypeModesHistory[0] >= 0 && (int)m_DeviceTypeModesHistory[0] < pComboBoxDevTypeMode->GetCount())
-				pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[0]);
+				m_nDeviceTypeMode = m_DeviceTypeModesHistory[0];
+			pComboBoxDevTypeMode->SetCurSel(m_nDeviceTypeMode);
 		}
 	}
-	pComboBoxHost->SetCurSel(0);			// pComboBoxHost is never empty!
-	EnableDisableCtrls(m_HostsHistory[0]);	// m_HostsHistory is never empty!
+	pComboBoxHost->SetCurSel(0); // pComboBoxHost is never empty!
+
+	// Update Controls
+	EnableDisableCtrls();
+	LoadCredentials();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CHostPortDlg::OnOK() 
+void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
+							int& nGetFrameVideoPort,
+							int& nNetworkDeviceTypeMode,
+							CString& sHttpGetFrameLocation)
 {
-	// Update m_nDeviceTypeMode necessary by SaveSettings()
-	UpdateData(TRUE);
+	// Init Vars
+	int nPos, nPosEnd;
+	BOOL bUrl = FALSE;
+	int nUrlPort = 80; // default url port is always 80
+	sGetFrameVideoHost = m_sHost;
+	CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
+	sGetFrameVideoHostLowerCase.MakeLower();
 
-	// Host
-	CString sText;
-	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBoxHost->GetWindowText(sText);
-	m_sHost = sText;
-		
-	// Port
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
-	pEdit->GetWindowText(sText);
-	int nPort = _tcstol(sText.GetBuffer(0), NULL, 10);
-	sText.ReleaseBuffer();
-	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
-		m_nPort = nPort;
+	// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
+	if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://["))) >= 0)
+	{
+		// Set flag
+		bUrl = TRUE;
+
+		// Remove leading http://[ from url
+		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
+
+		// Has Port?
+		if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
+		{
+			CString sPort;
+			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
+				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+			}
+			else
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
+				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
+		}
+		else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
+			sGetFrameVideoHost.Delete(nPos);
+		else
+			nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
+
+		// Split
+		CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+		sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+
+		// Get Location which is set as first automatic camera type detection query string
+		nPos = sLocation.Find(_T('/'));
+		if (nPos >= 0)
+		{	
+			sHttpGetFrameLocation = sLocation.Right(sLocation.GetLength() - nPos);
+			sHttpGetFrameLocation.TrimLeft();
+			sHttpGetFrameLocation.TrimRight();
+		}
+		else
+			sHttpGetFrameLocation = _T("/");
+	}
+	// Numeric IP4 or hostname with format http://host:port/framelocation
+	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
+	{
+		// Set flag
+		bUrl = TRUE;
+
+		// Remove leading http:// from url
+		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
+
+		// Has Port?
+		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
+		{
+			CString sPort;
+			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
+				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+			}
+			else
+			{
+				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
+				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+			}
+			sPort.TrimLeft();
+			sPort.TrimRight();
+			int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+			sPort.ReleaseBuffer();
+			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+				nUrlPort = nPort;
+		}
+
+		// Get Location which is set as first automatic camera type detection query string
+		nPos = sGetFrameVideoHost.Find(_T('/'));
+		if (nPos >= 0)
+		{	
+			sHttpGetFrameLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
+			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+			sHttpGetFrameLocation.TrimLeft();
+			sHttpGetFrameLocation.TrimRight();
+		}
+		else
+			sHttpGetFrameLocation = _T("/");
+	}
 	else
-		m_nPort = DEFAULT_TCP_PORT;
+		sHttpGetFrameLocation = _T("/");
 
-	// Save Settings
-	SaveSettings();
-
-	// This calls UpdateData(TRUE) -> view to vars
-	CDialog::OnOK();
+	// Set vars
+	sGetFrameVideoHost.TrimLeft();
+	sGetFrameVideoHost.TrimRight();
+	nGetFrameVideoPort = bUrl ? nUrlPort : m_nPort;
+	nNetworkDeviceTypeMode = bUrl ? CVideoDeviceDoc::OTHERONE_CP : m_nDeviceTypeMode;
 }
 
 /*
@@ -134,17 +221,17 @@ Don't disable group boxes. To indicate that a group of controls doesn't currentl
 apply, disable all the controls within the group box, but not the group box itself.
 This approach is more accessible and can be supported consistently by all UI frameworks.
 */
-void CHostPortDlg::EnableDisableCtrls(CString sHost)
+void CHostPortDlg::EnableDisableCtrls()
 {
-	// Make lowercase
-	sHost.MakeLower();
+	CString sHostLowerCase(m_sHost);
+	sHostLowerCase.MakeLower();
 
 	// Disable / Enable
 	CEdit* pEditPort = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	CStatic* pStaticServerPush = (CStatic*)GetDlgItem(IDC_STATIC_SERVERPUSH);
 	CStatic* pStaticClientPoll = (CStatic*)GetDlgItem(IDC_STATIC_CLIENTPOLL);
-	if (sHost.Find(_T("http://")) >= 0)
+	if (sHostLowerCase.Find(_T("http://")) >= 0)
 	{
 		pEditPort->EnableWindow(FALSE);
 		pComboBoxDevTypeMode->EnableWindow(FALSE);
@@ -162,11 +249,10 @@ void CHostPortDlg::EnableDisableCtrls(CString sHost)
 
 void CHostPortDlg::OnEditchangeComboHost()
 {
-	// Enable / Disable Controls
-	CString sHost;
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
-	pComboBoxHost->GetWindowText(sHost);
-	EnableDisableCtrls(sHost);
+	pComboBoxHost->GetWindowText(m_sHost);
+	EnableDisableCtrls();
+	LoadCredentials();
 }
 
 /*
@@ -179,29 +265,106 @@ combo box control.
 */
 void CHostPortDlg::OnSelchangeComboHost() 
 {
-	// Set Port
+	// Host
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
+	pComboBoxHost->GetLBText(pComboBoxHost->GetCurSel(), m_sHost);
+
+	// Port
 	int nSel = pComboBoxHost->GetCurSel();
 	if (nSel >= 0 && nSel < m_PortsHistory.GetSize())
 	{
+		m_nPort = m_PortsHistory[nSel];
 		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
 		CString sPort;
-		sPort.Format(_T("%i"), m_PortsHistory[nSel]);
+		sPort.Format(_T("%i"), m_nPort);
 		pEdit->SetWindowText(sPort);
 	}
 
-	// Set Device Type Mode
+	// Device Type Mode
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	if (nSel >= 0 && nSel < m_DeviceTypeModesHistory.GetSize())
 	{
 		if (m_DeviceTypeModesHistory[nSel] >= 0 && (int)m_DeviceTypeModesHistory[nSel] < pComboBoxDevTypeMode->GetCount())
-			pComboBoxDevTypeMode->SetCurSel(m_DeviceTypeModesHistory[nSel]);
+		{
+			m_nDeviceTypeMode = m_DeviceTypeModesHistory[nSel];
+			pComboBoxDevTypeMode->SetCurSel(m_nDeviceTypeMode);
+		}
 	}
 
-	// Enable / Disable Controls
-	CString sHost;
-	pComboBoxHost->GetLBText(pComboBoxHost->GetCurSel(), sHost);
-	EnableDisableCtrls(sHost);
+	// Update Controls
+	EnableDisableCtrls();
+	LoadCredentials();
+}
+
+void CHostPortDlg::OnChangeEditPort()
+{
+	CString sPort;
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_PORT);
+	pEdit->GetWindowText(sPort);
+	int nPort = _tcstol(sPort.GetBuffer(0), NULL, 10);
+	sPort.ReleaseBuffer();
+	if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
+		m_nPort = nPort;
+	else
+		m_nPort = DEFAULT_TCP_PORT;
+	LoadCredentials();
+}
+
+void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
+{
+	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
+	m_nDeviceTypeMode = pComboBoxDevTypeMode->GetCurSel();
+	LoadCredentials();
+}
+
+void CHostPortDlg::OnOK() 
+{
+	SaveSettings();
+	SaveCredentials();
+	CDialog::OnOK();
+}
+
+void CHostPortDlg::LoadCredentials()
+{
+	// Get device path name
+	CString sGetFrameVideoHost;
+	int nGetFrameVideoPort;
+	int nNetworkDeviceTypeMode;
+	CString sHttpGetFrameLocation;
+	ParseUrl(sGetFrameVideoHost, nGetFrameVideoPort, nNetworkDeviceTypeMode, sHttpGetFrameLocation);
+	CString sDevice;
+	sDevice.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
+	sDevice.Replace(_T('\\'), _T('/')); // Registry keys cannot begin with a backslash and should not contain backslashes otherwise subkeys are created!
+	
+	// Load & display
+	CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevice, _T("HTTPGetFrameUsername"), _T(""));
+	CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevice, _T("HTTPGetFramePassword"), _T(""));
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+	pEdit->SetWindowText(sUsername);
+	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	pEdit->SetWindowText(sPassword);
+}
+
+void CHostPortDlg::SaveCredentials()
+{
+	// Get device path name
+	CString sGetFrameVideoHost;
+	int nGetFrameVideoPort;
+	int nNetworkDeviceTypeMode;
+	CString sHttpGetFrameLocation;
+	ParseUrl(sGetFrameVideoHost, nGetFrameVideoPort, nNetworkDeviceTypeMode, sHttpGetFrameLocation);
+	CString sDevice;
+	sDevice.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
+	sDevice.Replace(_T('\\'), _T('/')); // Registry keys cannot begin with a backslash and should not contain backslashes otherwise subkeys are created!
+	
+	// Store
+	CString sText;
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+	pEdit->GetWindowText(sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevice, _T("HTTPGetFrameUsername"), sText);
+	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+	pEdit->GetWindowText(sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevice, _T("HTTPGetFramePassword"), sText);
 }
 
 void CHostPortDlg::LoadSettings()
