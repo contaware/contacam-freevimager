@@ -9171,7 +9171,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 	// Store last request
 	m_sLastRequest = sRequest;
 
-	// Url encode uri inside request
+	// Url encode uri inside request and insert eventual credentials
 	CString sMethod;
 	CString sUri;
 	int nPos, nPosEnd;
@@ -9181,9 +9181,22 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 		nPos++; // skip space
 		if ((nPosEnd = sRequest.ReverseFind(_T(' '))) >= 0)
 		{
+			// Get Uri
 			sUri = sRequest.Mid(nPos, nPosEnd - nPos);
-			sUri = ::UrlDecode(sUri); // make sure not already encoded!
+
+			// Make sure it is not already url encoded
+			sUri = ::UrlDecode(sUri);
+
+			// Url encode without encoding reserved chars like '?' or '&'
+			// used as uri parameters separators or '[' and ']' used in
+			// HTTPGETFRAME_USERNAME_PLACEHOLDER and replaced below
 			sUri = ::UrlEncode(sUri, FALSE);
+
+			// Replace uri parameters placeholders with fully url encoded username and password
+			sUri.Replace(HTTPGETFRAME_USERNAME_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFrameUsername, TRUE));
+			sUri.Replace(HTTPGETFRAME_PASSWORD_PLACEHOLDER, ::UrlEncode(m_pDoc->m_sHttpGetFramePassword, TRUE));
+
+			// Make request
 			sRequest = sMethod + _T(" ") + sUri + sRequest.Mid(nPosEnd);
 		}
 	}
@@ -9358,8 +9371,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 				sLocation = m_pDoc->m_HttpGetFrameLocations[m_pDoc->m_nHttpGetFrameLocationPos];
 			else
 				sLocation = m_pDoc->m_HttpGetFrameLocations[0];
-			sLocation.Replace(HTTPGETFRAME_USERNAME_PLACEHOLDER, m_pDoc->m_sHttpGetFrameUsername);
-			sLocation.Replace(HTTPGETFRAME_PASSWORD_PLACEHOLDER, m_pDoc->m_sHttpGetFramePassword);
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 							sLocation,
 							m_bOldVersion ? _T("1.0") : _T("1.1"));
