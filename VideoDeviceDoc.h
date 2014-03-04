@@ -189,6 +189,7 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U		// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
 #define HTTPGETFRAME_CONNECTION_TIMEOUT		60			// Connection timeout in sec
+#define HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS	50			// Keep-alive support check
 #define HTTPGETFRAME_USERNAME_PLACEHOLDER	_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
 #define HTTPGETFRAME_PASSWORD_PLACEHOLDER	_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars
 

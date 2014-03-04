@@ -3401,7 +3401,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 	ASSERT(m_pDoc);
 	int nAlarmLevel = 0;
 	BOOL bCheckConnectionTimeout = FALSE;
-	int nConnectionKeepAliveSupported = -1; // -1: to be verified, 0: not supported, 1: supported
+	int nConnectionKeepAliveSupported = HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 
 	for (;;)
 	{
@@ -3448,7 +3448,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 			{
 				::ResetEvent(m_hEventArray[1]);
 				bCheckConnectionTimeout = TRUE;
-				nConnectionKeepAliveSupported = -1;
+				nConnectionKeepAliveSupported = HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				DWORD dwConnectDelay = m_dwConnectDelay;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
@@ -3528,7 +3528,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				{
 					// Keep-alive: just send the request to the already open connection
 					if (m_pDoc->m_pHttpGetFrameParseProcess->m_bConnectionKeepAlive &&
-						nConnectionKeepAliveSupported != 0)
+						nConnectionKeepAliveSupported > 0)
 					{
 						// Keep-alive support already verified
 						if (nConnectionKeepAliveSupported == 1)
@@ -3540,9 +3540,9 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 						else
 						{
 							if (m_pDoc->m_pHttpGetFrameParseProcess->SendRequest())
-								nConnectionKeepAliveSupported = 1;
+								nConnectionKeepAliveSupported--;	// try several times to make sure the connection stays open
 							else
-								nConnectionKeepAliveSupported = 0;
+								nConnectionKeepAliveSupported = 0;	// no keep alive support
 						}
 					}
 					// Some servers by default limit the amount of requests per connection,
@@ -5446,6 +5446,8 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(_T("/netcam.jpg"));						// Stardot
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/encoder?SNAPSHOT"));		// ACTi
+
+		m_HttpGetFrameLocations.Add(_T("/capture1.jpg"));					// Active WebCam Video Surveillance Software
 
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setOSDSetting&isEnableTimeStamp=0&isEnableDevName=0&dispPos=0&isEnableOSDMask=0")) +
 									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
@@ -9185,11 +9187,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRawRequest(CString sRequest
 			sUri = sRequest.Mid(nPos, nPosEnd - nPos);
 
 			// Make sure it is not already url encoded
+			// (this happens when copying from IE address bar and pasting into ContaCam)
 			sUri = ::UrlDecode(sUri);
 
-			// Url encode without encoding reserved chars like '?' or '&'
-			// used as uri parameters separators or '[' and ']' used in
-			// HTTPGETFRAME_USERNAME_PLACEHOLDER and replaced below
+			// Do not encode reserved chars like '?' or '&' or '=' used by uri parameters
+			// or '[' and ']' found in HTTPGETFRAME_USERNAME_PLACEHOLDER or
+			// HTTPGETFRAME_PASSWORD_PLACEHOLDER and replaced below
 			sUri = ::UrlEncode(sUri, FALSE);
 
 			// Replace uri parameters placeholders with fully url encoded username and password
