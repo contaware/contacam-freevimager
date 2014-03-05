@@ -5379,9 +5379,6 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 									_T("&user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +		// For devices which only support authentication
 									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// in CGI request (for example Tenvis IPROBOT3)
 
-		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setOSDSetting&isEnableTimeStamp=0&isEnableDevName=0&dispPos=0&isEnableOSDMask=0")) +
-									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Disable OSD for Foscam HD
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1")) +
 									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
 									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
@@ -5449,9 +5446,6 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 
 		m_HttpGetFrameLocations.Add(_T("/capture1.jpg"));					// Active WebCam Video Surveillance Software
 
-		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setOSDSetting&isEnableTimeStamp=0&isEnableDevName=0&dispPos=0&isEnableOSDMask=0")) +
-									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER); // Disable OSD for Foscam HD
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=snapPicture2")) +
 									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
 									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER); // Foscam HD
