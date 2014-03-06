@@ -637,14 +637,18 @@ void InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
     LsaString->MaximumLength = (StringLength+1) * sizeof(WCHAR);
 }
 
-BOOL GetCurrentLoggedUser(TCHAR* pUserName)
+BOOL GetCurrentLoggedUser(TCHAR* pServiceStartName, TCHAR* pServiceLogonRightName)
 {
 	BOOL res = FALSE;
     WKSTA_USER_INFO_1* pUserInfo;
 	NET_API_STATUS nets = NetWkstaUserGetInfo(NULL, 1, (LPBYTE*)&pUserInfo);
     if (nets == NERR_Success && pUserInfo)
     {
-		_sntprintf(pUserName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
+		if (_tcsicmp(_T("MicrosoftAccount"), pUserInfo->wkui1_logon_domain) == 0)
+			_sntprintf(pServiceStartName, STRINGBUFSIZE+1, _T(".\\%s"), pUserInfo->wkui1_username);
+		else
+			_sntprintf(pServiceStartName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
+		_sntprintf(pServiceLogonRightName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
 		res = TRUE;
     }
     if (pUserInfo)
@@ -652,7 +656,7 @@ BOOL GetCurrentLoggedUser(TCHAR* pUserName)
 	return res;
 }
 
-BOOL AddServiceLogonRight(LPCTSTR pUserName)
+BOOL AddServiceLogonRight(LPCTSTR pServiceLogonRightName)
 {
     // Open the policy object on the target machine
 	LSA_OBJECT_ATTRIBUTES ObjectAttributes;
@@ -669,7 +673,7 @@ BOOL AddServiceLogonRight(LPCTSTR pUserName)
 	DWORD SidSize = MAX_PATH;
 	DWORD DomSize = MAX_PATH;
 	nts = 1; // set error
-    if (LookupAccountName(NULL, pUserName, UserSid, &SidSize, DomName, &DomSize, &SidUse))
+    if (LookupAccountName(NULL, pServiceLogonRightName, UserSid, &SidSize, DomName, &DomSize, &SidUse))
     {
 		LSA_UNICODE_STRING lucPrivilege;
 		InitLsaString(&lucPrivilege, L"SeServiceLogonRight");
@@ -811,30 +815,35 @@ void _tmain(int argc, TCHAR* argv[])
 		else if (_tcsicmp(_T("-i"), argv[1]) == 0)
 		{
 			_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
+			// Username for StartService() on Windows 8 which fails with
+			// ERROR_SERVICE_DEPENDENCY_FAIL (1068) if initializing
+			// CreateService() with MicrosoftAccount\email
 			TCHAR pServiceStartName[STRINGBUFSIZE+1];
+			// Username for LookupAccountName() which doesn't support the .\ prefix
+			TCHAR pServiceLogonRightName[STRINGBUFSIZE+1];
+			// Password
 			TCHAR pServiceStartPassword[STRINGBUFSIZE+1];
 			int nRet;
 			while (TRUE)
 			{
 				KillService(g_pServiceName);
 				Uninstall(g_pServiceName);
-				if (GetCurrentLoggedUser(pServiceStartName))
-					_tprintf(_T("Logon Username: %s\n"), pServiceStartName);
+				if (GetCurrentLoggedUser(pServiceStartName, pServiceLogonRightName))
+					_tprintf(_T("Logon Username: %s\n"), pServiceLogonRightName);
 				else
 				{
-					TCHAR pTemp[STRINGBUFSIZE+1];
 					_tprintf(_T("Logon Username: "));
-					_getts_s(pTemp, STRINGBUFSIZE+1);
+					_getts_s(pServiceLogonRightName, STRINGBUFSIZE+1);
 					_tcscpy(pServiceStartName, _T(".\\"));
-					_tcscat(pServiceStartName, pTemp);
+					_tcscat(pServiceStartName, pServiceLogonRightName);
 				}
 				_tprintf(_T("Logon Password: "));
 				GetPw(pServiceStartPassword);
 				nRet = Install(g_pExeFile, g_pServiceName, pServiceStartName, pServiceStartPassword);
 				if (nRet != ERROR_INVALID_SERVICE_ACCOUNT)
 				{
-					if (pServiceStartName[0] != _T('\0'))
-						AddServiceLogonRight(pServiceStartName);
+					if (pServiceLogonRightName[0] != _T('\0'))
+						AddServiceLogonRight(pServiceLogonRightName);
 					LPTSTR pArgv[1];
 					pArgv[0] = PROCESSES_STOP; // Start the service (without starting the processes) to verify the password
 					if ((nRet = RunService(g_pServiceName, 1, (LPCTSTR*)pArgv)) != ERROR_SERVICE_LOGON_FAILED)
