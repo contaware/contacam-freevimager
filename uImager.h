@@ -564,6 +564,11 @@ public:
 	// Are All Documents Saved?
 	BOOL AreAllDocsSaved();
 
+	// Profile Settings
+	void LoadPlacement(UINT showCmd = SW_SHOWNORMAL);	// pass SW_HIDE to override the stored placement (otherwise this parameter is ignored)
+	void LoadSettings(UINT showCmd = SW_SHOWNORMAL);	// showCmd is handed over to LoadPlacement()
+	void SavePlacement();
+
 	// Video device finishes recording,
 	// the most important settings are stored
 	void SaveOnEndSession();
@@ -667,8 +672,8 @@ public:
 	// load the full-sized dib.
 	BOOL m_bUseLoadPreviewDib;
 
-	// CUImagerApp Settings have been loaded
-	BOOL m_bSettingsLoaded;
+	// Placement Settings have been loaded
+	BOOL m_bPlacementLoaded;
 
 	// Ending session because of shutdown or log-off
 	volatile BOOL m_bEndSession;
@@ -857,12 +862,6 @@ public:
 	afx_msg void OnFileDxVideoDevice(UINT nID);
 #endif
 	DECLARE_MESSAGE_MAP()
-
-// Profile Settings
-public:
-	void SaveSettings();
-protected:
-	void LoadSettings(UINT showCmd);
 	
 protected:
 

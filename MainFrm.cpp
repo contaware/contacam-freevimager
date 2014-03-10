@@ -680,8 +680,8 @@ void CMainFrame::OnClose()
 		// Stop All Threads used for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Exit();
 
-		// Save Settings
-		pApp->SaveSettings();
+		// Save Placement
+		pApp->SavePlacement();
 
 		// Release Twain
 		ReleaseTwain();
@@ -1240,8 +1240,8 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SetFullScreenBlt();
 	}
 
-	// Store placement
-	((CUImagerApp*)::AfxGetApp())->SaveSettings();
+	// Save Placement
+	((CUImagerApp*)::AfxGetApp())->SavePlacement();
 
 	// Get Current Monitor Rectangle
 	m_rcEnterFullScreenMonitor = GetMonitorFullRect();

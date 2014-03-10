@@ -162,7 +162,7 @@ CUImagerApp::CUImagerApp()
 	m_bWaitingMailFinish = FALSE;
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;
-	m_bSettingsLoaded = FALSE;
+	m_bPlacementLoaded = FALSE;
 	m_hAppMutex = NULL;
 	m_bFirstRun = FALSE;
 	m_bFirstRunEver = FALSE;
@@ -1975,7 +1975,7 @@ BOOL CUImagerApp::AreAllDocsSaved()
 
 void CUImagerApp::SaveOnEndSession()
 {
-	SaveSettings();
+	SavePlacement();
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
 
 	CDocument* pDoc;
@@ -4201,11 +4201,10 @@ BOOL CUImagerApp::CloseAll()
 	return bAllClosed;
 }
 
-void CUImagerApp::LoadSettings(UINT showCmd)
+void CUImagerApp::LoadPlacement(UINT showCmd/*=SW_SHOWNORMAL*/)
 {
 	CString sSection(_T("GeneralApp"));
 
-	// MainFrame Placement
 	if (!m_bForceSeparateInstance
 #ifdef VIDEODEVICEDOC
 		&& !m_bServiceProcess
@@ -4227,16 +4226,23 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 			if (pwp->showCmd == SW_SHOWMINIMIZED)
 				pwp->showCmd = SW_RESTORE;
 
-			// Store Window Placement used when restoring from tray
-			if (m_bTrayIcon)
-				::AfxGetMainFrame()->m_TrayIcon.SetWndPlacement(pwp);
-
 			// Set
 			m_pMainWnd->SetWindowPlacement(pwp);
 		}
 		if (pData)
 			delete [] pData;
+
+		// Set flag
+		m_bPlacementLoaded = TRUE;
 	}
+}
+
+void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
+{
+	CString sSection(_T("GeneralApp"));
+
+	// MainFrame Placement
+	LoadPlacement(showCmd);
 
 	// Preview File Dialog
 	m_bFileDlgPreview = (BOOL)GetProfileInt(sSection, _T("FileDlgPreview"), TRUE);
@@ -4329,30 +4335,26 @@ void CUImagerApp::LoadSettings(UINT showCmd)
 		}
 	}
 #endif
-
-	// Set flag
-	m_bSettingsLoaded = TRUE;
 }
 
-void CUImagerApp::SaveSettings()
+void CUImagerApp::SavePlacement()
 {
+	// Check
+	if (!m_bPlacementLoaded)
+		return;
+
 	// MainFrame Placement
 	if (!m_bForceSeparateInstance				&&
 #ifdef VIDEODEVICEDOC
 		!m_bServiceProcess						&&
 #endif
-		!::AfxGetMainFrame()->m_bFullScreenMode	&&
-		m_bSettingsLoaded)
+		!::AfxGetMainFrame()->m_bFullScreenMode &&
+		(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 	{
 		WINDOWPLACEMENT wndpl;
 		memset(&wndpl, 0, sizeof(wndpl));
 		wndpl.length = sizeof(wndpl);
-		BOOL bOk;
-		if (m_bTrayIcon && ::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
-			bOk = ::AfxGetMainFrame()->m_TrayIcon.GetWndPlacement(&wndpl);
-		else
-			bOk = ::AfxGetMainFrame()->GetWindowPlacement(&wndpl);
-		if (bOk)
+		if (::AfxGetMainFrame()->GetWindowPlacement(&wndpl))
 		{
 			WriteProfileBinary(	_T("GeneralApp"),
 								_T("WindowPlacement"),

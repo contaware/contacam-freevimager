@@ -48,23 +48,6 @@ void CTrayIcon::SetWnd(CWnd* pWnd, UINT uCbMsg)
 	m_nid.uCallbackMessage = uCbMsg;
 }
 
-BOOL CTrayIcon::GetWndPlacement(WINDOWPLACEMENT* pWndPlacement)
-{
-	if (pWndPlacement)
-	{
-		memcpy(pWndPlacement, &m_WndPlacement, sizeof(WINDOWPLACEMENT));
-		return TRUE;
-	}
-	else
-		return FALSE;
-}
-
-void CTrayIcon::SetWndPlacement(WINDOWPLACEMENT* pWndPlacement)
-{
-	if (pWndPlacement)
-		memcpy(&m_WndPlacement, pWndPlacement, sizeof(WINDOWPLACEMENT));
-}
-
 BOOL CTrayIcon::SetIcon(UINT uID)
 { 
 	HICON hicon = NULL;
@@ -160,11 +143,7 @@ BOOL CTrayIcon::RemoveTaskbarIcon(HWND hWnd)
 
 void CTrayIcon::MinimizeToTray()
 {
-	memset(&m_WndPlacement, 0, sizeof(m_WndPlacement));
-	m_WndPlacement.length = sizeof(m_WndPlacement);
-	::GetWindowPlacement(m_nid.hWnd, &m_WndPlacement);
-	if (m_WndPlacement.showCmd == SW_SHOWMINIMIZED)
-		m_WndPlacement.showCmd = SW_SHOWNORMAL;
+	((CUImagerApp*)::AfxGetApp())->SavePlacement();
     RemoveTaskbarIcon(m_nid.hWnd);
 	::SetWindowLong(m_nid.hWnd, GWL_STYLE, ::GetWindowLong(m_nid.hWnd, GWL_STYLE) & ~WS_VISIBLE);
 	m_bMinimizedToTray = TRUE;
@@ -181,7 +160,7 @@ void CTrayIcon::MaximizeFromTray()
 	}
 	::SetParent(m_nid.hWnd, NULL);
 	::SetWindowLong(m_nid.hWnd, GWL_STYLE, ::GetWindowLong(m_nid.hWnd, GWL_STYLE) | WS_VISIBLE);
-	::SetWindowPlacement(m_nid.hWnd, &m_WndPlacement);
+	((CUImagerApp*)::AfxGetApp())->LoadPlacement();
     ::RedrawWindow(	m_nid.hWnd,
 					NULL, NULL,
 					RDW_UPDATENOW | RDW_ALLCHILDREN |
