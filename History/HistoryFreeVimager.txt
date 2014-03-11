@@ -7,6 +7,7 @@ FREEVIMAGER HISTORY
   File - Close or when pressing the view's [X] button
 - Slideshow settings are now stored in a simple .ini file
   instead of the more complicated .xml file
+- In Batch Processing dialog update thumbs when sorting columns
   
 4.9.0 (November 19th 2013)
 

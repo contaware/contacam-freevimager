@@ -927,6 +927,7 @@ public:
 	BOOL LoadZonesSettings();
 	void SaveZonesSettings();
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);
+	void SavePlacement();
 	void SaveSettings();
 	void ExportDetectionZones(const CString& sFileName);
 	void ImportDetectionZones(const CString& sFileName);
@@ -999,6 +1000,7 @@ public:
 	volatile LONG m_lCompressedDataRateSum;				// Compressed data rate sum
 	BITMAPINFOFULL m_CaptureBMI;						// Capture source format
 	BITMAPINFOFULL m_ProcessFrameBMI;					// BMI of Frame reaching ProcessI420Frame()
+	volatile BOOL m_bPlacementLoaded;					// Placement Settings have been loaded
 	volatile BOOL m_bCaptureStarted;					// Flag set when first frame has been processed
 	CTime m_CaptureStartTime;							// Grabbing device started at this time
 	volatile BOOL m_bVideoView;							// Flag indicating whether the frame grabbing is to be previewed

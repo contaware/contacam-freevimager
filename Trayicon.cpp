@@ -143,7 +143,8 @@ BOOL CTrayIcon::RemoveTaskbarIcon(HWND hWnd)
 
 void CTrayIcon::MinimizeToTray()
 {
-	((CUImagerApp*)::AfxGetApp())->SavePlacement();
+	((CUImagerApp*)::AfxGetApp())->SavePlacements();
+	((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements = FALSE;
     RemoveTaskbarIcon(m_nid.hWnd);
 	::SetWindowLong(m_nid.hWnd, GWL_STYLE, ::GetWindowLong(m_nid.hWnd, GWL_STYLE) & ~WS_VISIBLE);
 	m_bMinimizedToTray = TRUE;
@@ -171,4 +172,7 @@ void CTrayIcon::MaximizeFromTray()
 		::SetActiveWindow(m_hWndInvisible);
     ::SetActiveWindow(m_nid.hWnd);
 	::SetForegroundWindow(m_nid.hWnd);
+
+	// Now it's possible to save placements again
+	((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements = TRUE;
 }

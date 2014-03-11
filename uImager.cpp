@@ -127,6 +127,7 @@ END_MESSAGE_MAP()
 
 CUImagerApp::CUImagerApp()
 {
+	m_bCanSavePlacements = TRUE;
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
 	m_sSysTempDir = _T("");
@@ -4339,28 +4340,33 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 void CUImagerApp::SavePlacement()
 {
-	// Check
-	if (!m_bPlacementLoaded)
-		return;
-
-	// MainFrame Placement
-	if (!m_bForceSeparateInstance				&&
-#ifdef VIDEODEVICEDOC
-		!m_bServiceProcess						&&
-#endif
-		!::AfxGetMainFrame()->m_bFullScreenMode &&
-		(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+	if (m_bPlacementLoaded && m_bCanSavePlacements)
 	{
 		WINDOWPLACEMENT wndpl;
 		memset(&wndpl, 0, sizeof(wndpl));
 		wndpl.length = sizeof(wndpl);
 		if (::AfxGetMainFrame()->GetWindowPlacement(&wndpl))
+			WriteProfileBinary(_T("GeneralApp"), _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
+	}
+}
+
+void CUImagerApp::SavePlacements()
+{
+	SavePlacement(); // store main window placement
+#ifdef VIDEODEVICEDOC
+	POSITION posTemplate = GetFirstDocTemplatePosition();
+	while (posTemplate)
+	{
+		CUImagerMultiDocTemplate* curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
+		POSITION posDoc = curTemplate->GetFirstDocPosition();
+		while (posDoc)
 		{
-			WriteProfileBinary(	_T("GeneralApp"),
-								_T("WindowPlacement"),
-								(BYTE*)&wndpl, sizeof(wndpl));
+			CDocument* pDoc = curTemplate->GetNextDoc(posDoc);
+			if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
+				((CVideoDeviceDoc*)pDoc)->SavePlacement(); // store video device window placement
 		}
 	}
+#endif
 }
 
 void CUImagerApp::SendOpenDocsAsMailInit()

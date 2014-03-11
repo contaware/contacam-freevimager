@@ -12,6 +12,11 @@ CONTACAM HISTORY
   if all IP cams start at the same time (thanks to Sanford Gossman
   for the idea and for testing it)
 - Increased network timeouts
+- Made mjpeg video decoder more fault tolerant
+- Credentials are now typed into the 'Connect To' network dialog
+  making it possible to edit them later on
+- Fixed service installation failure when using a Windows 8
+  Microsoft Account (thanks to Paolo Seveso for reporting that)
 
 4.9.0 (November 19th 2013)
 

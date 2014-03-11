@@ -1240,8 +1240,9 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SetFullScreenBlt();
 	}
 
-	// Save Placement
-	((CUImagerApp*)::AfxGetApp())->SavePlacement();
+	// Save Placements
+	((CUImagerApp*)::AfxGetApp())->SavePlacements();
+	((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements = FALSE;
 
 	// Get Current Monitor Rectangle
 	m_rcEnterFullScreenMonitor = GetMonitorFullRect();
@@ -1634,6 +1635,9 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		// Update View
 		pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
 	}
+
+	// Now it's possible to save placements again
+	((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements = TRUE;
 }
 
 LONG CMainFrame::OnVideoAviFullScreenModeOff(WPARAM wparam, LPARAM lparam)

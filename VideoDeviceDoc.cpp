@@ -4027,6 +4027,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lProcessFrameTime = 0;
 	m_lCompressedDataRate = 0;
 	m_lCompressedDataRateSum = 0;
+	m_bPlacementLoaded = FALSE;
 	m_bCaptureStarted = FALSE;
 	m_bShowFrameTime = TRUE;
 	m_nRefFontSize = 9;
@@ -4737,6 +4738,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		}
 		if (pData)
 			delete [] pData;
+
+		// Set flag
+		m_bPlacementLoaded = TRUE;
 	}
 
 	// Update m_ZoomRect and show the Please wait... message
@@ -4948,9 +4952,20 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	MicroApacheUpdateWebFiles(m_sRecordAutoSaveDir);
 }
 
+void CVideoDeviceDoc::SavePlacement()
+{
+	if (m_bPlacementLoaded && ((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements)
+	{
+		WINDOWPLACEMENT wndpl;
+		memset(&wndpl, 0, sizeof(wndpl));
+		wndpl.length = sizeof(wndpl);
+		if (GetFrame()->GetWindowPlacement(&wndpl))
+			::AfxGetApp()->WriteProfileBinary(GetDevicePathName(), _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
+	}
+}
+
 void CVideoDeviceDoc::SaveSettings()
 {
-	WINDOWPLACEMENT wndpl;
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 	CString sSection(GetDevicePathName());
 
@@ -4962,13 +4977,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
 
 	// Store Placement
-	if (!pApp->m_bForceSeparateInstance && !pApp->m_bServiceProcess)
-	{
-		memset(&wndpl, 0, sizeof(wndpl));
-		wndpl.length = sizeof(wndpl);
-		if (GetFrame()->GetWindowPlacement(&wndpl))
-			pApp->WriteProfileBinary(sSection, _T("WindowPlacement"), (BYTE*)&wndpl, sizeof(wndpl));
-	}
+	SavePlacement();
 
 	// Email Settings
 	pApp->WriteProfileString(sSection, _T("SendMailFiles"), m_MovDetSendMailConfiguration.m_sFiles);

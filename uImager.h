@@ -567,7 +567,8 @@ public:
 	// Profile Settings
 	void LoadPlacement(UINT showCmd = SW_SHOWNORMAL);	// pass SW_HIDE to override the stored placement (otherwise this parameter is ignored)
 	void LoadSettings(UINT showCmd = SW_SHOWNORMAL);	// showCmd is handed over to LoadPlacement()
-	void SavePlacement();
+	void SavePlacement();								// store main window placement
+	void SavePlacements();								// store main window placement + placement of all open video device documents
 
 	// Video device finishes recording,
 	// the most important settings are stored
@@ -658,6 +659,9 @@ public:
 
 	// Top Most
 	BOOL m_bTopMost;
+
+	// Flag indicating whether it's possible to store window placements
+	BOOL m_bCanSavePlacements;
 
 	// Application is Shutting down
 	BOOL m_bShuttingDownApplication;
