@@ -4723,10 +4723,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 			// Reset size to doc flag
 			m_bSizeToDoc = FALSE;
 
-			// Clip to MDI rect (ClipToMDIRect() not working for all OSs if auto starting minimized to tray)
-			if (!pApp->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
-				::AfxGetMainFrame()->ClipToMDIRect(&pwp->rcNormalPosition);
-
 			// Open Maximized?
 			if (GetFrame()->IsZoomed())
 				pwp->showCmd = SW_SHOWMAXIMIZED;
