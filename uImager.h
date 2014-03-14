@@ -468,6 +468,9 @@ public:
 	// Is At least One Video Device Document Open?
 	BOOL AreVideoDeviceDocsOpen();
 
+	// Returns the count of all open Video Device Documents
+	int GetTotalVideoDeviceDocs();
+
 	// Get the total number of Video Device Documents
 	// that have the movement detection enabled
 	int GetTotalVideoDeviceDocsMovementDetecting();

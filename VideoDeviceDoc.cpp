@@ -2716,18 +2716,19 @@ end_of_software_detection:
 	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
 		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 	{
-		// Usable RAM for this 32 bits application
-		int nTotalPhysInMB = ::GetTotPhysMemMB(FALSE);
-		if (nTotalPhysInMB > MOVDET_MEM_MAX_MB)
-			nTotalPhysInMB = MOVDET_MEM_MAX_MB;
-		else if (nTotalPhysInMB <= 0)
-			nTotalPhysInMB = 1;		// At least 1MB...
+		// Calculate the usable RAM
+		int nTotalUsableMB = ::GetTotPhysMemMB(FALSE);
+		if (nTotalUsableMB > MOVDET_MEM_MAX_MB)	// we are a 32 bits application
+			nTotalUsableMB = MOVDET_MEM_MAX_MB;
+		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB; // consider all open devices because also non-detecting ones use RAM
+		if (nTotalUsableMB < MOVDET_MEM_MIN_MB)	// give a chance if many devices open or if we are on a PC with low amount of RAM 
+			nTotalUsableMB = MOVDET_MEM_MIN_MB;
 
 		// This document load in %
-		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB;
+		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalUsableMB;
 
 		// Newest list load in %
-		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalPhysInMB;
+		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalUsableMB;
 
 		// Get the total amount of devices which are movement detecting
 		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();

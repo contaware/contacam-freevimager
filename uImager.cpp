@@ -1922,6 +1922,20 @@ BOOL CUImagerApp::AreVideoDeviceDocsOpen()
 	return FALSE;
 }
 
+int CUImagerApp::GetTotalVideoDeviceDocs()
+{
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	int nCount = 0;
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+			++nCount;
+	}
+	return nCount;
+}
+
 int CUImagerApp::GetTotalVideoDeviceDocsMovementDetecting()
 {
 	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
