@@ -469,8 +469,9 @@ BOOL CGeneralPage::OnInitDialog()
 		if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::AXIS_SP ||
 			m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::EDIMAX_SP)
 			m_SpinFrameRate.SetRange(1.0, MAX_FRAMERATE);
-		// Pixord
-		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PIXORD_SP)
+		// Pixord or Foscam
+		else if (m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::PIXORD_SP ||
+				m_pDoc->m_nNetworkDeviceTypeMode == CVideoDeviceDoc::FOSCAM_SP)
 			m_SpinFrameRate.SetRange(MIN_FRAMERATE, MAX_FRAMERATE);
 		// Disable all other Server Push devices,
 		// Client Poll devices will be enabled in OnTimer()

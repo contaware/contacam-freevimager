@@ -792,6 +792,8 @@ public:
 		EDIMAX_CP,			// Edimax Client Poll (jpegs)
 		TPLINK_SP,			// TP-Link Server Push (mjpeg)
 		TPLINK_CP,			// TP-Link Client Poll (jpegs)
+		FOSCAM_SP,			// Foscam Server Push (mjpeg)
+		FOSCAM_CP,			// Foscam Client Poll (jpegs)
 		// Add more devices here...	
 		LAST_DEVICE			// Placeholder for range check
 	} NetworkDeviceTypeMode;

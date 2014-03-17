@@ -5380,17 +5380,13 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		m_HttpGetFrameLocations.Add(CString(_T("/image.cgi?mode=http")) +
 									_T("&id=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
 									_T("&passwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);	// Intellinet
- 
-		m_HttpGetFrameLocations.Add(CString(_T("/videostream.cgi?resolution=32&rate=0")) +
-									_T("&user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +		// For devices which only support authentication
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// in CGI request (for example Tenvis IPROBOT3)
 
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1")) +
 									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
 									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Enable MJPG for Foscam HD
 		m_HttpGetFrameLocations.Add(CString(_T("/cgi-bin/CGIStream.cgi?cmd=GetMJStream")) +
 									_T("&usr=") + HTTPGETFRAME_USERNAME_PLACEHOLDER + 
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Foscam HD
+									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);		// Foscam HD (mjpeg stream is VGA resolution @ 15fps)
 	}
 	// JPEG
 	else if (m_nNetworkDeviceTypeMode == OTHERONE_CP)
@@ -5478,10 +5474,6 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 		
 		m_HttpGetFrameLocations.Add(_T("/image.cgi"));						// AirLive, A-Link, ALinking, Asante, Intellinet, MonoPrice, NetMedia, 
 																			// Planet, Rosewill, Savitmicro, TELCA, Topica, VISIONxIP
-
-		m_HttpGetFrameLocations.Add(CString(_T("/snapshot.cgi")) +
-									_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +	// For devices which only support authentication
-									_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER);	// in CGI request
 	}
 }
 
@@ -5501,6 +5493,8 @@ double CVideoDeviceDoc::GetDefaultNetworkFrameRate(NetworkDeviceTypeMode nNetwor
 		case EDIMAX_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		case TPLINK_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
 		case TPLINK_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
+		case FOSCAM_SP :	return HTTPSERVERPUSH_DEFAULT_FRAMERATE;
+		case FOSCAM_CP :	return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 		default :			return HTTPCLIENTPOLL_DEFAULT_FRAMERATE;
 	}
 }
@@ -9013,6 +9007,23 @@ Standard -> Standard quality.
 Clarity  -> Lower compression rate, fewer frames, better image clarity.
 
 
+PIXORD/NETCOMM
+--------------
+
+JPEG
+_T("GET /images<channel><resolution> HTTP/1.1\r\n")
+_T("GET /images1sif HTTP/1.1\r\n")
+
+MJPEG
+_T("GET /getimage?camera=<channel>[&fmt=<resolution>][&delay=<delay>] HTTP/1.1\r\n")
+_T("GET /getimage?camera=1&fmt=sif&delay=10 HTTP/1.1\r\n")
+
+qsif     -> 176x112 (NTSC)
+sif      -> 352x240 (NTSC)
+full     -> 704x480 (NTSC)
+delay=10 -> 100 ms
+
+
 EDIMAX
 ------
 
@@ -9046,24 +9057,34 @@ _T("GET /cgi-bin/admin/param?action=update&Image.I0.Appearance.Compression=Compr
 _T("GET /cgi-bin/admin/param?action=update&Image.I0.MJPEG.FPS=Fps HTTP/1.1\r\n")                           -> set framerate, valid range: 1-30
 
 
-PIXORD or NETCOMM
------------------
+FOSCAM/TENVIS/CLONES
+--------------------
 
 JPEG
-_T("GET /images<channel><resolution> HTTP/1.1\r\n")
-_T("GET /images1sif HTTP/1.1\r\n")
+_T("GET /snapshot.cgi?user=<user>&pwd=<password>&resolution=<resolution> HTTP/1.1\r\n")
 
 MJPEG
-_T("GET /getimage?camera=<channel>[&fmt=<resolution>][&delay=<delay>] HTTP/1.1\r\n")
-_T("GET /getimage?camera=1&fmt=sif&delay=10 HTTP/1.1\r\n")
+_T("GET /videostream.cgi?user=<user>&pwd=<password>&resolution=<resolution>&rate=<rate> HTTP/1.1\r\n")
 
-qsif     -> 176x112 (NTSC)
-sif      -> 352x240 (NTSC)
-full     -> 704x480 (NTSC)
-delay=10 -> 100 ms
+resolutions:
+8  -> 320*240
+32 -> 640*480
 
+rates (value rang 0-23):
+0  -> full speed
+1  -> 20 fps
+3  -> 15 fps
+6  -> 10 fps
+11 -> 5 fps
+12 -> 4 fps
+13 -> 3 fps
+14 -> 2 fps
+15 -> 1 fps
+17 -> 0.5 fps
+19 -> 0.333333 fps
+21 -> 0.25 fps
+23 -> 0.2 fps
 */
-
 BOOL CVideoDeviceDoc::ConnectGetFrame(DWORD dwConnectDelay/*=0U*/)
 {
 	// Check
@@ -9156,6 +9177,20 @@ BOOL CVideoDeviceDoc::ConnectGetFrame(DWORD dwConnectDelay/*=0U*/)
 
 		case TPLINK_CP :	// TP-Link Client Poll (jpegs)
 			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			break;
+
+		case FOSCAM_SP :	// Foscam Server Push (mjpeg)
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATMJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
+			break;
+
+		case FOSCAM_CP :	// Foscam Client Poll (jpegs)
+			m_pHttpGetFrameParseProcess->m_FormatType = CHttpGetFrameParseProcess::FORMATJPEG;
+			m_pHttpGetFrameParseProcess->m_Sizes.RemoveAll();			
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(320, 240));
+			m_pHttpGetFrameParseProcess->m_Sizes.Add(CSize(640, 480));
 			break;
 
 		default :
@@ -9772,6 +9807,94 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::SendRequest()
 			sRequest.Format(_T("GET %s HTTP/%s\r\n"),
 						sLocation,
 						m_bOldVersion ? _T("1.0") : _T("1.1"));
+			break;
+		}
+		case FOSCAM_SP :	// Foscam Server Push (mjpeg)
+		{
+			int nRate;
+			if (m_pDoc->m_dFrameRate > 20.0)
+				nRate = 0;	// full speed
+			else if (m_pDoc->m_dFrameRate > 15.0)
+				nRate = 1;	// 20 fps
+			else if (m_pDoc->m_dFrameRate > 10.0)
+				nRate = 3;	// 15 fps
+			else if (m_pDoc->m_dFrameRate > 5.0)
+				nRate = 6;	// 10 fps
+			else if (m_pDoc->m_dFrameRate > 4.0)
+				nRate = 11;	// 5 fps
+			else if (m_pDoc->m_dFrameRate > 3.0)
+				nRate = 12;	// 4 fps
+			else if (m_pDoc->m_dFrameRate > 2.0)
+				nRate = 13;	// 3 fps
+			else if (m_pDoc->m_dFrameRate > 1.0)
+				nRate = 14;	// 2 fps
+			else if (m_pDoc->m_dFrameRate > 0.5)
+				nRate = 15;	// 1 fps
+			else if (m_pDoc->m_dFrameRate > 0.333333)
+				nRate = 17;	// 0.5 fps
+			else if (m_pDoc->m_dFrameRate > 0.25)
+				nRate = 19;	// 0.333333 fps
+			else if (m_pDoc->m_dFrameRate > 0.2)
+				nRate = 21;	// 0.25 fps
+			else
+				nRate = 23;	// 0.2 fps
+			sLocation =	CString(_T("/videostream.cgi")) +
+						_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +
+						_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER;
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s&resolution=%d&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 640 ? 32 : 8,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s&rate=%d HTTP/%s\r\n"),
+								sLocation,
+								nRate,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			break;
+		}
+		case FOSCAM_CP :	// Foscam Client Poll (jpegs)
+		{
+			sLocation = CString(_T("/snapshot.cgi")) +
+						_T("?user=") + HTTPGETFRAME_USERNAME_PLACEHOLDER +
+						_T("&pwd=") + HTTPGETFRAME_PASSWORD_PLACEHOLDER;
+			if (HasResolution(CSize(m_pDoc->m_nHttpVideoSizeX, m_pDoc->m_nHttpVideoSizeY)))
+			{
+				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
+								sLocation,
+								m_pDoc->m_nHttpVideoSizeX == 640 ? 32 : 8,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
+			else if (m_Sizes.GetSize() > 0)
+			{
+				sRequest.Format(_T("GET %s&resolution=%d HTTP/%s\r\n"),
+								sLocation,
+								m_Sizes[0].cx == 640 ? 32 : 8,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+				m_pDoc->m_nHttpVideoSizeX = m_Sizes[0].cx;
+				m_pDoc->m_nHttpVideoSizeY = m_Sizes[0].cy;
+			}
+			else
+			{
+				sRequest.Format(_T("GET %s HTTP/%s\r\n"),
+								sLocation,
+								m_bOldVersion ? _T("1.0") : _T("1.1"));
+			}
 			break;
 		}
 		default :

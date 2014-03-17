@@ -2,6 +2,9 @@ CONTACAM HISTORY
 
 4.9.5 (xxx xth 2014)
 
+- Support Foscam, Tenvis and Clones mjpeg cameras in network dialog
+- Credentials are now typed into the 'Connect To' network dialog
+  making it possible to edit them later on
 - Avoid leading and trailing whitespaces in directx device names
 - Fixed 'Out of memory' error message when joining a huge amount
   of avi files (more than 100)
@@ -13,8 +16,6 @@ CONTACAM HISTORY
   for the idea and for testing it)
 - Increased network timeouts
 - Made mjpeg video decoder more fault tolerant
-- Credentials are now typed into the 'Connect To' network dialog
-  making it possible to edit them later on
 - Fixed service installation failure when using a Windows 8
   Microsoft Account (thanks to Paolo Seveso for reporting that)
 

@@ -1,52 +1,37 @@
 Both
 ----
 - When views are tiled and resizing mainframe then resize also childs
-- Possibility to hide menu, statusbar and toolbars
+- Possibility to hide menu, statusbar, titlebars and toolbars
 
 
 FreeVimager Program
 -------------------
-- Possibility to only show some XMP metadata, like:
-Contact: Creator (byline)
-Content: Headline
-Content: Description (caption)
-Content: Keywords
-Image: Location
-Image: City
-Image: State/Province
-Image: Country
-Status: Title (object name)
-Status: Source
-Status: Copyright notice
+- ...
 
 
 ContaCam Program
 ----------------
-- More compact storing in registry / ini file of detection zones
 - Save JPEG snapshots once the motion detection is triggered
 - Document the way to have different parameters for the same cam,
   like two different snapshot rates, or ...
-- Output static .htm files through the PHP parser so that also Dropbox
-  users can access it? -> to many files for all the days in a month
-  and for all the pages, do not do that!
-- Seems that some dynamic dns providers do html or javascript redirects:
-  http://g4534.vipcam.org. Should we support that? vipcam.org is from D-Link
-- Remove Tray Icon because if in service mode ContaCam sometimes is not notified
-  that a user is logging-off and also the settings are not always stored well.
-  Since Windows 7 the tray icons are obsolete.
 - Rotate by 0,90,180,270 degrees
-- Think about changing Device Assistant to Device Usage, Name,
-  Appearance, Storage or change it to Device Basic Settings
+- Think about changing Device Assistant to Device Basic Settings
+  and Device Settings to Device Advanced Settings
+- Think about removing 'Merge Avi Streams'
 - Make thumbnail anim. gif for avi records?
 - Support NV12 (NV21) camera source format
 - Add duration to file names like:
   det_2013_09_15-03_33_48-143.avi = 143 secs
+- Auto join all avi detections at the end of the day
+- Det Off / Det Soft,... for all open cams
+- Ability to send different emails to different people. For example
+  send GIF files to one person and JPGs to another
 
-
+  
 ContaCam Web Interface
 ----------------------
-- Replace swf with html5 video (mp4 and webm formats)
+- Replace swf with html5 video (mp4 format)
 - Back click if in full-screen stream should
   return to the correct day and page
-- If live snapshot time stamp remains the same then
+- If live snapshot file time stamp remains the same then
   output a red border to alert

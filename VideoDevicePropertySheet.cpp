@@ -84,12 +84,14 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 			case CVideoDeviceDoc::AXIS_CP		: sTitle += CString(_T(" , ")) + _T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			case CVideoDeviceDoc::PANASONIC_SP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
 			case CVideoDeviceDoc::PANASONIC_CP	: sTitle += CString(_T(" , ")) + _T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + _T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
-			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + _T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PIXORD_SP		: sTitle += CString(_T(" , ")) + _T("Pixord/NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::PIXORD_CP		: sTitle += CString(_T(" , ")) + _T("Pixord/NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			case CVideoDeviceDoc::EDIMAX_SP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
 			case CVideoDeviceDoc::EDIMAX_CP		: sTitle += CString(_T(" , ")) + _T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			case CVideoDeviceDoc::TPLINK_SP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
 			case CVideoDeviceDoc::TPLINK_CP		: sTitle += CString(_T(" , ")) + _T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
+			case CVideoDeviceDoc::FOSCAM_SP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")"); break;
+			case CVideoDeviceDoc::FOSCAM_CP		: sTitle += CString(_T(" , ")) + _T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")"); break;
 			default : break;
 		}
 		if (pDoc->m_pGetFrameNetCom->GetSocketFamily() == AF_INET6)

@@ -45,12 +45,14 @@ BOOL CHostPortDlg::OnInitDialog()
 	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Pixord or NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(_T("Pixord or NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Pixord/NetComm (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Edimax (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("TP-Link (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(_T("Foscam/Tenvis/Clones (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 
 	CDialog::OnInitDialog();
 
