@@ -17,7 +17,11 @@ ContaCam Program
 - Rotate by 0,90,180,270 degrees
 - Think about changing Device Assistant to Device Basic Settings
   and Device Settings to Device Advanced Settings
-- Think about removing 'Merge Avi Streams'
+- Think about removing 'Merge Avi Streams' as it is rarely used
+  and confusing for beginners
+- Think about removing vorbis audio compression as it is rarely used
+  and flac audio compression which can have buffers up to 18432 bytes,
+  this size is above the LFH maximum size (16 KB)!
 - Make thumbnail anim. gif for avi records?
 - Support NV12 (NV21) camera source format
 - Add duration to file names like:

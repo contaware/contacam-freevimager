@@ -123,8 +123,8 @@ class CMovementDetectionPage;
 														// a new list with 15000
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
-#define MOVDET_MEM_LOAD_THRESHOLD			30.0		// Above this load the detected frames are saved and freed
-#define MOVDET_MEM_LOAD_CRITICAL			70.0		// Above this load the detected frames are dropped
+#define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
+#define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
 #define MOVDET_MEM_MAX_MB					1050		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
 #define MOVDET_MEM_MIN_MB					100			// Minimum memory in MB
