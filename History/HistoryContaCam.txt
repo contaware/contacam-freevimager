@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-4.9.5 (xxx xth 2014)
+4.9.5 (March 24th 2014)
 
 - Support Foscam, Tenvis and Clones mjpeg cameras in network dialog
 - Credentials are now typed into the 'Connect To' network dialog
