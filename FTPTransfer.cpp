@@ -525,8 +525,6 @@ int CFTPTransfer::Transfer()
 	}
 	if (m_hFTPFile == NULL)
 	{
-		BOOL bFtpOpenFileError = TRUE;
-
 		// Do We Have To Create A Directory?
 		if (!m_bDownload)
 		{
@@ -535,23 +533,18 @@ int CFTPTransfer::Transfer()
 			if ((pos = sRemoteDir.ReverseFind(_T('/'))) > -1)
 			{
 				sRemoteDir = sRemoteDir.Left(pos);
-				if (CreateRemoteDir(sRemoteDir))
-				{
-					if (m_bBinary)  
-						m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
-											   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
-					else
-						m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_ASCII | 
-											   INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
-
-					if (m_hFTPFile != NULL)
-						bFtpOpenFileError = FALSE;
-				}
+				CreateRemoteDir(sRemoteDir);
+				if (m_bBinary)  
+					m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_BINARY | 
+											INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
+				else
+					m_hFTPFile = ::FtpOpenFile(m_hFTPConnection, m_sRemoteFile, GENERIC_WRITE, FTP_TRANSFER_TYPE_ASCII | 
+											INTERNET_FLAG_RELOAD | INTERNET_FLAG_DONT_CACHE, (DWORD) this);
 			}
 		}
 
 		// Ftp Open File Error?
-		if (bFtpOpenFileError)
+		if (m_hFTPFile == NULL)
 		{
 			m_sError = ::ShowLastError(FALSE);
 			m_LocalFile.Close();
