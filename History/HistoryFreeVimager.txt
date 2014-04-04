@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+4.9.7 (xxx yth 2014)
+
+- ... 
+
 4.9.5 (March 24th 2014)
 
 - Touch screen gesture support for print preview (pan & zoom)

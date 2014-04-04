@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+4.9.7 (xxx yth 2014)
+
+- ... 
+
 4.9.5 (March 24th 2014)
 
 - Added strings 1766, 1789, 1820
