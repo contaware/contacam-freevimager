@@ -700,8 +700,9 @@ public:
 	class CSaveSnapshotSWFThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotSWFThread(){m_ThreadExecutedForTime = CTime(0);};
+			CSaveSnapshotSWFThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
 			virtual ~CSaveSnapshotSWFThread() {Kill();};
+			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			BOOL m_bSnapshotHistoryJpeg;
 			BOOL m_bSnapshotHistorySwfFtp;
@@ -713,6 +714,7 @@ public:
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
+			CVideoDeviceDoc* m_pDoc;
 			int Work();
 			__forceinline CString MakeSwfHistoryFileName();
 	};
@@ -721,8 +723,9 @@ public:
 	class CSaveSnapshotThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotThread(){;};
+			CSaveSnapshotThread(){m_pDoc = NULL;};
 			virtual ~CSaveSnapshotThread() {Kill();};
+			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			CDib m_Dib;
 			BOOL m_bSnapshotHistoryJpeg;
@@ -742,6 +745,7 @@ public:
 			FTPUploadConfigurationStruct m_Config;
 
 		protected:
+			CVideoDeviceDoc* m_pDoc;
 			CMJPEGEncoder m_MJPEGEncoder;
 			CMJPEGEncoder m_MJPEGThumbEncoder;
 			int Work();
@@ -920,8 +924,8 @@ public:
 	// -1 : Do Exit Thread (specified for CFTPTransfer constructor)
 	// 0  : Error
 	// 1  : Ok
-	static int FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
-							CString sLocalFileName, CString sRemoteFileName);
+	int FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct* pConfig,
+					CString sLocalFileName, CString sRemoteFileName);
 
 	// Validate Name
 	static CString GetValidName(CString sName);

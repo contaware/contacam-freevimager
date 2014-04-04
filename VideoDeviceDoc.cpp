@@ -975,45 +975,45 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
 	{
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_GIF :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				if (result == 1)
-					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				if (result == 1)
-					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF :
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-													sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
 				if (result == 1)
-					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-														sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
+					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+												sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
 				if (result == 1)
-					result = CVideoDeviceDoc::FTPUpload(&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-														sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
+					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
+												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
 		default :
@@ -1548,17 +1548,17 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 		if (::IsExistingFile(sSWFTempThumbFileName))
 		{
 			// Do Exit?
-			if (CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
-											sSWFTempThumbFileName,
-											sUploadDir + _T("/") + ::GetShortFileName(sSWFThumbFileName)) == -1)
+			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+									sSWFTempThumbFileName,
+									sUploadDir + _T("/") + ::GetShortFileName(sSWFThumbFileName)) == -1)
 				goto exit;
 		}
 		if (::IsExistingFile(sSWFTempFileName))
 		{
 			// Do Exit?
-			if (CVideoDeviceDoc::FTPUpload(	&FTP, &m_Config,
-											sSWFTempFileName,
-											sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName)) == -1)
+			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+									sSWFTempFileName,
+									sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName)) == -1)
 				goto exit;
 		}
 	}
@@ -1642,8 +1642,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 		{
 			int result;
 			CFTPTransfer FTP(this);
-			result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-												sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
+			result = m_pDoc->FTPUpload(	&FTP, &m_Config,
+										sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
 			if (result == -1) // Do Exit?
 			{
 				// Delete Temp
@@ -1670,8 +1670,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 			{
 				int result;
 				CFTPTransfer FTP(this);
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-													sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
+				result = m_pDoc->FTPUpload(	&FTP, &m_Config,
+											sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
 				if (result == -1) // Do Exit?
 				{
 					// Delete Temp
@@ -1693,8 +1693,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 			CString sUploadDir = m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d"));
 			int result;
 			CFTPTransfer FTP(this);
-			result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-												sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
+			result = m_pDoc->FTPUpload(	&FTP, &m_Config,
+										sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
 			if (result == -1) // Do Exit?
 			{
 				// Delete Temp
@@ -1715,8 +1715,8 @@ int CVideoDeviceDoc::CSaveSnapshotThread::Work()
 				CString sUploadDir = m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d"));
 				int result;
 				CFTPTransfer FTP(this);
-				result = CVideoDeviceDoc::FTPUpload(&FTP, &m_Config,
-													sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
+				result = m_pDoc->FTPUpload(	&FTP, &m_Config,
+											sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
 				if (result == -1) // Do Exit?
 				{
 					// Delete Temp
@@ -2179,7 +2179,11 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		// Upload
 		int nRet = pFTP->Transfer();
 		if (nRet == 0 && pFTP->m_sError != _T(""))
-			::LogLine(pFTP->m_sError);
+		{
+			CString sMsg(GetAssignedDeviceName() + _T(", ") + pFTP->m_sError + _T("\n"));
+			TRACE(sMsg);
+			::LogLine(sMsg);
+		}
 		return nRet;
 	}
 }
@@ -4097,6 +4101,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_WatchdogAndDrawThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
+	m_SaveSnapshotThread.SetDoc(this);
+	m_SaveSnapshotSWFThread.SetDoc(this);
 
 	// Recording
 	m_sRecordAutoSaveDir = _T("");

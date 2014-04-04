@@ -177,7 +177,7 @@ BOOL CFTPTransfer::ResumeTransfer()
 	// Send the resume request
 	BOOL bSuccess = ::FtpCommand(m_hFTPConnection, FALSE, FTP_TRANSFER_TYPE_BINARY, sRequest, 0, NULL); 
 	if (!bSuccess)
-		m_sError = ::ShowLastError(FALSE);
+		m_sError = sRequest + _T(" -> ") + ::ShowLastError(FALSE);
 	else
 	{
 		// Check the reponse to see if we get a "350" response code
@@ -191,7 +191,7 @@ BOOL CFTPTransfer::ResumeTransfer()
 		// Check to see if there is a 350 response code in the extended error text anywhere
 		bSuccess = (_ttoi(pszResponse) == 350);
 		if (!bSuccess)
-			m_sError = pszResponse;
+			m_sError = sRequest + _T(" -> ") + pszResponse;
 
 		// Tidy up the heap memory now that we have finished with it
 		delete [] pszResponse;
