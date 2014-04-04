@@ -1409,6 +1409,8 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 
 int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 {
+	ASSERT(m_pDoc);
+
 	// Init
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(FALSE);
@@ -1581,6 +1583,8 @@ exit:
 
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
+	ASSERT(m_pDoc);
+
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
 
