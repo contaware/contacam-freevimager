@@ -247,7 +247,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -560,7 +559,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -664,7 +662,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -900,7 +897,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -1027,7 +1023,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -1323,7 +1318,6 @@ BEGIN
         MENUITEM "&Merge Avi Streams",          ID_TOOLS_AVIMERGEPARALLEL_AS
         MENUITEM SEPARATOR
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "View Web Server Log",         ID_TOOLS_VIEW_WEB_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
@@ -5296,8 +5290,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_TOOLS_VIEW_WEB_LOGFILE 
-                            "View the web server log file with the default text editor\nView Web Server Log"
     ID_PLAY_INC             "Increment the video playback speed\nIncrement Speed"
     ID_PLAY_DEC             "Decrement the video playback speed\nDecrement Speed"
     ID_EDIT_SNAPSHOT        "Take a snapshot\nSnapshot"
@@ -5582,7 +5574,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
-    IDS_STRING1761          "Web Server Log File has not yet been created"
     IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"

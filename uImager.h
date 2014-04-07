@@ -862,7 +862,6 @@ public:
 	//}}AFX_MSG
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC
-	afx_msg void OnToolsViewWebLogfile();
 	afx_msg void OnToolsMoveCamFolders();
 	afx_msg void OnToolsDelCamFolders();
 	afx_msg void OnCaptureNetwork();

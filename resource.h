@@ -3476,7 +3476,6 @@
 #define ID_BUTTON33148                  33148
 #define ID_BUTTON33149                  33149
 #define ID_BUTTON33150                  33150
-#define ID_TOOLS_VIEW_WEB_LOGFILE       33156
 #define ID_PLAY_INC                     33157
 #define ID_PLAY_DEC                     33158
 #define ID_EDIT_SNAPSHOT                33161
