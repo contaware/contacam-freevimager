@@ -56,8 +56,8 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	CDialog::OnInitDialog();
 
-	// Load Settings
-	LoadSettings();
+	// Load History
+	LoadHistory(m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
 	
 	// Init
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
@@ -101,17 +101,20 @@ BOOL CHostPortDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
-							int& nGetFrameVideoPort,
-							int& nNetworkDeviceTypeMode,
-							CString& sHttpGetFrameLocation)
+void CHostPortDlg::ParseUrl(const CString& sInHost,
+							int nInPort,
+							int nInDeviceTypeMode,
+							CString& sOutGetFrameVideoHost,
+							int& nOutGetFrameVideoPort,
+							CString& sOutHttpGetFrameLocation,
+							int& nOutDeviceTypeMode)
 {
 	// Init Vars
 	int nPos, nPosEnd;
 	BOOL bUrl = FALSE;
 	int nUrlPort = 80; // default url port is always 80
-	sGetFrameVideoHost = m_sHost;
-	CString sGetFrameVideoHostLowerCase(sGetFrameVideoHost);
+	sOutGetFrameVideoHost = sInHost;
+	CString sGetFrameVideoHostLowerCase(sOutGetFrameVideoHost);
 	sGetFrameVideoHostLowerCase.MakeLower();
 
 	// Numeric IP6 with format http://[ip6%interfacenum]:port/framelocation
@@ -121,21 +124,21 @@ void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
 		bUrl = TRUE;
 
 		// Remove leading http://[ from url
-		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 8 - nPos);
+		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 8 - nPos);
 
 		// Has Port?
-		if ((nPos = sGetFrameVideoHost.Find(_T("]:"))) >= 0)
+		if ((nPos = sOutGetFrameVideoHost.Find(_T("]:"))) >= 0)
 		{
 			CString sPort;
-			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			if ((nPosEnd = sOutGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
 			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
-				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 2, nPosEnd - nPos - 2);
+				sOutGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
 			}
 			else
 			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 2, sGetFrameVideoHost.GetLength() - nPos - 2);
-				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 2, sOutGetFrameVideoHost.GetLength() - nPos - 2);
+				sOutGetFrameVideoHost.Delete(nPos, sOutGetFrameVideoHost.GetLength() - nPos);
 			}
 			sPort.TrimLeft();
 			sPort.TrimRight();
@@ -144,25 +147,25 @@ void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
 			if (nPort > 0 && nPort <= 65535) // Port 0 is Reserved
 				nUrlPort = nPort;
 		}
-		else if ((nPos = sGetFrameVideoHost.Find(_T("]"))) >= 0)
-			sGetFrameVideoHost.Delete(nPos);
+		else if ((nPos = sOutGetFrameVideoHost.Find(_T("]"))) >= 0)
+			sOutGetFrameVideoHost.Delete(nPos);
 		else
-			nPos = sGetFrameVideoHost.GetLength(); // Just in case ] is missing
+			nPos = sOutGetFrameVideoHost.GetLength(); // Just in case ] is missing
 
 		// Split
-		CString sLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-		sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
+		CString sLocation = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - nPos);
+		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Left(nPos);
 
 		// Get Location which is set as first automatic camera type detection query string
 		nPos = sLocation.Find(_T('/'));
 		if (nPos >= 0)
 		{	
-			sHttpGetFrameLocation = sLocation.Right(sLocation.GetLength() - nPos);
-			sHttpGetFrameLocation.TrimLeft();
-			sHttpGetFrameLocation.TrimRight();
+			sOutHttpGetFrameLocation = sLocation.Right(sLocation.GetLength() - nPos);
+			sOutHttpGetFrameLocation.TrimLeft();
+			sOutHttpGetFrameLocation.TrimRight();
 		}
 		else
-			sHttpGetFrameLocation = _T("/");
+			sOutHttpGetFrameLocation = _T("/");
 	}
 	// Numeric IP4 or hostname with format http://host:port/framelocation
 	else if ((nPos = sGetFrameVideoHostLowerCase.Find(_T("http://"))) >= 0)
@@ -171,21 +174,21 @@ void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
 		bUrl = TRUE;
 
 		// Remove leading http:// from url
-		sGetFrameVideoHost = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - 7 - nPos);
+		sOutGetFrameVideoHost = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - 7 - nPos);
 
 		// Has Port?
-		if ((nPos = sGetFrameVideoHost.Find(_T(":"))) >= 0)
+		if ((nPos = sOutGetFrameVideoHost.Find(_T(":"))) >= 0)
 		{
 			CString sPort;
-			if ((nPosEnd = sGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
+			if ((nPosEnd = sOutGetFrameVideoHost.Find(_T('/'), nPos)) >= 0)
 			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 1, nPosEnd - nPos - 1);
+				sOutGetFrameVideoHost.Delete(nPos, nPosEnd - nPos);
 			}
 			else
 			{
-				sPort = sGetFrameVideoHost.Mid(nPos + 1, sGetFrameVideoHost.GetLength() - nPos - 1);
-				sGetFrameVideoHost.Delete(nPos, sGetFrameVideoHost.GetLength() - nPos);
+				sPort = sOutGetFrameVideoHost.Mid(nPos + 1, sOutGetFrameVideoHost.GetLength() - nPos - 1);
+				sOutGetFrameVideoHost.Delete(nPos, sOutGetFrameVideoHost.GetLength() - nPos);
 			}
 			sPort.TrimLeft();
 			sPort.TrimRight();
@@ -196,25 +199,25 @@ void CHostPortDlg::ParseUrl(CString& sGetFrameVideoHost,
 		}
 
 		// Get Location which is set as first automatic camera type detection query string
-		nPos = sGetFrameVideoHost.Find(_T('/'));
+		nPos = sOutGetFrameVideoHost.Find(_T('/'));
 		if (nPos >= 0)
 		{	
-			sHttpGetFrameLocation = sGetFrameVideoHost.Right(sGetFrameVideoHost.GetLength() - nPos);
-			sGetFrameVideoHost = sGetFrameVideoHost.Left(nPos);
-			sHttpGetFrameLocation.TrimLeft();
-			sHttpGetFrameLocation.TrimRight();
+			sOutHttpGetFrameLocation = sOutGetFrameVideoHost.Right(sOutGetFrameVideoHost.GetLength() - nPos);
+			sOutGetFrameVideoHost = sOutGetFrameVideoHost.Left(nPos);
+			sOutHttpGetFrameLocation.TrimLeft();
+			sOutHttpGetFrameLocation.TrimRight();
 		}
 		else
-			sHttpGetFrameLocation = _T("/");
+			sOutHttpGetFrameLocation = _T("/");
 	}
 	else
-		sHttpGetFrameLocation = _T("/");
+		sOutHttpGetFrameLocation = _T("/");
 
 	// Set vars
-	sGetFrameVideoHost.TrimLeft();
-	sGetFrameVideoHost.TrimRight();
-	nGetFrameVideoPort = bUrl ? nUrlPort : m_nPort;
-	nNetworkDeviceTypeMode = bUrl ? CVideoDeviceDoc::OTHERONE_CP : m_nDeviceTypeMode;
+	sOutGetFrameVideoHost.TrimLeft();
+	sOutGetFrameVideoHost.TrimRight();
+	nOutGetFrameVideoPort = bUrl ? nUrlPort : nInPort;
+	nOutDeviceTypeMode = bUrl ? CVideoDeviceDoc::OTHERONE_CP : nInDeviceTypeMode;
 }
 
 /*
@@ -321,26 +324,33 @@ void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 
 void CHostPortDlg::OnOK() 
 {
-	SaveSettings();
+	SaveHistory(m_sHost, m_nPort, m_nDeviceTypeMode,
+				m_HostsHistory, m_PortsHistory, m_DeviceTypeModesHistory);
 	SaveCredentials();
 	CDialog::OnOK();
+}
+
+CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode)
+{
+	CString sOutGetFrameVideoHost;
+	int nOutGetFrameVideoPort;
+	CString sOutHttpGetFrameLocation;
+	int nOutDeviceTypeMode;
+	ParseUrl(sInHost, nInPort, nInDeviceTypeMode,
+			sOutGetFrameVideoHost, nOutGetFrameVideoPort,
+			sOutHttpGetFrameLocation, nOutDeviceTypeMode);
+	return CVideoDeviceDoc::GetNetworkDevicePathName(	sOutGetFrameVideoHost, nOutGetFrameVideoPort,
+														sOutHttpGetFrameLocation, nOutDeviceTypeMode);
 }
 
 void CHostPortDlg::LoadCredentials()
 {
 	// Get device path name
-	CString sGetFrameVideoHost;
-	int nGetFrameVideoPort;
-	int nNetworkDeviceTypeMode;
-	CString sHttpGetFrameLocation;
-	ParseUrl(sGetFrameVideoHost, nGetFrameVideoPort, nNetworkDeviceTypeMode, sHttpGetFrameLocation);
-	CString sDevice;
-	sDevice.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
-	sDevice.Replace(_T('\\'), _T('/')); // Registry keys cannot begin with a backslash and should not contain backslashes otherwise subkeys are created!
-	
+	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
+
 	// Load & display
-	CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevice, _T("HTTPGetFrameUsername"), _T(""));
-	CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevice, _T("HTTPGetFramePassword"), _T(""));
+	CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), _T(""));
+	CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), _T(""));
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->SetWindowText(sUsername);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
@@ -350,26 +360,21 @@ void CHostPortDlg::LoadCredentials()
 void CHostPortDlg::SaveCredentials()
 {
 	// Get device path name
-	CString sGetFrameVideoHost;
-	int nGetFrameVideoPort;
-	int nNetworkDeviceTypeMode;
-	CString sHttpGetFrameLocation;
-	ParseUrl(sGetFrameVideoHost, nGetFrameVideoPort, nNetworkDeviceTypeMode, sHttpGetFrameLocation);
-	CString sDevice;
-	sDevice.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
-	sDevice.Replace(_T('\\'), _T('/')); // Registry keys cannot begin with a backslash and should not contain backslashes otherwise subkeys are created!
-	
+	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
+
 	// Store
 	CString sText;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->GetWindowText(sText);
-	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevice, _T("HTTPGetFrameUsername"), sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), sText);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->GetWindowText(sText);
-	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevice, _T("HTTPGetFramePassword"), sText);
+	((CUImagerApp*)::AfxGetApp())->WriteSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), sText);
 }
 
-void CHostPortDlg::LoadSettings()
+void CHostPortDlg::LoadHistory(	CStringArray& HostsHistory,
+								CDWordArray& PortsHistory,
+								CDWordArray& DeviceTypeModesHistory)
 {
 	CWinApp* pApp = ::AfxGetApp();
 	CString sSection(_T("HostPortDlg"));
@@ -385,7 +390,7 @@ void CHostPortDlg::LoadSettings()
 		if (!sHost.IsEmpty())
 		{
 			// Host
-			m_HostsHistory.Add(sHost);
+			HostsHistory.Add(sHost);
 
 			// Port
 			CString sPortEntry;
@@ -393,18 +398,23 @@ void CHostPortDlg::LoadSettings()
 			dwPort = (DWORD) pApp->GetProfileInt(sSection, sPortEntry, 0xFFFFFFFF);
 			if (dwPort == 0 || dwPort > 65535) // Port 0 is Reserved
 				dwPort = DEFAULT_TCP_PORT;
-			m_PortsHistory.Add(dwPort);
+			PortsHistory.Add(dwPort);
 
 			// Device Type and Mode
 			CString sDeviceTypeModeEntry;
 			sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
 			dwDeviceTypeMode = (DWORD) pApp->GetProfileInt(sSection, sDeviceTypeModeEntry, 0);
-			m_DeviceTypeModesHistory.Add(dwDeviceTypeMode);
+			DeviceTypeModesHistory.Add(dwDeviceTypeMode);
 		}
 	}
 }
 
-void CHostPortDlg::SaveSettings()
+void CHostPortDlg::SaveHistory(	const CString& sHost,
+								int nPort,
+								int nDeviceTypeMode,
+								CStringArray& HostsHistory,
+								CDWordArray& PortsHistory,
+								CDWordArray& DeviceTypeModesHistory)
 {
 	int i;
 	CWinApp* pApp = ::AfxGetApp();
@@ -412,13 +422,13 @@ void CHostPortDlg::SaveSettings()
 
 	// Remove duplicates
 	i = 0;
-	while (i < m_HostsHistory.GetSize())
+	while (i < HostsHistory.GetSize())
 	{
-		if (m_HostsHistory[i] == m_sHost)
+		if (HostsHistory[i] == sHost)
 		{
-			m_HostsHistory.RemoveAt(i);
-			m_PortsHistory.RemoveAt(i);
-			m_DeviceTypeModesHistory.RemoveAt(i);
+			HostsHistory.RemoveAt(i);
+			PortsHistory.RemoveAt(i);
+			DeviceTypeModesHistory.RemoveAt(i);
 			i = 0; // restart to check
 		}
 		else
@@ -426,39 +436,79 @@ void CHostPortDlg::SaveSettings()
 	}
 
 	// Insert new one at the beginning
-	if (!m_sHost.IsEmpty())
+	if (!sHost.IsEmpty())
 	{
-		m_HostsHistory.InsertAt(0, m_sHost);
-		m_PortsHistory.InsertAt(0, (DWORD)m_nPort);
-		m_DeviceTypeModesHistory.InsertAt(0, (DWORD)m_nDeviceTypeMode);
+		HostsHistory.InsertAt(0, sHost);
+		PortsHistory.InsertAt(0, (DWORD)nPort);
+		DeviceTypeModesHistory.InsertAt(0, (DWORD)nDeviceTypeMode);
 	}
 
 	// Shrink to MAX_HOST_PORT_HISTORY_SIZE
-	while (m_HostsHistory.GetSize() > MAX_HOST_PORT_HISTORY_SIZE)
+	while (HostsHistory.GetSize() > MAX_HOST_PORT_HISTORY_SIZE)
 	{
-		m_HostsHistory.RemoveAt(m_HostsHistory.GetUpperBound());
-		m_PortsHistory.RemoveAt(m_PortsHistory.GetUpperBound());
-		m_DeviceTypeModesHistory.RemoveAt(m_DeviceTypeModesHistory.GetUpperBound());
+		HostsHistory.RemoveAt(HostsHistory.GetUpperBound());
+		PortsHistory.RemoveAt(PortsHistory.GetUpperBound());
+		DeviceTypeModesHistory.RemoveAt(DeviceTypeModesHistory.GetUpperBound());
 	}
 
 	// Write them
-	for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE && i < m_HostsHistory.GetSize() ; i++)
+	for (i = 0 ; i < MAX_HOST_PORT_HISTORY_SIZE ; i++)
 	{
-		// Host
 		CString sHostEntry;
 		sHostEntry.Format(_T("HostHistory%d"), i);
-		pApp->WriteProfileString(sSection, sHostEntry, m_HostsHistory[i]);
-			
-		// Port
 		CString sPortEntry;
 		sPortEntry.Format(_T("PortHistory%d"), i);
-		pApp->WriteProfileInt(sSection, sPortEntry, (int)m_PortsHistory[i]);
-
-		// Device Type and Mode
 		CString sDeviceTypeModeEntry;
 		sDeviceTypeModeEntry.Format(_T("DeviceTypeModeHistory%d"), i);
-		pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, (int)m_DeviceTypeModesHistory[i]);
+		if (i < HostsHistory.GetSize())
+		{
+			pApp->WriteProfileString(sSection, sHostEntry, HostsHistory[i]);
+			pApp->WriteProfileInt(sSection, sPortEntry, (int)PortsHistory[i]);
+			pApp->WriteProfileInt(sSection, sDeviceTypeModeEntry, (int)DeviceTypeModesHistory[i]);
+		}
+		else
+		{
+			if (::AfxGetApp()->m_pszRegistryKey)
+			{
+				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sHostEntry);
+				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sPortEntry);
+				::DeleteRegistryValue(HKEY_CURRENT_USER, CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection, sDeviceTypeModeEntry);
+			}
+			else
+			{
+				::WritePrivateProfileString(sSection, sHostEntry, NULL, ::AfxGetApp()->m_pszProfileName);
+				::WritePrivateProfileString(sSection, sPortEntry, NULL, ::AfxGetApp()->m_pszProfileName);
+				::WritePrivateProfileString(sSection, sDeviceTypeModeEntry, NULL, ::AfxGetApp()->m_pszProfileName);
+			}
+		}
 	}
+}
+
+void CHostPortDlg::DeleteHistory(const CString& sDevicePathName)
+{
+	// Load History
+	CStringArray HostsHistory;
+	CDWordArray PortsHistory;
+	CDWordArray DeviceTypeModesHistory;
+	LoadHistory(HostsHistory, PortsHistory, DeviceTypeModesHistory);
+
+	// Remove given Device Path Name
+	int i = 0;
+	while (i < HostsHistory.GetSize())
+	{
+		if (MakeDevicePathName(HostsHistory[i], PortsHistory[i], DeviceTypeModesHistory[i]) == sDevicePathName)
+		{
+			HostsHistory.RemoveAt(i);
+			PortsHistory.RemoveAt(i);
+			DeviceTypeModesHistory.RemoveAt(i);
+			i = 0; // restart to check
+		}
+		else
+			i++;
+	}
+
+	// Save History
+	SaveHistory(_T(""), 0, 0, HostsHistory, PortsHistory, DeviceTypeModesHistory);
 }
 
 #endif

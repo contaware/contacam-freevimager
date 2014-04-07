@@ -19,10 +19,14 @@ class CHostPortDlg : public CDialog
 public:
 	CHostPortDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CHostPortDlg() {;};
-	void ParseUrl(	CString& sGetFrameVideoHost,
-					int& nGetFrameVideoPort,
-					int& nNetworkDeviceTypeMode,
-					CString& sHttpGetFrameLocation);
+	static void ParseUrl(const CString& sInHost,
+						int nInPort,
+						int nInDeviceTypeMode,
+						CString& sOutGetFrameVideoHost,
+						int& nOutGetFrameVideoPort,
+						CString& sOutHttpGetFrameLocation,
+						int& nOutDeviceTypeMode);
+	static void DeleteHistory(const CString& sDevicePathName);
 
 // Returned Data
 public:
@@ -34,11 +38,19 @@ public:
 // Implementation
 protected:
 	void EnableDisableCtrls();
+	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
 	void LoadCredentials();
 	void SaveCredentials();
-	void LoadSettings();
-	void SaveSettings();
-	
+	static void LoadHistory(CStringArray& HostsHistory,
+							CDWordArray& PortsHistory,
+							CDWordArray& DeviceTypeModesHistory);
+	static void SaveHistory(const CString& sHost,
+							int nPort,
+							int nDeviceTypeMode,
+							CStringArray& HostsHistory,
+							CDWordArray& PortsHistory,
+							CDWordArray& DeviceTypeModesHistory);
+
 	CStringArray m_HostsHistory;
 	CDWordArray m_PortsHistory;
 	CDWordArray m_DeviceTypeModesHistory;

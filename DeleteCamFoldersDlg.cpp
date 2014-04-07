@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "VideoDeviceDoc.h"
+#include "HostPortDlg.h"
 #include "DeleteCamFoldersDlg.h"
 
 #ifdef _DEBUG
@@ -84,7 +85,7 @@ void CDeleteCamFoldersDlg::OnOK()
 			// Delete folder
 			::DeleteToRecycleBin(sDirName);
 			
-			// Autorun-clear and device configuration delete
+			// Clear autorun, remove network dialog history and delete device configuration
 			if (!::IsExistingDir(sDirName)) // make sure dir has been deleted
 			{
 				for (int i = 0 ; i < m_DevicePathNames.GetSize() ; i++)
@@ -94,6 +95,7 @@ void CDeleteCamFoldersDlg::OnOK()
 					if (sDirName.CompareNoCase(sRecordAutoSaveDir) == 0)
 					{
 						CVideoDeviceDoc::AutorunRemoveDevice(m_DevicePathNames[i]);
+						CHostPortDlg::DeleteHistory(m_DevicePathNames[i]);
 						if (::AfxGetApp()->m_pszRegistryKey)
 							::DeleteRegistryKey(HKEY_CURRENT_USER,	_T("Software\\") +
 																	CString(MYCOMPANY) + CString(_T("\\")) +

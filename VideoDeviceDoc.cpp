@@ -4414,20 +4414,36 @@ CString CVideoDeviceDoc::GetHostFromDevicePathName(const CString& sDevicePathNam
 	return sAddress.Left(i);
 }
 
-CString CVideoDeviceDoc::GetDevicePathName()
+CString CVideoDeviceDoc::GetNetworkDevicePathName(	const CString& sGetFrameVideoHost,
+													int nGetFrameVideoPort,
+													const CString& sHttpGetFrameLocation,
+													int nNetworkDeviceTypeMode)
 {
-	CString sDevice(_T(""));
-
-	if (m_pDxCapture)
-		sDevice = m_pDxCapture->GetDevicePath();
-	else if (m_pGetFrameNetCom)
-		sDevice.Format(_T("%s:%d:%s:%d"), m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
+	CString sDevicePathName;
+	sDevicePathName.Format(_T("%s:%d:%s:%d"), sGetFrameVideoHost, nGetFrameVideoPort, sHttpGetFrameLocation, nNetworkDeviceTypeMode);
 
 	// Registry keys cannot begin with a backslash and should
 	// not contain backslashes otherwise subkeys are created!
-	sDevice.Replace(_T('\\'), _T('/'));
+	sDevicePathName.Replace(_T('\\'), _T('/'));
 
-	return sDevice;
+	return sDevicePathName;
+}
+
+CString CVideoDeviceDoc::GetDevicePathName()
+{
+	CString sDevicePathName;
+
+	if (m_pDxCapture)
+	{
+		sDevicePathName = m_pDxCapture->GetDevicePath();
+		// Registry keys cannot begin with a backslash and should
+		// not contain backslashes otherwise subkeys are created!
+		sDevicePathName.Replace(_T('\\'), _T('/'));
+	}
+	else if (m_pGetFrameNetCom)
+		sDevicePathName = GetNetworkDevicePathName(m_sGetFrameVideoHost, m_nGetFrameVideoPort, m_HttpGetFrameLocations[0], m_nNetworkDeviceTypeMode);
+
+	return sDevicePathName;
 }
 
 CString CVideoDeviceDoc::GetAssignedDeviceName()
@@ -4444,7 +4460,7 @@ CString CVideoDeviceDoc::GetAssignedDeviceName()
 
 CString CVideoDeviceDoc::GetDeviceName()
 {
-	CString sDevice(_T(""));
+	CString sDevice;
 
 	if (m_pDxCapture)
 		sDevice = m_pDxCapture->GetDeviceName();
@@ -4657,8 +4673,7 @@ void CVideoDeviceDoc::LoadAndDeleteOldZonesSettings()
 		if (::AfxGetApp()->m_pszRegistryKey)
 		{
 			::DeleteRegistryValue(	HKEY_CURRENT_USER,
-									CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") +
-									sSection,
+									CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection,
 									sZone);
 		}
 		else
@@ -5606,10 +5621,9 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelay/*=0U*/
 BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg) 
 {
 	ASSERT(pDlg);
-	pDlg->ParseUrl(	m_sGetFrameVideoHost,
-					(int&)m_nGetFrameVideoPort,
-					(int&)m_nNetworkDeviceTypeMode,
-					m_HttpGetFrameLocations[0]);
+	CHostPortDlg::ParseUrl(	pDlg->m_sHost, pDlg->m_nPort, pDlg->m_nDeviceTypeMode,
+							m_sGetFrameVideoHost, (int&)m_nGetFrameVideoPort,
+							m_HttpGetFrameLocations[0], (int&)m_nNetworkDeviceTypeMode);
 
 	// Free if Necessary
 	if (m_pGetFrameNetCom)

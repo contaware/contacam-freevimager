@@ -768,6 +768,10 @@ public:
 	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device
 	CString GetDeviceName();													// Friendly Device Name
 	CString GetDevicePathName();												// Used For Settings, Scheduler and Autorun
+	static CString GetNetworkDevicePathName(const CString& sGetFrameVideoHost,	// GetDevicePathName() calls this for network devices
+											int nGetFrameVideoPort,
+											const CString& sHttpGetFrameLocation,
+											int nNetworkDeviceTypeMode);
 	void SetDocumentTitle();
 	CVideoDeviceView* GetView() const {return m_pView;};
 	void SetView(CVideoDeviceView* pView) {m_pView = pView;};
