@@ -849,8 +849,7 @@ public:
 	afx_msg void OnFileShrinkDirDocs();
 	afx_msg void OnFileSendmailOpenDocs();
 	afx_msg void OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI);
-	afx_msg void OnToolsAvimergeSerialAs();
-	afx_msg void OnToolsAvimergeParallelAs();
+	afx_msg void OnToolsAvimergeAs();
 	afx_msg void OnToolsTrayicon();
 	afx_msg void OnUpdateToolsTrayicon(CCmdUI* pCmdUI);
 	afx_msg void OnAppFaq();

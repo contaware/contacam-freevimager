@@ -95,8 +95,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
-	ON_COMMAND(ID_TOOLS_AVIMERGESERIAL_AS, OnToolsAvimergeSerialAs)
-	ON_COMMAND(ID_TOOLS_AVIMERGEPARALLEL_AS, OnToolsAvimergeParallelAs)
+	ON_COMMAND(ID_TOOLS_AVIMERGE_AS, OnToolsAvimergeAs)
 	ON_COMMAND(ID_TOOLS_TRAYICON, OnToolsTrayicon)
 	ON_UPDATE_COMMAND_UI(ID_TOOLS_TRAYICON, OnUpdateToolsTrayicon)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
@@ -5597,20 +5596,12 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	return TRUE;
 }
 
-void CUImagerApp::OnToolsAvimergeSerialAs() 
+void CUImagerApp::OnToolsAvimergeAs() 
 {
 	// Open Empty Video Document For Progress Display And Load Avi if Success
 	CVideoAviDoc* pDoc = (CVideoAviDoc*)(GetVideoAviDocTemplate()->OpenDocumentFile(NULL));
 	if (pDoc)
-		pDoc->StartFileMergeSerialAs();
-}
-
-void CUImagerApp::OnToolsAvimergeParallelAs() 
-{
-	// Open Empty Video Document For Progress Display And Load Avi if Success
-	CVideoAviDoc* pDoc = (CVideoAviDoc*)(GetVideoAviDocTemplate()->OpenDocumentFile(NULL));
-	if (pDoc)
-		pDoc->StartFileMergeParallelAs();
+		pDoc->StartFileMergeAs();
 }
 
 void CUImagerApp::OnToolsViewLogfile() 

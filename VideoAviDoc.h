@@ -325,15 +325,10 @@ public:
 			double dAudioPercentOffset;
 			double dAudioPercentSize;
 	};
-	class CFileMergeSerialAs : public CFunct
+	class CFileMergeAs : public CFunct
 	{
 		public:
-			virtual BOOL Do() {return m_pDoc->FileMergeAs(TRUE);};
-	};
-	class CFileMergeParallelAs : public CFunct
-	{
-		public:
-			virtual BOOL Do() {return m_pDoc->FileMergeAs(FALSE);};
+			virtual BOOL Do() {return m_pDoc->FileMergeAs();};
 	};
 	class CShrinkDocTo : public CFunct
 	{
@@ -421,9 +416,8 @@ public:
 	void ResetPercentDone();
 	void StartShrinkDocTo(CString sOutFileName);
 	BOOL ShrinkDocTo(CShrinkDocTo* pShrinkDocTo);
-	void StartFileMergeSerialAs();
-	void StartFileMergeParallelAs();
-	BOOL FileMergeAs(BOOL bSerial);
+	void StartFileMergeAs();
+	BOOL FileMergeAs();
 
 	// Save
 	BOOL Save(BOOL bNoReload = FALSE);			// NoReload is set only if Saving and Closing,
@@ -639,27 +633,22 @@ protected:
 						bool* pbAudioStreamsSave,
 						bool* pbAudioStreamsChange);
 
-	// Merge Functions
-	BOOL AVIFileMergeParallelAVCODEC(	CString sSaveFileName,
-										CSortableStringArray* pAviFileNames,
-										CWnd* pWnd,
-										CWorkerThread* pThread,
-										bool bShowMessageBoxOnError);
+	// Merge Function
 	// Return Values:
 	// -1: Error
 	// 0 : Dlg Canceled
 	// 1 : Ok
-	int AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
-									CSortableStringArray* pAviFileNames,
-									DWORD& dwVideoCompressorFourCC,
-									int& nVideoCompressorDataRate,
-									int& nVideoCompressorKeyframesRate,
-									float& fVideoCompressorQuality,
-									int& nVideoCompressorQualityBitrate,
-									LPWAVEFORMATEX pAudioCompressorWaveFormat,
-									CWnd* pWnd,
-									CWorkerThread* pThread,
-									bool bShowMessageBoxOnError);
+	int AVIFileMergeAVCODEC(CString sSaveFileName,
+							CSortableStringArray* pAviFileNames,
+							DWORD& dwVideoCompressorFourCC,
+							int& nVideoCompressorDataRate,
+							int& nVideoCompressorKeyframesRate,
+							float& fVideoCompressorQuality,
+							int& nVideoCompressorQualityBitrate,
+							LPWAVEFORMATEX pAudioCompressorWaveFormat,
+							CWnd* pWnd,
+							CWorkerThread* pThread,
+							bool bShowMessageBoxOnError);
 
 // Protected Variables
 protected:
@@ -676,8 +665,7 @@ protected:
 	// Processing Classes
 	CSaveAs m_SaveAsProcessing;
 	CExtractframes m_ExtractframesProcessing;
-	CFileMergeSerialAs m_FileMergeSerialAsProcessing;
-	CFileMergeParallelAs m_FileMergeParallelAsProcessing;
+	CFileMergeAs m_FileMergeAsProcessing;
 	CShrinkDocTo m_ShrinkDocToProcessing;
 
 // Overrides

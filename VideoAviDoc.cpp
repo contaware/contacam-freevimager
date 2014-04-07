@@ -2218,8 +2218,7 @@ CVideoAviDoc::CVideoAviDoc()
 	m_ProcessingThread.SetDoc(this);
 	m_SaveAsProcessing.SetDoc(this);
 	m_ExtractframesProcessing.SetDoc(this);
-	m_FileMergeSerialAsProcessing.SetDoc(this);
-	m_FileMergeParallelAsProcessing.SetDoc(this);
+	m_FileMergeAsProcessing.SetDoc(this);
 	m_ShrinkDocToProcessing.SetDoc(this);
 	m_sProcessingError = _T("");
 
@@ -5840,21 +5839,14 @@ void CVideoAviDoc::UpdateAviInfoDlg()
 		m_pAviInfoDlg->UpdateDisplay();
 }
 
-void CVideoAviDoc::StartFileMergeSerialAs() 
+void CVideoAviDoc::StartFileMergeAs() 
 {
 	ResetPercentDone();
-	m_ProcessingThread.SetProcessingFunct(&m_FileMergeSerialAsProcessing);
+	m_ProcessingThread.SetProcessingFunct(&m_FileMergeAsProcessing);
 	m_ProcessingThread.Start();
 }
 
-void CVideoAviDoc::StartFileMergeParallelAs() 
-{	
-	ResetPercentDone();
-	m_ProcessingThread.SetProcessingFunct(&m_FileMergeParallelAsProcessing);
-	m_ProcessingThread.Start();
-}
-
-BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial) 
+BOOL CVideoAviDoc::FileMergeAs() 
 {
 	// Display the Open Dialog
 	TCHAR* OpenFileNames = new TCHAR[MAX_FILEDLG_PATH];
@@ -5923,32 +5915,17 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 	}
 
 	// Merge
-	int ret;
-	if (bSerial)
-	{
-		ret = AVIFileMergeSerialAVCODEC(SaveFileName,
-										&AviFileNames,
-										m_dwVideoCompressorFourCC,
-										m_nVideoCompressorDataRate,
-										m_nVideoCompressorKeyframesRate,
-										m_fVideoCompressorQuality,
-										m_nVideoCompressorQualityBitrate,
-										m_pAudioCompressorWaveFormat,
-										GetView(),
-										&m_ProcessingThread,
-										false);
-	}
-	else
-	{
-		if (AVIFileMergeParallelAVCODEC(	SaveFileName,
-											&AviFileNames,
-											GetView(),
-											&m_ProcessingThread,
-											false))
-			ret = 1;
-		else
-			ret = -1;
-	}
+	int ret = AVIFileMergeAVCODEC(	SaveFileName,
+									&AviFileNames,
+									m_dwVideoCompressorFourCC,
+									m_nVideoCompressorDataRate,
+									m_nVideoCompressorKeyframesRate,
+									m_fVideoCompressorQuality,
+									m_nVideoCompressorQualityBitrate,
+									m_pAudioCompressorWaveFormat,
+									GetView(),
+									&m_ProcessingThread,
+									false);
 
 	// Load Merged Avi
 	if (ret == 1)		// Ok
@@ -5982,278 +5959,21 @@ BOOL CVideoAviDoc::FileMergeAs(BOOL bSerial)
 	}
 }
 
-BOOL CVideoAviDoc::AVIFileMergeParallelAVCODEC(	CString sSaveFileName,
-												CSortableStringArray* pAviFileNames,
-												CWnd* pWnd,
-												CWorkerThread* pThread,
-												bool bShowMessageBoxOnError) 
-{
-	// Check
-	if (!pAviFileNames)
-		return FALSE;
-
-	BOOL res = TRUE;
-	BOOL bFirst = TRUE;
-	CAVIPlay::CAVIVideoStream* pSrcVideoStream = NULL;
-	CAVIPlay::CAVIAudioStream* pSrcAudioStream = NULL;
-	DWORD dwVideoStreamNum;
-	DWORD dwAudioStreamNum;
-	BOOL bVideoAvailable = TRUE;
-	BOOL bAudioAvailable = TRUE;
-	DWORD dwVideoFrame = 0;
-	DWORD dwVideoRawChunkPos[MAX_VIDEO_STREAMS];
-	DWORD dwAudioRawChunkPos[MAX_AUDIO_STREAMS];
-	memset(dwVideoRawChunkPos, 0, MAX_VIDEO_STREAMS * sizeof(DWORD));
-	memset(dwAudioRawChunkPos, 0, MAX_AUDIO_STREAMS * sizeof(DWORD));
-	DWORD dwSrcBufSizeUsed = 0;
-	DWORD dwSrcBufSize = 0;
-	LPBYTE pSrcBuf = NULL;
-	CAVRec* pAVRec = NULL;
-	double dFrameRate = 0.0;
-	double dElapsedTime = 0.0;
-	DWORD dwTotalFrames = 0;
-	int nVideoPercent = 0;
-	int nPrevVideoPercent = -1;
-	DWORD dwTotalAudioChunks = 0;
-	int nCurrentAudioChunk = -1;
-	int nAudioPercent = 0;
-	int nPrevAudioPercent = -1;
-	const bool bInterleave = false; // Already better done in this function for AVI, do not enable!
-	int i;
-	CVideoAviDoc::AVIPLAYARRAY AVIPlayArray;
-	CAVIPlay::VIDEOSTREAMARRAY VideoStreams;
-	CAVIPlay::AUDIOSTREAMARRAY AudioStreams;
-	
-	// AVRec
-	pAVRec = new CAVRec;
-	if (!pAVRec)
-		goto error;
-	if (!pAVRec->Init(sSaveFileName))
-		goto error;
-
-	// Set Info
-	if (!pAVRec->SetInfo(::GetShortFileNameNoExt(sSaveFileName), APPNAME_NOEXT, MYCOMPANY_WEB))
-		goto error;
-
-	// Loop through all input files
-	for (i = 0 ; i < pAviFileNames->GetSize() ; i++)
-	{
-		// Open AVI
-		CAVIPlay* pAVIPlay = new CAVIPlay;
-		if (!pAVIPlay)
-			goto error;
-		pAVIPlay->SetShowMessageBoxOnError(bShowMessageBoxOnError);
-		if (!pAVIPlay->Open(pAviFileNames->ElementAt(i)))
-		{
-			delete pAVIPlay;
-			goto error;
-		}
-		AVIPlayArray.Add(pAVIPlay);
-
-		// Src Buffer Size
-		if (pAVIPlay->GetMaxChunkSize() > dwSrcBufSize)
-			dwSrcBufSize = pAVIPlay->GetMaxChunkSize();
-	
-		// Add Video Stream(s)
-		for (dwVideoStreamNum = 0 ; dwVideoStreamNum < pAVIPlay->GetVideoStreamsCount() ; dwVideoStreamNum++)
-		{
-			pSrcVideoStream = pAVIPlay->GetVideoStream(dwVideoStreamNum);
-			if (pSrcVideoStream)
-			{
-				// Open Input
-				pSrcVideoStream->OpenDecompression(false);	// This changes BI_RGB16 & BI_BGR16 to BI_BITFIELDS
-															// BI_RGB15 & BI_BGR15 to BI_RGB!
-				if (pAVRec->AddRawVideoStream(	pSrcVideoStream->GetFormat(true),		// Video Format
-												pSrcVideoStream->GetFormatSize(true),	// Video Format Size
-												pSrcVideoStream->GetRate(),				// Set in avi strh
-												pSrcVideoStream->GetScale()) < 0)		// Set in avi strh
-					goto error;
-				VideoStreams.Add(pSrcVideoStream);
-			}
-		}
-		
-		// Add Audio Stream(s)
-		for (dwAudioStreamNum = 0 ; dwAudioStreamNum < pAVIPlay->GetAudioStreamsCount() ; dwAudioStreamNum++)
-		{
-			pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
-			if (pSrcAudioStream)
-			{
-				// Open Input, necessary for raw copy because
-				// m_nVBRSamplesPerChunk is calculated when opening
-				// the decompressor. m_nVBRSamplesPerChunk is used by
-				// SampleToChunk() for VBR audio.
-				pSrcAudioStream->OpenDecompression();
-				if (pAVRec->AddRawAudioStream(	pSrcAudioStream->GetFormat(true),		// Wave Format
-												pSrcAudioStream->GetFormatSize(true),	// Wave Format Size
-												pSrcAudioStream->GetHdr()->dwSampleSize,// Set in avi strh
-												pSrcAudioStream->GetRate(),				// Set in avi strh
-												pSrcAudioStream->GetScale()) < 0)		// Set in avi strh
-					goto error;
-				AudioStreams.Add(pSrcAudioStream);
-			}
-		}
-	}
-
-	// Allocate Src Buffer
-	pSrcBuf = new BYTE[dwSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
-	if (!pSrcBuf)
-		goto error;
-
-	// Open AVRec
-	if (!pAVRec->Open())
-		goto error;
-	
-	// Add data to output file
-	while (bVideoAvailable || bAudioAvailable)
-	{
-		// Exit?
-		if (pThread->DoExit())
-			goto error;
-
-		// Reset available flags
-		bVideoAvailable = FALSE;
-		bAudioAvailable = FALSE;
-
-		// Add Video
-		for (dwVideoStreamNum = 0 ; dwVideoStreamNum < (DWORD)VideoStreams.GetSize() ; dwVideoStreamNum++)
-		{
-			pSrcVideoStream = VideoStreams.GetAt(dwVideoStreamNum);
-			if (pSrcVideoStream)
-			{
-				dwSrcBufSizeUsed = dwSrcBufSize;
-				if (pSrcVideoStream->GetChunkData(	dwVideoRawChunkPos[dwVideoStreamNum],
-													pSrcBuf,
-													&dwSrcBufSizeUsed))
-				{
-					bVideoAvailable = TRUE;
-					pAVRec->AddRawVideoPacket(	pAVRec->VideoStreamNumToStreamNum(dwVideoStreamNum),
-												dwSrcBufSizeUsed,
-												pSrcBuf,
-												pSrcVideoStream->IsKeyFrame(dwVideoRawChunkPos[dwVideoStreamNum]),
-												bInterleave);
-					dwVideoRawChunkPos[dwVideoStreamNum]++;
-				}
-
-				// Init Vars
-				if (dwTotalFrames == 0)
-					dwTotalFrames = pSrcVideoStream->GetTotalFrames();
-				if (dFrameRate == 0.0)
-					dFrameRate = pSrcVideoStream->GetFrameRate();
-			}
-		}
-
-		// Set Elapsed Time
-		if (dFrameRate > 0.0)
-			dElapsedTime += 1.0 / dFrameRate;
-
-		// Add Audio
-		for (dwAudioStreamNum = 0 ; dwAudioStreamNum < (DWORD)AudioStreams.GetSize() ; dwAudioStreamNum++)
-		{
-			pSrcAudioStream = AudioStreams.GetAt(dwAudioStreamNum);
-			if (pSrcAudioStream)
-			{
-				LONGLONG llSampleNum = (LONGLONG)(dElapsedTime * pSrcAudioStream->GetSampleRate(false));
-				if (llSampleNum < 0)
-					llSampleNum = 0;
-				while (!bVideoAvailable ||
-					((int)pSrcAudioStream->SampleToChunk(llSampleNum) >= dwAudioRawChunkPos[dwAudioStreamNum]))
-				{
-					dwSrcBufSizeUsed = dwSrcBufSize;
-					if (pSrcAudioStream->GetChunkData(	dwAudioRawChunkPos[dwAudioStreamNum],
-														pSrcBuf,
-														&dwSrcBufSizeUsed))
-					{
-						bAudioAvailable = TRUE;
-						pAVRec->AddRawAudioPacket(	pAVRec->AudioStreamNumToStreamNum(dwAudioStreamNum),
-													dwSrcBufSizeUsed,
-													pSrcBuf,
-													bInterleave);
-						dwAudioRawChunkPos[dwAudioStreamNum]++;
-						if (nCurrentAudioChunk < 0)
-							nCurrentAudioChunk = dwAudioRawChunkPos[dwAudioStreamNum];
-					}
-					else
-						break;
-					if (!bVideoAvailable) // Interleave possible multiple audio streams
-						break;
-				}
-
-				// Init Var
-				if (dwTotalAudioChunks == 0)
-					dwTotalAudioChunks = pSrcAudioStream->GetTotalChunks();
-			}
-		}
-		bFirst = FALSE;
-
-		// Video Progress
-		dwVideoFrame++;
-		if (dwTotalFrames)
-		{	
-			nVideoPercent = 100 * dwVideoFrame / dwTotalFrames;	
-			if (nVideoPercent >= 99)
-				nVideoPercent = 100;
-			if (nVideoPercent > nPrevVideoPercent)
-			{
-				if (pWnd)
-					::PostMessage(pWnd->GetSafeHwnd(), WM_AVIFILE_PROGRESS, (WPARAM)streamtypeVIDEO, (LPARAM)nVideoPercent);	
-				nPrevVideoPercent = nVideoPercent;
-			}
-		}
-
-		// Audio Progress
-		if (dwTotalAudioChunks && nCurrentAudioChunk >= 0)
-		{
-			nAudioPercent = 100 * nCurrentAudioChunk / dwTotalAudioChunks;
-			if (nAudioPercent >= 99)
-				nAudioPercent = 100;
-			if (nAudioPercent > nPrevAudioPercent)
-			{
-				if (pWnd)
-					::PostMessage(pWnd->GetSafeHwnd(), WM_AVIFILE_PROGRESS, (WPARAM)streamtypeAUDIO, (LPARAM)nAudioPercent);	
-				nPrevAudioPercent = nAudioPercent;
-			}
-			nCurrentAudioChunk = -1;
-		}
-	}
-
-	goto free;
-
-error:
-	res = FALSE;
-
-free:
-	for (i = 0 ; i < AVIPlayArray.GetSize() ; i++)
-	{
-		if (AVIPlayArray[i])
-			delete AVIPlayArray[i];
-	}
-	if (pSrcBuf)
-		delete [] pSrcBuf;
-	if (pAVRec)
-	{
-		if (!pAVRec->Close())
-			res = FALSE;
-		delete pAVRec;
-	}
-
-	return res;
-}
-
 // Return Values:
 // -1: Error
 // 0 : Dlg Canceled
 // 1 : Ok
-int CVideoAviDoc::AVIFileMergeSerialAVCODEC(	CString sSaveFileName,
-												CSortableStringArray* pAviFileNames,
-												DWORD& dwVideoCompressorFourCC,
-												int& nVideoCompressorDataRate,
-												int& nVideoCompressorKeyframesRate,
-												float& fVideoCompressorQuality,
-												int& nVideoCompressorQualityBitrate,
-												LPWAVEFORMATEX pAudioCompressorWaveFormat,
-												CWnd* pWnd,
-												CWorkerThread* pThread,
-												bool bShowMessageBoxOnError) 
+int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
+										CSortableStringArray* pAviFileNames,
+										DWORD& dwVideoCompressorFourCC,
+										int& nVideoCompressorDataRate,
+										int& nVideoCompressorKeyframesRate,
+										float& fVideoCompressorQuality,
+										int& nVideoCompressorQualityBitrate,
+										LPWAVEFORMATEX pAudioCompressorWaveFormat,
+										CWnd* pWnd,
+										CWorkerThread* pThread,
+										bool bShowMessageBoxOnError)
 {
 	// Check
 	if (!pAviFileNames || pAviFileNames->GetSize() <= 0)
