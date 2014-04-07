@@ -257,7 +257,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<a class=\"back\" href=\"$prevrequesturi\" onclick=\"top.window.name = '" . $_GET["$prevkey"] . "';\">&lt;</a>&nbsp;\n";
+		echo "<a class=\"back\" href=\"$prevrequesturi\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "';\">&lt;</a>&nbsp;\n";
 	}
 	if (isset($_GET['backuri']))
 		echo "<a class=\"back\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>\n";
@@ -266,7 +266,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"top.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
+		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
 	}
 	echo "</div>\n";
 }

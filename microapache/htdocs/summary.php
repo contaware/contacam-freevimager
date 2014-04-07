@@ -60,14 +60,12 @@ if (isset($_GET['pageoffset']))	{// Thumbs offset
 ?>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
-// Replace all 'top' with 'parent' if we are iframed from another server (different domain).
-// For security reasons in this special case we are not allowed to access the top window name.
 function changeStyle(id) {
-	if (top.window.name != '' && document.getElementById(top.window.name))
-		document.getElementById(top.window.name).className = 'notselected';
+	if (parent.window.name != '' && document.getElementById(parent.window.name))
+		document.getElementById(parent.window.name).className = 'notselected';
 	if (document.getElementById(id))
 		document.getElementById(id).className = 'lastselected';
-	top.window.name = id; // this var survives between pages!
+	parent.window.name = id; // this var survives between pages!
 }
 //]]>
 </script>
@@ -375,10 +373,8 @@ else {
 ?>
 <script language="JavaScript" type="text/javascript">
 //<![CDATA[
-// Replace all 'top' with 'parent' if we are iframed from another server (different domain).
-// For security reasons in this special case we are not allowed to access the top window name.
-if (top.window.name != '' && document.getElementById(top.window.name))
-	document.getElementById(top.window.name).className = 'lastselected';
+if (parent.window.name != '' && document.getElementById(parent.window.name))
+	document.getElementById(parent.window.name).className = 'lastselected';
 //]]>
 </script>
 </body>
