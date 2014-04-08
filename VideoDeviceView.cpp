@@ -25,6 +25,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_RBUTTONDOWN()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_MBUTTONDOWN()
+	ON_WM_TIMER()
 	ON_WM_KEYDOWN()
 	ON_WM_SETCURSOR()
 	ON_WM_MOUSEMOVE()
@@ -961,6 +962,33 @@ void CVideoDeviceView::OnMButtonDown(UINT nFlags, CPoint point)
 {
 	EnableCursor();
 	CUImagerView::OnMButtonDown(nFlags, point);
+}
+
+void CVideoDeviceView::OnTimer(UINT nIDEvent) 
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	switch (nIDEvent)
+	{
+		case ID_TIMER_RELOAD_SETTINGS :
+		{
+			DWORD dwVideoProcessorMode = (DWORD) ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), NO_DETECTOR);
+			if (dwVideoProcessorMode != pDoc->m_dwVideoProcessorMode)
+			{
+				pDoc->m_dwVideoProcessorMode = dwVideoProcessorMode;
+				if (pDoc->GetFrame() && pDoc->GetFrame()->GetToolBar())
+					((CVideoDeviceToolBar*)(pDoc->GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(pDoc->m_dwVideoProcessorMode);
+				if (pDoc->m_pMovementDetectionPage)
+					pDoc->m_pMovementDetectionPage->UpdateDetectionState();
+			}
+			break;
+		}
+		default:
+			break;
+	}
+
+	CUImagerView::OnTimer(nIDEvent);
 }
 
 void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags) 

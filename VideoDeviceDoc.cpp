@@ -3617,6 +3617,12 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 			sMsg.Format(_T("%s starting\n"), m_pDoc->GetAssignedDeviceName());
 			TRACE(sMsg);
 			::LogLine(sMsg);
+
+			// Init settings reload timer
+			::SetTimer(	m_pDoc->GetView()->GetSafeHwnd(),
+						ID_TIMER_RELOAD_SETTINGS,
+						ONESEC_POLL_TIMER_MS, NULL);
+			
 			break;
 		}
 		else if (m_pDoc->GetView())

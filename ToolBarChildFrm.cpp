@@ -327,6 +327,7 @@ void CDetComboBox::OnSelEndOk()
 		CVideoDeviceDoc* pDoc = pView->GetDocument();
 		ASSERT_VALID(pDoc);
 		pDoc->m_dwVideoProcessorMode = Index;
+		::AfxGetApp()->WriteProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), pDoc->m_dwVideoProcessorMode);
 		if (pDoc->m_pMovementDetectionPage)
 			pDoc->m_pMovementDetectionPage->UpdateDetectionState();
 	}
@@ -1481,6 +1482,9 @@ void CVideoDeviceChildFrame::OnClose()
 									ML_STRING(1566, "Closing ") + pDoc->GetAssignedDeviceName() + _T("..."),
 									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
 			}
+
+			// Kill Timer
+			pView->KillTimer(ID_TIMER_RELOAD_SETTINGS);
 
 			// Hide detection zones
 			if (pDoc->m_bShowEditDetectionZones)

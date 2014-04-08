@@ -42,12 +42,13 @@ extern "C"
 #define ID_TIMER_MCIAUDIO							9
 #define ID_TIMER_PROGRESS							10
 #define ID_TIMER_AVIPLAYSLIDER						11
+#define ID_TIMER_ABOUTDLG							12
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_GENERALDLG  						12
-#define ID_TIMER_ONESEC_POLL						13
-#define ID_TIMER_ASSISTANTDLG						14
+#define ID_TIMER_GENERALDLG  						13
+#define ID_TIMER_ONESEC_POLL						14
+#define ID_TIMER_ASSISTANTDLG						15
+#define ID_TIMER_RELOAD_SETTINGS					16
 #endif
-#define ID_TIMER_ABOUTDLG							15
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms

@@ -834,6 +834,7 @@ void CAssistantDlg::ApplySettings()
 	{
 		bDoMovDet = TRUE;
 		m_pDoc->m_dwVideoProcessorMode &= ~SOFTWARE_MOVEMENT_DETECTOR;
+		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
 	else
 		bDoMovDet = FALSE;
@@ -1148,7 +1149,10 @@ void CAssistantDlg::ApplySettings()
 
 	// Do mov. det.?
 	if (bDoMovDet)
+	{
 		m_pDoc->m_dwVideoProcessorMode |= SOFTWARE_MOVEMENT_DETECTOR;
+		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
+	}
 	if (m_pDoc->GetFrame() && m_pDoc->GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(m_pDoc->GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_pDoc->m_dwVideoProcessorMode);
 	if (m_pDoc->m_pMovementDetectionPage)
