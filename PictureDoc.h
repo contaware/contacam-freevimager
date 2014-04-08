@@ -917,7 +917,9 @@ protected:
 	afx_msg void OnUpdatePlayStopAnimation(CCmdUI* pCmdUI);
 	afx_msg void OnEditCopy();
 	afx_msg void OnViewNextPageFrame();
+	afx_msg void OnUpdateViewNextPageFrame(CCmdUI* pCmdUI);
 	afx_msg void OnViewPreviousPageFrame();
+	afx_msg void OnUpdateViewPreviousPageFrame(CCmdUI* pCmdUI);
 	afx_msg void OnEditTo1bitDitherErrDiff();
 	afx_msg void OnUpdateEditTo1bitDitherErrDiff(CCmdUI* pCmdUI);
 	afx_msg void OnEditTo8bits();

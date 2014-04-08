@@ -142,12 +142,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_lSessionDisconnectedLockedCount = 0;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
-	m_sPlayGifMenuItem = _T("");
-	m_sStopGifMenuItem = _T("");
-	m_sNextPageFrameMenuItem = _T("");
-	m_sPrevPageFrameMenuItem = _T("");
-	m_hJPEGAdvancedMenu = NULL;
-	m_sJPEGAdvancedMenuItem = _T("");
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
@@ -2126,7 +2120,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 	CMenu* pSubMenu = pMainMenu ? pMainMenu->GetSubMenu(nIndex) : NULL;
 
 	// Only handle direct popups of the main menu
-	int i;
 	int idx = (int)nIndex;
 	if (pMainMenu && pSubMenu && pPopupMenu && !bSysMenu &&
 		pSubMenu->GetSafeHmenu() == pPopupMenu->GetSafeHmenu() && idx >= 0)
@@ -2147,132 +2140,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 				pMainMenu->GetMenuString(0, sTest, MF_BYPOSITION);
 				if (sTest == _T("")) // In maximized state the first position is the system icon with no string
 					idx--;
-
-				// Is it a Picture Doc?
-				if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc))) 
-				{
-					if (idx == ((CPictureDoc*)pDoc)->m_nPlayMenuPos)
-					{
-						// Remove the menu items if the file is not a animated gif
-						if (!((CPictureDoc*)pDoc)->m_GifAnimationThread.IsAlive())
-						{
-							// Only remove if not already done!
-							if (m_sPlayGifMenuItem == _T("") &&
-								m_sStopGifMenuItem == _T(""))
-							{
-								// Separator Pos
-								i = (int)pPopupMenu->GetMenuItemCount() - 3;
-
-								// Store Menu Strings
-								pPopupMenu->GetMenuString(i+1, m_sPlayGifMenuItem, MF_BYPOSITION);
-								pPopupMenu->GetMenuString(i+2, m_sStopGifMenuItem, MF_BYPOSITION);
-
-								// Remove
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-							}
-						}
-						// Restore the menu items if the file is a animated gif
-						else
-						{
-							// Only restore if not already done!
-							if (m_sPlayGifMenuItem != _T("") &&
-								m_sStopGifMenuItem != _T(""))
-							{
-								// Append
-								pPopupMenu->AppendMenu(MF_SEPARATOR);
-								if (((CPictureDoc*)pDoc)->m_GifAnimationThread.IsRunning())
-								{
-									pPopupMenu->AppendMenu(MF_STRING | MF_CHECKED, ID_PLAY_ANIMATION, m_sPlayGifMenuItem);
-									pPopupMenu->AppendMenu(MF_STRING | MF_UNCHECKED, ID_STOP_ANIMATION, m_sStopGifMenuItem);
-								}
-								else
-								{
-									pPopupMenu->AppendMenu(MF_STRING | MF_UNCHECKED, ID_PLAY_ANIMATION, m_sPlayGifMenuItem);
-									pPopupMenu->AppendMenu(MF_STRING | MF_CHECKED, ID_STOP_ANIMATION, m_sStopGifMenuItem);
-								}
-								m_sPlayGifMenuItem = _T("");
-								m_sStopGifMenuItem = _T("");
-							}
-						}
-					}
-					else if (idx == ((CPictureDoc*)pDoc)->m_nViewMenuPos)
-					{
-						// Remove the menu items if the file is not a animated gif
-						// and not a multipage tiff
-						if (!((CPictureDoc*)pDoc)->m_GifAnimationThread.IsAlive() &&
-							!((CPictureDoc*)pDoc)->IsMultiPageTIFF())
-						{
-							// Only remove if not already done!
-							if (m_sNextPageFrameMenuItem == _T("") &&
-								m_sPrevPageFrameMenuItem == _T(""))
-							{
-								// Separator Pos
-								i = (int)pPopupMenu->GetMenuItemCount() - 3;
-
-								// Store Menu Strings
-								pPopupMenu->GetMenuString(i+1, m_sNextPageFrameMenuItem, MF_BYPOSITION);
-								pPopupMenu->GetMenuString(i+2, m_sPrevPageFrameMenuItem, MF_BYPOSITION);
-
-								// Remove
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-							}
-						}
-						// Restore the menu items if the file is a animated gif
-						// or a multipage tiff
-						else
-						{
-							// Only restore if not already done!
-							if (m_sNextPageFrameMenuItem != _T("") &&
-								m_sPrevPageFrameMenuItem != _T(""))
-							{
-								// Append
-								pPopupMenu->AppendMenu(MF_SEPARATOR);
-								pPopupMenu->AppendMenu(MF_STRING, ID_VIEW_NEXT_PAGE_FRAME, m_sNextPageFrameMenuItem);
-								m_sNextPageFrameMenuItem = _T("");
-								pPopupMenu->AppendMenu(MF_STRING, ID_VIEW_PREVIOUS_PAGE_FRAME, m_sPrevPageFrameMenuItem);
-								m_sPrevPageFrameMenuItem = _T("");
-							}
-						}
-					}
-					else if (idx == ((CPictureDoc*)pDoc)->m_nEditMenuPos)
-					{
-						// Restore the JPEG Advanced menu item if the file is a jpeg
-						if (::IsJPEG(((CPictureDoc*)pDoc)->m_sFileName))
-						{
-							// Only restore if not already done!	
-							if (m_hJPEGAdvancedMenu)
-							{
-								// Append
-								pPopupMenu->AppendMenu(MF_POPUP, (UINT)m_hJPEGAdvancedMenu, m_sJPEGAdvancedMenuItem);
-								m_hJPEGAdvancedMenu = NULL;
-								m_sJPEGAdvancedMenuItem = _T("");
-							}
-						}
-						// Remove the JPEG Advanced menu item if the file is not a jpeg
-						else
-						{
-							// Only remove if not already done!
-							if (m_hJPEGAdvancedMenu == NULL)
-							{
-								// JPEG Advanced Menu Pos
-								i = (int)pPopupMenu->GetMenuItemCount() - 1;
-
-								// Store Menu Strings
-								pPopupMenu->GetMenuString(i, m_sJPEGAdvancedMenuItem, MF_BYPOSITION);
-
-								// Store Popup Menu Handle
-								m_hJPEGAdvancedMenu = pPopupMenu->GetSubMenu(i)->GetSafeHmenu();
-
-								// Remove (this will not delete the SubMenu!)
-								pPopupMenu->RemoveMenu(i, MF_BYPOSITION);
-							}
-						}
-					}
-				}
 
 				// Populate Help or Capture menus
 				if (pDoc->IsKindOf(RUNTIME_CLASS(CUImagerDoc)))

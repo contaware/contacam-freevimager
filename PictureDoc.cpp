@@ -119,7 +119,9 @@ BEGIN_MESSAGE_MAP(CPictureDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_STOP_ANIMATION, OnUpdatePlayStopAnimation)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_VIEW_NEXT_PAGE_FRAME, OnViewNextPageFrame)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_NEXT_PAGE_FRAME, OnUpdateViewNextPageFrame)
 	ON_COMMAND(ID_VIEW_PREVIOUS_PAGE_FRAME, OnViewPreviousPageFrame)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_PREVIOUS_PAGE_FRAME, OnUpdateViewPreviousPageFrame)
 	ON_COMMAND(ID_EDIT_TO1BIT_DITHER_ERRDIFF, OnEditTo1bitDitherErrDiff)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_TO1BIT_DITHER_ERRDIFF, OnUpdateEditTo1bitDitherErrDiff)
 	ON_COMMAND(ID_EDIT_TO8BITS, OnEditTo8bits)
@@ -10252,6 +10254,11 @@ void CPictureDoc::OnViewNextPageFrame()
 	}
 }
 
+void CPictureDoc::OnUpdateViewNextPageFrame(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(IsMultiPageTIFF() || m_GifAnimationThread.IsAlive());
+}
+
 BOOL CPictureDoc::ViewPreviousPageFrame() 
 {
 	if (::GetFileExt(m_sFileName) == _T(".gif"))
@@ -10304,6 +10311,11 @@ void CPictureDoc::OnViewPreviousPageFrame()
 		}
 		ViewPreviousPageFrame();
 	}
+}
+
+void CPictureDoc::OnUpdateViewPreviousPageFrame(CCmdUI* pCmdUI) 
+{
+	pCmdUI->Enable(IsMultiPageTIFF() || m_GifAnimationThread.IsAlive());
 }
 
 BOOL CPictureDoc::ViewFirstPageFrame() 

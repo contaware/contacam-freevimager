@@ -192,15 +192,6 @@ public:
 	// IMAPI2 Burn dialog
 	CIMAPI2Dlg* m_pIMAPI2Dlg;
 
-	// Menu Item Strings that have been deleted,
-	// store them here for later restore
-	CString m_sPlayGifMenuItem;
-	CString m_sStopGifMenuItem;
-	CString m_sNextPageFrameMenuItem;
-	CString m_sPrevPageFrameMenuItem;
-	HMENU m_hJPEGAdvancedMenu;
-	CString m_sJPEGAdvancedMenuItem;
-
 	// Tray Icon
 	CTrayIcon m_TrayIcon;
 
