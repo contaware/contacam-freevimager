@@ -249,9 +249,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Help"
@@ -561,9 +559,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -662,9 +658,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -895,9 +889,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -1019,9 +1011,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -1312,9 +1302,7 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
-        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
     END
     POPUP "&Window"
@@ -5171,7 +5159,7 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_WEB             "Open web browser\nBrowse"
-    ID_TOOLS_VIEW_LOGFILE   "View the application log file with the default text editor\nView Application Log"
+    ID_TOOLS_VIEW_LOGFILE   "View the log file with the default text editor\nView Log File"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
