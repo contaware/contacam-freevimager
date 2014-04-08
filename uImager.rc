@@ -91,6 +91,7 @@ BEGIN
     BUTTON      ID_FILE_SAVE_AS
     BUTTON      ID_FILE_SAVE_AS_PDF
     SEPARATOR
+    BUTTON      ID_EDIT_DELETE
     BUTTON      ID_EDIT_COPY
     BUTTON      ID_EDIT_PASTE
     SEPARATOR
@@ -190,6 +191,8 @@ BEGIN
     SEPARATOR
     BUTTON      ID_FILE_PRINT_PREVIEW
     SEPARATOR
+    BUTTON      ID_EDIT_DELETE
+    SEPARATOR
     BUTTON      ID_VIEW_WEB
     BUTTON      ID_VIEW_FILES
     SEPARATOR
@@ -236,6 +239,8 @@ BEGIN
     BEGIN
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
     POPUP "&Capture"
     BEGIN
@@ -248,7 +253,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Help"
     BEGIN
@@ -528,6 +532,8 @@ BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete",                     ID_EDIT_DELETE
     END
     POPUP "&View"
     BEGIN
@@ -559,7 +565,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -661,7 +666,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -895,7 +899,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -1020,7 +1023,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -1314,7 +1316,6 @@ BEGIN
         MENUITEM "View Application Log",        ID_TOOLS_VIEW_LOGFILE
         MENUITEM SEPARATOR
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM "Delete Camera Folder(s)",     ID_TOOLS_DEL_CAM_FOLDERS
     END
     POPUP "&Window"
     BEGIN
@@ -3414,17 +3415,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_FILENAME,7,7,172,12,ES_AUTOHSCROLL
 END
 
-IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 225, 207
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+IDD_DELETE_CAM_FOLDERS DIALOGEX 0, 0, 250, 210
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Select camera folder(s) to delete"
+CAPTION "Select Cameras to Delete (all files are removed)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LISTBOX         IDC_CAM_FOLDERS,7,7,211,171,LBS_MULTIPLESEL | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Delete",IDOK,7,186,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,64,186,50,14
-    PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,143,186,35,14
-    PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,183,186,35,14
+    LISTBOX         IDC_CAM_FOLDERS,7,7,236,172,LBS_MULTIPLESEL | LBS_USETABSTOPS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Delete",IDOK,7,186,50,19
+    PUSHBUTTON      "Cancel",IDCANCEL,64,186,50,19
+    PUSHBUTTON      "Sel All",IDC_BUTTON_LIST_SELECTALL,166,186,35,19
+    PUSHBUTTON      "Sel None",IDC_BUTTON_LIST_SELECTNONE,208,186,35,19
 END
 
 IDD_CONNECTERR_MSGBOX DIALOG 0, 0, 249, 74
@@ -4246,9 +4247,10 @@ BEGIN
     IDD_DELETE_CAM_FOLDERS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 218
+        RIGHTMARGIN, 243
         TOPMARGIN, 7
-        BOTTOMMARGIN, 200
+        BOTTOMMARGIN, 205
+        HORZGUIDE, 186
     END
 
     IDD_CONNECTERR_MSGBOX, DIALOG
@@ -4868,7 +4870,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_EDIT_DELETE          "Delete current document\nDelete Document"
+    ID_EDIT_DELETE          "Delete\nDelete"
     ID_EDIT_ROTATE_90CW     "Rotate current image 90° clockwise (Ctrl + Right Arrow)\nRotate 90° CW"
     ID_EDIT_ROTATE_90CCW    "Rotate current image 90° counter clockwise (Ctrl + Left Arrow)\nRotate 90° CCW"
     ID_PLAY_VOL             "Show output volume regulations\nOutput Volume"
@@ -5670,8 +5672,6 @@ STRINGTABLE
 BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
-    ID_TOOLS_DEL_CAM_FOLDERS 
-                            "Select camera folder(s) to delete\nDelete Camera Folder(s)"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
     ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
     ID_EDIT_ZONE_SENSIBILITY_100 

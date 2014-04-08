@@ -862,7 +862,7 @@ public:
 	afx_msg void OnHelpTutorial(UINT nID);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnToolsMoveCamFolders();
-	afx_msg void OnToolsDelCamFolders();
+	afx_msg void OnEditDelete();
 	afx_msg void OnCaptureNetwork();
 	afx_msg void OnFileDxVideoDevice(UINT nID);
 #endif

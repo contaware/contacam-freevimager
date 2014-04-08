@@ -3484,7 +3484,6 @@
 #define ID_EDIT_RENAME                  33167
 #define ID_EDIT_EXPORT_ZONES            33168
 #define ID_EDIT_IMPORT_ZONES            33169
-#define ID_TOOLS_DEL_CAM_FOLDERS        33170
 #define ID_DET_COMBOX                   33171
 #define ID_CAPTURE_ASSISTANT            33172
 #define ID_EDIT_ZONE_SENSIBILITY_100    33173

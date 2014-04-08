@@ -1251,6 +1251,7 @@ protected:
 	afx_msg void OnUpdateCaptureSettings(CCmdUI* pCmdUI);
 	afx_msg void OnViewDetectionZones();
 	afx_msg void OnUpdateViewDetectionZones(CCmdUI* pCmdUI);
+	afx_msg void OnEditDelete();
 	afx_msg void OnEditCopy();
 	afx_msg void OnFileSave();
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);

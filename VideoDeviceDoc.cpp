@@ -59,6 +59,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_SETTINGS, OnUpdateCaptureSettings)
 	ON_COMMAND(ID_VIEW_DETECTION_ZONES, OnViewDetectionZones)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES, OnUpdateViewDetectionZones)
+	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
@@ -8923,6 +8924,11 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 	pCmdUI->Enable(	!GetView()->m_bFullScreenMode	&&
 					(rcClient != m_DocRect)			&&
 					!GetFrame()->IsIconic());
+}
+
+void CVideoDeviceDoc::OnEditDelete() 
+{
+	::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
 }
 
 void CVideoDeviceDoc::OnEditCopy() 

@@ -113,7 +113,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_TOOLS_MOVE_CAM_FOLDERS, OnToolsMoveCamFolders)
-	ON_COMMAND(ID_TOOLS_DEL_CAM_FOLDERS, OnToolsDelCamFolders)
+	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
 	ON_COMMAND(ID_CAPTURE_NETWORK, OnCaptureNetwork)
 #endif
@@ -5737,16 +5737,8 @@ void CUImagerApp::OnToolsMoveCamFolders()
 	}
 }
 
-void CUImagerApp::OnToolsDelCamFolders() 
+void CUImagerApp::OnEditDelete() 
 {
-	// Check
-	if (AreVideoDeviceDocsOpen())
-	{
-		::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	// Call delete camera folder(s) dialog
 	CDeleteCamFoldersDlg dlg;
 	dlg.DoModal();
 }
