@@ -2201,7 +2201,7 @@ BEGIN
     LTEXT           "http://www.ijg.org",IDC_LINK_IJG,15,68,71,8,SS_NOTIFY
     LTEXT           "Thanks to the TIFF Library Authors for libtiff 3.8.2",IDC_STATIC2343,15,80,223,8
     LTEXT           "http://www.libtiff.org",IDC_LINK_LIBTIFF,15,89,78,8,SS_NOTIFY
-    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.49",IDC_STATIC2344,15,101,223,8
+    LTEXT           "Thanks to the PNG Library Authors for libpng 1.2.51",IDC_STATIC2344,15,101,223,8
     LTEXT           "http://www.libpng.org",IDC_LINK_LIBPNG,15,110,83,8,SS_NOTIFY
     LTEXT           "Thanks to the ZLIB Library Authors for zlib 1.2.3",IDC_STATIC2346,15,122,223,8
     LTEXT           "http://www.zlib.net",IDC_LINK_ZLIB,15,131,74,8,SS_NOTIFY
