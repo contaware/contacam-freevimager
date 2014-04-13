@@ -15,11 +15,9 @@ ContaCam Program
 - Document the way to have different parameters for the same cam,
   like two different snapshot rates, or ...
 - Rotate by 0,90,180,270 degrees
-- Think about changing Device Assistant to Device Basic Settings
-  and Device Settings to Device Advanced Settings
-- Think about removing vorbis audio compression as it is rarely used
-  and flac audio compression which can have buffers up to 18432 bytes,
-  this size is above the LFH maximum size (16 KB)!
+- Use the word Camera instead of Device and Capture.
+  Change Device Assistant to Basic Settings and Device Settings to
+  Advanced Settings (in titlebars prepend with Camera)
 - Make thumbnail anim. gif for avi records?
 - Support NV12 (NV21) camera source format
 - Auto join all avi detections at the end of the day
