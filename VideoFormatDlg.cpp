@@ -31,7 +31,7 @@ CVideoFormatDlg::CVideoFormatDlg(CWnd* pParent /*=NULL*/)
 	m_nRawCompressionIndex = 0;
 	m_nQualityBitrate = 0;
 	//}}AFX_DATA_INIT
-	m_dwVideoCompressorFourCC = FCC('MJPG');
+	m_dwVideoCompressorFourCC = DEFAULT_VIDEO_FOURCC;
 	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
 	m_dVideoLength = 0.0;
 	m_llTotalAudioBytes = 0;
@@ -306,29 +306,10 @@ BOOL CVideoFormatDlg::OnInitDialog()
 		m_VideoCompressionDataRateSupport.Add((DWORD)0);
 		m_VideoCompressionQualitySupport.Add((DWORD)1);
 
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc)
-		{
-			m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
-			m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-			m_VideoCompressionDataRateSupport.Add((DWORD)1);
-			m_VideoCompressionQualitySupport.Add((DWORD)1);
-		}
-		
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFTheoraVideoEnc)
-		{
-			m_VideoCompressionFcc.Add((DWORD)FCC('theo')); 
-			m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-			m_VideoCompressionDataRateSupport.Add((DWORD)1);
-			m_VideoCompressionQualitySupport.Add((DWORD)1);
-		}
-
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc)
-		{
-			m_VideoCompressionFcc.Add((DWORD)FCC('SNOW')); 
-			m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-			m_VideoCompressionDataRateSupport.Add((DWORD)1);
-			m_VideoCompressionQualitySupport.Add((DWORD)1);
-		}
+		m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
+		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
+		m_VideoCompressionDataRateSupport.Add((DWORD)1);
+		m_VideoCompressionQualitySupport.Add((DWORD)1);
 	}
 	else if (m_nFileType == FILETYPE_SWF)
 	{
@@ -352,7 +333,7 @@ BOOL CVideoFormatDlg::OnInitDialog()
 	{
 		if (m_nFileType == FILETYPE_AVI)
 		{
-			m_dwVideoCompressorFourCC = FCC('MJPG');
+			m_dwVideoCompressorFourCC = DEFAULT_VIDEO_FOURCC;
 			for (int i = 0 ; i < m_VideoCompressionFcc.GetSize() ; i++)
 			{
 				if (m_VideoCompressionFcc[i] == m_dwVideoCompressorFourCC)
@@ -398,12 +379,7 @@ BOOL CVideoFormatDlg::OnInitDialog()
 		m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
 		m_VideoCompressionChoose.AddString(_T("FFV1 Lossless YUV 12 bits/pix"));
 		m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc)
-			m_VideoCompressionChoose.AddString(_T("MPEG-4"));
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFTheoraVideoEnc)
-			m_VideoCompressionChoose.AddString(_T("Theora"));
-		if (((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc)
-			m_VideoCompressionChoose.AddString(_T("SNOW"));
+		m_VideoCompressionChoose.AddString(_T("MPEG-4"));
 	}
 	else if (m_nFileType == FILETYPE_SWF)
 		m_VideoCompressionChoose.AddString(_T("FLV1"));

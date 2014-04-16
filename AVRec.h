@@ -116,9 +116,6 @@ public:
 					LPBITMAPINFO pBmi,
 					LPBYTE pBits,
 					bool bInterleaved);
-	
-	// Get theora encoder statistics after first pass
-	void TheoraStats(DWORD dwStreamNum);
 
 	// Raw Video Packet Write
 	bool AddRawVideoPacket(DWORD dwStreamNum, DWORD dwBytes, LPBYTE pBuf, bool bKeyframe, bool bInterleaved);

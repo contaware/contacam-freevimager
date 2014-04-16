@@ -28,11 +28,6 @@ perform the following in visual studio command prompt:
 */
 #pragma comment(lib, "ffmpeg\\lib\\libmingwex.a")
 #pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")
-//#pragma comment(lib, "ffmpeg\\lib\\libogg.a")
-//#pragma comment(lib, "ffmpeg\\lib\\libtheora.a")
-// Integer division by zero exception using libvorbis...
-//#pragma comment(lib, "ffmpeg\\lib\\libvorbis.a")
-//#pragma comment(lib, "ffmpeg\\lib\\libvorbisenc.a")
 #pragma comment(lib, "wsock32.lib")
 #pragma comment(lib, "vfw32.lib")
 #pragma comment(lib, "msacm32.lib")

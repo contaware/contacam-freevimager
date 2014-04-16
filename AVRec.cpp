@@ -337,9 +337,7 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 		pCodecCtx->codec_id != CODEC_ID_H263	&&
 		pCodecCtx->codec_id != CODEC_ID_H263P	&&
 		pCodecCtx->codec_id != CODEC_ID_FLV1	&&
-		pCodecCtx->codec_id != CODEC_ID_H264	&&
-		pCodecCtx->codec_id != CODEC_ID_THEORA	&&
-		pCodecCtx->codec_id != CODEC_ID_SNOW)
+		pCodecCtx->codec_id != CODEC_ID_H264)
 		m_nPassNumber[pStream->index] = 0; // No two pass mode supported
 	else
 		m_nPassNumber[pStream->index] = m_nGlobalPassNumber;
@@ -358,15 +356,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
            motion of the chroma plane doesnt match the luma plane */
         pCodecCtx->mb_decision = 2;
     }
-	else if (pCodecCtx->codec_id == CODEC_ID_SNOW)
-	{
-		pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
-		pCodecCtx->prediction_method = 0;
-		pCodecCtx->me_cmp = 1;
-		pCodecCtx->me_sub_cmp = 1;
-		pCodecCtx->mb_cmp = 1;
-		pCodecCtx->flags |= CODEC_FLAG_QPEL;
-	}
 	else if (pCodecCtx->codec_id == CODEC_ID_MPEG4)
 	{
 		if (!m_bFastEncode)
@@ -398,11 +387,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 								CODEC_FLAG_H263P_AIV			|	// aiv:    H.263+ alternative inter VLC
 								CODEC_FLAG_H263P_UMV);				// umv:    Enable Unlimited Motion Vector (h263+)
 		}
-	}
-	else if (pCodecCtx->codec_id == CODEC_ID_THEORA)
-	{
-		if (m_bFastEncode)
-			pCodecCtx->flags |= CODEC_FLAG2_FAST;
 	}
 	//
 	// Notes:
@@ -875,7 +859,6 @@ int CAVRec::AddRawAudioStream(	const LPWAVEFORMATEX pFormat,
 int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 							const LPWAVEFORMATEX pDstWaveFormat)
 {
-	int qscale; // Only used for vorbis
 	int nStreamNum = -1;
 
 	// Check
@@ -910,28 +893,6 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 		sample_fmt = SAMPLE_FMT_S16;
 
 	// Create Audio Stream
-	if (m_pOutputFormat->audio_codec == CODEC_ID_FLAC)
-	{
-		// Reset Avg Bytes Per Sec, so that the codec calculates it
-		pDstWaveFormat->nAvgBytesPerSec = 0;
-	}
-	else if (m_pOutputFormat->audio_codec == CODEC_ID_VORBIS)
-	{
-		// Note: libvorbis has a quality scale 0..10, but it crashes with a division by 0
-		// -> use ffmpeg internal vorbis encoder which has a different quality scale:
-		// Author says: 10 to 30 are sane values, the higher the number,
-		// the higher the bitrate and quality.
-		// Only 2 channel is supported, and, in a psy sense,
-		// 44100 and 48000 are best supported...
-		if (pDstWaveFormat->nAvgBytesPerSec <= (60000 / 8))
-			qscale = 10;											// After some tests quality 10 gives around 60 kbps (for 44.1KHz)
-		else if (pDstWaveFormat->nAvgBytesPerSec <= (90000 / 8))
-			qscale = 15;											// After some tests quality 15 gives around 90 kbps (for 44.1KHz)
-		else if (pDstWaveFormat->nAvgBytesPerSec <= (120000 / 8))
-			qscale = 22;											// After some tests quality 22 gives around 120 kbps (for 44.1KHz)
-		else
-			qscale = 35;											// After some tests quality 35 gives around 160 kbps (for 44.1KHz)
-	}
     pAudioStream = CreateAudioStream(m_pOutputFormat->audio_codec,
 									sample_fmt,
 									pDstWaveFormat->wFormatTag,
@@ -946,13 +907,6 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 
 	// Get the attached audio codec context	
 	AVCodecContext* pCodecCtx = pAudioStream->codec;
-
-	// Set the quality for internal vorbis encoder
-	if (m_pOutputFormat->audio_codec == CODEC_ID_VORBIS)
-	{
-		pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-		pCodecCtx->global_quality = FF_QP2LAMBDA * qscale;
-	}
 
 	// Open the audio codec
 	if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
@@ -1718,7 +1672,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 											m_pFrame[dwStreamNum]);
         
 		// If zero size, it means the image was buffered (if B frames enabled)
-		// or an empty delta frame was issued by libtheora for example
+		// or an empty delta frame was issued
         if (out_size >= 0)
 		{
             AVPacket pkt;
@@ -1761,23 +1715,6 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		m_llTotalWrittenBytes[dwStreamNum] += lBytesWritten;
 		::LeaveCriticalSection(&m_csAVI);
 		return true;
-	}
-}
-
-void CAVRec::TheoraStats(DWORD dwStreamNum)
-{
-	if (m_pFormatCtx && m_pFormatCtx->streams[dwStreamNum])
-	{
-		AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
-		if (pCodecCtx)
-		{
-			avcodec_encode_video(	pCodecCtx,
-									m_pOutbuf[dwStreamNum],
-									m_nOutbufSize[dwStreamNum],
-									NULL);
-			if (m_p2PassLogFiles[dwStreamNum] && pCodecCtx->stats_out)
-				fprintf(m_p2PassLogFiles[dwStreamNum], "%s", pCodecCtx->stats_out);
-		}
 	}
 }
 

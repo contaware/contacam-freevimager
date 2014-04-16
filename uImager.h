@@ -76,17 +76,12 @@
 // Big Picture Size Limit
 #define BIG_PICTURE_SIZE_LIMIT							134217728U /* 128MB */
 
-// Default VfW Compression Quality
-#define DEFAULT_VCM_QUALITY								7500
-
-// Default VfW Data Rate in Bytes / Sec
-#define DEFAULT_VCM_DATARATE							150000
-
 // Default Video Compression Quality: 2.0f best, 31.0f worst
 #define DEFAULT_VIDEO_QUALITY							4.0f
+#define DEFAULT_SHRINK_VIDEO_QUALITY					7.0f
 
-// The theora codec has a more linear Quality distribution: 2.0f best, 31.0f worst
-#define DEFAULT_THEO_QUALITY							17.0f
+// Default Video Codec
+#define DEFAULT_VIDEO_FOURCC							FCC('DIVX')
 
 // Default Video Compression Keyframes Rate
 #define DEFAULT_KEYFRAMESRATE							30
@@ -100,10 +95,7 @@
 #endif
 
 // Default settings for auto shrink
-#define	AUTO_SHRINK_MAX_SIZE							1024					
-
-// New line when this count of chars is reached
-#define OCR_LINE_SIZE									80
+#define	AUTO_SHRINK_MAX_SIZE							1024
 
 // Coordinate Units
 #define COORDINATES_PIX									0
@@ -693,24 +685,6 @@ public:
 
 	// Display Advanced On-Screen Video Avi Info
 	BOOL m_bVideoAviInfo;
-
-	// Preferred ffmpeg video encoder fourcc
-	DWORD m_dwFFPreferredVideoEncFourCC;
-
-	// Preferred ffmpeg video encoder quality
-	float m_fFFPreferredVideoEncQuality;
-
-	// Is ffmpeg snow video encoder compiled in?
-	BOOL m_bFFSnowVideoEnc;
-
-	// Is ffmpeg mpeg4 video encoder compiled in?
-	BOOL m_bFFMpeg4VideoEnc;
-
-	// Is ffmpeg theora video encoder compiled in?
-	BOOL m_bFFTheoraVideoEnc;
-
-	// Are ffmpeg mp2 and mp3 audio encoders compiled in?
-	BOOL m_bFFMpegAudioEnc;
 
 	// Flags to execute final steps after video shrinking
 	volatile BOOL m_bWaitingMailFinish;

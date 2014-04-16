@@ -389,29 +389,10 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoCompressionDataRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc)
-	{
-		m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-		m_VideoCompressionDataRateSupport.Add((DWORD)1);
-		m_VideoCompressionQualitySupport.Add((DWORD)1);
-	}
-
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFTheoraVideoEnc)
-	{
-		m_VideoCompressionFcc.Add((DWORD)FCC('theo')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-		m_VideoCompressionDataRateSupport.Add((DWORD)1);
-		m_VideoCompressionQualitySupport.Add((DWORD)1);
-	}
-
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc)
-	{
-		m_VideoCompressionFcc.Add((DWORD)FCC('SNOW')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-		m_VideoCompressionDataRateSupport.Add((DWORD)1);
-		m_VideoCompressionQualitySupport.Add((DWORD)1);
-	}
+	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
+	m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
+	m_VideoCompressionDataRateSupport.Add((DWORD)1);
+	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	// Update Current Selected Codec
 	int nVideoCompressionSelection = -1;
@@ -425,7 +406,7 @@ BOOL CGeneralPage::OnInitDialog()
 	}
 	if (nVideoCompressionSelection == -1)
 	{
-		m_pDoc->m_dwVideoRecFourCC = FCC('MJPG');
+		m_pDoc->m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 		for (i = 0 ; i < m_VideoCompressionFcc.GetSize() ; i++)
 		{
 			if (m_VideoCompressionFcc[i] == m_pDoc->m_dwVideoRecFourCC)
@@ -533,12 +514,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
 	m_VideoCompressionChoose.AddString(_T("FFV1 Lossless YUV 12 bits/pix"));
 	m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc)
-		m_VideoCompressionChoose.AddString(_T("MPEG-4"));
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFTheoraVideoEnc)
-		m_VideoCompressionChoose.AddString(_T("Theora"));
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc)
-		m_VideoCompressionChoose.AddString(_T("SNOW"));
+	m_VideoCompressionChoose.AddString(_T("MPEG-4"));
 
 	// Set Current Selections
 	m_VideoCompressionChoose.SetCurSel(nVideoCompressionSelection);

@@ -2385,7 +2385,7 @@ void CVideoAviDoc::LoadSettings()
 	m_bForceRgb = (BOOL) pApp->GetProfileInt(sSection, _T("ForceRgb"), TRUE);
 	m_dwPlayAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioPlayDeviceID"), 0);
 	
-	m_dwVideoCompressorFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), FCC('MJPG'));
+	m_dwVideoCompressorFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), DEFAULT_VIDEO_FOURCC);
 	m_fVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("VideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoCompressorKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoCompressorDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
@@ -2993,15 +2993,6 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 	if (!pAVIPlay || !ppAVRec)
 		return -1;
 
-	// Remove audio if saving to swf file and no mp3 support,
-	// this because the swf ffmpeg muxer only supports mp3!
-	if (CUImagerApp::IsSWFFile(sDstFileName) && !((CUImagerApp*)::AfxGetApp())->m_bFFMpegAudioEnc)
-	{
-		pAudioCompressorWaveFormat = NULL;
-		pbAudioStreamsSave = NULL;
-		pbAudioStreamsChange = NULL;
-	}
-
 	// Count the Video Streams to Compress
 	for (dwVideoStreamNum = 0 ; dwVideoStreamNum < pAVIPlay->GetVideoStreamsCount() ; dwVideoStreamNum++)
 	{
@@ -3058,7 +3049,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 					return 0;
 				memcpy(pAudioCompressorWaveFormat, &AudioFormatDlg.m_WaveFormat, sizeof(WAVEFORMATEX));
 			}
-			else if (CUImagerApp::IsSWFFile(sDstFileName) && ((CUImagerApp*)::AfxGetApp())->m_bFFMpegAudioEnc)
+			else if (CUImagerApp::IsSWFFile(sDstFileName))
 			{
 				// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz
 				// and 11025 Hz. Emulate the audio dialog and make the best choice
@@ -3481,9 +3472,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		dwVideoCompressorFourCC != FCC('XVID')	&&
 		dwVideoCompressorFourCC != FCC('FLV1')	&&
 		dwVideoCompressorFourCC != FCC('H263')	&&
-		dwVideoCompressorFourCC != FCC('H264')	&&
-		dwVideoCompressorFourCC != FCC('theo')	&&
-		dwVideoCompressorFourCC != FCC('SNOW')))
+		dwVideoCompressorFourCC != FCC('H264')))
 		nPassNumber = 0; // No two pass mode
 
 	// Video Format
@@ -3849,12 +3838,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 														bInterleave);
 							}
 						}
-
-						// Get stats from theora lib
-						if (!bVideoAvailable && nPassNumber == 1	&&
-							dwVideoCompressorFourCC == FCC('theo')	&&
-							(*ppAVRec)->GetFrameCount(dwRecStreamNum) > 0)
-							(*ppAVRec)->TheoraStats(dwRecStreamNum);
 					}
 
 					// Init Vars
@@ -5538,41 +5521,20 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	// Single Pass
 	int nPassNumber = 0;
 	WAVEFORMATEX WaveFormat;
-	if (((CUImagerApp*)::AfxGetApp())->m_bFFMpegAudioEnc)
-	{
-		WaveFormat.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
-		WaveFormat.nChannels = 1;
-		WaveFormat.nSamplesPerSec = 22050;
-		WaveFormat.nAvgBytesPerSec = 32000 / 8;
-		WaveFormat.nBlockAlign = 0;
-		WaveFormat.wBitsPerSample = 0;
-		WaveFormat.cbSize = 0;
-	}
-	else
-	{
-		WaveFormat.wFormatTag = WAVE_FORMAT_VORBIS;
-		WaveFormat.nChannels = 2;				// Only stereo supported
-		WaveFormat.nSamplesPerSec = 22050;
-		WaveFormat.nAvgBytesPerSec = 90000 / 8;	// q = 15
-		WaveFormat.nBlockAlign = 0;
-		WaveFormat.wBitsPerSample = 0;
-		WaveFormat.cbSize = 0;
-	}
-	DWORD dwFourCC =		((CUImagerApp*)::AfxGetApp())->m_bFFMpeg4VideoEnc ? FCC('DIVX') :
-							((CUImagerApp*)::AfxGetApp())->m_bFFTheoraVideoEnc ? FCC('theo') :						
-							((CUImagerApp*)::AfxGetApp())->m_bFFSnowVideoEnc ? FCC('SNOW') :
-							FCC('MJPG');
-	float fVideoQuality =	dwFourCC == FCC('DIVX') ? 7.0f :
-							dwFourCC == FCC('theo') ? 19.0f :					
-							dwFourCC == FCC('SNOW') ? 5.0f :
-							8.0f;
+	WaveFormat.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
+	WaveFormat.nChannels = 1;
+	WaveFormat.nSamplesPerSec = 22050;
+	WaveFormat.nAvgBytesPerSec = 32000 / 8;
+	WaveFormat.nBlockAlign = 0;
+	WaveFormat.wBitsPerSample = 0;
+	WaveFormat.cbSize = 0;
 	BOOL res = SaveAsAVCODEC(nPassNumber,
 							pShrinkDocTo->m_sOutFileName,
 							m_pAVIPlay->GetFileName(),
-							dwFourCC,
+							DEFAULT_VIDEO_FOURCC,
 							0,		// Set Bitrate to 0 because we use quality
 							DEFAULT_KEYFRAMESRATE,
-							fVideoQuality,
+							DEFAULT_SHRINK_VIDEO_QUALITY,
 							0,		// Use Quality
 							&WaveFormat,
 							bVideoStreamsSave,

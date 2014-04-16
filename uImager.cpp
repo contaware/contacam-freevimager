@@ -169,13 +169,7 @@ CUImagerApp::CUImagerApp()
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
-	m_dwFFPreferredVideoEncFourCC = FCC('MJPG');
-	m_fFFPreferredVideoEncQuality = DEFAULT_VIDEO_QUALITY;
 	m_bVideoAviInfo = FALSE;
-	m_bFFSnowVideoEnc = FALSE;
-	m_bFFMpeg4VideoEnc = FALSE;
-	m_bFFTheoraVideoEnc = FALSE;
-	m_bFFMpegAudioEnc = FALSE;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
@@ -659,23 +653,11 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// On newer systems I had some strange crashes ... better to always disable sse2 and higher!
 		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
 		av_register_all();
-		m_bFFSnowVideoEnc = avcodec_find_encoder(CODEC_ID_SNOW) != NULL ? TRUE : FALSE;
-		m_bFFMpeg4VideoEnc = avcodec_find_encoder(CODEC_ID_MPEG4) != NULL ? TRUE : FALSE;
-		m_bFFTheoraVideoEnc = avcodec_find_encoder(CODEC_ID_THEORA) != NULL ? TRUE : FALSE;
-		m_bFFMpegAudioEnc = avcodec_find_encoder(CODEC_ID_MP2) != NULL && avcodec_find_encoder(CODEC_ID_MP3) != NULL ? TRUE : FALSE;
 		// Initializing mm_flags is necessary when using deinterlacing,
 		// otherwise the emms_c() macro in avpicture_deinterlace() of the imgconvert.c file
 		// may be empty and the emms instruction is not called after using MMX!
 		// Note: all codecs except the raw one call dsputil_init() which executes mm_flags = mm_support()
 		mm_flags = mm_support();
-
-		// Set preferred video encoder
-		m_dwFFPreferredVideoEncFourCC = m_bFFMpeg4VideoEnc ? FCC('DIVX') :
-										m_bFFTheoraVideoEnc ? FCC('theo') :								
-										m_bFFSnowVideoEnc ? FCC('SNOW') :
-										FCC('MJPG');
-		m_fFFPreferredVideoEncQuality = m_dwFFPreferredVideoEncFourCC == FCC('theo') ? DEFAULT_THEO_QUALITY :
-										DEFAULT_VIDEO_QUALITY;
 		
 #ifdef VIDEODEVICEDOC
 		// Init WinSock 2.2

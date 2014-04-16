@@ -40,28 +40,21 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CAudioFormatDlg)
 	virtual BOOL OnInitDialog();
+	afx_msg void OnRadioPcm();
+	afx_msg void OnRadioAdpcm();
+	afx_msg void OnRadioMp2();
+	afx_msg void OnRadioMp3();
 	afx_msg void OnSelchangeComboPcmBits();
 	afx_msg void OnSelchangeComboPcmChannels();
 	afx_msg void OnSelchangeComboPcmSamplingrate();
-	afx_msg void OnRadioAdpcm();
-	afx_msg void OnRadioFlac();
-	afx_msg void OnRadioMp2();
-	afx_msg void OnRadioMp3();
-	afx_msg void OnRadioPcm();
+	afx_msg void OnSelchangeComboAdpcmChannels();
+	afx_msg void OnSelchangeComboAdpcmSamplingrate();
 	afx_msg void OnSelchangeComboMp2Bitrate();
 	afx_msg void OnSelchangeComboMp2Channels();
 	afx_msg void OnSelchangeComboMp2Samplingrate();
 	afx_msg void OnSelchangeComboMp3Bitrate();
 	afx_msg void OnSelchangeComboMp3Channels();
 	afx_msg void OnSelchangeComboMp3Samplingrate();
-	afx_msg void OnSelchangeComboAdpcmChannels();
-	afx_msg void OnSelchangeComboAdpcmSamplingrate();
-	afx_msg void OnSelchangeComboFlacChannels();
-	afx_msg void OnSelchangeComboFlacSamplingrate();
-	afx_msg void OnRadioVorbis();
-	afx_msg void OnSelchangeComboVorbisQuality();
-	afx_msg void OnSelchangeComboVorbisChannels();
-	afx_msg void OnSelchangeComboVorbisSamplingrate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

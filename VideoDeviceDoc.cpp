@@ -154,10 +154,9 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 
 						// For audio the maximum allocated size for a single buffer
 						// with AUDIO_IN_MIN_BUF_SIZE set to 256 is:
-						// PCM and Vorbis = 5120  bytes + FF_INPUT_BUFFER_PADDING_SIZE
-						// ADPCM          = 8136  bytes + FF_INPUT_BUFFER_PADDING_SIZE
-						// Flac           = 18432 bytes + FF_INPUT_BUFFER_PADDING_SIZE
-						// MP2 or MP3     = 9216  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// PCM        = 5120  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// ADPCM      = 8136  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// MP2 or MP3 = 9216  bytes + FF_INPUT_BUFFER_PADDING_SIZE
 						DWORD dwAudioUsedSize = 0U;
 						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
 						while (posAudioBuf)
@@ -2442,8 +2441,6 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 		nFrameSize = 2 * 1152 * m_pDstWaveFormat->nChannels;
 	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
 		nFrameSize = 2 * ((1024 - 4 * m_pDstWaveFormat->nChannels) * 8 / (4 * m_pDstWaveFormat->nChannels) + 1) * m_pDstWaveFormat->nChannels;
-	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_FLAC)
-		nFrameSize = 2 * 4608 * m_pDstWaveFormat->nChannels;
 
 	// Set the buffer size a multiple of the frame size
 	if (nFrameSize > 0)
@@ -4126,8 +4123,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nRecordedFrames = 0;
 	m_nVideoRecDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoRecQuality = ((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality;
-	m_dwVideoRecFourCC = ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC;
+	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
+	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nVideoRecQualityBitrate = 0;
 	m_nDeleteRecordingsOlderThanDays = 0;
 
@@ -4174,9 +4171,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lMovDetTotalZones = 0;
 	m_nVideoDetDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoDetKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoDetQuality = ((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality;
+	m_fVideoDetQuality = DEFAULT_VIDEO_QUALITY;
 	m_nVideoDetQualityBitrate = 0;
-	m_dwVideoDetFourCC = ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC;
+	m_dwVideoDetFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nVideoDetSwfDataRate = DEFAULT_VIDEO_DATARATE;
 	m_nVideoDetSwfKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoDetSwfQuality = DEFAULT_VIDEO_QUALITY;
@@ -4897,13 +4894,13 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
-	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
-	m_fVideoRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
+	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), DEFAULT_VIDEO_FOURCC);
+	m_fVideoRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoRecDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecDataRate"), DEFAULT_VIDEO_DATARATE);
 	m_nVideoRecQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoRecQualityBitrate"), 0);
-	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), ((CUImagerApp*)::AfxGetApp())->m_dwFFPreferredVideoEncFourCC);
-	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)(((CUImagerApp*)::AfxGetApp())->m_fFFPreferredVideoEncQuality));
+	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), DEFAULT_VIDEO_FOURCC);
+	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoDetQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoDetQualityBitrate"), 0);
 	m_nVideoDetKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nVideoDetDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetDataRate"), DEFAULT_VIDEO_DATARATE);
