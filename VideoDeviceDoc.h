@@ -43,7 +43,7 @@ class CMovementDetectionPage;
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
 #define HTTPCLIENTPOLL_DEFAULT_FRAMERATE	1.0			// fps
-#define MAX_DEVICE_AUTORUN_KEYS				100			// Maximum number of devices that can autorun at start-up
+#define MAX_DEVICE_AUTORUN_KEYS				128			// Maximum number of devices that can autorun at start-up
 #define ACTIVE_VIDEO_STREAM					0			// Video stream 0 for recording and detection
 #define ACTIVE_AUDIO_STREAM					0			// Audio stream 0 for recording and detection
 #define	FILES_DELETE_INTERVAL_MIN			600000	 	// in ms -> 10min
@@ -127,7 +127,7 @@ class CMovementDetectionPage;
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
 #define MOVDET_MEM_MAX_MB					1050		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
-#define MOVDET_MEM_MIN_MB					100			// Minimum memory in MB
+#define MOVDET_MEM_MIN_MB					500			// Minimum memory in MB
 #define MOVDET_BASE_MEM_USAGE_MB			50			// Base memory usage of a open video device doc (without detection buffer)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
