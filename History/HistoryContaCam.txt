@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 4.9.7 (xxx yth 2014)
 
-- ... 
+- New camera delete toolbar button 
+- Removed vorbis and flac audio encoders
 
 4.9.5 (March 24th 2014)
 

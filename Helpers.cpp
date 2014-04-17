@@ -16,7 +16,8 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Wininet.lib")
 
-// If InitHelpers() is not called use worst case which is WinXP
+// If InitHelpers() is not called vars default to WinXP,
+// no multimedia instructions and 2GB RAM
 BOOL g_bWin2003 = FALSE;
 BOOL g_bWin2003OrHigher = FALSE;
 BOOL g_bWinVista = FALSE;
@@ -25,14 +26,14 @@ BOOL g_bMMX = FALSE;
 BOOL g_bSSE = FALSE;
 BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
-
-// Cpu Instruction Set Support
+int g_nInstalledPhysRamMB = 2048;
+int g_nAvailablePhysRamMB = 2048;
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
 #define CPU_FEATURE_SSE2	0x0004
 #define CPU_FEATURE_3DNOW	0x0008
 int GetCpuInstr();
-
+int GetTotPhysMemMB(BOOL bInstalled);
 void InitHelpers()
 {
 	OSVERSIONINFO ovi = {0};
@@ -67,6 +68,10 @@ void InitHelpers()
 		g_bSSE2 = TRUE;
 	if (nInstructionSets & CPU_FEATURE_3DNOW)
 		g_b3DNOW = TRUE;
+
+	// RAM
+	g_nInstalledPhysRamMB = GetTotPhysMemMB(TRUE);
+	g_nAvailablePhysRamMB = GetTotPhysMemMB(FALSE);
 }
 
 //
@@ -2138,7 +2143,7 @@ CString GetComputerName()
 		return _T("");
 }
 
-int GetTotPhysMemMB(BOOL bInstalled)
+static int GetTotPhysMemMB(BOOL bInstalled)
 {
 	/* The GetPhysicallyInstalledSystemMemory function retrieves
 	the amount of physically installed RAM from the computer's

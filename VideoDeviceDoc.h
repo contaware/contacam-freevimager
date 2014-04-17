@@ -117,7 +117,7 @@ class CMovementDetectionPage;
 #define MOVDET_ZONE_FORMAT					_T("DoMovementDetection%03i")
 #define MOVDET_ZONES_BLOCK_FORMAT			_T("MovDetZones%i")
 #define MOVDET_SAVEFRAMES_POLL				1000U		// ms
-#define MOVDET_MIN_FRAMES_IN_LIST			30			// Min. frames in list before saving the list in the
+#define MOVDET_MIN_FRAMES_IN_LIST			10			// Min. frames in list before saving the list in the
 														// case of insufficient memory
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// 16000 is the limit for swf files -> be safe and start
 														// a new list with 15000

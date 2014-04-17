@@ -22,6 +22,8 @@ extern BOOL g_bMMX;
 extern BOOL g_bSSE;
 extern BOOL g_bSSE2;
 extern BOOL g_b3DNOW;
+extern int g_nInstalledPhysRamMB;
+extern int g_nAvailablePhysRamMB;
 
 // Call This Before Using the following Functions!
 extern void InitHelpers();
@@ -200,10 +202,6 @@ extern void delete16align(LPVOID ptr);
 
 // Get the local NetBIOS computer name
 extern CString GetComputerName();
-
-// Get the Total Physical Memory in MB installed on the computer
-// or available to the OS
-extern int GetTotPhysMemMB(BOOL bInstalled);
 
 // Get Memory Stats
 extern void GetMemoryStats(	int* pRegions = NULL,

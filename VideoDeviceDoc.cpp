@@ -2723,7 +2723,7 @@ end_of_software_detection:
 		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 	{
 		// Calculate the usable RAM
-		int nTotalUsableMB = ::GetTotPhysMemMB(FALSE);
+		int nTotalUsableMB = g_nAvailablePhysRamMB;
 		if (nTotalUsableMB > MOVDET_MEM_MAX_MB)	// we are a 32 bits application
 			nTotalUsableMB = MOVDET_MEM_MAX_MB;
 		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB; // consider all open devices because also non-detecting ones use RAM
