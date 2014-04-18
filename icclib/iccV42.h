@@ -6,7 +6,7 @@
  * things that are not needed for icclib.
  *
  * This version of the header file corresponds to the profile
- * Specification ICC.1:2003-09 (Version 4.1.0)
+ * Specification ICC.1:2003-09 (Version 4.2.0)
  *
  * All header file entries are pre-fixed with "ic" to help 
  * avoid name space collisions. Signatures are pre-fixed with
@@ -15,15 +15,20 @@
  * Version numbers used within file are file format version numers,
  * not spec. version numbers.
  *
- * Portions of this file are Copyright 2004 Graeme W. Gill,
- * See Licence.txt file for conditions of use.
+ * Portions of this file are Copyright 2004 - 2005 Graeme W. Gill,
+ * This material is licensed with an "MIT" free use license:-
+ * see the License.txt file in this directory for licensing details.
  *
  *  Graeme Gill.
  */
 
 /* Header file guard bands */
-#ifndef ICCV41_H
-#define ICCV41_H
+#ifndef ICCV42_H
+#define ICCV42_H
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 /***************************************************************** 
  Copyright (c) 1994-1998 SunSoft, Inc.
@@ -61,6 +66,7 @@ authorization from SunSoft Inc.
    
    Spec. Name      Spec. Version    ICC File Version
    ----------      -------------    ----------------
+   ICC.1:2004-10      4.2            4.2.0
    ICC.1:2003-09      4.1            4.1.0
    ICC.1:2001-12      4.0            4.0.0
    ICC.1:2001-04      (3.7?)         2.4.0
@@ -184,57 +190,62 @@ typedef unsigned long   icU16Fixed16Number;
 /*------------------------------------------------------------------------*/
 /* public tags and sizes */
 typedef enum {
-    icSigAToB0Tag                       = 0x41324230L,  /* 'A2B0' */ 
-    icSigAToB1Tag                       = 0x41324231L,  /* 'A2B1' */
-    icSigAToB2Tag                       = 0x41324232L,  /* 'A2B2' */ 
-    icSigBlueMatrixColumnTag            = 0x6258595AL,  /* 'bXYZ' */
-    icSigBlueTRCTag                     = 0x62545243L,  /* 'bTRC' */
-    icSigBToA0Tag                       = 0x42324130L,  /* 'B2A0' */
-    icSigBToA1Tag                       = 0x42324131L,  /* 'B2A1' */
-    icSigBToA2Tag                       = 0x42324132L,  /* 'B2A2' */
-    icSigCalibrationDateTimeTag         = 0x63616C74L,  /* 'calt' */
-    icSigCharTargetTag                  = 0x74617267L,  /* 'targ' */ 
-    icSigChromaticAdaptationTag         = 0x63686164L,  /* 'chad' V2.4+ */
-    icSigChromaticityTag                = 0x6368726DL,  /* 'chrm' V2.3+ */ 
-    icSigColorantOrderTag               = 0x636C726FL,  /* 'clro' V4.0+ */
-    icSigColorantTableTag               = 0x636C7274L,  /* 'clrt' V4.0+ */
-    icSigCopyrightTag                   = 0x63707274L,  /* 'cprt' */
-    icSigCrdInfoTag                     = 0x63726469L,  /* 'crdi' V2.1 - V4.0 */
-    icSigDeviceMfgDescTag               = 0x646D6E64L,  /* 'dmnd' */
-    icSigDeviceModelDescTag             = 0x646D6464L,  /* 'dmdd' */
-    icSigDeviceSettingsTag              = 0x64657673L,  /* 'devs' V2.2 - V4.0 */
-    icSigGamutTag                       = 0x67616D74L,  /* 'gamt' */
-    icSigGrayTRCTag                     = 0x6b545243L,  /* 'kTRC' */
-    icSigGreenMatrixColumnTag           = 0x6758595AL,  /* 'gXYZ' */
-    icSigGreenTRCTag                    = 0x67545243L,  /* 'gTRC' */
-    icSigLuminanceTag                   = 0x6C756d69L,  /* 'lumi' */
-    icSigMeasurementTag                 = 0x6D656173L,  /* 'meas' */
-    icSigMediaBlackPointTag             = 0x626B7074L,  /* 'bkpt' */
-    icSigMediaWhitePointTag             = 0x77747074L,  /* 'wtpt' */
-    icSigNamedColorTag                  = 0x6E636f6CL,  /* 'ncol' V2.0 */
-    icSigNamedColor2Tag                 = 0x6E636C32L,  /* 'ncl2' V2.1+ */
-    icSigOutputResponseTag              = 0x72657370L,  /* 'resp' V2.2+ */
-    icSigPreview0Tag                    = 0x70726530L,  /* 'pre0' */
-    icSigPreview1Tag                    = 0x70726531L,  /* 'pre1' */
-    icSigPreview2Tag                    = 0x70726532L,  /* 'pre2' */
-    icSigProfileDescriptionTag          = 0x64657363L,  /* 'desc' */
-    icSigProfileSequenceDescTag         = 0x70736571L,  /* 'pseq' */
-    icSigPs2CRD0Tag                     = 0x70736430L,  /* 'psd0' V2.0 - V4.0 */
-    icSigPs2CRD1Tag                     = 0x70736431L,  /* 'psd1' V2.0 - V4.0 */
-    icSigPs2CRD2Tag                     = 0x70736432L,  /* 'psd2' V2.0 - V4.0 */
-    icSigPs2CRD3Tag                     = 0x70736433L,  /* 'psd3' V2.0 - V4.0 */
-    icSigPs2CSATag                      = 0x70733273L,  /* 'ps2s' V2.0 - V4.0 */
-    icSigPs2RenderingIntentTag          = 0x70733269L,  /* 'ps2i' V2.0 - V4.0 */
-    icSigRedMatrixColumnTag             = 0x7258595AL,  /* 'rXYZ' */
-    icSigRedTRCTag                      = 0x72545243L,  /* 'rTRC' */
-    icSigScreeningDescTag               = 0x73637264L,  /* 'scrd' V2.0 - V4.0 */
-    icSigScreeningTag                   = 0x7363726EL,  /* 'scrn' V2.0 - V4.0 */
-    icSigTechnologyTag                  = 0x74656368L,  /* 'tech' */
-    icSigUcrBgTag                       = 0x62666420L,  /* 'bfd ' V2.0 - V4.0 */
-    icSigVideoCardGammaTag              = 0x76636774L,  /* 'vcgt' ColorSync 2.5+ */
-    icSigViewingCondDescTag             = 0x76756564L,  /* 'vued' */
-    icSigViewingConditionsTag           = 0x76696577L,  /* 'view' */
-    icMaxEnumTag                        = icMaxTagVal 
+	icSigAToB0Tag                          = 0x41324230L,  /* 'A2B0' */ 
+	icSigAToB1Tag                          = 0x41324231L,  /* 'A2B1' */
+	icSigAToB2Tag                          = 0x41324232L,  /* 'A2B2' */ 
+	icSigBlueMatrixColumnTag               = 0x6258595AL,  /* 'bXYZ' */
+	icSigBlueTRCTag                        = 0x62545243L,  /* 'bTRC' */
+	icSigBToA0Tag                          = 0x42324130L,  /* 'B2A0' */
+	icSigBToA1Tag                          = 0x42324131L,  /* 'B2A1' */
+	icSigBToA2Tag                          = 0x42324132L,  /* 'B2A2' */
+	icSigCalibrationDateTimeTag            = 0x63616C74L,  /* 'calt' */
+	icSigCharTargetTag                     = 0x74617267L,  /* 'targ' */ 
+	icSigChromaticAdaptationTag            = 0x63686164L,  /* 'chad' V2.4+ */
+	icSigChromaticityTag                   = 0x6368726DL,  /* 'chrm' V2.3+ */ 
+	icSigColorantOrderTag                  = 0x636C726FL,  /* 'clro' V4.0+ */
+	icSigColorantTableTag                  = 0x636C7274L,  /* 'clrt' V4.0+ */
+	icSigColorantTableOutTag               = 0x636C6F74L,  /* 'clot' V4.0+ */
+	icSigCopyrightTag                      = 0x63707274L,  /* 'cprt' */
+	icSigCrdInfoTag                        = 0x63726469L,  /* 'crdi' V2.1 - V4.0 */
+	icSigDataTag                           = 0x64617461L,  /* 'data' ??? */
+	icSigDateTimeTag                       = 0x6474696DL,  /* 'dtim' ???  */
+	icSigDeviceMfgDescTag                  = 0x646D6E64L,  /* 'dmnd' */
+	icSigDeviceModelDescTag                = 0x646D6464L,  /* 'dmdd' */
+	icSigDeviceSettingsTag                 = 0x64657673L,  /* 'devs' V2.2 - V4.0 */
+	icSigGamutTag                          = 0x67616D74L,  /* 'gamt' */
+	icSigGrayTRCTag                        = 0x6b545243L,  /* 'kTRC' */
+	icSigGreenMatrixColumnTag              = 0x6758595AL,  /* 'gXYZ' */
+	icSigGreenTRCTag                       = 0x67545243L,  /* 'gTRC' */
+	icSigLuminanceTag                      = 0x6C756d69L,  /* 'lumi' */
+	icSigMeasurementTag                    = 0x6D656173L,  /* 'meas' */
+	icSigMediaBlackPointTag                = 0x626B7074L,  /* 'bkpt' */
+	icSigMediaWhitePointTag                = 0x77747074L,  /* 'wtpt' */
+	icSigNamedColorTag                     = 0x6E636f6CL,  /* 'ncol' V2.0 */
+	icSigNamedColor2Tag                    = 0x6E636C32L,  /* 'ncl2' V2.1+ */
+	icSigOutputResponseTag                 = 0x72657370L,  /* 'resp' V2.2+ */
+	icSigPerceptualRenderingIntentGamutTag = 0x72696730L,  /* 'rig0' ??? */
+	icSigPreview0Tag                       = 0x70726530L,  /* 'pre0' */
+	icSigPreview1Tag                       = 0x70726531L,  /* 'pre1' */
+	icSigPreview2Tag                       = 0x70726532L,  /* 'pre2' */
+	icSigProfileDescriptionTag             = 0x64657363L,  /* 'desc' */
+	icSigProfileSequenceDescTag            = 0x70736571L,  /* 'pseq' */
+	icSigPs2CRD0Tag                        = 0x70736430L,  /* 'psd0' V2.0 - V4.0 */
+	icSigPs2CRD1Tag                        = 0x70736431L,  /* 'psd1' V2.0 - V4.0 */
+	icSigPs2CRD2Tag                        = 0x70736432L,  /* 'psd2' V2.0 - V4.0 */
+	icSigPs2CRD3Tag                        = 0x70736433L,  /* 'psd3' V2.0 - V4.0 */
+	icSigPs2CSATag                         = 0x70733273L,  /* 'ps2s' V2.0 - V4.0 */
+	icSigPs2RenderingIntentTag             = 0x70733269L,  /* 'ps2i' V2.0 - V4.0 */
+	icSigRedMatrixColumnTag                = 0x7258595AL,  /* 'rXYZ' */
+	icSigRedTRCTag                         = 0x72545243L,  /* 'rTRC' */
+	icSigSaturationRenderingIntentGamutTag = 0x72696732L,  /* 'rig2' ??? */
+	icSigScreeningDescTag                  = 0x73637264L,  /* 'scrd' V2.0 - V4.0 */
+	icSigScreeningTag                      = 0x7363726EL,  /* 'scrn' V2.0 - V4.0 */
+	icSigTechnologyTag                     = 0x74656368L,  /* 'tech' */
+	icSigUcrBgTag                          = 0x62666420L,  /* 'bfd ' V2.0 - V4.0 */
+	icSigVideoCardGammaTag                 = 0x76636774L,  /* 'vcgt' ColorSync 2.5+ */
+	icSigViewingCondDescTag                = 0x76756564L,  /* 'vued' */
+	icSigViewingConditionsTag              = 0x76696577L,  /* 'view' */
+	icMaxEnumTag                           = icMaxTagVal 
 } icTagSignature;
 
 /* Aliases for backwards compatibility */
@@ -272,8 +283,8 @@ typedef enum {
 /* type signatures */
 typedef enum {
     icSigChromaticityType               = 0x6368726DL,  /* 'chrm' */ 
-    icSigColorantOrderType              = 0x636C726FL,  /* 'clro' */
-    icSigColorantTableType              = 0x636C7274L,  /* 'clrt' */
+    icSigColorantOrderType              = 0x636C726FL,  /* 'clro' V4.0+ */
+    icSigColorantTableType              = 0x636C7274L,  /* 'clrt' V4.0+ */
     icSigCrdInfoType                    = 0x63726469L,  /* 'crdi' V2.1 - V4.0 */
     icSigCurveType                      = 0x63757276L,  /* 'curv' */
     icSigDataType                       = 0x64617461L,  /* 'data' */
@@ -325,10 +336,7 @@ typedef enum {
     icSigHlsData                        = 0x484C5320L,  /* 'HLS ' */
     icSigCmykData                       = 0x434D594BL,  /* 'CMYK' */
     icSigCmyData                        = 0x434D5920L,  /* 'CMY ' */
-    icSigMch5Data                       = 0x4D434835L,  /* 'MCH5' Colorsync ? */
-    icSigMch6Data                       = 0x4D434836L,  /* 'MCH6' Hexachrome: CMYKOG */
-    icSigMch7Data                       = 0x4D434837L,  /* 'MCH7' Colorsync ? */
-    icSigMch8Data                       = 0x4D434838L,  /* 'MCH8' Colorsync ? */
+
     icSig2colorData                     = 0x32434C52L,  /* '2CLR' */
     icSig3colorData                     = 0x33434C52L,  /* '3CLR' */
     icSig4colorData                     = 0x34434C52L,  /* '4CLR' */
@@ -343,6 +351,13 @@ typedef enum {
     icSig13colorData                    = 0x44434C52L,  /* 'DCLR' */
     icSig14colorData                    = 0x45434C52L,  /* 'ECLR' */
     icSig15colorData                    = 0x46434C52L,  /* 'FCLR' */
+
+    icSigMch5Data                       = 0x4D434835L,  /* 'MCH5' Colorsync ? */
+    icSigMch6Data                       = 0x4D434836L,  /* 'MCH6' Hexachrome: CMYKOG */
+    icSigMch7Data                       = 0x4D434837L,  /* 'MCH7' Colorsync ? */
+    icSigMch8Data                       = 0x4D434838L,  /* 'MCH8' Colorsync ? */
+	icSigNamedData                      = 0x6e6d636cL,  /* 'nmcl' ??? */
+
     icMaxEnumData                       = icMaxTagVal   
 } icColorSpaceSignature;
 
@@ -367,6 +382,12 @@ typedef enum {
     icSigTaligent                       = 0x54474E54L,  /* 'TGNT' */
     icMaxEnumPlatform                   = icMaxTagVal  
 } icPlatformSignature;
+
+/* Rendering Intent Gamut Signatures */
+typedef enum {
+    icSigPerceptualReferenceMediumGamut = 0x70726d67L,  /* 'prmg' */
+    icMaxEnumReferenceMediumGamut       = icMaxTagVal  
+} icReferenceMediumGamutSignature;
 
 /*------------------------------------------------------------------------*/
 /*
@@ -429,8 +450,47 @@ typedef enum {
     icIlluminantA                       = 0x00000006L,
     icIlluminantEquiPowerE              = 0x00000007L,  
     icIlluminantF8                      = 0x00000008L,  
-    icMaxEnumIluminant                  = icMaxTagVal   
+    icMaxEnumIlluminant                 = icMaxTagVal   
 } icIlluminant;
+
+/* A not so exhaustive list of language codes */
+typedef enum {
+	icLanguageCodeEnglish               = 0x656E, /* 'en' */
+	icLanguageCodeGerman                = 0x6465, /* 'de' */
+	icLanguageCodeItalian               = 0x6974, /* 'it' */
+	icLanguageCodeDutch                 = 0x6E6C, /* 'nl' */
+	icLanguageCodeSweden                = 0x7376, /* 'sv' */
+	icLanguageCodeSpanish               = 0x6573, /* 'es' */
+	icLanguageCodeDanish                = 0x6461, /* 'da' */
+	icLanguageCodeNorwegian             = 0x6E6F, /* 'no' */
+	icLanguageCodeJapanese              = 0x6A61, /* 'ja' */
+	icLanguageCodeFinish                = 0x6669, /* 'fi' */
+	icLanguageCodeTurkish               = 0x7472, /* 'tr' */
+	icLanguageCodeKorean                = 0x6B6F, /* 'ko' */
+	icLanguageCodeChienese              = 0x7A68, /* 'zh' */
+	icLanguageCodeFrench                = 0x6672, /* 'fr' */
+	icMaxEnumLanguageCode               = 0xFFFF
+} icEnumLanguageCode;
+
+/* A not so exhaustive list of region codes. */
+typedef enum {
+	icRegionCodeUSA                      = 0x5553, /* 'US' */
+	icRegionCodeUnitedKingdom            = 0x554B, /* 'UK' */
+	icRegionCodeGermany                  = 0x4445, /* 'DE' */
+	icRegionCodeItaly                    = 0x4954, /* 'IT' */
+	icRegionCodeNetherlands              = 0x4E4C, /* 'NL' */
+	icRegionCodeSpain                    = 0x4543, /* 'ES' */
+	icRegionCodeDenmark                  = 0x444B, /* 'DK' */
+	icRegionCodeNorway                   = 0x4E4F, /* 'ND' */
+	icRegionCodeJapan                    = 0x4A50, /* 'JP' */
+	icRegionCodeFinland                  = 0x4649, /* 'FI' */
+	icRegionCodeTurkey                   = 0x5452, /* 'TR' */
+	icRegionCodeKorea                    = 0x4B52, /* 'KR' */
+	icRegionCodeChina                    = 0x434E, /* 'CN' */
+	icRegionCodeTaiwan                   = 0x5457, /* 'TW' */
+	icRegionCodeFrance                   = 0x4652, /* 'FR' */
+	icMaxEnumRegionCode                  = 0xFFFF
+} icEnumRegionCode;
 
 /* media type for icSigDeviceSettingsTag */
 typedef enum {
@@ -488,4 +548,8 @@ typedef enum {
     icCurveFunction7                    = 0x0004
 } icParametricCurveFunctionType;
 
-#endif /* ICCV41_H */
+#ifdef __cplusplus
+	}
+#endif
+
+#endif /* ICCV42_H */

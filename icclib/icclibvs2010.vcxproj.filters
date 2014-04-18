@@ -22,7 +22,7 @@
     <ClInclude Include="icc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="iccV41.h">
+    <ClInclude Include="iccV42.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,11 +4,13 @@
  * File dump utility.
  *
  * Author:  Graeme W. Gill
- * Date:    99/11/29
- * Version: 2.05
+ * Date:    1999/11/29
+ * Version: 2.14
  *
- * Copyright 1997 - 2004 Graeme W. Gill
- * Please refer to Licence.txt file for details.
+ * Copyright 1997 - 2012 Graeme W. Gill
+ *
+ * This material is licensed with an "MIT" free use license:-
+ * see the License.txt file in this directory for licensing details.
  */
 
 /*
@@ -31,18 +33,23 @@ void usage(void) {
 	fprintf(stderr,"Author: Graeme W. Gill\n");
 	fprintf(stderr,"usage: iccdump [-v level] [-t tagname] [-s] infile\n");
 	fprintf(stderr," -v level                 Verbose level 1-3 (default 2)\n");
-	fprintf(stderr," -t tag                   Dump this tag only\n");
+	fprintf(stderr," -t tag                   Dump this tag only (can be used multiple times)\n");
 	fprintf(stderr," -s                       Search for embedded profile\n");
+	fprintf(stderr," -i                       Check V4 ID value\n");
 	exit(1);
 }
+
+#define MXTGNMS 30
 
 int
 main(int argc, char *argv[]) {
 	int fa,nfa;				/* argument we're looking at */
 	char in_name[500];
-	char tag_name[40] = { '\000' };
+	int ntag_names = 0;
+	char tag_names[MXTGNMS][5];
 	int verb = 2;
 	int search = 0;
+	int chid = 0;		/* Check V4 ID */
 	int ecount = 1;		/* Embedded count */
 	int offset = 0;		/* Offset to read profile from */
 	int found;
@@ -83,11 +90,18 @@ main(int argc, char *argv[]) {
 			else if (argv[fa][1] == 't' || argv[fa][1] == 'T') {
 				fa = nfa;
 				if (na == NULL) usage();
-				strcpy(tag_name,na);
+				if (ntag_names >= MXTGNMS)
+					usage();
+				strncpy(tag_names[ntag_names],na,4);
+				tag_names[ntag_names++][4] = '\000';
 			}
 			/* Search */
 			else if (argv[fa][1] == 's' || argv[fa][1] == 'S') {
 				search = 1;
+			}
+			/* Check ID */
+			else if (argv[fa][1] == 'i' || argv[fa][1] == 'I') {
+				chid = 1;
 			}
 
 			else 
@@ -162,29 +176,59 @@ main(int argc, char *argv[]) {
 		if (search == 0 || found != 0) {
 			ecount++;
 	
+			if (search)
+				printf("Embedded profile found at file offset %d (0x%x)\n",offset,offset);
+
 			if ((rv = icco->read(icco,fp,offset)) != 0)
 				error ("%d, %s",rv,icco->err);
 		
-			if (tag_name[0] != '\000') {
-				icTagSignature sig = str2tag(tag_name);
-		
-				/* Try and locate that particular tag */
-				if ((rv = icco->find_tag(icco,sig)) != 0) {
-					if (rv == 1)
-						warning ("icc->find_tag() tag '%s' found but unknown", tag_name);
-					else
-						warning ("icc->find_tag() can't find tag '%s' in file", tag2str(sig));
-				} else {
-					icmBase *ob;
-		
-					if ((ob = icco->read_tag(icco, sig)) == NULL) {
-						warning("Failed to read tag '%s': %d, %s",tag_name, icco->errc,icco->err);
+			if (ntag_names > 0) {
+				int i;
+				for (i = 0; i < ntag_names; i++) {
+
+					icTagSignature sig = str2tag(tag_names[i]);
+			
+					/* Try and locate that particular tag */
+					if ((rv = icco->find_tag(icco,sig)) != 0) {
+						if (rv == 1)
+							warning ("icc->find_tag() tag '%s' found but unknown", tag_names[i]);
+						else
+							warning ("icc->find_tag() can't find tag '%s' in file", tag2str(sig));
 					} else {
-						ob->dump(ob, op, verb-1);
+						icmBase *ob;
+			
+						if ((ob = icco->read_tag(icco, sig)) == NULL) {
+							warning("Failed to read tag '%s': %d, %s",tag_names[i], icco->errc,icco->err);
+						} else {
+							ob->dump(ob, op, verb-1);
+						}
 					}
 				}
 			} else {
 				icco->dump(icco, op, verb);
+				if (chid && icco->header->majv >= 4) {
+					unsigned char id[16];
+					rv = icco->check_id(icco, id);
+					if (rv == 0)
+						printf("Id checks\n");
+					else if (rv == 1)
+						printf("Id can't be checked because it's not set\n");
+					else if (rv == 2) {
+						icmHeader *p = icco->header;
+						printf("Id check fails:\n");
+						op->gprintf(op," ID is       = %02X%02X%02X%02X%02X%02X%02X%02X"
+						                              "%02X%02X%02X%02X%02X%02X%02X%02X\n",
+							p->id[0], p->id[1], p->id[2], p->id[3],
+							p->id[4], p->id[5], p->id[6], p->id[7],
+							p->id[8], p->id[9], p->id[10], p->id[11],
+							p->id[12], p->id[13], p->id[14], p->id[15]);
+						op->gprintf(op," ID should be = %02X%02X%02X%02X%02X%02X%02X%02X"
+						                               "%02X%02X%02X%02X%02X%02X%02X%02X\n",
+							id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7],
+							id[8], id[9], id[10], id[11], id[12], id[13], id[14], id[15]);
+					} else
+						warning("Failed to do ID check %d, %s",icco->errc,icco->err);
+				}
 			}
 			offset += 128;
 		}

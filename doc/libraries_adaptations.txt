@@ -136,14 +136,18 @@ static av_cold int encode_end(AVCodecContext *avctx)
 - libavcodec/vp3.c many changes to backport!
 
 
-icclib 2.0.3
-------------
+icclib 2.14
+-----------
 
 - Thread Safe
 
 - Changed file icc.c:
-  * icmFileMem_printf changed to advance pointer and using the more safe vsnprint
+  * icmFileMem_printf changed to advance pointer
   * Adapted icc_dump & icmHeader_dump to use tabs
+  
+- Added missing extern to the following two arrays in icc.h:
+  extern double icmD50_ary3[3];				/* As an array */
+  extern double icmD65_ary3[3];				/* As an array */
 
 
 ziparchive-2.4.4
@@ -365,7 +369,7 @@ libtiff 3.8.2
 - In tif_dirinfo.c EXIFTAG_SUBJECTDISTANCE is TIFF_SRATIONAL!
 
 
-libpng 1.2.49
+libpng 1.2.51
 -------------
 
 - Thread Safe, but do not define PNG_THREAD_UNSAFE_OK!

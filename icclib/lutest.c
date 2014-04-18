@@ -4,11 +4,13 @@
  * Lookup test code, and profile creation examples.
  *
  * Author:  Graeme W. Gill
- * Date:    00/6/18
- * Version: 2.04
+ * Date:    2000/6/18
+ * Version: 2.14
  *
- * Copyright 1998 - 2004 Graeme W. Gill
- * Please refer to Licence.txt file for details.
+ * Copyright 1998 - 2012 Graeme W. Gill
+ *
+ * This material is licensed with an "MIT" free use license:-
+ * see the License.txt file in this directory for licensing details.
  */
 
 /* TTBD:
@@ -174,12 +176,14 @@ static void abs_to_rel(double out[3], double in[3]) {
 	out[2] = -0.008529 * tt[0] +  0.040043 * tt[1] + 0.968487 * tt[2];
 }
 
+#ifdef NEVER	/* Not currently used */
 /* Convert from absolute to normalized XYZ */
 static void from_abs(double out[3], double in[3]) {
 	
 	abs_to_rel(out, in);		/* Convert to relative */
 	from_rel(out, out);			/* Convert to normalised */
 }
+#endif /* NEVER */
 
 /* CIE XYZ to perceptual Lab with ICC D50 white point */
 static void
@@ -565,6 +569,8 @@ static void aRGB_XYZ(void *cntx, double out[3], double in[3]) {
 	to_abs(out, out);
 }
 
+#ifdef NEVER	/* Not currently used */
+
 /* XYZ -> RGB, absolute */
 static void aXYZ_RGB(void *cntx, double out[3], double in[3]) {
 	from_abs(out, in);
@@ -578,10 +584,12 @@ static void cXYZ_RGB(void *cntx, double out[3], double in[3]) {
 	clip(out);
 }
 
+#endif /* NEVER */
+
 /* XYZ' -> distance to gamut boundary */
 static void XYZp_BDIST(void *cntx, double out[1], double in[3]) {
 	double gdst;				/* Gamut error */
-	int m, mini, outg;
+	int m, mini = 0, outg;
 	double tt, mind;
 	double pcs[3];				/* PCS value of input */
 	double dev[3];				/* Device value */
@@ -718,6 +726,8 @@ static void aRGB_Lab(void *cntx, double out[3], double in[3]) {
 	XYZ2Lab(out, out);
 }
 
+#ifdef NEVER	/* Not currently used */
+
 /* Lab -> RGB, absolute */
 static void aLab_RGB(void *cntx, double out[3], double in[3]) {
 	Lab2XYZ(out, in);
@@ -733,10 +743,12 @@ static void cLab_RGB(void *cntx, double out[3], double in[3]) {
 	clip(out);
 }
 
+#endif /* NEVER */
+
 /* Lab' -> distance to gamut boundary */
 static void Labp_BDIST(void *cntx, double out[1], double in[3]) {
 	double gdst;				/* Gamut error */
-	int m, mini, outg;
+	int m, mini = 0, outg;
 	double tt, mind;
 	double pcs[3];				/* PCS value of input */
 	double dev[3];				/* Device value */
@@ -820,7 +832,7 @@ main(
 
 	/* Check variables */
 	int co[3];
-	double in[3], out[3], check[3], temp[3];
+	double in[3], out[3], check[3];
 
 	{
 
@@ -940,7 +952,7 @@ main(
 	/* Gray Tone Reproduction Curve Tags: */
 	{
 		icmCurve *wog;
-		int i;
+		unsigned int i;
 		if ((wog = (icmCurve *)wr_icco->add_tag(
 		           wr_icco, icSigGrayTRCTag, icSigCurveType)) == NULL) 
 			error("add_tag failed: %d, %s",rv,wr_icco->err);
@@ -1234,7 +1246,7 @@ main(
 	/* Gray Tone Reproduction Curve Tags: */
 	{
 		icmCurve *wog;
-		int i;
+		unsigned int i;
 		if ((wog = (icmCurve *)wr_icco->add_tag(
 		           wr_icco, icSigGrayTRCTag, icSigCurveType)) == NULL) 
 			error("add_tag failed: %d, %s",rv,wr_icco->err);
@@ -1654,7 +1666,7 @@ main(
 	/* Red, Green and Blue Tone Reproduction Curve Tags: */
 	{
 		icmCurve *wor, *wog, *wob;
-		int i;
+		unsigned int i;
 		if ((wor = (icmCurve *)wr_icco->add_tag(
 		           wr_icco, icSigRedTRCTag, icSigCurveType)) == NULL) 
 			error("add_tag failed: %d, %s",rv,wr_icco->err);
@@ -1982,7 +1994,7 @@ main(
 		/* So we can't use it for this lut. */
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigRgbData, 				/* Input color space */
 				icSigXYZData, 				/* Output color space */
 				RGB_RGBp,					/* Input transfer function, RGB->RGB' (NULL = default) */
@@ -2113,7 +2125,7 @@ main(
 		}
 #endif
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigXYZData, 				/* Input color space */
 				icSigRgbData, 				/* Output color space */
 				XYZ_XYZp, 					/* Input transfer function, XYZ->XYZ' (NULL = default) */
@@ -2168,7 +2180,7 @@ main(
 		*/
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigXYZData, 				/* Input color space */
 				icSigGrayData, 				/* Output color space */
 				XYZ_XYZp,					/* Input transfer function, XYZ->XYZ' (NULL = default) */
@@ -2546,7 +2558,7 @@ main(
 		/* so it is not used here. */
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigRgbData, 				/* Input color space */
 				icSigLabData, 				/* Output color space */
 				RGB_RGBp,					/* Input transfer function, RGB->RGB' (NULL = default) */
@@ -2630,7 +2642,7 @@ main(
 		}
 #endif
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigLabData, 				/* Input color space */
 				icSigRgbData, 				/* Output color space */
 				Lab_Labp,					/* Linear input transform Lab->Lab' */
@@ -2677,7 +2689,7 @@ main(
 		/* so it can't be used here. */
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigLabData, 				/* Input color space */
 				icSigGrayData, 				/* Output color space */
 				Lab_Labp,					/* Linear input transform Lab->Lab' */
@@ -2781,11 +2793,11 @@ main(
 	
 					/* Check the result */
 					mxd = maxdiff(in, out);
-					if (mxd > 0.01)
+					if (mxd > 0.02)
 #ifdef STOPONERROR
-						error ("Excessive error in Lab16 Lut Bwd %f > 0.01",mxd);
+						error ("Excessive error in Lab16 Lut Bwd %f > 0.02",mxd);
 #else
-						warning ("Excessive error in Lab16 Lut Bwd %f > 0.01",mxd);
+						warning ("Excessive error in Lab16 Lut Bwd %f > 0.02",mxd);
 #endif /* STOPONERROR */
 					if (mxd > merr)
 						merr = mxd;
@@ -2869,11 +2881,11 @@ main(
 	
 					/* Check the result */
 					mxd = maxdiff(in, out);
-					if (mxd > 0.01)
+					if (mxd > 0.02)
 #ifdef STOPONERROR
-						error ("Excessive error in Abs Lab16 Lut Bwd %f > 0.01",mxd);
+						error ("Excessive error in Abs Lab16 Lut Bwd %f > 0.02",mxd);
 #else
-						warning ("Excessive error in Abs Lab16 Lut Bwd %f > 0.01",mxd);
+						warning ("Excessive error in Abs Lab16 Lut Bwd %f > 0.02",mxd);
 #endif /* STOPONERROR */
 					if (mxd > merr)
 						merr = mxd;
@@ -2939,7 +2951,7 @@ main(
 		printf("Lut Lab16 gamut check inside  correct = %f%%\n",100.0 * iok/ino);
 		printf("Lut Lab16 gamut check outside correct = %f%%\n",100.0 * ook/ono);
 		printf("Lut Lab16 gamut check total   correct = %f%%\n",100.0 * (iok+ook)/(ino+ono));
-		if (((double)iok/ino) < 0.99 || ((double)ook/ono) < 0.98)
+		if (((double)iok/ino) < 0.98 || ((double)ook/ono) < 0.98)
 #ifdef STOPONERROR
 			error ("Gamut Lab16 lookup has excessive error");
 #else
@@ -3052,7 +3064,7 @@ main(
 		/* so it is not used here. */
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigRgbData, 				/* Input color space */
 				icSigLabData, 				/* Output color space */
 				RGB_RGBp,					/* Input transfer function, RGB->RGB' (NULL = default) */
@@ -3136,7 +3148,7 @@ main(
 		}
 #endif
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigLabData, 				/* Input color space */
 				icSigRgbData, 				/* Output color space */
 				Lab_Labp,					/* Linear input transform Lab->Lab' */
@@ -3183,7 +3195,7 @@ main(
 		/* so it can't be used here. */
 
 		/* Use helper function to do the hard work. */
-		if (wo->set_tables(wo, NULL,
+		if (wo->set_tables(wo, ICM_CLUT_SET_EXACT, NULL,
 				icSigLabData, 				/* Input color space */
 				icSigGrayData, 				/* Output color space */
 				Lab_Labp,					/* Linear input transform Lab->Lab' */
@@ -3287,11 +3299,11 @@ main(
 	
 					/* Check the result */
 					mxd = maxdiff(in, out);
-					if (mxd > 0.025)
+					if (mxd > 0.03)
 #ifdef STOPONERROR
-						error ("Excessive error in Lab8 Lut Bwd %f > 0.025",mxd);
+						error ("Excessive error in Lab8 Lut Bwd %f > 0.03",mxd);
 #else
-						warning ("Excessive error in Lab8 Lut Bwd %f > 0.025",mxd);
+						warning ("Excessive error in Lab8 Lut Bwd %f > 0.03",mxd);
 #endif /* STOPONERROR */
 					if (mxd > merr)
 						merr = mxd;
@@ -3375,11 +3387,11 @@ main(
 	
 					/* Check the result */
 					mxd = maxdiff(in, out);
-					if (mxd > 0.025)
+					if (mxd > 0.03)
 #ifdef STOPONERROR
-						error ("Excessive error in Abs Lab8 Lut Bwd %f > 0.025",mxd);
+						error ("Excessive error in Abs Lab8 Lut Bwd %f > 0.03",mxd);
 #else
-						warning ("Excessive error in Abs Lab8 Lut Bwd %f > 0.025",mxd);
+						warning ("Excessive error in Abs Lab8 Lut Bwd %f > 0.03",mxd);
 #endif /* STOPONERROR */
 					if (mxd > merr)
 						merr = mxd;
@@ -3445,7 +3457,7 @@ main(
 		printf("Lut Lab8 gamut check inside  correct = %f%%\n",100.0 * iok/ino);
 		printf("Lut Lab8 gamut check outside correct = %f%%\n",100.0 * ook/ono);
 		printf("Lut Lab8 gamut check total   correct = %f%%\n",100.0 * (iok+ook)/(ino+ono));
-		if (((double)iok/ino) < 0.99 || ((double)ook/ono) < 0.98)
+		if (((double)iok/ino) < 0.98 || ((double)ook/ono) < 0.98)
 #ifdef STOPONERROR
 			error ("Gamut Lab8 lookup has excessive error");
 #else

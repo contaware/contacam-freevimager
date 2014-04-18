@@ -3,6 +3,7 @@ FREEVIMAGER HISTORY
 4.9.7 (xxx yth 2014)
 
 - libpng updated to 1.2.51
+- icclib updated to 2.14
 
 4.9.5 (March 24th 2014)
 

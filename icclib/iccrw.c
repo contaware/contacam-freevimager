@@ -4,11 +4,13 @@
  * Profile read then re-write skeleton utility.
  *
  * Author:  Graeme W. Gill
- * Date:    99/11/29
- * Version: 2.05
+ * Date:    1999/11/29
+ * Version: 2.14
  *
- * Copyright 1997 - 2004 Graeme W. Gill
- * Please refer to Licence.txt file for details.
+ * Copyright 1997 - 2012 Graeme W. Gill
+ *
+ * This material is licensed with an "MIT" free use license:-
+ * see the License.txt file in this directory for licensing details.
  */
 
 /* TTBD:
@@ -25,7 +27,9 @@
 
 #undef TEST_VIDGAMTAG		/* Add ColorSync 2.5 VideoCardGamma tag with linear table */
 #undef TEST_SRGB_FIX		/* Some test code */
-#undef WP_PATCH			/* Overwrite the white point */
+#undef WP_PATCH				/* Overwrite the white point */
+#undef INVERT_GRAY			/* Invert single TRC gray profile */
+#undef MOD_A2B /* 0 */		/* Modify A2B RGB tables */
 
 void error(char *fmt, ...), warning(char *fmt, ...);
 
@@ -43,7 +47,6 @@ main(int argc, char *argv[]) {
 	char out_name[500];
 	icmFile *rd_fp, *wr_fp;
 	icc *icco;
-	int i;
 	int verb = 0;
 	int rv = 0;
 
@@ -69,6 +72,9 @@ main(int argc, char *argv[]) {
 
 			if (argv[fa][1] == '?')
 				usage();
+
+			if (argv[fa][1] == 'v' || argv[fa][1] == 'V')
+				verb = 1;
 
 			/* No options */
 			usage();
@@ -130,7 +136,7 @@ main(int argc, char *argv[]) {
 			double vi, vo;
 			vi = i/(double)(ro->size-1);
 
-			if (vi < 0.03928) {
+			if (vi < 0.04045) {
 				vo = vi/12.92;
 			} else {
 				vo = pow((0.055+vi)/1.055,2.4);
@@ -200,6 +206,66 @@ main(int argc, char *argv[]) {
 	/* Show we modified this ICC file */
 	icco->header->cmmId = str2tag("argl");		/* CMM for profile - Argyll CMM */
 #endif
+#ifdef INVERT_GRAY			/* Invert single TRC gray profile */
+	{
+		icmCurve *ro;
+		int i;
+
+		/* Try and read the tag from the file */
+		ro = (icmCurve *)icco->read_tag(icco, icSigGrayTRCTag);
+		if (ro == NULL) 
+			error("Unable to read GrayTRC");
+
+		/* Need to check that the cast is appropriate. */
+		if (ro->ttype != icSigCurveType)
+			error("GrayTRC is not CurveType");
+
+		/* Swap the curve entries from top to bottom */
+		for (i = 0; i < (ro->size/2); i++) {
+			double temp;
+			int ii = 255 - i;
+
+			temp = ro->data[ii];
+			ro->data[ii] = ro->data[i];
+			ro->data[i] = temp;
+		}
+	}
+
+#endif
+
+#ifdef MOD_A2B
+	{
+		icmLut *ro;
+		unsigned long size;
+		unsigned int i, j;
+		icTagSignature sig;
+
+		if (MOD_A2B == 0)
+			sig = icSigAToB0Tag;
+		else if (MOD_A2B == 1)
+			sig = icSigAToB1Tag;
+		else 
+			sig = icSigAToB2Tag;
+
+		/* Try and read the tag from the file */
+		ro = (icmLut *)icco->read_tag(icco, sig);
+		if (ro == NULL) 
+			error("Failed to read A2B tag");
+
+		/* Need to check that the cast is appropriate. */
+		if (ro->ttype != icSigLut16Type)
+			error("A2B is not 16 bitg");
+	
+		/* Simply apply a gamma to the corresponding input curve */
+		for (i = 0; i < ro->inputChan; i++) {				/* Input tables */
+			double val;
+			j = MOD_A2B;
+			val = ro->inputTable[i * ro->inputEnt + j];
+			val = pow(val, 2.0);
+			ro->inputTable[i * ro->inputEnt + j] = val;
+		}
+	}
+#endif /* MOD_A2B */
 
 	/* ======================================= */
 	

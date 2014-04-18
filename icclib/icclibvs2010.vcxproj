@@ -176,7 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="icc.h" />
-    <ClInclude Include="iccV41.h" />
+    <ClInclude Include="iccV42.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

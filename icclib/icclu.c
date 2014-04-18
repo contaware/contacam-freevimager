@@ -4,11 +4,13 @@
  * Profile color lookup utility.
  *
  * Author:  Graeme W. Gill
- * Date:    99/11/29
- * Version: 2.05
+ * Date:    1999/11/29
+ * Version: 2.14
  *
- * Copyright 1998 - 2004 Graeme W. Gill
- * Please refer to Licence.txt file for details.
+ * Copyright 1998 - 2012 Graeme W. Gill
+ *
+ * This material is licensed with an "MIT" free use license:-
+ * see the License.txt file in this directory for licensing details.
  */
 
 /* TTBD:
@@ -37,14 +39,15 @@ void usage(void) {
 	fprintf(stderr,"Translate colors through an ICC profile, V%s\n",ICCLIB_VERSION_STR);
 	fprintf(stderr,"Author: Graeme W. Gill\n");
 	fprintf(stderr,"usage: icclu [-v level] [-f func] [-i intent] [-o order] profile\n");
-	fprintf(stderr," -v            Verbose\n");
+	fprintf(stderr," -v level      Verbosity level 0 - 2 (default = 1)\n");
 	fprintf(stderr," -f function   f = forward, b = backwards, g = gamut, p = preview\n");
 	fprintf(stderr," -i intent     p = perceptual, r = relative colorimetric,\n");
 	fprintf(stderr,"               s = saturation, a = absolute\n");
+//	fprintf(stderr,"               P = absolute perceptual, S = absolute saturation\n");
 	fprintf(stderr," -p oride      x = XYZ_PCS, l = Lab_PCS, y = Yxy,\n");
 	fprintf(stderr," -o order      n = normal (priority: lut > matrix > monochrome)\n");
 	fprintf(stderr,"               r = reverse (priority: monochrome > matrix > lut)\n");
-	fprintf(stderr," -s            Scale device input and output to 100.0\n");
+	fprintf(stderr," -s scale      Scale device range 0.0 - scale rather than 0.0 - 1.0\n");
 	fprintf(stderr,"\n");
 	fprintf(stderr,"    The colors to be translated should be fed into standard input,\n");
 	fprintf(stderr,"    one input color per line, white space separated.\n");
@@ -59,8 +62,8 @@ main(int argc, char *argv[]) {
 	char prof_name[500];
 	icmFile *fp;
 	icc *icco;
-	int verb = 0;
-	int scale = 0;
+	int verb = 1;
+	double scale = 0.0;		/* Device value scale factor */
 	int rv = 0;
 	int repYxy = 0;			/* Report Yxy */
 	char buf[200];
@@ -102,8 +105,21 @@ main(int argc, char *argv[]) {
 
 			/* Verbosity */
 			else if (argv[fa][1] == 'v' || argv[fa][1] == 'V') {
-				verb = 1;
+				fa = nfa;
+				if (na == NULL)
+					verb = 2;
+				else {
+					if (na[0] == '0')
+						verb = 0;
+					else if (na[0] == '1')
+						verb = 1;
+					else if (na[0] == '2')
+						verb = 2;
+					else
+						usage();
+				}
 			}
+
 			/* function */
 			else if (argv[fa][1] == 'f' || argv[fa][1] == 'F') {
 				fa = nfa;
@@ -136,20 +152,23 @@ main(int argc, char *argv[]) {
 				if (na == NULL) usage();
     			switch (na[0]) {
 					case 'p':
-					case 'P':
 						intent = icPerceptual;
 						break;
 					case 'r':
-					case 'R':
 						intent = icRelativeColorimetric;
 						break;
 					case 's':
-					case 'S':
 						intent = icSaturation;
 						break;
 					case 'a':
-					case 'A':
 						intent = icAbsoluteColorimetric;
+						break;
+					/* Special function icclib intents */
+					case 'P':
+						intent = icmAbsolutePerceptual;
+						break;
+					case 'S':
+						intent = icmAbsoluteSaturation;
 						break;
 					default:
 						usage();
@@ -201,7 +220,10 @@ main(int argc, char *argv[]) {
 
 			/* Device scale */
 			else if (argv[fa][1] == 's' || argv[fa][1] == 'S') {
-				scale = 1;
+				fa = nfa;
+				if (na == NULL) usage();
+				scale = atof(na);
+				if (scale <= 0.0) usage();
 			}
 
 			else 
@@ -223,7 +245,7 @@ main(int argc, char *argv[]) {
 	if ((rv = icco->read(icco,fp,0)) != 0)
 		error ("%d, %s",rv,icco->err);
 
-	if (verb) {
+	if (verb > 1) {
 		icmFile *op;
 		if ((op = new_icmFileStd_fp(stdout)) == NULL)
 			error ("Can't open stdout");
@@ -236,7 +258,7 @@ main(int argc, char *argv[]) {
 		error ("%d, %s",icco->errc, icco->err);
 
 	/* Get details of conversion (Arguments may be NULL if info not needed) */
-	luo->spaces(luo, &ins, &inn, &outs, &outn, &alg, NULL, NULL, NULL);
+	luo->spaces(luo, &ins, &inn, &outs, &outn, &alg, NULL, NULL, NULL, NULL);
 
 	if (repYxy) {	/* report Yxy rather than XYZ */
 		if (ins == icSigXYZData)
@@ -259,7 +281,8 @@ main(int argc, char *argv[]) {
 		if (fgets(buf, 200, stdin) == NULL)
 			break;
 		if (buf[0] == '#') {
-			fprintf(stdout,"%s\n",buf);
+			if (verb > 0)
+				fprintf(stdout,"%s\n",buf);
 			continue;
 		}
 		/* For each input number */
@@ -273,7 +296,7 @@ main(int argc, char *argv[]) {
 			break;
 
 		/* If device data and scale */
-		if(scale != 0
+		if(scale > 0.0
     	 && ins != icSigXYZData
 		 && ins != icSigLabData
 		 && ins != icSigLuvData
@@ -282,7 +305,7 @@ main(int argc, char *argv[]) {
 		 && ins != icSigHsvData
 		 && ins != icSigHlsData) {
 			for (i = 0; i < MAX_CHAN; i++) {
-				in[i] /= 100.0;
+				in[i] /= scale;
 			}
 		}
 
@@ -307,15 +330,17 @@ main(int argc, char *argv[]) {
 			error ("%d, %s",icco->errc,icco->err);
 
 		/* Output the results */
-		for (j = 0; j < inn; j++) {
-			if (j > 0)
-				fprintf(stdout," %f",oin[j]);
-			else
-				fprintf(stdout,"%f",oin[j]);
-		}
-		printf(" [%s] -> %s -> ", icm2str(icmColorSpaceSignature, ins),
+		if (verb > 0) {
+			for (j = 0; j < inn; j++) {
+				if (j > 0)
+					fprintf(stdout," %f",oin[j]);
+				else
+					fprintf(stdout,"%f",oin[j]);
+			}
+			printf(" [%s] -> %s -> ", icm2str(icmColorSpaceSignature, ins),
 		                          icm2str(icmLuAlg, alg));
-
+		}
+		
 		if (repYxy && outs == icSigYxyData) {
 			double X = out[0];
 			double Y = out[1];
@@ -331,7 +356,7 @@ main(int argc, char *argv[]) {
 		}
 
 		/* If device data and scale */
-		if(scale != 0
+		if(scale > 0.0
     	 && outs != icSigXYZData
 		 && outs != icSigLabData
 		 && outs != icSigLuvData
@@ -340,7 +365,7 @@ main(int argc, char *argv[]) {
 		 && outs != icSigHsvData
 		 && outs != icSigHlsData) {
 			for (i = 0; i < MAX_CHAN; i++) {
-				out[i] *= 100.0;
+				out[i] *= scale;
 			}
 		}
 
@@ -350,12 +375,13 @@ main(int argc, char *argv[]) {
 			else
 				fprintf(stdout,"%f",out[j]);
 		}
-		printf(" [%s]", icm2str(icmColorSpaceSignature, outs));
+		if (verb > 0)
+			printf(" [%s]", icm2str(icmColorSpaceSignature, outs));
 
-		if (rv == 0)
-			fprintf(stdout,"\n");
-		else
-			fprintf(stdout," (clip)\n");
+		if (verb > 0 && rv != 0)
+			fprintf(stdout," (clip)");
+
+		fprintf(stdout,"\n");
 
 	}
 

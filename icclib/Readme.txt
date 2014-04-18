@@ -1,7 +1,11 @@
 ICC profile I/O library (icclib), README file
 ---------------------------------------------
 
-Date 2nd December 2004, Version 2.03
+This version is part of Argyll V 1.50 
+
+-------------------------------------------
+
+Date 20 April 2012, Version 2.14
 
 This distribution contains source code which implements the reading and
 writing of color profile files that conform to the International Color
@@ -66,24 +70,23 @@ In summary this library provides:
      system file and memory sub-systems.
    * Loads Tag Types on demand to conserve memory space.
 
-Changes from V2.02
+Changes from V2.11
 
-Version 2.03 has a few minor changes from the previous release, V2.02,
-aimed at improving the system compatibility of the library.
-
-See icc.c for a more detailed change history.
+Many changes have been made to support ArgyllCMS.
+A double memory free bug when iccdump'ing a profile
+that has duplicate tags has been fixed.
 
 Package contents:
 
  icclib.zip    ZIP archive of the following files
  README.txt    This file.
- Licence.txt   Important! - Permissions for use of this package.
+ License.txt   Important! - Permissions for use of this package.
  icc.c         Library source file.
  iccstd.c      Library source that uses stdio and malloc system calls.
 
  icc.h         Library include file. Note machine dependent defines.
-               Includes icc9809.h.
- iccV41.h      Standard ICC header file modified up to Version 4.1 spec.
+               Includes iccV42.h.
+ iccV42.h      Standard ICC header file modified up to Version 4.2 spec.
  iccdump.c     Program that dumps ASCII description of a profile.
 
  icclu.c       Program that allows interactive or batch translation of
