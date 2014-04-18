@@ -3,7 +3,7 @@ Module : PJNSmtp.h
 Purpose: Defines the interface for a MFC class encapsulation of the SMTP protocol
 Created: PJN / 22-05-1998
 
-Copyright (c) 1998 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 1998 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -66,13 +66,13 @@ public:
   ~CPJNSMPTBase64Encode();
 
 //Methods
-	void	Encode(const BYTE* pbyData, int nSize, DWORD dwFlags);
-	void	Decode(LPCSTR pData, int nSize);
-	void	Encode(LPCSTR pszMessage, DWORD dwFlags);
-	void	Decode(LPCSTR sMessage);
+  void	Encode(const BYTE* pbyData, int nSize, DWORD dwFlags);
+  void	Decode(LPCSTR pData, int nSize);
+  void	Encode(LPCSTR pszMessage, DWORD dwFlags);
+  void	Decode(LPCSTR sMessage);
 
-	LPSTR Result() const { return m_pBuf; };
-	int	  ResultSize() const { return m_nSize; };
+  LPSTR Result() const { return m_pBuf; };
+  int	  ResultSize() const { return m_nSize; };
 
 protected:
 //Member variables
@@ -91,11 +91,11 @@ public:
   ~CPJNSMPTQPEncode();
 
 //Methods
-	void	Encode(const BYTE* pbyData, int nSize, DWORD dwFlags);
-	void	Encode(LPCSTR pszMessage, DWORD dwFlags);
+  void	Encode(const BYTE* pbyData, int nSize, DWORD dwFlags);
+  void	Encode(LPCSTR pszMessage, DWORD dwFlags);
 
-	LPSTR Result() const { return m_pBuf; };
-	int	  ResultSize() const { return m_nSize; };
+  LPSTR Result() const { return m_pBuf; };
+  int	  ResultSize() const { return m_nSize; };
 
 protected:
 //Member variables
@@ -114,11 +114,11 @@ public:
   ~CPJNSMPTQEncode();
 
 //Methods
-	void	Encode(const BYTE* pbyData, int nSize, LPCSTR szCharset);
-	void	Encode(LPCSTR pszMessage, LPCSTR szCharset);
+  void	Encode(const BYTE* pbyData, int nSize, LPCSTR szCharset);
+  void	Encode(LPCSTR pszMessage, LPCSTR szCharset);
 
-	LPSTR Result() const { return m_pBuf; };
-	int	  ResultSize() const { return m_nSize; };
+  LPSTR Result() const { return m_pBuf; };
+  int	  ResultSize() const { return m_nSize; };
 
 protected:
 //Member variables
@@ -134,11 +134,11 @@ class PJNSMTP_EXT_CLASS CPJNSMTPException : public CException
 public:
 //Constructors / Destructors
   CPJNSMTPException(HRESULT hr, const CString& sLastResponse = _T("")); 
-	CPJNSMTPException(DWORD dwError = 0, DWORD dwFacility = FACILITY_WIN32, const CString& sLastResponse = _T(""));
+  CPJNSMTPException(DWORD dwError = 0, DWORD dwFacility = FACILITY_WIN32, const CString& sLastResponse = _T(""));
 
 //Methods
 #ifdef _DEBUG
-	virtual void Dump(CDumpContext& dc) const;
+  virtual void Dump(CDumpContext& dc) const;
 #endif
 
 #if _MSC_VER >= 1700
@@ -146,14 +146,14 @@ public:
 #else	
   virtual BOOL GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszError, __in UINT nMaxError, __out_opt PUINT pnHelpContext = NULL);
 #endif
-	CString GetErrorMessage();
+  CString GetErrorMessage();
 
 //Members variables
-	HRESULT m_hr;
+  HRESULT m_hr;
   CString m_sLastResponse;
 
 protected:
-	DECLARE_DYNAMIC(CPJNSMTPException)
+  DECLARE_DYNAMIC(CPJNSMTPException)
 };
 
                      
@@ -165,15 +165,15 @@ public:
 //Constructors / Destructors
   CPJNSMTPAddress();
   CPJNSMTPAddress(const CPJNSMTPAddress& address);
-	CPJNSMTPAddress(const CString& sAddress);
-	CPJNSMTPAddress(const CString& sFriendly, const CString& sAddress);
-	CPJNSMTPAddress& operator=(const CPJNSMTPAddress& r);
+  CPJNSMTPAddress(const CString& sAddress);
+  CPJNSMTPAddress(const CString& sFriendly, const CString& sAddress);
+  CPJNSMTPAddress& operator=(const CPJNSMTPAddress& r);
 
 //Methods
   CString GetRegularFormat(BOOL bEncode, const CString& sCharset) const;
 
 //Data members
-	CString m_sFriendlyName; //Would set it to contain something like "PJ Naughter"
+  CString m_sFriendlyName; //Would set it to contain something like "PJ Naughter"
   CString m_sEmailAddress; //Would set it to contains something like "pjna@naughter.com"
   
 protected:
@@ -188,12 +188,12 @@ class PJNSMTP_EXT_CLASS CPJNSMTPBodyPart
 {
 public:
 //Enums
-	enum CONTENT_TRANSFER_ENCODING 
-	{ 
-	  NO_ENCODING  = 0, 
-	  BASE64_ENCODING  = 1, 
-	  QP_ENCODING = 2 
-	};
+  enum CONTENT_TRANSFER_ENCODING 
+  { 
+    NO_ENCODING  = 0, 
+    BASE64_ENCODING  = 1, 
+    QP_ENCODING = 2 
+  };
 
 //Constructors / Destructors
   CPJNSMTPBodyPart();
@@ -211,14 +211,14 @@ public:
   void    SetText(const CString& sText);
   CString GetText() const { return m_sText; };
 
-	void    SetTitle(const CString& sTitle) { m_sTitle = sTitle; };
-	CString GetTitle() const { return m_sTitle; };
+  void    SetTitle(const CString& sTitle) { m_sTitle = sTitle; };
+  CString GetTitle() const { return m_sTitle; };
 
-	void    SetContentType(const CString& sContentType) { m_sContentType = sContentType; };
-	CString GetContentType() const { return m_sContentType; };
+  void    SetContentType(const CString& sContentType) { m_sContentType = sContentType; };
+  CString GetContentType() const { return m_sContentType; };
 
-	void    SetCharset(const CString& sCharset) { m_sCharset = sCharset; };
-	CString GetCharset() const { return m_sCharset; };
+  void    SetCharset(const CString& sCharset) { m_sCharset = sCharset; };
+  CString GetCharset() const { return m_sCharset; };
 
   void    SetContentID(const CString& sContentID);
   CString GetContentID() const;
@@ -242,10 +242,10 @@ public:
   CPJNSMTPBodyPart* FindFirstBodyPart(const CString sContentType);
 
 //Child Body part methods
-	INT_PTR           GetNumberOfChildBodyParts() const;
-	INT_PTR           AddChildBodyPart(CPJNSMTPBodyPart& bodyPart);
-	void              RemoveChildBodyPart(INT_PTR nIndex);
-	CPJNSMTPBodyPart* GetChildBodyPart(INT_PTR nIndex);
+  INT_PTR           GetNumberOfChildBodyParts() const;
+  INT_PTR           AddChildBodyPart(CPJNSMTPBodyPart& bodyPart);
+  void              RemoveChildBodyPart(INT_PTR nIndex);
+  CPJNSMTPBodyPart* GetChildBodyPart(INT_PTR nIndex);
   CPJNSMTPBodyPart* GetParentBodyPart();
 
 //Static methods
@@ -294,12 +294,12 @@ public:
   typedef CArray<CPJNSMTPAddress, CPJNSMTPAddress&> CAddressArray;
 
 //Enums
-	enum RECIPIENT_TYPE 
-	{ 
-	  TO  = 0, 
-	  CC  = 1, 
-	  BCC = 2 
-	};
+  enum RECIPIENT_TYPE 
+  { 
+    TO  = 0, 
+    CC  = 1, 
+    BCC = 2 
+  };
   enum PRIORITY 
   { 
     NoPriority     = 0, 
@@ -326,16 +326,16 @@ public:
   CPJNSMTPMessage& operator=(const CPJNSMTPMessage& message);
 
 //Recipient support
-	CAddressArray m_To;
-	CAddressArray m_CC;
-	CAddressArray m_BCC;
+  CAddressArray m_To;
+  CAddressArray m_CC;
+  CAddressArray m_BCC;
   static INT_PTR       ParseMultipleRecipients(const CString& sRecipients, CAddressArray& recipients);
 
 //Body Part support
   INT_PTR              GetNumberOfBodyParts() const;
-	INT_PTR              AddBodyPart(CPJNSMTPBodyPart& bodyPart);
-	void                 RemoveBodyPart(INT_PTR nIndex);
-	CPJNSMTPBodyPart*    GetBodyPart(INT_PTR nIndex);
+  INT_PTR              AddBodyPart(CPJNSMTPBodyPart& bodyPart);
+  void                 RemoveBodyPart(INT_PTR nIndex);
+  CPJNSMTPBodyPart*    GetBodyPart(INT_PTR nIndex);
   int                  AddMultipleAttachments(const CString& sAttachments);
 
 //Misc methods
@@ -355,10 +355,10 @@ public:
   void                 SaveToDisk(const CString& sFilename);
                                 
 //Data Members
-	CPJNSMTPAddress      m_From;
-	CString              m_sSubject;
+  CPJNSMTPAddress      m_From;
+  CString              m_sSubject;
   CString              m_sXMailer;
-	CPJNSMTPAddress      m_ReplyTo;
+  CPJNSMTPAddress      m_ReplyTo;
   CPJNSMTPBodyPart     m_RootPart;
   PRIORITY             m_Priority;
   DSN_RETURN_TYPE      m_DSNReturnType;
@@ -413,14 +413,6 @@ public:
     CTIR_NewConnection=2,
   };
 
-  enum ProxyType
-  {
-    ptNone = 0,
-    ptSocks4 = 1,
-    ptSocks5 = 2,
-    ptHTTP = 3
-  };
-
   enum ConnectionType
   {
     PlainText = 0,
@@ -431,39 +423,33 @@ public:
   #endif  
   };
 
+  enum SSLProtocol
+  {
+    SSLv2orv3,
+    TLSv1,
+    TLSv1_1,
+    TLSv1_2,
+    DTLSv1
+  };
+
 //Constructors / Destructors
   CPJNSMTPConnection();
   virtual ~CPJNSMTPConnection();
 
-//Methods
-  void    Connect(LPCTSTR pszHostName, AuthenticationMethod am = AUTH_NONE, LPCTSTR pszUsername = NULL, LPCTSTR pszPassword = NULL, int nPort = 25, ConnectionType connectionType = PlainText);
-  void    Disconnect(BOOL bGracefully = TRUE);
-  BOOL    IsConnected() const	{ return m_bConnected; };
-  CString GetLastCommandResponse() const { return m_sLastCommandResponse; };
-  int     GetLastCommandResponseCode() const { return m_nLastCommandResponseCode; };
-  DWORD   GetTimeout() const { return m_dwTimeout; };
-  void    SetTimeout(DWORD dwTimeout) { m_dwTimeout = dwTimeout; };
-	void    SendMessage(CPJNSMTPMessage& Message);
-  void    SendMessage(const CString& sMessageOnFile, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
-  void    SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
-  void    SetHeloHostname(const CString& sHostname);
-  CString GetHeloHostName() const { return m_sHeloHostname; };
-
-//Proxy Methods
-  void      SetProxyType(ProxyType proxyType) { m_ProxyType = proxyType; };
-  ProxyType GetProxyType() const { return m_ProxyType; };
-  void      SetProxyServer(const CString& sServer) { m_sProxyServer = sServer; };
-  CString   GetProxyServer() const { return m_sProxyServer; };
-  void      SetProxyPort(int nPort) { m_nProxyPort = nPort; };
-  int       GetProxyPort() { return m_nProxyPort; };
-  void      SetBindAddress(const CString& sBindAddress) { m_sBindAddress = sBindAddress; };
-  CString   GetBindAddress() const { return m_sBindAddress; };
-  void      SetProxyUserName(const CString& sUserName) { m_sProxyUserName = sUserName; };
-  CString   GetProxyUserName() const { return m_sProxyUserName; };
-  void      SetProxyPassword(const CString& sPassword) { m_sProxyPassword = sPassword; };
-  CString   GetProxyPassword() const { return m_sProxyPassword; };
-  void      SetHTTPProxyUserAgent(const CString& sUserAgent) { m_sUserAgent = sUserAgent; };
-  CString   GetHTTPProxyUserAgent() const { return m_sUserAgent; };
+//Standard Methods
+  BOOL        IsConnected() const	{ return m_bConnected; };
+  CString     GetLastCommandResponse() const { return m_sLastCommandResponse; };
+  int         GetLastCommandResponseCode() const { return m_nLastCommandResponseCode; };
+  DWORD       GetTimeout() const { return m_dwTimeout; };
+  void        SetTimeout(DWORD dwTimeout) { m_dwTimeout = dwTimeout; };
+  void        SetHeloHostname(const CString& sHostname);
+  CString     GetHeloHostName() const { return m_sHeloHostname; };
+  void        SetSSLProtocol(SSLProtocol protocol) { m_SSLProtocol = protocol; }
+  SSLProtocol GetSSLProtocol() const { return m_SSLProtocol; }
+  void        SetBindAddress(const CString& sBindAddress) { m_sBindAddress = sBindAddress; };
+  CString     GetBindAddress() const { return m_sBindAddress; };
+  BOOL        ImplementsDSN() const { return m_bCanDoDSN; }; //Note you should only use this method after calling Connect where the variable actually gets set
+  BOOL        ImplementsSTARTTLS() const { return m_bCanDoSTARTTLS; }; //Note you should only use this method after calling Connect where the variable actually gets set
 
 //"Wininet" Connectivity methods
   ConnectToInternetResult ConnectToInternet();
@@ -480,6 +466,11 @@ public:
   static CString CreateNEWENVID();
 
 //Virtual Methods
+  virtual void SendMessage(CPJNSMTPMessage& Message);
+  virtual void SendMessage(const CString& sMessageOnFile, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
+  virtual void SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
+  virtual void Connect(LPCTSTR pszHostName, AuthenticationMethod am = AUTH_NONE, LPCTSTR pszUsername = NULL, LPCTSTR pszPassword = NULL, int nPort = 25, ConnectionType connectionType = PlainText);
+  void         Disconnect(BOOL bGracefully = TRUE);
   virtual BOOL OnSendProgress(DWORD dwCurrentBytes, DWORD dwTotalBytes);
 
 protected:
@@ -502,68 +493,57 @@ protected:
 #ifndef CPJNSMTP_NOSSL
   virtual CString GetOpenSSLError();
   virtual void DoSTARTTLS();
+  virtual void CreateSSLSocket();
 #endif
-	virtual void AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword);
+  virtual void AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword);
   virtual void ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername, LPCTSTR pszPassword, AuthenticationMethod am);
   virtual void ConnectSMTP(LPCTSTR pszLocalName);
   virtual AuthenticationMethod ChooseAuthenticationMethod(const CString& sAuthMethods);
-	virtual void AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword);
-	virtual void AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword);
+  virtual void AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword);
+  virtual void AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword);
   virtual CString FormMailFromCommand(const CString& sEmailAddress, DWORD DSN, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType, CString& sENVID);
-	virtual void SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient);
+  virtual void SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient);
   virtual void SendBodyPart(CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, const CString& sRootCharset);
-	virtual BOOL ReadCommandResponse(int nExpectedCode);
+  virtual BOOL ReadCommandResponse(int nExpectedCode);
   virtual BOOL ReadCommandResponse(int nExpectedCode1, int nExpectedCode2);
-	virtual BOOL ReadResponse(CStringA& sResponse);
+  virtual BOOL ReadResponse(CStringA& sResponse);
 #ifndef CPJNSMTP_NONTLM
   virtual SECURITY_STATUS NTLMAuthPhase1(PBYTE pBuf, DWORD cbBuf);
   virtual SECURITY_STATUS NTLMAuthPhase2(PBYTE pBuf, DWORD cbBuf, DWORD* pcbRead);
   virtual SECURITY_STATUS NTLMAuthPhase3(PBYTE pBuf, DWORD cbBuf);
 #endif
-  virtual void _ConnectViaSocks4(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, DWORD dwConnectionTimeout);
-  virtual void _ConnectViaSocks5(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, LPCTSTR lpszUserName, LPCTSTR lpszPassword, DWORD dwConnectionTimeout, BOOL bUDP);
-  virtual void _ConnectViaHTTPProxy(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszHTTPServer, UINT nHTTPProxyPort, CStringA& sProxyResponse, LPCTSTR lpszUserName, LPCTSTR pszPassword, DWORD dwConnectionTimeout, LPCTSTR lpszUserAgent);
-  virtual void _Connect(LPCTSTR lpszHostAddress, UINT nHostPort);
   virtual int  _Send(const void *pBuffer, int nBuf);
   virtual int  _Receive(void *pBuffer, int nBuf);
   virtual void _Close(BOOL bGracefully);
   virtual BOOL _IsReadible(DWORD dwTimeout);
   virtual BOOL DoEHLO(AuthenticationMethod am, ConnectionType connectionType);
   virtual void SendEHLO(LPCTSTR pszLocalName, CString& sLastResponse);
-    
-//Static methods
-  __forceinline static void SecureEmptyString(CStringA& sVal);
-  __forceinline static void SecureEmptyString(CStringW& sVal);
-  __forceinline static void SecureEmptyString(CT2A& sVal);
 
 //Member variables
 #ifndef CPJNSMTP_NOSSL
-  CSSLContext                 m_SSLCtx;                   //SSL Context
-  CSSLSocket                  m_SSL;                      //SSL socket wrapper
+  CSSLContext                 m_SSLCtx;                        //SSL Context
+  CSSLSocket                  m_SSL;                           //SSL socket wrapper
 #endif
-  ConnectionType              m_ConnectionType;           //What type of connection are we using
-  CWSocket                    m_Socket;                   //The socket connection to the SMTP server (if not using SSL)
-  BOOL                        m_bConnected;               //Are we currently connected to the server 
-  CString                     m_sLastCommandResponse;     //The full last response the server sent us  
-  CString                     m_sHeloHostname;            //The hostname we will use in the HELO command
-	DWORD                       m_dwTimeout;                //The timeout in milliseconds
-  int                         m_nLastCommandResponseCode; //The last numeric SMTP response
-  ProxyType                   m_ProxyType;
-  CString                     m_sProxyServer;
-  int                         m_nProxyPort;
+  ConnectionType              m_ConnectionType;                //What type of connection are we using
+  CWSocket                    m_Socket;                        //The socket connection to the SMTP server (if not using SSL)
+  BOOL                        m_bConnected;                    //Are we currently connected to the server 
+  CString                     m_sLastCommandResponse;          //The full last response the server sent us  
+  CString                     m_sHeloHostname;                 //The hostname we will use in the HELO command
+  DWORD                       m_dwTimeout;                     //The timeout in milliseconds
+  int                         m_nLastCommandResponseCode;      //The last numeric SMTP response
   CString                     m_sBindAddress;
-  CString                     m_sProxyUserName;
-  CString                     m_sProxyPassword;
-  CString                     m_sUserAgent;
-  HINSTANCE                   m_hWininet;  //Instance handle of the "Wininet.dll" which houses the functions we want
+  HINSTANCE                   m_hWininet;                      //Instance handle of the "Wininet.dll" which houses the functions we want
   LPINTERNETGETCONNECTEDSTATE m_lpfnInternetGetConnectedState;
   LPINTERNETAUTODIALHANGUP    m_lpfnInternetAutoDialHangup;
   LPINTERNETATTEMPCONNECT     m_lpfnInternetAttemptConnect;
 #ifndef CPJNSMTP_NOMXLOOKUP
-  HINSTANCE                   m_hDnsapi;   //Instance handle of the "Dnsapi.dll" which houses the other functions we want
+  HINSTANCE                   m_hDnsapi;                       //Instance handle of the "Dnsapi.dll" which houses the other functions we want
   LPDNSRECORDLISTFREE         m_lpfnDnsRecordListFree;
   LPDNSQUERY                  m_lpfnDnsQuery; 
 #endif
+  SSLProtocol                 m_SSLProtocol;                  //What flavour of SSL should we speak
+  BOOL                        m_bCanDoDSN;                    //Is the server capable of "DSN"
+  BOOL                        m_bCanDoSTARTTLS;               //Is the server capale of "STARTTLS"
 };
 
 #endif //__PJNSMTP_H__

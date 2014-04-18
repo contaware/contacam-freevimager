@@ -1,5 +1,5 @@
-Note On Thread Safety or Re-entrant Code
-----------------------------------------
+Note On Thread Safety
+---------------------
 
 The following code declares an integer thread local variable
 and initializes it with a value:
@@ -17,10 +17,13 @@ CXButtonXP 1.2
 - Centering multiline text
 
 
-CPJNSMTPConnection 3.01 with w3 mfc 1.95
+CPJNSMTPConnection 3.05 with w3 mfc 1.97
 ----------------------------------------
 
 - Thread Safe
+- Preprocessor define: CWSOCKET_MFC_EXTENSTIONS
+- Used files: PJNLoadLibraryFromSystem32.h, PJNMD5.h, PJNNTLMAuth.h, PJNNTLMAuth.cpp, PJNSmtp.h, PJNSmtp.cpp
+- Used files: OpenSSLMfc.h, OpenSSLMfc.cpp, SocMFC.h, SocMFC.cpp
 
 
 CFTPTransfer

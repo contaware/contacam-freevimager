@@ -3,7 +3,7 @@ Module : OpenSSLMfc.H
 Purpose: Defines the interface for wrapper classes for the OpenSSL C variable types
 Created: PJN / 24-05-2002
 
-Copyright (c) 2002 - 2012 by PJ Naughter.  
+Copyright (c) 2002 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -103,9 +103,6 @@ public:
   BOOL    Create(CSSLContext& sslContext, CWSocket& socket);
   BOOL    Connect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType = SOCK_STREAM);
   BOOL    Connect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, int nSocketType = SOCK_STREAM);
-  BOOL    ConnectViaSocks4(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort = 1080, DWORD dwTimeout = 5000);
-  BOOL    ConnectViaSocks5(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort = 1080, LPCTSTR pszUserName = NULL, LPCTSTR pszPassword = NULL, DWORD dwTimeout = 5000, BOOL bUDP = FALSE);
-  BOOL    ConnectViaHTTPProxy(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszHTTPServer, UINT nHTTPProxyPort, CStringA& sProxyResponse, LPCTSTR pszUserName = NULL, LPCTSTR pszPassword = NULL, DWORD dwTimeout = 5000, LPCTSTR pszUserAgent = NULL);
   BOOL    Accept(DWORD dwSSLNegotiationTimeout);
   void    Close(BOOL bGracefully = TRUE);
   int     Send(const void* pBuffer, int nBuf);
@@ -127,4 +124,4 @@ private:
   CSSLSocket& operator=(const CSSLSocket& socket); //Implemented as private to ensure that instances of this class are non-copyable
 };
 
-#endif //__OPENSSLMFC_H__
+#endif //#ifndef __OPENSSLMFC_H__

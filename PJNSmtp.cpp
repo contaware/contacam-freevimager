@@ -544,8 +544,35 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
          PJN / 03-06-2013 1. The demo app now disables the MIME checkbox after checking it if the email is to be sent as HTML
                           2. Fixed a bug in the sample app where the mime type of the root body part would be incorrectly set to an empty string when it should 
                           use the default which is "multipart/mixed". Thanks to Ting L for reporting this bug.
+         PJN / 05-01-2014 1. Updated copyright details.
+                          2. Updated the code to clean compile on VC 2013
+                          3. Fixed a problem with NTLM auth where the code did not correctly set the "m_nSize" parameter value correctly in 
+                          CPJNSMPTBase64Encode::Encode & Decode. Thanks to John Pendleton for reporting this bug.
+         PJN / 18-01-2013 1. The ConvertToUTF8 method now also handles conversion of ASCII data to UTF8. Thanks to Jean-Christophe Voogden for this update.
+                          2. The CPJNSMTPConnection class now provides Set/GetSSLProtocol methods. This allows client code to specify the exact flavour of SSL which
+                          the code should speak. Supported protocols are SSL v2/v3, TLS v1.0, TLS v1.1, TLS v1.2 and DTLS v1.0. This is required for some SMTP
+                          servers which use the SSLv2 or v3 protocol instead of the more modern TLS v1 protocol. The default is to use TLS v1.0.
+                          You may need to use this compatibility setting for the likes of IBM Domino SMTP servers which only support the older SSLv2/v3 setting. 
+                          Thanks to Jean-Christophe Voogden for this update.
+                          3. Removed all the proxy connection methods as they cannot be easily supported / tested by the author.
+                          4. Reworked the code in CPJNSMTPConnection::ConnectESMTP to handle all variants of the 250 response as well as operate case insensitively
+                          which is required by the ESMTP RFC.
+                          5. Made more methods virtual to facilitate further client customisation
+                          6. Fixed an issue in the DoSTARTTLS method where the socket would be left in a connected state if SSL negotiation failed. This would result in
+                          later code which sent on the socket during the tear down phase hanging. Thanks to Jean-Christophe Voogden for reporting this issue.
+                          7. The sample app is now linked against the latest OpenSSL v1.0.1f dlls.
+         PJN / 26-01-2014 1. Updated ASSERT logic at the top of the ConnectESMTP method. Thanks to Jean-Christophe Voogden for reporting this issue.
+         PJN / 09-02-2014 1. Fixed a compile problem in the CreateSSLSocket method when the CPJNSMTP_NOSSL preprocessor macro is defined.
+                          2. Reworked the logic which does SecureZeroMemory on sensitive string data
+         PJN / 13-04-2014 1. The sample app is now linked against the latest OpenSSL v1.0.1g dlls. This version is the patched version of OpenSSL which does not
+                          suffer from the Heartbleed bug.
+                          2. Please note that by default OpenSSL does not do host name validation. The sample app provided with the PJNSMTP code also does not do
+                          host name validation. This means that as it stands the sample app is vulnerable to man in the middle attacks if you use SSL/TLS to connect
+                          to a SMTP server. For further information and sample code which you should incorporate into your real SMTP client applications, please see
+                          http://wiki.openssl.org/index.php/Hostname_validation, https://github.com/iSECPartners/ssl-conservatory and 
+                          http://archives.seul.org/libevent/users/Feb-2013/msg00043.html.
                           
-Copyright (c) 1998 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 1998 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -597,6 +624,39 @@ const int PJNSMTP_MAXLINE = 76;
 
 //////////////// Implementation ///////////////////////////////////////////////
 
+//A version of CStringA which supports secure disposal
+class CPJNSMTPSecureStringA : public CStringA
+{
+public:
+//Constructors / Destructors
+  CPJNSMTPSecureStringA()
+  {
+  }
+  CPJNSMTPSecureStringA(LPCWSTR pszValue) : CStringA(pszValue)
+  {
+  }
+  CPJNSMTPSecureStringA(LPCSTR pszValue) : CStringA(pszValue)
+  {
+  }
+  ~CPJNSMTPSecureStringA()
+  {
+    SecureEmpty();
+  }
+
+//Methods
+  __forceinline void SecureEmpty()
+  {
+    int nLength = GetLength();
+    if (nLength)
+    {
+      LPSTR pszVal = GetBuffer(nLength);
+      SecureZeroMemory(pszVal, nLength);
+      ReleaseBuffer();
+    } 
+  }
+};
+
+
 CPJNSMPTBase64Encode::CPJNSMPTBase64Encode() : m_pBuf(NULL), 
                                                m_nSize(0)
 {
@@ -615,17 +675,15 @@ void CPJNSMPTBase64Encode::Encode(const BYTE* pData, int nSize, DWORD dwFlags)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
-  m_nSize = ATL::Base64EncodeGetRequiredLength(nSize, dwFlags) + 1; //We allocate an extra byte so that we can null terminate the result
-  m_pBuf = new char[m_nSize];
+  m_nSize = ATL::Base64EncodeGetRequiredLength(nSize, dwFlags);
+  m_pBuf = new char[m_nSize + 1];
 
   //Finally do the encoding
-  int nFinalSize = m_nSize;
-  if (!ATL::Base64Encode(pData, nSize, m_pBuf, &nFinalSize, dwFlags))
+  if (!ATL::Base64Encode(pData, nSize, m_pBuf, &m_nSize, dwFlags))
     CPJNSMTPConnection::ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_BASE64_ENCODE, FACILITY_ITF);
 
   //Null terminate the data
-  AFXASSUME(nFinalSize < m_nSize);
-  m_pBuf[nFinalSize] = '\0';
+  m_pBuf[m_nSize] = '\0';
 }
 
 void CPJNSMPTBase64Encode::Decode(LPCSTR pData, int nSize)
@@ -635,17 +693,15 @@ void CPJNSMPTBase64Encode::Decode(LPCSTR pData, int nSize)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
-  m_nSize = ATL::Base64DecodeGetRequiredLength(nSize) + 1;
-  m_pBuf = new char[m_nSize];
+  m_nSize = ATL::Base64DecodeGetRequiredLength(nSize);
+  m_pBuf = new char[m_nSize + 1];
 
   //Finally do the encoding
-  int nFinalSize = m_nSize;
-  if (!ATL::Base64Decode(pData, nSize, reinterpret_cast<BYTE*>(m_pBuf), &nFinalSize))
+  if (!ATL::Base64Decode(pData, nSize, reinterpret_cast<BYTE*>(m_pBuf), &m_nSize))
     CPJNSMTPConnection::ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_BASE64_DECODE, FACILITY_ITF);
 
   //Null terminate the data
-  AFXASSUME(nFinalSize < m_nSize);
-  m_pBuf[nFinalSize] = '\0';
+  m_pBuf[m_nSize] = '\0';
 }
 
 void CPJNSMPTBase64Encode::Encode(LPCSTR pszMessage, DWORD dwFlags)
@@ -975,10 +1031,11 @@ CString CPJNSMTPBodyPart::CreateGUID()
   
   //Convert it to a string
 #ifdef _UNICODE
-  unsigned short* pszGuid = NULL;
+  RPC_WSTR pszGuid = NULL;
 #else
-  unsigned char* pszGuid = NULL;
+  RPC_CSTR pszGuid = NULL;
 #endif
+#pragma warning(suppress: 6102) //There seems to be a a bug with the SAL annotation of UuuidCreate in the Windows 8.1 SDK
   status = UuidToString(&uuid, &pszGuid);
   if (status != RPC_S_OK)
     CPJNSMTPConnection::ThrowPJNSMTPException(status, FACILITY_RPC);
@@ -1083,13 +1140,16 @@ CStringA CPJNSMTPBodyPart::ConvertToUTF8(const CString& sText)
   //What will be the return value from this function
   CStringA sOutput;
 
-#ifdef _UNICODE
-  int nInputLen = sText.GetLength();
-  int nChars = WideCharToMultiByte(CP_UTF8, 0, sText, nInputLen, NULL, 0, NULL, NULL); 
+  //Convert the TCHAR text to Unicode
+  CStringW sUnicodeText(sText);
+
+  //Then convert the Unicode text to UTF8
+  int nInputLen = sUnicodeText.GetLength();
+  int nChars = WideCharToMultiByte(CP_UTF8, 0, sUnicodeText, nInputLen, NULL, 0, NULL, NULL); 
   if (nChars)
   {
     char* pszUTF8 = new char[nChars+1];
-    nChars = WideCharToMultiByte(CP_UTF8, 0, sText, nInputLen, pszUTF8, nChars, NULL, NULL);
+    nChars = WideCharToMultiByte(CP_UTF8, 0, sUnicodeText, nInputLen, pszUTF8, nChars, NULL, NULL);
     if (nChars)
     {
       pszUTF8[nChars] = '\0';
@@ -1097,10 +1157,6 @@ CStringA CPJNSMTPBodyPart::ConvertToUTF8(const CString& sText)
     }
     delete [] pszUTF8;
   }
-#else
-  //If the code is built for ASCII then the data is already expected to be UTF8 encoded
-  sOutput = sText;  
-#endif
 
   return sOutput;
 }
@@ -1561,7 +1617,7 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
 }
 
 
-CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.01")), 
+CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.06")), 
                                      m_bMime(FALSE), 
                                      m_Priority(NoPriority),
                                      m_DSNReturnType(HeadersOnly),
@@ -1684,10 +1740,11 @@ CStringA CPJNSMTPMessage::FormDateHeader()
   
   //Form the Timezone info which will form part of the Date header
   TIME_ZONE_INFORMATION tzi;
-  int nTZBias;
-  if (GetTimeZoneInformation(&tzi) == TIME_ZONE_ID_DAYLIGHT)
+  int nTZBias = 0;
+  DWORD dwTZI = GetTimeZoneInformation(&tzi);
+  if (dwTZI == TIME_ZONE_ID_DAYLIGHT)
     nTZBias = tzi.Bias + tzi.DaylightBias;
-  else
+  else if (dwTZI != TIME_ZONE_ID_INVALID)
     nTZBias = tzi.Bias;
   CStringA sTZBias;
   sTZBias.Format("%+.2d%.2d", -nTZBias/60, abs(nTZBias)%60);
@@ -2184,7 +2241,10 @@ void CPJNSMTPMessage::WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPa
 
 CPJNSMTPConnection::CPJNSMTPConnection() : m_bConnected(FALSE), 
                                            m_nLastCommandResponseCode(0), 
-                                           m_ConnectionType(PlainText)
+                                           m_ConnectionType(PlainText),
+                                           m_bCanDoDSN(FALSE),
+                                           m_bCanDoSTARTTLS(FALSE),
+                                           m_SSLProtocol(TLSv1)
 {
 #ifdef _DEBUG
   m_dwTimeout = 90000; //default timeout of 90 seconds when debugging
@@ -2192,8 +2252,6 @@ CPJNSMTPConnection::CPJNSMTPConnection() : m_bConnected(FALSE),
   m_dwTimeout = 60000;  //default timeout of 60 seconds for normal release code
 #endif
   SetHeloHostname(_T("auto"));
-  m_ProxyType = ptNone;
-  m_nProxyPort = 1080;
   
   m_hWininet = PJNLoadLibraryFromSystem32(_T("WININET.DLL"));
   if (m_hWininet)
@@ -2315,90 +2373,6 @@ CString CPJNSMTPConnection::GetOpenSSLError()
 }
 #endif
 
-void CPJNSMTPConnection::_ConnectViaSocks4(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, DWORD dwConnectionTimeout)
-{
-  m_Socket.Create();
-  m_Socket.SetBindAddress(m_sBindAddress);
-
-#ifndef CPJNSMTP_NOSSL
-  if (m_ConnectionType == SSL_TLS)
-  {
-    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-    if (!m_SSL.Create(m_SSLCtx, m_Socket))
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
-  
-    if (!m_SSL.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout)) 
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS4_VIASSL, FACILITY_ITF, GetOpenSSLError());
-  }
-  else 
-#endif
-  {
-    m_Socket.SetBindAddress(m_sBindAddress);
-    m_Socket.ConnectViaSocks4(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, dwConnectionTimeout);
-  }
-}
-
-void CPJNSMTPConnection::_ConnectViaSocks5(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszSocksServer, UINT nSocksPort, LPCTSTR lpszUserName, LPCTSTR lpszPassword, DWORD dwConnectionTimeout, BOOL bUDP)
-{
-#ifndef CPJNSMTP_NOSSL
-  if (m_ConnectionType == SSL_TLS)
-  {
-    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-    if (!m_SSL.Create(m_SSLCtx, m_Socket))
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
-  
-    if (!m_SSL.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP)) 
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_SOCKS5_VIASSL, FACILITY_ITF, GetOpenSSLError());
-  }
-  else 
-#endif
-  { 
-    m_Socket.SetBindAddress(m_sBindAddress);
-    m_Socket.ConnectViaSocks5(lpszHostAddress, nHostPort, lpszSocksServer, nSocksPort, lpszUserName, lpszPassword, dwConnectionTimeout, bUDP);
-  }
-}
-
-void CPJNSMTPConnection::_ConnectViaHTTPProxy(LPCTSTR lpszHostAddress, UINT nHostPort, LPCTSTR lpszHTTPServer, UINT nHTTPProxyPort, CStringA& sProxyResponse, 
-                                              LPCTSTR lpszUserName, LPCTSTR pszPassword, DWORD dwConnectionTimeout, LPCTSTR lpszUserAgent)
-{
-#ifndef CPJNSMTP_NOSSL
-  if (m_ConnectionType == SSL_TLS)
-  {
-    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-    if (!m_SSL.Create(m_SSLCtx, m_Socket))
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
-
-    if (!m_SSL.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent))
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_HTTPPROXY_VIASSL, FACILITY_ITF, GetOpenSSLError());
-  }
-  else 
-#endif
-  {
-    m_Socket.SetBindAddress(m_sBindAddress);
-    m_Socket.ConnectViaHTTPProxy(lpszHostAddress, nHostPort, lpszHTTPServer, nHTTPProxyPort, sProxyResponse, lpszUserName, pszPassword, dwConnectionTimeout, lpszUserAgent);
-  }
-}
-
-void CPJNSMTPConnection::_Connect(LPCTSTR lpszHostAddress, UINT nHostPort)
-{
-#ifndef CPJNSMTP_NOSSL
-  if (m_ConnectionType == SSL_TLS)
-  {
-    m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
-    if (!m_SSL.Create(m_SSLCtx, m_Socket))
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
-
-    if (!m_SSL.Connect(lpszHostAddress, nHostPort)) 
-      ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_VIASSL, FACILITY_ITF, GetOpenSSLError());
-  }
-  else 
-#endif
-  {
-    m_Socket.SetBindAddress(m_sBindAddress);
-    m_Socket.CreateAndConnect(lpszHostAddress, nHostPort);
-  }
-}
-
 int CPJNSMTPConnection::_Send(const void* pBuffer, int nBuf)
 {
 #ifndef CPJNSMTP_NOSSL
@@ -2477,10 +2451,51 @@ BOOL CPJNSMTPConnection::DoEHLO(AuthenticationMethod am, ConnectionType connecti
   return bDoEHLO;
 }
 
+#ifndef CPJNSMTP_NOSSL
+void CPJNSMTPConnection::CreateSSLSocket()
+{
+  switch (m_SSLProtocol)
+  {
+    case SSLv2orv3:
+    {
+      m_SSLCtx.Attach(SSL_CTX_new(SSLv23_client_method()));
+      break;
+    }
+    case TLSv1:
+    {
+      m_SSLCtx.Attach(SSL_CTX_new(TLSv1_client_method()));
+      break;
+    }
+    case TLSv1_1:
+    {
+      m_SSLCtx.Attach(SSL_CTX_new(TLSv1_1_client_method()));
+      break;
+    }
+    case TLSv1_2:
+    {
+      m_SSLCtx.Attach(SSL_CTX_new(TLSv1_2_client_method()));
+      break;
+    }
+    case DTLSv1:
+    {
+      m_SSLCtx.Attach(SSL_CTX_new(DTLSv1_client_method()));
+      break;
+    }
+    default:
+    {
+      ASSERT(FALSE);
+      break;
+    }
+  }
+  if (!m_SSL.Create(m_SSLCtx, m_Socket))
+    ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
+}
+#endif
+
 void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, LPCTSTR pszUsername, LPCTSTR pszPassword, int nPort, ConnectionType connectionType)
 {
   //Validate our parameters
-  ASSERT(pszHostName);
+  ASSERT(pszHostName != NULL);
   ASSERT(!m_bConnected);
 
 #ifndef CPJNSMTP_NOSSL
@@ -2491,51 +2506,18 @@ void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, L
 
   try
   {
-    //Connect to the SMTP server
-    switch (m_ProxyType)
+  #ifndef CPJNSMTP_NOSSL
+    if (m_ConnectionType == SSL_TLS)
     {
-      case ptSocks4:
-      {
-        _ConnectViaSocks4(pszHostName, nPort, m_sProxyServer, m_nProxyPort, m_dwTimeout);
-        break;
-      }
-      case ptSocks5:
-      {
-        if (m_sProxyUserName.GetLength())
-          _ConnectViaSocks5(pszHostName, nPort, m_sProxyServer, m_nProxyPort, m_sProxyUserName, m_sProxyPassword, m_dwTimeout, FALSE);
-        else
-          _ConnectViaSocks5(pszHostName, nPort, m_sProxyServer, m_nProxyPort, NULL, NULL, m_dwTimeout, FALSE);
-        break;
-      }
-      case ptHTTP:
-      {
-        CStringA sProxyResponse;
-        if (m_sProxyUserName.GetLength())
-        {
-          if (m_sUserAgent.GetLength())
-            _ConnectViaHTTPProxy(pszHostName, nPort, m_sProxyServer, m_nProxyPort, sProxyResponse, m_sProxyUserName, m_sProxyPassword, m_dwTimeout, m_sUserAgent);
-          else
-            _ConnectViaHTTPProxy(pszHostName, nPort, m_sProxyServer, m_nProxyPort, sProxyResponse, m_sProxyUserName, m_sProxyPassword, m_dwTimeout, NULL);
-        }
-        else
-        {
-          if (m_sUserAgent.GetLength())
-            _ConnectViaHTTPProxy(pszHostName, nPort, m_sProxyServer, m_nProxyPort, sProxyResponse, NULL, NULL, m_dwTimeout, m_sUserAgent);
-          else
-            _ConnectViaHTTPProxy(pszHostName, nPort, m_sProxyServer, m_nProxyPort, sProxyResponse, NULL, NULL, m_dwTimeout, NULL);
-        }
-        break;
-      }
-      case ptNone:
-      {
-        _Connect(pszHostName, nPort);
-        break;
-      }
-      default:
-      {
-        ASSERT(FALSE);
-        break;
-      }
+      CreateSSLSocket();
+      if (!m_SSL.Connect(pszHostName, nPort)) 
+        ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_VIASSL, FACILITY_ITF, GetOpenSSLError());
+    }
+    else 
+  #endif
+    {
+      m_Socket.SetBindAddress(m_sBindAddress);
+      m_Socket.CreateAndConnect(pszHostName, nPort);
     }
   }
   catch(CWSocketException* pEx)
@@ -2636,13 +2618,15 @@ void CPJNSMTPConnection::DoSTARTTLS()
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_STARTTLS_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
  
   //Hook up the SSL socket at this point
-  m_SSLCtx.Attach(SSL_CTX_new(TLSv1_client_method()));
-  if (!m_SSL.Create(m_SSLCtx, m_Socket))
-    ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CREATE_SSL_SOCKET, FACILITY_ITF, GetOpenSSLError());
+  CreateSSLSocket();
  
   //Do the SSL connect
   if (SSL_connect(m_SSL) != 1)
+  {
+    //Close down the socket before we throw the exception
+    Disconnect(FALSE);
     ThrowPJNSMTPException(IDS_PJNSMTP_FAIL_CONNECT_VIASSL, FACILITY_ITF, GetOpenSSLError());
+  }
 }
 #endif
 
@@ -2669,17 +2653,22 @@ void CPJNSMTPConnection::SendEHLO(LPCTSTR pszLocalName, CString& sLastResponse)
   sLastResponse = GetLastCommandResponse();
 }
 
-//This function connects using one of the Extended SMTP methods i.e. EHLO
+//This method connects using RFC1869 ESMTP 
 void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername, LPCTSTR pszPassword, AuthenticationMethod am)
 {
   //Validate our parameters
-  ASSERT(pszUsername);
-  ASSERT(pszPassword);
-  ASSERT(am != AUTH_NONE);
+  ASSERT(pszUsername != NULL || am == AUTH_NONE);
+  ASSERT(pszPassword != NULL || am == AUTH_NONE);
 
   //Send the EHLO command
   CString sResponse;
   SendEHLO(pszLocalName, sResponse);
+  CString sUpperCaseResponse(sResponse);
+  sUpperCaseResponse.MakeUpper();
+
+  //Check the server capabilities
+  m_bCanDoDSN = (sUpperCaseResponse.Find(_T("250-DSN\r\n")) >= 0) || (sUpperCaseResponse.Find(_T("250 DSN\r\n")) >= 0);
+  m_bCanDoSTARTTLS = (sUpperCaseResponse.Find(_T("250-STARTTLS\r\n")) >= 0) || (sUpperCaseResponse.Find(_T("250 STARTTLS\r\n")) >= 0);
   
   //Check to see if we should do STARTTLS
 #ifndef CPJNSMTP_NOSSL
@@ -2695,7 +2684,7 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
     case AutoUpgradeToSTARTTLS:
     {
       //Check the response to see if the server supports STARTTLS
-      bDoSTARTTLS = (sResponse.Find(_T("STARTTLS")) >= 0);
+      bDoSTARTTLS = m_bCanDoSTARTTLS;
       break;
     }
     default:
@@ -2711,6 +2700,8 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
 
     //Reissue the EHLO command to ensure we see the most up to date response values after we have done a STARTTLS
     SendEHLO(pszLocalName, sResponse);
+    sUpperCaseResponse = sResponse;
+    sUpperCaseResponse.MakeUpper();
   }
 #endif
 
@@ -2718,18 +2709,17 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
   if (am == AUTH_AUTO)
   {
     //Find the authentication methods supported by the SMTP server
-    TCHAR* sBegin = _T("250-AUTH ");
-    TCHAR* sEnd = _T("\r\n");
-    int PosBegin = sResponse.Find(sBegin);
-    if (PosBegin >= 0)
+    int nPosBegin = sUpperCaseResponse.Find(_T("250-AUTH "));
+    if (nPosBegin == -1)
+      nPosBegin = sUpperCaseResponse.Find(_T("250 AUTH "));
+    if (nPosBegin >= 0)
     {
       CString sAuthMethods;
-      int PosEnd = sResponse.Find(sEnd, PosBegin);
-      if (PosEnd >= 0)
-        sAuthMethods = sResponse.Mid(PosBegin + 9, PosEnd - PosBegin - 9);
+      int nPosEnd = sUpperCaseResponse.Find(_T("\r\n"), nPosBegin);
+      if (nPosEnd >= 0)
+        sAuthMethods = sUpperCaseResponse.Mid(nPosBegin + 9, nPosEnd - nPosBegin - 9);
       else
-        sAuthMethods = sResponse.Mid(PosBegin + 9);
-      sAuthMethods.MakeUpper();
+        sAuthMethods = sUpperCaseResponse.Mid(nPosBegin + 9);
 
       //Now decide which protocol to choose via the virtual function to allow further client customization
       am = ChooseAuthenticationMethod(sAuthMethods);
@@ -2786,9 +2776,13 @@ void CPJNSMTPConnection::ConnectESMTP(LPCTSTR pszLocalName, LPCTSTR pszUsername,
   }
 }
 
-//This function connects using standard SMTP connection i.e. HELO
+//This method connects using standard RFC 821 SMTP
 void CPJNSMTPConnection::ConnectSMTP(LPCTSTR pszLocalName)
 {
+  //The server does not support any extentions if we use standard SMTP
+  m_bCanDoDSN = FALSE;
+  m_bCanDoSTARTTLS = FALSE;
+
   //Send the HELO command
   CStringA sBuf;
   sBuf.Format("HELO %s\r\n", CStringA(pszLocalName).operator LPCSTR());
@@ -3519,27 +3513,6 @@ BOOL CPJNSMTPConnection::ReadResponse(CStringA& sResponse)
   return TRUE;
 }
 
-void CPJNSMTPConnection::SecureEmptyString(CStringA& sVal)
-{
-  int nLength = sVal.GetLength();
-  LPSTR pszVal = sVal.GetBuffer(nLength);
-  SecureZeroMemory(pszVal, nLength);
-  sVal.ReleaseBuffer();
-}
-
-void CPJNSMTPConnection::SecureEmptyString(CStringW& sVal)
-{
-  int nLength = sVal.GetLength();
-  LPWSTR pszVal = sVal.GetBuffer(nLength);
-  SecureZeroMemory(pszVal, nLength*sizeof(wchar_t));
-  sVal.ReleaseBuffer();
-}
-
-void CPJNSMTPConnection::SecureEmptyString(CT2A& sVal)
-{
-  SecureZeroMemory(sVal.operator LPSTR(), strlen(sVal));
-}
-
 void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
 {
   //Send the AUTH LOGIN command
@@ -3569,10 +3542,9 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_USERNAME_REQUEST, FACILITY_ITF, GetLastCommandResponse());
 
   //send base64 encoded username
-  CStringA sAsciiUsername(pszUsername);
+  CPJNSMTPSecureStringA sAsciiUsername(pszUsername);
   encode.Encode(sAsciiUsername, ATL_BASE64_FLAG_NOCRLF);
-  SecureEmptyString(sAsciiUsername);
-  CStringA sUser;
+  CPJNSMTPSecureStringA sUser;
   sUser.Format("%s\r\n", encode.Result());
   try
   {
@@ -3580,12 +3552,10 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   catch(CWSocketException* pEx)
   {
-    SecureEmptyString(sUser);
     DWORD dwError = pEx->m_nError;
     pEx->Delete();
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
-  SecureEmptyString(sUser);
 
   //check the response to the username 
   if (!ReadCommandResponse(334))
@@ -3599,10 +3569,9 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_AUTH_LOGIN_PASSWORD_REQUEST, FACILITY_ITF, GetLastCommandResponse());
 
   //send password as base64 encoded
-  CStringA sAsciiPassword(pszPassword);
+  CPJNSMTPSecureStringA sAsciiPassword(pszPassword);
   encode.Encode(sAsciiPassword, ATL_BASE64_FLAG_NOCRLF);
-  SecureEmptyString(sAsciiPassword);
-  CStringA sPwd;
+  CPJNSMTPSecureStringA sPwd;
   sPwd.Format("%s\r\n", encode.Result());
   try
   {
@@ -3610,12 +3579,10 @@ void CPJNSMTPConnection::AuthLogin(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   catch(CWSocketException* pEx)
   {
-    SecureEmptyString(sPwd);
     DWORD dwError = pEx->m_nError;
     pEx->Delete();
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
-  SecureEmptyString(sPwd);
 
   //check if authentication is successful
   if (!ReadCommandResponse(235))
@@ -3643,9 +3610,9 @@ void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
 
   //Send the username and password in the base64 encoded AUTH PLAIN format of "authid\0userid\0passwd". Note 
   //that since authid is optional, we omit it which means take the authid to be the userid value.
-  CStringA sAsciiUserName(pszUsername);
+  CPJNSMTPSecureStringA sAsciiUserName(pszUsername);
   int nAsciiUserNameLen = sAsciiUserName.GetLength();
-  CStringA sAsciiPassword(pszPassword);
+  CPJNSMTPSecureStringA sAsciiPassword(pszPassword);
   int nAuthLen = nAsciiUserNameLen + sAsciiPassword.GetLength() + 3;
   
   //Allocate some heap space for the auth request packet
@@ -3656,14 +3623,12 @@ void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
   //Form the auth request
   memset(authRequest.m_pData, 0, nAuthLen);
   strcpy_s(authRequest.m_pData+1, nAuthLen - 1, sAsciiUserName);
-  SecureEmptyString(sAsciiUserName);
   strcpy_s(authRequest.m_pData + 2 + nAsciiUserNameLen, nAuthLen - 2 - nAsciiUserNameLen, sAsciiPassword);
-  SecureEmptyString(sAsciiPassword);
   CPJNSMPTBase64Encode encode;
   encode.Encode(reinterpret_cast<const BYTE*>(authRequest.m_pData), nAuthLen, ATL_BASE64_FLAG_NOCRLF);
   SecureZeroMemory(authRequest.m_pData, nAuthLen);
   
-  CStringA sAuthB64;
+  CPJNSMTPSecureStringA sAuthB64;
   sAuthB64.Format("%s\r\n", encode.Result());
   try
   {
@@ -3671,12 +3636,10 @@ void CPJNSMTPConnection::AuthPlain(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   catch(CWSocketException* pEx)
   {
-    SecureEmptyString(sAuthB64);
     DWORD dwError = pEx->m_nError;
     pEx->Delete();
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
-  SecureEmptyString(sAuthB64);
 
   //check if authentication is successful
   if (!ReadCommandResponse(235))
@@ -3713,13 +3676,9 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
   //generate the MD5 digest from the challenge and password
   CPJNMD5 hmac;
   CPJNMD5Hash hash;
-  CStringA sAsciiPassword(pszPassword);
+  CPJNSMTPSecureStringA sAsciiPassword(pszPassword);
   if (!hmac.HMAC(reinterpret_cast<const BYTE*>(pszChallenge), static_cast<DWORD>(strlen(pszChallenge)), reinterpret_cast<const BYTE*>(sAsciiPassword.operator LPCSTR()), sAsciiPassword.GetLength(), hash))
-  {
-    SecureEmptyString(sAsciiPassword);
     ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
-  }
-  SecureEmptyString(sAsciiPassword);
   
   //make the CRAM-MD5 response
   CString sCramDigest(pszUsername);
@@ -3727,11 +3686,9 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
   sCramDigest += hash.Format(FALSE); //CRAM-MD5 requires a lowercase hash
     
   //send the digest response
-  CStringA sAsciiCramDigest(sCramDigest);
-  SecureEmptyString(sCramDigest);
+  CPJNSMTPSecureStringA sAsciiCramDigest(sCramDigest);
   encode.Encode(sAsciiCramDigest, ATL_BASE64_FLAG_NOCRLF);
-  SecureEmptyString(sAsciiCramDigest);
-  CStringA sEncodedDigest;
+  CPJNSMTPSecureStringA sEncodedDigest;
   sEncodedDigest.Format("%s\r\n", encode.Result());
   try
   {
@@ -3739,12 +3696,10 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
   }
   catch(CWSocketException* pEx)
   {
-    SecureEmptyString(sEncodedDigest);
     DWORD dwError = pEx->m_nError;
     pEx->Delete();
     ThrowPJNSMTPException(dwError, FACILITY_WIN32);
   }
-  SecureEmptyString(sEncodedDigest);
 
   //check if authentication is successful
   if (!ReadCommandResponse(235))

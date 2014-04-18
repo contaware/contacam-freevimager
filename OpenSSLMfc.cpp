@@ -25,8 +25,11 @@ History: PJN / 29-12-2004 1. Updated to suit new layout of CWSocket methods
          PJN / 08-02-2011 1. Reinstated Sockv4, Socksv5 and HTTP proxy methods
          PJN / 07-08-2012 1. CSSL::Close now provides a bGracefully parameter
                           2. CSSLSocket::Close now provides a bGracefully parameter
+         PJN / 16-03-2014 1. Updated copyright details
+                          2. Removed all the proxy connection methods as they cannot be easily supported / tested by
+                          the author.
 
-Copyright (c) 2002 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2002 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -180,7 +183,7 @@ BOOL CSSLSocket::Create(CSSLContext& sslContext, CWSocket& socket)
 BOOL CSSLSocket::Connect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType)
 {
   //Validate our parameters
-  AFXASSUME(m_pSocket);
+  ATLASSUME(m_pSocket != NULL);
 
   //Call the low level socket connect
   m_pSocket->CreateAndConnect(pszHostAddress, nHostPort, nSocketType);
@@ -200,7 +203,7 @@ BOOL CSSLSocket::Connect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType
 BOOL CSSLSocket::Connect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, int nSocketType)
 {
   //Validate our parameters
-  AFXASSUME(m_pSocket);
+  ATLASSUME(m_pSocket != NULL);
 
   //Call the low level socket connect
   m_pSocket->CreateAndConnect(pszHostAddress, pszPortOrServiceName, nSocketType);
@@ -217,70 +220,10 @@ BOOL CSSLSocket::Connect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, i
   return (nSSLConnect == 1);
 }
 
-BOOL CSSLSocket::ConnectViaSocks4(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort, DWORD dwTimeout)
-{
-  //Validate our parameters
-  AFXASSUME(m_pSocket);
-
-  //Call the low level socket connect
-  m_pSocket->ConnectViaSocks4(pszHostAddress, nHostPort, pszSocksServer, nSocksPort, dwTimeout);
-
-  //Associate the socket with the SSL connection object
-  if (SSL_set_fd(m_SSL, *m_pSocket) != 1)
-  {
-    Close();
-    return FALSE;
-  }
-
-  //Just call the SSL_accept function
-  int nSSLConnect = SSL_connect(m_SSL);
-  return (nSSLConnect == 1);
-}
-
-BOOL CSSLSocket::ConnectViaSocks5(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort, LPCTSTR pszUserName, LPCTSTR pszPassword, DWORD dwTimeout, BOOL bUDP)
-{
-  //Validate our parameters
-  AFXASSUME(m_pSocket);
-
-  //Call the low level socket connect
-  m_pSocket->ConnectViaSocks5(pszHostAddress, nHostPort, pszSocksServer, nSocksPort, pszUserName, pszPassword, dwTimeout, bUDP);
-
-  //Associate the socket with the SSL connection object
-  if (SSL_set_fd(m_SSL, *m_pSocket) != 1)
-  {
-    Close();
-    return FALSE;
-  }
-
-  //Just call the SSL_accept function
-  int nSSLConnect = SSL_connect(m_SSL);
-  return (nSSLConnect == 1);
-}
-
-BOOL CSSLSocket::ConnectViaHTTPProxy(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszHTTPServer, UINT nHTTPProxyPort, CStringA& sProxyResponse, LPCTSTR pszUserName, LPCTSTR pszPassword, DWORD dwTimeout, LPCTSTR pszUserAgent)
-{
-  //Validate our parameters
-  AFXASSUME(m_pSocket);
-
-  //Call the low level socket connect
-  m_pSocket->ConnectViaHTTPProxy(pszHostAddress, nHostPort, pszHTTPServer, nHTTPProxyPort, sProxyResponse, pszUserName, pszPassword, dwTimeout, pszUserAgent);
-
-  //Associate the socket with the SSL connection object
-  if (SSL_set_fd(m_SSL, *m_pSocket) != 1)
-  {
-    Close();
-    return FALSE;
-  }
-
-  //Just call the SSL_accept function
-  int nSSLConnect = SSL_connect(m_SSL);
-  return (nSSLConnect == 1);
-}
-
 BOOL CSSLSocket::Accept(DWORD dwSSLNegotiationTimeout)
 {
   //Validate our parameters
-  AFXASSUME(m_pSocket);
+  ATLASSUME(m_pSocket != NULL);
 
   //Then do the SSL accept
   BOOL bNegotiationComplete = FALSE;
@@ -324,7 +267,7 @@ void CSSLSocket::Close(BOOL bGracefully)
 int CSSLSocket::Send(const void* pBuffer, int nBuf)
 {
   //Validate our parameters
-  ASSERT(m_SSL.operator SSL*());
+  ATLASSERT(m_SSL.operator SSL*());
 
   //Just call the SSL_write function
   return SSL_write(m_SSL, pBuffer, nBuf);
@@ -333,7 +276,7 @@ int CSSLSocket::Send(const void* pBuffer, int nBuf)
 int CSSLSocket::Receive(void* pBuffer, int nBuf)
 {
   //Validate our parameters
-  ASSERT(m_SSL.operator SSL*());
+  ATLASSERT(m_SSL.operator SSL*());
 
   //Just call the SSL_read function
   return SSL_read(m_SSL, pBuffer, nBuf);
@@ -347,7 +290,7 @@ CSSLSocket::operator SSL*() const
 CSSLSocket::operator CWSocket&() const
 {
   //validate our parameters
-  AFXASSUME(m_pSocket);
+  ATLASSUME(m_pSocket != NULL);
 
   return *m_pSocket;
 }
@@ -355,7 +298,7 @@ CSSLSocket::operator CWSocket&() const
 BOOL CSSLSocket::IsReadible(DWORD dwTimeout)
 {
   //Validate our parameters
-  AFXASSUME(m_pSocket);
+  ATLASSUME(m_pSocket != NULL);
 
   //Try SSL_pending before we defer to our socket implementation
   if (m_SSL.m_pSSL)

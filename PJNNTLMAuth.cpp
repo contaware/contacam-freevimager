@@ -29,7 +29,7 @@ History: PJN / 05-09-2005 1. Function pointer to CompleteAuthToken is now constr
          PJN / 30-09-2012 1. Updated the code to avoid DLL planting security issues when calling LoadLibrary. Thanks to Mat 
                           Berchtold for reporting this issue.
 
-Copyright (c) 2005 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2005 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -153,10 +153,10 @@ SECURITY_STATUS CNTLMClientAuth::NTLMAuthenticate(LPCTSTR pszUserName, LPCTSTR p
   CString sUserNameWithoutDomain;
   if (nSlashSeparatorOffset != -1)
   {
-	  sDomain = sUserName.Left(nSlashSeparatorOffset);
-	  pszDomain = sDomain.operator LPCTSTR();
-	  sUserNameWithoutDomain = sUserName.Mid(nSlashSeparatorOffset + 1);
-	  pszUserName = sUserNameWithoutDomain.operator LPCTSTR();
+    sDomain = sUserName.Left(nSlashSeparatorOffset);
+    pszDomain = sDomain.operator LPCTSTR();
+    sUserNameWithoutDomain = sUserName.Mid(nSlashSeparatorOffset + 1);
+    pszUserName = sUserNameWithoutDomain.operator LPCTSTR();
   }
 
   //Release the handles before we try to authenticate (we do this here to ensure any previous calls

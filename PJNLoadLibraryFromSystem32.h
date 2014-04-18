@@ -8,7 +8,7 @@ Purpose: Simple header definition of a PJNLoadLibraryFromSystem32 function. This
          information.
 Created: PJN / 30-09-2012
 
-Copyright (c) 2012 - 2013 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2012 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -42,6 +42,7 @@ inline HMODULE PJNLoadLibraryFromSystem32(LPCTSTR lpFileName)
     return NULL;
 
   //Setup the full path and delegate to LoadLibrary    
+#pragma warning(suppress: 6102) //There is a bug with the SAL annotation of GetSystemDirectory in the Windows 8.1 SDK
   _tcscat_s(szFullPath, _countof(szFullPath), _T("\\"));
   _tcscat_s(szFullPath, _countof(szFullPath), lpFileName);
   return LoadLibrary(szFullPath);

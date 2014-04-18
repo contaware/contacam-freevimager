@@ -3,7 +3,7 @@ Module : SocMFC.H
 Purpose: Interface for an MFC wrapper class for sockets
 Created: PJN / 05-08-1998
 
-Copyright (c) 2002 - 2012 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2002 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -36,7 +36,8 @@ __if_not_exists(ADDRESS_FAMILY)
 
 __if_not_exists(SOCKADDR_INET)
 {
-  typedef union _SOCKADDR_INET {
+  typedef union _SOCKADDR_INET 
+  {
       SOCKADDR_IN Ipv4;
       SOCKADDR_IN6 Ipv6;
       ADDRESS_FAMILY si_family;    
@@ -53,33 +54,44 @@ __if_not_exists(SOCKADDR_INET)
 
 #include <sal.h>
 
+#ifndef CWSOCKET_MFC_EXTENSTIONS
+#include <exception>
+#include <string>
+#endif
+
+
 
 ////////////////////////////// Classes ////////////////////////////////////////
 
+#ifdef CWSOCKET_MFC_EXTENSTIONS
 class SOCKMFC_EXT_CLASS CWSocketException : public CException
+#else
+class SOCKMFC_EXT_CLASS CWSocketException : public std::exception
+#endif //#ifdef CWSOCKET_MFC_EXTENSTIONS
 {
 public:
 //Constructors / Destructors
-	CWSocketException(int nError);
+  CWSocketException(int nError);
 
 //Methods
+#ifdef CWSOCKET_MFC_EXTENSTIONS
 #ifdef _DEBUG
-	virtual void Dump(CDumpContext& dc) const;
-#endif
+  virtual void Dump(CDumpContext& dc) const;
+#endif //#ifdef _DEBUG
+#endif //#ifdef CWSOCKET_MFC_EXTENSTIONS
 
 #if _MSC_VER >= 1700
-	virtual BOOL GetErrorMessage(_Out_writes_z_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError,	_Out_opt_ PUINT pnHelpContext = NULL);
+  virtual BOOL GetErrorMessage(_Out_z_cap_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError,	_Out_opt_ PUINT pnHelpContext = NULL);
 #else	
   virtual BOOL GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszError, __in UINT nMaxError, __out_opt PUINT pnHelpContext = NULL);
 #endif
-	
-	CString GetErrorMessage();
+  
+#ifdef CWSOCKET_MFC_EXTENSTIONS
+  CString GetErrorMessage();
+#endif //#ifdef CWSOCKET_MFC_EXTENSTIONS
 
 //Data members
-	int m_nError;
-
-protected:
-	DECLARE_DYNAMIC(CWSocketException)
+  int m_nError;
 };
 
 class SOCKMFC_EXT_CLASS CWSocket
@@ -89,20 +101,31 @@ public:
   CWSocket();
   virtual ~CWSocket();
 
+//typedefs
+#ifdef CWSOCKET_MFC_EXTENSTIONS
+  typedef CString String;
+#else
+  #ifdef _UNICODE
+    typedef std::wstring String; 
+  #else
+    typedef std::string String;
+  #endif //#ifdef _UNICODE
+#endif //#ifdef CWSOCKET_MFC_EXTENSTIONS
+
 //Attributes
   void    Attach(SOCKET hSocket);
   SOCKET  Detach(); 
-  void    GetPeerName(CString& sPeerAddress, UINT& nPeerPort);
+  void    GetPeerName(String& sPeerAddress, UINT& nPeerPort);
   void    GetPeerName(SOCKADDR* pSockaddr, int* pSockAddrLen);
-  void    GetSockName(CString& sSocketAddress, UINT& nSocketPort);
+  void    GetSockName(String& sSocketAddress, UINT& nSocketPort);
   void    GetSockName(SOCKADDR* pSockAddr, int* pSockAddrLen);
   void    SetSockOpt(int nOptionName, const void* pOptionValue, int nOptionLen, int nLevel = SOL_SOCKET);
   void    GetSockOpt(int nOptionName, void* pOptionValue, int* pOptionLen, int nLevel = SOL_SOCKET);
   BOOL    IsCreated() const; 
   BOOL    IsReadible(DWORD dwTimeout);
   BOOL    IsWritable(DWORD dwTimeout);
-  void    SetBindAddress(const CString& sBindAddress) { m_sBindAddress = sBindAddress; };
-  CString GetBindAddress() const { return m_sBindAddress; };
+  void    SetBindAddress(const String& sBindAddress) { m_sBindAddress = sBindAddress; };
+  String  GetBindAddress() const { return m_sBindAddress; };
 
 //Methods
   void    Create(BOOL bUDP = FALSE, BOOL bIPv6 = FALSE);
@@ -115,71 +138,38 @@ public:
   void    Close();
   void    Connect(const SOCKADDR* pSockAddr, int nSockAddrLen);
   __declspec(deprecated) void Connect(LPCTSTR pszHostAddress, UINT nHostPort);
-  void    CreateAndConnect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType = SOCK_STREAM);
-  void    CreateAndConnect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, int nSocketType = SOCK_STREAM);
+  void    CreateAndConnect(LPCTSTR pszHostAddress, UINT nHostPort, int nSocketType = SOCK_STREAM, int nFamily = AF_UNSPEC, int nProtocolType = 0);
+  void    CreateAndConnect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, int nSocketType = SOCK_STREAM, int nFamily = AF_UNSPEC, int nProtocolType = 0);
   void    Connect(const SOCKADDR* pSockAddr, int nSockAddrLen, DWORD dwTimeout, BOOL bResetToBlockingMode = TRUE);
   void    CreateAndConnect(LPCTSTR pszHostAddress, UINT nHostPort, DWORD dwTimeout, BOOL bResetToBlockingMode, int nSocketType = SOCK_STREAM);
   void    CreateAndConnect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName, DWORD dwTimeout, BOOL bResetToBlockingMode, int nSocketType = SOCK_STREAM);
-  void    ConnectViaSocks4(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort = 1080, DWORD dwTimeout = 5000);
-  void    ConnectViaSocks5(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszSocksServer, UINT nSocksPort = 1080, LPCTSTR pszUserName = NULL, LPCTSTR pszPassword = NULL, DWORD dwTimeout = 5000, BOOL bUDP = FALSE);
-  void    ConnectViaHTTPProxy(LPCTSTR pszHostAddress, UINT nHostPort, LPCTSTR pszHTTPServer, UINT nHTTPProxyPort, CStringA& sProxyResponse, LPCTSTR pszUserName = NULL, LPCTSTR pszPassword = NULL, DWORD dwTimeout = 5000, LPCTSTR pszUserAgent = NULL);
   void    IOCtl(long lCommand, DWORD* pArgument);
   void    Listen(int nConnectionBacklog = SOMAXCONN);
   int     Receive(void* pBuf, int nBufLen, int nFlags = 0);
   int     ReceiveFrom(void* pBuf, int nBufLen, SOCKADDR* pSockAddr, int* pSockAddrLen, int nFlags = 0);
-  int     ReceiveFrom(void* pBuf, int nBufLen, CString& sSocketAddress, UINT& nSocketPort, int nFlags = 0);
+  int     ReceiveFrom(void* pBuf, int nBufLen, String& sSocketAddress, UINT& nSocketPort, int nFlags = 0);
   int     Send(const void* pBuffer, int nBufLen, int nFlags = 0);
   int     SendTo(const void* pBuf, int nBufLen, const SOCKADDR* pSockAddr, int nSockAddrLen, int nFlags = 0);
   int     SendTo(const void* pBuf, int nBufLen, UINT nHostPort, LPCTSTR pszHostAddress = NULL, int nFlags = 0);
-  enum { receives = 0, sends = 1, both = 2 };
-  void    ShutDown(int nHow = sends);
+  void    ShutDown(int nHow = SD_SEND);
 
 //Operators
   operator SOCKET();
 
 //Static methods
   static void ThrowWSocketException(int nError = 0);
-  static CString AddressToString(const SOCKADDR_INET& sockAddr);
-  __forceinline static void SecureEmptyString(CStringA& sVal)
-  {
-    int nLength = sVal.GetLength();
-    if (nLength)
-    {
-      LPSTR pszVal = sVal.GetBuffer(nLength);
-      SecureZeroMemory(pszVal, nLength);
-      sVal.ReleaseBuffer();
-    }
-  }
-
-  __forceinline static void SecureEmptyString(CStringW& sVal)
-  {
-    int nLength = sVal.GetLength();
-    if (nLength)
-    {
-      LPWSTR pszVal = sVal.GetBuffer(nLength);
-      SecureZeroMemory(pszVal, nLength*sizeof(wchar_t));
-      sVal.ReleaseBuffer();
-    }
-  }
-
-  __forceinline static void SecureEmptyString(LPSTR sVal)
-  {
-    size_t nLen = strlen(sVal);
-    if (nLen)
-      SecureZeroMemory(sVal, nLen);
-  }
+  static String AddressToString(const SOCKADDR* pSockAddr, int nSockAddrLen, int nFlags = 0, UINT* pnSocketPort = NULL);
+  static String AddressToString(const SOCKADDR_INET& sockAddr, int nFlags = 0, UINT* pnSocketPort = NULL);
 
 protected:
 //Methods
   void _Connect(LPCTSTR pszHostAddress, LPCTSTR pszPortOrServiceName);
   void _Bind(UINT nSocketPort, LPCTSTR pszSocketAddress);
   void _Bind(LPCTSTR pszPortOrServiceName);
-  void ReadHTTPProxyResponse(DWORD dwTimeout, CStringA& sResponse);
-  void ReadSocks5ConnectReply(DWORD dwTimeout);
 
 //Member variables
-  SOCKET  m_hSocket;
-  CString m_sBindAddress;
+  SOCKET m_hSocket;
+  String m_sBindAddress;
 };
 
 #endif //__SOCMFC_H__
