@@ -51,6 +51,8 @@ Adaptations to compile 64 bit
   
 Notes
 -----
+- After calling install you can delete inc32, out32, out32.dbg, tmp32, tmp32.dbg,
+  Build32MT\bin and Build32MTd\bin (if not using the executable)
 - To compile a dll version us ntdll.mak instead of nt.mak
   (run-time library switch is then /MD or /MDd for debug)
 - Don't try to build 32-bit and 64-bit OpenSSL in the same folder. The first build
