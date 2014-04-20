@@ -172,13 +172,11 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 	}
 }
 
-BOOL CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
+void CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 {
-	BOOL res = TRUE;
-
 	// Check whether still compressed, could already have
 	// been decompressed by thread loop or AnimatedGifInit()
-	if (pDib->GetCompression() == FCC('MJPG') || pDib->GetCompression() == FCC('M601'))
+	if (pDib && (pDib->GetCompression() == FCC('MJPG') || pDib->GetCompression() == FCC('M601')))
 	{
 		// Init device flag
 		BOOL bDeviceIsMJPG = FALSE;
@@ -204,17 +202,32 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 		pDib->SetBMI(&NewBmi);
 
 		// Decode
-		res = m_AVDetDecoder.Decode(pOldBmi,
-									pOldBits,
-									pOldBmi->bmiHeader.biSizeImage,
-									pDib);
+		BOOL res = m_AVDetDecoder.Decode(pOldBmi,
+										pOldBits,
+										pOldBmi->bmiHeader.biSizeImage,
+										pDib);
 		// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
 		if (!res)
+		{
+			m_AVDetDecoder.Close(); // close it so that with next frame mjpeg decoder is re-opened
 			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
+		}
+
+		// Make sure we have valid bits, if not make a green frame
+		if (!pDib->GetBits())
+		{
+			pDib->AllocateBits(	NewBmi.bmiHeader.biBitCount,
+								NewBmi.bmiHeader.biCompression,
+								NewBmi.bmiHeader.biWidth,
+								NewBmi.bmiHeader.biHeight,
+								(COLORREF)16); // green
+		}
 
 		// Free
-		delete [] pOldBmi;
-		BIGFREE(pOldBits);
+		if (pOldBmi)
+			delete [] pOldBmi;
+		if (pOldBits)
+			BIGFREE(pOldBits);
 
 		// Frames coming from a mjpeg source have to be processed here
 		// if set so. The other ones are already deinterlaced and/or
@@ -230,8 +243,6 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 				CVideoDeviceDoc::Rotate180(pDib);
 		}
 	}
-
-	return res;
 }
 
 int CVideoDeviceDoc::CSaveFrameListThread::Work() 
@@ -1152,29 +1163,40 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 									DibForPalette1.GetCompression() == BI_BITFIELDS ?
 									(RGBQUAD*)((LPBYTE)(DibForPalette1.GetBMI()) + DibForPalette1.GetBMIH()->biSize) :
 									NULL);
-	LPBYTE pSrcBits;
 	LPBYTE pDstBits = DibForPalette.GetBits();
-	int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
-	pSrcBits = DibForPalette1.GetBits();
-	for (line = 0 ; line < DibForPalette1.GetHeight() ; line++)
+	if (pDstBits)
 	{
-		memcpy(pDstBits, pSrcBits, nScanLineSize);
-		pDstBits += nScanLineSize;
-		pSrcBits += nScanLineSize;
-	}
-	pSrcBits = DibForPalette2.GetBits();
-	for (line = 0 ; line < DibForPalette2.GetHeight() ; line++)
-	{
-		memcpy(pDstBits, pSrcBits, nScanLineSize);
-		pDstBits += nScanLineSize;
-		pSrcBits += nScanLineSize;
-	}
-	pSrcBits = DibForPalette3.GetBits();
-	for (line = 0 ; line < DibForPalette3.GetHeight() ; line++)
-	{
-		memcpy(pDstBits, pSrcBits, nScanLineSize);
-		pDstBits += nScanLineSize;
-		pSrcBits += nScanLineSize;
+		int nScanLineSize = DWALIGNEDWIDTHBYTES(DibForPalette.GetWidth() * DibForPalette.GetBitCount());
+		LPBYTE pSrcBits = DibForPalette1.GetBits();
+		if (pSrcBits)
+		{
+			for (line = 0 ; line < DibForPalette1.GetHeight() ; line++)
+			{
+				memcpy(pDstBits, pSrcBits, nScanLineSize);
+				pDstBits += nScanLineSize;
+				pSrcBits += nScanLineSize;
+			}
+		}
+		pSrcBits = DibForPalette2.GetBits();
+		if (pSrcBits)
+		{
+			for (line = 0 ; line < DibForPalette2.GetHeight() ; line++)
+			{
+				memcpy(pDstBits, pSrcBits, nScanLineSize);
+				pDstBits += nScanLineSize;
+				pSrcBits += nScanLineSize;
+			}
+		}
+		pSrcBits = DibForPalette3.GetBits();
+		if (pSrcBits)
+		{
+			for (line = 0 ; line < DibForPalette3.GetHeight() ; line++)
+			{
+				memcpy(pDstBits, pSrcBits, nScanLineSize);
+				pDstBits += nScanLineSize;
+				pSrcBits += nScanLineSize;
+			}
+		}
 	}
 
 	// Add frame tags to include its colors

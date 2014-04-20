@@ -513,7 +513,7 @@ public:
 			// CalcMovementDetectionListsSize() must be called from this thread because
 			// this thread changes/deletes the list's dibs not inside the lists critical section!
 			void CalcMovementDetectionListsSize();
-			BOOL DecodeFrame(CDib* pDib);
+			void DecodeFrame(CDib* pDib);
 			int Work();
 			CString SaveJpeg(	CDib* pDib,
 								CString sJPGDir,
