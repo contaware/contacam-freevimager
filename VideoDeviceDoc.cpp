@@ -208,10 +208,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 										pDib);
 		// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
 		if (!res)
-		{
-			m_AVDetDecoder.Close(); // close it so that with next frame mjpeg decoder is re-opened
 			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
-		}
 
 		// Make sure we have valid bits, if not make a green frame
 		if (!pDib->GetBits())

@@ -24,7 +24,6 @@ class CAVDecoder
 						m_pFrameDst = NULL;
 						m_pImgConvertCtx = NULL;}
 		virtual ~CAVDecoder(){Close();}
-		void Close();
 		BOOL Decode(LPBITMAPINFO pSrcBMI,
 					LPBYTE pSrcBits,
 					DWORD dwSrcSize,
@@ -33,6 +32,7 @@ class CAVDecoder
 
 	protected:
 		BOOL Open(LPBITMAPINFO pSrcBMI);
+		void Close();
 		BITMAPINFOFULL m_SrcBMI;
 		BITMAPINFOFULL m_DstBMI;
 		AVCodec* m_pCodec;
