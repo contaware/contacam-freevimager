@@ -1,7 +1,7 @@
-// ISO C9x  compliant inttypes.h for Miscrosoft Visual Studio
+// ISO C9x  compliant inttypes.h for Microsoft Visual Studio
 // Based on ISO/IEC 9899:TC2 Committee draft (May 6, 2005) WG14/N1124 
 // 
-//  Copyright (c) 2006 Alexander Chemeris
+//  Copyright (c) 2006-2013 Alexander Chemeris
 // 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -13,8 +13,9 @@
 //      notice, this list of conditions and the following disclaimer in the
 //      documentation and/or other materials provided with the distribution.
 // 
-//   3. The name of the author may be used to endorse or promote products
-//      derived from this software without specific prior written permission.
+//   3. Neither the name of the product nor the names of its contributors may
+//      be used to endorse or promote products derived from this software
+//      without specific prior written permission.
 // 
 // THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
 // WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -40,7 +41,7 @@
 #pragma once
 #endif
 
-#include <stdint.h>
+#include "stdint.h"
 
 // 7.8 Format conversion of integer types
 
@@ -50,6 +51,8 @@ typedef struct {
 } imaxdiv_t;
 
 // 7.8.1 Macros for format specifiers
+
+#if !defined(__cplusplus) || defined(__STDC_FORMAT_MACROS) // [   See footnote 185 at page 198
 
 // The fprintf macros for signed integers are:
 #define PRId8       "d"
@@ -258,6 +261,8 @@ typedef struct {
 #  define SCNxPTR     "lx"
 #  define SCNXPTR     "lX"
 #endif  // _WIN64 ]
+
+#endif // __STDC_FORMAT_MACROS ]
 
 // 7.8.2 Functions for greatest-width integer types
 
