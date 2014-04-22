@@ -454,7 +454,6 @@ public:
 
 	// Is At least One Video Avi Document Open?
 	BOOL AreVideoAviDocsOpen();
-
 	
 #ifdef VIDEODEVICEDOC
 	// Is At least One Video Device Document Open?
@@ -492,9 +491,6 @@ public:
 	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
 #endif
 
-	// Is Showing a Print Preview other than pThisDoc?
-	BOOL HasPicturePrintPreview(CPictureDoc* pThisDoc = NULL);
-
 	// Is the Given Doc Available?
 	// Shows the reason of the unavailability of the current doc
 	// if bShowMsgBoxIfNotAvailable is TRUE
@@ -505,16 +501,6 @@ public:
 	// (does not check m_pDib->IsValid(), which means fully loaded)
 	BOOL IsDocAvailable(	CDocument* pDoc,
 							BOOL bShowMsgBoxIfNotAvailable = FALSE);
-
-	// Is the Current Active Doc Available?
-	// Shows the reason of the unavailability of the current doc
-	// if bShowMsgBoxIfNotAvailable is TRUE
-	//
-	// Not available means when dialogs open, when doc modified,
-	// when a command will be executed with the full load of the picture,
-	// when in print preview, when playing, when processing
-	// (does not check m_pDib->IsValid(), which means fully loaded)
-	BOOL IsCurrentDocAvailable(BOOL bShowMsgBoxIfNotAvailable = FALSE);
 
 	// Is the Given Doc Ready to Change Picture?
 	// Shows the reason of the impossibility to slide
@@ -527,37 +513,8 @@ public:
 	BOOL IsDocReadyToSlide(	CPictureDoc* pDoc,
 							BOOL bShowMsgBoxIfSlideNotPossible = FALSE);
 
-	// Is the Current Active Doc Ready to Change Picture?
-	// Shows the reason of the impossibility to slide
-	// if bShowMsgBoxIfSlideNotPossible is TRUE
-	//
-	// Not ready to slide means when dialogs open, when doc modified,
-	// when a command will be executed with the full load of the picture,
-	// when in print preview
-	// (does not check m_pDib->IsValid(), which means fully loaded)
-	BOOL IsCurrentDocReadyToSlide(BOOL bShowMsgBoxIfSlideNotPossible = FALSE);
-
-	// Are the Open Picture Docs Available?
-	// Shows the reason of the unavailability
-	// if bShowMsgBoxIfNotAvailable is TRUE
-	BOOL AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable = FALSE);
-
-	// Are the Open Video Avi Docs Available?
-	// Shows the reason of the unavailability
-	// if bShowMsgBoxIfNotAvailable is TRUE
-	BOOL AreOpenVideoAviDocsAvailable(BOOL bShowMsgBoxIfNotAvailable = FALSE);
-
-	// Checks whether any Video Avi Processing thread is running
-	BOOL AreProcessingThreadsRunning();
-
-	// Is the give picture size (in bytes) to be considered Big?
+	// Is the given picture size (in bytes) to be considered Big?
 	BOOL IsPictureSizeBig(DWORD dwImageSize);
-
-	// Is The Current Doc Saved?
-	BOOL IsCurrentDocSaved();
-
-	// Are All Documents Saved?
-	BOOL AreAllDocsSaved();
 
 	// Profile Settings
 	void LoadPlacement(UINT showCmd = SW_SHOWNORMAL);	// pass SW_HIDE to override the stored placement (otherwise this parameter is ignored)

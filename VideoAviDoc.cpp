@@ -4007,7 +4007,7 @@ free:
 
 void CVideoAviDoc::OnFileExtractframes() 
 {
-	if (((CUImagerApp*)::AfxGetApp())->IsCurrentDocAvailable(TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		ResetPercentDone();
 		m_ProcessingThread.SetProcessingFunct(&m_ExtractframesProcessing);
@@ -4504,7 +4504,7 @@ BOOL CVideoAviDoc::SaveModified()
 
 void CVideoAviDoc::OnFileSaveAs()
 {
-	if (((CUImagerApp*)::AfxGetApp())->IsCurrentDocAvailable(TRUE))
+	if (((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
 		ResetPercentDone();
 		m_ProcessingThread.SetProcessingFunct(&m_SaveAsProcessing);

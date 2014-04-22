@@ -3872,10 +3872,11 @@ BOOL CPictureDoc::Save()
 
 void CPictureDoc::OnFileCopyTo()
 {
-	GetView()->ForceCursor();
 	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
 		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
+		GetView()->ForceCursor();
+
 		// Copy To Dialog
 		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
 		InitDir[0] = _T('\0');
@@ -3905,16 +3906,18 @@ void CPictureDoc::OnFileCopyTo()
 
 		// Free
 		delete [] InitDir;
+
+		GetView()->ForceCursor(FALSE);
 	}
-	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::OnFileMoveTo()
 {
-	GetView()->ForceCursor();
 	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
 		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
+		GetView()->ForceCursor();
+
 		// Be Sure We Are Not Working On This File
 		m_JpegThread.Kill();
 #ifdef SUPPORT_GIFLIB
@@ -3956,17 +3959,20 @@ void CPictureDoc::OnFileMoveTo()
 
 		// Free
 		delete [] InitDir;
+
+		GetView()->ForceCursor(FALSE);
 	}
-	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::OnFileReload() 
 {
-	GetView()->ForceCursor();
 	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
 		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
+	{
+		GetView()->ForceCursor();
 		LoadPicture(&m_pDib, m_sFileName);
-	GetView()->ForceCursor(FALSE);
+		GetView()->ForceCursor(FALSE);
+	}
 }
 
 void CPictureDoc::OnFileSave() 
@@ -4479,10 +4485,11 @@ BOOL CPictureDoc::DeleteDocFile()
 
 void CPictureDoc::OnEditRename() 
 {
-	GetView()->ForceCursor();
 	if (!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly &&
 		((CUImagerApp*)::AfxGetApp())->IsDocAvailable(this, TRUE))
 	{
+		GetView()->ForceCursor();
+
 		CRenameDlg dlg;
 		dlg.m_sFileName = ::GetShortFileNameNoExt(m_sFileName);
 		if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
@@ -4511,8 +4518,9 @@ void CPictureDoc::OnEditRename()
 			if (LoadPicture(&m_pDib, sNewFileName))
 				SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 		}
+
+		GetView()->ForceCursor(FALSE);
 	}
-	GetView()->ForceCursor(FALSE);
 }
 
 void CPictureDoc::LoadSettings()

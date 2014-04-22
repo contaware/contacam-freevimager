@@ -1741,29 +1741,32 @@ void CUImagerApp::OnFileSendmailOpenDocs()
 		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
-	else if (AreProcessingThreadsRunning())
-	{
-		::AfxMessageBox(ML_STRING(1176, "Wait till all processing is done."), MB_OK | MB_ICONINFORMATION);
-		return;
-	}
 	else if (!ArePictureDocsOpen() && !AreVideoAviDocsOpen())
 		OnFileOpen();
 
 	// Send open doc(s)
-	if (ArePictureDocsOpen() && !AreVideoAviDocsOpen())
+	if (ArePictureDocsOpen() || AreVideoAviDocsOpen())
 	{
-		if (AreOpenPictureDocsAvailable(TRUE))
-			SendOpenDocsAsMailInit();
-	}
-	else if (!ArePictureDocsOpen() && AreVideoAviDocsOpen())
-	{
-		if (AreOpenVideoAviDocsAvailable(TRUE))
-			SendOpenDocsAsMailInit();
-	}
-	else if (ArePictureDocsOpen() && AreVideoAviDocsOpen())
-	{
-		if (AreOpenPictureDocsAvailable(TRUE) && AreOpenVideoAviDocsAvailable(TRUE))
-			SendOpenDocsAsMailInit();
+		// Make sure open doc(s) are available
+		CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
+		POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
+		while (posPictureDoc)
+		{
+			CPictureDoc* pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
+			if (!IsDocAvailable(pPictureDoc, TRUE))
+				return;
+		}
+		CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
+		POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
+		while (posVideoAviDoc)
+		{
+			CVideoAviDoc* pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
+			if (!IsDocAvailable(pVideoAviDoc, TRUE))
+				return;
+		}
+
+		// Send init
+		SendOpenDocsAsMailInit();
 	}
 }
 
@@ -1931,41 +1934,6 @@ int CUImagerApp::GetTotalVideoDeviceDocsMovementDetecting()
 
 #endif
 
-BOOL CUImagerApp::IsCurrentDocSaved()
-{
-	if (!::AfxGetMainFrame())
-		return FALSE;
-	CDocument* pDoc = NULL;
-	if (::AfxGetMainFrame()->MDIGetActive())
-		pDoc = ::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument();
-	if (pDoc && pDoc->IsModified())
-		return FALSE;
-	else
-		return TRUE;
-}
-
-BOOL CUImagerApp::AreAllDocsSaved()
-{
-	CDocument* pDoc;
-	CUImagerMultiDocTemplate* curTemplate;
-	POSITION posTemplate, posDoc;
-
-	posTemplate = GetFirstDocTemplatePosition();
-	while (posTemplate)
-	{
-		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
-		posDoc = curTemplate->GetFirstDocPosition();
-		while (posDoc)
-		{
-			pDoc = curTemplate->GetNextDoc(posDoc);
-			if (pDoc && pDoc->IsModified())
-				return FALSE;
-		}
-	}
-
-	return TRUE;
-}
-
 void CUImagerApp::SaveOnEndSession()
 {
 	SavePlacement();
@@ -2009,20 +1977,6 @@ void CUImagerApp::SaveOnEndSession()
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
 		ControlContaCamService(CONTACAMSERVICE_CONTROL_START_PROC);
 #endif
-}
-	
-BOOL CUImagerApp::AreProcessingThreadsRunning()
-{
-	CVideoAviDoc* pDoc;
-	CUImagerMultiDocTemplate* curTemplate = GetVideoAviDocTemplate();
-	POSITION pos = curTemplate->GetFirstDocPosition();
-	while (pos)
-	{
-		pDoc = (CVideoAviDoc*)(curTemplate->GetNextDoc(pos));
-		if (pDoc && pDoc->m_ProcessingThread.IsRunning())
-			return TRUE;
-	}
-	return FALSE;
 }
 
 BOOL CUImagerApp::IsDoc(CDocument* pDoc)
@@ -2145,175 +2099,57 @@ CString CUImagerApp::VideoAviMakeMsg(CVideoAviDoc* pDoc)
 
 BOOL CUImagerApp::IsDocAvailable(CDocument* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
 {
-	CString sMsg;
-	
-	if (!pDoc)
+	if (pDoc)
 	{
-		sMsg = ML_STRING(1201, "No open documents available.");
-		goto msg;
+		if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+		{
+			CString sMsg(PictureMakeMsg((CPictureDoc*)pDoc));
+			if (!sMsg.IsEmpty())
+			{
+				if (bShowMsgBoxIfNotAvailable)
+				{
+					((CPictureDoc*)pDoc)->GetView()->ForceCursor();
+					::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+					((CPictureDoc*)pDoc)->GetView()->ForceCursor(FALSE);
+				}
+				return FALSE;
+			}
+		}
+		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+		{
+			CString sMsg(VideoAviMakeMsg((CVideoAviDoc*)pDoc));
+			if (!sMsg.IsEmpty())
+			{
+				if (bShowMsgBoxIfNotAvailable)
+				{
+					((CVideoAviDoc*)pDoc)->GetView()->ForceCursor();
+					::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+					((CVideoAviDoc*)pDoc)->GetView()->ForceCursor(FALSE);
+				}
+				return FALSE;
+			}
+		}
 	}
-
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-	{
-		sMsg = PictureMakeMsg((CPictureDoc*)pDoc);
-		if (sMsg == _T(""))
-			return TRUE;
-	}
-	else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-	{
-		sMsg = VideoAviMakeMsg((CVideoAviDoc*)pDoc);
-		if (sMsg == _T(""))
-			return TRUE;
-	}
-	else
-		sMsg = ML_STRING(1199, "This is not a Picture or a Video File.");
-
-msg:
-	if (bShowMsgBoxIfNotAvailable)
-		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-	return FALSE;
-}
-
-BOOL CUImagerApp::IsCurrentDocAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
-{
-	if (!::AfxGetMainFrame())
-	{
-		if (bShowMsgBoxIfNotAvailable)
-			::AfxMessageBox(_T("Main window pointer is NULL!"), MB_OK | MB_ICONINFORMATION);
-		return FALSE;
-	}
-
-	if (::AfxGetMainFrame()->MDIGetActive())
-		return IsDocAvailable(	::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument(),
-								bShowMsgBoxIfNotAvailable);
-	else
-	{
-		if (bShowMsgBoxIfNotAvailable)
-			::AfxMessageBox(ML_STRING(1201, "No open documents available."), MB_OK | MB_ICONINFORMATION);
-		return FALSE;
-	}
-}
-
-BOOL CUImagerApp::AreOpenVideoAviDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
-{
-	CString sMsg;
-	CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
-	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-	CVideoAviDoc* pVideoAviDoc;
-
-	// If No Video Docs Open
-	if (!posVideoAviDoc)
-	{
-		sMsg = ML_STRING(1202, "No video documents open."); 
-		goto msg;
-	}
-
-	while (posVideoAviDoc)
-	{
-		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-		sMsg = VideoAviMakeMsg(pVideoAviDoc);
-		if (sMsg != _T(""))
-			goto msg;
-	}
-	
 	return TRUE;
-
-msg:
-	if (bShowMsgBoxIfNotAvailable)
-		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-	return FALSE;
-}
-
-BOOL CUImagerApp::AreOpenPictureDocsAvailable(BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
-{
-	CString sMsg;
-	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
-	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
-	CPictureDoc* pPictureDoc;
-
-	// If No Picture Docs Open
-	if (!posPictureDoc)
-	{
-		sMsg = ML_STRING(1203, "No picture documents open."); 
-		goto msg;
-	}
-
-	while (posPictureDoc)
-	{
-		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		sMsg = PictureMakeMsg(pPictureDoc);
-		if (sMsg != _T(""))
-			goto msg;
-	}
-
-	return TRUE;
-	
-msg:
-	if (bShowMsgBoxIfNotAvailable)
-		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-	return FALSE;
-}
-
-BOOL CUImagerApp::HasPicturePrintPreview(CPictureDoc* pThisDoc/*=NULL*/)
-{
-	CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
-	POSITION posPictureDoc = pPictureDocTemplate->GetFirstDocPosition();
-	CPictureDoc* pPictureDoc;	
-	while (posPictureDoc)
-	{
-		pPictureDoc = (CPictureDoc*)(pPictureDocTemplate->GetNextDoc(posPictureDoc));
-		if (pPictureDoc				&&
-			pThisDoc != pPictureDoc	&&
-			pPictureDoc->m_bPrintPreviewMode)
-			return TRUE;
-	}
-
-	return FALSE;
 }
 
 BOOL CUImagerApp::IsDocReadyToSlide(CPictureDoc* pDoc, BOOL bShowMsgBoxIfSlideNotPossible/*=FALSE*/)
 {
-	CString sMsg;
-
-	if (!pDoc)
+	if (pDoc)
 	{
-		sMsg = ML_STRING(1204, "No picture document open."); 
-		goto msg;
+		CString sMsg(PictureSlideMakeMsg(pDoc));
+		if (!sMsg.IsEmpty())
+		{
+			if (bShowMsgBoxIfSlideNotPossible)
+			{
+				pDoc->GetView()->ForceCursor();
+				::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+				pDoc->GetView()->ForceCursor(FALSE);
+			}
+			return FALSE;
+		}
 	}
-
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-	{
-		sMsg = PictureSlideMakeMsg((CPictureDoc*)pDoc);
-		if (sMsg == _T(""))
-			return TRUE;
-	}
-	else
-		sMsg = ML_STRING(1206, "This is not a Picture File.");
-
-msg:
-	if (bShowMsgBoxIfSlideNotPossible)
-		::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-	return FALSE;
-}
-
-BOOL CUImagerApp::IsCurrentDocReadyToSlide(BOOL bShowMsgBoxIfSlideNotPossible/*=FALSE*/)
-{
-	if (!::AfxGetMainFrame())
-	{
-		if (bShowMsgBoxIfSlideNotPossible)
-			::AfxMessageBox(_T("Main window pointer is NULL!"), MB_OK | MB_ICONINFORMATION);
-		return FALSE;
-	}
-
-	if (::AfxGetMainFrame()->MDIGetActive())
-		return IsDocReadyToSlide(	(CPictureDoc*)(::AfxGetMainFrame()->MDIGetActive()->GetActiveDocument()),
-									bShowMsgBoxIfSlideNotPossible);
-	else
-	{
-		if (bShowMsgBoxIfSlideNotPossible)
-			::AfxMessageBox(ML_STRING(1201, "No open documents available."), MB_OK | MB_ICONINFORMATION);
-		return FALSE;
-	}
+	return TRUE;
 }
 
 int CUImagerApp::GetUniqueTopDirAndCount(CString sZipFileName, CString& sTopDir)

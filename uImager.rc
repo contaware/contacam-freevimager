@@ -4478,7 +4478,6 @@ BEGIN
     IDS_MULTILANG_1173      "%u phys. processor(s), %u core(s), %u logical processor(s)"
     IDS_MULTILANG_1174      "Failed to Open:\n%s\nThe following extension is not supported:\n%s"
     IDS_MULTILANG_1175      "No Email Program Installed."
-    IDS_MULTILANG_1176      "Wait till all processing is done."
     IDS_MULTILANG_1178      "No picture file loaded."
     IDS_MULTILANG_1179      "Please try again later, a command is executed when picture fully loaded."
     IDS_MULTILANG_1180      "Try again after saving the picture file."
@@ -4503,16 +4502,10 @@ BEGIN
     IDS_MULTILANG_1195      "Try again after saving the file."
     IDS_MULTILANG_1196      "Try again after the video processing has terminated."
     IDS_MULTILANG_1197      "Stop playing the file and try again."
-    IDS_MULTILANG_1199      "This is not a Picture or a Video File."
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1201      "No open documents available."
-    IDS_MULTILANG_1202      "No video documents open."
-    IDS_MULTILANG_1203      "No picture documents open."
-    IDS_MULTILANG_1204      "No picture document open."
-    IDS_MULTILANG_1206      "This is not a Picture File."
     IDS_MULTILANG_1207      "Extract Files To Folder"
     IDS_MULTILANG_1208      "Error While Deleting The Burn Folder."
     IDS_MULTILANG_1209      "Error While Copying Files to The Burn Folder."
