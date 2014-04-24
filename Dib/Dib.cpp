@@ -2972,20 +2972,12 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	if ((sExt == _T(".bmp")) ||
 		(sExt == _T(".dib")))
 	{
-#ifdef SUPPORT_BMP
 		return LoadBMP(	lpszPathName,					// Loads bmp as BMI + bits
 						bOnlyHeader,
 						bDecompressBmp,
 						pProgressWnd,
 						bProgressSend,
 						pThread);
-#endif
-
-		return LoadDibSection(lpszPathName);			// Loads bmp as DIBSECTION
-
-#ifdef SUPPORT_MMBMP
-		return MapBMP(lpszPathName, TRUE);				// Memory Maps the bmp, TRUE -> Read Only
-#endif
 	}
 	else if (sExt == _T(".emf"))
 	{
@@ -4206,9 +4198,7 @@ BOOL CDib::DibSectionToBits(BOOL bForceNewBits/*=FALSE*/, BOOL bDeleteDibSection
 	if (!m_hDibSection || !m_pBMI)
 		return FALSE;
 
-#ifdef SUPPORT_MMBMP
 	UnMapBMP();
-#endif
 
 	if (m_pBits)
 	{
@@ -4391,17 +4381,14 @@ HGLOBAL CDib::CopyToHandle()
 	CSharedFile file;
 	try
 	{
-#ifdef SUPPORT_BMP
 		if (SaveBMPNoFileHeader(file) == FALSE)
 			return NULL;
-#endif
 	}
 	catch (CFileException* e)
 	{
 		e->Delete();
 		return NULL;
 	}
-		
 	return file.Detach();
 }
 
@@ -4411,17 +4398,14 @@ HGLOBAL CDib::CopyFromHandle(HGLOBAL handle)
 	file.SetHandle(handle, FALSE);
 	try
 	{
-#ifdef SUPPORT_BMP
 		if (LoadBMPNoFileHeader(file) == FALSE)
 			return NULL;
-#endif
 	}
 	catch (CFileException* e)
 	{
 		e->Delete();
 		return NULL;
 	}
-		
 	return file.Detach();
 }
 
@@ -5787,16 +5771,12 @@ void CDib::Serialize(CArchive& ar)
 	if (pFile)
 	{
 		if (ar.IsStoring())
-		{	// storing code
-#ifdef SUPPORT_BMP
+		{
 			SaveBMP(*pFile);
-#endif
 		}
 		else
-		{	// loading code
-#ifdef SUPPORT_BMP
+		{
 			LoadBMP(*pFile);
-#endif
 		}
 	}
 }
@@ -5877,12 +5857,10 @@ void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
 				BOOL bLeaveMetadata/*=FALSE*/,
 				BOOL bLeaveGIF/*=FALSE*/)
 {
-#ifdef SUPPORT_MMBMP
 	if (bLeaveHeader)
 		MMBMPToBMI();
 	else
 		UnMapBMP();
-#endif
 	
 	if (!bLeaveHeader && m_pBMI)
 	{

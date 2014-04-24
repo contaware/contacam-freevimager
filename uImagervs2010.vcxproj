@@ -112,7 +112,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>.\ffmpeg;.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>CPJNSMTP_NOSSL;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_BMP;SUPPORT_MMBMP;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPJNSMTP_NOSSL;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -162,7 +162,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\openssl\Build32MTd\include;.\ffmpeg;.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VIDEODEVICEDOC;_DEBUG;DEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_BMP;SUPPORT_MMBMP;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VIDEODEVICEDOC;_DEBUG;DEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -222,7 +222,7 @@
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>.\openssl\Build32MT\include;.\ffmpeg;.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>VIDEODEVICEDOC;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_BMP;SUPPORT_MMBMP;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VIDEODEVICEDOC;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;SUPPORT_LIBJPEG;SUPPORT_LIBPNG;SUPPORT_LIBTIFF;SUPPORT_PCX;SUPPORT_GIFLIB;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

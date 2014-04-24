@@ -2693,7 +2693,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		extension.MakeLower();
 		if ((extension == _T("bmp")) || (extension == _T("dib")))
 		{
-#ifdef SUPPORT_BMP
 			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
 			{
@@ -2735,7 +2734,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 										TRUE);
 			}
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("gif"))
 		{
@@ -3680,7 +3678,6 @@ BOOL CPictureDoc::Save()
 		extension.MakeLower();
 		if ((extension == _T("bmp")) || (extension == _T("dib")))
 		{
-#ifdef SUPPORT_BMP
 			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
 			{
@@ -3721,7 +3718,6 @@ BOOL CPictureDoc::Save()
 										TRUE);
 			}
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("gif"))
 		{

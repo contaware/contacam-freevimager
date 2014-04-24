@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_BMP
-
 BOOL CDib::LoadBMP(	LPCTSTR lpszPathName,
 					BOOL bOnlyHeader/*=FALSE*/,
 					BOOL bDecompress/*=TRUE*/,
@@ -781,5 +779,3 @@ BOOL CDib::SaveBMP(	CFile& file,
 		return FALSE;
 	}
 }
-
-#endif

@@ -1207,7 +1207,6 @@ public:
 														// to check whether interruption of the load is wante
 
 	// Memory Mapped BMP Support
-#ifdef SUPPORT_MMBMP
 	BOOL MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly);	// Load a Memory Mapped File,
 														// m_pBMI and m_pBits are set
 														// to the right place in the file.
@@ -1219,10 +1218,8 @@ public:
 														// a Copy of the BMI to m_pBMI.
 	void UnMapBMP();									// Closes Memory Mapped File:
 														// m_pBits = m_pBMI = NULL;
-#endif
 
 	// BMP Support
-#ifdef SUPPORT_BMP
 	BOOL LoadBMP(	LPCTSTR lpszPathName,
 					BOOL bOnlyHeader = FALSE,
 					BOOL bDecompress = TRUE,			// If Set Decompress RLE4 and RLE8 to RGB4 and RGB8
@@ -1252,7 +1249,6 @@ public:
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
-#endif
 
 	// EMF Support
 	BOOL LoadEMF(LPCTSTR lpszPathName);

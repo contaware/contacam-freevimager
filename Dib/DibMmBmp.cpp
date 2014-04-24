@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_MMBMP
-
 BOOL CDib::MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly)
 {
 	// Free
@@ -449,5 +447,3 @@ void CDib::UnMapBMP()
 		m_hMMFile = INVALID_HANDLE_VALUE;
 	}
 }
-
-#endif
