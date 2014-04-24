@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBJPEG
-
 extern "C"
 {
 #include "jerror.h"
@@ -5291,5 +5289,3 @@ BOOL CDib::JPEGWriteComment(LPCTSTR szFileName,
 	else
 		return FALSE;
 }
-
-#endif

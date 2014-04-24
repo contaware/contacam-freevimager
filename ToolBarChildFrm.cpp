@@ -1329,11 +1329,9 @@ void CPictureChildFrame::StartShutdown()
 
 	// Start Killing
 	pDoc->m_SlideShowThread.Kill_NoBlocking();
-#ifdef SUPPORT_LIBJPEG
 	pDoc->m_bLoadFullJpegTransitionUI = FALSE;
 	pDoc->m_bCancelLoadFullJpegTransition = FALSE;
 	pDoc->m_JpegThread.Kill_NoBlocking();
-#endif
 	pDoc->m_LoadPicturesThread.Kill_NoBlocking();
 	pDoc->m_LayeredDlgThread.Kill_NoBlocking();
 	pDoc->m_GifAnimationThread.Kill_NoBlocking();

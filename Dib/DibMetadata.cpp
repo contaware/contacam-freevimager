@@ -8,8 +8,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBJPEG
-
 // Bytes Per Format
 const int CMetadata::m_BytesPerFormat[13] = {0,1,1,2,4,8,1,1,2,4,8,4,8};
 
@@ -5654,5 +5652,3 @@ void CMetadata::XMPINFO::MakeCRLF()
 	// Status
 	::MakeLineBreakCRLF(UsageTerms);
 }
-
-#endif

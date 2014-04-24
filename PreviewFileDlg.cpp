@@ -366,7 +366,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 			s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
 												pDib->GetHeight());
 
-#ifdef SUPPORT_LIBJPEG
 			if (pDib->GetExifInfo()->bHasExif)
 			{
 				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
@@ -422,7 +421,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 					s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 			}
 			else
-#endif
 			{
 				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
 				s += t;

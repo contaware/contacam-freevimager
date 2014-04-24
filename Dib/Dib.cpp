@@ -79,9 +79,7 @@ void CDib::CopyVars(const CDib& SrcDib)
 	m_bFast32bpp = SrcDib.m_bFast32bpp;
 	m_crBackgroundColor = SrcDib.m_crBackgroundColor;
 	m_FileInfo = SrcDib.m_FileInfo;
-#ifdef SUPPORT_LIBJPEG
 	m_Metadata = SrcDib.m_Metadata;
-#endif
 	m_Gif = SrcDib.m_Gif;
 }
 
@@ -2992,7 +2990,6 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	}
 	else if (::IsJPEGExt(sExt))
 	{
-#ifdef SUPPORT_LIBJPEG
 		if (bOnlyHeader || (nMaxSizeX <= 0 && nMaxSizeY <= 0))
 			return LoadJPEG(lpszPathName,				// Loads jpg as BMI + bits
 							1,
@@ -3034,9 +3031,6 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 			else
 				return TRUE;
 		}
-#endif
-
-		return LoadDibSectionEx(lpszPathName);			// Loads jpg as DIBSECTION
 	}
 	else if (::IsTIFFExt(sExt))
 	{
@@ -3317,9 +3311,7 @@ BOOL CDib::LoadDibSectionEx(LPCTSTR lpszPathName)
 		pStream->Release();
 
 		// Load Metadata
-#ifdef SUPPORT_LIBJPEG
 		JPEGLoadMetadata(lpszPathName);
-#endif
 
 		// Init BMI
 		if (DibSectionInitBMI())
@@ -5878,10 +5870,8 @@ void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
 		DeletePreviewDib();
 	if (!bLeaveThumbnailDib)
 		DeleteThumbnailDib();
-#ifdef SUPPORT_LIBJPEG
 	if (!bLeaveMetadata)
 		m_Metadata.Free();
-#endif
 	if (!bLeaveGIF)
 		m_Gif.Free();
 	if (!bLeavePalette && m_pPalette)

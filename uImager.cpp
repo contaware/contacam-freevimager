@@ -3627,7 +3627,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			pSaveDib->SetAlpha(FALSE);
 		}
 
-#ifdef SUPPORT_LIBJPEG
 		if (::IsJPEGExt(sSrcExt))
 		{
 			if (!pSaveDib->SaveJPEG(szDstFileName,
@@ -3660,7 +3659,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 									pThread))
 				return 0;
 		}
-#endif
 	}
 	else if (::IsTIFFExt(sDstExt))
 	{

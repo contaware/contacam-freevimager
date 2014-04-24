@@ -124,7 +124,6 @@ BOOL CRotationFlippingDlg::DoIt()
 	pDoc->BeginWaitCursor();
 
 	// Try Lossless Transformation
-#ifdef SUPPORT_LIBJPEG
 	switch (pDoc->LossLessRotateFlip(TRUE, this))
 	{
 		case 0 :
@@ -151,7 +150,6 @@ BOOL CRotationFlippingDlg::DoIt()
 			pDoc->EndWaitCursor();
 			return FALSE;
 	}
-#endif
 
 	// Do Transformation if the angle is not 0°
 	if (m_TransformationType != 5 || m_uiAngle != 0 || m_uiAngleMinutes != 0)

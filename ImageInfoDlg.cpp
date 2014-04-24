@@ -1088,7 +1088,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 	{
 		if (::IsJPEG(m_pDoc->m_sFileName))
 		{
-#ifdef SUPPORT_LIBJPEG
 			BeginWaitCursor();
 
 			// Be Sure We Are Not Working On This File
@@ -1125,7 +1124,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 				EndWaitCursor();
 				return FALSE;
 			}
-#endif
 		}
 		else if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
 		{
@@ -1180,7 +1178,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 	// Keywords or Supplemental Categories.
 	if (::IsJPEG(m_pDoc->m_sFileName))
 	{
-#ifdef SUPPORT_LIBJPEG
 		BeginWaitCursor();
 
 		// Be Sure We Are Not Working On This File
@@ -1270,7 +1267,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 			EndWaitCursor();
 			return FALSE;
 		}
-#endif
 	}
 	else if (::IsTIFF(m_pDoc->m_sFileName))
 	{
@@ -2816,7 +2812,6 @@ void CImageInfoDlg::UpdateMetadata()
 	m_pDoc->m_bMetadataModified = FALSE;
 
 	// Jpeg
-#ifdef SUPPORT_LIBJPEG
 	if (::IsJPEG(m_pDoc->m_sFileName))
 	{
 		CString sJpegComment = m_pDoc->m_pDib->GetMetadata()->m_sJpegComment;
@@ -2825,7 +2820,6 @@ void CImageInfoDlg::UpdateMetadata()
 		m_sCurrentComment = sJpegComment;
 		GetIptc();
 	}
-#endif
 
 	// Tiff
 	if (::IsTIFF(m_pDoc->m_sFileName))

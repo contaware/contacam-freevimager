@@ -393,7 +393,6 @@ public:
 						m_pDib->m_FileInfo.m_nImageCount > 1 &&
 						::IsTIFF(m_sFileName);};
 
-#ifdef SUPPORT_LIBJPEG
 	// Gets the Pixel Alignment and starts the Jpeg Thread
 	// (compression calculation and full size jpeg load)
 	void JPEGGet();
@@ -405,7 +404,6 @@ public:
 	// 1 = ok done
 	// 2 = cannot do a lossless transformation
 	int LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippingDlg* pDlg);
-#endif
 
 	// Update Alpha Rendered Dib
 	void UpdateAlphaRenderedDib();

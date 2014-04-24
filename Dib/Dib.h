@@ -6,10 +6,8 @@ extern "C"
 #include "png.h"
 #include "tiffio.h"
 #include "tiffiop.h"
-#ifdef SUPPORT_LIBJPEG
 #include "jpeglib.h"
 #include "transupp.h"	// Support routines for lossless transformations
-#endif
 #include "gif_lib.h"
 }
 
@@ -313,9 +311,7 @@ class CUserBuf
 #include "DibGif.h"
 
 // Metadata (Exif, Iptc, Xmp) Support
-#ifdef SUPPORT_LIBJPEG
 #include "DibMetadata.h"
-#endif
 
 // Include Worker Thread
 #include "..\WorkerThread.h"
@@ -448,9 +444,7 @@ protected:
 	int m_nFloodFillStackPos;
 
 	// The Exif Var
-#ifdef SUPPORT_LIBJPEG
 	CMetadata m_Metadata;
-#endif
 
 	// The Gif Var
 	CGif m_Gif;
@@ -1461,7 +1455,6 @@ public:
 									BOOL bProgressSend = TRUE);
 
 	// JPEG Support
-#ifdef SUPPORT_LIBJPEG
 	BOOL LoadJPEG(LPCTSTR lpszPathName,
 					int ScaleFactor = 1,				// ScaleFactor(=making the image smaller) can be 1,2,4 or 8
 					BOOL bFast = FALSE,					// bFast=TRUE selects a fast but sloppy decoding
@@ -1723,7 +1716,6 @@ public:
 	// Remove the Icc Section of the given file
 	static BOOL JPEGRemoveIcc(	LPCTSTR lpszPathName,
 								BOOL bShowMessageBoxOnError);
-#endif
 
 	// Dib Section Functions
 	BOOL LoadDibSection(HBITMAP hDibSection);		// Duplicates a DibSection

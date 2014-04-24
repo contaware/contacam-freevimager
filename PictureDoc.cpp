@@ -475,10 +475,7 @@ void CPictureDoc::CSlideShowThread::RunSlideshow()
 												0,
 												TIME_PERIODIC | TIME_CALLBACK_EVENT_SET | TIME_KILL_SYNCHRONOUS);
 	}
-	
-#ifdef SUPPORT_LIBJPEG
 	m_pDoc->m_bDoJPEGGet = FALSE;
-#endif
 }
 
 void CPictureDoc::CSlideShowThread::PauseSlideshow()
@@ -497,7 +494,6 @@ void CPictureDoc::CSlideShowThread::PauseSlideshow()
 		m_uiSlideshowTimerId = 0;
 	}
 
-#ifdef SUPPORT_LIBJPEG
 	if (!m_pDoc->m_bDoJPEGGet)
 	{	
 		m_pDoc->m_bDoJPEGGet = TRUE;
@@ -506,7 +502,6 @@ void CPictureDoc::CSlideShowThread::PauseSlideshow()
 						WM_THREADSAFE_UPDATEIMAGEINFO,
 						(WPARAM)TRUE, (LPARAM)0);
 	}
-#endif
 }
 
 BOOL CPictureDoc::CSlideShowThread::LoadPicture(LPCTSTR sFileName, BOOL bNext)
@@ -1244,7 +1239,6 @@ int CPictureDoc::CJpegThread::Work()
 {
 	ASSERT(m_pDoc);
 
-#ifdef SUPPORT_LIBJPEG
 	DWORD Event;
 	CDib Dib;
 
@@ -1609,8 +1603,6 @@ int CPictureDoc::CJpegThread::Work()
 
 	// Clean-Up
 	CleanUp();
-
-#endif
 
 	return 0;
 }
@@ -2761,7 +2753,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		}
 		else if (::IsJPEGExt(extension))
 		{
-#ifdef SUPPORT_LIBJPEG
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
@@ -2845,7 +2836,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 				}
 			}
 			EndWaitCursor();
-#endif
 		}
 		else if (::IsTIFFExt(extension))
 		{
@@ -3735,7 +3725,6 @@ BOOL CPictureDoc::Save()
 		}
 		else if (::IsJPEGExt(extension))
 		{
-#ifdef SUPPORT_LIBJPEG
 			BeginWaitCursor();
 			res = m_pDib->SaveJPEG(	FileName,
 									m_JpegThread.GetJpegCompressionQualityBlocking(),
@@ -3754,7 +3743,6 @@ BOOL CPictureDoc::Save()
 												FALSE);
 			}
 			EndWaitCursor();
-#endif
 		}
 		else if (::IsTIFFExt(extension))
 		{
@@ -4816,12 +4804,10 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 	if (m_GifAnimationThread.IsAlive())
 		m_GifAnimationThread.Kill_NoBlocking();
 
-#ifdef SUPPORT_LIBJPEG
 	// Stop Jpeg Full Load Transition and start killing Jpeg thread
 	m_bLoadFullJpegTransitionUI = FALSE;
 	m_bCancelLoadFullJpegTransition = FALSE;
 	m_JpegThread.Kill_NoBlocking();
-#endif
 
 	// Do Not Draw Now!
 	m_bNoDrawing = TRUE;
@@ -4979,11 +4965,9 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 		m_sFileName = sFileName;
 		SetPathName(sFileName, TRUE);
 
-#ifdef SUPPORT_LIBJPEG
 		// Make Sure Jpeg Thread Is Not Running!
 		if (m_bDoJPEGGet)
 			m_JpegThread.Kill();
-#endif
 
 		// Wait until the Gif Animation Thread Stops
 		if (m_GifAnimationThread.IsAlive())
@@ -5071,14 +5055,12 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 			GetView()->InvalidateRect(rcClient, FALSE);
 		}
 
-#ifdef SUPPORT_LIBJPEG
 		// Start Calc. Jpeg Compression,
 		// get pixel align (for cropping)
 		// and load the full-sized jpeg 
 		// if not already done.
 		if (m_bDoJPEGGet)
 			JPEGGet();
-#endif
 
 		// Set flag which would be otherwise set
 		// in CJpegThread started by JPEGGet()
@@ -5251,7 +5233,7 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 		// Show Cursor & Begin Wait Cursor
 		GetView()->ForceCursor();
 		BeginWaitCursor();
-#ifdef SUPPORT_LIBJPEG
+
 		// Check for JPEG Extensions and make sure the file has not been modified
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
@@ -5331,7 +5313,6 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 
 			return TRUE;
 		}
-#endif
 
 		// A Duplicated Dib is created
 		AddUndo();
@@ -5364,7 +5345,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 		GetView()->ForceCursor();
 		BeginWaitCursor();
 
-#ifdef SUPPORT_LIBJPEG
 		// Check for JPEG Extensions and make sure the file has not been modified
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
@@ -5444,7 +5424,6 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 
 			return TRUE;
 		}
-#endif
 
 		// A Duplicated Dib is created
 		AddUndo();
@@ -5477,7 +5456,6 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 		GetView()->ForceCursor();
 		BeginWaitCursor();
 
-#ifdef SUPPORT_LIBJPEG
 		// Check for JPEG Extensions and make sure the file has not been modified
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
@@ -5557,7 +5535,6 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 
 			return TRUE;
 		}
-#endif
 
 		// A Duplicated Dib is created
 		AddUndo();
@@ -5598,7 +5575,6 @@ void CPictureDoc::OnEditRotateFlip()
 	}
 }
 
-#ifdef SUPPORT_LIBJPEG
 // Return values:
 // 0 = save before doing a lossless transformation
 // 1 = ok done
@@ -5828,7 +5804,6 @@ int CPictureDoc::LossLessRotateFlip(BOOL bShowMessageBoxOnError, CRotationFlippi
 	else
 		return 2;
 }
-#endif
 
 void CPictureDoc::OnUpdateEditRotateFlip(CCmdUI* pCmdUI) 
 {	
@@ -7115,7 +7090,6 @@ void CPictureDoc::OnUpdateEditNegative(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditUpdateExifthumb() 
 {
-#ifdef SUPPORT_LIBJPEG
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7154,27 +7128,22 @@ void CPictureDoc::OnEditUpdateExifthumb()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditUpdateExifthumb(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_UPDATE_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					m_pDib->GetExifInfo()->bHasExif &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditAddExifthumb() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7242,27 +7211,22 @@ void CPictureDoc::OnEditAddExifthumb()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditAddExifthumb(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_ADD_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(!m_pDib->GetExifInfo()->bHasExif ||
 					!m_pDib->GetExifInfo()->ThumbnailPointer));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveExifthumb() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7332,27 +7296,22 @@ void CPictureDoc::OnEditRemoveExifthumb()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveExifthumb(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_EXIFTHUMB) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					m_pDib->GetExifInfo()->bHasExif &&
 					m_pDib->GetExifInfo()->ThumbnailPointer);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditClearExifOrientate() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7394,26 +7353,21 @@ void CPictureDoc::OnEditClearExifOrientate()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditClearExifOrientate(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_CLEAR_EXIF_ORIENTATE) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					CDib::DoAutoOrientate(m_pDib));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveExif() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7494,26 +7448,21 @@ void CPictureDoc::OnEditRemoveExif()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveExif(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_EXIF) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetExifInfo()->bHasExifSection));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveIcc() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7594,26 +7543,21 @@ void CPictureDoc::OnEditRemoveIcc()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveIcc(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_ICC) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
-					(m_pDib && m_pDib->GetMetadata()->HasIcc()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif	
+					(m_pDib && m_pDib->GetMetadata()->HasIcc()));	
 }
 
 void CPictureDoc::OnEditRemoveXmp() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7694,26 +7638,21 @@ void CPictureDoc::OnEditRemoveXmp()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveXmp(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_XMP) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasXmp()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveJfif() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7794,26 +7733,21 @@ void CPictureDoc::OnEditRemoveJfif()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveJfif(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_JFIF) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasJfif()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveIptc() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -7894,26 +7828,21 @@ void CPictureDoc::OnEditRemoveIptc()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif	
 }
 
 void CPictureDoc::OnUpdateEditRemoveIptc(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_IPTC) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
-					(m_pDib && m_pDib->GetMetadata()->HasIptcLegacy()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif	
+					(m_pDib && m_pDib->GetMetadata()->HasIptcLegacy()));	
 }
 
 void CPictureDoc::OnEditRemoveOtherApp()
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -8024,26 +7953,21 @@ void CPictureDoc::OnEditRemoveOtherApp()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveOtherApp(CCmdUI* pCmdUI)
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_OTHERAPP) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasOtherAppSections()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRemoveCom() 
 {
 	const BOOL bShowMessageBoxOnError = TRUE;
-#ifdef SUPPORT_LIBJPEG
+
 	if (::IsJPEG(m_sFileName))
 	{
 		if (IsModified())
@@ -8124,20 +8048,15 @@ void CPictureDoc::OnEditRemoveCom()
 		if (bWasRunning && m_bDoJPEGGet)
 			JPEGGet();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditRemoveCom(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0 ||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_REMOVE_COM) &&
 					DoEnableCommand() &&
 					::IsJPEG(m_sFileName) &&
 					(m_pDib && m_pDib->GetMetadata()->HasCom()));
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditRedeye() 
@@ -8701,7 +8620,6 @@ void CPictureDoc::OnUpdatePlayRandom(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_SlideShowThread.IsRandom() ? 1 : 0);
 }
 
-#ifdef SUPPORT_LIBJPEG
 void CPictureDoc::JPEGGet()
 {
 	if (::IsJPEG(m_sFileName))
@@ -8749,7 +8667,6 @@ void CPictureDoc::JPEGGet()
 		m_JpegThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 	}
 }
-#endif
 
 void CPictureDoc::UpdateAlphaRenderedDib()
 {
@@ -9566,7 +9483,6 @@ void CPictureDoc::EditCrop()
 
 void CPictureDoc::OnEditCropLossless() 
 {
-#ifdef SUPPORT_LIBJPEG
 	if (::IsJPEG(m_sFileName))
 	{
 		if (m_bCrop)
@@ -9582,12 +9498,10 @@ void CPictureDoc::OnEditCropLossless()
 			EditCrop();
 		}
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_LIBJPEG
 	pCmdUI->Enable(	(m_dwIDAfterFullLoadCommand == 0			||
 					m_dwIDAfterFullLoadCommand == ID_EDIT_CROP_LOSSLESS)&&
 					m_pDib												&&
@@ -9609,9 +9523,6 @@ void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI)
 					m_DocRect.Width() >= m_nPixelAlignX					&&
 					m_DocRect.Height() >= m_nPixelAlignY				&&
 					!m_bPrintPreviewMode);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnEditCrop() 
@@ -9718,7 +9629,6 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 		// Force Cursor
 		GetView()->ForceCursor();
 
-#ifdef SUPPORT_LIBJPEG
 		// Lossless crop,
 		// check for JPEG Extensions,
 		// make sure the file has not been modified
@@ -9875,7 +9785,7 @@ BOOL CPictureDoc::CopyDelCrop(BOOL bShowMessageBoxOnError, BOOL bCopy, BOOL bDel
 
 			return TRUE;
 		}
-#endif
+
 		// Begin Wait Cursor
 		BeginWaitCursor();
 
@@ -10425,10 +10335,8 @@ void CPictureDoc::ViewMap()
 		}
 
 		// Use comment, filename or user's country
-#ifdef SUPPORT_LIBJPEG
 		if (sQuery == _T("") && ::IsJPEG(m_sFileName) && m_pDib->GetMetadata())
 			sQuery = m_pDib->GetMetadata()->m_sJpegComment;
-#endif
 		if (sQuery == _T("") && ::GetFileExt(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive() &&
