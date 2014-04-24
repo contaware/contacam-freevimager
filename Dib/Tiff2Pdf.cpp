@@ -34,8 +34,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBTIFF
-
 #define PS_UNIT_SIZE	72.0F
 
 void t2p_setdefaultcompression(T2P* t2p, uint16 compression);
@@ -4956,5 +4954,3 @@ tsize_t t2p_write_pdf(T2P* t2p, TIFF* input, TIFF* output){
 
 	return(written);
 }
-
-#endif

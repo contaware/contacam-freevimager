@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBTIFF
-
 /*
 #include <tiffio.h>
 #include <stdio.h>
@@ -2641,5 +2639,3 @@ CString CDib::TIFFExtractPages(	LPCTSTR szDstFileName,
 	else
 		return _T("");
 }
-
-#endif

@@ -3664,7 +3664,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	}
 	else if (::IsTIFFExt(sDstExt))
 	{
-#ifdef SUPPORT_LIBTIFF
 		if (::IsTIFFExt(sSrcExt))
 		{
 			if (SrcDib.m_FileInfo.m_nImageCount > 1)
@@ -3702,7 +3701,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 									pThread))
 				return 0;
 		}
-#endif
 	}
 	else if (sDstExt == _T(".bmp") || sDstExt == _T(".dib"))
 	{

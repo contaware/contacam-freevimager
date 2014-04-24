@@ -1274,7 +1274,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 	}
 	else if (::IsTIFF(m_pDoc->m_sFileName))
 	{
-#ifdef SUPPORT_LIBTIFF
 		BeginWaitCursor();
 
 		// Prepare Iptc for Save
@@ -1326,7 +1325,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 			EndWaitCursor();
 			return FALSE;
 		}
-#endif
 	}
 
 	// Reset Metadata Modified Flag
@@ -2830,12 +2828,10 @@ void CImageInfoDlg::UpdateMetadata()
 #endif
 
 	// Tiff
-#ifdef SUPPORT_LIBTIFF
 	if (::IsTIFF(m_pDoc->m_sFileName))
 	{
 		GetIptc();
 	}
-#endif
 
 	// Gif
 	if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))

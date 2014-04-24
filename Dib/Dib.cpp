@@ -3040,14 +3040,12 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	}
 	else if (::IsTIFFExt(sExt))
 	{
-#ifdef SUPPORT_LIBTIFF
 		return LoadTIFF(lpszPathName,					// Loads tif as BMI + bits
 						nPageNum,						// Load the given page
 						bOnlyHeader,
 						pProgressWnd,
 						bProgressSend,
 						pThread);
-#endif
 	}
 	else if (sExt == _T(".pcx"))
 	{

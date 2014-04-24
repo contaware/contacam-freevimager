@@ -1,7 +1,6 @@
 #ifndef _INC_TIFF2PDF
 #define _INC_TIFF2PDF
 
-#ifdef SUPPORT_LIBTIFF
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -202,5 +201,4 @@ extern BOOL Tiff2Pdf(	LPCTSTR lpszTiff,
 						BOOL bInterpolate,
 						int nJpegCompressionQuality);
 
-#endif
 #endif //!_INC_TIFF2PDF

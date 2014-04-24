@@ -4,10 +4,8 @@
 extern "C"
 {
 #include "png.h"
-#ifdef SUPPORT_LIBTIFF
 #include "tiffio.h"
 #include "tiffiop.h"
-#endif
 #ifdef SUPPORT_LIBJPEG
 #include "jpeglib.h"
 #include "transupp.h"	// Support routines for lossless transformations
@@ -1358,7 +1356,6 @@ public:
 	// 4bpp and 8bpp			-> COMPRESSION_LZW
 	// 16bpp, 24bpp and 32bpp	-> COMPRESSION_JPEG
 	//
-#ifdef SUPPORT_LIBTIFF
 	BOOL LoadTIFF(	LPCTSTR lpszPathName,
 					int nPageNum = 0,					// Load the given page
 					BOOL bOnlyHeader = FALSE,
@@ -1462,7 +1459,6 @@ public:
 									LPCTSTR szSrcFileName,
 									CWnd* pProgressWnd = NULL,
 									BOOL bProgressSend = TRUE);
-#endif
 
 	// JPEG Support
 #ifdef SUPPORT_LIBJPEG

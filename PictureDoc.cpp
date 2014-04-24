@@ -2849,7 +2849,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		}
 		else if (::IsTIFFExt(extension))
 		{
-#ifdef SUPPORT_LIBTIFF
 			BeginWaitCursor();
 			int nTiffCompression;
 			if (::IsTIFFExt(defextension))
@@ -2883,7 +2882,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			m_pDib->GetExifInfo()->Orientation = nOrientation;
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("pcx"))
 		{
@@ -3760,7 +3758,6 @@ BOOL CPictureDoc::Save()
 		}
 		else if (::IsTIFFExt(extension))
 		{
-#ifdef SUPPORT_LIBTIFF
 			BeginWaitCursor();
 			int nOrientation = m_pDib->GetExifInfo()->Orientation;
 			m_pDib->GetExifInfo()->Orientation = 1;
@@ -3784,7 +3781,6 @@ BOOL CPictureDoc::Save()
 			}
 			m_pDib->GetExifInfo()->Orientation = nOrientation;
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("pcx"))
 		{
@@ -4356,7 +4352,6 @@ void CPictureDoc::OnUpdateEditDelete(CCmdUI* pCmdUI)
 
 void CPictureDoc::EditDelete(BOOL bPrompt)
 {
-#ifdef SUPPORT_LIBTIFF
 	if (IsMultiPageTIFF())
 	{
 		CDeletePageDlg dlg(GetView());
@@ -4392,7 +4387,6 @@ void CPictureDoc::EditDelete(BOOL bPrompt)
 		}
 	}
 	else
-#endif
 	{
 		// Prompt for Deleting
 		if (bPrompt)
@@ -10147,14 +10141,12 @@ BOOL CPictureDoc::ViewNextPageFrame()
 	}
 	else if (IsMultiPageTIFF())
 	{
-#ifdef SUPPORT_LIBTIFF
 		if (m_nPageNum == m_pDib->m_FileInfo.m_nImageCount - 1)
 			m_nPageNum = 0;
 		else
 			m_nPageNum++;
 		LoadPicture(&m_pDib, m_sFileName);
 		return TRUE;
-#endif
 	}
 
 	return FALSE;
@@ -10202,14 +10194,12 @@ BOOL CPictureDoc::ViewPreviousPageFrame()
 	}
 	else if (IsMultiPageTIFF())
 	{
-#ifdef SUPPORT_LIBTIFF
 		if (m_nPageNum == 0)
 			m_nPageNum = m_pDib->m_FileInfo.m_nImageCount - 1;
 		else
 			m_nPageNum--;
 		LoadPicture(&m_pDib, m_sFileName);
 		return TRUE;
-#endif
 	}
 
 	return FALSE;
@@ -10257,11 +10247,9 @@ BOOL CPictureDoc::ViewFirstPageFrame()
 	}
 	else if (IsMultiPageTIFF())
 	{
-#ifdef SUPPORT_LIBTIFF
 		m_nPageNum = 0;
 		LoadPicture(&m_pDib, m_sFileName);
 		return TRUE;
-#endif
 	}
 
 	return FALSE;
@@ -10286,11 +10274,9 @@ BOOL CPictureDoc::ViewLastPageFrame()
 	}
 	else if (IsMultiPageTIFF())
 	{
-#ifdef SUPPORT_LIBTIFF
 		m_nPageNum = m_pDib->m_FileInfo.m_nImageCount - 1;
 		LoadPicture(&m_pDib, m_sFileName);
 		return TRUE;
-#endif
 	}
 	
 	return FALSE;
