@@ -3740,7 +3740,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	}
 	else if (sDstExt == _T(".png"))
 	{
-#ifdef SUPPORT_LIBPNG
 		if (!CPictureDoc::SavePNG(	szDstFileName,
 									pSaveDib,
 									SrcDib.m_FileInfo.m_bHasBackgroundColor,
@@ -3748,7 +3747,6 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 									bProgressSend,
 									pThread))
 			return 0;
-#endif
 	}
 	else if (sDstExt == _T(".pcx"))
 	{
@@ -3759,13 +3757,11 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 			pSaveDib->SetAlpha(FALSE);
 		}
 
-#ifdef SUPPORT_PCX
 		if (!pSaveDib->SavePCX(	szDstFileName,
 								pProgressWnd,
 								bProgressSend,
 								pThread))
 			return 0;
-#endif
 	}
 	else if (sDstExt == _T(".emf"))
 	{

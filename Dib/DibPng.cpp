@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_LIBPNG
-
 static void png_error_load(png_structp png_ptr, const char *err_msg)
 {
 	png_ptr;
@@ -1040,5 +1038,3 @@ BOOL CDib::SavePNG(	LPCTSTR lpszPathName,
 		return FALSE;
 	}
 }
-
-#endif

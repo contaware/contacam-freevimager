@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_PCX
-
 /*******************************************************************************************************
 PCX files can hold the following Images: 2-color mono, 4-color palettized CGA, 16-color palettized EGA,
 256-color palettized VGA, and 24-bit truecolor.
@@ -1469,5 +1467,3 @@ BOOL CDib::SavePCX(	LPCTSTR lpszPathName,
 		return FALSE;
 	}
 }
-
-#endif

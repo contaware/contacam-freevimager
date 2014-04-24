@@ -3,9 +3,7 @@
 
 extern "C"
 {
-#ifdef SUPPORT_LIBPNG
 #include "png.h"
-#endif
 #ifdef SUPPORT_LIBTIFF
 #include "tiffio.h"
 #include "tiffiop.h"
@@ -1336,7 +1334,6 @@ public:
 #endif
 
 	// PCX Support
-#ifdef SUPPORT_PCX
 	BOOL LoadPCX(	LPCTSTR lpszPathName,
 					BOOL bOnlyHeader = FALSE,
 					CWnd* pProgressWnd = NULL,			// Progress Messages Sent to This Window
@@ -1348,10 +1345,8 @@ public:
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
-#endif
 
 	// PNG Support
-#ifdef SUPPORT_LIBPNG
 	BOOL LoadPNG(	LPCTSTR lpszPathName,
 					BOOL bLoadAlpha = TRUE,				// RGB + Alpha are loaded to a 32bpp RGBA Dib
 					BOOL bOnlyHeader = FALSE,
@@ -1366,7 +1361,6 @@ public:
 					BOOL bProgressSend = TRUE,			// Send Or Post Messages to The Progress Window
 					CWorkerThread* pThread = NULL);		// Optional Worker Thread pointer from which we call DoExit()
 														// to check whether interruption of the load is wanted
-#endif
 
 	// TIFF Support
 	//

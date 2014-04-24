@@ -2752,7 +2752,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		}
 		else if (extension == _T("png"))
 		{
-#ifdef SUPPORT_LIBPNG
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
@@ -2766,7 +2765,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							GetView(),
 							TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (::IsJPEGExt(extension))
 		{
@@ -2896,7 +2894,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		}
 		else if (extension == _T("pcx"))
 		{
-#ifdef SUPPORT_PCX
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
@@ -2912,7 +2909,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 										GetView(),
 										TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("emf"))
 		{
@@ -3736,7 +3732,6 @@ BOOL CPictureDoc::Save()
 		}
 		else if (extension == _T("png"))
 		{
-#ifdef SUPPORT_LIBPNG
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
@@ -3748,7 +3743,6 @@ BOOL CPictureDoc::Save()
 							GetView(),
 							TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (::IsJPEGExt(extension))
 		{
@@ -3803,7 +3797,6 @@ BOOL CPictureDoc::Save()
 		}
 		else if (extension == _T("pcx"))
 		{
-#ifdef SUPPORT_PCX
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
 			{
@@ -3819,7 +3812,6 @@ BOOL CPictureDoc::Save()
 										GetView(),
 										TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("emf"))
 		{

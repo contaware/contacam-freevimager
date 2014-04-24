@@ -2985,14 +2985,12 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	}
 	else if (sExt == _T(".png"))
 	{
-#ifdef SUPPORT_LIBPNG
 		return LoadPNG(	lpszPathName,					// Loads png as BMI + bits	
 						TRUE,							// Load Alpha Channel
 						bOnlyHeader,
 						pProgressWnd,
 						bProgressSend,
 						pThread);
-#endif
 	}
 	else if (::IsJPEGExt(sExt))
 	{
@@ -3055,13 +3053,11 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	}
 	else if (sExt == _T(".pcx"))
 	{
-#ifdef SUPPORT_PCX
 		return LoadPCX(	lpszPathName,					// Loads pcx as BMI + bits
 						bOnlyHeader,
 						pProgressWnd,
 						bProgressSend,
 						pThread);
-#endif
 	}
 	else if (sExt == _T(".gif"))
 	{
