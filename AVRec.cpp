@@ -20,11 +20,10 @@ CAVRec::CAVRec()
 }
 
 CAVRec::CAVRec(	LPCTSTR lpszFileName,
-				int nPassNumber/*=0*/,
 				bool bFastEncode/*=false*/)
 {
 	InitVars();
-	Init(lpszFileName, nPassNumber, bFastEncode);
+	Init(lpszFileName, bFastEncode);
 }
 
 void CAVRec::InitVars()
@@ -38,7 +37,6 @@ void CAVRec::InitVars()
 	m_dwTotalAudioStreams = 0;
 	m_bFileOpened = false;
 	m_bOpen = false;
-	m_nGlobalPassNumber = 0;
 	m_bFastEncode = false;
 	
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < MAX_STREAMS ; dwStreamNum++)
@@ -51,8 +49,6 @@ void CAVRec::InitVars()
 		m_nFrameBufSize1[dwStreamNum] = 0;
 		m_pFrameBuf2[dwStreamNum] = NULL;
 		m_nFrameBufSize2[dwStreamNum] = 0;
-		m_p2PassLogFiles[dwStreamNum] = NULL;
-		m_nPassNumber[dwStreamNum] = 0;
 		
 		m_nAudioInputFrameSize[dwStreamNum] = 0;
 		m_pIntermediateSamplesBuf[dwStreamNum] = NULL;
@@ -332,16 +328,6 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;
 
-	// Set m_nPassNumber
-	if (pCodecCtx->codec_id != CODEC_ID_MPEG4	&&
-		pCodecCtx->codec_id != CODEC_ID_H263	&&
-		pCodecCtx->codec_id != CODEC_ID_H263P	&&
-		pCodecCtx->codec_id != CODEC_ID_FLV1	&&
-		pCodecCtx->codec_id != CODEC_ID_H264)
-		m_nPassNumber[pStream->index] = 0; // No two pass mode supported
-	else
-		m_nPassNumber[pStream->index] = m_nGlobalPassNumber;
-
 	if (!strcmp(m_pFormatCtx->oformat->name, "avi"))
 		pCodecCtx->max_b_frames = 0;
 	else
@@ -428,27 +414,10 @@ AVStream* CAVRec::CreateVideoStream(CodecID codec_id,
 		!strcmp(m_pFormatCtx->oformat->name, "3gp"))
         pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
 
-	// Two pass mode
-	if (m_nPassNumber[pStream->index] > 0)
-	{
-		m_s2PassLogFileName[pStream->index].Format(_T("%s_stream%d_twopass.log"),
-										::GetFileNameNoExt(m_sFileName), pStream->index);
-		if (m_nPassNumber[pStream->index] == 2)
-		{
-			if (::IsExistingFile(m_s2PassLogFileName[pStream->index]))
-				pCodecCtx->flags |= CODEC_FLAG_PASS2;
-			else
-				m_nPassNumber[pStream->index] = 0;
-		}
-		else if (m_nPassNumber[pStream->index] == 1)
-			pCodecCtx->flags |= CODEC_FLAG_PASS1;
-	}
-
     return pStream;
 }
 
 bool CAVRec::Init(	LPCTSTR lpszFileName,
-					int nPassNumber/*=0*/,
 					bool bFastEncode/*=false*/)
 {
 	// Make ffmpeg compatible file name
@@ -476,7 +445,6 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 	m_sFileName = lpszFileName;
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
-	m_nGlobalPassNumber = nPassNumber;
 	m_bFastEncode = bFastEncode;
 	
     // Auto detect the output format from the name. Default is mpeg.
@@ -652,49 +620,6 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// Get the attached video codec context	
 	AVCodecContext* pCodecCtx = pVideoStream->codec;
 
-	// Two pass mode
-    if (pCodecCtx->flags & (CODEC_FLAG_PASS1 | CODEC_FLAG_PASS2))
-	{
-        FILE* f;
-        if (pCodecCtx->flags & CODEC_FLAG_PASS1)
-		{
-			// Write the log file
-			//
-			// If CREATE_ALWAYS and FILE_ATTRIBUTE_NORMAL are specified, CreateFile fails and sets the last error to
-			// ERROR_ACCESS_DENIED if the file exists and has the FILE_ATTRIBUTE_HIDDEN or FILE_ATTRIBUTE_SYSTEM
-			// attribute. To avoid the error, specify the same attributes as the existing file.
-			//
-			// -> You can open hidden file using fopen("r") but you cannot do this with fopen("w").
-			// The reason is that if you want to open a hidden file for writing you must provide the correct attribute
-			// and fopen("w") always  calls CreateFile with FILE_ATTRIBUTE_NORMAL.
-			//
-			// -> Set the hidden attribute after the file is opened!
-			::DeleteFile(m_s2PassLogFileName[nStreamNum]);
-            f = _tfopen(m_s2PassLogFileName[nStreamNum], _T("w"));
-            if (!f)
-               return -1;
-			::SetFileAttributes(m_s2PassLogFileName[nStreamNum], ::GetFileAttributes(m_s2PassLogFileName[nStreamNum]) | FILE_ATTRIBUTE_HIDDEN);
-            m_p2PassLogFiles[nStreamNum] = f;
-        }
-		else
-		{
-            // Read the log file
-            f = _tfopen(m_s2PassLogFileName[nStreamNum], _T("r"));
-            if (!f)
-                return -1;
-            fseek(f, 0, SEEK_END);
-            int size = ftell(f);
-            fseek(f, 0, SEEK_SET);
-            char* logbuffer = (char*)av_malloc(size + 1);
-            if (!logbuffer)
-                return -1;
-            size = fread(logbuffer, 1, size, f);
-            fclose(f);
-            logbuffer[size] = '\0';
-            pCodecCtx->stats_in = logbuffer;
-        }
-    }
-
 	// Store codec_tag for raw video encoder
 	unsigned int rawvideo_codec_tag = 0;
 	if (pCodecCtx->codec_id == CODEC_ID_RAWVIDEO)
@@ -703,46 +628,18 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// Open the video codec
 	if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
 	{
-		if (pCodecCtx->flags & CODEC_FLAG_PASS2)
+		TRACE(_T("Cannot reach the wanted bit_rate, set to best quality\n"));
+		pCodecCtx->flags |= CODEC_FLAG_QSCALE;
+		pVideoStream->quality = (float)(FF_QP2LAMBDA * pCodecCtx->qmin);
+		pCodecCtx->global_quality = (int)pVideoStream->quality;
+		pCodecCtx->bit_rate = 0;
+		if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
 		{
-			TRACE(_T("Cannot reach the wanted bit_rate, set to worst quality\n"));
-			pCodecCtx->flags &= ~CODEC_FLAG_PASS2;
-			pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-			pVideoStream->quality = (float)(FF_QP2LAMBDA * pCodecCtx->qmax);
-			pCodecCtx->global_quality = (int)pVideoStream->quality;
-			pCodecCtx->bit_rate = 0;
-			if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
-			{
-				TRACE(_T("Could not open the video codec\n"));
-				return -1;
-			}
-			else
-				m_bCodecOpened[nStreamNum] = true;
+			TRACE(_T("Could not open the video codec\n"));
+			return -1;
 		}
 		else
-		{
-			TRACE(_T("Cannot reach the wanted bit_rate, set to best quality\n"));
-			m_nPassNumber[nStreamNum] = 0;
-			if (m_p2PassLogFiles[nStreamNum])
-			{
-				fclose(m_p2PassLogFiles[nStreamNum]);
-				m_p2PassLogFiles[nStreamNum] = NULL;
-			}
-			if (::IsExistingFile(m_s2PassLogFileName[nStreamNum]))
-				::DeleteFile(m_s2PassLogFileName[nStreamNum]);
-			pCodecCtx->flags &= ~CODEC_FLAG_PASS1;
-			pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-			pVideoStream->quality = (float)(FF_QP2LAMBDA * pCodecCtx->qmin);
-			pCodecCtx->global_quality = (int)pVideoStream->quality;
-			pCodecCtx->bit_rate = 0;
-			if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
-			{
-				TRACE(_T("Could not open the video codec\n"));
-				return -1;
-			}
-			else
-				m_bCodecOpened[nStreamNum] = true;
-		}
+			m_bCodecOpened[nStreamNum] = true;
 	}
 	else
 	{
@@ -1271,27 +1168,11 @@ bool CAVRec::Close()
 		// Reset
 		m_llTotalWrittenBytes[dwStreamNum] = 0;
 		m_llTotalFramesOrSamples[dwStreamNum] = 0;
-
-		// Close 2Pass Log Files
-		if (m_p2PassLogFiles[dwStreamNum])
-		{
-			fclose(m_p2PassLogFiles[dwStreamNum]);
-			m_p2PassLogFiles[dwStreamNum] = NULL;
-		}
-
-		// Delete File
-		if (m_nPassNumber[dwStreamNum] == 2 && ::IsExistingFile(m_s2PassLogFileName[dwStreamNum]))
-			::DeleteFile(m_s2PassLogFileName[dwStreamNum]);
-
-		// Reset 2Pass Log File Name and Pass Number
-		m_s2PassLogFileName[dwStreamNum] = _T("");
-		m_nPassNumber[dwStreamNum] = 0;
 	}
 
 	m_sFileName = _T("");
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
-	m_nGlobalPassNumber = 0;
 	m_bFastEncode = false;
 	m_bOpen = false;
 
@@ -1695,10 +1576,6 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 					av_write_frame(m_pFormatCtx, &pkt);
 			if (ret == 0)
 				lBytesWritten += pkt.size;
-
-			// Output Status to Log File
-            if (m_p2PassLogFiles[dwStreamNum] && pCodecCtx->stats_out)
-                fprintf(m_p2PassLogFiles[dwStreamNum], "%s", pCodecCtx->stats_out);
         }
 		else
             ret = 0;

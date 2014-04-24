@@ -436,7 +436,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CAVRec AVRecAvi;
 		if (bMakeAvi)
 		{
-			AVRecAvi.Init(sAVIFileName, 0, true); // fast encoding!
+			AVRecAvi.Init(sAVIFileName, true); // fast encoding!
 			AVRecAvi.SetInfo(	_T("Det: ") + ::MakeDateLocalFormat(FirstTime) +
 								_T(", ") + ::MakeTimeLocalFormat(FirstTime, TRUE),
 								APPNAME_NOEXT, MYCOMPANY_WEB);
@@ -445,7 +445,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Create the Swf File
 		CAVRec AVRecSwf;
 		if (bMakeSwf)
-			AVRecSwf.Init(sSWFFileName, 0, true); // fast encoding!
+			AVRecSwf.Init(sSWFFileName, true); // fast encoding!
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -5763,7 +5763,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 		return FALSE;
 
 	// Set File Name
-	if (!(*ppAVRec)->Init(sFileName, 0, true)) // fast encoding!
+	if (!(*ppAVRec)->Init(sFileName, true)) // fast encoding!
 		return FALSE;
 
 	// Set File Info

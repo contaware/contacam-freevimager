@@ -540,8 +540,7 @@ protected:
 						BOOL bDitherColorConversion,
 						UINT uiMaxColors,
 						UINT uiPlayTimes);
-	static BOOL SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-										const CString& sDstFileName,
+	static BOOL SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 										CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 										CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 										DWORD dwVideoCompressorFourCC,
@@ -558,8 +557,7 @@ protected:
 										BOOL bProgressSend = TRUE,
 										CPercentProgress* pPercentProgress = NULL,
 										CWorkerThread* pThread = NULL);
-	static BOOL SaveAsAVCODECSingleFile(int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-										const CString& sDstFileName,
+	static BOOL SaveAsAVCODECSingleFile(const CString& sDstFileName,
 										CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 										DWORD dwVideoCompressorFourCC,
 										int nVideoCompressorDataRate,
@@ -579,8 +577,7 @@ protected:
 	// -1: Error
 	// 0 : Dlg Canceled
 	// 1 : Ok
-	static int SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-								const CString& sDstFileName,
+	static int SaveAsAVCODECDlgs(const CString& sDstFileName,
 								CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 								CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 								DWORD& dwVideoCompressorFourCC,
@@ -597,8 +594,7 @@ protected:
 								BOOL bProgressSend = TRUE,
 								CPercentProgress* pPercentProgress = NULL,
 								CWorkerThread* pThread = NULL);
-	int SaveAsAVCODECDlgs(	int& nPassNumber,			// 0: Single Pass, 1: First Pass, 2: Second Pass
-							const CString& sDstFileName,
+	int SaveAsAVCODECDlgs(	const CString& sDstFileName,
 							bool* pbVideoStreamsSave,
 							bool* pbVideoStreamsChange,
 							bool* pbAudioStreamsSave,
@@ -606,8 +602,7 @@ protected:
 
 	// Static Save Function with compression params
 	// called by ShrinkDocTo()
-	static BOOL SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-								const CString& sDstFileName,
+	static BOOL SaveAsAVCODEC(	const CString& sDstFileName,
 								const CString& sSrcFileName,
 								DWORD dwVideoCompressorFourCC,
 								int nVideoCompressorDataRate,
@@ -627,7 +622,6 @@ protected:
 	BOOL SaveAsAVCODEC(	const CString& sFileName,
 						BOOL bSaveCopyAs,
 						int nCurrentFramePos,
-						bool b2Pass,
 						bool* pbVideoStreamsSave,
 						bool* pbVideoStreamsChange,
 						bool* pbAudioStreamsSave,

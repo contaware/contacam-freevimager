@@ -2583,7 +2583,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 				res = SaveAsAVCODEC(FileName,
 									TRUE,
 									nCurrentFramePos,
-									true,	// Try two pass encoding
 									bVideoStreamsSave,
 									bVideoStreamsChange,
 									bAudioStreamsSave,
@@ -2642,7 +2641,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 					res = SaveAsAVCODEC(FileName,
 										bSaveCopyAs,
 										nCurrentFramePos,
-										true,	// Try two pass encoding
 										bVideoStreamsSave,
 										bVideoStreamsChange,
 										bAudioStreamsSave,
@@ -2688,7 +2686,6 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sFileName,
 									BOOL bSaveCopyAs,
 									int nCurrentFramePos,
-									bool b2Pass,
 									bool* pbVideoStreamsSave,
 									bool* pbVideoStreamsChange,
 									bool* pbAudioStreamsSave,
@@ -2702,44 +2699,15 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sFileName,
 		sDstFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
 	}
 
-	int res;
-	int nPassNumber;
-	if (b2Pass)
-	{
-		nPassNumber = 1;
-		res = SaveAsAVCODECDlgs(nPassNumber,			// 1: First Pass
-								sDstFileName,
+	// Save
+	int res = SaveAsAVCODECDlgs(sDstFileName,
 								pbVideoStreamsSave,
 								pbVideoStreamsChange,
 								pbAudioStreamsSave,
 								pbAudioStreamsChange);
-		if (res == 0)
-			return FALSE;								// Dlg Canceled
-		else if (res == 1 && nPassNumber != 0)			// The above function sets nPassNumber to 0
-		{												// if only a single pass is necessary for the specified codec
-			nPassNumber = 2;
-			res = SaveAsAVCODECDlgs(nPassNumber,		// 2: Second Pass
-									sDstFileName,
-									pbVideoStreamsSave,
-									pbVideoStreamsChange,
-									pbAudioStreamsSave,
-									pbAudioStreamsChange);
-		}
-	}
-	else
-	{
-		nPassNumber = 0;
-		res = SaveAsAVCODECDlgs(	nPassNumber,		// 0: Single Pass
-									sDstFileName,
-									pbVideoStreamsSave,
-									pbVideoStreamsChange,
-									pbAudioStreamsSave,
-									pbAudioStreamsChange);
-		if (res == 0)
-			return FALSE;								// Dlg Canceled
-	}
-
-	if (res == 1)
+	if (res == 0)
+		return FALSE; // Dlg Canceled
+	else if (res == 1)
 	{
 		// Open Document
 		if (bSaveCopyAs)
@@ -2851,8 +2819,7 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sFileName,
 // -1: Error
 // 0 : Dlg Canceled
 // 1 : Ok
-int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-									const CString& sDstFileName,
+int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 									bool* pbVideoStreamsSave,
 									bool* pbVideoStreamsChange,
 									bool* pbAudioStreamsSave,
@@ -2870,8 +2837,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 	}
 
 	CAVRec* pAVRec = NULL;
-	int ret = SaveAsAVCODECDlgs(nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-								sDstFileName,
+	int ret = SaveAsAVCODECDlgs(sDstFileName,
 								&pAVRec,
 								pAVIPlay,
 								m_dwVideoCompressorFourCC,
@@ -2961,8 +2927,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 // -1: Error
 // 0 : Dlg Canceled
 // 1 : Ok
-int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-									const CString& sDstFileName,
+int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 									CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 									CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 									DWORD& dwVideoCompressorFourCC,
@@ -3013,221 +2978,212 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 		}
 	}
 
-	// Format Dialogs
-	if (nPassNumber < 2)
+	// Audio Format
+	double dAudioLength = 0.0;
+	if (pAudioCompressorWaveFormat && nTotalAudioStreamsToChange > 0)
 	{
-		// Audio Format
-		double dAudioLength = 0.0;
-		if (pAudioCompressorWaveFormat && nTotalAudioStreamsToChange > 0)
+		memcpy(&AudioFormatDlg.m_WaveFormat, pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
+		for (dwAudioStreamNum = 0 ; dwAudioStreamNum < pAVIPlay->GetAudioStreamsCount() ; dwAudioStreamNum++)
 		{
-			memcpy(&AudioFormatDlg.m_WaveFormat, pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
-			for (dwAudioStreamNum = 0 ; dwAudioStreamNum < pAVIPlay->GetAudioStreamsCount() ; dwAudioStreamNum++)
+			if (pbAudioStreamsChange && pbAudioStreamsChange[dwAudioStreamNum])
 			{
-				if (pbAudioStreamsChange && pbAudioStreamsChange[dwAudioStreamNum])
+				pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
+				if (pSrcAudioStream)
 				{
-					pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
-					if (pSrcAudioStream)
-					{
-						// Set format for dlg
-						memcpy(&AudioFormatDlg.m_WaveFormat, pSrcAudioStream->GetFormat(true), sizeof(WAVEFORMATEX));
+					// Set format for dlg
+					memcpy(&AudioFormatDlg.m_WaveFormat, pSrcAudioStream->GetFormat(true), sizeof(WAVEFORMATEX));
 						
-						// GetTotalTime() needs m_nVBRSamplesPerChunk which is
-						// calculated when opening the decompressor
-						if (pSrcAudioStream->IsVBR())
+					// GetTotalTime() needs m_nVBRSamplesPerChunk which is
+					// calculated when opening the decompressor
+					if (pSrcAudioStream->IsVBR())
+					{
+						pSrcAudioStream->OpenDecompression();
+						pSrcAudioStream->SetStart();
+					}
+					dAudioLength = pSrcAudioStream->GetTotalTime();
+					break;
+				}
+			}
+		}
+		if (CUImagerApp::IsAVIFile(sDstFileName))
+		{
+			if (AudioFormatDlg.DoModal() != IDOK)
+				return 0;
+			memcpy(pAudioCompressorWaveFormat, &AudioFormatDlg.m_WaveFormat, sizeof(WAVEFORMATEX));
+		}
+		else if (CUImagerApp::IsSWFFile(sDstFileName))
+		{
+			// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz
+			// and 11025 Hz. Emulate the audio dialog and make the best choice
+			// depending from the original sample rate.
+			if (AudioFormatDlg.m_WaveFormat.nSamplesPerSec >= 44100)
+			{
+				pAudioCompressorWaveFormat->nSamplesPerSec = 44100;
+				if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
+				{
+					pAudioCompressorWaveFormat->nChannels = 2;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (96000 / 8);
+				}
+				else
+				{
+					pAudioCompressorWaveFormat->nChannels = 1;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (56000 / 8);
+				}
+			}
+			else if (AudioFormatDlg.m_WaveFormat.nSamplesPerSec >= 22050)
+			{
+				pAudioCompressorWaveFormat->nSamplesPerSec = 22050;
+				if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
+				{
+					pAudioCompressorWaveFormat->nChannels = 2;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (56000 / 8);
+				}
+				else
+				{
+					pAudioCompressorWaveFormat->nChannels = 1;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (32000 / 8);
+				}
+			}
+			else
+			{
+				pAudioCompressorWaveFormat->nSamplesPerSec = 11025;
+				if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
+				{
+					pAudioCompressorWaveFormat->nChannels = 2;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (32000 / 8);
+				}
+				else
+				{
+					pAudioCompressorWaveFormat->nChannels = 1;
+					pAudioCompressorWaveFormat->nAvgBytesPerSec = (24000 / 8);
+				}
+			}
+			pAudioCompressorWaveFormat->wFormatTag = WAVE_FORMAT_MPEGLAYER3;
+			pAudioCompressorWaveFormat->nBlockAlign = 0;
+			pAudioCompressorWaveFormat->wBitsPerSample = 0;
+		}
+	}
+
+	// Add Total Audio Bytes to Change
+	if (pAudioCompressorWaveFormat)
+		llTotalAudioBytes += (LONGLONG)(dAudioLength * (double)nTotalAudioStreamsToChange * (double)pAudioCompressorWaveFormat->nAvgBytesPerSec);
+
+	// Video Format
+	if (nTotalVideoStreamsToChange > 0)
+	{
+		if (CUImagerApp::IsAVIFile(sDstFileName))
+		{
+			DWORD dwFourCC = dwVideoCompressorFourCC;
+			double dVideoLength = 0.0;
+			int nDataRate = nVideoCompressorDataRate;	// bps
+			int nKeyframesRate = nVideoCompressorKeyframesRate;
+			for (dwVideoStreamNum = 0 ; dwVideoStreamNum < pAVIPlay->GetVideoStreamsCount() ; dwVideoStreamNum++)
+			{
+				if (pbVideoStreamsChange && pbVideoStreamsChange[dwVideoStreamNum])
+				{
+					pSrcVideoStream = pAVIPlay->GetVideoStream(dwVideoStreamNum);
+					if (pSrcVideoStream)
+					{
+						dwFourCC = pSrcVideoStream->GetFourCC(true); 
+						dVideoLength = pSrcVideoStream->GetTotalTime();
+						if (dwFourCC != BI_RGB			&&
+							dwFourCC != FCC('HFYU')		&&
+							dwFourCC != FCC('FFVH')		&&
+							dwFourCC != FCC('FFV1')		&&
+							dwFourCC != FCC('MJPG'))
 						{
-							pSrcAudioStream->OpenDecompression();
-							pSrcAudioStream->SetStart();
+							// Get from file
+							nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
+							nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
+
+							// Get from previous settings if to big
+							if (nDataRate > 2000000)
+								nDataRate = nVideoCompressorDataRate;
+								
+							// Get from previous settings if to small
+							if (nKeyframesRate <= 1)
+								nKeyframesRate = nVideoCompressorKeyframesRate;
 						}
-						dAudioLength = pSrcAudioStream->GetTotalTime();
 						break;
 					}
 				}
 			}
-			if (CUImagerApp::IsAVIFile(sDstFileName))
-			{
-				if (AudioFormatDlg.DoModal() != IDOK)
-					return 0;
-				memcpy(pAudioCompressorWaveFormat, &AudioFormatDlg.m_WaveFormat, sizeof(WAVEFORMATEX));
-			}
-			else if (CUImagerApp::IsSWFFile(sDstFileName))
-			{
-				// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz
-				// and 11025 Hz. Emulate the audio dialog and make the best choice
-				// depending from the original sample rate.
-				if (AudioFormatDlg.m_WaveFormat.nSamplesPerSec >= 44100)
-				{
-					pAudioCompressorWaveFormat->nSamplesPerSec = 44100;
-					if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
-					{
-						pAudioCompressorWaveFormat->nChannels = 2;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (96000 / 8);
-					}
-					else
-					{
-						pAudioCompressorWaveFormat->nChannels = 1;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (56000 / 8);
-					}
-				}
-				else if (AudioFormatDlg.m_WaveFormat.nSamplesPerSec >= 22050)
-				{
-					pAudioCompressorWaveFormat->nSamplesPerSec = 22050;
-					if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
-					{
-						pAudioCompressorWaveFormat->nChannels = 2;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (56000 / 8);
-					}
-					else
-					{
-						pAudioCompressorWaveFormat->nChannels = 1;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (32000 / 8);
-					}
-				}
-				else
-				{
-					pAudioCompressorWaveFormat->nSamplesPerSec = 11025;
-					if (AudioFormatDlg.m_WaveFormat.nChannels >= 2)
-					{
-						pAudioCompressorWaveFormat->nChannels = 2;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (32000 / 8);
-					}
-					else
-					{
-						pAudioCompressorWaveFormat->nChannels = 1;
-						pAudioCompressorWaveFormat->nAvgBytesPerSec = (24000 / 8);
-					}
-				}
-				pAudioCompressorWaveFormat->wFormatTag = WAVE_FORMAT_MPEGLAYER3;
-				pAudioCompressorWaveFormat->nBlockAlign = 0;
-				pAudioCompressorWaveFormat->wBitsPerSample = 0;
-			}
+			VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
+			VideoFormatDlg.m_dVideoLength = dVideoLength;
+			VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
+			VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
+			VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
+			VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
+			VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
+			if (VideoFormatDlg.DoModal() != IDOK)
+				return 0;
+			nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
+			fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
+			nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
+			nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
+			dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 		}
-
-		// Add Total Audio Bytes to Change
-		if (pAudioCompressorWaveFormat)
-			llTotalAudioBytes += (LONGLONG)(dAudioLength * (double)nTotalAudioStreamsToChange * (double)pAudioCompressorWaveFormat->nAvgBytesPerSec);
-
-		// Video Format
-		if (nTotalVideoStreamsToChange > 0)
+		else if (CUImagerApp::IsSWFFile(sDstFileName))
 		{
-			if (CUImagerApp::IsAVIFile(sDstFileName))
+			DWORD dwFourCC = dwVideoCompressorFourCC;
+			double dVideoLength = 0.0;
+			int nDataRate = nVideoCompressorDataRate;	// bps
+			int nKeyframesRate = nVideoCompressorKeyframesRate;
+			pSrcVideoStream = pAVIPlay->GetVideoStream(0);
+			if (pSrcVideoStream)
 			{
-				DWORD dwFourCC = dwVideoCompressorFourCC;
-				double dVideoLength = 0.0;
-				int nDataRate = nVideoCompressorDataRate;	// bps
-				int nKeyframesRate = nVideoCompressorKeyframesRate;
-				for (dwVideoStreamNum = 0 ; dwVideoStreamNum < pAVIPlay->GetVideoStreamsCount() ; dwVideoStreamNum++)
+				dwFourCC = pSrcVideoStream->GetFourCC(true); 
+				dVideoLength = pSrcVideoStream->GetTotalTime();
+				if (dwFourCC != BI_RGB			&&
+					dwFourCC != FCC('HFYU')		&&
+					dwFourCC != FCC('FFVH')		&&
+					dwFourCC != FCC('FFV1')		&&
+					dwFourCC != FCC('MJPG'))
 				{
-					if (pbVideoStreamsChange && pbVideoStreamsChange[dwVideoStreamNum])
-					{
-						pSrcVideoStream = pAVIPlay->GetVideoStream(dwVideoStreamNum);
-						if (pSrcVideoStream)
-						{
-							dwFourCC = pSrcVideoStream->GetFourCC(true); 
-							dVideoLength = pSrcVideoStream->GetTotalTime();
-							if (dwFourCC != BI_RGB			&&
-								dwFourCC != FCC('HFYU')		&&
-								dwFourCC != FCC('FFVH')		&&
-								dwFourCC != FCC('FFV1')		&&
-								dwFourCC != FCC('MJPG'))
-							{
-								// Get from file
-								nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
-								nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
+					// Get from file
+					nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
+					nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
 
-								// Get from previous settings if to big
-								if (nDataRate > 2000000)
-									nDataRate = nVideoCompressorDataRate;
-								
-								// Get from previous settings if to small
-								if (nKeyframesRate <= 1)
-									nKeyframesRate = nVideoCompressorKeyframesRate;
-							}
-							break;
-						}
-					}
-				}
-				VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
-				VideoFormatDlg.m_dVideoLength = dVideoLength;
-				VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
-				VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
-				VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
-				VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
-				VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
-				if (VideoFormatDlg.DoModal() != IDOK)
-					return 0;
-				nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
-				fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-				nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
-				nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
-				dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
-			}
-			else if (CUImagerApp::IsSWFFile(sDstFileName))
-			{
-				DWORD dwFourCC = dwVideoCompressorFourCC;
-				double dVideoLength = 0.0;
-				int nDataRate = nVideoCompressorDataRate;	// bps
-				int nKeyframesRate = nVideoCompressorKeyframesRate;
-				pSrcVideoStream = pAVIPlay->GetVideoStream(0);
-				if (pSrcVideoStream)
-				{
-					dwFourCC = pSrcVideoStream->GetFourCC(true); 
-					dVideoLength = pSrcVideoStream->GetTotalTime();
-					if (dwFourCC != BI_RGB			&&
-						dwFourCC != FCC('HFYU')		&&
-						dwFourCC != FCC('FFVH')		&&
-						dwFourCC != FCC('FFV1')		&&
-						dwFourCC != FCC('MJPG'))
-					{
-						// Get from file
-						nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
-						nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
-
-						// Get from previous settings if to big
-						if (nDataRate > 2000000)
-							nDataRate = nVideoCompressorDataRate;
+					// Get from previous settings if to big
+					if (nDataRate > 2000000)
+						nDataRate = nVideoCompressorDataRate;
 						
-						// Get from previous settings if to small
-						if (nKeyframesRate <= 1)
-							nKeyframesRate = nVideoCompressorKeyframesRate;
-					}
-
-					// Warn
-					if (pSrcVideoStream->GetTotalFrames() > 16000)
-					{
-						if (::AfxMessageBox(ML_STRING(1432, "The Flash Player has a limit of 16000 frames.\n") +
-											ML_STRING(1433, "The file you are saving is bigger than that,\n") +
-											ML_STRING(1434, "a solution is to split it in more pieces.\n") +
-											ML_STRING(1435, "Do you want to continue anyway?\n"),
-											MB_YESNO | MB_ICONWARNING) == IDNO)
-							return 0;
-					}
+					// Get from previous settings if to small
+					if (nKeyframesRate <= 1)
+						nKeyframesRate = nVideoCompressorKeyframesRate;
 				}
-				VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
-				VideoFormatDlg.m_dVideoLength = dVideoLength;
-				VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
-				VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
-				VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
-				VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
-				VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
-				VideoFormatDlg.m_bShowRawChoose = FALSE;
-				VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
-				if (VideoFormatDlg.DoModal() != IDOK)
-					return 0;
-				nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
-				fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-				nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
-				nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
-				dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
+
+				// Warn
+				if (pSrcVideoStream->GetTotalFrames() > 16000)
+				{
+					if (::AfxMessageBox(ML_STRING(1432, "The Flash Player has a limit of 16000 frames.\n") +
+										ML_STRING(1433, "The file you are saving is bigger than that,\n") +
+										ML_STRING(1434, "a solution is to split it in more pieces.\n") +
+										ML_STRING(1435, "Do you want to continue anyway?\n"),
+										MB_YESNO | MB_ICONWARNING) == IDNO)
+						return 0;
+				}
 			}
+			VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
+			VideoFormatDlg.m_dVideoLength = dVideoLength;
+			VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
+			VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
+			VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
+			VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
+			VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
+			VideoFormatDlg.m_bShowRawChoose = FALSE;
+			VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
+			if (VideoFormatDlg.DoModal() != IDOK)
+				return 0;
+			nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
+			fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
+			nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
+			nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
+			dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 		}
 	}
 
-	// Update nPassNumber
-	if (nTotalVideoStreamsToChange == 0)
-		nPassNumber = 0;
-
-	BOOL res = SaveAsAVCODECMultiFile(	nPassNumber,
-										sDstFileName,
+	BOOL res = SaveAsAVCODECMultiFile(	sDstFileName,
 										ppAVRec,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
@@ -3248,8 +3204,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(int& nPassNumber,		// 0: Single Pass, 1: Fir
 	return (res ? 1 : -1);
 }
 
-BOOL CVideoAviDoc::SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-									const CString& sDstFileName,
+BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sDstFileName,
 									const CString& sSrcFileName,
 									DWORD dwVideoCompressorFourCC,
 									int nVideoCompressorDataRate,
@@ -3276,8 +3231,7 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First
 		return FALSE;
 	}
 
-	BOOL res = SaveAsAVCODECSingleFile(	nPassNumber,
-										sDstFileName,
+	BOOL res = SaveAsAVCODECSingleFile(	sDstFileName,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
 										nVideoCompressorDataRate,
@@ -3353,8 +3307,7 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	int& nPassNumber,		// 0: Single Pass, 1: First
 	return res;
 }
 
-BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-											const CString& sDstFileName,
+BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	const CString& sDstFileName,
 											CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 											DWORD dwVideoCompressorFourCC,
 											int nVideoCompressorDataRate,
@@ -3371,8 +3324,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass
 											CWorkerThread* pThread/*=NULL*/)
 {	
 	CAVRec* pAVRec = NULL;
-	BOOL res = SaveAsAVCODECMultiFile(	nPassNumber,
-										sDstFileName,
+	BOOL res = SaveAsAVCODECMultiFile(	sDstFileName,
 										&pAVRec,	// This function allocates pAVRec!
 										pAVIPlay,
 										dwVideoCompressorFourCC,
@@ -3403,8 +3355,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	int& nPassNumber,		// 0: Single Pass
 
 // Tested and working with the following YUV FourCCs:
 // I420, YV12, YV16, Y42B, Y800, Y41P, YVU9, YUV9, YUY2, UYVY, YVYU
-BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass, 1: First Pass, 2: Second Pass
-											const CString& sDstFileName,
+BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 											CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 											CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 											DWORD dwVideoCompressorFourCC,
@@ -3466,15 +3417,6 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 	if (!pSrcBuf)
 		goto error;
 
-	// Update nPassNumber
-	if (nVideoCompressorQualityBitrate == 0		||
-		(dwVideoCompressorFourCC != FCC('DIVX')	&&
-		dwVideoCompressorFourCC != FCC('XVID')	&&
-		dwVideoCompressorFourCC != FCC('FLV1')	&&
-		dwVideoCompressorFourCC != FCC('H263')	&&
-		dwVideoCompressorFourCC != FCC('H264')))
-		nPassNumber = 0; // No two pass mode
-
 	// Video Format
 	pDib = new CDib;
 	if (!pDib)
@@ -3491,7 +3433,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		*ppAVRec = new CAVRec;
 		if (!(*ppAVRec))
 			goto error;
-		if (!(*ppAVRec)->Init(sDstFileName, nPassNumber))
+		if (!(*ppAVRec)->Init(sDstFileName))
 			goto error;
 		bFirstFile = TRUE;
 	}
@@ -3856,69 +3798,66 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 		if (dFrameRate > 0.0)
 			dElapsedTime += 1.0 / dFrameRate;
 
-		// Add audio for Single Pass (nPassNumber == 0) or Second Pass (nPassNumber == 2)
-		if (nPassNumber != 1)
+		// Add audio
+		for (dwAudioStreamNum = 0 ; dwAudioStreamNum < pAVIPlay->GetAudioStreamsCount() ; dwAudioStreamNum++)
 		{
-			for (dwAudioStreamNum = 0 ; dwAudioStreamNum < pAVIPlay->GetAudioStreamsCount() ; dwAudioStreamNum++)
+			if (pbAudioStreamsSave && pbAudioStreamsSave[dwAudioStreamNum])
 			{
-				if (pbAudioStreamsSave && pbAudioStreamsSave[dwAudioStreamNum])
+				pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
+				if (pSrcAudioStream)
 				{
-					pSrcAudioStream = pAVIPlay->GetAudioStream(dwAudioStreamNum);
-					if (pSrcAudioStream)
+					LONGLONG llSampleNum = (LONGLONG)(dElapsedTime * pSrcAudioStream->GetSampleRate(false));
+					if (llSampleNum < 0)
+						llSampleNum = 0;
+					bool bRawCopy = !pbAudioStreamsChange || !pbAudioStreamsChange[dwAudioStreamNum];
+					while (!bVideoAvailable ||
+						((int)pSrcAudioStream->SampleToChunk(llSampleNum) >=
+						(bRawCopy ? dwAudioRawChunkPos[dwAudioStreamNum] : pSrcAudioStream->GetCurrentChunkPos())))
 					{
-						LONGLONG llSampleNum = (LONGLONG)(dElapsedTime * pSrcAudioStream->GetSampleRate(false));
-						if (llSampleNum < 0)
-							llSampleNum = 0;
-						bool bRawCopy = !pbAudioStreamsChange || !pbAudioStreamsChange[dwAudioStreamNum];
-						while (!bVideoAvailable ||
-							((int)pSrcAudioStream->SampleToChunk(llSampleNum) >=
-							(bRawCopy ? dwAudioRawChunkPos[dwAudioStreamNum] : pSrcAudioStream->GetCurrentChunkPos())))
+						if (bRawCopy)
 						{
-							if (bRawCopy)
+							dwSrcBufSizeUsed = dwSrcBufSize;
+							if (pSrcAudioStream->GetChunkData(	dwAudioRawChunkPos[dwAudioStreamNum],
+																pSrcBuf,
+																&dwSrcBufSizeUsed))
 							{
-								dwSrcBufSizeUsed = dwSrcBufSize;
-								if (pSrcAudioStream->GetChunkData(	dwAudioRawChunkPos[dwAudioStreamNum],
-																	pSrcBuf,
-																	&dwSrcBufSizeUsed))
-								{
-									bAudioAvailable = TRUE;
-									(*ppAVRec)->AddRawAudioPacket(	dwRecStreamNum,
-																	dwSrcBufSizeUsed,
-																	pSrcBuf,
-																	bInterleave);
-									dwAudioRawChunkPos[dwAudioStreamNum]++;
-									if (nCurrentAudioChunk < 0)
-										nCurrentAudioChunk = dwAudioRawChunkPos[dwAudioStreamNum];
-								}
-								else
-									break;
+								bAudioAvailable = TRUE;
+								(*ppAVRec)->AddRawAudioPacket(	dwRecStreamNum,
+																dwSrcBufSizeUsed,
+																pSrcBuf,
+																bInterleave);
+								dwAudioRawChunkPos[dwAudioStreamNum]++;
+								if (nCurrentAudioChunk < 0)
+									nCurrentAudioChunk = dwAudioRawChunkPos[dwAudioStreamNum];
 							}
 							else
-							{
-								if (pSrcAudioStream->GetNextChunksSamples())
-								{
-									bAudioAvailable = TRUE;
-									(*ppAVRec)->AddAudioSamples(dwRecStreamNum,
-																pSrcAudioStream->GetBufSamplesCount(),
-																pSrcAudioStream->GetBufData(),
-																bInterleave);
-									if (nCurrentAudioChunk < 0)
-										nCurrentAudioChunk = pSrcAudioStream->GetCurrentChunkPos();
-								}
-								else
-									break;
-							}
-							if (!bVideoAvailable) // Interleave possible multiple audio streams
 								break;
 						}
-
-						// Init Var
-						if (dwTotalAudioChunks == 0)
-							dwTotalAudioChunks = pSrcAudioStream->GetTotalChunks();
-
-						// Inc. Rec Stream Num
-						dwRecStreamNum++;
+						else
+						{
+							if (pSrcAudioStream->GetNextChunksSamples())
+							{
+								bAudioAvailable = TRUE;
+								(*ppAVRec)->AddAudioSamples(dwRecStreamNum,
+															pSrcAudioStream->GetBufSamplesCount(),
+															pSrcAudioStream->GetBufData(),
+															bInterleave);
+								if (nCurrentAudioChunk < 0)
+									nCurrentAudioChunk = pSrcAudioStream->GetCurrentChunkPos();
+							}
+							else
+								break;
+						}
+						if (!bVideoAvailable) // Interleave possible multiple audio streams
+							break;
 					}
+
+					// Init Var
+					if (dwTotalAudioChunks == 0)
+						dwTotalAudioChunks = pSrcAudioStream->GetTotalChunks();
+
+					// Inc. Rec Stream Num
+					dwRecStreamNum++;
 				}
 			}
 		}
@@ -3933,18 +3872,7 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	int& nPassNumber,		// 0: Single Pass,
 									(pPercentProgress->dVideoPercentSize * dwVideoFrame / dwTotalFrames));
 			}
 			else
-			{
-				// Single pass
-				if (nPassNumber == 0)	
-					nVideoPercent = 100 * dwVideoFrame / dwTotalFrames;
-				// First pass of a 2 pass saving
-				else if (nPassNumber == 1)
-					nVideoPercent = 50 * dwVideoFrame / dwTotalFrames;
-				// Second pass of a 2 pass saving
-				else
-					nVideoPercent = 50 + (50 * dwVideoFrame / dwTotalFrames);
-			}
-
+				nVideoPercent = 100 * dwVideoFrame / dwTotalFrames;
 			if (nVideoPercent >= 99)
 				nVideoPercent = 100;
 			if (nVideoPercent > nPrevVideoPercent)
@@ -5518,8 +5446,7 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 		bAudioStreamsChange[dwStreamNum] = true;
 	}
 
-	// Single Pass
-	int nPassNumber = 0;
+	// Shrink
 	WAVEFORMATEX WaveFormat;
 	WaveFormat.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
 	WaveFormat.nChannels = 1;
@@ -5528,8 +5455,7 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	WaveFormat.nBlockAlign = 0;
 	WaveFormat.wBitsPerSample = 0;
 	WaveFormat.cbSize = 0;
-	BOOL res = SaveAsAVCODEC(nPassNumber,
-							pShrinkDocTo->m_sOutFileName,
+	BOOL res = SaveAsAVCODEC(pShrinkDocTo->m_sOutFileName,
 							m_pAVIPlay->GetFileName(),
 							DEFAULT_VIDEO_FOURCC,
 							0,		// Set Bitrate to 0 because we use quality
@@ -5944,7 +5870,6 @@ int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 	CAVRec* pAVRec = NULL;
 	CAVIPlay* pAVIPlay = NULL;
 	CAVIPlay* pFirstAVIPlay = NULL;
-	int nPassNumber = 0;	// Single Pass
 	int ret = 0;			// Dlg Canceled
 	int i;
 	CAVIPlay::CAVIVideoStream* pSrcVideoStream;
@@ -6032,8 +5957,7 @@ int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 					if (AudioStreamsChange[nStreamNum])
 						bAudioStreamsChange[nStreamNum] = true;
 				}
-				ret = SaveAsAVCODECDlgs(nPassNumber,
-										sSaveFileName,
+				ret = SaveAsAVCODECDlgs(sSaveFileName,
 										&pAVRec, // This function allocates pAVRec!
 										pAVIPlay,
 										dwVideoCompressorFourCC,
@@ -6119,8 +6043,7 @@ int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 			}
 
 			// Save
-			if (!SaveAsAVCODECMultiFile(nPassNumber,
-										sSaveFileName,
+			if (!SaveAsAVCODECMultiFile(sSaveFileName,
 										&pAVRec,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
