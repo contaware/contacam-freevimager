@@ -1,0 +1,88 @@
+MSYS with mingw-get-setup.exe installer from http://www.mingw.org
+-----------------------------------------------------------------
+* mingw-developer-toolkit
+* mingw32-base
+* mingw32-gcc-g++
+* msys-base
+* mingw doesn't provide pkg-config.exe so copy a static version to C:\MinGW\bin
+
+Copy yasm.exe, c99wrap.exe and c99conv.exe to
+C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\BIN
+* download generic yasm-1.2.0-win64.exe from http://yasm.tortall.net
+* download c99wrap.exe and c99conv.exe from https://github.com/libav/c99-to-c89
+
+Get latest inttypes.h from http://code.google.com/p/msinttypes
+Only copy inttypes.h to ffmpeg root folder (where you will type ./configure)
+because Visual Studio 2010 has already stdint.h under
+C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include
+
+run msys.bat from the Visual Studio command prompt (C:\MinGW\msys\1.0\msys.bat)
+
+
+Check
+-----
+$ which cl
+/C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/cl.exe
+
+$ which link
+/C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/link.exe
+(if it points to the msys link then rename C:\MinGW\msys\1.0\bin\link.exe to msys_link.exe)
+
+$which c99wrap
+/C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/c99conv.exe
+
+$which c99conv
+/C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/c99wrap.exe
+
+$which yasm
+/C/Program Files (x86)/Microsoft Visual Studio 10.0/VC/BIN/yasm.exe
+
+
+Build 
+-----
+./configure --toolchain=msvc --prefix=../build --arch=x86 --pkg-config=/c/mingw/bin/pkg-config.exe
+--extra-cflags="/I../build/include" --extra-ldflags="/LIBPATH:../build/lib"
+make
+
+/I include directory, to add more than one directory, use this option 
+more than once. Directories are searched only until the specified 
+include file is found. 
+
+/LIBPATH option to override the environment library path. The linker 
+will first search in the path specified by this option, and then search 
+in the path specified in the LIB environment variable. You can specify 
+only one directory for each /LIBPATH option you enter. If you want to 
+specify more than one directory, you must specify multiple /LIBPATH 
+options. The linker will then search the specified directories in order. 
+
+Todo: check whether the link time optimization switch --enable-lto is working!
+
+
+External libs
+-------------
+- Grab the zlib sources
+- Edit win32/Makefile.msc so that it uses -MT instead of -MD, since this is how FFmpeg is built as well
+- Edit zconf.h and remove its inclusion of unistd.h. This gets erroneously included when building FFmpeg
+- Run nmake -f win32/Makefile.msc
+- Move zlib.lib, zconf.h, and zlib.h to somewhere MSVC can see 
+	
+
+Debug build
+-----------
+--extra-cflags="-Z7 -MTd" --extra-ldflags="-DEBUG"
+
+
+Linking to FFmpeg with Microsoft Visual C++
+-------------------------------------------
+- Runtime Library set to Multi-threaded (/MT) in your project's settings
+- You will need inttypes.h in your project
+- If you do not make debug builds of ffmpeg then in Debug Target of your project
+  add libcmt.lib to Linker - Input - Ignore Specific Default Libraries  
+- Including both stdint.h and intsafe.h generates warnings in vs2010 (fixed in vs2012)
+  http://connect.microsoft.com/VisualStudio/feedback/details/621653/including-stdint-after-intsafe-generates-warnings
+  In stdafx.h add:
+  #pragma warning(push)
+  #pragma warning(disable : 4005)
+  #include <intsafe.h>
+  #include <stdint.h>
+  #pragma warning(pop)
