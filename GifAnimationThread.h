@@ -7,8 +7,6 @@
 
 #pragma once
 
-#ifdef SUPPORT_GIFLIB
-
 #include "WorkerThread.h"
 #include "Dib.h"
 
@@ -54,7 +52,5 @@ class CGifAnimationThread : public CWorkerThread
 		// (state in year 2005). I do not know in future...
 		BOOL m_bClipTo100ms;
 };
-#endif
-
 
 #endif // !defined(AFX_GIFANIMATIONTHREAD_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)

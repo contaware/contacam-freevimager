@@ -82,9 +82,7 @@ void CDib::CopyVars(const CDib& SrcDib)
 #ifdef SUPPORT_LIBJPEG
 	m_Metadata = SrcDib.m_Metadata;
 #endif
-#ifdef SUPPORT_GIFLIB
 	m_Gif = SrcDib.m_Gif;
-#endif
 }
 
 // Note: Memory Mapped files are copied, memory is allocated for it!?
@@ -3061,15 +3059,11 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	}
 	else if (sExt == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		return LoadGIF(	lpszPathName,					// Loads gif as BMI + bits
 						bOnlyHeader,
 						pProgressWnd,
 						bProgressSend,
 						pThread);
-#endif
-
-		return LoadDibSectionEx(lpszPathName);			// Loads gif as DIBSECTION
 	}
 	
 	return FALSE;
@@ -5890,10 +5884,8 @@ void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
 	if (!bLeaveMetadata)
 		m_Metadata.Free();
 #endif
-#ifdef SUPPORT_GIFLIB
 	if (!bLeaveGIF)
 		m_Gif.Free();
-#endif
 	if (!bLeavePalette && m_pPalette)
 	{
 		m_pPalette->DeleteObject();

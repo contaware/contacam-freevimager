@@ -1718,7 +1718,6 @@ int CPictureDoc::CLoadPicturesThread::Work()
 	return 0;
 }
 
-#ifdef SUPPORT_GIFLIB
 void CPictureDoc::CMyGifAnimationThread::OnNewFrame()
 {	
 	ASSERT(m_pDoc);
@@ -1726,13 +1725,13 @@ void CPictureDoc::CMyGifAnimationThread::OnNewFrame()
 	m_pDoc->GetView()->GetClientRect(&rcc);
 	m_pDoc->GetView()->InvalidateRect(rcc, FALSE);
 }
+
 void CPictureDoc::CMyGifAnimationThread::OnPlayTimesDone()
 {	
 	ASSERT(m_pDoc);
 	m_pDoc->GetView()->PostMessage(WM_COMMAND, ID_STOP_ANIMATION);
 	::Sleep(100); // Make sure we are paused here!
 }
-#endif
 
 CPictureDoc::CTransitionThread::CTransitionThread()
 {
@@ -2080,9 +2079,7 @@ CPictureDoc::CPictureDoc()
 	m_LoadPicturesThread.SetDoc(this);
 	m_LayeredDlgThread.SetDoc(this);
 	m_TransitionThread.SetDoc(this);
-#ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.SetDoc(this);
-#endif
 	
 	// Undo / Redo
 	m_nDibUndoPos = -1;
@@ -2322,9 +2319,7 @@ BOOL CPictureDoc::DoEnableCommand()
 			!(m_SlideShowThread.IsSlideshowRunning() ||
 			m_bDoRestartSlideshow)								&&
 			!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 			!m_GifAnimationThread.IsAlive()						&&
-#endif
 			!m_bMetadataModified								&&
 			!m_pRotationFlippingDlg								&&
 			!m_pWndPalette										&&
@@ -2737,7 +2732,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 		}
 		else if (extension == _T("gif"))
 		{
-#ifdef SUPPORT_GIFLIB
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
@@ -2748,7 +2742,6 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							GetView(),
 							TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("png"))
 		{
@@ -3717,7 +3710,6 @@ BOOL CPictureDoc::Save()
 		}
 		else if (extension == _T("gif"))
 		{
-#ifdef SUPPORT_GIFLIB
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
@@ -3728,7 +3720,6 @@ BOOL CPictureDoc::Save()
 							GetView(),
 							TRUE);
 			EndWaitCursor();
-#endif
 		}
 		else if (extension == _T("png"))
 		{
@@ -3908,9 +3899,7 @@ void CPictureDoc::OnFileMoveTo()
 
 		// Be Sure We Are Not Working On This File
 		m_JpegThread.Kill();
-#ifdef SUPPORT_GIFLIB
 		m_GifAnimationThread.Kill();
-#endif
 
 		// Move To Dialog
 		TCHAR* InitDir = new TCHAR[MAX_FILEDLG_PATH];
@@ -4260,7 +4249,6 @@ BOOL CPictureDoc::SaveAsPdf()
 		{
 			// The Animation has a separate array of dibs, sync the document's
 			// one with the current one of the animation array
-#ifdef SUPPORT_GIFLIB
 			if (m_GifAnimationThread.IsAlive())
 			{
 				::EnterCriticalSection(&m_csDib);
@@ -4273,7 +4261,6 @@ BOOL CPictureDoc::SaveAsPdf()
 				else
 					UpdateAlphaRenderedDib();
 			}
-#endif
 
 			// Flatten
 			CDib Dib(*m_pDib);
@@ -4447,9 +4434,7 @@ BOOL CPictureDoc::DeleteDocFile()
 
 	// Be Sure We Are Not Working On This File
 	m_JpegThread.Kill();
-#ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.Kill();
-#endif
 
 	// Delete It
 	if (!::DeleteToRecycleBin(sFileNameToDelete))
@@ -4490,9 +4475,7 @@ void CPictureDoc::OnEditRename()
 
 			// Be Sure We Are Not Working On This File
 			m_JpegThread.Kill();
-#ifdef SUPPORT_GIFLIB
 			m_GifAnimationThread.Kill();
-#endif
 
 			// Rename
 			if (!::MoveFile(m_sFileName, sNewFileName))
@@ -4835,11 +4818,9 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 		return res;
 	}
 
-#ifdef SUPPORT_GIFLIB
 	// Kill Gif Animation Thread
 	if (m_GifAnimationThread.IsAlive())
 		m_GifAnimationThread.Kill_NoBlocking();
-#endif
 
 #ifdef SUPPORT_LIBJPEG
 	// Stop Jpeg Full Load Transition and start killing Jpeg thread
@@ -5010,7 +4991,6 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 			m_JpegThread.Kill();
 #endif
 
-#ifdef SUPPORT_GIFLIB
 		// Wait until the Gif Animation Thread Stops
 		if (m_GifAnimationThread.IsAlive())
 			m_GifAnimationThread.WaitDone_Blocking();
@@ -5028,7 +5008,6 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 				m_GifAnimationThread.Start();
 			}
 		}
-#endif
 
 		// Fit zoom factor (if fit selected) and calc.
 		// the new zoom rect. Do the calculation here
@@ -5077,13 +5056,9 @@ BOOL CPictureDoc::LoadPicture(CDib *volatile *ppDib,
 		}
 
 		// Start Transition (only if it's not a animated gif)
-		if (m_nTransitionType 
-#ifdef SUPPORT_GIFLIB
-			&&
+		if (m_nTransitionType &&
 			!((m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
-			m_GifAnimationThread.IsAlive())
-#endif
-			)
+			m_GifAnimationThread.IsAlive()))
 		{
 			// Set m_bTransitionUI 
 			m_bTransitionUI = TRUE;
@@ -5869,9 +5844,7 @@ void CPictureDoc::OnUpdateEditRotateFlip(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pWndPalette										&&
 					!m_pHLSDlg											&&
@@ -5933,9 +5906,7 @@ void CPictureDoc::OnUpdateEditPalette(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pHLSDlg											&&
 					!m_pRedEyeDlg										&&
@@ -6272,9 +6243,7 @@ void CPictureDoc::OnUpdateEditHls(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -6970,9 +6939,7 @@ void CPictureDoc::OnUpdateEditSoftBorders(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pHLSDlg											&&
 					!m_pRedEyeDlg										&&
@@ -8226,9 +8193,7 @@ void CPictureDoc::OnUpdateEditRedeye(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning() ||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -8987,7 +8952,6 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 			else if (::GetFileExt(m_sFileName) == _T(".gif"))
 			{
 				// Animated GIF
-#ifdef SUPPORT_GIFLIB
 				if (m_GifAnimationThread.IsAlive() && m_GifAnimationThread.m_dwDibAnimationCount > 1)
 				{
 					// Play Times
@@ -9037,9 +9001,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 				}
 				// Normal Single Image GIF
 				else
-#endif
 				{
-#ifdef SUPPORT_GIFLIB
 					t.Format(ML_STRING(1321, "Dim: %dx%d , Ver: %s\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrames Count: 1\r\nUnc. Image Size: %d %s , File Size: %d %s"),
 						m_pDib->GetWidth(), 
 						m_pDib->GetHeight(),
@@ -9051,18 +9013,6 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 						(m_pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"),
 						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
 						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-#else
-					t.Format(ML_STRING(1322, "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrames Count: 1\r\nUnc. Image Size: %d %s , File Size: %d %s"),
-						m_pDib->GetWidth(), 
-						m_pDib->GetHeight(),
-						m_pDib->GetCompressionName(),
-						m_pDib->GetNumColorsName(),
-						m_pDib->m_FileInfo.GetDepthName(),
-						(m_pDib->GetImageSize() >= 1024) ? m_pDib->GetImageSize() >> 10 : m_pDib->GetImageSize(),
-						(m_pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"),
-						(m_pDib->GetFileSize() >= 1024) ? m_pDib->GetFileSize() >> 10 : m_pDib->GetFileSize(),
-						(m_pDib->GetFileSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-#endif
 				}
 			}
 			// Multi-Page TIFF
@@ -9650,9 +9600,7 @@ void CPictureDoc::OnUpdateEditCropLossless(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning()	||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -9696,9 +9644,7 @@ void CPictureDoc::OnUpdateEditCrop(CCmdUI* pCmdUI)
 					!(m_SlideShowThread.IsSlideshowRunning()	||
 					m_bDoRestartSlideshow)								&&
 					!((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly	&&
-#ifdef SUPPORT_GIFLIB
 					!m_GifAnimationThread.IsAlive()						&&
-#endif
 					!m_bMetadataModified								&&
 					!m_pRotationFlippingDlg								&&
 					!m_pWndPalette										&&
@@ -10077,7 +10023,6 @@ void CPictureDoc::OnEditCopy()
 
 		// The Animation has a separate array of dibs, sync the document's
 		// one with the current one of the animation array
-#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive())
 		{
 			::EnterCriticalSection(&m_csDib);
@@ -10090,7 +10035,6 @@ void CPictureDoc::OnEditCopy()
 			else
 				UpdateAlphaRenderedDib();
 		}
-#endif
 
 		// Has Alpha?
 		if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -10145,32 +10089,25 @@ void CPictureDoc::OnUpdateEditCropCancel(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnPlayAnimation() 
 {
-#ifdef SUPPORT_GIFLIB
 	if (m_GifAnimationThread.IsAlive() && !m_GifAnimationThread.IsRunning())
 	{
 		m_GifAnimationThread.Start();
 		SetDocumentTitle();
 		UpdateImageInfo();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdatePlayAnimation(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_GIFLIB
 	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
 	if (m_GifAnimationThread.IsAlive())
 		pCmdUI->SetCheck(m_GifAnimationThread.IsRunning() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 void CPictureDoc::OnPlayStopAnimation() 
 {
-#ifdef SUPPORT_GIFLIB
 	if (m_GifAnimationThread.IsRunning())
 	{
 		m_GifAnimationThread.Pause();
@@ -10180,27 +10117,21 @@ void CPictureDoc::OnPlayStopAnimation()
 		SetDocumentTitle();
 		UpdateImageInfo();
 	}
-#endif
 }
 
 void CPictureDoc::OnUpdatePlayStopAnimation(CCmdUI* pCmdUI) 
 {
-#ifdef SUPPORT_GIFLIB
 	pCmdUI->Enable(m_GifAnimationThread.IsAlive());
 	if (m_GifAnimationThread.IsAlive())
 		pCmdUI->SetCheck((!m_GifAnimationThread.IsRunning()) ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
-#else
-	pCmdUI->Enable(FALSE);
-#endif
 }
 
 BOOL CPictureDoc::ViewNextPageFrame() 
 {
 	if (::GetFileExt(m_sFileName) == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
 			m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10213,7 +10144,6 @@ BOOL CPictureDoc::ViewNextPageFrame()
 			UpdateImageInfo();
 			return TRUE;
 		}
-#endif
 	}
 	else if (IsMultiPageTIFF())
 	{
@@ -10236,7 +10166,6 @@ void CPictureDoc::OnViewNextPageFrame()
 	{
 		if (::GetFileExt(m_sFileName) == _T(".gif"))
 		{
-#ifdef SUPPORT_GIFLIB
 			if (m_GifAnimationThread.IsAlive()		&&
 				m_GifAnimationThread.IsRunning()	&&
 				m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10244,7 +10173,6 @@ void CPictureDoc::OnViewNextPageFrame()
 				::AfxMessageBox(ML_STRING(1329, "Stop playing the Animated GIF before viewing it frame by frame."));
 				return;
 			}
-#endif
 		}
 		ViewNextPageFrame();
 	}
@@ -10259,7 +10187,6 @@ BOOL CPictureDoc::ViewPreviousPageFrame()
 {
 	if (::GetFileExt(m_sFileName) == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
 			m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10272,7 +10199,6 @@ BOOL CPictureDoc::ViewPreviousPageFrame()
 			UpdateImageInfo();
 			return TRUE;
 		}
-#endif
 	}
 	else if (IsMultiPageTIFF())
 	{
@@ -10295,7 +10221,6 @@ void CPictureDoc::OnViewPreviousPageFrame()
 	{
 		if (::GetFileExt(m_sFileName) == _T(".gif"))
 		{
-#ifdef SUPPORT_GIFLIB
 			if (m_GifAnimationThread.IsAlive()		&&
 				m_GifAnimationThread.IsRunning()	&&
 				m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10303,7 +10228,6 @@ void CPictureDoc::OnViewPreviousPageFrame()
 				::AfxMessageBox(ML_STRING(1329, "Stop playing the Animated GIF before viewing it frame by frame."));
 				return;
 			}
-#endif
 		}
 		ViewPreviousPageFrame();
 	}
@@ -10318,7 +10242,6 @@ BOOL CPictureDoc::ViewFirstPageFrame()
 {
 	if (::GetFileExt(m_sFileName) == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
 			m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10331,7 +10254,6 @@ BOOL CPictureDoc::ViewFirstPageFrame()
 			UpdateImageInfo();
 			return TRUE;
 		}
-#endif
 	}
 	else if (IsMultiPageTIFF())
 	{
@@ -10349,7 +10271,6 @@ BOOL CPictureDoc::ViewLastPageFrame()
 {
 	if (::GetFileExt(m_sFileName) == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		if (m_GifAnimationThread.IsAlive()		&&
 			!m_GifAnimationThread.IsRunning()	&&
 			m_GifAnimationThread.m_dwDibAnimationCount > 1)
@@ -10362,7 +10283,6 @@ BOOL CPictureDoc::ViewLastPageFrame()
 			UpdateImageInfo();
 			return TRUE;
 		}
-#endif
 	}
 	else if (IsMultiPageTIFF())
 	{
@@ -10398,14 +10318,12 @@ void CPictureDoc::ViewBackgroundColorDlg()
 		pBkgColorButtonPicker->SetColor(*pBackgroundColor);
 
 		// Re-Render Animated Gif frames with new background color
-#ifdef SUPPORT_GIFLIB
 		if (::GetFileExt(m_sFileName) == _T(".gif")	&&
 			m_GifAnimationThread.IsAlive()			&&
 			m_GifAnimationThread.m_dwDibAnimationCount > 1)
 		{
 			m_GifAnimationThread.AlphaRender(*pBackgroundColor);
 		}
-#endif
 
 		// Re-Render with new background color
 		UpdateAlphaRenderedDib();
@@ -10525,7 +10443,6 @@ void CPictureDoc::ViewMap()
 		if (sQuery == _T("") && ::IsJPEG(m_sFileName) && m_pDib->GetMetadata())
 			sQuery = m_pDib->GetMetadata()->m_sJpegComment;
 #endif
-#ifdef SUPPORT_GIFLIB
 		if (sQuery == _T("") && ::GetFileExt(m_sFileName) == _T(".gif"))
 		{
 			if (m_GifAnimationThread.IsAlive() &&
@@ -10542,7 +10459,6 @@ void CPictureDoc::ViewMap()
 					sQuery = CString(m_pDib->GetGif()->GetComment());
 			}
 		}
-#endif
 		if (sQuery == _T(""))
 			sQuery = ::GetShortFileNameNoExt(m_sFileName);
 		if (sQuery == _T(""))
@@ -10612,14 +10528,12 @@ void CPictureDoc::OnBackgroundColor()
 		*pBackgroundColor = pBkgColorButtonPicker->GetColor();
 
 	// Re-Render Animated Gif frames with new background color
-#ifdef SUPPORT_GIFLIB
 	if (::GetFileExt(m_sFileName) == _T(".gif")	&&
 		m_GifAnimationThread.IsAlive()			&&
 		m_GifAnimationThread.m_dwDibAnimationCount > 1)
 	{
 		m_GifAnimationThread.AlphaRender(*pBackgroundColor);
 	}
-#endif
 
 	// Re-Render with new background color
 	UpdateAlphaRenderedDib();

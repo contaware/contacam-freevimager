@@ -3729,14 +3729,12 @@ int CUImagerApp::ShrinkPicture(	LPCTSTR szSrcFileName,
 	}
 	else if (sDstExt == _T(".gif"))
 	{
-#ifdef SUPPORT_GIFLIB
 		if (!CPictureDoc::SaveGIF(	szDstFileName,
 									pSaveDib,
 									pProgressWnd,
 									bProgressSend,
 									pThread))
 			return 0;
-#endif	
 	}
 	else if (sDstExt == _T(".png"))
 	{

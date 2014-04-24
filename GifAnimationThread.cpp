@@ -11,8 +11,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_GIFLIB
-
 void CGifAnimationThread::ClearAnimationArrays()
 {	
 	while (m_DibAnimationArray.GetSize() > 0)
@@ -246,5 +244,3 @@ void CGifAnimationThread::ShowLast()
 {	
 	m_dwDibAnimationPos = m_dwDibAnimationCount - 1;
 }
-
-#endif

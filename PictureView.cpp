@@ -379,7 +379,6 @@ void CPictureView::OnFilePrintDirect()
 
 	// The Animation has a separate array of dibs, sync the document's
 	// one with the current one of the animation array
-#ifdef SUPPORT_GIFLIB
 	if (pDoc->m_GifAnimationThread.IsAlive())
 	{
 		::EnterCriticalSection(&pDoc->m_csDib);
@@ -392,7 +391,6 @@ void CPictureView::OnFilePrintDirect()
 		else
 			pDoc->UpdateAlphaRenderedDib();
 	}
-#endif
 
 	// Wait and schedule command if dib not fully loaded!
 	if (!pDoc->IsDibReadyForCommand(ID_FILE_PRINT_DIRECT))
@@ -445,7 +443,6 @@ void CPictureView::OnFilePrint()
 
 	// The Animation has a separate array of dibs, sync the document's
 	// one with the current one of the animation array
-#ifdef SUPPORT_GIFLIB
 	if (pDoc->m_GifAnimationThread.IsAlive())
 	{
 		::EnterCriticalSection(&pDoc->m_csDib);
@@ -458,7 +455,6 @@ void CPictureView::OnFilePrint()
 		else
 			pDoc->UpdateAlphaRenderedDib();
 	}
-#endif
 
 	// Wait and schedule command if dib not fully loaded!
 	if (!pDoc->IsDibReadyForCommand(ID_FILE_PRINT))
@@ -518,7 +514,6 @@ void CPictureView::OnFilePrintPreview()
 
 	// The Animation has a separate array of dibs, sync the document's
 	// one with the current one of the animation array
-#ifdef SUPPORT_GIFLIB
 	if (pDoc->m_GifAnimationThread.IsAlive())
 	{
 		::EnterCriticalSection(&pDoc->m_csDib);
@@ -531,7 +526,6 @@ void CPictureView::OnFilePrintPreview()
 		else
 			pDoc->UpdateAlphaRenderedDib();
 	}
-#endif
 
 	// Cancel Transitions
 	pDoc->CancelTransition();
@@ -2514,7 +2508,6 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 	// Erase Bkg
 	EraseBkgnd(pTheDC);
 
-#ifdef SUPPORT_GIFLIB
 	if ((pDoc->m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
 		pDoc->m_GifAnimationThread.IsAlive())
 	{
@@ -2540,7 +2533,6 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 								(pDoc->m_GifAnimationThread.m_dwDibAnimationPos));
 	}
 	else
-#endif
 	{
 		if (pDib->GetPreviewDib() && pDib->GetPreviewDib()->IsValid())
 		{	

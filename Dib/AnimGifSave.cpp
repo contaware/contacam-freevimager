@@ -9,8 +9,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_GIFLIB
-
 void CAnimGifSave::Open(const CString& sFileName,
 						const CString& sTempDir,
 						BOOL bDitherColorConversion,
@@ -240,5 +238,3 @@ BOOL CAnimGifSave::SaveAsAnimGIF(const CDib* pDib, int nMsDelay)
 	else
 		return FALSE;
 }
-
-#endif

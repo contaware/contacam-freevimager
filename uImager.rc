@@ -4634,7 +4634,6 @@ BEGIN
     IDS_MULTILANG_1319      "Dim: %dx%d , Ver: %s\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrames Count: %d , %s\r\nFile Size: %d %s"
     IDS_MULTILANG_1320      "Dim: %dx%d , Ver: %s\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrame %d of %d , Delay: %dms , %s\r\nFile Size: %d %s"
     IDS_MULTILANG_1321      "Dim: %dx%d , Ver: %s\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrames Count: 1\r\nUnc. Image Size: %d %s , File Size: %d %s"
-    IDS_MULTILANG_1322      "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nFrames Count: 1\r\nUnc. Image Size: %d %s , File Size: %d %s"
     IDS_MULTILANG_1323      "Dim: %dx%d , Dpi: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nPage %d of %d\r\nUnc. Image Size: %d %s , File Size: %d %s"
     IDS_MULTILANG_1324      "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nPage %d of %d\r\nUnc. Image Size: %d %s , File Size: %d %s"
     IDS_MULTILANG_1325      "Dim: %dx%d , Dpi: %dx%d\r\nCurrent Depth: %s, %s\r\nFile Depth: %s\r\nUnc. Image Size: %d %s\r\nFile Size: %d %s"

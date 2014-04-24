@@ -7,8 +7,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_GIFLIB
-
 CString CDib::GIFGetVersion(LPCTSTR lpszPathName, BOOL bShowMessageBoxOnError)
 {
 	if (::GetFileExt(lpszPathName) != _T(".gif"))
@@ -3728,5 +3726,3 @@ BOOL CGif::Save(	GifByteType *OutputBuffer,
 
 	return TRUE;
 }
-
-#endif

@@ -13,14 +13,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef SUPPORT_GIFLIB
 void CDibStatic::CMyGifAnimationThread::OnNewFrame()
 {	
 	ASSERT(m_pDibStatic);
 	m_pDibStatic->PaintDib();
 }
-#endif
-
 
 int CDibStatic::CThumbLoadThread::Work() 
 {
@@ -428,21 +425,16 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			throw (int)FULLLOAD_DOEXIT;
 
 		// Wait until the Gif Animation Thread Stops
-#ifdef SUPPORT_GIFLIB
 		if (m_pDibStatic->m_GifAnimationThread.IsAlive())
 			m_pDibStatic->m_GifAnimationThread.WaitDone_Blocking();
-#endif
 			
 		// Clear all Animation Frames
-#ifdef SUPPORT_GIFLIB
 		m_pDibStatic->m_GifAnimationThread.ClearAnimationArrays();
-#endif
 
 		// Restore Old ShowMessageBoxOnError
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
 
 		// Load All Frames of the Animated File to m_DibAnimationArray
-#ifdef SUPPORT_GIFLIB
 		if (m_pDibStatic->m_bAnimatedGif && m_bLoadAndPlayAnimatedGif)
 		{
 			// Load Gifs
@@ -471,7 +463,6 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 				return 1;
 			}
 		}
-#endif
 
 		// Clear Paint Busy Text
 		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
@@ -564,10 +555,8 @@ void CDibStatic::CThumbLoadThread::CreateThumbnail()
 		throw (int)FULLLOAD_DOEXIT;
 
 	// Create Thumbnail Dib if not animated GIF or if no load and play wanted
-#ifdef SUPPORT_GIFLIB
 	if (!m_bLoadAndPlayAnimatedGif ||
 		!(m_pDibStatic->m_bAnimatedGif = CDib::IsAnimatedGIF(m_sFileName, FALSE)))
-#endif
 	{
 		if (!m_pDibStatic->m_pDibFull->CreateThumbnailDib(	m_rcClient.Width(),
 															m_rcClient.Height(),
@@ -639,17 +628,13 @@ CDibStatic::CDibStatic()
 	m_crCrossColor = RGB(0, 0, 0);
 	m_ThumbLoadThread.SetDibStatic(this);
 	m_hMCIWnd = NULL;
-#ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.SetDibStatic(this);
-#endif
 }
 
 CDibStatic::~CDibStatic()
 {
 	m_ThumbLoadThread.Kill();
-#ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.Kill();
-#endif
 }
 
 void CDibStatic::OnDestroy() 
@@ -657,9 +642,7 @@ void CDibStatic::OnDestroy()
 	// Destroy MCI Wnd
 	FreeMusic();
 	m_ThumbLoadThread.Kill();
-#ifdef SUPPORT_GIFLIB
 	m_GifAnimationThread.Kill();
-#endif
 	CStatic::OnDestroy();
 }
 
@@ -697,10 +680,8 @@ BOOL CDibStatic::Load(	LPCTSTR lpszFileName,
 		m_ThumbLoadThread.Kill();
 
 	// Start Killing Gif Animation Thread
-#ifdef SUPPORT_GIFLIB
 	if (m_GifAnimationThread.IsAlive())
 		m_GifAnimationThread.Kill_NoBlocking();
-#endif
 
 	// Clear Gif Animation Flag
 	m_bAnimatedGif = FALSE;
@@ -1112,14 +1093,12 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 			((m_pDibFull && m_pDibFull->IsValid()) ||
 			(m_pDibFull && m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid())))
 		{
-#ifdef SUPPORT_GIFLIB
 			if ((m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
 				m_GifAnimationThread.IsAlive())
 			{
 				pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(m_GifAnimationThread.m_dwDibAnimationPos);
 			}
 			else
-#endif
 			{
 				if (m_pAlphaRenderedDib && m_pAlphaRenderedDib->IsValid())
 					pDib = m_pAlphaRenderedDib;
@@ -1273,12 +1252,10 @@ BOOL CDibStatic::DoRealizePalette(BOOL bForceBackGround)
 		(m_pDibFull && m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid())))
 	{
 		CDib* pDib;
-#ifdef SUPPORT_GIFLIB
 		if ((m_GifAnimationThread.m_dwDibAnimationCount > 1) &&
 			m_GifAnimationThread.IsAlive())
 			pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(m_GifAnimationThread.m_dwDibAnimationPos);
 		else
-#endif
 		{
 			if (m_pDibFull->GetThumbnailDib() && m_pDibFull->GetThumbnailDib()->IsValid()) 
 				pDib = m_pDibFull->GetThumbnailDib();

@@ -227,11 +227,7 @@ __forceinline CMetadata::XMPINFO* CDib::GetXmpInfo() {return &(m_Metadata.m_XmpI
 // File Info
 __forceinline int CDib::CFileInfo::GetXDpi() const {return DPI(m_nXPixsPerMeter);};
 __forceinline int CDib::CFileInfo::GetYDpi() const {return DPI(m_nYPixsPerMeter);};
-
-#ifdef SUPPORT_GIFLIB
 __forceinline CGif* CDib::GetGif() {return &m_Gif;};
-#endif
-
 __forceinline DWORD CDib::GetImageSize()	const { return m_dwImageSize; };
 __forceinline DWORD CDib::GetFileSize()		const { return m_FileInfo.m_dwFileSize; };
 __forceinline void CDib::SetImageSize(DWORD dwImageSize) {m_dwImageSize = dwImageSize;}; 

@@ -129,9 +129,7 @@ void CPreviewFileDlg::OnDestroy()
 {
 	m_DibStaticCtrl.SetNotifyHwnd(NULL);
 	m_DibStaticCtrl.GetThumbLoadThread()->Kill();
-#ifdef SUPPORT_GIFLIB
 	m_DibStaticCtrl.GetGifAnimationThread()->Kill();
-#endif
 	CFileDialog::OnDestroy();	
 }
 
@@ -439,7 +437,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 					s += t;
 				}
 
-#ifdef SUPPORT_GIFLIB
 				if (::GetFileExt(sLastFileName) == _T(".gif"))
 				{
 					t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
@@ -452,7 +449,6 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 						s += t;
 					}
 				}
-#endif
 
 				s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 			}

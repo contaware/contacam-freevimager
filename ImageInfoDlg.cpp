@@ -1129,7 +1129,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 		}
 		else if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
 		{
-#ifdef SUPPORT_GIFLIB
 			BeginWaitCursor();
 
 			// Write Comment to current shown frame in case of an animated gif
@@ -1171,7 +1170,6 @@ BOOL CImageInfoDlg::SaveMetadata()
 				EndWaitCursor();
 				return FALSE;
 			}
-#endif
 		}
 	}
 
@@ -2840,7 +2838,6 @@ void CImageInfoDlg::UpdateMetadata()
 #endif
 
 	// Gif
-#ifdef SUPPORT_GIFLIB
 	if (::GetFileExt(m_pDoc->m_sFileName) == _T(".gif"))
 	{
 		CString sGifComment(_T(""));
@@ -2861,7 +2858,6 @@ void CImageInfoDlg::UpdateMetadata()
 		m_sOrigComment = sGifComment;
 		m_sCurrentComment = sGifComment;
 	}
-#endif
 
 	// Display Metadata
 	DisplayMetadata();

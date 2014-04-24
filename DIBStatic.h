@@ -24,7 +24,6 @@
 class CDibStatic : public CStatic
 {
 public:
-#ifdef SUPPORT_GIFLIB
 	// The Gif Animation Thread Class
 	class CMyGifAnimationThread : public CGifAnimationThread
 	{
@@ -36,7 +35,6 @@ public:
 			CDibStatic* m_pDibStatic;
 			virtual void OnNewFrame();
 	};
-#endif
 
 	// Thumbnail Loading Thread Class
 	class CThumbLoadThread : public CWorkerThread
@@ -112,9 +110,7 @@ public:
 
 	// Threads Pointers
 	CThumbLoadThread* GetThumbLoadThread() {return &m_ThumbLoadThread;};
-#ifdef SUPPORT_GIFLIB
 	CMyGifAnimationThread* GetGifAnimationThread() {return &m_GifAnimationThread;};
-#endif
 	void SetThumbLoadThreadPriority(int nThumbLoadThreadPriority) {m_nThumbLoadThreadPriority = nThumbLoadThreadPriority;};
 
 	// Hdr Load Started Flag Means that LoadDib has been successfully called
@@ -215,9 +211,7 @@ protected:
 	CDib* volatile m_pDibFull;
 	CDib* volatile m_pAlphaRenderedDib;
 	CThumbLoadThread m_ThumbLoadThread;
-#ifdef SUPPORT_GIFLIB
 	CMyGifAnimationThread m_GifAnimationThread;
-#endif
 	volatile BOOL m_bOnlyHeader;
 	CTryEnterCriticalSection* volatile m_pcsDibHdr;
 	CTryEnterCriticalSection* volatile m_pcsDibFull;

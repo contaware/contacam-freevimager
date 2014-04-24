@@ -315,7 +315,6 @@ public:
 	};
 
 	// The Gif Animation Thread Class
-#ifdef SUPPORT_GIFLIB
 	class CMyGifAnimationThread : public CGifAnimationThread
 	{
 		public:
@@ -327,7 +326,6 @@ public:
 			virtual void OnNewFrame();
 			virtual void OnPlayTimesDone();
 	};
-#endif
 
 	// The Picture Transition Effect Thread Class
 	class CTransitionThread : public CWorkerThread
@@ -619,9 +617,7 @@ public:
 										// and loads the full sized jpeg
 	CLoadPicturesThread m_LoadPicturesThread;
 	CLayeredDlgThread m_LayeredDlgThread; // Thread which shrinks the current picture for layered display
-#ifdef SUPPORT_GIFLIB
 	CMyGifAnimationThread m_GifAnimationThread;
-#endif
 
 	// Do Not Draw Flag
 	volatile BOOL m_bNoDrawing;

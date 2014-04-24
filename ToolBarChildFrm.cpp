@@ -1336,9 +1336,7 @@ void CPictureChildFrame::StartShutdown()
 #endif
 	pDoc->m_LoadPicturesThread.Kill_NoBlocking();
 	pDoc->m_LayeredDlgThread.Kill_NoBlocking();
-#ifdef SUPPORT_GIFLIB
 	pDoc->m_GifAnimationThread.Kill_NoBlocking();
-#endif
 	pDoc->CancelTransition();
 	
 	// Close Eventually Open Dlgs
@@ -1419,9 +1417,7 @@ BOOL CPictureChildFrame::IsShutdownDone()
 		!pDoc->m_JpegThread.IsAlive()			&&
 		!pDoc->m_LoadPicturesThread.IsAlive()	&&
 		!pDoc->m_LayeredDlgThread.IsAlive()		&&
-#ifdef SUPPORT_GIFLIB
 		!pDoc->m_GifAnimationThread.IsAlive()	&&
-#endif
 		!pDoc->m_TransitionThread.IsAlive())
 		return TRUE;
 	else

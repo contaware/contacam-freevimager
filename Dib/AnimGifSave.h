@@ -1,8 +1,6 @@
 #ifndef _INC_ANIMGIFSAVE
 #define _INC_ANIMGIFSAVE
 
-#ifdef SUPPORT_GIFLIB
-
 class CAnimGifSave
 {
 public:
@@ -62,5 +60,4 @@ private:
 	CDib* m_pBkgDiffSaveDib;
 };
 
-#endif
 #endif //!_INC_ANIMGIFSAVE

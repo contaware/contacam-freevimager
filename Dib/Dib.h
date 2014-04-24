@@ -12,9 +12,7 @@ extern "C"
 #include "jpeglib.h"
 #include "transupp.h"	// Support routines for lossless transformations
 #endif
-#ifdef SUPPORT_GIFLIB
 #include "gif_lib.h"
-#endif
 }
 
 #include <afxtempl.h>	// For CArray
@@ -314,9 +312,7 @@ class CUserBuf
 };
 
 // Gif Support
-#ifdef SUPPORT_GIFLIB
 #include "DibGif.h"
-#endif
 
 // Metadata (Exif, Iptc, Xmp) Support
 #ifdef SUPPORT_LIBJPEG
@@ -459,9 +455,7 @@ protected:
 #endif
 
 	// The Gif Var
-#ifdef SUPPORT_GIFLIB
 	CGif m_Gif;
-#endif
 
 // Member Functions
 public:
@@ -478,11 +472,7 @@ public:
 	__forceinline CMetadata::IPTCINFO* GetIptcFromXmpInfo();
 	// Get Xmp Info Structure
 	__forceinline CMetadata::XMPINFO* GetXmpInfo();
-
-#ifdef SUPPORT_GIFLIB
 	__forceinline CGif* GetGif();
-#endif
-
 	__forceinline DWORD GetImageSize() const;
 	__forceinline DWORD GetFileSize() const;
 	__forceinline void SetImageSize(DWORD dwImageSize);
@@ -1253,7 +1243,6 @@ public:
 	BOOL SaveEMF(LPCTSTR lpszPathName, HDC hRefDC = NULL);
 
 	// GIF Support
-#ifdef SUPPORT_GIFLIB
 	static CString GIFGetVersion(	LPCTSTR lpszPathName,
 									BOOL bShowMessageBoxOnError);
 	static BOOL IsAnimatedGIF(	LPCTSTR lpszPathName,
@@ -1331,7 +1320,6 @@ public:
 								LPCTSTR szTempDir,
 								LPCTSTR szComment,
 								BOOL bShowMessageBoxOnError);
-#endif
 
 	// PCX Support
 	BOOL LoadPCX(	LPCTSTR lpszPathName,
