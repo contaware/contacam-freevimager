@@ -38,7 +38,6 @@
 #define IDC_HAND_CURSOR                 157
 #define IDD_OUTVOL                      158
 #define IDD_AUDIOOUT_DESTINATION        159
-#define IDD_SAVEAS_STREAMS_SELECT       165
 #define IDD_OPEN_STREAMS_SELECT         167
 #define IDD_IMAGEINFO                   170
 #define IDD_RESIZING                    171
@@ -1118,11 +1117,9 @@
 #define IDS_MULTILANG_1145              1145
 #define IDC_SPIN_WAITBETWEENCOUNTUP     1145
 #define IDS_MULTILANG_1146              1146
-#define IDC_STREAM_SAVE                 1146
 #define IDS_MULTILANG_1147              1147
 #define IDC_EDIT_LASTTIME1              1147
 #define IDS_MULTILANG_1148              1148
-#define IDC_STREAM_CHANGE               1148
 #define IDS_MULTILANG_1149              1149
 #define IDC_VIDEO_STREAMS               1149
 #define IDS_MULTILANG_1150              1150
@@ -2136,13 +2133,9 @@
 #define IDS_STRING1661                  1661
 #define IDS_STRING1662                  1662
 #define IDS_STRING1663                  1663
-#define IDC_RADIO_RGB                   1664
 #define IDS_STRING1664                  1664
-#define IDC_RADIO_I420                  1665
 #define IDS_STRING1665                  1665
-#define IDC_RADIO_YV12                  1666
 #define IDS_STRING1666                  1666
-#define IDC_RADIO_YUY2                  1667
 #define IDS_STRING1667                  1667
 #define IDC_RADIO_QUALITY               1668
 #define IDS_STRING1668                  1668
@@ -2896,8 +2889,6 @@
 #define IDC_STATIC2225                  2225
 #define IDC_STATIC2226                  2226
 #define IDC_STATIC2227                  2227
-#define IDC_STATIC2228                  2228
-#define IDC_STATIC2229                  2229
 #define IDC_STATIC2230                  2230
 #define IDC_STATIC2231                  2231
 #define IDC_STATIC2232                  2232
