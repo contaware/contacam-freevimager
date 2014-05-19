@@ -85,7 +85,7 @@ public:
 				int nId,								// device id, if it is negative m_sDeviceName and m_sDevicePath are used
 				double dFrameRate,						// if zero or negative, the default Frame-Rate is used
 				int nFormatId,							// If -1, the format is chosen in the following order:
-														// MJPG, I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
+														// MJPG, I420, IYUV, YV12, NV12, NV21, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 				int nWidth,								// If Width or Height are <= 0 the sizes are tried in the following order:
 				int nHeight,							// 640x480, 352x288, 352x240, 320x240
 				const GUID *pMediaSubType = NULL);		// With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber

@@ -368,6 +368,8 @@ CString CDxCapture::GetFormatCompressionDescription(DWORD dwFourCC)
 		return _T("Planar 4:1:0 (9 Bpp)");
 	else if (dwFourCC == FCC('cyuv'))
 		return _T("Packed 4:1:1 (6 Bpp)");
+	else if (dwFourCC == FCC('NV12') || dwFourCC == FCC('NV21'))
+		return _T("Planar 4:2:0 (12 Bpp)");
 	else if (dwFourCC == FCC('M420'))
 		return _T("Packed 4:2:0 (12 Bpp)");
 	else if (	dwFourCC == FCC('YUY2') ||	// Packed Y0 U0 Y1 V0
@@ -1190,7 +1192,7 @@ BOOL CDxCapture::BindFilter(const CString& sDeviceName, const CString& sDevicePa
 // - nId is the device id, if it is negative m_sDeviceName and m_sDevicePath are used
 // - If dFrameRate is zero or negative, the default Frame-Rate is used
 // - If nFormatId is -1, the format is chosen in the following order:
-//   MJPG, I420, IYUV, YV12, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
+//   MJPG, I420, IYUV, YV12, NV12, NV21, M420, YUY2, YUNV, VYUY, V422, YUYV, RGB32, RGB24, RGB16, then the first format is used
 // - If Width or Height are <= 0 the sizes are tried in the following order: 640x480, 352x288, 352x240, 320x240
 // - With pMediaSubTypeSet it's possible to set the media subtype for the frame grabber
 //   (for DV devices the media subtype is fixed to YUY2)
@@ -1499,6 +1501,12 @@ BOOL CDxCapture::Open(	HWND hWnd,
 			// YV12
 			if ((nFormatId = GetFormatID(mmioFOURCC('Y','V','1','2'))) == -1)
 			
+			// NV12
+			if ((nFormatId = GetFormatID(mmioFOURCC('N','V','1','2'))) == -1)
+
+			// NV21
+			if ((nFormatId = GetFormatID(mmioFOURCC('N','V','2','1'))) == -1)
+
 			// M420
 			if ((nFormatId = GetFormatID(mmioFOURCC('M','4','2','0'))) == -1)
 
