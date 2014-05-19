@@ -1461,7 +1461,7 @@ BOOL CDxDraw::RenderDib(LPBITMAPINFO pBmi, LPBYTE pSrc, CRect rc)
 	}
 	// RGB Surface
 	else 
-	{	
+	{
 		// FullScreen Direct Copy and Two Steps Copy Vars
 		BOOL bFullScreenDirectCopy = FALSE;
 		BOOL bTwoStepsCopy = FALSE;
@@ -1475,7 +1475,7 @@ BOOL CDxDraw::RenderDib(LPBITMAPINFO pBmi, LPBYTE pSrc, CRect rc)
 				bFullScreenDirectCopy = TRUE;
 		}
 
-		// Direct Copy with Flip
+		// Direct Copy
 		if (IsCurrentSrcSameRgbFormat(pBmi))
 		{
 			// Pixel Size in Bytes
@@ -1494,23 +1494,32 @@ BOOL CDxDraw::RenderDib(LPBITMAPINFO pBmi, LPBYTE pSrc, CRect rc)
 					return FALSE;
 			}
 
-			// Destination Bits Pointer
+			// Destination Bits Pointer and Pitch
 			LPBYTE pDst;
-			if (bFullScreenDirectCopy)
-				pDst = (LPBYTE)ddsd.lpSurface +
-						((int)ddsd.lPitch * (((int)pBmi->bmiHeader.biHeight - 1) + rc.top))
-						+ rc.left * nPixelsSize;
-			else
-				pDst = (LPBYTE)ddsd.lpSurface +
-						((int)ddsd.lPitch * ((int)pBmi->bmiHeader.biHeight - 1));
-
-			// Bottom-Up to Top-Down Conversion
-			int nMinPitch = GetCurrentSrcMinPitch();
-			for (int line = 0 ; line < pBmi->bmiHeader.biHeight ; line++)
+			int nDstPitch = ddsd.lPitch;
+			if (pBmi->bmiHeader.biHeight > 0)
 			{
-				memcpy(pDst, pSrc, nMinPitch);
-				pSrc += nMinPitch;
-				pDst -= (DWORD)ddsd.lPitch;
+				if (bFullScreenDirectCopy)
+					pDst = (LPBYTE)ddsd.lpSurface + ddsd.lPitch * (pBmi->bmiHeader.biHeight - 1 + rc.top) + rc.left * nPixelsSize;
+				else
+					pDst = (LPBYTE)ddsd.lpSurface + ddsd.lPitch * (pBmi->bmiHeader.biHeight - 1);
+				nDstPitch *= -1;
+			}
+			else
+			{
+				if (bFullScreenDirectCopy)
+					pDst = (LPBYTE)ddsd.lpSurface + ddsd.lPitch * rc.top + rc.left * nPixelsSize;
+				else
+					pDst = (LPBYTE)ddsd.lpSurface;
+			}
+
+			// Copy Bits
+			int nSrcMinPitch = GetCurrentSrcMinPitch();
+			for (int line = 0 ; line < ABS(pBmi->bmiHeader.biHeight) ; line++)
+			{
+				memcpy(pDst, pSrc, nSrcMinPitch);
+				pSrc += nSrcMinPitch;
+				pDst += nDstPitch;
 			}
 
 			// Unlock Video Memory
@@ -1536,11 +1545,11 @@ BOOL CDxDraw::RenderDib(LPBITMAPINFO pBmi, LPBYTE pSrc, CRect rc)
 								   rc.left,						// DestX
 								   rc.top,						// DestY
 								   pBmi->bmiHeader.biWidth,		// nSrcWidth
-								   pBmi->bmiHeader.biHeight,	// nSrcHeight
+								   ABS(pBmi->bmiHeader.biHeight),// nSrcHeight
 								   0,							// SrcX
 								   0,							// SrcY
 								   0,							// nStartScan
-								   pBmi->bmiHeader.biHeight,	// nNumScans
+								   ABS(pBmi->bmiHeader.biHeight),// nNumScans
 								   pSrc,						// Bits
 								   pBmi,						// Bitmap Info
 								   DIB_RGB_COLORS);				// wUsage
@@ -1551,16 +1560,15 @@ BOOL CDxDraw::RenderDib(LPBITMAPINFO pBmi, LPBYTE pSrc, CRect rc)
 								   0,							// DestX
 								   0,							// DestY
 								   pBmi->bmiHeader.biWidth,		// nSrcWidth
-								   pBmi->bmiHeader.biHeight,	// nSrcHeight
+								   ABS(pBmi->bmiHeader.biHeight),// nSrcHeight
 								   0,							// SrcX
 								   0,							// SrcY
 								   0,							// nStartScan
-								   pBmi->bmiHeader.biHeight,	// nNumScans
+								   ABS(pBmi->bmiHeader.biHeight),// nNumScans
 								   pSrc,						// Bits
 								   pBmi,						// Bitmap Info
 								   DIB_RGB_COLORS);				// wUsage
 			}
-
 
 			// Release DC
 			if (bTwoStepsCopy)
