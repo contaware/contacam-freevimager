@@ -414,13 +414,6 @@ protected:
 	// The Sort Type
 	int m_nSortType;
 
-	// Avi Compression Params
-	DWORD m_dwVideoCompressorFourCC;
-	int m_nVideoCompressorDataRate;
-	int m_nVideoCompressorKeyframesRate;
-	float m_fVideoCompressorQuality;
-	int m_nQualityBitrate;
-
 	// Tabs
 	int m_nInitTab;
 	CBatchProcGeneralTab m_GeneralTab;

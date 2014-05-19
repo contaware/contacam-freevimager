@@ -456,7 +456,6 @@ void CMovementDetectionPage::OnSwfConfigure()
 	VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDoc->m_nVideoDetSwfKeyframesRate;
 	VideoFormatDlg.m_fVideoCompressorQuality = m_pDoc->m_fVideoDetSwfQuality;
 	VideoFormatDlg.m_nQualityBitrate = m_pDoc->m_nVideoDetSwfQualityBitrate;
-	VideoFormatDlg.m_bShowRawChoose = FALSE;
 	VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
 	if (VideoFormatDlg.DoModal() == IDOK)
 	{
@@ -483,7 +482,6 @@ void CMovementDetectionPage::OnAviConfigure()
 	VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDoc->m_nVideoDetKeyframesRate;
 	VideoFormatDlg.m_fVideoCompressorQuality = m_pDoc->m_fVideoDetQuality;
 	VideoFormatDlg.m_nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
-	VideoFormatDlg.m_bShowRawChoose = FALSE;
 	if (VideoFormatDlg.DoModal() == IDOK)
 	{
 		m_pDoc->m_nVideoDetQualityBitrate = VideoFormatDlg.m_nQualityBitrate;

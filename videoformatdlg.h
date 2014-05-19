@@ -22,13 +22,11 @@ public:
 	CComboBox	m_VideoCompressionChoose;
 	int		m_nVideoCompressorDataRate;		// Data Rate in kbps
 	int		m_nVideoCompressorKeyframesRate;
-	int		m_nRawCompressionIndex;
 	int		m_nQualityBitrate;
 	//}}AFX_DATA
 	DWORD m_dwVideoCompressorFourCC;
 	float m_fVideoCompressorQuality;
 	double m_dVideoLength;
-	BOOL m_bShowRawChoose;
 	LONGLONG m_llTotalAudioBytes;
 	enum FILETYPE {FILETYPE_AVI, FILETYPE_SWF};
 	FILETYPE m_nFileType;
@@ -54,7 +52,6 @@ protected:
 	afx_msg void OnSelchangeVideoCompressionChoose();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnChangeEditDatarate();
-	virtual void OnOK();
 	afx_msg void OnRadioQuality();
 	afx_msg void OnRadioBitrate();
 	//}}AFX_MSG

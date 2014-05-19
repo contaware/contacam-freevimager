@@ -364,22 +364,7 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Codec's Supports
 
-	m_VideoCompressionFcc.Add((DWORD)BI_RGB);
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionDataRateSupport.Add((DWORD)0);
-	m_VideoCompressionQualitySupport.Add((DWORD)0);
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('HFYU')); 
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionDataRateSupport.Add((DWORD)0);
-	m_VideoCompressionQualitySupport.Add((DWORD)0);
-
 	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionDataRateSupport.Add((DWORD)0);
-	m_VideoCompressionQualitySupport.Add((DWORD)0);
-
-	m_VideoCompressionFcc.Add((DWORD)FCC('FFV1')); 
 	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
 	m_VideoCompressionDataRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)0);
@@ -509,10 +494,7 @@ BOOL CGeneralPage::OnInitDialog()
 	pEdit->SetWindowText(sQuality);
 
 	// Add Codec strings to ComboBoxes
-	m_VideoCompressionChoose.AddString(_T("Raw"));
-	m_VideoCompressionChoose.AddString(_T("Huffman YUV 16 bits/pix"));
 	m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
-	m_VideoCompressionChoose.AddString(_T("FFV1 Lossless YUV 12 bits/pix"));
 	m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
 	m_VideoCompressionChoose.AddString(_T("MPEG-4"));
 

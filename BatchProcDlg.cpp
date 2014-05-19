@@ -431,31 +431,8 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
 	{
-		// Create the Avi File
 		m_pAVRec = new CAVRec(m_pDlg->m_sOutputFileName);
 		if (!m_pAVRec)
-			throw (int)0;
-
-		// Set File Info
-		m_pAVRec->SetInfo(::GetShortFileNameNoExt(m_pDlg->m_sOutputFileName), APPNAME_NOEXT, MYCOMPANY_WEB);
-
-		// Prompt for Compression
-		CVideoFormatDlg VideoFormatDlg(m_pDlg);
-		VideoFormatDlg.m_dwVideoCompressorFourCC = m_pDlg->m_dwVideoCompressorFourCC;
-		VideoFormatDlg.m_nVideoCompressorDataRate = m_pDlg->m_nVideoCompressorDataRate / 1000;
-		VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDlg->m_nVideoCompressorKeyframesRate;
-		VideoFormatDlg.m_fVideoCompressorQuality = m_pDlg->m_fVideoCompressorQuality;
-		VideoFormatDlg.m_nQualityBitrate = m_pDlg->m_nQualityBitrate;
-		VideoFormatDlg.m_bShowRawChoose = FALSE;
-		if (VideoFormatDlg.DoModal() == IDOK)
-		{
-			m_pDlg->m_nQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
-			m_pDlg->m_fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-			m_pDlg->m_nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
-			m_pDlg->m_nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
-			m_pDlg->m_dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
-		}
-		else
 			throw (int)0;
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
@@ -635,70 +612,50 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 		m_Dib.SetAlpha(FALSE);
 	}
 
-	// Set Raw Copy Flag
-	BOOL bRawCopy = (m_pDlg->m_dwVideoCompressorFourCC == BI_RGB);
+	// Decompress to 32 bpp
+	if (!m_Dib.Decompress(32))
+		throw (int)0;
 
 	// If first frame
 	if (m_bFirstOutputFile)
-	{
-		// If not raw encoding
-		if (!bRawCopy)
-		{
-			// Decompress to 32 bpp
-			if (!m_Dib.Decompress(32))
-				throw (int)0;
-		
-			// Size multiple of 4, so that all codecs are happy!
-			int nXAdd = 0;
-			int nYAdd = 0;
-			const int nMultipleShift = 2; // 1: Multiple of 2, 2: Multiple of 4, 3: Multiple of 8, ...
-			nXAdd = m_Dib.GetWidth() % (1<<nMultipleShift);
-			if (nXAdd > 0)
-				nXAdd = (1<<nMultipleShift) - nXAdd;
-			nYAdd = m_Dib.GetHeight() % (1<<nMultipleShift);
-			if (nYAdd > 0)
-				nYAdd = (1<<nMultipleShift) - nYAdd;
-			if (!m_Dib.StretchBitsMaintainAspectRatio(	m_Dib.GetWidth() + nXAdd,
-														m_Dib.GetHeight() + nYAdd,
-														RGB(0,0,0), // Black background for AVIs is ok
-														NULL,		// Src Dib itself
-														NULL,		// No Progress Wnd
-														FALSE,		// No Progress Send
-														this))		// Thread
-				throw (int)0;
-		}
+	{	
+		// Size multiple of 4, so that codec is happy
+		int nXAdd = 0;
+		int nYAdd = 0;
+		const int nMultipleShift = 2; // 1: Multiple of 2, 2: Multiple of 4, 3: Multiple of 8, ...
+		nXAdd = m_Dib.GetWidth() % (1<<nMultipleShift);
+		if (nXAdd > 0)
+			nXAdd = (1<<nMultipleShift) - nXAdd;
+		nYAdd = m_Dib.GetHeight() % (1<<nMultipleShift);
+		if (nYAdd > 0)
+			nYAdd = (1<<nMultipleShift) - nYAdd;
+		if (!m_Dib.StretchBitsMaintainAspectRatio(	m_Dib.GetWidth() + nXAdd,
+													m_Dib.GetHeight() + nYAdd,
+													RGB(0,0,0), // Black background for AVIs is ok
+													NULL,		// Src Dib itself
+													NULL,		// No Progress Wnd
+													FALSE,		// No Progress Send
+													this))		// Thread
+			throw (int)0;
 
 		// Add Video Stream and Open
 		AVRational FrameRate = av_d2q(m_dFrameRate, MAX_SIZE_FOR_RATIONAL);
-		if (bRawCopy)
-		{
-			if (m_pAVRec->AddRawVideoStream(m_Dib.GetBMI(),						// Video Format
-											m_Dib.GetBMISize(),					// Video Format Size
-											FrameRate.num,						// Rate
-											FrameRate.den) != 0)				// Scale
-				throw (int)0;
-		}
-		else
-		{
-			BITMAPINFOHEADER DstBmi;
-			memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-			DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-			DstBmi.biWidth = m_Dib.GetWidth();
-			DstBmi.biHeight = m_Dib.GetHeight();
-			DstBmi.biPlanes = 1;
-			DstBmi.biCompression = m_pDlg->m_dwVideoCompressorFourCC;
-			int nQualityBitrate = m_pDlg->m_nQualityBitrate;
-			if (DstBmi.biCompression == FCC('MJPG'))
-				nQualityBitrate = 0;
-			if (m_pAVRec->AddVideoStream(m_Dib.GetBMI(),						// Source Video Format
-										(LPBITMAPINFO)&DstBmi,					// Dst Video Format
-										FrameRate.num,							// Rate
-										FrameRate.den,							// Scale
-										nQualityBitrate == 1 ? m_pDlg->m_nVideoCompressorDataRate : 0,			// Bitrate in bits/s
-										m_pDlg->m_nVideoCompressorKeyframesRate,// Keyframes Rate					
-										nQualityBitrate == 0 ? m_pDlg->m_fVideoCompressorQuality : 0.0f) != 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-				throw (int)0;
-		}
+		BITMAPINFOHEADER DstBmi;
+		memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+		DstBmi.biSize = sizeof(BITMAPINFOHEADER);
+		DstBmi.biWidth = m_Dib.GetWidth();
+		DstBmi.biHeight = m_Dib.GetHeight();
+		DstBmi.biPlanes = 1;
+		DstBmi.biCompression = FCC('MJPG');
+		if (m_pAVRec->AddVideoStream(m_Dib.GetBMI(),		// Source Video Format
+									(LPBITMAPINFO)&DstBmi,	// Dst Video Format
+									FrameRate.num,			// Rate
+									FrameRate.den,			// Scale
+									0,
+									DEFAULT_KEYFRAMESRATE,					
+									DEFAULT_VIDEO_QUALITY,
+									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)
+			throw (int)0;
 		if (!m_pAVRec->Open())
 			throw (int)0;
 
@@ -707,7 +664,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 	}
 	else
 	{
-		// Stretch if necessary and decompresses if RLE encoded
+		// Stretch
 		if (!m_Dib.StretchBitsMaintainAspectRatio(	m_FirstDib.GetWidth(),
 													m_FirstDib.GetHeight(),
 													RGB(0,0,0), // Black background for AVIs is ok
@@ -716,80 +673,11 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 													FALSE,		// No Progress Send
 													this))		// Thread
 			throw (int)0;
-
-		// Change bit depth and eventually decompress if RLE encoded
-		if (m_FirstDib.GetBitCount() <= 8)
-		{
-			if (!m_Dib.Decompress(32))
-				throw (int)0;
-		}
-		else
-		{
-			// Special Handling for 16 bpp
-			if (m_FirstDib.GetBitCount() == 16)
-			{
-				if (m_FirstDib.IsRgb16_555())
-				{
-					if (!m_Dib.ConvertTo15bits())
-						throw (int)0;
-				}
-				else
-				{
-					if (!m_Dib.ConvertTo16bitsMasks())
-						throw (int)0;
-				}
-			}
-			// Normal Handling for 24 bpp & 32 bpp
-			else
-			{
-				if (!m_Dib.ConvertTo(m_FirstDib.GetBitCount()))
-					throw (int)0;
-			}
-		}
-		
-		// Convert to 1 bpp
-		if (m_FirstDib.GetBitCount() == 1)
-		{
-			if (!m_Dib.ConvertTo1bitDitherErrDiff(0))	// Floyd-Steinberg
-				throw (int)0;
-		}
-		// Convert to 4 bpp using first's image palette
-		else if (m_FirstDib.GetBitCount() == 4)
-		{
-			if (!m_Dib.ConvertTo4bitsErrDiff(m_FirstDib.GetPalette()))
-				throw (int)0;
-		}
-		// Convert to 8 bpp using first's image palette
-		else if (m_FirstDib.GetBitCount() == 8)
-		{
-			if (!m_Dib.ConvertTo8bitsErrDiff(m_FirstDib.GetPalette()))
-				throw (int)0;
-		}
-
-		// If we want RLE we need to compress
-		if (m_FirstDib.GetCompression() == BI_RLE4 ||
-			m_FirstDib.GetCompression() == BI_RLE8)
-		{
-			if (!m_Dib.Compress(m_FirstDib.GetCompression()))
-				throw (int)0;
-		}
 	}
 
 	// Save Frame
-	if (bRawCopy)
-	{
-		if (!m_pAVRec->AddRawVideoPacket(0,
-										m_Dib.GetImageSize(),
-										m_Dib.GetBits(),
-										true,
-										false))
-			throw (int)0;
-	}
-	else
-	{
-		if (!m_pAVRec->AddFrame(0, &m_Dib, false))
-			throw (int)0;
-	}
+	if (!m_pAVRec->AddFrame(0, &m_Dib, false))
+		throw (int)0;
 }
 
 void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
@@ -1623,13 +1511,6 @@ CBatchProcDlg::CBatchProcDlg(CWnd* pParent)
 	// Output Dir Files Count
 	m_nOutDirFilesCount = 0;
 
-	// Avi Compression Params
-	m_dwVideoCompressorFourCC = FCC('MJPG');
-	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
-	m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE;
-	m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_nQualityBitrate = 0;
-
 	// Critical Section
 	::InitializeCriticalSection(&m_csOutDir);
 
@@ -1953,11 +1834,6 @@ void CBatchProcDlg::LoadSettings()
 			delete [] pFrameRate;
 		m_GeneralTab.m_dFrameRate = 1.0;
 	}
-	m_dwVideoCompressorFourCC = (DWORD)pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), FCC('MJPG'));
-	m_fVideoCompressorQuality = (float)pApp->GetProfileInt(sSection, _T("VideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_nVideoCompressorKeyframesRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_nVideoCompressorDataRate = (int)pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
-	m_nQualityBitrate = (int)pApp->GetProfileInt(sSection, _T("QualityBitrate"), 0);
 }
 
 void CBatchProcDlg::SaveSettings()
@@ -2017,11 +1893,6 @@ void CBatchProcDlg::SaveSettings()
 	}
 	unsigned int nSize = sizeof(m_GeneralTab.m_dFrameRate);
 	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&(m_GeneralTab.m_dFrameRate), nSize);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
-	pApp->WriteProfileInt(sSection, _T("QualityBitrate"), m_nQualityBitrate);
 }
 
 void CBatchProcDlg::OnRadioOptimizeAdvanced() 

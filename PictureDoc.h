@@ -771,7 +771,6 @@ protected:
 	BOOL SaveAsFromAnimGIFToAnimGIF(const CString& sFileName,
 									UINT uiPlayTimes,
 									CArray<int, int>* pDelaysArray);
-	BOOL SaveAsFromAnimGIFToAVI(const CString& sFileName);
 	CString ExtractFromAnimGIFToBMP(const CString& sFileName);
 
 	// Crop/Copy/Cut

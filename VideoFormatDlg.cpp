@@ -28,14 +28,12 @@ CVideoFormatDlg::CVideoFormatDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CVideoFormatDlg)
 	m_nVideoCompressorDataRate = DEFAULT_VIDEO_DATARATE / 1000;
 	m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_nRawCompressionIndex = 0;
 	m_nQualityBitrate = 0;
 	//}}AFX_DATA_INIT
 	m_dwVideoCompressorFourCC = DEFAULT_VIDEO_FOURCC;
 	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
 	m_dVideoLength = 0.0;
 	m_llTotalAudioBytes = 0;
-	m_bShowRawChoose = TRUE;
 	m_nFileType = FILETYPE_AVI;
 }
 
@@ -47,7 +45,6 @@ void CVideoFormatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
 	DDX_Text(pDX, IDC_EDIT_DATARATE, m_nVideoCompressorDataRate);
 	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoCompressorKeyframesRate);
-	DDX_Radio(pDX, IDC_RADIO_RGB, m_nRawCompressionIndex);
 	DDX_Radio(pDX, IDC_RADIO_QUALITY, m_nQualityBitrate);
 	//}}AFX_DATA_MAP
 }
@@ -150,30 +147,6 @@ void CVideoFormatDlg::ShowHideCtrls()
 		pRadio = (CButton*)GetDlgItem(IDC_RADIO_BITRATE);
 		pRadio->ShowWindow(SW_HIDE);
 	}
-	
-	// Raw radio
-	if (m_bShowRawChoose && m_dwVideoCompressorFourCC == BI_RGB)
-	{
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_RGB);
-		pRadio->ShowWindow(SW_SHOW);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_I420);
-		pRadio->ShowWindow(SW_SHOW);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_YV12);
-		pRadio->ShowWindow(SW_SHOW);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_YUY2);
-		pRadio->ShowWindow(SW_SHOW);
-	}
-	else
-	{
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_RGB);
-		pRadio->ShowWindow(SW_HIDE);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_I420);
-		pRadio->ShowWindow(SW_HIDE);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_YV12);
-		pRadio->ShowWindow(SW_HIDE);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_YUY2);
-		pRadio->ShowWindow(SW_HIDE);
-	}
 }
 
 void CVideoFormatDlg::UpdateLength()
@@ -254,49 +227,10 @@ void CVideoFormatDlg::UpdateLength()
 
 BOOL CVideoFormatDlg::OnInitDialog() 
 {
-	// Init Raw Type radio buttons
-	if (m_bShowRawChoose)
-	{
-		if (m_dwVideoCompressorFourCC == BI_RGB)
-		{
-			m_nRawCompressionIndex = 0;
-		}
-		else if (m_dwVideoCompressorFourCC == FCC('I420'))
-		{
-			m_dwVideoCompressorFourCC = BI_RGB;
-			m_nRawCompressionIndex = 1;
-		}
-		else if (m_dwVideoCompressorFourCC == FCC('YV12'))
-		{
-			m_dwVideoCompressorFourCC = BI_RGB;
-			m_nRawCompressionIndex = 2;
-		}
-		else if (m_dwVideoCompressorFourCC == FCC('YUY2'))
-		{
-			m_dwVideoCompressorFourCC = BI_RGB;
-			m_nRawCompressionIndex = 3;
-		}
-	}
-	
 	// Init Codec's Supports
 	if (m_nFileType == FILETYPE_AVI)
 	{
-		m_VideoCompressionFcc.Add((DWORD)BI_RGB);
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-		m_VideoCompressionDataRateSupport.Add((DWORD)0);
-		m_VideoCompressionQualitySupport.Add((DWORD)0);
-		
-		m_VideoCompressionFcc.Add((DWORD)FCC('HFYU')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-		m_VideoCompressionDataRateSupport.Add((DWORD)0);
-		m_VideoCompressionQualitySupport.Add((DWORD)0);
-		
 		m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-		m_VideoCompressionDataRateSupport.Add((DWORD)0);
-		m_VideoCompressionQualitySupport.Add((DWORD)0);
-		
-		m_VideoCompressionFcc.Add((DWORD)FCC('FFV1')); 
 		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
 		m_VideoCompressionDataRateSupport.Add((DWORD)0);
 		m_VideoCompressionQualitySupport.Add((DWORD)0);
@@ -374,10 +308,7 @@ BOOL CVideoFormatDlg::OnInitDialog()
 	// Add Codec strings to ComboBox
 	if (m_nFileType == FILETYPE_AVI)
 	{
-		m_VideoCompressionChoose.AddString(_T("Raw"));
-		m_VideoCompressionChoose.AddString(_T("Huffman YUV 16 bits/pix"));
 		m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
-		m_VideoCompressionChoose.AddString(_T("FFV1 Lossless YUV 12 bits/pix"));
 		m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
 		m_VideoCompressionChoose.AddString(_T("MPEG-4"));
 	}
@@ -450,24 +381,4 @@ void CVideoFormatDlg::OnChangeEditDatarate()
 {
 	UpdateData(TRUE);
 	UpdateLength();
-}
-
-void CVideoFormatDlg::OnOK() 
-{
-	CDialog::OnOK();
-	if (m_dwVideoCompressorFourCC == BI_RGB && m_bShowRawChoose)
-	{
-		switch (m_nRawCompressionIndex)
-		{
-			case 0 : m_dwVideoCompressorFourCC = BI_RGB;
-					break;
-			case 1 : m_dwVideoCompressorFourCC = FCC('I420');
-					break;
-			case 2 : m_dwVideoCompressorFourCC = FCC('YV12');
-					break;
-			case 3 : m_dwVideoCompressorFourCC = FCC('YUY2');
-					break;
-			default : break;
-		}
-	}
 }

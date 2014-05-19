@@ -3184,15 +3184,14 @@ BOOL CPictureDoc::SavePNG(	const CString& sFileName,
 BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 									CString sDlgTitle/*=_T("")*/) 
 {
-	// Display the Save As Dialog
+	// Display the Save As Gif Dialog
 	TCHAR FileName[MAX_PATH] = _T("");
 	_tcscpy(FileName, m_sFileName);
 	CSaveFileDlg dlgFile(FALSE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = _T("gif");
-	dlgFile.m_ofn.lpstrFilter = _T("Animated GIF (*.gif)\0*.gif\0")	
-								_T("Avi File (*.avi)\0*.avi\0");
+	dlgFile.m_ofn.lpstrFilter = _T("Animated GIF (*.gif)\0*.gif\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
@@ -3231,88 +3230,57 @@ BOOL CPictureDoc::SaveAsFromAnimGIF(BOOL bSaveCopyAs,
 			return FALSE;
 		}
 
+		// Save
 		BOOL res = FALSE;
-		TCHAR ext[10] = _T("");
-		LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
-		if (lpPos != NULL)
-			_tcscpy(ext, lpPos+1);
-		CString extension = ext;
-		extension.MakeLower();
-		if (extension == _T("gif"))
+		CAnimGifSaveSmallDlg AnimGifSaveSmallDlg(GetView());
+		int nPlayTimes = m_pDib->GetGif()->GetPlayTimes();
+		if (nPlayTimes == 0)
+			AnimGifSaveSmallDlg.m_nLoopInfinite = 1;
+		else
 		{
-			CAnimGifSaveSmallDlg AnimGifSaveSmallDlg(GetView());
-			int nPlayTimes = m_pDib->GetGif()->GetPlayTimes();
-			if (nPlayTimes == 0)
-				AnimGifSaveSmallDlg.m_nLoopInfinite = 1;
-			else
-			{
-				AnimGifSaveSmallDlg.m_nLoopInfinite = 0;
-				AnimGifSaveSmallDlg.m_uiPlayTimes = nPlayTimes;
-			}
-			CArray<int, int> DelaysArray;
-			for (unsigned int i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
-			{
-				CDib* pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(i);
-				if (pDib)
-					DelaysArray.Add(pDib->GetGif()->GetDelay());
-			}
-			AnimGifSaveSmallDlg.m_pDelaysArray = &DelaysArray;
-			if (AnimGifSaveSmallDlg.DoModal() == IDOK)
-			{	
-				BeginWaitCursor();
-				res = SaveAsFromAnimGIFToAnimGIF(	FileName,
-													(AnimGifSaveSmallDlg.m_nLoopInfinite == 1) ?
-													0 : AnimGifSaveSmallDlg.m_uiPlayTimes,
-													&DelaysArray);
-				EndWaitCursor();
-			}
-			else
-			{
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+			AnimGifSaveSmallDlg.m_nLoopInfinite = 0;
+			AnimGifSaveSmallDlg.m_uiPlayTimes = nPlayTimes;
 		}
-		else if (	extension == _T("avi")	||
-					extension == _T("divx"))
+		CArray<int, int> DelaysArray;
+		for (unsigned int i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
 		{
-			res = SaveAsFromAnimGIFToAVI(FileName);
+			CDib* pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(i);
+			if (pDib)
+				DelaysArray.Add(pDib->GetGif()->GetDelay());
+		}
+		AnimGifSaveSmallDlg.m_pDelaysArray = &DelaysArray;
+		if (AnimGifSaveSmallDlg.DoModal() == IDOK)
+		{	
+			BeginWaitCursor();
+			res = SaveAsFromAnimGIFToAnimGIF(	FileName,
+												(AnimGifSaveSmallDlg.m_nLoopInfinite == 1) ?
+												0 : AnimGifSaveSmallDlg.m_uiPlayTimes,
+												&DelaysArray);
+			EndWaitCursor();
+		}
+		else
+		{
+			GetView()->ForceCursor(FALSE);
+			return FALSE;
 		}
 
 		// Load
-		if (extension == _T("avi")	||
-			extension == _T("divx"))
+		if (res)
 		{
-			if (res)
-			{
+			if (bSaveCopyAs)
 				::AfxGetApp()->OpenDocumentFile(FileName);
-				if (!bSaveCopyAs)
-					CloseDocumentForce(); // Closes Without Asking To Save
-			}
 			else
 			{
-				::DeleteFile(FileName);
-				::AfxMessageBox(ML_STRING(1253, "Could Not Save The Picture With The Selected Avi Compression."), MB_OK | MB_ICONSTOP);
+				ClearPrevNextPictures();
+				SetModifiedFlag(FALSE);
+				if (LoadPicture(&m_pDib, FileName))
+					SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
 			}
 		}
 		else
 		{
-			if (res)
-			{
-				if (bSaveCopyAs)
-					::AfxGetApp()->OpenDocumentFile(FileName);
-				else
-				{
-					ClearPrevNextPictures();
-					SetModifiedFlag(FALSE);
-					if (LoadPicture(&m_pDib, FileName))
-						SlideShow(FALSE, FALSE);	// No Recursive Slideshow in Paused State (also if it was Recursive before...)
-				}
-			}
-			else
-			{
-				::DeleteFile(FileName);
-				::AfxMessageBox(ML_STRING(1254, "Could Not Save The Animated Gif."), MB_OK | MB_ICONSTOP);
-			}
+			::DeleteFile(FileName);
+			::AfxMessageBox(ML_STRING(1254, "Could Not Save The Animated Gif."), MB_OK | MB_ICONSTOP);
 		}
 
 		GetView()->ForceCursor(FALSE);
@@ -3449,94 +3417,6 @@ BOOL CPictureDoc::SaveAsFromAnimGIFToAnimGIF(	const CString& sFileName,
 	}
 
 	return TRUE;
-}
-
-BOOL CPictureDoc::SaveAsFromAnimGIFToAVI(const CString& sFileName)
-{
-	CDib* pDib;
-	BOOL res = FALSE;
-	int nMilliSecondDelay = INT_MAX;
-	unsigned int i;
-
-	// Shortest Delay gives frame rate
-	for (i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
-	{
-		pDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(i);
-		if (pDib->GetGif()->GetDelay() < nMilliSecondDelay)
-			nMilliSecondDelay = pDib->GetGif()->GetDelay();
-	}
-
-	// Create Avi
-	CAVRec AVRec(sFileName);
-
-	// Set File Info
-	AVRec.SetInfo(::GetShortFileNameNoExt(sFileName), APPNAME_NOEXT, MYCOMPANY_WEB);
-
-	BeginWaitCursor();
-	DIB_INIT_PROGRESS;
-	
-	BOOL bFirst = TRUE;
-	CDib Dib32;
-	for (i = 0 ; i < m_GifAnimationThread.m_dwDibAnimationCount ; i++)
-	{
-		// Progress
-		DIB_PROGRESS(GetView()->GetSafeHwnd(), TRUE, i, m_GifAnimationThread.m_dwDibAnimationCount);
-
-		// Add Frame
-		CDib* pOriginalDib = m_GifAnimationThread.m_DibAnimationArray.GetAt(i);
-		CDib* pAlphaRenderedDib =	(m_GifAnimationThread.m_AlphaRenderedDibAnimationArray.GetSize() > 0) ?
-									m_GifAnimationThread.m_AlphaRenderedDibAnimationArray.GetAt(i) : NULL;
-		if (pAlphaRenderedDib ?
-			pDib = pAlphaRenderedDib :
-			pDib = pOriginalDib)
-		{
-			Dib32 = *pDib;
-			Dib32.SetShowMessageBoxOnError(FALSE);
-			res = Dib32.ConvertTo32bits();
-			if (!res)
-				break;
-
-			// First Frame?
-			if (bFirst)
-			{
-				bFirst = FALSE;
-				res = (AVRec.AddRawVideoStream(	Dib32.GetBMI(),				// Video Format
-												Dib32.GetBMISize(),			// Video Format Size
-												1000,						// Rate
-												nMilliSecondDelay) == 0);	// Scale
-				if (!res)
-					break;
-				res = AVRec.Open();
-				if (!res)
-					break;
-			}
-
-			// Add Frame(s)
-			int nRep = pOriginalDib->GetGif()->GetDelay() / nMilliSecondDelay;
-			for (int r = 0 ; r < nRep ; r++)
-			{
-				res = AVRec.AddRawVideoPacket(	0,
-												Dib32.GetImageSize(),
-												Dib32.GetBits(),
-												true,
-												false);
-				if (!res)
-					break;
-			}
-			if (!res)
-				break;
-		}
-		else
-		{
-			res = FALSE;
-			break;
-		}
-	}
-	
-	DIB_END_PROGRESS(GetView()->GetSafeHwnd());
-	EndWaitCursor();
-
-	return res;
 }
 
 CString CPictureDoc::ExtractFromAnimGIFToBMP(const CString& sFileName)
