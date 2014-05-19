@@ -635,7 +635,10 @@ public:
 	volatile BOOL m_bEndSession;
 
 	// Cores count
-	int m_nCoresCount;
+	volatile int m_nCoresCount;
+
+	// The number of threads used by AVCodec
+	volatile int m_nAVCodecThreadsCount;
 
 	// Last Opened Directory
 	CString m_sLastOpenedDir;

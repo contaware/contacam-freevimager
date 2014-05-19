@@ -169,6 +169,7 @@ CUImagerApp::CUImagerApp()
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
+	m_nAVCodecThreadsCount = 1;
 	m_bVideoAviInfo = FALSE;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
@@ -205,15 +206,19 @@ CUImagerApp theApp;
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp initialization
 
+// Note: these ffmpeg functions are not thread safe: avcodec_open2, avdevice_register_all, av_set_cpu_flags_mask
+
 CRITICAL_SECTION g_csAVCodec;
 BOOL g_bAVCodecCSInited = FALSE;
+
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
 {
 	::EnterCriticalSection(&g_csAVCodec);
-	int ret = avcodec_open(avctx, codec);
+	int ret = avcodec_open2(avctx, codec, 0);
 	::LeaveCriticalSection(&g_csAVCodec);
 	return ret;
 }
+
 int avcodec_close_thread_safe(AVCodecContext *avctx)
 {
 	::EnterCriticalSection(&g_csAVCodec);
@@ -221,6 +226,7 @@ int avcodec_close_thread_safe(AVCodecContext *avctx)
 	::LeaveCriticalSection(&g_csAVCodec);
 	return ret;
 }
+
 static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 {
 	return;
@@ -251,16 +257,12 @@ static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
 	// Output message string
 	TRACE(CString(s));
 }
+
 static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
 {
 	return;
 }
-extern "C"
-{
-extern int mm_support_mask;
-extern int mm_flags;
-extern int mm_support(void);
-}
+
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
 #ifdef VIDEODEVICEDOC
@@ -539,7 +541,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					 TotAvailCore		= 0, // Number of available cores in the system
 					 PhysicalNum		= 0; // Total number of physical processors in the system
 		::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-		m_nCoresCount = TotAvailCore;
+		m_nAVCodecThreadsCount = m_nCoresCount = TotAvailCore;
 
 		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
 		// variable for the PrintPreview.
@@ -638,26 +640,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #else
 		av_log_set_callback(my_av_log_empty);
 #endif
-		/*	ffmpeg automatically detects the best instructions
-			for the given CPU. Set mm_support_mask to limit the
-			used instructions.
-		FF_MM_MMX		// standard MMX
-		FF_MM_3DNOW		// AMD 3DNOW
-		FF_MM_MMXEXT	// SSE integer functions or AMD MMX ext
-		FF_MM_SSE		// SSE functions
-		FF_MM_SSE2		// PIV SSE2 functions
-		FF_MM_3DNOWEXT	// AMD 3DNowExt
-		FF_MM_SSE3		// Prescott SSE3 functions
-		FF_MM_SSSE3		// Conroe SSSE3 functions
-		*/
-		// On newer systems I had some strange crashes ... better to always disable sse2 and higher!
-		mm_support_mask = FF_MM_MMX | FF_MM_3DNOW | FF_MM_MMXEXT | FF_MM_SSE;
 		av_register_all();
-		// Initializing mm_flags is necessary when using deinterlacing,
-		// otherwise the emms_c() macro in avpicture_deinterlace() of the imgconvert.c file
-		// may be empty and the emms instruction is not called after using MMX!
-		// Note: all codecs except the raw one call dsputil_init() which executes mm_flags = mm_support()
-		mm_flags = mm_support();
 		
 #ifdef VIDEODEVICEDOC
 		// Init WinSock 2.2
