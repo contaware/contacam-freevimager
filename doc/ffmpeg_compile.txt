@@ -1,48 +1,21 @@
-1. Open MSys Console
+1. Copy yasm.exe and nasm.exe to c:\mingw\bin
+2. Open msys console:
+$ cd /c/uimager/ffmpeg
+$ make distclean
+$ ./config_mingw
+$ make
 
-2. cd to ffmpeg sources (for example: cd /c/uimager/ffmpeg)
+Lame
+----
+Put library source to /src, extract it and:
+./configure --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
+make
+make install
+-> library: /mingw/lib/libmp3lame.a
+-> include: /mingw/include/lame
 
-3. Configure (for available options call ./configure --help)
-
-Edit
-./config_lgpl by setting the correct prefix (for example: --prefix=/c/uimager/ffmpeg)
-Run
-./config_lgpl
-
-4. Build calling: make
-
-
-To Clean:
-make clean
-  or
-make distclean -> to really start from a clean distribution
-
-
-Additional GPL Libs, lib sources under /usr/local/externallibs,
-compiled libs will be put to /usr/local/lib (--prefix=/usr/local):
---enable-gpl
---enable-pp
---enable-swscaler
---enable-libx264
---enable-liba52     ->   For AC3 decoding
---enable-libdts     ->   Not available anymore, there is an internal dca decoder
---enable-w32threads
---enable-pthreads   ->   set this if using x264 (supports only pthreads)
-
-
-Note on AC3:
-
-in new ffmpeg AC3 decoding is available as a GPL native code,
-but I could not manage to bring it to work!
-
-
-Note on LibGsm:
-
-not necessary because available as a ACM codec
-
-
-Note on Ogg, Vorbis and Theora:
-
-To compile everything correctly use for all 3 libs the mingw prefix and
-copy libs from /mingw/lib to /usr/local/lib and includes from /mingw/include to /usr/local/include:
-./configure --enable-static --disable-shared --prefix=/mingw
+Note
+----
+--enable-memalign-hack not necessary because HAVE_ALIGNED_MALLOC is
+defined with mingw and msvc toolchains so that _aligned_malloc,
+_aligned_realloc and _aligned_free are used
