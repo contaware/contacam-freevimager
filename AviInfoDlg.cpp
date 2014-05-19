@@ -156,50 +156,50 @@ void CAviInfoDlg::UpdateDisplay()
 					CString sFormat(_T(""));
 					switch (pVideoStream->GetAVCodecCtx()->pix_fmt)
 					{
-						case PIX_FMT_YUVJ420P :
+						case AV_PIX_FMT_YUVJ420P :
 							sFormat = _T("Planar YUV 4:2:0, 12bpp");
 							break;
-						case PIX_FMT_YUVJ422P :
+						case AV_PIX_FMT_YUVJ422P :
 							sFormat = _T("Planar YUV 4:2:2, 16bpp");
 							break;
-						case PIX_FMT_YUVJ444P :
+						case AV_PIX_FMT_YUVJ444P :
 							sFormat = _T("Planar YUV 4:4:4, 24bpp");
 							break;
-						case PIX_FMT_YUV420P :
+						case AV_PIX_FMT_YUV420P :
 							sFormat = _T("Planar YUV 4:2:0, 12bpp");
 							break;
-						case PIX_FMT_YUYV422 : //	Note: PIX_FMT_YUV422 = PIX_FMT_YUYV422
+						case AV_PIX_FMT_YUYV422 : //	Note: AV_PIX_FMT_YUV422 = AV_PIX_FMT_YUYV422
 							sFormat = _T("Packed YUV 4:2:2, 16bpp");
 							break;
-						case PIX_FMT_YUV422P :
+						case AV_PIX_FMT_YUV422P :
 							sFormat = _T("Planar YUV 4:2:2, 16bpp");
 							break;
-						case PIX_FMT_YUV410P :
+						case AV_PIX_FMT_YUV410P :
 							sFormat = _T("Planar YUV 4:1:0, 9bpp");
 							break;
-						case PIX_FMT_YUV411P :
+						case AV_PIX_FMT_YUV411P :
 							sFormat = _T("Planar YUV 4:1:1, 12bpp");
 							break;
-						case PIX_FMT_PAL8 :
+						case AV_PIX_FMT_PAL8 :
 							sFormat = _T("RGB8 with Palette");
 							break;
-						case PIX_FMT_RGB565 :
+						case AV_PIX_FMT_RGB565 :
 							sFormat = _T("RGB 5:6:5, 16bpp");
 							break;
-						case PIX_FMT_BGR565 :
+						case AV_PIX_FMT_BGR565 :
 							sFormat = _T("BGR 5:6:5, 16bpp");
 							break;
-						case PIX_FMT_RGB555 :
+						case AV_PIX_FMT_RGB555 :
 							sFormat = _T("RGB 5:5:5, 16bpp");
 							break;
-						case PIX_FMT_BGR555 :
+						case AV_PIX_FMT_BGR555 :
 							sFormat = _T("BGR 5:5:5, 16bpp");
 							break;
-						case PIX_FMT_RGB32 :
+						case AV_PIX_FMT_RGB32 :
 							sFormat = _T("RGB32");
 							break;
-						case PIX_FMT_RGB24 :
-						case PIX_FMT_BGR24 :
+						case AV_PIX_FMT_RGB24 :
+						case AV_PIX_FMT_BGR24 :
 							sFormat = _T("RGB24");
 							break;
 						default :
