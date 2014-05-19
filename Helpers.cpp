@@ -2119,20 +2119,6 @@ notamd:
     return feature;
 }
 
-LPVOID new16align(SIZE_T size)
-{
-	LPBYTE mem = new BYTE[size+sizeof(LPVOID)+0xf];
-	LPVOID ptr = (LPVOID)((SIZE_T)(mem+sizeof(LPVOID)+0xf) & ~0xf);
-	((LPVOID*)ptr)[-1] = (LPVOID)mem;
-	ASSERT(((SIZE_T)ptr & 0xf) == 0);
-	return ptr;
-}
-
-void delete16align(LPVOID ptr)
-{
-	delete [] (LPBYTE)(((LPVOID*)ptr)[-1]);
-}
-
 CString GetComputerName()
 {
 	TCHAR szComputerName[MAX_COMPUTERNAME_LENGTH + 1];
