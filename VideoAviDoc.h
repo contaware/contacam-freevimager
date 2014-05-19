@@ -549,10 +549,6 @@ protected:
 										float fVideoCompressorQuality,
 										int nVideoCompressorQualityBitrate,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
-										bool* pbVideoStreamsSave,
-										bool* pbVideoStreamsChange,
-										bool* pbAudioStreamsSave,
-										bool* pbAudioStreamsChange,
 										CWnd* pProgressWnd = NULL,
 										BOOL bProgressSend = TRUE,
 										CPercentProgress* pPercentProgress = NULL,
@@ -565,10 +561,6 @@ protected:
 										float fVideoCompressorQuality,
 										int nVideoCompressorQualityBitrate,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
-										bool* pbVideoStreamsSave,
-										bool* pbVideoStreamsChange,
-										bool* pbAudioStreamsSave,
-										bool* pbAudioStreamsChange,
 										CWnd* pProgressWnd = NULL,
 										BOOL bProgressSend = TRUE,
 										CWorkerThread* pThread = NULL);
@@ -586,19 +578,11 @@ protected:
 								float& fVideoCompressorQuality,
 								int& nVideoCompressorQualityBitrate,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
-								bool* pbVideoStreamsSave,
-								bool* pbVideoStreamsChange,
-								bool* pbAudioStreamsSave,
-								bool* pbAudioStreamsChange,
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
 								CPercentProgress* pPercentProgress = NULL,
 								CWorkerThread* pThread = NULL);
-	int SaveAsAVCODECDlgs(	const CString& sDstFileName,
-							bool* pbVideoStreamsSave,
-							bool* pbVideoStreamsChange,
-							bool* pbAudioStreamsSave,
-							bool* pbAudioStreamsChange);
+	int SaveAsAVCODECDlgs(const CString& sDstFileName);
 
 	// Static Save Function with compression params
 	// called by ShrinkDocTo()
@@ -610,10 +594,6 @@ protected:
 								float fVideoCompressorQuality,
 								int nVideoCompressorQualityBitrate,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
-								bool* pbVideoStreamsSave,
-								bool* pbVideoStreamsChange,
-								bool* pbAudioStreamsSave,
-								bool* pbAudioStreamsChange,
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
 								CWorkerThread* pThread = NULL);
@@ -621,11 +601,7 @@ protected:
 	// Main Save Function called by SaveAs()
 	BOOL SaveAsAVCODEC(	const CString& sFileName,
 						BOOL bSaveCopyAs,
-						int nCurrentFramePos,
-						bool* pbVideoStreamsSave,
-						bool* pbVideoStreamsChange,
-						bool* pbAudioStreamsSave,
-						bool* pbAudioStreamsChange);
+						int nCurrentFramePos);
 
 	// Merge Function
 	// Return Values:
