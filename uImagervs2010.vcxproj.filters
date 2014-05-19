@@ -57,13 +57,7 @@
     <ClCompile Include="AviPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AviSaveAsStreamsDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AVRec.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AVRecHelpers.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Base64.cpp">
@@ -517,9 +511,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AviPlay.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AviSaveAsStreamsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AVRec.h">
