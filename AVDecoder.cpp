@@ -14,17 +14,6 @@ static char THIS_FILE[] = __FILE__;
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
 
-// Performances
-// ------------
-//
-// CAVDecoder::Decode() is faster for:
-// RGB32         -> I420
-// YUY2         <-> I420
-//
-// CDib::Decompress() is faster for:
-// I420 and YUY2 -> RGB32
-// RGB32         -> YUY2
-
 BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 {
 	// Already open?
@@ -32,10 +21,27 @@ BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 		return TRUE;
 
 	// Find the codec id for the video stream
-	CodecID id = CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(pSrcBMI->bmiHeader.biCompression);
+	AVCodecID id = CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(pSrcBMI->bmiHeader.biCompression);
+
+	// Get codec
+	if (id != AV_CODEC_ID_NONE)
+	{
+		m_pCodec = avcodec_find_decoder(id);
+		if (!m_pCodec)
+			goto error;
+	}
+	else
+		m_pCodec = NULL;
 
 	// Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
+	/* if m_pCodec non-NULL, allocate private data and initialize defaults
+	 * for the given codec. It is illegal to then call avcodec_open2()
+	 * with a different codec.
+	 * If NULL, then the codec-specific defaults won't be initialized,
+	 * which may result in suboptimal default settings (this is
+	 * important mainly for encoders, e.g. libx264).
+	 */
+	m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
 	if (!m_pCodecCtx)
 		goto error;
 
@@ -49,38 +55,28 @@ BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 	// Set FourCC
 	m_pCodecCtx->codec_tag = pSrcBMI->bmiHeader.biCompression;
 
-	// Set some other values
-	m_pCodecCtx->error_concealment = 3;
-	m_pCodecCtx->error_recognition = 1;
-
 	// Open codec
-	if (id != CODEC_ID_NONE)
+	if (id != AV_CODEC_ID_NONE)
 	{
-		m_pCodec = avcodec_find_decoder(id);
-		if (!m_pCodec)
-			goto error;
 		if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
-		{
-			m_pCodec = NULL;
 			goto error;
-		}
 	}
 	// Codec not necessary but use the codec context to store
 	// width, height, pix_fmt and codec_tag
 	else
 	{
 		m_pCodecCtx->pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
-		if (m_pCodecCtx->pix_fmt == PIX_FMT_NONE)
+		if (m_pCodecCtx->pix_fmt == AV_PIX_FMT_NONE)
 			goto error;
 		m_pCodecCtx->width = m_pCodecCtx->coded_width;
 		m_pCodecCtx->height = m_pCodecCtx->coded_height;
 	}
 
     // Allocate video frames
-    m_pFrame = avcodec_alloc_frame();
+    m_pFrame = av_frame_alloc();
 	if (!m_pFrame)
         goto error;
-    m_pFrameDst = avcodec_alloc_frame();
+    m_pFrameDst = av_frame_alloc();
     if (!m_pFrameDst)
         goto error;
 
@@ -95,16 +91,23 @@ void CAVDecoder::Close()
 {
 	if (m_pCodecCtx)
 	{
-		if (m_pCodec) // only close if avcodec_open_thread_safe has been successfully called!
-			avcodec_close_thread_safe(m_pCodecCtx);
+		/*
+		Close a given AVCodecContext and free all the data associated with it
+		(but not the AVCodecContext itself).
+		Calling this function on an AVCodecContext that hasn't been opened will free
+		the codec-specific data allocated in avcodec_alloc_context3() /
+		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
+		do nothing.
+		*/
+		avcodec_close_thread_safe(m_pCodecCtx);
 		av_freep(&m_pCodecCtx);
 	}
 	m_pCodec = NULL;
 
 	if (m_pFrameDst)
-		av_freep(&m_pFrameDst);
+		av_frame_free(&m_pFrameDst);
 	if (m_pFrame)
-		av_freep(&m_pFrame);
+		av_frame_free(&m_pFrame);
 
 	if (m_pImgConvertCtx)
 	{
@@ -149,23 +152,33 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 			return FALSE;
 	}
 
+	// Copy source data to have a 16 bytes aligned buffer
+	// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+	AVPacket avpkt;
+    if (av_new_packet(&avpkt, dwSrcSize) < 0)
+        return FALSE;
+	memcpy(avpkt.data, pSrcBits, dwSrcSize);
+
 	// Decode?
 	if (m_pCodec)
 	{
+		av_frame_unref(m_pFrame);
 		int got_picture = 0;
-		int len = avcodec_decode_video(	m_pCodecCtx,
+		int len = avcodec_decode_video2(m_pCodecCtx,
 										m_pFrame,
 										&got_picture,
-										(unsigned __int8 *)pSrcBits,
-										dwSrcSize);
+										&avpkt);
 		if (len <= 0 || got_picture == 0)
+		{
+			av_free_packet(&avpkt);
 			return FALSE;
+		}
 	}
 	else
 	{
 		// Assign appropriate parts of source buffer to image planes
 		avpicture_fill(	(AVPicture*)m_pFrame,
-						(unsigned __int8 *)pSrcBits,
+						(unsigned __int8 *)avpkt.data,
 						m_pCodecCtx->pix_fmt,
 						m_pCodecCtx->width,
 						m_pCodecCtx->height);
@@ -196,13 +209,19 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 										pDstDib->GetCompression(),
 										pDstDib->GetWidth() == 0 ? m_pCodecCtx->width : pDstDib->GetWidth(),
 										pDstDib->GetHeight() == 0 ? m_pCodecCtx->height : pDstDib->GetHeight()))
+		{	
+			av_free_packet(&avpkt);
 			return FALSE;
+		}
 	}
 
 	// Get destination pixel format
-	enum PixelFormat dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
-	if (dst_pix_fmt == PIX_FMT_NONE)
+	enum AVPixelFormat dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
+	if (dst_pix_fmt == AV_PIX_FMT_NONE)
+	{
+		av_free_packet(&avpkt);
 		return FALSE;
+	}
 
 	// Now that we know the destination format store current formats
 	memcpy(&m_SrcBMI, pSrcBMI, MIN(CDib::GetBMISize(pSrcBMI), sizeof(BITMAPINFOFULL)));
@@ -221,7 +240,10 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 											NULL,							// No Dst Filter
 											NULL);							// Param
 	if (!m_pImgConvertCtx)
+	{
+		av_free_packet(&avpkt);
 		return FALSE;
+	}
 
 	// Assign appropriate parts of destination buffer to image planes
 	avpicture_fill((AVPicture*)m_pFrameDst,
@@ -257,14 +279,14 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 										m_pCodecCtx->height,	// Source Height
 										m_pFrameDst->data,		// Destination Data
 										m_pFrameDst->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
+		av_free_packet(&avpkt);
 		return (sws_scale_res > 0 ? TRUE : FALSE);
-#else
-		return (sws_scale_res >= 0 ? TRUE : FALSE);
-#endif
 	}
 	else
+	{
+		av_free_packet(&avpkt);
 		return FALSE;
+	}
 }
 
 #endif
