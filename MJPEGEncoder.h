@@ -16,12 +16,12 @@ extern "C"
 //
 // Source pixel format must be
 //
-// PIX_FMT_YUVJ420P
-// PIX_FMT_YUVJ422P
-// PIX_FMT_YUV420P (FF_COMPLIANCE_INOFFICIAL)
-// PIX_FMT_YUV422P (FF_COMPLIANCE_INOFFICIAL)
+// AV_PIX_FMT_YUVJ420P
+// AV_PIX_FMT_YUVJ422P
+// AV_PIX_FMT_YUV420P (FF_COMPLIANCE_UNOFFICIAL)
+// AV_PIX_FMT_YUV422P (FF_COMPLIANCE_UNOFFICIAL)
 //
-// Note: if using PIX_FMT_YUV420P or PIX_FMT_YUV422P ffmpeg adds a
+// Note: if using AV_PIX_FMT_YUV420P or AV_PIX_FMT_YUV422P ffmpeg adds a
 // "CS=ITU601" string to the Jpeg COM marker emphasizing that a
 // non-JPEG compliant colorspace is used. The ffmpeg decoder recognizes
 // that, thus only use ITU601 colorspace if encoding AND decoding with ffmpeg!
@@ -35,12 +35,13 @@ class CMJPEGEncoder
 						m_pOutbuf = NULL;
 						m_nOutbufSize = 0;}
 		virtual ~CMJPEGEncoder(){Close();}
-		DWORD Encode(	int qscale,		// 2: best quality, 31: worst quality
-						LPBITMAPINFO pSrcBMI,	
-						LPBYTE pSrcBits);
-		uint8_t* GetEncodedBuf() {return m_pOutbuf;};
+		DWORD Encode(	int qscale,						// 2: best quality, 31: worst quality
+						LPBITMAPINFO pSrcBMI,			// source format containing fourcc, width and height
+						LPBYTE pSrcBits,				// pSrcBits must be 16 bytes aligned and have FF_INPUT_BUFFER_PADDING_SIZE bytes padding 
+						int nThreadCount);				// set the wanted thread count
+		uint8_t* GetEncodedBuf() {return m_pOutbuf;};	// returns the encoded data buffer pointer valid till next Encode() call
 	protected:
-		BOOL Open(LPBITMAPINFO pSrcBMI);
+		BOOL Open(LPBITMAPINFO pSrcBMI, int nThreadCount);
 		void Close();
 		BITMAPINFOFULL m_SrcBMI;
 		AVCodec* m_pCodec;
