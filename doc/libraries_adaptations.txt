@@ -34,109 +34,12 @@ CFTPTransfer
 - Inspired by ftptransferdlg-1.0.8.zip, changed quite everything!
 
 
-FFMPEG rev.15375
-----------------
+ffmpeg
+------
 
-- Made thread safe by adding:
+- Use thread safe open/close implemented in uImager.cpp:
   avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec)
   avcodec_close_thread_safe(AVCodecContext *avctx)
-
-
-- Using revision 9227 for liba52.c otherwise it is not working ...
-
-
-- Under libavutil/rational.h added the (int) cast:
-static inline int av_cmp_q(AVRational a, AVRational b){
-    const int64_t tmp= a.num * (int64_t)b.den - b.num * (int64_t)a.den;
-
-    if(tmp) return (int)(tmp>>63)|1; // Oli Added (int) cast
-    else    return 0;
-}
-
-
-- Under libavutil/common.h before #include "mem.h" added:
-#ifndef INT64_C
-#if !defined(WIN32) || (_MSC_VER > 1200) // Oli Added
-#define INT64_C(c)     (c ## LL)
-#define UINT64_C(c)    (c ## ULL)
-#else
-#define INT64_C(c)     (c)
-#define UINT64_C(c)    (c)
-#endif
-#endif
-
-
-- Added mm_support_mask to libavcodec/i386/cpuid.c or libavcodec/x86/cpuid.c to
-  selectively disable MM instructions types. There is a dsp_mask in
-  AVCodecContext, but this flag is not global. There are still
-  some functions calling mm_support() directly without checking
-  the dsp_mask!
-
-
-- In libavcodec/avcodec.h because of sse2 or sse3 I changed:
-#define FF_INPUT_BUFFER_PADDING_SIZE 16 // Oli change from 8 to 16
-
-
-- In libavformat/avienc.c added if in avi_write_header():
-if(stream->codec_type != CODEC_TYPE_DATA){
-    strf = start_tag(pb, "strf");
-    if (s->streams[i]->stream_copy) { // oli added this if
-        put_buffer(pb, stream->extradata, stream->extradata_size);
-    } else {
-        switch(stream->codec_type) {
-        ...
-
-
-- Minor Bug in libavcodec/rawdec.c:
-static const PixelFormatTag pixelFormatBpsAVI[] = {
-    { PIX_FMT_PAL8,    8 },
-    { PIX_FMT_RGB555, 15 },
-    { PIX_FMT_RGB555, 16 }, // Oli changed this from PIX_FMT_RGB555 to PIX_FMT_RGB565
-    { PIX_FMT_BGR24,  24 },
-    { PIX_FMT_RGB32,  32 },
-    { -1, 0 },
-};  
-
-
-- libavcodec/mpegvideo_enc.c has to be fixed for mem. leaking;
-  changed MPV_encode_init() so that it doesn't leak when
-  rate control fails (for example if selected bitrate is to low):
-av_cold int MPV_encode_init(AVCodecContext *avctx)
-{
-    ...
-    if(ff_rate_control_init(s) < 0) {
-        MPV_encode_end(avctx); // Oli added
-        return -1;
-    }
-	
-    return 0;
-}
-
-
-- libavcodec/snow.c has to be fixed for mem. leakings:
-1. Changed encode_init() so that it doesn't leak when
-rate control fails (for example if selected bitrate is to low)
-2. Add and change given lines:
-static av_cold int encode_end(AVCodecContext *avctx)
-{
-    SnowContext *s = avctx->priv_data;
-
-    ff_rate_control_uninit(&s->m); // Oli added
-    common_end(s);
-    if (s->input_picture.data[0])
-        avctx->release_buffer(avctx, &s->input_picture);
-    av_freep(&avctx->stats_out);   // Oli changed
-
-    return 0;
-}
-
-
-- libavcodec/libtheoraenc.c quality conversion change,
-  commented out color_primaries, fixed setting the keyframe flag
-  and added CODEC_FLAG2_FAST support for fast encoding
-
-
-- libavcodec/vp3.c many changes to backport!
 
 
 icclib 2.14
