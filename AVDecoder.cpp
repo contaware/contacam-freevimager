@@ -152,7 +152,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 			return FALSE;
 	}
 
-	// Copy source data to have a 16 bytes aligned buffer
+	// Copy source data to have a correctly aligned buffer
 	// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
 	AVPacket avpkt;
     if (av_new_packet(&avpkt, dwSrcSize) < 0)
@@ -228,16 +228,16 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 	memcpy(&m_DstBMI, pDstDib->GetBMI(), MIN(pDstDib->GetBMISize(), sizeof(BITMAPINFOFULL)));
 
 	// Prepare Image Conversion Context
-	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,				// re-use if already allocated
+	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,				// Re-use if already allocated
 											m_pCodecCtx->width,				// Source Width
 											m_pCodecCtx->height,			// Source Height
 											m_pCodecCtx->pix_fmt,			// Source Format
 											pDstDib->GetWidth(),			// Destination Width
 											pDstDib->GetHeight(),			// Destination Height
 											dst_pix_fmt,					// Destination Format
-											SWS_BICUBIC,					// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-											NULL,							// No Src Filter
-											NULL,							// No Dst Filter
+											SWS_BICUBIC,					// Interpolation
+											NULL,							// No Source Filter
+											NULL,							// No Destination Filter
 											NULL);							// Param
 	if (!m_pImgConvertCtx)
 	{

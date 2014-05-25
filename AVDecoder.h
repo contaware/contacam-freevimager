@@ -7,9 +7,12 @@
 
 extern "C"
 {
-#include "ffmpeg\\libavcodec\\avcodec.h"
-#include "ffmpeg\\libavformat\\avformat.h"
-#include "ffmpeg\\libswscale\\swscale.h"
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 // AV Decoder
