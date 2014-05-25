@@ -8,8 +8,9 @@
 
 // - VirtualAlloc and VirtualFree leaks are not detected by debugger,
 //   we use the CRT heap functions for the debug build 
-// - VirtualAlloc's returned address is 64 KB aligned, 16 bytes
-//   alignment is necessary for SIMD ops in CDib, CAVRec and CAVIPlay
+// - VirtualAlloc's returned address is 64 KB aligned, 16, 32 or 64 bytes
+//   alignment is necessary for SIMD ops in CDib, CAVRec and CAVIPlay,
+//   av_malloc handles that correctly
 // - Today's 32 bits apps suffer from memory space fragmentation and
 //   not from RAM shortage, BIGALLOC_USEDSIZE accounts for the 64 KB
 //   allocation granularity and the address space waste
@@ -22,13 +23,13 @@
 //   memory remains reserved in memory wasting address space). For
 //   picture data the size is above 512 KB, using the heap functions
 //   would add a function call more
+#define BIGALLOC_SAFETY			4096	// must be at least FF_INPUT_BUFFER_PADDING_SIZE, we use one page
 #ifdef _DEBUG
-#define BIGALLOC(Size) _aligned_malloc((size_t)(Size),16)
-#define BIGFREE(lpAddress) _aligned_free((void*)(lpAddress))
-// From _aligned_offset_malloc_dbg we get the nonuser_size which is 23 bytes for 16 bytes alignment
-#define BIGALLOC_USEDSIZE(Size) ((SIZE_T)(Size)+23)
+#define BIGALLOC(Size) av_malloc((size_t)(Size)+BIGALLOC_SAFETY)
+#define BIGFREE(lpAddress) av_free(lpAddress)
+// av_malloc wastes some bytes for alignment but we do not account for that here
+#define BIGALLOC_USEDSIZE(Size) ((SIZE_T)(Size)+BIGALLOC_SAFETY)
 #else
-#define BIGALLOC_SAFETY			4096	// one page (some MMX/SSE codecs, like XVID 1.1 for example, are reading passed the buffer)
 #define BIGALLOC(Size) VirtualAlloc(NULL,(SIZE_T)(Size)+BIGALLOC_SAFETY,MEM_COMMIT,PAGE_READWRITE)
 #define BIGFREE(lpAddress) VirtualFree((LPVOID)(lpAddress),0,MEM_RELEASE)
 #define BIGALLOC_USEDSIZE(Size) (((SIZE_T)(Size)+BIGALLOC_SAFETY+0xffff)&~0xffff)
