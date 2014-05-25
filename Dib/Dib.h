@@ -9,6 +9,12 @@ extern "C"
 #include "jpeglib.h"
 #include "transupp.h"	// Support routines for lossless transformations
 #include "gif_lib.h"
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 #include <afxtempl.h>	// For CArray

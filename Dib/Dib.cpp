@@ -318,7 +318,7 @@ void CDib::CopyUserList(const USERLIST& UserList)
 		CUserBuf UserBuf = UserList.GetNext(pos);
 		if (UserBuf.m_pBuf && UserBuf.m_dwSize > 0)
 		{
-			LPBYTE p = (LPBYTE)_aligned_malloc(UserBuf.m_dwSize, 16);
+			LPBYTE p = (LPBYTE)av_malloc(UserBuf.m_dwSize);
 			if (p)
 				memcpy(p, UserBuf.m_pBuf, UserBuf.m_dwSize);
 			UserBuf.m_pBuf = p;
@@ -340,7 +340,7 @@ void CDib::FreeUserList()
 	{
 		CUserBuf UserBuf = m_UserList.RemoveHead();
 		if (UserBuf.m_pBuf)
-			_aligned_free((void*)UserBuf.m_pBuf);
+			av_free(UserBuf.m_pBuf);
 	}
 }
 
