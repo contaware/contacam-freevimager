@@ -43,7 +43,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 	m_pCodecCtx->codec_id = AV_CODEC_ID_MJPEG;
 	m_pCodecCtx->pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
 	m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-	m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL; // to allow the AV_PIX_FMT_YUV420P and the AV_PIX_FMT_YUV422P formats
+	m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL; // to allow the AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P and AV_PIX_FMT_YUV444P formats
 	m_pCodecCtx->flags |= CODEC_FLAG_QSCALE;
 	m_pCodecCtx->bit_rate = 0;
 	m_pCodecCtx->time_base.den = 1;
@@ -67,7 +67,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 	m_nOutbufSize = 4 * m_pCodecCtx->width * m_pCodecCtx->height;
 	if (m_nOutbufSize < FF_MIN_BUFFER_SIZE)
 		m_nOutbufSize = FF_MIN_BUFFER_SIZE;
-	m_pOutbuf = (uint8_t*)_aligned_malloc(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE, 16);
+	m_pOutbuf = (uint8_t*)av_malloc(m_nOutbufSize + FF_INPUT_BUFFER_PADDING_SIZE);
 	if (!m_pOutbuf)
 		goto error;
 
@@ -100,7 +100,7 @@ void CMJPEGEncoder::Close()
 
 	if (m_pOutbuf)
 	{
-		_aligned_free((void*)m_pOutbuf);
+		av_free(m_pOutbuf);
 		m_pOutbuf = NULL;
 	}
 	m_nOutbufSize = 0;
