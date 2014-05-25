@@ -60,10 +60,6 @@
 #pragma warning(pop)
 #endif
 
-// Memory Alignment
-#define ISALIGNED(x, a) (0==((unsigned int)(x) & ((a) - 1)))
-#define DOALIGN(x, a) (((x)+(a)-1)&~((a)-1))
-
 // Session change notification
 #ifndef NOTIFY_FOR_ALL_SESSIONS
 #define NOTIFY_FOR_ALL_SESSIONS		1
