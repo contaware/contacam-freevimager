@@ -148,19 +148,22 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 					CDib* pDib = pList->GetNext(posDibs);
 					if (pDib)
 					{
-						// For video frames BIGALLOC_USEDSIZE accounts for the 64 KB
+						// For video frames BIGALLOC_USEDSIZE accounts for the
 						// allocation granularity and the address space waste
 						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize() + BIGALLOC_USEDSIZE(pDib->GetImageSize());
 
 						// For audio the maximum allocated size for a single buffer
 						// with AUDIO_IN_MIN_BUF_SIZE set to 256 is:
-						// PCM        = 5120  bytes + FF_INPUT_BUFFER_PADDING_SIZE
-						// ADPCM      = 8136  bytes + FF_INPUT_BUFFER_PADDING_SIZE
-						// MP2 or MP3 = 9216  bytes + FF_INPUT_BUFFER_PADDING_SIZE
+						// PCM        = 5120  bytes
+						// ADPCM      = 8136  bytes
+						// MP2 or MP3 = 9216  bytes
 						DWORD dwAudioUsedSize = 0U;
 						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
 						while (posAudioBuf)
-							dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize + FF_INPUT_BUFFER_PADDING_SIZE;
+						{
+							// av_malloc wastes some few bytes for alignment but we do not account for that here
+							dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize;
+						}
 
 						// Sum
 						m_pDoc->m_dwNewestMovementDetectionListSize += dwVideoUsedSize + dwAudioUsedSize;
@@ -206,7 +209,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 										pOldBits,
 										pOldBmi->bmiHeader.biSizeImage,
 										pDib);
-		// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+		// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
 		if (!res)
 			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
 
@@ -435,12 +438,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Create the Avi File
 		CAVRec AVRecAvi;
 		if (bMakeAvi)
-		{
 			AVRecAvi.Init(sAVIFileName, true); // fast encoding!
-			AVRecAvi.SetInfo(	_T("Det: ") + ::MakeDateLocalFormat(FirstTime) +
-								_T(", ") + ::MakeTimeLocalFormat(FirstTime, TRUE),
-								APPNAME_NOEXT, MYCOMPANY_WEB);
-		}
 
 		// Create the Swf File
 		CAVRec AVRecSwf;
@@ -534,7 +532,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											CalcFrameRate.den,					// Scale
 											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetSwfDataRate : 0,		// Bitrate in bits/s
 											m_pDoc->m_nVideoDetSwfKeyframesRate,// Keyframes Rate				
-											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetSwfQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetSwfQuality : 0.0f,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											1);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
 						// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz and 11025 Hz
@@ -631,16 +630,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					BITMAPINFOFULL DstBmi;
 					memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
 					DWORD dwVideoDetFourCC = m_pDoc->m_dwVideoDetFourCC;
-					if (dwVideoDetFourCC == BI_RGB)
-						memcpy(&DstBmi, AVISaveDib.GetBMI(), AVISaveDib.GetBMISize());
-					else
-					{
-						DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-						DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
-						DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
-						DstBmi.bmiHeader.biPlanes = 1;
-						DstBmi.bmiHeader.biCompression = dwVideoDetFourCC;
-					}
+					DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+					DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
+					DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
+					DstBmi.bmiHeader.biPlanes = 1;
+					DstBmi.bmiHeader.biCompression = dwVideoDetFourCC;
 					int nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
 					if (DstBmi.bmiHeader.biCompression == FCC('MJPG'))
 						nQualityBitrate = 0;
@@ -650,7 +644,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											CalcFrameRate.den,						// Scale
 											nQualityBitrate == 1 ? m_pDoc->m_nVideoDetDataRate : 0,		// Bitrate in bits/s
 											m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
-											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											nQualityBitrate == 0 ? m_pDoc->m_fVideoDetQuality : 0.0f,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{
 						AVRecAvi.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
@@ -673,21 +668,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 						while (posUserBuf)
 						{
 							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
-							if (m_pDoc->m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
-							{
-								AVRecAvi.AddRawAudioPacket(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-															UserBuf.m_dwSize,
-															UserBuf.m_pBuf,
-															false);	// No interleave
-							}
-							else
-							{
-								int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
-								AVRecAvi.AddAudioSamples(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-															nNumOfSrcSamples,
-															UserBuf.m_pBuf,
-															false);	// No interleave
-							}
+							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+							AVRecAvi.AddAudioSamples(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+														nNumOfSrcSamples,
+														UserBuf.m_pBuf,
+														false);	// No interleave
 						}
 					}
 				}
@@ -1477,7 +1462,8 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 															FrameRate.den,						// Scale
 															0,									// Not using bitrate
 															DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-															m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+															m_fSnapshotVideoCompressorQuality,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+															1);
 								pAVRecSwf->Open();
 							}
 
@@ -1514,7 +1500,8 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 																FrameRate.den,						// Scale
 																0,									// Not using bitrate
 																DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-																m_fSnapshotVideoCompressorQuality);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+																m_fSnapshotVideoCompressorQuality,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+																1);
 								pAVRecThumbSwf->Open();
 							}
 
@@ -2256,14 +2243,15 @@ CVideoDeviceDoc::CCaptureAudioThread::~CCaptureAudioThread()
 	{
 		if (m_pUncompressedBuf[i])
 		{
-			delete [] m_pUncompressedBuf[i];
+			av_free(m_pUncompressedBuf[i]);
 			m_pUncompressedBuf[i] = NULL;
 		}
 	}
 	while (!m_AudioList.IsEmpty())
 	{
 		CUserBuf UserBuf = m_AudioList.RemoveHead();
-		delete [] UserBuf.m_pBuf;
+		if (UserBuf.m_pBuf)
+			av_free(UserBuf.m_pBuf);
 	}
 	::CloseHandle(m_hWaveInEvent);
 	m_hWaveInEvent = NULL;
@@ -2327,7 +2315,11 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 	while (!m_AudioList.IsEmpty())
 	{
 		UserBuf = m_AudioList.RemoveHead();
-		delete [] UserBuf.m_pBuf;
+		if (UserBuf.m_pBuf)
+		{
+			av_free(UserBuf.m_pBuf);
+			UserBuf.m_pBuf = NULL;
+		}
 	}
 	::LeaveCriticalSection(&m_csAudioList);
 	m_uiWaveInBufPos = 0;
@@ -2335,8 +2327,8 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 	for (i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
 	{
 		if (m_pUncompressedBuf[i])
-			delete [] m_pUncompressedBuf[i];
-		m_pUncompressedBuf[i] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+			av_free(m_pUncompressedBuf[i]);
+		m_pUncompressedBuf[i] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
 		if (!DataInAudio())
 		{
 			nLoopState = -1; // error
@@ -2368,12 +2360,16 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 												if (m_AudioList.GetCount() > AUDIO_MAX_LIST_SIZE)
 												{
 													UserBuf = m_AudioList.RemoveHead();
-													delete [] UserBuf.m_pBuf;
+													if (UserBuf.m_pBuf)
+													{
+														av_free(UserBuf.m_pBuf);
+														UserBuf.m_pBuf = NULL;
+													}
 												}
 												::LeaveCriticalSection(&m_csAudioList);
 
 												// New Buffer
-												m_pUncompressedBuf[m_uiWaveInBufPos] = new BYTE[m_dwUncompressedBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+												m_pUncompressedBuf[m_uiWaveInBufPos] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
 												if (!DataInAudio())
 												{
 													nLoopState = -1; // error
@@ -2899,14 +2895,14 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	AVFrame* pDstFrame = NULL;
 	SwsContext* pImgConvertCtx = NULL;
 	int sws_scale_res;
-	PixelFormat src_pix_fmt, dst_pix_fmt;
+	AVPixelFormat src_pix_fmt, dst_pix_fmt;
 
 	// Check
 	if (!pSrcDib || !pSrcDib->GetBits() || !pDstDib || !pDstDib->GetBits())
 		goto exit;
 
 	// Source frame
-	pSrcFrame = avcodec_alloc_frame();
+	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
 	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
@@ -2917,7 +2913,7 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 					pSrcDib->GetHeight());
 
 	// Destination frame
-	pDstFrame = avcodec_alloc_frame();
+	pDstFrame = av_frame_alloc();
 	if (!pDstFrame)
         goto exit;
 	dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
@@ -2934,9 +2930,9 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 									pDstDib->GetWidth(),	// Destination Width
 									pDstDib->GetHeight(),	// Destination Height
 									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-									NULL,					// No Src Filter
-									NULL,					// No Dst Filter
+									SWS_BICUBIC,			// Interpolation
+									NULL,					// No Source Filter
+									NULL,					// No Destination Filter
 									NULL);					// Param
 	if (!pImgConvertCtx)
 		goto exit;
@@ -2949,19 +2945,14 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 								pSrcDib->GetHeight(),	// Source Height
 								pDstFrame->data,		// Destination Data
 								pDstFrame->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
 	if (sws_scale_res > 0)
 		res = TRUE;
-#else
-	if (sws_scale_res >= 0)
-		res = TRUE;
-#endif
 
 exit:
 	if (pSrcFrame)
-		av_freep(&pSrcFrame);
+		av_frame_free(&pSrcFrame);
 	if (pDstFrame)
-		av_freep(&pDstFrame);
+		av_frame_free(&pDstFrame);
 	if (pImgConvertCtx)
 	{
 		sws_freeContext(pImgConvertCtx);
@@ -2980,14 +2971,14 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	BITMAPINFO DstBmi;
 	DWORD dwEncodedLen;
 	int nJ420ImageSize, qscale, sws_scale_res;
-	PixelFormat src_pix_fmt, dst_pix_fmt;
+	AVPixelFormat src_pix_fmt, dst_pix_fmt;
 
 	// Check
 	if (!pDib || !pDib->GetBits() || !pMJPEGEncoder || sFileName.IsEmpty())
 		goto exit;
 
 	// Source frame
-	pSrcFrame = avcodec_alloc_frame();
+	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
 	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
@@ -2998,15 +2989,15 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 					pDib->GetHeight());
 
 	// Destination frame
-	pDstFrame = avcodec_alloc_frame();
+	pDstFrame = av_frame_alloc();
 	if (!pDstFrame)
         goto exit;
-	dst_pix_fmt = PIX_FMT_YUVJ420P; // Full range YUV (0..255)
+	dst_pix_fmt = AV_PIX_FMT_YUVJ420P; // Full range YUV (0..255)
 	nJ420ImageSize = avpicture_get_size(dst_pix_fmt,
 										pDib->GetWidth(),
 										pDib->GetHeight());
 	if (nJ420ImageSize > 0)
-		pJ420Buf = new BYTE[nJ420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE];
+		pJ420Buf = (LPBYTE)av_malloc(nJ420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE);
 	if (!pJ420Buf)
 		goto exit;
 	avpicture_fill(	(AVPicture*)pDstFrame,
@@ -3022,9 +3013,9 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 									pDib->GetWidth(),		// Destination Width
 									pDib->GetHeight(),		// Destination Height
 									dst_pix_fmt,			// Destination Format
-									SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-									NULL,					// No Src Filter
-									NULL,					// No Dst Filter
+									SWS_BICUBIC,			// Interpolation
+									NULL,					// No Source Filter
+									NULL,					// No Destination Filter
 									NULL);					// Param
 	if (!pImgConvertCtx)
 		goto exit;
@@ -3037,13 +3028,8 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 								pDib->GetHeight(),		// Source Height
 								pDstFrame->data,		// Destination Data
 								pDstFrame->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
 	if (sws_scale_res <= 0)
 		goto exit;
-#else
-	if (sws_scale_res < 0)
-		goto exit;
-#endif
 
 	// Set Dst Header
 	memset(&DstBmi, 0, sizeof(BITMAPINFO));
@@ -3061,7 +3047,8 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 
 	// JPEG encode
 	dwEncodedLen = pMJPEGEncoder->Encode(qscale, // 2: best quality, 31: worst quality
-										&DstBmi, pJ420Buf);
+										&DstBmi, pJ420Buf,
+										((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 	if (dwEncodedLen == 0U)
 		goto exit;
 
@@ -3082,9 +3069,9 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 
 exit:
 	if (pSrcFrame)
-		av_freep(&pSrcFrame);
+		av_frame_free(&pSrcFrame);
 	if (pDstFrame)
-		av_freep(&pDstFrame);
+		av_frame_free(&pDstFrame);
 	if (pImgConvertCtx)
 	{
 		sws_freeContext(pImgConvertCtx);
@@ -3092,7 +3079,7 @@ exit:
 	}
 	if (pJ420Buf)
 	{
-		delete [] pJ420Buf;
+		av_free(pJ420Buf);
 		pJ420Buf = NULL;
 	}
 	return res;
@@ -5766,28 +5753,17 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 	if (!(*ppAVRec)->Init(sFileName, true)) // fast encoding!
 		return FALSE;
 
-	// Set File Info
-	if (!(*ppAVRec)->SetInfo(	_T("Rec: ") + ::MakeDateLocalFormat(CurrentTime) +
-								_T(", ") + ::MakeTimeLocalFormat(CurrentTime, TRUE),
-								APPNAME_NOEXT, MYCOMPANY_WEB))
-		return FALSE;
-
 	// Add Video Stream
 	BITMAPINFOFULL SrcBmi;
 	BITMAPINFOFULL DstBmi;
 	memset(&SrcBmi, 0, sizeof(BITMAPINFOFULL));
 	memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
 	memcpy(&SrcBmi, &m_ProcessFrameBMI, CDib::GetBMISize((LPBITMAPINFO)&m_ProcessFrameBMI));
-	if (m_dwVideoRecFourCC == BI_RGB)
-		memcpy(&DstBmi, &SrcBmi, CDib::GetBMISize((LPBITMAPINFO)&SrcBmi));
-	else
-	{
-		DstBmi.bmiHeader.biSize = SrcBmi.bmiHeader.biSize;
-		DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
-		DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
-		DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
-		DstBmi.bmiHeader.biCompression = m_dwVideoRecFourCC;
-	}
+	DstBmi.bmiHeader.biSize = SrcBmi.bmiHeader.biSize;
+	DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
+	DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
+	DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
+	DstBmi.bmiHeader.biCompression = m_dwVideoRecFourCC;
 	AVRational FrameRate;
 	if (m_dEffectiveFrameRate > 0.0)
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
@@ -5802,7 +5778,8 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 									FrameRate.den,					// Scale
 									nQualityBitrate == 1 ? m_nVideoRecDataRate : 0,			// Bitrate in bits/s
 									m_nVideoRecKeyframesRate,		// Keyframes Rate	
-									nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f) < 0)	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality		
+									nQualityBitrate == 0 ? m_fVideoRecQuality : 0.0f,		// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)	
 		return FALSE;
 
 	// Add Audio Stream
@@ -7441,7 +7418,7 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 	if (!pDib)
 		return FALSE;
 	AVPicture Frame;
-	PixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
+	AVPixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
 	avpicture_fill(	&Frame,
 					(uint8_t*)pDib->GetBits(),
 					pix_fmt,
@@ -7463,7 +7440,7 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 							dwSize,
 							m_pProcessFrameExtraDib)) // this function will allocate the dst bits if necessary
 	{
-		if (m_AVDecoder.GetCodecId() == CODEC_ID_MJPEG)
+		if (m_AVDecoder.GetCodecId() == AV_CODEC_ID_MJPEG)
 		{
 			m_lCompressedDataRateSum += dwSize;
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
@@ -7471,7 +7448,7 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 		else
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
 	}
-	// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+	// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
 	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
 	{
 		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize, 1, TRUE) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
@@ -7571,6 +7548,7 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	}
 
 	// Unpack UV
+	#define ISALIGNED(x, a) (0==((size_t)(x)&((a)-1)))
 	if (g_bSSE2						&&
 		ISALIGNED(halfwidth, 16)	&&
 		ISALIGNED(src_uv, 16)		&&
@@ -7803,21 +7781,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 					while (posUserBuf)
 					{
 						CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
-						if (m_CaptureAudioThread.m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_PCM)
-						{
-							m_pAVRec->AddRawAudioPacket(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-														UserBuf.m_dwSize,
-														UserBuf.m_pBuf,
-														m_bInterleave ? true : false);
-						}
-						else
-						{
-							int nNumOfSrcSamples = (m_CaptureAudioThread.m_pSrcWaveFormat && (m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
-							m_pAVRec->AddAudioSamples(	m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-														nNumOfSrcSamples,
-														UserBuf.m_pBuf,
-														m_bInterleave ? true : false);
-						}
+						int nNumOfSrcSamples = (m_CaptureAudioThread.m_pSrcWaveFormat && (m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+						m_pAVRec->AddAudioSamples(	m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+													nNumOfSrcSamples,
+													UserBuf.m_pBuf,
+													m_bInterleave ? true : false);
 					}
 				}
 
@@ -8662,12 +8630,13 @@ __forceinline CDib* CVideoDeviceDoc::AllocMJPGFrame(CDib* pDib, LPBYTE pMJPGData
 		else
 		{
 			DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
-															pDib->GetBMI(), pDib->GetBits());
+															pDib->GetBMI(), pDib->GetBits(),
+															((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 			if (dwEncodedLen > 0U)
 			{
-				// Contaware introduced this fourcc to distinguish the inofficial jpeg ITU601
+				// Contaware introduced this fourcc to distinguish the unofficial jpeg ITU601
 				// color space so that the mjpeg decompressor in CSaveFrameListThread
-				// is re-opened when switching between normal FCC('MJPG') and inofficial FCC('M601')
+				// is re-opened when switching between normal FCC('MJPG') and unofficial FCC('M601')
 				Bmi.bmiHeader.biCompression = FCC('M601');
 				Bmi.bmiHeader.biSizeImage = dwEncodedLen;
 				pNewDib = new CDib;
@@ -10851,15 +10820,28 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		return TRUE; // Auto-Delete pLinBuf
 	}
 
+	// Copy source data to have a correctly aligned buffer
+	// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+	AVPacket avpkt;
+    if (av_new_packet(&avpkt, nSize) < 0)
+	{
+		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
+		return TRUE; // Auto-Delete pLinBuf
+	}
+	memcpy(avpkt.data, pLinBuf, nSize);
+
+	// Reset Frame Structure 
+	av_frame_unref(m_pFrame);
+
 	// Decode
 	int got_picture = 0;
-	int len = avcodec_decode_video(	m_pCodecCtx,
+	int len = avcodec_decode_video2(m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
-									(unsigned __int8 *)pLinBuf,
-									nSize);
+									&avpkt);
     if (len < 0)
 	{
+		av_free_packet(&avpkt);
 		::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
 		return TRUE; // Auto-Delete pLinBuf
 	}
@@ -10875,6 +10857,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		// Init Image Convert Context
 		if (!InitImgConvert())
 		{
+			av_free_packet(&avpkt);
 			::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
 			return TRUE; // Auto-Delete pLinBuf
 		}
@@ -10947,27 +10930,24 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 										m_pCodecCtx->height,	// Source Height
 										m_pFrameI420->data,		// Destination Data
 										m_pFrameI420->linesize);// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
 		int res = sws_scale_res > 0 ? 1 : -1;
-#else
-		int res = sws_scale_res >= 0 ? 1 : -1;
-#endif
+
 		// Process Frame
 		if (res == 1)
 		{
-			m_pDoc->m_lCompressedDataRateSum += nSize;
-			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, pLinBuf, nSize);
+			m_pDoc->m_lCompressedDataRateSum += avpkt.size;
+			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, avpkt.data, avpkt.size);
 		}
 	}
-	// In case that avcodec_decode_video fails use LoadJPEG which is more fault tolerant, but slower...
+	// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
 	else
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(FALSE);
-		if (Dib.LoadJPEG(pLinBuf, nSize, 1, TRUE) && Dib.Compress(FCC('I420')))
+		if (Dib.LoadJPEG(avpkt.data, avpkt.size, 1, TRUE) && Dib.Compress(FCC('I420')))
 		{
-			m_pDoc->m_lCompressedDataRateSum += nSize;
-			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), pLinBuf, nSize);
+			m_pDoc->m_lCompressedDataRateSum += avpkt.size;
+			m_pDoc->ProcessI420Frame(Dib.GetBits(), Dib.GetImageSize(), avpkt.data, avpkt.size);
 		}
 	}
 	
@@ -10975,6 +10955,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 	// otherwise the watchdog is restarting the connection!
 	m_bFirstFrame = FALSE;
 	
+	// Free memory
+	av_free_packet(&avpkt);
+
 	::LeaveCriticalSection(&m_pDoc->m_csHttpProcess);
 
 	return TRUE; // Auto-Delete pLinBuf
@@ -10986,15 +10969,22 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::OpenAVCodec()
 	FreeAVCodec();
 
     // Find the decoder for the video stream
-	m_pCodec = avcodec_find_decoder(CODEC_ID_MJPEG);
+	m_pCodec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
     if (!m_pCodec)
-        goto error_noclose;
+        goto error;
 	m_pDoc->m_CaptureBMI.bmiHeader.biCompression = FCC('MJPG');
 
 	// Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
+	/* if m_pCodec non-NULL, allocate private data and initialize defaults
+	 * for the given codec. It is illegal to then call avcodec_open2()
+	 * with a different codec.
+	 * If NULL, then the codec-specific defaults won't be initialized,
+	 * which may result in suboptimal default settings (this is
+	 * important mainly for encoders, e.g. libx264).
+	 */
+	m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
 	if (!m_pCodecCtx)
-		goto error_noclose;
+		goto error;
 
 	// Width and Height Unknown at this point
 	m_pCodecCtx->coded_width = 0;
@@ -11003,19 +10993,15 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::OpenAVCodec()
 	// Set FourCC
 	m_pCodecCtx->codec_tag = FCC('MJPG');
 
-	// Set some other values
-	m_pCodecCtx->error_concealment = 3;
-	m_pCodecCtx->error_recognition = 1;
-
 	// Open codec
     if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
-        goto error_noclose;
+        goto error;
 
 	// Allocate video frames
-    m_pFrame = avcodec_alloc_frame();
+    m_pFrame = av_frame_alloc();
 	if (!m_pFrame)
         goto error;
-	m_pFrameI420 = avcodec_alloc_frame();
+	m_pFrameI420 = av_frame_alloc();
 	if (!m_pFrameI420)
         goto error;
 
@@ -11024,41 +11010,39 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::OpenAVCodec()
 error:
 	FreeAVCodec();
 	return FALSE;
-error_noclose:
-	FreeAVCodec(TRUE);
-	return FALSE;
 }
 
-void CVideoDeviceDoc::CHttpGetFrameParseProcess::FreeAVCodec(BOOL bNoClose/*=FALSE*/)
+void CVideoDeviceDoc::CHttpGetFrameParseProcess::FreeAVCodec()
 {
 	if (m_pCodecCtx)
 	{
-		// Close
-		if (!bNoClose)
-			avcodec_close_thread_safe(m_pCodecCtx);
-
-		// Free
+		/*
+		Close a given AVCodecContext and free all the data associated with it
+		(but not the AVCodecContext itself).
+		Calling this function on an AVCodecContext that hasn't been opened will free
+		the codec-specific data allocated in avcodec_alloc_context3() /
+		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
+		do nothing.
+		*/
+		avcodec_close_thread_safe(m_pCodecCtx);
 		av_freep(&m_pCodecCtx);
-		m_pCodec = NULL;
 	}
+	m_pCodec = NULL;
+
 	if (m_pFrame)
-	{
-		av_free(m_pFrame);
-		m_pFrame = NULL;
-	}
+		av_frame_free(&m_pFrame);
 	if (m_pFrameI420)
-    {
-		av_free(m_pFrameI420);
-		m_pFrameI420 = NULL;
-	}
+		av_frame_free(&m_pFrameI420);
+
 	if (m_pImgConvertCtx)
 	{
 		sws_freeContext(m_pImgConvertCtx);
 		m_pImgConvertCtx = NULL;
 	}
+
 	if (m_pI420Buf)
 	{
-		delete [] m_pI420Buf;
+		av_free(m_pI420Buf);
 		m_pI420Buf = NULL;
 	}
 	m_dwI420BufSize = 0;
@@ -11072,7 +11056,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 	// avpicture_get_size() returns -1 which cast to DWORD gives 4GB - 1
 	if (m_pCodecCtx->width > 0 && m_pCodecCtx->height > 0)
 	{
-		m_dwI420ImageSize = avpicture_get_size(	PIX_FMT_YUV420P,
+		m_dwI420ImageSize = avpicture_get_size(	AV_PIX_FMT_YUV420P,
 												m_pCodecCtx->width,
 												m_pCodecCtx->height);
 	}
@@ -11081,8 +11065,8 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 	if (m_dwI420BufSize < m_dwI420ImageSize || m_pI420Buf == NULL)
 	{
 		if (m_pI420Buf)
-			delete [] m_pI420Buf;
-		m_pI420Buf = new BYTE[m_dwI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE];
+			av_free(m_pI420Buf);
+		m_pI420Buf = (LPBYTE)av_malloc(m_dwI420ImageSize + FF_INPUT_BUFFER_PADDING_SIZE);
 		if (!m_pI420Buf)
 			return FALSE;
 		m_dwI420BufSize = m_dwI420ImageSize;
@@ -11091,21 +11075,21 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::InitImgConvert()
 	// Assign appropriate parts of buffer to image planes
 	avpicture_fill((AVPicture*)m_pFrameI420,
 					(unsigned __int8 *)m_pI420Buf,
-					PIX_FMT_YUV420P,
+					AV_PIX_FMT_YUV420P,
 					m_pCodecCtx->width,
 					m_pCodecCtx->height);
 
 	// Prepare Image Conversion Context
-	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,
+	m_pImgConvertCtx = sws_getCachedContext(m_pImgConvertCtx,		// Re-use if already allocated
 											m_pCodecCtx->width,		// Source Width
 											m_pCodecCtx->height,	// Source Height
 											m_pCodecCtx->pix_fmt,	// Source Format
 											m_pCodecCtx->width,		// Destination Width
 											m_pCodecCtx->height,	// Destination Height
-											PIX_FMT_YUV420P,		// Destination Format
-											SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-											NULL,					// No Src Filter
-											NULL,					// No Dst Filter
+											AV_PIX_FMT_YUV420P,		// Destination Format
+											SWS_BICUBIC,			// Interpolation
+											NULL,					// No Source Filter
+											NULL,					// No Destination Filter
 											NULL);					// Param
 
 	return (m_pImgConvertCtx != NULL);

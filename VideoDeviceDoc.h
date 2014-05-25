@@ -20,9 +20,12 @@
 #include "HostPortDlg.h"
 extern "C"
 {
-#include "ffmpeg\\libavcodec\\avcodec.h"
-#include "ffmpeg\\libavformat\\avformat.h"
-#include "ffmpeg\\libswscale\\swscale.h"
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 // Forward Declarations
@@ -300,7 +303,7 @@ public:
 			__forceinline int FindEndOfLine(const CString& s,
 											int nStart);
 			BOOL OpenAVCodec();
-			void FreeAVCodec(BOOL bNoClose = FALSE);
+			void FreeAVCodec();
 			BOOL InitImgConvert();
 
 			CVideoDeviceDoc* m_pDoc;
