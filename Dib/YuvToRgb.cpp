@@ -55,18 +55,50 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	// Select the Right Decoder
 	if (dwFourCC == FCC('YV12'))
 	{
-		YV12ToRGB32(	src,
-						dst,
-						width,
-						height);
+		int nChromaOffset = width * height;
+		int nChromaSize = width * height / 4;
+		if (g_bMMX && (width & 1) == 0 && (height & 1) == 0)
+		{
+			YUV420ToRGB32Asm(src,								// Y Plane
+							src + nChromaOffset + nChromaSize,	// U Plane
+							src + nChromaOffset,				// V Plane
+							(LPDWORD)dst,						// RGB32 Dib
+							width,
+							height);
+		}
+		else
+		{
+			YUV420ToRGB32(	src,								// Y Plane
+							src + nChromaOffset + nChromaSize,	// U Plane
+							src + nChromaOffset,				// V Plane
+							(LPDWORD)dst,						// RGB32 Dib
+							width,
+							height);
+		}
 	}
 	else if (	dwFourCC == FCC('I420') ||
 				dwFourCC == FCC('IYUV'))
 	{
-		I420ToRGB32(	src,
-						dst,
-						width,
-						height);
+		int nChromaOffset = width * height;
+		int nChromaSize = width * height / 4;
+		if (g_bMMX && (width & 1) == 0 && (height & 1) == 0)
+		{
+			YUV420ToRGB32Asm(src,								// Y Plane
+							src + nChromaOffset,				// U Plane
+							src + nChromaOffset + nChromaSize,	// V Plane
+							(LPDWORD)dst,						// RGB32 Dib
+							width,
+							height);
+		}
+		else
+		{
+			YUV420ToRGB32(	src,								// Y Plane
+							src + nChromaOffset,				// U Plane
+							src + nChromaOffset + nChromaSize,	// V Plane
+							(LPDWORD)dst,						// RGB32 Dib
+							width,
+							height);
+		}
 	}
 	else if (dwFourCC == FCC('YVU9'))
 	{
@@ -88,7 +120,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 				dwFourCC == FCC('YUNV') ||
 				dwFourCC == FCC('YUYV'))
 	{
-		if (g_bMMX)
+		if (g_bMMX && (width & 1) == 0)
 		{
 			YUY2ToRGB32Asm(	src,
 							(LPDWORD)dst,
@@ -107,7 +139,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 				dwFourCC == FCC('Y422') ||
 				dwFourCC == FCC('UYNV'))
 	{
-		if (g_bMMX)
+		if (g_bMMX && (width & 1) == 0)
 		{
 			UYVYToRGB32Asm(	src,
 							(LPDWORD)dst,
@@ -124,7 +156,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 	}
 	else if (dwFourCC == FCC('YVYU'))
 	{
-		if (g_bMMX)
+		if (g_bMMX && (width & 1) == 0)
 		{
 			YVYUToRGB32Asm(	src,
 							(LPDWORD)dst,
