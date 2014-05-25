@@ -7,17 +7,23 @@
 #include "DxDraw.h"
 extern "C"
 {
-#include "ffmpeg\\libavcodec\\avcodec.h"
-#include "ffmpeg\\libavformat\\avformat.h"
-#include "ffmpeg\\libswscale\\swscale.h"
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 // Used to Convert From Double to Fractional Frame-Rate.
-// Do not use a higher value, CODEC_ID_MPEG4 is not working!
+// Do not use a higher value, AV_CODEC_ID_MPEG4 is not working!
 #define MAX_SIZE_FOR_RATIONAL				65535
 
 // Also defined in AviPlay.h!
 #define AUDIO_PCM_MIN_BUF_SIZE				8192
+
+// Maximum number of streams
+#define MAX_STREAMS							20
 
 class CAVRec
 {
@@ -47,36 +53,12 @@ public:
 						DWORD dwDstScale,
 						int bitrate,
 						int keyframes_rate,
-						float qscale);	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-
-	// Add a Raw Video Stream, no compressor
-	// Only use AddRawVideoPacket and not AddFrame!
-	int AddRawVideoStream(	const LPBITMAPINFO pFormat,
-							int nFormatSize,
-							DWORD dwRate,
-							DWORD dwScale);
+						float qscale,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+						int nThreadCount);
 
 	// Add Audio Stream
 	int AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 						const LPWAVEFORMATEX pDstWaveFormat);
-
-	// Add a Raw Audio Stream, no compressor
-	// Only use AddRawAudioPacket and not AddAudioSamples!
-	int AddRawAudioStream(	const LPWAVEFORMATEX pFormat,
-							int nFormatSize,
-							DWORD dwSampleSize,	// Set in avi strh
-							DWORD dwRate,		// Set in avi strh
-							DWORD dwScale);		// Set in avi strh
-
-	// Set Info
-	bool SetInfo(	LPCTSTR szTitle,
-					LPCTSTR szAuthor,
-					LPCTSTR szCopyright,
-					LPCTSTR szComment = _T(""),
-					LPCTSTR szAlbum = _T(""),
-					LPCTSTR szGenre = _T(""),
-					int nTrack = 0,
-					int nYear = 0);
 
 	// Open
 	bool Open();
@@ -99,7 +81,7 @@ public:
 	// Video Streams Number to Overall Stream Number
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
 
-	// Video Frame Write
+	// Video Frame Write, for flushing set pDib to NULL or pBmi and pBits to NULL
 	__forceinline bool AddFrame(DWORD dwStreamNum,
 								CDib* pDib,
 								bool bInterleaved)
@@ -114,14 +96,8 @@ public:
 					LPBYTE pBits,
 					bool bInterleaved);
 
-	// Raw Video Packet Write
-	bool AddRawVideoPacket(DWORD dwStreamNum, DWORD dwBytes, LPBYTE pBuf, bool bKeyframe, bool bInterleaved);
-
-	// Audio Samples Write
+	// Audio Samples Write, for flushing set pBuf to NULL and dwNumSamples to 0
 	bool AddAudioSamples(DWORD dwStreamNum, DWORD dwNumSamples, LPBYTE pBuf, bool bInterleaved);
-
-	// Raw Audio Packet Write
-	bool AddRawAudioPacket(DWORD dwStreamNum, DWORD dwBytes, LPBYTE pBuf, bool bInterleaved);
 
 	// Video Frame Manipulation Functions
 	__forceinline LONGLONG GetFrameCount(DWORD dwStreamNum) const					{return m_llTotalFramesOrSamples[dwStreamNum];};
@@ -172,69 +148,50 @@ public:
 
 	// Audio Format Functions
 	__forceinline LPWAVEFORMATEX GetSrcWaveFormat(DWORD dwStreamNum)				{return m_pSrcWaveFormat[dwStreamNum];};
-	__forceinline LPWAVEFORMATEX GetIntermediateWaveFormat(DWORD dwStreamNum)		{return m_pIntermediateWaveFormat[dwStreamNum];};
 	
 protected:
-	AVStream* CreateVideoStream(CodecID codec_id,
-								const LPBITMAPINFO pDstVideoFormat,
-								DWORD dwRate,
-								DWORD dwScale,
-								PixelFormat pix_fmt,
-								int bitrate,
-								int keyframes_rate,
-								float qscale); // 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
-	AVStream* CreateAudioStream(CodecID codec_id,
-								SampleFormat sample_fmt,
-								int tag,
-								int bitrate,
-								int samplerate,
-								int channels);
-	bool AddAudioSamplesDirect(DWORD dwStreamNum, DWORD dwNumSamples, LPBYTE pBuf, bool bInterleaved);
-	__forceinline bool EncodeSamples(DWORD dwStreamNum, int nInputSamplesCount, int nOutputBufSize, AVPacket* pPkt);
 	__forceinline void SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMATEX pWaveFormat);
-	__forceinline void SetIntermediateWaveFormat(DWORD dwStreamNum, const LPWAVEFORMATEX pWaveFormat);
+	__forceinline void AdjustPTSDTS(DWORD dwStreamNum, AVPacket* pkt);
+	bool EncodeAndWriteFrame(	DWORD dwStreamNum,
+								AVFrame* pFrame, // set to NULL to flush
+								bool bInterleaved);
 	void InitVars();	// Called by constructors
-	void FlushAudio();
+	void Flush();
 
 protected:
 
 	// General Vars
 	CString m_sFileName;
 	CRITICAL_SECTION m_csAVI;
-	volatile LONGLONG m_llTotalFramesOrSamples[MAX_STREAMS];
-	volatile LONGLONG m_llTotalWrittenBytes[MAX_STREAMS];
 	AVOutputFormat* m_pOutputFormat;
     AVFormatContext* m_pFormatCtx;
-	uint8_t* m_pOutbuf[MAX_STREAMS];
-	int m_nOutbufSize[MAX_STREAMS];		// In Bytes
 	bool m_bFileOpened;
 	bool m_bOpen;
-	bool m_bCodecOpened[MAX_STREAMS];
 	bool m_bFastEncode;
-
-	// Video Vars
 	volatile DWORD m_dwTotalVideoStreams;
+	volatile DWORD m_dwTotalAudioStreams;
+
+	// Conversion Contexts
 	SwsContext* m_pImgConvertCtx[MAX_STREAMS];
+	SwrContext* m_pAudioConvertCtx[MAX_STREAMS];
+
+	// Buffers
+	uint8_t** m_ppSrcBuf[MAX_STREAMS];
+	int m_nSrcBufSize[MAX_STREAMS];
+	uint8_t** m_ppDstBuf[MAX_STREAMS];
+	int m_nDstBufSize[MAX_STREAMS];
+
+	// Frames
 	AVFrame* m_pFrame[MAX_STREAMS];
 	AVFrame* m_pFrameTemp[MAX_STREAMS];
-	LPBYTE m_pFrameBuf1[MAX_STREAMS];
-	int m_nFrameBufSize1[MAX_STREAMS];
-	LPBYTE m_pFrameBuf2[MAX_STREAMS];
-	int m_nFrameBufSize2[MAX_STREAMS];
 
-	// Audio Vars
-	volatile DWORD m_dwTotalAudioStreams;
+	// Wave Format
 	LPWAVEFORMATEX volatile m_pSrcWaveFormat[MAX_STREAMS];
-	LPWAVEFORMATEX volatile m_pIntermediateWaveFormat[MAX_STREAMS];
-	int m_nAudioInputFrameSize[MAX_STREAMS];		// In Samples
-	int m_nIntermediateSamplesBufPos[MAX_STREAMS];	// In Samples
-	uint8_t* m_pIntermediateSamplesBuf[MAX_STREAMS];
-	int m_nIntermediateSamplesBufSize[MAX_STREAMS];	// In Bytes
-	uint8_t* m_pTempSamplesBuf[MAX_STREAMS];
-	int m_nTempSamplesBufSize[MAX_STREAMS];		// In Bytes
-	uint8_t* m_pTempSamplesBuf2[MAX_STREAMS];
-	int m_nTempSamplesBufSize2[MAX_STREAMS];	// In Bytes
-	ReSampleContext* m_pAudioResampleCtx[MAX_STREAMS];
+
+	// Counters
+	volatile LONGLONG m_llTotalFramesOrSamples[MAX_STREAMS];
+	volatile LONGLONG m_llTotalWrittenBytes[MAX_STREAMS];
+	volatile LONGLONG m_llLastDTS[MAX_STREAMS];
 };
 
 __forceinline DWORD CAVRec::VideoStreamNumToStreamNum(DWORD dwVideoStreamNum)
@@ -250,7 +207,7 @@ __forceinline DWORD CAVRec::VideoStreamNumToStreamNum(DWORD dwVideoStreamNum)
 	DWORD dwVideoStreamCount = 0;
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < m_pFormatCtx->nb_streams ; dwStreamNum++)
 	{
-		if (m_pFormatCtx->streams[dwStreamNum]->codec->codec_type == CODEC_TYPE_VIDEO)
+		if (m_pFormatCtx->streams[dwStreamNum]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
 			dwVideoStreamCount++;
 		if (dwVideoStreamCount == dwVideoStreamNum + 1)
 			return dwStreamNum;
@@ -272,7 +229,7 @@ __forceinline DWORD CAVRec::AudioStreamNumToStreamNum(DWORD dwAudioStreamNum)
 	DWORD dwAudioStreamCount = 0;
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < m_pFormatCtx->nb_streams ; dwStreamNum++)
 	{
-		if (m_pFormatCtx->streams[dwStreamNum]->codec->codec_type == CODEC_TYPE_AUDIO)
+		if (m_pFormatCtx->streams[dwStreamNum]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
 			dwAudioStreamCount++;
 		if (dwAudioStreamCount == dwAudioStreamNum + 1)
 			return dwStreamNum;
