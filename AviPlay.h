@@ -10,9 +10,12 @@
 #include "DxDraw.h"
 extern "C"
 {
-#include "ffmpeg\\libavcodec\\avcodec.h"
-#include "ffmpeg\\libavformat\\avformat.h"
-#include "ffmpeg\\libswscale\\swscale.h"
+#include "libavutil/opt.h"
+#include "libavutil/mathematics.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
 }
 
 #ifndef BI_BGR16
@@ -51,12 +54,8 @@ extern "C"
 #define	AVI_SCALE_INT						10000000
 #define	AVI_SCALE_DOUBLE					10000000.0
 
-// Maximum gop size to avoid locking the seek to long
+// Maximum gop size to avoid locking the seek too long
 #define MAX_KEYFRAMES_SPACING				1024
-
-// Lib AVCodec Defines: Codec Id as Parameter
-#define mpeg_codec(x)		((x)==CODEC_ID_MPEG1VIDEO || (x)==CODEC_ID_MPEG2VIDEO)
-#define mjpeg_codec(x)		((x)==CODEC_ID_MJPEG || (x)==CODEC_ID_MJPEGB || (x)==CODEC_ID_SP5X)
 
 /*
 Timing of an AVI stream is governed by several variables:
@@ -140,26 +139,6 @@ Typical 48000 Hz VBR Mp3:
     - nBlockAlign = 1152
 	- nSamplesPerSec = 48000
 	- nChannels = 2
-
-Typical 48000 Hz CBR AC3:
-  StreamHdr
-	- dwSampleSize = 1
-    - dwScale = 1
-    - dwRate = 48000
-  WAVEFORMATEX
-    - nBlockAlign = 1
-	- nSamplesPerSec = 48000
-	- nChannels = 5
-
-Typical 48000 Hz VBR AC3: -> Never Seen!!!!!!!!!!!
-  StreamHdr
-	- dwSampleSize = ?
-    - dwScale = ?
-    - dwRate = ?
-  WAVEFORMATEX
-    - nBlockAlign = ?
-	- nSamplesPerSec = ?
-	- nChannels = ?
 
 ------------------------------------------------------------------------------------
 
@@ -533,7 +512,8 @@ class CAVIPlay
 									memset(&m_MpegAudioFrameHdr, 0, sizeof(MpegAudioFrameHdr));
 									m_pCodec = NULL;
 									m_pCodecCtx = NULL;
-									m_pParser = NULL;
+									m_pFrame = NULL;
+									m_pAudioConvertCtx = NULL;
 								}; 
 			
 			// Destructor						
@@ -614,7 +594,7 @@ class CAVIPlay
 			__forceinline bool IsUsingAVCodec() {return m_pCodecCtx != NULL;};
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
-			static enum CodecID AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits = 16);
+			static enum AVCodecID AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits = 16);
 
 		protected:
 			bool OpenDecompressionACM();
@@ -715,11 +695,14 @@ class CAVIPlay
 			// AVCodec Vars
 			AVCodec* m_pCodec;
 			AVCodecContext* m_pCodecCtx;
-			AVCodecParserContext* m_pParser;
+			AVFrame* m_pFrame;
+			SwrContext* m_pAudioConvertCtx;
 
 			// AVCodec Functions
 			bool OpenDecompressionAVCodec();
 			void FreeAVCodec();
+			int AVDecodeAudio(LPBYTE pDstBuf, int& out_size, AVPacket* pkt,
+					int& out_channels, int& out_sample_rate, AVSampleFormat& out_sample_fmt);
 	};
 
 	// AVI Palette Stream Class
@@ -800,14 +783,11 @@ class CAVIPlay
 									m_nPrevPitchDxDraw = 0;
 									m_nPrevBppDxDraw = 0;
 									m_pPrevSurfaceDxDraw = NULL;
-									m_bDecodeExtraData = false;
-									memset(&m_Palette, 0, sizeof(AVPaletteControl));
+									m_bAVDecodeExtraData = false;
+									m_bAVPaletteChanged = false;
+									memset(&m_AVPalette, 0, AVPALETTE_SIZE);
 									m_pImgConvertCtxGdi = NULL;
 									m_pImgConvertCtxDxDraw = NULL;
-#ifdef SUPPORT_LIBSWSCALE
-									m_pFilterGdi = NULL;
-									m_pFilterDxDraw = NULL;
-#endif
 								}; 
 			
 			// Destructor						
@@ -829,9 +809,9 @@ class CAVIPlay
 			__forceinline bool IsUsingAVCodec() {return m_pCodecCtx != NULL;};
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
-			static __forceinline enum PixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
-			static __forceinline enum PixelFormat AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw);
-			static __forceinline enum CodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
+			static __forceinline enum AVPixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
+			static __forceinline enum AVPixelFormat AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw);
+			static __forceinline enum AVCodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
 
 			// Width & Height: some corrupted Avis have different values for width & height...
 			// Priority of choice: 1. Format, 2. rcFrame, 3. Main Hdr
@@ -841,7 +821,7 @@ class CAVIPlay
 															(m_Hdr.rcFrame.right - m_Hdr.rcFrame.left) :
 															m_pAVIPlay->GetMainHdr()->dwWidth);};
 			__forceinline DWORD GetHeight() const {return (	m_pSrcFormat ?
-															((LPBITMAPINFOHEADER)m_pSrcFormat)->biHeight :
+															ABS(((LPBITMAPINFOHEADER)m_pSrcFormat)->biHeight) :
 															(m_Hdr.rcFrame.bottom - m_Hdr.rcFrame.top) > 0 ?
 															(m_Hdr.rcFrame.bottom - m_Hdr.rcFrame.top) :
 															m_pAVIPlay->GetMainHdr()->dwHeight);};
@@ -1034,13 +1014,10 @@ class CAVIPlay
 			int m_nOneFrameDelay;
 
 			bool OpenDecompressionAVCodec();
-			void FreeAVCodec(bool bNoClose = false);
-			__forceinline bool AVCodecHandle8bpp(bool bVFlip);
+			void FreeAVCodec();
 			__forceinline bool AVCodecDecompressDib(bool bKeyFrame,
-													bool bSkipFrame,
 													bool bSeek);
 			__forceinline bool AVCodecDecompressDxDraw(	bool bKeyFrame,
-														bool bSkipFrame,
 														bool bSeek,
 														CDxDraw* pDxDraw,
 														CRect rc);
@@ -1054,14 +1031,11 @@ class CAVIPlay
 			int m_nPrevPitchDxDraw;
 			int m_nPrevBppDxDraw;
 			LPVOID m_pPrevSurfaceDxDraw;
-			AVPaletteControl m_Palette;
-			bool m_bDecodeExtraData;
+			bool m_bAVPaletteChanged; // Demuxer sets this to true to indicate the palette has changed, decoder resets to false
+			unsigned int m_AVPalette[AVPALETTE_COUNT];
+			bool m_bAVDecodeExtraData;
 			SwsContext* m_pImgConvertCtxGdi;
 			SwsContext* m_pImgConvertCtxDxDraw;
-#ifdef SUPPORT_LIBSWSCALE
-			SwsFilter* m_pFilterGdi;
-			SwsFilter* m_pFilterDxDraw;
-#endif
 	};
 
 	typedef CArray<CAVIVideoStream*,CAVIVideoStream*> VIDEOSTREAMARRAY;
@@ -1242,57 +1216,61 @@ __forceinline DWORD CAVIPlay::CAVIAudioStream::GetBufSamplesCount() const
 		return 0;
 }
 
-__forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
+__forceinline enum AVPixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
 {
 	if (pBMI)
 	{
 		if (pBMI->bmiHeader.biCompression == FCC('YV12')			||
 			pBMI->bmiHeader.biCompression == FCC('I420')			||
 			pBMI->bmiHeader.biCompression == FCC('IYUV'))
-			return PIX_FMT_YUV420P;	// For YV12 we have to invert the planes!
+			return AV_PIX_FMT_YUV420P;	// For YV12 we have to invert the planes!
 		else if (pBMI->bmiHeader.biCompression == FCC('J420'))
-			return PIX_FMT_YUVJ420P;
+			return AV_PIX_FMT_YUVJ420P;
+		else if (pBMI->bmiHeader.biCompression == FCC('NV12'))
+			return AV_PIX_FMT_NV12;
+		else if (pBMI->bmiHeader.biCompression == FCC('NV21'))
+			return AV_PIX_FMT_NV21;
 		else if (	pBMI->bmiHeader.biCompression == FCC('YUY2')	||
 					pBMI->bmiHeader.biCompression == FCC('YUNV')	||
 					pBMI->bmiHeader.biCompression == FCC('VYUY')	||
 					pBMI->bmiHeader.biCompression == FCC('V422')	||
 					pBMI->bmiHeader.biCompression == FCC('YUYV'))
-			return PIX_FMT_YUYV422;
+			return AV_PIX_FMT_YUYV422;
 		else if (	pBMI->bmiHeader.biCompression == FCC('UYVY')	||
 					pBMI->bmiHeader.biCompression == FCC('Y422')	||
 					pBMI->bmiHeader.biCompression == FCC('UYNV'))
-			return PIX_FMT_UYVY422;
+			return AV_PIX_FMT_UYVY422;
 		else if (	pBMI->bmiHeader.biCompression == FCC('YUV9')	||
 					pBMI->bmiHeader.biCompression == FCC('YVU9'))
-			return PIX_FMT_YUV410P;	// For YVU9 we have to invert the planes!
+			return AV_PIX_FMT_YUV410P;	// For YVU9 we have to invert the planes!
 		else if (pBMI->bmiHeader.biCompression == FCC('Y41B'))
-			return PIX_FMT_YUV411P;
+			return AV_PIX_FMT_YUV411P;
 		else if (	pBMI->bmiHeader.biCompression == FCC('YV16')	||
 					pBMI->bmiHeader.biCompression == FCC('Y42B'))
-			return PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
+			return AV_PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
 		else if (pBMI->bmiHeader.biCompression == FCC('J422'))
-			return PIX_FMT_YUVJ422P;
+			return AV_PIX_FMT_YUVJ422P;
 		else if (	pBMI->bmiHeader.biCompression == FCC('  Y8')	||
 					pBMI->bmiHeader.biCompression == FCC('Y800')	||
 					pBMI->bmiHeader.biCompression == FCC('GREY'))
-			return PIX_FMT_GRAY8;
+			return AV_PIX_FMT_GRAY8;
 		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('R','G','B',15))
-			return PIX_FMT_RGB555;
+			return AV_PIX_FMT_RGB555;
 		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('B','G','R',15))
-			return PIX_FMT_BGR555;
+			return AV_PIX_FMT_BGR555;
 		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('R','G','B',16))
-			return PIX_FMT_RGB565;
+			return AV_PIX_FMT_RGB565;
 		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('B','G','R',16))
-			return PIX_FMT_BGR565;
+			return AV_PIX_FMT_BGR565;
 		else if (pBMI->bmiHeader.biCompression == BI_RGB)
 		{
 			switch (pBMI->bmiHeader.biBitCount)
 			{
-				case 8  : return PIX_FMT_PAL8;
-				case 16 : return PIX_FMT_RGB555;
-				case 24 : return PIX_FMT_BGR24;
-				case 32 : return PIX_FMT_RGB32;
-				default : return PIX_FMT_NONE;
+				case 8  : return AV_PIX_FMT_PAL8;
+				case 16 : return AV_PIX_FMT_RGB555;
+				case 24 : return AV_PIX_FMT_BGR24;
+				case 32 : return AV_PIX_FMT_RGB32;
+				default : return AV_PIX_FMT_NONE;
 			}
 		}
 		else if (pBMI->bmiHeader.biCompression == BI_BITFIELDS)
@@ -1305,48 +1283,48 @@ __forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(
 					if ((pBmiBf->biBlueMask == 0x001F)	&&
 						(pBmiBf->biGreenMask == 0x07E0)	&&
 						(pBmiBf->biRedMask == 0xF800))
-						return PIX_FMT_RGB565;
+						return AV_PIX_FMT_RGB565;
 					else
-						return PIX_FMT_RGB555;
+						return AV_PIX_FMT_RGB555;
 				}
-				case 32 : return PIX_FMT_RGB32;
-				default : return PIX_FMT_NONE;
+				case 32 : return AV_PIX_FMT_RGB32;
+				default : return AV_PIX_FMT_NONE;
 			}
 		}
 		else
-			return PIX_FMT_NONE;
+			return AV_PIX_FMT_NONE;
 	}
 	else
-		return PIX_FMT_NONE;
+		return AV_PIX_FMT_NONE;
 }
 
-__forceinline enum PixelFormat CAVIPlay::CAVIVideoStream::AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw)
+__forceinline enum AVPixelFormat CAVIPlay::CAVIVideoStream::AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw)
 {
 	if (pDxDraw)
 	{
 		if (pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
-			return PIX_FMT_YUV420P;
+			return AV_PIX_FMT_YUV420P;
 		else if (pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2'))
-			return PIX_FMT_YUYV422;
+			return AV_PIX_FMT_YUYV422;
 		else if (pDxDraw->GetCurrentSrcFourCC() == BI_RGB)
 		{
 			switch (pDxDraw->GetCurrentSrcBpp())
 			{
-				case 8  : return PIX_FMT_RGB8;
-				case 16 : return pDxDraw->IsCurrentSrcRgb15() ? PIX_FMT_RGB555 : PIX_FMT_RGB565;
-				case 24 : return PIX_FMT_BGR24;
-				case 32 : return PIX_FMT_RGB32;
-				default : return PIX_FMT_RGB32;
+				case 8  : return AV_PIX_FMT_RGB8;
+				case 16 : return pDxDraw->IsCurrentSrcRgb15() ? AV_PIX_FMT_RGB555 : AV_PIX_FMT_RGB565;
+				case 24 : return AV_PIX_FMT_BGR24;
+				case 32 : return AV_PIX_FMT_RGB32;
+				default : return AV_PIX_FMT_RGB32;
 			}
 		}
 		else
-			return PIX_FMT_RGB32;
+			return AV_PIX_FMT_RGB32;
 	}
 	else
-		return PIX_FMT_RGB32;
+		return AV_PIX_FMT_RGB32;
 }
 
-__forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWORD dwFourCC)
+__forceinline enum AVCodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWORD dwFourCC)
 {
 	CString sFourCC = FourCCToStringUpperCase(dwFourCC);
 
@@ -1374,18 +1352,18 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 		sFourCC == _T("DX50")					||	// DX50
 		sFourCC == _T("BLZ0")					||	// BLZ0
 		sFourCC == _T("DXGM"))						// DXGM
-		return CODEC_ID_MPEG4;
+		return AV_CODEC_ID_MPEG4;
 
 	else if (sFourCC == _T("MP41")				||	// MP41
 			sFourCC == _T("MPG4")				||	// MPG4
 			sFourCC == _T("DIV1"))					// DIV1
-		return CODEC_ID_MSMPEG4V1;
+		return AV_CODEC_ID_MSMPEG4V1;
 
 	else if (sFourCC == _T("MP42")				||	// MP42
 			sFourCC == _T("DIV2"))					// DIV2
-		return CODEC_ID_MSMPEG4V2;
+		return AV_CODEC_ID_MSMPEG4V2;
 
-	// Note CODEC_ID_MSMPEG4 = CODEC_ID_MSMPEG4V3
+	// Note AV_CODEC_ID_MSMPEG4 = AV_CODEC_ID_MSMPEG4V3
 	else if (sFourCC == _T("DIV3")				||	// DIV3
 			sFourCC == _T("DIV4")				||	// DIV4
 			sFourCC == _T("DIV5")				||	// DIV5
@@ -1396,59 +1374,59 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 			sFourCC == _T("DVX3")				||	// DVX3
 			sFourCC == _T("MPG3")				||	// MPG3
 			sFourCC == _T("MP43"))					// MP43
-		return CODEC_ID_MSMPEG4V3;
+		return AV_CODEC_ID_MSMPEG4V3;
 
 	else if (sFourCC == _T("SNOW"))					// SNOW
-		return CODEC_ID_SNOW;
+		return AV_CODEC_ID_SNOW;
 
 	else if (sFourCC == _T("WMV1"))					// WMV1
-		return CODEC_ID_WMV1;
+		return AV_CODEC_ID_WMV1;
 
 	else if (sFourCC == _T("WMV2"))					// WMV2
-		return CODEC_ID_WMV2;
+		return AV_CODEC_ID_WMV2;
 
 	else if (sFourCC == _T("FLV1"))					// FLV1
-		return CODEC_ID_FLV1;
+		return AV_CODEC_ID_FLV1;
 
 	else if (sFourCC == _T("VP30")				||	// VP30
 			sFourCC == _T("VP31"))					// VP31
-		return CODEC_ID_VP3;
+		return AV_CODEC_ID_VP3;
 
 	else if (sFourCC == _T("THEO"))					// Theora
-		return CODEC_ID_THEORA;
+		return AV_CODEC_ID_THEORA;
 
 	else if (sFourCC == _T("VP50"))					// VP50
-		return CODEC_ID_VP5;
+		return AV_CODEC_ID_VP5;
 
 	else if (sFourCC == _T("VP6F"))					// VP6F
-		return CODEC_ID_VP6F;
+		return AV_CODEC_ID_VP6F;
 
 	else if (sFourCC == _T("VP60")				||	// VP60
 			sFourCC == _T("VP61")				||	// VP61
 			sFourCC == _T("VP62"))					// VP62
-		return CODEC_ID_VP6;
+		return AV_CODEC_ID_VP6;
 
 	else if (sFourCC == _T("MJPG")				||	// MJPG
-			sFourCC == _T("M601")				||	// M601: contaware introduced this fourcc to distinguish the inofficial jpeg ITU601 color space
+			sFourCC == _T("M601")				||	// M601: contaware introduced this fourcc to distinguish the unofficial jpeg ITU601 color space
 			sFourCC == _T("IJPG")				||	// IJPG
 			sFourCC == _T("DMB1")				||	// DMB1
 			sFourCC == _T("JPGL")				||	// JPGL
 			sFourCC == _T("QIVG"))					// QIVG
-		return CODEC_ID_MJPEG;
+		return AV_CODEC_ID_MJPEG;
 
 	else if (sFourCC == _T("SP54"))					// SP54
-		return CODEC_ID_SP5X;
+		return AV_CODEC_ID_SP5X;
 
 	else if (sFourCC == _T("LJPG"))					// LJPG
-		return CODEC_ID_LJPEG;
+		return AV_CODEC_ID_LJPEG;
 
 	else if (sFourCC == _T("MJLS"))					// MJLS
-		return CODEC_ID_JPEGLS;
+		return AV_CODEC_ID_JPEGLS;
 
 	else if (sFourCC == _T("QPEG")				||	// QPEG
 			sFourCC == _T("Q1.0")				||	// QPEG
 			sFourCC == _T("Q1.1"))					// QPEG
-		return CODEC_ID_QPEG;
+		return AV_CODEC_ID_QPEG;
 
 	else if (sFourCC == _T("DVC ")				||	// DV NTSC
 			sFourCC == _T("DVCP")				||	// DV PAL
@@ -1463,87 +1441,87 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 			sFourCC == _T("DVSL")				||	// DVSL
 			sFourCC == _T("DV25")				||	// DV25
 			sFourCC == _T("DV50"))					// DV50
-		return CODEC_ID_DVVIDEO;
+		return AV_CODEC_ID_DVVIDEO;
 
 	else if (sFourCC == _T("H261")				||	// H261
 			sFourCC == _T("M261"))					// Microsoft M261
-		return CODEC_ID_H261;
+		return AV_CODEC_ID_H261;
 
 	else if (sFourCC == _T("H263")				||	// H263	
 			sFourCC == _T("S263")				||	// S263
 			sFourCC == _T("M263")				||	// Microsoft M263
 			sFourCC == _T("U263")				||	// U263
 			sFourCC == _T("VIV1"))					// VIV1
-		return CODEC_ID_H263;
+		return AV_CODEC_ID_H263;
 
 	else if (sFourCC == _T("I263"))					// Intel I263
-		return CODEC_ID_H263I;
+		return AV_CODEC_ID_H263I;
 
 	else if (sFourCC == _T("H264")				||	// H264
 			sFourCC == _T("X264")				||	// X264
 			sFourCC == _T("VSSH")				||	// VSSH
 			sFourCC == _T("DAVC")				||	// DAVC
 			sFourCC == _T("AVC1"))					// AVC1
-		return CODEC_ID_H264;
+		return AV_CODEC_ID_H264;
 
 	else if (sFourCC == _T("VC-1"))					// SMPTE RP 2025
-		return CODEC_ID_VC1;
+		return AV_CODEC_ID_VC1;
 
 	else if (sFourCC == _T("HFYU"))					// HFYU
-		return CODEC_ID_HUFFYUV;
+		return AV_CODEC_ID_HUFFYUV;
 
 	else if (sFourCC == _T("FFVH"))					// FFVH
-		return CODEC_ID_FFVHUFF;
+		return AV_CODEC_ID_FFVHUFF;
 
 	else if (sFourCC == _T("FFV1"))					// FFV1
-		return CODEC_ID_FFV1;
+		return AV_CODEC_ID_FFV1;
 
 	else if (dwFourCC == BI_RLE8				||	// RLE8
 			dwFourCC == BI_RLE4					||	// RLE4
 			sFourCC == _T("RLE ")				||	// RLE8 or RLE4
 			sFourCC == _T("RLE8")				||	// RLE8
 			sFourCC == _T("RLE4"))					// RLE4
-		return CODEC_ID_MSRLE;
+		return AV_CODEC_ID_MSRLE;
 
 	else if (sFourCC == _T("MPNG"))					// MPNG
-		return CODEC_ID_PNG;
+		return AV_CODEC_ID_PNG;
 	
 	/*else if (sFourCC == _T("PNG1"))				// PNG1
-		return CODEC_ID_COREPNG;*/
+		return AV_CODEC_ID_COREPNG;*/
 	
 	else if (sFourCC == _T("ZLIB"))					// ZLIB
-		return CODEC_ID_ZLIB;
+		return AV_CODEC_ID_ZLIB;
 	
 	else if (sFourCC == _T("QRLE"))					// QRLE
-		return CODEC_ID_QTRLE;
+		return AV_CODEC_ID_QTRLE;
 	
 	else if (sFourCC == _T("TSCC"))					// TSCC
-		return CODEC_ID_TSCC;
+		return AV_CODEC_ID_TSCC;
 
 	else if (sFourCC == _T("CSCD"))					// CSCD
-		return CODEC_ID_CSCD;
+		return AV_CODEC_ID_CSCD;
 	
 	else if (sFourCC == _T("CVID"))					// Cinepak
-		return CODEC_ID_CINEPAK;
+		return AV_CODEC_ID_CINEPAK;
 
 	else if (sFourCC == _T("CRAM")				||	// MS Video 1
 			sFourCC == _T("MSVC")				||	// MS Video 1
 			sFourCC == _T("WHAM"))					// MS Video 1
-		return CODEC_ID_MSVIDEO1;
+		return AV_CODEC_ID_MSVIDEO1;
 
 	else if (sFourCC == _T("IV31")				||	// IV31
 			sFourCC == _T("IV32"))					// IV32
-		return CODEC_ID_INDEO3;
+		return AV_CODEC_ID_INDEO3;
 
 	else if (sFourCC == _T("MPEG")				||	// MPEG
 			sFourCC == _T("MPG1")				||	// MPG1
 			sFourCC == _T("PIM1")				||	// PIM1
 			dwFourCC == 0x10000001)
-		return CODEC_ID_MPEG1VIDEO;
+		return AV_CODEC_ID_MPEG1VIDEO;
 
 	/* Implemented in YuvToRgb.cpp
 	else if (sFourCC == _T("VCR1"))					// VCR1
-		return CODEC_ID_VCR1;*/
+		return AV_CODEC_ID_VCR1;*/
 
 	else if (sFourCC == _T("VCR2")				||	// VCR2, only intra frame compression
 			sFourCC == _T("MPG2")				||	// MPG2
@@ -1556,10 +1534,10 @@ __forceinline enum CodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWO
 			sFourCC == _T("EM2V")				||	// EM2V
 			sFourCC == _T("DVR ")				||	// DVR
 			dwFourCC == 0x10000002)
-		return CODEC_ID_MPEG2VIDEO;
+		return AV_CODEC_ID_MPEG2VIDEO;
 
 	else
-		return CODEC_ID_NONE;
+		return AV_CODEC_ID_NONE;
 }
 
 #endif //!_INC_AVIPLAY

@@ -12,22 +12,30 @@ static char THIS_FILE[] = __FILE__;
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
 
-// Libs
+// Ffmpeg libs
 #pragma comment(lib, "ffmpeg\\libavcodec\\libavcodec.a")
 #pragma comment(lib, "ffmpeg\\libavformat\\libavformat.a")
 #pragma comment(lib, "ffmpeg\\libavutil\\libavutil.a")
-#pragma comment(lib, "ffmpeg\\lib\\libgcc.a")
-/*
-To correctly link in VS2010 we have to remove mbrtowc.o and wcrtomb.o from libmingwex.a,
-perform the following in visual studio command prompt:
-1. cd uimager\ffmpeg\lib
-2. lib -remove:mbrtowc.o libmingwex.a
-3. lib -remove:wcrtomb.o libmingwex.lib (note the ending .lib)
-4. del libmingwex.a
-5. rename libmingwex.lib libmingwex.a
-*/
-#pragma comment(lib, "ffmpeg\\lib\\libmingwex.a")
-#pragma comment(lib, "ffmpeg\\lib\\libmp3lame.a")
+#pragma comment(lib, "ffmpeg\\libswscale\\libswscale.a")
+#pragma comment(lib, "ffmpeg\\libswresample\\libswresample.a")
+// In 2014 I was happy to be able to build ffmpeg 2.2.1 with vs2010,
+// but the result was extremelly slow: video codecs slower by a
+// factor of 1.5 - 2 and swscale by a factor of 3 compared to mingw
+#ifdef FFMPEG_TOOLCHAIN_MSVC
+#pragma comment(lib, "ffmpeg\\msvc\\mp3lame.lib")
+#else
+// libcmt.lib(_pow_.obj) : error LNK2005: _pow already defined in libmingwex.a(pow.o)
+// -> to correctly link we have to remove pow.o from libmingwex.a,
+// perform the following in visual studio command prompt:
+// 1. cd uimager\ffmpeg\lib
+// 2. lib -remove:pow.o libmingwex.a
+// 3. rename libmingwex.lib libmingwex.a
+#pragma comment(lib, "ffmpeg\\mingw\\libgcc.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libmingwex.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libmp3lame.a")
+#endif
+
+// Win32 libs
 #pragma comment(lib, "wsock32.lib")
 #pragma comment(lib, "vfw32.lib")
 #pragma comment(lib, "msacm32.lib")
@@ -629,12 +637,12 @@ void CAVIPlay::CAVIAudioStream::Free()
 	// Clean-Up
 	if (m_pSrcBuf)
 	{
-		delete [] m_pSrcBuf;
+		av_free(m_pSrcBuf);
 		m_pSrcBuf = NULL;
 	}
 	if (m_pDstBuf)
 	{
-		delete [] m_pDstBuf;
+		av_free(m_pDstBuf);
 		m_pDstBuf = NULL;
 	}
 	m_dwSrcBufSize = 0;
@@ -672,14 +680,16 @@ void CAVIPlay::CAVIAudioStream::Free()
 
 void CAVIPlay::CAVIAudioStream::FreeAVCodec()
 {
-	if (m_pParser)
-	{
-		av_parser_close(m_pParser);
-		m_pParser = NULL;
-	}
 	if (m_pCodecCtx)
 	{
-		// Close
+		/*
+		Close a given AVCodecContext and free all the data associated with it
+		(but not the AVCodecContext itself).
+		Calling this function on an AVCodecContext that hasn't been opened will free
+		the codec-specific data allocated in avcodec_alloc_context3() /
+		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
+		do nothing.
+		*/
 		avcodec_close_thread_safe(m_pCodecCtx);
 
 		// Free
@@ -687,8 +697,13 @@ void CAVIPlay::CAVIAudioStream::FreeAVCodec()
 			av_freep(&m_pCodecCtx->extradata);
 		m_pCodecCtx->extradata_size = 0;
 		av_freep(&m_pCodecCtx);
-		m_pCodec = NULL;
 	}
+	m_pCodec = NULL;
+
+	if (m_pFrame)
+		av_frame_free(&m_pFrame);
+	if (m_pAudioConvertCtx)
+		swr_free(&m_pAudioConvertCtx);
 } 
 
 bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
@@ -697,7 +712,7 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 	FreeAVCodec();
 
 	// Find the decoder for the audio stream
-	CodecID id = AVCodecFormatTagToCodecID(GetFormatTag(true),
+	AVCodecID id = AVCodecFormatTagToCodecID(GetFormatTag(true),
 				((LPWAVEFORMATEX)m_pSrcFormat)->wBitsPerSample);
 	
 	// Open Codec
@@ -705,12 +720,15 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
     if (!m_pCodec)
         return false;
 
-	// Open the Parser for CBR DTS
-	if (id == CODEC_ID_DTS && !m_bVBR)
-		m_pParser = av_parser_init(id);
-
-    // Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
+	// Allocate Context
+	/* if m_pCodec non-NULL, allocate private data and initialize defaults
+	 * for the given codec. It is illegal to then call avcodec_open2()
+	 * with a different codec.
+	 * If NULL, then the codec-specific defaults won't be initialized,
+	 * which may result in suboptimal default settings (this is
+	 * important mainly for encoders, e.g. libx264).
+	 */
+	m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
 	if (!m_pCodecCtx)
 	{
 		m_pCodec = NULL;
@@ -742,55 +760,11 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 		else
 			m_pCodecCtx->extradata_size = 0;
 	}
-	// The AAC decoder needs the header in extradata!
-	else if (id == CODEC_ID_AAC)
-	{
-		const int mpeg4audio_sample_rates[16] = {
-			96000, 88200, 64000, 48000, 44100, 32000,
-			24000, 22050, 16000, 12000, 11025, 8000, 7350, 0, 0, 0
-		};
-		m_pCodecCtx->extradata_size = 2;
-		m_pCodecCtx->extradata = (uint8_t*)av_malloc(m_pCodecCtx->extradata_size +
-													FF_INPUT_BUFFER_PADDING_SIZE);
-		if (m_pCodecCtx->extradata)
-		{
-			int sample_rate_index;
-			for (sample_rate_index = 0 ; sample_rate_index < 16 ; sample_rate_index++)
-			{
-				if (m_pCodecCtx->sample_rate == mpeg4audio_sample_rates[sample_rate_index])
-					break;
-			}
-			if (sample_rate_index == 16)
-			{
-				if (m_pCodecCtx->extradata)
-					av_freep(&m_pCodecCtx->extradata);
-				m_pCodecCtx->extradata_size = 0;
-				av_free(m_pCodecCtx);
-				m_pCodecCtx = NULL;
-				m_pCodec = NULL;
-				return false;
-			}
-			int header = 2;	// object type 2 is AAC-LC
-			header <<= 4;
-			header |= sample_rate_index;
-			header <<= 4;
-			header |= m_pCodecCtx->channels;
-			header <<= 1;
-			header |= 0;	// 0 means that frame length is 1024 samples
-			header <<= 1;
-			header |= 0;	// 0 means that does not depend on core coder
-			header <<= 1;
-			header |= 0;	// 0 means is not extension
-			header = ((header << 8) & 0xFF00) | ((header >> 8) & 0x00FF); // LE to BE
-			memcpy(m_pCodecCtx->extradata, &header, m_pCodecCtx->extradata_size);
-		}
-		else
-			m_pCodecCtx->extradata_size = 0;
-	}
 
 	// Open codec
     if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
 	{
+		avcodec_close_thread_safe(m_pCodecCtx);
 		if (m_pCodecCtx->extradata)
 			av_freep(&m_pCodecCtx->extradata);
 		m_pCodecCtx->extradata_size = 0;
@@ -813,7 +787,7 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 		m_dwDstMinBytesCount = 48 * AUDIO_PCM_MIN_BUF_SIZE * nChannels;
 	else
 		m_dwDstMinBytesCount = 64 * AUDIO_PCM_MIN_BUF_SIZE * nChannels;
-	m_dwDstMinBytesCount = MAX(m_dwDstMinBytesCount, AVCODEC_MAX_AUDIO_FRAME_SIZE);
+	m_dwDstMinBytesCount = MAX(m_dwDstMinBytesCount, 192000); // at least 1 second of 48khz 16bit stereo
 	m_dwDstBufSize = 3 * m_dwDstMinBytesCount;
 
 	// Calc. Source Buffer Sizes
@@ -841,12 +815,29 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 		m_dwSrcBufSize = m_dwDstBufSize / nCompression;
 	}
 
+	// Allocate audio frame
+	if (m_pFrame)
+		av_frame_free(&m_pFrame);
+    m_pFrame = av_frame_alloc();
+	if (!m_pFrame)
+	{
+		avcodec_close_thread_safe(m_pCodecCtx);
+		if (m_pCodecCtx->extradata)
+			av_freep(&m_pCodecCtx->extradata);
+		m_pCodecCtx->extradata_size = 0;
+		av_free(m_pCodecCtx);
+		m_pCodecCtx = NULL;
+		m_pCodec = NULL;
+		return false;
+	}
+
 	// Allocate Destination Buffer
 	if (m_pDstBuf)
-		delete [] m_pDstBuf;
-	m_pDstBuf = new BYTE[m_dwDstBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+		av_free(m_pDstBuf);
+	m_pDstBuf = (LPBYTE)av_malloc(m_dwDstBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
 	if (!m_pDstBuf)
 	{
+		avcodec_close_thread_safe(m_pCodecCtx);
 		if (m_pCodecCtx->extradata)
 			av_freep(&m_pCodecCtx->extradata);
 		m_pCodecCtx->extradata_size = 0;
@@ -858,10 +849,11 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 
 	// Allocate Source Buffer
 	if (m_pSrcBuf)
-		delete [] m_pSrcBuf;
-	m_pSrcBuf = new BYTE[m_dwSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+		av_free(m_pSrcBuf);
+	m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
 	if (!m_pSrcBuf)
 	{
+		avcodec_close_thread_safe(m_pCodecCtx);
 		if (m_pCodecCtx->extradata)
 			av_freep(&m_pCodecCtx->extradata);
 		m_pCodecCtx->extradata_size = 0;
@@ -874,44 +866,44 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 	return true;
 }
 
-enum CodecID CAVIPlay::CAVIAudioStream::AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits/*=16*/)
+enum AVCodecID CAVIPlay::CAVIAudioStream::AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits/*=16*/)
 {
 	switch (wFormatTag)
 	{
-		case WAVE_FORMAT_PCM :					return nPcmBits == 16 ? CODEC_ID_PCM_S16LE : CODEC_ID_PCM_U8;
-		case WAVE_FORMAT_MSAUDIO1 :				return CODEC_ID_WMAV1; // = WMA7
-		case WAVE_FORMAT_WMA8 :					return CODEC_ID_WMAV2;
-		case WAVE_FORMAT_MPEG :					return CODEC_ID_MP2;
-		case WAVE_FORMAT_MPEGLAYER3 :			return CODEC_ID_MP3;
-		case WAVE_FORMAT_DOLBY_AC3 :			return CODEC_ID_AC3;
-		case WAVE_FORMAT_DVD_DTS :				return CODEC_ID_DTS;
+		case WAVE_FORMAT_PCM :					return nPcmBits == 16 ? AV_CODEC_ID_PCM_S16LE : AV_CODEC_ID_PCM_U8;
+		case WAVE_FORMAT_MSAUDIO1 :				return AV_CODEC_ID_WMAV1; // = WMA7
+		case WAVE_FORMAT_WMA8 :					return AV_CODEC_ID_WMAV2;
+		case WAVE_FORMAT_MPEG :					return AV_CODEC_ID_MP2;
+		case WAVE_FORMAT_MPEGLAYER3 :			return AV_CODEC_ID_MP3;
+		case WAVE_FORMAT_DOLBY_AC3 :			return AV_CODEC_ID_AC3;
+		case WAVE_FORMAT_DVD_DTS :				return AV_CODEC_ID_DTS;
 		case WAVE_FORMAT_VORBIS :
 		case WAVE_FORMAT_OGG1 :
 		case WAVE_FORMAT_OGG2 :
 		case WAVE_FORMAT_OGG3 :
 		case WAVE_FORMAT_OGG1P :
 		case WAVE_FORMAT_OGG2P :
-		case WAVE_FORMAT_OGG3P :				return CODEC_ID_VORBIS;
-		case WAVE_FORMAT_FLAC :					return CODEC_ID_FLAC;
-		case WAVE_FORMAT_AAC1 :					return CODEC_ID_AAC;
-		case WAVE_FORMAT_AAC2 :					return CODEC_ID_AAC;
-		case WAVE_FORMAT_AAC4 :					return CODEC_ID_AAC;
-		case WAVE_FORMAT_AMR :					return CODEC_ID_AMR_NB;
-		case WAVE_FORMAT_VOXWARE :				return CODEC_ID_ADPCM_IMA_DK3;
-		case WAVE_FORMAT_DVI_ADPCM :			return CODEC_ID_ADPCM_IMA_WAV;
-		case WAVE_FORMAT_ESPCM :				return CODEC_ID_ADPCM_IMA_DK4;
-		case WAVE_FORMAT_ADPCM :				return CODEC_ID_ADPCM_MS;
-		case WAVE_FORMAT_CREATIVE_ADPCM :		return CODEC_ID_ADPCM_CT;
-		case WAVE_FORMAT_YAMAHA_ADPCM :			return CODEC_ID_ADPCM_YAMAHA;
-		case WAVE_FORMAT_G726_ADPCM :			return CODEC_ID_ADPCM_G726;
-		case WAVE_FORMAT_ALAW :					return CODEC_ID_PCM_ALAW;
-		case WAVE_FORMAT_MULAW :				return CODEC_ID_PCM_MULAW;
-		case WAVE_FORMAT_GSM610 :				return CODEC_ID_GSM_MS;
-		case WAVE_FORMAT_DSPGROUP_TRUESPEECH :	return CODEC_ID_TRUESPEECH;
-		case WAVE_FORMAT_TTA :					return CODEC_ID_TTA;
-		case WAVE_FORMAT_COOK :					return CODEC_ID_COOK;
-		case WAVE_FORMAT_SONY_SCX :				return CODEC_ID_ATRAC3;
-		default :								return CODEC_ID_NONE;
+		case WAVE_FORMAT_OGG3P :				return AV_CODEC_ID_VORBIS;
+		case WAVE_FORMAT_FLAC :					return AV_CODEC_ID_FLAC;
+		case WAVE_FORMAT_AAC1 :					return AV_CODEC_ID_AAC;
+		case WAVE_FORMAT_AAC2 :					return AV_CODEC_ID_AAC;
+		case WAVE_FORMAT_AAC4 :					return AV_CODEC_ID_AAC;
+		case WAVE_FORMAT_AMR :					return AV_CODEC_ID_AMR_NB;
+		case WAVE_FORMAT_VOXWARE :				return AV_CODEC_ID_ADPCM_IMA_DK3;
+		case WAVE_FORMAT_DVI_ADPCM :			return AV_CODEC_ID_ADPCM_IMA_WAV;
+		case WAVE_FORMAT_ESPCM :				return AV_CODEC_ID_ADPCM_IMA_DK4;
+		case WAVE_FORMAT_ADPCM :				return AV_CODEC_ID_ADPCM_MS;
+		case WAVE_FORMAT_CREATIVE_ADPCM :		return AV_CODEC_ID_ADPCM_CT;
+		case WAVE_FORMAT_YAMAHA_ADPCM :			return AV_CODEC_ID_ADPCM_YAMAHA;
+		case WAVE_FORMAT_G726_ADPCM :			return AV_CODEC_ID_ADPCM_G726;
+		case WAVE_FORMAT_ALAW :					return AV_CODEC_ID_PCM_ALAW;
+		case WAVE_FORMAT_MULAW :				return AV_CODEC_ID_PCM_MULAW;
+		case WAVE_FORMAT_GSM610 :				return AV_CODEC_ID_GSM_MS;
+		case WAVE_FORMAT_DSPGROUP_TRUESPEECH :	return AV_CODEC_ID_TRUESPEECH;
+		case WAVE_FORMAT_TTA :					return AV_CODEC_ID_TTA;
+		case WAVE_FORMAT_COOK :					return AV_CODEC_ID_COOK;
+		case WAVE_FORMAT_SONY_SCX :				return AV_CODEC_ID_ATRAC3;
+		default :								return AV_CODEC_ID_NONE;
 	}
 }
 
@@ -1220,8 +1212,8 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionACM()
 	// Allocate Dst (=Uncompressed) Buffer
 	m_dwDstBufSize = 2 * MAX(dwSuggestedDstBufSize, m_dwDstMinBytesCount);	// Be Safe!
 	if (m_pDstBuf)
-		delete [] m_pDstBuf;
-	m_pDstBuf = new BYTE[m_dwDstBufSize];
+		av_free(m_pDstBuf);
+	m_pDstBuf = (LPBYTE)av_malloc(m_dwDstBufSize);
 	if (!m_pDstBuf)
 	{
 		::acmStreamClose(m_hAcmStream, 0);
@@ -1240,8 +1232,8 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionACM()
 	}
 	m_dwSrcBufSize *= 2;	// Be Safe!
 	if (m_pSrcBuf)
-		delete [] m_pSrcBuf;
-	m_pSrcBuf = new BYTE[m_dwSrcBufSize];
+		av_free(m_pSrcBuf);
+	m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize);
 	if (!m_pSrcBuf)
 	{
 		::acmStreamClose(m_hAcmStream, 0);
@@ -1294,7 +1286,7 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompression()
 		m_dwDstBufSize = 2 * MAX(dwSuggestedBufSize, m_dwDstMinBytesCount);	// Be Safe!
 		if (GetMaxChunkSize() > m_dwDstBufSize)
 			m_dwDstBufSize = GetMaxChunkSize();
-		m_pDstBuf = new BYTE[m_dwDstBufSize];
+		m_pDstBuf = (LPBYTE)av_malloc(m_dwDstBufSize);
 		if (!m_pDstBuf)
 		{
 			Free();
@@ -1857,6 +1849,58 @@ bool CAVIPlay::CAVIAudioStream::GetNextChunksSamples()
 	return GetChunksSamples(m_dwNextChunk);
 }
 
+int CAVIPlay::CAVIAudioStream::AVDecodeAudio(LPBYTE pDstBuf, int& out_size, AVPacket* pkt,
+										int& out_channels, int& out_sample_rate, AVSampleFormat& out_sample_fmt)
+{
+	// Check
+	if (!pDstBuf || !pkt)
+		return -1;
+
+	// Reset Frame Structure
+	av_frame_unref(m_pFrame);
+
+	// Decode
+	int got_frame = 0;
+	int len = avcodec_decode_audio4(m_pCodecCtx, m_pFrame, &got_frame, pkt); // returns the number of bytes consumed from the input
+	
+	// Set conversion params
+	out_channels = MIN(2, m_pCodecCtx->channels); // not more channels than stereo
+	out_sample_rate = m_pCodecCtx->sample_rate;
+	out_sample_fmt = av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) == 1 ? AV_SAMPLE_FMT_U8 : AV_SAMPLE_FMT_S16;			
+
+	// Create resampler context
+	if (!m_pAudioConvertCtx)
+	{
+		m_pAudioConvertCtx = swr_alloc();
+		if (!m_pAudioConvertCtx)
+			return -1;
+		av_opt_set_int       (m_pAudioConvertCtx, "in_channel_count",   m_pCodecCtx->channels, 0);
+		av_opt_set_int       (m_pAudioConvertCtx, "in_sample_rate",     m_pCodecCtx->sample_rate, 0);
+		av_opt_set_sample_fmt(m_pAudioConvertCtx, "in_sample_fmt",      m_pCodecCtx->sample_fmt, 0);
+		av_opt_set_int       (m_pAudioConvertCtx, "out_channel_count",  out_channels, 0);
+		av_opt_set_int       (m_pAudioConvertCtx, "out_sample_rate",    out_sample_rate, 0);
+		av_opt_set_sample_fmt(m_pAudioConvertCtx, "out_sample_fmt",     out_sample_fmt, 0);
+		if (swr_init(m_pAudioConvertCtx) < 0)
+			return -1;
+	}
+
+	// Resample
+	int out_samples = (int)av_rescale_rnd(swr_get_delay(m_pAudioConvertCtx, m_pCodecCtx->sample_rate) + m_pFrame->nb_samples, out_sample_rate, m_pCodecCtx->sample_rate, AV_ROUND_UP);
+	uint8_t* out_buffer = NULL;
+	av_samples_alloc(&out_buffer, NULL, out_channels, out_samples, out_sample_fmt, 0);
+	out_samples = swr_convert(m_pAudioConvertCtx, &out_buffer, out_samples, (const uint8_t **)m_pFrame->data, m_pFrame->nb_samples);
+	if (out_samples < 0)
+		return -1;
+
+	// Copy to given destination buffer
+	out_size = MIN(out_size, out_channels * out_samples * av_get_bytes_per_sample(out_sample_fmt));
+	if (out_size > 0)
+		memcpy(pDstBuf, out_buffer, out_size);
+	av_freep(&out_buffer);
+
+	return len;
+}
+
 bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 {
 	// Enter CS
@@ -2083,8 +2127,8 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 			// If lay has the reserved value of 0 it means that the structure has not been initialized
 			int nOffset;
 			int nFrameSize;
-			if ((m_pCodecCtx->codec_id == CODEC_ID_MP2	||
-				m_pCodecCtx->codec_id == CODEC_ID_MP3)	&&
+			if ((m_pCodecCtx->codec_id == AV_CODEC_ID_MP2	||
+				m_pCodecCtx->codec_id == AV_CODEC_ID_MP3)	&&
 				m_MpegAudioFrameHdr.lay == 0)
 			{
 				nFrameSize = (int)dwSrcBufSizeUsed;
@@ -2105,13 +2149,12 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 				// Reset
 				m_dwSrcBufUnconvertedBytesCount = 0;
 
-				// To Stereo for AC3 & DTS
-				if (m_pCodecCtx->channels > 2)
-					m_pCodecCtx->channels = 2;
-
 				int out_size = 0;
-				if ((m_pCodecCtx->codec_id == CODEC_ID_MP2	||
-					m_pCodecCtx->codec_id == CODEC_ID_MP3)	&&
+				int out_channels = 2;
+				int out_sample_rate = 44100;
+				AVSampleFormat out_sample_fmt = AV_SAMPLE_FMT_S16;
+				if ((m_pCodecCtx->codec_id == AV_CODEC_ID_MP2	||
+					m_pCodecCtx->codec_id == AV_CODEC_ID_MP3)	&&
 					!m_bVBR)
 				{
 					nFrameSize = nSrcBufSizeUsed;
@@ -2121,10 +2164,15 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 					nOffset = GetMpegAudioFrameHdr(inbuf_ptr, &nFrameSize, nLayer, NULL, &m_MpegAudioFrameHdr);
 					if (nOffset >= 0 && nFrameSize > 0)
 					{
+						// Copy source data to have a correctly aligned buffer
+						// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+						AVPacket pkt;
+						av_new_packet(&pkt, nFrameSize);
+						memcpy(pkt.data, inbuf_ptr + nOffset, nFrameSize);
 						out_size = (int)m_dwDstBufSize - total_out_size;
-						len = avcodec_decode_audio2(m_pCodecCtx, (__int16 *)(m_pDstBuf + total_out_size),
-													&out_size, (unsigned __int8 *)(inbuf_ptr + nOffset), nFrameSize);
-						
+						len = AVDecodeAudio(m_pDstBuf + total_out_size, out_size, &pkt, out_channels, out_sample_rate, out_sample_fmt);
+						av_free_packet(&pkt);
+
 						// GetMpegAudioFrameHdr parser found a wrong frame start -> try again!
 						if (len == -1)
 						{
@@ -2133,7 +2181,7 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 						}
 						else
 						{
-							// avcodec_decode_audio is not returning the
+							// avcodec_decode_audio4 may not return the
 							// correct used source size for one frame
 							// -> set len manually!
 							len = nOffset + nFrameSize;
@@ -2158,70 +2206,28 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 				}
 				else
 				{
-					uint8_t* parsed_buf = (uint8_t*)inbuf_ptr;
-					int parsed_size = nSrcBufSizeUsed;
-					if (m_pParser)
+					if (nSrcBufSizeUsed > 0)
 					{
-						// Finds the next start of a audio frame:
-						// - pos is the offset to the start of the next frame
-						//   pos == 0 means that there are no
-						//   enough data to find a frame start
-						// - parsed_size returns the found frame size
-						int pos = av_parser_parse(	m_pParser, m_pCodecCtx,
-													&parsed_buf, &parsed_size,
-													(unsigned __int8 *)inbuf_ptr, nSrcBufSizeUsed,
-													AV_NOPTS_VALUE, AV_NOPTS_VALUE);
-						if (pos == 0)				// No enough input data
-						{
-							parsed_size = 0;
-							out_size = 0;
-							len = 0;
-							m_dwSrcBufUnconvertedBytesCount = nSrcBufSizeUsed;
-							if (m_dwSrcBufUnconvertedBytesCount >= m_dwSrcBufSize / 2)
-							{
-								m_dwDstBufSizeUsed = 0;
-								m_nCurrentChunksCount = 0;
-								m_dwDstBufOffset = 0;
-								::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-								return false;
-							}
-							memmove(m_pSrcBuf, inbuf_ptr, m_dwSrcBufUnconvertedBytesCount);
-							nSrcBufSizeUsed = 0;
-						}
-						else if (pos < parsed_size)	// Seeking
-						{
-							nSrcBufSizeUsed -= pos;
-							inbuf_ptr += pos;
-						}
-					}
-					if (parsed_size > 0)
-					{
+						// Copy source data to have a correctly aligned buffer
+						// ending with FF_INPUT_BUFFER_PADDING_SIZE zero bytes
+						AVPacket pkt;
+						av_new_packet(&pkt, nSrcBufSizeUsed);
+						memcpy(pkt.data, inbuf_ptr, nSrcBufSizeUsed);
 						out_size = (int)m_dwDstBufSize - total_out_size;
-						len = avcodec_decode_audio2(m_pCodecCtx, (__int16 *)(m_pDstBuf + total_out_size),
-													&out_size, (uint8_t*)inbuf_ptr, parsed_size);
-						
-						// Parser found a wrong frame start -> try again!
-						if (m_pParser && len == -1)
-						{
-							out_size = 0;
-							len = 1;
-						}
+						len = AVDecodeAudio(m_pDstBuf + total_out_size, out_size, &pkt, out_channels, out_sample_rate, out_sample_fmt);
+						av_free_packet(&pkt);
 					}
 				}	
 
-				// To Stereo for AC3 & DTS
-				if (m_pCodecCtx->channels > 2)
-					m_pCodecCtx->channels = 2;
-
 				if (m_bFirstConversion && out_size > 0)
 				{
-					m_pUncompressedWaveFormat->nChannels = m_pCodecCtx->channels;
-					if (m_pCodecCtx->sample_fmt == SAMPLE_FMT_U8)
+					m_pUncompressedWaveFormat->nChannels = out_channels;
+					if (out_sample_fmt == AV_SAMPLE_FMT_U8)
 					{
 						m_pUncompressedWaveFormat->wBitsPerSample = 8;
 						m_pUncompressedWaveFormat->nBlockAlign = m_pUncompressedWaveFormat->nChannels;
 					}
-					else if (m_pCodecCtx->sample_fmt == SAMPLE_FMT_S16)
+					else if (out_sample_fmt == AV_SAMPLE_FMT_S16)
 					{
 						m_pUncompressedWaveFormat->wBitsPerSample = 16;
 						m_pUncompressedWaveFormat->nBlockAlign = 2 * m_pUncompressedWaveFormat->nChannels;
@@ -2234,10 +2240,10 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 						::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 						return false;
 					}
-					m_pUncompressedWaveFormat->nSamplesPerSec = m_pCodecCtx->sample_rate;
+					m_pUncompressedWaveFormat->nSamplesPerSec = out_sample_rate;
 					if (m_pUncompressedWaveFormat->nSamplesPerSec == 0)
 						m_pUncompressedWaveFormat->nSamplesPerSec = ((LPWAVEFORMATEX)m_pSrcFormat)->nSamplesPerSec;
-					m_pUncompressedWaveFormat->nAvgBytesPerSec = m_pCodecCtx->sample_rate * m_pUncompressedWaveFormat->nBlockAlign;
+					m_pUncompressedWaveFormat->nAvgBytesPerSec = out_sample_rate * m_pUncompressedWaveFormat->nBlockAlign;
 					if (m_pUncompressedWaveFormat->nAvgBytesPerSec == 0)
 						m_pUncompressedWaveFormat->nAvgBytesPerSec = m_pUncompressedWaveFormat->nBlockAlign * m_pUncompressedWaveFormat->nSamplesPerSec;
 					m_pUncompressedWaveFormat->cbSize = 0;
@@ -2251,7 +2257,6 @@ bool CAVIPlay::CAVIAudioStream::GetChunksSamples(DWORD dwChunkNum)
 				}
 
 				// Skip Decodes from before the seek!
-				// (necessary for AC3 decoder, maybe also others...)
 				if (bSeek && len == 0)
 					out_size = 0;
 				bSeek = false;
@@ -2753,29 +2758,29 @@ bool CAVIPlay::CAVIVideoStream::PrepareWantedDstBMI(LPBITMAPINFOHEADER pDstBMIH)
 
 bool CAVIPlay::CAVIVideoStream::IsYUV420Out(DWORD dwFourCC)
 {
-	enum CodecID id = AVCodecFourCCToCodecID(dwFourCC);
-	if (id == CODEC_ID_MPEG4		||
-		id == CODEC_ID_MSMPEG4V1	||
-		id == CODEC_ID_MSMPEG4V2	||
-		id == CODEC_ID_MSMPEG4V3	||
-		id == CODEC_ID_SNOW			||
-		id == CODEC_ID_WMV1			||
-		id == CODEC_ID_WMV2			||
-		id == CODEC_ID_FLV1			||
-		id == CODEC_ID_VP3			||
-		id == CODEC_ID_THEORA		||
-		id == CODEC_ID_VP5			||
-		id == CODEC_ID_VP6F			||
-		id == CODEC_ID_VP6			||
-		id == CODEC_ID_H261			||
-		id == CODEC_ID_H263			||
-		id == CODEC_ID_H263I		||
-		id == CODEC_ID_H264			||
-		id == CODEC_ID_VC1			||
-		id == CODEC_ID_FFVHUFF		||
-		id == CODEC_ID_FFV1			||
-		id == CODEC_ID_MPEG1VIDEO	||
-		id == CODEC_ID_MPEG2VIDEO)
+	enum AVCodecID id = AVCodecFourCCToCodecID(dwFourCC);
+	if (id == AV_CODEC_ID_MPEG4			||
+		id == AV_CODEC_ID_MSMPEG4V1		||
+		id == AV_CODEC_ID_MSMPEG4V2		||
+		id == AV_CODEC_ID_MSMPEG4V3		||
+		id == AV_CODEC_ID_SNOW			||
+		id == AV_CODEC_ID_WMV1			||
+		id == AV_CODEC_ID_WMV2			||
+		id == AV_CODEC_ID_FLV1			||
+		id == AV_CODEC_ID_VP3			||
+		id == AV_CODEC_ID_THEORA		||
+		id == AV_CODEC_ID_VP5			||
+		id == AV_CODEC_ID_VP6F			||
+		id == AV_CODEC_ID_VP6			||
+		id == AV_CODEC_ID_H261			||
+		id == AV_CODEC_ID_H263			||
+		id == AV_CODEC_ID_H263I			||
+		id == AV_CODEC_ID_H264			||
+		id == AV_CODEC_ID_VC1			||
+		id == AV_CODEC_ID_FFVHUFF		||
+		id == AV_CODEC_ID_FFV1			||
+		id == AV_CODEC_ID_MPEG1VIDEO	||
+		id == AV_CODEC_ID_MPEG2VIDEO)
 		return true;
 	else
 		return false;
@@ -2916,7 +2921,7 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 		// Allocate Buffer
 		m_dwSrcBufSize =	4 * pSrcBMIH->biWidth *
 							ABS(pSrcBMIH->biHeight);
-		m_pSrcBuf = new BYTE[m_dwSrcBufSize];
+		m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize);
 		if (!m_pSrcBuf)
 			return false;
 
@@ -2943,13 +2948,10 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 		m_pDstBMI->bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(	m_pDstBMI->bmiHeader.biBitCount	*
 																m_pDstBMI->bmiHeader.biWidth)	*
 																ABS(m_pDstBMI->bmiHeader.biHeight);
-		m_dwDstBufSize = DWALIGNEDWIDTHBYTES(	m_pDstBMI->bmiHeader.biBitCount							*
-												DOALIGN(m_pDstBMI->bmiHeader.biWidth, 16)	*
-												DOALIGN(ABS(m_pDstBMI->bmiHeader.biHeight), 16));
-		m_pSrcBuf = new BYTE[m_dwSrcBufSize = pSrcBMIH->biSizeImage];
+		m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize = pSrcBMIH->biSizeImage);
 		if (!m_pSrcBuf)
 			return false;
-		m_pDstBuf = new BYTE[m_dwDstBufSize];
+		m_pDstBuf = (LPBYTE)av_malloc(m_dwDstBufSize = m_pDstBMI->bmiHeader.biSizeImage);
 		if (!m_pDstBuf)
 			return false;
 		m_bYuvToRgb32 = true;
@@ -3032,13 +3034,13 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompression(bool bForceRgb)
 	// Allocate Src & Dst Buffers
 	DWORD dwBufSize =	8 * m_pDstBMI->bmiHeader.biWidth * // Be Safe!
 						ABS(m_pDstBMI->bmiHeader.biHeight);
-	m_pSrcBuf = new BYTE[m_dwSrcBufSize = dwBufSize];
+	m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize = dwBufSize);
 	if (!m_pSrcBuf)
 	{
 		Free();
 		return false;
 	}
-	m_pDstBuf = new BYTE[m_dwDstBufSize = dwBufSize];
+	m_pDstBuf = (LPBYTE)av_malloc(m_dwDstBufSize = dwBufSize);
 	if (!m_pDstBuf)
 	{
 		Free();
@@ -3076,21 +3078,28 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 
 	// Get the codec id for the video stream
 	DWORD dwFourCC = GetFourCC(true);
-	CodecID id = AVCodecFourCCToCodecID(dwFourCC);
+	AVCodecID id = AVCodecFourCCToCodecID(dwFourCC);
 
 	// Always use mpeg2 decoder
-	if (id == CODEC_ID_MPEG1VIDEO)
-		id = CODEC_ID_MPEG2VIDEO;
+	if (id == AV_CODEC_ID_MPEG1VIDEO)
+		id = AV_CODEC_ID_MPEG2VIDEO;
 
     // Find the decoder for the video stream
 	m_pCodec = avcodec_find_decoder(id);
     if (!m_pCodec)
-        goto error_noclose;
+        goto error;
 
 	// Allocate Context
-	m_pCodecCtx = avcodec_alloc_context();
+	/* if m_pCodec non-NULL, allocate private data and initialize defaults
+	 * for the given codec. It is illegal to then call avcodec_open2()
+	 * with a different codec.
+	 * If NULL, then the codec-specific defaults won't be initialized,
+	 * which may result in suboptimal default settings (this is
+	 * important mainly for encoders, e.g. libx264).
+	 */
+	m_pCodecCtx = avcodec_alloc_context3(m_pCodec);
 	if (!m_pCodecCtx)
-		goto error_noclose;
+		goto error;
 
 	// Set Width & Height
 	m_pCodecCtx->coded_width = GetWidth();
@@ -3101,30 +3110,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 
 	// Set FourCC
 	m_pCodecCtx->codec_tag = dwFourCC;
-
-	// Set some other values
-	m_pCodecCtx->error_concealment = 3;
-	m_pCodecCtx->error_recognition = 1;
-	if (mpeg_codec(id) || mjpeg_codec(id))
-		m_pCodecCtx->flags |= CODEC_FLAG_TRUNCATED;
-
-	// By Default Autodetect is set
-	/*
-	m_pCodecCtx->workaround_bugs =	FF_BUG_AUTODETECT		|
-									FF_BUG_OLD_MSMPEG4		|
-									FF_BUG_XVID_ILACE		|
-									FF_BUG_UMP4				|
-									FF_BUG_NO_PADDING		|
-									FF_BUG_AMV				|
-									FF_BUG_QPEL_CHROMA		|
-									FF_BUG_STD_QPEL			|
-									FF_BUG_QPEL_CHROMA2		|
-									FF_BUG_DIRECT_BLOCKSIZE	|
-									FF_BUG_EDGE				|
-									FF_BUG_HPEL_CHROMA		|
-									FF_BUG_DC_CLIP			|
-									FF_BUG_MS;
-	*/
 
 	// Extra data
 	m_pCodecCtx->extradata_size = m_dwSrcFormatSize - sizeof(BITMAPINFOHEADER);
@@ -3137,15 +3122,18 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 			memcpy(	m_pCodecCtx->extradata,
 					(LPBYTE)m_pSrcFormat + sizeof(BITMAPINFOHEADER),
 					m_pCodecCtx->extradata_size);
-			m_bDecodeExtraData = mpeg_codec(id) ? true : false;
+			if (id == AV_CODEC_ID_MPEG1VIDEO || id == AV_CODEC_ID_MPEG2VIDEO)
+				m_bAVDecodeExtraData = true;
+			else
+				m_bAVDecodeExtraData = false;
 		}
 	}
 
 	// In case of buggy source header
-	if (id == CODEC_ID_MSVIDEO1)
+	if (id == AV_CODEC_ID_MSVIDEO1)
 		m_pCodecCtx->bits_per_coded_sample = m_pCodecCtx->extradata_size > 0 ? 8 : 16;
 
-	// Spacial handling for palettized videos
+	// Special handling for palettized videos
 	if (m_pCodecCtx->extradata_size > 0			&&
 		m_pCodecCtx->bits_per_coded_sample <= 8	&&
 		(id == CODEC_ID_MSRLE					||
@@ -3156,44 +3144,23 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 		id == CODEC_ID_TSCC						||
 		id == CODEC_ID_QPEG))
 	{
-		memcpy(	m_Palette.palette, m_pCodecCtx->extradata,
+		memcpy(	m_AVPalette, m_pCodecCtx->extradata,
 				MIN(m_pCodecCtx->extradata_size, AVPALETTE_SIZE));
-		m_Palette.palette_changed = 1;
-		m_pCodecCtx->palctrl = &m_Palette;
+		m_bAVPaletteChanged = true;
 	}
 
     // Open codec
     if (avcodec_open_thread_safe(m_pCodecCtx, m_pCodec) < 0)
-        goto error_noclose;
-
-	// Blur Filter Example
-#ifdef SUPPORT_LIBSWSCALE
-	/*
-	m_pFilterGdi = sws_getDefaultFilter(	10.0f,	// Luma Blur
-											10.0f,	// Chroma Blur
-											0.0f,	// Luma Sharpen
-											0.0f,	// Chroma Sharpen
-											0.0f,	// Chroma Horizontal Shift
-											0.0f,	// Chroma Vertical Shift
-											0);		// No Verbose
-	m_pFilterDxDraw = sws_getDefaultFilter(	10.0f,	// Luma Blur
-											10.0f,	// Chroma Blur
-											0.0f,	// Luma Sharpen
-											0.0f,	// Chroma Sharpen
-											0.0f,	// Chroma Horizontal Shift
-											0.0f,	// Chroma Vertical Shift
-											0);		// No Verbose
-	*/
-#endif
+        goto error;
 
     // Allocate video frames
-    m_pFrame = avcodec_alloc_frame();
+    m_pFrame = av_frame_alloc();
 	if (!m_pFrame)
         goto error;
-    m_pFrameGdi = avcodec_alloc_frame();
+    m_pFrameGdi = av_frame_alloc();
     if (!m_pFrameGdi)
         goto error;
-	m_pFrameDxDraw = avcodec_alloc_frame();
+	m_pFrameDxDraw = av_frame_alloc();
     if (!m_pFrameDxDraw)
         goto error;
 
@@ -3211,8 +3178,8 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 	m_dwSrcBufSize =	4 * pSrcBMIH->biWidth *
 						ABS(pSrcBMIH->biHeight);
 	if (m_pSrcBuf)
-		delete [] m_pSrcBuf;
-	m_pSrcBuf = new BYTE[m_dwSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+		av_free(m_pSrcBuf);
+	m_pSrcBuf = (LPBYTE)av_malloc(m_dwSrcBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
 	if (!m_pSrcBuf)
 		goto error;
 
@@ -3224,62 +3191,45 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 error:
 	FreeAVCodec();
 	return false;
-error_noclose:
-	FreeAVCodec(true);
-	return false;
 }
 
-void CAVIPlay::CAVIVideoStream::FreeAVCodec(bool bNoClose/*=false*/)
+void CAVIPlay::CAVIVideoStream::FreeAVCodec()
 {
 	if (m_pCodecCtx)
 	{
-		// Close
-		if (!bNoClose)
-			avcodec_close_thread_safe(m_pCodecCtx);
+		/*
+		Close a given AVCodecContext and free all the data associated with it
+		(but not the AVCodecContext itself).
+		Calling this function on an AVCodecContext that hasn't been opened will free
+		the codec-specific data allocated in avcodec_alloc_context3() /
+		avcodec_get_context_defaults3() with a non-NULL codec. Subsequent calls will
+		do nothing.
+		*/
+		avcodec_close_thread_safe(m_pCodecCtx);
 
 		// Free
 		if (m_pCodecCtx->extradata)
 			av_freep(&m_pCodecCtx->extradata);
 		m_pCodecCtx->extradata_size = 0;
 		av_freep(&m_pCodecCtx);
-		m_pCodec = NULL;
 	}
+	m_pCodec = NULL;
 
 	if (m_pFrameGdi)
-    {
-		av_free(m_pFrameGdi);
-		m_pFrameGdi = NULL;
-	}
+		av_frame_free(&m_pFrameGdi);
 	if (m_pFrame)
-	{
-		av_free(m_pFrame);
-		m_pFrame = NULL;
-	}
+		av_frame_free(&m_pFrame);
 	if (m_pFrameDxDraw)
-    {
-		av_free(m_pFrameDxDraw);
-		m_pFrameDxDraw = NULL;
-	}
+		av_frame_free(&m_pFrameDxDraw);
 	
 	m_dwPrevFourCCDxDraw = 0;
 	m_nPrevPitchDxDraw = 0;
 	m_nPrevBppDxDraw = 0;
 	m_pPrevSurfaceDxDraw = NULL;
-	m_bDecodeExtraData = false;
-	memset(&m_Palette, 0, sizeof(AVPaletteControl));
+	m_bAVDecodeExtraData = false;
+	m_bAVPaletteChanged = false;
+	memset(&m_AVPalette, 0, AVPALETTE_SIZE);
 
-#ifdef SUPPORT_LIBSWSCALE
-	if (m_pFilterGdi)
-	{
-		sws_freeFilter(m_pFilterGdi);
-		m_pFilterGdi = NULL;
-	}
-	if (m_pFilterDxDraw)
-	{
-		sws_freeFilter(m_pFilterDxDraw);
-		m_pFilterDxDraw = NULL;
-	}
-#endif
 	if (m_pImgConvertCtxGdi)
 	{
 		sws_freeContext(m_pImgConvertCtxGdi);
@@ -3292,69 +3242,8 @@ void CAVIPlay::CAVIVideoStream::FreeAVCodec(bool bNoClose/*=false*/)
 	}
 }
 
-__forceinline bool CAVIPlay::CAVIVideoStream::AVCodecHandle8bpp(bool bVFlip)
+__forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFrame, bool bSeek)
 {
-	// Allocate Destination Format
-	if (m_dwDstFormatSize != m_dwSrcFormatSize)
-	{
-		if (m_pDstBMI)
-			delete [] m_pDstBMI;
-		m_dwDstFormatSize = m_dwSrcFormatSize;
-		m_pDstBMI = (LPBITMAPINFO)new BYTE[m_dwDstFormatSize];
-		if (!m_pDstBMI)
-			return false;
-		memcpy(m_pDstBMI, m_pSrcFormat, m_dwDstFormatSize);
-		m_pDstBMI->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		m_pDstBMI->bmiHeader.biCompression = BI_RGB;
-		m_pDstBMI->bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(	8 *
-																m_pDstBMI->bmiHeader.biWidth) *
-																ABS(m_pDstBMI->bmiHeader.biHeight);
-	}
-
-	// Allocate Destination Buffer
-	if ((int)(m_dwDstBufSize) < m_pDstBMI->bmiHeader.biSizeImage || m_pDstBuf == NULL)
-	{
-		if (m_pDstBuf)
-			delete [] m_pDstBuf;
-		m_pDstBuf = new BYTE[m_pDstBMI->bmiHeader.biSizeImage + FF_INPUT_BUFFER_PADDING_SIZE];
-		if (!m_pDstBuf)
-			return false;
-		m_dwDstBufSize = m_pDstBMI->bmiHeader.biSizeImage;
-	}
-
-	// Copy From Decompressed Buffer to Destination Buffer
-	int nSrcStride = m_pFrame->linesize[0];
-	int nDstStride = DWALIGNEDWIDTHBYTES(8 * m_pDstBMI->bmiHeader.biWidth);
-	LPBYTE pSrcBits = (LPBYTE)m_pFrame->data[0];
-	LPBYTE pDstBits;
-	if (bVFlip)
-	{
-		pDstBits = m_pDstBuf + ((int)m_pDstBMI->bmiHeader.biHeight - 1) * nDstStride;
-		for (int nCurLine = 0 ; nCurLine < (int)m_pDstBMI->bmiHeader.biHeight ; nCurLine++)
-		{
-			memcpy(pDstBits, pSrcBits, m_pDstBMI->bmiHeader.biWidth); 
-			pSrcBits += nSrcStride;
-			pDstBits -= nDstStride;
-		}
-	}
-	else
-	{
-		pDstBits = m_pDstBuf;
-		for (int nCurLine = 0 ; nCurLine < (int)m_pDstBMI->bmiHeader.biHeight ; nCurLine++)
-		{
-			memcpy(pDstBits, pSrcBits, m_pDstBMI->bmiHeader.biWidth); 
-			pSrcBits += nSrcStride;
-			pDstBits += nDstStride;
-		}
-	}
-		
-	return true;
-}
-
-__forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFrame, bool bSkipFrame, bool bSeek)
-{
-	int got_picture = 0;
-
 	// Check
 	if (!m_pCodecCtx)
 		return false;
@@ -3364,49 +3253,51 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		avcodec_flush_buffers(m_pCodecCtx);
 
 	// Reset Frame Structure
-	avcodec_get_frame_defaults(m_pFrame);
+	av_frame_unref(m_pFrame);
 
 	// Set Key Frame, not necessary ... but it does not harm
 	m_pFrame->key_frame = bKeyFrame ? 1 : 0;
 
 	// Decode
+	int got_picture;
 	memset(	m_pSrcBuf + ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage,
 			0,
 			FF_INPUT_BUFFER_PADDING_SIZE);
-	if (m_bDecodeExtraData)
+	if (m_bAVDecodeExtraData)
 	{
-		avcodec_decode_video(	m_pCodecCtx,
+		AVPacket pkt;
+		av_init_packet(&pkt);
+		pkt.data = m_pCodecCtx->extradata;
+		pkt.size = m_pCodecCtx->extradata_size;
+		got_picture = 0;
+		avcodec_decode_video2(	m_pCodecCtx,
 								m_pFrame,
 								&got_picture,
-								m_pCodecCtx->extradata,
-								m_pCodecCtx->extradata_size);
-		m_bDecodeExtraData = false;
+								&pkt);
+		av_free_packet(&pkt);
+		m_bAVDecodeExtraData = false;
 	}
-	int len = avcodec_decode_video(	m_pCodecCtx,
+	AVPacket pkt;
+	av_init_packet(&pkt);
+	pkt.data = (uint8_t*)m_pSrcBuf;
+	pkt.size = ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage;
+	if (m_bAVPaletteChanged)
+	{
+		uint8_t* pal = av_packet_new_side_data(&pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
+		if (pal)
+			memcpy(pal, m_AVPalette, AVPALETTE_SIZE);
+		m_bAVPaletteChanged = false;
+	}
+	got_picture = 0;
+	int len = avcodec_decode_video2(m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
-									(unsigned __int8 *)m_pSrcBuf,
-									((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage); 
+									&pkt);
+	av_free_packet(&pkt);
 	if (m_pCodecCtx->has_b_frames)
 		m_nOneFrameDelay = 1;
     if (len < 0)
-		return false;
-	if (bSkipFrame && m_pCodecCtx->codec_id != CODEC_ID_THEORA) // Theora supports encoded 0-byte-frames which mean repeat last one,
-		return true;											// we cannot skip previous frames because if we exactly seek to such
-																// a 0-byte-frame we would not have the previous one!
-
-	// sws_scale has some problems with 8 bpp images, copy it manually
-	if (m_pCodecCtx->pix_fmt == PIX_FMT_PAL8)
-		return AVCodecHandle8bpp(false);
-
-	// VCR2 has inverted U and V
-	if (((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression == FCC('VCR2'))
-	{
-		uint8_t* pTemp = m_pFrame->data[1];
-		m_pFrame->data[1] = m_pFrame->data[2];
-		m_pFrame->data[2] = pTemp;
-		// Line Sizes for U and V are the same no need to swap
-	}
+		return true; // be tolerant!
 
 	// Init Color Space Convert Context
 	if (!m_pImgConvertCtxGdi)
@@ -3414,8 +3305,8 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		// Make Sure Destination Format is set correctly
 		if (!m_bForceRgb)
 		{
-			if (m_pCodecCtx->pix_fmt == PIX_FMT_YUV420P	||
-				m_pCodecCtx->pix_fmt == PIX_FMT_YUVJ420P)
+			if (m_pCodecCtx->pix_fmt == AV_PIX_FMT_YUV420P	||
+				m_pCodecCtx->pix_fmt == AV_PIX_FMT_YUVJ420P)
 			{
 				m_pDstBMI->bmiHeader.biCompression = FCC('YV12');
 				m_pDstBMI->bmiHeader.biBitCount = 12;
@@ -3425,9 +3316,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 																	stride,
 																	(int)m_pDstBMI->bmiHeader.biHeight);
 			}
-			else if (	m_pCodecCtx->pix_fmt == PIX_FMT_YUYV422	||	// Note: PIX_FMT_YUV422 = PIX_FMT_YUYV422
-						m_pCodecCtx->pix_fmt == PIX_FMT_YUV422P	||
-						m_pCodecCtx->pix_fmt == PIX_FMT_YUVJ422P)
+			else if (	m_pCodecCtx->pix_fmt == AV_PIX_FMT_YUYV422	||	// Note: AV_PIX_FMT_YUV422 = AV_PIX_FMT_YUYV422
+						m_pCodecCtx->pix_fmt == AV_PIX_FMT_YUV422P	||
+						m_pCodecCtx->pix_fmt == AV_PIX_FMT_YUVJ422P)
 			{
 				m_pDstBMI->bmiHeader.biCompression = FCC('YUY2');
 				m_pDstBMI->bmiHeader.biBitCount = 16;
@@ -3440,17 +3331,17 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		}
 
 		// Get Pix Format
-		enum PixelFormat pix_fmt = AVCodecBMIToPixFormat(m_pDstBMI);
+		enum AVPixelFormat pix_fmt = AVCodecBMIToPixFormat(m_pDstBMI);
 		
 		// Determine required buffer size and allocate buffer if necessary
 		int nBufSize = avpicture_get_size(	pix_fmt,
-											DOALIGN(m_pCodecCtx->width, 16),
-											DOALIGN(m_pCodecCtx->height, 16));
+											m_pCodecCtx->width,
+											m_pCodecCtx->height);
 		if ((int)(m_dwDstBufSize) < nBufSize || m_pDstBuf == NULL)
 		{
 			if (m_pDstBuf)
-				delete [] m_pDstBuf;
-			m_pDstBuf = new BYTE[nBufSize + FF_INPUT_BUFFER_PADDING_SIZE];
+				av_free(m_pDstBuf);
+			m_pDstBuf = (LPBYTE)av_malloc(nBufSize + FF_INPUT_BUFFER_PADDING_SIZE);
 			if (!m_pDstBuf)
 				return false;
 			m_dwDstBufSize = nBufSize;
@@ -3465,7 +3356,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 						m_pCodecCtx->height);
 
 		// Prepare Image Conversion Context
-		if (m_pCodecCtx->pix_fmt != PIX_FMT_NONE)
+		if (m_pCodecCtx->pix_fmt != AV_PIX_FMT_NONE)
 		{
 			m_pImgConvertCtxGdi = sws_getContext(	GetWidth(),				// Source Width
 													GetHeight(),			// Source Height
@@ -3473,20 +3364,16 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 													GetWidth(),				// Destination Width
 													GetHeight(),			// Destination Height
 													pix_fmt,				// Destination Format
-													SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-#ifdef SUPPORT_LIBSWSCALE
-													m_pFilterGdi,			// Src Filter
-#else
-													NULL,
-#endif
-													NULL,					// No Dst Filter
+													SWS_BICUBIC,			// Interpolation
+													NULL,					// No Source Filter
+													NULL,					// No Destination Filter
 													NULL);					// Param
 			if (!m_pImgConvertCtxGdi)
 				return false;
 		}
 
 		// Flip U <-> V pointers
-		if (pix_fmt == PIX_FMT_YUV420P)
+		if (pix_fmt == AV_PIX_FMT_YUV420P)
 		{
 			uint8_t* pTemp = m_pFrameGdi->data[1];
 			m_pFrameGdi->data[1] = m_pFrameGdi->data[2];
@@ -3505,24 +3392,17 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 										GetHeight(),			// Source Height
 										m_pFrameGdi->data,		// Destination Data
 										m_pFrameGdi->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
-		return sws_scale_res > 0 ? true : false;
-#else
-		return sws_scale_res >= 0 ? true : false;
-#endif			
+		return sws_scale_res > 0 ? true : false;		
 	}
 	else
 		return true;
 }
 
 __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKeyFrame,
-																		bool bSkipFrame,
 																		bool bSeek,
 																		CDxDraw* pDxDraw,
 																		CRect rc)
 {
-	int got_picture = 0;
-
 	// Check
 	if (!m_pCodecCtx)
 		return false;
@@ -3532,57 +3412,51 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		avcodec_flush_buffers(m_pCodecCtx);
 
 	// Reset Frame Structure
-	avcodec_get_frame_defaults(m_pFrame);
+	av_frame_unref(m_pFrame);
 
 	// Set Key Frame, not necessary ... but it does not harm
 	m_pFrame->key_frame = bKeyFrame ? 1 : 0;
 
 	// Decode
+	int got_picture;
 	memset(	m_pSrcBuf + ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage,
 			0,
 			FF_INPUT_BUFFER_PADDING_SIZE);
-	if (m_bDecodeExtraData)
+	if (m_bAVDecodeExtraData)
 	{
-		avcodec_decode_video(	m_pCodecCtx,
+		AVPacket pkt;
+		av_init_packet(&pkt);
+		pkt.data = m_pCodecCtx->extradata;
+		pkt.size = m_pCodecCtx->extradata_size;
+		got_picture = 0;
+		avcodec_decode_video2(	m_pCodecCtx,
 								m_pFrame,
 								&got_picture,
-								m_pCodecCtx->extradata,
-								m_pCodecCtx->extradata_size);
-		m_bDecodeExtraData = false;
+								&pkt);
+		av_free_packet(&pkt);
+		m_bAVDecodeExtraData = false;
 	}
-	int len = avcodec_decode_video(	m_pCodecCtx,
+	AVPacket pkt;
+	av_init_packet(&pkt);
+	pkt.data = (uint8_t*)m_pSrcBuf;
+	pkt.size = ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage;
+	if (m_bAVPaletteChanged)
+	{
+		uint8_t* pal = av_packet_new_side_data(&pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
+		if (pal)
+			memcpy(pal, m_AVPalette, AVPALETTE_SIZE);
+		m_bAVPaletteChanged = false;
+	}
+	got_picture = 0;
+	int len = avcodec_decode_video2(m_pCodecCtx,
 									m_pFrame,
 									&got_picture,
-									(unsigned __int8 *)m_pSrcBuf,
-									((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage);
+									&pkt);
+	av_free_packet(&pkt);
 	if (m_pCodecCtx->has_b_frames)
 		m_nOneFrameDelay = 1;
     if (len < 0)
-		return false;
-	if (bSkipFrame && m_pCodecCtx->codec_id != CODEC_ID_THEORA)	// Theora supports encoded 0-byte-frames which mean repeat last one,
-		return true;											// we cannot skip previous frames because if we exactly seek to such
-																// a 0-byte-frame we would not have the previous one!
-
-	// sws_scale has some problems with 8 bpp images, copy it manually
-	if (m_pCodecCtx->pix_fmt == PIX_FMT_PAL8)
-	{
-		if (AVCodecHandle8bpp(true))
-		{
-			pDxDraw->RenderDib(m_pDstBMI, m_pDstBuf, rc); // Fails when surface lost
-			return true;
-		}
-		else
-			return false;
-	}
-
-	// VCR2 has inverted U and V
-	if (((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression == FCC('VCR2'))
-	{
-		uint8_t* pTemp = m_pFrame->data[1];
-		m_pFrame->data[1] = m_pFrame->data[2];
-		m_pFrame->data[2] = pTemp;
-		// Line Sizes for U and V are the same no need to swap
-	}
+		return true; // be tolerant!
 
 	// Lock Surface
 	DDSURFACEDESC2 ddsd;
@@ -3603,7 +3477,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		m_pPrevSurfaceDxDraw = ddsd.lpSurface;
 
 		// Get Pix Format
-		enum PixelFormat pix_fmt = AVCodecDxDrawToPixFormat(pDxDraw);
+		enum AVPixelFormat pix_fmt = AVCodecDxDrawToPixFormat(pDxDraw);
 
 		// Assign appropriate parts of buffer to image planes
 		avpicture_fill((AVPicture*)m_pFrameDxDraw,
@@ -3613,7 +3487,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 						m_pCodecCtx->height);
 
 		// Flip U <-> V pointers
-		if (pix_fmt == PIX_FMT_YUV420P)
+		if (pix_fmt == AV_PIX_FMT_YUV420P)
 		{
 			m_pFrameDxDraw->linesize[0] = pDxDraw->GetCurrentSrcPitch();
 			m_pFrameDxDraw->linesize[1] = pDxDraw->GetCurrentSrcPitch()>>1;
@@ -3627,7 +3501,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 		// Prepare Image Conversion Context
 		if (m_pImgConvertCtxDxDraw)
 			sws_freeContext(m_pImgConvertCtxDxDraw);
-		if (m_pCodecCtx->pix_fmt != PIX_FMT_NONE)
+		if (m_pCodecCtx->pix_fmt != AV_PIX_FMT_NONE)
 		{
 			m_pImgConvertCtxDxDraw = sws_getContext(GetWidth(),				// Source Width
 													GetHeight(),			// Source Height
@@ -3635,13 +3509,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 													GetWidth(),				// Destination Width
 													GetHeight(),			// Destination Height
 													pix_fmt,				// Destination Format
-													SWS_BICUBIC,			// SWS_CPU_CAPS_MMX2, SWS_CPU_CAPS_MMX, SWS_CPU_CAPS_3DNOW
-#ifdef SUPPORT_LIBSWSCALE
-													m_pFilterDxDraw,		// Src Filter
-#else
-													NULL,
-#endif
-													NULL,					// No Dst Filter
+													SWS_BICUBIC,			// Interpolation
+													NULL,					// No Source Filter
+													NULL,					// No Destination Filter
 													NULL);					// Param
 			if (!m_pImgConvertCtxDxDraw)
 			{
@@ -3652,12 +3522,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 	}
 
 	// Color Space Conversion
-	// Note: the conversion may be really slow when converting the
-	// destination buffer in place byte by byte like the conversion
-	// from PIX_FMT_YUVJ420P to PIX_FMT_YUV420P. This because accessing
-	// directly the graphics memory byte-wise is not that efficient...
-	// (see img_convert() in imgconvert.c)
-	// -> Do not use DirectX YUV rendering!
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
 	{
 		int sws_scale_res = sws_scale(	m_pImgConvertCtxDxDraw,		// Image Convert Context
@@ -3667,7 +3531,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 										GetHeight(),				// Source Height
 										m_pFrameDxDraw->data,		// Destination Data
 										m_pFrameDxDraw->linesize);	// Destination Stride
-#ifdef SUPPORT_LIBSWSCALE
 		if (sws_scale_res > 0)
 		{
 			pDxDraw->UnlockSrc();
@@ -3679,19 +3542,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 			pDxDraw->UnlockSrc();
 			return false;
 		}
-#else
-		if (sws_scale_res >= 0)	
-		{
-			pDxDraw->UnlockSrc();
-			pDxDraw->UpdateBackSurface(rc);
-			return true;
-		}
-		else
-		{
-			pDxDraw->UnlockSrc();
-			return false;
-		}
-#endif
 	}
 	else
 	{
@@ -3778,12 +3628,12 @@ void CAVIPlay::CAVIVideoStream::Free()
 	// Clean-Up
 	if (m_pSrcBuf)
 	{
-		delete [] m_pSrcBuf;
+		av_free(m_pSrcBuf);
 		m_pSrcBuf = NULL;
 	}
 	if (m_pDstBuf)
 	{
-		delete [] m_pDstBuf;
+		av_free(m_pDstBuf);
 		m_pDstBuf = NULL;
 	}
 	if (m_pDstBMI)
@@ -3957,7 +3807,7 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompr
 			}
 			else
 			{
-				if (AVCodecDecompressDib(IsKeyFrame(m_dwNextFrame), true, false))
+				if (AVCodecDecompressDib(IsKeyFrame(m_dwNextFrame), false))
 				{
 					m_nLastDecompressedDibFrame = (int)m_dwNextFrame;
 					m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
@@ -4163,7 +4013,7 @@ bool CAVIPlay::CAVIVideoStream::GetUncompressedDib(CDib* pDib)
 			if (!pDib->AllocateBitsFast(((LPBITMAPINFOHEADER)m_pSrcFormat)->biBitCount,
 										((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression,
 										((LPBITMAPINFOHEADER)m_pSrcFormat)->biWidth,
-										((LPBITMAPINFOHEADER)m_pSrcFormat)->biHeight,
+										ABS(((LPBITMAPINFOHEADER)m_pSrcFormat)->biHeight),
 										(RGBQUAD*)(m_pSrcFormat + ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSize),
 										((LPBITMAPINFOHEADER)m_pSrcFormat)->biClrUsed))
 			{
@@ -4182,10 +4032,26 @@ bool CAVIPlay::CAVIVideoStream::GetUncompressedDib(CDib* pDib)
 				m_pSrcFormat,
 				MIN(pDib->GetBMISize(), m_dwSrcFormatSize));
 
+		// Flip Vertically?
+		if (pDib->GetBMIH()->biHeight < 0)
+		{
+			pDib->GetBMIH()->biHeight *= -1;			
+			int nDWAlignedLineSize = DWALIGNEDWIDTHBYTES(	pDib->GetBMIH()->biBitCount *
+															pDib->GetBMIH()->biWidth);
+			LPBYTE lpBits = pDib->GetBits() + ((int)pDib->GetBMIH()->biHeight - 1) * nDWAlignedLineSize;
+			for (int nCurLine = 0 ; nCurLine < (int)pDib->GetBMIH()->biHeight ; nCurLine++)
+			{
+				memcpy((void*)lpBits, (void*)(m_pSrcBuf + nCurLine*nDWAlignedLineSize), nDWAlignedLineSize); 
+				lpBits -= nDWAlignedLineSize;
+			}
+		}
 		// Copy Bits
-		memcpy(	pDib->GetBits(),
-				m_pSrcBuf,
-				MIN(pDib->GetImageSize(), ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage));
+		else
+		{
+			memcpy(	pDib->GetBits(),
+					m_pSrcBuf,
+					MIN(pDib->GetImageSize(), ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage));
+		}
 
 		// Decode RLE
 		if (IsRLE(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression))
@@ -4466,19 +4332,19 @@ __forceinline void  CAVIPlay::CAVIVideoStream::UpdatePalette(DWORD dwFrame)
 				if (m_dwSrcFormatSize > sizeof(BITMAPINFOHEADER))
 				{
 					dwPaletteSize = m_dwSrcFormatSize - sizeof(BITMAPINFOHEADER);
-					memcpy(	(LPBYTE)m_Palette.palette,
+					memcpy(	(LPBYTE)m_AVPalette,
 							(LPBYTE)m_pSrcFormat + sizeof(BITMAPINFOHEADER),
 							MIN(dwPaletteSize, AVPALETTE_SIZE));
-					m_Palette.palette_changed = 1;
+					m_bAVPaletteChanged = true;
 				}
 			}
 			if (m_pPaletteStream->DoChangePalette(dwFrame))
 			{
 				dwPaletteSize = AVPALETTE_SIZE;
 				m_pPaletteStream->GetPalette(dwFrame,
-											(LPBYTE)m_Palette.palette,
+											(LPBYTE)m_AVPalette,
 											&dwPaletteSize);
-				m_Palette.palette_changed = 1;
+				m_bAVPaletteChanged = true;
 			}
 		}
 		else
@@ -4619,7 +4485,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDib* pDib)
 		}
 		else
 		{
-			if (!AVCodecDecompressDib(IsKeyFrame(bFlushLastFrame ?  GetTotalFrames() - 1 : m_dwNextFrame), false, false))
+			if (!AVCodecDecompressDib(IsKeyFrame(bFlushLastFrame ?  GetTotalFrames() - 1 : m_dwNextFrame), false))
 			{
 				pDib->Free();
 				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
@@ -4868,7 +4734,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDxDraw* pDxDraw, CRect rc)
 	else
 	{
 		((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-		if (!AVCodecDecompressDxDraw(IsKeyFrame(m_dwNextFrame), false, false, pDxDraw, rc))
+		if (!AVCodecDecompressDxDraw(IsKeyFrame(m_dwNextFrame), false, pDxDraw, rc))
 		{
 			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
 			return false;
@@ -4983,7 +4849,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-				if (!AVCodecDecompressDib(true, true, true))
+				if (!AVCodecDecompressDib(true, true))
 				{
 					pDib->Free();
 					return false;
@@ -5018,7 +4884,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 				}
 				else
 				{
-					if (!AVCodecDecompressDib(false, true, false))
+					if (!AVCodecDecompressDib(false, false))
 					{
 						pDib->Free();
 						return false;
@@ -5052,7 +4918,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-				if (!AVCodecDecompressDib(false, false, false))
+				if (!AVCodecDecompressDib(false, false))
 				{
 					pDib->Free();
 					return false;
@@ -5095,9 +4961,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDib* pDib, DWORD dwFrame)
 			}
 			else
 			{
-				if (!AVCodecDecompressDib(	true,
-											false,
-											true))
+				if (!AVCodecDecompressDib(true, true))
 				{
 					pDib->Free();
 					return false;
@@ -5403,7 +5267,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		else
 		{
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if (!AVCodecDecompressDxDraw(true, true, true, pDxDraw, rc))
+			if (!AVCodecDecompressDxDraw(true, true, pDxDraw, rc))
 			{
 				return false;
 			}
@@ -5438,7 +5302,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 			else
 			{
 				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-				if (!AVCodecDecompressDxDraw(false, true, false, pDxDraw, rc))
+				if (!AVCodecDecompressDxDraw(false, false, pDxDraw, rc))
 				{
 					return false;
 				}
@@ -5496,7 +5360,7 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		else
 		{
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if (!AVCodecDecompressDxDraw(false, false, false, pDxDraw, rc))
+			if (!AVCodecDecompressDxDraw(false, false, pDxDraw, rc))
 			{
 				return false;
 			}
@@ -5566,7 +5430,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame
 		{
 			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
 			if (!AVCodecDecompressDxDraw(true,
-										false,
 										true,
 										pDxDraw,
 										rc))

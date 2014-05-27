@@ -1,76 +1,32 @@
-Fixed Bugs:
------------
+Strange Things (=not really bugs)
+---------------------------------
 
-Tooltips of bottom toolbar showing sometimes, sometimes not, MFC bug solved in vs2003 and vs2005!
-The Player Slider Is Not Hovering Correctly under vs6, fixed in vs2005!
-
-
-
-Strange Things (=not really bugs):
-----------------------------------
-
-On NT 4 and on Vista the progress when loading a big jpeg is not shown well,
+On Vista the progress when loading a big jpeg is not shown well,
 this because the posted messages for the progress bar are not handled as
 fast as in other OSs, or maybe they are all handled together...
 
 3ivx D4 4.5.1 codec plays DIV3 videos only with uimager release build...
 
-Playing raw yv12 video makes ir50_32.dll vfw codec crash when changing from
-GDI RGB <-> GDI YUV rendering mode on win98 & WinMe...
-
-Axis 206W sometimes is violet -> It's a hardware problem
-
 Logitech old Quickcam (Pro and Notbook) cameras at 640x480 and 4fps (or more)
 change back and forth the dropped frames count...
 
 
-Memory Leaks:
--------------
+Memory Leaks
+------------
 
 OpenSSL leaks and this is perfectly normal.  What happens is that a number of functions
 are registered for a "type" (completely defined by the caller) of extra
 data. This structure of pointers is then stored in a stack, and
 that's what you see being allocated in your tracebacks. Since it's
 meant to be possible to reuse, given an index into that stack, it's
-stored globally and stays around for the lifetime of the proocess.
+stored globally and stays around for the lifetime of the process.
 
 
-Bugs:
------
-
-On NT 4 after exiting fullscreen mode and if mainframe was maximized, the re-maximizing
-is not exact (1-2 pixels less on right and bottom). Not a big problem. Leave it like this.
+Bugs
+----
 
 Windows Bug: Passing over a picture in Halftone mode with another window restores
 the picture with the wrong stretch mode (coloroncolor) but only with small pictures (like 8x8)...
 
 No Support For Compressing/Decompressing Unicode File Names, even new ZipArchive doesn't support it...
 Zip File Specification doesn't support UNICODE...
-
-On Safari 4 animated gifs support is buggy -> solved with safari 4.0.5
-
-
-
-ffmpeg Bugs:
-------------
-
-- SNOW is locking with low resolutions...                          -> not compiled in
-- Atrac3 leaks or even crashes if not only MMX set                 -> not compiled in
-- H261, DIV3, MP4x, AP41 leak because of old init_vlc static code  -> not compiled in
-- Internal DTS not working in new ffmpeg                           -> not compiled in
-- zlib leaks                                                       -> not compiled in
-- swscale doesn't support pal8 input like from CRAM 8bpp.avi. img_convert supports it!
-- MPNG.avi is working with dll version, but with static it is no converting frame at 1 sec...
-- I263 not working, showing only first frame
-
-
-
-Why using ContaCam only on Win2k and higher:
---------------------------------------------
-
-- The VC6 compile is less stable, after some month the C lib crashed!
-- Micro Apache is not working on Win95
-- On NT4 DirectX 7 is not supported
-- PSAPI.dll not available on NT4 (can be installed) -> Micro Apache cannot be killed!
-- Passwords are encrypted on Win2k or higher
-- MD5 necessary for auth not available with versions less than win2k
