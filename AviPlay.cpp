@@ -1866,7 +1866,8 @@ int CAVIPlay::CAVIAudioStream::AVDecodeAudio(LPBYTE pDstBuf, int& out_size, AVPa
 	// Set conversion params
 	out_channels = MIN(2, m_pCodecCtx->channels); // not more channels than stereo
 	out_sample_rate = m_pCodecCtx->sample_rate;
-	out_sample_fmt = av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) == 1 ? AV_SAMPLE_FMT_U8 : AV_SAMPLE_FMT_S16;			
+	out_sample_fmt = av_get_bytes_per_sample(m_pCodecCtx->sample_fmt) == 1 ?
+			AV_SAMPLE_FMT_U8 : AV_SAMPLE_FMT_S16; // av_get_bytes_per_sample returns the bytes count per sample and per channel
 
 	// Create resampler context
 	if (!m_pAudioConvertCtx)
@@ -1893,6 +1894,7 @@ int CAVIPlay::CAVIAudioStream::AVDecodeAudio(LPBYTE pDstBuf, int& out_size, AVPa
 		return -1;
 
 	// Copy to given destination buffer
+	// Note: av_get_bytes_per_sample returns the bytes count per sample and per channel
 	out_size = MIN(out_size, out_channels * out_samples * av_get_bytes_per_sample(out_sample_fmt));
 	if (out_size > 0)
 		memcpy(pDstBuf, out_buffer, out_size);
