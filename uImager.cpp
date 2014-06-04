@@ -34,6 +34,7 @@
 #include "PostDelayedMessage.h"
 #include "YuvToRgb.h"
 #include "RgbToYuv.h"
+#include "YuvToYuv.h"
 #include "sinstance.h"
 #include <atlbase.h>
 #include "DiscMaster.h"
@@ -631,6 +632,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init YUV <-> RGB LUT
 		::InitYUVToRGBTable();
 		::InitRGBToYUVTable();
+		::InitYUVToYUVTable();
 
 		// AVCODEC Init
 		::InitializeCriticalSection(&g_csAVCodec);

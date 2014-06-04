@@ -360,6 +360,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="YuvToYuv.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimGifSave.h" />
@@ -373,6 +374,7 @@
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Tiff2Pdf.h" />
     <ClInclude Include="YuvToRgb.h" />
+    <ClInclude Include="YuvToYuv.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

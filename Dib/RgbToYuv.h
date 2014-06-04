@@ -2,56 +2,19 @@
 #define _INC_RGBTOYUV
 
 /*
-
+ITU-R BT.601 (formerly called CCIR 601)
 Y Range:     [16,235] (220 steps)
 Cb,Cr Range: [16,240] (225 steps) 
 
 RGB to YUV Conversion:
 
-    Y  =      (0.257 * R) + (0.504 * G) + (0.098 * B) + 16
+    Y  =      0.257 * R + 0.504 * G + 0.098 * B + 16
 
-    Cr = V =  (0.439 * R) - (0.368 * G) - (0.071 * B) + 128
+    Cb = U = -0.148 * R - 0.291 * G + 0.439 * B + 128
 
-    Cb = U = -(0.148 * R) - (0.291 * G) + (0.439 * B) + 128
-
-
-YUV to RGB Conversion:
-
-    B = 1.164(Y - 16)                   + 2.018(U - 128)
-
-    G = 1.164(Y - 16) - 0.813(V - 128)  - 0.391(U - 128)
-
-    R = 1.164(Y - 16) + 1.596(V - 128)
+	Cr = V =  0.439 * R - 0.368 * G - 0.071 * B + 128
 */
 
-
-/* MJPEG
-   -----
-
-YUVJ420P Planar YUV 4:2:0, 12bpp
-YUVJ422P Planar YUV 4:2:2, 16bpp
-YUVJ444P Planar YUV 4:4:4, 24bpp
-
-Y Range:     [0,255]
-Cb,Cr Range: [0,255] 
-
-RGB to YUV Conversion:
-
-	Y =       (0.299 * R) + (0.587 * G) + (0.114 * B)
-
-    Cr = V =  (R-Y)*0.713 + 128
-
-    Cb = U =  (B-Y)*0.565 + 128
-
-YUV to RGB Conversion:
-
-    B = Y + 1.770 * (U - 128)
-
-    G = Y - 0.714 * (V - 128) - 0.344 * (U - 128) 
-
-    R = Y + 1.403 * (V - 128)
-
-*/
 
 // Macros
 

@@ -80,6 +80,9 @@
     <ClCompile Include="YuvToRgb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="YuvToYuv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimGifSave.h">
@@ -113,6 +116,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="YuvToRgb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YuvToYuv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
