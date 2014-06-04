@@ -3,6 +3,7 @@
 #include "Round.h"
 #include "Helpers.h"
 #include "AviPlay.h"
+#include "YuvToYuv.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -712,18 +713,33 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 							pCodecCtx->width,
 							pCodecCtx->height);
 
-			// Convert
-			int sws_scale_res = sws_scale(	m_pImgConvertCtx[dwStreamNum],
-											m_pFrameTemp[dwStreamNum]->data,		// Src Pixels
-											m_pFrameTemp[dwStreamNum]->linesize,	// Src Stride
-											0,
-											pBmi->bmiHeader.biHeight,
-											m_pFrame[dwStreamNum]->data,		// Dst Pixels
-											m_pFrame[dwStreamNum]->linesize);	// Dst Stride
-			if (sws_scale_res <= 0)
+			// Convert (first try fast conversion, if not supported fall back to sws_scale)
+			BOOL bOk = FALSE;
+			if (pBmi->bmiHeader.biWidth == pCodecCtx->width &&
+				pBmi->bmiHeader.biHeight == pCodecCtx->height)
 			{
-				::LeaveCriticalSection(&m_csAVI);
-				return false;
+				bOk = ITU601JPEGConvert(	SrcPixFormat,							// Source Format
+											pCodecCtx->pix_fmt,						// Destination Format
+											m_pFrameTemp[dwStreamNum]->data,		// Source Data
+											m_pFrameTemp[dwStreamNum]->linesize,	// Source Stride
+											m_pFrame[dwStreamNum]->data,			// Destination Data
+											m_pFrame[dwStreamNum]->linesize,		// Destination Stride
+											pCodecCtx->width,						// Width
+											pCodecCtx->height);						// Height
+			}
+			if (!bOk)
+			{
+				if (sws_scale(	m_pImgConvertCtx[dwStreamNum],
+								m_pFrameTemp[dwStreamNum]->data,					// Source Data
+								m_pFrameTemp[dwStreamNum]->linesize,				// Source Stride
+								0,
+								pBmi->bmiHeader.biHeight,
+								m_pFrame[dwStreamNum]->data,						// Destination Data
+								m_pFrame[dwStreamNum]->linesize) <= 0)				// Destination Stride
+				{
+					::LeaveCriticalSection(&m_csAVI);
+					return false;
+				}
 			}
 		}
 		else

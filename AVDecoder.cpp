@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AviPlay.h"
+#include "YuvToYuv.h"
 #include "AVDecoder.h"
 
 #ifdef _DEBUG
@@ -269,18 +270,34 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 		m_pFrameDst->linesize[0] *= -1;
 	}
 
-	// Post Process
+	// Post Process (first try fast conversion, if not supported fall back to sws_scale)
 	if (m_pFrame->data[0])
 	{
-		int sws_scale_res = sws_scale(	m_pImgConvertCtx,		// Image Convert Context
+		BOOL bOk = FALSE;
+		if (m_pCodecCtx->width == pDstDib->GetWidth() &&
+			m_pCodecCtx->height == pDstDib->GetHeight())
+		{
+			bOk = ITU601JPEGConvert(	m_pCodecCtx->pix_fmt,	// Source Format
+										dst_pix_fmt,			// Destination Format
 										m_pFrame->data,			// Source Data
 										m_pFrame->linesize,		// Source Stride
-										0,						// Source Slice Y
-										m_pCodecCtx->height,	// Source Height
 										m_pFrameDst->data,		// Destination Data
-										m_pFrameDst->linesize);	// Destination Stride
+										m_pFrameDst->linesize,	// Destination Stride
+										m_pCodecCtx->width,		// Width
+										m_pCodecCtx->height);	// Height
+		}
+		if (!bOk)
+		{
+			bOk = sws_scale(m_pImgConvertCtx,					// Image Convert Context
+							m_pFrame->data,						// Source Data
+							m_pFrame->linesize,					// Source Stride
+							0,									// Source Slice Y
+							m_pCodecCtx->height,				// Source Height
+							m_pFrameDst->data,					// Destination Data
+							m_pFrameDst->linesize) > 0;			// Destination Stride
+		}
 		av_free_packet(&avpkt);
-		return (sws_scale_res > 0 ? TRUE : FALSE);
+		return bOk;
 	}
 	else
 	{

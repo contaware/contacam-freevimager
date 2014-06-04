@@ -26,6 +26,7 @@
 #include "PJNMD5.h"
 #include "Psapi.h"
 #include "NoVistaFileDlg.h"
+#include "YuvToYuv.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -2894,7 +2895,6 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	AVFrame* pSrcFrame = NULL;
 	AVFrame* pDstFrame = NULL;
 	SwsContext* pImgConvertCtx = NULL;
-	int sws_scale_res;
 	AVPixelFormat src_pix_fmt, dst_pix_fmt;
 
 	// Check
@@ -2938,14 +2938,13 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 		goto exit;
 
 	// Resize
-	sws_scale_res = sws_scale(	pImgConvertCtx,			// Image Convert Context
-								pSrcFrame->data,		// Source Data
-								pSrcFrame->linesize,	// Source Stride
-								0,						// Source Slice Y
-								pSrcDib->GetHeight(),	// Source Height
-								pDstFrame->data,		// Destination Data
-								pDstFrame->linesize);	// Destination Stride
-	if (sws_scale_res > 0)
+	if (sws_scale(	pImgConvertCtx,				// Image Convert Context
+					pSrcFrame->data,			// Source Data
+					pSrcFrame->linesize,		// Source Stride
+					0,							// Source Slice Y
+					pSrcDib->GetHeight(),		// Source Height
+					pDstFrame->data,			// Destination Data
+					pDstFrame->linesize) > 0)	// Destination Stride
 		res = TRUE;
 
 exit:
@@ -2970,7 +2969,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	SwsContext* pImgConvertCtx = NULL;
 	BITMAPINFO DstBmi;
 	DWORD dwEncodedLen;
-	int nJ420ImageSize, qscale, sws_scale_res;
+	int nJ420ImageSize, qscale;
 	AVPixelFormat src_pix_fmt, dst_pix_fmt;
 
 	// Check
@@ -3020,16 +3019,25 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	if (!pImgConvertCtx)
 		goto exit;
 
-	// Convert
-	sws_scale_res = sws_scale(	pImgConvertCtx,			// Image Convert Context
-								pSrcFrame->data,		// Source Data
-								pSrcFrame->linesize,	// Source Stride
-								0,						// Source Slice Y
-								pDib->GetHeight(),		// Source Height
-								pDstFrame->data,		// Destination Data
-								pDstFrame->linesize);	// Destination Stride
-	if (sws_scale_res <= 0)
-		goto exit;
+	// Convert (first try fast conversion, if source format not supported fall back to sws_scale)
+	if (!ITU601JPEGConvert(	src_pix_fmt,			// Source Format
+							dst_pix_fmt,			// Destination Format
+							pSrcFrame->data,		// Source Data
+							pSrcFrame->linesize,	// Source Stride
+							pDstFrame->data,		// Destination Data
+							pDstFrame->linesize,	// Destination Stride
+							pDib->GetWidth(),		// Width
+							pDib->GetHeight()))		// Height
+	{
+		if (sws_scale(	pImgConvertCtx,				// Image Convert Context
+						pSrcFrame->data,			// Source Data
+						pSrcFrame->linesize,		// Source Stride
+						0,							// Source Slice Y
+						pDib->GetHeight(),			// Source Height
+						pDstFrame->data,			// Destination Data
+						pDstFrame->linesize) <= 0)	// Destination Stride
+			goto exit;
+	}
 
 	// Set Dst Header
 	memset(&DstBmi, 0, sizeof(BITMAPINFO));
@@ -10920,20 +10928,29 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		}
 	}
 
-	// Color Space Conversion
+	// Convert and Process Frame
+	// (first try fast conversion, if source format not supported fall back to sws_scale)
 	if (got_picture && m_pImgConvertCtx)
 	{
-		int sws_scale_res = sws_scale(	m_pImgConvertCtx,		// Image Convert Context
-										m_pFrame->data,			// Source Data
-										m_pFrame->linesize,		// Source Stride
-										0,						// Source Slice Y
-										m_pCodecCtx->height,	// Source Height
-										m_pFrameI420->data,		// Destination Data
-										m_pFrameI420->linesize);// Destination Stride
-		int res = sws_scale_res > 0 ? 1 : -1;
-
-		// Process Frame
-		if (res == 1)
+		BOOL bOk = ITU601JPEGConvert(m_pCodecCtx->pix_fmt,	// Source Format
+									AV_PIX_FMT_YUV420P,		// Destination Format
+									m_pFrame->data,			// Source Data
+									m_pFrame->linesize,		// Source Stride
+									m_pFrameI420->data,		// Destination Data
+									m_pFrameI420->linesize,	// Destination Stride
+									m_pCodecCtx->width,		// Width
+									m_pCodecCtx->height);	// Height
+		if (!bOk)
+		{
+			bOk = sws_scale(m_pImgConvertCtx,				// Image Convert Context
+							m_pFrame->data,					// Source Data
+							m_pFrame->linesize,				// Source Stride
+							0,								// Source Slice Y
+							m_pCodecCtx->height,			// Source Height
+							m_pFrameI420->data,				// Destination Data
+							m_pFrameI420->linesize) > 0;	// Destination Stride
+		}
+		if (bOk)
 		{
 			m_pDoc->m_lCompressedDataRateSum += avpkt.size;
 			m_pDoc->ProcessI420Frame(m_pI420Buf, m_dwI420ImageSize, avpkt.data, avpkt.size);
