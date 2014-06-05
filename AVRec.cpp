@@ -583,8 +583,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 	::EnterCriticalSection(&m_csAVI);
 
 	// Check
-	if (!pBits										||
-		!m_pFormatCtx								||
+	if (!m_pFormatCtx								||
 		dwStreamNum >= m_pFormatCtx->nb_streams		||
 		!m_pFormatCtx->streams[dwStreamNum]			||
 		!m_pFormatCtx->streams[dwStreamNum]->codec	||
@@ -893,8 +892,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 	::EnterCriticalSection(&m_csAVI);
 
 	// Check
-	if (!pBuf										||
-		!m_pFormatCtx								||
+	if (!m_pFormatCtx								||
 		dwStreamNum >= m_pFormatCtx->nb_streams		||
 		!m_pAudioConvertCtx[dwStreamNum]			||
 		!m_pFormatCtx->streams[dwStreamNum]			||
@@ -943,7 +941,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 	// Copy input samples to source buffer
 	// (use an input buffer because it is aligned for the conversion)
 	int nCopyBytes = m_pSrcWaveFormat[dwStreamNum]->nBlockAlign * (int)dwNumSamples;
-	if (nCopyBytes > 0)
+	if (nCopyBytes > 0 && pBuf)
 		memcpy(*m_ppSrcBuf[dwStreamNum], pBuf, nCopyBytes);
 
 	// Encode and Write frame by frame
