@@ -2395,6 +2395,15 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 #ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
+		// Update m_nAVCodecThreadsCount
+		double dCount = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs();
+		if (dCount < 1.0)
+			dCount = 1.0;
+		int nThreadsCount = Round((double)((CUImagerApp*)::AfxGetApp())->m_nCoresCount / dCount);
+		if (nThreadsCount < 1)
+			nThreadsCount = 1;
+		((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount = nThreadsCount;
+
 		// Current Time
 		CTime timedate = CTime::GetCurrentTime();
 		CTime timeonly(2000, 1, 1, timedate.GetHour(), timedate.GetMinute(), timedate.GetSecond());
