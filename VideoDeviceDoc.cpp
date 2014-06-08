@@ -157,7 +157,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 						// with AUDIO_IN_MIN_BUF_SIZE set to 256 is:
 						// PCM        = 5120  bytes
 						// ADPCM      = 8136  bytes
-						// MP2 or MP3 = 9216  bytes
+						// MP3        = 9216  bytes
 						DWORD dwAudioUsedSize = 0U;
 						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
 						while (posAudioBuf)
@@ -2452,8 +2452,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 
 	// Get Frame Size in Bytes
 	int nFrameSize = 0;
-	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEG ||
-		m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
+	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
 		nFrameSize = 2 * 1152 * m_pDstWaveFormat->nChannels;
 	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
 		nFrameSize = 2 * ((1024 - 4 * m_pDstWaveFormat->nChannels) * 8 / (4 * m_pDstWaveFormat->nChannels) + 1) * m_pDstWaveFormat->nChannels;

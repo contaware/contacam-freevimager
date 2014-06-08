@@ -39,16 +39,12 @@ BEGIN_MESSAGE_MAP(CAudioFormatDlg, CDialog)
 	//{{AFX_MSG_MAP(CAudioFormatDlg)
 	ON_BN_CLICKED(IDC_RADIO_PCM, OnRadioPcm)
 	ON_BN_CLICKED(IDC_RADIO_ADPCM, OnRadioAdpcm)
-	ON_BN_CLICKED(IDC_RADIO_MP2, OnRadioMp2)
 	ON_BN_CLICKED(IDC_RADIO_MP3, OnRadioMp3)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_BITS, OnSelchangeComboPcmBits)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_CHANNELS, OnSelchangeComboPcmChannels)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_SAMPLINGRATE, OnSelchangeComboPcmSamplingrate)
 	ON_CBN_SELCHANGE(IDC_COMBO_ADPCM_CHANNELS, OnSelchangeComboAdpcmChannels)
 	ON_CBN_SELCHANGE(IDC_COMBO_ADPCM_SAMPLINGRATE, OnSelchangeComboAdpcmSamplingrate)
-	ON_CBN_SELCHANGE(IDC_COMBO_MP2_BITRATE, OnSelchangeComboMp2Bitrate)
-	ON_CBN_SELCHANGE(IDC_COMBO_MP2_CHANNELS, OnSelchangeComboMp2Channels)
-	ON_CBN_SELCHANGE(IDC_COMBO_MP2_SAMPLINGRATE, OnSelchangeComboMp2Samplingrate)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_BITRATE, OnSelchangeComboMp3Bitrate)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_CHANNELS, OnSelchangeComboMp3Channels)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_SAMPLINGRATE, OnSelchangeComboMp3Samplingrate)
@@ -76,14 +72,6 @@ void CAudioFormatDlg::ResetAllCtrls()
 	pCombo->SetCurSel(1);
 	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_ADPCM_SAMPLINGRATE);
 	pCombo->SetCurSel(2);
-
-	// Reset MP2
-	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);	
-	pCombo->SetCurSel(0);
-	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-	pCombo->SetCurSel(1);
-	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-	pCombo->SetCurSel(0);
 
 	// Reset MP3
 	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP3_BITRATE);	
@@ -186,57 +174,6 @@ void CAudioFormatDlg::CtrlsToWaveFormat()
 
 		// Guess nAvgBytesPerSec, calculated more precisely by codec!
 		m_WaveFormat.nAvgBytesPerSec = m_WaveFormat.nSamplesPerSec * m_WaveFormat.nChannels / 2;
-	}
-	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_MPEG)
-	{
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-		switch (pCombo->GetCurSel())
-		{
-			case 0  :	m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
-						break;
-			case 1  :	m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
-						break;
-			case 2  :	m_WaveFormat.nAvgBytesPerSec = 256000 / 8;
-						break;
-			case 3  :	m_WaveFormat.nAvgBytesPerSec = 320000 / 8;
-						break;
-			case 4  :	m_WaveFormat.nAvgBytesPerSec = 384000 / 8;
-						break;
-			default :	ASSERT(FALSE);
-						break;
-		}
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-		if (pCombo->GetCount() == 2)
-		{
-			switch (pCombo->GetCurSel())
-			{
-				case 0  :	m_WaveFormat.nChannels = 1;
-							break;
-				case 1  :	m_WaveFormat.nChannels = 2;
-							break;
-				default :	ASSERT(FALSE);
-							break;
-			}
-		}
-		else
-			m_WaveFormat.nChannels = 2;
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-		switch (pCombo->GetCurSel())
-		{
-			case 0  :	m_WaveFormat.nSamplesPerSec = 32000;
-						break;
-			case 1  :	m_WaveFormat.nSamplesPerSec = 44100;
-						break;
-			case 2  :	m_WaveFormat.nSamplesPerSec = 48000;
-						break;
-			default :	ASSERT(FALSE);
-						break;
-		}
-
-		m_WaveFormat.nBlockAlign = 0;
-		m_WaveFormat.wBitsPerSample = 0;
 	}
 	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_MPEGLAYER3)
 	{
@@ -363,113 +300,10 @@ void CAudioFormatDlg::WaveFormatToCtrls()
 		}
 
 		m_WaveFormat.wBitsPerSample = 4;
-		m_WaveFormat.nBlockAlign = 0;	 // Calculated by AddAudioStream()
+		m_WaveFormat.nBlockAlign = 0;
 
 		// Guess nAvgBytesPerSec, calculated more precisely by codec!
 		m_WaveFormat.nAvgBytesPerSec = m_WaveFormat.nSamplesPerSec * m_WaveFormat.nChannels / 2;
-	}
-	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_MPEG)
-	{
-		CButton* pRadio = (CButton*)GetDlgItem(IDC_RADIO_MP2);
-		pRadio->SetCheck(1);
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-		if (m_WaveFormat.nAvgBytesPerSec > (192000 / 8))
-		{
-			if (pCombo->GetCount() == 2)
-				pCombo->DeleteString(0);
-		}
-		else
-		{
-			if (pCombo->GetCount() == 1)
-				pCombo->InsertString(0, _T("Mono"));
-		}
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-		if (m_WaveFormat.nChannels == 1)
-		{
-			if (pCombo->GetCount() == 5)
-			{
-				pCombo->DeleteString(pCombo->GetCount() - 1);
-				pCombo->DeleteString(pCombo->GetCount() - 1);
-				pCombo->DeleteString(pCombo->GetCount() - 1);
-				pCombo->DeleteString(pCombo->GetCount() - 1);
-			}
-		}
-		else
-		{
-			if (pCombo->GetCount() == 1)
-			{
-				pCombo->AddString(_T("224 kBit/s"));
-				pCombo->AddString(_T("256 kBit/s"));
-				pCombo->AddString(_T("320 kBit/s"));
-				pCombo->AddString(_T("384 kBit/s"));
-			}
-		}
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-		if (m_WaveFormat.nAvgBytesPerSec <= (192000 / 8))
-		{
-			pCombo->SetCurSel(0);
-			m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
-		}
-		else if (m_WaveFormat.nAvgBytesPerSec <= (224000 / 8))
-		{
-			pCombo->SetCurSel(1);
-			m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
-		}
-		else if (m_WaveFormat.nAvgBytesPerSec <= (256000 / 8))
-		{
-			pCombo->SetCurSel(2);
-			m_WaveFormat.nAvgBytesPerSec = 256000 / 8;
-		}
-		else if (m_WaveFormat.nAvgBytesPerSec <= (320000 / 8))
-		{
-			pCombo->SetCurSel(3);
-			m_WaveFormat.nAvgBytesPerSec = 320000 / 8;
-		}
-		else
-		{
-			pCombo->SetCurSel(4);
-			m_WaveFormat.nAvgBytesPerSec = 384000 / 8;
-		}
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-		if (pCombo->GetCount() == 2)
-		{
-			if (m_WaveFormat.nChannels == 1)
-				pCombo->SetCurSel(0);
-			else
-			{
-				pCombo->SetCurSel(1);
-				m_WaveFormat.nChannels = 2;
-			}
-		}
-		else
-		{
-			pCombo->SetCurSel(0);
-			m_WaveFormat.nChannels = 2;
-		}
-
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-		if (m_WaveFormat.nSamplesPerSec <= 32000)
-		{
-			pCombo->SetCurSel(0);
-			m_WaveFormat.nSamplesPerSec = 32000;
-		}
-		else if (m_WaveFormat.nSamplesPerSec <= 44100)
-		{
-			pCombo->SetCurSel(1);
-			m_WaveFormat.nSamplesPerSec = 44100;
-		}
-		else
-		{
-			pCombo->SetCurSel(2);
-			m_WaveFormat.nSamplesPerSec = 48000;
-		}
-
-		m_WaveFormat.nBlockAlign = 0;
-		m_WaveFormat.wBitsPerSample = 0;
 	}
 	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_MPEGLAYER3)
 	{
@@ -692,12 +526,6 @@ BOOL CAudioFormatDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1545, "Mono"));
 		pComboBox->AddString(ML_STRING(1546, "Stereo"));
 	}
-	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-	if (pComboBox)
-	{
-		pComboBox->AddString(ML_STRING(1545, "Mono"));
-		pComboBox->AddString(ML_STRING(1546, "Stereo"));
-	}
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_MP3_CHANNELS);
 	if (pComboBox)
 	{
@@ -827,111 +655,6 @@ void CAudioFormatDlg::OnSelchangeComboAdpcmSamplingrate()
 	}
 	// Guess nAvgBytesPerSec, calculated more precisely by codec!
 	m_WaveFormat.nAvgBytesPerSec = m_WaveFormat.nSamplesPerSec * m_WaveFormat.nChannels / 2;
-}
-
-void CAudioFormatDlg::OnRadioMp2() 
-{
-	m_WaveFormat.wFormatTag = WAVE_FORMAT_MPEG;
-	CtrlsToWaveFormat();
-	EnableDisableCtrls();
-}
-
-void CAudioFormatDlg::OnSelchangeComboMp2Bitrate() 
-{
-	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-	switch (pCombo->GetCurSel())
-	{
-		case 0  :	m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
-					break;
-		case 1  :	m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
-					break;
-		case 2  :	m_WaveFormat.nAvgBytesPerSec = 256000 / 8;
-					break;
-		case 3  :	m_WaveFormat.nAvgBytesPerSec = 320000 / 8;
-					break;
-		case 4  :	m_WaveFormat.nAvgBytesPerSec = 384000 / 8;
-					break;
-		default :	ASSERT(FALSE);
-					break;
-	}
-	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-	if (m_WaveFormat.nAvgBytesPerSec > (192000 / 8))
-	{
-		if (pCombo->GetCount() == 2)
-		{
-			pCombo->DeleteString(0);
-			pCombo->SetCurSel(0);
-			m_WaveFormat.nChannels = 2;
-		}
-	}
-	else
-	{
-		if (pCombo->GetCount() == 1)
-		{
-			pCombo->InsertString(0, _T("Mono"));
-			pCombo->SetCurSel(1);
-		}
-	}
-}
-
-void CAudioFormatDlg::OnSelchangeComboMp2Channels() 
-{
-	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-	if (pCombo->GetCount() == 2)
-	{
-		switch (pCombo->GetCurSel())
-		{
-			case 0  :	m_WaveFormat.nChannels = 1;
-						break;
-			case 1  :	m_WaveFormat.nChannels = 2;
-						break;
-			default :	ASSERT(FALSE);
-						break;
-		}
-	}
-	else
-		m_WaveFormat.nChannels = 2;
-
-	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-	if (m_WaveFormat.nChannels == 1)
-	{
-		if (pCombo->GetCount() == 5)
-		{
-			pCombo->DeleteString(pCombo->GetCount() - 1);
-			pCombo->DeleteString(pCombo->GetCount() - 1);
-			pCombo->DeleteString(pCombo->GetCount() - 1);
-			pCombo->DeleteString(pCombo->GetCount() - 1);
-			pCombo->SetCurSel(0);
-			m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
-		}
-	}
-	else
-	{
-		if (pCombo->GetCount() == 1)
-		{
-			pCombo->AddString(_T("224 kBit/s"));
-			pCombo->AddString(_T("256 kBit/s"));
-			pCombo->AddString(_T("320 kBit/s"));
-			pCombo->AddString(_T("384 kBit/s"));
-			pCombo->SetCurSel(0);
-		}
-	}
-}
-
-void CAudioFormatDlg::OnSelchangeComboMp2Samplingrate() 
-{
-	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-	switch (pCombo->GetCurSel())
-	{
-		case 0  :	m_WaveFormat.nSamplesPerSec = 32000;
-					break;
-		case 1  :	m_WaveFormat.nSamplesPerSec = 44100;
-					break;
-		case 2  :	m_WaveFormat.nSamplesPerSec = 48000;
-					break;
-		default :	ASSERT(FALSE);
-					break;
-	}
 }
 
 void CAudioFormatDlg::OnRadioMp3() 
@@ -1116,26 +839,6 @@ void CAudioFormatDlg::EnableDisableCtrls()
 		pCombo->EnableWindow(FALSE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_4BITS);
 		pEdit->EnableWindow(FALSE);
-	}
-
-	pRadio = (CButton*)GetDlgItem(IDC_RADIO_MP2);
-	if (pRadio->GetCheck() == 1)
-	{
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-		pCombo->EnableWindow(TRUE);
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-		pCombo->EnableWindow(TRUE);
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-		pCombo->EnableWindow(TRUE);
-	}
-	else
-	{
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_BITRATE);
-		pCombo->EnableWindow(FALSE);
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_CHANNELS);
-		pCombo->EnableWindow(FALSE);
-		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP2_SAMPLINGRATE);
-		pCombo->EnableWindow(FALSE);
 	}
 
 	pRadio = (CButton*)GetDlgItem(IDC_RADIO_MP3);

@@ -2091,7 +2091,6 @@
 #define IDC_RADIO_ADPCM                 1640
 #define IDS_STRING1640                  1640
 #define IDS_STRING1641                  1641
-#define IDC_RADIO_MP2                   1642
 #define IDS_STRING1642                  1642
 #define IDC_RADIO_MP3                   1643
 #define IDS_STRING1643                  1643
@@ -2101,15 +2100,12 @@
 #define IDS_STRING1645                  1645
 #define IDC_COMBO_PCM_SAMPLINGRATE      1646
 #define IDS_STRING1646                  1646
-#define IDC_COMBO_MP2_BITRATE           1647
 #define IDS_STRING1647                  1647
 #define IDC_COMBO_MP3_BITRATE           1648
 #define IDS_STRING1648                  1648
-#define IDC_COMBO_MP2_CHANNELS          1649
 #define IDS_STRING1649                  1649
 #define IDC_COMBO_MP3_CHANNELS          1650
 #define IDS_STRING1650                  1650
-#define IDC_COMBO_MP2_SAMPLINGRATE      1651
 #define IDS_STRING1651                  1651
 #define IDC_COMBO_MP3_SAMPLINGRATE      1652
 #define IDS_STRING1652                  1652

@@ -42,16 +42,12 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnRadioPcm();
 	afx_msg void OnRadioAdpcm();
-	afx_msg void OnRadioMp2();
 	afx_msg void OnRadioMp3();
 	afx_msg void OnSelchangeComboPcmBits();
 	afx_msg void OnSelchangeComboPcmChannels();
 	afx_msg void OnSelchangeComboPcmSamplingrate();
 	afx_msg void OnSelchangeComboAdpcmChannels();
 	afx_msg void OnSelchangeComboAdpcmSamplingrate();
-	afx_msg void OnSelchangeComboMp2Bitrate();
-	afx_msg void OnSelchangeComboMp2Channels();
-	afx_msg void OnSelchangeComboMp2Samplingrate();
 	afx_msg void OnSelchangeComboMp3Bitrate();
 	afx_msg void OnSelchangeComboMp3Channels();
 	afx_msg void OnSelchangeComboMp3Samplingrate();
