@@ -20,14 +20,10 @@ public:
 	enum { IDD = IDD_VIDEOFORMAT };
 	CSliderCtrl	m_VideoCompressorQuality;
 	CComboBox	m_VideoCompressionChoose;
-	int		m_nVideoCompressorDataRate;		// Data Rate in kbps
 	int		m_nVideoCompressorKeyframesRate;
-	int		m_nQualityBitrate;
 	//}}AFX_DATA
 	DWORD m_dwVideoCompressorFourCC;
 	float m_fVideoCompressorQuality;
-	double m_dVideoLength;
-	LONGLONG m_llTotalAudioBytes;
 	enum FILETYPE {FILETYPE_AVI, FILETYPE_SWF};
 	FILETYPE m_nFileType;
 
@@ -41,19 +37,14 @@ public:
 // Implementation
 protected:
 	void ShowHideCtrls();
-	void UpdateLength();
 	CDWordArray m_VideoCompressionFcc;
 	CDWordArray m_VideoCompressionKeyframesRateSupport;
-	CDWordArray m_VideoCompressionDataRateSupport;
 	CDWordArray m_VideoCompressionQualitySupport;
 	// Generated message map functions
 	//{{AFX_MSG(CVideoFormatDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchangeVideoCompressionChoose();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	afx_msg void OnChangeEditDatarate();
-	afx_msg void OnRadioQuality();
-	afx_msg void OnRadioBitrate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1076,10 +1076,8 @@ public:
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
-	volatile int m_nVideoRecDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality
-	volatile int m_nVideoRecQualityBitrate;				// 0 -> use quality, 1 -> use bitrate
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	// HTTP Get Frame Networking
@@ -1173,15 +1171,11 @@ public:
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
 	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
-	volatile int m_nVideoDetDataRate;					// Data Rate in Bits / Sec
 	volatile int m_nVideoDetKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoDetQuality;					// 2.0f best quality, 31.0f worst quality
-	volatile int m_nVideoDetQualityBitrate;				// 0 -> use quality, 1 -> use bitrate
 	volatile DWORD m_dwVideoDetSwfFourCC;				// Video Compressor FourCC
-	volatile int m_nVideoDetSwfDataRate;				// Data Rate in Bits / Sec
 	volatile int m_nVideoDetSwfKeyframesRate;			// Keyframes Rate
 	volatile float m_fVideoDetSwfQuality;				// 2.0f best quality, 31.0f worst quality
-	volatile int m_nVideoDetSwfQualityBitrate;			// 0 -> use quality, 1 -> use bitrate
 	volatile int m_nDetectionStartStop;					// 0 -> Detection Alwayn on
 														// 1 -> Enable detection on specified times and days
 														// 2 -> Disable detection on specified times and days

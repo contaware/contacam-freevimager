@@ -59,9 +59,7 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_STOP, m_SchedulerOnceDateStop);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SchedulerDailyTimeStart);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SchedulerDailyTimeStop);
-	DDX_Text(pDX, IDC_EDIT_DATARATE, m_nVideoRecDataRate);
 	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoRecKeyframesRate);
-	DDX_Radio(pDX, IDC_RADIO_QUALITY, m_nVideoRecQualityBitrate);
 	DDX_Check(pDX, IDC_CHECK_TIME_SEGMENTATION, m_bRecTimeSegmentation);
 	DDX_Check(pDX, IDC_CHECK_AUTORUN, m_bAutorun);
 	DDX_CBIndex(pDX, IDC_TIME_SEGMENTATION, m_nTimeSegmentationIndex);
@@ -90,9 +88,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_ONCE, OnCheckSchedulerOnce)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
 	ON_EN_CHANGE(IDC_EDIT_KEYFRAMES_RATE, OnChangeEditKeyframesRate)
-	ON_EN_CHANGE(IDC_EDIT_DATARATE, OnChangeEditDatarate)
-	ON_BN_CLICKED(IDC_RADIO_QUALITY, OnRadioQuality)
-	ON_BN_CLICKED(IDC_RADIO_BITRATE, OnRadioBitrate)
 	ON_BN_CLICKED(IDC_CHECK_TIME_SEGMENTATION, OnCheckTimeSegmentation)
 	ON_BN_CLICKED(IDC_CHECK_AUTORUN, OnCheckAutorun)
 	ON_CBN_SELCHANGE(IDC_TIME_SEGMENTATION, OnSelchangeTimeSegmentation)
@@ -187,60 +182,23 @@ void CGeneralPage::ShowHideCtrls()
 		pEdit->ShowWindow(SW_HIDE);
 	}
 
-	// Datarate
-	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_DATARATE);
-	if (m_VideoCompressionDataRateSupport[m_VideoCompressionChoose.GetCurSel()] &&
-		(m_nVideoRecQualityBitrate == 1											||
-		!m_VideoCompressionQualitySupport[m_VideoCompressionChoose.GetCurSel()]))
-	{	
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_DATARATE0);
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_DATARATE1);
-		pEdit->ShowWindow(SW_SHOW);
-	}
-	else
-	{
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_DATARATE0);
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_DATARATE1);
-		pEdit->ShowWindow(SW_HIDE);
-	}
-
 	// Quality
 	CSliderCtrl* pSlider = (CSliderCtrl*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY);
-	if (m_VideoCompressionQualitySupport[m_VideoCompressionChoose.GetCurSel()]	&&
-		(m_nVideoRecQualityBitrate == 0											||
-		!m_VideoCompressionDataRateSupport[m_VideoCompressionChoose.GetCurSel()]))
+	if (m_VideoCompressionQualitySupport[m_VideoCompressionChoose.GetCurSel()])
 	{
 		pSlider->ShowWindow(SW_SHOW);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
+		pEdit->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
 		pEdit->ShowWindow(SW_SHOW);
 	}
 	else
 	{
 		pSlider->ShowWindow(SW_HIDE);
+		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
+		pEdit->ShowWindow(SW_HIDE);
 		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
 		pEdit->ShowWindow(SW_HIDE);
-	}
-
-	// Quality / Bitrate radio
-	CButton* pRadio;
-	if (m_VideoCompressionDataRateSupport[m_VideoCompressionChoose.GetCurSel()] &&
-		m_VideoCompressionQualitySupport[m_VideoCompressionChoose.GetCurSel()])
-	{
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_QUALITY);
-		pRadio->ShowWindow(SW_SHOW);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_BITRATE);
-		pRadio->ShowWindow(SW_SHOW);
-	}
-	else
-	{
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_QUALITY);
-		pRadio->ShowWindow(SW_HIDE);
-		pRadio = (CButton*)GetDlgItem(IDC_RADIO_BITRATE);
-		pRadio->ShowWindow(SW_HIDE);
 	}
 }
 
@@ -251,7 +209,6 @@ BOOL CGeneralPage::OnInitDialog()
 	// Init vars
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
-	m_nVideoRecQualityBitrate = 0;
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
 	m_bRecAutoOpen = TRUE;
@@ -278,8 +235,6 @@ BOOL CGeneralPage::OnInitDialog()
 
 	// Init Rec Vars
 	m_nVideoRecKeyframesRate = m_pDoc->m_nVideoRecKeyframesRate;
-	m_nVideoRecDataRate = m_pDoc->m_nVideoRecDataRate / 1000;
-	m_nVideoRecQualityBitrate = m_pDoc->m_nVideoRecQualityBitrate;
 
 	// Init Scheduler Values
 	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
@@ -366,17 +321,14 @@ BOOL CGeneralPage::OnInitDialog()
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
 	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionDataRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)0);
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('MJPG')); 
 	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
-	m_VideoCompressionDataRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
 	m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
-	m_VideoCompressionDataRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	// Update Current Selected Codec
@@ -401,14 +353,6 @@ BOOL CGeneralPage::OnInitDialog()
 			}
 		}
 	}
-
-	// Update Quality / Bitrate selection radios
-	if (m_VideoCompressionDataRateSupport[nVideoCompressionSelection] &&
-		!m_VideoCompressionQualitySupport[nVideoCompressionSelection])
-		m_pDoc->m_nVideoRecQualityBitrate = m_nVideoRecQualityBitrate = 1;
-	else if (!m_VideoCompressionDataRateSupport[nVideoCompressionSelection] &&
-			m_VideoCompressionQualitySupport[nVideoCompressionSelection])
-		m_pDoc->m_nVideoRecQualityBitrate = m_nVideoRecQualityBitrate = 0;
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -802,12 +746,6 @@ void CGeneralPage::OnChangeEditKeyframesRate()
 	m_pDoc->m_nVideoRecKeyframesRate = m_nVideoRecKeyframesRate;
 }
 
-void CGeneralPage::OnChangeEditDatarate() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nVideoRecDataRate = m_nVideoRecDataRate * 1000;
-}
-
 void CGeneralPage::OnCheckLiveDeinterlace() 
 {
 	UpdateData(TRUE);
@@ -845,20 +783,6 @@ void CGeneralPage::OnCheckAutorun()
 		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
 	else
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
-}
-
-void CGeneralPage::OnRadioQuality() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nVideoRecQualityBitrate = m_nVideoRecQualityBitrate;
-	ShowHideCtrls();
-}
-
-void CGeneralPage::OnRadioBitrate() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_nVideoRecQualityBitrate = m_nVideoRecQualityBitrate;
-	ShowHideCtrls();
 }
 
 void CGeneralPage::OnAudioInput() 

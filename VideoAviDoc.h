@@ -487,10 +487,8 @@ public:
 	CProcessingThread m_ProcessingThread;
 
 	// Compression Vars
-	int m_nVideoCompressorDataRate;				// Data Rate in Bits / Sec
 	int m_nVideoCompressorKeyframesRate;		// Keyframes Rate
 	float m_fVideoCompressorQuality;			// 2.0f best quality, 31.0f worst quality
-	int m_nVideoCompressorQualityBitrate;		// 0 -> use quality, 1 -> use bitrate
 	LPWAVEFORMATEX m_pAudioCompressorWaveFormat;
 
 	// If Positive Values the Audio leads (is played before)
@@ -544,10 +542,8 @@ protected:
 										CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 										CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 										DWORD dwVideoCompressorFourCC,
-										int nVideoCompressorDataRate,
 										int nVideoCompressorKeyframesRate,
 										float fVideoCompressorQuality,
-										int nVideoCompressorQualityBitrate,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
 										CWnd* pProgressWnd = NULL,
 										BOOL bProgressSend = TRUE,
@@ -556,10 +552,8 @@ protected:
 	static BOOL SaveAsAVCODECSingleFile(const CString& sDstFileName,
 										CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 										DWORD dwVideoCompressorFourCC,
-										int nVideoCompressorDataRate,
 										int nVideoCompressorKeyframesRate,
 										float fVideoCompressorQuality,
-										int nVideoCompressorQualityBitrate,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
 										CWnd* pProgressWnd = NULL,
 										BOOL bProgressSend = TRUE,
@@ -573,10 +567,8 @@ protected:
 								CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 								CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 								DWORD& dwVideoCompressorFourCC,
-								int& nVideoCompressorDataRate,
 								int& nVideoCompressorKeyframesRate,
 								float& fVideoCompressorQuality,
-								int& nVideoCompressorQualityBitrate,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
@@ -589,10 +581,8 @@ protected:
 	static BOOL SaveAsAVCODEC(	const CString& sDstFileName,
 								const CString& sSrcFileName,
 								DWORD dwVideoCompressorFourCC,
-								int nVideoCompressorDataRate,
 								int nVideoCompressorKeyframesRate,
 								float fVideoCompressorQuality,
-								int nVideoCompressorQualityBitrate,
 								LPWAVEFORMATEX pAudioCompressorWaveFormat,
 								CWnd* pProgressWnd = NULL,
 								BOOL bProgressSend = TRUE,
@@ -611,10 +601,8 @@ protected:
 	int AVIFileMergeAVCODEC(CString sSaveFileName,
 							CSortableStringArray* pAviFileNames,
 							DWORD& dwVideoCompressorFourCC,
-							int& nVideoCompressorDataRate,
 							int& nVideoCompressorKeyframesRate,
 							float& fVideoCompressorQuality,
-							int& nVideoCompressorQualityBitrate,
 							LPWAVEFORMATEX pAudioCompressorWaveFormat,
 							CWnd* pWnd,
 							CWorkerThread* pThread,

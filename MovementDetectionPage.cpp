@@ -452,16 +452,12 @@ void CMovementDetectionPage::OnSwfConfigure()
 	// Swf Config Dialog
 	CVideoFormatDlg VideoFormatDlg(this);
 	VideoFormatDlg.m_dwVideoCompressorFourCC = m_pDoc->m_dwVideoDetSwfFourCC;
-	VideoFormatDlg.m_nVideoCompressorDataRate = m_pDoc->m_nVideoDetSwfDataRate / 1000;
 	VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDoc->m_nVideoDetSwfKeyframesRate;
 	VideoFormatDlg.m_fVideoCompressorQuality = m_pDoc->m_fVideoDetSwfQuality;
-	VideoFormatDlg.m_nQualityBitrate = m_pDoc->m_nVideoDetSwfQualityBitrate;
 	VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
 	if (VideoFormatDlg.DoModal() == IDOK)
 	{
-		m_pDoc->m_nVideoDetSwfQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 		m_pDoc->m_fVideoDetSwfQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-		m_pDoc->m_nVideoDetSwfDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
 		m_pDoc->m_nVideoDetSwfKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
 		m_pDoc->m_dwVideoDetSwfFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 	}
@@ -478,15 +474,11 @@ void CMovementDetectionPage::OnAviConfigure()
 	// Avi Config Dialog
 	CVideoFormatDlg VideoFormatDlg(this);
 	VideoFormatDlg.m_dwVideoCompressorFourCC = m_pDoc->m_dwVideoDetFourCC;
-	VideoFormatDlg.m_nVideoCompressorDataRate = m_pDoc->m_nVideoDetDataRate / 1000;
 	VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDoc->m_nVideoDetKeyframesRate;
 	VideoFormatDlg.m_fVideoCompressorQuality = m_pDoc->m_fVideoDetQuality;
-	VideoFormatDlg.m_nQualityBitrate = m_pDoc->m_nVideoDetQualityBitrate;
 	if (VideoFormatDlg.DoModal() == IDOK)
 	{
-		m_pDoc->m_nVideoDetQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 		m_pDoc->m_fVideoDetQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-		m_pDoc->m_nVideoDetDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
 		m_pDoc->m_nVideoDetKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
 		m_pDoc->m_dwVideoDetFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 	}

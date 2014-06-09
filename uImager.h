@@ -85,9 +85,6 @@
 
 // Default Video Compression Keyframes Rate
 #define DEFAULT_KEYFRAMESRATE							30
-							
-// Default Video Compression Data Rate in Bits / Sec
-#define DEFAULT_VIDEO_DATARATE							500000
 
 // Default Jpeg Compression Quality
 #ifndef DEFAULT_JPEGCOMPRESSION

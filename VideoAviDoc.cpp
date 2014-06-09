@@ -2387,8 +2387,6 @@ void CVideoAviDoc::LoadSettings()
 	m_dwVideoCompressorFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), DEFAULT_VIDEO_FOURCC);
 	m_fVideoCompressorQuality = (float) pApp->GetProfileInt(sSection, _T("VideoCompressorQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoCompressorKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_nVideoCompressorDataRate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorDataRate"), DEFAULT_VIDEO_DATARATE);
-	m_nVideoCompressorQualityBitrate = (int) pApp->GetProfileInt(sSection, _T("VideoCompressorQualityBitrate"), 0);
 
 	if (m_pAudioCompressorWaveFormat)
 		delete [] m_pAudioCompressorWaveFormat;
@@ -2434,8 +2432,6 @@ void CVideoAviDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
 	pApp->WriteProfileInt(sSection, _T("VideoCompressorQuality"), (int)m_fVideoCompressorQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoCompressorKeyframesRate"), m_nVideoCompressorKeyframesRate);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorDataRate"), m_nVideoCompressorDataRate);
-	pApp->WriteProfileInt(sSection, _T("VideoCompressorQualityBitrate"), m_nVideoCompressorQualityBitrate);
 		
 	if (m_pAudioCompressorWaveFormat)
 		pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
@@ -2760,10 +2756,8 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName)
 								&pAVRec,
 								pAVIPlay,
 								m_dwVideoCompressorFourCC,
-								m_nVideoCompressorDataRate,
 								m_nVideoCompressorKeyframesRate,
 								m_fVideoCompressorQuality,
-								m_nVideoCompressorQualityBitrate,
 								m_pAudioCompressorWaveFormat,
 								GetView(),
 								FALSE,
@@ -2846,10 +2840,8 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 									CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 									CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 									DWORD& dwVideoCompressorFourCC,
-									int& nVideoCompressorDataRate,
 									int& nVideoCompressorKeyframesRate,
 									float& fVideoCompressorQuality,
-									int& nVideoCompressorQualityBitrate,
 									LPWAVEFORMATEX pAudioCompressorWaveFormat,
 									CWnd* pProgressWnd/*=NULL*/,
 									BOOL bProgressSend/*=TRUE*/,
@@ -2858,7 +2850,6 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 {
 	CVideoFormatDlg VideoFormatDlg(pProgressWnd);
 	CAudioFormatDlg AudioFormatDlg(pProgressWnd);
-	LONGLONG llTotalAudioBytes = 0;
 
 	// Check
 	if (!pAVIPlay || !ppAVRec)
@@ -2943,69 +2934,43 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 		}
 	}
 
-	// Add Total Audio Bytes to Change
-	if (pAudioCompressorWaveFormat)
-		llTotalAudioBytes += (LONGLONG)(dAudioLength * (double)pAVIPlay->GetAudioStreamsCount() * (double)pAudioCompressorWaveFormat->nAvgBytesPerSec);
-
 	// Video Format
 	if (pAVIPlay->GetVideoStreamsCount() > 0)
 	{
 		if (CUImagerApp::IsAVIFile(sDstFileName))
 		{
 			DWORD dwFourCC = dwVideoCompressorFourCC;
-			double dVideoLength = 0.0;
-			int nDataRate = nVideoCompressorDataRate;	// bps
 			int nKeyframesRate = nVideoCompressorKeyframesRate;
 			CAVIPlay::CAVIVideoStream* pSrcVideoStream = pAVIPlay->GetVideoStream(0);
 			if (pSrcVideoStream)
 			{
 				// Get from file
-				dwFourCC = pSrcVideoStream->GetFourCC(true); 
-				dVideoLength = pSrcVideoStream->GetTotalTime();
-				nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
+				dwFourCC = pSrcVideoStream->GetFourCC(true);
 				nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
-
-				// Get from previous settings if to big
-				if (nDataRate > 2000000)
-					nDataRate = nVideoCompressorDataRate;
 								
 				// Get from previous settings if to small
 				if (nKeyframesRate <= 1)
 					nKeyframesRate = nVideoCompressorKeyframesRate;
 			}
 			VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
-			VideoFormatDlg.m_dVideoLength = dVideoLength;
-			VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
-			VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
 			VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
 			VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
-			VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
 			if (VideoFormatDlg.DoModal() != IDOK)
 				return 0;
-			nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 			fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-			nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
 			nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
 			dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 		}
 		else if (CUImagerApp::IsSWFFile(sDstFileName))
 		{
 			DWORD dwFourCC = dwVideoCompressorFourCC;
-			double dVideoLength = 0.0;
-			int nDataRate = nVideoCompressorDataRate;	// bps
 			int nKeyframesRate = nVideoCompressorKeyframesRate;
 			CAVIPlay::CAVIVideoStream* pSrcVideoStream = pAVIPlay->GetVideoStream(0);
 			if (pSrcVideoStream)
 			{
 				// Get from file
-				dwFourCC = pSrcVideoStream->GetFourCC(true); 
-				dVideoLength = pSrcVideoStream->GetTotalTime();
-				nDataRate = Round((double)pSrcVideoStream->GetTotalBytes() / dVideoLength * 8.0); // bps
+				dwFourCC = pSrcVideoStream->GetFourCC(true);
 				nKeyframesRate = Round((double)pSrcVideoStream->GetTotalFrames() / (double)pSrcVideoStream->GetTotalKeyFrames());
-
-				// Get from previous settings if to big
-				if (nDataRate > 2000000)
-					nDataRate = nVideoCompressorDataRate;
 						
 				// Get from previous settings if to small
 				if (nKeyframesRate <= 1)
@@ -3023,18 +2988,12 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 				}
 			}
 			VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
-			VideoFormatDlg.m_dVideoLength = dVideoLength;
-			VideoFormatDlg.m_llTotalAudioBytes = llTotalAudioBytes;
-			VideoFormatDlg.m_nVideoCompressorDataRate = nDataRate / 1000;	// kbps
 			VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
 			VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
-			VideoFormatDlg.m_nQualityBitrate = nVideoCompressorQualityBitrate;
 			VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_SWF;
 			if (VideoFormatDlg.DoModal() != IDOK)
 				return 0;
-			nVideoCompressorQualityBitrate = VideoFormatDlg.m_nQualityBitrate;
 			fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;
-			nVideoCompressorDataRate = VideoFormatDlg.m_nVideoCompressorDataRate * 1000;
 			nVideoCompressorKeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
 			dwVideoCompressorFourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
 		}
@@ -3044,10 +3003,8 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 										ppAVRec,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
-										nVideoCompressorDataRate,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
-										nVideoCompressorQualityBitrate,
 										pAudioCompressorWaveFormat,
 										pProgressWnd,
 										bProgressSend,
@@ -3060,10 +3017,8 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sDstFileName,
 									const CString& sSrcFileName,
 									DWORD dwVideoCompressorFourCC,
-									int nVideoCompressorDataRate,
 									int nVideoCompressorKeyframesRate,
 									float fVideoCompressorQuality,
-									int nVideoCompressorQualityBitrate,
 									LPWAVEFORMATEX pAudioCompressorWaveFormat,
 									CWnd* pProgressWnd/*=NULL*/,
 									BOOL bProgressSend/*=TRUE*/,
@@ -3083,10 +3038,8 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sDstFileName,
 	BOOL res = SaveAsAVCODECSingleFile(	sDstFileName,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
-										nVideoCompressorDataRate,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
-										nVideoCompressorQualityBitrate,
 										pAudioCompressorWaveFormat,
 										pProgressWnd,
 										bProgressSend,
@@ -3155,10 +3108,8 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sDstFileName,
 BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	const CString& sDstFileName,
 											CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 											DWORD dwVideoCompressorFourCC,
-											int nVideoCompressorDataRate,
 											int nVideoCompressorKeyframesRate,
 											float fVideoCompressorQuality,
-											int nVideoCompressorQualityBitrate,
 											LPWAVEFORMATEX pAudioCompressorWaveFormat,
 											CWnd* pProgressWnd/*=NULL*/,
 											BOOL bProgressSend/*=TRUE*/,
@@ -3169,10 +3120,8 @@ BOOL CVideoAviDoc::SaveAsAVCODECSingleFile(	const CString& sDstFileName,
 										&pAVRec,	// This function allocates pAVRec!
 										pAVIPlay,
 										dwVideoCompressorFourCC,
-										nVideoCompressorDataRate,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
-										nVideoCompressorQualityBitrate,
 										pAudioCompressorWaveFormat,
 										pProgressWnd,
 										bProgressSend,
@@ -3194,10 +3143,8 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 											CAVRec** ppAVRec,		// If first file *ppAVRec is NULL and will be allocated
 											CAVIPlay* pAVIPlay,		// Already Opened Input AVI File
 											DWORD dwVideoCompressorFourCC,
-											int nVideoCompressorDataRate,
 											int nVideoCompressorKeyframesRate,
 											float fVideoCompressorQuality,
-											int nVideoCompressorQualityBitrate,
 											LPWAVEFORMATEX pAudioCompressorWaveFormat,
 											CWnd* pProgressWnd/*=NULL*/,
 											BOOL bProgressSend/*=TRUE*/,
@@ -3270,16 +3217,13 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 			// Add Stream
 			if (bFirstFile)
 			{
-				int nQualityBitrate = nVideoCompressorQualityBitrate;
-				if (pBmi->bmiHeader.biCompression == FCC('MJPG'))
-					nQualityBitrate = 0;
 				if ((*ppAVRec)->AddVideoStream(	pSrcVideoStream->GetFormat(false),							// Decompressed Src Video Format
 												pBmi,														// Dst Video Format
 												pSrcVideoStream->GetRate(),									// Dst Rate
 												pSrcVideoStream->GetScale(),								// Dst Scale
-												nQualityBitrate == 1 ? nVideoCompressorDataRate : 0,		// Bitrate in bits/s
+												0,															// Bitrate in bits/s
 												nVideoCompressorKeyframesRate,								// Keyframes Rate
-												nQualityBitrate == 0 ? fVideoCompressorQuality : 0.0f,		// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+												fVideoCompressorQuality,									// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
 												((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)
 					goto error;
 			}
@@ -4974,10 +4918,8 @@ BOOL CVideoAviDoc::ShrinkDocTo(CVideoAviDoc::CShrinkDocTo* pShrinkDocTo)
 	BOOL res = SaveAsAVCODEC(pShrinkDocTo->m_sOutFileName,
 							m_pAVIPlay->GetFileName(),
 							DEFAULT_VIDEO_FOURCC,
-							0,		// Set Bitrate to 0 because we use quality
 							DEFAULT_KEYFRAMESRATE,
 							DEFAULT_SHRINK_VIDEO_QUALITY,
-							0,		// Use Quality
 							&WaveFormat,
 							GetView(),
 							FALSE,
@@ -5318,10 +5260,8 @@ BOOL CVideoAviDoc::FileMergeAs()
 	int ret = AVIFileMergeAVCODEC(	SaveFileName,
 									&AviFileNames,
 									m_dwVideoCompressorFourCC,
-									m_nVideoCompressorDataRate,
 									m_nVideoCompressorKeyframesRate,
 									m_fVideoCompressorQuality,
-									m_nVideoCompressorQualityBitrate,
 									m_pAudioCompressorWaveFormat,
 									GetView(),
 									&m_ProcessingThread,
@@ -5366,10 +5306,8 @@ BOOL CVideoAviDoc::FileMergeAs()
 int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 										CSortableStringArray* pAviFileNames,
 										DWORD& dwVideoCompressorFourCC,
-										int& nVideoCompressorDataRate,
 										int& nVideoCompressorKeyframesRate,
 										float& fVideoCompressorQuality,
-										int& nVideoCompressorQualityBitrate,
 										LPWAVEFORMATEX pAudioCompressorWaveFormat,
 										CWnd* pWnd,
 										CWorkerThread* pThread,
@@ -5425,10 +5363,8 @@ int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 									&pAVRec, // This function allocates pAVRec!
 									pAVIPlay,
 									dwVideoCompressorFourCC,
-									nVideoCompressorDataRate,
 									nVideoCompressorKeyframesRate,
 									fVideoCompressorQuality,
-									nVideoCompressorQualityBitrate,
 									pAudioCompressorWaveFormat,
 									pWnd,
 									FALSE,
@@ -5501,10 +5437,8 @@ int CVideoAviDoc::AVIFileMergeAVCODEC(	CString sSaveFileName,
 										&pAVRec,
 										pAVIPlay,
 										dwVideoCompressorFourCC,
-										nVideoCompressorDataRate,
 										nVideoCompressorKeyframesRate,
 										fVideoCompressorQuality,
-										nVideoCompressorQualityBitrate,
 										pAudioCompressorWaveFormat,
 										pWnd,
 										FALSE,
