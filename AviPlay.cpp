@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AviPlay.h"
+#include "YuvToYuv.h"
 #include "Round.h"
 
 #ifdef _DEBUG
@@ -3385,16 +3386,28 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 	}
 
 	// Color Space Conversion
+	// (first try fast conversion, if not supported fall back to sws_scale)
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxGdi)
 	{
-		int sws_scale_res = sws_scale(	m_pImgConvertCtxGdi,	// Image Convert Context
-										m_pFrame->data,			// Source Data
-										m_pFrame->linesize,		// Source Stride
-										0,						// Source Slice Y
-										GetHeight(),			// Source Height
-										m_pFrameGdi->data,		// Destination Data
-										m_pFrameGdi->linesize);	// Destination Stride
-		return sws_scale_res > 0 ? true : false;		
+		BOOL bOk = ITU601JPEGConvert(m_pCodecCtx->pix_fmt,				// Source Format
+									AVCodecBMIToPixFormat(m_pDstBMI),	// Destination Format
+									m_pFrame->data,						// Source Data
+									m_pFrame->linesize,					// Source Stride
+									m_pFrameGdi->data,					// Destination Data
+									m_pFrameGdi->linesize,				// Destination Stride
+									GetWidth(),							// Width
+									GetHeight());						// Height
+		if (!bOk)
+		{
+			bOk = sws_scale(m_pImgConvertCtxGdi,						// Image Convert Context
+							m_pFrame->data,								// Source Data
+							m_pFrame->linesize,							// Source Stride
+							0,											// Source Slice Y
+							GetHeight(),								// Source Height
+							m_pFrameGdi->data,							// Destination Data
+							m_pFrameGdi->linesize) > 0;					// Destination Stride
+		}
+		return bOk ? true : false;
 	}
 	else
 		return true;
@@ -3524,16 +3537,28 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKey
 	}
 
 	// Color Space Conversion
+	// (first try fast conversion, if not supported fall back to sws_scale)
 	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
 	{
-		int sws_scale_res = sws_scale(	m_pImgConvertCtxDxDraw,		// Image Convert Context
-										m_pFrame->data,				// Source Data
-										m_pFrame->linesize,			// Source Stride
-										0,							// Source Slice Y
-										GetHeight(),				// Source Height
-										m_pFrameDxDraw->data,		// Destination Data
-										m_pFrameDxDraw->linesize);	// Destination Stride
-		if (sws_scale_res > 0)
+		BOOL bOk = ITU601JPEGConvert(m_pCodecCtx->pix_fmt,				// Source Format
+									AVCodecDxDrawToPixFormat(pDxDraw),	// Destination Format
+									m_pFrame->data,						// Source Data
+									m_pFrame->linesize,					// Source Stride
+									m_pFrameDxDraw->data,				// Destination Data
+									m_pFrameDxDraw->linesize,			// Destination Stride
+									GetWidth(),							// Width
+									GetHeight());						// Height
+		if (!bOk)
+		{
+			bOk = sws_scale(m_pImgConvertCtxDxDraw,						// Image Convert Context
+							m_pFrame->data,								// Source Data
+							m_pFrame->linesize,							// Source Stride
+							0,											// Source Slice Y
+							GetHeight(),								// Source Height
+							m_pFrameDxDraw->data,						// Destination Data
+							m_pFrameDxDraw->linesize) > 0;				// Destination Stride
+		}
+		if (bOk)
 		{
 			pDxDraw->UnlockSrc();
 			pDxDraw->UpdateBackSurface(rc);
