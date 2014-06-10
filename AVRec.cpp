@@ -137,9 +137,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							const LPBITMAPINFO pDstFormat,
 							DWORD dwDstRate,
 							DWORD dwDstScale,
-							int bitrate,
 							int keyframes_rate,
-							float qscale,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+							float qscale,	// 2.0f best quality, 31.0f worst quality
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -193,22 +192,14 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 	pCodecCtx->codec_tag = pDstFormat->bmiHeader.biCompression;
 
-	// Use Quality
-	if (qscale > 0.0f)
-	{
-		// Clip: 31 comes from pCodecCtx->qmax, and 2 from pCodecCtx->qmin for MJPG
-		if (qscale > 31.0f)
-			qscale = 31.0f;
-		else if (qscale < 2.0f)
-			qscale = 2.0f;
-
-		pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-		pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
-		pCodecCtx->bit_rate = 0;
-	}
-	// Use Bitrate
-	else
-		pCodecCtx->bit_rate = MAX(1, bitrate);
+	// Quality
+	if (qscale > 31.0f)
+		qscale = 31.0f;
+	else if (qscale < 2.0f)
+		qscale = 2.0f;
+	pCodecCtx->flags |= CODEC_FLAG_QSCALE;
+	pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
+	pCodecCtx->bit_rate = 0;
 
 	// Resolution must be a multiple of two
 	pCodecCtx->width = pDstFormat->bmiHeader.biWidth;
@@ -281,17 +272,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	}
 
 	// Open the video codec
-	int ret = avcodec_open_thread_safe(pCodecCtx, pCodec);
-	if (ret < 0)
-	{
-		TRACE(_T("Cannot reach the wanted bit_rate, set to best quality\n"));
-		pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-		pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * pCodecCtx->qmin);
-		pCodecCtx->bit_rate = 0;
-		ret = avcodec_open_thread_safe(pCodecCtx, pCodec);
-		if (ret < 0)
-			return -1;
-	}
+	if (avcodec_open_thread_safe(pCodecCtx, pCodec) < 0)
+		return -1;
 
 	// Allocate video frames
 	m_pFrame[nStreamNum] = av_frame_alloc();

@@ -51,9 +51,8 @@ public:
 						const LPBITMAPINFO pDstFormat,
 						DWORD dwDstRate,
 						DWORD dwDstScale,
-						int bitrate,
 						int keyframes_rate,
-						float qscale,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+						float qscale,	// 2.0f best quality, 31.0f worst quality
 						int nThreadCount);
 
 	// Add Audio Stream

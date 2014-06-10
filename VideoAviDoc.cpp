@@ -3221,9 +3221,8 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 												pBmi,														// Dst Video Format
 												pSrcVideoStream->GetRate(),									// Dst Rate
 												pSrcVideoStream->GetScale(),								// Dst Scale
-												0,															// Bitrate in bits/s
 												nVideoCompressorKeyframesRate,								// Keyframes Rate
-												fVideoCompressorQuality,									// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+												fVideoCompressorQuality,									// 2.0f best quality, 31.0f worst quality
 												((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)
 					goto error;
 			}

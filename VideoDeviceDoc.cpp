@@ -530,9 +530,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale
-											0,									// Bitrate in bits/s
 											m_pDoc->m_nVideoDetSwfKeyframesRate,// Keyframes Rate				
-											m_pDoc->m_fVideoDetSwfQuality,		// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											m_pDoc->m_fVideoDetSwfQuality,		// 2.0f best quality, 31.0f worst quality
 											1);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
@@ -639,9 +638,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
 											CalcFrameRate.num,						// Rate
 											CalcFrameRate.den,						// Scale
-											0,										// Bitrate in bits/s
 											m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
-											m_pDoc->m_fVideoDetQuality,				// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+											m_pDoc->m_fVideoDetQuality,				// 2.0f best quality, 31.0f worst quality
 											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{
@@ -1457,9 +1455,8 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 															(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 															FrameRate.num,						// Rate
 															FrameRate.den,						// Scale
-															0,									// Not using bitrate
 															DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-															m_fSnapshotVideoCompressorQuality,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+															m_fSnapshotVideoCompressorQuality,	// 2.0f best quality, 31.0f worst quality
 															1);
 								pAVRecSwf->Open();
 							}
@@ -1495,9 +1492,8 @@ int CVideoDeviceDoc::CSaveSnapshotSWFThread::Work()
 																(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 																FrameRate.num,						// Rate
 																FrameRate.den,						// Scale
-																0,									// Not using bitrate
 																DEFAULT_KEYFRAMESRATE,				// Keyframes Rate				
-																m_fSnapshotVideoCompressorQuality,	// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+																m_fSnapshotVideoCompressorQuality,	// 2.0f best quality, 31.0f worst quality
 																1);
 								pAVRecThumbSwf->Open();
 							}
@@ -5758,9 +5754,8 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 									(LPBITMAPINFO)(&DstBmi),		// Destination Video Format
 									FrameRate.num,					// Rate
 									FrameRate.den,					// Scale
-									0,								// Bitrate in bits/s
 									m_nVideoRecKeyframesRate,		// Keyframes Rate	
-									m_fVideoRecQuality,				// 0.0f use bitrate, 2.0f best quality, 31.0f worst quality
+									m_fVideoRecQuality,				// 2.0f best quality, 31.0f worst quality
 									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)	
 		return FALSE;
 

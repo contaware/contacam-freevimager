@@ -651,7 +651,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
 									(LPBITMAPINFO)&DstBmi,	// Dst Video Format
 									FrameRate.num,			// Rate
 									FrameRate.den,			// Scale
-									0,
 									DEFAULT_KEYFRAMESRATE,					
 									DEFAULT_VIDEO_QUALITY,
 									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)
