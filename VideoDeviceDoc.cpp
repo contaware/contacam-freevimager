@@ -4031,7 +4031,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
 	m_pAVRec = NULL;
-	m_bInterleave = FALSE; // Do not interleave because while recording the frame rate is not yet exactly known!
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
@@ -4125,7 +4124,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwRecFirstUpTime = 0;
 	m_dwRecLastUpTime = 0;
 	m_bRecFirstFrame = FALSE;
-	m_nRecordedFrames = 0;
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
@@ -7747,9 +7745,20 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 			if (m_pAVRec)
 			{
 				// Add Frame
+				int64_t pts;
+				if (m_bRecFirstFrame)
+					pts = 0;
+				else
+				{
+					int64_t Rate = m_pAVRec->GetRate(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
+					int64_t Scale = m_pAVRec->GetScale(m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM));
+					DWORD dwDiffMS = dwCurrentInitUpTime - m_dwRecFirstUpTime;
+					pts = (int64_t)dwDiffMS * Rate / Scale / 1000;
+				}
 				BOOL bOk = m_pAVRec->AddFrame(	m_pAVRec->VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
 												pDib,
-												m_bInterleave ? true : false);
+												false, // No interleave
+												pts);
 
 				// Add Audio Samples
 				if (m_bCaptureAudio)
@@ -7762,7 +7771,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 						m_pAVRec->AddAudioSamples(	m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 													nNumOfSrcSamples,
 													UserBuf.m_pBuf,
-													m_bInterleave ? true : false);
+													false); // No interleave
 					}
 				}
 
@@ -7770,15 +7779,11 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 				if (m_bRecFirstFrame)
 				{
 					m_dwRecLastUpTime  = m_dwRecFirstUpTime = dwCurrentInitUpTime;
-					m_nRecordedFrames = 1;
 					m_bRecFirstFrame = FALSE;
 				}
 				// Recording Up-Time Update
 				else
-				{
 					m_dwRecLastUpTime = dwCurrentInitUpTime;
-					m_nRecordedFrames++;
-				}
 					
 				// Every second check for segmentation
 				if (bOk && b1SecTick && m_bRecTimeSegmentation &&
@@ -8202,53 +8207,18 @@ void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
 
 void CVideoDeviceDoc::CloseAndShowAviRec()
 {
-	LONGLONG llSamplesCount = 0;
+	// Store old rec file name
 	CString sOldRecFileName;
 	if (m_pAVRec)
-	{
-		// Get Total Samples
-		if (m_bCaptureAudio)
-			llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
-
-		// Store old rec file name
 		sOldRecFileName = m_pAVRec->GetFileName();
-	}
 
 	// Free
 	FreeAVIFile();
 
-	// Change Frame Rate
-	double dFrameRate = 1.0;
-	if (m_bCaptureAudio)
-	{
-		if (m_nRecordedFrames > 0	&&
-			llSamplesCount > 0		&&
-			m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec > 0)
-		{
-			dFrameRate =	(double)m_nRecordedFrames /
-							((double)llSamplesCount / (double)m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec);
-		}
-	}
-	else
-	{
-		if (m_nRecordedFrames > 1	&&
-			m_dwRecLastUpTime - m_dwRecFirstUpTime > 0U)
-		{
-			dFrameRate =	(1000.0 * (m_nRecordedFrames - 1)) /
-							(double)(m_dwRecLastUpTime - m_dwRecFirstUpTime);
-		}
-	}
-	CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sOldRecFileName,
-										0,
-										dFrameRate,
-										false);
-
-	// If ending the windows session do not perform the following
+	// Open the video file
+	// (if ending the windows session do not perform the following)
 	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
-	{
-		// Open the video file
 		OpenAVIFile(sOldRecFileName);
-	}
 }
 
 void CVideoDeviceDoc::NextRecTime(CTime t)
@@ -8326,45 +8296,14 @@ BOOL CVideoDeviceDoc::NextAviFile()
 		return FALSE;
 	}
 
-	// Close old file, change frame rate and open it
+	// Close old file and open it
 	if (m_pAVRec)
 	{
-		// Get Samples Count
-		LONGLONG llSamplesCount = 0;
-		if (m_bCaptureAudio)
-			llSamplesCount = m_pAVRec->GetSampleCount(m_pAVRec->AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM));
-
 		// Store old rec file name
 		CString sOldRecFileName = m_pAVRec->GetFileName();
 
 		// Free
 		delete m_pAVRec;
-
-		// Change Frame Rate
-		double dFrameRate = 1.0;
-		if (m_bCaptureAudio)
-		{
-			if (m_nRecordedFrames > 0	&&
-				llSamplesCount > 0		&&
-				m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec > 0)
-			{
-				dFrameRate =	(double)m_nRecordedFrames /
-								((double)llSamplesCount / (double)m_CaptureAudioThread.m_pDstWaveFormat->nSamplesPerSec);
-			}
-		}
-		else
-		{
-			if (m_nRecordedFrames > 1	&&
-				m_dwRecLastUpTime - m_dwRecFirstUpTime > 0U)
-			{
-				dFrameRate =	(1000.0 * (m_nRecordedFrames - 1)) /
-								(double)(m_dwRecLastUpTime - m_dwRecFirstUpTime);
-			}
-		}
-		CAVIPlay::AviChangeVideoFrameRate(	(LPCTSTR)sOldRecFileName,
-											0,
-											dFrameRate,
-											false);
 
 		// Open the video file
 		OpenAVIFile(sOldRecFileName);

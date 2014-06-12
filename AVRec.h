@@ -80,20 +80,27 @@ public:
 	// Video Streams Number to Overall Stream Number
 	__forceinline DWORD VideoStreamNumToStreamNum(DWORD dwVideoStreamNum);
 
-	// Video Frame Write, for flushing set pDib to NULL or pBmi and pBits to NULL
+	// Video Frame Write
+	// - For flushing set pDib to NULL or pBmi and pBits to NULL
+	// - For fixed framerate content set pts to AV_NOPTS_VALUE, for variable framerate
+	//   pts should be strictly monotonically increasing (if it is not, frame is skipped
+	//   and function returns true)
 	__forceinline bool AddFrame(DWORD dwStreamNum,
 								CDib* pDib,
-								bool bInterleaved)
+								bool bInterleaved,
+								int64_t pts = AV_NOPTS_VALUE)
 	{
 		return AddFrame(dwStreamNum,
 						pDib ? pDib->GetBMI() : NULL,
 						pDib ? pDib->GetBits() : NULL,
-						bInterleaved);
+						bInterleaved,
+						pts);
 	};
 	bool AddFrame(	DWORD dwStreamNum,
 					LPBITMAPINFO pBmi,
 					LPBYTE pBits,
-					bool bInterleaved);
+					bool bInterleaved,
+					int64_t pts = AV_NOPTS_VALUE);
 
 	// Audio Samples Write, for flushing set pBuf to NULL and dwNumSamples to 0
 	bool AddAudioSamples(DWORD dwStreamNum, DWORD dwNumSamples, LPBYTE pBuf, bool bInterleaved);
@@ -190,7 +197,8 @@ protected:
 	// Counters
 	volatile LONGLONG m_llTotalFramesOrSamples[MAX_STREAMS];
 	volatile LONGLONG m_llTotalWrittenBytes[MAX_STREAMS];
-	volatile LONGLONG m_llLastDTS[MAX_STREAMS];
+	volatile LONGLONG m_llLastCodecPTS[MAX_STREAMS];
+	volatile LONGLONG m_llLastStreamDTS[MAX_STREAMS];
 };
 
 __forceinline DWORD CAVRec::VideoStreamNumToStreamNum(DWORD dwVideoStreamNum)

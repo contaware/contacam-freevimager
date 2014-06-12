@@ -62,7 +62,8 @@ void CAVRec::InitVars()
 		// Reset counters
 		m_llTotalFramesOrSamples[dwStreamNum] = 0;
 		m_llTotalWrittenBytes[dwStreamNum] = 0;
-		m_llLastDTS[dwStreamNum] = AV_NOPTS_VALUE;
+		m_llLastCodecPTS[dwStreamNum] = AV_NOPTS_VALUE;
+		m_llLastStreamDTS[dwStreamNum] = AV_NOPTS_VALUE;
 	}
 }
 
@@ -172,6 +173,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 			const enum AVPixelFormat *p = pCodec->pix_fmts;
 			for ( ; *p != -1 ; p++)
 			{
+				if (*p == AV_PIX_FMT_YUV420P)
+					pix_fmt = AV_PIX_FMT_YUV420P; // YUV420P is always first choice
 				if (*p == pix_fmt)
 					break;
 			}
@@ -190,7 +193,8 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	AVCodecContext* pCodecCtx = pVideoStream->codec;
 	pCodecCtx->codec_id = m_pOutputFormat->video_codec;
 	pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-	pCodecCtx->codec_tag = pDstFormat->bmiHeader.biCompression;
+	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
+		pCodecCtx->codec_tag = pDstFormat->bmiHeader.biCompression;
 
 	// Quality
 	if (qscale > 31.0f)
@@ -205,10 +209,20 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	pCodecCtx->width = pDstFormat->bmiHeader.biWidth;
 	pCodecCtx->height = pDstFormat->bmiHeader.biHeight;
 
-	/* time base: this is the fundamental unit of time (in seconds) in terms
-	   of which frame timestamps are represented. for fixed-fps content,
-	   timebase should be 1/framerate and timestamp increments should be
-	   identically 1. */
+	// Time base
+	// is the fundamental unit of time (in seconds) in terms of which frame
+	// timestamps are represented. For fixed framerate content, timebase should
+	// be 1/framerate and timestamp increments should be identically to 1.
+	// For variable framerate we can set a ms resoltution time base like:
+	// pCodecCtx->time_base.num = 1 and pCodecCtx->time_base.den = 1000
+	//
+	// Most container formats are supporting VFR, except swf which is not.
+	// Although avi is not designed for variable framerates, it is possible to 
+	// use them without creating a non-standard file by using 0-byte chunks for 
+	// skipped frames. However it requires framerate to be set to least common 
+	// multiple of all framerates used, and produces slight overhead compared 
+	// to true VFR (ffmpeg avi muxer correctly adds 0-byte chunks as delta
+	// frames so that seeking works well)
 	int dst_rate, dst_scale;
 	av_reduce(&dst_scale, &dst_rate, (int64_t)dwDstScale, (int64_t)dwDstRate, MAX_SIZE_FOR_RATIONAL);
 	pCodecCtx->time_base.den = dst_rate;
@@ -219,6 +233,9 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;
+
+	// No B-Frames
+	pCodecCtx->max_b_frames = 0;
 
 	// Encoder specific settings
 	if (pCodecCtx->codec_id == AV_CODEC_ID_MPEG4)
@@ -320,7 +337,8 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	pCodecCtx->bit_rate = pDstWaveFormat->nAvgBytesPerSec * 8;
 	pCodecCtx->sample_rate = pDstWaveFormat->nSamplesPerSec;
 	pCodecCtx->channels = pDstWaveFormat->nChannels;
-	pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
+	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
+		pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
 
 	// Some formats want stream headers to be separate
 	if (m_pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -347,7 +365,10 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	AVSampleFormat src_sample_fmt = pSrcWaveFormat->wBitsPerSample == 16 ? AV_SAMPLE_FMT_S16 : AV_SAMPLE_FMT_U8;
 
 	// Destination buffer
-	// Note: m_nDstBufSize is the number of samples in one channel
+	// - m_nDstBufSize is the number of samples in one channel
+	// - Audio in avi files must be either constant-bitrate (CBR)
+	//   or constant-framesize (i.e. all frames decode to the same
+	//   number of samples)
 	if (pCodecCtx->codec->capabilities & CODEC_CAP_VARIABLE_FRAME_SIZE)
 	{
 		if (pCodecCtx->sample_rate <= 11025) 
@@ -542,7 +563,8 @@ bool CAVRec::Close()
 		// Reset counters
 		m_llTotalFramesOrSamples[dwStreamNum] = 0;
 		m_llTotalWrittenBytes[dwStreamNum] = 0;
-		m_llLastDTS[dwStreamNum] = AV_NOPTS_VALUE;
+		m_llLastCodecPTS[dwStreamNum] = AV_NOPTS_VALUE;
+		m_llLastStreamDTS[dwStreamNum] = AV_NOPTS_VALUE;
 	}
 
 	m_sFileName = _T("");
@@ -560,7 +582,8 @@ bool CAVRec::Close()
 bool CAVRec::AddFrame(	DWORD dwStreamNum,
 						LPBITMAPINFO pBmi,
 						LPBYTE pBits,
-						bool bInterleaved)
+						bool bInterleaved,
+						int64_t pts/*=AV_NOPTS_VALUE*/)
 {
 	::EnterCriticalSection(&m_csAVI);
 
@@ -575,6 +598,17 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		return false;
 	}
 
+	// Skip frame if not strictly monotonically increasing pts
+	if (pts != AV_NOPTS_VALUE							&&
+		m_llLastCodecPTS[dwStreamNum] != AV_NOPTS_VALUE	&&
+		pts <= m_llLastCodecPTS[dwStreamNum])
+	{
+		::LeaveCriticalSection(&m_csAVI);
+		return true;
+	}
+	else
+		m_llLastCodecPTS[dwStreamNum] = pts;
+
 	// Get the attached codec context
 	AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
 
@@ -584,6 +618,11 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 	{
 		// Get Src Pixel Format
 		enum AVPixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
+		if (SrcPixFormat == AV_PIX_FMT_NONE)
+		{
+			::LeaveCriticalSection(&m_csAVI);
+			return false;
+		}
 
 		// Copy input bits to source buffer
 		// (use an input buffer because it is aligned for the conversion)
@@ -643,6 +682,8 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 							SrcPixFormat,
 							pBmi->bmiHeader.biWidth,
 							pBmi->bmiHeader.biHeight);
+			if (SrcPixFormat == AV_PIX_FMT_PAL8)
+				m_pFrameTemp[dwStreamNum]->data[1] = (uint8_t*)pBmi->bmiColors;
 
 			// Flip U <-> V pointers?
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
@@ -731,6 +772,8 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 							SrcPixFormat,
 							pBmi->bmiHeader.biWidth,
 							pBmi->bmiHeader.biHeight);
+			if (SrcPixFormat == AV_PIX_FMT_PAL8)
+				m_pFrame[dwStreamNum]->data[1] = (uint8_t*)pBmi->bmiColors;
 
 			// Flip U <-> V pointers?
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
@@ -755,8 +798,8 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		if (pCodecCtx->flags & CODEC_FLAG_QSCALE)
 			m_pFrame[dwStreamNum]->quality = pCodecCtx->global_quality;
 
-		// Set pts
-		m_pFrame[dwStreamNum]->pts = m_llTotalFramesOrSamples[dwStreamNum];
+		// Set pts here and not after encoding because of possible B-frames!
+		m_pFrame[dwStreamNum]->pts = pts != AV_NOPTS_VALUE ? pts : m_llTotalFramesOrSamples[dwStreamNum];
 	}
 
 	// Encode and write frame to file
@@ -770,6 +813,8 @@ __forceinline void CAVRec::AdjustPTSDTS(DWORD dwStreamNum, AVPacket* pkt)
 	AVCodecContext* pCodecCtx = m_pFormatCtx->streams[dwStreamNum]->codec;
 
 	// Rescale output packet timestamp values from codec to stream timebase
+	// pkt->pts = pkt->pts * pCodecCtx->time_base / m_pFormatCtx->streams[dwStreamNum]->time_base
+	// pkt->dts = pkt->dts * pCodecCtx->time_base / m_pFormatCtx->streams[dwStreamNum]->time_base
 	pkt->pts = av_rescale_q_rnd(pkt->pts, pCodecCtx->time_base, m_pFormatCtx->streams[dwStreamNum]->time_base, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 	pkt->dts = av_rescale_q_rnd(pkt->dts, pCodecCtx->time_base, m_pFormatCtx->streams[dwStreamNum]->time_base, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 	pkt->duration = (int)av_rescale_q(pkt->duration, pCodecCtx->time_base, m_pFormatCtx->streams[dwStreamNum]->time_base);
@@ -779,26 +824,26 @@ __forceinline void CAVRec::AdjustPTSDTS(DWORD dwStreamNum, AVPacket* pkt)
 	// av_interleaved_write_frame and av_write_frame fail
 	if (pkt->dts != AV_NOPTS_VALUE)
 	{
-		if (m_llLastDTS[dwStreamNum] != AV_NOPTS_VALUE)
+		if (m_llLastStreamDTS[dwStreamNum] != AV_NOPTS_VALUE)
 		{
 			// Format supports non-strictly monotonically increasing dts: -10,1,1,2,6,7,7,15,...
 			if (m_pOutputFormat->flags & AVFMT_TS_NONSTRICT)
 			{
-				if (pkt->dts < m_llLastDTS[dwStreamNum])
+				if (pkt->dts < m_llLastStreamDTS[dwStreamNum])
 				{
 					TRACE(_T("Stream%u: DTS adjusted non-strictly monotonically %I64d -> %I64d\n"),
-							dwStreamNum, pkt->dts, m_llLastDTS[dwStreamNum]);
-					pkt->dts = m_llLastDTS[dwStreamNum];
+							dwStreamNum, pkt->dts, m_llLastStreamDTS[dwStreamNum]);
+					pkt->dts = m_llLastStreamDTS[dwStreamNum];
 				}
 			}
 			// Format needs strictly monotonically increasing dts: -10,0,1,2,7,10,15,...
 			else
 			{
-				if (pkt->dts <= m_llLastDTS[dwStreamNum])
+				if (pkt->dts <= m_llLastStreamDTS[dwStreamNum])
 				{
 					TRACE(_T("Stream%u: DTS adjusted strictly monotonically %I64d -> %I64d\n"),
-							dwStreamNum, pkt->dts, m_llLastDTS[dwStreamNum] + 1);
-					pkt->dts = m_llLastDTS[dwStreamNum] + 1;
+							dwStreamNum, pkt->dts, m_llLastStreamDTS[dwStreamNum] + 1);
+					pkt->dts = m_llLastStreamDTS[dwStreamNum] + 1;
 				}
 			}
 		}
@@ -809,7 +854,7 @@ __forceinline void CAVRec::AdjustPTSDTS(DWORD dwStreamNum, AVPacket* pkt)
 			pkt->pts = pkt->dts;
 		}
 	}
-	m_llLastDTS[dwStreamNum] = pkt->dts;
+	m_llLastStreamDTS[dwStreamNum] = pkt->dts;
 }
 
 bool CAVRec::EncodeAndWriteFrame(DWORD dwStreamNum,

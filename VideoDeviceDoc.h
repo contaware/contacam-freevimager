@@ -1005,7 +1005,6 @@ public:
 	// General Vars
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
-	volatile BOOL m_bInterleave;						// Do not interleave because while recording the frame rate is not yet exactly known!
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
@@ -1068,8 +1067,6 @@ public:
 	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
 	volatile DWORD m_dwRecLastUpTime;					// Up-Time of Last Recorded Frame
 	volatile BOOL m_bRecFirstFrame;						// Recording Just Started
-	volatile DWORD m_nRecordedFrames;					// Recorded Frames Count
-														// -> For Frame Rate Calculation
 	volatile BOOL m_bRecAutoOpen;						// Auto open avi after recording
 	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
