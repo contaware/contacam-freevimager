@@ -186,6 +186,7 @@ protected:
 	int m_nSrcBufSize[MAX_STREAMS];
 	uint8_t** m_ppDstBuf[MAX_STREAMS];
 	int m_nDstBufSize[MAX_STREAMS];
+	uint8_t* m_pAVPalette[MAX_STREAMS];
 
 	// Frames
 	AVFrame* m_pFrame[MAX_STREAMS];

@@ -3278,10 +3278,10 @@ BOOL CVideoAviDoc::SaveAsAVCODECMultiFile(	const CString& sDstFileName,
 				{
 					bVideoAvailable = TRUE;
 
-					// 4 bpp and 8 bpp not supported by CAVRec
+					// Convert 4 bpp (not supported by CAVRec) to 32 bpp
 					if ((pDib->GetCompression() == BI_RGB ||
 						pDib->GetCompression() == BI_BITFIELDS)	&&
-						pDib->GetBitCount() < 16)
+						pDib->GetBitCount() < 8)
 						pDib->ConvertTo32bits();
 
 					(*ppAVRec)->AddFrame(	dwRecStreamNum,

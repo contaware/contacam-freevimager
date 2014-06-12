@@ -51,6 +51,7 @@ void CAVRec::InitVars()
 		m_nSrcBufSize[dwStreamNum] = 0;
 		m_ppDstBuf[dwStreamNum] = NULL;
 		m_nDstBufSize[dwStreamNum] = 0;
+		m_pAVPalette[dwStreamNum] = NULL;
 
 		// Frames
 		m_pFrame[dwStreamNum] = NULL;
@@ -546,6 +547,8 @@ bool CAVRec::Close()
 			av_freep(&m_ppDstBuf[dwStreamNum]);
 		}
 		m_nDstBufSize[dwStreamNum] = 0;
+		if (m_pAVPalette[dwStreamNum])
+			av_freep(&m_pAVPalette[dwStreamNum]);
 
 		// Free frames
 		if (m_pFrame[dwStreamNum])
@@ -683,7 +686,21 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 							pBmi->bmiHeader.biWidth,
 							pBmi->bmiHeader.biHeight);
 			if (SrcPixFormat == AV_PIX_FMT_PAL8)
-				m_pFrameTemp[dwStreamNum]->data[1] = (uint8_t*)pBmi->bmiColors;
+			{
+				if (m_pAVPalette[dwStreamNum] == NULL)
+				{
+					m_pAVPalette[dwStreamNum] = (uint8_t*)av_malloc(AVPALETTE_SIZE);
+					if (m_pAVPalette[dwStreamNum] == NULL)
+					{
+						::LeaveCriticalSection(&m_csAVI);
+						return false;
+					}
+				}
+				memset(m_pAVPalette[dwStreamNum], 0, AVPALETTE_SIZE);
+				int nUsedColors = pBmi->bmiHeader.biClrUsed != 0 ? pBmi->bmiHeader.biClrUsed : 256;
+				memcpy(m_pAVPalette[dwStreamNum], pBmi->bmiColors, MIN(AVPALETTE_SIZE, nUsedColors * sizeof(RGBQUAD)));
+				m_pFrameTemp[dwStreamNum]->data[1] = m_pAVPalette[dwStreamNum];
+			}
 
 			// Flip U <-> V pointers?
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
@@ -773,7 +790,21 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 							pBmi->bmiHeader.biWidth,
 							pBmi->bmiHeader.biHeight);
 			if (SrcPixFormat == AV_PIX_FMT_PAL8)
-				m_pFrame[dwStreamNum]->data[1] = (uint8_t*)pBmi->bmiColors;
+			{
+				if (m_pAVPalette[dwStreamNum] == NULL)
+				{
+					m_pAVPalette[dwStreamNum] = (uint8_t*)av_malloc(AVPALETTE_SIZE);
+					if (m_pAVPalette[dwStreamNum] == NULL)
+					{
+						::LeaveCriticalSection(&m_csAVI);
+						return false;
+					}
+				}
+				memset(m_pAVPalette[dwStreamNum], 0, AVPALETTE_SIZE);
+				int nUsedColors = pBmi->bmiHeader.biClrUsed != 0 ? pBmi->bmiHeader.biClrUsed : 256;
+				memcpy(m_pAVPalette[dwStreamNum], pBmi->bmiColors, MIN(AVPALETTE_SIZE, nUsedColors * sizeof(RGBQUAD)));
+				m_pFrame[dwStreamNum]->data[1] = m_pAVPalette[dwStreamNum];
+			}
 
 			// Flip U <-> V pointers?
 			if (pBmi->bmiHeader.biCompression == FCC('YV12') ||
