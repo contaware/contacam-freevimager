@@ -37,6 +37,9 @@ END_MESSAGE_MAP()
 
 BOOL CHostPortDlg::OnInitDialog() 
 {
+	// Store initial dialog title
+	GetWindowText(m_sInitialDlgTitle);
+
 	// Init Device Type Mode Combo Box
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
@@ -95,7 +98,7 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Update Controls
 	EnableDisableCtrls();
-	LoadCredentials();
+	LoadCredentialsAndTitle();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -257,7 +260,7 @@ void CHostPortDlg::OnEditchangeComboHost()
 	CComboBox* pComboBoxHost = (CComboBox*)GetDlgItem(IDC_COMBO_HOST);
 	pComboBoxHost->GetWindowText(m_sHost);
 	EnableDisableCtrls();
-	LoadCredentials();
+	LoadCredentialsAndTitle();
 }
 
 /*
@@ -298,7 +301,7 @@ void CHostPortDlg::OnSelchangeComboHost()
 
 	// Update Controls
 	EnableDisableCtrls();
-	LoadCredentials();
+	LoadCredentialsAndTitle();
 }
 
 void CHostPortDlg::OnChangeEditPort()
@@ -312,14 +315,14 @@ void CHostPortDlg::OnChangeEditPort()
 		m_nPort = nPort;
 	else
 		m_nPort = DEFAULT_TCP_PORT;
-	LoadCredentials();
+	LoadCredentialsAndTitle();
 }
 
 void CHostPortDlg::OnSelchangeComboDeviceTypeMode()
 {
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
 	m_nDeviceTypeMode = pComboBoxDevTypeMode->GetCurSel();
-	LoadCredentials();
+	LoadCredentialsAndTitle();
 }
 
 void CHostPortDlg::OnOK() 
@@ -343,18 +346,29 @@ CString CHostPortDlg::MakeDevicePathName(const CString& sInHost, int nInPort, in
 														sOutHttpGetFrameLocation, nOutDeviceTypeMode);
 }
 
-void CHostPortDlg::LoadCredentials()
+void CHostPortDlg::LoadCredentialsAndTitle()
 {
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
 
-	// Load & display
+	// Load and display credentials
 	CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), _T(""));
 	CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), _T(""));
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
 	pEdit->SetWindowText(sUsername);
 	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
 	pEdit->SetWindowText(sPassword);
+
+	// Update dialog title
+	CString	sName = ((CUImagerApp*)::AfxGetApp())->GetProfileString(sDevicePathName, _T("RecordAutoSaveDir"), _T(""));
+	sName.TrimRight(_T('\\'));
+	int index = sName.ReverseFind(_T('\\'));
+	if (index >= 0)
+		sName = sName.Mid(index + 1);
+	if (sName.IsEmpty())
+		SetWindowText(m_sInitialDlgTitle);
+	else
+		SetWindowText(m_sInitialDlgTitle + _T(" ") + sName);
 }
 
 void CHostPortDlg::SaveCredentials()

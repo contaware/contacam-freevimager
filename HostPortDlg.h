@@ -39,7 +39,7 @@ public:
 protected:
 	void EnableDisableCtrls();
 	static CString MakeDevicePathName(const CString& sInHost, int nInPort, int nInDeviceTypeMode);
-	void LoadCredentials();
+	void LoadCredentialsAndTitle();
 	void SaveCredentials();
 	static void LoadHistory(CStringArray& HostsHistory,
 							CDWordArray& PortsHistory,
@@ -54,6 +54,8 @@ protected:
 	CStringArray m_HostsHistory;
 	CDWordArray m_PortsHistory;
 	CDWordArray m_DeviceTypeModesHistory;
+	CString m_sInitialDlgTitle;
+
 	// Generated message map functions
 	//{{AFX_MSG(CHostPortDlg)
 	virtual BOOL OnInitDialog();
