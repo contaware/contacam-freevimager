@@ -10,7 +10,14 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
 <?php
-echo "<title>Flash Player</title>\n";
+$doc_root = $_SERVER['DOCUMENT_ROOT'];
+$filename = $_GET['file'];
+if ($doc_root == "")
+	$full_path = trim($filename,"\\/");
+else
+	$full_path = "$doc_root/" . trim($filename,"\\/");
+$currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
+echo "<title>$currentswf</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
 <script language="JavaScript" type="text/javascript">
@@ -154,12 +161,6 @@ echo "width: " . $width . "px;\n}\n";
 
 <body>
 <?php
-$doc_root = $_SERVER['DOCUMENT_ROOT'];
-$filename = $_GET['file'];
-if ($doc_root == "")
-	$full_path = trim($filename,"\\/");
-else
-	$full_path = "$doc_root/" . trim($filename,"\\/");
 if (!is_file("$full_path")) {
 	echo "<div align=\"center\"><h2>\n";
 	echo NOFILE;
@@ -240,7 +241,6 @@ echo "</div>\n";
 echo "</div>\n";
 
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
-	$currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
 	$currentkey = '0';
 	$lastkey = 0;
 	foreach($_GET as $key=>$val) {
@@ -268,6 +268,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
 		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
 	}
+	echo "&nbsp;<a style=\"outline: none;\" href=\"swf.php?file=" . urlencode($filename) . "&amp;back=no\" target=\"_blank\"><img style=\"border: 0; padding: 0; margin: 0;\" src=\"styles/fullscreen_$style_postfix.gif\" alt=\"[Fullscreen]\" /></a>\n";
 	echo "</div>\n";
 }
 ?>
