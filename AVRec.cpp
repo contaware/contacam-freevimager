@@ -279,9 +279,11 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// Note: in ffmpeg source MAX_THREADS definition differs
 	// from header to header ... 32 is a safe value
 	nThreadCount = MIN(nThreadCount, 32);
-	if (pCodecCtx->codec_id == AV_CODEC_ID_MJPEG	||
-		pCodecCtx->codec_id == AV_CODEC_ID_H263P	||
-		pCodecCtx->codec_id == AV_CODEC_ID_MPEG4	||
+	if (pCodecCtx->codec_id == AV_CODEC_ID_MJPEG		||
+		pCodecCtx->codec_id == AV_CODEC_ID_MPEG1VIDEO	||
+        pCodecCtx->codec_id == AV_CODEC_ID_MPEG2VIDEO	||
+		pCodecCtx->codec_id == AV_CODEC_ID_H263P		||
+		pCodecCtx->codec_id == AV_CODEC_ID_MPEG4		||
 		pCodecCtx->codec_id == AV_CODEC_ID_H264)
 	{
 		pCodecCtx->thread_count = nThreadCount;
