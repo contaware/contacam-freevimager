@@ -29,6 +29,7 @@ public:
 	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
 	CString	m_sName;
+	CString m_sMaxCameraFolderSizeGB;
 	int		m_nUsage;
 	int		m_nComboSnapshotRate;
 	int		m_nComboSnapshotHistoryRate;

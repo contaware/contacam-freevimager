@@ -440,7 +440,6 @@ public:
 
 		protected:
 			int Work();
-			BOOL DeleteIt(CString sAutoSaveDir, int nDeleteOlderThanDays);
 			BOOL CalcOldestDir(	CSortableFileFind& FileFind,
 								int nAutoSaveDirSize,
 								CTime& OldestDirTime,
@@ -1077,6 +1076,9 @@ public:
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
+	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
+														// 0 means no limit other than the always applied harddrive space limit
+
 	// HTTP Get Frame Networking
 	CNetCom* volatile m_pGetFrameNetCom;				// Get Frame Instance
 	volatile NetworkDeviceTypeMode m_nNetworkDeviceTypeMode;// Get Frame Network Device Type and Mode

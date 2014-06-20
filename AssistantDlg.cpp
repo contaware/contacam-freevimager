@@ -47,6 +47,7 @@ void CAssistantDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	DDX_Check(pDX, IDC_CHECK_PRINTCOMMAND, m_bCheckPrintCommand);
 	DDX_Check(pDX, IDC_CHECK_SAVECOMMAND, m_bCheckSaveCommand);
+	DDX_Text(pDX, IDC_EDIT_MAX_CAMERA_FOLDER_SIZE, m_sMaxCameraFolderSizeGB);
 	//}}AFX_DATA_MAP
 }
 
@@ -228,6 +229,7 @@ BOOL CAssistantDlg::OnInitDialog()
 		m_nComboKeepFor = 0;	// 1 Day
 	else
 		m_nComboKeepFor = 11;	// Infinite
+	m_sMaxCameraFolderSizeGB.Format(_T("%.1f"), (double)m_pDoc->m_nMaxCameraFolderSizeMB / 1024.0);
 	if (m_pDoc->m_nSnapshotRate > 240)
 		m_nComboSnapshotHistoryRate = 6;	// 5 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 180)
@@ -1143,6 +1145,13 @@ void CAssistantDlg::ApplySettings()
 		default : nKeepForDays = 0;   break;
 	}
 	m_pDoc->m_nDeleteRecordingsOlderThanDays = nKeepForDays;
+
+	// Maximum camera folder size
+	double dMaxCameraFolderSizeGB = _tcstod(m_sMaxCameraFolderSizeGB.GetBuffer(0), NULL);
+	m_sMaxCameraFolderSizeGB.ReleaseBuffer();
+	m_pDoc->m_nMaxCameraFolderSizeMB = Round(dMaxCameraFolderSizeGB * 1024.0);
+	if (m_pDoc->m_nMaxCameraFolderSizeMB < 0)
+		m_pDoc->m_nMaxCameraFolderSizeMB = 0;
 
 	// Restart delete thread
 	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);

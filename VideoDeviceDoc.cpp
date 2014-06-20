@@ -3887,94 +3887,22 @@ BOOL CVideoDeviceDoc::CDeleteThread::CalcOldestDir(	CSortableFileFind& FileFind,
 	return TRUE;
 }
 
-BOOL CVideoDeviceDoc::CDeleteThread::DeleteIt(CString sAutoSaveDir, int nDeleteOlderThanDays)
-{
-	DWORD dwAttrib;
-	CSortableFileFind FileFind;
-	CTime CurrentTime, OldestDirTime;
-	CTimeSpan TimeDiff;
-	LONGLONG llDaysAgo;
-	BOOL bDeletingOld;
-	ULONGLONG ullDiskTotalSize;
-	ULONGLONG ullMinDiskFreeSpace;
-
-	// Check and adjust Auto-Save directory
-	dwAttrib = ::GetFileAttributes(sAutoSaveDir);
-	if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		sAutoSaveDir.TrimRight(_T('\\'));
-		int nAutoSaveDirSize = sAutoSaveDir.GetLength() + 1;
-
-		// Do recursive file find
-		if (FileFind.InitRecursive(sAutoSaveDir + _T("\\*"), FALSE))
-		{
-			if (FileFind.WaitRecursiveDone(GetKillEvent()) == -1)
-				return FALSE; // Exit Thread
-		}
-
-		// Get current time
-		CurrentTime = CTime::GetCurrentTime();
-
-		// Delete files which are older than the given days amount
-		if (nDeleteOlderThanDays > 0)
-		{
-			if (!DeleteOld(	FileFind,
-							nAutoSaveDirSize,
-							nDeleteOlderThanDays,
-							CurrentTime))
-				return FALSE; // Exit Thread
-		}
-
-		// Delete oldest files if we are short of disk space
-		ullDiskTotalSize = ::GetDiskSize(sAutoSaveDir);
-		if (ullDiskTotalSize > 0)
-		{
-			// Minimum wanted disk space: MIN(10% of HD size, 10 GB)
-			ullMinDiskFreeSpace = MIN(ullDiskTotalSize / 10, 10737418240UI64);
-
-			// Get the time of the oldest existing directory
-			if (!CalcOldestDir(	FileFind,
-								nAutoSaveDirSize,
-								OldestDirTime,
-								CurrentTime))
-				return FALSE; // Exit Thread
-
-			TimeDiff = CurrentTime - OldestDirTime;
-			llDaysAgo = (LONGLONG)TimeDiff.GetDays();
-			bDeletingOld = FALSE;
-			while (llDaysAgo > 0 && ::GetDiskSpace(sAutoSaveDir) < ullMinDiskFreeSpace)
-			{
-				// Delete old
-				if (!DeleteOld(	FileFind,
-								nAutoSaveDirSize,
-								llDaysAgo,
-								CurrentTime))
-					return FALSE; // Exit Thread
-				bDeletingOld = TRUE;
-				llDaysAgo--;
-			}
-
-			// Log
-			if (bDeletingOld)
-			{
-				CString sMsg;
-				sMsg.Format(_T("%s, deleting old files in \"%s\" because the available disk space is low\n"),
-							m_pDoc->GetAssignedDeviceName(), sAutoSaveDir);
-				TRACE(sMsg);
-				::LogLine(sMsg);
-			}
-		}
-	}
-
-	return TRUE;
-}
-
 int CVideoDeviceDoc::CDeleteThread::Work()
 {
 	if (!m_pDoc)
 		return 0;
 
 	DWORD Event;
+	CString sAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	sAutoSaveDir.TrimRight(_T('\\'));
+	int nAutoSaveDirSize = sAutoSaveDir.GetLength() + 1; // + 1 for ending backslash
+	DWORD dwAttrib;
+	CSortableFileFind FileFind;
+	CTime CurrentTime, OldestDirTime;
+	CTimeSpan TimeDiff;
+	LONGLONG llDaysAgo;
+	ULONGLONG ullMaxCameraFolderSize;
+	ULONGLONG ullMinDiskFreeSpace;
 
 	for (;;)
 	{
@@ -3992,8 +3920,67 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 
 			// Delete
 			case WAIT_TIMEOUT :
-				if (!DeleteIt(m_pDoc->m_sRecordAutoSaveDir, m_pDoc->m_nDeleteRecordingsOlderThanDays))
-					return 0; // Exit Thread
+				dwAttrib = ::GetFileAttributes(sAutoSaveDir);
+				if (dwAttrib != 0xFFFFFFFF && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+				{
+					// Do recursive file find
+					if (FileFind.InitRecursive(sAutoSaveDir + _T("\\*"), FALSE))
+					{
+						if (FileFind.WaitRecursiveDone(GetKillEvent()) == -1)
+							return 0; // Exit Thread
+					}
+
+					// Get current time
+					CurrentTime = CTime::GetCurrentTime();
+
+					// Delete dirs which are older than the given days amount
+					if (m_pDoc->m_nDeleteRecordingsOlderThanDays > 0)
+					{
+						if (!DeleteOld(	FileFind,
+										nAutoSaveDirSize,
+										m_pDoc->m_nDeleteRecordingsOlderThanDays,
+										CurrentTime))
+							return 0; // Exit Thread
+					}
+
+					// Maximum camera folder size
+					ullMaxCameraFolderSize = ULLONG_MAX;
+					if (m_pDoc->m_nMaxCameraFolderSizeMB > 0)
+					{
+						ullMaxCameraFolderSize = m_pDoc->m_nMaxCameraFolderSizeMB;
+						ullMaxCameraFolderSize <<= 20; // MB to Bytes
+					}
+
+					// Minimum wanted disk free space: MIN(10% of HD size, 10 GB)
+					ullMinDiskFreeSpace = MIN(::GetDiskTotalSize(sAutoSaveDir) / 10, 10737418240UI64);
+
+					// Get the time of the oldest existing directory
+					if (!CalcOldestDir(	FileFind,
+										nAutoSaveDirSize,
+										OldestDirTime,
+										CurrentTime))
+						return 0; // Exit Thread
+
+					// Delete old dirs
+					// - GetDiskTotalSize() and GetDiskAvailableFreeSpace() may both return 0,
+					//   the below 'less than' comparison operator is mandatory
+					// - GetDirContentSize() returns the size it could calculate
+					//   up to the point this thread was flagged to exit,
+					//   that's ok for the below check
+					TimeDiff = CurrentTime - OldestDirTime;
+					llDaysAgo = (LONGLONG)TimeDiff.GetDays();
+					while (	llDaysAgo > 0 &&
+							(::GetDiskAvailableFreeSpace(sAutoSaveDir) < ullMinDiskFreeSpace ||
+							::GetDirContentSize(sAutoSaveDir, NULL, this).QuadPart > ullMaxCameraFolderSize))
+					{
+						if (!DeleteOld(	FileFind,
+										nAutoSaveDirSize,
+										llDaysAgo,
+										CurrentTime))
+							return 0; // Exit Thread
+						llDaysAgo--;
+					}
+				}
 				break;
 
 			default:
@@ -4128,6 +4115,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nDeleteRecordingsOlderThanDays = 0;
+	m_nMaxCameraFolderSizeMB = 0;
 
 	// Movement Detection
 	m_pDifferencingDib = NULL;
@@ -4921,6 +4909,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), 0);
+	m_nMaxCameraFolderSizeMB = (int) pApp->GetProfileInt(sSection, _T("MaxCameraFolderSizeMB"), 0);
 
 	unsigned int nSize = sizeof(m_dFrameRate);
 	volatile double* pFrameRate = &m_dFrameRate;
@@ -5131,6 +5120,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifWidth"), m_dwAnimatedGifWidth);
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 	pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
+	pApp->WriteProfileInt(sSection, _T("MaxCameraFolderSizeMB"), m_nMaxCameraFolderSizeMB);
 
 	// Store detection zones only if the total size has already been calculated by OnThreadSafeInitMovDet()
 	if (m_lMovDetTotalZones > 0)
@@ -5306,7 +5296,7 @@ BOOL CVideoDeviceDoc::OpenVideoDevice(int nId)
 	// Load Settings
 	LoadSettings(DEFAULT_FRAMERATE, sDevicePathName, sDeviceName);
 
-	// Start Delete Detections Thread
+	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
@@ -5584,7 +5574,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CString sAddress, DWORD dwConnectDelay/*=0U*/
 	// Load Settings
 	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
 
-	// Start Delete Detections Thread
+	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 
@@ -5630,7 +5620,7 @@ BOOL CVideoDeviceDoc::OpenGetVideo(CHostPortDlg* pDlg)
 	// Load Settings
 	LoadSettings(GetDefaultNetworkFrameRate(m_nNetworkDeviceTypeMode), GetDevicePathName(), GetDeviceName());
 
-	// Start Delete Detections Thread
+	// Start Delete Thread
 	if (!m_DeleteThread.IsAlive())
 		m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);
 

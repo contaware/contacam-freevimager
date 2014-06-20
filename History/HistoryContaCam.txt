@@ -2,10 +2,14 @@ CONTACAM HISTORY
 
 4.9.7 (xxx yth 2014)
 
-- New camera delete toolbar button 
-- Faster video/audio encoding
+- New camera delete toolbar button
+- Configurable maximum camera folder size (that's useful when
+  recording to a Cloud with limited space)
+- Faster avi video recording
+- Web interface's video player has gotten a full-screen button
 - Support NV12 and NV21 web camera formats
-- Removed vorbis, flac and mp2 audio encoders
+- Simplified video encoding settings by removing the bitrate
+  parameter and dropped vorbis, flac and mp2 audio encoding support
 
 4.9.5 (March 24th 2014)
 

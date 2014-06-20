@@ -2248,31 +2248,27 @@ BOOL EnableLFHeap()
 	return (bResDefaultHeap && bResCRTHeap);
 }
 
-ULONGLONG GetDiskSize(LPCTSTR lpszPath)
+ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
 {
-	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
-												// disk available to the caller
-	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
-	ULARGE_INTEGER TotalNumberOfFreeBytes;		// receives the free bytes on disk
+	// Receives the total number of bytes on disk available to caller
+	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
 	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
-							&FreeBytesAvailableToCaller,
-							&TotalNumberOfBytes,
-							&TotalNumberOfFreeBytes))
+							NULL,
+							&TotalNumberOfBytesAvailableToCaller,
+							NULL))
 		return 0;
 	else
-		return TotalNumberOfBytes.QuadPart;
+		return TotalNumberOfBytesAvailableToCaller.QuadPart;
 }
 
-ULONGLONG GetDiskSpace(LPCTSTR lpszPath)
+ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath)
 {
-	ULARGE_INTEGER FreeBytesAvailableToCaller;	// receives the number of bytes on
-												// disk available to the caller
-	ULARGE_INTEGER TotalNumberOfBytes;			// receives the number of bytes on disk
-	ULARGE_INTEGER TotalNumberOfFreeBytes;		// receives the free bytes on disk
+	// Receives the number of free bytes on disk available to caller
+	ULARGE_INTEGER FreeBytesAvailableToCaller;
 	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
 							&FreeBytesAvailableToCaller,
-							&TotalNumberOfBytes,
-							&TotalNumberOfFreeBytes))
+							NULL,
+							NULL))
 		return 0;
 	else
 		return FreeBytesAvailableToCaller.QuadPart;

@@ -1477,7 +1477,7 @@ BEGIN
     COMBOBOX        IDC_TIME_SEGMENTATION,117,227,68,67,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,288,26,116,220,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
-                    "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,282,67,95,18
+                    "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,282,67,105,18
     EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,262,113,22,12,ES_NUMBER
     CONTROL         "Once:",IDC_CHECK_SCHEDULER_ONCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,159,42,10
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,171,58,15
@@ -1515,7 +1515,7 @@ BEGIN
     LTEXT           "ms",IDC_STATIC2173,145,51,10,8
     GROUPBOX        "Recording Segmentation",IDC_STATIC2174,7,212,183,37
     LTEXT           "Compression:",IDC_STATIC2177,204,28,41,8
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,385,71,17,11
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_NUM,390,71,17,11
     LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,292,115,21,8
     LTEXT           "Minimum Font Size for Frame Time",IDC_STATIC2287,261,256,113,8
     LTEXT           "Quality\n(0: worst, 100: best)",IDC_LABEL_QUALITY,204,68,71,18
@@ -2197,7 +2197,7 @@ BEGIN
     LTEXT           "Thanks to the Unicode NSIS Authors (installer)",IDC_STATIC2348,15,221,223,8
     LTEXT           "http://www.scratchpaper.com",IDC_LINK_NSIS,15,230,106,8,SS_NOTIFY
     DEFPUSHBUTTON   "OK",IDOK,99,247,50,15
-    LTEXT           "Thanks to the FFMPEG Library Authors for ffmpeg rev.15375 (lgpl)",IDC_STATIC2351,15,39,209,8
+    LTEXT           "Thanks to the FFMPEG Library Authors for rev. n2.0-8023-gc7251fe",IDC_STATIC2351,15,39,223,8
     LTEXT           "http://www.ffmpeg.org",IDC_LINK_FFMPEG,15,48,83,8,SS_NOTIFY
 END
 
@@ -3306,7 +3306,7 @@ BEGIN
     LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,240,8
 END
 
-IDD_ASSISTANT DIALOGEX 0, 0, 417, 287
+IDD_ASSISTANT DIALOGEX 0, 0, 417, 297
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Device Assistant"
@@ -3327,30 +3327,33 @@ BEGIN
     COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,42,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,44,129,10
-    EDITTEXT        IDC_EDIT_NAME,152,104,114,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "Move camera folder...",IDC_BUTTON_PARENT_DIR,277,103,125,15
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,142,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,152,156,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,144,63,10
-    CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,158,64,10
-    COMBOBOX        IDC_COMBO_KEEPFOR,64,193,107,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    PUSHBUTTON      "OK",IDOK,152,263,58,20,BS_MULTILINE
-    PUSHBUTTON      "Cancel",IDCANCEL,220,263,58,20
+    EDITTEXT        IDC_EDIT_NAME,152,103,252,13,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,140,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_STYLE,152,154,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Print command",IDC_CHECK_PRINTCOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,313,142,63,10
+    CONTROL         "Save command",IDC_CHECK_SAVECOMMAND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,313,156,64,10
+    COMBOBOX        IDC_COMBO_KEEPFOR,100,187,93,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,145,203,35,13,ES_RIGHT
+    PUSHBUTTON      "Move camera folder...",IDC_BUTTON_PARENT_DIR,353,186,51,30,BS_MULTILINE
+    PUSHBUTTON      "OK",IDOK,152,273,58,20,BS_MULTILINE
+    PUSHBUTTON      "Cancel",IDCANCEL,220,273,58,20
     GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,81
     LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,279,15,56,8
-    GROUPBOX        "2. Name",IDC_STATIC,5,90,407,37
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,101,123,8
-    LTEXT           "Web interface language",IDC_STATIC,16,145,78,8
-    LTEXT           "Web interface style",IDC_STATIC,16,159,64,8
-    GROUPBOX        "4. Storage",IDC_STATIC,5,180,407,33
-    LTEXT           "Keep files for",IDC_STATIC,16,195,43,8
-    LTEXT           "Note: if the free disk space becomes low the oldest files are automatically deleted to make room for the new one",IDC_STATIC,188,191,214,19
-    GROUPBOX        "5. Finish",IDC_STATIC,5,218,407,39
-    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",IDC_STATIC,16,231,386,18
+    GROUPBOX        "2. Name",IDC_STATIC,5,89,407,37
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,100,123,8
+    LTEXT           "Web interface language",IDC_STATIC,16,143,78,8
+    LTEXT           "Web interface style",IDC_STATIC,16,157,64,8
+    GROUPBOX        "4. Storage",IDC_STATIC,5,178,407,43
+    LTEXT           "Keep files for",IDC_STATIC,16,190,43,8
+    LTEXT           "Note: if the free disk space becomes low or the maximum camera folder size is reached then the oldest files are automatically deleted to make room for the new one",IDC_STATIC,201,185,144,33
+    GROUPBOX        "5. Finish",IDC_STATIC,5,230,407,39
+    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",IDC_STATIC,16,243,388,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,279,29,57,8
-    GROUPBOX        "3. Appearance",IDC_STATIC,5,133,407,41
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,111,117,8
+    GROUPBOX        "3. Appearance",IDC_STATIC,5,131,407,41
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,110,117,8
     LTEXT           "+",IDC_LABEL_PLUS_SIGN,139,15,8,8
+    LTEXT           "Max camera folder size (0.0: unlimited)",IDC_STATIC,16,205,125,8
+    LTEXT           "GB",IDC_STATIC,184,205,10,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47
@@ -4159,9 +4162,9 @@ BEGIN
         VERTGUIDE, 16
         VERTGUIDE, 152
         VERTGUIDE, 266
-        VERTGUIDE, 402
+        VERTGUIDE, 404
         TOPMARGIN, 2
-        BOTTOMMARGIN, 283
+        BOTTOMMARGIN, 293
     END
 
     IDD_RENAME, DIALOG

@@ -209,10 +209,10 @@ extern void GetMemoryStats(	int* pRegions = NULL,
 // Enable the LFH heap for both the default heap and the CRT heap
 extern BOOL EnableLFHeap();
 
-// Disk Size and Available Space, pass "c:"
-// or a path that has a drive letter in it
-extern ULONGLONG GetDiskSize(LPCTSTR lpszPath);
-extern ULONGLONG GetDiskSpace(LPCTSTR lpszPath);
+// Disk total size and available free space, pass "c:"
+// or a path that has a drive letter in it or a UNC path
+extern ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath);
+extern ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath);
 
 // Is it a positive numeric string (0, 1, 2, ...)?
 __forceinline BOOL IsNumeric(const CString& s)
