@@ -268,7 +268,6 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
 		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
 	}
-	echo "&nbsp;<a style=\"outline: none;\" href=\"swf.php?file=" . urlencode($filename) . "&amp;back=no\" target=\"_blank\"><img style=\"border: 0; padding: 0; margin: 0;\" src=\"styles/fullscreen_$style_postfix.gif\" alt=\"[Fullscreen]\" /></a>\n";
 	echo "</div>\n";
 }
 ?>
