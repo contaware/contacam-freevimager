@@ -6,7 +6,9 @@ CONTACAM HISTORY
 - Configurable maximum camera folder size (that's useful when
   recording to a Cloud with limited space)
 - Faster avi video recording
-- Web interface's video player has gotten a full-screen button
+- Web interface has gotten a button to hide date navigation
+  and live preview so that detections can be watched better.
+  Hint: in your preferred browser press F11 to enter full-screen
 - Support NV12 and NV21 web camera formats
 - Simplified video encoding settings by removing the bitrate
   parameter and dropped vorbis, flac and mp2 audio encoding support
