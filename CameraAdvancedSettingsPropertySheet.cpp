@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "uImager.h"
-#include "VideoDevicePropertySheet.h"
+#include "CameraAdvancedSettingsPropertySheet.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "resource.h"
@@ -13,15 +13,15 @@ static char THIS_FILE[] = __FILE__;
 
 #ifdef VIDEODEVICEDOC
 
-IMPLEMENT_DYNAMIC(CVideoDevicePropertySheet, CPropertySheet)
+IMPLEMENT_DYNAMIC(CCameraAdvancedSettingsPropertySheet, CPropertySheet)
 
-BEGIN_MESSAGE_MAP(CVideoDevicePropertySheet, CPropertySheet)
-	//{{AFX_MSG_MAP(CVideoDevicePropertySheet)
+BEGIN_MESSAGE_MAP(CCameraAdvancedSettingsPropertySheet, CPropertySheet)
+	//{{AFX_MSG_MAP(CCameraAdvancedSettingsPropertySheet)
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-CVideoDevicePropertySheet::CVideoDevicePropertySheet(CVideoDeviceDoc* pDoc) :
+CCameraAdvancedSettingsPropertySheet::CCameraAdvancedSettingsPropertySheet(CVideoDeviceDoc* pDoc) :
 CPropertySheet(MakeTitle(pDoc), NULL)
 {	
 	// Set doc pointer
@@ -39,17 +39,17 @@ CPropertySheet(MakeTitle(pDoc), NULL)
 	AddPage(&m_MovementDetectionPropertyPage);
 }
 
-CVideoDevicePropertySheet::~CVideoDevicePropertySheet()
+CCameraAdvancedSettingsPropertySheet::~CCameraAdvancedSettingsPropertySheet()
 {
 	
 }
 
-void CVideoDevicePropertySheet::UpdateTitle()
+void CCameraAdvancedSettingsPropertySheet::UpdateTitle()
 {
 	SetTitle(MakeTitle(m_pDoc));
 }
 
-CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
+CString CCameraAdvancedSettingsPropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 {
 	ASSERT_VALID(pDoc);
 	CString sTitle;
@@ -100,7 +100,7 @@ CString CVideoDevicePropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 	return sTitle;
 }
 
-void CVideoDevicePropertySheet::Show()
+void CCameraAdvancedSettingsPropertySheet::Show()
 {
 	if (!IsWindowVisible())
 	{
@@ -109,7 +109,7 @@ void CVideoDevicePropertySheet::Show()
 	}
 }
 
-void CVideoDevicePropertySheet::Hide(BOOL bSaveSettingsOnHiding)
+void CCameraAdvancedSettingsPropertySheet::Hide(BOOL bSaveSettingsOnHiding)
 {
 	if (IsWindowVisible())
 	{
@@ -120,28 +120,28 @@ void CVideoDevicePropertySheet::Hide(BOOL bSaveSettingsOnHiding)
 	}
 }
 
-void CVideoDevicePropertySheet::PostNcDestroy() 
+void CCameraAdvancedSettingsPropertySheet::PostNcDestroy() 
 {
-	m_pDoc->m_pVideoDevicePropertySheet = NULL;
+	m_pDoc->m_pCameraAdvancedSettingsPropertySheet = NULL;
 	delete this;
 	CPropertySheet::PostNcDestroy();	// This Does nothing
 }
 
-void CVideoDevicePropertySheet::OnClose() 
+void CCameraAdvancedSettingsPropertySheet::OnClose() 
 {
 	// Instead of closing the modeless
 	// property sheet, just hide it
 	Hide(TRUE);
 }
 
-void CVideoDevicePropertySheet::Close()
+void CCameraAdvancedSettingsPropertySheet::Close()
 {
 	if (IsWindowVisible())
 		m_pDoc->GetView()->ForceCursor(FALSE);
 	DestroyWindow();
 }
 
-BOOL CVideoDevicePropertySheet::PreTranslateMessage(MSG* pMsg) 
+BOOL CCameraAdvancedSettingsPropertySheet::PreTranslateMessage(MSG* pMsg) 
 {
 	if (pMsg->message == WM_KEYDOWN)
 	{

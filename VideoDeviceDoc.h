@@ -34,7 +34,7 @@ class CVideoDeviceChildFrame;
 class CDxCapture;
 class CGeneralPage;
 class CSnapshotPage;
-class CVideoDevicePropertySheet;
+class CCameraAdvancedSettingsPropertySheet;
 class CMovementDetectionPage;
 
 // General Settings
@@ -71,7 +71,7 @@ class CMovementDetectionPage;
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			5000		// ms
-#define PROCESSFRAME_ASSISTANT				0x01
+#define PROCESSFRAME_CAMERABASICSETTINGS	0x01
 #define PROCESSFRAME_DXFORMATDIALOG			0x02
 #define PROCESSFRAME_DVFORMATDIALOG			0x04
 #define PROCESSFRAME_CHANGEFRAMERATE		0x08
@@ -810,7 +810,7 @@ public:
 	BOOL ConnectGetFrame(DWORD dwConnectDelay = 0U);
 
 	// Dialogs
-	void CaptureAssistant();
+	void CaptureCameraBasicSettings();
 	void VideoFormatDialog();
 	void AudioFormatDialog();
 
@@ -1198,7 +1198,7 @@ public:
 	FTPUploadConfigurationStruct m_MovDetFTPUploadConfiguration;
 
 	// Property Sheet Pointer
-	CVideoDevicePropertySheet* volatile m_pVideoDevicePropertySheet;
+	CCameraAdvancedSettingsPropertySheet* volatile m_pCameraAdvancedSettingsPropertySheet;
 	CSnapshotPage* volatile m_pSnapshotPage;
 	CGeneralPage* volatile m_pGeneralPage;
 	CMovementDetectionPage* volatile m_pMovementDetectionPage;
@@ -1236,7 +1236,7 @@ protected:
 	//{{AFX_MSG(CVideoDeviceDoc)
 	afx_msg void OnCaptureRecord();
 	afx_msg void OnUpdateCaptureRecord(CCmdUI* pCmdUI);
-	afx_msg void OnCaptureSettings();
+	afx_msg void OnCaptureCameraAdvancedSettings();
 	afx_msg void OnViewVideo();
 	afx_msg void OnUpdateViewVideo(CCmdUI* pCmdUI);
 	afx_msg void OnViewFrametime();
@@ -1244,7 +1244,7 @@ protected:
 	afx_msg void OnFileClose();
 	afx_msg void OnViewDetections();
 	afx_msg void OnUpdateViewDetections(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateCaptureSettings(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI);
 	afx_msg void OnViewDetectionZones();
 	afx_msg void OnUpdateViewDetectionZones(CCmdUI* pCmdUI);
 	afx_msg void OnEditDelete();
@@ -1260,8 +1260,8 @@ protected:
 	afx_msg void OnUpdateEditSnapshot(CCmdUI* pCmdUI);
 	afx_msg void OnEditExportZones();
 	afx_msg void OnEditImportZones();
-	afx_msg void OnCaptureAssistant();
-	afx_msg void OnUpdateCaptureAssistant(CCmdUI* pCmdUI);
+	afx_msg void OnCaptureCameraBasicSettings();
+	afx_msg void OnUpdateCaptureCameraBasicSettings(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

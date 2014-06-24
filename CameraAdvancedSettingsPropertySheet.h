@@ -1,9 +1,9 @@
-#if !defined(AFX_VIDEODEVICEPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
-#define AFX_VIDEODEVICEPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
+#if !defined(AFX_CAMERAADVANCEDSETTINGSPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#define AFX_CAMERAADVANCEDSETTINGSPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_
 
 #pragma once
 
-// VideoDevicePropertySheet.h : header file
+// CameraAdvancedSettingsPropertySheet.h : header file
 //
 
 #include "GeneralPage.h"
@@ -15,18 +15,18 @@
 // Forward Declaration
 class CVideoDeviceDoc;
 
-class CVideoDevicePropertySheet : public CPropertySheet
+class CCameraAdvancedSettingsPropertySheet : public CPropertySheet
 {
 public:
-	DECLARE_DYNAMIC(CVideoDevicePropertySheet)
-	CVideoDevicePropertySheet(CVideoDeviceDoc* pDoc);
+	DECLARE_DYNAMIC(CCameraAdvancedSettingsPropertySheet)
+	CCameraAdvancedSettingsPropertySheet(CVideoDeviceDoc* pDoc);
 	void Close();
 	void UpdateTitle();
 	void Show();
 	void Hide(BOOL bSaveSettingsOnHiding);
 
 protected:
-	virtual ~CVideoDevicePropertySheet();
+	virtual ~CCameraAdvancedSettingsPropertySheet();
 	static CString MakeTitle(CVideoDeviceDoc* pDoc);
 
 // Attributes
@@ -37,7 +37,7 @@ protected:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CVideoDevicePropertySheet)
+	//{{AFX_VIRTUAL(CCameraAdvancedSettingsPropertySheet)
 	public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
@@ -46,7 +46,7 @@ protected:
 
 // Message Handlers
 protected:
-	//{{AFX_MSG(CVideoDevicePropertySheet)
+	//{{AFX_MSG(CCameraAdvancedSettingsPropertySheet)
 	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -57,4 +57,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_VIDEODEVICEPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)
+#endif // !defined(AFX_CAMERAADVANCEDSETTINGSPROPERTYSHEET_H__AAD75600_3201_49D1_A5D4_3AE518917430__INCLUDED_)

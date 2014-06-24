@@ -24,9 +24,6 @@
     <ClCompile Include="AnimGifSaveSmallDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssistantDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AudioFormatDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -426,9 +423,6 @@
     <ClCompile Include="VideoDeviceDoc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VideoDevicePropertySheet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VideoDeviceView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -456,6 +450,12 @@
     <ClCompile Include="ZipProgressDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CameraBasicSettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraAdvancedSettingsPropertySheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">
@@ -478,9 +478,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="appconst.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssistantDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioFormatDlg.h">
@@ -915,9 +912,6 @@
     <ClInclude Include="VideoDeviceDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VideoDevicePropertySheet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VideoDeviceView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -943,6 +937,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ZipProgressDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBasicSettingsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraAdvancedSettingsPropertySheet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

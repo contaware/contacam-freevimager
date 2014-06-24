@@ -10,6 +10,8 @@ CONTACAM HISTORY
   and live preview so that detections can be watched better.
   Hint: in your preferred browser press F11 to enter full-screen
 - Support NV12 and NV21 web camera formats
+- Renamed: Device Assistant -> Camera Basic Settings
+           Device Settings  -> Camera Advanced Settings
 - Simplified video encoding settings by removing the bitrate
   parameter and dropped vorbis, flac and mp2 audio encoding support
 

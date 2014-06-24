@@ -1,9 +1,9 @@
-#if !defined(AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
-#define AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_
+#if !defined(AFX_CAMERABASICSETTINGSDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
+#define AFX_CAMERABASICSETTINGSDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_
 
 #pragma once
 
-// AssistantDlg.h : header file
+// CameraBasicSettingsDlg.h : header file
 //
 
 #ifdef VIDEODEVICEDOC
@@ -12,20 +12,20 @@
 class CVideoDeviceDoc;
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantDlg dialog
+// CCameraBasicSettingsDlg dialog
 
-#define ASSISTANTDLG_TIMER_MS		500
+#define CAMERABASICSETTINGSDLG_TIMER_MS		500
 
-class CAssistantDlg : public CDialog
+class CCameraBasicSettingsDlg : public CDialog
 {
 // Construction
 public:
-	CAssistantDlg(CVideoDeviceDoc* pDoc, CWnd* pParent = NULL);
-	~CAssistantDlg();
+	CCameraBasicSettingsDlg(CVideoDeviceDoc* pDoc, CWnd* pParent = NULL);
+	~CCameraBasicSettingsDlg();
 
 // Dialog Data
-	//{{AFX_DATA(CAssistantDlg)
-	enum { IDD = IDD_ASSISTANT };
+	//{{AFX_DATA(CCameraBasicSettingsDlg)
+	enum { IDD = IDD_CAMERABASICSETTINGS };
 	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
 	CString	m_sName;
@@ -42,7 +42,7 @@ public:
 
 // Overrides
 	// ClassWizard generate virtual function overrides
-	//{{AFX_VIRTUAL(CAssistantDlg)
+	//{{AFX_VIRTUAL(CCameraBasicSettingsDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
@@ -61,7 +61,7 @@ protected:
 	void ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate);
 	void ApplySettings();
 	// Generated message map functions
-	//{{AFX_MSG(CAssistantDlg)
+	//{{AFX_MSG(CCameraBasicSettingsDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnDestroy();
 	afx_msg void OnRadioMovdet();
@@ -83,4 +83,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_ASSISTANTDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)
+#endif // !defined(AFX_CAMERABASICSETTINGSDLG_H__6E88B0A4_B936_40BD_B351_397CEA44BF51__INCLUDED_)

@@ -5,10 +5,10 @@
 #include "VideoDeviceDoc.h"
 #include "AviPlay.h"
 #include "AudioInSourceDlg.h"
-#include "AssistantDlg.h"
+#include "CameraBasicSettingsDlg.h"
 #include "GeneralPage.h"
 #include "SnapshotPage.h"
-#include "VideoDevicePropertySheet.h"
+#include "CameraAdvancedSettingsPropertySheet.h"
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
@@ -49,7 +49,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	//{{AFX_MSG_MAP(CVideoDeviceDoc)
 	ON_COMMAND(ID_CAPTURE_RECORD, OnCaptureRecord)
 	ON_UPDATE_COMMAND_UI(ID_CAPTURE_RECORD, OnUpdateCaptureRecord)
-	ON_COMMAND(ID_CAPTURE_SETTINGS, OnCaptureSettings)
+	ON_COMMAND(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_VIDEO, OnViewVideo)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_VIDEO, OnUpdateViewVideo)
 	ON_COMMAND(ID_VIEW_FRAMETIME, OnViewFrametime)
@@ -57,7 +57,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_COMMAND(ID_FILE_CLOSE, OnFileClose)
 	ON_COMMAND(ID_VIEW_DETECTIONS, OnViewDetections)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTIONS, OnUpdateViewDetections)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_SETTINGS, OnUpdateCaptureSettings)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERAADVANCEDSETTINGS, OnUpdateCaptureCameraAdvancedSettings)
 	ON_COMMAND(ID_VIEW_DETECTION_ZONES, OnViewDetectionZones)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_DETECTION_ZONES, OnUpdateViewDetectionZones)
 	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
@@ -73,8 +73,8 @@ BEGIN_MESSAGE_MAP(CVideoDeviceDoc, CUImagerDoc)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SNAPSHOT, OnUpdateEditSnapshot)
 	ON_COMMAND(ID_EDIT_EXPORT_ZONES, OnEditExportZones)
 	ON_COMMAND(ID_EDIT_IMPORT_ZONES, OnEditImportZones)
-	ON_COMMAND(ID_CAPTURE_ASSISTANT, OnCaptureAssistant)
-	ON_UPDATE_COMMAND_UI(ID_CAPTURE_ASSISTANT, OnUpdateCaptureAssistant)
+	ON_COMMAND(ID_CAPTURE_CAMERABASICSETTINGS, OnCaptureCameraBasicSettings)
+	ON_UPDATE_COMMAND_UI(ID_CAPTURE_CAMERABASICSETTINGS, OnUpdateCaptureCameraBasicSettings)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -3492,7 +3492,7 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				CString sRequest = m_sRequest;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
-				::PostMessage(m_pDoc->GetView()->GetSafeHwnd(), WM_THREADSAFE_SETDOCUMENTTITLE, 0, 0); // update device settings title
+				::PostMessage(m_pDoc->GetView()->GetSafeHwnd(), WM_THREADSAFE_SETDOCUMENTTITLE, 0, 0); // update camera advanced settings title
 				if (sRequest == _T(""))
 					m_pDoc->m_pHttpGetFrameParseProcess->SendRequest();
 				else
@@ -4182,7 +4182,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pMovementDetectionPage = NULL;
 	m_pGeneralPage = NULL;
 	m_pSnapshotPage = NULL;
-	m_pVideoDevicePropertySheet = NULL;
+	m_pCameraAdvancedSettingsPropertySheet = NULL;
 
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sBCC = _T("");
@@ -4502,8 +4502,8 @@ void CVideoDeviceDoc::SetDocumentTitle()
 	}
 
 	// Update Property Sheet title
-	if (m_pVideoDevicePropertySheet)
-		m_pVideoDevicePropertySheet->UpdateTitle();
+	if (m_pCameraAdvancedSettingsPropertySheet)
+		m_pCameraAdvancedSettingsPropertySheet->UpdateTitle();
 
 	// Set main title
 	if (!sWidthHeight.IsEmpty())
@@ -6034,57 +6034,57 @@ void CVideoDeviceDoc::AudioFormatDialog()
 	}
 }
 
-void CVideoDeviceDoc::OnCaptureAssistant() 
+void CVideoDeviceDoc::OnCaptureCameraBasicSettings() 
 {
-	CaptureAssistant();
+	CaptureCameraBasicSettings();
 }
 
-void CVideoDeviceDoc::OnUpdateCaptureAssistant(CCmdUI* pCmdUI) 
+void CVideoDeviceDoc::OnUpdateCaptureCameraBasicSettings(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(m_bCaptureStarted && !m_bClosing);
 }
 
-void CVideoDeviceDoc::CaptureAssistant()
+void CVideoDeviceDoc::CaptureCameraBasicSettings()
 {
 	GetView()->ForceCursor();
-	CAssistantDlg dlg(this, GetView());
+	CCameraBasicSettingsDlg dlg(this, GetView());
 	dlg.DoModal();
 	GetView()->ForceCursor(FALSE);
 }
 
-void CVideoDeviceDoc::OnCaptureSettings() 
+void CVideoDeviceDoc::OnCaptureCameraAdvancedSettings() 
 {
 	// Create if First Time
-	if (!m_pVideoDevicePropertySheet)
+	if (!m_pCameraAdvancedSettingsPropertySheet)
 	{
-		m_pVideoDevicePropertySheet = new CVideoDevicePropertySheet(this);
+		m_pCameraAdvancedSettingsPropertySheet = new CCameraAdvancedSettingsPropertySheet(this);
 		CRect rect(0, 0, 0, 0);
-		if (!m_pVideoDevicePropertySheet->Create(GetView(),
+		if (!m_pCameraAdvancedSettingsPropertySheet->Create(GetView(),
 			WS_POPUP | WS_CAPTION | WS_SYSMENU, WS_EX_TOOLWINDOW))
 		{
-			m_pVideoDevicePropertySheet = NULL;
+			m_pCameraAdvancedSettingsPropertySheet = NULL;
 			return;
 		}
-		m_pVideoDevicePropertySheet->CenterWindow();
-		m_pVideoDevicePropertySheet->Show();
+		m_pCameraAdvancedSettingsPropertySheet->CenterWindow();
+		m_pCameraAdvancedSettingsPropertySheet->Show();
 	}
 	// Toggle Visible / Invisible State
 	else
 	{
-		if (m_pVideoDevicePropertySheet->IsWindowVisible())
-			m_pVideoDevicePropertySheet->Hide(TRUE);
+		if (m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
+			m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
 		else
-			m_pVideoDevicePropertySheet->Show();
+			m_pCameraAdvancedSettingsPropertySheet->Show();
 	}
 
 	SetDocumentTitle();
 }
 
-void CVideoDeviceDoc::OnUpdateCaptureSettings(CCmdUI* pCmdUI) 
+void CVideoDeviceDoc::OnUpdateCaptureCameraAdvancedSettings(CCmdUI* pCmdUI) 
 {
 	pCmdUI->Enable(m_pDxCapture || m_pGetFrameNetCom);
-	if (m_pVideoDevicePropertySheet)
-		pCmdUI->SetCheck(m_pVideoDevicePropertySheet->IsWindowVisible() ? 1 : 0);
+	if (m_pCameraAdvancedSettingsPropertySheet)
+		pCmdUI->SetCheck(m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible() ? 1 : 0);
 	else
 		pCmdUI->SetCheck(0);
 }
@@ -7800,7 +7800,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 		if (m_bVideoView)
 			m_WatchdogAndDrawThread.TriggerDraw();
 
-		// Set start time, flag and open the Assistant dialog
+		// Set start time, flag and open the Camera Basic Settings dialog
 		if (!m_bCaptureStarted)
 		{
 			// Do not invert the order of the following two assignments!
@@ -7809,7 +7809,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 			if (m_bDeviceFirstRun)
 			{
 				::PostMessage(	GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_CAPTUREASSISTANT,
+								WM_THREADSAFE_CAPTURECAMERABASICSETTINGS,
 								0, 0);
 			}
 		}

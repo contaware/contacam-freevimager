@@ -1,12 +1,12 @@
-// AssistantDlg.cpp : implementation file
+// CameraBasicSettingsDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "uimager.h"
-#include "AssistantDlg.h"
+#include "CameraBasicSettingsDlg.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "VideoDevicePropertySheet.h"
+#include "CameraAdvancedSettingsPropertySheet.h"
 #include "BrowseDlg.h"
 
 #ifdef _DEBUG
@@ -18,25 +18,25 @@ static char THIS_FILE[] = __FILE__;
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantDlg dialog
+// CCameraBasicSettingsDlg dialog
 
-CAssistantDlg::CAssistantDlg(CVideoDeviceDoc* pDoc, CWnd* pParent /*=NULL*/)
-	: CDialog(CAssistantDlg::IDD, pParent)
+CCameraBasicSettingsDlg::CCameraBasicSettingsDlg(CVideoDeviceDoc* pDoc, CWnd* pParent /*=NULL*/)
+	: CDialog(CCameraBasicSettingsDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CAssistantDlg)
+	//{{AFX_DATA_INIT(CCameraBasicSettingsDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	m_pDoc = pDoc;
 }
 
-CAssistantDlg::~CAssistantDlg()
+CCameraBasicSettingsDlg::~CCameraBasicSettingsDlg()
 {
 }
 
-void CAssistantDlg::DoDataExchange(CDataExchange* pDX)
+void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CAssistantDlg)
+	//{{AFX_DATA_MAP(CCameraBasicSettingsDlg)
 	DDX_Check(pDX, IDC_CHECK_24H_REC, m_bCheck24hRec);
 	DDX_CBIndex(pDX, IDC_COMBO_KEEPFOR, m_nComboKeepFor);
 	DDX_Text(pDX, IDC_EDIT_NAME, m_sName);
@@ -52,8 +52,8 @@ void CAssistantDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CAssistantDlg, CDialog)
-	//{{AFX_MSG_MAP(CAssistantDlg)
+BEGIN_MESSAGE_MAP(CCameraBasicSettingsDlg, CDialog)
+	//{{AFX_MSG_MAP(CCameraBasicSettingsDlg)
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_RADIO_MOVDET, OnRadioMovdet)
 	ON_BN_CLICKED(IDC_RADIO_SNAPSHOTHISTORY, OnRadioSnapshothistory)
@@ -67,9 +67,9 @@ BEGIN_MESSAGE_MAP(CAssistantDlg, CDialog)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
-// CAssistantDlg message handlers
+// CCameraBasicSettingsDlg message handlers
 
-BOOL CAssistantDlg::OnInitDialog()
+BOOL CCameraBasicSettingsDlg::OnInitDialog()
 {
 	// Get a copy of m_sRecordAutoSaveDir
 	// (do not modify it now because various threads
@@ -317,22 +317,22 @@ BOOL CAssistantDlg::OnInitDialog()
 	EnableDisableCtrls();
 	
 	// Set Timer
-	SetTimer(ID_TIMER_ASSISTANTDLG, ASSISTANTDLG_TIMER_MS, NULL);
+	SetTimer(ID_TIMER_CAMERABASICSETTINGSDLG, CAMERABASICSETTINGSDLG_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CAssistantDlg::OnDestroy() 
+void CCameraBasicSettingsDlg::OnDestroy() 
 {
 	// Kill timer
-	KillTimer(ID_TIMER_ASSISTANTDLG);
+	KillTimer(ID_TIMER_CAMERABASICSETTINGSDLG);
 
 	// Base class
 	CDialog::OnDestroy();
 }
 
-void CAssistantDlg::EnableDisableCtrls()
+void CCameraBasicSettingsDlg::EnableDisableCtrls()
 {
 	CButton* pCheckMovDet = (CButton*)GetDlgItem(IDC_RADIO_MOVDET);
 	CButton* pCheckSnapshotHistory = (CButton*)GetDlgItem(IDC_RADIO_SNAPSHOTHISTORY);
@@ -423,7 +423,7 @@ void CAssistantDlg::EnableDisableCtrls()
 	}
 }
 
-void CAssistantDlg::EnableDisableAllCtrls(BOOL bEnable)
+void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 {
 	if (bEnable)
 		EnableDisableCtrls();
@@ -476,32 +476,32 @@ void CAssistantDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pButton->EnableWindow(bEnable);
 }
 
-void CAssistantDlg::OnRadioMovdet() 
+void CCameraBasicSettingsDlg::OnRadioMovdet() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantDlg::OnRadioSnapshothistory() 
+void CCameraBasicSettingsDlg::OnRadioSnapshothistory() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantDlg::OnRadioSnapshot() 
+void CCameraBasicSettingsDlg::OnRadioSnapshot() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantDlg::OnRadioManual() 
+void CCameraBasicSettingsDlg::OnRadioManual() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantDlg::OnRadioNochange() 
+void CCameraBasicSettingsDlg::OnRadioNochange() 
 {
 	EnableDisableCtrls();
 }
 
-void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
+void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
 {
 	if (m_pDoc->m_pGeneralPage)
 	{
@@ -593,7 +593,7 @@ void CAssistantDlg::EnableDisable24hRec(BOOL bEnable)
 	}
 }
 
-BOOL CAssistantDlg::Is24hRec() 
+BOOL CCameraBasicSettingsDlg::Is24hRec() 
 {
 	CUImagerApp::CSchedulerEntry* pOnceSchedulerEntry =
 		((CUImagerApp*)::AfxGetApp())->GetOnceSchedulerEntry(m_pDoc->GetDevicePathName());
@@ -605,7 +605,7 @@ BOOL CAssistantDlg::Is24hRec()
 		return FALSE;
 }
 
-void CAssistantDlg::OnTimer(UINT nIDEvent) 
+void CCameraBasicSettingsDlg::OnTimer(UINT nIDEvent) 
 {
 	if (m_bDoApplySettings)
 	{
@@ -615,17 +615,17 @@ void CAssistantDlg::OnTimer(UINT nIDEvent)
 		else
 		{
 			// Apply settings if we are not inside the processing function
-			m_pDoc->StopProcessFrame(PROCESSFRAME_ASSISTANT);
-			if (m_nRetryTimeMs > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_ASSISTANT))
+			m_pDoc->StopProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
+			if (m_nRetryTimeMs > PROCESSFRAME_MAX_RETRY_TIME || m_pDoc->IsProcessFrameStopped(PROCESSFRAME_CAMERABASICSETTINGS))
 				ApplySettings();
 			else
-				m_nRetryTimeMs += ASSISTANTDLG_TIMER_MS;
+				m_nRetryTimeMs += CAMERABASICSETTINGSDLG_TIMER_MS;
 		}
 	}
 	CDialog::OnTimer(nIDEvent);
 }
 
-BOOL CAssistantDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
+BOOL CCameraBasicSettingsDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message) 
 {
 	// If Wait Cursor leave it!
 	if (((CUImagerApp*)::AfxGetApp())->IsWaitCursor())
@@ -637,7 +637,7 @@ BOOL CAssistantDlg::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 		return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
-void CAssistantDlg::OnOK() 
+void CCameraBasicSettingsDlg::OnOK() 
 {
 	// Begin wait cursor
 	BeginWaitCursor();
@@ -650,7 +650,7 @@ void CAssistantDlg::OnOK()
 	EnableDisableAllCtrls(FALSE);
 }
 
-void CAssistantDlg::OnButtonParentDir() 
+void CCameraBasicSettingsDlg::OnButtonParentDir() 
 {
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&m_sParentDir,
@@ -659,7 +659,7 @@ void CAssistantDlg::OnButtonParentDir()
 	dlg.DoModal();
 }
 
-void CAssistantDlg::Rename()
+void CCameraBasicSettingsDlg::Rename()
 {
 	// Store current name
 	CString sOldName = m_pDoc->GetAssignedDeviceName();
@@ -794,7 +794,7 @@ void CAssistantDlg::Rename()
 	}
 }
 
-void CAssistantDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
+void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, double dSnapshotRate)
 {
 	m_pDoc->SnapshotRate(dSnapshotRate);
 	if (m_pDoc->m_pSnapshotPage)
@@ -821,7 +821,7 @@ void CAssistantDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbHeight, dou
 	}
 }
 
-void CAssistantDlg::ApplySettings()
+void CCameraBasicSettingsDlg::ApplySettings()
 {
 	// Reset vars
 	m_bDoApplySettings = FALSE;
@@ -1172,7 +1172,7 @@ void CAssistantDlg::ApplySettings()
 	EnableDisable24hRec(bDo24hRec);
 
 	// Restart process frame
-	m_pDoc->StartProcessFrame(PROCESSFRAME_ASSISTANT);
+	m_pDoc->StartProcessFrame(PROCESSFRAME_CAMERABASICSETTINGS);
 
 	// Set Autorun
 	if (m_nUsage >= 0 && m_nUsage <= 2)

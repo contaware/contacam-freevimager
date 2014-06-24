@@ -10,7 +10,7 @@
 #include "VideoDeviceDoc.h"
 
 // Window Message IDs
-#define WM_THREADSAFE_CAPTUREASSISTANT				WM_USER + 600
+#define WM_THREADSAFE_CAPTURECAMERABASICSETTINGS	WM_USER + 600
 #define WM_THREADSAFE_INIT_MOVDET					WM_USER + 601
 #define WM_THREADSAFE_DVCHANGEVIDEOFORMAT			WM_USER + 602
 #define WM_THREADSAFE_UPDATE_PHPPARAMS				WM_USER + 603
@@ -80,7 +80,7 @@ protected:
 	afx_msg void OnViewFullscreen();
 	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	//}}AFX_MSG
-	afx_msg LONG OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafeCaptureCameraBasicSettings(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePhpParams(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam);

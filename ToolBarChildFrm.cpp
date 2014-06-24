@@ -16,7 +16,7 @@
 #include "AviInfoDlg.h"
 #include "OutVolDlg.h"
 #include "AudioVideoShiftDlg.h"
-#include "VideoDevicePropertySheet.h"
+#include "CameraAdvancedSettingsPropertySheet.h"
 #include "DxCapture.h"
 #ifdef VIDEODEVICEDOC
 #include "ProgressDlg.h"
@@ -1622,9 +1622,9 @@ void CVideoDeviceChildFrame::StartShutdown1()
 
 	// Hide Window Property Sheet without saving
 	// because already done in OnClose()
-	if (pDoc->m_pVideoDevicePropertySheet &&
-		pDoc->m_pVideoDevicePropertySheet->IsWindowVisible())
-		pDoc->m_pVideoDevicePropertySheet->Hide(FALSE);
+	if (pDoc->m_pCameraAdvancedSettingsPropertySheet &&
+		pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
+		pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(FALSE);
 }
 
 void CVideoDeviceChildFrame::StartShutdown2()
@@ -1689,18 +1689,18 @@ void CVideoDeviceChildFrame::EndShutdown()
 	// The next step must happen last, because it sets to NULL
 	// the following pointers (used inside ProcessI420Frame()):
 	//
-	// m_pVideoDevicePropertySheet
+	// m_pCameraAdvancedSettingsPropertySheet
 	// m_pGeneralPage
 	// m_pSnapshotPage
 	// m_pMovementDetectionPage
 	//
-	if (pDoc->m_pVideoDevicePropertySheet)
+	if (pDoc->m_pCameraAdvancedSettingsPropertySheet)
 	{
-		// m_pVideoDevicePropertySheet pointer is set to NULL
+		// m_pCameraAdvancedSettingsPropertySheet pointer is set to NULL
 		// from the sheet class (selfdeletion)
 		// The other pointers are set to NULL
 		// by the respective OnDestroy() functions
-		pDoc->m_pVideoDevicePropertySheet->Close();
+		pDoc->m_pCameraAdvancedSettingsPropertySheet->Close();
 	}
 }
 

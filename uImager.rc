@@ -128,8 +128,8 @@ END
 
 IDR_VIDEO_DEVICE_TOOLBAR TOOLBAR 16, 15
 BEGIN
-    BUTTON      ID_CAPTURE_ASSISTANT
-    BUTTON      ID_CAPTURE_SETTINGS
+    BUTTON      ID_CAPTURE_CAMERABASICSETTINGS
+    BUTTON      ID_CAPTURE_CAMERAADVANCEDSETTINGS
     BUTTON      ID_EDIT_SNAPSHOT
     BUTTON      ID_CAPTURE_RECORD
     BUTTON      ID_VIEW_FRAMETIME
@@ -485,8 +485,8 @@ BEGIN
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM SEPARATOR
-        MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
-        MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
+        MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -553,8 +553,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM SEPARATOR
-        MENUITEM "Device Assistant...",         ID_CAPTURE_ASSISTANT
-        MENUITEM "Device Settings...",          ID_CAPTURE_SETTINGS
+        MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
+        MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
     END
     POPUP "&Tools"
     BEGIN
@@ -3306,10 +3306,10 @@ BEGIN
     LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,240,8
 END
 
-IDD_ASSISTANT DIALOGEX 0, 0, 417, 305
+IDD_CAMERABASICSETTINGS DIALOGEX 0, 0, 417, 305
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Device Assistant"
+CAPTION "Camera Basic Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
@@ -3347,7 +3347,7 @@ BEGIN
     LTEXT           "Keep files for",IDC_STATIC,16,191,86,8
     LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,205,193,144,30
     GROUPBOX        "5. Finish",IDC_STATIC,5,237,407,39
-    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Device Settings in Capture menu for advanced configurations",IDC_STATIC,16,250,390,18
+    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Camera Advanced Settings in Capture menu for more configurations",IDC_STATIC,16,250,390,18
     LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,279,29,57,8
     GROUPBOX        "3. Appearance",IDC_STATIC,5,131,407,41
     LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,110,117,8
@@ -4155,7 +4155,7 @@ BEGIN
         BOTTOMMARGIN, 59
     END
 
-    IDD_ASSISTANT, DIALOG
+    IDD_CAMERABASICSETTINGS, DIALOG
     BEGIN
         LEFTMARGIN, 5
         RIGHTMARGIN, 412
@@ -4722,7 +4722,8 @@ BEGIN
     ID_FILE_SELECTTWAINSOURCE 
                             "Select twain (scanner,...) source\nSelect Twain Source"
     ID_FILE_ACQUIRE         "Scan from selected source\nScan"
-    ID_CAPTURE_SETTINGS     "Device settings\nDevice Settings"
+    ID_CAPTURE_CAMERAADVANCEDSETTINGS 
+                            "Camera advanced settings\nCamera Advanced Settings"
 END
 
 STRINGTABLE
@@ -5441,8 +5442,8 @@ BEGIN
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and device type)"
-    IDS_STRING1755          "3. Follow the Device Assistant"
-    IDS_STRING1756          "(if it is not popping-up select Device Assistant from the Capture menu)"
+    IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
+    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Capture menu)"
     IDS_STRING1757          "4. Choose Browse from the View menu"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
@@ -5555,7 +5556,8 @@ BEGIN
     ID_EDIT_EXPORT_ZONES    "Export detection zones to a ini file\nExport Detection Zones"
     ID_EDIT_IMPORT_ZONES    "Import detection zones from a ini file\nImport Detection Zones"
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
-    ID_CAPTURE_ASSISTANT    "Device assistant\nDevice Assistant"
+    ID_CAPTURE_CAMERABASICSETTINGS 
+                            "Camera basic settings\nCamera Basic Settings"
     ID_EDIT_ZONE_SENSIBILITY_100 
                             "Set detection zone sensibility to 100 %\nZone Sensibility 100 %"
     ID_EDIT_ZONE_SENSIBILITY_50 

@@ -128,9 +128,9 @@ void CMDIClientWnd::OnPaint()
 
 	// Draw point 3.
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, ML_STRING(1755, "3. Follow the Device Assistant"), rcDraw);
+	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Basic Settings dialog"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it is not popping-up select Device Assistant from the Capture menu)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Capture menu)"), rcDraw);
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	

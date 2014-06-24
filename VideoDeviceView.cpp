@@ -4,7 +4,7 @@
 #include "VideoDeviceDoc.h"
 #include "PostDelayedMessage.h"
 #include "VideoDeviceView.h"
-#include "VideoDevicePropertySheet.h"
+#include "CameraAdvancedSettingsPropertySheet.h"
 #include "DxCapture.h"
 #include "MyMemDC.h"
 
@@ -44,7 +44,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_25, OnUpdateEditZoneSensibility25)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_10, OnUpdateEditZoneSensibility10)
 	//}}AFX_MSG_MAP
-	ON_MESSAGE(WM_THREADSAFE_CAPTUREASSISTANT, OnThreadSafeCaptureAssistant)
+	ON_MESSAGE(WM_THREADSAFE_CAPTURECAMERABASICSETTINGS, OnThreadSafeCaptureCameraBasicSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
 	ON_MESSAGE(WM_THREADSAFE_DVCHANGEVIDEOFORMAT, OnThreadSafeDVChangeVideoFormat)
 	ON_MESSAGE(WM_THREADSAFE_INIT_MOVDET, OnThreadSafeInitMovDet)
@@ -150,14 +150,14 @@ LONG CVideoDeviceView::OnThreadSafeDVChangeVideoFormat(WPARAM wparam, LPARAM lpa
 		return 0;
 }
 
-LONG CVideoDeviceView::OnThreadSafeCaptureAssistant(WPARAM wparam, LPARAM lparam)
+LONG CVideoDeviceView::OnThreadSafeCaptureCameraBasicSettings(WPARAM wparam, LPARAM lparam)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
 	if (pDoc && pDoc->m_bCaptureStarted	&& !pDoc->m_bClosing)
 	{
-		pDoc->CaptureAssistant();
+		pDoc->CaptureCameraBasicSettings();
 		return 1;
 	}
 	else
@@ -1013,8 +1013,8 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
 			else
 			{
-				if (pDoc->m_pVideoDevicePropertySheet && pDoc->m_pVideoDevicePropertySheet->IsWindowVisible())
-					pDoc->m_pVideoDevicePropertySheet->Hide(TRUE);
+				if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
+					pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
 				else if (pDoc->m_bShowEditDetectionZones)
 					pDoc->HideDetectionZones(TRUE);
 				else if (m_bFullScreenMode)

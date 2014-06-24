@@ -132,7 +132,7 @@
 #define IDI_EMF                         300
 #define IDD_IMAPI2                      301
 #define IDD_IMAPI2_DOWNLOAD             302
-#define IDD_ASSISTANT                   304
+#define IDD_CAMERABASICSETTINGS         304
 #define IDD_RENAME                      305
 #define IDD_DELETE_CAM_FOLDERS          306
 #define IDD_CONNECTERR_MSGBOX           307
@@ -3214,7 +3214,7 @@
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
-#define ID_CAPTURE_SETTINGS             32781
+#define ID_CAPTURE_CAMERAADVANCEDSETTINGS 32781
 #define ID_VIDEO_COMPRESSION            32786
 #define ID_VIEW_VIDEO                   32788
 #define ID_FILE_RECOMPRESS_AVI          32789
@@ -3460,7 +3460,7 @@
 #define ID_EDIT_EXPORT_ZONES            33168
 #define ID_EDIT_IMPORT_ZONES            33169
 #define ID_DET_COMBOX                   33171
-#define ID_CAPTURE_ASSISTANT            33172
+#define ID_CAPTURE_CAMERABASICSETTINGS  33172
 #define ID_EDIT_ZONE_SENSIBILITY_100    33173
 #define ID_EDIT_ZONE_SENSIBILITY_50     33174
 #define ID_EDIT_ZONE_SENSIBILITY_25     33175
