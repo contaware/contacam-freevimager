@@ -2612,7 +2612,7 @@ BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount)
 			!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 		{
 			m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
-														ML_STRING(1720, "Starting Device..."),
+														ML_STRING(1720, "Starting Camera..."),
 														(nRetryCount - 1) * AUTORUN_VIDEODEVICES_RETRY_DELAY,
 														AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY);
 		}
@@ -5454,7 +5454,7 @@ void CUImagerApp::OnToolsMoveCamFolders()
 	// Check
 	if (AreVideoDeviceDocsOpen())
 	{
-		::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
+		::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
 		return;
 	}
 

@@ -15,19 +15,22 @@ ContaCam Program
 - Document the way to have different parameters for the same cam,
   like two different snapshot rates, or ...
 - Rotate by 0,90,180,270 degrees
-- Use the word Camera instead of Device and Capture.
-  Change Device Assistant to Basic Settings and Device Settings to
-  Advanced Settings (in titlebars prepend with Camera)
 - Make thumbnail anim. gif for avi records?
-- Support NV12 (NV21) camera source format
 - Auto join all avi detections at the end of the day
 - Det Off / Det Soft,... for all open cams
 - Ability to send different emails to different people. For example
   send GIF files to one person and JPGs to another
-
-
+- Think about making temp folder configurable and saving first to it
+  and when done moving to actual web folder. That to avoid fragmentation.
+  (temp. folder could be on a SSD the other folder on a normal HDD)
+- Configurable email subject line: Movement Detection:
+  [Camera Name] on [Date] at [Time]
+  
+  
 ContaCam Web Interface
 ----------------------
+- Add 2 links to the "summary snapshot" web page with "previous camera"
+  and "next camera" (either with text, arrow or + and -)
 - Replace swf with html5 video (mp4 format)
 - Back click if in full-screen stream should
   return to the correct day and page

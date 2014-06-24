@@ -42,8 +42,8 @@ BOOL CHostPortDlg::OnInitDialog()
 
 	// Init Device Type Mode Combo Box
 	CComboBox* pComboBoxDevTypeMode = (CComboBox*)GetDlgItem(IDC_COMBO_DEVICETYPEMODE);
-	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
-	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Device") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
+	pComboBoxDevTypeMode->AddString(ML_STRING(1548, "Other HTTP Camera") + _T(" (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1865, "Server Push Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Axis (") + ML_STRING(1866, "Client Poll Mode") + _T(")"));
 	pComboBoxDevTypeMode->AddString(_T("Panasonic (") + ML_STRING(1865, "Server Push Mode") + _T(")"));

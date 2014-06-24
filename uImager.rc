@@ -4704,7 +4704,7 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1488      "Camera is telling you something,\nfirst open it in a browser, then come back here."
     IDS_MULTILANG_1489      "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."
-    IDS_MULTILANG_1490      "Unsupported network device type or mode"
+    IDS_MULTILANG_1490      "Unsupported network camera type or mode"
     IDS_MULTILANG_1491      "Server is to busy, try later"
     IDS_MULTILANG_1493      "Cannot Create the AVI File!\n"
     IDS_STRING1496          "cm"
@@ -5203,7 +5203,7 @@ STRINGTABLE
 BEGIN
     IDS_STRING1545          "Mono"
     IDS_STRING1546          "Stereo"
-    IDS_STRING1548          "Other HTTP Device"
+    IDS_STRING1548          "Other HTTP Camera"
 END
 
 STRINGTABLE
@@ -5403,7 +5403,7 @@ BEGIN
     IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
     IDS_STRING1717          "The latest version for your os may be downloaded from:"
     IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tmplay32.exe (or path to %s)\r\nParams\t/play /close ""audio file path"""
-    IDS_STRING1720          "Starting Device..."
+    IDS_STRING1720          "Starting Camera..."
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"
@@ -5441,7 +5441,7 @@ BEGIN
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"
-    IDS_STRING1754          "(for network cameras supply host name or ip address, port and device type)"
+    IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
     IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Capture menu)"
     IDS_STRING1757          "4. Choose Browse from the View menu"
@@ -5619,7 +5619,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1872          "Try again after closing all devices"
+    IDS_STRING1872          "Try again after closing all cameras"
     IDS_STRING1873          "Files are not shown in web interface if disabling this!"
     IDS_STRING1874          "Detection always enabled (scheduler is off)"
     IDS_STRING1875          "Detection enabled:"

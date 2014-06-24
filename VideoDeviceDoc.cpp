@@ -8825,7 +8825,7 @@ void CVideoDeviceDoc::OnUpdateViewFit(CCmdUI* pCmdUI)
 
 void CVideoDeviceDoc::OnEditDelete() 
 {
-	::AfxMessageBox(ML_STRING(1872, "Try again after closing all devices"), MB_OK | MB_ICONERROR);
+	::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
 }
 
 void CVideoDeviceDoc::OnEditCopy() 
@@ -10667,7 +10667,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				if (sCode == _T("503")) // Service Unavailable
 					m_pDoc->ConnectErr(ML_STRING(1491, "Server is to busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 				else
-					m_pDoc->ConnectErr(ML_STRING(1490, "Unsupported network device type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					m_pDoc->ConnectErr(ML_STRING(1490, "Unsupported network camera type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();

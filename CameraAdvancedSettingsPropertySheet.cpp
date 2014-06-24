@@ -68,7 +68,7 @@ CString CCameraAdvancedSettingsPropertySheet::MakeTitle(CVideoDeviceDoc* pDoc)
 				if (nHttpGetFrameLocationPos > 0 && nHttpGetFrameLocationPos < pDoc->m_HttpGetFrameLocations.GetSize())
 					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[nHttpGetFrameLocationPos];
 				else if (pDoc->m_HttpGetFrameLocations[0] == _T("/"))
-					sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Device");
+					sTitle += CString(_T(" , ")) + ML_STRING(1548, "Other HTTP Camera");
 				else
 					sTitle += CString(_T(" , ")) + pDoc->m_HttpGetFrameLocations[0];
 				if (pDoc->m_pHttpGetFrameParseProcess)

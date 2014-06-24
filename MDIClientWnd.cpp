@@ -124,7 +124,7 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1753, "2. From the Capture menu select the device you want to use"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and device type)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1754, "(for network cameras supply host name or ip address, port and camera type)"), rcDraw);
 
 	// Draw point 3.
 	rcDraw.top += nLineHeight;
