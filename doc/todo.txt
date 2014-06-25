@@ -32,7 +32,10 @@ ContaCam Web Interface
 - Add 2 links to the "summary snapshot" web page with "previous camera"
   and "next camera" (either with text, arrow or + and -)
 - Replace swf with html5 video (mp4 format)
-- Back click if in full-screen stream should
-  return to the correct day and page
+- Back click if in full-screen stream should return to the correct
+  day and page. Not easily solvable with current frames implementation.
+  I tried with clickurl=javascript:history.back() but it is only working
+  well with Firefox. This problem will be solved when changing the
+  ContaCam web interface to a frameless design with jquery 
 - If live snapshot file time stamp remains the same then
   output a red border to alert
