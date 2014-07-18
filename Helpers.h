@@ -4,6 +4,7 @@
 #pragma once
 
 #include "MMSystem.h"
+#include "WinReg.h"
 #include "WorkerThread.h"
 #include "Round.h"
 
@@ -155,6 +156,12 @@ CSIDL_CDBURN_AREA				CD Burn area
 */
 extern CString GetSpecialFolderPath(int nSpecialFolder);
 
+// Application execute/kill pair
+extern HANDLE ExecApp(	const CString& sFileName,	// close the returned process handle when not needed anymore
+						const CString& sParams = _T(""),
+						const CString& sStartDirectory = _T(""));
+extern void KillApp(HANDLE& hProcess);				// this closes the process handle and sets it to NULL
+
 // Enumerate or eventually kill process(es) by name
 // returns the number of found processes
 extern int EnumKillProcByName(CString sProcessName, BOOL bKill = FALSE);
@@ -172,11 +179,11 @@ CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpsz
 BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue, LPCTSTR lpszProfileName);
 
 // Registry Functions
-extern BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
-extern BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey);
+extern BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, REGSAM samOptional = 0);
+extern BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey, REGSAM samOptional = 0);
 extern BOOL SetRegistryEmptyValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL SetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, LPCTSTR szData);
-extern CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
+extern CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, REGSAM samOptional = 0);
 extern BOOL DeleteRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue);
 extern BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey);
 

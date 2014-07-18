@@ -1239,6 +1239,37 @@ CString GetSpecialFolderPath(int nSpecialFolder)
 	return CString(path);
 }
 
+HANDLE ExecApp(	const CString& sFileName,
+				const CString& sParams/*=_T("")*/,
+				const CString& sStartDirectory/*=_T("")*/)
+{
+	SHELLEXECUTEINFO sei;
+	memset(&sei, 0, sizeof(sei));
+	sei.cbSize = sizeof(sei);
+	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+	sei.nShow = SW_SHOW;
+	sei.lpFile = sFileName;
+	if (sStartDirectory.IsEmpty())
+		sei.lpDirectory = GetDriveAndDirName(sFileName);
+	else
+		sei.lpDirectory = sStartDirectory;
+	sei.lpParameters = sParams;
+	if (ShellExecuteEx(&sei))
+		return sei.hProcess;
+	else
+		return NULL;
+}
+
+void KillApp(HANDLE& hProcess)
+{	
+	if (hProcess)
+	{
+		TerminateProcess(hProcess, 0);
+		CloseHandle(hProcess); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
+		hProcess = NULL;
+	}
+}
+
 int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 {	
 	// Vars
@@ -1294,7 +1325,7 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 						if (hProc)
 						{
 							TerminateProcess(hProc, 0);
-							CloseHandle(hProc);
+							CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
 						}
 					}
 				}
@@ -1366,11 +1397,11 @@ int EnumKillProcByName(CString sProcessName, BOOL bKill/*=FALSE*/)
 					iCount++;
 					if (bKill)
 					{
-						hProc = OpenProcess(PROCESS_TERMINATE, FALSE,procentry.th32ProcessID);
+						hProc = OpenProcess(PROCESS_TERMINATE, FALSE, procentry.th32ProcessID);
 						if (hProc)
 						{
 							TerminateProcess(hProc, 0);
-							CloseHandle(hProc);
+							CloseHandle(hProc); // close handle to avoid ERROR_NO_SYSTEM_RESOURCES
 						}
 					}
 				}
@@ -1466,7 +1497,7 @@ BOOL WriteProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszV
 	return WritePrivateProfileString(lpszSection, lpszEntry, lpszValue, lpszProfileName);
 }
 
-BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
+BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, REGSAM samOptional/*=0*/)
 {
 	LONG lRet;
 
@@ -1479,7 +1510,7 @@ BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
 						hOpenKey,		// key handle at root level
 						szKey,			// path name of child key
 						0,				// reserved
-						KEY_READ,		// requesting access
+						KEY_READ | samOptional,	// requesting access
 						&hSubKey		// address of key to be returned
 						);
 	if (lRet != ERROR_SUCCESS)
@@ -1502,7 +1533,7 @@ BOOL IsRegistryValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
 		return TRUE;
 }
 
-BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
+BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey, REGSAM samOptional/*=0*/)
 {
 	LONG lRet;
 
@@ -1515,7 +1546,7 @@ BOOL IsRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 						hOpenKey,		// key handle at root level
 						szKey,			// path name of child key
 						0,				// reserved
-						KEY_READ,		// requesting access
+						KEY_READ | samOptional,	// requesting access
 						&hSubKey		// address of key to be returned
 						);
 	if (lRet != ERROR_SUCCESS)
@@ -1613,7 +1644,7 @@ BOOL SetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, LPCTS
 	return bRetVal;
 }
 
-CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
+CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, REGSAM samOptional/*=0*/)
 {
 	LONG lRet;
 
@@ -1626,7 +1657,7 @@ CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue)
 						hOpenKey,		// key handle at root level
 						szKey,			// path name of child key
 						0,				// reserved
-						KEY_READ,		// requesting access
+						KEY_READ | samOptional,	// requesting access
 						&hSubKey		// address of key to be returned
 						);
 	if (lRet != ERROR_SUCCESS)
