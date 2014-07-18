@@ -16,6 +16,7 @@ ContaCam Program
   like two different snapshot rates, or ...
 - Rotate by 0,90,180,270 degrees
 - Make thumbnail anim. gif for avi records?
+- Make video splits also of 5 min, 10 min, ...  
 - Auto join all avi detections at the end of the day
 - Det Off / Det Soft,... for all open cams
 - Ability to send different emails to different people. For example
