@@ -55,6 +55,10 @@
 #define MICROAPACHE_JS_DIR								_T("js")
 #define MICROAPACHE_DEFAULT_AUTH_AREANAME				_T("Secure Area")
 
+// Vlm
+#define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")
+#define VLM_CONFIG_FILE									(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(VLM_CONFIGNAME_EXT))
+
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 
@@ -740,6 +744,9 @@ public:
 
 	// Micro Apache Watchdog Thread
 	CMicroApacheWatchdogThread m_MicroApacheWatchdogThread;
+
+	// Running Vlc process handle
+	HANDLE m_hVlcProcess;
 
 	// Service
 	// - ContaCam's browser autostart disabled if this set

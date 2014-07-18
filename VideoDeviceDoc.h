@@ -969,6 +969,12 @@ public:
 	static BOOL MicroApacheShutdown();
 	static int MicroApacheReload(); // Return Values: 1=OK, 0=Failed to stop the web server, -1=Failed to start the web server
 	
+	// Vlm
+	static CString VlmGetConfigFileName();
+	static BOOL VlmConfigFileFilled();
+	static void VlmStart();
+	static void VlmShutdown();
+
 	// Php config file manipulation
 	CString PhpGetConfigFileName();
 	CString PhpLoadConfigFile();

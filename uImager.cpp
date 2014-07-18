@@ -149,6 +149,7 @@ CUImagerApp::CUImagerApp()
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
 	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
+	m_hVlcProcess = NULL;
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -815,6 +816,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			// Auto-starts
 			if (!m_bForceSeparateInstance)
 			{
+				// Start Vlc process with given vlm configurtion file
+				CVideoDeviceDoc::VlmStart();
+
 				// Update / create doc root index.php and config file for microapache
 				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
@@ -1952,6 +1956,7 @@ void CUImagerApp::SaveOnEndSession()
 		}
 	}
 #ifdef VIDEODEVICEDOC
+	CVideoDeviceDoc::VlmShutdown();
 	if (m_bMicroApacheStarted)
 	{
 		m_MicroApacheWatchdogThread.Kill();
@@ -2473,6 +2478,9 @@ int CUImagerApp::ExitInstance()
 	while (pos)
 		delete m_Scheduler.GetNext(pos);
 	m_Scheduler.RemoveAll();
+
+	// Vlm shutdown
+	CVideoDeviceDoc::VlmShutdown();
 
 	// Micro Apache shutdown
 	if (m_bMicroApacheStarted)

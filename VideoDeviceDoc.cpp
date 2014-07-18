@@ -6941,6 +6941,117 @@ int CVideoDeviceDoc::MicroApacheReload()
 	return 1;
 }
 
+CString CVideoDeviceDoc::VlmGetConfigFileName()
+{
+	CString sVlmConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
+	sVlmConfigFile += _T("\\") + VLM_CONFIG_FILE;
+	return sVlmConfigFile;
+}
+
+BOOL CVideoDeviceDoc::VlmConfigFileFilled()
+{
+	// Get vlm config file path (create an empty file if not existing)
+	CString sVlmConfigFile = VlmGetConfigFileName();
+	if (!::IsExistingFile(sVlmConfigFile))
+	{
+		LPSTR pData = NULL;
+		int nLen = ::ToANSI(_T("# Add VideoLAN Media Manager stream(s) here\r\n")
+							_T("#\r\n")
+							_T("# Note1: ContaCam launches this file if VLC is installed\r\n")
+							_T("#        and a camera is configured below\r\n")
+							_T("# Note2: VLM is a media manager originally designed to launch\r\n")
+							_T("#        multiple streams with only one VLC instance\r\n\r\n")
+							_T("# Camera 1 (uncomment the following 4 lines by removing the leading #\r\n")
+							_T("#           and fill USERNAME, PASSWORD, IP, PORT, COMMAND, MJPGPORT)\r\n")
+							_T("#new camera1 broadcast loop enabled\r\n")
+							_T("#setup camera1 input rtsp://USERNAME:PASSWORD@IP:PORT/COMMAND\r\n")
+							_T("#setup camera1 output #transcode{vcodec=mjpg,vb=2500,scale=1.0,fps=10,acodec=none}:standard{access=http{mime=\"multipart/x-mixed-replace; boundary=7b3cc56e5f51db803f790dad720ed50a\"},mux=mpjpeg,dst=:MJPGPORT/videostream.cgi}\r\n")
+							_T("#control camera1 play\r\n\r\n")
+							_T("# Camera 2 (example for a Foscam HD cam)\r\n")
+							_T("#new camera2 broadcast loop enabled\r\n")
+							_T("#setup camera2 input rtsp://admin:admin@192.168.1.21:88/videoMain\r\n")
+							_T("#setup camera2 output #transcode{vcodec=mjpg,vb=2500,scale=1.0,fps=10,acodec=none}:standard{access=http{mime=\"multipart/x-mixed-replace; boundary=7b3cc56e5f51db803f790dad720ed50a\"},mux=mpjpeg,dst=:8080/videostream.cgi}\r\n")
+							_T("#control camera2 play\r\n\r\n")
+							_T("# Camera 3\r\n")
+							_T("# ...\r\n"), &pData);
+		if (nLen > 0 && pData)
+		{
+			try
+			{
+				CFile VlmConfigFile(sVlmConfigFile,
+									CFile::modeCreate		|
+									CFile::modeWrite		|
+									CFile::shareDenyWrite);
+				VlmConfigFile.Write(pData, nLen);
+			}
+			catch (CFileException* e)
+			{
+				e->Delete();
+			}
+		}
+		if (pData)
+			delete [] pData;
+	}
+
+	// In a vlm file any line where the first non white space character is a '#' is considered as a comment
+	try
+	{
+		CStdioFile VlmConfigFile(sVlmConfigFile, CFile::modeRead | CFile::shareDenyNone | CFile::typeText);
+		CString sLine;
+		while (VlmConfigFile.ReadString(sLine))
+		{
+			sLine.TrimLeft();
+			if (!sLine.IsEmpty() && sLine[0] != _T('#'))
+			{
+				VlmConfigFile.Close();
+				return TRUE;
+			}
+		}
+		VlmConfigFile.Close();
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();
+	}
+
+	return FALSE;
+}
+
+void CVideoDeviceDoc::VlmStart()
+{
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	if (pApp->m_hVlcProcess == NULL)
+	{
+		// Vlm config file path
+		if (!VlmConfigFileFilled())
+			return;
+		CString sVlmConfigFile = VlmGetConfigFileName();
+
+		// Vlc executable path
+		CString sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir")); // 32 bit vlc
+		if (sVlcFile.IsEmpty())
+			sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir"), KEY_WOW64_64KEY); // 64 bit vlc
+		if (sVlcFile.IsEmpty())
+			return;
+		sVlcFile.TrimRight(_T('\\'));
+		sVlcFile += _T("\\vlc.exe");
+
+		// Execute vlc passing the vlm configuration file as parameter
+		// Note: vlc doesn't support a full path name as vlm configuration file,
+		// I tried with/without double-quotes, converting back-slashes to forward-slashes,
+		// using the short file name notation returned by the GetShortPathName() API...
+		// Changing the start (or working) directory when launching vlc.exe works!
+		pApp->m_hVlcProcess = ::ExecApp(sVlcFile,
+										CString(_T("-I telnet --vlm-conf ")) + ::GetShortFileName(sVlmConfigFile),
+										::GetDriveAndDirName(sVlmConfigFile));
+	}
+}
+
+void CVideoDeviceDoc::VlmShutdown()
+{
+	::KillApp(((CUImagerApp*)::AfxGetApp())->m_hVlcProcess);
+}
+
 CString CVideoDeviceDoc::PhpGetConfigFileName()
 {
 	CString sAutoSaveDir = m_sRecordAutoSaveDir;
