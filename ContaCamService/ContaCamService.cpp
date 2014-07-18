@@ -35,14 +35,11 @@ void WriteLog(LPCTSTR pMsg)
 {
 	// write error or other information into log file
 	EnterCriticalSection(&g_WriteLogCS);
-	try
-	{
-		SYSTEMTIME oT;
-		GetLocalTime(&oT);
-		FILE* pLog = _tfopen(g_pLogFile, _T("a"));
-		_ftprintf(pLog,_T("%02d/%02d/%04d, %02d:%02d:%02d\n    %s\n"),oT.wMonth,oT.wDay,oT.wYear,oT.wHour,oT.wMinute,oT.wSecond,pMsg); 
-		fclose(pLog);
-	} catch(...) {}
+	SYSTEMTIME oT;
+	GetLocalTime(&oT);
+	FILE* pLog = _tfopen(g_pLogFile, _T("a"));
+	_ftprintf(pLog, _T("%02d/%02d/%04d, %02d:%02d:%02d\n    %s\n"), oT.wMonth, oT.wDay, oT.wYear, oT.wHour, oT.wMinute, oT.wSecond, pMsg); 
+	fclose(pLog);
 	LeaveCriticalSection(&g_WriteLogCS);
 }
 
@@ -212,12 +209,8 @@ void EndProcess(int nIndex)
 		}
 
 		// Close handles to avoid ERROR_NO_SYSTEM_RESOURCES
-		try
-		{
-			CloseHandle(g_pProcInfo[nIndex].hThread);
-			CloseHandle(g_pProcInfo[nIndex].hProcess);
-		}
-		catch(...) {}
+		CloseHandle(g_pProcInfo[nIndex].hThread);
+		CloseHandle(g_pProcInfo[nIndex].hProcess);
 		g_pProcInfo[nIndex].hProcess = 0;
 		g_pProcInfo[nIndex].hThread = 0;
 	}
@@ -256,12 +249,9 @@ unsigned int __stdcall WorkerProc(void* lpParam)
 							{
 								if (dwCode != STILL_ACTIVE)
 								{
-									try // close handles to avoid ERROR_NO_SYSTEM_RESOURCES
-									{
-										CloseHandle(g_pProcInfo[i].hThread);
-										CloseHandle(g_pProcInfo[i].hProcess);
-									}
-									catch(...) {}
+									// Close handles to avoid ERROR_NO_SYSTEM_RESOURCES
+									CloseHandle(g_pProcInfo[i].hThread);
+									CloseHandle(g_pProcInfo[i].hProcess);
 									if (StartProcess(i))
 									{
 										TCHAR pTemp[MAX_PATH];
