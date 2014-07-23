@@ -6462,36 +6462,36 @@ void CVideoDeviceDoc::ViewFiles()
 
 CString CVideoDeviceDoc::MicroApacheGetConfigFileName()
 {
-	CString sMicroapacheConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sMicroapacheConfigFile += _T("\\") + MICROAPACHE_CONFIG_FILE;
+	CString sMicroapacheConfigFile = CUImagerApp::GetConfigFilesDir();
+	sMicroapacheConfigFile += CString(_T("\\")) + MICROAPACHE_CONFIGNAME_EXT;
 	return sMicroapacheConfigFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetEditableConfigFileName()
 {
-	CString sMicroapacheEditableConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sMicroapacheEditableConfigFile += _T("\\") + MICROAPACHE_EDITABLE_CONFIG_FILE;
+	CString sMicroapacheEditableConfigFile = CUImagerApp::GetConfigFilesDir();
+	sMicroapacheEditableConfigFile += CString(_T("\\")) + MICROAPACHE_EDITABLE_CONFIGNAME_EXT;
 	return sMicroapacheEditableConfigFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetLogFileName()
 {
-	CString sMicroapacheLogFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sMicroapacheLogFile += _T("\\") + MICROAPACHE_LOG_FILE;
+	CString sMicroapacheLogFile = CUImagerApp::GetConfigFilesDir();
+	sMicroapacheLogFile += CString(_T("\\")) + MICROAPACHE_LOGNAME_EXT;
 	return sMicroapacheLogFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetPidFileName()
 {
-	CString sMicroapachePidFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sMicroapachePidFile += _T("\\") + MICROAPACHE_PID_FILE;
+	CString sMicroapachePidFile = CUImagerApp::GetConfigFilesDir();
+	sMicroapachePidFile += CString(_T("\\")) + MICROAPACHE_PIDNAME_EXT;
 	return sMicroapachePidFile;
 }
 
 CString CVideoDeviceDoc::MicroApacheGetPwFileName()
 {
-	CString sMicroapachePwFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sMicroapachePwFile += _T("\\") + MICROAPACHE_PW_FILE;
+	CString sMicroapachePwFile = CUImagerApp::GetConfigFilesDir();
+	sMicroapachePwFile += CString(_T("\\")) + MICROAPACHE_PWNAME_EXT;
 	return sMicroapachePwFile;
 }
 
@@ -6943,8 +6943,8 @@ int CVideoDeviceDoc::MicroApacheReload()
 
 CString CVideoDeviceDoc::VlmGetConfigFileName()
 {
-	CString sVlmConfigFile = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sVlmConfigFile += _T("\\") + VLM_CONFIG_FILE;
+	CString sVlmConfigFile = CUImagerApp::GetConfigFilesDir();
+	sVlmConfigFile += CString(_T("\\")) + VLM_CONFIGNAME_EXT;
 	return sVlmConfigFile;
 }
 

@@ -129,7 +129,7 @@ CUImagerApp::CUImagerApp()
 	m_bCanSavePlacements = TRUE;
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
-	m_sSysTempDir = _T("");
+	m_sAppTempDir = _T("");
 	m_sZipFile = _T("");
 	m_sShrinkDestination = _T("");
 	m_bExtractHere = FALSE;
@@ -143,7 +143,6 @@ CUImagerApp::CUImagerApp()
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = 0U;
-	m_bUseCustomTempFolder = FALSE;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -207,6 +206,62 @@ CUImagerApp theApp;
 
 /////////////////////////////////////////////////////////////////////////////
 // CUImagerApp initialization
+
+int CUImagerApp::GetConfiguredUseRegistry()
+{
+	int nUseRegistry = -1;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		nUseRegistry = ::GetProfileIniInt(_T("General"), _T("UseRegistry"), -1, CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
+	}
+	return nUseRegistry;
+}
+
+CString CUImagerApp::GetConfigFilesDir(BOOL* pbIsConfigured/*=NULL*/)
+{
+	CString sConfigFilesDir;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sConfigFilesDir = ::GetProfileIniString(_T("General"), _T("ConfigFilesDir"), _T(""), CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
+	}
+	if (sConfigFilesDir.IsEmpty())
+	{
+		if (pbIsConfigured)
+			*pbIsConfigured = FALSE;
+		sConfigFilesDir = ::GetSpecialFolderPath(CSIDL_APPDATA); // returns the path with no trailing backslash
+		sConfigFilesDir += CString(_T("\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT;
+	}
+	else
+	{
+		if (pbIsConfigured)
+			*pbIsConfigured = TRUE;
+		sConfigFilesDir.TrimRight(_T('\\'));
+	}
+	return sConfigFilesDir;
+}
+
+CString CUImagerApp::GetConfiguredTempDir()
+{
+	CString sConfiguredTempDir;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sConfiguredTempDir = ::GetProfileIniString(_T("General"), _T("TempDir"), _T(""), CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
+	}
+	sConfiguredTempDir.TrimRight(_T('\\'));
+	return sConfiguredTempDir;
+}
 
 // Note: these ffmpeg functions are not thread safe: avcodec_open2, avdevice_register_all, av_set_cpu_flags_mask
 
@@ -320,54 +375,53 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// double-clicked!
 		::SetCurrentDirectory(sDriveDir); // Locks program's dir
 
-		// Create System Temporary Directory
+		// Create Application Temporary Directory (it is _T('\\') terminated)
+		// Note: do not delete it to clean-up because other instances may be running!
 		TCHAR szTempPath[MAX_PATH];
+		CString sSysTempDir;
 		if (::GetTempPath(MAX_PATH, szTempPath))
+			sSysTempDir = CString(szTempPath) + sName;	// no trailing backslash
+		m_sAppTempDir = GetConfiguredTempDir();			// no trailing backslash
+		if (m_sAppTempDir.IsEmpty())
+			m_sAppTempDir = sSysTempDir;
+		m_sAppTempDir += _T("\\");						// add trailing backslash
+		if (!::IsExistingDir(m_sAppTempDir))
 		{
-			// Do not delete temp directory to clean-up,
-			// because other instances may be running!  
-			m_sSysTempDir = CString(szTempPath) + sName + _T("\\");
-			if (!::IsExistingDir(m_sSysTempDir))
-			{
-				if (!::CreateDir(m_sSysTempDir))
-					::ShowLastError(TRUE);
-			}
-		}
-
-		// Get AppData Folder
-		CString sAppData = ::GetSpecialFolderPath(CSIDL_APPDATA);
-
-#ifdef VIDEODEVICEDOC
-		// Create our application folder
-		CString sOurAppFolder = sAppData + _T("\\") +
-				CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT);
-		if (!::IsExistingDir(sOurAppFolder))
-		{
-			if (!::CreateDir(sOurAppFolder))
+			if (!::CreateDir(m_sAppTempDir))
 				::ShowLastError(TRUE);
 		}
 
+		// Get configuration files directory
+		// Note: create directory only if VIDEODEVICEDOC defined
+		BOOL bIsConfigFilesDirConfigured;
+		CString sConfigFilesDir = GetConfigFilesDir(&bIsConfigFilesDirConfigured);
+#ifdef VIDEODEVICEDOC
+		if (!::IsExistingDir(sConfigFilesDir))
+		{
+			if (!::CreateDir(sConfigFilesDir))
+				::ShowLastError(TRUE);
+		}
+#endif
+
 		// Set default location for Document Root,
-		// get a drive where we can write (usually it's C:)
-		m_sMicroApacheDocRoot = ::GetDriveName(GetAppTempDir());
+		// Note: sSysTempDir is supposed to be on a drive where we can write
+#ifdef VIDEODEVICEDOC
+		m_sMicroApacheDocRoot = ::GetDriveName(sSysTempDir);
 		m_sMicroApacheDocRoot.TrimRight(_T('\\'));
 		m_sMicroApacheDocRoot += _T("\\") + CString(APPNAME_NOEXT);
 #endif
 
-		// Init Trace and Log Files Location
-		// (Containing folder is created when Trace or Log Files are written)
-		CString sLogFile = sAppData;
-		sLogFile += _T("\\") + LOG_FILE;
-		CString sTraceFile = sAppData;
-		sTraceFile += _T("\\") + TRACE_FILE;
-		::InitTraceLogFile(sTraceFile, sLogFile, MAX_LOG_FILE_SIZE);
+		// Init Trace and Log files location
+		// (containing folder is only created when Trace or Log Files are written)
+		::InitTraceLogFile(	sConfigFilesDir + _T("\\") + TRACENAME_EXT,
+							sConfigFilesDir + _T("\\") + LOGNAME_EXT,
+							MAX_LOG_FILE_SIZE);
 
-		// Do not use registry if application is not installed
-		// Note: on newer NT systems the ini files are not limited to 64k
+		// Use registry?
 		BOOL bUseRegistry = TRUE;
 #ifndef _DEBUG
 		CString sSoftwareCompany = CString(_T("Software\\")) + CString(MYCOMPANY) + CString(_T("\\"));
-		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName))
+		if (::IsRegistryKey(HKEY_LOCAL_MACHINE, sSoftwareCompany + sName)) // is application installed?
 		{
 			CString sInstallDir = ::GetRegistryStringValue(	HKEY_LOCAL_MACHINE,
 															sSoftwareCompany + sName,
@@ -380,9 +434,14 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		else
 			bUseRegistry = FALSE;
 #endif
+		int nUseRegistry = GetConfiguredUseRegistry();
+		if (nUseRegistry == 0)
+			bUseRegistry = FALSE;
+		else if (nUseRegistry == 1)
+			bUseRegistry = TRUE;
 
-#ifndef CPJNSMTP_NOSSL
 		// Standard OpenSSL initialization
+#ifndef CPJNSMTP_NOSSL
 		SSL_load_error_strings();
 		SSL_library_init(); // it's normal that OpenSSL leaks 16 + 20 bytes +
 							// sometimes more but not increasing with the email sends
@@ -415,7 +474,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 
 		// Registry key under which the settings are stored.
-		// This Will create the HKEY_CURRENT_USER\Software\Contaware key
+		// This Will create the HKEY_CURRENT_USER\Software\MYCOMPANY key
 		if (bUseRegistry)
 			SetRegistryKey(MYCOMPANY);
 		else
@@ -426,7 +485,18 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 			// Change the name of the .INI file.
 			// The CWinApp destructor will free the memory.
-			m_pszProfileName = _tcsdup(sDriveDir + sName + _T(".ini"));
+			if (bIsConfigFilesDirConfigured)
+				m_pszProfileName = _tcsdup(sConfigFilesDir + _T("\\") + sName + _T(".ini"));
+			else
+				m_pszProfileName = _tcsdup(sDriveDir + sName + _T(".ini"));
+
+			// Create ini file's directory if not existing
+			CString sProfileNamePath = ::GetDriveAndDirName(m_pszProfileName);
+			if (!::IsExistingDir(sProfileNamePath))
+			{
+				if (!::CreateDir(sProfileNamePath))
+					::ShowLastError(TRUE);
+			}
 
 			// Force a unicode ini file by writing the UTF16-LE BOM (FFFE)
 			if (!::IsExistingFile(m_pszProfileName))
@@ -4097,9 +4167,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	// Device Autostart delay
 	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), 0);
 
-	// Use Custom Temp Folder
-	m_bUseCustomTempFolder = (BOOL)GetProfileInt(sSection, _T("UseCustomTempFolder"), FALSE);
-
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);
 
@@ -5899,17 +5966,38 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 	}
 }
 
+CString CUImagerApp::GetFullscreenBrowserConfigFileName()
+{
+	CString sConfigFileName;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sConfigFileName = ::GetProfileIniString(_T("General"), _T("ConfigFilesDir"), _T(""), CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
+	}
+	if (sConfigFileName.IsEmpty())
+	{
+		sConfigFileName = ::GetSpecialFolderPath(CSIDL_APPDATA); // returns the path with no trailing backslash
+		sConfigFileName += CString(_T("\\")) + MYCOMPANY + _T("\\") + FULLSCREENBROWSER_NOEXT + _T("\\") + FULLSCREENBROWSER_INI_NAME_EXT;
+	}
+	else
+	{
+		sConfigFileName.TrimRight(_T('\\'));
+		sConfigFileName += CString(_T("\\")) + FULLSCREENBROWSER_INI_NAME_EXT;
+	}
+	return sConfigFileName;
+}
+
 CString CUImagerApp::GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
 {
-	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
-	return ::GetProfileIniString(_T("General"), lpszEntry, lpszDefault, sProfileName);
+	return ::GetProfileIniString(_T("General"), lpszEntry, lpszDefault, GetFullscreenBrowserConfigFileName());
 }
 
 BOOL CUImagerApp::WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue)
 {
-	CString sProfileName = ::GetSpecialFolderPath(CSIDL_APPDATA);
-	sProfileName += _T("\\") + FULLSCREENBROWSER_INI_FILE;
+	CString sProfileName = GetFullscreenBrowserConfigFileName();
 	CString sProfileNamePath = ::GetDriveAndDirName(sProfileName);
 	if (!::IsExistingDir(sProfileNamePath))
 		::CreateDir(sProfileNamePath);

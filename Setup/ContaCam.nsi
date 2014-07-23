@@ -272,6 +272,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "..\ContaCamService\Release\ContaCamService.exe"
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"
+  File "MasterConfig.ini"
   SetOverwrite on
   File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
   File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
@@ -575,6 +576,7 @@ Section "Uninstall"
   Delete $INSTDIR\ContaCamService.exe
   Delete $INSTDIR\ContaCamService.ini
   Delete $INSTDIR\ContaCamService.log
+  Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users

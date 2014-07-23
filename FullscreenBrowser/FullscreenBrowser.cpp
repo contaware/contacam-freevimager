@@ -13,15 +13,15 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define DESKTOPNAME			_T("FullscreenBrowserDesktop85672235")
-#define FULLSCREENSTART		_T("FullscreenStart:")
-#define EXITSTRING_ENTRY	_T("ExitString")
-#define DEFAULT_EXITSTRING	_T("")
-#define DEFAULT_WEBPAGE		_T("http://localhost:8800")
-#define APPNAME_NOEXT		_T("FullscreenBrowser")
-#define MYCOMPANY			_T("Contaware")
-#define INI_NAME_EXT		_T("FullscreenBrowser.ini")
-#define INI_FILE			(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(INI_NAME_EXT))
+#define DESKTOPNAME						_T("FullscreenBrowserDesktop85672235")
+#define FULLSCREENSTART					_T("FullscreenStart:")
+#define EXITSTRING_ENTRY				_T("ExitString")
+#define DEFAULT_EXITSTRING				_T("")
+#define DEFAULT_WEBPAGE					_T("http://localhost")
+#define APPNAME_NOEXT					_T("FullscreenBrowser")
+#define MYCOMPANY						_T("Contaware")
+#define MASTERCONFIG_INI_NAME_EXT		_T("MasterConfig.ini")
+#define INI_NAME_EXT					_T("FullscreenBrowser.ini")
 
 /////////////////////////////////////////////////////////////////////////////
 // FullscreenBrowserApp declaration
@@ -36,9 +36,11 @@ public:
 	FullscreenBrowserApp();
 	static BOOL IsExistingFile(LPCTSTR lpszFileName);
 	static BOOL IsExistingDir(LPCTSTR lpszFileName);
-	CString GetDriveAndDirName(const CString& sFullFilePath);
+	static CString GetDriveAndDirName(const CString& sFullFilePath);
 	static BOOL CreateDir(LPCTSTR szNewDir);
+	static CString GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName);
 	static CString GetSpecialFolderPath(int nSpecialFolder);
+	static CString GetConfigFileName();
 	CString m_sExitString;
 	CString m_sUrl;
 	BOOL m_bNewDesktop;
@@ -447,11 +449,49 @@ BOOL FullscreenBrowserApp::CreateDir(LPCTSTR szNewDir)
 	return FALSE;
 }
 
+// Attention: GetPrivateProfileString strips quotes!
+CString FullscreenBrowserApp::GetProfileIniString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault, LPCTSTR lpszProfileName)
+{
+	ASSERT(lpszSection != NULL);
+	ASSERT(lpszEntry != NULL);
+	ASSERT(lpszProfileName != NULL);
+	if (lpszDefault == NULL)
+		lpszDefault = _T("");    // don't pass in NULL
+	TCHAR szT[4096];
+	DWORD dw = GetPrivateProfileString(lpszSection, lpszEntry, lpszDefault, szT, _countof(szT), lpszProfileName);
+	ASSERT(dw < 4095);
+	return szT;
+}
+
 CString FullscreenBrowserApp::GetSpecialFolderPath(int nSpecialFolder)
 {
 	TCHAR path[MAX_PATH] = {0};
 	SHGetSpecialFolderPath(NULL, path, nSpecialFolder, FALSE);
 	return CString(path);
+}
+
+CString FullscreenBrowserApp::GetConfigFileName()
+{
+	CString sConfigFileName;
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szProgramName[MAX_PATH];
+	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+	{
+		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+		sConfigFileName = GetProfileIniString(_T("General"), _T("ConfigFilesDir"), _T(""), CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
+	}
+	if (sConfigFileName.IsEmpty())
+	{
+		sConfigFileName = GetSpecialFolderPath(CSIDL_APPDATA); // returns the path with no trailing backslash
+		sConfigFileName += CString(_T("\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + INI_NAME_EXT;
+	}
+	else
+	{
+		sConfigFileName.TrimRight(_T('\\'));
+		sConfigFileName += CString(_T("\\")) + INI_NAME_EXT;
+	}
+	return sConfigFileName;
 }
 
 BOOL FullscreenBrowserApp::InitInstance()
@@ -473,8 +513,7 @@ BOOL FullscreenBrowserApp::InitInstance()
 	free((void*)m_pszProfileName);
 
 	// Change the name of the .INI file
-	CString sProfileName = GetSpecialFolderPath(CSIDL_APPDATA);
-	sProfileName += _T("\\") + INI_FILE;
+	CString sProfileName = GetConfigFileName();
 	CString sProfileNamePath = GetDriveAndDirName(sProfileName);
 	if (!IsExistingDir(sProfileNamePath))
 		CreateDir(sProfileNamePath);

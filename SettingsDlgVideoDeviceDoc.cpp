@@ -69,7 +69,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
-	m_bUseCustomTempFolder = ((CUImagerApp*)::AfxGetApp())->m_bUseCustomTempFolder;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
@@ -122,7 +121,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
 	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
 	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
-	DDX_Check(pDX, IDC_CHECK_CUSTOMTEMP, m_bUseCustomTempFolder);
 	//}}AFX_DATA_MAP
 }
 
@@ -513,9 +511,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Device Autostart delay
 	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
 
-	// Use Custom Temp Folder
-	pApp->m_bUseCustomTempFolder = m_bUseCustomTempFolder;
-
 	// Micro Apache
 	if (m_sMicroApacheAreaname.IsEmpty())
 		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
@@ -576,9 +571,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("AutostartDelayMs"),
 									1000 * m_nAutostartDelay);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("UseCustomTempFolder"),
-									m_bUseCustomTempFolder);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("StartMicroApache"),
 									m_bStartMicroApache);

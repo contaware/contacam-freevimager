@@ -4,7 +4,12 @@ FREEVIMAGER HISTORY
 
 - libpng updated to 1.2.51
 - icclib updated to 2.14
-
+- Simplified video encoding settings by removing the bitrate
+  parameter and dropped vorbis, flac and mp2 audio encoding support
+- In installation folder there is a new MasterConfig.ini file
+  which determines the configuration files location, the temporary
+  folder location and whether to use the registry or an ini file
+  
 4.9.5 (March 24th 2014)
 
 - Touch screen gesture support for print preview (pan & zoom)

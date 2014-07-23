@@ -22,7 +22,6 @@
 #define FULLSCREENBROWSER_NOEXT							_T("FullscreenBrowser")
 #define FULLSCREENBROWSER_INI_NAME_EXT					_T("FullscreenBrowser.ini")
 #define FULLSCREENBROWSER_EXE_NAME_EXT					_T("FullscreenBrowser.exe")
-#define FULLSCREENBROWSER_INI_FILE						(CString(MYCOMPANY) + CString(_T("\\")) + CString(FULLSCREENBROWSER_NOEXT) + CString(_T("\\")) + CString(FULLSCREENBROWSER_INI_NAME_EXT))
 #define FULLSCREENBROWSER_EXITSTRING_ENTRY				_T("ExitString")
 #define FULLSCREENBROWSER_DEFAULT_EXITSTRING			_T("")
 
@@ -44,11 +43,6 @@
 #define MICROAPACHE_CONFIGNAME_EXT						_T("httpd_conf.txt")
 #define MICROAPACHE_EDITABLE_CONFIGNAME_EXT				_T("httpd_conf_editable.txt")
 #define MICROAPACHE_PWNAME_EXT							_T("httpd_pw.txt")
-#define MICROAPACHE_LOG_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_LOGNAME_EXT))
-#define MICROAPACHE_PID_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_PIDNAME_EXT))
-#define MICROAPACHE_CONFIG_FILE							(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_CONFIGNAME_EXT))
-#define MICROAPACHE_EDITABLE_CONFIG_FILE				(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_EDITABLE_CONFIGNAME_EXT))
-#define MICROAPACHE_PW_FILE								(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(MICROAPACHE_PWNAME_EXT))
 #define MICROAPACHE_INDEX_ROOTDIR_FILENAME				_T("index_rootdir.php")
 #define MICROAPACHE_LANGUAGES_DIR						_T("languages")
 #define MICROAPACHE_STYLE_DIR							_T("styles")
@@ -57,7 +51,6 @@
 
 // Vlm
 #define VLM_CONFIGNAME_EXT								_T("vlm_conf.txt")
-#define VLM_CONFIG_FILE									(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(VLM_CONFIGNAME_EXT))
 
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
@@ -301,6 +294,21 @@ public:
 	CUImagerApp();
 	virtual ~CUImagerApp();
 
+	// Returns whether to use the registry or an ini file:
+	// -1 : not set
+	// 0  : use ini file
+	// 1  : use registry
+	static int GetConfiguredUseRegistry();
+
+	// Returns the configuration files directory with no trailing backslash,
+	// optionally informs whether it was taken from MASTERCONFIG_INI_NAME_EXT
+	// (folder will not be created if not existing)
+	static CString GetConfigFilesDir(BOOL* pbIsConfigured = NULL);
+
+	// Returns the configured temporary directory with no trailing backslash
+	// (folder will not be created if not existing)
+	static CString GetConfiguredTempDir();
+
 	// Templates Get Functions
 	CUImagerMultiDocTemplate* GetVideoAviDocTemplate() {return m_pVideoAviDocTemplate;};
 #ifdef VIDEODEVICEDOC
@@ -485,8 +493,9 @@ public:
 	void BrowserAutostart();
 
 	// FullscreenBrowser Ini file handling
-	CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
-	BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
+	static CString GetFullscreenBrowserConfigFileName();
+	static CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
+	static BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
 
 	// Enumerate all configured (in registry or ini file) devices
 	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
@@ -537,24 +546,7 @@ public:
 	BOOL UnassociateFileType(CString sExt);
 
 	// Get Application Temporary Directory (the returned string ends with a _T('\\'))
-	__forceinline CString GetAppTempDir() const {
-#ifdef VIDEODEVICEDOC
-		if (m_bUseCustomTempFolder)
-		{
-			CString sCustomTempDir = m_sMicroApacheDocRoot;
-			sCustomTempDir.TrimRight(_T('\\'));
-			sCustomTempDir += _T("\\Temp\\");
-			if (!::IsExistingDir(sCustomTempDir))
-			{
-				if (!::CreateDir(sCustomTempDir))
-					return m_sSysTempDir; // on failure return sys temp folder
-			}
-			return sCustomTempDir;
-		}
-		else
-#endif
-			return m_sSysTempDir;
-	};
+	__forceinline CString GetAppTempDir() const {return m_sAppTempDir;};
 
 	// Show color dialog with custom
 	// colors store in registry.
@@ -721,9 +713,6 @@ public:
 	// Device Autostart delay
 	volatile DWORD m_dwAutostartDelayMs;
 
-	// Use Custom Temp Folder
-	volatile BOOL m_bUseCustomTempFolder;
-
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
 
@@ -844,8 +833,8 @@ protected:
 							DWORD& dwResizeWidth,
 							DWORD& dwResizeHeight);
 
-	// System's Temporary Directory (it is _T('\\') terminated)
-	CString m_sSysTempDir;
+	// Application's Temporary Directory (it is _T('\\') terminated)
+	CString m_sAppTempDir;
 
 	// Mutex for the Installer / Uninstaller to check
 	// whether this program is running

@@ -29,18 +29,20 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #endif
-#define APPVERSION										_T("4.9.7beta7")
+#define APPVERSION										_T("4.9.7beta8")
 #define SLIDESHOWNAME									_T("Start.exe")
 
 // Company
 #define MYCOMPANY										_T("Contaware")
 #define MYCOMPANY_WEB									_T("contaware.com")
 
+// This file contains the configuration files location, the temporary folder location
+// and tells the program whether to use the registry or an ini file 
+#define MASTERCONFIG_INI_NAME_EXT						_T("MasterConfig.ini")
+
 // Trace and Log files
 #define LOGNAME_EXT										_T("log.txt")
 #define TRACENAME_EXT									_T("trace.txt")
-#define LOG_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(LOGNAME_EXT))
-#define TRACE_FILE										(CString(MYCOMPANY) + CString(_T("\\")) + CString(APPNAME_NOEXT) + CString(_T("\\")) + CString(TRACENAME_EXT))
 #define MAX_LOG_FILE_SIZE								8388608 /* 8MB */
 
 

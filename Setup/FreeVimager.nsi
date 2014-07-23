@@ -235,6 +235,9 @@ Section "${APPNAME_NOEXT} Program (required)"
 !endif
   File "/oname=License.txt" "..\License\License${INSTALLER_LANGUAGE_SUFFIX}.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
+  SetOverwrite off
+  File "MasterConfig.ini"
+  SetOverwrite on
   File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
   File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
   File "/oname=Tutorials\Basics.js" "..\Tutorials\Basics.js"
@@ -503,6 +506,7 @@ Section "Uninstall"
   Delete $INSTDIR\Start.exe
   Delete $INSTDIR\${APPNAME_EXT}
   Delete $INSTDIR\NeroBurn.exe
+  Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}
 
   ; Removes Shortcuts from the Start Menu for All Users
