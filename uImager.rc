@@ -249,8 +249,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Help"
     BEGIN
@@ -559,8 +561,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -658,8 +662,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -889,8 +895,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -1011,8 +1019,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -1302,8 +1312,10 @@ BEGIN
     POPUP "&Tools"
     BEGIN
         MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
+        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -5625,6 +5637,11 @@ BEGIN
     IDS_STRING1877          "Save: %d%%"
     IDS_STRING1878          "Email: %d%%"
     IDS_STRING1879          "FTP: %d%%"
+END
+
+STRINGTABLE
+BEGIN
+    ID_TOOLS_BROWSE_CONFIG_FILES "Open file explorer\nBrowse Config Files"
 END
 
 #endif    // English (United States) resources

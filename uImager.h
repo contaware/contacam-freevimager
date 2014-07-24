@@ -782,6 +782,7 @@ public:
 	afx_msg void OnAppFaq();
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnToolsViewLogfile();
+	afx_msg void OnToolsBrowseConfigFiles();
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	afx_msg void OnEditScreenshot();
 	afx_msg void OnUpdateEditScreenshot(CCmdUI* pCmdUI);

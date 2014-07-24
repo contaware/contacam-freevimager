@@ -102,6 +102,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
+	ON_COMMAND(ID_TOOLS_BROWSE_CONFIG_FILES, OnToolsBrowseConfigFiles)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SCREENSHOT, OnUpdateEditScreenshot)
@@ -5475,6 +5476,28 @@ void CUImagerApp::OnToolsViewLogfile()
 		::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
 	else
 		::AfxMessageBox(ML_STRING(1760, "Application Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
+}
+
+void CUImagerApp::OnToolsBrowseConfigFiles()
+{
+	CString sConfigFilesDir(GetConfigFilesDir());
+	if (!::IsExistingDir(sConfigFilesDir))
+	{
+		TCHAR szDrive[_MAX_DRIVE];
+		TCHAR szDir[_MAX_DIR];
+		TCHAR szProgramName[MAX_PATH];
+		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
+		{
+			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
+			sConfigFilesDir = CString(szDrive) + CString(szDir);
+		}
+	}
+	::ShellExecute(	NULL,
+					_T("open"),
+					sConfigFilesDir,
+					NULL,
+					NULL,
+					SW_SHOWNORMAL);
 }
 
 #ifdef VIDEODEVICEDOC
