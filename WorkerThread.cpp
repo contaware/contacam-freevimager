@@ -78,7 +78,7 @@ bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
 		if (ResumeThread() != 0xFFFFFFFF)
 		{
 			m_bRunning = true;
-			VERIFY(SetThreadPriority(nPriority));
+			SetThreadPriority(nPriority);
 			if (bStartup)
 				::SetEvent(m_hStartupEvent);
 			::LeaveCriticalSection(&m_cs);
@@ -92,7 +92,7 @@ bool CWorkerThread::Start(int nPriority/*=THREAD_PRIORITY_NORMAL*/)
 	}
 	else
 	{
-		VERIFY(SetThreadPriority(nPriority));
+		SetThreadPriority(nPriority);
 		::LeaveCriticalSection(&m_cs);
 		return true;
 	}
@@ -203,32 +203,26 @@ bool CWorkerThread::Kill(DWORD dwTimeout/*=INFINITE*/)
 		{
 			if (ResumeThread() != 0xFFFFFFFF)
 				m_bRunning = true;
-			else
-			{
-				::LeaveCriticalSection(&m_cs);
-				return false;
-			}
 		}
 
 		::LeaveCriticalSection(&m_cs);
 
 		// Send the Thread Kill Event
-		if (::SetEvent(m_hKillEvent) == 0)
-			return false;
+		::SetEvent(m_hKillEvent);
 
 		// Wait until thread exits
-		WaitDone_Blocking(dwTimeout);
+		return WaitDone_Blocking(dwTimeout);
 	}
 	else
 	{
 		::LeaveCriticalSection(&m_cs);
-		WaitDone_Blocking(1000); // Give 1 sec to completely exit
+
+		// Give 1 sec to completely exit
+		return WaitDone_Blocking(1000);
 	}
-	
-	return true;
 }
 
-bool CWorkerThread::Kill_NoBlocking()
+void CWorkerThread::Kill_NoBlocking()
 {
 	::EnterCriticalSection(&m_cs);
 	if (m_bAlive)
@@ -238,26 +232,18 @@ bool CWorkerThread::Kill_NoBlocking()
 		{
 			if (ResumeThread() != 0xFFFFFFFF)
 				m_bRunning = true;
-			else
-			{
-				::LeaveCriticalSection(&m_cs);
-				return false;
-			}
 		}
 
 		::LeaveCriticalSection(&m_cs);
 
 		// Send the Thread Kill Event
-		if (::SetEvent(m_hKillEvent) == 0)
-			return false;
+		::SetEvent(m_hKillEvent);
 	}
 	else
 		::LeaveCriticalSection(&m_cs);
-
-	return true;
 }
 
-void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
+bool CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 {
 	// Wait until thread exits
 	if (m_hThread && ::WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
@@ -273,7 +259,8 @@ void CWorkerThread::WaitDone_Blocking(DWORD dwTimeout/*=INFINITE*/)
 			m_pMainWnd = NULL;
 			::LeaveCriticalSection(&m_cs);
 			TRACE(_T("Thread with ID = 0x%08X has been forced to terminate!\n"), m_nThreadID);
-			ASSERT(FALSE);
+			return false;
 		}
 	}
+	return true;
 }
