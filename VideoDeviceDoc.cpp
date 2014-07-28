@@ -10348,7 +10348,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+				{
+					CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+					sTrace.Replace(_T("%"), _T("%%"));
+					TRACE(sTrace);
+				}
 #endif
 				return res;
 			}
@@ -10364,7 +10368,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 				if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+				{
+					CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+					sTrace.Replace(_T("%"), _T("%%"));
+					TRACE(sTrace);
+				}
 #endif
 				return res;
 			}
@@ -10495,7 +10503,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+				{
+					CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+					sTrace.Replace(_T("%"), _T("%%"));
+					TRACE(sTrace);
+				}
 #endif
 				return FALSE; // Do not call Processor
 			}
@@ -10530,7 +10542,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+				{
+					CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+					sTrace.Replace(_T("%"), _T("%%"));
+					TRACE(sTrace);
+				}
 #endif
 				return FALSE; // Do not call Processor
 			}
@@ -10592,8 +10608,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+			{
+				CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+				sTrace.Replace(_T("%"), _T("%%"));
+				TRACE(sTrace);
+			}
 #endif
 			return FALSE; // Do not call Processor
 		}
@@ -10751,8 +10771,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+			{
+				CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+				sTrace.Replace(_T("%"), _T("%%"));
+				TRACE(sTrace);
+			}
 #endif
 			return FALSE; // Do not call Processor
 		}
@@ -10797,8 +10821,12 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			}
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-					TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
+			{
+				CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+				sTrace.Replace(_T("%"), _T("%%"));
+				TRACE(sTrace);
+			}
 #endif
 			return FALSE; // Do not call Processor
 		}
@@ -10812,7 +10840,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 		delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
 		if (res && (nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0)
-			TRACE(sMsg.Left(nPosEnd) + _T('\n'));
+		{
+			CString sTrace(sMsg.Left(nPosEnd) + _T('\n'));
+			sTrace.Replace(_T("%"), _T("%%"));
+			TRACE(sTrace);
+		}
 #endif
 		return res;
 	}
