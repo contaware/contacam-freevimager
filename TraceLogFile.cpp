@@ -129,9 +129,7 @@ void TraceFileEnterCS(const TCHAR* pFormat, ...)
 
 	// Trace
 #ifdef _DEBUG
-	CString sTrace(s);
-	sTrace.Replace(_T("%"), _T("%%"));
-	AfxTrace(sTrace);
+	AfxTrace(_T("%s"), s);
 #endif
 
 	// Create directory
@@ -162,9 +160,7 @@ void TraceFileLeaveCS(const TCHAR* pFormat, ...)
 
 	// Trace
 #ifdef _DEBUG
-	CString sTrace(s);
-	sTrace.Replace(_T("%"), _T("%%"));
-	AfxTrace(sTrace);
+	AfxTrace(_T("%s"), s);
 #endif
 
 	// Create directory
