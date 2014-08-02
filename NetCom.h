@@ -1,17 +1,13 @@
 #ifndef __NETCOM_H__
 #define __NETCOM_H__
 
-// Include MFC Collection Class
+// Includes
 #ifndef __AFXTEMPL_H__
 #pragma message("To avoid this message, put afxtempl.h in your PCH (usually stdafx.h)")
 #include <afxtempl.h>
 #endif
-
-// Include WinSock2
 #include <winsock2.h>
 #include <Ws2tcpip.h>
-
-// Include Worker Thread
 #include "WorkerThread.h"
 
 // Macros
@@ -51,7 +47,7 @@
 // closes the connection very fast)
 #define NETCOM_PEER_CONNECTION_CLOSE_TIMEOUT	2000U
 
-// In Close() after this timeout the connection closing wait is given up
+// Threads closing timeout, after this time the threads are forced to terminate
 #define NETCOM_BLOCKING_TIMEOUT					15000U
 
 // Default Send Buf Size
@@ -233,19 +229,18 @@ public:
 			friend class CNetCom;
 			CMsgOut(){::InitializeCriticalSection(&m_csMessageOut);};
 			virtual ~CMsgOut(){::DeleteCriticalSection(&m_csMessageOut);};
-			enum MsgOutCode {ERROR_MSG, WARNING_MSG, NOTICE_MSG};
-			virtual void MessageOut(MsgOutCode code, const TCHAR* pFormat, ...);
+			enum MsgOutCode {CRITICAL_MSG, ERROR_MSG, WARNING_MSG, NOTICE_MSG, DEBUG_MSG};
+			virtual void MessageOut(MsgOutCode code, const TCHAR* pMsg);
 		protected:
 			CRITICAL_SECTION m_csMessageOut;
 	};
-	typedef void (MSGOUTFUNC)(unsigned int code, TCHAR* pFormat, ...);
 
 	// The Message Thread Class
 	class CMsgThread : public CWorkerThread
 	{
 		public:
 			CMsgThread(){m_bClosing = FALSE; m_pNetCom = NULL;};
-			virtual ~CMsgThread(){Kill();};
+			virtual ~CMsgThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			volatile BOOL m_bClosing; // About to Close
 
@@ -260,7 +255,7 @@ public:
 	{
 		public:
 			CRxThread(){m_pNetCom = NULL; m_pCurrentBuf = NULL;};
-			virtual ~CRxThread(){Kill();};
+			virtual ~CRxThread(){Kill(NETCOM_BLOCKING_TIMEOUT);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 
 		protected:
@@ -283,7 +278,7 @@ public:
 						m_dwMaxBandwidth = 0U;
 						m_dwLastUpTime = 0U;
 						::InitializeCriticalSection(&m_csBandwidth);};
-			virtual ~CTxThread(){Kill(); ::DeleteCriticalSection(&m_csBandwidth);};
+			virtual ~CTxThread(){Kill(NETCOM_BLOCKING_TIMEOUT); ::DeleteCriticalSection(&m_csBandwidth);};
 			__forceinline void SetNetComPointer(CNetCom* pNetCom) {m_pNetCom = pNetCom;};
 			__forceinline void SetMaxDatagramBandwidth(DWORD dwMaxBandwidth)
 			{
@@ -416,7 +411,7 @@ public:
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 														// This is also the Generator rate if not sending through Write Events,
 														// Attention: if set to zero the Generator is never called!
-					CMsgOut* pMsgOut,					// Message Class for Notice, Warning and Error Visualization.
+					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily);					// Socket family
 
 	// Close the Network Connection or Shutdown the Server,
@@ -432,10 +427,23 @@ public:
 	void ShutdownConnection_NoBlocking();
 
 	// Wait till all threads are dead
-	__forceinline void WaitTillShutdown_Blocking(DWORD dwTimeout = INFINITE) {
-												m_pTxThread->WaitDone_Blocking(dwTimeout);
-												m_pRxThread->WaitDone_Blocking(dwTimeout);
-												m_pMsgThread->WaitDone_Blocking(dwTimeout);};
+	__forceinline void WaitTillShutdown_Blocking() {
+									if (!m_pTxThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
+									{
+										if (m_pMsgOut)
+											Critical(GetName() + _T(" TxThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+									}
+									if (!m_pRxThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
+									{
+										if (m_pMsgOut)
+											Critical(GetName() + _T(" RxThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+									}
+									if (!m_pMsgThread->WaitDone_Blocking(NETCOM_BLOCKING_TIMEOUT))
+									{
+										if (m_pMsgOut)
+											Critical(GetName() + _T(" MsgThread has been forced to terminate by WaitTillShutdown_Blocking() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+									}
+								};
 
 	// Is Shutdown?
 	__forceinline BOOL IsShutdown() {return !m_pMsgThread->IsAlive()	&&
@@ -691,7 +699,7 @@ protected:
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
 	// Initialize All User Parameters (Parameters from Init Function)
-	BOOL InitVars(BOOL bServer,
+	void InitVars(BOOL bServer,
 				HWND hOwnerWnd,
 				LPARAM	lParam,
 				BUFARRAY* pRxBuf,
@@ -730,21 +738,35 @@ protected:
 	BOOL InitEvents();
 
 	// Shutdown Threads
-	__forceinline void ShutdownMsgThread() {if (m_pMsgThread->Kill() == false)
-												if (m_pMsgOut)
-													Warning(GetName() + _T(" MsgThread failed to end (ID = 0x%08X)"), m_pMsgThread->GetId());};
-	__forceinline void ShutdownRxThread() {	if (m_pRxThread->Kill() == false)		
-												if (m_pMsgOut)
-													Warning(GetName() + _T(" RxThread failed to end (ID = 0x%08X)"), m_pRxThread->GetId());};
-	__forceinline void ShutdownTxThread() {	if (m_pTxThread->Kill() == false)
-												if (m_pMsgOut)
-													Warning(GetName() + _T(" TxThread failed to end (ID = 0x%08X)"), m_pTxThread->GetId());};
+	__forceinline void ShutdownMsgThread() {
+										if (!m_pMsgThread->Kill(NETCOM_BLOCKING_TIMEOUT))
+										{
+											if (m_pMsgOut)
+												Critical(GetName() + _T(" MsgThread has been forced to terminate by ShutdownMsgThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+										}
+									};
+	__forceinline void ShutdownRxThread() {
+										if (!m_pRxThread->Kill(NETCOM_BLOCKING_TIMEOUT))
+										{
+											if (m_pMsgOut)
+												Critical(GetName() + _T(" RxThread has been forced to terminate by ShutdownRxThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+										}
+									};
+	__forceinline void ShutdownTxThread() {
+										if (!m_pTxThread->Kill(NETCOM_BLOCKING_TIMEOUT))
+										{
+											if (m_pMsgOut)
+												Critical(GetName() + _T(" TxThread has been forced to terminate by ShutdownTxThread() after %u ms"), NETCOM_BLOCKING_TIMEOUT);
+										}
+									};
 
-	// Error, Warning and Notice Functions
+	// Critical, Error, Warning, Notice and Debug Functions
 	void ProcessWSAError(const CString& sErrorText);
+	void Critical(const TCHAR* pFormat, ...);
 	void Error(const TCHAR* pFormat, ...);
 	void Warning(const TCHAR* pFormat, ...);
 	void Notice(const TCHAR* pFormat, ...);
+	void Debug(const TCHAR* pFormat, ...);
 
 	/*
 	String to Byte, returns the new size.

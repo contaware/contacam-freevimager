@@ -327,7 +327,12 @@ int CNetCom::CMsgThread::Work()
 				if (!m_pNetCom->m_bServer)
 					m_pNetCom->m_bClientConnected = FALSE;
 				if (m_pNetCom->m_pMsgOut)
-					m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
+				{
+					if (m_pNetCom->m_bMainServer)
+						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
+					else
+						m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
+				}
 				return 0;
 
 			// Start Connection Shutdown Event
@@ -462,7 +467,7 @@ int CNetCom::CMsgThread::Work()
 							CNetCom* pNetCom = new CNetCom(m_pNetCom, m_pNetCom->m_pcsServersSync);
 							
 							// Initialize the Member Variables
-							if (pNetCom->InitVars(TRUE, // Server
+							pNetCom->InitVars(TRUE, // Server
 										m_pNetCom->m_hOwnerWnd,
 										m_pNetCom->m_lParam,
 										m_pNetCom->m_pRxBuf,
@@ -495,17 +500,7 @@ int CNetCom::CMsgThread::Work()
 										m_pNetCom->m_uiMaxTxPacketSize,
 										m_pNetCom->m_uiRxPacketTimeout,
 										m_pNetCom->m_uiTxPacketTimeout,
-										m_pNetCom->m_pMsgOut) == FALSE)
-							{
-								m_pNetCom->m_bServerListening = FALSE;
-								if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
-									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
-								else
-									m_pNetCom->m_hSocket = INVALID_SOCKET;
-								if (m_pNetCom->m_pMsgOut)
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
-								return 0;
-							}
+										m_pNetCom->m_pMsgOut);
 							pNetCom->m_bRxBufEnabled = m_pNetCom->m_bRxBufEnabled;
 							pNetCom->m_bTxBufEnabled = m_pNetCom->m_bTxBufEnabled;
 							pNetCom->m_uiMaxRxFifoSize = m_pNetCom->m_uiMaxRxFifoSize;
@@ -567,6 +562,7 @@ int CNetCom::CMsgThread::Work()
 							// Turn On all Network Events
 							if (pNetCom->InitEvents() == FALSE)
 							{
+								delete pNetCom;
 								m_pNetCom->m_bServerListening = FALSE;
 								if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
@@ -746,7 +742,7 @@ int CNetCom::CMsgThread::Work()
 						if (NetworkEvents.lNetworkEvents & FD_READ)
 						{
 							if (m_pNetCom->m_pMsgOut)
-								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_READ"));
+								m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Net Event FD_READ"));
 
 							// Read Event
 							if (m_pNetCom->m_hReadEvent)
@@ -774,7 +770,7 @@ int CNetCom::CMsgThread::Work()
 						if (NetworkEvents.lNetworkEvents & FD_WRITE)
 						{
 							if (m_pNetCom->m_pMsgOut)
-								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_WRITE"));
+								m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Net Event FD_WRITE"));
 
 							// Write Event
 							if (m_pNetCom->m_hWriteEvent)
@@ -1002,7 +998,7 @@ int CNetCom::CRxThread::Work()
 				{
 					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pNetCom->m_pMsgOut)
-						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() or WSARecvFrom() with %d bytes"), NumberOfBytesReceived);
+						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() or WSARecvFrom() with %d bytes"), NumberOfBytesReceived);
 				}
 				// Strange: Even if WSARecv received all the bytes and returned no error,
 				// the Overlapped event is triggered! 
@@ -1207,9 +1203,9 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 			if (m_pNetCom->m_pMsgOut)
 			{
 				if (res == WSAEWOULDBLOCK)
-					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received with WSAEWOULDBLOCK %d bytes"), NumberOfBytesReceived);
+					m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Received with WSAEWOULDBLOCK %d bytes"), NumberOfBytesReceived);
 				else
-					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received with WSA_IO_PENDING %d bytes"), NumberOfBytesReceived);
+					m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Received with WSA_IO_PENDING %d bytes"), NumberOfBytesReceived);
 			}
 		}
 		else
@@ -1227,7 +1223,7 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	{
 		::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 		if (m_pNetCom->m_pMsgOut)
-			m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Received %d bytes"), NumberOfBytesReceived);
+			m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Received %d bytes"), NumberOfBytesReceived);
 
 		// Overlapped Event is also called if no error has been returned.
 		// -> the following code is not necessary!
@@ -1305,7 +1301,7 @@ int CNetCom::CTxThread::Work()
 				{
 					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pNetCom->m_pMsgOut)
-						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
+						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
 				}
 
 				// Statistics
@@ -1470,9 +1466,9 @@ void CNetCom::CTxThread::Write()
 					if (m_pNetCom->m_pMsgOut)
 					{
 						if (res == WSAEWOULDBLOCK)
-							m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent with WSAEWOULDBLOCK %d bytes"), NumberOfBytesSent);
+							m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Sent with WSAEWOULDBLOCK %d bytes"), NumberOfBytesSent);
 						else
-							m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent with WSA_IO_PENDING %d bytes"), NumberOfBytesSent);
+							m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Sent with WSA_IO_PENDING %d bytes"), NumberOfBytesSent);
 					}
 				}
 				else
@@ -1491,7 +1487,7 @@ void CNetCom::CTxThread::Write()
 			{
 				::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 				if (m_pNetCom->m_pMsgOut)
-					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Sent %d bytes"), NumberOfBytesSent);
+					m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Sent %d bytes"), NumberOfBytesSent);
 
 				// Overlapped Event is also called if no error has been returned.
 				// -> the following code is not necessary!
@@ -1903,7 +1899,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 														// This is also the Generator rate if not sending through Write Events,
 														// Attention: if set to zero the Generator is never called!
-					CMsgOut* pMsgOut,					// Message Class for Notice, Warning and Error Visualization.
+					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily)					// Socket family
 {
 	// First close
@@ -1963,12 +1959,11 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	m_uiTotalRemovedConnectionsTxByteCount = 0;
 
 	// Initialize the Member Variables
-	if (InitVars(bServer, hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
+	InitVars(	bServer, hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
 				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, nSocketType, sLocalAddress, uiLocalPort,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, hAllCloseEvent, lResetEventMask, lOwnerWndNetEvents,
-				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut) == FALSE)
-		return FALSE;
+				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
 
 	// Init the Parser
 	if (m_pParseProcess)
@@ -2030,10 +2025,8 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					StartMsgThread();
 					if (m_pMsgOut)
 					{
-						CString sLocalAddressMsg(sLocalAddress);
-						sLocalAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
-						if (sLocalAddressMsg != _T(""))
-							Notice(GetName() + _T(" Listen (%s port %d)"), sLocalAddressMsg, uiLocalPort);
+						if (sLocalAddress != _T(""))
+							Notice(GetName() + _T(" Listen (%s port %d)"), sLocalAddress, uiLocalPort);
 						else
 							Notice(GetName() + _T(" Listen (localhost port %d)"), uiLocalPort);
 					}
@@ -2052,10 +2045,8 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					}
 					else if (m_pMsgOut)
 					{
-						CString sLocalAddressMsg(sLocalAddress);
-						sLocalAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
-						if (sLocalAddressMsg != _T(""))
-							Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddressMsg, uiLocalPort);
+						if (sLocalAddress != _T(""))
+							Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddress, uiLocalPort);
 						else
 							Notice(GetName() + _T(" Bind (localhost port %d)"), uiLocalPort);
 					}
@@ -2069,11 +2060,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
 					{
 						if (m_pMsgOut)
-						{
-							CString sPeerAddressMsg(sPeerAddress);
-							sPeerAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
-							Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddressMsg, uiPeerPort);
-						}
+							Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
 
 						// Old Win9x and Wine do not set the FD_CONNECT event for udp
 						// -> start everything here!
@@ -2114,11 +2101,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 						if (nErrorCode == WSAEWOULDBLOCK)
 						{
 							if (m_pMsgOut)
-							{
-								CString sPeerAddressMsg(sPeerAddress);
-								sPeerAddressMsg.Replace(_T("%"), _T("%%")); // for IP6 link-local addresses
-								Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddressMsg, uiPeerPort);
-							}
+								Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddress, uiPeerPort);
 							return TRUE;
 						}
 						ProcessWSAError(GetName() + _T(" WSAConnect()"));
@@ -2193,9 +2176,9 @@ void CNetCom::Close()
 	{
 		// Shutdown connection
 		ShutdownConnection_NoBlocking();
-		WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT);
+		WaitTillShutdown_Blocking();
 		
-		// Close the socket if thread was forced to shutdown after timeout
+		// Close the socket in case MsgThread was forced to shutdown after timeout
 		if (m_hSocket != INVALID_SOCKET)
 		{
 			if (::closesocket(m_hSocket) == SOCKET_ERROR)
@@ -2530,18 +2513,18 @@ BOOL CNetCom::StartMsgThread()
 		// Reset eventually set vars from an old closed connection
 		// before starting the message thread. Resetting them at
 		// the beginning of the message thread could lock at
-		// WaitTillShutdown_Blocking(NETCOM_BLOCKING_TIMEOUT) in the
-		// Close() function called two times by two consecutive Init()!
+		// WaitTillShutdown_Blocking() in the Close() function
+		// called two times by two consecutive Init()!
 		m_pMsgThread->m_bClosing = FALSE;
 		::ResetEvent(m_hStartConnectionShutdownEvent);
-		if (m_pMsgThread->Start() == true)
+		if (m_pMsgThread->Start() == true) // this function sets the m_bRunning flag
 		{
 			return TRUE;
 		}
 		else
 		{
 			if (m_pMsgOut)
-				Error(GetName() + _T(" MsgThread start failed (ID = 0x%08X)"), m_pMsgThread->GetId());
+				Critical(GetName() + _T(" MsgThread start failed (ID = 0x%08X)"), m_pMsgThread->GetId());
 			return FALSE;
 		}
 	}
@@ -2552,14 +2535,14 @@ BOOL CNetCom::StartRxThread()
 {
 	if (!m_pRxThread->IsRunning())
 	{
-		if (m_pRxThread->Start() == true)
+		if (m_pRxThread->Start() == true) // this function sets the m_bRunning flag
 		{
 			return TRUE;
 		}
 		else
 		{
 			if (m_pMsgOut)
-				Error(GetName() + _T(" RxThread start failed (ID = 0x%08X)"), m_pRxThread->GetId());
+				Critical(GetName() + _T(" RxThread start failed (ID = 0x%08X)"), m_pRxThread->GetId());
 			return FALSE;
 		}
 	}
@@ -2570,14 +2553,14 @@ BOOL CNetCom::StartTxThread()
 {	
 	if (!m_pTxThread->IsRunning())
 	{
-		if (m_pTxThread->Start() == true)
+		if (m_pTxThread->Start() == true) // this function sets the m_bRunning flag
 		{
 			return TRUE;
 		}
 		else
 		{
 			if (m_pMsgOut)
-				Error(GetName() + _T(" TxThread start failed (ID = 0x%08X)"), m_pTxThread->GetId());
+				Critical(GetName() + _T(" TxThread start failed (ID = 0x%08X)"), m_pTxThread->GetId());
 			return FALSE;
 		}
 	}
@@ -3224,7 +3207,7 @@ CString CNetCom::GetName()
 	}
 }
 
-BOOL CNetCom::InitVars(	BOOL bServer,
+void CNetCom::InitVars(	BOOL bServer,
 						HWND hOwnerWnd,
 						LPARAM	lParam,
 						BUFARRAY* pRxBuf,
@@ -3377,8 +3360,6 @@ BOOL CNetCom::InitVars(	BOOL bServer,
 	m_uiRxPacketTimeout = uiRxPacketTimeout;
 	m_uiTxPacketTimeout = uiTxPacketTimeout;
 	m_pMsgOut = pMsgOut;
-
-	return TRUE;
 }
 
 BOOL CNetCom::InitEvents()
@@ -3727,6 +3708,24 @@ void CNetCom::ProcessWSAError(const CString& sErrorText)
 	}
 }
 
+void CNetCom::Critical(const TCHAR* pFormat, ...)
+{
+	if (pFormat && m_pMsgOut)
+	{
+		// Get Msg
+		CString s;
+		va_list arguments;
+		va_start(arguments, pFormat);	
+		s.FormatV(pFormat, arguments);
+		va_end(arguments);
+
+		// Display It
+		::EnterCriticalSection(&m_pMsgOut->m_csMessageOut);
+		m_pMsgOut->MessageOut(CMsgOut::CRITICAL_MSG, s);
+		::LeaveCriticalSection(&m_pMsgOut->m_csMessageOut);
+	}
+}
+
 void CNetCom::Error(const TCHAR* pFormat, ...)
 {
 	if (pFormat && m_pMsgOut)
@@ -3781,26 +3780,45 @@ void CNetCom::Notice(const TCHAR* pFormat, ...)
 	}
 }
 
-void CNetCom::CMsgOut::MessageOut(MsgOutCode code, const TCHAR* pFormat, ...)
+void CNetCom::Debug(const TCHAR* pFormat, ...)
 {
-	if (pFormat)
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+	if (pFormat && m_pMsgOut)
 	{
+		// Get Msg
 		CString s;
 		va_list arguments;
 		va_start(arguments, pFormat);	
 		s.FormatV(pFormat, arguments);
 		va_end(arguments);
 
+		// Display It
+		::EnterCriticalSection(&m_pMsgOut->m_csMessageOut);
+		m_pMsgOut->MessageOut(CMsgOut::DEBUG_MSG, s);
+		::LeaveCriticalSection(&m_pMsgOut->m_csMessageOut);
+	}
+#endif
+}
+
+void CNetCom::CMsgOut::MessageOut(MsgOutCode code, const TCHAR* pMsg)
+{
+	if (pMsg)
+	{
 		switch (code)
 		{
+			case CMsgOut::CRITICAL_MSG :
+				TRACE(_T("NETCOM CRITICAL %s\n"), pMsg);
+				break;
 			case CMsgOut::ERROR_MSG :
-				TRACE(_T("NETCOM ERROR %s\n"), s);
+				TRACE(_T("NETCOM ERROR %s\n"), pMsg);
 				break;
 			case CMsgOut::WARNING_MSG :
-				TRACE(_T("NETCOM WARNING %s\n"), s);
+				TRACE(_T("NETCOM WARNING %s\n"), pMsg);
 				break;
 			case CMsgOut::NOTICE_MSG :
-				//TRACE(_T("NETCOM NOTICE %s\n"), s);
+				TRACE(_T("NETCOM NOTICE %s\n"), pMsg);
+				break;
+			case CMsgOut::DEBUG_MSG :
 				break;
 			default :
 				break;
