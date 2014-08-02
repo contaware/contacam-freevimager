@@ -847,18 +847,16 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			CString sMsg;
 			if (dwFramesTimeMs < dwSaveTimeMs)
 			{
-				sMsg.Format(_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
+				sMsg.Format(_T("%s, attention cannot realtime save the detections: SaveTime=%0.1fs > FramesTime=%0.1fs (MailFTP=%0.1fs)"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
 							(double)dwMailFTPTimeMs / 1000.0);
-				TRACE(sMsg);
 				::LogLine(sMsg);
 			}
 			else if (m_pDoc->m_nDetectionLevel == 100)
 			{
-				sMsg.Format(_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)\n"),
+				sMsg.Format(_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
 							(double)dwMailFTPTimeMs / 1000.0);
-				TRACE(sMsg);
 				::LogLine(sMsg);
 			}
 		}
@@ -1889,8 +1887,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 		if (pMessage->m_To.GetSize() == 0)
 		{
 			CString sMsg;
-			sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option\n"), m_pDoc->GetAssignedDeviceName());
-			TRACE(sMsg);
+			sMsg.Format(_T("%s, at least one recipient must be specified to use the DNS lookup option"), m_pDoc->GetAssignedDeviceName());
 			::LogLine(sMsg);
 			bSend = FALSE;
 		}
@@ -1901,8 +1898,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 			if (nAmpersand == -1)
 			{
 				CString sMsg;
-				sMsg.Format(_T("%s, unable to determine the domain for the email address %s\n"), m_pDoc->GetAssignedDeviceName(), sAddress);
-				TRACE(sMsg);
+				sMsg.Format(_T("%s, unable to determine the domain for the email address %s"), m_pDoc->GetAssignedDeviceName(), sAddress);
 				::LogLine(sMsg);
 				bSend = FALSE;
 			}
@@ -1916,9 +1912,8 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 				if (!connection.MXLookup(sDomain, servers, priorities))
 				{
 					CString sMsg;
-					sMsg.Format(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"),
+					sMsg.Format(_T("%s, unable to perform a DNS MX lookup for the domain %s, Error: %d"),
 													m_pDoc->GetAssignedDeviceName(), sDomain, GetLastError());
-					TRACE(sMsg);
 					::LogLine(sMsg);
 					bSend = FALSE;
 				}
@@ -2101,11 +2096,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 			else
 			{
 				CString sMsg;
-				sMsg.Format(_T("%s, an error occured sending the message, Error:%x\nDescription:%s\n"),
+				sMsg.Format(_T("%s, an error occured sending the message, Error: %x, Description: %s"),
 							m_pDoc->GetAssignedDeviceName(),
 							pEx->m_hr,
 							pEx->GetErrorMessage());
-				TRACE(sMsg);
 				::LogLine(sMsg);
 				pEx->Delete();
 				return 0;
@@ -2182,11 +2176,7 @@ int CVideoDeviceDoc::FTPUpload(	CFTPTransfer* pFTP, FTPUploadConfigurationStruct
 		// Upload
 		int nRet = pFTP->Transfer();
 		if (nRet == 0 && pFTP->m_sError != _T(""))
-		{
-			CString sMsg(GetAssignedDeviceName() + _T(", ") + pFTP->m_sError + _T("\n"));
-			TRACE(sMsg);
-			::LogLine(sMsg);
-		}
+			::LogLine(GetAssignedDeviceName() + _T(", ") + pFTP->m_sError);
 		return nRet;
 	}
 }
@@ -2761,11 +2751,7 @@ end_of_software_detection:
 							ML_STRING(1818, "set lower framerate"),
 							ML_STRING(1819, "or resolution!"),
 							dwFirstUpTime, dwLastUpTime);
-			CString sMsg;
-			sMsg.Format(_T("%s, dropping det frames -> set lower framerate or resolution!\n"),
-						GetAssignedDeviceName());
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			::LogLine(GetAssignedDeviceName() + _T(", dropping det frames -> set lower framerate or resolution!"));
 		}
 	}
 
@@ -2808,9 +2794,8 @@ end_of_software_detection:
 			DWORD dwFirstUpTime, dwLastUpTime;
 			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
 			CString sMsg;
-			sMsg.Format(_T("%s, cannot store %ds of det pre-buffer -> lower that!\n"),
+			sMsg.Format(_T("%s, cannot store %ds of det pre-buffer -> lower that!"),
 						GetAssignedDeviceName(), m_nMilliSecondsRecBeforeMovementBegin / 1000);
-			TRACE(sMsg);
 			::LogLine(sMsg);
 		}
 	}
@@ -3615,10 +3600,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 		if (m_pDoc->m_bCaptureStarted)
 		{
 			// Log the starting
-			CString sMsg;
-			sMsg.Format(_T("%s starting\n"), m_pDoc->GetAssignedDeviceName());
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			::LogLine(m_pDoc->GetAssignedDeviceName() + _T(" starting"));
 
 			// Init settings reload timer
 			::SetTimer(	m_pDoc->GetView()->GetSafeHwnd(),
@@ -3715,10 +3697,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				{
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
-					CString sMsg;
-					sMsg.Format(_T("%s try reconnecting\n"), m_pDoc->GetAssignedDeviceName());
-					TRACE(sMsg);
-					::LogLine(sMsg);
+					::LogLine(m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
 				}
 
 				// Draw
@@ -5884,10 +5863,7 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 			AM_MEDIA_TYPE* pmtConfig = NULL;
 			if (!m_pDxCapture->GetCurrentFormat(&pmtConfig))
 			{
-				CString sMsg;
-				sMsg.Format(_T("%s, error getting current video format!\n"), GetAssignedDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
+				::LogLine(GetAssignedDeviceName() + _T(", error getting current video format!"));
 				return;
 			}
 			if (pmtConfig->formattype != FORMAT_VideoInfo	||
@@ -5895,10 +5871,7 @@ void CVideoDeviceDoc::OnChangeDxVideoFormat()
 				pmtConfig->cbFormat < sizeof(VIDEOINFOHEADER))
 			{
 				m_pDxCapture->DeleteMediaType(pmtConfig);
-				CString sMsg;
-				sMsg.Format(_T("%s, unsupported video format!\n"), GetAssignedDeviceName());
-				TRACE(sMsg);
-				::LogLine(sMsg);
+				::LogLine(GetAssignedDeviceName() + _T(", unsupported video format!"));
 				return;
 			}
 			dwSize = MIN(sizeof(BITMAPINFOFULL), pmtConfig->cbFormat - SIZE_PREHEADER);
@@ -7579,10 +7552,7 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	DstBmi.bmiHeader.biSizeImage = ::CalcYUVSize(DstBmi.bmiHeader.biCompression, stride, DstBmi.bmiHeader.biHeight);
 	if (!m_pProcessFrameExtraDib->SetBMI(&DstBmi))
 	{
-		CString sMsg;
-		sMsg.Format(_T("%s, error setting I420 format for M420 decoding!\n"), GetAssignedDeviceName());
-		TRACE(sMsg);
-		::LogLine(sMsg);
+		::LogLine(GetAssignedDeviceName() + _T(", error setting I420 format for M420 decoding!"));
 		return;
 	}
 	if (!m_pProcessFrameExtraDib->GetBits())
@@ -7592,10 +7562,7 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 														m_pProcessFrameExtraDib->GetWidth(),
 														m_pProcessFrameExtraDib->GetHeight()))
 		{
-			CString sMsg;
-			sMsg.Format(_T("%s, error allocating I420 buffer for M420 decoding!\n"), GetAssignedDeviceName());
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			::LogLine(GetAssignedDeviceName() + _T(", error allocating I420 buffer for M420 decoding!"));
 			return;
 		}
 	}

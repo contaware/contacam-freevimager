@@ -42,7 +42,7 @@
 
 // Trace and Log files
 #define LOGNAME_EXT										_T("log.txt")
-#define TRACENAME_EXT									_T("trace.txt")
+#define TRACENAME_EXT									_T("log_debug.txt")
 #define MAX_LOG_FILE_SIZE								8388608 /* 8MB */
 
 

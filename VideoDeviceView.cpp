@@ -1196,10 +1196,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				{
 					// Set Unplugged Flag
 					pDoc->m_bDxDeviceUnplugged = TRUE;
-					CString sMsg;
-					sMsg.Format(_T("%s unplugged\n"), pDoc->GetAssignedDeviceName());
-					TRACE(sMsg);
-					::LogLine(sMsg);
+					::LogLine(pDoc->GetAssignedDeviceName() + _T(" unplugged"));
 
                     break;
 				}
@@ -1212,10 +1209,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 					{
 						// Reset Unplugged Flag
 						pDoc->m_bDxDeviceUnplugged = FALSE;
-						CString sMsg;
-						sMsg.Format(_T("%s replugged\n"), pDoc->GetAssignedDeviceName());
-						TRACE(sMsg);
-						::LogLine(sMsg);
+						::LogLine(pDoc->GetAssignedDeviceName() + _T(" replugged"));
 
 						// Restart process frame
 						pDoc->StartProcessFrame(PROCESSFRAME_DXREPLUGGED);

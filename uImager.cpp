@@ -902,10 +902,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 						m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
 					}
 					else
-					{
-						TRACE(ML_STRING(1475, "Failed to start the web server") + _T("\n"));
 						::LogLine(ML_STRING(1475, "Failed to start the web server"));
-					}
 				}
 
 				// Autorun Devices

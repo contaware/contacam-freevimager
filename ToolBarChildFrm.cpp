@@ -1494,7 +1494,7 @@ void CVideoDeviceChildFrame::OnClose()
 				CString sMsg;
 				if (TimeSpan.GetDays() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dday%s, %dhour%s, %dmin and %dsec)\n"),
+					sMsg.Format(_T("%s stopping (running for %I64dday%s, %dhour%s, %dmin and %dsec)"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetDays(),
 						(TimeSpan.GetDays() == 1) ? _T("") : _T("s"),
@@ -1505,7 +1505,7 @@ void CVideoDeviceChildFrame::OnClose()
 				}
 				else if (TimeSpan.GetTotalHours() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dhour%s, %dmin and %dsec)\n"),
+					sMsg.Format(_T("%s stopping (running for %I64dhour%s, %dmin and %dsec)"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalHours(),
 						(TimeSpan.GetTotalHours() == 1) ? _T("") : _T("s"),
@@ -1514,20 +1514,19 @@ void CVideoDeviceChildFrame::OnClose()
 				}
 				else if (TimeSpan.GetTotalMinutes() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dmin and %dsec)\n"),
+					sMsg.Format(_T("%s stopping (running for %I64dmin and %dsec)"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalMinutes(),
 						TimeSpan.GetSeconds());
 				}
 				else if (TimeSpan.GetTotalSeconds() > 0)
 				{
-					sMsg.Format(_T("%s stopping (running for %I64dsec)\n"),
+					sMsg.Format(_T("%s stopping (running for %I64dsec)"),
 						pDoc->GetAssignedDeviceName(),
 						(LONGLONG)TimeSpan.GetTotalSeconds());
 				}
 				else
-					sMsg.Format(_T("%s stopping\n"), pDoc->GetAssignedDeviceName());
-				TRACE(sMsg);
+					sMsg.Format(_T("%s stopping"), pDoc->GetAssignedDeviceName());
 				::LogLine(sMsg);
 			}
 
@@ -1590,9 +1589,7 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", save snapshot SWF thread still alive");
 			if (pDoc->m_SaveSnapshotThread.IsAlive())
 				t += _T(", save snapshot thread still alive");
-			sMsg = sMsg + t + _T("\n");
-			TRACE(sMsg);
-			::LogLine(sMsg);
+			::LogLine(sMsg + t);
 		}
 
 		// Kill Timer?

@@ -75,13 +75,17 @@ void LogLine(const TCHAR* pString)
 	s.Replace(_T('\n'), _T(' '));
 	s.TrimLeft();
 	s.TrimRight();
-	s += _T("\r\n");
-
+	
 	// Current Time
 	time_t CurrentTime;
 	time(&CurrentTime);
 	CString sCurrentTime(_tctime(&CurrentTime));
 	sCurrentTime.Replace(_T('\n'), _T(' '));
+
+	// Trace
+#ifdef _DEBUG
+	AfxTrace(_T("%s: %s\n"), sCurrentTime, s);
+#endif
 
 	// Create directory
 	CString sPath = GetDriveAndDirName(g_sLogFileName);
@@ -93,7 +97,7 @@ void LogLine(const TCHAR* pString)
 	if (pf)
 	{
 		LPBYTE pData = NULL;
-		int nSize = ToUTF8(sCurrentTime + _T(": ") + s, &pData);
+		int nSize = ToUTF8(sCurrentTime + _T(": ") + s + _T("\r\n"), &pData);
 		if (pData)
 		{
 			ULARGE_INTEGER Size = GetFileSize64(g_sLogFileName);
