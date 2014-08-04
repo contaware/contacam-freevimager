@@ -2588,8 +2588,9 @@ int CUImagerApp::ExitInstance()
 		delete [] m_pOpenSSLCritSections;
 		m_pOpenSSLCritSections = NULL;
 	}
-
+#ifdef _DEBUG // only trace in debug mode do not write to Trace Log File in release mode
 	TRACE(_T("*** OPENSSL LEAKS 16 + 20 BYTES + SOMETIMES MORE, IT'S NORMAL ***\n"));
+#endif
 #endif
 
 	// Clean-Up Trace Log File
