@@ -47,6 +47,19 @@ void EndTraceLogFile()
 	}
 }
 
+CString SingleLine(CString s)
+{
+	s.Replace(_T("\r\n\r\n"), _T(" "));
+	s.Replace(_T("\r\r"), _T(" "));
+	s.Replace(_T("\n\n"), _T(" "));
+	s.Replace(_T("\r\n"), _T(" "));
+	s.Replace(_T('\r'), _T(' '));
+	s.Replace(_T('\n'), _T(' '));
+	s.TrimLeft();
+	s.TrimRight();
+	return s;
+}
+
 void LogLine(const TCHAR* pString)
 {
 	// Check
@@ -68,13 +81,8 @@ void LogLine(const TCHAR* pString)
 		}
 	}
 
-	// Make single line
-	CString s(pString);
-	s.Replace(_T("\r\n"), _T(" "));
-	s.Replace(_T('\r'), _T(' '));
-	s.Replace(_T('\n'), _T(' '));
-	s.TrimLeft();
-	s.TrimRight();
+	// Single line
+	CString s(SingleLine(pString));
 	
 	// Current Time
 	time_t CurrentTime;
