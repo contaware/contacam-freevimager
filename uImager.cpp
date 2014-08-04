@@ -1036,7 +1036,11 @@ BOOL CAboutDlg::OnInitDialog()
 
 	// Application Name
 	CEdit* pAppName = (CEdit*)GetDlgItem(IDC_APPNAME);
+#ifdef TRACELOGFILE
+	pAppName->SetWindowText(CString(APPNAME_NOEXT) + _T(" - ONLY FOR DEBUG"));
+#else
 	pAppName->SetWindowText(APPNAME_NOEXT);
+#endif
 
 	// Application Version
 	CEdit* pAppVer = (CEdit*)GetDlgItem(IDC_APPVER);
