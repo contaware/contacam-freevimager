@@ -10460,7 +10460,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				}
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
 					TRACE(_T("%s"), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
 #endif
 				return FALSE; // Do not call Processor
@@ -10495,7 +10495,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				}
 				delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0)
+				if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
 					TRACE(_T("%s"), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
 #endif
 				return FALSE; // Do not call Processor
@@ -10558,7 +10558,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0)
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
 				TRACE(_T("%s"), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
 #endif
 			return FALSE; // Do not call Processor
@@ -10566,31 +10566,27 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 		// Unauthorized
 		else if (sCode == _T("401"))
 		{
-			// Parse first www-authenticate line
-			if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), 0)) < 0)
+			// Wait until whole header is received
+			if (sMsg.Find(_T("\r\n\r\n"), 0) < 0 && sMsg.Find(_T("\n\n"), 0) < 0)
 			{
 				delete [] pMsg;
 				return FALSE; // Do not call Processor
 			}
-			if ((nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) < 0)
-			{
-				delete [] pMsg;
-				return FALSE; // Do not call Processor
-			}
-			CString sAuthLine1LowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
-			CString sAuthLine1 = sMsg.Mid(nPos, nPosEnd - nPos);
 
-			// There may be a second www-authenticate line if an additional authentication type is supported
-			CString sAuthLine2LowerCase(_T(""));
-			CString sAuthLine2(_T(""));
-			if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), nPosEnd)) >= 0)
+			// Parse www-authenticate line(s)
+			CString sAuthLine1LowerCase;
+			CString sAuthLine1;
+			CString sAuthLine2LowerCase;
+			CString sAuthLine2;
+			if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), 0)) >= 0 &&
+				(nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) >= 0)
 			{
-				if ((nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) < 0)
-				{
-					delete [] pMsg;
-					return FALSE; // Do not call Processor
-				}
-				else
+				sAuthLine1LowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
+				sAuthLine1 = sMsg.Mid(nPos, nPosEnd - nPos);
+
+				// There may be a second www-authenticate line if an additional authentication type is supported
+				if ((nPos = sMsgLowerCase.Find(_T("www-authenticate:"), nPosEnd)) >= 0 &&
+					(nPosEnd = FindEndOfLine(sMsgLowerCase, nPos)) >= 0)
 				{
 					sAuthLine2LowerCase = sMsgLowerCase.Mid(nPos, nPosEnd - nPos);
 					sAuthLine2 = sMsg.Mid(nPos, nPosEnd - nPos);
@@ -10717,7 +10713,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 	
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0)
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
 				TRACE(_T("%s"), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
 #endif
 			return FALSE; // Do not call Processor
@@ -10763,7 +10759,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 			}
 			delete [] pMsg;
 #if defined(_DEBUG) || defined(TRACELOGFILE)
-			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0)
+			if ((nPosEnd = sMsg.Find(_T("\r\n\r\n"))) > 0 || (nPosEnd = sMsg.Find(_T("\n\n"))) > 0 || (nPosEnd = sMsg.GetLength()) > 0)
 				TRACE(_T("%s"), ::SingleLine(sMsg.Left(nPosEnd)) + _T('\n'));
 #endif
 			return FALSE; // Do not call Processor

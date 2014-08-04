@@ -338,6 +338,8 @@ int CNetCom::CMsgThread::Work()
 			// Start Connection Shutdown Event
 			case WAIT_OBJECT_0 + 1 :
 				::ResetEvent(m_pNetCom->m_hStartConnectionShutdownEvent);
+				if (m_pNetCom->m_pMsgOut)
+					m_pNetCom->Notice(m_pNetCom->GetName() + _T(" We are starting shutdown"));
 				if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 				{
 					if (m_pNetCom->m_nSocketType == SOCK_DGRAM)
@@ -835,9 +837,9 @@ int CNetCom::CMsgThread::Work()
 									if (m_pNetCom->m_pMsgOut)
 										m_pNetCom->Error(m_pNetCom->GetName() + _T(" FD_CLOSE The connection was reset by the remote side"));
 									break;
-								case WSAECONNABORTED :
+								case WSAECONNABORTED : // this error may happen when we close the connection and there is still something to read
 									if (m_pNetCom->m_pMsgOut)
-										m_pNetCom->Error(m_pNetCom->GetName() + _T(" FD_CLOSE The connection was terminated due to a time-out or other failure"));
+										m_pNetCom->Warning(m_pNetCom->GetName() + _T(" FD_CLOSE The connection was interrupted due to a time-out or other reason"));
 									break;
 								case 0 : // no error
 									if (m_pNetCom->m_pMsgOut)
