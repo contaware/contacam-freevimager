@@ -2589,7 +2589,7 @@ int CUImagerApp::ExitInstance()
 		m_pOpenSSLCritSections = NULL;
 	}
 #ifdef _DEBUG // only trace in debug mode do not write to Trace Log File in release mode
-	TRACE(_T("*** OPENSSL LEAKS 16 + 20 BYTES + SOMETIMES MORE, IT'S NORMAL ***\n"));
+	TRACE(_T("*** FFMPEG LEAKS 63 BYTES, OPENSSL LEAKS 16 + 20 BYTES and SOMETIMES MORE, IT'S NORMAL ***\n"));
 #endif
 #endif
 
