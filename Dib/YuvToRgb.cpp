@@ -222,6 +222,7 @@ bool YUVToRGB32(	DWORD dwFourCC,
 						height);
 	}
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 	{

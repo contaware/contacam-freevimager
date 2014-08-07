@@ -22,6 +22,11 @@
 #define RGBTO15BITS(r,g,b) (((r&0xF8)<<7) + ((g&0xF8)<<2) + (b>>3))
 #define RGBTO16BITS(r,g,b) (((r&0xF8)<<8) + ((g&0xFC)<<3) + (b>>3))
 
+// Multiple character literals like 'abcd' are of type int with the
+// first character 'a' put into the most significant byte position
+// and 'd' in the least significant position. The FCC macro reverts
+// the order so that 'a' is the least significant byte and 'd' the
+// most significant one (like in a string)
 #ifndef FCC
 #define FCC(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
 				  (((DWORD)(ch4) & 0xFF00) << 8) |    \

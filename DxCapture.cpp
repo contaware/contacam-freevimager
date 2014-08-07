@@ -388,6 +388,7 @@ CString CDxCapture::GetFormatCompressionDescription(DWORD dwFourCC)
 				dwFourCC == FCC('Y42B'))
 		return _T("Planar 4:2:2 (16 Bpp)");
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||		
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return _T("Grayscale (8 Bpp)");

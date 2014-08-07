@@ -31,6 +31,11 @@ extern BOOL g_bMMX;
 #define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
+// Multiple character literals like 'abcd' are of type int with the
+// first character 'a' put into the most significant byte position
+// and 'd' in the least significant position. The FCC macro reverts
+// the order so that 'a' is the least significant byte and 'd' the
+// most significant one (like in a string)
 #ifndef FCC
 #define FCC(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
 				  (((DWORD)(ch4) & 0xFF00) << 8) |    \
@@ -217,6 +222,7 @@ __forceinline bool IsSupportedYuvToRgbFormat(DWORD dwFourCC)
 	else if (dwFourCC == FCC('Y42B'))
 		return true;
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return true;

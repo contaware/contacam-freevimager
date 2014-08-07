@@ -226,6 +226,11 @@ class CAVIPlay
 			WRONG_STANDARDINDEX_HEADER,
 			OUT_OF_MEM};
 
+// Multiple character literals like 'abcd' are of type int with the
+// first character 'a' put into the most significant byte position
+// and 'd' in the least significant position. The FCC macro reverts
+// the order so that 'a' is the least significant byte and 'd' the
+// most significant one (like in a string)
 #ifndef FCC
 	#define FCC(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
 					  (((DWORD)(ch4) & 0xFF00) << 8) |    \
@@ -1250,8 +1255,9 @@ __forceinline enum AVPixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixForma
 			return AV_PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
 		else if (pBMI->bmiHeader.biCompression == FCC('J422'))
 			return AV_PIX_FMT_YUVJ422P;
-		else if (	pBMI->bmiHeader.biCompression == FCC('  Y8')	||
-					pBMI->bmiHeader.biCompression == FCC('Y800')	||
+		else if (	pBMI->bmiHeader.biCompression == FCC('Y800')	||
+					pBMI->bmiHeader.biCompression == FCC('  Y8')	||
+					pBMI->bmiHeader.biCompression == FCC('Y8  ')	||
 					pBMI->bmiHeader.biCompression == FCC('GREY'))
 			return AV_PIX_FMT_GRAY8;
 		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('R','G','B',15))

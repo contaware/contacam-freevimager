@@ -26,6 +26,11 @@ RGB to YUV Conversion:
 #define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
+// Multiple character literals like 'abcd' are of type int with the
+// first character 'a' put into the most significant byte position
+// and 'd' in the least significant position. The FCC macro reverts
+// the order so that 'a' is the least significant byte and 'd' the
+// most significant one (like in a string)
 #ifndef FCC
 #define FCC(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
 				  (((DWORD)(ch4) & 0xFF00) << 8) |    \
@@ -228,6 +233,7 @@ __forceinline bool IsSupportedRgbToYuvFormat(DWORD dwFourCC)
 	else if (dwFourCC == FCC('Y42B'))
 		return true;
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return true;
@@ -265,6 +271,7 @@ __forceinline int FourCCToBpp(DWORD dwFourCC)
 	else if (dwFourCC == FCC('Y42B'))
 		return 16;
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return 8;
@@ -302,6 +309,7 @@ __forceinline int CalcYUVStride(DWORD dwFourCC, int width)
 	else if (dwFourCC == FCC('Y42B'))
 		return width;
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return width;
@@ -339,6 +347,7 @@ __forceinline int CalcYUVSize(DWORD dwFourCC, int stride, int height)
 	else if (dwFourCC == FCC('Y42B'))
 		return stride * height * 2;
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 		return stride * height;

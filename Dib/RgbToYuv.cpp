@@ -138,6 +138,7 @@ bool RGB24ToYUV(	DWORD dwFourCC,
 							stride);
 	}
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 	{
@@ -251,6 +252,7 @@ bool RGB32ToYUV(	DWORD dwFourCC,
 							stride);
 	}
 	else if (	dwFourCC == FCC('Y800') ||
+				dwFourCC == FCC('  Y8') ||
 				dwFourCC == FCC('Y8  ') ||
 				dwFourCC == FCC('GREY'))
 	{

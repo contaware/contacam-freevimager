@@ -11,6 +11,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Multiple character literals like 'abcd' are of type int with the
+// first character 'a' put into the most significant byte position
+// and 'd' in the least significant position. The FCC macro reverts
+// the order so that 'a' is the least significant byte and 'd' the
+// most significant one (like in a string)
 #ifndef FCC
 #define FCC(ch4) ((((DWORD)(ch4) & 0xFF) << 24) |     \
 				  (((DWORD)(ch4) & 0xFF00) << 8) |    \
