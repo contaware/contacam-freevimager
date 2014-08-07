@@ -25,12 +25,11 @@ public:
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
-	BOOL InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC);
-	void DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	BOOL InitDxDraw(int nWidth, int nHeight);
+	void DxDrawText(int nWidth, int nHeight, const CString& sOSDMessage, COLORREF crOSDMessageColor);
 	__forceinline void DxDrawZoneSensibility(int i, HDC hDC, const RECT& rcDetZone, int n);
-	void DxDrawZones(CDib* pDib);
+	void DxDrawZones(int nWidth, int nHeight);
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
-	__forceinline BOOL IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensibility;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;

@@ -4020,7 +4020,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
 	m_bVideoView = TRUE;
 	m_dwVideoProcessorMode = NO_DETECTOR;
-	m_bDecodeFramesForPreview = FALSE;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
@@ -4463,11 +4462,7 @@ void CVideoDeviceDoc::SetDocumentTitle()
 		sFramerate.Format(_T("%0.1ff/s"), m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate);
 
 		// Pixel Format
-		if (m_CaptureBMI.bmiHeader.biCompression != m_ProcessFrameBMI.bmiHeader.biCompression)
-			sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI) + _T(" -> ");
-		sPixelFormat += CDib::GetCompressionName((LPBITMAPINFO)&m_ProcessFrameBMI);
-		if (m_bDecodeFramesForPreview)
-			sPixelFormat += _T(" -> RGB32");
+		sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI);
 	}
 
 	// Network info
@@ -6127,13 +6122,6 @@ void CVideoDeviceDoc::VideoFormatDialog()
 void CVideoDeviceDoc::OnViewVideo() 
 {
 	m_bVideoView = !m_bVideoView;
-	if (!m_bVideoView)
-	{
-		m_bDecodeFramesForPreview = FALSE;
-		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_THREADSAFE_SETDOCUMENTTITLE,
-						0, 0);
-	}
 }
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 

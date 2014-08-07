@@ -1044,8 +1044,6 @@ public:
 
 	// Drawing
 	CDxDraw* m_pDxDraw;									// Direct Draw Object
-	volatile BOOL m_bDecodeFramesForPreview;			// Decode the frames from YUV to RGB32 for display
-														// because the format isn't supported by the graphics card
 	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
 	volatile DWORD m_dwOSDMessageUpTime;				// OSD message UpTime
 	CString m_sOSDMessage;								// OSD message string

@@ -308,7 +308,7 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	return 1;
 }
 
-BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC)
+BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -320,32 +320,24 @@ BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight, DWORD dwFourCC)
 		if (pDoc->m_pDxDraw->Init(	GetSafeHwnd(),
 									nWidth,
 									nHeight,
-									dwFourCC,
+									BI_RGB,
 									IDB_BITSTREAM_VERA_11))
 		{
 			m_bDxDrawInitFailed = FALSE;
 			m_bDxDrawFirstInitOk = TRUE;
 			return TRUE;
 		}
-		else
+		else if (!m_bDxDrawInitFailed)
 		{
-			pDoc->m_bDecodeFramesForPreview = TRUE;
+			m_bDxDrawInitFailed = TRUE;
 			::PostMessage(	GetSafeHwnd(),
-							WM_THREADSAFE_SETDOCUMENTTITLE,
-							0, 0);
-			if (!m_bDxDrawInitFailed && dwFourCC == 0U) // if also BI_RGB failed, display "DirectX failed" in OnDraw()
-			{
-				m_bDxDrawInitFailed = TRUE;
-				::PostMessage(	GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-								(LPARAM)0);
-			}
-			return FALSE;
+							WM_THREADSAFE_UPDATEWINDOWSIZES,
+							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+							(LPARAM)0);
 		}
 	}
-	else
-		return FALSE;
+	
+	return FALSE;
 }
 
 int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -394,29 +386,6 @@ __forceinline void CVideoDeviceView::EraseDxDrawBkgnd(BOOL bFullErase)
 		pDoc->m_pDxDraw->ClearBack();
 }
 
-__forceinline BOOL CVideoDeviceView::IsDxDrawCompressionDifferent(CDib* pDib, BOOL bVideoView)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-
-	if (!bVideoView)
-		return (BI_RGB != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
-	else
-	{
-		// Special Handling for YV12 Format
-		if (pDoc->m_pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
-		{
-			if (pDoc->m_pDxDraw->GetCurrentSrcFlipUV() &&
-				pDib->GetCompression() == FCC('I420'))
-				return FALSE;
-			else
-				return TRUE;
-		}
-		else
-			return (pDib->GetCompression() != pDoc->m_pDxDraw->GetCurrentSrcFourCC());
-	}
-}
-
 BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
@@ -433,51 +402,6 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		return FALSE;
 	}
 
-	// Convert to RGB32?
-	CDib* pDib = pDoc->m_pDib;
-	if (pDoc->m_bDecodeFramesForPreview)
-	{	
-		// Allocate Dst Bits?
-		BITMAPINFO Bmi;
-		memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-		Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-		Bmi.bmiHeader.biWidth = pDib->GetWidth();
-		Bmi.bmiHeader.biHeight = pDib->GetHeight();
-		Bmi.bmiHeader.biPlanes = 1;
-		Bmi.bmiHeader.biCompression = BI_RGB;
-		Bmi.bmiHeader.biBitCount = 32;
-		Bmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(Bmi.bmiHeader.biWidth * Bmi.bmiHeader.biBitCount) * Bmi.bmiHeader.biHeight;
-		if (!m_pDxDrawDib->SetBMI(&Bmi))
-		{
-			::LeaveCriticalSection(&pDoc->m_csDib);
-			return FALSE;
-		}
-		if (!m_pDxDrawDib->GetBits())
-		{
-			if (!m_pDxDrawDib->AllocateBitsFast(m_pDxDrawDib->GetBitCount(),
-												m_pDxDrawDib->GetCompression(),
-												m_pDxDrawDib->GetWidth(),
-												m_pDxDrawDib->GetHeight()))
-			{
-				::LeaveCriticalSection(&pDoc->m_csDib);
-				return FALSE;
-			}
-		}
-
-		// Convert
-		if (!::YUVToRGB32(	pDib->GetCompression(),
-							pDib->GetBits(),
-							m_pDxDrawDib->GetBits(),
-							m_pDxDrawDib->GetWidth(),
-							m_pDxDrawDib->GetHeight()))
-		{
-			::LeaveCriticalSection(&pDoc->m_csDib);
-			return FALSE;
-		}
-		else
-			pDib = m_pDxDrawDib;
-	}
-
 	// Init
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
@@ -485,13 +409,11 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
 	if (!pDoc->m_pDxDraw->IsInit()										||
 		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-		pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()				||
-		pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight()			||				
-		IsDxDrawCompressionDifferent(pDib, bVideoView))
+		pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
+		pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight())
 	{
 		m_dwDxDrawUpTime = dwCurrentUpTime;
-		if (!InitDxDraw(pDib->GetWidth(), pDib->GetHeight(),
-						bVideoView ? pDib->GetCompression() : BI_RGB))
+		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()))
 		{
 			::LeaveCriticalSection(&pDoc->m_csDib);
 			return FALSE;
@@ -505,7 +427,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		HDC hDC; 
 
 		// Draw Rect
-		CRect rc(0, 0, pDib->GetWidth(), pDib->GetHeight());
+		CRect rc(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
 
 		// Update Current Device
 		pDoc->m_pDxDraw->UpdateCurrentDevice();
@@ -543,19 +465,57 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 		// Draw
 		else if (bVideoView)
 		{
+			// Allocate Dst Bits?
+			BITMAPINFO Bmi;
+			memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
+			Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			Bmi.bmiHeader.biWidth = pDoc->m_pDib->GetWidth();
+			Bmi.bmiHeader.biHeight = pDoc->m_pDib->GetHeight();
+			Bmi.bmiHeader.biPlanes = 1;
+			Bmi.bmiHeader.biCompression = BI_RGB;
+			Bmi.bmiHeader.biBitCount = 32;
+			Bmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(Bmi.bmiHeader.biWidth * Bmi.bmiHeader.biBitCount) * Bmi.bmiHeader.biHeight;
+			if (!m_pDxDrawDib->SetBMI(&Bmi))
+			{
+				::LeaveCriticalSection(&pDoc->m_csDib);
+				return FALSE;
+			}
+			if (!m_pDxDrawDib->GetBits())
+			{
+				if (!m_pDxDrawDib->AllocateBitsFast(m_pDxDrawDib->GetBitCount(),
+													m_pDxDrawDib->GetCompression(),
+													m_pDxDrawDib->GetWidth(),
+													m_pDxDrawDib->GetHeight()))
+				{
+					::LeaveCriticalSection(&pDoc->m_csDib);
+					return FALSE;
+				}
+			}
+
+			// Convert
+			if (!::YUVToRGB32(	pDoc->m_pDib->GetCompression(),
+								pDoc->m_pDib->GetBits(),
+								m_pDxDrawDib->GetBits(),
+								m_pDxDrawDib->GetWidth(),
+								m_pDxDrawDib->GetHeight()))
+			{
+				::LeaveCriticalSection(&pDoc->m_csDib);
+				return FALSE;
+			}
+			
 			// Draw Frame
-			pDoc->m_pDxDraw->RenderDib(pDib, m_ZoomRect);
+			pDoc->m_pDxDraw->RenderDib(m_pDxDrawDib, m_ZoomRect);
 			
 			// Draw Zones
 			if (pDoc->m_bShowEditDetectionZones ||
 				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
-				DxDrawZones(pDib);
+				DxDrawZones(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
 
 			// Draw Text
 			if (pDoc->m_bDetectingMinLengthMovement		||
 				pDoc->m_SaveFrameListThread.IsWorking() ||
 				!sOSDMessage.IsEmpty())
-				DxDrawText(pDib, sOSDMessage, crOSDMessageColor);
+				DxDrawText(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), sOSDMessage, crOSDMessageColor);
 		}
 		// Display: Preview Off
 		else
@@ -578,7 +538,7 @@ BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage,
 	return TRUE;
 }
 
-void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORREF crOSDMessageColor)
+void CVideoDeviceView::DxDrawText(int nWidth, int nHeight, const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -588,13 +548,13 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 	if (hDC)
 	{
 		// Calc. font size
-		int nMaxFontSize = ::ScaleFont(	pDib->GetWidth(), pDib->GetHeight(),
+		int nMaxFontSize = ::ScaleFont(	nWidth, nHeight,
 										pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
 
 		// Motion Detection
 		if (pDoc->m_bDetectingMinLengthMovement)
 		{
-			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
+			::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
 							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
 							OPAQUE, DXDRAW_BKG_COLOR);
 		}
@@ -611,7 +571,7 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 				sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
 			if (sProgress != _T(""))
 			{
-				::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
+				::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
 								sProgress, DXDRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
 								OPAQUE, DXDRAW_BKG_COLOR);
 			}
@@ -620,7 +580,7 @@ void CVideoDeviceView::DxDrawText(CDib* pDib, const CString& sOSDMessage, COLORR
 		// Draw OSD message
 		if (!sOSDMessage.IsEmpty())
 		{
-			::DrawBigText(	hDC, CRect(0, 0, pDib->GetWidth(), pDib->GetHeight()),
+			::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
 							sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
 							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
 		}
@@ -693,7 +653,7 @@ __forceinline void CVideoDeviceView::DxDrawZoneSensibility(int i, HDC hDC, const
 	}
 }
 
-void CVideoDeviceView::DxDrawZones(CDib* pDib)
+void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -703,8 +663,8 @@ void CVideoDeviceView::DxDrawZones(CDib* pDib)
 	if (hDC)
 	{
 		RECT rcDetZone;
-		int nZoneWidth = pDib->GetWidth() / pDoc->m_lMovDetXZonesCount;
-		int nZoneHeight = pDib->GetHeight() / pDoc->m_lMovDetYZonesCount;
+		int nZoneWidth = nWidth / pDoc->m_lMovDetXZonesCount;
+		int nZoneHeight = nHeight / pDoc->m_lMovDetYZonesCount;
 		int nSensibilityTextSize;
 		if (nZoneWidth == 8 || nZoneHeight == 8)
 			nSensibilityTextSize = 0;
@@ -781,6 +741,7 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 
 void CVideoDeviceView::OnDraw(CDC* pDC) 
 {
+	// Only GDI draw if directx could never initialize
 	if (!m_bDxDrawFirstInitOk)
 	{
 		// Flicker free drawing
