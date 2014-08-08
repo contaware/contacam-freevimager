@@ -951,6 +951,17 @@ public:
 	static void AutorunAddDevice(const CString& sDevicePathName);
 	static void AutorunRemoveDevice(const CString& sDevicePathName);
 
+	// NOTE for console applications started by a service
+	// (this holds for microapache which is a console app and not for the windowed VLC)
+	//
+	// Up to Windows XP the first logged user and the services run both in session 0.
+	// When logging off, the system sends a logoff event to all console applications
+	// from all users which run in session 0 -> the mapache.exe processes terminate
+	// even if started from a service!
+	// Starting from Windows 2003 Server the services run in session 0, all the other
+	// processes in session 1 or higher. Logging off will not terminate the mapache.exe
+	// processes started from the service because they are session 0 processes.
+
 	// Micro Apache
 	void ViewWeb();
 	void ViewFiles();

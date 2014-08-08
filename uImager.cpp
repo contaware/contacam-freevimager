@@ -897,10 +897,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 				if (m_bStartMicroApache)
 				{
 					if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
-					{
 						m_bMicroApacheStarted = TRUE;
-						m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
-					}
 					else
 						::LogLine(ML_STRING(1475, "Failed to start the web server"));
 				}
@@ -2030,10 +2027,7 @@ void CUImagerApp::SaveOnEndSession()
 #ifdef VIDEODEVICEDOC
 	CVideoDeviceDoc::VlmShutdown();
 	if (m_bMicroApacheStarted)
-	{
-		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheShutdown();
-	}
 	if (!m_bServiceProcess)
 		BrowserAutostart();
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING)
@@ -2556,10 +2550,7 @@ int CUImagerApp::ExitInstance()
 
 	// Micro Apache shutdown
 	if (m_bMicroApacheStarted)
-	{
-		m_MicroApacheWatchdogThread.Kill();
 		CVideoDeviceDoc::MicroApacheShutdown();
-	}
 
 	// Browser autostart
 	if (!m_bServiceProcess)
@@ -5631,51 +5622,6 @@ void CUImagerApp::OnEditDelete()
 {
 	CDeleteCamFoldersDlg dlg;
 	dlg.DoModal();
-}
-
-int CUImagerApp::CMicroApacheWatchdogThread::Work()
-{
-	DWORD Event;
-	int nLastCount = 0;
-
-	// NOTE:
-	// Up to Windows XP the first logged user and the services run both in session 0.
-	// When logging off, the system sends a logoff event to all console applications
-	// -> the mapache.exe processes terminate even if started from a service. Thus a
-	// watchdog is necessary for these older systems. Starting from Windows 2003 Server
-	// the services run in session 0, all the other processes in session 1 or higher.
-	// Logging off will not terminate the mapache.exe processes started from the service
-	// because they are session 0 processes. For these systems a watchdog is still good
-	// in case the mapache.exe processes are killed or crash for some unknown reasons.
-	for (;;)
-	{
-		Event = ::WaitForSingleObject(GetKillEvent(), MICROAPACHE_WATCHDOG_CHECK_TIME);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :
-				return 0;
-
-			// Check
-			case WAIT_TIMEOUT :		
-			{
-				int nCount = ::EnumKillProcByName(MICROAPACHE_FILENAME);
-				if (nCount == 0)
-					CVideoDeviceDoc::MicroApacheInitStart();
-				else if (	nCount == nLastCount	&&
-							nCount > 0				&&
-							nCount < MICROAPACHE_NUM_PROCESS)
-					::EnumKillProcByName(MICROAPACHE_FILENAME, TRUE); // Kill it!
-				nLastCount = nCount;
-				break;
-			}
-
-			default:
-				break;
-		}
-	}
-
-	return 0;
 }
 
 CUImagerApp::CSchedulerEntry::CSchedulerEntry()

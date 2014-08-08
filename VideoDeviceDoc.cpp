@@ -6875,7 +6875,6 @@ int CVideoDeviceDoc::MicroApacheReload()
 	BOOL bOk = TRUE;
 	if (pApp->m_bMicroApacheStarted)
 	{
-		pApp->m_MicroApacheWatchdogThread.Kill();
 		if (bOk = MicroApacheShutdown())
 			pApp->m_bMicroApacheStarted = FALSE;
 	}
@@ -6890,10 +6889,7 @@ int CVideoDeviceDoc::MicroApacheReload()
 		if (pApp->m_bStartMicroApache)
 		{
 			if (MicroApacheInitStart() && MicroApacheWaitStartDone())
-			{
 				pApp->m_bMicroApacheStarted = TRUE;
-				pApp->m_MicroApacheWatchdogThread.Start(THREAD_PRIORITY_BELOW_NORMAL);
-			}
 			else
 				return -1;
 		}

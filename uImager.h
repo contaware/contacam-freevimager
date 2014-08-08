@@ -231,17 +231,6 @@ public:
 
 
 #ifdef VIDEODEVICEDOC
-	// Micro Apache Watch Dog Thread
-	class CMicroApacheWatchdogThread : public CWorkerThread
-	{
-		public:
-			CMicroApacheWatchdogThread() {;};
-			virtual ~CMicroApacheWatchdogThread() {Kill();};
-
-		protected:
-			int Work();
-	};
-
 	// Scheduler Entry Class
 	class CSchedulerEntry
 	{
@@ -730,9 +719,6 @@ public:
 	CString m_sMicroApacheAreaname;
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
-
-	// Micro Apache Watchdog Thread
-	CMicroApacheWatchdogThread m_MicroApacheWatchdogThread;
 
 	// Running Vlc process handle
 	HANDLE m_hVlcProcess;
