@@ -312,10 +312,8 @@ BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-	CTimeSpan ElapsedTimeSinceLastSessionChange = CTime::GetCurrentTime() - ::AfxGetMainFrame()->m_SessionChangeTime;
-	if (nWidth > 0 && nHeight > 0 &&
-		(ElapsedTimeSinceLastSessionChange.GetTotalSeconds() >= SESSIONCHANGE_WAIT_SEC ||
-		ElapsedTimeSinceLastSessionChange.GetTotalSeconds() < 0))
+
+	if (nWidth > 0 && nHeight > 0)
 	{
 		if (pDoc->m_pDxDraw->Init(	GetSafeHwnd(),
 									nWidth,

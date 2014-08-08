@@ -3701,8 +3701,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 				}
 
 				// Draw
-				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw &&
-					::AfxGetMainFrame()->m_lSessionDisconnectedLockedCount <= 0)
+				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw)
 				{
 					if (!m_pDoc->GetView()->DxDraw(dwCurrentUpTime, sOSDMessage, crOSDMessageColor))
 					{

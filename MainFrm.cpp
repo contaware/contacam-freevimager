@@ -93,7 +93,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
-	ON_MESSAGE(WM_WTSSESSION_CHANGE, OnSessionChange)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 #ifdef VIDEODEVICEDOC
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
@@ -138,8 +137,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_dChildZoomFactor = 1.0;
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
-	m_SessionChangeTime = CTime::GetCurrentTime() - CTimeSpan(0, 0, 0, SESSIONCHANGE_WAIT_SEC);
-	m_lSessionDisconnectedLockedCount = 0;
 	m_sStatusBarString = _T("");
 	m_bProgressIndicatorCreated = FALSE;
 	m_TiffScan = NULL;
@@ -2879,47 +2876,6 @@ void CMainFrame::OnEndSession(BOOL bEnding)
 		((CUImagerApp*)::AfxGetApp())->m_bEndSession = TRUE;
 		((CUImagerApp*)::AfxGetApp())->SaveOnEndSession();
 	}
-}
-
-LONG CMainFrame::OnSessionChange(WPARAM wparam, LPARAM lparam)
-{
-	// Use a counter for disconnection and lock.
-	// This because XP is handling it differently
-	// than Vista and newer. XP sends an additional session lock with
-	// the disconnection, when then connecting to another user
-	// we get a session unlock and finally coming back we receive
-	// the session connect.
-	if (wparam == WTS_CONSOLE_DISCONNECT	||
-		wparam == WTS_REMOTE_DISCONNECT		||
-		wparam == WTS_SESSION_LOCK)
-	{
-		m_SessionChangeTime = CTime::GetCurrentTime();
-		::InterlockedIncrement(&m_lSessionDisconnectedLockedCount);
-#ifdef _DEBUG
-		if (wparam == WTS_CONSOLE_DISCONNECT)
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-		else if (wparam == WTS_REMOTE_DISCONNECT)
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION DISCONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-		else
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION LOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-#endif
-	}
-	else if (wparam == WTS_CONSOLE_CONNECT	||
-			wparam == WTS_REMOTE_CONNECT	||
-			wparam == WTS_SESSION_UNLOCK)
-	{
-		m_SessionChangeTime = CTime::GetCurrentTime();
-		::InterlockedDecrement(&m_lSessionDisconnectedLockedCount);
-#ifdef _DEBUG
-		if (wparam == WTS_CONSOLE_CONNECT)
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (LOCAL SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-		else if (wparam == WTS_REMOTE_CONNECT)
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (REMOTE SESSION CONNECTED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-		else
-			TRACE(_T("m_lSessionDisconnectedLockedCount = %d (SESSION UNLOCKED , session id = %d)\n"), m_lSessionDisconnectedLockedCount, lparam);
-#endif
-	}
-	return 1;
 }
 
 LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)

@@ -178,12 +178,6 @@ public:
 	// Full screen flag
 	volatile bool m_bFullScreenMode;
 
-	// Session change state time
-	CTime m_SessionChangeTime;
-
-	// Session disconnected and locked count
-	volatile LONG m_lSessionDisconnectedLockedCount;
-
 	// Progress control
 	CProgressCtrl m_Progress;
 
@@ -282,7 +276,6 @@ protected:
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
-	afx_msg LONG OnSessionChange(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
