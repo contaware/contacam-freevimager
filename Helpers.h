@@ -55,13 +55,13 @@ extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
 
 // File / directory operations
 extern BOOL TakeOwnership(LPCTSTR lpszFile);
-extern BOOL SetPrivilege(HANDLE hToken,LPCTSTR lpszPrivilege,BOOL bChange);
+extern BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange);
 extern BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask);
 extern BOOL CreateDir(LPCTSTR szNewDir);
 extern BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE, BOOL bContinueOnCopyError = TRUE);
 extern BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists = TRUE, BOOL bContinueOnCopyError = TRUE);
 extern BOOL DeleteDir(LPCTSTR szDirName);
-extern BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles = FALSE);
+extern BOOL DeleteDirContent(LPCTSTR szDirName);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
 										int* pFilesCount = NULL, // optional Files Count
 										CWorkerThread* pThread = NULL);

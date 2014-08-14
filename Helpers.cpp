@@ -668,7 +668,7 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 #define DELETEDIRCONTENT_FREE \
 if (pInfo) delete pInfo;\
 if (name) delete [] name;
-BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles/*=FALSE*/)
+BOOL DeleteDirContent(LPCTSTR szDirName)
 {
 	HANDLE hp;
 	BOOL bBackslashEnding;
@@ -731,7 +731,7 @@ BOOL DeleteDirContent(LPCTSTR szDirName, BOOL bOnlyFiles/*=FALSE*/)
 		}
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
-			if (!bOnlyFiles && !DeleteDir(name))
+			if (!DeleteDir(name))
 			{
 				FindClose(hp);
 				DELETEDIRCONTENT_FREE;
