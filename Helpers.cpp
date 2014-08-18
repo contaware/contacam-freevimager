@@ -194,7 +194,6 @@ BOOL TakeOwnership(LPCTSTR lpszFile)
 	if (GetVersion() < 0x80000000) // Windows NT or higher
 	{
 		int file[256];
-		TCHAR error[256];
 		DWORD description;
 		SECURITY_DESCRIPTOR sd;
 		SECURITY_INFORMATION info_owner = OWNER_SECURITY_INFORMATION;
@@ -212,40 +211,25 @@ BOOL TakeOwnership(LPCTSTR lpszFile)
 				if (GetTokenInformation(token, TokenUser, owner, sizeof(file), &description))
 				{
 					// Get the information on the opened token
-					if (SetSecurityDescriptorOwner(&sd,owner->User.Sid,FALSE))
+					if (SetSecurityDescriptorOwner(&sd, owner->User.Sid, FALSE))
 					{
 						// Replace any owner information present on the security descriptor
-						if (SetFileSecurity(lpszFile,info_owner, &sd))
+						if (SetFileSecurity(lpszFile, info_owner, &sd))
 							return TRUE;
 						else
-						{
-							_stprintf(error, _T("Error in SetFileSecurity Error No : %d\n"), GetLastError());
-							TRACE(error);
-						}
+							TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
 					}
 					else
-					{
-						_stprintf(error, _T("Error in SetSecurityDescriptorOwner Error No : %d\n"), GetLastError());
-						TRACE(error);
-					}
+						TRACE(_T("Error in SetSecurityDescriptorOwner No %u\n"), GetLastError());
 				}
 				else
-				{
-					_stprintf(error, _T("Error in GetTokenInformation Error No : %d\n"), GetLastError());
-					TRACE(error);
-				}
+					TRACE(_T("Error in GetTokenInformation No %u\n"), GetLastError());
 			}
 			else
-			{
-				_stprintf(error, _T("Error in SetPrivilege No : %d\n"), GetLastError());
-				TRACE(error);
-			}
+				TRACE(_T("Error in SetPrivilege No %u\n"), GetLastError());
 		}
 		else
-		{
-			_stprintf(error, _T("Error in OpenProcessToken No : %d\n"), GetLastError());
-			TRACE(error);
-		}
+			TRACE(_T("Error in OpenProcessToken No %u\n"), GetLastError());
 
 		SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, TRUE);// Disabling the set previlege
 	}
@@ -279,11 +263,8 @@ BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange)
 			}
 		}
 
-		AdjustTokenPrivileges(hToken,bChange,&tp,
-			sizeof(TOKEN_PRIVILEGES), 
-			(PTOKEN_PRIVILEGES) NULL,
-			(PDWORD) NULL);  
-		// Call GetLastError to determine whether the function succeeded.
+		AdjustTokenPrivileges(hToken, bChange, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL);
+		// Call GetLastError to determine whether the function succeeded
 		if (GetLastError() == ERROR_SUCCESS) 
 			bReturnValue = TRUE;
 		 
@@ -303,7 +284,6 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 	{
 		int buff[512];
 		TCHAR domain[512];
-		TCHAR error[256];
 		
 		DWORD domain_size = 512;
 		DWORD acl_size;
@@ -323,8 +303,7 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 			acl = (ACL*)malloc(acl_size);
 			if (!acl)
 			{
-				_stprintf(error, _T("Error allocating memory for the acl\n"));
-				TRACE(error);
+				TRACE(_T("Error allocating memory for the acl\n"));
 				return FALSE;
 			}
 			InitializeAcl(acl, acl_size, ACL_REVISION);
@@ -339,28 +318,16 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 						return TRUE;
 					}
 					else
-					{
-						_stprintf(error, _T("Error in SetFileSecurity Error No : %d\n"), GetLastError());
-						TRACE(error);
-					}
+						TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
 				}
 				else
-				{
-					_stprintf(error, _T("Error in SetSecurityDescriptorDacl Error No : %d\n"), GetLastError());
-					TRACE(error);
-				}
+					TRACE(_T("Error in SetSecurityDescriptorDacl No %u\n"), GetLastError());
 			}
 			else
-			{
-				_stprintf(error, _T("Error in AddAccessAllowedAce Error No : %d\n"), GetLastError());
-				TRACE(error);
-			}
+				TRACE(_T("Error in AddAccessAllowedAce No %u\n"), GetLastError());
 		}
 		else
-		{
-			_stprintf(error, _T("Error in LookupAccountName No : %d\n"), GetLastError());
-			TRACE(error);
-		}
+			TRACE(_T("Error in LookupAccountName No %u\n"), GetLastError());
 
 		if (acl)
 			free(acl);
