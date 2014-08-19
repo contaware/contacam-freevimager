@@ -899,7 +899,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					if (CVideoDeviceDoc::MicroApacheInitStart() && CVideoDeviceDoc::MicroApacheWaitStartDone())
 						m_bMicroApacheStarted = TRUE;
 					else
-						::LogLine(ML_STRING(1475, "Failed to start the web server"));
+						::LogLine(_T("%s"), ML_STRING(1475, "Failed to start the web server"));
 				}
 
 				// Autorun Devices

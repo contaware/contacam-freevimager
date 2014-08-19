@@ -60,7 +60,7 @@ CString SingleLine(CString s)
 	return s;
 }
 
-void LogLine(const TCHAR* pString)
+void LogLine(const TCHAR* pFormat, ...)
 {
 	// Check
 	if (!g_bTraceLogFileInited)
@@ -81,8 +81,15 @@ void LogLine(const TCHAR* pString)
 		}
 	}
 
+	// Format
+	CString s;
+	va_list arguments;
+	va_start(arguments, pFormat);	
+	s.FormatV(pFormat, arguments);
+    va_end(arguments);
+
 	// Single line
-	CString s(SingleLine(pString));
+	s = SingleLine(s);
 	
 	// Current Time
 	time_t CurrentTime;
@@ -133,6 +140,7 @@ void TraceFileEnterCS(const TCHAR* pFormat, ...)
 	// Enter CS
 	EnterCriticalSection(&g_csTraceFile);
 
+	// Format
 	CString s;
 	va_list arguments;
 	va_start(arguments, pFormat);	
@@ -164,6 +172,7 @@ void TraceFileLeaveCS(const TCHAR* pFormat, ...)
 	if (!g_bTraceLogFileInited)
 		return;
 
+	// Format
 	CString s;
 	va_list arguments;
 	va_start(arguments, pFormat);	

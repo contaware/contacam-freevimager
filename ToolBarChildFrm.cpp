@@ -1527,7 +1527,7 @@ void CVideoDeviceChildFrame::OnClose()
 				}
 				else
 					sMsg.Format(_T("%s stopping"), pDoc->GetAssignedDeviceName());
-				::LogLine(sMsg);
+				::LogLine(_T("%s"), sMsg);
 			}
 
 			// Set Closing Flag
@@ -1589,7 +1589,7 @@ void CVideoDeviceChildFrame::OnClose()
 				t += _T(", save snapshot SWF thread still alive");
 			if (pDoc->m_SaveSnapshotThread.IsAlive())
 				t += _T(", save snapshot thread still alive");
-			::LogLine(sMsg + t);
+			::LogLine(_T("%s"), sMsg + t);
 		}
 
 		// Kill Timer?
