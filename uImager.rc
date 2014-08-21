@@ -852,7 +852,7 @@ BEGIN
         MENUITEM "All Next Image\tCtrl+Space",  ID_VIEW_ALL_NEXT_PICTURE
         MENUITEM "All Prev. Image\tCtrl+Backspace", ID_VIEW_ALL_PREVIOUS_PICTURE
         MENUITEM SEPARATOR
-        MENUITEM "Hi Quality Stretch",          ID_VIEW_STRETCH_HALFTONE
+        MENUITEM "High Quality Stretch",        ID_VIEW_STRETCH_HALFTONE
         MENUITEM SEPARATOR
         MENUITEM "Next Page/Frame\tPageDn",     ID_VIEW_NEXT_PAGE_FRAME
         MENUITEM "Prev. Page/Frame\tPageUp",    ID_VIEW_PREVIOUS_PAGE_FRAME
@@ -4877,7 +4877,7 @@ BEGIN
     ID_PLAY_AUDIOVIDEOSHIFT "Audio / video sync adjustments\nA/V Sync"
     ID_APP_LICENSE          "Display program license\nLicense"
     ID_APP_CREDITS          "Display program contributors and used libraries\nCredits"
-    ID_VIEW_STRETCH_HALFTONE "Hi quality stretch\nHi Quality Stretch"
+    ID_VIEW_STRETCH_HALFTONE "High quality stretch\nHigh Quality Stretch"
 END
 
 STRINGTABLE

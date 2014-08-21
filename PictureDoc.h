@@ -35,22 +35,12 @@ class CPictureChildFrame;
 // Default Save As file extension for new files
 #define DEFAULT_SAVEAS_EXT										_T(".jpg")
 
-// The CJpegThread waits for this amount of time
-// in ms before starting the full sized jpeg load. 
-#define JPEG_FULL_IMAGE_LOAD_START_WAITTIME						1000U
-
-// The CJpegThread waits for this amount of time
-// in ms before starting the calculation. The Short time
-// is used when the Picture Properties Dialog is open.
-#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_LONG		4000U
-#define JPEG_COMPRESSION_CALCULATION_START_WAITTIME_SHORT		2000U
-
 // CJpegThread waits that the Load Pictures
-// Thread finishes, with a maximum wait time specified here in ms.
+// Thread finishes, with a maximum wait time specified here in ms
 #define JPEG_COMPRESSION_CALCULATION_THREADWAIT_TIMEOUT			4000U
 
 // Load Full Jpeg Transition Delay in ms
-#define JPEG_LOADFULL_TRANSITIONDELAY							200
+#define JPEG_LOADFULL_TRANSITIONDELAY							150
 
 // Full Jpeg Transition Critical Section Timeout in ms
 #define CS_LOADFULLJPEGDIB_TIMEOUT								30
@@ -84,9 +74,6 @@ class CPictureChildFrame;
 
 // In Milliseconds
 #define SLIDESHOW_TRANSITION_DELAY								60
-
-// Number of Blend Operations for a Blend Transition Effect
-#define BLEND_STEPS												8
 
 // Layered dialog parameters
 #define LAYERED_DLG_LEFTBORDER									0	// In pixels
@@ -290,7 +277,6 @@ public:
 
 		protected:
 			int Work();
-			__forceinline BOOL WaitFor(DWORD dwMilliseconds);
 			void OnExit();
 			void CleanUp();
 			CPictureDoc* m_pDoc;

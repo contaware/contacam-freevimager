@@ -2,6 +2,8 @@ FREEVIMAGER HISTORY
 
 4.9.7 (xxx yth 2014)
 
+- Faster transition to full-sized jpeg image
+- High Quality Stretch enabled by default
 - libpng updated to 1.2.51
 - icclib updated to 2.14
 - Simplified video encoding settings by removing the bitrate

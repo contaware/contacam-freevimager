@@ -1189,19 +1189,6 @@ BOOL CPictureDoc::CLayeredDlgThread::DoIt(CWorkerThread* pThread/*=NULL*/)
 	return bRet;
 }
 
-__forceinline BOOL CPictureDoc::CJpegThread::WaitFor(DWORD dwMilliseconds)
-{
-	DWORD Event = ::WaitForSingleObject(GetKillEvent(),
-										dwMilliseconds);
-	switch (Event)
-	{
-		// Shutdown Event
-		case WAIT_OBJECT_0 :	return FALSE;
-		case WAIT_TIMEOUT :		return TRUE;
-		default:				return FALSE;
-	}
-}
-
 void CPictureDoc::CJpegThread::OnExit()
 {
 	// Not Calculated
@@ -1237,8 +1224,6 @@ void CPictureDoc::CJpegThread::CleanUp()
 
 int CPictureDoc::CJpegThread::Work() 
 {
-	ASSERT(m_pDoc);
-
 	DWORD Event;
 	CDib Dib;
 
@@ -1260,16 +1245,6 @@ int CPictureDoc::CJpegThread::Work()
 
 	// No Message Box On Error
 	Dib.SetShowMessageBoxOnError(FALSE);
-
-	// Wait for some milliseconds before starting,
-	// this saves cpu time when watching very fast
-	// pictures one after the other.
-	if (!WaitFor(JPEG_FULL_IMAGE_LOAD_START_WAITTIME))
-	{
-		m_pDoc->m_bCancelLoadFullJpegTransitionAllowed = TRUE;
-		OnExit();
-		return 0;
-	}
 
 	// This flag is disabled when first opening a document,
 	// from now on it is permitted to cancel the 
@@ -1495,19 +1470,6 @@ int CPictureDoc::CJpegThread::Work()
 	}
 	else
 		m_pDoc->m_csLoadFullJpegDib.LeaveCriticalSection(); // LEAVE CS
-
-	// Wait for some seconds before starting,
-	// this saves cpu time when watching
-	// pictures one after the other.
-	// If the Property Dialog is open wait less time
-	// to show the compression faster!
-	if (!WaitFor(m_pDoc->m_pImageInfoDlg ?
-				JPEG_COMPRESSION_CALCULATION_START_WAITTIME_SHORT :
-				JPEG_COMPRESSION_CALCULATION_START_WAITTIME_LONG))
-	{
-		OnExit();
-		return 0;
-	}
 
 	// Now Make Sure the Load Pictures Thread is not running
 	// to safe CPU for the Loading, which is more important
@@ -4370,7 +4332,7 @@ void CPictureDoc::LoadSettings()
 	m_uiMaxColors256 = (BOOL)pApp->GetProfileInt(sSection, _T("MaxColors256"), 256);
 	m_crBackgroundColor = (COLORREF)pApp->GetProfileInt(sSection, _T("BackgroundColor"), ::GetSysColor(COLOR_WINDOW));
 	m_bForceLossyTrafo = (BOOL)pApp->GetProfileInt(sSection, _T("ForceLossyTrafo"), FALSE);
-	m_bStretchModeHalftone = (BOOL)pApp->GetProfileInt(sSection, _T("StretchModeHalftone"), FALSE);
+	m_bStretchModeHalftone = (BOOL)pApp->GetProfileInt(sSection, _T("StretchModeHalftone"), TRUE);
 	m_bEnableOsd = (BOOL)pApp->GetProfileInt(sSection, _T("EnableOSD"), TRUE);
 	m_bNoBorders = (BOOL)pApp->GetProfileInt(sSection, _T("NoBorders"), FALSE);
 	m_bPrintMargin = (BOOL)pApp->GetProfileInt(sSection, _T("PrintMargin"), TRUE);
@@ -9051,13 +9013,15 @@ BOOL CPictureDoc::TransitionLRSlide(HDC hSrcDC, int xs, int ys,
 	}
 }
 
-const BYTE AlphaLoadFullJpegTransitionValues[BLEND_STEPS] = {16, 32, 48, 60, 72, 80, 88, 230};
+const BYTE AlphaLoadFullJpegTransitionValues[] = {48, 84, 128, 180};
+//                                                  +36  +44  +52
 BOOL CPictureDoc::TransitionLoadFullJpeg(	HDC hSrcDC, int xs, int ys,
 											HDC hDestDC, int xd, int yd,
 											int width, int height,
 											int nStep)
 {
-	if ((nStep >= BLEND_STEPS) || (nStep < 0))
+	const int nSteps = sizeof(AlphaLoadFullJpegTransitionValues) / sizeof(AlphaLoadFullJpegTransitionValues[0]);
+	if ((nStep >= nSteps) || (nStep < 0))
 		return FALSE;
 	else
 	{
@@ -9104,14 +9068,15 @@ BOOL CPictureDoc::TransitionLoadFullJpeg(	HDC hSrcDC, int xs, int ys,
 	}
 }
 
-const BYTE AlphaTransitionValues[BLEND_STEPS] = {32, 56, 80, 104, 128, 152, 188, 240};
-//                                                 +24 +24 +24  +24  +24  +36
+const BYTE AlphaTransitionValues[] = {32, 56, 80, 104, 128, 152, 188, 240};
+//                                      +24 +24 +24  +24  +24  +36  +52
 BOOL CPictureDoc::TransitionBlend(	HDC hSrcDC, int xs, int ys,
 									HDC hDestDC, int xd, int yd,
 									int width, int height,
 									int nStep)
 {
-	if ((nStep >= BLEND_STEPS) || (nStep < 0))
+	const int nSteps = sizeof(AlphaTransitionValues) / sizeof(AlphaTransitionValues[0]);
+	if ((nStep >= nSteps) || (nStep < 0))
 		return FALSE;
 	else
 	{
