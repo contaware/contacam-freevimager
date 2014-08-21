@@ -2789,7 +2789,7 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 					}
 					else
 					{
-						pDoc->ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
+						CVideoDeviceDoc::ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
 						pDoc->CloseDocument();
 					}
 				}

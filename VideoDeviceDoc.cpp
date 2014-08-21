@@ -13,7 +13,6 @@
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
 #include "AudioFormatDlg.h"
-#include "ConnectErrMsgBoxDlg.h"
 #include "HttpVideoFormatDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
@@ -3281,7 +3280,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::PollAndClean(BOOL bDoNewPoll)
 int CVideoDeviceDoc::CHttpGetFrameThread::OnError()
 {
 	CleanUpAllConnections();
-	m_pDoc->ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+	CVideoDeviceDoc::ConnectErr(ML_STRING(1465, "Cannot connect to the specified network device or server"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 	m_pDoc->CloseDocument();
 	return 0;
 }
@@ -4290,20 +4289,10 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 
 void CVideoDeviceDoc::ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName)
 {
-	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-		::LogLine(_T("%s"), sDeviceName + _T(", ") + lpszText);
-	else
-	{
-		if (AutorunGetDeviceKey(sDevicePathName) != _T(""))
-		{
-			CConnectErrMsgBoxDlg dlg(sDeviceName + _T(", ") + lpszText);
-			dlg.DoModal();
-			if (!dlg.m_bAutorun)
-				AutorunRemoveDevice(sDevicePathName);
-		}
-		else
-			::AfxMessageBox(sDeviceName + _T(", ") + lpszText, MB_OK | MB_ICONSTOP);
-	}
+	::PostMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
+					WM_THREADSAFE_CONNECTERR,
+					(WPARAM)(new CString(sDeviceName + _T(", ") + lpszText)),
+					(LPARAM)(new CString(sDevicePathName)));
 }
 
 void CVideoDeviceDoc::FreeMovementDetector()
@@ -4434,48 +4423,70 @@ CString CVideoDeviceDoc::GetDeviceName()
 
 void CVideoDeviceDoc::SetDocumentTitle()
 {
-	// Get name
-	CString sTitle = GetAssignedDeviceName();
-
-	// General info
-	CString sWidthHeight;
-	CString sFramerate;
-	CString sPixelFormat;
-	if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
+	CString sTitle;
+	if (m_bClosing)
 	{
-		// Width and Height
-		sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
-
-		// Framerate
-		sFramerate.Format(_T("%0.1ff/s"), m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate);
-
-		// Pixel Format
-		sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI);
+		// Closing progress
+		sTitle = ML_STRING(1566, "Closing ");
+		CString sCurrentTitle(GetTitle());
+		if (sCurrentTitle.Find(_T(".....")) >= 0)
+			sTitle += _T(".");
+		else if (sCurrentTitle.Find(_T("....")) >= 0)
+			sTitle += _T(".....");
+		else if (sCurrentTitle.Find(_T("...")) >= 0)
+			sTitle += _T("....");
+		else if (sCurrentTitle.Find(_T("..")) >= 0)
+			sTitle += _T("...");
+		else if (sCurrentTitle.Find(_T(".")) >= 0)
+			sTitle += _T("..");
+		else
+			sTitle += _T(".");
 	}
-
-	// Network info
-	CString sNetworkMode;
-	if (m_pGetFrameNetCom && m_pHttpGetFrameParseProcess)
+	else
 	{
-		if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
-			sNetworkMode = ML_STRING(1865, "Server Push Mode");
-		else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
-			sNetworkMode = ML_STRING(1866, "Client Poll Mode");
+		// Get name
+		sTitle = GetAssignedDeviceName();
+
+		// General info
+		CString sWidthHeight;
+		CString sFramerate;
+		CString sPixelFormat;
+		if (m_DocRect.Width() > 0 && m_DocRect.Height() > 0)
+		{
+			// Width and Height
+			sWidthHeight.Format(_T("%dx%d"), m_DocRect.Width(), m_DocRect.Height());
+
+			// Framerate
+			sFramerate.Format(_T("%0.1ff/s"), m_dEffectiveFrameRate > 0.0 ? m_dEffectiveFrameRate : m_dFrameRate);
+
+			// Pixel Format
+			sPixelFormat = CDib::GetCompressionName((LPBITMAPINFO)&m_CaptureBMI);
+		}
+
+		// Network info
+		CString sNetworkMode;
+		if (m_pGetFrameNetCom && m_pHttpGetFrameParseProcess)
+		{
+			if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATMJPEG)
+				sNetworkMode = ML_STRING(1865, "Server Push Mode");
+			else if (m_pHttpGetFrameParseProcess->m_FormatType == CHttpGetFrameParseProcess::FORMATJPEG)
+				sNetworkMode = ML_STRING(1866, "Client Poll Mode");
+		}
+
+		// Update Property Sheet title
+		if (m_pCameraAdvancedSettingsPropertySheet)
+			m_pCameraAdvancedSettingsPropertySheet->UpdateTitle();
+
+		// Set main title
+		if (!sWidthHeight.IsEmpty())
+			sTitle += _T(" , ") + sWidthHeight;
+		if (!sFramerate.IsEmpty())
+			sTitle += _T(" , ") + sFramerate;
+		if (!sPixelFormat.IsEmpty())
+			sTitle += _T(" , ") + sPixelFormat;
+		if (!sNetworkMode.IsEmpty())
+			sTitle += _T(" , ") + sNetworkMode;
 	}
-
-	// Update Property Sheet title
-	if (m_pCameraAdvancedSettingsPropertySheet)
-		m_pCameraAdvancedSettingsPropertySheet->UpdateTitle();
-
-	// Set main title
-	if (!sWidthHeight.IsEmpty())
-		sTitle += _T(" , ") + sWidthHeight;
-	if (!sFramerate.IsEmpty())
-		sTitle += _T(" , ") + sFramerate;
-	if (!sPixelFormat.IsEmpty())
-		sTitle += _T(" , ") + sPixelFormat;
-	if (!sNetworkMode.IsEmpty())
-		sTitle += _T(" , ") + sNetworkMode;
 	CDocument::SetTitle(sTitle);
 }
 
@@ -10422,7 +10433,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_bTryConnecting = FALSE;
 
 					// Msg
-					m_pDoc->ConnectErr(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					CVideoDeviceDoc::ConnectErr(ML_STRING(1488, "Camera is telling you something,\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10457,7 +10468,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 					m_bTryConnecting = FALSE;
 
 					// Msg
-					m_pDoc->ConnectErr(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					CVideoDeviceDoc::ConnectErr(ML_STRING(1489, "Camera is asking you something (probably to set a password),\nfirst open it in a browser, then come back here."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 					
 					// Empty the buffers, so that parser stops calling us!
 					pNetCom->Read();
@@ -10573,7 +10584,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				m_bTryConnecting = FALSE;
 
 				// Msg
-				m_pDoc->ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+				CVideoDeviceDoc::ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Close
 				m_pDoc->CloseDocument();
@@ -10710,9 +10721,9 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 
 				// Msg
 				if (sCode == _T("503")) // Service Unavailable
-					m_pDoc->ConnectErr(ML_STRING(1491, "Server is to busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					CVideoDeviceDoc::ConnectErr(ML_STRING(1491, "Server is to busy, try later"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 				else
-					m_pDoc->ConnectErr(ML_STRING(1490, "Unsupported network camera type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+					CVideoDeviceDoc::ConnectErr(ML_STRING(1490, "Unsupported network camera type or mode"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Empty the buffers, so that parser stops calling us!
 				pNetCom->Read();

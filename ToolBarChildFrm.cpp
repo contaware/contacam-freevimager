@@ -18,9 +18,6 @@
 #include "AudioVideoShiftDlg.h"
 #include "CameraAdvancedSettingsPropertySheet.h"
 #include "DxCapture.h"
-#ifdef VIDEODEVICEDOC
-#include "ProgressDlg.h"
-#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1460,6 +1457,9 @@ void CVideoDeviceChildFrame::OnClose()
 	// Exit Full-Screen
 	if (pView->m_bFullScreenMode)
 		::AfxGetMainFrame()->EnterExitFullscreen();
+	
+	// Show closing progress in title bar
+	pDoc->SetDocumentTitle();
 
 	// If First Close Attempt
 	if (m_bFirstCloseAttempt)
@@ -1467,16 +1467,6 @@ void CVideoDeviceChildFrame::OnClose()
 		// Start closing
 		if (pDoc->CanCloseFrame(this))
 		{
-			// Show closing progress dialog
-			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess	&&
-				(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon		||
-				!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
-			{
-				new CProgressDlg(	this->GetSafeHwnd(),
-									ML_STRING(1566, "Closing ") + pDoc->GetAssignedDeviceName() + _T("..."),
-									0, MAX_CLOSE_CHILDFRAME_WAITTIME);
-			}
-
 			// Kill Timer
 			pView->KillTimer(ID_TIMER_RELOAD_SETTINGS);
 
@@ -1532,6 +1522,7 @@ void CVideoDeviceChildFrame::OnClose()
 
 			// Set Closing Flag
 			::InterlockedExchange(&pDoc->m_bClosing, 1);
+			pDoc->SetDocumentTitle();
 
 			// Clear Modified Flag
 			pDoc->SetModifiedFlag(FALSE);

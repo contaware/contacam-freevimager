@@ -764,7 +764,7 @@ protected: // create from serialization only
 public:
 	
 	// General Functions
-	void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
+	static void ConnectErr(LPCTSTR lpszText, const CString& sDevicePathName, const CString& sDeviceName); // Called when a device start fails
 	void CloseDocument();														// Close Document by sending a WM_CLOSE to the Parent Frame
 	CString GetAssignedDeviceName();											// Get User Assigned Device Name
 	static CString GetHostFromDevicePathName(const CString& sDevicePathName);	// Returns host name or _T("") if it's not a network device

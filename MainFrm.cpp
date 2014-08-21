@@ -8,6 +8,7 @@
 #include "PictureView.h"
 #include "VideoAviView.h"
 #include "VideoDeviceView.h"
+#include "ConnectErrMsgBoxDlg.h"
 #include "MainFrm.h"
 #include "DxCapture.h"
 #include "GeneralPage.h"
@@ -95,6 +96,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 #ifdef VIDEODEVICEDOC
+	ON_MESSAGE(WM_THREADSAFE_CONNECTERR, OnThreadSafeConnectErr)
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
 	ON_COMMAND(ID_VIEW_FILES, OnViewFiles)
@@ -977,6 +979,43 @@ LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 }
 
 #ifdef VIDEODEVICEDOC
+LONG CMainFrame::OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam)
+{
+	// Check params
+	CString* pMsg = (CString*)wparam;
+	CString* pDevicePathName = (CString*)lparam;
+	if (!pMsg || !pDevicePathName)
+	{
+		if (pMsg)
+			delete pMsg;
+		if (pDevicePathName)
+			delete pDevicePathName;
+		return 0;
+	}
+
+	// Log / show connection error message
+	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+		::LogLine(_T("%s"), *pMsg);
+	else
+	{
+		if (CVideoDeviceDoc::AutorunGetDeviceKey(*pDevicePathName) != _T(""))
+		{
+			CConnectErrMsgBoxDlg dlg(*pMsg);
+			dlg.DoModal();
+			if (!dlg.m_bAutorun)
+				CVideoDeviceDoc::AutorunRemoveDevice(*pDevicePathName);
+		}
+		else
+			::AfxMessageBox(*pMsg, MB_OK | MB_ICONSTOP);
+	}
+
+	// Free
+	delete pMsg;
+	delete pDevicePathName;
+
+	return 1;
+}
+
 LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 {
 	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices((int)wparam);
