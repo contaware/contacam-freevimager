@@ -58,7 +58,7 @@ BOOL CProgressDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	SetWindowText(m_sTitle);
-	SetWindowPos(&this->wndTopMost,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW);
+	SetWindowPos(&this->wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_SHOWWINDOW);
 	m_Progress.SetRange32(0, m_dwWaitTimeMs);
 	m_Progress.SetStep(1000);
 	m_Progress.SetPos(m_dwStartTimeMs);
@@ -156,7 +156,7 @@ void CProgressDlg::OnSysCommand(UINT nID, LPARAM lParam)
 		(nID & 0xfff0) == SC_SIZE ||
 		(nID & 0xfff0) == SC_RESTORE)
 		return;
-	CProgressDlg::OnSysCommand(nID, lParam);
+	CDialog::OnSysCommand(nID, lParam);
 }
 
 
