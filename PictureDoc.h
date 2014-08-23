@@ -40,7 +40,7 @@ class CPictureChildFrame;
 #define JPEG_COMPRESSION_CALCULATION_THREADWAIT_TIMEOUT			4000U
 
 // Load Full Jpeg Transition Delay in ms
-#define JPEG_LOADFULL_TRANSITIONDELAY							150
+#define JPEG_LOADFULL_TRANSITIONDELAY							200
 
 // Full Jpeg Transition Critical Section Timeout in ms
 #define CS_LOADFULLJPEGDIB_TIMEOUT								30
