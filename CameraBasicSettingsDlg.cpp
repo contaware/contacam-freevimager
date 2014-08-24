@@ -470,7 +470,11 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
 	pComboBox->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDOK);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MAX_CAMERA_FOLDER_SIZE);
+	pEdit->EnableWindow(bEnable);
+	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_PARENT_DIR);
+	pButton->EnableWindow(bEnable);
+	pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDCANCEL);
 	pButton->EnableWindow(bEnable);
