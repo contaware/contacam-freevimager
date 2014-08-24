@@ -224,22 +224,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			m_TrayIcon.MinimizeToTray();
 	}
 
-	// Register session change notification
-#ifdef VIDEODEVICEDOC
-	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-#endif
-	{
-		typedef BOOL (WINAPI * FPWTSREGISTERSESSIONNOTIFICATION)(HWND hWnd, DWORD dwFlags);
-		HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
-		if (h)
-		{
-			FPWTSREGISTERSESSIONNOTIFICATION fpWTSRegisterSessionNotification = (FPWTSREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSRegisterSessionNotification");
-			if (fpWTSRegisterSessionNotification)
-				fpWTSRegisterSessionNotification(GetSafeHwnd(), NOTIFY_FOR_THIS_SESSION);
-			::FreeLibrary(h);
-		}
-	}
-
 	return 0;
 }
 
@@ -652,22 +636,6 @@ void CMainFrame::OnClose()
 			m_pIMAPI2Dlg->SetActiveWindow();
 			m_pIMAPI2Dlg->SetFocus();
 			return;		// don't close it
-		}
-
-		// Unregister session change notification
-#ifdef VIDEODEVICEDOC
-		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-#endif
-		{
-			typedef BOOL (WINAPI * FPWTSUNREGISTERSESSIONNOTIFICATION)(HWND hWnd);
-			HINSTANCE h = ::LoadLibrary(_T("Wtsapi32.dll"));
-			if (h)
-			{
-				FPWTSUNREGISTERSESSIONNOTIFICATION fpWTSUnRegisterSessionNotification = (FPWTSUNREGISTERSESSIONNOTIFICATION)::GetProcAddress(h, "WTSUnRegisterSessionNotification");
-				if (fpWTSUnRegisterSessionNotification)
-					fpWTSUnRegisterSessionNotification(GetSafeHwnd());
-				::FreeLibrary(h);
-			}
 		}
 
 		// Stop All Threads used for the PostDelayedMessage() Function
