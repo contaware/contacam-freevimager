@@ -994,7 +994,8 @@ LONG CMainFrame::OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam)
 	}
 
 	// Log / show connection error message
-	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+	if (((CUImagerApp*)::AfxGetApp())->m_bServiceProcess ||
+		((CUImagerApp*)::AfxGetApp())->m_bShuttingDownApplication)
 		::LogLine(_T("%s"), *pMsg);
 	else
 	{
