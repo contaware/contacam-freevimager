@@ -1,10 +1,10 @@
 CONTACAM HISTORY
 
-4.9.7 (xxx yth 2014)
+4.9.7 (August 25th 2014)
 
 - New camera delete toolbar button
 - Configurable maximum camera folder size (that's useful when
-  recording to a Cloud with limited space)
+  recording to a cloud storage service with limited space)
 - Faster avi video recording
 - Web interface has gotten a button to hide date navigation
   and live preview so that detections can be watched better.

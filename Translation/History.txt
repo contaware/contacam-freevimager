@@ -1,8 +1,10 @@
 TRANSLATIONS HISTORY
 
-4.9.7 (xxx yth 2014)
+4.9.7 (August 25th 2014)
 
-- ... 
+- Fixed text of 32958 (ID_VIEW_STRETCH_HALFTONE)
+- Renamed: Device Assistant -> Camera Basic Settings
+           Device Settings  -> Camera Advanced Settings 
 
 4.9.5 (March 24th 2014)
 

@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-4.9.7 (xxx yth 2014)
+4.9.7 (August 25th 2014)
 
 - Faster transition to full-sized jpeg image
 - High Quality Stretch enabled by default
