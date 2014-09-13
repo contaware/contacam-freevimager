@@ -28,7 +28,7 @@ FREEVIMAGER HISTORY
 - FreeVimager opens now all numeric extensions as tiff files
   because some fax/scan devices/programs highlight the pages
   count in the extension (.001, .002, .003, ...)
-- First version especially optimized for Windows XP and higher
+- First version especially optimized for Windows XP SP2 and higher
 - Dropped support for theora encoding because many modern
   players are not able to play avi files encoded in such a way
   
