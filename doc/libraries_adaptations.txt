@@ -17,7 +17,7 @@ CXButtonXP 1.2
 - Centering multiline text
 
 
-CPJNSMTPConnection 3.05 with w3 mfc 1.97
+CPJNSMTPConnection 3.06 with w3 mfc 1.97
 ----------------------------------------
 
 - Thread Safe
