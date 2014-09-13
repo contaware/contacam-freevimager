@@ -1,5 +1,9 @@
 FREEVIMAGER HISTORY
 
+4.9.9 (xxx yth 2014)
+
+- ... 
+
 4.9.7 (August 25th 2014)
 
 - Faster transition to full-sized jpeg image
