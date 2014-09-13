@@ -1,4 +1,7 @@
+﻿#include <fcntl.h>
+#include <io.h>
 #include <stdio.h>
+#include <conio.h>
 #include <windows.h>
 #include <tchar.h>
 #include <winbase.h>
@@ -734,8 +737,49 @@ void GetPw(TCHAR* sPw)
 	_tprintf(_T("\n"));
 }
 
+BOOL SwitchToUnicodeConsole()
+{
+	// Change to unicode mode
+	_setmode(_fileno(stderr), _O_U16TEXT);
+	_setmode(_fileno(stdin), _O_U16TEXT);
+	_setmode(_fileno(stdout), _O_U16TEXT);
+
+	// Change to unicode font
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	typedef BOOL (WINAPI *PGETCURRENTCONSOLEFONTEX)(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);
+	typedef BOOL (WINAPI *PSETCURRENTCONSOLEFONTEX)(HANDLE, BOOL, PCONSOLE_FONT_INFOEX);
+	HMODULE hMod = GetModuleHandle(_T("kernel32.dll"));
+	PGETCURRENTCONSOLEFONTEX pGetCurrentConsoleFontEx = (PGETCURRENTCONSOLEFONTEX)GetProcAddress(hMod, "GetCurrentConsoleFontEx");
+	PSETCURRENTCONSOLEFONTEX pSetCurrentConsoleFontEx = (PSETCURRENTCONSOLEFONTEX)GetProcAddress(hMod, "SetCurrentConsoleFontEx");
+	if (pGetCurrentConsoleFontEx && pSetCurrentConsoleFontEx) // Win Vista or later
+	{
+		CONSOLE_FONT_INFOEX cfix_current = { 0 };
+		cfix_current.cbSize = sizeof(cfix_current);
+		if (pGetCurrentConsoleFontEx(hConsole, FALSE, &cfix_current))
+		{
+			if (!(cfix_current.FontFamily & TMPF_TRUETYPE)) // if no unicode font configured
+			{
+				CONSOLE_FONT_INFOEX cfix_new = { 0 };
+				cfix_new.cbSize       = sizeof(cfix_new);
+				cfix_new.dwFontSize.X = 7;
+				cfix_new.dwFontSize.Y = 14;
+				cfix_new.FontFamily   = FF_DONTCARE;
+				cfix_new.FontWeight   = FW_NORMAL;
+				lstrcpy(cfix_new.FaceName, _T("Consolas")); // Consolas (unicode font) is present in Win Vista and later
+				return pSetCurrentConsoleFontEx(hConsole, FALSE, &cfix_new);
+			}
+			else
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 void _tmain(int argc, TCHAR* argv[])
 {
+	// Unicode Console
+	BOOL bSureUnicode = SwitchToUnicodeConsole();
+
 	// initialize critical section
 	InitializeCriticalSection(&g_WriteLogCS);
 
@@ -804,6 +848,14 @@ void _tmain(int argc, TCHAR* argv[])
 		// install service
 		else if (_tcsicmp(_T("-i"), argv[1]) == 0)
 		{
+			// For older systems the undocumented SetConsoleFont() API is not working
+			// to change the font face, the solution is to manually change FaceName in
+			// registry before starting us
+			if (!bSureUnicode)
+			{
+				_tprintf(	_T("NOTE: for unicode support run regedit.exe and set\n")
+							_T("HKEY_CURRENT_USER\\Console\\FaceName to Lucida Console\n\n"));
+			}
 			_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
 			// Username for StartService() on Windows 8 which fails with
 			// ERROR_SERVICE_DEPENDENCY_FAIL (1068) if initializing
@@ -823,7 +875,8 @@ void _tmain(int argc, TCHAR* argv[])
 				else
 				{
 					_tprintf(_T("Logon Username: "));
-					_getts_s(pServiceLogonRightName, STRINGBUFSIZE+1);
+					size_t numRead = 0;
+					_cgetts_s(pServiceLogonRightName, &numRead);
 					_tcscpy(pServiceStartName, _T(".\\"));
 					_tcscat(pServiceStartName, pServiceLogonRightName);
 				}
