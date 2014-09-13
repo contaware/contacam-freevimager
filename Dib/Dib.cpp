@@ -4090,8 +4090,7 @@ BOOL CDib::SetDibSectionFromDDB(HBITMAP hBitmap, HPALETTE hPal)
     HBITMAP hOldCopyBitmap = (HBITMAP)::SelectObject(hCopyDC, m_hDibSection);
 
 	// Copy
-	if (::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY) == FALSE)
-		::MessageBeep(0xFFFFFFFF);
+	::BitBlt(hCopyDC, 0, 0, bm.bmWidth, bm.bmHeight, hMemDC, 0, 0, SRCCOPY);
 
 	// Get Colors from the DibSection
 	if (m_pBMI->bmiHeader.biBitCount <= 8)
