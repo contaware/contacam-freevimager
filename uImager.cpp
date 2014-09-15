@@ -2678,8 +2678,9 @@ BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount)
 														(WPARAM)nRetryCount, 0);
 
 		// Show starting progress dialog
-		if (!m_bServiceProcess								&&
-			!m_pAutorunProgressDlg							&&
+		if (!m_pAutorunProgressDlg								&&
+			!m_bServiceProcess									&&
+			((CUImagerApp*)::AfxGetApp())->IsMainFrameVisible()	&&
 			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
 			!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 		{
