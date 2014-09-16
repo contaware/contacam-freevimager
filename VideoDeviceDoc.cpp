@@ -8443,7 +8443,7 @@ __forceinline int CVideoDeviceDoc::SummRectArea(CDib* pDib,
 // Movement Detector
 //
 // pDib				: Difference Dib from which to detect movement
-// nDetectionLevel	: 1 - 100 (1 - > low movement sensibility, 100 -> high movement sensibility)
+// nDetectionLevel	: 1 - 100 (1 - > low movement sensitivity, 100 -> high movement sensitivity)
 BOOL CVideoDeviceDoc::MovementDetector(CDib* pDib, int nDetectionLevel)
 {
 	// Check Params

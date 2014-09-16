@@ -27,11 +27,11 @@ protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
 	BOOL InitDxDraw(int nWidth, int nHeight);
 	void DxDrawText(int nWidth, int nHeight, const CString& sOSDMessage, COLORREF crOSDMessageColor);
-	__forceinline void DxDrawZoneSensibility(int i, HDC hDC, const RECT& rcDetZone, int n);
+	__forceinline void DxDrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n);
 	void DxDrawZones(int nWidth, int nHeight);
 	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
 	BOOL ReOpenDxDevice();
-	BYTE m_MovDetSingleZoneSensibility;
+	BYTE m_MovDetSingleZoneSensitivity;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
 
 // Overrides
@@ -68,14 +68,14 @@ protected:
 	afx_msg void OnEditSelectall();
 	afx_msg void OnEditSelectnone();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-	afx_msg void OnEditZoneSensibility100();
-	afx_msg void OnEditZoneSensibility50();
-	afx_msg void OnEditZoneSensibility25();
-	afx_msg void OnEditZoneSensibility10();
-	afx_msg void OnUpdateEditZoneSensibility100(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI);
+	afx_msg void OnEditZoneSensitivity100();
+	afx_msg void OnEditZoneSensitivity50();
+	afx_msg void OnEditZoneSensitivity25();
+	afx_msg void OnEditZoneSensitivity10();
+	afx_msg void OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI);
 	afx_msg void OnViewFullscreen();
 	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	//}}AFX_MSG

@@ -112,7 +112,7 @@ class CMovementDetectionPage;
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
 #define MOVDET_BUFFER_COMPRESSIONQUALITY	4			// 2: best quality, 31: worst quality
-#define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max sensibility)
+#define DEFAULT_MOVDET_LEVEL				50			// Detection level default value (1 .. 100 = Max Sensitivity)
 #define DEFAULT_MOVDET_INTENSITY_LIMIT		25			// Intensity difference default value
 #define MOVDET_MAX_ZONES_BLOCK_SIZE			1024		// Subdivide settings in blocks (MOVDET_MAX_ZONES must be a multiple of this)
 #define MOVDET_MAX_ZONES					8192		// Maximum number of zones
@@ -1143,8 +1143,7 @@ public:
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone
 	volatile BOOL m_bDetectingMovement;					// Flag Indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag Indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
-	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 (100 Max Sensibility)
-														// a high sensibility may Detect Video Noise!)
+	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 = Max Sensitivity
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame
@@ -1177,8 +1176,8 @@ public:
 	int* volatile m_MovementDetectorCurrentIntensity;	// Current Intensity by zones (array allocated in constructor)
 	DWORD* volatile m_MovementDetectionsUpTime;			// Detection Up-Time For each Zone (array allocated in constructor)
 	BYTE* volatile m_MovementDetections;				// Detecting in Zone (array allocated in constructor)
-	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensibility
-														// 0 -> No Detection, 1 -> Full Sensibility=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
+	BYTE* volatile m_DoMovementDetection;				// Do Movement Detection in this Zone with given relative sensitivity
+														// 0 -> No Detection, 1 -> Full Sensitivity=100%, 2 -> 50%, 4 -> 25%, 10 -> 10%
 														// (array allocated in constructor)
 	volatile int m_nMovementDetectorIntensityLimit;		// Noise Floor
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)

@@ -939,10 +939,10 @@ BEGIN
         MENUITEM "Import...",                   ID_EDIT_IMPORT_ZONES
         MENUITEM "Export...",                   ID_EDIT_EXPORT_ZONES
         MENUITEM SEPARATOR
-        MENUITEM "Sensibility 100 %",           ID_EDIT_ZONE_SENSIBILITY_100
-        MENUITEM "Sensibility 50 %",            ID_EDIT_ZONE_SENSIBILITY_50
-        MENUITEM "Sensibility 25 %",            ID_EDIT_ZONE_SENSIBILITY_25
-        MENUITEM "Sensibility 10 %",            ID_EDIT_ZONE_SENSIBILITY_10
+        MENUITEM "Sensitivity 100 %",           ID_EDIT_ZONE_SENSITIVITY_100
+        MENUITEM "Sensitivity 50 %",            ID_EDIT_ZONE_SENSITIVITY_50
+        MENUITEM "Sensitivity 25 %",            ID_EDIT_ZONE_SENSITIVITY_25
+        MENUITEM "Sensitivity 10 %",            ID_EDIT_ZONE_SENSITIVITY_10
         MENUITEM SEPARATOR
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
         MENUITEM SEPARATOR
@@ -1976,7 +1976,7 @@ BEGIN
     EDITTEXT        IDC_EDIT_EXEC_HELP,231,219,177,34,ES_MULTILINE | ES_READONLY | NOT WS_TABSTOP
     LTEXT           "seconds of frames before detection begin",IDC_STATIC2283,62,34,144,8
     LTEXT           "seconds of frames after detection end",IDC_STATIC2284,62,49,144,8
-    LTEXT           "Detection\nSensibility",IDC_STATIC2285,13,67,35,17
+    LTEXT           "Detection\nSensitivity",IDC_STATIC2285,13,67,35,17
     GROUPBOX        "Detection Parameters",IDC_STATIC2286,7,19,203,91
     EDITTEXT        IDC_DETECTION_LEVEL_NUM,186,70,13,12,ES_RIGHT | ES_READONLY | ES_NUMBER | NOT WS_BORDER | NOT WS_TABSTOP
     GROUPBOX        "On Detection",IDC_STATIC2288,215,19,198,243
@@ -5568,14 +5568,14 @@ BEGIN
     ID_DET_COMBOX           "Select detection mode\nDetection Mode"
     ID_CAPTURE_CAMERABASICSETTINGS 
                             "Camera basic settings\nCamera Basic Settings"
-    ID_EDIT_ZONE_SENSIBILITY_100 
-                            "Set detection zone sensibility to 100 %\nZone Sensibility 100 %"
-    ID_EDIT_ZONE_SENSIBILITY_50 
-                            "Set detection zone sensibility to 50 %\nZone Sensibility 50 %"
-    ID_EDIT_ZONE_SENSIBILITY_25 
-                            "Set detection zone sensibility to 25 %\nZone Sensibility 25 %"
-    ID_EDIT_ZONE_SENSIBILITY_10 
-                            "Set detection zone sensibility to 10 %\nZone Sensibility 10 %"
+    ID_EDIT_ZONE_SENSITIVITY_100 
+                            "Set detection zone sensitivity to 100 %\nZone Sensitivity 100 %"
+    ID_EDIT_ZONE_SENSITIVITY_50 
+                            "Set detection zone sensitivity to 50 %\nZone Sensitivity 50 %"
+    ID_EDIT_ZONE_SENSITIVITY_25 
+                            "Set detection zone sensitivity to 25 %\nZone Sensitivity 25 %"
+    ID_EDIT_ZONE_SENSITIVITY_10 
+                            "Set detection zone sensitivity to 10 %\nZone Sensitivity 10 %"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
     ID_FILE_EXTRACTFRAMES   "Extract all frames\nExtract Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"

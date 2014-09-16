@@ -35,14 +35,14 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_COMMAND(ID_EDIT_SELECTALL, OnEditSelectall)
 	ON_COMMAND(ID_EDIT_SELECTNONE, OnEditSelectnone)
 	ON_WM_MOUSEWHEEL()
-	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_100, OnEditZoneSensibility100)
-	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_50, OnEditZoneSensibility50)
-	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_25, OnEditZoneSensibility25)
-	ON_COMMAND(ID_EDIT_ZONE_SENSIBILITY_10, OnEditZoneSensibility10)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_100, OnUpdateEditZoneSensibility100)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_50, OnUpdateEditZoneSensibility50)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_25, OnUpdateEditZoneSensibility25)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSIBILITY_10, OnUpdateEditZoneSensibility10)
+	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_100, OnEditZoneSensitivity100)
+	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_50, OnEditZoneSensitivity50)
+	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_25, OnEditZoneSensitivity25)
+	ON_COMMAND(ID_EDIT_ZONE_SENSITIVITY_10, OnEditZoneSensitivity10)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_100, OnUpdateEditZoneSensitivity100)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_50, OnUpdateEditZoneSensitivity50)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_25, OnUpdateEditZoneSensitivity25)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_ZONE_SENSITIVITY_10, OnUpdateEditZoneSensitivity10)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_THREADSAFE_CAPTURECAMERABASICSETTINGS, OnThreadSafeCaptureCameraBasicSettings)
 	ON_MESSAGE(WM_THREADSAFE_UPDATE_PHPPARAMS, OnThreadSafeUpdatePhpParams)
@@ -60,7 +60,7 @@ CVideoDeviceView::CVideoDeviceView()
 	m_dwDxDrawUpTime = ::timeGetTime();
 	m_pDxDrawDib = new CDib;
 	m_pDxDrawDib->SetShowMessageBoxOnError(FALSE);
-	m_MovDetSingleZoneSensibility = 1;
+	m_MovDetSingleZoneSensitivity = 1;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
@@ -588,7 +588,7 @@ void CVideoDeviceView::DxDrawText(int nWidth, int nHeight, const CString& sOSDMe
 	}
 }
 
-__forceinline void CVideoDeviceView::DxDrawZoneSensibility(int i, HDC hDC, const RECT& rcDetZone, int n)
+__forceinline void CVideoDeviceView::DxDrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
@@ -663,13 +663,13 @@ void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 		RECT rcDetZone;
 		int nZoneWidth = nWidth / pDoc->m_lMovDetXZonesCount;
 		int nZoneHeight = nHeight / pDoc->m_lMovDetYZonesCount;
-		int nSensibilityTextSize;
+		int nSensitivityTextSize;
 		if (nZoneWidth == 8 || nZoneHeight == 8)
-			nSensibilityTextSize = 0;
+			nSensitivityTextSize = 0;
 		else if (nZoneWidth == 16 || nZoneHeight == 16)
-			nSensibilityTextSize = 2;
+			nSensitivityTextSize = 2;
 		else
-			nSensibilityTextSize = 4;
+			nSensitivityTextSize = 4;
 
 		// Draw Zones where Detection is enabled
 		if (pDoc->m_bShowEditDetectionZones)
@@ -688,7 +688,7 @@ void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 					
-					DxDrawZoneSensibility(i, hDC, rcDetZone, nSensibilityTextSize);
+					DxDrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
 					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
@@ -716,7 +716,7 @@ void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 					rcDetZone.right = nZoneOffsetX + nZoneWidth;
 					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
 
-					DxDrawZoneSensibility(i, hDC, rcDetZone, nSensibilityTextSize);
+					DxDrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
 					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
 					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
 					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
@@ -913,7 +913,7 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone Value
 		else
-			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensibility;
+			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
 	}
 }
 
@@ -1238,7 +1238,7 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 			pDoc->m_DoMovementDetection[nZone] = 0;
 		// Set Zone Value
 		else
-			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensibility;
+			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
 	}
 	
 	CUImagerView::OnMouseMove(nFlags, point);
@@ -1268,44 +1268,44 @@ void CVideoDeviceView::OnEditSelectnone()
 	memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
 }
 
-void CVideoDeviceView::OnEditZoneSensibility100() 
+void CVideoDeviceView::OnEditZoneSensitivity100() 
 {
-	m_MovDetSingleZoneSensibility = 1;
+	m_MovDetSingleZoneSensitivity = 1;
 }
 
-void CVideoDeviceView::OnUpdateEditZoneSensibility100(CCmdUI* pCmdUI) 
+void CVideoDeviceView::OnUpdateEditZoneSensitivity100(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 1);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 1);
 }
 
-void CVideoDeviceView::OnEditZoneSensibility50() 
+void CVideoDeviceView::OnEditZoneSensitivity50() 
 {
-	m_MovDetSingleZoneSensibility = 2;
+	m_MovDetSingleZoneSensitivity = 2;
 }
 
-void CVideoDeviceView::OnUpdateEditZoneSensibility50(CCmdUI* pCmdUI) 
+void CVideoDeviceView::OnUpdateEditZoneSensitivity50(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 2);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 2);
 }
 
-void CVideoDeviceView::OnEditZoneSensibility25() 
+void CVideoDeviceView::OnEditZoneSensitivity25() 
 {
-	m_MovDetSingleZoneSensibility = 4;
+	m_MovDetSingleZoneSensitivity = 4;
 }
 
-void CVideoDeviceView::OnUpdateEditZoneSensibility25(CCmdUI* pCmdUI) 
+void CVideoDeviceView::OnUpdateEditZoneSensitivity25(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 4);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 4);
 }
 
-void CVideoDeviceView::OnEditZoneSensibility10() 
+void CVideoDeviceView::OnEditZoneSensitivity10() 
 {
-	m_MovDetSingleZoneSensibility = 10;
+	m_MovDetSingleZoneSensitivity = 10;
 }
 
-void CVideoDeviceView::OnUpdateEditZoneSensibility10(CCmdUI* pCmdUI) 
+void CVideoDeviceView::OnUpdateEditZoneSensitivity10(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetRadio(m_MovDetSingleZoneSensibility == 10);
+	pCmdUI->SetRadio(m_MovDetSingleZoneSensitivity == 10);
 }
 
 BOOL CVideoDeviceView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt) 
