@@ -1486,7 +1486,7 @@ BEGIN
     PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,98,180,87,16
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,229,81,10
-    COMBOBOX        IDC_TIME_SEGMENTATION,117,227,68,67,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_TIME_SEGMENTATION,117,227,68,83,CBS_DROPDOWNLIST | WS_TABSTOP
     COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,274,26,130,220,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
                     "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,269,67,118,18
@@ -5219,6 +5219,8 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1555          "Full"
+    IDS_STRING1556          "15 minutes"
+    IDS_STRING1557          "30 minutes"
     IDS_STRING1558          "1 hour"
     IDS_STRING1559          "2 hours"
     IDS_STRING1560          "3 hours"
@@ -5625,6 +5627,7 @@ BEGIN
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
     ID_TOOLS_MOVE_CAM_FOLDERS 
                             "Move all camera folders to selected directory\nMove Camera Folders"
+    ID_TOOLS_BROWSE_CONFIG_FILES "Open file explorer\nBrowse Config Files"
 END
 
 STRINGTABLE
@@ -5637,11 +5640,6 @@ BEGIN
     IDS_STRING1877          "Save: %d%%"
     IDS_STRING1878          "Email: %d%%"
     IDS_STRING1879          "FTP: %d%%"
-END
-
-STRINGTABLE
-BEGIN
-    ID_TOOLS_BROWSE_CONFIG_FILES "Open file explorer\nBrowse Config Files"
 END
 
 #endif    // English (United States) resources

@@ -2,7 +2,9 @@ CONTACAM HISTORY
 
 4.9.9 (xxx yth 2014)
 
-- ... 
+- Possibility to configure Recording Segments of 15 min. and 30 min.
+  (if upgrading please check/fix the recording segments under
+  Camera Advanced Settings - General tab)
 
 4.9.7 (August 25th 2014)
 

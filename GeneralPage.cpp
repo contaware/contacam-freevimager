@@ -299,6 +299,8 @@ BOOL CGeneralPage::OnInitDialog()
 	CComboBox* pComboBoxTimeSeg = (CComboBox*)GetDlgItem(IDC_TIME_SEGMENTATION);
 	if (pComboBoxTimeSeg)
 	{
+		pComboBoxTimeSeg->AddString(ML_STRING(1556, "15 minutes"));
+		pComboBoxTimeSeg->AddString(ML_STRING(1557, "30 minutes"));
 		pComboBoxTimeSeg->AddString(ML_STRING(1558, "1 hour"));
 		pComboBoxTimeSeg->AddString(ML_STRING(1559, "2 hours"));
 		pComboBoxTimeSeg->AddString(ML_STRING(1560, "3 hours"));

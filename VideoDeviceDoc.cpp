@@ -8274,18 +8274,40 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 
 void CVideoDeviceDoc::NextRecTime(CTime t)
 {
-	int hours;
+	int minutes, hours;
 	switch (m_nTimeSegmentationIndex)
 	{
-		case 0 :	// 1 hour
+		case 0 :	// 15 minutes
+			minutes = 15;
+			minutes -= (t.GetMinute()%15);
+			t = t + CTimeSpan(0, 0, minutes, 0);	// + minutes
+			m_NextRecTime = CTime(	t.GetYear(),
+									t.GetMonth(),
+									t.GetDay(),
+									t.GetHour(),
+									t.GetMinute(),
+									0);		// Back to 0 sec
+			break;
+		case 1 :	// 30 minutes
+			minutes = 30;
+			minutes -= (t.GetMinute()%30);
+			t = t + CTimeSpan(0, 0, minutes, 0);	// + minutes
+			m_NextRecTime = CTime(	t.GetYear(),
+									t.GetMonth(),
+									t.GetDay(),
+									t.GetHour(),
+									t.GetMinute(),
+									0);		// Back to 0 sec
+			break;
+		case 2 :	// 1 hour
 			t = t + CTimeSpan(0, 1, 0, 0);			// + 1 hour
 			m_NextRecTime = CTime(	t.GetYear(),
 									t.GetMonth(),
 									t.GetDay(),
 									t.GetHour(),
-									0, 0);// Back to 0 min and 0 sec
+									0, 0);	// Back to 0 min and 0 sec
 			break;
-		case 1 :	// 2 hours
+		case 3 :	// 2 hours
 			hours = 2;
 			hours -= (t.GetHour()%2);
 			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
@@ -8293,9 +8315,9 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 									t.GetMonth(),
 									t.GetDay(),
 									t.GetHour(),
-									0, 0);// Back to 0 min and 0 sec
+									0, 0);	// Back to 0 min and 0 sec
 			break;
-		case 2 :	// 3 hours
+		case 4 :	// 3 hours
 			hours = 3;
 			hours -= (t.GetHour()%3);
 			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
@@ -8303,9 +8325,9 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 									t.GetMonth(),
 									t.GetDay(),
 									t.GetHour(),
-									0, 0);// Back to 0 min and 0 sec
+									0, 0);	// Back to 0 min and 0 sec
 			break;
-		case 3 :	// 6 hours
+		case 5 :	// 6 hours
 			hours = 6;
 			hours -= (t.GetHour()%6);
 			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
@@ -8313,9 +8335,9 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 									t.GetMonth(),
 									t.GetDay(),
 									t.GetHour(),
-									0, 0);// Back to 0 min and 0 sec
+									0, 0);	// Back to 0 min and 0 sec
 			break;
-		case 4 :	// 12 hours
+		case 6 :	// 12 hours
 			hours = 12;
 			hours -= (t.GetHour()%12);
 			t = t + CTimeSpan(0, hours, 0, 0);		// + hours
@@ -8323,9 +8345,9 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 									t.GetMonth(),
 									t.GetDay(),
 									t.GetHour(),
-									0, 0);// Back to 0 min and 0 sec
+									0, 0);	// Back to 0 min and 0 sec
 			break;
-		case 5 :	// 24 hours
+		case 7 :	// 24 hours
 		default:
 			t = t + CTimeSpan(1, 0, 0, 0);			// + 1 day
 			m_NextRecTime = CTime(	t.GetYear(),

@@ -538,7 +538,7 @@ void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
 
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = m_pDoc->m_pGeneralPage->m_bRecTimeSegmentation = TRUE;
-			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 3;
+			m_pDoc->m_nTimeSegmentationIndex = m_pDoc->m_pGeneralPage->m_nTimeSegmentationIndex = 5;
 			m_pDoc->m_bRecAutoOpen = m_pDoc->m_pGeneralPage->m_bRecAutoOpen = FALSE;
 
 			// Update Data from vars to view
@@ -581,7 +581,7 @@ void CCameraBasicSettingsDlg::EnableDisable24hRec(BOOL bEnable)
 			
 			// 6 Hours Segmentation
 			m_pDoc->m_bRecTimeSegmentation = TRUE;
-			m_pDoc->m_nTimeSegmentationIndex = 3;
+			m_pDoc->m_nTimeSegmentationIndex = 5;
 			m_pDoc->m_bRecAutoOpen = FALSE;
 
 			// Add Scheduler Entry
