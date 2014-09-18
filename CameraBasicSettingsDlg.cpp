@@ -149,6 +149,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 			_itot(i, sNum, 10);
 			pComboBox->AddString(sNum);
 		}
+		pComboBox->SetMinVisibleItems(PHPCONFIG_MAX_THUMSPERPAGE - PHPCONFIG_MIN_THUMSPERPAGE + 1);
 	}
 	if (sAutoSaveDir != _T(""))
 	{

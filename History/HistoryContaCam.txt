@@ -5,6 +5,9 @@ CONTACAM HISTORY
 - Possibility to configure Recording Segments of 15 min. and 30 min.
   (if upgrading please check/fix the recording segments under
   Camera Advanced Settings - General tab)
+- In email configuration dialog it's now possible to setup a
+  personalized subject line with insertion of variables
+- Added unicode support to ContaCamService console
 
 4.9.7 (August 25th 2014)
 
