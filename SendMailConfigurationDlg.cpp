@@ -1,4 +1,4 @@
-// SendMailConfigurationDlg.cpp : implementation file
+﻿// SendMailConfigurationDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
@@ -78,6 +78,10 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 	// From Email
 	pEdit = (CEdit*)GetDlgItem(IDC_SENDER_MAIL);
 	pEdit->SetWindowText(m_SendMailConfiguration.m_sFrom);
+
+	// Subject Line
+	pEdit = (CEdit*)GetDlgItem(IDC_SUBJECT_LINE);
+	pEdit->SetWindowText(m_SendMailConfiguration.m_sSubject);
 
 	// Server Name
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
@@ -184,6 +188,10 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sFrom = sText;
 
+	pEdit = (CEdit*)GetDlgItem(IDC_SUBJECT_LINE);
+	pEdit->GetWindowText(sText);
+	m_SendMailConfiguration.m_sSubject = sText;
+
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sHost = sText;
@@ -236,22 +244,16 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		CPJNSMTPMessage* pMessage = NULL;
 		try
 		{
-			// Subject
-			CTime Time = CTime::GetCurrentTime();
-			CString sSubject(_T("Test Email: ") + m_pDoc->GetAssignedDeviceName() + _T(" on ") +
-				::MakeDateLocalFormat(Time) + _T(" at ") + ::MakeTimeLocalFormat(Time, TRUE));
-			m_SendMailConfiguration.m_sSubject = sSubject;
-
 			if (m_SendMailConfiguration.m_bHTML == FALSE)
 			{
 				m_SendMailConfiguration.m_bMime = FALSE;
-				m_SendMailConfiguration.m_sBody = _T("Test Email: ") + m_pDoc->GetAssignedDeviceName();
+				m_SendMailConfiguration.m_sBody = m_pDoc->GetAssignedDeviceName();
 
 				// No Attachment(s)
 				m_SendMailConfiguration.m_sFiles = _T("");
 
 				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_SendMailConfiguration);
+				pMessage = m_pDoc->CreateEmailMessage(CTime::GetCurrentTime(), &m_SendMailConfiguration);
 			}
 			else
 			{
@@ -260,7 +262,7 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				m_SendMailConfiguration.m_sBody = _T("");
 
 				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_SendMailConfiguration);
+				pMessage = m_pDoc->CreateEmailMessage(CTime::GetCurrentTime(), &m_SendMailConfiguration);
 
 				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
 					pMessage->RemoveBodyPart(i);
@@ -268,10 +270,12 @@ void CSendMailConfigurationDlg::OnButtonTest()
 				// Setup all the body parts we want
 				CPJNSMTPBodyPart related;
 				related.SetContentType(_T("multipart/related"));
+				related.SetCharset(pMessage->GetCharset());
 
 				CPJNSMTPBodyPart html;
-				html.SetText(_T("<p>Test Email: ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>"));
+				html.SetText(_T("<p>") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>"));
 				html.SetContentType(_T("text/html"));
+				html.SetCharset(pMessage->GetCharset());
 
 				related.AddChildBodyPart(html);
 				pMessage->AddBodyPart(related);

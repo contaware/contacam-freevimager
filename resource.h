@@ -1281,6 +1281,7 @@
 #define IDC_HOST_PORT                   1222
 #define IDS_MULTILANG_1223              1223
 #define IDC_PROXY_HOST_NAME             1223
+#define IDC_SUBJECT_LINE                1223
 #define IDS_MULTILANG_1224              1224
 #define IDC_RECEIVER_MAIL               1224
 #define IDS_MULTILANG_1225              1225

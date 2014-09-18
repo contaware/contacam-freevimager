@@ -888,9 +888,6 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 																						const CString& sGIFFileName,
 																						const CStringArray& sJPGFileNames)
 {
-	CString sSubject(_T("Movement Detection: ") + m_pDoc->GetAssignedDeviceName() + _T(" on ") +
-				::MakeDateLocalFormat(Time) + _T(" at ") + ::MakeTimeLocalFormat(Time, TRUE));
-	m_pDoc->m_MovDetSendMailConfiguration.m_sSubject = sSubject;
 	CStringArray sFileNames;
 	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
 	{
@@ -932,7 +929,7 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 	}
 
 	// Do Exit?
-	if (SendMail(sFileNames) == -1)
+	if (SendMail(Time, sFileNames) == -1)
 	{
 		m_nSendMailProgress = 100; // hide progress display
 		return FALSE;
@@ -1792,7 +1789,7 @@ __forceinline CString CVideoDeviceDoc::CSaveSnapshotSWFThread::MakeSwfHistoryFil
 		return sYearMonthDayDir + _T("\\") + _T("shot_") + sTime + _T(".swf");
 }
 
-CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration)
+CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(const CTime& Time, SendMailConfigurationStruct* pSendMailConfiguration)
 {
 	// Check
 	if (!pSendMailConfiguration)
@@ -1814,15 +1811,20 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct
 	// Set the message priority
 	pMessage->m_Priority = pSendMailConfiguration->m_Priority;
 
-	// Setup the all the recipient types for this message,
+	// Setup all the recipient types for this message,
 	// valid separators between addresses are ',' or ';'
 	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
 	if (!pSendMailConfiguration->m_sCC.IsEmpty())
 		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
 	if (!pSendMailConfiguration->m_sBCC.IsEmpty())
 		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
-	if (!pSendMailConfiguration->m_sSubject.IsEmpty()) 
+	if (!pSendMailConfiguration->m_sSubject.IsEmpty())
+	{
 		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
+		pMessage->m_sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
+		pMessage->m_sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
+		pMessage->m_sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
+	}
 	if (!pSendMailConfiguration->m_sBody.IsEmpty())
 	{
 		if (pSendMailConfiguration->m_bHTML)
@@ -1849,7 +1851,7 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(SendMailConfigurationStruct
 		//pMessage->m_ReplyTo = address; //uncomment this if you want to send a Reply-To header
 	}
 
-	pMessage->m_sXMailer = _T(""); //comment this line out if you want to send a X-Mailer header
+	pMessage->m_sXMailer = _T("");
 
 	return pMessage;
 }
@@ -1961,7 +1963,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::SendMailMessage(const CString& sTemp
 // -1 : Do Exit Thread
 // 0  : Error Sending Email
 // 1  : Ok
-int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles) 
+int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CStringArray& sFiles) 
 {
 	int i;
 
@@ -1988,7 +1990,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 			{
 				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
 				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("Movement Detection: ") + m_pDoc->GetAssignedDeviceName();
+				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = ML_STRING(1844, "Det") + _T(": ") + m_pDoc->GetAssignedDeviceName();
 
 				// Attachment(s)
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
@@ -2000,7 +2002,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 				}
 
 				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
+				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
 				if (!pMessage)
 					return 0;
 			}
@@ -2011,7 +2013,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
 
 				// Create the message
-				pMessage = CVideoDeviceDoc::CreateEmailMessage(&m_pDoc->m_MovDetSendMailConfiguration);
+				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
 				if (!pMessage)
 					return 0;
 				for (i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
@@ -2023,9 +2025,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
 				CPJNSMTPBodyPart related;
 				related.SetContentType(_T("multipart/related"));
+				related.SetCharset(pMessage->GetCharset());
 				CPJNSMTPBodyPart html;
 				CString sHtml(_T("<html><body>"));
-				sHtml += _T("<p>Movement Detection: ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>");
+				sHtml += _T("<p>") + ML_STRING(1844, "Det") + _T(": ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>");
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
 					CString s;
@@ -2044,6 +2047,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CStringArray& sFiles)
 				sHtml += _T("</body></html>");
 				html.SetText(sHtml);
 				html.SetContentType(_T("text/html"));
+				html.SetCharset(pMessage->GetCharset());
 				related.AddChildBodyPart(html);
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
@@ -4167,8 +4171,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_sUsername = _T("");
 	m_MovDetSendMailConfiguration.m_sPassword = _T("");
 	m_MovDetSendMailConfiguration.m_sBoundIP = _T("");
-	m_MovDetSendMailConfiguration.m_sEncodingFriendly = _T("Western European (ISO)");
-	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("iso-8859-1");
+	m_MovDetSendMailConfiguration.m_sEncodingCharset = _T("utf-8");
 	m_MovDetSendMailConfiguration.m_bMime = TRUE;
 	m_MovDetSendMailConfiguration.m_bHTML = TRUE;
 	m_MovDetSendMailConfiguration.m_ConnectionType = CPJNSMTPConnection::PlainText;
@@ -4736,7 +4739,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
-	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), _T(""));
+	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), _T("%name%: %date%  %time%"));
 	m_MovDetSendMailConfiguration.m_sTo = pApp->GetProfileString(sSection, _T("SendMailTo"), _T(""));
 	m_MovDetSendMailConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SendMailPort"), 25);
 	m_MovDetSendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));

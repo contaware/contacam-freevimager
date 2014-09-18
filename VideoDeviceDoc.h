@@ -472,7 +472,6 @@ public:
 		CString			m_sUsername;
 		CString			m_sPassword;
 		CString			m_sBoundIP;
-		CString			m_sEncodingFriendly;
 		CString			m_sEncodingCharset;
 		BOOL			m_bMime;
 		BOOL			m_bHTML;
@@ -664,7 +663,7 @@ public:
 			// -1 : Do Exit Thread
 			// 0  : Error Sending Email
 			// 1  : Ok
-			int SendMail(const CStringArray& sFiles);
+			int SendMail(const CTime& Time, const CStringArray& sFiles);
 			void SendMailMessage(const CString& sTempEmailFile, CSaveFrameListSMTPConnection& connection, CPJNSMTPMessage* pMessage);
 
 			CVideoDeviceDoc* m_pDoc;
@@ -923,7 +922,7 @@ public:
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
-	static CPJNSMTPMessage* CreateEmailMessage(SendMailConfigurationStruct* pSendMailConfiguration);
+	CPJNSMTPMessage* CreateEmailMessage(const CTime& Time, SendMailConfigurationStruct* pSendMailConfiguration);
 
 	// FTP Upload
 	// Return Values

@@ -3044,7 +3044,14 @@ void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
   }
   else
   {
-    CStringA sBody(Message.m_RootPart.GetText());
+     //Oli fixed to support UTF-8
+     //CStringA sBody(Message.m_RootPart.GetText());
+     //Do the UTF8 conversion if necessary
+     CStringA sBody;
+     if (Message.m_RootPart.GetCharset().CompareNoCase(_T("UTF-8")) == 0)
+       sBody = CPJNSMTPBodyPart::ConvertToUTF8(Message.m_RootPart.GetText());
+     else
+       sBody = Message.m_RootPart.GetText(); 
     CPJNSMTPBodyPart::FixSingleDotA(sBody);
 
     //Send the body

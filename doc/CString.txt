@@ -43,3 +43,18 @@ string length when you release the buffer with ReleaseBuffer. If you do
 append a terminating null character, you should pass –1 for the length 
 to ReleaseBuffer and ReleaseBuffer will perform a strlen on the buffer 
 to determine its length. 
+
+
+CStringA <-> CStringW
+---------------------
+
+When converting between CStringA <-> CStringW the CP_ACP code page is 
+passed to MultiByteToWideChar() and WideCharToMultiByte(). This code 
+page is localization dependent. I tested whether all 256 8 bit chars are 
+converted from ANSI to Unicode and back. It seems to work even when the 
+tested CP-1252 codepage defines 81, 8D, 8F, 90, and 9D as invalid. But I 
+would not take that as granted, because I do not know the behaviour with 
+all the other codepages and with different OS versions. So it's ok to 
+store UTF-8 in CStringA but converting that to CStringW and then back to 
+CStringA is not a good idea. When working with UTF-8 only use CStringA 
+and do not convert it. 
