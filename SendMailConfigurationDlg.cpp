@@ -191,6 +191,8 @@ void CSendMailConfigurationDlg::CopyToStruct()
 	pEdit = (CEdit*)GetDlgItem(IDC_SUBJECT_LINE);
 	pEdit->GetWindowText(sText);
 	m_SendMailConfiguration.m_sSubject = sText;
+	if (m_SendMailConfiguration.m_sSubject.IsEmpty())
+		m_SendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 
 	pEdit = (CEdit*)GetDlgItem(IDC_HOST_NAME);
 	pEdit->GetWindowText(sText);

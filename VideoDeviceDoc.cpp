@@ -4159,7 +4159,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetSendMailConfiguration.m_sCC = _T("");
 	m_MovDetSendMailConfiguration.m_sFiles = _T("");
 	m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
-	m_MovDetSendMailConfiguration.m_sSubject = _T("");
+	m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = _T("");
 	m_MovDetSendMailConfiguration.m_bDirectly = FALSE;
 	m_MovDetSendMailConfiguration.m_bDNSLookup = FALSE;
@@ -4739,7 +4739,9 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
-	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), _T("%name%: %date%  %time%"));
+	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
+	if (m_MovDetSendMailConfiguration.m_sSubject.IsEmpty())
+		m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
 	m_MovDetSendMailConfiguration.m_sTo = pApp->GetProfileString(sSection, _T("SendMailTo"), _T(""));
 	m_MovDetSendMailConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SendMailPort"), 25);
 	m_MovDetSendMailConfiguration.m_sFrom = pApp->GetProfileString(sSection, _T("SendMailFrom"), _T(""));
