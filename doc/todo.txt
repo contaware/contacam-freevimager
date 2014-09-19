@@ -2,6 +2,8 @@ Both
 ----
 - When views are tiled and resizing mainframe then resize also childs
 - Possibility to hide menu, statusbar, titlebars and toolbars
+- Add double-quotes to ContaCam.exe file path under:
+  HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
 
 
 FreeVimager Program
@@ -16,17 +18,14 @@ ContaCam Program
   like two different snapshot rates, or ...
 - Rotate by 0,90,180,270 degrees
 - Make thumbnail anim. gif for avi records?
-- Make video splits also of 5 min, 10 min, ...  
 - Auto join all avi detections at the end of the day
 - Ability to send different emails to different people. For example
   send GIF files to one person and JPGs to another
 - Think about saving first to temp folder and when done moving to
   actual web folder. That to avoid fragmentation (temp folder could be
   on a SSD the other folder on a normal HDD)
-- Configurable email subject line: Movement Detection:
-  [Camera Name] on [Date] at [Time]
   
-  
+
 ContaCam Web Interface
 ----------------------
 - Add 2 links to the "summary snapshot" web page with "previous camera"
