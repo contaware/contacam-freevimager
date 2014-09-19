@@ -937,7 +937,6 @@ public:
 	static CString GetValidName(CString sName);
 
 	// Settings
-	void LoadAndDeleteOldZonesSettings();
 	BOOL LoadZonesSettings();
 	void SaveZonesSettings();
 	void LoadSettings(double dDefaultFrameRate, CString sSection, CString sDeviceName);

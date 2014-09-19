@@ -4615,42 +4615,6 @@ CString CVideoDeviceDoc::GetValidName(CString sName)
 	return sValidName;
 }
 
-void CVideoDeviceDoc::LoadAndDeleteOldZonesSettings()
-{
-	int i;
-	CString sSection(GetDevicePathName());
-	CString sZone;
-
-	// Load old style Zones Settings
-	for (i = 0 ; i < MOVDET_MAX_ZONES ; i++)
-	{
-		sZone.Format(MOVDET_ZONE_FORMAT, i);
-		m_DoMovementDetection[i] = (BYTE)::AfxGetApp()->GetProfileInt(sSection, sZone, 1);
-	}
-
-	// Store new style Zones Settings
-	SaveZonesSettings();
-
-	// Clean-up all old style Zones Settings
-	for (i = 0 ; i < MOVDET_MAX_ZONES ; i++)
-	{
-		sZone.Format(MOVDET_ZONE_FORMAT, i);
-		if (::AfxGetApp()->m_pszRegistryKey)
-		{
-			::DeleteRegistryValue(	HKEY_CURRENT_USER,
-									CString(_T("Software\\")) + MYCOMPANY + _T("\\") + APPNAME_NOEXT + _T("\\") + sSection,
-									sZone);
-		}
-		else
-		{
-			::WritePrivateProfileString(sSection,
-										sZone,
-										NULL,
-										::AfxGetApp()->m_pszProfileName);
-		}
-	}
-}
-
 BOOL CVideoDeviceDoc::LoadZonesSettings()
 {
 	BOOL bOK = FALSE;

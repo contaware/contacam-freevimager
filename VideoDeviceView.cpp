@@ -286,17 +286,15 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 		::InterlockedExchange(&pDoc->m_lMovDetTotalZones, lMovDetTotalZones);
 	}
 
-	// Load/Store Settings
+	// Load zones settings
 	CString sSection(pDoc->GetDevicePathName());
+	BOOL bZonesLoaded = FALSE;
 	if (pDoc->m_lMovDetTotalZones == ::AfxGetApp()->GetProfileInt(sSection, _T("MovDetTotalZones"), 0))
+		bZonesLoaded = pDoc->LoadZonesSettings();
+	
+	// If not loaded enable all zones and save it
+	if (!bZonesLoaded)
 	{
-		// Load Zones Settings
-		if (!pDoc->LoadZonesSettings())
-			pDoc->LoadAndDeleteOldZonesSettings();
-	}
-	else
-	{
-		// Enable All Zones and Store Zones Settings
 		memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
 		::AfxGetApp()->WriteProfileInt(sSection, _T("MovDetTotalZones"), pDoc->m_lMovDetTotalZones);
 		pDoc->SaveZonesSettings();
