@@ -695,6 +695,9 @@ public:
 	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
+	// Max available memory for all movement detecting devices
+	volatile int m_nMovDetMemMaxMB;
+
 	// Use integrated Fullscreen Browser
 	BOOL m_bFullscreenBrowser;
 	BOOL m_bBrowserAutostart;

@@ -2400,6 +2400,50 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 #ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+		// Get virtual memory stats
+		int nRegions = 0; int nFreeMB = 0; int nReservedMB = 0; int nCommittedMB = 0; double dFragmentation = 0.0;
+		::GetMemoryStats(&nRegions, &nFreeMB, &nReservedMB, &nCommittedMB, &dFragmentation);
+
+		// Get heap stats
+		SIZE_T DefaultHeapSize = 0; SIZE_T CRTHeapSize = 0; SIZE_T OtherHeapsSize = 0;
+		int nDefaultHeapType = 0; int nCRTHeapType = 0;
+		::GetHeapStats(&DefaultHeapSize, &CRTHeapSize, &OtherHeapsSize, &nDefaultHeapType, &nCRTHeapType);
+		CString sDefaultHeapType;
+		switch (nDefaultHeapType)
+		{
+			case 0 :	sDefaultHeapType = _T("regular"); break;
+			case 1 :	sDefaultHeapType = _T("look-asides"); break;
+			case 2 :	sDefaultHeapType = _T("LFH"); break;
+			default :	sDefaultHeapType = _T("unknown"); break;
+		}
+		CString sCRTHeapType;
+		switch (nCRTHeapType)
+		{
+			case 0 :	sCRTHeapType = _T("regular"); break;
+			case 1 :	sCRTHeapType = _T("look-asides"); break;
+			case 2 :	sCRTHeapType = _T("LFH"); break;
+			default :	sCRTHeapType = _T("unknown"); break;
+		}
+		
+		// Check CRT heap status
+		int heapstatus = _heapchk();
+		CString sCRTHeapStatus;
+		switch (heapstatus)
+		{
+			case _HEAPOK :		sCRTHeapStatus = _T("ok" ); break;
+			case _HEAPEMPTY :	sCRTHeapStatus = _T("empty" ); break;
+			case _HEAPBADBEGIN :sCRTHeapStatus = _T("ERROR bad start of heap" ); break;
+			case _HEAPBADNODE :	sCRTHeapStatus = _T("ERROR bad node in heap" ); break;
+		}
+
+		// Print debug message
+		TRACE(_T("RAM: used=%dMB res=%dMB free=%dMB frag=%0.1f%% regions=%d, ")
+			_T("HEAPS: default(%s)=%uMB CRT(%s %s)=%uMB others=%uMB\n"),
+			nCommittedMB, nReservedMB, nFreeMB, dFragmentation, nRegions,
+			sDefaultHeapType, DefaultHeapSize>>20, sCRTHeapType, sCRTHeapStatus, CRTHeapSize>>20, OtherHeapsSize>>20);
+#endif
+
 		// Update m_nAVCodecThreadsCount
 		double dCount = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs();
 		if (dCount < 1.0)

@@ -140,6 +140,7 @@ CUImagerApp::CUImagerApp()
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
+	m_nMovDetMemMaxMB = MOVDET_MEM_MAX_MB;
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
@@ -881,6 +882,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			WriteProfileInt(_T("GeneralApp"), _T("SilentInstall"), FALSE);
 
 #ifdef VIDEODEVICEDOC
+			// Store max available memory for all movement detecting devices
+			WriteProfileInt(_T("GeneralApp"), _T("MovDetMemMaxMB"), m_nMovDetMemMaxMB);
+
 			// Redraw web server port
 			::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
 
@@ -4152,6 +4156,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_crNewBackgroundColor = (COLORREF)GetProfileInt(sSection, _T("NewBackgroundColor"), DEFAULT_NEW_COLOR);
 
 #ifdef VIDEODEVICEDOC
+	// Max available memory for all movement detecting devices
+	m_nMovDetMemMaxMB = GetProfileInt(sSection, _T("MovDetMemMaxMB"), MOVDET_MEM_MAX_MB);
+
 	// Browser
 	m_bFullscreenBrowser = (BOOL)GetProfileInt(sSection, _T("FullscreenBrowser"), FALSE);
 	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);

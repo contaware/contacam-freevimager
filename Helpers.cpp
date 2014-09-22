@@ -2225,6 +2225,74 @@ void GetMemoryStats(int* pRegions/*=NULL*/,
 	if (pFragmentation) *pFragmentation = dFragmentation;
 }
 
+SIZE_T HeapAllocatedSize(HANDLE heap)
+{
+	SIZE_T Size = 0;
+	HeapLock(heap);
+	PROCESS_HEAP_ENTRY entry;
+	memset(&entry, 0, sizeof(entry));
+	while (HeapWalk(heap, &entry))
+	{
+		if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
+		{
+			Size += entry.cbData;
+			Size += entry.cbOverhead;
+		}
+	}
+	HeapUnlock(heap);
+	return Size;
+}
+
+void GetHeapStats(	SIZE_T* pDefaultHeapSize/*=NULL*/,
+					SIZE_T* pCRTHeapSize/*=NULL*/,
+					SIZE_T* pOtherHeapsSize/*=NULL*/,
+					int* pDefaultHeapType/*=NULL*/,
+					int* pCRTHeapType/*=NULL*/)
+{
+	// Get all the heaps in the process
+	HANDLE heaps[256];
+	DWORD c = GetProcessHeaps(256, heaps);
+	
+	// Get the default heap and the CRT heap
+	HANDLE default_heap = GetProcessHeap();
+	HANDLE crt_heap = (HANDLE)_get_heap_handle();
+
+	// Loop through all heaps
+	SIZE_T DefaultHeapSize = 0;
+	SIZE_T CRTHeapSize = 0;
+	SIZE_T OtherHeapsSize = 0;
+	int nDefaultHeapType = 0;
+	int nCRTHeapType = 0;
+	for (unsigned int i = 0 ; i < c ; i++)
+	{
+		ULONG heap_info = 0;
+		SIZE_T ret_size = 0;
+		if (HeapQueryInformation(heaps[i], HeapCompatibilityInformation,
+								&heap_info, sizeof(heap_info), &ret_size))
+		{
+			if (heaps[i] == default_heap)
+			{
+				nDefaultHeapType = heap_info;
+				DefaultHeapSize = HeapAllocatedSize(heaps[i]);
+			}
+			else if (heaps[i] == crt_heap)
+			{
+				nCRTHeapType = heap_info;
+				CRTHeapSize = HeapAllocatedSize(heaps[i]);
+			}
+			else
+				OtherHeapsSize += HeapAllocatedSize(heaps[i]);
+		}
+	}
+
+	// Return values
+	if (pDefaultHeapSize) *pDefaultHeapSize = DefaultHeapSize;
+	if (pCRTHeapSize) *pCRTHeapSize = CRTHeapSize;
+	if (pOtherHeapsSize) *pOtherHeapsSize = OtherHeapsSize;
+	if (pDefaultHeapType) *pDefaultHeapType = nDefaultHeapType;
+	if (pCRTHeapType) *pCRTHeapType = nCRTHeapType;
+}
+
 BOOL EnableLFHeap()
 {
 	// Enable the low-fragmenation heap (LFH) for XP and Windows 2003.

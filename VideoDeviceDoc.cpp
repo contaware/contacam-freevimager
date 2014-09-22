@@ -2713,13 +2713,16 @@ end_of_software_detection:
 	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
 		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 	{
-		// Calculate the usable RAM
+		// Calculate the usable RAM remembering that we are a
+		// 32 bits application and taking into account all open
+		// devices because also non-detecting ones use RAM
 		int nTotalUsableMB = g_nAvailablePhysRamMB;
-		if (nTotalUsableMB > MOVDET_MEM_MAX_MB)	// we are a 32 bits application
-			nTotalUsableMB = MOVDET_MEM_MAX_MB;
-		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB; // consider all open devices because also non-detecting ones use RAM
-		if (nTotalUsableMB < MOVDET_MEM_MIN_MB)	// give a chance if many devices open or if we are on a PC with low amount of RAM 
-			nTotalUsableMB = MOVDET_MEM_MIN_MB;
+		int nMovDetMemMaxMB = MIN(((CUImagerApp*)::AfxGetApp())->m_nMovDetMemMaxMB, MOVDET_MEM_MAX_MB);
+		if (nTotalUsableMB > nMovDetMemMaxMB)
+			nTotalUsableMB = nMovDetMemMaxMB;
+		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB;
+		if (nTotalUsableMB < MOVDET_MEM_MIN_MB)	// give a chance if many devices open or
+			nTotalUsableMB = MOVDET_MEM_MIN_MB;	// if we are on a PC with low amount of RAM 
 
 		// This document load in %
 		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalUsableMB;
@@ -2731,8 +2734,7 @@ end_of_software_detection:
 		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
 
 		// Debug
-		TRACE(_T("%s, buf frames=%d, buf mem load=%0.1f, doc mem load=%0.1f\n"),
-						GetAssignedDeviceName(), nFramesCount, dNewestListLoad, dDocLoad);
+		TRACE(_T("%s, DET: %0.1f%% load of %dMB\n"), GetAssignedDeviceName(), dDocLoad, nTotalUsableMB);
 
 		// High threshold reached, frames saving is to slow:
 		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames 
