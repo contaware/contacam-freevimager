@@ -349,10 +349,6 @@ public:
 	BOOL InitDiscRecorders2();
 	void FreeDiscRecorders2();
 
-	// Is MainFrame Visible?
-	inline BOOL IsMainFrameVisible() const {HWND hWnd = ::AfxGetMainFrame()->GetSafeHwnd();
-							return (hWnd && ::IsWindow(hWnd) && ::IsWindowVisible(hWnd));};
-
 	// Is Wait Cursor Showing?
 	// Used by the OnSetCursor() functions of the Views
 	// to make sure the cursor is not in the wait state

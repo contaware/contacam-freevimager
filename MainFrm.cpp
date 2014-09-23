@@ -2941,9 +2941,7 @@ LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)
 			::MessageBeep(0xFFFFFFFF);
 		else if (!m_bFullScreenMode)
 		{
-			OnOpenFromTray();									// this restores us if minimized to tray
-			if (!((CUImagerApp*)::AfxGetApp())->IsMainFrameVisible())
-				((CUImagerApp*)::AfxGetApp())->LoadPlacement();	// this makes us visible if hidden
+			OnOpenFromTray(); // this restores us if minimized to tray
 			CString sFiles(pszFiles);
 			int nStartIndex = sFiles.Find(_T("\""));
 			if (nStartIndex < 0)

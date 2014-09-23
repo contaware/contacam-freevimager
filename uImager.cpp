@@ -2682,11 +2682,9 @@ BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount)
 														(WPARAM)nRetryCount, 0);
 
 		// Show starting progress dialog
-		if (!m_pAutorunProgressDlg								&&
-			!m_bServiceProcess									&&
-			((CUImagerApp*)::AfxGetApp())->IsMainFrameVisible()	&&
-			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon	||
-			!::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+		if (!m_pAutorunProgressDlg	&&
+			!m_bServiceProcess		&&
+			(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
 		{
 			m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
 														ML_STRING(1720, "Starting Camera..."),
