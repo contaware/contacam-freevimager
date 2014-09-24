@@ -1189,9 +1189,6 @@ void CXmpDlg::SaveSettings()
 	else
 		sSection = _T("XmpDlg");
 
-	// Ini file writing is slow, especially on memory sticks and network devices
-	BeginWaitCursor();
-
 	// Contact
 	pApp->WriteProfileInt(sSection, _T("RadioByline"),		m_nRadioByline);
 	pApp->WriteProfileInt(sSection, _T("RadioBylineTitle"), m_nRadioBylineTitle); 
@@ -1241,9 +1238,6 @@ void CXmpDlg::SaveSettings()
 	// Xmp File
 	pApp->WriteProfileString(sSection, _T("XmpLoadFile"), m_sXmpLoadFile);
 	pApp->WriteProfileString(sSection, _T("XmpSaveFile"), m_sXmpSaveFile);
-
-	// Ini file writing is slow, especially on memory sticks and network devices
-	EndWaitCursor();
 }
 
 void CXmpDlg::OnButtonContactOverwrite() 
