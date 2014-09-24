@@ -21,15 +21,13 @@ public:
 	CVideoDeviceView();
 	virtual ~CVideoDeviceView();
 	CVideoDeviceDoc* GetDocument();
-	BOOL DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	void Draw(HDC hDC);
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
-	BOOL InitDxDraw(int nWidth, int nHeight);
-	void DxDrawText(int nWidth, int nHeight, const CString& sOSDMessage, COLORREF crOSDMessageColor);
-	__forceinline void DxDrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n);
-	void DxDrawZones(int nWidth, int nHeight);
-	__forceinline void EraseDxDrawBkgnd(BOOL bFullErase);
+	void DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n);
+	void DrawZones(HDC hDC);
 	BOOL ReOpenDxDevice();
 	BYTE m_MovDetSingleZoneSensitivity;
 	CVideoDeviceToolBar m_VideoDeviceToolBar;
@@ -59,6 +57,7 @@ protected:
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
@@ -87,11 +86,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 protected:
-	volatile DWORD m_dwDxDrawUpTime;
-	volatile BOOL m_bDxDrawInitFailed;
-	volatile BOOL m_bDxDrawFirstInitOk;
 	CFont m_GDIDrawFont;
-	CDib* volatile m_pDxDrawDib; // DirectDraw Helper Dib
 };
 
 #ifndef _DEBUG

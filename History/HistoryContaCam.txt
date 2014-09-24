@@ -7,6 +7,7 @@ CONTACAM HISTORY
   Camera Advanced Settings - General tab)
 - In email configuration dialog it's now possible to setup a
   personalized subject line with insertion of variables
+- Improved detection zones editing tool
 - Added unicode support to ContaCamService console
 
 4.9.7 (August 25th 2014)

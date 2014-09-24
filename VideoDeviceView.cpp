@@ -24,6 +24,7 @@ BEGIN_MESSAGE_MAP(CVideoDeviceView, CUImagerView)
 	ON_WM_ERASEBKGND()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONDBLCLK()
 	ON_WM_MBUTTONDOWN()
 	ON_WM_TIMER()
 	ON_WM_KEYDOWN()
@@ -55,21 +56,12 @@ END_MESSAGE_MAP()
 CVideoDeviceView::CVideoDeviceView()
 {
 	// Init vars
-	m_bDxDrawInitFailed = FALSE;
-	m_bDxDrawFirstInitOk = FALSE;
-	m_dwDxDrawUpTime = ::timeGetTime();
-	m_pDxDrawDib = new CDib;
-	m_pDxDrawDib->SetShowMessageBoxOnError(FALSE);
 	m_MovDetSingleZoneSensitivity = 1;
 }
 
 CVideoDeviceView::~CVideoDeviceView()
 {
-	if (m_pDxDrawDib)
-	{
-		delete m_pDxDrawDib;
-		m_pDxDrawDib = NULL;
-	}	
+	
 }
 
 #ifdef _DEBUG
@@ -306,36 +298,6 @@ LONG CVideoDeviceView::OnThreadSafeInitMovDet(WPARAM wparam, LPARAM lparam)
 	return 1;
 }
 
-BOOL CVideoDeviceView::InitDxDraw(int nWidth, int nHeight)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-
-	if (nWidth > 0 && nHeight > 0)
-	{
-		if (pDoc->m_pDxDraw->Init(	GetSafeHwnd(),
-									nWidth,
-									nHeight,
-									BI_RGB,
-									IDB_BITSTREAM_VERA_11))
-		{
-			m_bDxDrawInitFailed = FALSE;
-			m_bDxDrawFirstInitOk = TRUE;
-			return TRUE;
-		}
-		else if (!m_bDxDrawInitFailed)
-		{
-			m_bDxDrawInitFailed = TRUE;
-			::PostMessage(	GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-							(LPARAM)0);
-		}
-	}
-	
-	return FALSE;
-}
-
 int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	CToolBarChildFrame* pFrame = (CToolBarChildFrame*)GetParentFrame();
@@ -348,248 +310,151 @@ int CVideoDeviceView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
-__forceinline void CVideoDeviceView::EraseDxDrawBkgnd(BOOL bFullErase)
+void CVideoDeviceView::Draw(HDC hDC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-
-	// Erase Full-Screen Borders
-	if (m_bFullScreenMode)
-	{
-		// Client Rect
-		CRect rcClient;
-		GetClientRect(rcClient);
-
-		// Erase Bkg Rectangles
-		CRect rcTop(rcClient.left, rcClient.top, rcClient.right, m_ZoomRect.top);
-		CRect rcLeft(rcClient.left, m_ZoomRect.top, m_ZoomRect.left, m_ZoomRect.bottom);
-		CRect rcRight = CRect(m_ZoomRect.right, m_ZoomRect.top, rcClient.right, m_ZoomRect.bottom);
-		CRect rcBottom = CRect(rcClient.left, m_ZoomRect.bottom, rcClient.right, rcClient.bottom);
-		
-		// Clear Front
-		if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-			pDoc->m_pDxDraw->ClearFront(&rcTop);
-		if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-			pDoc->m_pDxDraw->ClearFront(&rcLeft);
-		if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-			pDoc->m_pDxDraw->ClearFront(&rcRight);
-		if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-			pDoc->m_pDxDraw->ClearFront(&rcBottom);
-	}
-
-	// Erase All
-	if (bFullErase)
-		pDoc->m_pDxDraw->ClearBack();
-}
-
-BOOL CVideoDeviceView::DxDraw(DWORD dwCurrentUpTime, const CString& sOSDMessage, COLORREF crOSDMessageColor)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-	ASSERT(pDoc->m_pDxDraw);
-
-	// Enter CS
-	::EnterCriticalSection(&pDoc->m_csDib);
-
-	// No drawing possible at this moment
-	if (!pDoc->m_pDib || !pDoc->m_pDib->IsValid())
-	{
-		::LeaveCriticalSection(&pDoc->m_csDib);
-		return FALSE;
-	}
+	ASSERT_VALID(pDoc);
 
 	// Init
 	BOOL bVideoView = pDoc->m_bVideoView;
 	BOOL bStopAndChangeFormat = pDoc->m_bStopAndChangeFormat;
 	BOOL bDxDeviceUnplugged = pDoc->m_bDxDeviceUnplugged;
 	BOOL bWatchDogAlarm = pDoc->m_bWatchDogAlarm;
-	if (!pDoc->m_pDxDraw->IsInit()										||
-		(dwCurrentUpTime - m_dwDxDrawUpTime > DXDRAW_REINIT_TIMEOUT)	||
-		pDoc->m_pDib->GetWidth() != pDoc->m_pDxDraw->GetSrcWidth()		||
-		pDoc->m_pDib->GetHeight() != pDoc->m_pDxDraw->GetSrcHeight())
+
+	// Draw Rect
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	// Erase Background
+	if (bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogAlarm || !bVideoView)
 	{
-		m_dwDxDrawUpTime = dwCurrentUpTime;
-		if (!InitDxDraw(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight()))
-		{
-			::LeaveCriticalSection(&pDoc->m_csDib);
-			return FALSE;
-		}
+		CBrush br;
+		br.CreateSolidBrush(DRAW_BKG_COLOR);	
+		::FillRect(hDC, &rcClient, (HBRUSH)br.GetSafeHandle());
 	}
 
-	// Draw if initialized
-	if (pDoc->m_pDxDraw->IsInit())
+	// Display: Change Size
+	if (bStopAndChangeFormat)
 	{
-		// Device Context
-		HDC hDC; 
+		::DrawBigText(	hDC, rcClient,
+						ML_STRING(1569, "Change Size"),
+						DRAW_MESSAGE_COLOR, 72, DT_CENTER | DT_VCENTER,
+						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
+	}
+	// Display: Unplugged
+	else if (bDxDeviceUnplugged)
+	{
+		::DrawBigText(	hDC, rcClient,
+						ML_STRING(1568, "Unplugged"),
+						DRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
+						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
+	}
+	// Display: No Frames
+	else if (bWatchDogAlarm)
+	{
+		::DrawBigText(	hDC, rcClient,
+						ML_STRING(1570, "No Frames"),
+						DRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
+						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
+	}
+	// Draw
+	else if (bVideoView)
+	{
+		// Enter CS
+		::EnterCriticalSection(&pDoc->m_csDib);
 
-		// Draw Rect
-		CRect rc(0, 0, pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
+		// Draw Frame
+		pDoc->m_pDrawDibRGB32->Paint(hDC,
+									&rcClient,
+									CRect(0, 0, pDoc->m_pDrawDibRGB32->GetWidth(), pDoc->m_pDrawDibRGB32->GetHeight()),
+									FALSE, TRUE);
 
-		// Update Current Device
-		pDoc->m_pDxDraw->UpdateCurrentDevice();
+		// Leave CS
+		::LeaveCriticalSection(&pDoc->m_csDib);
 
-		// Erase Background, full erase if drawing a message (erases to black)
-		EraseDxDrawBkgnd(bStopAndChangeFormat || bDxDeviceUnplugged || bWatchDogAlarm || !bVideoView);
+		// Draw Zones
+		if (pDoc->m_bShowEditDetectionZones ||
+			((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
+			DrawZones(hDC);
 
-		// Display: Change Size
-		if (bStopAndChangeFormat)
+		// Draw Text
+		CString sOSDMessage;
+		COLORREF crOSDMessageColor = DRAW_MESSAGE_SUCCESS_COLOR;
+		::EnterCriticalSection(&pDoc->m_csOSDMessage);
+		DWORD dwCurrentUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
+		if ((dwCurrentUpTime - pDoc->m_dwOSDMessageUpTime) <= DRAW_MESSAGE_SHOWTIME)
 		{
-			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
-							ML_STRING(1569, "Change Size"),
-							DXDRAW_MESSAGE_COLOR, 72, DT_CENTER | DT_VCENTER,
-							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
-			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+			sOSDMessage = pDoc->m_sOSDMessage;
+			crOSDMessageColor = pDoc->m_crOSDMessageColor;
 		}
-		// Display: Unplugged
-		else if (bDxDeviceUnplugged)
-		{
-			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
-							ML_STRING(1568, "Unplugged"),
-							DXDRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
-							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
-			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
-		}
-		// Display: No Frames
-		else if (bWatchDogAlarm)
-		{
-			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
-							ML_STRING(1570, "No Frames"),
-							DXDRAW_MESSAGE_ERROR_COLOR, 72, DT_CENTER | DT_VCENTER,
-							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
-			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
-		}
-		// Draw
-		else if (bVideoView)
-		{
-			// Allocate Dst Bits?
-			BITMAPINFO Bmi;
-			memset(&Bmi, 0, sizeof(BITMAPINFOHEADER));
-			Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			Bmi.bmiHeader.biWidth = pDoc->m_pDib->GetWidth();
-			Bmi.bmiHeader.biHeight = pDoc->m_pDib->GetHeight();
-			Bmi.bmiHeader.biPlanes = 1;
-			Bmi.bmiHeader.biCompression = BI_RGB;
-			Bmi.bmiHeader.biBitCount = 32;
-			Bmi.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(Bmi.bmiHeader.biWidth * Bmi.bmiHeader.biBitCount) * Bmi.bmiHeader.biHeight;
-			if (!m_pDxDrawDib->SetBMI(&Bmi))
-			{
-				::LeaveCriticalSection(&pDoc->m_csDib);
-				return FALSE;
-			}
-			if (!m_pDxDrawDib->GetBits())
-			{
-				if (!m_pDxDrawDib->AllocateBitsFast(m_pDxDrawDib->GetBitCount(),
-													m_pDxDrawDib->GetCompression(),
-													m_pDxDrawDib->GetWidth(),
-													m_pDxDrawDib->GetHeight()))
-				{
-					::LeaveCriticalSection(&pDoc->m_csDib);
-					return FALSE;
-				}
-			}
-
-			// Convert
-			if (!::YUVToRGB32(	pDoc->m_pDib->GetCompression(),
-								pDoc->m_pDib->GetBits(),
-								m_pDxDrawDib->GetBits(),
-								m_pDxDrawDib->GetWidth(),
-								m_pDxDrawDib->GetHeight()))
-			{
-				::LeaveCriticalSection(&pDoc->m_csDib);
-				return FALSE;
-			}
-			
-			// Draw Frame
-			pDoc->m_pDxDraw->RenderDib(m_pDxDrawDib, m_ZoomRect);
-			
-			// Draw Zones
-			if (pDoc->m_bShowEditDetectionZones ||
-				((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
-				DxDrawZones(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight());
-
-			// Draw Text
-			if (pDoc->m_bDetectingMinLengthMovement		||
-				pDoc->m_SaveFrameListThread.IsWorking() ||
-				!sOSDMessage.IsEmpty())
-				DxDrawText(pDoc->m_pDib->GetWidth(), pDoc->m_pDib->GetHeight(), sOSDMessage, crOSDMessageColor);
-		}
-		// Display: Preview Off
 		else
-		{
-			::DrawBigText(	hDC = pDoc->m_pDxDraw->GetBackDC(), rc,
-							ML_STRING(1571, "Preview Off"),
-							DXDRAW_MESSAGE_SUCCESS_COLOR, 72, DT_CENTER | DT_VCENTER,
-							OPAQUE, DXDRAW_BKG_COLOR); // faster drawing with opaque!
-			pDoc->m_pDxDraw->ReleaseBackDC(hDC);
-		}
-
-		// Blt
-		if (pDoc->m_pDxDraw->Blt(m_ZoomRect, rc))
-			m_dwDxDrawUpTime = dwCurrentUpTime;
+			pDoc->m_sOSDMessage = _T("");
+		::LeaveCriticalSection(&pDoc->m_csOSDMessage);
+		if (pDoc->m_bDetectingMinLengthMovement		||
+			pDoc->m_SaveFrameListThread.IsWorking() ||
+			!sOSDMessage.IsEmpty())
+			DrawTextMsg(hDC, sOSDMessage, crOSDMessageColor);
 	}
-
-	// Leave CS
-	::LeaveCriticalSection(&pDoc->m_csDib);
-
-	return TRUE;
-}
-
-void CVideoDeviceView::DxDrawText(int nWidth, int nHeight, const CString& sOSDMessage, COLORREF crOSDMessageColor)
-{
-	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
-
-	// Get Back DC
-	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
-	if (hDC)
+	// Display: Preview Off
+	else
 	{
-		// Calc. font size
-		int nMaxFontSize = ::ScaleFont(	nWidth, nHeight,
-										pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
-
-		// Motion Detection
-		if (pDoc->m_bDetectingMinLengthMovement)
-		{
-			::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
-							ML_STRING(1844, "Det"), DXDRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
-							OPAQUE, DXDRAW_BKG_COLOR);
-		}
-
-		// Save / Email / FTP progress display
-		if (pDoc->m_SaveFrameListThread.IsWorking())
-		{
-			CString sProgress(_T(""));
-			if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
-				sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
-			else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
-				sProgress.Format(ML_STRING(1878, "Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
-			else if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
-				sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
-			if (sProgress != _T(""))
-			{
-				::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
-								sProgress, DXDRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
-								OPAQUE, DXDRAW_BKG_COLOR);
-			}
-		}
-
-		// Draw OSD message
-		if (!sOSDMessage.IsEmpty())
-		{
-			::DrawBigText(	hDC, CRect(0, 0, nWidth, nHeight),
-							sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
-							OPAQUE, DXDRAW_MESSAGE_BKG_COLOR);
-		}
-
-		// Release Back DC
-		pDoc->m_pDxDraw->ReleaseBackDC(hDC);
+		::DrawBigText(	hDC, rcClient,
+						ML_STRING(1571, "Preview Off"),
+						DRAW_MESSAGE_SUCCESS_COLOR, 72, DT_CENTER | DT_VCENTER,
+						OPAQUE, DRAW_BKG_COLOR); // faster drawing with opaque!
 	}
 }
 
-__forceinline void CVideoDeviceView::DxDrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n)
+void CVideoDeviceView::DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
+	ASSERT_VALID(pDoc);
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	// Calc. font size
+	int nMaxFontSize = ::ScaleFont(	rcClient.Width(), rcClient.Height(),
+									pDoc->m_nRefFontSize, FRAMETAG_REFWIDTH, FRAMETAG_REFHEIGHT);
+
+	// Motion Detection
+	if (pDoc->m_bDetectingMinLengthMovement)
+	{
+		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						ML_STRING(1844, "Det"), DRAW_MESSAGE_SUCCESS_COLOR, nMaxFontSize, DT_BOTTOM | DT_RIGHT,
+						OPAQUE, DRAW_BKG_COLOR);
+	}
+
+	// Save / Email / FTP progress display
+	if (pDoc->m_SaveFrameListThread.IsWorking())
+	{
+		CString sProgress(_T(""));
+		if (pDoc->m_SaveFrameListThread.GetSaveProgress() < 100)
+			sProgress.Format(ML_STRING(1877, "Save: %d%%"), pDoc->m_SaveFrameListThread.GetSaveProgress());
+		else if (pDoc->m_SaveFrameListThread.GetSendMailProgress() < 100)
+			sProgress.Format(ML_STRING(1878, "Email: %d%%"), pDoc->m_SaveFrameListThread.GetSendMailProgress());
+		else if (pDoc->m_SaveFrameListThread.GetFTPUploadProgress() < 100)
+			sProgress.Format(ML_STRING(1879, "FTP: %d%%"), pDoc->m_SaveFrameListThread.GetFTPUploadProgress());
+		if (sProgress != _T(""))
+		{
+			::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
+							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
+							OPAQUE, DRAW_BKG_COLOR);
+		}
+	}
+
+	// Draw OSD message
+	if (!sOSDMessage.IsEmpty())
+	{
+		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
+						sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
+						OPAQUE, DRAW_MESSAGE_BKG_COLOR);
+	}
+}
+
+__forceinline void CVideoDeviceView::DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n)
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
 
 	POINT ptCenter;
 	ptCenter.x = rcDetZone.left + (rcDetZone.right - rcDetZone.left) / 2;
@@ -649,22 +514,23 @@ __forceinline void CVideoDeviceView::DxDrawZoneSensitivity(int i, HDC hDC, const
 	}
 }
 
-void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
+void CVideoDeviceView::DrawZones(HDC hDC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); crashing because called from non UI thread!
+	ASSERT_VALID(pDoc);
 
-	// Get Back DC
-	HDC hDC = pDoc->m_pDxDraw->GetBackDC();
-	if (hDC)
+	if (pDoc->m_lMovDetTotalZones > 0)
 	{
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
 		RECT rcDetZone;
-		int nZoneWidth = nWidth / pDoc->m_lMovDetXZonesCount;
-		int nZoneHeight = nHeight / pDoc->m_lMovDetYZonesCount;
+		double dZoneWidth = (double)rcClient.Width() / (double)pDoc->m_lMovDetXZonesCount;
+		double dZoneHeight = (double)rcClient.Height() / (double)pDoc->m_lMovDetYZonesCount;
 		int nSensitivityTextSize;
-		if (nZoneWidth == 8 || nZoneHeight == 8)
+		if (dZoneWidth <= 8.0 || dZoneHeight <= 8.0)
 			nSensitivityTextSize = 0;
-		else if (nZoneWidth == 16 || nZoneHeight == 16)
+		else if (dZoneWidth <= 16.0 || dZoneHeight <= 16.0)
 			nSensitivityTextSize = 2;
 		else
 			nSensitivityTextSize = 4;
@@ -675,22 +541,29 @@ void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_SELECTED_ZONES_COLOR);
 			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
 			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
-			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
+			int nLastBottomEdge = 1;
+			for (int y = 0 ; y < pDoc->m_lMovDetYZonesCount ; y++)
 			{
-				if (pDoc->m_DoMovementDetection[i])
+				int nLastRightEdge = 1;
+				for (int x = 0 ; x < pDoc->m_lMovDetXZonesCount ; x++)
 				{
-					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
-					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
-					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
-					rcDetZone.top = MAX(0, nZoneOffsetY - 1);
-					rcDetZone.right = nZoneOffsetX + nZoneWidth;
-					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
-					
-					DxDrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
-					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
-					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
-					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
+					int nZoneOffsetX = (int)(x * dZoneWidth);
+					int nZoneOffsetY = (int)(y * dZoneHeight);
+					rcDetZone.left = nLastRightEdge - 1;
+					rcDetZone.top = nLastBottomEdge - 1;
+					rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
+					rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
+					int i = x + y*pDoc->m_lMovDetXZonesCount;
+					if (pDoc->m_DoMovementDetection[i])
+					{
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
+						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
+						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
+						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
+					}
+					nLastRightEdge = rcDetZone.right;
 				}
+				nLastBottomEdge = rcDetZone.bottom;
 			}
 			::SelectObject(hDC, hOldBrush);
 			::SelectObject(hDC, hOldPen);
@@ -703,30 +576,34 @@ void CVideoDeviceView::DxDrawZones(int nWidth, int nHeight)
 			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
 			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
 			HGDIOBJ hOldBrush = ::SelectObject(hDC, ::GetStockObject(NULL_BRUSH));
-			for (int i = 0 ; i < pDoc->m_lMovDetTotalZones ; i++)
+			int nLastBottomEdge = 1;
+			for (int y = 0 ; y < pDoc->m_lMovDetYZonesCount ; y++)
 			{
-				if (pDoc->m_MovementDetections[i])
+				int nLastRightEdge = 1;
+				for (int x = 0 ; x < pDoc->m_lMovDetXZonesCount ; x++)
 				{
-					int nZoneOffsetX = i%pDoc->m_lMovDetXZonesCount * nZoneWidth;
-					int nZoneOffsetY = i/pDoc->m_lMovDetXZonesCount * nZoneHeight;
-					rcDetZone.left = MAX(0, nZoneOffsetX - 1);
-					rcDetZone.top = MAX(0, nZoneOffsetY - 1);
-					rcDetZone.right = nZoneOffsetX + nZoneWidth;
-					rcDetZone.bottom = nZoneOffsetY + nZoneHeight;
-
-					DxDrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
-					::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
-					::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
-					::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
+					int nZoneOffsetX = (int)(x * dZoneWidth);
+					int nZoneOffsetY = (int)(y * dZoneHeight);
+					rcDetZone.left = nLastRightEdge - 1;
+					rcDetZone.top = nLastBottomEdge - 1;
+					rcDetZone.right = (x == (pDoc->m_lMovDetXZonesCount - 1) ? rcClient.right : (int)(nZoneOffsetX + dZoneWidth));
+					rcDetZone.bottom = (y == (pDoc->m_lMovDetYZonesCount - 1) ? rcClient.bottom : (int)(nZoneOffsetY + dZoneHeight));
+					int i = x + y*pDoc->m_lMovDetXZonesCount;
+					if (pDoc->m_MovementDetections[i])
+					{
+						DrawZoneSensitivity(i, hDC, rcDetZone, nSensitivityTextSize);
+						::Rectangle(hDC, rcDetZone.left, rcDetZone.top, rcDetZone.right, rcDetZone.bottom);
+						::MoveToEx(hDC, rcDetZone.left + (rcDetZone.right -  rcDetZone.left) / 4, rcDetZone.top, NULL);
+						::LineTo(hDC, rcDetZone.left, rcDetZone.top + (rcDetZone.right -  rcDetZone.left) / 4);
+					}
+					nLastRightEdge = rcDetZone.right;
 				}
+				nLastBottomEdge = rcDetZone.bottom;
 			}
 			::SelectObject(hDC, hOldBrush);
 			::SelectObject(hDC, hOldPen);
 			::DeleteObject(hPen);
 		}
-
-		// Release Back DC
-		pDoc->m_pDxDraw->ReleaseBackDC(hDC);
 	}
 }
 
@@ -735,19 +612,24 @@ BOOL CVideoDeviceView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
-void CVideoDeviceView::OnDraw(CDC* pDC) 
+void CVideoDeviceView::OnDraw(CDC* pDC)
 {
-	// Only GDI draw if directx could never initialize
-	if (!m_bDxDrawFirstInitOk)
-	{
-		// Flicker free drawing
-		CRect rcClient;
-		GetClientRect(&rcClient);
-		CMyMemDC MemDC(pDC, &rcClient);
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
 
+	// Flicker free drawing
+	CRect rcClient;
+	GetClientRect(&rcClient);
+	CMyMemDC MemDC(pDC, &rcClient);
+
+	// Draw
+	if (pDoc->m_bCaptureStarted)
+		Draw(MemDC.GetSafeHdc());
+	else
+	{
 		//  Erase Background
 		CBrush br;
-		br.CreateSolidBrush(DXDRAW_BKG_COLOR);	
+		br.CreateSolidBrush(DRAW_BKG_COLOR);	
 		MemDC.FillRect(&rcClient, &br);
 
 		// Create font
@@ -764,51 +646,41 @@ void CVideoDeviceView::OnDraw(CDC* pDC)
 		}
 
 		// Set colors
-		COLORREF crOldTextColor = MemDC.SetTextColor(DXDRAW_MESSAGE_COLOR);
+		COLORREF crOldTextColor = MemDC.SetTextColor(DRAW_MESSAGE_COLOR);
 		int nOldBkMode = MemDC.SetBkMode(OPAQUE);
-		COLORREF crOldBkColor = MemDC.SetBkColor(DXDRAW_BKG_COLOR);
+		COLORREF crOldBkColor = MemDC.SetBkColor(DRAW_BKG_COLOR);
 		CFont* pOldFont = MemDC.SelectObject(&m_GDIDrawFont);
 
 		// Draw
-		if (m_bDxDrawInitFailed)
-		{
-			MemDC.DrawText(	ML_STRING(1747, "DirectX failed"),
-							-1,
-							&rcClient,
-							(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-		}
-		else
-		{
-			MemDC.DrawText(	ML_STRING(1565, "Please wait..."),
-											-1,
-											&rcClient,
-											(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-			TEXTMETRIC TextMetrics;
-			MemDC.GetTextMetrics(&TextMetrics);
-			int nBoxLength = TextMetrics.tmHeight / 4;
-			CPoint ptCenter(rcClient.CenterPoint());
-			ptCenter.y += TextMetrics.tmHeight;
-			CRect rcBoxMiddle(	ptCenter.x - nBoxLength, ptCenter.y - nBoxLength,
-								ptCenter.x + nBoxLength, ptCenter.y + nBoxLength);
-			CRect rcBoxLeft(rcBoxMiddle);
-			rcBoxLeft.OffsetRect(-3*nBoxLength, 0);
-			CRect rcBoxLeftLeft(rcBoxLeft);
-			rcBoxLeftLeft.OffsetRect(-3*nBoxLength, 0);
-			CRect rcBoxRight(rcBoxMiddle);
-			rcBoxRight.OffsetRect(3*nBoxLength, 0);
-			CRect rcBoxRightRight(rcBoxRight);
-			rcBoxRightRight.OffsetRect(3*nBoxLength, 0);
-			int nCount = ((::GetTickCount() / 1000U) % 5U);
-			MemDC.FillSolidRect(rcBoxLeftLeft, RGB(0,0xFF,0));
-			if (nCount >= 1)
-				MemDC.FillSolidRect(rcBoxLeft, RGB(0,0xFF,0));
-			if (nCount >= 2)
-				MemDC.FillSolidRect(rcBoxMiddle, RGB(0,0xFF,0));
-			if (nCount >= 3)
-				MemDC.FillSolidRect(rcBoxRight, RGB(0,0xFF,0));
-			if (nCount == 4)
-				MemDC.FillSolidRect(rcBoxRightRight, RGB(0,0xFF,0));
-		}
+		MemDC.DrawText(	ML_STRING(1565, "Please wait..."),
+										-1,
+										&rcClient,
+										(DT_CENTER | DT_VCENTER | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+		TEXTMETRIC TextMetrics;
+		MemDC.GetTextMetrics(&TextMetrics);
+		int nBoxLength = TextMetrics.tmHeight / 4;
+		CPoint ptCenter(rcClient.CenterPoint());
+		ptCenter.y += TextMetrics.tmHeight;
+		CRect rcBoxMiddle(	ptCenter.x - nBoxLength, ptCenter.y - nBoxLength,
+							ptCenter.x + nBoxLength, ptCenter.y + nBoxLength);
+		CRect rcBoxLeft(rcBoxMiddle);
+		rcBoxLeft.OffsetRect(-3*nBoxLength, 0);
+		CRect rcBoxLeftLeft(rcBoxLeft);
+		rcBoxLeftLeft.OffsetRect(-3*nBoxLength, 0);
+		CRect rcBoxRight(rcBoxMiddle);
+		rcBoxRight.OffsetRect(3*nBoxLength, 0);
+		CRect rcBoxRightRight(rcBoxRight);
+		rcBoxRightRight.OffsetRect(3*nBoxLength, 0);
+		int nCount = ((::GetTickCount() / 1000U) % 5U);
+		MemDC.FillSolidRect(rcBoxLeftLeft, RGB(0,0xFF,0));
+		if (nCount >= 1)
+			MemDC.FillSolidRect(rcBoxLeft, RGB(0,0xFF,0));
+		if (nCount >= 2)
+			MemDC.FillSolidRect(rcBoxMiddle, RGB(0,0xFF,0));
+		if (nCount >= 3)
+			MemDC.FillSolidRect(rcBoxRight, RGB(0,0xFF,0));
+		if (nCount == 4)
+			MemDC.FillSolidRect(rcBoxRightRight, RGB(0,0xFF,0));
 
 		// Clean-up
 		MemDC.SetBkMode(nOldBkMode);
@@ -883,24 +755,24 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (pDoc->m_bShowEditDetectionZones && pDoc->m_lMovDetTotalZones > 0)
 	{
-		// Offset Remove
-		point.x -= m_ZoomRect.left;
-		point.y -= m_ZoomRect.top;
+		// Get client rectangle
+		CRect rcClient;
+		GetClientRect(&rcClient);
 
-		// Check if inside Frame
+		// Make sure point is inside the frame
 		if (point.x < 0 ||
 			point.y < 0 ||
-			point.x >= m_ZoomRect.Width() ||
-			point.y >= m_ZoomRect.Height())
+			point.x >= rcClient.Width() ||
+			point.y >= rcClient.Height())
 			return;
 
 		// Calc. x and y offsets
 		int x = 0;
-		if (m_ZoomRect.Width() > 0)
-			x = pDoc->m_lMovDetXZonesCount * point.x / m_ZoomRect.Width(); // note: point.x < m_ZoomRect.Width()  -> x < pDoc->m_lMovDetXZonesCount
+		if (rcClient.Width() > 0)
+			x = pDoc->m_lMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_lMovDetXZonesCount
 		int y = 0;
-		if (m_ZoomRect.Height() > 0)
-			y = pDoc->m_lMovDetYZonesCount * point.y / m_ZoomRect.Height();// note: point.y < m_ZoomRect.Height() -> y < pDoc->m_lMovDetYZonesCount
+		if (rcClient.Height() > 0)
+			y = pDoc->m_lMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_lMovDetYZonesCount
 
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
@@ -912,7 +784,25 @@ void CVideoDeviceView::OnLButtonDown(UINT nFlags, CPoint point)
 		// Set Zone Value
 		else
 			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
+
+		// Paint
+		Invalidate(FALSE);
 	}
+}
+
+void CVideoDeviceView::OnLButtonDblClk(UINT nFlags, CPoint point) 
+{
+	CVideoDeviceDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+
+	// No fullscreen enter/exit when editing zones!
+	if (pDoc->m_bShowEditDetectionZones)
+	{
+		EnableCursor();
+		CScrollView::OnLButtonDblClk(nFlags, point);
+	}
+	else
+		CUImagerView::OnLButtonDblClk(nFlags, point);
 }
 
 void CVideoDeviceView::OnMButtonDown(UINT nFlags, CPoint point) 
@@ -973,7 +863,10 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
 					pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
 				else if (pDoc->m_bShowEditDetectionZones)
-					pDoc->HideDetectionZones(TRUE);
+				{
+					pDoc->HideDetectionZones();
+					pDoc->SaveSettings();
+				}
 				else if (m_bFullScreenMode)
 					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
 				else
@@ -1153,6 +1046,7 @@ LONG CVideoDeviceView::OnDirectShowGraphNotify(WPARAM wparam, LPARAM lparam)
 				{
 					// Set Unplugged Flag
 					pDoc->m_bDxDeviceUnplugged = TRUE;
+					Invalidate(FALSE);
 					::LogLine(_T("%s"), pDoc->GetAssignedDeviceName() + _T(" unplugged"));
 
                     break;
@@ -1208,24 +1102,24 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		(nFlags & MK_LBUTTON)			&&
 		pDoc->m_lMovDetTotalZones > 0)
 	{
-		// Offset Remove
-		point.x -= m_ZoomRect.left;
-		point.y -= m_ZoomRect.top;
+		// Get client rectangle
+		CRect rcClient;
+		GetClientRect(&rcClient);
 
-		// Check if inside Frame
+		// Make sure point is inside the frame
 		if (point.x < 0 ||
 			point.y < 0 ||
-			point.x >= m_ZoomRect.Width() ||
-			point.y >= m_ZoomRect.Height())
+			point.x >= rcClient.Width() ||
+			point.y >= rcClient.Height())
 			return;
 
 		// Calc. x and y offsets
 		int x = 0;
-		if (m_ZoomRect.Width() > 0)
-			x = pDoc->m_lMovDetXZonesCount * point.x / m_ZoomRect.Width(); // note: point.x < m_ZoomRect.Width()  -> x < pDoc->m_lMovDetXZonesCount
+		if (rcClient.Width() > 0)
+			x = pDoc->m_lMovDetXZonesCount * point.x / rcClient.Width(); // note: point.x < rcClient.Width()  -> x < pDoc->m_lMovDetXZonesCount
 		int y = 0;
-		if (m_ZoomRect.Height() > 0)
-			y = pDoc->m_lMovDetYZonesCount * point.y / m_ZoomRect.Height();// note: point.y < m_ZoomRect.Height() -> y < pDoc->m_lMovDetYZonesCount
+		if (rcClient.Height() > 0)
+			y = pDoc->m_lMovDetYZonesCount * point.y / rcClient.Height();// note: point.y < rcClient.Height() -> y < pDoc->m_lMovDetYZonesCount
 
 		// The Selected Zone Index
 		int nZone = x + y * pDoc->m_lMovDetXZonesCount;
@@ -1237,6 +1131,9 @@ void CVideoDeviceView::OnMouseMove(UINT nFlags, CPoint point)
 		// Set Zone Value
 		else
 			pDoc->m_DoMovementDetection[nZone] = m_MovDetSingleZoneSensitivity;
+
+		// Paint
+		Invalidate(FALSE);
 	}
 	
 	CUImagerView::OnMouseMove(nFlags, point);
@@ -1257,6 +1154,7 @@ void CVideoDeviceView::OnEditSelectall()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	memset(pDoc->m_DoMovementDetection, 1, MOVDET_MAX_ZONES);
+	Invalidate(FALSE);
 }
 
 void CVideoDeviceView::OnEditSelectnone() 
@@ -1264,6 +1162,7 @@ void CVideoDeviceView::OnEditSelectnone()
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	memset(pDoc->m_DoMovementDetection, 0, MOVDET_MAX_ZONES);
+	Invalidate(FALSE);
 }
 
 void CVideoDeviceView::OnEditZoneSensitivity100() 

@@ -5444,7 +5444,6 @@ BEGIN
     IDS_STRING1744          "4 Seconds Rate"
     IDS_STRING1745          "5 Seconds Rate"
     IDS_STRING1746          "10 Seconds Rate"
-    IDS_STRING1747          "DirectX failed"
     IDS_STRING1751          "1. Make sure your video capture device is plugged-in and drivers are installed"
     IDS_STRING1752          "(network and DV cameras do not need specific drivers)"
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"

@@ -1472,7 +1472,7 @@ void CVideoDeviceChildFrame::OnClose()
 
 			// Hide detection zones
 			if (pDoc->m_bShowEditDetectionZones)
-				pDoc->HideDetectionZones(FALSE); // without saving because done below
+				pDoc->HideDetectionZones();
 	
 			// Save Settings
 			pDoc->SaveSettings();
@@ -1602,8 +1602,8 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Kill it right now because of the drawing
-	pDoc->m_WatchdogAndDrawThread.Kill_NoBlocking();
+	// Kill it right now because of Save Frame List and HTTP Reconnect
+	pDoc->m_WatchdogThread.Kill_NoBlocking();
 
 	// Stop Processing Frames
 	pDoc->StopProcessFrame(PROCESSFRAME_CLOSE);
@@ -1699,10 +1699,10 @@ BOOL CVideoDeviceChildFrame::IsShutdown1Done()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// Check whether we exited full-screen, watchdog and draw
-	// stopped and we are not inside the processing function
-	if (!pView->m_bFullScreenMode					&&
-		!pDoc->m_WatchdogAndDrawThread.IsAlive()	&&
+	// Check whether we exited full-screen, watchdog stopped
+	// and we are not inside the processing function
+	if (!pView->m_bFullScreenMode			&&
+		!pDoc->m_WatchdogThread.IsAlive()	&&
 		pDoc->IsProcessFrameStopped(PROCESSFRAME_CLOSE))
 		return TRUE;
 	else

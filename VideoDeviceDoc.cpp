@@ -3125,7 +3125,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_LEFT | DT_TOP),
 										FRAMEDATE_COLOR,
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message1
@@ -3136,7 +3136,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_CENTER | DT_TOP),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message2
@@ -3147,7 +3147,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_CENTER | DT_VCENTER),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message3
@@ -3158,7 +3158,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_CENTER | DT_BOTTOM),
 										RGB(0xff,0,0),
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Time
@@ -3170,7 +3170,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_LEFT | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 		if (!ThumbDib.AddSingleLineText(_T("->"),
 										rcRect,
@@ -3178,7 +3178,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_CENTER | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 		rcRect.right -= 1; // Looks nicer!
 		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
@@ -3188,7 +3188,7 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 										(DT_RIGHT | DT_BOTTOM),
 										FRAMETIME_COLOR,
 										TRANSPARENT,
-										DXDRAW_BKG_COLOR))
+										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Save
@@ -3567,10 +3567,9 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 	return 0;
 }
 
-int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
+int CVideoDeviceDoc::CWatchdogThread::Work()
 {
 	ASSERT(m_pDoc);
-	ASSERT(!m_pDoc->m_pDxDraw);
 	DWORD Event;
 
 	// Necessary because we are drawing with directx
@@ -3579,7 +3578,7 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 	// Poll starting flag
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
+		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
@@ -3615,53 +3614,41 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 
 	// Init
 	DWORD dwLastHttpReconnectUpTime = ::timeGetTime();
-	if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
-		m_pDoc->m_pDxDraw = new CDxDraw;
 
 	// Watch
 	for (;;)
 	{
-		Event = ::WaitForMultipleObjects(2, m_hEventArray, FALSE, WATCHDOG_SHORTCHECK_TIME);
+		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
 			case WAIT_OBJECT_0 :		
 			{
-				if (m_pDoc->m_pDxDraw)
-				{
-					delete m_pDoc->m_pDxDraw;
-					m_pDoc->m_pDxDraw = NULL;
-				}
 				::CoUninitialize();
 				return 0;
 			}
 
-			// Check and Draw
-			case WAIT_OBJECT_0 + 1 : ::ResetEvent(m_hEventArray[1]);
+			// Check
 			case WAIT_TIMEOUT :		
 			{
-				// Get/Reset OSD Message
-				CString sOSDMessage;
-				COLORREF crOSDMessageColor = DXDRAW_MESSAGE_SUCCESS_COLOR;
-				::EnterCriticalSection(&m_pDoc->m_csOSDMessage);
-				DWORD dwCurrentUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
-				if ((dwCurrentUpTime - m_pDoc->m_dwOSDMessageUpTime) <= DXDRAW_MESSAGE_SHOWTIME)
-				{
-					sOSDMessage = m_pDoc->m_sOSDMessage;
-					crOSDMessageColor = m_pDoc->m_crOSDMessageColor;
-				}
-				else
-					m_pDoc->m_sOSDMessage = _T("");
-				::LeaveCriticalSection(&m_pDoc->m_csOSDMessage);
-
 				// Update m_bWatchDogAlarm
+				DWORD dwCurrentUpTime = ::timeGetTime();
 				DWORD dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dFrameRate);
 				if (m_pDoc->m_dEffectiveFrameRate > 0.0)
 					dwFrameTime = (DWORD)Round(1000.0 / m_pDoc->m_dEffectiveFrameRate);
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				if (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD	&&
 					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
+				{
 					m_pDoc->m_bWatchDogAlarm = TRUE;
+					if (m_pDoc->GetView())
+					{
+						::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+										WM_THREADSAFE_UPDATEWINDOWSIZES,
+										(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+										(LPARAM)0);
+					}
+				}
 				else
 				{
 					m_pDoc->m_bWatchDogAlarm = FALSE;
@@ -3692,31 +3679,6 @@ int CVideoDeviceDoc::CWatchdogAndDrawThread::Work()
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 					::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
-				}
-
-				// Draw
-				if (m_pDoc->GetView() && m_pDoc->m_pDxDraw)
-				{
-					if (!m_pDoc->GetView()->DxDraw(dwCurrentUpTime, sOSDMessage, crOSDMessageColor))
-					{
-						Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_LONGCHECK_TIME);
-						switch (Event)
-						{
-							// Shutdown Event
-							case WAIT_OBJECT_0 :		
-							{
-								if (m_pDoc->m_pDxDraw)
-								{
-									delete m_pDoc->m_pDxDraw;
-									m_pDoc->m_pDxDraw = NULL;
-								}
-								::CoUninitialize();
-								return 0;
-							}
-							default:
-								break;
-						}
-					}
 				}
 
 				break;
@@ -3981,11 +3943,12 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_pProcessFrameDib->SetShowMessageBoxOnError(FALSE);
 	m_pProcessFrameExtraDib = new CDib;
 	m_pProcessFrameExtraDib->SetShowMessageBoxOnError(FALSE);
+	m_pDrawDibRGB32 = new CDib;
+	m_pDrawDibRGB32->SetShowMessageBoxOnError(FALSE);
 
 	// General Vars
 	m_pView = NULL;
 	m_pFrame = NULL;
-	m_pDxDraw = NULL;
 	m_bCaptureAudio = FALSE;
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
@@ -4068,7 +4031,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Threads Init
 	m_CaptureAudioThread.SetDoc(this);
 	m_HttpGetFrameThread.SetDoc(this);
-	m_WatchdogAndDrawThread.SetDoc(this);
+	m_WatchdogThread.SetDoc(this);
 	m_DeleteThread.SetDoc(this);
 	m_SaveFrameListThread.SetDoc(this);
 	m_SaveSnapshotThread.SetDoc(this);
@@ -4232,8 +4195,8 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Start Save Frame List Thread
 	m_SaveFrameListThread.Start();
 
-	// Start Video Watchdog and Draw Thread
-	m_WatchdogAndDrawThread.Start();
+	// Start Video Watchdog Thread
+	m_WatchdogThread.Start();
 }
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
@@ -4289,6 +4252,11 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	{
 		delete m_pProcessFrameExtraDib;
 		m_pProcessFrameExtraDib = NULL;
+	}
+	if (m_pDrawDibRGB32)
+	{
+		delete m_pDrawDibRGB32;
+		m_pDrawDibRGB32 = NULL;
 	}
 }
 
@@ -4919,9 +4887,6 @@ void CVideoDeviceDoc::SaveSettings()
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 	CString sSection(GetDevicePathName());
 
-	// Ini file writing is slow, especially on memory sticks and network devices
-	BeginWaitCursor();
-
 	// Store the device name to identify the entry when manually looking the registry
 	// and to know that it is not the first run of the device
 	pApp->WriteProfileString(sSection, _T("DeviceName"), GetDeviceName());
@@ -5080,9 +5045,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	unsigned int nSize = sizeof(m_dFrameRate);
 	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
-
-	// Ini file writing is slow, especially on memory sticks and network devices
-	EndWaitCursor();
 }
 
 void CVideoDeviceDoc::OnEditExportZones() 
@@ -6037,6 +5999,10 @@ void CVideoDeviceDoc::VideoFormatDialog()
 			if (!m_bStopAndChangeFormat)
 			{
 				m_bStopAndChangeFormat = TRUE;
+				::PostMessage(	GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+								(LPARAM)0);
 				StopProcessFrame(PROCESSFRAME_DVFORMATDIALOG);
 				double dFrameRate = m_dEffectiveFrameRate;
 				int delay;
@@ -6092,6 +6058,8 @@ void CVideoDeviceDoc::VideoFormatDialog()
 void CVideoDeviceDoc::OnViewVideo() 
 {
 	m_bVideoView = !m_bVideoView;
+	if (!m_bVideoView)
+		GetView()->Invalidate(FALSE);
 }
 
 void CVideoDeviceDoc::OnUpdateViewVideo(CCmdUI* pCmdUI) 
@@ -7311,7 +7279,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 							(DT_LEFT | DT_BOTTOM),
 							FRAMETIME_COLOR,
 							OPAQUE,
-							DXDRAW_BKG_COLOR);
+							DRAW_BKG_COLOR);
 
 	CString sDate = ::MakeDateLocalFormat(RefTime);
 	pDib->AddSingleLineText(sDate,
@@ -7320,7 +7288,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 							(DT_LEFT | DT_TOP),
 							FRAMEDATE_COLOR,
 							OPAQUE,
-							DXDRAW_BKG_COLOR);
+							DRAW_BKG_COLOR);
 }
 
 void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount, int nRefFontSize)
@@ -7347,7 +7315,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount, int nRefFontSize)
 							(DT_RIGHT | DT_BOTTOM),
 							FRAMECOUNT_COLOR,
 							OPAQUE,
-							DXDRAW_BKG_COLOR);
+							DRAW_BKG_COLOR);
 }
 
 BOOL CVideoDeviceDoc::Rotate180(CDib* pDib)
@@ -7822,15 +7790,36 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 			::LeaveCriticalSection(&m_csAVRec);
 		}
 
-		// Swap Dib pointers
+		// Swap Dib pointers, convert to RGB32 and invalidate to draw
 		::EnterCriticalSection(&m_csDib);
 		m_pProcessFrameDib = m_pDib;
 		m_pDib = pDib;
-		::LeaveCriticalSection(&m_csDib);
-
-		// Trigger a Draw
-		if (m_bVideoView)
-			m_WatchdogAndDrawThread.TriggerDraw();
+		if (m_bVideoView										&&
+			!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess	&&
+			(!((CUImagerApp*)::AfxGetApp())->m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+		{
+			BITMAPINFO BmiRgb32;
+			memset(&BmiRgb32, 0, sizeof(BITMAPINFOHEADER));
+			BmiRgb32.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			BmiRgb32.bmiHeader.biWidth = m_pDib->GetWidth();
+			BmiRgb32.bmiHeader.biHeight = m_pDib->GetHeight();
+			BmiRgb32.bmiHeader.biPlanes = 1;
+			BmiRgb32.bmiHeader.biCompression = BI_RGB;
+			BmiRgb32.bmiHeader.biBitCount = 32;
+			BmiRgb32.bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(BmiRgb32.bmiHeader.biWidth * BmiRgb32.bmiHeader.biBitCount) * BmiRgb32.bmiHeader.biHeight;
+			m_pDrawDibRGB32->SetBMI(&BmiRgb32);
+			m_DrawDecoder.Decode(	m_pDib->GetBMI(),
+									m_pDib->GetBits(),
+									m_pDib->GetImageSize(),
+									m_pDrawDibRGB32);
+			::LeaveCriticalSection(&m_csDib);
+			::PostMessage(	GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_UPDATEWINDOWSIZES,
+							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+							(LPARAM)0);
+		}
+		else
+			::LeaveCriticalSection(&m_csDib);
 
 		// Set start time, flag and open the Camera Basic Settings dialog
 		if (!m_bCaptureStarted)
@@ -8199,10 +8188,10 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	if (res)
 	{
 		if (!m_bManualSnapshotAutoOpen)
-			ShowOSDMessage(ML_STRING(1849, "Snapshot Saved"), DXDRAW_MESSAGE_SUCCESS_COLOR);
+			ShowOSDMessage(ML_STRING(1849, "Snapshot Saved"), DRAW_MESSAGE_SUCCESS_COLOR);
 	}
 	else
-		ShowOSDMessage(ML_STRING(1850, "Snapshot Save Failed!"), DXDRAW_MESSAGE_ERROR_COLOR);
+		ShowOSDMessage(ML_STRING(1850, "Snapshot Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
 
 	return res;
 }
@@ -8210,7 +8199,7 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 void CVideoDeviceDoc::ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor)
 {
 	::EnterCriticalSection(&m_csOSDMessage);
-	m_dwOSDMessageUpTime = ::timeGetTime();
+	m_dwOSDMessageUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
 	m_sOSDMessage = sOSDMessage;
 	m_crOSDMessageColor = crOSDMessageColor;
 	::LeaveCriticalSection(&m_csOSDMessage);
@@ -8788,6 +8777,7 @@ void CVideoDeviceDoc::OnUpdateViewFrametime(CCmdUI* pCmdUI)
 void CVideoDeviceDoc::OnViewDetections() 
 {
 	m_bShowMovementDetections = !m_bShowMovementDetections;
+	GetView()->Invalidate(FALSE);
 }
 
 void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI) 
@@ -8795,39 +8785,32 @@ void CVideoDeviceDoc::OnUpdateViewDetections(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_bShowMovementDetections ? 1 : 0);	
 }
 
-void CVideoDeviceDoc::ShowDetectionZones()
-{
-	if (!m_bShowEditDetectionZones)
-	{
-		m_bShowEditDetectionZones = TRUE;
-		GetView()->ForceCursor();
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
-	}
-}
-
-void CVideoDeviceDoc::HideDetectionZones(BOOL bSaveSettingsOnHiding)
+void CVideoDeviceDoc::HideDetectionZones()
 {
 	if (m_bShowEditDetectionZones)
 	{
 		m_bShowEditDetectionZones = FALSE;
 		GetView()->ForceCursor(FALSE);
 		m_bShowEditDetectionZonesMinus = FALSE;
+		GetView()->Invalidate(FALSE);
 		::AfxGetMainFrame()->StatusText();
-		if (bSaveSettingsOnHiding)
-		{
-			BeginWaitCursor();
-			SaveZonesSettings();
-			EndWaitCursor();
-		}
 	}
 }
 
 void CVideoDeviceDoc::OnViewDetectionZones()
 {
 	if (m_bShowEditDetectionZones)
-		HideDetectionZones(TRUE);
+	{
+		HideDetectionZones();
+		SaveSettings();
+	}
 	else
-		ShowDetectionZones();
+	{
+		m_bShowEditDetectionZones = TRUE;
+		GetView()->ForceCursor();
+		GetView()->Invalidate(FALSE);
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
+	}
 }
 
 void CVideoDeviceDoc::OnUpdateViewDetectionZones(CCmdUI* pCmdUI) 

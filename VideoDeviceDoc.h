@@ -8,7 +8,6 @@
 // Includes
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
-#include "DxDraw.h"
 #include "pjnsmtp.h"
 #include "NetCom.h"
 #include "AVRec.h"
@@ -61,13 +60,19 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
 #define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
 
-// Frame time, date, count and thumb message constants
+// Frame tag, thumb message and draw
 #define FRAMETAG_REFWIDTH					640
 #define FRAMETAG_REFHEIGHT					480
 #define FRAMETIME_COLOR						RGB(0,0xFF,0)
 #define FRAMEDATE_COLOR						RGB(0x80,0x80,0xFF)
 #define FRAMECOUNT_COLOR					RGB(0xFF,0xFF,0xFF)
 #define THUMBMESSAGE_FONTSIZE				8
+#define DRAW_BKG_COLOR						RGB(0,0,0)
+#define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
+#define DRAW_MESSAGE_SUCCESS_COLOR			RGB(0,0xFF,0)
+#define DRAW_MESSAGE_ERROR_COLOR			RGB(0xFF,0,0)
+#define DRAW_MESSAGE_BKG_COLOR				RGB(0x30,0x30,0x30)
+#define DRAW_MESSAGE_SHOWTIME				1500U		// ms
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			5000		// ms
@@ -79,17 +84,9 @@ class CMovementDetectionPage;
 #define PROCESSFRAME_DXREPLUGGED			0x20
 #define PROCESSFRAME_CLOSE					0x40
 
-// Watch Dog and Draw
-#define WATCHDOG_LONGCHECK_TIME				1000U		// ms
-#define WATCHDOG_SHORTCHECK_TIME			300U		// ms
+// Watch Dog
+#define WATCHDOG_CHECK_TIME					1000U		// ms
 #define WATCHDOG_THRESHOLD					30000U		// ms, make sure that: 1000 / MIN_FRAMERATE < WATCHDOG_THRESHOLD
-#define DXDRAW_REINIT_TIMEOUT				5000U		// ms
-#define DXDRAW_BKG_COLOR					RGB(0,0,0)	// do not change this because dxdraw background is cleared to 0
-#define DXDRAW_MESSAGE_COLOR				RGB(0xFF,0xFF,0xFF)
-#define DXDRAW_MESSAGE_SUCCESS_COLOR		RGB(0,0xFF,0)
-#define DXDRAW_MESSAGE_ERROR_COLOR			RGB(0xFF,0,0)
-#define DXDRAW_MESSAGE_BKG_COLOR			RGB(0x30,0x30,0x30)
-#define DXDRAW_MESSAGE_SHOWTIME				1500U		// ms
 
 // Snapshot
 #define MIN_SNAPSHOT_RATE					1			// one snapshot per second
@@ -413,22 +410,17 @@ public:
 			NETCOMPARSEPROCESSLIST m_HttpGetFrameParseProcessList;
 	};
 
-	// Watch Dog and Draw Thread
-	class CWatchdogAndDrawThread : public CWorkerThread
+	// Watch Dog Thread
+	class CWatchdogThread : public CWorkerThread
 	{
 		public:
-			CWatchdogAndDrawThread() {	m_pDoc = NULL;
-										m_hEventArray[0] = GetKillEvent();
-										m_hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL);};
-			virtual ~CWatchdogAndDrawThread() {	Kill();
-												::CloseHandle(m_hEventArray[1]);};
+			CWatchdogThread() {m_pDoc = NULL;};
+			virtual ~CWatchdogThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			__forceinline BOOL TriggerDraw() {return ::SetEvent(m_hEventArray[1]);};
 
 		protected:
 			int Work();
 			CVideoDeviceDoc* m_pDoc;
-			HANDLE m_hEventArray[2];
 	};
 
 	// Delete Thread
@@ -918,8 +910,7 @@ public:
 										const CString& sGIFFileName = _T(""),
 										const CString& sSWFFileName = _T(""),
 										int nMovDetSavesCount = 0);
-	void ShowDetectionZones();
-	void HideDetectionZones(BOOL bSaveSettingsOnHiding);
+	void HideDetectionZones();
 
 	// Email Message Creation
 	// The returned CPJNSMTPMessage* is allocated on the heap -> has to be deleted when done!
@@ -1045,7 +1036,7 @@ public:
 
 	// Threads
 	CHttpGetFrameThread m_HttpGetFrameThread;			// Http Networking Helper Thread
-	CWatchdogAndDrawThread m_WatchdogAndDrawThread;		// Video Capture Watchdog and Draw Thread
+	CWatchdogThread m_WatchdogThread;					// Video Capture Watchdog Thread
 	CDeleteThread m_DeleteThread;						// Delete files older than a given amount of days Thread
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
@@ -1053,11 +1044,11 @@ public:
 	CSaveSnapshotSWFThread m_SaveSnapshotSWFThread;		// Thread which creates the history SWF video file and FTP uploads it
 
 	// Drawing
-	CDxDraw* m_pDxDraw;									// Direct Draw Object
 	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
 	volatile DWORD m_dwOSDMessageUpTime;				// OSD message UpTime
 	CString m_sOSDMessage;								// OSD message string
 	volatile COLORREF m_crOSDMessageColor;				// OSD message color
+	CDib* volatile m_pDrawDibRGB32;						// Frame in RGB32 format for drawing
 
 	// Watchdog vars
 	volatile LONG m_lCurrentInitUpTime;					// Uptime set in ProcessI420Frame()
@@ -1223,6 +1214,7 @@ protected:
 	CDib* volatile m_pProcessFrameDib;
 	CDib* volatile m_pProcessFrameExtraDib;
 	CAVDecoder m_AVDecoder;
+	CAVDecoder m_DrawDecoder;
 	CMJPEGEncoder m_MJPEGDetEncoder;
 	volatile DWORD m_dwStopProcessFrame;
 	volatile DWORD m_dwProcessFrameStopped;
