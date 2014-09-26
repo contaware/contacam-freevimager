@@ -367,7 +367,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 		pDoc->m_pDrawDibRGB32->Paint(hDC,
 									&rcClient,
 									CRect(0, 0, pDoc->m_pDrawDibRGB32->GetWidth(), pDoc->m_pDrawDibRGB32->GetHeight()),
-									FALSE, TRUE);
+									FALSE);
 
 		// Leave CS
 		::LeaveCriticalSection(&pDoc->m_csDib);

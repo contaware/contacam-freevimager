@@ -3570,27 +3570,16 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 int CVideoDeviceDoc::CWatchdogThread::Work()
 {
 	ASSERT(m_pDoc);
-	DWORD Event;
 
-	// Necessary because we are drawing with directx
-	::CoInitialize(NULL);
-
-	// Poll starting flag
+	// Poll capture starting flag
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :		
-			{
-				::CoUninitialize();
-				return 0;
-			}
-			default:
-				break;
-		}
-		if (m_pDoc->m_bCaptureStarted)
+		// Shutdown Event?
+		if (::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME) == WAIT_OBJECT_0)
+			return 0;
+		// Did we get the first frame?
+		// (note that at this point the view has been created) 
+		else if (m_pDoc->m_bCaptureStarted)
 		{
 			// Log the starting
 			::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" starting"));
@@ -3600,11 +3589,19 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 						ID_TIMER_RELOAD_SETTINGS,
 						ONESEC_POLL_TIMER_MS, NULL);
 			
+			// Trigger drawing of the possible "Preview Off" message
+			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+							WM_THREADSAFE_UPDATEWINDOWSIZES,
+							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+							(LPARAM)0);
+
 			break;
 		}
+		// Trigger drawing of the Please wait... progress bar
+		// (make sure view has been created as this thread is
+		//  started from the document constructor)
 		else if (m_pDoc->GetView())
 		{
-			// Trigger drawing of the Please wait... progress bar
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_UPDATEWINDOWSIZES,
 							(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
@@ -3618,15 +3615,12 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 	// Watch
 	for (;;)
 	{
-		Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
+		DWORD Event = ::WaitForSingleObject(GetKillEvent(), WATCHDOG_CHECK_TIME);
 		switch (Event)
 		{
 			// Shutdown Event
-			case WAIT_OBJECT_0 :		
-			{
-				::CoUninitialize();
+			case WAIT_OBJECT_0 :
 				return 0;
-			}
 
 			// Check
 			case WAIT_TIMEOUT :		
@@ -3641,13 +3635,10 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
 				{
 					m_pDoc->m_bWatchDogAlarm = TRUE;
-					if (m_pDoc->GetView())
-					{
-						::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-										WM_THREADSAFE_UPDATEWINDOWSIZES,
-										(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-										(LPARAM)0);
-					}
+					::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+									WM_THREADSAFE_UPDATEWINDOWSIZES,
+									(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+									(LPARAM)0);
 				}
 				else
 				{

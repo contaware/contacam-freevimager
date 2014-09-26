@@ -11,14 +11,12 @@ static char THIS_FILE[] = __FILE__;
 
 CDib::CDib()
 {
-	m_hDrawDib = ::DrawDibOpen();
 	m_GetClosestColorIndexLookUp = NULL;
 	Init();
 }
 
 CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
 {
-	m_hDrawDib = ::DrawDibOpen();
 	m_GetClosestColorIndexLookUp = NULL;
 	Init();
 	SetDibSectionFromDDB(pBitmap, pPal);
@@ -26,7 +24,6 @@ CDib::CDib(CBitmap* pBitmap, CPalette* pPal)
 
 CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
 {
-	m_hDrawDib = ::DrawDibOpen();
 	m_GetClosestColorIndexLookUp = NULL;
 	Init();
 	SetDibSectionFromDDB(hBitmap, hPal);
@@ -34,7 +31,6 @@ CDib::CDib(HBITMAP hBitmap, HPALETTE hPal)
 
 CDib::CDib(HBITMAP hDibSection)
 {
-	m_hDrawDib = ::DrawDibOpen();
 	m_GetClosestColorIndexLookUp = NULL;
 	Init();
 	AttachDibSection(hDibSection);
@@ -86,7 +82,6 @@ void CDib::CopyVars(const CDib& SrcDib)
 // Note: Memory Mapped files are copied, memory is allocated for it!?
 CDib::CDib(const CDib& dib) // Copy Constructor (CDib dib1 = dib2 or CDib dib1(dib2))
 {
-	m_hDrawDib = ::DrawDibOpen();
 	m_GetClosestColorIndexLookUp = NULL;
 
 	// Init the object
@@ -282,11 +277,6 @@ CDib::~CDib()
 	Free();
 	FreeGetClosestColorIndex();
 	FreeUserList();
-	if (m_hDrawDib)
-	{
-		::DrawDibClose(m_hDrawDib);
-		m_hDrawDib = NULL;
-	}
 }
 
 void CDib::FreeArray(CDib::ARRAY& a)
@@ -403,8 +393,7 @@ BOOL CDib::IsBilevelAlpha()
 BOOL CDib::Paint(HDC hDC,
 				 const LPRECT lpDCRect,
 				 const LPRECT lpDIBRect,
-				 BOOL bForceStretch/*=FALSE*/,
-				 BOOL bNoDrawDib/*=FALSE*/)
+				 BOOL bForceStretch/*=FALSE*/)
 {
 	BOOL bSuccess = FALSE;
 	HPALETTE hPal = NULL;           // Our DIB's palette
@@ -421,149 +410,45 @@ BOOL CDib::Paint(HDC hDC,
 
 	if (m_pBits)
 	{
-		// Do Draw Dib Begin
-		BOOL bDoDrawDibBegin = FALSE;
-		if (!bNoDrawDib)
-		{
-			DWORD dwBMICompareSize = MIN(sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD), GetBMISize());
-			if (memcmp(m_pBMI, &m_OldBMI, dwBMICompareSize) != 0 ||
-				memcmp(lpDCRect, &m_OldDCRect, sizeof(RECT)) != 0 ||
-				memcmp(lpDIBRect, &m_OldDIBRect, sizeof(RECT)) != 0)
-			{
-				bDoDrawDibBegin = TRUE;
-				memcpy(&m_OldBMI, m_pBMI, dwBMICompareSize);
-				memcpy(&m_OldDCRect, lpDCRect, sizeof(RECT));
-				memcpy(&m_OldDIBRect, lpDIBRect, sizeof(RECT));
-				::DrawDibEnd(m_hDrawDib);
-			}
-		}
-
 		// Determine whether to call StretchDIBits() or SetDIBitsToDevice()
 		if ((RECTWIDTH(lpDCRect) == RECTWIDTH(lpDIBRect)) &&
 			(RECTHEIGHT(lpDCRect) == RECTHEIGHT(lpDIBRect)) &&
 			(RC_DIBTODEV & ::GetDeviceCaps(hDC, RASTERCAPS)) && !bForceStretch)
-		{
-			if (m_pBMI->bmiHeader.biBitCount >= 8 && !bNoDrawDib)
-			{
-				if (bDoDrawDibBegin)
-				{
-					bSuccess = ::DrawDibBegin(	m_hDrawDib,             
-												hDC,                  
-												RECTWIDTH(lpDCRect),
-												RECTHEIGHT(lpDCRect),              
-												(LPBITMAPINFOHEADER)m_pBMI,  
-												RECTWIDTH(lpDIBRect),
-												RECTHEIGHT(lpDIBRect),         
-												DDF_SAME_DRAW);
-				}
-				else
-					bSuccess = TRUE;
-
-				if (bSuccess)
-				{
-					bSuccess = ::DrawDibDraw(m_hDrawDib,				// Draw Dib DC         
-											hDC,						// hDC               
-											lpDCRect->left,             // DestX
-											lpDCRect->top,              // DestY
-											RECTWIDTH(lpDCRect),        // nDestWidth
-											RECTHEIGHT(lpDCRect),		// nDestHeight              
-											(LPBITMAPINFOHEADER)m_pBMI,	// lpBitsInfo
-											m_pBits,					// lpBits
-											lpDIBRect->left,			// SrcX
-											lpDIBRect->top,				// SrcY
-											RECTWIDTH(lpDIBRect),		// wSrcWidth
-											RECTHEIGHT(lpDIBRect),		// wSrcHeight               
-											DDF_SAME_DRAW);				// Flags
-				}
-			}
-			else
-				bSuccess = FALSE;
-				
+		{		
 			// ATTENTION: Here the Src Point (SrcX, SrcY) is the left-bottom point and
 			//            not the left-top point like with the other functions (BitBlt, StretchBlt, DrawDibDraw) !!!
-			if (!bSuccess)
-				bSuccess = ::SetDIBitsToDevice(hDC,					// hDC
-									   lpDCRect->left,				// DestX
-									   lpDCRect->top,				// DestY
-									   RECTWIDTH(lpDIBRect),		// nSrcWidth
-									   RECTHEIGHT(lpDIBRect),		// nSrcHeight
-									   lpDIBRect->left,				// SrcX
-									   GetHeight() - lpDIBRect->bottom,	// SrcY
-									   0,							// nStartScan, I do not understand the purpose of that...
-									   GetHeight(),					// nNumScans, I do not understand the purpose of that...
-									   m_pBits,						// lpBits
-									   m_pBMI,						// lpBitsInfo
-									   DIB_RGB_COLORS);				// wUsage
+			bSuccess = ::SetDIBitsToDevice(hDC,						// hDC
+									lpDCRect->left,					// DestX
+									lpDCRect->top,					// DestY
+									RECTWIDTH(lpDIBRect),			// nSrcWidth
+									RECTHEIGHT(lpDIBRect),			// nSrcHeight
+									lpDIBRect->left,				// SrcX
+									GetHeight() - lpDIBRect->bottom,// SrcY
+									0,								// nStartScan
+									GetHeight(),					// nNumScans
+									m_pBits,						// lpBits
+									m_pBMI,							// lpBitsInfo
+									DIB_RGB_COLORS);				// wUsage
 		}
 		else if ((RC_STRETCHDIB & ::GetDeviceCaps(hDC, RASTERCAPS)))
 		{
-			if (m_pBMI->bmiHeader.biBitCount >= 8 && !bNoDrawDib)
-			{
-				if (bDoDrawDibBegin)
-				{
-					bSuccess  = ::DrawDibBegin(	m_hDrawDib,             
-												hDC,                  
-												RECTWIDTH(lpDCRect),
-												RECTHEIGHT(lpDCRect),              
-												(LPBITMAPINFOHEADER)m_pBMI,  
-												RECTWIDTH(lpDIBRect),
-												RECTHEIGHT(lpDIBRect),         
-												DDF_SAME_DRAW);
-				}
-				else
-					bSuccess = TRUE;
-
-				if (bSuccess)
-				{
-					bSuccess = ::DrawDibDraw(m_hDrawDib,				// Draw Dib DC             
-											hDC,						// hDC           
-											lpDCRect->left,             // DestX
-											lpDCRect->top,              // DestY
-											RECTWIDTH(lpDCRect),        // nDestWidth
-											RECTHEIGHT(lpDCRect),		// nDestHeight              
-											(LPBITMAPINFOHEADER)m_pBMI,	// lpBitsInfo
-											m_pBits,					// lpBits
-											lpDIBRect->left,			// SrcX
-											lpDIBRect->top,				// SrcY
-											RECTWIDTH(lpDIBRect),		// wSrcWidth
-											RECTHEIGHT(lpDIBRect),		// wSrcHeight               
-											DDF_SAME_DRAW);				// Flags
-				}
-			}
-			else
-				bSuccess = FALSE;
-
 			// ATTENTION: Here the Src Point (SrcX, SrcY) is the left-bottom point and
 			//            not the left-top point like with the other functions (BitBlt, StretchBlt, DrawDibDraw) !!!
-			if (!bSuccess)
-			{
-				int nOldStretchMode = ::SetStretchBltMode(hDC, m_nStretchMode);
-
-				bSuccess = ::StretchDIBits(hDC,						// hDC
-								   lpDCRect->left,					// DestX
-								   lpDCRect->top,					// DestY
-								   RECTWIDTH(lpDCRect),				// nDestWidth
-								   RECTHEIGHT(lpDCRect),			// nDestHeight
-								   lpDIBRect->left,					// SrcX
-								   GetHeight() - lpDIBRect->bottom,	// SrcY
-								   RECTWIDTH(lpDIBRect),			// wSrcWidth
-								   RECTHEIGHT(lpDIBRect),			// wSrcHeight
-								   m_pBits,							// lpBits
-								   m_pBMI,							// lpBitsInfo
-								   DIB_RGB_COLORS,					// wUsage
-								   SRCCOPY);						// dwROP
-				
-				::SetStretchBltMode(hDC, nOldStretchMode);
-			}
-		}
-		else
-		{	
-			HPEN hPen = CreatePen(PS_SOLID, 3, RGB(0xFF,0,0));
-			HGDIOBJ hOldPen = SelectObject(hDC, hPen);
-			Rectangle(hDC, lpDCRect->left, lpDCRect->top, lpDCRect->right, lpDCRect->bottom);
-			SelectObject(hDC, hOldPen);
-			DeleteObject(hPen);
-			bSuccess = FALSE;
+			int nOldStretchMode = ::SetStretchBltMode(hDC, m_nStretchMode);
+			bSuccess = ::StretchDIBits(hDC,							// hDC
+									lpDCRect->left,					// DestX
+									lpDCRect->top,					// DestY
+									RECTWIDTH(lpDCRect),			// nDestWidth
+									RECTHEIGHT(lpDCRect),			// nDestHeight
+									lpDIBRect->left,				// SrcX
+									GetHeight() - lpDIBRect->bottom,// SrcY
+									RECTWIDTH(lpDIBRect),			// wSrcWidth
+									RECTHEIGHT(lpDIBRect),			// wSrcHeight
+									m_pBits,						// lpBits
+									m_pBMI,							// lpBitsInfo
+									DIB_RGB_COLORS,					// wUsage
+									SRCCOPY);						// dwROP
+			::SetStretchBltMode(hDC, nOldStretchMode);
 		}
 	}
 	else if (m_hDibSection)
@@ -592,22 +477,12 @@ BOOL CDib::Paint(HDC hDC,
 							RECTWIDTH(lpDIBRect), RECTHEIGHT(lpDIBRect), SRCCOPY);
 			::SetStretchBltMode(hDC, nOldStretchMode);
 		}
-		else
-		{	
-			HPEN hPen = ::CreatePen(PS_SOLID, 3, RGB(0xFF,0,0));
-			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
-			::Rectangle(hDC, lpDCRect->left, lpDCRect->top, lpDCRect->right, lpDCRect->bottom);
-			::SelectObject(hDC, hOldPen);
-			::DeleteObject(hPen);
-			bSuccess = FALSE;
-		}
+		
 		::SelectObject(memDC, hOldBitmap);
 		if (hOldPalMemDC != NULL)
 			::SelectPalette(memDC, hOldPalMemDC, TRUE);
 		::DeleteDC(memDC);
 	}
-	else
-		return FALSE;
 
 	// Reselect old palette
 	if (hOldPal != NULL)
@@ -4679,7 +4554,7 @@ BOOL CDib::Decompress(int nToBitsPerPixel)
 		else
 			return ConvertTo(nToBitsPerPixel);
 	}
-	// Try to Decode with DrawDib()
+	// Try to Decode with DrawDib Functions
 	else
 	{
 		// Get Display dc
@@ -5763,9 +5638,6 @@ void CDib::Serialize(CArchive& ar)
 
 void CDib::Init()
 {
-	memset(&m_OldBMI, 0, sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD));
-	memset(&m_OldDCRect, 0, sizeof(RECT));
-	memset(&m_OldDIBRect, 0, sizeof(RECT));
 	m_nStretchMode = COLORONCOLOR;
 	m_hMMFile = INVALID_HANDLE_VALUE;
 	m_hMMapping = NULL;

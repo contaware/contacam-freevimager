@@ -381,12 +381,6 @@ protected:
 	LPBYTE m_pBits;				// Undo() copies OrigBits to Bits
 	LPBYTE m_pOrigBits;			// SetUndo() copies Bits to OrigBits
 	LPBITMAPINFO m_pBMI;		// The BITMAPINFO
-	BYTE m_OldBMI[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];	// The Previous BITMAPINFOHEADER,
-																		// used to check whether to call DrawDibBegin()
-	RECT m_OldDCRect;			// The Previous DC Rectangle,
-								// used to check whether to call DrawDibBegin()
-	RECT m_OldDIBRect;			// The Previous DIB Rectangle,
-								// used to check whether to call DrawDibBegin()
 	RGBQUAD* m_pColors;			// UndoColor() copies OrigColors to Colors
 	RGBQUAD* m_pOrigColors;		// SetColorUndo() copies Colors to OrigColors 
 	
@@ -395,8 +389,6 @@ protected:
 	HBITMAP m_hDibSection;		// The Dib Section Handle
 	LPBYTE m_pDibSectionBits;	// Pointer to DibSection Bits
 	LPPICTURE m_pIPicture;		// The IPicture interface
-
-	HDRAWDIB m_hDrawDib;		// Draw Dib Handle
 
 	BOOL m_bShowMessageBoxOnError;// Display MessageBox on Error	
 
@@ -684,8 +676,7 @@ public:
 	BOOL Paint(	HDC hDC,							// The Device Context
 				const LPRECT lpDCRect,				// Device Context Rectangle
 				const LPRECT lpDIBRect,				// Dib Rectangle
-				BOOL bForceStretch = FALSE,			// Force Stretch if set
-				BOOL bNoDrawDib = FALSE);			// Do not use DrawDib Functions if set
+				BOOL bForceStretch = FALSE);		// Force Stretch if set
 
 	// Palette Functions
 	CPalette* GetPalette();

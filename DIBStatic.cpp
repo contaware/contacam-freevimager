@@ -292,8 +292,7 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 			// Set File Size
 			m_pDibStatic->m_pDibFull->SetFileSize((DWORD)::GetFileSize64(m_sFileName).QuadPart);
 
-			// Create thumbnail fails with YUV surfaces,
-			// keep full sized image and let DrawDib() stretch it.
+			// Create thumbnail
 			if (!m_pDibStatic->m_pDibFull->CreateThumbnailDib(	m_rcClient.Width(),
 																m_rcClient.Height(),
 																NULL,
@@ -1137,19 +1136,10 @@ void CDibStatic::PaintDib(BOOL bUseCS/*=TRUE*/)
 			CRect RectDest(nDestX, nDestY, nDestX+nDestWidth, nDestY+nDestHeight);
 			CRect RectDib(0, 0, pDib->GetWidth(), pDib->GetHeight());
 			ClearBorders(&dc, RectDest);
-			if (!pDib->Paint(	dc,
-								&RectDest,
-								&RectDib,
-								FALSE,
-								TRUE))
-			{
-				// Try With DrawDib()
-				pDib->Paint(dc,
-							&RectDest,
-							&RectDib,
-							FALSE,
-							FALSE);
-			} 
+			pDib->Paint(dc,
+						&RectDest,
+						&RectDib,
+						FALSE); 
 		}
 		else
 		{

@@ -996,16 +996,14 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 				if (!Dib.Paint(	pDC->m_hDC,
 								m_rcDibPrint,
 								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-								FALSE,
-								TRUE))
+								FALSE))
 				{
 					// Try with color on color stretch
 					Dib.SetStretchMode(COLORONCOLOR);
 					Dib.Paint(	pDC->m_hDC,
 								m_rcDibPrint,
 								CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-								FALSE,
-								TRUE);
+								FALSE);
 				}
 			}
 
@@ -1023,8 +1021,7 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 		Dib.Paint(	pDC->m_hDC,
 					m_rcDibPrint,
 					CRect(0, 0, Dib.GetWidth(), Dib.GetHeight()),
-					FALSE,
-					TRUE);
+					FALSE);
 
 		EndWaitCursor();
 	}
@@ -1036,8 +1033,7 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			pDib->GetPreviewDib()->Paint(	pDC->m_hDC,
 											m_rcDibPrint,
 											PreviewDibRect,
-											TRUE, // Force Stretch Otherwise it will not be previewed correctly!
-											TRUE);
+											TRUE); // Force Stretch Otherwise it will not be previewed correctly!
 		}
 		else
 		{
@@ -1045,8 +1041,7 @@ void CPictureView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 			pDib->Paint(pDC->m_hDC,
 						m_rcDibPrint,
 						DibRect,
-						TRUE, // Force Stretch Otherwise it will not be previewed correctly!
-						TRUE);
+						TRUE); // Force Stretch Otherwise it will not be previewed correctly!
 		}
 	}
 
@@ -2525,8 +2520,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 		pGifDib->Paint(	pTheDC->GetSafeHdc(),
 						m_ZoomRect,
 						pDoc->m_DocRect,
-						FALSE,
-						TRUE);
+						FALSE);
 
 		// Update Layered Image
 		pDoc->UpdateLayeredDlg(	pDoc->m_GifAnimationThread.m_DibAnimationArray.GetAt
@@ -2589,8 +2583,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->GetPreviewDib()->Paint(	pTheDC->GetSafeHdc(),
 													m_ZoomRect,
 													PreviewDocRect,
-													FALSE,
-													TRUE);
+													FALSE);
 				}
 				else
 				{
@@ -2602,8 +2595,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->GetPreviewDib()->Paint(	pTheDC->GetSafeHdc(),
 													rcVisibleZoomRect,
 													rcVisibleDocRect,
-													FALSE,
-													TRUE);
+													FALSE);
 				}
 
 				// Remove Region from DC
@@ -2636,8 +2628,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->GetPreviewDib()->Paint(pTheDC->GetSafeHdc(),
 												m_ZoomRect,
 												PreviewDocRect,
-												FALSE,
-												TRUE);
+												FALSE);
 				}
 				else
 				{
@@ -2649,8 +2640,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->GetPreviewDib()->Paint(	pTheDC->GetSafeHdc(),
 													rcVisibleZoomRect,
 													rcVisibleDocRect,
-													FALSE,
-													TRUE);
+													FALSE);
 				}
 
 				// Update Layered Image
@@ -2710,8 +2700,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->Paint(pTheDC->GetSafeHdc(),
 								m_ZoomRect,
 								pDoc->m_DocRect,
-								FALSE,
-								TRUE);
+								FALSE);
 				}
 				else
 				{
@@ -2720,8 +2709,7 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 					pDib->Paint(pTheDC->GetSafeHdc(),
 								rcVisibleZoomRect,
 								rcVisibleDocRect,
-								FALSE,
-								TRUE);
+								FALSE);
 				}
 
 				// Remove Region from DC
@@ -2746,37 +2734,19 @@ BOOL CPictureView::Draw(CDC* pDC/*=NULL*/)
 				// Paint Image
 				if (!IsXOrYScroll())
 				{
-					if (!pDib->Paint(pTheDC->GetSafeHdc(),
-									m_ZoomRect,
-									pDoc->m_DocRect,
-									FALSE,
-									TRUE))
-					{
-						// Try With DrawDib()
-						pDib->Paint(pTheDC->GetSafeHdc(),
-									m_ZoomRect,
-									pDoc->m_DocRect,
-									FALSE,
-									FALSE);
-					}
+					pDib->Paint(pTheDC->GetSafeHdc(),
+								m_ZoomRect,
+								pDoc->m_DocRect,
+								FALSE);
 				}
 				else
 				{
 					CRect rcVisibleDocRect = GetVisibleDocRect(pDoc->m_DocRect, pDoc->m_dZoomFactor);
 					CRect rcVisibleZoomRect = GetVisibleZoomRect(rcVisibleDocRect, pDoc->m_dZoomFactor);
-					if (!pDib->Paint(pTheDC->GetSafeHdc(),
-									rcVisibleZoomRect,
-									rcVisibleDocRect,
-									FALSE,
-									TRUE))
-					{
-						// Try With DrawDib()
-						pDib->Paint(pTheDC->GetSafeHdc(),
-									rcVisibleZoomRect,
-									rcVisibleDocRect,
-									FALSE,
-									FALSE);
-					}
+					pDib->Paint(pTheDC->GetSafeHdc(),
+								rcVisibleZoomRect,
+								rcVisibleDocRect,
+								FALSE);
 				}
 
 				// Update Layered Image
@@ -3239,8 +3209,7 @@ void CPictureView::DrawCropBkgImage(CDC* pDC, BOOL bUseMemDC)
 			pDoc->m_pCropBkgDib->Paint(	pDC->GetSafeHdc(),
 										m_ZoomRect,
 										DocRect,
-										FALSE,
-										TRUE);
+										FALSE);
 		}
 		else
 		{
@@ -3255,8 +3224,7 @@ void CPictureView::DrawCropBkgImage(CDC* pDC, BOOL bUseMemDC)
 			pDoc->m_pCropBkgDib->Paint(	pDC->GetSafeHdc(),
 										rcVisibleZoomRect,
 										rcVisibleDocRect,
-										FALSE,
-										TRUE);
+										FALSE);
 		}
 
 		// Remove Region from DC

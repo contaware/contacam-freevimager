@@ -1505,8 +1505,7 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 						res = pDoc->m_pDib->Paint(	hDC,
 													&ZoomRect,
 													pDoc->m_DocRect,
-													FALSE,	// Force Stretch?
-													FALSE);	// No Draw Dib?
+													FALSE);	// Force Stretch?
 					}
 					else
 						res = FALSE;
