@@ -17,7 +17,6 @@
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "FTPTransfer.h"
-#include "getdxver.h"
 #include "BrowseDlg.h"
 #include "PostDelayedMessage.h"
 #include "MotionDetHelpers.h"

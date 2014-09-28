@@ -23,13 +23,11 @@ extern "C"
 #define WM_THREADSAFE_OPEN_DOC						WM_USER + 100
 #define WM_SHRINKDOC_TERMINATED						WM_USER + 101
 #define WM_ALL_CLOSED								WM_USER + 102
-#define WM_VIDEOAVI_FULLSCREEN_MODE_ON				WM_USER + 103
-#define WM_VIDEOAVI_FULLSCREEN_MODE_OFF				WM_USER + 104
-#define WM_SCANANDEMAIL								WM_USER + 105
-#define WM_TRAY_NOTIFICATION						WM_USER + 106
+#define WM_SCANANDEMAIL								WM_USER + 103
+#define WM_TRAY_NOTIFICATION						WM_USER + 104
 #ifdef VIDEODEVICEDOC
-#define WM_THREADSAFE_CONNECTERR					WM_USER + 107
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 108
+#define WM_THREADSAFE_CONNECTERR					WM_USER + 105
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 106
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -63,12 +61,6 @@ extern "C"
 #define AUTORUN_VIDEODEVICES_MAX_RETRIES			6
 #define AUTORUN_VIDEODEVICES_RETRY_DELAY			10000	// ms
 #endif
-
-#define FULLSCREEN_SAFEPAUSED_FRAMES_TIMEOUT		3
-#define FULLSCREEN_MIN_SAFEPAUSED_TIMEOUT			1000U	// ms
-#define FULLSCREEN_DELAYEDRESTART_TIMEOUT			3000U	// ms
-
-#define SESSIONCHANGE_WAIT_SEC						5		// sec
 
 // Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				60000U	// ms
@@ -134,9 +126,6 @@ public:
 	CRect GetMonitorFullRect(CPoint pt);
 	CRect GetPreviousMonitorFullRect();
 	CRect GetNextMonitorFullRect();
-
-	// Are Modeless Dialogs Visible?
-	BOOL AreModelessDlgsVisible();
 
 	// Toolbar and Statusbar
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
@@ -218,9 +207,8 @@ protected:
 	TIFF* m_TiffScan;
 
 protected:
-	void FullScreenModeOn(HWND hChildWndSafePaused = NULL);
-	void FullScreenModeOff(HWND hChildWndSafePaused = NULL);
-	void RestoreAllFrames();
+	void FullScreenModeOn();
+	void FullScreenModeOff();
 	void ChangeCoordinatesUnit();
 #ifdef VIDEODEVICEDOC
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
@@ -249,7 +237,6 @@ protected:
 	afx_msg void OnMaximize();
 	afx_msg void OnUpdateMaximize(CCmdUI* pCmdUI);
 	afx_msg void OnMainmonitor();
-	afx_msg void OnMove(int x, int y);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnFileAcquireToTiff();
 	afx_msg void OnFileAcquireToPdf();
@@ -269,10 +256,7 @@ protected:
 	afx_msg LONG OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTaskBarButton(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnRestoreAllFrames(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAllClosed(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnVideoAviFullScreenModeOn(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnVideoAviFullScreenModeOff(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);

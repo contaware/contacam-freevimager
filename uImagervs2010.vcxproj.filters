@@ -138,9 +138,6 @@
     <ClCompile Include="DIBStatic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DirectX7Dlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DiscFormatData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -165,9 +162,6 @@
     <ClCompile Include="DxCapture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DxDraw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DxVideoFormatDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -184,9 +178,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneralPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="getdxver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GifAnimationThread.cpp">
@@ -597,9 +588,6 @@
     <ClInclude Include="DIBStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DirectX7Dlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DiscFormatData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -624,9 +612,6 @@
     <ClInclude Include="DxCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DxDraw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DxVideoFormatDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -643,9 +628,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneralPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="getdxver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GifAnimationThread.h">

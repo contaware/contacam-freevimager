@@ -313,8 +313,6 @@ protected:
 protected:
 	//{{AFX_MSG(CVideoAviChildFrame)
 	afx_msg void OnClose();
-	afx_msg void OnMove(int x, int y);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);

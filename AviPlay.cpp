@@ -3163,9 +3163,6 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
     m_pFrameGdi = av_frame_alloc();
     if (!m_pFrameGdi)
         goto error;
-	m_pFrameDxDraw = av_frame_alloc();
-    if (!m_pFrameDxDraw)
-        goto error;
 
 	// Prepare Wanted Dib Format
 	if (m_pDstBMI)
@@ -3222,13 +3219,7 @@ void CAVIPlay::CAVIVideoStream::FreeAVCodec()
 		av_frame_free(&m_pFrameGdi);
 	if (m_pFrame)
 		av_frame_free(&m_pFrame);
-	if (m_pFrameDxDraw)
-		av_frame_free(&m_pFrameDxDraw);
 	
-	m_dwPrevFourCCDxDraw = 0;
-	m_nPrevPitchDxDraw = 0;
-	m_nPrevBppDxDraw = 0;
-	m_pPrevSurfaceDxDraw = NULL;
 	m_bAVDecodeExtraData = false;
 	m_bAVPaletteChanged = false;
 	memset(&m_AVPalette, 0, AVPALETTE_SIZE);
@@ -3237,11 +3228,6 @@ void CAVIPlay::CAVIVideoStream::FreeAVCodec()
 	{
 		sws_freeContext(m_pImgConvertCtxGdi);
 		m_pImgConvertCtxGdi = NULL;
-	}
-	if (m_pImgConvertCtxDxDraw)
-	{
-		sws_freeContext(m_pImgConvertCtxDxDraw);
-		m_pImgConvertCtxDxDraw = NULL;
 	}
 }
 
@@ -3413,175 +3399,9 @@ __forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDib(bool bKeyFram
 		return true;
 }
 
-__forceinline bool CAVIPlay::CAVIVideoStream::AVCodecDecompressDxDraw(	bool bKeyFrame,
-																		bool bSeek,
-																		CDxDraw* pDxDraw,
-																		CRect rc)
-{
-	// Check
-	if (!m_pCodecCtx)
-		return false;
-
-	// Flush Buffers
-	if (bSeek)
-		avcodec_flush_buffers(m_pCodecCtx);
-
-	// Reset Frame Structure
-	av_frame_unref(m_pFrame);
-
-	// Set Key Frame, not necessary ... but it does not harm
-	m_pFrame->key_frame = bKeyFrame ? 1 : 0;
-
-	// Decode
-	int got_picture;
-	memset(	m_pSrcBuf + ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage,
-			0,
-			FF_INPUT_BUFFER_PADDING_SIZE);
-	if (m_bAVDecodeExtraData)
-	{
-		AVPacket pkt;
-		av_init_packet(&pkt);
-		pkt.data = m_pCodecCtx->extradata;
-		pkt.size = m_pCodecCtx->extradata_size;
-		got_picture = 0;
-		avcodec_decode_video2(	m_pCodecCtx,
-								m_pFrame,
-								&got_picture,
-								&pkt);
-		av_free_packet(&pkt);
-		m_bAVDecodeExtraData = false;
-	}
-	AVPacket pkt;
-	av_init_packet(&pkt);
-	pkt.data = (uint8_t*)m_pSrcBuf;
-	pkt.size = ((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage;
-	if (m_bAVPaletteChanged)
-	{
-		uint8_t* pal = av_packet_new_side_data(&pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
-		if (pal)
-			memcpy(pal, m_AVPalette, AVPALETTE_SIZE);
-		m_bAVPaletteChanged = false;
-	}
-	got_picture = 0;
-	int len = avcodec_decode_video2(m_pCodecCtx,
-									m_pFrame,
-									&got_picture,
-									&pkt);
-	av_free_packet(&pkt);
-	if (m_pCodecCtx->has_b_frames)
-		m_nOneFrameDelay = 1;
-    if (len < 0)
-		return true; // be tolerant!
-
-	// Lock Surface
-	DDSURFACEDESC2 ddsd;
-	if (!pDxDraw->LockSrc(&ddsd)) // Fails when surface lost
-		return true;
-
-	// Init Color Space Convert Context
-	if (!m_pImgConvertCtxDxDraw									||
-		m_dwPrevFourCCDxDraw != pDxDraw->GetCurrentSrcFourCC()	||
-		m_nPrevPitchDxDraw != pDxDraw->GetCurrentSrcPitch()		||
-		m_nPrevBppDxDraw != pDxDraw->GetCurrentSrcBpp()			||
-		m_pPrevSurfaceDxDraw != ddsd.lpSurface)
-	{
-		// Store Values
-		m_dwPrevFourCCDxDraw = pDxDraw->GetCurrentSrcFourCC();
-		m_nPrevPitchDxDraw = pDxDraw->GetCurrentSrcPitch();
-		m_nPrevBppDxDraw = pDxDraw->GetCurrentSrcBpp();
-		m_pPrevSurfaceDxDraw = ddsd.lpSurface;
-
-		// Get Pix Format
-		enum AVPixelFormat pix_fmt = AVCodecDxDrawToPixFormat(pDxDraw);
-
-		// Assign appropriate parts of buffer to image planes
-		avpicture_fill((AVPicture*)m_pFrameDxDraw,
-						(unsigned __int8 *)ddsd.lpSurface,
-						pix_fmt,
-						m_pCodecCtx->width,
-						m_pCodecCtx->height);
-
-		// Flip U <-> V pointers
-		if (pix_fmt == AV_PIX_FMT_YUV420P)
-		{
-			m_pFrameDxDraw->linesize[0] = pDxDraw->GetCurrentSrcPitch();
-			m_pFrameDxDraw->linesize[1] = pDxDraw->GetCurrentSrcPitch()>>1;
-			m_pFrameDxDraw->linesize[2] = m_pFrameDxDraw->linesize[1];
-			m_pFrameDxDraw->data[2] = m_pFrameDxDraw->data[0] + m_pFrameDxDraw->linesize[0] * GetHeight();
-			m_pFrameDxDraw->data[1] = m_pFrameDxDraw->data[2] + ((m_pFrameDxDraw->linesize[1] * GetHeight())>>1);
-		}
-		else
-			m_pFrameDxDraw->linesize[0] = pDxDraw->GetCurrentSrcPitch();
-
-		// Prepare Image Conversion Context
-		if (m_pImgConvertCtxDxDraw)
-			sws_freeContext(m_pImgConvertCtxDxDraw);
-		if (m_pCodecCtx->pix_fmt != AV_PIX_FMT_NONE)
-		{
-			m_pImgConvertCtxDxDraw = sws_getContext(GetWidth(),				// Source Width
-													GetHeight(),			// Source Height
-													m_pCodecCtx->pix_fmt,	// Source Format
-													GetWidth(),				// Destination Width
-													GetHeight(),			// Destination Height
-													pix_fmt,				// Destination Format
-													SWS_BICUBIC,			// Interpolation
-													NULL,					// No Source Filter
-													NULL,					// No Destination Filter
-													NULL);					// Param
-			if (!m_pImgConvertCtxDxDraw)
-			{
-				pDxDraw->UnlockSrc();
-				return false;
-			}
-		}
-	}
-
-	// Color Space Conversion
-	// (first try fast conversion, if not supported fall back to sws_scale)
-	if (got_picture && m_pFrame->data[0] && m_pImgConvertCtxDxDraw)
-	{
-		BOOL bOk = ITU601JPEGConvert(m_pCodecCtx->pix_fmt,				// Source Format
-									AVCodecDxDrawToPixFormat(pDxDraw),	// Destination Format
-									m_pFrame->data,						// Source Data
-									m_pFrame->linesize,					// Source Stride
-									m_pFrameDxDraw->data,				// Destination Data
-									m_pFrameDxDraw->linesize,			// Destination Stride
-									GetWidth(),							// Width
-									GetHeight());						// Height
-		if (!bOk)
-		{
-			bOk = sws_scale(m_pImgConvertCtxDxDraw,						// Image Convert Context
-							m_pFrame->data,								// Source Data
-							m_pFrame->linesize,							// Source Stride
-							0,											// Source Slice Y
-							GetHeight(),								// Source Height
-							m_pFrameDxDraw->data,						// Destination Data
-							m_pFrameDxDraw->linesize) > 0;				// Destination Stride
-		}
-		if (bOk)
-		{
-			pDxDraw->UnlockSrc();
-			pDxDraw->UpdateBackSurface(rc);
-			return true;
-		}
-		else
-		{
-			pDxDraw->UnlockSrc();
-			return false;
-		}
-	}
-	else
-	{
-		pDxDraw->UnlockSrc();
-		pDxDraw->UpdateBackSurface(rc);
-		return true;
-	}
-}
-
 bool CAVIPlay::CAVIVideoStream::ReOpenDecompressVCM()
 {
 	m_nLastDecompressedDibFrame = -2;
-	m_nLastDecompressedDxDrawFrame = -2;
 	if (m_hIC)
 	{
 		// Close
@@ -3683,7 +3503,6 @@ void CAVIPlay::CAVIVideoStream::Free()
 	m_dwDstBufSize = 0;
 	m_dwDstFormatSize = 0;
 	m_nLastDecompressedDibFrame = -2;
-	m_nLastDecompressedDxDrawFrame = -2;
 	m_bNoDecompression = false;
 	m_bYuvToRgb32 = false;
 	m_bHasDecompressor = false;
@@ -3799,7 +3618,6 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompr
 
 	// Reset
 	m_nLastDecompressedDibFrame = -2;
-	m_nLastDecompressedDxDrawFrame = -2;
 
 	// Decompress?
 	if (bForceDecompress ||
@@ -3827,18 +3645,12 @@ __forceinline bool CAVIPlay::CAVIVideoStream::SkipFrameHelper(BOOL bForceDecompr
 										(LPVOID)m_pSrcBuf,                  
 										(LPBITMAPINFOHEADER)m_pDstBMI,        
 										(LPVOID)m_pDstBuf) >= 0)
-				{
 					m_nLastDecompressedDibFrame = (int)m_dwNextFrame;
-					m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
-				}
 			}
 			else
 			{
 				if (AVCodecDecompressDib(IsKeyFrame(m_dwNextFrame), false))
-				{
 					m_nLastDecompressedDibFrame = (int)m_dwNextFrame;
-					m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
-				}
 			}
 		}
 	}
@@ -4109,96 +3921,6 @@ bool CAVIPlay::CAVIVideoStream::GetUncompressedDib(CDib* pDib)
 	}
 }
 
-bool CAVIPlay::CAVIVideoStream::GetUncompressedFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc)
-{
-	// Check
-	if (!pDxDraw)
-		return false;
-	
-	// Enter CS
-	::EnterCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	// Check Range
-	if (dwFrame >= GetTotalFrames())
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-
-	// Direct Decompress?
-	bool bDirectDecompress =	(pDxDraw->GetCurrentSrcBpp() == ((LPBITMAPINFOHEADER)m_pSrcFormat)->biBitCount)			&&	// Same Bpp
-								pDxDraw->HasSameSrcPitch()																&&	// Same Pitch
-								(pDxDraw->GetCurrentSrcFourCC() == ((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression)	&&	// Same Compression
-								(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression != BI_RGB)							&&	// We have to Flip for BI_RGB
-								(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression != BI_BITFIELDS)						&&	// We have to Flip for BI_BITFIELDS
-								!IsRLE(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression);									// We have to Flip for BI_RLE4 or BI_RLE8
-
-	// Get the Frame
-	if (bDirectDecompress)
-	{
-		DDSURFACEDESC2 ddsd;
-		if (pDxDraw->LockSrc(&ddsd)) // Fails when surface lost
-		{
-			DWORD dwSrcBufSizeUsed = 0;
-			dwSrcBufSizeUsed = ddsd.lPitch * ddsd.dwHeight;
-			if (!GetChunkData(	dwFrame,
-								(LPBYTE)ddsd.lpSurface,
-								&dwSrcBufSizeUsed))
-			{
-				pDxDraw->UnlockSrc();
-				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-				return false;	
-			}
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			pDxDraw->UnlockSrc();
-			pDxDraw->UpdateBackSurface(rc);
-		}
-	}
-	else
-	{
-		if (IsRLE(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression))
-		{
-			if (!m_pCurrentRLEDib)
-			{
-				m_pCurrentRLEDib = new CDib;
-				if (!m_pCurrentRLEDib)
-				{
-					::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-					return false;
-				}
-			}
-			if (GetUncompressedFrameAt(m_pCurrentRLEDib, dwFrame, m_nLastDecompressedDxDrawFrame))
-				pDxDraw->RenderDib(m_pCurrentRLEDib, rc); // Fails when surface lost
-		}
-		else
-		{
-			DWORD dwSrcBufSizeUsed = 0;
-			dwSrcBufSizeUsed = m_dwSrcBufSize;
-			if (!GetChunkData(	dwFrame,
-								m_pSrcBuf,
-								&dwSrcBufSizeUsed))
-			{
-				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-				return false;	
-			}
-			UpdatePalette(dwFrame);
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			pDxDraw->RenderDib((LPBITMAPINFO)m_pSrcFormat, m_pSrcBuf, rc); // Fails when surface lost
-		}
-	}
-
-	// Update Last Decompressed Frame
-	m_nLastDecompressedDxDrawFrame = (int)dwFrame;
-
-	// Inc. Pos
-	m_dwNextFrame = dwFrame + 1;
-
-	// Leave CS
-	::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	return true;
-}
-
 bool CAVIPlay::CAVIVideoStream::GetYUVFrameAt(CDib* pDib, DWORD dwFrame)
 {
 	// Check
@@ -4259,56 +3981,6 @@ bool CAVIPlay::CAVIVideoStream::GetYUVFrameAt(CDib* pDib, DWORD dwFrame)
 
 	// Update Last Decompressed Frame
 	m_nLastDecompressedDibFrame = (int)dwFrame;
-
-	// Inc. Pos
-	m_dwNextFrame = dwFrame + 1;
-
-	// Leave CS
-	::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	return true;
-}
-
-bool CAVIPlay::CAVIVideoStream::GetYUVFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc)
-{
-	// Check
-	if (!pDxDraw)
-		return false;
-	
-	// Enter CS
-	::EnterCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	// Check Range
-	if (dwFrame >= GetTotalFrames())
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-
-	// Get Encoded Frame
-	DWORD dwSrcBufSizeUsed = m_dwSrcBufSize;
-	if (!GetChunkData(	dwFrame,
-						m_pSrcBuf,
-						&dwSrcBufSizeUsed))
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;	
-	}
-
-	// Decode
-	if (!::YUVToRGB32(	((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression,
-						m_pSrcBuf,
-						m_pDstBuf,
-						m_pDstBMI->bmiHeader.biWidth,
-						m_pDstBMI->bmiHeader.biHeight))
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-	pDxDraw->RenderDib(m_pDstBMI, m_pDstBuf, rc); // Fails when surface lost
-
-	// Update Last Decompressed Frame
-	m_nLastDecompressedDxDrawFrame = (int)dwFrame;
 
 	// Inc. Pos
 	m_dwNextFrame = dwFrame + 1;
@@ -4619,158 +4291,6 @@ bool CAVIPlay::CAVIVideoStream::GetFrame(CDib* pDib)
 	// Update Last Decompressed Frame
 	m_nLastDecompressedDibFrame = (int)m_dwNextFrame;
 
-	// Inc. Pos
-	m_dwNextFrame++;
-
-	// Leave CS
-	::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	return true;
-}
-
-bool CAVIPlay::CAVIVideoStream::GetFrame(CDxDraw* pDxDraw, CRect rc)
-{
-	// Check
-	if (!pDxDraw)
-		return false;
-
-	// Uncompressed Frame?
-	if (m_bNoDecompression)
-		return GetUncompressedFrameAt(pDxDraw, m_dwNextFrame, rc);
-	else if (m_bYuvToRgb32)
-		return GetYUVFrameAt(pDxDraw, m_dwNextFrame, rc);
-
-	// Get the DirectDraw Pixel Format
-	int nSrcBpp = pDxDraw->GetCurrentSrcBpp();
-	DWORD dwSrcFourCC = pDxDraw->GetCurrentSrcFourCC();
-	
-	// Enter CS
-	::EnterCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	// Check
-	if (GetTotalFrames() <= 0)
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-
-	// Special Handling for delayed codecs
-	bool bFlushLastFrame = false;
-	if (m_nOneFrameDelay)
-	{
-		// Flush Last Frame?
-		if (m_dwNextFrame == GetTotalFrames())
-			bFlushLastFrame = true;
-		// End of File -> Return
-		else if (m_dwNextFrame > GetTotalFrames())
-		{
-			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-			return false;
-		}
-	}
-	else
-	{
-		// End of File -> Return
-		if (m_dwNextFrame >= GetTotalFrames())
-		{
-			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-			return false;
-		}
-	}
-
-	// Change the Pixel Format?
-	if (m_hIC)
-	{
-		if (!m_bNoBitCountChangeVCM &&
-			((nSrcBpp != m_pDstBMI->bmiHeader.biBitCount) ||
-			(dwSrcFourCC != m_pDstBMI->bmiHeader.biCompression)))
-			ChangeGetFrameBitsVCM((WORD)nSrcBpp);
-	}
-
-	// Not in Sequence Frame?
-	if ((m_nLastDecompressedDxDrawFrame + 1) != (int)m_dwNextFrame)
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return GetFrameAt(pDxDraw, m_dwNextFrame, rc);
-	}
-
-	// Get Compressed Data
-	DWORD dwSrcBufSizeUsed = m_dwSrcBufSize;
-	if (!GetChunkData(	m_dwNextFrame,
-						m_pSrcBuf,
-						&dwSrcBufSizeUsed))
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-	UpdatePalette(m_dwNextFrame);
-
-	// VCM
-	if (m_hIC)
-	{
-		// Direct Decompress?
-		bool bDirectDecompress =	(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression != FCC('HFYU'))	&&	// HuffYuv is so slow decompressing directly to surface...
-									(nSrcBpp == m_pDstBMI->bmiHeader.biBitCount)						&&	// Same Bpp
-									pDxDraw->HasSameSrcPitch()											&&	// Same Pitch
-									(dwSrcFourCC == m_pDstBMI->bmiHeader.biCompression)					&&	// Same Compression
-									(m_pDstBMI->bmiHeader.biCompression != BI_RGB)						&&	// We have to Flip for BI_RGB
-									(m_pDstBMI->bmiHeader.biCompression != BI_BITFIELDS);					// We have to Flip for BI_BITFIELDS
-
-		// Get the Frame
-		if (bDirectDecompress)
-		{
-			// Decompress
-			DDSURFACEDESC2 ddsd;
-			if (pDxDraw->LockSrc(&ddsd)) // Fails when surface lost
-			{
-				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-				if ((int)ICDecompress(	m_hIC,
-										IsKeyFrame(m_dwNextFrame) ?
-										0 : ICDECOMPRESS_NOTKEYFRAME,
-										(LPBITMAPINFOHEADER)m_pSrcFormat,
-										(LPVOID)m_pSrcBuf,                  
-										(LPBITMAPINFOHEADER)m_pDstBMI,        
-										(LPVOID)ddsd.lpSurface) < 0)
-				{
-					pDxDraw->UnlockSrc();
-					::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-					return false;
-				}
-				pDxDraw->UnlockSrc();
-				pDxDraw->UpdateBackSurface(rc);
-			}
-		}
-		else
-		{
-			// Decompress
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if ((int)ICDecompress(	m_hIC,
-									IsKeyFrame(m_dwNextFrame) ?
-									0 : ICDECOMPRESS_NOTKEYFRAME,
-									(LPBITMAPINFOHEADER)m_pSrcFormat,
-									(LPVOID)m_pSrcBuf,                  
-									(LPBITMAPINFOHEADER)m_pDstBMI,        
-									(LPVOID)m_pDstBuf) < 0)
-			{
-				::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-				return false;
-			}
-			pDxDraw->RenderDib(m_pDstBMI, m_pDstBuf, rc); // Fails when surface lost
-		}
-	}
-	else
-	{
-		((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-		if (!AVCodecDecompressDxDraw(IsKeyFrame(m_dwNextFrame), false, pDxDraw, rc))
-		{
-			::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-			return false;
-		}
-	}
-
-	// Update Last Decompressed Frame
-	m_nLastDecompressedDxDrawFrame = (int)m_dwNextFrame;
-	
 	// Inc. Pos
 	m_dwNextFrame++;
 
@@ -5179,300 +4699,6 @@ void CAVIPlay::CAVIVideoStream::ClearDstBuf()
 		else
 			memset(m_pDstBuf, 0, m_dwDstBufSize);
 	}
-}
-
-bool CAVIPlay::CAVIVideoStream::GetFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc)
-{
-	bool res;
-
-	// Check
-	if (!pDxDraw)
-		return false;
-	
-	// Uncompressed Frame?
-	if (m_bNoDecompression)
-		return GetUncompressedFrameAt(pDxDraw, dwFrame, rc);
-	else if (m_bYuvToRgb32)
-		return GetYUVFrameAt(pDxDraw, dwFrame, rc);
-
-	// Get the DirectDraw Pixel Format
-	int nSrcBpp = pDxDraw->GetCurrentSrcBpp();
-	DWORD dwSrcFourCC = pDxDraw->GetCurrentSrcFourCC();
-
-	// Enter CS
-	::EnterCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	// Check Range
-	if (dwFrame >= GetTotalFrames())
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return false;
-	}
-
-	// Change the Pixel Format?
-	if (m_hIC)
-	{
-		if (!m_bNoBitCountChangeVCM &&
-			((nSrcBpp != m_pDstBMI->bmiHeader.biBitCount) ||
-			(dwSrcFourCC != m_pDstBMI->bmiHeader.biCompression)))
-			ChangeGetFrameBitsVCM((WORD)nSrcBpp);
-	}
-
-	// Just Call GetFrame()?
-	if ((dwFrame == m_dwNextFrame) &&
-		((m_nLastDecompressedDxDrawFrame + 1) == (int)dwFrame))
-	{
-		::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-		return GetFrame(pDxDraw, rc);
-	}
-
-	// Get Frame at direct
-	res = GetFrameAtDirect(pDxDraw, dwFrame, rc);
-	::LeaveCriticalSection(&m_pAVIPlay->m_csAVI);
-
-	// Has One Frame Delay?
-	if (m_nOneFrameDelay)
-	{
-		if (res)
-			return GetFrame(pDxDraw, rc);
-		else
-			return false;
-	}
-	else
-		return res;
-}
-
-bool CAVIPlay::CAVIVideoStream::GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc)
-{
-	// Get the DirectDraw Pixel Format
-	int nSrcBpp = pDxDraw->GetCurrentSrcBpp();
-	DWORD dwSrcFourCC = pDxDraw->GetCurrentSrcFourCC();
-
-	// VCM Direct Decompress?
-	bool bDirectDecompress = false;
-	if (m_hIC)
-	{
-		bDirectDecompress =	(((LPBITMAPINFOHEADER)m_pSrcFormat)->biCompression != FCC('HFYU'))	&&	// HuffYuv is so slow decompressing directly to surface...
-							(nSrcBpp == m_pDstBMI->bmiHeader.biBitCount)						&&	// Same Bpp
-							pDxDraw->HasSameSrcPitch()											&&	// Same Pitch
-							(dwSrcFourCC == m_pDstBMI->bmiHeader.biCompression)					&&	// Same Compression
-							(m_pDstBMI->bmiHeader.biCompression != BI_RGB)						&&	// We have to Flip for BI_RGB
-							(m_pDstBMI->bmiHeader.biCompression != BI_BITFIELDS);					// We have to Flip for BI_BITFIELDS
-	}
-
-	// Get Frame
-	DWORD dwSrcBufSizeUsed;
-	int nPrevKeyFrame = GetPrevKeyFrame(dwFrame);
-	if (nPrevKeyFrame == -1)
-		return false;
-	else if (nPrevKeyFrame < (int)dwFrame && ((int)dwFrame - nPrevKeyFrame < MAX_KEYFRAMES_SPACING))
-	{	
-		// Get Key-Frame
-		dwSrcBufSizeUsed = m_dwSrcBufSize;
-		if (!GetChunkData(	nPrevKeyFrame,
-							m_pSrcBuf,
-							&dwSrcBufSizeUsed))
-		{
-			return false;
-		}
-		UpdatePalette(nPrevKeyFrame);
-
-		// VCM
-		if (m_hIC)
-		{
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if ((int)ICDecompress(	m_hIC,
-									ICDECOMPRESS_PREROLL,
-									(LPBITMAPINFOHEADER)m_pSrcFormat,
-									(LPVOID)m_pSrcBuf,                  
-									(LPBITMAPINFOHEADER)m_pDstBMI,        
-									(LPVOID)m_pDstBuf) < 0)
-			{
-				return false;
-			}
-		}
-		else
-		{
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if (!AVCodecDecompressDxDraw(true, true, pDxDraw, rc))
-			{
-				return false;
-			}
-		}
-		
-		// Get Middle Delta Frames
-		for (int i = nPrevKeyFrame + 1 ; i < (int)dwFrame ; i++)
-		{
-			dwSrcBufSizeUsed = m_dwSrcBufSize;
-			if (!GetChunkData(	i,
-								m_pSrcBuf,
-								&dwSrcBufSizeUsed))
-			{
-				return false;
-			}
-			UpdatePalette(i);
-
-			// VCM
-			if (m_hIC)
-			{
-				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed; 
-				if ((int)ICDecompress(	m_hIC,
-										ICDECOMPRESS_NOTKEYFRAME | ICDECOMPRESS_PREROLL,
-										(LPBITMAPINFOHEADER)m_pSrcFormat,
-										(LPVOID)m_pSrcBuf,                  
-										(LPBITMAPINFOHEADER)m_pDstBMI,        
-										(LPVOID)m_pDstBuf) < 0)
-				{
-					return false;
-				}
-			}
-			else
-			{
-				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-				if (!AVCodecDecompressDxDraw(false, false, pDxDraw, rc))
-				{
-					return false;
-				}
-			}
-		}
-
-		// Get Wanted Delta Frame
-		dwSrcBufSizeUsed = m_dwSrcBufSize;
-		if (!GetChunkData(	dwFrame,
-							m_pSrcBuf,
-							&dwSrcBufSizeUsed))
-		{
-			return false;
-		}
-		UpdatePalette(dwFrame);
-
-		// VCM
-		if (m_hIC)
-		{
-			if (bDirectDecompress)
-			{
-				DDSURFACEDESC2 ddsd;
-				if (pDxDraw->LockSrc(&ddsd)) // Fails when surface lost
-				{
-					((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-					if ((int)ICDecompress(	m_hIC,
-											ICDECOMPRESS_NOTKEYFRAME,
-											(LPBITMAPINFOHEADER)m_pSrcFormat,
-											(LPVOID)m_pSrcBuf,                  
-											(LPBITMAPINFOHEADER)m_pDstBMI,        
-											(LPVOID)ddsd.lpSurface) < 0)
-					{
-						pDxDraw->UnlockSrc();
-						return false;
-					}
-					pDxDraw->UnlockSrc();
-					pDxDraw->UpdateBackSurface(rc);
-				}
-			}
-			else
-			{
-				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-				if ((int)ICDecompress(	m_hIC,
-										ICDECOMPRESS_NOTKEYFRAME,
-										(LPBITMAPINFOHEADER)m_pSrcFormat,
-										(LPVOID)m_pSrcBuf,                  
-										(LPBITMAPINFOHEADER)m_pDstBMI,        
-										(LPVOID)m_pDstBuf) < 0)
-				{
-					return false;
-				}
-				pDxDraw->RenderDib(m_pDstBMI, m_pDstBuf, rc); // Fails when surface lost
-			}
-		}
-		else
-		{
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if (!AVCodecDecompressDxDraw(false, false, pDxDraw, rc))
-			{
-				return false;
-			}
-		}
-	}
-	else
-	{
-		// Get Key-Frame
-		dwSrcBufSizeUsed = m_dwSrcBufSize;
-		if (!GetChunkData(	dwFrame,
-							m_pSrcBuf,
-							&dwSrcBufSizeUsed))
-		{
-			return false;
-		}
-		UpdatePalette(dwFrame);
-
-		// VCM
-		if (m_hIC)
-		{
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if ((int)ICDecompress(	m_hIC,
-									ICDECOMPRESS_PREROLL,
-									(LPBITMAPINFOHEADER)m_pSrcFormat,
-									(LPVOID)m_pSrcBuf,                  
-									(LPBITMAPINFOHEADER)m_pDstBMI,        
-									(LPVOID)m_pDstBuf) < 0)
-			{
-				return false;
-			}
-			if (bDirectDecompress)
-			{
-				DDSURFACEDESC2 ddsd;
-				if (pDxDraw->LockSrc(&ddsd)) // Fails when surface lost
-				{
-					((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-					if ((int)ICDecompress(	m_hIC,
-											0,
-											(LPBITMAPINFOHEADER)m_pSrcFormat,
-											(LPVOID)m_pSrcBuf,                  
-											(LPBITMAPINFOHEADER)m_pDstBMI,        
-											(LPVOID)ddsd.lpSurface) < 0)
-					{
-						pDxDraw->UnlockSrc();
-						return false;
-					}
-					pDxDraw->UnlockSrc();
-					pDxDraw->UpdateBackSurface(rc);
-				}
-			}
-			else
-			{
-				((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-				if ((int)ICDecompress(	m_hIC,
-										0,
-										(LPBITMAPINFOHEADER)m_pSrcFormat,
-										(LPVOID)m_pSrcBuf,                  
-										(LPBITMAPINFOHEADER)m_pDstBMI,        
-										(LPVOID)m_pDstBuf) < 0)
-				{
-					return false;
-				}
-				pDxDraw->RenderDib(m_pDstBMI, m_pDstBuf, rc); // Fails when surface lost
-			}
-		}
-		else
-		{
-			((LPBITMAPINFOHEADER)m_pSrcFormat)->biSizeImage = dwSrcBufSizeUsed;
-			if (!AVCodecDecompressDxDraw(true,
-										true,
-										pDxDraw,
-										rc))
-			{
-				return false;
-			}
-		}
-	}
-
-	// Update Last Decompressed Frame
-	m_nLastDecompressedDxDrawFrame = (int)dwFrame;
-
-	// Inc. Pos
-	m_dwNextFrame = dwFrame + 1;
-
-	return true;
 }
 
 CAVIPlay::CAVIVideoStream* CAVIPlay::GetVideoStream(int nStreamNum) const

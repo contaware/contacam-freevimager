@@ -27,8 +27,6 @@
 #include "ZipProgressDlg.h"
 #include "BrowseDlg.h"
 #include "SortableFileFind.h"
-#include "getdxver.h"
-#include "DirectX7Dlg.h"
 #include "CPUCount.h"
 #include "CPUSpeed.h"
 #include "PostDelayedMessage.h"
@@ -687,16 +685,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		{
 			::AfxMessageBox(ML_STRING(1170, "Error: No MMX Processor"), MB_OK | MB_ICONSTOP);
 			throw (int)0;
-		}
-
-		// DirectX check (it's a bit slow, do not run that each time)
-		if (m_bFirstRun)
-		{	
-#ifdef VIDEODEVICEDOC
-			RequireDirectXVersion7();
-#else
-			SuggestDirectXVersion7();
-#endif
 		}
 
 		// Zip Settings
@@ -4571,51 +4559,6 @@ BOOL CUImagerApp::SendMail(LPCTSTR szAttachment)
 		return TRUE;
 }
 PROCESS_LOCAL(CMailState, MailState)
-
-void CUImagerApp::SuggestDirectXVersion7()
-{
-	DWORD dwDxVer = 0U;
-	TCHAR szDxVer[16] = {0};
-	::GetDXVersion(&dwDxVer, szDxVer, 16);
-	CString strResult;
-    if (dwDxVer > 0U)
-		strResult.Format(ML_STRING(1216, "DirectX %s installed."), szDxVer);
-    else
-        strResult.Format(ML_STRING(1217, "DirectX not installed."));
-	if (dwDxVer < 0x00070000)
-	{
-		CDirectX7Dlg dlg(::AfxGetMainFrame());
-		dlg.m_sTextRow1 = strResult;
-		dlg.m_sTextRow2 = ML_STRING(1219, "DirectX 7.0 or higher is required for best video playback performance!");
-		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://support.microsoft.com/kb/179113");
-		dlg.DoModal();
-	}
-}
-
-BOOL CUImagerApp::RequireDirectXVersion7()
-{
-	DWORD dwDxVer = 0U;
-	TCHAR szDxVer[16] = {0};
-	::GetDXVersion(&dwDxVer, szDxVer, 16);
-	CString strResult;
-    if (dwDxVer > 0U)
-		strResult.Format(ML_STRING(1216, "DirectX %s installed."), szDxVer);
-    else
-        strResult.Format(ML_STRING(1217, "DirectX not installed."));
-	if (dwDxVer < 0x00070000)
-	{
-		CDirectX7Dlg dlg(::AfxGetMainFrame());
-		dlg.m_sTextRow1 = strResult;
-		dlg.m_sTextRow2 = ML_STRING(1221, "DirectX 7.0 or higher is required!");
-		dlg.m_sTextRow3 = ML_STRING(1220, "The latest version may be downloaded from:");
-		dlg.m_sTextLink = _T("http://support.microsoft.com/kb/179113");
-		dlg.DoModal();
-		return FALSE;
-	}
-	else
-		return TRUE;
-}
 
 BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 {

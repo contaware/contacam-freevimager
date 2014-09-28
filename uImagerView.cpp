@@ -495,12 +495,6 @@ void CUImagerView::OnTimer(UINT nIDEvent)
 		{
 			m_nMouseMoveCount = 0;
 
-			// Here we could also check with !AreModelessDlgsVisible()
-			// to avoid hiding the cursor when a modeless dialog of
-			// another document is open. But doing so has the side-effect
-			// of never hiding the cursor when the OSD is enabled.
-			// -> I let it like this, also because usually when in
-			// full-screen mode dialogs of other documents are not open.
 			if (m_bFullScreenMode	&&
 				!m_bForceCursor		&&
 				m_bCursor)

@@ -237,26 +237,8 @@ void CVideoAviDoc::CPlayAudioFileThread::OnExit()
 	m_bWaitingForStart = FALSE;
 	::LeaveCriticalSection(&m_pDoc->m_csPlayWaitingForStart);
 
-	// Update View
-	if ((!m_pDoc->m_pAVIPlay->HasVideo() || !(m_pDoc->m_nActiveVideoStream >= 0)))
-	{
-		CPostDelayedMessageThread::PostDelayedMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-														WM_THREADSAFE_UPDATEWINDOWSIZES,
-														THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-														(WPARAM)(	UPDATEWINDOWSIZES_INVALIDATE |
-																	UPDATEWINDOWSIZES_ERASEBKG),
-														(LPARAM)0);
-	}
-	else
-	{
-		CPostDelayedMessageThread::PostDelayedMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-														WM_THREADSAFE_UPDATEWINDOWSIZES,
-														THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-														(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-														(LPARAM)0);
-	}
-
-	::CoUninitialize();
+	// Invalidate View
+	m_pDoc->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 }
 
 int CVideoAviDoc::CPlayAudioFileThread::Work() 
@@ -290,8 +272,6 @@ int CVideoAviDoc::CPlayAudioFileThread::Work()
 		delete [] m_pBuf[1];
 	m_pBuf[0] = new BYTE [dwBufSize];
 	m_pBuf[1] = new BYTE [dwBufSize];
-
-	::CoInitialize(NULL);
 
 	// Wait For Sync.
 	if (m_hPlaySyncEvent)
@@ -401,11 +381,7 @@ int CVideoAviDoc::CPlayAudioFileThread::Work()
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_UPDATEPLAYSLIDER,
 							0, 0);
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)(	UPDATEWINDOWSIZES_INVALIDATE |
-										UPDATEWINDOWSIZES_ERASEBKG),
-							(LPARAM)0);
+			m_pDoc->InvalidateView();
 		}
 		
 		// Play
@@ -435,11 +411,7 @@ int CVideoAviDoc::CPlayAudioFileThread::Work()
 												::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 																WM_THREADSAFE_UPDATEPLAYSLIDER,
 																0, 0);
-												::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-																WM_THREADSAFE_UPDATEWINDOWSIZES,
-																(WPARAM)(	UPDATEWINDOWSIZES_INVALIDATE |
-																			UPDATEWINDOWSIZES_ERASEBKG),
-																(LPARAM)0);
+												m_pDoc->InvalidateView();
 											}
 
 											break;
@@ -463,11 +435,7 @@ int CVideoAviDoc::CPlayAudioFileThread::Work()
 			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
 							WM_THREADSAFE_UPDATEPLAYSLIDER,
 							0, 0);
-			::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							(WPARAM)(	UPDATEWINDOWSIZES_INVALIDATE |
-										UPDATEWINDOWSIZES_ERASEBKG),
-							(LPARAM)0);
+			m_pDoc->InvalidateView();
 		}
 
 		// Clean-Up
@@ -508,26 +476,8 @@ int CVideoAviDoc::CPlayAudioFileThread::Work()
 	m_bWaitingForStart = FALSE;
 	::LeaveCriticalSection(&m_pDoc->m_csPlayWaitingForStart);
 
-	// Update View
-	if ((!m_pDoc->m_pAVIPlay->HasVideo() || !(m_pDoc->m_nActiveVideoStream >= 0)))
-	{
-		CPostDelayedMessageThread::PostDelayedMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-														WM_THREADSAFE_UPDATEWINDOWSIZES,
-														THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-														(WPARAM)(	UPDATEWINDOWSIZES_INVALIDATE |
-																	UPDATEWINDOWSIZES_ERASEBKG),
-														(LPARAM)0);
-	}
-	else
-	{
-		CPostDelayedMessageThread::PostDelayedMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-														WM_THREADSAFE_UPDATEWINDOWSIZES,
-														THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-														(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-														(LPARAM)0);
-	}
-
-	::CoUninitialize();
+	// Invalidate View
+	m_pDoc->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 
 	return 0;
 }
@@ -1424,19 +1374,6 @@ CVideoAviDoc::CPlayVideoFileThread::CPlayVideoFileThread()
 	m_hTimerEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hEventArray[0] = GetKillEvent();
 	m_hEventArray[1] = m_hTimerEvent;
-
-	m_bDoFullScreenBlt = 0;
-	m_bDoUpdateDoFullScreenBlt = FALSE;
-	m_bDoSafePause = FALSE;
-	m_dwDelayedRestartTimeout = 0;
-	m_bDoSetSafePaused = FALSE;
-	m_lSafePausedMsgId = 0;
-	m_hSafePausedMsgWnd = NULL;
-	m_wSafePausedMsgWParam = 0;
-	m_lSafePausedMsgLParam = 0;
-	m_dwSafePausedMsgSeq = 0;
-	m_hDelayedRestartEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	::InitializeCriticalSection(&m_csSafePauseDelayedRestart);
 }
 
 CVideoAviDoc::CPlayVideoFileThread::~CPlayVideoFileThread() 
@@ -1444,9 +1381,6 @@ CVideoAviDoc::CPlayVideoFileThread::~CPlayVideoFileThread()
 	Kill();
 	::CloseHandle(m_hTimerEvent);
 	m_hTimerEvent = NULL;
-	::CloseHandle(m_hDelayedRestartEvent);
-	m_hDelayedRestartEvent = NULL;
-	::DeleteCriticalSection(&m_csSafePauseDelayedRestart);
 }
 
 void CVideoAviDoc::CPlayVideoFileThread::Rew()
@@ -1487,182 +1421,6 @@ BOOL CVideoAviDoc::CPlayVideoFileThread::GetFrameRate(DWORD* pdwRate, DWORD* pdw
 		return FALSE;
 }
 
-void CVideoAviDoc::CPlayVideoFileThread::DxDrawGDIDisplay(	HWND hSafePausedMsgWnd,
-															LONG lSafePausedMsgId,
-															WPARAM wparam,
-															LPARAM lparam)
-{
-	if (!DoFullScreenBlt() && m_pDoc->m_DxDraw.IsFullScreen())
-	{
-		SafePauseDelayedRestart(hSafePausedMsgWnd,
-								lSafePausedMsgId,
-								wparam,
-								lparam,
-								DXDRAW_GDIDISPLAY_SAFEPAUSED_TIMEOUT,
-								DXDRAW_GDIDISPLAY_DELAYEDRESTART_TIMEOUT,
-								TRUE);
-	}
-	else
-	{
-		::PostMessage(	hSafePausedMsgWnd,
-						lSafePausedMsgId,
-						wparam,
-						lparam);
-	}
-}
-
-void CVideoAviDoc::CPlayVideoFileThread::SafePauseDelayedRestart(HWND hSafePausedMsgWnd,
-																 LONG lSafePausedMsgId,
-																 WPARAM wparam,
-																 LPARAM lparam,
-																 DWORD dwSafePausedMsgTimeout,
-																 DWORD dwDelayedRestartTimeout,
-																 BOOL bDoUpdateDoFullScreenBlt)
-{
-	if (!IsAlive()) // Is Not Playing
-	{
-		// Set Full Screen Blt
-		if (bDoUpdateDoFullScreenBlt)
-			SetFullScreenBlt();
-
-		// Post Message
-		if ((hSafePausedMsgWnd != NULL) &&
-			(lSafePausedMsgId != 0))
-		{
-			::PostMessage(	hSafePausedMsgWnd,
-							lSafePausedMsgId,
-							wparam,
-							lparam);
-		}
-	}
-	else
-	{
-		// Enter CS
-		::EnterCriticalSection(&m_csSafePauseDelayedRestart);
-
-		::ResetEvent(m_hDelayedRestartEvent);
-		m_hDelayedRestartEventArray[0] = GetKillEvent();
-		m_hDelayedRestartEventArray[1] = m_hDelayedRestartEvent;
-		m_hSafePausedMsgWnd = hSafePausedMsgWnd;
-		m_lSafePausedMsgId = lSafePausedMsgId;
-		m_wSafePausedMsgWParam = wparam;
-		m_lSafePausedMsgLParam = lparam;
-		m_dwDelayedRestartTimeout = dwDelayedRestartTimeout;
-		m_bDoUpdateDoFullScreenBlt = bDoUpdateDoFullScreenBlt;
-		m_bDoSafePause = TRUE;
-		m_bDoSetSafePaused = FALSE;
-		m_dwSafePausedMsgSeq++;
-
-		// Timeout Message
-		if ((hSafePausedMsgWnd != NULL)			&&
-			(lSafePausedMsgId != 0)				&&
-			(dwSafePausedMsgTimeout != 0)		&&
-			(dwSafePausedMsgTimeout != INFINITE))
-		{
-			CPostDelayedMessageThread::PostDelayedMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-															WM_SAFE_PAUSE_TIMEOUT,
-															dwSafePausedMsgTimeout,
-															(WPARAM)m_dwSafePausedMsgSeq,
-															(LPARAM)bDoUpdateDoFullScreenBlt);
-		}
-
-		// Leave CS
-		::LeaveCriticalSection(&m_csSafePauseDelayedRestart);
-	}
-}
-
-void CVideoAviDoc::CPlayVideoFileThread::OnSafePauseTimeout(WPARAM wparam, LPARAM lparam)
-{
-	// Enter CS
-	::EnterCriticalSection(&m_csSafePauseDelayedRestart);
-
-	// If no new SafePauseDelayedRestart() called
-	if (m_dwSafePausedMsgSeq == (DWORD)wparam)
-	{	
-		if ((m_hSafePausedMsgWnd != NULL) &&
-			(m_lSafePausedMsgId != 0))
-		{
-			// Set Full Screen Blt
-			if ((BOOL)lparam)
-				SetFullScreenBlt();
-
-			// Post Message
-			::PostMessage(	m_hSafePausedMsgWnd,
-							m_lSafePausedMsgId,
-							m_wSafePausedMsgWParam,
-							m_lSafePausedMsgLParam);
-		}
-
-		// Reset Flags
-		m_bDoSafePause = FALSE;
-		m_bDoSetSafePaused = FALSE;
-		m_hSafePausedMsgWnd = NULL;
-		m_lSafePausedMsgId = 0;
-	}
-
-	// Leave CS
-	::LeaveCriticalSection(&m_csSafePauseDelayedRestart);
-}
-
-__forceinline BOOL CVideoAviDoc::CPlayVideoFileThread::OnSafePause()
-{
-	BOOL res = TRUE;
-
-	// Enter CS
-	::EnterCriticalSection(&m_csSafePauseDelayedRestart);
-
-	if (m_bDoSetSafePaused)
-	{
-		// Post Message
-		if ((m_hSafePausedMsgWnd != NULL) &&
-			(m_lSafePausedMsgId != 0))
-		{
-			::PostMessage(	m_hSafePausedMsgWnd,
-							m_lSafePausedMsgId,
-							m_wSafePausedMsgWParam,
-							m_lSafePausedMsgLParam);
-		}
-
-		// Reset Flags
-		m_bDoSetSafePaused = FALSE;
-		m_hSafePausedMsgWnd = NULL;
-		m_lSafePausedMsgId = 0;
-
-		// Restart
-		DWORD Event = ::WaitForMultipleObjects(	2,
-												m_hDelayedRestartEventArray,
-												FALSE,
-												m_dwDelayedRestartTimeout);
-		switch (Event)
-		{
-			// Shutdown Event
-			case WAIT_OBJECT_0 :		res = FALSE;
-										break;
-
-			// Restart Event
-			case WAIT_OBJECT_0 + 1 :	break;
-
-			// Timeout
-			case WAIT_TIMEOUT :			break;
-
-			default :					res = FALSE;
-										break;
-		}
-	}
-	else if (m_bDoSafePause)
-	{
-		m_bDoSafePause = FALSE;
-		m_bDoSetSafePaused = TRUE;
-		if (m_bDoUpdateDoFullScreenBlt)
-			SetFullScreenBlt();
-	}
-
-	// Leave CS
-	::LeaveCriticalSection(&m_csSafePauseDelayedRestart);
-
-	return res;
-}
-
 void CVideoAviDoc::CPlayVideoFileThread::OnExit()
 {
 	// Reset Waiting For Start Flag
@@ -1678,23 +1436,11 @@ void CVideoAviDoc::CPlayVideoFileThread::OnExit()
 	if (nCurrentFramePos < 0)
 		nCurrentFramePos = 0;
 
-	// Display Frame / Update View
+	// Display Frame / Invalidate View
 	if (pVideoStream)
-	{
-		m_pDoc->DisplayFrame(	nCurrentFramePos,
-								THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-	}
+		m_pDoc->DisplayFrame(nCurrentFramePos, THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 	else
-	{
-		CPostDelayedMessageThread::PostDelayedMessage(
-							m_pDoc->GetView()->GetSafeHwnd(),
-							WM_THREADSAFE_UPDATEWINDOWSIZES,
-							THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-							(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-							(LPARAM)0);
-	}
-
-	::CoUninitialize();
+		m_pDoc->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 }
 
 __forceinline BOOL CVideoAviDoc::CPlayVideoFileThread::OnSync()
@@ -1721,11 +1467,6 @@ __forceinline BOOL CVideoAviDoc::CPlayVideoFileThread::OnSync()
 
 				default:					return FALSE;
 			}
-
-			// Call OnSafePause() to eventually
-			// post a message
-			if (!OnSafePause())
-				return FALSE;
 		}
 		while (m_bWaitingForStart);
 	}
@@ -1746,7 +1487,6 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 	int nOldMilliSecondsCorrectionAvg;
 	int nWaitForCorrectionCountDown;
 	BOOL bDoRewind;
-	BOOL bDxDraw = FALSE;
 	BOOL bChangingSpeed = FALSE;
 
 	if (!m_pDoc)
@@ -1767,9 +1507,6 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 		return 0;
 	wTimerRes = MIN(MAX(tc.wPeriodMin, 1), tc.wPeriodMax); // 1 millisecond target resolution
 	::timeBeginPeriod(wTimerRes);
-
-	// Init COM
-	::CoInitialize(NULL);
 
 	// Init Audio Sample Offset
 	LONGLONG llAudioSampleOffset = 0;
@@ -1829,44 +1566,15 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 		// Get Frames
 		while (TRUE)
 		{
-			// Do Pause a Moment?
-			if (!OnSafePause())
-			{
-				::timeKillEvent(uiTimerId);
-				::timeEndPeriod(wTimerRes);
-				OnExit();
-				return 0;
-			}
-
-			// Enter DirectDraw CS
-			if (m_pDoc->m_DxDraw.HasDxDraw())
-				m_pDoc->m_DxDraw.EnterCS();
-
 			// Get Frame
-			bDxDraw = m_pDoc->m_bUseDxDraw && m_pDoc->m_DxDraw.IsInit();
-			if (!bDxDraw)
+			::EnterCriticalSection(&m_pDoc->m_csDib);
+			if (!pVideoStream->GetFrame(m_pDoc->m_pDib))
 			{
-				::EnterCriticalSection(&m_pDoc->m_csDib);
-				if (!pVideoStream->GetFrame(m_pDoc->m_pDib))
-				{
-					::LeaveCriticalSection(&m_pDoc->m_csDib);
-					if (m_pDoc->m_DxDraw.HasDxDraw())
-						m_pDoc->m_DxDraw.LeaveCS();
-					break;
-				}
-				else
-					::LeaveCriticalSection(&m_pDoc->m_csDib);
+				::LeaveCriticalSection(&m_pDoc->m_csDib);
+				break;
 			}
 			else
-			{
-				if (!pVideoStream->GetFrame(&m_pDoc->m_DxDraw,
-											m_pDoc->GetView()->m_UserZoomRect))
-				{
-					if (m_pDoc->m_DxDraw.HasDxDraw())
-						m_pDoc->m_DxDraw.LeaveCS();
-					break;
-				}
-			}
+				::LeaveCriticalSection(&m_pDoc->m_csDib);
 
 			// Count-Up
 			m_pDoc->m_dwFrameCountUp++;
@@ -1938,11 +1646,7 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 
 					// Skip Frames
 					if (!pVideoStream->SkipFrame(nSkipCount))
-					{
-						if (m_pDoc->m_DxDraw.HasDxDraw())
-							m_pDoc->m_DxDraw.LeaveCS();
 						break;
-					}
 					m_dwDroppedFramesCount += (DWORD)nSkipCount;
 
 					// Wait For The Remaining Time
@@ -1998,18 +1702,8 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 				}
 			}
 
-			// Display Frame
-			if (bDxDraw)
-				m_pDoc->GetView()->Draw();
-			else
-				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEWINDOWSIZES,
-								(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-								(LPARAM)0);
-
-			// Leave DirectDraw CS
-			if (m_pDoc->m_DxDraw.HasDxDraw())
-				m_pDoc->m_DxDraw.LeaveCS();
+			// Invalidate View
+			m_pDoc->InvalidateView();
 			
 			// Sync with Audio
 			if (!bChangingSpeed && m_pDoc->m_PlayAudioFileThread.IsOpen())
@@ -2110,16 +1804,6 @@ int CVideoAviDoc::CPlayVideoFileThread::Work()
 			{
 				if (!m_pDoc->m_PlayAudioFileThread.IsWaitingForStart())
 				{
-					// Read frame to Dib while waiting that audio finishes,
-					// this because RestoreFrame() may be called
-					// in the mean time!
-					if (bDxDraw)
-					{
-						::EnterCriticalSection(&m_pDoc->m_csDib);
-						pVideoStream->GetFrameAt(m_pDoc->m_pDib,
-												pVideoStream->GetCurrentFramePos());
-						::LeaveCriticalSection(&m_pDoc->m_csDib);
-					}
 					m_bWaitingForStart = TRUE;
 					::ResetEvent(m_hPlaySyncEvent);
 				}
@@ -2144,8 +1828,6 @@ int CVideoAviDoc::CProcessingThread::Work()
 	if (!m_pDoc)
 		return 0;
 
-	::CoInitialize(NULL);
-
 	// No Error
 	m_pDoc->m_sProcessingError = _T("");
 
@@ -2155,27 +1837,9 @@ int CVideoAviDoc::CProcessingThread::Work()
 	// Call Processing Function
 	BOOL res = m_pFunct->Do();
 
-	::CoUninitialize();
-
-	// On error or on exit: Restore Frame / Update Window
+	// On error or on exit Invalidate View
 	if (!res)
-	{
-		if (m_pDoc->m_pAVIPlay &&
-			m_pDoc->m_pAVIPlay->HasVideo() &&
-			(m_pDoc->m_nActiveVideoStream >= 0))
-		{
-			m_pDoc->RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-		}
-		else
-		{
-			CPostDelayedMessageThread::PostDelayedMessage(
-									m_pDoc->GetView()->GetSafeHwnd(),
-									WM_THREADSAFE_UPDATEWINDOWSIZES,
-									THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-									(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-									(LPARAM)0);
-		}
-	}
+		m_pDoc->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 
 	return 0;
 }
@@ -2201,10 +1865,6 @@ CVideoAviDoc::CVideoAviDoc()
 	m_pOutVolDlg = NULL;
 	m_pAudioVideoShiftDlg = NULL;
 	m_pPlayerToolBarDlg = NULL;
-	m_bUseDxDraw = TRUE;
-	m_bForceRgb = TRUE;
-	m_bNoDrawing = FALSE;
-	m_bAboutToRestoreFrame = 0;
 	m_nEndThumbTrackRetryCountDown = 0;
 	m_dwFrameCountUp = 0U;
 	m_pAudioCompressorWaveFormat = NULL;
@@ -2232,10 +1892,6 @@ CVideoAviDoc::CVideoAviDoc()
 
 	// Load the Settings
 	LoadSettings();
-
-	// If no DirectX make sure m_bUseDxDraw is not set
-	if (!m_DxDraw.HasDxDraw())
-		m_bUseDxDraw = FALSE;
 }
 
 CVideoAviDoc::~CVideoAviDoc()
@@ -2380,8 +2036,6 @@ void CVideoAviDoc::LoadSettings()
 	// Doc settings
 	sSection = _T("VideoAviDoc");
 	m_bTimePositionShow = (BOOL) pApp->GetProfileInt(sSection, _T("TimePositionShow"), FALSE);
-	m_bUseDxDraw = (BOOL) pApp->GetProfileInt(sSection, _T("UseDxDraw"), TRUE);
-	m_bForceRgb = (BOOL) pApp->GetProfileInt(sSection, _T("ForceRgb"), TRUE);
 	m_dwPlayAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioPlayDeviceID"), 0);
 	
 	m_dwVideoCompressorFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoCompressorFourCC"), DEFAULT_VIDEO_FOURCC);
@@ -2425,8 +2079,6 @@ void CVideoAviDoc::SaveSettings()
 	// Doc settings
 	sSection = _T("VideoAviDoc");
 	pApp->WriteProfileInt(sSection, _T("TimePositionShow"), m_bTimePositionShow);
-	pApp->WriteProfileInt(sSection, _T("UseDxDraw"), m_bUseDxDraw);
-	pApp->WriteProfileInt(sSection, _T("ForceRgb"), m_bForceRgb);
 	pApp->WriteProfileInt(sSection, _T("AudioPlayDeviceID"), m_dwPlayAudioDeviceID);
 		
 	pApp->WriteProfileInt(sSection, _T("VideoCompressorFourCC"), m_dwVideoCompressorFourCC);
@@ -2602,8 +2254,8 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 					::AfxMessageBox(ML_STRING(1431, "Error while saving file"), MB_ICONSTOP);
 			}
 
-			// Restore Frame
-			RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
+			// Invalidate View
+			InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 		}
 	}
 	
@@ -2650,22 +2302,8 @@ BOOL CVideoAviDoc::SaveAsAVCODEC(	const CString& sFileName,
 			else if (!((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg)
 				::ShellExecute(NULL, _T("open"), sFileName, NULL, NULL, SW_SHOWNORMAL);
 
-			// Restore Frame
-			if (m_pAVIPlay &&
-				m_pAVIPlay->HasVideo() &&
-				(m_nActiveVideoStream >= 0))
-			{
-				RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-			}
-			else
-			{
-				CPostDelayedMessageThread::PostDelayedMessage(
-										GetView()->GetSafeHwnd(),
-										WM_THREADSAFE_UPDATEWINDOWSIZES,
-										THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-										(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-										(LPARAM)0);
-			}	
+			// Invalidate View
+			InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 		}
 		// Load
 		else
@@ -3487,8 +3125,8 @@ BOOL CVideoAviDoc::FileExtractframes()
 				::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_ICONSTOP);
 		}
 
-		// Restore Frame
-		RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
+		// Invalidate View
+		InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 	}
 
 	return res;
@@ -4125,10 +3763,10 @@ BOOL CVideoAviDoc::LoadAVI(CString sFileName,
 														0, 0, 0, 0,
 														SWP_NOSIZE |
 														SWP_NOZORDER);
-			GetView()->UpdateWindowSizes(TRUE, TRUE, TRUE);
+			GetView()->UpdateWindowSizes(TRUE, FALSE, TRUE);
 		}
 		else
-			GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+			GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 		
 		// Start Play
 		if (((CUImagerApp*)::AfxGetApp())->m_bStartPlay)
@@ -4206,7 +3844,7 @@ BOOL CVideoAviDoc::LoadActiveStreams(DWORD dwFramePos)
 	CAVIPlay::CAVIVideoStream* pVideoStream = m_pAVIPlay->GetVideoStream(m_nActiveVideoStream);
 	if (pVideoStream)
 	{
-		if (!pVideoStream->OpenDecompression(m_bForceRgb ? true : false)) 
+		if (!pVideoStream->OpenDecompression(true)) 
 			m_nActiveVideoStream = -1;
 	}
 	else
@@ -4237,32 +3875,6 @@ BOOL CVideoAviDoc::LoadActiveStreams(DWORD dwFramePos)
 		m_DocRect.bottom = pVideoStream->GetHeight();
 		m_DocRect.right = pVideoStream->GetWidth();
 		pVideoStream->GetFrameRate((DWORD*)&m_dwPlayRate, (DWORD*)&m_dwPlayScale);
-
-		// Dx Draw
-		if (m_DxDraw.HasDxDraw())
-		{
-			// Enter CS
-			m_DxDraw.EnterCS();
-
-			// Init DxDraw
-			if (m_bUseDxDraw)
-			{
-				::EnterCriticalSection(&m_csDib);
-				m_DxDraw.Init(	GetView()->GetSafeHwnd(),
-								m_DocRect.right,
-								m_DocRect.bottom,
-								m_pDib->GetBMIH()->biCompression,
-								IDB_BITSTREAM_VERA_11);
-
-				// Copy Current Frame To DirectDraw Surface
-				if (m_DxDraw.IsInit())
-					m_DxDraw.RenderDib(m_pDib, GetView()->m_UserZoomRect);
-				::LeaveCriticalSection(&m_csDib);
-			}
-
-			// Leave CS
-			m_DxDraw.LeaveCS();
-		}
 	}
 	else
 	{
@@ -4352,8 +3964,8 @@ BOOL CVideoAviDoc::DisplayFrame(int nFrame, int nDelay/*=0*/)
 		pVideoStream->GetFrameAt(m_pDib, nFrame);
 		::LeaveCriticalSection(&m_csDib);
 
-		// Restore Frame
-		RestoreFrame(nDelay);
+		// Invalidate View
+		InvalidateView(nDelay);
 
 		return TRUE;
 	}
@@ -4361,29 +3973,25 @@ BOOL CVideoAviDoc::DisplayFrame(int nFrame, int nDelay/*=0*/)
 		return FALSE;
 }
 
-void CVideoAviDoc::RestoreFrame(int nDelay/*=0*/)
+void CVideoAviDoc::InvalidateView(int nDelay/*=0*/)
 {
-	// A restore has already been posted and not yet processed
-	if (m_bAboutToRestoreFrame)
-		return;
-
 	// Direct Post
 	if (nDelay == 0)
 	{
 		::PostMessage(	GetView()->GetSafeHwnd(),
-						WM_RESTORE_FRAME,
-						(WPARAM)0,
+						WM_THREADSAFE_UPDATEWINDOWSIZES,
+						(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
 						(LPARAM)0);
 	}
 	// Delayed Post
 	else
 	{
 		CPostDelayedMessageThread::PostDelayedMessage(
-									GetView()->GetSafeHwnd(),
-									WM_RESTORE_FRAME,
-									nDelay,
-									(WPARAM)0,
-									(LPARAM)0);
+										GetView()->GetSafeHwnd(),
+										WM_THREADSAFE_UPDATEWINDOWSIZES,
+										nDelay,
+										(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
+										(LPARAM)0);
 	}
 }
 
@@ -4641,7 +4249,7 @@ void CVideoAviDoc::FrameBack()
 		else
 			m_PlayAudioFileThread.Rew();
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4678,7 +4286,7 @@ void CVideoAviDoc::FrameFront()
 		else
 			m_PlayAudioFileThread.SetCurrentSamplePos((m_PlayAudioFileThread.GetTotalSamples() - 1));
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4747,7 +4355,7 @@ void CVideoAviDoc::FrameBackFast(BOOL bVeryFast/*=FALSE*/)
 		else
 			m_PlayAudioFileThread.Rew();
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4816,7 +4424,7 @@ void CVideoAviDoc::FrameFrontFast(BOOL bVeryFast/*=FALSE*/)
 		else
 			m_PlayAudioFileThread.SetCurrentSamplePos(m_PlayAudioFileThread.GetTotalSamples() - 1);
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4845,7 +4453,7 @@ void CVideoAviDoc::JumpToFirstFrame()
 	{
 		m_PlayAudioFileThread.Rew();
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4874,7 +4482,7 @@ void CVideoAviDoc::JumpToLastFrame()
 	{
 		m_PlayAudioFileThread.SetCurrentSamplePos(m_PlayAudioFileThread.GetTotalSamples() - 1);
 		GetView()->UpdatePlaySlider();
-		GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+		GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 	}
 }
 
@@ -4957,7 +4565,7 @@ void CVideoAviDoc::OnUpdateFileInfo(CCmdUI* pCmdUI)
 void CVideoAviDoc::OnViewTimeposition() 
 {
 	m_bTimePositionShow = !m_bTimePositionShow;
-	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 }
 
 void CVideoAviDoc::OnUpdateViewTimeposition(CCmdUI* pCmdUI) 
@@ -4995,10 +4603,43 @@ void CVideoAviDoc::AviInfoDlg(BOOL bCenterCursor/*=FALSE*/)
 	else
 	{
 		m_pAviInfoDlg = new CAviInfoDlg(GetView());
-		m_PlayVideoFileThread.DxDrawGDIDisplay(	GetView()->GetSafeHwnd(),
-												WM_AVIINFODLG_POPUP,
-												(WPARAM)bCenterCursor,
-												0);
+		if (m_pAviInfoDlg)
+		{
+			if (bCenterCursor)
+			{
+				CPoint ptPos;
+				::GetCursorPos(&ptPos);
+
+				// Size
+				CRect rcCurrent;
+				m_pAviInfoDlg->GetWindowRect(&rcCurrent);
+
+				// Offset
+				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
+
+				// Clip
+				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
+
+				// Funny Note:
+				// The ClipToWorkRect() clips correctly,
+				// but the dialog is auto-centered if the bottom and right
+				// corners of rcCurrent are at the limit of the
+				// bottom, right of the window.
+				// -> we cannot invert the following two functions,
+				// because ShowWindow() makes some wrong checks...
+
+				// Show
+				m_pAviInfoDlg->ShowWindow(SW_SHOW);
+
+				// Position
+				m_pAviInfoDlg->MoveWindow(	rcCurrent.left,
+											rcCurrent.top,
+											rcCurrent.Width(),
+											rcCurrent.Height());
+			}
+			else
+				m_pAviInfoDlg->ShowWindow(SW_SHOW);
+		}
 	}
 }
 
@@ -5013,10 +4654,43 @@ void CVideoAviDoc::PlayVolDlg(BOOL bCenterCursor/*=FALSE*/)
 	else
 	{
 		m_pOutVolDlg = new COutVolDlg(GetView());
-		m_PlayVideoFileThread.DxDrawGDIDisplay(	GetView()->GetSafeHwnd(),
-												WM_PLAYVOLDLG_POPUP,
-												(WPARAM)bCenterCursor,
-												0);
+		if (m_pOutVolDlg)
+		{
+			if (bCenterCursor)
+			{
+				CPoint ptPos;
+				::GetCursorPos(&ptPos);
+
+				// Size
+				CRect rcCurrent;
+				m_pOutVolDlg->GetWindowRect(&rcCurrent);
+
+				// Offset
+				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
+
+				// Clip
+				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
+
+				// Funny Note:
+				// The ClipToWorkRect() clips correctly,
+				// but the dialog is auto-centered if the bottom and right
+				// corners of rcCurrent are at the limit of the
+				// bottom, right of the window.
+				// -> we cannot invert the following two functions,
+				// because ShowWindow() makes some wrong checks...
+
+				// Show
+				m_pOutVolDlg->ShowWindow(SW_SHOW);
+
+				// Position
+				m_pOutVolDlg->MoveWindow(	rcCurrent.left,
+											rcCurrent.top,
+											rcCurrent.Width(),
+											rcCurrent.Height());
+			}
+			else
+				m_pOutVolDlg->ShowWindow(SW_SHOW);
+		}
 	}
 }
 
@@ -5046,10 +4720,43 @@ void CVideoAviDoc::AudioVideoShiftDlg(BOOL bCenterCursor/*=FALSE*/)
 	else
 	{
 		m_pAudioVideoShiftDlg = new CAudioVideoShiftDlg(GetView());
-		m_PlayVideoFileThread.DxDrawGDIDisplay(	GetView()->GetSafeHwnd(),
-												WM_AVSHIFTDLG_POPUP,
-												(WPARAM)bCenterCursor,
-												0);
+		if (m_pAudioVideoShiftDlg)
+		{
+			if (bCenterCursor)
+			{
+				CPoint ptPos;
+				::GetCursorPos(&ptPos);
+
+				// Size
+				CRect rcCurrent;
+				m_pAudioVideoShiftDlg->GetWindowRect(&rcCurrent);
+
+				// Offset
+				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
+
+				// Clip
+				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
+
+				// Funny Note:
+				// The ClipToWorkRect() clips correctly,
+				// but the dialog is auto-centered if the bottom and right
+				// corners of rcCurrent are at the limit of the
+				// bottom, right of the window.
+				// -> we cannot invert the following two functions,
+				// because ShowWindow() makes some wrong checks...
+
+				// Show
+				m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
+
+				// Position
+				m_pAudioVideoShiftDlg->MoveWindow(	rcCurrent.left,
+													rcCurrent.top,
+													rcCurrent.Width(),
+													rcCurrent.Height());
+			}
+			else
+				m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
+		}
 	}
 }
 
@@ -5079,10 +4786,41 @@ void CVideoAviDoc::PlayerToolBarDlg(CPoint ptPos)
 	else
 	{
 		m_pPlayerToolBarDlg = new CPlayerToolBarDlg(GetView());
-		m_PlayVideoFileThread.DxDrawGDIDisplay(	GetView()->GetSafeHwnd(),
-												WM_PLAYERTOOLBARDLG_POPUP,
-												(WPARAM)ptPos.x,
-												(LPARAM)ptPos.y);
+		if (m_pPlayerToolBarDlg)
+		{
+			// Size
+			CRect rcCurrent;
+			m_pPlayerToolBarDlg->GetWindowRect(&rcCurrent);
+
+			// Offset
+			rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.TopLeft()));
+
+			// Offset
+			if (m_PlayVideoFileThread.IsAlive() || m_PlayAudioFileThread.IsAlive())
+				rcCurrent.OffsetRect(CPoint(-35,-12));	// Pop-Up Center On Stop Button
+			else	
+				rcCurrent.OffsetRect(CPoint(-12,-12));	// Pop-Up Center On Play Button
+
+			// Clip
+			::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
+
+			// Funny Note:
+			// The ClipToWorkRect() clips correctly,
+			// but the dialog is auto-centered if the bottom and right
+			// corners of rcCurrent are at the limit of the
+			// bottom, right of the window.
+			// -> we cannot invert the following two functions,
+			// because ShowWindow() makes some wrong checks...
+
+			// Show
+			m_pPlayerToolBarDlg->ShowWindow(SW_SHOW);
+
+			// Position
+			m_pPlayerToolBarDlg->MoveWindow(rcCurrent.left,
+											rcCurrent.top,
+											rcCurrent.Width(),
+											rcCurrent.Height());
+		}
 	}
 }
 
@@ -5098,7 +4836,7 @@ void CVideoAviDoc::OnPlayVfwcodecpriority()
 	m_pAVIPlay->m_bAVCodecPriority = m_bAVCodecPriority;
 	LoadActiveStreams(nCurrentFramePos);
 	UpdateAviInfoDlg();
-	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 }
 
 void CVideoAviDoc::OnUpdatePlayVfwcodecpriority(CCmdUI* pCmdUI) 
@@ -5122,7 +4860,7 @@ void CVideoAviDoc::OnPlayInternalcodecpriority()
 	m_pAVIPlay->m_bAVCodecPriority = m_bAVCodecPriority;
 	LoadActiveStreams(nCurrentFramePos);
 	UpdateAviInfoDlg();
-	GetView()->UpdateWindowSizes(TRUE, TRUE, FALSE);
+	GetView()->UpdateWindowSizes(TRUE, FALSE, FALSE);
 }
 
 void CVideoAviDoc::OnUpdatePlayInternalcodecpriority(CCmdUI* pCmdUI) 

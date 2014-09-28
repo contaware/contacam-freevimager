@@ -4,7 +4,6 @@
 #include "Dib.h"
 #include <mmsystem.h>
 #include "YuvToRgb.h"
-#include "DxDraw.h"
 extern "C"
 {
 #include "libavutil/opt.h"

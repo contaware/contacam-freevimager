@@ -9,6 +9,7 @@
 #include "AudioVideoShiftDlg.h"
 #include "PlayerToolBarDlg.h"
 #include "PostDelayedMessage.h"
+#include "MyMemDC.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,14 +37,6 @@ BEGIN_MESSAGE_MAP(CVideoAviView, CUImagerView)
 	ON_COMMAND(ID_VIEW_FULLSCREEN, OnViewFullscreen)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FULLSCREEN, OnUpdateViewFullscreen)
 	ON_WM_SETCURSOR()
-	ON_COMMAND(ID_VIEW_GDI_RGB, OnViewGdiRgb)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_GDI_RGB, OnUpdateViewGdiRgb)
-	ON_COMMAND(ID_VIEW_DIRECTX_RGB, OnViewDirectxRgb)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECTX_RGB, OnUpdateViewDirectxRgb)
-	ON_COMMAND(ID_VIEW_DIRECTX_YUV, OnViewDirectxYuv)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_DIRECTX_YUV, OnUpdateViewDirectxYuv)
-	ON_COMMAND(ID_VIEW_GDI_YUV, OnViewGdiYuv)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_GDI_YUV, OnUpdateViewGdiYuv)
 	ON_COMMAND(ID_VIEW_FIT, OnViewFit)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIT, OnUpdateViewFit)
 	ON_COMMAND(ID_PLAY_INC, OnPlayInc)
@@ -54,13 +47,7 @@ BEGIN_MESSAGE_MAP(CVideoAviView, CUImagerView)
 	ON_MESSAGE(WM_THREADSAFE_LOAD_AVI, OnThreadSafeLoadAVI)
 	ON_MESSAGE(WM_THREADSAFE_UPDATEPLAYSLIDER, OnThreadSafeUpdatePlaySlider)
 	ON_MESSAGE(WM_AVIFILE_PROGRESS, OnAviFileProgress)
-	ON_MESSAGE(WM_RESTORE_FRAME, OnRestoreFrame)
 	ON_MESSAGE(WM_ENABLE_CURSOR, OnEnableCursor)
-	ON_MESSAGE(WM_SAFE_PAUSE_TIMEOUT, OnSafePauseTimeout)
-	ON_MESSAGE(WM_AVIINFODLG_POPUP, OnAviInfoDlg)
-	ON_MESSAGE(WM_PLAYVOLDLG_POPUP, OnPlayVolDlg)
-	ON_MESSAGE(WM_AVSHIFTDLG_POPUP, OnAVShiftDlg)
-	ON_MESSAGE(WM_PLAYERTOOLBARDLG_POPUP, OnPlayerToolBarDlg)
 	ON_MESSAGE(WM_END_THUMBTRACK, OnEndThumbTrack)
 END_MESSAGE_MAP()
 
@@ -105,32 +92,12 @@ CVideoAviView::CVideoAviView()
 	m_nPreviewThumbTrackPos = 0;
 	m_dwThumbTrackSeq = 0U;
 	m_bWasPlayingBeforeThumbTrack = FALSE;
-
-	// GDI Mem DC Drawing
-	m_hMemDC = NULL;
-	m_hMemDCDibSection = NULL;
-	m_hOldMemDCBitmap = NULL;
-	m_rcPrevClient = CRect(0,0,0,0);
-	m_pDibSectionBits = NULL;
-	m_pBmi = NULL;
 }	
 
 CVideoAviView::~CVideoAviView()
 {	
 	if (m_hFont)
 		::DeleteObject(m_hFont);
-
-	// GDI Mem DC Drawing
-	if (m_pBmi)
-	{
-		delete [] m_pBmi;
-		m_pBmi = NULL;
-	}
-	if (m_hOldMemDCBitmap)
-		::SelectObject(m_hMemDC, m_hOldMemDCBitmap);
-	if (m_hMemDCDibSection)
-		::DeleteObject(m_hMemDCDibSection);
-	::DeleteDC(m_hMemDC);
 }
 
 int CVideoAviView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -294,281 +261,6 @@ LONG CVideoAviView::OnEnableCursor(WPARAM wparam, LPARAM lparam)
 	return 0;
 }
 
-LONG CVideoAviView::OnAviInfoDlg(WPARAM wparam, LPARAM lparam)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	BOOL bCenterCursor = (BOOL)wparam;
-	
-	if (pDoc->m_pAviInfoDlg)
-	{
-		if (bCenterCursor)
-		{
-			CPoint ptPos;
-			::GetCursorPos(&ptPos);
-
-			// Size
-			CRect rcCurrent;
-			pDoc->m_pAviInfoDlg->GetWindowRect(&rcCurrent);
-
-			// Offset
-			rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-			// Clip
-			::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-			// Funny Note:
-			// The ClipToWorkRect() clips correctly,
-			// but the dialog is auto-centered if the bottom and right
-			// corners of rcCurrent are at the limit of the
-			// bottom, right of the window.
-			// -> we cannot invert the following two functions,
-			// because ShowWindow() makes some wrong checks...
-
-			// Show
-			pDoc->m_pAviInfoDlg->ShowWindow(SW_SHOW);
-
-			// Position
-			pDoc->m_pAviInfoDlg->MoveWindow(rcCurrent.left,
-											rcCurrent.top,
-											rcCurrent.Width(),
-											rcCurrent.Height());
-		}
-		else
-			pDoc->m_pAviInfoDlg->ShowWindow(SW_SHOW);
-
-		// Restart
-		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-	}
-
-	return 1;
-}
-
-LONG CVideoAviView::OnPlayVolDlg(WPARAM wparam, LPARAM lparam)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	BOOL bCenterCursor = (BOOL)wparam;
-
-	if (pDoc->m_pOutVolDlg)
-	{
-		if (bCenterCursor)
-		{
-			CPoint ptPos;
-			::GetCursorPos(&ptPos);
-
-			// Size
-			CRect rcCurrent;
-			pDoc->m_pOutVolDlg->GetWindowRect(&rcCurrent);
-
-			// Offset
-			rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-			// Clip
-			::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-			// Funny Note:
-			// The ClipToWorkRect() clips correctly,
-			// but the dialog is auto-centered if the bottom and right
-			// corners of rcCurrent are at the limit of the
-			// bottom, right of the window.
-			// -> we cannot invert the following two functions,
-			// because ShowWindow() makes some wrong checks...
-
-			// Show
-			pDoc->m_pOutVolDlg->ShowWindow(SW_SHOW);
-
-			// Position
-			pDoc->m_pOutVolDlg->MoveWindow(	rcCurrent.left,
-											rcCurrent.top,
-											rcCurrent.Width(),
-											rcCurrent.Height());
-		}
-		else
-			pDoc->m_pOutVolDlg->ShowWindow(SW_SHOW);
-
-		// Restart
-		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-	}
-	
-	return 1;
-}
-
-LONG CVideoAviView::OnAVShiftDlg(WPARAM wparam, LPARAM lparam)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	BOOL bCenterCursor = (BOOL)wparam;
-	
-	if (pDoc->m_pAudioVideoShiftDlg)
-	{
-		if (bCenterCursor)
-		{
-			CPoint ptPos;
-			::GetCursorPos(&ptPos);
-
-			// Size
-			CRect rcCurrent;
-			pDoc->m_pAudioVideoShiftDlg->GetWindowRect(&rcCurrent);
-
-			// Offset
-			rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-			// Clip
-			::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-			// Funny Note:
-			// The ClipToWorkRect() clips correctly,
-			// but the dialog is auto-centered if the bottom and right
-			// corners of rcCurrent are at the limit of the
-			// bottom, right of the window.
-			// -> we cannot invert the following two functions,
-			// because ShowWindow() makes some wrong checks...
-
-			// Show
-			pDoc->m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
-
-			// Position
-			pDoc->m_pAudioVideoShiftDlg->MoveWindow(rcCurrent.left,
-													rcCurrent.top,
-													rcCurrent.Width(),
-													rcCurrent.Height());
-		}
-		else
-			pDoc->m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
-
-		// Restart
-		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-	}
-
-	return 1;
-}
-
-LONG CVideoAviView::OnPlayerToolBarDlg(WPARAM wparam, LPARAM lparam)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	CPoint ptPos((int)wparam, (int)lparam);
-
-	if (pDoc->m_pPlayerToolBarDlg)
-	{
-		// Size
-		CRect rcCurrent;
-		pDoc->m_pPlayerToolBarDlg->GetWindowRect(&rcCurrent);
-
-		// Offset
-		rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.TopLeft()));
-
-		// Offset
-		if (pDoc->m_PlayVideoFileThread.IsAlive() ||
-			pDoc->m_PlayAudioFileThread.IsAlive())
-			rcCurrent.OffsetRect(CPoint(-35,-12));	// Pop-Up Center On Stop Button
-		else	
-			rcCurrent.OffsetRect(CPoint(-12,-12));	// Pop-Up Center On Play Button
-
-		// Clip
-		::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-		// Funny Note:
-		// The ClipToWorkRect() clips correctly,
-		// but the dialog is auto-centered if the bottom and right
-		// corners of rcCurrent are at the limit of the
-		// bottom, right of the window.
-		// -> we cannot invert the following two functions,
-		// because ShowWindow() makes some wrong checks...
-
-		// Show
-		pDoc->m_pPlayerToolBarDlg->ShowWindow(SW_SHOW);
-
-		// Position
-		pDoc->m_pPlayerToolBarDlg->MoveWindow(	rcCurrent.left,
-												rcCurrent.top,
-												rcCurrent.Width(),
-												rcCurrent.Height());
-
-		// Restart
-		pDoc->m_PlayVideoFileThread.SetSafePauseRestartEvent();
-	}
-	
-	return 1;
-}
-
-LONG CVideoAviView::OnSafePauseTimeout(WPARAM wparam, LPARAM lparam)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	pDoc->m_PlayVideoFileThread.OnSafePauseTimeout(wparam, lparam);
-	return 1;
-}
-
-LONG CVideoAviView::OnRestoreFrame(WPARAM wparam, LPARAM lparam)
-{	
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Reset Flag
-	::InterlockedExchange(&(pDoc->m_bAboutToRestoreFrame), 0);
-
-	if (!pDoc->m_bNoDrawing	&&
-		pDoc->m_pAVIPlay	&&
-		(pDoc->m_nActiveVideoStream >= 0))
-	{
-		// DirectDraw?
-		if (pDoc->m_DxDraw.HasDxDraw()	&&
-			pDoc->m_bUseDxDraw			&&
-			pDoc->m_DxDraw.IsInit())
-		{
-			// Tries for CS_TIMEOUT to Enter the CS
-			if (pDoc->m_DxDraw.EnterCSTimeout())
-			{
-				// Update Current Device for Normal-Screen Mode
-				pDoc->m_DxDraw.UpdateCurrentDevice();
-				
-				// Copy Dib
-				if ((pDoc->m_PlayVideoFileThread.IsAlive() &&	// Is Waiting Audio to finish
-					pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-					||
-					!pDoc->m_PlayVideoFileThread.IsAlive())		// Is Not Playing
-				{
-					::EnterCriticalSection(&pDoc->m_csDib);
-					pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_UserZoomRect);
-					::LeaveCriticalSection(&pDoc->m_csDib);
-				}
-
-				// Leave CS
-				pDoc->m_DxDraw.LeaveCS();
-			}
-			else
-			{
-				// Set Flag
-				::InterlockedExchange(&(pDoc->m_bAboutToRestoreFrame), 1);
-
-				// Retry Later
-				CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-																WM_RESTORE_FRAME,
-																RESTORE_FRAME_RETRY_DELAY,
-																wparam,
-																lparam);
-
-				TRACE(_T("Post Delayed: OnRestoreFrame()\n"));
-				
-				return 1;
-			}
-		}
-
-		// Update Window
-		if ((pDoc->m_PlayVideoFileThread.IsAlive() &&		// Is Waiting Audio to finish
-			pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-			||
-			!pDoc->m_PlayVideoFileThread.IsAlive())			// Is Not Playing
-		{
-			UpdateWindowSizes(TRUE, FALSE, FALSE);
-		}
-	}
-
-	return 1;
-}
-
 LONG CVideoAviView::OnEndThumbTrack(WPARAM wparam, LPARAM lparam)
 {
 	CVideoAviDoc* pDoc = GetDocument();
@@ -653,8 +345,7 @@ BOOL CVideoAviView::UpdateCurrentFrame(CAVIPlay::CAVIVideoStream* pVideoStream)
 		//       feed them with the starting frame!
 		int nCurrentFramePos = pVideoStream->GetCurrentFramePos();
 		if (pVideoStream->GetFrameAt(pDoc->m_pDib, 0) &&
-			pVideoStream->GetFrameAt(	pDoc->m_pDib,
-										nCurrentFramePos))
+			pVideoStream->GetFrameAt(pDoc->m_pDib, nCurrentFramePos))
 		{
 			::LeaveCriticalSection(&pDoc->m_csDib);
 			return TRUE;
@@ -667,171 +358,6 @@ BOOL CVideoAviView::UpdateCurrentFrame(CAVIPlay::CAVIVideoStream* pVideoStream)
 	}
 }
 
-void CVideoAviView::RenderingSwitch(int nRenderingMode)
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Enter the CS
-	if (pDoc->m_DxDraw.HasDxDraw())
-		pDoc->m_DxDraw.EnterCS();
-	
-	switch (nRenderingMode)
-	{
-		case RENDERING_MODE_GDI_RGB :
-		case RENDERING_MODE_GDI_YUV :
-		{
-			CAVIPlay::CAVIVideoStream* pVideoStream =
-					pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
-			if (pVideoStream)
-			{
-				// Update Flags
-				pDoc->m_bUseDxDraw = FALSE;
-				pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_GDI_RGB);
-
-				// Free DxDraw
-				if (pDoc->m_DxDraw.HasDxDraw())
-					pDoc->m_DxDraw.Free();
-
-				// Open Decompressor
-				if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_GDI_RGB) ? true : false))
-					goto RenderingSwitchExit;
-
-				// Update Frame At Current Position
-				if (!UpdateCurrentFrame(pVideoStream))
-					goto RenderingSwitchExit;
-			}
-
-			break;
-		}
-
-		case RENDERING_MODE_DXDRAW_RGB :
-		case RENDERING_MODE_DXDRAW_YUV :
-		{
-			CAVIPlay::CAVIVideoStream* pVideoStream =
-					pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
-			if (pVideoStream)
-			{
-				// Update Flags
-				pDoc->m_bUseDxDraw = TRUE;
-				pDoc->m_bForceRgb = (nRenderingMode == RENDERING_MODE_DXDRAW_RGB);
-
-				// Open Decompressor
-				if (!pVideoStream->OpenDecompression((nRenderingMode == RENDERING_MODE_DXDRAW_RGB) ? true : false))
-					goto RenderingSwitchExit;
-
-				// Update Frame At Current Position
-				if (!UpdateCurrentFrame(pVideoStream))
-					goto RenderingSwitchExit;
-
-				// Update / Init DxDraw
-				if (!pDoc->m_DxDraw.Init(GetSafeHwnd(),
-									pDoc->m_DocRect.right,
-									pDoc->m_DocRect.bottom,
-									pVideoStream->GetFourCC(false),
-									IDB_BITSTREAM_VERA_11))
-					goto RenderingSwitchExit;
-			}
-
-			break;
-		}
-		
-		default :
-			break;
-	}
-	
-	// Copy Dib
-	if (pDoc->m_bUseDxDraw)
-	{
-		::EnterCriticalSection(&pDoc->m_csDib);
-		pDoc->m_DxDraw.RenderDib(pDoc->m_pDib, m_UserZoomRect);
-		::LeaveCriticalSection(&pDoc->m_csDib);
-	}
-
-RenderingSwitchExit:
-	
-	// Leave CS
-	if (pDoc->m_DxDraw.HasDxDraw())
-		pDoc->m_DxDraw.LeaveCS();
-
-	// Update Window
-	UpdateWindowSizes(TRUE, FALSE, FALSE);
-}
-
-void CVideoAviView::OnViewGdiRgb() 
-{
-	RenderingSwitch(RENDERING_MODE_GDI_RGB);
-}
-
-void CVideoAviView::OnUpdateViewGdiRgb(CCmdUI* pCmdUI) 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
-					pDoc->m_pAVIPlay->HasVideo()									&&
-					(pDoc->m_nActiveVideoStream >= 0)								&&
-					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
-					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
-					!pDoc->IsProcessing());
-	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
-}
-
-void CVideoAviView::OnViewGdiYuv() 
-{
-	RenderingSwitch(RENDERING_MODE_GDI_YUV);
-}
-
-void CVideoAviView::OnUpdateViewGdiYuv(CCmdUI* pCmdUI) 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
-					pDoc->m_pAVIPlay->HasVideo()									&&
-					(pDoc->m_nActiveVideoStream >= 0)								&&
-					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
-					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
-					!pDoc->IsProcessing());
-	pCmdUI->SetRadio(!pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
-}
-
-void CVideoAviView::OnViewDirectxRgb() 
-{
-	RenderingSwitch(RENDERING_MODE_DXDRAW_RGB);
-}
-
-void CVideoAviView::OnUpdateViewDirectxRgb(CCmdUI* pCmdUI) 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
-					pDoc->m_pAVIPlay->HasVideo()									&&
-					(pDoc->m_nActiveVideoStream >= 0)								&&
-					pDoc->m_DxDraw.HasDxDraw()										&&
-					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
-					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
-					!pDoc->IsProcessing());
-	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && pDoc->m_bForceRgb);
-}
-
-void CVideoAviView::OnViewDirectxYuv() 
-{
-	RenderingSwitch(RENDERING_MODE_DXDRAW_YUV);
-}
-
-void CVideoAviView::OnUpdateViewDirectxYuv(CCmdUI* pCmdUI) 
-{
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	pCmdUI->Enable(	pDoc->m_pAVIPlay												&&
-					pDoc->m_pAVIPlay->HasVideo()									&&
-					(pDoc->m_nActiveVideoStream >= 0)								&&
-					pDoc->m_DxDraw.HasDxDraw()										&&
-					!pDoc->m_PlayVideoFileThread.IsAlive()							&&
-					!pDoc->m_PlayAudioFileThread.IsAlive()							&&
-					!pDoc->IsProcessing());
-	pCmdUI->SetRadio(pDoc->m_bUseDxDraw && !pDoc->m_bForceRgb);
-}
-
 void CVideoAviView::OnViewFit() 
 {
 	CVideoAviDoc* pDoc = GetDocument();
@@ -842,8 +368,8 @@ void CVideoAviView::OnViewFit()
 		// Reset User Zoom Rect
 		m_UserZoomRect = m_ZoomRect;
 
-		// Restore Frame
-		pDoc->RestoreFrame();
+		// Invalidate View
+		pDoc->InvalidateView();
 	}
 	else
 	{
@@ -1049,13 +575,10 @@ BOOL CVideoAviView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
-void CVideoAviView::EraseBkgnd(HDC hDC/*=NULL*/)
+void CVideoAviView::EraseBkgnd(HDC hDC)
 {
 	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called from Video Thread for Direct Draw!
-
-	if (pDoc->m_bNoDrawing)
-		return;
+	ASSERT_VALID(pDoc);
 
 	// Client Rect
 	CRect rcClient;
@@ -1091,81 +614,31 @@ void CVideoAviView::EraseBkgnd(HDC hDC/*=NULL*/)
 						pDoc->m_pAVIPlay->HasVideo()	&&
 						pDoc->m_nActiveVideoStream >= 0;
 
-	// Direct Draw?
-	BOOL bDxDraw =	pDoc->m_bUseDxDraw		&&
-					pDoc->m_DxDraw.IsInit()	&&
-					bHasVideo				&&
-					!pDoc->IsProcessing();
-	if (bDxDraw)
-	{
-		// If Processing
-		if (pDoc->IsProcessing())
-		{
-			if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcTop);
-			if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcLeft);
-			if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcRight);
-			if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcBottom);	
-			pDoc->m_DxDraw.ClearBack();
-		}
-		// In FullScreen Mode
-		else if (pDoc->m_DxDraw.IsFullScreen())
-		{
-			// Clear Back
-			if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-				pDoc->m_DxDraw.ClearBack(&rcTop);
-			if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-				pDoc->m_DxDraw.ClearBack(&rcLeft);
-			if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-				pDoc->m_DxDraw.ClearBack(&rcRight);
-			if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-				pDoc->m_DxDraw.ClearBack(&rcBottom);
-		}
-		// Normal Screen Mode
-		else
-		{
-			// Clear Front
-			if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcTop);
-			if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcLeft);
-			if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcRight);
-			if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-				pDoc->m_DxDraw.ClearFront(&rcBottom);
-		}
-	}
+	CBrush br;
+	br.CreateSolidBrush(pDoc->m_crBackgroundColor);
+
+	// If Audio or Processing
+	if (!bHasVideo || pDoc->IsProcessing())
+		::FillRect(hDC, &rcClient, (HBRUSH)br);
 	else
 	{
-		CBrush br;
-		br.CreateSolidBrush(pDoc->m_crBackgroundColor);
-
-		// If Audio or Processing
-		if (!bHasVideo || pDoc->IsProcessing())
-			::FillRect(hDC, &rcClient, (HBRUSH)br);
-		else
-		{
-			if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
-				::FillRect(hDC, &rcTop, (HBRUSH)br);
-			if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
-				::FillRect(hDC, &rcLeft, (HBRUSH)br);
-			if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
-				::FillRect(hDC, &rcRight, (HBRUSH)br);
-			if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
-				::FillRect(hDC, &rcBottom, (HBRUSH)br);
-		}
-
-		br.DeleteObject();
+		if ((rcTop.Width() > 0) && (rcTop.Height() > 0))
+			::FillRect(hDC, &rcTop, (HBRUSH)br);
+		if ((rcLeft.Width() > 0) && (rcLeft.Height() > 0))
+			::FillRect(hDC, &rcLeft, (HBRUSH)br);
+		if ((rcRight.Width() > 0) && (rcRight.Height() > 0))
+			::FillRect(hDC, &rcRight, (HBRUSH)br);
+		if ((rcBottom.Width() > 0) && (rcBottom.Height() > 0))
+			::FillRect(hDC, &rcBottom, (HBRUSH)br);
 	}
+
+	br.DeleteObject();
 }
 
 BOOL CVideoAviView::MakeFont(BOOL bBig)
 {
 	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called from Video Thread for Direct Draw!
+	ASSERT_VALID(pDoc);
 
 	if (bBig)	
 	{
@@ -1210,108 +683,16 @@ void CVideoAviView::OnDraw(CDC* pDC)
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	// No Drawing?
-	if (pDoc->m_bNoDrawing)
-		return;
-
-	// Direct Draw?
-	BOOL bDxDraw =	pDoc->m_bUseDxDraw					&&
-					pDoc->m_DxDraw.IsInit()				&&
-					pDoc->m_pAVIPlay					&&
-					pDoc->m_pAVIPlay->HasVideo()		&&
-					(pDoc->m_nActiveVideoStream >= 0)	&&
-					!pDoc->IsProcessing();
-
-	// DirectDraw?
-	if (bDxDraw)
-	{
-		if ((pDoc->m_PlayVideoFileThread.IsAlive() &&		// Is Waiting Audio to finish
-			pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-			||
-			!pDoc->m_PlayVideoFileThread.IsAlive())			// Is Not Playing
-		{
-			// Tries for CS_TIMEOUT to Enter the CS
-			if (pDoc->m_DxDraw.EnterCSTimeout())
-			{
-				// Draw
-				Draw();
-
-				// Leave CS
-				pDoc->m_DxDraw.LeaveCS();
-			}
-			else
-			{
-				// Retry Later
-				CPostDelayedMessageThread::PostDelayedMessage(	GetSafeHwnd(),
-																WM_THREADSAFE_UPDATEWINDOWSIZES,
-																THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-																(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-																(LPARAM)0);
-				TRACE(_T("Post Delayed: OnDraw()\n"));
-			}
-		}
-	}
-	else
-		Draw(pDC->GetSafeHdc());
-}
-
-__forceinline BOOL CVideoAviView::InitMemDC(HDC hDC) 
-{
-	BOOL bOk = TRUE;
-	CVideoAviDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Client Rect
+	// Flicker free drawing
 	CRect rcClient;
 	GetClientRect(&rcClient);
+	CMyMemDC MemDC(pDC, &rcClient);
 
-	// Clean-Up
-	if (m_hOldMemDCBitmap)
-		::SelectObject(m_hMemDC, m_hOldMemDCBitmap);
-	if (m_hMemDCDibSection)
-		::DeleteObject(m_hMemDCDibSection);
-	::DeleteDC(m_hMemDC);
-
-	// Create Mem DC
-	if (m_hMemDC = ::CreateCompatibleDC(hDC))
-	{
-		if (m_pBmi)
-			delete [] m_pBmi;
-		m_pBmi = (LPBITMAPINFO)new BYTE[pDoc->m_pDib->GetBMISize()];
-		memcpy(m_pBmi, pDoc->m_pDib->GetBMI(), pDoc->m_pDib->GetBMISize());
-		m_pBmi->bmiHeader.biWidth = rcClient.Width();
-		m_pBmi->bmiHeader.biHeight = rcClient.Height();
-		m_pBmi->bmiHeader.biCompression = BI_RGB;
-		if (m_pBmi->bmiHeader.biBitCount != 32 &&
-			m_pBmi->bmiHeader.biBitCount != 24 &&
-			m_pBmi->bmiHeader.biBitCount != 16)
-		{
-			int bpp = ::AfxGetMainFrame()->GetMonitorBpp();
-			if (bpp < 8)
-				m_pBmi->bmiHeader.biBitCount = 32;
-			else
-				m_pBmi->bmiHeader.biBitCount = bpp;
-		}
-		m_pBmi->bmiHeader.biSizeImage = DWALIGNEDWIDTHBYTES(m_pBmi->bmiHeader.biWidth *
-															m_pBmi->bmiHeader.biBitCount) *
-															m_pBmi->bmiHeader.biHeight;
-		m_hMemDCDibSection = ::CreateDIBSection(hDC, (const BITMAPINFO*)m_pBmi,
-								DIB_RGB_COLORS, (void**)&m_pDibSectionBits, NULL, 0);
-		if (m_hMemDCDibSection)
-		{
-			// Select DibSection into Memory DC
-			m_hOldMemDCBitmap = (HBITMAP)::SelectObject(m_hMemDC, m_hMemDCDibSection);
-		}
-		else
-			bOk = FALSE;
-	}
-	else
-		bOk = FALSE;
-
-	return bOk;
+	// Draw
+	Draw(MemDC.GetSafeHdc());
 }
 
-void CVideoAviView::Draw(HDC hDC/*=NULL*/) 
+void CVideoAviView::Draw(HDC hDC) 
 {
 	// Vars
 	RECT Rect;
@@ -1322,15 +703,8 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 	sText[0] = _T('\0');
 	RECT rcClient;
 	RECT ZoomRect;
-	CSize szDxDrawFont;
-	BOOL bUseMemDC = FALSE;
-	HDC hOrigDC = hDC;
 	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called from Video Thread for Direct Draw!
-
-	// No Drawing?
-	if (pDoc->m_bNoDrawing)
-		return;
+	ASSERT_VALID(pDoc);
 
 	// Client Rect
 	GetClientRect(&rcClient);
@@ -1358,54 +732,11 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 	else
 		ZoomRect = m_ZoomRect;
 
-	// Direct Draw?
-	BOOL bDxDraw =	pDoc->m_bUseDxDraw		&&
-					pDoc->m_DxDraw.IsInit()	&&
-					bHasVideo				&&
-					!pDoc->IsProcessing();
-	if (bDxDraw)
-	{
-		// Erase the Bkg
-		EraseBkgnd();
+	// Enter CS
+	::EnterCriticalSection(&pDoc->m_csDib);
 
-		// Change Zoom Rect in Normal Screen Mode
-		if (!pDoc->m_DxDraw.IsFullScreen())
-			ZoomRect = pDoc->m_DocRect;
-
-		// Get Dx Draw Font Size
-		if (bDrawText)
-			szDxDrawFont = pDoc->m_DxDraw.GetFontSize();
-	}
-	// GDI
-	else 
-	{
-		// Check
-		if (!hDC)
-			return;
-		else
-		{
-			// Enter CS
-			::EnterCriticalSection(&pDoc->m_csDib);
-
-			// Valid Dib?
-			if (pDoc->m_pDib && pDoc->m_pDib->IsValid())
-			{
-				// Set Flag
-				bUseMemDC = TRUE;
-
-				// (Re-)Init Mem DC
-				if (m_rcPrevClient != rcClient || (m_hMemDCDibSection == NULL))
-					bUseMemDC = InitMemDC(hDC); 
-
-				// Use Mem DC?
-				if (bUseMemDC)
-					hDC = m_hMemDC;
-			}
-
-			// EraseBkgnd
-			EraseBkgnd(hDC);
-		}
-	}
+	// EraseBkgnd
+	EraseBkgnd(hDC);
 
 	// Processing Progress
 	if (pDoc->IsProcessing())
@@ -1467,156 +798,80 @@ void CVideoAviView::Draw(HDC hDC/*=NULL*/)
 	// Frame Display
 	else
 	{
-		// DirectDraw?
-		if (bDxDraw)
+		// Make Font
+		if (m_bFullScreenMode && !m_bBigFont)
+			MakeFont(TRUE);
+		else if (!m_bFullScreenMode && m_bBigFont)
+			MakeFont(FALSE);
+
+		// Paint
+		if (pDoc->m_pDib)
 		{
-			// Update Slider?
-			if (m_bThumbTrackDone						&&
-				((pDoc->m_PlayVideoFileThread.IsAlive()	&&		// Is Waiting Audio to finish
-				pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-														||
-				!pDoc->m_PlayVideoFileThread.IsAlive()	||		// Is Not Playing
-				((pDoc->m_dwFrameCountUp %
-				MAX(1, Round(pDoc->GetPlayFrameRate()))) == 0)))// Update Slider Every Second if playing
+			// Valid Frame?
+			if (pDoc->m_pDib->IsValid())
 			{
-				::PostMessage(	GetSafeHwnd(),
-								WM_THREADSAFE_UPDATEPLAYSLIDER,
-								0, 0);
+				// Paint
+				pDoc->m_pDib->Paint(hDC,
+									&ZoomRect,
+									pDoc->m_DocRect,
+									FALSE);	// Force Stretch?
+
+				// Leave CS
+				::LeaveCriticalSection(&pDoc->m_csDib);
+
+				// Update Slider?
+				if (m_bThumbTrackDone						&&
+					((pDoc->m_PlayVideoFileThread.IsAlive()	&&		// Is Waiting Audio to finish
+					pDoc->m_PlayVideoFileThread.IsWaitingForStart())
+															||
+					!pDoc->m_PlayVideoFileThread.IsAlive()	||		// Is Not Playing
+					((pDoc->m_dwFrameCountUp %
+					MAX(1, Round(pDoc->GetPlayFrameRate()))) == 0)))// Update Slider Every Second if playing
+				{
+					UpdatePlaySlider();
+				}
+			}
+			// Empty Frame
+			else
+			{
+				// Leave CS
+				::LeaveCriticalSection(&pDoc->m_csDib);
+
+				// Fill Black
+				CBrush br;
+				br.CreateSolidBrush(RGB(0,0,0));
+				::FillRect(hDC, &ZoomRect, (HBRUSH)br);
+				br.DeleteObject();
+
+				// Update Slider?
+				if (m_bThumbTrackDone						&&
+					((pDoc->m_PlayVideoFileThread.IsAlive()	&&		// Is Waiting Audio to finish
+					pDoc->m_PlayVideoFileThread.IsWaitingForStart())
+															||
+					!pDoc->m_PlayVideoFileThread.IsAlive()	||		// Is Not Playing
+					((pDoc->m_dwFrameCountUp %
+					MAX(1, Round(pDoc->GetPlayFrameRate()))) == 0)))// Update Slider Every Second if playing
+				{
+					UpdatePlaySlider();
+				}
 			}
 		}
 		else
-		{
-			// Make Font
-			if (m_bFullScreenMode && !m_bBigFont)
-				MakeFont(TRUE);
-			else if (!m_bFullScreenMode && m_bBigFont)
-				MakeFont(FALSE);
-
-			// GDI Paint
-			if (pDoc->m_pDib)
-			{
-				// Valid Frame?
-				if (pDoc->m_pDib->IsValid())
-				{
-					// Paint
-					BOOL res;
-					if (!pDoc->m_bUseDxDraw)
-					{
-						res = pDoc->m_pDib->Paint(	hDC,
-													&ZoomRect,
-													pDoc->m_DocRect,
-													FALSE);	// Force Stretch?
-					}
-					else
-						res = FALSE;
-
-					// Leave CS
-					::LeaveCriticalSection(&pDoc->m_csDib);
-
-					// Display Error in 2 cases:
-					// - if GDI YUV is not supported (Paint() retuns FALSE).
-					// - if m_bUseDxDraw is set (res == FALSE)
-					//   but DxDraw doesn't support YUV surfaces
-					//   (m_DxDraw.IsInit() == FALSE).
-					if (!res)
-					{
-						CBrush br;
-						br.CreateSolidBrush(pDoc->m_crBackgroundColor);
-						::FillRect(hDC, &rcClient, (HBRUSH)br);
-						br.DeleteObject();
-						::DrawBigText(	hDC,
-										rcClient,
-										ML_STRING(1452, "Rendering mode not supported!"),
-										RGB(0xFF,0,0), 72, DT_CENTER | DT_VCENTER,
-										OPAQUE, pDoc->m_crBackgroundColor);
-					}
-
-					// Update Slider?
-					if (m_bThumbTrackDone						&&
-						((pDoc->m_PlayVideoFileThread.IsAlive()	&&		// Is Waiting Audio to finish
-						pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-																||
-						!pDoc->m_PlayVideoFileThread.IsAlive()	||		// Is Not Playing
-						((pDoc->m_dwFrameCountUp %
-						MAX(1, Round(pDoc->GetPlayFrameRate()))) == 0)))// Update Slider Every Second if playing
-					{
-						UpdatePlaySlider();
-					}
-				}
-				// Empty Frame
-				else
-				{
-					// Leave CS
-					::LeaveCriticalSection(&pDoc->m_csDib);
-
-					// Fill Black
-					CBrush br;
-					br.CreateSolidBrush(RGB(0,0,0));
-					::FillRect(hDC, &ZoomRect, (HBRUSH)br);
-					br.DeleteObject();
-
-					// Update Slider?
-					if (m_bThumbTrackDone						&&
-						((pDoc->m_PlayVideoFileThread.IsAlive()	&&		// Is Waiting Audio to finish
-						pDoc->m_PlayVideoFileThread.IsWaitingForStart())
-																||
-						!pDoc->m_PlayVideoFileThread.IsAlive()	||		// Is Not Playing
-						((pDoc->m_dwFrameCountUp %
-						MAX(1, Round(pDoc->GetPlayFrameRate()))) == 0)))// Update Slider Every Second if playing
-					{
-						UpdatePlaySlider();
-					}
-				}
-			}
-			else
-				::LeaveCriticalSection(&pDoc->m_csDib); // Leave CS
-		}
+			::LeaveCriticalSection(&pDoc->m_csDib); // Leave CS
 
 		// Info Text Show
 		if (pDoc->m_pAVIPlay && bDrawText)
 		{
 			DrawInfo(	hDC,
-						bDxDraw,
 						rcClient,
-						ZoomRect,
-						szDxDrawFont);
+						ZoomRect);
 		}
 	}
-
-	// Display Surface
-	if (bDxDraw)
-	{
-		if (pDoc->m_DxDraw.IsFullScreen())
-			pDoc->m_DxDraw.Flip(!pDoc->m_PlayVideoFileThread.IsAlive() ||
-								pDoc->m_PlayVideoFileThread.DoFullScreenBlt());
-		else
-			pDoc->m_DxDraw.Blt(m_ZoomRect, pDoc->m_DocRect);
-		m_rcPrevClient = CRect(0,0,0,0);
-	}
-	// BitBlt MemDC to Screen DC
-	else if (bUseMemDC)
-	{
-		// Copy Bits
-		::BitBlt(hOrigDC,
-				0, 0,
-				rcClient.right - rcClient.left,
-				rcClient.bottom - rcClient.top,
-				m_hMemDC,
-				0,
-				0,
-				SRCCOPY);
-
-		m_rcPrevClient = rcClient;
-	}
-	else
-		m_rcPrevClient = CRect(0,0,0,0);
 }
 
 __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
-											 BOOL bDxDraw,
-											 RECT& rcClient,
-											 RECT& ZoomRect,
-											 CSize& szDxDrawFont)
+											RECT& rcClient,
+											RECT& ZoomRect)
 {
 	RECT Rect;
 	COLORREF OldTextColor;
@@ -1626,114 +881,29 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 	TCHAR sText[MAX_STATISTICS_TEXT_SIZE];
 	sText[0] = _T('\0');
 	CVideoAviDoc* pDoc = GetDocument();
-	//ASSERT_VALID(pDoc); Crashing because called from Video Thread for Direct Draw!
+	ASSERT_VALID(pDoc);
 
 	// Has video?
-	BOOL bHasVideo =	pDoc->m_pAVIPlay->HasVideo()	&&
-						pDoc->m_nActiveVideoStream >= 0;
+	BOOL bHasVideo = pDoc->m_pAVIPlay->HasVideo() && pDoc->m_nActiveVideoStream >= 0;
 
 	// Set Font & Color
-	if (!bDxDraw)
-	{
-		OldTextColor = ::SetTextColor(hDC, RGB(0x0,0xFF,0x0));
-		OldBkMode = ::SetBkMode(hDC, OPAQUE);
-		crOldBkColor = ::SetBkColor(hDC, RGB(0,0,0));
-		hOldFont = (HFONT)::SelectObject(hDC, m_hFont);
-	}
+	OldTextColor = ::SetTextColor(hDC, RGB(0x0,0xFF,0x0));
+	OldBkMode = ::SetBkMode(hDC, OPAQUE);
+	crOldBkColor = ::SetBkColor(hDC, RGB(0,0,0));
+	hOldFont = (HFONT)::SelectObject(hDC, m_hFont);
 
-	// Advanced Video Avi Info
-	if (((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo)
+	// Avg Milliseconds Correction, Timer Delay and Dropped Frames Count Display
+	if (((CUImagerApp*)::AfxGetApp())->m_bVideoAviInfo && bHasVideo)
 	{
-		// Avg Milliseconds Correction, Timer Delay and Dropped Frames Count Display
-		if (bHasVideo)
-		{
-			_stprintf(sText, _T("Corr % 3i,Timer % 2u,Drop % 1u"),	
-													pDoc->m_PlayVideoFileThread.GetMilliSecondsCorrectionAvg(),
-													pDoc->m_PlayVideoFileThread.GetTimerDelay(),
-													pDoc->m_PlayVideoFileThread.GetDroppedFramesCount());
-			if (m_bFullScreenMode)
-				Rect = rcClient;
-			else
-				Rect = ZoomRect;
-			if (bDxDraw)
-				pDoc->m_DxDraw.DrawText(sText, 0, Rect.bottom - 1, DRAWTEXT_BOTTOMLEFT);
-			else
-				::DrawText(hDC, sText, -1, &Rect, (DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-		}
-
-		// DirectX Info?
+		_stprintf(sText, _T("Corr % 3i,Timer % 2u,Drop % 1u"),	
+												pDoc->m_PlayVideoFileThread.GetMilliSecondsCorrectionAvg(),
+												pDoc->m_PlayVideoFileThread.GetTimerDelay(),
+												pDoc->m_PlayVideoFileThread.GetDroppedFramesCount());
 		if (m_bFullScreenMode)
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
-		if (bDxDraw)
-		{
-			DWORD dwTotalMem;
-			DWORD dwFreeMem;
-			pDoc->m_DxDraw.GetCurrentVideoMem(dwTotalMem, dwFreeMem);
-			if (pDoc->m_DxDraw.IsFullScreen())
-			{
-				_stprintf(sText, _T("DX, Dev%i, %s (%s), %u of %u MB"),
-								pDoc->m_DxDraw.GetCurrentDevice(),
-								(!pDoc->m_PlayVideoFileThread.IsAlive()	||
-								pDoc->m_PlayVideoFileThread.DoFullScreenBlt()) ? _T("Blt") : _T("Flip"),
-								pDoc->m_DxDraw.IsTripleBuffering() ? _T("3-Buf") : _T("2-Buf"),
-								dwFreeMem >> 20, dwTotalMem >> 20);
-				pDoc->m_DxDraw.DrawText(sText, 0, 0, DRAWTEXT_TOPLEFT);
-			}
-			else
-			{
-				_stprintf(sText, _T("DX, Dev%i, Blt, %u of %u MB"),
-								pDoc->m_DxDraw.GetCurrentDevice(),
-								dwFreeMem >> 20, dwTotalMem >> 20);
-				pDoc->m_DxDraw.DrawText(sText, 0, 0, DRAWTEXT_TOPLEFT);
-			}
-
-			CAVIPlay::CAVIVideoStream* pVideoStream = pDoc->m_pAVIPlay->GetVideoStream(pDoc->m_nActiveVideoStream);
-			if (pVideoStream)
-			{
-				LPBITMAPINFOHEADER pSrcBMIH = (LPBITMAPINFOHEADER)(pVideoStream->GetFormat(true));
-				LPBITMAPINFOHEADER pDstBMIH = (LPBITMAPINFOHEADER)(pVideoStream->GetFormat(false));
-				if (pDoc->m_DxDraw.GetCurrentSrcFourCC() == BI_RGB)
-				{
-					int nSrcBpp = pDoc->m_DxDraw.GetCurrentSrcBpp();
-					if (nSrcBpp == 16)
-					{
-						_stprintf(sText, _T("%s->%s , RGB%d->RGB%d (%s)"),
-							CDib::GetCompressionName((LPBITMAPINFO)pSrcBMIH),
-							CDib::GetCompressionName((LPBITMAPINFO)pDstBMIH),
-							nSrcBpp,
-							pDoc->m_DxDraw.GetCurrentMonitorBpp(),
-							pDoc->m_DxDraw.IsCurrentSrcRgb15() ? _T("555") : _T("565"));
-					}
-					else
-					{
-						_stprintf(sText, _T("%s->%s , RGB%d->RGB%d"),
-							CDib::GetCompressionName((LPBITMAPINFO)pSrcBMIH),
-							CDib::GetCompressionName((LPBITMAPINFO)pDstBMIH),
-							nSrcBpp,
-							pDoc->m_DxDraw.GetCurrentMonitorBpp());
-
-					}
-				}
-				else
-				{
-					_stprintf(sText, _T("%s->%s , %s->RGB%d"),
-						CDib::GetCompressionName((LPBITMAPINFO)pSrcBMIH),
-						CDib::GetCompressionName((LPBITMAPINFO)pDstBMIH),
-						CAVIPlay::FourCCToString(pDoc->m_DxDraw.GetCurrentSrcFourCC()),
-						pDoc->m_DxDraw.GetCurrentMonitorBpp());
-				}
-				pDoc->m_DxDraw.DrawText(sText, 0, szDxDrawFont.cy + 1, DRAWTEXT_TOPLEFT);
-			}
-		}
-		else
-		{
-			if (!bHasVideo)
-				Rect = rcClient;
-			_tcscpy(sText, _T("GDI"));
-			::DrawText(hDC, sText, 3, &Rect, (DT_LEFT | DT_TOP | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
-		}
+		::DrawText(hDC, sText, -1, &Rect, (DT_LEFT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
 	}
 	
 	// Time Position Text
@@ -1773,10 +943,7 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
-		if (bDxDraw)
-			pDoc->m_DxDraw.DrawText(sText, Rect.right - 1, 0, DRAWTEXT_TOPRIGHT);
-		else
-			::DrawText(hDC, sText, -1, &Rect, (DT_RIGHT | DT_TOP | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+		::DrawText(hDC, sText, -1, &Rect, (DT_RIGHT | DT_TOP | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
 	}
 	else
 	{
@@ -1795,20 +962,14 @@ __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
 			Rect = rcClient;
 		else
 			Rect = ZoomRect;
-		if (bDxDraw)
-			pDoc->m_DxDraw.DrawText(sText, Rect.right - 1, Rect.bottom - 1, DRAWTEXT_BOTTOMRIGHT);
-		else
-			::DrawText(hDC, sText, -1, &Rect, (DT_RIGHT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
+		::DrawText(hDC, sText, -1, &Rect, (DT_RIGHT | DT_BOTTOM | DT_NOCLIP | DT_NOPREFIX | DT_SINGLELINE));
 	}
 
 	// Clean-Up
-	if (!bDxDraw)
-	{
-		::SetBkMode(hDC, OldBkMode);
-		::SetBkColor(hDC, crOldBkColor);
-		::SetTextColor(hDC, OldTextColor);
-		::SelectObject(hDC, hOldFont);
-	}
+	::SetBkMode(hDC, OldBkMode);
+	::SetBkColor(hDC, crOldBkColor);
+	::SetTextColor(hDC, OldTextColor);
+	::SelectObject(hDC, hOldFont);
 }
 
 __forceinline void CVideoAviView::FramePosText(	TCHAR* sText,
@@ -1817,9 +978,6 @@ __forceinline void CVideoAviView::FramePosText(	TCHAR* sText,
 												bool bKeyFrame,
 												LONGLONG llSamplePos)
 {
-	// Use a costant sized text because in dxdraw mode when moving the slider
-	// the text is updated but the background frame is only updated with a rate
-	// of AVIPLAYSLIDER_TIMER_MS!
 	double dPos		= (double)nFramePos / dFrameRate;				// Position in Seconds
 	int nPosHour	= (int)(dPos / 3600.0);							// Hours Part
 	int nPosMin		= (int)((dPos - nPosHour * 3600.0) / 60.0);		// Minutes Part
@@ -1921,7 +1079,7 @@ void CVideoAviView::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			}
 
 			// Update Window
-			UpdateWindowSizes(TRUE, TRUE, FALSE);
+			UpdateWindowSizes(TRUE, FALSE, FALSE);
 		}
 	}
 }
@@ -2331,8 +1489,8 @@ void CVideoAviView::OnMouseMove(UINT nFlags, CPoint point)
 			// Set User Rect
 			m_UserZoomRect = UserZoomRect;
 
-			// Restore Frame
-			pDoc->RestoreFrame();
+			// Invalidate View
+			pDoc->InvalidateView();
 		}
 	}
 	else
@@ -2760,7 +1918,7 @@ LONG CVideoAviView::OnAviFileProgress(WPARAM wparam, LPARAM lparam)
 	else if (fccType == streamtypeAUDIO)
 		pDoc->m_nAudioPercentDone = (int)lparam;
 
-	UpdateWindowSizes(TRUE, TRUE, FALSE);
+	UpdateWindowSizes(TRUE, FALSE, FALSE);
 
 	return 1;
 }
@@ -2772,10 +1930,6 @@ void CVideoAviView::OnTimer(UINT nIDEvent)
 
 	switch (nIDEvent)
 	{
-		case ID_TIMER_FULLSCREEN :
-			if (!::AfxGetMainFrame()->AreModelessDlgsVisible())
-				pDoc->m_PlayVideoFileThread.ResetFullScreenBlt();
-			break;
 		case ID_TIMER_AVIPLAYSLIDER :
 		{
 			if (m_bThumbTrack)

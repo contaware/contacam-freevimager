@@ -11,7 +11,6 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "crossbar.h"
-#include "getdxver.h"
 #include "Dib.h"
 #include "DxCapture.h"
 #include "xprtdefs.h"

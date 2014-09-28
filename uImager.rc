@@ -71,8 +71,6 @@ IDR_PICTURE_TOOLBAR     BITMAP                  "res\\picture.bmp"
 IDB_BITMAP_DRAGDROP_SINGLE BITMAP                  "res\\DragDropSingle.bmp"
 IDB_BITMAP_DRAGDROP_MULTI BITMAP                  "res\\DragDropMulti.bmp"
 IDB_HEADER_CTRL         BITMAP                  "res\\HeaderArrows.bmp"
-IDB_TELETEXT_DH_26      BITMAP                  "res\\TeleTextDH_26.bmp"
-IDB_BITSTREAM_VERA_11   BITMAP                  "res\\Bitstream_Vera_11.bmp"
 IDR_MAINFRAME_VIDEODEVICEDOC BITMAP                  "res\\toolbarvideodevicedoc.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -634,11 +632,6 @@ BEGIN
         MENUITEM "Show Time Position",          ID_VIEW_TIMEPOSITION
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-        MENUITEM SEPARATOR
-        MENUITEM "GDI RGB",                     ID_VIEW_GDI_RGB
-        MENUITEM "GDI YUV",                     ID_VIEW_GDI_YUV
-        MENUITEM "DirectX RGB",                 ID_VIEW_DIRECTX_RGB
-        MENUITEM "DirectX YUV",                 ID_VIEW_DIRECTX_YUV
     END
     POPUP "&Capture"
     BEGIN
@@ -2288,17 +2281,6 @@ BEGIN
     LTEXT           "Dir",IDC_TEXT_INPUT_DIR,24,16,10,8,SS_NOTIFY | NOT WS_GROUP
 END
 
-IDD_DIRECTX7 DIALOG 0, 0, 236, 79
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-FONT 8, "MS Shell Dlg"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,97,58,50,14
-    LTEXT           "Row1",IDC_EDIT_TEXTROW1,7,7,222,8
-    CTEXT           "Link",IDC_EDIT_LINK,7,41,222,8,SS_NOTIFY
-    LTEXT           "Row2",IDC_EDIT_TEXTROW2,7,18,222,8
-    LTEXT           "Row3",IDC_EDIT_TEXTROW3,7,28,222,8
-END
-
 IDD_SHARPEN DIALOGEX 0, 0, 141, 65
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -3788,14 +3770,6 @@ BEGIN
         HORZGUIDE, 268
     END
 
-    IDD_DIRECTX7, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 229
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 72
-    END
-
     IDD_SHARPEN, DIALOG
     BEGIN
         LEFTMARGIN, 6
@@ -4465,12 +4439,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1216      "DirectX %s installed."
-    IDS_MULTILANG_1217      "DirectX not installed."
-    IDS_MULTILANG_1218      "Unknown version of DirectX installed."
-    IDS_MULTILANG_1219      "DirectX 7.0 or higher is required for best video playback performance!"
-    IDS_MULTILANG_1220      "The latest version may be downloaded from:"
-    IDS_MULTILANG_1221      "DirectX 7.0 or higher is required!"
     IDS_MULTILANG_1223      "No twain driver found."
     IDS_MULTILANG_1224      "No twain source found."
     IDS_MULTILANG_1225      "Error While Deleting The Temporary Folder."
@@ -4683,7 +4651,6 @@ BEGIN
     IDS_MULTILANG_1449      "Failed to Merge the Avi Files."
     IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
     IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
-    IDS_MULTILANG_1452      "Rendering mode not supported!"
 END
 
 STRINGTABLE
@@ -4887,10 +4854,6 @@ END
 STRINGTABLE
 BEGIN
     ID_EDIT_REMOVE_IPTC     "Remove the legacy IPTC section\nRemove Legacy IPTC"
-    ID_VIEW_DIRECTX_RGB     "Render video using DirectX RGB surface\nDirectX RGB"
-    ID_VIEW_DIRECTX_YUV     "Render video using DirectX YUV surface\nDirectX YUV"
-    ID_VIEW_GDI_RGB         "Render video with GDI RGB\nGDI RGB"
-    ID_VIEW_GDI_YUV         "Render video with GDI YUV\nGDI YUV"
     ID_VIEW_BACKGROUND_COLOR_MENU "Background color\nBackground Color"
     ID_VIEW_ZOOM_FIT        "Fit all images\nFit All"
     ID_VIEW_ZOOM_FITBIG     "Fit big images only\nFit Big Images"

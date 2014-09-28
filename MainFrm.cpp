@@ -67,7 +67,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_MAXIMIZE, OnMaximize)
 	ON_UPDATE_COMMAND_UI(ID_MAXIMIZE, OnUpdateMaximize)
 	ON_COMMAND(ID_MAINMONITOR, OnMainmonitor)
-	ON_WM_MOVE()
 	ON_WM_SETCURSOR()
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_TIFF, OnFileAcquireToTiff)
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_PDF, OnFileAcquireToPdf)
@@ -87,10 +86,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
 	ON_MESSAGE(WM_SHRINKDOC_TERMINATED, OnShrinkDocTerminated)
 	ON_MESSAGE(WM_TASKBAR_BUTTON, OnTaskBarButton)
-	ON_MESSAGE(WM_RESTORE_FRAME, OnRestoreAllFrames)
 	ON_MESSAGE(WM_ALL_CLOSED, OnAllClosed)
-	ON_MESSAGE(WM_VIDEOAVI_FULLSCREEN_MODE_ON, OnVideoAviFullScreenModeOn)
-	ON_MESSAGE(WM_VIDEOAVI_FULLSCREEN_MODE_OFF, OnVideoAviFullScreenModeOff)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
@@ -1037,22 +1033,8 @@ LONG CMainFrame::OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam)
 	// Message From a VideoAviDoc Processing Thread
 	if (pDocFrom && ((CUImagerApp*)::AfxGetApp())->IsDoc(pDocFrom))
 	{
-		// Restore Frame
-		if (pDocFrom->m_pAVIPlay &&
-			pDocFrom->m_pAVIPlay->HasVideo() &&
-			(pDocFrom->m_nActiveVideoStream >= 0))
-		{
-			pDocFrom->RestoreFrame(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-		}
-		else
-		{
-			CPostDelayedMessageThread::PostDelayedMessage(
-									pDocFrom->GetView()->GetSafeHwnd(),
-									WM_THREADSAFE_UPDATEWINDOWSIZES,
-									THREAD_SAFE_UPDATEWINDOWSIZES_DELAY,
-									(WPARAM)(UPDATEWINDOWSIZES_INVALIDATE),
-									(LPARAM)0);
-		}
+		// Invalidate View
+		pDocFrom->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
 
 		// Check whether all video avi processing threads have terminated
 		BOOL bRunning = FALSE;
@@ -1178,7 +1160,7 @@ BOOL CMainFrame::FullScreenTo(const CRect& rcMonitor)
 		return FALSE;
 }
 
-void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
+void CMainFrame::FullScreenModeOn()
 {
 	// Return if already in fullscreen mode
 	if (m_bFullScreenMode)
@@ -1190,13 +1172,6 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 		return;
 
 	// Get Child
-	if (hChildWndSafePaused)
-	{
-		if (::IsWindow(hChildWndSafePaused))
-			::SendMessage(m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM)hChildWndSafePaused, 0); // Activate it
-		else
-			return; // We got an old message, child window has already been closed
-	}
 	CMDIChildWnd* pChild = MDIGetActive();
 	if (!pChild)
 		return;
@@ -1210,34 +1185,6 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 	// Doc
 	CUImagerDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
-
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-	{
-		// Safe Pause
-		if (!hChildWndSafePaused)
-		{
-			DWORD dwSafePausedMsgTimeout = 0U;
-			double dPlay = (((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.GetPlaySpeedPercent() * ((CVideoAviDoc*)pDoc)->GetPlayFrameRate());
-			if (dPlay > 0.0)
-				dwSafePausedMsgTimeout = (DWORD)Round(FULLSCREEN_SAFEPAUSED_FRAMES_TIMEOUT * 100000.0 / dPlay); 
-			dwSafePausedMsgTimeout = MAX(FULLSCREEN_MIN_SAFEPAUSED_TIMEOUT, dwSafePausedMsgTimeout);
-			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SafePauseDelayedRestart(	GetSafeHwnd(),
-																					WM_VIDEOAVI_FULLSCREEN_MODE_ON,
-																					(WPARAM)pChild->GetSafeHwnd(),
-																					(LPARAM)0,
-																					dwSafePausedMsgTimeout,
-																					FULLSCREEN_DELAYEDRESTART_TIMEOUT,
-																					FALSE);
-			return;
-		}
-
-		// No drawing
-		((CVideoAviDoc*)pDoc)->m_bNoDrawing = TRUE;
-
-		// No Flip (do Blt) if some modeless dialogs are visible
-		if (AreModelessDlgsVisible())
-			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SetFullScreenBlt();
-	}
 
 	// Save Placements
 	((CUImagerApp*)::AfxGetApp())->SavePlacements();
@@ -1335,9 +1282,8 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 	style &= ~WS_CLIPSIBLINGS;
 	::SetWindowLong(pChild->GetSafeHwnd(), GWL_STYLE, style);
 
-	// Size MainFrame to Full-Screen and set as Top-Most
-	// (In restored state because DirectDraw is not
-	// working with a Maximized MainFrame!)
+	// Size MainFrame to Full-Screen and set as
+	// Top-Most in restored state
 	CRect rcMonitor = GetMonitorFullRect();
 	int nMonitorWidth = rcMonitor.right - rcMonitor.left;
 	int nMonitorHeight = rcMonitor.bottom - rcMonitor.top;
@@ -1352,8 +1298,6 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 	pView->SetWindowPos(NULL, -2, -2, nMonitorWidth + 4, nMonitorHeight + 4, SWP_NOZORDER);
 
 	// Start Full-Screen Timer for Cursor Hiding
-	// and to call ResetFullScreenBlt() for CVideoAviDoc
-	// if no modeless dialogs are visible
 	pView->m_nMouseHideTimerCount = 0;
 	pView->m_nMouseMoveCount = 0;
 	pView->SetTimer(ID_TIMER_FULLSCREEN, FULLSCREEN_TIMER_MS, NULL);
@@ -1364,65 +1308,19 @@ void CMainFrame::FullScreenModeOn(HWND hChildWndSafePaused/*=NULL*/)
 		// Restore previous m_UserZoomRect
 		pView->m_UserZoomRect = ((CVideoAviDoc*)pDoc)->m_PrevUserZoomRect;
 
-		// Get Video Stream
-		CAVIPlay::CAVIVideoStream* pVideoStream = NULL;
-		if (((CVideoAviDoc*)pDoc)->m_pAVIPlay)
-			pVideoStream = ((CVideoAviDoc*)pDoc)->m_pAVIPlay->GetVideoStream(((CVideoAviDoc*)pDoc)->m_nActiveVideoStream);
-		if (pVideoStream)
-		{
-			// Enter CS
-			if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
-				((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
-
-			// Initialize the DirectDraw Interface
-			if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
-				((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
-			{
-				// Init DxDraw in Exclusive mode if we are the only open document
-				BOOL bExclusive = (((CUImagerApp*)::AfxGetApp())->GetOpenDocsCount() == 1);
-				((CVideoAviDoc*)pDoc)->m_DxDraw.InitFullScreen(	bExclusive ? GetSafeHwnd() : pView->GetSafeHwnd(),
-																((CVideoAviDoc*)pDoc)->m_DocRect.right,
-																((CVideoAviDoc*)pDoc)->m_DocRect.bottom,
-																bExclusive,
-																pVideoStream->GetFourCC(false),
-																IDB_TELETEXT_DH_26);
-
-				// Leave CS
-				((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
-			}
-			else
-			{
-				// Leave CS
-				if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
-					((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
-			}
-		}
-
 		// Calc. m_ZoomRect
 		pView->UpdateZoomRect();
 
 		// Set User Zoom Rect
 		if (((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect == CRect(0,0,0,0))
 			((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect = pView->m_ZoomRect;
-
-		// Do Draw
-		((CVideoAviDoc*)pDoc)->m_bNoDrawing = FALSE;
-
-		// Restart
-		((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SetSafePauseRestartEvent();
 	}
 
 	// Update View
 	pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
 }
 
-LONG CMainFrame::OnVideoAviFullScreenModeOn(WPARAM wparam, LPARAM lparam)
-{
-	FullScreenModeOn((HWND)wparam);
-	return 1;
-}
-
-void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
+void CMainFrame::FullScreenModeOff()
 {
 	CUImagerView* pView = NULL;
 	CUImagerDoc* pDoc = NULL;
@@ -1436,13 +1334,6 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		::SystemParametersInfo(SPI_SETSCREENSAVEACTIVE, TRUE, NULL, 0);
 
 	// Get Child
-	if (hChildWndSafePaused)
-	{
-		if (::IsWindow(hChildWndSafePaused))
-			::SendMessage(m_hWndMDIClient, WM_MDIACTIVATE, (WPARAM)hChildWndSafePaused, 0); // Activate it
-		else
-			return; // We got an old message, child window has already been closed
-	}
 	CMDIChildWnd* pChild = MDIGetActive();
 	if (pChild)
 	{		
@@ -1455,30 +1346,6 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 		// Doc
 		pDoc = pView->GetDocument();
 		ASSERT_VALID(pDoc);
-
-		if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-		{
-			// Safe Pause
-			if (!hChildWndSafePaused)
-			{
-				DWORD dwSafePausedMsgTimeout = 0U;
-				double dPlay = (((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.GetPlaySpeedPercent() * ((CVideoAviDoc*)pDoc)->GetPlayFrameRate());
-				if (dPlay > 0.0)
-					dwSafePausedMsgTimeout = (DWORD)Round(FULLSCREEN_SAFEPAUSED_FRAMES_TIMEOUT * 100000.0 / dPlay); 
-				dwSafePausedMsgTimeout = MAX(FULLSCREEN_MIN_SAFEPAUSED_TIMEOUT, dwSafePausedMsgTimeout);
-				((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SafePauseDelayedRestart(	GetSafeHwnd(),
-																						WM_VIDEOAVI_FULLSCREEN_MODE_OFF,
-																						(WPARAM)pChild->GetSafeHwnd(),
-																						(LPARAM)0,
-																						dwSafePausedMsgTimeout,
-																						FULLSCREEN_DELAYEDRESTART_TIMEOUT,
-																						FALSE);
-				return;
-			}
-
-			// No drawing
-			((CVideoAviDoc*)pDoc)->m_bNoDrawing = TRUE;
-		}
 
 		// Exiting?
 		if (((CUImagerApp*)::AfxGetApp())->m_bShuttingDownApplication)
@@ -1581,54 +1448,8 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 			if (((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg)
 				((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg->Close();
 
-			// Get Video Stream
-			CAVIPlay::CAVIVideoStream* pVideoStream = NULL;
-			if (((CVideoAviDoc*)pDoc)->m_pAVIPlay)
-				pVideoStream = ((CVideoAviDoc*)pDoc)->m_pAVIPlay->GetVideoStream(((CVideoAviDoc*)pDoc)->m_nActiveVideoStream);
-			if (pVideoStream)
-			{
-				// Enter CS
-				if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
-					((CVideoAviDoc*)pDoc)->m_DxDraw.EnterCS();
-
-				// Exit DirectDraw FullScreen Mode
-				if (((CVideoAviDoc*)pDoc)->m_DxDraw.IsInit() &&
-					((CVideoAviDoc*)pDoc)->m_bUseDxDraw)
-				{
-					// Init DxDraw
-					((CVideoAviDoc*)pDoc)->m_DxDraw.Init(pView->GetSafeHwnd(),
-														((CVideoAviDoc*)pDoc)->m_DocRect.right,
-														((CVideoAviDoc*)pDoc)->m_DocRect.bottom,
-														pVideoStream->GetFourCC(false),
-														IDB_BITSTREAM_VERA_11);
-
-					// Leave CS
-					((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
-
-					// Do Draw
-					((CVideoAviDoc*)pDoc)->m_bNoDrawing = FALSE;
-
-					// Restore All Frames of All Docs
-					RestoreAllFrames();
-				}
-				else
-				{
-					// Leave CS
-					if (((CVideoAviDoc*)pDoc)->m_DxDraw.HasDxDraw())
-						((CVideoAviDoc*)pDoc)->m_DxDraw.LeaveCS();
-
-					// Do Draw
-					((CVideoAviDoc*)pDoc)->m_bNoDrawing = FALSE;
-				}
-			}
-			else
-				((CVideoAviDoc*)pDoc)->m_bNoDrawing = FALSE;
-
 			// Store m_UserZoomRect
 			((CVideoAviDoc*)pDoc)->m_PrevUserZoomRect = pView->m_UserZoomRect;
-
-			// Restart
-			((CVideoAviDoc*)pDoc)->m_PlayVideoFileThread.SetSafePauseRestartEvent();
 		}
 
 		// Update View
@@ -1637,12 +1458,6 @@ void CMainFrame::FullScreenModeOff(HWND hChildWndSafePaused/*=NULL*/)
 
 	// Now it's possible to save placements again
 	((CUImagerApp*)::AfxGetApp())->m_bCanSavePlacements = TRUE;
-}
-
-LONG CMainFrame::OnVideoAviFullScreenModeOff(WPARAM wparam, LPARAM lparam)
-{
-	FullScreenModeOff((HWND)wparam);
-	return 1;
 }
 
 BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
@@ -1953,23 +1768,6 @@ int CMainFrame::GetMonitorBpp(CWnd* pWnd/*=NULL*/)
 		}
 	}
 	return nBpp;
-}
-
-BOOL CMainFrame::AreModelessDlgsVisible()
-{
-	HWND hWnd = ::GetWindow(::GetDesktopWindow(), GW_CHILD);
-	while (hWnd != NULL)
-	{
-		CWnd* pWnd = CWnd::FromHandlePermanent(hWnd);
-		if (pWnd != NULL && m_hWnd != hWnd && AfxIsDescendant(m_hWnd, hWnd))
-		{
-			DWORD dwStyle = ::GetWindowLong(hWnd, GWL_STYLE);
-			if ((dwStyle & WS_VISIBLE) == WS_VISIBLE)
-				return TRUE;
-		}
-		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
-	}
-	return FALSE;
 }
 
 void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
@@ -2727,31 +2525,6 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 								Rect.right - Rect.left,
 								Rect.bottom - Rect.top,
 								0);
-	}
-}
-
-LONG CMainFrame::OnRestoreAllFrames(WPARAM wparam, LPARAM lparam)
-{
-	RestoreAllFrames();
-	return 1;
-}
-
-void CMainFrame::OnMove(int x, int y) 
-{
-	CMDIFrameWnd::OnMove(x, y);
-	RestoreAllFrames();
-}
-
-void CMainFrame::RestoreAllFrames()
-{
-	CUImagerMultiDocTemplate* pVideoAviDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
-	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-	CVideoAviDoc* pVideoAviDoc;	
-	while (posVideoAviDoc)
-	{
-		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-		if (pVideoAviDoc && ((CUImagerApp*)::AfxGetApp())->IsDoc(pVideoAviDoc))
-			pVideoAviDoc->RestoreFrame();
 	}
 }
 

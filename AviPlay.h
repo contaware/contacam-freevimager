@@ -7,7 +7,6 @@
 #include <vfw.h>
 #include "Dib.h"
 #include "YuvToRgb.h"
-#include "DxDraw.h"
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -773,7 +772,6 @@ class CAVIPlay
 									m_bNoDecompression = false;
 									m_bYuvToRgb32 = false;
 									m_nLastDecompressedDibFrame = -2;
-									m_nLastDecompressedDxDrawFrame = -2;
 									m_bNoBitCountChangeVCM = false;
 									m_bForceRgb = false;
 									m_pPrevRLEDib = NULL;
@@ -783,16 +781,10 @@ class CAVIPlay
 									m_pCodecCtx = NULL;
 									m_pFrame = NULL;
 									m_pFrameGdi = NULL;
-									m_pFrameDxDraw = NULL;
-									m_dwPrevFourCCDxDraw = 0;
-									m_nPrevPitchDxDraw = 0;
-									m_nPrevBppDxDraw = 0;
-									m_pPrevSurfaceDxDraw = NULL;
 									m_bAVDecodeExtraData = false;
 									m_bAVPaletteChanged = false;
 									memset(&m_AVPalette, 0, AVPALETTE_SIZE);
 									m_pImgConvertCtxGdi = NULL;
-									m_pImgConvertCtxDxDraw = NULL;
 								}; 
 			
 			// Destructor						
@@ -815,7 +807,6 @@ class CAVIPlay
 			__forceinline AVCodec* GetAVCodec() {return m_pCodec;};
 			__forceinline AVCodecContext* GetAVCodecCtx() {return m_pCodecCtx;};
 			static __forceinline enum AVPixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
-			static __forceinline enum AVPixelFormat AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw);
 			static __forceinline enum AVCodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
 
 			// Width & Height: some corrupted Avis have different values for width & height...
@@ -905,13 +896,10 @@ class CAVIPlay
 			bool SkipFrame(int nNumOfFrames = 1, BOOL bForceDecompress = FALSE); // Skip the given amount of frames
 			bool GetFrame(CDib* pDib);
 			bool GetFrameAt(CDib* pDib, DWORD dwFrame);
-			bool GetFrame(CDxDraw* pDxDraw, CRect rc);
-			bool GetFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc);
 
 			// Position Functions
 			__forceinline void Rew() {	m_dwNextFrame = 0;
-										m_nLastDecompressedDibFrame = -2;
-										m_nLastDecompressedDxDrawFrame = -2;};
+										m_nLastDecompressedDibFrame = -2;};
 			__forceinline int GetCurrentFramePos() const {return (int)m_dwNextFrame - 1 - m_nOneFrameDelay;};
 			__forceinline int GetNextFramePos() const {return (int)m_dwNextFrame - m_nOneFrameDelay;};
 			bool SetCurrentFramePos(int nCurrentFramePos);
@@ -964,12 +952,9 @@ class CAVIPlay
 		protected:
 			__forceinline bool SkipFrameHelper(BOOL bForceDecompress);	// Do not use it directly, has no CS!
 			bool GetFrameAtDirect(CDib* pDib, DWORD dwFrame);
-			bool GetFrameAtDirect(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc);
 			bool GetUncompressedFrameAt(CDib* pDib, DWORD dwFrame,					// Direct decompress: RGB, RLE4, RLE8, YV12, YUY2
 										volatile int& nLastDecompressedFrame);
-			bool GetUncompressedFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc);	// Direct decompress: RGB, RLE4, RLE8, YV12, YUY2
 			bool GetYUVFrameAt(CDib* pDib, DWORD dwFrame);							// Internal YUV -> RGB
-			bool GetYUVFrameAt(CDxDraw* pDxDraw, DWORD dwFrame, CRect rc);			// Internal YUV -> RGB
 			__forceinline bool IsRLE(DWORD dwFourCC) {return	(dwFourCC == BI_RLE4		||
 																dwFourCC == FCC('rle4')		||
 																dwFourCC == FCC('RLE4')		||
@@ -1008,7 +993,6 @@ class CAVIPlay
 			volatile bool m_bNoDecompression;
 			volatile bool m_bYuvToRgb32;
 			volatile int m_nLastDecompressedDibFrame;
-			volatile int m_nLastDecompressedDxDrawFrame;
 			volatile DWORD m_dwKeyFramesCount;
 			volatile bool m_bNoBitCountChangeVCM;
 			volatile bool m_bForceRgb;
@@ -1022,25 +1006,15 @@ class CAVIPlay
 			void FreeAVCodec();
 			__forceinline bool AVCodecDecompressDib(bool bKeyFrame,
 													bool bSeek);
-			__forceinline bool AVCodecDecompressDxDraw(	bool bKeyFrame,
-														bool bSeek,
-														CDxDraw* pDxDraw,
-														CRect rc);
 
 			AVCodec* m_pCodec;
 			AVCodecContext* m_pCodecCtx;
 			AVFrame* m_pFrame;
 			AVFrame* m_pFrameGdi;
-			AVFrame* m_pFrameDxDraw;
-			DWORD m_dwPrevFourCCDxDraw;
-			int m_nPrevPitchDxDraw;
-			int m_nPrevBppDxDraw;
-			LPVOID m_pPrevSurfaceDxDraw;
 			bool m_bAVPaletteChanged; // Demuxer sets this to true to indicate the palette has changed, decoder resets to false
 			unsigned int m_AVPalette[AVPALETTE_COUNT];
 			bool m_bAVDecodeExtraData;
 			SwsContext* m_pImgConvertCtxGdi;
-			SwsContext* m_pImgConvertCtxDxDraw;
 	};
 
 	typedef CArray<CAVIVideoStream*,CAVIVideoStream*> VIDEOSTREAMARRAY;
@@ -1302,32 +1276,6 @@ __forceinline enum AVPixelFormat CAVIPlay::CAVIVideoStream::AVCodecBMIToPixForma
 	}
 	else
 		return AV_PIX_FMT_NONE;
-}
-
-__forceinline enum AVPixelFormat CAVIPlay::CAVIVideoStream::AVCodecDxDrawToPixFormat(CDxDraw* pDxDraw)
-{
-	if (pDxDraw)
-	{
-		if (pDxDraw->GetCurrentSrcFourCC() == FCC('YV12'))
-			return AV_PIX_FMT_YUV420P;
-		else if (pDxDraw->GetCurrentSrcFourCC() == FCC('YUY2'))
-			return AV_PIX_FMT_YUYV422;
-		else if (pDxDraw->GetCurrentSrcFourCC() == BI_RGB)
-		{
-			switch (pDxDraw->GetCurrentSrcBpp())
-			{
-				case 8  : return AV_PIX_FMT_RGB8;
-				case 16 : return pDxDraw->IsCurrentSrcRgb15() ? AV_PIX_FMT_RGB555 : AV_PIX_FMT_RGB565;
-				case 24 : return AV_PIX_FMT_BGR24;
-				case 32 : return AV_PIX_FMT_RGB32;
-				default : return AV_PIX_FMT_RGB32;
-			}
-		}
-		else
-			return AV_PIX_FMT_RGB32;
-	}
-	else
-		return AV_PIX_FMT_RGB32;
 }
 
 __forceinline enum AVCodecID CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(DWORD dwFourCC)

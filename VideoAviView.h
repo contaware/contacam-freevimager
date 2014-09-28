@@ -18,13 +18,8 @@
 // Window Message IDs
 #define WM_THREADSAFE_LOAD_AVI					WM_USER + 175
 #define WM_THREADSAFE_UPDATEPLAYSLIDER			WM_USER + 176
-#define WM_SAFE_PAUSE_TIMEOUT					WM_USER + 177
-#define WM_AVIINFODLG_POPUP						WM_USER + 178
-#define WM_PLAYVOLDLG_POPUP						WM_USER + 179
-#define WM_AVSHIFTDLG_POPUP						WM_USER + 180
-#define WM_PLAYERTOOLBARDLG_POPUP				WM_USER + 181
-#define WM_END_THUMBTRACK						WM_USER + 182
-#define WM_AVIFILE_PROGRESS						WM_USER + 183
+#define WM_END_THUMBTRACK						WM_USER + 177
+#define WM_AVIFILE_PROGRESS						WM_USER + 178
 
 // Message Delays in ms
 #define THREAD_SAFE_LOAD_AVI_DELAY				500
@@ -37,8 +32,8 @@
 class CVideoAviView : public CUImagerView
 {
 public:
-	void Draw(HDC hDC = NULL);
-	void EraseBkgnd(HDC hDC = NULL);
+	void Draw(HDC hDC);
+	void EraseBkgnd(HDC hDC);
 
 	// Update Play Slider
 	void UpdatePlaySlider();
@@ -49,12 +44,9 @@ protected: // create from serialization only
 	virtual ~CVideoAviView();
 	
 	// Drawing Helpers
-	__forceinline BOOL InitMemDC(HDC hDC);
 	__forceinline void DrawInfo(HDC hDC,
-								BOOL bDxDraw,
 								RECT& rcClient,
-								RECT& ZoomRect,
-								CSize& szDxDrawFont);
+								RECT& ZoomRect);
 	__forceinline void FramePosText(TCHAR* sText,
 									int nFramePos,
 									double dFrameRate,
@@ -63,7 +55,6 @@ protected: // create from serialization only
 	__forceinline void SamplePosText(TCHAR* sText,
 									 LONGLONG llSamplePos,
 									 DWORD dwSampleRate);
-	void RenderingSwitch(int nRenderingMode);
 	BOOL UpdateCurrentFrame(CAVIPlay::CAVIVideoStream* pVideoStream);
 
 	// Change play speed
@@ -100,14 +91,6 @@ protected: // create from serialization only
 	int m_nPreviewThumbTrackPos;		// Thumb Track Pos of last previewed frame 
 	BOOL m_bWasPlayingBeforeThumbTrack;	// Do restart player when thumb track is done
 	DWORD m_dwThumbTrackSeq;			// Identifies a thumb track init/end pair
-
-	// GDI Mem DC Drawing
-	HDC m_hMemDC;
-	HBITMAP m_hMemDCDibSection;
-	HBITMAP m_hOldMemDCBitmap;
-	CRect m_rcPrevClient;
-	LPBYTE m_pDibSectionBits;
-	LPBITMAPINFO m_pBmi;
 
 // Operations
 public:
@@ -150,14 +133,6 @@ protected:
 	afx_msg void OnViewFullscreen();
 	afx_msg void OnUpdateViewFullscreen(CCmdUI* pCmdUI);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
-	afx_msg void OnViewGdiRgb();
-	afx_msg void OnUpdateViewGdiRgb(CCmdUI* pCmdUI);
-	afx_msg void OnViewDirectxRgb();
-	afx_msg void OnUpdateViewDirectxRgb(CCmdUI* pCmdUI);
-	afx_msg void OnViewDirectxYuv();
-	afx_msg void OnUpdateViewDirectxYuv(CCmdUI* pCmdUI);
-	afx_msg void OnViewGdiYuv();
-	afx_msg void OnUpdateViewGdiYuv(CCmdUI* pCmdUI);
 	afx_msg void OnViewFit();
 	afx_msg void OnUpdateViewFit(CCmdUI* pCmdUI);
 	afx_msg void OnPlayInc();
@@ -167,14 +142,8 @@ protected:
 	//}}AFX_MSG
 	afx_msg LONG OnThreadSafeLoadAVI(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnThreadSafeUpdatePlaySlider(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnRestoreFrame(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAviFileProgress(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEnableCursor(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnSafePauseTimeout(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnAviInfoDlg(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnPlayVolDlg(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnAVShiftDlg(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnPlayerToolBarDlg(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnEndThumbTrack(WPARAM wparam, LPARAM lparam);
 	DECLARE_MESSAGE_MAP()
 };

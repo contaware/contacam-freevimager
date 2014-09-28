@@ -80,16 +80,13 @@
 #define IDD_SHRINK_CURRENT_PICTUREDOC   228
 #define IDD_BATCH_PROC                  229
 #define IDD_SHRINK_CURRENT_VIDEOAVIDOC  233
-#define IDD_DIRECTX7                    234
 #define IDR_CONTEXT_PICTURE_FULLSCREEN  240
 #define IDR_CONTEXT_OSD                 242
 #define IDB_BITMAP_DRAGDROP_SINGLE      243
 #define IDB_BITMAP_DRAGDROP_MULTI       244
 #define IDB_HEADER_CTRL                 245
 #define IDR_CONTEXT_SLIDESHOW_ONLY1     246
-#define IDB_TELETEXT_DH_26              247
 #define IDB_BITSTREAM_VERA_10           249
-#define IDB_BITSTREAM_VERA_11           250
 #define IDB_BITSTREAM_VERA_12           251
 #define IDD_PICTURES_TO_AVI             256
 #define IDD_SHARPEN                     257
@@ -1491,7 +1488,6 @@
 #define IDS_MULTILANG_1333              1333
 #define IDC_EDIT_TEXTROW2               1333
 #define IDS_MULTILANG_1334              1334
-#define IDC_EDIT_TEXTROW3               1334
 #define IDS_MULTILANG_1335              1335
 #define IDC_CHECK_PICTURE_EXTCHANGE     1335
 #define IDS_MULTILANG_1336              1336
@@ -3319,10 +3315,6 @@
 #define ID_EDIT_FILTER_SHARPEN          32973
 #define ID_EDIT_FILTER_SOFTEN           32974
 #define ID_EDIT_REMOVE_IPTC             32980
-#define ID_VIEW_DIRECTX_RGB             32983
-#define ID_VIEW_DIRECTX_YUV             32984
-#define ID_VIEW_GDI_RGB                 32985
-#define ID_VIEW_GDI_YUV                 32986
 #define ID_VIEW_BACKGROUND_COLOR_MENU   32989
 #define ID_VIEW_ZOOM_FIT                32990
 #define ID_VIEW_ZOOM_FITBIG             32991

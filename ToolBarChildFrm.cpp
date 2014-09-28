@@ -1021,8 +1021,6 @@ CVideoAviChildFrame::CVideoAviChildFrame()
 BEGIN_MESSAGE_MAP(CVideoAviChildFrame, CToolBarChildFrame)
 	//{{AFX_MSG_MAP(CVideoAviChildFrame)
 	ON_WM_CLOSE()
-	ON_WM_MOVE()
-	ON_WM_SIZE()
 	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_IDLEUPDATECMDUI, OnIdleUpdateCmdUI)
@@ -1100,9 +1098,6 @@ void CVideoAviChildFrame::StartShutdown2()
 	// Save Settings
 	pDoc->SaveSettings();
 
-	// Do Not Draw Now!
-	pDoc->m_bNoDrawing = TRUE;
-
 	// Start Killing
 	pDoc->m_PlayAudioFileThread.Kill_NoBlocking();
 	pDoc->m_PlayVideoFileThread.Kill_NoBlocking();
@@ -1138,13 +1133,7 @@ void CVideoAviChildFrame::StartShutdown2()
 
 void CVideoAviChildFrame::EndShutdown()
 {
-	CVideoAviView* pView = (CVideoAviView*)GetActiveView();
-	ASSERT_VALID(pView);
-	CVideoAviDoc* pDoc = pView->GetDocument();
-	ASSERT_VALID(pDoc);
-
-	// Close DirectDraw
-	pDoc->m_DxDraw.Free();
+	
 }
 
 BOOL CVideoAviChildFrame::IsShutdown1Done()
@@ -1175,32 +1164,6 @@ BOOL CVideoAviChildFrame::IsShutdown2Done()
 		return TRUE;
 	else
 		return FALSE;
-}
-
-void CVideoAviChildFrame::OnMove(int x, int y) 
-{
-	CToolBarChildFrame::OnMove(x, y);
-	
-	CVideoAviView* pView = (CVideoAviView*)GetActiveView();
-	if (pView)
-	{
-		CVideoAviDoc* pDoc = pView->GetDocument();
-		ASSERT_VALID(pDoc);
-		pDoc->RestoreFrame();
-	}
-}
-
-void CVideoAviChildFrame::OnSize(UINT nType, int cx, int cy) 
-{
-	CToolBarChildFrame::OnSize(nType, cx, cy);
-	
-	CVideoAviView* pView = (CVideoAviView*)GetActiveView();
-	if (pView)
-	{
-		CVideoAviDoc* pDoc = pView->GetDocument();
-		ASSERT_VALID(pDoc);
-		pDoc->RestoreFrame();
-	}
 }
 
 LRESULT CVideoAviChildFrame::OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam)

@@ -6,7 +6,6 @@
 #include "uImagerDoc.h"
 #include "WorkerThread.h"
 #include "SortableStringArray.h"
-#include "DxDraw.h"
 #include "AviPlay.h"
 #include "AVRec.h"
 
@@ -17,16 +16,6 @@
 
 // Player Timing Constants
 #define VIDEO_PLAYER_THRESHOLD_TIME					5
-
-// DirectDraw Full-Screen Display of GDI Dialogs Timeouts
-#define DXDRAW_GDIDISPLAY_SAFEPAUSED_TIMEOUT		3000U	// ms
-#define DXDRAW_GDIDISPLAY_DELAYEDRESTART_TIMEOUT	3000U	// ms
-
-// Rendering Modes
-#define RENDERING_MODE_GDI_RGB						0
-#define RENDERING_MODE_GDI_YUV						1
-#define RENDERING_MODE_DXDRAW_RGB					2
-#define RENDERING_MODE_DXDRAW_YUV					3
 
 // Audio only avi file
 #define AUDIOONLY_DEFAULT_WIDTH						400
@@ -39,70 +28,6 @@ class CAviInfoDlg;
 class COutVolDlg;
 class CAudioVideoShiftDlg;
 class CPlayerToolBarDlg;
-
-//
-// The synchronization between UI Thread and Worker Threads is quite complicated:
-//
-// This mainly because we are using a CDxDraw class that wraps the DirectDraw 7.0 COM
-// Object in a STA (Single Threaded Apartment) environment.
-// MTA (Multi Thread Apartment) would be much easier,
-// but it is not supported by all COMs like OLE and others!
-//
-// STA means that each call from the Worker Thread to the COM Object passes through the
-// UI Thread much like a SendMessage(). This causes a dead-locks if the Worker Thread is in
-// the CDxDraw CS and calls CDxDraw functions while at the same time the UI Thread is waiting to
-// enter a CDxDraw CS. To avoid that each UI function which wants to enter the CDxDraw CS tries to
-// enter and if it fails a retry is scheduled through a delayed post message.
-//
-// To avoid the same type of dead-lock with the CDib CS all functions which call a CDxDraw
-// function from a Worker Thread inside a CDib CS should be avoided because the CDib CS
-// in the UI Thread is not entered through a try enter CS like the CDxDraw CS!  
-//
-// RESUMING THE RULES:
-// 1. Each call to CDxDraw functions from the UI Thread is to be done through a Try Enter CS!
-// 2. No CDxDraw calls from the Worker Thread inside a CDib CS!
-//
-// EXCEPTION TO THE RULES:
-// Rule 1. may be broken if you are absolutely sure that the Worker Threads are not running!
-//
-//
-// RESUME OF FUNCTIONS calling CDxDraw functions:
-//
-//
-// Called by the UI Thread:
-// ------------------------
-//
-// - CMainFrame::FullScreenModeOn()          No need for a Try Enter CS because the function makes sure
-//                                           the Video Thread is waiting in a safe place.
-//                                           While processing we cannot switch to full-screen.
-//
-// - CMainFrame::FullScreenModeOff()         Same Comments as above.
-//
-// - CVideoAviDoc::LoadActiveStreams()       No need for a Try Enter CS because the streams are loaded 
-//                                           before playing and the process functions have already
-//                                           terminated when reloading.
-//
-// - CVideoAviView::RenderingSwitch()        No need for a Try Enter CS because the function is only
-//                                           called when not playing and not processing.
-//
-// - CVideoAviView::OnRestoreFrame()         Has Try Enter CS.
-//
-// - CVideoAviView::OnDraw()                 Has Try Enter CS.
-//
-//
-// Called by CPlayVideoFileThread::Work():
-// ---------------------------------------
-//
-// - Draw() (-> EraseBkgnd())                Normal Enter CS.
-//
-//
-// Called by CProcessing::Work():
-// ------------------------------
-// 
-// Nothing is called directly by this thread, all calls are through the UI Thread
-// with PostMessage(). See DisplayFrame() or RestoreFrame().
-//
-
 
 // The Document Class
 class CVideoAviDoc : public CUImagerDoc
@@ -128,35 +53,11 @@ public:
 			void Rew();
 			double GetFrameRate() const;
 			BOOL GetFrameRate(DWORD* pdwRate, DWORD* pdwScale) const;
-
-			// Direct Draw Sync.
-
-			// Prepares the Exclusive Full-Screen DirectDraw Mode for GDI Drawing
-			// and posts the message to show the GDI Object (usually a dialog).
-			void DxDrawGDIDisplay(	HWND hSafePausedMsgWnd,			// Window is notified when GDI drawing can be safely performed
-									LONG lSafePausedMsgId,			// Message ID
-									WPARAM wparam,					// Message W Param
-									LPARAM lparam);					// Message L Param
-			void SafePauseDelayedRestart(HWND hSafePausedWnd,		// If hSafePausedWnd != NULL and lSafePausedMsgId != 0
-										LONG lSafePausedMsgId,		// and in safe paused state a message is posted to hSafePausedWnd
-										WPARAM wparam,				// Message W Param
-										LPARAM lparam,				// Message L Param
-										DWORD dwSafePausedMsgTimeout,// Message Post Timeout (after this amount of time a message is posted also if we are not in the safe state)
-										DWORD dwDelayedRestartTimeout,	// Video Thread sleeps in safe place a max. of this amount of time
-										BOOL bDoUpdateDoFullScreenBlt);	// Should the Video Thread set the m_bDoFullScreenBlt when in safe place?
-			void OnSafePauseTimeout(WPARAM wparam, LPARAM lparam);
-			__forceinline BOOL DoFullScreenBlt() const {return (BOOL)m_bDoFullScreenBlt;};
-			__forceinline void SetFullScreenBlt() {::InterlockedExchange(&m_bDoFullScreenBlt, 1);};
-			__forceinline void ResetFullScreenBlt() {::InterlockedExchange(&m_bDoFullScreenBlt, 0);};
-			__forceinline void SetSafePauseRestartEvent() {::SetEvent(m_hDelayedRestartEvent);}; // Finish sleeping in safe place
 		
 		protected:
 			int Work();									// Thread Proc.
 			void OnExit();								// Called when thread exits in response to a Thread Kill Event
 			__forceinline BOOL OnSync();				// Called at the beginning the first time and with each looping
-			__forceinline BOOL OnSafePause();			// Called with each frame to see whether we have to stop a moment in a safe place,
-														// used mainily by Direct Draw
-
 			volatile int m_nPlaySpeedPercent;			// 100 = normal speed
 			volatile int m_nMilliSecondsCorrection;		// Instantaneous drift of frame with respect to audio samples (if available) or with respect to system time
 			volatile int m_nMilliSecondsCorrectionAvg;	// Moving-average drift of frame with respect to audio samples (if available) or with respect to system time
@@ -168,21 +69,6 @@ public:
 			HANDLE m_hPlaySyncEventArray[2];			// Event array containing the Thread Kill Event and the m_hPlaySyncEvent 
 			HANDLE m_hTimerEvent;						// The Timer Event triggered each m_uiTimerDelay ms
 			HANDLE m_hEventArray[2];					// Event array containing the Thread Kill Event and the m_hTimerEvent
-
-			// Direct Draw Sync. Vars
-			volatile LONG m_bDoFullScreenBlt;
-			volatile BOOL m_bDoUpdateDoFullScreenBlt;
-			volatile BOOL m_bDoSafePause;
-			volatile DWORD m_dwDelayedRestartTimeout;
-			volatile BOOL m_bDoSetSafePaused;
-			volatile LONG m_lSafePausedMsgId;
-			volatile WPARAM m_wSafePausedMsgWParam;
-			volatile LPARAM m_lSafePausedMsgLParam;
-			HWND volatile m_hSafePausedMsgWnd;
-			volatile DWORD m_dwSafePausedMsgSeq;
-			CRITICAL_SECTION m_csSafePauseDelayedRestart;
-			HANDLE volatile m_hDelayedRestartEvent;
-			HANDLE m_hDelayedRestartEventArray[2];
 	};
 
 	// The Play Audio File Thread Class
@@ -376,7 +262,7 @@ public:
 
 	// Player Control
 	void PlayAVI();				// Not blocking start (starts playing if not already playing)
-	void StopAVI();				// Not blocking stop playing.
+	void StopAVI();				// Not blocking stop playing
 	void JumpToFirstFrame();
 	void JumpToLastFrame();
 	void FrameBack();
@@ -460,8 +346,8 @@ public:
 	// Display Frame
 	BOOL DisplayFrame(int nFrame, int nDelay = 0);
 
-	// Restore Frame
-	void RestoreFrame(int nDelay = 0);
+	// Invalidate View
+	void InvalidateView(int nDelay = 0);
 
 // Public Variables
 public:
@@ -504,13 +390,6 @@ public:
 
 	// User Zoom Rect of the previous full-screen
 	CRect m_PrevUserZoomRect;
-
-	// Draw
-	CDxDraw m_DxDraw;					// Direct Draw Object
-	volatile BOOL m_bUseDxDraw;			// Use Direct Draw?
-	volatile BOOL m_bForceRgb;			// Force Rgb Rendering
-	volatile BOOL m_bNoDrawing;			// Disable Drawing
-	volatile LONG m_bAboutToRestoreFrame;// Restoring Frame Soon
 
 	// AV Codec Priority
 	bool m_bAVCodecPriority;

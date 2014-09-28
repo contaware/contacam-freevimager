@@ -313,12 +313,6 @@ public:
 	static BOOL IsSupportedMusicFile(CString sFileName);
 	static BOOL IsSupportedCDAudioFile(CString sFileName);
 
-	// Suggest Direct X Version 7 or higher
-	void SuggestDirectXVersion7();
-
-	// Require Direct X Version 7 or higher
-	BOOL RequireDirectXVersion7();
-
 	// Close All Open Documents
 	BOOL CloseAll();
 	
