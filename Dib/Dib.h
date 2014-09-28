@@ -18,7 +18,7 @@ extern "C"
 }
 
 #include <afxtempl.h>	// For CArray
-#include <afxole.h>		// For LoadDibSectionEx()
+#include <afxole.h>		// For COleDateTime
 #include "vfw.h"		// For DrawDib Functions
 #include "RgbToYuv.h"
 #include "YuvToRgb.h"
@@ -163,15 +163,6 @@ typedef struct {
 #define MMBMP_E_FILEEMPTY				5	// File is empty
 #define MMBMP_E_CREATEFILEMAPPING		6   // CreateFileMapping failed
 #define MMBMP_E_MAPVIEWOFFILE			7   // MapViewOfFile failed
-
-#define DIBSECTIONEX_E_ZEROPATH			0   // The file name is zero
-#define DIBSECTIONEX_E_NOMEM			1	// Could not alloc memory
-#define DIBSECTIONEX_E_READ				2	// Couldn't read file
-#define DIBSECTIONEX_E_ISTREAM			3	// Couldn't create IStream
-#define DIBSECTIONEX_E_LOAD				4	// Couldn't load picture
-#define DIBSECTIONEX_E_TYPE				5	// Couldn't get right picture type
-#define DIBSECTIONEX_E_HANDLE			6	// Couldn't get picture handle
-#define DIBSECTIONEX_E_FILEEMPTY		7	// File is empty
 
 #define PCX_E_ZEROPATH					0   // The file name is zero
 #define PCX_E_WRONGEXTENTION			1	// Wrong File Extention
@@ -388,7 +379,6 @@ protected:
 	
 	HBITMAP m_hDibSection;		// The Dib Section Handle
 	LPBYTE m_pDibSectionBits;	// Pointer to DibSection Bits
-	LPPICTURE m_pIPicture;		// The IPicture interface
 
 	BOOL m_bShowMessageBoxOnError;// Display MessageBox on Error	
 
@@ -1624,7 +1614,7 @@ public:
 
 	// Fill the m_Metadata.m_ExifInfo Structure,
 	// and loads the Thumbnail if available!
-	// (Called by LoadJPEG() and LoadDibSectionEx() for Jpeg Files)
+	// (Called by LoadJPEG())
 	BOOL JPEGLoadMetadata(LPCTSTR lpszPathName);
 	BOOL JPEGLoadMetadata(LPBYTE pJpegData, DWORD dwSize);
 	BOOL LoadEXIFThumbnail();
@@ -1717,7 +1707,6 @@ public:
 	// Dib Section Functions
 	BOOL LoadDibSection(HBITMAP hDibSection);		// Duplicates a DibSection
 	BOOL LoadDibSection(LPCTSTR lpszPathName);		// Loads a Bmp file
-	BOOL LoadDibSectionEx(LPCTSTR lpszPathName);	// Loads Bmp, Gif and Jpg files
 	BOOL LoadDibSectionRes(HINSTANCE hInst, LPCTSTR lpResourceName); // Loads a resource
 	BOOL LoadDibSectionRes(HINSTANCE hInst, UINT uID); // Loads a resource
 	BOOL AttachDibSection(HBITMAP hDibSection); // Attaches a Dib Section to the class

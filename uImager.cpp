@@ -1395,10 +1395,7 @@ void CUImagerApp::OnFileOpen()
 									if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
 																			FileName,
 																			FALSE,
-																			FALSE	// Do not preload Prev & Next because LoadDibSectionEx
-																					// of CDib has a OLE object problem when loading many
-																					// files at the same time!
-																			))
+																			FALSE))
 									{
 										((CPictureDoc*)pDoc)->CloseDocumentForce();
 										delete [] FileNames;

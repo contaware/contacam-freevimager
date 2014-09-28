@@ -13,7 +13,7 @@
 #include <afx.h>
 #include <afxwin.h>
 #include <afxadv.h>
-#include <afxole.h>			// For LoadDibSectionEx()
+#include <afxole.h>
 #include <wingdi.h>
 #include <math.h>
 #include <windowsx.h>
