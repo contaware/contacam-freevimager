@@ -24,6 +24,8 @@ ContaCam Program
 - Think about saving first to temp folder and when done moving to
   actual web folder. That to avoid fragmentation (temp folder could be
   on a SSD the other folder on a normal HDD)
+- For longer detection sequences introduce CDib persistence to a file
+  (m_sBitsFileName set and m_pBits is NULL)
   
 
 ContaCam Web Interface

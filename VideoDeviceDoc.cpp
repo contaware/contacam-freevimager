@@ -5325,9 +5325,11 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 																			// Foscam, iCam+, Instar, IPC, IPCMontor, Jen-Fu, Loftek, Maygion,
 																			// Micronet, PelcoNet, PROCCTV, SmartEye, Vonnic, Wanscam, Wansview, Xenta
 
-		m_HttpGetFrameLocations.Add(_T("/tmpfs/auto.jpg"));					// Apexis, Astak, Aztech, Dannovo, Dericam, Ensidio, Foscam, iCam+,
-																			// Instar, IPCMontor, Loftek, Maygion, Niceview, PROCCTV, SmartEye,
+		m_HttpGetFrameLocations.Add(_T("/tmpfs/snap.jpg"));					// Apexis, Astak, Aztech, Dannovo, Dericam, Ensidio, Foscam, iCam+,
+		m_HttpGetFrameLocations.Add(_T("/tmpfs/auto.jpg"));					// Instar, IPCMontor, Loftek, Maygion, Niceview, PROCCTV, SmartEye,
 																			// Suneyes, Tenvis, Vonnic, Vstarcam, Wansview, Xenta
+																			// Note: if both are supported prefer snap.jpg because it returns
+																			//       a larger image than auto.jpg
 
 		m_HttpGetFrameLocations.Add(_T("/cgi-bin/net_jpeg.cgi"));			// 3com, 4XEM, Abelcam, ABS, ADT, Amovision, ANRAN, Aposonic, ArcVision,
 																			// Beward, Dericam, Digitus, GadSpot, HiSilicon, Mega-pixel, Netwave,
