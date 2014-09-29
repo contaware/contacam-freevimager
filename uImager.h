@@ -717,8 +717,10 @@ public:
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 
-	// Running Vlc process handle
+	// Vlc
 	HANDLE m_hVlcProcess;
+	CTime m_VlcStartTime;
+	CRITICAL_SECTION m_csVlc;
 
 	// Service
 	// - ContaCam's browser autostart disabled if this set

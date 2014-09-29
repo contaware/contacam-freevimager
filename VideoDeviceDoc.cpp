@@ -3666,6 +3666,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
 					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
+					VlmReStart();
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
 					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
 					::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
@@ -6906,39 +6907,68 @@ BOOL CVideoDeviceDoc::VlmConfigFileFilled()
 	return FALSE;
 }
 
-void CVideoDeviceDoc::VlmStart()
+void CVideoDeviceDoc::VlmReStart()
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+
+	::EnterCriticalSection(&pApp->m_csVlc);
+
+	// Stop if running and 2.5 * HTTPGETFRAME_CONNECTION_TIMEOUT seconds elapsed
+	if (pApp->m_hVlcProcess)
+	{
+		CTimeSpan TimeSpan = CTime::GetCurrentTime() - pApp->m_VlcStartTime;
+		if (TimeSpan.GetTotalSeconds() > 5 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2)
+		{
+			::LogLine(_T("Stopping VLC"));
+			::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
+		}
+	}
+
+	// Start
 	if (pApp->m_hVlcProcess == NULL)
 	{
 		// Vlm config file path
-		if (!VlmConfigFileFilled())
-			return;
-		CString sVlmConfigFile = VlmGetConfigFileName();
+		if (VlmConfigFileFilled())
+		{
+			CString sVlmConfigFile = VlmGetConfigFileName();
 
-		// Vlc executable path
-		CString sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir")); // 32 bit vlc
-		if (sVlcFile.IsEmpty())
-			sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir"), KEY_WOW64_64KEY); // 64 bit vlc
-		if (sVlcFile.IsEmpty())
-			return;
-		sVlcFile.TrimRight(_T('\\'));
-		sVlcFile += _T("\\vlc.exe");
+			// Vlc executable path
+			CString sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir")); // 32 bit vlc
+			if (sVlcFile.IsEmpty())
+				sVlcFile = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE, _T("Software\\VideoLAN\\VLC"), _T("InstallDir"), KEY_WOW64_64KEY); // 64 bit vlc
+			if (!sVlcFile.IsEmpty())
+			{
+				sVlcFile.TrimRight(_T('\\'));
+				sVlcFile += _T("\\vlc.exe");
 
-		// Execute vlc passing the vlm configuration file as parameter
-		// Note: vlc doesn't support a full path name as vlm configuration file,
-		// I tried with/without double-quotes, converting back-slashes to forward-slashes,
-		// using the short file name notation returned by the GetShortPathName() API...
-		// Changing the start (or working) directory when launching vlc.exe works!
-		pApp->m_hVlcProcess = ::ExecApp(sVlcFile,
-										CString(_T("-I telnet --vlm-conf ")) + ::GetShortFileName(sVlmConfigFile),
-										::GetDriveAndDirName(sVlmConfigFile));
+				// Execute vlc passing the vlm configuration file as parameter
+				// Note: vlc doesn't support a full path name as vlm configuration file,
+				// I tried with/without double-quotes, converting back-slashes to forward-slashes,
+				// using the short file name notation returned by the GetShortPathName() API...
+				// Changing the start (or working) directory when launching vlc.exe works!
+				pApp->m_hVlcProcess = ::ExecApp(sVlcFile,
+												CString(_T("-I telnet --vlm-conf ")) + ::GetShortFileName(sVlmConfigFile),
+												::GetDriveAndDirName(sVlmConfigFile));
+				pApp->m_VlcStartTime = CTime::GetCurrentTime();
+				if (pApp->m_hVlcProcess)
+					::LogLine(_T("Starting VLC"));
+			}
+		}
 	}
+
+	::LeaveCriticalSection(&pApp->m_csVlc);
 }
 
 void CVideoDeviceDoc::VlmShutdown()
 {
-	::KillApp(((CUImagerApp*)::AfxGetApp())->m_hVlcProcess);
+	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	::EnterCriticalSection(&pApp->m_csVlc);
+	if (pApp->m_hVlcProcess)
+	{
+		::LogLine(_T("Stopping VLC"));
+		::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
+	}
+	::LeaveCriticalSection(&pApp->m_csVlc);
 }
 
 CString CVideoDeviceDoc::PhpGetConfigFileName()

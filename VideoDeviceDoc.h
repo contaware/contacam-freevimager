@@ -973,7 +973,7 @@ public:
 	// Vlm
 	static CString VlmGetConfigFileName();
 	static BOOL VlmConfigFileFilled();
-	static void VlmStart();
+	static void VlmReStart();
 	static void VlmShutdown();
 
 	// Php config file manipulation

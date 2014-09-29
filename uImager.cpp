@@ -149,6 +149,8 @@ CUImagerApp::CUImagerApp()
 	m_bMicroApacheDigestAuth = TRUE;
 	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
 	m_hVlcProcess = NULL;
+	m_VlcStartTime = CTime(0);
+	::InitializeCriticalSection(&m_csVlc);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -196,7 +198,7 @@ CUImagerApp::CUImagerApp()
 
 CUImagerApp::~CUImagerApp()
 {
-
+	::DeleteCriticalSection(&m_csVlc);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -880,7 +882,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			if (!m_bForceSeparateInstance)
 			{
 				// Start Vlc process with given vlm configurtion file
-				CVideoDeviceDoc::VlmStart();
+				CVideoDeviceDoc::VlmReStart();
 
 				// Update / create doc root index.php and config file for microapache
 				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
