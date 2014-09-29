@@ -5328,6 +5328,10 @@ void CVideoDeviceDoc::InitHttpGetFrameLocations()
 																			// Instar, IPCMontor, Loftek, Maygion, Niceview, PROCCTV, SmartEye,
 																			// Suneyes, Tenvis, Vonnic, Vstarcam, Wansview, Xenta
 
+		m_HttpGetFrameLocations.Add(_T("/cgi-bin/net_jpeg.cgi"));			// 3com, 4XEM, Abelcam, ABS, ADT, Amovision, ANRAN, Aposonic, ArcVision,
+																			// Beward, Dericam, Digitus, GadSpot, HiSilicon, Mega-pixel, Netwave,
+																			// Polaroid, Rayvision, Wanscam, ZyXEL
+
 		m_HttpGetFrameLocations.Add(_T("/img/snapshot.cgi"));				// Allnet, Cisco, Clas, LevelOne, Linksys, NorthQ, Sercomm, Sitecom
 
 		m_HttpGetFrameLocations.Add(_T("/image/jpeg.cgi"));					// D-Link, Sparklan, TrendNet
