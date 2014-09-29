@@ -92,6 +92,9 @@ CVideoAviView::CVideoAviView()
 	m_nPreviewThumbTrackPos = 0;
 	m_dwThumbTrackSeq = 0U;
 	m_bWasPlayingBeforeThumbTrack = FALSE;
+
+	// Load the Settings
+	LoadSettings();
 }	
 
 CVideoAviView::~CVideoAviView()
@@ -110,6 +113,26 @@ int CVideoAviView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
 	return 0;
+}
+
+void CVideoAviView::LoadSettings()
+{
+	CWinApp* pApp = ::AfxGetApp();
+	CString sSection(_T("VideoAviView"));
+	m_UserZoomRect.left   = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectLeft"), 0);
+	m_UserZoomRect.top    = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectTop"), 0);
+	m_UserZoomRect.right  = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectRight"), 0);
+	m_UserZoomRect.bottom = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectBottom"), 0);
+}
+
+void CVideoAviView::SaveSettings()
+{
+	CWinApp* pApp = ::AfxGetApp();
+	CString sSection(_T("VideoAviView"));
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectLeft"), m_UserZoomRect.left);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectTop"), m_UserZoomRect.top);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectRight"), m_UserZoomRect.right);
+	pApp->WriteProfileInt(sSection, _T("UserZoomRectBottom"), m_UserZoomRect.bottom);
 }
 
 LONG CVideoAviView::OnThreadSafeLoadAVI(WPARAM wparam, LPARAM lparam)
@@ -575,7 +598,7 @@ BOOL CVideoAviView::OnEraseBkgnd(CDC* pDC)
 	return TRUE;
 }
 
-void CVideoAviView::EraseBkgnd(HDC hDC)
+void CVideoAviView::EraseBkgnd(HDC hDC, const CRect& ZoomRect)
 {
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -584,30 +607,11 @@ void CVideoAviView::EraseBkgnd(HDC hDC)
 	CRect rcClient;
 	GetClientRect(rcClient);
 
-	// Zoom Rect
-	CRect ZoomRect;
-	if ((m_UserZoomRect.Width() != 0) &&
-		(m_UserZoomRect.Height() != 0) &&
-		m_bFullScreenMode)
-	{
-		ZoomRect = m_UserZoomRect;
-		if (ZoomRect.left < 0)
-			ZoomRect.left = 0;
-		if (ZoomRect.top < 0)
-			ZoomRect.top = 0;
-		if (ZoomRect.right > rcClient.Width())
-			ZoomRect.right = rcClient.Width();
-		if (ZoomRect.bottom > rcClient.Height())
-			ZoomRect.bottom = rcClient.Height();
-	}
-	else
-		ZoomRect = m_ZoomRect;
-
 	// Erase Bkg
 	CRect rcTop(rcClient.left, rcClient.top, rcClient.right, ZoomRect.top);
 	CRect rcLeft(rcClient.left, ZoomRect.top, ZoomRect.left, ZoomRect.bottom);
-	CRect rcRight = CRect(ZoomRect.right, ZoomRect.top, rcClient.right, ZoomRect.bottom);
-	CRect rcBottom = CRect(rcClient.left, ZoomRect.bottom, rcClient.right, rcClient.bottom);
+	CRect rcRight(ZoomRect.right, ZoomRect.top, rcClient.right, ZoomRect.bottom);
+	CRect rcBottom(rcClient.left, ZoomRect.bottom, rcClient.right, rcClient.bottom);
 
 	// Has video?
 	BOOL bHasVideo =	pDoc->m_pAVIPlay				&&
@@ -701,8 +705,8 @@ void CVideoAviView::Draw(HDC hDC)
 	HFONT hOldFont;
 	TCHAR sText[MAX_STATISTICS_TEXT_SIZE];
 	sText[0] = _T('\0');
-	RECT rcClient;
-	RECT ZoomRect;
+	CRect rcClient;
+	CRect ZoomRect;
 	CVideoAviDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
@@ -732,11 +736,8 @@ void CVideoAviView::Draw(HDC hDC)
 	else
 		ZoomRect = m_ZoomRect;
 
-	// Enter CS
-	::EnterCriticalSection(&pDoc->m_csDib);
-
 	// EraseBkgnd
-	EraseBkgnd(hDC);
+	EraseBkgnd(hDC, ZoomRect);
 
 	// Processing Progress
 	if (pDoc->IsProcessing())
@@ -744,9 +745,6 @@ void CVideoAviView::Draw(HDC hDC)
 		// Init Vars
 		int nCurrentLine = 0;
 		int nGDITextHeight = 0;
-
-		// Leave CS
-		::LeaveCriticalSection(&pDoc->m_csDib);
 
 		// Init Font and Text Mode
 		if (m_bBigFont)
@@ -804,6 +802,9 @@ void CVideoAviView::Draw(HDC hDC)
 		else if (!m_bFullScreenMode && m_bBigFont)
 			MakeFont(FALSE);
 
+		// Enter CS
+		::EnterCriticalSection(&pDoc->m_csDib);
+
 		// Paint
 		if (pDoc->m_pDib)
 		{
@@ -812,7 +813,7 @@ void CVideoAviView::Draw(HDC hDC)
 			{
 				// Paint
 				pDoc->m_pDib->Paint(hDC,
-									&ZoomRect,
+									ZoomRect,
 									pDoc->m_DocRect,
 									FALSE);	// Force Stretch?
 
@@ -840,7 +841,7 @@ void CVideoAviView::Draw(HDC hDC)
 				// Fill Black
 				CBrush br;
 				br.CreateSolidBrush(RGB(0,0,0));
-				::FillRect(hDC, &ZoomRect, (HBRUSH)br);
+				::FillRect(hDC, ZoomRect, (HBRUSH)br);
 				br.DeleteObject();
 
 				// Update Slider?
@@ -870,8 +871,8 @@ void CVideoAviView::Draw(HDC hDC)
 }
 
 __forceinline void CVideoAviView::DrawInfo(	HDC hDC,
-											RECT& rcClient,
-											RECT& ZoomRect)
+											const CRect& rcClient,
+											const CRect& ZoomRect)
 {
 	RECT Rect;
 	COLORREF OldTextColor;

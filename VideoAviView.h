@@ -33,10 +33,14 @@ class CVideoAviView : public CUImagerView
 {
 public:
 	void Draw(HDC hDC);
-	void EraseBkgnd(HDC hDC);
+	void EraseBkgnd(HDC hDC, const CRect& ZoomRect);
 
 	// Update Play Slider
 	void UpdatePlaySlider();
+
+	// Settings
+	void LoadSettings();
+	void SaveSettings();
 
 protected: // create from serialization only
 	DECLARE_DYNCREATE(CVideoAviView)
@@ -45,8 +49,8 @@ protected: // create from serialization only
 	
 	// Drawing Helpers
 	__forceinline void DrawInfo(HDC hDC,
-								RECT& rcClient,
-								RECT& ZoomRect);
+								const CRect& rcClient,
+								const CRect& ZoomRect);
 	__forceinline void FramePosText(TCHAR* sText,
 									int nFramePos,
 									double dFrameRate,

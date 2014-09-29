@@ -1868,7 +1868,6 @@ CVideoAviDoc::CVideoAviDoc()
 	m_nEndThumbTrackRetryCountDown = 0;
 	m_dwFrameCountUp = 0U;
 	m_pAudioCompressorWaveFormat = NULL;
-	m_PrevUserZoomRect = CRect(0,0,0,0);
 	m_bAVCodecPriority = true;
 
 	// Threads Init
@@ -2031,10 +2030,8 @@ void CVideoAviDoc::SetDocumentTitle()
 void CVideoAviDoc::LoadSettings()
 {
 	CWinApp* pApp = ::AfxGetApp();
-	CString sSection;
+	CString sSection(_T("VideoAviDoc"));
 
-	// Doc settings
-	sSection = _T("VideoAviDoc");
 	m_bTimePositionShow = (BOOL) pApp->GetProfileInt(sSection, _T("TimePositionShow"), FALSE);
 	m_dwPlayAudioDeviceID = (DWORD) pApp->GetProfileInt(sSection, _T("AudioPlayDeviceID"), 0);
 	
@@ -2062,22 +2059,13 @@ void CVideoAviDoc::LoadSettings()
 	}
 
 	m_bAVCodecPriority = pApp->GetProfileInt(sSection, _T("AVCodecPriority"), true) ? true : false;
-
-	// View settings
-	sSection = _T("VideoAviView");
-	m_PrevUserZoomRect.left   = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectLeft"), 0);
-	m_PrevUserZoomRect.top    = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectTop"), 0);
-	m_PrevUserZoomRect.right  = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectRight"), 0);
-	m_PrevUserZoomRect.bottom = (LONG) pApp->GetProfileInt(sSection, _T("UserZoomRectBottom"), 0);
 }
 
 void CVideoAviDoc::SaveSettings()
 {
 	CWinApp* pApp = ::AfxGetApp();
-	CString sSection;
-
-	// Doc settings
-	sSection = _T("VideoAviDoc");
+	CString sSection(_T("VideoAviDoc"));
+	
 	pApp->WriteProfileInt(sSection, _T("TimePositionShow"), m_bTimePositionShow);
 	pApp->WriteProfileInt(sSection, _T("AudioPlayDeviceID"), m_dwPlayAudioDeviceID);
 		
@@ -2088,13 +2076,6 @@ void CVideoAviDoc::SaveSettings()
 	if (m_pAudioCompressorWaveFormat)
 		pApp->WriteProfileBinary(sSection, _T("AudioCompressorWaveFormat"), (LPBYTE)m_pAudioCompressorWaveFormat, sizeof(WAVEFORMATEX));
 	pApp->WriteProfileInt(sSection, _T("AVCodecPriority"), (int)m_bAVCodecPriority);
-
-	// View settings
-	sSection = _T("VideoAviView");
-	pApp->WriteProfileInt(sSection, _T("UserZoomRectLeft"), m_PrevUserZoomRect.left);
-	pApp->WriteProfileInt(sSection, _T("UserZoomRectTop"), m_PrevUserZoomRect.top);
-	pApp->WriteProfileInt(sSection, _T("UserZoomRectRight"), m_PrevUserZoomRect.right);
-	pApp->WriteProfileInt(sSection, _T("UserZoomRectBottom"), m_PrevUserZoomRect.bottom);
 }
 
 __forceinline BOOL CVideoAviDoc::GetPlayFrameRate(DWORD* pdwRate, DWORD* pdwScale) const
@@ -4551,9 +4532,17 @@ void CVideoAviDoc::StartShrinkDocTo(CString sOutFileName)
 
 void CVideoAviDoc::OnFileInfo() 
 {
-	// Center if in Full-Screen Mode
-	if (!IsProcessing())
-		AviInfoDlg(GetView()->m_bFullScreenMode);
+	if (m_pAviInfoDlg)
+	{
+		// m_pAviInfoDlg pointer is set to NULL
+		// from the dialog class (selfdeletion)
+		m_pAviInfoDlg->Close();
+	}
+	else
+	{
+		m_pAviInfoDlg = new CAviInfoDlg(GetView());
+		m_pAviInfoDlg->ShowWindow(SW_RESTORE);
+	}
 }
 
 void CVideoAviDoc::OnUpdateFileInfo(CCmdUI* pCmdUI) 
@@ -4592,58 +4581,7 @@ void CVideoAviDoc::OnUpdateFileSave(CCmdUI* pCmdUI)
 	pCmdUI->Enable(FALSE);
 }
 
-void CVideoAviDoc::AviInfoDlg(BOOL bCenterCursor/*=FALSE*/)
-{
-	if (m_pAviInfoDlg)
-	{
-		// m_pAviInfoDlg pointer is set to NULL
-		// from the dialog class (selfdeletion)
-		m_pAviInfoDlg->Close();
-	}
-	else
-	{
-		m_pAviInfoDlg = new CAviInfoDlg(GetView());
-		if (m_pAviInfoDlg)
-		{
-			if (bCenterCursor)
-			{
-				CPoint ptPos;
-				::GetCursorPos(&ptPos);
-
-				// Size
-				CRect rcCurrent;
-				m_pAviInfoDlg->GetWindowRect(&rcCurrent);
-
-				// Offset
-				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-				// Clip
-				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-				// Funny Note:
-				// The ClipToWorkRect() clips correctly,
-				// but the dialog is auto-centered if the bottom and right
-				// corners of rcCurrent are at the limit of the
-				// bottom, right of the window.
-				// -> we cannot invert the following two functions,
-				// because ShowWindow() makes some wrong checks...
-
-				// Show
-				m_pAviInfoDlg->ShowWindow(SW_SHOW);
-
-				// Position
-				m_pAviInfoDlg->MoveWindow(	rcCurrent.left,
-											rcCurrent.top,
-											rcCurrent.Width(),
-											rcCurrent.Height());
-			}
-			else
-				m_pAviInfoDlg->ShowWindow(SW_SHOW);
-		}
-	}
-}
-
-void CVideoAviDoc::PlayVolDlg(BOOL bCenterCursor/*=FALSE*/)
+void CVideoAviDoc::OnPlayVol() 
 {
 	if (m_pOutVolDlg)
 	{
@@ -4654,50 +4592,8 @@ void CVideoAviDoc::PlayVolDlg(BOOL bCenterCursor/*=FALSE*/)
 	else
 	{
 		m_pOutVolDlg = new COutVolDlg(GetView());
-		if (m_pOutVolDlg)
-		{
-			if (bCenterCursor)
-			{
-				CPoint ptPos;
-				::GetCursorPos(&ptPos);
-
-				// Size
-				CRect rcCurrent;
-				m_pOutVolDlg->GetWindowRect(&rcCurrent);
-
-				// Offset
-				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-				// Clip
-				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-				// Funny Note:
-				// The ClipToWorkRect() clips correctly,
-				// but the dialog is auto-centered if the bottom and right
-				// corners of rcCurrent are at the limit of the
-				// bottom, right of the window.
-				// -> we cannot invert the following two functions,
-				// because ShowWindow() makes some wrong checks...
-
-				// Show
-				m_pOutVolDlg->ShowWindow(SW_SHOW);
-
-				// Position
-				m_pOutVolDlg->MoveWindow(	rcCurrent.left,
-											rcCurrent.top,
-											rcCurrent.Width(),
-											rcCurrent.Height());
-			}
-			else
-				m_pOutVolDlg->ShowWindow(SW_SHOW);
-		}
+		m_pOutVolDlg->ShowWindow(SW_RESTORE);
 	}
-}
-
-void CVideoAviDoc::OnPlayVol() 
-{
-	// Center if in Full-Screen Mode
-	PlayVolDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdatePlayVol(CCmdUI* pCmdUI) 
@@ -4709,7 +4605,7 @@ void CVideoAviDoc::OnUpdatePlayVol(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pOutVolDlg != NULL ? 1 : 0);	
 }
 
-void CVideoAviDoc::AudioVideoShiftDlg(BOOL bCenterCursor/*=FALSE*/)
+void CVideoAviDoc::OnPlayAudiovideoshift() 
 {
 	if (m_pAudioVideoShiftDlg)
 	{
@@ -4720,50 +4616,8 @@ void CVideoAviDoc::AudioVideoShiftDlg(BOOL bCenterCursor/*=FALSE*/)
 	else
 	{
 		m_pAudioVideoShiftDlg = new CAudioVideoShiftDlg(GetView());
-		if (m_pAudioVideoShiftDlg)
-		{
-			if (bCenterCursor)
-			{
-				CPoint ptPos;
-				::GetCursorPos(&ptPos);
-
-				// Size
-				CRect rcCurrent;
-				m_pAudioVideoShiftDlg->GetWindowRect(&rcCurrent);
-
-				// Offset
-				rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.CenterPoint()));
-
-				// Clip
-				::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
-
-				// Funny Note:
-				// The ClipToWorkRect() clips correctly,
-				// but the dialog is auto-centered if the bottom and right
-				// corners of rcCurrent are at the limit of the
-				// bottom, right of the window.
-				// -> we cannot invert the following two functions,
-				// because ShowWindow() makes some wrong checks...
-
-				// Show
-				m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
-
-				// Position
-				m_pAudioVideoShiftDlg->MoveWindow(	rcCurrent.left,
-													rcCurrent.top,
-													rcCurrent.Width(),
-													rcCurrent.Height());
-			}
-			else
-				m_pAudioVideoShiftDlg->ShowWindow(SW_SHOW);
-		}
+		m_pAudioVideoShiftDlg->ShowWindow(SW_RESTORE);
 	}
-}
-
-void CVideoAviDoc::OnPlayAudiovideoshift() 
-{
-	// Center if in Full-Screen Mode
-	AudioVideoShiftDlg(GetView()->m_bFullScreenMode);
 }
 
 void CVideoAviDoc::OnUpdatePlayAudiovideoshift(CCmdUI* pCmdUI) 
@@ -4775,7 +4629,7 @@ void CVideoAviDoc::OnUpdatePlayAudiovideoshift(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pAudioVideoShiftDlg != NULL ? 1 : 0);	
 }
 
-void CVideoAviDoc::PlayerToolBarDlg(CPoint ptPos)
+void CVideoAviDoc::PlayerToolBarDlg(CPoint ptPos) // ptPos must be in screen coordinates
 {
 	if (m_pPlayerToolBarDlg)
 	{
@@ -4788,38 +4642,25 @@ void CVideoAviDoc::PlayerToolBarDlg(CPoint ptPos)
 		m_pPlayerToolBarDlg = new CPlayerToolBarDlg(GetView());
 		if (m_pPlayerToolBarDlg)
 		{
-			// Size
+			// Get toolbar rect in screen coordinates
 			CRect rcCurrent;
 			m_pPlayerToolBarDlg->GetWindowRect(&rcCurrent);
 
 			// Offset
 			rcCurrent.OffsetRect(ptPos - CPoint(rcCurrent.TopLeft()));
-
-			// Offset
 			if (m_PlayVideoFileThread.IsAlive() || m_PlayAudioFileThread.IsAlive())
 				rcCurrent.OffsetRect(CPoint(-35,-12));	// Pop-Up Center On Stop Button
 			else	
 				rcCurrent.OffsetRect(CPoint(-12,-12));	// Pop-Up Center On Play Button
 
-			// Clip
-			::AfxGetMainFrame()->ClipToWorkRect(rcCurrent, ptPos);
+			// Clip to current monitor
+			::AfxGetMainFrame()->ClipToFullRect(rcCurrent, ptPos);
 
-			// Funny Note:
-			// The ClipToWorkRect() clips correctly,
-			// but the dialog is auto-centered if the bottom and right
-			// corners of rcCurrent are at the limit of the
-			// bottom, right of the window.
-			// -> we cannot invert the following two functions,
-			// because ShowWindow() makes some wrong checks...
-
-			// Show
-			m_pPlayerToolBarDlg->ShowWindow(SW_SHOW);
-
-			// Position
-			m_pPlayerToolBarDlg->MoveWindow(rcCurrent.left,
-											rcCurrent.top,
-											rcCurrent.Width(),
-											rcCurrent.Height());
+			// Show in new position
+			// Note: position is in screen coordinate because
+			//       we have been created with the WS_POPUP style
+			m_pPlayerToolBarDlg->SetWindowPos(	NULL, rcCurrent.left, rcCurrent.top,
+												0, 0, SWP_NOSIZE | SWP_SHOWWINDOW);
 		}
 	}
 }

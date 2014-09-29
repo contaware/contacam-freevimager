@@ -1302,18 +1302,11 @@ void CMainFrame::FullScreenModeOn()
 	pView->m_nMouseMoveCount = 0;
 	pView->SetTimer(ID_TIMER_FULLSCREEN, FULLSCREEN_TIMER_MS, NULL);
 
-	// Special Additional Commands for CVideoAviDoc
-	if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+	// Init pView->m_UserZoomRect on first full-screen display
+	if (pView->m_UserZoomRect == CRect(0,0,0,0))
 	{
-		// Restore previous m_UserZoomRect
-		pView->m_UserZoomRect = ((CVideoAviDoc*)pDoc)->m_PrevUserZoomRect;
-
-		// Calc. m_ZoomRect
-		pView->UpdateZoomRect();
-
-		// Set User Zoom Rect
-		if (((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect == CRect(0,0,0,0))
-			((CVideoAviDoc*)pDoc)->GetView()->m_UserZoomRect = pView->m_ZoomRect;
+		pView->UpdateZoomRect(); // this calculates pView->m_ZoomRect
+		pView->m_UserZoomRect = pView->m_ZoomRect;
 	}
 
 	// Update View
@@ -1441,15 +1434,11 @@ void CMainFrame::FullScreenModeOff()
 																SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		}
 
-		// Special Additional Commands for CVideoAviDoc
+		// Close Player ToolBar if Open
 		if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
 		{
-			// Close Player ToolBar if Open
 			if (((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg)
 				((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg->Close();
-
-			// Store m_UserZoomRect
-			((CVideoAviDoc*)pDoc)->m_PrevUserZoomRect = pView->m_UserZoomRect;
 		}
 
 		// Update View

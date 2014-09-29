@@ -474,6 +474,9 @@ BEGIN
         MENUITEM "Volume...",                   ID_PLAY_VOL
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
         MENUITEM SEPARATOR
+        MENUITEM "Increment Speed\t+",          ID_PLAY_INC
+        MENUITEM "Decrement Speed\t-",          ID_PLAY_DEC
+        MENUITEM SEPARATOR
         MENUITEM "Fit",                         ID_VIEW_FIT
         MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
     END

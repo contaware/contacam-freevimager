@@ -2000,7 +2000,11 @@ void CUImagerApp::SaveOnEndSession()
 			if (pDoc)
 			{
 				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
+				{
 					((CVideoAviDoc*)pDoc)->SaveSettings();
+					if (((CVideoAviDoc*)pDoc)->GetView())
+						((CVideoAviDoc*)pDoc)->GetView()->SaveSettings();
+				}
 #ifdef VIDEODEVICEDOC
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
 				{

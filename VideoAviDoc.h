@@ -328,15 +328,6 @@ public:
 	void LoadSettings();
 	void SaveSettings();
 
-	// Show / Hide Avi Info Dialog
-	void AviInfoDlg(BOOL bCenterCursor = FALSE);
-
-	// Show / Hide Play Volume Dialog
-	void PlayVolDlg(BOOL bCenterCursor = FALSE);
-
-	// Show / Hide Audio Video Shift Dialog
-	void AudioVideoShiftDlg(BOOL bCenterCursor = FALSE);
-
 	// Show / Hide Player Controls in FullScreen Mode
 	void PlayerToolBarDlg(CPoint ptPos);
 
@@ -387,9 +378,6 @@ public:
 	volatile int m_nVideoPercentDone;
 	volatile int m_nAudioPercentDone;
 	CString m_sProcessingError;
-
-	// User Zoom Rect of the previous full-screen
-	CRect m_PrevUserZoomRect;
 
 	// AV Codec Priority
 	bool m_bAVCodecPriority;

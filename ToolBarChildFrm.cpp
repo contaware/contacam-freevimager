@@ -1097,6 +1097,7 @@ void CVideoAviChildFrame::StartShutdown2()
 
 	// Save Settings
 	pDoc->SaveSettings();
+	pView->SaveSettings();
 
 	// Start Killing
 	pDoc->m_PlayAudioFileThread.Kill_NoBlocking();
