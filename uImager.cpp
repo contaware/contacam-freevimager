@@ -198,7 +198,9 @@ CUImagerApp::CUImagerApp()
 
 CUImagerApp::~CUImagerApp()
 {
+#ifdef VIDEODEVICEDOC
 	::DeleteCriticalSection(&m_csVlc);
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
