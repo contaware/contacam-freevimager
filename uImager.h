@@ -55,6 +55,9 @@
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 
+// Default network devices autostart delay
+#define DEFAULT_AUTOSTART_DELAY_MS						1000U
+
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
 #define CONTACAMSERVICE_RUNNING							1

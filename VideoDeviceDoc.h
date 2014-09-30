@@ -366,7 +366,7 @@ public:
 	{
 		public:
 			CHttpGetFrameThread() {	m_pDoc = NULL;
-									m_dwConnectDelay	= 0U;										// Delay before starting connection
+									m_dwConnectDelayMs	= 0U;										// Delay before starting connection
 									m_hEventArray[0]	= GetKillEvent();							// Kill Event
 									m_hEventArray[1]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Setup Connection Event
 									m_hEventArray[2]	= ::CreateEvent(NULL, TRUE, FALSE, NULL);	// Http Connected Event
@@ -380,11 +380,11 @@ public:
 											::CloseHandle(m_hEventArray[4]);
 											::DeleteCriticalSection(&m_csConnectRequestParams);};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
-			__forceinline BOOL SetEventConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelay = 0U)
+			__forceinline BOOL SetEventConnect(LPCTSTR lpszRequest = _T(""), DWORD dwConnectDelayMs = 0U)
 			{
 				::EnterCriticalSection(&m_csConnectRequestParams);
 				m_sRequest = CString(lpszRequest);
-				m_dwConnectDelay = dwConnectDelay;
+				m_dwConnectDelayMs = dwConnectDelayMs;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
 				return ::SetEvent(m_hEventArray[1]);	
 			};
@@ -403,7 +403,7 @@ public:
 			void CleanUpAllConnections();
 			CVideoDeviceDoc* m_pDoc;
 			HANDLE m_hEventArray[5];
-			volatile DWORD m_dwConnectDelay;
+			volatile DWORD m_dwConnectDelayMs;
 			CString m_sRequest;
 			CRITICAL_SECTION m_csConnectRequestParams;
 			NETCOMLIST m_HttpGetFrameNetComList;
@@ -973,7 +973,7 @@ public:
 	// Vlm
 	static CString VlmGetConfigFileName();
 	static BOOL VlmConfigFileFilled();
-	static void VlmReStart();
+	static BOOL VlmReStart();
 	static void VlmShutdown();
 
 	// Php config file manipulation

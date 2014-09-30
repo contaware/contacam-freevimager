@@ -142,7 +142,7 @@ CUImagerApp::CUImagerApp()
 	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
-	m_dwAutostartDelayMs = 0U;
+	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -4158,7 +4158,7 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
 
 	// Device Autostart delay
-	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), 0);
+	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), DEFAULT_AUTOSTART_DELAY_MS);
 
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);

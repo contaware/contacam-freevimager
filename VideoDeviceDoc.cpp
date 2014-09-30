@@ -3440,13 +3440,13 @@ int CVideoDeviceDoc::CHttpGetFrameThread::Work()
 				bCheckConnectionTimeout = TRUE;
 				nConnectionKeepAliveSupported = HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS; // 0: not supported, 1: supported, >1: to be verified
 				::EnterCriticalSection(&m_csConnectRequestParams);
-				DWORD dwConnectDelay = m_dwConnectDelay;
+				DWORD dwConnectDelayMs = m_dwConnectDelayMs;
 				::LeaveCriticalSection(&m_csConnectRequestParams);
 				CleanUpAllConnections();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelay / 2U) == WAIT_OBJECT_0)
+				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs / 2U) == WAIT_OBJECT_0)
 					return 0;
 				m_pDoc->m_pGetFrameNetCom->Close();
-				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelay / 2U) == WAIT_OBJECT_0)
+				if (::WaitForSingleObject(GetKillEvent(), dwConnectDelayMs / 2U) == WAIT_OBJECT_0)
 					return 0;
 				m_pDoc->m_pHttpGetFrameParseProcess->m_bPollNextJpeg = FALSE;
 				if (!Connect(TRUE,
@@ -3666,9 +3666,11 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
 					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
-					VlmReStart();
+					DWORD dwConnectDelayMs = 0U;
+					if (VlmReStart())
+						dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
-					m_pDoc->m_HttpGetFrameThread.SetEventConnect();
+					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), dwConnectDelayMs);
 					::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
 				}
 
@@ -6909,9 +6911,10 @@ BOOL CVideoDeviceDoc::VlmConfigFileFilled()
 	return FALSE;
 }
 
-void CVideoDeviceDoc::VlmReStart()
+BOOL CVideoDeviceDoc::VlmReStart()
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
+	BOOL res = FALSE;
 
 	::EnterCriticalSection(&pApp->m_csVlc);
 
@@ -6921,7 +6924,7 @@ void CVideoDeviceDoc::VlmReStart()
 		CTimeSpan TimeSpan = CTime::GetCurrentTime() - pApp->m_VlcStartTime;
 		if (TimeSpan.GetTotalSeconds() > 5 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2)
 		{
-			::LogLine(_T("Stopping VLC"));
+			::LogLine(_T("VLC stopping"));
 			::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
 		}
 	}
@@ -6953,12 +6956,17 @@ void CVideoDeviceDoc::VlmReStart()
 												::GetDriveAndDirName(sVlmConfigFile));
 				pApp->m_VlcStartTime = CTime::GetCurrentTime();
 				if (pApp->m_hVlcProcess)
-					::LogLine(_T("Starting VLC"));
+				{
+					res = TRUE;
+					::LogLine(_T("VLC starting"));
+				}
 			}
 		}
 	}
 
 	::LeaveCriticalSection(&pApp->m_csVlc);
+
+	return res;
 }
 
 void CVideoDeviceDoc::VlmShutdown()
@@ -6967,7 +6975,7 @@ void CVideoDeviceDoc::VlmShutdown()
 	::EnterCriticalSection(&pApp->m_csVlc);
 	if (pApp->m_hVlcProcess)
 	{
-		::LogLine(_T("Stopping VLC"));
+		::LogLine(_T("VLC stopping"));
 		::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
 	}
 	::LeaveCriticalSection(&pApp->m_csVlc);
