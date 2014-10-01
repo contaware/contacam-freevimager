@@ -3,6 +3,7 @@ TRANSLATIONS HISTORY
 4.9.9 (xxx yth 2014)
 
 - Renamed "sensibility" to "sensitivity"
+- Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 
 4.9.7 (August 25th 2014)
 

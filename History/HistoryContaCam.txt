@@ -9,6 +9,7 @@ CONTACAM HISTORY
   personalized subject line with insertion of variables
 - Improved detection zones editing tool
 - Added unicode support to ContaCamService console
+- Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 
 4.9.7 (August 25th 2014)
 
