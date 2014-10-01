@@ -86,7 +86,7 @@ xpstyle on
 ;--------------------------------
 
 ; Page Modern UI
-!insertmacro MUI_PAGE_LICENSE "..\License\License${INSTALLER_LANGUAGE_SUFFIX}.txt"
+!insertmacro MUI_PAGE_LICENSE "..\License\License.rtf"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -233,7 +233,7 @@ Section "${APPNAME_NOEXT} Program (required)"
 !else
   File "/oname=${APPNAME_NOEXT}.exe" "..\Translation\${APPNAME_NOEXT}${INSTALLER_LANGUAGE_SUFFIX}.exe"
 !endif
-  File "/oname=License.txt" "..\License\License${INSTALLER_LANGUAGE_SUFFIX}.txt"
+  File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryFreeVimager.txt"
   SetOverwrite off
   File "MasterConfig.ini"

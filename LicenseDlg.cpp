@@ -48,7 +48,7 @@ BOOL CLicenseDlg::OnInitDialog()
 	// Create Font
 	LOGFONT lf;
 	memset(&lf, 0, sizeof(LOGFONT));
-	_tcscpy(lf.lfFaceName, _T("Tahoma")); // Same font used by installation routine
+	_tcscpy(lf.lfFaceName, _T("Courier New"));
 	HDC hDC = ::GetDC(GetSafeHwnd());
 	lf.lfHeight = -MulDiv(8, GetDeviceCaps(hDC, LOGPIXELSY), 72);
 	::ReleaseDC(GetSafeHwnd(), hDC);
