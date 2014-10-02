@@ -6914,7 +6914,8 @@ BOOL CVideoDeviceDoc::VlmConfigFileFilled()
 BOOL CVideoDeviceDoc::VlmReStart()
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
-	BOOL res = FALSE;
+	BOOL bStopped = FALSE;
+	BOOL bStarted = FALSE;
 
 	::EnterCriticalSection(&pApp->m_csVlc);
 
@@ -6924,8 +6925,8 @@ BOOL CVideoDeviceDoc::VlmReStart()
 		CTimeSpan TimeSpan = CTime::GetCurrentTime() - pApp->m_VlcStartTime;
 		if (TimeSpan.GetTotalSeconds() > 5 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2)
 		{
-			::LogLine(_T("VLC stopping"));
 			::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
+			bStopped = TRUE;
 		}
 	}
 
@@ -6954,19 +6955,26 @@ BOOL CVideoDeviceDoc::VlmReStart()
 				pApp->m_hVlcProcess = ::ExecApp(sVlcFile,
 												CString(_T("-I telnet --vlm-conf ")) + ::GetShortFileName(sVlmConfigFile),
 												::GetDriveAndDirName(sVlmConfigFile));
-				pApp->m_VlcStartTime = CTime::GetCurrentTime();
 				if (pApp->m_hVlcProcess)
 				{
-					res = TRUE;
-					::LogLine(_T("VLC starting"));
+					pApp->m_VlcStartTime = CTime::GetCurrentTime();
+					bStarted = TRUE;
 				}
 			}
 		}
 	}
 
+	// Log if something has been done
+	if (bStopped && bStarted)
+		::LogLine(_T("VLC restarting"));
+	else if (bStopped)
+		::LogLine(_T("VLC stopping"));
+	else if (bStarted)
+		::LogLine(_T("VLC starting"));
+
 	::LeaveCriticalSection(&pApp->m_csVlc);
 
-	return res;
+	return bStarted;
 }
 
 void CVideoDeviceDoc::VlmShutdown()
@@ -6975,8 +6983,8 @@ void CVideoDeviceDoc::VlmShutdown()
 	::EnterCriticalSection(&pApp->m_csVlc);
 	if (pApp->m_hVlcProcess)
 	{
-		::LogLine(_T("VLC stopping"));
 		::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
+		::LogLine(_T("VLC stopping"));
 	}
 	::LeaveCriticalSection(&pApp->m_csVlc);
 }
