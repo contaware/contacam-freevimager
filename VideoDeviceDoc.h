@@ -125,7 +125,7 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					1000		// Maximum allocable memory in MB for 32 bits applications
+#define MOVDET_MEM_MAX_MB					1050		// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
 #define MOVDET_MEM_MIN_MB					500			// Minimum memory in MB
 #define MOVDET_BASE_MEM_USAGE_MB			50			// Base memory usage of a open video device doc (without detection buffer)

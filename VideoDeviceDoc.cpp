@@ -2716,9 +2716,8 @@ end_of_software_detection:
 		// 32 bits application and taking into account all open
 		// devices because also non-detecting ones use RAM
 		int nTotalUsableMB = g_nAvailablePhysRamMB;
-		int nMovDetMemMaxMB = MIN(((CUImagerApp*)::AfxGetApp())->m_nMovDetMemMaxMB, MOVDET_MEM_MAX_MB);
-		if (nTotalUsableMB > nMovDetMemMaxMB)
-			nTotalUsableMB = nMovDetMemMaxMB;
+		if (nTotalUsableMB > MOVDET_MEM_MAX_MB)
+			nTotalUsableMB = MOVDET_MEM_MAX_MB;
 		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB;
 		if (nTotalUsableMB < MOVDET_MEM_MIN_MB)	// give a chance if many devices open or
 			nTotalUsableMB = MOVDET_MEM_MIN_MB;	// if we are on a PC with low amount of RAM 
