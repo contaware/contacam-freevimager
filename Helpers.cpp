@@ -6,6 +6,7 @@
 #include "Rpc.h"
 #include <math.h>
 #include <tlhelp32.h>
+#include <psapi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -15,6 +16,7 @@ static char THIS_FILE[] = __FILE__;
 
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "Wininet.lib")
+#pragma comment(lib, "psapi.lib") // to support GetProcessMemoryInfo()
 
 // If InitHelpers() is not called vars default to WinXP,
 // no multimedia instructions and 2GB RAM
@@ -28,6 +30,10 @@ BOOL g_bSSE2 = FALSE;
 BOOL g_b3DNOW = FALSE;
 int g_nInstalledPhysRamMB = 2048;
 int g_nAvailablePhysRamMB = 2048;
+static int g_nNumProcessors = 1;
+static ULONGLONG g_ullLastCPUUsageMeasureTime = 0;
+static ULONGLONG g_ullLastProcKernelTime = 0;
+static ULONGLONG g_ullLastProcUserTime = 0;
 #define CPU_FEATURE_MMX		0x0001
 #define CPU_FEATURE_SSE		0x0002
 #define CPU_FEATURE_SSE2	0x0004
@@ -72,6 +78,13 @@ void InitHelpers()
 	// RAM
 	g_nInstalledPhysRamMB = GetTotPhysMemMB(TRUE);
 	g_nAvailablePhysRamMB = GetTotPhysMemMB(FALSE);
+
+	// CPU usage
+	SYSTEM_INFO sysInfo;
+	GetSystemInfo(&sysInfo);
+	g_nNumProcessors = sysInfo.dwNumberOfProcessors;
+	GetCPUUsage();	// this initializes g_ullLastCPUUsageMeasureTime,
+					// g_ullLastProcKernelTime and g_ullLastProcUserTime
 }
 
 //
@@ -2127,6 +2140,36 @@ CString GetComputerName()
 		return _T("");
 }
 
+double GetCPUUsage()
+{
+	// Current time
+	FILETIME CPUUsageMeasureTime;
+	GetSystemTimeAsFileTime(&CPUUsageMeasureTime);
+	ULONGLONG ullCPUUsageMeasureTime = (((ULONGLONG)CPUUsageMeasureTime.dwHighDateTime) << 32) + CPUUsageMeasureTime.dwLowDateTime;
+    
+	// Process times
+	FILETIME ProcCreateTime, ProcExitTime, ProcKernelTime, ProcUserTime;
+	GetProcessTimes(GetCurrentProcess(), &ProcCreateTime, &ProcExitTime, &ProcKernelTime, &ProcUserTime);
+	ULONGLONG ullProcKernelTime = (((ULONGLONG)ProcKernelTime.dwHighDateTime) << 32) + ProcKernelTime.dwLowDateTime;
+	ULONGLONG ullProcUserTime = (((ULONGLONG)ProcUserTime.dwHighDateTime) << 32) + ProcUserTime.dwLowDateTime;
+
+	// Calculate percentage
+	double dPercent = (double)((ullProcKernelTime - g_ullLastProcKernelTime) + (ullProcUserTime - g_ullLastProcUserTime));
+	dPercent /= (ullCPUUsageMeasureTime - g_ullLastCPUUsageMeasureTime);
+	dPercent /= g_nNumProcessors;
+	dPercent *= 100.0;
+	dPercent = MIN(dPercent, 100.0);
+	dPercent = MAX(dPercent, 0.0);
+
+	// Store for next call
+	g_ullLastCPUUsageMeasureTime = ullCPUUsageMeasureTime;
+	g_ullLastProcUserTime = ullProcUserTime;
+	g_ullLastProcKernelTime = ullProcKernelTime;
+    
+	// Return value
+	return dPercent;
+}
+
 static int GetTotPhysMemMB(BOOL bInstalled)
 {
 	/* The GetPhysicallyInstalledSystemMemory function retrieves
@@ -2312,6 +2355,20 @@ BOOL EnableLFHeap()
 								sizeof(HeapInformation));
 
 	return (bResDefaultHeap && bResCRTHeap);
+}
+
+int GetVirtualMemUsedMB()
+{
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	return (int)(pmc.PrivateUsage >> 20);
+}
+
+int GetPhysicalMemUsedMB()
+{
+	PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+	return (int)(pmc.WorkingSetSize >> 20);
 }
 
 ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)

@@ -142,7 +142,6 @@ ICDBurn : public IUnknown
 };
 #endif 	/* __ICDBurn_FWD_DEFINED__ */
 
-#define ABOUTDLG_TIMER_MS		3000U
 class CAboutDlg : public CDialog
 {
 public:
@@ -163,12 +162,9 @@ public:
 protected:
 	//{{AFX_MSG(CAboutDlg)
 	virtual BOOL OnInitDialog();
-	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	void DisplayMemStats();
 	BOOL m_bClickableLinks;
 	CStaticLink m_WebLink;		// Hyperlink
 };

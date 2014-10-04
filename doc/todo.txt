@@ -26,6 +26,8 @@ ContaCam Program
   on a SSD the other folder on a normal HDD)
 - For longer detection sequences introduce CDib persistence to a file
   (m_sBitsFileName set and m_pBits is NULL)
+- Allow Digital Zoom of live camera via mouse wheel
+  (suggested by alanphoto@starpower.net)
   
 
 ContaCam Web Interface
@@ -40,3 +42,5 @@ ContaCam Web Interface
   ContaCam web interface to a frameless design with jquery 
 - If live snapshot file time stamp remains the same then
   output a red border to alert
+- Possibility to browse the detections from multiple cameras at the same
+  time (suggested by alanphoto@starpower.net)

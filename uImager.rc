@@ -1432,7 +1432,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 299, 236
+IDD_ABOUTBOX DIALOGEX 0, 0, 299, 223
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "About"
@@ -1440,8 +1440,8 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            120,IDC_STATIC,15,10,21,20
     LTEXT           "Unknown",IDC_VERSION,154,49,136,8,SS_NOPREFIX
-    LTEXT           "Copyright © 2003 - 2014 Contaware.com, Switzerland",IDC_STATIC2141,62,226,181,8
-    DEFPUSHBUTTON   "OK",IDOK,125,208,50,14,WS_GROUP
+    LTEXT           "Copyright © 2003 - 2014 Contaware.com, Switzerland",IDC_STATIC2141,62,213,181,8
+    DEFPUSHBUTTON   "OK",IDOK,125,196,50,14,WS_GROUP
     LTEXT           "Version:",IDC_STATIC2142,15,49,39,8
     LTEXT           "",IDC_APPNAME,74,17,216,8
     LTEXT           "Homepage:",IDC_STATIC2143,15,80,42,8
@@ -1451,14 +1451,13 @@ BEGIN
     GROUPBOX        "",IDC_STATIC2146,7,38,285,26
     LTEXT           "",IDC_APPVER,74,49,67,8
     GROUPBOX        "",IDC_STATIC2148,7,100,285,39
-    GROUPBOX        "",IDC_STATIC2149,7,144,285,58
+    GROUPBOX        "",IDC_STATIC2149,7,144,285,46
     LTEXT           "1000 MHz",IDC_CPUSPEED,74,153,216,8
-    LTEXT           "System Info:",IDC_STATIC2150,15,170,44,8
-    LTEXT           "1000 MB",IDC_PHYSMEM,74,178,216,8
+    LTEXT           "System Info:",IDC_STATIC2150,15,164,44,8
+    LTEXT           "1000 MB",IDC_PHYSMEM,74,176,216,8
     LTEXT           "CPU Count",IDC_CPUCOUNT,74,164,216,8
     LTEXT           "Translated By:",IDC_STATIC2151,15,124,51,8
     LTEXT           "This is the original language",IDC_STATIC2152,74,124,216,8
-    LTEXT           "Mem Stats",IDC_MEMSTATS,74,189,216,8
     GROUPBOX        "",IDC_STATIC2147,7,69,285,26
 END
 
@@ -3420,7 +3419,7 @@ BEGIN
         VERTGUIDE, 74
         VERTGUIDE, 290
         TOPMARGIN, 7
-        BOTTOMMARGIN, 231
+        BOTTOMMARGIN, 218
     END
 
     IDD_GENERAL, DIALOG
@@ -4819,6 +4818,8 @@ END
 STRINGTABLE
 BEGIN
     ID_INDICATOR_YCOORDINATE "Y:               "
+    ID_INDICATOR_CPU_USAGE  "CPU: 0.0%"
+    ID_INDICATOR_MEM_USAGE  "MEM: 0MB"
     ID_VIEW_ZOOM_TOOL       "Click to zoom-in, right click to zoom-out\nZoom Click"
     ID_EDIT_ADD_EXIFTHUMB   "Add an EXIF thumbnail from the downsized main image\nAdd EXIF Thumbnail"
     ID_EDIT_REMOVE_EXIFTHUMB 
@@ -5499,7 +5500,6 @@ BEGIN
     IDS_STRING1818          "set lower framerate"
     IDS_STRING1819          "or resolution!"
     IDS_STRING1820          "usable"
-    IDS_STRING1821          "used %s, reserved %s, fragmented %s"
     IDS_STRING1822          "Fit"
     IDS_STRING1823          "Fit Big"
 END

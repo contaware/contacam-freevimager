@@ -2152,7 +2152,6 @@
 #define IDC_CPUCOUNT                    1684
 #define IDS_STRING1684                  1684
 #define IDS_STRING1685                  1685
-#define IDC_MEMSTATS                    1685
 #define IDS_STRING1686                  1686
 #define IDS_STRING1687                  1687
 #define IDS_STRING1688                  1688
@@ -3289,6 +3288,8 @@
 #define ID_INDICATOR_PROGRESS           32926
 #define ID_INDICATOR_XCOORDINATE        32927
 #define ID_INDICATOR_YCOORDINATE        32928
+#define ID_INDICATOR_CPU_USAGE          32929
+#define ID_INDICATOR_MEM_USAGE          32930
 #define ID_VIEW_ZOOM_TOOL               32931
 #define ID_EDIT_ADD_EXIFTHUMB           32933
 #define ID_EDIT_REMOVE_EXIFTHUMB        32934

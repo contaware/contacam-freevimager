@@ -106,9 +106,9 @@ static SBACTPANEINFO sba_indicators[] =
 	{ ID_INDICATOR_PROGRESS, _T(""), SBACTF_NORMAL },
 	{ ID_INDICATOR_XCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR },
 	{ ID_INDICATOR_YCOORDINATE, sba_CoordinateHelp, SBACTF_AUTOFIT | SBACTF_COMMAND | SBACTF_HANDCURSOR }, 
-	{ ID_INDICATOR_CAPS, _T(""), SBACTF_NORMAL }, 
-	{ ID_INDICATOR_NUM, _T(""), SBACTF_NORMAL }, 
-	{ ID_INDICATOR_SCRL, _T(""), SBACTF_NORMAL }, 
+	{ ID_INDICATOR_CPU_USAGE, _T(""), SBACTF_AUTOFIT },
+	{ ID_INDICATOR_MEM_USAGE, _T(""), SBACTF_AUTOFIT },
+	{ ID_INDICATOR_CAPS, _T(""), SBACTF_NORMAL },
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -194,11 +194,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Enable Drag'n'Drop
 	DragAcceptFiles(TRUE);
-	
-#ifdef VIDEODEVICEDOC
+
 	// Poll Timer
 	SetTimer(ID_TIMER_ONESEC_POLL, ONESEC_POLL_TIMER_MS, NULL);
-#endif
 
 	// Init Menu Positions
 	InitMenuPositions();
@@ -283,9 +281,7 @@ void CMainFrame::TrayIcon(BOOL bEnable)
 void CMainFrame::OnDestroy() 
 {
 	// Kill Timer
-#ifdef VIDEODEVICEDOC
 	KillTimer(ID_TIMER_ONESEC_POLL);
-#endif
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -2184,10 +2180,18 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	{
 		((CUImagerApp*)::AfxGetApp())->CloseAll();
 	}
-#ifdef VIDEODEVICEDOC
 	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
+		// Get CPU Usage
+		double dCPUUsage = ::GetCPUUsage();
+
+		// Get VM Stats
+		int nVMPrivateCommitSize = ::GetVirtualMemUsedMB();
+
 #if defined(_DEBUG) || defined(TRACELOGFILE)
+		// Get Used Phys. Mem Stats
+		int nPhysMemWorkingSetSize = ::GetPhysicalMemUsedMB();
+
 		// Get virtual memory stats
 		int nRegions = 0; int nFreeMB = 0; int nReservedMB = 0; int nCommittedMB = 0; double dFragmentation = 0.0;
 		::GetMemoryStats(&nRegions, &nFreeMB, &nReservedMB, &nCommittedMB, &dFragmentation);
@@ -2225,12 +2229,24 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		}
 
 		// Print debug message
-		TRACE(_T("RAM: used=%dMB res=%dMB free=%dMB frag=%0.1f%% regions=%d, ")
-			_T("HEAPS: default(%s)=%uMB CRT(%s %s)=%uMB others=%uMB\n"),
-			nCommittedMB, nReservedMB, nFreeMB, dFragmentation, nRegions,
-			sDefaultHeapType, DefaultHeapSize>>20, sCRTHeapType, sCRTHeapStatus, CRTHeapSize>>20, OtherHeapsSize>>20);
+		TRACE(_T("\nCPU:   %0.1f%%\n")
+			_T("MEM:   phystotused=%dMB vmprivused=%dMB vmused=%dMB vmres=%dMB vmfree=%dMB frag=%0.1f%% regions=%d\n")
+			_T("HEAPS: default(%s)=%dMB CRT(%s %s)=%dMB others=%dMB\n"),
+			dCPUUsage,
+			nPhysMemWorkingSetSize, nVMPrivateCommitSize, nCommittedMB, nReservedMB, nFreeMB, dFragmentation, nRegions,
+			sDefaultHeapType, (int)(DefaultHeapSize>>20), sCRTHeapType, sCRTHeapStatus, (int)(CRTHeapSize>>20), (int)(OtherHeapsSize>>20));
 #endif
+		// Show CPU Usage
+		CString sCPUUsage;
+		sCPUUsage.Format(_T("CPU: %0.1f%%"), dCPUUsage);
+		GetStatusBar()->SetPaneText(4, sCPUUsage);
 
+		// Show MEM Usage
+		CString sMEMUsage;
+		sMEMUsage.Format(_T("MEM: %dMB"), nVMPrivateCommitSize);
+		GetStatusBar()->SetPaneText(5, sMEMUsage);
+
+#ifdef VIDEODEVICEDOC
 		// Update m_nAVCodecThreadsCount
 		double dCount = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs();
 		if (dCount < 1.0)
@@ -2305,8 +2321,8 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 				}
 			}
 		}
-	}
 #endif
+	}
 }
 
 void CMainFrame::StatusText(CString sText/*=_T("")*/)

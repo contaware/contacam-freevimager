@@ -1,1 +1,1 @@
-Save as UTF-8 without BOM
+Save License.txt as UTF-8 without BOM

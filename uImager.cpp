@@ -1065,9 +1065,6 @@ BOOL CAboutDlg::OnInitDialog()
 	CEdit* pPhysMemMB = (CEdit*)GetDlgItem(IDC_PHYSMEM);
 	pPhysMemMB->SetWindowText(sPhysMemMB);
 
-	// Memory Stats
-	DisplayMemStats();
-
 	// Clickable Links?
 	if (m_bClickableLinks)
 		m_WebLink.SubclassDlgItem(IDC_WEB_LINK, this);
@@ -1080,62 +1077,15 @@ BOOL CAboutDlg::OnInitDialog()
 						CString(_T(__DATE__)) +
 						CString(_T(")"));
 	SetDlgItemText(IDC_VERSION, sCompilationTime);
-	
-	// Set Timer
-	SetTimer(ID_TIMER_ABOUTDLG, ABOUTDLG_TIMER_MS, NULL);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CAboutDlg::DisplayMemStats()
-{
-	// Get virtual memory stats
-	int nReservedMB = 0;
-	int nCommittedMB = 0;
-	double dFragmentation = 0.0;
-	::GetMemoryStats(NULL, NULL, &nReservedMB, &nCommittedMB, &dFragmentation);
-	CString sReservedSize;
-	sReservedSize.Format(_T("%d ") + ML_STRING(1825, "MB"), nReservedMB);
-	CString sCommittedSize;
-	sCommittedSize.Format(_T("%d ") + ML_STRING(1825, "MB"), nCommittedMB);
-	CString sFragmentation;
-	sFragmentation.Format(_T("%0.1f %%"), dFragmentation);
-
-	// Update text on dialog if necessary
-	CString sCurrentText, sNewTextStats;
-	sNewTextStats.Format(ML_STRING(1821, "used %s, reserved %s, fragmented %s"),
-						sCommittedSize, sReservedSize, sFragmentation);
-	CEdit* pMemStats = (CEdit*)GetDlgItem(IDC_MEMSTATS);
-	if (pMemStats)
-	{
-		pMemStats->GetWindowText(sCurrentText);
-		if (sNewTextStats != sCurrentText)
-			pMemStats->SetWindowText(sNewTextStats);
-	}
-}
-
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
-	ON_WM_TIMER()
-	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
-
-void CAboutDlg::OnTimer(UINT_PTR nIDEvent)
-{
-	DisplayMemStats();
-	CDialog::OnTimer(nIDEvent);
-}
-
-void CAboutDlg::OnDestroy()
-{
-	// Kill timer
-	KillTimer(ID_TIMER_ABOUTDLG);
-
-	// Base class
-	CDialog::OnDestroy();
-}
 
 // App command to run the dialog
 void CUImagerApp::OnAppAbout()
