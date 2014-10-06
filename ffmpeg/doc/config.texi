@@ -413,16 +413,16 @@
 @c @set config-vda no
 @c @set config-vdpau no
 @c @set config-xvmc no
-@c @set config-gpl no
+@set config-gpl yes
 @c @set config-nonfree no
-@c @set config-version3 no
+@set config-version3 yes
 @set config-avcodec yes
 @set config-avdevice yes
 @set config-avfilter yes
 @set config-avformat yes
 @c @set config-avresample no
 @set config-avutil yes
-@c @set config-postproc no
+@set config-postproc yes
 @set config-swresample yes
 @set config-swscale yes
 @c @set config-ffplay no
@@ -458,7 +458,7 @@
 @set config-frame-thread-encoder yes
 @c @set config-gcrypt no
 @set config-golomb yes
-@c @set config-gplv3 no
+@set config-gplv3 yes
 @set config-h263dsp yes
 @set config-h264chroma yes
 @set config-h264dsp yes
