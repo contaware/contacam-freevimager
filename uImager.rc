@@ -2200,7 +2200,7 @@ BEGIN
     LTEXT           "Thanks to the GIF Library Authors for giflib 4.1.3",IDC_STATIC2349,15,143,226,8
     LTEXT           "http://sourceforge.net/projects/giflib",IDC_LINK_GIFLIB,15,152,126,8,SS_NOTIFY
     LTEXT           "Thanks to Graeme W. Gill for icclib 2.14",IDC_STATIC2350,15,164,226,8
-    LTEXT           "http://freshmeat.net/projects/icclib",IDC_LINK_ICCLIB,15,173,122,8,SS_NOTIFY
+    LTEXT           "http://www.argyllcms.com/icclibsrc.html",IDC_LINK_ICCLIB,15,173,140,8,SS_NOTIFY
     GROUPBOX        "Tools",IDC_STATIC2347,7,189,239,54
     LTEXT           "Thanks to Debug Mode for Wink (tutorial creation software)",IDC_STATIC2345,15,199,226,8
     LTEXT           "http://www.debugmode.com/wink",IDC_LINK_WINK,15,208,118,8,SS_NOTIFY
