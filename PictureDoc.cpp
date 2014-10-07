@@ -8569,7 +8569,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 	if (!m_pDib->GetBMI())
 		return;
 
-	// Store Current Focus
+	// Store Current Focus (that could be an open dialog)
 	CWnd* pOldActiveWnd = CWnd::GetActiveWindow();
 
 	// Dpi
@@ -8581,7 +8581,7 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 
 	// OSD
 	if (m_pOsdDlg)
-		m_pOsdDlg->UpdateDisplay();
+		m_pOsdDlg->UpdateDisplay(); // this function also changes the active window
 
 	// Image Info Dialog
 	if (m_pImageInfoDlg)
@@ -8865,12 +8865,12 @@ void CPictureDoc::UpdateImageInfo(BOOL bUpdateFileInfoOnly/*=FALSE*/)
 
 		// Update Metadata
 		m_pImageInfoDlg->UpdateMetadata();
-
-		// Restore Focus
-		if (pOldActiveWnd &&
-			(pOldActiveWnd != CWnd::GetActiveWindow()))
-			pOldActiveWnd->SetActiveWindow();
 	}
+
+	// Restore Focus
+	if (pOldActiveWnd &&
+		(pOldActiveWnd != CWnd::GetActiveWindow()))
+		pOldActiveWnd->SetActiveWindow();
 }
 
 void CPictureDoc::FileInfo() 
