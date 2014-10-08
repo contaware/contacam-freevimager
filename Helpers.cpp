@@ -201,51 +201,48 @@ BOOL HasWriteAccess(LPCTSTR lpszFileName)
 	}
 }
 
-// This function is used to take the Owneship of a specified file
+// This function is used to take the Ownership of a specified file
 BOOL TakeOwnership(LPCTSTR lpszFile)
 {
-	if (GetVersion() < 0x80000000) // Windows NT or higher
-	{
-		int file[256];
-		DWORD description;
-		SECURITY_DESCRIPTOR sd;
-		SECURITY_INFORMATION info_owner = OWNER_SECURITY_INFORMATION;
+	int file[256];
+	DWORD description;
+	SECURITY_DESCRIPTOR sd;
+	SECURITY_INFORMATION info_owner = OWNER_SECURITY_INFORMATION;
 			
-		TOKEN_USER* owner = (TOKEN_USER*)file;
-		HANDLE token;
+	TOKEN_USER* owner = (TOKEN_USER*)file;
+	HANDLE token;
 		
-		InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-		if (OpenProcessToken(GetCurrentProcess(), TOKEN_READ | TOKEN_ADJUST_PRIVILEGES, &token))
+	InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_READ | TOKEN_ADJUST_PRIVILEGES, &token))
+	{
+		// To Get the Current Process Token & opening it to adjust the privileges
+		if (SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, FALSE))
 		{
-			// To Get the Current Process Token & opening it to adjust the previleges
-			if (SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, FALSE))
+			// Enabling the privilege
+			if (GetTokenInformation(token, TokenUser, owner, sizeof(file), &description))
 			{
-				// Enabling the privilege
-				if (GetTokenInformation(token, TokenUser, owner, sizeof(file), &description))
+				// Get the information on the opened token
+				if (SetSecurityDescriptorOwner(&sd, owner->User.Sid, FALSE))
 				{
-					// Get the information on the opened token
-					if (SetSecurityDescriptorOwner(&sd, owner->User.Sid, FALSE))
-					{
-						// Replace any owner information present on the security descriptor
-						if (SetFileSecurity(lpszFile, info_owner, &sd))
-							return TRUE;
-						else
-							TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
-					}
+					// Replace any owner information present on the security descriptor
+					if (SetFileSecurity(lpszFile, info_owner, &sd))
+						return TRUE;
 					else
-						TRACE(_T("Error in SetSecurityDescriptorOwner No %u\n"), GetLastError());
+						TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
 				}
 				else
-					TRACE(_T("Error in GetTokenInformation No %u\n"), GetLastError());
+					TRACE(_T("Error in SetSecurityDescriptorOwner No %u\n"), GetLastError());
 			}
 			else
-				TRACE(_T("Error in SetPrivilege No %u\n"), GetLastError());
+				TRACE(_T("Error in GetTokenInformation No %u\n"), GetLastError());
 		}
 		else
-			TRACE(_T("Error in OpenProcessToken No %u\n"), GetLastError());
-
-		SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, TRUE);// Disabling the set previlege
+			TRACE(_T("Error in SetPrivilege No %u\n"), GetLastError());
 	}
+	else
+		TRACE(_T("Error in OpenProcessToken No %u\n"), GetLastError());
+
+	SetPrivilege(token, SE_TAKE_OWNERSHIP_NAME, TRUE); // disabling the set privilege
 
 	return FALSE;
 }
@@ -257,34 +254,24 @@ BOOL TakeOwnership(LPCTSTR lpszFile)
 //                 privilege. Otherwise It disables all privileges
 BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange)
 {
-	if (GetVersion() < 0x80000000) // Windows NT or higher
+	TOKEN_PRIVILEGES tp;
+	LUID luid;
+
+	if (lpszPrivilege != NULL && !bChange)
 	{
-		TOKEN_PRIVILEGES tp;
-		LUID luid;
-		BOOL bReturnValue = FALSE;
-
-		if (lpszPrivilege != NULL && !bChange)
-		{
-			if (LookupPrivilegeValue( 
-				NULL,            // lookup privilege on local system
-				lpszPrivilege,   // privilege to lookup 
-				&luid )) 
-			{      // receives LUID of privilege
-				tp.PrivilegeCount = 1;
-				tp.Privileges[0].Luid = luid;
-				tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-			}
+		if (LookupPrivilegeValue( 
+			NULL,            // lookup privilege on local system
+			lpszPrivilege,   // privilege to lookup 
+			&luid )) 
+		{      // receives LUID of privilege
+			tp.PrivilegeCount = 1;
+			tp.Privileges[0].Luid = luid;
+			tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 		}
-
-		AdjustTokenPrivileges(hToken, bChange, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL);
-		// Call GetLastError to determine whether the function succeeded
-		if (GetLastError() == ERROR_SUCCESS) 
-			bReturnValue = TRUE;
-		 
-		return bReturnValue;
 	}
-	else
-		return FALSE;
+
+	AdjustTokenPrivileges(hToken, bChange, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL);
+	return (GetLastError() == ERROR_SUCCESS);
 } 
 
 // This function is used to set the Permissions of a file
@@ -293,58 +280,55 @@ BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange)
 // dwAccessMask : access rights to be granted to the specified SID              
 BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 {
-	if (GetVersion() < 0x80000000) // Windows NT or higher
-	{
-		int buff[512];
-		TCHAR domain[512];
+	int buff[512];
+	TCHAR domain[512];
 		
-		DWORD domain_size = 512;
-		DWORD acl_size;
+	DWORD domain_size = 512;
+	DWORD acl_size;
 
-		SECURITY_DESCRIPTOR sd1;
-		SECURITY_INFORMATION info_dacl = DACL_SECURITY_INFORMATION;
-		PSID sid = (PSID)buff;
-		ACL* acl = NULL;
-		SID_NAME_USE sidname;
-		DWORD sid_size = sizeof(buff);
+	SECURITY_DESCRIPTOR sd1;
+	SECURITY_INFORMATION info_dacl = DACL_SECURITY_INFORMATION;
+	PSID sid = (PSID)buff;
+	ACL* acl = NULL;
+	SID_NAME_USE sidname;
+	DWORD sid_size = sizeof(buff);
 		
-		InitializeSecurityDescriptor(&sd1, SECURITY_DESCRIPTOR_REVISION);
-		// To get the SID 
-		if (LookupAccountName(NULL, lpszAccess, sid, &sid_size, domain, &domain_size, &sidname))
+	InitializeSecurityDescriptor(&sd1, SECURITY_DESCRIPTOR_REVISION);
+	// To get the SID 
+	if (LookupAccountName(NULL, lpszAccess, sid, &sid_size, domain, &domain_size, &sidname))
+	{
+		acl_size = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD) + GetLengthSid(buff);
+		acl = (ACL*)malloc(acl_size);
+		if (!acl)
 		{
-			acl_size = sizeof(ACL) + sizeof(ACCESS_ALLOWED_ACE) - sizeof(DWORD) + GetLengthSid(buff);
-			acl = (ACL*)malloc(acl_size);
-			if (!acl)
+			TRACE(_T("Error allocating memory for the acl\n"));
+			return FALSE;
+		}
+		InitializeAcl(acl, acl_size, ACL_REVISION);
+		if (AddAccessAllowedAce(acl, ACL_REVISION, dwAccessMask, sid))
+		{
+			if (SetSecurityDescriptorDacl(&sd1, TRUE, acl, FALSE))
 			{
-				TRACE(_T("Error allocating memory for the acl\n"));
-				return FALSE;
-			}
-			InitializeAcl(acl, acl_size, ACL_REVISION);
-			if (AddAccessAllowedAce(acl, ACL_REVISION, dwAccessMask, sid))
-			{
-				if (SetSecurityDescriptorDacl(&sd1, TRUE, acl, FALSE))
+				if (SetFileSecurity(lpszFile, info_dacl, &sd1))
 				{
-					if (SetFileSecurity(lpszFile, info_dacl, &sd1))
-					{
-						if (acl)
-							free(acl);
-						return TRUE;
-					}
-					else
-						TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
+					if (acl)
+						free(acl);
+					return TRUE;
 				}
 				else
-					TRACE(_T("Error in SetSecurityDescriptorDacl No %u\n"), GetLastError());
+					TRACE(_T("Error in SetFileSecurity No %u\n"), GetLastError());
 			}
 			else
-				TRACE(_T("Error in AddAccessAllowedAce No %u\n"), GetLastError());
+				TRACE(_T("Error in SetSecurityDescriptorDacl No %u\n"), GetLastError());
 		}
 		else
-			TRACE(_T("Error in LookupAccountName No %u\n"), GetLastError());
-
-		if (acl)
-			free(acl);
+			TRACE(_T("Error in AddAccessAllowedAce No %u\n"), GetLastError());
 	}
+	else
+		TRACE(_T("Error in LookupAccountName No %u\n"), GetLastError());
+
+	if (acl)
+		free(acl);
 
 	return FALSE;
 }
@@ -705,10 +689,6 @@ BOOL DeleteDirContent(LPCTSTR szDirName)
 		else
 			_sntprintf(name, MAX_PATH - 1, _T("%s\\%s"), szDirName, pInfo->cFileName);
 		name[MAX_PATH - 1] = _T('\0');
-		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-		{
-			SetFileAttributes(name, pInfo->dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
-		}
 		if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if (!DeleteDir(name))
@@ -722,20 +702,25 @@ BOOL DeleteDirContent(LPCTSTR szDirName)
 		{
 			if (!DeleteFile(name))
 			{
-				if (!TakeOwnership(name))
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				::ShowLastError(FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
+#endif
+				TakeOwnership(name);
+				SetPermission(name, _T("everyone"), GENERIC_ALL);
+				if (pInfo->dwFileAttributes & FILE_ATTRIBUTE_READONLY)
 				{
-					FindClose(hp);
-					DELETEDIRCONTENT_FREE;
-					return FALSE;
-				}
-				if (!SetPermission(name, _T("everyone"), GENERIC_ALL))
-				{
-					FindClose(hp);
-					DELETEDIRCONTENT_FREE;
-					return FALSE;
+					if (!SetFileAttributes(name, pInfo->dwFileAttributes & ~FILE_ATTRIBUTE_READONLY))
+					{
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+						::ShowLastError(FALSE, _T("SetFileAttributes(") + CString(name) + _T(", REMOVE READONLY): "));
+#endif
+					}
 				}
 				if (!DeleteFile(name))
 				{
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+					::ShowLastError(FALSE, _T("DeleteFile(") + CString(name) + _T("): "), _T(" Giving up..."));
+#endif
 					FindClose(hp);
 					DELETEDIRCONTENT_FREE;
 					return FALSE;
@@ -758,16 +743,30 @@ BOOL DeleteDir(LPCTSTR szDirName)
 	{
 		if (!RemoveDirectory(szDirName))
 		{
-			if (!TakeOwnership(szDirName))
-				return FALSE;
-			if (!SetPermission(szDirName, _T("everyone"), GENERIC_ALL))
-				return FALSE;
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+			::ShowLastError(FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Trying to take ownership, set permission and remove readonly flag"));
+#endif
+			TakeOwnership(szDirName);
+			SetPermission(szDirName, _T("everyone"), GENERIC_ALL);
 			DWORD dwFileAttributes = GetFileAttributes(szDirName);
 			if (dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-				SetFileAttributes(szDirName, dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
+			{
+				if (!SetFileAttributes(szDirName, dwFileAttributes & ~FILE_ATTRIBUTE_READONLY))
+				{
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+					::ShowLastError(FALSE, _T("SetFileAttributes(") + CString(szDirName) + _T(", REMOVE READONLY): "));
+#endif
+				}
+			}
 			if (!RemoveDirectory(szDirName))
+			{
+#if defined(_DEBUG) || defined(TRACELOGFILE)
+				::ShowLastError(FALSE, _T("RemoveDirectory(") + CString(szDirName) + _T("): "), _T(" Giving up..."));
+#endif
 				return FALSE;
-			return TRUE;
+			}
+			else
+				return TRUE;
 		}
 		else
 			return TRUE;
