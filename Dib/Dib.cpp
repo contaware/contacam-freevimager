@@ -6503,7 +6503,7 @@ void CDib::ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, const CStri
 	LPVOID lpMsgBuf = NULL;
 
 	if (::FormatMessage( 
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
 		dwErrorCode,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
@@ -6525,9 +6525,6 @@ void CDib::ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, const CStri
 #ifdef _DEBUG
 		sText = sFunctionName + _T(":\n") + sText;
 #endif
-
-		// Free
-		::LocalFree(lpMsgBuf);
 	}
 	else
 	{
@@ -6538,14 +6535,15 @@ void CDib::ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, const CStri
 #endif
 	}
 
+	// Free buffer
+	if (lpMsgBuf)
+		::LocalFree(lpMsgBuf);
+
 	// Show Error
-	CString sTraceMsg = sText;
-	if (sTraceMsg.GetLength() > 0)
-	{
-		if (sTraceMsg[sTraceMsg.GetLength() - 1] != _T('\n'))
-			sTraceMsg += _T('\n');
-	}
-	TRACE(sTraceMsg);
+	if (sText.GetLength() > 0 && sText[sText.GetLength() - 1] != _T('\n'))
+		TRACE(_T("%s"), sText + _T('\n'));
+	else
+		TRACE(_T("%s"), sText);
 	if (bShowMessageBoxOnError)
 		::AfxMessageBox(sText, MB_ICONSTOP);
 }

@@ -10601,7 +10601,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Parse(CNetCom* pNetCom, BOOL bL
 				m_bTryConnecting = FALSE;
 
 				// Msg
-				CVideoDeviceDoc::ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
+				CVideoDeviceDoc::ConnectErr(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect"), m_pDoc->GetDevicePathName(), m_pDoc->GetDeviceName());
 
 				// Close
 				m_pDoc->CloseDocument();

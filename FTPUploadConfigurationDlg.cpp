@@ -182,7 +182,7 @@ void CFTPUploadConfigurationDlg::OnButtonTest()
 		if (FTP.Test())
 		{
 			EndWaitCursor();
-			::AfxMessageBox(ML_STRING(1771, "Success: Host Reachable."), MB_ICONINFORMATION);
+			::AfxMessageBox(ML_STRING(1771, "Success: Host Reachable"), MB_ICONINFORMATION);
 		}
 		else
 		{

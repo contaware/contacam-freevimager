@@ -1835,17 +1835,31 @@ BOOL DeleteRegistryKey(HKEY hOpenKey, LPCTSTR szKey)
 
 CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)
 {
-	CString sText;
+	// Get message
 	LPVOID lpMsgBuf = NULL;
+	DWORD dwRes = 0;
+	if (dwErrorCode >= INTERNET_ERROR_BASE && dwErrorCode <= INTERNET_ERROR_LAST)
+	{
+		HMODULE hMod = LoadLibrary(_T("wininet.dll"));
+		dwRes = FormatMessage(	FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
+								hMod,
+								dwErrorCode,
+								MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+								(LPTSTR)&lpMsgBuf, 0, NULL);
+		FreeLibrary(hMod);
+	}
+	else
+	{
+		dwRes = FormatMessage(	FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+								NULL,
+								dwErrorCode,
+								MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+								(LPTSTR)&lpMsgBuf, 0, NULL);
+	}
 
-	if (FormatMessage( 
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		NULL,
-		dwErrorCode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-		(LPTSTR)&lpMsgBuf,
-		0,
-		NULL) && lpMsgBuf)
+	// Prepare text string
+	CString sText;
+	if (dwRes && lpMsgBuf)
 	{
 		// Init
 		sText = (LPCTSTR)lpMsgBuf;
@@ -1856,12 +1870,13 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 		// Replace eventual CRs or LFs in the middle of the string with a space
 		sText.Replace(_T('\r'), _T(' '));
 		sText.Replace(_T('\n'), _T(' '));
-
-		// Free
-		LocalFree(lpMsgBuf);
 	}
 
-	// Error Codes For Internet Functions
+	// Free buffer
+	if (lpMsgBuf)
+		LocalFree(lpMsgBuf);
+
+	// Append internet extended message
 	if (dwErrorCode == ERROR_INTERNET_EXTENDED_ERROR)
 	{
 		DWORD dwInetError;
@@ -1876,78 +1891,20 @@ CString ShowError(DWORD dwErrorCode, BOOL bShowMessageBoxOnError, CString sHeade
 			sText = pszResponse;
 		delete [] pszResponse;
 	}
-	else if (dwErrorCode == ERROR_INTERNET_CONNECTION_RESET)
-	{
-		CString sResponse(ML_STRING(1766, "The connection with the server has been reset."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (dwErrorCode == ERROR_INTERNET_NAME_NOT_RESOLVED)
-	{
-		CString sResponse(ML_STRING(1778, "The server name could not be resolved."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (dwErrorCode == ERROR_INTERNET_CANNOT_CONNECT)
-	{
-		CString sResponse(ML_STRING(1779, "The attempt to connect to the server failed."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (	dwErrorCode == ERROR_INTERNET_INCORRECT_PASSWORD	||
-				dwErrorCode == ERROR_INTERNET_INCORRECT_USER_NAME	||
-				dwErrorCode == ERROR_INTERNET_LOGIN_FAILURE)
-	{
-		CString sResponse(ML_STRING(1780, "The request to connect could not be completed because the supplied user name and/or password are incorrect."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (dwErrorCode == ERROR_INTERNET_INVALID_PROXY_REQUEST)
-	{
-		CString sResponse(ML_STRING(1781, "The request to the proxy was invalid."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (dwErrorCode == ERROR_FTP_NO_PASSIVE_MODE)
-	{
-		CString sResponse(ML_STRING(1782, "Passive mode is not available on the server."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
-	else if (dwErrorCode == ERROR_FTP_DROPPED)
-	{
-		CString sResponse(ML_STRING(1783, "FTP connection has been dropped."));
-		if (sText != _T(""))
-			sText = sText + _T('\n') + sResponse;
-		else
-			sText = sResponse;
-	}
 
-	// Avoid empty errors!
+	// Avoid an empty error message
 	if (sText == _T(""))
 		sText.Format(ML_STRING(1784, "Error with code %u."), dwErrorCode);
 
-	// Format and show error
-	CString sMsg = sHeader + sText + sFooter;
-	if (sMsg[sMsg.GetLength() - 1] != _T('\n')) // this is ok because sMsg is never empty
-		TRACE(sMsg + _T('\n'));
+	// Format and show error message
+	sText = sHeader + sText + sFooter;
+	if (sText[sText.GetLength() - 1] != _T('\n')) // this is ok because sText is never empty
+		TRACE(_T("%s"), sText + _T('\n'));
 	else
-		TRACE(sMsg);
+		TRACE(_T("%s"), sText);
 	if (bShowMessageBoxOnError)
-		AfxMessageBox(sMsg, MB_ICONSTOP);
-	return sMsg;
+		AfxMessageBox(sText, MB_ICONSTOP);
+	return sText;
 }
 
 CString ShowLastError(BOOL bShowMessageBoxOnError, CString sHeader/*=_T("")*/, CString sFooter/*=_T("")*/)

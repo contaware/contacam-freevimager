@@ -3677,7 +3677,7 @@ void CNetCom::ProcessWSAError(const CString& sErrorText)
 
 		int nLastError = ::WSAGetLastError();
 		if (::FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			nLastError,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
@@ -3697,16 +3697,17 @@ void CNetCom::ProcessWSAError(const CString& sErrorText)
 
 			// Format message
 			sText = sErrorText + _T(" failed with the following error:\n") + sText;
-
-			// Free
-			::LocalFree(lpMsgBuf);
 		}
 		else
 			sText.Format(_T("%s failed with the following error code: %d"),
 								sErrorText, nLastError);
 
+		// Free buffer
+		if (lpMsgBuf)
+			::LocalFree(lpMsgBuf);
+
 		// Call Error
-		Error(sText);
+		Error(_T("%s"), sText);
 	}
 }
 
