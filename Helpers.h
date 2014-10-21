@@ -53,6 +53,10 @@ extern BOOL IsReadonly(LPCTSTR lpszFileName);
 // Do we have write access to the given file
 extern BOOL HasWriteAccess(LPCTSTR lpszFileName);
 
+// If it's a valid drive mount path convert it to a UNC path,
+// otherwise return the given sPath unchanged
+extern CString UNCPath(const CString& sPath);
+
 // File / directory operations
 extern BOOL TakeOwnership(LPCTSTR lpszFile);
 extern BOOL SetPrivilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bChange);

@@ -5456,6 +5456,10 @@ void CUImagerApp::OnToolsMoveCamFolders()
 					TRUE);
 	if (dlg.DoModal() == IDOK)
 	{
+		// If it's a valid drive mount path convert it to a UNC path
+		// which is also working in service mode
+		sNewMicroApacheDocRoot = ::UNCPath(sNewMicroApacheDocRoot);
+
 		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
 		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
 		if (::IsSubDir(sMicroApacheDocRoot, sNewMicroApacheDocRoot))

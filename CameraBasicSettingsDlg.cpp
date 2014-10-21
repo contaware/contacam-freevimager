@@ -661,7 +661,8 @@ void CCameraBasicSettingsDlg::OnButtonParentDir()
 					&m_sParentDir,
 					ML_STRING(1869, "Move camera folder to selected directory. ATTENTION: all camera folders have to be moved to this directory!"),
 					TRUE);
-	dlg.DoModal();
+	if (dlg.DoModal() == IDOK)
+		m_sParentDir = ::UNCPath(m_sParentDir); // if it's a valid drive mount path convert it to a UNC path which is also working in service mode
 }
 
 void CCameraBasicSettingsDlg::Rename()

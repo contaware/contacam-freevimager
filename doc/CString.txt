@@ -9,22 +9,17 @@ LPTSTR CString::GetBuffer(int nMinBufLength)
 nMinBufLength is the minimum number of characters that the character 
 buffer can hold. This value does not include space for a null 
 terminator. If nMinBufLength is larger than the length of the current 
-buffer, GetBuffer destroys the current buffer, replaces it with a buffer 
-of the requested size. The return value is a pointer to the object's 
-(null-terminated) character buffer. 
+buffer, GetBuffer destroys the current buffer and replaces it with a 
+null-terminated character buffer of (nMinBufLength + 1) * sizeof(TCHAR) 
+bytes. 
 
 Calling CString::GetBuffer() or the equivalent CString::GetBuffer(0) 
 does not allocate memory, it simply returns a non-const pointer to the 
-existing internal string data. The official MSDN documentation on 
-GetBuffer does not mention the behaviour if the nMinBufLength is omitted 
-(or if zero is set). In this case you cannot safely modify this buffer, 
-because its size is undetermined. It should be equal to the string 
-length + 1 at the time when GetBuffer() was called, however this is not 
-officially documented. 
+existing internal string data. The buffer size is 
+(string length + 1) * sizeof(TCHAR) bytes. 
 
-Thus you must specify a nMinBufLength value when calling GetBuffer that 
-is LARGER than what you expect to use. The pointer returned by GetBuffer 
-is a dumb TCHAR*, it will not automatically reallocate on demand. 
+The pointer returned by GetBuffer is a dumb TCHAR*, it will not 
+automatically reallocate on demand. 
 
 Only if you use the pointer returned by GetBuffer to change the string 
 contents, you must call ReleaseBuffer before you use any other member 

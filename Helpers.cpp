@@ -201,6 +201,43 @@ BOOL HasWriteAccess(LPCTSTR lpszFileName)
 	}
 }
 
+CString UNCPath(const CString& sPath)
+{
+	// Check
+	if (sPath.IsEmpty())
+		return _T("");
+
+	// Return UNC path, extended-length path and device namespaces unchanged:
+	// \\server\share, \\?\D:\very_long_path, \\?\UNC\server\share or \\.\COM1
+	if (sPath.GetLength() >= 2 && sPath[0] == _T('\\') && sPath[1] == _T('\\'))
+		return sPath;
+
+	// Split path
+	TCHAR szDrive[_MAX_DRIVE];
+	TCHAR szDir[_MAX_DIR];
+	TCHAR szName[_MAX_FNAME];
+	TCHAR szExt[_MAX_EXT];
+	_tsplitpath(sPath, szDrive, szDir, szName, szExt);
+
+	// Return UNC path
+	CString sUNC;
+    DWORD dwBufSize = 0;
+    if (ERROR_MORE_DATA == WNetGetConnection(szDrive, NULL, &dwBufSize))
+    {	
+		LPTSTR p = sUNC.GetBuffer(dwBufSize);
+        if (NO_ERROR == WNetGetConnection(szDrive, p, &dwBufSize))
+        {
+			sUNC.ReleaseBuffer();
+            return sUNC + CString(szDir) + CString(szName) + CString(szExt);
+        }
+		else
+			sUNC.ReleaseBuffer();
+    }
+
+	// Otherwise return original path
+    return sPath;
+}
+
 // This function is used to take the Ownership of a specified file
 BOOL TakeOwnership(LPCTSTR lpszFile)
 {
