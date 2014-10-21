@@ -3466,7 +3466,7 @@
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
 #define ID_TOOLS_MOVE_CAM_FOLDERS       33502
-#define ID_TOOLS_BROWSE_CONFIG_FILES    33503
+#define ID_TOOLS_BROWSE_CONFIGLOG_FILES 33503
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects

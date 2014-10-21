@@ -250,7 +250,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Help"
     BEGIN
@@ -565,7 +565,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -661,7 +661,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -894,7 +894,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -1018,7 +1018,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -1311,7 +1311,7 @@ BEGIN
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config Files",         ID_TOOLS_BROWSE_CONFIG_FILES
+        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -5581,7 +5581,8 @@ BEGIN
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
     ID_TOOLS_MOVE_CAM_FOLDERS 
                             "Move all camera folders to selected directory\nMove Camera Folders"
-    ID_TOOLS_BROWSE_CONFIG_FILES "Open file explorer\nBrowse Config Files"
+    ID_TOOLS_BROWSE_CONFIGLOG_FILES 
+	                        "Open file explorer\nBrowse Config/Log Files"
 END
 
 STRINGTABLE

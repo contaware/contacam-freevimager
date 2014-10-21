@@ -100,7 +100,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
-	ON_COMMAND(ID_TOOLS_BROWSE_CONFIG_FILES, OnToolsBrowseConfigFiles)
+	ON_COMMAND(ID_TOOLS_BROWSE_CONFIGLOG_FILES, OnToolsBrowseConfigLogFiles)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SCREENSHOT, OnUpdateEditScreenshot)
@@ -5368,7 +5368,7 @@ void CUImagerApp::OnToolsViewLogfile()
 		::AfxMessageBox(ML_STRING(1760, "Application Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
 }
 
-void CUImagerApp::OnToolsBrowseConfigFiles()
+void CUImagerApp::OnToolsBrowseConfigLogFiles()
 {
 	CString sConfigFilesDir(GetConfigFilesDir());
 	if (!::IsExistingDir(sConfigFilesDir))

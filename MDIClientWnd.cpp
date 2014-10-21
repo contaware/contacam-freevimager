@@ -111,7 +111,7 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += TextMetrics.tmAscent;
 	CString s;
 #ifdef TRACELOGFILE
-	s.Format(_T("%s %s - ONLY FOR DEBUG (see %s with Browse Config Files under Tools menu)"), APPNAME_NOEXT, APPVERSION, TRACENAME_EXT);
+	s.Format(_T("%s %s - ONLY FOR DEBUG (see %s with Browse Config/Log Files under Tools menu)"), APPNAME_NOEXT, APPVERSION, TRACENAME_EXT);
 #else
 	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
 #endif
