@@ -34,7 +34,7 @@ public:
 protected:
 	DECLARE_DYNAMIC(CTrayIcon)
 	NOTIFYICONDATA m_nid;			// struct for Shell_NotifyIcon args
-	BOOL m_bMinimizedToTray;
+	volatile BOOL m_bMinimizedToTray;
 	static HWND m_hWndInvisible;
 	static BOOL RemoveTaskbarIcon(HWND hWnd);
 };

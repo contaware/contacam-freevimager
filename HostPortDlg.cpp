@@ -351,20 +351,31 @@ void CHostPortDlg::LoadCredentialsAndTitle()
 	// Get device path name
 	CString sDevicePathName = MakeDevicePathName(m_sHost, m_nPort, m_nDeviceTypeMode);
 
+	// Check whether section exists because the get profile functions call GetSectionKey()
+	// which creates the key if it doesn't exist. We do not want a new key for each typed char!
+	BOOL bSectionExists = ((CUImagerApp*)::AfxGetApp())->IsExistingSection(sDevicePathName);
+
 	// Load and display credentials
-	CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), _T(""));
-	CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), _T(""));
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
-	pEdit->SetWindowText(sUsername);
-	pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
-	pEdit->SetWindowText(sPassword);
+	if (bSectionExists)
+	{
+		CString	sUsername = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFrameUsername"), _T(""));
+		CString	sPassword = ((CUImagerApp*)::AfxGetApp())->GetSecureProfileString(sDevicePathName, _T("HTTPGetFramePassword"), _T(""));
+		CEdit* pEdit = (CEdit*)GetDlgItem(IDC_AUTH_USERNAME);
+		pEdit->SetWindowText(sUsername);
+		pEdit = (CEdit*)GetDlgItem(IDC_AUTH_PASSWORD);
+		pEdit->SetWindowText(sPassword);
+	}
 
 	// Update dialog title
-	CString	sName = ((CUImagerApp*)::AfxGetApp())->GetProfileString(sDevicePathName, _T("RecordAutoSaveDir"), _T(""));
-	sName.TrimRight(_T('\\'));
-	int index = sName.ReverseFind(_T('\\'));
-	if (index >= 0)
-		sName = sName.Mid(index + 1);
+	CString	sName;
+	if (bSectionExists)
+	{
+		sName = ((CUImagerApp*)::AfxGetApp())->GetProfileString(sDevicePathName, _T("RecordAutoSaveDir"), _T(""));
+		sName.TrimRight(_T('\\'));
+		int index = sName.ReverseFind(_T('\\'));
+		if (index >= 0)
+			sName = sName.Mid(index + 1);
+	}
 	if (sName.IsEmpty())
 		SetWindowText(m_sInitialDlgTitle);
 	else

@@ -70,6 +70,9 @@
 // System Files
 #define THUMBS_DB										_T("Thumbs.db")
 
+// That's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
+#define MAX_SECTIONNAMES_BUFFER							65535
+
 // Maximum Number of Email Attached Files
 #define MAX_ATTACHMENTS									16
 
@@ -537,7 +540,10 @@ public:
 	BOOL ShowColorDlg(	COLORREF& crColor,
 						CWnd* pParentWnd = NULL);
 
-	// Encrypted Write / Read to the registry
+	// Check whether section exists
+	BOOL IsExistingSection(const CString& sSection);
+
+	// Encrypted Write / Read
 	BOOL WriteSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszValue);
 	CString GetSecureProfileString(LPCTSTR lpszSection, LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
 	
@@ -555,7 +561,7 @@ public:
 	BOOL m_bSlideShowOnly;
 
 	// Use Tray Icon
-	BOOL m_bTrayIcon;
+	volatile BOOL m_bTrayIcon;
 
 	// First time that the App runs after Install (or Upgrade)
 	BOOL m_bFirstRun;

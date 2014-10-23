@@ -5419,7 +5419,6 @@ void CUImagerApp::EnumConfiguredDevicePathNames(CStringArray& DevicePathNames)
 	}
 	else
 	{
-		const int MAX_SECTIONNAMES_BUFFER = 65535; // that's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
 		TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
 		memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
 		::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, m_pszProfileName);
@@ -6025,6 +6024,39 @@ BOOL CUImagerApp::IsAutostart()
 	{
 		RegKey.Close();
 		return FALSE;
+	}
+}
+
+BOOL CUImagerApp::IsExistingSection(const CString& sSection)
+{
+	if (m_pszRegistryKey)
+	{
+		return ::IsRegistryKey(	HKEY_CURRENT_USER,
+								_T("Software\\") +
+								CString(MYCOMPANY) + CString(_T("\\")) +
+								CString(APPNAME_NOEXT) + _T("\\") +
+								sSection);
+	}
+	else
+	{
+		BOOL res = FALSE;
+		TCHAR* pSectionNames = new TCHAR[MAX_SECTIONNAMES_BUFFER];
+		memset(pSectionNames, 0, MAX_SECTIONNAMES_BUFFER * sizeof(TCHAR));
+		::GetPrivateProfileSectionNames(pSectionNames, MAX_SECTIONNAMES_BUFFER, m_pszProfileName);
+		TCHAR* s = pSectionNames;
+		while (*s != 0) // If 0 -> end of list
+		{
+			if (sSection.CompareNoCase(s) == 0)
+			{
+				res = TRUE;
+				break;
+			}
+			while (*s != 0)
+				s++;
+			s++; // Skip the 0
+		}
+		delete [] pSectionNames;
+		return res;
 	}
 }
 
