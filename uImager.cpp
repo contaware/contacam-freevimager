@@ -358,6 +358,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		AfxEnableControlContainer();
 
+		// Init RichEdit2
+		AfxInitRichEdit2();
+
 		// Get Module Name and Split it
 		TCHAR szDrive[_MAX_DRIVE];
 		TCHAR szDir[_MAX_DIR];

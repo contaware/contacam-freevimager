@@ -1100,6 +1100,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="RichEditCtrl2.cpp" />
     <ClCompile Include="RotationFlippingDlg.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1606,6 +1607,7 @@
     <ClInclude Include="ResizingDlg.h" />
     <ClInclude Include="ResizingDpiDlg.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RichEditCtrl2.h" />
     <ClInclude Include="RotationFlippingDlg.h" />
     <ClInclude Include="Round.h" />
     <ClInclude Include="SampleCGB.h" />

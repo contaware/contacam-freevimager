@@ -4,6 +4,19 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "CreditsDlg.h"
+extern "C"
+{
+#include "libavutil/ffversion.h"
+#ifndef CPJNSMTP_NOSSL
+#include <openssl/crypto.h>
+#endif
+#include "jversion.h"
+#include "tiffio.h"
+#include "png.h"
+#include "zlib.h"
+#include "gif_lib.h"
+#include "icc.h"
+}
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,7 +41,7 @@ void CCreditsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCreditsDlg)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, IDC_EDIT_CREDITS, m_Credits);
 	//}}AFX_DATA_MAP
 }
 
@@ -44,17 +57,72 @@ END_MESSAGE_MAP()
 BOOL CCreditsDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
+
+	// ffmpeg
+	CString sffmpeg = _T("ffmpeg ") + CString(FFMPEG_VERSION);
+	sffmpeg += CString(_T('\n')) + _T("http://www.ffmpeg.org");
+
+	// openssl
+	CString sopenssl;
+#ifndef CPJNSMTP_NOSSL
+	sopenssl = ::SSLeay_version(SSLEAY_VERSION);
+	sopenssl += CString(_T('\n')) + _T("http://www.openssl.org");
+#endif
+
+	// libjpeg
+	CString slibjpeg = _T("libjpeg ") + CString(JVERSION);
+	slibjpeg += CString(_T('\n')) + _T("http://www.ijg.org");
+
+	// libtiff
+	CString slibtiff(::TIFFGetVersion());
+	int i = slibtiff.Find(_T('\n'));
+	if (i >= 0)
+		slibtiff = slibtiff.Left(i);
+	slibtiff += CString(_T('\n')) + _T("http://www.libtiff.org");
+
+	// libpng
+	CString slibpng(::png_get_header_version(NULL));
+	slibpng.Trim();
+	slibpng += CString(_T('\n')) + _T("http://www.libpng.org");
+
+	// zlib
+	CString szlib = _T("zlib ") + CString(::zlibVersion());
+	szlib += CString(_T('\n')) + _T("http://www.zlib.net");
+
+	// giflib
+	CString sgiflib(GIF_LIB_VERSION);
+	sgiflib.Trim();
+	sgiflib.TrimRight(_T(','));
+	sgiflib = _T("giflib ") + sgiflib;
+	sgiflib += CString(_T('\n')) + _T("http://sourceforge.net/projects/giflib");
+
+	// icclib
+	CString sicclib = _T("icclib ") + CString(ICCLIB_VERSION_STR);
+	sicclib += CString(_T('\n')) + _T("http://www.argyllcms.com/icclibsrc.html");
 	
-	m_FfmpegLink.SubclassDlgItem(IDC_LINK_FFMPEG, this);
-	m_IjgLink.SubclassDlgItem(IDC_LINK_IJG, this);
-	m_LibTiffLink.SubclassDlgItem(IDC_LINK_LIBTIFF, this);
-	m_LibPngLink.SubclassDlgItem(IDC_LINK_LIBPNG, this);
-	m_ZlibLink.SubclassDlgItem(IDC_LINK_ZLIB, this);
-	m_GifLibLink.SubclassDlgItem(IDC_LINK_GIFLIB, this);
-	m_IccLibLink.SubclassDlgItem(IDC_LINK_ICCLIB, this);
-	m_WinkLink.SubclassDlgItem(IDC_LINK_WINK, this);
-	m_NsisLink.SubclassDlgItem(IDC_LINK_NSIS, this);
-	
+	// wink
+	CString swink(_T("Wink"));
+	swink += CString(_T('\n')) + _T("http://www.debugmode.com/wink");
+
+	// unicode nsis
+	CString snsis(_T("Unicode NSIS"));
+	snsis += CString(_T('\n')) + _T("http://www.scratchpaper.com");
+
+	// Output credits
+	CString sCredits =	sffmpeg		+ _T("\n\n") +
+#ifndef CPJNSMTP_NOSSL
+						sopenssl	+ _T("\n\n") +
+#endif
+						slibjpeg	+ _T("\n\n") +
+						slibtiff	+ _T("\n\n") +
+						slibpng		+ _T("\n\n") +
+						szlib		+ _T("\n\n") +
+						sgiflib		+ _T("\n\n") +
+						sicclib		+ _T("\n\n") +
+						swink		+ _T("\n\n") +
+						snsis;
+	m_Credits.SetWindowText(sCredits);
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

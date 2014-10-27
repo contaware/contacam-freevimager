@@ -1435,29 +1435,20 @@
 #define IDS_MULTILANG_1307              1307
 #define IDC_BUTTON_COPYFOLDERCONTENT    1307
 #define IDS_MULTILANG_1308              1308
-#define IDC_LINK_IJG                    1308
 #define IDS_MULTILANG_1309              1309
-#define IDC_LINK_LIBTIFF                1309
 #define IDC_APPNAME                     1309
 #define IDS_MULTILANG_1310              1310
-#define IDC_LINK_LIBPNG                 1310
 #define IDC_APPVER                      1310
 #define IDS_MULTILANG_1311              1311
 #define IDC_EDIT_PRINTER_PAPERSIZE_DPI  1311
-#define IDC_LINK_WINK                   1311
 #define IDS_MULTILANG_1312              1312
-#define IDC_LINK_ZLIB                   1312
 #define IDS_MULTILANG_1313              1313
 #define IDC_EDIT_SRCDIR                 1313
-#define IDC_LINK_NSIS                   1313
 #define IDS_MULTILANG_1314              1314
 #define IDC_EDIT_DSTDIR                 1314
-#define IDC_LINK_GIFLIB                 1314
 #define IDS_MULTILANG_1315              1315
-#define IDC_LINK_ICCLIB                 1315
 #define IDC_EDIT_OUTPUT_FILE            1315
 #define IDS_MULTILANG_1316              1316
-#define IDC_LINK_FFMPEG                 1316
 #define IDS_MULTILANG_1317              1317
 #define IDS_MULTILANG_1318              1318
 #define IDC_CHECK_BROWSEDLG             1318
@@ -3206,6 +3197,7 @@
 #define IDC_STATIC_SERVERPUSH           2561
 #define IDC_STATIC_CLIENTPOLL           2562
 #define IDC_LABEL_QUALITY               2563
+#define IDC_EDIT_CREDITS                2564
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3476,7 +3468,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33504
-#define _APS_NEXT_CONTROL_VALUE         2564
+#define _APS_NEXT_CONTROL_VALUE         2565
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

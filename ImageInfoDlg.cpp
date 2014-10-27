@@ -7,8 +7,11 @@
 #include "PictureDoc.h"
 #include "PictureView.h"
 #include "XMLite.h"
-#include "icc.h"
 #include "NoVistaFileDlg.h"
+extern "C"
+{
+#include "icc.h"
+}
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

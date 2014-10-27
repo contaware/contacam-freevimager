@@ -6,7 +6,7 @@
 // CreditsDlg.h : header file
 //
 
-#include "Staticlink.h"
+#include "RichEditCtrl2.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CCreditsDlg dialog
@@ -16,6 +16,7 @@ class CCreditsDlg : public CDialog
 // Construction
 public:
 	CCreditsDlg(CWnd* pParent = NULL);   // standard constructor
+	CRichEditCtrl2 m_Credits;
 
 // Dialog Data
 	//{{AFX_DATA(CCreditsDlg)
@@ -32,16 +33,6 @@ public:
 
 // Implementation
 protected:
-	CStaticLink m_FfmpegLink;
-	CStaticLink m_IjgLink;
-	CStaticLink m_LibTiffLink;
-	CStaticLink m_LibPngLink;
-	CStaticLink m_ZlibLink;
-	CStaticLink m_GifLibLink;
-	CStaticLink m_IccLibLink;
-	CStaticLink m_WinkLink;
-	CStaticLink m_NsisLink;
-
 	// Generated message map functions
 	//{{AFX_MSG(CCreditsDlg)
 	virtual BOOL OnInitDialog();

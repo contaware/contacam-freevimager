@@ -447,6 +447,9 @@
     <ClCompile Include="CameraAdvancedSettingsPropertySheet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RichEditCtrl2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">
@@ -925,6 +928,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CameraAdvancedSettingsPropertySheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RichEditCtrl2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
