@@ -4,6 +4,7 @@ Both
 - Possibility to hide menu, statusbar, titlebars and toolbars
 - Add double-quotes to ContaCam.exe file path under:
   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
+- PDF manual
 
 
 FreeVimager Program
@@ -26,10 +27,15 @@ ContaCam Program
   on a SSD the other folder on a normal HDD)
 - For longer detection sequences introduce CDib persistence to a file
   (m_sBitsFileName set and m_pBits is NULL)
+- Configurable saving frame-rate and resolution
 - Allow Digital Zoom of live camera via mouse wheel
   (suggested by alanphoto@starpower.net)
-  
+- Remove possibility to move cam folder in Camera Basic Settings as people
+  keep moving it and then complain that cams are not shown in web browser
+- Tools - Move Camera Folders to Global Settings dialog
+- Remove Fullscreen Browser
 
+  
 ContaCam Web Interface
 ----------------------
 - Add 2 links to the "summary snapshot" web page with "previous camera"
