@@ -266,7 +266,8 @@ CString CUImagerApp::GetConfiguredTempDir()
 	return sConfiguredTempDir;
 }
 
-// Note: these ffmpeg functions are not thread safe: avcodec_open2, avdevice_register_all, av_set_cpu_flags_mask
+// Note: the following ffmpeg functions are not thread safe:
+// avcodec_open2, avdevice_register_all, av_get_cpu_flags, av_force_cpu_flags
 
 CRITICAL_SECTION g_csAVCodec;
 BOOL g_bAVCodecCSInited = FALSE;
@@ -285,6 +286,16 @@ int avcodec_close_thread_safe(AVCodecContext *avctx)
 	int ret = avcodec_close(avctx);
 	::LeaveCriticalSection(&g_csAVCodec);
 	return ret;
+}
+
+// Necessary hack to correctly link to ffmpeg which needs hypot, see StdAfx.h
+extern "C" double __cdecl hypot(double x, double y)
+{
+	return _hypot(x, y);
+}
+extern "C" float __cdecl hypotf(float x, float y)
+{
+	return _hypotf(x, y);
 }
 
 static void my_av_log_trace(void* ptr, int level, const char* fmt, va_list vl)
@@ -702,6 +713,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::InitYUVToYUVTable();
 
 		// AVCODEC Init
+		// Uncomment to debug SIMD problems/crashes
+		//unsigned int flags = av_get_cpu_flags();
+		//av_force_cpu_flags(flags & ~(AV_CPU_FLAG_SSE2 | AV_CPU_FLAG_AVX));
 		::InitializeCriticalSection(&g_csAVCodec);
 		g_bAVCodecCSInited = TRUE;
 #ifdef _DEBUG

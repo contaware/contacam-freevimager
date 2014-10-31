@@ -1,5 +1,13 @@
 1. Copy yasm.exe and nasm.exe to c:\mingw\bin
-2. Open msys console:
+
+2. Copy latest c:\mingw\lib\gcc\mingw32\4.8.1\libgcc.a to /c/uimager/ffmpeg/mingw
+               c:\mingw\lib\libmingwex.a to /c/uimager/ffmpeg/mingw
+   To correctly link we have to remove pow.o from libmingwex.a,
+   perform the following in visual studio command prompt:
+   $ lib -remove:pow.o libmingwex.a
+   $ rename libmingwex.lib libmingwex.a
+
+3. Open msys console:
 $ cd /c/uimager/ffmpeg
 $ make distclean
 $ ./config_mingw
@@ -11,11 +19,18 @@ Put library source to /src, extract it and:
 ./configure --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
 make
 make install
--> library: /mingw/lib/libmp3lame.a
--> include: /mingw/include/lame
+-> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
+-> include: /mingw/include/lame      copy to  /c/uimager/ffmpeg/msvc
 
-Note
-----
+Note 1
+------
 --enable-memalign-hack not necessary because HAVE_ALIGNED_MALLOC is
 defined with mingw and msvc toolchains so that _aligned_malloc,
 _aligned_realloc and _aligned_free are used
+
+Note 2
+------
+When running the MinGW Installation Manager it may happen that libintl-8.dll is missing:
+Delete packages C:\MinGW\var\cache\mingw-get\packages\libintl-*
+$ mingw-get install --reinstall msys-libintl
+$ mingw-get install --reinstall mingw32-libintl
