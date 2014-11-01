@@ -34,15 +34,7 @@
 #include <afxinet.h>
 #include <locale.h>
 #include <afxmt.h>
-/* Necessary hack to correctly link to ffmpeg which needs hypot:
-the problem is that hypot and hypotf are declared inline in math.h,
-but fortunately we can turn the declarion off by defining RC_INVOKED
-*/
-#define RC_INVOKED
 #include <math.h>
-extern "C" double __cdecl hypot(double, double); // defined in uImager.cpp
-extern "C" float __cdecl hypotf(float, float);   // defined in uImager.cpp
-#undef RC_INVOKED
 #include <afxtempl.h>
 #include <direct.h>
 #include <string>

@@ -288,7 +288,8 @@ int avcodec_close_thread_safe(AVCodecContext *avctx)
 	return ret;
 }
 
-// Necessary hack to correctly link to ffmpeg which needs hypot, see StdAfx.h
+// Necessary hack to correctly link to ffmpeg which needs hypot,
+// the following two functions are declared in wrapperheaders\math.h
 extern "C" double __cdecl hypot(double x, double y)
 {
 	return _hypot(x, y);
@@ -713,9 +714,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		::InitYUVToYUVTable();
 
 		// AVCODEC Init
-		// Uncomment to debug SIMD problems/crashes
-		//unsigned int flags = av_get_cpu_flags();
-		//av_force_cpu_flags(flags & ~(AV_CPU_FLAG_SSE2 | AV_CPU_FLAG_AVX));
 		::InitializeCriticalSection(&g_csAVCodec);
 		g_bAVCodecCSInited = TRUE;
 #ifdef _DEBUG
