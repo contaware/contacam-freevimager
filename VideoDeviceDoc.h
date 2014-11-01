@@ -861,7 +861,8 @@ public:
 																	
 
 	// Main Decode & Process Functions
-	void ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize);
+	void ProcessOtherFrame(LPBYTE pData, DWORD dwSize);
+	void ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV);
 	void ProcessM420Frame(LPBYTE pData, DWORD dwSize);
 	void ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGData, DWORD dwMJPGSize);
 	static BOOL Rotate180(CDib* pDib);

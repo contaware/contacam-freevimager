@@ -72,8 +72,10 @@ public:
 		switch (m_pDoc->m_CaptureBMI.bmiHeader.biCompression)
 		{
 			case FCC('I420') :	m_pDoc->ProcessI420Frame(pBuffer, BufferLen, NULL, 0U);	break;
+			case FCC('NV12') :	m_pDoc->ProcessNV12Frame(pBuffer, BufferLen, FALSE);	break;
+			case FCC('NV21') :	m_pDoc->ProcessNV12Frame(pBuffer, BufferLen, TRUE);		break;
 			case FCC('M420') :	m_pDoc->ProcessM420Frame(pBuffer, BufferLen);			break;
-			default :			m_pDoc->ProcessNoI420NoM420Frame(pBuffer, BufferLen);	break;
+			default :			m_pDoc->ProcessOtherFrame(pBuffer, BufferLen);			break;
 		}
 		return S_OK;
     }

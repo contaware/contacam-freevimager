@@ -7443,7 +7443,7 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 									pDib->GetHeight()) >= 0);
 }
 
-void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
+void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 {	
 	// Decode ffmpeg supported formats
 	m_pProcessFrameExtraDib->SetBMI((LPBITMAPINFO)&m_ProcessFrameBMI);
@@ -7481,6 +7481,135 @@ void CVideoDeviceDoc::ProcessNoI420NoM420Frame(LPBYTE pData, DWORD dwSize)
 	}
 }
 
+#define ISALIGNED(x, a) (0==((size_t)(x)&((a)-1)))
+
+/*
+NV12 is a YUV 4:2:0 format, in which all Y samples are found first in memory as an array
+of unsigned char with an even number of lines. This is followed immediately by an array
+of unsigned char containing interleaved U and V samples. NV21 is the same as NV12,
+except that U and V samples are swapped.
+Note1:
+ffmpeg has also NV12 and NV21 decoding, but it crashes for some resolutions
+Note2:
+When using __asm to write assembly language in C/C++ functions, you don't need to
+preserve the EAX, EBX, ECX, EDX, ESI, or EDI registers. However, using these registers
+will affect code quality because the register allocator cannot use them to store values
+across __asm blocks. The compiler avoids enregistering variables across an __asm block
+if the register's contents would be changed by the __asm block. In addition, by using
+EBX, ESI or EDI in inline assembly code, you force the compiler to save and restore
+those registers in the function prologue and epilogue.
+*/
+void CVideoDeviceDoc::ProcessNV12Frame(LPBYTE pData, DWORD dwSize, BOOL bFlipUV)
+{
+	// Allocate Bits?
+	BITMAPINFO DstBmi;
+	memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+	DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	DstBmi.bmiHeader.biWidth = m_ProcessFrameBMI.bmiHeader.biWidth;
+	DstBmi.bmiHeader.biHeight = m_ProcessFrameBMI.bmiHeader.biHeight;
+	DstBmi.bmiHeader.biPlanes = 1;
+	DstBmi.bmiHeader.biCompression = FCC('I420');
+	DstBmi.bmiHeader.biBitCount = 12;
+	int stride = ::CalcYUVStride(DstBmi.bmiHeader.biCompression, DstBmi.bmiHeader.biWidth);
+	DstBmi.bmiHeader.biSizeImage = ::CalcYUVSize(DstBmi.bmiHeader.biCompression, stride, DstBmi.bmiHeader.biHeight);
+	if (!m_pProcessFrameExtraDib->SetBMI(&DstBmi))
+		return;
+	if (!m_pProcessFrameExtraDib->GetBits())
+	{
+		if (!m_pProcessFrameExtraDib->AllocateBitsFast(	m_pProcessFrameExtraDib->GetBitCount(),
+														m_pProcessFrameExtraDib->GetCompression(),
+														m_pProcessFrameExtraDib->GetWidth(),
+														m_pProcessFrameExtraDib->GetHeight()))
+			return;
+	}
+
+	// Init conversion vars
+	int width = m_ProcessFrameBMI.bmiHeader.biWidth;
+	int height = m_ProcessFrameBMI.bmiHeader.biHeight;
+	int halfwidth = width >> 1;
+	int halfheight = height >> 1;
+	LPBYTE src_y = pData;
+	LPBYTE src_uv = src_y + width * height; 
+	LPBYTE dst_y = m_pProcessFrameExtraDib->GetBits();
+	LPBYTE dst_u;
+	LPBYTE dst_v;
+	if (bFlipUV)
+	{
+		dst_v = dst_y + width * height;
+		dst_u = dst_v + halfwidth * halfheight;
+	}
+	else
+	{
+		dst_u = dst_y + width * height;
+		dst_v = dst_u + halfwidth * halfheight;
+	}
+	int y;
+
+	// Copy Y plane
+	memcpy(dst_y, src_y, width * height);
+
+	// Unpack UV
+	if (g_bSSE2						&&
+		ISALIGNED(halfwidth, 16)	&&
+		ISALIGNED(src_uv, 16)		&&
+		ISALIGNED(dst_u, 16)		&&
+		ISALIGNED(dst_v, 16))
+	{
+		for (y = 0 ; y < halfheight ; y++)
+		{
+			__asm
+			{
+				mov        eax, src_uv
+				mov        edx, dst_u
+				mov        edi, dst_v
+				mov        ecx, halfwidth
+				pcmpeqb    xmm5, xmm5	// generate mask 0x00ff00ff
+				psrlw      xmm5, 8
+				sub        edi, edx
+
+				align      16
+				convertloop:
+				movdqa     xmm0, [eax]
+				movdqa     xmm1, [eax + 16]
+				lea        eax,  [eax + 32]
+				movdqa     xmm2, xmm0
+				movdqa     xmm3, xmm1
+				pand       xmm0, xmm5	// even bytes
+				pand       xmm1, xmm5
+				packuswb   xmm0, xmm1
+				psrlw      xmm2, 8		// odd bytes
+				psrlw      xmm3, 8
+				packuswb   xmm2, xmm3
+				movdqa     [edx], xmm0
+				movdqa     [edx + edi], xmm2
+				lea        edx, [edx + 16]
+				sub        ecx, 16
+				ja         convertloop
+			}
+			dst_u += halfwidth;
+			dst_v += halfwidth;
+			src_uv += width;
+		}
+	}
+	else
+	{
+		for (y = 0 ; y < halfheight ; y++)
+		{
+			for (int x = 0 ; x < halfwidth ; x++)
+			{
+				dst_u[0] = src_uv[0];
+				dst_v[0] = src_uv[1];
+				src_uv += 2;
+				dst_u++;
+				dst_v++;
+			}
+		}
+	}
+
+	// Call Process Frame
+	ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), NULL, 0U);
+}
+
 /* 
 M420 is a YUV 4:2:0 format, with 2 lines Y and 1 line UV interleaved
 There are multiple benefits using M420:
@@ -7514,20 +7643,14 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	int stride = ::CalcYUVStride(DstBmi.bmiHeader.biCompression, DstBmi.bmiHeader.biWidth);
 	DstBmi.bmiHeader.biSizeImage = ::CalcYUVSize(DstBmi.bmiHeader.biCompression, stride, DstBmi.bmiHeader.biHeight);
 	if (!m_pProcessFrameExtraDib->SetBMI(&DstBmi))
-	{
-		::LogLine(_T("%s"), GetAssignedDeviceName() + _T(", error setting I420 format for M420 decoding!"));
 		return;
-	}
 	if (!m_pProcessFrameExtraDib->GetBits())
 	{
 		if (!m_pProcessFrameExtraDib->AllocateBitsFast(	m_pProcessFrameExtraDib->GetBitCount(),
 														m_pProcessFrameExtraDib->GetCompression(),
 														m_pProcessFrameExtraDib->GetWidth(),
 														m_pProcessFrameExtraDib->GetHeight()))
-		{
-			::LogLine(_T("%s"), GetAssignedDeviceName() + _T(", error allocating I420 buffer for M420 decoding!"));
 			return;
-		}
 	}
 
 	// Init conversion vars
@@ -7554,7 +7677,6 @@ void CVideoDeviceDoc::ProcessM420Frame(LPBYTE pData, DWORD dwSize)
 	}
 
 	// Unpack UV
-	#define ISALIGNED(x, a) (0==((size_t)(x)&((a)-1)))
 	if (g_bSSE2						&&
 		ISALIGNED(halfwidth, 16)	&&
 		ISALIGNED(src_uv, 16)		&&

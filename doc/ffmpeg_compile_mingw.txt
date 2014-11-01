@@ -30,6 +30,13 @@ _aligned_realloc and _aligned_free are used
 
 Note 2
 ------
+Sometimes ffmpeg can crash on new buggy code especially because of unaligned
+image sizes in SIMD routines, add the following code to isolate such problems:
+unsigned int flags = av_get_cpu_flags();
+av_force_cpu_flags(flags & ~(AV_CPU_FLAG_SSE2 | AV_CPU_FLAG_AVX));
+		
+Note 3
+------
 When running the MinGW Installation Manager it may happen that libintl-8.dll is missing:
 Delete packages C:\MinGW\var\cache\mingw-get\packages\libintl-*
 $ mingw-get install --reinstall msys-libintl
