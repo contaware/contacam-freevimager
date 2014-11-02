@@ -12,6 +12,7 @@ CONTACAM HISTORY
   obsolete and poses stability and in some cases even memory leaks
   problems on Windows 8/8.1
 - Added unicode support to ContaCamService console
+- Fixed NV12 and NV21 support (crashed with some video resolutions)
 - Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 
 4.9.7 (August 25th 2014)

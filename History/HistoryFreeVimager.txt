@@ -5,6 +5,7 @@ FREEVIMAGER HISTORY
 - Dropped DirectX (IDirectDraw7) drawing support because it is
   obsolete and poses stability and in some cases even memory leaks
   problems on Windows 8/8.1
+- Avi player has now an AAC codec
 - Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 
 4.9.7 (August 25th 2014)

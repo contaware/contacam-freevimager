@@ -746,12 +746,12 @@ bool CAVIPlay::CAVIAudioStream::OpenDecompressionAVCodec()
 	m_pCodecCtx->block_align = ((LPWAVEFORMATEX)m_pSrcFormat)->nBlockAlign;
 	m_pCodecCtx->bits_per_coded_sample = ((LPWAVEFORMATEX)m_pSrcFormat)->wBitsPerSample;
 
-	// Extra data for some Decoders
-	m_pCodecCtx->extradata_size = m_dwSrcFormatSize - sizeof(WAVEFORMATEX);
-	if (m_pCodecCtx->extradata_size > 0)
+	// Extra data
+	if (m_dwSrcFormatSize > sizeof(WAVEFORMATEX))
 	{
-		m_pCodecCtx->extradata = (uint8_t*)av_malloc(m_pCodecCtx->extradata_size +
-													FF_INPUT_BUFFER_PADDING_SIZE);
+		m_pCodecCtx->extradata_size = m_dwSrcFormatSize - sizeof(WAVEFORMATEX);
+		m_pCodecCtx->extradata = (uint8_t*)av_malloc(	m_pCodecCtx->extradata_size +
+														FF_INPUT_BUFFER_PADDING_SIZE);
 		if (m_pCodecCtx->extradata)
 		{
 			memcpy(	m_pCodecCtx->extradata,
@@ -3115,9 +3115,9 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 	m_pCodecCtx->codec_tag = dwFourCC;
 
 	// Extra data
-	m_pCodecCtx->extradata_size = m_dwSrcFormatSize - sizeof(BITMAPINFOHEADER);
-	if (m_pCodecCtx->extradata_size > 0)
+	if (m_dwSrcFormatSize > sizeof(BITMAPINFOHEADER))
 	{
+		m_pCodecCtx->extradata_size = m_dwSrcFormatSize - sizeof(BITMAPINFOHEADER);
 		m_pCodecCtx->extradata = (uint8_t*)av_malloc(	m_pCodecCtx->extradata_size +
 														FF_INPUT_BUFFER_PADDING_SIZE);
 		if (m_pCodecCtx->extradata)
@@ -3130,6 +3130,8 @@ bool CAVIPlay::CAVIVideoStream::OpenDecompressionAVCodec()
 			else
 				m_bAVDecodeExtraData = false;
 		}
+		else
+			m_pCodecCtx->extradata_size = 0;
 	}
 
 	// In case of buggy source header
