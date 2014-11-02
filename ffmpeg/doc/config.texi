@@ -146,7 +146,7 @@
 @c @set have-mm-empty no
 @c @set have-rdtsc no
 @c @set have-sarestart no
-@set have-sync-val-compare-and-swap yes
+@c @set have-sync-val-compare-and-swap no
 @set have-inline-asm yes
 @set have-symver yes
 @set have-yasm yes
@@ -504,7 +504,7 @@
 @set config-huffyuvdsp yes
 @set config-huffyuvencdsp yes
 @set config-idctdsp yes
-@c @set config-iirfilter no
+@set config-iirfilter yes
 @set config-intrax8 yes
 @c @set config-lgplv3 no
 @c @set config-llauddsp no
@@ -524,7 +524,7 @@
 @set config-riffenc yes
 @c @set config-rtpdec no
 @set config-rtpenc-chain yes
-@c @set config-sinewin no
+@set config-sinewin yes
 @set config-startcode yes
 @c @set config-tpeldsp no
 @set config-videodsp yes
@@ -757,7 +757,7 @@
 @c @set config-zerocodec-decoder no
 @c @set config-zlib-decoder no
 @c @set config-zmbv-decoder no
-@c @set config-aac-decoder no
+@set config-aac-decoder yes
 @c @set config-aac-latm-decoder no
 @c @set config-ac3-decoder no
 @c @set config-ac3-fixed-decoder no
@@ -1254,7 +1254,7 @@
 @c @set config-yuv4-encoder no
 @c @set config-zlib-encoder no
 @c @set config-zmbv-encoder no
-@c @set config-aac-encoder no
+@set config-aac-encoder yes
 @c @set config-ac3-encoder no
 @c @set config-ac3-fixed-encoder no
 @c @set config-alac-encoder no

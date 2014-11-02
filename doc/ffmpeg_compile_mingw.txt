@@ -13,7 +13,7 @@ $ make distclean
 $ ./config_mingw
 $ make
 
-Lame
+LAME
 ----
 Put library source to /src, extract it and:
 ./configure --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
@@ -22,6 +22,11 @@ make install
 -> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
 -> include: /mingw/include/lame      copy to  /c/uimager/ffmpeg/msvc
 
+AAC
+---
+Compiled with internal aac because of gpl conflicts with other aac libs:
+https://trac.ffmpeg.org/wiki/Encode/AAC
+  
 Note 1
 ------
 --enable-memalign-hack not necessary because HAVE_ALIGNED_MALLOC is
