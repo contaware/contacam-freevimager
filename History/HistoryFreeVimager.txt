@@ -1,6 +1,6 @@
 FREEVIMAGER HISTORY
 
-4.9.9 (xxx yth 2014)
+4.9.9 (November 3rd 2014)
 
 - Dropped DirectX (IDirectDraw7) drawing support because it is
   obsolete and poses stability and in some cases even memory leaks

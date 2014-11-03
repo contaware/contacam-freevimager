@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-4.9.9 (xxx yth 2014)
+4.9.9 (November 3rd 2014)
 
 - Possibility to configure Recording Segments of 15 min. and 30 min.
   (if upgrading please check/fix the recording segments under
@@ -12,7 +12,7 @@ CONTACAM HISTORY
   obsolete and poses stability and in some cases even memory leaks
   problems on Windows 8/8.1
 - Added unicode support to ContaCamService console
-- Fixed NV12 and NV21 support (crashed with some video resolutions)
+- Fixed NV12 and NV21 support for some video resolutions
 - Licensed under GNU GENERAL PUBLIC LICENSE Version 3
 
 4.9.7 (August 25th 2014)
