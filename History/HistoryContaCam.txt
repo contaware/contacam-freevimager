@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.0.0 (xxx yth 2015)
+
+- ... 
+
 4.9.9 (November 3rd 2014)
 
 - Possibility to configure Recording Segments of 15 min. and 30 min.

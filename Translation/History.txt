@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+5.0.0 (xxx yth 2015)
+
+- ... 
+
 4.9.9 (November 3rd 2014)
 
 - Renamed "sensibility" to "sensitivity"
