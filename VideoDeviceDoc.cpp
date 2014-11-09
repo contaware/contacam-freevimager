@@ -6125,10 +6125,19 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	if (!::IsExistingDir(sConfigDir))
 		::CreateDir(sConfigDir);
 	sConfigDir = ::GetASCIICompatiblePath(sConfigDir); // directory must exist!
-	sConfigDir.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
+	sConfigDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	sConfig += _T("ErrorLog \"") + sConfigDir + MICROAPACHE_LOGNAME_EXT + _T("\"\r\n");
 	sConfig += _T("PidFile \"") + sConfigDir + MICROAPACHE_PIDNAME_EXT + _T("\"\r\n");
 	
+	// PHP session temporary file location
+	CString sTempDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir(); // directory has been created in InitInstance()
+	sTempDir = ::GetASCIICompatiblePath(sTempDir); // directory must exist!
+	sTempDir.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
+	sConfig += _T("php_value session.save_path \"") + sTempDir + _T("\"\r\n");
+	sConfig += _T("php_value session.gc_probability 1\r\n");	// default value
+	sConfig += _T("php_value session.gc_divisor 10\r\n");		// every session init has 1 / 10 or 10% probability to clean-up old session files
+	sConfig += _T("php_value session.gc_maxlifetime 1440\r\n"); // default value
+
 	// Rewrite engine
 	sConfig += _T("<Directory />\r\n");
 	sConfig += _T("RewriteEngine on\r\n");
@@ -6466,7 +6475,7 @@ BOOL CVideoDeviceDoc::MicroApacheMakePasswordFile(BOOL bDigest, const CString& s
 			::CloseHandle(hFile);
 		}
 		sMicroapachePwFile = ::GetASCIICompatiblePath(sMicroapachePwFile); // file must exist!
-		sMicroapachePwFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise pw tool is not happy)
+		sMicroapachePwFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise pw tool is not happy)
 		CString sParams = _T("-bc \"") + sMicroapachePwFile + _T("\" \"") + sUsername + _T("\" \"") + sPassword + _T("\"");
 		return ::ExecHiddenApp(sMicroapachePwToolFile, sParams);
 	}
@@ -6580,9 +6589,9 @@ BOOL CVideoDeviceDoc::MicroApacheInitStart()
 	sMicroapacheStartFile += MICROAPACHE_RELPATH;
 	if (!::IsExistingFile(sMicroapacheStartFile))
 		return FALSE;
-	::DeleteFile(MicroApacheGetLogFileName()); // Avoid growing it to much!
+	::DeleteFile(MicroApacheGetLogFileName()); // avoid growing it to much!
 	sMicroapacheConfigFile = ::GetASCIICompatiblePath(sMicroapacheConfigFile); // file must exist!
-	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // Change path from \ to / (otherwise apache is not happy)
+	sMicroapacheConfigFile.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
 	CString sParams = _T("-f \"") + sMicroapacheConfigFile + _T("\"");
 	return ::ExecHiddenApp(sMicroapacheStartFile, sParams);
 }
