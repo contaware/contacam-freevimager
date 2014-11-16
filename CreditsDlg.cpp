@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "uimager.h"
 #include "CreditsDlg.h"
+#include "pjnsmtp.h"
 extern "C"
 {
 #include "libavutil/ffversion.h"
@@ -62,11 +63,13 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString sffmpeg = _T("ffmpeg ") + CString(FFMPEG_VERSION);
 	sffmpeg += CString(_T('\n')) + _T("http://www.ffmpeg.org");
 
-	// openssl
-	CString sopenssl;
+	// openssl and smtp
 #ifndef CPJNSMTP_NOSSL
-	sopenssl = ::SSLeay_version(SSLEAY_VERSION);
+	CString sopenssl(::SSLeay_version(SSLEAY_VERSION));
 	sopenssl += CString(_T('\n')) + _T("http://www.openssl.org");
+	CPJNSMTPMessage Message;
+	CString ssmtp(Message.m_sXMailer);
+	ssmtp += CString(_T('\n')) + _T("http://www.naughter.com");
 #endif
 
 	// libjpeg
@@ -112,6 +115,7 @@ BOOL CCreditsDlg::OnInitDialog()
 	CString sCredits =	sffmpeg		+ _T("\n\n") +
 #ifndef CPJNSMTP_NOSSL
 						sopenssl	+ _T("\n\n") +
+						ssmtp		+ _T("\n\n") +
 #endif
 						slibjpeg	+ _T("\n\n") +
 						slibtiff	+ _T("\n\n") +
