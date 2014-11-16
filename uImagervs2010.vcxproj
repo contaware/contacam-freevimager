@@ -1592,7 +1592,6 @@
     <ClInclude Include="PictureDoc.h" />
     <ClInclude Include="PicturePrintPreviewView.h" />
     <ClInclude Include="PictureView.h" />
-    <ClInclude Include="PJNLoadLibraryFromSystem32.h" />
     <ClInclude Include="PJNMD5.h" />
     <ClInclude Include="PJNNTLMAuth.h" />
     <ClInclude Include="PJNSMTP.h" />

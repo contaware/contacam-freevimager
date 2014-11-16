@@ -571,6 +571,21 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
                           to a SMTP server. For further information and sample code which you should incorporate into your real SMTP client applications, please see
                           http://wiki.openssl.org/index.php/Hostname_validation, https://github.com/iSECPartners/ssl-conservatory and 
                           http://archives.seul.org/libevent/users/Feb-2013/msg00043.html.
+         PJN / 15-11-2014 1. Removed the defunct method CPJNSMTPBodyPart::HexDigit.
+                          2. Reworked the CPJNSMTPBodyPart::GetBody method to use ATL::CAtlFile and ATL::CHeapPtr
+                          3. CPJNSMTPConnection now takes a static dependency on Wininet.dll instead of using GetProcAddress.
+                          4. CPJNSMTPConnection now takes a static dependency on Dnsapi.dll instead of using GetProcAddress.
+                          5. The default timeout set in the CPJNSMTPConnection constructor is now 60 seconds for both debug and release builds
+                          6. Removed the now defunct CPJNSMTPConnection::MXLookupAvailable method 
+                          7. Removed the now defunct CPJNSMTP_NOMXLOOKUP preprocessor value
+                          8. Removed the now defunct PJNLoadLibraryFromSystem32.h module from the distribution
+                          9. CPJNSMTPConnection::SendMessage has been reworked to use ATL::CAtlFile and ATL::CHeapPtr
+                          10. CPJNSMTPConnection::SendMessage now does a UTF-8 conversion on the body of the email when sending
+                          a plain email i.e. no HTML or mime if the charset is UTF-8. Thanks to Oliver Pfister for reporting this issue.
+                          11. Sample app has been updated to compile cleanly on VS 2013 Update 3 and higher
+                          12. The sample app shipped with the source code is now Visual Studio 2008 and as of this release the code is only supported on Visual Studio 
+                          2008 and later
+                          13. The sample app is now linked against the latest OpenSSL v1.0.1j dlls
                           
 Copyright (c) 1998 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
@@ -596,8 +611,10 @@ This was not the intention of the code and the author explicitly forbids use of 
 #include "PJNSmtp.h"
 #include "resource.h"
 #include "PJNMD5.h"
-#include "PJNLoadLibraryFromSystem32.h"
-
+#ifndef _WININET_
+#include <wininet.h>
+#pragma message("To avoid this message, please put wininet.h in your pre compiled header (usually stdafx.h)")
+#endif
 #ifndef __ATLENC_H__
 #pragma message("To avoid this message, please put atlenc.h in your pre compiled header (usually stdafx.h)")
 #include <atlenc.h>
@@ -614,12 +631,8 @@ const int PJNSMTP_MAXLINE = 76;
 
 #pragma comment(lib, "wsock32.lib") //Automatically link in the Winsock dll
 #pragma comment(lib, "rpcrt4.lib")  //Automatically link in the RPC runtime dll
-
-#ifndef CPJNSMTP_NONTLM
-#ifndef SEC_SUCCESS
-#define SEC_SUCCESS(Status) ((Status) >= 0)
-#endif
-#endif
+#pragma comment(lib, "wininet.lib") //Automatically link in the Wininet dll
+#pragma comment(lib, "Dnsapi.lib")  //Automatically linke to the DNS dll
 
 
 //////////////// Implementation ///////////////////////////////////////////////
@@ -664,14 +677,14 @@ CPJNSMPTBase64Encode::CPJNSMPTBase64Encode() : m_pBuf(NULL),
 
 CPJNSMPTBase64Encode::~CPJNSMPTBase64Encode()
 {
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 }
 
 void CPJNSMPTBase64Encode::Encode(const BYTE* pData, int nSize, DWORD dwFlags)
 {
   //Tidy up any heap memory we have been using
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
@@ -689,7 +702,7 @@ void CPJNSMPTBase64Encode::Encode(const BYTE* pData, int nSize, DWORD dwFlags)
 void CPJNSMPTBase64Encode::Decode(LPCSTR pData, int nSize)
 {
   //Tidy up any heap memory we have been using
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
@@ -722,14 +735,14 @@ CPJNSMPTQPEncode::CPJNSMPTQPEncode() : m_pBuf(NULL),
 
 CPJNSMPTQPEncode::~CPJNSMPTQPEncode()
 {
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 }
 
 void CPJNSMPTQPEncode::Encode(const BYTE* pData, int nSize, DWORD dwFlags)
 {
   //Tidy up any heap memory we have been using
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
@@ -757,14 +770,14 @@ CPJNSMPTQEncode::CPJNSMPTQEncode() : m_pBuf(NULL),
 
 CPJNSMPTQEncode::~CPJNSMPTQEncode()
 {
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 }
 
 void CPJNSMPTQEncode::Encode(const BYTE* pData, int nSize, LPCSTR szCharset)
 {
   //Tidy up any heap memory we have been using
-  if (m_pBuf)
+  if (m_pBuf != NULL)
     delete [] m_pBuf;
 
   //Calculate and allocate the buffer to store the encoded data
@@ -796,7 +809,7 @@ CPJNSMTPException::CPJNSMTPException(DWORD dwError, DWORD dwFacility, const CStr
 }
 
 #if _MSC_VER >= 1700
-BOOL CPJNSMTPException::GetErrorMessage(_Out_writes_z_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError,	_Out_opt_ PUINT pnHelpContext)
+BOOL CPJNSMTPException::GetErrorMessage(_Out_writes_z_(nMaxError) LPTSTR lpszError, _In_ UINT nMaxError, _Out_opt_ PUINT pnHelpContext)
 #else	
 BOOL CPJNSMTPException::GetErrorMessage(__out_ecount_z(nMaxError) LPTSTR lpszError, __in UINT nMaxError, __out_opt PUINT pnHelpContext)
 #endif
@@ -1127,14 +1140,6 @@ void CPJNSMTPBodyPart::SetAttachment(BOOL bAttachment)
     SetContentTransferEncoding(BASE64_ENCODING);
 }
 
-char CPJNSMTPBodyPart::HexDigit(int nDigit)
-{
-  if (nDigit < 10)
-    return static_cast<char>(nDigit + '0');
-  else
-    return static_cast<char>(nDigit - 10 + 'A');
-}
-
 CStringA CPJNSMTPBodyPart::ConvertToUTF8(const CString& sText)
 {
   //What will be the return value from this function
@@ -1310,7 +1315,7 @@ CStringA CPJNSMTPBodyPart::GetHeader(const CString& sRootCharset)
 CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
 {
   //if the body is text we must convert it to the declared encoding, this could create some
-  //problems since windows conversion functions (such as WideCharToMultiByte) uses UINT
+  //problems since Windows conversion functions (such as WideCharToMultiByte) uses UINT
   //code page and not a String like HTTP uses.
   //For now we will add the support for UTF-8, to support other encodings we have to 
   //implement a mapping between the "internet name" of the encoding and its LCID(UINT)
@@ -1318,85 +1323,67 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
   //What will be the return value from this function
   CStringA sBodyA;
   
-  if (m_pszRawBody)
+  if (m_pszRawBody != NULL)
     sBodyA = m_pszRawBody;
   else if (m_sFilename.GetLength())
   {
     //Ok, it's a file  
-    HANDLE hFile = CreateFile(m_sFilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-    if (hFile != INVALID_HANDLE_VALUE)
+    ATL::CAtlFile file;
+    HRESULT hr = file.Create(m_sFilename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN);
+    if (FAILED(hr))
+      CPJNSMTPConnection::ThrowPJNSMTPException(hr);
+    
+    //Get the length of the file (we only support sending files less than 2GB!)
+    ULONGLONG nFileSize = 0;
+    hr = file.GetSize(nFileSize);
+    if (FAILED(hr))
+      CPJNSMTPConnection::ThrowPJNSMTPException(hr);
+    if (nFileSize >= INT_MAX)
+      CPJNSMTPConnection::ThrowPJNSMTPException(IDS_PJNSMTP_FILE_SIZE_TO_SEND_TOO_LARGE, FACILITY_ITF);
+    
+    //Allocate some memory for the contents of the file
+    ATL::CHeapPtr<BYTE> body;
+    if (!body.Allocate(static_cast<size_t>(nFileSize + 1)))
+      CPJNSMTPConnection::ThrowPJNSMTPException(ERROR_OUTOFMEMORY, FACILITY_WIN32); 
+
+    //Read in the contents of the file
+    DWORD dwBytesWritten = 0;
+    hr = file.Read(body, static_cast<DWORD>(nFileSize));
+    if (FAILED(hr))
+      CPJNSMTPConnection::ThrowPJNSMTPException(hr);
+
+    switch (m_ContentTransferEncoding)
     {
-      //Get the length of the file (we only support sending files less than 4GB!)
-      DWORD dwFileSizeHigh = 0;
-      DWORD dwFileSizeLow = GetFileSize(hFile, &dwFileSizeHigh);
-      if (dwFileSizeHigh)
+      case BASE64_ENCODING:
       {
-        //Close the handler before we throw the exception
-        CloseHandle(hFile);
-        
-        CPJNSMTPConnection::ThrowPJNSMTPException(IDS_PJNSMTP_FILE_SIZE_TO_SEND_TOO_LARGE, FACILITY_ITF);
+        //Do the encoding
+        CPJNSMPTBase64Encode encode;
+        encode.Encode(body, dwBytesWritten, ATL_BASE64_FLAG_NONE);
+
+        //Form the body for this body part
+        sBodyA = encode.Result();
+        break;
       }
-      else if (dwFileSizeLow != INVALID_FILE_SIZE)
+      case QP_ENCODING:
       {
-        if (dwFileSizeLow)
-        {
-          //read in the contents of the input file
-          BYTE* pszIn = new BYTE[dwFileSizeLow + 1];
+        //Do the encoding
+        CPJNSMPTQPEncode encode;
+        encode.Encode(body, dwBytesWritten, 0);
 
-          //Read in the contents of the file
-          DWORD dwBytesWritten = 0;
-          if (ReadFile(hFile, pszIn, dwFileSizeLow, &dwBytesWritten, NULL))
-          {
-            switch (m_ContentTransferEncoding)
-            {
-              case BASE64_ENCODING:
-              {
-                //Do the encoding
-                CPJNSMPTBase64Encode encode;
-                encode.Encode(pszIn, dwBytesWritten, ATL_BASE64_FLAG_NONE);
-
-                //Form the body for this body part
-                sBodyA = encode.Result();
-                break;
-              }
-              case QP_ENCODING:
-              {
-                //Do the encoding
-                CPJNSMPTQPEncode encode;
-                encode.Encode(pszIn, dwBytesWritten, 0);
-
-                //Form the body for this body part
-                sBodyA = encode.Result();
-                break;
-              }
-              default:
-              {
-                pszIn[dwBytesWritten] = '\0';
-
-                //The body of this body part is just the raw file contents
-                sBodyA = pszIn;
-                break;
-              }
-            }
-          }
-
-          //delete the input buffer
-          delete [] pszIn;
-        }
+        //Form the body for this body part
+        sBodyA = encode.Result();
+        break;
       }
-      else
+      default:
       {
-        //Close the handler before we throw the exception
-        CloseHandle(hFile);
-        
-        CPJNSMTPConnection::ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
-      }
+        //NULL terminate the data before we try to treat it as a char*
+        body.m_pData[nFileSize] = '\0';
 
-      //Close the file now that we are finished with it
-      CloseHandle(hFile);
+        //The body of this body part is just the raw file contents
+        sBodyA = body.m_pData;
+        break;
+      }
     }
-    else
-      CPJNSMTPConnection::ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
   }
   else
   {
@@ -1617,7 +1604,7 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
 }
 
 
-CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.06")), 
+CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.07")), 
                                      m_bMime(FALSE), 
                                      m_Priority(NoPriority),
                                      m_DSNReturnType(HeadersOnly),
@@ -2244,45 +2231,10 @@ CPJNSMTPConnection::CPJNSMTPConnection() : m_bConnected(FALSE),
                                            m_ConnectionType(PlainText),
                                            m_bCanDoDSN(FALSE),
                                            m_bCanDoSTARTTLS(FALSE),
-                                           m_SSLProtocol(TLSv1)
+                                           m_SSLProtocol(TLSv1),
+                                           m_dwTimeout(60000)
 {
-#ifdef _DEBUG
-  m_dwTimeout = 90000; //default timeout of 90 seconds when debugging
-#else
-  m_dwTimeout = 60000;  //default timeout of 60 seconds for normal release code
-#endif
   SetHeloHostname(_T("auto"));
-  
-  m_hWininet = PJNLoadLibraryFromSystem32(_T("WININET.DLL"));
-  if (m_hWininet)
-  {
-    m_lpfnInternetGetConnectedState = reinterpret_cast<LPINTERNETGETCONNECTEDSTATE>(GetProcAddress(m_hWininet, "InternetGetConnectedState"));
-    m_lpfnInternetAutoDialHangup = reinterpret_cast<LPINTERNETAUTODIALHANGUP>(GetProcAddress(m_hWininet, "InternetAutodialHangup"));
-    m_lpfnInternetAttemptConnect = reinterpret_cast<LPINTERNETATTEMPCONNECT>(GetProcAddress(m_hWininet, "InternetAttemptConnect"));
-  }
-  else
-  {
-    m_lpfnInternetGetConnectedState = NULL;
-    m_lpfnInternetAutoDialHangup = NULL;
-    m_lpfnInternetAttemptConnect = NULL;
-  }
-#ifndef CPJNSMTP_NOMXLOOKUP
-  m_hDnsapi = PJNLoadLibraryFromSystem32(_T("DNSAPI.DLL"));
-  if (m_hDnsapi)
-  {
-    m_lpfnDnsRecordListFree = reinterpret_cast<LPDNSRECORDLISTFREE>(GetProcAddress(m_hDnsapi, "DnsRecordListFree"));
-    #ifdef _UNICODE
-    m_lpfnDnsQuery = reinterpret_cast<LPDNSQUERY>(GetProcAddress(m_hDnsapi, "DnsQuery_W"));
-    #else
-    m_lpfnDnsQuery = reinterpret_cast<LPDNSQUERY>(GetProcAddress(m_hDnsapi, "DnsQuery_A"));
-    #endif
-  }
-  else
-  {
-    m_lpfnDnsRecordListFree = NULL;
-    m_lpfnDnsQuery = NULL; 
-  }
-#endif
 }
 
 CPJNSMTPConnection::~CPJNSMTPConnection()
@@ -2299,19 +2251,6 @@ CPJNSMTPConnection::~CPJNSMTPConnection()
       pEx->Delete();
     }
   }
-  
-  if (m_hWininet)
-  {
-    FreeLibrary(m_hWininet);
-    m_hWininet = NULL;
-  }
-#ifndef CPJNSMTP_NOMXLOOKUP
-  if (m_hDnsapi)
-  {
-    FreeLibrary(m_hDnsapi);
-    m_hDnsapi = NULL;
-  }
-#endif
 }
 
 void CPJNSMTPConnection::ThrowPJNSMTPException(DWORD dwError, DWORD dwFacility, const CString& sLastResponse)
@@ -2517,7 +2456,7 @@ void CPJNSMTPConnection::Connect(LPCTSTR pszHostName, AuthenticationMethod am, L
   #endif
     {
       m_Socket.SetBindAddress(m_sBindAddress);
-      m_Socket.CreateAndConnect(pszHostName, nPort);
+      m_Socket.CreateAndConnect(pszHostName, nPort, SOCK_STREAM, AF_INET);
     }
   }
   catch(CWSocketException* pEx)
@@ -2945,13 +2884,13 @@ CString CPJNSMTPConnection::FormMailFromCommand(const CString& sEmailAddress, DW
   return sBuf;  
 }
 
-void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
+void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& message)
 {
   //paramater validity checking
   ASSERT(m_bConnected); //Must be connected to send a message
 
   //Send the MAIL command
-  CStringA sBuf(FormMailFromCommand(Message.m_From.m_sEmailAddress, Message.m_DSN, Message.m_DSNReturnType, Message.m_sENVID));
+  CStringA sBuf(FormMailFromCommand(message.m_From.m_sEmailAddress, message.m_DSN, message.m_DSNReturnType, message.m_sENVID));
   try
   {
     _Send(sBuf.operator LPCSTR(), sBuf.GetLength());
@@ -2970,27 +2909,27 @@ void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
   //Send the RCPT command, one for each recipient (includes the TO, CC & BCC recipients)
 
   //We must be sending the message to someone!
-  ASSERT(Message.m_To.GetSize() + Message.m_CC.GetSize() + Message.m_BCC.GetSize());
+  ASSERT(message.m_To.GetSize() + message.m_CC.GetSize() + message.m_BCC.GetSize());
 
   //First the "To" recipients
-  for (INT_PTR i=0; i<Message.m_To.GetSize(); i++)
+  for (INT_PTR i=0; i<message.m_To.GetSize(); i++)
   {
-    CPJNSMTPAddress& recipient = Message.m_To.ElementAt(i);
-    SendRCPTForRecipient(Message.m_DSN, recipient);
+    CPJNSMTPAddress& recipient = message.m_To.ElementAt(i);
+    SendRCPTForRecipient(message.m_DSN, recipient);
   }
 
   //Then the "CC" recipients
-  for (INT_PTR i=0; i<Message.m_CC.GetSize(); i++)
+  for (INT_PTR i=0; i<message.m_CC.GetSize(); i++)
   {
-    CPJNSMTPAddress& recipient = Message.m_CC.ElementAt(i);
-    SendRCPTForRecipient(Message.m_DSN, recipient);
+    CPJNSMTPAddress& recipient = message.m_CC.ElementAt(i);
+    SendRCPTForRecipient(message.m_DSN, recipient);
   }
 
   //Then the "BCC" recipients
-  for (INT_PTR i=0; i<Message.m_BCC.GetSize(); i++)
+  for (INT_PTR i=0; i<message.m_BCC.GetSize(); i++)
   {
-    CPJNSMTPAddress& recipient = Message.m_BCC.ElementAt(i);
-    SendRCPTForRecipient(Message.m_DSN, recipient);
+    CPJNSMTPAddress& recipient = message.m_BCC.ElementAt(i);
+    SendRCPTForRecipient(message.m_DSN, recipient);
   }
 
   //Send the DATA command
@@ -3011,7 +2950,7 @@ void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
     ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_DATA_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
   //Send the Message Header
-  CStringA sHeader(Message.GetHeader());
+  CStringA sHeader(message.GetHeader());
   try
   {
     _Send(sHeader.operator LPCSTR(), sHeader.GetLength());
@@ -3037,21 +2976,20 @@ void CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
   }
 
   //Now send the contents of the mail    
-  if (Message.m_RootPart.GetNumberOfChildBodyParts() || Message.m_bMime)
+  if (message.m_RootPart.GetNumberOfChildBodyParts() || message.m_bMime)
   {
     //Send the root body part (and all its children)
-    SendBodyPart(&Message.m_RootPart, TRUE, Message.GetCharset());
+    SendBodyPart(&message.m_RootPart, TRUE, message.GetCharset());
   }
   else
   {
-     //Oli fixed to support UTF-8
-     //CStringA sBody(Message.m_RootPart.GetText());
-     //Do the UTF8 conversion if necessary
-     CStringA sBody;
-     if (Message.m_RootPart.GetCharset().CompareNoCase(_T("UTF-8")) == 0)
-       sBody = CPJNSMTPBodyPart::ConvertToUTF8(Message.m_RootPart.GetText());
-     else
-       sBody = Message.m_RootPart.GetText(); 
+    //Do the UTF8 conversion if necessary
+    CStringA sBody;
+    if (message.m_RootPart.GetCharset().CompareNoCase(_T("UTF-8")) == 0)
+      sBody = CPJNSMTPBodyPart::ConvertToUTF8(message.m_RootPart.GetText());
+    else
+      sBody = message.m_RootPart.GetText();
+  
     CPJNSMTPBodyPart::FixSingleDotA(sBody);
 
     //Send the body
@@ -3200,31 +3138,20 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
   ASSERT(m_bConnected); //Must be connected to send a message
 
   //Open up the file we want to send
-  HANDLE hFile = CreateFile(sMessageOnFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-  if (hFile == INVALID_HANDLE_VALUE)
-    ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
+  ATL::CAtlFile file;
+  HRESULT hr = file.Create(sMessageOnFile, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN);
+  if (FAILED(hr))
+    ThrowPJNSMTPException(hr);
 
-  //Get the length of the file (we only support sending files less than 4GB)
-  DWORD dwFileSizeHigh = 0;
-  DWORD dwFileSizeLow = GetFileSize(hFile, &dwFileSizeHigh);
-  DWORD dwError = GetLastError();
-  if (dwFileSizeLow == INVALID_FILE_SIZE)
-  {
-    CloseHandle(hFile);
-    ThrowPJNSMTPException(dwError, FACILITY_WIN32);
-  }
-  if (dwFileSizeHigh)
-  {
-    CloseHandle(hFile);
-    ThrowPJNSMTPException(IDS_PJNSMTP_FILE_SIZE_TO_SEND_TOO_LARGE, FACILITY_ITF);
-  }
-  if (dwFileSizeLow == 0)
-  {
-    CloseHandle(hFile);
+  //Get the length of the file (we only support sending files less than 4GB!)
+  ULONGLONG nFileSize = 0;
+  hr = file.GetSize(nFileSize);
+  if (FAILED(hr))
+    CPJNSMTPConnection::ThrowPJNSMTPException(hr);
+  if (nFileSize >= ULONG_MAX)
+    CPJNSMTPConnection::ThrowPJNSMTPException(IDS_PJNSMTP_FILE_SIZE_TO_SEND_TOO_LARGE, FACILITY_ITF);
+  if (nFileSize == 0)
     ThrowPJNSMTPException(IDS_PJNSMTP_CANNOT_SEND_ZERO_BYTE_MESSAGE, FACILITY_ITF);
-  }
-
-  char* pSendBuf = NULL;
 
   try
   {
@@ -3237,7 +3164,7 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
     }
     catch(CWSocketException* pEx)
     {
-      dwError = pEx->m_nError;
+      DWORD dwError = pEx->m_nError;
       pEx->Delete();
       ThrowPJNSMTPException(dwError, FACILITY_WIN32);
     }
@@ -3265,7 +3192,7 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
     }
     catch(CWSocketException* pEx)
     {
-      dwError = pEx->m_nError;
+      DWORD dwError = pEx->m_nError;
       pEx->Delete();
       ThrowPJNSMTPException(dwError, FACILITY_WIN32);
     }
@@ -3275,7 +3202,9 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
       ThrowPJNSMTPException(IDS_PJNSMTP_UNEXPECTED_DATA_RESPONSE, FACILITY_ITF, GetLastCommandResponse());
 
     //Allocate a buffer we will use in the sending
-    pSendBuf = new char[dwSendBufferSize];
+    ATL::CHeapPtr<BYTE> sendBuf;
+    if (!sendBuf.Allocate(dwSendBufferSize))
+      ThrowPJNSMTPException(ERROR_OUTOFMEMORY, FACILITY_WIN32); 
 
     //Read and send the data a chunk at a time
     BOOL bMore = TRUE;
@@ -3284,8 +3213,9 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
     {
       //Read the chunk from file
       DWORD dwRead = 0;
-      if (!ReadFile(hFile, pSendBuf, dwSendBufferSize, &dwRead, NULL))
-        ThrowPJNSMTPException(GetLastError(), FACILITY_WIN32);
+      hr = file.Read(sendBuf, dwSendBufferSize, dwRead);
+      if (FAILED(hr))
+        ThrowPJNSMTPException(hr);
       bMore = (dwRead == dwSendBufferSize);
 
       //Send the chunk
@@ -3294,15 +3224,15 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
         dwBytesSent += dwRead;
 
         //Call the progress virtual method
-        if (OnSendProgress(dwBytesSent, dwFileSizeLow))
+        if (OnSendProgress(dwBytesSent, static_cast<DWORD>(nFileSize)))
         {
           try
           {
-            _Send(pSendBuf, dwRead);
+            _Send(sendBuf, dwRead);
           }
           catch(CWSocketException* pEx)
           {
-            dwError = pEx->m_nError;
+            DWORD dwError = pEx->m_nError;
             pEx->Delete();
             ThrowPJNSMTPException(dwError, FACILITY_WIN32);
           }
@@ -3316,10 +3246,6 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
     }
     while (bMore);
 
-    //Tidy up the heap memory we have used
-    delete [] pSendBuf;
-    pSendBuf = NULL;
-
     //Send the end of message indicator
     static char* szEOM = "\r\n.\r\n";
     try
@@ -3328,7 +3254,7 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
     }
     catch(CWSocketException* pEx)
     {
-      dwError = pEx->m_nError;
+      DWORD dwError = pEx->m_nError;
       pEx->Delete();
       ThrowPJNSMTPException(dwError, FACILITY_WIN32);
     }
@@ -3339,23 +3265,13 @@ void CPJNSMTPConnection::SendMessage(const CString& sMessageOnFile, CPJNSMTPMess
   }
   catch(CPJNSMTPException* pEx)
   {
-    //Explicitly closing the file before we rethrow the exception
-    CloseHandle(hFile);
-
-    //Tidy up the heap memory we have used
-    if (pSendBuf)
-      delete [] pSendBuf;
-
-    HRESULT hr = pEx->m_hr;
-    CString sLastResponse = pEx->m_sLastResponse;
+    hr = pEx->m_hr;
+    CString sLastResponse(pEx->m_sLastResponse);
     pEx->Delete();
 
     //rethrow the exception
     ThrowPJNSMTPException(hr, sLastResponse);
   }
-
-  //close the file we have been working on
-  CloseHandle(hFile);
 }
 
 void CPJNSMTPConnection::SendRCPTForRecipient(DWORD DSN, CPJNSMTPAddress& recipient)
@@ -3715,53 +3631,33 @@ void CPJNSMTPConnection::AuthCramMD5(LPCTSTR pszUsername, LPCTSTR pszPassword)
 
 CPJNSMTPConnection::ConnectToInternetResult CPJNSMTPConnection::ConnectToInternet()
 {
-  if ((m_lpfnInternetGetConnectedState != NULL) && (m_lpfnInternetAttemptConnect != NULL))
+  //Check to see if an internet connection already exists.
+  //bInternet = TRUE  internet connection exists.
+  //bInternet = FALSE internet connection does not exist
+  DWORD dwFlags = 0;
+  BOOL bInternet = InternetGetConnectedState(&dwFlags, 0);
+  if (!bInternet)
   {
-    //Check to see if an internet connection already exists.
-    //bInternet = TRUE  internet connection exists.
-    //bInternet = FALSE internet connection does not exist
-    DWORD dwFlags = 0;
-    BOOL bInternet = m_lpfnInternetGetConnectedState(&dwFlags, 0);
-    if (!bInternet)
+    //Attempt to establish internet connection, probably
+    //using Dial-up connection. CloseInternetConnection() should be called when
+    //as some time to drop the dial-up connection.
+    DWORD dwResult = InternetAttemptConnect(0);
+    if (dwResult != ERROR_SUCCESS)
     {
-      //Attempt to establish internet connection, probably
-      //using Dial-up connection. CloseInternetConnection() should be called when
-      //as some time to drop the dial-up connection.
-      DWORD dwResult = m_lpfnInternetAttemptConnect(0);
-      if (dwResult != ERROR_SUCCESS)
-      {
-        SetLastError(dwResult);
-        return CTIR_Failure;
-      }
-      else
-        return CTIR_NewConnection;
+      SetLastError(dwResult);
+      return CTIR_Failure;
     }
     else
-      return CTIR_ExistingConnection;
+      return CTIR_NewConnection;
   }
   else
-  {
-    //Wininet is not available. Do what would happen if the dll
-    //was present but the function call failed
-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);  
-    return CTIR_Failure;
-  }
+    return CTIR_ExistingConnection;
 }
 
 BOOL CPJNSMTPConnection::CloseInternetConnection()
 {
-  if (m_lpfnInternetAutoDialHangup)
-  {
-    //Make sure any connection through a modem is 'closed'.
-    return m_lpfnInternetAutoDialHangup(0);
-  }
-  else
-  {
-    //Wininet is not available. Do what would happen if the dll
-    //was present but the function call failed
-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);  
-    return FALSE;
-  }
+  //Make sure any connection through a modem is 'closed'.
+  return InternetAutodialHangup(0);
 }
 
 #ifndef CPJNSMTP_NONTLM
@@ -3836,56 +3732,41 @@ SECURITY_STATUS CPJNSMTPConnection::NTLMAuthPhase3(PBYTE pBuf, DWORD cbBuf)
 }
 #endif
 
-#ifndef CPJNSMTP_NOMXLOOKUP
 BOOL CPJNSMTPConnection::MXLookup(LPCTSTR lpszHostDomain,	CStringArray& arrHosts, CWordArray& arrPreferences, WORD fOptions, PIP4_ARRAY aipServers)
 {
   //What will be the return value
   BOOL bSuccess = FALSE;
 
-  //Reset the arrays
+  //Reset the output parameter arrays
   arrHosts.RemoveAll();
   arrPreferences.RemoveAll();
 
-  if ((m_lpfnDnsRecordListFree != NULL) && (m_lpfnDnsQuery != NULL))
+  //Do the DNS MX lookup  
+  PDNS_RECORD pRec = NULL;
+  DNS_STATUS status = DnsQuery(lpszHostDomain, DNS_TYPE_MX, fOptions, aipServers, &pRec, NULL);
+  if (status == ERROR_SUCCESS)
   {
-    //Do the DNS MX lookup  
-    PDNS_RECORD pRec = NULL;
-    DNS_STATUS status = m_lpfnDnsQuery(lpszHostDomain, DNS_TYPE_MX, fOptions, aipServers, &pRec, NULL);
-    if (status == ERROR_SUCCESS)
-    {
-      bSuccess = TRUE;
+    bSuccess = TRUE;
 
-      PDNS_RECORD pRecFirst = pRec;
-      while (pRec)
+    PDNS_RECORD pRecFirst = pRec;
+    while (pRec)
+    {
+      //We're only interested in MX records
+      if (pRec->wType == DNS_TYPE_MX)
       {
-        //We're only interested in MX records
-        if (pRec->wType == DNS_TYPE_MX)
-        {
-          arrHosts.Add(pRec->Data.MX.pNameExchange);
-          arrPreferences.Add(pRec->Data.MX.wPreference);
-        }
-        pRec = pRec->pNext;
+        arrHosts.Add(pRec->Data.MX.pNameExchange);
+        arrPreferences.Add(pRec->Data.MX.wPreference);
       }
-      m_lpfnDnsRecordListFree(pRecFirst, DnsFreeRecordList);
+      pRec = pRec->pNext;
     }
-    else
-      SetLastError(status);
+    if (pRecFirst != NULL)
+      DnsRecordListFree(pRecFirst, DnsFreeRecordList);
   }
   else
-  {
-    //Dnsapi is not available. Do what would happen if the dll
-    //was present but the function call failed
-    SetLastError(ERROR_CALL_NOT_IMPLEMENTED);  
-  }
+    SetLastError(status);
 
   return bSuccess;
 }
-
-BOOL CPJNSMTPConnection::MXLookupAvailable()
-{
-  return (m_lpfnDnsRecordListFree != NULL && m_lpfnDnsQuery != NULL);
-}
-#endif
 
 CString CPJNSMTPConnection::CreateNEWENVID()
 {

@@ -28,11 +28,9 @@ This was not the intention of the code and the author explicitly forbids use of 
 #ifndef __PJNSMTP_H__
 #define __PJNSMTP_H__
 
-#ifndef CPJNSMTP_NOMXLOOKUP
 #ifndef _WINDNS_INCLUDED_
 #pragma message("To avoid this message, please put WinDNS.h in your pre compiled header (usually stdafx.h)")
 #include <WinDNS.h>
-#endif
 #endif
 
 #include "SocMFC.h" //If you get a compilation error about this missing header file, then you need to download my CWSocket class from http://www.naughter.com/w3mfc.html
@@ -250,7 +248,6 @@ public:
 
 //Static methods
   static CStringA   ConvertToUTF8(const CString& sIn);
-  static char       HexDigit(int nDigit);
   static CString    CreateGUID();
   static CStringA   HeaderEncode(const CString& sText, const CString& sCharset);
   static CStringA   FoldSubjectHeader(const CString& sSubject, const CString& sCharset);
@@ -455,10 +452,8 @@ public:
   ConnectToInternetResult ConnectToInternet();
   BOOL CloseInternetConnection();
 
-#ifndef CPJNSMTP_NOMXLOOKUP
+//MX Lookup support
   BOOL MXLookup(LPCTSTR lpszHostDomain, CStringArray& arrHosts, CWordArray& arrPreferences, WORD fOptions = DNS_QUERY_STANDARD, PIP4_ARRAY aipServers = NULL);
-  BOOL MXLookupAvailable();
-#endif
 
 //Static methods
   static void ThrowPJNSMTPException(DWORD dwError = 0, DWORD Facility = FACILITY_WIN32, const CString& sLastResponse = _T(""));
@@ -466,7 +461,7 @@ public:
   static CString CreateNEWENVID();
 
 //Virtual Methods
-  virtual void SendMessage(CPJNSMTPMessage& Message);
+  virtual void SendMessage(CPJNSMTPMessage& message);
   virtual void SendMessage(const CString& sMessageOnFile, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
   virtual void SendMessage(BYTE* pMessage, DWORD dwMessageSize, CPJNSMTPMessage::CAddressArray& Recipients, const CPJNSMTPAddress& From, CString& sENVID, DWORD dwSendBufferSize = 4096, DWORD DSN = CPJNSMTPMessage::DSN_NOT_SPECIFIED, CPJNSMTPMessage::DSN_RETURN_TYPE DSNReturnType = CPJNSMTPMessage::HeadersOnly);
   virtual void Connect(LPCTSTR pszHostName, AuthenticationMethod am = AUTH_NONE, LPCTSTR pszUsername = NULL, LPCTSTR pszPassword = NULL, int nPort = 25, ConnectionType connectionType = PlainText);
@@ -474,21 +469,6 @@ public:
   virtual BOOL OnSendProgress(DWORD dwCurrentBytes, DWORD dwTotalBytes);
 
 protected:
-//typedefs of the function pointers
-  typedef BOOL (WINAPI INTERNETGETCONNECTEDSTATE)(LPDWORD, DWORD);
-  typedef INTERNETGETCONNECTEDSTATE* LPINTERNETGETCONNECTEDSTATE;
-  typedef BOOL (WINAPI INTERNETAUTODIALHANGUP)(DWORD);
-  typedef INTERNETAUTODIALHANGUP* LPINTERNETAUTODIALHANGUP;
-  typedef BOOL (WINAPI INTERNETATTEMPCONNECT)(DWORD);
-  typedef INTERNETATTEMPCONNECT* LPINTERNETATTEMPCONNECT;
-
-#ifndef CPJNSMTP_NOMXLOOKUP
-  typedef VOID (WINAPI DNSRECORDLISTFREE)(PDNS_RECORD, DNS_FREE_TYPE);
-  typedef DNSRECORDLISTFREE* LPDNSRECORDLISTFREE;
-  typedef DNS_STATUS (WINAPI DNSQUERY)(LPCTSTR, WORD, DWORD, PIP4_ARRAY, PDNS_RECORD*, PVOID*);
-  typedef DNSQUERY* LPDNSQUERY;
-#endif
-
 //Methods
 #ifndef CPJNSMTP_NOSSL
   virtual CString GetOpenSSLError();
@@ -521,26 +501,17 @@ protected:
 
 //Member variables
 #ifndef CPJNSMTP_NOSSL
-  CSSLContext                 m_SSLCtx;                        //SSL Context
-  CSSLSocket                  m_SSL;                           //SSL socket wrapper
+  CSSLContext                 m_SSLCtx;                       //SSL Context
+  CSSLSocket                  m_SSL;                          //SSL socket wrapper
 #endif
-  ConnectionType              m_ConnectionType;                //What type of connection are we using
-  CWSocket                    m_Socket;                        //The socket connection to the SMTP server (if not using SSL)
-  BOOL                        m_bConnected;                    //Are we currently connected to the server 
-  CString                     m_sLastCommandResponse;          //The full last response the server sent us  
-  CString                     m_sHeloHostname;                 //The hostname we will use in the HELO command
-  DWORD                       m_dwTimeout;                     //The timeout in milliseconds
-  int                         m_nLastCommandResponseCode;      //The last numeric SMTP response
+  ConnectionType              m_ConnectionType;               //What type of connection are we using
+  CWSocket                    m_Socket;                       //The socket connection to the SMTP server (if not using SSL)
+  BOOL                        m_bConnected;                   //Are we currently connected to the server 
+  CString                     m_sLastCommandResponse;         //The full last response the server sent us  
+  CString                     m_sHeloHostname;                //The hostname we will use in the HELO command
+  DWORD                       m_dwTimeout;                    //The timeout in milliseconds
+  int                         m_nLastCommandResponseCode;     //The last numeric SMTP response
   CString                     m_sBindAddress;
-  HINSTANCE                   m_hWininet;                      //Instance handle of the "Wininet.dll" which houses the functions we want
-  LPINTERNETGETCONNECTEDSTATE m_lpfnInternetGetConnectedState;
-  LPINTERNETAUTODIALHANGUP    m_lpfnInternetAutoDialHangup;
-  LPINTERNETATTEMPCONNECT     m_lpfnInternetAttemptConnect;
-#ifndef CPJNSMTP_NOMXLOOKUP
-  HINSTANCE                   m_hDnsapi;                       //Instance handle of the "Dnsapi.dll" which houses the other functions we want
-  LPDNSRECORDLISTFREE         m_lpfnDnsRecordListFree;
-  LPDNSQUERY                  m_lpfnDnsQuery; 
-#endif
   SSLProtocol                 m_SSLProtocol;                  //What flavour of SSL should we speak
   BOOL                        m_bCanDoDSN;                    //Is the server capable of "DSN"
   BOOL                        m_bCanDoSTARTTLS;               //Is the server capale of "STARTTLS"

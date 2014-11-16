@@ -37,14 +37,13 @@ to maintain a single distribution point for the source code.
 
 /////////////////////////////// Classes ///////////////////////////////////////
 
-//////// A class which performs NTLM client authentication ////////////////////
-
+//A class which performs NTLM client authentication
 class PJNNTLMAUTH_EXT_CLASS CNTLMClientAuth
 {
 public:
 //Constructors / Destructors
   CNTLMClientAuth();
-  ~CNTLMClientAuth();
+  virtual ~CNTLMClientAuth();
 
 //Methods
   SECURITY_STATUS NTLMAuthenticate(LPCTSTR pszUserName = NULL, LPCTSTR pszPassword = NULL);
@@ -58,20 +57,15 @@ public:
 
 protected:
 //Misc Methods
+  static BOOL SEC_SUCCESS(SECURITY_STATUS ss);
   SECURITY_STATUS GenClientContext(BYTE* pIn, DWORD cbIn, BYTE* pOut, DWORD* pcbOut, BOOL* pfDone, LPCTSTR pszUserName, LPCTSTR pszPassword, LPCTSTR pszDomain);
   SECURITY_STATUS DoNTLMAuthentication(LPCTSTR pszUserName, LPCTSTR pszPassword, LPCTSTR pszDomain);
   void ReleaseHandles();
   
 //Member variables
-  HINSTANCE                      m_hSecur32;                      //Instance handle of the "Secur32.dll" which houses the functions we want
-  COMPLETE_AUTH_TOKEN_FN         m_lpfnCompleteAuthToken;         //The function pointer to "CompleteAuthToken"
-  FREE_CREDENTIALS_HANDLE_FN     m_lpfnFreeCredentialsHandle;     //The function pointer to "FreeCredentialsHandle"
-  DELETE_SECURITY_CONTEXT_FN     m_lpfnDeleteSecurityContext;     //The function pointer to "DeleteSecurityContext"
-  INITIALIZE_SECURITY_CONTEXT_FN m_lpfnInitializeSecurityContext; //The function pointer to "InitializeSecurityContext"
-  ACQUIRE_CREDENTIALS_HANDLE_FN  m_lpfnAcquireCredentialsHandle;  //The function pointer to "AcquireCredentialsHandle"
-  CredHandle                     m_hCred;                         //The credentials handle for the connection
-  SecHandle                      m_hContext;                      //The security handle for the connection 
-  DWORD                          m_dwBufferSize;                  //The size of the buffers we allocate for reading and writing via SSPI
+  CredHandle m_hCred;                         //The credentials handle for the connection
+  SecHandle  m_hContext;                      //The security handle for the connection 
+  DWORD      m_dwBufferSize;                  //The size of the buffers we allocate for reading and writing via SSPI
 };
 
 #endif //__PJNNTLMAUTH_H__

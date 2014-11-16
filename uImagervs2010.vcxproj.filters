@@ -741,9 +741,6 @@
     <ClInclude Include="PictureView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PJNLoadLibraryFromSystem32.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PJNMD5.h">
       <Filter>Header Files</Filter>
     </ClInclude>

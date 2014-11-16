@@ -17,35 +17,15 @@ CXButtonXP 1.2
 - Centering multiline text
 
 
-CPJNSMTPConnection 3.06 with w3 mfc 1.97
+CPJNSMTPConnection 3.07 with w3 mfc 1.97
 ----------------------------------------
 
 - Thread Safe
 - Preprocessor define: CWSOCKET_MFC_EXTENSTIONS
-- Used files: PJNLoadLibraryFromSystem32.h, PJNMD5.h, PJNNTLMAuth.h, PJNNTLMAuth.cpp, PJNSmtp.h, PJNSmtp.cpp
+- Used files: PJNMD5.h, PJNNTLMAuth.h, PJNNTLMAuth.cpp, PJNSmtp.h, PJNSmtp.cpp
 - Used files: OpenSSLMfc.h, OpenSSLMfc.cpp, SocMFC.h, SocMFC.cpp
-- In PJNSmtp.cpp fixed CPJNSMTPConnection::SendMessage(CPJNSMTPMessage& Message)
-  to support UTF-8 encoding for non-html emails:
-  ...
-  //Now send the contents of the mail    
-  if (Message.m_RootPart.GetNumberOfChildBodyParts() || Message.m_bMime)
-  {
-    //Send the root body part (and all its children)
-    SendBodyPart(&Message.m_RootPart, TRUE, Message.GetCharset());
-  }
-  else
-  {
-     //Oli fixed to support UTF-8
-     //CStringA sBody(Message.m_RootPart.GetText());
-     //Do the UTF8 conversion if necessary
-     CStringA sBody;
-     if (Message.m_RootPart.GetCharset().CompareNoCase(_T("UTF-8")) == 0)
-       sBody = CPJNSMTPBodyPart::ConvertToUTF8(Message.m_RootPart.GetText());
-     else
-       sBody = Message.m_RootPart.GetText();
-  ...
 
-  
+
 CFTPTransfer
 ------------
 
