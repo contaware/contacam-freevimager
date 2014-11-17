@@ -1348,7 +1348,7 @@ CStringA CPJNSMTPBodyPart::GetBody(BOOL bDoSingleDotFix)
 
     //Read in the contents of the file
     DWORD dwBytesWritten = 0;
-    hr = file.Read(body, static_cast<DWORD>(nFileSize));
+    hr = file.Read(body, static_cast<DWORD>(nFileSize), dwBytesWritten);
     if (FAILED(hr))
       CPJNSMTPConnection::ThrowPJNSMTPException(hr);
 
