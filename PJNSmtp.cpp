@@ -168,7 +168,7 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
                           this problem.
                           4. QP encoding is now only used when you specify MIME. This fixes a bug as reported by David Terracino.
                           5. Removed now unused "API Reference" link in HTML file supported the code.
-         PJN / 10-08-2002 1. Fixed a number of uncaught file exceptions in CPJNSMTPBodyPart::GetBody (Tick), CPJNSMTPMessage::SaveToDisk (Tick), and 
+         PJN / 10-08-2002 1. Fixed a number of uncaught file exceptions in CPJNSMTPBodyPart::GetBody, CPJNSMTPMessage::SaveToDisk, and 
                           CPJNSMTPConnection::SendMessage. Thanks to John Allan Miller for reporting this problem.
                           2. The CPJNSMTPConnection::SendMessage version of the method which sends a file directly from disk, now fails if the
                           file is empty.
@@ -586,6 +586,8 @@ History: PJN / 15-06-1998 1. Fixed the case where a single dot occurs on its own
                           12. The sample app shipped with the source code is now Visual Studio 2008 and as of this release the code is only supported on Visual Studio 
                           2008 and later
                           13. The sample app is now linked against the latest OpenSSL v1.0.1j dlls
+         PJN / 18-11-2014 1. Fixed a bug in CPJNSMTPBodyPart::GetBody where file attachments were always being treated as 0 in size. Thanks to Oliver Pfister for 
+                          reporting this issue.
                           
 Copyright (c) 1998 - 2014 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
@@ -1604,7 +1606,7 @@ CStringA CPJNSMTPBodyPart::FoldSubjectHeader(const CString& sSubject, const CStr
 }
 
 
-CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.07")), 
+CPJNSMTPMessage::CPJNSMTPMessage() : m_sXMailer(_T("CPJNSMTPConnection v3.08")), 
                                      m_bMime(FALSE), 
                                      m_Priority(NoPriority),
                                      m_DSNReturnType(HeadersOnly),
@@ -2190,7 +2192,7 @@ void CPJNSMTPMessage::SaveToDisk(const CString& sFilename)
 void CPJNSMTPMessage::WriteToDisk(ATL::CAtlFile& file, CPJNSMTPBodyPart* pBodyPart, BOOL bRoot, const CString& sRootCharset)
 {
   //Validate our parameters
-  AFXASSUME(pBodyPart);
+  AFXASSUME(pBodyPart != NULL);
 
   if (!bRoot)
   {
