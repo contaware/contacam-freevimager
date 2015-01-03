@@ -8987,7 +8987,7 @@ void CVideoDeviceDoc::OnViewDetectionZones()
 		m_bShowEditDetectionZones = TRUE;
 		GetView()->ForceCursor();
 		GetView()->Invalidate(FALSE);
-		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Click Inside The Capture Window to Add Zones. Press Ctrl (or Shift) to Remove Them ***"));
+		::AfxGetMainFrame()->StatusText(ML_STRING(1483, "*** Press Ctrl (or Shift) to Remove Zones ***"));
 	}
 }
 
