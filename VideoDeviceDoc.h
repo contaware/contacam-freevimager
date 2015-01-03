@@ -59,6 +59,8 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_DEINTERLACE			0x02		// mark the frame as being deinterlaced
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
 #define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
+#define MIN_DISK_FREE_PERCENT				10			// 10 %
+#define MIN_DISK_FREE_BYTES					21474836480UI64	// 20 GB
 
 // Frame tag, thumb message and draw
 #define FRAMETAG_REFWIDTH					640

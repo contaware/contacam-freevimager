@@ -3877,8 +3877,8 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 						ullMaxCameraFolderSize <<= 20; // MB to Bytes
 					}
 
-					// Minimum wanted disk free space: MIN(10% of HD size, 10 GB)
-					ullMinDiskFreeSpace = MIN(::GetDiskTotalSize(sAutoSaveDir) / 10, 10737418240UI64);
+					// Minimum wanted disk free space: MIN(MIN_DISK_FREE_PERCENT of HD Size, MIN_DISK_FREE_BYTES)
+					ullMinDiskFreeSpace = MIN(::GetDiskTotalSize(sAutoSaveDir) * MIN_DISK_FREE_PERCENT / 100, MIN_DISK_FREE_BYTES);
 
 					// Get the time of the oldest existing directory
 					if (!CalcOldestDir(	FileFind,
