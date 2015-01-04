@@ -4040,7 +4040,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
-	m_nDeleteRecordingsOlderThanDays = 0;
+	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 
 	// Movement Detection
@@ -4812,7 +4812,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nMovementDetectorIntensityLimit = (int) pApp->GetProfileInt(sSection, _T("IntensityLimit"), DEFAULT_MOVDET_INTENSITY_LIMIT);
 	m_dwAnimatedGifWidth = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifWidth"), MOVDET_ANIMGIF_DEFAULT_WIDTH);
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
-	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), 0);
+	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), DEFAULT_DEL_RECS_OLDER_THAN_DAYS);
 	m_nMaxCameraFolderSizeMB = (int) pApp->GetProfileInt(sSection, _T("MaxCameraFolderSizeMB"), 0);
 
 	unsigned int nSize = sizeof(m_dFrameRate);
