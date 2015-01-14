@@ -16,7 +16,7 @@ $ make
 LAME
 ----
 Put library source to /src, extract it and:
-./configure --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
+./configure CFLAGS="-mstackrealign" --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
 make
 make install
 -> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
@@ -36,10 +36,23 @@ _aligned_realloc and _aligned_free are used
 Note 2
 ------
 Sometimes ffmpeg can crash on new buggy code especially because of unaligned
-image sizes in SIMD routines, add the following code to isolate such problems:
+image sizes in SIMD routines, add the following code to isolate such problems
+by allowing only : AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE
 unsigned int flags = av_get_cpu_flags();
-av_force_cpu_flags(flags & ~(AV_CPU_FLAG_SSE2 | AV_CPU_FLAG_AVX));
-		
+av_force_cpu_flags(flags & ~(	AV_CPU_FLAG_3DNOWEXT |
+								AV_CPU_FLAG_SSE2     |
+								AV_CPU_FLAG_SSE2SLOW |
+								AV_CPU_FLAG_SSE3     |
+								AV_CPU_FLAG_SSE3SLOW |
+								AV_CPU_FLAG_SSSE3    |
+								AV_CPU_FLAG_SSE4     |
+								AV_CPU_FLAG_SSE42    |
+								AV_CPU_FLAG_AVX      |
+								AV_CPU_FLAG_XOP      |
+								AV_CPU_FLAG_FMA3     |
+								AV_CPU_FLAG_FMA4     |
+								AV_CPU_FLAG_AVX2     ));
+
 Note 3
 ------
 When running the MinGW Installation Manager it may happen that libintl-8.dll is missing:
