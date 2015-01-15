@@ -360,8 +360,8 @@ SectionEnd
 ; Optional section (can be disabled by the user)
 Section "Start Menu Shortcuts"
 
-  ; Stores to Start Menu for All Users
-  SetShellVarContext all
+  ; Stores to Start Menu for Current User
+  SetShellVarContext current
   CreateDirectory "$SMPROGRAMS\${APPNAME_NOEXT}"
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${UNINSTNAME_LNK}" "$INSTDIR\${UNINSTNAME_EXT}" "" "$INSTDIR\${UNINSTNAME_EXT}" 0
   CreateShortCut "$SMPROGRAMS\${APPNAME_NOEXT}\${APPNAME_NOEXT}.lnk" "$INSTDIR\${APPNAME_EXT}" "" "$INSTDIR\${APPNAME_EXT}" 0
@@ -566,6 +566,20 @@ Section "Uninstall"
   DeleteRegKey HKCU "Software\Contaware\RemoteCamViewer"
   DeleteRegKey HKCR "Applications\${APPNAME_EXT}"
   
+  ; Be safe and remove shortcuts from the Start Menu for both: All Users + Current User
+  SetShellVarContext all
+  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
+  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  SetShellVarContext current
+  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
+  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  
+  ; Remove application data directories for Current User
+  ; (see the above SetShellVarContext current)
+  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
+  RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
+  RMDir "$APPDATA\Contaware"
+  
   ; Remove files and uninstaller
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
@@ -578,23 +592,12 @@ Section "Uninstall"
   Delete $INSTDIR\ContaCamService.log
   Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}
-
-  ; Removes Shortcuts from the Start Menu for All Users
-  SetShellVarContext all
-  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
-  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
   
   ; Remove directories used
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
   RMDir "$INSTDIR"
-  
-  ; Remove application data directories for current user
-  SetShellVarContext current
-  RMDir /r "$APPDATA\Contaware\${APPNAME_NOEXT}"
-  RMDir /r "$APPDATA\Contaware\FullscreenBrowser"
-  RMDir "$APPDATA\Contaware"
   
   ; Refresh Icons
   call un.RefreshShellIcons

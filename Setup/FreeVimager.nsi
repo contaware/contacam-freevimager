@@ -500,6 +500,14 @@ Section "Uninstall"
   DeleteRegKey HKCU "Software\Contaware\${APPNAME_NOEXT}"
   DeleteRegKey HKCR "Applications\${APPNAME_EXT}"
   
+  ; Be safe and remove shortcuts from the Start Menu for both: All Users + Current User
+  SetShellVarContext all
+  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
+  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  SetShellVarContext current
+  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
+  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
+  
   ; Remove files and uninstaller
   Delete $INSTDIR\License.txt
   Delete $INSTDIR\History.txt
@@ -508,11 +516,6 @@ Section "Uninstall"
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\MasterConfig.ini
   Delete $INSTDIR\${UNINSTNAME_EXT}
-
-  ; Removes Shortcuts from the Start Menu for All Users
-  SetShellVarContext all
-  Delete "$SMPROGRAMS\${APPNAME_NOEXT}\*.*"
-  RMDir "$SMPROGRAMS\${APPNAME_NOEXT}"
   
   ; Remove directories used
   RMDir /r "$INSTDIR\Tutorials"
