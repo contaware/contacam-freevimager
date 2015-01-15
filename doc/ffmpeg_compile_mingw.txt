@@ -1,3 +1,6 @@
+FFMPEG
+------
+
 1. Copy yasm.exe and nasm.exe to c:\mingw\bin
 
 2. Copy latest c:\mingw\lib\gcc\mingw32\4.8.1\libgcc.a to /c/uimager/ffmpeg/mingw
@@ -13,8 +16,10 @@ $ make distclean
 $ ./config_mingw
 $ make
 
+
 LAME
 ----
+
 Put library source to /src, extract it and:
 ./configure CFLAGS="-mstackrealign" --prefix=/mingw --exec-prefix=/mingw --enable-static --disable-shared --disable-decoder --enable-nasm
 make
@@ -22,22 +27,54 @@ make install
 -> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
 -> include: /mingw/include/lame      copy to  /c/uimager/ffmpeg/msvc
 
+
 AAC
 ---
+
 Compiled with internal aac because of gpl conflicts with other aac libs:
 https://trac.ffmpeg.org/wiki/Encode/AAC
-  
-Note 1
-------
---enable-memalign-hack not necessary because HAVE_ALIGNED_MALLOC is
+
+
+Is --enable-memalign-hack still necessary?
+------------------------------------------
+
+--enable-memalign-hack is not necessary because HAVE_ALIGNED_MALLOC is
 defined with mingw and msvc toolchains so that _aligned_malloc,
 _aligned_realloc and _aligned_free are used
 
-Note 2
-------
-Sometimes ffmpeg can crash on new buggy code especially because of unaligned
-image sizes in SIMD routines, add the following code to isolate such problems
-by allowing only : AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE
+
+Default stack alignment incompatibility: GCC uses 16 bytes, MSVC uses 4 bytes
+-----------------------------------------------------------------------------
+
+MSVC doesn't guarantee automatic stack alignment of variables, at most 
+the variable will be aligned to the stacks alignment (generally 4 bytes 
+on 32 bit systems). If you need special alignment, you have to use 
+__declspec(align(x)), just like MSVC's SSE types(like __m128), else 
+you'll need to use _aligned_malloc instead. 
+
+A global solution is to edit your project so that when compiling with 
+GCC on Windows, you pass the GCC option -mincoming-stack-boundary=2. 
+Explanation: this tells GCC that the stack is only required to be 
+aligned to 2^2=4 bytes, so that GCC now knows that it really must take 
+extra care to honor the 16 byte alignment of fixed-size vectorizable 
+Eigen types when needed.  
+
+The problem with ffmpeg is that it assumes 16-byte alignment, and also 
+has a lot of hand-written SSE assembly, either inline or in separate 
+yasm sources. So that the above flag is not working, compilation will 
+fail. To fix this problem use -mstackrealign which generates an 
+alternate prologue/epilogue that realigns the runtime stack. This 
+supports mixing legacy codes that keep a 4-byte aligned stack with 
+modern codes that keep a 16-byte stack for SSE compatibility. The 
+alternate prologue and epilogue are slower and bigger than the regular 
+ones, and they require one dedicated register for the entire function. 
+Nested functions encountered while -mstackrealign is on will generate 
+warnings, and they will not realign the stack when called. 
+
+If ffmpeg is still crashing with the -mstackrealign option then there is 
+another alignment problem or just buggy SIMD routines, add the following 
+code to isolate such problems by allowing only: 
+AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE 
 unsigned int flags = av_get_cpu_flags();
 av_force_cpu_flags(flags & ~(	AV_CPU_FLAG_3DNOWEXT |
 								AV_CPU_FLAG_SSE2     |
@@ -53,8 +90,10 @@ av_force_cpu_flags(flags & ~(	AV_CPU_FLAG_3DNOWEXT |
 								AV_CPU_FLAG_FMA4     |
 								AV_CPU_FLAG_AVX2     ));
 
-Note 3
-------
+
+Possible MinGW Installation Manager Problems
+--------------------------------------------
+
 When running the MinGW Installation Manager it may happen that libintl-8.dll is missing:
 Delete packages C:\MinGW\var\cache\mingw-get\packages\libintl-*
 $ mingw-get install --reinstall msys-libintl
