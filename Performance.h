@@ -9,6 +9,39 @@
 
 #include "TraceLogFile.h"
 
+/*
+QueryPerformanceCounter (QPC) functions
+---------------------------------------
+
+In general, the performance counter results are consistent across all processors
+in multi-core and multi-processor systems, even when measured on different threads
+or processes. Here are some exceptions to this rule:
+
+1. Pre-Windows Vista operating systems that run on certain processors might violate
+   this consistency because of one of these reasons:
+   - The hardware processors have a non-invariant TSC and the BIOS doesn't indicate
+     this condition correctly
+   - The TSC synchronization algorithm that was used wasn't suitable for systems
+     with large numbers of processors
+    
+2. When you compare performance counter results that are acquired from different
+   threads, consider values that differ by ± 1 tick to have an ambiguous ordering.
+   If the time stamps are taken from the same thread, this ± 1 tick uncertainty
+   doesn't apply. In this context, the term tick refers to a period of time equal
+   to the frequency of the performance counter obtained from
+   QueryPerformanceFrequency.
+
+In conclusion do we need to set the thread affinity to a single core to use the
+QPC functions in the following class?
+
+This is neither necessary nor desirable. Performing this scenario might adversely
+affect the application's performance by restricting processing to one core or by
+creating a bottleneck on a single core if multiple threads set their affinity to
+the same core when calling QueryPerformanceCounter.
+
+Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/dn553408%28v=vs.85%29.aspx
+*/
+
 class CPerformance
 {
 	public:
@@ -21,6 +54,7 @@ class CPerformance
 			m_dwDiffMicroSec = 0U;
 			m_dwInitTick = 0U;
 
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 			// Get the current process core mask
 			DWORD dwProcMask;
 			DWORD dwSysMask;
@@ -35,6 +69,7 @@ class CPerformance
 			m_dwFirstCoreMask = 1U;
 			while ((m_dwFirstCoreMask & dwProcMask) == 0U)
 				m_dwFirstCoreMask <<= 1;
+#endif
 		}
 		virtual ~CPerformance()
 		{
@@ -42,11 +77,13 @@ class CPerformance
 		}
 		__forceinline void Init()
 		{
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 			// Get thread handle
 			HANDLE hThread = ::GetCurrentThread();
 
 			// Set affinity to the first core
 			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
+#endif
 
 			// Get the constant frequency
 			::QueryPerformanceFrequency(&m_Frequency);
@@ -55,23 +92,29 @@ class CPerformance
 			m_dwInitTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
 			::QueryPerformanceCounter(&m_InitCount);
 
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 			// Reset affinity
-			::SetThreadAffinityMask(hThread, dwOldMask);		
+			::SetThreadAffinityMask(hThread, dwOldMask);
+#endif
 		}
 		__forceinline void End()
 		{
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 			// Get thread handle
 			HANDLE hThread = ::GetCurrentThread();
 
 			// Set affinity to the first core
 			DWORD dwOldMask = ::SetThreadAffinityMask(hThread, m_dwFirstCoreMask);
+#endif
 
 			// Query the counters
 			::QueryPerformanceCounter(&m_EndCount);
 			DWORD dwEndTick = ::GetTickCount(); // GetTickCount() is faster than timeGetTime() but a bit less accurate
 
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 			// Reset affinity
 			::SetThreadAffinityMask(hThread, dwOldMask);
+#endif
 
 			// Get differences
 			if (m_Frequency.QuadPart > 0)
@@ -184,7 +227,9 @@ class CPerformance
 		LARGE_INTEGER m_Frequency;
 		DWORD m_dwDiffMicroSec;
 		DWORD m_dwInitTick;
+#ifdef USE_SET_THREAD_AFFINITY_MASK
 		DWORD m_dwFirstCoreMask;
+#endif
 };
 
 #endif // !defined(AFX_PERFORMANCE_H__0A6BEBCA_829C_4085_8A12_19A15A12F62C__INCLUDED_)
