@@ -34,6 +34,7 @@ int avcodec_close_thread_safe(AVCodecContext *avctx);
 #pragma comment(lib, "ffmpeg\\mingw\\libgcc.a")
 #pragma comment(lib, "ffmpeg\\mingw\\libmingwex.a")
 #pragma comment(lib, "ffmpeg\\mingw\\libmp3lame.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libx264.a")
 #endif
 
 // Win32 libs

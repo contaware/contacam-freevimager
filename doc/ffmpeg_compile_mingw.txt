@@ -17,6 +17,16 @@ $ ./config_mingw
 $ make
 
 
+X264
+----
+
+Put library source to /src, extract it and: (get src from: http://download.videolan.org/pub/videolan/x264/snapshots/last_stable_x264.tar.bz2)
+./configure --extra-cflags='-mstackrealign' --prefix=/mingw --enable-static --enable-strip --enable-win32thread --disable-cli --disable-avs --disable-gpac --disable-lsmash
+make
+make install
+-> library: /mingw/lib/libx264.a  copy to  /c/uimager/ffmpeg/mingw
+
+  
 LAME
 ----
 
@@ -25,7 +35,6 @@ Put library source to /src, extract it and:
 make
 make install
 -> library: /mingw/lib/libmp3lame.a  copy to  /c/uimager/ffmpeg/mingw
--> include: /mingw/include/lame      copy to  /c/uimager/ffmpeg/msvc
 
 
 AAC
@@ -33,6 +42,8 @@ AAC
 
 Compiled with internal aac because of gpl conflicts with other aac libs:
 https://trac.ffmpeg.org/wiki/Encode/AAC
+Native aac usable range >= 192kbps, recommended rate is 240kbps
+(VBR is experimental and likely to get even worse results than the CBR)
 
 
 Is --enable-memalign-hack still necessary?
@@ -71,12 +82,14 @@ ones, and they require one dedicated register for the entire function.
 Nested functions encountered while -mstackrealign is on will generate 
 warnings, and they will not realign the stack when called. 
 
-If ffmpeg is still crashing with the -mstackrealign option then there is 
-another alignment problem or just buggy SIMD routines, add the following 
-code to isolate such problems by allowing only: 
+ffmpeg is still crashing with the -mstackrealign option, I suppose there
+is another alignment problem or just buggy SIMD routines, limit the SIMD
+instructions to: 
 AV_CPU_FLAG_MMX, AV_CPU_FLAG_MMXEXT, AV_CPU_FLAG_3DNOW, AV_CPU_FLAG_SSE 
-unsigned int flags = av_get_cpu_flags();
-av_force_cpu_flags(flags & ~(	AV_CPU_FLAG_3DNOWEXT |
+
+with the following code:
+unsigned int uiFlags = av_get_cpu_flags();
+av_force_cpu_flags(uiFlags & ~(	AV_CPU_FLAG_3DNOWEXT |
 								AV_CPU_FLAG_SSE2     |
 								AV_CPU_FLAG_SSE2SLOW |
 								AV_CPU_FLAG_SSE3     |
@@ -89,6 +102,19 @@ av_force_cpu_flags(flags & ~(	AV_CPU_FLAG_3DNOWEXT |
 								AV_CPU_FLAG_FMA3     |
 								AV_CPU_FLAG_FMA4     |
 								AV_CPU_FLAG_AVX2     ));
+
+or with the following options:
+--disable-amd3dnowext
+--disable-sse2
+--disable-sse3
+--disable-ssse3
+--disable-sse4
+--disable-sse42
+--disable-avx
+--disable-xop
+--disable-fma3
+--disable-fma4
+--disable-avx2
 
 
 Possible MinGW Installation Manager Problems
