@@ -254,20 +254,22 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
 	echo "<div align=\"center\">\n";
+	echo "<form name=\"videonav\" action=\"\" method=\"post\" id=\"videonav\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<a class=\"back\" href=\"$prevrequesturi\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "';\">&lt;</a>&nbsp;\n";
+		echo "<input type=\"button\" value=\"&lt;&lt;&lt;\" name=\"PrevVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "';\" />";
 	}
 	if (isset($_GET['backuri']))
-		echo "<a class=\"back\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>\n";
+		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "';\" />";
 	else
-		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
+		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.history.back();\" />";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "&nbsp;<a class=\"back\" href=\"$nextrequesturi\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "';\">&gt;</a>\n";
+		echo "<input type=\"button\" value=\"&gt;&gt;&gt;\" name=\"NextVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "';\" />";
 	}
+	echo "</form>\n";
 	echo "</div>\n";
 }
 ?>
@@ -305,11 +307,15 @@ function resizeSwf() {
 		windowWidth = document.body.clientWidth;
 		windowHeight = document.body.clientHeight;
 	}
+	if (windowWidth <= 0 || windowHeight <= 0) { // in case not fully loaded
+		window.setTimeout("resizeSwf()", 1000);
+		return;
+	}
 	// Left and right margin
 	windowWidth -= 50; // this must be less than 60, see snapshothistory.php!
 	// Bottom player control and ev. back button
 	if (back)
-		windowHeight -= 114;
+		windowHeight -= 120;
 	else
 		windowHeight -= 80; // this must be less than 90, see snapshothistory.php!
 	// Set a min. size

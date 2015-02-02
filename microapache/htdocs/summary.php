@@ -215,9 +215,12 @@ if ($handle = @opendir($dir)) {
 		$path_parts = pathinfo($file);
 		if (is_file("$dir/$file")) {
 			list($file_prefix, $file_year, $file_month, $file_day, $file_hour, $file_min, $file_sec, $file_postfix) = sscanf($file, "%[a-z,A-Z]_%d_%d_%d_%d_%d_%d_%[a-z,A-Z]");
-			if ($path_parts['extension'] == 'gif'									||	// Movement detection thumbs
-				(($path_parts['extension'] == 'jpg') && ($file_postfix == 'thumb'))	||	// Snapshot thumbs
-				(($file_prefix == 'rec') && ($path_parts['extension'] == 'avi'))) {		// Avi recordings
+			$hasgif = is_file($dir."/".basename($file, ".".$path_parts['extension']).".gif");
+			if ($path_parts['extension'] == 'gif'				||					// Gif thumb
+				($path_parts['extension'] == 'mp4' && !$hasgif)	||					// Mp4 without Gif thumb
+				($path_parts['extension'] == 'swf' && !$hasgif)	||					// Swf without Gif thumb
+				($path_parts['extension'] == 'avi' && !$hasgif)	||					// Avi without Gif thumb
+				($path_parts['extension'] == 'jpg' && $file_postfix == 'thumb')) {	// Snapshot thumb
 				$file_time = mktime($file_hour, $file_min, $file_sec, $file_month, $file_day, $file_year); 
 				$file_array[$file] = $file_time;
 			}
@@ -233,15 +236,17 @@ if ($handle = @opendir($dir)) {
 		if (($pages_float - $pages) > 0.0)
 			$pages++;
 		
-		// Sort file time
+		// Sort by file time
 		if (SORT_OLDEST_FIRST == 1)
 			asort($file_array);
 		else
 			arsort($file_array);
 		
-		// Get html query string of swfs pointed to by gifs
+		// Get html query string of mp4s and swfs
 		$pos = 0;
 		$count = 0;
+		$mp4pos = 0;
+		$mp4s = "";
 		$swfpos = 0;
 		$swfs = "";
 		foreach($file_array as $file => $file_time) {
@@ -250,17 +255,31 @@ if ($handle = @opendir($dir)) {
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
 			
 			if ($pos >= $page_offset && $count < $max_per_page) {
-				if ($path_parts['extension'] == 'gif') {
-					$swffile = $dir."/".basename($file, ".gif").".swf";
+				$filenamenoext = basename($file, ".".$path_parts['extension']);
+				if ($path_parts['extension'] == 'gif') {		// Gif thumb
+					$mp4file = "$dir/$filenamenoext.mp4";
+					$swffile = "$dir/$filenamenoext.swf";
+					if (is_file($mp4file)) {
+						$mp4s .= "&amp;" . $mp4pos . '=' . urlencode($filenamenoext);
+						$mp4pos++;
+					}
 					if (is_file($swffile)) {
-						$swfs .= "&amp;" . $swfpos . '=' . urlencode(basename($file, ".gif"));
+						$swfs .= "&amp;" . $swfpos . '=' . urlencode($filenamenoext);
 						$swfpos++;
 					}
+				}
+				else if ($path_parts['extension'] == 'mp4') {	// Mp4 without Gif thumb
+					$mp4s .= "&amp;" . $mp4pos . '=' . urlencode($filenamenoext);
+					$mp4pos++;
+				}
+				else if ($path_parts['extension'] == 'swf') {	// Swf without Gif thumb
+					$swfs .= "&amp;" . $swfpos . '=' . urlencode($filenamenoext);
+					$swfpos++;
 				}
 				$count++;
 			}
 			$pos++;
-		}			
+		}
 		
 		// Display
 		$pos = 0;
@@ -281,16 +300,17 @@ if ($handle = @opendir($dir)) {
 			
 			if ($pos >= $page_offset && $count < $max_per_page) {
 				$file_date = getdate($file_time);
-				// Leave a final space so that the text can wrap in the browser
-				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']);
+				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']); // leave a final space so that the text can wrap in the browser!
+				$filenamenoext = basename($file, ".".$path_parts['extension']);
+				$uribasenoext = "$filesdirpath/$display_year_string/$display_month_string/$display_day_string/$filenamenoext";
+				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri); $mp4file = "$dir/$filenamenoext.mp4";
+				$swfuri = "$uribasenoext.swf"; $swfuri_get = urlencode($swfuri); $swffile = "$dir/$filenamenoext.swf";
+				$aviuri = "$uribasenoext.avi"; $avifile = "$dir/$filenamenoext.avi";
+				$gifuri = "$uribasenoext.gif";
 				if ($path_parts['extension'] == 'gif') {
-					$swfuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".basename($file, ".gif").".swf";
-					$swfuri_get = urlencode($swfuri);
-					$aviuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".basename($file, ".gif").".avi";
-					$gifuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
-					$swffile = $dir."/".basename($file, ".gif").".swf";
-					$avifile = $dir."/".basename($file, ".gif").".avi";
-					if (is_file($swffile) && is_file($avifile))
+					if (is_file($mp4file))
+						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+					else if (is_file($swffile) && is_file($avifile))
 						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
 					else if (is_file($swffile))
 						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
@@ -300,15 +320,17 @@ if ($handle = @opendir($dir)) {
 						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'jpg') {
-					$jpegthumburi = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
+					$jpegthumburi = "$uribasenoext.jpg";
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
 					$jpeguri_get = urlencode($jpeguri);
 					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
 				}
-				else if ($path_parts['extension'] == 'avi') {
-					$aviuri = "$filesdirpath/".$display_year_string."/".$display_month_string."/".$display_day_string."/".$file;
-					echo "<span class=\"line1\">Rec</span><a class=\"line2\" href=\"$aviuri\" >$file_timestamp</a>";
-				}
+				else if ($path_parts['extension'] == 'avi')
+					echo "<span class=\"line1\">AVI</span><a class=\"line2\" href=\"$aviuri\" >$file_timestamp</a>";
+				else if ($path_parts['extension'] == 'mp4')
+					echo "<span class=\"line1\">MP4</span><a class=\"line2\" href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" >$file_timestamp</a>";
+				else if ($path_parts['extension'] == 'swf')
+					echo "<span class=\"line1\">SWF</span><a class=\"line2\" href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" >$file_timestamp</a>";
 				$count++;
 			}
 			$pos++;
