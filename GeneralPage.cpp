@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "uimager.h"
+#include "AVRec.h"
 #include "GeneralPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
@@ -66,6 +67,7 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
+	DDX_Check(pDX, IDC_CHECK_FASTENCODE, m_bFastEncode);
 	//}}AFX_DATA_MAP
 }
 
@@ -94,6 +96,7 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
+	ON_BN_CLICKED(IDC_CHECK_FASTENCODE, OnCheckFastEncode)
 	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -165,12 +168,14 @@ void CGeneralPage::ShowHideCtrls()
 {
 	// Keyframes Rate
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
-	if (m_VideoCompressionKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
+	if (m_VideoCompressionFastEncodeAndKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
 	{
 		pEdit->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
 		pEdit->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
+		pEdit->ShowWindow(SW_SHOW);
+		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
 		pEdit->ShowWindow(SW_SHOW);
 	}
 	else
@@ -179,6 +184,8 @@ void CGeneralPage::ShowHideCtrls()
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
 		pEdit->ShowWindow(SW_HIDE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
+		pEdit->ShowWindow(SW_HIDE);
+		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
 		pEdit->ShowWindow(SW_HIDE);
 	}
 
@@ -189,7 +196,7 @@ void CGeneralPage::ShowHideCtrls()
 		pSlider->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
 		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
+		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 		pEdit->ShowWindow(SW_SHOW);
 	}
 	else
@@ -197,9 +204,23 @@ void CGeneralPage::ShowHideCtrls()
 		pSlider->ShowWindow(SW_HIDE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
 		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
+		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 		pEdit->ShowWindow(SW_HIDE);
 	}
+}
+
+void CGeneralPage::UpdateVideoQualityInfo()
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
+	CString sQuality;
+	switch (GetRevertedPos(m_VideoRecQuality))
+	{
+		case 3 : sQuality = ML_STRING(1544, "Best"); break;
+		case 4 : sQuality = ML_STRING(1543, "Good"); break;
+		case 5 : sQuality = ML_STRING(1542, "Medium"); break;
+		default: sQuality = ML_STRING(1541, "Low"); break;
+	}
+	pEdit->SetWindowText(sQuality);
 }
 
 BOOL CGeneralPage::OnInitDialog() 
@@ -212,6 +233,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
 	m_bRecAutoOpen = TRUE;
+	m_bFastEncode = TRUE;
 
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;
@@ -322,15 +344,19 @@ BOOL CGeneralPage::OnInitDialog()
 	// Init Codec's Supports
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
+	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)0);
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('MJPG')); 
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
+	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
-	m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
+	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
+	m_VideoCompressionQualitySupport.Add((DWORD)1);
+
+	m_VideoCompressionFcc.Add((DWORD)FCC('H264')); 
+	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 	// Update Current Selected Codec
@@ -355,6 +381,9 @@ BOOL CGeneralPage::OnInitDialog()
 			}
 		}
 	}
+
+	// Fast Encode
+	m_bFastEncode = m_pDoc->m_bVideoRecFastEncode;
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -430,19 +459,18 @@ BOOL CGeneralPage::OnInitDialog()
 		pComboBoxRefFontSize->SetCurSel(5);
 
 	// Video Compressor Quality
-	m_VideoRecQuality.SetRange(2, 31);
-	m_VideoRecQuality.SetPageSize(5);
+	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
+	m_VideoRecQuality.SetPageSize(1);
 	m_VideoRecQuality.SetLineSize(1);
-	m_VideoRecQuality.SetPos(33 - (int)(m_pDoc->m_fVideoRecQuality)); // m_fVideoRecQuality has a range from 31.0f to 2.0f
-	pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-	CString sQuality;
-	sQuality.Format(_T("%i"), (int)((m_VideoRecQuality.GetPos() - 2) * 3.45)); // 0 .. 100
-	pEdit->SetWindowText(sQuality);
+	m_pDoc->m_fVideoRecQuality = CUImagerApp::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
+	SetRevertedPos(m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
+	UpdateVideoQualityInfo();
 
 	// Add Codec strings to ComboBoxes
 	m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
 	m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
 	m_VideoCompressionChoose.AddString(_T("MPEG-4"));
+	m_VideoCompressionChoose.AddString(_T("H.264"));
 
 	// Set Current Selections
 	m_VideoCompressionChoose.SetCurSel(nVideoCompressionSelection);
@@ -730,11 +758,8 @@ void CGeneralPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		{
 			if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
-				m_pDoc->m_fVideoRecQuality = (float)(33 - m_VideoRecQuality.GetPos());
-				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-				CString sQuality;
-				sQuality.Format(_T("%i"), (int)((m_VideoRecQuality.GetPos() - 2) * 3.45)); // 0 .. 100
-				pEdit->SetWindowText(sQuality);
+				m_pDoc->m_fVideoRecQuality = (float)GetRevertedPos(m_VideoRecQuality);
+				UpdateVideoQualityInfo();
 			}
 		}
 	}
@@ -785,6 +810,12 @@ void CGeneralPage::OnCheckAutorun()
 		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
 	else
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
+}
+
+void CGeneralPage::OnCheckFastEncode() 
+{
+	UpdateData(TRUE);
+	m_pDoc->m_bVideoRecFastEncode = m_bFastEncode;
 }
 
 void CGeneralPage::OnAudioInput() 

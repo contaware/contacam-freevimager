@@ -52,6 +52,7 @@ public:
 	BOOL	m_bRecAutoOpen;
 	BOOL	m_bDeinterlace;
 	BOOL	m_bRotate180;
+	BOOL	m_bFastEncode;
 	//}}AFX_DATA
 
 
@@ -65,6 +66,10 @@ public:
 // Implementation
 protected:
 	void ShowHideCtrls();
+	void UpdateVideoQualityInfo();
+	__forceinline int GetRevertedPos(CSliderCtrl& SliderCtrl) {return SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - SliderCtrl.GetPos());};
+	__forceinline void SetRevertedPos(CSliderCtrl& SliderCtrl, int nPos) {SliderCtrl.SetPos(SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - nPos));};
+
 	// Generated message map functions
 	//{{AFX_MSG(CGeneralPage)
 	afx_msg void OnVideoFormat();
@@ -90,13 +95,14 @@ protected:
 	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
+	afx_msg void OnCheckFastEncode();
 	afx_msg void OnSelchangeRefFontsize();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	CVideoDeviceDoc* m_pDoc;
 	CDWordArray m_VideoCompressionFcc;
-	CDWordArray m_VideoCompressionKeyframesRateSupport;
+	CDWordArray m_VideoCompressionFastEncodeAndKeyframesRateSupport;
 	CDWordArray m_VideoCompressionQualitySupport;
 	BOOL m_bDoChangeFrameRate;
 	int m_nFrameRateChangeTimeout;

@@ -2102,6 +2102,7 @@ BOOL CVideoAviDoc::SaveAs(CString sDlgTitle/*=_T("")*/)
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
 	dlgFile.m_ofn.lpstrDefExt = defext;
 	dlgFile.m_ofn.lpstrFilter = _T("Avi File (*.avi)\0*.avi\0")
+								_T("Mp4 File (*.mp4)\0*.mp4\0")
 								_T("Swf File (*.swf)\0*.swf\0")
 								_T("Animated GIF (*.gif)\0*.gif\0");
 	dlgFile.m_ofn.nFilterIndex = 1;
@@ -2494,7 +2495,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 			}
 			dAudioLength = pSrcAudioStream->GetTotalTime();
 		}
-		if (CUImagerApp::IsAVIFile(sDstFileName))
+		if (CUImagerApp::IsMP4File(sDstFileName) || CUImagerApp::IsAVIFile(sDstFileName))
 		{
 			if (AudioFormatDlg.DoModal() != IDOK)
 				return 0;
@@ -2556,7 +2557,7 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 	// Video Format
 	if (pAVIPlay->GetVideoStreamsCount() > 0)
 	{
-		if (CUImagerApp::IsAVIFile(sDstFileName))
+		if (CUImagerApp::IsMP4File(sDstFileName) || CUImagerApp::IsAVIFile(sDstFileName))
 		{
 			DWORD dwFourCC = dwVideoCompressorFourCC;
 			int nKeyframesRate = nVideoCompressorKeyframesRate;
@@ -2574,6 +2575,10 @@ int CVideoAviDoc::SaveAsAVCODECDlgs(const CString& sDstFileName,
 			VideoFormatDlg.m_dwVideoCompressorFourCC = dwFourCC;
 			VideoFormatDlg.m_nVideoCompressorKeyframesRate = nKeyframesRate;
 			VideoFormatDlg.m_fVideoCompressorQuality = fVideoCompressorQuality;
+			if (CUImagerApp::IsMP4File(sDstFileName))
+				VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_MP4;
+			else
+				VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_AVI;
 			if (VideoFormatDlg.DoModal() != IDOK)
 				return 0;
 			fVideoCompressorQuality = VideoFormatDlg.m_fVideoCompressorQuality;

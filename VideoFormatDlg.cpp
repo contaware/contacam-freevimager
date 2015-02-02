@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "uimager.h"
+#include "AVRec.h"
 #include "VideoFormatDlg.h"
 
 #ifdef _DEBUG
@@ -32,6 +33,7 @@ CVideoFormatDlg::CVideoFormatDlg(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CVideoFormatDlg)
 	m_nVideoCompressorKeyframesRate = DEFAULT_KEYFRAMESRATE;
+	m_bFastEncode = TRUE;
 	//}}AFX_DATA_INIT
 	m_dwVideoCompressorFourCC = DEFAULT_VIDEO_FOURCC;
 	m_fVideoCompressorQuality = DEFAULT_VIDEO_QUALITY;
@@ -45,6 +47,7 @@ void CVideoFormatDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoCompressorQuality);
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
 	DDX_Text(pDX, IDC_EDIT_KEYFRAMES_RATE, m_nVideoCompressorKeyframesRate);
+	DDX_Check(pDX, IDC_CHECK_FASTENCODE, m_bFastEncode);
 	//}}AFX_DATA_MAP
 }
 
@@ -62,12 +65,14 @@ void CVideoFormatDlg::ShowHideCtrls()
 {
 	// Keyframes Rate
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
-	if (m_VideoCompressionKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
+	if (m_VideoCompressionFastEncodeAndKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
 	{
 		pEdit->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
 		pEdit->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
+		pEdit->ShowWindow(SW_SHOW);
+		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
 		pEdit->ShowWindow(SW_SHOW);
 	}
 	else
@@ -76,6 +81,8 @@ void CVideoFormatDlg::ShowHideCtrls()
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
 		pEdit->ShowWindow(SW_HIDE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
+		pEdit->ShowWindow(SW_HIDE);
+		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
 		pEdit->ShowWindow(SW_HIDE);
 	}
 	
@@ -86,7 +93,7 @@ void CVideoFormatDlg::ShowHideCtrls()
 		pSlider->ShowWindow(SW_SHOW);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
 		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
+		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 		pEdit->ShowWindow(SW_SHOW);
 	}
 	else
@@ -94,9 +101,23 @@ void CVideoFormatDlg::ShowHideCtrls()
 		pSlider->ShowWindow(SW_HIDE);
 		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
 		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
+		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
 		pEdit->ShowWindow(SW_HIDE);
 	}
+}
+
+void CVideoFormatDlg::UpdateVideoQualityInfo()
+{
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
+	CString sQuality;
+	switch (GetRevertedPos(m_VideoCompressorQuality))
+	{
+		case 3 : sQuality = ML_STRING(1544, "Best"); break;
+		case 4 : sQuality = ML_STRING(1543, "Good"); break;
+		case 5 : sQuality = ML_STRING(1542, "Medium"); break;
+		default: sQuality = ML_STRING(1541, "Low"); break;
+	}
+	pEdit->SetWindowText(sQuality);
 }
 
 BOOL CVideoFormatDlg::OnInitDialog() 
@@ -105,21 +126,27 @@ BOOL CVideoFormatDlg::OnInitDialog()
 	if (m_nFileType == FILETYPE_AVI)
 	{
 		m_VideoCompressionFcc.Add((DWORD)FCC('FFVH')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
+		m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 		m_VideoCompressionQualitySupport.Add((DWORD)0);
 
 		m_VideoCompressionFcc.Add((DWORD)FCC('MJPG')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)0);
+		m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)0);
 		m_VideoCompressionQualitySupport.Add((DWORD)1);
 
 		m_VideoCompressionFcc.Add((DWORD)FCC('DIVX')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
+		m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 		m_VideoCompressionQualitySupport.Add((DWORD)1);
 	}
 	else if (m_nFileType == FILETYPE_SWF)
 	{
 		m_VideoCompressionFcc.Add((DWORD)FCC('FLV1')); 
-		m_VideoCompressionKeyframesRateSupport.Add((DWORD)1);
+		m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
+		m_VideoCompressionQualitySupport.Add((DWORD)1);
+	}
+	else if (m_nFileType == FILETYPE_MP4)
+	{
+		m_VideoCompressionFcc.Add((DWORD)FCC('H264')); 
+		m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 		m_VideoCompressionQualitySupport.Add((DWORD)1);
 	}
 
@@ -152,20 +179,23 @@ BOOL CVideoFormatDlg::OnInitDialog()
 			nSelection = 0;
 			m_dwVideoCompressorFourCC = FCC('FLV1');
 		}
+		else if (m_nFileType == FILETYPE_MP4)
+		{
+			nSelection = 0;
+			m_dwVideoCompressorFourCC = FCC('H264');
+		}
 	}
 
 	// This calls UpdateData(FALSE)
 	CDialog::OnInitDialog();
 
 	// Video Compressor Quality
-	m_VideoCompressorQuality.SetRange(2, 31);
-	m_VideoCompressorQuality.SetPageSize(5);
+	m_VideoCompressorQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
+	m_VideoCompressorQuality.SetPageSize(1);
 	m_VideoCompressorQuality.SetLineSize(1);
-	m_VideoCompressorQuality.SetPos(33 - (int)(m_fVideoCompressorQuality)); // m_fVideoCompressorQuality has a range from 31.0f to 2.0f
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-	CString sQuality;
-	sQuality.Format(_T("%i"), (int)((m_VideoCompressorQuality.GetPos() - 2) * 3.45)); // 0 .. 100
-	pEdit->SetWindowText(sQuality);
+	m_fVideoCompressorQuality = CUImagerApp::ClipVideoQuality(m_fVideoCompressorQuality);
+	SetRevertedPos(m_VideoCompressorQuality, (int)m_fVideoCompressorQuality);
+	UpdateVideoQualityInfo();
 
 	// Add Codec strings to ComboBox
 	if (m_nFileType == FILETYPE_AVI)
@@ -176,6 +206,8 @@ BOOL CVideoFormatDlg::OnInitDialog()
 	}
 	else if (m_nFileType == FILETYPE_SWF)
 		m_VideoCompressionChoose.AddString(_T("FLV1"));
+	else if (m_nFileType == FILETYPE_MP4)
+		m_VideoCompressionChoose.AddString(_T("H.264"));
 
 	// Set Current Selection
 	m_VideoCompressionChoose.SetCurSel(nSelection);
@@ -211,11 +243,8 @@ void CVideoFormatDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		{
 			if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
 			{
-				m_fVideoCompressorQuality = (float)(33 - m_VideoCompressorQuality.GetPos());
-				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-				CString sQuality;
-				sQuality.Format(_T("%i"), (int)((m_VideoCompressorQuality.GetPos() - 2) * 3.45)); // 0 .. 100
-				pEdit->SetWindowText(sQuality);
+				m_fVideoCompressorQuality = (float)GetRevertedPos(m_VideoCompressorQuality);
+				UpdateVideoQualityInfo();
 			}
 		}
 	}

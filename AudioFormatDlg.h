@@ -43,6 +43,7 @@ protected:
 	afx_msg void OnRadioPcm();
 	afx_msg void OnRadioAdpcm();
 	afx_msg void OnRadioMp3();
+	afx_msg void OnRadioAac();
 	afx_msg void OnSelchangeComboPcmBits();
 	afx_msg void OnSelchangeComboPcmChannels();
 	afx_msg void OnSelchangeComboPcmSamplingrate();
@@ -51,6 +52,9 @@ protected:
 	afx_msg void OnSelchangeComboMp3Bitrate();
 	afx_msg void OnSelchangeComboMp3Channels();
 	afx_msg void OnSelchangeComboMp3Samplingrate();
+	afx_msg void OnSelchangeComboAacBitrate();
+	afx_msg void OnSelchangeComboAacChannels();
+	afx_msg void OnSelchangeComboAacSamplingrate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

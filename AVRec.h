@@ -24,6 +24,12 @@ extern "C"
 // Maximum number of streams
 #define MAX_STREAMS							20
 
+// Video Compression Quality
+#define VIDEO_QUALITY_BEST					3.0f
+#define VIDEO_QUALITY_GOOD					4.0f
+#define VIDEO_QUALITY_MEDIUM				5.0f
+#define VIDEO_QUALITY_LOW					6.0f
+
 class CAVRec
 {
 public:
@@ -51,7 +57,7 @@ public:
 						DWORD dwDstRate,
 						DWORD dwDstScale,
 						int keyframes_rate,
-						float qscale,	// 2.0f best quality, 31.0f worst quality
+						float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 						int nThreadCount);
 
 	// Add Audio Stream

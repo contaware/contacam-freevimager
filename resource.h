@@ -900,6 +900,7 @@
 #define IDC_SAVE_SWF_MOVEMENT_DETECTION 1033
 #define IDS_MULTILANG_1034              1034
 #define IDC_FRAMERATE                   1034
+#define IDC_SAVE_MP4_MOVEMENT_DETECTION 1034
 #define IDS_MULTILANG_1035              1035
 #define IDC_SPIN_FRAMERATE              1035
 #define IDS_MULTILANG_1036              1036
@@ -1276,6 +1277,7 @@
 #define IDC_AUTH_AREANAME               1221
 #define IDS_MULTILANG_1222              1222
 #define IDC_HOST_PORT                   1222
+#define IDC_MP4_CONFIGURE               1222
 #define IDS_MULTILANG_1223              1223
 #define IDC_PROXY_HOST_NAME             1223
 #define IDC_SUBJECT_LINE                1223
@@ -2088,12 +2090,15 @@
 #define IDC_COMBO_PCM_SAMPLINGRATE      1646
 #define IDS_STRING1646                  1646
 #define IDS_STRING1647                  1647
+#define IDC_RADIO_AAC                   1647
 #define IDC_COMBO_MP3_BITRATE           1648
 #define IDS_STRING1648                  1648
 #define IDS_STRING1649                  1649
+#define IDC_COMBO_AAC_BITRATE           1649
 #define IDC_COMBO_MP3_CHANNELS          1650
 #define IDS_STRING1650                  1650
 #define IDS_STRING1651                  1651
+#define IDC_COMBO_AAC_CHANNELS          1651
 #define IDC_COMBO_MP3_SAMPLINGRATE      1652
 #define IDS_STRING1652                  1652
 #define IDC_CHECK_LIVE_DEINTERLACE      1652
@@ -2103,7 +2108,9 @@
 #define IDC_COMBO_ADPCM_SAMPLINGRATE    1654
 #define IDS_STRING1654                  1654
 #define IDC_LABEL_KEYFRAMES_RATE0       1655
+#define IDC_COMBO_AAC_SAMPLINGRATE      1655
 #define IDS_STRING1656                  1656
+#define IDC_CHECK_FASTENCODE            1656
 #define IDC_VIDEO_COMPRESSION_QUALITY_NUM 1657
 #define IDS_STRING1657                  1657
 #define IDC_LABEL_KEYFRAMES_RATE1       1658
@@ -3198,6 +3205,7 @@
 #define IDC_STATIC_CLIENTPOLL           2562
 #define IDC_LABEL_QUALITY               2563
 #define IDC_EDIT_CREDITS                2564
+#define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3468,7 +3476,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33504
-#define _APS_NEXT_CONTROL_VALUE         2565
+#define _APS_NEXT_CONTROL_VALUE         2566
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

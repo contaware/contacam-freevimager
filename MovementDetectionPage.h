@@ -73,6 +73,8 @@ protected:
 	afx_msg void OnCbnSelchangeComboboxDetectionScheduler();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnSaveMp4MovementDetection();
+	afx_msg void OnMp4Configure();
 	afx_msg void OnSaveSwfMovementDetection();
 	afx_msg void OnSwfConfigure();
 	afx_msg void OnExecMovementDetection();

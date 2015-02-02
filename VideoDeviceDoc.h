@@ -603,6 +603,21 @@ public:
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
 								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
 
+			__forceinline BOOL DoMakeMp4() const {
+							return m_pDoc->m_bSaveMP4MovementDetection/*			||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF)				||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
+
+							(m_pDoc->m_bFTPUploadMovementDetection &&
+							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
+								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF)*/;};
+
 			__forceinline BOOL DoMakeJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
@@ -1084,6 +1099,7 @@ public:
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality
+	volatile BOOL m_bVideoRecFastEncode;				// FALSE slow encoding, TRUE fast encoding
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
@@ -1147,6 +1163,7 @@ public:
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
+	volatile BOOL m_bSaveMP4MovementDetection;			// Save Movement Detections as MP4
 	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
 	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
@@ -1181,6 +1198,10 @@ public:
 	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoDetKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoDetQuality;					// 2.0f best quality, 31.0f worst quality
+	volatile DWORD m_dwVideoDetMp4FourCC;				// Video Compressor FourCC
+	volatile int m_nVideoDetMp4KeyframesRate;			// Keyframes Rate
+	volatile float m_fVideoDetMp4Quality;				// 2.0f best quality, 31.0f worst quality
+	volatile BOOL m_bVideoDetMp4FastEncode;				// FALSE slow encoding, TRUE fast encoding
 	volatile DWORD m_dwVideoDetSwfFourCC;				// Video Compressor FourCC
 	volatile int m_nVideoDetSwfKeyframesRate;			// Keyframes Rate
 	volatile float m_fVideoDetSwfQuality;				// 2.0f best quality, 31.0f worst quality

@@ -140,7 +140,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 							DWORD dwDstRate,
 							DWORD dwDstScale,
 							int keyframes_rate,
-							float qscale,	// 2.0f best quality, 31.0f worst quality
+							float qscale,	// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 							int nThreadCount)
 {
 	int nStreamNum = -1;
@@ -202,9 +202,77 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		qscale = 31.0f;
 	else if (qscale < 2.0f)
 		qscale = 2.0f;
-	pCodecCtx->flags |= CODEC_FLAG_QSCALE;
-	pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
-	pCodecCtx->bit_rate = 0;
+	pCodecCtx->bit_rate = 0; // only use quality and not bitrate
+
+	// Encoder specific settings
+	if (pCodecCtx->codec_id == AV_CODEC_ID_H264)
+	{
+		// Clamp to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+		if (qscale > VIDEO_QUALITY_LOW)
+			qscale = VIDEO_QUALITY_LOW;
+		else if (qscale < VIDEO_QUALITY_BEST)
+			qscale = VIDEO_QUALITY_BEST;
+		int nQScale = (int)qscale;
+
+		// Quality 0-51: where 0 is lossless, 23 is default, and 51 is worst possible
+		// Note: subjectively sane range is 18-28 (consider 18 to be visually lossless)
+		int crf;
+		switch (nQScale)
+		{
+			case 3 : crf = 22; break;
+			case 4 : crf = 25; break;
+			case 5 : crf = 27; break;
+			default: crf = 29; break;
+		}
+		CStringA scrf;
+		scrf.Format("%d.0", crf);
+		av_opt_set(pCodecCtx->priv_data, "crf", scrf, 0);
+
+		// Set profile to baseline so that all devices can play it
+		// Note: setting a profile with lossless encoding is not working!
+		if (crf > 0)
+			av_opt_set(pCodecCtx->priv_data, "profile", "baseline", AV_OPT_SEARCH_CHILDREN);
+
+		// Encoding speed
+		// "placebo", "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast", "superfast", "ultrafast"
+		if (m_bFastEncode)
+			av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
+		else
+			av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
+	}
+	else
+	{
+		// Quality: 2.0f best quality, 31.0f worst quality
+        pCodecCtx->flags |= CODEC_FLAG_QSCALE;
+		pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
+
+		// Slow encoding
+		if (!m_bFastEncode)
+		{
+			if (pCodecCtx->codec_id == AV_CODEC_ID_MPEG4)
+			{
+				pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
+				pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
+				pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
+				pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
+				pCodecCtx->flags |= (CODEC_FLAG_AC_PRED |			// aic:    MPEG-4 AC prediction
+									CODEC_FLAG_4MV);				// mv4:    4 MV per MB allowed
+			}
+			else if (	pCodecCtx->codec_id == AV_CODEC_ID_H263  ||
+						pCodecCtx->codec_id == AV_CODEC_ID_H263P ||
+						pCodecCtx->codec_id == AV_CODEC_ID_FLV1)
+			{
+				pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
+				pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
+				pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
+				pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
+				pCodecCtx->flags |= (CODEC_FLAG_AC_PRED		|		// aic:    H.263 advanced intra coding
+									CODEC_FLAG_4MV			|		// mv4:    advanced prediction for H.263
+									CODEC_FLAG_MV0			|		// mv0:    try to encode each MB with MV=<0,0> and choose the better one (has no effect if mb_decision=0)
+									CODEC_FLAG_LOOP_FILTER);		// lf:     use loop filter (h263+)
+			}
+		}
+	}
 
 	// Resolution must be a multiple of two
 	pCodecCtx->width = pDstFormat->bmiHeader.biWidth;
@@ -214,7 +282,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// is the fundamental unit of time (in seconds) in terms of which frame
 	// timestamps are represented. For fixed framerate content, timebase should
 	// be 1/framerate and timestamp increments should be identically to 1.
-	// For variable framerate we can set a ms resoltution time base like:
+	// For variable framerate we can set a ms resolution time base like:
 	// pCodecCtx->time_base.num = 1 and pCodecCtx->time_base.den = 1000
 	//
 	// Most container formats are supporting VFR, except swf which is not.
@@ -230,43 +298,12 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	pCodecCtx->time_base.num = dst_scale;
 	
 	// Emit one intra frame every given frames at most
-	pCodecCtx->gop_size = MAX(1, keyframes_rate);
+	pCodecCtx->gop_size = keyframes_rate;	// keyframe interval(=GOP length) determines the maximum distance between I-frames.
+											// Normally it defaults to 12, for H.264 it defaults to -1 which means there is
+											// no upper limit, codec will still insert a keyframe with each scene change
 
 	// Pixel Format
 	pCodecCtx->pix_fmt = pix_fmt;
-
-	// No B-Frames
-	pCodecCtx->max_b_frames = 0;
-
-	// Encoder specific settings
-	if (pCodecCtx->codec_id == AV_CODEC_ID_MPEG4)
-	{
-		if (!m_bFastEncode)
-		{
-			pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
-			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
-			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED |			// aic:    MPEG-4 AC prediction
-								CODEC_FLAG_4MV);				// mv4:    4 MV per MB allowed
-		}
-	}
-	else if (	pCodecCtx->codec_id == AV_CODEC_ID_H263  ||
-				pCodecCtx->codec_id == AV_CODEC_ID_H263P ||
-				pCodecCtx->codec_id == AV_CODEC_ID_FLV1)
-	{
-		if (!m_bFastEncode)
-		{
-			pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
-			pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-			pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-			pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
-			pCodecCtx->flags |= (CODEC_FLAG_AC_PRED		|		// aic:    H.263 advanced intra coding
-								CODEC_FLAG_4MV			|		// mv4:    advanced prediction for H.263
-								CODEC_FLAG_MV0			|		// mv0:    try to encode each MB with MV=<0,0> and choose the better one (has no effect if mb_decision=0)
-								CODEC_FLAG_LOOP_FILTER);		// lf:     use loop filter (h263+)
-		}
-	}
 
 	// Some formats want stream headers to be separate
 	if (m_pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -342,6 +379,7 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 	pCodecCtx->channels = pDstWaveFormat->nChannels;
 	if (strcmp(m_pFormatCtx->oformat->name, "avi") == 0)
 		pCodecCtx->codec_tag = pDstWaveFormat->wFormatTag;
+	pCodecCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL; // to enable AAC
 
 	// Some formats want stream headers to be separate
 	if (m_pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)

@@ -79,9 +79,9 @@
 // Big Picture Size Limit
 #define BIG_PICTURE_SIZE_LIMIT							134217728U /* 128MB */
 
-// Default Video Compression Quality: 2.0f best, 31.0f worst
-#define DEFAULT_VIDEO_QUALITY							4.0f
-#define DEFAULT_SHRINK_VIDEO_QUALITY					7.0f
+// Video Compression Quality
+#define DEFAULT_VIDEO_QUALITY							VIDEO_QUALITY_GOOD
+#define DEFAULT_SHRINK_VIDEO_QUALITY					VIDEO_QUALITY_LOW
 
 // Default Video Codec
 #define DEFAULT_VIDEO_FOURCC							FCC('DIVX')
@@ -300,6 +300,9 @@ public:
 	// (folder will not be created if not existing)
 	static CString GetConfiguredTempDir();
 
+	// Clip video quality to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+	static float ClipVideoQuality(float fQuality);
+
 	// Templates Get Functions
 	CUImagerMultiDocTemplate* GetVideoAviDocTemplate() {return m_pVideoAviDocTemplate;};
 #ifdef VIDEODEVICEDOC
@@ -310,6 +313,7 @@ public:
 	CUImagerMultiDocTemplate* GetCDAudioDocTemplate() {return m_pCDAudioDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
+	static BOOL IsMP4File(CString sFileName);
 	static BOOL IsAVIFile(CString sFileName);
 	static BOOL IsSWFFile(CString sFileName);
 	static BOOL IsSupportedMusicFile(CString sFileName);

@@ -354,7 +354,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Directory to Store Detection
 		CString sDetectionAutoSaveDir;
-		if (m_pDoc->m_bSaveSWFMovementDetection	||
+		if (m_pDoc->m_bSaveMP4MovementDetection	||
+			m_pDoc->m_bSaveSWFMovementDetection	||
 			m_pDoc->m_bSaveAVIMovementDetection ||
 			m_pDoc->m_bSaveAnimGIFMovementDetection)
 		{
@@ -408,16 +409,18 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Detection File Names
 		BOOL bMakeAvi = DoMakeAvi();
 		BOOL bMakeSwf = DoMakeSwf();
+		BOOL bMakeMp4 = DoMakeMp4();
 		BOOL bMakeJpeg = DoMakeJpeg();
 		BOOL bMakeGif = DoMakeGif();
 		CString sAVIFileName;
 		CString sSWFFileName;
+		CString sMP4FileName;
 		CString sGIFFileName;
 		CString sGIFTempFileName; // Store to temp and then move so that web browser will not load half saved gifs
 		CString sJPGDir;
 		CStringArray sJPGFileNames;
-		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sAVIFileName);
-		sJPGDir = sGIFFileName = sSWFFileName = sAVIFileName;
+		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sMP4FileName);
+		sJPGDir = sGIFFileName = sSWFFileName = sAVIFileName = sMP4FileName;
 		if (sAVIFileName == _T(""))
 			sAVIFileName = _T("det_") + sFirstTime + _T(".avi");
 		else
@@ -426,6 +429,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			sSWFFileName = _T("det_") + sFirstTime + _T(".swf");
 		else
 			sSWFFileName = sSWFFileName + _T("\\") + _T("det_") + sFirstTime + _T(".swf");
+		if (sMP4FileName == _T(""))
+			sMP4FileName = _T("det_") + sFirstTime + _T(".mp4");
+		else
+			sMP4FileName = sMP4FileName + _T("\\") + _T("det_") + sFirstTime + _T(".mp4");
 		if (sGIFFileName == _T(""))
 			sGIFFileName = _T("det_") + sFirstTime + _T(".gif");
 		else
@@ -444,6 +451,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (bMakeSwf)
 			AVRecSwf.Init(sSWFFileName, true); // fast encoding!
 
+		// Create the Mp4 File
+		CAVRec AVRecMp4;
+		if (bMakeMp4)
+			AVRecMp4.Init(sMP4FileName, m_pDoc->m_bVideoDetMp4FastEncode ? true : false);
+
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
 		POSITION currentpos;
@@ -452,6 +464,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		double dSpeedMul = 1.0;
 		CDib AVISaveDib;
 		CDib SWFSaveDib;
+		CDib MP4SaveDib;
 		CDib GIFSaveDib;
 		CDib JPGSaveDib;
 		CDib* pDibPrev;
@@ -481,6 +494,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFTempFileName);
 				AVRecSwf.Close();
 				::DeleteFile(sSWFFileName);
+				AVRecMp4.Close();
+				::DeleteFile(sMP4FileName);
 				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
@@ -500,6 +515,67 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 				CalcMovementDetectionListsSize();
 				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
+			}
+
+			// Mp4
+			if (bMakeMp4)
+			{
+				MP4SaveDib = *pDib;
+
+				// Add Frame Tags
+				if (m_pDoc->m_bShowFrameTime)
+				{
+					AddFrameTime(&MP4SaveDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
+					AddFrameCount(&MP4SaveDib, m_pDoc->m_nMovDetSavesCount, m_pDoc->m_nRefFontSize);
+				}
+
+				// Open
+				if (!AVRecMp4.IsOpen())
+				{
+					BITMAPINFOHEADER DstBmi;
+					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
+					DstBmi.biSize = sizeof(BITMAPINFOHEADER);
+					DstBmi.biWidth = MP4SaveDib.GetWidth();
+					DstBmi.biHeight = MP4SaveDib.GetHeight();
+					DstBmi.biPlanes = 1;
+					DstBmi.biCompression = m_pDoc->m_dwVideoDetMp4FourCC;
+					AVRecMp4.AddVideoStream(MP4SaveDib.GetBMI(),				// Source Video Format
+											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
+											CalcFrameRate.num,					// Rate
+											CalcFrameRate.den,					// Scale
+											m_pDoc->m_nVideoDetMp4KeyframesRate,// Keyframes Rate				
+											m_pDoc->m_fVideoDetMp4Quality,		// 2.0f best quality, 31.0f worst quality
+											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+					if (m_pDoc->m_bCaptureAudio)
+					{	
+						AVRecMp4.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
+												m_pDoc->m_CaptureAudioThread.m_pDstWaveFormat);	// Dst Wave Format
+					}
+					AVRecMp4.Open();
+				}
+
+				if (AVRecMp4.IsOpen())
+				{
+					// Add Frame
+					AVRecMp4.AddFrame(	AVRecMp4.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
+										&MP4SaveDib,
+										false);	// No interleave
+
+					// Add Audio Samples
+					if (m_pDoc->m_bCaptureAudio)
+					{
+						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
+						while (posUserBuf)
+						{
+							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
+							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
+							AVRecMp4.AddAudioSamples(	AVRecMp4.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
+														nNumOfSrcSamples,
+														UserBuf.m_pBuf,
+														false);	// No interleave
+						}
+					}
+				}
 			}
 
 			// Swf
@@ -780,8 +856,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (pGIFColors)
 			delete [] pGIFColors;
 		GIFSaveDib.GetGif()->Close();
-		AVRecAvi.Close();
+		AVRecMp4.Close();
 		AVRecSwf.Close();
+		AVRecAvi.Close();
 
 		// Rename Saved Gif File
 		::DeleteFile(sGIFFileName);
@@ -802,6 +879,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				::DeleteFile(sGIFFileName);
 			if (!m_pDoc->m_bSaveSWFMovementDetection)
 				::DeleteFile(sSWFFileName);
+			if (!m_pDoc->m_bSaveMP4MovementDetection)
+				::DeleteFile(sMP4FileName);
 			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
@@ -826,6 +905,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::DeleteFile(sGIFFileName);
 		if (!m_pDoc->m_bSaveSWFMovementDetection)
 			::DeleteFile(sSWFFileName);
+		if (!m_pDoc->m_bSaveMP4MovementDetection)
+			::DeleteFile(sMP4FileName);
 		for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 			::DeleteFile(sJPGFileNames[i]);
 
@@ -2669,7 +2750,8 @@ end_of_software_detection:
 
 	// Store frames?
 	BOOL bStoreFrames =	dwVideoProcessorMode			&&
-						(m_bSaveSWFMovementDetection	||
+						(m_bSaveMP4MovementDetection	||
+						m_bSaveSWFMovementDetection		||
 						m_bSaveAVIMovementDetection		||
 						m_bSaveAnimGIFMovementDetection	||
 						m_bSendMailMovementDetection	||
@@ -3654,7 +3736,8 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->GetTotalMovementDetectionListSize() > 0		&&
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
-					(m_pDoc->m_bSaveSWFMovementDetection				||
+					(m_pDoc->m_bSaveMP4MovementDetection				||
+					m_pDoc->m_bSaveSWFMovementDetection					||
 					m_pDoc->m_bSaveAVIMovementDetection					||
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
 					m_pDoc->m_bSendMailMovementDetection				||
@@ -4039,6 +4122,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecFirstFrame = FALSE;
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
+	m_bVideoRecFastEncode = TRUE;
 	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
@@ -4058,6 +4142,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMilliSecondsRecAfterMovementEnd = DEFAULT_POST_BUFFER_MSEC;
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 	m_nDetectionMaxFrames = MOVDET_MAX_FRAMES_IN_LIST;
+	m_bSaveMP4MovementDetection = TRUE;
 	m_bSaveSWFMovementDetection = TRUE;
 	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
@@ -4087,6 +4172,10 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nVideoDetKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoDetQuality = DEFAULT_VIDEO_QUALITY;
 	m_dwVideoDetFourCC = DEFAULT_VIDEO_FOURCC;
+	m_nVideoDetMp4KeyframesRate = DEFAULT_KEYFRAMESRATE;
+	m_fVideoDetMp4Quality = DEFAULT_VIDEO_QUALITY;
+	m_dwVideoDetMp4FourCC = FCC('H264');
+	m_bVideoDetMp4FastEncode = TRUE;
 	m_nVideoDetSwfKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoDetSwfQuality = DEFAULT_VIDEO_QUALITY;
 	m_dwVideoDetSwfFourCC = FCC('FLV1');
@@ -4762,6 +4851,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDetectionMaxFrames = (int) pApp->GetProfileInt(sSection, _T("DetectionMaxFrames"), MOVDET_MAX_FRAMES_IN_LIST);
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
+	m_bSaveMP4MovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveMP4MovementDetection"), TRUE);
 	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
 	m_bSaveAVIMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAVIMovementDetection"), FALSE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
@@ -4784,11 +4874,16 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), DEFAULT_VIDEO_FOURCC);
-	m_fVideoRecQuality = (float) pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY);
+	m_fVideoRecQuality = (float) CUImagerApp::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
+	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), TRUE);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), DEFAULT_VIDEO_FOURCC);
 	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoDetKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetKeyframesRate"), DEFAULT_KEYFRAMESRATE);
+	m_dwVideoDetMp4FourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetMp4FourCC"), FCC('H264'));
+	m_fVideoDetMp4Quality = (float) pApp->GetProfileInt(sSection, _T("VideoDetMp4Quality"), (int)DEFAULT_VIDEO_QUALITY);
+	m_nVideoDetMp4KeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetMp4KeyframesRate"), DEFAULT_KEYFRAMESRATE);
+	m_bVideoDetMp4FastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoDetMp4FastEncode"), TRUE);
 	m_dwVideoDetSwfFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetSwfFourCC"), FCC('FLV1'));
 	m_fVideoDetSwfQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetSwfQuality"), (int)DEFAULT_VIDEO_QUALITY);
 	m_nVideoDetSwfKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), DEFAULT_KEYFRAMESRATE);
@@ -4970,6 +5065,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionMaxFrames"), m_nDetectionMaxFrames);
 	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
+	pApp->WriteProfileInt(sSection, _T("SaveMP4MovementDetection"), m_bSaveMP4MovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
@@ -4993,10 +5089,15 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
+	pApp->WriteProfileInt(sSection, _T("VideoRecFastEncode"), (int)m_bVideoRecFastEncode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
 	pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
 	pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate);
+	pApp->WriteProfileInt(sSection, _T("VideoDetMp4FourCC"), m_dwVideoDetMp4FourCC);
+	pApp->WriteProfileInt(sSection, _T("VideoDetMp4Quality"), (int)m_fVideoDetMp4Quality);
+	pApp->WriteProfileInt(sSection, _T("VideoDetMp4KeyframesRate"), m_nVideoDetMp4KeyframesRate);
+	pApp->WriteProfileInt(sSection, _T("VideoDetMp4FastEncode"), (int)m_bVideoDetMp4FastEncode);
 	pApp->WriteProfileInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC);
 	pApp->WriteProfileInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
@@ -5613,9 +5714,9 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 			return FALSE;
 	}
 	if (sYearMonthDayDir == _T(""))
-		sFileName = _T("rec_") + sCurrentTime + _T(".avi");
+		sFileName = _T("rec_") + sCurrentTime + (m_dwVideoRecFourCC == FCC('H264')  ? _T(".mp4") : _T(".avi"));
 	else
-		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + _T(".avi");
+		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + (m_dwVideoRecFourCC == FCC('H264')  ? _T(".mp4") : _T(".avi"));
 
 	// Allocate
 	*ppAVRec = new CAVRec;
@@ -5623,7 +5724,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 		return FALSE;
 
 	// Set File Name
-	if (!(*ppAVRec)->Init(sFileName, true)) // fast encoding!
+	if (!(*ppAVRec)->Init(sFileName, m_bVideoRecFastEncode ? true : false))
 		return FALSE;
 
 	// Add Video Stream

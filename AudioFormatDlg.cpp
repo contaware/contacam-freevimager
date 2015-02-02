@@ -40,6 +40,7 @@ BEGIN_MESSAGE_MAP(CAudioFormatDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_PCM, OnRadioPcm)
 	ON_BN_CLICKED(IDC_RADIO_ADPCM, OnRadioAdpcm)
 	ON_BN_CLICKED(IDC_RADIO_MP3, OnRadioMp3)
+	ON_BN_CLICKED(IDC_RADIO_AAC, OnRadioAac)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_BITS, OnSelchangeComboPcmBits)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_CHANNELS, OnSelchangeComboPcmChannels)
 	ON_CBN_SELCHANGE(IDC_COMBO_PCM_SAMPLINGRATE, OnSelchangeComboPcmSamplingrate)
@@ -48,6 +49,9 @@ BEGIN_MESSAGE_MAP(CAudioFormatDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_BITRATE, OnSelchangeComboMp3Bitrate)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_CHANNELS, OnSelchangeComboMp3Channels)
 	ON_CBN_SELCHANGE(IDC_COMBO_MP3_SAMPLINGRATE, OnSelchangeComboMp3Samplingrate)
+	ON_CBN_SELCHANGE(IDC_COMBO_AAC_BITRATE, OnSelchangeComboAacBitrate)
+	ON_CBN_SELCHANGE(IDC_COMBO_AAC_CHANNELS, OnSelchangeComboAacChannels)
+	ON_CBN_SELCHANGE(IDC_COMBO_AAC_SAMPLINGRATE, OnSelchangeComboAacSamplingrate)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -80,6 +84,14 @@ void CAudioFormatDlg::ResetAllCtrls()
 	pCombo->SetCurSel(1);
 	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP3_SAMPLINGRATE);
 	pCombo->SetCurSel(4);
+
+	// Reset AAC
+	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);	
+	pCombo->SetCurSel(0);
+	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+	pCombo->SetCurSel(0);
+	pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_SAMPLINGRATE);
+	pCombo->SetCurSel(0);
 }
 
 void CAudioFormatDlg::CtrlsToWaveFormat()
@@ -245,6 +257,23 @@ void CAudioFormatDlg::CtrlsToWaveFormat()
 			}
 		}
 
+		m_WaveFormat.nBlockAlign = 0;
+		m_WaveFormat.wBitsPerSample = 0;
+	}
+	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_AAC2)
+	{
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);
+		switch (pCombo->GetCurSel())
+		{
+			case 0  :	m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
+						break;
+			case 1  :	m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
+						break;
+			default :	ASSERT(FALSE);
+						break;
+		}
+		m_WaveFormat.nChannels = 2;
+		m_WaveFormat.nSamplesPerSec = 44100;
 		m_WaveFormat.nBlockAlign = 0;
 		m_WaveFormat.wBitsPerSample = 0;
 	}
@@ -444,6 +473,34 @@ void CAudioFormatDlg::WaveFormatToCtrls()
 		m_WaveFormat.nBlockAlign = 0;
 		m_WaveFormat.wBitsPerSample = 0;
 	}
+	else if (m_WaveFormat.wFormatTag == WAVE_FORMAT_AAC2)
+	{
+		CButton* pRadio = (CButton*)GetDlgItem(IDC_RADIO_AAC);
+		pRadio->SetCheck(1);
+
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);
+		if (m_WaveFormat.nAvgBytesPerSec <= (192000 / 8))
+		{
+			pCombo->SetCurSel(0);
+			m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
+		}
+		else
+		{
+			pCombo->SetCurSel(1);
+			m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
+		}
+
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+		pCombo->SetCurSel(0);
+		m_WaveFormat.nChannels = 2;
+
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_SAMPLINGRATE);
+		pCombo->SetCurSel(0);
+		m_WaveFormat.nSamplesPerSec = 44100;
+
+		m_WaveFormat.nBlockAlign = 0;
+		m_WaveFormat.wBitsPerSample = 0;
+	}
 	// Default to: WAVE_FORMAT_PCM
 	else
 	{
@@ -532,6 +589,9 @@ BOOL CAudioFormatDlg::OnInitDialog()
 		pComboBox->AddString(ML_STRING(1545, "Mono"));
 		pComboBox->AddString(ML_STRING(1546, "Stereo"));
 	}
+	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+	if (pComboBox)
+		pComboBox->AddString(ML_STRING(1546, "Stereo"));
 
 	CDialog::OnInitDialog();
 
@@ -795,6 +855,51 @@ void CAudioFormatDlg::OnSelchangeComboMp3Samplingrate()
 	}
 }
 
+void CAudioFormatDlg::OnRadioAac() 
+{
+	m_WaveFormat.wFormatTag = WAVE_FORMAT_AAC2;
+	CtrlsToWaveFormat();
+	EnableDisableCtrls();
+}
+
+void CAudioFormatDlg::OnSelchangeComboAacBitrate()
+{
+	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);
+	switch (pCombo->GetCurSel())
+	{
+		case 0  :	m_WaveFormat.nAvgBytesPerSec = 192000 / 8;
+					break;
+		case 1  :	m_WaveFormat.nAvgBytesPerSec = 224000 / 8;
+					break;
+		default :	ASSERT(FALSE);
+					break;
+	}
+}
+
+void CAudioFormatDlg::OnSelchangeComboAacChannels() 
+{
+	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+	switch (pCombo->GetCurSel())
+	{
+		case 0  :	m_WaveFormat.nChannels = 2;
+					break;
+		default :	ASSERT(FALSE);
+					break;
+	}
+}
+
+void CAudioFormatDlg::OnSelchangeComboAacSamplingrate() 
+{
+	CComboBox* pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_SAMPLINGRATE);
+	switch (pCombo->GetCurSel())
+	{
+		case 0  :	m_WaveFormat.nSamplesPerSec = 44100;
+					break;
+		default :	ASSERT(FALSE);
+					break;
+	}
+}
+
 void CAudioFormatDlg::EnableDisableCtrls()
 {
 	CComboBox* pCombo;
@@ -858,6 +963,26 @@ void CAudioFormatDlg::EnableDisableCtrls()
 		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP3_CHANNELS);
 		pCombo->EnableWindow(FALSE);
 		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_MP3_SAMPLINGRATE);
+		pCombo->EnableWindow(FALSE);
+	}
+
+	pRadio = (CButton*)GetDlgItem(IDC_RADIO_AAC);
+	if (pRadio->GetCheck() == 1)
+	{
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);
+		pCombo->EnableWindow(TRUE);
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+		pCombo->EnableWindow(TRUE);
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_SAMPLINGRATE);
+		pCombo->EnableWindow(TRUE);
+	}
+	else
+	{
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_BITRATE);
+		pCombo->EnableWindow(FALSE);
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_CHANNELS);
+		pCombo->EnableWindow(FALSE);
+		pCombo = (CComboBox*)GetDlgItem(IDC_COMBO_AAC_SAMPLINGRATE);
 		pCombo->EnableWindow(FALSE);
 	}
 }

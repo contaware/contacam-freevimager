@@ -266,6 +266,15 @@ CString CUImagerApp::GetConfiguredTempDir()
 	return sConfiguredTempDir;
 }
 
+float CUImagerApp::ClipVideoQuality(float fQuality)
+{
+	if (fQuality > VIDEO_QUALITY_LOW)
+		fQuality = VIDEO_QUALITY_LOW;
+	else if (fQuality < VIDEO_QUALITY_BEST)
+		fQuality = VIDEO_QUALITY_BEST;
+	return fQuality;
+}
+
 // Note: the following ffmpeg functions are not thread safe:
 // avcodec_open2, avdevice_register_all, av_get_cpu_flags, av_force_cpu_flags
 
@@ -2538,7 +2547,7 @@ int CUImagerApp::ExitInstance()
 		m_pOpenSSLCritSections = NULL;
 	}
 #ifdef _DEBUG // only trace in debug mode do not write to Trace Log File in release mode
-	TRACE(_T("*** FFMPEG LEAKS 63 BYTES, OPENSSL LEAKS 16 + 20 BYTES and SOMETIMES MORE, IT'S NORMAL ***\n"));
+	TRACE(_T("*** FFMPEG LEAKS 47 or 63 BYTES, OPENSSL LEAKS 16 + 20 BYTES and SOMETIMES MORE, IT'S NORMAL ***\n"));
 #endif
 #endif
 
@@ -4534,6 +4543,16 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		(sExt == _T(".gif"))	||
 		::IsJPEGExt(sExt)		||
 		::IsTIFFExt(sExt))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+BOOL CUImagerApp::IsMP4File(CString sFileName)
+{
+	CString sExt = ::GetFileExt(sFileName);
+
+	if (sExt == _T(".mp4"))
 		return TRUE;
 	else
 		return FALSE;

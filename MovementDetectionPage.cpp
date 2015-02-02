@@ -86,6 +86,8 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_COMBOBOX_DETECTION_SCHEDULER, OnCbnSelchangeComboboxDetectionScheduler)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
+	ON_BN_CLICKED(IDC_SAVE_MP4_MOVEMENT_DETECTION, OnSaveMp4MovementDetection)
+	ON_BN_CLICKED(IDC_MP4_CONFIGURE, OnMp4Configure)
 	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
 	ON_BN_CLICKED(IDC_SWF_CONFIGURE, OnSwfConfigure)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
@@ -176,6 +178,13 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionFriday);
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSaturday);
+
+	// Save MP4 Movement Detection Check Box
+	CButton* pCheckMP4SaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_MP4_MOVEMENT_DETECTION);
+	if (m_pDoc->m_bSaveMP4MovementDetection)
+		pCheckMP4SaveMovementDetection->SetCheck(1);
+	else
+		pCheckMP4SaveMovementDetection->SetCheck(0);
 
 	// Save SWF Movement Detection Check Box
 	CButton* pCheckSWFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
@@ -424,6 +433,12 @@ void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRES
 	*pResult = 0;
 }
 
+void CMovementDetectionPage::OnSaveMp4MovementDetection() 
+{
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_MP4_MOVEMENT_DETECTION);
+	m_pDoc->m_bSaveMP4MovementDetection = pCheck->GetCheck() > 0;
+}
+
 void CMovementDetectionPage::OnSaveSwfMovementDetection() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
@@ -442,6 +457,30 @@ void CMovementDetectionPage::OnSaveAnimGifMovementDetection()
 	m_pDoc->m_bSaveAnimGIFMovementDetection = pCheck->GetCheck() > 0;
 	if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
 		::AfxMessageBox(ML_STRING(1873, "Files are not shown in web interface if disabling this!"), MB_OK | MB_ICONWARNING);
+}
+
+void CMovementDetectionPage::OnMp4Configure() 
+{
+	// Stop Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Kill();
+
+	// Mp4 Config Dialog
+	CVideoFormatDlg VideoFormatDlg(this);
+	VideoFormatDlg.m_dwVideoCompressorFourCC = m_pDoc->m_dwVideoDetMp4FourCC;
+	VideoFormatDlg.m_nVideoCompressorKeyframesRate = m_pDoc->m_nVideoDetMp4KeyframesRate;
+	VideoFormatDlg.m_fVideoCompressorQuality = m_pDoc->m_fVideoDetMp4Quality;
+	VideoFormatDlg.m_bFastEncode = m_pDoc->m_bVideoDetMp4FastEncode;
+	VideoFormatDlg.m_nFileType = CVideoFormatDlg::FILETYPE_MP4;
+	if (VideoFormatDlg.DoModal() == IDOK)
+	{
+		m_pDoc->m_bVideoDetMp4FastEncode = VideoFormatDlg.m_bFastEncode;
+		m_pDoc->m_fVideoDetMp4Quality = VideoFormatDlg.m_fVideoCompressorQuality;
+		m_pDoc->m_nVideoDetMp4KeyframesRate = VideoFormatDlg.m_nVideoCompressorKeyframesRate;
+		m_pDoc->m_dwVideoDetMp4FourCC = VideoFormatDlg.m_dwVideoCompressorFourCC;
+	}
+
+	// Restart Save Frame List Thread
+	m_pDoc->m_SaveFrameListThread.Start();
 }
 
 void CMovementDetectionPage::OnSwfConfigure() 
