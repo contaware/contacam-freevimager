@@ -21,7 +21,6 @@ public:
 	CSliderCtrl	m_VideoCompressorQuality;
 	CComboBox	m_VideoCompressionChoose;
 	int			m_nVideoCompressorKeyframesRate;
-	BOOL		m_bFastEncode;
 	//}}AFX_DATA
 	DWORD m_dwVideoCompressorFourCC;
 	float m_fVideoCompressorQuality;
@@ -42,7 +41,7 @@ protected:
 	__forceinline int GetRevertedPos(CSliderCtrl& SliderCtrl) {return SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - SliderCtrl.GetPos());};
 	__forceinline void SetRevertedPos(CSliderCtrl& SliderCtrl, int nPos) {SliderCtrl.SetPos(SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - nPos));};
 	CDWordArray m_VideoCompressionFcc;
-	CDWordArray m_VideoCompressionFastEncodeAndKeyframesRateSupport;
+	CDWordArray m_VideoCompressionKeyframesRateSupport;
 	CDWordArray m_VideoCompressionQualitySupport;
 	// Generated message map functions
 	//{{AFX_MSG(CVideoFormatDlg)

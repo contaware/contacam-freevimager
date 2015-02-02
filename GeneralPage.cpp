@@ -233,7 +233,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
 	m_bRecAutoOpen = TRUE;
-	m_bFastEncode = TRUE;
+	m_bFastEncode = FALSE;
 
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;

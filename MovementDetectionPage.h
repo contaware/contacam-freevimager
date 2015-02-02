@@ -69,14 +69,11 @@ protected:
 	afx_msg void OnSendmailMovementDetection();
 	afx_msg void OnFtpMovementDetection();
 	afx_msg void OnFtpConfigure();
-	afx_msg void OnAviConfigure();
 	afx_msg void OnCbnSelchangeComboboxDetectionScheduler();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSaveMp4MovementDetection();
-	afx_msg void OnMp4Configure();
 	afx_msg void OnSaveSwfMovementDetection();
-	afx_msg void OnSwfConfigure();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnChangeEditExe();
 	afx_msg void OnChangeEditParams();

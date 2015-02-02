@@ -1195,16 +1195,6 @@ public:
 	volatile LONG m_lMovDetXZonesCount;					// Number of zones in X direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetYZonesCount;					// Number of zones in Y direction (never set to 0 to avoid division by 0)
 	volatile LONG m_lMovDetTotalZones;					// Total Number of zones (set to 0 when a (re-)init of the zones is wanted)
-	volatile DWORD m_dwVideoDetFourCC;					// Video Compressor FourCC
-	volatile int m_nVideoDetKeyframesRate;				// Keyframes Rate
-	volatile float m_fVideoDetQuality;					// 2.0f best quality, 31.0f worst quality
-	volatile DWORD m_dwVideoDetMp4FourCC;				// Video Compressor FourCC
-	volatile int m_nVideoDetMp4KeyframesRate;			// Keyframes Rate
-	volatile float m_fVideoDetMp4Quality;				// 2.0f best quality, 31.0f worst quality
-	volatile BOOL m_bVideoDetMp4FastEncode;				// FALSE slow encoding, TRUE fast encoding
-	volatile DWORD m_dwVideoDetSwfFourCC;				// Video Compressor FourCC
-	volatile int m_nVideoDetSwfKeyframesRate;			// Keyframes Rate
-	volatile float m_fVideoDetSwfQuality;				// 2.0f best quality, 31.0f worst quality
 	volatile int m_nDetectionStartStop;					// 0 -> Detection Alwayn on
 														// 1 -> Enable detection on specified times and days
 														// 2 -> Disable detection on specified times and days

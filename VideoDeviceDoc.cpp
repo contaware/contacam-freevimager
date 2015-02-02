@@ -444,17 +444,17 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Create the Avi File
 		CAVRec AVRecAvi;
 		if (bMakeAvi)
-			AVRecAvi.Init(sAVIFileName, true); // fast encoding!
+			AVRecAvi.Init(sAVIFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
 
 		// Create the Swf File
 		CAVRec AVRecSwf;
 		if (bMakeSwf)
-			AVRecSwf.Init(sSWFFileName, true); // fast encoding!
+			AVRecSwf.Init(sSWFFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
 
 		// Create the Mp4 File
 		CAVRec AVRecMp4;
 		if (bMakeMp4)
-			AVRecMp4.Init(sMP4FileName, m_pDoc->m_bVideoDetMp4FastEncode ? true : false);
+			AVRecMp4.Init(sMP4FileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -538,13 +538,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biWidth = MP4SaveDib.GetWidth();
 					DstBmi.biHeight = MP4SaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = m_pDoc->m_dwVideoDetMp4FourCC;
+					DstBmi.biCompression = m_pDoc->m_dwVideoRecFourCC;
 					AVRecMp4.AddVideoStream(MP4SaveDib.GetBMI(),				// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale
-											m_pDoc->m_nVideoDetMp4KeyframesRate,// Keyframes Rate				
-											m_pDoc->m_fVideoDetMp4Quality,		// 2.0f best quality, 31.0f worst quality
+											m_pDoc->m_nVideoRecKeyframesRate,	// Keyframes Rate				
+											m_pDoc->m_fVideoRecQuality,			// 2.0f best quality, 31.0f worst quality
 											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
@@ -599,13 +599,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biWidth = SWFSaveDib.GetWidth();
 					DstBmi.biHeight = SWFSaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = m_pDoc->m_dwVideoDetSwfFourCC;		// FLV1, need Flash 6 to play it
+					DstBmi.biCompression = FCC('FLV1');							// FLV1, need Flash 6 to play it
 					AVRecSwf.AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
 											CalcFrameRate.den,					// Scale
-											m_pDoc->m_nVideoDetSwfKeyframesRate,// Keyframes Rate				
-											m_pDoc->m_fVideoDetSwfQuality,		// 2.0f best quality, 31.0f worst quality
+											m_pDoc->m_nVideoRecKeyframesRate,	// Keyframes Rate				
+											m_pDoc->m_fVideoRecQuality,			// 2.0f best quality, 31.0f worst quality
 											1);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
@@ -702,7 +702,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				{
 					BITMAPINFOFULL DstBmi;
 					memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
-					DWORD dwVideoDetFourCC = m_pDoc->m_dwVideoDetFourCC;
+					DWORD dwVideoDetFourCC = m_pDoc->m_dwVideoRecFourCC;
 					DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 					DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
 					DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
@@ -712,8 +712,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
 											CalcFrameRate.num,						// Rate
 											CalcFrameRate.den,						// Scale
-											m_pDoc->m_nVideoDetKeyframesRate,		// Keyframes Rate					
-											m_pDoc->m_fVideoDetQuality,				// 2.0f best quality, 31.0f worst quality
+											m_pDoc->m_nVideoRecKeyframesRate,		// Keyframes Rate					
+											m_pDoc->m_fVideoRecQuality,				// 2.0f best quality, 31.0f worst quality
 											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{
@@ -4122,7 +4122,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecFirstFrame = FALSE;
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
-	m_bVideoRecFastEncode = TRUE;
+	m_bVideoRecFastEncode = FALSE;
 	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
@@ -4169,16 +4169,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_lMovDetXZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetYZonesCount = MOVDET_MIN_ZONES_XORY;
 	m_lMovDetTotalZones = 0;
-	m_nVideoDetKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoDetQuality = DEFAULT_VIDEO_QUALITY;
-	m_dwVideoDetFourCC = DEFAULT_VIDEO_FOURCC;
-	m_nVideoDetMp4KeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoDetMp4Quality = DEFAULT_VIDEO_QUALITY;
-	m_dwVideoDetMp4FourCC = FCC('H264');
-	m_bVideoDetMp4FastEncode = TRUE;
-	m_nVideoDetSwfKeyframesRate = DEFAULT_KEYFRAMESRATE;
-	m_fVideoDetSwfQuality = DEFAULT_VIDEO_QUALITY;
-	m_dwVideoDetSwfFourCC = FCC('FLV1');
 	m_nDetectionStartStop = 0;
 	m_bDetectionSunday = TRUE;
 	m_bDetectionMonday = TRUE;
@@ -4875,18 +4865,8 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), DEFAULT_VIDEO_FOURCC);
 	m_fVideoRecQuality = (float) CUImagerApp::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
-	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), TRUE);
+	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), FALSE);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_dwVideoDetFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetFourCC"), DEFAULT_VIDEO_FOURCC);
-	m_fVideoDetQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_nVideoDetKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetKeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_dwVideoDetMp4FourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetMp4FourCC"), FCC('H264'));
-	m_fVideoDetMp4Quality = (float) pApp->GetProfileInt(sSection, _T("VideoDetMp4Quality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_nVideoDetMp4KeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetMp4KeyframesRate"), DEFAULT_KEYFRAMESRATE);
-	m_bVideoDetMp4FastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoDetMp4FastEncode"), TRUE);
-	m_dwVideoDetSwfFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoDetSwfFourCC"), FCC('FLV1'));
-	m_fVideoDetSwfQuality = (float) pApp->GetProfileInt(sSection, _T("VideoDetSwfQuality"), (int)DEFAULT_VIDEO_QUALITY);
-	m_nVideoDetSwfKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
 	m_bDetectionMonday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionMonday"), TRUE);
@@ -5091,16 +5071,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoRecFastEncode"), (int)m_bVideoRecFastEncode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
-	pApp->WriteProfileInt(sSection, _T("VideoDetFourCC"), m_dwVideoDetFourCC);
-	pApp->WriteProfileInt(sSection, _T("VideoDetQuality"), (int)m_fVideoDetQuality);
-	pApp->WriteProfileInt(sSection, _T("VideoDetKeyframesRate"), m_nVideoDetKeyframesRate);
-	pApp->WriteProfileInt(sSection, _T("VideoDetMp4FourCC"), m_dwVideoDetMp4FourCC);
-	pApp->WriteProfileInt(sSection, _T("VideoDetMp4Quality"), (int)m_fVideoDetMp4Quality);
-	pApp->WriteProfileInt(sSection, _T("VideoDetMp4KeyframesRate"), m_nVideoDetMp4KeyframesRate);
-	pApp->WriteProfileInt(sSection, _T("VideoDetMp4FastEncode"), (int)m_bVideoDetMp4FastEncode);
-	pApp->WriteProfileInt(sSection, _T("VideoDetSwfFourCC"), m_dwVideoDetSwfFourCC);
-	pApp->WriteProfileInt(sSection, _T("VideoDetSwfQuality"), (int)m_fVideoDetSwfQuality);
-	pApp->WriteProfileInt(sSection, _T("VideoDetSwfKeyframesRate"), m_nVideoDetSwfKeyframesRate);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
 	pApp->WriteProfileInt(sSection, _T("DetectionMonday"), (int)m_bDetectionMonday);

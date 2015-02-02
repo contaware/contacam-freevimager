@@ -1270,14 +1270,11 @@
 #define IDC_PROCESS_TIME                1219
 #define IDS_MULTILANG_1220              1220
 #define IDC_AUTH_PASSWORD               1220
-#define IDC_AVI_CONFIGURE               1220
 #define IDS_MULTILANG_1221              1221
 #define IDC_HOST_NAME                   1221
-#define IDC_SWF_CONFIGURE               1221
 #define IDC_AUTH_AREANAME               1221
 #define IDS_MULTILANG_1222              1222
 #define IDC_HOST_PORT                   1222
-#define IDC_MP4_CONFIGURE               1222
 #define IDS_MULTILANG_1223              1223
 #define IDC_PROXY_HOST_NAME             1223
 #define IDC_SUBJECT_LINE                1223
