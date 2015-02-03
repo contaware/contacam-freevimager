@@ -816,8 +816,8 @@ void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbH
 		m_pDoc->m_pSnapshotPage->DisplaySnapshotRate();
 
 		// Snapshot history
-		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-		pCheck->SetCheck(m_pDoc->m_bSnapshotHistorySwf ? 1 : 0);
+		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
 	}
 	else
 	{
@@ -860,7 +860,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// (at this point the process frame is stopped but
 	// the snapshot threads may still be running)
 	m_pDoc->m_SaveSnapshotThread.Kill();
-	m_pDoc->m_SaveSnapshotSWFThread.Kill();
+	m_pDoc->m_SaveSnapshotVideoThread.Kill();
 
 	// Rename
 	Rename();
@@ -945,7 +945,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Disable snapshot history
-			m_pDoc->m_bSnapshotHistorySwf = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
@@ -1015,7 +1015,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Enable snapshot history
-			m_pDoc->m_bSnapshotHistorySwf = TRUE;
+			m_pDoc->m_bSnapshotHistoryVideo = TRUE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, nSnapshotRate);
@@ -1080,7 +1080,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Disable snapshot history
-			m_pDoc->m_bSnapshotHistorySwf = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
@@ -1122,7 +1122,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Disable snapshot history
-			m_pDoc->m_bSnapshotHistorySwf = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);

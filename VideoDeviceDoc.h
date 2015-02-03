@@ -708,17 +708,19 @@ public:
 			CSaveFrameListThread* m_pThread;
 	};
 
-	// The Save Snapshot SWF Thread Class
-	class CSaveSnapshotSWFThread : public CWorkerThread
+	// The Save Snapshot Video Thread Class
+	class CSaveSnapshotVideoThread : public CWorkerThread
 	{
 		public:
-			CSaveSnapshotSWFThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
-			virtual ~CSaveSnapshotSWFThread() {Kill();};
+			CSaveSnapshotVideoThread(){m_pDoc = NULL; m_ThreadExecutedForTime = CTime(0);};
+			virtual ~CSaveSnapshotVideoThread() {Kill();};
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			BOOL m_bSnapshotHistoryJpeg;
-			BOOL m_bSnapshotHistorySwfFtp;
+			BOOL m_bSnapshotHistoryVideoFtp;
 			float m_fSnapshotVideoCompressorQuality;
+			DWORD m_dwSnapshotVideoFourCC;
+			int m_nSnapshotVideoKeyframesRate;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
 			CTime m_ThreadExecutedForTime;
@@ -728,7 +730,7 @@ public:
 		protected:
 			CVideoDeviceDoc* m_pDoc;
 			int Work();
-			__forceinline CString MakeSwfHistoryFileName();
+			__forceinline CString MakeVideoHistoryFileName();
 	};
 
 	// The Save Snapshot Thread Class
@@ -1061,7 +1063,7 @@ public:
 	CCaptureAudioThread m_CaptureAudioThread;			// Audio Capture Thread
 	CSaveFrameListThread m_SaveFrameListThread;			// Thread which saves the frames in m_FrameArray
 	CSaveSnapshotThread m_SaveSnapshotThread;			// Thread which saves the snapshots
-	CSaveSnapshotSWFThread m_SaveSnapshotSWFThread;		// Thread which creates the history SWF video file and FTP uploads it
+	CSaveSnapshotVideoThread m_SaveSnapshotVideoThread;	// Thread which creates the history video file and FTP uploads it
 
 	// Drawing
 	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
@@ -1098,7 +1100,7 @@ public:
 	CString m_sRecordAutoSaveDir;						// The Record Directory
 	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
-	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality
+	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 	volatile BOOL m_bVideoRecFastEncode;				// FALSE slow encoding, TRUE fast encoding
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
@@ -1124,16 +1126,15 @@ public:
 	// Snapshot Vars
 	volatile BOOL m_bSnapshotLiveJpeg;					// Live snapshot save as Jpeg
 	volatile BOOL m_bSnapshotHistoryJpeg;				// Snapshot history save Jpegs
-	volatile BOOL m_bSnapshotHistorySwf;				// Snapshot history save Swf
+	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
 	volatile BOOL m_bSnapshotHistoryJpegFtp;			// Upload Jpeg Snapshot history files
-	volatile BOOL m_bSnapshotHistorySwfFtp;				// Upload Swf Snapshot history files
+	volatile BOOL m_bSnapshotHistoryVideoFtp;			// Upload Video Snapshot history files
 	volatile BOOL m_bManualSnapshotAutoOpen;			// Auto open after executing the manual snapshot command
 	volatile int m_nSnapshotRate;						// Snapshot rate in seconds
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
 	volatile int m_nSnapshotCompressionQuality;			// Snapshot compression quality
-	volatile float m_fSnapshotVideoCompressorQuality;	// Snapshots swf compression quality
 	volatile BOOL m_bSnapshotThumb;						// Snapshot thumbnail enable / disable flag
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height

@@ -29,7 +29,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSnapshotPage)
 	enum { IDD = IDD_SNAPSHOT };
-	CSliderCtrl	m_VideoCompressorQuality;
 	CSliderCtrl	m_CompressionQuality;
 	CTime	m_SnapshotStartTime;
 	CTime	m_SnapshotStopTime;
@@ -58,14 +57,14 @@ protected:
 	afx_msg void OnChangeEditSnapshotHistoryFramerate();
 	afx_msg void OnCheckSnapshotLiveJpeg();
 	afx_msg void OnCheckSnapshotHistoryJpeg();
-	afx_msg void OnCheckSnapshotHistorySwf();
+	afx_msg void OnCheckSnapshotHistoryVideo();
 	afx_msg void OnCheckSchedulerDaily();
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnFtpConfigure();
 	afx_msg void OnCheckFtpSnapshot();
 	afx_msg void OnCheckFtpSnapshotHistoryJpeg();
-	afx_msg void OnCheckFtpSnapshotHistorySwf();
+	afx_msg void OnCheckFtpSnapshotHistoryVideo();
 	afx_msg void OnCheckManualshotAutoopen();
 	afx_msg void OnButtonSnapshotNames();
 	//}}AFX_MSG

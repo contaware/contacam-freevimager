@@ -49,7 +49,6 @@ void CSnapshotPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSnapshotPage)
-	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoCompressorQuality);
 	DDX_Control(pDX, IDC_COMPRESSION_QUALITY, m_CompressionQuality);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_START, m_SnapshotStartTime);
 	DDX_DateTimeCtrl(pDX, IDC_TIME_DAILY_STOP, m_SnapshotStopTime);
@@ -67,14 +66,14 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE, OnChangeEditSnapshotHistoryFramerate)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_LIVE_JPEG, OnCheckSnapshotLiveJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_JPEG, OnCheckSnapshotHistoryJpeg)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_SWF, OnCheckSnapshotHistorySwf)
+	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_FTP_CONFIGURE, OnFtpConfigure)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT, OnCheckFtpSnapshot)
 	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG, OnCheckFtpSnapshotHistoryJpeg)
-	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF, OnCheckFtpSnapshotHistorySwf)
+	ON_BN_CLICKED(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO, OnCheckFtpSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_CHECK_MANUALSHOT_AUTOOPEN, OnCheckManualshotAutoopen)
 	ON_BN_CLICKED(IDC_BUTTON_SNAPSHOT_NAMES, OnButtonSnapshotNames)
 	//}}AFX_MSG_MAP
@@ -104,9 +103,9 @@ BOOL CSnapshotPage::OnInitDialog()
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_JPEG);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryJpeg);
 
-	// Snapshot History Swf Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistorySwf);
+	// Snapshot History Video Check Box
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo);
 
 	// Live Snapshot Jpeg Ftp Check Box
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT);
@@ -116,9 +115,9 @@ BOOL CSnapshotPage::OnInitDialog()
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryJpegFtp);
 
-	// Snapshot History Swf Ftp Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotHistorySwfFtp);
+	// Snapshot History Video Ftp Check Box
+	pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
+	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideoFtp);
 
 	// Manual Snapshot Auto-Open Document File
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
@@ -145,15 +144,6 @@ BOOL CSnapshotPage::OnInitDialog()
 	pEdit = (CEdit*)GetDlgItem(IDC_COMPRESSION_QUALITY_NUM);
 	CString sQuality;
 	sQuality.Format(_T("%i"), m_CompressionQuality.GetPos());
-	pEdit->SetWindowText(sQuality);
-
-	// Video Compression Quality
-	m_VideoCompressorQuality.SetRange(2, 31);
-	m_VideoCompressorQuality.SetPageSize(5);
-	m_VideoCompressorQuality.SetLineSize(1);
-	m_VideoCompressorQuality.SetPos(33 - (int)(m_pDoc->m_fSnapshotVideoCompressorQuality)); // m_fSnapshotVideoCompressorQuality has a range from 31.0f to 2.0f
-	pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-	sQuality.Format(_T("%i"), (int)((m_VideoCompressorQuality.GetPos() - 2) * 3.45)); // 0 .. 100
 	pEdit->SetWindowText(sQuality);
 
 	// Thumbnail Size Button
@@ -219,13 +209,13 @@ void CSnapshotPage::OnCheckSnapshotHistoryJpeg()
 		m_pDoc->m_bSnapshotHistoryJpeg = FALSE;
 }
 
-void CSnapshotPage::OnCheckSnapshotHistorySwf() 
+void CSnapshotPage::OnCheckSnapshotHistoryVideo() 
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_SWF);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistorySwf = TRUE;
+		m_pDoc->m_bSnapshotHistoryVideo = TRUE;
 	else
-		m_pDoc->m_bSnapshotHistorySwf = FALSE;
+		m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 }
 
 void CSnapshotPage::OnCheckFtpSnapshot() 
@@ -246,13 +236,13 @@ void CSnapshotPage::OnCheckFtpSnapshotHistoryJpeg()
 		m_pDoc->m_bSnapshotHistoryJpegFtp = FALSE;
 }
 
-void CSnapshotPage::OnCheckFtpSnapshotHistorySwf() 
+void CSnapshotPage::OnCheckFtpSnapshotHistoryVideo() 
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_SWF);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
 	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotHistorySwfFtp = TRUE;
+		m_pDoc->m_bSnapshotHistoryVideoFtp = TRUE;
 	else
-		m_pDoc->m_bSnapshotHistorySwfFtp = FALSE;
+		m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 }
 
 void CSnapshotPage::UpdateSnapshotStartStopTimes()
@@ -357,14 +347,6 @@ void CSnapshotPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_COMPRESSION_QUALITY_NUM);
 				CString sQuality;
 				sQuality.Format(_T("%i"), m_CompressionQuality.GetPos());
-				pEdit->SetWindowText(sQuality);
-			}
-			else if (pSlider->GetDlgCtrlID() == IDC_VIDEO_COMPRESSION_QUALITY)
-			{
-				m_pDoc->m_fSnapshotVideoCompressorQuality = (float)(33 - m_VideoCompressorQuality.GetPos());
-				CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_NUM);
-				CString sQuality;
-				sQuality.Format(_T("%i"), (int)((m_VideoCompressorQuality.GetPos() - 2) * 3.45)); // 0 .. 100
 				pEdit->SetWindowText(sQuality);
 			}
 		}
