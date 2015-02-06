@@ -87,16 +87,68 @@ void InitHelpers()
 					// g_ullLastProcKernelTime and g_ullLastProcUserTime
 }
 
-//
-// Example c:\mydir1\mydir2\hello.jpeg
-// 
-// GetDriveName()			->  c:
-// GetDirName()				-> \mydir1\mydir2\
-// GetDriveAndDirName()		-> c:\mydir1\mydir2\
-// GetShortFileName()		-> hello.jpeg
-// GetShortFileNameNoExt()	-> hello
-// GetFileNameNoExt()		-> c:\mydir1\mydir2\hello
-// GetFileExt()				-> .jpeg
+/*
+c:\mydir1\mydir2\hello.jpeg
+---------------------------
+GetDriveName()			-> c:
+GetDirName()			-> \mydir1\mydir2\
+GetDriveAndDirName()	-> c:\mydir1\mydir2\
+GetShortFileName()		-> hello.jpeg
+GetShortFileNameNoExt()	-> hello
+GetFileNameNoExt()		-> c:\mydir1\mydir2\hello
+GetFileExt()			-> .jpeg
+
+c:\mydir1\mydir2\hello
+----------------------
+GetDriveName()			-> c:
+GetDirName()			-> \mydir1\mydir2\
+GetDriveAndDirName()	-> c:\mydir1\mydir2\
+GetShortFileName()		-> hello
+GetShortFileNameNoExt()	-> hello
+GetFileNameNoExt()		-> c:\mydir1\mydir2\hello
+GetFileExt()			-> empty string!
+
+c:\mydir1\mydir2\hello\
+-----------------------
+GetDriveName()			-> c:
+GetDirName()			-> \mydir1\mydir2\hello\
+GetDriveAndDirName()	-> c:\mydir1\mydir2\hello\
+GetShortFileName()		-> empty string!
+GetShortFileNameNoExt()	-> empty string!
+GetFileNameNoExt()		-> c:\mydir1\mydir2\hello\
+GetFileExt()			-> empty string!
+
+\\?\c:\mydir1\mydir2\hello.jpeg
+-------------------------------
+GetDriveName()			-> empty string!
+GetDirName()			-> \\?\c:\mydir1\mydir2\
+GetDriveAndDirName()	-> \\?\c:\mydir1\mydir2\
+GetShortFileName()		-> hello.jpeg
+GetShortFileNameNoExt()	-> hello
+GetFileNameNoExt()		-> \\?\c:\mydir1\mydir2\hello
+GetFileExt()			-> .jpeg
+
+\\TS109\Public\ContaCam\hello.jpeg
+----------------------------------
+GetDriveName()			-> empty string!
+GetDirName()			-> \\TS109\Public\ContaCam\
+GetDriveAndDirName()	-> \\TS109\Public\ContaCam\
+GetShortFileName()		-> hello.jpeg
+GetShortFileNameNoExt()	-> hello
+GetFileNameNoExt()		-> \\TS109\Public\ContaCam\hello
+GetFileExt()			-> .jpeg
+
+\\?\UNC\TS109\Public\ContaCam\hello.jpeg
+----------------------------------------
+GetDriveName()			-> empty string!
+GetDirName()			-> \\?\UNC\TS109\Public\ContaCam\
+GetDriveAndDirName()	-> \\?\UNC\TS109\Public\ContaCam\
+GetShortFileName()		-> hello.jpeg
+GetShortFileNameNoExt()	-> hello
+GetFileNameNoExt()		-> \\?\UNC\TS109\Public\ContaCam\hello
+GetFileExt()			-> .jpeg
+*/
+
 CString GetDriveName(const CString& sFullFilePath)
 {
 	TCHAR szDrive[_MAX_DRIVE];
@@ -2366,9 +2418,14 @@ int GetPhysicalMemUsedMB()
 
 ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
 {
+	// Must include trailing backslash and does not have to specify the root dir
+	CString sPath(lpszPath);
+	sPath.TrimRight(_T('\\'));
+	sPath += _T("\\");
+
 	// Receives the total number of bytes on disk available to caller
 	ULARGE_INTEGER TotalNumberOfBytesAvailableToCaller;
-	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
+	if (!GetDiskFreeSpaceEx(sPath,
 							NULL,
 							&TotalNumberOfBytesAvailableToCaller,
 							NULL))
@@ -2379,9 +2436,14 @@ ULONGLONG GetDiskTotalSize(LPCTSTR lpszPath)
 
 ULONGLONG GetDiskAvailableFreeSpace(LPCTSTR lpszPath)
 {
+	// Must include trailing backslash and does not have to specify the root dir
+	CString sPath(lpszPath);
+	sPath.TrimRight(_T('\\'));
+	sPath += _T("\\");
+
 	// Receives the number of free bytes on disk available to caller
 	ULARGE_INTEGER FreeBytesAvailableToCaller;
-	if (!GetDiskFreeSpaceEx(GetDriveName(lpszPath) + _T("\\"),
+	if (!GetDiskFreeSpaceEx(sPath,
 							&FreeBytesAvailableToCaller,
 							NULL,
 							NULL))
