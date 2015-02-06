@@ -894,10 +894,8 @@
 #define IDS_MULTILANG_1031              1031
 #define IDC_VIDEO_FORMAT                1031
 #define IDS_MULTILANG_1032              1032
-#define IDC_SAVE_AVI_MOVEMENT_DETECTION 1032
 #define IDS_MULTILANG_1033              1033
 #define IDC_VIDEO_SOURCE                1033
-#define IDC_SAVE_SWF_MOVEMENT_DETECTION 1033
 #define IDS_MULTILANG_1034              1034
 #define IDC_FRAMERATE                   1034
 #define IDC_SAVE_MP4_MOVEMENT_DETECTION 1034

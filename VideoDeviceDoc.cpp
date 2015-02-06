@@ -354,10 +354,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 
 		// Directory to Store Detection
 		CString sDetectionAutoSaveDir;
-		if (m_pDoc->m_bSaveMP4MovementDetection	||
-			m_pDoc->m_bSaveSWFMovementDetection	||
-			m_pDoc->m_bSaveAVIMovementDetection ||
-			m_pDoc->m_bSaveAnimGIFMovementDetection)
+		if (m_pDoc->m_bSaveMP4MovementDetection	|| m_pDoc->m_bSaveAnimGIFMovementDetection)
 		{
 			// Check Whether Dir Exists
 			sDetectionAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
@@ -407,28 +404,16 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		}
 
 		// Detection File Names
-		BOOL bMakeAvi = DoMakeAvi();
-		BOOL bMakeSwf = DoMakeSwf();
 		BOOL bMakeMp4 = DoMakeMp4();
 		BOOL bMakeJpeg = DoMakeJpeg();
 		BOOL bMakeGif = DoMakeGif();
-		CString sAVIFileName;
-		CString sSWFFileName;
 		CString sMP4FileName;
 		CString sGIFFileName;
 		CString sGIFTempFileName; // Store to temp and then move so that web browser will not load half saved gifs
 		CString sJPGDir;
 		CStringArray sJPGFileNames;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sMP4FileName);
-		sJPGDir = sGIFFileName = sSWFFileName = sAVIFileName = sMP4FileName;
-		if (sAVIFileName == _T(""))
-			sAVIFileName = _T("det_") + sFirstTime + _T(".avi");
-		else
-			sAVIFileName = sAVIFileName + _T("\\") + _T("det_") + sFirstTime + _T(".avi");
-		if (sSWFFileName == _T(""))
-			sSWFFileName = _T("det_") + sFirstTime + _T(".swf");
-		else
-			sSWFFileName = sSWFFileName + _T("\\") + _T("det_") + sFirstTime + _T(".swf");
+		sJPGDir = sGIFFileName = sMP4FileName;
 		if (sMP4FileName == _T(""))
 			sMP4FileName = _T("det_") + sFirstTime + _T(".mp4");
 		else
@@ -441,16 +426,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (sJPGDir != _T(""))
 			sJPGDir = sJPGDir + _T("\\");
 
-		// Create the Avi File
-		CAVRec AVRecAvi;
-		if (bMakeAvi)
-			AVRecAvi.Init(sAVIFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
-
-		// Create the Swf File
-		CAVRec AVRecSwf;
-		if (bMakeSwf)
-			AVRecSwf.Init(sSWFFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
-
 		// Create the Mp4 File
 		CAVRec AVRecMp4;
 		if (bMakeMp4)
@@ -462,8 +437,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		int nFrames = m_nNumFramesToSave;
 		double dDelayMul = 1.0;
 		double dSpeedMul = 1.0;
-		CDib AVISaveDib;
-		CDib SWFSaveDib;
 		CDib MP4SaveDib;
 		CDib GIFSaveDib;
 		CDib JPGSaveDib;
@@ -488,12 +461,8 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				m_pDoc->RemoveOldestMovementDetectionList();
 				if (pGIFColors)
 					delete [] pGIFColors;
-				AVRecAvi.Close();
-				::DeleteFile(sAVIFileName);
 				GIFSaveDib.GetGif()->Close();
 				::DeleteFile(sGIFTempFileName);
-				AVRecSwf.Close();
-				::DeleteFile(sSWFFileName);
 				AVRecMp4.Close();
 				::DeleteFile(sMP4FileName);
 				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
@@ -570,175 +539,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
 							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
 							AVRecMp4.AddAudioSamples(	AVRecMp4.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-														nNumOfSrcSamples,
-														UserBuf.m_pBuf,
-														false);	// No interleave
-						}
-					}
-				}
-			}
-
-			// Swf
-			if (bMakeSwf)
-			{
-				SWFSaveDib = *pDib;
-
-				// Add Frame Tags
-				if (m_pDoc->m_bShowFrameTime)
-				{
-					AddFrameTime(&SWFSaveDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-					AddFrameCount(&SWFSaveDib, m_pDoc->m_nMovDetSavesCount, m_pDoc->m_nRefFontSize);
-				}
-
-				// Open
-				if (!AVRecSwf.IsOpen())
-				{
-					BITMAPINFOHEADER DstBmi;
-					memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-					DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-					DstBmi.biWidth = SWFSaveDib.GetWidth();
-					DstBmi.biHeight = SWFSaveDib.GetHeight();
-					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = FCC('FLV1');							// FLV1, need Flash 6 to play it
-					AVRecSwf.AddVideoStream(SWFSaveDib.GetBMI(),				// Source Video Format
-											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
-											CalcFrameRate.num,					// Rate
-											CalcFrameRate.den,					// Scale
-											m_pDoc->m_nVideoRecKeyframesRate,	// Keyframes Rate				
-											m_pDoc->m_fVideoRecQuality,
-											1);
-					if (m_pDoc->m_bCaptureAudio)
-					{	
-						// Swf only supports mp3 with sample rates of 44100 Hz, 22050 Hz and 11025 Hz
-						WAVEFORMATEX SwfWaveFormat;
-						memset(&SwfWaveFormat, 0, sizeof(WAVEFORMATEX));
-						SwfWaveFormat.wFormatTag = WAVE_FORMAT_MPEGLAYER3;
-						if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec >= 44100)
-						{
-							SwfWaveFormat.nSamplesPerSec = 44100;
-							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
-							{
-								SwfWaveFormat.nChannels = 2;
-								SwfWaveFormat.nAvgBytesPerSec = (96000 / 8);
-							}
-							else
-							{
-								SwfWaveFormat.nChannels = 1;
-								SwfWaveFormat.nAvgBytesPerSec = (56000 / 8);
-							}
-						}
-						else if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec >= 22050)
-						{
-							SwfWaveFormat.nSamplesPerSec = 22050;
-							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
-							{
-								SwfWaveFormat.nChannels = 2;
-								SwfWaveFormat.nAvgBytesPerSec = (56000 / 8);
-							}
-							else
-							{
-								SwfWaveFormat.nChannels = 1;
-								SwfWaveFormat.nAvgBytesPerSec = (32000 / 8);
-							}
-						}
-						else
-						{
-							SwfWaveFormat.nSamplesPerSec = 11025;
-							if (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nChannels >= 2)
-							{
-								SwfWaveFormat.nChannels = 2;
-								SwfWaveFormat.nAvgBytesPerSec = (32000 / 8);
-							}
-							else
-							{
-								SwfWaveFormat.nChannels = 1;
-								SwfWaveFormat.nAvgBytesPerSec = (24000 / 8);
-							}
-						}
-						AVRecSwf.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
-												&SwfWaveFormat);	// Dst Wave Format
-					}
-					AVRecSwf.Open();
-				}
-
-				if (AVRecSwf.IsOpen())
-				{
-					// Add Frame
-					AVRecSwf.AddFrame(	AVRecSwf.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-										&SWFSaveDib,
-										false);	// No interleave
-
-					// Add Audio Samples
-					if (m_pDoc->m_bCaptureAudio)
-					{
-						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
-						while (posUserBuf)
-						{
-							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
-							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
-							AVRecSwf.AddAudioSamples(	AVRecSwf.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
-														nNumOfSrcSamples,
-														UserBuf.m_pBuf,
-														false);	// No interleave
-						}
-					}
-				}
-			}
-
-			// Avi
-			if (bMakeAvi)
-			{
-				AVISaveDib = *pDib;
-
-				// Add Frame Tags
-				if (m_pDoc->m_bShowFrameTime)
-				{
-					AddFrameTime(&AVISaveDib, RefTime, dwRefUpTime, m_pDoc->m_nRefFontSize);
-					AddFrameCount(&AVISaveDib, m_pDoc->m_nMovDetSavesCount, m_pDoc->m_nRefFontSize);
-				}
-
-				// Open
-				if (!AVRecAvi.IsOpen())
-				{
-					BITMAPINFOFULL DstBmi;
-					memset(&DstBmi, 0, sizeof(BITMAPINFOFULL));
-					DWORD dwVideoDetFourCC = m_pDoc->m_dwVideoRecFourCC;
-					DstBmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-					DstBmi.bmiHeader.biWidth = AVISaveDib.GetWidth();
-					DstBmi.bmiHeader.biHeight = AVISaveDib.GetHeight();
-					DstBmi.bmiHeader.biPlanes = 1;
-					DstBmi.bmiHeader.biCompression = dwVideoDetFourCC;
-					AVRecAvi.AddVideoStream(AVISaveDib.GetBMI(),					// Source Video Format
-											(LPBITMAPINFO)(&DstBmi),				// Destination Video Format
-											CalcFrameRate.num,						// Rate
-											CalcFrameRate.den,						// Scale
-											m_pDoc->m_nVideoRecKeyframesRate,		// Keyframes Rate					
-											m_pDoc->m_fVideoRecQuality,
-											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
-					if (m_pDoc->m_bCaptureAudio)
-					{
-						AVRecAvi.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
-												m_pDoc->m_CaptureAudioThread.m_pDstWaveFormat);	// Dst Wave Format
-					}
-					AVRecAvi.Open();
-				}
-
-				if (AVRecAvi.IsOpen())
-				{
-					// Add Frame
-					AVRecAvi.AddFrame(	AVRecAvi.VideoStreamNumToStreamNum(ACTIVE_VIDEO_STREAM),
-										&AVISaveDib,
-										false);	// No interleave
-
-					// Add Audio Samples
-					if (m_pDoc->m_bCaptureAudio)
-					{
-						POSITION posUserBuf = pDib->m_UserList.GetHeadPosition();
-						while (posUserBuf)
-						{
-							CUserBuf UserBuf = pDib->m_UserList.GetNext(posUserBuf);
-							int nNumOfSrcSamples = (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat && (m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign > 0)) ? UserBuf.m_dwSize / m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign : 0;
-							AVRecAvi.AddAudioSamples(	AVRecAvi.AudioStreamNumToStreamNum(ACTIVE_AUDIO_STREAM),
 														nNumOfSrcSamples,
 														UserBuf.m_pBuf,
 														false);	// No interleave
@@ -857,8 +657,6 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			delete [] pGIFColors;
 		GIFSaveDib.GetGif()->Close();
 		AVRecMp4.Close();
-		AVRecSwf.Close();
-		AVRecAvi.Close();
 
 		// Rename Saved Gif File
 		::DeleteFile(sGIFFileName);
@@ -870,15 +668,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
 		DWORD dwMailFTPTimeMs = ::timeGetTime();
-		if (!SendMailFTPUpload(FirstTime, sAVIFileName, sGIFFileName, sSWFFileName, sJPGFileNames))
+		if (!SendMailFTPUpload(FirstTime, sMP4FileName, sGIFFileName, sJPGFileNames))
 		{
 			// Delete Files if not wanted
-			if (!m_pDoc->m_bSaveAVIMovementDetection)
-				::DeleteFile(sAVIFileName);
 			if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
 				::DeleteFile(sGIFFileName);
-			if (!m_pDoc->m_bSaveSWFMovementDetection)
-				::DeleteFile(sSWFFileName);
 			if (!m_pDoc->m_bSaveMP4MovementDetection)
 				::DeleteFile(sMP4FileName);
 			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
@@ -894,17 +688,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		if (m_pDoc->m_bExecCommandMovementDetection && m_pDoc->m_nExecModeMovementDetection == 1)
 		{
 			m_pDoc->ExecCommandMovementDetection(	TRUE, FirstTime,
-													sAVIFileName, sGIFFileName, sSWFFileName,
+													sMP4FileName, sGIFFileName,
 													m_pDoc->m_nMovDetSavesCount);
 		}
 
 		// Delete Files if not wanted
-		if (!m_pDoc->m_bSaveAVIMovementDetection)
-			::DeleteFile(sAVIFileName);
 		if (!m_pDoc->m_bSaveAnimGIFMovementDetection)
 			::DeleteFile(sGIFFileName);
-		if (!m_pDoc->m_bSaveSWFMovementDetection)
-			::DeleteFile(sSWFFileName);
 		if (!m_pDoc->m_bSaveMP4MovementDetection)
 			::DeleteFile(sMP4FileName);
 		for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
@@ -945,34 +735,33 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 }
 
 BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailFTPUpload(	const CTime& Time,
-																const CString& sAVIFileName,
+																const CString& sMP4FileName,
 																const CString& sGIFFileName,
-																const CString& sSWFFileName,
 																const CStringArray& sJPGFileNames)
 {
 	// Send By E-Mail
 	if (m_pDoc->m_bSendMailMovementDetection &&
-		!SendMailMovementDetection(Time, sAVIFileName, sGIFFileName, sJPGFileNames))
+		!SendMailMovementDetection(Time, sMP4FileName, sGIFFileName, sJPGFileNames))
 		return FALSE;
 
 	// FTP Upload
 	if (m_pDoc->m_bFTPUploadMovementDetection &&
-		!FTPUploadMovementDetection(Time, sAVIFileName, sGIFFileName, sSWFFileName))
+		!FTPUploadMovementDetection(Time, sMP4FileName, sGIFFileName))
 		return FALSE;
 
 	return TRUE;
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetection(	const CTime& Time,
-																						const CString& sAVIFileName,
+																						const CString& sMP4FileName,
 																						const CString& sGIFFileName,
 																						const CStringArray& sJPGFileNames)
 {
 	CStringArray sFileNames;
 	switch (m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType)
 	{
-		case CVideoDeviceDoc::ATTACHMENT_AVI :
-				sFileNames.Add(sAVIFileName);
+		case CVideoDeviceDoc::ATTACHMENT_MP4 :
+				sFileNames.Add(sMP4FileName);
 				break;
 
 		case CVideoDeviceDoc::ATTACHMENT_GIF :
@@ -983,14 +772,14 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 				sFileNames.Append(sJPGFileNames);
 				break;
 
-		case CVideoDeviceDoc::ATTACHMENT_GIF_AVI :
+		case CVideoDeviceDoc::ATTACHMENT_GIF_MP4 :
 				sFileNames.Add(sGIFFileName);
-				sFileNames.Add(sAVIFileName);
+				sFileNames.Add(sMP4FileName);
 				break;
 
-		case CVideoDeviceDoc::ATTACHMENT_JPG_AVI :
+		case CVideoDeviceDoc::ATTACHMENT_JPG_MP4 :
 				sFileNames.Append(sJPGFileNames);
-				sFileNames.Add(sAVIFileName);
+				sFileNames.Add(sMP4FileName);
 				break;
 		
 		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG :
@@ -998,10 +787,10 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 				sFileNames.Append(sJPGFileNames);
 				break;
 
-		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI :
+		case CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4 :
 				sFileNames.Add(sGIFFileName);
 				sFileNames.Append(sJPGFileNames);
-				sFileNames.Add(sAVIFileName);
+				sFileNames.Add(sMP4FileName);
 				break;
 
 		default :
@@ -1022,9 +811,8 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::SendMailMovementDetect
 }
 
 __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetection(	const CTime& Time,
-																						const CString& sAVIFileName,
-																						const CString& sGIFFileName,
-																						const CString& sSWFFileName)
+																						const CString& sMP4FileName,
+																						const CString& sGIFFileName)
 {
 	// Upload Directory
 	CString sUploadDir = Time.Format(_T("%Y")) + _T("/") + Time.Format(_T("%m")) + _T("/") + Time.Format(_T("%d"));
@@ -1033,9 +821,9 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 	CSaveFrameListFTPTransfer FTP(this);
 	switch (m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload)
 	{
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_MP4 :
 				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
+											sMP4FileName, sUploadDir + _T("/") + ::GetShortFileName(sMP4FileName));
 				break;
 
 		case CVideoDeviceDoc::FILES_TO_UPLOAD_GIF :
@@ -1043,33 +831,9 @@ __forceinline BOOL CVideoDeviceDoc::CSaveFrameListThread::FTPUploadMovementDetec
 											sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
 				break;
 
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF :
+		case CVideoDeviceDoc::FILES_TO_UPLOAD_MP4_GIF :
 				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
-				break;
-
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
-				if (result == 1)
-					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				break;
-
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
-				if (result == 1)
-					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
-				break;
-
-		case CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF :
-				result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-											sAVIFileName, sUploadDir + _T("/") + ::GetShortFileName(sAVIFileName));
-				if (result == 1)
-					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
-												sSWFFileName, sUploadDir + _T("/") + ::GetShortFileName(sSWFFileName));
+											sMP4FileName, sUploadDir + _T("/") + ::GetShortFileName(sMP4FileName));
 				if (result == 1)
 					result = m_pDoc->FTPUpload(	&FTP, &m_pDoc->m_MovDetFTPUploadConfiguration,
 												sGIFFileName, sUploadDir + _T("/") + ::GetShortFileName(sGIFFileName));
@@ -2751,8 +2515,6 @@ end_of_software_detection:
 	// Store frames?
 	BOOL bStoreFrames =	dwVideoProcessorMode			&&
 						(m_bSaveMP4MovementDetection	||
-						m_bSaveSWFMovementDetection		||
-						m_bSaveAVIMovementDetection		||
 						m_bSaveAnimGIFMovementDetection	||
 						m_bSendMailMovementDetection	||
 						m_bFTPUploadMovementDetection);
@@ -2879,9 +2641,8 @@ end_of_software_detection:
 
 void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
 													CTime StartTime/*=CTime(0)*/,
-													const CString& sAVIFileName/*=_T("")*/,
+													const CString& sMP4FileName/*=_T("")*/,
 													const CString& sGIFFileName/*=_T("")*/,
-													const CString& sSWFFileName/*=_T("")*/,
 													int nMovDetSavesCount/*=0*/)
 {
 	::EnterCriticalSection(&m_csExecCommandMovementDetection);
@@ -2921,9 +2682,8 @@ void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
 			sExecParamsMovementDetection.Replace(_T("%day%"), sDay);
 			sExecParamsMovementDetection.Replace(_T("%month%"), sMonth);
 			sExecParamsMovementDetection.Replace(_T("%year%"), sYear);
-			sExecParamsMovementDetection.Replace(_T("%avi%"), sAVIFileName);
+			sExecParamsMovementDetection.Replace(_T("%mp4%"), sMP4FileName);
 			sExecParamsMovementDetection.Replace(_T("%gif%"), sGIFFileName);
-			sExecParamsMovementDetection.Replace(_T("%swf%"), sSWFFileName);
 			sExecParamsMovementDetection.Replace(_T("%counter%"), sMovDetSavesCount);
 		}
 		SHELLEXECUTEINFO sei;
@@ -3737,8 +3497,6 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_SaveFrameListThread.IsAlive()				&&
 					!m_pDoc->m_SaveFrameListThread.IsWorking()			&&
 					(m_pDoc->m_bSaveMP4MovementDetection				||
-					m_pDoc->m_bSaveSWFMovementDetection					||
-					m_pDoc->m_bSaveAVIMovementDetection					||
 					m_pDoc->m_bSaveAnimGIFMovementDetection				||
 					m_pDoc->m_bSendMailMovementDetection				||
 					m_pDoc->m_bFTPUploadMovementDetection))
@@ -4142,8 +3900,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nDetectionMinLengthMilliSeconds = MOVDET_MIN_LENGTH_MSEC;
 	m_nDetectionMaxFrames = MOVDET_MAX_FRAMES_IN_LIST;
 	m_bSaveMP4MovementDetection = TRUE;
-	m_bSaveSWFMovementDetection = TRUE;
-	m_bSaveAVIMovementDetection = FALSE;
 	m_bSaveAnimGIFMovementDetection = TRUE;
 	m_bSendMailMovementDetection = FALSE;
 	m_bFTPUploadMovementDetection = FALSE;
@@ -4222,7 +3978,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_MovDetFTPUploadConfiguration.m_sProxy = _T("");
 	m_MovDetFTPUploadConfiguration.m_sUsername = _T("");
 	m_MovDetFTPUploadConfiguration.m_sPassword = _T("");
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI_GIF;
+	m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_MP4_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = _T("");
 	m_SnapshotFTPUploadConfiguration.m_nPort = 21;
@@ -4232,7 +3988,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_SnapshotFTPUploadConfiguration.m_sProxy = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sUsername = _T("");
 	m_SnapshotFTPUploadConfiguration.m_sPassword = _T("");
-	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_AVI; // Not used
+	m_SnapshotFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_MP4; // Not used
 
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
@@ -4743,6 +4499,10 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	// Email Settings
 	m_MovDetSendMailConfiguration.m_sFiles = pApp->GetProfileString(sSection, _T("SendMailFiles"), _T(""));
 	m_MovDetSendMailConfiguration.m_AttachmentType = (AttachmentType) pApp->GetProfileInt(sSection, _T("AttachmentType"), ATTACHMENT_NONE);
+	if (m_MovDetSendMailConfiguration.m_AttachmentType < ATTACHMENT_NONE)
+		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_NONE;
+	else if (m_MovDetSendMailConfiguration.m_AttachmentType > ATTACHMENT_GIF_JPG_MP4)
+		m_MovDetSendMailConfiguration.m_AttachmentType = ATTACHMENT_GIF_JPG_MP4;
 	m_MovDetSendMailConfiguration.m_sSubject = pApp->GetProfileString(sSection, _T("SendMailSubject"), MOVDET_DEFAULT_EMAIL_SUBJECT);
 	if (m_MovDetSendMailConfiguration.m_sSubject.IsEmpty())
 		m_MovDetSendMailConfiguration.m_sSubject = MOVDET_DEFAULT_EMAIL_SUBJECT;
@@ -4766,7 +4526,11 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_MovDetFTPUploadConfiguration.m_sProxy = pApp->GetProfileString(sSection, _T("MovDetFTPProxyHost"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sUsername = pApp->GetSecureProfileString(sSection, _T("MovDetFTPUsername"), _T(""));
 	m_MovDetFTPUploadConfiguration.m_sPassword = pApp->GetSecureProfileString(sSection, _T("MovDetFTPPassword"), _T(""));
-	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_AVI_GIF);
+	m_MovDetFTPUploadConfiguration.m_FilesToUpload = (FilesToUploadType) pApp->GetProfileInt(sSection, _T("MovDetFilesToUpload"), FILES_TO_UPLOAD_MP4_GIF);
+	if (m_MovDetFTPUploadConfiguration.m_FilesToUpload < FILES_TO_UPLOAD_MP4)
+		m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_MP4;
+	else if (m_MovDetFTPUploadConfiguration.m_FilesToUpload > FILES_TO_UPLOAD_MP4_GIF)
+		m_MovDetFTPUploadConfiguration.m_FilesToUpload = FILES_TO_UPLOAD_MP4_GIF;
 	m_SnapshotFTPUploadConfiguration.m_sHost = pApp->GetProfileString(sSection, _T("SnapshotFTPHost"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_sRemoteDir = pApp->GetProfileString(sSection, _T("SnapshotFTPRemoteDir"), _T(""));
 	m_SnapshotFTPUploadConfiguration.m_nPort = (int) pApp->GetProfileInt(sSection, _T("SnapshotFTPPort"), 21);
@@ -4840,8 +4604,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDetectionLevel = (int) pApp->GetProfileInt(sSection, _T("DetectionLevel"), DEFAULT_MOVDET_LEVEL);
 	m_nDetectionZoneSize = (int) pApp->GetProfileInt(sSection, _T("DetectionZoneSize"), 0);
 	m_bSaveMP4MovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveMP4MovementDetection"), TRUE);
-	m_bSaveSWFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveSWFMovementDetection"), TRUE);
-	m_bSaveAVIMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAVIMovementDetection"), FALSE);
 	m_bSaveAnimGIFMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), TRUE);
 	m_bSendMailMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("SendMailMovementDetection"), FALSE);
 	m_bFTPUploadMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("FTPUploadMovementDetection"), FALSE);
@@ -5043,8 +4805,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("DetectionLevel"), m_nDetectionLevel);
 	pApp->WriteProfileInt(sSection, _T("DetectionZoneSize"), m_nDetectionZoneSize);
 	pApp->WriteProfileInt(sSection, _T("SaveMP4MovementDetection"), m_bSaveMP4MovementDetection);
-	pApp->WriteProfileInt(sSection, _T("SaveSWFMovementDetection"), m_bSaveSWFMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("SaveAVIMovementDetection"), m_bSaveAVIMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SaveAnimGIFMovementDetection"), m_bSaveAnimGIFMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("SendMailMovementDetection"), m_bSendMailMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("FTPUploadMovementDetection"), m_bFTPUploadMovementDetection);
@@ -8290,8 +8050,8 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		return;
 
 	// Start Snapshot Thread
-	// (we need the history jpgs to make the swf video file inside the snapshot SWF thread,
-	// user unwanted history jpgs are deleted in snapshot SWF thread)
+	// (we need the history jpgs to make the video file inside the snapshot video thread,
+	// user unwanted history jpgs are deleted in snapshot video thread)
 	m_SaveSnapshotThread.m_Dib = *pDib;
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
@@ -8312,7 +8072,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	::LeaveCriticalSection(&m_csSnapshotConfiguration);
 	m_SaveSnapshotThread.Start();
 
-	// Start Snapshot SWF Thread?
+	// Start Snapshot Video Thread?
 	if (!m_sRecordAutoSaveDir.IsEmpty() && m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
 	{
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day

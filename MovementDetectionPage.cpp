@@ -75,7 +75,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_SECONDS_BEFORE_MOVEMENT_BEGIN, OnChangeSecondsBeforeMovementBegin)
 	ON_WM_HSCROLL()
 	ON_NOTIFY(NM_RELEASEDCAPTURE, IDC_DETECTION_LEVEL, OnReleasedcaptureDetectionLevel)
-	ON_BN_CLICKED(IDC_SAVE_AVI_MOVEMENT_DETECTION, OnSaveAviMovementDetection)
 	ON_BN_CLICKED(IDC_ANIMATEDGIF_SIZE, OnAnimatedgifSize)
 	ON_BN_CLICKED(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION, OnSaveAnimGifMovementDetection)
 	ON_BN_CLICKED(IDC_SENDMAIL_CONFIGURE, OnSendmailConfigure)
@@ -86,7 +85,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	ON_BN_CLICKED(IDC_SAVE_MP4_MOVEMENT_DETECTION, OnSaveMp4MovementDetection)
-	ON_BN_CLICKED(IDC_SAVE_SWF_MOVEMENT_DETECTION, OnSaveSwfMovementDetection)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
@@ -182,20 +180,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 		pCheckMP4SaveMovementDetection->SetCheck(1);
 	else
 		pCheckMP4SaveMovementDetection->SetCheck(0);
-
-	// Save SWF Movement Detection Check Box
-	CButton* pCheckSWFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSaveSWFMovementDetection)
-		pCheckSWFSaveMovementDetection->SetCheck(1);
-	else
-		pCheckSWFSaveMovementDetection->SetCheck(0);
-
-	// Save AVI Movement Detection Check Box
-	CButton* pCheckAVISaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_AVI_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSaveAVIMovementDetection)
-		pCheckAVISaveMovementDetection->SetCheck(1);
-	else
-		pCheckAVISaveMovementDetection->SetCheck(0);
 
 	// Save Animated GIF Movement Detection Check Box
 	CButton* pCheckAnimGIFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
@@ -413,7 +397,7 @@ void CMovementDetectionPage::UpdateExecHelp()
 	if (m_pDoc->m_nExecModeMovementDetection == 0)
 		s.Format(ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tmplay32.exe (or path to %s)\r\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
 	else
-		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour% %day% %month% %year%\r\n%avi% %gif% %swf% %counter%");
+		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%mp4% %gif% %counter%");
 	pEdit->SetWindowText(s);
 }
 
@@ -434,18 +418,6 @@ void CMovementDetectionPage::OnSaveMp4MovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_MP4_MOVEMENT_DETECTION);
 	m_pDoc->m_bSaveMP4MovementDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnSaveSwfMovementDetection() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_SWF_MOVEMENT_DETECTION);
-	m_pDoc->m_bSaveSWFMovementDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnSaveAviMovementDetection() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_AVI_MOVEMENT_DETECTION);
-	m_pDoc->m_bSaveAVIMovementDetection = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnSaveAnimGifMovementDetection() 

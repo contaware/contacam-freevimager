@@ -62,7 +62,6 @@ protected:
 	afx_msg void OnChangeSecondsBeforeMovementBegin();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRESULT* pResult);
-	afx_msg void OnSaveAviMovementDetection();
 	afx_msg void OnAnimatedgifSize();
 	afx_msg void OnSaveAnimGifMovementDetection();
 	afx_msg void OnSendmailConfigure();
@@ -73,7 +72,6 @@ protected:
 	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSaveMp4MovementDetection();
-	afx_msg void OnSaveSwfMovementDetection();
 	afx_msg void OnExecMovementDetection();
 	afx_msg void OnChangeEditExe();
 	afx_msg void OnChangeEditParams();

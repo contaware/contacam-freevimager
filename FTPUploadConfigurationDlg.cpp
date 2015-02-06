@@ -83,12 +83,9 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(_T("AVI"));
+		pComboBox->AddString(_T("MP4"));
 		pComboBox->AddString(_T("GIF"));
-		pComboBox->AddString(_T("SWF"));
-		pComboBox->AddString(_T("AVI + GIF"));
-		pComboBox->AddString(_T("SWF + GIF"));
-		pComboBox->AddString(_T("AVI + SWF + GIF"));
+		pComboBox->AddString(_T("MP4 + GIF"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 

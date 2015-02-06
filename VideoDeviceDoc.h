@@ -100,8 +100,8 @@ class CMovementDetectionPage;
 #define DEFAULT_SNAPSHOT_LIVE_JPEGNAME		_T("snapshot")
 #define DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME	_T("snapshot_thumb")
 #define DEFAULT_SNAPSHOT_COMPR_QUALITY		60			// 0 Worst Quality, 100 Best Quality 
-#define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of swf
-#define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of swf
+#define DEFAULT_SNAPSHOT_THUMB_WIDTH		228			// Must be a multiple of 4 because of video
+#define DEFAULT_SNAPSHOT_THUMB_HEIGHT		172			// Must be a multiple of 4 because of video
 #define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
 
 // Movement Detection
@@ -122,8 +122,7 @@ class CMovementDetectionPage;
 #define MOVDET_SAVEFRAMES_POLL				1000U		// ms
 #define MOVDET_MIN_FRAMES_IN_LIST			10			// Min. frames in list before saving the list in the
 														// case of insufficient memory
-#define MOVDET_MAX_FRAMES_IN_LIST			15000		// 16000 is the limit for swf files -> be safe and start
-														// a new list with 15000
+#define MOVDET_MAX_FRAMES_IN_LIST			15000		// Default maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
@@ -211,22 +210,19 @@ public:
 	enum AttachmentType
 	{
 		ATTACHMENT_NONE				= 0,
-		ATTACHMENT_AVI				= 1,
+		ATTACHMENT_MP4				= 1,
 		ATTACHMENT_GIF				= 2,
 		ATTACHMENT_JPG				= 3,
-		ATTACHMENT_GIF_AVI			= 4,
-		ATTACHMENT_JPG_AVI			= 5,
+		ATTACHMENT_GIF_MP4			= 4,
+		ATTACHMENT_JPG_MP4			= 5,
 		ATTACHMENT_GIF_JPG			= 6,
-		ATTACHMENT_GIF_JPG_AVI		= 7
+		ATTACHMENT_GIF_JPG_MP4		= 7
 	};
 	enum FilesToUploadType
 	{
-		FILES_TO_UPLOAD_AVI			= 0,
+		FILES_TO_UPLOAD_MP4			= 0,
 		FILES_TO_UPLOAD_GIF			= 1,
-		FILES_TO_UPLOAD_SWF			= 2,
-		FILES_TO_UPLOAD_AVI_GIF		= 3,
-		FILES_TO_UPLOAD_SWF_GIF		= 4,
-		FILES_TO_UPLOAD_AVI_SWF_GIF	= 5
+		FILES_TO_UPLOAD_MP4_GIF		= 2
 	};
 
 	// The Http Networking Get Frame Parser & Processor Class
@@ -544,79 +540,43 @@ public:
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
 			BOOL SendMailFTPUpload(	const CTime& Time,
-									const CString& sAVIFileName,
+									const CString& sMP4FileName,
 									const CString& sGIFFileName,
-									const CString& sSWFFileName,
 									const CStringArray& sJPGFileNames);
 			__forceinline BOOL SendMailMovementDetection(	const CTime& Time,
-															const CString& sAVIFileName,
+															const CString& sMP4FileName,
 															const CString& sGIFFileName,
 															const CStringArray& sJPGFileNames);
 			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
-															const CString& sAVIFileName,
-															const CString& sGIFFileName,
-															const CString& sSWFFileName);
-
-			__forceinline BOOL DoMakeAvi() const {
-							return m_pDoc->m_bSaveAVIMovementDetection				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_AVI)					||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_AVI)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_AVI)				||
-
-							(m_pDoc->m_bSendMailMovementDetection &&
-							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI)				||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
-
-			__forceinline BOOL DoMakeSwf() const {
-							return m_pDoc->m_bSaveSWFMovementDetection				||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF)				||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
+															const CString& sMP4FileName,
+															const CString& sGIFFileName);
 
 			__forceinline BOOL DoMakeMp4() const {
-							return m_pDoc->m_bSaveMP4MovementDetection/*			||
+							return m_pDoc->m_bSaveMP4MovementDetection				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_MP4)					||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_MP4)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_JPG_MP4)				||
+
+							(m_pDoc->m_bSendMailMovementDetection &&
+							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF)				||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4)				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF)*/;};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4_GIF);};
 
 			__forceinline BOOL DoMakeJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
@@ -625,7 +585,7 @@ public:
 								
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_AVI)				||
+								CVideoDeviceDoc::ATTACHMENT_JPG_MP4)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
@@ -633,7 +593,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI);};
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4);};
 
 			__forceinline BOOL DoMakeGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
@@ -644,7 +604,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_AVI)				||
+								CVideoDeviceDoc::ATTACHMENT_GIF_MP4)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
@@ -652,7 +612,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_AVI)			||
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -660,15 +620,7 @@ public:
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_GIF)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_SWF_GIF)			||
-
-							(m_pDoc->m_bFTPUploadMovementDetection &&
-							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_AVI_SWF_GIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4_GIF);};
 			
 			// Return Values
 			// -1 : Do Exit Thread
@@ -927,9 +879,8 @@ public:
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
 										CTime StartTime = CTime(0),
-										const CString& sAVIFileName = _T(""),
+										const CString& sMP4FileName = _T(""),
 										const CString& sGIFFileName = _T(""),
-										const CString& sSWFFileName = _T(""),
 										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
 
@@ -1031,8 +982,8 @@ protected:
 // Public Variables
 public:
 	// General Vars
-	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording Avi File
-	CRITICAL_SECTION m_csAVRec;							// Critical section for the Avi File
+	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording file
+	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
 	volatile double m_dFrameRate;						// Set Capture Frame Rate
@@ -1165,8 +1116,6 @@ public:
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
 	volatile BOOL m_bSaveMP4MovementDetection;			// Save Movement Detections as MP4
-	volatile BOOL m_bSaveSWFMovementDetection;			// Save Movement Detections as SWF
-	volatile BOOL m_bSaveAVIMovementDetection;			// Save Movement Detections as AVI
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email of Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections
