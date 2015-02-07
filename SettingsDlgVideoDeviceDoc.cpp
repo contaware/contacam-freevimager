@@ -64,9 +64,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bStartFullScreenMode = ((CUImagerApp*)::AfxGetApp())->m_bStartFullScreenMode;
 	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
-	m_bFullscreenBrowser = ((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
-	m_sFullscreenBrowserExitString = ((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
@@ -113,9 +111,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_AUTH_AREANAME, m_sMicroApacheAreaname);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
 	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
-	DDX_Check(pDX, IDC_CHECK_FULLSCREENBROWSER, m_bFullscreenBrowser);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
-	DDX_Text(pDX, IDC_EDIT_FULLSCREENBROWSER_EXITSTRING, m_sFullscreenBrowserExitString);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
@@ -128,36 +124,12 @@ BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_BN_CLICKED(IDC_BUTTON_CLEARALL, OnButtonClearall)
 	ON_BN_CLICKED(IDC_BUTTON_SETALL, OnButtonSetall)
-	ON_BN_CLICKED(IDC_CHECK_FULLSCREENBROWSER, OnCheckFullscreenbrowser)
 	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSettingsDlgVideoDeviceDoc message handlers
-
-void CSettingsDlgVideoDeviceDoc::OnCheckFullscreenbrowser() 
-{
-	// Enable / Disable Fullscreen Browser Exit password field
-	CButton* pCheckFullscreenBrowser = (CButton*)GetDlgItem(IDC_CHECK_FULLSCREENBROWSER);
-	CEdit* pEditFullscreenBrowserExitString = (CEdit*)GetDlgItem(IDC_EDIT_FULLSCREENBROWSER_EXITSTRING);
-	CEdit* pLabelFullscreenBrowser = (CEdit*)GetDlgItem(IDC_LABEL_FULLSCREENBROWSER);
-	if (pCheckFullscreenBrowser				&&
-		pEditFullscreenBrowserExitString	&&
-		pLabelFullscreenBrowser)
-	{
-		if (pCheckFullscreenBrowser->GetCheck())
-		{
-			pEditFullscreenBrowserExitString->EnableWindow(TRUE);
-			pLabelFullscreenBrowser->EnableWindow(TRUE);
-		}
-		else
-		{
-			pEditFullscreenBrowserExitString->EnableWindow(FALSE);
-			pLabelFullscreenBrowser->EnableWindow(FALSE);
-		}
-	}
-}
 
 void CSettingsDlgVideoDeviceDoc::OnButtonClearall() 
 {
@@ -501,9 +473,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->m_bDisableExtProg = m_bDisableExtProg;
 
 	// Browser
-	pApp->m_bFullscreenBrowser = m_bFullscreenBrowser;
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
-	pApp->m_sFullscreenBrowserExitString = m_sFullscreenBrowserExitString;
 
 	// Priority to IPv6
 	pApp->m_bIPv6 = m_bIPv6;
@@ -543,7 +513,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	}
 
 	// Store settings
-	pApp->WriteProfileFullscreenBrowser(FULLSCREENBROWSER_EXITSTRING_ENTRY, m_sFullscreenBrowserExitString);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("TopMost"),
 									m_bTopMost);
@@ -559,9 +528,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("DisableExtProg"),
 									m_bDisableExtProg);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("FullscreenBrowser"),
-									m_bFullscreenBrowser);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);
@@ -608,26 +574,6 @@ BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog()
 		CButton* pOK = (CButton*)GetDlgItem(IDOK);
 		if (pOK)
 			pOK->SendMessage(BCM_SETSHIELD, 0, TRUE);
-	}
-
-	// Enable / Disable Fullscreen Browser Exit password field
-	CButton* pCheckFullscreenBrowser = (CButton*)GetDlgItem(IDC_CHECK_FULLSCREENBROWSER);
-	CEdit* pEditFullscreenBrowserExitString = (CEdit*)GetDlgItem(IDC_EDIT_FULLSCREENBROWSER_EXITSTRING);
-	CEdit* pLabelFullscreenBrowser = (CEdit*)GetDlgItem(IDC_LABEL_FULLSCREENBROWSER);
-	if (pCheckFullscreenBrowser				&&
-		pEditFullscreenBrowserExitString	&&
-		pLabelFullscreenBrowser)
-	{
-		if (pCheckFullscreenBrowser->GetCheck())
-		{
-			pEditFullscreenBrowserExitString->EnableWindow(TRUE);
-			pLabelFullscreenBrowser->EnableWindow(TRUE);
-		}
-		else
-		{
-			pEditFullscreenBrowserExitString->EnableWindow(FALSE);
-			pLabelFullscreenBrowser->EnableWindow(FALSE);
-		}
 	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control

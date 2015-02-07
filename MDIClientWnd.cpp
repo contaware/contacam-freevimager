@@ -260,47 +260,14 @@ void CMDIClientWnd::ViewWeb(CString sHost)
 		else
 			sUrl.Format(_T("http://%s:%d"), sHost, ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort);
 		sUrl = ::UrlEncode(sUrl, FALSE);
-		if (((CUImagerApp*)::AfxGetApp())->m_bFullscreenBrowser)
-		{
-			int nRet = IDYES;
-			if (((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString != _T(""))
-			{
-				CString sMsg;
-				sMsg.Format(ML_STRING(1762, "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"),
-							((CUImagerApp*)::AfxGetApp())->m_sFullscreenBrowserExitString);
-				nRet = ::AfxMessageBox(sMsg, MB_YESNO | MB_ICONINFORMATION);
-			}
-			if (nRet == IDYES)
-			{
-				BeginWaitCursor();
-				TCHAR szDrive[_MAX_DRIVE];
-				TCHAR szDir[_MAX_DIR];
-				TCHAR szProgramName[MAX_PATH];
-				if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-				{
-					_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-					CString sFullscreenExe = CString(szDrive) + CString(szDir) + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
-					::ShellExecute(	NULL,
-									_T("open"),
-									sFullscreenExe,
-									sUrl,
-									NULL,
-									SW_SHOWNORMAL);
-				}
-				EndWaitCursor();
-			}
-		}
-		else
-		{
-			BeginWaitCursor();
-			::ShellExecute(	NULL,
-							_T("open"),
-							sUrl,
-							NULL,
-							NULL,
-							SW_SHOWNORMAL);
-			EndWaitCursor();
-		}
+		BeginWaitCursor();
+		::ShellExecute(	NULL,
+						_T("open"),
+						sUrl,
+						NULL,
+						NULL,
+						SW_SHOWNORMAL);
+		EndWaitCursor();
 	}
 }
 #endif

@@ -2179,7 +2179,6 @@
 #define IDC_CHECK_BROWSER_AUTOSTART     1701
 #define IDC_BAND7                       1702
 #define IDS_STRING1702                  1702
-#define IDC_CHECK_FULLSCREENBROWSER     1702
 #define IDC_BANDMIN                     1703
 #define IDC_CHECK_START_FULLSCREEN      1703
 #define IDS_STRING1703                  1703
@@ -3140,8 +3139,6 @@
 #define IDC_STATIC2500                  2500
 #define IDC_CHECK_WEBSERVER             2501
 #define IDC_CHECK_DIGESTAUTH            2502
-#define IDC_EDIT_FULLSCREENBROWSER_EXITSTRING 2507
-#define IDC_LABEL_FULLSCREENBROWSER     2508
 #define IDC_COMBO_DRIVE                 2509
 #define IDC_BURN                        2512
 #define IDC_ABORT                       2513

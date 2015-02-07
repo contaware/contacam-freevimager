@@ -268,7 +268,6 @@ Section "${APPNAME_NOEXT} Program (required)"
 !endif
   File "/oname=License.txt" "..\License\License.txt"
   File "/oname=History.txt" "..\History\HistoryContaCam.txt"
-  File "..\FullscreenBrowser\Release\FullscreenBrowser.exe"
   File "..\ContaCamService\Release\ContaCamService.exe"
   SetOverwrite off
   File "..\ContaCamService\Release\ContaCamService.ini"

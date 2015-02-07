@@ -1,3 +1,0 @@
-- With ie7 installed (with ie6 and ie8 it's working) and NewDesktop enabled
-  the view of the snapshots are not updated, really strange, I think it is
-  something with the painting of the component, because in ie7 itself it works...

@@ -138,7 +138,6 @@ CUImagerApp::CUImagerApp()
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
-	m_bFullscreenBrowser = FALSE;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
@@ -853,10 +852,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 		else
 		{
-#ifdef VIDEODEVICEDOC
-			m_sFullscreenBrowserExitString = GetProfileFullscreenBrowser(	FULLSCREENBROWSER_EXITSTRING_ENTRY,
-																			FULLSCREENBROWSER_DEFAULT_EXITSTRING);
-#endif
 			// Load Settings has to be here for the Window Placement restore to work!
 			LoadSettings(m_nCmdShow);
 
@@ -938,25 +933,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 							sUrl = _T("http://localhost:") + sPort + _T("/");
 						else
 							sUrl = _T("http://localhost/");
-						if (m_bFullscreenBrowser)
-						{
-							CString sFullscreenExe = sDriveDir + CString(FULLSCREENBROWSER_EXE_NAME_EXT);
-							::ShellExecute(	NULL,
-											_T("open"),
-											sFullscreenExe,
-											sUrl,
-											NULL,
-											SW_SHOWNORMAL);
-						}
-						else
-						{
-							::ShellExecute(	NULL,
-											_T("open"),
-											sUrl,
-											NULL,
-											NULL,
-											SW_SHOWNORMAL);
-						}
+						::ShellExecute(	NULL,
+										_T("open"),
+										sUrl,
+										NULL,
+										NULL,
+										SW_SHOWNORMAL);
 					}
 				}
 			}
@@ -2828,28 +2810,16 @@ void CUImagerApp::BrowserAutostart()
 	if (m_bDoStartFromService && GetContaCamServiceState() == CONTACAMSERVICE_RUNNING &&
 		!IsAutostart() && m_bBrowserAutostart)
 	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szProgramName[MAX_PATH];
-		if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-		{
-			_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-			CString sDriveDir = CString(szDrive) + CString(szDir);
-			CString sUrl, sPort;
-			sPort.Format(_T("%d"), m_nMicroApachePort);
-			if (sPort != _T("80"))
-				sUrl = _T("http://localhost:") + sPort + _T("/");
-			else
-				sUrl = _T("http://localhost/");
-			CString sAutorunCommand;
-			if (m_bFullscreenBrowser)
-				sAutorunCommand = _T("\"") + sDriveDir + FULLSCREENBROWSER_EXE_NAME_EXT + _T("\" ") + sUrl;
-			else
-				sAutorunCommand = _T("rundll32.exe url.dll,FileProtocolHandler ") + sUrl;
-			::SetRegistryStringValue(	HKEY_CURRENT_USER,
-										_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
-										BROSERAUTORUN_NAME, sAutorunCommand);
-		}
+		CString sUrl, sPort;
+		sPort.Format(_T("%d"), m_nMicroApachePort);
+		if (sPort != _T("80"))
+			sUrl = _T("http://localhost:") + sPort + _T("/");
+		else
+			sUrl = _T("http://localhost/");
+		CString sAutorunCommand(_T("rundll32.exe url.dll,FileProtocolHandler ") + sUrl);
+		::SetRegistryStringValue(	HKEY_CURRENT_USER,
+									_T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"),
+									BROSERAUTORUN_NAME, sAutorunCommand);
 	}
 }
 #endif
@@ -4118,7 +4088,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 #ifdef VIDEODEVICEDOC
 	// Browser
-	m_bFullscreenBrowser = (BOOL)GetProfileInt(sSection, _T("FullscreenBrowser"), FALSE);
 	m_bBrowserAutostart = (BOOL)GetProfileInt(sSection, _T("BrowserAutostart"), FALSE);
 
 	// Priority to IPv6
@@ -5869,44 +5838,6 @@ void CUImagerApp::DeleteDailySchedulerEntry(CString sDevicePathName)
 			break;
 		}
 	}
-}
-
-CString CUImagerApp::GetFullscreenBrowserConfigFileName()
-{
-	CString sConfigFileName;
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) != 0)
-	{
-		_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-		sConfigFileName = ::GetProfileIniString(_T("General"), _T("ConfigFilesDir"), _T(""), CString(szDrive) + CString(szDir) + MASTERCONFIG_INI_NAME_EXT);
-	}
-	if (sConfigFileName.IsEmpty())
-	{
-		sConfigFileName = ::GetSpecialFolderPath(CSIDL_APPDATA); // returns the path with no trailing backslash
-		sConfigFileName += CString(_T("\\")) + MYCOMPANY + _T("\\") + FULLSCREENBROWSER_NOEXT + _T("\\") + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	else
-	{
-		sConfigFileName.TrimRight(_T('\\'));
-		sConfigFileName += CString(_T("\\")) + FULLSCREENBROWSER_INI_NAME_EXT;
-	}
-	return sConfigFileName;
-}
-
-CString CUImagerApp::GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault/*=NULL*/)
-{
-	return ::GetProfileIniString(_T("General"), lpszEntry, lpszDefault, GetFullscreenBrowserConfigFileName());
-}
-
-BOOL CUImagerApp::WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue)
-{
-	CString sProfileName = GetFullscreenBrowserConfigFileName();
-	CString sProfileNamePath = ::GetDriveAndDirName(sProfileName);
-	if (!::IsExistingDir(sProfileNamePath))
-		::CreateDir(sProfileNamePath);
-	return ::WriteProfileIniString(_T("General"), lpszEntry, lpszValue, sProfileName);
 }
 
 #endif

@@ -3199,10 +3199,7 @@ BEGIN
     CONTROL         "ESC key exits the program",IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,79,101,10
     CONTROL         "Disable auto-opening with external program",IDC_CHECK_DISABLE_EXTPROG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,91,154,10
-    CONTROL         "Internal Fullscreen Browser",IDC_CHECK_FULLSCREENBROWSER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,122,103,10
-    CONTROL         "Autostart",IDC_CHECK_BROWSER_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,123,122,45,10
-    EDITTEXT        IDC_EDIT_FULLSCREENBROWSER_EXITSTRING,79,135,86,13,ES_AUTOHSCROLL
+    CONTROL         "Autostart",IDC_CHECK_BROWSER_AUTOSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,128,48,10
     CONTROL         "bmp",IDC_CHECK_BMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,29,29,10
     CONTROL         "gif",IDC_CHECK_GIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,40,24,10
     CONTROL         "jpg",IDC_CHECK_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,187,51,26,10
@@ -3240,7 +3237,6 @@ BEGIN
     GROUPBOX        "General",IDC_STATIC2248,5,7,170,100
     LTEXT           "Port",IDC_STATIC,146,168,14,8
     GROUPBOX        "Web Browser",IDC_STATIC,5,110,170,42
-    LTEXT           "Exit pressing ESC +",IDC_LABEL_FULLSCREENBROWSER,11,137,64,8
     GROUPBOX        "Web Server",IDC_STATIC,5,155,342,75
     LTEXT           "NOTE: Clear User Name and Password when using the Internal Fullscreen Browser!",IDC_STATIC,146,184,191,20,SS_SUNKEN
     LTEXT           "Area Name",IDC_STATIC,11,190,38,8
@@ -5410,7 +5406,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
-    IDS_STRING1762          "Entering fullscreen mode, exit pressing anywhere\nthe ESC key followed by %s\nDo you want to continue?"
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"

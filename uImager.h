@@ -18,13 +18,6 @@
 #include "WorkerThread.h"
 #include "XmpDlg.h"
 
-// Fullscreen Browser
-#define FULLSCREENBROWSER_NOEXT							_T("FullscreenBrowser")
-#define FULLSCREENBROWSER_INI_NAME_EXT					_T("FullscreenBrowser.ini")
-#define FULLSCREENBROWSER_EXE_NAME_EXT					_T("FullscreenBrowser.exe")
-#define FULLSCREENBROWSER_EXITSTRING_ENTRY				_T("ExitString")
-#define FULLSCREENBROWSER_DEFAULT_EXITSTRING			_T("")
-
 // Micro Apache
 #define MICROAPACHE_DIR									_T("microapache")
 #define MICROAPACHE_HTDOCS								(CString(MICROAPACHE_DIR) + CString(_T("\\htdocs")))
@@ -481,11 +474,6 @@ public:
 	// Broser autostart
 	void BrowserAutostart();
 
-	// FullscreenBrowser Ini file handling
-	static CString GetFullscreenBrowserConfigFileName();
-	static CString GetProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszDefault = NULL);
-	static BOOL WriteProfileFullscreenBrowser(LPCTSTR lpszEntry, LPCTSTR lpszValue);
-
 	// Enumerate all configured (in registry or ini file) devices
 	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
 #endif
@@ -694,10 +682,8 @@ public:
 	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
-	// Use integrated Fullscreen Browser
-	BOOL m_bFullscreenBrowser;
+	// Browser
 	BOOL m_bBrowserAutostart;
-	CString m_sFullscreenBrowserExitString;
 
 	// Priority to IPv6
 	volatile BOOL m_bIPv6;

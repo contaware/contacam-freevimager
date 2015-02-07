@@ -47,9 +47,7 @@ public:
 	CString	m_sMicroApacheAreaname;
 	CString	m_sMicroApacheUsername;
 	CString	m_sMicroApachePassword;
-	BOOL	m_bFullscreenBrowser;
 	BOOL	m_bBrowserAutostart;
-	CString	m_sFullscreenBrowserExitString;
 	BOOL	m_bStartFromService;
 	BOOL	m_bMicroApacheDigestAuth;
 	BOOL	m_bIPv6;
@@ -73,7 +71,6 @@ protected:
 	afx_msg void OnButtonSetall();
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
-	afx_msg void OnCheckFullscreenbrowser();
 	afx_msg void OnUpdateAuthUsername();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
