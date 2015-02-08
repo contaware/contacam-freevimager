@@ -221,10 +221,7 @@ if ($IEVersion >= 0 && $IEVersion < 9) {
 } else {
 	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" /><input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" /><input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" /><input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" /><input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" /><input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" /><input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" /><input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" /><input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" /><input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" />";
 }
-if (SHOW_SAVECOMMAND == 1) {
-	echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href='download.php?file=" . urlencode($filename) . "';\" />";
-}
-echo "\n";
+echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href='download.php?file=" . urlencode($filename) . "';\" />\n";
 ?>
 </div>
 </form>

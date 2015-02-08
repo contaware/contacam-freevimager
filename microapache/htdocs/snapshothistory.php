@@ -26,10 +26,6 @@ document.write(getCalendarStyles());
 <div class="menutop">
 <a href="#" onclick="myiframe.location.reload(); return false;"><?php echo RELOAD;?></a> |
 <a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
-<?php
-if (SHOW_PRINTCOMMAND == 1)
-	echo "| <a href=\"#\" onclick=\"myiframe.focus(); myiframe.print(); myiframe.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
-?>
 </div>
 <div class="wrap">
 <form action="">

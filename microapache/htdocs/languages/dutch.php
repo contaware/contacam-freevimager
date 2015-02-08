@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Afbeelding word geladen in");
 define("SECONDS","seconden");
 define("RELOAD","Herlaad");
 define("HOME","Selecteer Camera");
-define("PRINTCOMMAND","Afdrukken");

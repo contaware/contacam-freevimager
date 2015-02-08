@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Изображение будет перезагруже
 define("SECONDS","секунд");
 define("RELOAD","Перезагрузить");
 define("HOME","Выбор камеры");
-define("PRINTCOMMAND","Печать");

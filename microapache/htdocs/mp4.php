@@ -76,8 +76,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "';\" />";
 	else
 		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.history.back();\" />";
-	if (SHOW_SAVECOMMAND == 1)
-		echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href = 'download.php?file=" . urlencode($filename) . "';\" />";
+	echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href = 'download.php?file=" . urlencode($filename) . "';\" />";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);

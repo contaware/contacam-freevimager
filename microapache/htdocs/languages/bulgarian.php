@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Презареждане на снимката след"
 define("SECONDS","секунди");
 define("RELOAD","Обновяване");
 define("HOME","Избeри камера");
-define("PRINTCOMMAND","печат");

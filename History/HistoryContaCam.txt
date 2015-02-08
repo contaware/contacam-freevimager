@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 5.0.0 (January 15th 2015)
 
-- Video saving as .mp4 files (supported by most smartphones)
+- Goodbye Flash and goodbye AVI: video saving as MP4 files
+  (all modern Browsers and Smartphones can play them)
 - Removed Fullscreen Browser as it cannot display HTML5 videos
 - To avoid troubles in service mode from now on it's not possible
   to associate files to ContaCam (please use FreeVimager for that)

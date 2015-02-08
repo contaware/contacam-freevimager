@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Zdjęcie załaduje się w");
 define("SECONDS","sekund");
 define("RELOAD","Odswież");
 define("HOME","Wybierz Kamerę");
-define("PRINTCOMMAND","Drukuj");

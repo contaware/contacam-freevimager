@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Image will reload in");
 define("SECONDS","seconds");
 define("RELOAD","Reload");
 define("HOME","Select Camera");
-define("PRINTCOMMAND","Print");

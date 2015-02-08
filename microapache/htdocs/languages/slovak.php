@@ -25,4 +25,3 @@ define("IMAGERELOADIN","Obraz bude obnovený za");
 define("SECONDS","sekúnd");
 define("RELOAD","Obnoviť");
 define("HOME","Vybrať kameru");
-define("PRINTCOMMAND","Vytlačiť");

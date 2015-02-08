@@ -129,8 +129,6 @@ if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	echo "<div class=\"menutop\">\n";
 	echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
 	echo "<a href=\"" . getParentUrl() . "\" target=\"_top\">" . HOME . "</a>\n";
-	if (SHOW_PRINTCOMMAND == 1)
-		echo "| <a href=\"#\" onclick=\"window.focus(); window.print(); window.focus(); return false;\">" . PRINTCOMMAND . "</a>\n";
 	echo "</div>\n";
 }
 if (isset($_GET['clickurl']))

@@ -49,12 +49,6 @@ define ("LANGUAGEFILEPATH","languages/italian.php");
 // Set the Style
 define ("STYLEFILEPATH","styles/darkgray.css");
 
-// Show / hide the print command
-define ("SHOW_PRINTCOMMAND","1");     // 0 = Hide , 1 = Show
-
-// Show / hide the save command
-define ("SHOW_SAVECOMMAND","1");      // 0 = Hide , 1 = Show
-
 // Use normal or thumb version for the snapshot history viewer
 define ("SNAPSHOTHISTORY_THUMB","0"); // 0 = Fullsize version , 1 = Thumb version
 
