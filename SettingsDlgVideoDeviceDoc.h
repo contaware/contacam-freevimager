@@ -20,22 +20,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlgVideoDeviceDoc)
 	enum { IDD = IDD_SETTINGS_VIDEODEVICEDOC };
-	BOOL	m_bCheckAvi;
-	BOOL	m_bCheckBmp;
-	BOOL	m_bCheckJpeg;
-	BOOL	m_bCheckPcx;
-	BOOL	m_bCheckEmf;
-	BOOL	m_bCheckPng;
-	BOOL	m_bCheckTiff;
-	BOOL	m_bCheckGif;
-	BOOL	m_bCheckZip;
-	BOOL	m_bCheckAif;
-	BOOL	m_bCheckAu;
-	BOOL	m_bCheckMidi;
-	BOOL	m_bCheckMp3;
-	BOOL	m_bCheckWav;
-	BOOL	m_bCheckWma;
-	BOOL	m_bCheckCda;
 	BOOL	m_bStartFullScreenMode;
 	BOOL	m_bEscExit;
 	BOOL	m_bTrayIcon;
@@ -67,8 +51,6 @@ protected:
 	BOOL m_bRejectingApacheUsernameChange;
 	// Generated message map functions
 	//{{AFX_MSG(CSettingsDlgVideoDeviceDoc)
-	afx_msg void OnButtonClearall();
-	afx_msg void OnButtonSetall();
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnUpdateAuthUsername();
