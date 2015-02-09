@@ -922,20 +922,20 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 
 LONG CMainFrame::OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam)
 {
+	LONG nOK = 0;
 	CString* pFileName = (CString*)wparam;
 	if (pFileName)
 	{
-		CDocument* pDoc = NULL;
 		if (!m_bFullScreenMode)
-			pDoc = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName);
+		{
+			if (((CUImagerApp*)::AfxGetApp())->GetTemplateFromFileExtension(*pFileName) != NULL)
+				nOK = ((CUImagerApp*)::AfxGetApp())->OpenDocumentFile(*pFileName) != NULL ? 1 : 0;
+			else
+				nOK = ::ShellExecute(NULL, _T("open"), *pFileName, NULL, NULL, SW_SHOWNORMAL) > (HINSTANCE)32 ? 1 : 0;
+		}
 		delete pFileName;
-		if (pDoc)
-			return 1;
-		else
-			return 0;
 	}
-	else
-		return 0;
+	return nOK;
 }
 
 #ifdef VIDEODEVICEDOC

@@ -51,7 +51,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGeneralPage)
 	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_QUALITY, m_VideoRecQuality);
-	DDX_Control(pDX, IDC_VIDEO_COMPRESSION_CHOOSE, m_VideoCompressionChoose);
 	DDX_Control(pDX, IDC_FRAMERATE, m_FrameRate);
 	DDX_Control(pDX, IDC_SPIN_FRAMERATE, m_SpinFrameRate);
 	DDX_DateTimeCtrl(pDX, IDC_DATE_ONCE_START, m_SchedulerOnceDateStart);
@@ -83,7 +82,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_WM_DESTROY()
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_AUDIO_INPUT, OnAudioInput)
-	ON_CBN_SELCHANGE(IDC_VIDEO_COMPRESSION_CHOOSE, OnSelchangeVideoCompressionChoose)
 	ON_BN_CLICKED(IDC_AUDIO_MIXER, OnAudioMixer)
 	ON_BN_CLICKED(IDC_VIDEO_INPUT, OnVideoInput)
 	ON_BN_CLICKED(IDC_VIDEO_TUNER, OnVideoTuner)
@@ -164,51 +162,6 @@ void CGeneralPage::OnAudioFormat()
 	m_pDoc->AudioFormatDialog();
 }
 
-void CGeneralPage::ShowHideCtrls()
-{
-	// Keyframes Rate
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_KEYFRAMES_RATE);
-	if (m_VideoCompressionFastEncodeAndKeyframesRateSupport[m_VideoCompressionChoose.GetCurSel()])
-	{
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
-		pEdit->ShowWindow(SW_SHOW);
-	}
-	else
-	{
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE0);
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_KEYFRAMES_RATE1);
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_CHECK_FASTENCODE);
-		pEdit->ShowWindow(SW_HIDE);
-	}
-
-	// Quality
-	CSliderCtrl* pSlider = (CSliderCtrl*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY);
-	if (m_VideoCompressionQualitySupport[m_VideoCompressionChoose.GetCurSel()])
-	{
-		pSlider->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
-		pEdit->ShowWindow(SW_SHOW);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
-		pEdit->ShowWindow(SW_SHOW);
-	}
-	else
-	{
-		pSlider->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_LABEL_QUALITY);
-		pEdit->ShowWindow(SW_HIDE);
-		pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
-		pEdit->ShowWindow(SW_HIDE);
-	}
-}
-
 void CGeneralPage::UpdateVideoQualityInfo()
 {
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_VIDEO_COMPRESSION_QUALITY_INFO);
@@ -224,9 +177,7 @@ void CGeneralPage::UpdateVideoQualityInfo()
 }
 
 BOOL CGeneralPage::OnInitDialog() 
-{
-	int i;
-	
+{	
 	// Init vars
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
@@ -359,29 +310,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
 
-	// Update Current Selected Codec
-	int nVideoCompressionSelection = -1;
-	for (i = 0 ; i < m_VideoCompressionFcc.GetSize() ; i++)
-	{
-		if (m_VideoCompressionFcc[i] == m_pDoc->m_dwVideoRecFourCC)
-		{
-			nVideoCompressionSelection = i;
-			break;
-		}
-	}
-	if (nVideoCompressionSelection == -1)
-	{
-		m_pDoc->m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
-		for (i = 0 ; i < m_VideoCompressionFcc.GetSize() ; i++)
-		{
-			if (m_VideoCompressionFcc[i] == m_pDoc->m_dwVideoRecFourCC)
-			{
-				nVideoCompressionSelection = i;
-				break;
-			}
-		}
-	}
-
 	// Fast Encode
 	m_bFastEncode = m_pDoc->m_bVideoRecFastEncode;
 
@@ -465,18 +393,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_pDoc->m_fVideoRecQuality = CUImagerApp::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
 	SetRevertedPos(m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
-
-	// Add Codec strings to ComboBoxes
-	m_VideoCompressionChoose.AddString(_T("Huffman YUV 12 bits/pix"));
-	m_VideoCompressionChoose.AddString(_T("Motion JPEG"));
-	m_VideoCompressionChoose.AddString(_T("MPEG-4"));
-	m_VideoCompressionChoose.AddString(_T("H.264"));
-
-	// Set Current Selections
-	m_VideoCompressionChoose.SetCurSel(nVideoCompressionSelection);
-
-	// Show Hide Ctrl
-	ShowHideCtrls();
 
 	// Enable Format Button?
 	CButton* pButton = (CButton*)GetDlgItem(IDC_VIDEO_FORMAT);
@@ -821,13 +737,6 @@ void CGeneralPage::OnCheckFastEncode()
 void CGeneralPage::OnAudioInput() 
 {
 	m_pDoc->m_CaptureAudioThread.AudioInSourceDialog();	
-}
-
-void CGeneralPage::OnSelchangeVideoCompressionChoose() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_dwVideoRecFourCC = m_VideoCompressionFcc[m_VideoCompressionChoose.GetCurSel()];
-	ShowHideCtrls();
 }
 
 void CGeneralPage::OnSelchangeRefFontsize()

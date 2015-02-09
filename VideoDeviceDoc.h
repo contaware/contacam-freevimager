@@ -852,12 +852,12 @@ public:
 	
 	// Video / Audio Recording
 	BOOL MakeAVRec(CAVRec** ppAVRec);
-	void OpenAVIFile(const CString& sFileName);
+	void OpenVideoFile(const CString& sFileName);
 	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
-	BOOL NextAviFile();
+	BOOL NextVideoFile();
 	void NextRecTime(CTime t);
-	void CloseAndShowAviRec();
-	void FreeAVIFile();
+	void CloseAndShowVideoFile();
+	void FreeVideoFile();
 
 	// Fast bicubic resize
 	// Source and destination Dibs must already have the bits allocated! 
@@ -1042,12 +1042,11 @@ public:
 	volatile DWORD m_dwRecFirstUpTime;					// Up-Time of First Recorded Frame
 	volatile DWORD m_dwRecLastUpTime;					// Up-Time of Last Recorded Frame
 	volatile BOOL m_bRecFirstFrame;						// Recording Just Started
-	volatile BOOL m_bRecAutoOpen;						// Auto open avi after recording
+	volatile BOOL m_bRecAutoOpen;						// Auto open video file after recording
 	volatile BOOL m_bRecTimeSegmentation;				// Enable / Disable Time Segmentation
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
 	CString m_sRecordAutoSaveDir;						// The Record Directory
-	volatile DWORD m_dwVideoRecFourCC;					// Video Compressor FourCC
 	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
 	volatile BOOL m_bVideoRecFastEncode;				// FALSE slow encoding, TRUE fast encoding

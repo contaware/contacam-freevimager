@@ -2468,6 +2468,8 @@ CString FileNameToMime(LPCTSTR lpszFileName)
 		return _T("image/png");
 	else if (sExt == _T(".avi")	|| sExt == _T(".divx"))
 		return _T("video/avi");
+	else if (sExt == _T(".mp4"))
+		return _T("video/mp4");
 	else
 		return _T(""); 
 }

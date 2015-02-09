@@ -507,7 +507,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 					DstBmi.biWidth = MP4SaveDib.GetWidth();
 					DstBmi.biHeight = MP4SaveDib.GetHeight();
 					DstBmi.biPlanes = 1;
-					DstBmi.biCompression = m_pDoc->m_dwVideoRecFourCC;
+					DstBmi.biCompression = DEFAULT_VIDEO_FOURCC;
 					AVRecMp4.AddVideoStream(MP4SaveDib.GetBMI(),				// Source Video Format
 											(LPBITMAPINFO)(&DstBmi),			// Destination Video Format
 											CalcFrameRate.num,					// Rate
@@ -1876,9 +1876,9 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
 					CString s;
-					if (::GetFileExt(sFiles[i]) == _T(".avi"))
+					if (::GetFileExt(sFiles[i]) == _T(".mp4")) // video tag not yet supported by most email clients
 					{
-						s.Format(_T("<a href=\"cid:%s\">AVI Video File</a>"),
+						s.Format(_T("<a href=\"cid:%s\">Video File</a>"),
 								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
 					}
 					else
@@ -1886,7 +1886,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 						s.Format(_T("<img src=\"cid:%s\" border=\"0\" alt=\"Detection Image\">"),
 								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
 					}
-					sHtml += s;
+					sHtml += s + _T("<br />");
 				}
 				sHtml += _T("</body></html>");
 				html.SetText(sHtml);
@@ -3880,7 +3880,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_bVideoRecFastEncode = FALSE;
-	m_dwVideoRecFourCC = DEFAULT_VIDEO_FOURCC;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 
@@ -3993,7 +3992,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Command Execution on Detection Critical Section
 	::InitializeCriticalSection(&m_csExecCommandMovementDetection);
 
-	// Init Avi File Critical Section
+	// Init Video File Critical Section
 	::InitializeCriticalSection(&m_csAVRec);
 
 	// Init Movement Detections List Critical Section
@@ -4027,7 +4026,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 
 CVideoDeviceDoc::~CVideoDeviceDoc()
 {
-	FreeAVIFile();
+	FreeVideoFile();
 	// Parsers and Generators always deleted after the related CNetCom objects!
 	if (m_pHttpGetFrameParseProcess)
 	{
@@ -4623,7 +4622,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
-	m_dwVideoRecFourCC = (DWORD) pApp->GetProfileInt(sSection, _T("VideoRecFourCC"), DEFAULT_VIDEO_FOURCC);
 	m_fVideoRecQuality = (float) CUImagerApp::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), FALSE);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
@@ -4824,7 +4822,6 @@ void CVideoDeviceDoc::SaveSettings()
 		
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
-	pApp->WriteProfileInt(sSection, _T("VideoRecFourCC"), m_dwVideoRecFourCC);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoRecFastEncode"), (int)m_bVideoRecFastEncode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
@@ -5403,7 +5400,7 @@ CString CVideoDeviceDoc::MakeJpegManualSnapshotFileName(const CTime& Time)
 		return sYearMonthDayDir + _T("\\") + _T("manualshot_") + sTime + _T(".jpg");
 }
 
-void CVideoDeviceDoc::FreeAVIFile()
+void CVideoDeviceDoc::FreeVideoFile()
 {
 	if (m_pAVRec)
 	{
@@ -5441,9 +5438,9 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 			return FALSE;
 	}
 	if (sYearMonthDayDir == _T(""))
-		sFileName = _T("rec_") + sCurrentTime + (m_dwVideoRecFourCC == FCC('H264')  ? _T(".mp4") : _T(".avi"));
+		sFileName = _T("rec_") + sCurrentTime + _T(".mp4");
 	else
-		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + (m_dwVideoRecFourCC == FCC('H264')  ? _T(".mp4") : _T(".avi"));
+		sFileName = sYearMonthDayDir + _T("\\") + _T("rec_") + sCurrentTime + _T(".mp4");
 
 	// Allocate
 	*ppAVRec = new CAVRec;
@@ -5464,7 +5461,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 	DstBmi.bmiHeader.biWidth = SrcBmi.bmiHeader.biWidth;
 	DstBmi.bmiHeader.biHeight = SrcBmi.bmiHeader.biHeight;
 	DstBmi.bmiHeader.biPlanes = SrcBmi.bmiHeader.biPlanes;
-	DstBmi.bmiHeader.biCompression = m_dwVideoRecFourCC;
+	DstBmi.bmiHeader.biCompression = DEFAULT_VIDEO_FOURCC;
 	AVRational FrameRate;
 	if (m_dEffectiveFrameRate > 0.0)
 		FrameRate = av_d2q(m_dEffectiveFrameRate, MAX_SIZE_FOR_RATIONAL);
@@ -5512,8 +5509,8 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 	// Stop Recording
 	if (m_pAVRec)
 	{
-		// Close avi and show it (if set so by user)
-		CloseAndShowAviRec();
+		// Close and show it (if set so by user)
+		CloseAndShowVideoFile();
 
 		// Leave CS
 		::LeaveCriticalSection(&m_csAVRec);
@@ -5528,7 +5525,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 			NextRecTime(CTime::GetCurrentTime());
 
 		// Free
-		FreeAVIFile();
+		FreeVideoFile();
 		
 		// Allocate & Init pAVRec
 		CAVRec* pAVRec = NULL;
@@ -5544,7 +5541,7 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 			// Leave CS
 			::LeaveCriticalSection(&m_csAVRec);
 			
-			CString sMsg = ML_STRING(1493, "Cannot Create the AVI File!\n");
+			CString sMsg = ML_STRING(1493, "Cannot Create the Video File!\n");
 			TRACE(sMsg);
 			if (bShowMessageBoxOnError)
 				::AfxMessageBox(sMsg, MB_ICONSTOP);
@@ -7751,12 +7748,12 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 					CurrentTime >= m_NextRecTime)
 				{
 					NextRecTime(CurrentTime);
-					bOk = NextAviFile();
+					bOk = NextVideoFile();
 				}
 
 				// If not OK -> Stop Recording
 				if (!bOk)
-					CloseAndShowAviRec();
+					CloseAndShowVideoFile();
 			}
 			::LeaveCriticalSection(&m_csAVRec);
 		}
@@ -8050,7 +8047,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
-			m_SaveSnapshotVideoThread.m_dwSnapshotVideoFourCC = m_dwVideoRecFourCC;
+			m_SaveSnapshotVideoThread.m_dwSnapshotVideoFourCC = DEFAULT_VIDEO_FOURCC;
 			m_SaveSnapshotVideoThread.m_nSnapshotVideoKeyframesRate = m_nVideoRecKeyframesRate;
 			m_SaveSnapshotVideoThread.m_dSnapshotHistoryFrameRate = (double)m_nSnapshotHistoryFrameRate;
 			m_SaveSnapshotVideoThread.m_Time = Yesterday;
@@ -8178,7 +8175,7 @@ void CVideoDeviceDoc::ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDM
 	::LeaveCriticalSection(&m_csOSDMessage);
 }
 
-void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
+void CVideoDeviceDoc::OpenVideoFile(const CString& sFileName)
 {
 	if (m_bRecAutoOpen)
 	{
@@ -8189,7 +8186,7 @@ void CVideoDeviceDoc::OpenAVIFile(const CString& sFileName)
 	}
 }
 
-void CVideoDeviceDoc::CloseAndShowAviRec()
+void CVideoDeviceDoc::CloseAndShowVideoFile()
 {
 	// Store old rec file name
 	CString sOldRecFileName;
@@ -8197,12 +8194,12 @@ void CVideoDeviceDoc::CloseAndShowAviRec()
 		sOldRecFileName = m_pAVRec->GetFileName();
 
 	// Free
-	FreeAVIFile();
+	FreeVideoFile();
 
 	// Open the video file
-	// (if ending the windows session do not perform the following)
+	// (if ending the Windows session do not perform the following)
 	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
-		OpenAVIFile(sOldRecFileName);
+		OpenVideoFile(sOldRecFileName);
 }
 
 void CVideoDeviceDoc::NextRecTime(CTime t)
@@ -8291,7 +8288,7 @@ void CVideoDeviceDoc::NextRecTime(CTime t)
 	}
 }
 
-BOOL CVideoDeviceDoc::NextAviFile()
+BOOL CVideoDeviceDoc::NextVideoFile()
 {
 	// Allocate & Init pNextAVRec
 	CAVRec* pNextAVRec = NULL;
@@ -8312,7 +8309,7 @@ BOOL CVideoDeviceDoc::NextAviFile()
 		delete m_pAVRec;
 
 		// Open the video file
-		OpenAVIFile(sOldRecFileName);
+		OpenVideoFile(sOldRecFileName);
 	}
 
 	// Change Pointer

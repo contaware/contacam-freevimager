@@ -77,7 +77,7 @@
 #define DEFAULT_SHRINK_VIDEO_QUALITY					VIDEO_QUALITY_LOW
 
 // Default Video Codec
-#define DEFAULT_VIDEO_FOURCC							FCC('DIVX')
+#define DEFAULT_VIDEO_FOURCC							FCC('H264')
 
 // Default Video Compression Keyframes Rate
 #define DEFAULT_KEYFRAMESRATE							30

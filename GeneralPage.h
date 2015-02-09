@@ -36,7 +36,6 @@ public:
 	//{{AFX_DATA(CGeneralPage)
 	enum { IDD = IDD_GENERAL };
 	CSliderCtrl	m_VideoRecQuality;
-	CComboBox	m_VideoCompressionChoose;
 	CNumEdit	m_FrameRate;
 	CNumSpinCtrl m_SpinFrameRate;
 	CTime	m_SchedulerOnceDateStart;
@@ -65,7 +64,6 @@ public:
 
 // Implementation
 protected:
-	void ShowHideCtrls();
 	void UpdateVideoQualityInfo();
 	__forceinline int GetRevertedPos(CSliderCtrl& SliderCtrl) {return SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - SliderCtrl.GetPos());};
 	__forceinline void SetRevertedPos(CSliderCtrl& SliderCtrl, int nPos) {SliderCtrl.SetPos(SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - nPos));};
@@ -82,7 +80,6 @@ protected:
 	afx_msg void OnDestroy();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnAudioInput();
-	afx_msg void OnSelchangeVideoCompressionChoose();
 	afx_msg void OnAudioMixer();
 	afx_msg void OnVideoInput();
 	afx_msg void OnVideoTuner();
