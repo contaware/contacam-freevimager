@@ -211,6 +211,7 @@ if ($handle = @opendir($dir)) {
 	$pages = 1;
 			
 	// First catch all the wanted files
+	$file_array = array();
 	while (false !== ($file = readdir($handle))) {
 		$path_parts = pathinfo($file);
 		if (is_file("$dir/$file")) {
@@ -228,7 +229,7 @@ if ($handle = @opendir($dir)) {
 	}
 			
 	// Now order them and display the wanted page
-	if ($file_array !== NULL) {
+	if (!empty($file_array)) {
 		// Get total images and calc. total pages
 		$total_size = count($file_array);
 		$pages_float = $total_size / (float)$max_per_page;
