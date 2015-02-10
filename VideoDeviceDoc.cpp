@@ -2272,7 +2272,9 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 
 	// Get Frame Size in Bytes
 	int nFrameSize = 0;
-	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
+	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_AAC2)
+		nFrameSize = 2 * 1024 * m_pDstWaveFormat->nChannels;
+	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3)
 		nFrameSize = 2 * 1152 * m_pDstWaveFormat->nChannels;
 	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
 		nFrameSize = 2 * ((1024 - 4 * m_pDstWaveFormat->nChannels) * 8 / (4 * m_pDstWaveFormat->nChannels) + 1) * m_pDstWaveFormat->nChannels;
