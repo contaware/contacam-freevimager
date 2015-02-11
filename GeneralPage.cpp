@@ -76,7 +76,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_VIDEO_FORMAT, OnVideoFormat)
 	ON_BN_CLICKED(IDC_VIDEO_SOURCE, OnVideoSource)
 	ON_EN_CHANGE(IDC_FRAMERATE, OnChangeFrameRate)
-	ON_BN_CLICKED(IDC_AUDIO_FORMAT, OnAudioFormat)
 	ON_BN_CLICKED(IDC_REC_AUDIO, OnRecAudio)
 	ON_WM_TIMER()
 	ON_WM_DESTROY()
@@ -154,12 +153,6 @@ void CGeneralPage::OnVideoTuner()
 	// Open the tv tuner dialog
 	if (m_pDoc->m_pDxCapture)
 		m_pDoc->m_pDxCapture->ShowVideoTVTunerDlg();
-}
-
-void CGeneralPage::OnAudioFormat() 
-{
-	// Open the audio format dialog
-	m_pDoc->AudioFormatDialog();
 }
 
 void CGeneralPage::UpdateVideoQualityInfo()

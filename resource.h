@@ -979,7 +979,6 @@
 #define IDC_SLIDER_LIGHTNESS            1071
 #define IDC_SLIDER_GAMMA                1071
 #define IDS_MULTILANG_1072              1072
-#define IDC_AUDIO_FORMAT                1072
 #define IDS_MULTILANG_1073              1073
 #define IDC_REC_AUDIO                   1073
 #define IDS_MULTILANG_1074              1074

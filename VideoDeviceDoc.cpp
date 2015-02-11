@@ -12,7 +12,6 @@
 #include "Quantizer.h"
 #include "DxCapture.h"
 #include "DxVideoFormatDlg.h"
-#include "AudioFormatDlg.h"
 #include "HttpVideoFormatDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
@@ -2029,11 +2028,25 @@ CVideoDeviceDoc::CCaptureAudioThread::CCaptureAudioThread()
 	m_hEventArray[1] = m_hWaveInEvent;
 	m_hWaveIn = NULL;
 
-	// Audio Format set Default to: Mono , 11025 Hz , 16 bits
+	// Audio Format
 	m_pSrcWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	WaveInitFormat(1, 11025, 16, m_pSrcWaveFormat);
+	WaveInitFormat(DEFAULT_AUDIO_CHANNELS,  DEFAULT_AUDIO_SAMPLINGRATE, 16, m_pSrcWaveFormat);
 	m_pDstWaveFormat = (WAVEFORMATEX*)new BYTE[sizeof(WAVEFORMATEX)];
-	WaveInitFormat(1, 11025, 16, m_pDstWaveFormat);
+	WaveInitFormat(DEFAULT_AUDIO_CHANNELS,  DEFAULT_AUDIO_SAMPLINGRATE, 16, m_pDstWaveFormat);
+	m_pDstWaveFormat->wFormatTag = DEFAULT_AUDIO_FORMAT_TAG;
+	if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_DVI_ADPCM)
+	{
+		m_pDstWaveFormat->nAvgBytesPerSec = m_pDstWaveFormat->nSamplesPerSec * m_pDstWaveFormat->nChannels / 2; // calculated more precisely by codec
+		m_pDstWaveFormat->nBlockAlign = 0;																		// calculated by codec
+		m_pDstWaveFormat->wBitsPerSample = 4;
+	}
+	else if (m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_MPEGLAYER3 ||
+			m_pDstWaveFormat->wFormatTag == WAVE_FORMAT_AAC2)
+	{
+		m_pDstWaveFormat->nAvgBytesPerSec = DEFAULT_AUDIO_BITRATE / 8;
+		m_pDstWaveFormat->nBlockAlign = 0;
+		m_pDstWaveFormat->wBitsPerSample = 0;
+	}
 
 	// ACM
 	for (int i = 0 ; i < AUDIO_UNCOMPRESSED_BUFS_COUNT ; i++)
@@ -2109,8 +2122,8 @@ void CVideoDeviceDoc::CCaptureAudioThread::WaveInitFormat(WORD wCh, DWORD dwSamp
 	pWaveFormat->wFormatTag = WAVE_FORMAT_PCM;
 	pWaveFormat->nChannels = wCh;
 	pWaveFormat->nSamplesPerSec = dwSampleRate;
-	pWaveFormat->nAvgBytesPerSec = dwSampleRate * wCh * wBitsPerSample/8;
 	pWaveFormat->nBlockAlign = wCh * wBitsPerSample/8;
+	pWaveFormat->nAvgBytesPerSec = dwSampleRate * pWaveFormat->nBlockAlign;
 	pWaveFormat->wBitsPerSample = wBitsPerSample;
 	pWaveFormat->cbSize = 0;
 }
@@ -4650,6 +4663,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), DEFAULT_DEL_RECS_OLDER_THAN_DAYS);
 	m_nMaxCameraFolderSizeMB = (int) pApp->GetProfileInt(sSection, _T("MaxCameraFolderSizeMB"), 0);
 
+	// Frame-rate
 	unsigned int nSize = sizeof(m_dFrameRate);
 	volatile double* pFrameRate = &m_dFrameRate;
 	pApp->GetProfileBinary(sSection, _T("FrameRate"), (LPBYTE*)&pFrameRate, &nSize);
@@ -4663,31 +4677,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		if (pFrameRate)
 			delete [] (LPBYTE)pFrameRate;
 		m_dFrameRate = dDefaultFrameRate;
-	}
-
-	if (m_CaptureAudioThread.m_pSrcWaveFormat)
-		delete [] m_CaptureAudioThread.m_pSrcWaveFormat;
-	UINT uiSize = 0;
-	pApp->GetProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE*)&m_CaptureAudioThread.m_pSrcWaveFormat, &uiSize);
-	if (m_CaptureAudioThread.m_pSrcWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 16 bits
-	{
-		// Make Sure Nothing Has Been Allocated!
-		if (m_CaptureAudioThread.m_pSrcWaveFormat)
-			delete [] m_CaptureAudioThread.m_pSrcWaveFormat;
-		m_CaptureAudioThread.m_pSrcWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
-		CCaptureAudioThread::WaveInitFormat(1, 11025, 16, m_CaptureAudioThread.m_pSrcWaveFormat);
-	}
-	if (m_CaptureAudioThread.m_pDstWaveFormat)
-		delete [] m_CaptureAudioThread.m_pDstWaveFormat;
-	uiSize = 0;
-	pApp->GetProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE*)&m_CaptureAudioThread.m_pDstWaveFormat, &uiSize);
-	if (m_CaptureAudioThread.m_pDstWaveFormat == NULL || uiSize != sizeof(WAVEFORMATEX)) // Default Audio: Mono , 11025 Hz , 16 bits
-	{
-		// Make Sure Nothing Has Been Allocated!
-		if (m_CaptureAudioThread.m_pDstWaveFormat)
-			delete [] m_CaptureAudioThread.m_pDstWaveFormat;
-		m_CaptureAudioThread.m_pDstWaveFormat = (WAVEFORMATEX*) new BYTE[sizeof(WAVEFORMATEX)];
-		CCaptureAudioThread::WaveInitFormat(1, 11025, 16, m_CaptureAudioThread.m_pDstWaveFormat);
 	}
 
 	// Create dir
@@ -4857,10 +4846,6 @@ void CVideoDeviceDoc::SaveSettings()
 		SaveZonesSettings();
 	}
 
-	if (m_CaptureAudioThread.m_pSrcWaveFormat)
-		pApp->WriteProfileBinary(sSection, _T("SrcWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pSrcWaveFormat, sizeof(WAVEFORMATEX));
-	if (m_CaptureAudioThread.m_pDstWaveFormat)
-		pApp->WriteProfileBinary(sSection, _T("DstWaveFormat"), (LPBYTE)m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
 	pApp->WriteProfileInt(sSection, _T("VideoProcessorMode"), m_dwVideoProcessorMode);
 	unsigned int nSize = sizeof(m_dFrameRate);
 	pApp->WriteProfileBinary(sSection, _T("FrameRate"), (LPBYTE)&m_dFrameRate, nSize);
@@ -5710,52 +5695,6 @@ void CVideoDeviceDoc::OnChangeFrameRate()
 			StartProcessFrame(PROCESSFRAME_CHANGEFRAMERATE);
 			SetDocumentTitle();
 		}
-	}
-}
-
-void CVideoDeviceDoc::AudioFormatDialog() 
-{
-	CAudioFormatDlg dlg(GetView());
-	if (m_CaptureAudioThread.m_pDstWaveFormat)
-		memcpy(&dlg.m_WaveFormat, m_CaptureAudioThread.m_pDstWaveFormat, sizeof(WAVEFORMATEX));
-	if (dlg.DoModal() == IDOK)
-	{
-		// Stop Save Frame List Thread
-		m_SaveFrameListThread.Kill();
-
-		// Stop Rec
-		if (m_pAVRec)
-			CaptureRecord();
-
-		// Stop Audio Thread
-		if (m_bCaptureAudio)
-			m_CaptureAudioThread.Kill();
-
-		// Copy from Dialog to Doc
-		if (m_CaptureAudioThread.m_pSrcWaveFormat && m_CaptureAudioThread.m_pDstWaveFormat)
-		{
-			// Src Wave Format
-			memcpy(m_CaptureAudioThread.m_pSrcWaveFormat, &dlg.m_WaveFormat, sizeof(WAVEFORMATEX));
-			if (m_CaptureAudioThread.m_pSrcWaveFormat->wFormatTag != WAVE_FORMAT_PCM)
-			{
-				m_CaptureAudioThread.m_pSrcWaveFormat->wFormatTag			= WAVE_FORMAT_PCM;
-				m_CaptureAudioThread.m_pSrcWaveFormat->wBitsPerSample		= 16;
-				m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign			= 2 * m_CaptureAudioThread.m_pSrcWaveFormat->nChannels;
-				m_CaptureAudioThread.m_pSrcWaveFormat->nAvgBytesPerSec		= m_CaptureAudioThread.m_pSrcWaveFormat->nSamplesPerSec *
-																				m_CaptureAudioThread.m_pSrcWaveFormat->nBlockAlign;
-				m_CaptureAudioThread.m_pSrcWaveFormat->cbSize				= 0;
-			}
-
-			// Dst Wave Format
-			memcpy(m_CaptureAudioThread.m_pDstWaveFormat, &dlg.m_WaveFormat, sizeof(WAVEFORMATEX));
-		}
-
-		// Start Audio Thread
-		if (m_bCaptureAudio)
-			m_CaptureAudioThread.Start();
-
-		// Restart Save Frame List Thread
-		m_SaveFrameListThread.Start();
 	}
 }
 

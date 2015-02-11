@@ -774,7 +774,6 @@ public:
 	// Dialogs
 	void CaptureCameraBasicSettings();
 	void VideoFormatDialog();
-	void AudioFormatDialog();
 
 	// Frame Tags
 	static CTime CalcTime(DWORD dwUpTime, const CTime& RefTime, DWORD dwRefUpTime);

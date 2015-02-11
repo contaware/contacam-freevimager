@@ -72,15 +72,19 @@
 // Big Picture Size Limit
 #define BIG_PICTURE_SIZE_LIMIT							134217728U /* 128MB */
 
-// Video Compression Quality
+// Default Video Codec
+// FCC('MJPG'), FCC('DIVX'), FCC('H264')
+#define DEFAULT_VIDEO_FOURCC							FCC('H264')
 #define DEFAULT_VIDEO_QUALITY							VIDEO_QUALITY_GOOD
 #define DEFAULT_SHRINK_VIDEO_QUALITY					VIDEO_QUALITY_LOW
-
-// Default Video Codec
-#define DEFAULT_VIDEO_FOURCC							FCC('H264')
-
-// Default Video Compression Keyframes Rate
 #define DEFAULT_KEYFRAMESRATE							30
+
+// Default Audio Codec
+// WAVE_FORMAT_PCM, WAVE_FORMAT_DVI_ADPCM, WAVE_FORMAT_MPEGLAYER3, WAVE_FORMAT_AAC2
+#define	DEFAULT_AUDIO_FORMAT_TAG						WAVE_FORMAT_AAC2
+#define DEFAULT_AUDIO_BITRATE							192000
+#define DEFAULT_AUDIO_CHANNELS							2
+#define DEFAULT_AUDIO_SAMPLINGRATE						44100
 
 // Default Jpeg Compression Quality
 #ifndef DEFAULT_JPEGCOMPRESSION

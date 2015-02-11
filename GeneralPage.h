@@ -74,7 +74,6 @@ protected:
 	afx_msg void OnVideoSource();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnChangeFrameRate();
-	afx_msg void OnAudioFormat();
 	afx_msg void OnRecAudio();
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnDestroy();
