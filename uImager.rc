@@ -246,7 +246,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -561,7 +560,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -657,7 +655,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -890,7 +887,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -1014,7 +1010,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -1307,7 +1302,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "&Join Avi Files",             ID_TOOLS_AVIMERGE_AS
         MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
         MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
@@ -4606,8 +4600,6 @@ BEGIN
     IDS_MULTILANG_1440      "The file extention is not .avi or .divx"
     IDS_MULTILANG_1441      "File is empty"
     IDS_MULTILANG_1442      "Unspecified error"
-    IDS_MULTILANG_1446      "Select Two Or More Files!\n(Tip: Hold Down the Ctrl-Key To Multiple File Select)"
-    IDS_MULTILANG_1449      "Failed to Merge the Avi Files."
     IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
     IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
 END
@@ -4743,7 +4735,6 @@ BEGIN
     ID_EDIT_TO8BITS         "Convert current image to maximum 256 colors and 8 bits per pixel\nTo 8 bpp"
     ID_EDIT_TO1BIT_DITHER_ERRDIFF 
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
-    ID_TOOLS_AVIMERGE_AS    "Join avi file segments\nJoin Avi Files"
     ID_FILE_SETTINGS        "File associations and global settings\nGlobal Settings"
     ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
 END

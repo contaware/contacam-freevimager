@@ -94,7 +94,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
-	ON_COMMAND(ID_TOOLS_AVIMERGE_AS, OnToolsAvimergeAs)
 	ON_COMMAND(ID_TOOLS_TRAYICON, OnToolsTrayicon)
 	ON_UPDATE_COMMAND_UI(ID_TOOLS_TRAYICON, OnUpdateToolsTrayicon)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
@@ -5353,14 +5352,6 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	WriteProfileString(_T("UninstallUserApplication"), sExtNoPoint, _T(""));
 
 	return TRUE;
-}
-
-void CUImagerApp::OnToolsAvimergeAs() 
-{
-	// Open Empty Video Document For Progress Display And Load Avi if Success
-	CVideoAviDoc* pDoc = (CVideoAviDoc*)(GetVideoAviDocTemplate()->OpenDocumentFile(NULL));
-	if (pDoc)
-		pDoc->StartFileMergeAs();
 }
 
 void CUImagerApp::OnToolsViewLogfile() 

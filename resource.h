@@ -3259,7 +3259,6 @@
 #define ID_VIEW_PREVIOUS_PAGE_FRAME     32881
 #define ID_EDIT_TO8BITS                 32883
 #define ID_EDIT_TO1BIT_DITHER_ERRDIFF   32884
-#define ID_TOOLS_AVIMERGE_AS            32886
 #define ID_FILE_SETTINGS                32889
 #define ID_VIEW_TIMEPOSITION            32890
 #define ID_VIEW_DETECTIONS              32910
