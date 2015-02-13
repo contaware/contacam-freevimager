@@ -60,7 +60,7 @@ define ("SNAPSHOTREFRESHSEC","1");
 define ("THUMBWIDTH","228");
 define ("THUMBHEIGHT","172");
 
-// The with and height of the fullsize snapshots and the fullsize swf movies
+// The with and height of the fullsize snapshots and the fullsize movies
 define ("WIDTH","640");
 define ("HEIGHT","480");
 

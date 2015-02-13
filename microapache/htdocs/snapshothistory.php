@@ -44,6 +44,12 @@ document.write(getCalendarStyles());
 <div id="calendar"></div>
 <script language="JavaScript" id="jscal" type="text/javascript">
 //<![CDATA[
+function urlExists(url) {
+	var ajax = new XMLHttpRequest(); 
+	ajax.open('HEAD', url, false); // sync. call
+	ajax.send(null);
+	return ajax.status != 404;
+}
 var now = new Date();
 var sel = new Date();
 var todayselected = true;
@@ -84,28 +90,36 @@ function loadIFrame(y,m,d) {
 			<?php
 			if (SNAPSHOTHISTORY_THUMB == 1)
 			{
-				$swf_width = THUMBWIDTH;
-				$swf_height = THUMBHEIGHT;
+				$video_width = THUMBWIDTH;
+				$video_height = THUMBHEIGHT;
 			}
 			else
 			{
-				$swf_width = WIDTH;
-				$swf_height = HEIGHT;
+				$video_width = WIDTH;
+				$video_height = HEIGHT;
 			}
-			$srcuri = "swf.php?width=" . $swf_width . "&height=" . $swf_height . "&file=";
+			$srcuri = "?width=" . $video_width . "&height=" . $video_height . "&file=";
 			echo "var filesdirpath = '$filesdirpath';\n";
 			echo "var srcuri = '$srcuri';\n";
 			echo "var usethumb = " . SNAPSHOTHISTORY_THUMB . ";\n";
 			?>
 			var filename;
 			if (usethumb == 1)
-				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '_thumb.swf';
+				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '_thumb';
 			else
-				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '.swf';
-			var swfuri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
-			var swfuri_get = new String(swfuri);
-			swfuri_get = swfuri_get.replace(/\//g, "%2F");
-			srcuri += swfuri_get + '&back=no';
+				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
+			var videouri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
+			var videouri_get = new String(videouri);
+			if (urlExists(videouri_get + '.mp4')) {
+				videouri_get += '.mp4';
+				videouri_get = videouri_get.replace(/\//g, "%2F");
+				srcuri = 'mp4.php' + srcuri + videouri_get + '&back=no';
+			}
+			else {
+				videouri_get += '.swf'
+				videouri_get = videouri_get.replace(/\//g, "%2F");
+				srcuri = 'swf.php' + srcuri + videouri_get + '&back=no';
+			}
 		}
 		window.frames.myiframe.location.href = srcuri;
 	}
