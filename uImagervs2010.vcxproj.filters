@@ -18,13 +18,7 @@
     <ClCompile Include="AddBordersDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AnimGifSaveDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AnimGifSaveSmallDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioFormatDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AudioInSourceDlg.cpp">
@@ -36,22 +30,7 @@
     <ClCompile Include="AudioMCIView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AudioOutDestinationDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AudioVideoShiftDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AVDecoder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AviInfoDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AviOpenStreamsDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AviPlay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AVRec.cpp">
@@ -261,9 +240,6 @@
     <ClCompile Include="OsdDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OutVolDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PaletteWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -280,9 +256,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PJNSMTP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerToolBarDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PostDelayedMessage.cpp">
@@ -405,19 +378,10 @@
     <ClCompile Include="uImagerView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VideoAviDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VideoAviView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VideoDeviceDoc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VideoDeviceView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VideoFormatDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WorkerThread.cpp">
@@ -465,16 +429,10 @@
     <ClInclude Include="AddBordersDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AnimGifSaveDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AnimGifSaveSmallDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="appconst.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioFormatDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AudioInSourceDlg.h">
@@ -486,22 +444,7 @@
     <ClInclude Include="AudioMCIView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AudioOutDestinationDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AudioVideoShiftDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AVDecoder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AviInfoDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AviOpenStreamsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AviPlay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AVRec.h">
@@ -723,9 +666,6 @@
     <ClInclude Include="OsdDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OutVolDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PaletteWnd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -748,9 +688,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PJNSMTP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerToolBarDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostDelayedMessage.h">
@@ -885,19 +822,10 @@
     <ClInclude Include="uImagerView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VideoAviDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VideoAviView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VideoDeviceDoc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VideoDeviceView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="videoformatdlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WorkerThread.h">
@@ -1023,12 +951,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\videodevicedoc.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\videotoolbar.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\videotoolbarfs.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\zip.ico">
