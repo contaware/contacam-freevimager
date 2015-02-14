@@ -12,7 +12,6 @@
 #include "SortableFileFind.h"
 #include "SaveFileDlg.h"
 #include "Tiff2Pdf.h"
-#include "VideoFormatDlg.h"
 #include "IMAPI2DownloadDlg.h"
 #include "NoVistaFileDlg.h"
 
@@ -429,12 +428,6 @@ void CBatchProcDlg::CProcessThread::OpenOutputFile(int nFilesCount)
 	{
 		((CUImagerApp*)::AfxGetApp())->m_Zip.Open(m_pDlg->m_sOutputFileName, CZipArchive::create, 0);
 	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
-	{
-		m_pAVRec = new CAVRec(m_pDlg->m_sOutputFileName);
-		if (!m_pAVRec)
-			throw (int)0;
-	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
 		m_pAnimGifSave = new CAnimGifSave (	m_pDlg->m_sOutputFileName,
@@ -460,14 +453,6 @@ void CBatchProcDlg::CProcessThread::CloseOutputFile(bool bException)
 	if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".zip"))
 	{
 		((CUImagerApp*)::AfxGetApp())->m_Zip.Close(bException);
-	}
-	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
-	{
-		if (m_pAVRec)
-		{
-			delete m_pAVRec;
-			m_pAVRec = NULL;
-		}
 	}
 	else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
 	{
@@ -532,11 +517,7 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 		if (!CUImagerApp::IsSupportedPictureFile(sFileName))
 			return; 
 		
-		if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".avi"))
-		{
-			AddToOutputAvi(sFileName);
-		}
-		else if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
+		if (::GetFileExt(m_pDlg->m_sOutputFileName) == _T(".gif"))
 		{
 			// Load Image
 			if (!m_Dib.LoadImage(	sFileName,
@@ -582,101 +563,6 @@ void CBatchProcDlg::CProcessThread::AddToOutputFile(int nFilesCount,
 		}
 	}
 	m_bFirstOutputFile = FALSE;
-}
-
-void CBatchProcDlg::CProcessThread::AddToOutputAvi(CString sInFileName)
-{
-	// Load Image
-	if (!m_Dib.LoadImage(	sInFileName,
-							0,		// X Full Size Load
-							0,		// Y Full Size Load
-							0,		// Load Page 0
-							FALSE,	// Do Not Decompress Bmps, in case we want to create a RLE AVI
-							FALSE,	// Not Only Header
-							NULL,	// No Progress Wnd
-							FALSE,	// No Progress Send
-							this))	// Thread
-		throw (int)0;
-
-	// Auto Orientate
-	CDib::AutoOrientateDib(&m_Dib);
-		
-	// Clear Orientation
-	m_Dib.GetExifInfo()->Orientation = 1;
-
-	// Flatten
-	if (m_Dib.HasAlpha() && m_Dib.GetBitCount() == 32)
-	{
-		m_Dib.SetBackgroundColor(RGB(0,0,0)); // Black background for AVIs is ok
-		m_Dib.RenderAlphaWithSrcBackground();
-		m_Dib.SetAlpha(FALSE);
-	}
-
-	// Decompress to 32 bpp
-	if (!m_Dib.Decompress(32))
-		throw (int)0;
-
-	// If first frame
-	if (m_bFirstOutputFile)
-	{	
-		// Size multiple of 4, so that codec is happy
-		int nXAdd = 0;
-		int nYAdd = 0;
-		const int nMultipleShift = 2; // 1: Multiple of 2, 2: Multiple of 4, 3: Multiple of 8, ...
-		nXAdd = m_Dib.GetWidth() % (1<<nMultipleShift);
-		if (nXAdd > 0)
-			nXAdd = (1<<nMultipleShift) - nXAdd;
-		nYAdd = m_Dib.GetHeight() % (1<<nMultipleShift);
-		if (nYAdd > 0)
-			nYAdd = (1<<nMultipleShift) - nYAdd;
-		if (!m_Dib.StretchBitsMaintainAspectRatio(	m_Dib.GetWidth() + nXAdd,
-													m_Dib.GetHeight() + nYAdd,
-													RGB(0,0,0), // Black background for AVIs is ok
-													NULL,		// Src Dib itself
-													NULL,		// No Progress Wnd
-													FALSE,		// No Progress Send
-													this))		// Thread
-			throw (int)0;
-
-		// Add Video Stream and Open
-		AVRational FrameRate = av_d2q(m_dFrameRate, MAX_SIZE_FOR_RATIONAL);
-		BITMAPINFOHEADER DstBmi;
-		memset(&DstBmi, 0, sizeof(BITMAPINFOHEADER));
-		DstBmi.biSize = sizeof(BITMAPINFOHEADER);
-		DstBmi.biWidth = m_Dib.GetWidth();
-		DstBmi.biHeight = m_Dib.GetHeight();
-		DstBmi.biPlanes = 1;
-		DstBmi.biCompression = FCC('MJPG');
-		if (m_pAVRec->AddVideoStream(m_Dib.GetBMI(),		// Source Video Format
-									(LPBITMAPINFO)&DstBmi,	// Dst Video Format
-									FrameRate.num,			// Rate
-									FrameRate.den,			// Scale
-									DEFAULT_KEYFRAMESRATE,					
-									DEFAULT_VIDEO_QUALITY,
-									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)
-			throw (int)0;
-		if (!m_pAVRec->Open())
-			throw (int)0;
-
-		// Store First Dib
-		m_FirstDib = m_Dib;
-	}
-	else
-	{
-		// Stretch
-		if (!m_Dib.StretchBitsMaintainAspectRatio(	m_FirstDib.GetWidth(),
-													m_FirstDib.GetHeight(),
-													RGB(0,0,0), // Black background for AVIs is ok
-													NULL,		// Src Dib itself
-													NULL,		// No Progress Wnd
-													FALSE,		// No Progress Send
-													this))		// Thread
-			throw (int)0;
-	}
-
-	// Save Frame
-	if (!m_pAVRec->AddFrame(0, &m_Dib, false))
-		throw (int)0;
 }
 
 void CBatchProcDlg::CProcessThread::AddToOutputTiff(int nFilesCount,
@@ -2018,7 +1904,6 @@ void CBatchProcDlg::OnButtonDstFile()
 		fd.m_ofn.nMaxFile = MAX_PATH;
 		fd.m_ofn.lpstrDefExt = defext;
 		fd.m_ofn.lpstrFilter =	_T("Zip File (*.zip)\0*.zip\0")
-								_T("Avi File (*.avi)\0*.avi\0")
 								_T("Animated GIF (*.gif)\0*.gif\0")						
 								_T("Multi-Page TIFF (*.tif)\0*.tif\0")
 								_T("Pdf Document (*.pdf)\0*.pdf\0");
@@ -2028,21 +1913,17 @@ void CBatchProcDlg::OnButtonDstFile()
 		{
 			fd.m_ofn.nFilterIndex = 1;
 		}
-		else if (defextension == _T("avi"))
+		else if (defextension == _T("gif"))
 		{
 			fd.m_ofn.nFilterIndex = 2;
 		}
-		else if (defextension == _T("gif"))
+		else if (::IsTIFFExt(defextension))
 		{
 			fd.m_ofn.nFilterIndex = 3;
 		}
-		else if (::IsTIFFExt(defextension))
-		{
-			fd.m_ofn.nFilterIndex = 4;
-		}
 		else if (defextension == _T("pdf"))
 		{
-			fd.m_ofn.nFilterIndex = 5;
+			fd.m_ofn.nFilterIndex = 4;
 		}
 		if (fd.DoModal() == IDOK)
 		{
@@ -2053,7 +1934,6 @@ void CBatchProcDlg::OnButtonDstFile()
 		UpdateDstFileSize();
 	}
 }
-
 
 void CBatchProcDlg::OnCheckMusicPreview() 
 {
@@ -3529,18 +3409,9 @@ BOOL CBatchProcDlg::ListAdd(int nItem, CString sFileName)
 			delete pListElement;
 			return FALSE;
 		}
-		pListElement->m_pAVIPlay = new CAVIPlay;
-		if (!pListElement->m_pAVIPlay)
-		{
-			delete pListElement->m_pDibHdr;
-			delete pListElement->m_pDibFull;
-			delete pListElement;
-			return FALSE;
-		}
 		pListElement->m_pAlphaRenderedDib = new CDib;
 		if (!pListElement->m_pAlphaRenderedDib)
 		{
-			delete pListElement->m_pAVIPlay;
 			delete pListElement->m_pDibHdr;
 			delete pListElement->m_pDibFull;
 			delete pListElement;
@@ -3550,7 +3421,6 @@ BOOL CBatchProcDlg::ListAdd(int nItem, CString sFileName)
 		if (!pListElement->m_pcsDibHdr)
 		{
 			delete pListElement->m_pAlphaRenderedDib;
-			delete pListElement->m_pAVIPlay;
 			delete pListElement->m_pDibHdr;
 			delete pListElement->m_pDibFull;
 			delete pListElement;
@@ -3561,7 +3431,6 @@ BOOL CBatchProcDlg::ListAdd(int nItem, CString sFileName)
 		{
 			delete pListElement->m_pcsDibHdr;
 			delete pListElement->m_pAlphaRenderedDib;
-			delete pListElement->m_pAVIPlay;
 			delete pListElement->m_pDibHdr;
 			delete pListElement->m_pDibFull;
 			delete pListElement;
@@ -3571,7 +3440,6 @@ BOOL CBatchProcDlg::ListAdd(int nItem, CString sFileName)
 		pListElement->m_DibStatic.SetNotifyHwnd(GetSafeHwnd());
 		pListElement->m_DibStatic.SetDibHdrPointer(pListElement->m_pDibHdr);
 		pListElement->m_DibStatic.SetDibFullPointer(pListElement->m_pDibFull);
-		pListElement->m_DibStatic.SetAVIPlayPointer(pListElement->m_pAVIPlay);
 		pListElement->m_DibStatic.SetAlphaRenderedDibPointer(pListElement->m_pAlphaRenderedDib);
 		pListElement->m_DibStatic.SetDibHdrCS(pListElement->m_pcsDibHdr);
 		pListElement->m_DibStatic.SetDibFullCS(pListElement->m_pcsDibFull);
@@ -3644,8 +3512,8 @@ void CBatchProcDlg::OnButtonListAdd()
 	dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 	dlgFile.m_ofn.lpstrCustomFilter = NULL;
 	dlgFile.m_ofn.lpstrFilter = 
-				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.wma;*.mid;*.au;*.aif;*.avi)\0")
-				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.avi;*.divx;")
+				_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
+				_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;")
 				_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
 				_T("All Files (*.*)\0*.*\0")
 				_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
@@ -3655,7 +3523,6 @@ void CBatchProcDlg::OnButtonListAdd()
 				_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 				_T("PC Paintbrush (*.pcx)\0*.pcx\0")
 				_T("Enhanced Metafile (*.emf)\0*.emf\0")
-				_T("Audio Video Interchange (*.avi;*.divx)\0*.avi;*.divx\0")
 	            _T("Audio Files (*.mp3;*.wav;*.wma;*.mid;*.au;*.aif)\0")
 				_T("*.mp3;*.wav;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0");
 	dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
@@ -3796,13 +3663,6 @@ void CBatchProcDlg::DeleteListElement(CBatchProcDlg::CListElement* pListElement)
 		{
 			pListElement->m_DibStatic.SetDibFullPointer(NULL);
 			delete pListElement->m_pDibFull;
-		}
-
-		// Delete AVI File
-		if (pListElement->m_pAVIPlay)
-		{
-			pListElement->m_DibStatic.SetAVIPlayPointer(NULL);
-			delete pListElement->m_pAVIPlay;
 		}
 
 		// Delete Alpha Rendered Dib
@@ -4796,7 +4656,6 @@ void CBatchProcDlg::ClearDibs(BOOL bPaint/*=TRUE*/)
 	{
 		m_Dibs[i].SetDibHdrPointer(NULL);
 		m_Dibs[i].SetDibFullPointer(NULL);
-		m_Dibs[i].SetAVIPlayPointer(NULL);
 		m_Dibs[i].SetAlphaRenderedDibPointer(NULL);
 		m_Dibs[i].SetDibHdrCS(NULL);
 		m_Dibs[i].SetDibFullCS(NULL);
@@ -4846,7 +4705,6 @@ LONG CBatchProcDlg::OnUpdateDibsPostpone(WPARAM wparam, LPARAM lparam)
 			{
 				m_Dibs[i].SetDibHdrPointer(pListElement->m_pDibHdr);
 				m_Dibs[i].SetDibFullPointer(pListElement->m_pDibFull);
-				m_Dibs[i].SetAVIPlayPointer(pListElement->m_pAVIPlay);
 				m_Dibs[i].SetAlphaRenderedDibPointer(pListElement->m_pAlphaRenderedDib);
 				m_Dibs[i].SetDibHdrCS(pListElement->m_pcsDibHdr);
 				m_Dibs[i].SetDibFullCS(pListElement->m_pcsDibFull);
@@ -4859,7 +4717,6 @@ LONG CBatchProcDlg::OnUpdateDibsPostpone(WPARAM wparam, LPARAM lparam)
 			{
 				m_Dibs[i].SetDibHdrPointer(NULL);
 				m_Dibs[i].SetDibFullPointer(NULL);
-				m_Dibs[i].SetAVIPlayPointer(NULL);
 				m_Dibs[i].SetAlphaRenderedDibPointer(NULL);
 				m_Dibs[i].SetDibHdrCS(NULL);
 				m_Dibs[i].SetDibFullCS(NULL);

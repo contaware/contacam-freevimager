@@ -5,7 +5,6 @@
 
 #include "resource.h"
 #include "DibStatic.h"
-#include "AviPlay.h"
 #include "StaticLink.h"
 #include "DragDropListCtrl.h"
 #include "TabCtrlSSL.h"
@@ -15,7 +14,6 @@
 #include "BatchProcShrinkTab.h"
 #include "TryEnterCriticalSection.h"
 #include "AnimGifSave.h"
-#include "AVRec.h"
 
 #define	WM_ONEXIT							WM_USER + 1200
 #define	WM_UPDATEDIBS_POSTPONE				WM_USER + 1201
@@ -33,7 +31,7 @@
 #define HDF_SORTDOWN						0x0200
 #endif
 
-#define DEFAULT_OUTFILE_FRAMERATE			0.25		// Default Framerate for Animated GIFs and AVIs
+#define DEFAULT_OUTFILE_FRAMERATE			0.25		// Default Framerate for Animated GIFs
 
 /////////////////////////////////////////////////////////////////////////////
 // CBatchProcDlg dialog
@@ -49,7 +47,6 @@ public:
 								m_pAnimGifSave = NULL;
 								m_TiffOutFile = NULL;
 								m_bFirstOutputFile = TRUE;
-								m_pAVRec = NULL;
 							};
 			virtual ~CProcessThread(){Kill();};
 			void SetDlg(CBatchProcDlg* pDlg) {m_pDlg = pDlg;};
@@ -94,7 +91,6 @@ public:
 			CString m_sTempOutputFileName;
 			BOOL m_bFirstOutputFile;
 			CBatchProcDlg* m_pDlg;
-			CAVRec* m_pAVRec;
 
 			int Work();
 			void OpenOutputFile(int nFilesCount);
@@ -102,7 +98,6 @@ public:
 			void AddToOutputFile(	int nFilesCount,
 									CString sSrcDirPath,
 									CString sFileName);
-			void AddToOutputAvi(	CString sInFileName);
 			void AddToOutputTiff(	int nFilesCount,
 									CString sInFileName,
 									CString sOutFileName);
@@ -131,7 +126,6 @@ public:
 			CListElement() {m_pDibHdr = NULL;
 							m_pDibFull = NULL;
 							m_pAlphaRenderedDib = NULL;
-							m_pAVIPlay = NULL;
 							m_pcsDibHdr = NULL;
 							m_pcsDibFull = NULL;};
 			virtual ~CListElement() {;};
@@ -139,7 +133,6 @@ public:
 			CDib* m_pDibHdr;
 			CDib* m_pDibFull;
 			CDib* m_pAlphaRenderedDib;
-			CAVIPlay* m_pAVIPlay;
 			CTryEnterCriticalSection* m_pcsDibHdr;
 			CTryEnterCriticalSection* m_pcsDibFull;
 			CString m_sShortFileName;
