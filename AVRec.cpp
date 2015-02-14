@@ -38,11 +38,6 @@ int avcodec_close_thread_safe(AVCodecContext *avctx);
 #pragma comment(lib, "ffmpeg\\mingw\\libx264.a")
 #endif
 
-// Win32 libs
-#pragma comment(lib, "wsock32.lib")
-#pragma comment(lib, "vfw32.lib")
-#pragma comment(lib, "msacm32.lib")
-
 CAVRec::CAVRec()
 {
 	InitVars();
@@ -1238,4 +1233,13 @@ enum AVCodecID CAVRec::AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits/*
 		case WAVE_FORMAT_DVI_ADPCM :			return AV_CODEC_ID_ADPCM_IMA_WAV;
 		default :								return AV_CODEC_ID_NONE;
 	}
+}
+
+float CAVRec::ClipVideoQuality(float fQuality)
+{
+	if (fQuality > VIDEO_QUALITY_LOW)
+		fQuality = VIDEO_QUALITY_LOW;
+	else if (fQuality < VIDEO_QUALITY_BEST)
+		fQuality = VIDEO_QUALITY_BEST;
+	return fQuality;
 }

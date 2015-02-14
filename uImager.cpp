@@ -257,15 +257,6 @@ CString CUImagerApp::GetConfiguredTempDir()
 	return sConfiguredTempDir;
 }
 
-float CUImagerApp::ClipVideoQuality(float fQuality)
-{
-	if (fQuality > VIDEO_QUALITY_LOW)
-		fQuality = VIDEO_QUALITY_LOW;
-	else if (fQuality < VIDEO_QUALITY_BEST)
-		fQuality = VIDEO_QUALITY_BEST;
-	return fQuality;
-}
-
 // Note: the following ffmpeg functions are not thread safe:
 // avcodec_open2, avdevice_register_all, av_get_cpu_flags, av_force_cpu_flags
 

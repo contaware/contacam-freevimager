@@ -169,6 +169,7 @@ public:
 	static enum AVPixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
 	static enum AVCodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
 	static enum AVCodecID AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits = 16);
+	static float ClipVideoQuality(float fQuality);
 
 protected:
 	__forceinline void SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMATEX pWaveFormat);

@@ -382,7 +382,7 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoRecQuality.SetRange((int)VIDEO_QUALITY_BEST, (int)VIDEO_QUALITY_LOW);
 	m_VideoRecQuality.SetPageSize(1);
 	m_VideoRecQuality.SetLineSize(1);
-	m_pDoc->m_fVideoRecQuality = CUImagerApp::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
+	m_pDoc->m_fVideoRecQuality = CAVRec::ClipVideoQuality(m_pDoc->m_fVideoRecQuality);
 	SetRevertedPos(m_VideoRecQuality, (int)m_pDoc->m_fVideoRecQuality);
 	UpdateVideoQualityInfo();
 

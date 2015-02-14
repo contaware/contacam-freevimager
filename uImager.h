@@ -296,9 +296,6 @@ public:
 	// (folder will not be created if not existing)
 	static CString GetConfiguredTempDir();
 
-	// Clip video quality to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
-	static float ClipVideoQuality(float fQuality);
-
 	// Templates Get Functions
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* GetVideoDeviceDocTemplate() {return m_pVideoDeviceDocTemplate;};

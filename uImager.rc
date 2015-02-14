@@ -4131,8 +4131,6 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_VIDEO           "Enable / disable video input preview\nPreview Video"
-    ID_PLAY_FRAME_FRONT     "Jump to next frame\nNext Frame"
-    ID_PLAY_FRAME_BACK      "Jump to previous frame\nPrevious Frame"
     ID_ZOOM_COMBOX          "Select image zoom level\nZoom Image"
 END
 
@@ -4162,20 +4160,14 @@ BEGIN
     ID_EDIT_DELETE          "Delete\nDelete"
     ID_EDIT_ROTATE_90CW     "Rotate current image 90° clockwise (Ctrl + Right Arrow)\nRotate 90° CW"
     ID_EDIT_ROTATE_90CCW    "Rotate current image 90° counter clockwise (Ctrl + Left Arrow)\nRotate 90° CCW"
-    ID_PLAY_VOL             "Show output volume regulations\nOutput Volume"
     ID_VIEW_NEXT_PICTURE    "Show next image\nNext Image"
     ID_VIEW_PREVIOUS_PICTURE "Show previous image\nPrevious Image"
-    ID_PLAY_FRAME_LAST      "Jump to last frame\nLast Frame"
-    ID_PLAY_FRAME_FIRST     "Jump to first frame\nFirst Frame"
-    ID_PLAY_FRAME_FRONT_FAST "Jump Forward\nJump Forward"
 END
 
 STRINGTABLE
 BEGIN
-    ID_PLAY_FRAME_BACK_FAST "Jump Backward\nJump Backward"
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_EDIT_STOP            "Interrupt the processing of the current document\nStop Processing"
     ID_VIEW_FRAMETIME       "Enable / disable frame time display\nShow Frame Time"
     ID_FILE_INFO            "Show file information\nFile Info"
     ID_PLAY_TRANSITION_OFF  "Turn transition effect off\nTransition Off"
@@ -4213,7 +4205,6 @@ BEGIN
     ID_EDIT_TO1BIT_DITHER_ERRDIFF 
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
     ID_FILE_SETTINGS        "File associations and global settings\nGlobal Settings"
-    ID_VIEW_TIMEPOSITION    "Show time position\nTime Position Show"
 END
 
 STRINGTABLE
@@ -4265,7 +4256,6 @@ BEGIN
     ID_MINIMIZE             "Reduces the window to an icon\nMinimize"
     ID_MAXIMIZE             "Enlarges the window to full size\nMaximize"
     ID_MAINMONITOR          "Move the main window to the primary monitor\nTo Primary Monitor"
-    ID_PLAY_AUDIOVIDEOSHIFT "Audio / video sync adjustments\nA/V Sync"
     ID_APP_LICENSE          "Display program license\nLicense"
     ID_APP_CREDITS          "Display program contributors and used libraries\nCredits"
     ID_VIEW_STRETCH_HALFTONE "High quality stretch\nHigh Quality Stretch"
@@ -4380,10 +4370,6 @@ BEGIN
     ID_HELP_TUTORIAL_15     "Start this tutorial\nStart Tutorial"
     ID_HELP_TUTORIAL_16     "Start this tutorial\nStart Tutorial"
     ID_EDIT_TO15BITS        "Convert current image to 32768 colors and 16 bits per pixel\nTo 16 bpp"
-    ID_PLAY_VFWCODECPRIORITY 
-                            "VfW codecs have priority over the internal one\nVfW Codec Priority"
-    ID_PLAY_INTERNALCODECPRIORITY 
-                            "Internal codecs have priority over the VfW one\nInternal Codec Priority"
     ID_FILE_ACQUIRE_TO_TIFF "Scan from selected source to Tiff\nScan to Tiff"
     ID_FILE_ACQUIRE_TO_PDF  "Scan from selected source to Pdf\nScan to Pdf"
     ID_FILE_ACQUIRE_AND_EMAIL 
@@ -4569,8 +4555,6 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_PLAY_INC             "Increment the video playback speed\nIncrement Speed"
-    ID_PLAY_DEC             "Decrement the video playback speed\nDecrement Speed"
     ID_EDIT_SNAPSHOT        "Take a snapshot\nSnapshot"
     ID_EDIT_PASTE_INTO_FILE_HELP 
                             "Coordinates text file help\nCoordinates Text File Help"
@@ -4958,7 +4942,6 @@ BEGIN
     ID_EDIT_ZONE_SENSITIVITY_10 
                             "Set detection zone sensitivity to 10 %\nZone Sensitivity 10 %"
     ID_FILE_EXTRACT         "Extract all pages/frames\nExtract Pages/Frames"
-    ID_FILE_EXTRACTFRAMES   "Extract all frames\nExtract Frames"
     ID_EDIT_SCREENSHOT      "Take a screenshot\nScreenshot"
 END
 

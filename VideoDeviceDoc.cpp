@@ -4636,7 +4636,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
-	m_fVideoRecQuality = (float) CUImagerApp::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
+	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), FALSE);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
