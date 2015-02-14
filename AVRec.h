@@ -3,6 +3,7 @@
 
 #include "Dib.h"
 #include <mmsystem.h>
+#include <mmreg.h>
 #include "YuvToRgb.h"
 extern "C"
 {
