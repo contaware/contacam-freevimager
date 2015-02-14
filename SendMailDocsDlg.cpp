@@ -27,7 +27,6 @@ CSendMailDocsDlg::CSendMailDocsDlg(CWnd* pParent /*=NULL*/)
 	m_nShrinkingPixels = AUTO_SHRINK_MAX_SIZE;
 	m_nJpegQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sZipFileName = _T("Files.zip");
-	m_bShrinkingVideos = TRUE;
 	m_bPictureExtChange = TRUE;
 	//}}AFX_DATA_INIT
 }
@@ -39,7 +38,6 @@ void CSendMailDocsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_OPTIMIZE_EMAIL, m_nOptimizationSelection);
 	DDX_Check(pDX, IDC_CHECK_ZIP, m_bZipFile);
 	DDX_Text(pDX, IDC_EDIT_ZIPFILE_NAME, m_sZipFileName);
-	DDX_Check(pDX, IDC_CHECK_SHRINKINGVIDEOS, m_bShrinkingVideos);
 	DDX_Radio(pDX, IDC_RADIO_PIXELS, m_nPixelsPercentSel);
 	DDX_Check(pDX, IDC_CHECK_SHRINKINGPICTURES, m_bShrinkingPictures);
 	DDX_Text(pDX, IDC_EDIT_PERCENT, m_nShrinkingPercent);
@@ -109,9 +107,6 @@ BOOL CSendMailDocsDlg::OnInitDialog()
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGVIDEOS);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
 
 	CButton* pRadio;
 	pRadio = (CButton*)GetDlgItem(IDC_RADIO_PIXELS);
@@ -158,9 +153,6 @@ void CSendMailDocsDlg::OnRadioOptimizeAdvanced()
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(TRUE);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGVIDEOS);
-	if (pCheck)
-		pCheck->EnableWindow(TRUE);
 
 	CButton* pRadio;
 	pRadio = (CButton*)GetDlgItem(IDC_RADIO_PIXELS);
@@ -202,9 +194,6 @@ void CSendMailDocsDlg::OnRadioOptimizeEmail()
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGVIDEOS);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
 
 	CButton* pRadio;
 	pRadio = (CButton*)GetDlgItem(IDC_RADIO_PIXELS);
@@ -244,9 +233,6 @@ void CSendMailDocsDlg::OnRadioOptimizeUnchanged()
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
 	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGPICTURES);
-	if (pCheck)
-		pCheck->EnableWindow(FALSE);
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SHRINKINGVIDEOS);
 	if (pCheck)
 		pCheck->EnableWindow(FALSE);
 

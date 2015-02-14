@@ -33,7 +33,6 @@ public:
 	int		m_nShrinkingPixels;
 	int		m_nJpegQuality;
 	CString	m_sZipFileName;
-	BOOL	m_bShrinkingVideos;
 	BOOL	m_bPictureExtChange;
 	//}}AFX_DATA
 
