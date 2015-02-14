@@ -11,7 +11,6 @@
 #include "ColorButtonPicker.h"
 #include "ToolbarSliderCtrl.h"
 
-#define PLAY_SLIDER_WIDTH_MIN						80
 #define MIN_ZOOM_COMBOBOX_INDEX						0
 #define MAX_ZOOM_COMBOBOX_INDEX						10
 #define ZOOMCOMBOBOX_WIDTH							92
@@ -50,41 +49,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNAMIC(CChildToolBar)
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CVideoAviToolBar
-
-class CVideoAviToolBar : public CChildToolBar
-{
-public:
-	CVideoAviToolBar();
-	virtual ~CVideoAviToolBar();
-	virtual void UpdateControls(void);
-	BOOL Create(CWnd* pParentWnd);
-	BOOL Create(CWnd* pParentWnd, BOOL bFullScreen, int nMaxWidth);
-	CToolbarSliderCtrl m_PlayerSlider;
-
-protected:	
-	int m_PlayerSliderIndex;
-	int m_PlaySliderWidth;
-	
-	// Overrides
-protected:
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CVideoAviToolBar)
-	//}}AFX_VIRTUAL
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CVideoAviToolBar)
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
-	//}}AFX_MSG
-	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
-
-	DECLARE_MESSAGE_MAP()
-	DECLARE_DYNAMIC(CVideoAviToolBar)
 };
 
 #ifdef VIDEODEVICEDOC
@@ -285,40 +249,6 @@ protected:
 	
 	DECLARE_MESSAGE_MAP()
 	DECLARE_DYNCREATE(CCDAudioChildFrame)
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CVideoAviChildFrame
-
-class CVideoAviChildFrame : public CToolBarChildFrame
-{
-protected:
-	CVideoAviChildFrame();           // protected constructor used by dynamic creation
-	void StartShutdown1();
-	void StartShutdown2();
-	void EndShutdown();
-	BOOL IsShutdown1Done();
-	BOOL IsShutdown2Done();
-
-protected:
-	BOOL m_bShutdown2Started;
-
-	// Overrides
-protected:
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CVideoAviChildFrame)
-	//}}AFX_VIRTUAL
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CVideoAviChildFrame)
-	afx_msg void OnClose();
-	afx_msg void OnTimer(UINT nIDEvent);
-	//}}AFX_MSG
-	afx_msg LRESULT OnIdleUpdateCmdUI(WPARAM wParam, LPARAM lParam);
-	
-	DECLARE_MESSAGE_MAP()
-	DECLARE_DYNCREATE(CVideoAviChildFrame)
 };
 
 #ifdef VIDEODEVICEDOC

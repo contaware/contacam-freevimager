@@ -20,7 +20,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlg)
 	enum { IDD = IDD_SETTINGS };
-	BOOL	m_bCheckAvi;
 	BOOL	m_bCheckBmp;
 	BOOL	m_bCheckJpeg;
 	BOOL	m_bCheckPcx;

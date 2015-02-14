@@ -7,7 +7,6 @@
 #include "SaveFileDlg.h"
 #include "RotationFlippingDlg.h"
 #include "ResizingDpiDlg.h"
-#include "AnimGifSaveDlg.h"
 #include "AnimGifSaveSmallDlg.h"
 #include "MonochromeConversionDlg.h"
 #include "SharpenDlg.h"

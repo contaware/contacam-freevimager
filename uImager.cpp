@@ -9,13 +9,11 @@
 #include "ToolBarChildFrm.h"
 #include "uImagerDoc.h"
 #include "PictureDoc.h"
-#include "VideoAviDoc.h"
 #include "VideoDeviceDoc.h"
 #include "AudioMCIDoc.h"
 #include "CDAudioDoc.h"
 #include "PictureView.h"
 #include "PicturePrintPreviewView.h"
-#include "VideoAviView.h"
 #include "VideoDeviceView.h"
 #include "AudioMCIView.h"
 #include "CDAudioView.h"
@@ -128,12 +126,9 @@ CUImagerApp::CUImagerApp()
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
 	m_sAppTempDir = _T("");
-	m_sZipFile = _T("");
-	m_sShrinkDestination = _T("");
 	m_bExtractHere = FALSE;
 	m_bStartPlay = FALSE;
 	m_bCloseAfterAudioPlayDone = FALSE;
-	m_pVideoAviDocTemplate = NULL;
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
@@ -158,7 +153,6 @@ CUImagerApp::CUImagerApp()
 	m_bTopMost = FALSE;
 	m_pPictureDocTemplate = NULL;
 	m_pAudioMCIDocTemplate = NULL;
-	m_bWaitingMailFinish = FALSE;
 	m_bUseLoadPreviewDib = TRUE;
 	m_bFileDlgPreview = TRUE;
 	m_bPlacementLoaded = FALSE;
@@ -170,7 +164,6 @@ CUImagerApp::CUImagerApp()
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
 	m_nAVCodecThreadsCount = 1;
-	m_bVideoAviInfo = FALSE;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
@@ -655,16 +648,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (!m_pPictureDocTemplate)
 			throw (int)0;
 		AddDocTemplate(m_pPictureDocTemplate);
-
-		// Video Avi Doc Template Registration
-		m_pVideoAviDocTemplate = new CUImagerMultiDocTemplate(
-			IDR_VIDEOAVI,
-			RUNTIME_CLASS(CVideoAviDoc),
-			RUNTIME_CLASS(CVideoAviChildFrame),
-			RUNTIME_CLASS(CVideoAviView));
-		if (!m_pVideoAviDocTemplate)
-			throw (int)0;
-		AddDocTemplate(m_pVideoAviDocTemplate);
 
 		// Video Device Doc Template Registration
 #ifdef VIDEODEVICEDOC
@@ -1162,8 +1145,8 @@ void CUImagerApp::OnFileOpen()
 		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 		dlgFile.m_ofn.lpstrCustomFilter = NULL;
 		dlgFile.m_ofn.lpstrFilter = 
-					_T("Supported Files (*.bmp;*.gif;*.jpg;*.avi;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif;*.zip)\0")
-					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;*.avi;*.divx;")
+					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif;*.zip)\0")
+					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;")
 					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff;*.zip\0")
 					_T("All Files (*.*)\0*.*\0")
 					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
@@ -1173,7 +1156,6 @@ void CUImagerApp::OnFileOpen()
 					_T("Tag Image File Format (*.tif;*.tiff;*.jfx)\0*.tif;*.tiff;*.jfx\0")
 					_T("PC Paintbrush (*.pcx)\0*.pcx\0")
 					_T("Enhanced Metafile (*.emf)\0*.emf\0")
-					_T("Audio Video Interchange (*.avi;*.divx)\0*.avi;*.divx\0")
 					_T("Audio Files (*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif)\0")
 					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
 					_T("Zip File (*.zip)\0*.zip\0");
@@ -1226,17 +1208,7 @@ void CUImagerApp::OnFileOpen()
 					CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 					if (pDoc)
 					{
-						if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-						{
-							if (!((CVideoAviDoc*)pDoc)->LoadAVI(Path))
-							{
-								((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
-							}
-						}
-						else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 						{
 							CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
 							pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
@@ -1331,17 +1303,7 @@ void CUImagerApp::OnFileOpen()
 							CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 							if (pDoc)
 							{
-								if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-								{
-									if (!((CVideoAviDoc*)pDoc)->LoadAVI(FileName))
-									{
-										((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-										delete [] FileNames;
-										delete [] InitDir;
-										return;
-									}
-								}
-								else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+								if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 								{
 									CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
 									pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
@@ -1622,17 +1584,7 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 		CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
 		if (pDoc)
 		{
-			if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-			{
-				if (m_bStartMaximized)
-					((CVideoAviDoc*)pDoc)->GetFrame()->MDIMaximize();
-				if (!((CVideoAviDoc*)pDoc)->LoadAVI(szFullPathName))
-				{
-					((CVideoAviDoc*)pDoc)->CloseDocumentForce();
-					return NULL;
-				}
-			}
-			else if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+			if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 			{
 				if (m_bStartMaximized)
 					((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
@@ -1743,11 +1695,11 @@ void CUImagerApp::OnFileSendmailOpenDocs()
 		::AfxMessageBox(ML_STRING(1175, "No Email Program Installed."), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
-	else if (!ArePictureDocsOpen() && !AreVideoAviDocsOpen())
+	else if (!ArePictureDocsOpen())
 		OnFileOpen();
 
 	// Send open doc(s)
-	if (ArePictureDocsOpen() || AreVideoAviDocsOpen())
+	if (ArePictureDocsOpen())
 	{
 		// Make sure open doc(s) are available
 		CUImagerMultiDocTemplate* pPictureDocTemplate = GetPictureDocTemplate();
@@ -1758,17 +1710,9 @@ void CUImagerApp::OnFileSendmailOpenDocs()
 			if (!IsDocAvailable(pPictureDoc, TRUE))
 				return;
 		}
-		CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
-		POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-		while (posVideoAviDoc)
-		{
-			CVideoAviDoc* pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-			if (!IsDocAvailable(pVideoAviDoc, TRUE))
-				return;
-		}
 
-		// Send init
-		SendOpenDocsAsMailInit();
+		// Send them
+		SendOpenDocsAsMail();
 	}
 }
 
@@ -1874,21 +1818,6 @@ BOOL CUImagerApp::ArePictureDocsOpen()
 	return FALSE;
 }
 
-BOOL CUImagerApp::AreVideoAviDocsOpen()
-{
-	CUImagerMultiDocTemplate* pVideoAviDocTemplate = GetVideoAviDocTemplate();
-	POSITION posVideoAviDoc = pVideoAviDocTemplate->GetFirstDocPosition();
-	CVideoAviDoc* pVideoAviDoc;	
-	while (posVideoAviDoc)
-	{
-		pVideoAviDoc = (CVideoAviDoc*)(pVideoAviDocTemplate->GetNextDoc(posVideoAviDoc));
-		if (pVideoAviDoc)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 #ifdef VIDEODEVICEDOC
 
 BOOL CUImagerApp::AreVideoDeviceDocsOpen()
@@ -1940,39 +1869,20 @@ void CUImagerApp::SaveOnEndSession()
 {
 	SavePlacement();
 	m_PrinterControl.SavePrinterSelection(m_hDevMode, m_hDevNames);
-
-	CDocument* pDoc;
-	CUImagerMultiDocTemplate* curTemplate;
-	POSITION posTemplate, posDoc;
-	posTemplate = GetFirstDocTemplatePosition();
-	while (posTemplate)
-	{
-		curTemplate = (CUImagerMultiDocTemplate*)GetNextDocTemplate(posTemplate);
-		posDoc = curTemplate->GetFirstDocPosition();
-		while (posDoc)
-		{
-			pDoc = curTemplate->GetNextDoc(posDoc);
-			if (pDoc)
-			{
-				if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-				{
-					((CVideoAviDoc*)pDoc)->SaveSettings();
-					if (((CVideoAviDoc*)pDoc)->GetView())
-						((CVideoAviDoc*)pDoc)->GetView()->SaveSettings();
-				}
 #ifdef VIDEODEVICEDOC
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoDeviceDoc)))
-				{
-					// Stop recording so that the index is not missing!
-					if (((CVideoDeviceDoc*)pDoc)->m_pAVRec)
-						((CVideoDeviceDoc*)pDoc)->CaptureRecord(FALSE); // No Message Box on Error
-					((CVideoDeviceDoc*)pDoc)->SaveSettings();
-				}
-#endif
-			}
+	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
+	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+	while (posVideoDeviceDoc)
+	{
+		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+		if (pVideoDeviceDoc)
+		{
+			// Stop recording so that the index is not missing!
+			if (pVideoDeviceDoc->m_pAVRec)
+				pVideoDeviceDoc->CaptureRecord(FALSE); // No Message Box on Error
+			pVideoDeviceDoc->SaveSettings();
 		}
 	}
-#ifdef VIDEODEVICEDOC
 	CVideoDeviceDoc::VlmShutdown();
 	if (m_bMicroApacheStarted)
 		CVideoDeviceDoc::MicroApacheShutdown();
@@ -2082,56 +1992,20 @@ CString CUImagerApp::PictureMakeMsg(CPictureDoc* pDoc)
 	return sMsg;
 }
 
-CString CUImagerApp::VideoAviMakeMsg(CVideoAviDoc* pDoc)
-{
-	CString sMsg;
-
-	if (!pDoc->m_pAVIPlay)
-		sMsg = ML_STRING(1194, "No file loaded."); 
-	else if (pDoc->IsModified())
-		sMsg = ML_STRING(1195, "Try again after saving the file.");
-	else if (pDoc->IsProcessing())
-		sMsg = ML_STRING(1196, "Try again after the video processing has terminated.");
-	else if (pDoc->m_PlayVideoFileThread.IsAlive() ||
-			pDoc->m_PlayAudioFileThread.IsAlive())
-		sMsg = ML_STRING(1197, "Stop playing the file and try again.");
-	else
-		sMsg = _T("");	
-		
-	return sMsg;
-}
-
 BOOL CUImagerApp::IsDocAvailable(CDocument* pDoc, BOOL bShowMsgBoxIfNotAvailable/*=FALSE*/)
 {
-	if (pDoc)
+	if (pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 	{
-		if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+		CString sMsg(PictureMakeMsg((CPictureDoc*)pDoc));
+		if (!sMsg.IsEmpty())
 		{
-			CString sMsg(PictureMakeMsg((CPictureDoc*)pDoc));
-			if (!sMsg.IsEmpty())
+			if (bShowMsgBoxIfNotAvailable)
 			{
-				if (bShowMsgBoxIfNotAvailable)
-				{
-					((CPictureDoc*)pDoc)->GetView()->ForceCursor();
-					::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-					((CPictureDoc*)pDoc)->GetView()->ForceCursor(FALSE);
-				}
-				return FALSE;
+				((CPictureDoc*)pDoc)->GetView()->ForceCursor();
+				::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
+				((CPictureDoc*)pDoc)->GetView()->ForceCursor(FALSE);
 			}
-		}
-		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-		{
-			CString sMsg(VideoAviMakeMsg((CVideoAviDoc*)pDoc));
-			if (!sMsg.IsEmpty())
-			{
-				if (bShowMsgBoxIfNotAvailable)
-				{
-					((CVideoAviDoc*)pDoc)->GetView()->ForceCursor();
-					::AfxMessageBox(sMsg, MB_OK | MB_ICONINFORMATION);
-					((CVideoAviDoc*)pDoc)->GetView()->ForceCursor(FALSE);
-				}
-				return FALSE;
-			}
+			return FALSE;
 		}
 	}
 	return TRUE;
@@ -3155,33 +3029,14 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 	return bResult;
 }
 
-void CUImagerApp::ShrinkStatusText(	CString sSrcFileName,
-									CString sDstFileName)
-{
-	CString sStatusText;
-	sStatusText.Format(_T("%s -> %s"),
-				::GetShortFileName(sSrcFileName),
-				::GetShortFileName(sDstFileName));
-	::AfxGetMainFrame()->StatusText(sStatusText);
-}
-
-// Return Value:
-// -1 : Not Finished
-// 0  : Error
-// 1  : Ok
-int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
+void CUImagerApp::ShrinkOpenDocs(LPCTSTR szDstDirPath,
 								 DWORD dwMaxSize,
 								 BOOL bMaxSizePercent,
 								 DWORD dwJpegQuality,
 								 BOOL bPictureExtChange,
 								 BOOL bShrinkPictures,
-								 BOOL bShrinkVideos,
 								 BOOL bOnlyCopyFiles)
 {
-	POSITION pos;
-	CUImagerMultiDocTemplate* curTemplate = NULL;
-	int res = 1;
-
 	// Destination Directory Path
 	CString sDstDirPath(szDstDirPath);
 	sDstDirPath.TrimRight(_T('\\'));
@@ -3193,8 +3048,8 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 	CStringArray DstFileNames;
 
 	// Picture Docs
-	curTemplate = GetPictureDocTemplate();
-	pos = curTemplate->GetFirstDocPosition();
+	CUImagerMultiDocTemplate* curTemplate = GetPictureDocTemplate();
+	POSITION pos = curTemplate->GetFirstDocPosition();
 	while (pos)
 	{
 		CPictureDoc* pDoc = (CPictureDoc*)curTemplate->GetNextDoc(pos);
@@ -3226,30 +3081,20 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 		}
 
 		// Status Text
-		ShrinkStatusText(sSrcFileName, sDstFileName);
+		CString sStatusText;
+		sStatusText.Format(_T("%s -> %s"), ::GetShortFileName(sSrcFileName), ::GetShortFileName(sDstFileName));
+		::AfxGetMainFrame()->StatusText(sStatusText);
 
 		// Only Copy File?
 		if (bOnlyCopyFiles)
 		{
-			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, TRUE);
-				return 0;
-			}
-			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				int nLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(nLastError, TRUE);
-				return 0;
-			}
-			continue;
+			::CopyFile(sSrcFileName, sDstFileName, FALSE);
+			::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY);
 		}
-
 		// Shrink
-		if (ShrinkPicture(	sSrcFileName,
+		else
+		{
+			ShrinkPicture(	sSrcFileName,
 							sDstFileName,
 							dwMaxSize,
 							bMaxSizePercent,
@@ -3262,85 +3107,13 @@ int CUImagerApp::ShrinkOpenDocs( LPCTSTR szDstDirPath,
 							TRUE,				// Work on all pages of a multi-page Tiff
 							::AfxGetMainFrame(),
 							TRUE,
-							NULL) == 0)
-		{
-			EndWaitCursor();
-			return 0;
+							NULL);
 		}
 	}
 
-	// End Wait Cursor
+	// Done
 	EndWaitCursor();
-
-	// Video Docs
-	curTemplate = GetVideoAviDocTemplate();
-	pos = curTemplate->GetFirstDocPosition();
-	while (pos)
-	{
-		CVideoAviDoc* pDoc = (CVideoAviDoc*)curTemplate->GetNextDoc(pos);
-
-		// Source Directory Path
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		_tsplitpath(pDoc->m_sFileName, szDrive, szDir, NULL, NULL);
-		CString sSrcDirPath = CString(szDrive) + CString(szDir);
-		sSrcDirPath.TrimRight(_T('\\'));
-
-		// Source File Name
-		CString sSrcFileName = pDoc->m_sFileName;
-		sSrcFileName.TrimRight(_T('\\'));
-
-		// Destination File Name
-		CString sDstFileName = sSrcFileName;
-		sDstFileName = sDstFileName.Mid(sSrcDirPath.GetLength() + 1);
-		CString sOrigDstFileName = sDstFileName;
-		int i = 0;
-		while (::InStringArray(sDstFileName, DstFileNames))
-			sDstFileName.Format(_T("%s(%d)%s"), ::GetFileNameNoExt(sOrigDstFileName), ++i, ::GetFileExt(sOrigDstFileName));
-		DstFileNames.Add(sDstFileName);
-		sDstFileName = sDstDirPath + _T("\\") + sDstFileName;
-		
-		// Status Text
-		ShrinkStatusText(sSrcFileName, sDstFileName);
-
-		// Only Copy File?
-		if (bOnlyCopyFiles)
-		{
-			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-			continue;
-		}
-
-		// Shrink
-		if (bShrinkVideos)
-		{
-			pDoc->StartShrinkDocTo(sDstFileName);
-			res = -1; // Not finished
-		}
-		else
-		{
-			if (!::CopyFile(sSrcFileName, sDstFileName, FALSE))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-			if (!::SetFileAttributes(sDstFileName, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_TEMPORARY))
-			{
-				::ShowLastError(TRUE);
-				return 0;
-			}
-		}
-	}
-
-	return res;
+	::AfxGetMainFrame()->StatusText();
 }
 
 BOOL CUImagerApp::CalcShrink(	const CDib& SrcDib,
@@ -3929,8 +3702,6 @@ CString CUImagerApp::ShrinkGetDstExt(CString sSrcExt)
 		return _T(".gif");
 	else if (sSrcExt == _T("png"))
 		return _T(".png");
-	else if ((sSrcExt == _T("avi")) || (sSrcExt == _T("divx")))
-		return _T(".avi");
 	else
 		return (_T(".") + sSrcExt);
 }
@@ -4058,16 +3829,13 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_bFileDlgPreview = (BOOL)GetProfileInt(sSection, _T("FileDlgPreview"), TRUE);
 	g_nPreviewFileDlgViewMode = (int)GetProfileInt(sSection, _T("PreviewFileDlgViewMode"), SHVIEW_Default);
 
-	// Display Advanced On-Screen Video Avi Info
-	m_bVideoAviInfo = (BOOL)GetProfileInt(sSection, _T("VideoAviInfo"), FALSE);
-
 	// Last Opened Directory
 	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));
 
 	// ESC to exit the program
 	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
 
-	// Disable opening external program (for pdf, swf)
+	// Disable opening external program
 	m_bDisableExtProg = (BOOL)GetProfileInt(sSection, _T("DisableExtProg"), FALSE);
 
 	// Coordinate Units
@@ -4174,26 +3942,12 @@ void CUImagerApp::SavePlacements()
 #endif
 }
 
-void CUImagerApp::SendOpenDocsAsMailInit()
+void CUImagerApp::SendOpenDocsAsMail()
 {
-	int res;
-
 	CSendMailDocsDlg dlg(::AfxGetMainFrame());
-
 	if (dlg.DoModal() == IDOK)
-	{	
-		// Check & Store Var
-		if (dlg.m_bZipFile)
-		{
-			if (dlg.m_sZipFileName == _T(""))
-				m_sZipFile = _T("Files.zip"); 
-			else
-				m_sZipFile = dlg.m_sZipFileName;
-		}
-		else
-			m_sZipFile = _T("");
-
-		// Create & Empty Email Temp Dir
+	{
+		// Create & Do Empty Email Temp Dir
 		CString sTempEmailDir;
 		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
 		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
@@ -4217,98 +3971,75 @@ void CUImagerApp::SendOpenDocsAsMailInit()
 		// Shrink
 		if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::EMAIL_OPT) // Send Email Optimized
 		{
-			res = ShrinkOpenDocs(sTempEmailDir,
-								AUTO_SHRINK_MAX_SIZE,
-								FALSE,
-								DEFAULT_JPEGCOMPRESSION,
-								TRUE,
-								TRUE,
-								TRUE,
-								FALSE);
+			ShrinkOpenDocs(	sTempEmailDir,
+							AUTO_SHRINK_MAX_SIZE,
+							FALSE,
+							DEFAULT_JPEGCOMPRESSION,
+							TRUE,
+							TRUE,
+							FALSE);
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::NO_OPT) // Leave Unchanged
 		{
-			res = ShrinkOpenDocs(sTempEmailDir,
-								0,
-								FALSE,
-								0,
-								FALSE,
-								FALSE,
-								FALSE,
-								TRUE);
+			ShrinkOpenDocs(	sTempEmailDir,
+							0,
+							FALSE,
+							0,
+							FALSE,
+							FALSE,
+							TRUE);
 		}
 		else if (dlg.m_nOptimizationSelection == CSendMailDocsDlg::ADV_OPT) // Advanced Settings
 		{
-			res = ShrinkOpenDocs(sTempEmailDir,
-								(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
-								(dlg.m_nPixelsPercentSel == 1),
-								dlg.m_nJpegQuality,
-								dlg.m_bPictureExtChange,
-								dlg.m_bShrinkingPictures,
-								dlg.m_bShrinkingVideos,
-								FALSE);
+			ShrinkOpenDocs(	sTempEmailDir,
+							(dlg.m_nPixelsPercentSel == 0) ? dlg.m_nShrinkingPixels : dlg.m_nShrinkingPercent,
+							(dlg.m_nPixelsPercentSel == 1),
+							dlg.m_nJpegQuality,
+							dlg.m_bPictureExtChange,
+							dlg.m_bShrinkingPictures,
+							FALSE);
 		}
-
-		// If No Avi Files, we can finish now,
-		// if avi file we have to wait untill all shrinking threads terminate!
-		// See CMainFrame::OnShrinkDocTerminated()
-		if (res == 1)
-			SendDocAsMailFinish(TRUE);		// Ok
-		else if (res == -1)
-			m_bWaitingMailFinish = TRUE;	// Wait
-		else
-			SendDocAsMailFinish(FALSE);		// Error
-	}
-}
-
-void CUImagerApp::SendDocAsMailFinish(BOOL bOk)
-{
-	// Reset Flag
-	m_bWaitingMailFinish = FALSE;
-
-	if (bOk)
-	{
-		// The Email Temp Dirs
-		CString sTempEmailDir;
-		sTempEmailDir.Format(_T("Email%X"), ::GetCurrentProcessId());
-		sTempEmailDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailDir;
-		CString sTempEmailZipDir;
-		sTempEmailZipDir.Format(_T("EmailZip%X"), ::GetCurrentProcessId());
-		sTempEmailZipDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailZipDir;
-
+		
 		// Do Zip?
-		if (m_sZipFile != _T(""))
+		if (dlg.m_bZipFile)
 		{
+			CString sZipFileName;
+			if (dlg.m_sZipFileName == _T(""))
+				sZipFileName = _T("Files.zip"); 
+			else
+				sZipFileName = dlg.m_sZipFileName;
+
 			// Adjust if no correct extension or no extension at all supplied
-			m_sZipFile = ::GetFileNameNoExt(m_sZipFile);
-			m_sZipFile += _T(".zip");
+			sZipFileName = ::GetFileNameNoExt(sZipFileName);
+			sZipFileName += _T(".zip");
 
 			// Create Email Zip Temp Directory if not existing
+			CString sTempEmailZipDir;
+			sTempEmailZipDir.Format(_T("EmailZip%X"), ::GetCurrentProcessId());
+			sTempEmailZipDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempEmailZipDir;
 			if (!::IsExistingDir(sTempEmailZipDir))
 			{
 				if (!::CreateDir(sTempEmailZipDir))
 				{
 					::ShowLastError(TRUE);
-					::AfxGetMainFrame()->StatusText();
 					return;
 				}
 			}
 
 			// Compress & Send
-			if (CompressToZip(sTempEmailDir, sTempEmailZipDir + _T("\\") + m_sZipFile))
-				SendMail(sTempEmailZipDir + _T("\\") + m_sZipFile);
+			if (CompressToZip(sTempEmailDir, sTempEmailZipDir + _T("\\") + sZipFileName))
+				SendMail(sTempEmailZipDir + _T("\\") + sZipFileName);
 
 			// Delete Email Zip Temp Directory
 			::DeleteDir(sTempEmailZipDir);
 		}
+		// Send Email Directory Content
 		else
-			SendMail(sTempEmailDir); // Send Email Directory Content
-	
+			SendMail(sTempEmailDir);
+		
+		// Delete Email Temp Directory
 		::DeleteDir(sTempEmailDir);
 	}
-
-	// Reset Status Text
-	::AfxGetMainFrame()->StatusText();
 }
 
 class CMailState : public CNoTrackObject
@@ -4526,26 +4257,6 @@ BOOL CUImagerApp::IsMP4File(CString sFileName)
 		return FALSE;
 }
 
-BOOL CUImagerApp::IsAVIFile(CString sFileName)
-{
-	CString sExt = ::GetFileExt(sFileName);
-
-	if (sExt == _T(".avi") || sExt == _T(".divx"))
-		return TRUE;
-	else
-		return FALSE;
-}
-
-BOOL CUImagerApp::IsSWFFile(CString sFileName)
-{
-	CString sExt = ::GetFileExt(sFileName);
-
-	if (sExt == _T(".swf"))
-		return TRUE;
-	else
-		return FALSE;
-}
-
 BOOL CUImagerApp::IsSupportedMusicFile(CString sFileName)
 {
 	CString sExt = ::GetFileExt(sFileName);
@@ -4578,9 +4289,7 @@ BOOL CUImagerApp::IsSupportedCDAudioFile(CString sFileName)
 
 CUImagerMultiDocTemplate* CUImagerApp::GetTemplateFromFileExtension(CString sFileName)
 {
-	if (IsAVIFile(sFileName))
-		return GetVideoAviDocTemplate();
-	else if (IsSupportedPictureFile(sFileName))
+	if (IsSupportedPictureFile(sFileName))
 		return GetPictureDocTemplate();
 	else if (IsSupportedMusicFile(sFileName))
 		return GetAudioMCIDocTemplate();
@@ -4794,8 +4503,6 @@ void CUImagerApp::UpdateFileAssociations()
 	BOOL bCda =		IsFileTypeAssociated(_T("cda"));
 
 	// Others
-	BOOL bAvi =		IsFileTypeAssociated(_T("avi")) &&
-					IsFileTypeAssociated(_T("divx"));
 	BOOL bZip =		IsFileTypeAssociated(_T("zip"));
 
 	
@@ -4906,16 +4613,8 @@ void CUImagerApp::UpdateFileAssociations()
 
 	// Others
 
-	if (bAvi)
-	{
-		AssociateFileType(_T("avi"));
-		AssociateFileType(_T("divx"));
-	}
-	else
-	{
-		UnassociateFileType(_T("avi"));
-		UnassociateFileType(_T("divx"));
-	}
+	// Unassociate Avi Files (remove associations from older program versions)
+	UnassociateFileType(_T("avi")); UnassociateFileType(_T("divx"));
 
 	if (bZip)
 		AssociateFileType(_T("zip"));
@@ -5119,7 +4818,7 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	// Shell Open Command
 	
 	// Icon order
-	// Note: IDR_PICTURE_NOHQ, IDR_BIGPICTURE and IDR_BIGPICTURE_NOHQ
+	// Note: IDR_VIDEOAVI, IDR_PICTURE_NOHQ, IDR_BIGPICTURE and IDR_BIGPICTURE_NOHQ
 	//       are not used anymore, but icons remain to keep the
 	//       same order!
 	/*

@@ -1,12 +1,10 @@
 #include "stdafx.h"
 #include "uImager.h"
 #include "PictureDoc.h"
-#include "VideoAviDoc.h"
 #include "VideoDeviceDoc.h"
 #include "AudioMCIDoc.h"
 #include "CDAudioDoc.h"
 #include "PictureView.h"
-#include "VideoAviView.h"
 #include "VideoDeviceView.h"
 #include "ConnectErrMsgBoxDlg.h"
 #include "MainFrm.h"
@@ -14,8 +12,6 @@
 #include "GeneralPage.h"
 #include "dbt.h"
 #include "PicturePrintPreviewView.h"
-#include "OutVolDlg.h"
-#include "PlayerToolBarDlg.h"
 #include "IMAPI2Dlg.h"
 #include "BatchProcDlg.h"
 #include "CPUCount.h"
@@ -84,7 +80,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_PROGRESS, OnProgress)
 	ON_MESSAGE(WM_SETMESSAGESTRING, OnSetMessageString)
 	ON_MESSAGE(WM_THREADSAFE_OPEN_DOC, OnThreadSafeOpenDoc)
-	ON_MESSAGE(WM_SHRINKDOC_TERMINATED, OnShrinkDocTerminated)
 	ON_MESSAGE(WM_TASKBAR_BUTTON, OnTaskBarButton)
 	ON_MESSAGE(WM_ALL_CLOSED, OnAllClosed)
 	ON_MESSAGE(WM_SCANANDEMAIL, OnScanAndEmail)
@@ -1017,41 +1012,7 @@ void CMainFrame::OnViewFiles()
 					NULL,
 					SW_SHOWNORMAL);
 }
-#endif				
-
-LONG CMainFrame::OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam)
-{
-	POSITION pos;
-	CUImagerMultiDocTemplate* curTemplate = NULL;
-	BOOL bOk = (BOOL)wparam;
-	CVideoAviDoc* pDocFrom = (CVideoAviDoc*)lparam;
-
-	// Message From a VideoAviDoc Processing Thread
-	if (pDocFrom && ((CUImagerApp*)::AfxGetApp())->IsDoc(pDocFrom))
-	{
-		// Invalidate View
-		pDocFrom->InvalidateView(THREAD_SAFE_UPDATEWINDOWSIZES_DELAY);
-
-		// Check whether all video avi processing threads have terminated
-		BOOL bRunning = FALSE;
-		curTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoAviDocTemplate();
-		pos = curTemplate->GetFirstDocPosition();
-		while (pos)
-		{
-			CVideoAviDoc* pDoc = (CVideoAviDoc*)curTemplate->GetNextDoc(pos);
-			if ((pDoc != pDocFrom) && pDoc->m_ProcessingThread.IsRunning())
-				return 0;
-		}
-		
-		// Done
-		if (((CUImagerApp*)::AfxGetApp())->m_bWaitingMailFinish)
-			((CUImagerApp*)::AfxGetApp())->SendDocAsMailFinish(TRUE);
-
-		return 1;
-	}
-	else
-		return 0;
-}
+#endif
 
 void CMainFrame::EnterExitFullscreen()
 {
@@ -1298,13 +1259,6 @@ void CMainFrame::FullScreenModeOn()
 	pView->m_nMouseMoveCount = 0;
 	pView->SetTimer(ID_TIMER_FULLSCREEN, FULLSCREEN_TIMER_MS, NULL);
 
-	// Init pView->m_UserZoomRect on first full-screen display
-	if (pView->m_UserZoomRect == CRect(0,0,0,0))
-	{
-		pView->UpdateZoomRect(); // this calculates pView->m_ZoomRect
-		pView->m_UserZoomRect = pView->m_ZoomRect;
-	}
-
 	// Update View
 	pView->UpdateWindowSizes(TRUE, TRUE, FALSE);
 }
@@ -1428,13 +1382,6 @@ void CMainFrame::FullScreenModeOff()
 																&wndTopMost : &wndNoTopMost,
 																0, 0, 0, 0,
 																SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-		}
-
-		// Close Player ToolBar if Open
-		if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-		{
-			if (((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg)
-				((CVideoAviDoc*)pDoc)->m_pPlayerToolBarDlg->Close();
 		}
 
 		// Update View
@@ -1806,31 +1753,6 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CPictureDoc*)pDoc)->m_nToolsMenuPos = -2;
 			((CPictureDoc*)pDoc)->m_nWindowsPos--;
 			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
-		}
-		else if (pDoc->IsKindOf(RUNTIME_CLASS(CVideoAviDoc)))
-		{
-			((CVideoAviDoc*)pDoc)->m_nFileMenuPos = 0;
-			((CVideoAviDoc*)pDoc)->m_nEditMenuPos = 1;
-			((CVideoAviDoc*)pDoc)->m_nViewMenuPos = 2;
-			((CVideoAviDoc*)pDoc)->m_nCaptureMenuPos = 3;
-			((CVideoAviDoc*)pDoc)->m_nPlayMenuPos = 4;
-			((CVideoAviDoc*)pDoc)->m_nToolsMenuPos = 5;
-			((CVideoAviDoc*)pDoc)->m_nWindowsPos = 6;
-			((CVideoAviDoc*)pDoc)->m_nHelpMenuPos = 7;
-#ifndef VIDEODEVICEDOC
-			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CVideoAviDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-			((CVideoAviDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CVideoAviDoc*)pDoc)->m_nPlayMenuPos--;
-			((CVideoAviDoc*)pDoc)->m_nToolsMenuPos--;
-			((CVideoAviDoc*)pDoc)->m_nWindowsPos--;
-			((CVideoAviDoc*)pDoc)->m_nHelpMenuPos--;
-			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CVideoAviDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-			((CVideoAviDoc*)pDoc)->m_nToolsMenuPos = -2;
-			((CVideoAviDoc*)pDoc)->m_nWindowsPos--;
-			((CVideoAviDoc*)pDoc)->m_nHelpMenuPos--;
 #endif
 		}
 #ifdef VIDEODEVICEDOC

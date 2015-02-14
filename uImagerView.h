@@ -117,10 +117,6 @@ public:
 	// The rectangle where the dib is painted
 	CRect m_ZoomRect;
 
-	// The View Rectangle the user selects in Full-Screen Mode,
-	// CRect(0,0,0,0) means use m_ZoomRect
-	CRect m_UserZoomRect;
-
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

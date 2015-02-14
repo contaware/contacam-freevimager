@@ -112,7 +112,6 @@
 // Forward Declarations
 class CVideoDeviceDoc;
 class CPictureDoc;
-class CVideoAviDoc;
 class CUImagerDoc;
 class CProgressDlg;
 class CDiscRecorder;
@@ -301,7 +300,6 @@ public:
 	static float ClipVideoQuality(float fQuality);
 
 	// Templates Get Functions
-	CUImagerMultiDocTemplate* GetVideoAviDocTemplate() {return m_pVideoAviDocTemplate;};
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* GetVideoDeviceDocTemplate() {return m_pVideoDeviceDocTemplate;};
 #endif
@@ -311,8 +309,6 @@ public:
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
 	static BOOL IsMP4File(CString sFileName);
-	static BOOL IsAVIFile(CString sFileName);
-	static BOOL IsSWFFile(CString sFileName);
 	static BOOL IsSupportedMusicFile(CString sFileName);
 	static BOOL IsSupportedCDAudioFile(CString sFileName);
 
@@ -385,20 +381,13 @@ public:
 	BOOL SendMail(LPCTSTR szAttachment);
 
 	// Send Document(s) by e-mail
-	void SendOpenDocsAsMailInit();
-	void SendDocAsMailFinish(BOOL bOk);
-
-	// Return Value:
-	// -1 : Not Finished
-	// 0  : Error
-	// 1  : Ok
-	int ShrinkOpenDocs(	LPCTSTR szDstDirPath,
+	void SendOpenDocsAsMail();
+	void ShrinkOpenDocs(LPCTSTR szDstDirPath,
 						DWORD dwMaxSize,
 						BOOL bMaxSizePercent,
 						DWORD dwJpegQuality,
 						BOOL bPictureExtChange,
 						BOOL bShrinkPictures,
-						BOOL bShrinkVideos,
 						BOOL bOnlyCopyFiles);
 
 	// Shrink Picture
@@ -426,11 +415,6 @@ public:
 								BOOL bProgressSend,
 								CWorkerThread* pThread);
 
-	// Set Shrink Status Text
-	// (Only To be used From Main UI Thread!)
-	void ShrinkStatusText(	CString sSrcFileName,
-							CString sDstFileName);
-
 	// From Source Extension get the Destination Extension
 	static CString ShrinkGetDstExt(CString sSrcExt);
 
@@ -446,9 +430,6 @@ public:
 
 	// Is At least One Picture Document Open?
 	BOOL ArePictureDocsOpen();
-
-	// Is At least One Video Avi Document Open?
-	BOOL AreVideoAviDocsOpen();
 	
 #ifdef VIDEODEVICEDOC
 	// Is At least One Video Device Document Open?
@@ -620,12 +601,6 @@ public:
 	// Last Opened Directory
 	CString m_sLastOpenedDir;
 
-	// Display Advanced On-Screen Video Avi Info
-	BOOL m_bVideoAviInfo;
-
-	// Flags to execute final steps after video shrinking
-	volatile BOOL m_bWaitingMailFinish;
-
 	// The Zip File Handling Class
 	CZipArchive m_Zip;
 
@@ -658,7 +633,7 @@ public:
 	// ESC to exit the program
 	BOOL m_bEscExit;
 
-	// Disable opening external program (for pdf, swf)
+	// Disable opening external program
 	BOOL m_bDisableExtProg;
 
 	// Scan Vars
@@ -785,7 +760,6 @@ protected:
 
 	CString PictureSlideMakeMsg(CPictureDoc* pDoc);
 	CString PictureMakeMsg(CPictureDoc* pDoc);
-	CString VideoAviMakeMsg(CVideoAviDoc* pDoc);
 
 	// Show Message Box saying that the given
 	// File Type (extension) is not supported
@@ -820,10 +794,6 @@ protected:
 	// Mutex for the Installer / Uninstaller to check
 	// whether this program is running
 	HANDLE m_hAppMutex;
-	
-	// Shrinking & Email Sending Vars
-	CString m_sZipFile;
-	CString m_sShrinkDestination;
 
 	// Autorun progress dialog
 #ifdef VIDEODEVICEDOC
@@ -831,7 +801,6 @@ protected:
 #endif
 
 	// Doc Templates
-	CUImagerMultiDocTemplate* m_pVideoAviDocTemplate;
 #ifdef VIDEODEVICEDOC
 	CUImagerMultiDocTemplate* m_pVideoDeviceDocTemplate;
 #endif

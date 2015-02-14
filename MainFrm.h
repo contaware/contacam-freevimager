@@ -21,13 +21,12 @@ extern "C"
 // Window Message IDs
 #define WM_TASKBAR_BUTTON							0x0313
 #define WM_THREADSAFE_OPEN_DOC						WM_USER + 100
-#define WM_SHRINKDOC_TERMINATED						WM_USER + 101
-#define WM_ALL_CLOSED								WM_USER + 102
-#define WM_SCANANDEMAIL								WM_USER + 103
-#define WM_TRAY_NOTIFICATION						WM_USER + 104
+#define WM_ALL_CLOSED								WM_USER + 101
+#define WM_SCANANDEMAIL								WM_USER + 102
+#define WM_TRAY_NOTIFICATION						WM_USER + 103
 #ifdef VIDEODEVICEDOC
-#define WM_THREADSAFE_CONNECTERR					WM_USER + 105
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 106
+#define WM_THREADSAFE_CONNECTERR					WM_USER + 104
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 105
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -35,23 +34,20 @@ extern "C"
 #define ID_TIMER_TRANSPARENCY						3
 #define ID_TIMER_CLOSING_ALL						4
 #define ID_TIMER_CLOSING_PICTUREDOC					5
-#define ID_TIMER_CLOSING_VIDEOAVIDOC				6
-#define ID_TIMER_CLOSING_VIDEODEVICEDOC				7
-#define ID_TIMER_CDAUDIO							8
-#define ID_TIMER_MCIAUDIO							9
-#define ID_TIMER_PROGRESS							10
-#define ID_TIMER_AVIPLAYSLIDER						11
-#define ID_TIMER_ONESEC_POLL						12
+#define ID_TIMER_CLOSING_VIDEODEVICEDOC				6
+#define ID_TIMER_CDAUDIO							7
+#define ID_TIMER_MCIAUDIO							8
+#define ID_TIMER_PROGRESS							9
+#define ID_TIMER_ONESEC_POLL						10
 #ifdef VIDEODEVICEDOC
-#define ID_TIMER_GENERALDLG  						13
-#define ID_TIMER_CAMERABASICSETTINGSDLG				14
-#define ID_TIMER_RELOAD_SETTINGS					15
+#define ID_TIMER_GENERALDLG  						11
+#define ID_TIMER_CAMERABASICSETTINGSDLG				12
+#define ID_TIMER_RELOAD_SETTINGS					13
 #endif
 
 #define FULLSCREEN_TIMER_MS							1000U	// ms
 #define AUTOSCROLL_TIMER_MS							120U	// ms
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				300U	// ms
-#define AVIPLAYSLIDER_TIMER_MS						300U	// ms
 #define ONESEC_POLL_TIMER_MS						1000U	// ms
 
 #ifdef VIDEODEVICEDOC
@@ -251,7 +247,6 @@ protected:
 	afx_msg void OnUpdateIndicatorYCoordinate(CCmdUI* pCmdUI);
 	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnThreadSafeOpenDoc(WPARAM wparam, LPARAM lparam);
-	afx_msg LONG OnShrinkDocTerminated(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnTaskBarButton(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAllClosed(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnScanAndEmail(WPARAM wparam, LPARAM lparam);

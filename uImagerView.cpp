@@ -42,7 +42,6 @@ END_MESSAGE_MAP()
 CUImagerView::CUImagerView()
 {
 	m_ZoomRect = CRect(0,0,0,0);
-	m_UserZoomRect = CRect(0,0,0,0);
 	m_bCursor = TRUE;
 	m_bForceCursor = FALSE;
 	m_nForceCursorCount = 0;

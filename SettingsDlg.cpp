@@ -50,8 +50,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bCheckCda =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("cda"));
 
 	// Others
-	m_bCheckAvi =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("avi")) &&
-					((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("divx"));
 	m_bCheckZip =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("zip"));
 
 	// Global Settings
@@ -67,7 +65,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSettingsDlg)
-	DDX_Check(pDX, IDC_CHECK_AVI, m_bCheckAvi);
 	DDX_Check(pDX, IDC_CHECK_BMP, m_bCheckBmp);
 	DDX_Check(pDX, IDC_CHECK_JPEG, m_bCheckJpeg);
 	DDX_Check(pDX, IDC_CHECK_PCX, m_bCheckPcx);
@@ -125,7 +122,6 @@ void CSettingsDlg::OnButtonClearall()
 	m_bCheckCda =  FALSE;
 
 	// Others
-	m_bCheckAvi = FALSE;
 	m_bCheckZip = FALSE;
 
 	UpdateData(FALSE);
@@ -154,7 +150,6 @@ void CSettingsDlg::OnButtonSetall()
 	m_bCheckCda = TRUE;
 
 	// Others
-	m_bCheckAvi = TRUE;
 	m_bCheckZip = TRUE;
 
 	UpdateData(FALSE);
@@ -179,7 +174,7 @@ void CSettingsDlg::OnOK()
 	BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
 	BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
 	BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;  BOOL bCdaHasUserChoice = FALSE;
-	BOOL bAviHasUserChoice = FALSE;  BOOL bDivxHasUserChoice = FALSE; BOOL bZipHasUserChoice = FALSE;
+	BOOL bZipHasUserChoice = FALSE;
 
 	// Graphics
 
@@ -288,16 +283,8 @@ void CSettingsDlg::OnOK()
 
 	// Others
 
-	if (m_bCheckAvi)
-	{
-		pApp->AssociateFileType(_T("avi"), &bAviHasUserChoice);
-		pApp->AssociateFileType(_T("divx"), &bDivxHasUserChoice);
-	}
-	else
-	{
-		pApp->UnassociateFileType(_T("avi"));
-		pApp->UnassociateFileType(_T("divx"));
-	}
+	// Unassociate Avi Files (remove associations from older program versions)
+	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
 
 	if (m_bCheckZip)
 		pApp->AssociateFileType(_T("zip"), &bZipHasUserChoice);
@@ -315,7 +302,7 @@ void CSettingsDlg::OnOK()
 		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
 		bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
 		bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice ||
-		bCdaHasUserChoice || bAviHasUserChoice	|| bDivxHasUserChoice	|| bZipHasUserChoice))
+		bCdaHasUserChoice || bZipHasUserChoice))
 	{
 		try
 		{
@@ -364,10 +351,6 @@ void CSettingsDlg::OnOK()
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
 			if (bCdaHasUserChoice)
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cda\\UserChoice]\n"));
-			if (bAviHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.avi\\UserChoice]\n"));
-			if (bDivxHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.divx\\UserChoice]\n"));
 			if (bZipHasUserChoice)
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.zip\\UserChoice]\n"));
 			RegFile.Close();
@@ -412,7 +395,7 @@ void CSettingsDlg::OnOK()
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
-	// Disable opening external program (for pdf, swf)
+	// Disable opening external program
 	pApp->m_bDisableExtProg = m_bDisableExtProg;
 
 	// Store settings

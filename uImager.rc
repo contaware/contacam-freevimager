@@ -64,8 +64,6 @@ END
 //
 
 IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
-IDR_VIDEO_AVI_TOOLBAR   BITMAP                  "res\\videotoolbar.bmp"
-IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN BITMAP                  "res\\videotoolbarfs.bmp"
 IDR_VIDEO_DEVICE_TOOLBAR BITMAP                  "res\\videodevice.bmp"
 IDR_PICTURE_TOOLBAR     BITMAP                  "res\\picture.bmp"
 IDB_BITMAP_DRAGDROP_SINGLE BITMAP                  "res\\DragDropSingle.bmp"
@@ -108,22 +106,6 @@ BEGIN
     BUTTON      ID_APP_ABOUT
 END
 
-IDR_VIDEO_AVI_TOOLBAR TOOLBAR 16, 15
-BEGIN
-    BUTTON      ID_PLAY_AVI
-    BUTTON      ID_STOP_AVI
-    BUTTON      ID_EDIT_SNAPSHOT
-    BUTTON      ID_PLAY_VOL
-    BUTTON      ID_VIEW_FIT
-    BUTTON      ID_PLAY_FRAME_FIRST
-    BUTTON      ID_PLAY_FRAME_BACK_FAST
-    BUTTON      ID_PLAY_FRAME_BACK
-    BUTTON      ID_PLAY_SLIDER
-    BUTTON      ID_PLAY_FRAME_FRONT
-    BUTTON      ID_PLAY_FRAME_FRONT_FAST
-    BUTTON      ID_PLAY_FRAME_LAST
-END
-
 IDR_VIDEO_DEVICE_TOOLBAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_CAPTURE_CAMERABASICSETTINGS
@@ -160,25 +142,6 @@ BEGIN
     BUTTON      ID_VIEW_ZOOM_TOOL
     BUTTON      ID_BACKGROUND_COLOR
     BUTTON      ID_VIEW_STRETCH_HALFTONE
-END
-
-IDR_VIDEO_AVI_TOOLBAR_FULLSCREEN TOOLBAR 16, 15
-BEGIN
-    BUTTON      ID_PLAY_AVI
-    BUTTON      ID_STOP_AVI
-    BUTTON      ID_PLAY_LOOP
-    BUTTON      ID_PLAY_VOL
-    BUTTON      ID_FILE_INFO
-    BUTTON      ID_VIEW_TIMEPOSITION
-    BUTTON      ID_VIEW_FIT
-    BUTTON      ID_PLAY_AUDIOVIDEOSHIFT
-    BUTTON      ID_PLAY_FRAME_FIRST
-    BUTTON      ID_PLAY_FRAME_BACK_FAST
-    BUTTON      ID_PLAY_FRAME_BACK
-    BUTTON      ID_PLAY_SLIDER
-    BUTTON      ID_PLAY_FRAME_FRONT
-    BUTTON      ID_PLAY_FRAME_FRONT_FAST
-    BUTTON      ID_PLAY_FRAME_LAST
 END
 
 IDR_MAINFRAME_VIDEODEVICEDOC TOOLBAR 16, 15
@@ -460,27 +423,6 @@ BEGIN
     END
 END
 
-IDR_CONTEXT_VIDEO_AVI MENU
-BEGIN
-    POPUP "_Context Menu_"
-    BEGIN
-        MENUITEM "&Play\tEnter",                ID_PLAY_AVI
-        MENUITEM "&Stop\tPause",                ID_STOP_AVI
-        MENUITEM "Infinite Loop",               ID_PLAY_LOOP
-        MENUITEM "Show Time Position",          ID_VIEW_TIMEPOSITION
-        MENUITEM "A/V Sync...",                 ID_PLAY_AUDIOVIDEOSHIFT
-        MENUITEM SEPARATOR
-        MENUITEM "Volume...",                   ID_PLAY_VOL
-        MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM SEPARATOR
-        MENUITEM "Increment Speed\t+",          ID_PLAY_INC
-        MENUITEM "Decrement Speed\t-",          ID_PLAY_DEC
-        MENUITEM SEPARATOR
-        MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-    END
-END
-
 IDR_CONTEXT_VIDEO_DEVICE MENU
 BEGIN
     POPUP "_Context Menu_"
@@ -557,101 +499,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
-    END
-    POPUP "&Tools"
-    BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "Close A&ll",                  ID_FILE_CLOSEALL
-        MENUITEM SEPARATOR
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
-        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "License",                     ID_APP_LICENSE
-        MENUITEM "Credits",                     ID_APP_CREDITS
-        MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "FAQs",                        ID_APP_FAQ
-    END
-END
-
-IDR_VIDEOAVI MENU
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
-        MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
-        MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
-        MENUITEM SEPARATOR
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
-        MENUITEM "Extract Frames...",           ID_FILE_EXTRACTFRAMES
-        MENUITEM SEPARATOR
-        POPUP "Scan"
-        BEGIN
-            MENUITEM "Scan Single",                 ID_FILE_ACQUIRE
-            MENUITEM "Scan to Tiff",                ID_FILE_ACQUIRE_TO_TIFF
-            MENUITEM SEPARATOR
-            MENUITEM "Scan to Pdf",                 ID_FILE_ACQUIRE_TO_PDF
-            MENUITEM "Scan to Pdf && Email",        ID_FILE_ACQUIRE_AND_EMAIL
-            MENUITEM SEPARATOR
-            MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
-        END
-        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
-        MENUITEM SEPARATOR
-        MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Snapshot\tIns",              ID_EDIT_SNAPSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
-        MENUITEM SEPARATOR
-        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
-        MENUITEM "Re&name\tF2",                 ID_EDIT_RENAME
-        MENUITEM SEPARATOR
-        MENUITEM "Stop Processing",             ID_EDIT_STOP
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "Show Time Position",          ID_VIEW_TIMEPOSITION
-        MENUITEM "Fit",                         ID_VIEW_FIT
-        MENUITEM "&Full Screen\tF11",           ID_VIEW_FULLSCREEN
-    END
-    POPUP "&Capture"
-    BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
-    END
-    POPUP "&Play"
-    BEGIN
-        MENUITEM "&Play\tEnter",                ID_PLAY_AVI
-        MENUITEM "&Stop\tPause",                ID_STOP_AVI
-        MENUITEM "Infinite Loop",               ID_PLAY_LOOP
-        MENUITEM "A/V Sync...",                 ID_PLAY_AUDIOVIDEOSHIFT
-        MENUITEM SEPARATOR
-        MENUITEM "Volume...",                   ID_PLAY_VOL
-        MENUITEM SEPARATOR
-        MENUITEM "Increment Speed\t+",          ID_PLAY_INC
-        MENUITEM "Decrement Speed\t-",          ID_PLAY_DEC
-        MENUITEM SEPARATOR
-        MENUITEM "VfW Codec Priority",          ID_PLAY_VFWCODECPRIORITY
-        MENUITEM "Internal Codec Priority",     ID_PLAY_INTERNALCODECPRIORITY
     END
     POPUP "&Tools"
     BEGIN
@@ -1547,8 +1394,8 @@ BEGIN
     LTEXT           "Percent:",IDC_STATIC2189,10,56,28,8
 END
 
-IDD_SENDMAIL_OPEN_DOCS DIALOGEX 0, 0, 217, 191
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+IDD_SENDMAIL_OPEN_DOCS DIALOGEX 0, 0, 217, 180
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Send Open Documents By E-Mail"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -1558,26 +1405,24 @@ BEGIN
     CONTROL         "Leave All Files Unchanged (Maybe Very Slow)",IDC_RADIO_OPTIMIZE_UNCHANGED,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,31,161,10
     CONTROL         "Advanced Settings:",IDC_RADIO_OPTIMIZE_ADVANCED,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,12,46,78,10
-    CONTROL         "Shrink Size Of Video Files",IDC_CHECK_SHRINKINGVIDEOS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,60,97,10
     CONTROL         "Allow Image Extension Change",IDC_CHECK_PICTURE_EXTCHANGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,74,113,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,62,113,10
     CONTROL         "Enable Image Shrinking:",IDC_CHECK_SHRINKINGPICTURES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,88,93,10
-    CONTROL         "Max Pixels:",IDC_RADIO_PIXELS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,103,51,10
-    EDITTEXT        IDC_EDIT_PIXELS,72,102,38,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PIXELS,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,105,102,11,13
-    CONTROL         "Percent:",IDC_RADIO_PERCENT,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,127,103,43,10
-    EDITTEXT        IDC_EDIT_PERCENT,171,102,31,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PERCENT,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,199,102,11,13
-    EDITTEXT        IDC_EDIT_QUALITY,127,127,34,12,ES_AUTOHSCROLL
-    CONTROL         "Spin1",IDC_SPIN_QUALITY,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,160,127,11,13
-    CONTROL         "Attachment As A Zip File:",IDC_CHECK_ZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,152,91,10
-    EDITTEXT        IDC_EDIT_ZIPFILE_NAME,101,150,109,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,7,170,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,160,170,50,14
-    GROUPBOX        "Settings",IDC_STATIC2190,7,4,203,139
-    LTEXT           "Jpeg Quality (100 best, 0 worst):",IDC_STATIC2191,18,129,102,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,79,93,10
+    CONTROL         "Max Pixels:",IDC_RADIO_PIXELS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,18,95,51,10
+    CONTROL         "Percent:",IDC_RADIO_PERCENT,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,127,95,43,10
+    EDITTEXT        IDC_EDIT_PIXELS,72,94,38,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPIN_PIXELS,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,105,94,11,13
+    EDITTEXT        IDC_EDIT_PERCENT,171,94,31,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Spin1",IDC_SPIN_PERCENT,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,199,94,11,13
+    EDITTEXT        IDC_EDIT_QUALITY,171,112,31,13,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN_QUALITY,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,199,112,11,13
+    CONTROL         "Attachment As A Zip File:",IDC_CHECK_ZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,139,97,10
+    EDITTEXT        IDC_EDIT_ZIPFILE_NAME,109,138,101,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,7,159,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,159,50,14
+    GROUPBOX        "Settings",IDC_STATIC2190,7,4,203,126
+    LTEXT           "Jpeg Quality (100 best, 0 worst):",IDC_STATIC2191,20,114,108,8
 END
 
 IDD_HLS DIALOGEX 0, 0, 278, 219
@@ -1658,54 +1503,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,100,37,50,14
 END
 
-IDD_OUTVOL DIALOGEX 0, 0, 155, 94
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Output Mixer"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Lock",IDC_CHECK_MASTERVOL_LOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,15,32,9
-    CONTROL         "Slider1",IDC_SLIDER_MASTERVOL_LEFT,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,15,24,18,54
-    CONTROL         "Slider1",IDC_SLIDER_MASTERVOL_RIGHT,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,32,24,18,54
-    CONTROL         "Mute",IDC_CHECK_MASTERVOL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,78,32,11
-    CONTROL         "Lock",IDC_CHECK_WAVEVOL_LOCK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,74,15,32,9
-    CONTROL         "Slider1",IDC_SLIDER_WAVEVOL_LEFT,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,71,24,18,54
-    CONTROL         "Slider1",IDC_SLIDER_WAVEVOL_RIGHT,"msctls_trackbar32",TBS_VERT | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,88,24,18,54
-    CONTROL         "Mute",IDC_CHECK_WAVEVOL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,74,78,32,11
-    PUSHBUTTON      "Audio Out",IDC_AUDIO_DESTINATION,121,55,26,23,BS_MULTILINE
-    LTEXT           "Master",IDC_STATIC2221,21,3,22,8
-    LTEXT           "Wave",IDC_STATIC2222,77,3,20,8
-    LTEXT           "L",IDC_STATIC2223,62,46,8,8
-    LTEXT           "L",IDC_STATIC2224,6,46,8,8
-    LTEXT           "R",IDC_STATIC2225,107,46,8,8
-    LTEXT           "R",IDC_STATIC2226,52,46,8,8
-END
-
-IDD_AUDIOOUT_DESTINATION DIALOGEX 0, 0, 164, 58
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Audio Output"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    COMBOBOX        IDC_COMBO_AUDIOOUT_DESTINATION,7,9,150,162,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,7,37,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,107,37,50,14
-END
-
-IDD_OPEN_STREAMS_SELECT DIALOGEX 0, 0, 232, 187
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Select the Stream(s) to Open"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    LISTBOX         IDC_VIDEO_STREAMS,7,17,218,59,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    LISTBOX         IDC_AUDIO_STREAMS,7,95,218,59,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Cancel",IDCANCEL,103,166,50,14
-    DEFPUSHBUTTON   "OK",IDOK,175,166,50,14
-    LTEXT           "Select One Video Stream:",IDC_STATIC2239,7,7,82,8
-    LTEXT           "Select One Audio Stream:",IDC_STATIC2240,7,84,82,8
-END
-
 IDD_IMAGEINFO DIALOGEX 0, 0, 187, 266
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CLIPCHILDREN | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
@@ -1746,20 +1543,6 @@ BEGIN
     CTEXT           "Static",IDC_BW_THRESHOLD,74,6,21,10,SS_SUNKEN
 END
 
-IDD_AVIINFO DIALOGEX 0, 0, 234, 271
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Avi Information"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_FILEINFO,10,13,214,48,ES_MULTILINE | ES_READONLY | WS_HSCROLL
-    EDITTEXT        IDC_VIDEOINFO,10,80,214,88,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_HSCROLL
-    EDITTEXT        IDC_AUDIOINFO,10,188,214,73,ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_HSCROLL
-    GROUPBOX        "Video",IDC_STATIC2241,5,70,224,103
-    GROUPBOX        "Audio",IDC_STATIC2242,5,178,224,88
-    GROUPBOX        "File Information",IDC_STATIC2243,5,3,224,62
-END
-
 IDD_SETTINGS DIALOGEX 0, 0, 213, 220
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_TOOLWINDOW
@@ -1780,8 +1563,7 @@ BEGIN
     CONTROL         "au",IDC_CHECK_AU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,82,82,24,10
     CONTROL         "mid",IDC_CHECK_MIDI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,82,94,27,10
     CONTROL         "cda",IDC_CHECK_CDA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,82,106,27,10
-    CONTROL         "avi",IDC_CHECK_AVI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,34,25,10
-    CONTROL         "zip",IDC_CHECK_ZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,46,25,10
+    CONTROL         "zip",IDC_CHECK_ZIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,148,34,25,10
     PUSHBUTTON      "Select All",IDC_BUTTON_SETALL,148,72,40,14
     PUSHBUTTON      "Clear All",IDC_BUTTON_CLEARALL,148,90,40,14
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,140,77,10
@@ -2125,33 +1907,6 @@ BEGIN
     LTEXT           "x H",IDC_STATIC2336,73,70,15,8
 END
 
-IDD_PLAYER_TOOLBAR DIALOG 0, 0, 172, 17
-STYLE DS_SETFONT | WS_POPUP
-FONT 8, "MS Shell Dlg"
-BEGIN
-END
-
-IDD_AUDIOVIDEO_SHIFT DIALOGEX 0, 0, 214, 154
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Audio / Video Sync Adjustments"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Slider1",IDC_SLIDER_AUDIOVIDEOSHIFT,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,15,35,184,16
-    PUSHBUTTON      "Undo",IDC_BUTTON_UNDO_SHIFT,22,56,28,13
-    PUSHBUTTON      "No Shift",IDC_BUTTON_ZEROSHIFT,56,56,35,13
-    PUSHBUTTON      "Save To AVI File",IDC_BUTTON_SHIFT_SAVETOAVI,123,56,61,13
-    CONTROL         "Slider1",IDC_SLIDER_VIDEOFRAMERATE,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,15,108,184,16
-    PUSHBUTTON      "Undo",IDC_BUTTON_UNDO_FRAMERATE,22,131,28,12
-    PUSHBUTTON      "A/V Same Length",IDC_BUTTON_AV_SAMELENGTH,56,131,62,12
-    PUSHBUTTON      "Save To AVI File",IDC_BUTTON_FRAMERATE_SAVETOAVI,123,131,61,12
-    LTEXT           "",IDC_DESC_AUDIOVIDEOSHIFT,13,20,101,9
-    LTEXT           "",IDC_VALUE_AUDIOVIDEOSHIFT,123,20,48,13
-    GROUPBOX        "A/V Shift",IDC_STATIC2337,7,3,200,74
-    GROUPBOX        "Video Frame Rate Adjust",IDC_STATIC2338,7,82,200,68
-    LTEXT           "",IDC_VALUE_VIDEOFRAMERATE,60,96,107,11
-END
-
 IDD_ZIP_PROGRESS DIALOGEX 0, 0, 186, 46
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
@@ -2271,36 +2026,6 @@ STYLE DS_SETFONT | WS_CHILD | WS_BORDER
 FONT 8, "MS Shell Dlg"
 BEGIN
     LTEXT           "",IDC_DIBSTATIC,7,7,172,51
-END
-
-IDD_ANIMGIF_SAVE DIALOGEX 0, 0, 139, 192
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Animated GIF Save Settings"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "Error Diffusion",IDC_DITHERCOLORCONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,5,60,10
-    CONTROL         "Unique Color Table for all frames",IDC_RADIO_COLORTABLES,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,30,116,10
-    CONTROL         "A Color Table for each frame",IDC_RADIO_COLORTABLES_MULTI,
-                    "Button",BS_AUTORADIOBUTTON,14,43,111,10
-    CONTROL         "255",IDC_RADIO_NUMCOL_255,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,75,28,10
-    CONTROL         "127",IDC_RADIO_NUMCOL_127,"Button",BS_AUTORADIOBUTTON,14,88,28,10
-    CONTROL         "63",IDC_RADIO_NUMCOL_63,"Button",BS_AUTORADIOBUTTON,14,101,28,10
-    CONTROL         "31",IDC_RADIO_NUMCOL_31,"Button",BS_AUTORADIOBUTTON,73,75,28,10
-    CONTROL         "15",IDC_RADIO_NUMCOL_15,"Button",BS_AUTORADIOBUTTON,73,88,28,10
-    CONTROL         "7",IDC_RADIO_NUMCOL_7,"Button",BS_AUTORADIOBUTTON,73,101,28,10
-    CONTROL         "Play frames",IDC_RADIO_LOOP,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,134,49,10
-    CONTROL         "Play frames Infinite times",IDC_RADIO_LOOP_INFINITE,
-                    "Button",BS_AUTORADIOBUTTON,14,148,105,10
-    EDITTEXT        IDC_EDIT_PLAY_TIMES,66,133,43,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Spin1",IDC_SPIN_PLAY_TIMES,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,99,132,11,13
-    DEFPUSHBUTTON   "OK",IDOK,7,171,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,82,171,50,14
-    GROUPBOX        "Loop",IDC_STATIC2362,7,122,125,42
-    LTEXT           "times",IDC_STATIC2363,112,135,18,10
-    GROUPBOX        "Number of Colors",IDC_STATIC2364,7,63,125,54
-    GROUPBOX        "Color Table(s)",IDC_STATIC2365,7,19,125,38
 END
 
 IDD_ADD_BORDERS DIALOGEX 0, 0, 135, 115
@@ -2601,7 +2326,7 @@ BEGIN
 END
 
 IDD_BATCH_PROC_GENERALTAB DIALOGEX 0, 0, 226, 78
-STYLE DS_SETFONT | WS_CHILD
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO_EXTENSION,6,4,214,94,CBS_DROPDOWNLIST | WS_TABSTOP
@@ -2617,7 +2342,7 @@ BEGIN
     CONTROL         "Iptc Legacy",IDC_RADIO_IPTCLEGACY_PRIORITY,"Button",BS_AUTORADIOBUTTON,156,48,53,10
     EDITTEXT        IDC_EDIT_FRAMERATE,148,62,30,12,ES_AUTOHSCROLL
     LTEXT           "On conflicts give priority to:",IDC_LABEL_IPTC_PRIORITY,82,38,86,8
-    LTEXT           "Frame Rate for Anim GIF && AVI Output Files:",IDC_LABEL_FRAMERATE,6,64,139,8
+    LTEXT           "Frame Rate for Animated GIF Output File:",IDC_LABEL_FRAMERATE,6,64,139,8
     LTEXT           "s",IDC_LABEL_EXIF_TIMEOFFSET_SEC,216,23,8,8
     LTEXT           "m",IDC_LABEL_EXIF_TIMEOFFSET_MIN,191,23,8,8
     LTEXT           "h",IDC_LABEL_EXIF_TIMEOFFSET_HOURS,165,23,8,8
@@ -2961,52 +2686,6 @@ BEGIN
     CONTROL         "Margin",IDC_CHECK_PRINTMARGIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,309,7,37,10
     CTEXT           "",IDC_EDIT_PRINTER_PAPERSIZE_DPI,348,1,69,19,WS_BORDER
     CONTROL         "Spin1",IDC_SPIN_SIZE,"msctls_updown32",UDS_ALIGNLEFT | UDS_ARROWKEYS,231,5,11,13
-END
-
-IDD_AUDIOFORMAT DIALOGEX 0, 0, 203, 182
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Audio Compression"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    CONTROL         "PCM (uncompressed)",IDC_RADIO_PCM,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,7,106,13
-    CONTROL         "Adaptive PCM (fast and good compatibility)",IDC_RADIO_ADPCM,
-                    "Button",BS_AUTORADIOBUTTON,7,45,163,15
-    CONTROL         "Mp3 (smallest size and good compatibility)",IDC_RADIO_MP3,
-                    "Button",BS_AUTORADIOBUTTON,7,83,145,16
-    CONTROL         "Aac (modern codec)",IDC_RADIO_AAC,"Button",BS_AUTORADIOBUTTON,7,122,145,16
-    COMBOBOX        IDC_COMBO_PCM_BITS,24,22,52,36,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_PCM_CHANNELS,86,22,41,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_PCM_SAMPLINGRATE,136,22,60,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "4 bits",IDC_LABEL_4BITS,26,62,50,10
-    COMBOBOX        IDC_COMBO_ADPCM_CHANNELS,86,61,41,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_ADPCM_SAMPLINGRATE,136,61,60,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_MP3_BITRATE,24,101,52,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_MP3_CHANNELS,86,101,41,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_MP3_SAMPLINGRATE,136,101,60,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_AAC_BITRATE,24,139,52,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_AAC_CHANNELS,86,139,41,40,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_AAC_SAMPLINGRATE,136,139,60,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "OK",IDOK,47,161,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,107,161,50,14
-END
-
-IDD_VIDEOFORMAT DIALOGEX 0, 0, 251, 92
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
-EXSTYLE WS_EX_TOOLWINDOW
-CAPTION "Video Compression"
-FONT 8, "MS Shell Dlg", 0, 0, 0x1
-BEGIN
-    COMBOBOX        IDC_VIDEO_COMPRESSION_CHOOSE,7,7,237,220,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
-                    "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,73,25,130,17
-    EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,78,50,21,12,ES_NUMBER
-    DEFPUSHBUTTON   "OK",IDOK,74,71,44,14
-    PUSHBUTTON      "Cancel",IDCANCEL,133,71,50,14
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,206,28,38,11
-    LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,7,52,64,8
-    LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,106,52,29,8
-    LTEXT           "Quality",IDC_LABEL_QUALITY,7,28,24,8
 END
 
 IDD_HTTP_VIDEOFORMAT DIALOGEX 0, 0, 178, 102
@@ -3399,10 +3078,8 @@ BEGIN
         RIGHTMARGIN, 210
         VERTGUIDE, 12
         VERTGUIDE, 18
-        VERTGUIDE, 127
         TOPMARGIN, 4
-        BOTTOMMARGIN, 184
-        HORZGUIDE, 108
+        BOTTOMMARGIN, 173
     END
 
     IDD_HLS, DIALOG
@@ -3428,35 +3105,6 @@ BEGIN
         BOTTOMMARGIN, 51
     END
 
-    IDD_OUTVOL, DIALOG
-    BEGIN
-        VERTGUIDE, 6
-        VERTGUIDE, 19
-        VERTGUIDE, 74
-        TOPMARGIN, 3
-        HORZGUIDE, 15
-        HORZGUIDE, 24
-        HORZGUIDE, 46
-        HORZGUIDE, 78
-        HORZGUIDE, 89
-    END
-
-    IDD_AUDIOOUT_DESTINATION, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 157
-        TOPMARGIN, 9
-        BOTTOMMARGIN, 51
-    END
-
-    IDD_OPEN_STREAMS_SELECT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 225
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 180
-    END
-
     IDD_IMAGEINFO, DIALOG
     BEGIN
         LEFTMARGIN, 5
@@ -3478,16 +3126,6 @@ BEGIN
         VERTGUIDE, 160
         BOTTOMMARGIN, 57
         HORZGUIDE, 4
-    END
-
-    IDD_AVIINFO, DIALOG
-    BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 229
-        VERTGUIDE, 10
-        VERTGUIDE, 224
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 266
     END
 
     IDD_SETTINGS, DIALOG
@@ -3631,29 +3269,6 @@ BEGIN
         HORZGUIDE, 45
     END
 
-    IDD_AUDIOVIDEO_SHIFT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 207
-        VERTGUIDE, 15
-        VERTGUIDE, 22
-        VERTGUIDE, 50
-        VERTGUIDE, 56
-        VERTGUIDE, 123
-        VERTGUIDE, 184
-        VERTGUIDE, 199
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 150
-        HORZGUIDE, 20
-        HORZGUIDE, 51
-        HORZGUIDE, 56
-        HORZGUIDE, 69
-        HORZGUIDE, 96
-        HORZGUIDE, 124
-        HORZGUIDE, 131
-        HORZGUIDE, 143
-    END
-
     IDD_ZIP_PROGRESS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -3724,19 +3339,6 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 58
-    END
-
-    IDD_ANIMGIF_SAVE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 132
-        VERTGUIDE, 14
-        VERTGUIDE, 73
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 185
-        HORZGUIDE, 85
-        HORZGUIDE, 98
-        HORZGUIDE, 111
     END
 
     IDD_ADD_BORDERS, DIALOG
@@ -3942,28 +3544,6 @@ BEGIN
         HORZGUIDE, 17
     END
 
-    IDD_AUDIOFORMAT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 196
-        VERTGUIDE, 24
-        VERTGUIDE, 76
-        VERTGUIDE, 86
-        VERTGUIDE, 127
-        VERTGUIDE, 136
-        VERTGUIDE, 196
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 175
-    END
-
-    IDD_VIDEOFORMAT, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 244
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 85
-    END
-
     IDD_HTTP_VIDEOFORMAT, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -4149,71 +3729,6 @@ BEGIN
     0
 END
 
-IDD_AUDIOFORMAT DLGINIT
-BEGIN
-    IDC_COMBO_PCM_BITS, 0x403, 7, 0
-0x2038, 0x6962, 0x7374, "\000" 
-    IDC_COMBO_PCM_BITS, 0x403, 8, 0
-0x3631, 0x6220, 0x7469, 0x0073, 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 6, 0
-0x2038, 0x484b, 0x007a, 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 11, 0
-0x3131, 0x302e, 0x3532, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 11, 0
-0x3232, 0x302e, 0x3035, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 7, 0
-0x3233, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 11, 0
-0x3434, 0x312e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_PCM_SAMPLINGRATE, 0x403, 11, 0
-0x3834, 0x302e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 6, 0
-0x2038, 0x484b, 0x007a, 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 11, 0
-0x3131, 0x302e, 0x3532, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 11, 0
-0x3232, 0x302e, 0x3035, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 7, 0
-0x3233, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 11, 0
-0x3434, 0x312e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_ADPCM_SAMPLINGRATE, 0x403, 11, 0
-0x3834, 0x302e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_MP3_BITRATE, 0x403, 8, 0
-0x3233, 0x6b20, 0x7062, 0x0073, 
-    IDC_COMBO_MP3_BITRATE, 0x403, 8, 0
-0x3635, 0x6b20, 0x7062, 0x0073, 
-    IDC_COMBO_MP3_BITRATE, 0x403, 8, 0
-0x3436, 0x6b20, 0x7062, 0x0073, 
-    IDC_COMBO_MP3_BITRATE, 0x403, 8, 0
-0x3639, 0x6b20, 0x7062, 0x0073, 
-    IDC_COMBO_MP3_BITRATE, 0x403, 9, 0
-0x3131, 0x2032, 0x626b, 0x7370, "\000" 
-    IDC_COMBO_MP3_BITRATE, 0x403, 9, 0
-0x3231, 0x2038, 0x626b, 0x7370, "\000" 
-    IDC_COMBO_MP3_BITRATE, 0x403, 9, 0
-0x3931, 0x2032, 0x626b, 0x7370, "\000" 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 6, 0
-0x2038, 0x484b, 0x007a, 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 11, 0
-0x3131, 0x302e, 0x3532, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 11, 0
-0x3232, 0x302e, 0x3035, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 7, 0
-0x3233, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 11, 0
-0x3434, 0x312e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_MP3_SAMPLINGRATE, 0x403, 7, 0
-0x3834, 0x4b20, 0x7a48, "\000" 
-    IDC_COMBO_AAC_BITRATE, 0x403, 9, 0
-0x3931, 0x2032, 0x626b, 0x7370, "\000" 
-    IDC_COMBO_AAC_BITRATE, 0x403, 9, 0
-0x3232, 0x2034, 0x626b, 0x7370, "\000" 
-    IDC_COMBO_AAC_SAMPLINGRATE, 0x403, 11, 0
-0x3434, 0x312e, 0x3030, 0x4b20, 0x7a48, "\000" 
-    0
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -4238,7 +3753,6 @@ STRINGTABLE
 BEGIN
     IDR_AUDIOMCI            "\nAudio\nAudio\n\n\nAudio.Document\nAudio Document"
     IDR_CDAUDIO             "\nCDAudio\nCDAudio\n\n\nCDAudio.Document\nCDAudio Document"
-    IDR_VIDEOAVI            "\nVideoAvi\nVideoAvi\nAvi (*.avi)\n.avi\nVideoAvi.Document\nVideoAvi Document"
     IDR_PICTURE             "\nPicture\nPicture\n\n\nPicture.Document\nPicture Document"
 END
 
@@ -4372,10 +3886,6 @@ BEGIN
     IDS_MULTILANG_1191      "Finish cropping, then try again."
     IDS_MULTILANG_1192      "Exit Print Preview, then try again."
     IDS_MULTILANG_1193      "Stop the slideshow and try again."
-    IDS_MULTILANG_1194      "No file loaded."
-    IDS_MULTILANG_1195      "Try again after saving the file."
-    IDS_MULTILANG_1196      "Try again after the video processing has terminated."
-    IDS_MULTILANG_1197      "Stop playing the file and try again."
 END
 
 STRINGTABLE
@@ -4482,7 +3992,6 @@ BEGIN
     IDS_MULTILANG_1304      "Do You Really Want To Remove the COM Section?"
     IDS_MULTILANG_1305      "Dim: %dx%d\r\nDpi: %dx%d\r\nCurrent Depth: %s, %s\r\nImage Size: %d %s"
     IDS_MULTILANG_1306      "Dim: %dx%d\r\nCurrent Depth: %s, %s\r\nImage Size: %d %s"
-    IDS_MULTILANG_1307      "File: %s\r\n"
     IDS_MULTILANG_1308      "File %i of %i: %s\r\n"
     IDS_MULTILANG_1309      "Path: %s\r\n"
     IDS_MULTILANG_1310      "Date: "
@@ -4519,7 +4028,6 @@ STRINGTABLE
 BEGIN
     IDS_MULTILANG_1354      "No Sound Input Device."
     IDS_MULTILANG_1355      "Sound Input Cannot Determine Card Capabilities!"
-    IDS_MULTILANG_1356      "Sound Output Cannot Determine Card Capabilities!"
     IDS_MULTILANG_1357      "Error while converting to Pdf"
 END
 
@@ -4573,35 +4081,6 @@ BEGIN
     IDS_MULTILANG_1411      "Unable to determine the domain for the email address %s\n"
     IDS_MULTILANG_1413      "Unable to perform a DNS MX lookup for the domain %s, Error Code:%d\n"
     IDS_MULTILANG_1414      "An error occured sending the message, Error:%x\nDescription:%s\n"
-    IDS_MULTILANG_1422      "Sound Output Playback Speed Not Supported"
-    IDS_MULTILANG_1423      "Sound Output Cannot Set Playback Speed"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_MULTILANG_1424      "Sound Output Pitch Not Supported"
-    IDS_MULTILANG_1425      "Sound Output Cannot Set Pitch"
-    IDS_MULTILANG_1426      "No Sound Output Device."
-    IDS_MULTILANG_1428      "Sound Output Cannot Choose The Right PCM Format!"
-    IDS_MULTILANG_1429      "Sound Output Cannot Open Device!"
-    IDS_MULTILANG_1430      "Sound Output Cannot Pause Device!"
-    IDS_MULTILANG_1431      "Error while saving file"
-    IDS_MULTILANG_1432      "The Flash Player has a limit of 16000 frames.\n"
-    IDS_MULTILANG_1433      "The file you are saving is bigger than that,\n"
-    IDS_MULTILANG_1434      "a solution is to split it in more pieces.\n"
-    IDS_MULTILANG_1435      "Do you want to continue anyway?\n"
-    IDS_MULTILANG_1436      "AVI file is to big to create one unique gif color table,\n"
-    IDS_MULTILANG_1437      "please choose the multiple color tables option."
-    IDS_MULTILANG_1439      "The file name is zero"
-END
-
-STRINGTABLE
-BEGIN
-    IDS_MULTILANG_1440      "The file extention is not .avi or .divx"
-    IDS_MULTILANG_1441      "File is empty"
-    IDS_MULTILANG_1442      "Unspecified error"
-    IDS_MULTILANG_1450      "Video Processing Progress: %i%%"
-    IDS_MULTILANG_1451      "Audio Processing Progress: %i%%"
 END
 
 STRINGTABLE
@@ -4696,8 +4175,6 @@ BEGIN
     ID_PLAY_FRAME_BACK_FAST "Jump Backward\nJump Backward"
     ID_PLAY_SLIDESHOW       "Start slideshow (inside current directory)\nStart Slideshow"
     ID_STOP_SLIDESHOW       "Stop slideshow\nStop Slideshow"
-    ID_PLAY_AVI             "Start playing avi file\nPlay Avi"
-    ID_STOP_AVI             "Stop playing avi file\nStop Avi"
     ID_EDIT_STOP            "Interrupt the processing of the current document\nStop Processing"
     ID_VIEW_FRAMETIME       "Enable / disable frame time display\nShow Frame Time"
     ID_FILE_INFO            "Show file information\nFile Info"
@@ -4750,7 +4227,7 @@ BEGIN
     ID_EDIT_SELECTALL       "Select all detection zones\nSelect All"
     ID_EDIT_SELECTNONE      "Clear all detection zones\nSelect None"
     ID_CAPTURE_NETWORK      "Capture frames from the network\nCapture From Network"
-    ID_CAPTURE_RECORD       "Record video and audio to a avi file\nRecord To Avi File"
+    ID_CAPTURE_RECORD       "Record video and audio to a file\nRecord to a File"
     ID_VIEW_ALL_NEXT_PICTURE 
                             "Show next image of all open documents\nAll Next Image"
     ID_VIEW_ALL_PREVIOUS_PICTURE 
@@ -5125,8 +4602,6 @@ BEGIN
     IDS_STRING1542          "Medium"
     IDS_STRING1543          "Good"
     IDS_STRING1544          "Best"
-    IDS_STRING1545          "Mono"
-    IDS_STRING1546          "Stereo"
     IDS_STRING1548          "Other HTTP Camera"
 END
 
@@ -5451,7 +4926,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STRING1824          "File Size: "
     IDS_STRING1825          "MB"
     IDS_STRING1826          "GB"
     IDS_STRING1827          "None"
