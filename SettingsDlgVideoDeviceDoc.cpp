@@ -173,7 +173,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
-	// Disable opening external program (for pdf, swf)
+	// Disable opening external program
 	pApp->m_bDisableExtProg = m_bDisableExtProg;
 
 	// Browser

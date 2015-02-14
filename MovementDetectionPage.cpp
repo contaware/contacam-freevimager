@@ -8,7 +8,6 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "ResizingDlg.h"
-#include "VideoFormatDlg.h"
 #include "SendMailConfigurationDlg.h"
 #include "FTPUploadConfigurationDlg.h"
 #include "BrowseDlg.h"

@@ -956,7 +956,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				default : nSnapshotRate = 300;  break;	// 5 Minutes
 			}
 
-			// Init thumb vars, must be a multiple of 4 because of swf
+			// Init thumb vars: must be a multiple of 4 for some video codecs,
+			// most efficient would be a multiple of 16 to fit the macro blocks
 			BOOL bUseThumb = TRUE;
 			int nThumbWidth = m_pDoc->m_DocRect.right & ~0x3;
 			int nThumbHeight = m_pDoc->m_DocRect.bottom & ~0x3;

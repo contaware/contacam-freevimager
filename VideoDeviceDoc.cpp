@@ -3,7 +3,6 @@
 #include "VideoDeviceView.h"
 #include "MainFrm.h"
 #include "VideoDeviceDoc.h"
-#include "AviPlay.h"
 #include "AudioInSourceDlg.h"
 #include "CameraBasicSettingsDlg.h"
 #include "GeneralPage.h"
@@ -2730,7 +2729,7 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
-	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
+	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pSrcDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pSrcFrame,
 					(uint8_t*)pSrcDib->GetBits(),
 					src_pix_fmt,
@@ -2741,7 +2740,7 @@ BOOL CVideoDeviceDoc::ResizeFast(CDib* pSrcDib, CDib* pDstDib)
 	pDstFrame = av_frame_alloc();
 	if (!pDstFrame)
         goto exit;
-	dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
+	dst_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDstDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pDstFrame,
 					(uint8_t*)pDstDib->GetBits(),
 					dst_pix_fmt,
@@ -2805,7 +2804,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	pSrcFrame = av_frame_alloc();
 	if (!pSrcFrame)
         goto exit;
-	src_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
+	src_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDib->GetBMI());
 	avpicture_fill(	(AVPicture*)pSrcFrame,
 					(uint8_t*)pDib->GetBits(),
 					src_pix_fmt,
@@ -7176,7 +7175,7 @@ BOOL CVideoDeviceDoc::Deinterlace(CDib* pDib)
 	if (!pDib)
 		return FALSE;
 	AVPicture Frame;
-	AVPixelFormat pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDib->GetBMI());
+	AVPixelFormat pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDib->GetBMI());
 	avpicture_fill(	&Frame,
 					(uint8_t*)pDib->GetBits(),
 					pix_fmt,

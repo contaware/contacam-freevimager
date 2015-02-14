@@ -7,7 +7,6 @@
 #include "GeneralPage.h"
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
-#include "VideoAviDoc.h"
 #include "DxCapture.h"
 #include "DxVideoInputDlg.h"
 #include "NetCom.h"

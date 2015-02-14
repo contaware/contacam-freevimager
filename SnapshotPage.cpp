@@ -371,6 +371,8 @@ void CSnapshotPage::OnButtonThumbSize()
 
 void CSnapshotPage::ChangeThumbSize(int nNewWidth, int nNewHeight)
 {
+	// Init thumb vars: must be a multiple of 4 for some video codecs,
+	// most efficient would be a multiple of 16 to fit the macro blocks
 	m_pDoc->m_nSnapshotThumbWidth = nNewWidth & ~0x3;
 	m_pDoc->m_nSnapshotThumbHeight = nNewHeight & ~0x3;
 	CString sSize;
