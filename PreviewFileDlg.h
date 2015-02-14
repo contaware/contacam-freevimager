@@ -9,7 +9,6 @@
 #include "DibStatic.h"
 #include "TryEnterCriticalSection.h"
 #include "Dib.h"
-#include "AviPlay.h"
 
 #define WM_POST_INITDONE			WM_USER + 3000
 
@@ -85,7 +84,6 @@ protected:
 	CDib m_AlphaRenderedDib;
 	CTryEnterCriticalSection m_csDibHdr;
 	CTryEnterCriticalSection m_csDibFull;
-	CAVIPlay m_AVIPlay;
 
 // Implementation
 #ifdef _DEBUG

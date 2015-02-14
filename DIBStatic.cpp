@@ -3,7 +3,6 @@
 #include "MainFrm.h"
 #include "DibStatic.h"
 #include "PictureDoc.h"
-#include "VideoAviDoc.h"
 #include "PostDelayedMessage.h"
 #include "MyMemDC.h"
 
@@ -103,53 +102,8 @@ int CDibStatic::CThumbLoadThread::WorkHdr()
 		if (DoExit())
 			throw (int)HDRLOAD_DOEXIT;
 
-		// Is AVI File?
-		if (CVideoAviDoc::IsAVI(m_sFileName))
-		{
-			// AVI Play Pointer Check
-			if (!m_pDibStatic->m_pAVIPlay)
-				throw (int)HDRLOAD_ERROR;
-
-			// Init AVI File Object
-			if (!m_pDibStatic->m_pAVIPlay->Open(m_sFileName,
-												true,	// Load Only Header
-												false))	// Do Not Show MessageBox On Error
-				throw (int)HDRLOAD_ERROR;
-
-			// Set Sizes
-			m_pDibStatic->m_pDibHdr->Free();
-			BITMAPINFOHEADER BmiH;
-			memset(&BmiH, 0 , sizeof(BmiH));
-			BmiH.biSize = sizeof(BmiH);
-			CAVIPlay::CAVIVideoStream* pVideoStream = m_pDibStatic->m_pAVIPlay->GetVideoStream(0);
-			if (pVideoStream)
-			{
-				BmiH.biWidth = pVideoStream->GetWidth();
-				BmiH.biHeight = pVideoStream->GetHeight();
-			}
-			m_pDibStatic->m_pDibHdr->SetBMI((LPBITMAPINFO)&BmiH);
-			m_pDibStatic->m_pDibHdr->SetFileSize((DWORD)::GetFileSize64(m_sFileName).QuadPart);
-			m_pDibStatic->m_pDibHdr->SetImageSize(0);
-
-			// Load Header Done
-			m_pDibStatic->m_bLoadHdrTerminated = TRUE;
-			m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
-			if (m_bPaint)
-				m_pDibStatic->PaintDib(FALSE);
-			LeaveHdrCS();
-			if (::IsWindow(m_pDibStatic->m_hNotifyWnd))
-				::PostMessage(	m_pDibStatic->m_hNotifyWnd,
-								WM_LOADDONE,
-								(WPARAM)(HDRLOAD_HDRDONE),
-								(LPARAM)m_pDibStatic);
-
-			// Close File so that it's possible
-			// to delete it in CPreviewFileDlg
-			m_pDibStatic->m_pAVIPlay->CloseFile();
-
-			return 1;
-		}
-		else if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
+		// Is it a Picture?
+		if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
 		{
 			// Load Header (for Jpeg this loads also exif data)
 			if (!m_pDibStatic->m_pDibHdr->LoadImage(m_sFileName, 0, 0, 0, TRUE, TRUE))
@@ -173,8 +127,6 @@ int CDibStatic::CThumbLoadThread::WorkHdr()
 	}
 	catch (int nCause)
 	{
-		if (m_pDibStatic->m_pAVIPlay)
-			m_pDibStatic->m_pAVIPlay->CloseFile();
 		m_pDibStatic->m_bLoadHdrTerminated = TRUE;
 		m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
 		m_pDibStatic->FreeDibs();
@@ -231,86 +183,8 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 		if (m_pDibStatic->m_pAlphaRenderedDib)
 			m_pDibStatic->m_pAlphaRenderedDib->Free();
 
-		// Is AVI File?
-		if (CVideoAviDoc::IsAVI(m_sFileName))
-		{
-			// AVI Play Pointer Check
-			if (!m_pDibStatic->m_pAVIPlay)
-				throw (int)FULLLOAD_HDRERROR;
-
-			// Post Paint Busy Text Message
-			m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
-			CPostDelayedMessageThread::PostDelayedMessage(	m_pDibStatic->GetSafeHwnd(),
-															WM_PAINT_BUSYTEXT,
-															PAINT_BUSYTEXT_DELAY,
-															(WPARAM)m_pDibStatic->m_dwBusyTextUpTime,
-															(LPARAM)0);
-
-			// Init AVI File Object
-			if (!m_pDibStatic->m_pAVIPlay->Open(m_sFileName,
-												false,	// Load Full
-												false))	// Do Not Show MessageBox On Error
-				throw (int)FULLLOAD_HDRERROR;
-
-			// Set Size
-			m_pDibStatic->m_pDibHdr->Free();
-			BITMAPINFOHEADER BmiH;
-			memset(&BmiH, 0 , sizeof(BmiH));
-			BmiH.biSize = sizeof(BmiH);
-			CAVIPlay::CAVIVideoStream* pVideoStream = m_pDibStatic->m_pAVIPlay->GetVideoStream(0);
-			if (pVideoStream)
-			{
-				pVideoStream->OpenDecompression(true);
-				BmiH.biWidth = pVideoStream->GetWidth();
-				BmiH.biHeight = pVideoStream->GetHeight();
-			}
-			m_pDibStatic->m_pDibHdr->SetBMI((LPBITMAPINFO)&BmiH);
-			m_pDibStatic->m_pDibHdr->SetFileSize((DWORD)::GetFileSize64(m_sFileName).QuadPart);
-			m_pDibStatic->m_pDibHdr->SetImageSize(0);
-
-			// Restore Old ShowMessageBoxOnError
-			m_pDibStatic->m_pDibHdr->SetShowMessageBoxOnError(bOldDibHdrShowMessageBoxOnError);
-
-			// Leave Hdr CS
-			LeaveHdrCS();
-
-			// Post Header Load Done
-			if (::IsWindow(m_pDibStatic->m_hNotifyWnd))
-				::PostMessage(	m_pDibStatic->m_hNotifyWnd,
-								WM_LOADDONE,
-								(WPARAM)(FULLLOAD_HDRDONE),
-								(LPARAM)m_pDibStatic);
-
-			// Do Exit?
-			if (DoExit())
-				throw (int)FULLLOAD_DOEXIT;
-
-			// Get Frame
-			if (pVideoStream && !pVideoStream->GetFrame(m_pDibStatic->m_pDibFull))
-				throw (int)FULLLOAD_FULLERROR;
-
-			// Set File Size
-			m_pDibStatic->m_pDibFull->SetFileSize((DWORD)::GetFileSize64(m_sFileName).QuadPart);
-
-			// Create thumbnail
-			if (!m_pDibStatic->m_pDibFull->CreateThumbnailDib(	m_rcClient.Width(),
-																m_rcClient.Height(),
-																NULL,
-																NULL,
-																TRUE,
-																this))
-			{
-				if (DoExit())
-					throw (int)FULLLOAD_DOEXIT;
-				else
-					throw (int)FULLLOAD_FULLERROR;
-			}
-
-			// Close File so that it's possible
-			// to delete it in CPreviewFileDlg
-			m_pDibStatic->m_pAVIPlay->CloseFile();
-		}
-		else if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
+		// Is it a Picture?
+		if (((CUImagerApp*)::AfxGetApp())->IsSupportedPictureFile(m_sFileName))
 		{
 			// Load Header (for Jpeg this loads also exif data)
 			if (!m_pDibStatic->m_pDibHdr->LoadImage(m_sFileName, 0, 0, 0, TRUE, TRUE))
@@ -488,8 +362,6 @@ int CDibStatic::CThumbLoadThread::WorkFull()
 	}
 	catch (int nCause)
 	{
-		if (m_pDibStatic->m_pAVIPlay)
-			m_pDibStatic->m_pAVIPlay->CloseFile();
 		m_pDibStatic->m_dwBusyTextUpTime = ::timeGetTime();
 		m_pDibStatic->m_bLoadFullTerminated = TRUE;
 		m_pDibStatic->m_pDibFull->SetShowMessageBoxOnError(bOldDibFullShowMessageBoxOnError);
@@ -606,7 +478,6 @@ CDibStatic::CDibStatic()
 	m_nThumbLoadThreadPriority = THREAD_PRIORITY_NORMAL;
 	m_hNotifyWnd = NULL;
 	m_dwBusyTextUpTime = 0U;
-	m_pAVIPlay = NULL;
 	m_pDibHdr = NULL;
 	m_pDibFull = NULL;
 	m_pAlphaRenderedDib = NULL;
@@ -1269,15 +1140,6 @@ BOOL CDibStatic::DoRealizePalette(BOOL bForceBackGround)
 	}
 
 	return TRUE;
-}
-
-void CDibStatic::SetAVIPlayPointer(CAVIPlay* pAVIPlay)
-{
-	if (m_pcsDibFull)
-		m_pcsDibFull->EnterCriticalSection();
-	m_pAVIPlay = pAVIPlay;
-	if (m_pcsDibFull)
-		m_pcsDibFull->LeaveCriticalSection();
 }
 
 void CDibStatic::FreeDibs()

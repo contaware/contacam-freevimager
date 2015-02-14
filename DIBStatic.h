@@ -10,7 +10,6 @@
 // CDibStatic window
 
 #include "Dib.h"
-#include "AviPlay.h"
 #include "GifAnimationThread.h"
 #include "TryEnterCriticalSection.h"
 
@@ -139,9 +138,7 @@ public:
 	CTryEnterCriticalSection* GetDibFullCS() const {return m_pcsDibFull;};
 	void SetDibFullCS(CTryEnterCriticalSection* pcs) {m_pcsDibFull = pcs;};
 
-	// Dibs & AVI Pointers
-	CAVIPlay* GetAVIPlayPointer() const {return m_pAVIPlay;};
-	void SetAVIPlayPointer(CAVIPlay* pAVIPlay);
+	// Dibs Pointers
 	CDib* GetDibHdrPointer() const {return m_pDibHdr;};
 	void SetDibHdrPointer(CDib* pDib) {m_pDibHdr = pDib;};
 	CDib* GetDibFullPointer() const {return m_pDibFull;};
@@ -206,7 +203,6 @@ protected:
 
 	volatile DWORD m_dwBusyTextUpTime;
 	HWND volatile m_hNotifyWnd;
-	CAVIPlay* volatile m_pAVIPlay;
 	CDib* volatile m_pDibHdr;
 	CDib* volatile m_pDibFull;
 	CDib* volatile m_pAlphaRenderedDib;

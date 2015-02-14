@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "uImager.h"
 #include "Dib.h"
-#include "AviPlay.h"
 #include "DibStatic.h"
 #include "PreviewFileDlg.h"
 #include <dlgs.h>
@@ -122,7 +121,6 @@ CPreviewFileDlg::CPreviewFileDlg(	BOOL bOpenFileDialog,
 	m_DibStaticCtrl.SetAlphaRenderedDibPointer(&m_AlphaRenderedDib);
 	m_DibStaticCtrl.SetDibHdrCS(&m_csDibHdr);
 	m_DibStaticCtrl.SetDibFullCS(&m_csDibFull);
-	m_DibStaticCtrl.SetAVIPlayPointer(&m_AVIPlay);
 }
 
 void CPreviewFileDlg::OnDestroy() 
@@ -293,163 +291,102 @@ LONG CPreviewFileDlg::OnLoadDone(WPARAM wparam, LPARAM lparam)
 		// Enter CS
 		m_csDibHdr.EnterCriticalSection();
 
-		// Avi File
-		if (::GetFileExt(sLastFileName) == _T(".avi") ||
-			::GetFileExt(sLastFileName) == _T(".divx"))
+		CDib* pDib = m_DibStaticCtrl.GetDibHdrPointer();
+
+		// Dpi
+		int nXDpi = pDib->GetXDpi();
+		int nYDpi = pDib->GetYDpi();
+		BOOL bDpi = TRUE;
+		if (nXDpi == 0 || nYDpi == 0)
+			bDpi = FALSE;
+
+		// Create Info Text
+		s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
+											pDib->GetHeight());
+
+		if (pDib->GetExifInfo()->bHasExif)
 		{
-			CAVIPlay* pAVIPlay = m_DibStaticCtrl.GetAVIPlayPointer();
-			CAVIPlay::CAVIVideoStream* pVideoStream = pAVIPlay->GetVideoStream(0);
-			CAVIPlay::CAVIAudioStream* pAudioStream = pAVIPlay->GetAudioStream(0);
+			t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+			s += t;
 
-			if (pVideoStream && (pAVIPlay->GetVideoStreamsCount() >= 1))
+			if (bDpi)
 			{
-				t.Format(_T("%d x %d   %.1ff/s\r\n"),pVideoStream->GetWidth(),
-													pVideoStream->GetHeight(),
-													pVideoStream->GetFrameRate());
-				s += t;
-
-				t.Format(_T("%s\r\n"), CDib::GetCompressionName(pVideoStream->GetFormat(true)));
+				t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
 				s += t;
 			}
-
-			if (pAudioStream && (pAVIPlay->GetAudioStreamsCount() >= 1))
+					
+			if (pDib->GetExifInfo()->CameraModel[0])
 			{
-				if (CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)) != _T(""))
-				{
-					if (pAudioStream->GetFormatTag(true) == WAVE_FORMAT_MPEGLAYER3)
-					{
-						if (pAudioStream->IsVBR())
-							t = _T("Mp3 VBR\r\n");
-						else
-							t = _T("Mp3 CBR\r\n");
-					}
-					else if (pAudioStream->GetFormatTag(true) == WAVE_FORMAT_PCM)
-						t = _T("Uncompressed Audio\r\n");
-					else
-						t.Format(_T("%s\r\n"),
-							CAVIPlay::GetWaveFormatTagString(pAudioStream->GetFormatTag(true)));		
-				}
+				t.Format(_T("Model:\t%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
+				s+=t;
+			}
+
+			if (pDib->GetExifInfo()->Flash >= 0)
+			{
+				if (pDib->GetExifInfo()->Flash & 1)
+					t = ML_STRING(1714, "Flash:\tyes\r\n");
 				else
-					t.Format(_T("Audio 0x%04x\r\n"), pAudioStream->GetFormatTag(true));
-				s += t;
+					t = ML_STRING(1715, "Flash:\tno\r\n");
+				s+=t;
 			}
 
-			if (pVideoStream && (pAVIPlay->GetVideoStreamsCount() >= 1))
+			if (pDib->GetExifInfo()->ExposureTime)
 			{
-				double dLength;		// Total Length in Seconds
-				int nLengthHour;	// Hours Part
-				int nLengthMin;		// Minutes Part
-				double dLengthSec;	// Seconds Part
-				dLength		=	(double)pVideoStream->GetTotalFrames() /
-										pVideoStream->GetFrameRate();
-				nLengthHour	= (int)(dLength / 3600.0);
-				nLengthMin	= (int)((dLength - nLengthHour * 3600.0) / 60.0);
-				dLengthSec	= dLength - nLengthHour * 3600.0 - nLengthMin * 60.0;
-				t.Format(_T("%02d:%02d:%02d"),	nLengthHour,
-												nLengthMin,
-												Round(dLengthSec));
-				s += t;
+				t.Format(_T("Exp.:\t%.3f s "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
+				if (pDib->GetExifInfo()->ExposureTime <= 0.5)
+				{
+					t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
+					s+=t;
+				}
+				t.Format(_T("\r\n"));
+				s+=t;
 			}
+
+			if (pDib->GetExifInfo()->ApertureFNumber)
+			{
+				t.Format(_T("Aperture:\tf/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
+				s+=t;
+			}
+
+			if (pDib->GetExifInfo()->DateTime[0])
+			{
+				CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
+				CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
+				t.Format(_T("Taken:\t%s"), sTime);
+				s+=t;
+			}
+			else
+				s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 		}
 		else
 		{
-			CDib* pDib = m_DibStaticCtrl.GetDibHdrPointer();
+			t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+			s += t;
 
-			// Dpi
-			int nXDpi = pDib->GetXDpi();
-			int nYDpi = pDib->GetYDpi();
-			BOOL bDpi = TRUE;
-			if (nXDpi == 0 || nYDpi == 0)
-				bDpi = FALSE;
+			t.Format(_T("Image:\t%d %s\r\n"),		(pDib->GetImageSize() >= 1024) ? pDib->GetImageSize() >> 10 : pDib->GetImageSize(),
+													(pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
+			s += t;
 
-			// Create Info Text
-			s.Format(_T("Size:\t%d x %d\r\n"),	pDib->GetWidth(),
-												pDib->GetHeight());
-
-			if (pDib->GetExifInfo()->bHasExif)
+			if (bDpi)
 			{
-				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+				t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
 				s += t;
-
-				if (bDpi)
-				{
-					t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
-					s += t;
-				}
-					
-				if (pDib->GetExifInfo()->CameraModel[0])
-				{
-					t.Format(_T("Model:\t%s\r\n"), CString(pDib->GetExifInfo()->CameraModel));
-					s+=t;
-				}
-
-				if (pDib->GetExifInfo()->Flash >= 0)
-				{
-					if (pDib->GetExifInfo()->Flash & 1)
-						t = ML_STRING(1714, "Flash:\tyes\r\n");
-					else
-						t = ML_STRING(1715, "Flash:\tno\r\n");
-					s+=t;
-				}
-
-				if (pDib->GetExifInfo()->ExposureTime)
-				{
-					t.Format(_T("Exp.:\t%.3f s "), (double)pDib->GetExifInfo()->ExposureTime); s+=t;
-					if (pDib->GetExifInfo()->ExposureTime <= 0.5)
-					{
-						t.Format(_T(" (1/%d)"), Round(1.0 / pDib->GetExifInfo()->ExposureTime));
-						s+=t;
-					}
-					t.Format(_T("\r\n"));
-					s+=t;
-				}
-
-				if (pDib->GetExifInfo()->ApertureFNumber)
-				{
-					t.Format(_T("Aperture:\tf/%.1f\r\n"), (double)pDib->GetExifInfo()->ApertureFNumber);
-					s+=t;
-				}
-
-				if (pDib->GetExifInfo()->DateTime[0])
-				{
-					CTime Time = CMetadata::GetDateTimeFromExifString(CString(pDib->GetExifInfo()->DateTime));
-					CString sTime = ::MakeDateLocalFormat(Time) + _T(" ") + ::MakeTimeLocalFormat(Time, TRUE);
-					t.Format(_T("Taken:\t%s"), sTime);
-					s+=t;
-				}
-				else
-					s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 			}
-			else
+
+			if (::GetFileExt(sLastFileName) == _T(".gif"))
 			{
-				t.Format(_T("Depth:\t%s\r\n"), pDib->m_FileInfo.GetDepthName());
+				t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
 				s += t;
-
-				t.Format(_T("Image:\t%d %s\r\n"),		(pDib->GetImageSize() >= 1024) ? pDib->GetImageSize() >> 10 : pDib->GetImageSize(),
-														(pDib->GetImageSize() >= 1024) ? ML_STRING(1243, "KB") : ML_STRING(1244, "Bytes"));
-				s += t;
-
-				if (bDpi)
+				if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
+					m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
 				{
-					t.Format(_T("Dpi:\t%d x %d\r\n"), nXDpi, nYDpi);
+					t.Format(_T("Frames:\t%d\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
+													m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
 					s += t;
 				}
-
-				if (::GetFileExt(sLastFileName) == _T(".gif"))
-				{
-					t.Format(_T("Ver:\t%s\r\n"), CDib::GIFGetVersion(sLastFileName, FALSE));
-					s += t;
-					if (m_DibStaticCtrl.GetGifAnimationThread()->IsRunning() &&
-						m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1)
-					{
-						t.Format(_T("Frames:\t%d\r\n"),	m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount > 1 ?
-														m_DibStaticCtrl.GetGifAnimationThread()->m_dwDibAnimationCount : 1);
-						s += t;
-					}
-				}
-
-				s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 			}
+
+			s += (_T("Created:\t") + GetCreationFileTime(sLastFileName));
 		}
 
 		// Leave CS
