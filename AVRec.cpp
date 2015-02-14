@@ -2,7 +2,6 @@
 #include "AVRec.h"
 #include "Round.h"
 #include "Helpers.h"
-#include "AviPlay.h"
 #include "YuvToYuv.h"
 
 #ifdef _DEBUG
@@ -14,6 +13,35 @@ static char THIS_FILE[] = __FILE__;
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
+
+// Ffmpeg libs
+#pragma comment(lib, "ffmpeg\\libavcodec\\libavcodec.a")
+#pragma comment(lib, "ffmpeg\\libavformat\\libavformat.a")
+#pragma comment(lib, "ffmpeg\\libavutil\\libavutil.a")
+#pragma comment(lib, "ffmpeg\\libswscale\\libswscale.a")
+#pragma comment(lib, "ffmpeg\\libswresample\\libswresample.a")
+// In 2014 I was happy to be able to build ffmpeg 2.2.1 with vs2010,
+// but the result was extremelly slow: video codecs slower by a
+// factor of 1.5 - 2 and swscale by a factor of 3 compared to mingw
+#ifdef FFMPEG_TOOLCHAIN_MSVC
+#pragma comment(lib, "ffmpeg\\msvc\\mp3lame.lib")
+#else
+// libcmt.lib(_pow_.obj) : error LNK2005: _pow already defined in libmingwex.a(pow.o)
+// -> to correctly link we have to remove pow.o from libmingwex.a,
+// perform the following in visual studio command prompt:
+// 1. cd uimager\ffmpeg\lib
+// 2. lib -remove:pow.o libmingwex.a
+// 3. rename libmingwex.lib libmingwex.a
+#pragma comment(lib, "ffmpeg\\mingw\\libgcc.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libmingwex.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libmp3lame.a")
+#pragma comment(lib, "ffmpeg\\mingw\\libx264.a")
+#endif
+
+// Win32 libs
+#pragma comment(lib, "wsock32.lib")
+#pragma comment(lib, "vfw32.lib")
+#pragma comment(lib, "msacm32.lib")
 
 CAVRec::CAVRec()
 {
@@ -29,7 +57,7 @@ CAVRec::CAVRec(	LPCTSTR lpszFileName,
 
 void CAVRec::InitVars()
 {
-	::InitializeCriticalSection(&m_csAVI);
+	::InitializeCriticalSection(&m_csAV);
 
 	m_pOutputFormat = NULL;
 	m_pFormatCtx = NULL;
@@ -71,7 +99,7 @@ void CAVRec::InitVars()
 CAVRec::~CAVRec()
 {
 	Close();
-	::DeleteCriticalSection(&m_csAVI);
+	::DeleteCriticalSection(&m_csAV);
 }
 
 __forceinline void CAVRec::SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMATEX pWaveFormat)					
@@ -151,7 +179,7 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		return -1;
 
 	// Set the Codec ID
-	m_pOutputFormat->video_codec = CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(pDstFormat->bmiHeader.biCompression);
+	m_pOutputFormat->video_codec = AVCodecFourCCToCodecID(pDstFormat->bmiHeader.biCompression);
 	if (m_pOutputFormat->video_codec == AV_CODEC_ID_H263)
 		m_pOutputFormat->video_codec = AV_CODEC_ID_H263P;		// set encoder to H.263+
 	else if (m_pOutputFormat->video_codec == AV_CODEC_ID_NONE)
@@ -165,10 +193,10 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 	// Check whether pixel format is supported
 	AVPixelFormat pix_fmt;
 	if (m_pOutputFormat->video_codec == CODEC_ID_RAWVIDEO)
-		pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstFormat);
+		pix_fmt = AVCodecBMIToPixFormat(pDstFormat);
 	else
 	{
-		pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcFormat);
+		pix_fmt = AVCodecBMIToPixFormat(pSrcFormat);
 		if (pCodec->pix_fmts)
 		{
 			const enum AVPixelFormat *p = pCodec->pix_fmts;
@@ -355,8 +383,8 @@ int CAVRec::AddAudioStream(	const LPWAVEFORMATEX pSrcWaveFormat,
 		return -1;
 
 	// Set the Codec
-	m_pOutputFormat->audio_codec = CAVIPlay::CAVIAudioStream::AVCodecFormatTagToCodecID(pDstWaveFormat->wFormatTag,
-																						pDstWaveFormat->wBitsPerSample);
+	m_pOutputFormat->audio_codec = AVCodecFormatTagToCodecID(	pDstWaveFormat->wFormatTag,
+																pDstWaveFormat->wBitsPerSample);
 	if (m_pOutputFormat->audio_codec == AV_CODEC_ID_NONE)
 		return -1;
 	
@@ -512,7 +540,7 @@ bool CAVRec::Close()
 	int i;
 	bool res = true;
 
-	::EnterCriticalSection(&m_csAVI);
+	::EnterCriticalSection(&m_csAV);
 
 	if (m_pFormatCtx)
 	{
@@ -617,7 +645,7 @@ bool CAVRec::Close()
 	m_bOpen = false;
 	m_bFileOpened = false;
 
-	::LeaveCriticalSection(&m_csAVI);
+	::LeaveCriticalSection(&m_csAV);
 
 	return res;
 }
@@ -628,7 +656,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 						bool bInterleaved,
 						int64_t pts/*=AV_NOPTS_VALUE*/)
 {
-	::EnterCriticalSection(&m_csAVI);
+	::EnterCriticalSection(&m_csAV);
 
 	// Check
 	if (!m_pFormatCtx								||
@@ -637,7 +665,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		!m_pFormatCtx->streams[dwStreamNum]->codec	||
 		m_pFormatCtx->streams[dwStreamNum]->codec->codec_type != AVMEDIA_TYPE_VIDEO)
 	{
-		::LeaveCriticalSection(&m_csAVI);
+		::LeaveCriticalSection(&m_csAV);
 		return false;
 	}
 
@@ -646,7 +674,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 		m_llLastCodecPTS[dwStreamNum] != AV_NOPTS_VALUE	&&
 		pts <= m_llLastCodecPTS[dwStreamNum])
 	{
-		::LeaveCriticalSection(&m_csAVI);
+		::LeaveCriticalSection(&m_csAV);
 		return true;
 	}
 	else
@@ -660,10 +688,10 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 	if (!bFlush)
 	{
 		// Get Src Pixel Format
-		enum AVPixelFormat SrcPixFormat = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pBmi);
+		enum AVPixelFormat SrcPixFormat = AVCodecBMIToPixFormat(pBmi);
 		if (SrcPixFormat == AV_PIX_FMT_NONE)
 		{
-			::LeaveCriticalSection(&m_csAVI);
+			::LeaveCriticalSection(&m_csAV);
 			return false;
 		}
 
@@ -674,7 +702,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 			m_ppSrcBuf[dwStreamNum] = (uint8_t**)av_mallocz(sizeof(uint8_t*));
 			if (m_ppSrcBuf[dwStreamNum] == NULL)
 			{
-				::LeaveCriticalSection(&m_csAVI);
+				::LeaveCriticalSection(&m_csAV);
 				return false;
 			}
 		}
@@ -689,7 +717,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 			if (*m_ppSrcBuf[dwStreamNum] == NULL)
 			{
 				m_nSrcBufSize[dwStreamNum] = 0;
-				::LeaveCriticalSection(&m_csAVI);
+				::LeaveCriticalSection(&m_csAV);
 				return false;
 			}
 			m_nSrcBufSize[dwStreamNum] = nNewSrcBufSize;
@@ -715,7 +743,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 																NULL);							// Param
 			if (!m_pImgConvertCtx[dwStreamNum])
 			{
-				::LeaveCriticalSection(&m_csAVI);
+				::LeaveCriticalSection(&m_csAV);
 				return false;
 			}
 
@@ -732,7 +760,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 					m_pAVPalette[dwStreamNum] = (uint8_t*)av_malloc(AVPALETTE_SIZE);
 					if (m_pAVPalette[dwStreamNum] == NULL)
 					{
-						::LeaveCriticalSection(&m_csAVI);
+						::LeaveCriticalSection(&m_csAV);
 						return false;
 					}
 				}
@@ -766,7 +794,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 				m_ppDstBuf[dwStreamNum] = (uint8_t**)av_mallocz(sizeof(uint8_t*));
 				if (m_ppDstBuf[dwStreamNum] == NULL)
 				{
-					::LeaveCriticalSection(&m_csAVI);
+					::LeaveCriticalSection(&m_csAV);
 					return false;
 				}
 			}
@@ -781,7 +809,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 				if (*m_ppDstBuf[dwStreamNum] == NULL)
 				{
 					m_nDstBufSize[dwStreamNum] = 0;
-					::LeaveCriticalSection(&m_csAVI);
+					::LeaveCriticalSection(&m_csAV);
 					return false;
 				}
 				m_nDstBufSize[dwStreamNum] = nNewDstBufSize;
@@ -816,7 +844,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 								m_pFrame[dwStreamNum]->data,						// Destination Data
 								m_pFrame[dwStreamNum]->linesize) <= 0)				// Destination Stride
 				{
-					::LeaveCriticalSection(&m_csAVI);
+					::LeaveCriticalSection(&m_csAV);
 					return false;
 				}
 			}
@@ -836,7 +864,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 					m_pAVPalette[dwStreamNum] = (uint8_t*)av_malloc(AVPALETTE_SIZE);
 					if (m_pAVPalette[dwStreamNum] == NULL)
 					{
-						::LeaveCriticalSection(&m_csAVI);
+						::LeaveCriticalSection(&m_csAV);
 						return false;
 					}
 				}
@@ -875,7 +903,7 @@ bool CAVRec::AddFrame(	DWORD dwStreamNum,
 
 	// Encode and write frame to file
 	bool res = EncodeAndWriteFrame(dwStreamNum, bFlush ? NULL : m_pFrame[dwStreamNum], bInterleaved);
-	::LeaveCriticalSection(&m_csAVI);
+	::LeaveCriticalSection(&m_csAV);
 	return res;
 }
 
@@ -987,7 +1015,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 								LPBYTE pBuf,
 								bool bInterleaved)
 {
-	::EnterCriticalSection(&m_csAVI);
+	::EnterCriticalSection(&m_csAV);
 
 	// Check
 	if (!m_pFormatCtx								||
@@ -997,7 +1025,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		!m_pFormatCtx->streams[dwStreamNum]->codec	||
 		m_pFormatCtx->streams[dwStreamNum]->codec->codec_type != AVMEDIA_TYPE_AUDIO)
 	{
-		::LeaveCriticalSection(&m_csAVI);
+		::LeaveCriticalSection(&m_csAV);
 		return false;
 	}
 
@@ -1029,7 +1057,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 		}
 		if (ret < 0)
 		{
-			::LeaveCriticalSection(&m_csAVI);
+			::LeaveCriticalSection(&m_csAV);
 			return false;
 		}
 		else
@@ -1057,7 +1085,7 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 											(const uint8_t **)m_ppSrcBuf[dwStreamNum], (int)dwNumSamples);
 		if (nConvertedSamples < 0)
 		{
-			::LeaveCriticalSection(&m_csAVI);
+			::LeaveCriticalSection(&m_csAV);
 			return false;
 		}
 		else if (nConvertedSamples > 0)
@@ -1077,7 +1105,137 @@ bool CAVRec::AddAudioSamples(	DWORD dwStreamNum,
 	}
 	while (nBufferedDstSamples >= m_nDstBufSize[dwStreamNum]);
 
-	::LeaveCriticalSection(&m_csAVI);
+	::LeaveCriticalSection(&m_csAV);
 
 	return res;
+}
+
+CString CAVRec::FourCCToString(DWORD dwFourCC)
+{
+	char ch0 = (char)(dwFourCC & 0xFF);
+	char ch1 = (char)((dwFourCC >> 8) & 0xFF);
+	char ch2 = (char)((dwFourCC >> 16) & 0xFF);
+	char ch3 = (char)((dwFourCC >> 24) & 0xFF);
+	WCHAR wch0, wch1, wch2, wch3;
+	mbtowc(&wch0, &ch0, sizeof(WCHAR));
+	mbtowc(&wch1, &ch1, sizeof(WCHAR));
+	mbtowc(&wch2, &ch2, sizeof(WCHAR));
+	mbtowc(&wch3, &ch3, sizeof(WCHAR));
+	return (CString(wch0) + CString(wch1) + CString(wch2) + CString(wch3));
+}
+
+CString CAVRec::FourCCToStringUpperCase(DWORD dwFourCC)
+{
+	CString sFourCC = FourCCToString(dwFourCC);
+	sFourCC.MakeUpper();
+	return sFourCC;
+}
+
+enum AVPixelFormat CAVRec::AVCodecBMIToPixFormat(LPBITMAPINFO pBMI)
+{
+	if (pBMI)
+	{
+		if (pBMI->bmiHeader.biCompression == FCC('YV12')			||
+			pBMI->bmiHeader.biCompression == FCC('I420')			||
+			pBMI->bmiHeader.biCompression == FCC('IYUV'))
+			return AV_PIX_FMT_YUV420P;	// For YV12 we have to invert the planes!
+		else if (pBMI->bmiHeader.biCompression == FCC('J420'))
+			return AV_PIX_FMT_YUVJ420P;
+		else if (pBMI->bmiHeader.biCompression == FCC('NV12'))
+			return AV_PIX_FMT_NV12;
+		else if (pBMI->bmiHeader.biCompression == FCC('NV21'))
+			return AV_PIX_FMT_NV21;
+		else if (	pBMI->bmiHeader.biCompression == FCC('YUY2')	||
+					pBMI->bmiHeader.biCompression == FCC('YUNV')	||
+					pBMI->bmiHeader.biCompression == FCC('VYUY')	||
+					pBMI->bmiHeader.biCompression == FCC('V422')	||
+					pBMI->bmiHeader.biCompression == FCC('YUYV'))
+			return AV_PIX_FMT_YUYV422;
+		else if (	pBMI->bmiHeader.biCompression == FCC('UYVY')	||
+					pBMI->bmiHeader.biCompression == FCC('Y422')	||
+					pBMI->bmiHeader.biCompression == FCC('UYNV'))
+			return AV_PIX_FMT_UYVY422;
+		else if (	pBMI->bmiHeader.biCompression == FCC('YUV9')	||
+					pBMI->bmiHeader.biCompression == FCC('YVU9'))
+			return AV_PIX_FMT_YUV410P;	// For YVU9 we have to invert the planes!
+		else if (pBMI->bmiHeader.biCompression == FCC('Y41B'))
+			return AV_PIX_FMT_YUV411P;
+		else if (	pBMI->bmiHeader.biCompression == FCC('YV16')	||
+					pBMI->bmiHeader.biCompression == FCC('Y42B'))
+			return AV_PIX_FMT_YUV422P; // For YV16 we have to invert the planes!
+		else if (pBMI->bmiHeader.biCompression == FCC('J422'))
+			return AV_PIX_FMT_YUVJ422P;
+		else if (	pBMI->bmiHeader.biCompression == FCC('Y800')	||
+					pBMI->bmiHeader.biCompression == FCC('  Y8')	||
+					pBMI->bmiHeader.biCompression == FCC('Y8  ')	||
+					pBMI->bmiHeader.biCompression == FCC('GREY'))
+			return AV_PIX_FMT_GRAY8;
+		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('R','G','B',15))
+			return AV_PIX_FMT_RGB555;
+		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('B','G','R',15))
+			return AV_PIX_FMT_BGR555;
+		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('R','G','B',16))
+			return AV_PIX_FMT_RGB565;
+		else if (pBMI->bmiHeader.biCompression == mmioFOURCC('B','G','R',16))
+			return AV_PIX_FMT_BGR565;
+		else if (pBMI->bmiHeader.biCompression == BI_RGB)
+		{
+			switch (pBMI->bmiHeader.biBitCount)
+			{
+				case 8  : return AV_PIX_FMT_PAL8;
+				case 16 : return AV_PIX_FMT_RGB555;
+				case 24 : return AV_PIX_FMT_BGR24;
+				case 32 : return AV_PIX_FMT_RGB32;
+				default : return AV_PIX_FMT_NONE;
+			}
+		}
+		else if (pBMI->bmiHeader.biCompression == BI_BITFIELDS)
+		{
+			switch (pBMI->bmiHeader.biBitCount)
+			{
+				case 16 :
+				{
+					LPBITMAPINFOBITFIELDS pBmiBf = (LPBITMAPINFOBITFIELDS)pBMI;
+					if ((pBmiBf->biBlueMask == 0x001F)	&&
+						(pBmiBf->biGreenMask == 0x07E0)	&&
+						(pBmiBf->biRedMask == 0xF800))
+						return AV_PIX_FMT_RGB565;
+					else
+						return AV_PIX_FMT_RGB555;
+				}
+				case 32 : return AV_PIX_FMT_RGB32;
+				default : return AV_PIX_FMT_NONE;
+			}
+		}
+		else
+			return AV_PIX_FMT_NONE;
+	}
+	else
+		return AV_PIX_FMT_NONE;
+}
+
+enum AVCodecID CAVRec::AVCodecFourCCToCodecID(DWORD dwFourCC)
+{
+	CString sFourCC = FourCCToStringUpperCase(dwFourCC);
+	if (sFourCC == _T("MJPG")	||
+		sFourCC == _T("M601"))	// contaware introduced this fourcc to distinguish the unofficial jpeg ITU601 color space
+		return AV_CODEC_ID_MJPEG;
+	else if (sFourCC == _T("H264"))
+		return AV_CODEC_ID_H264;
+	else if (sFourCC == _T("DIVX"))
+		return AV_CODEC_ID_MPEG4;
+	else
+		return AV_CODEC_ID_NONE;
+}
+
+enum AVCodecID CAVRec::AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits/*=16*/)
+{
+	switch (wFormatTag)
+	{
+		case WAVE_FORMAT_PCM :					return nPcmBits == 16 ? AV_CODEC_ID_PCM_S16LE : AV_CODEC_ID_PCM_U8;
+		case WAVE_FORMAT_MPEGLAYER3 :			return AV_CODEC_ID_MP3;
+		case WAVE_FORMAT_AAC2 :					return AV_CODEC_ID_AAC;
+		case WAVE_FORMAT_DVI_ADPCM :			return AV_CODEC_ID_ADPCM_IMA_WAV;
+		default :								return AV_CODEC_ID_NONE;
+	}
 }

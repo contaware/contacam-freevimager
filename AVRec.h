@@ -18,7 +18,7 @@ extern "C"
 // Do not use a higher value, AV_CODEC_ID_MPEG4 is not working!
 #define MAX_SIZE_FOR_RATIONAL				65535
 
-// Also defined in AviPlay.h!
+// Minimum PCM buffer size
 #define AUDIO_PCM_MIN_BUF_SIZE				8192
 
 // Maximum number of streams
@@ -29,6 +29,9 @@ extern "C"
 #define VIDEO_QUALITY_GOOD					4.0f
 #define VIDEO_QUALITY_MEDIUM				5.0f
 #define VIDEO_QUALITY_LOW					6.0f
+
+// Additional define not found in mmreg.h
+#define WAVE_FORMAT_AAC2					0x00FF
 
 class CAVRec
 {
@@ -73,7 +76,7 @@ public:
 	// Close
 	bool Close();
 
-	// Avi File Name
+	// File Name
 	__forceinline CString GetFileName() const	{return m_sFileName;};
 
 	// Total Written Bytes for the given stream
@@ -160,6 +163,13 @@ public:
 	// Audio Format Functions
 	__forceinline LPWAVEFORMATEX GetSrcWaveFormat(DWORD dwStreamNum)				{return m_pSrcWaveFormat[dwStreamNum];};
 	
+	// Helpers
+	static CString FourCCToString(DWORD dwFourCC);
+	static CString FourCCToStringUpperCase(DWORD dwFourCC);
+	static enum AVPixelFormat AVCodecBMIToPixFormat(LPBITMAPINFO pBMI);
+	static enum AVCodecID AVCodecFourCCToCodecID(DWORD dwFourCC);
+	static enum AVCodecID AVCodecFormatTagToCodecID(WORD wFormatTag, int nPcmBits = 16);
+
 protected:
 	__forceinline void SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMATEX pWaveFormat);
 	__forceinline void AdjustPTSDTS(DWORD dwStreamNum, AVPacket* pkt);
@@ -173,7 +183,7 @@ protected:
 
 	// General Vars
 	CString m_sFileName;
-	CRITICAL_SECTION m_csAVI;
+	CRITICAL_SECTION m_csAV;
 	AVOutputFormat* m_pOutputFormat;
     AVFormatContext* m_pFormatCtx;
 	bool m_bFileOpened;

@@ -9,8 +9,8 @@
 // - VirtualAlloc and VirtualFree leaks are not detected by debugger,
 //   we use the CRT heap functions for the debug build 
 // - VirtualAlloc's returned address is 64 KB aligned, 16, 32 or 64 bytes
-//   alignment is necessary for SIMD ops in CDib, CAVRec and CAVIPlay,
-//   av_malloc handles that correctly
+//   alignment is necessary for SIMD ops in CDib and CAVRec, av_malloc
+//   handles that correctly
 // - Today's 32 bits apps suffer from memory space fragmentation and
 //   not from RAM shortage, BIGALLOC_USEDSIZE accounts for the 64 KB
 //   allocation granularity and the address space waste

@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "AviPlay.h"
 #include "MJPEGEncoder.h"
+#include "AVRec.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,7 +41,7 @@ BOOL CMJPEGEncoder::Open(LPBITMAPINFO pSrcBMI, int nThreadCount)
 	m_pCodecCtx->width = pSrcBMI->bmiHeader.biWidth;
 	m_pCodecCtx->height = pSrcBMI->bmiHeader.biHeight;
 	m_pCodecCtx->codec_id = AV_CODEC_ID_MJPEG;
-	m_pCodecCtx->pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
+	m_pCodecCtx->pix_fmt = CAVRec::AVCodecBMIToPixFormat(pSrcBMI);
 	m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
 	m_pCodecCtx->strict_std_compliance = FF_COMPLIANCE_UNOFFICIAL; // to allow the AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P and AV_PIX_FMT_YUV444P formats
 	m_pCodecCtx->flags |= CODEC_FLAG_QSCALE;
@@ -140,7 +140,7 @@ DWORD CMJPEGEncoder::Encode(int qscale, LPBITMAPINFO pSrcBMI, LPBYTE pSrcBits, i
 	// Encode
 	avpicture_fill(	(AVPicture*)m_pFrame,
 					(uint8_t*)pSrcBits,
-					CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI),
+					CAVRec::AVCodecBMIToPixFormat(pSrcBMI),
 					pSrcBMI->bmiHeader.biWidth,
 					pSrcBMI->bmiHeader.biHeight);
 	m_pFrame->quality = FF_QP2LAMBDA * qscale;

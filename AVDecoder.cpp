@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "AviPlay.h"
 #include "YuvToYuv.h"
 #include "AVDecoder.h"
+#include "AVRec.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -22,7 +22,7 @@ BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 		return TRUE;
 
 	// Find the codec id for the video stream
-	AVCodecID id = CAVIPlay::CAVIVideoStream::AVCodecFourCCToCodecID(pSrcBMI->bmiHeader.biCompression);
+	AVCodecID id = CAVRec::AVCodecFourCCToCodecID(pSrcBMI->bmiHeader.biCompression);
 
 	// Get codec
 	if (id != AV_CODEC_ID_NONE)
@@ -66,7 +66,7 @@ BOOL CAVDecoder::Open(LPBITMAPINFO pSrcBMI)
 	// width, height, pix_fmt and codec_tag
 	else
 	{
-		m_pCodecCtx->pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pSrcBMI);
+		m_pCodecCtx->pix_fmt = CAVRec::AVCodecBMIToPixFormat(pSrcBMI);
 		if (m_pCodecCtx->pix_fmt == AV_PIX_FMT_NONE)
 			goto error;
 		m_pCodecCtx->width = m_pCodecCtx->coded_width;
@@ -217,7 +217,7 @@ BOOL CAVDecoder::Decode(LPBITMAPINFO pSrcBMI,
 	}
 
 	// Get destination pixel format
-	enum AVPixelFormat dst_pix_fmt = CAVIPlay::CAVIVideoStream::AVCodecBMIToPixFormat(pDstDib->GetBMI());
+	enum AVPixelFormat dst_pix_fmt = CAVRec::AVCodecBMIToPixFormat(pDstDib->GetBMI());
 	if (dst_pix_fmt == AV_PIX_FMT_NONE)
 	{
 		av_free_packet(&avpkt);
