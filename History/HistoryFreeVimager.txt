@@ -1,9 +1,9 @@
 FREEVIMAGER HISTORY
 
-5.0.0 (January 15th 2015)
+5.0.0 (March xth 2015)
 
-- Latest ffmpeg version built with stack re-alignment option enabled
 - libpng updated to 1.2.52
+- Removed avi player as there are many modern players out there
 
 4.9.9 (November 3rd 2014)
 

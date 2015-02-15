@@ -70,7 +70,6 @@ protected:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnRadioNochange();
 	virtual void OnOK();
-	afx_msg void OnButtonParentDir();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -7,7 +7,6 @@
 #include "VideoDeviceDoc.h"
 #include "VideoDeviceView.h"
 #include "CameraAdvancedSettingsPropertySheet.h"
-#include "BrowseDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,7 +59,6 @@ BEGIN_MESSAGE_MAP(CCameraBasicSettingsDlg, CDialog)
 	ON_WM_TIMER()
 	ON_WM_SETCURSOR()
 	ON_BN_CLICKED(IDC_RADIO_NOCHANGE, OnRadioNochange)
-	ON_BN_CLICKED(IDC_BUTTON_PARENT_DIR, OnButtonParentDir)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -465,9 +463,7 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MAX_CAMERA_FOLDER_SIZE);
 	pEdit->EnableWindow(bEnable);
-	CButton* pButton = (CButton*)GetDlgItem(IDC_BUTTON_PARENT_DIR);
-	pButton->EnableWindow(bEnable);
-	pButton = (CButton*)GetDlgItem(IDOK);
+	CButton* pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
 	pButton = (CButton*)GetDlgItem(IDCANCEL);
 	pButton->EnableWindow(bEnable);
@@ -645,16 +641,6 @@ void CCameraBasicSettingsDlg::OnOK()
 
 	// Disable all
 	EnableDisableAllCtrls(FALSE);
-}
-
-void CCameraBasicSettingsDlg::OnButtonParentDir() 
-{
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&m_sParentDir,
-					ML_STRING(1869, "Move camera folder to selected directory. ATTENTION: all camera folders have to be moved to this directory!"),
-					TRUE);
-	if (dlg.DoModal() == IDOK)
-		m_sParentDir = ::UNCPath(m_sParentDir); // if it's a valid drive mount path convert it to a UNC path which is also working in service mode
 }
 
 void CCameraBasicSettingsDlg::Rename()

@@ -1,16 +1,19 @@
 CONTACAM HISTORY
 
-5.0.0 (January 15th 2015)
+5.0.0 (March xth 2015)
 
 - Goodbye Flash and goodbye AVI: video saving as MP4 files
   (all modern Browsers and Smartphones can play them)
 - Removed Fullscreen Browser as it cannot display HTML5 videos
 - To avoid troubles in service mode from now on it's not possible
   to associate files to ContaCam (please use FreeVimager for that)
-- Latest ffmpeg version built with stack re-alignment option enabled
-- By default delete recordings older than a month
+- By default delete recordings older than a month and fixed disk full
+  prevention logic for network shares and symlinks
 - Installer adds now Start Menu entry only for Current User
-
+- Because of miss-configuration danger the possibility to move the
+  individual camera folders in Camera Basic Settings dialog has been
+  removed (advanced users can create junctions or symlinks)
+  
 4.9.9 (November 3rd 2014)
 
 - Possibility to configure Recording Segments of 15 min. and 30 min.
