@@ -76,12 +76,6 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	// Overwrite web files in given directory
 	m_pDoc->MicroApacheUpdateWebFiles(sAutoSaveDir);
 
-	// Get parent directory
-	m_sParentDir = sAutoSaveDir;
-	int index;
-	if ((index = m_sParentDir.ReverseFind(_T('\\'))) >= 0)
-		m_sParentDir = m_sParentDir.Left(index);
-
 	// Init Combo Boxes
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_SNAPSHOTHISTORY_RATE);
 	if (pComboBox)
@@ -668,26 +662,15 @@ void CCameraBasicSettingsDlg::Rename()
 	if (m_sName == _T(""))
 		m_sName = m_pDoc->GetDeviceName();
 	
-	// Adjust old dir
+	// Adjust old dir name
 	m_pDoc->m_sRecordAutoSaveDir.TrimRight(_T('\\'));
 
-	// Make new dir
-	CString sNewRecordAutoSaveDir = m_sParentDir;
-	sNewRecordAutoSaveDir.TrimRight(_T('\\'));
+	// Make new dir name
+	CString sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
+	int index;
+	if ((index = sNewRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
+		sNewRecordAutoSaveDir = sNewRecordAutoSaveDir.Left(index);
 	sNewRecordAutoSaveDir += _T('\\') + m_sName;
-	
-	// Fail if sNewRecordAutoSaveDir is a nested subdir of the old one
-	if (::IsSubDir(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
-	{
-		// Error Message
-		EndWaitCursor();
-		::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
-		BeginWaitCursor();
-
-		// Restore old name
-		m_sName = sOldName;
-		return;
-	}
 
 	// Prompt for merging
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir)	&&
@@ -710,20 +693,15 @@ void CCameraBasicSettingsDlg::Rename()
 			BeginWaitCursor();
 	}
 
-	// Error code
-	DWORD dwLastError = ERROR_SUCCESS;
-
 	// Merge or move
+	DWORD dwLastError = ERROR_SUCCESS;
 	if (::IsExistingDir(m_pDoc->m_sRecordAutoSaveDir) &&
 		sNewRecordAutoSaveDir.CompareNoCase(m_pDoc->m_sRecordAutoSaveDir) != 0)
 	{
 		if (::IsExistingDir(sNewRecordAutoSaveDir) || !::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
 		{
 			if (!::MergeDirContent(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir)) // overwrite existing
-			{
 				dwLastError = ::GetLastError();
-				sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-			}
 			else
 				::DeleteDir(m_pDoc->m_sRecordAutoSaveDir); // No error message on failure
 		}
@@ -734,21 +712,16 @@ void CCameraBasicSettingsDlg::Rename()
 			sNewRecordAutoSaveDir.Compare(m_pDoc->m_sRecordAutoSaveDir) != 0)
 	{
 		if (!::MoveFile(m_pDoc->m_sRecordAutoSaveDir, sNewRecordAutoSaveDir))
-		{
 			dwLastError = ::GetLastError();
-			sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-		}
 	}
 	// Create if nothing exists
 	else if (!::IsExistingDir(sNewRecordAutoSaveDir) && !::CreateDir(sNewRecordAutoSaveDir))
-	{
 		dwLastError = ::GetLastError();
-		sNewRecordAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-	}
-	m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
 
-	// On Error
-	if (dwLastError != ERROR_SUCCESS)
+	// OK?
+	if (dwLastError == ERROR_SUCCESS)
+		m_pDoc->m_sRecordAutoSaveDir = sNewRecordAutoSaveDir;
+	else
 	{
 		// Error Message
 		EndWaitCursor();
@@ -757,24 +730,6 @@ void CCameraBasicSettingsDlg::Rename()
 
 		// Restore old name
 		m_sName = sOldName;
-	}
-	// Update Doc Root
-	else if (m_sParentDir != ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot = m_sParentDir;
-		int nRet = CVideoDeviceDoc::MicroApacheReload();
-		if (nRet <= 0)
-		{
-			EndWaitCursor();
-			if (nRet == 0)
-				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
-			else
-				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
-			BeginWaitCursor();
-		}
-		::AfxGetApp()->WriteProfileString(	_T("GeneralApp"),
-											_T("MicroApacheDocRoot"),
-											((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot);
 	}
 }
 

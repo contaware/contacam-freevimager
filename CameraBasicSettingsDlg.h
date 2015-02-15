@@ -48,7 +48,6 @@ public:
 // Implementation
 protected:
 	CVideoDeviceDoc* m_pDoc;
-	CString	m_sParentDir;
 	BOOL m_bDoApplySettings;
 	int m_nRetryTimeMs;
 	void EnableDisableCtrls();

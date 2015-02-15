@@ -31,6 +31,7 @@ public:
 	CString	m_sMicroApacheAreaname;
 	CString	m_sMicroApacheUsername;
 	CString	m_sMicroApachePassword;
+	CString m_sMicroApacheDocRoot;
 	BOOL	m_bBrowserAutostart;
 	BOOL	m_bStartFromService;
 	BOOL	m_bMicroApacheDigestAuth;
@@ -47,6 +48,7 @@ public:
 
 // Implementation
 protected:
+	CString m_sMicroApacheDocRootOld;
 	CString m_sLastValidApacheUsername;
 	BOOL m_bRejectingApacheUsernameChange;
 	// Generated message map functions
@@ -54,6 +56,7 @@ protected:
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnUpdateAuthUsername();
+	afx_msg void OnButtonDocRoot();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

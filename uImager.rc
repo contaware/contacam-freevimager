@@ -209,8 +209,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
@@ -502,8 +500,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
@@ -734,8 +730,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
@@ -857,8 +851,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
@@ -1149,8 +1141,6 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "Move Camera Folders",         ID_TOOLS_MOVE_CAM_FOLDERS
-        MENUITEM SEPARATOR
         MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
         MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
     END
@@ -2863,34 +2853,37 @@ CAPTION "Global Settings"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,20,78,10
-    CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,36,47,10
-    CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,53,63,10
+    CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,33,47,10
+    CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,47,63,10
     CONTROL         "Web Browser Autostart",IDC_CHECK_BROWSER_AUTOSTART,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,70,91,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,60,91,10
     CONTROL         "Start in full-screen",IDC_CHECK_START_FULLSCREEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,20,75,10
-    CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,36,63,10
-    CONTROL         "ESC key exits the program",IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,53,101,10
+    CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,33,63,10
+    CONTROL         "ESC key exits the program",IDC_CHECK_ESC_EXIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,47,101,10
     CONTROL         "Disable auto-opening with external program",IDC_CHECK_DISABLE_EXTPROG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,70,154,10
-    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,69,115,23,13,ES_AUTOHSCROLL
-    CONTROL         "Connect to cameras with IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,116,109,10
-    CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,164,105,10
-    EDITTEXT        IDC_EDIT_PORT,57,182,27,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_AREANAME,189,182,139,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_USERNAME,57,203,75,13,ES_AUTOHSCROLL
-    EDITTEXT        IDC_AUTH_PASSWORD,189,203,75,13,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Secure\nAuthentication",IDC_CHECK_DIGESTAUTH,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,274,200,69,18
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,60,154,10
+    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,69,100,23,13,ES_AUTOHSCROLL
+    CONTROL         "Connect to cameras with IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,101,109,10
+    CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,146,105,10
+    PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,319,160,17,14
+    EDITTEXT        IDC_EDIT_PORT,69,182,27,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_AREANAME,198,182,140,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_USERNAME,69,203,75,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUTH_PASSWORD,198,203,66,13,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         "Secure\nAuthentication",IDC_CHECK_DIGESTAUTH,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,280,200,64,18
     DEFPUSHBUTTON   "OK",IDOK,135,232,36,14
     PUSHBUTTON      "Cancel",IDCANCEL,182,232,36,14
-    LTEXT           "User Name",IDC_STATIC,11,205,38,8
-    LTEXT           "Password",IDC_STATIC,145,205,33,8
-    GROUPBOX        "General",IDC_STATIC2248,5,7,342,82
-    LTEXT           "Port",IDC_STATIC,11,184,14,8
-    GROUPBOX        "Web Server",IDC_STATIC,5,146,342,80
-    LTEXT           "Area Name",IDC_STATIC,140,184,38,8
-    GROUPBOX        "Network Cameras",IDC_STATIC,5,97,342,40
-    LTEXT           "Autostart delay",IDC_STATIC,11,117,53,8
-    LTEXT           "seconds",IDC_STATIC,100,117,27,8
+    LTEXT           "User Name",IDC_STATIC,11,205,43,8
+    LTEXT           "Password",IDC_STATIC,158,205,33,8
+    GROUPBOX        "General",IDC_STATIC2248,5,7,342,70
+    LTEXT           "Port",IDC_STATIC,11,184,19,8
+    GROUPBOX        "Web Server",IDC_STATIC,5,131,342,95
+    LTEXT           "Area Name",IDC_STATIC,154,184,38,8
+    GROUPBOX        "Network Cameras",IDC_STATIC,5,85,342,38
+    LTEXT           "Autostart delay",IDC_STATIC,11,102,53,8
+    LTEXT           "seconds",IDC_STATIC,100,102,27,8
+    EDITTEXT        IDC_EDIT_DOCROOT,69,161,248,13,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Cameras Root",IDC_STATIC,11,163,50,8
 END
 
 IDD_IMAPI2 DIALOG 0, 0, 298, 124
@@ -3634,10 +3627,11 @@ BEGIN
         TOPMARGIN, 6
         BOTTOMMARGIN, 246
         HORZGUIDE, 25
-        HORZGUIDE, 41
-        HORZGUIDE, 58
-        HORZGUIDE, 75
-        HORZGUIDE, 121
+        HORZGUIDE, 38
+        HORZGUIDE, 52
+        HORZGUIDE, 65
+        HORZGUIDE, 106
+        HORZGUIDE, 167
         HORZGUIDE, 188
         HORZGUIDE, 209
     END
@@ -4985,8 +4979,6 @@ STRINGTABLE
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
-    ID_TOOLS_MOVE_CAM_FOLDERS 
-                            "Move all camera folders to selected directory\nMove Camera Folders"
     ID_TOOLS_BROWSE_CONFIGLOG_FILES 
                             "Open file explorer\nBrowse Config/Log Files"
 END

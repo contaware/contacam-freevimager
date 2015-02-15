@@ -43,6 +43,10 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_sMicroApacheAreaname = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheAreaname;;
 	m_sMicroApacheUsername = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheUsername;
 	m_sMicroApachePassword = ((CUImagerApp*)::AfxGetApp())->m_sMicroApachePassword;
+	m_sMicroApacheDocRootOld = ((CUImagerApp*)::AfxGetApp())->m_sMicroApacheDocRoot;
+	m_sMicroApacheDocRootOld = ::UNCPath(m_sMicroApacheDocRootOld);
+	m_sMicroApacheDocRootOld.TrimRight(_T('\\'));
+	m_sMicroApacheDocRoot = m_sMicroApacheDocRootOld;
 
 	// For validating apache user name
 	m_bRejectingApacheUsernameChange = FALSE;
@@ -65,6 +69,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_AUTH_AREANAME, m_sMicroApacheAreaname);
 	DDX_Text(pDX, IDC_AUTH_USERNAME, m_sMicroApacheUsername);
 	DDX_Text(pDX, IDC_AUTH_PASSWORD, m_sMicroApachePassword);
+	DDX_Text(pDX, IDC_EDIT_DOCROOT, m_sMicroApacheDocRoot);
 	DDX_Check(pDX, IDC_CHECK_BROWSER_AUTOSTART, m_bBrowserAutostart);
 	DDX_Check(pDX, IDC_CHECK_STARTFROM_SERVICE, m_bStartFromService);
 	DDX_Check(pDX, IDC_CHECK_DIGESTAUTH, m_bMicroApacheDigestAuth);
@@ -77,6 +82,7 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSettingsDlgVideoDeviceDoc, CDialog)
 	//{{AFX_MSG_MAP(CSettingsDlgVideoDeviceDoc)
 	ON_EN_UPDATE(IDC_AUTH_USERNAME, OnUpdateAuthUsername)
+	ON_BN_CLICKED(IDC_BUTTON_DOCROOT, OnButtonDocRoot)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -185,6 +191,34 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Device Autostart delay
 	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
 
+	// Document root changed?
+	if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
+	{
+		// Update all RecordAutoSaveDir configuration entries
+		CStringArray DevicePathNames;
+		pApp->EnumConfiguredDevicePathNames(DevicePathNames);
+		for (int i = 0 ; i < DevicePathNames.GetSize() ; i++)
+		{
+			CString sRecordAutoSaveDir = pApp->GetProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
+			sRecordAutoSaveDir.TrimRight(_T('\\'));
+			int index;
+			if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
+				sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
+			WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
+		}
+
+		// Merge
+		if (!::MergeDirContent(m_sMicroApacheDocRootOld, m_sMicroApacheDocRoot)) // overwrite existing
+		{
+			DWORD dwLastError = ::GetLastError();
+			EndWaitCursor();
+			::ShowError(dwLastError, TRUE);
+			BeginWaitCursor();
+		}
+		else
+			::DeleteDir(m_sMicroApacheDocRootOld); // no error message on failure
+	}
+
 	// Micro Apache
 	if (m_sMicroApacheAreaname.IsEmpty())
 		m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
@@ -193,7 +227,8 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_bMicroApacheDigestAuth != m_bMicroApacheDigestAuth	||
 		pApp->m_sMicroApacheAreaname != m_sMicroApacheAreaname		||
 		pApp->m_sMicroApacheUsername != m_sMicroApacheUsername		||
-		pApp->m_sMicroApachePassword != m_sMicroApachePassword)
+		pApp->m_sMicroApachePassword != m_sMicroApachePassword		||
+		m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
 	{
 		// Update vars
 		pApp->m_bStartMicroApache = m_bStartMicroApache;
@@ -202,6 +237,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 		pApp->m_sMicroApacheAreaname = m_sMicroApacheAreaname;
 		pApp->m_sMicroApacheUsername = m_sMicroApacheUsername;
 		pApp->m_sMicroApachePassword = m_sMicroApachePassword;
+		pApp->m_sMicroApacheDocRoot = m_sMicroApacheDocRoot;
 
 		// Stop, update and eventually restart server
 		int nRet = CVideoDeviceDoc::MicroApacheReload();
@@ -259,6 +295,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteSecureProfileString(	_T("GeneralApp"),
 									_T("MicroApachePassword"),
 									m_sMicroApachePassword);
+	pApp->WriteProfileString(		_T("GeneralApp"),
+									_T("MicroApacheDocRoot"),
+									m_sMicroApacheDocRoot);
 
 	// Redraw web server port
 	::AfxGetMainFrame()->m_MDIClientWnd.Invalidate();
@@ -266,6 +305,35 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	EndWaitCursor();
 
 	EndDialog(IDOK);
+}
+
+void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot() 
+{
+	// Validate
+	if (!UpdateData(TRUE))
+		return;
+	CString sNewMicroApacheDocRoot = m_sMicroApacheDocRoot;
+	CBrowseDlg dlg(	::AfxGetMainFrame(),
+					&sNewMicroApacheDocRoot,
+					ML_STRING(1871, "Move all camera folders to selected directory"),
+					TRUE);
+	if (dlg.DoModal() == IDOK)
+	{
+		// If it's a valid drive mount path convert it to a UNC path which is also working in service mode
+		sNewMicroApacheDocRoot = ::UNCPath(sNewMicroApacheDocRoot);
+
+		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
+		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
+		if (::IsSubDir(m_sMicroApacheDocRootOld, sNewMicroApacheDocRoot))
+		{
+			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
+			return;
+		}
+
+		// Update
+		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
+		UpdateData(FALSE);
+	}
 }
 
 BOOL CSettingsDlgVideoDeviceDoc::OnInitDialog() 

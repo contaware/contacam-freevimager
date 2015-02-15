@@ -109,7 +109,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_PRINT_SETUP, CWinApp::OnFilePrintSetup)
 	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
 #ifdef VIDEODEVICEDOC
-	ON_COMMAND(ID_TOOLS_MOVE_CAM_FOLDERS, OnToolsMoveCamFolders)
 	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
 	ON_COMMAND(ID_CAPTURE_NETWORK, OnCaptureNetwork)
@@ -1097,6 +1096,11 @@ void CUImagerApp::OnAppFaq()
 void CUImagerApp::OnFileSettings() 
 {
 #ifdef VIDEODEVICEDOC
+	if (AreVideoDeviceDocsOpen())
+	{
+		::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
+		return;
+	}
 	CSettingsDlgVideoDeviceDoc dlg;
 #else
 	CSettingsDlg dlg;
@@ -5117,88 +5121,6 @@ void CUImagerApp::EnumConfiguredDevicePathNames(CStringArray& DevicePathNames)
 			sSource++; // Skip the 0
 		}
 		delete [] pSectionNames;
-	}
-}
-
-void CUImagerApp::OnToolsMoveCamFolders()
-{
-	// Check
-	if (AreVideoDeviceDocsOpen())
-	{
-		::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	// Call browse for folder dialog
-	CString sMicroApacheDocRoot = m_sMicroApacheDocRoot;
-	sMicroApacheDocRoot.TrimRight(_T('\\'));
-	CString sNewMicroApacheDocRoot = sMicroApacheDocRoot;
-	CBrowseDlg dlg(	::AfxGetMainFrame(),
-					&sNewMicroApacheDocRoot,
-					ML_STRING(1871, "Move all camera folders to selected directory"),
-					TRUE);
-	if (dlg.DoModal() == IDOK)
-	{
-		// If it's a valid drive mount path convert it to a UNC path
-		// which is also working in service mode
-		sNewMicroApacheDocRoot = ::UNCPath(sNewMicroApacheDocRoot);
-
-		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
-		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
-		if (::IsSubDir(sMicroApacheDocRoot, sNewMicroApacheDocRoot))
-		{
-			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
-			return;
-		}
-
-		// Begin Wait Cursor
-		BeginWaitCursor();
-
-		// Update all RecordAutoSaveDir configuration entries
-		CStringArray DevicePathNames;
-		EnumConfiguredDevicePathNames(DevicePathNames);
-		for (int i = 0 ; i < DevicePathNames.GetSize() ; i++)
-		{
-			CString sRecordAutoSaveDir = GetProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), _T(""));
-			sRecordAutoSaveDir.TrimRight(_T('\\'));
-			int index;
-			if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
-				sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
-			WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), sNewMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
-		}
-
-		// Merge if different directories
-		if (sNewMicroApacheDocRoot.CompareNoCase(sMicroApacheDocRoot) != 0)
-		{
-			if (!::MergeDirContent(sMicroApacheDocRoot, sNewMicroApacheDocRoot)) // overwrite existing
-			{
-				DWORD dwLastError = ::GetLastError();
-				EndWaitCursor();
-				::ShowError(dwLastError, TRUE);
-				BeginWaitCursor();
-			}
-			else
-				::DeleteDir(sMicroApacheDocRoot); // no error message on failure
-		}
-
-		// Update doc root and reload web server
-		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
-		WriteProfileString(	_T("GeneralApp"),
-							_T("MicroApacheDocRoot"),
-							m_sMicroApacheDocRoot);
-		int nRet = CVideoDeviceDoc::MicroApacheReload();
-
-		// End Wait Cursor
-		EndWaitCursor();
-
-		// Micro apache error message
-		if (nRet <= 0)
-		{
-			if (nRet == 0)
-				::AfxMessageBox(ML_STRING(1474, "Failed to stop the web server"), MB_ICONSTOP);
-			else
-				::AfxMessageBox(ML_STRING(1475, "Failed to start the web server"), MB_ICONSTOP);
-		}
 	}
 }
 

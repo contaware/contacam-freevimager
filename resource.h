@@ -1238,6 +1238,7 @@
 #define IDC_AUTH_AREANAME               1221
 #define IDS_MULTILANG_1222              1222
 #define IDC_HOST_PORT                   1222
+#define IDC_EDIT_DOCROOT                1222
 #define IDS_MULTILANG_1223              1223
 #define IDC_PROXY_HOST_NAME             1223
 #define IDC_SUBJECT_LINE                1223
@@ -3111,6 +3112,7 @@
 #define IDC_LABEL_QUALITY               2563
 #define IDC_EDIT_CREDITS                2564
 #define IDC_VIDEO_COMPRESSION_QUALITY_INFO 2565
+#define IDC_BUTTON_DOCROOT              2566
 #define ID_EDIT_ROTATE_FLIP             32778
 #define ID_FILE_SELECTTWAINSOURCE       32779
 #define ID_FILE_ACQUIRE                 32780
@@ -3343,7 +3345,6 @@
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33307
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
-#define ID_TOOLS_MOVE_CAM_FOLDERS       33502
 #define ID_TOOLS_BROWSE_CONFIGLOG_FILES 33503
 #define ID_BUTTON_PRINT_SETUP           58120
 
@@ -3354,7 +3355,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        1496
 #define _APS_NEXT_COMMAND_VALUE         33504
-#define _APS_NEXT_CONTROL_VALUE         2566
+#define _APS_NEXT_CONTROL_VALUE         2567
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
