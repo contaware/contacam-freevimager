@@ -1,6 +1,8 @@
 #ifndef _INC_YUVTOYUV
 #define _INC_YUVTOYUV
 
+#ifdef VIDEODEVICEDOC
+
 extern "C"
 {
 #include "libavutil/opt.h"
@@ -84,3 +86,4 @@ extern BOOL ITU601JPEGConvert(	enum AVPixelFormat src_pix_fmt,
 								int width, int height);
 
 #endif
+#endif //!_INC_YUVTOYUV

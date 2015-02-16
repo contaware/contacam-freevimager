@@ -7,6 +7,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef VIDEODEVICEDOC
+
 // Defines
 #define SCALEBITS 10
 #define ONE_HALF  (1 << (SCALEBITS - 1))
@@ -586,4 +588,5 @@ error:
 	return res;
 }
 
+#endif
 #endif

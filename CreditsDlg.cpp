@@ -7,7 +7,9 @@
 #include "pjnsmtp.h"
 extern "C"
 {
+#ifdef VIDEODEVICEDOC
 #include "libavutil/ffversion.h"
+#endif
 #ifndef CPJNSMTP_NOSSL
 #include <openssl/crypto.h>
 #endif
@@ -60,8 +62,10 @@ BOOL CCreditsDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// ffmpeg
+#ifdef VIDEODEVICEDOC
 	CString sffmpeg = _T("ffmpeg ") + CString(FFMPEG_VERSION);
 	sffmpeg += CString(_T('\n')) + _T("http://www.ffmpeg.org");
+#endif
 
 	// openssl and smtp
 #ifndef CPJNSMTP_NOSSL
@@ -112,7 +116,10 @@ BOOL CCreditsDlg::OnInitDialog()
 	snsis += CString(_T('\n')) + _T("http://www.scratchpaper.com");
 
 	// Output credits
-	CString sCredits =	sffmpeg		+ _T("\n\n") +
+	CString sCredits =	
+#ifdef VIDEODEVICEDOC
+						sffmpeg		+ _T("\n\n") +
+#endif
 #ifndef CPJNSMTP_NOSSL
 						sopenssl	+ _T("\n\n") +
 						ssmtp		+ _T("\n\n") +

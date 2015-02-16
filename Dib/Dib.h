@@ -9,12 +9,14 @@ extern "C"
 #include "jpeglib.h"
 #include "transupp.h"	// Support routines for lossless transformations
 #include "gif_lib.h"
+#ifdef VIDEODEVICEDOC
 #include "libavutil/opt.h"
 #include "libavutil/mathematics.h"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
+#endif
 }
 
 #include <afxtempl.h>	// For CArray
@@ -357,7 +359,9 @@ public:
 	static RGBQUAD ms_StdColors[];
 
 	// General Purpose User List
+#ifdef VIDEODEVICEDOC
 	USERLIST m_UserList;
+#endif
 
 protected:
 	int m_nStretchMode;			// Stretch Mode: COLORONCOLOR or HALFTONE
@@ -601,9 +605,11 @@ public:
 	void Init();
 
 	// User list handling
+#ifdef VIDEODEVICEDOC
 	void CopyUserList(const USERLIST& UserList);
 	void MoveUserList(USERLIST& UserList);
 	void FreeUserList();
+#endif
 
 	// Is the given File Name an existing file?
 	static BOOL IsFile(LPCTSTR lpszFileName);

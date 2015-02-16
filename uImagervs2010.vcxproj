@@ -135,8 +135,8 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.\wrapperheaders;.\ffmpeg;.\ffmpeg\msvc;.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MATH_H_PATH=&lt;$(VCInstallDir)include\math.h&gt;;CPJNSMTP_NOSSL;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\Dib;.\icclib;.\libpng;.\libjpeg;.\libtiff\libtiff;.\zlib;.\giflib\lib;.\zip;.\directx_base;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>CPJNSMTP_NOSSL;NDEBUG;UNICODE;WINVER=0x0501;_WIN32_WINNT=0x0501;_WINDOWS;DIRECT3D_VERSION=0x0700;CWSOCKET_MFC_EXTENSTIONS;WIN32;_WIN32_IE=0x0600;STRSAFE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;_ATL_SECURE_NO_DEPRECATE;_AFX_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>

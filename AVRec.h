@@ -1,6 +1,8 @@
 #ifndef _INC_AVREC
 #define _INC_AVREC
 
+#ifdef VIDEODEVICEDOC
+
 #include "Dib.h"
 #include <mmsystem.h>
 #include <mmreg.h>
@@ -263,4 +265,5 @@ __forceinline DWORD CAVRec::AudioStreamNumToStreamNum(DWORD dwAudioStreamNum)
 	return 0;
 }
 
+#endif
 #endif //!_INC_AVREC

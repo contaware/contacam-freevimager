@@ -276,7 +276,9 @@ CDib::~CDib()
 {
 	Free();
 	FreeGetClosestColorIndex();
+#ifdef VIDEODEVICEDOC
 	FreeUserList();
+#endif
 }
 
 void CDib::FreeArray(CDib::ARRAY& a)
@@ -299,6 +301,7 @@ void CDib::FreeList(CDib::LIST& l)
 	}
 }
 
+#ifdef VIDEODEVICEDOC
 void CDib::CopyUserList(const USERLIST& UserList)
 {
 	FreeUserList();
@@ -333,6 +336,7 @@ void CDib::FreeUserList()
 			av_free(UserBuf.m_pBuf);
 	}
 }
+#endif
 
 BOOL CDib::IsFile(LPCTSTR lpszFileName)
 {

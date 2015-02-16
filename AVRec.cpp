@@ -10,6 +10,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef VIDEODEVICEDOC
+
 // Defined in uImager.cpp
 int avcodec_open_thread_safe(AVCodecContext *avctx, AVCodec *codec);
 int avcodec_close_thread_safe(AVCodecContext *avctx);
@@ -1243,3 +1245,5 @@ float CAVRec::ClipVideoQuality(float fQuality)
 		fQuality = VIDEO_QUALITY_BEST;
 	return fQuality;
 }
+
+#endif

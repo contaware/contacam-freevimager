@@ -256,6 +256,8 @@ CString CUImagerApp::GetConfiguredTempDir()
 	return sConfiguredTempDir;
 }
 
+#ifdef VIDEODEVICEDOC
+
 // Note: the following ffmpeg functions are not thread safe:
 // avcodec_open2, avdevice_register_all, av_get_cpu_flags, av_force_cpu_flags
 
@@ -324,6 +326,8 @@ static void my_av_log_empty(void* ptr, int level, const char* fmt, va_list vl)
 {
 	return;
 }
+
+#endif
 
 BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 {
@@ -691,6 +695,9 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init YUV <-> RGB LUT
 		::InitYUVToRGBTable();
 		::InitRGBToYUVTable();
+
+#ifdef VIDEODEVICEDOC
+		// Init YUV <-> YUV LUT
 		::InitYUVToYUVTable();
 
 		// AVCODEC Init
@@ -703,7 +710,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 #endif
 		av_register_all();
 		
-#ifdef VIDEODEVICEDOC
 		// Init WinSock 2.2
 		WSADATA wsadata;
 		if (::WSAStartup(MAKEWORD(2, 2), &wsadata) == 0)
@@ -2405,11 +2411,13 @@ int CUImagerApp::ExitInstance()
 	::EndTraceLogFile();
 
 	// Delete Critical Section
+#ifdef VIDEODEVICEDOC
 	if (g_bAVCodecCSInited)
 	{
 		g_bAVCodecCSInited = FALSE;
 		::DeleteCriticalSection(&g_csAVCodec);
 	}
+#endif
 
 	// From CWinApp::ExitInstance(), I modified it:
 
