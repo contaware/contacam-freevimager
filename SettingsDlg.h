@@ -39,7 +39,6 @@ public:
 	BOOL	m_bSingleInstance;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;
-	BOOL	m_bDisableExtProg;
 	//}}AFX_DATA
 
 

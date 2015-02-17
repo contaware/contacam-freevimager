@@ -168,7 +168,6 @@ CUImagerApp::CUImagerApp()
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
 	m_bEscExit = FALSE;
-	m_bDisableExtProg = FALSE;
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
 	m_bEndSession = FALSE;
@@ -3827,9 +3826,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 	// ESC to exit the program
 	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
-
-	// Disable opening external program
-	m_bDisableExtProg = (BOOL)GetProfileInt(sSection, _T("DisableExtProg"), FALSE);
 
 	// Coordinate Units
 	m_nCoordinateUnit = GetProfileInt(sSection, _T("CoordinateUnit"), COORDINATES_PIX);

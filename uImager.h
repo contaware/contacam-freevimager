@@ -627,9 +627,6 @@ public:
 	// ESC to exit the program
 	BOOL m_bEscExit;
 
-	// Disable opening external program
-	BOOL m_bDisableExtProg;
-
 	// Scan Vars
 	int m_nPdfScanCompressionQuality;
 	CString m_sScanToTiffFileName;

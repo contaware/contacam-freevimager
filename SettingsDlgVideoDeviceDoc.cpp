@@ -32,7 +32,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
 	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
-	m_bDisableExtProg = ((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
@@ -59,7 +58,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
-	DDX_Check(pDX, IDC_CHECK_DISABLE_EXTPROG, m_bDisableExtProg);
 	DDX_Check(pDX, IDC_CHECK_TOPMOST, m_bTopMost);
 	DDX_Check(pDX, IDC_CHECK_WEBSERVER, m_bStartMicroApache);
 	DDX_Text(pDX, IDC_EDIT_PORT, m_nMicroApachePort);
@@ -174,9 +172,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
-	// Disable opening external program
-	pApp->m_bDisableExtProg = m_bDisableExtProg;
-
 	// Browser
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
 
@@ -257,9 +252,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("ESCExit"),
 									m_bEscExit);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("DisableExtProg"),
-									m_bDisableExtProg);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);

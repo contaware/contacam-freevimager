@@ -4135,13 +4135,8 @@ BOOL CPictureDoc::SaveAsPdf()
 		// End Wait Cursor
 		EndWaitCursor();
 
-		// Open Pdf with external program
-		if (res)
-		{
-			if (!((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg)
-				::ShellExecute(NULL, _T("open"), FileName, NULL, NULL, SW_SHOWNORMAL);
-		}
-		else
+		// On Error
+		if (!res)
 		{
 			::DeleteFile(FileName);
 			::AfxMessageBox(ML_STRING(1264, "Could Not Save The Picture As a Pdf File."), MB_OK | MB_ICONSTOP);

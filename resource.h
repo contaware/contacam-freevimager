@@ -2099,7 +2099,6 @@
 #define IDC_CHECK_ESC_EXIT              1697
 #define IDC_BAND2                       1697
 #define IDS_STRING1697                  1697
-#define IDC_CHECK_DISABLE_EXTPROG       1698
 #define IDC_BAND3                       1698
 #define IDS_STRING1698                  1698
 #define IDC_BAND4                       1699

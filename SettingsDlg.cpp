@@ -57,7 +57,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =				((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bEscExit =				((CUImagerApp*)::AfxGetApp())->m_bEscExit;
-	m_bDisableExtProg =			((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 }
 
 void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
@@ -83,7 +82,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
-	DDX_Check(pDX, IDC_CHECK_DISABLE_EXTPROG, m_bDisableExtProg);
 	//}}AFX_DATA_MAP
 }
 
@@ -390,9 +388,6 @@ void CSettingsDlg::OnOK()
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
-	// Disable opening external program
-	pApp->m_bDisableExtProg = m_bDisableExtProg;
-
 	// Store settings
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("SingleInstance"),
@@ -403,9 +398,6 @@ void CSettingsDlg::OnOK()
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("ESCExit"),
 							m_bEscExit);
-	pApp->WriteProfileInt(	_T("GeneralApp"),
-							_T("DisableExtProg"),
-							m_bDisableExtProg);
 
 	EndWaitCursor();
 

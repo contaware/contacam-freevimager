@@ -23,7 +23,6 @@ public:
 	BOOL	m_bEscExit;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;
-	BOOL	m_bDisableExtProg;
 	BOOL	m_bTopMost;
 	BOOL	m_bStartMicroApache;
 	int		m_nMicroApachePort;

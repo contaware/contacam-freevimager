@@ -423,10 +423,6 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 
 						// Delete Tiff
 						::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
-
-						// Open Pdf with external program
-						if (!((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg)
-							::ShellExecute(NULL, _T("open"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName, NULL, NULL, SW_SHOWNORMAL);
 					}
 					else
 						EndWaitCursor();
