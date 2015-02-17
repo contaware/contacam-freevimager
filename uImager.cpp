@@ -167,7 +167,6 @@ CUImagerApp::CUImagerApp()
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
 	m_sScanToTiffFileName = _T("");
-	m_bEscExit = FALSE;
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
 	m_bEndSession = FALSE;
@@ -3823,9 +3822,6 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 
 	// Last Opened Directory
 	m_sLastOpenedDir = GetProfileString(sSection, _T("LastOpenedDir"), _T(""));
-
-	// ESC to exit the program
-	m_bEscExit = (BOOL)GetProfileInt(sSection, _T("ESCExit"), FALSE);
 
 	// Coordinate Units
 	m_nCoordinateUnit = GetProfileInt(sSection, _T("CoordinateUnit"), COORDINATES_PIX);

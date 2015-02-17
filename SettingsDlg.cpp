@@ -56,7 +56,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
 	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =				((CUImagerApp*)::AfxGetApp())->IsAutostart();
-	m_bEscExit =				((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 }
 
 void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
@@ -78,7 +77,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
 	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
 	DDX_Check(pDX, IDC_CHECK_CDA, m_bCheckCda);
-	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
@@ -385,9 +383,6 @@ void CSettingsDlg::OnOK()
 	// Autostart
 	pApp->Autostart(m_bAutostart);
 
-	// ESC to exit the program
-	pApp->m_bEscExit = m_bEscExit;
-
 	// Store settings
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("SingleInstance"),
@@ -395,9 +390,6 @@ void CSettingsDlg::OnOK()
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("TrayIcon"),
 							m_bTrayIcon);
-	pApp->WriteProfileInt(	_T("GeneralApp"),
-							_T("ESCExit"),
-							m_bEscExit);
 
 	EndWaitCursor();
 

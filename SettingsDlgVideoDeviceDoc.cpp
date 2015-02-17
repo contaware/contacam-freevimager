@@ -31,7 +31,6 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bTrayIcon =		((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =		((CUImagerApp*)::AfxGetApp())->IsAutostart();
 	m_bStartFromService = CUImagerApp::GetContaCamServiceState() > 0;
-	m_bEscExit =		((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
@@ -55,7 +54,6 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSettingsDlgVideoDeviceDoc)
-	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
 	DDX_Check(pDX, IDC_CHECK_TOPMOST, m_bTopMost);
@@ -169,9 +167,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	else
 		::AfxGetMainFrame()->SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-	// ESC to exit the program
-	pApp->m_bEscExit = m_bEscExit;
-
 	// Browser
 	pApp->m_bBrowserAutostart = m_bBrowserAutostart;
 
@@ -249,9 +244,6 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("TrayIcon"),
 									m_bTrayIcon);
-	pApp->WriteProfileInt(			_T("GeneralApp"),
-									_T("ESCExit"),
-									m_bEscExit);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("BrowserAutostart"),
 									m_bBrowserAutostart);

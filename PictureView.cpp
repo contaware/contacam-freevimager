@@ -2062,63 +2062,58 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
-				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-			else
+			if (pDoc->m_bZoomTool)
+				pDoc->CancelZoomTool();
+			else if (	pDoc->m_pRotationFlippingDlg		||
+						pDoc->m_pWndPalette					||
+						pDoc->m_pLayeredDlg					||
+						pDoc->m_pImageInfoDlg				||
+						pDoc->m_pHLSDlg						||
+						pDoc->m_pRedEyeDlg					||
+						pDoc->m_pMonochromeConversionDlg	||
+						pDoc->m_pSharpenDlg					||
+						pDoc->m_pSoftenDlg					||
+						pDoc->m_pSoftBordersDlg				||
+						pDoc->m_bDoRedEyeColorPickup)
 			{
-				if (pDoc->m_bZoomTool)
-					pDoc->CancelZoomTool();
-				else if (	pDoc->m_pRotationFlippingDlg		||
-							pDoc->m_pWndPalette					||
-							pDoc->m_pLayeredDlg					||
-							pDoc->m_pImageInfoDlg				||
-							pDoc->m_pHLSDlg						||
-							pDoc->m_pRedEyeDlg					||
-							pDoc->m_pMonochromeConversionDlg	||
-							pDoc->m_pSharpenDlg					||
-							pDoc->m_pSoftenDlg					||
-							pDoc->m_pSoftBordersDlg				||
-							pDoc->m_bDoRedEyeColorPickup)
+				if (pDoc->m_pRotationFlippingDlg)
+					pDoc->m_pRotationFlippingDlg->Close();
+				if (pDoc->m_pWndPalette)
+					pDoc->m_pWndPalette->Close();
+				if (pDoc->m_pImageInfoDlg)
+					pDoc->m_pImageInfoDlg->Close();
+				if (pDoc->m_pLayeredDlg)
 				{
-					if (pDoc->m_pRotationFlippingDlg)
-						pDoc->m_pRotationFlippingDlg->Close();
-					if (pDoc->m_pWndPalette)
-						pDoc->m_pWndPalette->Close();
-					if (pDoc->m_pImageInfoDlg)
-						pDoc->m_pImageInfoDlg->Close();
-					if (pDoc->m_pLayeredDlg)
-					{
-						pDoc->m_LayeredDlgThread.Kill();
-						pDoc->m_pLayeredDlg->Close();
-					}
-					if (pDoc->m_pHLSDlg)
-						pDoc->m_pHLSDlg->Close();
-					if (pDoc->m_pMonochromeConversionDlg)
-						pDoc->m_pMonochromeConversionDlg->Close();
-					if (pDoc->m_pSharpenDlg)
-						pDoc->m_pSharpenDlg->Close();
-					if (pDoc->m_pSoftenDlg)
-						pDoc->m_pSoftenDlg->Close();
-					if (pDoc->m_pSoftBordersDlg)
-						pDoc->m_pSoftBordersDlg->Close();
-					if (pDoc->m_pRedEyeDlg)
-						pDoc->m_pRedEyeDlg->Close();
-					else if (pDoc->m_bDoRedEyeColorPickup)
-					{
-						pDoc->m_bDoRedEyeColorPickup = FALSE;
-						ForceCursor(FALSE);
-						::AfxGetMainFrame()->StatusText();
-					}
+					pDoc->m_LayeredDlgThread.Kill();
+					pDoc->m_pLayeredDlg->Close();
 				}
-				else if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
-					::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-				else if (pDoc->m_bCrop)
-					pDoc->CancelCrop();
-				else if (m_bFullScreenMode)
-					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-				else
-					pDoc->CloseDocument();
+				if (pDoc->m_pHLSDlg)
+					pDoc->m_pHLSDlg->Close();
+				if (pDoc->m_pMonochromeConversionDlg)
+					pDoc->m_pMonochromeConversionDlg->Close();
+				if (pDoc->m_pSharpenDlg)
+					pDoc->m_pSharpenDlg->Close();
+				if (pDoc->m_pSoftenDlg)
+					pDoc->m_pSoftenDlg->Close();
+				if (pDoc->m_pSoftBordersDlg)
+					pDoc->m_pSoftBordersDlg->Close();
+				if (pDoc->m_pRedEyeDlg)
+					pDoc->m_pRedEyeDlg->Close();
+				else if (pDoc->m_bDoRedEyeColorPickup)
+				{
+					pDoc->m_bDoRedEyeColorPickup = FALSE;
+					ForceCursor(FALSE);
+					::AfxGetMainFrame()->StatusText();
+				}
 			}
+			else if (((CUImagerApp*)::AfxGetApp())->m_bSlideShowOnly)
+				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
+			else if (pDoc->m_bCrop)
+				pDoc->CancelCrop();
+			else if (m_bFullScreenMode)
+				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
+			else
+				pDoc->CloseDocument();
 			break;
 
 		case VK_DOWN :

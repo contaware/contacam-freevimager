@@ -2096,7 +2096,6 @@
 #define IDC_BAND1                       1696
 #define IDS_STRING1696                  1696
 #define IDC_CHECK_STARTFROM_SERVICE     1696
-#define IDC_CHECK_ESC_EXIT              1697
 #define IDC_BAND2                       1697
 #define IDS_STRING1697                  1697
 #define IDC_BAND3                       1698

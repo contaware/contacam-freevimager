@@ -856,22 +856,17 @@ void CVideoDeviceView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			break;
 
 		case VK_ESCAPE :
-			if (((CUImagerApp*)::AfxGetApp())->m_bEscExit)
-				::AfxGetMainFrame()->PostMessage(WM_CLOSE, 0, 0);
-			else
+			if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
+				pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
+			else if (pDoc->m_bShowEditDetectionZones)
 			{
-				if (pDoc->m_pCameraAdvancedSettingsPropertySheet && pDoc->m_pCameraAdvancedSettingsPropertySheet->IsWindowVisible())
-					pDoc->m_pCameraAdvancedSettingsPropertySheet->Hide(TRUE);
-				else if (pDoc->m_bShowEditDetectionZones)
-				{
-					pDoc->HideDetectionZones();
-					pDoc->SaveSettings();
-				}
-				else if (m_bFullScreenMode)
-					::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
-				else
-					pDoc->CloseDocument();
+				pDoc->HideDetectionZones();
+				pDoc->SaveSettings();
 			}
+			else if (m_bFullScreenMode)
+				::AfxGetMainFrame()->EnterExitFullscreen();	// Exit Full-Screen Mode
+			else
+				pDoc->CloseDocument();
 			break;
 
 		case VK_INSERT :

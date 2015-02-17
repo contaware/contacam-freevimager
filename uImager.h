@@ -624,9 +624,6 @@ public:
 	CXmpDlg* m_pXmpImportDlg;
 	CXmpDlg* m_pXmpDlg;
 
-	// ESC to exit the program
-	BOOL m_bEscExit;
-
 	// Scan Vars
 	int m_nPdfScanCompressionQuality;
 	CString m_sScanToTiffFileName;
