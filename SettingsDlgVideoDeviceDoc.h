@@ -20,7 +20,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSettingsDlgVideoDeviceDoc)
 	enum { IDD = IDD_SETTINGS_VIDEODEVICEDOC };
-	BOOL	m_bStartFullScreenMode;
 	BOOL	m_bEscExit;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;

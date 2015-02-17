@@ -209,7 +209,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (((CUImagerApp*)::AfxGetApp())->m_bTrayIcon)
 	{
 		TrayIcon(TRUE);
-		if (!((CUImagerApp*)::AfxGetApp())->m_bFirstRun && !((CUImagerApp*)::AfxGetApp())->m_bStartFullScreenMode)
+		if (!((CUImagerApp*)::AfxGetApp())->m_bFirstRun)
 			m_TrayIcon.MinimizeToTray();
 	}
 

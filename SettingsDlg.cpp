@@ -56,7 +56,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
 	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
 	m_bAutostart =				((CUImagerApp*)::AfxGetApp())->IsAutostart();
-	m_bStartFullScreenMode =	((CUImagerApp*)::AfxGetApp())->m_bStartFullScreenMode;
 	m_bEscExit =				((CUImagerApp*)::AfxGetApp())->m_bEscExit;
 	m_bDisableExtProg =			((CUImagerApp*)::AfxGetApp())->m_bDisableExtProg;
 }
@@ -80,7 +79,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
 	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
 	DDX_Check(pDX, IDC_CHECK_CDA, m_bCheckCda);
-	DDX_Check(pDX, IDC_CHECK_START_FULLSCREEN, m_bStartFullScreenMode);
 	DDX_Check(pDX, IDC_CHECK_ESC_EXIT, m_bEscExit);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
@@ -389,9 +387,6 @@ void CSettingsDlg::OnOK()
 	// Autostart
 	pApp->Autostart(m_bAutostart);
 
-	// When starting program open document in full screen mode
-	pApp->m_bStartFullScreenMode = m_bStartFullScreenMode;
-
 	// ESC to exit the program
 	pApp->m_bEscExit = m_bEscExit;
 
@@ -405,9 +400,6 @@ void CSettingsDlg::OnOK()
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("TrayIcon"),
 							m_bTrayIcon);
-	pApp->WriteProfileInt(	_T("GeneralApp"),
-							_T("StartFullScreenMode"),
-							m_bStartFullScreenMode);
 	pApp->WriteProfileInt(	_T("GeneralApp"),
 							_T("ESCExit"),
 							m_bEscExit);
