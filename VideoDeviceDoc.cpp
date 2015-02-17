@@ -251,6 +251,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	CString sTempDetectionDir; 
 	sTempDetectionDir.Format(_T("Detection%X"), ::GetCurrentThreadId());
 	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
+	DWORD dwAttrib = ::GetFileAttributes(sTempDetectionDir);
+	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
+	{
+		if (!::CreateDir(sTempDetectionDir))
+			::ShowLastError(FALSE);
+	}
+
 	while (TRUE)
 	{
 		// Poll for Work
@@ -275,8 +282,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Shutdown?
 				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
 				{
-					if (::IsExistingDir(sTempDetectionDir))
-						::DeleteDir(sTempDetectionDir);
+					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
 			}
@@ -337,8 +343,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
 					m_bWorking = FALSE;
-					if (::IsExistingDir(sTempDetectionDir))
-						::DeleteDir(sTempDetectionDir);
+					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
 			}
@@ -354,34 +359,15 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sDetectionAutoSaveDir;
 		if (m_pDoc->m_bSaveMP4MovementDetection	|| m_pDoc->m_bSaveAnimGIFMovementDetection)
 		{
-			// Check Whether Dir Exists
 			sDetectionAutoSaveDir = m_pDoc->m_sRecordAutoSaveDir;
-			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
+			dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
 			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-			{
-				// Temp Dir To Store Files
 				sDetectionAutoSaveDir = sTempDetectionDir;
-				dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
-				if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-				{
-					if (!::CreateDir(sDetectionAutoSaveDir))
-						::ShowLastError(FALSE);
-				}	
-			}
 			else
 				sDetectionAutoSaveDir.TrimRight(_T('\\'));
 		}
-		// Temp Dir To Store Files For Email Sending and/or Ftp Upload
 		else
-		{
 			sDetectionAutoSaveDir = sTempDetectionDir;
-			DWORD dwAttrib = ::GetFileAttributes(sDetectionAutoSaveDir);
-			if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
-			{
-				if (!::CreateDir(sDetectionAutoSaveDir))
-					::ShowLastError(FALSE);
-			}
-		}
 
 		// Load the detection sequences counter and reset it if entering a new day.
 		// The detection sequences are tagged 1, 2, 3, ... A detection sequence is
@@ -401,33 +387,24 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			m_pDoc->m_nMovDetSavesCountYear = FirstTime.GetYear();
 		}
 
-		// Detection File Names
+		// Detection creation flags and File Names
 		BOOL bMakeMp4 = DoMakeMp4();
 		BOOL bMakeJpeg = DoMakeJpeg();
 		BOOL bMakeGif = DoMakeGif();
 		CString sMP4FileName;
-		CString sGIFFileName;
-		CString sGIFTempFileName; // Store to temp and then move so that web browser will not load half saved gifs
-		CString sJPGDir;
-		CStringArray sJPGFileNames;
 		CVideoDeviceDoc::CreateCheckYearMonthDayDir(FirstTime, sDetectionAutoSaveDir, sMP4FileName);
-		sJPGDir = sGIFFileName = sMP4FileName;
-		if (sMP4FileName == _T(""))
-			sMP4FileName = _T("det_") + sFirstTime + _T(".mp4");
-		else
-			sMP4FileName = sMP4FileName + _T("\\") + _T("det_") + sFirstTime + _T(".mp4");
-		if (sGIFFileName == _T(""))
-			sGIFFileName = _T("det_") + sFirstTime + _T(".gif");
-		else
-			sGIFFileName = sGIFFileName + _T("\\") + _T("det_") + sFirstTime + _T(".gif");
-		sGIFTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sGIFFileName);
-		if (sJPGDir != _T(""))
-			sJPGDir = sJPGDir + _T("\\");
+		CString sGIFFileName(sMP4FileName);
+		sMP4FileName += _T("\\det_") + sFirstTime + _T(".mp4");
+		sGIFFileName += _T("\\det_") + sFirstTime + _T(".gif");
+		CString sMP4TempFileName(sTempDetectionDir + _T("\\det_") + sFirstTime + _T(".mp4"));
+		CString sGIFTempFileName(sTempDetectionDir + _T("\\det_") + sFirstTime + _T(".gif"));
+		CString sJPGDir(sTempDetectionDir);
+		CStringArray sJPGFileNames;
 
 		// Create the Mp4 File
 		CAVRec AVRecMp4;
 		if (bMakeMp4)
-			AVRecMp4.Init(sMP4FileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
+			AVRecMp4.Init(sMP4TempFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -462,12 +439,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				GIFSaveDib.GetGif()->Close();
 				::DeleteFile(sGIFTempFileName);
 				AVRecMp4.Close();
-				::DeleteFile(sMP4FileName);
+				::DeleteFile(sMP4TempFileName);
 				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
-				if (::IsExistingDir(sTempDetectionDir))
-					::DeleteDir(sTempDetectionDir);
+				::DeleteDir(sTempDetectionDir);
 				return 0;
 			}
 
@@ -656,8 +632,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		GIFSaveDib.GetGif()->Close();
 		AVRecMp4.Close();
 
-		// Rename Saved Gif File
+		// Rename Saved Temp Files
+		::DeleteFile(sMP4FileName);
 		::DeleteFile(sGIFFileName);
+		::MoveFile(sMP4TempFileName, sMP4FileName);
 		::MoveFile(sGIFTempFileName, sGIFFileName);
 
 		// Free
@@ -676,8 +654,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
-			if (::IsExistingDir(sTempDetectionDir))
-				::DeleteDir(sTempDetectionDir);
+			::DeleteDir(sTempDetectionDir);
 			return 0;
 		}
 		dwMailFTPTimeMs = ::timeGetTime() - dwMailFTPTimeMs;
@@ -727,8 +704,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	}
 	ASSERT(FALSE); // should never end up here...
 	m_bWorking = FALSE;
-	if (::IsExistingDir(sTempDetectionDir))
-		::DeleteDir(sTempDetectionDir);
+	::DeleteDir(sTempDetectionDir);
 	return 0;
 }
 
@@ -859,7 +835,8 @@ CString CVideoDeviceDoc::CSaveFrameListThread::SaveJpeg(CDib* pDib,
 	// Calc. time and create file name
 	CTime Time = CalcTime(pDib->GetUpTime(), RefTime, dwRefUpTime);
 	CString sTime(Time.Format(_T("%Y_%m_%d_%H_%M_%S")));
-	sJPGDir += _T("det_") + sTime + _T(".jpg");
+	sJPGDir.TrimRight(_T('\\'));
+	sJPGDir += _T("\\det_") + sTime + _T(".jpg");
 
 	// Do not overwrite previous jpeg save
 	if (::IsExistingFile(sJPGDir))
