@@ -4286,8 +4286,7 @@ void CPictureDoc::OnEditRename()
 		if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
 		{	
 			// New file name
-			CString sNewFileName =	::GetDriveName(m_sFileName) +
-									::GetDirName(m_sFileName) +
+			CString sNewFileName =	::GetDriveAndDirName(m_sFileName) +
 									dlg.m_sFileName +
 									::GetFileExt(m_sFileName);
 

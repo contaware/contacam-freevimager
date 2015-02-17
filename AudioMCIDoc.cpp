@@ -175,8 +175,7 @@ void CAudioMCIDoc::OnEditRename()
 	if (dlg.DoModal() == IDOK && ::IsValidFileName(dlg.m_sFileName, TRUE))
 	{
 		// New file name
-		CString sNewFileName =	::GetDriveName(GetPathName()) +
-								::GetDirName(GetPathName()) +
+		CString sNewFileName =	::GetDriveAndDirName(GetPathName()) +
 								dlg.m_sFileName +
 								::GetFileExt(GetPathName());
 		
