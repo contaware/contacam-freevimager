@@ -207,7 +207,7 @@ void CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
 										pOldBmi->bmiHeader.biSizeImage,
 										pDib);
 		// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
-		if (!res)
+		if (!res && ((CUImagerApp*)::AfxGetApp())->m_bDecodeWithLibJpeg)
 			res = pDib->LoadJPEG(pOldBits, pOldBmi->bmiHeader.biSizeImage, 1, TRUE) && pDib->Compress(FCC('I420'));
 
 		// Make sure we have valid bits, if not make a green frame
@@ -7185,7 +7185,9 @@ void CVideoDeviceDoc::ProcessOtherFrame(LPBYTE pData, DWORD dwSize)
 	// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
 	else if (m_CaptureBMI.bmiHeader.biCompression == FCC('MJPG'))
 	{
-		if (m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize, 1, TRUE) && m_pProcessFrameExtraDib->Compress(FCC('I420')))
+		if (((CUImagerApp*)::AfxGetApp())->m_bDecodeWithLibJpeg			&&
+			m_pProcessFrameExtraDib->LoadJPEG(pData, dwSize, 1, TRUE)	&&
+			m_pProcessFrameExtraDib->Compress(FCC('I420')))
 		{
 			m_lCompressedDataRateSum += dwSize;
 			ProcessI420Frame(m_pProcessFrameExtraDib->GetBits(), m_pProcessFrameExtraDib->GetImageSize(), pData, dwSize);
@@ -10774,7 +10776,7 @@ BOOL CVideoDeviceDoc::CHttpGetFrameParseProcess::Process(unsigned char* pLinBuf,
 		}
 	}
 	// In case that avcodec_decode_video2 fails use LoadJPEG which is more fault tolerant, but slower...
-	else
+	else if (((CUImagerApp*)::AfxGetApp())->m_bDecodeWithLibJpeg)
 	{
 		CDib Dib;
 		Dib.SetShowMessageBoxOnError(FALSE);

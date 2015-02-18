@@ -139,6 +139,7 @@ CUImagerApp::CUImagerApp()
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
 	m_bMicroApacheDigestAuth = TRUE;
 	m_sMicroApacheAreaname = MICROAPACHE_DEFAULT_AUTH_AREANAME;
+	m_bDecodeWithLibJpeg = FALSE;
 	m_hVlcProcess = NULL;
 	m_VlcStartTime = CTime(0);
 	::InitializeCriticalSection(&m_csVlc);
@@ -3863,6 +3864,9 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	m_sMicroApacheAreaname = GetProfileString(sSection, _T("MicroApacheAreaname"), MICROAPACHE_DEFAULT_AUTH_AREANAME);
 	m_sMicroApacheUsername = GetSecureProfileString(sSection, _T("MicroApacheUsername"), _T(""));
 	m_sMicroApachePassword = GetSecureProfileString(sSection, _T("MicroApachePassword"), _T(""));
+
+	// Use libjpeg to decode if ffmpeg fails?
+	m_bDecodeWithLibJpeg = (BOOL)GetProfileInt(sSection, _T("DecodeWithLibJpeg"), FALSE);
 
 	// Load Schedulers
 	int nCount = GetProfileInt(sSection, _T("SchedulerCount"), 0);

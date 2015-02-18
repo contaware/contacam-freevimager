@@ -676,6 +676,9 @@ public:
 	CString m_sMicroApacheUsername;
 	CString m_sMicroApachePassword;
 
+	// Use libjpeg to decode if ffmpeg fails?
+	volatile BOOL m_bDecodeWithLibJpeg;
+
 	// Vlc
 	HANDLE m_hVlcProcess;
 	CTime m_VlcStartTime;

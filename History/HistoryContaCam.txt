@@ -4,12 +4,12 @@ CONTACAM HISTORY
 
 - Goodbye Flash and goodbye AVI: video saving as MP4 files
   (all modern Browsers and Smartphones can play them)
+- By default delete recordings older than a month and fixed disk full
+  deletion logic for network shares and symlinks
+- Installer adds now Start Menu entry only for Current User
 - Removed Fullscreen Browser as it cannot display HTML5 videos
 - To avoid troubles in service mode from now on it's not possible
   to associate files to ContaCam (please use FreeVimager for that)
-- By default delete recordings older than a month and fixed disk full
-  prevention logic for network shares and symlinks
-- Installer adds now Start Menu entry only for Current User
 - Because of miss-configuration danger the possibility to move the
   individual camera folders in Camera Basic Settings dialog has been
   removed (advanced users can create junctions or symlinks)
