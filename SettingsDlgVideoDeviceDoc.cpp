@@ -189,7 +189,7 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 			int index;
 			if ((index = sRecordAutoSaveDir.ReverseFind(_T('\\'))) >= 0)
 				sRecordAutoSaveDir = sRecordAutoSaveDir.Right(sRecordAutoSaveDir.GetLength() - index - 1);
-			WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
+			pApp->WriteProfileString(DevicePathNames[i], _T("RecordAutoSaveDir"), m_sMicroApacheDocRoot + _T("\\") + sRecordAutoSaveDir);
 		}
 
 		// Merge
