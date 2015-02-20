@@ -120,11 +120,17 @@ public:
 	CRect GetPreviousMonitorFullRect();
 	CRect GetNextMonitorFullRect();
 
-	// Toolbar and Statusbar
+	// Toolbar
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
-	CString* GetStatusBarString() {m_sStatusBarString;};
-	void StatusText(CString sText = _T("")); // If sText is _T("") the Idle message is displayed
+	
+	// Statusbar
+	// - sText == _T("") shows the idle message
+	// - nCountdownSec sets how long to disable the idle messages
+	void StatusText(CString sText = _T(""), int nCountdownSec = 0);
 	CStatusBar* GetStatusBar() {return &m_wndStatusBar;};
+	CString GetStatusBarString() const {return m_sStatusBarString;};
+	void SetIDLastMessage(UINT nIDLastMessage) {m_nIDLastMessage = nIDLastMessage;};
+	void SetIDTracking(UINT nIDTracking) {m_nIDTracking = nIDTracking;};
 
 	// Menu Positions
 	void InitMenuPositions(CDocument* pDoc = NULL);
@@ -193,6 +199,7 @@ protected:
 	CPoint m_ptChildScrollPosition;
 	BOOL m_bScreenSaverWasActive;
 	CString m_sStatusBarString;
+	int m_nStatusBarStringCountdownSec;
 	BOOL m_bProgressIndicatorCreated;
 
 	// Scan Vars

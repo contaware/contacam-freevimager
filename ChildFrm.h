@@ -39,6 +39,7 @@ protected:
 
 	//{{AFX_MSG(CChildFrame)
 	//}}AFX_MSG
+	LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 };
 

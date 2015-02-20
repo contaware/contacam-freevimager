@@ -131,6 +131,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
 	m_sStatusBarString = _T("");
+	m_nStatusBarStringCountdownSec = 0;
 	m_bProgressIndicatorCreated = FALSE;
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
@@ -2100,6 +2101,13 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
+		// Handle statusbar message off-time
+		if (m_nStatusBarStringCountdownSec > 0)
+		{
+			if (--m_nStatusBarStringCountdownSec == 0)
+				StatusText(); // show idle message
+		}
+
 		// Get CPU Usage
 		double dCPUUsage = ::GetCPUUsage();
 
@@ -2243,67 +2251,26 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 }
 
-void CMainFrame::StatusText(CString sText/*=_T("")*/)
+void CMainFrame::StatusText(CString sText/*=_T("")*/, int nCountdownSec/*=0*/)
 {
-	CString sCurrentText(sText);
-	CWnd* pMessageBar = GetMessageBar();
-	if (pMessageBar)
-		pMessageBar->GetWindowText(sCurrentText);
+	// Update if not a StatusText() empty call during a countdown
+	if (!(sText == _T("") && nCountdownSec == 0 && m_nStatusBarStringCountdownSec > 0))
+	{
+		m_nStatusBarStringCountdownSec = nCountdownSec;
+		m_sStatusBarString = sText;
+	}
 
-	if (m_sStatusBarString == sText && sCurrentText == sText)
-		return;
-
-	m_sStatusBarString = sText;
-
+	// Send Message handled in OnSetMessageString()
 	if (sText == _T(""))
-		SetMessageText(AFX_IDS_IDLEMESSAGE);
+		SetMessageText(AFX_IDS_IDLEMESSAGE);			// = SendMessage(WM_SETMESSAGESTRING, (WPARAM)AFX_IDS_IDLEMESSAGE);
 	else
-    	SetMessageText((LPCTSTR)m_sStatusBarString);
+    	SetMessageText((LPCTSTR)m_sStatusBarString);	// = SendMessage(WM_SETMESSAGESTRING, 0, (LPARAM)(LPCTSTR)m_sStatusBarString);
 }
 
 LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 {
-	/* Original Version in CFrameWnd
-	UINT nIDLast = m_nIDLastMessage;
-	m_nFlags &= ~WF_NOPOPMSG;
-
-	CWnd* pMessageBar = GetMessageBar();
-	if (pMessageBar != NULL)
-	{
-		LPCTSTR lpsz = NULL;
-		CString strMessage;
-
-		// set the message bar text
-		if (lParam != 0)
-		{
-			ASSERT(wParam == 0);    // can't have both an ID and a string
-			lpsz = (LPCTSTR)lParam; // set an explicit string
-		}
-		else if (wParam != 0)
-		{
-			// map SC_CLOSE to PREVIEW_CLOSE when in print preview mode
-			if (wParam == AFX_IDS_SCCLOSE && m_lpfnCloseProc != NULL)
-				wParam = AFX_IDS_PREVIEW_CLOSE;
-
-			// get message associated with the ID indicated by wParam
-			GetMessageString(wParam, strMessage);
-			lpsz = strMessage;
-		}
-		pMessageBar->SetWindowText(lpsz);
-
-		// update owner of the bar in terms of last message selected
-		CFrameWnd* pFrameWnd = pMessageBar->GetParentFrame();
-		if (pFrameWnd != NULL)
-		{
-			pFrameWnd->m_nIDLastMessage = (UINT)wParam;
-			pFrameWnd->m_nIDTracking = (UINT)wParam;
-		}
-	}
-
-	m_nIDLastMessage = (UINT)wParam;    // new ID (or 0)
-	m_nIDTracking = (UINT)wParam;       // so F1 on toolbar buttons work
-	return nIDLast;
-	*/
+	// Adapted version of CFrameWnd::OnSetMessageString() from winfrm.cpp
+	// see also CChildFrame::OnSetMessageString()
 
 	UINT nIDLast = m_nIDLastMessage;
 	m_nFlags &= ~WF_NOPOPMSG;
@@ -2317,9 +2284,8 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 		// set the message bar text
 		if (lParam != 0)
 		{
-			ASSERT(wParam == 0);    // can't have both an ID and a string
-            m_sStatusBarString = (LPCTSTR)lParam;
-            sMsg = m_sStatusBarString;
+			ASSERT(wParam == 0);	// can't have both an ID and a string
+			sMsg = (LPCTSTR)lParam;	// set an explicit string
 		}
 		else if (wParam != 0)
 		{
@@ -2334,22 +2300,17 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 			else if (wParam >= ID_DIRECTSHOW_VIDEODEV_FIRST && wParam <= ID_DIRECTSHOW_VIDEODEV_LAST)
 				sMsg = _T("DirectShow / WDM");
 			// get message associated with the ID indicated by wParam
+			// NT64: Assume IDs are still 32-bit
 			else
 			{
-				GetMessageString(wParam, strMessage);
+				GetMessageString((UINT)wParam, strMessage);
 				sMsg = strMessage;
 			}
 		}
 		pMessageBar->SetWindowText(sMsg);
 
-		// update owner of the bar in terms of last message selected
-		CFrameWnd* pFrameWnd = pMessageBar->GetParentFrame();
-		ASSERT(pFrameWnd == this);
-		if (pFrameWnd != NULL)
-		{
-			m_nIDLastMessage = (UINT)wParam;
-			m_nIDTracking = (UINT)wParam;
-		}
+		// no need to update owner of the bar in terms of last message selected
+		// because we are the owner and are updated below!
 	}
 
 	m_nIDLastMessage = (UINT)wParam;    	// new ID (or 0)
