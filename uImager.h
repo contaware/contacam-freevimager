@@ -586,9 +586,6 @@ public:
 	// Placement Settings have been loaded
 	BOOL m_bPlacementLoaded;
 
-	// Ending session because of shutdown or log-off
-	volatile BOOL m_bEndSession;
-
 	// Cores count
 	volatile int m_nCoresCount;
 

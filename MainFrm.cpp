@@ -2581,10 +2581,7 @@ BOOL CMainFrame::OnQueryEndSession()
 void CMainFrame::OnEndSession(BOOL bEnding) 
 {
 	if (bEnding)
-	{
-		((CUImagerApp*)::AfxGetApp())->m_bEndSession = TRUE;
 		((CUImagerApp*)::AfxGetApp())->SaveOnEndSession();
-	}
 }
 
 LRESULT CMainFrame::OnCopyData(WPARAM /*wParam*/, LPARAM lParam)

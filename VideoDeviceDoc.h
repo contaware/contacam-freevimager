@@ -852,7 +852,7 @@ public:
 	// Video / Audio Recording
 	BOOL MakeAVRec(CAVRec** ppAVRec);
 	void OpenVideoFile(const CString& sFileName);
-	BOOL CaptureRecord(BOOL bShowMessageBoxOnError = TRUE);
+	BOOL CaptureRecord();
 	BOOL NextVideoFile();
 	void NextRecTime(CTime t);
 	void CloseAndShowVideoFile();

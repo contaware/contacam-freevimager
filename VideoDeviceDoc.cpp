@@ -5464,7 +5464,7 @@ void CVideoDeviceDoc::OnUpdateCaptureRecord(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_pAVRec != NULL ? 1 : 0);
 }
 
-BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/) 
+BOOL CVideoDeviceDoc::CaptureRecord() 
 {
 	// Enter CS
 	::EnterCriticalSection(&m_csAVRec);
@@ -5504,10 +5504,9 @@ BOOL CVideoDeviceDoc::CaptureRecord(BOOL bShowMessageBoxOnError/*=TRUE*/)
 			// Leave CS
 			::LeaveCriticalSection(&m_csAVRec);
 			
-			CString sMsg = ML_STRING(1493, "Cannot Create the Video File!\n");
-			TRACE(sMsg);
-			if (bShowMessageBoxOnError)
-				::AfxMessageBox(sMsg, MB_ICONSTOP);
+			// Error Message
+			ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+			::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
 			
 			return FALSE;
 		}
@@ -6687,11 +6686,11 @@ BOOL CVideoDeviceDoc::VlmReStart()
 
 	// Log if something has been done
 	if (bStopped && bStarted)
-		::LogLine(_T("VLC restarting"));
+		::LogLine(_T("%s"), _T("VLC restarting"));
 	else if (bStopped)
-		::LogLine(_T("VLC stopping"));
+		::LogLine(_T("%s"), _T("VLC stopping"));
 	else if (bStarted)
-		::LogLine(_T("VLC starting"));
+		::LogLine(_T("%s"), _T("VLC starting"));
 
 	::LeaveCriticalSection(&pApp->m_csVlc);
 
@@ -6705,7 +6704,7 @@ void CVideoDeviceDoc::VlmShutdown()
 	if (pApp->m_hVlcProcess)
 	{
 		::KillApp(pApp->m_hVlcProcess); // this sets pApp->m_hVlcProcess to NULL
-		::LogLine(_T("VLC stopping"));
+		::LogLine(_T("%s"), _T("VLC stopping"));
 	}
 	::LeaveCriticalSection(&pApp->m_csVlc);
 }
@@ -8077,10 +8076,10 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	if (res)
 	{
 		if (!m_bManualSnapshotAutoOpen)
-			ShowOSDMessage(ML_STRING(1849, "Snapshot Saved"), DRAW_MESSAGE_SUCCESS_COLOR);
+			ShowOSDMessage(ML_STRING(1849, "Saved"), DRAW_MESSAGE_SUCCESS_COLOR);
 	}
 	else
-		ShowOSDMessage(ML_STRING(1850, "Snapshot Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+		ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
 
 	return res;
 }
@@ -8116,9 +8115,7 @@ void CVideoDeviceDoc::CloseAndShowVideoFile()
 	FreeVideoFile();
 
 	// Open the video file
-	// (if ending the Windows session do not perform the following)
-	if (::AfxGetApp() && !((CUImagerApp*)::AfxGetApp())->m_bEndSession)
-		OpenVideoFile(sOldRecFileName);
+	OpenVideoFile(sOldRecFileName);
 }
 
 void CVideoDeviceDoc::NextRecTime(CTime t)
@@ -8215,6 +8212,8 @@ BOOL CVideoDeviceDoc::NextVideoFile()
 	{
 		if (pNextAVRec)
 			delete pNextAVRec;
+		ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+		::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
 		return FALSE;
 	}
 

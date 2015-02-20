@@ -446,7 +446,7 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF
 	if (!sOSDMessage.IsEmpty())
 	{
 		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sOSDMessage, crOSDMessageColor, 72, DT_CENTER | DT_VCENTER,
+						sOSDMessage, crOSDMessageColor, nMaxFontSize, DT_BOTTOM | DT_CENTER,
 						OPAQUE, DRAW_MESSAGE_BKG_COLOR);
 	}
 }

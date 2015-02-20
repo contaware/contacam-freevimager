@@ -170,7 +170,6 @@ CUImagerApp::CUImagerApp()
 	m_sScanToTiffFileName = _T("");
 	m_bTrayIcon = FALSE;
 	m_bHideMainFrame = FALSE;
-	m_bEndSession = FALSE;
 	m_bSlideShowOnly = FALSE;
 	m_bPrinterInit = FALSE;
 	m_nCoordinateUnit = COORDINATES_PIX;
@@ -1869,7 +1868,7 @@ void CUImagerApp::SaveOnEndSession()
 		{
 			// Stop recording so that the index is not missing!
 			if (pVideoDeviceDoc->m_pAVRec)
-				pVideoDeviceDoc->CaptureRecord(FALSE); // No Message Box on Error
+				pVideoDeviceDoc->CaptureRecord();
 			pVideoDeviceDoc->SaveSettings();
 		}
 	}
@@ -5185,7 +5184,7 @@ void CUImagerApp::CSchedulerEntry::Start()
 		}
 
 		// Start record
-		if (!pDoc->CaptureRecord(FALSE)) // No Message Box on Error					
+		if (!pDoc->CaptureRecord())
 		{
 			m_bInsideStart = FALSE;
 			return;
@@ -5225,7 +5224,7 @@ BOOL CUImagerApp::CSchedulerEntry::Stop()
 
 	// Stop recording if not already stopped
 	if (m_pDoc->m_pAVRec)
-		m_pDoc->CaptureRecord(FALSE); // No Message Box on Error
+		m_pDoc->CaptureRecord();
 	
 	// Not Running
 	m_bRunning = FALSE;
