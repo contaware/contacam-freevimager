@@ -55,6 +55,9 @@ extern "C"
 #define AUTORUN_VIDEODEVICES_RETRY_DELAY			10000	// ms
 #endif
 
+// Default Statusbar message off-time
+#define DEFAULT_STATUSBAR_MSG_OFFTIME				5		// sec
+
 // Closing wait time
 #define MAX_CLOSE_CHILDFRAME_WAITTIME				60000U	// ms
 

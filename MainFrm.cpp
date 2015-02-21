@@ -424,6 +424,11 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 
 						// Delete Tiff
 						::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
+
+						// Show message in Statusbar
+						StatusText(	ML_STRING(1849, "Saved") + _T(" ") +
+									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
+									DEFAULT_STATUSBAR_MSG_OFFTIME);
 					}
 					else
 						EndWaitCursor();
