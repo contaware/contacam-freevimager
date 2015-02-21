@@ -4560,10 +4560,24 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
 	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), TRUE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
-	m_bSnapshotHistoryVideo = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), FALSE);
+	int nSnapshotHistoryVideo = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), 2);	// use invalid default value to check whether it exists
+	int nSnapshotHistorySwf = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), 2);		// for backwards compatibility
+	if (nSnapshotHistoryVideo >= 0 && nSnapshotHistoryVideo <= 1)
+		m_bSnapshotHistoryVideo = (BOOL) nSnapshotHistoryVideo;
+	else if (nSnapshotHistorySwf >= 0 && nSnapshotHistorySwf <= 1)
+		m_bSnapshotHistoryVideo = (BOOL) nSnapshotHistorySwf;
+	else
+		m_bSnapshotHistoryVideo = FALSE;
 	m_bSnapshotLiveJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpegFtp"), FALSE);
 	m_bSnapshotHistoryJpegFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpegFtp"), FALSE);
-	m_bSnapshotHistoryVideoFtp = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), FALSE);
+	int nSnapshotHistoryVideoFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideoFtp"), 2);	// use invalid default value to check whether it exists
+	int nSnapshotHistorySwfFtp = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwfFtp"), 2);		// for backwards compatibility
+	if (nSnapshotHistoryVideoFtp >= 0 && nSnapshotHistoryVideoFtp <= 1)
+		m_bSnapshotHistoryVideoFtp = (BOOL) nSnapshotHistoryVideoFtp;
+	else if (nSnapshotHistorySwfFtp >= 0 && nSnapshotHistorySwfFtp <= 1)
+		m_bSnapshotHistoryVideoFtp = (BOOL) nSnapshotHistorySwfFtp;
+	else
+		m_bSnapshotHistoryVideoFtp = FALSE;
 	m_bManualSnapshotAutoOpen = (BOOL) pApp->GetProfileInt(sSection, _T("ManualSnapshotAutoOpen"), TRUE);
 	m_sSnapshotLiveJpegName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegName"), DEFAULT_SNAPSHOT_LIVE_JPEGNAME);
 	m_sSnapshotLiveJpegThumbName = pApp->GetProfileString(sSection, _T("SnapshotLiveJpegThumbName"), DEFAULT_SNAPSHOT_LIVE_JPEGTHUMBNAME);
