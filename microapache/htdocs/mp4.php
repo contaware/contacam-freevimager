@@ -156,10 +156,6 @@ function resizeMp4() {
 	mp4Movie.width = fittedWidth;
 	mp4Movie.height = fittedHeight;
 }
-//]]>
-</script>
-<script language="JavaScript" type="text/javascript">
-//<![CDATA[
 window.addEventListener('resize', function(event){
 	resizeMp4();
 });
