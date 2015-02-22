@@ -5849,11 +5849,20 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("ServerRoot .\r\n");
 	sConfig += _T("ServerAdmin webmaster@nowhere.com\r\n");
 
-	// Document root
-	sDocRoot = ::GetASCIICompatiblePath(sDocRoot); // directory must exist!
-	sDocRoot.Replace(_T('\\'), _T('/')); // change path from \ to / (otherwise apache is not happy)
-	sFormat.Format(_T("DocumentRoot \"%s/\"\r\n"), sDocRoot); // add a trailing /, otherwise it is not
-	sConfig += sFormat;			// working when the root directory is the drive itself (c: for example)
+	// DocumentRoot
+	// Note: APACHE resolves a path to its long version before passing it to PHP.
+	// PHP file functions use the ANSI API of Windows and are unable to deal with
+	// unicode characters in filenames. So even if configuring here the 8.3 short path
+	// name, PHP will get the long path and will fail if it contains non-ASCII
+	// characters. In conclusion we have to make sure that the DocumentRoot contains
+	// only ASCII characters because the following GetASCIICompatiblePath(sDocRoot)
+	// call is not enough for non-static pages.
+	sDocRoot = ::GetASCIICompatiblePath(sDocRoot);				// directory must exist!
+	sDocRoot.Replace(_T('\\'), _T('/'));						// change path from \ to / (otherwise apache is not happy)
+	sFormat.Format(_T("DocumentRoot \"%s/\"\r\n"), sDocRoot);	// even if the apache docu says that the DocumentRoot
+	sConfig += sFormat;											// should be specified without a trailing slash, add it
+																// anyway, otherwise it is not working when the root
+																// directory is the drive itself (c: for example)
 
 	// Global settings
 	sConfig += _T("ThreadsPerChild 128\r\n");
@@ -5899,13 +5908,6 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 	sConfig += _T("RewriteBase /\r\n");
 	sConfig += _T("RewriteCond %{REQUEST_FILENAME} -d\r\n");
 	sConfig += _T("RewriteRule [^/]$ http://%{HTTP_HOST}%{REQUEST_URI}/ [L,R=301]\r\n");
-	sConfig += _T("</Directory>\r\n");
-
-	// Deny Access to Temp folder
-	sFormat.Format(_T("<Directory \"%s/Temp/\">\r\n"), sDocRoot);
-	sConfig += sFormat;
-	sConfig += _T("Order allow,deny\r\n");
-	sConfig += _T("Deny from all\r\n");
 	sConfig += _T("</Directory>\r\n");
 
 	// Make password file and set authentication type

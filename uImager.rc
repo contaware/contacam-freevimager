@@ -4817,6 +4817,7 @@ BEGIN
     IDS_STRING1760          "Application Log File has not yet been created"
     IDS_STRING1764          "Starting %s..."
     IDS_STRING1765          "%s already exists.\nDo you want to proceed and merge the files?"
+    IDS_STRING1766          "Only ASCII characters allowed in path"
     IDS_STRING1767          "Only the ANSI character set is supported for the camera name"
     IDS_STRING1768          "Double-click to change unit"
     IDS_STRING1769          "Thumbnail Size %i x %i"

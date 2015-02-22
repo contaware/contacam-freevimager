@@ -297,9 +297,16 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 	{
 		// If it's a valid drive mount path convert it to a UNC path which is also working in service mode
 		sNewMicroApacheDocRoot = ::UNCPath(sNewMicroApacheDocRoot);
+		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
+
+		// Fail if sNewMicroApacheDocRoot is not an ASCII path
+		if (!::IsASCIICompatiblePath(sNewMicroApacheDocRoot))
+		{
+			::AfxMessageBox(ML_STRING(1766, "Only ASCII characters allowed in path"), MB_OK | MB_ICONERROR);
+			return;
+		}
 
 		// Fail if sNewMicroApacheDocRoot is a nested subdir of the old one
-		sNewMicroApacheDocRoot.TrimRight(_T('\\'));
 		if (::IsSubDir(m_sMicroApacheDocRootOld, sNewMicroApacheDocRoot))
 		{
 			::AfxMessageBox(ML_STRING(1870, "The new folder cannot be a subfolder of the old one"), MB_OK | MB_ICONERROR);
