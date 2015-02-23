@@ -1090,11 +1090,6 @@ void CUImagerApp::OnAppFaq()
 void CUImagerApp::OnFileSettings() 
 {
 #ifdef VIDEODEVICEDOC
-	if (AreVideoDeviceDocsOpen())
-	{
-		::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
-		return;
-	}
 	CSettingsDlgVideoDeviceDoc dlg;
 #else
 	CSettingsDlg dlg;

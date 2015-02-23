@@ -285,9 +285,18 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 
 void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot() 
 {
-	// Validate
+	// Fail if there are running cameras
+	if (((CUImagerApp*)::AfxGetApp())->AreVideoDeviceDocsOpen())
+	{
+		::AfxMessageBox(ML_STRING(1872, "Try again after closing all cameras"), MB_OK | MB_ICONERROR);
+		return;
+	}
+
+	// Validate entered data
 	if (!UpdateData(TRUE))
 		return;
+
+	// Pop-up browse for folder dialog
 	CString sNewMicroApacheDocRoot = m_sMicroApacheDocRoot;
 	CBrowseDlg dlg(	::AfxGetMainFrame(),
 					&sNewMicroApacheDocRoot,
@@ -313,7 +322,7 @@ void CSettingsDlgVideoDeviceDoc::OnButtonDocRoot()
 			return;
 		}
 
-		// Update
+		// Update displayed path
 		m_sMicroApacheDocRoot = sNewMicroApacheDocRoot;
 		UpdateData(FALSE);
 	}
