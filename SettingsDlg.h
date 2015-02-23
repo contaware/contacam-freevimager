@@ -27,7 +27,6 @@ public:
 	BOOL	m_bCheckPng;
 	BOOL	m_bCheckTiff;
 	BOOL	m_bCheckGif;
-	BOOL	m_bCheckZip;
 	BOOL	m_bCheckAif;
 	BOOL	m_bCheckAu;
 	BOOL	m_bCheckMidi;

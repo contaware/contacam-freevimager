@@ -40,7 +40,6 @@ public:
 
 public:
 	CZipProgressDlg(CWnd* pParent, BOOL bExtract);
-	volatile int* m_pPictureFilesCount;
 	CString m_sZipFileName;
 	CString m_sPath;
 	BOOL m_bExtract;

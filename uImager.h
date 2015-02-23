@@ -193,12 +193,11 @@ public:
 	//
 	// /slideshow	 : start in slideshow only mode
 	// /service      : started from the ContaCamService
-	// /extracthere  : zip extraction to zip's directory
-	// /play         : play given audio or video file
+	// /play         : play given audio file
 	// /close        : close app after finishing playing the audio file
 	// /hide         : hide mainframe
-	// /p			 : print preview open given file
-	// /pt			 : print the given file to the specified printer
+	// /p			 : print preview the given file
+	// /pt			 : print the given file(s) to the specified printer
 	class CUImagerCommandLineInfo : public CCommandLineInfo
 	{
 		public:
@@ -349,26 +348,12 @@ public:
 	static BOOL Autostart(BOOL bEnable);
 	static BOOL IsAutostart();
 
-	// Zip File Handling
-
-	// Get the Unique Top Directory (if any)
-	// and the Zip File entries count (the count is files + dirs)
-	// On error a MessageBox is displayed and 0 is returned
-	int GetUniqueTopDirAndCount(CString sZipFileName, CString& sTopDir);
-
 	// Compress File or Directory Content to the newly created zip file
 	// (no add, overwrite if file existing!)
-	BOOL CompressToZip(LPCTSTR szPath, LPCTSTR szZipFileName);
-
-	// Popsup a Browse-Dir Dialog, extracts the archive to the selected dir and
-	// returns the extraction directory or _T("") if an error occurred.
-	CString ExtractZip(	LPCTSTR szZipFileName,
-						volatile int* pPictureFilesCount = NULL); // *pPictureFilesCount has to be set to 0 by the caller!	
+	static BOOL CompressToZip(LPCTSTR szPath, LPCTSTR szZipFileName);	
 	
 	// Extracts the archive to the given directory
-	static BOOL ExtractZipToDir(LPCTSTR szDirPath,
-								LPCTSTR szZipFileName,
-								volatile int* pPictureFilesCount = NULL); // *pPictureFilesCount has to be set to 0 by the caller!
+	static BOOL ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName);
 
 	// Send Email through MAPI.
 	// The attachment may be a
@@ -597,9 +582,6 @@ public:
 
 	// The Zip File Handling Class
 	CZipArchive m_Zip;
-
-	// Do Extract Zip File Here Flag
-	BOOL m_bExtractHere;
 
 	// Start playing given file
 	BOOL m_bStartPlay;

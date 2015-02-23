@@ -125,7 +125,6 @@ CUImagerApp::CUImagerApp()
 	m_bShuttingDownApplication = FALSE;
 	m_bClosingAll = FALSE;
 	m_sAppTempDir = _T("");
-	m_bExtractHere = FALSE;
 	m_bStartPlay = FALSE;
 	m_bCloseAfterAudioPlayDone = FALSE;
 	m_bForceSeparateInstance = FALSE;
@@ -533,7 +532,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 
 		// Separate Instance Necessary?
 		m_bForceSeparateInstance =
-			m_bExtractHere												||
 			m_bStartPlay												||
 			m_bCloseAfterAudioPlayDone									||
 			cmdInfo.m_bRunEmbedded										||
@@ -782,9 +780,8 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		}
 #endif
 
-		// Dispatch commands specified on the command line.
-		// Returns FALSE if extracting zip file here,
-		// if printing, if file opening fails.
+		// Dispatch commands specified on the command line,
+		// returns FALSE if printing or if file opening fails
 		if (!ProcessShellCommand(cmdInfo))
 		{
 			m_pMainWnd->PostMessage(WM_CLOSE);
@@ -795,14 +792,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		if (m_bHideMainFrame)
 			m_nCmdShow = SW_HIDE;
 
-		// The main window has been initialized, so show, place it and update it.
+		// The main window has been initialized, so show, place it and update it
 		pMainFrame->ShowWindow(m_nCmdShow);
 		pMainFrame->UpdateWindow();
 
 		// ProcessShellCommand() is called before the MainFrame is shown,
-		// this to display the zip extraction dialog without MainFrame.
-		// But that causes a problem with the document titles,
-		// they are not shown!
+		// that causes a problem with the document titles, they are not shown!
 		// -> Update Title here:
 		CMDIChildWnd* pChild = pMainFrame->MDIGetActive();
 		if (pChild)
@@ -1129,9 +1124,9 @@ void CUImagerApp::OnFileOpen()
 		dlgFile.m_ofn.lpstrDefExt = _T("bmp");
 		dlgFile.m_ofn.lpstrCustomFilter = NULL;
 		dlgFile.m_ofn.lpstrFilter = 
-					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif;*.zip)\0")
+					_T("Supported Files (*.bmp;*.gif;*.jpg;*.tif;*.png;*.pcx;*.emf;*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif)\0")
 					_T("*.bmp;*.dib;*.gif;*.png;*.jpg;*.jpeg;*.jpe;*.thm;*.tif;*.tiff;*.jfx;*.pcx;*.emf;")
-					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff;*.zip\0")
+					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
 					_T("All Files (*.*)\0*.*\0")
 					_T("Windows Bitmap (*.bmp;*.dib)\0*.bmp;*.dib\0")
 					_T("Graphics Interchange Format (*.gif)\0*.gif\0")
@@ -1141,8 +1136,7 @@ void CUImagerApp::OnFileOpen()
 					_T("PC Paintbrush (*.pcx)\0*.pcx\0")
 					_T("Enhanced Metafile (*.emf)\0*.emf\0")
 					_T("Audio Files (*.mp3;*.wav;*.cda;*.wma;*.mid;*.au;*.aif)\0")
-					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0")
-					_T("Zip File (*.zip)\0*.zip\0");
+					_T("*.mp3;*.wav;*.cda;*.wma;*.mid;*.rmi;*.au;*.aif;*.aiff\0");
 		dlgFile.m_ofn.Flags |= OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
 		dlgFile.m_ofn.lpstrFile = FileNames;
 		dlgFile.m_ofn.nMaxFile = MAX_FILEDLG_PATH;
@@ -1150,11 +1144,6 @@ void CUImagerApp::OnFileOpen()
 		// Open File Dialog
 		if (dlgFile.DoModal() == IDOK)
 		{
-			// In case of zip file(s) this is the
-			// selected extraction directory
-			CString sZipExtractDir(_T(""));
-			volatile int nPictureFilesInZipsCount = 0;
-
 			// Update preview flag
 			m_bFileDlgPreview = dlgFile.m_bPreview;
 			WriteProfileInt(_T("GeneralApp"),
@@ -1173,71 +1162,63 @@ void CUImagerApp::OnFileOpen()
 			sSource++; // Skip the 0.
 			if (*sSource == 0) // If two zeros -> single file selected
 			{
-				// Zip File Extraction
-				if (::GetFileExt(Path) == _T(".zip"))
+				CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(Path);
+				if (curTemplate == NULL)
 				{
-					sZipExtractDir = ExtractZip(Path, &nPictureFilesInZipsCount);
+					FileTypeNotSupportedMessageBox(Path);
+					delete [] FileNames;
+					delete [] InitDir;
+					return;
 				}
-				else
+
+				CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
+				if (pDoc)
 				{
-					CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(Path);
-					if (curTemplate == NULL)
+					if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 					{
-						FileTypeNotSupportedMessageBox(Path);
-						delete [] FileNames;
-						delete [] InitDir;
-						return;
+						CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+						pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+						pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+						if (!((CPictureDoc*)pDoc)->LoadPicture(&((CPictureDoc*)pDoc)->m_pDib, Path))
+						{
+							((CPictureDoc*)pDoc)->CloseDocumentForce();
+							delete [] FileNames;
+							delete [] InitDir;
+							return;
+						}
+						else
+						{
+							// Fit to document
+							if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+							{
+								((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																								0, 0, 0, 0,
+																								SWP_NOSIZE |
+																								SWP_NOZORDER);
+								((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+							}
+							((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+						}
 					}
-
-					CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
-					if (pDoc)
+					else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
 					{
-						if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+						if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
 						{
-							CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-							pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-							pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
-
-							if (!((CPictureDoc*)pDoc)->LoadPicture(&((CPictureDoc*)pDoc)->m_pDib, Path))
-							{
-								((CPictureDoc*)pDoc)->CloseDocumentForce();
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
-							}
-							else
-							{
-								// Fit to document
-								if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-								{
-									((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																									0, 0, 0, 0,
-																									SWP_NOSIZE |
-																									SWP_NOZORDER);
-									((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-								}
-								((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-							}
+							((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+							delete [] FileNames;
+							delete [] InitDir;
+							return;
 						}
-						else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+					}
+					else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+					{
+						if (!((CCDAudioDoc*)pDoc)->LoadCD(Path))
 						{
-							if (!((CAudioMCIDoc*)pDoc)->LoadAudio(Path))
-							{
-								((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
-							}
-						}
-						else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-						{
-							if (!((CCDAudioDoc*)pDoc)->LoadCD(Path))
-							{
-								((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
-							}
+							((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+							delete [] FileNames;
+							delete [] InitDir;
+							return;
 						}
 					}
 				}
@@ -1263,82 +1244,71 @@ void CUImagerApp::OnFileOpen()
 					_tcscat(FileName, (LPCTSTR)_T("\\"));
 					_tcscat(FileName, (LPCTSTR)sSource);
 
-					// Zip File Extraction
-					if (::GetFileExt(FileName) == _T(".zip"))
+					// Just open one cd player
+					if (!bCDAudioOpened || ::GetFileExt(FileName) != _T(".cda"))
 					{
-						if (sZipExtractDir == _T(""))
-							sZipExtractDir = ExtractZip(FileName, &nPictureFilesInZipsCount);
-						else
-							ExtractZipToDir(sZipExtractDir, FileName, &nPictureFilesInZipsCount);
-					}
-					else
-					{
-						// Just open one cd player
-						if (!bCDAudioOpened || ::GetFileExt(FileName) != _T(".cda"))
+						CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(FileName);
+						if (curTemplate == NULL)
 						{
-							CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(FileName);
-							if (curTemplate == NULL)
+							FileTypeNotSupportedMessageBox(FileName);
+							delete [] FileNames;
+							delete [] InitDir;
+							return;
+						}
+						CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
+						if (pDoc)
+						{
+							if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 							{
-								FileTypeNotSupportedMessageBox(FileName);
-								delete [] FileNames;
-								delete [] InitDir;
-								return;
-							}
-							CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
-							if (pDoc)
-							{
-								if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
-								{
-									CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-									pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-									pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+								CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+								pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+								pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
 
-									if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
-																			FileName,
-																			FALSE,
-																			FALSE))
-									{
-										((CPictureDoc*)pDoc)->CloseDocumentForce();
-										delete [] FileNames;
-										delete [] InitDir;
-										return;
-									}
-									else
-									{
-										// Fit to document
-										if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-										{
-											((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																											0, 0, 0, 0,
-																											SWP_NOSIZE |
-																											SWP_NOZORDER);
-											((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-										}
-										((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-									}
-								}
-								else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+								if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
+																		FileName,
+																		FALSE,
+																		FALSE))
 								{
-									if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
-									{
-										((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-										delete [] FileNames;
-										delete [] InitDir;
-										return;
-									}
+									((CPictureDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
 								}
-								else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+								else
 								{
-									if (!((CCDAudioDoc*)pDoc)->LoadCD(FileName))
+									// Fit to document
+									if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
 									{
-										((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-										delete [] FileNames;
-										delete [] InitDir;
-										return;
+										((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																										0, 0, 0, 0,
+																										SWP_NOSIZE |
+																										SWP_NOZORDER);
+										((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
 									}
-									else
-										bCDAudioOpened = TRUE;
+									((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
 								}
+							}
+							else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+							{
+								if (!((CAudioMCIDoc*)pDoc)->LoadAudio(FileName))
+								{
+									((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+							}
+							else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
+							{
+								if (!((CCDAudioDoc*)pDoc)->LoadCD(FileName))
+								{
+									((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+									delete [] FileNames;
+									delete [] InitDir;
+									return;
+								}
+								else
+									bCDAudioOpened = TRUE;
 							}
 						}
 					}
@@ -1354,15 +1324,6 @@ void CUImagerApp::OnFileOpen()
 				WriteProfileString(	_T("GeneralApp"),
 									_T("LastOpenedDir"),
 									m_sLastOpenedDir);
-			}
-
-			// Open Zip File Content
-			if (sZipExtractDir != _T("") && nPictureFilesInZipsCount > 0)
-			{
-				SlideShow(	sZipExtractDir,
-							FALSE,
-							FALSE,
-							TRUE);
 			}
 		}
 		else
@@ -1499,128 +1460,94 @@ CDocument* CUImagerApp::OpenDocumentFile(LPCTSTR lpszFileName)
 						_T("LastOpenedDir"),
 						m_sLastOpenedDir);
 
-	// Zip File Extraction
-	if (::GetFileExt(lpszFileName) == _T(".zip"))
+	// Maximize from Tray
+	if (m_bTrayIcon &&
+		::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
 	{
-		volatile int nPictureFilesInZipCount = 0;
-		CString sZipExtractDir = ExtractZip(lpszFileName, &nPictureFilesInZipCount);
+		::AfxGetMainFrame()->m_TrayIcon.MaximizeFromTray();
+		::AfxGetMainFrame()->ShowOwnedWindows(TRUE);
+		PaintDocTitles();
+	}
 
-		if (m_bExtractHere)
-			return NULL;
+	CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(lpszFileName);
+	if (curTemplate == NULL)
+	{
+		// A Dir may have been dropped -> Start Recursive Slideshow
+		if (::IsExistingDir(lpszFileName))
+		{
+			return SlideShow(	lpszFileName,
+								FALSE,
+								FALSE,
+								TRUE);
+		}
 		else
 		{
-			// Open Zip File Content
-			if (sZipExtractDir != _T("") && nPictureFilesInZipCount > 0)
-			{
-				// Maximize from Tray
-				if (m_bTrayIcon &&
-					::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
-				{
-					::AfxGetMainFrame()->m_TrayIcon.MaximizeFromTray();
-					::AfxGetMainFrame()->ShowOwnedWindows(TRUE);
-					PaintDocTitles();
-				}
-
-				return SlideShow(	sZipExtractDir,
-									FALSE,
-									FALSE,
-									TRUE);
-			}
-			else
-				return NULL;
+			FileTypeNotSupportedMessageBox(lpszFileName);
+			return NULL;
 		}
 	}
-	else
+
+	// If the Path is Already Full, GetFullPathName will not change it.
+	TCHAR szFullPathName[MAX_PATH];
+	LPTSTR lpFilePart;
+	::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
+
+	// Open Doc
+	CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
+	if (pDoc)
 	{
-		// Maximize from Tray
-		if (m_bTrayIcon &&
-			::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())
+		if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
 		{
-			::AfxGetMainFrame()->m_TrayIcon.MaximizeFromTray();
-			::AfxGetMainFrame()->ShowOwnedWindows(TRUE);
-			PaintDocTitles();
-		}
+			if (m_bStartMaximized)
+				((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
 
-		CUImagerMultiDocTemplate* curTemplate = GetTemplateFromFileExtension(lpszFileName);
-		if (curTemplate == NULL)
-		{
-			// A Dir may have been dropped -> Start Recursive Slideshow
-			if (::IsExistingDir(lpszFileName))
+			CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
+			pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
+			pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
+
+			if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
+													szFullPathName,
+													FALSE,
+													FALSE,	// Do not preload Prev & Next
+													FALSE
+													))
 			{
-				return SlideShow(	lpszFileName,
-									FALSE,
-									FALSE,
-									TRUE);
+				((CPictureDoc*)pDoc)->CloseDocumentForce();
+				return NULL;
 			}
 			else
 			{
-				FileTypeNotSupportedMessageBox(lpszFileName);
+				// Fit to document
+				if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
+				{
+					((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
+																					0, 0, 0, 0,
+																					SWP_NOSIZE |
+																					SWP_NOZORDER);
+					((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
+				}
+				((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
+			}
+		}
+		else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
+		{
+			if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
+			{
+				((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
 				return NULL;
 			}
 		}
-
-		// If the Path is Already Full, GetFullPathName will not change it.
-		TCHAR szFullPathName[MAX_PATH];
-		LPTSTR lpFilePart;
-		::GetFullPathName(lpszFileName, MAX_PATH, szFullPathName, &lpFilePart);
-
-		// Open Doc
-		CDocument* pDoc = curTemplate->OpenDocumentFile(NULL);
-		if (pDoc)
+		else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
 		{
-			if (pDoc->IsKindOf(RUNTIME_CLASS(CPictureDoc)))
+			if (!((CCDAudioDoc*)pDoc)->LoadCD(szFullPathName))
 			{
-				if (m_bStartMaximized)
-					((CPictureDoc*)pDoc)->GetFrame()->MDIMaximize();
-
-				CZoomComboBox* pZoomCB = &(((CPictureToolBar*)((CToolBarChildFrame*)(((CPictureDoc*)pDoc)->GetFrame()))->GetToolBar())->m_ZoomComboBox);
-				pZoomCB->SetCurSel(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex);
-				pZoomCB->OnChangeZoomFactor(*((double*)(pZoomCB->GetItemDataPtr(((CPictureDoc*)pDoc)->m_nZoomComboBoxIndex))));
-
-				if (!((CPictureDoc*)pDoc)->LoadPicture(	&((CPictureDoc*)pDoc)->m_pDib,
-														szFullPathName,
-														FALSE,
-														FALSE,	// Do not preload Prev & Next
-														FALSE
-														))
-				{
-					((CPictureDoc*)pDoc)->CloseDocumentForce();
-					return NULL;
-				}
-				else
-				{
-					// Fit to document
-					if (!((CPictureDoc*)pDoc)->GetFrame()->IsZoomed())
-					{
-						((CPictureDoc*)pDoc)->GetView()->GetParentFrame()->SetWindowPos(NULL,
-																						0, 0, 0, 0,
-																						SWP_NOSIZE |
-																						SWP_NOZORDER);
-						((CPictureDoc*)pDoc)->GetView()->UpdateWindowSizes(FALSE, FALSE, TRUE);
-					}
-					((CPictureDoc*)pDoc)->SlideShow(FALSE, FALSE); // No Recursive Slideshow in Paused State
-				}
-			}
-			else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
-			{
-				if (!((CAudioMCIDoc*)pDoc)->LoadAudio(szFullPathName))
-				{
-					((CAudioMCIDoc*)pDoc)->CloseDocumentForce();
-					return NULL;
-				}
-			}
-			else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-			{
-				if (!((CCDAudioDoc*)pDoc)->LoadCD(szFullPathName))
-				{
-					((CCDAudioDoc*)pDoc)->CloseDocumentForce();
-					return NULL;
-				}
+				((CCDAudioDoc*)pDoc)->CloseDocumentForce();
+				return NULL;
 			}
 		}
-
-		return pDoc;
 	}
+
+	return pDoc;
 }
 
 #ifdef VIDEODEVICEDOC
@@ -2014,96 +1941,6 @@ BOOL CUImagerApp::IsDocReadyToSlide(CPictureDoc* pDoc, BOOL bShowMsgBoxIfSlideNo
 	return TRUE;
 }
 
-int CUImagerApp::GetUniqueTopDirAndCount(CString sZipFileName, CString& sTopDir)
-{
-	try
-	{
-		int i;
-
-		// Reset Top Dir
-		sTopDir = _T("");
-
-		// Open Zip File
-		m_Zip.Open(sZipFileName, CZipArchive::openReadOnly, 0);
-
-		// Entries
-		int nEntries = m_Zip.GetNoEntries();
-
-		// Check for Unique Top Dir
-		for (i = 0 ; i < nEntries ; i++)
-		{
-			if (m_Zip.IsFileDirectory((WORD)i))
-			{
-				// Get File Info
-				CFileHeader fh;
-				m_Zip.GetFileInfo(fh, (WORD)i);
-
-				// Get Length
-				int nLength = fh.m_szFileName.GetLength();
-				if (nLength == 0)
-					continue;
-
-				// Is This a Top Dir?
-				int pos = fh.m_szFileName.Find(_T('\\'));
-				if (pos == (nLength - 1))
-				{
-					if (sTopDir == _T(""))
-						sTopDir = fh.m_szFileName;
-					else if (sTopDir != fh.m_szFileName)
-					{
-						m_Zip.Close();
-						sTopDir = _T("");
-						return nEntries;
-					}
-				}
-			}
-		}
-
-		// Check whether all files are under the found unique top dir
-		for (i = 0 ; i < nEntries ; i++)
-		{
-			// Get File Info
-			CFileHeader fh;
-			m_Zip.GetFileInfo(fh, (WORD)i);
-
-			// If is file
-			if (!m_Zip.IsFileDirectory((WORD)i))
-			{
-				int pos = fh.m_szFileName.Find(_T('\\'));
-				if ((pos < 0) || (sTopDir != fh.m_szFileName.Left(pos+1)))
-				{
-					m_Zip.Close();
-					sTopDir = _T("");
-					return nEntries;
-				}
-			}
-		}
-
-		// Close Zip File
-		m_Zip.Close();
-
-		// Remove Trailing '\'
-		sTopDir.TrimRight(_T('\\'));
-
-		return nEntries;
-		
-	}
-	catch (CZipException* e)
-	{
-		e->ReportZipError();
-		e->Delete();
-		m_Zip.Close(true);
-		return 0;
-	}
-	catch (CException* e)
-	{
-		e->ReportError(MB_ICONSTOP);
-		e->Delete();
-		m_Zip.Close(true);
-		return 0;
-	}
-}
-
 BOOL CUImagerApp::CompressToZip(LPCTSTR szPath, LPCTSTR szZipFileName)
 {	
 	CZipProgressDlg dlg(::AfxGetMainFrame(), FALSE);
@@ -2115,63 +1952,15 @@ BOOL CUImagerApp::CompressToZip(LPCTSTR szPath, LPCTSTR szZipFileName)
 		return FALSE;
 }
 
-BOOL CUImagerApp::ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName, volatile int* pPictureFilesCount/*=NULL*/)
+BOOL CUImagerApp::ExtractZipToDir(LPCTSTR szDirPath, LPCTSTR szZipFileName)
 {
 	CZipProgressDlg dlg(::AfxGetMainFrame(), TRUE);
-	dlg.m_pPictureFilesCount = pPictureFilesCount;
 	dlg.m_sZipFileName = CString(szZipFileName);
 	dlg.m_sPath = CString(szDirPath);
 	if (dlg.DoModal() == IDOK)
 		return TRUE;
 	else
 		return FALSE;
-}
-
-CString CUImagerApp::ExtractZip(LPCTSTR szZipFileName, volatile int* pPictureFilesCount/*=NULL*/)
-{
-	// Directory Browse Dialog
-	CString sExtractDir;
-
-	if (m_bExtractHere)
-	{
-		TCHAR szDrive[_MAX_DRIVE];
-		TCHAR szDir[_MAX_DIR];
-		TCHAR szName[_MAX_FNAME];
-		_tsplitpath(szZipFileName, szDrive, szDir, szName, NULL);
-		
-		CString sTopDir;
-		int nZipEntries = GetUniqueTopDirAndCount(szZipFileName, sTopDir);
-		if (nZipEntries == 0)
-			return _T("");
-
-		// If no Top Dir and at least 2 files,
-		// use the Zip File Name as Top Dir
-		if (sTopDir == _T("") && nZipEntries > 1)
-		{
-			sExtractDir = CString(szDrive) + CString(szDir) + CString(szName);
-		}
-		else
-		{
-			sExtractDir = CString(szDrive) + CString(szDir);
-			sExtractDir.TrimRight(_T('\\'));
-		}
-	}
-	else
-	{
-		sExtractDir = ::GetDriveAndDirName(szZipFileName);
-		CBrowseDlg dlg(	::AfxGetMainFrame(),
-						&sExtractDir,
-						ML_STRING(1207, "Extract Files To Folder"),
-						TRUE);
-		if (dlg.DoModal() == IDCANCEL)
-			return _T("");
-	}
-	
-	if (ExtractZipToDir(sExtractDir, szZipFileName, pPictureFilesCount))
-		return sExtractDir;
-	else
-		return _T("");
-	
 }
 
 BOOL CUImagerApp::HasRecordableDrive(ICDBurn* pICDBurn/*=NULL*/)
@@ -2735,11 +2524,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const TCHAR* pszParam, BOO
 			else if (_tcscmp(pszParam, _T("service")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
-			else if (_tcscmp(pszParam, _T("extracthere")) == 0) // Case sensitive!
-			{
-				((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
-				((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
-			}
 			else if (_tcscmp(pszParam, _T("play")) == 0) // Case sensitive!
 				((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 			else if (_tcscmp(pszParam, _T("close")) == 0) // Case sensitive!
@@ -2766,11 +2550,6 @@ void CUImagerApp::CUImagerCommandLineInfo::ParseParam(const char* pszParam, BOOL
 		else if (strcmp(pszParam, "service") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bServiceProcess = TRUE;
 #endif
-		else if (strcmp(pszParam, "exctracthere") == 0) // Case sensitive!
-		{
-			((CUImagerApp*)::AfxGetApp())->m_bExtractHere = TRUE;
-			((CUImagerApp*)::AfxGetApp())->m_bHideMainFrame = TRUE;
-		}
 		else if (strcmp(pszParam, "play") == 0) // Case sensitive!
 			((CUImagerApp*)::AfxGetApp())->m_bStartPlay = TRUE;
 		else if (strcmp(pszParam, "close") == 0) // Case sensitive!
@@ -2927,7 +2706,7 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 			break;
 
 		// If the user wanted to print to the given file(s), case sensitive:
-		// Example: uImager.exe "file1.jpg" "file2.jpg" /pt "Printer Name" "Driver Name" "Port Name"
+		// Example: Program.exe "file1.jpg" "file2.jpg" /pt "Printer Name" "Driver Name" "Port Name"
 		// (Printer parameters are optional)
 		case CCommandLineInfo::FilePrintTo:
 			ASSERT(m_pCmdInfo == NULL);
@@ -2953,7 +2732,7 @@ BOOL CUImagerApp::ProcessShellCommand(CUImagerCommandLineInfo& rCmdInfo)
 			break;
 
 		// If the user wanted to print preview the given file, case sensitive:
-		// Example: uImager.exe "ad3.jpg" /p
+		// Example: Program.exe "file.jpg" /p
 		case CCommandLineInfo::FilePrint:
 			{
 				ASSERT(m_pCmdInfo == NULL);
@@ -4485,9 +4264,6 @@ void CUImagerApp::UpdateFileAssociations()
 	BOOL bWma =		IsFileTypeAssociated(_T("wma"));
 	BOOL bCda =		IsFileTypeAssociated(_T("cda"));
 
-	// Others
-	BOOL bZip =		IsFileTypeAssociated(_T("zip"));
-
 	
 	// Graphics
 
@@ -4594,15 +4370,9 @@ void CUImagerApp::UpdateFileAssociations()
 	else
 		UnassociateFileType(_T("cda"));
 
-	// Others
-
-	// Unassociate Avi Files (remove associations from older program versions)
+	// Unassociate Other Files (remove associations from older program versions)
 	UnassociateFileType(_T("avi")); UnassociateFileType(_T("divx"));
-
-	if (bZip)
-		AssociateFileType(_T("zip"));
-	else
-		UnassociateFileType(_T("zip"));
+	UnassociateFileType(_T("zip"));	
 
 	// Notify Changes
 	::SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
@@ -4801,9 +4571,8 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	// Shell Open Command
 	
 	// Icon order
-	// Note: IDR_VIDEOAVI, IDR_PICTURE_NOHQ, IDR_BIGPICTURE and IDR_BIGPICTURE_NOHQ
-	//       are not used anymore, but icons remain to keep the
-	//       same order!
+	// Note: IDR_VIDEOAVI, IDR_PICTURE_NOHQ, IDR_BIGPICTURE, IDR_BIGPICTURE_NOHQ
+	//       and IDI_ZIP are not used anymore, but icons remain to keep the same order!
 	/*
 	IDR_MAINFRAME			0
 	IDR_AUDIOMCI			1
@@ -4831,33 +4600,15 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	IDI_EMF					23
 	*/
 
-	// Zip
-	if (sExtNoPoint == _T("zip"))
-	{
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",8"));
-
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\open\\command"),
-								_T(""),
-								_T("\"") + CString(szProgPath) +
-								_T("\"") + _T(" \"%1\""));
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\Extract Here\\command"),
-								_T(""),
-								_T("\"") +  CString(szProgPath)
-								+ _T("\"") + _T(" /extracthere") + _T(" \"%1\""));
-	}
 	// Audio
-	else if (	sExtNoPoint == _T("mp3")	||
-				sExtNoPoint == _T("wav")	||
-				sExtNoPoint == _T("wma")	||
-				sExtNoPoint == _T("mid")	||
-				sExtNoPoint == _T("rmi")	||
-				sExtNoPoint == _T("au")		||
-				sExtNoPoint == _T("aif")	||
-				sExtNoPoint == _T("aiff"))
+	if (sExtNoPoint == _T("mp3")	||
+		sExtNoPoint == _T("wav")	||
+		sExtNoPoint == _T("wma")	||
+		sExtNoPoint == _T("mid")	||
+		sExtNoPoint == _T("rmi")	||
+		sExtNoPoint == _T("au")		||
+		sExtNoPoint == _T("aif")	||
+		sExtNoPoint == _T("aiff"))
 	{
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",1"));
 
@@ -4872,19 +4623,6 @@ BOOL CUImagerApp::AssociateFileType(CString sExt, BOOL* pbHasUserChoice/*=NULL*/
 	else if (sExtNoPoint == _T("cda"))
 	{
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",2"));
-
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
-								sMyFileClassName +
-								_T("\\shell\\open\\command"),
-								_T(""),
-								_T("\"") + CString(szProgPath) +
-								_T("\"") + _T(" \"%1\""));
-	}
-	// Video
-	else if (sExtNoPoint == _T("avi")	||
-			sExtNoPoint == _T("divx"))
-	{
-		::SetRegistryStringValue(HKEY_CLASSES_ROOT, sMyFileClassName + _T("\\DefaultIcon"), _T(""), CString(szProgPath) + _T(",3"));
 
 		::SetRegistryStringValue(HKEY_CLASSES_ROOT,
 								sMyFileClassName +

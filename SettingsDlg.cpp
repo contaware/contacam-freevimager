@@ -49,9 +49,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bCheckWma =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("wma"));
 	m_bCheckCda =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("cda"));
 
-	// Others
-	m_bCheckZip =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("zip"));
-
 	// Global Settings
 	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
 	m_bTrayIcon =				((CUImagerApp*)::AfxGetApp())->m_bTrayIcon;
@@ -69,7 +66,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_PNG, m_bCheckPng);
 	DDX_Check(pDX, IDC_CHECK_TIFF, m_bCheckTiff);
 	DDX_Check(pDX, IDC_CHECK_GIF, m_bCheckGif);
-	DDX_Check(pDX, IDC_CHECK_ZIP, m_bCheckZip);
 	DDX_Check(pDX, IDC_CHECK_AIF, m_bCheckAif);
 	DDX_Check(pDX, IDC_CHECK_AU, m_bCheckAu);
 	DDX_Check(pDX, IDC_CHECK_MIDI, m_bCheckMidi);
@@ -115,9 +111,6 @@ void CSettingsDlg::OnButtonClearall()
 	m_bCheckWma =  FALSE;
 	m_bCheckCda =  FALSE;
 
-	// Others
-	m_bCheckZip = FALSE;
-
 	UpdateData(FALSE);
 }
 
@@ -143,9 +136,6 @@ void CSettingsDlg::OnButtonSetall()
 	m_bCheckWma = TRUE;
 	m_bCheckCda = TRUE;
 
-	// Others
-	m_bCheckZip = TRUE;
-
 	UpdateData(FALSE);
 }
 
@@ -168,7 +158,6 @@ void CSettingsDlg::OnOK()
 	BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
 	BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
 	BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;  BOOL bCdaHasUserChoice = FALSE;
-	BOOL bZipHasUserChoice = FALSE;
 
 	// Graphics
 
@@ -275,15 +264,9 @@ void CSettingsDlg::OnOK()
 	else
 		pApp->UnassociateFileType(_T("cda"));
 
-	// Others
-
-	// Unassociate Avi Files (remove associations from older program versions)
+	// Unassociate Other Files (remove associations from older program versions)
 	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
-
-	if (m_bCheckZip)
-		pApp->AssociateFileType(_T("zip"), &bZipHasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("zip"));
+	pApp->UnassociateFileType(_T("zip"));
 
 	// For Vista or higher there is also a key under
 	// HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.ext
@@ -296,7 +279,7 @@ void CSettingsDlg::OnOK()
 		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
 		bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
 		bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice ||
-		bCdaHasUserChoice || bZipHasUserChoice))
+		bCdaHasUserChoice))
 	{
 		try
 		{
@@ -345,8 +328,6 @@ void CSettingsDlg::OnOK()
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
 			if (bCdaHasUserChoice)
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cda\\UserChoice]\n"));
-			if (bZipHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.zip\\UserChoice]\n"));
 			RegFile.Close();
 			CString sParams;
 			sParams.Format(_T("/S \"%s\""), sTempRegFileName);

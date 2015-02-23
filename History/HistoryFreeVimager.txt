@@ -4,6 +4,8 @@ FREEVIMAGER HISTORY
 
 - libpng updated to 1.2.52
 - Removed avi player as there are many modern players out there
+- Removed zip file opening support as we are a graphics viewer
+  and not an archiver
 
 4.9.9 (November 3rd 2014)
 

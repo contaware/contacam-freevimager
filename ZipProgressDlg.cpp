@@ -16,18 +16,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CZipProgressDlg dialog
 
-
 CZipProgressDlg::CZipProgressDlg(CWnd* pParent, BOOL bExtract)
 	: CDialog(CZipProgressDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CZipProgressDlg)
 	//}}AFX_DATA_INIT
 	m_bExtract = bExtract;
-	m_pPictureFilesCount = NULL;
 	m_sZipFileName = _T("");
 	m_sPath = _T("");
 }
-
 
 void CZipProgressDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -98,26 +95,12 @@ int CZipProgressDlg::CExtractThread::Work()
 				}
 			}
 
-			// Statistics and Progress
-			if (res &&
-				m_pDlg->m_pPictureFilesCount &&
-				!((CUImagerApp*)::AfxGetApp())->m_Zip.IsFileDirectory((WORD)i))
+			// Update Percent Done
+			int nPercentDone = i * 100 / ((CUImagerApp*)::AfxGetApp())->m_Zip.GetNoEntries();
+			if (nPercentDone > nPrevPercentDone)
 			{
-				// Get File Info
-				CFileHeader fh;
-				((CUImagerApp*)::AfxGetApp())->m_Zip.GetFileInfo(fh, (WORD)i);
-				
-				// Inc. Picture Count if Supported
-				if (CUImagerApp::IsSupportedPictureFile(fh.m_szFileName))
-					(*m_pDlg->m_pPictureFilesCount)++;
-
-				// Update Percent Done
-				int nPercentDone = i * 100 / ((CUImagerApp*)::AfxGetApp())->m_Zip.GetNoEntries();
-				if (nPercentDone > nPrevPercentDone)
-				{
-					m_pDlg->m_ZipProgress.PostMessage(PBM_SETPOS, (WPARAM)nPercentDone, 0);
-					nPrevPercentDone = nPercentDone;
-				}
+				m_pDlg->m_ZipProgress.PostMessage(PBM_SETPOS, (WPARAM)nPercentDone, 0);
+				nPrevPercentDone = nPercentDone;
 			}
 		}
 
