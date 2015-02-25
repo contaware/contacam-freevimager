@@ -86,14 +86,6 @@ ShellCommands:
 	;IDI_PCX                22
 	;IDI_EMF				23
 
-; Zip
-StrCmp $FILEEXTENSION "zip" 0 ZipExtensionEnd
-  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},8"
-  WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
-  WriteRegStr HKCR "$MYFILECLASSNAME\shell\Extract Here\command" "" '"$INSTDIR\${APPNAME_EXT}" /extracthere "%1"'
-  Return
-ZipExtensionEnd:
-
 ; Audio
 StrCmp $FILEEXTENSION "mp3" AudioExtension 0
 StrCmp $FILEEXTENSION "wav" AudioExtension 0
@@ -115,15 +107,6 @@ StrCmp $FILEEXTENSION "cda" 0 AudioCDExtensionEnd
   WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
   Return
 AudioCDExtensionEnd:
-
-; Video
-StrCmp $FILEEXTENSION "avi" VideoExtension 0
-StrCmp $FILEEXTENSION "divx" VideoExtension VideoExtensionEnd
-VideoExtension:
-  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},3"
-  WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
-  Return
-VideoExtensionEnd:
 
 ; Graphics
 StrCmp $FILEEXTENSION "bmp" 0 GifExtension

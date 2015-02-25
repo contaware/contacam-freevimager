@@ -15,8 +15,6 @@ Var MP3
 Var WAV
 Var WMA
 Var CDA
-Var AVI
-Var ZIP
 Var ALL
 Var KILL
 Function InitParams
@@ -36,8 +34,6 @@ Function InitParams
   ${GetOptions} $R0 /wav= $WAV
   ${GetOptions} $R0 /wma= $WMA
   ${GetOptions} $R0 /cda= $CDA
-  ${GetOptions} $R0 /avi= $AVI
-  ${GetOptions} $R0 /zip= $ZIP
   ${GetOptions} $R0 /all= $ALL
   ${GetOptions} $R0 /kill= $KILL
   StrCmp $ALL "1" 0 all_off
@@ -69,10 +65,6 @@ Function InitParams
   StrCpy $WMA "1"
   StrCmp $CDA "" 0 +2
   StrCpy $CDA "1"
-  StrCmp $AVI "" 0 +2
-  StrCpy $AVI "1"
-  StrCmp $ZIP "" 0 +2
-  StrCpy $ZIP "1"
   goto all_end
 all_off:
   StrCmp $ALL "0" 0 all_end
@@ -104,10 +96,6 @@ all_off:
   StrCpy $WMA "0"
   StrCmp $CDA "" 0 +2
   StrCpy $CDA "0"
-  StrCmp $AVI "" 0 +2
-  StrCpy $AVI "0"
-  StrCmp $ZIP "" 0 +2
-  StrCpy $ZIP "0"
 all_end:
   
 FunctionEnd

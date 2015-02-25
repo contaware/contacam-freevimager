@@ -282,8 +282,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME_NOEXT}" "NoRepair" 1
   WriteUninstaller "${UNINSTNAME_EXT}"
   
-  ; File Associations
-  
+  ; Graphics File Associations
   !insertmacro ADDREMOVE_FILEASSOCIATION $BMP bmp
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jpg
   !insertmacro ADDREMOVE_FILEASSOCIATION $JPG jpeg
@@ -297,6 +296,7 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $TIF jfx
   !insertmacro ADDREMOVE_FILEASSOCIATION $GIF gif
   
+  ; Audio File Associations
   !insertmacro ADDREMOVE_FILEASSOCIATION $AIF aif
   !insertmacro ADDREMOVE_FILEASSOCIATION $AIF aiff
   !insertmacro ADDREMOVE_FILEASSOCIATION $AU au
@@ -306,10 +306,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $WAV wav
   !insertmacro ADDREMOVE_FILEASSOCIATION $WMA wma
   !insertmacro ADDREMOVE_FILEASSOCIATION $CDA cda
-  
-  !insertmacro ADDREMOVE_FILEASSOCIATION $AVI avi
-  !insertmacro ADDREMOVE_FILEASSOCIATION $AVI divx
-  !insertmacro ADDREMOVE_FILEASSOCIATION $ZIP zip
 
   ; Refresh Icons
   call RefreshShellIcons
@@ -438,8 +434,7 @@ Section "Uninstall"
   DetailPrint $(StoppingApplicationMessage)
   call un.KillApp
   
-  ; Remove / Restore All File Associations
-  
+  ; Remove / Restore Graphics File Associations
   StrCpy $FILEEXTENSION "bmp"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "jpg"
@@ -465,6 +460,7 @@ Section "Uninstall"
   StrCpy $FILEEXTENSION "gif"
   call un.RemoveFileAssociation
   
+  ; Remove / Restore Audio File Associations
   StrCpy $FILEEXTENSION "aif"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "aiff"
@@ -484,6 +480,7 @@ Section "Uninstall"
   StrCpy $FILEEXTENSION "cda"
   call un.RemoveFileAssociation
   
+  ; Remove / Restore associations from older program versions
   StrCpy $FILEEXTENSION "avi"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "divx"
