@@ -425,6 +425,10 @@ BOOL SetPermission(LPCTSTR lpszFile, LPCTSTR lpszAccess, DWORD dwAccessMask)
 // This Iterative Solution Should Be Faster than a Recursive One!
 BOOL CreateDir(LPCTSTR szNewDir)
 {
+	// Check
+	if (szNewDir == NULL || _tcslen(szNewDir) == 0)
+		return FALSE;
+
 	TCHAR szFolder[MAX_PATH];
 	_tcsncpy(szFolder, szNewDir, MAX_PATH);
 	szFolder[MAX_PATH - 1] = _T('\0');
@@ -470,6 +474,11 @@ if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
 BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnCopyError/*=TRUE*/)
 {
+	// Check
+	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
+		szToDir == NULL || _tcslen(szToDir))
+		return FALSE;
+
 	// Create dir
 	if (!IsExistingDir(szToDir))
 	{
@@ -591,6 +600,11 @@ if (srcname) delete [] srcname;\
 if (dstname) delete [] dstname;
 BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/*=TRUE*/, BOOL bContinueOnCopyError/*=TRUE*/)
 {
+	// Check
+	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
+		szToDir == NULL || _tcslen(szToDir))
+		return FALSE;
+
 	// Create dir
 	if (!IsExistingDir(szToDir))
 	{
@@ -723,6 +737,10 @@ if (pInfo) delete pInfo;\
 if (name) delete [] name;
 BOOL DeleteDirContent(LPCTSTR szDirName)
 {
+	// Check
+	if (szDirName == NULL || _tcslen(szDirName) == 0)
+		return TRUE;
+
 	HANDLE hp;
 	BOOL bBackslashEnding;
 	// Allocate on heap because we are a recursive function,
@@ -878,6 +896,11 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 	ULARGE_INTEGER Size, SizeReturned;
 	Size.QuadPart = 0;
 	SizeReturned.QuadPart = 0;
+
+	// Check
+	if (szDirName == NULL || _tcslen(szDirName) == 0)
+		return Size;
+
 	// Allocate on heap because we are a recursive function,
 	// using the stack can overflow the stack!
 	WIN32_FIND_DATA* pInfo = NULL;
@@ -954,6 +977,51 @@ ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName,
 	GETDIRCONTENTSIZE_FREE;
 	
 	return Size;
+}
+
+// Is given directory empty?
+BOOL IsDirEmpty(LPCTSTR szDirName)
+{
+	// Check
+	if (szDirName == NULL || _tcslen(szDirName) == 0)
+		return TRUE;
+
+	TCHAR name[MAX_PATH];
+	if (_tcslen(szDirName) > MAX_PATH - 5) // Make sure we have some chars left to add '\\' and '*'
+		return FALSE;
+	if (szDirName[_tcslen(szDirName) - 1] == _T('\\'))
+	{
+		_sntprintf(name, MAX_PATH - 1, _T("%s*"), szDirName);
+		name[MAX_PATH - 1] = _T('\0');
+	}
+	else
+	{
+		_sntprintf(name, MAX_PATH - 1, _T("%s\\*"), szDirName);
+		name[MAX_PATH - 1] = _T('\0');
+	}
+	BOOL bEmpty = TRUE;
+	WIN32_FIND_DATA Info;
+    HANDLE hp = FindFirstFile(name, &Info);
+    if (!hp || hp == INVALID_HANDLE_VALUE)
+        return TRUE;
+    do
+    {
+        if (Info.cFileName[1] == _T('\0') && Info.cFileName[0] == _T('.'))
+            continue;
+        else if (Info.cFileName[2] == _T('\0') && Info.cFileName[1] == _T('.') && Info.cFileName[0] == _T('.'))
+            continue;
+		else
+		{
+			bEmpty = FALSE;
+			break;
+		}
+    }
+    while (FindNextFile(hp, &Info));
+
+	// Clean-up
+	FindClose(hp);
+	
+	return bEmpty;
 }
 
 // Shell deletion

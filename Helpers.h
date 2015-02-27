@@ -120,6 +120,7 @@ extern BOOL DeleteDirContent(LPCTSTR szDirName);
 extern ULARGE_INTEGER GetDirContentSize(LPCTSTR szDirName, 
 										int* pFilesCount = NULL, // optional Files Count
 										CWorkerThread* pThread = NULL);
+extern BOOL IsDirEmpty(LPCTSTR szDirName);
 extern BOOL DeleteToRecycleBin(LPCTSTR szName); // delete file or directory
 
 // Date / Time Formatting According to Local Settings
