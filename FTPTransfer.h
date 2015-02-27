@@ -36,7 +36,6 @@ public:
 	CFTPTransfer(CWorkerThread* pThread);
 	virtual ~CFTPTransfer();
 	virtual void OnTransferProgress(DWORD dwPercentage) {;};
-	__forceinline DWORD GetPercentage() const {return m_dwPercentage;};
 	int Transfer();
 	void Close();
 	BOOL Test();
@@ -69,7 +68,6 @@ protected:
 	BOOL OpenLocalFile();
 	BOOL CreateRemoteDir(CString sDirName);
 
-	DWORD			m_dwPercentage;
 	DWORD			m_dwLastPercentage;
 	HINTERNET		m_hInternetSession;
 	HINTERNET		m_hFTPConnection;

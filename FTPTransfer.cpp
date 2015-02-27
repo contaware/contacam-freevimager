@@ -55,7 +55,6 @@ int CFTPTransfer::CMakeConnectionThread::Work()
 
 CFTPTransfer::CFTPTransfer(CWorkerThread* pThread)
 {
-	m_dwPercentage = 100;
 	m_dwLastPercentage = 100;
 	m_pThread = pThread;
 	m_hInternetSession = NULL;
@@ -202,14 +201,13 @@ BOOL CFTPTransfer::ResumeTransfer()
 
 void CFTPTransfer::UpdatePercentage(DWORD dwTotalBytesDone, DWORD dwFileSize)
 {
+	DWORD dwPercentage = 100;
 	if (dwFileSize > 0)
-		m_dwPercentage = (DWORD) (dwTotalBytesDone * 100.0 / dwFileSize);
-	else
-		m_dwPercentage = 100;
-	if (m_dwPercentage > m_dwLastPercentage)
+		dwPercentage = (DWORD) (dwTotalBytesDone * 100.0 / dwFileSize);
+	if (dwPercentage > m_dwLastPercentage)
 	{
-		OnTransferProgress(m_dwPercentage);
-		m_dwLastPercentage = m_dwPercentage;
+		OnTransferProgress(dwPercentage);
+		m_dwLastPercentage = dwPercentage;
 	}
 }
 
