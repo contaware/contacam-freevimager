@@ -667,6 +667,7 @@ public:
 			void SetDoc(CVideoDeviceDoc* pDoc) {m_pDoc = pDoc;};
 
 			BOOL m_bSnapshotHistoryJpeg;
+			BOOL m_bSnapshotHistoryVideo;
 			BOOL m_bSnapshotHistoryVideoFtp;
 			float m_fSnapshotVideoCompressorQuality;
 			DWORD m_dwSnapshotVideoFourCC;
@@ -696,8 +697,6 @@ public:
 			BOOL m_bSnapshotHistoryJpegFtp;
 			BOOL m_bShowFrameTime;
 			int m_nRefFontSize;
-			BOOL m_bSnapshotThumb;
-			BOOL m_bSnapshotLiveJpeg;
 			BOOL m_bSnapshotLiveJpegFtp;
 			int m_nSnapshotThumbWidth;
 			int m_nSnapshotThumbHeight;
@@ -1071,7 +1070,6 @@ public:
 	CStringArray m_HttpGetFrameLocations;				// Automatic camera type detection query string
 
 	// Snapshot Vars
-	volatile BOOL m_bSnapshotLiveJpeg;					// Live snapshot save as Jpeg
 	volatile BOOL m_bSnapshotHistoryJpeg;				// Snapshot history save Jpegs
 	volatile BOOL m_bSnapshotHistoryVideo;				// Snapshot history save Video
 	volatile BOOL m_bSnapshotLiveJpegFtp;				// Upload Jpeg Live snapshot files
@@ -1082,7 +1080,6 @@ public:
 	volatile int m_nSnapshotRateMs;						// Snapshot rate in ms, effective: 1000 * m_nSnapshotRate + m_nSnapshotRateMs
 	volatile int m_nSnapshotHistoryFrameRate;			// Snapshot history framerate
 	volatile int m_nSnapshotCompressionQuality;			// Snapshot compression quality
-	volatile BOOL m_bSnapshotThumb;						// Snapshot thumbnail enable / disable flag
 	volatile int m_nSnapshotThumbWidth;					// Snapshot thumbnail width
 	volatile int m_nSnapshotThumbHeight;				// Snapshot thumbnail height
 	volatile DWORD m_dwNextSnapshotUpTime;				// The up-time of the next snapshot

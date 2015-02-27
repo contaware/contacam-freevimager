@@ -2765,42 +2765,38 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Snapshot"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "Make Snapshot Thumbnail",IDC_CHECK_SNAPSHOT_THUMB,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,22,99,10
-    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,128,19,101,17
-    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,353,22,34,12,ES_RIGHT
-    CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,122,50,140,18
-    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,303,50,101,17
+    EDITTEXT        IDC_EDIT_SNAPSHOT_RATE,79,24,34,12,ES_RIGHT
+    PUSHBUTTON      "",IDC_BUTTON_THUMB_SIZE,158,21,189,17
+    CONTROL         "Slider1",IDC_COMPRESSION_QUALITY,"msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,153,56,199,18
+    PUSHBUTTON      "Live Snapshot File Names",IDC_BUTTON_SNAPSHOT_NAMES,13,90,121,17
+    PUSHBUTTON      "Ftp Settings",IDC_FTP_CONFIGURE,158,90,111,17
+    CONTROL         "Ftp Upload Live Snapshots",IDC_CHECK_FTP_SNAPSHOT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,300,94,101,10
     CONTROL         "Enable Snapshots (if not checked always enabled)",IDC_CHECK_SCHEDULER_DAILY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,105,177,10
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,102,66,16
-    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,102,66,16
-    CONTROL         "Save a Snapshot as Jpeg",IDC_CHECK_SNAPSHOT_LIVE_JPEG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,155,97,10
-    PUSHBUTTON      "Snapshot File Names",IDC_BUTTON_SNAPSHOT_NAMES,228,151,101,17
-    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,155,54,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,151,177,10
+    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,247,148,66,16
+    CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,338,148,66,16
     CONTROL         "Save History as Jpegs",IDC_CHECK_SNAPSHOT_HISTORY_JPEG,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,204,86,10
-    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,204,54,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,205,86,10
+    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_JPEG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,205,54,9
     CONTROL         "Save History as Daily Video",IDC_CHECK_SNAPSHOT_HISTORY_VIDEO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,223,109,10
-    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,225,221,14,12,ES_RIGHT | ES_NUMBER
-    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,223,54,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,224,109,10
+    EDITTEXT        IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE,225,222,14,12,ES_RIGHT | ES_NUMBER
+    CONTROL         "Ftp Upload",IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,350,224,54,9
     CONTROL         "Open after manual shot",IDC_CHECK_MANUALSHOT_AUTOOPEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,255,89,10
-    LTEXT           "Snapshot each",IDC_STATIC2476,299,24,52,10
-    LTEXT           "sec",IDC_STATIC2477,390,24,14,10
-    GROUPBOX        "Live Snapshot",IDC_STATIC2478,7,136,404,43
+    LTEXT           "Snapshot each",IDC_STATIC2476,14,26,56,10
+    LTEXT           "sec",IDC_STATIC2477,123,26,14,10
     GROUPBOX        "Snapshot History",IDC_STATIC2479,7,187,404,59
-    LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,265,54,17,11
-    LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,15,50,104,17
-    GROUPBOX        "General Settings",IDC_STATIC2481,7,4,404,73
-    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,143,223,77,8
-    LTEXT           "frames/sec",IDC_STATIC2483,245,223,62,8
-    GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,86,404,42
-    LTEXT           "From",IDC_STATIC2485,224,106,16,8
-    LTEXT           "To",IDC_STATIC2486,323,106,10,8
-    LTEXT           "(multiple of 4)",IDC_STATIC2491,233,24,49,9
+    LTEXT           "qual.",IDC_COMPRESSION_QUALITY_NUM,368,60,17,11
+    LTEXT           "JPEG Quality\n(0: worst, 100: best)",IDC_STATIC2480,14,56,104,17
+    GROUPBOX        "General Settings",IDC_STATIC2481,7,4,404,115
+    LTEXT           "Framerate (1 .. 99)",IDC_STATIC2482,143,224,77,8
+    LTEXT           "frames/sec",IDC_STATIC2483,245,224,62,8
+    GROUPBOX        "Snapshot Scheduling",IDC_STATIC2484,7,130,404,45
+    LTEXT           "From",IDC_STATIC2485,224,152,16,8
+    LTEXT           "To",IDC_STATIC2486,323,152,10,8
+    LTEXT           "(multiple of 4)",IDC_STATIC2491,354,26,49,9
 END
 
 IDD_PROGRESS DIALOGEX 0, 0, 186, 31
@@ -4970,7 +4966,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_STRING1872          "Try again after closing all cameras"
-    IDS_STRING1873          "Files are not shown in web interface if disabling this!"
     IDS_STRING1874          "Detection always enabled (scheduler is off)"
     IDS_STRING1875          "Detection enabled:"
     IDS_STRING1876          "Detection disabled:"

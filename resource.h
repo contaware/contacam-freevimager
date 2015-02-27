@@ -2222,7 +2222,6 @@
 #define IDS_STRING1762                  1762
 #define IDC_COMPRESSION_QUALITY_NUM     1763
 #define IDS_STRING1763                  1763
-#define IDC_CHECK_SNAPSHOT_THUMB        1764
 #define IDS_STRING1764                  1764
 #define IDC_BUTTON_THUMB_SIZE           1765
 #define IDS_STRING1765                  1765
@@ -2247,7 +2246,6 @@
 #define IDS_STRING1777                  1777
 #define IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO 1778
 #define IDS_STRING1778                  1778
-#define IDC_CHECK_SNAPSHOT_LIVE_JPEG    1779
 #define IDS_STRING1779                  1779
 #define IDS_STRING1780                  1780
 #define IDC_STATIC1781                  1781

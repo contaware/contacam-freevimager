@@ -53,9 +53,7 @@ protected:
 	afx_msg void OnChangeEditSnapshotRate();
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnButtonThumbSize();
-	afx_msg void OnCheckSnapshotThumb();
 	afx_msg void OnChangeEditSnapshotHistoryFramerate();
-	afx_msg void OnCheckSnapshotLiveJpeg();
 	afx_msg void OnCheckSnapshotHistoryJpeg();
 	afx_msg void OnCheckSnapshotHistoryVideo();
 	afx_msg void OnCheckSchedulerDaily();

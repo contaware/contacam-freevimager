@@ -62,9 +62,7 @@ BEGIN_MESSAGE_MAP(CSnapshotPage, CPropertyPage)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_RATE, OnChangeEditSnapshotRate)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_THUMB_SIZE, OnButtonThumbSize)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_THUMB, OnCheckSnapshotThumb)
 	ON_EN_CHANGE(IDC_EDIT_SNAPSHOT_HISTORY_FRAMERATE, OnChangeEditSnapshotHistoryFramerate)
-	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_LIVE_JPEG, OnCheckSnapshotLiveJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_JPEG, OnCheckSnapshotHistoryJpeg)
 	ON_BN_CLICKED(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO, OnCheckSnapshotHistoryVideo)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_DAILY, OnCheckSchedulerDaily)
@@ -91,16 +89,8 @@ BOOL CSnapshotPage::OnInitDialog()
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
 
-	// Thumb Check Box
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotThumb);
-
-	// Live Snapshot Jpeg Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-	pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpeg);
-
 	// Snapshot History Jpeg Check Box
-	pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_JPEG);
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_JPEG);
 	pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryJpeg);
 
 	// Snapshot History Video Check Box
@@ -167,18 +157,6 @@ void CSnapshotPage::OnDestroy()
 	m_pDoc->m_pSnapshotPage = NULL;
 }
 
-void CSnapshotPage::OnCheckSnapshotThumb() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotThumb = TRUE;
-	else
-	{
-		m_pDoc->m_bSnapshotThumb = FALSE;
-		::AfxMessageBox(ML_STRING(1873, "Files are not shown in web interface if disabling this!"), MB_OK | MB_ICONWARNING);
-	}
-}
-
 void CSnapshotPage::OnCheckManualshotAutoopen() 
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_MANUALSHOT_AUTOOPEN);
@@ -186,18 +164,6 @@ void CSnapshotPage::OnCheckManualshotAutoopen()
 		m_pDoc->m_bManualSnapshotAutoOpen = TRUE;
 	else
 		m_pDoc->m_bManualSnapshotAutoOpen = FALSE;
-}
-
-void CSnapshotPage::OnCheckSnapshotLiveJpeg() 
-{
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-	if (pCheck->GetCheck())
-		m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-	else
-	{
-		m_pDoc->m_bSnapshotLiveJpeg = FALSE;
-		::AfxMessageBox(ML_STRING(1873, "Files are not shown in web interface if disabling this!"), MB_OK | MB_ICONWARNING);
-	}
 }
 
 void CSnapshotPage::OnCheckSnapshotHistoryJpeg() 

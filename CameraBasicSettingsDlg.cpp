@@ -233,22 +233,17 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 		m_nComboSnapshotHistoryRate = 1;	// 30 Seconds
 	else
 		m_nComboSnapshotHistoryRate = 0;	// 15 Seconds
-	if (!m_pDoc->m_bSnapshotThumb)
+	int nSizeRatio = 75;
+	if (m_pDoc->m_DocRect.right > 0)
+		nSizeRatio = 100 * m_pDoc->m_nSnapshotThumbWidth / m_pDoc->m_DocRect.right;
+	if (nSizeRatio > 75)
 		m_nComboSnapshotHistorySize = 0;	// Full Size
+	else if (nSizeRatio > 50)
+		m_nComboSnapshotHistorySize = 1;	// 3 / 4 Size
+	else if (nSizeRatio > 25)
+		m_nComboSnapshotHistorySize = 2;	// 1 / 2 Size
 	else
-	{
-		int nSizeRatio = 75;
-		if (m_pDoc->m_DocRect.right > 0)
-			nSizeRatio = 100 * m_pDoc->m_nSnapshotThumbWidth / m_pDoc->m_DocRect.right;
-		if (nSizeRatio > 75)
-			m_nComboSnapshotHistorySize = 0;// Full Size
-		else if (nSizeRatio > 50)
-			m_nComboSnapshotHistorySize = 1;// 3 / 4 Size
-		else if (nSizeRatio > 25)
-			m_nComboSnapshotHistorySize = 2;// 1 / 2 Size
-		else
-			m_nComboSnapshotHistorySize = 3;// 1 / 4 Size
-	}
+		m_nComboSnapshotHistorySize = 3;	// 1 / 4 Size
 	if (m_pDoc->m_nSnapshotRate > 240)
 		m_nComboSnapshotRate = 13;			// 5 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 180)
@@ -741,15 +736,11 @@ void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbH
 		// Thumb size (this updates the controls and sets m_nSnapshotThumbWidth and m_nSnapshotThumbHeight)
 		m_pDoc->m_pSnapshotPage->ChangeThumbSize(nThumbWidth, nThumbHeight);
 		
-		// Live snapshots
-		CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_LIVE_JPEG);
-		pCheck->SetCheck(m_pDoc->m_bSnapshotLiveJpeg ? 1 : 0);
-		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_THUMB);
-		pCheck->SetCheck(m_pDoc->m_bSnapshotThumb ? 1 : 0);
+		// Display snapshot rate
 		m_pDoc->m_pSnapshotPage->DisplaySnapshotRate();
 
 		// Snapshot history
-		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
+		CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
 	}
 	else
@@ -861,10 +852,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 				m_pDoc->PhpConfigFileSetParam(PHPCONFIG_MAX_PER_PAGE, sMaxPerPage);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 
-			// Enable live snapshots
-			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-			m_pDoc->m_bSnapshotThumb = TRUE;
-
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 
@@ -905,8 +892,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			switch (m_nComboSnapshotHistorySize)
 			{
 				// Full Size
-				case 0	:	bUseThumb = FALSE;
-							break;
+				case 0	:	break;
 				// 3 / 4 Size
 				case 1	:	nThumbWidth = (3 * nThumbWidth / 4) & ~0x3;
 							nThumbHeight = (3 * nThumbHeight / 4) & ~0x3;
@@ -920,6 +906,8 @@ void CCameraBasicSettingsDlg::ApplySettings()
 							nThumbHeight = (nThumbHeight / 4) & ~0x3;
 							break;
 			}
+			if (nThumbWidth == m_pDoc->m_DocRect.right && nThumbHeight == m_pDoc->m_DocRect.bottom)
+				bUseThumb = FALSE;
 			CString sThumbWidth, sThumbHeight;
 			sThumbWidth.Format(_T("%d"), nThumbWidth);
 			sThumbHeight.Format(_T("%d"), nThumbHeight);
@@ -931,10 +919,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, bUseThumb ? _T("1") : _T("0"));
-
-			// Enable live snapshots
-			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Enable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = TRUE;
@@ -997,10 +981,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
 
-			// Enable live snapshots
-			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-			m_pDoc->m_bSnapshotThumb = TRUE;
-
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
 
@@ -1038,10 +1018,6 @@ void CCameraBasicSettingsDlg::ApplySettings()
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBWIDTH, sThumbWidth);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_THUMBHEIGHT, sThumbHeight);
 			m_pDoc->PhpConfigFileSetParam(PHPCONFIG_SNAPSHOTHISTORY_THUMB, _T("0"));
-
-			// Enable live snapshots
-			m_pDoc->m_bSnapshotLiveJpeg = TRUE;
-			m_pDoc->m_bSnapshotThumb = TRUE;
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;

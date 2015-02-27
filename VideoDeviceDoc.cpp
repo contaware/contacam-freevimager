@@ -1219,6 +1219,7 @@ BOOL CVideoDeviceDoc::CSaveFrameListThread::SaveAnimatedGif(CDib* pGIFSaveDib,
 int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 {
 	ASSERT(m_pDoc);
+	CFTPTransfer FTP(this);
 
 	// Init
 	CDib Dib;
@@ -1233,7 +1234,9 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	// Find and process jpg snapshot history files
 	CSortableFileFind FileFind;
 	FileFind.AddAllowedExtension(_T("jpg"));
-	if (FileFind.Init(::GetDriveAndDirName(sMP4FileName) + _T("\\") + _T("*")))
+	CString sDir(::GetDriveAndDirName(sMP4FileName));
+	sDir.TrimRight(_T('\\'));
+	if (FileFind.Init(sDir + _T("\\*")))
 	{
 		for (int pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
 		{
@@ -1343,27 +1346,18 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 	}
 
 	// Copy from temp to snapshots folder
-	if (::IsExistingFile(sMP4TempFileName))
-		::CopyFile(sMP4TempFileName, sMP4FileName, FALSE);
-	if (::IsExistingFile(sMP4TempThumbFileName))
-		::CopyFile(sMP4TempThumbFileName, sMP4ThumbFileName, FALSE);
+	if (m_bSnapshotHistoryVideo)
+	{
+		if (::IsExistingFile(sMP4TempFileName))
+			::CopyFile(sMP4TempFileName, sMP4FileName, FALSE);
+		if (::IsExistingFile(sMP4TempThumbFileName))
+			::CopyFile(sMP4TempThumbFileName, sMP4ThumbFileName, FALSE);
+	}
 
 	// Ftp upload
 	if (m_bSnapshotHistoryVideoFtp)
 	{
-		CString sYear = m_Time.Format(_T("%Y"));
-		CString sMonth = m_Time.Format(_T("%m"));
-		CString sDay = m_Time.Format(_T("%d"));
-		CString sUploadDir(sYear + _T("/") + sMonth + _T("/") + sDay);
-		CFTPTransfer FTP(this);
-		if (::IsExistingFile(sMP4TempThumbFileName))
-		{
-			// Do Exit?
-			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
-									sMP4TempThumbFileName,
-									sUploadDir + _T("/") + ::GetShortFileName(sMP4ThumbFileName)) == -1)
-				goto exit;
-		}
+		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
 		if (::IsExistingFile(sMP4TempFileName))
 		{
 			// Do Exit?
@@ -1372,182 +1366,122 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 									sUploadDir + _T("/") + ::GetShortFileName(sMP4FileName)) == -1)
 				goto exit;
 		}
+		if (::IsExistingFile(sMP4TempThumbFileName))
+		{
+			// Do Exit?
+			if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+									sMP4TempThumbFileName,
+									sUploadDir + _T("/") + ::GetShortFileName(sMP4ThumbFileName)) == -1)
+				goto exit;
+		}
 	}
 
 	// Set thread executed variable
 	// (if thread is killed this var is not set, that's the correct behavior)
 	m_ThreadExecutedForTime = m_Time;
 
-	// Clean-up
 exit:
+	// Clean-up
 	if (pAVRecMp4)
 		delete pAVRecMp4;
 	if (pAVRecThumbMp4)
 		delete pAVRecThumbMp4;
 	::DeleteFile(sMP4TempFileName);
 	::DeleteFile(sMP4TempThumbFileName);
+	if (!m_bSnapshotHistoryJpeg && ::IsDirEmpty(sDir))
+		::RemoveDirectory(sDir);
 
 	return 0;
 }
 
+// Note: always first copy/ftp upload full-size file then the
+// thumb version which links to the full-size in web interface
 int CVideoDeviceDoc::CSaveSnapshotThread::Work() 
 {
 	ASSERT(m_pDoc);
+	CFTPTransfer FTP(this);
 
 	// Get uptime
 	DWORD dwUpTime = m_Dib.GetUpTime();
 
+	// Live file names
+	CString sLiveFileName(m_sSnapshotAutoSaveDir);
+	sLiveFileName.TrimRight(_T('\\'));
+	sLiveFileName += _T("\\") + m_sSnapshotLiveJpegName + _T(".jpg");
+	CString sLiveThumbFileName(m_sSnapshotAutoSaveDir);
+	sLiveThumbFileName.TrimRight(_T('\\'));
+	sLiveThumbFileName += _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
+
+	// Init history file names
+	// Note: if m_bSnapshotHistoryJpeg is TRUE, it creates also the year, month and day
+	// directories, otherwise it just returns the file name without path
+	CString sHistoryFileName(MakeJpegHistoryFileName());
+	CString sHistoryThumbFileName(::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
+
 	// Temp file names
-	CString sTempFileName, sTempThumbFileName;
+	CString sTempFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName));
+	CString sTempThumbFileName(::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryThumbFileName));
 
-	// Init history file name, if m_bSnapshotHistoryJpeg is TRUE,
-	// it creates also the year, month and day directories, otherwise
-	// it just returns the file name without path
-	CString sHistoryFileName = MakeJpegHistoryFileName();
-
-	// Resize Thumb
+	// Resize thumb
 	CDib DibThumb;
-	if (m_bSnapshotThumb)
+	DibThumb.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
+	if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
 	{
-		// No Message Box on Error
-		DibThumb.SetShowMessageBoxOnError(FALSE);
-
-		// Resize
-		if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
-		{
-			CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
-			DibThumb.SetUpTime(m_Dib.GetUpTime());
-		}
+		CVideoDeviceDoc::ResizeFast(&m_Dib, &DibThumb);
+		DibThumb.SetUpTime(m_Dib.GetUpTime());
 	}
 
-	// Save Full-size to Temp
+	// Save to temp location
 	if (m_bShowFrameTime)
+	{
 		AddFrameTime(&m_Dib, m_Time, dwUpTime, m_nRefFontSize);
-	sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), sHistoryFileName);
+		AddFrameTime(&DibThumb, m_Time, dwUpTime, m_nRefFontSize);
+	}
 	CVideoDeviceDoc::SaveJpegFast(&m_Dib, &m_MJPEGEncoder, sTempFileName, m_nSnapshotCompressionQuality);
-
-	// Save Thumb to Temp
-	if (m_bSnapshotThumb)
-	{
-		if (m_bShowFrameTime)
-			AddFrameTime(&DibThumb, m_Time, dwUpTime, m_nRefFontSize);
-		sTempThumbFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-										::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg"));
-		CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
-	}
+	CVideoDeviceDoc::SaveJpegFast(&DibThumb, &m_MJPEGThumbEncoder, sTempThumbFileName, m_nSnapshotCompressionQuality);
 	
-	// Copy from Temp and Ftp Upload
-	// Note: always first copy/ftp upload full-size file then the
-	// thumb version which links to the full-size in web interface!
-	if (m_bSnapshotLiveJpeg)
+	// Live
+	::CopyFile(sTempFileName, sLiveFileName, FALSE);
+	::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
+	if (m_bSnapshotLiveJpegFtp)
 	{
-		CString sLiveFileName;
-		if (m_sSnapshotAutoSaveDir != _T(""))
-		{
-			sLiveFileName = m_sSnapshotAutoSaveDir;
-			sLiveFileName.TrimRight(_T('\\'));
-			sLiveFileName = sLiveFileName + _T("\\") + m_sSnapshotLiveJpegName + _T(".jpg");
-			::CopyFile(sTempFileName, sLiveFileName, FALSE);
-		}
-		else
-			sLiveFileName = m_sSnapshotLiveJpegName + _T(".jpg");
-		if (m_bSnapshotLiveJpegFtp) // FTP Upload
-		{
-			int result;
-			CFTPTransfer FTP(this);
-			result = m_pDoc->FTPUpload(	&FTP, &m_Config,
-										sTempFileName, m_sSnapshotLiveJpegName + _T(".jpg"));
-			if (result == -1) // Do Exit?
-			{
-				// Delete Temp
-				if (sTempThumbFileName != _T(""))
-					::DeleteFile(sTempThumbFileName);
-				if (sTempFileName != _T(""))
-					::DeleteFile(sTempFileName);
-				return 0;
-			}
-		}
-		if (m_bSnapshotThumb)
-		{
-			CString sLiveThumbFileName;
-			if (m_sSnapshotAutoSaveDir != _T(""))
-			{
-				sLiveThumbFileName = m_sSnapshotAutoSaveDir;
-				sLiveThumbFileName.TrimRight(_T('\\'));
-				sLiveThumbFileName = sLiveThumbFileName + _T("\\") + m_sSnapshotLiveJpegThumbName + _T(".jpg");
-				::CopyFile(sTempThumbFileName, sLiveThumbFileName, FALSE);
-			}
-			else
-				sLiveThumbFileName = m_sSnapshotLiveJpegThumbName + _T(".jpg");
-			if (m_bSnapshotLiveJpegFtp) // FTP Upload
-			{
-				int result;
-				CFTPTransfer FTP(this);
-				result = m_pDoc->FTPUpload(	&FTP, &m_Config,
-											sTempThumbFileName, m_sSnapshotLiveJpegThumbName + _T(".jpg"));
-				if (result == -1) // Do Exit?
-				{
-					// Delete Temp
-					if (sTempThumbFileName != _T(""))
-						::DeleteFile(sTempThumbFileName);
-					if (sTempFileName != _T(""))
-						::DeleteFile(sTempFileName);
-					return 0;
-				}
-			}
-		}
+		// Do Exit?
+		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+								sTempFileName,
+								m_sSnapshotLiveJpegName + _T(".jpg")) == -1)
+			goto exit;
+		// Do Exit?
+		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+								sTempThumbFileName,
+								m_sSnapshotLiveJpegThumbName + _T(".jpg")) == -1)
+			goto exit;
 	}
+
+	// History
 	if (m_bSnapshotHistoryJpeg)
 	{
-		if (m_sSnapshotAutoSaveDir != _T(""))
-			::CopyFile(sTempFileName, sHistoryFileName, FALSE);
-		if (m_bSnapshotHistoryJpegFtp) // FTP Upload
-		{
-			CString sUploadDir = m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d"));
-			int result;
-			CFTPTransfer FTP(this);
-			result = m_pDoc->FTPUpload(	&FTP, &m_Config,
-										sTempFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName));
-			if (result == -1) // Do Exit?
-			{
-				// Delete Temp
-				if (sTempThumbFileName != _T(""))
-					::DeleteFile(sTempThumbFileName);
-				if (sTempFileName != _T(""))
-					::DeleteFile(sTempFileName);
-				return 0;
-			}
-		}
-		if (m_bSnapshotThumb)
-		{
-			CString sHistoryThumbFileName = ::GetFileNameNoExt(sHistoryFileName) + _T("_thumb.jpg");
-			if (m_sSnapshotAutoSaveDir != _T(""))
-				::CopyFile(sTempThumbFileName, sHistoryThumbFileName, FALSE);
-			if (m_bSnapshotHistoryJpegFtp) // FTP Upload
-			{
-				CString sUploadDir = m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d"));
-				int result;
-				CFTPTransfer FTP(this);
-				result = m_pDoc->FTPUpload(	&FTP, &m_Config,
-											sTempThumbFileName, sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName));
-				if (result == -1) // Do Exit?
-				{
-					// Delete Temp
-					if (sTempThumbFileName != _T(""))
-						::DeleteFile(sTempThumbFileName);
-					if (sTempFileName != _T(""))
-						::DeleteFile(sTempFileName);
-					return 0;
-				}
-			}
-		}
+		::CopyFile(sTempFileName, sHistoryFileName, FALSE);
+		::CopyFile(sTempThumbFileName, sHistoryThumbFileName, FALSE);
 	}
-	
-	// Delete Temp
-	if (sTempThumbFileName != _T(""))
-		::DeleteFile(sTempThumbFileName);
-	if (sTempFileName != _T(""))
-		::DeleteFile(sTempFileName);
+	if (m_bSnapshotHistoryJpegFtp)
+	{
+		CString sUploadDir(m_Time.Format(_T("%Y")) + _T("/") + m_Time.Format(_T("%m")) + _T("/") + m_Time.Format(_T("%d")));
+		// Do Exit?
+		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+								sTempFileName,
+								sUploadDir + _T("/") + ::GetShortFileName(sHistoryFileName)) == -1)
+			goto exit;
+		// Do Exit?
+		if (m_pDoc->FTPUpload(	&FTP, &m_Config,
+								sTempThumbFileName,
+								sUploadDir + _T("/") + ::GetShortFileName(sHistoryThumbFileName)) == -1)
+			goto exit;
+	}
+
+exit:
+	// Clean-up
+	::DeleteFile(sTempFileName);
+	::DeleteFile(sTempThumbFileName);
 
 	return 0;
 }
@@ -3830,7 +3764,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_HttpGetFrameLocations.Add(_T("/")); // start trying home to see whether cam is reachable
 
 	// Snapshot
-	m_bSnapshotLiveJpeg = TRUE;
 	m_bSnapshotHistoryJpeg = FALSE;
 	m_bSnapshotHistoryVideo = FALSE;
 	m_bSnapshotLiveJpegFtp = FALSE;
@@ -3843,7 +3776,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nSnapshotRateMs = 0;
 	m_nSnapshotHistoryFrameRate = DEFAULT_SNAPSHOT_HISTORY_FRAMERATE;
 	m_nSnapshotCompressionQuality = DEFAULT_SNAPSHOT_COMPR_QUALITY;
-	m_bSnapshotThumb = TRUE;
 	m_nSnapshotThumbWidth = DEFAULT_SNAPSHOT_THUMB_WIDTH;
 	m_nSnapshotThumbHeight = DEFAULT_SNAPSHOT_THUMB_HEIGHT;
 	m_dwNextSnapshotUpTime = 0U;
@@ -4558,7 +4490,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 		sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 	}
 	::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &m_DetectionTriggerLastWriteTime);
-	m_bSnapshotLiveJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotLiveJpeg"), TRUE);
 	m_bSnapshotHistoryJpeg = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotHistoryJpeg"), FALSE);
 	int nSnapshotHistoryVideo = pApp->GetProfileInt(sSection, _T("SnapshotHistoryVideo"), 2);	// use invalid default value to check whether it exists
 	int nSnapshotHistorySwf = pApp->GetProfileInt(sSection, _T("SnapshotHistorySwf"), 2);		// for backwards compatibility
@@ -4585,7 +4516,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_nSnapshotRateMs = (int) pApp->GetProfileInt(sSection, _T("SnapshotRateMs"), 0);
 	m_nSnapshotHistoryFrameRate = (int) pApp->GetProfileInt(sSection, _T("SnapshotHistoryFrameRate"), DEFAULT_SNAPSHOT_HISTORY_FRAMERATE);
 	m_nSnapshotCompressionQuality = (int) pApp->GetProfileInt(sSection, _T("SnapshotCompressionQuality"), DEFAULT_SNAPSHOT_COMPR_QUALITY);
-	m_bSnapshotThumb = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotThumb"), TRUE);
 	m_nSnapshotThumbWidth = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbWidth"), DEFAULT_SNAPSHOT_THUMB_WIDTH);
 	m_nSnapshotThumbHeight = (int) pApp->GetProfileInt(sSection, _T("SnapshotThumbHeight"), DEFAULT_SNAPSHOT_THUMB_HEIGHT);
 	m_bSnapshotStartStop = (BOOL) pApp->GetProfileInt(sSection, _T("SnapshotStartStop"), FALSE);
@@ -4748,7 +4678,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("TimeSegmentationIndex"), m_nTimeSegmentationIndex);
 	pApp->WriteProfileString(sSection, _T("RecordAutoSaveDir"), m_sRecordAutoSaveDir);
 	pApp->WriteProfileString(sSection, _T("DetectionTriggerFileName"), m_sDetectionTriggerFileName);
-	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpeg"), (int)m_bSnapshotLiveJpeg);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryJpeg"), (int)m_bSnapshotHistoryJpeg);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryVideo"), (int)m_bSnapshotHistoryVideo);
 	pApp->WriteProfileInt(sSection, _T("SnapshotLiveJpegFtp"), (int)m_bSnapshotLiveJpegFtp);
@@ -4761,7 +4690,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("SnapshotRateMs"), m_nSnapshotRateMs);
 	pApp->WriteProfileInt(sSection, _T("SnapshotHistoryFrameRate"), m_nSnapshotHistoryFrameRate);
 	pApp->WriteProfileInt(sSection, _T("SnapshotCompressionQuality"), m_nSnapshotCompressionQuality);
-	pApp->WriteProfileInt(sSection, _T("SnapshotThumb"), (int)m_bSnapshotThumb);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbWidth"), m_nSnapshotThumbWidth);
 	pApp->WriteProfileInt(sSection, _T("SnapshotThumbHeight"), m_nSnapshotThumbHeight);
 	pApp->WriteProfileInt(sSection, _T("SnapshotStartStop"), (int)m_bSnapshotStartStop);
@@ -7949,12 +7877,10 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	// (we need the history jpgs to make the video file inside the snapshot video thread,
 	// user unwanted history jpgs are deleted in snapshot video thread)
 	m_SaveSnapshotThread.m_Dib = *pDib;
-	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo);
+	m_SaveSnapshotThread.m_bSnapshotHistoryJpeg = (m_bSnapshotHistoryJpeg || m_bSnapshotHistoryVideo || m_bSnapshotHistoryVideoFtp);
 	m_SaveSnapshotThread.m_bSnapshotHistoryJpegFtp = m_bSnapshotHistoryJpegFtp;
 	m_SaveSnapshotThread.m_bShowFrameTime = m_bShowFrameTime;
 	m_SaveSnapshotThread.m_nRefFontSize = m_nRefFontSize;
-	m_SaveSnapshotThread.m_bSnapshotThumb = m_bSnapshotThumb;
-	m_SaveSnapshotThread.m_bSnapshotLiveJpeg = m_bSnapshotLiveJpeg;
 	m_SaveSnapshotThread.m_bSnapshotLiveJpegFtp = m_bSnapshotLiveJpegFtp;
 	m_SaveSnapshotThread.m_nSnapshotThumbWidth = m_nSnapshotThumbWidth;
 	m_SaveSnapshotThread.m_nSnapshotThumbHeight = m_nSnapshotThumbHeight;
@@ -7969,7 +7895,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 	m_SaveSnapshotThread.Start();
 
 	// Start Snapshot Video Thread?
-	if (!m_sRecordAutoSaveDir.IsEmpty() && m_bSnapshotHistoryVideo && !m_SaveSnapshotVideoThread.IsAlive())
+	if ((m_bSnapshotHistoryVideo || m_bSnapshotHistoryVideoFtp) && !m_SaveSnapshotVideoThread.IsAlive())
 	{
 		CTime Yesterday = Time - CTimeSpan(1, 0, 0, 0);	// - 1 day
 		Yesterday = CTime(	Yesterday.GetYear(),
@@ -7979,6 +7905,7 @@ void CVideoDeviceDoc::Snapshot(CDib* pDib, const CTime& Time)
 		if (m_SaveSnapshotVideoThread.m_ThreadExecutedForTime < Yesterday)
 		{
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryJpeg = m_bSnapshotHistoryJpeg;
+			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideo = m_bSnapshotHistoryVideo;
 			m_SaveSnapshotVideoThread.m_bSnapshotHistoryVideoFtp = m_bSnapshotHistoryVideoFtp;
 			m_SaveSnapshotVideoThread.m_fSnapshotVideoCompressorQuality = m_fVideoRecQuality;
 			m_SaveSnapshotVideoThread.m_dwSnapshotVideoFourCC = DEFAULT_VIDEO_FOURCC;
@@ -8040,17 +7967,11 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 
 	// Resize Thumb
 	CDib DibThumb;
-	if (m_bSnapshotThumb)
+	DibThumb.SetShowMessageBoxOnError(FALSE); // no Message Box on Error
+	if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
 	{
-		// No Message Box on Error
-		DibThumb.SetShowMessageBoxOnError(FALSE);
-
-		// Resize
-		if (DibThumb.AllocateBitsFast(12, FCC('I420'), m_nSnapshotThumbWidth, m_nSnapshotThumbHeight))
-		{
-			CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
-			DibThumb.SetUpTime(Dib.GetUpTime());
-		}
+		CVideoDeviceDoc::ResizeFast(&Dib, &DibThumb);
+		DibThumb.SetUpTime(Dib.GetUpTime());
 	}
 
 	// Add frame time
