@@ -1388,8 +1388,6 @@ exit:
 		delete pAVRecThumbMp4;
 	::DeleteFile(sMP4TempFileName);
 	::DeleteFile(sMP4TempThumbFileName);
-	if (!m_bSnapshotHistoryJpeg && ::IsDirEmpty(sDir))
-		::RemoveDirectory(sDir);
 
 	return 0;
 }
@@ -3518,6 +3516,8 @@ BOOL CVideoDeviceDoc::CDeleteThread::DeleteOld(	CSortableFileFind& FileFind,
 			continue;
 
 		// Delete Dir
+		// Note: the directory time is set to 23:59:59 so that GetDays()
+		// returns one or greater only after 24-hours passed from 23:59:59 
 		CTime DirTime(nYear, nMonth, nDay, 23, 59, 59);
 		CTimeSpan TimeDiff = CurrentTime - DirTime;
 		if ((LONGLONG)TimeDiff.GetDays() >= llDeleteOlderThanDays &&
