@@ -15,6 +15,9 @@
 #  define MIN(a,b)  ((a) < (b) ? (a) : (b))
 #endif
 
+// Windows thumbnail cache file
+#define THUMBS_DB				_T("Thumbs.db")
+
 extern BOOL g_bWin2003;
 extern BOOL g_bWin2003OrHigher;
 extern BOOL g_bWinVista;

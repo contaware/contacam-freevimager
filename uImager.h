@@ -60,9 +60,6 @@
 #define CONTACAMSERVICE_CONTROL_START_PROC				133
 #define CONTACAMSERVICE_CONTROL_END_PROC				134
 
-// System Files
-#define THUMBS_DB										_T("Thumbs.db")
-
 // That's the maximum for Win95, Win98 and WinMe (bigger bufs are not working)
 #define MAX_SECTIONNAMES_BUFFER							65535
 

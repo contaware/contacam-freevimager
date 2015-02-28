@@ -1010,6 +1010,8 @@ BOOL IsDirEmpty(LPCTSTR szDirName)
             continue;
         else if (Info.cFileName[2] == _T('\0') && Info.cFileName[1] == _T('.') && Info.cFileName[0] == _T('.'))
             continue;
+		else if (_tcsicmp(Info.cFileName, THUMBS_DB) == 0)
+			continue;
 		else
 		{
 			bEmpty = FALSE;
