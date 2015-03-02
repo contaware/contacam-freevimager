@@ -742,6 +742,8 @@ void CCameraBasicSettingsDlg::ApplySettingsSnapshot(int nThumbWidth, int nThumbH
 		// Snapshot history
 		CButton* pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_SNAPSHOT_HISTORY_VIDEO);
 		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideo ? 1 : 0);
+		pCheck = (CButton*)m_pDoc->m_pSnapshotPage->GetDlgItem(IDC_CHECK_FTP_SNAPSHOT_HISTORY_VIDEO);
+		pCheck->SetCheck(m_pDoc->m_bSnapshotHistoryVideoFtp ? 1 : 0);
 	}
 	else
 	{
@@ -854,6 +856,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
@@ -983,6 +986,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, dSnapshotRate);
@@ -1021,6 +1025,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 			// Disable snapshot history
 			m_pDoc->m_bSnapshotHistoryVideo = FALSE;
+			m_pDoc->m_bSnapshotHistoryVideoFtp = FALSE;
 
 			// Update snapshot settings
 			ApplySettingsSnapshot(nThumbWidth, nThumbHeight, MIN_SNAPSHOT_RATE);
