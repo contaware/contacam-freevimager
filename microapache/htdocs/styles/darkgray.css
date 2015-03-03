@@ -79,10 +79,40 @@ a.back {
 	background: transparent url('transparent.gif');
 }
 
-/* Highlight currently selected date for summary.php */
-a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover {
+/* Highlight currently selected page offset */
+a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.highlight:focus {
 	color: #ffa23c;
 	text-decoration: underline;
+}
+
+/* PHP date picker */
+div.calbuttons a {
+	font-size: 11px;
+	font-style: normal;
+	font-weight: bold;
+	font-family: sans-serif,Arial,Helvetica;
+	display: inline-block;
+	width: 36px;
+	height: 24px;
+	line-height: 24px;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	color: #111111;
+	background-color: #ededed;
+	border: 1px solid;
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+div.calbuttons a:hover, div.calbuttons a:focus {
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+div.calbuttons a:active {
+	border-color: #039ccf #33ccff #33ccff #039ccf;
+}
+div.calbuttons a.highlight:link, div.calbuttons a.highlight:visited, div.calbuttons a.highlight:active, div.calbuttons a.highlight:hover, div.calbuttons a.highlight:focus {
+	color: #111111;
+	text-decoration: underline;
+	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
 
 /* Two line Rec text and AVI link for summaries */

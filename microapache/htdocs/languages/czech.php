@@ -6,8 +6,6 @@ define("DAYNAMES","'Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek'
 define("MONDAYSTARTSWEEK","1");	// 1: monday starts the week, 0: sunday starts the week
 define("SHORTMONTHNAMES","'Led','Ún','Bře','Dub','Kvě','Červ','Čerc','Srp','Zář','Říj','Lis','Pro'");
 define("MONTHNAMES","'Leden','Únor','Březen','Duben','Květen','Červen','Červenec','Srpen','Září','Říjen','Listopad','Prosinec'");
-define("YEAR","rok");
-define("MONTH","měsíc");
 define("IN","za");
 define("DAY","den");
 define("DAYS","dny");
@@ -18,7 +16,6 @@ define("NOFILESFOR","Žádné soubory z");
 define("PAGES","stránky");
 define("BACK","Zpět");
 define("LOCALTIME","Aktuální čas");
-define("VIEWSNAPSHOTSFOR","Prohlédnout snapshoty");
 define("VIEWFILESFOR","Prohlédnout soubory");
 define("SELECT","vybrat");
 define("IMAGERELOADIN","Obraz bude obnoven za");

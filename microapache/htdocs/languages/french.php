@@ -6,8 +6,6 @@ define("DAYNAMES","'Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Sam
 define("MONDAYSTARTSWEEK","1");	// 1: monday starts the week, 0: sunday starts the week
 define("SHORTMONTHNAMES","'Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'");
 define("MONTHNAMES","'Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'");
-define("YEAR","année");
-define("MONTH","mois");
 define("IN","dans");
 define("DAY","jour");
 define("DAYS","jours");
@@ -18,7 +16,6 @@ define("NOFILESFOR","Aucun fichier pour");
 define("PAGES","pages");
 define("BACK","Arrière");
 define("LOCALTIME","Heure locale");
-define("VIEWSNAPSHOTSFOR","Visualiser instantanée(s) pour");
 define("VIEWFILESFOR","Visualiser fichier(s) pour");
 define("SELECT","sélectionner");
 define("IMAGERELOADIN","L'image est ajournée dans");

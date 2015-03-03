@@ -18,15 +18,11 @@ define ("SERVERPUSH_POLLRATE_MS","200");
 define ("SUMMARYREFRESHSEC","300");
 // Javascript date picker years start offset
 define ("STARTOFFSET_YEARS","4");
-// Linear date picker maximum number of shown years
-define ("MAX_YEARS","11");
-// Linear date picker maximum number of shown days ago
-define ("MAX_DAYSAGO","20");
 // mjpeg(=server push) is not supported by Internet Explorer.
 // If this flag is set to 1 Internet Explorer will continue to work
 // in client poll mode, all the other browsers will switch to server
-// push mode: Firefox, Chrome, Safari and iPhone support that well,
-// Opera and Android have problems.
+// push mode: Firefox, Chrome, Opera, Safari and iPhone support that
+// well, Android has problems
 define ("USESERVERPUSH","0");
 
 
@@ -39,8 +35,8 @@ define("SUMMARYTITLE","Summary");
 define("SNAPSHOTTITLE","Snapshot");
 
 // Default page (index.php redirects to this page)
-// Choose between: summary.php, summarysnapshot.php
-// summaryiframe.php, snapshot.php, snapshotfull.php, snapshothistory.php
+// Choose between: summarysnapshot.php, summaryiframe.php,
+// snapshot.php, snapshotfull.php, snapshothistory.php
 define ("DEFAULTPAGE","summarysnapshot.php");
 
 // Set the Language
