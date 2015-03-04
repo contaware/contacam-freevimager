@@ -29,7 +29,7 @@
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
 #endif
-#define APPVERSION										_T("5.0.0beta6")
+#define APPVERSION										_T("5.0.0beta7")
 #define SLIDESHOWNAME									_T("Start.exe")
 
 // Company
