@@ -22,7 +22,7 @@ if ($doc_root == "")
 else
 	$full_path = "$doc_root/" . trim($filename,"\\/");
 if (!is_file("$full_path")) {
-	echo "<div align=\"center\"><h2>\n";
+	echo "<div style=\"text-align: center\"><h2>\n";
 	echo NOFILE;
 	echo "</h2></div>\n";
 	echo "</body>\n";
@@ -30,11 +30,11 @@ if (!is_file("$full_path")) {
 	exit();
 }
 echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
-echo "<img src=\"$filename\" alt=\"Image File\" align=\"middle\" />\n";
+echo "<img src=\"$filename\" alt=\"Image File\" />\n";
 echo "</div>\n";
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	echo "<br/>\n";
-	echo "<div align=\"center\">\n";
+	echo "<div style=\"text-align: center\">\n";
 	if (isset($_GET['backuri']))
 		echo "<a class=\"back\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>\n";
 	else

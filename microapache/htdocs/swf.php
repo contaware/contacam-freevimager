@@ -162,7 +162,7 @@ echo "width: " . $width . "px;\n}\n";
 <body>
 <?php
 if (!is_file("$full_path")) {
-	echo "<div align=\"center\"><h2>\n";
+	echo "<div style=\"text-align: center\"><h2>\n";
 	echo NOFILE;
 	echo "</h2></div>\n";
 	echo "</body>\n";
@@ -228,7 +228,7 @@ echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\"
 </div>
 
 <?php
-echo "<div align=\"center\">\n";
+echo "<div style=\"text-align: center\">\n";
 echo "<div id=\"slidercontainer\">\n";
 echo "<div id=\"track1\" style=\"width: " . $width . "px;\n";
 echo "background-repeat: repeat-x; background-position: center left; height: 26px; padding: 0px;\">\n";
@@ -250,7 +250,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$prevkey = intval($currentkey) - 1;
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
-	echo "<div align=\"center\">\n";
+	echo "<div style=\"text-align: center\">\n";
 	echo "<form name=\"videonav\" action=\"\" method=\"post\" id=\"videonav\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);

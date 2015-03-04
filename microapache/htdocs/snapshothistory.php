@@ -22,7 +22,7 @@ document.write(getCalendarStyles());
 </head>
 
 <body>
-<?php echo "<div align=\"center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
+<?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
 <div class="menutop">
 <a href="#" onclick="myiframe.location.reload(); return false;"><?php echo RELOAD;?></a> |
 <a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
@@ -197,7 +197,7 @@ if ($iframe_width < 380)
 	$iframe_width = 380;
 if ($iframe_height < 330)
 	$iframe_height = 330;
-echo "<div align=\"center\">\n";
+echo "<div style=\"text-align: center\">\n";
 echo "<iframe name=\"myiframe\" src=\"$srcuri\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" frameborder=\"0\">\n";
 echo "<p>Click <a href=\"snapshot.php\">here</a> to see today's sequence of snapshots</p>\n";
 echo "</iframe>\n";

@@ -25,7 +25,7 @@ echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" 
 <body>
 <?php
 if (!is_file("$full_path")) {
-	echo "<div align=\"center\"><h2>\n";
+	echo "<div style=\"text-align: center\"><h2>\n";
 	echo NOFILE;
 	echo "</h2></div>\n";
 	echo "</body>\n";
@@ -65,7 +65,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$prevkey = intval($currentkey) - 1;
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
-	echo "<div align=\"center\">\n";
+	echo "<div style=\"text-align: center\">\n";
 	echo "<form name=\"videonav\" action=\"\" method=\"post\" id=\"videonav\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);

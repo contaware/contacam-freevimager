@@ -53,7 +53,7 @@ $dir = rtrim(str_replace("\\", "/", dirname($_SERVER['SCRIPT_FILENAME'])), '/');
 $hasdir = false;
 if ($handle = @opendir($dir)) {
 	$count = 0;
-	echo "<div align=\"center\">";
+	echo "<div style=\"text-align: center\">";
 	while (false !== ($file = readdir($handle))) {
 		if (is_dir("$dir/$file") && $file != "." && $file != "..") {
 			$configfile = "$dir/$file/configuration.php";
