@@ -13,8 +13,8 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 echo "<title>" . SNAPSHOTTITLE . "</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
-<script language="JavaScript" src="js/calendarpopup.js" type="text/javascript"></script>
-<script language="JavaScript" type="text/javascript">
+<script src="js/calendarpopup.js" type="text/javascript"></script>
+<script type="text/javascript">
 //<![CDATA[
 document.write(getCalendarStyles());
 //]]>
@@ -42,7 +42,7 @@ document.write(getCalendarStyles());
 </form>
 </div>
 <div id="calendar"></div>
-<script language="JavaScript" id="jscal" type="text/javascript">
+<script id="jscal" type="text/javascript">
 //<![CDATA[
 function urlExists(url) {
 	var ajax = new XMLHttpRequest(); 

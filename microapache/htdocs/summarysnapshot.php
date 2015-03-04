@@ -57,7 +57,7 @@ if (isset($_GET['pageoffset']))	{// Thumbs offset
 		$page_offset = 0;
 }
 ?>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 function changeStyle(id) {
 	if (parent.window.name != '' && document.getElementById(parent.window.name))
@@ -392,7 +392,7 @@ else {
 	echo "</h2></div>\n";
 }
 ?>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 if (parent.window.name != '' && document.getElementById(parent.window.name))
 	document.getElementById(parent.window.name).className = 'lastselected';

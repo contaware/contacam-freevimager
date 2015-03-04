@@ -4,8 +4,8 @@ if (!isset($_SESSION['timezonename'])) {
 	if (function_exists('date_default_timezone_set'))
 		date_default_timezone_set('UTC');
     ?>
-	<script language="JavaScript" src="js/detect_timezone.js" type="text/javascript"></script>
-	<script language="JavaScript" type="text/javascript">
+	<script src="js/detect_timezone.js" type="text/javascript"></script>
+	<script type="text/javascript">
 	//<![CDATA[
 	var timezone = jstz.determine();
 	var ajax = new XMLHttpRequest();

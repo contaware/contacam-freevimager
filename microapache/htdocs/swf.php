@@ -20,7 +20,7 @@ $currentswf = basename(substr($filename, strrpos($filename, '/') + 1), '.swf');
 echo "<title>$currentswf</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 // Major version of Flash required
 var requiredMajorVersion = 6;
@@ -30,7 +30,7 @@ var requiredMinorVersion = 0;
 var requiredRevision = 40;
 //]]>
 </script>
-<script language="VBScript" type="text/vbscript">
+<script type="text/vbscript">
 '<![CDATA[
 Function VBGetSwfVer(i)
 on error resume next
@@ -44,7 +44,7 @@ VBGetSwfVer = swVersion
 End Function
 ']]>
 </script>
-<script language="JavaScript1.1" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 function getIEVersion() {
 	if (/MSIE (\d+\.\d+)/.test(navigator.userAgent)) {
@@ -172,7 +172,7 @@ if (!is_file("$full_path")) {
 ?>
 
 <div class="wrap" id="playercontainer">
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[ 
 var hasRightVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
 if (hasRightVersion)
@@ -273,7 +273,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 
 <script src="js/prototype.js" type="text/javascript"></script>
 <script src="js/scriptaculous.js?load=slider" type="text/javascript"></script>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 var mySlider = new Control.Slider('handle1','track1',{axis:'horizontal'});
 function resizeSwf() {
@@ -354,7 +354,7 @@ function resizeSwf() {
 //]]>
 </script>
 <script type="text/javascript" src="js/swf.js"></script>
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 InitPlayer();
 resizeSwf();
