@@ -20,7 +20,7 @@ if (!isset($_GET['thumb']) || $_GET['thumb'] == 'no') {
 	$pollfilename = "poll.php?dummy=";
 	$pushfilename = "push.php";
 	$width = WIDTH;
-	$height = HEIGHT;	
+	$height = HEIGHT;
 }
 else {
 	$pollfilename = "poll.php?thumb=yes&dummy=";
@@ -99,6 +99,7 @@ div#pollimgcontainer {
 	height: <?php echo $height; ?>px;
 }
 a#pollimglink {
+	cursor: pointer;
 	position: relative;
 	display: block;
 	z-index: 4;
@@ -124,7 +125,7 @@ img.campicturepoll {
 <body>
 <?php
 if (!isset($_GET['title']) || $_GET['title'] != 'no')
-	echo "<div align=\"center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
+	echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>\n";
 if (!isset($_GET['menu']) || $_GET['menu'] != 'no') {
 	echo "<div class=\"menutop\">\n";
 	echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
@@ -139,7 +140,7 @@ echo "<div class=\"wrap\" id=\"jpegviewercontainer\">\n";
 if ($doPoll) {
 	echo "<form name=\"form1\" action=\"\">\n";
 	echo "<div id=\"pollimgcontainer\">\n";
-	echo "<a id=\"pollimglink\" class=\"transparentbkg\" href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\"></a>\n";
+	echo "<a id=\"pollimglink\" class=\"transparentbkg\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "'; return false;\"></a>\n";
 	echo "<img class=\"campicture campicturepoll\" style=\"z-index: 3;\" name=\"campicture0\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />";
 	echo "<img class=\"campicture campicturepoll\" style=\"z-index: 1;\" name=\"campicture1\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />";
 	echo "</div>\n";
@@ -149,11 +150,8 @@ if ($doPoll) {
 		echo "<div id=\"imagereloading\"><input type=\"hidden\" id=\"clock\" name=\"clock\" value=\"\" /></div>\n";
 	echo "</form>\n";
 }
-else {
-	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img class=\"campicture\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" align=\"middle\" />";
-	echo "</a>\n";
-}
+else
+	echo "<img class=\"campicture\" style=\"cursor: pointer;\" src=\"" . htmlspecialchars($pushfilename) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"$width\" height=\"$height\" />";
 echo "</div>\n";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";

@@ -94,6 +94,7 @@ html, body {
 	height: 100%;
 }
 a#pollimglink {
+	cursor: pointer;
 	position: relative;
 	display: block;
 	z-index: 4;
@@ -123,15 +124,12 @@ if (isset($_GET['clickurl']))
 else
 	$clickurl = getParentUrl();
 if ($doPoll) {
-	echo "<a id=\"pollimglink\" class=\"transparentbkg\" href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\"></a>\n";
+	echo "<a id=\"pollimglink\" class=\"transparentbkg\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "'; return false;\"></a>\n";
 	echo "<img class=\"campicture\" style=\"z-index: 3;\" name=\"campicture0\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
 	echo "<img class=\"campicture\" style=\"z-index: 1;\" name=\"campicture1\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
 }
-else {
-	echo "<a href=\"" . htmlspecialchars($clickurl) . "\" target=\"_top\">";
-	echo "<img class=\"campicture\" src=\"" . htmlspecialchars($pushfilename) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" align=\"middle\" />";
-	echo "</a>\n";
-}
+else
+	echo "<img class=\"campicture\" style=\"cursor: pointer;\" src=\"" . htmlspecialchars($pushfilename) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
 if ($doPoll) {
 	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
