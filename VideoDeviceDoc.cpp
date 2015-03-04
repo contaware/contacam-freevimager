@@ -5913,8 +5913,7 @@ void CVideoDeviceDoc::MicroApacheUpdateMainFiles()
 
 BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 {
-	sAutoSaveDir.TrimRight(_T('\\'));
-	sAutoSaveDir += _T('\\');
+	// Source directory
 	TCHAR szDrive[_MAX_DRIVE];
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szProgramName[MAX_PATH];
@@ -5922,11 +5921,19 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 		return FALSE;
 	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
 	CString sMicroapacheHtDocs = CString(szDrive) + CString(szDir) + MICROAPACHE_HTDOCS + _T("\\");
+	
+	// Destination directory
+	sAutoSaveDir.TrimRight(_T('\\'));
+	sAutoSaveDir += _T('\\');
+
+	// Init source directory file find
 	CSortableFileFind FileFind;
 	if (!FileFind.InitRecursive(sMicroapacheHtDocs + _T("*"), FALSE))
 		return FALSE;
 	if (FileFind.WaitRecursiveDone() != 1)
 		return FALSE;
+
+	// Create dirs
 	CString sRootDirName = FileFind.GetRootDirName();
 	sRootDirName.TrimRight(_T('\\'));
 	int nRootDirNameSize = sRootDirName.GetLength() + 1;
@@ -5937,6 +5944,8 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 		CString sRelDir = sDir.Mid(nRootDirNameSize);
 		::CreateDir(sAutoSaveDir + sRelDir); // Does nothing if dir already exists
 	}
+
+	// Copy files
 	for (pos = 0 ; pos < FileFind.GetFilesCount() ; pos++)
 	{
 		CString sName = FileFind.GetFileName(pos);
@@ -5951,6 +5960,23 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 				::CopyFile(sName, sAutoSaveDir + sRelName, FALSE);	// Always overwrite to get new version!
 		}
 	}
+
+	// Remove old unused files
+	::DeleteFile(sAutoSaveDir + _T("snapshotmobile.php"));
+	::DeleteFile(sAutoSaveDir + _T("jpeglive.php"));
+	::DeleteFile(sAutoSaveDir + _T("summarylive.php"));
+	::DeleteFile(sAutoSaveDir + _T("summary.php"));
+	::DeleteFile(sAutoSaveDir + _T("summarynav.php"));
+	::DeleteFile(sAutoSaveDir + _T("separator.php"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\show_black.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\hide_black.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\show_white.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\hide_white.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\show_darkgray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\hide_darkgray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\show_gray.gif"));
+	::DeleteFile(sAutoSaveDir + _T("styles\\hide_gray.gif"));
+
 	return TRUE;
 }
 
