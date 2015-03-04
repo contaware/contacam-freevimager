@@ -2,10 +2,8 @@
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
@@ -66,7 +64,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
-	echo "<form name=\"videonav\" action=\"\" method=\"post\" id=\"videonav\">";
+	echo "<form name=\"videonav\" method=\"post\" id=\"videonav\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
@@ -87,7 +85,7 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 }
 ?>
 
-<script language="JavaScript" type="text/javascript">
+<script type="text/javascript">
 //<![CDATA[
 function resizeMp4() {
 <?php
