@@ -152,33 +152,29 @@ echo "</div>\n";
 echo "<h1>" . SUMMARYTITLE . "</h1>\n";
 
 // Year selector
-echo "<div class=\"calbuttons\">\n";
-echo "<a href=\"" . GetDeltaUrl(-10,0,0) . "\">&lt;&lt;</a>";
+echo "<span class=\"calbuttons\">";
 echo "<a href=\"" . GetDeltaUrl(-1,0,0) . "\">&lt;</a>";
 if ($selected_year == $today_year)
 	echo "<a class=\"highlight\" href=\"$scriptname\">$selected_year</a>";
 else
 	echo "<a href=\"$scriptname\">$selected_year</a>";
 echo "<a href=\"" . GetDeltaUrl(1,0,0) . "\">&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(10,0,0) . "\">&gt;&gt;</a>\n";
-echo "</div>\n";
+echo "</span>\n";
 
 // Month selector
-echo "<div class=\"calbuttons\">\n";
+echo "<span class=\"calbuttons\">";
 $shortmonthnames = explode(",", str_replace("'", "", SHORTMONTHNAMES));
 $month_name = $shortmonthnames[$selected_month - 1];
-echo "<a href=\"" . GetDeltaUrl(0,-3,0) . "\">&lt;&lt;</a>";
 echo "<a href=\"" . GetDeltaUrl(0,-1,0) . "\">&lt;</a>";
 if ($selected_month == $today_month)
 	echo "<a class=\"highlight\" href=\"$scriptname\">$month_name</a>";
 else
 	echo "<a href=\"$scriptname\">$month_name</a>";
 echo "<a href=\"" . GetDeltaUrl(0,1,0) . "\">&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,3,0) . "\">&gt;&gt;</a>\n";
-echo "</div>\n";
+echo "</span>\n";
 
 // Day selector
-echo "<div class=\"calbuttons\">\n";
+echo "<span class=\"calbuttons\">";
 echo "<a href=\"" . GetDeltaUrl(0,0,-7) . "\">&lt;&lt;</a>";
 echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>";
 if ($selected_day == $today_day)
@@ -186,8 +182,8 @@ if ($selected_day == $today_day)
 else
 	echo "<a href=\"$scriptname\">$selected_day</a>";
 echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,0,7) . "\">&gt;&gt;</a>\n";
-echo "</div>\n";
+echo "<a href=\"" . GetDeltaUrl(0,0,7) . "\">&gt;&gt;</a>";
+echo "</span>\n";
 
 // End Left Header
 echo "</div>\n";

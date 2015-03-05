@@ -86,7 +86,10 @@ a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.
 }
 
 /* PHP date picker */
-div.calbuttons a {
+span.calbuttons {
+	white-space: nowrap;
+}
+span.calbuttons a {
 	font-size: 11px;
 	font-style: normal;
 	font-weight: bold;
@@ -103,13 +106,13 @@ div.calbuttons a {
 	border: 1px solid;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
-div.calbuttons a:hover, div.calbuttons a:focus {
+span.calbuttons a:hover, span.calbuttons a:focus {
 	border-color: #33ccff #039ccf #039ccf #33ccff;
 }
-div.calbuttons a:active {
+span.calbuttons a:active {
 	border-color: #039ccf #33ccff #33ccff #039ccf;
 }
-div.calbuttons a.highlight:link, div.calbuttons a.highlight:visited, div.calbuttons a.highlight:active, div.calbuttons a.highlight:hover, div.calbuttons a.highlight:focus {
+span.calbuttons a.highlight:link, span.calbuttons a.highlight:visited, span.calbuttons a.highlight:active, span.calbuttons a.highlight:hover, span.calbuttons a.highlight:focus {
 	color: #070707;
 	text-decoration: underline;
 	border-color: #33ccff #039ccf #039ccf #33ccff;
