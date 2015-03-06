@@ -157,6 +157,24 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 		return false;
 	m_pOutputFormat = m_pFormatCtx->oformat;
 
+	// Run a second pass moving the moov atom to the top of the file making
+	// pseudo-streaming possible
+	//
+	// Note:
+	// A mov/mp4 file can have either all the metadata about all packets stored
+	// on top of the file (if setting the FF_MOV_FLAG_FASTSTART flag) or on bottom
+	// of the file. It can also be fragmented where packets and metadata about
+	// these packets are stored together. Writing a fragmented file has the
+	// advantage that the file is decodable even if the writing is interrupted
+	// (the downside is that it is less compatible with some applications)
+	if (strcmp(m_pFormatCtx->oformat->name, "mov") == 0 ||
+		strcmp(m_pFormatCtx->oformat->name, "mp4") == 0)
+	{
+		MOVMuxContext* mov = (MOVMuxContext*)m_pFormatCtx->priv_data;
+		if (mov)
+			mov->flags |= FF_MOV_FLAG_FASTSTART;
+	}
+
 	return true;
 }
 
