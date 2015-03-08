@@ -248,40 +248,26 @@ void CSendMailConfigurationDlg::OnButtonTest()
 		{
 			if (m_SendMailConfiguration.m_bHTML == FALSE)
 			{
+				// Create the message
 				m_SendMailConfiguration.m_bMime = FALSE;
 				m_SendMailConfiguration.m_sBody = m_pDoc->GetAssignedDeviceName();
-
-				// No Attachment(s)
 				m_SendMailConfiguration.m_sFiles = _T("");
-
-				// Create the message
 				pMessage = m_pDoc->CreateEmailMessage(CTime::GetCurrentTime(), &m_SendMailConfiguration);
 			}
 			else
 			{
-				m_SendMailConfiguration.m_bMime = TRUE;
-				m_SendMailConfiguration.m_sFiles = _T("");
-				m_SendMailConfiguration.m_sBody = _T("");
-
 				// Create the message
+				m_SendMailConfiguration.m_bMime = TRUE;
+				m_SendMailConfiguration.m_sBody = _T("");
+				m_SendMailConfiguration.m_sFiles = _T("");
 				pMessage = m_pDoc->CreateEmailMessage(CTime::GetCurrentTime(), &m_SendMailConfiguration);
 
-				for (int i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
-					pMessage->RemoveBodyPart(i);
-
-				// Setup all the body parts we want
-				CPJNSMTPBodyPart related;
-				related.SetContentType(_T("multipart/related"));
-				related.SetCharset(pMessage->GetCharset());
-
+				// Setup the body part
 				CPJNSMTPBodyPart html;
 				html.SetText(_T("<p>") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>"));
 				html.SetContentType(_T("text/html"));
 				html.SetCharset(pMessage->GetCharset());
-
-				related.AddChildBodyPart(html);
-				pMessage->AddBodyPart(related);
-				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
+				pMessage->AddBodyPart(html);
 			}
 
 			// Init Connection class

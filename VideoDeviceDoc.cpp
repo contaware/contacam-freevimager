@@ -1550,44 +1550,18 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(const CTime& Time, SendMail
 	CPJNSMTPMessage* pMessage = new CPJNSMTPMessage;
 	if (!pMessage)
 		return NULL;
-	CPJNSMTPBodyPart attachment;
 
 	// Set the mime flag
 	pMessage->SetMime(pSendMailConfiguration->m_bMime);
 
-	// Set the charset of the message and all attachments
+	// Set the charset
 	pMessage->SetCharset(pSendMailConfiguration->m_sEncodingCharset);
-	attachment.SetCharset(pSendMailConfiguration->m_sEncodingCharset);
 
 	// Set the message priority
 	pMessage->m_Priority = pSendMailConfiguration->m_Priority;
 
-	// Setup all the recipient types for this message,
-	// valid separators between addresses are ',' or ';'
-	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
-	if (!pSendMailConfiguration->m_sCC.IsEmpty())
-		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
-	if (!pSendMailConfiguration->m_sBCC.IsEmpty())
-		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
-	if (!pSendMailConfiguration->m_sSubject.IsEmpty())
-	{
-		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
-		pMessage->m_sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
-		pMessage->m_sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
-		pMessage->m_sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
-	}
-	if (!pSendMailConfiguration->m_sBody.IsEmpty())
-	{
-		if (pSendMailConfiguration->m_bHTML)
-			pMessage->AddHTMLBody(pSendMailConfiguration->m_sBody, _T(""));
-		else
-			pMessage->AddTextBody(pSendMailConfiguration->m_sBody);
-	}
-
-	// Add the attachment(s) if necessary,
-	// valid separators between attachments are ',' or ';'
-	if (!pSendMailConfiguration->m_sFiles.IsEmpty()) 
-		pMessage->AddMultipleAttachments(pSendMailConfiguration->m_sFiles);		
+	// ContaCam XMailer
+	pMessage->m_sXMailer = CString(APPNAME_NOEXT) + _T(" ") + CString(APPVERSION);
 
 	// Setup the from address
 	if (pSendMailConfiguration->m_sFromName.IsEmpty()) 
@@ -1602,7 +1576,36 @@ CPJNSMTPMessage* CVideoDeviceDoc::CreateEmailMessage(const CTime& Time, SendMail
 		//pMessage->m_ReplyTo = address; //uncomment this if you want to send a Reply-To header
 	}
 
-	pMessage->m_sXMailer = _T("");
+	// Setup all the recipient types for this message
+	// (valid separators between addresses are ',' or ';')
+	pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sTo, pMessage->m_To);
+	if (!pSendMailConfiguration->m_sCC.IsEmpty())
+		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sCC, pMessage->m_CC);
+	if (!pSendMailConfiguration->m_sBCC.IsEmpty())
+		pMessage->ParseMultipleRecipients(pSendMailConfiguration->m_sBCC, pMessage->m_BCC);
+
+	// Subject
+	if (!pSendMailConfiguration->m_sSubject.IsEmpty())
+	{
+		pMessage->m_sSubject = pSendMailConfiguration->m_sSubject;
+		pMessage->m_sSubject.Replace(_T("%name%"), GetAssignedDeviceName());
+		pMessage->m_sSubject.Replace(_T("%date%"), ::MakeDateLocalFormat(Time));
+		pMessage->m_sSubject.Replace(_T("%time%"), ::MakeTimeLocalFormat(Time, TRUE));
+	}
+
+	// Body
+	if (!pSendMailConfiguration->m_sBody.IsEmpty())
+	{
+		if (pSendMailConfiguration->m_bHTML)
+			pMessage->AddHTMLBody(pSendMailConfiguration->m_sBody, _T(""));
+		else
+			pMessage->AddTextBody(pSendMailConfiguration->m_sBody);
+	}
+
+	// Add the attachment(s) if necessary
+	// (valid separators between attachments are ',' or ';')
+	if (!pSendMailConfiguration->m_sFiles.IsEmpty()) 
+		pMessage->AddMultipleAttachments(pSendMailConfiguration->m_sFiles);
 
 	return pMessage;
 }
@@ -1739,11 +1742,10 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 		{
 			if (m_pDoc->m_MovDetSendMailConfiguration.m_bHTML == FALSE)
 			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = FALSE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
+				// Create the message
+				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = (sFiles.GetSize() > 0); // attachments imply Mime
 				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = ML_STRING(1844, "Det") + _T(": ") + m_pDoc->GetAssignedDeviceName();
-
-				// Attachment(s)
+				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
 					if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
@@ -1751,26 +1753,21 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 					else
 						m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sFiles[i];
 				}
-
-				// Create the message
 				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
 				if (!pMessage)
 					return 0;
 			}
 			else
 			{
-				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE;
-				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
-				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
-
 				// Create the message
+				m_pDoc->m_MovDetSendMailConfiguration.m_bMime = TRUE; // html emails imply Mime
+				m_pDoc->m_MovDetSendMailConfiguration.m_sBody = _T("");
+				m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = _T("");
 				pMessage = m_pDoc->CreateEmailMessage(Time, &m_pDoc->m_MovDetSendMailConfiguration);
 				if (!pMessage)
 					return 0;
-				for (i = 0 ; i < pMessage->GetNumberOfBodyParts() ; i++)
-					pMessage->RemoveBodyPart(i);
 
-				// Setup all the body parts we want
+				// Setup all the html body parts
 				srand(::makeseed(::timeGetTime(), ::GetCurrentProcessId(), ::GetCurrentThreadId())); // Seed
 				CString sRanNum;
 				sRanNum.Format(_T("%08X"), (DWORD)irand(4294967296.0)); // returns a hex random string in the range [0,0xFFFFFFFF]
@@ -1782,18 +1779,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 				sHtml += _T("<p>") + ML_STRING(1844, "Det") + _T(": ") + ::HtmlEncode(m_pDoc->GetAssignedDeviceName()) + _T("</p>");
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
-					CString s;
-					if (::GetFileExt(sFiles[i]) == _T(".mp4")) // video tag not yet supported by most email clients
+					if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
 					{
-						s.Format(_T("<a href=\"cid:%s\">Video File</a>"),
+						CString s;
+						s.Format(_T("<img src=\"cid:%s\" alt=\"Detection Image\" />"),
 								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
+						sHtml += s + _T("<br /><br />");
 					}
-					else
-					{
-						s.Format(_T("<img src=\"cid:%s\" border=\"0\" alt=\"Detection Image\">"),
-								::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com"));
-					}
-					sHtml += s + _T("<br />");
 				}
 				sHtml += _T("</body></html>");
 				html.SetText(sHtml);
@@ -1802,14 +1794,31 @@ int CVideoDeviceDoc::CSaveFrameListThread::SendMail(const CTime& Time, const CSt
 				related.AddChildBodyPart(html);
 				for (i = 0 ; i < sFiles.GetSize() ; i++)
 				{
-					CPJNSMTPBodyPart filebody;
-					filebody.SetFilename(sFiles[i]);
-					filebody.SetContentID(_T("<") + ::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
-					filebody.SetContentType(::FileNameToMime(sFiles[i]));
-					related.AddChildBodyPart(filebody);
+					if (::GetFileExt(sFiles[i]) == _T(".jpg") || ::GetFileExt(sFiles[i]) == _T(".gif"))
+					{
+						CPJNSMTPBodyPart filebody;
+						filebody.SetFilename(sFiles[i]);
+						filebody.SetContentID(_T("<") + ::GetShortFileName(sFiles[i]) + _T("@") + sRanNum + _T(".com") + _T(">"));
+						filebody.SetContentType(::FileNameToMime(sFiles[i]));
+						related.AddChildBodyPart(filebody);
+					}
 				}
 				pMessage->AddBodyPart(related);
-				pMessage->GetBodyPart(0)->SetContentLocation(_T("http://localhost"));
+
+				// Add other attachment(s) if necessary
+				// (valid separators between attachments are ',' or ';')
+				for (i = 0 ; i < sFiles.GetSize() ; i++)
+				{
+					if (::GetFileExt(sFiles[i]) != _T(".jpg") && ::GetFileExt(sFiles[i]) != _T(".gif"))
+					{
+						if (m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty())
+							m_pDoc->m_MovDetSendMailConfiguration.m_sFiles = sFiles[i];
+						else
+							m_pDoc->m_MovDetSendMailConfiguration.m_sFiles += _T(";") + sFiles[i];
+					}
+				}
+				if (!m_pDoc->m_MovDetSendMailConfiguration.m_sFiles.IsEmpty()) 
+					pMessage->AddMultipleAttachments(m_pDoc->m_MovDetSendMailConfiguration.m_sFiles);
 			}
 
 			// Send It
