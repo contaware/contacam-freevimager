@@ -85,39 +85,6 @@ a.highlight:link, a.highlight:visited, a.highlight:active, a.highlight:hover, a.
 	text-decoration: underline;
 }
 
-/* PHP date picker */
-span.calbuttons {
-	white-space: nowrap;
-}
-span.calbuttons a {
-	font-size: 11px;
-	font-style: normal;
-	font-weight: bold;
-	font-family: sans-serif,Arial,Helvetica;
-	display: inline-block;
-	width: 36px;
-	height: 24px;
-	line-height: 24px;
-	text-align: center;
-	vertical-align: middle;
-	text-decoration: none;
-	color: #111111;
-	background-color: #ededed;
-	border: 1px solid;
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-span.calbuttons a:hover, span.calbuttons a:focus {
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-span.calbuttons a:active {
-	border-color: #039ccf #33ccff #33ccff #039ccf;
-}
-span.calbuttons a.highlight:link, span.calbuttons a.highlight:visited, span.calbuttons a.highlight:active, span.calbuttons a.highlight:hover, span.calbuttons a.highlight:focus {
-	color: #111111;
-	text-decoration: underline;
-	border-color: #33ccff #039ccf #039ccf #33ccff;
-}
-
 /* Two line Rec text and AVI link for summaries */
 span.line1 {
 	line-height: 52px;
@@ -172,6 +139,40 @@ a.lastselected img, a.lastselected:visited img, a:active img, a:focus img {
 /* Controls style */
 video {
 	background: transparent url('darkgray.gif') repeat 0 0;
+}
+span.globalbuttons {
+	white-space: nowrap;
+}
+span.globalbuttons a {
+	font-size: 11px;
+	font-style: normal;
+	font-weight: bold;
+	font-family: sans-serif,Arial,Helvetica;
+	display: inline-block;
+	width: 36px;
+	height: 24px;
+	line-height: 24px;
+	text-align: center;
+	vertical-align: middle;
+	text-decoration: none;
+	color: #111111;
+	background-color: #ededed;
+	border: 1px solid;
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+span.globalbuttons a:hover, span.globalbuttons a:focus {
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+span.globalbuttons a:active {
+	border-color: #039ccf #33ccff #33ccff #039ccf;
+}
+span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, span.globalbuttons a.highlight:active, span.globalbuttons a.highlight:hover, span.globalbuttons a.highlight:focus {
+	color: #111111;
+	text-decoration: underline;
+	border-color: #33ccff #039ccf #039ccf #33ccff;
+}
+a.savebuttons {
+	background: transparent url('save_darkgray.png') no-repeat center center;
 }
 table#navcontrols {
 	margin: 0 auto;

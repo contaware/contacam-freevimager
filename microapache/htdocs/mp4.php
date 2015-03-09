@@ -64,23 +64,23 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
-	echo "<form name=\"videonav\" method=\"post\" id=\"videonav\">";
+	echo "<span class=\"globalbuttons\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$prevkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<input type=\"button\" value=\"&lt;&lt;&lt;\" name=\"PrevVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;&lt;&lt;</a>";
 	}
 	if (isset($_GET['backuri']))
-		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "'; return false;\">" . BACK . "</a>";
 	else
-		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.history.back();\" />";
-	echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href = 'download.php?file=" . urlencode($filename) . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"window.history.back(); return false;\">" . BACK . "</a>";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentmp4 . '.mp4', $_GET["$nextkey"] . '.mp4', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "<input type=\"button\" value=\"&gt;&gt;&gt;\" name=\"NextVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;&gt;&gt;</a>";
 	}
-	echo "</form>\n";
+	echo "&nbsp;&nbsp;<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+	echo "</span>\n";
 	echo "</div>\n";
 }
 ?>

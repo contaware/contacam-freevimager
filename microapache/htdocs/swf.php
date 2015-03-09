@@ -217,11 +217,28 @@ else {
 <?php
 $IEVersion = getIEVersion();
 if ($IEVersion >= 0 && $IEVersion < 9) {
-	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" /><input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" /><input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" /><input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" ondblclick=\"PrevFrameFastFlashMovie();\" /><input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" ondblclick=\"PrevFrameFlashMovie();\" /><input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" /><input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" ondblclick=\"NextFrameFlashMovie();\" /><input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" ondblclick=\"NextFrameFastFlashMovie();\" /><input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" ondblclick=\"ZoominFlashMovie();\" /><input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" ondblclick=\"ZoomoutFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" ondblclick=\"PrevFrameFastFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" ondblclick=\"PrevFrameFlashMovie();\" />";
+	echo "<input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" />";
+	echo "<input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" ondblclick=\"NextFrameFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" ondblclick=\"NextFrameFastFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" ondblclick=\"ZoominFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" ondblclick=\"ZoomoutFlashMovie();\" />";
 } else {
-	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" /><input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" /><input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" /><input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" /><input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" /><input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" /><input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" /><input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" /><input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" /><input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Play\" name=\"Play\" class=\"playerbutton\" onclick=\"PlayFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Stop\" name=\"Stop\" class=\"playerbutton\" onclick=\"StopFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Rew\" name=\"Rewind\" class=\"playerbutton\" onclick=\"RewindFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&lt;&lt;\" name=\"PrevFrameFast\" class=\"playerbutton\" onclick=\"PrevFrameFastFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&lt;\" name=\"PrevFrame\" class=\"playerbutton\" onclick=\"PrevFrameFlashMovie();\" />";
+	echo "<input type=\"text\" readonly=\"readonly\" id=\"infotext\" name=\"infotext\" class=\"playerinfotext\" value=\"0%\" size=\"5\" />";
+	echo "<input type=\"button\" value=\"&gt;\" name=\"NextFrame\" class=\"playerbutton\" onclick=\"NextFrameFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"&gt;&gt;\" name=\"NextFrameFast\" class=\"playerbutton\" onclick=\"NextFrameFastFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Zoom+\" name=\"Zoomin\" class=\"playerbutton\" onclick=\"ZoominFlashMovie();\" />";
+	echo "<input type=\"button\" value=\"Zoom-\" name=\"Zoomout\" class=\"playerbutton\" onclick=\"ZoomoutFlashMovie();\" />";
 }
-echo "<input type=\"button\" value=\"Save\" name=\"Save\" class=\"playerbutton\" onclick=\"window.location.href='download.php?file=" . urlencode($filename) . "';\" />\n";
 ?>
 </div>
 </form>
@@ -251,22 +268,23 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	$nextkey = intval($currentkey) + 1;
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
-	echo "<form name=\"videonav\" action=\"\" method=\"post\" id=\"videonav\">";
+	echo "<span class=\"globalbuttons\">";
 	if ($prevkey >= 0) {
 		$prevrequesturi = str_replace($currentswf . '.swf', $_GET["$prevkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$prevrequesturi = htmlspecialchars($prevrequesturi);
-		echo "<input type=\"button\" value=\"&lt;&lt;&lt;\" name=\"PrevVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;&lt;&lt;</a>";
 	}
 	if (isset($_GET['backuri']))
-		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "'; return false;\">" . BACK . "</a>";
 	else
-		echo "<input type=\"button\" value=\"" . BACK . "\" name=\"BackButton\" class=\"playerbutton\" onclick=\"window.history.back();\" />";
+		echo "<a href=\"javascript:;\" onclick=\"window.history.back(); return false;\">" . BACK . "</a>";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
-		echo "<input type=\"button\" value=\"&gt;&gt;&gt;\" name=\"NextVideo\" class=\"playerbutton\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "';\" />";
+		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$nextkey"] . "'; window.location.href = '" . $nextrequesturi . "'; return false;\">&gt;&gt;&gt;</a>";
 	}
-	echo "</form>\n";
+	echo "&nbsp;&nbsp;<a class=\"savebuttons\" href=\"download.php?file=" . urlencode($filename) . "\">&nbsp;</a>";
+	echo "</span>\n";
 	echo "</div>\n";
 }
 ?>
