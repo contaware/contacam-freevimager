@@ -35,10 +35,12 @@ echo "</div>\n";
 if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 	echo "<br/>\n";
 	echo "<div style=\"text-align: center\">\n";
+	echo "<span class=\"globalbuttons\">";
 	if (isset($_GET['backuri']))
-		echo "<a class=\"back\" href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>\n";
+		echo "<a href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>";
 	else
-		echo "<a class=\"back\" href=\"javascript:history.back();\">" . BACK . "</a>\n";
+		echo "<a href=\"javascript:history.back();\">" . BACK . "</a>";
+	echo "</span>\n";
 	echo "</div>\n";
 }
 ?>

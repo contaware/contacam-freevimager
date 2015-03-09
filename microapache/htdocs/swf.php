@@ -275,9 +275,9 @@ if (!isset($_GET['back']) || $_GET['back'] != 'no') {
 		echo "<a href=\"javascript:;\" onclick=\"parent.window.name = '" . $_GET["$prevkey"] . "'; window.location.href = '" . $prevrequesturi . "'; return false;\">&lt;&lt;&lt;</a>";
 	}
 	if (isset($_GET['backuri']))
-		echo "<a href=\"javascript:;\" onclick=\"window.location.href = '" . htmlspecialchars($_GET['backuri']) . "'; return false;\">" . BACK . "</a>";
+		echo "<a href=\"" . htmlspecialchars($_GET['backuri']) . "\">" . BACK . "</a>";
 	else
-		echo "<a href=\"javascript:;\" onclick=\"window.history.back(); return false;\">" . BACK . "</a>";
+		echo "<a href=\"javascript:history.back();\">" . BACK . "</a>";
 	if ($nextkey <= $lastkey) {
 		$nextrequesturi = str_replace($currentswf . '.swf', $_GET["$nextkey"] . '.swf', $_SERVER['REQUEST_URI']);
 		$nextrequesturi = htmlspecialchars($nextrequesturi);
