@@ -2880,28 +2880,63 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 
 		// Draw rect
 		CRect rcRect;
-		rcRect.left = 0;
-		rcRect.top = 0;
-		rcRect.right = ThumbDib.GetWidth();
-		rcRect.bottom = ThumbDib.GetHeight();
 
 		// Font
 		CFont Font;
 		Font.CreatePointFont(THUMBMESSAGE_FONTSIZE * 10, DEFAULT_FONTFACE);
 
-		// Date
-		sTime = ::MakeDateLocalFormat(FirstTime);
+		// Time
+		rcRect.left = 1;
+		rcRect.top = 0;
+		rcRect.right = ThumbDib.GetWidth() - 1;
+		rcRect.bottom = ThumbDib.GetHeight();
+		sTime = ::MakeTimeLocalFormat(FirstTime, TRUE);
 		if (!ThumbDib.AddSingleLineText(sTime,
 										rcRect,
 										&Font,
 										(DT_LEFT | DT_TOP),
+										FRAMETIME_COLOR,
+										TRANSPARENT,
+										DRAW_BKG_COLOR))
+			return FALSE;
+		if (!ThumbDib.AddSingleLineText(_T("->"),
+										rcRect,
+										&Font,
+										(DT_CENTER | DT_TOP),
+										FRAMETIME_COLOR,
+										TRANSPARENT,
+										DRAW_BKG_COLOR))
+			return FALSE;
+		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
+		if (!ThumbDib.AddSingleLineText(sTime,
+										rcRect,
+										&Font,
+										(DT_RIGHT | DT_TOP),
+										FRAMETIME_COLOR,
+										TRANSPARENT,
+										DRAW_BKG_COLOR))
+			return FALSE;
+
+		// Date
+		rcRect.left = 1;
+		rcRect.top = 0;
+		rcRect.right = ThumbDib.GetWidth() - 1;
+		rcRect.bottom = ThumbDib.GetHeight();
+		sTime = ::MakeDateLocalFormat(FirstTime);
+		if (!ThumbDib.AddSingleLineText(sTime,
+										rcRect,
+										&Font,
+										(DT_LEFT | DT_BOTTOM),
 										FRAMEDATE_COLOR,
 										TRANSPARENT,
 										DRAW_BKG_COLOR))
 			return FALSE;
 
 		// Message1
-		rcRect.top = rcRect.bottom / 4;
+		rcRect.left = 0;
+		rcRect.top = ThumbDib.GetHeight() / 4;
+		rcRect.right = ThumbDib.GetWidth();
+		rcRect.bottom = ThumbDib.GetHeight();
 		if (!ThumbDib.AddSingleLineText(sMessage1,
 										rcRect,
 										&Font,
@@ -2912,7 +2947,10 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 			return FALSE;
 
 		// Message2
+		rcRect.left = 0;
 		rcRect.top = 0;
+		rcRect.right = ThumbDib.GetWidth();
+		rcRect.bottom = ThumbDib.GetHeight();
 		if (!ThumbDib.AddSingleLineText(sMessage2,
 										rcRect,
 										&Font,
@@ -2923,42 +2961,15 @@ BOOL CVideoDeviceDoc::ThumbMessage(	const CString& sMessage1,
 			return FALSE;
 
 		// Message3
-		rcRect.bottom = 3 * rcRect.bottom / 4;
+		rcRect.left = 0;
+		rcRect.top = 0;
+		rcRect.right = ThumbDib.GetWidth();
+		rcRect.bottom = 3 * ThumbDib.GetHeight() / 4;
 		if (!ThumbDib.AddSingleLineText(sMessage3,
 										rcRect,
 										&Font,
 										(DT_CENTER | DT_BOTTOM),
 										RGB(0xff,0,0),
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-
-		// Time
-		rcRect.bottom = ThumbDib.GetHeight();
-		sTime = ::MakeTimeLocalFormat(FirstTime, TRUE);
-		if (!ThumbDib.AddSingleLineText(sTime,
-										rcRect,
-										&Font,
-										(DT_LEFT | DT_BOTTOM),
-										FRAMETIME_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-		if (!ThumbDib.AddSingleLineText(_T("->"),
-										rcRect,
-										&Font,
-										(DT_CENTER | DT_BOTTOM),
-										FRAMETIME_COLOR,
-										TRANSPARENT,
-										DRAW_BKG_COLOR))
-			return FALSE;
-		rcRect.right -= 1; // Looks nicer!
-		sTime = ::MakeTimeLocalFormat(LastTime, TRUE);
-		if (!ThumbDib.AddSingleLineText(sTime,
-										rcRect,
-										&Font,
-										(DT_RIGHT | DT_BOTTOM),
-										FRAMETIME_COLOR,
 										TRANSPARENT,
 										DRAW_BKG_COLOR))
 			return FALSE;
@@ -7017,7 +7028,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	pDib->AddSingleLineText(sTime,
 							rcRect,
 							&Font,
-							(DT_LEFT | DT_BOTTOM),
+							(DT_LEFT | DT_TOP),
 							FRAMETIME_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
@@ -7026,7 +7037,7 @@ void CVideoDeviceDoc::AddFrameTime(CDib* pDib, CTime RefTime, DWORD dwRefUpTime,
 	pDib->AddSingleLineText(sDate,
 							rcRect,
 							&Font,
-							(DT_LEFT | DT_TOP),
+							(DT_LEFT | DT_BOTTOM),
 							FRAMEDATE_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
@@ -7053,7 +7064,7 @@ void CVideoDeviceDoc::AddFrameCount(CDib* pDib, int nCount, int nRefFontSize)
 	pDib->AddSingleLineText(sCount,
 							rcRect,
 							&Font,
-							(DT_RIGHT | DT_BOTTOM),
+							(DT_RIGHT | DT_TOP),
 							FRAMECOUNT_COLOR,
 							OPAQUE,
 							DRAW_BKG_COLOR);
