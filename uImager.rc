@@ -158,7 +158,7 @@ BEGIN
     BUTTON      ID_VIEW_FILES
     SEPARATOR
     BUTTON      ID_FILE_SETTINGS
-    BUTTON      ID_TOOLS_VIEW_LOGFILE
+    BUTTON      ID_SETTINGS_VIEW_LOGFILE
     SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
@@ -190,8 +190,6 @@ BEGIN
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -207,10 +205,12 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
-    POPUP "&Tools"
+    POPUP "&Settings"
     BEGIN
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Help"
     BEGIN
@@ -427,6 +427,7 @@ BEGIN
     BEGIN
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
         MENUITEM SEPARATOR
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
         MENUITEM SEPARATOR
@@ -458,8 +459,6 @@ BEGIN
         END
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
-        MENUITEM SEPARATOR
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -494,14 +493,15 @@ BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
         MENUITEM SEPARATOR
         MENUITEM "Record\tEnter",               ID_CAPTURE_RECORD
-        MENUITEM SEPARATOR
+    END
+    POPUP "&Settings"
+    BEGIN
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM "Camera Basic Settings...",    ID_CAPTURE_CAMERABASICSETTINGS
         MENUITEM "Camera Advanced Settings...", ID_CAPTURE_CAMERAADVANCEDSETTINGS
-    END
-    POPUP "&Tools"
-    BEGIN
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -555,7 +555,6 @@ BEGIN
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
         MENUITEM "File Information...\tCtrl+I", ID_FILE_INFO
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT_PREVIEW
         MENUITEM SEPARATOR
@@ -728,10 +727,12 @@ BEGIN
         MENUITEM "Play Animated GIF",           ID_PLAY_ANIMATION
         MENUITEM "Stop Animated GIF",           ID_STOP_ANIMATION
     END
-    POPUP "&Tools"
+    POPUP "&Settings"
     BEGIN
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -831,8 +832,6 @@ BEGIN
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -849,10 +848,12 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
-    POPUP "&Tools"
+    POPUP "&Settings"
     BEGIN
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -1096,7 +1097,7 @@ BEGIN
     BEGIN
         MENUITEM "&Open",                       ID_OPEN_FROM_TRAY
         MENUITEM SEPARATOR
-        MENUITEM "&Tray Icon",                  ID_TOOLS_TRAYICON
+        MENUITEM "&Tray Icon",                  ID_SETTINGS_TRAYICON
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -1124,8 +1125,6 @@ BEGIN
         MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
         MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
         MENUITEM SEPARATOR
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
@@ -1139,10 +1138,12 @@ BEGIN
     BEGIN
         MENUITEM "&Network",                    ID_CAPTURE_NETWORK
     END
-    POPUP "&Tools"
+    POPUP "&Settings"
     BEGIN
-        MENUITEM "View Log File",               ID_TOOLS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_TOOLS_BROWSE_CONFIGLOG_FILES
+        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
+        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
     END
     POPUP "&Window"
     BEGIN
@@ -4176,7 +4177,7 @@ BEGIN
     ID_EDIT_TO8BITS         "Convert current image to maximum 256 colors and 8 bits per pixel\nTo 8 bpp"
     ID_EDIT_TO1BIT_DITHER_ERRDIFF 
                             "Convert current image to black and white with error diffusion\nTo 1 bpp"
-    ID_FILE_SETTINGS        "File associations and global settings\nGlobal Settings"
+    ID_FILE_SETTINGS        "Global settings\nGlobal Settings"
 END
 
 STRINGTABLE
@@ -4350,7 +4351,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_TOOLS_TRAYICON       "Use tray icon\nTray Icon"
+    ID_SETTINGS_TRAYICON    "Use tray icon\nTray Icon"
     ID_VIEW_FIT             "Fit\nFit"
     ID_APP_FAQ              "Open the FAQs page of contaware.com\nFAQs Page"
     ID_VIEW_NO_BORDERS      "No borders\nNo Borders"
@@ -4413,7 +4414,8 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_WEB             "Open web browser\nBrowse"
-    ID_TOOLS_VIEW_LOGFILE   "View the log file with the default text editor\nView Log File"
+    ID_SETTINGS_VIEW_LOGFILE 
+                            "View the log file with the default text editor\nView Log File"
     ID_EDIT_ROTATE_180      "Rotate current image 180° (Ctrl + Down Arrow)\nRotate 180°"
 END
 
@@ -4799,7 +4801,7 @@ BEGIN
     IDS_STRING1753          "2. From the Capture menu select the device you want to use"
     IDS_STRING1754          "(for network cameras supply host name or ip address, port and camera type)"
     IDS_STRING1755          "3. Follow the Camera Basic Settings dialog"
-    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Capture menu)"
+    IDS_STRING1756          "(if it's not popping-up select Camera Basic Settings from the Settings menu)"
     IDS_STRING1757          "4. Choose Browse from the View menu"
     IDS_STRING1758          "&Snapshooting...\tIns"
     IDS_STRING1759          "&Snapshot\tIns"
@@ -4959,7 +4961,7 @@ STRINGTABLE
 BEGIN
     ID_FILE_RELOAD          "Reload current file\nReload File"
     ID_VIEW_FILES           "Open file explorer\nBrowse Files"
-    ID_TOOLS_BROWSE_CONFIGLOG_FILES 
+    ID_SETTINGS_BROWSE_CONFIGLOG_FILES 
                             "Open file explorer\nBrowse Config/Log Files"
 END
 

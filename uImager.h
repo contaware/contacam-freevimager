@@ -699,12 +699,12 @@ public:
 	afx_msg void OnFileShrinkDirDocs();
 	afx_msg void OnFileSendmailOpenDocs();
 	afx_msg void OnUpdateFileSendmailOpenDocs(CCmdUI* pCmdUI);
-	afx_msg void OnToolsTrayicon();
-	afx_msg void OnUpdateToolsTrayicon(CCmdUI* pCmdUI);
+	afx_msg void OnSettingsTrayicon();
+	afx_msg void OnUpdateSettingsTrayicon(CCmdUI* pCmdUI);
 	afx_msg void OnAppFaq();
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
-	afx_msg void OnToolsViewLogfile();
-	afx_msg void OnToolsBrowseConfigLogFiles();
+	afx_msg void OnSettingsViewLogfile();
+	afx_msg void OnSettingsBrowseConfigLogFiles();
 	afx_msg void OnUpdateFileShrinkDirDocs(CCmdUI* pCmdUI);
 	afx_msg void OnEditScreenshot();
 	afx_msg void OnUpdateEditScreenshot(CCmdUI* pCmdUI);

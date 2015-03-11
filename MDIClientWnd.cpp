@@ -111,7 +111,7 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += TextMetrics.tmAscent;
 	CString s;
 #ifdef TRACELOGFILE
-	s.Format(_T("%s %s - ONLY FOR DEBUG (see %s with Browse Config/Log Files under Tools menu)"), APPNAME_NOEXT, APPVERSION, TRACENAME_EXT);
+	s.Format(_T("%s %s - ONLY FOR DEBUG (see %s with Browse Config/Log Files under Settings menu)"), APPNAME_NOEXT, APPVERSION, TRACENAME_EXT);
 #else
 	s.Format(_T("%s %s"), APPNAME_NOEXT, APPVERSION);
 #endif
@@ -134,7 +134,7 @@ void CMDIClientWnd::OnPaint()
 	rcDraw.top += nLineHeight;
 	DrawT(memDC, ML_STRING(1755, "3. Follow the Camera Basic Settings dialog"), rcDraw);
 	rcDraw.top += nLineHeight;
-	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Capture menu)"), rcDraw);
+	DrawT(memDC, _T("    ") + ML_STRING(1756, "(if it's not popping-up select Camera Basic Settings from the Settings menu)"), rcDraw);
 
 	// Draw point 4.
 	rcDraw.top += nLineHeight;	

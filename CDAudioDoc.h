@@ -59,7 +59,7 @@ public:
 	int m_nViewMenuPos;
 	int m_nCaptureMenuPos;
 	int m_nPlayMenuPos;
-	int m_nToolsMenuPos;
+	int m_nSettingsMenuPos;
 	int m_nWindowsPos;
 	int m_nHelpMenuPos;
 

@@ -32,7 +32,7 @@ CUImagerDoc::CUImagerDoc()
 	m_nViewMenuPos = -2;
 	m_nCaptureMenuPos = -2;
 	m_nPlayMenuPos = -2;
-	m_nToolsMenuPos = -2;
+	m_nSettingsMenuPos = -2;
 	m_nWindowsPos = -2;
 	m_nHelpMenuPos = -2;
 	m_bClosing = FALSE;

@@ -92,12 +92,12 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_SHRINK_DIR_DOCS, OnFileShrinkDirDocs)
 	ON_COMMAND(ID_FILE_SENDMAIL_OPEN_DOCS, OnFileSendmailOpenDocs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SENDMAIL_OPEN_DOCS, OnUpdateFileSendmailOpenDocs)
-	ON_COMMAND(ID_TOOLS_TRAYICON, OnToolsTrayicon)
-	ON_UPDATE_COMMAND_UI(ID_TOOLS_TRAYICON, OnUpdateToolsTrayicon)
+	ON_COMMAND(ID_SETTINGS_TRAYICON, OnSettingsTrayicon)
+	ON_UPDATE_COMMAND_UI(ID_SETTINGS_TRAYICON, OnUpdateSettingsTrayicon)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
-	ON_COMMAND(ID_TOOLS_VIEW_LOGFILE, OnToolsViewLogfile)
-	ON_COMMAND(ID_TOOLS_BROWSE_CONFIGLOG_FILES, OnToolsBrowseConfigLogFiles)
+	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
+	ON_COMMAND(ID_SETTINGS_BROWSE_CONFIGLOG_FILES, OnSettingsBrowseConfigLogFiles)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SHRINK_DIR_DOCS, OnUpdateFileShrinkDirDocs)
 	ON_COMMAND(ID_EDIT_SCREENSHOT, OnEditScreenshot)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_SCREENSHOT, OnUpdateEditScreenshot)
@@ -4774,7 +4774,7 @@ BOOL CUImagerApp::UnassociateFileType(CString sExt)
 	return TRUE;
 }
 
-void CUImagerApp::OnToolsViewLogfile() 
+void CUImagerApp::OnSettingsViewLogfile() 
 {
 	if (::IsExistingFile(g_sLogFileName))
 		::ShellExecute(NULL, _T("open"), g_sLogFileName, NULL, NULL, SW_SHOWNORMAL);
@@ -4782,7 +4782,7 @@ void CUImagerApp::OnToolsViewLogfile()
 		::AfxMessageBox(ML_STRING(1760, "Application Log File has not yet been created"), MB_OK | MB_ICONINFORMATION);
 }
 
-void CUImagerApp::OnToolsBrowseConfigLogFiles()
+void CUImagerApp::OnSettingsBrowseConfigLogFiles()
 {
 	CString sConfigFilesDir(GetConfigFilesDir());
 	if (!::IsExistingDir(sConfigFilesDir))
@@ -5223,7 +5223,7 @@ void CUImagerApp::OnHelpTutorial(UINT nID)
 	}
 }
 
-void CUImagerApp::OnToolsTrayicon() 
+void CUImagerApp::OnSettingsTrayicon() 
 {
 	m_bTrayIcon = !m_bTrayIcon;
 	::AfxGetMainFrame()->TrayIcon(m_bTrayIcon);
@@ -5232,7 +5232,7 @@ void CUImagerApp::OnToolsTrayicon()
 					m_bTrayIcon);
 }
 
-void CUImagerApp::OnUpdateToolsTrayicon(CCmdUI* pCmdUI) 
+void CUImagerApp::OnUpdateSettingsTrayicon(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_bTrayIcon ? 1 : 0);
 }

@@ -117,7 +117,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_nViewMenuPos = -2;
 	m_nCaptureMenuPos = -2;
 	m_nPlayMenuPos = -2;
-	m_nToolsMenuPos = -2;
+	m_nSettingsMenuPos = -2;
 	m_nWindowsPos = -2;
 	m_nHelpMenuPos = -2;
 	m_nHelpMenuItemsCount = -1;
@@ -1712,23 +1712,19 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 		// Main menu entries count
 		int nCount = (int)pMenu->GetMenuItemCount();
 
-		// Init menu positions and remove Capture and Tools menus
+		// Init menu positions and remove Capture menu
 		if (pDoc == NULL) // MainFrame menu
 		{
 			m_nFileMenuPos = 0;
 			m_nEditMenuPos = 1;
 			m_nCaptureMenuPos = 2;
-			m_nToolsMenuPos = 3;
+			m_nSettingsMenuPos = 3;
 			m_nHelpMenuPos = 4;
 #ifndef VIDEODEVICEDOC
 			if (nCount == 5)
 				pMenu->DeleteMenu(m_nCaptureMenuPos, MF_BYPOSITION);
 			m_nCaptureMenuPos = -2;
-			m_nToolsMenuPos--;
-			m_nHelpMenuPos--;
-			if (nCount == 5)
-				pMenu->DeleteMenu(m_nToolsMenuPos, MF_BYPOSITION);
-			m_nToolsMenuPos = -2;
+			m_nSettingsMenuPos--;
 			m_nHelpMenuPos--;
 #endif
 		}
@@ -1739,7 +1735,7 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CPictureDoc*)pDoc)->m_nViewMenuPos = 2;
 			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = 3;
 			((CPictureDoc*)pDoc)->m_nPlayMenuPos = 4;
-			((CPictureDoc*)pDoc)->m_nToolsMenuPos = 5;
+			((CPictureDoc*)pDoc)->m_nSettingsMenuPos = 5;
 			((CPictureDoc*)pDoc)->m_nWindowsPos = 6;
 			((CPictureDoc*)pDoc)->m_nHelpMenuPos = 7;
 #ifndef VIDEODEVICEDOC
@@ -1747,12 +1743,7 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
 			((CPictureDoc*)pDoc)->m_nPlayMenuPos--;
-			((CPictureDoc*)pDoc)->m_nToolsMenuPos--;
-			((CPictureDoc*)pDoc)->m_nWindowsPos--;
-			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
-			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-			((CPictureDoc*)pDoc)->m_nToolsMenuPos = -2;
+			((CPictureDoc*)pDoc)->m_nSettingsMenuPos--;
 			((CPictureDoc*)pDoc)->m_nWindowsPos--;
 			((CPictureDoc*)pDoc)->m_nHelpMenuPos--;
 #endif
@@ -1764,7 +1755,7 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CVideoDeviceDoc*)pDoc)->m_nEditMenuPos = 1;
 			((CVideoDeviceDoc*)pDoc)->m_nViewMenuPos = 2;
 			((CVideoDeviceDoc*)pDoc)->m_nCaptureMenuPos = 3;
-			((CVideoDeviceDoc*)pDoc)->m_nToolsMenuPos = 4;
+			((CVideoDeviceDoc*)pDoc)->m_nSettingsMenuPos = 4;
 			((CVideoDeviceDoc*)pDoc)->m_nWindowsPos = 5;
 			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 6;
 		}
@@ -1774,19 +1765,14 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CCDAudioDoc*)pDoc)->m_nFileMenuPos = 0;
 			((CCDAudioDoc*)pDoc)->m_nEditMenuPos = 1;
 			((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos = 2;
-			((CCDAudioDoc*)pDoc)->m_nToolsMenuPos = 3;
+			((CCDAudioDoc*)pDoc)->m_nSettingsMenuPos = 3;
 			((CCDAudioDoc*)pDoc)->m_nWindowsPos = 4;
 			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos = 5;
 #ifndef VIDEODEVICEDOC
 			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CCDAudioDoc*)pDoc)->m_nToolsMenuPos--;
-			((CCDAudioDoc*)pDoc)->m_nWindowsPos--;
-			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos--;
-			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CCDAudioDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-			((CCDAudioDoc*)pDoc)->m_nToolsMenuPos = -2;
+			((CCDAudioDoc*)pDoc)->m_nSettingsMenuPos--;
 			((CCDAudioDoc*)pDoc)->m_nWindowsPos--;
 			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos--;
 #endif
@@ -1796,19 +1782,14 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CAudioMCIDoc*)pDoc)->m_nFileMenuPos = 0;
 			((CAudioMCIDoc*)pDoc)->m_nEditMenuPos = 1;
 			((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos = 2;
-			((CAudioMCIDoc*)pDoc)->m_nToolsMenuPos = 3;
+			((CAudioMCIDoc*)pDoc)->m_nSettingsMenuPos = 3;
 			((CAudioMCIDoc*)pDoc)->m_nWindowsPos = 4;
 			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos = 5;
 #ifndef VIDEODEVICEDOC
 			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CAudioMCIDoc*)pDoc)->m_nToolsMenuPos--;
-			((CAudioMCIDoc*)pDoc)->m_nWindowsPos--;
-			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos--;
-			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CAudioMCIDoc*)pDoc)->m_nToolsMenuPos, MF_BYPOSITION);
-			((CAudioMCIDoc*)pDoc)->m_nToolsMenuPos = -2;
+			((CAudioMCIDoc*)pDoc)->m_nSettingsMenuPos--;
 			((CAudioMCIDoc*)pDoc)->m_nWindowsPos--;
 			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos--;
 #endif

@@ -3276,7 +3276,7 @@
 #define ID_FILE_ACQUIRE_TO_PDF          33068
 #define ID_FILE_ACQUIRE_AND_EMAIL       33069
 #define ID_OPEN_FROM_TRAY               33072
-#define ID_TOOLS_TRAYICON               33073
+#define ID_SETTINGS_TRAYICON            33073
 #define ID_VIEW_FIT                     33083
 #define ID_APP_FAQ                      33084
 #define ID_VIEW_NO_BORDERS              33087
@@ -3319,7 +3319,7 @@
 #define ID_EDIT_PASTE_INTO_BOTTOMRIGHT  33134
 #define ID_EDIT_PASTE_INTO_FILE         33135
 #define ID_VIEW_WEB                     33139
-#define ID_TOOLS_VIEW_LOGFILE           33142
+#define ID_SETTINGS_VIEW_LOGFILE        33142
 #define ID_EDIT_ROTATE_180              33145
 #define ID_EDIT_SNAPSHOT                33161
 #define ID_EDIT_PASTE_INTO_FILE_HELP    33164
@@ -3340,7 +3340,7 @@
 #define ID_DIRECTSHOW_VIDEODEV_LAST     33307
 #define ID_FILE_RELOAD                  33500
 #define ID_VIEW_FILES                   33501
-#define ID_TOOLS_BROWSE_CONFIGLOG_FILES 33503
+#define ID_SETTINGS_BROWSE_CONFIGLOG_FILES 33503
 #define ID_BUTTON_PRINT_SETUP           58120
 
 // Next default values for new objects
