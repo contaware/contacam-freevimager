@@ -106,7 +106,7 @@ BOOL CDib::SaveBMP(	LPCTSTR lpszPathName,
 									CFile::modeWrite  |
 									CFile::shareExclusive);
 
-		DWORD res = SaveBMP(file,
+		BOOL res = SaveBMP(	file,
 							pProgressWnd,
 							bProgressSend,
 							pThread);
