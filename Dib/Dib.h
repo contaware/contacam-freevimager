@@ -297,6 +297,7 @@ typedef struct {
 //
 
 // User Buffer
+#ifdef VIDEODEVICEDOC
 class CUserBuf
 {
 	public:
@@ -305,6 +306,7 @@ class CUserBuf
 		DWORD m_dwSize;
 		LPBYTE m_pBuf;
 };
+#endif
 
 // Gif Support
 #include "DibGif.h"
@@ -327,7 +329,9 @@ public:
 	typedef CList<CDib*,CDib*> LIST;
 
 	// User List
+#ifdef VIDEODEVICEDOC
 	typedef CList<CUserBuf,CUserBuf> USERLIST;
+#endif
 
 	// Constructors
 	CDib(); // Constructs an empty Dib class
@@ -358,9 +362,9 @@ public:
 	// Halftone Colors
 	static RGBQUAD ms_StdColors[];
 
-	// General Purpose User List
 #ifdef VIDEODEVICEDOC
-	USERLIST m_UserList;
+	CString m_sBitsRawFileName;	// Bits Raw File Name
+	USERLIST m_UserList;		// General Purpose User List
 #endif
 
 protected:
@@ -604,8 +608,12 @@ public:
 	// Init vars
 	void Init();
 
-	// User list handling
 #ifdef VIDEODEVICEDOC
+	// Moving: Bits <--> Raw File
+	BOOL BitsToRawFile(LPCTSTR szBitsRawFileName);
+	BOOL RawFileToBits();
+
+	// User list handling
 	void CopyUserList(const USERLIST& UserList);
 	void MoveUserList(USERLIST& UserList);
 	void FreeUserList();

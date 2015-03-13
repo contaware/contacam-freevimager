@@ -278,6 +278,8 @@ CDib::~CDib()
 	FreeGetClosestColorIndex();
 #ifdef VIDEODEVICEDOC
 	FreeUserList();
+	if (!m_sBitsRawFileName.IsEmpty())
+		::DeleteFile(m_sBitsRawFileName);
 #endif
 }
 
@@ -302,6 +304,144 @@ void CDib::FreeList(CDib::LIST& l)
 }
 
 #ifdef VIDEODEVICEDOC
+BOOL CDib::BitsToRawFile(LPCTSTR szBitsRawFileName)
+{
+	// Check
+	if (szBitsRawFileName == NULL || !m_sBitsRawFileName.IsEmpty())
+		return FALSE;
+
+	// Create file (truncate file if it already exists)
+	DWORD dwNumberOfBytesWritten;
+	HANDLE hFile = ::CreateFile(szBitsRawFileName, GENERIC_WRITE,
+								FILE_SHARE_READ, NULL, CREATE_ALWAYS,
+								FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	// Copy Bits to file
+	if (m_pBits && GetImageSize() > 0)
+	{
+		if (!::WriteFile(hFile, m_pBits, GetImageSize(), &dwNumberOfBytesWritten, NULL))
+		{
+			::CloseHandle(hFile);
+			::DeleteFile(szBitsRawFileName);
+			return FALSE;
+		}
+	}
+	else if (GetImageSize() > 0) // fix inconsistency: buffer NULL but size set
+		SetImageSize(0);
+
+	// Copy User buffers to file
+	POSITION pos = m_UserList.GetHeadPosition();
+	while (pos)
+	{
+		CUserBuf& UserBuf = m_UserList.GetNext(pos);
+		if (UserBuf.m_pBuf && UserBuf.m_dwSize > 0)
+		{
+			if (!::WriteFile(hFile, UserBuf.m_pBuf, UserBuf.m_dwSize, &dwNumberOfBytesWritten, NULL))
+			{
+				::CloseHandle(hFile);
+				::DeleteFile(szBitsRawFileName);
+				return FALSE;
+			}
+		}
+		else if (UserBuf.m_dwSize > 0) // fix inconsistency: buffer NULL but size set
+			UserBuf.m_dwSize = 0;
+	}
+
+	// Close file
+	::CloseHandle(hFile);
+
+	// Free memory
+	if (m_pBits)
+	{
+		BIGFREE(m_pBits);
+		m_pBits = NULL;
+	}
+	ResetColorUndo();
+	pos = m_UserList.GetHeadPosition();
+	while (pos)
+	{
+		CUserBuf& UserBuf = m_UserList.GetNext(pos);
+		if (UserBuf.m_pBuf)
+		{
+			av_free(UserBuf.m_pBuf);
+			UserBuf.m_pBuf = NULL;
+		}
+	}
+
+	// Store file name
+	m_sBitsRawFileName = szBitsRawFileName;
+
+    return TRUE;
+}
+
+BOOL CDib::RawFileToBits()
+{
+	// Check
+	if (m_sBitsRawFileName.IsEmpty())
+		return FALSE;
+
+	// Open file
+	DWORD dwNumberOfBytesRead;
+	HANDLE hFile = ::CreateFile(m_sBitsRawFileName, GENERIC_READ,
+								FILE_SHARE_READ, NULL, OPEN_EXISTING,
+								FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return FALSE;
+	
+	// Copy Bits from file
+	if (GetImageSize() > 0)
+	{
+		m_pBits = (LPBYTE)BIGALLOC(GetImageSize());
+		if (!m_pBits)
+		{
+			::CloseHandle(hFile);
+			return FALSE;
+		}
+		if (!::ReadFile(hFile, m_pBits, GetImageSize(), &dwNumberOfBytesRead, NULL))
+		{
+			::CloseHandle(hFile);
+			return FALSE;
+		}
+	}
+
+	// Copy User bufs from file
+	POSITION pos = m_UserList.GetHeadPosition();
+	while (pos)
+	{
+		CUserBuf& UserBuf = m_UserList.GetNext(pos);
+		if (UserBuf.m_dwSize > 0)
+		{
+			UserBuf.m_pBuf = (LPBYTE)av_malloc(UserBuf.m_dwSize);
+			if (!UserBuf.m_pBuf)
+			{
+				::CloseHandle(hFile);
+				return FALSE;
+			}
+			if (!::ReadFile(hFile, UserBuf.m_pBuf, UserBuf.m_dwSize, &dwNumberOfBytesRead, NULL))
+			{
+				::CloseHandle(hFile);
+				return FALSE;
+			}
+		}
+	}
+
+	// Make sur we reached the EOF
+	ASSERT(::SetFilePointer(hFile, 0, NULL, FILE_CURRENT) == ::GetFileSize(hFile, NULL));
+
+	// Close file
+	::CloseHandle(hFile);
+
+	// Delete file
+	::DeleteFile(m_sBitsRawFileName);
+
+	// Clear file name
+	m_sBitsRawFileName.Empty();
+
+	return TRUE;
+}
+
 void CDib::CopyUserList(const USERLIST& UserList)
 {
 	FreeUserList();

@@ -5,6 +5,8 @@ CONTACAM HISTORY
 - Goodbye Flash and goodbye AVI: video saving as MP4 files
   (all modern Browsers and Smartphones can play them)
 - Goodbye Html Frames, web interface improved for mobile devices
+- Detection frames are now buffered on HD and not in RAM. This
+  choice avoids splitting a detection sequence into many files
 - By default delete recordings older than a month and fixed disk full
   deletion logic for network shares and symlinks
 - Installer adds now Start Menu entry only for Current User

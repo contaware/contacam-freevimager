@@ -127,9 +127,9 @@ class CMovementDetectionPage;
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
 #define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
 #define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					1050		// Maximum allocable memory in MB for 32 bits applications
+#define MOVDET_MEM_MAX_MB					850			// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
-#define MOVDET_MEM_MIN_MB					500			// Minimum memory in MB
+#define MOVDET_MEM_MIN_MB					400			// Minimum memory in MB
 #define MOVDET_BASE_MEM_USAGE_MB			50			// Base memory usage of a open video device doc (without detection buffer)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
@@ -504,7 +504,7 @@ public:
 			// CalcMovementDetectionListsSize() must be called from this thread because
 			// this thread changes/deletes the list's dibs not inside the lists critical section!
 			void CalcMovementDetectionListsSize();
-			void DecodeFrame(CDib* pDib);
+			void LoadAndDecodeFrame(CDib* pDib);
 			int Work();
 			CString SaveJpeg(	CDib* pDib,
 								CString sJPGDir,

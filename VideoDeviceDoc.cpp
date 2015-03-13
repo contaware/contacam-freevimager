@@ -145,21 +145,29 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 					CDib* pDib = pList->GetNext(posDibs);
 					if (pDib)
 					{
-						// For video frames BIGALLOC_USEDSIZE accounts for the
-						// allocation granularity and the address space waste
-						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize() + BIGALLOC_USEDSIZE(pDib->GetImageSize());
+						DWORD dwVideoUsedSize = sizeof(CDib) + pDib->GetBMISize(); // approximate size used by the CDib object
+						DWORD dwAudioUsedSize = 0U; // size used by the audio list logic is negligible
 
-						// For audio the maximum allocated size for a single buffer
-						// with AUDIO_IN_MIN_BUF_SIZE set to 256 is:
-						// PCM        = 5120  bytes
-						// ADPCM      = 8136  bytes
-						// MP3        = 9216  bytes
-						DWORD dwAudioUsedSize = 0U;
-						POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
-						while (posAudioBuf)
+						// Only count size if buffers are in memory!
+						if (pDib->m_sBitsRawFileName.IsEmpty())
 						{
-							// av_malloc wastes some few bytes for alignment but we do not account for that here
-							dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize;
+							// For video frames BIGALLOC_USEDSIZE accounts for the
+							// allocation granularity and the address space waste
+							dwVideoUsedSize += BIGALLOC_USEDSIZE(pDib->GetImageSize());
+
+							// For audio the maximum allocated size for a single buffer
+							// with AUDIO_IN_MIN_BUF_SIZE set to 256 is
+							// (see CCaptureAudioThread::OpenInAudio()):
+							// AAC        = 8192  bytes (2 * Max AAC Frame Size)
+							// PCM        = 5120  bytes (5 * AUDIO_IN_MIN_BUF_SIZE * nBlockAlign)
+							// ADPCM      = 8136  bytes (2 * Max ADPCM Frame Size)
+							// MP3        = 9216  bytes (2 * Max MP3 Frame Size)
+							POSITION posAudioBuf = pDib->m_UserList.GetHeadPosition();
+							while (posAudioBuf)
+							{
+								// av_malloc wastes some few bytes for alignment but we do not account for that here
+								dwAudioUsedSize += pDib->m_UserList.GetNext(posAudioBuf).m_dwSize;
+							}
 						}
 
 						// Sum
@@ -172,8 +180,12 @@ void CVideoDeviceDoc::CSaveFrameListThread::CalcMovementDetectionListsSize()
 	}
 }
 
-void CVideoDeviceDoc::CSaveFrameListThread::DecodeFrame(CDib* pDib)
+void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 {
+	// Move back the bits from file to memory
+	if (pDib && !pDib->m_sBitsRawFileName.IsEmpty())
+		pDib->RawFileToBits();
+
 	// Check whether still compressed, could already have
 	// been decompressed by thread loop or AnimatedGifInit()
 	if (pDib && (pDib->GetCompression() == FCC('MJPG') || pDib->GetCompression() == FCC('M601')))
@@ -450,7 +462,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			// Get Frame
 			currentpos = nextpos;
 			pDib = m_pFrameList->GetNext(nextpos);
-			DecodeFrame(pDib);
+			LoadAndDecodeFrame(pDib);
 
 			// Calc. detection lists size
 			if ((nFrames % MOVDET_MIN_FRAMES_IN_LIST) == 0)
@@ -922,21 +934,21 @@ void CVideoDeviceDoc::CSaveFrameListThread::AnimatedGifInit(	RGBQUAD* pGIFColors
 	// Make sure the 3 image pointers are ok
 	if (!pDibForPalette1)
 		pDibForPalette1 = m_pFrameList->GetHead();
-	DecodeFrame(pDibForPalette1);
+	LoadAndDecodeFrame(pDibForPalette1);
 	DibForPalette1 = *pDibForPalette1;
 	if (DibForPalette1.IsCompressed() || DibForPalette1.GetBitCount() <= 8)
 		DibForPalette1.Decompress(32);
 	DibForPalette1.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette2)
 		pDibForPalette2 = m_pFrameList->GetHead();
-	DecodeFrame(pDibForPalette2);
+	LoadAndDecodeFrame(pDibForPalette2);
 	DibForPalette2 = *pDibForPalette2;
 	if (DibForPalette2.IsCompressed() || DibForPalette2.GetBitCount() <= 8)
 		DibForPalette2.Decompress(32);
 	DibForPalette2.StretchBits(m_pDoc->m_dwAnimatedGifWidth, m_pDoc->m_dwAnimatedGifHeight);
 	if (!pDibForPalette3)
 		pDibForPalette3 = m_pFrameList->GetHead();
-	DecodeFrame(pDibForPalette3);
+	LoadAndDecodeFrame(pDibForPalette3);
 	DibForPalette3 = *pDibForPalette3;
 	if (DibForPalette3.IsCompressed() || DibForPalette3.GetBitCount() <= 8)
 		DibForPalette3.Decompress(32);
@@ -8498,7 +8510,13 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				// Add the new frame
 				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
+				{
+					CString sTempFileName;
+					sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
+					sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
+					pNewDib->BitsToRawFile(sTempFileName); // save bits to file
 					pTail->AddTail(pNewDib);
+				}
 			}
 		}
 		::LeaveCriticalSection(&m_csMovementDetectionsList);

@@ -22,8 +22,6 @@ ContaCam Program
 - Auto join with mp4box.exe all mp4 detections at the end of the day
 - Ability to send different emails to different people. For example
   send GIF files to one person and JPGs to another
-- For longer detection sequences introduce CDib persistence to a file
-  (m_sBitsFileName set and m_pBits is NULL)
 - Configurable saving frame-rate and resolution
 - Allow Digital Zoom of live camera via mouse wheel
   (suggested by alanphoto@starpower.net)
