@@ -210,19 +210,19 @@
 // Inline Functions //
 //////////////////////
 
-// Get Exif
-__forceinline CMetadata* CDib::GetMetadata() {return &m_Metadata;};
+// Get Metadata (do allocate it if not yet done)
+__forceinline CMetadata* CDib::GetMetadata() {return (m_pMetadata ? m_pMetadata : (m_pMetadata = new CMetadata));};
 // Get Exif Info Structure
-__forceinline CMetadata::EXIFINFO* CDib::GetExifInfo() {return &(m_Metadata.m_ExifInfo);};
+__forceinline CMetadata::EXIFINFO* CDib::GetExifInfo() {return &(GetMetadata()->m_ExifInfo);};
 // Get Exif Info Write Structure
-__forceinline CMetadata::EXIFINFOINPLACEWRITE* CDib::GetExifInfoWrite() {return &(m_Metadata.m_ExifInfoWrite);};
+__forceinline CMetadata::EXIFINFOINPLACEWRITE* CDib::GetExifInfoWrite() {return &(GetMetadata()->m_ExifInfoWrite);};
 
 // Get Iptc Legacy Info Structure
-__forceinline CMetadata::IPTCINFO* CDib::GetIptcLegacyInfo() {return &(m_Metadata.m_IptcLegacyInfo);};
+__forceinline CMetadata::IPTCINFO* CDib::GetIptcLegacyInfo() {return &(GetMetadata()->m_IptcLegacyInfo);};
 // Get Iptc from Xmp Info Structure
-__forceinline CMetadata::IPTCINFO* CDib::GetIptcFromXmpInfo() {return &(m_Metadata.m_IptcFromXmpInfo);};
+__forceinline CMetadata::IPTCINFO* CDib::GetIptcFromXmpInfo() {return &(GetMetadata()->m_IptcFromXmpInfo);};
 // Get Xmp Info Structure
-__forceinline CMetadata::XMPINFO* CDib::GetXmpInfo() {return &(m_Metadata.m_XmpInfo);};
+__forceinline CMetadata::XMPINFO* CDib::GetXmpInfo() {return &(GetMetadata()->m_XmpInfo);};
 
 // File Info
 __forceinline int CDib::CFileInfo::GetXDpi() const {return DPI(m_nXPixsPerMeter);};

@@ -75,7 +75,16 @@ void CDib::CopyVars(const CDib& SrcDib)
 	m_bFast32bpp = SrcDib.m_bFast32bpp;
 	m_crBackgroundColor = SrcDib.m_crBackgroundColor;
 	m_FileInfo = SrcDib.m_FileInfo;
-	m_Metadata = SrcDib.m_Metadata;
+	if (SrcDib.m_pMetadata)						// if metadata exists in Src
+		*GetMetadata() = *SrcDib.m_pMetadata;	// -> allocate Dst if necessary and copy
+	else
+	{											// if metadata doesn't exist in Src
+		if (m_pMetadata)						// -> free Dst if allocated 
+		{
+			delete m_pMetadata;
+			m_pMetadata = NULL;
+		}
+	}
 	m_Gif = SrcDib.m_Gif;
 }
 
@@ -5592,6 +5601,7 @@ void CDib::Init()
 	m_dPreviewDibRatio = 0.0;
 	m_dThumbnailDibRatio = 0.0;
 	m_crBackgroundColor = RGB(0,0,0);
+	m_pMetadata = NULL;
 
 	m_wBrightness = 0;
 	m_wContrast = 0;
@@ -5670,7 +5680,13 @@ void CDib::Free(BOOL bLeavePalette/*=FALSE*/,
 	if (!bLeaveThumbnailDib)
 		DeleteThumbnailDib();
 	if (!bLeaveMetadata)
-		m_Metadata.Free();
+	{
+		if (m_pMetadata)
+		{
+			delete m_pMetadata;
+			m_pMetadata = NULL;
+		}
+	}
 	if (!bLeaveGIF)
 		m_Gif.Free();
 	if (!bLeavePalette && m_pPalette)

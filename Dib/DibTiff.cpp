@@ -107,7 +107,7 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 			throw (int)TIFF_E_LIBTIFF;
 
 		// Parse Metadata of the given Page Number
-		m_Metadata.ParseTIFF(nPageNum, tif->tif_base, tif->tif_size);
+		GetMetadata()->ParseTIFF(nPageNum, tif->tif_base, tif->tif_size);
 
 		uint32 uiImageWidth = 0;
 		uint32 uiImageHeight = 0;
@@ -1135,40 +1135,40 @@ BOOL CDib::TIFFSetMetadata(TIFF* tif, BOOL bRemoveIcc/*=FALSE*/)
 		TIFFSetField(tif, TIFFTAG_DATETIME, GetExifInfo()->DateTime);
 
 	// Xmp Packet
-	if (m_Metadata.m_pXmpData && m_Metadata.m_dwXmpSize > 0)
+	if (GetMetadata()->m_pXmpData && GetMetadata()->m_dwXmpSize > 0)
 	{
 		// Call this to change to the image/tiff mime
 		// when saving from a jpeg file for example!
-		m_Metadata.UpdateXmpData(_T("image/tiff"));
+		GetMetadata()->UpdateXmpData(_T("image/tiff"));
 
-		TIFFSetField(tif, TIFFTAG_XMLPACKET, (uint32)m_Metadata.m_dwXmpSize, (void*)m_Metadata.m_pXmpData);
+		TIFFSetField(tif, TIFFTAG_XMLPACKET, (uint32)GetMetadata()->m_dwXmpSize, (void*)GetMetadata()->m_pXmpData);
 	}
 
 	// Legacy Iptc
-	if (m_Metadata.m_pIptcLegacyData && m_Metadata.m_dwIptcLegacySize > 0)
+	if (GetMetadata()->m_pIptcLegacyData && GetMetadata()->m_dwIptcLegacySize > 0)
 	{
-		unsigned long dwDWordsCount = (m_Metadata.m_dwIptcLegacySize % 4) ? (m_Metadata.m_dwIptcLegacySize / 4) + 1 : m_Metadata.m_dwIptcLegacySize / 4;
+		unsigned long dwDWordsCount = (GetMetadata()->m_dwIptcLegacySize % 4) ? (GetMetadata()->m_dwIptcLegacySize / 4) + 1 : GetMetadata()->m_dwIptcLegacySize / 4;
 
 		// Swab it here because saving it as big endian on this
 		// little endian machine (windows) will swab it again.
 		// Iptc data are in reality of type UNDEFINED (just bytes),
 		// but a historical bug attributes it type LONG...
 		if (tif->tif_header.tiff_magic == TIFF_BIGENDIAN)
-			TIFFSwabArrayOfLong((uint32*)(m_Metadata.m_pIptcLegacyData), dwDWordsCount);
+			TIFFSwabArrayOfLong((uint32*)(GetMetadata()->m_pIptcLegacyData), dwDWordsCount);
 
-		TIFFSetField(tif, TIFFTAG_RICHTIFFIPTC, (uint32)dwDWordsCount, (void*)m_Metadata.m_pIptcLegacyData);
+		TIFFSetField(tif, TIFFTAG_RICHTIFFIPTC, (uint32)dwDWordsCount, (void*)GetMetadata()->m_pIptcLegacyData);
 	}
 
 	// ICC Profile
 	if (!bRemoveIcc)
 	{
-		if (m_Metadata.m_pIccData && m_Metadata.m_dwIccSize > 0)
-			TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32)m_Metadata.m_dwIccSize, (void*)m_Metadata.m_pIccData);
+		if (GetMetadata()->m_pIccData && GetMetadata()->m_dwIccSize > 0)
+			TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32)GetMetadata()->m_dwIccSize, (void*)GetMetadata()->m_pIccData);
 	}
 
 	// Photoshop
-	if (m_Metadata.m_pPhotoshopData && m_Metadata.m_dwPhotoshopSize > 0)
-		TIFFSetField(tif, TIFFTAG_PHOTOSHOP, (uint32)m_Metadata.m_dwPhotoshopSize, (void*)m_Metadata.m_pPhotoshopData);
+	if (GetMetadata()->m_pPhotoshopData && GetMetadata()->m_dwPhotoshopSize > 0)
+		TIFFSetField(tif, TIFFTAG_PHOTOSHOP, (uint32)GetMetadata()->m_dwPhotoshopSize, (void*)GetMetadata()->m_pPhotoshopData);
 
 	return TRUE;
 }

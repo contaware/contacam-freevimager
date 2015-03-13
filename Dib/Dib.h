@@ -439,16 +439,16 @@ protected:
 	int* m_pFloodFillStack;
 	int m_nFloodFillStackPos;
 
-	// The Exif Var
-	CMetadata m_Metadata;
+	// The Metadata Variable
+	CMetadata* m_pMetadata;
 
-	// The Gif Var
+	// The Gif Variable
 	CGif m_Gif;
 
 // Member Functions
 public:
 
-	// Get Exif
+	// Get Metadata
 	__forceinline CMetadata* GetMetadata();
 	// Get Exif Info Structure
 	__forceinline CMetadata::EXIFINFO* GetExifInfo();
@@ -1626,16 +1626,16 @@ public:
 									LPCTSTR lpszOutPathName,
 									BOOL bShowMessageBoxOnError);
 
-	// Fill the m_Metadata.m_ExifInfo Structure,
+	// Fill the GetMetadata()->m_ExifInfo Structure,
 	// and loads the Thumbnail if available!
 	// (Called by LoadJPEG())
 	BOOL JPEGLoadMetadata(LPCTSTR lpszPathName);
 	BOOL JPEGLoadMetadata(LPBYTE pJpegData, DWORD dwSize);
 	BOOL LoadEXIFThumbnail();
 
-	// Write the m_Metadata.m_ExifInfo member
-	// that are marked true inside the m_Metadata.m_ExifInfoWrite
-	// to the Jpeg.
+	// Write the GetMetadata()->m_ExifInfo member
+	// that are marked true inside the GetMetadata()->m_ExifInfoWrite
+	// to the Jpeg
 	BOOL JPEGWriteEXIFInplace(LPCTSTR lpszPathName);
 	BOOL JPEGWriteEXIFInplace(LPBYTE pJpegData, DWORD dwSize);
 

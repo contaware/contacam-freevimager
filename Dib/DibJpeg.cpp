@@ -995,32 +995,32 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 		delete [] pJpegThumbData;
 
 	// Xmp Packet
-	if (m_Metadata.m_pXmpData		&&
-		m_Metadata.m_dwXmpSize > 0	&&
-		XMP_HEADER_SIZE + m_Metadata.m_dwXmpSize <= nMaxSectionSize)
+	if (GetMetadata()->m_pXmpData		&&
+		GetMetadata()->m_dwXmpSize > 0	&&
+		XMP_HEADER_SIZE + GetMetadata()->m_dwXmpSize <= nMaxSectionSize)
 	{
 		// Call this to change to the image/jpeg mime
 		// when saving from a tiff file for example!
-		m_Metadata.UpdateXmpData(_T("image/jpeg")); 
+		GetMetadata()->UpdateXmpData(_T("image/jpeg")); 
 
 		// Header
 		memcpy(data, CMetadata::m_XmpHeader, XMP_HEADER_SIZE);
 		
 		// Copy Xmp Data
-		memcpy(data + XMP_HEADER_SIZE, m_Metadata.m_pXmpData, m_Metadata.m_dwXmpSize);
+		memcpy(data + XMP_HEADER_SIZE, GetMetadata()->m_pXmpData, GetMetadata()->m_dwXmpSize);
 
 		// Write Marker
 		jpeg_write_marker(	&cinfo,
 							M_EXIF_XMP,
 							data,
-							XMP_HEADER_SIZE + m_Metadata.m_dwXmpSize);
+							XMP_HEADER_SIZE + GetMetadata()->m_dwXmpSize);
 	}
 
 	// Iptc Legacy Data
-	if (m_Metadata.m_pIptcLegacyData		&&
-		m_Metadata.m_dwIptcLegacySize > 0)
+	if (GetMetadata()->m_pIptcLegacyData &&
+		GetMetadata()->m_dwIptcLegacySize > 0)
 	{
-		int nTotalSize = 26 + m_Metadata.m_dwIptcLegacySize;
+		int nTotalSize = 26 + GetMetadata()->m_dwIptcLegacySize;
 
 		// Pad to Even Length
 		if (nTotalSize & 0x1)
@@ -1040,7 +1040,7 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 			data[21] = 0;
 
 			// Iptc Size is big endian and 32 bit
-			int iptcsize = m_Metadata.m_dwIptcLegacySize;
+			int iptcsize = GetMetadata()->m_dwIptcLegacySize;
 			BYTE t;
 			LPBYTE cp = (LPBYTE)&iptcsize;
 			t = cp[3]; cp[3] = cp[0]; cp[0] = t;
@@ -1048,7 +1048,7 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 			*((DWORD*)(&data[22])) = iptcsize;
 
 			// Copy Iptc Data
-			memcpy(data + 26, m_Metadata.m_pIptcLegacyData, m_Metadata.m_dwIptcLegacySize);
+			memcpy(data + 26, GetMetadata()->m_pIptcLegacyData, GetMetadata()->m_dwIptcLegacySize);
 
 			// Write Marker
 			jpeg_write_marker(	&cinfo,
@@ -1059,7 +1059,7 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 	}
 
 	// Icc Color Profile
-	if (m_Metadata.m_pIccData && m_Metadata.m_dwIccSize > 0)
+	if (GetMetadata()->m_pIccData && GetMetadata()->m_dwIccSize > 0)
 	{
 		// Max Size for a jpeg section is: 65535 - 2 = 65533
 		//
@@ -1068,8 +1068,8 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 		// Byte:     Chunks count
 		// Max Data: 65533 - 12 - 2 = 65519 bytes
 		const int nMaxIccChunkSize = 32000; // Photoshop uses 32000
-		int nSectionsCount = m_Metadata.m_dwIccSize / nMaxIccChunkSize;
-		if (m_Metadata.m_dwIccSize % nMaxIccChunkSize)
+		int nSectionsCount = GetMetadata()->m_dwIccSize / nMaxIccChunkSize;
+		if (GetMetadata()->m_dwIccSize % nMaxIccChunkSize)
 			nSectionsCount++;
 		
 		int datapos;
@@ -1082,7 +1082,7 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 
 			// Last?
 			if (i == nSectionsCount - 1)
-				iccsize = m_Metadata.m_dwIccSize - i * nMaxIccChunkSize;
+				iccsize = GetMetadata()->m_dwIccSize - i * nMaxIccChunkSize;
 
 			// Icc Header
 			memcpy(data, CMetadata::m_IccHeader, ICC_HEADER_SIZE);
@@ -1093,7 +1093,7 @@ void CDib::SaveJPEGWriteMetadata(jpeg_compress_struct& cinfo)
 			data[datapos++] = nSectionsCount;	// Chunks count: 1..255
 			
 			// Copy Icc Data
-			memcpy(data + datapos, m_Metadata.m_pIccData + iccpos, iccsize);
+			memcpy(data + datapos, GetMetadata()->m_pIccData + iccpos, iccsize);
 			datapos += iccsize; 
 			iccpos += iccsize;
 
@@ -2722,53 +2722,53 @@ BOOL CDib::UpdateExifWidthHeightThumbLossLess(	LPCTSTR lpszPathName,
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.m_Metadata.m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
 	{
 		// If the thumbnail is not jpeg 
 		// -> do a lossy thumbnail transformation
-		if (Dib.m_Metadata.m_ExifInfo.ThumbnailCompression != 6)
+		if (Dib.GetMetadata()->m_ExifInfo.ThumbnailCompression != 6)
 			return UpdateExifWidthHeightThumb(lpszPathName, bShowMessageBoxOnError);
 
-		memset(&Dib.m_Metadata.m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
+		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
-		if (Dib.m_Metadata.m_ExifInfo.ThumbnailPointer && Dib.m_Metadata.m_ExifInfo.ThumbnailSize)
+		if (Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer && Dib.GetMetadata()->m_ExifInfo.ThumbnailSize)
 		{
 			// Calc Output Size, it should be the same, but in some cases it is bigger -> Lossy Exif Update
 			// (All the Exif Stores are in place -> the size must be the same or smaller!)
 			int nJpegOutThumbDataSize = 0;
-			if (!LossLessJPEGTrans(Dib.m_Metadata.m_ExifInfo.ThumbnailPointer, Dib.m_Metadata.m_ExifInfo.ThumbnailSize,
+			if (!LossLessJPEGTrans(Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer, Dib.GetMetadata()->m_ExifInfo.ThumbnailSize,
 							 NULL, &nJpegOutThumbDataSize,
 							 Transform, bTrim,
 							 bGrayScale, FALSE, 
 							 "",
 							 FALSE, 0, 0, 0, 0, bShowMessageBoxOnError))
 				return FALSE;
-			if (nJpegOutThumbDataSize > (int)Dib.m_Metadata.m_ExifInfo.ThumbnailSize)
+			if (nJpegOutThumbDataSize > (int)Dib.GetMetadata()->m_ExifInfo.ThumbnailSize)
 				return UpdateExifWidthHeightThumb(lpszPathName, bShowMessageBoxOnError);
 			else
-				pJpegOutThumbData = new BYTE[Dib.m_Metadata.m_ExifInfo.ThumbnailSize];
+				pJpegOutThumbData = new BYTE[Dib.GetMetadata()->m_ExifInfo.ThumbnailSize];
 
 			// Do Lossless Transformation On Thumbnail
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnail =
-			LossLessJPEGTrans(Dib.m_Metadata.m_ExifInfo.ThumbnailPointer, Dib.m_Metadata.m_ExifInfo.ThumbnailSize,
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnail =
+			LossLessJPEGTrans(Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer, Dib.GetMetadata()->m_ExifInfo.ThumbnailSize,
 							 pJpegOutThumbData, &nJpegOutThumbDataSize,
 							 Transform, bTrim,
 							 bGrayScale, FALSE, 
 							 "",
 							 FALSE, 0, 0, 0, 0, bShowMessageBoxOnError) ? true : false;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
 			// Leave the Same Size to avoid a continuos shrinking if editing (lossy) many times!
-			// Dib.m_Metadata.m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
+			// Dib.GetMetadata()->m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
 			CDib ThumbDib;
 			ThumbDib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
 			ThumbDib.JPEGLoadMetadata(pJpegOutThumbData, nJpegOutThumbDataSize); // It has no Exif, but Width and Height are returned from SOFn
-			Dib.m_Metadata.m_ExifInfo.ThumbnailWidth = ThumbDib.GetExifInfo()->Width;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailHeight = ThumbDib.GetExifInfo()->Height;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailWidth = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailHeight = true;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailWidth = ThumbDib.GetExifInfo()->Width;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailHeight = ThumbDib.GetExifInfo()->Height;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailWidth = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailHeight = true;
 		}
-		Dib.m_Metadata.m_ExifInfoWrite.bWidth = true;
-		Dib.m_Metadata.m_ExifInfoWrite.bHeight = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bWidth = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bHeight = true;
 		BOOL res = Dib.JPEGWriteEXIFInplace(lpszPathName);
 		if (pJpegOutThumbData)
 			delete [] pJpegOutThumbData;
@@ -2789,32 +2789,32 @@ BOOL CDib::UpdateExifWidthHeightThumb(LPCTSTR lpszPathName, BOOL bShowMessageBox
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.m_Metadata.m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(lpszPathName) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
 	{
-		memset(&Dib.m_Metadata.m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
+		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
-		int nJpegOutThumbDataSize = Dib.m_Metadata.m_ExifInfo.ThumbnailSize;
+		int nJpegOutThumbDataSize = Dib.GetMetadata()->m_ExifInfo.ThumbnailSize;
 		if (nJpegOutThumbDataSize)
 		{
 			Dib.LoadJPEG(lpszPathName);
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnail = MakeEXIFThumbnail(
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnail = MakeEXIFThumbnail(
 											&Dib,
 											&pJpegOutThumbData,
 											&nJpegOutThumbDataSize) ? true : false;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
 			// Leave the Same Size to avoid a continuos shrinking if editing (lossy) many times!
-			// Dib.m_Metadata.m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailWidth = Dib.GetWidth();
-			Dib.m_Metadata.m_ExifInfo.ThumbnailHeight = Dib.GetHeight();
-			Dib.m_Metadata.m_ExifInfo.ThumbnailCompression = 6; // Jpeg
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPhotometricInterpretation = 6; // Jpeg is YCbCr
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailWidth = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailHeight = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailCompression = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailPhotometricInterpretation = true;
+			// Dib.GetMetadata()->m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailWidth = Dib.GetWidth();
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailHeight = Dib.GetHeight();
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailCompression = 6; // Jpeg
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPhotometricInterpretation = 6; // Jpeg is YCbCr
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailWidth = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailHeight = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailCompression = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailPhotometricInterpretation = true;
 		}
-		Dib.m_Metadata.m_ExifInfoWrite.bWidth = true;
-		Dib.m_Metadata.m_ExifInfoWrite.bHeight = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bWidth = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bHeight = true;
 		BOOL res = Dib.JPEGWriteEXIFInplace(lpszPathName);
 		if (pJpegOutThumbData)
 			delete [] pJpegOutThumbData;
@@ -2842,53 +2842,53 @@ BOOL CDib::UpdateExifWidthHeightThumbLossLess(	LPBYTE pJpegData,
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.m_Metadata.m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
 	{
 		// If the thumbnail is not jpeg 
 		// -> do a lossy thumbnail transformation
-		if (Dib.m_Metadata.m_ExifInfo.ThumbnailCompression != 6)
+		if (Dib.GetMetadata()->m_ExifInfo.ThumbnailCompression != 6)
 			return UpdateExifWidthHeightThumb(pJpegData, nJpegDataSize, bShowMessageBoxOnError);
 
-		memset(&Dib.m_Metadata.m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
+		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
-		if (Dib.m_Metadata.m_ExifInfo.ThumbnailPointer && Dib.m_Metadata.m_ExifInfo.ThumbnailSize)
+		if (Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer && Dib.GetMetadata()->m_ExifInfo.ThumbnailSize)
 		{
 			// Calc Output Size, it should be the same, but in some cases it is bigger -> Lossy Exif Update
 			// (All the Exif Stores are in place -> the size must be the same or smaller!)
 			int nJpegOutThumbDataSize = 0;
-			if (!LossLessJPEGTrans(Dib.m_Metadata.m_ExifInfo.ThumbnailPointer, Dib.m_Metadata.m_ExifInfo.ThumbnailSize,
+			if (!LossLessJPEGTrans(Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer, Dib.GetMetadata()->m_ExifInfo.ThumbnailSize,
 							 NULL, &nJpegOutThumbDataSize,
 							 Transform, bTrim,
 							 bGrayScale, FALSE, 
 							 "",
 							 FALSE, 0, 0, 0, 0, bShowMessageBoxOnError))
 				return FALSE;
-			if (nJpegOutThumbDataSize > (int)Dib.m_Metadata.m_ExifInfo.ThumbnailSize)
+			if (nJpegOutThumbDataSize > (int)Dib.GetMetadata()->m_ExifInfo.ThumbnailSize)
 				return UpdateExifWidthHeightThumb(pJpegData, nJpegDataSize, bShowMessageBoxOnError);
 			else
-				pJpegOutThumbData = new BYTE[Dib.m_Metadata.m_ExifInfo.ThumbnailSize];
+				pJpegOutThumbData = new BYTE[Dib.GetMetadata()->m_ExifInfo.ThumbnailSize];
 
 			// Do Lossless Transformation On Thumbnail
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnail =
-			LossLessJPEGTrans(Dib.m_Metadata.m_ExifInfo.ThumbnailPointer, Dib.m_Metadata.m_ExifInfo.ThumbnailSize,
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnail =
+			LossLessJPEGTrans(Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer, Dib.GetMetadata()->m_ExifInfo.ThumbnailSize,
 							 pJpegOutThumbData, &nJpegOutThumbDataSize,
 							 Transform, bTrim,
 							 bGrayScale, FALSE, 
 							 "",
 							 FALSE, 0, 0, 0, 0, bShowMessageBoxOnError) ? true : false;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
 			// Leave the Same Size to avoid a continuos shrinking if editing (lossy) many times!
-			// Dib.m_Metadata.m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
+			// Dib.GetMetadata()->m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
 			CDib ThumbDib;
 			ThumbDib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
 			ThumbDib.JPEGLoadMetadata(pJpegOutThumbData, nJpegOutThumbDataSize); // It has no Exif, but Width and Height are returned from SOFn
-			Dib.m_Metadata.m_ExifInfo.ThumbnailWidth = ThumbDib.GetExifInfo()->Width;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailHeight = ThumbDib.GetExifInfo()->Height;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailWidth = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailHeight = true;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailWidth = ThumbDib.GetExifInfo()->Width;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailHeight = ThumbDib.GetExifInfo()->Height;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailWidth = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailHeight = true;
 		}
-		Dib.m_Metadata.m_ExifInfoWrite.bWidth = true;
-		Dib.m_Metadata.m_ExifInfoWrite.bHeight = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bWidth = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bHeight = true;
 		BOOL res = Dib.JPEGWriteEXIFInplace(pJpegData, nJpegDataSize);
 		if (pJpegOutThumbData)
 			delete [] pJpegOutThumbData;
@@ -2909,32 +2909,32 @@ BOOL CDib::UpdateExifWidthHeightThumb(LPBYTE pJpegData, int nJpegDataSize, BOOL 
 
 	CDib Dib;
 	Dib.SetShowMessageBoxOnError(bShowMessageBoxOnError);
-	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.m_Metadata.m_ExifInfo.bHasExif)
+	if (Dib.JPEGLoadMetadata(pJpegData, nJpegDataSize) && Dib.GetMetadata()->m_ExifInfo.bHasExif)
 	{
-		memset(&Dib.m_Metadata.m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
+		memset(&Dib.GetMetadata()->m_ExifInfoWrite, 0, sizeof(CMetadata::EXIFINFOINPLACEWRITE));
 		LPBYTE pJpegOutThumbData = NULL;
-		int nJpegOutThumbDataSize = Dib.m_Metadata.m_ExifInfo.ThumbnailSize;
+		int nJpegOutThumbDataSize = Dib.GetMetadata()->m_ExifInfo.ThumbnailSize;
 		if (nJpegOutThumbDataSize)
 		{
 			Dib.LoadJPEG(pJpegData, nJpegDataSize);
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnail = MakeEXIFThumbnail(
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnail = MakeEXIFThumbnail(
 											&Dib,
 											&pJpegOutThumbData,
 											&nJpegOutThumbDataSize) ? true : false;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPointer = pJpegOutThumbData;
 			// Leave the Same Size to avoid a continuos shrinking if editing (lossy) many times!
-			// Dib.m_Metadata.m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
-			Dib.m_Metadata.m_ExifInfo.ThumbnailWidth = Dib.GetWidth();
-			Dib.m_Metadata.m_ExifInfo.ThumbnailHeight = Dib.GetHeight();
-			Dib.m_Metadata.m_ExifInfo.ThumbnailCompression = 6; // Jpeg
-			Dib.m_Metadata.m_ExifInfo.ThumbnailPhotometricInterpretation = 6; // Jpeg is YCbCr
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailWidth = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailHeight = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailCompression = true;
-			Dib.m_Metadata.m_ExifInfoWrite.bThumbnailPhotometricInterpretation = true;
+			// Dib.GetMetadata()->m_ExifInfo.ThumbnailSize = nJpegOutThumbDataSize;
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailWidth = Dib.GetWidth();
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailHeight = Dib.GetHeight();
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailCompression = 6; // Jpeg
+			Dib.GetMetadata()->m_ExifInfo.ThumbnailPhotometricInterpretation = 6; // Jpeg is YCbCr
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailWidth = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailHeight = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailCompression = true;
+			Dib.GetMetadata()->m_ExifInfoWrite.bThumbnailPhotometricInterpretation = true;
 		}
-		Dib.m_Metadata.m_ExifInfoWrite.bWidth = true;
-		Dib.m_Metadata.m_ExifInfoWrite.bHeight = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bWidth = true;
+		Dib.GetMetadata()->m_ExifInfoWrite.bHeight = true;
 		BOOL res = Dib.JPEGWriteEXIFInplace(pJpegData, nJpegDataSize);
 		if (pJpegOutThumbData)
 			delete [] pJpegOutThumbData;
@@ -3242,7 +3242,7 @@ BOOL CDib::JPEGLoadMetadata(LPBYTE pJpegData, DWORD dwSize)
 		return FALSE;
 
 	// Parse Exif Data
-	bool res = m_Metadata.ParseProcessJPEG(pJpegData, dwSize, false);
+	bool res = GetMetadata()->ParseProcessJPEG(pJpegData, dwSize, false);
 
 	if (res)
 	{
@@ -3255,21 +3255,21 @@ BOOL CDib::JPEGLoadMetadata(LPBYTE pJpegData, DWORD dwSize)
 
 BOOL CDib::LoadEXIFThumbnail()
 {
-	if (m_Metadata.m_ExifInfo.bHasExif &&
-		m_Metadata.m_ExifInfo.ThumbnailPointer &&
-		m_Metadata.m_ExifInfo.ThumbnailSize)
+	if (GetMetadata()->m_ExifInfo.bHasExif &&
+		GetMetadata()->m_ExifInfo.ThumbnailPointer &&
+		GetMetadata()->m_ExifInfo.ThumbnailSize)
 	{
 		BOOL res = FALSE;
-		if (m_Metadata.m_ExifInfo.ThumbnailCompression == 6) // Jpeg
+		if (GetMetadata()->m_ExifInfo.ThumbnailCompression == 6) // Jpeg
 		{
 			if (m_pThumbnailDib == NULL)
 				m_pThumbnailDib = (CDib*)new CDib;
-			res = m_pThumbnailDib->LoadJPEG(m_Metadata.m_ExifInfo.ThumbnailPointer, 
-											m_Metadata.m_ExifInfo.ThumbnailSize);
+			res = m_pThumbnailDib->LoadJPEG(GetMetadata()->m_ExifInfo.ThumbnailPointer, 
+											GetMetadata()->m_ExifInfo.ThumbnailSize);
 		}
-		else if (m_Metadata.m_ExifInfo.ThumbnailCompression == 1) // TIFF
+		else if (GetMetadata()->m_ExifInfo.ThumbnailCompression == 1) // TIFF
 		{
-			if (m_Metadata.m_ExifInfo.ThumbnailPhotometricInterpretation == 2) // RGB Format
+			if (GetMetadata()->m_ExifInfo.ThumbnailPhotometricInterpretation == 2) // RGB Format
 			{
 				// Kodak DC-210/220/260 And Sony D700 use this format
 
@@ -3281,33 +3281,33 @@ BOOL CDib::LoadEXIFThumbnail()
 				// Header
 				BITMAPINFO Bmi;
 				memset(&Bmi, 0, sizeof(BITMAPINFO));
-				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(m_Metadata.m_ExifInfo.ThumbnailWidth * 24);
+				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetMetadata()->m_ExifInfo.ThumbnailWidth * 24);
 				Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				Bmi.bmiHeader.biWidth = (DWORD)m_Metadata.m_ExifInfo.ThumbnailWidth;
-				Bmi.bmiHeader.biHeight = (DWORD)m_Metadata.m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biWidth = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailWidth;
+				Bmi.bmiHeader.biHeight = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biPlanes = 1;
 				Bmi.bmiHeader.biBitCount = 24;
 				Bmi.bmiHeader.biCompression = BI_RGB;    
-				Bmi.bmiHeader.biSizeImage = uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biSizeImage = uiDIBScanLineSize * GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biClrUsed = 0;
 				Bmi.bmiHeader.biClrImportant = 0;
 				m_pThumbnailDib->SetBMI(&Bmi);
 
 				// Pixels
-				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight);
+				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetMetadata()->m_ExifInfo.ThumbnailHeight);
 				if (m_pThumbnailDib->m_pBits)
 				{
 					// Start Writing To Last Line (TIFF Bitmap is top-down, windows is bottom-up)
-					LPBYTE p = m_pThumbnailDib->m_pBits + (uiDIBScanLineSize * (m_Metadata.m_ExifInfo.ThumbnailHeight - 1));
-					for (int SrcLine = 0 ; SrcLine < m_Metadata.m_ExifInfo.ThumbnailHeight ; SrcLine++)
+					LPBYTE p = m_pThumbnailDib->m_pBits + (uiDIBScanLineSize * (GetMetadata()->m_ExifInfo.ThumbnailHeight - 1));
+					for (int SrcLine = 0 ; SrcLine < GetMetadata()->m_ExifInfo.ThumbnailHeight ; SrcLine++)
 					{
-						for (int pix = 0 ; pix < m_Metadata.m_ExifInfo.ThumbnailWidth ; pix++)
+						for (int pix = 0 ; pix < GetMetadata()->m_ExifInfo.ThumbnailWidth ; pix++)
 						{
 							// Invert Ordering: TIFF uses RGB ordering, windows uses BGR
 							unsigned char R,G,B;
-							R = m_Metadata.m_ExifInfo.ThumbnailPointer[3*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth + pix)];
-							G = m_Metadata.m_ExifInfo.ThumbnailPointer[3*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth + pix) + 1];
-							B = m_Metadata.m_ExifInfo.ThumbnailPointer[3*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth + pix) + 2];
+							R = GetMetadata()->m_ExifInfo.ThumbnailPointer[3*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth + pix)];
+							G = GetMetadata()->m_ExifInfo.ThumbnailPointer[3*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth + pix) + 1];
+							B = GetMetadata()->m_ExifInfo.ThumbnailPointer[3*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth + pix) + 2];
 							p[3*pix] = B;
 							p[3*pix + 1] = G;
 							p[3*pix + 2] = R;
@@ -3322,7 +3322,7 @@ BOOL CDib::LoadEXIFThumbnail()
 					m_pThumbnailDib = NULL;
 				}
 			}
-			else if (m_Metadata.m_ExifInfo.ThumbnailPhotometricInterpretation == 6) // YCbCr Format
+			else if (GetMetadata()->m_ExifInfo.ThumbnailPhotometricInterpretation == 6) // YCbCr Format
 			{
 				/* Ricoh RDC4200/4300, Fuji DS-7/300 and DX-5/7/9 use this format
 
@@ -3365,62 +3365,62 @@ BOOL CDib::LoadEXIFThumbnail()
 				int R0,G0,B0,R1,G1,B1;
 				BITMAPINFO Bmi;
 				memset(&Bmi, 0, sizeof(BITMAPINFO));
-				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(m_Metadata.m_ExifInfo.ThumbnailWidth * 24);
+				DWORD uiDIBScanLineSize = DWALIGNEDWIDTHBYTES(GetMetadata()->m_ExifInfo.ThumbnailWidth * 24);
 				Bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				Bmi.bmiHeader.biWidth = (DWORD)m_Metadata.m_ExifInfo.ThumbnailWidth;
-				Bmi.bmiHeader.biHeight = (DWORD)m_Metadata.m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biWidth = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailWidth;
+				Bmi.bmiHeader.biHeight = (DWORD)GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biPlanes = 1;
 				Bmi.bmiHeader.biBitCount = 24;
 				Bmi.bmiHeader.biCompression = BI_RGB;    
-				Bmi.bmiHeader.biSizeImage = uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight;
+				Bmi.bmiHeader.biSizeImage = uiDIBScanLineSize * GetMetadata()->m_ExifInfo.ThumbnailHeight;
 				Bmi.bmiHeader.biClrUsed = 0;
 				Bmi.bmiHeader.biClrImportant = 0;
 				m_pThumbnailDib->SetBMI(&Bmi);
 
 				// Pixels
-				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * m_Metadata.m_ExifInfo.ThumbnailHeight);
+				m_pThumbnailDib->m_pBits = (LPBYTE)BIGALLOC(uiDIBScanLineSize * GetMetadata()->m_ExifInfo.ThumbnailHeight);
 				if (m_pThumbnailDib->m_pBits)
 				{
 					// Start Writing To Last Line (TIFF Bitmap is top-down, windows is bottom-up)
-					LPBYTE p = m_pThumbnailDib->m_pBits + (uiDIBScanLineSize * (m_Metadata.m_ExifInfo.ThumbnailHeight - 1));
+					LPBYTE p = m_pThumbnailDib->m_pBits + (uiDIBScanLineSize * (GetMetadata()->m_ExifInfo.ThumbnailHeight - 1));
 					
 					// 2,1 = YCbCr4:2:2
-					if (m_Metadata.m_ExifInfo.ThumbnailYCbCrSubSampling[0] == 2 &&
-						m_Metadata.m_ExifInfo.ThumbnailYCbCrSubSampling[1] == 1)
+					if (GetMetadata()->m_ExifInfo.ThumbnailYCbCrSubSampling[0] == 2 &&
+						GetMetadata()->m_ExifInfo.ThumbnailYCbCrSubSampling[1] == 1)
 					{
-						for (int SrcLine = 0 ; SrcLine < m_Metadata.m_ExifInfo.ThumbnailHeight ; SrcLine++)
+						for (int SrcLine = 0 ; SrcLine < GetMetadata()->m_ExifInfo.ThumbnailHeight ; SrcLine++)
 						{
-							for (int pix = 0 ; pix < m_Metadata.m_ExifInfo.ThumbnailWidth / 2 ; pix++)
+							for (int pix = 0 ; pix < GetMetadata()->m_ExifInfo.ThumbnailWidth / 2 ; pix++)
 							{
 								// Get Y0Y1CbCr
-								Y0 = m_Metadata.m_ExifInfo.ThumbnailPointer[4*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth/2 + pix)];
-								Y1 = m_Metadata.m_ExifInfo.ThumbnailPointer[4*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth/2 + pix) + 1];
-								Cb = m_Metadata.m_ExifInfo.ThumbnailPointer[4*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth/2 + pix) + 2];
-								Cr = m_Metadata.m_ExifInfo.ThumbnailPointer[4*(SrcLine*m_Metadata.m_ExifInfo.ThumbnailWidth/2 + pix) + 3];
+								Y0 = GetMetadata()->m_ExifInfo.ThumbnailPointer[4*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth/2 + pix)];
+								Y1 = GetMetadata()->m_ExifInfo.ThumbnailPointer[4*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth/2 + pix) + 1];
+								Cb = GetMetadata()->m_ExifInfo.ThumbnailPointer[4*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth/2 + pix) + 2];
+								Cr = GetMetadata()->m_ExifInfo.ThumbnailPointer[4*(SrcLine*GetMetadata()->m_ExifInfo.ThumbnailWidth/2 + pix) + 3];
 								
 								// Convert All to The Range: 0..255
-								Y0 = Round((double)(Y0 - m_Metadata.m_ExifInfo.dThumbnailRefBW[0]) *
-									255.0 / (double)(m_Metadata.m_ExifInfo.dThumbnailRefBW[1] - m_Metadata.m_ExifInfo.dThumbnailRefBW[0]));
-								Y1 = Round((double)(Y1 - m_Metadata.m_ExifInfo.dThumbnailRefBW[0]) *
-									255.0 / (double)(m_Metadata.m_ExifInfo.dThumbnailRefBW[1] - m_Metadata.m_ExifInfo.dThumbnailRefBW[0]));
-								Cb = Round((double)(Cb - m_Metadata.m_ExifInfo.dThumbnailRefBW[2])	*
-									255.0 / (double)(m_Metadata.m_ExifInfo.dThumbnailRefBW[3] - m_Metadata.m_ExifInfo.dThumbnailRefBW[2]));
-								Cr = Round((double)(Cr - m_Metadata.m_ExifInfo.dThumbnailRefBW[4])	*
-									255.0 / (double)(m_Metadata.m_ExifInfo.dThumbnailRefBW[5] - m_Metadata.m_ExifInfo.dThumbnailRefBW[4]));
+								Y0 = Round((double)(Y0 - GetMetadata()->m_ExifInfo.dThumbnailRefBW[0]) *
+									255.0 / (double)(GetMetadata()->m_ExifInfo.dThumbnailRefBW[1] - GetMetadata()->m_ExifInfo.dThumbnailRefBW[0]));
+								Y1 = Round((double)(Y1 - GetMetadata()->m_ExifInfo.dThumbnailRefBW[0]) *
+									255.0 / (double)(GetMetadata()->m_ExifInfo.dThumbnailRefBW[1] - GetMetadata()->m_ExifInfo.dThumbnailRefBW[0]));
+								Cb = Round((double)(Cb - GetMetadata()->m_ExifInfo.dThumbnailRefBW[2])	*
+									255.0 / (double)(GetMetadata()->m_ExifInfo.dThumbnailRefBW[3] - GetMetadata()->m_ExifInfo.dThumbnailRefBW[2]));
+								Cr = Round((double)(Cr - GetMetadata()->m_ExifInfo.dThumbnailRefBW[4])	*
+									255.0 / (double)(GetMetadata()->m_ExifInfo.dThumbnailRefBW[5] - GetMetadata()->m_ExifInfo.dThumbnailRefBW[4]));
 								
 								// Convert From YCbCr To RGB
 								R0 = Round(Y0 + Cr);
 								B0 = Round(Y0 + Cb);
 								G0 = Round((Y0 -
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[0]*R0 -
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[2]*B0) /
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[1]);
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[0]*R0 -
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[2]*B0) /
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[1]);
 								R1 = Round(Y1 + Cr);
 								B1 = Round(Y1 + Cb);
 								G1 = Round((Y1 -
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[0]*R1 -
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[2]*B1) /
-										m_Metadata.m_ExifInfo.dThumbnailYCbCrCoeff[1]);			
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[0]*R1 -
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[2]*B1) /
+										GetMetadata()->m_ExifInfo.dThumbnailYCbCrCoeff[1]);			
 
 								// Clip
 								if (B0 < 0) B0 = 0;
@@ -3449,8 +3449,8 @@ BOOL CDib::LoadEXIFThumbnail()
 						res = TRUE;
 					}
 					// 2,2 = YCbCr4:2:0
-					else if (m_Metadata.m_ExifInfo.ThumbnailYCbCrSubSampling[0] == 2 &&
-							m_Metadata.m_ExifInfo.ThumbnailYCbCrSubSampling[1] == 2)
+					else if (GetMetadata()->m_ExifInfo.ThumbnailYCbCrSubSampling[0] == 2 &&
+							GetMetadata()->m_ExifInfo.ThumbnailYCbCrSubSampling[1] == 2)
 					{
 						// TODO
 						//res = TRUE;
@@ -4817,7 +4817,7 @@ BOOL CDib::JPEGWriteEXIFInplace(LPCTSTR lpszPathName)
 	}
 	::CloseHandle(hFile);
 
-	return (m_Metadata.m_ExifInfo.bHasExif);
+	return (GetMetadata()->m_ExifInfo.bHasExif);
 }
 
 BOOL CDib::JPEGWriteEXIFInplace(LPBYTE pJpegData, DWORD dwSize)
@@ -4826,9 +4826,9 @@ BOOL CDib::JPEGWriteEXIFInplace(LPBYTE pJpegData, DWORD dwSize)
 		return FALSE;
 
 	// Parse & Process Exif Data
-	m_Metadata.ParseProcessJPEG(pJpegData, dwSize, true);
+	GetMetadata()->ParseProcessJPEG(pJpegData, dwSize, true);
 
-	return (m_Metadata.m_ExifInfo.bHasExif);
+	return (GetMetadata()->m_ExifInfo.bHasExif);
 }
 
 BOOL CDib::CreatePreviewDibFromJPEG(	LPCTSTR lpszPathName,
