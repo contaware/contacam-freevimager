@@ -163,7 +163,6 @@ CUImagerApp::CUImagerApp()
 	m_bMailAvailable = FALSE;
 	m_bStartMaximized = FALSE;
 	m_nCoresCount = 1;
-	m_nAVCodecThreadsCount = 1;
 	m_sLastOpenedDir = _T("");
 	m_nPdfScanCompressionQuality = DEFAULT_JPEGCOMPRESSION;
 	m_sScanToPdfFileName = _T("");
@@ -615,12 +614,12 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 		// Init for the PostDelayedMessage() Function
 		CPostDelayedMessageThread::Init();
 
-		// Get the CPU Count
+		// Get the Cores Count
 		unsigned int TotAvailLogical	= 0, // Number of available logical CPU in the system
 					 TotAvailCore		= 0, // Number of available cores in the system
 					 PhysicalNum		= 0; // Total number of physical processors in the system
 		::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-		m_nAVCodecThreadsCount = m_nCoresCount = MAX(1, TotAvailCore);
+		m_nCoresCount = MAX(1, TotAvailCore);
 
 		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
 		// variable for the PrintPreview.

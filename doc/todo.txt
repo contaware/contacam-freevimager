@@ -14,6 +14,7 @@ FreeVimager Program
 
 ContaCam Program
 ----------------
+- Use a Logitech C920 to implement H.264 video capture support
 - Save JPEG snapshots once the motion detection is triggered
 - Document the way to have different parameters for the same cam,
   like two different snapshot rates, or ...

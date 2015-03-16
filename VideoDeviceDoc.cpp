@@ -500,7 +500,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 											CalcFrameRate.den,					// Scale
 											m_pDoc->m_nVideoRecKeyframesRate,	// Keyframes Rate				
 											m_pDoc->m_fVideoRecQuality,
-											((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+											((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 					if (m_pDoc->m_bCaptureAudio)
 					{	
 						AVRecMp4.AddAudioStream(m_pDoc->m_CaptureAudioThread.m_pSrcWaveFormat,	// Src Wave Format
@@ -1285,7 +1285,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 															FrameRate.den,						// Scale
 															m_nSnapshotVideoKeyframesRate,		// Keyframes Rate				
 															m_fSnapshotVideoCompressorQuality,
-															((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 								pAVRecMp4->Open();
 							}
 
@@ -1322,7 +1322,7 @@ int CVideoDeviceDoc::CSaveSnapshotVideoThread::Work()
 																FrameRate.den,						// Scale
 																m_nSnapshotVideoKeyframesRate,		// Keyframes Rate				
 																m_fSnapshotVideoCompressorQuality,
-																((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+																((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 								pAVRecThumbMp4->Open();
 							}
 
@@ -2805,7 +2805,7 @@ BOOL CVideoDeviceDoc::SaveJpegFast(CDib* pDib, CMJPEGEncoder* pMJPEGEncoder, con
 	// JPEG encode
 	dwEncodedLen = pMJPEGEncoder->Encode(qscale, // 2: best quality, 31: worst quality
 										&DstBmi, pJ420Buf,
-										((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+										((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 	if (dwEncodedLen == 0U)
 		goto exit;
 
@@ -5406,7 +5406,7 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 									FrameRate.den,					// Scale
 									m_nVideoRecKeyframesRate,		// Keyframes Rate	
 									m_fVideoRecQuality,
-									((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount) < 0)	
+									((CUImagerApp*)::AfxGetApp())->m_nCoresCount) < 0)	
 		return FALSE;
 
 	// Add Audio Stream
@@ -8459,7 +8459,7 @@ __forceinline CDib* CVideoDeviceDoc::AllocMJPGFrame(CDib* pDib, LPBYTE pMJPGData
 		{
 			DWORD dwEncodedLen = m_MJPEGDetEncoder.Encode(	MOVDET_BUFFER_COMPRESSIONQUALITY,
 															pDib->GetBMI(), pDib->GetBits(),
-															((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount);
+															((CUImagerApp*)::AfxGetApp())->m_nCoresCount);
 			if (dwEncodedLen > 0U)
 			{
 				// Contaware introduced this fourcc to distinguish the unofficial jpeg ITU601
