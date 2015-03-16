@@ -414,13 +414,6 @@ public:
 	// Is At least One Video Device Document Open?
 	BOOL AreVideoDeviceDocsOpen();
 
-	// Returns the count of all open Video Device Documents
-	int GetTotalVideoDeviceDocs();
-
-	// Get the total number of Video Device Documents
-	// that have the movement detection enabled
-	int GetTotalVideoDeviceDocsMovementDetecting();
-
 	// Autorun Video Devices
 	BOOL AutorunVideoDevicesDoWait(int nRetryCount);
 	void AutorunVideoDevices(int nRetryCount = 0);
@@ -625,6 +618,9 @@ public:
 	DISCRECORDERARRAY m_DiscRecorders2;
 
 #ifdef VIDEODEVICEDOC
+	// Count of open video device docs with detection enabled
+	volatile int m_nTotalVideoDeviceDocsMovementDetecting;
+
 	// Browser
 	BOOL m_bBrowserAutostart;
 

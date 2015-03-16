@@ -125,12 +125,12 @@ class CMovementDetectionPage;
 #define MOVDET_MAX_FRAMES_IN_LIST			15000		// Default maximum frames per list
 #define MOVDET_SAVE_MIN_FRAMERATE_RATIO		0.3			// Min ratio between calculated (last - first) and m_dEffectiveFrameRate
 #define MOVDET_TIMEOUT						1000U		// Timeout in ms for detection zones
-#define MOVDET_MEM_LOAD_THRESHOLD			25.0		// Above this load the detected frames are saved and freed
-#define MOVDET_MEM_LOAD_CRITICAL			60.0		// Above this load the detected frames are dropped
-#define MOVDET_MEM_MAX_MB					850			// Maximum allocable memory in MB for 32 bits applications
+#define MOVDET_MEM_LOAD_HD_BUF				15.0		// Above this load the detection frames are buffered in HD instead of RAM
+#define MOVDET_MEM_LOAD_PRE_BUF				25.0		// Above this load the oldest pre-buffer frames are dropped
+#define MOVDET_MEM_LOAD_SAVE				35.0		// Above this load the detected frames are saved and freed
+#define MOVDET_MEM_LOAD_CRITICAL			75.0		// Above this load the detected frames are dropped
+#define MOVDET_MEM_MAX_MB					512			// Maximum allocable memory in MB for 32 bits applications
 														// (not 2048 because of fragmentation, stack and heap)
-#define MOVDET_MEM_MIN_MB					400			// Minimum memory in MB
-#define MOVDET_BASE_MEM_USAGE_MB			50			// Base memory usage of a open video device doc (without detection buffer)
 #define MOVDET_ANIMGIF_MAX_FRAMES			60			// Maximum number of frames per animated gif
 #define MOVDET_ANIMGIF_MAX_LENGTH			6000.0		// ms, MOVDET_ANIMGIF_MAX_LENGTH / MOVDET_ANIMGIF_MAX_FRAMES must be >= 100
 #define MOVDET_ANIMGIF_DELAY				500.0		// ms (frame time)
@@ -1097,8 +1097,9 @@ public:
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZones;						// Show & Edit / Hide Movement Detection Zones
 	BOOL m_bShowEditDetectionZonesMinus;				// Add / Remove Movement Detection Zone
-	volatile BOOL m_bDetectingMovement;					// Flag Indicating a Detection
-	volatile BOOL m_bDetectingMinLengthMovement;		// Flag Indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
+	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
+	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
+	volatile BOOL m_bMovDetHDBuffering;					// Flag indicating whether frames are buffered in RAM or on HD
 	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 = Max Sensitivity
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small

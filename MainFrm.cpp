@@ -2159,14 +2159,17 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 		GetStatusBar()->SetPaneText(5, sMEMUsage);
 
 #ifdef VIDEODEVICEDOC
-		// Update m_nAVCodecThreadsCount
-		double dCount = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs();
-		if (dCount < 1.0)
-			dCount = 1.0;
-		int nThreadsCount = Round((double)((CUImagerApp*)::AfxGetApp())->m_nCoresCount / dCount);
-		if (nThreadsCount < 1)
-			nThreadsCount = 1;
-		((CUImagerApp*)::AfxGetApp())->m_nAVCodecThreadsCount = nThreadsCount;
+		// Update the count of open video device docs with detection enabled
+		CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = ((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate();
+		POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
+		int nCountVideoDeviceDocsMovementDetecting = 0;
+		while (posVideoDeviceDoc)
+		{
+			CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
+			if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
+				++nCountVideoDeviceDocsMovementDetecting;
+		}
+		((CUImagerApp*)::AfxGetApp())->m_nTotalVideoDeviceDocsMovementDetecting = nCountVideoDeviceDocsMovementDetecting;
 
 		// Current Time
 		CTime timedate = CTime::GetCurrentTime();

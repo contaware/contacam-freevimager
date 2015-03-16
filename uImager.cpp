@@ -130,6 +130,7 @@ CUImagerApp::CUImagerApp()
 	m_bForceSeparateInstance = FALSE;
 #ifdef VIDEODEVICEDOC
 	m_pVideoDeviceDocTemplate = NULL;
+	m_nTotalVideoDeviceDocsMovementDetecting = 0;
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
@@ -619,7 +620,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					 TotAvailCore		= 0, // Number of available cores in the system
 					 PhysicalNum		= 0; // Total number of physical processors in the system
 		::CPUCount(&TotAvailLogical, &TotAvailCore, &PhysicalNum);
-		m_nAVCodecThreadsCount = m_nCoresCount = TotAvailCore;
+		m_nAVCodecThreadsCount = m_nCoresCount = MAX(1, TotAvailCore);
 
 		// Loads the 6 MRU Files and loads also the m_nNumPreviewPages
 		// variable for the PrintPreview.
@@ -1745,35 +1746,6 @@ BOOL CUImagerApp::AreVideoDeviceDocsOpen()
 	return FALSE;
 }
 
-int CUImagerApp::GetTotalVideoDeviceDocs()
-{
-	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
-	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
-	int nCount = 0;
-	while (posVideoDeviceDoc)
-	{
-		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-		if (pVideoDeviceDoc)
-			++nCount;
-	}
-	return nCount;
-}
-
-int CUImagerApp::GetTotalVideoDeviceDocsMovementDetecting()
-{
-	CUImagerMultiDocTemplate* pVideoDeviceDocTemplate = GetVideoDeviceDocTemplate();
-	POSITION posVideoDeviceDoc = pVideoDeviceDocTemplate->GetFirstDocPosition();
-	int nCount = 0;
-	while (posVideoDeviceDoc)
-	{
-		CVideoDeviceDoc* pVideoDeviceDoc = (CVideoDeviceDoc*)(pVideoDeviceDocTemplate->GetNextDoc(posVideoDeviceDoc));
-		if (pVideoDeviceDoc && pVideoDeviceDoc->m_dwVideoProcessorMode)
-			++nCount;
-			
-	}
-	return nCount;
-}
-
 #endif
 
 void CUImagerApp::SaveOnEndSession()
@@ -2356,7 +2328,7 @@ void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
 		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
 		{
 			// Open Empty Document
-			pDoc = (CVideoDeviceDoc*)((CUImagerApp*)::AfxGetApp())->GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+			pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
 			if (pDoc)
 			{
 				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))

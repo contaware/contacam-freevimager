@@ -650,8 +650,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		::MoveFile(sMP4TempFileName, sMP4FileName);
 		::MoveFile(sGIFTempFileName, sGIFFileName);
 
-		// Free
+		// Free and update lists size
 		m_pDoc->RemoveOldestMovementDetectionList();
+		::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
+		CalcMovementDetectionListsSize();
+		::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
 		// SendMail and/or FTPUpload?
 		// (this function returns FALSE if we have to exit the thread)
@@ -698,7 +701,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		// Save time calculation
 		DWORD dwSaveTimeMs = ::timeGetTime() - dwStartUpTime;
 		DWORD dwFramesTimeMs = dwLastUpTime - dwFirstUpTime;
-		if (dwFramesTimeMs >= 2000U) // Check only if at least 2 sec of frames
+		if (m_pDoc->m_nDetectionLevel == 100)
 		{
 			if (dwFramesTimeMs < dwSaveTimeMs)
 			{
@@ -706,7 +709,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
 							(double)dwMailFTPTimeMs / 1000.0);
 			}
-			else if (m_pDoc->m_nDetectionLevel == 100)
+			else
 			{
 				::LogLine(	_T("%s, realtime saving the detections is ok: SaveTime=%0.1fs < FramesTime=%0.1fs (MailFTP=%0.1fs)"),
 							m_pDoc->GetAssignedDeviceName(), (double)dwSaveTimeMs / 1000.0, (double)dwFramesTimeMs / 1000.0,
@@ -2480,7 +2483,7 @@ end_of_software_detection:
 		}
 
 		// Do we have a movement of at least m_nDetectionMinLengthMilliSeconds?
-		// (if m_nDetectionMinLengthMilliSeconds is 0 then m_nDetectionMinLengthMilliSeconds
+		// (if m_nDetectionMinLengthMilliSeconds is 0 then m_bDetectingMinLengthMovement
 		// is the same as m_bDetectingMovement)
 		if (!m_bDetectingMinLengthMovement &&
 			(m_dwLastDetFrameUpTime - m_dwFirstDetFrameUpTime) >= (DWORD)m_nDetectionMinLengthMilliSeconds)
@@ -2500,30 +2503,25 @@ end_of_software_detection:
 	if (nFramesCount >= MOVDET_MIN_FRAMES_IN_LIST &&
 		((m_dwFrameCountUp % MOVDET_MIN_FRAMES_IN_LIST) == 0))
 	{
-		// Calculate the usable RAM remembering that we are a
-		// 32 bits application and taking into account all open
-		// devices because also non-detecting ones use RAM
-		int nTotalUsableMB = g_nAvailablePhysRamMB;
-		if (nTotalUsableMB > MOVDET_MEM_MAX_MB)
-			nTotalUsableMB = MOVDET_MEM_MAX_MB;
-		nTotalUsableMB -= ((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocs() * MOVDET_BASE_MEM_USAGE_MB;
-		if (nTotalUsableMB < MOVDET_MEM_MIN_MB)	// give a chance if many devices open or
-			nTotalUsableMB = MOVDET_MEM_MIN_MB;	// if we are on a PC with low amount of RAM 
-
 		// This document load in %
-		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalUsableMB;
+		dDocLoad = ((double)(GetTotalMovementDetectionListSize() >> 10) / 10.24) / (double)MOVDET_MEM_MAX_MB;
 
 		// Newest list load in %
-		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)nTotalUsableMB;
+		dNewestListLoad = ((double)(GetNewestMovementDetectionListSize() >> 10) / 10.24) / (double)MOVDET_MEM_MAX_MB;
 
 		// Get the total amount of devices which are movement detecting
-		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->GetTotalVideoDeviceDocsMovementDetecting();
+		dTotalDocsMovementDetecting = (double)((CUImagerApp*)::AfxGetApp())->m_nTotalVideoDeviceDocsMovementDetecting;
+
+		// Update buffering flag
+		m_bMovDetHDBuffering = (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_HD_BUF);
 
 		// Debug
-		TRACE(_T("%s, DET: %0.1f%% load of %dMB\n"), GetAssignedDeviceName(), dDocLoad, nTotalUsableMB);
+		TRACE(_T("%s, DET %s Buf: %0.1f%% load of %dMB\n"), GetAssignedDeviceName(),
+															m_bMovDetHDBuffering ? _T("HD") : _T("RAM"),
+															dDocLoad, MOVDET_MEM_MAX_MB);
 
-		// High threshold reached, frames saving is to slow:
-		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames 
+		// High threshold reached, frames saving is too slow:
+		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
 		// -> notify user with a gif thumb and in log file 
 		if (dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_CRITICAL)
 		{
@@ -2559,7 +2557,7 @@ end_of_software_detection:
 		}
 		// Low load threshold or maximum number of frames reached
 		else if (m_SaveFrameListThread.IsAlive() && !m_SaveFrameListThread.IsWorking()	&&
-				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_THRESHOLD	||
+				(dTotalDocsMovementDetecting * dDocLoad >= MOVDET_MEM_LOAD_SAVE	||
 				(nFramesCount + 1) >= m_nDetectionMaxFrames)) // + 1 because we added another frame after the counting
 			SaveFrameList(FALSE);
 	}
@@ -2570,13 +2568,10 @@ end_of_software_detection:
 		
 		// If pre-buffer is set to big:
 		// -> drop oldest 3 * MOVDET_MIN_FRAMES_IN_LIST / 2 frames
-		// -> notify user in log file
-		if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_THRESHOLD)
+		if (dTotalDocsMovementDetecting * dNewestListLoad >= MOVDET_MEM_LOAD_PRE_BUF)
 		{
 			DWORD dwFirstUpTime, dwLastUpTime;
 			ShrinkNewestFrameListBy(3 * MOVDET_MIN_FRAMES_IN_LIST / 2, dwFirstUpTime, dwLastUpTime);
-			::LogLine(	_T("%s, cannot store %ds of det pre-buffer -> lower that!"),
-						GetAssignedDeviceName(), m_nMilliSecondsRecBeforeMovementBegin / 1000);
 		}
 	}
 	else
@@ -3846,6 +3841,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bShowEditDetectionZonesMinus = FALSE;
 	m_bDetectingMovement = FALSE;
 	m_bDetectingMinLengthMovement = FALSE;
+	m_bMovDetHDBuffering = FALSE;
 	m_sDetectionTriggerFileName = _T("");
 	m_DetectionTriggerLastWriteTime.dwLowDateTime = 0;
 	m_DetectionTriggerLastWriteTime.dwHighDateTime = 0;
@@ -8511,10 +8507,13 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestList(CDib* pDib, LPBYTE p
 				CDib* pNewDib = AllocMJPGFrame(pDib, pMJPGData, dwMJPGSize);
 				if (pNewDib)
 				{
-					CString sTempFileName;
-					sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
-					sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
-					pNewDib->BitsToRawFile(sTempFileName); // save bits to file
+					if (m_bMovDetHDBuffering)
+					{
+						CString sTempFileName;
+						sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
+						sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
+						pNewDib->BitsToRawFile(sTempFileName);
+					}
 					pTail->AddTail(pNewDib);
 				}
 			}
@@ -8548,6 +8547,13 @@ __forceinline void CVideoDeviceDoc::AddNewFrameToNewestListAndShrink(CDib* pDib,
 				if (pNewDib)
 				{
 					// Add the new frame
+					if (m_bMovDetHDBuffering)
+					{
+						CString sTempFileName;
+						sTempFileName.Format(_T("Doc08%xFrame%u.raw"), this, m_dwFrameCountUp);
+						sTempFileName = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempFileName;
+						pNewDib->BitsToRawFile(sTempFileName);
+					}
 					pTail->AddTail(pNewDib);
 
 					// Shrink to a size of m_nMilliSecondsRecBeforeMovementBegin
