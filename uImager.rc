@@ -146,19 +146,12 @@ END
 
 IDR_MAINFRAME_VIDEODEVICEDOC TOOLBAR 16, 15
 BEGIN
-    BUTTON      ID_FILE_OPEN
-    BUTTON      ID_FILE_SAVE
-    BUTTON      ID_FILE_SAVE_AS
-    SEPARATOR
-    BUTTON      ID_FILE_PRINT_PREVIEW
-    SEPARATOR
     BUTTON      ID_EDIT_DELETE
     SEPARATOR
     BUTTON      ID_VIEW_WEB
     BUTTON      ID_VIEW_FILES
     SEPARATOR
     BUTTON      ID_FILE_SETTINGS
-    BUTTON      ID_SETTINGS_VIEW_LOGFILE
     SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
@@ -173,7 +166,7 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "New...",                      ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
         MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM SEPARATOR
@@ -442,7 +435,7 @@ IDR_VIDEODEVICE MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "New...",                      ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
         MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
@@ -525,7 +518,7 @@ IDR_PICTURE MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "New...",                      ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
         MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
@@ -814,7 +807,7 @@ IDR_AUDIOMCI MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "New...",                      ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
         MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
@@ -1107,7 +1100,7 @@ IDR_CDAUDIO MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "New...\tCtrl+N",              ID_FILE_NEW
+        MENUITEM "New...",                      ID_FILE_NEW
         MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
         MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
         MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
@@ -1222,40 +1215,39 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_EDIT_GRAYSCALE,      VIRTKEY, CONTROL, NOINVERT
-    "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
-    "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
-    "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
-    "P",            ID_FILE_PRINT_PREVIEW,  VIRTKEY, CONTROL, NOINVERT
-    "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
-    VK_BACK,        ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
-    VK_DOWN,        ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
-    VK_END,         ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
-    VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
-    VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
-    VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
-    VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
-    VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
-    VK_HOME,        ID_VIEW_ALL_FIRST_PICTURE, VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_EDIT_CROP,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_EDIT_GRAYSCALE,      VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_EDIT_HLS,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
+    "R",            ID_EDIT_RESIZE,         VIRTKEY, CONTROL, NOINVERT
+    VK_DOWN,        ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
+    VK_UP,          ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
     VK_LEFT,        ID_EDIT_ROTATE_90CCW,   VIRTKEY, CONTROL, NOINVERT
     VK_RIGHT,       ID_EDIT_ROTATE_90CW,    VIRTKEY, CONTROL, NOINVERT
-    VK_SPACE,       ID_VIEW_ALL_NEXT_PICTURE, VIRTKEY, CONTROL, NOINVERT
-    VK_UP,          ID_EDIT_ROTATE_180,     VIRTKEY, CONTROL, NOINVERT
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_EDIT_REDO,           VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_EDIT_ROTATE_FLIP,    VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_EDIT_SCREENSHOT,     VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_FILE_COPY_TO,        VIRTKEY, NOINVERT
+    "I",            ID_FILE_INFO,           VIRTKEY, CONTROL, NOINVERT
+    VK_F7,          ID_FILE_MOVE_TO,        VIRTKEY, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT_PREVIEW,  VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_FILE_RELOAD,         VIRTKEY, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_HOME,        ID_VIEW_ALL_FIRST_PICTURE, VIRTKEY, CONTROL, NOINVERT
+    VK_END,         ID_VIEW_ALL_LAST_PICTURE, VIRTKEY, CONTROL, NOINVERT
+    VK_SPACE,       ID_VIEW_ALL_NEXT_PICTURE, VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_VIEW_ALL_PREVIOUS_PICTURE, VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         ID_VIEW_FULLSCREEN,     VIRTKEY, NOINVERT
+    "U",            ID_VIEW_LAYERED_DLG,    VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -1309,31 +1301,31 @@ BEGIN
     PUSHBUTTON      "Video Input Select",IDC_VIDEO_INPUT,98,136,87,19
     CONTROL         "Enable",IDC_REC_AUDIO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,38,10
     PUSHBUTTON      "Source",IDC_AUDIO_INPUT,13,202,82,19
-    PUSHBUTTON      "Win Mixer",IDC_AUDIO_MIXER,98,202,87,19
+    PUSHBUTTON      "Mixer",IDC_AUDIO_MIXER,98,202,87,19
     COMBOBOX        IDC_REF_FONTSIZE,157,235,33,79,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Autostart Camera",IDC_CHECK_AUTORUN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,252,73,10
     CONTROL         "Slider1",IDC_VIDEO_COMPRESSION_QUALITY,
-                    "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,269,21,102,18
+                    "msctls_trackbar32",TBS_TOP | TBS_NOTICKS | WS_TABSTOP,269,21,96,18
     CONTROL         "Fast Encode (bigger files for the same quality)",IDC_CHECK_FASTENCODE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,46,163,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,46,163,10
     EDITTEXT        IDC_EDIT_KEYFRAMES_RATE,274,65,22,12,ES_NUMBER
     CONTROL         "Start a new file each",IDC_CHECK_TIME_SEGMENTATION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,113,81,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,113,81,10
     COMBOBOX        IDC_TIME_SEGMENTATION,310,112,94,83,CBS_DROPDOWNLIST | WS_TABSTOP
-    CONTROL         "Open file when done",IDC_CHECK_AUTOOPEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,131,82,10
+    CONTROL         "Open file when done",IDC_CHECK_AUTOOPEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,131,82,10
     CONTROL         "Once Scheduler (camera must be running)",IDC_CHECK_SCHEDULER_ONCE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,161,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,161,150,10
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,175,58,15
     CONTROL         "DateTimePicker2",IDC_DATE_ONCE_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,175,112,15
     CONTROL         "DateTimePicker1",IDC_TIME_ONCE_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,193,58,15
     CONTROL         "DateTimePicker2",IDC_DATE_ONCE_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | WS_TABSTOP,292,193,112,15
     CONTROL         "Daily Scheduler (camera must be running)",IDC_CHECK_SCHEDULER_DAILY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,204,225,149,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,225,149,10
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_START,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,233,239,59,15
     CONTROL         "DateTimePicker1",IDC_TIME_DAILY_STOP,"SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | WS_TABSTOP | 0x8,344,239,59,15
-    LTEXT           "Quality",IDC_LABEL_QUALITY,204,25,63,8
-    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,374,25,33,11
-    LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,204,67,63,8
+    LTEXT           "Quality",IDC_LABEL_QUALITY,203,24,63,8
+    LTEXT           "qual.",IDC_VIDEO_COMPRESSION_QUALITY_INFO,367,24,40,11
+    LTEXT           "Keyframe each",IDC_LABEL_KEYFRAMES_RATE0,203,67,63,8
     LTEXT           "frames",IDC_LABEL_KEYFRAMES_RATE1,303,67,27,8
     LTEXT           "Start",IDC_STATIC2163,205,178,25,8
     LTEXT           "Stop",IDC_STATIC2164,205,196,25,8
@@ -1726,10 +1718,10 @@ BEGIN
     EDITTEXT        IDC_EDIT_EXE,266,139,142,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT_PARAMS,266,155,142,12,ES_AUTOHSCROLL
     CONTROL         "Hide window of executed command",IDC_CHECK_HIDE_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,232,177,129,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,231,175,129,10
     CONTROL         "Only one instance of executed command",IDC_CHECK_WAIT_EXEC_COMMAND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,232,192,145,10
-    EDITTEXT        IDC_EDIT_EXEC_HELP,232,212,176,42,ES_MULTILINE | ES_READONLY | NOT WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,231,190,145,10
+    EDITTEXT        IDC_EDIT_EXEC_HELP,231,206,176,50,ES_MULTILINE | ES_READONLY | NOT WS_TABSTOP
     LTEXT           "sec of frames before detection begin",IDC_STATIC2283,65,34,132,8
     LTEXT           "sec of frames after detection end",IDC_STATIC2284,65,49,137,8
     LTEXT           "Detection\nSensitivity",IDC_STATIC2285,13,67,35,17
@@ -1739,8 +1731,8 @@ BEGIN
     LTEXT           "From",IDC_STATIC2289,13,192,16,8
     LTEXT           "To",IDC_STATIC2290,120,192,10,8
     GROUPBOX        "Detection Scheduling",IDC_STATIC2291,7,160,203,64
-    LTEXT           "Cmd",IDC_STATIC2299,232,142,15,8
-    LTEXT           "Params",IDC_STATIC2300,232,157,24,8
+    LTEXT           "Cmd",IDC_STATIC2299,231,142,15,8
+    LTEXT           "Params",IDC_STATIC2300,231,157,24,8
     RTEXT           "Warning: Unsupported Video or Zones Size for Movement Detection",IDC_WARNING,154,4,256,11,SS_CENTERIMAGE
     LTEXT           "Store",IDC_STATIC,13,34,18,8
     LTEXT           "Store",IDC_STATIC,13,49,18,8
@@ -2868,7 +2860,7 @@ BEGIN
     LTEXT           "Area Name",IDC_STATIC,154,189,38,8
     GROUPBOX        "Network Cameras",IDC_STATIC,5,69,342,35
     LTEXT           "Autostart delay",IDC_STATIC,11,85,53,8
-    LTEXT           "seconds",IDC_STATIC,100,85,27,8
+    LTEXT           "sec",IDC_STATIC,100,85,12,8
     EDITTEXT        IDC_EDIT_DOCROOT,11,127,309,13,ES_AUTOHSCROLL | ES_READONLY
     GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,112,342,36
 END
@@ -3028,7 +3020,7 @@ BEGIN
         VERTGUIDE, 142
         VERTGUIDE, 185
         VERTGUIDE, 196
-        VERTGUIDE, 204
+        VERTGUIDE, 203
         VERTGUIDE, 233
         TOPMARGIN, 2
         BOTTOMMARGIN, 266
@@ -3181,7 +3173,7 @@ BEGIN
         VERTGUIDE, 13
         VERTGUIDE, 22
         VERTGUIDE, 220
-        VERTGUIDE, 232
+        VERTGUIDE, 231
         VERTGUIDE, 266
         VERTGUIDE, 298
         VERTGUIDE, 408
@@ -4761,7 +4753,7 @@ BEGIN
     IDS_STRING1715          "Flash:\tno\r\n"
     IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
     IDS_STRING1717          "The latest version for your os may be downloaded from:"
-    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tmplay32.exe (or path to %s)\r\nParams\t/play /close ""audio file path"""
+    IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close ""audio file path"""
     IDS_STRING1720          "Starting Camera..."
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"

@@ -214,6 +214,7 @@ protected:
 	void FullScreenModeOff();
 	void ChangeCoordinatesUnit();
 #ifdef VIDEODEVICEDOC
+	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
 	void PopulateHelpMenu(CMenu* pPopupMenu);

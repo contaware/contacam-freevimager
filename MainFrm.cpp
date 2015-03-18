@@ -1739,6 +1739,9 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CPictureDoc*)pDoc)->m_nWindowsPos = 6;
 			((CPictureDoc*)pDoc)->m_nHelpMenuPos = 7;
 #ifndef VIDEODEVICEDOC
+			// In maximized state the first position is the system icon,
+			// MDIMaximize() is always called after InitMenuPositions()
+			// so that the Capture menu position is correct:
 			if (nCount == 8) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CPictureDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CPictureDoc*)pDoc)->m_nCaptureMenuPos = -2;
@@ -1769,6 +1772,9 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CCDAudioDoc*)pDoc)->m_nWindowsPos = 4;
 			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos = 5;
 #ifndef VIDEODEVICEDOC
+			// In maximized state the first position is the system icon,
+			// MDIMaximize() is always called after InitMenuPositions()
+			// so that the Capture menu position is correct:
 			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos = -2;
@@ -1786,6 +1792,9 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CAudioMCIDoc*)pDoc)->m_nWindowsPos = 4;
 			((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos = 5;
 #ifndef VIDEODEVICEDOC
+			// In maximized state the first position is the system icon,
+			// MDIMaximize() is always called after InitMenuPositions()
+			// so that the Capture menu position is correct:
 			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
 				pMenu->DeleteMenu(((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
 			((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos = -2;
@@ -1840,6 +1849,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					if (idx == ((CUImagerDoc*)pDoc)->m_nHelpMenuPos)
 						PopulateHelpMenu(pPopupMenu);
 #ifdef VIDEODEVICEDOC
+					else if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
+						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CUImagerDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 #endif
@@ -1849,6 +1860,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					if (idx == ((CCDAudioDoc*)pDoc)->m_nHelpMenuPos)
 						PopulateHelpMenu(pPopupMenu);
 #ifdef VIDEODEVICEDOC
+					else if (idx == ((CCDAudioDoc*)pDoc)->m_nFileMenuPos)
+						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 #endif
@@ -1858,6 +1871,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					if (idx == ((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos)
 						PopulateHelpMenu(pPopupMenu);
 #ifdef VIDEODEVICEDOC
+					else if (idx == ((CAudioMCIDoc*)pDoc)->m_nFileMenuPos)
+						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 #endif
@@ -1875,6 +1890,8 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 			if (idx == m_nHelpMenuPos)
 				PopulateHelpMenu(pPopupMenu);
 #ifdef VIDEODEVICEDOC
+			else if (idx == m_nFileMenuPos)
+				CleanupFileMenu(pPopupMenu);
 			else if (idx == m_nCaptureMenuPos)
 				PopulateCaptureMenu(pPopupMenu);
 #endif
@@ -1883,6 +1900,45 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 }
 
 #ifdef VIDEODEVICEDOC
+void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
+{
+	int nPos = 0;
+	while (nPos < pPopupMenu->GetMenuItemCount())
+	{
+		// Item IDs, GetMenuItemID() returns:
+		// -1: pop-up menu or not existing, 0: separator, > 0: ID
+		int nIDPrev = -1;
+		if ((nPos - 1) >= 0)
+			nIDPrev = (int)pPopupMenu->GetMenuItemID(nPos - 1);
+		int nID = (int)pPopupMenu->GetMenuItemID(nPos);
+
+		// Leave item?
+		if ((nID == 0 && nIDPrev != 0)								||	// keep separator if not double
+			nID == ID_FILE_OPEN										||
+			nID == ID_FILE_CLOSE									||
+			nID == ID_FILE_RELOAD									||
+			nID == ID_FILE_SAVE										||
+			nID == ID_FILE_SAVE_AS									||
+			nID == ID_FILE_MOVE_TO									||
+			nID == ID_FILE_COPY_TO									||
+			nID == ID_FILE_INFO										||
+			nID == ID_FILE_PRINT_PREVIEW							||
+			(nID >= ID_FILE_MRU_FIRST && nID <= ID_FILE_MRU_LAST)	||
+			nID == ID_APP_EXIT)
+			nPos++;
+		else
+			pPopupMenu->DeleteMenu(nPos, MF_BYPOSITION);
+	}
+
+	// Cleanup beginning separator
+	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(0) == 0)
+		pPopupMenu->DeleteMenu(0, MF_BYPOSITION);
+
+	// Cleanup ending separator
+	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(pPopupMenu->GetMenuItemCount() - 1) == 0)
+		pPopupMenu->DeleteMenu(pPopupMenu->GetMenuItemCount() - 1, MF_BYPOSITION);
+}
+
 void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
 {
 	// Enumerate DirectShow Video Devices
