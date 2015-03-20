@@ -272,7 +272,7 @@ void COsdDlg::OnTimer(UINT nIDEvent)
 {
 	POINT ptCursor;
 	CRect rcDlg;
-	::GetCursorPos(&ptCursor);
+	::GetSafeCursorPos(&ptCursor);
 	GetWindowRect(&rcDlg);
 	
 	if (::IsWindow(m_pDoc->GetView()->GetSafeHwnd()))
@@ -849,7 +849,7 @@ void COsdDlg::ActivateDrag()
 	
 	// Get Current Cursor Position
 	CPoint ptGlobPos;
-	::GetCursorPos(&ptGlobPos);
+	::GetSafeCursorPos(&ptGlobPos);
 	m_nOldMouseX = ptGlobPos.x;
 	m_nOldMouseY = ptGlobPos.y;
 
@@ -895,7 +895,7 @@ void COsdDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 		// Get coordinates of the mouse
 		CPoint ptGlobPos;
-		if (!::GetCursorPos(&ptGlobPos))
+		if (!::GetSafeCursorPos(&ptGlobPos))
 			return;
 			
 		// Calculate the difference between old 

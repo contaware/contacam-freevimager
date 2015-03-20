@@ -2955,6 +2955,25 @@ BOOL InStringArray(const CString& s, const CStringArray& arr)
 	return FALSE;
 }
 
+BOOL GetSafeCursorPos(LPPOINT lpPoint)
+{
+	if (lpPoint)
+	{
+		CURSORINFO ci = {0};
+		ci.cbSize = sizeof(ci);
+		if (GetCursorInfo(&ci))
+		{
+			lpPoint->x = ci.ptScreenPos.x;
+			lpPoint->y = ci.ptScreenPos.y;
+			return TRUE;
+		}
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
+}
+
 BOOL IntersectsValidMonitor(LPCRECT lpRect)
 {
 	return (MonitorFromRect(lpRect, MONITOR_DEFAULTTONULL) != NULL ? TRUE : FALSE);

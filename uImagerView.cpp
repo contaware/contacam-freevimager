@@ -196,7 +196,7 @@ BOOL CUImagerView::IsYScroll()
 void CUImagerView::UpdateCursor()
 {
 	CPoint pos;
-	::GetCursorPos(&pos);
+	::GetSafeCursorPos(&pos);
 	if (CWnd::WindowFromPoint(pos) == this)
 	{
 		ScreenToClient(&pos);

@@ -329,7 +329,7 @@ LONG CMainFrame::OnTrayNotification(WPARAM uID, LPARAM lEvent)
 		    // (Microsoft calls it a feature) in Windows 95 that requires calling
 		    // SetForegroundWindow. To find out more, search for Q135788 in MSDN.
 		    CPoint mouse;
-			::GetCursorPos(&mouse);
+			::GetSafeCursorPos(&mouse);
 		    ::SetForegroundWindow(m_hWnd);	
 		    ::TrackPopupMenu(pSubMenu->m_hMenu, 0, mouse.x, mouse.y, 0,
 			    m_hWnd, NULL);

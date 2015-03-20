@@ -172,7 +172,7 @@ BOOL CStatusBarACT::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
   if (nHitTest == HTCLIENT)
   {
     CPoint pt;
-    GetCursorPos(&pt);
+    GetSafeCursorPos(&pt);
     ScreenToClient(&pt);
     int nIndex = HitTest(pt);
     if (nIndex != -1)

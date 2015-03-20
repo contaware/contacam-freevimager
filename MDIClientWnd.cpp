@@ -229,7 +229,7 @@ BOOL CMDIClientWnd::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	else
 	{
 		CPoint pt;
-		::GetCursorPos(&pt);
+		::GetSafeCursorPos(&pt);
 		ScreenToClient(&pt); // Client coordinates of mouse position
 		if (nHitTest == HTCLIENT && pWnd->GetSafeHwnd() == GetSafeHwnd() &&
 			(m_rcLinkComputer.PtInRect(pt) || m_rcLinkLocalhost.PtInRect(pt)))

@@ -428,6 +428,11 @@ extern int __cdecl CompareNatural(CString * pstr1, CString * pstr2);
 // Is the given string in the supplied array (case insensitive)?
 extern BOOL InStringArray(const CString& s, const CStringArray& arr);
 
+// On some systems GetCursorPos() fails for addresses > 2GB,
+// better to use GetCursorInfo() which is called by this wrapper
+// (this bug appears to be fixed in Windows 7 and higher)
+extern BOOL GetSafeCursorPos(LPPOINT lpPoint);
+
 // Does the given rectangle intersect a valid monitor?
 extern BOOL IntersectsValidMonitor(LPCRECT lpRect);
 

@@ -264,7 +264,7 @@ CImageList* CDragDropListCtrl::CreateDragImageEx(LPPOINT lpPoint)
 	if (lpPoint)
 	{
 		CPoint ptCursor;
-		::GetCursorPos(&ptCursor);
+		::GetSafeCursorPos(&ptCursor);
 		ScreenToClient(&ptCursor);
 		lpPoint->x = ptCursor.x - rectComplete.left;
 		lpPoint->y = ptCursor.y - rectComplete.top;

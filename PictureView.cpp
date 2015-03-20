@@ -1960,7 +1960,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_bCrop && !m_bCropMouseCaptured)
 			{
 				CPoint point;
-				::GetCursorPos(&point);
+				::GetSafeCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
@@ -2120,7 +2120,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_bCrop)
 			{
 				CPoint point;
-				::GetCursorPos(&point);
+				::GetSafeCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
@@ -2154,7 +2154,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_bCrop)
 			{
 				CPoint point;
-				::GetCursorPos(&point);
+				::GetSafeCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
@@ -2194,7 +2194,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_bCrop)
 			{
 				CPoint point;
-				::GetCursorPos(&point);
+				::GetSafeCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
@@ -2228,7 +2228,7 @@ void CPictureView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			if (pDoc->m_bCrop)
 			{
 				CPoint point;
-				::GetCursorPos(&point);
+				::GetSafeCursorPos(&point);
 				ScreenToClient(&point);
 				point += GetScrollPosition();
 				CPoint center(m_CropZoomRect.CenterPoint());
@@ -4019,7 +4019,7 @@ BOOL CPictureView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 	ASSERT_VALID(pDoc);
 
 	CPoint point;
-	::GetCursorPos(&point);
+	::GetSafeCursorPos(&point);
 	ScreenToClient(&point); // Client coordinates of mouse position
 	CRect rcClient;
 	GetClientRect(&rcClient);

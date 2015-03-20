@@ -104,7 +104,7 @@ CPictureDoc* CPicturePrintPreviewView::GetDocument() // non-debug version is inl
 BOOL CPicturePrintPreviewView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {
 	CPoint point;
-	::GetCursorPos(&point);
+	::GetSafeCursorPos(&point);
 	ScreenToClient(&point); // Client coordinates of mouse position
 	CRect rcClient;
 	GetClientRect(&rcClient);
@@ -630,7 +630,7 @@ void CPicturePrintPreviewView::OnPreviewPages()
 		point = CPoint(rect.left, rect.bottom);
 	}
 	else
-		::GetCursorPos(&point); // failed to get window, use the mouse position
+		::GetSafeCursorPos(&point); // failed to get window, use the mouse position
 	CMenu menu;
 	CMenu* pSub;
 

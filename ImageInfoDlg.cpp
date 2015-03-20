@@ -493,7 +493,7 @@ void CImageInfoDlg::OnTimer(UINT nIDEvent)
 	{
 		POINT ptCursor;
 		CRect rcDlg, rcView, rcIntersect;
-		::GetCursorPos(&ptCursor);
+		::GetSafeCursorPos(&ptCursor);
 		GetWindowRect(&rcDlg);
 		if (::IsWindow(m_pDoc->GetView()->GetSafeHwnd()))
 		{
