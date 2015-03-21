@@ -1,0 +1,63 @@
+Tell the 32-bit OS to increase the amount user-mode memory from 2GB to 3GB
+--------------------------------------------------------------------------
+
+- Not necessary for 64-bit OS
+- On Windows XP or 2003 backup the boot.ini file and then put the /3GB switch in it
+- For Vista run the following from the "Visual Studio Command Prompt":
+  BCDEDIT /Set IncreaseUserVa 3072
+
+
+Considerations to make sure that the code can handle addresses larger than 2GB
+------------------------------------------------------------------------------
+
+- Check all pointer subtractions and verify the result is stored
+  in a type which can contain the possible difference, or replace
+  them with comparisons or other constructs
+- Make sure you are not assuming pointers have Bit31 zero, do not attempt 
+  to use Bit31 for something else 
+- Some dll's will be loaded just under the 2GB boundary. In this case,
+  no consecutive memory can be allocated with VirtualAlloc()
+- Use GlobalMemoryStatusEx() to retrieve memory sizes
+- Replace all GetCursorPos() calls with GetCursorInfo() as on some systems
+  it fails for addresses > 2GB
+  https://support.microsoft.com/en-us/kb/979288
+  https://msdn.microsoft.com/en-us/library/ms648390%28VS.85%29.aspx
+- To force allocations to allocate from higher addresses before lower 
+  addresses, specify MEM_TOP_DOWN when calling VirtualAlloc or set the 
+  following registry value to REG_DWORD 0x100000 and reboot: 
+  HKLM\System\CurrentControlSet\Control\Session Manager\Memory Management\AllocationPreference
+
+
+Linker option in the Visual Studio
+----------------------------------
+
+- Open the project's Property Pages dialog box
+- Click the Linker folder
+- Click the System property page
+- Modify the Enable Large Addresses property
+
+
+Enable LARGEADDRESSAWARE for an application
+-------------------------------------------
+
+Open the "Visual Studio Command Prompt" console from the start 
+menu, and CD into prog.exe's dir:
+editbin /LARGEADDRESSAWARE prog.exe
+
+disable it:
+editbin /LARGEADDRESSAWARE:NO prog.exe
+
+
+Verify if LARGEADDRESSAWARE is in effect
+----------------------------------------
+
+Open the "Visual Studio Command Prompt" console from the start 
+menu, and CD into prog.exe's dir:
+dumpbin /headers prog.exe | more
+
+
+References
+----------
+
+http://blogs.msdn.com/b/oldnewthing/archive/2004/08/12/213468.aspx
+http://blogs.msdn.com/b/oldnewthing/archive/2004/08/22/218527.aspx
