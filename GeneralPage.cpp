@@ -65,7 +65,6 @@ void CGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_LIVE_DEINTERLACE, m_bDeinterlace);
 	DDX_Check(pDX, IDC_CHECK_LIVE_ROTATE180, m_bRotate180);
 	DDX_Check(pDX, IDC_CHECK_AUTOOPEN, m_bRecAutoOpen);
-	DDX_Check(pDX, IDC_CHECK_FASTENCODE, m_bFastEncode);
 	//}}AFX_DATA_MAP
 }
 
@@ -92,7 +91,6 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_AUTOOPEN, OnCheckAutoopen)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
-	ON_BN_CLICKED(IDC_CHECK_FASTENCODE, OnCheckFastEncode)
 	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -176,7 +174,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_bRecTimeSegmentation = FALSE;
 	m_nTimeSegmentationIndex = 0;
 	m_bRecAutoOpen = TRUE;
-	m_bFastEncode = FALSE;
 
 	// Frame Rate Change Flag
 	m_bDoChangeFrameRate = FALSE;
@@ -301,9 +298,6 @@ BOOL CGeneralPage::OnInitDialog()
 	m_VideoCompressionFcc.Add((DWORD)FCC('H264')); 
 	m_VideoCompressionFastEncodeAndKeyframesRateSupport.Add((DWORD)1);
 	m_VideoCompressionQualitySupport.Add((DWORD)1);
-
-	// Fast Encode
-	m_bFastEncode = m_pDoc->m_bVideoRecFastEncode;
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
@@ -718,12 +712,6 @@ void CGeneralPage::OnCheckAutorun()
 		CVideoDeviceDoc::AutorunAddDevice(m_pDoc->GetDevicePathName());
 	else
 		CVideoDeviceDoc::AutorunRemoveDevice(m_pDoc->GetDevicePathName());
-}
-
-void CGeneralPage::OnCheckFastEncode() 
-{
-	UpdateData(TRUE);
-	m_pDoc->m_bVideoRecFastEncode = m_bFastEncode;
 }
 
 void CGeneralPage::OnAudioInput() 

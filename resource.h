@@ -2040,7 +2040,6 @@
 #define IDS_STRING1654                  1654
 #define IDC_LABEL_KEYFRAMES_RATE0       1655
 #define IDS_STRING1656                  1656
-#define IDC_CHECK_FASTENCODE            1656
 #define IDS_STRING1657                  1657
 #define IDC_LABEL_KEYFRAMES_RATE1       1658
 #define IDS_STRING1658                  1658

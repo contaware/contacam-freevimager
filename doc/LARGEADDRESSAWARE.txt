@@ -2,11 +2,14 @@ Tell the 32-bit OS to increase the amount user-mode memory from 2GB to 3GB
 --------------------------------------------------------------------------
 
 - Not necessary for 64-bit OS
-- On Windows XP or 2003 backup the boot.ini file and then put the /3GB switch in it
-- For Vista run the following from the "Visual Studio Command Prompt":
-  BCDEDIT /Set IncreaseUserVa 3072
+- On Windows XP or 2003 put the /3GB switch into boot.ini and reboot
+- For Vista or higher run the following from the Command Prompt
+  as Administrator and reboot:
+  bcdedit /set IncreaseUserVa 3072
+  to disable:
+  bcdedit /deletevalue IncreaseUserVa
 
-
+  
 Considerations to make sure that the code can handle addresses larger than 2GB
 ------------------------------------------------------------------------------
 

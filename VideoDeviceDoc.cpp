@@ -413,10 +413,11 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 		CString sJPGDir(sTempDetectionDir);
 		CStringArray sJPGFileNames;
 
-		// Create the Mp4 File
+		// Init the Mp4 File
+		// Note: fast encode is ~30% faster but produces 2.5x bigger files -> do not use it!
 		CAVRec AVRecMp4;
 		if (bMakeMp4)
-			AVRecMp4.Init(sMP4TempFileName, m_pDoc->m_bVideoRecFastEncode ? true : false);
+			AVRecMp4.Init(sMP4TempFileName);
 
 		// Store the Frames
 		POSITION nextpos = m_pFrameList->GetHeadPosition();
@@ -3829,7 +3830,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_bRecFirstFrame = FALSE;
 	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
-	m_bVideoRecFastEncode = FALSE;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 
@@ -4586,7 +4586,6 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
-	m_bVideoRecFastEncode = (BOOL) pApp->GetProfileInt(sSection, _T("VideoRecFastEncode"), FALSE);
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
 	m_bDetectionSunday = (BOOL) pApp->GetProfileInt(sSection, _T("DetectionSunday"), TRUE);
@@ -4760,7 +4759,6 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
-	pApp->WriteProfileInt(sSection, _T("VideoRecFastEncode"), (int)m_bVideoRecFastEncode);
 	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);
 	pApp->WriteProfileInt(sSection, _T("DetectionSunday"), (int)m_bDetectionSunday);
@@ -5380,8 +5378,9 @@ BOOL CVideoDeviceDoc::MakeAVRec(CAVRec** ppAVRec)
 	if (!(*ppAVRec))
 		return FALSE;
 
-	// Set File Name
-	if (!(*ppAVRec)->Init(sFileName, m_bVideoRecFastEncode ? true : false))
+	// Init the Mp4 File
+	// Note: fast encode is ~30% faster but produces 2.5x bigger files -> do not use it!
+	if (!(*ppAVRec)->Init(sFileName))
 		return FALSE;
 
 	// Add Video Stream

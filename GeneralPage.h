@@ -51,7 +51,6 @@ public:
 	BOOL	m_bRecAutoOpen;
 	BOOL	m_bDeinterlace;
 	BOOL	m_bRotate180;
-	BOOL	m_bFastEncode;
 	//}}AFX_DATA
 
 
@@ -91,7 +90,6 @@ protected:
 	afx_msg void OnCheckLiveDeinterlace();
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
-	afx_msg void OnCheckFastEncode();
 	afx_msg void OnSelchangeRefFontsize();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

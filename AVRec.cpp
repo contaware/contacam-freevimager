@@ -277,7 +277,14 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 			av_opt_set(pCodecCtx->priv_data, "profile", "baseline", AV_OPT_SEARCH_CHILDREN);
 
 		// Encoding speed
-		// "placebo", "veryslow", "slower", "slow", "medium", "fast", "faster", "veryfast", "superfast", "ultrafast"
+		// "placebo", "veryslow", "slower", "slow", "medium",
+		// "fast", "faster", "veryfast", "superfast", "ultrafast"
+		//
+		// Notes
+		// - faster presets create bigger files for the same quality
+		// - slower presets use more RAM because of the increasing complexity
+		//   of the used algorithms, for example a Full HD video encoding uses
+		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
 		if (m_bFastEncode)
 			av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
 		else
