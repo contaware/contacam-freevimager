@@ -3423,13 +3423,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				DWORD dwMsSinceLastProcessFrame = dwCurrentUpTime - (DWORD)m_pDoc->m_lCurrentInitUpTime;
 				if (dwMsSinceLastProcessFrame > WATCHDOG_THRESHOLD	&&
 					dwMsSinceLastProcessFrame > 7U * dwFrameTime)
-				{
 					m_pDoc->m_bWatchDogAlarm = TRUE;
-					::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
-									WM_THREADSAFE_UPDATEWINDOWSIZES,
-									(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
-									(LPARAM)0);
-				}
 				else
 				{
 					m_pDoc->m_bWatchDogAlarm = FALSE;
@@ -3439,7 +3433,7 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				// Save Frame List may be called many times till
 				// CSaveFrameListThread::Work() reacts and starts working:
 				// it's not a problem because CSaveFrameListThread::Work()
-				// removes empty lists.
+				// removes empty lists
 				if (m_pDoc->m_bWatchDogAlarm							&&
 					m_pDoc->m_dwVideoProcessorMode						&&
 					m_pDoc->m_bDetectingMovement						&&
@@ -3463,6 +3457,12 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), dwConnectDelayMs);
 					::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
 				}
+
+				// Trigger drawing in case no frames reaching
+				::PostMessage(	m_pDoc->GetView()->GetSafeHwnd(),
+								WM_THREADSAFE_UPDATEWINDOWSIZES,
+								(WPARAM)UPDATEWINDOWSIZES_INVALIDATE,
+								(LPARAM)0);
 
 				break;
 			}
