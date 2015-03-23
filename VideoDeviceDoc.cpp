@@ -7599,7 +7599,7 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 		if (m_bDoEditCopy)
 			EditCopy(pDib, CurrentTime);
 
-		// Manual Snapshot to JPEG File(s) (this copies also to clipboard)
+		// Manual Snapshot to JPEG Files
 		if (m_bDoEditSnapshot)
 			EditSnapshot(pDib, CurrentTime);
 
@@ -8034,11 +8034,8 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 		if (DibThumb.IsValid())
 			AddFrameTime(&DibThumb, Time, dwUpTime, m_nRefFontSize);
 	}
-	
-	// Copy to clipboard (not necessary but can be useful)
-	Dib.EditCopy();
 
-	// Save to JPEG File(s)
+	// Save to JPEG Files
 	// Note: always first save full-size file then the thumb
 	// version which links to the full-size in web interface!
 	CMJPEGEncoder MJPEGEncoder;
