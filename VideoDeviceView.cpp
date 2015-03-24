@@ -374,7 +374,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 
 		// Draw Zones
 		if (pDoc->m_bShowEditDetectionZones ||
-			((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections))
+			(pDoc->m_dwVideoProcessorMode && pDoc->m_bShowMovementDetections))
 			DrawZones(hDC);
 
 		// Draw Text
@@ -571,7 +571,7 @@ void CVideoDeviceView::DrawZones(HDC hDC)
 		}
 
 		// Draw Detected Zones
-		if ((pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) && pDoc->m_bShowMovementDetections)
+		if (pDoc->m_dwVideoProcessorMode && pDoc->m_bShowMovementDetections)
 		{
 			HPEN hPen = ::CreatePen(PS_SOLID, 1, MOVDET_DETECTING_ZONES_COLOR);
 			HGDIOBJ hOldPen = ::SelectObject(hDC, hPen);
@@ -820,7 +820,7 @@ void CVideoDeviceView::OnTimer(UINT nIDEvent)
 	{
 		case ID_TIMER_RELOAD_SETTINGS :
 		{
-			DWORD dwVideoProcessorMode = (DWORD) ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), NO_DETECTOR);
+			DWORD dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, ::AfxGetApp()->GetProfileInt(pDoc->GetDevicePathName(), _T("VideoProcessorMode"), 0)));
 			if (dwVideoProcessorMode != pDoc->m_dwVideoProcessorMode)
 			{
 				pDoc->m_dwVideoProcessorMode = dwVideoProcessorMode;

@@ -2311,8 +2311,26 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 
 void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, DWORD dwMJPGSize, DWORD dwVideoProcessorMode, BOOL b1SecTick)
 {
-	BOOL bMovement = FALSE;
+	BOOL bSoftwareDetectionMovement = FALSE;
 	BOOL bExternalFileTriggerMovement = FALSE;
+	BOOL bDoSoftwareDetection = (dwVideoProcessorMode && m_nDetectionLevel > 0);
+
+	// Clean-up
+	if (!bDoSoftwareDetection)
+	{	
+		if (m_pDifferencingDib)
+		{
+			delete m_pDifferencingDib;
+			m_pDifferencingDib = NULL;
+		}
+		if (m_pMovementDetectorBackgndDib)
+		{
+			delete m_pMovementDetectorBackgndDib;
+			m_pMovementDetectorBackgndDib = NULL;
+		}
+		if (m_MovementDetections)
+			memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
+	}
 
 	// Init from UI thread because of a UI control update and
 	// initialization of variables used by the UI drawing
@@ -2324,8 +2342,8 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, 
 			goto end_of_software_detection; // Cannot init, unsupported resolution
 	}
 
-	// Software Detection Enabled?
-	if (dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR)
+	// Software Detection
+	if (bDoSoftwareDetection)
 	{
 		// Every 1 sec check whether we have to update the Freq Div
 		if (b1SecTick														&&
@@ -2386,7 +2404,7 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, 
 
 			// Call Detector
 			m_pDifferencingDib->SetUpTime(pDib->GetUpTime());
-			bMovement = MovementDetector(m_pDifferencingDib, m_nDetectionLevel);
+			bSoftwareDetectionMovement = MovementDetector(m_pDifferencingDib, m_nDetectionLevel);
 
 			// Update background
 			// Note: Mix7To1MMX and Mix3To1MMX use the pavgb instruction
@@ -2424,8 +2442,6 @@ void CVideoDeviceDoc::MovementDetectionProcessing(CDib* pDib, LPBYTE pMJPGData, 
 			}
 		}
 	}
-	else
-		memset(m_MovementDetections, 0, MOVDET_MAX_ZONES);
 
 	// End of software detection
 end_of_software_detection:
@@ -2444,7 +2460,7 @@ end_of_software_detection:
 			sDetectionAutoSaveDir.TrimRight(_T('\\'));
 			sDetectionTriggerFileName = sDetectionAutoSaveDir + _T("\\") + sDetectionTriggerFileName;
 		}
-		if (dwVideoProcessorMode & TRIGGER_FILE_DETECTOR)
+		if (dwVideoProcessorMode)
 		{
 			FILETIME LastWriteTime;
 			if (::GetFileTime(sDetectionTriggerFileName, NULL, NULL, &LastWriteTime)			&&
@@ -2468,7 +2484,7 @@ end_of_software_detection:
 						m_bFTPUploadMovementDetection);
 
 	// If Movement
-	if (bMovement || bExternalFileTriggerMovement)
+	if (bSoftwareDetectionMovement || bExternalFileTriggerMovement)
 	{
 		// Mark the Frame as a Cause of Movement
 		pDib->SetUserFlag(pDib->GetUserFlag() | FRAME_USER_FLAG_MOTION);
@@ -3761,7 +3777,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_nMovDetSavesCountMonth = CurrentTime.GetMonth();
 	m_nMovDetSavesCountYear = CurrentTime.GetYear();
 	m_bVideoView = TRUE;
-	m_dwVideoProcessorMode = NO_DETECTOR;
+	m_dwVideoProcessorMode = 0;
 	m_dwFrameCountUp = 0U;
 	m_bSizeToDoc = TRUE;
 	m_bDeviceFirstRun = FALSE;
@@ -4582,7 +4598,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 
 	m_bHideExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("HideExecCommandMovementDetection"), FALSE);
 	m_bWaitExecCommandMovementDetection = (BOOL) pApp->GetProfileInt(sSection, _T("WaitExecCommandMovementDetection"), FALSE);
-	m_dwVideoProcessorMode = (DWORD) pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), NO_DETECTOR);
+	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
@@ -7571,23 +7587,13 @@ void CVideoDeviceDoc::ProcessI420Frame(LPBYTE pData, DWORD dwSize, LPBYTE pMJPGD
 				if (m_nDetectionStartStop == 1) 
 				{
 					if (!bInSchedule)
-						dwVideoProcessorMode = NO_DETECTOR;
+						dwVideoProcessorMode = 0;
 				}
 				// 2 -> Disable detection on specified schedule
 				else
 				{
 					if (bInSchedule)
-						dwVideoProcessorMode = NO_DETECTOR;
-				}
-			}
-
-			// Reset moving background frame if software detection engine has been turned-off
-			if (!(dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR))
-			{	
-				if (m_pMovementDetectorBackgndDib)
-				{
-					delete m_pMovementDetectorBackgndDib;
-					m_pMovementDetectorBackgndDib = NULL;
+						dwVideoProcessorMode = 0;
 				}
 			}
 

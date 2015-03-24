@@ -1173,7 +1173,6 @@
 #define IDS_MULTILANG_1192              1192
 #define IDS_MULTILANG_1193              1193
 #define IDS_MULTILANG_1194              1194
-#define IDC_DETECTION_TRIGGER_FILENAME  1194
 #define IDS_MULTILANG_1195              1195
 #define IDS_MULTILANG_1196              1196
 #define IDC_CHECK_BMP                   1196

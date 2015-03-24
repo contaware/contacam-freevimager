@@ -764,10 +764,10 @@ void CCameraBasicSettingsDlg::ApplySettings()
 
 	// Disable mov. det.
 	BOOL bDoMovDet;
-	if (m_pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR)
+	if (m_pDoc->m_dwVideoProcessorMode)
 	{
 		bDoMovDet = TRUE;
-		m_pDoc->m_dwVideoProcessorMode &= ~SOFTWARE_MOVEMENT_DETECTOR;
+		m_pDoc->m_dwVideoProcessorMode = 0;
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
 	else
@@ -1068,7 +1068,7 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	// Do mov. det.?
 	if (bDoMovDet)
 	{
-		m_pDoc->m_dwVideoProcessorMode |= SOFTWARE_MOVEMENT_DETECTOR;
+		m_pDoc->m_dwVideoProcessorMode = 1;
 		::AfxGetApp()->WriteProfileInt(m_pDoc->GetDevicePathName(), _T("VideoProcessorMode"), m_pDoc->m_dwVideoProcessorMode);
 	}
 	if (m_pDoc->GetFrame() && m_pDoc->GetFrame()->GetToolBar())

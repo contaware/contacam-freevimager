@@ -105,9 +105,6 @@ class CMovementDetectionPage;
 #define DEFAULT_SERVERPUSH_POLLRATE_MS		200			// ms
 
 // Movement Detection
-#define NO_DETECTOR							0x00
-#define TRIGGER_FILE_DETECTOR				0x01
-#define SOFTWARE_MOVEMENT_DETECTOR			0x02
 #define DEFAULT_PRE_BUFFER_MSEC				2000		// ms
 #define DEFAULT_POST_BUFFER_MSEC			6000		// ms
 #define MOVDET_MIN_LENGTH_MSEC				1000		// Minimum detection length in ms, below this value SaveFrameList() is not called
@@ -998,7 +995,6 @@ public:
 	volatile BOOL m_bDoEditCopy;						// Copy Frame to Clipboard in ProcessI420Frame()
 	volatile BOOL m_bDoEditSnapshot;					// Manual Snapshot Frame to file
 	volatile DWORD m_dwFrameCountUp;					// Captured Frames Count-Up, it can wrap around!
-	volatile DWORD m_dwVideoProcessorMode;				// The Processor Mode Variable
 	volatile BOOL m_bSizeToDoc;							// If no placement settings in registry size client window to frame size
 	volatile BOOL m_bDeviceFirstRun;					// First Time that this device runs
 	CTime m_1SecTime;									// For the 1 sec tick in ProcessI420Frame()
@@ -1091,6 +1087,7 @@ public:
 	CRITICAL_SECTION m_csSnapshotConfiguration;			// Critical section for snapshot configurations
 
 	// Movement Detector Vars
+	volatile DWORD m_dwVideoProcessorMode;				// 0 = Off, 1 = software + file trigger detectors On
 	CString m_sDetectionTriggerFileName;				// The external detection trigger file name
 	FILETIME m_DetectionTriggerLastWriteTime;			// Last known write time of detection trigger file
 	BOOL m_bShowMovementDetections;						// Show / Hide Movement Detection Zones
@@ -1099,7 +1096,7 @@ public:
 	volatile BOOL m_bDetectingMovement;					// Flag indicating a Detection
 	volatile BOOL m_bDetectingMinLengthMovement;		// Flag indicating a Movement of at least m_nDetectionMinLengthMilliSeconds
 	volatile BOOL m_bMovDetHDBuffering;					// Flag indicating whether frames are buffered in RAM or on HD
-	volatile int m_nDetectionLevel;						// Detection Level 1 .. 100 = Max Sensitivity
+	volatile int m_nDetectionLevel;						// 0 = Off .. 100 = Max Sensitivity
 	volatile int m_nDetectionZoneSize;					// Configured detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile int m_nCurrentDetectionZoneSize;			// Current detection zone size: 0->Big, 1->Medium, 2->Small
 	volatile DWORD m_dwFirstDetFrameUpTime;				// Uptime of first movement detection frame

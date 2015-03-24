@@ -91,7 +91,6 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_WAIT_EXEC_COMMAND, OnCheckWaitExecCommand)
 	ON_WM_CTLCOLOR()
 	ON_CBN_SELCHANGE(IDC_DETECTION_ZONE_SIZE, OnSelchangeDetectionZoneSize)
-	ON_EN_CHANGE(IDC_DETECTION_TRIGGER_FILENAME, OnChangeDetectionTriggerFilename)
 	ON_CBN_SELCHANGE(IDC_EXECMODE_MOVEMENT_DETECTION, OnSelchangeExecmodeMovementDetection)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_SUNDAY, OnCheckSchedulerSunday)
 	ON_BN_CLICKED(IDC_CHECK_SCHEDULER_MONDAY, OnCheckSchedulerMonday)
@@ -133,10 +132,6 @@ BOOL CMovementDetectionPage::OnInitDialog()
 
 	// This calls UpdateData(FALSE)
 	CPropertyPage::OnInitDialog();
-
-	// The external detection trigger file name
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
-	pEdit->SetWindowText(m_pDoc->m_sDetectionTriggerFileName);
 	
 	// Movement Detection Save Seconds Before & After Detection Spin Controls
 	m_SpinSecondsBeforeMovementBegin.SetRange(1, 99);
@@ -146,9 +141,9 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	m_SpinDetectionMinLengthSeconds.SetRange(0, 99);
 
 	// Detection Level Slider & Edit Controls
-	m_DetectionLevel.SetRange(1, 100, TRUE);
+	m_DetectionLevel.SetRange(0, 100, TRUE);
 	m_DetectionLevel.SetPos(m_pDoc->m_nDetectionLevel);
-	pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_LEVEL_NUM);
+	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_LEVEL_NUM);
 	CString sLevel;
 	sLevel.Format(_T("%i"), m_pDoc->m_nDetectionLevel);
 	pEdit->SetWindowText(sLevel);
@@ -247,15 +242,15 @@ void CMovementDetectionPage::UpdateDetectionState()
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_MODE);
 	if (pEdit)
 	{
-		CString sDetectionMode;
-		switch (m_pDoc->m_dwVideoProcessorMode)
+		CString sDetectionMode(ML_STRING(1845, "OFF"));
+		if (m_pDoc->m_dwVideoProcessorMode)
 		{
-			case NO_DETECTOR :						sDetectionMode = ML_STRING(1845, "Off"); break;
-			case TRIGGER_FILE_DETECTOR :			sDetectionMode = ML_STRING(1846, "Trigger File"); break;
-			case SOFTWARE_MOVEMENT_DETECTOR :		sDetectionMode = ML_STRING(1847, "Software"); break;
-			case (	TRIGGER_FILE_DETECTOR |
-					SOFTWARE_MOVEMENT_DETECTOR):	sDetectionMode = ML_STRING(1848, "Trigger File + Software"); break;
-			default: break;
+			if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty() && m_pDoc->m_nDetectionLevel > 0)
+				sDetectionMode = ML_STRING(1848, "Trigger File + Software");
+			else if (!m_pDoc->m_sDetectionTriggerFileName.IsEmpty())
+				sDetectionMode = ML_STRING(1846, "Trigger File");
+			else if (m_pDoc->m_nDetectionLevel > 0)
+				sDetectionMode = ML_STRING(1847, "Software");
 		}
 		pEdit->SetWindowText(sDetectionMode);
 	}
@@ -264,8 +259,7 @@ void CMovementDetectionPage::UpdateDetectionState()
 	pEdit = (CEdit*)GetDlgItem(IDC_WARNING);
 	if (pEdit)
 	{
-		if ((m_pDoc->m_dwVideoProcessorMode & SOFTWARE_MOVEMENT_DETECTOR) &&
-			m_pDoc->m_bUnsupportedVideoSizeForMovDet)
+		if (m_pDoc->m_bUnsupportedVideoSizeForMovDet)
 			pEdit->ShowWindow(TRUE);
 		else
 			pEdit->ShowWindow(FALSE);
@@ -376,6 +370,7 @@ void CMovementDetectionPage::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScr
 				CString sLevel;
 				sLevel.Format(_T("%i"), m_DetectionLevel.GetPos());
 				pEdit->SetWindowText(sLevel);
+				UpdateDetectionState();
 			}
 		}
 	}
@@ -492,12 +487,6 @@ void CMovementDetectionPage::OnExecMovementDetection()
 {
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_EXEC_MOVEMENT_DETECTION);
 	m_pDoc->m_bExecCommandMovementDetection = pCheck->GetCheck() > 0;
-}
-
-void CMovementDetectionPage::OnChangeDetectionTriggerFilename() 
-{
-	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_DETECTION_TRIGGER_FILENAME);
-	pEdit->GetWindowText(m_pDoc->m_sDetectionTriggerFileName);
 }
 
 void CMovementDetectionPage::OnChangeEditExe() 
