@@ -1902,6 +1902,7 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 #ifdef VIDEODEVICEDOC
 void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 {
+#ifndef _DEBUG
 	int nPos = 0;
 	while (nPos < pPopupMenu->GetMenuItemCount())
 	{
@@ -1937,6 +1938,7 @@ void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 	// Cleanup ending separator
 	if (pPopupMenu->GetMenuItemCount() > 0 && pPopupMenu->GetMenuItemID(pPopupMenu->GetMenuItemCount() - 1) == 0)
 		pPopupMenu->DeleteMenu(pPopupMenu->GetMenuItemCount() - 1, MF_BYPOSITION);
+#endif
 }
 
 void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
