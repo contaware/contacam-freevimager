@@ -1,7 +1,8 @@
 Tell the 32-bit OS to increase the amount user-mode memory from 2GB to 3GB
 --------------------------------------------------------------------------
 
-- Not necessary for 64-bit OS
+- Not necessary for 64-bit OS as LARGEADDRESSAWARE 32-bit apps automatically
+  use the full 4GB address space
 - On Windows XP or 2003 put the /3GB switch into boot.ini and reboot
 - For Vista or higher run the following from the Command Prompt
   as Administrator and reboot:
