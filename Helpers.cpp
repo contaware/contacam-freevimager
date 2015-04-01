@@ -476,7 +476,7 @@ BOOL CopyDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists/
 {
 	// Check
 	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
-		szToDir == NULL || _tcslen(szToDir))
+		szToDir == NULL || _tcslen(szToDir) == 0)
 		return FALSE;
 
 	// Create dir
@@ -602,7 +602,7 @@ BOOL MergeDirContent(LPCTSTR szFromDir, LPCTSTR szToDir, BOOL bOverwriteIfExists
 {
 	// Check
 	if (szFromDir == NULL || _tcslen(szFromDir) == 0 ||
-		szToDir == NULL || _tcslen(szToDir))
+		szToDir == NULL || _tcslen(szToDir) == 0)
 		return FALSE;
 
 	// Create dir
