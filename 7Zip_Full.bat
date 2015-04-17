@@ -7,6 +7,4 @@ REM Delete old version
 del .\uimager_Full.7z
 
 REM 7-Zip it
-"%exedir%\7z.exe" a -r -mx9 -t7z uimager_Full.7z * -xr!?svn\ -x!uimager_NoTutorials.7z -x!uimager_OnlyTutorials.7z
-
-pause
+"%exedir%\7z.exe" a -r -mx9 -t7z uimager_Full.7z * -xr!?svn\
