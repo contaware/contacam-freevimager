@@ -3989,7 +3989,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MULTILANG_1354      "No Sound Input Device."
-    IDS_MULTILANG_1355      "Sound Input Cannot Determine Card Capabilities!"
     IDS_MULTILANG_1357      "Error while converting to Pdf"
 END
 

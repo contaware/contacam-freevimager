@@ -46,45 +46,37 @@ END_MESSAGE_MAP()
 BOOL CAudioInSourceDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	
-	MMRESULT res;
 
 	// Get Number of Audio Devices
-	m_uiNumDev = ::waveInGetNumDevs(); 
-	if (m_uiNumDev == 0)
+	UINT uiNumDev = ::waveInGetNumDevs(); 
+	if (uiNumDev == 0)
 	{
 		::AfxMessageBox(ML_STRING(1354, "No Sound Input Device."));
 		CDialog::OnCancel();
 		return TRUE;
 	}
 
-	m_Devices.SetSize(m_uiNumDev);
-
 	// Enumerate The Devices
 	WAVEINCAPS2 DevCaps;
-	for (UINT i = 0 ; i < m_uiNumDev ; i++)
+	for (UINT i = 0 ; i < uiNumDev ; i++)
 	{
-		res = ::waveInGetDevCaps(i, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
+		MMRESULT res = ::waveInGetDevCaps(i, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
 		if (res != MMSYSERR_NOERROR)
-		{
-			::AfxMessageBox(ML_STRING(1355, "Sound Input Cannot Determine Card Capabilities!"));
-			m_Devices[i] = _T("Unknown Device");
-		}
+			m_AudioInSource.AddString(_T("Unknown Device"));
 		else
 		{
 			CString sFullDeviceName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
 										_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
 										::UuidToString(&DevCaps.NameGuid) + _T("}"),
 										_T("Name"));
-			m_Devices.SetAt(i, sFullDeviceName.IsEmpty() ? (CString)DevCaps.szPname : sFullDeviceName);
+			m_AudioInSource.AddString(sFullDeviceName.IsEmpty() ? (CString)DevCaps.szPname : sFullDeviceName);
 		}
-		m_AudioInSource.AddString(m_Devices[i]);
 	}
 
-	if (m_uiDeviceID > (m_uiNumDev - 1))
-		m_AudioInSource.SetCurSel(-1);
+	if (m_uiDeviceID > (uiNumDev - 1))
+		m_AudioInSource.SetCurSel(-1); // no selection if m_uiDeviceID is not existing (maybe a USB device was removed)
 	else
-		m_AudioInSource.SelectString(0, m_Devices[m_uiDeviceID]);
+		m_AudioInSource.SetCurSel(m_uiDeviceID);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -93,7 +85,7 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 void CAudioInSourceDlg::OnOK()
 {
 	int nSel = m_AudioInSource.GetCurSel();
-	if (nSel != CB_ERR)
+	if (nSel != CB_ERR) // nSel is CB_ERR if nothing selected
 		m_uiDeviceID = nSel;
 	CDialog::OnOK();
 }

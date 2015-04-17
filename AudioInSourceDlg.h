@@ -22,9 +22,6 @@ public:
 	enum { IDD = IDD_AUDIOIN_SOURCE };
 	CComboBox	m_AudioInSource;
 	//}}AFX_DATA
-	
-	CArray<CString,CString&> m_Devices;
-	UINT m_uiNumDev;
 	UINT m_uiDeviceID;
 
 // Overrides
