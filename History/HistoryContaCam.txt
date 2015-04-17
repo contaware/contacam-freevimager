@@ -1,6 +1,6 @@
 CONTACAM HISTORY
 
-5.0.0 (March xth 2015)
+5.0.0 (May xth 2015)
 
 - Goodbye Flash and goodbye AVI: video saving as MP4 files
   (all modern Browsers and Smartphones can play them)
@@ -17,7 +17,9 @@ CONTACAM HISTORY
   individual camera folders in Camera Basic Settings dialog has been
   removed (advanced users can create junctions, symlinks or run a .bat
   script on detection to move/copy the video files to another location)
-  
+- In audio input dialog the correct entry is now selected for devices
+  having the same name
+
 4.9.9 (November 3rd 2014)
 
 - Possibility to configure Recording Segments of 15 min. and 30 min.
