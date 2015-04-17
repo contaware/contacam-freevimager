@@ -256,9 +256,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   RMDir /r "$INSTDIR\ActiveX"
   RMDir /r "$INSTDIR\Tutorials"
   RMDir /r "$INSTDIR\microapache"
-    
-  ; Create Tutorials Directory
-  CreateDirectory "$INSTDIR\Tutorials"
   
   ; Source Program File Path
 !if ${INSTALLER_LANGUAGE} == "English"
@@ -273,18 +270,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   File "..\ContaCamService\Release\ContaCamService.ini"
   File "MasterConfig.ini"
   SetOverwrite on
-  File "/oname=Tutorials\Getting_Started.htm" "..\Tutorials\Getting_Started.htm"
-  File "/oname=Tutorials\Getting_Started.swf" "..\Tutorials\Getting_Started.swf"
-  File "/oname=Tutorials\Getting_Started.js" "..\Tutorials\Getting_Started.js"
-  File "/oname=Tutorials\Camera_Advanced_Settings.htm" "..\Tutorials\Camera_Advanced_Settings.htm"
-  File "/oname=Tutorials\Camera_Advanced_Settings.swf" "..\Tutorials\Camera_Advanced_Settings.swf"
-  File "/oname=Tutorials\Camera_Advanced_Settings.js" "..\Tutorials\Camera_Advanced_Settings.js"
-  File "/oname=Tutorials\Global_Settings.htm" "..\Tutorials\Global_Settings.htm"
-  File "/oname=Tutorials\Global_Settings.swf" "..\Tutorials\Global_Settings.swf"
-  File "/oname=Tutorials\Global_Settings.js" "..\Tutorials\Global_Settings.js"
-  File "/oname=Tutorials\Publish_on_Internet.htm" "..\Tutorials\Publish_on_Internet.htm"
-  File "/oname=Tutorials\Publish_on_Internet.swf" "..\Tutorials\Publish_on_Internet.swf"
-  File "/oname=Tutorials\Publish_on_Internet.js" "..\Tutorials\Publish_on_Internet.js"
   SetOutPath $INSTDIR\microapache
   File /r /x .svn /x configuration*.* "..\microapache\*.*"
   SetOutPath $INSTDIR

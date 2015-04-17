@@ -223,9 +223,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   Delete $INSTDIR\NeroBurn.exe
   Delete $INSTDIR\${UNINSTNAME_EXT}
   RMDir /r "$INSTDIR\Tutorials"
-    
-  ; Create Tutorials Directory
-  CreateDirectory "$INSTDIR\Tutorials"
   
   ; Source Program File Path
 !if ${INSTALLER_LANGUAGE} == "English"
@@ -238,21 +235,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   SetOverwrite off
   File "MasterConfig.ini"
   SetOverwrite on
-  File "/oname=Tutorials\Basics.htm" "..\Tutorials\Basics.htm"
-  File "/oname=Tutorials\Basics.swf" "..\Tutorials\Basics.swf"
-  File "/oname=Tutorials\Basics.js" "..\Tutorials\Basics.js"
-  File "/oname=Tutorials\Batch_Processing.htm" "..\Tutorials\Batch_Processing.htm"
-  File "/oname=Tutorials\Batch_Processing.swf" "..\Tutorials\Batch_Processing.swf"
-  File "/oname=Tutorials\Batch_Processing.js" "..\Tutorials\Batch_Processing.js"
-  File "/oname=Tutorials\CD_Slideshow.htm" "..\Tutorials\CD_Slideshow.htm"
-  File "/oname=Tutorials\CD_Slideshow.swf" "..\Tutorials\CD_Slideshow.swf"
-  File "/oname=Tutorials\CD_Slideshow.js" "..\Tutorials\CD_Slideshow.js"
-  File "/oname=Tutorials\Compositions.htm" "..\Tutorials\Compositions.htm"
-  File "/oname=Tutorials\Compositions.swf" "..\Tutorials\Compositions.swf"
-  File "/oname=Tutorials\Compositions.js" "..\Tutorials\Compositions.js"
-  File "/oname=Tutorials\Redeye_Remove.htm" "..\Tutorials\Redeye_Remove.htm"
-  File "/oname=Tutorials\Redeye_Remove.swf" "..\Tutorials\Redeye_Remove.swf"
-  File "/oname=Tutorials\Redeye_Remove.js" "..\Tutorials\Redeye_Remove.js"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\Contaware\${APPNAME_NOEXT}" "Install_Dir" "$INSTDIR"
