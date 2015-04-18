@@ -695,6 +695,7 @@ public:
 	afx_msg void OnSettingsTrayicon();
 	afx_msg void OnUpdateSettingsTrayicon(CCmdUI* pCmdUI);
 	afx_msg void OnAppFaq();
+	afx_msg void OnAppManual();
 	afx_msg void OnUpdateFileNew(CCmdUI* pCmdUI);
 	afx_msg void OnSettingsViewLogfile();
 	afx_msg void OnSettingsBrowseConfigLogFiles();

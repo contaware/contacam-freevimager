@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_SETTINGS_TRAYICON, OnSettingsTrayicon)
 	ON_UPDATE_COMMAND_UI(ID_SETTINGS_TRAYICON, OnUpdateSettingsTrayicon)
 	ON_COMMAND(ID_APP_FAQ, OnAppFaq)
+	ON_COMMAND(ID_APP_MANUAL, OnAppManual)
 	ON_UPDATE_COMMAND_UI(ID_FILE_NEW, OnUpdateFileNew)
 	ON_COMMAND(ID_SETTINGS_VIEW_LOGFILE, OnSettingsViewLogfile)
 	ON_COMMAND(ID_SETTINGS_BROWSE_CONFIGLOG_FILES, OnSettingsBrowseConfigLogFiles)
@@ -1077,6 +1078,15 @@ void CUImagerApp::OnAppFaq()
 	::ShellExecute(	NULL,
 					_T("open"),
 					FAQ_ONLINE_PAGE,
+					NULL, NULL, SW_SHOWNORMAL);
+}
+
+// Show the internet site of the Manual
+void CUImagerApp::OnAppManual() 
+{
+	::ShellExecute(	NULL,
+					_T("open"),
+					MANUAL_ONLINE_PAGE,
 					NULL, NULL, SW_SHOWNORMAL);
 }
 

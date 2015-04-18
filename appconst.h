@@ -21,6 +21,7 @@
 #define APPMUTEXNAME									_T("ContaCamAppMutex")
 #define BROSERAUTORUN_NAME								_T("ContaCamBrowser")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/contacamfaq/")
+#define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/contacammanual/")
 #else
 #define APPNAME_EXT										_T("FreeVimager.exe")
 #define APPNAME_NOEXT									_T("FreeVimager")
@@ -28,8 +29,9 @@
 #define APPNAME_NOEXT_ASCII								"FreeVimager"
 #define APPMUTEXNAME									_T("FreeVimagerAppMutex")
 #define FAQ_ONLINE_PAGE									_T("http://www.contaware.com/freevimagerfaq/")
+#define MANUAL_ONLINE_PAGE								_T("http://www.contaware.com/freevimagermanual/")
 #endif
-#define APPVERSION										_T("5.0.0beta12")
+#define APPVERSION										_T("5.0.0beta13")
 #define SLIDESHOWNAME									_T("Start.exe")
 
 // Company
