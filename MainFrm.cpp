@@ -67,7 +67,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_TIFF, OnFileAcquireToTiff)
 	ON_COMMAND(ID_FILE_ACQUIRE_TO_PDF, OnFileAcquireToPdf)
 	ON_COMMAND(ID_FILE_ACQUIRE_AND_EMAIL, OnFileAcquireAndEmail)
-	ON_WM_INITMENUPOPUP()
 	ON_COMMAND(ID_OPEN_FROM_TRAY, OnOpenFromTray)
 	ON_WM_SYSCOMMAND()
 	ON_WM_QUERYENDSESSION()
@@ -87,6 +86,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
 #ifdef VIDEODEVICEDOC
+	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_THREADSAFE_CONNECTERR, OnThreadSafeConnectErr)
 	ON_MESSAGE(WM_AUTORUN_VIDEODEVICES, OnAutorunVideoDevices)
 	ON_COMMAND(ID_VIEW_WEB, OnViewWeb)
@@ -1813,6 +1813,7 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 	}
 }
 
+#ifdef VIDEODEVICEDOC
 void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu) 
 {
 	CMDIFrameWnd::OnInitMenuPopup(pPopupMenu, nIndex, bSysMenu);
@@ -1843,39 +1844,26 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 				if (sTest == _T("")) // In maximized state the first position is the system icon with no string
 					idx--;
 
-				// Populate Help or Capture menus
 				if (pDoc->IsKindOf(RUNTIME_CLASS(CUImagerDoc)))
 				{
-					if (idx == ((CUImagerDoc*)pDoc)->m_nHelpMenuPos)
-						PopulateHelpMenu(pPopupMenu);
-#ifdef VIDEODEVICEDOC
-					else if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
+					if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CUImagerDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
-#endif
 				}
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
 				{
-					if (idx == ((CCDAudioDoc*)pDoc)->m_nHelpMenuPos)
-						PopulateHelpMenu(pPopupMenu);
-#ifdef VIDEODEVICEDOC
-					else if (idx == ((CCDAudioDoc*)pDoc)->m_nFileMenuPos)
+					if (idx == ((CCDAudioDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
-#endif
 				}
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
 				{
-					if (idx == ((CAudioMCIDoc*)pDoc)->m_nHelpMenuPos)
-						PopulateHelpMenu(pPopupMenu);
-#ifdef VIDEODEVICEDOC
-					else if (idx == ((CAudioMCIDoc*)pDoc)->m_nFileMenuPos)
+					if (idx == ((CAudioMCIDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CAudioMCIDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
-#endif
 				}
 				else
 				{
@@ -1886,20 +1874,14 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 		// No Document loaded
 		else
 		{
-			// Populate Help or Capture menus
-			if (idx == m_nHelpMenuPos)
-				PopulateHelpMenu(pPopupMenu);
-#ifdef VIDEODEVICEDOC
-			else if (idx == m_nFileMenuPos)
+			if (idx == m_nFileMenuPos)
 				CleanupFileMenu(pPopupMenu);
 			else if (idx == m_nCaptureMenuPos)
 				PopulateCaptureMenu(pPopupMenu);
-#endif
 		}	
 	}
 }
 
-#ifdef VIDEODEVICEDOC
 void CMainFrame::CleanupFileMenu(CMenu* pPopupMenu)
 {
 #ifndef _DEBUG
@@ -1974,59 +1956,6 @@ void CMainFrame::PopulateCaptureMenu(CMenu* pPopupMenu)
 	}
 }
 #endif
-
-void CMainFrame::PopulateHelpMenu(CMenu* pPopupMenu)
-{
-	int i;
-
-	// Original Items Count
-	if (m_nHelpMenuItemsCount <= 0)
-		m_nHelpMenuItemsCount = (int)pPopupMenu->GetMenuItemCount();
-
-	// Tutorials Count
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-		return;
-	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	CString sTutorialsPath = CString(szDrive) + CString(szDir);
-	sTutorialsPath += _T("Tutorials");
-	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T("htm"));
-	int nTutorialsCount = 0;
-	if (FileFind.Init(sTutorialsPath + _T("\\*")))
-	{
-		// Get Count
-		 nTutorialsCount = FileFind.GetFilesCount();
-
-		// We have a limited range of menu items
-		if (nTutorialsCount > (ID_HELP_TUTORIAL_LAST - ID_HELP_TUTORIAL_FIRST + 1))
-			nTutorialsCount = (ID_HELP_TUTORIAL_LAST - ID_HELP_TUTORIAL_FIRST + 1);
-	}
-
-	// Remove Tutorial Menu Items
-	i = (int)pPopupMenu->GetMenuItemCount() - 1;
-	while (i >= m_nHelpMenuItemsCount)
-		pPopupMenu->DeleteMenu(i--, MF_BYPOSITION);
-
-	// Append Tutorial Menu Items
-	if (nTutorialsCount > 0)
-	{
-		// Append Separator
-		pPopupMenu->AppendMenu(MF_SEPARATOR);
-	
-		// Append Tutorial Menu Items
-		for (i = 0 ; i < nTutorialsCount ; i++)
-		{
-			CString sDisplayedTutorialName = ::GetShortFileNameNoExt(FileFind.GetFileName(i));
-			sDisplayedTutorialName.Replace(_T('_'), _T(' ')); // Replace '_' with a space
-			pPopupMenu->AppendMenu(	MF_BYCOMMAND,
-									ID_HELP_TUTORIAL_FIRST + i,
-									sDisplayedTutorialName);
-		}
-	}
-}
 
 void CMainFrame::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
 {

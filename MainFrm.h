@@ -217,7 +217,6 @@ protected:
 	void CleanupFileMenu(CMenu* pPopupMenu);
 	void PopulateCaptureMenu(CMenu* pPopupMenu);
 #endif
-	void PopulateHelpMenu(CMenu* pPopupMenu);
 
 // Generated message map functions
 protected:
@@ -245,7 +244,6 @@ protected:
 	afx_msg void OnFileAcquireToTiff();
 	afx_msg void OnFileAcquireToPdf();
 	afx_msg void OnFileAcquireAndEmail();
-	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg void OnOpenFromTray();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg BOOL OnQueryEndSession();
@@ -265,6 +263,7 @@ protected:
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
+	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg LONG OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam);
 	afx_msg LONG OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam);
 	afx_msg void OnViewWeb();

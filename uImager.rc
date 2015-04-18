@@ -4309,26 +4309,10 @@ BEGIN
     ID_OSD_DISPLAY_METADATADATE 
                             "Display the metadata date\nDisplay Metadata Date"
     ID_OSD_AUTOSIZE         "Auto size the on-screen display\nAuto-Size On-Screen Display"
-    ID_HELP_TUTORIAL_1      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_2      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_3      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_4      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_5      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_6      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_7      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_8      "Start this tutorial\nStart Tutorial"
 END
 
 STRINGTABLE
 BEGIN
-    ID_HELP_TUTORIAL_9      "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_10     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_11     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_12     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_13     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_14     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_15     "Start this tutorial\nStart Tutorial"
-    ID_HELP_TUTORIAL_16     "Start this tutorial\nStart Tutorial"
     ID_EDIT_TO15BITS        "Convert current image to 32768 colors and 16 bits per pixel\nTo 16 bpp"
     ID_FILE_ACQUIRE_TO_TIFF "Scan from selected source to Tiff\nScan to Tiff"
     ID_FILE_ACQUIRE_TO_PDF  "Scan from selected source to Pdf\nScan to Pdf"

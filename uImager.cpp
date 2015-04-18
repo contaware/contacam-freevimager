@@ -107,7 +107,6 @@ BEGIN_MESSAGE_MAP(CUImagerApp, CWinApp)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 	// Standard print setup command
 	ON_COMMAND(ID_FILE_PRINT_SETUP, CWinApp::OnFilePrintSetup)
-	ON_COMMAND_RANGE(ID_HELP_TUTORIAL_FIRST, ID_HELP_TUTORIAL_LAST, OnHelpTutorial)
 #ifdef VIDEODEVICEDOC
 	ON_COMMAND(ID_EDIT_DELETE, OnEditDelete)
 	ON_COMMAND_RANGE(ID_DIRECTSHOW_VIDEODEV_FIRST, ID_DIRECTSHOW_VIDEODEV_LAST, OnFileDxVideoDevice)
@@ -5171,27 +5170,6 @@ BOOL CUImagerApp::ShowColorDlg(	COLORREF& crColor,
 	}
 
 	return res;
-}
-
-void CUImagerApp::OnHelpTutorial(UINT nID)
-{
-	TCHAR szDrive[_MAX_DRIVE];
-	TCHAR szDir[_MAX_DIR];
-	TCHAR szProgramName[MAX_PATH];
-	if (::GetModuleFileName(NULL, szProgramName, MAX_PATH) == 0)
-		return;
-	_tsplitpath(szProgramName, szDrive, szDir, NULL, NULL);
-	CString sTutorialsPath = CString(szDrive) + CString(szDir);
-	sTutorialsPath += _T("Tutorials");
-	CSortableFileFind FileFind;
-	FileFind.AddAllowedExtension(_T("htm"));
-	if (FileFind.Init(sTutorialsPath + _T("\\*")))
-	{
-		::ShellExecute(	NULL,
-						_T("open"),
-						FileFind.GetFileName(nID - ID_HELP_TUTORIAL_FIRST),
-						NULL, NULL, SW_SHOWNORMAL);
-	}
 }
 
 void CUImagerApp::OnSettingsTrayicon() 
