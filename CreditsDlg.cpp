@@ -106,10 +106,6 @@ BOOL CCreditsDlg::OnInitDialog()
 	// icclib
 	CString sicclib = _T("icclib ") + CString(ICCLIB_VERSION_STR);
 	sicclib += CString(_T('\n')) + _T("http://www.argyllcms.com/icclibsrc.html");
-	
-	// wink
-	CString swink(_T("Wink"));
-	swink += CString(_T('\n')) + _T("http://www.debugmode.com/wink");
 
 	// unicode nsis
 	CString snsis(_T("Unicode NSIS"));
@@ -130,7 +126,6 @@ BOOL CCreditsDlg::OnInitDialog()
 						szlib		+ _T("\n\n") +
 						sgiflib		+ _T("\n\n") +
 						sicclib		+ _T("\n\n") +
-						swink		+ _T("\n\n") +
 						snsis;
 	m_Credits.SetWindowText(sCredits);
 

@@ -16,10 +16,9 @@ Additional requirements for Visual Studio 2010:
   2. Install DXSDK_Jun10.exe
   3. Reinstall http://www.microsoft.com/en-us/download/details.aspx?id=26999
   
-Necessary free tools:
-- http://www.scratchpaper.com    -> to make the Unicode NSIS installers
+Free tool to make the Unicode NSIS installers:
+- http://www.scratchpaper.com
   (needed also the nsisFirewall, KillProc and UAC unicode plugins)
-- http://www.debugmode.com/wink  -> for tutorials build
 
 Non-free tool to make the translations:
 - http://www.apptranslator.com
