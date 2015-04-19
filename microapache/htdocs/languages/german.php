@@ -14,7 +14,6 @@ define("DAYSAGO","Tagen zurück");
 define("NOFILE","Kein File");
 define("NOFILESFOR","Kein File für");
 define("PAGES","Seiten");
-define("BACK","Zurück");
 define("LOCALTIME","Lokale Zeit");
 define("VIEWFILESFOR","Zeige file(s) für");
 define("SELECT","auswählen");

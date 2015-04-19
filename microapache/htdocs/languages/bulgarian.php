@@ -14,7 +14,6 @@ define("DAYSAGO","дни назад");
 define("NOFILE","Липсва файл");
 define("NOFILESFOR","Липсват файлове за");
 define("PAGES","страници");
-define("BACK","Назад");
 define("LOCALTIME","Местно време");
 define("VIEWFILESFOR","Преглед на файл(ове) за");
 define("SELECT","избери");

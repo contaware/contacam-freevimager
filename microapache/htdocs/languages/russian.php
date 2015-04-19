@@ -14,7 +14,6 @@ define("DAYSAGO","дней назад");
 define("NOFILE","Нет файлов");
 define("NOFILESFOR","Нет файлов для");
 define("PAGES","Страницы");
-define("BACK","вернуться");
 define("LOCALTIME","Местное время");
 define("VIEWFILESFOR","Открыть файл");
 define("SELECT","Выберите");

@@ -14,7 +14,6 @@ define("DAYSAGO","dni dozadu");
 define("NOFILE","Žiadne súbory");
 define("NOFILESFOR","Žiadne súbory z");
 define("PAGES","strany");
-define("BACK","Späť");
 define("LOCALTIME","Aktuálny čas");
 define("VIEWFILESFOR","Prezrieť súbory");
 define("SELECT","vybrať");

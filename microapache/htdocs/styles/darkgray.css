@@ -169,6 +169,9 @@ span.globalbuttons a.highlight:link, span.globalbuttons a.highlight:visited, spa
 a.savebuttons {
 	background: transparent url('save_darkgray.png') no-repeat center center;
 }
+a.backbuttons {
+	background: transparent url('back_darkgray.png') no-repeat center center;
+}
 table#navcontrols {
 	margin: 0 auto;
 	text-align: center;
