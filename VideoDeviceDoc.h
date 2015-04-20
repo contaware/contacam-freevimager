@@ -60,8 +60,7 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_ROTATE180			0x04		// mark the frame as being rotated by 180°
 #define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
-#define MIN_DISK_FREE_PERCENT				10			// 10 %
-#define MIN_DISK_FREE_BYTES					21474836480UI64	// 20 GB
+#define MIN_DISK_FREE_PERMILLION			50000		// 5%
 
 // Frame tag, thumb message and draw
 #define FRAMETAG_REFWIDTH					640
@@ -1046,7 +1045,8 @@ public:
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
-														// 0 means no limit other than the always applied harddrive space limit
+														// 0 means no limit
+	volatile int m_nMinDiskFreePermillion;				// Minimum disk free size in permillion, if the free space is lower than that the oldest files are removed
 
 	// HTTP Get Frame Networking
 	CNetCom* volatile m_pGetFrameNetCom;				// Get Frame Instance

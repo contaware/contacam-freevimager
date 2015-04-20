@@ -2906,42 +2906,45 @@ BEGIN
     CONTROL         "Movement detection surveillance",IDC_RADIO_MOVDET,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,16,14,121,10
     CONTROL         "Snapshots with history",IDC_RADIO_SNAPSHOTHISTORY,
-                    "Button",BS_AUTORADIOBUTTON,16,28,89,10
-    CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,43,100,10
-    CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,57,61,10
+                    "Button",BS_AUTORADIOBUTTON,16,27,89,10
+    CONTROL         "Snapshots without History",IDC_RADIO_SNAPSHOT,"Button",BS_AUTORADIOBUTTON,16,41,100,10
+    CONTROL         "Manual record",IDC_RADIO_MANUAL,"Button",BS_AUTORADIOBUTTON,16,54,61,10
     CONTROL         "No change (to update name, appearance and storage)",IDC_RADIO_NOCHANGE,
-                    "Button",BS_AUTORADIOBUTTON,16,71,191,10
+                    "Button",BS_AUTORADIOBUTTON,16,67,191,10
     CONTROL         "24h continuous recording",IDC_CHECK_24H_REC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,14,97,10
     COMBOBOX        IDC_COMBO_THUMBSPERPAGE,345,13,38,288,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,27,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,345,27,38,72,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,42,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_RATE,152,26,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOTHISTORY_SIZE,345,26,38,72,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_SNAPSHOT_RATE,152,40,114,198,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "Full stretch (for mobile applications)",IDC_CHECK_FULLSTRETCH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,44,129,10
-    EDITTEXT        IDC_EDIT_NAME,152,103,254,13,ES_AUTOHSCROLL
-    COMBOBOX        IDC_COMBO_LANGUAGE,152,140,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_STYLE,152,154,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_KEEPFOR,112,188,86,116,CBS_DROPDOWNLIST | WS_TABSTOP
-    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,210,35,13,ES_RIGHT
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,279,42,129,10
+    EDITTEXT        IDC_EDIT_NAME,152,99,254,13,ES_AUTOHSCROLL
+    COMBOBOX        IDC_COMBO_LANGUAGE,152,136,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_STYLE,152,150,114,222,CBS_DROPDOWNLIST | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_KEEPFOR,152,184,114,116,CBS_DROPDOWNLIST | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_MIN_DISK_FREE_PERCENT,152,201,35,13,ES_RIGHT
+    EDITTEXT        IDC_EDIT_MAX_CAMERA_FOLDER_SIZE,152,217,35,13,ES_RIGHT
     PUSHBUTTON      "OK",IDOK,152,281,58,20,BS_MULTILINE
     PUSHBUTTON      "Cancel",IDCANCEL,220,281,58,20
-    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,81
+    GROUPBOX        "1. Usage",IDC_STATIC,5,3,407,77
     LTEXT           "Thumbs per page",IDC_LABEL_THUMBSPERPAGE,279,15,56,8
-    GROUPBOX        "2. Name",IDC_STATIC,5,89,407,37
-    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,100,123,8
-    LTEXT           "Web interface language",IDC_STATIC,16,143,78,8
-    LTEXT           "Web interface style",IDC_STATIC,16,157,64,8
-    GROUPBOX        "4. Storage",IDC_STATIC,5,178,407,53
-    LTEXT           "Keep files for",IDC_STATIC,16,191,86,8
-    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,197,195,28
-    GROUPBOX        "5. Finish",IDC_STATIC,5,237,407,39
-    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Camera Advanced Settings in Capture menu for more configurations",IDC_STATIC,16,250,390,18
-    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,279,29,57,8
-    GROUPBOX        "3. Appearance",IDC_STATIC,5,131,407,41
-    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,110,117,8
+    GROUPBOX        "2. Name",IDC_STATIC,5,85,407,37
+    LTEXT           "Enter a friendly name for your camera",IDC_STATIC,16,96,123,8
+    LTEXT           "Web interface language",IDC_STATIC,16,139,78,8
+    LTEXT           "Web interface style",IDC_STATIC,16,153,64,8
+    GROUPBOX        "4. Storage",IDC_STATIC,5,173,407,62
+    LTEXT           "Keep files for",IDC_STATIC,16,187,133,8
+    LTEXT           "NOTE: if the free disk space becomes low or the maximum camera folder size is reached the oldest files are deleted",IDC_STATIC,211,201,195,28
+    GROUPBOX        "5. Finish",IDC_STATIC,5,240,407,37
+    LTEXT           "Confirm pressing the OK button. To watch the Movement detections or the Snapshots on your Web Browser select Browse from the View menu. Call Camera Advanced Settings in Capture menu for more configurations",IDC_STATIC,16,252,390,18
+    LTEXT           "History video size",IDC_LABEL_SNAPSHOTHISTORY_SIZE,279,28,57,8
+    GROUPBOX        "3. Appearance",IDC_STATIC,5,127,407,41
+    LTEXT           "(that's also the camera folder name)",IDC_STATIC,16,106,117,8
     LTEXT           "+",IDC_LABEL_PLUS_SIGN,139,15,8,8
-    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,208,133,16
-    LTEXT           "GB",IDC_STATIC,189,212,10,8
+    LTEXT           "Maximum camera folder size\n(0.0: unlimited)",IDC_STATIC,16,215,133,16
+    LTEXT           "GB",IDC_STATIC,190,219,10,8
+    LTEXT           "%",IDC_STATIC,190,204,8,8
+    LTEXT           "Minimum disk free space",IDC_STATIC,16,203,132,8
 END
 
 IDD_RENAME DIALOG 0, 0, 186, 47

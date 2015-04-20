@@ -45,6 +45,7 @@ void CCameraBasicSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBIndex(pDX, IDC_COMBO_SNAPSHOTHISTORY_SIZE, m_nComboSnapshotHistorySize);
 	DDX_Check(pDX, IDC_CHECK_FULLSTRETCH, m_bCheckFullStretch);
 	DDX_Text(pDX, IDC_EDIT_MAX_CAMERA_FOLDER_SIZE, m_sMaxCameraFolderSizeGB);
+	DDX_Text(pDX, IDC_EDIT_MIN_DISK_FREE_PERCENT, m_sMinDiskFreePercent);
 	//}}AFX_DATA_MAP
 }
 
@@ -219,6 +220,7 @@ BOOL CCameraBasicSettingsDlg::OnInitDialog()
 	else
 		m_nComboKeepFor = 11;	// Infinite
 	m_sMaxCameraFolderSizeGB.Format(_T("%.1f"), (double)m_pDoc->m_nMaxCameraFolderSizeMB / 1024.0);
+	m_sMinDiskFreePercent.Format(_T("%.3f"), (double)m_pDoc->m_nMinDiskFreePermillion / 10000.0);
 	if (m_pDoc->m_nSnapshotRate > 240)
 		m_nComboSnapshotHistoryRate = 6;	// 5 Minutes
 	else if (m_pDoc->m_nSnapshotRate > 180)
@@ -451,6 +453,8 @@ void CCameraBasicSettingsDlg::EnableDisableAllCtrls(BOOL bEnable)
 	pComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_KEEPFOR);
 	pComboBox->EnableWindow(bEnable);
 	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MAX_CAMERA_FOLDER_SIZE);
+	pEdit->EnableWindow(bEnable);
+	pEdit = (CEdit*)GetDlgItem(IDC_EDIT_MIN_DISK_FREE_PERCENT);
 	pEdit->EnableWindow(bEnable);
 	CButton* pButton = (CButton*)GetDlgItem(IDOK);
 	pButton->EnableWindow(bEnable);
@@ -1061,6 +1065,15 @@ void CCameraBasicSettingsDlg::ApplySettings()
 	m_pDoc->m_nMaxCameraFolderSizeMB = Round(dMaxCameraFolderSizeGB * 1024.0);
 	if (m_pDoc->m_nMaxCameraFolderSizeMB < 0)
 		m_pDoc->m_nMaxCameraFolderSizeMB = 0;
+
+	// Minimum disk free size
+	double dMinDiskFreePercent = _tcstod(m_sMinDiskFreePercent.GetBuffer(0), NULL);
+	m_sMinDiskFreePercent.ReleaseBuffer();
+	m_pDoc->m_nMinDiskFreePermillion = Round(dMinDiskFreePercent * 10000.0);
+	if (m_pDoc->m_nMinDiskFreePermillion < 0)
+		m_pDoc->m_nMinDiskFreePermillion = 0;
+	else if (m_pDoc->m_nMinDiskFreePermillion > 1000000)
+		m_pDoc->m_nMinDiskFreePermillion = 1000000;
 
 	// Restart delete thread
 	m_pDoc->m_DeleteThread.Start(THREAD_PRIORITY_LOWEST);

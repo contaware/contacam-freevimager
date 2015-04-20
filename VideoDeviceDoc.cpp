@@ -3687,8 +3687,8 @@ int CVideoDeviceDoc::CDeleteThread::Work()
 						ullMaxCameraFolderSize <<= 20; // MB to Bytes
 					}
 
-					// Minimum wanted disk free space: MIN(MIN_DISK_FREE_PERCENT of HD Size, MIN_DISK_FREE_BYTES)
-					ullMinDiskFreeSpace = MIN(::GetDiskTotalSize(sAutoSaveDir) * MIN_DISK_FREE_PERCENT / 100, MIN_DISK_FREE_BYTES);
+					// Minimum wanted disk free space
+					ullMinDiskFreeSpace = ::GetDiskTotalSize(sAutoSaveDir) / 1000000 * m_pDoc->m_nMinDiskFreePermillion;
 
 					// Get the time of the oldest existing directory
 					if (!CalcOldestDir(	FileFind,
@@ -3848,6 +3848,7 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
+	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
 
 	// Movement Detection
 	m_pDifferencingDib = NULL;
@@ -4625,6 +4626,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwAnimatedGifHeight = (DWORD) pApp->GetProfileInt(sSection, _T("AnimatedGifHeight"), MOVDET_ANIMGIF_DEFAULT_HEIGHT);
 	m_nDeleteRecordingsOlderThanDays = (int) pApp->GetProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), DEFAULT_DEL_RECS_OLDER_THAN_DAYS);
 	m_nMaxCameraFolderSizeMB = (int) pApp->GetProfileInt(sSection, _T("MaxCameraFolderSizeMB"), 0);
+	m_nMinDiskFreePermillion = (int) pApp->GetProfileInt(sSection, _T("MinDiskFreePermillion"), MIN_DISK_FREE_PERMILLION);
 
 	// Frame-rate
 	unsigned int nSize = sizeof(m_dFrameRate);
@@ -4798,6 +4800,7 @@ void CVideoDeviceDoc::SaveSettings()
 	pApp->WriteProfileInt(sSection, _T("AnimatedGifHeight"), m_dwAnimatedGifHeight);
 	pApp->WriteProfileInt(sSection, _T("DeleteRecordingsOlderThanDays"), m_nDeleteRecordingsOlderThanDays);
 	pApp->WriteProfileInt(sSection, _T("MaxCameraFolderSizeMB"), m_nMaxCameraFolderSizeMB);
+	pApp->WriteProfileInt(sSection, _T("MinDiskFreePermillion"), m_nMinDiskFreePermillion);
 
 	// Store detection zones only if the total size has already been calculated by OnThreadSafeInitMovDet()
 	if (m_lMovDetTotalZones > 0)

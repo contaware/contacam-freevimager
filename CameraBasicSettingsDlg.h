@@ -30,6 +30,7 @@ public:
 	int		m_nComboKeepFor;
 	CString	m_sName;
 	CString m_sMaxCameraFolderSizeGB;
+	CString m_sMinDiskFreePercent;
 	int		m_nUsage;
 	int		m_nComboSnapshotRate;
 	int		m_nComboSnapshotHistoryRate;
