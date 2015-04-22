@@ -49,6 +49,7 @@
 #include <atlfile.h>
 #include <atlenc.h>
 #include <atlsocket.h>
+#include <atlimage.h>
 
 // Including both stdint.h and intsafe.h generates warnings in vs2010 (fixed in vs2012)
 // http://connect.microsoft.com/VisualStudio/feedback/details/621653/including-stdint-after-intsafe-generates-warnings

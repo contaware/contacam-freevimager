@@ -1194,6 +1194,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='FreeVimager|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="ToasterWnd.cpp" />
     <ClCompile Include="ToolBarChildFrm.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1523,6 +1524,7 @@
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TabCtrlSSL.h" />
     <ClInclude Include="TabPageSSL.h" />
+    <ClInclude Include="ToasterWnd.h" />
     <ClInclude Include="ToolBarChildFrm.h" />
     <ClInclude Include="ToolbarSliderCtrl.h" />
     <ClInclude Include="TraceLogFile.h" />

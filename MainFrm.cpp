@@ -137,6 +137,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
 	m_pIMAPI2Dlg = NULL;
+	m_pToaster = NULL;
 }
 
 CMainFrame::~CMainFrame()
@@ -278,6 +279,13 @@ void CMainFrame::OnDestroy()
 {
 	// Kill Timer
 	KillTimer(ID_TIMER_ONESEC_POLL);
+
+	// Close the toaster
+	if (m_pToaster)
+	{
+		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
+		m_pToaster = NULL;
+	}
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -642,6 +650,12 @@ void CMainFrame::OnClose()
 		// Set Flag
 		pApp->m_bShuttingDownApplication = TRUE;
 
+		// Show closing toaster window
+#ifdef VIDEODEVICEDOC
+		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+			PopupToaster(ML_STRING(1566, "Closing ") + APPNAME_NOEXT, ML_STRING(1565, "Please wait..."), 0);
+#endif
+
 		// Do Not Call pApp->CloseAllDocuments because it calls
 		// CDocument::OnCloseDocument(), which destroys the attached views.
 		// Instead Post WM_CLOSE Messages!
@@ -669,7 +683,32 @@ void CMainFrame::OnClose()
 	}	
 }
 
-void CMainFrame::OnFileAcquire() 
+void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs/*=10000*/)
+{
+	if (m_pToaster)
+		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
+	m_pToaster = new CToasterWnd(sTitle, sText);
+	if (dwWaitTimeMs > 0)
+	{
+		m_pToaster->m_dwWaitTime = dwWaitTimeMs;
+		m_pToaster->m_bWaitOnMouseOver = TRUE;
+		m_pToaster->m_bOnlyCloseOnUser = FALSE;
+	}
+	else
+		m_pToaster->m_bOnlyCloseOnUser = TRUE;
+	m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
+	m_pToaster->m_bTitleHot = FALSE;
+	m_pToaster->m_bTextHot = FALSE;
+	m_pToaster->m_bIconHot = FALSE;
+	m_pToaster->m_nHeight = 80;
+	m_pToaster->m_nWidth = 360;
+	m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
+	m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
+	if (!m_pToaster->Show())
+		m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
+}
+
+void CMainFrame::OnFileAcquire()
 {
 	// Init and check
 	if (!TwainIsValidDriver())

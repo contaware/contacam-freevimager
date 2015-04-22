@@ -13,6 +13,7 @@
 #include "Trayicon.h"
 #include "StatusBarACT.h"
 #include "MDIClientWnd.h"
+#include "ToasterWnd.h"
 extern "C"
 {
 #include "tiffiop.h"
@@ -81,6 +82,9 @@ public:
 	void TwainCopyImage(HANDLE hBitmap, TW_IMAGEINFO& info);
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
+
+	// Popup toaster window
+	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);
@@ -207,6 +211,7 @@ protected:
 	CString m_sStatusBarString;
 	int m_nStatusBarStringCountdownSec;
 	BOOL m_bProgressIndicatorCreated;
+	CToasterWnd* m_pToaster;
 
 	// Scan Vars
 	BOOL m_bScanAndEmail;
