@@ -35,7 +35,7 @@ public:
 // Generated message map functions
 protected:
 	BOOL m_bFirstCloseAttempt;
-	DWORD m_dwFirstCloseAttemptUpTime;
+	DWORD m_dwShutdownStartUpTime;
 
 	//{{AFX_MSG(CChildFrame)
 	//}}AFX_MSG

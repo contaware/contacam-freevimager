@@ -40,7 +40,7 @@ class CMovementDetectionPage;
 #define MIN_FRAMERATE						0.1			// fps
 #define MAX_FRAMERATE						95.0		// fps
 #define PROCESS_MAX_FRAMETIME				15000U		// ms, make sure that: 1000 / MIN_FRAMERATE < PROCESS_MAX_FRAMETIME
-#define STARTUP_SETTLE_TIME_SEC				3			// sec
+#define STARTUP_SETTLE_TIME_SEC				3			// movdet and rec startup delay in sec (especially to sync. audio / video)
 #define DEFAULT_FRAMERATE					10.0		// fps
 #define HTTPSERVERPUSH_DEFAULT_FRAMERATE	4.0			// fps
 #define HTTPSERVERPUSH_EDIMAX_DEFAULT_FRAMERATE	3.0		// fps
@@ -77,7 +77,7 @@ class CMovementDetectionPage;
 #define DRAW_MESSAGE_SHOWTIME				1500U		// ms
 
 // Process Frame Stop Engine
-#define PROCESSFRAME_MAX_RETRY_TIME			5000		// ms
+#define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
 #define PROCESSFRAME_CAMERABASICSETTINGS	0x01
 #define PROCESSFRAME_DXFORMATDIALOG			0x02
 #define PROCESSFRAME_DVFORMATDIALOG			0x04
@@ -178,7 +178,7 @@ class CMovementDetectionPage;
 #define DEFAULT_HTTP_VIDEO_QUALITY			30			// 0 Best Quality, 100 Worst Quality
 #define DEFAULT_HTTP_VIDEO_SIZE_CX			640
 #define DEFAULT_HTTP_VIDEO_SIZE_CY			480
-#define HTTPGETFRAME_RECONNECTION_DELAY		5000U		// ms
+#define HTTPGETFRAME_RECONNECTION_DELAY		5000U		// in case of a unhandled HTTP return code wait that time in ms before reconnecting
 #define HTTPGETFRAME_MAXCOUNT_ALARM1		30
 #define HTTPGETFRAME_MAXCOUNT_ALARM2		40
 #define HTTPGETFRAME_MAXCOUNT_ALARM3		50
@@ -187,7 +187,10 @@ class CMovementDetectionPage;
 #define HTTPGETFRAME_MIN_DELAY_ALARM2		400U		// ms
 #define HTTPGETFRAME_MIN_DELAY_ALARM3		1000U		// ms
 #define HTTPGETFRAME_MAX_DELAY_ALARM		((DWORD)(1000.0 / MIN_FRAMERATE)) // ms
-#define HTTPGETFRAME_CONNECTION_TIMEOUT		60			// Connection timeout in sec
+#define HTTPGETFRAME_CONNECTION_TIMEOUT		60			// Connection timeout in sec, used:
+														// - remove the oldest connections in network poll mode
+														// - network setup try connecting timeout
+														// - network reconnect in watchdog
 #define HTTPGETFRAME_MIN_KEEPALIVE_REQUESTS	50			// Keep-alive support check
 #define HTTPGETFRAME_USERNAME_PLACEHOLDER	_T("[USERNAME]") // only use letters, numbers, uri unreserved or uri reserved chars
 #define HTTPGETFRAME_PASSWORD_PLACEHOLDER	_T("[PASSWORD]") // only use letters, numbers, uri unreserved or uri reserved chars

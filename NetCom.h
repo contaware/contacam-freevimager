@@ -40,7 +40,7 @@
 #define NETCOM_MAX_TX_BUFFER_SIZE				1400
 
 // Timeout for waiting the FD_CLOSE replay if we started closing
-#define NETCOM_CONNECTION_SHUTDOWN_TIMEOUT		5000U
+#define NETCOM_CONNECTION_SHUTDOWN_TIMEOUT		3000U
 
 // Timeout for letting the RX Thread finishing reading the data in the input queue
 // (this is useful for http files download for example, in this case the peer

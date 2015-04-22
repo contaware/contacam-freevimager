@@ -50,16 +50,19 @@ extern "C"
 #define CLOSING_CHECK_INTERVAL_TIMER_MS				300U	// ms
 #define ONESEC_POLL_TIMER_MS						1000U	// ms
 
+// Autorun of devices checks for AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY ms:
+// - whether the directshow device is available
+// - whether there is a network interface that can connect to the given camera host
 #ifdef VIDEODEVICEDOC
-#define AUTORUN_VIDEODEVICES_MAX_RETRIES			6
-#define AUTORUN_VIDEODEVICES_RETRY_DELAY			10000	// ms
+#define AUTORUN_VIDEODEVICES_MAX_RETRIES			3
+#define AUTORUN_VIDEODEVICES_RETRY_DELAY			5000	// ms
 #endif
 
 // Default Statusbar message off-time
 #define DEFAULT_STATUSBAR_MSG_OFFTIME				5		// sec
 
-// Closing wait time
-#define MAX_CLOSE_CHILDFRAME_WAITTIME				60000U	// ms
+// Picture document closing wait time
+#define MAX_PICTUREDOC_CLOSE_WAITTIME				15000U	// ms
 
 // Forward Declarations
 class CUImagerDoc;

@@ -927,14 +927,13 @@ void CPictureChildFrame::OnClose()
 
 			// Start Shutdown
 			m_bFirstCloseAttempt = FALSE;
-			m_dwFirstCloseAttemptUpTime = ::timeGetTime();
 			StartShutdown();
 		}
 	}
 	else
 	{
 		if (IsShutdownDone() ||
-			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= MAX_CLOSE_CHILDFRAME_WAITTIME)
+			(::timeGetTime() - m_dwShutdownStartUpTime) >= MAX_PICTUREDOC_CLOSE_WAITTIME)
 		{
 			// Now that the layered thread exited we can close the dialog
 			if (pDoc->m_pLayeredDlg)
@@ -959,6 +958,9 @@ void CPictureChildFrame::StartShutdown()
 	CPictureDoc* pDoc = (CPictureDoc*)GetActiveDocument();
 	ASSERT_VALID(pDoc);
 	
+	// Init timeout
+	m_dwShutdownStartUpTime = ::timeGetTime();
+
 	// Cancel Crop Tool
 	pDoc->CancelCrop();
 
@@ -1174,7 +1176,6 @@ void CVideoDeviceChildFrame::OnClose()
 
 			// Reset Flag and set shutdown start uptime
 			m_bFirstCloseAttempt = FALSE;
-			m_dwFirstCloseAttemptUpTime = ::timeGetTime();
 
 			// Start Shutdown Process
 			StartShutdown1();
@@ -1184,23 +1185,23 @@ void CVideoDeviceChildFrame::OnClose()
 	else if (!m_bShutdown2Started)
 	{
 		// The given wait time may be exceeded if a small framerate is set.
-		// That's not a problem given that after MAX_CLOSE_CHILDFRAME_WAITTIME / 3 milliseconds
+		// That's not a problem given that after PROCESSFRAME_MAX_RETRY_TIME milliseconds
 		// that we called StopProcessFrame() we are not anymore inside ProcessI420Frame() and
 		// because of the StopProcessFrame() call we cannot enter ProcessI420Frame() again!
 		if (IsShutdown1Done() ||
-			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
+			(::timeGetTime() - m_dwShutdownStartUpTime) >= PROCESSFRAME_MAX_RETRY_TIME)
 			StartShutdown2();
 	}
 	// StartShutdown3()?
 	else if (!m_bShutdown3Started)
 	{
 		if (IsShutdown2Done() ||
-			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= (2 * MAX_CLOSE_CHILDFRAME_WAITTIME / 3))
+			(::timeGetTime() - m_dwShutdownStartUpTime) >= NETCOM_BLOCKING_TIMEOUT)
 			StartShutdown3();
 	}
 	// Done?
 	else if (IsShutdown3Done() ||
-			(::timeGetTime() - m_dwFirstCloseAttemptUpTime) >= MAX_CLOSE_CHILDFRAME_WAITTIME)
+			(::timeGetTime() - m_dwShutdownStartUpTime) >= NETCOM_BLOCKING_TIMEOUT)
 	{
 		// Log the failure to close
 		if (!IsShutdown2Done() || !IsShutdown3Done())
@@ -1243,6 +1244,9 @@ void CVideoDeviceChildFrame::StartShutdown1()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
+	// Init timeout
+	m_dwShutdownStartUpTime = ::timeGetTime();
+
 	// Kill it right now because of Save Frame List and HTTP Reconnect
 	pDoc->m_WatchdogThread.Kill_NoBlocking();
 
@@ -1263,6 +1267,9 @@ void CVideoDeviceChildFrame::StartShutdown2()
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
 
+	// Init timeout
+	m_dwShutdownStartUpTime = ::timeGetTime();
+
 	// Set flag
 	m_bShutdown2Started = TRUE;
 
@@ -1281,6 +1288,9 @@ void CVideoDeviceChildFrame::StartShutdown3()
 	ASSERT_VALID(pView);
 	CVideoDeviceDoc* pDoc = pView->GetDocument();
 	ASSERT_VALID(pDoc);
+
+	// Init timeout
+	m_dwShutdownStartUpTime = ::timeGetTime();
 
 	// Set flag
 	m_bShutdown3Started = TRUE;
@@ -1301,10 +1311,10 @@ void CVideoDeviceChildFrame::EndShutdown()
 	ASSERT_VALID(pDoc);
 
 	// Network Client Clean-Up
-	// (threads already stopped)
+	// (threads should already be stopped)
 	if (pDoc->m_pGetFrameNetCom)
 	{
-		delete pDoc->m_pGetFrameNetCom;
+		delete pDoc->m_pGetFrameNetCom; // this calls Close() which eventually blocks till all threads are forced to close
 		pDoc->m_pGetFrameNetCom = NULL;
 	}
 

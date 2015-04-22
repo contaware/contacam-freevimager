@@ -30,7 +30,7 @@ CChildFrame::CChildFrame()
 {
 	// Used For Closing in OnClose()
 	m_bFirstCloseAttempt = TRUE;
-	m_dwFirstCloseAttemptUpTime = 0;
+	m_dwShutdownStartUpTime = 0;
 }
 
 CChildFrame::~CChildFrame()
