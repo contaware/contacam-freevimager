@@ -76,6 +76,10 @@ BOOL CCreditsDlg::OnInitDialog()
 	ssmtp += CString(_T('\n')) + _T("http://www.naughter.com");
 #endif
 
+	// CToasterWnd v1.17
+	CString stoaster(_T("CToasterWnd v1.17"));
+	stoaster += CString(_T('\n')) + _T("http://www.naughter.com");
+
 	// libjpeg
 	CString slibjpeg = _T("libjpeg ") + CString(JVERSION);
 	slibjpeg += CString(_T('\n')) + _T("http://www.ijg.org");
@@ -120,6 +124,7 @@ BOOL CCreditsDlg::OnInitDialog()
 						sopenssl	+ _T("\n\n") +
 						ssmtp		+ _T("\n\n") +
 #endif
+						stoaster	+ _T("\n\n") +
 						slibjpeg	+ _T("\n\n") +
 						slibtiff	+ _T("\n\n") +
 						slibpng		+ _T("\n\n") +

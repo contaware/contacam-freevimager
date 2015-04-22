@@ -26,6 +26,12 @@ CPJNSMTPConnection 3.08 with w3 mfc 1.97
 - Used files: OpenSSLMfc.h, OpenSSLMfc.cpp, SocMFC.h, SocMFC.cpp
 
 
+CToasterWnd 1.17
+----------------
+
+- Used files: ToasterWnd.h, ToasterWnd.cpp
+
+
 CFTPTransfer
 ------------
 
