@@ -3922,7 +3922,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MULTILANG_1264      "Could Not Save The Picture As a Pdf File."
     IDS_MULTILANG_1265      "Cannot delete page %d"
     IDS_MULTILANG_1266      "Are you sure you want to delete %s ?"
     IDS_MULTILANG_1267      "Cannot delete the %s file"

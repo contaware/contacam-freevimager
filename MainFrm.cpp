@@ -85,6 +85,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_MESSAGE(WM_TRAY_NOTIFICATION, OnTrayNotification)
 	ON_MESSAGE(WM_COPYDATA, OnCopyData)
 	ON_MESSAGE(WM_TWAIN_CLOSED, OnTwainClosed)
+	ON_MESSAGE(WM_THREADSAFE_POPUP_TOASTER, OnThreadSafePopupToaster)
 #ifdef VIDEODEVICEDOC
 	ON_WM_INITMENUPOPUP()
 	ON_MESSAGE(WM_THREADSAFE_CONNECTERR, OnThreadSafeConnectErr)
@@ -433,13 +434,14 @@ LONG CMainFrame::OnTwainClosed(WPARAM wparam, LPARAM lparam)
 						// Delete Tiff
 						::DeleteFile(((CUImagerApp*)::AfxGetApp())->m_sScanToTiffFileName);
 
-						// Show message in Statusbar
-						StatusText(	ML_STRING(1849, "Saved") + _T(" ") +
-									((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName,
-									DEFAULT_STATUSBAR_MSG_OFFTIME);
+						// Show message
+						PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), ((CUImagerApp*)::AfxGetApp())->m_sScanToPdfFileName);
 					}
 					else
+					{
 						EndWaitCursor();
+						PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
+					}
 				}
 				// Open Multi-Page Tiff
 				else
@@ -650,7 +652,7 @@ void CMainFrame::OnClose()
 		// Set Flag
 		pApp->m_bShuttingDownApplication = TRUE;
 
-		// Show closing toaster window
+		// Show closing message
 #ifdef VIDEODEVICEDOC
 		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
 			PopupToaster(ML_STRING(1566, "Closing ") + APPNAME_NOEXT, ML_STRING(1565, "Please wait..."), 0);
@@ -685,6 +687,37 @@ void CMainFrame::OnClose()
 
 void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs/*=10000*/)
 {
+	TCHAR* p = new TCHAR[sTitle.GetLength() + sText.GetLength() + 2];
+	if (p)
+	{
+		_tcscpy(p, sTitle);
+		p += sTitle.GetLength() + 1;
+		_tcscpy(p, sText);
+		p -= sTitle.GetLength() + 1;
+		::PostMessage(	GetSafeHwnd(),
+						WM_THREADSAFE_POPUP_TOASTER,
+						(WPARAM)p,
+						(LPARAM)dwWaitTimeMs);
+	}
+}
+
+LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
+{
+	// Get params
+	TCHAR* p = (TCHAR*)wparam;
+	CString sTitle;
+	CString sText;
+	if (p)
+	{
+		sTitle = CString(p);
+		p += sTitle.GetLength() + 1;
+		sText = CString(p);
+		p -= sTitle.GetLength() + 1;
+		delete [] p;
+	}
+	DWORD dwWaitTimeMs = (DWORD)lparam;
+
+	// Show Toaster
 	if (m_pToaster)
 		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	m_pToaster = new CToasterWnd(sTitle, sText);
@@ -697,15 +730,28 @@ void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD
 	else
 		m_pToaster->m_bOnlyCloseOnUser = TRUE;
 	m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
-	m_pToaster->m_bTitleHot = FALSE;
-	m_pToaster->m_bTextHot = FALSE;
 	m_pToaster->m_bIconHot = FALSE;
-	m_pToaster->m_nHeight = 80;
+	m_pToaster->m_bTitleHot = FALSE;
+	m_pToaster->m_bTextHot = CToasterNotificationLink::IsClickable(m_pToaster->m_sText);
+	CFont defaultGUIFont;
+	defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT));
+	LOGFONT lf;
+	defaultGUIFont.GetLogFont(&lf);
+	if (m_pToaster->m_bTextHot)
+	{
+		m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
+		m_pToaster->m_colorText = RGB(0, 0, 0xFF);
+		lf.lfUnderline = TRUE;
+	}
+	m_pToaster->m_fontText.CreateFontIndirect(&lf);
 	m_pToaster->m_nWidth = 360;
+	m_pToaster->m_nHeight = 80;
 	m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
 	m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
 	if (!m_pToaster->Show())
 		m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
+
+	return 0;
 }
 
 void CMainFrame::OnFileAcquire()

@@ -417,6 +417,9 @@
     <ClCompile Include="ToasterWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ToasterWndLink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="MotionDetHelpers.asm">
@@ -862,6 +865,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToasterWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ToasterWndLink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

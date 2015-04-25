@@ -62,7 +62,7 @@ class CMovementDetectionPage;
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
 
-// Frame tag, thumb message and draw
+// Frame tag, thumb message and draw message
 #define FRAMETAG_REFWIDTH					640
 #define FRAMETAG_REFHEIGHT					480
 #define FRAMETIME_COLOR						RGB(0,0xFF,0)
@@ -73,8 +73,6 @@ class CMovementDetectionPage;
 #define DRAW_MESSAGE_COLOR					RGB(0xFF,0xFF,0xFF)
 #define DRAW_MESSAGE_SUCCESS_COLOR			RGB(0,0xFF,0)
 #define DRAW_MESSAGE_ERROR_COLOR			RGB(0xFF,0,0)
-#define DRAW_MESSAGE_BKG_COLOR				RGB(0x30,0x30,0x30)
-#define DRAW_MESSAGE_SHOWTIME				1500U		// ms
 
 // Process Frame Stop Engine
 #define PROCESSFRAME_MAX_RETRY_TIME			3500		// maximum retry time in ms for Process Frame Stop Engine
@@ -786,9 +784,6 @@ public:
 
 	// Changes the snapshot rate
 	void SnapshotRate(double dRate);
-
-	// Show OSD message
-	void ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor);
 	
 	// List Convention
 	//
@@ -1011,10 +1006,6 @@ public:
 	CSaveSnapshotVideoThread m_SaveSnapshotVideoThread;	// Thread which creates the history video file and FTP uploads it
 
 	// Drawing
-	CRITICAL_SECTION m_csOSDMessage;					// Critical Section for the OSD message vars
-	volatile DWORD m_dwOSDMessageUpTime;				// OSD message UpTime
-	CString m_sOSDMessage;								// OSD message string
-	volatile COLORREF m_crOSDMessageColor;				// OSD message color
 	CDib* volatile m_pDrawDibRGB32;						// Frame in RGB32 format for drawing
 
 	// Watchdog vars

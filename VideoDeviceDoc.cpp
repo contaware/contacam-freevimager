@@ -3975,9 +3975,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	// Init Snapshot Configuration Critical Section
 	::InitializeCriticalSection(&m_csSnapshotConfiguration);
 
-	// Init OSD Message Critical Section
-	::InitializeCriticalSection(&m_csOSDMessage);
-
 	// Init Process Frame Stop Engine Critical Section
 	::InitializeCriticalSection(&m_csProcessFrameStop);
 
@@ -4024,7 +4021,6 @@ CVideoDeviceDoc::~CVideoDeviceDoc()
 	}
 	ClearMovementDetectionsList();
 	::DeleteCriticalSection(&m_csProcessFrameStop);
-	::DeleteCriticalSection(&m_csOSDMessage);
 	::DeleteCriticalSection(&m_csSnapshotConfiguration);
 	::DeleteCriticalSection(&m_csHttpProcess);
 	::DeleteCriticalSection(&m_csHttpParams);
@@ -5492,8 +5488,9 @@ BOOL CVideoDeviceDoc::CaptureRecord()
 			// Leave CS
 			::LeaveCriticalSection(&m_csAVRec);
 			
-			// Error Message
-			ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+			// Error message
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 			::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
 			
 			return FALSE;
@@ -8068,25 +8065,16 @@ BOOL CVideoDeviceDoc::EditSnapshot(CDib* pDib, const CTime& Time)
 	// Clear flag
 	m_bDoEditSnapshot = FALSE;
 
-	// Show OSD Message
+	// Show message
 	if (res)
 	{
 		if (!m_bManualSnapshotAutoOpen)
-			ShowOSDMessage(ML_STRING(1849, "Saved"), DRAW_MESSAGE_SUCCESS_COLOR);
+			::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), sFileName);
 	}
 	else
-		ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+		::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 
 	return res;
-}
-
-void CVideoDeviceDoc::ShowOSDMessage(const CString& sOSDMessage, COLORREF crOSDMessageColor)
-{
-	::EnterCriticalSection(&m_csOSDMessage);
-	m_dwOSDMessageUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
-	m_sOSDMessage = sOSDMessage;
-	m_crOSDMessageColor = crOSDMessageColor;
-	::LeaveCriticalSection(&m_csOSDMessage);
 }
 
 void CVideoDeviceDoc::OpenVideoFile(const CString& sFileName)
@@ -8208,7 +8196,8 @@ BOOL CVideoDeviceDoc::NextVideoFile()
 	{
 		if (pNextAVRec)
 			delete pNextAVRec;
-		ShowOSDMessage(ML_STRING(1850, "Save Failed!"), DRAW_MESSAGE_ERROR_COLOR);
+		if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 		::LogLine(_T("%s, %s"), GetAssignedDeviceName(), ML_STRING(1850, "Save Failed!"));
 		return FALSE;
 	}

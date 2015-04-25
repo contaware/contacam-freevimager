@@ -14,6 +14,7 @@
 #include "StatusBarACT.h"
 #include "MDIClientWnd.h"
 #include "ToasterWnd.h"
+#include "ToasterWndLink.h"
 extern "C"
 {
 #include "tiffiop.h"
@@ -22,12 +23,13 @@ extern "C"
 // Window Message IDs
 #define WM_TASKBAR_BUTTON							0x0313
 #define WM_THREADSAFE_OPEN_DOC						WM_USER + 100
-#define WM_ALL_CLOSED								WM_USER + 101
-#define WM_SCANANDEMAIL								WM_USER + 102
-#define WM_TRAY_NOTIFICATION						WM_USER + 103
+#define WM_THREADSAFE_POPUP_TOASTER					WM_USER + 101
+#define WM_ALL_CLOSED								WM_USER + 102
+#define WM_SCANANDEMAIL								WM_USER + 103
+#define WM_TRAY_NOTIFICATION						WM_USER + 104
 #ifdef VIDEODEVICEDOC
-#define WM_THREADSAFE_CONNECTERR					WM_USER + 104
-#define WM_AUTORUN_VIDEODEVICES						WM_USER + 105
+#define WM_THREADSAFE_CONNECTERR					WM_USER + 105
+#define WM_AUTORUN_VIDEODEVICES						WM_USER + 106
 #endif
 														
 #define ID_TIMER_FULLSCREEN							1
@@ -58,9 +60,6 @@ extern "C"
 #define AUTORUN_VIDEODEVICES_MAX_RETRIES			3
 #define AUTORUN_VIDEODEVICES_RETRY_DELAY			5000	// ms
 #endif
-
-// Default Statusbar message off-time
-#define DEFAULT_STATUSBAR_MSG_OFFTIME				5		// sec
 
 // Picture document closing wait time
 #define MAX_PICTUREDOC_CLOSE_WAITTIME				15000U	// ms
@@ -212,6 +211,7 @@ protected:
 	int m_nStatusBarStringCountdownSec;
 	BOOL m_bProgressIndicatorCreated;
 	CToasterWnd* m_pToaster;
+	CToasterNotificationLink m_ToasterNotificationLink;
 
 	// Scan Vars
 	BOOL m_bScanAndEmail;
@@ -270,6 +270,7 @@ protected:
 	afx_msg LONG OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	afx_msg LRESULT OnCopyData(WPARAM wParam, LPARAM lParam);
 	afx_msg LONG OnTwainClosed(WPARAM wparam, LPARAM lparam);
+	afx_msg LONG OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam);
 #ifdef VIDEODEVICEDOC
 	afx_msg void OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu);
 	afx_msg LONG OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam);

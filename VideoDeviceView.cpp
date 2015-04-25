@@ -378,22 +378,9 @@ void CVideoDeviceView::Draw(HDC hDC)
 			DrawZones(hDC);
 
 		// Draw Text
-		CString sOSDMessage;
-		COLORREF crOSDMessageColor = DRAW_MESSAGE_SUCCESS_COLOR;
-		::EnterCriticalSection(&pDoc->m_csOSDMessage);
-		DWORD dwCurrentUpTime = ::timeGetTime(); // uptime measurement must be inside the cs!
-		if ((dwCurrentUpTime - pDoc->m_dwOSDMessageUpTime) <= DRAW_MESSAGE_SHOWTIME)
-		{
-			sOSDMessage = pDoc->m_sOSDMessage;
-			crOSDMessageColor = pDoc->m_crOSDMessageColor;
-		}
-		else
-			pDoc->m_sOSDMessage = _T("");
-		::LeaveCriticalSection(&pDoc->m_csOSDMessage);
-		if (pDoc->m_bDetectingMinLengthMovement		||
-			pDoc->m_SaveFrameListThread.IsWorking() ||
-			!sOSDMessage.IsEmpty())
-			DrawTextMsg(hDC, sOSDMessage, crOSDMessageColor);
+		if (pDoc->m_bDetectingMinLengthMovement ||
+			pDoc->m_SaveFrameListThread.IsWorking())
+			DrawTextMsg(hDC);
 	}
 	// Display: Preview Off
 	else
@@ -405,7 +392,7 @@ void CVideoDeviceView::Draw(HDC hDC)
 	}
 }
 
-void CVideoDeviceView::DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF crOSDMessageColor)
+void CVideoDeviceView::DrawTextMsg(HDC hDC)
 {
 	CVideoDeviceDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -440,14 +427,6 @@ void CVideoDeviceView::DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF
 							sProgress, DRAW_MESSAGE_COLOR, nMaxFontSize, DT_TOP | DT_RIGHT,
 							OPAQUE, DRAW_BKG_COLOR);
 		}
-	}
-
-	// Draw OSD message
-	if (!sOSDMessage.IsEmpty())
-	{
-		::DrawBigText(	hDC, CRect(0, 0, rcClient.Width(), rcClient.Height()),
-						sOSDMessage, crOSDMessageColor, 36, DT_CENTER | DT_VCENTER,
-						OPAQUE, DRAW_MESSAGE_BKG_COLOR);
 	}
 }
 

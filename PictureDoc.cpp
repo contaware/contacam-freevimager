@@ -4135,17 +4135,13 @@ BOOL CPictureDoc::SaveAsPdf()
 		// End Wait Cursor
 		EndWaitCursor();
 
-		// Show message in Statusbar
+		// Show message
 		if (res)
-		{
-			::AfxGetMainFrame()->StatusText(ML_STRING(1849, "Saved") + _T(" ") +
-											CString(FileName),
-											DEFAULT_STATUSBAR_MSG_OFFTIME);
-		}
+			::AfxGetMainFrame()->PopupToaster(CString(APPNAME_NOEXT) + _T(" ") + ML_STRING(1849, "Saved"), FileName);
 		else
 		{
 			::DeleteFile(FileName);
-			::AfxMessageBox(ML_STRING(1264, "Could Not Save The Picture As a Pdf File."), MB_OK | MB_ICONSTOP);
+			::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, ML_STRING(1850, "Save Failed!"), 0);
 		}
 	}
 

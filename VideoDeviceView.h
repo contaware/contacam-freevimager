@@ -25,7 +25,7 @@ public:
 
 protected:
 	DECLARE_DYNCREATE(CVideoDeviceView)
-	void DrawTextMsg(HDC hDC, const CString& sOSDMessage, COLORREF crOSDMessageColor);
+	void DrawTextMsg(HDC hDC);
 	__forceinline void DrawZoneSensitivity(int i, HDC hDC, const RECT& rcDetZone, int n);
 	void DrawZones(HDC hDC);
 	BOOL ReOpenDxDevice();
