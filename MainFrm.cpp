@@ -132,7 +132,6 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_ptChildScrollPosition = CPoint(0,0);
 	m_bScreenSaverWasActive = FALSE;
 	m_sStatusBarString = _T("");
-	m_nStatusBarStringCountdownSec = 0;
 	m_bProgressIndicatorCreated = FALSE;
 	m_TiffScan = NULL;
 	m_bScanAndEmail = FALSE;
@@ -2159,13 +2158,6 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 	else if (nIDEvent == ID_TIMER_ONESEC_POLL)
 	{
-		// Handle statusbar message off-time
-		if (m_nStatusBarStringCountdownSec > 0)
-		{
-			if (--m_nStatusBarStringCountdownSec == 0)
-				StatusText(); // show idle message
-		}
-
 		// Get CPU Usage
 		double dCPUUsage = ::GetCPUUsage();
 
@@ -2312,17 +2304,13 @@ void CMainFrame::OnTimer(UINT nIDEvent)
 	}
 }
 
-void CMainFrame::StatusText(CString sText/*=_T("")*/, int nCountdownSec/*=0*/)
+void CMainFrame::StatusText(CString sText/*=_T("")*/)
 {
-	// Update if not a StatusText() empty call during a countdown
-	if (!(sText == _T("") && nCountdownSec == 0 && m_nStatusBarStringCountdownSec > 0))
-	{
-		m_nStatusBarStringCountdownSec = nCountdownSec;
-		m_sStatusBarString = sText;
-	}
-
+	// Update variable
+	m_sStatusBarString = sText;
+	
 	// Send Message handled in OnSetMessageString()
-	if (sText == _T(""))
+	if (m_sStatusBarString == _T(""))
 		SetMessageText(AFX_IDS_IDLEMESSAGE);			// = SendMessage(WM_SETMESSAGESTRING, (WPARAM)AFX_IDS_IDLEMESSAGE);
 	else
     	SetMessageText((LPCTSTR)m_sStatusBarString);	// = SendMessage(WM_SETMESSAGESTRING, 0, (LPARAM)(LPCTSTR)m_sStatusBarString);

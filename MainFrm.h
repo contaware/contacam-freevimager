@@ -133,9 +133,7 @@ public:
 	CToolBar* GetToolBar() {return &m_wndToolBar;};
 	
 	// Statusbar
-	// - sText == _T("") shows the idle message
-	// - nCountdownSec sets how long to disable the idle messages
-	void StatusText(CString sText = _T(""), int nCountdownSec = 0);
+	void StatusText(CString sText = _T("")); // if sText is _T("") the idle message is displayed
 	CStatusBar* GetStatusBar() {return &m_wndStatusBar;};
 	CString GetStatusBarString() const {return m_sStatusBarString;};
 	void SetIDLastMessage(UINT nIDLastMessage) {m_nIDLastMessage = nIDLastMessage;};
@@ -208,7 +206,6 @@ protected:
 	CPoint m_ptChildScrollPosition;
 	BOOL m_bScreenSaverWasActive;
 	CString m_sStatusBarString;
-	int m_nStatusBarStringCountdownSec;
 	BOOL m_bProgressIndicatorCreated;
 	CToasterWnd* m_pToaster;
 	CToasterNotificationLink m_ToasterNotificationLink;
