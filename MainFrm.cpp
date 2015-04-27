@@ -280,12 +280,8 @@ void CMainFrame::OnDestroy()
 	// Kill Timer
 	KillTimer(ID_TIMER_ONESEC_POLL);
 
-	// Close the toaster
-	if (m_pToaster)
-	{
-		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
-		m_pToaster = NULL;
-	}
+	// Close toaster
+	CloseToaster();
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -700,6 +696,15 @@ void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD
 	}
 }
 
+void CMainFrame::CloseToaster()
+{
+	if (m_pToaster)
+	{
+		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
+		m_pToaster = NULL;
+	}
+}
+
 LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 {
 	// Get params
@@ -717,8 +722,7 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 	DWORD dwWaitTimeMs = (DWORD)lparam;
 
 	// Show Toaster
-	if (m_pToaster)
-		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
+	CloseToaster();
 	m_pToaster = new CToasterWnd(sTitle, sText);
 	if (dwWaitTimeMs > 0)
 	{

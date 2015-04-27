@@ -82,8 +82,9 @@ public:
 	void EnterExitFullscreen();
 	void Progress(int nPercent);
 
-	// Popup toaster window
-	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);
+	// Toaster window
+	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
+	void CloseToaster();																		// call only from UI thread
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "MainFrm.h"
 #include "ToasterWndLink.h"
 
 #ifdef _DEBUG
@@ -15,7 +16,13 @@ BOOL CToasterNotificationLink::IsClickable(const CString& sText)
 void CToasterNotificationLink::OnBodyTextClicked(CToasterWnd* pFrom)
 {
 	if (IsClickable(pFrom->m_sText))
+	{
+		// Open file/folder or web page
 		::ShellExecute(NULL, _T("open"), pFrom->m_sText, NULL, NULL, SW_SHOWNORMAL);
+
+		// Close toaster
+		::AfxGetMainFrame()->CloseToaster();
+	}
 }
 
 void CToasterNotificationLink::OnTitleTextClicked(CToasterWnd* /*pFrom*/)
