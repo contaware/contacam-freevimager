@@ -66,6 +66,8 @@ protected:
 	void UpdateVideoQualityInfo();
 	__forceinline int GetRevertedPos(CSliderCtrl& SliderCtrl) {return SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - SliderCtrl.GetPos());};
 	__forceinline void SetRevertedPos(CSliderCtrl& SliderCtrl, int nPos) {SliderCtrl.SetPos(SliderCtrl.GetRangeMin() + (SliderCtrl.GetRangeMax() - nPos));};
+	void ApplySchedulerOnce();
+	void ApplySchedulerDaily();
 
 	// Generated message map functions
 	//{{AFX_MSG(CGeneralPage)
@@ -91,6 +93,12 @@ protected:
 	afx_msg void OnCheckLiveRotate180();
 	afx_msg void OnCheckAutoopen();
 	afx_msg void OnSelchangeRefFontsize();
+	afx_msg void OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDatetimechangeDateOnceStart(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDatetimechangeDateOnceStop(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDatetimechangeTimeDailyStart(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDatetimechangeTimeDailyStop(NMHDR *pNMHDR, LRESULT *pResult);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

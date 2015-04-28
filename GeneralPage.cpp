@@ -92,6 +92,12 @@ BEGIN_MESSAGE_MAP(CGeneralPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_DEINTERLACE, OnCheckLiveDeinterlace)
 	ON_BN_CLICKED(IDC_CHECK_LIVE_ROTATE180, OnCheckLiveRotate180)
 	ON_CBN_SELCHANGE(IDC_REF_FONTSIZE, OnSelchangeRefFontsize)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_START, OnDatetimechangeTimeOnceStart)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_ONCE_STOP, OnDatetimechangeTimeOnceStop)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATE_ONCE_START, OnDatetimechangeDateOnceStart)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_DATE_ONCE_STOP, OnDatetimechangeDateOnceStop)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
+	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -434,30 +440,18 @@ BOOL CGeneralPage::OnInitDialog()
 	pDateTimeCtrl = (CDateTimeCtrl*)GetDlgItem(IDC_DATE_ONCE_STOP);
 	pDateTimeCtrl->SetRange(&t1, &t2);
 	
-	// Init Once Scheduler's Check-Boxes
+	// Init Once Scheduler's Check-Box
 	if (pOnceSchedulerEntry)
 	{
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
 		pCheck->SetCheck(1);
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_STOP);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_STOP);
-		pWnd->EnableWindow(FALSE);
 	}
 
-	// Init Daily Scheduler's Check-Boxes
+	// Init Daily Scheduler's Check-Box
 	if (pDailySchedulerEntry)
 	{
 		pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
 		pCheck->SetCheck(1);
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_STOP);
-		pWnd->EnableWindow(FALSE);
 	}
 
 	// OnInitDialog() has been called
@@ -778,7 +772,7 @@ void CGeneralPage::SetCheckSchedulerOnce(BOOL bCheck)
 		if (!bCheck)
 		{
 			pCheckOnce->SetCheck(0);
-			OnCheckSchedulerOnce();
+			ApplySchedulerOnce();
 		}
 	}
 	else
@@ -786,23 +780,19 @@ void CGeneralPage::SetCheckSchedulerOnce(BOOL bCheck)
 		if (bCheck)
 		{
 			pCheckOnce->SetCheck(1);
-			OnCheckSchedulerOnce();
+			ApplySchedulerOnce();
 		}
 	}
 }
 
-void CGeneralPage::OnCheckSchedulerOnce() 
+void CGeneralPage::ApplySchedulerOnce()
 {
 	CButton* pCheckOnce = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
 	CButton* pCheckDaily = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);
 	if (pCheckOnce->GetCheck())
 	{
 		// Clear daily
-		if (pCheckDaily->GetCheck())
-		{
-			pCheckDaily->SetCheck(0);
-			OnCheckSchedulerDaily();
-		}
+		SetCheckSchedulerDaily(FALSE);
 
 		// Scheduler Entry Init
 		CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
@@ -832,32 +822,45 @@ void CGeneralPage::OnCheckSchedulerOnce()
 
 		// Add Scheduler Entry
 		((CUImagerApp*)::AfxGetApp())->AddSchedulerEntry(pSchedulerEntry);
-
-		// Disable
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_STOP);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_STOP);
-		pWnd->EnableWindow(FALSE);
 	}
 	else
 	{
 		// Delete Once Scheduler Entry
 		((CUImagerApp*)::AfxGetApp())->DeleteOnceSchedulerEntry(m_pDoc->GetDevicePathName());
-
-		// Enable
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_START);
-		pWnd->EnableWindow(TRUE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_STOP);
-		pWnd->EnableWindow(TRUE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_START);
-		pWnd->EnableWindow(TRUE);
-		pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_STOP);
-		pWnd->EnableWindow(TRUE);
 	}
+}
+
+void CGeneralPage::OnCheckSchedulerOnce() 
+{
+	ApplySchedulerOnce();
+}
+
+void CGeneralPage::OnDatetimechangeTimeOnceStart(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerOnce();
+	*pResult = 0;
+}
+
+void CGeneralPage::OnDatetimechangeTimeOnceStop(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerOnce();
+	*pResult = 0;
+}
+
+void CGeneralPage::OnDatetimechangeDateOnceStart(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerOnce();
+	*pResult = 0;
+}
+
+void CGeneralPage::OnDatetimechangeDateOnceStop(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerOnce();
+	*pResult = 0;
 }
 
 void CGeneralPage::ClearOnceScheduler()
@@ -872,16 +875,6 @@ void CGeneralPage::ClearOnceScheduler()
 	// Uncheck
 	CButton* pCheck = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
 	pCheck->SetCheck(0);
-
-	// Enable
-	CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_START);
-	pWnd->EnableWindow(TRUE);
-	pWnd = (CWnd*)GetDlgItem(IDC_TIME_ONCE_STOP);
-	pWnd->EnableWindow(TRUE);
-	pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_START);
-	pWnd->EnableWindow(TRUE);
-	pWnd = (CWnd*)GetDlgItem(IDC_DATE_ONCE_STOP);
-	pWnd->EnableWindow(TRUE);
 }
 
 void CGeneralPage::SetCheckSchedulerDaily(BOOL bCheck) 
@@ -892,7 +885,7 @@ void CGeneralPage::SetCheckSchedulerDaily(BOOL bCheck)
 		if (!bCheck)
 		{
 			pCheckDaily->SetCheck(0);
-			OnCheckSchedulerDaily();
+			ApplySchedulerDaily();
 		}
 	}
 	else
@@ -900,23 +893,19 @@ void CGeneralPage::SetCheckSchedulerDaily(BOOL bCheck)
 		if (bCheck)
 		{
 			pCheckDaily->SetCheck(1);
-			OnCheckSchedulerDaily();
+			ApplySchedulerDaily();
 		}
 	}
 }
 
-void CGeneralPage::OnCheckSchedulerDaily() 
+void CGeneralPage::ApplySchedulerDaily()
 {
 	CButton* pCheckOnce = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_ONCE);
 	CButton* pCheckDaily = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_DAILY);	
 	if (pCheckDaily->GetCheck())
 	{
 		// Clear once
-		if (pCheckOnce->GetCheck())
-		{
-			pCheckOnce->SetCheck(0);
-			OnCheckSchedulerOnce();
-		}
+		SetCheckSchedulerOnce(FALSE);
 
 		// Scheduler Entry Init
 		CUImagerApp::CSchedulerEntry* pSchedulerEntry = new CUImagerApp::CSchedulerEntry;
@@ -946,25 +935,31 @@ void CGeneralPage::OnCheckSchedulerDaily()
 
 		// Add Scheduler Entry
 		((CUImagerApp*)::AfxGetApp())->AddSchedulerEntry(pSchedulerEntry);
-
-		// Disable
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_START);
-		pWnd->EnableWindow(FALSE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_STOP);
-		pWnd->EnableWindow(FALSE);
 	}
 	else
 	{
 		// Delete Daily Scheduler Entry
 		((CUImagerApp*)::AfxGetApp())->DeleteDailySchedulerEntry(m_pDoc->GetDevicePathName());
-
-		// Enable
-		CWnd* pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_START);
-		pWnd->EnableWindow(TRUE);
-		pWnd = (CWnd*)GetDlgItem(IDC_TIME_DAILY_STOP);
-		pWnd->EnableWindow(TRUE);
 	}
 }
 
-#endif
+void CGeneralPage::OnCheckSchedulerDaily() 
+{
+	ApplySchedulerDaily();
+}
 
+void CGeneralPage::OnDatetimechangeTimeDailyStart(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerDaily();
+	*pResult = 0;
+}
+
+void CGeneralPage::OnDatetimechangeTimeDailyStop(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMDATETIMECHANGE pDTChange = reinterpret_cast<LPNMDATETIMECHANGE>(pNMHDR);
+	ApplySchedulerDaily();
+	*pResult = 0;
+}
+
+#endif
