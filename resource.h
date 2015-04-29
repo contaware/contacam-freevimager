@@ -1275,6 +1275,7 @@
 #define IDS_MULTILANG_1241              1241
 #define IDC_EDIT_AUTOSTART_DELAY        1241
 #define IDS_MULTILANG_1242              1242
+#define IDC_EDIT_FIRSTSTART_DELAY       1242
 #define IDS_MULTILANG_1243              1243
 #define IDC_CHECK_ANTIALIASING          1243
 #define IDS_MULTILANG_1244              1244

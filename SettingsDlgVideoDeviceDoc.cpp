@@ -34,6 +34,7 @@ CSettingsDlgVideoDeviceDoc::CSettingsDlgVideoDeviceDoc(CWnd* pParent /*=NULL*/)
 	m_bBrowserAutostart = ((CUImagerApp*)::AfxGetApp())->m_bBrowserAutostart;
 	m_bIPv6 = ((CUImagerApp*)::AfxGetApp())->m_bIPv6;
 	m_nAutostartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs / 1000;
+	m_nFirstStartDelay = ((CUImagerApp*)::AfxGetApp())->m_dwFirstStartDelayMs / 1000;
 	m_bStartMicroApache = ((CUImagerApp*)::AfxGetApp())->m_bStartMicroApache;
 	m_nMicroApachePort = ((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort;
 	m_bMicroApacheDigestAuth = ((CUImagerApp*)::AfxGetApp())->m_bMicroApacheDigestAuth;
@@ -70,6 +71,8 @@ void CSettingsDlgVideoDeviceDoc::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_IPV6, m_bIPv6);
 	DDX_Text(pDX, IDC_EDIT_AUTOSTART_DELAY, m_nAutostartDelay);
 	DDV_MinMaxInt(pDX, m_nAutostartDelay, 0, 600);
+	DDX_Text(pDX, IDC_EDIT_FIRSTSTART_DELAY, m_nFirstStartDelay);
+	DDV_MinMaxInt(pDX, m_nFirstStartDelay, 0, 600);
 	//}}AFX_DATA_MAP
 }
 
@@ -173,8 +176,11 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	// Priority to IPv6
 	pApp->m_bIPv6 = m_bIPv6;
 
-	// Device Autostart delay
+	// Wait time between network devices start
 	pApp->m_dwAutostartDelayMs = 1000 * m_nAutostartDelay;
+
+	// Wait time before autostarting first device
+	pApp->m_dwFirstStartDelayMs = 1000 * m_nFirstStartDelay;
 
 	// Document root changed?
 	if (m_sMicroApacheDocRoot.CompareNoCase(m_sMicroApacheDocRootOld) != 0)
@@ -253,6 +259,9 @@ void CSettingsDlgVideoDeviceDoc::OnOK()
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("AutostartDelayMs"),
 									1000 * m_nAutostartDelay);
+	pApp->WriteProfileInt(			_T("GeneralApp"),
+									_T("FirstStartDelayMs"),
+									1000 * m_nFirstStartDelay);
 	pApp->WriteProfileInt(			_T("GeneralApp"),
 									_T("StartMicroApache"),
 									m_bStartMicroApache);

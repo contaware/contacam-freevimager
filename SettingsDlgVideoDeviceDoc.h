@@ -34,6 +34,7 @@ public:
 	BOOL	m_bMicroApacheDigestAuth;
 	BOOL	m_bIPv6;
 	int		m_nAutostartDelay;
+	int		m_nFirstStartDelay;
 	//}}AFX_DATA
 
 // Overrides

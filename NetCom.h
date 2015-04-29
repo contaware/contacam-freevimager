@@ -345,12 +345,6 @@ public:
 	// Attention: if nSocketFamily is AF_UNSPEC or AF_INET6 pass a sockaddr_in6 structure pointer!
 	static BOOL StringToAddress(const TCHAR* sHost, const TCHAR* sPort, sockaddr* psockaddr, int nSocketFamily = AF_UNSPEC);
 
-	// Is there an interface for the given address?
-	// This is a first guess to determine whether the given
-	// address could be reached through one of the installed adapters.
-	// Works starting from win2k, for older systems it returns FALSE
-	static BOOL HasInterface(const CString& sAddress);
-
 	// Enumerate the LAN
 	static DWORD EnumLAN(CStringArray* pHosts);
 

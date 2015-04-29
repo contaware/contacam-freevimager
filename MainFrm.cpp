@@ -1064,7 +1064,7 @@ LONG CMainFrame::OnThreadSafeConnectErr(WPARAM wparam, LPARAM lparam)
 
 LONG CMainFrame::OnAutorunVideoDevices(WPARAM wparam, LPARAM lparam)
 {
-	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices((int)wparam);
+	((CUImagerApp*)::AfxGetApp())->AutorunVideoDevices(FALSE);
 	return 0;
 }
 

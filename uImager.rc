@@ -2840,10 +2840,12 @@ BEGIN
     CONTROL         "Tray Icon",IDC_CHECK_TRAYICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,31,47,10
     CONTROL         "Run as Service",IDC_CHECK_STARTFROM_SERVICE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,44,63,10
     CONTROL         "Web Browser Autostart",IDC_CHECK_BROWSER_AUTOSTART,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,18,91,10
-    CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,31,63,10
-    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,69,83,23,13,ES_AUTOHSCROLL
-    CONTROL         "Connect to cameras with IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,178,84,109,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,18,91,10
+    CONTROL         "Always on Top",IDC_CHECK_TOPMOST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,31,63,10
+    EDITTEXT        IDC_EDIT_FIRSTSTART_DELAY,270,43,23,13,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_AUTOSTART_DELAY,98,83,23,13,ES_AUTOHSCROLL
+    CONTROL         "Connect to cameras with IPv6",IDC_CHECK_IPV6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,84,109,10
+    EDITTEXT        IDC_EDIT_DOCROOT,11,127,309,13,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "...",IDC_BUTTON_DOCROOT,321,127,17,13
     CONTROL         "Enable Internal Web Server",IDC_CHECK_WEBSERVER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,171,105,10
     EDITTEXT        IDC_EDIT_PORT,69,187,27,13,ES_AUTOHSCROLL
@@ -2860,10 +2862,11 @@ BEGIN
     GROUPBOX        "Web Server",IDC_STATIC,5,157,342,69
     LTEXT           "Area Name",IDC_STATIC,154,189,38,8
     GROUPBOX        "Network Cameras",IDC_STATIC,5,69,342,35
-    LTEXT           "Autostart delay",IDC_STATIC,11,85,53,8
-    LTEXT           "sec",IDC_STATIC,100,85,12,8
-    EDITTEXT        IDC_EDIT_DOCROOT,11,127,309,13,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Autostart a camera each",IDC_STATIC,11,85,80,8
+    LTEXT           "sec",IDC_STATIC,128,85,12,8
     GROUPBOX        "Parent Directory of all Cameras",IDC_STATIC,5,112,342,36
+    LTEXT           "Delay cameras autostart by",IDC_STATIC,174,45,90,8
+    LTEXT           "sec",IDC_STATIC,300,45,12,8
 END
 
 IDD_IMAPI2 DIALOG 0, 0, 298, 124
@@ -3606,7 +3609,7 @@ BEGIN
         LEFTMARGIN, 5
         RIGHTMARGIN, 347
         VERTGUIDE, 11
-        VERTGUIDE, 178
+        VERTGUIDE, 174
         TOPMARGIN, 6
         BOTTOMMARGIN, 246
         HORZGUIDE, 23
@@ -4741,7 +4744,6 @@ BEGIN
     IDS_STRING1716          "A new version of IMAPI is required for best burning performance!"
     IDS_STRING1717          "The latest version for your os may be downloaded from:"
     IDS_STRING1719          "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close ""audio file path"""
-    IDS_STRING1720          "Starting Camera..."
     IDS_STRING1721          "1 Day"
     IDS_STRING1722          "2 Days"
     IDS_STRING1723          "3 Days"

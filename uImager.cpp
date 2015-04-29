@@ -134,6 +134,7 @@ CUImagerApp::CUImagerApp()
 	m_bBrowserAutostart = FALSE;
 	m_bIPv6 = FALSE;
 	m_dwAutostartDelayMs = DEFAULT_AUTOSTART_DELAY_MS;
+	m_dwFirstStartDelayMs = DEFAULT_FIRSTSTART_DELAY_MS;
 	m_bStartMicroApache = FALSE;
 	m_bMicroApacheStarted = FALSE;
 	m_nMicroApachePort = MICROAPACHE_DEFAULT_PORT;
@@ -867,9 +868,6 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			// Auto-starts
 			if (!m_bForceSeparateInstance)
 			{
-				// Start Vlc process with given vlm configurtion file
-				CVideoDeviceDoc::VlmReStart();
-
 				// Update / create doc root index.php and config file for microapache
 				CVideoDeviceDoc::MicroApacheUpdateMainFiles();
 
@@ -2244,129 +2242,89 @@ CPictureDoc* CUImagerApp::SlideShow(LPCTSTR sStartDirName,
 
 #ifdef VIDEODEVICEDOC
 
-BOOL CUImagerApp::AutorunVideoDevicesDoWait(int nRetryCount)
+void CUImagerApp::AutorunVideoDevices(BOOL bStartDelay/*=TRUE*/)
 {
-	if (++nRetryCount <= AUTORUN_VIDEODEVICES_MAX_RETRIES)
+	// Start delay?
+	if (bStartDelay)
 	{
-		// Retry in AUTORUN_VIDEODEVICES_RETRY_DELAY ms
+		// Delay the start by m_dwFirstStartDelayMs ms
 		CPostDelayedMessageThread::PostDelayedMessage(	::AfxGetMainFrame()->GetSafeHwnd(),
 														WM_AUTORUN_VIDEODEVICES,
-														AUTORUN_VIDEODEVICES_RETRY_DELAY,
-														(WPARAM)nRetryCount, 0);
+														m_dwFirstStartDelayMs,
+														0, 0);
 
 		// Show starting progress dialog
-		if (!m_pAutorunProgressDlg	&&
-			!m_bServiceProcess		&&
-			(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray()))
+		if (m_pAutorunProgressDlg)
+		{
+			m_pAutorunProgressDlg->Close();	// self-deletion
+			m_pAutorunProgressDlg = NULL;
+		}
+		if (!m_bServiceProcess														&&
+			(!m_bTrayIcon || !::AfxGetMainFrame()->m_TrayIcon.IsMinimizedToTray())	&&
+			m_dwFirstStartDelayMs > 0U)
 		{
 			m_pAutorunProgressDlg = new CProgressDlg(	::AfxGetMainFrame()->GetSafeHwnd(),
-														ML_STRING(1720, "Starting Camera..."),
-														(nRetryCount - 1) * AUTORUN_VIDEODEVICES_RETRY_DELAY,
-														AUTORUN_VIDEODEVICES_MAX_RETRIES * AUTORUN_VIDEODEVICES_RETRY_DELAY);
+														ML_STRING(1565, "Please wait..."),
+														0,
+														m_dwFirstStartDelayMs);
 		}
-
-		return TRUE;
 	}
 	else
-		return FALSE;
-}
-
-void CUImagerApp::AutorunVideoDevices(int nRetryCount/*=0*/)
-{
-	CString sSection(_T("DeviceAutorun"));
-	CWinApp* pApp = ::AfxGetApp();
-	CString sKey;
-	CString sDevRegistry;
-	CVideoDeviceDoc* pDoc;
-	unsigned int i;
-
-	// If autorunning network devices or direct show devices
-	// check whether they are ready, if not try again in
-	// AUTORUN_VIDEODEVICES_RETRY_DELAY msec for a maximum of
-	// AUTORUN_VIDEODEVICES_MAX_RETRIES retries
-	for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 	{
-		sKey.Format(_T("%02u"), i);
-		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
+		// Close progress dialog
+		// Note: if application is exiting, the mainframe closes this
+		// child window and self-deletion will clean-up the memory
+		if (m_pAutorunProgressDlg)
 		{
-			CString sHost;
-			if ((sHost = CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry)) != _T(""))
-			{
-				// This function checks whether there is a network interface
-				// that can connect to the given host
-				if (!CNetCom::HasInterface(sHost))
-				{
-					if (AutorunVideoDevicesDoWait(nRetryCount))
-						return;
-					else
-						break;
-				}
-			}
-			else
-			{
-				CString sDev(sDevRegistry);
-				sDev.Replace(_T('/'), _T('\\'));
-				int nID = CDxCapture::GetDeviceID(sDev);
-				if (nID < 0)
-				{
-					if (AutorunVideoDevicesDoWait(nRetryCount))
-						return;
-					else
-						break;
-				}
-			}
+			m_pAutorunProgressDlg->Close();	// self-deletion
+			m_pAutorunProgressDlg = NULL;
 		}
-	}
-	
-	// Close progress dialog
-	// Note: if application is exiting the mainframe closes this
-	// child window and self-deletion will clean-up the memory
-	if (m_pAutorunProgressDlg)
-	{
-		m_pAutorunProgressDlg->Close();	// self-deletion
-		m_pAutorunProgressDlg = NULL;
-	}
 
-	// Start devices
-	DWORD dwInitTickCount = ::GetTickCount();
-	DWORD dwOpenNetworkDeviceCount = 0U;
-	for (i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
-	{
-		sKey.Format(_T("%02u"), i);
-		if ((sDevRegistry = pApp->GetProfileString(sSection, sKey, _T(""))) != _T(""))
+		// Start Vlc process with given vlm configuration file
+		CVideoDeviceDoc::VlmReStart();
+
+		// Start devices
+		DWORD dwInitTickCount = ::GetTickCount();
+		DWORD dwOpenNetworkDeviceCount = 0U;
+		for (unsigned int i = 0 ; i < MAX_DEVICE_AUTORUN_KEYS ; i++)
 		{
-			// Open Empty Document
-			pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
-			if (pDoc)
+			CString sKey, sDevRegistry;
+			sKey.Format(_T("%02u"), i);
+			if ((sDevRegistry = ::AfxGetApp()->GetProfileString(_T("DeviceAutorun"), sKey, _T(""))) != _T(""))
 			{
-				if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
+				// Open Empty Document
+				CVideoDeviceDoc* pDoc = (CVideoDeviceDoc*)GetVideoDeviceDocTemplate()->OpenDocumentFile(NULL);
+				if (pDoc)
 				{
-					DWORD dwCurrentStartupDelay = ::GetTickCount() - dwInitTickCount;
-					DWORD dwWantedNetworkDeviceStartupDelay = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
-					DWORD dwConnectDelay;
-					if (dwWantedNetworkDeviceStartupDelay > dwCurrentStartupDelay)
-						dwConnectDelay = dwWantedNetworkDeviceStartupDelay - dwCurrentStartupDelay;
-					else
-						dwConnectDelay = 0U;
-					if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelay))
-						pDoc->CloseDocument();
-					else
-						dwOpenNetworkDeviceCount++;
-				}
-				else
-				{
-					CString sDev(sDevRegistry);
-					sDev.Replace(_T('/'), _T('\\'));
-					int nID = CDxCapture::GetDeviceID(sDev);
-					if (nID >= 0)
+					if (CVideoDeviceDoc::GetHostFromDevicePathName(sDevRegistry) != _T(""))
 					{
-						if (!pDoc->OpenVideoDevice(nID))
+						DWORD dwCurrentStartupDelay = ::GetTickCount() - dwInitTickCount;
+						DWORD dwWantedNetworkDeviceStartupDelay = (dwOpenNetworkDeviceCount + 1U) * m_dwAutostartDelayMs;
+						DWORD dwConnectDelay;
+						if (dwWantedNetworkDeviceStartupDelay > dwCurrentStartupDelay)
+							dwConnectDelay = dwWantedNetworkDeviceStartupDelay - dwCurrentStartupDelay;
+						else
+							dwConnectDelay = 0U;
+						if (!pDoc->OpenGetVideo(sDevRegistry, dwConnectDelay))
 							pDoc->CloseDocument();
+						else
+							dwOpenNetworkDeviceCount++;
 					}
 					else
 					{
-						CVideoDeviceDoc::ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
-						pDoc->CloseDocument();
+						CString sDev(sDevRegistry);
+						sDev.Replace(_T('/'), _T('\\'));
+						int nID = CDxCapture::GetDeviceID(sDev);
+						if (nID >= 0)
+						{
+							if (!pDoc->OpenVideoDevice(nID))
+								pDoc->CloseDocument();
+						}
+						else
+						{
+							CVideoDeviceDoc::ConnectErr(ML_STRING(1568, "Unplugged"), sDevRegistry, sDevRegistry);
+							pDoc->CloseDocument();
+						}
 					}
 				}
 			}
@@ -3599,8 +3557,11 @@ void CUImagerApp::LoadSettings(UINT showCmd/*=SW_SHOWNORMAL*/)
 	// Priority to IPv6
 	m_bIPv6 = (BOOL)GetProfileInt(sSection, _T("IPv6"), FALSE);
 
-	// Device Autostart delay
+	// Wait time between network devices start
 	m_dwAutostartDelayMs = (DWORD)GetProfileInt(sSection, _T("AutostartDelayMs"), DEFAULT_AUTOSTART_DELAY_MS);
+
+	// Wait time before autostarting first device
+	m_dwFirstStartDelayMs = (DWORD)GetProfileInt(sSection, _T("FirstStartDelayMs"), DEFAULT_FIRSTSTART_DELAY_MS);
 
 	// Start Micro Apache
 	m_bStartMicroApache = (BOOL)GetProfileInt(sSection, _T("StartMicroApache"), TRUE);

@@ -48,8 +48,11 @@
 // Php
 #define	PHP_CONFIGNAME_EXT								_T("configuration.php")
 
-// Default network devices autostart delay
+// Default wait time between network devices start
 #define DEFAULT_AUTOSTART_DELAY_MS						1000U
+
+// Default wait time before autostarting first device
+#define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
@@ -415,8 +418,7 @@ public:
 	BOOL AreVideoDeviceDocsOpen();
 
 	// Autorun Video Devices
-	BOOL AutorunVideoDevicesDoWait(int nRetryCount);
-	void AutorunVideoDevices(int nRetryCount = 0);
+	void AutorunVideoDevices(BOOL bStartDelay = TRUE);
 
 	// Get current ContaCamService state
 	// returns:	CONTACAMSERVICE_NOTINSTALLED
@@ -624,8 +626,11 @@ public:
 	// Priority to IPv6
 	volatile BOOL m_bIPv6;
 
-	// Device Autostart delay
+	// Wait time between network devices start
 	volatile DWORD m_dwAutostartDelayMs;
+
+	// Wait time before autostarting first device
+	volatile DWORD m_dwFirstStartDelayMs;
 
 	// Start the Micro Apache server
 	BOOL m_bStartMicroApache;
