@@ -21,10 +21,6 @@ BOOL CDib::MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly)
 		if (sPathName.IsEmpty())
 			throw (int)MMBMP_E_ZEROPATH;
 
-		// Check for .bmp or .dib Extension
-		if ((::GetFileExt(sPathName) != _T(".bmp")) && (::GetFileExt(sPathName) != _T(".dib")))
-			throw (int)MMBMP_E_WRONGEXTENTION;
-
 		// Store ReadOnly Flag
 		m_bMMReadOnly = bReadOnly;
 
@@ -165,8 +161,6 @@ BOOL CDib::MapBMP(LPCTSTR lpszPathName, BOOL bReadOnly)
 		{
 			case MMBMP_E_ZEROPATH :			str += _T("The file name is zero\n");
 			break;
-			case MMBMP_E_WRONGEXTENTION :	str += _T("The file extention is not .bmp or .dib\n");
-			break;
 			case MMBMP_E_BADBMP :			str += _T("Corrupted or unsupported DIB\n");
 			break;
 			case MMBMP_E_FILESIZE :			str += _T("GetFileSize failed\n");
@@ -201,10 +195,6 @@ BOOL CDib::MMCreateBMP(LPCTSTR lpszPathName)
 		CString sPathName(lpszPathName);
 		if (sPathName.IsEmpty())
 			throw (int)MMBMP_E_ZEROPATH;
-
-		// Check for .bmp or .dib Extension
-		if ((::GetFileExt(sPathName) != _T(".bmp")) && (::GetFileExt(sPathName) != _T(".dib")))
-			throw (int)MMBMP_E_WRONGEXTENTION;
 
 		// Free
 		m_FileInfo.Clear();
@@ -341,8 +331,6 @@ BOOL CDib::MMCreateBMP(LPCTSTR lpszPathName)
 		switch(error_code)
 		{
 			case MMBMP_E_ZEROPATH :			str += _T("The file name is zero\n");
-			break;
-			case MMBMP_E_WRONGEXTENTION :	str += _T("The file extention is not .bmp or .dib\n");
 			break;
 			case MMBMP_E_CREATEFILE :		return FALSE;
 			case MMBMP_E_CREATEFILEMAPPING :return FALSE;

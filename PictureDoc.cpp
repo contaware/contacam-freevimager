@@ -2548,13 +2548,12 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	else
 		_tcscpy(FileName, m_sFileName);
 	CSaveFileDlg dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, GetView());
-	TCHAR defext[10] = _T("");
-	LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
-	if (lpPos != NULL)
-		_tcscpy(defext, lpPos+1);
+	CString defextension(::GetFileExt(FileName));
+	CString defextension_nodot(defextension);
+	defextension_nodot.TrimLeft(_T('.'));
 	dlgFile.m_ofn.lpstrFile = FileName;
 	dlgFile.m_ofn.nMaxFile = MAX_PATH;
-	dlgFile.m_ofn.lpstrDefExt = defext;
+	dlgFile.m_ofn.lpstrDefExt = defextension_nodot.GetBuffer();
 	dlgFile.m_ofn.lpstrFilter = _T("Windows Bitmap (*.bmp)\0*.bmp\0")
 								_T("Graphics Interchange Format (*.gif)\0*.gif\0")
 								_T("Portable Network Graphics (*.png)\0*.png\0")
@@ -2564,18 +2563,15 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 								_T("Enhanced Metafile (*.emf)\0*.emf\0");
 	if (sDlgTitle != _T(""))
 		dlgFile.m_ofn.lpstrTitle = sDlgTitle;
-	CString defextension = defext;
-	defextension.MakeLower();
-	if ((defextension == _T("bmp"))			||
-		(defextension == _T("dib")))
+	if ((defextension == _T(".bmp")) || (defextension == _T(".dib")))
 	{
 		dlgFile.m_ofn.nFilterIndex = 1;
 	}
-	else if (defextension == _T("gif"))
+	else if (defextension == _T(".gif"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 2;
 	}
-	else if (defextension == _T("png"))
+	else if (defextension == _T(".png"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 3;
 	}
@@ -2587,11 +2583,11 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	{
 		dlgFile.m_ofn.nFilterIndex = 5;
 	}
-	else if (defextension == _T("pcx"))
+	else if (defextension == _T(".pcx"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 6;
 	}
-	else if (defextension == _T("emf"))
+	else if (defextension == _T(".emf"))
 	{
 		dlgFile.m_ofn.nFilterIndex = 7;
 	}
@@ -2600,8 +2596,9 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 	if (dlgFile.DoModal() == IDOK)
 	{
 		// Store default extension for new files
+		CString extension(::GetFileExt(FileName));
 		if (bNewFile)
-			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), ::GetFileExt(FileName));
+			::AfxGetApp()->WriteProfileString(_T("PictureDoc"), _T("LastNewFileSaveAsExt"), extension);
 
 		// Save to itself?
 		if (m_sFileName.CompareNoCase(FileName) == 0 && bSaveCopyAs)
@@ -2633,13 +2630,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 
 		BOOL res = FALSE;
 		CDib Dib;
-		TCHAR ext[10] = _T("");
-		lpPos = _tcsrchr(FileName, _T('.'));
-		if (lpPos != NULL)
-			_tcscpy(ext, lpPos+1);
-		CString extension = ext;
-		extension.MakeLower();
-		if ((extension == _T("bmp")) || (extension == _T("dib")))
+		if ((extension == _T(".bmp")) || (extension == _T(".dib")))
 		{
 			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
@@ -2683,7 +2674,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			}
 			EndWaitCursor();
 		}
-		else if (extension == _T("gif"))
+		else if (extension == _T(".gif"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
@@ -2696,7 +2687,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T("png"))
+		else if (extension == _T(".png"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
@@ -2834,7 +2825,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 			m_pDib->GetExifInfo()->Orientation = nOrientation;
 			EndWaitCursor();
 		}
-		else if (extension == _T("pcx"))
+		else if (extension == _T(".pcx"))
 		{
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -2852,7 +2843,7 @@ BOOL CPictureDoc::SaveAs(BOOL bSaveCopyAs,
 										TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T("emf"))
+		else if (extension == _T(".emf"))
 		{
 			// Unfortunately with the given windows APIs we cannot choose the wanted dpi,
 			// only a reference dc with a given dpi can be chosen.
@@ -3486,15 +3477,8 @@ BOOL CPictureDoc::Save()
 			return FALSE;
 		}
 
-		TCHAR FileName[MAX_PATH] = _T("");
-		_tcscpy(FileName, m_sFileName);
-		TCHAR ext[10] = _T("");
-		LPTSTR lpPos = _tcsrchr(FileName, _T('.'));
-		if (lpPos != NULL)
-			_tcscpy(ext, lpPos+1);
-		CString extension = ext;
-		extension.MakeLower();
-		if ((extension == _T("bmp")) || (extension == _T("dib")))
+		CString extension(::GetFileExt(m_sFileName));
+		if ((extension == _T(".bmp")) || (extension == _T(".dib")))
 		{
 			BeginWaitCursor();
 			if (m_pDib->GetBitCount() == 8 || m_pDib->GetBitCount() == 4)
@@ -3509,13 +3493,13 @@ BOOL CPictureDoc::Save()
 									? BI_RLE4 : BI_RLE8);
 
 					// Save
-					res = Dib.SaveBMP(	FileName,
+					res = Dib.SaveBMP(	m_sFileName,
 										GetView(),
 										TRUE);
 				}
 				else
 				{
-					res = m_pDib->SaveBMP(	FileName,
+					res = m_pDib->SaveBMP(	m_sFileName,
 											GetView(),
 											TRUE);
 				}
@@ -3525,39 +3509,39 @@ BOOL CPictureDoc::Save()
 			{
 				Dib = *m_pDib;
 				Dib.BMIToBITMAPV4HEADER();
-				res = Dib.SaveBMP(	FileName,
+				res = Dib.SaveBMP(	m_sFileName,
 									GetView(),
 									TRUE);
 			}
 			else
 			{
-				res = m_pDib->SaveBMP(	FileName,
+				res = m_pDib->SaveBMP(	m_sFileName,
 										GetView(),
 										TRUE);
 			}
 			EndWaitCursor();
 		}
-		else if (extension == _T("gif"))
+		else if (extension == _T(".gif"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
 			else
 				m_pDib->SetBackgroundColor(m_crBackgroundColor);
-			res = SaveGIF(	FileName,
+			res = SaveGIF(	m_sFileName,
 							m_pDib,
 							GetView(),
 							TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T("png"))
+		else if (extension == _T(".png"))
 		{
 			BeginWaitCursor();
 			if (m_bImageBackgroundColor)
 				m_pDib->SetBackgroundColor(m_crImageBackgroundColor);
 			else
 				m_pDib->SetBackgroundColor(m_crBackgroundColor);
-			res = SavePNG(	FileName,
+			res = SavePNG(	m_sFileName,
 							m_pDib,
 							m_pDib->m_FileInfo.m_bHasBackgroundColor,
 							GetView(),
@@ -3567,7 +3551,7 @@ BOOL CPictureDoc::Save()
 		else if (::IsJPEGExt(extension))
 		{
 			BeginWaitCursor();
-			res = m_pDib->SaveJPEG(	FileName,
+			res = m_pDib->SaveJPEG(	m_sFileName,
 									m_JpegThread.GetJpegCompressionQualityBlocking(),
 									m_pDib->IsGrayscale(),
 									m_sFileName,
@@ -3579,7 +3563,7 @@ BOOL CPictureDoc::Save()
 			// this because orientation is copied from m_sFileName!
 			if (res)
 			{
-				CDib::JPEGSetOrientationInplace(FileName,
+				CDib::JPEGSetOrientationInplace(m_sFileName,
 												1,
 												FALSE);
 			}
@@ -3592,7 +3576,7 @@ BOOL CPictureDoc::Save()
 			m_pDib->GetExifInfo()->Orientation = 1;
 			if (IsMultiPageTIFF())
 			{
-				res = m_pDib->SaveMultiPageTIFF(FileName,
+				res = m_pDib->SaveMultiPageTIFF(m_sFileName,
 												m_sFileName,
 												((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
 												m_pDib->m_FileInfo.m_nCompression,
@@ -3602,7 +3586,7 @@ BOOL CPictureDoc::Save()
 			}
 			else
 			{
-				res = m_pDib->SaveTIFF(	FileName,
+				res = m_pDib->SaveTIFF(	m_sFileName,
 										m_pDib->m_FileInfo.m_nCompression,
 										DEFAULT_JPEGCOMPRESSION,
 										GetView(),
@@ -3611,7 +3595,7 @@ BOOL CPictureDoc::Save()
 			m_pDib->GetExifInfo()->Orientation = nOrientation;
 			EndWaitCursor();
 		}
-		else if (extension == _T("pcx"))
+		else if (extension == _T(".pcx"))
 		{
 			BeginWaitCursor();
 			if (m_pDib->HasAlpha() && m_pDib->GetBitCount() == 32)
@@ -3619,17 +3603,17 @@ BOOL CPictureDoc::Save()
 				Dib = *m_pDib;
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
-				res = Dib.SavePCX(	FileName,
+				res = Dib.SavePCX(	m_sFileName,
 									GetView(),
 									TRUE);
 			}
 			else
-				res = m_pDib->SavePCX(	FileName,
+				res = m_pDib->SavePCX(	m_sFileName,
 										GetView(),
 										TRUE);
 			EndWaitCursor();
 		}
-		else if (extension == _T("emf"))
+		else if (extension == _T(".emf"))
 		{
 			// Unfortunately with the given windows APIs we cannot choose the wanted dpi,
 			// only a reference dc with a given dpi can be chosen.
@@ -3650,10 +3634,10 @@ BOOL CPictureDoc::Save()
 				Dib = *m_pDib;
 				Dib.RenderAlphaWithSrcBackground();
 				Dib.SetAlpha(FALSE);
-				res = Dib.SaveEMF(FileName, hPrinterDC);
+				res = Dib.SaveEMF(m_sFileName, hPrinterDC);
 			}
 			else
-				res = m_pDib->SaveEMF(FileName, hPrinterDC);
+				res = m_pDib->SaveEMF(m_sFileName, hPrinterDC);
 			if (hPrinterDC)
 				::DeleteDC(hPrinterDC);
 			EndWaitCursor();
@@ -3663,7 +3647,7 @@ BOOL CPictureDoc::Save()
 		if (res)
 		{
 			SetModifiedFlag(FALSE);
-			LoadPicture(&m_pDib, FileName);
+			LoadPicture(&m_pDib, m_sFileName);
 		}
 		else
 			::AfxMessageBox(ML_STRING(1252, "Could Not Save The Picture."), MB_OK | MB_ICONSTOP);

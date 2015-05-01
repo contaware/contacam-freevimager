@@ -141,94 +141,85 @@ typedef struct {
 
 // Error Codes
 #define BMP_E_ZEROPATH					0   // The file name is zero
-#define BMP_E_WRONGEXTENTION			1	// Wrong File Extention
-#define BMP_E_FILEREADONLY				2	// The file is read only
-#define BMP_E_NOMEM 					3   // Could not alloc memory
-#define BMP_E_BADBMP					4	// Corrupted or unsupported DIB
-#define BMP_E_READ						5	// Couldn't read BMP file
-#define BMP_E_FILEEMPTY					6	// File is empty
-#define BMP_THREADEXIT					7	// Thread Exit -> Interrupt the current job!
+#define BMP_E_FILEREADONLY				1	// The file is read only
+#define BMP_E_NOMEM 					2   // Could not alloc memory
+#define BMP_E_BADBMP					3	// Corrupted or unsupported DIB
+#define BMP_E_READ						4	// Couldn't read BMP file
+#define BMP_E_FILEEMPTY					5	// File is empty
+#define BMP_THREADEXIT					6	// Thread Exit -> Interrupt the current job!
 
 #define EMF_E_ZEROPATH					0   // The file name is zero
-#define EMF_E_WRONGEXTENTION			1	// Wrong File Extention
-#define EMF_E_FILEREADONLY				2	// The file is read only
-#define EMF_E_NOMEM						3   // Could not alloc memory
-#define EMF_E_BADBMP					4	// Corrupted or unsupported DIB
-#define EMF_E_BADEMF					5   // Corrupted or unsupported EMF
-#define EMF_E_FILEEMPTY					6	// File is empty
+#define EMF_E_FILEREADONLY				1	// The file is read only
+#define EMF_E_NOMEM						2   // Could not alloc memory
+#define EMF_E_BADBMP					3	// Corrupted or unsupported DIB
+#define EMF_E_BADEMF					4   // Corrupted or unsupported EMF
+#define EMF_E_FILEEMPTY					5	// File is empty
 
 #define MMBMP_E_ZEROPATH				0   // The file name is zero
-#define MMBMP_E_WRONGEXTENTION			1	// Wrong File Extention
-#define MMBMP_E_CREATEFILE				2   // CreateFile failed
-#define MMBMP_E_BADBMP					3	// Corrupted or unsupported DIB
-#define MMBMP_E_FILESIZE				4	// GetFileSize failed
-#define MMBMP_E_FILEEMPTY				5	// File is empty
-#define MMBMP_E_CREATEFILEMAPPING		6   // CreateFileMapping failed
-#define MMBMP_E_MAPVIEWOFFILE			7   // MapViewOfFile failed
+#define MMBMP_E_CREATEFILE				1   // CreateFile failed
+#define MMBMP_E_BADBMP					2	// Corrupted or unsupported DIB
+#define MMBMP_E_FILESIZE				3	// GetFileSize failed
+#define MMBMP_E_FILEEMPTY				4	// File is empty
+#define MMBMP_E_CREATEFILEMAPPING		5   // CreateFileMapping failed
+#define MMBMP_E_MAPVIEWOFFILE			6   // MapViewOfFile failed
 
 #define PCX_E_ZEROPATH					0   // The file name is zero
-#define PCX_E_WRONGEXTENTION			1	// Wrong File Extention
-#define PCX_E_FILEREADONLY				2	// The file is read only
-#define PCX_E_NOMEM						3   // Could not alloc memory
-#define PCX_E_BADBMP					4	// Corrupted or unsupported DIB
-#define PCX_E_BADPCX					5   // Corrupted or unsupported PCX
-#define PCX_E_READ						6   // Couldn't read PCX file
-#define PCX_E_WRITE						7   // Couldn't write PCX file
-#define PCX_E_FILEEMPTY					8	// File is empty
-#define PCX_THREADEXIT					9	// Thread Exit -> Interrupt the current job!
+#define PCX_E_FILEREADONLY				1	// The file is read only
+#define PCX_E_NOMEM						2   // Could not alloc memory
+#define PCX_E_BADBMP					3	// Corrupted or unsupported DIB
+#define PCX_E_BADPCX					4   // Corrupted or unsupported PCX
+#define PCX_E_READ						5   // Couldn't read PCX file
+#define PCX_E_WRITE						6   // Couldn't write PCX file
+#define PCX_E_FILEEMPTY					7	// File is empty
+#define PCX_THREADEXIT					8	// Thread Exit -> Interrupt the current job!
 
 #define TIFF_E_WRONGPARAMETERS			0	// The Function Parameters Are Wrong
 #define TIFF_E_ZEROPATH					1   // The file name is zero
-#define TIFF_E_WRONGEXTENTION			2	// Wrong File Extention
-#define TIFF_E_FILEREADONLY				3	// The file is read only
-#define TIFF_E_NOMEM					4   // Could not alloc memory
-#define TIFF_E_LIBTIFF					5   // libtiff error
-#define TIFF_E_BADBMP					6	// Corrupted or unsupported DIB
-#define TIFF_E_READ						7   // Couldn't read TIFF file
-#define TIFF_E_WRITE					8   // Couldn't write TIFF file
-#define TIFF_E_FILEEMPTY				9	// File is empty
-#define TIFF_THREADEXIT					10	// Thread Exit -> Interrupt the current job!
+#define TIFF_E_FILEREADONLY				2	// The file is read only
+#define TIFF_E_NOMEM					3   // Could not alloc memory
+#define TIFF_E_LIBTIFF					4   // libtiff error
+#define TIFF_E_BADBMP					5	// Corrupted or unsupported DIB
+#define TIFF_E_READ						6   // Couldn't read TIFF file
+#define TIFF_E_WRITE					7   // Couldn't write TIFF file
+#define TIFF_E_FILEEMPTY				8	// File is empty
+#define TIFF_THREADEXIT					9	// Thread Exit -> Interrupt the current job!
 
 #define JPEG_E_WRONGPARAMETERS			0	// The Function Parameters Are Wrong
 #define JPEG_E_ZEROPATH					1   // The file name is zero
 #define JPEG_E_FILEREADONLY				2	// The file is read only
-#define JPEG_E_WRONGEXTENTION			3	// Wrong File Extention
-#define JPEG_E_NOMEM					4   // Could not alloc memory
-#define JPEG_E_LIBJPEG_LOAD				5   // libjpeg load error
-#define JPEG_E_LIBJPEG_SAVE				6   // libjpeg save error 
-#define JPEG_E_BADBMP					7   // Corrupted or unsupported DIB
-#define JPEG_E_BADJPEG					8   // Corrupted or unsupported JPEG
-#define JPEG_E_SCALEFACTOR				9	// Unsupported Scale Factor, use: 1,2,4 or 8
-#define JPEG_E_READ						10   // Couldn't read JPEG file
-#define JPEG_E_WRITE					11   // Couldn't write JPEG file
-#define JPEG_E_FILEEMPTY				12	// File is empty
-#define JPEG_E_QUALITYRANGE				13	// Quality must be 0..100
-#define JPEG_E_MEMSRC					14	// Memory Source is not specified
-#define JPEG_E_MEMDST					15	// Memory Destination is not specified
-#define JPEG_E_MEMDSTSIZE				16	// Memory Destination size pointer is not specified
-#define JPEG_THREADEXIT					17	// Thread Exit -> Interrupt the current job!
+#define JPEG_E_NOMEM					3   // Could not alloc memory
+#define JPEG_E_LIBJPEG_LOAD				4   // libjpeg load error
+#define JPEG_E_LIBJPEG_SAVE				5   // libjpeg save error 
+#define JPEG_E_BADBMP					6   // Corrupted or unsupported DIB
+#define JPEG_E_BADJPEG					7   // Corrupted or unsupported JPEG
+#define JPEG_E_SCALEFACTOR				8	// Unsupported Scale Factor, use: 1,2,4 or 8
+#define JPEG_E_READ						9   // Couldn't read JPEG file
+#define JPEG_E_WRITE					10   // Couldn't write JPEG file
+#define JPEG_E_FILEEMPTY				11	// File is empty
+#define JPEG_E_MEMSRC					12	// Memory Source is not specified
+#define JPEG_E_MEMDST					13	// Memory Destination is not specified
+#define JPEG_E_MEMDSTSIZE				14	// Memory Destination size pointer is not specified
+#define JPEG_THREADEXIT					15	// Thread Exit -> Interrupt the current job!
 
 #define GIF_E_ZEROPATH					0	// The file name is zero
-#define GIF_E_WRONGEXTENTION			1	// The file extention is not .gif
-#define GIF_E_FILEREADONLY				2	// The file is read only
-#define GIF_E_NOMEM						3	// Could not alloc memory
-#define GIF_E_GIFLIB					4	// giflib error
-#define GIF_E_READ						5	// Couldn't read GIF file
-#define GIF_E_FILEEMPTY					6	// File is empty
-#define GIF_E_BADBMP					7	// Corrupted or unsupported DIB
+#define GIF_E_FILEREADONLY				1	// The file is read only
+#define GIF_E_NOMEM						2	// Could not alloc memory
+#define GIF_E_GIFLIB					3	// giflib error
+#define GIF_E_READ						4	// Couldn't read GIF file
+#define GIF_E_FILEEMPTY					5	// File is empty
+#define GIF_E_BADBMP					6	// Corrupted or unsupported DIB
 
 #define PNG_E_ZEROPATH					0   // The file name is zero
-#define PNG_E_WRONGEXTENTION			1	// Wrong File Extention
-#define PNG_E_FILEREADONLY				2	// The file is read only
-#define PNG_E_NOMEM						3   // Could not alloc memory
-#define PNG_E_UNSUPP					4   // Unsupported image type
-#define PNG_E_LIBPNG					5   // libpng error
-#define PNG_E_BADBMP					6   // Corrupted or unsupported DIB
-#define PNG_E_BADPNG					7   // Corrupted or unsupported PNG
-#define PNG_E_READ						8   // Couldn't read PNG file
-#define PNG_E_WRITE						9   // Couldn't write PNG file
-#define PNG_E_FILEEMPTY					10	// File is empty
-#define PNG_THREADEXIT					11	// Thread Exit -> Interrupt the current job!
+#define PNG_E_FILEREADONLY				1	// The file is read only
+#define PNG_E_NOMEM						2   // Could not alloc memory
+#define PNG_E_UNSUPP					3   // Unsupported image type
+#define PNG_E_LIBPNG					4   // libpng error
+#define PNG_E_BADBMP					5   // Corrupted or unsupported DIB
+#define PNG_E_BADPNG					6   // Corrupted or unsupported PNG
+#define PNG_E_READ						7   // Couldn't read PNG file
+#define PNG_E_WRITE						8   // Couldn't write PNG file
+#define PNG_E_FILEEMPTY					9	// File is empty
+#define PNG_THREADEXIT					10	// Thread Exit -> Interrupt the current job!
 
 ////////////////////
 // Pixels in Memory:
@@ -1164,6 +1155,9 @@ public:
 
 	// Set color (or index for 1,4 and 8 bpp)
 	BOOL SetDibSectionColors(COLORREF crColor);
+
+	// Return the file extension from the file signature
+	static CString FileSignatureToExtension(LPCTSTR lpszPathName);
 
 	// Check file to find out strange things...
 	BOOL FileCheck(LPCTSTR lpszPathName);

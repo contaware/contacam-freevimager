@@ -57,10 +57,6 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)PNG_E_ZEROPATH;
 
-		// Check for .png Extension
-		if (::GetFileExt(sPathName) != _T(".png"))
-			throw (int)PNG_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		file.Close();
@@ -518,8 +514,6 @@ BOOL CDib::LoadPNG(	LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case PNG_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case PNG_E_WRONGEXTENTION :	str += _T("The file extention is not .png\n");
 			break;
 			case PNG_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;

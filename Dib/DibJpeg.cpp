@@ -87,10 +87,6 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
 
-		// Check for JPEG filename
-		if (!::IsJPEG(sPathName))
-			throw (int)JPEG_E_WRONGEXTENTION;
-
 		// Check whether file is empty
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
@@ -485,8 +481,6 @@ BOOL CDib::LoadJPEG(LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case JPEG_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
@@ -1144,7 +1138,8 @@ BOOL CDib::SaveJPEG(LPCTSTR lpszPathName,
 	jsrcerr.szLastLibJpegError[0] = '\0';
 	jerr.szLastLibJpegError[0] = '\0';
 	BOOL bCopySrcMarkers;
-	if ((lpszMarkersFrom == NULL) || (lpszMarkersFrom[0] == _T('\0')))
+	if ((lpszMarkersFrom == NULL) || (lpszMarkersFrom[0] == _T('\0')) ||
+		FileSignatureToExtension(lpszMarkersFrom) != _T(".jpg"))
 		bCopySrcMarkers = FALSE;
 	else
 		bCopySrcMarkers = TRUE;
@@ -1187,7 +1182,7 @@ BOOL CDib::SaveJPEG(LPCTSTR lpszPathName,
 		}
 
 		if ((quality < 0) || (quality > 100))
-			throw (int)JPEG_E_QUALITYRANGE;
+			quality = DEFAULT_JPEGCOMPRESSION;
 	
 		// Open the input file
 		if (bCopySrcMarkers)
@@ -1695,8 +1690,6 @@ BOOL CDib::SaveJPEG(LPCTSTR lpszPathName,
 			break;
 			case JPEG_E_WRITE :			str += _T("Couldn't write JPEG file\n");
 			break;
-			case JPEG_E_QUALITYRANGE :	str += _T("Quality must be between 0..100\n");
-			break;
 			default:					str += _T("Unspecified error\n");
 			break;
 		}
@@ -1772,7 +1765,8 @@ BOOL CDib::SaveJPEG(LPBYTE pOutput,
 	jsrcerr.szLastLibJpegError[0] = '\0';
 	jerr.szLastLibJpegError[0] = '\0';
 	BOOL bCopySrcMarkers;
-	if ((lpszMarkersFrom == NULL) || (lpszMarkersFrom[0] == _T('\0')))
+	if ((lpszMarkersFrom == NULL) || (lpszMarkersFrom[0] == _T('\0')) ||
+		FileSignatureToExtension(lpszMarkersFrom) != _T(".jpg"))
 		bCopySrcMarkers = FALSE;
 	else
 		bCopySrcMarkers = TRUE;
@@ -1810,7 +1804,7 @@ BOOL CDib::SaveJPEG(LPBYTE pOutput,
 		}
 
 		if ((quality < 0) || (quality > 100))
-			throw (int)JPEG_E_QUALITYRANGE;
+			quality = DEFAULT_JPEGCOMPRESSION;
 	
 		// Open the input file
 		if (bCopySrcMarkers)
@@ -2247,8 +2241,6 @@ BOOL CDib::SaveJPEG(LPBYTE pOutput,
 			break;
 			case JPEG_E_BADBMP :		str += _T("Corrupted or unsupported DIB\n");
 			break;
-			case JPEG_E_QUALITYRANGE :	str += _T("Quality must be between 0..100\n");
-			break;
 			case JPEG_E_MEMDSTSIZE :	str += _T("Memory Destination size pointer is not specified\n");
 			break;
 			default:					str += _T("Unspecified error\n");
@@ -2338,10 +2330,6 @@ BOOL CDib::LossLessJPEGTrans(	LPCTSTR lpszInPathName, LPCTSTR lpszOutPathName,
 		CString sOutPathName(lpszOutPathName);
 		if (sOutPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
-
-		// Check for JPEG filename
-		if (!::IsJPEG(sInPathName))
-			throw (int)JPEG_E_WRONGEXTENTION;
 
 		// Open the input file
 		if ((infile = _tfopen(lpszInPathName, _T("rb"))) == NULL)
@@ -2475,8 +2463,6 @@ BOOL CDib::LossLessJPEGTrans(	LPCTSTR lpszInPathName, LPCTSTR lpszOutPathName,
 		switch (error_code)
 		{
 			case JPEG_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case JPEG_E_WRONGEXTENTION :str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_LIBJPEG_LOAD :	str += CString(jsrcerr.szLastLibJpegError) + _T("\n");
 			break;
@@ -3088,10 +3074,6 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)JPEG_E_ZEROPATH;
 
-		// Check for JPEG filename
-		if (!::IsJPEG(sPathName))
-			throw (int)JPEG_E_WRONGEXTENTION;
-
 		// Get File Size
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		DWORD dwFileSize = (DWORD)file.GetLength();
@@ -3152,8 +3134,6 @@ BOOL CDib::JPEGGetPixelAlignment(LPCTSTR lpszPathName,
 			case JPEG_E_WRONGPARAMETERS :	str += _T("The Function Parameters Are Wrong!\n");
 			break;
 			case JPEG_E_ZEROPATH :			str += _T("The file name is zero\n");
-			break;
-			case JPEG_E_WRONGEXTENTION :	str += _T("The file extention is wrong\n");
 			break;
 			case JPEG_E_LIBJPEG_LOAD :		str += CString(jsrcerr.szLastLibJpegError) + _T("\n");
 			break;

@@ -19,10 +19,6 @@ BOOL CDib::LoadBMP(	LPCTSTR lpszPathName,
 		CString sPathName(lpszPathName);
 		if (sPathName.IsEmpty())
 			throw (int)BMP_E_ZEROPATH;
-
-		// Check for .bmp or .dib Extension
-		if ((::GetFileExt(sPathName) != _T(".bmp")) && (::GetFileExt(sPathName) != _T(".dib")))
-			throw (int)BMP_E_WRONGEXTENTION;
 			
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
 		if (file.GetLength() == 0)
@@ -61,8 +57,6 @@ BOOL CDib::LoadBMP(	LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case BMP_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case BMP_E_WRONGEXTENTION :	str += _T("The file extention is not .bmp or .dib\n");
 			break;
 			case BMP_E_FILEEMPTY :		str += _T("File is empty\n");
 			break;

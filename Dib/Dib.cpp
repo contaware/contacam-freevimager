@@ -2877,6 +2877,55 @@ DWORD CDib::GetBMISize() const
 		return m_pBMI->bmiHeader.biSize;
 }
 
+CString CDib::FileSignatureToExtension(LPCTSTR lpszPathName)
+{
+	try
+	{
+		// Init vars
+		BYTE buf[8]; // adapt that if having longer signatures!
+		memset(buf, 0, sizeof(buf));
+		const BYTE bmp[] = {0x42, 0x4D};
+		const BYTE gif[] = {0x47, 0x49, 0x46};
+		const BYTE jpg[] = {0xFF, 0xD8, 0xFF, 0xE0};
+		const BYTE tiff_le[] = {0x49, 0x49, 0x2A, 0x00};
+		const BYTE tiff_be[] = {0x4D, 0x4D, 0x00, 0x2A};
+		const BYTE png[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+		const BYTE emf[] = {0x01, 0x00, 0x00, 0x00};
+
+		// Read signature
+		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
+		UINT uiReadBytes = sizeof(buf);
+		if (file.GetLength() < (ULONGLONG)sizeof(buf))
+			uiReadBytes = (UINT)file.GetLength();
+		file.Read(buf, uiReadBytes);
+		file.Close();
+
+		// Compare signatures
+		if (memcmp(buf, bmp, sizeof(bmp)) == 0)
+			return _T(".bmp");
+		else if (memcmp(buf, gif, sizeof(gif)) == 0)
+			return _T(".gif");
+		else if (memcmp(buf, jpg, sizeof(jpg)) == 0)
+			return _T(".jpg");
+		else if (memcmp(buf, tiff_le, sizeof(tiff_le)) == 0 ||
+				memcmp(buf, tiff_be, sizeof(tiff_be)) == 0)
+			return _T(".tif");
+		else if (memcmp(buf, png, sizeof(png)) == 0)
+			return _T(".png");
+		else if (buf[0] == 0x0A && buf[2] == 0x01)
+			return _T(".pcx");
+		else if (memcmp(buf, emf, sizeof(emf)) == 0)
+			return _T(".emf");
+		else
+			return _T("");
+	}
+	catch (CFileException* e)
+	{
+		e->Delete();	
+		return _T("");
+	}
+}
+
 BOOL CDib::FileCheck(LPCTSTR lpszPathName)
 {
 	// Check File Existence
@@ -2888,7 +2937,7 @@ BOOL CDib::FileCheck(LPCTSTR lpszPathName)
 
 BOOL CDib::FileCheckInternal(LPCTSTR lpszPathName)
 {
-	// Check Size
+	// Check various sizes
 	if (LoadImage(lpszPathName, 0, 0, 0, TRUE, TRUE))
 	{
 		CString s, t;
@@ -2986,16 +3035,18 @@ BOOL CDib::LoadImage(LPCTSTR lpszPathName,
 	if (!IsFile(lpszPathName))
 		return FALSE;
 
-	// Check File
+	// Check File Sanity
 	if (!bOnlyHeader)
 	{
 		if (!FileCheckInternal(lpszPathName))
 			return FALSE;
 	}
 
-	CString sExt = ::GetFileExt(lpszPathName);
-	if ((sExt == _T(".bmp")) ||
-		(sExt == _T(".dib")))
+	// Load it
+	CString sExt(FileSignatureToExtension(lpszPathName));
+	if (sExt == _T(""))
+		sExt = ::GetFileExt(lpszPathName);
+	if ((sExt == _T(".bmp")) || (sExt == _T(".dib")))
 	{
 		return LoadBMP(	lpszPathName,					// Loads bmp as BMI + bits
 						bOnlyHeader,
@@ -3323,10 +3374,6 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 		if (sPathName.IsEmpty())
 			throw (int)EMF_E_ZEROPATH;
 
-		// Check for .bmp or .dib Extension
-		if (::GetFileExt(sPathName) != _T(".emf"))
-			throw (int)EMF_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		if (m_FileInfo.m_dwFileSize == 0)
@@ -3496,8 +3543,6 @@ BOOL CDib::LoadEMF(LPCTSTR lpszPathName)
 			case EMF_E_ZEROPATH :		str += _T("The file name is zero\n");
 			break;
 			case EMF_E_NOMEM :			str += _T("Could not alloc memory\n");
-			break;
-			case EMF_E_WRONGEXTENTION :	str += _T("The file extention is not .emf\n");
 			break;
 			case EMF_E_BADEMF :			str += _T("Corrupted or unsupported EMF\n");
 			break;

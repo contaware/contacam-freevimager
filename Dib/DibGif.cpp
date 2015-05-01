@@ -75,10 +75,6 @@ BOOL CDib::LoadGIFHeader(LPCTSTR lpszPathName)
 		if (sPathName.IsEmpty())
 			throw (int)GIF_E_ZEROPATH;
 
-		// Check for .gif Extension
-		if (::GetFileExt(sPathName) != _T(".gif"))
-			throw (int)GIF_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		file.Close();
@@ -347,8 +343,6 @@ BOOL CDib::LoadGIFHeader(LPCTSTR lpszPathName)
 		{
 			case GIF_E_ZEROPATH :		str += _T("The file name is zero\n");
 			break;
-			case GIF_E_WRONGEXTENTION :	str += _T("The file extention is not .gif\n");
-			break;
 			case GIF_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
 			case GIF_E_GIFLIB :			str += _T("Cannot load file\n");
@@ -421,10 +415,6 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		CString sPathName(lpszPathName);
 		if (sPathName.IsEmpty())
 			throw (int)GIF_E_ZEROPATH;
-
-		// Check for .gif Extension
-		if (::GetFileExt(sPathName) != _T(".gif"))
-			throw (int)GIF_E_WRONGEXTENTION;
 
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
@@ -576,8 +566,6 @@ BOOL CDib::LoadFirstGIFRaw(	LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case GIF_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case GIF_E_WRONGEXTENTION :	str += _T("The file extention is not .gif\n");
 			break;
 			case GIF_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
@@ -903,10 +891,6 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)GIF_E_ZEROPATH;
 
-		// Check for .gif Extension
-		if (::GetFileExt(sPathName) != _T(".gif"))
-			throw (int)GIF_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		file.Close();
@@ -1067,8 +1051,6 @@ BOOL CDib::LoadFirstGIF(LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case GIF_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case GIF_E_WRONGEXTENTION :	str += _T("The file extention is not .gif\n");
 			break;
 			case GIF_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;
@@ -1428,10 +1410,6 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)GIF_E_ZEROPATH;
 
-		// Check for .gif Extension
-		if (::GetFileExt(sPathName) != _T(".gif"))
-			throw (int)GIF_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyWrite);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		file.Close();
@@ -1610,8 +1588,6 @@ BOOL CDib::LoadFirstGIF32(	LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case GIF_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case GIF_E_WRONGEXTENTION :	str += _T("The file extention is not .gif\n");
 			break;
 			case GIF_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;

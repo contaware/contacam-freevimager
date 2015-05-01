@@ -155,10 +155,6 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)PCX_E_ZEROPATH;
 
-		// Check for .pcx Extension
-		if (::GetFileExt(sPathName) != _T(".pcx"))
-			throw (int)PCX_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		if (m_FileInfo.m_dwFileSize == 0)
@@ -654,8 +650,6 @@ BOOL CDib::LoadPCX(	LPCTSTR lpszPathName,
 		switch (error_code)
 		{
 			case PCX_E_ZEROPATH :		str += _T("The file name is zero\n");
-			break;
-			case PCX_E_WRONGEXTENTION :	str += _T("The file extention is not .pcx or .dcx\n");
 			break;
 			case PCX_E_NOMEM :			str += _T("Could not alloc memory\n");
 			break;

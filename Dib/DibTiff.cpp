@@ -85,10 +85,6 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 		if (sPathName.IsEmpty())
 			throw (int)TIFF_E_ZEROPATH;
 
-		// Check for tiff filename
-		if (!::IsTIFF(sPathName))
-			throw (int)TIFF_E_WRONGEXTENTION;
-
 		CFile file(lpszPathName, CFile::modeRead | CFile::shareDenyNone);
 		m_FileInfo.m_dwFileSize = (DWORD)file.GetLength();
 		file.Close();
@@ -544,8 +540,6 @@ BOOL CDib::LoadTIFF(LPCTSTR lpszPathName,
 			case TIFF_E_WRONGPARAMETERS :	str += _T("The Function Parameters Are Wrong!\n");
 			break;
 			case TIFF_E_ZEROPATH :			str += _T("The file name is zero\n");
-			break;
-			case TIFF_E_WRONGEXTENTION :	str += _T("The file extention is wrong\n");
 			break;
 			case TIFF_E_NOMEM :				str += _T("Could not alloc memory\n");
 			break;
@@ -1275,7 +1269,7 @@ BOOL CDib::SaveNextTIFF(	TIFF* tif,
 
 		// Compression
 		uint16 compress;
-		if (nCompression == -1)
+		if (nCompression <= 0) // first valid value is COMPRESSION_NONE which is 1
 		{
 			switch (GetBitCount())
 			{
