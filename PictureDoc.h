@@ -431,9 +431,9 @@ public:
 	BOOL EditPalette();
 
 	// Rotations
-	BOOL Rotate90cw(BOOL bShowMessageBoxOnError);
-	BOOL Rotate90ccw(BOOL bShowMessageBoxOnError);
-	BOOL Rotate180(BOOL bShowMessageBoxOnError);
+	BOOL Rotate90cw();
+	BOOL Rotate90ccw();
+	BOOL Rotate180();
 
 	// Resize
 	BOOL EditResize(BOOL bShowMessageBoxOnError);

@@ -5009,7 +5009,7 @@ void CPictureDoc::OnUpdateSlideshowDelay60(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditRotate90cw()
 {
-	Rotate90cw(TRUE);
+	Rotate90cw();
 }
 
 void CPictureDoc::OnUpdateEditRotate90cw(CCmdUI* pCmdUI) 
@@ -5021,7 +5021,7 @@ void CPictureDoc::OnUpdateEditRotate90cw(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditRotate90ccw() 
 {
-	Rotate90ccw(TRUE);
+	Rotate90ccw();
 }
 
 void CPictureDoc::OnUpdateEditRotate90ccw(CCmdUI* pCmdUI) 
@@ -5033,7 +5033,7 @@ void CPictureDoc::OnUpdateEditRotate90ccw(CCmdUI* pCmdUI)
 
 void CPictureDoc::OnEditRotate180() 
 {
-	Rotate180(TRUE);
+	Rotate180();
 }
 
 void CPictureDoc::OnUpdateEditRotate180(CCmdUI* pCmdUI) 
@@ -5043,7 +5043,7 @@ void CPictureDoc::OnUpdateEditRotate180(CCmdUI* pCmdUI)
 					DoEnableCommand());
 }
 
-BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
+BOOL CPictureDoc::Rotate90cw()
 {
 	if (m_pDib)
 	{
@@ -5056,41 +5056,35 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 		BeginWaitCursor();
 
 		// Check for JPEG Extensions and make sure the file has not been modified
+		BOOL bLosslessDone = FALSE;
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
 
 			// Make Sure The File has the right Orientation
-			if (!CDib::JPEGAutoOrientate(m_sFileName,
-										((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-										bShowMessageBoxOnError,
-										GetView(),
-										TRUE))
-			{
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
-			
+			CDib::JPEGAutoOrientate(m_sFileName,
+									((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+									FALSE,
+									GetView(),
+									TRUE);
+
 			// Temporary File
 			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
 
 			// Do Transformation
-			BOOL res = m_pDib->LossLessJPEGTrans(	m_sFileName,
-													sTempFileName,
-													JXFORM_ROT_90,
-													TRUE,
-													FALSE,
-													TRUE,
-													"",
-													FALSE,
-													0, 0, 0, 0,
-													bShowMessageBoxOnError,
-													GetView(),
-													TRUE);
-
-			if (res)
+			if (m_pDib->LossLessJPEGTrans(	m_sFileName,
+											sTempFileName,
+											JXFORM_ROT_90,
+											TRUE,
+											FALSE,
+											TRUE,
+											"",
+											FALSE,
+											0, 0, 0, 0,
+											FALSE,
+											GetView(),
+											TRUE))
 			{
 				// Remove and Rename Files
 				try
@@ -5104,49 +5098,36 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
+
+					// OK
+					bLosslessDone = TRUE;
 				}
 				catch (CFileException* e)
 				{
-					EndWaitCursor();
 					::DeleteFile(sTempFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
 					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
 				}
 			}
-
-			LoadPicture(&m_pDib, m_sFileName);
-
-			EndWaitCursor();
-			GetView()->ForceCursor(FALSE);
-
-			return TRUE;
 		}
 
-		// A Duplicated Dib is created
-		AddUndo();
-		m_pDib->Rotate90CW();
-		SetModifiedFlag();
-		m_DocRect.bottom = m_pDib->GetHeight();
-		m_DocRect.right = m_pDib->GetWidth();
-		UpdateAlphaRenderedDib();
-		SetDocumentTitle();
-		UpdateAllViews(NULL);
+		if (bLosslessDone)
+			LoadPicture(&m_pDib, m_sFileName);
+		else
+		{
+			// A Duplicated Dib is created
+			AddUndo();
+			m_pDib->Rotate90CW();
+			SetModifiedFlag();
+			m_DocRect.bottom = m_pDib->GetHeight();
+			m_DocRect.right = m_pDib->GetWidth();
+			UpdateAlphaRenderedDib();
+			SetDocumentTitle();
+			UpdateAllViews(NULL);
+			UpdateImageInfo();
+		}
+
 		EndWaitCursor();
 		GetView()->ForceCursor(FALSE);
-		UpdateImageInfo();
 
 		return TRUE;
 	}
@@ -5154,7 +5135,7 @@ BOOL CPictureDoc::Rotate90cw(BOOL bShowMessageBoxOnError)
 		return FALSE;
 }
 
-BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError) 
+BOOL CPictureDoc::Rotate90ccw() 
 {
 	if (m_pDib)
 	{
@@ -5167,41 +5148,35 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 		BeginWaitCursor();
 
 		// Check for JPEG Extensions and make sure the file has not been modified
+		BOOL bLosslessDone = FALSE;
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
-			
+
 			// Make Sure The File has the right Orientation
-			if (!CDib::JPEGAutoOrientate(m_sFileName,
-										((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-										bShowMessageBoxOnError,
-										GetView(),
-										TRUE))
-			{
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+			CDib::JPEGAutoOrientate(m_sFileName,
+									((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+									FALSE,
+									GetView(),
+									TRUE);
 
 			// Temporary File
 			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
 
 			// Do Transformation
-			BOOL res = m_pDib->LossLessJPEGTrans(	m_sFileName,
-													sTempFileName,
-													JXFORM_ROT_270,
-													TRUE,
-													FALSE,
-													TRUE,
-													"",
-													FALSE,
-													0, 0, 0, 0,
-													bShowMessageBoxOnError,
-													GetView(),
-													TRUE);
-
-			if (res)
+			if (m_pDib->LossLessJPEGTrans(	m_sFileName,
+											sTempFileName,
+											JXFORM_ROT_270,
+											TRUE,
+											FALSE,
+											TRUE,
+											"",
+											FALSE,
+											0, 0, 0, 0,
+											FALSE,
+											GetView(),
+											TRUE))
 			{
 				// Remove and Rename Files
 				try
@@ -5215,49 +5190,36 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
+
+					// OK
+					bLosslessDone = TRUE;
 				}
 				catch (CFileException* e)
 				{
-					EndWaitCursor();
 					::DeleteFile(sTempFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
 					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
 				}
 			}
-
-			LoadPicture(&m_pDib, m_sFileName);
-
-			EndWaitCursor();
-			GetView()->ForceCursor(FALSE);
-
-			return TRUE;
 		}
 
-		// A Duplicated Dib is created
-		AddUndo();
-		m_pDib->Rotate90CCW();
-		SetModifiedFlag();
-		m_DocRect.bottom = m_pDib->GetHeight();
-		m_DocRect.right = m_pDib->GetWidth();
-		UpdateAlphaRenderedDib();
-		SetDocumentTitle();
-		UpdateAllViews(NULL);
+		if (bLosslessDone)
+			LoadPicture(&m_pDib, m_sFileName);
+		else
+		{
+			// A Duplicated Dib is created
+			AddUndo();
+			m_pDib->Rotate90CCW();
+			SetModifiedFlag();
+			m_DocRect.bottom = m_pDib->GetHeight();
+			m_DocRect.right = m_pDib->GetWidth();
+			UpdateAlphaRenderedDib();
+			SetDocumentTitle();
+			UpdateAllViews(NULL);
+			UpdateImageInfo();
+		}
+
 		EndWaitCursor();
 		GetView()->ForceCursor(FALSE);
-		UpdateImageInfo();
 
 		return TRUE;
 	}
@@ -5265,7 +5227,7 @@ BOOL CPictureDoc::Rotate90ccw(BOOL bShowMessageBoxOnError)
 		return FALSE;
 }
 
-BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError) 
+BOOL CPictureDoc::Rotate180() 
 {
 	if (m_pDib)
 	{
@@ -5278,41 +5240,35 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 		BeginWaitCursor();
 
 		// Check for JPEG Extensions and make sure the file has not been modified
+		BOOL bLosslessDone = FALSE;
 		if (::IsJPEG(m_sFileName) && !IsModified() && !m_bPrintPreviewMode)
 		{
 			// Kill Jpeg Thread
 			m_JpegThread.Kill();
-			
+
 			// Make Sure The File has the right Orientation
-			if (!CDib::JPEGAutoOrientate(m_sFileName,
-										((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
-										bShowMessageBoxOnError,
-										GetView(),
-										TRUE))
-			{
-				EndWaitCursor();
-				GetView()->ForceCursor(FALSE);
-				return FALSE;
-			}
+			CDib::JPEGAutoOrientate(m_sFileName,
+									((CUImagerApp*)::AfxGetApp())->GetAppTempDir(),
+									FALSE,
+									GetView(),
+									TRUE);
 
 			// Temporary File
 			CString sTempFileName = ::MakeTempFileName(((CUImagerApp*)::AfxGetApp())->GetAppTempDir(), m_sFileName);
 
 			// Do Transformation
-			BOOL res = m_pDib->LossLessJPEGTrans(	m_sFileName,
-													sTempFileName,
-													JXFORM_ROT_180,
-													TRUE,
-													FALSE,
-													TRUE,
-													"",
-													FALSE,
-													0, 0, 0, 0,
-													bShowMessageBoxOnError,
-													GetView(),
-													TRUE);
-
-			if (res)
+			if (m_pDib->LossLessJPEGTrans(	m_sFileName,
+											sTempFileName,
+											JXFORM_ROT_180,
+											TRUE,
+											FALSE,
+											TRUE,
+											"",
+											FALSE,
+											0, 0, 0, 0,
+											FALSE,
+											GetView(),
+											TRUE))
 			{
 				// Remove and Rename Files
 				try
@@ -5326,49 +5282,36 @@ BOOL CPictureDoc::Rotate180(BOOL bShowMessageBoxOnError)
 
 					// Set Last Write File Time
 					::SetFileTime(m_sFileName, NULL, NULL, &LastWriteTime);
+
+					// OK
+					bLosslessDone = TRUE;
 				}
 				catch (CFileException* e)
 				{
-					EndWaitCursor();
 					::DeleteFile(sTempFileName);
-
-					DWORD dwAttrib = ::GetFileAttributes(m_sFileName);
-					if ((dwAttrib != 0xFFFFFFFF) && (dwAttrib & FILE_ATTRIBUTE_READONLY))
-					{
-						CString str(ML_STRING(1255, "The file is read only\n"));
-						TRACE(str);
-						if (bShowMessageBoxOnError)
-							::AfxMessageBox(str, MB_OK | MB_ICONSTOP);
-					}
-					else
-						::ShowError(e->m_lOsError, bShowMessageBoxOnError);
-
 					e->Delete();
-					GetView()->ForceCursor(FALSE);
-					return FALSE;
 				}
 			}
-
-			LoadPicture(&m_pDib, m_sFileName);
-
-			EndWaitCursor();
-			GetView()->ForceCursor(FALSE);
-
-			return TRUE;
 		}
 
-		// A Duplicated Dib is created
-		AddUndo();
-		m_pDib->Rotate180();
-		SetModifiedFlag();
-		m_DocRect.bottom = m_pDib->GetHeight();
-		m_DocRect.right = m_pDib->GetWidth();
-		UpdateAlphaRenderedDib();
-		SetDocumentTitle();
-		UpdateAllViews(NULL);
+		if (bLosslessDone)
+			LoadPicture(&m_pDib, m_sFileName);
+		else
+		{
+			// A Duplicated Dib is created
+			AddUndo();
+			m_pDib->Rotate180();
+			SetModifiedFlag();
+			m_DocRect.bottom = m_pDib->GetHeight();
+			m_DocRect.right = m_pDib->GetWidth();
+			UpdateAlphaRenderedDib();
+			SetDocumentTitle();
+			UpdateAllViews(NULL);
+			UpdateImageInfo();
+		}
+
 		EndWaitCursor();
 		GetView()->ForceCursor(FALSE);
-		UpdateImageInfo();
 
 		return TRUE;
 	}
