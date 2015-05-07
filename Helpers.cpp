@@ -1830,7 +1830,10 @@ CString GetRegistryStringValue(HKEY hOpenKey, LPCTSTR szKey, LPCTSTR szValue, RE
 	}
 
 	// Get The String
-	LPBYTE lpBuf = new BYTE[dwBufSize];
+	// Note: the string may not have been stored with the proper terminating null character,
+	//       therefore we have to ensure that the string is properly terminated
+	LPBYTE lpBuf = new BYTE[dwBufSize + sizeof(TCHAR)];
+	memset(lpBuf, 0, dwBufSize + sizeof(TCHAR));
 	lRet = RegQueryValueEx(
 						hSubKey,		// handle to key to query
 						szValue,		// address of name of value to query
