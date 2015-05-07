@@ -43,11 +43,32 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CAudioInSourceDlg message handlers
 
+CString CAudioInSourceDlg::DevIDToName(UINT uiID)
+{
+	WAVEINCAPS2 DevCaps;
+	memset(&DevCaps, 0, sizeof(WAVEINCAPS2));
+	MMRESULT res = ::waveInGetDevCaps(uiID, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
+	if (res != MMSYSERR_NOERROR)
+		return _T("Unknown Device");
+	else
+	{
+		CString sDevName(DevCaps.szPname);
+		CString sRegistryDevName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
+									_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
+									::UuidToString(&DevCaps.NameGuid) + _T("}"),
+									_T("Name"));
+		if (sDevName.GetLength() > sRegistryDevName.GetLength())
+			return (sRegistryDevName.GetLength() > 5 ? sRegistryDevName : sDevName); // priority to registry device name if it has a reasonable length
+		else
+			return sRegistryDevName;
+	}
+}
+
 BOOL CAudioInSourceDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
 
-	// Get Number of Audio Devices
+	// Get number of devices
 	UINT uiNumDev = ::waveInGetNumDevs(); 
 	if (uiNumDev == 0)
 	{
@@ -56,23 +77,11 @@ BOOL CAudioInSourceDlg::OnInitDialog()
 		return TRUE;
 	}
 
-	// Enumerate The Devices
-	WAVEINCAPS2 DevCaps;
+	// Enumerate the devices
 	for (UINT i = 0 ; i < uiNumDev ; i++)
-	{
-		MMRESULT res = ::waveInGetDevCaps(i, (LPWAVEINCAPS)(&DevCaps), sizeof(WAVEINCAPS2));
-		if (res != MMSYSERR_NOERROR)
-			m_AudioInSource.AddString(_T("Unknown Device"));
-		else
-		{
-			CString sFullDeviceName = ::GetRegistryStringValue(HKEY_LOCAL_MACHINE,
-										_T("System\\CurrentControlSet\\Control\\MediaCategories\\{") +
-										::UuidToString(&DevCaps.NameGuid) + _T("}"),
-										_T("Name"));
-			m_AudioInSource.AddString(sFullDeviceName.IsEmpty() ? (CString)DevCaps.szPname : sFullDeviceName);
-		}
-	}
+		m_AudioInSource.AddString(DevIDToName(i));
 
+	// Init selection
 	if (m_uiDeviceID > (uiNumDev - 1))
 		m_AudioInSource.SetCurSel(-1); // no selection if m_uiDeviceID is not existing (maybe a USB device was removed)
 	else

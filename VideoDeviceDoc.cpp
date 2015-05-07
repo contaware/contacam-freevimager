@@ -2074,7 +2074,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 
 	// Open Audio
 	if (!OpenInAudio())
-		return -1; // error
+		return -1; // error logged inside function
 
 	// Start Buffering
 	CUserBuf UserBuf;
@@ -2098,9 +2098,17 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 		m_pUncompressedBuf[i] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
 		if (!DataInAudio())
 		{
-			nLoopState = -1; // error
+			nLoopState = -1; // error logged inside function
 			break;
 		}
+	}
+
+	// Log the starting
+	if (nLoopState == 1)
+	{
+		::LogLine(	_T("%s starting audio from %s"),
+					m_pDoc->GetAssignedDeviceName(),
+					CAudioInSourceDlg::DevIDToName(m_pDoc->m_dwCaptureAudioDeviceID));
 	}
 
 	// Samples loop
@@ -2139,7 +2147,7 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 												m_pUncompressedBuf[m_uiWaveInBufPos] = (LPBYTE)av_malloc(m_dwUncompressedBufSize);
 												if (!DataInAudio())
 												{
-													nLoopState = -1; // error
+													nLoopState = -1; // error logged inside function
 													break;
 												}
 											}
@@ -2162,6 +2170,13 @@ int CVideoDeviceDoc::CCaptureAudioThread::Loop()
 		memset(&m_WaveHeader[i], 0, sizeof(WAVEHDR));
 	}
 	CloseInAudio();
+
+	// Log the stopping
+	if (nLoopState == 0)
+	{
+		::LogLine(	_T("%s stopping audio"),
+					m_pDoc->GetAssignedDeviceName());
+	}
 
 	return nLoopState;
 }
@@ -2187,7 +2202,10 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 {
 	// Check Wave Format Pointers
 	if (!m_pSrcWaveFormat || !m_pDstWaveFormat)
+	{
+		::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", open sound input device error because of NULL wave format!"));
 		return FALSE;
+	}
 
 	// First Close
 	CloseInAudio();
@@ -2196,7 +2214,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 	UINT num = ::waveInGetNumDevs();
 	if (num == 0)
 	{
-		TRACE(_T("No Sound Input Device.\n"));
+		::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", ") + ML_STRING(1354, "No Sound Input Device."));
 		return FALSE;
 	}
 
@@ -2242,7 +2260,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::OpenInAudio()
 						CALLBACK_EVENT) != MMSYSERR_NOERROR)
 	{
 		::ResetEvent(m_hWaveInEvent); // Reset The Open Event
-        TRACE(_T("Sound Input Cannot Open Device!\n"));
+		::LogLine(_T("%s, sound input cannot open device ID %u"), m_pDoc->GetAssignedDeviceName(), m_pDoc->m_dwCaptureAudioDeviceID);
 	    return FALSE;
 	}
 	else
@@ -2273,7 +2291,7 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
 		res = ::waveInUnprepareHeader(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR)); 
 		if (res != MMSYSERR_NOERROR) 
 		{
-			TRACE(_T("Sound Input Cannot UnPrepareHeader!\n"));
+			::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", sound input cannot UnprepareHeader!"));
 			return FALSE;
 		}
 	}
@@ -2286,21 +2304,21 @@ BOOL CVideoDeviceDoc::CCaptureAudioThread::DataInAudio()
     res = ::waveInPrepareHeader(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR)); 
 	if ((res != MMSYSERR_NOERROR) || (m_WaveHeader[m_uiWaveInBufPos].dwFlags != WHDR_PREPARED))
 	{
-		TRACE(_T("Sound Input Cannot PrepareHeader!\n"));
+		::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", sound input cannot PrepareHeader!"));
 		return FALSE;
 	}
 
 	res = ::waveInAddBuffer(m_hWaveIn, &m_WaveHeader[m_uiWaveInBufPos], sizeof(WAVEHDR));
 	if (res != MMSYSERR_NOERROR) 
 	{
-		TRACE(_T("Sound Input Cannot Add Buffer!\n"));
+		::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", sound input cannot AddBuffer!"));
 		return FALSE;
 	}
 
 	res = ::waveInStart(m_hWaveIn);
 	if (res != MMSYSERR_NOERROR) 
 	{
-		TRACE(_T("Sound Input Cannot Start Wave In!\n"));
+		::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(", sound input cannot Start Wave In!"));
 		return FALSE;
 	}
 

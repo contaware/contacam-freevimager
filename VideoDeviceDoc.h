@@ -336,7 +336,6 @@ public:
 			CRITICAL_SECTION m_csAudioList;
 			
 		protected:
-			
 			// Functions
 			int Loop();
 			int Work();

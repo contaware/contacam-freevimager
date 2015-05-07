@@ -16,6 +16,7 @@ class CAudioInSourceDlg : public CDialog
 // Construction
 public:
 	CAudioInSourceDlg(UINT uiDeviceID);   // standard constructor
+	static CString DevIDToName(UINT uiID);
 
 // Dialog Data
 	//{{AFX_DATA(CAudioInSourceDlg)
