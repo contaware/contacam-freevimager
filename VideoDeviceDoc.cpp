@@ -256,12 +256,14 @@ void CVideoDeviceDoc::CSaveFrameListThread::LoadAndDecodeFrame(CDib* pDib)
 
 int CVideoDeviceDoc::CSaveFrameListThread::Work() 
 {
+	// Init vars
 	ASSERT(m_pDoc);
 	m_bWorking = FALSE;
 	CTime FirstTime(0);
 	CTime LastTime(0);
-	CString sTempDetectionDir; 
-	sTempDetectionDir.Format(_T("Detection%X"), ::GetCurrentThreadId());
+	DWORD dwCurrentThreadId = ::GetCurrentThreadId();
+	CString sTempDetectionDir;
+	sTempDetectionDir.Format(_T("Detection%X"), dwCurrentThreadId);
 	sTempDetectionDir = ((CUImagerApp*)::AfxGetApp())->GetAppTempDir() + sTempDetectionDir;
 	DWORD dwAttrib = ::GetFileAttributes(sTempDetectionDir);
 	if (dwAttrib == 0xFFFFFFFF || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) // Not Existing or Not A Directory
@@ -270,21 +272,29 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			::ShowLastError(FALSE);
 	}
 
+	// Save loop
 	while (TRUE)
 	{
-		// Poll for Work
+		// Init vars for next saving
 		m_pFrameList = NULL;
 		m_nNumFramesToSave = 0;
 		m_nSaveProgress = 100;
 		BOOL bPolling = TRUE;
+
+		// Poll for work
 		do
-		{	
+		{
+			// Remove our old reservation
+			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
+
+			// Poll lists count and reservation position
 			while (TRUE)
 			{
-				// Is count >= 2?
+				// Continue to the empty lists remover?
 				::EnterCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 				CalcMovementDetectionListsSize();
-				if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
+				if (m_pDoc->m_MovementDetectionsList.GetCount() >= 2 &&
+					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservation(dwCurrentThreadId))
 					break;
 				::LeaveCriticalSection(&m_pDoc->m_csMovementDetectionsList);
 
@@ -294,10 +304,13 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				// Shutdown?
 				if (::WaitForSingleObject(GetKillEvent(), MOVDET_SAVEFRAMES_POLL) == WAIT_OBJECT_0)
 				{
+					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
 			}
+
+			// Remove empty lists
 			while (m_pDoc->m_MovementDetectionsList.GetCount() >= 2)
 			{
 				// Get oldest (head) list
@@ -355,6 +368,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				if (::WaitForSingleObject(GetKillEvent(), 10U) == WAIT_OBJECT_0)
 				{
 					m_bWorking = FALSE;
+					((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 					::DeleteDir(sTempDetectionDir);
 					return 0;
 				}
@@ -456,6 +470,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 				for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 					::DeleteFile(sJPGFileNames[i]);
 				m_bWorking = FALSE;
+				((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 				::DeleteDir(sTempDetectionDir);
 				return 0;
 			}
@@ -670,6 +685,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 			for (int i = 0 ; i < sJPGFileNames.GetSize() ; i++)
 				::DeleteFile(sJPGFileNames[i]);
 			m_bWorking = FALSE;
+			((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 			::DeleteDir(sTempDetectionDir);
 			return 0;
 		}
@@ -720,6 +736,7 @@ int CVideoDeviceDoc::CSaveFrameListThread::Work()
 	}
 	ASSERT(FALSE); // should never end up here...
 	m_bWorking = FALSE;
+	((CUImagerApp*)::AfxGetApp())->MovDetSaveReservationRemove(dwCurrentThreadId);
 	::DeleteDir(sTempDetectionDir);
 	return 0;
 }

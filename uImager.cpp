@@ -144,6 +144,7 @@ CUImagerApp::CUImagerApp()
 	m_hVlcProcess = NULL;
 	m_VlcStartTime = CTime(0);
 	::InitializeCriticalSection(&m_csVlc);
+	::InitializeCriticalSection(&m_csMovDetSaveReservation);
 	m_bSingleInstance = TRUE;
 	m_bServiceProcess = FALSE;
 	m_bDoStartFromService = FALSE;
@@ -186,6 +187,7 @@ CUImagerApp::~CUImagerApp()
 {
 #ifdef VIDEODEVICEDOC
 	::DeleteCriticalSection(&m_csVlc);
+	::DeleteCriticalSection(&m_csMovDetSaveReservation);
 #endif
 }
 
@@ -2408,6 +2410,88 @@ void CUImagerApp::BrowserAutostart()
 									BROSERAUTORUN_NAME, sAutorunCommand);
 	}
 }
+
+BOOL CUImagerApp::MovDetSaveReservation(DWORD dwId)
+{
+	int i;
+
+	// Enter critical section
+	::EnterCriticalSection(&m_csMovDetSaveReservation);
+
+	// Go if we are in the first MOVDET_MAX_SIMULTANEOUS_SAVINGS
+	POSITION pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+	for (i = 0 ; i < MIN(MOVDET_MAX_SIMULTANEOUS_SAVINGS, m_MovDetSaveReservationQueue.GetCount()) ; i++)
+	{
+		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		{
+			::LeaveCriticalSection(&m_csMovDetSaveReservation);
+			return TRUE;
+		}
+	}
+
+	// See whether we have to add the id to queue
+	BOOL bPresent = FALSE;
+	pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+	for (i = 0 ; i < m_MovDetSaveReservationQueue.GetCount() ; i++)
+	{
+		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		{
+			bPresent = TRUE;
+			break;
+		}
+	}    
+	if (!bPresent)
+	{
+		// Add to Tail
+		m_MovDetSaveReservationQueue.AddTail(dwId);
+	
+		// Go if we are in the first MOVDET_MAX_SIMULTANEOUS_SAVINGS
+		pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+		for (i = 0 ; i < MIN(MOVDET_MAX_SIMULTANEOUS_SAVINGS, m_MovDetSaveReservationQueue.GetCount()) ; i++)
+		{
+			if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+			{
+				::LeaveCriticalSection(&m_csMovDetSaveReservation);
+				return TRUE;
+			}
+		}
+	}
+
+	// Leave critical section
+	::LeaveCriticalSection(&m_csMovDetSaveReservation);
+
+	return FALSE;
+}
+
+void CUImagerApp::MovDetSaveReservationRemove(DWORD dwId)
+{
+	int i = 0;
+
+	// Enter critical section
+	::EnterCriticalSection(&m_csMovDetSaveReservation);
+
+	// Loop
+	POSITION pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+	while (i < m_MovDetSaveReservationQueue.GetCount())
+	{
+		POSITION prevpos = pos;
+		if (m_MovDetSaveReservationQueue.GetNext(pos) == dwId)
+		{
+			// Remove
+			m_MovDetSaveReservationQueue.RemoveAt(prevpos);
+
+			// Reset
+			i = 0;
+			pos = m_MovDetSaveReservationQueue.GetHeadPosition();
+		}
+		else
+			i++;
+	}
+
+	// Leave critical section
+	::LeaveCriticalSection(&m_csMovDetSaveReservation);
+}
+
 #endif
 
 void CUImagerApp::OnFileOpenDir() 

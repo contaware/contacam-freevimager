@@ -54,6 +54,12 @@
 // Default wait time before autostarting first device
 #define DEFAULT_FIRSTSTART_DELAY_MS						0U
 
+// Maximum number of simultaneous movement detection savings
+// Note: two cameras saving at the same time is a good value
+// for RAM usage (H.264 consumes a lot of heap memory while
+// encoding, MPEG4 uses less) and optimal threads distribution
+#define MOVDET_MAX_SIMULTANEOUS_SAVINGS					2
+
 // Service
 #define CONTACAMSERVICE_NOTINSTALLED					0
 #define CONTACAMSERVICE_RUNNING							1
@@ -76,7 +82,6 @@
 // FCC('MJPG'), FCC('DIVX'), FCC('H264')
 #define DEFAULT_VIDEO_FOURCC							FCC('H264')
 #define DEFAULT_VIDEO_QUALITY							VIDEO_QUALITY_GOOD
-#define DEFAULT_SHRINK_VIDEO_QUALITY					VIDEO_QUALITY_LOW
 #define DEFAULT_KEYFRAMESRATE							30
 
 // Default Audio Codec
@@ -433,6 +438,10 @@ public:
 	// Broser autostart
 	void BrowserAutostart();
 
+	// Movement detection save reservation queue
+	BOOL MovDetSaveReservation(DWORD dwId);
+	void MovDetSaveReservationRemove(DWORD dwId);
+
 	// Enumerate all configured (in registry or ini file) devices
 	void EnumConfiguredDevicePathNames(CStringArray& DevicePathNames);
 #endif
@@ -657,6 +666,11 @@ public:
 	HANDLE m_hVlcProcess;
 	CTime m_VlcStartTime;
 	CRITICAL_SECTION m_csVlc;
+
+	// Movement detection save reservation queue
+	typedef CList<DWORD,DWORD> MOVDETSAVERESERVATIONQUEUE;
+	MOVDETSAVERESERVATIONQUEUE m_MovDetSaveReservationQueue;
+	CRITICAL_SECTION m_csMovDetSaveReservation;
 
 	// Service
 	// - ContaCam's browser autostart disabled if this set
