@@ -205,19 +205,19 @@ public:
 	enum AttachmentType
 	{
 		ATTACHMENT_NONE				= 0,
-		ATTACHMENT_MP4				= 1,
+		ATTACHMENT_VIDEO			= 1,
 		ATTACHMENT_GIF				= 2,
 		ATTACHMENT_JPG				= 3,
-		ATTACHMENT_GIF_MP4			= 4,
-		ATTACHMENT_JPG_MP4			= 5,
+		ATTACHMENT_GIF_VIDEO		= 4,
+		ATTACHMENT_JPG_VIDEO		= 5,
 		ATTACHMENT_GIF_JPG			= 6,
-		ATTACHMENT_GIF_JPG_MP4		= 7
+		ATTACHMENT_GIF_JPG_VIDEO	= 7
 	};
 	enum FilesToUploadType
 	{
-		FILES_TO_UPLOAD_MP4			= 0,
+		FILES_TO_UPLOAD_VIDEO		= 0,
 		FILES_TO_UPLOAD_GIF			= 1,
-		FILES_TO_UPLOAD_MP4_GIF		= 2
+		FILES_TO_UPLOAD_VIDEO_GIF	= 2
 	};
 
 	// The Http Networking Get Frame Parser & Processor Class
@@ -534,43 +534,43 @@ public:
 									const CTime& RefTime,
 									DWORD dwRefUpTime);
 			BOOL SendMailFTPUpload(	const CTime& Time,
-									const CString& sMP4FileName,
+									const CString& sVideoFileName,
 									const CString& sGIFFileName,
 									const CStringArray& sJPGFileNames);
 			__forceinline BOOL SendMailMovementDetection(	const CTime& Time,
-															const CString& sMP4FileName,
+															const CString& sVideoFileName,
 															const CString& sGIFFileName,
 															const CStringArray& sJPGFileNames);
 			__forceinline BOOL FTPUploadMovementDetection(	const CTime& Time,
-															const CString& sMP4FileName,
+															const CString& sVideoFileName,
 															const CString& sGIFFileName);
 
-			__forceinline BOOL DoMakeMp4() const {
-							return m_pDoc->m_bSaveMP4MovementDetection				||
+			__forceinline BOOL DoMakeVideo() const {
+							return m_pDoc->m_bSaveVideoMovementDetection			||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_MP4)					||
+								CVideoDeviceDoc::ATTACHMENT_VIDEO)					||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_MP4)				||
+								CVideoDeviceDoc::ATTACHMENT_GIF_VIDEO)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_MP4)				||
+								CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4)			||
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4)				||
+								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO)				||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4_GIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
 
 			__forceinline BOOL DoMakeJpeg() const {
 							return (m_pDoc->m_bSendMailMovementDetection &&
@@ -579,7 +579,7 @@ public:
 								
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_JPG_MP4)				||
+								CVideoDeviceDoc::ATTACHMENT_JPG_VIDEO)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
@@ -587,7 +587,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4);};
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO);};
 
 			__forceinline BOOL DoMakeGif() const {
 							return	m_pDoc->m_bSaveAnimGIFMovementDetection			||
@@ -598,7 +598,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_MP4)				||
+								CVideoDeviceDoc::ATTACHMENT_GIF_VIDEO)				||
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
@@ -606,7 +606,7 @@ public:
 
 							(m_pDoc->m_bSendMailMovementDetection &&
 							m_pDoc->m_MovDetSendMailConfiguration.m_AttachmentType ==
-								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_MP4)			||
+								CVideoDeviceDoc::ATTACHMENT_GIF_JPG_VIDEO)			||
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
@@ -614,7 +614,7 @@ public:
 
 							(m_pDoc->m_bFTPUploadMovementDetection &&
 							m_pDoc->m_MovDetFTPUploadConfiguration.m_FilesToUpload ==
-								CVideoDeviceDoc::FILES_TO_UPLOAD_MP4_GIF);};
+								CVideoDeviceDoc::FILES_TO_UPLOAD_VIDEO_GIF);};
 			
 			// Return Values
 			// -1 : Do Exit Thread
@@ -666,7 +666,7 @@ public:
 			BOOL m_bSnapshotHistoryVideo;
 			BOOL m_bSnapshotHistoryVideoFtp;
 			float m_fSnapshotVideoCompressorQuality;
-			DWORD m_dwSnapshotVideoFourCC;
+			CString m_sSnapshotVideoFileExt;
 			int m_nSnapshotVideoKeyframesRate;
 			double m_dSnapshotHistoryFrameRate;
 			CTime m_Time;
@@ -868,7 +868,7 @@ public:
 	void FreeMovementDetector();
 	void ExecCommandMovementDetection(	BOOL bReplaceVars = FALSE,
 										CTime StartTime = CTime(0),
-										const CString& sMP4FileName = _T(""),
+										const CString& sVideoFileName = _T(""),
 										const CString& sGIFFileName = _T(""),
 										int nMovDetSavesCount = 0);
 	void HideDetectionZones();
@@ -972,6 +972,7 @@ protected:
 public:
 	// General Vars
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording file
+	CString m_sAVRecFileExt;							// Extension of video file (lowercase with dot)
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
@@ -1098,7 +1099,7 @@ public:
 	volatile int m_nMilliSecondsRecAfterMovementEnd;	// Keep Recording this amount of millisec. after det. end
 	volatile int m_nDetectionMinLengthMilliSeconds;		// Minimum detection length in ms, below this value SaveFrameList() is not called
 	volatile int m_nDetectionMaxFrames;					// Maximum number of frames for a detection sequence
-	volatile BOOL m_bSaveMP4MovementDetection;			// Save Movement Detections as MP4
+	volatile BOOL m_bSaveVideoMovementDetection;		// Save Movement Detections as Video File
 	volatile BOOL m_bSaveAnimGIFMovementDetection;		// Save Movement Detections as Animated GIF
 	volatile BOOL m_bSendMailMovementDetection;			// Send Email of Movement Detections
 	volatile BOOL m_bFTPUploadMovementDetection;		// FTP Upload Movement Detections

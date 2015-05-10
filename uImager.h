@@ -80,14 +80,17 @@
 
 // Default Video Codec
 // FCC('MJPG'), FCC('DIVX'), FCC('H264')
-#define DEFAULT_VIDEO_FOURCC							FCC('H264')
+#define DEFAULT_MP4_VIDEO_FOURCC						FCC('H264')
+#define DEFAULT_AVI_VIDEO_FOURCC						FCC('DIVX')
 #define DEFAULT_VIDEO_QUALITY							VIDEO_QUALITY_GOOD
 #define DEFAULT_KEYFRAMESRATE							30
 
 // Default Audio Codec
 // WAVE_FORMAT_PCM, WAVE_FORMAT_DVI_ADPCM, WAVE_FORMAT_MPEGLAYER3, WAVE_FORMAT_AAC2
-#define	DEFAULT_AUDIO_FORMAT_TAG						WAVE_FORMAT_AAC2
-#define DEFAULT_AUDIO_BITRATE							192000
+#define	DEFAULT_MP4_AUDIO_FORMAT_TAG					WAVE_FORMAT_AAC2
+#define	DEFAULT_AVI_AUDIO_FORMAT_TAG					WAVE_FORMAT_MPEGLAYER3
+#define DEFAULT_AAC_AUDIO_BITRATE						192000
+#define DEFAULT_MP3_AUDIO_BITRATE						128000
 #define DEFAULT_AUDIO_CHANNELS							2
 #define DEFAULT_AUDIO_SAMPLINGRATE						44100
 
@@ -309,7 +312,6 @@ public:
 	CUImagerMultiDocTemplate* GetCDAudioDocTemplate() {return m_pCDAudioDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
-	static BOOL IsMP4File(CString sFileName);
 	static BOOL IsSupportedMusicFile(CString sFileName);
 	static BOOL IsSupportedCDAudioFile(CString sFileName);
 

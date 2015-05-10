@@ -83,7 +83,7 @@ BEGIN_MESSAGE_MAP(CMovementDetectionPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_COMBOBOX_DETECTION_SCHEDULER, OnCbnSelchangeComboboxDetectionScheduler)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_START, OnDatetimechangeTimeDailyStart)
 	ON_NOTIFY(DTN_DATETIMECHANGE, IDC_TIME_DAILY_STOP, OnDatetimechangeTimeDailyStop)
-	ON_BN_CLICKED(IDC_SAVE_MP4_MOVEMENT_DETECTION, OnSaveMp4MovementDetection)
+	ON_BN_CLICKED(IDC_SAVE_VIDEO_MOVEMENT_DETECTION, OnSaveVideoMovementDetection)
 	ON_BN_CLICKED(IDC_EXEC_MOVEMENT_DETECTION, OnExecMovementDetection)
 	ON_EN_CHANGE(IDC_EDIT_EXE, OnChangeEditExe)
 	ON_EN_CHANGE(IDC_EDIT_PARAMS, OnChangeEditParams)
@@ -168,12 +168,12 @@ BOOL CMovementDetectionPage::OnInitDialog()
 	pCheckScheduler = (CButton*)GetDlgItem(IDC_CHECK_SCHEDULER_SATURDAY);
 	pCheckScheduler->SetCheck(m_pDoc->m_bDetectionSaturday);
 
-	// Save MP4 Movement Detection Check Box
-	CButton* pCheckMP4SaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_MP4_MOVEMENT_DETECTION);
-	if (m_pDoc->m_bSaveMP4MovementDetection)
-		pCheckMP4SaveMovementDetection->SetCheck(1);
+	// Save Video Movement Detection Check Box
+	CButton* pCheckVideoSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
+	if (m_pDoc->m_bSaveVideoMovementDetection)
+		pCheckVideoSaveMovementDetection->SetCheck(1);
 	else
-		pCheckMP4SaveMovementDetection->SetCheck(0);
+		pCheckVideoSaveMovementDetection->SetCheck(0);
 
 	// Save Animated GIF Movement Detection Check Box
 	CButton* pCheckAnimGIFSaveMovementDetection = (CButton*)GetDlgItem(IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION);
@@ -391,7 +391,7 @@ void CMovementDetectionPage::UpdateExecHelp()
 	if (m_pDoc->m_nExecModeMovementDetection == 0)
 		s.Format(ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
 	else
-		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%mp4% %gif% %counter%");
+		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%video% %gif% %counter%");
 	pEdit->SetWindowText(s);
 }
 
@@ -408,10 +408,10 @@ void CMovementDetectionPage::OnReleasedcaptureDetectionLevel(NMHDR* pNMHDR, LRES
 	*pResult = 0;
 }
 
-void CMovementDetectionPage::OnSaveMp4MovementDetection() 
+void CMovementDetectionPage::OnSaveVideoMovementDetection() 
 {
-	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_MP4_MOVEMENT_DETECTION);
-	m_pDoc->m_bSaveMP4MovementDetection = pCheck->GetCheck() > 0;
+	CButton* pCheck = (CButton*)GetDlgItem(IDC_SAVE_VIDEO_MOVEMENT_DETECTION);
+	m_pDoc->m_bSaveVideoMovementDetection = pCheck->GetCheck() > 0;
 }
 
 void CMovementDetectionPage::OnSaveAnimGifMovementDetection() 

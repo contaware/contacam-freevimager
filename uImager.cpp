@@ -4034,16 +4034,6 @@ BOOL CUImagerApp::IsSupportedPictureFile(CString sFileName)
 		return FALSE;
 }
 
-BOOL CUImagerApp::IsMP4File(CString sFileName)
-{
-	CString sExt = ::GetFileExt(sFileName);
-
-	if (sExt == _T(".mp4"))
-		return TRUE;
-	else
-		return FALSE;
-}
-
 BOOL CUImagerApp::IsSupportedMusicFile(CString sFileName)
 {
 	CString sExt = ::GetFileExt(sFileName);

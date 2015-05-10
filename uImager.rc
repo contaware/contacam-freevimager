@@ -1707,7 +1707,7 @@ BEGIN
     CONTROL         "Th",IDC_CHECK_SCHEDULER_THURSDAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,245,27,10
     CONTROL         "Fr",IDC_CHECK_SCHEDULER_FRIDAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,245,27,10
     CONTROL         "Sa",IDC_CHECK_SCHEDULER_SATURDAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,181,245,27,10
-    CONTROL         "Save Full Video",IDC_SAVE_MP4_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,35,68,10
+    CONTROL         "Save Full Video",IDC_SAVE_VIDEO_MOVEMENT_DETECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,35,68,10
     CONTROL         "Save Small Video",IDC_SAVE_ANIMATEDGIF_MOVEMENT_DETECTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,56,73,10
     PUSHBUTTON      "",IDC_ANIMATEDGIF_SIZE,298,53,110,14
@@ -4927,7 +4927,7 @@ BEGIN
     IDS_STRING1859          "Height"
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
-    IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%mp4% %gif% %counter%"
+    IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%video% %gif% %counter%"
     IDS_STRING1863          "Fast Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "Server Push Mode"
