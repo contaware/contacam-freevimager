@@ -48,15 +48,13 @@ public:
 	CAVRec();
 
 	// Construction which calls Init()
-	CAVRec(	LPCTSTR lpszFileName,
-			bool bFastEncode = false);
+	CAVRec(LPCTSTR lpszFileName);
 
 	// Destructor
 	virtual ~CAVRec();
 
 	// Init
-	bool Init(	LPCTSTR lpszFileName,
-				bool bFastEncode = false);
+	bool Init(LPCTSTR lpszFileName);
 
 	// Add Video Stream
 	int AddVideoStream(	const LPBITMAPINFO pSrcFormat,
@@ -193,7 +191,6 @@ protected:
     AVFormatContext* m_pFormatCtx;
 	bool m_bFileOpened;
 	bool m_bOpen;
-	bool m_bFastEncode;
 	volatile DWORD m_dwTotalVideoStreams;
 	volatile DWORD m_dwTotalAudioStreams;
 

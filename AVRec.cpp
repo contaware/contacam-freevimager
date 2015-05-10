@@ -45,11 +45,10 @@ CAVRec::CAVRec()
 	InitVars();
 }
 
-CAVRec::CAVRec(	LPCTSTR lpszFileName,
-				bool bFastEncode/*=false*/)
+CAVRec::CAVRec(LPCTSTR lpszFileName)
 {
 	InitVars();
-	Init(lpszFileName, bFastEncode);
+	Init(lpszFileName);
 }
 
 void CAVRec::InitVars()
@@ -63,7 +62,6 @@ void CAVRec::InitVars()
 	m_dwTotalAudioStreams = 0;
 	m_bFileOpened = false;
 	m_bOpen = false;
-	m_bFastEncode = false;
 	
 	for (DWORD dwStreamNum = 0 ; dwStreamNum < MAX_STREAMS ; dwStreamNum++)
 	{
@@ -117,8 +115,7 @@ __forceinline void CAVRec::SetSrcWaveFormat(DWORD dwStreamNum, const LPWAVEFORMA
 	memcpy(m_pSrcWaveFormat[dwStreamNum], pWaveFormat, nWaveFormatSize);
 }
 
-bool CAVRec::Init(	LPCTSTR lpszFileName,
-					bool bFastEncode/*=false*/)
+bool CAVRec::Init(LPCTSTR lpszFileName)
 {
 	// Make ffmpeg compatible file name
 	if (!::IsExistingFile(lpszFileName))
@@ -147,7 +144,6 @@ bool CAVRec::Init(	LPCTSTR lpszFileName,
 	m_sFileName = lpszFileName;
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
-	m_bFastEncode = bFastEncode;
 	
 	// Allocate the output media context
 	avformat_alloc_output_context2(&m_pFormatCtx, NULL, NULL, filename);
@@ -282,46 +278,17 @@ int CAVRec::AddVideoStream(	const LPBITMAPINFO pSrcFormat,
 		//
 		// Notes
 		// - faster presets create bigger files for the same quality
+		//   (ultrafast is ~30% faster but produces 2.5x bigger files than veryfast)
 		// - slower presets use more RAM because of the increasing complexity
 		//   of the used algorithms, for example a Full HD video encoding uses
 		//   ~270 MB with medium, ~130 MB with veryfast and ~65 MB with ultrafast
-		if (m_bFastEncode)
-			av_opt_set(pCodecCtx->priv_data, "preset", "ultrafast", 0);
-		else
-			av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
+		av_opt_set(pCodecCtx->priv_data, "preset", "veryfast", 0);
 	}
 	else
 	{
 		// Quality: 2.0f best quality, 31.0f worst quality
         pCodecCtx->flags |= CODEC_FLAG_QSCALE;
 		pCodecCtx->global_quality = (int)(FF_QP2LAMBDA * qscale);
-
-		// Slow encoding
-		if (!m_bFastEncode)
-		{
-			if (pCodecCtx->codec_id == AV_CODEC_ID_MPEG4)
-			{
-				pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
-				pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-				pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-				pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
-				pCodecCtx->flags |= (CODEC_FLAG_AC_PRED |			// aic:    MPEG-4 AC prediction
-									CODEC_FLAG_4MV);				// mv4:    4 MV per MB allowed
-			}
-			else if (	pCodecCtx->codec_id == AV_CODEC_ID_H263  ||
-						pCodecCtx->codec_id == AV_CODEC_ID_H263P ||
-						pCodecCtx->codec_id == AV_CODEC_ID_FLV1)
-			{
-				pCodecCtx->mb_decision = 2;							// mbd:    macroblock decision mode
-				pCodecCtx->me_cmp = 2;								// cmp:    fullpixel motion estimation compare function
-				pCodecCtx->me_sub_cmp = 2;							// subcmp: subpixel motion estimation compare function
-				pCodecCtx->trellis = 1;								// trell:  enable trellis quantization
-				pCodecCtx->flags |= (CODEC_FLAG_AC_PRED		|		// aic:    H.263 advanced intra coding
-									CODEC_FLAG_4MV			|		// mv4:    advanced prediction for H.263
-									CODEC_FLAG_MV0			|		// mv0:    try to encode each MB with MV=<0,0> and choose the better one (has no effect if mb_decision=0)
-									CODEC_FLAG_LOOP_FILTER);		// lf:     use loop filter (h263+)
-			}
-		}
 	}
 
 	// Resolution must be a multiple of two
@@ -663,7 +630,6 @@ bool CAVRec::Close()
 	m_sFileName = _T("");
 	m_dwTotalVideoStreams = 0;
 	m_dwTotalAudioStreams = 0;
-	m_bFastEncode = false;
 	m_bOpen = false;
 	m_bFileOpened = false;
 
