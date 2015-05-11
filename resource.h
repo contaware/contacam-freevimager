@@ -3075,6 +3075,7 @@
 #define IDC_LABEL_SNAPSHOTHISTORY_SIZE  2534
 #define IDC_EDIT_MIN_DISK_FREE_PERCENT  2535
 #define IDC_AUTH_METHOD                 2536
+#define IDC_COMBO_FILEEXT               2536
 #define IDC_STATIC2537                  2537
 #define IDC_LABEL_PLUS_SIGN             2537
 #define IDC_CONNECTIONTYPE              2538

@@ -3798,7 +3798,6 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwStopProcessFrame = 0U;
 	m_dwProcessFrameStopped = 0U;
 	m_pAVRec = NULL;
-	m_sAVRecFileExt = _T(".mp4");
 	m_bDeinterlace = FALSE;
 	m_bRotate180 = FALSE;
 	memset(&m_CaptureBMI, 0, sizeof(BITMAPINFOFULL));
@@ -3888,8 +3887,9 @@ CVideoDeviceDoc::CVideoDeviceDoc()
 	m_dwRecFirstUpTime = 0;
 	m_dwRecLastUpTime = 0;
 	m_bRecFirstFrame = FALSE;
-	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
+	m_sAVRecFileExt = DEFAULT_VIDEO_FILEEXT;
 	m_fVideoRecQuality = DEFAULT_VIDEO_QUALITY;
+	m_nVideoRecKeyframesRate = DEFAULT_KEYFRAMESRATE;
 	m_nDeleteRecordingsOlderThanDays = DEFAULT_DEL_RECS_OLDER_THAN_DAYS;
 	m_nMaxCameraFolderSizeMB = 0;
 	m_nMinDiskFreePermillion = MIN_DISK_FREE_PERMILLION;
@@ -4642,6 +4642,7 @@ void CVideoDeviceDoc::LoadSettings(double dDefaultFrameRate, CString sSection, C
 	m_dwVideoProcessorMode = (DWORD) MIN(1, MAX(0, pApp->GetProfileInt(sSection, _T("VideoProcessorMode"), 0)));
 	if (GetFrame() && GetFrame()->GetToolBar())
 		((CVideoDeviceToolBar*)(GetFrame()->GetToolBar()))->m_DetComboBox.SetCurSel(m_dwVideoProcessorMode);
+	m_sAVRecFileExt = pApp->GetProfileString(sSection, _T("VideoFileExt"), DEFAULT_VIDEO_FILEEXT);
 	m_fVideoRecQuality = (float) CAVRec::ClipVideoQuality((float)pApp->GetProfileInt(sSection, _T("VideoRecQuality"), (int)DEFAULT_VIDEO_QUALITY));
 	m_nVideoRecKeyframesRate = (int) pApp->GetProfileInt(sSection, _T("VideoRecKeyframesRate"), DEFAULT_KEYFRAMESRATE);
 	m_nDetectionStartStop = (int) pApp->GetProfileInt(sSection, _T("DetectionStartStop"), 0);
@@ -4816,6 +4817,7 @@ void CVideoDeviceDoc::SaveSettings()
 		
 	pApp->WriteProfileInt(sSection, _T("HideExecCommandMovementDetection"), m_bHideExecCommandMovementDetection);
 	pApp->WriteProfileInt(sSection, _T("WaitExecCommandMovementDetection"), m_bWaitExecCommandMovementDetection);
+	pApp->WriteProfileString(sSection, _T("VideoFileExt"), m_sAVRecFileExt);
 	pApp->WriteProfileInt(sSection, _T("VideoRecQuality"), (int)m_fVideoRecQuality);
 	pApp->WriteProfileInt(sSection, _T("VideoRecKeyframesRate"), m_nVideoRecKeyframesRate);
 	pApp->WriteProfileInt(sSection, _T("DetectionStartStop"), m_nDetectionStartStop);

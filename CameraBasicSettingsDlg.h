@@ -28,6 +28,7 @@ public:
 	enum { IDD = IDD_CAMERABASICSETTINGS };
 	BOOL	m_bCheck24hRec;
 	int		m_nComboKeepFor;
+	int		m_nComboFileExt;
 	CString	m_sName;
 	CString m_sMaxCameraFolderSizeGB;
 	CString m_sMinDiskFreePercent;

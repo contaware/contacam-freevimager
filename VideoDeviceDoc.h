@@ -61,6 +61,7 @@ class CMovementDetectionPage;
 #define FRAME_USER_FLAG_LAST				0x08		// mark the frame as being the last frame of the detection sequence
 #define DEFAULT_DEL_RECS_OLDER_THAN_DAYS	31			// by default delete recordings older than a month
 #define MIN_DISK_FREE_PERMILLION			50000		// 5%
+#define DEFAULT_VIDEO_FILEEXT				_T(".mp4")	// default file extension
 
 // Frame tag, thumb message and draw message
 #define FRAMETAG_REFWIDTH					640
@@ -972,7 +973,6 @@ protected:
 public:
 	// General Vars
 	CAVRec* volatile m_pAVRec;							// Pointer to the currently recording file
-	CString m_sAVRecFileExt;							// Extension of video file (lowercase with dot)
 	CRITICAL_SECTION m_csAVRec;							// Critical section for the recording file
 	volatile BOOL m_bDeinterlace;						// De-Interlace Video
 	volatile BOOL m_bRotate180;							// Rotate Video by 180°
@@ -1034,8 +1034,9 @@ public:
 	volatile int m_nTimeSegmentationIndex;				// Time segmentation combo box index
 	CTime m_NextRecTime;								// Next Rec Time for segmentation
 	CString m_sRecordAutoSaveDir;						// The Record Directory
-	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
+	CString m_sAVRecFileExt;							// Extension of video file (lowercase with dot)
 	volatile float m_fVideoRecQuality;					// 2.0f best quality, 31.0f worst quality, for H.264 clamped to [VIDEO_QUALITY_BEST, VIDEO_QUALITY_LOW]
+	volatile int m_nVideoRecKeyframesRate;				// Keyframes Rate
 	volatile int m_nDeleteRecordingsOlderThanDays;		// Delete Recordings older than the given amount of days,
 														// 0 means never delete any file!
 	volatile int m_nMaxCameraFolderSizeMB;				// Maximum size of a camera folder, after that oldest files are removed,
