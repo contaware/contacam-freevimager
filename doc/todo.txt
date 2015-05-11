@@ -34,8 +34,24 @@ ContaCam Program
 - Different detection params for day and night
 - Get an alert via email when an IP camera connection drops for a given
   period of time (jgminwa@gmail.com)
+- Black squares where no detection and where image is obscured with black pixels
+  (jeanbaptiste.guyot@orange.fr)
+- Checkbox in Camera Basic Settings to remove the files also from the FTP server
+  (jeanbaptiste.guyot@orange.fr)
+- Robert Sauer <rosamei@gmx.de>:
+  Es treten Videos auf, in denen zwar ein Audio-Stream angelegt ist, der 
+  aber leer ist (Null Chunks, Null Samples). Es ist dabei egal, ob man 
+  eine Komprimierung wie z.B. mp3 verwendet, oder PCM abspeichert. 
+  Manchmal passiert das auch innerhalb eines Files: Nur am Anfang gibt es 
+  Audio; dann ist Stille! Zu meinem Ärger passiert das immer dann 
+  (Murphy's laws), wenn die Audio-Daten wichtig gewesen wären. 
+  Auffällig ist dabei die Tatsache, daß ContaCam, wenn es sich einmal 
+  entschieden hat, kein Audio abzuspeichern, dies auch bei den folgenden 
+  Files nicht mehr tun wird. Aber auch darauf kann man sich nicht immer 
+  verlassen: manchmal funktioniert es später wieder. 
 
-  
+
+
 ContaCam Web Interface
 ----------------------
 - Add 2 links to the "summary snapshot" web page with "previous camera"
