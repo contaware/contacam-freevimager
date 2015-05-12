@@ -361,6 +361,13 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			::AfxMessageBox(IDP_OLE_INIT_FAILED, MB_OK | MB_ICONSTOP);
 			throw (int)0;
 		}
+
+		// Avoid the "Server Busy" dialog while scanning
+		AfxOleGetMessageFilter()->SetMessagePendingDelay(60000);		// set to 60 sec just in case the below two calls are not working
+		AfxOleGetMessageFilter()->EnableNotRespondingDialog(FALSE);		// https://support.microsoft.com/en-us/kb/2971655
+		AfxOleGetMessageFilter()->EnableBusyDialog(FALSE);				// https://support.microsoft.com/en-us/kb/248019
+		
+		// Enable support for containment of OLE controls
 		AfxEnableControlContainer();
 
 		// Init RichEdit2
