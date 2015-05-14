@@ -2591,7 +2591,13 @@ end_of_software_detection:
 							ML_STRING(1818, "set lower framerate"),
 							ML_STRING(1819, "or resolution!"),
 							dwFirstUpTime, dwLastUpTime);
-			::LogLine(_T("%s"), GetAssignedDeviceName() + _T(", dropping det frames -> set lower framerate or resolution!"));
+			CString sMsg(	GetAssignedDeviceName() + _T(", ") +
+							ML_STRING(1817, "Dropping det frames:") + _T(" ") +
+							ML_STRING(1818, "set lower framerate") + _T(" ") +
+							ML_STRING(1819, "or resolution!"));
+			if (!((CUImagerApp*)::AfxGetApp())->m_bServiceProcess)
+				::AfxGetMainFrame()->PopupToaster(APPNAME_NOEXT, sMsg, 0);
+			::LogLine(_T("%s"), sMsg);
 		}
 	}
 
