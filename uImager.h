@@ -309,11 +309,9 @@ public:
 #endif
 	CUImagerMultiDocTemplate* GetPictureDocTemplate() {return m_pPictureDocTemplate;};
 	CUImagerMultiDocTemplate* GetAudioMCIDocTemplate() {return m_pAudioMCIDocTemplate;};
-	CUImagerMultiDocTemplate* GetCDAudioDocTemplate() {return m_pCDAudioDocTemplate;};
 	CUImagerMultiDocTemplate* GetTemplateFromFileExtension(CString sFileName);
 	static BOOL IsSupportedPictureFile(CString sFileName);
 	static BOOL IsSupportedMusicFile(CString sFileName);
-	static BOOL IsSupportedCDAudioFile(CString sFileName);
 
 	// Close All Open Documents
 	BOOL CloseAll();
@@ -782,7 +780,6 @@ protected:
 	CUImagerMultiDocTemplate* m_pVideoDeviceDocTemplate;
 #endif
 	CUImagerMultiDocTemplate* m_pAudioMCIDocTemplate;
-	CUImagerMultiDocTemplate* m_pCDAudioDocTemplate;
 	CUImagerMultiDocTemplate* m_pPictureDocTemplate;
 };
 

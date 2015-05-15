@@ -14,7 +14,6 @@ Var MID
 Var MP3
 Var WAV
 Var WMA
-Var CDA
 Var ALL
 Var KILL
 Function InitParams
@@ -33,7 +32,6 @@ Function InitParams
   ${GetOptions} $R0 /mp3= $MP3
   ${GetOptions} $R0 /wav= $WAV
   ${GetOptions} $R0 /wma= $WMA
-  ${GetOptions} $R0 /cda= $CDA
   ${GetOptions} $R0 /all= $ALL
   ${GetOptions} $R0 /kill= $KILL
   StrCmp $ALL "1" 0 all_off
@@ -63,8 +61,6 @@ Function InitParams
   StrCpy $WAV "1"
   StrCmp $WMA "" 0 +2
   StrCpy $WMA "1"
-  StrCmp $CDA "" 0 +2
-  StrCpy $CDA "1"
   goto all_end
 all_off:
   StrCmp $ALL "0" 0 all_end
@@ -94,8 +90,6 @@ all_off:
   StrCpy $WAV "0"
   StrCmp $WMA "" 0 +2
   StrCpy $WMA "0"
-  StrCmp $CDA "" 0 +2
-  StrCpy $CDA "0"
 all_end:
   
 FunctionEnd

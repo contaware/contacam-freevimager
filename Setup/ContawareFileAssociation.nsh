@@ -101,13 +101,6 @@ AudioExtension:
   Return
 AudioExtensionEnd:
 
-; Audio CD
-StrCmp $FILEEXTENSION "cda" 0 AudioCDExtensionEnd
-  WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},2"
-  WriteRegStr HKCR "$MYFILECLASSNAME\shell\open\command" "" '"$INSTDIR\${APPNAME_EXT}" "%1"'
-  Return
-AudioCDExtensionEnd:
-
 ; Graphics
 StrCmp $FILEEXTENSION "bmp" 0 GifExtension
   WriteRegStr HKCR "$MYFILECLASSNAME\DefaultIcon" "" "$INSTDIR\${APPNAME_EXT},17"

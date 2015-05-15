@@ -1100,67 +1100,6 @@ BEGIN
     END
 END
 
-IDR_CDAUDIO MENU
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "New...",                      ID_FILE_NEW
-        MENUITEM "&Open File...\tCtrl+O",       ID_FILE_OPEN
-        MENUITEM "Open &Dir...",                ID_FILE_OPEN_DIR
-        MENUITEM "&Close\tEsc",                 ID_FILE_CLOSE
-        MENUITEM SEPARATOR
-        POPUP "Scan"
-        BEGIN
-            MENUITEM "Scan Single",                 ID_FILE_ACQUIRE
-            MENUITEM "Scan to Tiff",                ID_FILE_ACQUIRE_TO_TIFF
-            MENUITEM SEPARATOR
-            MENUITEM "Scan to Pdf",                 ID_FILE_ACQUIRE_TO_PDF
-            MENUITEM "Scan to Pdf && Email",        ID_FILE_ACQUIRE_AND_EMAIL
-            MENUITEM SEPARATOR
-            MENUITEM "S&elect Source",              ID_FILE_SELECTTWAINSOURCE
-        END
-        MENUITEM "Email",                       ID_FILE_SENDMAIL_OPEN_DOCS
-        MENUITEM "Batch Proc./Slideshow...",    ID_FILE_SHRINK_DIR_DOCS
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
-        MENUITEM "Screenshot\tCtrl+F11",        ID_EDIT_SCREENSHOT
-    END
-    POPUP "&Capture"
-    BEGIN
-        MENUITEM "&Network",                    ID_CAPTURE_NETWORK
-    END
-    POPUP "&Settings"
-    BEGIN
-        MENUITEM "Global Settings...",          ID_FILE_SETTINGS
-        MENUITEM SEPARATOR
-        MENUITEM "View Log File",               ID_SETTINGS_VIEW_LOGFILE
-        MENUITEM "Browse Config/Log Files",     ID_SETTINGS_BROWSE_CONFIGLOG_FILES
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "Close A&ll",                  ID_FILE_CLOSEALL
-        MENUITEM SEPARATOR
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "Tile &Horizontally",          ID_WINDOW_TILE_HORZ
-        MENUITEM "&Tile Vertically",            ID_WINDOW_TILE_VERT
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "License",                     ID_APP_LICENSE
-        MENUITEM "Credits",                     ID_APP_CREDITS
-        MENUITEM "&About",                      ID_APP_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "Manual",                      ID_APP_MANUAL
-        MENUITEM "FAQs",                        ID_APP_FAQ
-    END
-END
-
 IDR_CONTEXT_LAYERED_DLG MENU
 BEGIN
     POPUP "_Context Menu_"
@@ -1548,7 +1487,6 @@ BEGIN
     CONTROL         "wma",IDC_CHECK_WMA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,70,31,10
     CONTROL         "au",IDC_CHECK_AU,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,82,24,10
     CONTROL         "mid",IDC_CHECK_MIDI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,94,27,10
-    CONTROL         "cda",IDC_CHECK_CDA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,86,106,27,10
     PUSHBUTTON      "Select All",IDC_BUTTON_SETALL,148,72,40,14
     PUSHBUTTON      "Clear All",IDC_BUTTON_CLEARALL,148,90,40,14
     CONTROL         "Start with Windows",IDC_CHECK_STARTWITH_WINDOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,140,77,10
@@ -2684,22 +2622,6 @@ BEGIN
     EDITTEXT        IDC_COMPRESSION_QUALITY_EDIT,148,43,23,8,ES_READONLY | ES_NUMBER | NOT WS_BORDER
 END
 
-IDD_CDAUDIOPLAYER DIALOG 0, 0, 186, 65
-STYLE DS_SETFONT | WS_CHILD | WS_BORDER
-FONT 8, "MS Shell Dlg"
-BEGIN
-    CONTROL         "Slider1",IDC_SLIDER_POS,"msctls_trackbar32",TBS_NOTICKS | WS_TABSTOP,7,17,173,16
-    PUSHBUTTON      "",IDC_BUTTON_PLAY,7,50,16,14
-    PUSHBUTTON      "",IDC_BUTTON_PAUSE,24,50,16,14
-    PUSHBUTTON      "",IDC_BUTTON_STOP,41,50,16,14
-    PUSHBUTTON      "Track",IDC_BUTTON_TRACK,96,50,30,14
-    PUSHBUTTON      "<",IDC_BUTTON_PREVIOUS,127,50,26,14
-    PUSHBUTTON      ">",IDC_BUTTON_NEXT,154,50,26,14
-    CTEXT           "Current Pos",IDC_TEXT_CURRENT,15,34,158,11,SS_CENTERIMAGE | SS_SUNKEN
-    RTEXT           "Total",IDC_TEXT_TOTAL,75,5,105,9
-    LTEXT           "Tracks",IDC_TEXT_TRACKS,7,5,60,9
-END
-
 IDD_LAYERED DIALOG 0, 0, 131, 89
 STYLE DS_SETFONT | WS_POPUP
 FONT 8, "MS Shell Dlg"
@@ -3534,15 +3456,6 @@ BEGIN
         HORZGUIDE, 47
     END
 
-    IDD_CDAUDIOPLAYER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 180
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 64
-        HORZGUIDE, 29
-    END
-
     IDD_LAYERED, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -3730,7 +3643,6 @@ IDC_GRAB_CLOSED         CURSOR                  "res\\grab_closed.cur"
 STRINGTABLE
 BEGIN
     IDR_AUDIOMCI            "\nAudio\nAudio\n\n\nAudio.Document\nAudio Document"
-    IDR_CDAUDIO             "\nCDAudio\nCDAudio\n\n\nCDAudio.Document\nCDAudio Document"
     IDR_PICTURE             "\nPicture\nPicture\n\n\nPicture.Document\nPicture Document"
 END
 

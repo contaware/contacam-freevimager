@@ -33,7 +33,6 @@ public:
 	BOOL	m_bCheckMp3;
 	BOOL	m_bCheckWav;
 	BOOL	m_bCheckWma;
-	BOOL	m_bCheckCda;
 	BOOL	m_bSingleInstance;
 	BOOL	m_bTrayIcon;
 	BOOL	m_bAutostart;

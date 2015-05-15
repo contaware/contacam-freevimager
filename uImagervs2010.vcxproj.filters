@@ -60,15 +60,6 @@
     <ClCompile Include="BrowseDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CDAudio.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CDAudioDoc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CDAudioView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cdxCDynamicDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -481,15 +472,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BrowseDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDAudio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDAudioDoc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CDAudioView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cdxCDynamicDialog.h">

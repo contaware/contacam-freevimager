@@ -287,7 +287,6 @@ Section "${APPNAME_NOEXT} Program (required)"
   !insertmacro ADDREMOVE_FILEASSOCIATION $MP3 mp3
   !insertmacro ADDREMOVE_FILEASSOCIATION $WAV wav
   !insertmacro ADDREMOVE_FILEASSOCIATION $WMA wma
-  !insertmacro ADDREMOVE_FILEASSOCIATION $CDA cda
 
   ; Refresh Icons
   call RefreshShellIcons
@@ -459,10 +458,10 @@ Section "Uninstall"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "wma"
   call un.RemoveFileAssociation
-  StrCpy $FILEEXTENSION "cda"
-  call un.RemoveFileAssociation
   
   ; Remove / Restore associations from older program versions
+  StrCpy $FILEEXTENSION "cda"
+  call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "avi"
   call un.RemoveFileAssociation
   StrCpy $FILEEXTENSION "divx"

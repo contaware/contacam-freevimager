@@ -224,33 +224,6 @@ protected:
 	DECLARE_DYNCREATE(CAudioMCIChildFrame)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// CCDAudioChildFrame
-
-class CCDAudioChildFrame : public CChildFrame
-{
-protected:
-	CCDAudioChildFrame();           // protected constructor used by dynamic creation
-
-	// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CCDAudioChildFrame)
-	public:
-	virtual void ActivateFrame(int nCmdShow = -1);
-	protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	//}}AFX_VIRTUAL
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CCDAudioChildFrame)
-	afx_msg void OnClose();
-	//}}AFX_MSG
-	
-	DECLARE_MESSAGE_MAP()
-	DECLARE_DYNCREATE(CCDAudioChildFrame)
-};
-
 #ifdef VIDEODEVICEDOC
 
 /////////////////////////////////////////////////////////////////////////////

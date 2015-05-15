@@ -9,6 +9,7 @@ FREEVIMAGER HISTORY
 - Fixed the "Server Busy" error message popping-up while scanning
 - libpng updated to 1.2.52
 - Removed avi player as there are many modern players out there
+- Removed outdated audio CD player (cda file extension)
 - Removed zip file opening support as we are a graphics viewer
   and not an archiver
 

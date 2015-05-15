@@ -8,7 +8,6 @@
 #include "PictureView.h"
 #include "PicturePrintPreviewView.h"
 #include "AudioMCIView.h"
-#include "CDAudioView.h"
 #include "mmsystem.h"
 #include "XThemeHelper.h"
 #include "CameraAdvancedSettingsPropertySheet.h"
@@ -622,48 +621,6 @@ void CAudioMCIChildFrame::OnClose()
 	if (pDoc->m_uiTimerId)
 		pView->KillTimer(pDoc->m_uiTimerId);
 
-	// Destroy Window
-	CChildFrame::OnClose();
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// CCDAudioChildFrame
-
-IMPLEMENT_DYNCREATE(CCDAudioChildFrame, CChildFrame)
-
-CCDAudioChildFrame::CCDAudioChildFrame()
-{
-
-}
-
-BEGIN_MESSAGE_MAP(CCDAudioChildFrame, CChildFrame)
-	//{{AFX_MSG_MAP(CCDAudioChildFrame)
-	ON_WM_CLOSE()
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BOOL CCDAudioChildFrame::PreCreateWindow(CREATESTRUCT& cs) 
-{
-	cs.style &= ~WS_MAXIMIZEBOX;
-	cs.style &= ~WS_SIZEBOX;
-	return CChildFrame::PreCreateWindow(cs);
-}
-
-void CCDAudioChildFrame::ActivateFrame(int nCmdShow) 
-{
-	nCmdShow = SW_NORMAL;	// Otherwise if current shown document is maximized
-							// also this one is miximized, we do not want that!
-	CChildFrame::ActivateFrame(nCmdShow);
-}
-
-void CCDAudioChildFrame::OnClose() 
-{
-	CCDAudioView* pView = (CCDAudioView*)GetActiveView();
-	ASSERT_VALID(pView);
-	
-	// Kill Timer
-	pView->KillTimer(ID_TIMER_CDAUDIO);
-	
 	// Destroy Window
 	CChildFrame::OnClose();
 }

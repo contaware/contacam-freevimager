@@ -47,7 +47,6 @@ CSettingsDlg::CSettingsDlg(CWnd* pParent /*=NULL*/)
 	m_bCheckMp3 =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("mp3"));
 	m_bCheckWav =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("wav"));
 	m_bCheckWma =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("wma"));
-	m_bCheckCda =	((CUImagerApp*)::AfxGetApp())->IsFileTypeAssociated(_T("cda"));
 
 	// Global Settings
 	m_bSingleInstance =			((CUImagerApp*)::AfxGetApp())->m_bSingleInstance;
@@ -72,7 +71,6 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_MP3, m_bCheckMp3);
 	DDX_Check(pDX, IDC_CHECK_WAV, m_bCheckWav);
 	DDX_Check(pDX, IDC_CHECK_WMA, m_bCheckWma);
-	DDX_Check(pDX, IDC_CHECK_CDA, m_bCheckCda);
 	DDX_Check(pDX, IDC_CHECK_SINGLEINSTANCE, m_bSingleInstance);
 	DDX_Check(pDX, IDC_CHECK_TRAYICON, m_bTrayIcon);
 	DDX_Check(pDX, IDC_CHECK_STARTWITH_WINDOWS, m_bAutostart);
@@ -109,7 +107,6 @@ void CSettingsDlg::OnButtonClearall()
 	m_bCheckMp3 =  FALSE;
 	m_bCheckWav =  FALSE;
 	m_bCheckWma =  FALSE;
-	m_bCheckCda =  FALSE;
 
 	UpdateData(FALSE);
 }
@@ -134,7 +131,6 @@ void CSettingsDlg::OnButtonSetall()
 	m_bCheckMp3 = TRUE;
 	m_bCheckWav = TRUE;
 	m_bCheckWma = TRUE;
-	m_bCheckCda = TRUE;
 
 	UpdateData(FALSE);
 }
@@ -157,7 +153,7 @@ void CSettingsDlg::OnOK()
 	BOOL bTiffHasUserChoice = FALSE; BOOL bJfxHasUserChoice = FALSE;  BOOL bGifHasUserChoice = FALSE;
 	BOOL bAifHasUserChoice = FALSE;  BOOL bAiffHasUserChoice = FALSE; BOOL bAuHasUserChoice = FALSE;
 	BOOL bMidHasUserChoice = FALSE;  BOOL bRmiHasUserChoice = FALSE;  BOOL bMp3HasUserChoice = FALSE;
-	BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;  BOOL bCdaHasUserChoice = FALSE;
+	BOOL bWavHasUserChoice = FALSE;  BOOL bWmaHasUserChoice = FALSE;
 
 	// Graphics
 
@@ -259,12 +255,8 @@ void CSettingsDlg::OnOK()
 	else
 		pApp->UnassociateFileType(_T("wma"));
 
-	if (m_bCheckCda)
-		pApp->AssociateFileType(_T("cda"), &bCdaHasUserChoice);
-	else
-		pApp->UnassociateFileType(_T("cda"));
-
-	// Unassociate Other Files (remove associations from older program versions)
+	// Remove associations from older program versions
+	pApp->UnassociateFileType(_T("cda"));
 	pApp->UnassociateFileType(_T("avi")); pApp->UnassociateFileType(_T("divx"));
 	pApp->UnassociateFileType(_T("zip"));
 
@@ -278,8 +270,7 @@ void CSettingsDlg::OnOK()
 		bThmHasUserChoice || bPcxHasUserChoice	|| bEmfHasUserChoice	|| bPngHasUserChoice ||
 		bTifHasUserChoice || bTiffHasUserChoice	|| bJfxHasUserChoice	|| bGifHasUserChoice ||
 		bAifHasUserChoice || bAiffHasUserChoice	|| bAuHasUserChoice		|| bMidHasUserChoice ||
-		bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice ||
-		bCdaHasUserChoice))
+		bRmiHasUserChoice || bMp3HasUserChoice	|| bWavHasUserChoice	|| bWmaHasUserChoice))
 	{
 		try
 		{
@@ -326,8 +317,6 @@ void CSettingsDlg::OnOK()
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wav\\UserChoice]\n"));
 			if (bWmaHasUserChoice)
 				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wma\\UserChoice]\n"));
-			if (bCdaHasUserChoice)
-				RegFile.WriteString(_T("[-HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cda\\UserChoice]\n"));
 			RegFile.Close();
 			CString sParams;
 			sParams.Format(_T("/S \"%s\""), sTempRegFileName);

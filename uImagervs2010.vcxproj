@@ -506,9 +506,6 @@
     </ClCompile>
     <ClCompile Include="CameraAdvancedSettingsPropertySheet.cpp" />
     <ClCompile Include="CameraBasicSettingsDlg.cpp" />
-    <ClCompile Include="CDAudio.cpp" />
-    <ClCompile Include="CDAudioDoc.cpp" />
-    <ClCompile Include="CDAudioView.cpp" />
     <ClCompile Include="cdxCDynamicDialog.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ContaCam TraceLogFile|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -1417,9 +1414,6 @@
     <ClInclude Include="BrowseDlg.h" />
     <ClInclude Include="CameraAdvancedSettingsPropertySheet.h" />
     <ClInclude Include="CameraBasicSettingsDlg.h" />
-    <ClInclude Include="CDAudio.h" />
-    <ClInclude Include="CDAudioDoc.h" />
-    <ClInclude Include="CDAudioView.h" />
     <ClInclude Include="cdxCDynamicDialog.h" />
     <ClInclude Include="cdxCDynamicWnd.h" />
     <ClInclude Include="cdxCDynamicWndEx.h" />

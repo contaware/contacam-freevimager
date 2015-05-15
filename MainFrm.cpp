@@ -3,7 +3,6 @@
 #include "PictureDoc.h"
 #include "VideoDeviceDoc.h"
 #include "AudioMCIDoc.h"
-#include "CDAudioDoc.h"
 #include "PictureView.h"
 #include "VideoDeviceView.h"
 #include "ConnectErrMsgBoxDlg.h"
@@ -1851,26 +1850,6 @@ void CMainFrame::InitMenuPositions(CDocument* pDoc/*=NULL*/)
 			((CVideoDeviceDoc*)pDoc)->m_nHelpMenuPos = 6;
 		}
 #endif
-		else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-		{
-			((CCDAudioDoc*)pDoc)->m_nFileMenuPos = 0;
-			((CCDAudioDoc*)pDoc)->m_nEditMenuPos = 1;
-			((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos = 2;
-			((CCDAudioDoc*)pDoc)->m_nSettingsMenuPos = 3;
-			((CCDAudioDoc*)pDoc)->m_nWindowsPos = 4;
-			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos = 5;
-#ifndef VIDEODEVICEDOC
-			// In maximized state the first position is the system icon,
-			// MDIMaximize() is always called after InitMenuPositions()
-			// so that the Capture menu position is correct:
-			if (nCount == 6) // On some OSs menus are re-used from one doc opening to the next!
-				pMenu->DeleteMenu(((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos, MF_BYPOSITION);
-			((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos = -2;
-			((CCDAudioDoc*)pDoc)->m_nSettingsMenuPos--;
-			((CCDAudioDoc*)pDoc)->m_nWindowsPos--;
-			((CCDAudioDoc*)pDoc)->m_nHelpMenuPos--;
-#endif
-		}
 		else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
 		{
 			((CAudioMCIDoc*)pDoc)->m_nFileMenuPos = 0;
@@ -1937,13 +1916,6 @@ void CMainFrame::OnInitMenuPopup(CMenu* pPopupMenu, UINT nIndex, BOOL bSysMenu)
 					if (idx == ((CUImagerDoc*)pDoc)->m_nFileMenuPos)
 						CleanupFileMenu(pPopupMenu);
 					else if (idx == ((CUImagerDoc*)pDoc)->m_nCaptureMenuPos)
-						PopulateCaptureMenu(pPopupMenu);
-				}
-				else if (pDoc->IsKindOf(RUNTIME_CLASS(CCDAudioDoc)))
-				{
-					if (idx == ((CCDAudioDoc*)pDoc)->m_nFileMenuPos)
-						CleanupFileMenu(pPopupMenu);
-					else if (idx == ((CCDAudioDoc*)pDoc)->m_nCaptureMenuPos)
 						PopulateCaptureMenu(pPopupMenu);
 				}
 				else if (pDoc->IsKindOf(RUNTIME_CLASS(CAudioMCIDoc)))
