@@ -841,7 +841,10 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 					WriteProfileInt(_T("GeneralApp"), _T("FirstRunEver"), FALSE);
 				}
 		
-				// Update file associations (necessary when changing the icons)
+				// - Update file associations #ifndef VIDEODEVICEDOC
+				//   (necessary when changing the icons)
+				// - Unassociate all file types #ifdef VIDEODEVICEDOC
+				//   (file association has been removed with version 5.0.0)
 				UpdateFileAssociations();
 
 #ifndef VIDEODEVICEDOC
@@ -4195,30 +4198,44 @@ void CUImagerApp::OnUpdateEditScreenshot(CCmdUI* pCmdUI)
 
 void CUImagerApp::UpdateFileAssociations()
 {
+	BOOL bBmp = FALSE;
+	BOOL bJpeg = FALSE;
+	BOOL bPcx = FALSE;
+	BOOL bEmf = FALSE;
+	BOOL bPng = FALSE;
+	BOOL bTiff = FALSE;
+	BOOL bGif = FALSE;
+	BOOL bAif = FALSE;
+	BOOL bAu = FALSE;
+	BOOL bMidi = FALSE;
+	BOOL bMp3 = FALSE;
+	BOOL bWav = FALSE;
+	BOOL bWma = FALSE;
+#ifndef VIDEODEVICEDOC
 	// Graphics
-	BOOL bBmp =		IsFileTypeAssociated(_T("bmp"));
-	BOOL bJpeg =	IsFileTypeAssociated(_T("jpg"))	&&
-					IsFileTypeAssociated(_T("jpeg"))&&
-					IsFileTypeAssociated(_T("jpe"))	&&
-					IsFileTypeAssociated(_T("thm"));
-	BOOL bPcx =		IsFileTypeAssociated(_T("pcx"));
-	BOOL bEmf =		IsFileTypeAssociated(_T("emf"));
-	BOOL bPng =		IsFileTypeAssociated(_T("png"));
-	BOOL bTiff =	IsFileTypeAssociated(_T("tif"))	&&
-					IsFileTypeAssociated(_T("tiff"))&&
-					IsFileTypeAssociated(_T("jfx"));
-	BOOL bGif =		IsFileTypeAssociated(_T("gif"));
+	bBmp =		IsFileTypeAssociated(_T("bmp"));
+	bJpeg =		IsFileTypeAssociated(_T("jpg"))		&&
+				IsFileTypeAssociated(_T("jpeg"))	&&
+				IsFileTypeAssociated(_T("jpe"))		&&
+				IsFileTypeAssociated(_T("thm"));
+	bPcx =		IsFileTypeAssociated(_T("pcx"));
+	bEmf =		IsFileTypeAssociated(_T("emf"));
+	bPng =		IsFileTypeAssociated(_T("png"));
+	bTiff =		IsFileTypeAssociated(_T("tif"))		&&
+				IsFileTypeAssociated(_T("tiff"))	&&
+				IsFileTypeAssociated(_T("jfx"));
+	bGif =		IsFileTypeAssociated(_T("gif"));
 
 	// Audio
-	BOOL bAif =		IsFileTypeAssociated(_T("aif"))	&&
-					IsFileTypeAssociated(_T("aiff"));
-	BOOL bAu =		IsFileTypeAssociated(_T("au"));
-	BOOL bMidi =	IsFileTypeAssociated(_T("mid"))	&&
-					IsFileTypeAssociated(_T("rmi"));
-	BOOL bMp3 =		IsFileTypeAssociated(_T("mp3"));
-	BOOL bWav =		IsFileTypeAssociated(_T("wav"));
-	BOOL bWma =		IsFileTypeAssociated(_T("wma"));
-
+	bAif =		IsFileTypeAssociated(_T("aif"))		&&
+				IsFileTypeAssociated(_T("aiff"));
+	bAu =		IsFileTypeAssociated(_T("au"));
+	bMidi =		IsFileTypeAssociated(_T("mid"))		&&
+				IsFileTypeAssociated(_T("rmi"));
+	bMp3 =		IsFileTypeAssociated(_T("mp3"));
+	bWav =		IsFileTypeAssociated(_T("wav"));
+	bWma =		IsFileTypeAssociated(_T("wma"));
+#endif
 	
 	// Graphics
 
