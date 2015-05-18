@@ -4873,6 +4873,10 @@ BEGIN
     IDS_STRING1877          "Save: %d%%"
     IDS_STRING1878          "Email: %d%%"
     IDS_STRING1879          "FTP: %d%%"
+    IDS_STRING1880          "None"
+    IDS_STRING1881          "Snapshots"
+    IDS_STRING1882          "Small Video"
+    IDS_STRING1883          "Full Video"
 END
 
 #endif    // English (United States) resources

@@ -61,14 +61,14 @@ BOOL CSendMailConfigurationDlg::OnInitDialog()
 
 	// Attachment possibilities
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_ATTACHMENT);
-    pComboBox->AddString(_T("None"));
-    pComboBox->AddString(_T("Video"));
-    pComboBox->AddString(_T("GIF"));
-    pComboBox->AddString(_T("JPG"));
-	pComboBox->AddString(_T("GIF + Video"));
-	pComboBox->AddString(_T("JPG + Video"));
-	pComboBox->AddString(_T("GIF + JPG"));
-	pComboBox->AddString(_T("GIF + JPG + Video"));
+    pComboBox->AddString(ML_STRING(1880, "None"));
+    pComboBox->AddString(ML_STRING(1883, "Full Video"));
+    pComboBox->AddString(ML_STRING(1882, "Small Video"));
+    pComboBox->AddString(ML_STRING(1881, "Snapshots"));
+	pComboBox->AddString(ML_STRING(1882, "Small Video") + _T(" + ") + ML_STRING(1883, "Full Video"));
+	pComboBox->AddString(ML_STRING(1881, "Snapshots") + _T(" + ") + ML_STRING(1883, "Full Video"));
+	pComboBox->AddString(ML_STRING(1882, "Small Video") + _T(" + ") + ML_STRING(1881, "Snapshots"));
+	pComboBox->AddString(ML_STRING(1882, "Small Video") + _T(" + ") + ML_STRING(1881, "Snapshots") + _T(" + ") + ML_STRING(1883, "Full Video"));
 	pComboBox->SetCurSel((int)m_SendMailConfiguration.m_AttachmentType);
 
 	// From Name

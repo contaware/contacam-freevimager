@@ -83,9 +83,9 @@ BOOL CFTPUploadConfigurationDlg::OnInitDialog()
 	CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_FILES_TO_UPLOAD);
 	if (pComboBox)
 	{
-		pComboBox->AddString(_T("Video"));
-		pComboBox->AddString(_T("GIF"));
-		pComboBox->AddString(_T("Video + GIF"));
+		pComboBox->AddString(ML_STRING(1883, "Full Video"));
+		pComboBox->AddString(ML_STRING(1882, "Small Video"));
+		pComboBox->AddString(ML_STRING(1883, "Full Video") + _T(" + ") + ML_STRING(1882, "Small Video"));
 		pComboBox->SetCurSel((int)m_FTPUploadConfiguration.m_FilesToUpload);
 	}
 
