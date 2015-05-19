@@ -1,24 +1,25 @@
 CONTACAM HISTORY
 
-5.0.0 (May xth 2015)
+5.0.0 (May 19th 2015)
 
 - Goodbye Flash Video: .swf files have been replaced by .mp4 files
   which all modern browsers and smartphones can play
 - Goodbye Html Frames: web interface improved for mobile devices
 - Detection frames are now buffered also to HD and not only in RAM
   (this avoids splitting a detection sequence into many files)
-- By default delete recordings older than a month and fixed disk full
-  deletion logic for network shares and symlinks
-- Installer adds now Start Menu entry only for Current User
+- Configurable minimum disk free space (works now also for network
+  shares and symlinks)
+- In audio input dialog the correct entry is selected for devices
+  having the same name
+- Installer adds now the Start Menu entry only for the Current User
 - Removed Fullscreen Browser as it cannot display HTML5 videos
 - To avoid troubles in service mode from now on it's not possible
   to associate files to ContaCam (please use FreeVimager for that)
-- Because of miss-configuration danger the possibility to move the
-  individual camera folders in Camera Basic Settings dialog has been
-  removed (advanced users can create junctions, symlinks or run a .bat
-  script on detection to move/copy the video files to another location)
-- In audio input dialog the correct entry is now selected for devices
-  having the same name
+- Because of web server miss-configuration danger the possibility to
+  move the individual camera folders in Camera Basic Settings dialog
+  has been removed (advanced users can create junctions, symlinks or
+  run a .bat script on detection to move/copy the video files to
+  another location)
 
 4.9.9 (November 3rd 2014)
 

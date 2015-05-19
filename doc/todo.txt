@@ -4,7 +4,6 @@ Both
 - Possibility to hide menu, statusbar, titlebars and toolbars
 - Add double-quotes to ContaCam.exe file path under:
   HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run
-- Online HTML manual
 
 
 FreeVimager Program
