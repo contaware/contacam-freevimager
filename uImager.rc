@@ -4845,7 +4845,7 @@ BEGIN
     IDS_STRING1859          "Height"
     IDS_STRING1860          "Path"
     IDS_STRING1861          "Scan more pages?"
-    IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%video% %gif% %counter%"
+    IDS_STRING1862          "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%"
     IDS_STRING1863          "Fast Rate"
     IDS_STRING1864          "JPEG Quality\n(0: worst, 100: best)"
     IDS_STRING1865          "Server Push Mode"

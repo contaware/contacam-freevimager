@@ -391,7 +391,7 @@ void CMovementDetectionPage::UpdateExecHelp()
 	if (m_pDoc->m_nExecModeMovementDetection == 0)
 		s.Format(ML_STRING(1719, "Example to play a sound on detection\r\nCmd\tPath to %s\r\nParams\t/play /close \"audio file path\""), APPNAME_EXT);
 	else
-		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%video% %gif% %counter%");
+		s = ML_STRING(1862, "Params can include case sensitive variables\r\n%sec% %min% %hour%\r\n%day% %month% %year%\r\n%fullvideo% %smallvideo% %counter%");
 	pEdit->SetWindowText(s);
 }
 

@@ -2687,8 +2687,8 @@ void CVideoDeviceDoc::ExecCommandMovementDetection(	BOOL bReplaceVars/*=FALSE*/,
 			sExecParamsMovementDetection.Replace(_T("%day%"), sDay);
 			sExecParamsMovementDetection.Replace(_T("%month%"), sMonth);
 			sExecParamsMovementDetection.Replace(_T("%year%"), sYear);
-			sExecParamsMovementDetection.Replace(_T("%video%"), sVideoFileName);
-			sExecParamsMovementDetection.Replace(_T("%gif%"), sGIFFileName);
+			sExecParamsMovementDetection.Replace(_T("%fullvideo%"), sVideoFileName);
+			sExecParamsMovementDetection.Replace(_T("%smallvideo%"), sGIFFileName);
 			sExecParamsMovementDetection.Replace(_T("%counter%"), sMovDetSavesCount);
 		}
 		SHELLEXECUTEINFO sei;
