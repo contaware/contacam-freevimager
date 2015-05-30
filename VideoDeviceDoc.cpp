@@ -3516,12 +3516,14 @@ int CVideoDeviceDoc::CWatchdogThread::Work()
 				if (dwCurrentUpTime - dwLastHttpReconnectUpTime > (DWORD)(1000 * HTTPGETFRAME_CONNECTION_TIMEOUT) &&
 					m_pDoc->m_pGetFrameNetCom && m_pDoc->m_pGetFrameNetCom->IsClient())
 				{
-					DWORD dwConnectDelayMs = 0U;
-					if (VlmReStart())
-						dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
+					VlmReStart();
 					dwLastHttpReconnectUpTime = dwCurrentUpTime;
+					DWORD dwConnectDelayMs = MIN(((CUImagerApp*)::AfxGetApp())->m_dwAutostartDelayMs, 1000 * HTTPGETFRAME_CONNECTION_TIMEOUT / 2);
 					m_pDoc->m_HttpGetFrameThread.SetEventConnect(_T(""), dwConnectDelayMs);
-					::LogLine(_T("%s"), m_pDoc->GetAssignedDeviceName() + _T(" try reconnecting"));
+					if (dwConnectDelayMs == 0)
+						::LogLine(_T("%s try reconnecting"), m_pDoc->GetAssignedDeviceName());
+					else
+						::LogLine(_T("%s try reconnecting in %u sec"), m_pDoc->GetAssignedDeviceName(), dwConnectDelayMs / 1000U);
 				}
 
 				// Trigger drawing in case no frames reaching
@@ -6695,7 +6697,7 @@ BOOL CVideoDeviceDoc::VlmConfigFileFilled()
 	return FALSE;
 }
 
-BOOL CVideoDeviceDoc::VlmReStart()
+void CVideoDeviceDoc::VlmReStart()
 {
 	CUImagerApp* pApp = (CUImagerApp*)::AfxGetApp();
 	BOOL bStopped = FALSE;
@@ -6757,8 +6759,6 @@ BOOL CVideoDeviceDoc::VlmReStart()
 		::LogLine(_T("%s"), _T("VLC starting"));
 
 	::LeaveCriticalSection(&pApp->m_csVlc);
-
-	return bStarted;
 }
 
 void CVideoDeviceDoc::VlmShutdown()
