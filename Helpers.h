@@ -144,6 +144,9 @@ extern BOOL IsExistingDir(LPCTSTR lpszFileName);
 // Is sSubDir a nested subfolder of sDir?
 extern BOOL IsSubDir(CString sDir, CString sSubDir);
 
+// Path comparision
+extern BOOL AreSamePath(const CString& sPath1, const CString& sPath2);
+
 // File Size
 extern ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName);
 
@@ -375,6 +378,10 @@ extern BOOL IsANSIConvertible(const CString& s);
 // The function returns the number of written bytes
 // (the terminating NULL char is not included in this returned bytes count)
 extern int ToANSI(const CString& s, LPSTR* ppAnsi, BOOL* pbUsedDefaultChar = NULL);
+
+// Short <-> Long path names convertion
+extern CString GetLongPathName(const CString& sShortPath);
+extern CString GetShortPathName(const CString& sLongPath);
 
 // Get ASCII compatible path, file or directory must exist!
 extern BOOL IsASCIICompatiblePath(const CString& sPath);

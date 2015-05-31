@@ -1243,6 +1243,15 @@ BOOL IsSubDir(CString sDir, CString sSubDir)
 	return FALSE;
 }
 
+BOOL AreSamePath(const CString& sPath1, const CString& sPath2)
+{
+	CString sLongPath1 = GetLongPathName(sPath1);
+	CString sLongPath2 = GetLongPathName(sPath2);
+	sLongPath1.TrimRight(_T('\\'));
+	sLongPath2.TrimRight(_T('\\'));
+	return (sLongPath1.CompareNoCase(sLongPath2) == 0);
+}
+
 ULARGE_INTEGER GetFileSize64(LPCTSTR lpszFileName)
 {
 	ULARGE_INTEGER Size;
@@ -2706,6 +2715,36 @@ BOOL IsASCIICompatiblePath(const CString& sPath)
 	return TRUE;
 }
 
+CString GetLongPathName(const CString& sShortPath)
+{
+	CString sLongPath(sShortPath);
+	if (!sShortPath.IsEmpty())
+	{
+		DWORD dwSize = GetLongPathName(sShortPath, NULL, 0);
+		if (dwSize > 0)
+		{
+			GetLongPathName(sShortPath, sLongPath.GetBuffer(dwSize), dwSize);
+			sLongPath.ReleaseBuffer();
+		}
+	}
+	return sLongPath;
+}
+
+CString GetShortPathName(const CString& sLongPath)
+{
+	CString sShortPath(sLongPath);
+	if (!sLongPath.IsEmpty())
+	{
+		DWORD dwSize = GetShortPathName(sLongPath, NULL, 0);
+		if (dwSize > 0)
+		{
+			GetShortPathName(sLongPath, sShortPath.GetBuffer(dwSize), dwSize);
+			sShortPath.ReleaseBuffer();
+		}
+	}
+	return sShortPath;
+}
+
 /*
 GetShortPathName will return an ASCII string if NtfsAllowExtendedCharacterIn8dot3Name
 is not set in the registry (the default value is 0 so we are quite ok with the following code)
@@ -2729,15 +2768,7 @@ See: http://technet.microsoft.com/en-us/library/cc781607%28WS.10%29.aspx
 CString GetASCIICompatiblePath(const CString& sPath)
 {
 	if (!IsASCIICompatiblePath(sPath))
-	{
-		TCHAR lpszShortPath[1024];
-		DWORD dwCount = GetShortPathName(sPath, lpszShortPath, 1024);
-		lpszShortPath[1023] = _T('\0');
-		if (dwCount == 0)
-			return sPath;
-		else
-			return CString(lpszShortPath);
-	}
+		return GetShortPathName(sPath);
 	else
 		return sPath;
 }

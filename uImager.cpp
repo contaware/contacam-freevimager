@@ -440,9 +440,7 @@ BOOL CUImagerApp::InitInstance() // Returning FALSE calls ExitInstance()!
 			CString sInstallDir = ::GetRegistryStringValue(	HKEY_LOCAL_MACHINE,
 															sSoftwareCompany + sName,
 															_T("Install_Dir"));
-			sInstallDir.TrimRight(_T('\\'));
-			sInstallDir += _T("\\");
-			if (sInstallDir.CompareNoCase(sDriveDir) != 0)
+			if (!::AreSamePath(sInstallDir, sDriveDir))
 				bUseRegistry = FALSE;
 		}
 		else
