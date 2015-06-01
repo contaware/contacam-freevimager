@@ -139,14 +139,20 @@ function PrintNoFilesDate() {
 // Header
 echo "<div style=\"overflow: auto; width: 100%\">\n";
 
-// Left Header
-echo "<div style=\"float: left;\">\n";
+// Live Preview
+$clickbackurl = urlencode(urldecode($_SERVER['REQUEST_URI']));
+$clickurl = urlencode("snapshotfull.php?clickurl=$clickbackurl");
+$url_iframe = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=$clickurl";
+echo "<div style=\"float: right;\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . THUMBWIDTH . "\" height=\"" . THUMBHEIGHT . "\" frameborder=\"0\" scrolling=\"no\"></iframe></div>";
 
 // Top Menu
 echo "<div>\n";
 echo "<a href=\"#\" onclick=\"window.location.reload(); return false;\">" . RELOAD . "</a> |\n";
 echo "<a href=\"" . getParentUrl() . "\" target=\"_top\">" . HOME . "</a>\n";
 echo "</div>\n";
+
+// Centered Header
+echo "<div style=\"text-align: center\">\n";
 
 // Title
 echo "<h1>" . SUMMARYTITLE . "</h1>\n";
@@ -185,14 +191,8 @@ echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
 echo "<a href=\"" . GetDeltaUrl(0,0,7) . "\">&gt;&gt;</a>";
 echo "</span>\n";
 
-// End Left Header
+// End Centered Header
 echo "</div>\n";
-
-// Live Preview
-$clickbackurl = urlencode(urldecode($_SERVER['REQUEST_URI']));
-$clickurl = urlencode("snapshotfull.php?clickurl=$clickbackurl");
-$url_iframe = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=$clickurl";
-echo "<div style=\"float: right;\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . THUMBWIDTH . "\" height=\"" . THUMBHEIGHT . "\" frameborder=\"0\" scrolling=\"no\"></iframe></div>";
 
 // End Header
 echo "</div>\n";
