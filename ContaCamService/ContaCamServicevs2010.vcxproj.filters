@@ -5,10 +5,19 @@
       <UniqueIdentifier>{e129fddd-88a4-4bc4-b70e-827d70aafeec}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{ea0d5435-aa77-4db9-913c-f6661f7a977e}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ContaCamService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 ﻿#include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
-#include <conio.h>
 #include <windows.h>
 #include <tchar.h>
 #include <winbase.h>
@@ -9,6 +8,22 @@
 #include <process.h>
 #include <ntsecapi.h>
 #include <lm.h>
+
+// MFC Style CString Replacement (http://www.codeproject.com/Articles/1146/CString-clone-Using-Standard-C)
+// Differences to the MFC CString:
+// - CStdString::operator[] returns characters by value
+//   (unlike CString which returns them by reference)
+// - the constructor that takes a character and a count takes them in the order (count, value)
+//   which is the opposite of the order CString declares them. That's the order that
+//   basic_string<>; needs and it was impossible to implement both versions.
+// - could not implement LockBuffer and UnlockBuffer 
+// - where LPCTSTR is expected always cast the CStdString object with (LPCTSTR):
+//   CString s(L"World!");
+//   WCHAR buf[100];
+//   swprintf(buf, 100, L"Hello %s", s);          // not working!
+//   swprintf(buf, 100, L"Hello %s", (LPCWSTR)s); // ok
+#include "stdstring.h"
+typedef CStdString CString;
 
 #pragma comment(lib, "netapi32.lib")
 
@@ -585,7 +600,9 @@ DWORD Install(LPCTSTR pPath, LPCTSTR pName, LPCTSTR pServiceStartName, LPCTSTR p
 			pName,						// name of service
 			pName,						// service name to display
 			SERVICE_ALL_ACCESS,			// desired access
-			SERVICE_WIN32_OWN_PROCESS | (pServiceStartName[0] == _T('\0') ? SERVICE_INTERACTIVE_PROCESS : 0),// service type
+			SERVICE_WIN32_OWN_PROCESS,	// service type: for SERVICE_WIN32_OWN_PROCESS use an account name
+										// in the form DomainName\UserName. If the account belongs to the
+										// built-in domain, you can specify .\UserName
 			SERVICE_AUTO_START,			// start type
 			SERVICE_ERROR_NORMAL,		// error control type
 			pPath,						// service's binary
@@ -630,23 +647,16 @@ void InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
     LsaString->MaximumLength = (StringLength+1) * sizeof(WCHAR);
 }
 
-BOOL GetCurrentLoggedUser(TCHAR* pServiceStartName, TCHAR* pServiceLogonRightName)
+CString GetCurrentLoggedUser()
 {
-	BOOL res = FALSE;
+	CString sCurrentLoggedUser;
     WKSTA_USER_INFO_1* pUserInfo;
 	NET_API_STATUS nets = NetWkstaUserGetInfo(NULL, 1, (LPBYTE*)&pUserInfo);
     if (nets == NERR_Success && pUserInfo)
-    {
-		if (_tcsicmp(_T("MicrosoftAccount"), pUserInfo->wkui1_logon_domain) == 0)
-			_sntprintf(pServiceStartName, STRINGBUFSIZE+1, _T(".\\%s"), pUserInfo->wkui1_username);
-		else
-			_sntprintf(pServiceStartName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
-		_sntprintf(pServiceLogonRightName, STRINGBUFSIZE+1, _T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
-		res = TRUE;
-    }
+		sCurrentLoggedUser.Format(_T("%s\\%s"), pUserInfo->wkui1_logon_domain, pUserInfo->wkui1_username);
     if (pUserInfo)
 		NetApiBufferFree(pUserInfo);
-	return res;
+	return sCurrentLoggedUser;
 }
 
 BOOL AddServiceLogonRight(LPCTSTR pServiceLogonRightName)
@@ -700,13 +710,50 @@ TCHAR GetCharNoEcho(HANDLE hConsole)
 	return ch[0];
 }
 
-void GetPw(TCHAR* sPw)
+void GetUser(CString& sUser)
 {
 	HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	TCHAR ch;
-	memset(sPw, 0, sizeof(TCHAR) * (STRINGBUFSIZE + 1));
-	for (int i = 0 ; (i < STRINGBUFSIZE) && ((ch = GetCharNoEcho(hStdIn)) != _T('\r')) ; )
+	DWORD dwCharsWritten;
+	WriteConsole(hStdOut, (CONST VOID*)(LPCTSTR)sUser, sUser.GetLength(), &dwCharsWritten, NULL);
+	int i = dwCharsWritten;
+	while ((ch = GetCharNoEcho(hStdIn)) != _T('\r'))
+	{	
+		if (ch == VK_BACK)
+		{
+			if (i > 0)
+			{
+				CONSOLE_SCREEN_BUFFER_INFO ConsoleScreenBufferInfo;
+				GetConsoleScreenBufferInfo(hStdOut, &ConsoleScreenBufferInfo);
+				COORD coordScreen = ConsoleScreenBufferInfo.dwCursorPosition; 
+				coordScreen.X -= 1;
+				SetConsoleCursorPosition(hStdOut, coordScreen);
+				const TCHAR ClearOut[] = _T(" ");
+				WriteConsole(hStdOut, (CONST VOID*)ClearOut, 1, &dwCharsWritten, NULL);
+				SetConsoleCursorPosition(hStdOut, coordScreen);
+				i--;
+				sUser.Delete(i);
+			}
+		}
+		else
+		{
+			sUser += ch;
+			WriteConsole(hStdOut, (CONST VOID*)&ch, 1, &dwCharsWritten, NULL);
+			i++;
+		}
+	}
+	_tprintf(_T("\n"));
+}
+
+CString GetPw()
+{
+	HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	TCHAR ch;
+	CString sPw;
+	int i = 0;
+	while ((ch = GetCharNoEcho(hStdIn)) != _T('\r'))
 	{	
 		if (ch == VK_BACK)
 		{
@@ -722,12 +769,12 @@ void GetPw(TCHAR* sPw)
 				WriteConsole(hStdOut, (CONST VOID*)ClearOut, 1, &dwCharsWritten, NULL);
 				SetConsoleCursorPosition(hStdOut, coordScreen);
 				i--;
-				sPw[i] = _T('\0');
+				sPw.Delete(i);
 			}
 		}
 		else
 		{
-			sPw[i] = ch;
+			sPw += ch;
 			DWORD dwCharsWritten;
 			const TCHAR HideOut[] = _T("*");
 			WriteConsole(hStdOut, (CONST VOID*)HideOut, 1, &dwCharsWritten, NULL);
@@ -735,6 +782,39 @@ void GetPw(TCHAR* sPw)
 		}
 	}
 	_tprintf(_T("\n"));
+	return sPw;
+}
+
+CString GetComputerName()
+{
+	TCHAR szComputerName[MAX_COMPUTERNAME_LENGTH + 1];
+	DWORD dwSize = MAX_COMPUTERNAME_LENGTH + 1;
+	if (GetComputerName(szComputerName, &dwSize))
+		return CString(szComputerName);
+	else
+		return _T("");
+}
+
+void FixServiceStartName(CString& sServiceStartName)
+{
+	CString sServiceStartNameLower(sServiceStartName);
+	sServiceStartNameLower.MakeLower();
+	// LookupAccountName() doesn't support .\UserName
+	if (sServiceStartNameLower.Find(_T(".\\")) == 0)
+	{
+		sServiceStartName.Delete(0, 2);
+		sServiceStartName = GetComputerName() + _T("\\") + sServiceStartName;
+	}
+	// CreateService() fails with ERROR_SERVICE_DEPENDENCY_FAIL (1068)
+	// if initialized with MicrosoftAccount\Email
+	else if (sServiceStartNameLower.Find(_T("microsoftaccount\\")) == 0)
+	{
+		sServiceStartName.Delete(0, 17);
+		sServiceStartName = GetComputerName() + _T("\\") + sServiceStartName;
+	}
+	// If only UserName provided add ComputerName
+	else if (!sServiceStartNameLower.IsEmpty() && sServiceStartNameLower.Find(_T('\\')) == -1)
+		sServiceStartName = GetComputerName() + _T("\\") + sServiceStartName;
 }
 
 BOOL SwitchToUnicodeConsole()
@@ -857,43 +937,34 @@ void _tmain(int argc, TCHAR* argv[])
 							_T("HKEY_CURRENT_USER\\Console\\FaceName to Lucida Console\n\n"));
 			}
 			_tprintf(_T("Installing %s, please wait...\n\n"), g_pServiceName);
-			// Username for StartService() on Windows 8 which fails with
-			// ERROR_SERVICE_DEPENDENCY_FAIL (1068) if initializing
-			// CreateService() with MicrosoftAccount\email
-			TCHAR pServiceStartName[STRINGBUFSIZE+1];
-			// Username for LookupAccountName() which doesn't support the .\ prefix
-			TCHAR pServiceLogonRightName[STRINGBUFSIZE+1];
-			// Password
-			TCHAR pServiceStartPassword[STRINGBUFSIZE+1];
 			int nRet;
+			CString sServiceStartName(GetCurrentLoggedUser());
+			FixServiceStartName(sServiceStartName);
 			while (TRUE)
 			{
 				KillService(g_pServiceName);
 				Uninstall(g_pServiceName);
-				if (GetCurrentLoggedUser(pServiceStartName, pServiceLogonRightName))
-					_tprintf(_T("Logon Username: %s\n"), pServiceLogonRightName);
-				else
+				_tprintf(_T("Logon Username: "));
+				GetUser(sServiceStartName);
+				FixServiceStartName(sServiceStartName);
+				CString sServiceStartPassword;
+				if (!sServiceStartName.IsEmpty())
 				{
-					_tprintf(_T("Logon Username: "));
-					size_t numRead = 0;
-					_cgetts_s(pServiceLogonRightName, &numRead);
-					_tcscpy(pServiceStartName, _T(".\\"));
-					_tcscat(pServiceStartName, pServiceLogonRightName);
+					_tprintf(_T("Logon Password: "));
+					sServiceStartPassword = GetPw();
 				}
-				_tprintf(_T("Logon Password: "));
-				GetPw(pServiceStartPassword);
-				nRet = Install(g_pExeFile, g_pServiceName, pServiceStartName, pServiceStartPassword);
+				nRet = Install(g_pExeFile, g_pServiceName, sServiceStartName, sServiceStartPassword);
 				if (nRet != ERROR_INVALID_SERVICE_ACCOUNT)
 				{
-					if (pServiceLogonRightName[0] != _T('\0'))
-						AddServiceLogonRight(pServiceLogonRightName);
+					if (!sServiceStartName.IsEmpty())
+						AddServiceLogonRight(sServiceStartName);
 					LPTSTR pArgv[1];
 					pArgv[0] = PROCESSES_STOP; // Start the service (without starting the processes) to verify the password
 					if ((nRet = RunService(g_pServiceName, 1, (LPCTSTR*)pArgv)) != ERROR_SERVICE_LOGON_FAILED)
 						break;
 					else
 					{
-						if (pServiceStartName[0] != _T('\0') && pServiceStartPassword[0] == _T('\0'))
+						if (!sServiceStartName.IsEmpty() && sServiceStartPassword.IsEmpty())
 						{
 							_tprintf(_T("\
 Logon failed!\n\n\
