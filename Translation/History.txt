@@ -1,5 +1,9 @@
 TRANSLATIONS HISTORY
 
+5.0.1 (June Xth 2015)
+
+- ...
+
 5.0.0 (May 19th 2015)
 
 - Many changes!

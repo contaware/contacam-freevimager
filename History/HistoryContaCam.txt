@@ -1,5 +1,9 @@
 CONTACAM HISTORY
 
+5.0.1 (June Xth 2015)
+
+- Enhanced ContaCam service installation
+
 5.0.0 (May 19th 2015)
 
 - Goodbye Flash Video: .swf files have been replaced by .mp4 files
