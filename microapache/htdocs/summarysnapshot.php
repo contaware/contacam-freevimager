@@ -24,7 +24,7 @@ if (isset($_GET['year']) && isset($_GET['month']) && isset($_GET['day'])) {	// E
 	$selected_year = (int)$_GET['year'];
 	$selected_month = (int)$_GET['month'];
 	$lastdayof_selected_month = date('d',mktime(0, 0, 0, $selected_month + 1, 0, $selected_year));
-	$selected_day = min((int)$_GET['day'],$lastdayof_selected_month);
+	$selected_day = min((int)$_GET['day'],(int)$lastdayof_selected_month);
 	$params = "?year=$selected_year&amp;month=$selected_month&amp;day=$selected_day";
 }
 else {	// Today
@@ -316,10 +316,9 @@ if ($handle = @opendir($dir)) {
 						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'jpg') {
-					$jpegthumburi = "$uribasenoext.jpg";
-					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
-					$jpeguri_get = urlencode($jpeguri);
-					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
+					$jpegthumburi = "$uribasenoext.jpg"; $jpegthumburi_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($jpegthumburi)));
+					$jpeguri = str_replace("_thumb", "", $jpegthumburi); $jpeguri_get = urlencode($jpeguri);
+					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi')
 					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"$aviuri_for_html\" >$file_timestamp</a>";
@@ -402,7 +401,8 @@ document.getElementById('DatePicker').addEventListener("input", function(ev) {
 		parts[0] = parseInt(parts[0], 10);
 		parts[1] = parseInt(parts[1], 10);
 		parts[2] = parseInt(parts[2], 10);
-		window.location.href = '<?php echo "$scriptname"; ?>?year=' + parts[0] + '&month=' + parts[1] + '&day=' + parts[2];
+		if (parts[0] > 0 && parts[1] > 0 && parts[2] > 0)
+			window.location.href = '<?php echo "$scriptname"; ?>?year=' + parts[0] + '&month=' + parts[1] + '&day=' + parts[2];
 	}
 }, false);
 //]]>
