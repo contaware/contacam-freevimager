@@ -1,7 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
@@ -39,7 +37,7 @@ span.previewscontainer {
 	display: inline-block;
 	margin: 6px;
 	padding: 0;
-	border: none;
+	border: 0;
 }
 /*]]>*/
 </style>
@@ -69,8 +67,9 @@ if ($handle = @opendir($dir)) {
 				if ($match != 0)
 					$iframe_height = $matches[1];
 				$url = "$rel_path/$file/";
-				$url_iframe = $url . "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=" . urlencode($url);
-				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" frameborder=\"0\" scrolling=\"no\"></iframe><br /><a href=\"$url\">$file</a></span>";
+				$url_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($url)));
+				$url_iframe = $url_for_html . "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=" . urlencode($url);
+				echo "<span class=\"previewscontainer\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" style=\"border: 0; overflow: hidden;\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\"></iframe><br /><a href=\"$url_for_html\">$file</a></span>";
 				$count++;
 			}
 		}

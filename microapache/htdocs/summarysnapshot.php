@@ -2,10 +2,8 @@
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
@@ -137,13 +135,13 @@ function PrintNoFilesDate() {
 }
             
 // Header
-echo "<div style=\"overflow: auto; width: 100%\">\n";
+echo "<div style=\"width: 100%\">\n";
 
 // Live Preview
 $clickbackurl = urlencode(urldecode($_SERVER['REQUEST_URI']));
 $clickurl = urlencode("snapshotfull.php?clickurl=$clickbackurl");
 $url_iframe = "snapshot.php?title=no&amp;menu=no&amp;countdown=no&amp;thumb=yes&amp;clickurl=$clickurl";
-echo "<div style=\"float: right;\"><iframe id=\"iframe$count\" name=\"iframe$count\" src=\"$url_iframe\" width=\"" . THUMBWIDTH . "\" height=\"" . THUMBHEIGHT . "\" frameborder=\"0\" scrolling=\"no\"></iframe></div>";
+echo "<iframe style=\"display: block; float: right; border: 0; overflow: hidden; width: " . THUMBWIDTH . "px; height: " . THUMBHEIGHT . "px;\" id=\"livepreview\" name=\"livepreview\" src=\"$url_iframe\" width=\"" . THUMBWIDTH . "\" height=\"" . THUMBHEIGHT . "\"></iframe>\n";
 
 // Top Menu
 echo "<div>\n";
@@ -181,24 +179,27 @@ echo "</span>\n";
 
 // Day selector
 echo "<span class=\"globalbuttons\">";
-echo "<a href=\"" . GetDeltaUrl(0,0,-7) . "\">&lt;&lt;</a>";
 echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>";
 if ($selected_day == $today_day)
 	echo "<a class=\"highlight\" href=\"$scriptname\">$selected_day</a>";
 else
 	echo "<a href=\"$scriptname\">$selected_day</a>";
 echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
-echo "<a href=\"" . GetDeltaUrl(0,0,7) . "\">&gt;&gt;</a>";
 echo "</span>\n";
+
+// Date picker
+echo "<form>\n";
+echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />\n";
+echo "</form>\n";
 
 // End Centered Header
 echo "</div>\n";
 
+// Separator
+echo "<hr style=\"clear: both\" />\n";
+
 // End Header
 echo "</div>\n";
-
-// Header - Content Separator
-echo "<hr />\n";
 
 // Loop through the directory's files and display them
 $doc_root = $_SERVER['DOCUMENT_ROOT'];
@@ -300,28 +301,28 @@ if ($handle = @opendir($dir)) {
 				$uribasenoext = "$filesdirpath/$selected_year_string/$selected_month_string/$selected_day_string/$filenamenoext";
 				$mp4uri = "$uribasenoext.mp4"; $mp4uri_get = urlencode($mp4uri); $mp4file = "$dir/$filenamenoext.mp4";
 				$swfuri = "$uribasenoext.swf"; $swfuri_get = urlencode($swfuri); $swffile = "$dir/$filenamenoext.swf";
-				$aviuri = "$uribasenoext.avi"; $avifile = "$dir/$filenamenoext.avi";
-				$gifuri = "$uribasenoext.gif";
+				$aviuri = "$uribasenoext.avi"; $aviuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($aviuri))); $avifile = "$dir/$filenamenoext.avi";
+				$gifuri = "$uribasenoext.gif"; $gifuri_for_html = htmlspecialchars(str_replace("%2F", "/", rawurlencode($gifuri)));
 				if ($path_parts['extension'] == 'gif') {
 					if (is_file($mp4file))
-						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $mp4s . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else if (is_file($swffile) && is_file($avifile))
-						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a><a class=\"avilink\" href=\"$aviuri\">AVI</a></span>";
+						echo "<span class=\"thumbcontainer\"><a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a><a class=\"avilink\" href=\"$aviuri_for_html\">AVI</a></span>";
 					else if (is_file($swffile))
-						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"swf.php?file=$swfuri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . $swfs . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else if (is_file($avifile))
-						echo "<a href=\"$aviuri\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"$aviuri_for_html\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 					else
-						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+						echo "<a href=\"#\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$gifuri_for_html\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'jpg') {
 					$jpegthumburi = "$uribasenoext.jpg";
 					$jpeguri = str_replace("_thumb", "", $jpegthumburi);
 					$jpeguri_get = urlencode($jpeguri);
-					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" align=\"middle\" /></a>";
+					echo "<a href=\"jpeg.php?file=$jpeguri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" class=\"notselected\" id=\"" . $path_parts['filename'] . "\" onclick=\"changeStyle(this.id);\"><img src=\"$jpegthumburi\" alt=\"$file_timestamp\" style=\"vertical-align: middle\" /></a>";
 				}
 				else if ($path_parts['extension'] == 'avi')
-					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"$aviuri\" >$file_timestamp</a>";
+					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"$aviuri_for_html\" >$file_timestamp</a>";
 				else if ($path_parts['extension'] == 'mp4')
 					echo "<span class=\"line1\">" . strtoupper($file_prefix) . "</span><a class=\"line2\" href=\"mp4.php?file=$mp4uri_get&amp;backuri=" . urlencode(urldecode($_SERVER['REQUEST_URI'])) . "\" >$file_timestamp</a>";
 				else if ($path_parts['extension'] == 'swf')
@@ -392,6 +393,18 @@ else {
 //<![CDATA[
 if (parent.window.name != '' && document.getElementById(parent.window.name))
 	document.getElementById(parent.window.name).className = 'lastselected';
+document.getElementById('DatePicker').addEventListener("input", function(ev) {
+	if (ev.target.value == '') {// if pressing X in date picker
+		window.location.href = '<?php echo "$scriptname"; ?>';
+	}
+	else {
+		var parts = ev.target.value.split('-'); // parse date in yyyy-mm-dd format
+		parts[0] = parseInt(parts[0], 10);
+		parts[1] = parseInt(parts[1], 10);
+		parts[2] = parseInt(parts[2], 10);
+		window.location.href = '<?php echo "$scriptname"; ?>?year=' + parts[0] + '&month=' + parts[1] + '&day=' + parts[2];
+	}
+}, false);
 //]]>
 </script>
 </body>

@@ -1,10 +1,8 @@
 <?php
 require_once( 'configuration.php' );
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
@@ -24,7 +22,7 @@ else {
 	$pushfilename = "push.php?thumb=yes";
 }
 if ($doPoll) {
-	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
+	echo "<script type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
 	echo "var x = " . SNAPSHOTREFRESHSEC . ";\n";
 	echo "var loadingterminated = true;\n";
@@ -32,26 +30,30 @@ if ($doPoll) {
 	echo "var rate = " . SNAPSHOTREFRESHSEC . ";\n";
 	echo "var fastpollrate = " . SERVERPUSH_POLLRATE_MS . ";\n";
 	echo "function doFlip(){\n"; // always flip with some delay otherwise Firefox is flickering (it shows background) and the others are displaying the old image
-	echo "    if (document.campicture0.style.zIndex == 3){\n";
-	echo "        document.campicture1.style.zIndex = 2;\n";	// 1. Gently 3 steps flip of previously loaded image
-	echo "        document.campicture0.style.zIndex = 1;\n";	// 2. Flip
-	echo "        document.campicture1.style.zIndex = 3;\n";	// 3. Restore index
+	echo "    var campicture0 = document.getElementById('campicture0');\n";
+	echo "    var campicture1 = document.getElementById('campicture1');\n";
+	echo "    if (campicture0.style.zIndex == 3){\n";
+	echo "        campicture1.style.zIndex = 2;\n";		// 1. Gently 3 steps flip of previously loaded image
+	echo "        campicture0.style.zIndex = 1;\n";		// 2. Flip
+	echo "        campicture1.style.zIndex = 3;\n";		// 3. Restore index
 	echo "    } else {\n";
-	echo "        document.campicture0.style.zIndex = 2;\n";	// 1. Gently 3 steps flip of previously loaded image
-	echo "        document.campicture1.style.zIndex = 1;\n";	// 2. Flip
-	echo "        document.campicture0.style.zIndex = 3;\n";	// 3. Restore index
+	echo "        campicture0.style.zIndex = 2;\n";		// 1. Gently 3 steps flip of previously loaded image
+	echo "        campicture1.style.zIndex = 1;\n";		// 2. Flip
+	echo "        campicture0.style.zIndex = 3;\n";		// 3. Restore index
 	echo "    }\n";
 	echo "    loadingterminated = true;\n";
 	echo "}\n";
 	echo "function snapshotLoaded(){\n"; // this function is triggered when the image has been downloaded from network to file and not when loaded from file into memory
+	echo "    var campicture0 = document.getElementById('campicture0');\n";
+	echo "    var campicture1 = document.getElementById('campicture1');\n";
 	echo "    if (rate < 1)\n";
-	echo "        doFlip();\n";									// flip the image which started to decode in previous call
-	echo "    if (document.campicture1.style.zIndex == 3)\n";
-	echo "        document.campicture0.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
+	echo "        doFlip();\n";							// flip the image which started to decode in previous call
+	echo "    if (campicture1.style.zIndex == 3)\n";
+	echo "        campicture0.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
 	echo "    else\n";
-	echo "        document.campicture1.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
+	echo "        campicture1.src = tmpimage.src;\n";	// start decoding file from disk to memory (that takes some time)
 	echo "    if (rate >= 1)\n";
-	echo "        setTimeout(\"doFlip()\", 500);\n";			// flip with some delay to give the decoder enough time
+	echo "        setTimeout(\"doFlip()\", 500);\n";	// flip with some delay to give the decoder enough time
 	echo "}\n";
 	echo "function snapshotNotLoaded(){\n";
 	echo "    loadingterminated = true;\n";
@@ -125,18 +127,16 @@ else
 	$clickurl = getParentUrl();
 if ($doPoll) {
 	echo "<a id=\"pollimglink\" class=\"transparentbkg\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "'; return false;\"></a>\n";
-	echo "<img class=\"campicture\" style=\"z-index: 3;\" name=\"campicture0\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
-	echo "<img class=\"campicture\" style=\"z-index: 1;\" name=\"campicture1\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
-}
-else
-	echo "<img class=\"campicture\" style=\"cursor: pointer;\" src=\"" . htmlspecialchars($pushfilename) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" width=\"100%\" height=\"100%\" />";
-if ($doPoll) {
-	echo "<script language=\"JavaScript\" type=\"text/javascript\">\n";
+	echo "<img class=\"campicture\" style=\"width: 100%; height: 100%; z-index: 3;\" id=\"campicture0\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" />";
+	echo "<img class=\"campicture\" style=\"width: 100%; height: 100%; z-index: 1;\" id=\"campicture1\" src=\"" . htmlspecialchars($pollfilename . time()) . "\" alt=\"Snapshot Image\" />";
+	echo "<script type=\"text/javascript\">\n";
 	echo "//<![CDATA[\n";
 	echo "startClock();\n";
 	echo "//]]>\n";
 	echo "</script>\n";
 }
+else
+	echo "<img class=\"campicture\" style=\"width: 100%; height: 100%; cursor: pointer;\" src=\"" . htmlspecialchars($pushfilename) . "\" onclick=\"window.top.location.href = '" . htmlspecialchars($clickurl) . "';\" alt=\"Snapshot Image\" />";
 ?>
 </body>
 </html>
