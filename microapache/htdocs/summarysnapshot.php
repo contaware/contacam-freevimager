@@ -133,6 +133,62 @@ function PrintNoFilesDate() {
 			echo NOFILESFOR . " $day_name (" . IN . " $in_days " . DAYS . ")";
 	}
 }
+function PrintPageNavigation() {
+	global $file_array; 	// all the files
+	global $max_per_page;	// the configured maximum number of displayed files per page
+	global $page_offset;	// page offset parameter passed to script
+	global $params;			// all the parameters passed to script
+	global $scriptname;		// script name
+	
+	// Calculate the total pages amount
+	$pages = 1;
+	if (!empty($file_array)) {
+		$pages_float = (float)count($file_array) / (float)$max_per_page;
+		$pages = floor($pages_float);
+		if (($pages_float - $pages) > 0.0)
+			$pages++;
+	}
+	
+	// Show pages navigation if more than a page available
+	if ($pages > 1) {
+		echo "<div style=\"text-align: center\">" . PAGES . " [\n";
+		$current_page_offset = 0;
+		$file_time_array = array_values($file_array);
+		for ($page=1 ; $page <= $pages ; $page++) {
+			$file_date = getdate($file_time_array[$current_page_offset]);
+			$file_timestamp = sprintf("%02d:%02d", $file_date['hours'], $file_date['minutes']);
+			if ($page == 1) {
+				if ($current_page_offset == $page_offset) {
+					if ($params == "")
+						echo " <a class=\"highlight\" href=\"$scriptname\">$file_timestamp</a>\n";
+					else
+						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
+				}
+				else {
+					if ($params == "")
+						echo " <a href=\"$scriptname\">$file_timestamp</a>\n";
+					else
+						echo " <a href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
+				}
+			} else {
+				if ($current_page_offset == $page_offset) {
+					if ($params == "")
+						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+					else
+						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+				}
+				else {
+					if ($params == "")
+						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+					else
+						echo " <a href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
+				}
+			}
+			$current_page_offset += $max_per_page;
+		}
+		echo "]</div>\n";
+	}
+}
             
 // Header
 echo "<div style=\"width: 100%\">\n";
@@ -208,9 +264,8 @@ if ($doc_root == "")
 else
 	$dir = "$doc_root/".ltrim($filesdirpath,"\\/")."/".$selected_year_string."/".$selected_month_string."/".$selected_day_string;
 if ($handle = @opendir($dir)) {
+	// Clear flag
 	$day_has_files = false;
-	$bfirst = true;
-	$pages = 1;
 			
 	// First catch all the wanted files
 	$file_array = array();
@@ -232,13 +287,6 @@ if ($handle = @opendir($dir)) {
 			
 	// Now order them and display the wanted page
 	if (!empty($file_array)) {
-		// Get total images and calc. total pages
-		$total_size = count($file_array);
-		$pages_float = $total_size / (float)$max_per_page;
-		$pages = floor($pages_float);
-		if (($pages_float - $pages) > 0.0)
-			$pages++;
-		
 		// Sort by file time
 		if (SORT_OLDEST_FIRST == 1)
 			asort($file_array);
@@ -283,16 +331,12 @@ if ($handle = @opendir($dir)) {
 		echo "<h2>";
 		PrintFileDate();
 		echo "</h2>\n";
+		PrintPageNavigation();
 		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
 			if (!isset($path_parts['filename']))
 				$path_parts['filename'] = substr($path_parts['basename'], 0, strrpos($path_parts['basename'], '.'));
-		  
-			if ($bfirst) {
-				$bfirst = false;
-				$day_has_files = true;
-			}
-			
+			$day_has_files = true;			
 			if ($pos >= $page_offset && $count < $max_per_page) {
 				$file_date = getdate($file_time);
 				$file_timestamp = sprintf("%02d:%02d:%02d ", $file_date['hours'], $file_date['minutes'], $file_date['seconds']); // leave a final space so that the text can wrap in the browser!
@@ -340,46 +384,8 @@ if ($handle = @opendir($dir)) {
 		echo "</h2></div>\n";
 	}
 	
-	// If more than one page show the pages navigator
-	if ($pages > 1) {
-		echo "<hr />\n";
-		echo "<div style=\"text-align: center\">" . PAGES . " [\n";
-		$current_page_offset = 0;
-		$file_time_array = array_values($file_array);
-		for ($page=1 ; $page <= $pages ; $page++) {
-			$file_date = getdate($file_time_array[$current_page_offset]);
-			$file_timestamp = sprintf("%02d:%02d", $file_date['hours'], $file_date['minutes']);
-			if ($page == 1) {
-				if ($current_page_offset == $page_offset) {
-					if ($params == "")
-						echo " <a class=\"highlight\" href=\"$scriptname\">$file_timestamp</a>\n";
-					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
-				}
-				else {
-					if ($params == "")
-						echo " <a href=\"$scriptname\">$file_timestamp</a>\n";
-					else
-						echo " <a href=\"$scriptname" . $params . "\">$file_timestamp</a>\n";
-				}
-			} else {
-				if ($current_page_offset == $page_offset) {
-					if ($params == "")
-						echo " <a class=\"highlight\" href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
-					else
-						echo " <a class=\"highlight\" href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
-				}
-				else {
-					if ($params == "")
-						echo " <a href=\"$scriptname?pageoffset=$current_page_offset\">$file_timestamp</a>\n";
-					else
-						echo " <a href=\"$scriptname" . $params . "&amp;pageoffset=$current_page_offset\">$file_timestamp</a>\n";
-				}
-			}
-			$current_page_offset += $max_per_page;
-		}
-		echo "]</div>\n";
-	}
+	// Show pages navigation if more than a page available
+	PrintPageNavigation();
 }
 // Given day doesn't exist
 else {
