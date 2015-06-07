@@ -2,7 +2,8 @@ CONTACAM HISTORY
 
 5.0.1 (June Xth 2015)
 
-- Enhanced ContaCam service installation
+- Web interface has now a better calendar picker
+- Enhanced ContaCam service installation 
 
 5.0.0 (May 19th 2015)
 
