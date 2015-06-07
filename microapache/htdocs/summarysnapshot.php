@@ -89,28 +89,6 @@ function GetDeltaUrl($delta_year, $delta_month, $delta_day) {
 	$new_day = (int)date('d', $new_time);
 	return "$scriptname?year=$new_year&amp;month=$new_month&amp;day=$new_day";
 }
-function PrintFileDate() {
-	global $selected_days_elapsed;
-	global $selected_weekday_num;
-	$daynames = explode(",", str_replace("'", "", DAYNAMES));
-	$day_name = $daynames[$selected_weekday_num];
-	if ($selected_days_elapsed == 0) {
-		echo "$day_name (" . TODAY . ")";
-	}
-	else if ($selected_days_elapsed > 0) {
-		if ($selected_days_elapsed == 1)
-			echo "$day_name ($selected_days_elapsed " . DAYAGO . ")";
-		else
-			echo "$day_name ($selected_days_elapsed " . DAYSAGO . ")";
-	}
-	else {
-		$in_days = -$selected_days_elapsed;
-		if ($selected_days_elapsed == -1)
-			echo "$day_name (" . IN . " $in_days " . DAY . ")";
-		else
-			echo "$day_name (" . IN . " $in_days " . DAYS . ")";
-	}
-}
 function PrintNoFilesDate() {
 	global $selected_days_elapsed;
 	global $selected_weekday_num;
@@ -211,41 +189,34 @@ echo "<div style=\"text-align: center\">\n";
 // Title
 echo "<h1>" . SUMMARYTITLE . "</h1>\n";
 
-// Year selector
-echo "<span class=\"globalbuttons\">";
-echo "<a href=\"" . GetDeltaUrl(-1,0,0) . "\">&lt;</a>";
-if ($selected_year == $today_year)
-	echo "<a class=\"highlight\" href=\"$scriptname\">$selected_year</a>";
-else
-	echo "<a href=\"$scriptname\">$selected_year</a>";
-echo "<a href=\"" . GetDeltaUrl(1,0,0) . "\">&gt;</a>";
-echo "</span>\n";
-
-// Month selector
-echo "<span class=\"globalbuttons\">";
-$shortmonthnames = explode(",", str_replace("'", "", SHORTMONTHNAMES));
-$month_name = $shortmonthnames[$selected_month - 1];
-echo "<a href=\"" . GetDeltaUrl(0,-1,0) . "\">&lt;</a>";
-if ($selected_month == $today_month)
-	echo "<a class=\"highlight\" href=\"$scriptname\">$month_name</a>";
-else
-	echo "<a href=\"$scriptname\">$month_name</a>";
-echo "<a href=\"" . GetDeltaUrl(0,1,0) . "\">&gt;</a>";
-echo "</span>\n";
-
-// Day selector
-echo "<span class=\"globalbuttons\">";
-echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>";
-if ($selected_day == $today_day)
-	echo "<a class=\"highlight\" href=\"$scriptname\">$selected_day</a>";
-else
-	echo "<a href=\"$scriptname\">$selected_day</a>";
-echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
-echo "</span>\n";
-
 // Date picker
 echo "<form>\n";
-echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />\n";
+echo "<span class=\"globalbuttons\">";
+echo "<a href=\"" . GetDeltaUrl(0,0,-1) . "\">&lt;</a>";
+echo "<a href=\"" . GetDeltaUrl(0,-1,0) . "\">&lt;&lt;</a>";
+echo "<a href=\"" . GetDeltaUrl(-1,0,0) . "\">&lt;&lt;&lt;</a>";
+echo "<input id=\"DatePicker\" type=\"date\" value=\"$selected_year_string-$selected_month_string-$selected_day_string\" />";
+echo "<a href=\"" . GetDeltaUrl(1,0,0) . "\">&gt;&gt;&gt;</a>";
+echo "<a href=\"" . GetDeltaUrl(0,1,0) . "\">&gt;&gt;</a>";
+echo "<a href=\"" . GetDeltaUrl(0,0,1) . "\">&gt;</a>";
+echo "</span><br />\n";
+$daynames = explode(",", str_replace("'", "", DAYNAMES));
+$day_name = $daynames[$selected_weekday_num];	
+if ($selected_days_elapsed == 0)
+	echo "<span>$day_name (" . TODAY . ")</span>\n";
+else if ($selected_days_elapsed > 0) {
+	if ($selected_days_elapsed == 1)
+		echo "<span>$day_name ($selected_days_elapsed " . DAYAGO . ") | </span><a href=\"$scriptname\">" . TODAY . "</a>\n";
+	else
+		echo "<span>$day_name ($selected_days_elapsed " . DAYSAGO . ") | </span><a href=\"$scriptname\">" . TODAY . "</a>\n";
+}
+else {
+	$in_days = -$selected_days_elapsed;
+	if ($selected_days_elapsed == -1)
+		echo "<span>$day_name (" . IN . " $in_days " . DAY . ") | </span><a href=\"$scriptname\">" . TODAY . "</a>\n";
+	else
+		echo "<span>$day_name (" . IN . " $in_days " . DAYS . ") | </span><a href=\"$scriptname\">" . TODAY . "</a>\n";
+}
 echo "</form>\n";
 
 // End Centered Header
@@ -328,9 +299,6 @@ if ($handle = @opendir($dir)) {
 		$pos = 0;
 		$count = 0;
 		echo "<div style=\"text-align: center\">\n";
-		echo "<h2>";
-		PrintFileDate();
-		echo "</h2>\n";
 		PrintPageNavigation();
 		foreach($file_array as $file => $file_time) {
 			$path_parts = pathinfo($file);
