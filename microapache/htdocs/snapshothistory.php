@@ -2,10 +2,8 @@
 require_once( 'configuration.php' );
 require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file because it outputs the UTF8-BOM!
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="author" content="Oliver Pfister" />
@@ -13,180 +11,31 @@ require_once( LANGUAGEFILEPATH ); // Must be here at the top of this file becaus
 echo "<title>" . SNAPSHOTTITLE . "</title>\n";
 echo "<link rel=\"stylesheet\" href=\"" . STYLEFILEPATH . "\" type=\"text/css\" />\n";
 ?>
-<script src="js/calendarpopup.js" type="text/javascript"></script>
-<script type="text/javascript">
-//<![CDATA[
-document.write(getCalendarStyles());
-//]]>
-</script>
 </head>
-
 <body>
 <?php echo "<div style=\"text-align: center\"><h1>" . SNAPSHOTTITLE . "</h1></div>"; ?>
 <div class="menutop">
-<a href="#" onclick="myiframe.location.reload(); return false;"><?php echo RELOAD;?></a> |
 <a href="<?php echo getParentUrl();?>" target="_top"><?php echo HOME;?></a>
 </div>
 <div class="wrap">
-<form action="">
-<input type="hidden" name="dateall" value="" />
-<div id="navcontrols">
-<span class="inlinenowrap">
-<?php echo LOCALTIME;?> <input type="text" readonly="readonly" id="clock" name="clock" value="" size="44" />
-</span>
-&nbsp;
-<span class="inlinenowrap">
-<?php echo VIEWFILESFOR;?> <input type="button" value="&lt;" class="navbutton" name="prev" id="prev" onclick="onPrev();" /><input id="datetext" type="text" readonly="readonly" name="datetext" value="" size="32" /><input type="button" value="&gt;" class="navbutton" name="next" id="next" onclick="onNext();" /> <a href="#" onclick="positionCalendar(); var dateselected = LZ(sel.getDate()) + '/' + LZ(sel.getMonth()+1) + '/' + sel.getFullYear(); cal.select(document.forms[0].dateall,'anchor2','dd/MM/yyyy',dateselected); return false;" title="<?php echo SHOWCALENDAR;?>" name="anchor2" id="anchor2"><?php echo SELECT;?></a>
-</span>
-</div>
-</form>
-</div>
-<div id="calendar"></div>
-<script id="jscal" type="text/javascript">
+<form>
+<span class="globalbuttons">
+<a href="javascript:;" id="prevLink">&lt;</a>
+<script type="text/javascript">
 //<![CDATA[
-function urlExists(url) {
-	var ajax = new XMLHttpRequest(); 
-	ajax.open('HEAD', url, false); // sync. call
-	ajax.send(null);
-	return ajax.status != 404;
-}
 var now = new Date();
 var sel = new Date();
 var todayselected = true;
-var cal = new CalendarPopup("calendar");
-cal.setCssPrefix("my");
-cal.showNavigationDropdowns();
-cal.setYearSelectStartOffset(<?php echo STARTOFFSET_YEARS;?>);
-cal.setMonthNames(<?php	echo MONTHNAMES;?>);
-cal.setDayHeaders(<?php echo DAYHEADERS;?>);
-var daynames = new Array(<?php echo DAYNAMES;?>);
-cal.setWeekStartDay(<?php echo MONDAYSTARTSWEEK;?>);
-var todaytext = '<?php echo str_replace('\'','\\\'',TODAY);?>';
-cal.setTodayText(todaytext);
-cal.setReturnFunction('loadIFrame');
-cal.offsetX = 0;
-cal.offsetY = 0;
-document.forms[0].datetext.value = todaytext;
-document.forms[0].dateall.value = LZ(now.getDate()) + '/' + LZ(now.getMonth()+1) + '/' + now.getFullYear();
-updateClock();
-function loadIFrame(y,m,d) {
-	document.forms[0].dateall.value = LZ(d) + '/' + LZ(m) + '/' + y;
-	if (window.frames && window.frames.myiframe) {
-		now = new Date();
-		sel.setFullYear(y,m-1,d);
-		if (sel.getDate() == now.getDate() &&
-			sel.getMonth() == now.getMonth() &&
-			sel.getFullYear() == now.getFullYear()) {
-			todayselected = true;
-			document.forms[0].datetext.value = todaytext;
-			<?php
-			$srcuri = "snapshot.php?title=no&menu=no&clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
-			echo "var srcuri = '$srcuri';\n";
-			?>
-		}
-		else {
-			todayselected = false;
-			document.forms[0].datetext.value = daynames[sel.getDay()] + ' , ' + LZ(d) + ' ' + cal.monthNames[m-1] + ' ' + y;
-			<?php
-			if (SNAPSHOTHISTORY_THUMB == 1)
-			{
-				$video_width = THUMBWIDTH;
-				$video_height = THUMBHEIGHT;
-			}
-			else
-			{
-				$video_width = WIDTH;
-				$video_height = HEIGHT;
-			}
-			$srcuri = "?width=" . $video_width . "&height=" . $video_height . "&file=";
-			echo "var filesdirpath = '$filesdirpath';\n";
-			echo "var srcuri = '$srcuri';\n";
-			echo "var usethumb = " . SNAPSHOTHISTORY_THUMB . ";\n";
-			?>
-			var filename;
-			if (usethumb == 1)
-				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '_thumb';
-			else
-				filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
-			var videouri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
-			var videouri_get = new String(videouri);
-			if (urlExists(videouri_get + '.mp4')) {
-				videouri_get += '.mp4';
-				videouri_get = videouri_get.replace(/\//g, "%2F");
-				srcuri = 'mp4.php' + srcuri + videouri_get + '&back=no';
-			}
-			else if (urlExists(videouri_get + '.swf')) {
-				videouri_get += '.swf';
-				videouri_get = videouri_get.replace(/\//g, "%2F");
-				srcuri = 'swf.php' + srcuri + videouri_get + '&back=no';
-			}
-			else {
-				videouri_get += '.avi';
-				videouri_get = videouri_get.replace(/\//g, "%2F");
-				srcuri = 'avi.php' + srcuri + videouri_get + '&back=no';
-			}
-		}
-		window.frames.myiframe.location.href = srcuri;
-	}
-}
-function updateClock() {
-	// Update the now variable
-	now = new Date();
-	
-	// If the selected day was in the future and now we got there update the display!
-	if (!todayselected						&&
-		sel.getDate() == now.getDate()		&&
-		sel.getMonth() == now.getMonth()	&&
-		sel.getFullYear() == now.getFullYear()) {
-		todayselected = true;
-		loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
-	}
-	// Update the sel variable for today in case we passed midnight
-	else if (todayselected)
-		sel = now;
-	
-	// Set the clock
-	document.forms[0].clock.value =	daynames[now.getDay()] + ' , ' +
-									LZ(now.getDate()) + ' ' +
-									cal.monthNames[now.getMonth()] + ' ' +
-									now.getFullYear() + ' , ' +
-									LZ(now.getHours()) + ':' +
-									LZ(now.getMinutes()) + ':' +
-									LZ(now.getSeconds());
-	window.setTimeout('updateClock()', 1000);
-}
-function onPrev() {
-	var tmpdate = new Date();
-	tmpdate = sel;
-	tmpdate.setDate(tmpdate.getDate()-1);
-	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
-}
-function onNext() {
-	var tmpdate = new Date();
-	tmpdate = sel;
-	tmpdate.setDate(tmpdate.getDate()+1);
-	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
-}
-function positionCalendar() {
-	var CALENDARWIDTH = 154;
-	var pageW = document.documentElement.clientWidth;
-	var anchor2elem = document.getElementById('anchor2');
-	var anchor2OffsetX = anchor2elem.offsetLeft;
-	var offsetParent = anchor2elem.offsetParent;
-	while (offsetParent) {
-		anchor2OffsetX += offsetParent.offsetLeft;
-		offsetParent = offsetParent.offsetParent;
-	}
-	if (anchor2OffsetX + CALENDARWIDTH > pageW) {
-		var x = pageW - CALENDARWIDTH;
-		if (x < 0) x = 0;
-		cal.offsetX = x - anchor2OffsetX;
-	}
-	else
-		cal.offsetX = 0;
-}
+function LZ(x){return(x<0||x>9?"":"0")+x}
+document.write('<input id="DatePicker" type="date" value="' + now.getFullYear() + '-' + LZ(now.getMonth()+1) + '-' + LZ(now.getDate()) + '" />');
 //]]>
 </script>
+<a href="javascript:;" id="nextLink">&gt;</a>
+</span>
+<a href="javascript:;" id="todayLink"><?php echo TODAY;?></a>
+</form>
+</div>
+<br />
 <?php
 $srcuri = "snapshot.php?title=no&amp;menu=no&amp;clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
 if (intval(WIDTH) > intval(THUMBWIDTH))
@@ -203,10 +52,132 @@ if ($iframe_width < 380)
 if ($iframe_height < 330)
 	$iframe_height = 330;
 echo "<div style=\"text-align: center\">\n";
-echo "<iframe name=\"myiframe\" src=\"$srcuri\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" frameborder=\"0\">\n";
+echo "<iframe id=\"myiframe\" name=\"myiframe\" src=\"$srcuri\" style=\"border: 0; overflow: hidden;\" width=\"" . $iframe_width . "\" height=\"" . $iframe_height . "\" >\n";
 echo "<p>Click <a href=\"snapshot.php\">here</a> to see today's sequence of snapshots</p>\n";
 echo "</iframe>\n";
 echo "</div>\n";
 ?>
+<script type="text/javascript">
+//<![CDATA[
+function urlExists(url) {
+	var ajax = new XMLHttpRequest(); 
+	ajax.open('HEAD', url, false); // sync. call
+	ajax.send(null);
+	return ajax.status != 404;
+}
+function loadIFrame(y,m,d) {
+	now = new Date();
+	sel.setFullYear(y,m-1,d);
+	if (sel.getDate() == now.getDate() &&
+		sel.getMonth() == now.getMonth() &&
+		sel.getFullYear() == now.getFullYear()) {
+		todayselected = true;
+		<?php
+		$srcuri = "snapshot.php?title=no&menu=no&clickurl=" . urlencode("snapshotfull.php?clickurl=snapshothistory.php");
+		echo "var srcuri = '$srcuri';\n";
+		?>
+	}
+	else {
+		todayselected = false;
+		<?php
+		if (SNAPSHOTHISTORY_THUMB == 1)
+		{
+			$video_width = THUMBWIDTH;
+			$video_height = THUMBHEIGHT;
+		}
+		else
+		{
+			$video_width = WIDTH;
+			$video_height = HEIGHT;
+		}
+		$srcuri = "?width=" . $video_width . "&height=" . $video_height . "&file=";
+		echo "var filesdirpath = '$filesdirpath';\n";
+		echo "var srcuri = '$srcuri';\n";
+		echo "var usethumb = " . SNAPSHOTHISTORY_THUMB . ";\n";
+		?>
+		var filename;
+		if (usethumb == 1)
+			filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d) + '_thumb';
+		else
+			filename = 'shot' + '_' + y + '_' + LZ(m) + '_' + LZ(d);
+		var videouri = filesdirpath + '/' + y + '/' + LZ(m) + '/' + LZ(d) + '/' + filename;
+		var videouri_get = new String(videouri);
+		if (urlExists(videouri_get + '.mp4')) {
+			videouri_get += '.mp4';
+			videouri_get = videouri_get.replace(/\//g, "%2F");
+			srcuri = 'mp4.php' + srcuri + videouri_get + '&back=no';
+		}
+		else if (urlExists(videouri_get + '.swf')) {
+			videouri_get += '.swf';
+			videouri_get = videouri_get.replace(/\//g, "%2F");
+			srcuri = 'swf.php' + srcuri + videouri_get + '&back=no';
+		}
+		else {
+			videouri_get += '.avi';
+			videouri_get = videouri_get.replace(/\//g, "%2F");
+			srcuri = 'avi.php' + srcuri + videouri_get + '&back=no';
+		}
+	}
+	document.getElementById('myiframe').src = srcuri;
+}
+function updateDates() {
+	// Update the now variable
+	now = new Date();
+	
+	// If the selected day was in the future and now we got there update the display!
+	if (!todayselected						&&
+		sel.getDate() == now.getDate()		&&
+		sel.getMonth() == now.getMonth()	&&
+		sel.getFullYear() == now.getFullYear()) {
+		todayselected = true;
+		loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
+	}
+	// Update the sel variable for today in case we passed midnight
+	else if (todayselected)
+		sel = now;
+	
+	// Call us again
+	window.setTimeout('updateDates()', 1000);
+}
+function updateDatePicker(y,m,d) {
+	document.getElementById('DatePicker').value = y + '-' + LZ(m) + '-' + LZ(d);
+}
+document.getElementById('prevLink').addEventListener("click", function(ev) {
+	ev.preventDefault();
+	var tmpdate = new Date();
+	tmpdate = sel;
+	tmpdate.setDate(tmpdate.getDate()-1);
+	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+	updateDatePicker(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+}, false);
+document.getElementById('nextLink').addEventListener("click", function(ev) {
+	ev.preventDefault();
+	var tmpdate = new Date();
+	tmpdate = sel;
+	tmpdate.setDate(tmpdate.getDate()+1);
+	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+	updateDatePicker(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+}, false);
+document.getElementById('todayLink').addEventListener("click", function(ev) {
+	ev.preventDefault();
+	loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
+	updateDatePicker(now.getFullYear(),now.getMonth()+1,now.getDate());
+}, false);
+document.getElementById('DatePicker').addEventListener("input", function(ev) {
+	if (ev.target.value == '') {// if pressing X in date picker
+		loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
+	}
+	else {
+		var parts = ev.target.value.split('-'); // parse date in yyyy-mm-dd format
+		parts[0] = parseInt(parts[0], 10);
+		parts[1] = parseInt(parts[1], 10);
+		parts[2] = parseInt(parts[2], 10);
+		if (parts[0] > 0 && parts[1] > 0 && parts[2] > 0)
+			loadIFrame(parts[0],parts[1],parts[2]);
+	}
+}, false);
+updateDates();
+//]]>
+</script>
 </body>
 </html>

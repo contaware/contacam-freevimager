@@ -6064,6 +6064,7 @@ BOOL CVideoDeviceDoc::MicroApacheUpdateWebFiles(CString sAutoSaveDir)
 	::DeleteFile(sAutoSaveDir + _T("summary.php"));
 	::DeleteFile(sAutoSaveDir + _T("summarynav.php"));
 	::DeleteFile(sAutoSaveDir + _T("separator.php"));
+	::DeleteFile(sAutoSaveDir + _T("js\\calendarpopup.js"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\hide_black.gif"));
 	::DeleteFile(sAutoSaveDir + _T("styles\\show_white.gif"));
