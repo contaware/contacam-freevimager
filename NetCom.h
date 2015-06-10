@@ -799,9 +799,6 @@ protected:
 	// The Socket Handle
 	SOCKET m_hSocket;
 
-	// Socket handle serialization object
-	CRITICAL_SECTION m_csSocket;
-
 	// The lParam to send with the Messages
 	LPARAM m_lParam;
 

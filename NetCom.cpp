@@ -364,8 +364,6 @@ int CNetCom::CMsgThread::Work()
 						// Set flag
 						bInitConnectionShutdown = TRUE;
 
-						::EnterCriticalSection(&m_pNetCom->m_csSocket);
-
 						// Enable only FD_CLOSE events at this point
 						if (::WSAEventSelect(m_pNetCom->m_hSocket, (WSAEVENT)m_pNetCom->m_hNetEvent, FD_CLOSE) == SOCKET_ERROR)
 							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEventSelect()"));
@@ -373,8 +371,6 @@ int CNetCom::CMsgThread::Work()
 						// Shutdown SD_BOTH
 						if (::shutdown(m_pNetCom->m_hSocket, SD_BOTH) == SOCKET_ERROR)
 							m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
-
-						::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					}
 				}
 				break;
@@ -438,13 +434,11 @@ int CNetCom::CMsgThread::Work()
 				WSANETWORKEVENTS NetworkEvents;
 				if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 				{
-					::EnterCriticalSection(&m_pNetCom->m_csSocket);
 					if (::WSAEnumNetworkEvents(	m_pNetCom->m_hSocket, 
 												m_pNetCom->m_hNetEvent,
 												&NetworkEvents) == SOCKET_ERROR)
 					{
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEnumNetworkEvents()"));
-						::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 						if (m_pNetCom->m_bMainServer) 
 							m_pNetCom->m_bServerListening = FALSE;
 						if (!m_pNetCom->m_bServer)
@@ -461,7 +455,6 @@ int CNetCom::CMsgThread::Work()
 					}
 					else
 					{
-						::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 						if (NetworkEvents.lNetworkEvents & FD_ACCEPT)
 						{
 							if (m_pNetCom->m_pMsgOut)
@@ -871,8 +864,6 @@ int CNetCom::CMsgThread::Work()
 								// transmitting is not allowed!
 								m_pNetCom->ShutdownTxThread();
 
-								::EnterCriticalSection(&m_pNetCom->m_csSocket);
-
 								// Enable only FD_READ events at this point; on Wine that's needed because
 								// another FD_CLOSE event is fired when calling shutdown() and this would
 								// create an infinite loop!
@@ -882,8 +873,6 @@ int CNetCom::CMsgThread::Work()
 								// Shutdown SD_SEND
 								if (::shutdown(m_pNetCom->m_hSocket, SD_SEND) == SOCKET_ERROR)
 									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" shutdown()"));
-
-								::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 
 								// Next Step is entering the case WAIT_TIMEOUT.
 								// This is to let finish reading remaining data!
@@ -981,7 +970,6 @@ int CNetCom::CRxThread::Work()
 		
 			// Overlapped Event
 			case WAIT_OBJECT_0 + 1 :
-				::EnterCriticalSection(&m_pNetCom->m_csSocket);
 				bResult = ::WSAGetOverlappedResult(m_pNetCom->m_hSocket, &m_pNetCom->m_ovRx, &NumberOfBytesReceived, TRUE, &Flags);
 				::WSAResetEvent(m_pNetCom->m_ovRx.hEvent);
 
@@ -989,7 +977,6 @@ int CNetCom::CRxThread::Work()
 				if (!bResult)
 				{
 					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSARecv() or WSARecvFrom()"));
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pCurrentBuf)
 					{
 						delete m_pCurrentBuf;
@@ -998,7 +985,6 @@ int CNetCom::CRxThread::Work()
 				}
 				else
 				{
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pNetCom->m_pMsgOut)
 						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSARecv() or WSARecvFrom() with %d bytes"), NumberOfBytesReceived);
 				}
@@ -1169,8 +1155,6 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 	WSABuffer.buf = m_pCurrentBuf->GetBuf();
 	DWORD NumberOfBytesReceived = 0;
 
-	::EnterCriticalSection(&m_pNetCom->m_csSocket);
-
 	int nRecvRes;
 	if (m_pNetCom->IsDatagram())
 	{
@@ -1201,7 +1185,6 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 		int res = ::WSAGetLastError();
 		if (res == WSAEWOULDBLOCK || res == WSA_IO_PENDING)
 		{
-			::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 			if (m_pNetCom->m_pMsgOut)
 			{
 				if (res == WSAEWOULDBLOCK)
@@ -1216,14 +1199,12 @@ __forceinline void CNetCom::CRxThread::Read(UINT BufSize)
 				m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSARecvFrom()"));
 			else	
 				m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSARecv()"));
-			::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 			delete m_pCurrentBuf;
 			m_pCurrentBuf = NULL;
 		}	
 	}
 	else
 	{
-		::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 		if (m_pNetCom->m_pMsgOut)
 			m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Received %d bytes"), NumberOfBytesReceived);
 
@@ -1284,7 +1265,6 @@ int CNetCom::CTxThread::Work()
 
 			// Overlapped Event
 			case WAIT_OBJECT_0 + 1 :
-				::EnterCriticalSection(&m_pNetCom->m_csSocket);
 				bResult = ::WSAGetOverlappedResult(m_pNetCom->m_hSocket, &m_pNetCom->m_ovTx, &NumberOfBytesSent, TRUE, &Flags);
 				::WSAResetEvent(m_pNetCom->m_ovTx.hEvent);
 
@@ -1292,7 +1272,6 @@ int CNetCom::CTxThread::Work()
 				if (!bResult)
 				{
 					m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAGetOverlappedResult() of WSASend() or WSASendTo()"));
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pCurrentBuf)
 					{
 						delete m_pCurrentBuf;
@@ -1301,7 +1280,6 @@ int CNetCom::CTxThread::Work()
 				}
 				else
 				{
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pNetCom->m_pMsgOut)
 						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
 				}
@@ -1434,7 +1412,6 @@ void CNetCom::CTxThread::Write()
 				m_dwLastUpTime = ::timeGetTime();
 			}
 
-			::EnterCriticalSection(&m_pNetCom->m_csSocket);
 			int nSendRes;
 			if (m_pNetCom->IsDatagram() &&
 				!SOCKADDRANY(m_pCurrentBuf->GetAddrPtr()))
@@ -1464,7 +1441,6 @@ void CNetCom::CTxThread::Write()
 				int res = ::WSAGetLastError();
 				if (res == WSAEWOULDBLOCK || res == WSA_IO_PENDING)
 				{
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					if (m_pNetCom->m_pMsgOut)
 					{
 						if (res == WSAEWOULDBLOCK)
@@ -1480,14 +1456,12 @@ void CNetCom::CTxThread::Write()
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASendTo()"));
 					else
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSASend()"));
-					::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 				}
 			}
 			else
 			{
-				::LeaveCriticalSection(&m_pNetCom->m_csSocket);
 				if (m_pNetCom->m_pMsgOut)
 					m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Sent %d bytes"), NumberOfBytesSent);
 
@@ -1566,9 +1540,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_hSocket					= INVALID_SOCKET;
 	m_hRxMsgTriggerEvent		= NULL;
 	m_hOwnerWnd					= NULL;
-
-	// Initialize the Socket Handle Serialization Object
-	::InitializeCriticalSection(&m_csSocket);
 
 	// Pointers
 	m_pParseProcess				= NULL;
@@ -1725,8 +1696,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 CNetCom::~CNetCom()
 {
 	Close();
-
-	::DeleteCriticalSection(&m_csSocket);
 
 	// Close the Events
 	if (m_ovRx.hEvent != NULL)
@@ -3282,19 +3251,14 @@ BOOL CNetCom::InitEvents()
 {
 	if (m_hSocket != INVALID_SOCKET)
 	{
-		::EnterCriticalSection(&m_csSocket);
 		if (::WSAEventSelect(m_hSocket, (WSAEVENT)m_hNetEvent,
 						FD_READ | FD_WRITE | FD_OOB | FD_ACCEPT | FD_CONNECT | FD_CLOSE) == SOCKET_ERROR)
 		{
 			ProcessWSAError(GetName() + _T(" WSAEventSelect()"));
-			::LeaveCriticalSection(&m_csSocket);
 			return FALSE;
 		}
 		else
-		{
-			::LeaveCriticalSection(&m_csSocket);
 			return TRUE;
-		}
 	}
 	else
 		return FALSE;
