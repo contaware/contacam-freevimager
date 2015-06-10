@@ -66,8 +66,13 @@ function urlExists(url) {
 	return ajax.status != 404;
 }
 function loadIFrame(y,m,d) {
+	// Update the now variable
 	now = new Date();
+	
+	// Update the sel variable
 	sel.setFullYear(y,m-1,d);
+	
+	// Today selected?
 	if (sel.getDate() == now.getDate() &&
 		sel.getMonth() == now.getMonth() &&
 		sel.getFullYear() == now.getFullYear()) {
@@ -120,27 +125,32 @@ function loadIFrame(y,m,d) {
 	}
 	document.getElementById('myiframe').src = srcuri;
 }
+function updateDatePicker() {
+	document.getElementById('DatePicker').value = sel.getFullYear() + '-' + LZ(sel.getMonth()+1) + '-' + LZ(sel.getDate());
+}
 function updateDates() {
 	// Update the now variable
 	now = new Date();
 	
-	// If the selected day was in the future and now we got there update the display!
+	// If the selected day was in the future and now we got there -> update!
 	if (!todayselected						&&
 		sel.getDate() == now.getDate()		&&
 		sel.getMonth() == now.getMonth()	&&
 		sel.getFullYear() == now.getFullYear()) {
-		todayselected = true;
 		loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
+		updateDatePicker();
 	}
-	// Update the sel variable for today in case we passed midnight
-	else if (todayselected)
+	// If today selected and we passed midnight -> update!
+	else if (	todayselected						&&
+				!(sel.getDate() == now.getDate()	&&
+				sel.getMonth() == now.getMonth()	&&
+				sel.getFullYear() == now.getFullYear())) {
 		sel = now;
+		updateDatePicker();
+	}
 	
 	// Call us again
 	window.setTimeout('updateDates()', 1000);
-}
-function updateDatePicker(y,m,d) {
-	document.getElementById('DatePicker').value = y + '-' + LZ(m) + '-' + LZ(d);
 }
 document.getElementById('prevLink').addEventListener("click", function(ev) {
 	ev.preventDefault();
@@ -148,7 +158,7 @@ document.getElementById('prevLink').addEventListener("click", function(ev) {
 	tmpdate = sel;
 	tmpdate.setDate(tmpdate.getDate()-1);
 	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
-	updateDatePicker(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+	updateDatePicker();
 }, false);
 document.getElementById('nextLink').addEventListener("click", function(ev) {
 	ev.preventDefault();
@@ -156,12 +166,12 @@ document.getElementById('nextLink').addEventListener("click", function(ev) {
 	tmpdate = sel;
 	tmpdate.setDate(tmpdate.getDate()+1);
 	loadIFrame(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
-	updateDatePicker(tmpdate.getFullYear(),tmpdate.getMonth()+1,tmpdate.getDate());
+	updateDatePicker();
 }, false);
 document.getElementById('todayLink').addEventListener("click", function(ev) {
 	ev.preventDefault();
 	loadIFrame(now.getFullYear(),now.getMonth()+1,now.getDate());
-	updateDatePicker(now.getFullYear(),now.getMonth()+1,now.getDate());
+	updateDatePicker();
 }, false);
 document.getElementById('DatePicker').addEventListener("input", function(ev) {
 	if (ev.target.value == '') {// if pressing X in date picker
