@@ -448,10 +448,6 @@ public:
 	BOOL IsRxLogging();
 	BOOL IsTxLogging();
 
-	// Set Msg, Rx and Tx threads priority,
-	// to be done before starting them!
-	__forceinline void SetThreadsPriority(int nThreadsPriority) {m_nThreadsPriority = nThreadsPriority;};
-
 	// Set the new max Tx packet size
 	void SetMaxTxPacketSize(UINT uiNewSize);
 	
@@ -743,9 +739,6 @@ protected:
 
 	// Max Rx Fifo Size
 	UINT m_uiMaxRxFifoSize;
-
-	// Threads priority
-	int m_nThreadsPriority;
 
 	// Socket Family
 	volatile int m_nSocketFamily;

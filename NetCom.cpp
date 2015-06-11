@@ -171,9 +171,6 @@ int CNetCom::CMsgThread::Work()
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread started (ID = 0x%08X)"), GetId());
 	BOOL bInitConnectionShutdown = FALSE; // Did this Socket Initiate the Connection Shutdown
 
-	// Set thread priority
-	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
-
 	for(;;)
 	{
 		// Main wait function
@@ -552,9 +549,6 @@ int CNetCom::CRxThread::Work()
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" RxThread started (ID = 0x%08X)"), GetId());
 
-	// Set thread priority
-	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
-
 	for(;;)
 	{
 		if (m_pNetCom->m_uiRxMsgTrigger == 0)
@@ -801,9 +795,6 @@ int CNetCom::CTxThread::Work()
 
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" TxThread started (ID = 0x%08X)"), GetId());
-
-	// Set thread priority
-	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
 
 	for (;;)
 	{
@@ -1130,7 +1121,6 @@ CNetCom::CNetCom()
 	m_nIDOOB = 0;
 	m_nIDClose = 0;
 	m_nIDRx = 0;
-	m_nThreadsPriority = THREAD_PRIORITY_NORMAL;
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
