@@ -245,12 +245,8 @@ public:
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
-					UINT uiMaxTxPacketSize,				// The maximum size for transmitted packets,
-														// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
 					UINT uiRxPacketTimeout,				// After this timeout a Packet is returned
 														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
-					UINT uiTxPacketTimeout,				// After this timeout a Packet is sent
-														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily);					// Socket family
 
@@ -364,23 +360,11 @@ public:
 	// Socket Family
 	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
 
-	// Set the new max Tx packet size
-	void SetMaxTxPacketSize(UINT uiNewSize);
-	
-	// Return the max Tx packet size value
-	__forceinline UINT GetMaxTxPacketSize() const {return m_uiMaxTxPacketSize;};
-
 	// Set the new Rx message trigger
 	void SetRxMsgTriggerSize(UINT uiNewSize);
 	
 	// Return the Rx message trigger value
 	__forceinline UINT GetRxMsgTriggerSize() const {return m_uiRxMsgTrigger;};
-
-	// Set the new Tx packet timeout
-	UINT SetTxTimeout(UINT uiNewTimeout);
-
-	// Return the Tx packet timeout
-	__forceinline UINT GetTxTimeout() const {return (m_uiTxPacketTimeout == INFINITE) ? 0 : m_uiTxPacketTimeout;};
 
 	// Set the new Rx packet timeout
 	UINT SetRxTimeout(UINT uiNewTimeout);
@@ -405,9 +389,7 @@ protected:
 				HANDLE hReadEvent,
 				UINT uiRxMsgTrigger,
 				HANDLE hRxMsgTriggerEvent,
-				UINT uiMaxTxPacketSize,
 				UINT uiRxPacketTimeout,
-				UINT uiTxPacketTimeout,
 				CMsgOut* pMsgOut);
 	
 	// Initialize the Network Events FD_READ, FD_CONNECT and FD_CLOSE
@@ -480,18 +462,10 @@ protected:
 	// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 	UINT m_uiRxMsgTrigger;
 
-	// Maximum Tx Packet Size, 
-	// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
-	UINT m_uiMaxTxPacketSize;
-
 	// After this timeout a Packet is returned
 	// even if the m_uiRxMsgTrigger size is not reached
 	// (A zero meens INFINITE Timeout).
 	UINT m_uiRxPacketTimeout;
-
-	// After this timeout a Packet is sent
-	// even if no Write Event Happened (A zero meens INFINITE Timeout).
-	UINT m_uiTxPacketTimeout;
 
 	// Is the Client Connected?
 	volatile BOOL m_bClientConnected;
@@ -546,9 +520,6 @@ protected:
 	// ShutdownConnection_NoBlocking() function and handled
 	// by the message thread
 	HANDLE m_hStartConnectionShutdownEvent;
-	
-	// The Tx Timeout has changed
-	HANDLE m_hTxTimeoutChangeEvent;
 
 	// The Rx Timeout has changed
 	HANDLE m_hRxTimeoutChangeEvent;
@@ -561,10 +532,9 @@ protected:
 									// m_ovRx.hEvent
 									// m_hRxEvent
 									// m_hRxTimeoutChangeEvent
-	HANDLE m_hTxEventArray[4];		// m_TxThread.GetKillEvent() -> (highest priority)
+	HANDLE m_hTxEventArray[3];		// m_TxThread.GetKillEvent() -> (highest priority)
 									// m_ovTx.hEvent
 									// m_hTxEvent
-									// m_hTxTimeoutChangeEvent
 
 	// Rx Fifo and Tx Fifo Pointers
 	BUFQUEUE* m_pRxFifo;

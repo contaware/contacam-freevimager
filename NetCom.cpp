@@ -619,7 +619,7 @@ int CNetCom::CTxThread::Work()
 	for (;;)
 	{
 		// Main wait function
-		Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hTxEventArray, FALSE, m_pNetCom->m_uiTxPacketTimeout);
+		Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hTxEventArray, FALSE, INFINITE);
 		
 		switch (Event)
 		{
@@ -672,17 +672,9 @@ int CNetCom::CTxThread::Work()
 				::ResetEvent(m_pNetCom->m_hTxEvent);
 				if (m_pCurrentBuf == NULL) // If not sending
 					Write();
-				break; 
-
-			// Timeout has been changed
-			case WAIT_OBJECT_0 + 3 :
-				::ResetEvent(m_pNetCom->m_hTxTimeoutChangeEvent);
 				break;
 
-			// Timeout
-			case WAIT_TIMEOUT :
-				if (m_pCurrentBuf == NULL) // If not sending
-					Write();
+			default :
 				break;
 		}
 	}
@@ -834,7 +826,6 @@ CNetCom::CNetCom()
 	m_hTxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hRxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hStartConnectionShutdownEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hTxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hRxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hConnectEvent					= NULL;
 	m_hConnectFailedEvent			= NULL;
@@ -852,7 +843,6 @@ CNetCom::CNetCom()
 	m_hTxEventArray[0]			= m_pTxThread ? m_pTxThread->GetKillEvent() : NULL;		// highest priority
 	m_hTxEventArray[1]			= m_ovTx.hEvent;
 	m_hTxEventArray[2]			= m_hTxEvent;
-	m_hTxEventArray[3]			= m_hTxTimeoutChangeEvent;
 
 	// Is the Client Connected?
 	m_bClientConnected			= FALSE;
@@ -868,11 +858,8 @@ CNetCom::CNetCom()
 
 	// Number of Rx Bytes that trigger a WM_NETCOM_RX Msg
 	m_uiRxMsgTrigger = 0;
-
-	m_uiMaxTxPacketSize = NETCOM_MAX_TX_BUFFER_SIZE;
 	
 	m_uiRxPacketTimeout = INFINITE;
-	m_uiTxPacketTimeout = INFINITE;
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
@@ -921,12 +908,6 @@ CNetCom::~CNetCom()
 		::ResetEvent(m_hStartConnectionShutdownEvent);
 		::CloseHandle(m_hStartConnectionShutdownEvent);
 		m_hStartConnectionShutdownEvent = NULL;
-	}
-	if (m_hTxTimeoutChangeEvent != NULL)
-	{
-		::ResetEvent(m_hTxTimeoutChangeEvent);
-		::CloseHandle(m_hTxTimeoutChangeEvent);
-		m_hTxTimeoutChangeEvent = NULL;
 	}
 	if (m_hRxTimeoutChangeEvent != NULL)
 	{
@@ -996,12 +977,8 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 														// Upper bound for this value is NETCOM_MAX_RX_BUFFER_SIZE.
 					HANDLE hRxMsgTriggerEvent,			// Handle to an Event Object that will get an Event
 														// each time uiRxMsgTrigger bytes arrived.
-					UINT uiMaxTxPacketSize,				// The maximum size for transmitted packets,
-														// upper bound for this value is NETCOM_MAX_TX_BUFFER_SIZE.
 					UINT uiRxPacketTimeout,				// After this timeout a Packet is returned
 														// even if the uiRxMsgTrigger size is not reached (A zero meens INFINITE Timeout).
-					UINT uiTxPacketTimeout,				// After this timeout a Packet is sent
-														// even if no Write Event Happened (A zero meens INFINITE Timeout).
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily)					// Socket family
 {
@@ -1027,10 +1004,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 		m_nSocketFamily = AF_INET; // Default to IP4
 	ppeer_addr->sa_family = plocal_addr->sa_family = (unsigned short)m_nSocketFamily; // Init family
 
-	// Limit the Maximum size of the sent packets
-	if ((uiMaxTxPacketSize == 0) || (uiMaxTxPacketSize > NETCOM_MAX_TX_BUFFER_SIZE))
-		uiMaxTxPacketSize = NETCOM_MAX_TX_BUFFER_SIZE;
-
 	// Limit the Trigger Size
 	if (uiRxMsgTrigger > NETCOM_MAX_RX_BUFFER_SIZE)
 		uiRxMsgTrigger = NETCOM_MAX_RX_BUFFER_SIZE;
@@ -1038,8 +1011,6 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 	// Timeouts
 	if (uiRxPacketTimeout == 0)
 		uiRxPacketTimeout = INFINITE;
-	if (uiTxPacketTimeout == 0)
-		uiTxPacketTimeout = INFINITE;
 
 	// Init Message Out if not supplied
 	if (pMsgOut == NULL)
@@ -1054,7 +1025,7 @@ BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 	InitVars(	pParseProcess,
 				sPeerAddress, uiPeerPort, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent,
-				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
+				uiRxMsgTrigger, hRxMsgTriggerEvent, uiRxPacketTimeout, pMsgOut);
 
 	// Init the Parser
 	if (m_pParseProcess)
@@ -1446,12 +1417,12 @@ int CNetCom::Write(BYTE* Data, int Size)
 		while (SentSize < Size)
 		{
 			CBuf* pBuf;
-			if ((Size - SentSize) > (int)m_uiMaxTxPacketSize)
+			if ((Size - SentSize) > (int)NETCOM_MAX_TX_BUFFER_SIZE)
 			{
-				pBuf = new CBuf(m_uiMaxTxPacketSize);
-				memcpy((void*)(pBuf->GetBuf()), (void*)(Data+SentSize), m_uiMaxTxPacketSize);
-				pBuf->SetMsgSize(m_uiMaxTxPacketSize);
-				SentSize += m_uiMaxTxPacketSize;
+				pBuf = new CBuf(NETCOM_MAX_TX_BUFFER_SIZE);
+				memcpy((void*)(pBuf->GetBuf()), (void*)(Data+SentSize), NETCOM_MAX_TX_BUFFER_SIZE);
+				pBuf->SetMsgSize(NETCOM_MAX_TX_BUFFER_SIZE);
+				SentSize += NETCOM_MAX_TX_BUFFER_SIZE;
 			}
 			else
 			{
@@ -1720,9 +1691,7 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 						HANDLE hReadEvent,
 						UINT uiRxMsgTrigger,
 						HANDLE hRxMsgTriggerEvent,
-						UINT uiMaxTxPacketSize,
 						UINT uiRxPacketTimeout,
-						UINT uiTxPacketTimeout,
 						CMsgOut* pMsgOut)
 {
 	// Init the Fifos
@@ -1743,9 +1712,7 @@ void CNetCom::InitVars(	CParseProcess* pParseProcess,
 	m_hReadEvent = hReadEvent;
 	m_uiRxMsgTrigger = uiRxMsgTrigger;
 	m_hRxMsgTriggerEvent = hRxMsgTriggerEvent;
-	m_uiMaxTxPacketSize = uiMaxTxPacketSize;
 	m_uiRxPacketTimeout = uiRxPacketTimeout;
-	m_uiTxPacketTimeout = uiTxPacketTimeout;
 	m_pMsgOut = pMsgOut;
 }
 
@@ -1776,30 +1743,12 @@ void CNetCom::ShutdownConnection_NoBlocking()
 	}
 }
 
-void CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
-{
-	// Limit the Maximum size of the sent packets
-	if ((uiNewSize == 0) || (uiNewSize > NETCOM_MAX_TX_BUFFER_SIZE))
-		uiNewSize = NETCOM_MAX_TX_BUFFER_SIZE;
-	m_uiMaxTxPacketSize = uiNewSize;
-}
-
 void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
 {
 	// Limit the Trigger Size
 	if (uiNewSize > NETCOM_MAX_RX_BUFFER_SIZE)
 		uiNewSize = NETCOM_MAX_RX_BUFFER_SIZE;
 	m_uiRxMsgTrigger = uiNewSize;
-}
-
-UINT CNetCom::SetTxTimeout(UINT uiNewTimeout)
-{
-	if (uiNewTimeout == 0)
-		uiNewTimeout = INFINITE;
-	UINT uiOldTxTimeout = m_uiTxPacketTimeout;
-	m_uiTxPacketTimeout = uiNewTimeout;
-	::SetEvent(m_hTxTimeoutChangeEvent); // Release the Tx thread to change the timeout
-	return uiOldTxTimeout;
 }
 
 UINT CNetCom::SetRxTimeout(UINT uiNewTimeout)
