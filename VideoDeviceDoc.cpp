@@ -3183,7 +3183,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 
 	// Init TCP
 	return pNetCom->Init(
-					FALSE,					// Be Client
 					NULL,					// The Optional Owner Window to which send the Network Events.
 					NULL,					// The lParam to send with the Messages
 					NULL,					// The Optional Rx Buffer.
@@ -3208,13 +3207,11 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 					bSignalEvents ? GetHttpReadEvent() : NULL,// Handle to an Event Object that will get Read Events.
 					NULL,					// Handle to an Event Object that will get Write Events.
 					NULL,					// Handle to an Event Object that will get OOB Events.
-					NULL,					// Handle to an Event Object that will get an event when 
-											// all connection of a server have been closed.
 					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// A set value means that instead of setting an event it is reset.
 					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
 											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
 											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
@@ -3223,7 +3220,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
 											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
 											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-											// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
 											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
@@ -6262,7 +6258,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
 	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
 	if (NetCom.Init(
-				FALSE,					// Be Client
 				NULL,					// The Optional Owner Window to which send the Network Events.
 				NULL,					// The lParam to send with the Messages
 				NULL,					// The Optional Rx Buffer.
@@ -6287,13 +6282,11 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 				NULL,					// Handle to an Event Object that will get Read Events.
 				NULL,					// Handle to an Event Object that will get Write Events.
 				NULL,					// Handle to an Event Object that will get OOB Events.
-				NULL,					// Handle to an Event Object that will get an event when 
-										// all connection of a server have been closed.
 				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 										// A set value means that instead of setting an event it is reset.
 				0,						// A combination of network events:
-										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+										// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 										// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
 										// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
 										// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
@@ -6302,7 +6295,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 										// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
 										// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
 										// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-										// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
 				0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 										// (if hRxMsgTriggerEvent != NULL).
 										// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
@@ -6394,7 +6386,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 		::ResetEvent(hEventArray[0]);
 		::ResetEvent(hEventArray[1]);
 		if (NetCom.Init(
-					FALSE,					// Be Client
 					NULL,					// The Optional Owner Window to which send the Network Events.
 					NULL,					// The lParam to send with the Messages
 					NULL,					// The Optional Rx Buffer.
@@ -6419,13 +6410,11 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 					NULL,					// Handle to an Event Object that will get Read Events.
 					NULL,					// Handle to an Event Object that will get Write Events.
 					NULL,					// Handle to an Event Object that will get OOB Events.
-					NULL,					// Handle to an Event Object that will get an event when 
-											// all connection of a server have been closed.
 					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// A set value means that instead of setting an event it is reset.
 					0,						// A combination of network events:
-											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+											// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 											// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
 											// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
 											// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
@@ -6434,7 +6423,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 											// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
 											// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
 											// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-											// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
 					0,/*=uiRxMsgTrigger*/	// The number of bytes that triggers an hRxMsgTriggerEvent 
 											// (if hRxMsgTriggerEvent != NULL).
 											// And/Or the number of bytes that triggers a WM_NETCOM_RX Message

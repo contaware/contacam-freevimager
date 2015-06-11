@@ -65,12 +65,11 @@
 #define WM_NETCOM_CONNECT_EVENT			WM_USER + 20	// Notification of completed connection or multipoint "join" operation
 #define WM_NETCOM_CONNECTFAILED_EVENT	WM_USER + 21	// Notification of connection failure
 #define WM_NETCOM_CLOSE_EVENT			WM_USER + 22	// Notification of socket closure 
-#define WM_NETCOM_ALLCLOSE_EVENT		WM_USER + 23	// Notification that all connection have been closed
-#define WM_NETCOM_RX					WM_USER + 24	// m_uiRxMsgTrigger characters were received and placed in the input buffer.
+#define WM_NETCOM_RX					WM_USER + 23	// m_uiRxMsgTrigger characters were received and placed in the input buffer.
 														// The last received char is transmitted in the WPARAM of the message.
 														// (This may be useful if m_uiRxMsgTrigger is set to 1)
-#define WM_NETCOM_RXBUF_ADD				WM_USER + 25	// This Message is sent when a packet is added to the RxBuf
-#define WM_NETCOM_TXBUF_ADD				WM_USER + 26	// This Message is sent when a packet is added to the TxBuf
+#define WM_NETCOM_RXBUF_ADD				WM_USER + 24	// This Message is sent when a packet is added to the RxBuf
+#define WM_NETCOM_TXBUF_ADD				WM_USER + 25	// This Message is sent when a packet is added to the TxBuf
 
 ////////////////////////////
 // Event Masks From WinSock2
@@ -108,10 +107,7 @@
 // #define FD_MAX_EVENTS				10
 // #define FD_ALL_EVENTS				((1 << FD_MAX_EVENTS) - 1)
 
-#define FD_ALLCLOSE_BIT					11
-#define FD_ALLCLOSE						(1 << FD_ALLCLOSE_BIT)
-
-#define FD_CONNECTFAILED_BIT			12
+#define FD_CONNECTFAILED_BIT			11
 #define FD_CONNECTFAILED				(1 << FD_CONNECTFAILED_BIT)
 
 
@@ -338,7 +334,7 @@ public:
 	friend class CTxThread;
 
 	// Contruction and Destruction
-	CNetCom(CNetCom* pMainServer = NULL, LPCRITICAL_SECTION pcsServers = NULL);
+	CNetCom();
 	virtual	~CNetCom();
 
 	// Host and Port to IP4 or IP6 address
@@ -348,9 +344,8 @@ public:
 	// Enumerate the LAN
 	static DWORD EnumLAN(CStringArray* pHosts);
 
-	// Open a Network Connection or Start a Server											
-	BOOL Init(		BOOL bServer,						// Server or Client?
-					HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
+	// Open a Network Connection								
+	BOOL Init(		HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
 					LPARAM	lParam,						// The lParam to send with the Messages
 					BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
 					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
@@ -374,13 +369,11 @@ public:
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
 					HANDLE hWriteEvent,					// Handle to an Event Object that will get Write Events.
 					HANDLE hOOBEvent,					// Handle to an Event Object that will get OOB Events.
-					HANDLE hAllCloseEvent,				// Handle to an Event Object that will get an event when 
-														// all connection of a server have been closed.
 					long lResetEventMask,				// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// A set value means that instead of setting an event it is reset.
 					long lOwnerWndNetEvents,			// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
 														// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
 														// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
@@ -389,7 +382,6 @@ public:
 														// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
 														// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
 														// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data.
-														// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed.
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
 														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
@@ -408,8 +400,7 @@ public:
 					CMsgOut* pMsgOut,					// Message Class for Debug, Notice, Warning, Error and Critical Visualization.
 					int nSocketFamily);					// Socket family
 
-	// Close the Network Connection or Shutdown the Server,
-	// this function is blocking
+	// Close the Network Connection, this function is blocking
 	void Close();
 
 	// Start shutting down the connection,
@@ -453,11 +444,6 @@ public:
 	// Return the Peer Socket IP
 	CString GetPeerSockIP();
 
-	// Get the connected child servers of a main server.
-	// To get the first pass NULL as parameter, to get
-	// the next pass the previous child server pointer.
-	CNetCom* GetNextChildServer(CNetCom* pChildServer);
-
 	// Start Communication Threads
 	BOOL StartMsgThread();
 	BOOL StartRxThread();
@@ -473,11 +459,6 @@ public:
 	// This handle is used to trigger the TX Thread
 	// (The Write function shows how to use this handle)
 	__forceinline HANDLE GetTxEventHandle() const {return m_hTxEvent;};
-
-	// The TxToAllEventHandle is only used in server mode:
-	// The Main Server's message thread will catch this event
-	// and send a TxEvent to all child servers.
-	__forceinline HANDLE GetTxToAllEventHandle() const {return m_hTxToAllEvent;};
 
 	// Get The RxFifo, RxBuf, TxBuf and the TxFifo
 	__forceinline BUFQUEUE* GetRxFifo() const {return m_pRxFifo;};
@@ -578,23 +559,11 @@ public:
 	// the StrToByte (see below)
 	int WriteStr(LPCTSTR str, BOOL bEscapeSeq = FALSE);
 
-	// Return the number of open connections.
-	// For servers the number varies from zero up to 
-	// the maximum number of open connections.
-	// This functions returns 0 or 1 for clients.
-	int GetNumOpenConnections();
-
-	// Is the NetCom Object Configured as Server ?
-	__forceinline BOOL IsServer() const {return m_bServer;};
-
 	// Is the NetCom Object Configured as Stream (TCP) Client ?
-	__forceinline BOOL IsClient() const {return (!m_bServer && (m_nSocketType == SOCK_STREAM));};
+	__forceinline BOOL IsClient() const {return (m_nSocketType == SOCK_STREAM);};
 
 	// Is the NetCom Object Configured as Datagram (UDP) Client ?
-	__forceinline BOOL IsDatagram() const {return (!m_bServer && (m_nSocketType == SOCK_DGRAM));};
-
-	// Is Main Server Listening ?
-	__forceinline BOOL IsServerListening() const {return m_bServerListening;};
+	__forceinline BOOL IsDatagram() const {return (m_nSocketType == SOCK_DGRAM);};
 
 	// Is Client (Stream or Datagram) Connected ?
 	__forceinline BOOL IsClientConnected() const {return m_bClientConnected;}; 
@@ -605,19 +574,12 @@ public:
 	// Statistics
 	__forceinline UINT GetRxByteCount() const {return m_uiRxByteCount;};
 	__forceinline UINT GetTxByteCount() const {return m_uiTxByteCount;};
-
-	UINT GetTotalRxByteCount(); // Only useful for Servers
-	UINT GetTotalTxByteCount(); // Only useful for Servers
-	UINT GetTotalClosedConnectionsRxByteCount(); // Only useful for Servers
-	UINT GetTotalClosedConnectionsTxByteCount(); // Only useful for Servers
 	__forceinline UINT GetRxFifoSize() const {return (m_pRxFifo ? m_pRxFifo->GetCount() : 0);};
 	__forceinline UINT GetTxFifoSize() const {return (m_pTxFifo ? m_pTxFifo->GetCount() : 0);};
 	__forceinline UINT GetRxBufSize() const {return (m_pRxBuf ? m_pRxBuf->GetSize() : 0);};
 	__forceinline UINT GetTxBufSize() const {return (m_pTxBuf ? m_pTxBuf->GetSize() : 0);};
 
 	// Name of the CNetCom Object Instance:
-	// "NetCom Main Server"
-	// "NetCom Server"
 	// "NetCom Client"
 	// "NetCom Datagram"
 	CString GetName();
@@ -679,7 +641,6 @@ public:
 	WPARAM m_nIDWrite;
 	WPARAM m_nIDOOB;
 	WPARAM m_nIDClose;
-	WPARAM m_nIDAllClose;
 	WPARAM m_nIDRx;
 
 	// The Owner Window
@@ -693,8 +654,7 @@ protected:
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
 	// Initialize All User Parameters (Parameters from Init Function)
-	void InitVars(BOOL bServer,
-				HWND hOwnerWnd,
+	void InitVars(HWND hOwnerWnd,
 				LPARAM	lParam,
 				BUFARRAY* pRxBuf,
 				LPCRITICAL_SECTION pcsRxBufSync,
@@ -718,7 +678,6 @@ protected:
 				HANDLE hReadEvent,
 				HANDLE hWriteEvent,
 				HANDLE hOOBEvent,
-				HANDLE hAllCloseEvent,
 				long lResetEventMask,
 				long lOwnerWndNetEvents,
 				UINT uiRxMsgTrigger,
@@ -802,12 +761,6 @@ protected:
 	// The lParam to send with the Messages
 	LPARAM m_lParam;
 
-	// Pointer to the Main Server
-	CNetCom* m_pMainServer;
-
-	// The Servers: Array of CNetCom Child Servers Instances
-	NETCOMVECTOR m_Servers;
-
 	// The Socket Tyoe (SOCK_STREAM or SOCK_DGRAM)
 	int	m_nSocketType;
 
@@ -834,17 +787,6 @@ protected:
 	// even if no Write Event Happened (A zero meens INFINITE Timeout).
 	UINT m_uiTxPacketTimeout;
 
-	// Is this Class Instance a Server or a Client?
-	volatile BOOL m_bServer;
-
-	// Is this Class Instance a Main Listening Server
-	// (=has only a MsgThread and Creates Active Child Communication Servers)
-	// or an Active Child Communication Server?
-	volatile BOOL m_bMainServer;
-
-	// Is the Main Server Listening?
-	volatile BOOL m_bServerListening;
-
 	// Is the Client Connected?
 	volatile BOOL m_bClientConnected;
 
@@ -855,7 +797,6 @@ protected:
 	BOOL m_bFreeTxBufSync;
 	BOOL m_bFreeTxFifo;
 	BOOL m_bFreeTxFifoSync;
-	BOOL m_bFreeServersSync;
 	
 	// The Internet Addresses (IPs or Host Names)
 	CString m_sLocalAddress;
@@ -904,9 +845,6 @@ protected:
 	// The Message Thread will send the OOB Events
 	HANDLE m_hOOBEvent;
 
-	// The Message Thread will send the All Close Events
-	HANDLE m_hAllCloseEvent;
-
 	// The Message Thread will send the Rx Event
 	// when the FD_READ network event arrives
 	// This Event triggers the RX Thread
@@ -920,12 +858,6 @@ protected:
 	// The Event triggers the TX Thread
 	HANDLE m_hTxEvent;
 
-	// A User or the Write function of the Main Server
-	// set this this event.
-	// The Event triggers the Message Thread, which sets
-	// the m_hTxEvent for all Child Servers
-	HANDLE m_hTxToAllEvent;
-
 	// The m_hStartConnectionShutdownEvent is set by
 	// ShutdownConnection_NoBlocking() function and handled
 	// by the message thread
@@ -938,9 +870,8 @@ protected:
 	HANDLE m_hRxTimeoutChangeEvent;
 
 	// Event Arrays
-	HANDLE m_hMsgEventArray[4];		// m_MsgThread.GetKillEvent() -> (highest priority)
-									// m_hStartConnectionShutdownEvent 
-									// m_hWriteToAllEvent
+	HANDLE m_hMsgEventArray[3];		// m_MsgThread.GetKillEvent() -> (highest priority)
+									// m_hStartConnectionShutdownEvent
 									// m_hNetEvent
 	HANDLE m_hRxEventArray[4];		// m_RxThread.GetKillEvent() -> (highest priority)
 									// m_hRxEvent
@@ -962,10 +893,6 @@ protected:
 	LPCRITICAL_SECTION	m_pcsRxFifoSync;
 	LPCRITICAL_SECTION	m_pcsTxBufSync;
 	LPCRITICAL_SECTION	m_pcsTxFifoSync;
-	
-	// To Synchronize accesses to the m_pMainServer and its variables:
-	// m_Servers or m_uiRxByteCount and m_uiTxByteCount
-	LPCRITICAL_SECTION	m_pcsServersSync;
 
 	// Message Output
 	CMsgOut* m_pMsgOut;
@@ -974,8 +901,6 @@ protected:
 	// Statistics
 	volatile UINT m_uiRxByteCount;
 	volatile UINT m_uiTxByteCount;
-	volatile UINT m_uiTotalRemovedConnectionsRxByteCount;
-	volatile UINT m_uiTotalRemovedConnectionsTxByteCount;
 
 	// Enable / Disable use of the Rx and Tx Buffers
 	BOOL m_bRxBufEnabled;

@@ -245,20 +245,11 @@ void CNetCom::CMsgThread::SignalClosing()
 			::SetEvent(m_pNetCom->m_hCloseEvent);
 	}
 
-	// All Close Event
-	if (m_pNetCom->m_hAllCloseEvent && (m_pNetCom->GetNumOpenConnections() == 0))
-	{
-		if (m_pNetCom->m_lResetEventMask & FD_ALLCLOSE)
-			::ResetEvent(m_pNetCom->m_hAllCloseEvent);
-		else
-			::SetEvent(m_pNetCom->m_hAllCloseEvent);
-	}
-
 	// Send the Close Message to the Parent Window
 	if ((m_pNetCom->m_lOwnerWndNetEvents & FD_CLOSE) && m_pNetCom->m_hOwnerWnd)
 	{
 		::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_CLOSE_EVENT,
-			(WPARAM)(m_pNetCom->m_bServer ? m_pNetCom->m_pMainServer : m_pNetCom),
+			(WPARAM)m_pNetCom,
 			(LPARAM)m_pNetCom->m_lParam);
 
 		if (m_pNetCom->m_nIDClose)
@@ -266,73 +257,35 @@ void CNetCom::CMsgThread::SignalClosing()
 				(WPARAM)m_pNetCom->m_nIDClose, (LPARAM)NULL);
 
 	}
-
-	// Send the All Close Message to the Parent Window
-	if ((m_pNetCom->m_lOwnerWndNetEvents & FD_ALLCLOSE) &&
-			m_pNetCom->m_hOwnerWnd &&
-			(m_pNetCom->GetNumOpenConnections() == 0))
-	{
-		::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_ALLCLOSE_EVENT,
-			(WPARAM)(m_pNetCom->m_bServer ? m_pNetCom->m_pMainServer : m_pNetCom),
-			(LPARAM)m_pNetCom->m_lParam);
-
-		if (m_pNetCom->m_nIDAllClose)
-			::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-				(WPARAM)m_pNetCom->m_nIDAllClose, (LPARAM)NULL);
-	}
 }
 
 int CNetCom::CMsgThread::Work()
 {
 	DWORD Event;
-	sockaddr_in6 incoming_addr;
-	sockaddr* pincoming_addr = (sockaddr*)&incoming_addr;
-	INT incoming_addrlen;
-
 	if (m_pNetCom->m_pMsgOut)
 		m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread started (ID = 0x%08X)"), GetId());
-	memset(&incoming_addr, 0, sizeof(incoming_addr));
 	BOOL bInitConnectionShutdown = FALSE; // Did this Socket Initiate the Connection Shutdown
 
 	// Set thread priority
 	::SetThreadPriority(m_hThread, m_pNetCom->m_nThreadsPriority);
 
 	for(;;)
-	{	
-		int i;
-		int nMainTxFifoSize;
-
-		// Set the Listening Flag
-		if (m_pNetCom->m_bMainServer && (m_pNetCom->m_hSocket != INVALID_SOCKET))
-			m_pNetCom->m_bServerListening = TRUE;
-		else
-			m_pNetCom->m_bServerListening = FALSE;
-
+	{
 		// Main wait function
-		if (m_pNetCom->m_bMainServer)
-			Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hMsgEventArray, FALSE, m_pNetCom->m_uiTxPacketTimeout);
-		else if (m_bClosing && !bInitConnectionShutdown)
-			Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hMsgEventArray, FALSE, NETCOM_PEER_CONNECTION_CLOSE_TIMEOUT);
+		if (m_bClosing && !bInitConnectionShutdown)
+			Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hMsgEventArray, FALSE, NETCOM_PEER_CONNECTION_CLOSE_TIMEOUT);
 		else if (bInitConnectionShutdown)
-			Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hMsgEventArray, FALSE, NETCOM_CONNECTION_SHUTDOWN_TIMEOUT);
+			Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hMsgEventArray, FALSE, NETCOM_CONNECTION_SHUTDOWN_TIMEOUT);
 		else
-			Event = ::WaitForMultipleObjects(4, m_pNetCom->m_hMsgEventArray, FALSE, INFINITE);
+			Event = ::WaitForMultipleObjects(3, m_pNetCom->m_hMsgEventArray, FALSE, INFINITE);
 
 		switch (Event)
 		{
 			// Thread Shutdown Event
 			case WAIT_OBJECT_0 :
-				if (m_pNetCom->m_bMainServer) 
-					m_pNetCom->m_bServerListening = FALSE;
-				if (!m_pNetCom->m_bServer)
-					m_pNetCom->m_bClientConnected = FALSE;
+				m_pNetCom->m_bClientConnected = FALSE;
 				if (m_pNetCom->m_pMsgOut)
-				{
-					if (m_pNetCom->m_bMainServer)
-						m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
-					else
-						m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
-				}
+					m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended killed (ID = 0x%08X)"), GetId());
 				return 0;
 
 			// Start Connection Shutdown Event
@@ -374,63 +327,9 @@ int CNetCom::CMsgThread::Work()
 					}
 				}
 				break;
-			
-			case WAIT_OBJECT_0 + 2 :// tx to all child servers event
-				::ResetEvent(m_pNetCom->m_hTxToAllEvent);
-
-				// Only the Main Server should handle this event!
-				if (!m_pNetCom->m_bMainServer || !m_pNetCom->m_pMainServer) break;
-				
-				::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxFifoSync);
-				nMainTxFifoSize = m_pNetCom->m_pMainServer->m_pTxFifo->GetCount();
-				if (nMainTxFifoSize >= 1)
-				{
-					CBuf* pMainBuf = m_pNetCom->m_pMainServer->m_pTxFifo->GetHead();
-					m_pNetCom->m_pMainServer->m_pTxFifo->RemoveHead();
-					::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxFifoSync);
-					for (i = 0 ; i < (int)m_pNetCom->m_pMainServer->m_Servers.GetSize() ; i++)
-					{
-						if (m_pNetCom->m_pMainServer->m_Servers[i])
-						{
-							if ((m_pNetCom->m_pMainServer->m_Servers[i]->m_hSocket != INVALID_SOCKET) &&
-								m_pNetCom->m_pMainServer->m_Servers[i]->m_pMsgThread->IsRunning())
-							{
-								CBuf* pNewBuf = new CBuf(pMainBuf->GetMsgSize());
-								memcpy((void*)(pNewBuf->GetBuf()), (void*)(pMainBuf->GetBuf()), pMainBuf->GetMsgSize());
-								pNewBuf->SetMsgSize(pMainBuf->GetMsgSize());
-								::EnterCriticalSection(m_pNetCom->m_pMainServer->m_Servers[i]->m_pcsTxFifoSync);
-								m_pNetCom->m_pMainServer->m_Servers[i]->m_pTxFifo->AddTail(pNewBuf);
-								::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_Servers[i]->m_pcsTxFifoSync);
-								::SetEvent(m_pNetCom->m_pMainServer->m_Servers[i]->m_hTxEvent);
-							}
-						}
-					}
-					if (m_pNetCom->m_pMainServer->m_bTxBufEnabled)
-					{
-						::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxBufSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-						pMainBuf->m_dwTickCount = ::GetTickCount();
-#endif
-						m_pNetCom->m_pMainServer->m_pTxBuf->Add(pMainBuf);
-						::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxBufSync);
-
-						// Notify Parent that a Buffer was added to the Main Server's TxBuf
-						if (m_pNetCom->m_pMainServer->m_hOwnerWnd)
-							::PostMessage(m_pNetCom->m_pMainServer->m_hOwnerWnd, WM_NETCOM_TXBUF_ADD,
-								(WPARAM)m_pNetCom->m_pMainServer, (LPARAM)m_pNetCom->m_pMainServer->m_lParam);
-					}	
-					else
-						delete pMainBuf;
-				}
-				else
-					::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsTxFifoSync);
-
-				if (nMainTxFifoSize > 1)
-					::SetEvent(m_pNetCom->m_hTxToAllEvent);
-				break;
 
 			// Net Event
-			case WAIT_OBJECT_0 + 3 :
+			case WAIT_OBJECT_0 + 2 :
 				WSANETWORKEVENTS NetworkEvents;
 				if (m_pNetCom->m_hSocket != INVALID_SOCKET)
 				{
@@ -439,10 +338,7 @@ int CNetCom::CMsgThread::Work()
 												&NetworkEvents) == SOCKET_ERROR)
 					{
 						m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAEnumNetworkEvents()"));
-						if (m_pNetCom->m_bMainServer) 
-							m_pNetCom->m_bServerListening = FALSE;
-						if (!m_pNetCom->m_bServer)
-							m_pNetCom->m_bClientConnected = FALSE;
+						m_pNetCom->m_bClientConnected = FALSE;
 						m_pNetCom->ShutdownTxThread();
 						m_pNetCom->ShutdownRxThread();
 						if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
@@ -455,176 +351,6 @@ int CNetCom::CMsgThread::Work()
 					}
 					else
 					{
-						if (NetworkEvents.lNetworkEvents & FD_ACCEPT)
-						{
-							if (m_pNetCom->m_pMsgOut)
-								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_ACCEPT"));
-							CNetCom* pNetCom = new CNetCom(m_pNetCom, m_pNetCom->m_pcsServersSync);
-							
-							// Initialize the Member Variables
-							pNetCom->InitVars(TRUE, // Server
-										m_pNetCom->m_hOwnerWnd,
-										m_pNetCom->m_lParam,
-										m_pNetCom->m_pRxBuf,
-										m_pNetCom->m_pcsRxBufSync,
-										m_pNetCom->m_pRxFifo,
-										m_pNetCom->m_pcsRxFifoSync,
-										NULL, // The Child Server has no Tx Buf
-										NULL, // The Child Server has no Tx Buf Critical Section
-										NULL, // The Child Server has its own Tx Fifo
-										NULL, // The Child Server has its own Tx Fifo Critical Section
-										m_pNetCom->m_pParseProcess,
-										m_pNetCom->m_pIdleGenerator,
-										m_pNetCom->m_nSocketType,
-										m_pNetCom->m_sLocalAddress,
-										m_pNetCom->m_uiLocalPort,
-										m_pNetCom->m_sPeerAddress,
-										m_pNetCom->m_uiPeerPort,
-										NULL, // There are no Accept Events in a Child Server
-										NULL, // There are no Connect Events in a Child Server
-										NULL, // There are no Connect Failed Events in a Child Server
-										m_pNetCom->m_hCloseEvent,
-										m_pNetCom->m_hReadEvent,
-										m_pNetCom->m_hWriteEvent,
-										m_pNetCom->m_hOOBEvent,
-										m_pNetCom->m_hAllCloseEvent,
-										m_pNetCom->m_lResetEventMask,
-										m_pNetCom->m_lOwnerWndNetEvents,
-										m_pNetCom->m_uiRxMsgTrigger,
-										m_pNetCom->m_hRxMsgTriggerEvent,
-										m_pNetCom->m_uiMaxTxPacketSize,
-										m_pNetCom->m_uiRxPacketTimeout,
-										m_pNetCom->m_uiTxPacketTimeout,
-										m_pNetCom->m_pMsgOut);
-							pNetCom->m_bRxBufEnabled = m_pNetCom->m_bRxBufEnabled;
-							pNetCom->m_bTxBufEnabled = m_pNetCom->m_bTxBufEnabled;
-							pNetCom->m_uiMaxRxFifoSize = m_pNetCom->m_uiMaxRxFifoSize;
-							pNetCom->m_nIDAccept = m_pNetCom->m_nIDAccept;
-							pNetCom->m_nIDConnect = m_pNetCom->m_nIDConnect;
-							pNetCom->m_nIDConnectFailed = m_pNetCom->m_nIDConnectFailed;
-							pNetCom->m_nIDRead = m_pNetCom->m_nIDRead;
-							pNetCom->m_nIDWrite = m_pNetCom->m_nIDWrite;
-							pNetCom->m_nIDOOB = m_pNetCom->m_nIDOOB;
-							pNetCom->m_nIDClose = m_pNetCom->m_nIDClose;
-							pNetCom->m_nIDAllClose = m_pNetCom->m_nIDAllClose;
-							pNetCom->m_nIDRx = m_pNetCom->m_nIDRx;
-							pNetCom->m_bIdleGeneratorEnabled = m_pNetCom->m_bIdleGeneratorEnabled;
-							pNetCom->m_nThreadsPriority = m_pNetCom->m_nThreadsPriority;
-							pNetCom->m_nSocketFamily = m_pNetCom->m_nSocketFamily;
-
-							// Initialize the new Server Socket
-							incoming_addrlen = sizeof(incoming_addr);
-							if ((pNetCom->m_hSocket = ::WSAAccept(m_pNetCom->m_hSocket, pincoming_addr,
-															&incoming_addrlen, NULL, 0)) == INVALID_SOCKET)
-							{
-								delete pNetCom;
-								m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" WSAAccept()"));
-								m_pNetCom->m_bServerListening = FALSE;
-								if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
-									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
-								else
-									m_pNetCom->m_hSocket = INVALID_SOCKET;
-								if (m_pNetCom->m_pMsgOut)
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
-								return 0;
-							}
-							else if (m_pNetCom->m_pMsgOut)
-							{
-								if (pincoming_addr->sa_family == AF_INET)
-								{
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept From %d.%d.%d.%d"),
-																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b1,
-																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b2,
-																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b3,
-																((sockaddr_in*)pincoming_addr)->sin_addr.S_un.S_un_b.s_b4);
-								}
-								else if (pincoming_addr->sa_family == AF_INET6)
-								{
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Socket Accept From %x:%x:%x:%x:%x:%x:%x:%x"),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[0]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[1]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[2]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[3]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[4]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[5]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[6]),
-																ntohs(((sockaddr_in6*)pincoming_addr)->sin6_addr.u.Word[7]));
-								}
-								else
-									m_pNetCom->Warning(m_pNetCom->GetName() + _T(" Socket Accept Unknown Address Family"));
-							}
-
-							// Turn On all Network Events
-							if (pNetCom->InitEvents() == FALSE)
-							{
-								delete pNetCom;
-								m_pNetCom->m_bServerListening = FALSE;
-								if (::closesocket(m_pNetCom->m_hSocket) == SOCKET_ERROR)
-									m_pNetCom->ProcessWSAError(m_pNetCom->GetName() + _T(" closesocket()"));
-								else
-									m_pNetCom->m_hSocket = INVALID_SOCKET;
-								if (m_pNetCom->m_pMsgOut)
-									m_pNetCom->Notice(m_pNetCom->GetName() + _T(" MsgThread ended (ID = 0x%08X)"), GetId());
-								return 0;
-							}
-
-							// Enter the m_Servers' Critical Section
-							::EnterCriticalSection(m_pNetCom->m_pcsServersSync);
-
-							// Delete Closed Connections from the m_Servers Array
-							if (m_pNetCom->m_Servers.GetSize() >= 1)
-							{
-								for (i = 0 ; i < (int)m_pNetCom->m_Servers.GetSize() ; i++)
-								{
-									if (m_pNetCom->m_Servers[i])
-									{
-										if ((m_pNetCom->m_Servers[i]->m_hSocket == INVALID_SOCKET) ||
-											!m_pNetCom->m_Servers[i]->m_pMsgThread->IsRunning())
-										{
-											m_pNetCom->m_uiTotalRemovedConnectionsTxByteCount += m_pNetCom->m_Servers[i]->m_uiTxByteCount;
-											m_pNetCom->m_uiTotalRemovedConnectionsRxByteCount += m_pNetCom->m_Servers[i]->m_uiRxByteCount;
-											delete m_pNetCom->m_Servers[i];
-											m_pNetCom->m_Servers.RemoveAt(i);
-										}
-									}
-								}
-							}
-
-							// Add the new Server to the Servers Array
-							m_pNetCom->m_Servers.Add(pNetCom);
-
-							// Leave the m_Servers' Critical Section
-							::LeaveCriticalSection(m_pNetCom->m_pcsServersSync);
-
-							// Set Rx Logging Status (Child Server has no Tx Buffer ->
-							// No Tx Logging, only Main Server Logs Tx Data)
-							pNetCom->SetRxLogging(m_pNetCom->IsRxLoggingEnabled());
-
-							// Start Threads
-							pNetCom->StartMsgThread();
-							pNetCom->StartRxThread();
-							pNetCom->StartTxThread();
-
-							// Accept Event
-							if (m_pNetCom->m_hAcceptEvent)
-							{	
-								if (m_pNetCom->m_lResetEventMask & FD_ACCEPT)
-									::ResetEvent(m_pNetCom->m_hAcceptEvent);
-								else
-									::SetEvent(m_pNetCom->m_hAcceptEvent);
-							}
-
-							// Send Accept Message to the Parent Window
-							if ((m_pNetCom->m_lOwnerWndNetEvents & FD_ACCEPT) && m_pNetCom->m_hOwnerWnd)
-							{
-								::PostMessage(m_pNetCom->m_hOwnerWnd, WM_NETCOM_ACCEPT_EVENT,
-											(WPARAM)m_pNetCom, (LPARAM)m_pNetCom->m_lParam);
-
-								if (m_pNetCom->m_nIDAccept)
-									::PostMessage(m_pNetCom->m_hOwnerWnd, WM_COMMAND,
-											(WPARAM)m_pNetCom->m_nIDAccept, (LPARAM)NULL);
-							}
-						}
 						if (NetworkEvents.lNetworkEvents & FD_CONNECT) // Old Win9x and Wine do not set the FD_CONNECT event for udp
 						{
 							if (m_pNetCom->m_pMsgOut)
@@ -815,8 +541,7 @@ int CNetCom::CMsgThread::Work()
 						if (NetworkEvents.lNetworkEvents & FD_CLOSE)
 						{
 							m_bClosing = TRUE;
-							if (!m_pNetCom->m_bServer)
-								m_pNetCom->m_bClientConnected = FALSE;
+							m_pNetCom->m_bClientConnected = FALSE;
 							if (m_pNetCom->m_pMsgOut)
 								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_CLOSE"));
 
@@ -914,8 +639,6 @@ int CNetCom::CMsgThread::Work()
 						m_pNetCom->Warning(m_pNetCom->GetName() + _T(" MsgThread ended, we started shutdown, peer did not answer (ID = 0x%08X)"), GetId());
 					return 0;
 				}
-				else
-					::SetEvent(m_pNetCom->m_hTxToAllEvent);
 				break;
 		}
 	}
@@ -1031,12 +754,6 @@ int CNetCom::CRxThread::Work()
 		{
 			// Statistics
 			m_pNetCom->m_uiRxByteCount += uiCurrentMsgSize;
-			if (m_pNetCom->m_bServer && m_pNetCom->m_pMainServer)
-			{	
-				::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
-				m_pNetCom->m_pMainServer->m_uiRxByteCount += uiCurrentMsgSize;
-				::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
-			}
 
 			// Make a Copy if RxBuf and RxFifo are both available
 			if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled && m_pNetCom->m_pRxFifo)
@@ -1333,28 +1050,7 @@ int CNetCom::CTxThread::Work()
 	
 				// Call the Idle Generator
 				if (m_pNetCom->m_pIdleGenerator && m_pNetCom->m_bIdleGeneratorEnabled)
-				{
 					m_pNetCom->m_bIdleGeneratorEnabled = m_pNetCom->m_pIdleGenerator->Generate(m_pNetCom);
-					BOOL bAllIdleGeneratorsDisabled = TRUE;
-					if (m_pNetCom->m_bServer && m_pNetCom->m_pMainServer)
-					{
-						::EnterCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
-						for (int i = 0 ; i < m_pNetCom->m_pMainServer->m_Servers.GetSize() ; i++)
-						{
-							if (m_pNetCom->m_pMainServer->m_Servers[i])
-							{
-								if (m_pNetCom->m_pMainServer->m_Servers[i]->m_bIdleGeneratorEnabled)
-								{
-									bAllIdleGeneratorsDisabled = FALSE;
-									break;
-								}
-							}
-						}
-						m_pNetCom->m_pMainServer->m_bIdleGeneratorEnabled = !bAllIdleGeneratorsDisabled;
-						::LeaveCriticalSection(m_pNetCom->m_pMainServer->m_pcsServersSync);
-						
-					}
-				}
 				break;
 		}
 	}
@@ -1516,7 +1212,7 @@ void CNetCom::CTxThread::Write()
 ///////////////////////////////////////////////////////////////////////////////
 // CNetCom
 ///////////////////////////////////////////////////////////////////////////////
-CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
+CNetCom::CNetCom()
 {
 	// Init WinSock 2.2
 	WSADATA wsadata;
@@ -1545,7 +1241,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_pParseProcess				= NULL;
 	m_pIdleGenerator			= NULL;
 	m_lParam					= 0;
-	m_pMainServer				= pMainServer;
 	m_pRxBuf					= NULL;
 	m_pRxFifo					= NULL;
 	m_pTxBuf					= NULL;
@@ -1554,7 +1249,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_pcsRxFifoSync				= NULL;
 	m_pcsTxBufSync				= NULL;
 	m_pcsTxFifoSync				= NULL;
-	m_pcsServersSync			= NULL;
 	m_pMsgOut					= NULL;
 	m_pMsgThread = new CMsgThread;
 	m_pRxThread = new CRxThread;
@@ -1577,7 +1271,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_ovTx.hEvent					= ::WSACreateEvent();
 	m_hNetEvent						= ::WSACreateEvent();
 	m_hTxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_hTxToAllEvent					= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hRxEvent						= ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hStartConnectionShutdownEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_hTxTimeoutChangeEvent			= ::CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -1589,13 +1282,11 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_hReadEvent					= NULL;
 	m_hWriteEvent					= NULL;
 	m_hOOBEvent						= NULL;
-	m_hAllCloseEvent				= NULL;
 
 	// Initialize the Event Object Arrays
 	m_hMsgEventArray[0]			= m_pMsgThread ? m_pMsgThread->GetKillEvent() : NULL;	// highest priority
 	m_hMsgEventArray[1]			= m_hStartConnectionShutdownEvent;
-	m_hMsgEventArray[2]			= m_hTxToAllEvent;
-	m_hMsgEventArray[3]			= m_hNetEvent;
+	m_hMsgEventArray[2]			= m_hNetEvent;
 	m_hRxEventArray[0]			= m_pRxThread ? m_pRxThread->GetKillEvent() : NULL;		// highest priority
 	m_hRxEventArray[1]			= m_ovRx.hEvent;
 	m_hRxEventArray[2]			= m_hRxEvent;
@@ -1604,16 +1295,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_hTxEventArray[1]			= m_ovTx.hEvent;
 	m_hTxEventArray[2]			= m_hTxEvent;
 	m_hTxEventArray[3]			= m_hTxTimeoutChangeEvent;
-	
-	// Server or Client
-	m_bServer					= FALSE;
-	
-	// Main Listening Server (that accept connections)
-	// or Communicating Server
-	m_bMainServer				= FALSE;
-
-	// Is the Main Server Listening?
-	m_bServerListening			= FALSE;
 
 	// Is the Client Connected?
 	m_bClientConnected			= FALSE;
@@ -1628,7 +1309,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_bFreeTxBufSync			= FALSE;
 	m_bFreeTxFifo				= FALSE;
 	m_bFreeTxFifoSync			= FALSE;
-	m_bFreeServersSync			= FALSE;
 	m_bFreeMsgOut				= FALSE;
 
 	// Addresses
@@ -1645,21 +1325,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	// Statistics
 	m_uiRxByteCount = 0;
 	m_uiTxByteCount = 0;
-	m_uiTotalRemovedConnectionsRxByteCount = 0;
-	m_uiTotalRemovedConnectionsTxByteCount = 0;
-
-	// Initialize the Critical Section for the m_Servers array
-	if (pcsServers == NULL)
-	{
-		m_pcsServersSync = new CRITICAL_SECTION;
-		::InitializeCriticalSection(m_pcsServersSync);
-		m_bFreeServersSync = TRUE;
-	}
-	else
-	{
-		m_pcsServersSync = pcsServers;
-		m_bFreeServersSync = FALSE;
-	}
 
 	m_uiMaxTxPacketSize = NETCOM_MAX_TX_BUFFER_SIZE;
 	
@@ -1682,7 +1347,6 @@ CNetCom::CNetCom(CNetCom* pMainServer, LPCRITICAL_SECTION pcsServers)
 	m_nIDWrite = 0;
 	m_nIDOOB = 0;
 	m_nIDClose = 0;
-	m_nIDAllClose = 0;
 	m_nIDRx = 0;
 	m_nThreadsPriority = THREAD_PRIORITY_NORMAL;
 
@@ -1722,12 +1386,6 @@ CNetCom::~CNetCom()
 		::CloseHandle(m_hTxEvent);
 		m_hTxEvent = NULL;
 	}
-	if (m_hTxToAllEvent != NULL)
-	{
-		::ResetEvent(m_hTxToAllEvent);
-		::CloseHandle(m_hTxToAllEvent);
-		m_hTxToAllEvent = NULL;
-	}
 	if (m_hRxEvent != NULL)
 	{
 		::ResetEvent(m_hRxEvent);
@@ -1751,18 +1409,6 @@ CNetCom::~CNetCom()
 		::ResetEvent(m_hRxTimeoutChangeEvent);
 		::CloseHandle(m_hRxTimeoutChangeEvent);
 		m_hRxTimeoutChangeEvent = NULL;
-	}
-
-	// Delete the Main Server's Critical Section
-	if (m_bFreeServersSync)
-	{
-		if (m_pcsServersSync)
-		{
-			::DeleteCriticalSection(m_pcsServersSync);
-			delete m_pcsServersSync;
-			m_pcsServersSync = NULL;
-		}
-		m_bFreeServersSync = FALSE;
 	}
 
 	// Free the Threads
@@ -1814,8 +1460,7 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 	return TRUE;
 }
 
-BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
-					HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
+BOOL CNetCom::Init(	HWND hOwnerWnd,						// The Optional Owner Window to which send the Network Events.
 					LPARAM	lParam,						// The lParam to send with the Messages
 					BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
 					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
@@ -1839,13 +1484,11 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 					HANDLE hReadEvent,					// Handle to an Event Object that will get Read Events.
 					HANDLE hWriteEvent,					// Handle to an Event Object that will get Write Events.
 					HANDLE hOOBEvent,					// Handle to an Event Object that will get OOB Events.
-					HANDLE hAllCloseEvent,				// Handle to an Event Object that will get an event when 
-														// all connection of a server have been closed.
 					long lResetEventMask,				// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// A set value means that instead of setting an event it is reset.
 					long lOwnerWndNetEvents,			// A combination of network events:
-														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB | FD_ALLCLOSE.
+														// FD_ACCEPT | FD_CONNECT | FD_CONNECTFAILED | FD_CLOSE | FD_READ | FD_WRITE | FD_OOB
 														// The Following messages will be sent to the pOwnerWnd (if pOwnerWnd != NULL):
 														// WM_NETCOM_ACCEPT_EVENT -> Notification of incoming connections.
 														// WM_NETCOM_CONNECT_EVENT -> Notification of completed connection or multipoint "join" operation.
@@ -1854,7 +1497,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 														// WM_NETCOM_READ_EVENT -> Notification of readiness for reading.
 														// WM_NETCOM_WRITE_EVENT -> Notification of readiness for writing.
 														// WM_NETCOM_OOB_EVENT -> Notification of the arrival of out-of-band data. 
-														// WM_NETCOM_ALLCLOSE_EVENT -> Notification that all connection have been closed. 
 					UINT uiRxMsgTrigger,				// The number of bytes that triggers an hRxMsgTriggerEvent 
 														// (if hRxMsgTriggerEvent != NULL).
 														// And/Or the number of bytes that triggers a WM_NETCOM_RX Message
@@ -1891,7 +1533,7 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	memset(&local_addr6, 0, sizeof(local_addr6));	// Init to any address
 	if (!InitAddr(m_nSocketFamily, sPeerAddress, uiPeerPort, ppeer_addr)) // This can change m_nSocketFamily
 		return FALSE;
-	if (bServer || (nSocketType == SOCK_DGRAM))
+	if (nSocketType == SOCK_DGRAM)
 	{
 		if (!InitAddr(m_nSocketFamily, sLocalAddress, uiLocalPort, plocal_addr)) // This can change m_nSocketFamily
 			return FALSE;
@@ -1926,14 +1568,12 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 	// Statistics Reset
 	m_uiRxByteCount = 0;
 	m_uiTxByteCount = 0;
-	m_uiTotalRemovedConnectionsRxByteCount = 0;
-	m_uiTotalRemovedConnectionsTxByteCount = 0;
 
 	// Initialize the Member Variables
-	InitVars(	bServer, hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
+	InitVars(	hOwnerWnd, lParam, pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
 				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess, pIdleGenerator, nSocketType, sLocalAddress, uiLocalPort,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
-				hReadEvent, hWriteEvent, hOOBEvent, hAllCloseEvent, lResetEventMask, lOwnerWndNetEvents,
+				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask, lOwnerWndNetEvents,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
 
 	// Init the Parser
@@ -1942,17 +1582,6 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 
 	// The Idle Generator is disabled
 	m_bIdleGeneratorEnabled	= FALSE;
-
-	// Set the Main Server Flag
-	m_bMainServer = m_bServer;
-
-	// Check that if the server flag is set the Socket Type is SOCK_STREAM
-	if ((bServer == TRUE) && (nSocketType == SOCK_DGRAM))
-	{
-		if (m_pMsgOut)
-			Error(GetName() + _T(" can only be connection oriented (SOCK_STREAM)"));
-		return FALSE;
-	}
 
 	if (m_hSocket == INVALID_SOCKET)
 	{
@@ -1965,137 +1594,95 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 			if (InitEvents() == FALSE)
 				return FALSE;
 		
-			// Create a Listening Server Socket
-			if (m_bServer)
+			// Create a Client Socket or a Datagram Connection
+			if (nSocketType == SOCK_DGRAM)
 			{
-				m_pMainServer = this;
-
-				// IPV6_V6ONLY is the default for all Windows OSs because prior to Vista
-				// the stacks for IPv4 and IPv6 where separate so that IPV6_V6ONLY was
-				// the only choice. Do not check the return value because Windows XP and
-				// older do not support this option!
-				if (m_nSocketFamily == AF_INET6)
-				{
-					DWORD ipv6only = 1U;
-					::setsockopt(m_hSocket, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&ipv6only, sizeof(ipv6only));
-				}
 				if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
 				{
 					ProcessWSAError(GetName() + _T(" bind()"));
 					return FALSE;
 				}
-				if (::listen(m_hSocket, SOMAXCONN) == SOCKET_ERROR)
+				else if (m_pMsgOut)
 				{
-					ProcessWSAError(GetName() + _T(" listen()"));
-					return FALSE;
-				}
-				else
-				{
-					// Start Message Thread now so that
-					// FD_ACCEPT can be handled
-					StartMsgThread();
-					if (m_pMsgOut)
-					{
-						if (sLocalAddress != _T(""))
-							Notice(GetName() + _T(" Listen (%s port %d)"), sLocalAddress, uiLocalPort);
-						else
-							Notice(GetName() + _T(" Listen (localhost port %d)"), uiLocalPort);
-					}
-					return TRUE;
+					if (sLocalAddress != _T(""))
+						Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddress, uiLocalPort);
+					else
+						Notice(GetName() + _T(" Bind (localhost port %d)"), uiLocalPort);
 				}
 			}
-			else // Create a Client Socket or a Datagram Connection
-			{
-				if (nSocketType == SOCK_DGRAM)
-				{
-					if (::bind(m_hSocket, plocal_addr, SOCKADDRSIZE(plocal_addr)) == SOCKET_ERROR)
-					{
-						ProcessWSAError(GetName() + _T(" bind()"));
-						m_bMainServer = FALSE;
-						return FALSE;
-					}
-					else if (m_pMsgOut)
-					{
-						if (sLocalAddress != _T(""))
-							Notice(GetName() + _T(" Bind (%s port %d)"), sLocalAddress, uiLocalPort);
-						else
-							Notice(GetName() + _T(" Bind (localhost port %d)"), uiLocalPort);
-					}
-				}
 
-				// Start Message Thread now so that FD_CONNECT can be handled
-				StartMsgThread();
+			// Start Message Thread now so that FD_CONNECT can be handled
+			StartMsgThread();
 				
-				if (!SOCKADDRANY(ppeer_addr))
+			if (!SOCKADDRANY(ppeer_addr))
+			{
+				if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
 				{
-					if (::WSAConnect(m_hSocket, ppeer_addr, SOCKADDRSIZE(ppeer_addr), NULL, NULL, NULL, NULL) != SOCKET_ERROR)
+					if (m_pMsgOut)
+						Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
+
+					// Old Win9x and Wine do not set the FD_CONNECT event for udp
+					// -> start everything here!
+					if (nSocketType == SOCK_DGRAM)
 					{
-						if (m_pMsgOut)
-							Notice(GetName() + _T(" Connect (%s port %d)"), sPeerAddress, uiPeerPort);
+						m_bClientConnected = TRUE;
 
-						// Old Win9x and Wine do not set the FD_CONNECT event for udp
-						// -> start everything here!
-						if (nSocketType == SOCK_DGRAM)
-						{
-							m_bClientConnected = TRUE;
+						// Start Rx and Tx Threads
+						StartRxThread();
+						StartTxThread();
 
-							// Start Rx and Tx Threads
-							StartRxThread();
-							StartTxThread();
-
-							// Connect Event
-							if (m_hConnectEvent)
-							{	
-								if (m_lResetEventMask & FD_CONNECT)
-									::ResetEvent(m_hConnectEvent);
-								else
-									::SetEvent(m_hConnectEvent);
-							}
-
-							// Send Connect Message to the Parent Window
-							if ((m_lOwnerWndNetEvents & FD_CONNECT) && m_hOwnerWnd)
-							{
-								::PostMessage(m_hOwnerWnd, WM_NETCOM_CONNECT_EVENT,
-											(WPARAM)this, (LPARAM)m_lParam);
-
-								if (m_nIDConnect)
-									::PostMessage(m_hOwnerWnd, WM_COMMAND,
-										(WPARAM)m_nIDConnect, (LPARAM)NULL);
-							}
+						// Connect Event
+						if (m_hConnectEvent)
+						{	
+							if (m_lResetEventMask & FD_CONNECT)
+								::ResetEvent(m_hConnectEvent);
+							else
+								::SetEvent(m_hConnectEvent);
 						}
 
-						return TRUE;
-					}
-					else
-					{
-						int nErrorCode = ::WSAGetLastError();
-						if (nErrorCode == WSAEWOULDBLOCK)
+						// Send Connect Message to the Parent Window
+						if ((m_lOwnerWndNetEvents & FD_CONNECT) && m_hOwnerWnd)
 						{
-							if (m_pMsgOut)
-								Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddress, uiPeerPort);
-							return TRUE;
+							::PostMessage(m_hOwnerWnd, WM_NETCOM_CONNECT_EVENT,
+										(WPARAM)this, (LPARAM)m_lParam);
+
+							if (m_nIDConnect)
+								::PostMessage(m_hOwnerWnd, WM_COMMAND,
+									(WPARAM)m_nIDConnect, (LPARAM)NULL);
 						}
-						ProcessWSAError(GetName() + _T(" WSAConnect()"));
-						return FALSE;
 					}
+
+					return TRUE;
 				}
 				else
 				{
-					// A listening Datagram Socket is ok
-					if (nSocketType == SOCK_DGRAM)
-					{
-						// Start here the Rx Thread because no CONNECT event
-						// is sent to the Msg Thread,
-						// which would start the Rx Thread
-						StartRxThread();
-						return TRUE;
-					}
-					else
+					int nErrorCode = ::WSAGetLastError();
+					if (nErrorCode == WSAEWOULDBLOCK)
 					{
 						if (m_pMsgOut)
-							Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
-						return FALSE;
+							Notice(GetName() + _T(" Connect with WSAEWOULDBLOCK (%s port %d)"), sPeerAddress, uiPeerPort);
+						return TRUE;
 					}
+					ProcessWSAError(GetName() + _T(" WSAConnect()"));
+					return FALSE;
+				}
+			}
+			else
+			{
+				// A listening Datagram Socket is ok
+				if (nSocketType == SOCK_DGRAM)
+				{
+					// Start here the Rx Thread because no CONNECT event
+					// is sent to the Msg Thread,
+					// which would start the Rx Thread
+					StartRxThread();
+					return TRUE;
+				}
+				else
+				{
+					if (m_pMsgOut)
+						Error(GetName() + _T(" Cannot Connect To A Empty Address!"));
+					return FALSE;
 				}
 			}
 		}
@@ -2111,51 +1698,16 @@ BOOL CNetCom::Init(	BOOL bServer,						// Server or Client?
 
 void CNetCom::Close()
 {
-	if (m_bMainServer)
-	{
-		// First shutdown the MsgThread to avoid new connections creation!
-		ShutdownMsgThread();
-
-		// Close the main server's socket
-		if (m_hSocket != INVALID_SOCKET)
-		{
-			if (::closesocket(m_hSocket) == SOCKET_ERROR)
-				ProcessWSAError(GetName() + _T(" closesocket()"));
-			m_hSocket = INVALID_SOCKET;
-		}
-
-		// Kill all child servers. No use of servers critical section
-		// to avoid deadlocks with GetNumOpenConnections(), which is
-		// called inside the FD_CLOSE handler of the child server.
-		for (int i = 0 ; i < m_Servers.GetSize() ; i++)
-		{
-			if (m_Servers[i] != NULL)
-			{
-				m_uiTotalRemovedConnectionsTxByteCount += m_Servers[i]->m_uiTxByteCount;
-				m_uiTotalRemovedConnectionsRxByteCount += m_Servers[i]->m_uiRxByteCount;
-				delete m_Servers[i];
-			}
-		}
+	// Shutdown connection
+	ShutdownConnection_NoBlocking();
+	WaitTillShutdown_Blocking();
 		
-		// Now enter critical section and remove all closed child servers
-		::EnterCriticalSection(m_pcsServersSync);
-		m_Servers.RemoveAll();
-		::LeaveCriticalSection(m_pcsServersSync);
-
-	}
-	else
+	// Close the socket in case MsgThread was forced to shutdown after timeout
+	if (m_hSocket != INVALID_SOCKET)
 	{
-		// Shutdown connection
-		ShutdownConnection_NoBlocking();
-		WaitTillShutdown_Blocking();
-		
-		// Close the socket in case MsgThread was forced to shutdown after timeout
-		if (m_hSocket != INVALID_SOCKET)
-		{
-			if (::closesocket(m_hSocket) == SOCKET_ERROR)
-				ProcessWSAError(GetName() + _T(" closesocket()"));
-			m_hSocket = INVALID_SOCKET;
-		}
+		if (::closesocket(m_hSocket) == SOCKET_ERROR)
+			ProcessWSAError(GetName() + _T(" closesocket()"));
+		m_hSocket = INVALID_SOCKET;
 	}
 
 	m_hRxMsgTriggerEvent = NULL;
@@ -2285,58 +1837,6 @@ CString CNetCom::GetPeerSockIP()
 		return _T("");
 }
 
-// Get the connected child servers of a main server.
-// To get the first pass NULL as parameter, to get
-// the next pass the previous child server pointer.
-CNetCom* CNetCom::GetNextChildServer(CNetCom* pChildServer)
-{
-	if (m_bMainServer)
-	{
-		BOOL bFoundChildServer = FALSE;
-
-		::EnterCriticalSection(m_pcsServersSync);
-		for (int i = 0 ; i < m_Servers.GetSize() ; i++)
-		{
-			if (m_Servers[i])
-			{
-				if (m_Servers[i]->m_hSocket != INVALID_SOCKET)
-				{
-					// Return the First Connected Server
-					if (pChildServer == NULL)
-					{
-						::LeaveCriticalSection(m_pcsServersSync);
-						return m_Servers[i];
-					}
-
-					// Child Server has been found, return the next one
-					if (bFoundChildServer)
-					{
-						::LeaveCriticalSection(m_pcsServersSync);
-						return m_Servers[i];
-					}
-
-					// Flag Child Server found
-					if (m_Servers[i] == pChildServer)
-						bFoundChildServer = TRUE;
-				}
-			}
-		}
-
-		// Nothing found or it was the last one
-		::LeaveCriticalSection(m_pcsServersSync);
-		return NULL;
-	}
-	else if (m_bServer) // If Child Server
-	{
-		if (m_pMainServer)
-			return m_pMainServer->GetNextChildServer(pChildServer);
-		else
-			return NULL;
-	}
-	else // If Client or Datagram
-		return NULL;
-}
-
 DWORD CNetCom::EnumLAN(CStringArray* pHosts)
 {
 	// Check
@@ -2454,14 +1954,6 @@ BOOL CNetCom::StartTxThread()
 
 void CNetCom::EnableIdleGenerator(BOOL bEnabled)
 {
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->EnableIdleGenerator(bEnabled);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
 	m_bIdleGeneratorEnabled = bEnabled;
 }
 
@@ -2582,10 +2074,7 @@ int CNetCom::Write(BYTE* Data, int Size)
 			::EnterCriticalSection(m_pcsTxFifoSync);
 			m_pTxFifo->AddTail(pBuf);
 			::LeaveCriticalSection(m_pcsTxFifoSync);
-			if (m_bMainServer)
-				::SetEvent(m_hTxToAllEvent);
-			else
-				::SetEvent(m_hTxEvent);
+			::SetEvent(m_hTxEvent);
 		}
 		return SentSize;
 	}
@@ -2604,7 +2093,6 @@ int CNetCom::WriteDatagramTo(	sockaddr* pAddr,
 	if (!pAddr						||
 		m_hSocket == INVALID_SOCKET	||
 		m_nSocketType != SOCK_DGRAM	||
-		m_bServer					||
 		m_pMsgThread->m_bClosing	||
 		!m_pcsTxFifoSync			||
 		!m_pTxFifo)
@@ -2714,10 +2202,7 @@ int CNetCom::WriteDatagram(	BYTE* Hdr,
 		m_pTxFifo->AddTail(pBuf);
 	::LeaveCriticalSection(m_pcsTxFifoSync);
 
-	if (m_bMainServer)
-		::SetEvent(m_hTxToAllEvent);
-	else
-		::SetEvent(m_hTxEvent);
+	::SetEvent(m_hTxEvent);
 
 	return (DataSize + HdrSize);
 }
@@ -2952,139 +2437,14 @@ int CNetCom::StrToByte(char* str)
 	return count;
 }
 
-int CNetCom::GetNumOpenConnections()
-{
-	if (m_bMainServer)
-	{
-		int count = 0;
-		::EnterCriticalSection(m_pcsServersSync);
-		for (int i = 0 ; i < m_Servers.GetSize() ; i++)
-		{
-			if (m_Servers[i] && m_Servers[i]->m_hSocket != INVALID_SOCKET)
-				count++;
-		}
-		::LeaveCriticalSection(m_pcsServersSync);
-		return count;
-	}	
-	else if (!m_bServer && (m_nSocketType == SOCK_STREAM))
-	{
-		if (m_hSocket != INVALID_SOCKET)
-		{
-			if (IsClientConnected())
-				return 1;
-			else
-				return 0;
-		}
-		else
-			return 0;
-	}
-	else if (!m_bServer && (m_nSocketType == SOCK_DGRAM))
-	{
-		if (m_hSocket != INVALID_SOCKET)
-			return 1;
-		else
-			return 0;
-	}
-	else // If Child Server
-	{
-		if (m_pMainServer)
-			return m_pMainServer->GetNumOpenConnections();
-		else
-			return 0;
-	}
-}
-
-UINT CNetCom::GetTotalRxByteCount()
-{
-	if (m_bServer && m_pMainServer)
-	{
-		UINT uiCount = 0;
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-		{
-			if (m_pMainServer->m_Servers[i])
-				uiCount += m_pMainServer->m_Servers[i]->m_uiRxByteCount;
-		}
-		uiCount += m_pMainServer->m_uiTotalRemovedConnectionsRxByteCount;
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-		return uiCount;
-	}
-	else
-		return GetRxByteCount();
-}
-
-UINT CNetCom::GetTotalTxByteCount()
-{
-	
-	if (m_bServer && m_pMainServer)
-	{
-		UINT uiCount = 0;
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-		{
-			if (m_pMainServer->m_Servers[i])
-				uiCount += m_pMainServer->m_Servers[i]->m_uiTxByteCount;
-		}
-		uiCount += m_pMainServer->m_uiTotalRemovedConnectionsTxByteCount;
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-		return uiCount;
-	}
-	else
-		return GetTxByteCount();
-}
-
-UINT CNetCom::GetTotalClosedConnectionsRxByteCount()
-{
-	if (m_bServer && m_pMainServer)
-	{
-		UINT uiCount = 0;
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-		{
-			if (m_pMainServer->m_Servers[i] && m_pMainServer->m_Servers[i]->m_hSocket == INVALID_SOCKET)
-				uiCount += m_pMainServer->m_Servers[i]->m_uiRxByteCount;
-		}
-		uiCount += m_pMainServer->m_uiTotalRemovedConnectionsRxByteCount;
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-		return uiCount;
-	}
-	else
-		return 0;
-}
-
-UINT CNetCom::GetTotalClosedConnectionsTxByteCount()
-{
-	if (m_bServer && m_pMainServer)
-	{
-		UINT uiCount = 0;
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				if (m_pMainServer->m_Servers[i]->m_hSocket == INVALID_SOCKET)
-					uiCount += m_pMainServer->m_Servers[i]->m_uiTxByteCount;
-		uiCount += m_pMainServer->m_uiTotalRemovedConnectionsTxByteCount;
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-		return uiCount;
-	}
-	else
-		return 0;
-}
-
 CString CNetCom::GetName()
 {
 	if (m_hSocket != INVALID_SOCKET)
 	{
-		if (m_bMainServer)
-			return _T("Net_Main_Server");
-		else if (m_bServer)
-			return _T("Net_Server");
+		if (m_nSocketType == SOCK_STREAM)
+			return _T("Net_Client");
 		else
-		{
-			if (m_nSocketType == SOCK_STREAM)
-				return _T("Net_Client");
-			else
-				return _T("Net_Datagram");
-		}
+			return _T("Net_Datagram");
 	}
 	else
 	{
@@ -3092,8 +2452,7 @@ CString CNetCom::GetName()
 	}
 }
 
-void CNetCom::InitVars(	BOOL bServer,
-						HWND hOwnerWnd,
+void CNetCom::InitVars(	HWND hOwnerWnd,
 						LPARAM	lParam,
 						BUFARRAY* pRxBuf,
 						LPCRITICAL_SECTION pcsRxBufSync,
@@ -3117,7 +2476,6 @@ void CNetCom::InitVars(	BOOL bServer,
 						HANDLE hReadEvent,
 						HANDLE hWriteEvent,
 						HANDLE hOOBEvent,
-						HANDLE hAllCloseEvent,
 						long lResetEventMask,
 						long lOwnerWndNetEvents,
 						UINT uiRxMsgTrigger,
@@ -3221,7 +2579,6 @@ void CNetCom::InitVars(	BOOL bServer,
 	// Init member vars
 	m_pParseProcess = pParseProcess;
 	m_pIdleGenerator = pIdleGenerator;
-	m_bServer = bServer;
 	m_hOwnerWnd = hOwnerWnd;
 	m_lParam = lParam;
 	m_nSocketType = nSocketType;
@@ -3236,7 +2593,6 @@ void CNetCom::InitVars(	BOOL bServer,
 	m_hReadEvent = hReadEvent;
 	m_hWriteEvent = hWriteEvent;
 	m_hOOBEvent = hOOBEvent;
-	m_hAllCloseEvent = hAllCloseEvent;
 	m_lResetEventMask = lResetEventMask;
 	m_lOwnerWndNetEvents = lOwnerWndNetEvents;
 	m_uiRxMsgTrigger = uiRxMsgTrigger;
@@ -3268,8 +2624,7 @@ void CNetCom::ShutdownConnection_NoBlocking()
 {
 	if (m_pMsgThread->IsRunning() && !m_pMsgThread->m_bClosing)
 	{
-		if (!m_bServer)
-			m_bClientConnected = FALSE;
+		m_bClientConnected = FALSE;
 		m_pMsgThread->m_bClosing = TRUE;
 		::SetEvent(m_hStartConnectionShutdownEvent);
 	}
@@ -3277,27 +2632,11 @@ void CNetCom::ShutdownConnection_NoBlocking()
 
 void CNetCom::SetRxLogging(BOOL bLogging)
 {
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetRxLogging(bLogging);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
 	m_bRxBufEnabled = bLogging;
 }
 
 void CNetCom::SetTxLogging(BOOL bLogging)
 {
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetTxLogging(bLogging);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
 	m_bTxBufEnabled = bLogging;
 }
 
@@ -3306,62 +2645,17 @@ void CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 	// Limit the Maximum size of the sent packets
 	if ((uiNewSize == 0) || (uiNewSize > NETCOM_MAX_TX_BUFFER_SIZE))
 		uiNewSize = NETCOM_MAX_TX_BUFFER_SIZE;
-
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetMaxTxPacketSize(uiNewSize);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-	
 	m_uiMaxTxPacketSize = uiNewSize;
 }
 
 BOOL CNetCom::IsRxLogging()
 {
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-		{
-			if (m_pMainServer->m_Servers[i])
-			{
-				if (m_pMainServer->m_Servers[i]->IsRxLogging())
-				{
-					::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-					return TRUE;
-				}
-			}
-		}
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-	else
-		return (m_pRxThread->IsRunning() && m_bRxBufEnabled);
-
-	return FALSE;
+	return (m_pRxThread->IsRunning() && m_bRxBufEnabled);
 }
 
 BOOL CNetCom::IsTxLogging()
 {
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-		{
-			if (m_pMainServer->m_Servers[i] && m_pMainServer->m_Servers[i]->IsTxLogging())
-			{
-				::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-				return TRUE;
-			}
-		}
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-	else
-		return (m_pTxThread->IsRunning() && m_bTxBufEnabled);
-
-	return FALSE;
+	return (m_pTxThread->IsRunning() && m_bTxBufEnabled);
 }
 
 void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
@@ -3369,56 +2663,26 @@ void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
 	// Limit the Trigger Size
 	if (uiNewSize > NETCOM_MAX_RX_BUFFER_SIZE)
 		uiNewSize = NETCOM_MAX_RX_BUFFER_SIZE;
-
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetRxMsgTriggerSize(uiNewSize);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-	
 	m_uiRxMsgTrigger = uiNewSize;
 }
 
 UINT CNetCom::SetTxTimeout(UINT uiNewTimeout)
 {
-	if (uiNewTimeout == 0) uiNewTimeout = INFINITE;
-
+	if (uiNewTimeout == 0)
+		uiNewTimeout = INFINITE;
 	UINT uiOldTxTimeout = m_uiTxPacketTimeout;
-
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetTxTimeout(uiNewTimeout);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-
 	m_uiTxPacketTimeout = uiNewTimeout;
-	if (!m_bMainServer) ::SetEvent(m_hTxTimeoutChangeEvent); // Release the Tx thread to change the timeout
+	::SetEvent(m_hTxTimeoutChangeEvent); // Release the Tx thread to change the timeout
 	return uiOldTxTimeout;
 }
 
 UINT CNetCom::SetRxTimeout(UINT uiNewTimeout)
 {
-	if (uiNewTimeout == 0) uiNewTimeout = INFINITE;
-
+	if (uiNewTimeout == 0)
+		uiNewTimeout = INFINITE;
 	UINT uiOldRxTimeout = m_uiRxPacketTimeout;
-
-	if (m_bMainServer && m_pMainServer)
-	{
-		::EnterCriticalSection(m_pMainServer->m_pcsServersSync);
-		for (int i = 0 ; i < m_pMainServer->m_Servers.GetSize() ; i++)
-			if (m_pMainServer->m_Servers[i])
-				m_pMainServer->m_Servers[i]->SetRxTimeout(uiNewTimeout);
-		::LeaveCriticalSection(m_pMainServer->m_pcsServersSync);
-	}
-
 	m_uiRxPacketTimeout = uiNewTimeout;
-	if (!m_bMainServer) ::SetEvent(m_hRxTimeoutChangeEvent); // Release the Rx thread to change the timeout
+	::SetEvent(m_hRxTimeoutChangeEvent); // Release the Rx thread to change the timeout
 	return uiOldRxTimeout;
 }
 
