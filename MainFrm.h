@@ -75,7 +75,7 @@ public:
 
 	// Toaster window
 	void PopupToaster(const CString& sTitle, const CString& sText, DWORD dwWaitTimeMs = 10000);	// call from any thread
-	void CloseToaster();																		// call only from UI thread
+	void CloseToaster(BOOL bLastToasterDone = FALSE);																		// call only from UI thread
 
 	// Enable / Disable Tray Icon
 	void TrayIcon(BOOL bEnable);
@@ -199,6 +199,7 @@ protected:
 	BOOL m_bScreenSaverWasActive;
 	CString m_sStatusBarString;
 	BOOL m_bProgressIndicatorCreated;
+	BOOL m_bLastToasterDone;
 	CToasterWnd* m_pToaster;
 	CToasterNotificationLink m_ToasterNotificationLink;
 

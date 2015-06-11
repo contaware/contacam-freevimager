@@ -136,6 +136,7 @@ CMainFrame::CMainFrame() : m_TrayIcon(IDR_TRAYICON) // Menu ID
 	m_bScanAndEmail = FALSE;
 	m_pBatchProcDlg = NULL;
 	m_pIMAPI2Dlg = NULL;
+	m_bLastToasterDone = FALSE;
 	m_pToaster = NULL;
 }
 
@@ -280,7 +281,7 @@ void CMainFrame::OnDestroy()
 	KillTimer(ID_TIMER_ONESEC_POLL);
 
 	// Close toaster
-	CloseToaster();
+	CloseToaster(TRUE); // TRUE: do not allow further toaster windows
 
 	// Base class
 	CMDIFrameWnd::OnDestroy();
@@ -695,8 +696,9 @@ void CMainFrame::PopupToaster(const CString& sTitle, const CString& sText, DWORD
 	}
 }
 
-void CMainFrame::CloseToaster()
+void CMainFrame::CloseToaster(BOOL bLastToasterDone/*=FALSE*/)
 {
+	m_bLastToasterDone = bLastToasterDone;
 	if (m_pToaster)
 	{
 		m_pToaster->Close(); // we do not need to delete m_pToaster because CToasterWnd is self deleting
@@ -720,38 +722,41 @@ LONG CMainFrame::OnThreadSafePopupToaster(WPARAM wparam, LPARAM lparam)
 	}
 	DWORD dwWaitTimeMs = (DWORD)lparam;
 
-	// Show Toaster
-	CloseToaster();
-	m_pToaster = new CToasterWnd(sTitle, sText);
-	if (dwWaitTimeMs > 0)
+	// Show Toaster?
+	if (!m_bLastToasterDone)
 	{
-		m_pToaster->m_dwWaitTime = dwWaitTimeMs;
-		m_pToaster->m_bWaitOnMouseOver = TRUE;
-		m_pToaster->m_bOnlyCloseOnUser = FALSE;
+		CloseToaster();
+		m_pToaster = new CToasterWnd(sTitle, sText);
+		if (dwWaitTimeMs > 0)
+		{
+			m_pToaster->m_dwWaitTime = dwWaitTimeMs;
+			m_pToaster->m_bWaitOnMouseOver = TRUE;
+			m_pToaster->m_bOnlyCloseOnUser = FALSE;
+		}
+		else
+			m_pToaster->m_bOnlyCloseOnUser = TRUE;
+		m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
+		m_pToaster->m_bIconHot = FALSE;
+		m_pToaster->m_bTitleHot = FALSE;
+		m_pToaster->m_bTextHot = CToasterNotificationLink::IsClickable(m_pToaster->m_sText);
+		CFont defaultGUIFont;
+		defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT));
+		LOGFONT lf;
+		defaultGUIFont.GetLogFont(&lf);
+		if (m_pToaster->m_bTextHot)
+		{
+			m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
+			m_pToaster->m_colorText = RGB(0, 0, 0xFF);
+			lf.lfUnderline = TRUE;
+		}
+		m_pToaster->m_fontText.CreateFontIndirect(&lf);
+		m_pToaster->m_nWidth = 360;
+		m_pToaster->m_nHeight = 80;
+		m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
+		m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
+		if (!m_pToaster->Show())
+			m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 	}
-	else
-		m_pToaster->m_bOnlyCloseOnUser = TRUE;
-	m_pToaster->m_TitleIcon = static_cast<HICON>(LoadImage(AfxGetResourceHandle(), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
-	m_pToaster->m_bIconHot = FALSE;
-	m_pToaster->m_bTitleHot = FALSE;
-	m_pToaster->m_bTextHot = CToasterNotificationLink::IsClickable(m_pToaster->m_sText);
-	CFont defaultGUIFont;
-	defaultGUIFont.Attach(GetStockObject(DEFAULT_GUI_FONT));
-	LOGFONT lf;
-	defaultGUIFont.GetLogFont(&lf);
-	if (m_pToaster->m_bTextHot)
-	{
-		m_pToaster->m_pNotifier = &m_ToasterNotificationLink;
-		m_pToaster->m_colorText = RGB(0, 0, 0xFF);
-		lf.lfUnderline = TRUE;
-	}
-	m_pToaster->m_fontText.CreateFontIndirect(&lf);
-	m_pToaster->m_nWidth = 360;
-	m_pToaster->m_nHeight = 80;
-	m_pToaster->m_colorBackground = RGB(0xD4, 0xD0, 0xC8);
-	m_pToaster->m_colorGradient = RGB(0xF5, 0xF5, 0xF5);
-	if (!m_pToaster->Show())
-		m_pToaster = NULL; // we do not need to delete m_pToaster because CToasterWnd is self deleting
 
 	return 0;
 }
