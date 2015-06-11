@@ -26,52 +26,11 @@ const struct in6_addr my_in6addr_loopback = MY_IN6ADDR_LOOPBACK_INIT;
 // Buffer Class
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef NETCOM_BUF_SERIALIZE
-
-#define RUNTIME_NESTED_CLASS(class_name, enclosing_class_name) ((CRuntimeClass*)(&enclosing_class_name::class_name::class##enclosing_class_name##class_name))
-
-#ifdef _AFXDLL
-#define _IMPLEMENT_NESTED_RUNTIMECLASS(class_name, enclosing_class_name, base_class_name, wSchema, pfnNew) \
-	CRuntimeClass* PASCAL enclosing_class_name::class_name::_GetBaseClass() \
-		{ return RUNTIME_CLASS(base_class_name); } \
-		AFX_COMDAT AFX_DATADEF CRuntimeClass enclosing_class_name::class_name::class##enclosing_class_name##class_name = { \
-		#class_name, sizeof(class enclosing_class_name::class_name), wSchema, pfnNew, \
-			&enclosing_class_name::class_name::_GetBaseClass, NULL }; \
-		CRuntimeClass* enclosing_class_name::class_name::GetRuntimeClass() const \
-		{ return RUNTIME_NESTED_CLASS(class_name, enclosing_class_name); } \
-
-#else
-#define _IMPLEMENT_NESTED_RUNTIMECLASS(class_name, enclosing_class_name, base_class_name, wSchema, pfnNew) \
-	AFX_DATADEF CRuntimeClass enclosing_class_name::class_name::class##enclosing_class_name##class_name = { \
-		#class_name, sizeof(class enclosing_class_name::class_name), wSchema, pfnNew, \
-			RUNTIME_CLASS(base_class_name), NULL }; \
-		CRuntimeClass* enclosing_class_name::class_name::GetRuntimeClass() const \
-		{ return RUNTIME_NESTED_CLASS(class_name, enclosing_class_name); } \
-
-#endif
-
-#define IMPLEMENT_NESTED_SERIAL(class_name, enclosing_class_name, base_class_name, wSchema) \
-	CObject* PASCAL enclosing_class_name::class_name::CreateObject() \
-		{ return new enclosing_class_name::class_name; } \
-	_IMPLEMENT_NESTED_RUNTIMECLASS(class_name, enclosing_class_name, base_class_name, wSchema, \
-		enclosing_class_name::class_name::CreateObject) \
-			AFX_CLASSINIT _init_##enclosing_class_name##class_name(RUNTIME_NESTED_CLASS(class_name, enclosing_class_name)); \
-			CArchive& AFXAPI operator>>(CArchive& ar, enclosing_class_name::class_name* &pOb) \
-		{ pOb = (enclosing_class_name::class_name*) ar.ReadObject(RUNTIME_NESTED_CLASS(class_name, enclosing_class_name)); \
-			return ar; } \
-
-IMPLEMENT_NESTED_SERIAL(CBuf, CNetCom, CObject, 1)
-
-#endif
-
 CNetCom::CBuf::CBuf()
 {
 	m_Buf = NULL;
 	m_BufSize = 0;
 	m_MsgSize = 0;
-#ifdef NETCOM_BUF_TICKCOUNT
-	m_dwTickCount = 0;
-#endif
 }
 
 CNetCom::CBuf::CBuf(unsigned int Size)
@@ -79,9 +38,6 @@ CNetCom::CBuf::CBuf(unsigned int Size)
 	m_Buf = new char[Size];
 	m_BufSize = Size;
 	m_MsgSize = 0;
-#ifdef NETCOM_BUF_TICKCOUNT
-	m_dwTickCount = 0;
-#endif
 }
 
 CNetCom::CBuf::~CBuf()
@@ -93,9 +49,6 @@ CNetCom::CBuf::~CBuf()
 CNetCom::CBuf::CBuf(const CNetCom::CBuf& b) // Copy Constructor (CBuf b1 = b2 or CBuf b1(b2))
 {
 	m_MsgSize = b.m_MsgSize;
-#ifdef NETCOM_BUF_TICKCOUNT
-	m_dwTickCount = b.m_dwTickCount;
-#endif
 	m_Buf = new char[m_BufSize = b.m_BufSize];
 	ASSERT(m_MsgSize <= m_BufSize);
 	if (m_Buf && b.m_Buf)
@@ -107,9 +60,6 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	if (this != &b) // beware of self-assignment!
 	{
 		m_MsgSize = b.m_MsgSize;
-#ifdef NETCOM_BUF_TICKCOUNT
-		m_dwTickCount = b.m_dwTickCount;
-#endif
 		if (m_BufSize < m_MsgSize || !m_Buf)
 		{
 			if (m_Buf)
@@ -123,47 +73,6 @@ CNetCom::CBuf& CNetCom::CBuf::operator=(const CNetCom::CBuf& b) // Copy Assignme
 	}
 	return *this;
 }
-
-#ifdef NETCOM_BUF_SERIALIZE
-
-void CNetCom::CBuf::Serialize(CArchive& archive)
-{
-	unsigned int i;
-
-    // call base class function first
-    // base class is CObject in this case
-    CObject::Serialize(archive);
-
-    // now do the stuff for our specific class
-    if (archive.IsStoring())
-	{
-#ifdef NETCOM_BUF_TICKCOUNT
-        archive << m_BufSize << m_MsgSize << m_dwTickCount;
-#else
-		archive << m_BufSize << m_MsgSize;
-#endif
-		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
-			archive << ((LPBYTE)&m_Addr)[i];
-		for (i = 0 ; i < m_MsgSize ; i++)
-			archive << m_Buf[i];
-	}
-    else
-	{
-#ifdef NETCOM_BUF_TICKCOUNT
-        archive >> m_BufSize >> m_MsgSize >> m_dwTickCount;
-#else
-		archive >> m_BufSize >> m_MsgSize;
-#endif
-		ASSERT(m_BufSize >= m_MsgSize);
-		for (i = 0 ; i < sizeof(sockaddr_in6) ; i++)
-			archive >> ((LPBYTE)&m_Addr)[i];
-		m_Buf = new char[m_BufSize];
-		for (i = 0 ; i < m_MsgSize ; i++)
-			archive >> m_Buf[i];
-	}
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // The Parser & Processor Base Class
@@ -332,7 +241,7 @@ int CNetCom::CMsgThread::Work()
 					}
 					else
 					{
-						if (NetworkEvents.lNetworkEvents & FD_CONNECT) // Old Win9x and Wine do not set the FD_CONNECT event for udp
+						if (NetworkEvents.lNetworkEvents & FD_CONNECT)
 						{
 							if (m_pNetCom->m_pMsgOut)
 								m_pNetCom->Notice(m_pNetCom->GetName() + _T(" Net Event FD_CONNECT"));
@@ -745,17 +654,11 @@ int CNetCom::CRxThread::Work()
 
 				// Add Message to Buffer
 				::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-				pCopyBuf->m_dwTickCount = ::GetTickCount();
-#endif
 				m_pNetCom->m_pRxBuf->Add(pCopyBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
 
 				// Add Message to Fifo
 				::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-				m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
-#endif
 				m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 
@@ -770,9 +673,6 @@ int CNetCom::CRxThread::Work()
 				if (m_pNetCom->m_pRxFifo)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
-#endif
 					m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 				}
@@ -780,9 +680,6 @@ int CNetCom::CRxThread::Work()
 				else if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
-#endif
 					m_pNetCom->m_pRxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
 
@@ -956,9 +853,6 @@ int CNetCom::CTxThread::Work()
 					if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
 					{
 						::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-						m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
-#endif
 						m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 						::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
 
@@ -1067,9 +961,6 @@ void CNetCom::CTxThread::Write()
 				if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
 				{
 					::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
-#ifdef NETCOM_BUF_TICKCOUNT
-					m_pCurrentBuf->m_dwTickCount = ::GetTickCount();
-#endif
 					m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
 					::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
 

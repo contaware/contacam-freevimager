@@ -108,67 +108,13 @@
 #define FD_CONNECTFAILED				(1 << FD_CONNECTFAILED_BIT)
 
 
-#ifdef NETCOM_BUF_SERIALIZE
-
-//////////////////////////////////////////////////////////////////////////////
-// Helper macros for declaring nested CRuntimeClass compatible classes
-// See original afx.h file
-#ifdef _AFXDLL
-#define DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-protected: \
-	static CRuntimeClass* PASCAL _GetBaseClass(); \
-public: \
-	static const AFX_DATA CRuntimeClass class##enclosing_class_name##class_name; \
-	virtual CRuntimeClass* GetRuntimeClass() const; \
-
-#define _DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-protected: \
-	static CRuntimeClass* PASCAL _GetBaseClass(); \
-public: \
-	static AFX_DATA CRuntimeClass class##enclosing_class_name##class_name; \
-	virtual CRuntimeClass* GetRuntimeClass() const; \
-
-#else
-#define DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-public: \
-	static const AFX_DATA CRuntimeClass class##enclosing_class_name##class_name; \
-	virtual CRuntimeClass* GetRuntimeClass() const; \
-
-#define _DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-public: \
-	static AFX_DATA CRuntimeClass class##enclosing_class_name##class_name; \
-	virtual CRuntimeClass* GetRuntimeClass() const; \
-
-#endif
-
-// not serializable, but dynamically constructable
-#define DECLARE_NESTED_DYNCREATE(class_name, enclosing_class_name) \
-	DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-	static CObject* PASCAL CreateObject();
-
-#define _DECLARE_NESTED_DYNCREATE(class_name, enclosing_class_name) \
-	_DECLARE_NESTED_DYNAMIC(class_name, enclosing_class_name) \
-	static CObject* PASCAL CreateObject();
-
-#define DECLARE_NESTED_SERIAL(class_name, enclosing_class_name) \
-	_DECLARE_NESTED_DYNCREATE(class_name, enclosing_class_name) \
-	AFX_API friend CArchive& AFXAPI operator>>(CArchive& ar, class_name* &pOb);
-
-#endif
-
 // The Network Communication Class
 class CNetCom
 {		
 public:
 	// The Buffer Class
 	class CBuf
-#ifdef NETCOM_BUF_SERIALIZE
-				: public CObject
-#endif
 	{
-#ifdef NETCOM_BUF_SERIALIZE
-		DECLARE_NESTED_SERIAL(CBuf, CNetCom)
-#endif
 		public:
 			CBuf();
 			CBuf(unsigned int Size);
@@ -179,12 +125,6 @@ public:
 			__forceinline unsigned int GetMsgSize() const {return m_MsgSize;};
 			__forceinline unsigned int GetBufSize() const {return m_BufSize;};
 			__forceinline char* GetBuf() const {return m_Buf;};
-#ifdef NETCOM_BUF_SERIALIZE
-			void Serialize(CArchive& archive);
-#endif
-#ifdef NETCOM_BUF_TICKCOUNT
-			DWORD m_dwTickCount;
-#endif
 		private:
 			char* m_Buf;
 			unsigned int m_MsgSize;
