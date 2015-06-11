@@ -233,15 +233,7 @@ public:
 	static DWORD EnumLAN(CStringArray* pHosts);
 
 	// Open a Network Connection								
-	BOOL Init(		BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
-					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
-					BUFQUEUE* pRxFifo,					// The Optional Rx Fifo.
-					LPCRITICAL_SECTION pcsRxFifoSync,	// The Optional Critical Section fot the Rx Fifo.
-					BUFARRAY* pTxBuf,					// The Optional Tx Buffer.
-					LPCRITICAL_SECTION pcsTxBufSync,	// The Optional Critical Section for the Tx Buffer.
-					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
-					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
-					CParseProcess* pParseProcess,		// Parser & Processor
+	BOOL Init(		CParseProcess* pParseProcess,		// Parser & Processor
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
 					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
@@ -319,33 +311,13 @@ public:
 	// (The Write function shows how to use this handle)
 	__forceinline HANDLE GetTxEventHandle() const {return m_hTxEvent;};
 
-	// Get The RxFifo, RxBuf, TxBuf and the TxFifo
+	// Get The RxFifo and the TxFifo
 	__forceinline BUFQUEUE* GetRxFifo() const {return m_pRxFifo;};
-	__forceinline BUFARRAY* GetRxBuf() const {return m_pRxBuf;};
-	__forceinline BUFARRAY* GetTxBuf() const {return m_pTxBuf;};
 	__forceinline BUFQUEUE* GetTxFifo() const {return m_pTxFifo;};
 
-	// Get The RxFifo, RxBuf, TxBuf and the TxFifo Critical Sections
+	// Get The RxFifo and the TxFifo Critical Sections
 	__forceinline LPCRITICAL_SECTION GetRxFifoSync() const {return m_pcsRxFifoSync;};
-	__forceinline LPCRITICAL_SECTION GetRxBufSync() const {return m_pcsRxBufSync;};
-	__forceinline LPCRITICAL_SECTION GetTxBufSync() const {return m_pcsTxBufSync;};
 	__forceinline LPCRITICAL_SECTION GetTxFifoSync() const {return m_pcsTxFifoSync;};
-
-	// Enter / Leave RxBuf Critical Section
-	__forceinline void StartUsingRxBuf() const {::EnterCriticalSection(m_pcsRxBufSync);};
-	__forceinline void StopUsingRxBuf() const {::LeaveCriticalSection(m_pcsRxBufSync);};
-
-	// Enter / Leave RxFifo Critical Section
-	__forceinline void StartUsingRxFifo() const {::EnterCriticalSection(m_pcsRxFifoSync);};
-	__forceinline void StopUsingRxFifo() const {::LeaveCriticalSection(m_pcsRxFifoSync);};
-	
-	// Enter / Leave TxBuf Critical Section
-	__forceinline void StartUsingTxBuf() const {::EnterCriticalSection(m_pcsTxBufSync);};
-	__forceinline void StopUsingTxBuf() const {::LeaveCriticalSection(m_pcsTxBufSync);};
-
-	// Enter / Leave TxFifo Critical Section
-	__forceinline void StartUsingTxFifo() const {::EnterCriticalSection(m_pcsTxFifoSync);};
-	__forceinline void StopUsingTxFifo() const {::LeaveCriticalSection(m_pcsTxFifoSync);};
 	
 	// Get the available bytes count that can be read with Read()
 	int GetAvailableReadBytes();
@@ -391,31 +363,12 @@ public:
 	// Is Client Connected ?
 	__forceinline BOOL IsClientConnected() const {return m_bClientConnected;}; 
 
-	// Config
-	void SetMaxRxFifoSize(UINT uiMaxRxFifoSize) {m_uiMaxRxFifoSize = uiMaxRxFifoSize;};	// Bytes
-
-	// Statistics
-	__forceinline UINT GetRxByteCount() const {return m_uiRxByteCount;};
-	__forceinline UINT GetTxByteCount() const {return m_uiTxByteCount;};
-	__forceinline UINT GetRxFifoSize() const {return (m_pRxFifo ? m_pRxFifo->GetCount() : 0);};
-	__forceinline UINT GetTxFifoSize() const {return (m_pTxFifo ? m_pTxFifo->GetCount() : 0);};
-	__forceinline UINT GetRxBufSize() const {return (m_pRxBuf ? m_pRxBuf->GetSize() : 0);};
-	__forceinline UINT GetTxBufSize() const {return (m_pTxBuf ? m_pTxBuf->GetSize() : 0);};
-
 	// Name of the CNetCom Object Instance:
 	// "NetCom Client"
 	CString GetName();
 
 	// Socket Family
 	__forceinline int GetSocketFamily() {return m_nSocketFamily;};
-
-	// Logging
-	void SetRxLogging(BOOL bLogging);
-	void SetTxLogging(BOOL bLogging);
-	BOOL IsRxLoggingEnabled() const {return m_bRxBufEnabled;};
-	BOOL IsTxLoggingEnabled() const {return m_bTxBufEnabled;};
-	BOOL IsRxLogging();
-	BOOL IsTxLogging();
 
 	// Set the new max Tx packet size
 	void SetMaxTxPacketSize(UINT uiNewSize);
@@ -449,15 +402,7 @@ protected:
 	BOOL InitAddr(volatile int& nSocketFamily, const CString& sAddress, UINT uiPort, sockaddr* paddr);
 
 	// Initialize All User Parameters (Parameters from Init Function)
-	void InitVars(BUFARRAY* pRxBuf,
-				LPCRITICAL_SECTION pcsRxBufSync,
-				BUFQUEUE* pRxFifo,
-				LPCRITICAL_SECTION pcsRxFifoSync,
-				BUFARRAY* pTxBuf,
-				LPCRITICAL_SECTION pcsTxBufSync,
-				BUFQUEUE* pTxFifo,
-				LPCRITICAL_SECTION pcsTxFifoSync,
-				CParseProcess* pParseProcess,
+	void InitVars(CParseProcess* pParseProcess,
 				CString sPeerAddress,
 				UINT uiPeerPort,
 				HANDLE hAcceptEvent,
@@ -475,7 +420,7 @@ protected:
 				UINT uiTxPacketTimeout,
 				CMsgOut* pMsgOut);
 	
-	// Initialize all Network Events (FD_ACCEPT, FD_CONNECT, ...)
+	// Initialize all Network Events (FD_CONNECT, ...)
 	BOOL InitEvents();
 
 	// Shutdown Threads
@@ -560,14 +505,6 @@ protected:
 
 	// Is the Client Connected?
 	volatile BOOL m_bClientConnected;
-
-	// Must this Class Instance free or not the Buffers, Fifos and the Critical Sections
-	BOOL m_bFreeRxBufSync;
-	BOOL m_bFreeRxFifo;
-	BOOL m_bFreeRxFifoSync;
-	BOOL m_bFreeTxBufSync;
-	BOOL m_bFreeTxFifo;
-	BOOL m_bFreeTxFifoSync;
 	
 	// The Internet Address (IP or Host Name)
 	CString m_sPeerAddress;
@@ -651,32 +588,17 @@ protected:
 									// m_ovTx.hEvent
 									// m_hTxTimeoutChangeEvent
 
-	// Rx Buf, Rx Fifo, Tx Buf and Tx Fifo Pointers
-	BUFARRAY* m_pRxBuf;
+	// Rx Fifo and Tx Fifo Pointers
 	BUFQUEUE* m_pRxFifo;
-	BUFARRAY* m_pTxBuf;
 	BUFQUEUE* m_pTxFifo;
 
 	// Synchronisation Objects
-	LPCRITICAL_SECTION	m_pcsRxBufSync;
 	LPCRITICAL_SECTION	m_pcsRxFifoSync;
-	LPCRITICAL_SECTION	m_pcsTxBufSync;
 	LPCRITICAL_SECTION	m_pcsTxFifoSync;
 
 	// Message Output
 	CMsgOut* m_pMsgOut;
 	BOOL m_bFreeMsgOut;
-
-	// Statistics
-	volatile UINT m_uiRxByteCount;
-	volatile UINT m_uiTxByteCount;
-
-	// Enable / Disable use of the Rx and Tx Buffers
-	BOOL m_bRxBufEnabled;
-	BOOL m_bTxBufEnabled;
-
-	// Max Rx Fifo Size
-	UINT m_uiMaxRxFifoSize;
 
 	// Socket Family
 	volatile int m_nSocketFamily;

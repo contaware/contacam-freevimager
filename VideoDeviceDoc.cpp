@@ -3183,14 +3183,6 @@ BOOL CVideoDeviceDoc::CHttpGetFrameThread::Connect(BOOL bSignalEvents,
 
 	// Init TCP
 	return pNetCom->Init(
-					NULL,					// The Optional Rx Buffer.
-					NULL,					// The Optional Critical Section for the Rx Buffer.
-					NULL,					// The Optional Rx Fifo.
-					NULL,					// The Optional Critical Section fot the Rx Fifo.
-					NULL,					// The Optional Tx Buffer.
-					NULL,					// The Optional Critical Section for the Tx Buffer.
-					NULL,					// The Optional Tx Fifo.
-					NULL,					// The Optional Critical Section for the Tx Fifo.
 					pParseProcess,			// Parser
 					m_pDoc->m_sGetFrameVideoHost,// Peer Address (IP or Host Name).
 					m_pDoc->m_nGetFrameVideoPort,// Peer Port.
@@ -6238,14 +6230,6 @@ BOOL CVideoDeviceDoc::MicroApacheIsPortUsed(int nPort)
 	hEventArray[0] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connected Event						
 	hEventArray[1] = ::CreateEvent(NULL, TRUE, FALSE, NULL); // Http Connect Failed Event
 	if (NetCom.Init(
-				NULL,					// The Optional Rx Buffer.
-				NULL,					// The Optional Critical Section for the Rx Buffer.
-				NULL,					// The Optional Rx Fifo.
-				NULL,					// The Optional Critical Section fot the Rx Fifo.
-				NULL,					// The Optional Tx Buffer.
-				NULL,					// The Optional Critical Section for the Tx Buffer.
-				NULL,					// The Optional Tx Fifo.
-				NULL,					// The Optional Critical Section for the Tx Fifo.
 				NULL,					// Parser
 				_T("localhost"),		// Peer Address (IP or Host Name).
 				nPort,					// Peer Port.
@@ -6346,14 +6330,6 @@ BOOL CVideoDeviceDoc::MicroApacheWaitCanConnect()
 		::ResetEvent(hEventArray[0]);
 		::ResetEvent(hEventArray[1]);
 		if (NetCom.Init(
-					NULL,					// The Optional Rx Buffer.
-					NULL,					// The Optional Critical Section for the Rx Buffer.
-					NULL,					// The Optional Rx Fifo.
-					NULL,					// The Optional Critical Section fot the Rx Fifo.
-					NULL,					// The Optional Tx Buffer.
-					NULL,					// The Optional Critical Section for the Tx Buffer.
-					NULL,					// The Optional Tx Fifo.
-					NULL,					// The Optional Critical Section for the Tx Fifo.
 					NULL,					// Parser
 					_T("localhost"),									// Peer Address (IP or Host Name).
 					((CUImagerApp*)::AfxGetApp())->m_nMicroApachePort,	// Peer Port.

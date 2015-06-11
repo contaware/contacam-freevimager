@@ -565,60 +565,18 @@ int CNetCom::CRxThread::Work()
 		unsigned int uiCurrentMsgSize;
 		if (m_pCurrentBuf && ((uiCurrentMsgSize = m_pCurrentBuf->GetMsgSize()) > 0))
 		{
-			// Statistics
-			m_pNetCom->m_uiRxByteCount += uiCurrentMsgSize;
-
-			// Make a Copy if RxBuf and RxFifo are both available
-			if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled && m_pNetCom->m_pRxFifo)
+			// Add Message to Fifo
+			if (m_pNetCom->m_pRxFifo)
 			{
-				CBuf* pCopyBuf = new CBuf(uiCurrentMsgSize);
-				memcpy((void*)(pCopyBuf->GetBuf()), (void*)(m_pCurrentBuf->GetBuf()), uiCurrentMsgSize);
-				pCopyBuf->SetMsgSize(uiCurrentMsgSize);
-
-				// Add Message to Buffer
-				::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
-				m_pNetCom->m_pRxBuf->Add(pCopyBuf);
-				::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
-
-				// Add Message to Fifo
 				::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 				m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
 				::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 			}
 			else
-			{
-				// Add Message to Fifo
-				if (m_pNetCom->m_pRxFifo)
-				{
-					::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-					m_pNetCom->m_pRxFifo->AddTail(m_pCurrentBuf);
-					::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-				}
-				// Add Message to Buffer
-				else if (m_pNetCom->m_pRxBuf && m_pNetCom->m_bRxBufEnabled)
-				{
-					::EnterCriticalSection(m_pNetCom->m_pcsRxBufSync);
-					m_pNetCom->m_pRxBuf->Add(m_pCurrentBuf);
-					::LeaveCriticalSection(m_pNetCom->m_pcsRxBufSync);
-				}
-				else
-					delete m_pCurrentBuf;
-			}
+				delete m_pCurrentBuf;
 
 			// Set to NULL!
 			m_pCurrentBuf = NULL;
-
-			// Check the Fifo Size
-			::EnterCriticalSection(m_pNetCom->m_pcsRxFifoSync);
-			if (m_pNetCom->m_pRxFifo				&&
-				(m_pNetCom->m_uiMaxRxFifoSize > 0)	&&
-				((UINT)m_pNetCom->m_pRxFifo->GetCount() > m_pNetCom->m_uiMaxRxFifoSize))
-			{
-				CBuf* pBuf = m_pNetCom->m_pRxFifo->GetHead();
-				m_pNetCom->m_pRxFifo->RemoveHead();
-				delete pBuf;
-			}
-			::LeaveCriticalSection(m_pNetCom->m_pcsRxFifoSync);
 
 			// Call the Parser
 			if (m_pNetCom->m_pParseProcess)
@@ -745,24 +703,14 @@ int CNetCom::CTxThread::Work()
 						m_pNetCom->Debug(m_pNetCom->GetName() + _T(" Got WSAGetOverlappedResult() of WSASend() or WSASendTo() with %d bytes"), NumberOfBytesSent);
 				}
 
-				// Statistics
 				// Strange: Even if WSASend sent all the bytes and returned no error,
 				// the Overlapped event is triggered! 
 				if (m_pCurrentBuf && (m_pCurrentBuf->GetMsgSize() > 0))
 				{
-					// Store into TxBuf if available
-					if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
-					{
-						::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
-						m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
-						::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
-					}
-					else
-						delete m_pCurrentBuf;
+					delete m_pCurrentBuf;
 					m_pCurrentBuf = NULL;
 					
 					// Statistics
-					if (NumberOfBytesSent > 0) m_pNetCom->m_uiTxByteCount += NumberOfBytesSent;
 					if (m_nCurrentTxFifoSize > 1) ::SetEvent(m_pNetCom->m_hTxEvent);
 				}
 				break;
@@ -849,19 +797,10 @@ void CNetCom::CTxThread::Write()
 				// Overlapped Event is also called if no error has been returned.
 				// -> the following code is not necessary!
 				/*
-				// Store into TxBuf if available
-				if (m_pNetCom->m_pTxBuf && m_pNetCom->m_bTxBufEnabled)
-				{
-					::EnterCriticalSection(m_pNetCom->m_pcsTxBufSync);
-					m_pNetCom->m_pTxBuf->Add(m_pCurrentBuf);
-					::LeaveCriticalSection(m_pNetCom->m_pcsTxBufSync);
-				}
-				else
-					delete m_pCurrentBuf;
+				delete m_pCurrentBuf;
 				m_pCurrentBuf = NULL;
 
 				// Statistics
-				if (NumberOfBytesSent > 0) m_pNetCom->m_uiTxByteCount += NumberOfBytesSent;
 				if (m_nCurrentTxFifoSize > 1) ::SetEvent(m_pNetCom->m_hTxEvent);
 				*/
 			}
@@ -915,13 +854,9 @@ CNetCom::CNetCom()
 
 	// Pointers
 	m_pParseProcess				= NULL;
-	m_pRxBuf					= NULL;
 	m_pRxFifo					= NULL;
-	m_pTxBuf					= NULL;
 	m_pTxFifo					= NULL;
-	m_pcsRxBufSync				= NULL;
 	m_pcsRxFifoSync				= NULL;
-	m_pcsTxBufSync				= NULL;
 	m_pcsTxFifoSync				= NULL;
 	m_pMsgOut					= NULL;
 	m_pMsgThread = new CMsgThread;
@@ -974,12 +909,6 @@ CNetCom::CNetCom()
 	m_bClientConnected			= FALSE;
 
 	// Must this Class Instance free or not
-	m_bFreeRxBufSync			= FALSE;
-	m_bFreeRxFifo				= FALSE;
-	m_bFreeRxFifoSync			= FALSE;
-	m_bFreeTxBufSync			= FALSE;
-	m_bFreeTxFifo				= FALSE;
-	m_bFreeTxFifoSync			= FALSE;
 	m_bFreeMsgOut				= FALSE;
 
 	// Address
@@ -991,23 +920,12 @@ CNetCom::CNetCom()
 	// Number of Rx Bytes that trigger a WM_NETCOM_RX Msg
 	m_uiRxMsgTrigger = 0;
 
-	// Statistics
-	m_uiRxByteCount = 0;
-	m_uiTxByteCount = 0;
-
 	m_uiMaxTxPacketSize = NETCOM_MAX_TX_BUFFER_SIZE;
 	
 	m_uiRxPacketTimeout = INFINITE;
 	m_uiTxPacketTimeout = INFINITE;
 
 	m_lResetEventMask = 0;
-
-	// Disable use of the Rx and Tx Buffers
-	m_bRxBufEnabled = FALSE;
-	m_bTxBufEnabled = FALSE;
-
-	// Configuration Variables
-	m_uiMaxRxFifoSize = 0;	// No Rx size limit
 
 	// Socket Family
 	m_nSocketFamily = AF_UNSPEC;
@@ -1119,15 +1037,7 @@ BOOL CNetCom::InitAddr(volatile int& nSocketFamily, const CString& sAddress, UIN
 	return TRUE;
 }
 
-BOOL CNetCom::Init(	BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
-					LPCRITICAL_SECTION pcsRxBufSync,	// The Optional Critical Section for the Rx Buffer.
-					BUFQUEUE* pRxFifo,					// The Optional Rx Fifo.
-					LPCRITICAL_SECTION pcsRxFifoSync,	// The Optional Critical Section fot the Rx Fifo.
-					BUFARRAY* pTxBuf,					// The Optional Tx Buffer.
-					LPCRITICAL_SECTION pcsTxBufSync,	// The Optional Critical Section for the Tx Buffer.
-					BUFQUEUE* pTxFifo,					// The Optional Tx Fifo.
-					LPCRITICAL_SECTION pcsTxFifoSync,	// The Optional Critical Section for the Tx Fifo.
-					CParseProcess* pParseProcess,		// Parser & Processor
+BOOL CNetCom::Init(	CParseProcess* pParseProcess,		// Parser & Processor
 					CString sPeerAddress,				// Peer Address (IP or Host Name), if _T("") Any Address is ok
 					UINT uiPeerPort,					// Peer Port, if 0 -> Win Selects a Port
 					HANDLE hAcceptEvent,				// Handle to an Event Object that will get Accept Events.
@@ -1199,13 +1109,8 @@ BOOL CNetCom::Init(	BUFARRAY* pRxBuf,					// The Optional Rx Buffer.
 #endif
 	}
 
-	// Statistics Reset
-	m_uiRxByteCount = 0;
-	m_uiTxByteCount = 0;
-
 	// Initialize the Member Variables
-	InitVars(	pRxBuf, pcsRxBufSync, pRxFifo, pcsRxFifoSync,
-				pTxBuf, pcsTxBufSync, pTxFifo, pcsTxFifoSync, pParseProcess,
+	InitVars(	pParseProcess,
 				sPeerAddress, uiPeerPort, hAcceptEvent, hConnectEvent, hConnectFailedEvent, hCloseEvent,
 				hReadEvent, hWriteEvent, hOOBEvent, lResetEventMask,
 				uiRxMsgTrigger, hRxMsgTriggerEvent, uiMaxTxPacketSize, uiRxPacketTimeout, uiTxPacketTimeout, pMsgOut);
@@ -1283,15 +1188,7 @@ void CNetCom::Close()
 
 	m_hRxMsgTriggerEvent = NULL;
 
-	if (m_bFreeRxBufSync && m_pcsRxBufSync)
-	{
-		::DeleteCriticalSection(m_pcsRxBufSync);
-		delete m_pcsRxBufSync;
-		m_pcsRxBufSync = NULL;
-		m_bFreeRxBufSync = FALSE;
-	}
-
-	if (m_bFreeRxFifo && m_pRxFifo)
+	if (m_pRxFifo)
 	{
 		while (!m_pRxFifo->IsEmpty())
 		{
@@ -1301,25 +1198,15 @@ void CNetCom::Close()
 		}
 		delete m_pRxFifo;
 		m_pRxFifo = NULL;
-		m_bFreeRxFifo = FALSE;
 	}
-	if (m_bFreeRxFifoSync && m_pcsRxFifoSync)
+	if (m_pcsRxFifoSync)
 	{
 		::DeleteCriticalSection(m_pcsRxFifoSync);
 		delete m_pcsRxFifoSync;
 		m_pcsRxFifoSync = NULL;
-		m_bFreeRxFifoSync = FALSE;
 	}
 
-	if (m_bFreeTxBufSync && m_pcsTxBufSync)
-	{
-		::DeleteCriticalSection(m_pcsTxBufSync);
-		delete m_pcsTxBufSync;
-		m_pcsTxBufSync = NULL;
-		m_bFreeTxBufSync = FALSE;
-	}
-
-	if (m_bFreeTxFifo && m_pTxFifo)
+	if (m_pTxFifo)
 	{
 		while (!m_pTxFifo->IsEmpty())
 		{
@@ -1329,14 +1216,12 @@ void CNetCom::Close()
 		}
 		delete m_pTxFifo;
 		m_pTxFifo = NULL;
-		m_bFreeTxFifo = FALSE;
 	}
-	if (m_bFreeTxFifoSync && m_pcsTxFifoSync)
+	if (m_pcsTxFifoSync)
 	{
 		::DeleteCriticalSection(m_pcsTxFifoSync);
 		delete m_pcsTxFifoSync;
 		m_pcsTxFifoSync = NULL;
-		m_bFreeTxFifoSync = FALSE;
 	}
 
 	if (m_bFreeMsgOut && m_pMsgOut)
@@ -1885,15 +1770,7 @@ CString CNetCom::GetName()
 	}
 }
 
-void CNetCom::InitVars(	BUFARRAY* pRxBuf,
-						LPCRITICAL_SECTION pcsRxBufSync,
-						BUFQUEUE* pRxFifo,
-						LPCRITICAL_SECTION pcsRxFifoSync,
-						BUFARRAY* pTxBuf,
-						LPCRITICAL_SECTION pcsTxBufSync,
-						BUFQUEUE* pTxFifo,
-						LPCRITICAL_SECTION pcsTxFifoSync,
-						CParseProcess* pParseProcess,
+void CNetCom::InitVars(	CParseProcess* pParseProcess,
 						CString sPeerAddress,
 						UINT uiPeerPort,
 						HANDLE hAcceptEvent,
@@ -1911,96 +1788,13 @@ void CNetCom::InitVars(	BUFARRAY* pRxBuf,
 						UINT uiTxPacketTimeout,
 						CMsgOut* pMsgOut)
 {
-	// Init the Buffer and the Fifos
-	if (pRxBuf)
-	{
-		m_pRxBuf = pRxBuf;
-
-		if (pcsRxBufSync == NULL)
-		{
-			m_bFreeRxBufSync = TRUE;
-			m_pcsRxBufSync = new CRITICAL_SECTION;
-			::InitializeCriticalSection(m_pcsRxBufSync);
-		}
-		else
-		{
-			m_bFreeRxBufSync = FALSE;
-			m_pcsRxBufSync = pcsRxBufSync;
-		}
-	}
-	else
-	{
-		m_pRxBuf = NULL;
-		m_bFreeRxBufSync = FALSE;
-		m_pcsRxBufSync = NULL;
-	}
-	
-	if (pRxFifo == NULL)
-	{
-		m_bFreeRxFifo = TRUE;
-		m_pRxFifo = new BUFQUEUE;
-	}
-	else
-	{
-		m_bFreeRxFifo = FALSE;
-		m_pRxFifo = pRxFifo;
-	}
-	if (pcsRxFifoSync == NULL)
-	{
-		m_bFreeRxFifoSync = TRUE;
-		m_pcsRxFifoSync = new CRITICAL_SECTION;
-		::InitializeCriticalSection(m_pcsRxFifoSync);
-	}
-	else
-	{
-		m_bFreeRxFifoSync = FALSE;
-		m_pcsRxFifoSync = pcsRxFifoSync;
-	}
-
-	if (pTxBuf)
-	{
-		m_pTxBuf = pTxBuf;
-
-		if (pcsTxBufSync == NULL)
-		{
-			m_bFreeTxBufSync = TRUE;
-			m_pcsTxBufSync = new CRITICAL_SECTION;
-			::InitializeCriticalSection(m_pcsTxBufSync);
-		}
-		else
-		{
-			m_bFreeTxBufSync = FALSE;
-			m_pcsTxBufSync = pcsTxBufSync;
-		}
-	}
-	else
-	{
-		m_pTxBuf = NULL;
-		m_bFreeTxBufSync = FALSE;
-		m_pcsTxBufSync = NULL;
-	}
-
-	if (pTxFifo == NULL)
-	{
-		m_bFreeTxFifo = TRUE;
-		m_pTxFifo = new BUFQUEUE;
-	}
-	else
-	{
-		m_bFreeTxFifo = FALSE;
-		m_pTxFifo = pTxFifo;
-	}
-	if (pcsTxFifoSync == NULL)
-	{
-		m_bFreeTxFifoSync = TRUE;
-		m_pcsTxFifoSync = new CRITICAL_SECTION;
-		::InitializeCriticalSection(m_pcsTxFifoSync);
-	}
-	else
-	{
-		m_bFreeTxFifoSync = FALSE;
-		m_pcsTxFifoSync = pcsTxFifoSync;
-	}
+	// Init the Fifos
+	m_pRxFifo = new BUFQUEUE;
+	m_pcsRxFifoSync = new CRITICAL_SECTION;
+	::InitializeCriticalSection(m_pcsRxFifoSync);
+	m_pTxFifo = new BUFQUEUE;
+	m_pcsTxFifoSync = new CRITICAL_SECTION;
+	::InitializeCriticalSection(m_pcsTxFifoSync);
 
 	// Init member vars
 	m_pParseProcess = pParseProcess;
@@ -2049,32 +1843,12 @@ void CNetCom::ShutdownConnection_NoBlocking()
 	}
 }
 
-void CNetCom::SetRxLogging(BOOL bLogging)
-{
-	m_bRxBufEnabled = bLogging;
-}
-
-void CNetCom::SetTxLogging(BOOL bLogging)
-{
-	m_bTxBufEnabled = bLogging;
-}
-
 void CNetCom::SetMaxTxPacketSize(UINT uiNewSize)
 {
 	// Limit the Maximum size of the sent packets
 	if ((uiNewSize == 0) || (uiNewSize > NETCOM_MAX_TX_BUFFER_SIZE))
 		uiNewSize = NETCOM_MAX_TX_BUFFER_SIZE;
 	m_uiMaxTxPacketSize = uiNewSize;
-}
-
-BOOL CNetCom::IsRxLogging()
-{
-	return (m_pRxThread->IsRunning() && m_bRxBufEnabled);
-}
-
-BOOL CNetCom::IsTxLogging()
-{
-	return (m_pTxThread->IsRunning() && m_bTxBufEnabled);
 }
 
 void CNetCom::SetRxMsgTriggerSize(UINT uiNewSize)
